@@ -27,8 +27,6 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 
-#include "implot.h"
-
 #include "platform/display/glfw/windowglfw.hpp"
 #include "platform/graphics/opengl/oglrendertarget.hpp"
 

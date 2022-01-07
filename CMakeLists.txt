@@ -14,8 +14,6 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GN
 endif ()
 
 include(cmake/imgui.cmake)
-include(cmake/implot.cmake)
-include(cmake/extern.cmake)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     message("Debug Build")
@@ -35,9 +33,7 @@ else ()
 endif ()
 
 include(cmake/engine.cmake)
-include(cmake/editor.cmake)
-include(cmake/sample.cmake)
 
 if(UNIX AND CMAKE_COMPILER_IS_GNUCXX)
-    target_compile_options(mana-engine PUBLIC -fvisibility=hidden)
+    target_compile_options(engine PUBLIC -fvisibility=hidden)
 endif()

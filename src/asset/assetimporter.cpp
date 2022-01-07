@@ -27,8 +27,8 @@
 
 #include <sndfile.h>
 
-#include "stb_image.h"
-#include "json.hpp"
+#include "extern/stb_image.h"
+#include "extern/json.hpp"
 
 #include "async/threadpool.hpp"
 #include "asset/mesh.hpp"

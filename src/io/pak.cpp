@@ -22,8 +22,8 @@
 #include <utility>
 #include <filesystem>
 
-#include "json.hpp"
-#include "base64.hpp"
+#include "extern/json.hpp"
+#include "extern/base64.hpp"
 
 #include "io/readfile.hpp"
 #include "compression/gzip.hpp"
