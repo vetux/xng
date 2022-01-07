@@ -23,7 +23,7 @@
 
 #include "openal.hpp"
 
-namespace engine {
+namespace xengine {
     void checkOALError(const std::string &caller) {
         auto error = alGetError();
         if (error != AL_NO_ERROR) {

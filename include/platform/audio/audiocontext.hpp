@@ -26,7 +26,7 @@
 #include "audiobuffer.hpp"
 #include "audiosource.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT AudioContext {
     public:
         virtual ~AudioContext() = default;

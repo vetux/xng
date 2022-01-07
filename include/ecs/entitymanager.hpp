@@ -25,7 +25,7 @@
 
 #include "ecs/componentmanager.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT EntityManager {
     public:
         EntityManager() = default;

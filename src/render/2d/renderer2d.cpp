@@ -121,7 +121,7 @@ static float distance(float val1, float val2) {
         return abs;
 }
 
-namespace engine {
+namespace xengine {
     /**
      * Get plane mesh with origin at top left offset by center and scaled in the y axis.
      *

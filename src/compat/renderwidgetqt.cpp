@@ -24,7 +24,7 @@
 #include "platform/graphics/opengl-qt/qtoglrenderdevice.hpp"
 #include "platform/graphics/opengl-qt/qtoglrendertarget.hpp"
 
-namespace engine {
+namespace xengine {
     RenderWidgetQt::RenderWidgetQt(QWidget *parent, AssetManager &assetManager)
             : QOpenGLWidget(parent), assetManager(assetManager) {}
 

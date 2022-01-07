@@ -19,7 +19,7 @@
 
 #include "platform/text/character.hpp"
 
-namespace engine {
+namespace xengine {
     Recti Character::getMetrics(const std::string &str, const std::map<char, Character> &chars) {
         Vec2i origin(0); //The origin of the text
         Vec2i size(0); //The size of the text

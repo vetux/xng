@@ -30,7 +30,7 @@
 
 #include "asset/camera.hpp"
 
-namespace engine {
+namespace xengine {
     /**
      * This is a SDL inspired 2d renderer.
      * It uses a similar interface to SDL in a object oriented manner.

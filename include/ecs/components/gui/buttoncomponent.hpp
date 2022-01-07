@@ -20,7 +20,7 @@
 #ifndef MANA_BUTTONCOMPONENT_HPP
 #define MANA_BUTTONCOMPONENT_HPP
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT ButtonComponent {
     };
 }

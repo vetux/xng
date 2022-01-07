@@ -28,7 +28,7 @@
 #include "ecs/components.hpp"
 #include "ecs/entitymanager.hpp"
 
-namespace engine {
+namespace xengine {
     //TODO: Design better schema generation method
     MANA_EXPORT CameraType &operator<<(CameraType &value, const Message &message);
 

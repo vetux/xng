@@ -20,7 +20,7 @@
 #ifndef MANA_AUDIOBACKEND_HPP
 #define MANA_AUDIOBACKEND_HPP
 
-namespace engine {
+namespace xengine {
     enum AudioBackend {
         OpenAL
     };

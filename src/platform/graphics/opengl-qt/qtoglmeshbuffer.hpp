@@ -28,7 +28,7 @@
 
 #include <QOpenGLFunctions_4_5_Core>
 
-namespace engine {
+namespace xengine {
     namespace opengl {
         class QtOGLMeshBuffer : public MeshBuffer, public QOpenGLFunctions_4_5_Core {
         public:

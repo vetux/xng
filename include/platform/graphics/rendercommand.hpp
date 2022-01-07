@@ -27,7 +27,7 @@
 #include "texturebuffer.hpp"
 #include "shaderprogram.hpp"
 
-namespace engine {
+namespace xengine {
     enum DepthTestMode {
         DEPTH_TEST_ALWAYS,
         DEPTH_TEST_NEVER,

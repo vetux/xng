@@ -21,6 +21,6 @@
 
 #include "jointbox2d.hpp"
 
-namespace engine {}
+namespace xengine {}
 
 #endif

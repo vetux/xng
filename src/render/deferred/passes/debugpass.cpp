@@ -506,7 +506,7 @@ void main()
 }
 )###";
 
-namespace engine {
+namespace xengine {
     using namespace ShaderCompiler;
 
     const char *DebugPass::WIREFRAME = "debug_wireframe";

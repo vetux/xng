@@ -24,7 +24,7 @@
 
 #include "openal.hpp"
 
-namespace engine {
+namespace xengine {
     OALAudioListener::OALAudioListener() {}
 
     OALAudioListener::~OALAudioListener() = default;

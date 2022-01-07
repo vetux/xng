@@ -21,7 +21,7 @@
 
 #include "ecs/components.hpp"
 
-namespace engine {
+namespace xengine {
     /*struct RigidBodyData3D : public Component::UserData {
         World3D *world;
         RigidBody3D *body;

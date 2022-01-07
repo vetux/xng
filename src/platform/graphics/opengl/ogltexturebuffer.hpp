@@ -24,7 +24,7 @@
 
 #include "openglinclude.hpp"
 
-namespace engine {
+namespace xengine {
     namespace opengl {
         class OGLTextureBuffer : public TextureBuffer {
         public:

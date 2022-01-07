@@ -25,32 +25,32 @@
 
 #define ERROR throw std::runtime_error("Mono support not built");
 
-engine::MonoCppAssembly::MonoCppAssembly(void *domainPointer, void *assemblyPointer, void *imagePointer) { ERROR }
+xengine::MonoCppAssembly::MonoCppAssembly(void *domainPointer, void *assemblyPointer, void *imagePointer) { ERROR }
 
-engine::MonoCppAssembly::~MonoCppAssembly() {  }
+xengine::MonoCppAssembly::~MonoCppAssembly() {  }
 
-engine::MonoCppObject
-engine::MonoCppAssembly::invokeStaticMethod(const std::string &nameSpace, const std::string &className,
+xengine::MonoCppObject
+xengine::MonoCppAssembly::invokeStaticMethod(const std::string &nameSpace, const std::string &className,
                                             const std::string &functionName,
-                                            const engine::MonoCppArguments &args) const { ERROR }
+                                            const xengine::MonoCppArguments &args) const { ERROR }
 
-void engine::MonoCppAssembly::setStaticField(const std::string &nameSpace, const std::string &className,
+void xengine::MonoCppAssembly::setStaticField(const std::string &nameSpace, const std::string &className,
                                              const std::string &fieldName,
-                                             engine::MonoCppValue value) const { ERROR }
+                                             xengine::MonoCppValue value) const { ERROR }
 
-engine::MonoCppObject
-engine::MonoCppAssembly::getStaticField(const std::string &nameSpace, const std::string &className,
+xengine::MonoCppObject
+xengine::MonoCppAssembly::getStaticField(const std::string &nameSpace, const std::string &className,
                                         const std::string &fieldName) const { ERROR }
 
-engine::MonoCppObject
-engine::MonoCppAssembly::createObject(const std::string &nameSpace, const std::string &className,
+xengine::MonoCppObject
+xengine::MonoCppAssembly::createObject(const std::string &nameSpace, const std::string &className,
                                       bool pinned) const { ERROR }
 
 #else
 
 #include "mono.hpp"
 
-namespace engine {
+namespace xengine {
     MonoCppAssembly::MonoCppAssembly(void *domainPointer, void *assemblyPointer, void *imagePointer)
             : domainPointer(domainPointer),
               assemblyPointer(assemblyPointer),

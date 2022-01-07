@@ -29,7 +29,7 @@
 
 #include "platform/audio/audiodevice.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT AudioSystem : public System, ComponentPool<AudioSourceComponent>::Listener {
     public:
         explicit AudioSystem(AudioDevice &device, AssetManager &assetManager);

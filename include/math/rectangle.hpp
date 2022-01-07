@@ -3,7 +3,7 @@
 
 #include "math/vector2.hpp"
 
-namespace engine {
+namespace xengine {
     /**
      * A axis aligned rectangle defining position and dimensions.
      * */

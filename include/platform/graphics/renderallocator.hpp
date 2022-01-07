@@ -30,7 +30,7 @@
 
 #include "asset/mesh.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT RenderAllocator {
     public:
         virtual std::unique_ptr<RenderTarget> createRenderTarget(Vec2i size, int samples) = 0;

@@ -19,7 +19,7 @@
 
 #include "async/threadpool.hpp"
 
-namespace engine {
+namespace xengine {
     std::unique_ptr<ThreadPool> pool = nullptr;
 
     ThreadPool &ThreadPool::getPool() {

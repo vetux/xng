@@ -23,7 +23,7 @@
 #include "platform/audio/audiolistener.hpp"
 #include "platform/audio/audiocontext.hpp"
 
-namespace engine {
+namespace xengine {
     class OALAudioListener : public AudioListener {
     public:
         OALAudioListener();

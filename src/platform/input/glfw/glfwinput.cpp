@@ -27,7 +27,7 @@
 
 #include "glfwtypeconverter.hpp"
 
-namespace engine {
+namespace xengine {
     std::mutex windowMappingMutex;
     std::map<GLFWwindow *, GLFWInput *> windowMapping;
 
@@ -69,9 +69,9 @@ namespace engine {
         std::lock_guard<std::mutex> guard(windowMappingMutex);
         windowMapping[&wndH] = this;
 
-        glfwSetKeyCallback(&wndH, engine::glfwKeyCallback);
-        glfwSetCursorPosCallback(&wndH, engine::glfwCursorCallback);
-        glfwSetMouseButtonCallback(&wndH, engine::glfwMouseKeyCallback);
+        glfwSetKeyCallback(&wndH, xengine::glfwKeyCallback);
+        glfwSetCursorPosCallback(&wndH, xengine::glfwCursorCallback);
+        glfwSetMouseButtonCallback(&wndH, xengine::glfwMouseKeyCallback);
 
         //GLFW Does not appear to send connected events for joysticks which are already connected when the application starts.
         for (int i = GLFW_JOYSTICK_1; i < GLFW_JOYSTICK_16; i++) {
@@ -82,7 +82,7 @@ namespace engine {
             }
         }
 
-        glfwSetJoystickCallback(engine::glfwJoystickCallback);
+        glfwSetJoystickCallback(xengine::glfwJoystickCallback);
 
         listeners.insert(this);
 

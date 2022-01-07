@@ -25,7 +25,7 @@
 #include <tuple>
 #include <utility>
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT AssetPath {
         AssetPath() = default;
 

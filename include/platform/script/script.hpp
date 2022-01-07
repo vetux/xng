@@ -21,7 +21,7 @@
 #define MANA_SCRIPT_HPP
 
 //TODO: Redesign Script abstraction
-namespace engine {
+namespace xengine {
     class MANA_EXPORT Script {
     public:
         virtual void onEnable() const {};

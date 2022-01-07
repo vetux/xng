@@ -20,7 +20,7 @@
 #ifndef MANA_KEYBOARD_HPP
 #define MANA_KEYBOARD_HPP
 
-namespace engine {
+namespace xengine {
     enum KeyboardKey {
         KEY_RETURN,
         KEY_ESCAPE,

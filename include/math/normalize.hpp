@@ -24,7 +24,7 @@
 #include "math/vector3.hpp"
 #include "math/vector4.hpp"
 
-namespace engine {
+namespace xengine {
     template<typename T>
     T normalize(const T &value) {
         if (value < -1) {

@@ -20,7 +20,7 @@
 #ifndef MANA_MONITORMODE_HPP
 #define MANA_MONITORMODE_HPP
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT VideoMode {
         int width;
         int height;

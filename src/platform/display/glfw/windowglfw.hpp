@@ -35,7 +35,7 @@
 
 #include "platform/input/glfw/glfwinput.hpp"
 
-namespace engine {
+namespace xengine {
     namespace glfw {
         /**
          * Currently implemented is opengl render target support.

@@ -22,7 +22,7 @@
 
 #include "platform/script/script.hpp"
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT MonoSyncComponent {
     };
 }

@@ -24,7 +24,7 @@
 #include "colliderbox2d.hpp"
 #include "commonbox2d.hpp"
 
-namespace engine {
+namespace xengine {
     ColliderBox2D::ColliderBox2D(b2Body &body) {
         b2FixtureDef def;
         fixture = body.CreateFixture(&def);

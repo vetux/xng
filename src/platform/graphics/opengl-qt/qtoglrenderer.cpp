@@ -35,7 +35,7 @@
 
 #include "qtopenglinclude.hpp"
 
-namespace engine {
+namespace xengine {
     namespace opengl {
         static GLuint getTextureSlot(int slot) {
             switch (slot) {

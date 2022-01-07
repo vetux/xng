@@ -24,7 +24,7 @@
 
 #define AUDIO_POS_SCALE 1
 
-namespace engine {
+namespace xengine {
     AudioSystem::AudioSystem(AudioDevice &device, AssetManager &assetManager)
             : device(device), assetManager(assetManager) {
         context = device.createContext();

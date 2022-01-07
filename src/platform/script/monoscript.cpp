@@ -19,7 +19,7 @@
 
 #include "platform/script/mono/monoscript.hpp"
 
-namespace engine {
+namespace xengine {
     MonoScript::MonoScript() : object(nullptr),
                                assembly(nullptr) {}
 

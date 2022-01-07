@@ -24,7 +24,7 @@
 
 #include "platform/physics/2d/collider2d.hpp"
 
-namespace engine {
+namespace xengine {
     class ColliderBox2D : public Collider2D {
     public:
         b2Fixture *fixture;

@@ -27,7 +27,7 @@
 #include "monocpparguments.hpp"
 #include "monocppvalue.hpp"
 
-namespace engine {
+namespace xengine {
     //TODO: Refactor mono abstraction
     class MANA_EXPORT MonoCppAssembly {
     public:

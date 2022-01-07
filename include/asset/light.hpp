@@ -24,7 +24,7 @@
 
 #include "asset/asset.hpp"
 
-namespace engine {
+namespace xengine {
     enum LightType {
         LIGHT_DIRECTIONAL,
         LIGHT_POINT,

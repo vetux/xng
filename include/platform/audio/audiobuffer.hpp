@@ -26,7 +26,7 @@
 
 #include "audioformat.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT AudioBuffer {
     public:
         virtual ~AudioBuffer() = default;

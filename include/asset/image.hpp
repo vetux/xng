@@ -26,7 +26,7 @@
 #include "asset/color.hpp"
 #include "math/rectangle.hpp"
 
-namespace engine {
+namespace xengine {
     /**
      * Stores 2d image data in row major format.
      *

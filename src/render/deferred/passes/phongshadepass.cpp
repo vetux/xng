@@ -187,7 +187,7 @@ PS_OUTPUT main(PS_INPUT v) {
 }
 )###";
 
-namespace engine {
+namespace xengine {
     using namespace ShaderCompiler;
 
     const char *PhongShadePass::AMBIENT = "phong_ambient";

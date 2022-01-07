@@ -20,7 +20,7 @@
 #ifndef MANA_WINDOWATTRIBUTES_HPP
 #define MANA_WINDOWATTRIBUTES_HPP
 
-namespace engine {
+namespace xengine {
     /**
      * The attributes of a window which are required for creation.
      * Some attributes may be changed for an existing window, for which

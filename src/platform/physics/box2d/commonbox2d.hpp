@@ -25,7 +25,7 @@
 
 #include "platform/physics/2d/rigidbody2d.hpp"
 
-namespace engine {
+namespace xengine {
     Vec2f convert(const b2Vec2 &vec);
 
     b2Vec2 convert(const Vec2f &vec);

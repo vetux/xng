@@ -19,7 +19,7 @@
 
 #include "render/deferred/passes/shadowpass.hpp"
 
-namespace engine {
+namespace xengine {
     void ShadowPass::prepareBuffer(GeometryBuffer &gBuffer) {
         RenderPass::prepareBuffer(gBuffer);
     }

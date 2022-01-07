@@ -19,7 +19,7 @@
 
 #include "worldbt3.hpp"
 
-namespace engine {
+namespace xengine {
     RigidBody3D *WorldBt3::createRigidBody() {
         return nullptr;
     }

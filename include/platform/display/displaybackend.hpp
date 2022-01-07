@@ -20,7 +20,7 @@
 #ifndef MANA_DISPLAYBACKEND_HPP
 #define MANA_DISPLAYBACKEND_HPP
 
-namespace engine {
+namespace xengine {
     enum DisplayBackend {
         GLFW
     };

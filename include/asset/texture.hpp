@@ -23,7 +23,7 @@
 #include "platform/graphics/texturebuffer.hpp"
 #include "asset/assetpath.hpp"
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT Texture {
         std::vector<AssetPath> images;
         TextureBuffer::Attributes attributes;

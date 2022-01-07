@@ -24,7 +24,7 @@
 
 #include "asset/asset.hpp"
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT Shader : public AssetBase {
         ~Shader() override = default;
 

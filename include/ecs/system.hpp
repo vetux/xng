@@ -22,7 +22,7 @@
 
 #include "ecs/entitymanager.hpp"
 
-namespace engine {
+namespace xengine {
     /**
      * Systems provide logic.
      */

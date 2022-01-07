@@ -32,7 +32,7 @@
 
 #include "asset/assetimporter.hpp"
 
-namespace engine {
+namespace xengine {
     RenderSystem::RenderSystem(RenderTarget &screen,
                                RenderDevice &device,
                                Archive &archive,

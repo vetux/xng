@@ -24,7 +24,7 @@
 
 #include "platform/physics/3d/world3d.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT Physics3DSystem : public System {
     public:
         explicit Physics3DSystem(World3D &world);

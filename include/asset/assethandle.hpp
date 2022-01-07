@@ -23,7 +23,7 @@
 #include "asset/manager/assetmanager.hpp"
 #include "asset/manager/assetrendermanager.hpp"
 
-namespace engine {
+namespace xengine {
     template<typename T>
     class MANA_EXPORT AssetHandle {
     public:

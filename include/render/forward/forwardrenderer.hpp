@@ -24,7 +24,7 @@
 
 #include "platform/graphics/renderer.hpp"
 
-namespace engine {
+namespace xengine {
     namespace ForwardRenderer {
         void renderScene(Renderer &ren, RenderTarget &target, Scene &scene);
     }

@@ -20,7 +20,7 @@
 #ifndef MANA_PARTICLECOMPONENT_HPP
 #define MANA_PARTICLECOMPONENT_HPP
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT ParticleComponent {
     };
 }

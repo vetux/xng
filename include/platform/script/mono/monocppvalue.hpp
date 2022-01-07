@@ -22,7 +22,7 @@
 
 #include <stdexcept>
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT MonoCppValue {
         MonoCppValue() = default;
 

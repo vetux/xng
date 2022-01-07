@@ -30,7 +30,7 @@
 #include "async/threadpool.hpp"
 #include "io/archive.hpp"
 
-namespace engine {
+namespace xengine {
     namespace AssetImporter {
         /**
          * Import the bundle from the stream.

@@ -24,7 +24,7 @@
 #include "quaternion.hpp"
 #include "math/matrixmath.hpp"
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT Transform {
         Transform() = default;
 

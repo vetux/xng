@@ -22,7 +22,7 @@
 #include "rigidbodybox2d.hpp"
 #include "commonbox2d.hpp"
 
-namespace engine {
+namespace xengine {
     RigidBodyBox2D::RigidBodyBox2D(b2World &world) {
         b2BodyDef def;
         body = world.CreateBody(&def);

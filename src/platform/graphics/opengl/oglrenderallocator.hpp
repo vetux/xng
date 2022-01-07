@@ -24,7 +24,7 @@
 
 #include "asset/mesh.hpp"
 
-namespace engine {
+namespace xengine {
     namespace opengl {
         class OGLRenderAllocator : public RenderAllocator {
         public:

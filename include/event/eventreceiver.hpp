@@ -20,7 +20,7 @@
 #ifndef MANA_EVENTRECEIVER_HPP
 #define MANA_EVENTRECEIVER_HPP
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT EventReceiverBase {
     };
 

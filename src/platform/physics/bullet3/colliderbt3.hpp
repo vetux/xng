@@ -22,7 +22,7 @@
 
 #include "platform/physics/3d/collider3d.hpp"
 
-namespace engine {
+namespace xengine {
     class ColliderBt3 : Collider3D {
     public:
         void setShape(const std::vector<Vec3f> &vertices) override;

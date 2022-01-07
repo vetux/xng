@@ -35,7 +35,7 @@
 
 #include "platform/audio/audioformat.hpp"
 
-namespace engine {
+namespace xengine {
     static ColorRGBA convertJsonColor(const nlohmann::json &j) {
         return ColorRGBA(j["r"], j["g"], j["b"], j["a"]);
     }

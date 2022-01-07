@@ -27,7 +27,7 @@
 #include "platform/graphics/renderer.hpp"
 #include "platform/graphics/renderdevice.hpp"
 
-namespace engine {
+namespace xengine {
     /**
      * Users may extend this class MANA_EXPORT and create custom render passes.
      */

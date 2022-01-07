@@ -20,7 +20,7 @@
 #ifndef MANA_ASSET_HPP
 #define MANA_ASSET_HPP
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT AssetBase {
     public:
         virtual ~AssetBase() = default;

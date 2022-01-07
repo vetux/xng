@@ -23,7 +23,7 @@
 
 #include "platform/physics/3d/world3d.hpp"
 
-namespace engine {
+namespace xengine {
     class WorldBt3 : public World3D {
     public:
         RigidBody3D *createRigidBody() override;

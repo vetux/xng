@@ -23,7 +23,7 @@
 
 #include "platform/script/mono/monocppobject.hpp"
 
-namespace engine {
+namespace xengine {
     void MonoCppArguments::add(int &value) {
         args.emplace_back(&value);
     }

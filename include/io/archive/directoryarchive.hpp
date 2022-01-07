@@ -25,7 +25,7 @@
 
 #include "io/archive.hpp"
 
-namespace engine {
+namespace xengine {
     /**
      * A directory representing an archive.
      * Only files relative to the specified directory can be accessed by full or relative path,

@@ -29,7 +29,7 @@
 
 class MANA_EXPORT AssetPack;
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT PakArchive : public Archive {
     public:
         PakArchive() = default;

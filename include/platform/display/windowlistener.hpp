@@ -22,7 +22,7 @@
 
 #include "math/vector2.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT WindowListener {
     public:
         virtual void onWindowClose() {};

@@ -21,7 +21,7 @@
 
 #include "math/rotation.hpp"
 
-namespace engine {
+namespace xengine {
     void ForwardRenderer::renderScene(Renderer &ren, RenderTarget &target, Scene &scene) {
         // Clear forward color and depth textures
         ren.renderBegin(target, RenderOptions({},

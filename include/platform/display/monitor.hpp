@@ -27,7 +27,7 @@
 #include "math/vector2.hpp"
 #include "math/rectangle.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT Monitor {
     public:
         virtual ~Monitor() = default;

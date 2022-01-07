@@ -24,7 +24,7 @@
 
 #include "platform/audio/audiobuffer.hpp"
 
-namespace engine {
+namespace xengine {
     class OALAudioBuffer : public AudioBuffer {
     public:
         const ALuint handle;

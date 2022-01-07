@@ -20,7 +20,7 @@
 #ifndef MANA_SHADERLANGUAGE_HPP
 #define MANA_SHADERLANGUAGE_HPP
 
-namespace engine {
+namespace xengine {
     enum ShaderLanguage {
         HLSL_SHADER_MODEL_4,
         GLSL_460, //GLSL 460 with OpenGL semantics

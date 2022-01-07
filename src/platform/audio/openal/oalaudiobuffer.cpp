@@ -24,7 +24,7 @@
 #include "oalaudiobuffer.hpp"
 #include "oalcheckerror.hpp"
 
-namespace engine {
+namespace xengine {
     int convertFormat(AudioFormat format) {
         switch (format) {
             case MONO8:

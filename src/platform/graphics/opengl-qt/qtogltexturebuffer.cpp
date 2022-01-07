@@ -21,8 +21,8 @@
 #include "qtoglcheckerror.hpp"
 #include "qtogltypeconverter.hpp"
 
-using namespace engine;
-using namespace engine::opengl;
+using namespace xengine;
+using namespace xengine::opengl;
 
 //TODO: If users want to use integer texture formats the shaders would need to sample using isampler2d which does not exist in hlsl and therefore cant be cross compiled.
 //For now all integer format textures are uploaded as the normalized float format,
@@ -285,7 +285,7 @@ void QtOGLTextureBuffer::upload(const Image<unsigned char> &buffer) {
     checkGLError("QtOGLTextureBuffer::upload(unsigned char)");
 }
 
-engine::Image<ColorRGBA> QtOGLTextureBuffer::download() {
+xengine::Image<ColorRGBA> QtOGLTextureBuffer::download() {
     if (attributes.textureType != TEXTURE_2D)
         throw std::runtime_error("TextureBuffer not texture 2d");
 

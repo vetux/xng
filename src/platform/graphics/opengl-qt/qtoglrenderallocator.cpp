@@ -25,7 +25,7 @@
 #include "qtoglmeshbuffer.hpp"
 #include "qtoglshaderprogram.hpp"
 
-namespace engine {
+namespace xengine {
     namespace opengl {
         static std::string getGlslSource(const ShaderSource &source) {
             auto ret = source;

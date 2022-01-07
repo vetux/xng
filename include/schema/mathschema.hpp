@@ -30,7 +30,7 @@
 #include "math/vector3.hpp"
 #include "math/vector4.hpp"
 
-namespace engine {
+namespace xengine {
     MANA_EXPORT Grid &operator<<(Grid &grid, const Message &message);
 
     MANA_EXPORT Message &operator<<(Message &message, const Grid &grid);

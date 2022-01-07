@@ -141,7 +141,7 @@ void main() {
 }
 )###";
 
-namespace engine {
+namespace xengine {
     using namespace ShaderCompiler;
 
     static inline Vec4f scaleColor(const ColorRGBA &color) {

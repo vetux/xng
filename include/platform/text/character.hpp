@@ -24,7 +24,7 @@
 
 #include <map>
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT Character {
     public:
         static Recti getMetrics(const std::string &str, const std::map<char, Character> &chars);

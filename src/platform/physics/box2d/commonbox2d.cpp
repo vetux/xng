@@ -21,7 +21,7 @@
 
 #include "commonbox2d.hpp"
 
-namespace engine {
+namespace xengine {
     Vec2f convert(const b2Vec2 &vec) {
         return {vec.x, vec.y};
     }

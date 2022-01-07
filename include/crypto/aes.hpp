@@ -24,7 +24,7 @@
 #include <vector>
 #include <array>
 
-namespace engine {
+namespace xengine {
     namespace AES {
         const int BLOCKSIZE = 128;
 

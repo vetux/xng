@@ -28,7 +28,7 @@
 #include "platform/input/input.hpp"
 #include "io/archive.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT MonoScriptingSystem : public System, InputListener {
     public:
         MonoScriptingSystem(Input &input,

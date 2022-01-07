@@ -19,7 +19,7 @@
 
 #include "platform/graphics/shadersource.hpp"
 
-namespace engine {
+namespace xengine {
     ShaderSource::ShaderSource(std::string src,
                                std::string entryPoint,
                                ShaderStage stage,

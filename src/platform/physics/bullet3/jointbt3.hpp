@@ -22,7 +22,7 @@
 
 #include "platform/physics/3d/joint3d.hpp"
 
-namespace engine {
+namespace xengine {
     class JointBt3 : public Joint3D {
     public:
     };

@@ -24,7 +24,7 @@
 
 #include "platform/audio/audiodevice.hpp"
 
-namespace engine {
+namespace xengine {
     class OALAudioDevice : public AudioDevice {
     public:
         static std::vector<std::string> getDeviceNames();

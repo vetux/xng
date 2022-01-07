@@ -23,7 +23,7 @@
 #include "qtoglmeshbuffer.hpp"
 #include "qtoglshaderprogram.hpp"
 
-namespace engine {
+namespace xengine {
     namespace opengl {
         Renderer &QtOGLRenderDevice::getRenderer() {
             return dynamic_cast<Renderer &>(renderer);

@@ -27,7 +27,7 @@
 #include "texturebuffer.hpp"
 #include "graphicsbackend.hpp"
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT RenderOptions {
         explicit RenderOptions(Vec2i viewportOffset,
                                Vec2i viewportSize,

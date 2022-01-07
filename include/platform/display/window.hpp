@@ -33,7 +33,7 @@
 #include "platform/input/input.hpp"
 #include "math/vector2.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT Window {
     public:
         virtual ~Window() = default;

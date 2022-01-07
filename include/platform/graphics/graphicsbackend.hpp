@@ -20,7 +20,7 @@
 #ifndef MANA_GRAPHICSBACKEND_HPP
 #define MANA_GRAPHICSBACKEND_HPP
 
-namespace engine {
+namespace xengine {
     enum GraphicsBackend {
         OPENGL_4_6, // OpenGL 4.6
         OPENGL_4_6_QT, // OpenGL 4.6 Render implementation which can be used with QOpenGLWidget

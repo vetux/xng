@@ -23,7 +23,7 @@
 #include "cryptopp/gzip.h"
 #include "cryptopp/cryptlib.h"
 
-namespace engine {
+namespace xengine {
     std::vector<char> GZip::compress(const char *data, size_t length) {
         std::string compressed;
         CryptoPP::Gzip zipper(new CryptoPP::StringSink(compressed));

@@ -23,7 +23,7 @@
 #include <iostream>
 #include <memory>
 
-namespace engine {
+namespace xengine {
     /**
      * Archive interface, implementations may be directories or custom archive format.
      */

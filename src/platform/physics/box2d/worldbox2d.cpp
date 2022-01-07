@@ -23,7 +23,7 @@
 #include "rigidbodybox2d.hpp"
 #include "commonbox2d.hpp"
 
-namespace engine {
+namespace xengine {
     WorldBox2D::WorldBox2D()
             : world(b2Vec2(0.0f, -1.0f)) {}
 

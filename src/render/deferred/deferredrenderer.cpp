@@ -22,7 +22,7 @@
 #include <algorithm>
 #include <utility>
 
-namespace engine {
+namespace xengine {
     DeferredRenderer::DeferredRenderer(RenderDevice &device, AssetRenderManager &assetRenderManager)
             : passes(),
               geometryBuffer(device.getAllocator()),

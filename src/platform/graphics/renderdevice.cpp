@@ -3,7 +3,7 @@
 #include "platform/graphics/opengl/oglrenderdevice.hpp"
 #include "platform/graphics/opengl-qt/qtoglrenderdevice.hpp"
 
-namespace engine {
+namespace xengine {
     std::unique_ptr<RenderDevice> RenderDevice::create(GraphicsBackend backend) {
         switch (backend) {
             case OPENGL_4_6:

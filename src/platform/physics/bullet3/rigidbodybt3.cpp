@@ -19,7 +19,7 @@
 
 #include "rigidbodybt3.hpp"
 
-namespace engine {
+namespace xengine {
     void RigidBodyBt3::setRigidBodyType(RigidBody3D::RigidBodyType type) {
 
     }

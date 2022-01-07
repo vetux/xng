@@ -24,7 +24,7 @@
 
 #include "math/vector2.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT Collider2D {
     public:
         virtual void setShape(const std::vector<Vec2f> &vertices) = 0;

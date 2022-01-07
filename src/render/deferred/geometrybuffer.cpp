@@ -19,7 +19,7 @@
 
 #include "render/deferred/geometrybuffer.hpp"
 
-namespace engine {
+namespace xengine {
     GeometryBuffer::GeometryBuffer(RenderAllocator &allocator, Vec2i size, int samples)
             : renderAllocator(allocator), size(size), samples(samples) {
         if (size.x < 1 || size.y < 1)

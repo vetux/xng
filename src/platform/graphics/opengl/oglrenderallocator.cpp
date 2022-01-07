@@ -27,7 +27,7 @@
 #include "oglmeshbuffer.hpp"
 #include "oglshaderprogram.hpp"
 
-namespace engine {
+namespace xengine {
     namespace opengl {
         static std::string getGlslSource(const ShaderSource &source) {
             ShaderSource ret = source;

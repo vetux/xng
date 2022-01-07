@@ -23,7 +23,7 @@
 #include <vector>
 #include <string>
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT MonoCppObject;
 
     struct MANA_EXPORT MonoCppArguments {

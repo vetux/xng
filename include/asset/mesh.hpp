@@ -26,7 +26,7 @@
 #include "math/vector2.hpp"
 #include "asset/vertex.hpp"
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT Mesh {
         enum Primitive {
             POINT = 1,

@@ -25,7 +25,7 @@
 #include "oglrenderer.hpp"
 #include "oglrenderallocator.hpp"
 
-namespace engine {
+namespace xengine {
     namespace opengl {
         class OGLRenderDevice : public RenderDevice {
         public:

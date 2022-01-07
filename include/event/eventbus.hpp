@@ -27,7 +27,7 @@
 
 #include "event/eventreceiver.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT EventBus {
     public:
         template<typename T>

@@ -30,7 +30,7 @@
 #include "platform/display/glfw/windowglfw.hpp"
 #include "platform/graphics/opengl/oglrendertarget.hpp"
 
-namespace engine {
+namespace xengine {
     namespace ImGuiCompat {
         void Init(Window &window, GraphicsBackend graphicsBackend) {
             switch (window.getDisplayBackend()) {

@@ -23,7 +23,7 @@
 #include "rigidbody2d.hpp"
 #include "joint2d.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT World2D {
     public:
         enum Backend {

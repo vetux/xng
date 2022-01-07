@@ -26,7 +26,7 @@
 
 typedef unsigned int GLuint;
 
-namespace engine {
+namespace xengine {
     namespace opengl {
         class QtOGLRenderTarget : public RenderTarget, public QOpenGLFunctions_4_5_Core {
         public:

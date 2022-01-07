@@ -22,7 +22,7 @@
 
 #include "platform/graphics/renderer.hpp"
 
-namespace engine {
+namespace xengine {
     namespace opengl {
         class OGLRenderer : public Renderer {
         public:

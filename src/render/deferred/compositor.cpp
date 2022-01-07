@@ -112,7 +112,7 @@ void main()
 }
 )###";
 
-namespace engine {
+namespace xengine {
     Compositor::Compositor(RenderDevice &device, std::vector<Layer> layers)
             : device(device), layers(std::move(layers)) {
         ShaderSource shaderVert(SHADER_VERT, "main", VERTEX, GLSL_460);

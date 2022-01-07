@@ -23,7 +23,7 @@
 #include "rigidbody3d.hpp"
 #include "joint3d.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT World3D {
     public:
         enum Backend {

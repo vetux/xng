@@ -25,7 +25,7 @@
 #include "asset/asset.hpp"
 #include "asset/texture.hpp"
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT Material : public AssetBase {
         ~Material() override = default;
 

@@ -141,7 +141,7 @@ f 1/3/5 3/16/5 4/11/5
 f 5/1/6 1/3/6 2/12/6
 )###");
 
-namespace engine {
+namespace xengine {
     const char *SkyboxPass::COLOR = "skybox";
 
     SkyboxPass::SkyboxPass(RenderDevice &device)

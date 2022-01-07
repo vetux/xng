@@ -25,7 +25,7 @@
 
 #include "openglinclude.hpp"
 
-namespace engine {
+namespace xengine {
     namespace opengl {
         namespace OGLTypeConverter {
             GLenum getColorAttachment(int index) {

@@ -25,7 +25,7 @@
 #include <string>
 #include <dlfcn.h>
 
-namespace engine {
+namespace xengine {
     class LibraryLinux : public Library {
     public:
         explicit LibraryLinux(const std::string &filePath)

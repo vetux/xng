@@ -20,7 +20,7 @@
 #ifndef MANA_CANVASCOMPONENT_HPP
 #define MANA_CANVASCOMPONENT_HPP
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT CanvasComponent {
     };
 }

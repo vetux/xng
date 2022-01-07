@@ -23,7 +23,7 @@
 #include "platform/script/script.hpp"
 #include "monocppdomain.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT MonoScript : public Script {
     public:
         MonoScript();

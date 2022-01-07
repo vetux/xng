@@ -20,7 +20,7 @@
 #include "schema/ecsschema.hpp"
 #include "schema/mathschema.hpp"
 
-namespace engine {
+namespace xengine {
     CameraType &operator<<(CameraType &value, const Message &message) {
         auto str = message.getString();
         if (str == "perspective")
@@ -207,12 +207,12 @@ namespace engine {
         message["specular"] << component.light.specular;
 
         switch (component.light.type) {
-            case engine::LIGHT_POINT:
+            case xengine::LIGHT_POINT:
                 message["constant"] = component.light.constant;
                 message["linear"] = component.light.linear;
                 message["quadratic"] = component.light.quadratic;
                 break;
-            case engine::LIGHT_SPOT:
+            case xengine::LIGHT_SPOT:
                 message["direction"] << component.light.direction;
                 message["cutOff"] = component.light.cutOff;
                 message["outerCutOff"] = component.light.outerCutOff;
@@ -220,7 +220,7 @@ namespace engine {
                 message["linear"] = component.light.linear;
                 message["quadratic"] = component.light.quadratic;
                 break;
-            case engine::LIGHT_DIRECTIONAL:
+            case xengine::LIGHT_DIRECTIONAL:
                 message["direction"] << component.light.direction;
                 break;
             default:

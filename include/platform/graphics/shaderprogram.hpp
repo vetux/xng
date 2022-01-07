@@ -26,7 +26,7 @@
 
 #include "renderobject.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT ShaderProgram : public RenderObject {
     public:
         ~ShaderProgram() override = default;

@@ -25,7 +25,7 @@
 #include "math/vector4.hpp"
 #include "math/matrix.hpp"
 
-namespace engine {
+namespace xengine {
     namespace MatrixMath {
         MANA_EXPORT Mat4f identity();
 

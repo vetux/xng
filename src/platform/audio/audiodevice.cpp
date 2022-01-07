@@ -25,7 +25,7 @@
 #include "openal/oalaudiodevice.hpp"
 #endif
 
-namespace engine {
+namespace xengine {
     std::vector<std::string> AudioDevice::getDeviceNames(AudioBackend backend) {
         switch (backend) {
 #ifdef BUILD_ENGINE_AUDIO_OPENAL

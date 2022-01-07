@@ -23,7 +23,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 //TODO: Remove glm dependency from matrixmath.cpp
-namespace engine {
+namespace xengine {
     glm::mat4 convert(const Mat4f &mat) {
         glm::mat4 ret;
         for (int x = 0; x < mat.width(); x++) {

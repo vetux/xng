@@ -25,7 +25,7 @@
 #include "qtoglshaderprogram.hpp"
 #include "qtoglcheckerror.hpp"
 
-namespace engine {
+namespace xengine {
     namespace opengl {
         QtOGLShaderProgram::QtOGLShaderProgram() : programID(0) {}
 

@@ -33,7 +33,7 @@
 
 #include <QOpenGLFunctions_4_5_Core>
 
-namespace engine {
+namespace xengine {
     namespace opengl {
         class QtOGLShaderProgram : public ShaderProgram , public QOpenGLFunctions_4_5_Core {
         public:

@@ -22,7 +22,7 @@
 
 #include "render/deferred/renderpass.hpp"
 
-namespace engine {
+namespace xengine {
     /**
      * The PrePass creates buffers which are accessed by the deferred passes.
      *

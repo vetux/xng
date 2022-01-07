@@ -25,7 +25,7 @@
 #include "platform/graphics/opengl/ogltypeconverter.hpp"
 #include "platform/graphics/opengl/oglcheckerror.hpp"
 
-namespace engine {
+namespace xengine {
     namespace glfw {
         class GLFWRenderTargetGL : public opengl::OGLRenderTarget {
         public:

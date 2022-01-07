@@ -19,7 +19,7 @@
 
 #include "ftfont.hpp"
 
-namespace engine {
+namespace xengine {
     FTFont::FTFont(std::istream &stream) {
         bytes = std::vector<char>((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
 

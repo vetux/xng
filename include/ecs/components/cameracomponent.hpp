@@ -22,7 +22,7 @@
 
 #include "asset/camera.hpp"
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT CameraComponent {
         Camera camera;
     };

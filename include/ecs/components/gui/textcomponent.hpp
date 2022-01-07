@@ -20,7 +20,7 @@
 #ifndef MANA_TEXTCOMPONENT_HPP
 #define MANA_TEXTCOMPONENT_HPP
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT Text {
     };
 }

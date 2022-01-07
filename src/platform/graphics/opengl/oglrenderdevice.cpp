@@ -25,7 +25,7 @@
 #include "oglmeshbuffer.hpp"
 #include "oglshaderprogram.hpp"
 
-namespace engine {
+namespace xengine {
     namespace opengl {
         Renderer &OGLRenderDevice::getRenderer() {
             return dynamic_cast<Renderer &>(renderer);

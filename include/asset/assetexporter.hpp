@@ -25,7 +25,7 @@
 
 #include <ostream>
 
-namespace engine {
+namespace xengine {
     namespace AssetExporter {
         MANA_EXPORT void exportImage(std::ostream &stream, const Image <ColorRGBA> &image);
     }

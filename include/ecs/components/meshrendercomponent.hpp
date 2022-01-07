@@ -23,7 +23,7 @@
 #include "asset/image.hpp"
 #include "asset/assetpath.hpp"
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT MeshRenderComponent {
         bool enabled = true;
 

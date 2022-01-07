@@ -3,7 +3,7 @@
 
 #include <cmath>
 
-namespace engine {
+namespace xengine {
     template<typename T>
     class MANA_EXPORT Vector3 {
     public:

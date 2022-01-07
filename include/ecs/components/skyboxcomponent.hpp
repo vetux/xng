@@ -24,7 +24,7 @@
 
 #include "asset/skybox.hpp"
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT SkyboxComponent {
         Skybox skybox;
 

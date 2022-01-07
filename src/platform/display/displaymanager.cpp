@@ -23,7 +23,7 @@
 #include "glfw/glfwdisplay.hpp"
 #endif
 
-namespace engine {
+namespace xengine {
     DisplayManager::DisplayManager() = default;
 
     DisplayManager::DisplayManager(DisplayBackend backend) : backend(backend) {}

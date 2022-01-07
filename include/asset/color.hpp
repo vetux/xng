@@ -22,7 +22,7 @@
 
 #include <cstdint>
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT ColorRGB {
         uint8_t data[3];
 

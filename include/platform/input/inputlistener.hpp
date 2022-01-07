@@ -26,7 +26,7 @@
 #include "device/keyboard.hpp"
 #include "device/mouse.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT MANA_EXPORT InputListener {
     public:
         virtual void onKeyDown(KeyboardKey key) {};

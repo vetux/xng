@@ -22,7 +22,7 @@
 
 #include "platform/physics/2d/rigidbody2d.hpp"
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT RigidBodyComponent2D {
         RigidBody2D::RigidBodyType type;
     };

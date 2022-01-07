@@ -26,7 +26,7 @@
 
 #include "asset/image.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT Input {
     public:
         virtual ~Input() = default;

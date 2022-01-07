@@ -23,7 +23,7 @@
 
 #include <stdexcept>
 
-std::unique_ptr<engine::World2D> engine::World2D::create(engine::World2D::Backend backend) {
+std::unique_ptr<xengine::World2D> xengine::World2D::create(xengine::World2D::Backend backend) {
     switch (backend) {
         case BOX2D:
             return std::make_unique<WorldBox2D>();

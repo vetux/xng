@@ -26,7 +26,7 @@
 #include "window.hpp"
 #include "monitor.hpp"
 
-namespace engine {
+namespace xengine {
     //TODO: Add monitor gamma configuration interface
     class MANA_EXPORT DisplayManager {
     public:

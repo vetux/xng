@@ -26,7 +26,7 @@
 
 #include "ecs/entity.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT ComponentPoolBase {
     public:
         virtual ~ComponentPoolBase() = default;

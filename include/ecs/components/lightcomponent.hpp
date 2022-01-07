@@ -22,7 +22,7 @@
 
 #include "asset/light.hpp"
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT LightComponent {
         bool enabled = true;
 

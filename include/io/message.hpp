@@ -24,7 +24,7 @@
 #include <vector>
 #include <stdexcept>
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT Message;
 
     class MANA_EXPORT Message {

@@ -27,7 +27,7 @@
 
 #include "asset/asset.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT AssetBundle {
     public:
         ~AssetBundle() {

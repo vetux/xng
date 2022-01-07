@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-namespace engine {
+namespace xengine {
     namespace GZip {
         MANA_EXPORT std::vector<char> compress(const char *data, size_t length);
 

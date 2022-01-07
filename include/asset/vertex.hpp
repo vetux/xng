@@ -22,7 +22,7 @@
 
 #include "math/vector3.hpp"
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT Vertex {
         float data[14];
 

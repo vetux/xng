@@ -25,7 +25,7 @@
 #include "platform/display/displaybackend.hpp"
 #include "platform/display/window.hpp"
 
-namespace engine {
+namespace xengine {
     namespace ImGuiCompat {
         /**
          * Calls the Impl*Init* methods and ImGui::CreateContext if it is the first call.

@@ -26,7 +26,7 @@
 
 #include <QOpenGLFunctions_4_5_Core>
 
-namespace engine {
+namespace xengine {
     namespace opengl {
         class QtOGLTextureBuffer : public TextureBuffer, public QOpenGLFunctions_4_5_Core {
         public:

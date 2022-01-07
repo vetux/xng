@@ -20,7 +20,7 @@
 #ifndef MANA_SHADERSTAGE_HPP
 #define MANA_SHADERSTAGE_HPP
 
-namespace engine {
+namespace xengine {
     enum ShaderStage {
         VERTEX,
         GEOMETRY,

@@ -19,7 +19,7 @@
 
 #include "render/deferred/passes/outlinepass.hpp"
 
-namespace engine {
+namespace xengine {
     void OutlinePass::prepareBuffer(GeometryBuffer &gBuffer) {
         RenderPass::prepareBuffer(gBuffer);
     }

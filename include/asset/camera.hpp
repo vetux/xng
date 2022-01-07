@@ -26,7 +26,7 @@
 
 #include <stdexcept>
 
-namespace engine {
+namespace xengine {
     enum CameraType {
         ORTHOGRAPHIC,
         PERSPECTIVE

@@ -22,7 +22,7 @@
 
 #include <cstdio>
 
-namespace engine {
+namespace xengine {
     /**
      * Fast reading of a whole file into memory using cstdio
      *

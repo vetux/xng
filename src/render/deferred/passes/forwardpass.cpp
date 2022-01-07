@@ -21,7 +21,7 @@
 
 #include "render/forward/forwardrenderer.hpp"
 
-namespace engine {
+namespace xengine {
     const char *ForwardPass::COLOR = "forward";
     const char *ForwardPass::DEPTH = "forward_depth";
 

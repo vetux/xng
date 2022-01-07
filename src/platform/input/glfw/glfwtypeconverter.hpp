@@ -28,7 +28,7 @@
 #include "platform/input/device/keyboard.hpp"
 #include "platform/input/device/mouse.hpp"
 
-namespace engine {
+namespace xengine {
     class GLFWTypeConverter {
     public:
         static int convertMouseKey(MouseButton key) {

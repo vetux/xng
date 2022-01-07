@@ -29,7 +29,7 @@
 
 #include "task.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT ThreadPool {
     public:
         static ThreadPool &getPool();

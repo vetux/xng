@@ -26,7 +26,7 @@
 
 #include "ecs/entitymanager.hpp"
 
-namespace engine {
+namespace xengine {
     struct Scene;
 
     struct MANA_EXPORT TransformComponent {

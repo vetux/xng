@@ -26,7 +26,7 @@
 #include "audiocontext.hpp"
 #include "audiobackend.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT AudioDevice {
     public:
         static std::vector<std::string> getDeviceNames(AudioBackend backend);

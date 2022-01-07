@@ -22,7 +22,7 @@
 
 #include "math/matrix.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT Quaternion {
     public:
         float w, x, y, z;

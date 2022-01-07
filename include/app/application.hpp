@@ -32,7 +32,7 @@
 
 #include "imgui.h"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT Application {
     public:
         /**

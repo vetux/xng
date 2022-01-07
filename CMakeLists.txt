@@ -32,8 +32,4 @@ else ()
     add_compile_definitions(MANA_EXPORT=)
 endif ()
 
-include(cmake/engine.cmake)
-
-if(UNIX AND CMAKE_COMPILER_IS_GNUCXX)
-    target_compile_options(engine PUBLIC -fvisibility=hidden)
-endif()
+include(cmake/xengine.cmake)

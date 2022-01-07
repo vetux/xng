@@ -27,7 +27,7 @@
 #include "rigidbodybox2d.hpp"
 #include "jointbox2d.hpp"
 
-namespace engine {
+namespace xengine {
     class WorldBox2D : public World2D {
     public:
         b2World world;

@@ -26,7 +26,7 @@
 
 #include "asset/mesh.hpp"
 
-namespace engine {
+namespace xengine {
     namespace opengl {
         class QtOGLRenderAllocator : public RenderAllocator, public QOpenGLFunctions_4_5_Core {
         public:

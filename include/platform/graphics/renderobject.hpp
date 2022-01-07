@@ -20,7 +20,7 @@
 #ifndef MANA_OBJECT_HPP
 #define MANA_OBJECT_HPP
 
-namespace engine {
+namespace xengine {
     /**
      * A render object is a dynamically allocated graphics api dependent object which can be deallocated by
      * calling the destructor.

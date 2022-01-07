@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-namespace engine {
+namespace xengine {
     namespace SHA {
         MANA_EXPORT std::string sha256(const char *data, size_t length);
 

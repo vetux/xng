@@ -23,7 +23,7 @@
 #include "asset/audio.hpp"
 #include "asset/assethandle.hpp"
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT AudioSourceComponent {
         AssetPath audioPath;
         bool play = false;

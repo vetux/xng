@@ -26,7 +26,7 @@
 
 #include "platform/graphics/shadercompiler.hpp"
 
-namespace engine {
+namespace xengine {
     /**
      * Currently provides:
      * mvp.glsl/hlsl

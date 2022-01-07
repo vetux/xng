@@ -24,7 +24,7 @@
 
 #include "platform/graphics/rendercommand.hpp"
 
-namespace engine {
+namespace xengine {
     /**
      * The compositor creates the final image on the screen by combining textures from the geometry buffer.
      */

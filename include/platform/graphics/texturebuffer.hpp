@@ -23,7 +23,7 @@
 #include "asset/image.hpp"
 #include "renderobject.hpp"
 
-namespace engine {
+namespace xengine {
     /**
      * A texture buffer.
      * The texture type, size and format is changed when calling the upload methods.

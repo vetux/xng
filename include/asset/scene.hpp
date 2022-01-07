@@ -29,7 +29,7 @@
 
 #include "platform/graphics/rendercommand.hpp"
 
-namespace engine {
+namespace xengine {
     /**
      * The collected render scene data.
      */

@@ -20,7 +20,7 @@
 #ifndef MANA_ENTITY_HPP
 #define MANA_ENTITY_HPP
 
-namespace engine {
+namespace xengine {
     struct MANA_EXPORT Entity {
         static const int INVALID_ID = -1;
 

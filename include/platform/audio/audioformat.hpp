@@ -20,7 +20,7 @@
 #ifndef MANA_AUDIOFORMAT_HPP
 #define MANA_AUDIOFORMAT_HPP
 
-namespace engine {
+namespace xengine {
     enum AudioFormat {
         MONO8,
         MONO16,

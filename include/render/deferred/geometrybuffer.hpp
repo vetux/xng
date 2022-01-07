@@ -25,7 +25,7 @@
 #include "platform/graphics/renderdevice.hpp"
 #include "platform/graphics/texturebuffer.hpp"
 
-namespace engine {
+namespace xengine {
     /**
      * TODO: Avoid unnecessary multisampled textures in deferred passes which output screen quad rasterized data and therefore do not need to have a multisampled texture.
      */

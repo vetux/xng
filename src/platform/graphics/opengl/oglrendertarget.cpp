@@ -24,7 +24,7 @@
 #include "oglcheckerror.hpp"
 #include "ogltexturebuffer.hpp"
 
-namespace engine {
+namespace xengine {
     opengl::OGLRenderTarget::OGLRenderTarget() : FBO(0), colorRBO(0), depthStencilRBO(0), size(), samples() {}
 
     opengl::OGLRenderTarget::OGLRenderTarget(Vec2i size, int samples)

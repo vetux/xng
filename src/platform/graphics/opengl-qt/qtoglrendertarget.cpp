@@ -22,7 +22,7 @@
 #include "qtoglcheckerror.hpp"
 #include "qtogltexturebuffer.hpp"
 
-namespace engine {
+namespace xengine {
     opengl::QtOGLRenderTarget::QtOGLRenderTarget(GLuint FBO, Vec2i size, int samples, bool delFBO)
             : FBO(FBO),
               colorRBO(),

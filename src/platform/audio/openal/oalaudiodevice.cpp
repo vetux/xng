@@ -26,7 +26,7 @@
 
 #include "oalaudiodevice.hpp"
 
-namespace engine {
+namespace xengine {
     std::vector<std::string> OALAudioDevice::getDeviceNames() {
         const char *dev = alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
         std::vector<std::string> ret;

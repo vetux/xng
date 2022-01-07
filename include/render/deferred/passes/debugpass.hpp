@@ -22,7 +22,7 @@
 
 #include "render/deferred/renderpass.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT DebugPass : public RenderPass {
     public:
         static const char *WIREFRAME;

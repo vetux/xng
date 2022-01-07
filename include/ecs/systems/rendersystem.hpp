@@ -32,7 +32,7 @@
 
 #include "platform/display/window.hpp"
 
-namespace engine {
+namespace xengine {
     class ECS;
 
     class DebugPass;

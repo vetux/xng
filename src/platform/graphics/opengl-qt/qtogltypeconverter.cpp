@@ -23,7 +23,7 @@
 
 #include "qtopenglinclude.hpp"
 
-namespace engine {
+namespace xengine {
     namespace opengl {
         namespace QtOGLTypeConverter {
             GLenum getColorAttachment(int index) {

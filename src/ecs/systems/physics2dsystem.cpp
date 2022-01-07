@@ -21,7 +21,7 @@
 
 #include "ecs/components.hpp"
 
-namespace engine {
+namespace xengine {
    /* struct RigidBodyData {
         World2D *world;
         RigidBody2D *body;

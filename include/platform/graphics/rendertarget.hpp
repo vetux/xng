@@ -23,7 +23,7 @@
 #include "renderobject.hpp"
 #include "texturebuffer.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT RenderTarget : public RenderObject {
     public:
         ~RenderTarget() override = default;

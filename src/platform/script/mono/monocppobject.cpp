@@ -25,32 +25,32 @@
 
 #define ERROR throw std::runtime_error("Mono support not built");
 
-engine::MonoCppObject::MonoCppObject() { ERROR }
+xengine::MonoCppObject::MonoCppObject() { ERROR }
 
-engine::MonoCppObject::MonoCppObject(void *objectPointer, bool pinned) { ERROR }
+xengine::MonoCppObject::MonoCppObject(void *objectPointer, bool pinned) { ERROR }
 
-engine::MonoCppObject::~MonoCppObject() {}
+xengine::MonoCppObject::~MonoCppObject() {}
 
-engine::MonoCppObject::MonoCppObject(engine::MonoCppObject &&other) noexcept {}
+xengine::MonoCppObject::MonoCppObject(xengine::MonoCppObject &&other) noexcept {}
 
-engine::MonoCppObject &engine::MonoCppObject::operator=(engine::MonoCppObject &&other) noexcept { return other; }
+xengine::MonoCppObject &xengine::MonoCppObject::operator=(xengine::MonoCppObject &&other) noexcept { return other; }
 
-engine::MonoCppObject
-engine::MonoCppObject::invokeMethod(const std::string &name, const engine::MonoCppArguments &args) const { ERROR }
+xengine::MonoCppObject
+xengine::MonoCppObject::invokeMethod(const std::string &name, const xengine::MonoCppArguments &args) const { ERROR }
 
-void engine::MonoCppObject::setField(const std::string &name, const engine::MonoCppValue &value) const { ERROR }
+void xengine::MonoCppObject::setField(const std::string &name, const xengine::MonoCppValue &value) const { ERROR }
 
-void engine::MonoCppObject::getFieldValuePtr(const std::string &name, void *data) const { ERROR }
+void xengine::MonoCppObject::getFieldValuePtr(const std::string &name, void *data) const { ERROR }
 
-bool engine::MonoCppObject::isNull() const { ERROR }
+bool xengine::MonoCppObject::isNull() const { ERROR }
 
-bool engine::MonoCppObject::isPinned() const { ERROR }
+bool xengine::MonoCppObject::isPinned() const { ERROR }
 
-void *engine::MonoCppObject::getObjectPointer() const { ERROR }
+void *xengine::MonoCppObject::getObjectPointer() const { ERROR }
 
-std::string engine::MonoCppObject::getClassNamespace() const { ERROR }
+std::string xengine::MonoCppObject::getClassNamespace() const { ERROR }
 
-std::string engine::MonoCppObject::getClassName() const { ERROR }
+std::string xengine::MonoCppObject::getClassName() const { ERROR }
 
 #else
 
@@ -59,7 +59,7 @@ std::string engine::MonoCppObject::getClassName() const { ERROR }
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/debug-helpers.h>
 
-namespace engine {
+namespace xengine {
     MonoCppObject::MonoCppObject() : objectPointer(nullptr), gcHandle(0), pinned(false) {}
 
     MonoCppObject::MonoCppObject(void *objectPointer, bool pinned) : objectPointer(objectPointer),

@@ -28,7 +28,7 @@
 #include "character.hpp"
 
 //TODO: Design text metrics / formatting abstraction
-namespace engine {
+namespace xengine {
     class MANA_EXPORT Font {
     public:
         /**

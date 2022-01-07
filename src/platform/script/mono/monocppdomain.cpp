@@ -23,21 +23,21 @@
 
 #define ERROR throw std::runtime_error("Mono support not built");
 
-engine::MonoCppDomain::MonoCppDomain() { ERROR }
+xengine::MonoCppDomain::MonoCppDomain() { ERROR }
 
-engine::MonoCppDomain::MonoCppDomain(const std::string &domainName) { ERROR }
+xengine::MonoCppDomain::MonoCppDomain(const std::string &domainName) { ERROR }
 
-engine::MonoCppDomain::~MonoCppDomain() {  }
+xengine::MonoCppDomain::~MonoCppDomain() {  }
 
-engine::MonoCppAssembly &engine::MonoCppDomain::getMsCorLibAssembly() { ERROR }
+xengine::MonoCppAssembly &xengine::MonoCppDomain::getMsCorLibAssembly() { ERROR }
 
-std::unique_ptr<engine::MonoCppAssembly> engine::MonoCppDomain::loadAssembly(const std::string &filePath) { ERROR }
+std::unique_ptr<xengine::MonoCppAssembly> xengine::MonoCppDomain::loadAssembly(const std::string &filePath) { ERROR }
 
-std::unique_ptr<engine::MonoCppAssembly> engine::MonoCppDomain::loadAssembly(std::istream &source) { ERROR }
+std::unique_ptr<xengine::MonoCppAssembly> xengine::MonoCppDomain::loadAssembly(std::istream &source) { ERROR }
 
-engine::MonoCppObject engine::MonoCppDomain::stringFromUtf8(const std::string &str, bool pinned) { ERROR }
+xengine::MonoCppObject xengine::MonoCppDomain::stringFromUtf8(const std::string &str, bool pinned) { ERROR }
 
-std::string engine::MonoCppDomain::stringToUtf8(const engine::MonoCppObject &strObject) { ERROR }
+std::string xengine::MonoCppDomain::stringToUtf8(const xengine::MonoCppObject &strObject) { ERROR }
 
 #else
 
@@ -51,7 +51,7 @@ std::string engine::MonoCppDomain::stringToUtf8(const engine::MonoCppObject &str
 #include <mono/metadata/debug-helpers.h>
 #include <mono/metadata/mono-config.h>
 
-namespace engine {
+namespace xengine {
     MonoCppDomain::MonoCppDomain()
             : msCorLib(nullptr, nullptr, nullptr) {
         domainPointer = mono_jit_init("DefaultDomain");

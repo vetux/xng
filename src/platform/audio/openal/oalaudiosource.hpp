@@ -4,7 +4,7 @@
 
 #include <map>
 
-namespace engine {
+namespace xengine {
     class OALAudioSource : public AudioSource {
     public:
         explicit OALAudioSource(ALuint sourceHandle);

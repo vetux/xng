@@ -30,7 +30,7 @@
 
 #include "asset/mesh.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT RenderDevice {
     public:
         static std::unique_ptr<RenderDevice> create(GraphicsBackend backend);

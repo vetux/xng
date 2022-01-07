@@ -27,7 +27,7 @@
 
 #include <QOpenGLFunctions_4_5_Core>
 
-namespace engine {
+namespace xengine {
     namespace opengl {
         class QtOGLRenderDevice : public RenderDevice, public QOpenGLFunctions_4_5_Core {
         public:

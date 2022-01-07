@@ -28,7 +28,7 @@
 
 #include "ecs/componentpool.hpp"
 
-namespace engine {
+namespace xengine {
     /**
      * Any default constructable type can be used as a component.
      *

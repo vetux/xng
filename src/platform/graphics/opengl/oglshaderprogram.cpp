@@ -27,7 +27,7 @@
 #include "oglshaderprogram.hpp"
 #include "oglcheckerror.hpp"
 
-namespace engine {
+namespace xengine {
     namespace opengl {
         OGLShaderProgram::OGLShaderProgram() : programID(0) {}
 

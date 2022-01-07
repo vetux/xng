@@ -7,7 +7,7 @@
 #include "rectangle.hpp"
 #include "math/vector2.hpp"
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT Grid {
     public:
         int nCol, nRow;

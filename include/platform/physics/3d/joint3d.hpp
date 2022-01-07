@@ -20,7 +20,7 @@
 #ifndef MANA_JOINT3D_HPP
 #define MANA_JOINT3D_HPP
 
-namespace engine {
+namespace xengine {
     class MANA_EXPORT Joint3D {
     public:
         //TODO: Define physics joints api

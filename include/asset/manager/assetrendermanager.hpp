@@ -28,7 +28,7 @@
 
 #include "platform/graphics/renderallocator.hpp"
 
-namespace engine {
+namespace xengine {
     /**
      * Handles allocation of render objects on the main thread.
      */
