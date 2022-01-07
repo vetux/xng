@@ -26,18 +26,20 @@
 
 namespace engine {
     namespace AES {
-        static const int BLOCKSIZE = 128;
+        const int BLOCKSIZE = 128;
 
         typedef std::string Key;
         typedef std::array<char, BLOCKSIZE> InitializationVector;
 
-        std::string encrypt(const Key &key, const InitializationVector &iv, const std::string &plaintext);
+        MANA_EXPORT std::string encrypt(const Key &key, const InitializationVector &iv, const std::string &plaintext);
 
-        std::string decrypt(const Key &key, const InitializationVector &iv, const std::string &ciphertext);
+        MANA_EXPORT std::string decrypt(const Key &key, const InitializationVector &iv, const std::string &ciphertext);
 
-        std::vector<char> encrypt(const Key &key, const InitializationVector &iv, const std::vector<char> &plaintext);
+        MANA_EXPORT std::vector<char> encrypt(const Key &key, const InitializationVector &iv,
+                                              const std::vector<char> &plaintext);
 
-        std::vector<char> decrypt(const Key &key, const InitializationVector &iv, const std::vector<char> &ciphertext);
+        MANA_EXPORT std::vector<char> decrypt(const Key &key, const InitializationVector &iv,
+                                              const std::vector<char> &ciphertext);
     }
 }
 

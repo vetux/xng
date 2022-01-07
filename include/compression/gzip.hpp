@@ -25,17 +25,17 @@
 
 namespace engine {
     namespace GZip {
-        std::vector<char> compress(const char *data, size_t length);
+        MANA_EXPORT std::vector<char> compress(const char *data, size_t length);
 
-        std::vector<char> decompress(const char *data, size_t length);
+        MANA_EXPORT std::vector<char> decompress(const char *data, size_t length);
 
-        std::vector<char> compress(const std::vector<char> &data);
+        MANA_EXPORT std::vector<char> compress(const std::vector<char> &data);
 
-        std::vector<char> decompress(const std::vector<char> &data);
+        MANA_EXPORT std::vector<char> decompress(const std::vector<char> &data);
 
-        std::string compress(const std::string &data);
+        MANA_EXPORT std::string compress(const std::string &data);
 
-        std::string decompress(const std::string &data);
+        MANA_EXPORT std::string decompress(const std::string &data);
     }
 }
 

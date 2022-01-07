@@ -25,11 +25,11 @@
 
 namespace engine {
     namespace SHA {
-        std::string sha256(const char *data, size_t length);
+        MANA_EXPORT std::string sha256(const char *data, size_t length);
 
-        std::string sha256(const std::string &data);
+        MANA_EXPORT std::string sha256(const std::string &data);
 
-        std::string sha256(const std::vector<char> &data);
+        MANA_EXPORT std::string sha256(const std::vector<char> &data);
     }
 }
 
