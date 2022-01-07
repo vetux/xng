@@ -27,6 +27,7 @@
 #include "asset/assetimporter.hpp"
 
 namespace engine {
+    //TODO: Implement cross thread error handling
     /**
      * Handles loading asset bundles from disk on a thread pool
      */
