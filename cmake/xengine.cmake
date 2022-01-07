@@ -19,6 +19,7 @@ target_link_libraries(xengine
         Threads::Threads
         freetype
         shaderc
+        shaderc_util
         spirv-cross-core
         spirv-cross-glsl
         spirv-cross-hlsl
