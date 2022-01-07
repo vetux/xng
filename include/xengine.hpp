@@ -51,8 +51,6 @@
 #include "ecs/components/gui/canvascomponent.hpp"
 #include "ecs/components/audio/audiosourcecomponent.hpp"
 #include "ecs/components/audio/audiolistenercomponent.hpp"
-#include "compat/imguicompat.hpp"
-#include "compat/renderwidgetqt.hpp"
 #include "platform/script/script.hpp"
 #include "platform/script/mono/monocppvalue.hpp"
 #include "platform/script/mono/monoscript.hpp"
