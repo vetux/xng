@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_MATHSCHEMA_HPP
-#define MANA_MATHSCHEMA_HPP
+#ifndef XENGINE_MATHSCHEMA_HPP
+#define XENGINE_MATHSCHEMA_HPP
 
 #include "io/message.hpp"
 
@@ -31,41 +31,41 @@
 #include "math/vector4.hpp"
 
 namespace xengine {
-    MANA_EXPORT Grid &operator<<(Grid &grid, const Message &message);
+    XENGINE_EXPORT Grid &operator<<(Grid &grid, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, const Grid &grid);
+    XENGINE_EXPORT Message &operator<<(Message &message, const Grid &grid);
 
-    MANA_EXPORT Mat4f &operator<<(Mat4f &matrix, const Message &message);
+    XENGINE_EXPORT Mat4f &operator<<(Mat4f &matrix, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, const Mat4f &grid);
+    XENGINE_EXPORT Message &operator<<(Message &message, const Mat4f &grid);
 
-    MANA_EXPORT Rectf &operator<<(Rectf &mat, const Message &message);
+    XENGINE_EXPORT Rectf &operator<<(Rectf &mat, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, const Rectf &grid);
+    XENGINE_EXPORT Message &operator<<(Message &message, const Rectf &grid);
 
-    MANA_EXPORT Transform &operator<<(Transform &grid, const Message &message);
+    XENGINE_EXPORT Transform &operator<<(Transform &grid, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, const Transform &grid);
+    XENGINE_EXPORT Message &operator<<(Message &message, const Transform &grid);
 
-    MANA_EXPORT Vec2f &operator<<(Vec2f &grid, const Message &message);
+    XENGINE_EXPORT Vec2f &operator<<(Vec2f &grid, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, const Vec2f &grid);
+    XENGINE_EXPORT Message &operator<<(Message &message, const Vec2f &grid);
 
-    MANA_EXPORT Vec2i &operator<<(Vec2i &grid, const Message &message);
+    XENGINE_EXPORT Vec2i &operator<<(Vec2i &grid, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, const Vec2i &grid);
+    XENGINE_EXPORT Message &operator<<(Message &message, const Vec2i &grid);
 
-    MANA_EXPORT Vec3f &operator<<(Vec3f &grid, const Message &message);
+    XENGINE_EXPORT Vec3f &operator<<(Vec3f &grid, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, const Vec3f &grid);
+    XENGINE_EXPORT Message &operator<<(Message &message, const Vec3f &grid);
 
-    MANA_EXPORT Vec4f &operator<<(Vec4f &grid, const Message &message);
+    XENGINE_EXPORT Vec4f &operator<<(Vec4f &grid, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, const Vec4f &grid);
+    XENGINE_EXPORT Message &operator<<(Message &message, const Vec4f &grid);
 
-    MANA_EXPORT Quaternion &operator<<(Quaternion &q, const Message &message);
+    XENGINE_EXPORT Quaternion &operator<<(Quaternion &q, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, const Quaternion &q);
+    XENGINE_EXPORT Message &operator<<(Message &message, const Quaternion &q);
 }
 
-#endif //MANA_MATHSCHEMA_HPP
+#endif //XENGINE_MATHSCHEMA_HPP

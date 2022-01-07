@@ -17,12 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_MONO_HPP
-#define MANA_MONO_HPP
+#ifndef XENGINE_MONO_HPP
+#define XENGINE_MONO_HPP
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/loader.h>
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/debug-helpers.h>
 
-#endif //MANA_MONO_HPP
+#endif //XENGINE_MONO_HPP

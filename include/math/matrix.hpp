@@ -16,7 +16,7 @@ namespace xengine {
      * @tparam H The row count of the matrix.
      */
     template<typename T, int W, int H>
-    class MANA_EXPORT Matrix {
+    class XENGINE_EXPORT Matrix {
     public:
         static const size_t ROW_SIZE = W * sizeof(T);
         static const size_t COLUMN_SIZE = H * sizeof(T);
@@ -92,17 +92,17 @@ namespace xengine {
     };
 
     // Multiply matrix by column vector
-    MANA_EXPORT Vector4<float> operator*(const Matrix<float, 4, 4> &lhs, const Vector4<float> &rhs);
+    XENGINE_EXPORT Vector4<float> operator*(const Matrix<float, 4, 4> &lhs, const Vector4<float> &rhs);
 
-    MANA_EXPORT  Vector4<double> operator*(const Matrix<double, 4, 4> &lhs, const Vector4<double> &rhs);
+    XENGINE_EXPORT  Vector4<double> operator*(const Matrix<double, 4, 4> &lhs, const Vector4<double> &rhs);
 
     // Multiply matrix by column vector, convenience operators which call the vector 4 version with the w component set to 0
-    MANA_EXPORT Vector3<float> operator*(const Matrix<float, 4, 4> &lhs, const Vector3<float> &rhs);
+    XENGINE_EXPORT Vector3<float> operator*(const Matrix<float, 4, 4> &lhs, const Vector3<float> &rhs);
 
-    MANA_EXPORT Vector3<double> operator*(const Matrix<double, 4, 4> &lhs, const Vector3<double> &rhs);
+    XENGINE_EXPORT Vector3<double> operator*(const Matrix<double, 4, 4> &lhs, const Vector3<double> &rhs);
 
     // Multiply matrix by another matrix
-    MANA_EXPORT Matrix<float, 4, 4> operator*(const Matrix<float, 4, 4> &lhs, const Matrix<float, 4, 4> &rhs);
+    XENGINE_EXPORT Matrix<float, 4, 4> operator*(const Matrix<float, 4, 4> &lhs, const Matrix<float, 4, 4> &rhs);
 
     typedef Matrix<float, 2, 2> Mat2x2f;
     typedef Matrix<float, 2, 2> Mat2f;

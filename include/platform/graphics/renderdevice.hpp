@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_RENDERDEVICE_HPP
-#define MANA_RENDERDEVICE_HPP
+#ifndef XENGINE_RENDERDEVICE_HPP
+#define XENGINE_RENDERDEVICE_HPP
 
 #include <map>
 #include <functional>
@@ -31,7 +31,7 @@
 #include "asset/mesh.hpp"
 
 namespace xengine {
-    class MANA_EXPORT RenderDevice {
+    class XENGINE_EXPORT RenderDevice {
     public:
         static std::unique_ptr<RenderDevice> create(GraphicsBackend backend);
 
@@ -54,4 +54,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_RENDERDEVICE_HPP
+#endif //XENGINE_RENDERDEVICE_HPP

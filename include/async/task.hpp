@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_TASK_HPP
-#define MANA_TASK_HPP
+#ifndef XENGINE_TASK_HPP
+#define XENGINE_TASK_HPP
 
 #include <functional>
 #include <condition_variable>
@@ -26,7 +26,7 @@
 #include <atomic>
 
 namespace xengine {
-    class MANA_EXPORT Task {
+    class XENGINE_EXPORT Task {
     public:
         Task() : work(),
                  mutex(),
@@ -88,4 +88,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_TASK_HPP
+#endif //XENGINE_TASK_HPP

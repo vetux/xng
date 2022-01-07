@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_DISPLAYMANAGER_HPP
-#define MANA_DISPLAYMANAGER_HPP
+#ifndef XENGINE_DISPLAYMANAGER_HPP
+#define XENGINE_DISPLAYMANAGER_HPP
 
 #include <set>
 
@@ -28,7 +28,7 @@
 
 namespace xengine {
     //TODO: Add monitor gamma configuration interface
-    class MANA_EXPORT DisplayManager {
+    class XENGINE_EXPORT DisplayManager {
     public:
         DisplayManager();
 
@@ -56,4 +56,4 @@ namespace xengine {
         DisplayBackend backend;
     };
 }
-#endif //MANA_DISPLAYMANAGER_HPP
+#endif //XENGINE_DISPLAYMANAGER_HPP

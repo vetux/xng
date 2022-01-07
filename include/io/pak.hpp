@@ -1,5 +1,5 @@
-#ifndef MANA_PAK_HPP
-#define MANA_PAK_HPP
+#ifndef XENGINE_PAK_HPP
+#define XENGINE_PAK_HPP
 
 #include <string>
 #include <utility>
@@ -16,7 +16,7 @@ namespace xengine {
     /**
      * The pak file format
      */
-    class MANA_EXPORT Pak {
+    class XENGINE_EXPORT Pak {
     public:
         struct HeaderEntry {
             size_t offset;
@@ -96,4 +96,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_PAK_HPP
+#endif //XENGINE_PAK_HPP

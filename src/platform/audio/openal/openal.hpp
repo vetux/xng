@@ -17,11 +17,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_OPENAL_HPP
-#define MANA_OPENAL_HPP
+#ifndef XENGINE_OPENAL_HPP
+#define XENGINE_OPENAL_HPP
 
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <AL/alext.h>
 
-#endif //MANA_OPENAL_HPP
+#endif //XENGINE_OPENAL_HPP

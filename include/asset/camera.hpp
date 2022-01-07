@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_CAMERA_HPP
-#define MANA_CAMERA_HPP
+#ifndef XENGINE_CAMERA_HPP
+#define XENGINE_CAMERA_HPP
 
 #include "math/transform.hpp"
 #include "math/matrix.hpp"
@@ -35,7 +35,7 @@ namespace xengine {
     /**
      * A camera provides a view and projection matrix.
      */
-    struct MANA_EXPORT Camera {
+    struct XENGINE_EXPORT Camera {
         Camera() {}
 
         explicit Camera(CameraType type) : type(type) {}
@@ -85,4 +85,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_CAMERA_HPP
+#endif //XENGINE_CAMERA_HPP

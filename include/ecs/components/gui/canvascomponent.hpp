@@ -17,12 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_CANVASCOMPONENT_HPP
-#define MANA_CANVASCOMPONENT_HPP
+#ifndef XENGINE_CANVASCOMPONENT_HPP
+#define XENGINE_CANVASCOMPONENT_HPP
 
 namespace xengine {
-    struct MANA_EXPORT CanvasComponent {
+    struct XENGINE_EXPORT CanvasComponent {
     };
 }
 
-#endif //MANA_CANVASCOMPONENT_HPP
+#endif //XENGINE_CANVASCOMPONENT_HPP

@@ -17,15 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_CAMERACOMPONENT_HPP
-#define MANA_CAMERACOMPONENT_HPP
+#ifndef XENGINE_CAMERACOMPONENT_HPP
+#define XENGINE_CAMERACOMPONENT_HPP
 
 #include "asset/camera.hpp"
 
 namespace xengine {
-    struct MANA_EXPORT CameraComponent {
+    struct XENGINE_EXPORT CameraComponent {
         Camera camera;
     };
 }
 
-#endif //MANA_CAMERACOMPONENT_HPP
+#endif //XENGINE_CAMERACOMPONENT_HPP

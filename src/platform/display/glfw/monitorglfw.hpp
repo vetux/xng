@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_MONITORGLFW_HPP
-#define MANA_MONITORGLFW_HPP
+#ifndef XENGINE_MONITORGLFW_HPP
+#define XENGINE_MONITORGLFW_HPP
 
 #include <GLFW/glfw3.h>
 
@@ -99,4 +99,4 @@ namespace xengine {
     }
 }
 
-#endif //MANA_MONITORGLFW_HPP
+#endif //XENGINE_MONITORGLFW_HPP

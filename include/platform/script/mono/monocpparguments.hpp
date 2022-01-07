@@ -17,16 +17,16 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_MONOCPPTYPE_HPP
-#define MANA_MONOCPPTYPE_HPP
+#ifndef XENGINE_MONOCPPTYPE_HPP
+#define XENGINE_MONOCPPTYPE_HPP
 
 #include <vector>
 #include <string>
 
 namespace xengine {
-    class MANA_EXPORT MonoCppObject;
+    class XENGINE_EXPORT MonoCppObject;
 
-    struct MANA_EXPORT MonoCppArguments {
+    struct XENGINE_EXPORT MonoCppArguments {
         void add(int &value);
 
         void add(float &value);
@@ -46,4 +46,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_MONOCPPTYPE_HPP
+#endif //XENGINE_MONOCPPTYPE_HPP

@@ -17,14 +17,14 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_WORLD3D_HPP
-#define MANA_WORLD3D_HPP
+#ifndef XENGINE_WORLD3D_HPP
+#define XENGINE_WORLD3D_HPP
 
 #include "rigidbody3d.hpp"
 #include "joint3d.hpp"
 
 namespace xengine {
-    class MANA_EXPORT World3D {
+    class XENGINE_EXPORT World3D {
     public:
         enum Backend {
             BULLET3
@@ -32,14 +32,14 @@ namespace xengine {
 
         static std::unique_ptr<World3D> create(Backend backend);
 
-        struct MANA_EXPORT Contact {
+        struct XENGINE_EXPORT Contact {
             Collider3D *colliderA;
             Collider3D *colliderB;
 
             std::vector<Vec3f> points;
         };
 
-        class MANA_EXPORT ContactListener {
+        class XENGINE_EXPORT ContactListener {
         public:
             virtual ~ContactListener() = default;
 
@@ -72,4 +72,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_WORLD3D_HPP
+#endif //XENGINE_WORLD3D_HPP

@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_ASSETMANAGER_HPP
-#define MANA_ASSETMANAGER_HPP
+#ifndef XENGINE_ASSETMANAGER_HPP
+#define XENGINE_ASSETMANAGER_HPP
 
 #include "async/threadpool.hpp"
 
@@ -31,7 +31,7 @@ namespace xengine {
     /**
      * Handles loading asset bundles from disk on a thread pool
      */
-    class MANA_EXPORT AssetManager {
+    class XENGINE_EXPORT AssetManager {
     public:
         explicit AssetManager(Archive &archive)
                 : archive(archive) {}
@@ -108,4 +108,4 @@ namespace xengine {
         std::map<std::string, AssetBundle> bundles;
     };
 }
-#endif //MANA_ASSETMANAGER_HPP
+#endif //XENGINE_ASSETMANAGER_HPP

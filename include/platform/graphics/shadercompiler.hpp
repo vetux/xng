@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_SHADERCOMPILER_HPP
-#define MANA_SHADERCOMPILER_HPP
+#ifndef XENGINE_SHADERCOMPILER_HPP
+#define XENGINE_SHADERCOMPILER_HPP
 
 #include <map>
 #include <string>
@@ -63,7 +63,7 @@ namespace xengine {
         /**
          * Cross compile the source by using spirv as an intermediate.
          *
-         * When compiling hlsl to glsl globals defined in the hlsl source are stored in a struct MANA_EXPORT which has an instance
+         * When compiling hlsl to glsl globals defined in the hlsl source are stored in a struct XENGINE_EXPORT which has an instance
          * with the name "Globals". When using the render allocator to create a shader program the
          * implementation will append the prefix automatically when needed.
          *
@@ -86,4 +86,4 @@ namespace xengine {
     }
 }
 
-#endif //MANA_SHADERCOMPILER_HPP
+#endif //XENGINE_SHADERCOMPILER_HPP

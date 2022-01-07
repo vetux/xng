@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_AES_HPP
-#define MANA_AES_HPP
+#ifndef XENGINE_AES_HPP
+#define XENGINE_AES_HPP
 
 #include <string>
 #include <vector>
@@ -31,16 +31,16 @@ namespace xengine {
         typedef std::string Key;
         typedef std::array<char, BLOCKSIZE> InitializationVector;
 
-        MANA_EXPORT std::string encrypt(const Key &key, const InitializationVector &iv, const std::string &plaintext);
+        XENGINE_EXPORT std::string encrypt(const Key &key, const InitializationVector &iv, const std::string &plaintext);
 
-        MANA_EXPORT std::string decrypt(const Key &key, const InitializationVector &iv, const std::string &ciphertext);
+        XENGINE_EXPORT std::string decrypt(const Key &key, const InitializationVector &iv, const std::string &ciphertext);
 
-        MANA_EXPORT std::vector<char> encrypt(const Key &key, const InitializationVector &iv,
+        XENGINE_EXPORT std::vector<char> encrypt(const Key &key, const InitializationVector &iv,
                                               const std::vector<char> &plaintext);
 
-        MANA_EXPORT std::vector<char> decrypt(const Key &key, const InitializationVector &iv,
+        XENGINE_EXPORT std::vector<char> decrypt(const Key &key, const InitializationVector &iv,
                                               const std::vector<char> &ciphertext);
     }
 }
 
-#endif //MANA_AES_HPP
+#endif //XENGINE_AES_HPP

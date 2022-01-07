@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_MESH_HPP
-#define MANA_MESH_HPP
+#ifndef XENGINE_MESH_HPP
+#define XENGINE_MESH_HPP
 
 #include <vector>
 
@@ -27,7 +27,7 @@
 #include "asset/vertex.hpp"
 
 namespace xengine {
-    struct MANA_EXPORT Mesh {
+    struct XENGINE_EXPORT Mesh {
         enum Primitive {
             POINT = 1,
             LINE = 2,
@@ -64,4 +64,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_MESH_HPP
+#endif //XENGINE_MESH_HPP

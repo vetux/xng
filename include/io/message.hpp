@@ -17,17 +17,17 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_MESSAGE_HPP
-#define MANA_MESSAGE_HPP
+#ifndef XENGINE_MESSAGE_HPP
+#define XENGINE_MESSAGE_HPP
 
 #include <map>
 #include <vector>
 #include <stdexcept>
 
 namespace xengine {
-    class MANA_EXPORT Message;
+    class XENGINE_EXPORT Message;
 
-    class MANA_EXPORT Message {
+    class XENGINE_EXPORT Message {
     public:
         enum DataType {
             INT,
@@ -202,4 +202,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_MESSAGE_HPP
+#endif //XENGINE_MESSAGE_HPP

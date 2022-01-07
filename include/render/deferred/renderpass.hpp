@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_RENDERPASS_HPP
-#define MANA_RENDERPASS_HPP
+#ifndef XENGINE_RENDERPASS_HPP
+#define XENGINE_RENDERPASS_HPP
 
 #include "renderpass.hpp"
 #include "asset/scene.hpp"
@@ -29,9 +29,9 @@
 
 namespace xengine {
     /**
-     * Users may extend this class MANA_EXPORT and create custom render passes.
+     * Users may extend this class XENGINE_EXPORT and create custom render passes.
      */
-    class MANA_EXPORT RenderPass {
+    class XENGINE_EXPORT RenderPass {
     public:
         virtual ~RenderPass() = default;
 
@@ -50,4 +50,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_RENDERPASS_HPP
+#endif //XENGINE_RENDERPASS_HPP

@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_OGLSHADERPROGRAM_HPP
-#define MANA_OGLSHADERPROGRAM_HPP
+#ifndef XENGINE_OGLSHADERPROGRAM_HPP
+#define XENGINE_OGLSHADERPROGRAM_HPP
 
 #include <string>
 #include <map>
@@ -128,4 +128,4 @@ namespace xengine {
     }
 }
 
-#endif //MANA_OGLSHADERPROGRAM_HPP
+#endif //XENGINE_OGLSHADERPROGRAM_HPP

@@ -17,15 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_TRANSFORM_HPP
-#define MANA_TRANSFORM_HPP
+#ifndef XENGINE_TRANSFORM_HPP
+#define XENGINE_TRANSFORM_HPP
 
 #include "math/vector3.hpp"
 #include "quaternion.hpp"
 #include "math/matrixmath.hpp"
 
 namespace xengine {
-    struct MANA_EXPORT Transform {
+    struct XENGINE_EXPORT Transform {
         Transform() = default;
 
         Transform(Vec3f position, Vec3f rotation, Vec3f scale) : mPosition(position),
@@ -92,4 +92,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_TRANSFORM_HPP
+#endif //XENGINE_TRANSFORM_HPP

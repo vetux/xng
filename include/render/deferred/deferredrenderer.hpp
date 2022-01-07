@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_DEFERREDRENDERER_HPP
-#define MANA_DEFERREDRENDERER_HPP
+#ifndef XENGINE_DEFERREDRENDERER_HPP
+#define XENGINE_DEFERREDRENDERER_HPP
 
 #include <utility>
 #include <map>
@@ -35,7 +35,7 @@
 #include "asset/scene.hpp"
 
 namespace xengine {
-    class MANA_EXPORT DeferredRenderer {
+    class XENGINE_EXPORT DeferredRenderer {
     public:
         explicit DeferredRenderer(RenderDevice &device, AssetRenderManager &assetRenderManager);
 
@@ -74,4 +74,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_DEFERREDRENDERER_HPP
+#endif //XENGINE_DEFERREDRENDERER_HPP

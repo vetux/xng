@@ -17,18 +17,18 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_OBJECT_HPP
-#define MANA_OBJECT_HPP
+#ifndef XENGINE_OBJECT_HPP
+#define XENGINE_OBJECT_HPP
 
 namespace xengine {
     /**
      * A render object is a dynamically allocated graphics api dependent object which can be deallocated by
      * calling the destructor.
      */
-    class MANA_EXPORT RenderObject {
+    class XENGINE_EXPORT RenderObject {
     public:
         virtual ~RenderObject() = default;
     };
 }
 
-#endif //MANA_OBJECT_HPP
+#endif //XENGINE_OBJECT_HPP

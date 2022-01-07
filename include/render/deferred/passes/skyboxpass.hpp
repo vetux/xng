@@ -17,13 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_SKYBOXPASS_HPP
-#define MANA_SKYBOXPASS_HPP
+#ifndef XENGINE_SKYBOXPASS_HPP
+#define XENGINE_SKYBOXPASS_HPP
 
 #include "render/deferred/renderpass.hpp"
 
 namespace xengine {
-    class MANA_EXPORT SkyboxPass : public RenderPass {
+    class XENGINE_EXPORT SkyboxPass : public RenderPass {
     public:
         static const char *COLOR;
 
@@ -50,4 +50,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_SKYBOXPASS_HPP
+#endif //XENGINE_SKYBOXPASS_HPP

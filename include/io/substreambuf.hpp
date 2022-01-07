@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_SUBSTREAMBUF_HPP
-#define MANA_SUBSTREAMBUF_HPP
+#ifndef XENGINE_SUBSTREAMBUF_HPP
+#define XENGINE_SUBSTREAMBUF_HPP
 
 #include <cassert>
 #include <streambuf>
@@ -91,4 +91,4 @@ private:
     std::streampos m_pos;
 };
 
-#endif //MANA_SUBSTREAMBUF_HPP
+#endif //XENGINE_SUBSTREAMBUF_HPP

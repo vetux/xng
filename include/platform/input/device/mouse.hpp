@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_MOUSE_HPP
-#define MANA_MOUSE_HPP
+#ifndef XENGINE_MOUSE_HPP
+#define XENGINE_MOUSE_HPP
 
 #include "math/vector2.hpp"
 
@@ -35,7 +35,7 @@ namespace xengine {
         MOUSE_BUTTON_UNDEFINED
     };
 
-    class MANA_EXPORT Mouse {
+    class XENGINE_EXPORT Mouse {
     public:
         bool getButton(MouseButton button) const {
             return buttonsDown.find(button) != buttonsDown.end();
@@ -47,4 +47,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_MOUSE_HPP
+#endif //XENGINE_MOUSE_HPP

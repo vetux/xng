@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_RENDERWIDGETQT_HPP
-#define MANA_RENDERWIDGETQT_HPP
+#ifndef XENGINE_RENDERWIDGETQT_HPP
+#define XENGINE_RENDERWIDGETQT_HPP
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_3_3_Core>
@@ -31,7 +31,7 @@
 #include "render/deferred/passes/phongshadepass.hpp"
 
 namespace xengine {
-    class MANA_EXPORT RenderWidgetQt : public QOpenGLWidget {
+    class XENGINE_EXPORT RenderWidgetQt : public QOpenGLWidget {
     public:
         RenderWidgetQt(QWidget *parent, AssetManager &assetManager);
 
@@ -83,4 +83,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_RENDERWIDGETQT_HPP
+#endif //XENGINE_RENDERWIDGETQT_HPP

@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_IMGUICOMPAT_HPP
-#define MANA_IMGUICOMPAT_HPP
+#ifndef XENGINE_IMGUICOMPAT_HPP
+#define XENGINE_IMGUICOMPAT_HPP
 
 #include "platform/graphics/graphicsbackend.hpp"
 #include "platform/graphics/rendertarget.hpp"
@@ -31,19 +31,19 @@ namespace xengine {
          * Calls the Impl*Init* methods and ImGui::CreateContext if it is the first call.
          * @param window
          */
-        MANA_EXPORT void Init(Window &window, GraphicsBackend graphicsBackend);
+        XENGINE_EXPORT void Init(Window &window, GraphicsBackend graphicsBackend);
 
         /**
          * Calls the Impl*Shutdown methods and ImGui::DestroyContext if it is the last call.
          * @param window
          */
-        MANA_EXPORT void Shutdown(Window &window, GraphicsBackend graphicsBackend);
+        XENGINE_EXPORT void Shutdown(Window &window, GraphicsBackend graphicsBackend);
 
         /**
          * Calls Impl*NewFrame methods, the user still has to call ImGui::NewFrame afterwards.
          * @param window
          */
-        MANA_EXPORT void NewFrame(Window &window, GraphicsBackend graphicsBackend);
+        XENGINE_EXPORT void NewFrame(Window &window, GraphicsBackend graphicsBackend);
 
         /**
          * Calls Impl*RenderDrawData and renders the imgui data into the target.
@@ -54,7 +54,7 @@ namespace xengine {
          * @param window
          * @param target
          */
-        MANA_EXPORT void DrawData(Window &window, RenderTarget &target, GraphicsBackend graphicsBackend);
+        XENGINE_EXPORT void DrawData(Window &window, RenderTarget &target, GraphicsBackend graphicsBackend);
 
         /**
          * Calls Impl*RenderDrawData and renders the imgui data into the target.
@@ -65,10 +65,10 @@ namespace xengine {
          * @param window
          * @param target
          */
-        MANA_EXPORT  void DrawData(Window &window,
+        XENGINE_EXPORT  void DrawData(Window &window,
                                    RenderTarget &target,
                                    RenderOptions options,
                                    GraphicsBackend graphicsBackend);
     }
 }
-#endif //MANA_IMGUICOMPAT_HPP
+#endif //XENGINE_IMGUICOMPAT_HPP

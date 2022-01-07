@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_EVENTBUS_HPP
-#define MANA_EVENTBUS_HPP
+#ifndef XENGINE_EVENTBUS_HPP
+#define XENGINE_EVENTBUS_HPP
 
 #include <functional>
 #include <set>
@@ -28,7 +28,7 @@
 #include "event/eventreceiver.hpp"
 
 namespace xengine {
-    class MANA_EXPORT EventBus {
+    class XENGINE_EXPORT EventBus {
     public:
         template<typename T>
         void invoke(const T &event) {
@@ -57,4 +57,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_EVENTBUS_HPP
+#endif //XENGINE_EVENTBUS_HPP

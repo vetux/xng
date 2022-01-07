@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_COMPONENTPOOL_HPP
-#define MANA_COMPONENTPOOL_HPP
+#ifndef XENGINE_COMPONENTPOOL_HPP
+#define XENGINE_COMPONENTPOOL_HPP
 
 #include <map>
 #include <stdexcept>
@@ -27,7 +27,7 @@
 #include "ecs/entity.hpp"
 
 namespace xengine {
-    class MANA_EXPORT ComponentPoolBase {
+    class XENGINE_EXPORT ComponentPoolBase {
     public:
         virtual ~ComponentPoolBase() = default;
 
@@ -39,9 +39,9 @@ namespace xengine {
     };
 
     template<typename T>
-    class MANA_EXPORT ComponentPool : public ComponentPoolBase {
+    class XENGINE_EXPORT ComponentPool : public ComponentPoolBase {
     public:
-        class MANA_EXPORT Listener {
+        class XENGINE_EXPORT Listener {
         public:
             virtual void onComponentCreate(const Entity &entity, const T &component) = 0;
 
@@ -150,4 +150,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_COMPONENTPOOL_HPP
+#endif //XENGINE_COMPONENTPOOL_HPP

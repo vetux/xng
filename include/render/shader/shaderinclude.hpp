@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_SHADERINCLUDE_HPP
-#define MANA_SHADERINCLUDE_HPP
+#ifndef XENGINE_SHADERINCLUDE_HPP
+#define XENGINE_SHADERINCLUDE_HPP
 
 #include <map>
 #include <string>
@@ -38,4 +38,4 @@ namespace xengine {
         const std::function<std::string(const char *)> &getShaderIncludeCallback();
     }
 }
-#endif //MANA_SHADERINCLUDE_HPP
+#endif //XENGINE_SHADERINCLUDE_HPP

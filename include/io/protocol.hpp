@@ -17,15 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_PROTOCOL_HPP
-#define MANA_PROTOCOL_HPP
+#ifndef XENGINE_PROTOCOL_HPP
+#define XENGINE_PROTOCOL_HPP
 
 #include <ostream>
 
 #include "message.hpp"
 
 namespace xengine {
-    class MANA_EXPORT Protocol {
+    class XENGINE_EXPORT Protocol {
     public:
         virtual void serialize(std::ostream &stream, const Message &message) = 0;
 
@@ -33,4 +33,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_PROTOCOL_HPP
+#endif //XENGINE_PROTOCOL_HPP

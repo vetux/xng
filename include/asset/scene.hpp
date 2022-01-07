@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_SCENE_HPP
-#define MANA_SCENE_HPP
+#ifndef XENGINE_SCENE_HPP
+#define XENGINE_SCENE_HPP
 
 #include "asset/camera.hpp"
 #include "asset/light.hpp"
@@ -33,9 +33,9 @@ namespace xengine {
     /**
      * The collected render scene data.
      */
-    struct MANA_EXPORT Scene {
+    struct XENGINE_EXPORT Scene {
         // A deferred draw node description with a mesh, material and drawing parameters
-        struct MANA_EXPORT DeferredDrawNode {
+        struct XENGINE_EXPORT DeferredDrawNode {
             DeferredDrawNode() = default;
 
             DeferredDrawNode(Transform t, AssetHandle<Mesh> mesh, AssetHandle<Material> material)
@@ -51,7 +51,7 @@ namespace xengine {
         };
 
         // A forward draw node description with mesh, shaders and textures
-        struct MANA_EXPORT ForwardDrawNode {
+        struct XENGINE_EXPORT ForwardDrawNode {
             Transform transform;
             AssetHandle<Mesh> mesh;
             AssetHandle<Shader> shader;
@@ -70,4 +70,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_SCENE_HPP
+#endif //XENGINE_SCENE_HPP

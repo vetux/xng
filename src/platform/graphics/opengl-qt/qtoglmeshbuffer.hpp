@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_QTOGLMESHBUFFER_HPP
-#define MANA_QTOGLMESHBUFFER_HPP
+#ifndef XENGINE_QTOGLMESHBUFFER_HPP
+#define XENGINE_QTOGLMESHBUFFER_HPP
 
 #include "platform/graphics/meshbuffer.hpp"
 #include "math/matrixmath.hpp"
@@ -73,4 +73,4 @@ namespace xengine {
     }
 }
 
-#endif //MANA_QTOGLMESHBUFFER_HPP
+#endif //XENGINE_QTOGLMESHBUFFER_HPP

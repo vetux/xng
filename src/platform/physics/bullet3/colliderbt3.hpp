@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_COLLIDERBT3_HPP
-#define MANA_COLLIDERBT3_HPP
+#ifndef XENGINE_COLLIDERBT3_HPP
+#define XENGINE_COLLIDERBT3_HPP
 
 #include "platform/physics/3d/collider3d.hpp"
 
@@ -35,4 +35,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_COLLIDERBT3_HPP
+#endif //XENGINE_COLLIDERBT3_HPP

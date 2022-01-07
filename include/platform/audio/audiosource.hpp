@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_AUDIOSOURCE_HPP
-#define MANA_AUDIOSOURCE_HPP
+#ifndef XENGINE_AUDIOSOURCE_HPP
+#define XENGINE_AUDIOSOURCE_HPP
 
 #include <memory>
 
@@ -27,7 +27,7 @@
 #include "math/vector3.hpp"
 
 namespace xengine {
-    class MANA_EXPORT AudioSource {
+    class XENGINE_EXPORT AudioSource {
     public:
         enum SourceType {
             UNDETERMINED,
@@ -128,4 +128,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_AUDIOSOURCE_HPP
+#endif //XENGINE_AUDIOSOURCE_HPP

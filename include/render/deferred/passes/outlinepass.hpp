@@ -17,13 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_OUTLINEPASS_HPP
-#define MANA_OUTLINEPASS_HPP
+#ifndef XENGINE_OUTLINEPASS_HPP
+#define XENGINE_OUTLINEPASS_HPP
 
 #include "render/deferred/renderpass.hpp"
 
 namespace xengine {
-    class MANA_EXPORT OutlinePass : public RenderPass {
+    class XENGINE_EXPORT OutlinePass : public RenderPass {
     public:
         ~OutlinePass() override = default;
 
@@ -33,4 +33,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_OUTLINEPASS_HPP
+#endif //XENGINE_OUTLINEPASS_HPP

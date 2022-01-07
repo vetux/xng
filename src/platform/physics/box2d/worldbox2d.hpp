@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_WORLDBOX2D_HPP
-#define MANA_WORLDBOX2D_HPP
+#ifndef XENGINE_WORLDBOX2D_HPP
+#define XENGINE_WORLDBOX2D_HPP
 
 #include "box2d.hpp"
 
@@ -61,4 +61,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_WORLDBOX2D_HPP
+#endif //XENGINE_WORLDBOX2D_HPP

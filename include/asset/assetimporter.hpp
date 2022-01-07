@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_ASSETIMPORTER_HPP
-#define MANA_ASSETIMPORTER_HPP
+#ifndef XENGINE_ASSETIMPORTER_HPP
+#define XENGINE_ASSETIMPORTER_HPP
 
 #include <string>
 #include <vector>
@@ -42,7 +42,7 @@ namespace xengine {
          * @param archive
          * @return
          */
-        MANA_EXPORT AssetBundle import(std::istream &stream, const std::string &hint = "", Archive *archive = nullptr);
+        XENGINE_EXPORT AssetBundle import(std::istream &stream, const std::string &hint = "", Archive *archive = nullptr);
 
         /**
          * Import the bundle from the path.
@@ -56,8 +56,8 @@ namespace xengine {
          * @param archive
          * @return
          */
-        MANA_EXPORT AssetBundle import(const std::string &path, Archive &archive);
+        XENGINE_EXPORT AssetBundle import(const std::string &path, Archive &archive);
     }
 }
 
-#endif //MANA_ASSETIMPORTER_HPP
+#endif //XENGINE_ASSETIMPORTER_HPP

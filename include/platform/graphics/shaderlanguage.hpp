@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_SHADERLANGUAGE_HPP
-#define MANA_SHADERLANGUAGE_HPP
+#ifndef XENGINE_SHADERLANGUAGE_HPP
+#define XENGINE_SHADERLANGUAGE_HPP
 
 namespace xengine {
     enum ShaderLanguage {
@@ -29,4 +29,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_SHADERLANGUAGE_HPP
+#endif //XENGINE_SHADERLANGUAGE_HPP

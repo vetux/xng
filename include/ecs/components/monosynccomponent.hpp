@@ -17,15 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_MONOSYNCCOMPONENT_HPP
-#define MANA_MONOSYNCCOMPONENT_HPP
+#ifndef XENGINE_MONOSYNCCOMPONENT_HPP
+#define XENGINE_MONOSYNCCOMPONENT_HPP
 
 #include "platform/script/script.hpp"
 
 namespace xengine {
-    struct MANA_EXPORT MonoSyncComponent {
+    struct XENGINE_EXPORT MonoSyncComponent {
     };
 }
 
 
-#endif //MANA_MONOSYNCCOMPONENT_HPP
+#endif //XENGINE_MONOSYNCCOMPONENT_HPP

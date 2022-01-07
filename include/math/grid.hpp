@@ -8,7 +8,7 @@
 #include "math/vector2.hpp"
 
 namespace xengine {
-    class MANA_EXPORT Grid {
+    class XENGINE_EXPORT Grid {
     public:
         int nCol, nRow;
         Vec2i size;

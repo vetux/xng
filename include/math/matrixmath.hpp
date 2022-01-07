@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_GRAPHICSMATH_HPP
-#define MANA_GRAPHICSMATH_HPP
+#ifndef XENGINE_GRAPHICSMATH_HPP
+#define XENGINE_GRAPHICSMATH_HPP
 
 #include "math/vector2.hpp"
 #include "math/vector3.hpp"
@@ -27,11 +27,11 @@
 
 namespace xengine {
     namespace MatrixMath {
-        MANA_EXPORT Mat4f identity();
+        XENGINE_EXPORT Mat4f identity();
 
-        MANA_EXPORT Mat4f inverse(const Mat4f &mat);
+        XENGINE_EXPORT Mat4f inverse(const Mat4f &mat);
 
-        MANA_EXPORT Mat4f transpose(const Mat4f &mat);
+        XENGINE_EXPORT Mat4f transpose(const Mat4f &mat);
 
         /**
          * Returns a matrix which can be used for multiplying with a column vector.
@@ -44,7 +44,7 @@ namespace xengine {
          * @param zFar
          * @return
          */
-        MANA_EXPORT Mat4f perspective(float fovy, float aspect, float zNear, float zFar);
+        XENGINE_EXPORT Mat4f perspective(float fovy, float aspect, float zNear, float zFar);
 
         /**
          * Returns a matrix which can be used for multiplying with a column vector.
@@ -59,9 +59,9 @@ namespace xengine {
          * @param zFar
          * @return
          */
-        MANA_EXPORT Mat4f ortho(float left, float right, float bottom, float top, float zNear, float zFar);
+        XENGINE_EXPORT Mat4f ortho(float left, float right, float bottom, float top, float zNear, float zFar);
 
-        MANA_EXPORT Vec3f unProject(Vec2i windowCoordinates,
+        XENGINE_EXPORT Vec3f unProject(Vec2i windowCoordinates,
                                     Mat4f viewMatrix,
                                     Mat4f projectionMatrix,
                                     Vec2i viewportOffset,
@@ -73,7 +73,7 @@ namespace xengine {
          * @param translationValue
          * @return
          */
-        MANA_EXPORT  Mat4f translate(const Vec3f &translationValue);
+        XENGINE_EXPORT  Mat4f translate(const Vec3f &translationValue);
 
         /**
          * The returned matrix should be multiplied with a column vector or transposed to multiply with a row vector.
@@ -81,7 +81,7 @@ namespace xengine {
          * @param scaleValue
          * @return
          */
-        MANA_EXPORT Mat4f scale(const Vec3f &scaleValue);
+        XENGINE_EXPORT Mat4f scale(const Vec3f &scaleValue);
 
         /**
          * The returned matrix should be multiplied with a column vector or transposed to multiply with a row vector.
@@ -89,8 +89,8 @@ namespace xengine {
          * @param rotationValue
          * @return
          */
-        MANA_EXPORT Mat4f rotate(const Vec3f &rotationValue);
+        XENGINE_EXPORT Mat4f rotate(const Vec3f &rotationValue);
     }
 }
 
-#endif //MANA_GRAPHICSMATH_HPP
+#endif //XENGINE_GRAPHICSMATH_HPP

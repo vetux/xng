@@ -17,13 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_FORWARDPASS_HPP
-#define MANA_FORWARDPASS_HPP
+#ifndef XENGINE_FORWARDPASS_HPP
+#define XENGINE_FORWARDPASS_HPP
 
 #include "render/deferred/renderpass.hpp"
 
 namespace xengine {
-    class MANA_EXPORT ForwardPass : public RenderPass {
+    class XENGINE_EXPORT ForwardPass : public RenderPass {
     public:
         static const char *COLOR;
         static const char *DEPTH;
@@ -41,4 +41,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_FORWARDPASS_HPP
+#endif //XENGINE_FORWARDPASS_HPP

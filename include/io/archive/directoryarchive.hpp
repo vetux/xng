@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_DIRECTORYARCHIVE_HPP
-#define MANA_DIRECTORYARCHIVE_HPP
+#ifndef XENGINE_DIRECTORYARCHIVE_HPP
+#define XENGINE_DIRECTORYARCHIVE_HPP
 
 #include <fstream>
 #include <filesystem>
@@ -30,7 +30,7 @@ namespace xengine {
      * A directory representing an archive.
      * Only files relative to the specified directory can be accessed by full or relative path,
      */
-    class MANA_EXPORT DirectoryArchive : public Archive {
+    class XENGINE_EXPORT DirectoryArchive : public Archive {
     public:
         std::string directory;
 
@@ -69,4 +69,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_DIRECTORYARCHIVE_HPP
+#endif //XENGINE_DIRECTORYARCHIVE_HPP

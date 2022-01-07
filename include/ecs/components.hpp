@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_COMPONENTS_HPP
-#define MANA_COMPONENTS_HPP
+#ifndef XENGINE_COMPONENTS_HPP
+#define XENGINE_COMPONENTS_HPP
 
 #include "ecs/components/collidercomponent2d.hpp"
 #include "ecs/components/collidercomponent3d.hpp"
@@ -36,4 +36,4 @@
 #include "ecs/components/gui/canvascomponent.hpp"
 #include "ecs/components/gui/buttoncomponent.hpp"
 
-#endif //MANA_COMPONENTS_HPP
+#endif //XENGINE_COMPONENTS_HPP

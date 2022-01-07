@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_ASSETBUNDLE_HPP
-#define MANA_ASSETBUNDLE_HPP
+#ifndef XENGINE_ASSETBUNDLE_HPP
+#define XENGINE_ASSETBUNDLE_HPP
 
 #include <map>
 #include <string>
@@ -28,7 +28,7 @@
 #include "asset/asset.hpp"
 
 namespace xengine {
-    class MANA_EXPORT AssetBundle {
+    class XENGINE_EXPORT AssetBundle {
     public:
         ~AssetBundle() {
             assets.clear();
@@ -89,4 +89,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_ASSETBUNDLE_HPP
+#endif //XENGINE_ASSETBUNDLE_HPP

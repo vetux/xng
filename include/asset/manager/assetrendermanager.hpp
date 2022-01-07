@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_ASSETRENDERMANAGER_HPP
-#define MANA_ASSETRENDERMANAGER_HPP
+#ifndef XENGINE_ASSETRENDERMANAGER_HPP
+#define XENGINE_ASSETRENDERMANAGER_HPP
 
 #include <typeindex>
 
@@ -32,7 +32,7 @@ namespace xengine {
     /**
      * Handles allocation of render objects on the main thread.
      */
-    class MANA_EXPORT AssetRenderManager {
+    class XENGINE_EXPORT AssetRenderManager {
     public:
         AssetRenderManager(AssetManager &assetManager, RenderAllocator &renderAllocator)
                 : assetManager(assetManager), renderAllocator(renderAllocator) {}
@@ -120,4 +120,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_ASSETRENDERMANAGER_HPP
+#endif //XENGINE_ASSETRENDERMANAGER_HPP

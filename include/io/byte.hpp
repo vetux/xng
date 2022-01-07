@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_BYTE_HPP
-#define MANA_BYTE_HPP
+#ifndef XENGINE_BYTE_HPP
+#define XENGINE_BYTE_HPP
 
 #include <cstdlib>
 
@@ -27,4 +27,4 @@
 #define MB(x)   ((size_t) (x) << 20)
 #define GB(x)   ((size_t) (x) << 30)
 
-#endif //MANA_BYTE_HPP
+#endif //XENGINE_BYTE_HPP

@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_HLSL_NOISE_HPP
-#define MANA_HLSL_NOISE_HPP
+#ifndef XENGINE_HLSL_NOISE_HPP
+#define XENGINE_HLSL_NOISE_HPP
 
 static const char *HLSL_NOISE = R"###(
 // https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
@@ -658,4 +658,4 @@ float noise(float3 p){
 }
 )###";
 
-#endif //MANA_HLSL_NOISE_HPP
+#endif //XENGINE_HLSL_NOISE_HPP

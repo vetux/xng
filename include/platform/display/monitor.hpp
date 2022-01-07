@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_MONITOR_HPP
-#define MANA_MONITOR_HPP
+#ifndef XENGINE_MONITOR_HPP
+#define XENGINE_MONITOR_HPP
 
 #include <vector>
 #include <string>
@@ -28,7 +28,7 @@
 #include "math/rectangle.hpp"
 
 namespace xengine {
-    class MANA_EXPORT Monitor {
+    class XENGINE_EXPORT Monitor {
     public:
         virtual ~Monitor() = default;
 
@@ -48,4 +48,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_MONITOR_HPP
+#endif //XENGINE_MONITOR_HPP

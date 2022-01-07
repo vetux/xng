@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_LIGHT_HPP
-#define MANA_LIGHT_HPP
+#ifndef XENGINE_LIGHT_HPP
+#define XENGINE_LIGHT_HPP
 
 #include "math/transform.hpp"
 
@@ -31,7 +31,7 @@ namespace xengine {
         LIGHT_SPOT
     };
 
-    struct MANA_EXPORT Light : public AssetBase {
+    struct XENGINE_EXPORT Light : public AssetBase {
         Light() : type() {}
 
         explicit Light(LightType type) : type(type) {}
@@ -63,4 +63,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_LIGHT_HPP
+#endif //XENGINE_LIGHT_HPP

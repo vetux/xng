@@ -17,15 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_RIGIDBODYCOMPONENT3D_HPP
-#define MANA_RIGIDBODYCOMPONENT3D_HPP
+#ifndef XENGINE_RIGIDBODYCOMPONENT3D_HPP
+#define XENGINE_RIGIDBODYCOMPONENT3D_HPP
 
 #include "platform/physics/3d/rigidbody3d.hpp"
 
 namespace xengine {
-    struct MANA_EXPORT RigidBodyComponent3D {
+    struct XENGINE_EXPORT RigidBodyComponent3D {
         RigidBody3D::RigidBodyType type;
     };
 }
 
-#endif //MANA_RIGIDBODYCOMPONENT3D_HPP
+#endif //XENGINE_RIGIDBODYCOMPONENT3D_HPP

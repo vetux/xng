@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_ASSETEXPORTER_HPP
-#define MANA_ASSETEXPORTER_HPP
+#ifndef XENGINE_ASSETEXPORTER_HPP
+#define XENGINE_ASSETEXPORTER_HPP
 
 #include "asset/image.hpp"
 #include "color.hpp"
@@ -27,8 +27,8 @@
 
 namespace xengine {
     namespace AssetExporter {
-        MANA_EXPORT void exportImage(std::ostream &stream, const Image <ColorRGBA> &image);
+        XENGINE_EXPORT void exportImage(std::ostream &stream, const Image <ColorRGBA> &image);
     }
 }
 
-#endif //MANA_ASSETEXPORTER_HPP
+#endif //XENGINE_ASSETEXPORTER_HPP

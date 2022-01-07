@@ -17,13 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_SHADERSOURCE_HPP
-#define MANA_SHADERSOURCE_HPP
+#ifndef XENGINE_SHADERSOURCE_HPP
+#define XENGINE_SHADERSOURCE_HPP
 
 #include "shadercompiler.hpp"
 
 namespace xengine {
-    class MANA_EXPORT ShaderSource {
+    class XENGINE_EXPORT ShaderSource {
     public:
         ShaderSource() = default;
 
@@ -64,4 +64,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_SHADERSOURCE_HPP
+#endif //XENGINE_SHADERSOURCE_HPP

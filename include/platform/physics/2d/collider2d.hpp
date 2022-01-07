@@ -17,15 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_COLLIDER_HPP
-#define MANA_COLLIDER_HPP
+#ifndef XENGINE_COLLIDER_HPP
+#define XENGINE_COLLIDER_HPP
 
 #include <vector>
 
 #include "math/vector2.hpp"
 
 namespace xengine {
-    class MANA_EXPORT Collider2D {
+    class XENGINE_EXPORT Collider2D {
     public:
         virtual void setShape(const std::vector<Vec2f> &vertices) = 0;
 
@@ -40,4 +40,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_COLLIDER_HPP
+#endif //XENGINE_COLLIDER_HPP

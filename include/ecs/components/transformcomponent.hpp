@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_TRANSFORMCOMPONENT_HPP
-#define MANA_TRANSFORMCOMPONENT_HPP
+#ifndef XENGINE_TRANSFORMCOMPONENT_HPP
+#define XENGINE_TRANSFORMCOMPONENT_HPP
 
 #include "math/transform.hpp"
 
@@ -29,7 +29,7 @@
 namespace xengine {
     struct Scene;
 
-    struct MANA_EXPORT TransformComponent {
+    struct XENGINE_EXPORT TransformComponent {
         static Transform walkHierarchy(const TransformComponent &component, EntityManager &entityManager);
 
         bool enabled = true;
@@ -38,4 +38,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_TRANSFORMCOMPONENT_HPP
+#endif //XENGINE_TRANSFORMCOMPONENT_HPP

@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_RENDERER2D_HPP
-#define MANA_RENDERER2D_HPP
+#ifndef XENGINE_RENDERER2D_HPP
+#define XENGINE_RENDERER2D_HPP
 
 #include <set>
 
@@ -55,7 +55,7 @@ namespace xengine {
      * Resources which are passed by the user (Texture buffers, shaders etc.) shall not be deallocated until
      * render finish is called.
      */
-    class MANA_EXPORT Renderer2D {
+    class XENGINE_EXPORT Renderer2D {
     public:
         explicit Renderer2D(RenderDevice &device);
 
@@ -133,4 +133,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_RENDERER2D_HPP
+#endif //XENGINE_RENDERER2D_HPP

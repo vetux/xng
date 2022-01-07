@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_MONOCPPOBJECT_HPP
-#define MANA_MONOCPPOBJECT_HPP
+#ifndef XENGINE_MONOCPPOBJECT_HPP
+#define XENGINE_MONOCPPOBJECT_HPP
 
 #include <string>
 
@@ -31,7 +31,7 @@ namespace xengine {
      *
      * It optionally keeps the object pointer pinned to prevent the mono gc from moving / deleting the contained object.
      */
-    class MANA_EXPORT MonoCppObject {
+    class XENGINE_EXPORT MonoCppObject {
     public:
         MonoCppObject();
 
@@ -86,4 +86,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_MONOCPPOBJECT_HPP
+#endif //XENGINE_MONOCPPOBJECT_HPP

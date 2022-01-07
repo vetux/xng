@@ -17,14 +17,14 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_RENDERTARGET_HPP
-#define MANA_RENDERTARGET_HPP
+#ifndef XENGINE_RENDERTARGET_HPP
+#define XENGINE_RENDERTARGET_HPP
 
 #include "renderobject.hpp"
 #include "texturebuffer.hpp"
 
 namespace xengine {
-    class MANA_EXPORT RenderTarget : public RenderObject {
+    class XENGINE_EXPORT RenderTarget : public RenderObject {
     public:
         ~RenderTarget() override = default;
 
@@ -83,4 +83,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_RENDERTARGET_HPP
+#endif //XENGINE_RENDERTARGET_HPP

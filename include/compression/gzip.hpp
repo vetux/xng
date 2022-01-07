@@ -17,26 +17,26 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_GZIP_HPP
-#define MANA_GZIP_HPP
+#ifndef XENGINE_GZIP_HPP
+#define XENGINE_GZIP_HPP
 
 #include <string>
 #include <vector>
 
 namespace xengine {
     namespace GZip {
-        MANA_EXPORT std::vector<char> compress(const char *data, size_t length);
+        XENGINE_EXPORT std::vector<char> compress(const char *data, size_t length);
 
-        MANA_EXPORT std::vector<char> decompress(const char *data, size_t length);
+        XENGINE_EXPORT std::vector<char> decompress(const char *data, size_t length);
 
-        MANA_EXPORT std::vector<char> compress(const std::vector<char> &data);
+        XENGINE_EXPORT std::vector<char> compress(const std::vector<char> &data);
 
-        MANA_EXPORT std::vector<char> decompress(const std::vector<char> &data);
+        XENGINE_EXPORT std::vector<char> decompress(const std::vector<char> &data);
 
-        MANA_EXPORT std::string compress(const std::string &data);
+        XENGINE_EXPORT std::string compress(const std::string &data);
 
-        MANA_EXPORT std::string decompress(const std::string &data);
+        XENGINE_EXPORT std::string decompress(const std::string &data);
     }
 }
 
-#endif //MANA_GZIP_HPP
+#endif //XENGINE_GZIP_HPP

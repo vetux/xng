@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_ASSETPATH_HPP
-#define MANA_ASSETPATH_HPP
+#ifndef XENGINE_ASSETPATH_HPP
+#define XENGINE_ASSETPATH_HPP
 
 #include <string>
 
@@ -26,7 +26,7 @@
 #include <utility>
 
 namespace xengine {
-    struct MANA_EXPORT AssetPath {
+    struct XENGINE_EXPORT AssetPath {
         AssetPath() = default;
 
         AssetPath(std::string bundle, std::string asset)
@@ -50,14 +50,14 @@ namespace xengine {
             return std::tie(bundle, asset) == std::tie(other.bundle, other.asset);
         }
 
-        struct MANA_EXPORT Hash {
+        struct XENGINE_EXPORT Hash {
             std::size_t operator()(const AssetPath &key) const {
                 return key.hash();
             }
         };
 
         template<int S>
-        struct MANA_EXPORT HashArray {
+        struct XENGINE_EXPORT HashArray {
             std::size_t operator()(const std::array<AssetPath, S> &value) const {
                 std::string hashStr;
                 for (auto &item: value)
@@ -68,4 +68,4 @@ namespace xengine {
         };
     };
 }
-#endif //MANA_ASSETPATH_HPP
+#endif //XENGINE_ASSETPATH_HPP

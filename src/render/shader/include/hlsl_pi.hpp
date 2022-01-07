@@ -17,11 +17,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_HLSL_PI_HPP
-#define MANA_HLSL_PI_HPP
+#ifndef XENGINE_HLSL_PI_HPP
+#define XENGINE_HLSL_PI_HPP
 
 static const char *HLSL_PI = R"###(
 float PI = 3.14159265358979323846;
 )###";
 
-#endif //MANA_HLSL_PI_HPP
+#endif //XENGINE_HLSL_PI_HPP

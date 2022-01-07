@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_WINDOW_HPP
-#define MANA_WINDOW_HPP
+#ifndef XENGINE_WINDOW_HPP
+#define XENGINE_WINDOW_HPP
 
 #include "platform/graphics/renderdevice.hpp"
 #include "platform/graphics/rendertarget.hpp"
@@ -34,7 +34,7 @@
 #include "math/vector2.hpp"
 
 namespace xengine {
-    class MANA_EXPORT Window {
+    class XENGINE_EXPORT Window {
     public:
         virtual ~Window() = default;
 
@@ -133,4 +133,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_WINDOW_HPP
+#endif //XENGINE_WINDOW_HPP

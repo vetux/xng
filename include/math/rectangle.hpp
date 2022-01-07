@@ -8,7 +8,7 @@ namespace xengine {
      * A axis aligned rectangle defining position and dimensions.
      * */
     template<typename T>
-    struct MANA_EXPORT Rectangle {
+    struct XENGINE_EXPORT Rectangle {
         Vector2<T> position; //Top left point of the rectangle
         Vector2<T> dimensions;
 

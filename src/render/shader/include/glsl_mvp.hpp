@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_GLSL_MVP_HPP
-#define MANA_GLSL_MVP_HPP
+#ifndef XENGINE_GLSL_MVP_HPP
+#define XENGINE_GLSL_MVP_HPP
 
 static const char *GLSL_MVP = R"###(
     mat4 MANA_M;
@@ -29,4 +29,4 @@ static const char *GLSL_MVP = R"###(
     mat4 MANA_VIEW_TRANSLATION;
 )###";
 
-#endif //MANA_GLSL_MVP_HPP
+#endif //XENGINE_GLSL_MVP_HPP

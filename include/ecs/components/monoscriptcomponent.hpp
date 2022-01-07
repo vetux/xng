@@ -17,13 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_MONOSCRIPTCOMPONENT_HPP
-#define MANA_MONOSCRIPTCOMPONENT_HPP
+#ifndef XENGINE_MONOSCRIPTCOMPONENT_HPP
+#define XENGINE_MONOSCRIPTCOMPONENT_HPP
 
 #include "platform/script/script.hpp"
 
 namespace xengine {
-    struct MANA_EXPORT MonoScriptComponent {
+    struct XENGINE_EXPORT MonoScriptComponent {
         std::string assembly;
         std::string nameSpace;
         std::string className;
@@ -32,4 +32,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_MONOSCRIPTCOMPONENT_HPP
+#endif //XENGINE_MONOSCRIPTCOMPONENT_HPP

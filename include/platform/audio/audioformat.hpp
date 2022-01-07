@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_AUDIOFORMAT_HPP
-#define MANA_AUDIOFORMAT_HPP
+#ifndef XENGINE_AUDIOFORMAT_HPP
+#define XENGINE_AUDIOFORMAT_HPP
 
 namespace xengine {
     enum AudioFormat {
@@ -31,4 +31,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_AUDIOFORMAT_HPP
+#endif //XENGINE_AUDIOFORMAT_HPP

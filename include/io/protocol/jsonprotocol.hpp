@@ -17,13 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_JSONPROTOCOL_HPP
-#define MANA_JSONPROTOCOL_HPP
+#ifndef XENGINE_JSONPROTOCOL_HPP
+#define XENGINE_JSONPROTOCOL_HPP
 
 #include "io/protocol.hpp"
 
 namespace xengine {
-    class MANA_EXPORT JsonProtocol : public Protocol {
+    class XENGINE_EXPORT JsonProtocol : public Protocol {
     public:
         void serialize(std::ostream &stream, const Message &message) override;
 
@@ -31,4 +31,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_JSONPROTOCOL_HPP
+#endif //XENGINE_JSONPROTOCOL_HPP

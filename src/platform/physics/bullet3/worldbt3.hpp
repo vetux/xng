@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_WORLDBT3_HPP
-#define MANA_WORLDBT3_HPP
+#ifndef XENGINE_WORLDBT3_HPP
+#define XENGINE_WORLDBT3_HPP
 
 
 #include "platform/physics/3d/world3d.hpp"
@@ -49,4 +49,4 @@ namespace xengine {
 }
 
 
-#endif //MANA_WORLDBT3_HPP
+#endif //XENGINE_WORLDBT3_HPP

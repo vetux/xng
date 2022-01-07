@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_RENDERCOMMAND_HPP
-#define MANA_RENDERCOMMAND_HPP
+#ifndef XENGINE_RENDERCOMMAND_HPP
+#define XENGINE_RENDERCOMMAND_HPP
 
 #include <vector>
 #include <memory>
@@ -83,7 +83,7 @@ namespace xengine {
         ONE_MINUS_CONSTANT_ALPHA
     };
 
-    struct MANA_EXPORT RenderProperties {
+    struct XENGINE_EXPORT RenderProperties {
         bool enableDepthTest = true;
         bool depthTestWrite = true;
         DepthTestMode depthTestMode = DepthTestMode::DEPTH_TEST_LESS;
@@ -106,7 +106,7 @@ namespace xengine {
         BlendMode blendDestinationMode = BlendMode::ONE_MINUS_SRC_ALPHA;
     };
 
-    struct MANA_EXPORT RenderCommand {
+    struct XENGINE_EXPORT RenderCommand {
         explicit RenderCommand(ShaderProgram &shader, MeshBuffer &mesh) : shader(shader), mesh(mesh) {}
 
         RenderCommand(const RenderCommand &other) = default;
@@ -122,4 +122,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_RENDERCOMMAND_HPP
+#endif //XENGINE_RENDERCOMMAND_HPP

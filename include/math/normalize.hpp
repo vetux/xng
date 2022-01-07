@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_NORMALIZE_HPP
-#define MANA_NORMALIZE_HPP
+#ifndef XENGINE_NORMALIZE_HPP
+#define XENGINE_NORMALIZE_HPP
 
 #include "math/vector2.hpp"
 #include "math/vector3.hpp"
@@ -51,4 +51,4 @@ namespace xengine {
         return {normalize(value.x), normalize(value.y), normalize(value.z), normalize(value.w)};
     }
 }
-#endif //MANA_NORMALIZE_HPP
+#endif //XENGINE_NORMALIZE_HPP

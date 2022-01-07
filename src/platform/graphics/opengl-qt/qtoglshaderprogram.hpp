@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_QTOGLSHADERPROGRAM_HPP
-#define MANA_QTOGLSHADERPROGRAM_HPP
+#ifndef XENGINE_QTOGLSHADERPROGRAM_HPP
+#define XENGINE_QTOGLSHADERPROGRAM_HPP
 
 #include <string>
 #include <map>
@@ -130,4 +130,4 @@ namespace xengine {
     }
 }
 
-#endif //MANA_QTOGLSHADERPROGRAM_HPP
+#endif //XENGINE_QTOGLSHADERPROGRAM_HPP

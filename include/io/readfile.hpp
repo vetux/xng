@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_READFILE_HPP
-#define MANA_READFILE_HPP
+#ifndef XENGINE_READFILE_HPP
+#define XENGINE_READFILE_HPP
 
 #include <cstdio>
 
@@ -52,4 +52,4 @@ namespace xengine {
 
 }
 
-#endif //MANA_READFILE_HPP
+#endif //XENGINE_READFILE_HPP

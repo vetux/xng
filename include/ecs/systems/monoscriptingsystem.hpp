@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_SCRIPTINGSYSTEM_H
-#define MANA_SCRIPTINGSYSTEM_H
+#ifndef XENGINE_SCRIPTINGSYSTEM_H
+#define XENGINE_SCRIPTINGSYSTEM_H
 
 #include "ecs/system.hpp"
 
@@ -29,7 +29,7 @@
 #include "io/archive.hpp"
 
 namespace xengine {
-    class MANA_EXPORT MonoScriptingSystem : public System, InputListener {
+    class XENGINE_EXPORT MonoScriptingSystem : public System, InputListener {
     public:
         MonoScriptingSystem(Input &input,
                             MonoCppDomain &domain,
@@ -57,4 +57,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_SCRIPTINGSYSTEM_H
+#endif //XENGINE_SCRIPTINGSYSTEM_H

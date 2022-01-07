@@ -17,15 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_SKYBOXCOMPONENT_HPP
-#define MANA_SKYBOXCOMPONENT_HPP
+#ifndef XENGINE_SKYBOXCOMPONENT_HPP
+#define XENGINE_SKYBOXCOMPONENT_HPP
 
 #include <string>
 
 #include "asset/skybox.hpp"
 
 namespace xengine {
-    struct MANA_EXPORT SkyboxComponent {
+    struct XENGINE_EXPORT SkyboxComponent {
         Skybox skybox;
 
         bool operator==(const SkyboxComponent &other) const {
@@ -33,4 +33,4 @@ namespace xengine {
         }
     };
 }
-#endif //MANA_SKYBOXCOMPONENT_HPP
+#endif //XENGINE_SKYBOXCOMPONENT_HPP

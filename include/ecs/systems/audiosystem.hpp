@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_AUDIOSYSTEM_HPP
-#define MANA_AUDIOSYSTEM_HPP
+#ifndef XENGINE_AUDIOSYSTEM_HPP
+#define XENGINE_AUDIOSYSTEM_HPP
 
 
 #include "ecs/system.hpp"
@@ -30,7 +30,7 @@
 #include "platform/audio/audiodevice.hpp"
 
 namespace xengine {
-    class MANA_EXPORT AudioSystem : public System, ComponentPool<AudioSourceComponent>::Listener {
+    class XENGINE_EXPORT AudioSystem : public System, ComponentPool<AudioSourceComponent>::Listener {
     public:
         explicit AudioSystem(AudioDevice &device, AssetManager &assetManager);
 
@@ -61,4 +61,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_AUDIOSYSTEM_HPP
+#endif //XENGINE_AUDIOSYSTEM_HPP

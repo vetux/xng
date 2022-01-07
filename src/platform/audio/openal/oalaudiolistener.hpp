@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_OALAUDIOLISTENER_HPP
-#define MANA_OALAUDIOLISTENER_HPP
+#ifndef XENGINE_OALAUDIOLISTENER_HPP
+#define XENGINE_OALAUDIOLISTENER_HPP
 
 #include "platform/audio/audiolistener.hpp"
 #include "platform/audio/audiocontext.hpp"
@@ -48,4 +48,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_OALAUDIOLISTENER_HPP
+#endif //XENGINE_OALAUDIOLISTENER_HPP

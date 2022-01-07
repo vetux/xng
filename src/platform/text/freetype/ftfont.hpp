@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_FTFONT_HPP
-#define MANA_FTFONT_HPP
+#ifndef XENGINE_FTFONT_HPP
+#define XENGINE_FTFONT_HPP
 
 #include <ft2build.h>
 
@@ -45,4 +45,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_FTFONT_HPP
+#endif //XENGINE_FTFONT_HPP

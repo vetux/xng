@@ -17,11 +17,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_ENTITY_HPP
-#define MANA_ENTITY_HPP
+#ifndef XENGINE_ENTITY_HPP
+#define XENGINE_ENTITY_HPP
 
 namespace xengine {
-    struct MANA_EXPORT Entity {
+    struct XENGINE_EXPORT Entity {
         static const int INVALID_ID = -1;
 
         int id;
@@ -35,4 +35,4 @@ namespace xengine {
         }
     };
 }
-#endif //MANA_ENTITY_HPP
+#endif //XENGINE_ENTITY_HPP

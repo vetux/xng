@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_HLSL_PHONG_SHADING_HPP
-#define MANA_HLSL_PHONG_SHADING_HPP
+#ifndef XENGINE_HLSL_PHONG_SHADING_HPP
+#define XENGINE_HLSL_PHONG_SHADING_HPP
 
 static const char *HLSL_PHONG_SHADING = R"###(
 struct DirectionalLight {
@@ -187,4 +187,4 @@ LightComponents mana_calculate_light(float3 fPos, float3 fNorm, float4 fDiffuse,
 }
 )###";
 
-#endif //MANA_HLSL_PHONG_SHADING_HPP
+#endif //XENGINE_HLSL_PHONG_SHADING_HPP

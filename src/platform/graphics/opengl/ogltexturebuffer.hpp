@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_OGLTEXTUREBUFFER_HPP
-#define MANA_OGLTEXTUREBUFFER_HPP
+#ifndef XENGINE_OGLTEXTUREBUFFER_HPP
+#define XENGINE_OGLTEXTUREBUFFER_HPP
 
 #include "platform/graphics/texturebuffer.hpp"
 
@@ -66,4 +66,4 @@ namespace xengine {
     }
 }
 
-#endif //MANA_OGLTEXTUREBUFFER_HPP
+#endif //XENGINE_OGLTEXTUREBUFFER_HPP

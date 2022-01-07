@@ -17,14 +17,14 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_JOINT_HPP
-#define MANA_JOINT_HPP
+#ifndef XENGINE_JOINT_HPP
+#define XENGINE_JOINT_HPP
 
 #include "math/vector2.hpp"
 #include "math/vector3.hpp"
 
 namespace xengine {
-    class MANA_EXPORT Joint2D {
+    class XENGINE_EXPORT Joint2D {
     public:
         //TODO: Define physics joints api
     protected:
@@ -32,4 +32,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_JOINT_HPP
+#endif //XENGINE_JOINT_HPP

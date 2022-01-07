@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_RIGIDBODYBOX2D_HPP
-#define MANA_RIGIDBODYBOX2D_HPP
+#ifndef XENGINE_RIGIDBODYBOX2D_HPP
+#define XENGINE_RIGIDBODYBOX2D_HPP
 
 #include "platform/physics/2d/rigidbody2d.hpp"
 
@@ -66,4 +66,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_RIGIDBODYBOX2D_HPP
+#endif //XENGINE_RIGIDBODYBOX2D_HPP

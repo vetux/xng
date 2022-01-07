@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_PREPASS_HPP
-#define MANA_PREPASS_HPP
+#ifndef XENGINE_PREPASS_HPP
+#define XENGINE_PREPASS_HPP
 
 #include "render/deferred/renderpass.hpp"
 
@@ -28,7 +28,7 @@ namespace xengine {
      *
      * It executes a drawCall for each deferred command in the scene and stores the data in textures.
      */
-    class MANA_EXPORT PrePass : public RenderPass {
+    class XENGINE_EXPORT PrePass : public RenderPass {
     public:
         static const char *DEPTH;
 
@@ -61,4 +61,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_PREPASS_HPP
+#endif //XENGINE_PREPASS_HPP

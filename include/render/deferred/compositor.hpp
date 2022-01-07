@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_COMPOSITOR_HPP
-#define MANA_COMPOSITOR_HPP
+#ifndef XENGINE_COMPOSITOR_HPP
+#define XENGINE_COMPOSITOR_HPP
 
 #include "geometrybuffer.hpp"
 
@@ -28,9 +28,9 @@ namespace xengine {
     /**
      * The compositor creates the final image on the screen by combining textures from the geometry buffer.
      */
-    class MANA_EXPORT Compositor {
+    class XENGINE_EXPORT Compositor {
     public:
-        struct MANA_EXPORT Layer {
+        struct XENGINE_EXPORT Layer {
             Layer() = default;
 
             Layer(std::string name,
@@ -88,4 +88,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_COMPOSITOR_HPP
+#endif //XENGINE_COMPOSITOR_HPP

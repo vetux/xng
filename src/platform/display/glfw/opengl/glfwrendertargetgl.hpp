@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_GLFWRENDERTARGETGL_HPP
-#define MANA_GLFWRENDERTARGETGL_HPP
+#ifndef XENGINE_GLFWRENDERTARGETGL_HPP
+#define XENGINE_GLFWRENDERTARGETGL_HPP
 
 #include "platform/graphics/opengl/oglrendertarget.hpp"
 
@@ -42,4 +42,4 @@ namespace xengine {
     }
 }
 
-#endif //MANA_GLFWRENDERTARGETGL_HPP
+#endif //XENGINE_GLFWRENDERTARGETGL_HPP

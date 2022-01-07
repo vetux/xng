@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_QTOGLRENDERDEVICE_HPP
-#define MANA_QTOGLRENDERDEVICE_HPP
+#ifndef XENGINE_QTOGLRENDERDEVICE_HPP
+#define XENGINE_QTOGLRENDERDEVICE_HPP
 
 #include "platform/graphics/renderdevice.hpp"
 
@@ -54,4 +54,4 @@ namespace xengine {
     }
 }
 
-#endif //MANA_QTOGLRENDERDEVICE_HPP
+#endif //XENGINE_QTOGLRENDERDEVICE_HPP

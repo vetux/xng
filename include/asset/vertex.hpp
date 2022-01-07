@@ -17,13 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_VERTEX_HPP
-#define MANA_VERTEX_HPP
+#ifndef XENGINE_VERTEX_HPP
+#define XENGINE_VERTEX_HPP
 
 #include "math/vector3.hpp"
 
 namespace xengine {
-    struct MANA_EXPORT Vertex {
+    struct XENGINE_EXPORT Vertex {
         float data[14];
 
         Vertex(Vec3f position, Vec3f normal, Vec2f uv, Vec3f tangent, Vec3f bitangent) : data() {
@@ -71,4 +71,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_VERTEX_HPP
+#endif //XENGINE_VERTEX_HPP

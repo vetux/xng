@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_COLLIDERBOX2D_HPP
-#define MANA_COLLIDERBOX2D_HPP
+#ifndef XENGINE_COLLIDERBOX2D_HPP
+#define XENGINE_COLLIDERBOX2D_HPP
 
 #include "box2d.hpp"
 
@@ -43,4 +43,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_COLLIDERBOX2D_HPP
+#endif //XENGINE_COLLIDERBOX2D_HPP

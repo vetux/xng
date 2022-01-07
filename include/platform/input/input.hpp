@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_INPUT_HPP
-#define MANA_INPUT_HPP
+#ifndef XENGINE_INPUT_HPP
+#define XENGINE_INPUT_HPP
 
 #include <set>
 
@@ -27,7 +27,7 @@
 #include "asset/image.hpp"
 
 namespace xengine {
-    class MANA_EXPORT Input {
+    class XENGINE_EXPORT Input {
     public:
         virtual ~Input() = default;
 
@@ -51,4 +51,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_INPUT_HPP
+#endif //XENGINE_INPUT_HPP

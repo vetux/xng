@@ -17,15 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_AUDIO_HPP
-#define MANA_AUDIO_HPP
+#ifndef XENGINE_AUDIO_HPP
+#define XENGINE_AUDIO_HPP
 
 #include "platform/audio/audioformat.hpp"
 
 #include "asset/asset.hpp"
 
 namespace xengine {
-    class MANA_EXPORT Audio : public AssetBase {
+    class XENGINE_EXPORT Audio : public AssetBase {
     public:
         ~Audio() override = default;
 
@@ -39,4 +39,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_AUDIO_HPP
+#endif //XENGINE_AUDIO_HPP

@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_JOINTBOX2D_HPP
-#define MANA_JOINTBOX2D_HPP
+#ifndef XENGINE_JOINTBOX2D_HPP
+#define XENGINE_JOINTBOX2D_HPP
 
 #include <Box2D/Dynamics/b2Body.h>
 
@@ -33,4 +33,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_JOINTBOX2D_HPP
+#endif //XENGINE_JOINTBOX2D_HPP

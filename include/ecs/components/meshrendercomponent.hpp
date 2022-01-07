@@ -17,14 +17,14 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_MESHRENDERCOMPONENT_HPP
-#define MANA_MESHRENDERCOMPONENT_HPP
+#ifndef XENGINE_MESHRENDERCOMPONENT_HPP
+#define XENGINE_MESHRENDERCOMPONENT_HPP
 
 #include "asset/image.hpp"
 #include "asset/assetpath.hpp"
 
 namespace xengine {
-    struct MANA_EXPORT MeshRenderComponent {
+    struct XENGINE_EXPORT MeshRenderComponent {
         bool enabled = true;
 
         bool castShadows{};
@@ -42,4 +42,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_MESHRENDERCOMPONENT_HPP
+#endif //XENGINE_MESHRENDERCOMPONENT_HPP

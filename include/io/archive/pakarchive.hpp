@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_PAKARCHIVE_HPP
-#define MANA_PAKARCHIVE_HPP
+#ifndef XENGINE_PAKARCHIVE_HPP
+#define XENGINE_PAKARCHIVE_HPP
 
 #include <fstream>
 #include <vector>
@@ -27,10 +27,10 @@
 #include "io/archive.hpp"
 #include "io/pak.hpp"
 
-class MANA_EXPORT AssetPack;
+class XENGINE_EXPORT AssetPack;
 
 namespace xengine {
-    class MANA_EXPORT PakArchive : public Archive {
+    class XENGINE_EXPORT PakArchive : public Archive {
     public:
         PakArchive() = default;
 
@@ -52,4 +52,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_PAKARCHIVE_HPP
+#endif //XENGINE_PAKARCHIVE_HPP

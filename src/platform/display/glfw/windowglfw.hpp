@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_WINDOWGLFW_HPP
-#define MANA_WINDOWGLFW_HPP
+#ifndef XENGINE_WINDOWGLFW_HPP
+#define XENGINE_WINDOWGLFW_HPP
 
 #include <set>
 
@@ -158,4 +158,4 @@ namespace xengine {
     }
 }
 
-#endif //MANA_WINDOWGLFW_HPP
+#endif //XENGINE_WINDOWGLFW_HPP

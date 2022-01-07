@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_ECSSCHEMA_HPP
-#define MANA_ECSSCHEMA_HPP
+#ifndef XENGINE_ECSSCHEMA_HPP
+#define XENGINE_ECSSCHEMA_HPP
 
 #include "io/message.hpp"
 
@@ -30,57 +30,57 @@
 
 namespace xengine {
     //TODO: Design better schema generation method
-    MANA_EXPORT CameraType &operator<<(CameraType &value, const Message &message);
+    XENGINE_EXPORT CameraType &operator<<(CameraType &value, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, CameraType type);
+    XENGINE_EXPORT Message &operator<<(Message &message, CameraType type);
 
-    MANA_EXPORT LightType &operator<<(LightType &value, const Message &message);
+    XENGINE_EXPORT LightType &operator<<(LightType &value, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, LightType type);
+    XENGINE_EXPORT Message &operator<<(Message &message, LightType type);
 
-    MANA_EXPORT AssetPath &operator<<(AssetPath &value, const Message &message);
+    XENGINE_EXPORT AssetPath &operator<<(AssetPath &value, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, const AssetPath &path);
+    XENGINE_EXPORT Message &operator<<(Message &message, const AssetPath &path);
 
-    MANA_EXPORT CameraComponent &operator<<(CameraComponent &component, const Message &message);
+    XENGINE_EXPORT CameraComponent &operator<<(CameraComponent &component, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, const CameraComponent &component);
+    XENGINE_EXPORT Message &operator<<(Message &message, const CameraComponent &component);
 
-    MANA_EXPORT TransformComponent &operator<<(TransformComponent &component, const Message &message);
+    XENGINE_EXPORT TransformComponent &operator<<(TransformComponent &component, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, const TransformComponent &component);
+    XENGINE_EXPORT Message &operator<<(Message &message, const TransformComponent &component);
 
-    MANA_EXPORT MeshRenderComponent &operator<<(MeshRenderComponent &component, const Message &message);
+    XENGINE_EXPORT MeshRenderComponent &operator<<(MeshRenderComponent &component, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, const MeshRenderComponent &component);
+    XENGINE_EXPORT Message &operator<<(Message &message, const MeshRenderComponent &component);
 
-    MANA_EXPORT SkyboxComponent &operator<<(SkyboxComponent &component, const Message &message);
+    XENGINE_EXPORT SkyboxComponent &operator<<(SkyboxComponent &component, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, const SkyboxComponent &component);
+    XENGINE_EXPORT Message &operator<<(Message &message, const SkyboxComponent &component);
 
-    MANA_EXPORT LightComponent &operator<<(LightComponent &component, const Message &message);
+    XENGINE_EXPORT LightComponent &operator<<(LightComponent &component, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, const LightComponent &component);
+    XENGINE_EXPORT Message &operator<<(Message &message, const LightComponent &component);
 
-    MANA_EXPORT MonoScriptComponent &operator<<(MonoScriptComponent &component, const Message &message);
+    XENGINE_EXPORT MonoScriptComponent &operator<<(MonoScriptComponent &component, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, const MonoScriptComponent &component);
+    XENGINE_EXPORT Message &operator<<(Message &message, const MonoScriptComponent &component);
 
-    MANA_EXPORT MonoSyncComponent &operator<<(MonoSyncComponent &component, const Message &message);
+    XENGINE_EXPORT MonoSyncComponent &operator<<(MonoSyncComponent &component, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, const MonoSyncComponent &component);
+    XENGINE_EXPORT Message &operator<<(Message &message, const MonoSyncComponent &component);
 
-    MANA_EXPORT AudioSourceComponent &operator<<(AudioSourceComponent &component, const Message &message);
+    XENGINE_EXPORT AudioSourceComponent &operator<<(AudioSourceComponent &component, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, const AudioSourceComponent &component);
+    XENGINE_EXPORT Message &operator<<(Message &message, const AudioSourceComponent &component);
 
-    MANA_EXPORT AudioListenerComponent &operator<<(AudioListenerComponent &component, const Message &message);
+    XENGINE_EXPORT AudioListenerComponent &operator<<(AudioListenerComponent &component, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, const AudioListenerComponent &component);
+    XENGINE_EXPORT Message &operator<<(Message &message, const AudioListenerComponent &component);
 
-    MANA_EXPORT EntityManager &operator<<(EntityManager &manager, const Message &message);
+    XENGINE_EXPORT EntityManager &operator<<(EntityManager &manager, const Message &message);
 
-    MANA_EXPORT Message &operator<<(Message &message, EntityManager &manager);
+    XENGINE_EXPORT Message &operator<<(Message &message, EntityManager &manager);
 }
 
-#endif //MANA_ECSSCHEMA_HPP
+#endif //XENGINE_ECSSCHEMA_HPP

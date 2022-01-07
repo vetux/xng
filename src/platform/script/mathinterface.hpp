@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_MATHINTERFACE_HPP
-#define MANA_MATHINTERFACE_HPP
+#ifndef XENGINE_MATHINTERFACE_HPP
+#define XENGINE_MATHINTERFACE_HPP
 
 namespace xengine {
     namespace MathInterface {
@@ -53,4 +53,4 @@ namespace xengine {
     }
 }
 
-#endif //MANA_MATHINTERFACE_HPP
+#endif //XENGINE_MATHINTERFACE_HPP

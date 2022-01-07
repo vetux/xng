@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_BOX2D_HPP
-#define MANA_BOX2D_HPP
+#ifndef XENGINE_BOX2D_HPP
+#define XENGINE_BOX2D_HPP
 
 #if BOX2D_VERSION >= 240 || BOX2D_VERSION == 0
 #include <box2d/box2d.hpp>
@@ -26,4 +26,4 @@
 #include <Box2D/Box2D.h>
 #endif
 
-#endif //MANA_BOX2D_HPP
+#endif //XENGINE_BOX2D_HPP

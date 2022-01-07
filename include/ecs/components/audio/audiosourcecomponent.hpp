@@ -17,14 +17,14 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_AUDIOSOURCECOMPONENT_HPP
-#define MANA_AUDIOSOURCECOMPONENT_HPP
+#ifndef XENGINE_AUDIOSOURCECOMPONENT_HPP
+#define XENGINE_AUDIOSOURCECOMPONENT_HPP
 
 #include "asset/audio.hpp"
 #include "asset/assethandle.hpp"
 
 namespace xengine {
-    struct MANA_EXPORT AudioSourceComponent {
+    struct XENGINE_EXPORT AudioSourceComponent {
         AssetPath audioPath;
         bool play = false;
         bool loop = false;
@@ -34,4 +34,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_AUDIOSOURCECOMPONENT_HPP
+#endif //XENGINE_AUDIOSOURCECOMPONENT_HPP

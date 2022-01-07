@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_RENDERALLOCATOR_HPP
-#define MANA_RENDERALLOCATOR_HPP
+#ifndef XENGINE_RENDERALLOCATOR_HPP
+#define XENGINE_RENDERALLOCATOR_HPP
 
 #include <memory>
 
@@ -31,7 +31,7 @@
 #include "asset/mesh.hpp"
 
 namespace xengine {
-    class MANA_EXPORT RenderAllocator {
+    class XENGINE_EXPORT RenderAllocator {
     public:
         virtual std::unique_ptr<RenderTarget> createRenderTarget(Vec2i size, int samples) = 0;
 
@@ -54,7 +54,7 @@ namespace xengine {
          *  layout (location = 8) in vec4 instanceRow3;
          *
          * HLSL:
-         *  struct MANA_EXPORT VS_INPUT
+         *  struct XENGINE_EXPORT VS_INPUT
          *  {
          *      float3 position : POSITION0;
          *      float3 normal : NORMAL;
@@ -75,7 +75,7 @@ namespace xengine {
         virtual std::unique_ptr<MeshBuffer> createInstancedMeshBuffer(const Mesh &mesh,
                                                                       const std::vector<Transform> &offsets) = 0;
 
-        struct MANA_EXPORT CustomMeshDefinition {
+        struct XENGINE_EXPORT CustomMeshDefinition {
             enum AttributeType {
                 UNSIGNED_BYTE, // 1 Byte unsigned
                 SIGNED_BYTE, // 1 Byte signed
@@ -133,4 +133,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_RENDERALLOCATOR_HPP
+#endif //XENGINE_RENDERALLOCATOR_HPP

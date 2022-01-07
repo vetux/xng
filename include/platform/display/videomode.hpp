@@ -17,11 +17,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_MONITORMODE_HPP
-#define MANA_MONITORMODE_HPP
+#ifndef XENGINE_MONITORMODE_HPP
+#define XENGINE_MONITORMODE_HPP
 
 namespace xengine {
-    struct MANA_EXPORT VideoMode {
+    struct XENGINE_EXPORT VideoMode {
         int width;
         int height;
         int redBits;
@@ -31,4 +31,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_MONITORMODE_HPP
+#endif //XENGINE_MONITORMODE_HPP

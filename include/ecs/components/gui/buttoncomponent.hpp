@@ -17,12 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_BUTTONCOMPONENT_HPP
-#define MANA_BUTTONCOMPONENT_HPP
+#ifndef XENGINE_BUTTONCOMPONENT_HPP
+#define XENGINE_BUTTONCOMPONENT_HPP
 
 namespace xengine {
-    struct MANA_EXPORT ButtonComponent {
+    struct XENGINE_EXPORT ButtonComponent {
     };
 }
 
-#endif //MANA_BUTTONCOMPONENT_HPP
+#endif //XENGINE_BUTTONCOMPONENT_HPP

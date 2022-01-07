@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_INPUTLISTENER_HPP
-#define MANA_INPUTLISTENER_HPP
+#ifndef XENGINE_INPUTLISTENER_HPP
+#define XENGINE_INPUTLISTENER_HPP
 
 #include <string>
 
@@ -27,7 +27,7 @@
 #include "device/mouse.hpp"
 
 namespace xengine {
-    class MANA_EXPORT MANA_EXPORT InputListener {
+    class XENGINE_EXPORT XENGINE_EXPORT InputListener {
     public:
         virtual void onKeyDown(KeyboardKey key) {};
 
@@ -62,4 +62,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_INPUTLISTENER_HPP
+#endif //XENGINE_INPUTLISTENER_HPP

@@ -17,14 +17,14 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_MONOSCRIPT_HPP
-#define MANA_MONOSCRIPT_HPP
+#ifndef XENGINE_MONOSCRIPT_HPP
+#define XENGINE_MONOSCRIPT_HPP
 
 #include "platform/script/script.hpp"
 #include "monocppdomain.hpp"
 
 namespace xengine {
-    class MANA_EXPORT MonoScript : public Script {
+    class XENGINE_EXPORT MonoScript : public Script {
     public:
         MonoScript();
 
@@ -46,4 +46,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_MONOSCRIPT_HPP
+#endif //XENGINE_MONOSCRIPT_HPP

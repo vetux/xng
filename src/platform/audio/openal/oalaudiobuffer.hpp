@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_OALAUDIOBUFFER_HPP
-#define MANA_OALAUDIOBUFFER_HPP
+#ifndef XENGINE_OALAUDIOBUFFER_HPP
+#define XENGINE_OALAUDIOBUFFER_HPP
 
 #include "openal.hpp"
 
@@ -37,4 +37,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_OALAUDIOBUFFER_HPP
+#endif //XENGINE_OALAUDIOBUFFER_HPP

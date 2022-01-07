@@ -17,13 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_QUATERNION_HPP
-#define MANA_QUATERNION_HPP
+#ifndef XENGINE_QUATERNION_HPP
+#define XENGINE_QUATERNION_HPP
 
 #include "math/matrix.hpp"
 
 namespace xengine {
-    class MANA_EXPORT Quaternion {
+    class XENGINE_EXPORT Quaternion {
     public:
         float w, x, y, z;
 
@@ -65,4 +65,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_QUATERNION_HPP
+#endif //XENGINE_QUATERNION_HPP

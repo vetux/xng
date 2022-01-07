@@ -17,15 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_EVENTRECEIVER_HPP
-#define MANA_EVENTRECEIVER_HPP
+#ifndef XENGINE_EVENTRECEIVER_HPP
+#define XENGINE_EVENTRECEIVER_HPP
 
 namespace xengine {
-    class MANA_EXPORT EventReceiverBase {
+    class XENGINE_EXPORT EventReceiverBase {
     };
 
     template<typename T>
-    class MANA_EXPORT EventReceiver : public EventReceiverBase {
+    class XENGINE_EXPORT EventReceiver : public EventReceiverBase {
     public:
         /**
          * @param event
@@ -34,4 +34,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_EVENTRECEIVER_HPP
+#endif //XENGINE_EVENTRECEIVER_HPP

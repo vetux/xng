@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_LIBRARYWIN32_HPP
-#define MANA_LIBRARYWIN32_HPP
+#ifndef XENGINE_LIBRARYWIN32_HPP
+#define XENGINE_LIBRARYWIN32_HPP
 
 #include "platform/dl/library.hpp"
 
@@ -48,4 +48,4 @@ namespace xengine {
     typedef LibraryWin32 LibraryOS;
 }
 
-#endif //MANA_LIBRARYWIN32_HPP
+#endif //XENGINE_LIBRARYWIN32_HPP

@@ -17,13 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_LIBRARY_HPP
-#define MANA_LIBRARY_HPP
+#ifndef XENGINE_LIBRARY_HPP
+#define XENGINE_LIBRARY_HPP
 
 #include <memory>
 
 namespace xengine {
-    class MANA_EXPORT Library {
+    class XENGINE_EXPORT Library {
     public:
         /**
          * Load a shared library by path.
@@ -61,4 +61,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_LIBRARY_HPP
+#endif //XENGINE_LIBRARY_HPP

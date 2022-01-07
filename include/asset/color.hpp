@@ -17,13 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_COLOR_HPP
-#define MANA_COLOR_HPP
+#ifndef XENGINE_COLOR_HPP
+#define XENGINE_COLOR_HPP
 
 #include <cstdint>
 
 namespace xengine {
-    struct MANA_EXPORT ColorRGB {
+    struct XENGINE_EXPORT ColorRGB {
         uint8_t data[3];
 
         uint8_t &r() { return data[0]; }
@@ -55,7 +55,7 @@ namespace xengine {
         }
     };
 
-    struct MANA_EXPORT ColorRGBA {
+    struct XENGINE_EXPORT ColorRGBA {
         uint8_t data[4];
 
         uint8_t &r() { return data[0]; }
@@ -105,4 +105,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_COLOR_HPP
+#endif //XENGINE_COLOR_HPP

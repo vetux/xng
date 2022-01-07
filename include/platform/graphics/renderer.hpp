@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_RENDERER_HPP
-#define MANA_RENDERER_HPP
+#ifndef XENGINE_RENDERER_HPP
+#define XENGINE_RENDERER_HPP
 
 #include "asset/image.hpp"
 #include "rendercommand.hpp"
@@ -28,7 +28,7 @@
 #include "graphicsbackend.hpp"
 
 namespace xengine {
-    struct MANA_EXPORT RenderOptions {
+    struct XENGINE_EXPORT RenderOptions {
         explicit RenderOptions(Vec2i viewportOffset,
                                Vec2i viewportSize,
                                bool multiSample = true,
@@ -55,7 +55,7 @@ namespace xengine {
         bool clearStencil;
     };
 
-    class MANA_EXPORT Renderer {
+    class XENGINE_EXPORT Renderer {
     public:
         virtual ~Renderer() = default;
 
@@ -73,4 +73,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_RENDERER_HPP
+#endif //XENGINE_RENDERER_HPP

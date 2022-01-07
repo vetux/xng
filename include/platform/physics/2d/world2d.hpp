@@ -17,14 +17,14 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_WORLD_HPP
-#define MANA_WORLD_HPP
+#ifndef XENGINE_WORLD_HPP
+#define XENGINE_WORLD_HPP
 
 #include "rigidbody2d.hpp"
 #include "joint2d.hpp"
 
 namespace xengine {
-    class MANA_EXPORT World2D {
+    class XENGINE_EXPORT World2D {
     public:
         enum Backend {
             BOX2D
@@ -32,14 +32,14 @@ namespace xengine {
 
         static std::unique_ptr<World2D> create(Backend backend);
 
-        struct MANA_EXPORT Contact {
+        struct XENGINE_EXPORT Contact {
             Collider2D *colliderA;
             Collider2D *colliderB;
 
             std::vector<Vec2f> points;
         };
 
-        class MANA_EXPORT ContactListener {
+        class XENGINE_EXPORT ContactListener {
         public:
             virtual ~ContactListener() = default;
 
@@ -72,4 +72,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_WORLD_HPP
+#endif //XENGINE_WORLD_HPP

@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_KEYBOARD_HPP
-#define MANA_KEYBOARD_HPP
+#ifndef XENGINE_KEYBOARD_HPP
+#define XENGINE_KEYBOARD_HPP
 
 namespace xengine {
     enum KeyboardKey {
@@ -123,7 +123,7 @@ namespace xengine {
         KEY_UNDEFINED
     };
 
-    class MANA_EXPORT Keyboard {
+    class XENGINE_EXPORT Keyboard {
     public:
         bool getKey(KeyboardKey key) const {
             return keysDown.find(key) != keysDown.end();
@@ -133,4 +133,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_KEYBOARD_HPP
+#endif //XENGINE_KEYBOARD_HPP

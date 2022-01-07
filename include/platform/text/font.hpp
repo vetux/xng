@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_FONT_HPP
-#define MANA_FONT_HPP
+#ifndef XENGINE_FONT_HPP
+#define XENGINE_FONT_HPP
 
 #include <istream>
 #include <memory>
@@ -29,7 +29,7 @@
 
 //TODO: Design text metrics / formatting abstraction
 namespace xengine {
-    class MANA_EXPORT Font {
+    class XENGINE_EXPORT Font {
     public:
         /**
          * Load the font from the stream.
@@ -70,4 +70,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_FONT_HPP
+#endif //XENGINE_FONT_HPP

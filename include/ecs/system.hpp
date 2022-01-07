@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_SYSTEM_HPP
-#define MANA_SYSTEM_HPP
+#ifndef XENGINE_SYSTEM_HPP
+#define XENGINE_SYSTEM_HPP
 
 #include "ecs/entitymanager.hpp"
 
@@ -26,7 +26,7 @@ namespace xengine {
     /**
      * Systems provide logic.
      */
-    class MANA_EXPORT System {
+    class XENGINE_EXPORT System {
     public:
         virtual ~System() = default;
 
@@ -37,4 +37,4 @@ namespace xengine {
         virtual void update(float deltaTime, EntityManager &entityManager) {};
     };
 }
-#endif //MANA_SYSTEM_HPP
+#endif //XENGINE_SYSTEM_HPP

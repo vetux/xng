@@ -17,17 +17,17 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_LIGHTCOMPONENT_HPP
-#define MANA_LIGHTCOMPONENT_HPP
+#ifndef XENGINE_LIGHTCOMPONENT_HPP
+#define XENGINE_LIGHTCOMPONENT_HPP
 
 #include "asset/light.hpp"
 
 namespace xengine {
-    struct MANA_EXPORT LightComponent {
+    struct XENGINE_EXPORT LightComponent {
         bool enabled = true;
 
         Light light;
     };
 }
 
-#endif //MANA_LIGHTCOMPONENT_HPP
+#endif //XENGINE_LIGHTCOMPONENT_HPP

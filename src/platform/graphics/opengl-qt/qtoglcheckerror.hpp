@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_QtOGLCHECKERROR_HPP
-#define MANA_QtOGLCHECKERROR_HPP
+#ifndef XENGINE_QtOGLCHECKERROR_HPP
+#define XENGINE_QtOGLCHECKERROR_HPP
 
 #include <string>
 
@@ -35,4 +35,4 @@ static void checkGLError(const std::string &source = "") {
     }
 }
 
-#endif //MANA_QtOGLCHECKERROR_HPP
+#endif //XENGINE_QtOGLCHECKERROR_HPP

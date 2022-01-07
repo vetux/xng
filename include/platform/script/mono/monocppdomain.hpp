@@ -17,15 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_MONOCPPDOMAIN_HPP
-#define MANA_MONOCPPDOMAIN_HPP
+#ifndef XENGINE_MONOCPPDOMAIN_HPP
+#define XENGINE_MONOCPPDOMAIN_HPP
 
 #include <memory>
 
 #include "monocppassembly.hpp"
 
 namespace xengine {
-    class MANA_EXPORT MonoCppDomain {
+    class XENGINE_EXPORT MonoCppDomain {
     public:
         MonoCppDomain();
 
@@ -61,4 +61,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_MONOCPPDOMAIN_HPP
+#endif //XENGINE_MONOCPPDOMAIN_HPP

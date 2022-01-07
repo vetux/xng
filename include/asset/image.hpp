@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_IMAGE_HPP
-#define MANA_IMAGE_HPP
+#ifndef XENGINE_IMAGE_HPP
+#define XENGINE_IMAGE_HPP
 
 #include <vector>
 #include <stdexcept>
@@ -33,7 +33,7 @@ namespace xengine {
      * @tparam T The type to use for a pixel
      */
     template<typename T>
-    class MANA_EXPORT Image {
+    class XENGINE_EXPORT Image {
     public:
         Image()
                 : size(), buffer() {}
@@ -145,4 +145,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_IMAGE_HPP
+#endif //XENGINE_IMAGE_HPP

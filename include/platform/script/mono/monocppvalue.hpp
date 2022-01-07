@@ -17,13 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_MONOCPPVALUE_HPP
-#define MANA_MONOCPPVALUE_HPP
+#ifndef XENGINE_MONOCPPVALUE_HPP
+#define XENGINE_MONOCPPVALUE_HPP
 
 #include <stdexcept>
 
 namespace xengine {
-    struct MANA_EXPORT MonoCppValue {
+    struct XENGINE_EXPORT MonoCppValue {
         MonoCppValue() = default;
 
         MonoCppValue(void *ptr) : ptr(ptr) {}
@@ -44,4 +44,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_MONOCPPVALUE_HPP
+#endif //XENGINE_MONOCPPVALUE_HPP

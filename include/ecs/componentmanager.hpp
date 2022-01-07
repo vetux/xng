@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_COMPONENTMANAGER_HPP
-#define MANA_COMPONENTMANAGER_HPP
+#ifndef XENGINE_COMPONENTMANAGER_HPP
+#define XENGINE_COMPONENTMANAGER_HPP
 
 #include <map>
 #include <vector>
@@ -35,7 +35,7 @@ namespace xengine {
      * The engine defines some default components which are used by provided default systems (Rendering, Physics etc.)
      * The user can define custom component types and systems which use these types.
      */
-    class MANA_EXPORT ComponentManager {
+    class XENGINE_EXPORT ComponentManager {
     public:
         ComponentManager() = default;
 
@@ -137,4 +137,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_COMPONENTMANAGER_HPP
+#endif //XENGINE_COMPONENTMANAGER_HPP

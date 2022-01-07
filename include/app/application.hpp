@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_APPLICATION_HPP
-#define MANA_APPLICATION_HPP
+#ifndef XENGINE_APPLICATION_HPP
+#define XENGINE_APPLICATION_HPP
 
 #include <chrono>
 #include <thread>
@@ -33,7 +33,7 @@
 #include "imgui.h"
 
 namespace xengine {
-    class MANA_EXPORT Application {
+    class XENGINE_EXPORT Application {
     public:
         /**
          * @param argc
@@ -86,7 +86,7 @@ namespace xengine {
 
         virtual int loop() {
 //Disable catch all exception handler in debug build to be able to use debugger exception handler
-#ifndef MANA_DEBUG_BUILD
+#ifndef XENGINE_DEBUG_BUILD
             try {
 #endif
             start();
@@ -99,7 +99,7 @@ namespace xengine {
                 deltaTime = static_cast<float>(frameDelta.count()) / 1000000000.0f;
             }
             stop();
-#ifndef MANA_DEBUG_BUILD
+#ifndef XENGINE_DEBUG_BUILD
             }
             catch (const std::exception &e) {
                 // Show uncaught exception dialog
@@ -164,4 +164,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_APPLICATION_HPP
+#endif //XENGINE_APPLICATION_HPP

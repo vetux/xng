@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_COMMONBOX2D_HPP
-#define MANA_COMMONBOX2D_HPP
+#ifndef XENGINE_COMMONBOX2D_HPP
+#define XENGINE_COMMONBOX2D_HPP
 
 #include <stdexcept>
 #include "box2d.hpp"
@@ -37,4 +37,4 @@ namespace xengine {
     b2PolygonShape convert(const std::vector<Vec2f> &points);
 }
 
-#endif //MANA_COMMONBOX2D_HPP
+#endif //XENGINE_COMMONBOX2D_HPP

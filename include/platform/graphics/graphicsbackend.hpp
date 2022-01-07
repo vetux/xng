@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_GRAPHICSBACKEND_HPP
-#define MANA_GRAPHICSBACKEND_HPP
+#ifndef XENGINE_GRAPHICSBACKEND_HPP
+#define XENGINE_GRAPHICSBACKEND_HPP
 
 namespace xengine {
     enum GraphicsBackend {
@@ -29,4 +29,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_GRAPHICSBACKEND_HPP
+#endif //XENGINE_GRAPHICSBACKEND_HPP

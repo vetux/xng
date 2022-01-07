@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_TEXTUREBUFFER_HPP
-#define MANA_TEXTUREBUFFER_HPP
+#ifndef XENGINE_TEXTUREBUFFER_HPP
+#define XENGINE_TEXTUREBUFFER_HPP
 
 #include "asset/image.hpp"
 #include "renderobject.hpp"
@@ -28,7 +28,7 @@ namespace xengine {
      * A texture buffer.
      * The texture type, size and format is changed when calling the upload methods.
      */
-    class MANA_EXPORT TextureBuffer : public RenderObject {
+    class XENGINE_EXPORT TextureBuffer : public RenderObject {
     public:
         enum TextureType {
             TEXTURE_2D,
@@ -138,7 +138,7 @@ namespace xengine {
             LINEAR_MIPMAP_LINEAR
         };
 
-        struct MANA_EXPORT Attributes {
+        struct XENGINE_EXPORT Attributes {
             TextureType textureType = TEXTURE_2D;
             Vec2i size = {};
             ColorFormat format = RGBA;
@@ -183,4 +183,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_TEXTUREBUFFER_HPP
+#endif //XENGINE_TEXTUREBUFFER_HPP

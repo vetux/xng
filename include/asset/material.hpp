@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_MATERIAL_HPP
-#define MANA_MATERIAL_HPP
+#ifndef XENGINE_MATERIAL_HPP
+#define XENGINE_MATERIAL_HPP
 
 #include "asset/texture.hpp"
 
@@ -26,7 +26,7 @@
 #include "asset/texture.hpp"
 
 namespace xengine {
-    struct MANA_EXPORT Material : public AssetBase {
+    struct XENGINE_EXPORT Material : public AssetBase {
         ~Material() override = default;
 
         AssetBase *clone() override{
@@ -48,4 +48,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_MATERIAL_HPP
+#endif //XENGINE_MATERIAL_HPP

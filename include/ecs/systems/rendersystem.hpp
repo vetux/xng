@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_RENDERSYSTEM_HPP
-#define MANA_RENDERSYSTEM_HPP
+#ifndef XENGINE_RENDERSYSTEM_HPP
+#define XENGINE_RENDERSYSTEM_HPP
 
 #include <map>
 #include <string>
@@ -37,7 +37,7 @@ namespace xengine {
 
     class DebugPass;
 
-    class MANA_EXPORT RenderSystem : public System,
+    class XENGINE_EXPORT RenderSystem : public System,
                                      ComponentPool<MeshRenderComponent>::Listener,
                                      ComponentPool<SkyboxComponent>::Listener {
     public:
@@ -94,4 +94,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_RENDERSYSTEM_HPP
+#endif //XENGINE_RENDERSYSTEM_HPP

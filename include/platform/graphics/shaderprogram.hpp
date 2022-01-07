@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_SHADERPROGRAM_HPP
-#define MANA_SHADERPROGRAM_HPP
+#ifndef XENGINE_SHADERPROGRAM_HPP
+#define XENGINE_SHADERPROGRAM_HPP
 
 #include "math/vector2.hpp"
 #include "math/vector3.hpp"
@@ -27,7 +27,7 @@
 #include "renderobject.hpp"
 
 namespace xengine {
-    class MANA_EXPORT ShaderProgram : public RenderObject {
+    class XENGINE_EXPORT ShaderProgram : public RenderObject {
     public:
         ~ShaderProgram() override = default;
 
@@ -84,7 +84,7 @@ namespace xengine {
          * Lookup by the location directly is about twice as fast compared to looking up by name
          *
          * Note that when using the shader compiler to cross compile hlsl the
-         * implementation uses shaderc which for no reason merges global variables (But not samplers) in a struct MANA_EXPORT
+         * implementation uses shaderc which for no reason merges global variables (But not samplers) in a struct XENGINE_EXPORT
          * and thus looses all locations.
          */
         virtual bool setTexture(int location, int slot) = 0;
@@ -125,4 +125,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_SHADERPROGRAM_HPP
+#endif //XENGINE_SHADERPROGRAM_HPP

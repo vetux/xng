@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_JOINTBT3_HPP
-#define MANA_JOINTBT3_HPP
+#ifndef XENGINE_JOINTBT3_HPP
+#define XENGINE_JOINTBT3_HPP
 
 #include "platform/physics/3d/joint3d.hpp"
 
@@ -28,4 +28,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_JOINTBT3_HPP
+#endif //XENGINE_JOINTBT3_HPP

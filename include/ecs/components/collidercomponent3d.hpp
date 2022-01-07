@@ -17,15 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_COLLIDERCOMPONENT3D_HPP
-#define MANA_COLLIDERCOMPONENT3D_HPP
+#ifndef XENGINE_COLLIDERCOMPONENT3D_HPP
+#define XENGINE_COLLIDERCOMPONENT3D_HPP
 
 #include "math/vector3.hpp"
 
 namespace xengine {
-    struct MANA_EXPORT ColliderComponent3D {
+    struct XENGINE_EXPORT ColliderComponent3D {
         std::vector<Vec3f> shape;
     };
 }
 
-#endif //MANA_COLLIDERCOMPONENT3D_HPP
+#endif //XENGINE_COLLIDERCOMPONENT3D_HPP

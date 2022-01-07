@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_GAMEPAD_HPP
-#define MANA_GAMEPAD_HPP
+#ifndef XENGINE_GAMEPAD_HPP
+#define XENGINE_GAMEPAD_HPP
 
 #include <map>
 
@@ -57,7 +57,7 @@ namespace xengine {
         CIRCLE = B
     };
 
-    class MANA_EXPORT GamePad {
+    class XENGINE_EXPORT GamePad {
     public:
         double getGamepadAxis(GamePadAxis axis) const {
             return axies.at(axis);
@@ -75,4 +75,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_GAMEPAD_HPP
+#endif //XENGINE_GAMEPAD_HPP

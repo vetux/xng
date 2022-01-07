@@ -17,20 +17,20 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_SHA_HPP
-#define MANA_SHA_HPP
+#ifndef XENGINE_SHA_HPP
+#define XENGINE_SHA_HPP
 
 #include <string>
 #include <vector>
 
 namespace xengine {
     namespace SHA {
-        MANA_EXPORT std::string sha256(const char *data, size_t length);
+        XENGINE_EXPORT std::string sha256(const char *data, size_t length);
 
-        MANA_EXPORT std::string sha256(const std::string &data);
+        XENGINE_EXPORT std::string sha256(const std::string &data);
 
-        MANA_EXPORT std::string sha256(const std::vector<char> &data);
+        XENGINE_EXPORT std::string sha256(const std::vector<char> &data);
     }
 }
 
-#endif //MANA_SHA_HPP
+#endif //XENGINE_SHA_HPP

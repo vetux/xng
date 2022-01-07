@@ -5,7 +5,7 @@
 
 namespace xengine {
     template<typename T>
-    class MANA_EXPORT Vector3 {
+    class XENGINE_EXPORT Vector3 {
     public:
         T x;
         T y;
@@ -103,7 +103,7 @@ namespace xengine {
         }
 
         //https://en.wikipedia.org/wiki/Euclidean_distance
-        MANA_EXPORT static double distance(const Vector3<T> &start, const Vector3<T> end) {
+        XENGINE_EXPORT static double distance(const Vector3<T> &start, const Vector3<T> end) {
             return std::sqrt(
                     std::pow(start.x - end.x, 2) + std::pow(start.y - end.y, 2) + std::pow(start.z - end.z, 2));
         }

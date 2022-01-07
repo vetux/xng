@@ -17,18 +17,18 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_MESHBUFFER_HPP
-#define MANA_MESHBUFFER_HPP
+#ifndef XENGINE_MESHBUFFER_HPP
+#define XENGINE_MESHBUFFER_HPP
 
 #include "renderobject.hpp"
 
 #include "math/transform.hpp"
 
 namespace xengine {
-    class MANA_EXPORT MeshBuffer : public RenderObject {
+    class XENGINE_EXPORT MeshBuffer : public RenderObject {
     public:
         ~MeshBuffer() override = default;
     };
 }
 
-#endif //MANA_MESHBUFFER_HPP
+#endif //XENGINE_MESHBUFFER_HPP

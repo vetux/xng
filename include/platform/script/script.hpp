@@ -17,12 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_SCRIPT_HPP
-#define MANA_SCRIPT_HPP
+#ifndef XENGINE_SCRIPT_HPP
+#define XENGINE_SCRIPT_HPP
 
 //TODO: Redesign Script abstraction
 namespace xengine {
-    class MANA_EXPORT Script {
+    class XENGINE_EXPORT Script {
     public:
         virtual void onEnable() const {};
 
@@ -32,4 +32,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_SCRIPT_HPP
+#endif //XENGINE_SCRIPT_HPP

@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_LIBRARYLINUX_HPP
-#define MANA_LIBRARYLINUX_HPP
+#ifndef XENGINE_LIBRARYLINUX_HPP
+#define XENGINE_LIBRARYLINUX_HPP
 
 #include "platform/dl/library.hpp"
 
@@ -48,4 +48,4 @@ namespace xengine {
     typedef LibraryLinux LibraryOS;
 }
 
-#endif //MANA_LIBRARYLINUX_HPP
+#endif //XENGINE_LIBRARYLINUX_HPP

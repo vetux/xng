@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_THREADPOOL_HPP
-#define MANA_THREADPOOL_HPP
+#ifndef XENGINE_THREADPOOL_HPP
+#define XENGINE_THREADPOOL_HPP
 
 #include <memory>
 #include <vector>
@@ -30,7 +30,7 @@
 #include "task.hpp"
 
 namespace xengine {
-    class MANA_EXPORT ThreadPool {
+    class XENGINE_EXPORT ThreadPool {
     public:
         static ThreadPool &getPool();
 
@@ -134,4 +134,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_THREADPOOL_HPP
+#endif //XENGINE_THREADPOOL_HPP

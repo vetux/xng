@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_SKYBOX_HPP
-#define MANA_SKYBOX_HPP
+#ifndef XENGINE_SKYBOX_HPP
+#define XENGINE_SKYBOX_HPP
 
 #include <array>
 
@@ -26,10 +26,10 @@
 #include "color.hpp"
 
 namespace xengine {
-    struct MANA_EXPORT Skybox {
+    struct XENGINE_EXPORT Skybox {
         ColorRGBA color = {12, 123, 123, 255}; // If texture is unassigned skybox color is drawn
         AssetPath texture; // The cube map texture
     };
 }
 
-#endif //MANA_SKYBOX_HPP
+#endif //XENGINE_SKYBOX_HPP

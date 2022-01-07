@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_SHADERSTAGE_HPP
-#define MANA_SHADERSTAGE_HPP
+#ifndef XENGINE_SHADERSTAGE_HPP
+#define XENGINE_SHADERSTAGE_HPP
 
 namespace xengine {
     enum ShaderStage {
@@ -28,4 +28,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_SHADERSTAGE_HPP
+#endif //XENGINE_SHADERSTAGE_HPP

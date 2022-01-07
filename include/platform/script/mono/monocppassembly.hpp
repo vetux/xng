@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_MONOCPPASSEMBLY_HPP
-#define MANA_MONOCPPASSEMBLY_HPP
+#ifndef XENGINE_MONOCPPASSEMBLY_HPP
+#define XENGINE_MONOCPPASSEMBLY_HPP
 
 #include <string>
 
@@ -29,7 +29,7 @@
 
 namespace xengine {
     //TODO: Refactor mono abstraction
-    class MANA_EXPORT MonoCppAssembly {
+    class XENGINE_EXPORT MonoCppAssembly {
     public:
         MonoCppAssembly() = default;
 
@@ -65,4 +65,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_MONOCPPASSEMBLY_HPP
+#endif //XENGINE_MONOCPPASSEMBLY_HPP

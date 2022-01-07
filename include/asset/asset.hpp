@@ -17,11 +17,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_ASSET_HPP
-#define MANA_ASSET_HPP
+#ifndef XENGINE_ASSET_HPP
+#define XENGINE_ASSET_HPP
 
 namespace xengine {
-    class MANA_EXPORT AssetBase {
+    class XENGINE_EXPORT AssetBase {
     public:
         virtual ~AssetBase() = default;
 
@@ -29,7 +29,7 @@ namespace xengine {
     };
 
     template<typename T>
-    class MANA_EXPORT Asset : public AssetBase {
+    class XENGINE_EXPORT Asset : public AssetBase {
     public:
         Asset() = default;
 
@@ -43,4 +43,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_ASSET_HPP
+#endif //XENGINE_ASSET_HPP

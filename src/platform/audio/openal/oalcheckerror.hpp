@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_OALCHECKERROR_HPP
-#define MANA_OALCHECKERROR_HPP
+#ifndef XENGINE_OALCHECKERROR_HPP
+#define XENGINE_OALCHECKERROR_HPP
 
 #include <string>
 #include <stdexcept>
@@ -27,4 +27,4 @@ namespace xengine {
     void checkOALError(const std::string &caller = "None");
 }
 
-#endif //MANA_OALCHECKERROR_HPP
+#endif //XENGINE_OALCHECKERROR_HPP

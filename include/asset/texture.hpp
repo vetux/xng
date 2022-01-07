@@ -17,17 +17,17 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_TEXTURE_HPP
-#define MANA_TEXTURE_HPP
+#ifndef XENGINE_TEXTURE_HPP
+#define XENGINE_TEXTURE_HPP
 
 #include "platform/graphics/texturebuffer.hpp"
 #include "asset/assetpath.hpp"
 
 namespace xengine {
-    struct MANA_EXPORT Texture {
+    struct XENGINE_EXPORT Texture {
         std::vector<AssetPath> images;
         TextureBuffer::Attributes attributes;
     };
 }
 
-#endif //MANA_TEXTURE_HPP
+#endif //XENGINE_TEXTURE_HPP

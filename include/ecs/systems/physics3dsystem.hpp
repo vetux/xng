@@ -17,15 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_PHYISCS3DSYSTEM_HPP
-#define MANA_PHYISCS3DSYSTEM_HPP
+#ifndef XENGINE_PHYISCS3DSYSTEM_HPP
+#define XENGINE_PHYISCS3DSYSTEM_HPP
 
 #include "ecs/system.hpp"
 
 #include "platform/physics/3d/world3d.hpp"
 
 namespace xengine {
-    class MANA_EXPORT Physics3DSystem : public System {
+    class XENGINE_EXPORT Physics3DSystem : public System {
     public:
         explicit Physics3DSystem(World3D &world);
 
@@ -42,4 +42,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_PHYISCS3DSYSTEM_HPP
+#endif //XENGINE_PHYISCS3DSYSTEM_HPP

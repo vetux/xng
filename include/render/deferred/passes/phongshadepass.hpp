@@ -17,13 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_PHONGSHADEPASS_HPP
-#define MANA_PHONGSHADEPASS_HPP
+#ifndef XENGINE_PHONGSHADEPASS_HPP
+#define XENGINE_PHONGSHADEPASS_HPP
 
 #include "render/deferred/renderpass.hpp"
 
 namespace xengine {
-    class MANA_EXPORT PhongShadePass : public RenderPass {
+    class XENGINE_EXPORT PhongShadePass : public RenderPass {
     public:
         static const char *AMBIENT;
         static const char *DIFFUSE;
@@ -48,4 +48,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_PHONGSHADEPASS_HPP
+#endif //XENGINE_PHONGSHADEPASS_HPP

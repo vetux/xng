@@ -17,11 +17,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_OGLCHECKERROR_HPP
-#define MANA_OGLCHECKERROR_HPP
+#ifndef XENGINE_OGLCHECKERROR_HPP
+#define XENGINE_OGLCHECKERROR_HPP
 
 #include <string>
 
 void checkGLError(const std::string &source = "");
 
-#endif //MANA_OGLCHECKERROR_HPP
+#endif //XENGINE_OGLCHECKERROR_HPP

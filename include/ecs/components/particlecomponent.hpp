@@ -17,12 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_PARTICLECOMPONENT_HPP
-#define MANA_PARTICLECOMPONENT_HPP
+#ifndef XENGINE_PARTICLECOMPONENT_HPP
+#define XENGINE_PARTICLECOMPONENT_HPP
 
 namespace xengine {
-    struct MANA_EXPORT ParticleComponent {
+    struct XENGINE_EXPORT ParticleComponent {
     };
 }
 
-#endif //MANA_PARTICLECOMPONENT_HPP
+#endif //XENGINE_PARTICLECOMPONENT_HPP

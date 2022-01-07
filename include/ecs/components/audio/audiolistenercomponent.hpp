@@ -17,14 +17,14 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_AUDIOLISTENERCOMPONENT_HPP
-#define MANA_AUDIOLISTENERCOMPONENT_HPP
+#ifndef XENGINE_AUDIOLISTENERCOMPONENT_HPP
+#define XENGINE_AUDIOLISTENERCOMPONENT_HPP
 
 #include "math/vector3.hpp"
 
 namespace xengine {
-    struct MANA_EXPORT AudioListenerComponent {
+    struct XENGINE_EXPORT AudioListenerComponent {
         Vec3f velocity;
     };
 }
-#endif //MANA_AUDIOLISTENERCOMPONENT_HPP
+#endif //XENGINE_AUDIOLISTENERCOMPONENT_HPP

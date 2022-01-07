@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_GEOMETRYBUFFER_HPP
-#define MANA_GEOMETRYBUFFER_HPP
+#ifndef XENGINE_GEOMETRYBUFFER_HPP
+#define XENGINE_GEOMETRYBUFFER_HPP
 
 #include <memory>
 
@@ -29,7 +29,7 @@ namespace xengine {
     /**
      * TODO: Avoid unnecessary multisampled textures in deferred passes which output screen quad rasterized data and therefore do not need to have a multisampled texture.
      */
-    class MANA_EXPORT GeometryBuffer {
+    class XENGINE_EXPORT GeometryBuffer {
     public:
         explicit GeometryBuffer(RenderAllocator &allocator, Vec2i size = {640, 320}, int samples = 4);
 
@@ -105,4 +105,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_GEOMETRYBUFFER_HPP
+#endif //XENGINE_GEOMETRYBUFFER_HPP

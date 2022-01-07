@@ -17,15 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_CHARACTER_HPP
-#define MANA_CHARACTER_HPP
+#ifndef XENGINE_CHARACTER_HPP
+#define XENGINE_CHARACTER_HPP
 
 #include "asset/image.hpp"
 
 #include <map>
 
 namespace xengine {
-    class MANA_EXPORT Character {
+    class XENGINE_EXPORT Character {
     public:
         static Recti getMetrics(const std::string &str, const std::map<char, Character> &chars);
 
@@ -50,4 +50,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_CHARACTER_HPP
+#endif //XENGINE_CHARACTER_HPP

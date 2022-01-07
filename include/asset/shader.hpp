@@ -17,15 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_SHADER_HPP
-#define MANA_SHADER_HPP
+#ifndef XENGINE_SHADER_HPP
+#define XENGINE_SHADER_HPP
 
 #include "platform/graphics/shadersource.hpp"
 
 #include "asset/asset.hpp"
 
 namespace xengine {
-    struct MANA_EXPORT Shader : public AssetBase {
+    struct XENGINE_EXPORT Shader : public AssetBase {
         ~Shader() override = default;
 
         AssetBase *clone() override {
@@ -37,4 +37,4 @@ namespace xengine {
         ShaderSource fragmentShader;
     };
 }
-#endif //MANA_SHADER_HPP
+#endif //XENGINE_SHADER_HPP

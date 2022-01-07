@@ -17,16 +17,16 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_WINDOWATTRIBUTES_HPP
-#define MANA_WINDOWATTRIBUTES_HPP
+#ifndef XENGINE_WINDOWATTRIBUTES_HPP
+#define XENGINE_WINDOWATTRIBUTES_HPP
 
 namespace xengine {
     /**
      * The attributes of a window which are required for creation.
      * Some attributes may be changed for an existing window, for which
-     * individual member functions are added to the window class MANA_EXPORT.
+     * individual member functions are added to the window class XENGINE_EXPORT.
      */
-    struct MANA_EXPORT WindowAttributes {
+    struct XENGINE_EXPORT WindowAttributes {
         bool resizable = true;
         bool visible = true;
         bool decorated = true;
@@ -56,4 +56,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_WINDOWATTRIBUTES_HPP
+#endif //XENGINE_WINDOWATTRIBUTES_HPP

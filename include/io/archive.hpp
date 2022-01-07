@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_ARCHIVE_HPP
-#define MANA_ARCHIVE_HPP
+#ifndef XENGINE_ARCHIVE_HPP
+#define XENGINE_ARCHIVE_HPP
 
 #include <iostream>
 #include <memory>
@@ -27,7 +27,7 @@ namespace xengine {
     /**
      * Archive interface, implementations may be directories or custom archive format.
      */
-    class MANA_EXPORT Archive {
+    class XENGINE_EXPORT Archive {
     public:
         virtual ~Archive() = default;
 
@@ -37,4 +37,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_ARCHIVE_HPP
+#endif //XENGINE_ARCHIVE_HPP

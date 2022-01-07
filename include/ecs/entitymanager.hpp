@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_ENTITYMANAGER_HPP
-#define MANA_ENTITYMANAGER_HPP
+#ifndef XENGINE_ENTITYMANAGER_HPP
+#define XENGINE_ENTITYMANAGER_HPP
 
 #include <set>
 #include <limits>
@@ -26,7 +26,7 @@
 #include "ecs/componentmanager.hpp"
 
 namespace xengine {
-    class MANA_EXPORT EntityManager {
+    class XENGINE_EXPORT EntityManager {
     public:
         EntityManager() = default;
 
@@ -120,4 +120,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_ENTITYMANAGER_HPP
+#endif //XENGINE_ENTITYMANAGER_HPP

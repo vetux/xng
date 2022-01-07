@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_AUDIOBUFFER_HPP
-#define MANA_AUDIOBUFFER_HPP
+#ifndef XENGINE_AUDIOBUFFER_HPP
+#define XENGINE_AUDIOBUFFER_HPP
 
 #include <vector>
 
@@ -27,7 +27,7 @@
 #include "audioformat.hpp"
 
 namespace xengine {
-    class MANA_EXPORT AudioBuffer {
+    class XENGINE_EXPORT AudioBuffer {
     public:
         virtual ~AudioBuffer() = default;
 
@@ -35,4 +35,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_AUDIOBUFFER_HPP
+#endif //XENGINE_AUDIOBUFFER_HPP

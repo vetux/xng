@@ -17,15 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MANA_ECS_HPP
-#define MANA_ECS_HPP
+#ifndef XENGINE_ECS_HPP
+#define XENGINE_ECS_HPP
 
 #include <set>
 
 #include "ecs/system.hpp"
 
 namespace xengine {
-    class MANA_EXPORT ECS {
+    class XENGINE_EXPORT ECS {
     public:
         explicit ECS(std::vector<System *> systems = {});
 
@@ -49,4 +49,4 @@ namespace xengine {
     };
 }
 
-#endif //MANA_ECS_HPP
+#endif //XENGINE_ECS_HPP
