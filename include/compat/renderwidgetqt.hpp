@@ -20,8 +20,6 @@
 #ifndef MANA_RENDERWIDGETQT_HPP
 #define MANA_RENDERWIDGETQT_HPP
 
-#ifdef BUILD_ENGINE_RENDERER_QT
-
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_3_3_Core>
 
@@ -84,7 +82,5 @@ namespace engine {
         std::unique_ptr<DeferredRenderer> ren;
     };
 }
-
-#endif
 
 #endif //MANA_RENDERWIDGETQT_HPP

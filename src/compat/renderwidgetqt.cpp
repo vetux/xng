@@ -17,6 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifdef BUILD_ENGINE_RENDERER_QT
+
 #include "compat/renderwidgetqt.hpp"
 
 #include "platform/graphics/opengl-qt/qtoglrenderdevice.hpp"
@@ -33,3 +35,5 @@ namespace engine {
                                                                          false));
     }
 }
+
+#endif
