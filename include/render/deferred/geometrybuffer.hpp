@@ -1,5 +1,5 @@
 /**
- *  Mana - 3D Game Engine
+ *  XEngine - C++ game engine library
  *  Copyright (C) 2021  Julian Zampiccoli
  *
  *  This program is free software; you can redistribute it and/or modify
