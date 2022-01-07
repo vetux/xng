@@ -31,7 +31,6 @@
 #include "platform/display/displaymanager.hpp"
 
 #include "imgui.h"
-#include "implot.h"
 
 namespace engine {
     class MANA_EXPORT Application {
@@ -78,13 +77,9 @@ namespace engine {
 
             imGuiContext = ImGui::CreateContext();
             ImGuiCompat::Init(*window, graphicsBackend);
-
-            imPlotContext = ImPlot::CreateContext();
         }
 
         virtual ~Application() {
-            ImPlot::DestroyContext(imPlotContext);
-
             ImGuiCompat::Shutdown(*window, graphicsBackend);
             ImGui::DestroyContext(imGuiContext);
         }
@@ -156,7 +151,6 @@ namespace engine {
         std::unique_ptr<Archive> archive = nullptr;
 
         ImGuiContext *imGuiContext;
-        ImPlotContext *imPlotContext;
 
         float fpsLimit = 0;
 
