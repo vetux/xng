@@ -18,5 +18,5 @@ This is a cross-platform game engine library written in C++.
 
 # Building
 - Ensure the external dependencies are provided. ([install_dependencies.sh](install_dependencies.sh]))
-- Clone the imgui [submodule](submodules/imgui)
+- Clone the [imgui](submodules/imgui) submodule
 - Load [CMakeLists.txt](CMakeLists.txt) and build the engine target
