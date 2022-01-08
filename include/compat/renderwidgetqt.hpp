@@ -33,11 +33,17 @@
 namespace xengine {
     class XENGINE_EXPORT RenderWidgetQt : public QOpenGLWidget {
     public:
-        RenderWidgetQt(QWidget *parent, AssetManager &assetManager);
+        RenderWidgetQt(QWidget *parent, AssetManager &assetManager,
+                       const std::vector<std::function<std::unique_ptr<RenderPass>(RenderDevice &)>> &allocators,
+                       const std::vector<Compositor::Layer> &layers);
 
         void setScene(const Scene &s) {
             scene = s;
             update();
+        }
+
+        void setLayers(const std::vector<Compositor::Layer> &layers) {
+            renderLayers = layers;
         }
 
     protected:
@@ -47,11 +53,10 @@ namespace xengine {
             assetRenderManager = std::make_unique<AssetRenderManager>(assetManager,
                                                                       renderDevice->getAllocator());
             ren = std::make_unique<DeferredRenderer>(*renderDevice, *assetRenderManager);
-            ren->addRenderPass(std::make_unique<SkyboxPass>(*renderDevice));
-            ren->addRenderPass(std::make_unique<PrePass>(*renderDevice));
-            ren->addRenderPass(std::make_unique<PhongShadePass>(*renderDevice));
-            ren->getCompositor().setLayers({Compositor::Layer("Skybox", SkyboxPass::COLOR, ""),
-                                            Compositor::Layer("Phong", PhongShadePass::COMBINED, "")});
+            for (auto &a: renderPassAllocators) {
+                ren->addRenderPass(a(*renderDevice));
+            }
+            ren->getCompositor().setLayers(renderLayers);
         }
 
         void resizeGL(int w, int h) override {
@@ -80,6 +85,9 @@ namespace xengine {
         std::unique_ptr<RenderDevice> renderDevice;
         std::unique_ptr<AssetRenderManager> assetRenderManager;
         std::unique_ptr<DeferredRenderer> ren;
+
+        std::vector<std::function<std::unique_ptr<RenderPass>(RenderDevice &)>> renderPassAllocators;
+        std::vector<Compositor::Layer> renderLayers;
     };
 }
 

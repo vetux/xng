@@ -25,7 +25,7 @@
 #include "platform/graphics/opengl-qt/qtoglrendertarget.hpp"
 
 namespace xengine {
-    RenderWidgetQt::RenderWidgetQt(QWidget *parent, AssetManager &assetManager)
+    RenderWidgetQt::RenderWidgetQt(QWidget *parent, AssetManager &assetManager, const std::vector<std::function<std::unique_ptr<RenderPass>(RenderDevice &)>> &allocators, const std::vector<Compositor::Layer>& layers)
             : QOpenGLWidget(parent), assetManager(assetManager) {}
 
     std::unique_ptr<RenderTarget> RenderWidgetQt::getWidgetRenderTarget() {
