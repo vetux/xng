@@ -14,14 +14,6 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GN
 endif ()
 
 include(cmake/imgui.cmake)
-
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    message("Debug Build")
-    add_compile_definitions("MANA_DEBUG_BUILD")
-else ()
-    message("Release Build")
-endif ()
-
 include(cmake/config.cmake)
 
 if (UNIX)

@@ -29,6 +29,8 @@
 #include "render/shader/include/hlsl_pi.hpp"
 #include "render/shader/include/glsl_noise.hpp"
 #include "render/shader/include/hlsl_noise.hpp"
+#include "render/shader/include/glsl_texfilter.hpp"
+#include "render/shader/include/hlsl_texfilter.hpp"
 
 static std::string includeCallback(const char *n) {
     std::string name(n);
@@ -48,8 +50,10 @@ static std::string includeCallback(const char *n) {
         return HLSL_PI;
     } else if (name == "pi.glsl") {
         return GLSL_PI;
+    } else if (name == "texfilter.glsl") {
+        return GLSL_TEXFILTER;
     } else {
-        throw std::runtime_error("Invalid name: " + name);
+        return "";
     }
 }
 

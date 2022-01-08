@@ -263,7 +263,9 @@ namespace xengine {
                                                         "shader",
                                                         options);
 
-        if (preProcessResult.GetCompilationStatus() != shaderc_compilation_status_success) {
+        auto status = preProcessResult.GetCompilationStatus();
+
+        if (status != shaderc_compilation_status_success) {
             throw std::runtime_error("Failed to preprocess glsl: " + preProcessResult.GetErrorMessage());
         }
 

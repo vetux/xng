@@ -85,8 +85,8 @@ namespace xengine {
         }
 
         virtual int loop() {
-//Disable catch all exception handler in debug build to be able to use debugger exception handler
-#ifndef XENGINE_DEBUG_BUILD
+//Make catch all exception handler optional to be able to use debugger exception handler
+#ifdef ENABLE_APPLICATION_EXCEPTION_HANDLER
             try {
 #endif
             start();
@@ -99,7 +99,7 @@ namespace xengine {
                 deltaTime = static_cast<float>(frameDelta.count()) / 1000000000.0f;
             }
             stop();
-#ifndef XENGINE_DEBUG_BUILD
+#ifdef ENABLE_APPLICATION_EXCEPTION_HANDLER
             }
             catch (const std::exception &e) {
                 // Show uncaught exception dialog

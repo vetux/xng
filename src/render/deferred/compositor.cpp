@@ -19,6 +19,8 @@
 
 #include "render/deferred/compositor.hpp"
 
+#include "render/shader/shaderinclude.hpp"
+
 static const char *SHADER_VERT = R"###(#version 460 core
 
 #define MAX_COLOR 15
@@ -28,6 +30,7 @@ struct Layer {
     sampler2DMS color;
     sampler2DMS depth;
     int has_depth;
+    bool filterBicubic;
 };
 
 struct Globals {
@@ -62,11 +65,14 @@ static const char *SHADER_FRAG = R"###(#version 460 core
 
 #define MAX_COLOR 15
 
+#include "texfilter.glsl"
+
 struct Layer {
     int MSAA_SAMPLES;
     sampler2DMS color;
     sampler2DMS depth;
     int has_depth;
+    bool filterBicubic;
 };
 
 struct Globals {
@@ -85,26 +91,24 @@ vec4 blend(vec4 colorA, vec4 colorB)
     return vec4((colorB.rgb * colorB.a + colorA.rgb * (1.0 - colorB.a)).rgb, 1);
 }
 
-vec4 msaaAverage(sampler2DMS color, vec2 uv)
-{
-    vec4 ret;
-    ivec2 size = textureSize(color);
-    ivec2 pos = ivec2(size.x * uv.x, size.y * uv.y);
-    for(int i = 0; i < globals.layer.MSAA_SAMPLES; i++)
-    {
-        ret += texelFetch(color, pos, i);
-    }
-    return ret / globals.layer.MSAA_SAMPLES;
-}
-
 void main()
 {
-    vec4 color = msaaAverage(globals.layer.color, fUv);
+    vec4 color;
+    if (globals.layer.filterBicubic)
+    {
+        // Apply bicubic filtering which smooths out the image if the texture size is smaller than the viewport size.
+        color = textureBicubic(globals.layer.color, fUv);
+    }
+    else
+    {
+        color = resolveMsaa(globals.layer.color, fUv);
+    }
+
     float depth = 0;
 
     if (globals.layer.has_depth != 0)
     {
-        depth = msaaAverage(globals.layer.depth, fUv).r;
+        depth = resolveMsaa(globals.layer.depth, fUv).r;
     }
 
     fragColor = color;
@@ -117,6 +121,8 @@ namespace xengine {
             : device(device), layers(std::move(layers)) {
         ShaderSource shaderVert(SHADER_VERT, "main", VERTEX, GLSL_460);
         ShaderSource shaderFrag(SHADER_FRAG, "main", FRAGMENT, GLSL_460);
+        shaderFrag.preprocess(ShaderInclude::getShaderIncludeCallback(), ShaderInclude::getShaderMacros(GLSL_460));
+        shaderFrag.crossCompile(GLSL_460);
         shader = std::unique_ptr<ShaderProgram>(device.getAllocator().createShaderProgram(shaderVert, shaderFrag));
     }
 
@@ -168,6 +174,8 @@ namespace xengine {
         }
 
         assert(shader->setInt("globals.layer.MSAA_SAMPLES", textures.at(0).get().getAttributes().samples));
+
+        assert(shader->setBool("globals.layer.filterBicubic", textures.at(0).get().getAttributes().size != screen.getSize()));
 
         RenderCommand command(*shader, buffer.getScreenQuad());
         command.textures = textures;
