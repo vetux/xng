@@ -1,4 +1,4 @@
-# XEngine
+# xEngine
 This is a cross-platform game engine library written in C++.
 
 ## Features
@@ -15,6 +15,10 @@ This is a cross-platform game engine library written in C++.
 - Qt Compatibility widget
 - Deferred render pipeline
 - ECS with aggregated components storage pattern
+
+## Programs
+- [xEditor](https://github.com/xenotux/xeditor)
+- [xSamples](https://github.com/xenotux/xsamples)
 
 # Building
 - Ensure the external dependencies are provided. ([install_dependencies.sh](install_dependencies.sh]))
