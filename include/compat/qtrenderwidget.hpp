@@ -33,8 +33,19 @@
 namespace xengine {
     class XENGINE_EXPORT QtRenderWidget : public QOpenGLWidget {
     public:
+        /**
+         * The implementation of this interface creates the render passes when the QOpenGLWidget is initializing.
+         * This is needed to be a delayed operation because QOpenGLWidget only allows usage of OpenGL calls at
+         * specific points (initializeGL() ...)
+         */
         class Allocator {
         public:
+            /**
+             * Create the RenderPass objects and call ren.addRenderPass
+             *
+             * @param device
+             * @param ren
+             */
             virtual void addPasses(RenderDevice &device, DeferredRenderer &ren) = 0;
         };
 
