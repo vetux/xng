@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RENDERWIDGETQT_HPP
-#define XENGINE_RENDERWIDGETQT_HPP
+#ifndef XENGINE_QTRENDERWIDGET_HPP
+#define XENGINE_QTRENDERWIDGET_HPP
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_3_3_Core>
@@ -31,11 +31,17 @@
 #include "render/deferred/passes/phongshadepass.hpp"
 
 namespace xengine {
-    class XENGINE_EXPORT RenderWidgetQt : public QOpenGLWidget {
+    class XENGINE_EXPORT QtRenderWidget : public QOpenGLWidget {
     public:
-        RenderWidgetQt(QWidget *parent, AssetManager &assetManager,
-                       const std::vector<std::function<std::unique_ptr<RenderPass>(RenderDevice &)>> &allocators,
-                       const std::vector<Compositor::Layer> &layers);
+        class Allocator {
+        public:
+            virtual void addPasses(RenderDevice &device, DeferredRenderer &ren) = 0;
+        };
+
+        QtRenderWidget(QWidget *parent,
+                       AssetManager &assetManager,
+                       std::unique_ptr<Allocator> allocator)
+                : QOpenGLWidget(parent), assetManager(assetManager), allocator(std::move(allocator)) {}
 
         void setScene(const Scene &s) {
             scene = s;
@@ -53,10 +59,7 @@ namespace xengine {
             assetRenderManager = std::make_unique<AssetRenderManager>(assetManager,
                                                                       renderDevice->getAllocator());
             ren = std::make_unique<DeferredRenderer>(*renderDevice, *assetRenderManager);
-            for (auto &a: renderPassAllocators) {
-                ren->addRenderPass(a(*renderDevice));
-            }
-            ren->getCompositor().setLayers(renderLayers);
+            allocator->addPasses(*renderDevice, *ren);
         }
 
         void resizeGL(int w, int h) override {
@@ -72,6 +75,7 @@ namespace xengine {
             scene.camera.aspectRatio = static_cast<float>( target->getSize().x)
                                        / static_cast<float>(target->getSize().y);
             ren->getGeometryBuffer().setSize(target->getSize());
+            ren->getCompositor().setLayers(renderLayers);
             ren->render(*target, scene);
         }
 
@@ -86,9 +90,9 @@ namespace xengine {
         std::unique_ptr<AssetRenderManager> assetRenderManager;
         std::unique_ptr<DeferredRenderer> ren;
 
-        std::vector<std::function<std::unique_ptr<RenderPass>(RenderDevice &)>> renderPassAllocators;
+        std::unique_ptr<Allocator> allocator;
         std::vector<Compositor::Layer> renderLayers;
     };
 }
 
-#endif //XENGINE_RENDERWIDGETQT_HPP
+#endif //XENGINE_QTRENDERWIDGET_HPP
