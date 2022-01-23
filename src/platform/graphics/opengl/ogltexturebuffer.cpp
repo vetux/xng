@@ -26,9 +26,7 @@
 using namespace xengine;
 using namespace xengine::opengl;
 
-//TODO: If users want to use integer texture formats the shaders would need to sample using isampler2d which does not exist in hlsl and therefore cant be cross compiled.
-//For now all integer format textures are uploaded as the normalized float format,
-
+// Integer textures currently cannot be sampled in cross compiled hlsl because it requires isampler2d sampler type.
 OGLTextureBuffer::OGLTextureBuffer(Attributes attributes) : TextureBuffer(attributes), handle() {
     GLenum type = OGLTypeConverter::convert(attributes.textureType);
 
@@ -39,6 +37,7 @@ OGLTextureBuffer::OGLTextureBuffer(Attributes attributes) : TextureBuffer(attrib
         glTexParameteri(type, GL_TEXTURE_WRAP_S, OGLTypeConverter::convert(attributes.wrapping));
         glTexParameteri(type, GL_TEXTURE_WRAP_T, OGLTypeConverter::convert(attributes.wrapping));
     }
+
     checkGLError("OGLTextureBuffer::OGLTextureBuffer()");
 
     if (type != GL_TEXTURE_2D_MULTISAMPLE) {
@@ -208,7 +207,7 @@ void OGLTextureBuffer::upload(const Image<float> &buffer) {
 void OGLTextureBuffer::upload(const Image<int> &buffer) {
     setTextureType(TextureBuffer::TEXTURE_2D);
 
-    attributes.format = TextureBuffer::R;
+    attributes.format = TextureBuffer::R32I;
     attributes.size = buffer.getSize();
 
     glBindTexture(GL_TEXTURE_2D, handle);
@@ -234,7 +233,7 @@ void OGLTextureBuffer::upload(const Image<int> &buffer) {
 void OGLTextureBuffer::upload(const Image<char> &buffer) {
     setTextureType(TextureBuffer::TEXTURE_2D);
 
-    attributes.format = TextureBuffer::R;
+    attributes.format = TextureBuffer::R8I;
     attributes.size = buffer.getSize();
 
     glBindTexture(GL_TEXTURE_2D, handle);
@@ -261,7 +260,7 @@ void OGLTextureBuffer::upload(const Image<char> &buffer) {
 void OGLTextureBuffer::upload(const Image<unsigned char> &buffer) {
     setTextureType(TextureBuffer::TEXTURE_2D);
 
-    attributes.format = TextureBuffer::R;
+    attributes.format = TextureBuffer::R8UI;
     attributes.size = buffer.getSize();
 
     glBindTexture(GL_TEXTURE_2D, handle);
