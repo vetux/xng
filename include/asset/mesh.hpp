@@ -35,6 +35,12 @@ namespace xengine {
             QUAD = 4
         };
 
+        /**
+         * A quad mesh which covers the viewport in normalized screen coordinates
+         * @return
+         */
+        static const Mesh &screenQuad();
+
         bool indexed = false;
         Primitive primitive = POINT;
         std::vector<Vertex> vertices;
