@@ -20,7 +20,7 @@
 #define XENGINE_GLSL_TEXFILTER_HPP
 
 static const char *GLSL_TEXFILTER = R"###(
-vec4 resolveMsaa(sampler2DMS color, vec2 uv)
+vec4 textureMS(sampler2DMS color, vec2 uv)
 {
     vec4 ret;
     ivec2 size = textureSize(color);
@@ -102,10 +102,10 @@ vec4 textureBicubic(sampler2DMS sampler, vec2 texCoords){
 
     offset *= invTexSize.xxyy;
 
-    vec4 sample0 = resolveMsaa(sampler, offset.xz);
-    vec4 sample1 = resolveMsaa(sampler, offset.yz);
-    vec4 sample2 = resolveMsaa(sampler, offset.xw);
-    vec4 sample3 = resolveMsaa(sampler, offset.yw);
+    vec4 sample0 = textureMS(sampler, offset.xz);
+    vec4 sample1 = textureMS(sampler, offset.yz);
+    vec4 sample2 = textureMS(sampler, offset.xw);
+    vec4 sample3 = textureMS(sampler, offset.yw);
 
     float sx = s.x / (s.x + s.y);
     float sy = s.z / (s.z + s.w);
