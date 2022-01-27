@@ -116,8 +116,7 @@ namespace xengine {
         attr.textureType = TextureBuffer::TEXTURE_2D_MULTISAMPLE;
         attr.size = size;
         attr.samples = samples;
-        attr.fixedSampleLocations = true;
-
+        
         for (int i = GEOMETRY_TEXTURE_BEGIN, index = 0; i < GEOMETRY_TEXTURE_END; i++, index++) {
             auto tex = static_cast<GTexture>(i);
             if (i < DIFFUSE) {

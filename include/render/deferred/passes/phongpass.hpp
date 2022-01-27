@@ -40,8 +40,6 @@ namespace xengine {
         ShaderSource fragmentShader;
 
         std::unique_ptr<RenderTarget> multiSampleTarget;
-        std::unique_ptr<TextureBuffer> multiSampleColor;
-        std::unique_ptr<TextureBuffer> multiSampleDepth;
     };
 }
 

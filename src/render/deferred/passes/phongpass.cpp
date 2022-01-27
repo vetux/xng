@@ -168,18 +168,6 @@ namespace xengine {
 
         multiSampleTarget = allocator.createRenderTarget({1, 1}, 1);
 
-        TextureBuffer::Attributes attr;
-        attr.fixedSampleLocations = true;
-        attr.textureType = TextureBuffer::TEXTURE_2D_MULTISAMPLE;
-        attr.fixedSampleLocations = true;
-
-        multiSampleColor = allocator.createTextureBuffer(attr);
-        attr.format = TextureBuffer::DEPTH_STENCIL;
-        multiSampleDepth = allocator.createTextureBuffer(attr);
-
-        multiSampleTarget->attachColor(0, *multiSampleColor);
-        multiSampleTarget->attachDepthStencil(*multiSampleDepth);
-
         resizeTextureBuffers({1, 1}, device.getAllocator(), true);
     }
 
@@ -191,20 +179,6 @@ namespace xengine {
             auto &allocator = renderDevice.getAllocator();
 
             multiSampleTarget = allocator.createRenderTarget(gBuffer.getSize(), gBuffer.getSamples());
-
-            TextureBuffer::Attributes attr;
-            attr.fixedSampleLocations = true;
-            attr.textureType = TextureBuffer::TEXTURE_2D_MULTISAMPLE;
-            attr.samples = gBuffer.getSamples();
-            attr.size = gBuffer.getSize();
-            attr.fixedSampleLocations = true;
-
-            multiSampleColor = allocator.createTextureBuffer(attr);
-            attr.format = TextureBuffer::DEPTH_STENCIL;
-            multiSampleDepth = allocator.createTextureBuffer(attr);
-
-            multiSampleTarget->attachColor(0, *multiSampleColor);
-            multiSampleTarget->attachDepthStencil(*multiSampleDepth);
         }
 
         int dirCount = 0;
