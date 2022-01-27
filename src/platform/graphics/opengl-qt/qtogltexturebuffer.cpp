@@ -94,7 +94,7 @@ QtOGLTextureBuffer::QtOGLTextureBuffer(Attributes attributes) : TextureBuffer(at
                                 texInternalFormat,
                                 attributes.size.x,
                                 attributes.size.y,
-                                GL_TRUE);
+                                attributes.fixedSampleLocations ? GL_TRUE : GL_FALSE);
     } else {
         for (unsigned int i = 0; i < 6; i++) {
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,

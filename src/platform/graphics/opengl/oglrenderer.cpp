@@ -79,6 +79,13 @@ namespace xengine {
             else
                 glDisable(GL_MULTISAMPLE);
 
+            if (options.multiSampleEnableFrequency)
+                glEnable(GL_SAMPLE_COVERAGE);
+            else
+                glDisable(GL_SAMPLE_COVERAGE);
+
+            glSampleCoverage(options.multiSampleFrequency, GL_TRUE);
+
             auto &fb = dynamic_cast<OGLRenderTarget &>(target);
 
             GLint vpData[4];
@@ -216,13 +223,15 @@ namespace xengine {
             checkGLError("OGLRenderer::renderFinish");
         }
 
-        void OGLRenderer::renderClear(RenderTarget &target, ColorRGBA color) {
+        void OGLRenderer::renderClear(RenderTarget &target, ColorRGBA color, float depth) {
             glEnable(GL_MULTISAMPLE);
 
             glClearColor((float) color.r() / (float) 255,
                          (float) color.g() / (float) 255,
                          (float) color.b() / (float) 255,
                          (float) color.a() / (float) 255);
+
+            glClearDepth(depth);
 
             auto &fb = dynamic_cast<OGLRenderTarget &>(target);
 

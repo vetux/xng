@@ -140,14 +140,15 @@ namespace xengine {
 
         struct XENGINE_EXPORT Attributes {
             TextureType textureType = TEXTURE_2D;
-            Vec2i size = {};
+            Vec2i size = {1,1};
             ColorFormat format = RGBA;
             TextureWrapping wrapping = CLAMP_TO_EDGE;
             TextureFiltering filterMin = LINEAR;
             TextureFiltering filterMag = LINEAR;
-            bool generateMipmap = true;
+            bool generateMipmap = false;
             MipMapFiltering mipmapFilter = NEAREST_MIPMAP_NEAREST;
-            int samples = 1;
+            int samples = 1; //Ignored if texture is not TEXTURE_2D_MULTISAMPLE
+            bool fixedSampleLocations = false;
         };
 
         explicit TextureBuffer(Attributes attributes) : attributes(attributes) {}

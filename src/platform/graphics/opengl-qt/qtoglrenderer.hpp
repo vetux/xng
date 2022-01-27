@@ -38,7 +38,7 @@ namespace xengine {
 
             void renderFinish() override;
 
-            void renderClear(RenderTarget &target, ColorRGBA color) override;
+            void renderClear(RenderTarget &target, ColorRGBA color, float depth) override;
 
             void debugDrawCallRecordStart() override;
 

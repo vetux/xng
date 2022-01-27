@@ -32,6 +32,8 @@ namespace xengine {
         explicit RenderOptions(Vec2i viewportOffset,
                                Vec2i viewportSize,
                                bool multiSample = true,
+                               bool multiSampleEnableFrequency = false,
+                               float multiSampleFrequency = 1,
                                ColorRGBA clearColorValue = {0, 0, 0, 0},
                                float clearDepthValue = 1,
                                bool clearColor = true,
@@ -48,6 +50,8 @@ namespace xengine {
         Vec2i viewportOffset;
         Vec2i viewportSize;
         bool multiSample;
+        bool multiSampleEnableFrequency;
+        float multiSampleFrequency;
         ColorRGBA clearColorValue;
         float clearDepthValue;
         bool clearColor;
@@ -65,7 +69,7 @@ namespace xengine {
 
         virtual void renderFinish() = 0;
 
-        virtual void renderClear(RenderTarget &target, ColorRGBA color) = 0;
+        virtual void renderClear(RenderTarget &target, ColorRGBA color, float depth) = 0;
 
         virtual void debugDrawCallRecordStart() = 0;
 
