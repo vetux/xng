@@ -104,12 +104,16 @@ namespace xengine {
         template<typename T>
         void unloadObject(const AssetPath &path) {
             std::type_index tid = typeid(T);
-            if (tid == typeid(TextureBuffer)) {
-                auto texture = assetManager.getAsset<Texture>(path);
-                for (auto &img: texture.images)
-                    assetManager.decrementRef(img);
+
+            //Check if get() was called for the given path.
+            if (objects.find(path) != objects.end()) {
+                if (tid == typeid(TextureBuffer)) {
+                    auto texture = assetManager.getAsset<Texture>(path);
+                    for (auto &img: texture.images)
+                        assetManager.decrementRef(img);
+                }
+                assetManager.decrementRef(path);
             }
-            assetManager.decrementRef(path);
         }
 
         AssetManager &assetManager;
