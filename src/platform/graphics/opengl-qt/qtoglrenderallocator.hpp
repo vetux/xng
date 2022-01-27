@@ -34,6 +34,8 @@ namespace xengine {
                 QOpenGLFunctions_4_5_Core::initializeOpenGLFunctions();
             }
 
+            std::unique_ptr<RenderTarget> createRenderTarget(Vec2i size) override;
+
             std::unique_ptr<RenderTarget> createRenderTarget(Vec2i size, int samples) override;
 
             std::unique_ptr<TextureBuffer> createTextureBuffer(TextureBuffer::Attributes attributes) override;

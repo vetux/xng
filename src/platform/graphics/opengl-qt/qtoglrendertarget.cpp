@@ -33,6 +33,34 @@ namespace xengine {
         QOpenGLFunctions_4_5_Core::initializeOpenGLFunctions();
     }
 
+    opengl::QtOGLRenderTarget::QtOGLRenderTarget(Vec2i size) {
+        QOpenGLFunctions_4_5_Core::initializeOpenGLFunctions();
+
+        glGenFramebuffers(1, &FBO);
+        glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+
+        glGenRenderbuffers(1, &colorRBO);
+        glBindRenderbuffer(GL_RENDERBUFFER, colorRBO);
+
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA, size.x, size.y);
+
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRBO);
+
+        glGenRenderbuffers(1, &depthStencilRBO);
+        glBindRenderbuffer(GL_RENDERBUFFER, depthStencilRBO);
+
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, size.x, size.y);
+
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilRBO);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            throw std::runtime_error("Failed to setup framebuffer");
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        checkGLError("OGLRenderAllocator::allocateFrameBuffer");
+    }
+
     opengl::QtOGLRenderTarget::QtOGLRenderTarget(Vec2i size, int samples)
             : FBO(), colorRBO(), depthStencilRBO(), size(size), samples(samples) {
         QOpenGLFunctions_4_5_Core::initializeOpenGLFunctions();

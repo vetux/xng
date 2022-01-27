@@ -30,6 +30,8 @@ namespace xengine {
         public:
             OGLRenderTarget();
 
+            explicit OGLRenderTarget(Vec2i size);
+
             OGLRenderTarget(Vec2i size, int samples);
 
             ~OGLRenderTarget() override;
@@ -90,11 +92,11 @@ namespace xengine {
             virtual GLuint getFBO();
 
         protected:
-            GLuint FBO;
-            GLuint colorRBO;
-            GLuint depthStencilRBO;
+            GLuint FBO{};
+            GLuint colorRBO{};
+            GLuint depthStencilRBO{};
             Vec2i size;
-            int samples;
+            int samples{};
         };
     }
 }

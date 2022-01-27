@@ -32,6 +32,8 @@ namespace xengine {
         public:
             QtOGLRenderTarget(GLuint FBO, Vec2i size, int samples, bool delFBO);
 
+            QtOGLRenderTarget(Vec2i size);
+
             QtOGLRenderTarget(Vec2i size, int samples);
 
             ~QtOGLRenderTarget() override;

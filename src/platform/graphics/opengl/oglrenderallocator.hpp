@@ -28,6 +28,8 @@ namespace xengine {
     namespace opengl {
         class OGLRenderAllocator : public RenderAllocator {
         public:
+            std::unique_ptr<RenderTarget> createRenderTarget(Vec2i size) override;
+
             std::unique_ptr<RenderTarget> createRenderTarget(Vec2i size, int samples) override;
 
             std::unique_ptr<TextureBuffer> createTextureBuffer(TextureBuffer::Attributes attributes) override;

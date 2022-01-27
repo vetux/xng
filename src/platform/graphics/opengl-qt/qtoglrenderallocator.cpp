@@ -54,6 +54,10 @@ namespace xengine {
             }
         }
 
+        std::unique_ptr<RenderTarget> QtOGLRenderAllocator::createRenderTarget(Vec2i size) {
+            return std::make_unique<QtOGLRenderTarget>(size);
+        }
+
         std::unique_ptr<RenderTarget> QtOGLRenderAllocator::createRenderTarget(Vec2i size, int samples) {
             return std::make_unique<QtOGLRenderTarget>(size, samples);
         }

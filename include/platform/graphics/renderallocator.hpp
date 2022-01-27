@@ -33,6 +33,8 @@
 namespace xengine {
     class XENGINE_EXPORT RenderAllocator {
     public:
+        virtual std::unique_ptr<RenderTarget> createRenderTarget(Vec2i size) = 0;
+
         virtual std::unique_ptr<RenderTarget> createRenderTarget(Vec2i size, int samples) = 0;
 
         virtual std::unique_ptr<TextureBuffer> createTextureBuffer(TextureBuffer::Attributes attributes) = 0;
