@@ -26,7 +26,7 @@
 #include "ecs/system.hpp"
 #include "ecs/components/meshrendercomponent.hpp"
 #include "ecs/components/skyboxcomponent.hpp"
-#include "render/deferred/deferredrenderer.hpp"
+#include "render/deferred/deferredpipeline.hpp"
 #include "io/archive.hpp"
 #include "asset/assetimporter.hpp"
 
@@ -38,14 +38,15 @@ namespace xengine {
     class DebugPass;
 
     class XENGINE_EXPORT RenderSystem : public System,
-                                     ComponentPool<MeshRenderComponent>::Listener,
-                                     ComponentPool<SkyboxComponent>::Listener {
+                                        ComponentPool<MeshRenderComponent>::Listener,
+                                        ComponentPool<SkyboxComponent>::Listener {
     public:
         RenderSystem(RenderTarget &screen,
                      RenderDevice &device,
                      Archive &archive,
-                     const std::set<RenderPass *> &passes,
-                     AssetManager &assetManager);
+                     AssetManager &assetManager,
+                     AssetRenderManager &assetRenderManager,
+                     Pipeline &pipeline);
 
         ~RenderSystem() override;
 
@@ -55,14 +56,9 @@ namespace xengine {
 
         void update(float deltaTime, EntityManager &entityManager) override;
 
-        DeferredRenderer &getRenderer();
+        Pipeline &getPipeline();
 
         size_t getPolyCount() const { return polyCount; }
-
-        template<typename T>
-        T &getRenderPass() {
-            return ren->getRenderPass<T>();
-        }
 
     private:
         void onComponentCreate(const Entity &entity, const MeshRenderComponent &component) override;
@@ -81,14 +77,14 @@ namespace xengine {
                                const SkyboxComponent &oldValue,
                                const SkyboxComponent &newValue) override;
 
-        std::unique_ptr<DeferredRenderer> ren;
+        Pipeline &pipeline;
 
         RenderDevice &device;
         RenderTarget &screenTarget;
 
         Archive &archive;
         AssetManager &assetManager;
-        AssetRenderManager assetRenderManager;
+        AssetRenderManager &assetRenderManager;
 
         size_t polyCount{};
     };

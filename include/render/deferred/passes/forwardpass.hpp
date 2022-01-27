@@ -25,16 +25,11 @@
 namespace xengine {
     class XENGINE_EXPORT ForwardPass : public RenderPass {
     public:
-        static const char *COLOR;
-        static const char *DEPTH;
-
         explicit ForwardPass(RenderDevice &device);
 
         ~ForwardPass() override;
 
-        void prepareBuffer(GeometryBuffer &gBuffer) override;
-
-        void render(GeometryBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) override;
+        void render(GBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) override;
 
     private:
         RenderDevice &device;

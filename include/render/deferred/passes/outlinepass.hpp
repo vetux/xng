@@ -27,9 +27,7 @@ namespace xengine {
     public:
         ~OutlinePass() override = default;
 
-        void prepareBuffer(GeometryBuffer &gBuffer) override;
-
-        void render(GeometryBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) override;
+        void render(GBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) override;
     };
 }
 

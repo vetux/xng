@@ -22,22 +22,27 @@
 #include "render/forward/forwardrenderer.hpp"
 
 namespace xengine {
-    const char *ForwardPass::COLOR = "forward";
-    const char *ForwardPass::DEPTH = "forward_depth";
-
     ForwardPass::ForwardPass(RenderDevice &device)
-            : device(device) {}
+            : device(device) {
+        resizeTextureBuffers({1, 1}, device.getAllocator(), true);
+    }
 
     ForwardPass::~ForwardPass() = default;
 
-    void ForwardPass::prepareBuffer(GeometryBuffer &gBuffer) {
-        gBuffer.addBuffer(COLOR, TextureBuffer::ColorFormat::RGBA);
-        gBuffer.addBuffer(DEPTH, TextureBuffer::ColorFormat::DEPTH_STENCIL);
-    }
+    void ForwardPass::render(GBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) {
+        auto &target = gBuffer.getPassTarget();
 
-    void ForwardPass::render(GeometryBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) {
-        gBuffer.attachColor({COLOR});
-        gBuffer.attachDepthStencil(DEPTH);
-        ForwardRenderer::renderScene(device.getRenderer(), gBuffer.getRenderTarget(), scene);
+        if (colorBuffer->getAttributes().size != gBuffer.getSize()) {
+            resizeTextureBuffers(gBuffer.getSize(), device.getAllocator(), true);
+        }
+
+        target.setNumberOfColorAttachments(1);
+        target.attachColor(0, *colorBuffer);
+        target.attachDepthStencil(*depthBuffer);
+
+        ForwardRenderer::renderScene(device.getRenderer(), target, scene);
+
+        target.detachColor(0);
+        target.detachDepthStencil();
     }
 }

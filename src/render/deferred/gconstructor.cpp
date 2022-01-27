@@ -17,10 +17,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "render/deferred/gconstructor.hpp"
+
 #include <sstream>
 
-#include "render/deferred/passes/prepass.hpp"
-#include "render/deferred/deferredrenderer.hpp"
+#include "render/deferred/deferredpipeline.hpp"
 #include "platform/graphics/shadercompiler.hpp"
 #include "render/shader/shaderinclude.hpp"
 #include "asset/assetimporter.hpp"
@@ -151,20 +152,10 @@ namespace xengine {
                 static_cast<float>(color.a()) / 255};
     }
 
-    const char *PrePass::DEPTH = "depth";
-    const char *PrePass::POSITION = "position";
-    const char *PrePass::NORMAL = "normal";
-    const char *PrePass::TANGENT = "tangent";
-    const char *PrePass::TEXTURE_NORMAL = "texture_normal";
-    const char *PrePass::DIFFUSE = "diffuse";
-    const char *PrePass::AMBIENT = "ambient";
-    const char *PrePass::SPECULAR = "specular";
-    const char *PrePass::SHININESS_ID = "shininess_id";
-
-    PrePass::PrePass(RenderDevice &device)
+    GConstructor::GConstructor(RenderDevice &device)
             : renderDevice(device) {
-         vs = ShaderSource(SHADER_VERT_GEOMETRY, "main", VERTEX, GLSL_460);
-         fs = ShaderSource(SHADER_FRAG_GEOMETRY, "main", FRAGMENT, GLSL_460);
+        vs = ShaderSource(SHADER_VERT_GEOMETRY, "main", VERTEX, GLSL_460);
+        fs = ShaderSource(SHADER_FRAG_GEOMETRY, "main", FRAGMENT, GLSL_460);
 
         vs.preprocess(ShaderInclude::getShaderIncludeCallback(),
                       ShaderInclude::getShaderMacros(GLSL_460));
@@ -188,21 +179,7 @@ namespace xengine {
         defaultTexture->upload(Image<ColorRGBA>(1, 1, {{0, 0, 0, 0}}));
     }
 
-    PrePass::~PrePass() = default;
-
-    void PrePass::prepareBuffer(GeometryBuffer &gBuffer) {
-        gBuffer.addBuffer(DEPTH, TextureBuffer::ColorFormat::DEPTH_STENCIL);
-        gBuffer.addBuffer(POSITION, TextureBuffer::ColorFormat::RGBA32F);
-        gBuffer.addBuffer(NORMAL, TextureBuffer::ColorFormat::RGBA32F);
-        gBuffer.addBuffer(TANGENT, TextureBuffer::ColorFormat::RGBA32F);
-        gBuffer.addBuffer(TEXTURE_NORMAL, TextureBuffer::ColorFormat::RGBA32F);
-        gBuffer.addBuffer(DIFFUSE, TextureBuffer::ColorFormat::RGBA);
-        gBuffer.addBuffer(AMBIENT, TextureBuffer::ColorFormat::RGBA);
-        gBuffer.addBuffer(SPECULAR, TextureBuffer::ColorFormat::RGBA);
-        gBuffer.addBuffer(SHININESS_ID, TextureBuffer::ColorFormat::RGBA32F);
-    }
-
-    void PrePass::render(GeometryBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) {
+    void GConstructor::create(GBuffer &buffer, Scene &scene, AssetRenderManager &assetRenderManager) {
         auto &ren = renderDevice.getRenderer();
 
         Mat4f model, view, projection;
@@ -211,29 +188,15 @@ namespace xengine {
 
         shader->activate();
 
-        // Draw deferred geometry
-        gBuffer.attachColor({
-                                    POSITION,
-                                    NORMAL,
-                                    TANGENT,
-                                    TEXTURE_NORMAL,
-                                    DIFFUSE,
-                                    AMBIENT,
-                                    SPECULAR,
-                                    SHININESS_ID
-                            });
-        gBuffer.attachDepthStencil(DEPTH);
+        auto &target = buffer.getRenderTarget();
 
-        //Clear geometry buffer
-        ren.renderBegin(gBuffer.getRenderTarget(), RenderOptions({}, gBuffer.getRenderTarget().getSize()));
+        ren.renderBegin(target, RenderOptions({}, target.getSize(), true, true));
 
         std::vector<std::reference_wrapper<TextureBuffer>> textures;
         textures.reserve(6);
 
         bool firstCommand = true;
         Material shaderMaterial;
-
-        // Rasterize the geometry and store the geometry + shading data in the geometry buffer.
         for (auto &command: scene.deferred) {
             textures.clear();
 

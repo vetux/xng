@@ -20,71 +20,35 @@
 #ifndef XENGINE_COMPOSITOR_HPP
 #define XENGINE_COMPOSITOR_HPP
 
-#include "geometrybuffer.hpp"
+#include "render/deferred/passchain.hpp"
 
+#include "platform/graphics/renderdevice.hpp"
 #include "platform/graphics/rendercommand.hpp"
 
 namespace xengine {
     /**
-     * The compositor creates the final image on the screen by combining textures from the geometry buffer.
+     * The compositor creates the final image on the screen by combining textures returned by a pass chain object.
+     *
+     * It has the task of relating color and depth textures created by the render passes
+     * and outputting the correct pixels for the final image.
+     *
+     * The class can be inherited to define custom logic at the end of the pipeline for example for post processing effects.
      */
     class XENGINE_EXPORT Compositor {
     public:
-        struct XENGINE_EXPORT Layer {
-            Layer() = default;
+        explicit Compositor(RenderDevice &device);
 
-            Layer(std::string name,
-                  std::string color,
-                  std::string depth,
-                  DepthTestMode depthTestMode = DEPTH_TEST_LESS,
-                  BlendMode colorBlendModeSource = SRC_ALPHA,
-                  BlendMode colorBlendModeDest = ONE_MINUS_SRC_ALPHA)
-                    : name(std::move(name)),
-                      color(std::move(color)),
-                      depth(std::move(depth)),
-                      depthTestMode(depthTestMode),
-                      colorBlendModeSource(colorBlendModeSource),
-                      colorBlendModeDest(colorBlendModeDest) {}
+        virtual void setClearColor(ColorRGBA color);
 
-            Layer(const Layer &other) = default;
+        virtual void present(RenderTarget &screen, PassChain &chain);
 
-            std::string name;
+    protected:
+        virtual void drawNode(RenderTarget &screen, PassChain::Node &node);
 
-            // The names of the color texture in the geometry buffer
-            std::string color;
-
-            //The optional name of the depth texture in the geometry buffer
-            std::string depth;
-
-            //The depth test mode to use when rendering this layer
-            DepthTestMode depthTestMode = DEPTH_TEST_LESS;
-
-            //The blend modes to use when rendering this layer
-            BlendMode colorBlendModeSource = SRC_ALPHA;
-            BlendMode colorBlendModeDest = ONE_MINUS_SRC_ALPHA;
-        };
-
-        Compositor(RenderDevice &device, std::vector<Layer> layers);
-
-        std::vector<Layer> &getLayers();
-
-        void setLayers(const std::vector<Layer> &layers);
-
-        void setClearColor(ColorRGB color);
-
-        void presentLayers(RenderTarget &screen, GeometryBuffer &buffer);
-
-        void presentLayers(RenderTarget &screen, GeometryBuffer &buffer, const std::vector<Layer> &pLayers);
-
-    private:
-        void drawLayer(RenderTarget &screen,
-                       GeometryBuffer &buffer,
-                       const Layer &layer);
-
-        ColorRGB clearColor{0, 0, 0};
         RenderDevice &device;
-        std::vector<Layer> layers;
         std::unique_ptr<ShaderProgram> shader;
+        std::unique_ptr<MeshBuffer> screenQuad;
+        ColorRGBA clearColor{50, 50, 0, 0};
     };
 }
 

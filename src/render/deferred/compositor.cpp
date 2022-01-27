@@ -23,12 +23,9 @@
 
 static const char *SHADER_VERT = R"###(#version 460 core
 
-#define MAX_COLOR 15
-
 struct Layer {
-    int MSAA_SAMPLES;
-    sampler2DMS color;
-    sampler2DMS depth;
+    sampler2D color;
+    sampler2D depth;
     int has_depth;
     bool filterBicubic;
 };
@@ -63,14 +60,11 @@ void main()
 
 static const char *SHADER_FRAG = R"###(#version 460 core
 
-#define MAX_COLOR 15
-
 #include "texfilter.glsl"
 
 struct Layer {
-    int MSAA_SAMPLES;
-    sampler2DMS color;
-    sampler2DMS depth;
+    sampler2D color;
+    sampler2D depth;
     int has_depth;
     bool filterBicubic;
 };
@@ -93,32 +87,27 @@ vec4 blend(vec4 colorA, vec4 colorB)
 
 void main()
 {
-    vec4 color;
+    // Apply bicubic filtering which smooths out the image if the texture size is smaller than the viewport size.
     if (globals.layer.filterBicubic)
     {
-        // Apply bicubic filtering which smooths out the image if the texture size is smaller than the viewport size.
-        color = textureBicubic(globals.layer.color, fUv);
+        fragColor = textureBicubic(globals.layer.color, fUv);
     }
     else
     {
-        color = resolveMsaa(globals.layer.color, fUv);
+        fragColor = texture(globals.layer.color, fUv);
     }
 
-    float depth = 0;
-
+    gl_FragDepth = 1;
     if (globals.layer.has_depth != 0)
     {
-        depth = resolveMsaa(globals.layer.depth, fUv).r;
+        gl_FragDepth = texture(globals.layer.depth, fUv).r;
     }
-
-    fragColor = color;
-    gl_FragDepth = depth;
 }
 )###";
 
 namespace xengine {
-    Compositor::Compositor(RenderDevice &device, std::vector<Layer> layers)
-            : device(device), layers(std::move(layers)) {
+    Compositor::Compositor(RenderDevice &device)
+            : device(device), screenQuad(device.getAllocator().createMeshBuffer(Mesh::normalizedQuad())) {
         ShaderSource shaderVert(SHADER_VERT, "main", VERTEX, GLSL_460);
         ShaderSource shaderFrag(SHADER_FRAG, "main", FRAGMENT, GLSL_460);
         shaderFrag.preprocess(ShaderInclude::getShaderIncludeCallback(), ShaderInclude::getShaderMacros(GLSL_460));
@@ -126,71 +115,60 @@ namespace xengine {
         shader = std::unique_ptr<ShaderProgram>(device.getAllocator().createShaderProgram(shaderVert, shaderFrag));
     }
 
-    std::vector<Compositor::Layer> &Compositor::getLayers() {
-        return layers;
-    }
-
-    void Compositor::setClearColor(ColorRGB color) {
+    void Compositor::setClearColor(ColorRGBA color) {
         clearColor = color;
     }
 
-    void Compositor::presentLayers(RenderTarget &screen, GeometryBuffer &buffer) {
-        presentLayers(screen, buffer, layers);
-    }
-
-    void Compositor::presentLayers(RenderTarget &screen,
-                                   GeometryBuffer &buffer,
-                                   const std::vector<Layer> &pLayers) {
+    void Compositor::present(RenderTarget &screen,
+                             PassChain &chain) {
         auto &ren = device.getRenderer();
 
-        ren.renderClear(screen, {0, 0, 0, 255});
+        ren.renderClear(screen, clearColor, 1);
 
-        if (layers.empty())
+        auto nodes = chain.getNodes();
+
+        if (nodes.empty())
             return;
 
         shader->activate();
 
-        for (auto &layer: layers) {
-            drawLayer(screen, buffer, layer);
+        for (auto &node: nodes) {
+            drawNode(screen, node);
         }
     }
 
-    void Compositor::drawLayer(RenderTarget &screen,
-                               GeometryBuffer &buffer,
-                               const Compositor::Layer &layer) {
+    void Compositor::drawNode(RenderTarget &screen,
+                              PassChain::Node &node) {
         auto &ren = device.getRenderer();
 
         std::string prefix = "globals.layer";
 
         std::vector<std::reference_wrapper<TextureBuffer>> textures;
 
-        textures.emplace_back(buffer.getBuffer(layer.color));
-        assert(shader->setTexture(prefix + ".color", 0));
-
-        assert(shader->setInt(prefix + ".has_depth", !layer.depth.empty()));
-        if (!layer.depth.empty()) {
-            textures.emplace_back(buffer.getBuffer(layer.depth));
-            assert(shader->setTexture(prefix + ".depth", 1));
+        if (node.color != nullptr) {
+            textures.emplace_back(*node.color);
+            assert(shader->setTexture(prefix + ".color", 0));
         }
 
-        assert(shader->setInt("globals.layer.MSAA_SAMPLES", textures.at(0).get().getAttributes().samples));
+        assert(shader->setInt(prefix + ".has_depth", node.depth != nullptr));
+        if (node.depth != nullptr) {
+            textures.emplace_back(*node.depth);
+            assert(shader->setTexture(prefix + ".depth", textures.size() - 1));
+        }
 
-        assert(shader->setBool("globals.layer.filterBicubic", textures.at(0).get().getAttributes().size != screen.getSize()));
+        assert(shader->setBool("globals.layer.filterBicubic",
+                               textures.at(0).get().getAttributes().size != screen.getSize()));
 
-        RenderCommand command(*shader, buffer.getScreenQuad());
+        RenderCommand command(*shader, *screenQuad);
         command.textures = textures;
+        command.properties.enableDepthTest = false;
+        command.properties.enableBlending = node.enableBlending;
+        command.properties.depthTestMode = node.depthTestMode;
+        command.properties.blendSourceMode = node.colorBlendModeSource;
+        command.properties.blendDestinationMode = node.colorBlendModeDest;
 
-        command.properties.enableBlending = true;
-        command.properties.depthTestMode = layer.depthTestMode;
-        command.properties.blendSourceMode = layer.colorBlendModeSource;
-        command.properties.blendDestinationMode = layer.colorBlendModeDest;
-
-        ren.renderBegin(screen, RenderOptions({}, screen.getSize(), false, {}, 0, false, false));
+        ren.renderBegin(screen, RenderOptions({}, screen.getSize(), false, false, 1, {}, 0, false, false));
         ren.addCommand(command);
         ren.renderFinish();
-    }
-
-    void Compositor::setLayers(const std::vector<Layer> &l) {
-        layers = l;
     }
 }

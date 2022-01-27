@@ -21,32 +21,21 @@
 #include <filesystem>
 
 #include "ecs/systems/rendersystem.hpp"
-
 #include "ecs/components.hpp"
-
-#include "render/deferred/passes/prepass.hpp"
-#include "render/deferred/passes/phongshadepass.hpp"
-#include "render/deferred/passes/forwardpass.hpp"
-#include "render/deferred/passes/debugpass.hpp"
-#include "render/deferred/passes/skyboxpass.hpp"
-
-#include "asset/assetimporter.hpp"
 
 namespace xengine {
     RenderSystem::RenderSystem(RenderTarget &screen,
                                RenderDevice &device,
                                Archive &archive,
-                               const std::set<RenderPass *> &passes,
-                               AssetManager &assetManager)
+                               AssetManager &assetManager,
+                               AssetRenderManager &assetRenderManager,
+                               Pipeline &pipeline)
             : screenTarget(screen),
               device(device),
-              ren(),
               archive(archive),
               assetManager(assetManager),
-              assetRenderManager(assetManager, device.getAllocator()) {
-        ren = std::make_unique<DeferredRenderer>(device, assetRenderManager);
-        for (auto &pass: passes)
-            ren->addRenderPass(std::unique_ptr<RenderPass>(pass));
+              assetRenderManager(assetRenderManager),
+              pipeline(pipeline) {
     }
 
     RenderSystem::~RenderSystem() = default;
@@ -129,11 +118,11 @@ namespace xengine {
         }
 
         //Render
-        ren->render(screenTarget, scene);
+        pipeline.render(screenTarget, scene);
     }
 
-    DeferredRenderer &RenderSystem::getRenderer() {
-        return *ren;
+    Pipeline &RenderSystem::getPipeline() {
+        return pipeline;
     }
 
     void RenderSystem::onComponentCreate(const Entity &entity, const MeshRenderComponent &component) {

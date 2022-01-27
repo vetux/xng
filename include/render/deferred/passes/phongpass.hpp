@@ -17,33 +17,32 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SKYBOXPASS_HPP
-#define XENGINE_SKYBOXPASS_HPP
+#ifndef XENGINE_PHONGPASS_HPP
+#define XENGINE_PHONGPASS_HPP
 
 #include "render/deferred/renderpass.hpp"
 
 namespace xengine {
-    class XENGINE_EXPORT SkyboxPass : public RenderPass {
+    class XENGINE_EXPORT PhongPass : public RenderPass {
     public:
-        explicit SkyboxPass(RenderDevice &device);
+        explicit PhongPass(RenderDevice &device);
 
-        ~SkyboxPass() override = default;
+        ~PhongPass() override = default;
 
         void render(GBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) override;
 
     private:
-        RenderDevice &device;
+        RenderDevice &renderDevice;
 
         std::unique_ptr<ShaderProgram> shader;
-        std::unique_ptr<MeshBuffer> meshBuffer;
-        std::unique_ptr<TextureBuffer> defaultTexture;
 
-        TextureBuffer *texture = nullptr;
-        ColorRGBA color;
+        ShaderSource vertexShader;
+        ShaderSource fragmentShader;
 
-        ShaderSource vert;
-        ShaderSource frag;
+        std::unique_ptr<RenderTarget> multiSampleTarget;
+        std::unique_ptr<TextureBuffer> multiSampleColor;
+        std::unique_ptr<TextureBuffer> multiSampleDepth;
     };
 }
 
-#endif //XENGINE_SKYBOXPASS_HPP
+#endif //XENGINE_PHONGPASS_HPP

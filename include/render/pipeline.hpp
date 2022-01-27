@@ -17,35 +17,16 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_PHONGSHADEPASS_HPP
-#define XENGINE_PHONGSHADEPASS_HPP
+#ifndef XENGINE_PIPELINE_HPP
+#define XENGINE_PIPELINE_HPP
 
-#include "render/deferred/renderpass.hpp"
+#include "asset/scene.hpp"
+#include "platform/graphics/rendertarget.hpp"
 
 namespace xengine {
-    class XENGINE_EXPORT PhongShadePass : public RenderPass {
+    class XENGINE_EXPORT Pipeline {
     public:
-        static const char *AMBIENT;
-        static const char *DIFFUSE;
-        static const char *SPECULAR;
-        static const char *COMBINED;
-
-        explicit PhongShadePass(RenderDevice &device);
-
-        ~PhongShadePass() override = default;
-
-        void prepareBuffer(GeometryBuffer &gBuffer) override;
-
-        void render(GeometryBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) override;
-
-    private:
-        RenderDevice &renderDevice;
-
-        std::unique_ptr<ShaderProgram> shader;
-
-        ShaderSource vertexShader;
-        ShaderSource fragmentShader;
+        virtual void render(RenderTarget &target, Scene &scene) = 0;
     };
 }
-
-#endif //XENGINE_PHONGSHADEPASS_HPP
+#endif //XENGINE_PIPELINE_HPP

@@ -24,29 +24,28 @@
 #include <QOpenGLFunctions_3_3_Core>
 
 #include "platform/graphics/rendertarget.hpp"
-#include "render/deferred/deferredrenderer.hpp"
+#include "render/deferred/deferredpipeline.hpp"
 
 #include "render/deferred/passes/skyboxpass.hpp"
-#include "render/deferred/passes/prepass.hpp"
-#include "render/deferred/passes/phongshadepass.hpp"
+#include "render/deferred/passes/phongpass.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT QtRenderWidget : public QOpenGLWidget {
     public:
         /**
-         * The implementation of this interface creates the render passes when the QOpenGLWidget is initializing.
+         * The implementation of this interface creates the pipeline when the QOpenGLWidget is initializing.
          * This is needed to be a delayed operation because QOpenGLWidget only allows usage of OpenGL calls at
          * specific points (initializeGL() ...)
          */
         class Allocator {
         public:
             /**
-             * Create the RenderPass objects and call ren.addRenderPass
+             * Create the pipeline.
              *
              * @param device
              * @param ren
              */
-            virtual void addPasses(RenderDevice &device, DeferredRenderer &ren) = 0;
+            virtual std::unique_ptr<Pipeline> createPipeline() = 0;
         };
 
         QtRenderWidget(QWidget *parent,
@@ -59,23 +58,17 @@ namespace xengine {
             update();
         }
 
-        void setLayers(const std::vector<Compositor::Layer> &layers) {
-            renderLayers = layers;
-        }
-
     protected:
         void initializeGL() override {
             QOpenGLWidget::initializeGL();
             renderDevice = RenderDevice::create(OPENGL_4_6_QT);
             assetRenderManager = std::make_unique<AssetRenderManager>(assetManager,
                                                                       renderDevice->getAllocator());
-            ren = std::make_unique<DeferredRenderer>(*renderDevice, *assetRenderManager);
-            allocator->addPasses(*renderDevice, *ren);
+            pipeline = allocator->createPipeline();
         }
 
         void resizeGL(int w, int h) override {
             QOpenGLWidget::resizeGL(w, h);
-            ren->getGeometryBuffer().setSize({w, h});
         }
 
         void paintGL() override {
@@ -85,9 +78,7 @@ namespace xengine {
                 return;
             scene.camera.aspectRatio = static_cast<float>( target->getSize().x)
                                        / static_cast<float>(target->getSize().y);
-            ren->getGeometryBuffer().setSize(target->getSize());
-            ren->getCompositor().setLayers(renderLayers);
-            ren->render(*target, scene);
+            pipeline->render(*target, scene);
         }
 
     private:
@@ -97,12 +88,12 @@ namespace xengine {
 
         Scene scene;
 
+        std::unique_ptr<Pipeline> pipeline;
+
         std::unique_ptr<RenderDevice> renderDevice;
         std::unique_ptr<AssetRenderManager> assetRenderManager;
-        std::unique_ptr<DeferredRenderer> ren;
 
         std::unique_ptr<Allocator> allocator;
-        std::vector<Compositor::Layer> renderLayers;
     };
 }
 

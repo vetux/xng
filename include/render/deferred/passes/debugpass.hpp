@@ -25,17 +25,13 @@
 namespace xengine {
     class XENGINE_EXPORT DebugPass : public RenderPass {
     public:
-        static const char *WIREFRAME;
-        static const char *LIGHTS;
-        static const char *NORMALS;
-
         explicit DebugPass(RenderDevice &device);
 
         ~DebugPass() override;
 
-        void prepareBuffer(GeometryBuffer &gBuffer) override;
+        void render(GBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) override;
 
-        void render(GeometryBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) override;
+        void setEnabled(bool enable) { enabled = enable; }
 
     private:
         RenderDevice &device;
@@ -50,10 +46,13 @@ namespace xengine {
         ShaderSource vsw;
         ShaderSource gsw;
 
+        bool enabled = false;
+
         std::unique_ptr<ShaderProgram> shaderWireframe;
         std::unique_ptr<ShaderProgram> shaderNormals;
         std::unique_ptr<ShaderProgram> shaderLight;
         std::unique_ptr<MeshBuffer> meshBuffer;
+        std::unique_ptr<RenderTarget> multiSampleTarget;
     };
 }
 

@@ -192,6 +192,8 @@ namespace xengine {
         renderDevice.getRenderer().renderBegin(target, RenderOptions({},
                                                                      target.getSize(),
                                                                      true,
+                                                                     false,
+                                                                     1,
                                                                      {},
                                                                      1,
                                                                      clear, clear, clear));
@@ -207,6 +209,8 @@ namespace xengine {
         renderDevice.getRenderer().renderBegin(target, RenderOptions(viewportOffset,
                                                                      viewportSize,
                                                                      true,
+                                                                     false,
+                                                                     1,
                                                                      clearColor,
                                                                      1,
                                                                      clear, clear, clear));

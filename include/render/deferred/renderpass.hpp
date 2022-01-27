@@ -22,32 +22,70 @@
 
 #include "renderpass.hpp"
 #include "asset/scene.hpp"
-#include "geometrybuffer.hpp"
+#include "gbuffer.hpp"
 
 #include "platform/graphics/renderer.hpp"
 #include "platform/graphics/renderdevice.hpp"
 
 namespace xengine {
     /**
-     * Users may extend this class XENGINE_EXPORT and create custom render passes.
+     * Users may extend this type to create custom render passes.
      */
     class XENGINE_EXPORT RenderPass {
     public:
         virtual ~RenderPass() = default;
 
         /**
-         * Create the textures required for this render pass in the geometry buffer.
+         * Run the render logic.
+         *
+         * @param gBuffer The gbuffer to sample from.
+         * @param scene The scene data.
          */
-        virtual void prepareBuffer(GeometryBuffer &gBuffer) {};
+        virtual void render(GBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) = 0;
 
         /**
-         * Run the pass and store the results in the geometry buffer.
+         * Return the default color texture which the render pass has written to in the last render call.
+         * Pass inheritors can expose more color textures via members if needed.
          *
-         * @param gBuffer
-         * @param scene
+         * Returned texture is required to be TEXTURE_2D because a conventional render pass rasterizes a screenquad
+         * and does the multisample resolve while sampling from the GBuffer.
+         *
+         * Returned texture is required to be of the size of the last render Gbuffer size, and may change
+         * when the GBuffer size has changed from a previous render() invocation.
+         *
+         * @return pointer to TextureBuffer.
          */
-        virtual void render(GeometryBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) {};
+        std::shared_ptr<TextureBuffer> getColorBuffer() { return colorBuffer; }
+
+        /**
+         * Return the default depth texture.
+         *
+         * Returned texture is required to be TEXTURE_2D.
+         *
+         * Returned texture is required to be of the size of the last render Gbuffer size, and may change
+         * when the GBuffer size has changed from a previous render() invocation.
+         *
+         * @return pointer to TextureBuffer or nullptr if no depth texture was created.
+         */
+        std::shared_ptr<TextureBuffer> getDepthBuffer() { return depthBuffer; }
+
+    protected:
+        void resizeTextureBuffers(Vec2i size, RenderAllocator &alloc, bool createDepthBuffer) {
+            TextureBuffer::Attributes attrib;
+            attrib.size = size;
+
+            colorBuffer = std::shared_ptr<TextureBuffer>(std::move(alloc.createTextureBuffer(attrib)));
+
+            attrib.format = TextureBuffer::DEPTH_STENCIL;
+            if (createDepthBuffer)
+                depthBuffer = std::shared_ptr<TextureBuffer>(std::move(alloc.createTextureBuffer(attrib)));
+            else
+                depthBuffer = nullptr;
+        }
+
+        std::shared_ptr<TextureBuffer> colorBuffer;
+        std::shared_ptr<TextureBuffer> depthBuffer;
     };
 }
 
-#endif //XENGINE_RENDERPASS_HPP
+#endif //XENGINE_RENDERPASS _HPP

@@ -18,8 +18,7 @@
  */
 
 #include "render/deferred/passes/debugpass.hpp"
-#include "render/deferred/passes/prepass.hpp"
-#include "render/deferred/deferredrenderer.hpp"
+#include "render/deferred/deferredpipeline.hpp"
 #include "render/shader/shaderinclude.hpp"
 
 #include "math/rotation.hpp"
@@ -509,10 +508,6 @@ void main()
 namespace xengine {
     using namespace ShaderCompiler;
 
-    const char *DebugPass::WIREFRAME = "debug_wireframe";
-    const char *DebugPass::LIGHTS = "debug_lights";
-    const char *DebugPass::NORMALS = "debug_normals";
-
     DebugPass::DebugPass(RenderDevice &device)
             : device(device) {
 
@@ -550,135 +545,118 @@ namespace xengine {
         shaderLight = device.getAllocator().createShaderProgram(vsl, gsl, fs);
 
         meshBuffer = device.getAllocator().createMeshBuffer(Mesh(Mesh::TRI, {Vertex(Vec3f(0))}, {0, 0, 0}));
+        resizeTextureBuffers({1, 1}, device.getAllocator(), true);
+
+        multiSampleTarget = device.getAllocator().createRenderTarget({1, 1}, 1);
     }
 
     DebugPass::~DebugPass() = default;
 
-    void DebugPass::prepareBuffer(GeometryBuffer &gBuffer) {
-        gBuffer.addBuffer(WIREFRAME, TextureBuffer::RGBA);
-        gBuffer.addBuffer(NORMALS, TextureBuffer::RGBA);
-        gBuffer.addBuffer(LIGHTS, TextureBuffer::RGBA);
-    }
-
-    void DebugPass::render(GeometryBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) {
+    void DebugPass::render(GBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) {
         auto &ren = device.getRenderer();
 
-        gBuffer.attachColor({NORMALS});
-        gBuffer.attachDepthStencil(PrePass::DEPTH);
+        auto &target = gBuffer.getPassTarget();
 
-        ren.renderBegin(gBuffer.getRenderTarget(),
+        if (colorBuffer->getAttributes().size != gBuffer.getSize() ||
+            multiSampleTarget->getSamples() != gBuffer.getSamples()) {
+            resizeTextureBuffers(gBuffer.getSize(), device.getAllocator(), true);
+            multiSampleTarget = device.getAllocator().createRenderTarget(gBuffer.getSize(), gBuffer.getSamples());
+        }
+
+        target.setNumberOfColorAttachments(1);
+        target.attachColor(0, *colorBuffer);
+        target.attachDepthStencil(*depthBuffer);
+
+        ren.renderBegin(*multiSampleTarget,
                         RenderOptions({},
                                       gBuffer.getSize(),
-                                      true,
-                                      {},
-                                      1,
-                                      true,
-                                      false,
-                                      false));
+                                      true));
 
-        shaderNormals->activate();
-        for (Scene::DeferredDrawNode &deferredCommand: scene.deferred) {
-            if (!shaderNormals->setFloat("globals.scale", 0.1f))
-                throw std::runtime_error("");
-            shaderNormals->setMat4("globals.MODEL", deferredCommand.transform.model());
-            shaderNormals->setMat4("globals.VIEW", scene.camera.view());
-            shaderNormals->setMat4("globals.PROJECTION", scene.camera.projection());
+        if (enabled) {
+            shaderNormals->activate();
+            for (Scene::DeferredDrawNode &deferredCommand: scene.deferred) {
+                if (!shaderNormals->setFloat("globals.scale", 0.1f))
+                    throw std::runtime_error("");
+                shaderNormals->setMat4("globals.MODEL", deferredCommand.transform.model());
+                shaderNormals->setMat4("globals.VIEW", scene.camera.view());
+                shaderNormals->setMat4("globals.PROJECTION", scene.camera.projection());
 
-            RenderCommand command(*shaderNormals, deferredCommand.mesh.getRenderObject<MeshBuffer>());
+                RenderCommand command(*shaderNormals, deferredCommand.mesh.getRenderObject<MeshBuffer>());
 
-            command.properties.depthTestWrite = false;
+                command.properties.enableDepthTest = false;
+                command.properties.depthTestWrite = false;
 
-            if (!deferredCommand.material.get().normalTexture.empty()) {
-                shaderNormals->setBool("globals.hasNormalTexture", true);
-                shaderNormals->setTexture("normal", 0);
-                command.textures.emplace_back(
-                        assetRenderManager.get<TextureBuffer>(deferredCommand.material.get().normalTexture));
-            } else {
-                shaderNormals->setBool("globals.hasNormalTexture", false);
+                if (!deferredCommand.material.get().normalTexture.empty()) {
+                    shaderNormals->setBool("globals.hasNormalTexture", true);
+                    shaderNormals->setTexture("normal", 0);
+                    command.textures.emplace_back(
+                            assetRenderManager.get<TextureBuffer>(deferredCommand.material.get().normalTexture));
+                } else {
+                    shaderNormals->setBool("globals.hasNormalTexture", false);
+                }
+
+                ren.addCommand(command);
             }
 
-            ren.addCommand(command);
-        }
+            shaderWireframe->activate();
+            for (auto &deferredCommand: scene.deferred) {
+                shaderWireframe->setMat4("globals.MODEL", deferredCommand.transform.model());
+                shaderWireframe->setMat4("globals.VIEW", scene.camera.view());
+                shaderWireframe->setMat4("globals.PROJECTION", scene.camera.projection());
 
-        ren.renderFinish();
+                RenderCommand command = RenderCommand(*shaderWireframe,
+                                                      deferredCommand.mesh.getRenderObject<MeshBuffer>());
 
-        gBuffer.attachColor({WIREFRAME});
-        gBuffer.detachDepthStencil();
+                command.properties.enableDepthTest = false;
 
-        ren.renderBegin(gBuffer.getRenderTarget(),
-                        RenderOptions({},
-                                      gBuffer.getSize(),
-                                      true,
-                                      {},
-                                      1,
-                                      true,
-                                      false,
-                                      false));
-
-        shaderWireframe->activate();
-        for (auto &deferredCommand: scene.deferred) {
-            shaderWireframe->setMat4("globals.MODEL", deferredCommand.transform.model());
-            shaderWireframe->setMat4("globals.VIEW", scene.camera.view());
-            shaderWireframe->setMat4("globals.PROJECTION", scene.camera.projection());
-
-            RenderCommand command = RenderCommand(*shaderWireframe, deferredCommand.mesh.getRenderObject<MeshBuffer>());
-
-            command.properties.enableDepthTest = false;
-
-            ren.addCommand(command);
-        }
-
-        ren.renderFinish();
-
-        gBuffer.attachColor({LIGHTS});
-        gBuffer.attachDepthStencil(PrePass::DEPTH);
-
-        ren.renderBegin(gBuffer.getRenderTarget(),
-                        RenderOptions({},
-                                      gBuffer.getSize(),
-                                      true,
-                                      {},
-                                      1,
-                                      true,
-                                      false,
-                                      false));
-
-        shaderLight->activate();
-        for (auto &light: scene.lights) {
-            shaderLight->setMat4("globals.MODEL", light.transform.model());
-            shaderLight->setMat4("globals.VIEW", scene.camera.view());
-            shaderLight->setMat4("globals.PROJECTION", scene.camera.projection());
-
-            switch (light.type) {
-                case LIGHT_DIRECTIONAL: {
-                    shaderLight->setInt("globals.lightType", 0);
-
-                    std::string prefix = "globals.dirLight";
-                    shaderLight->setVec3(prefix + ".direction", light.direction);
-                    break;
-                }
-                case LIGHT_POINT: {
-                    shaderLight->setInt("globals.lightType", 1);
-                    break;
-                }
-                case LIGHT_SPOT: {
-                    shaderLight->setInt("globals.lightType", 2);
-
-                    std::string prefix = "globals.spotLight";
-                    shaderLight->setVec3(prefix + ".direction", light.direction);
-                    shaderLight->setFloat(prefix + ".cutOff", cosf(degreesToRadians(light.cutOff)));
-                    shaderLight->setFloat(prefix + ".outerCutOff", cosf(degreesToRadians(light.outerCutOff)));
-                    break;
-                }
+                ren.addCommand(command);
             }
 
-            RenderCommand command(*shaderLight, *meshBuffer);
+            shaderLight->activate();
+            for (auto &light: scene.lights) {
+                shaderLight->setMat4("globals.MODEL", light.transform.model());
+                shaderLight->setMat4("globals.VIEW", scene.camera.view());
+                shaderLight->setMat4("globals.PROJECTION", scene.camera.projection());
 
-            command.properties.depthTestWrite = false;
+                switch (light.type) {
+                    case LIGHT_DIRECTIONAL: {
+                        shaderLight->setInt("globals.lightType", 0);
 
-            ren.addCommand(command);
+                        std::string prefix = "globals.dirLight";
+                        shaderLight->setVec3(prefix + ".direction", light.direction);
+                        break;
+                    }
+                    case LIGHT_POINT: {
+                        shaderLight->setInt("globals.lightType", 1);
+                        break;
+                    }
+                    case LIGHT_SPOT: {
+                        shaderLight->setInt("globals.lightType", 2);
+
+                        std::string prefix = "globals.spotLight";
+                        shaderLight->setVec3(prefix + ".direction", light.direction);
+                        shaderLight->setFloat(prefix + ".cutOff", cosf(degreesToRadians(light.cutOff)));
+                        shaderLight->setFloat(prefix + ".outerCutOff", cosf(degreesToRadians(light.outerCutOff)));
+                        break;
+                    }
+                }
+
+                RenderCommand command(*shaderLight, *meshBuffer);
+
+                command.properties.enableDepthTest = false;
+                command.properties.depthTestWrite = false;
+
+                ren.addCommand(command);
+            }
         }
 
         ren.renderFinish();
+
+        target.blitColor(*multiSampleTarget, {}, {}, multiSampleTarget->getSize(), target.getSize(),
+                         TextureBuffer::LINEAR, 0, 0);
+        target.blitDepth(*multiSampleTarget, {}, {}, multiSampleTarget->getSize(), target.getSize());
+
+        target.detachColor(0);
+        target.detachDepthStencil();
     }
 }

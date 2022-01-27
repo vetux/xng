@@ -20,11 +20,6 @@
 #include "render/deferred/passes/outlinepass.hpp"
 
 namespace xengine {
-    void OutlinePass::prepareBuffer(GeometryBuffer &gBuffer) {
-        RenderPass::prepareBuffer(gBuffer);
-    }
-
-    void OutlinePass::render(GeometryBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) {
-        RenderPass::render(gBuffer, scene, assetRenderManager);
+    void OutlinePass::render(GBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) {
     }
 }

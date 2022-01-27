@@ -17,39 +17,35 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "render/deferred/deferredrenderer.hpp"
+#include "render/deferred/deferredpipeline.hpp"
 
 #include <algorithm>
 #include <utility>
 
 namespace xengine {
-    DeferredRenderer::DeferredRenderer(RenderDevice &device, AssetRenderManager &assetRenderManager)
-            : passes(),
-              geometryBuffer(device.getAllocator()),
-              compositor(device, {}),
-              assetRenderManager(assetRenderManager) {}
+    DeferredPipeline::DeferredPipeline(RenderDevice &device,
+                                       AssetRenderManager &assetRenderManager,
+                                       GConstructor &gconstructor,
+                                       PassChain &chain,
+                                       Compositor &compositor)
+            : geometryBuffer(device.getAllocator()),
+              assetRenderManager(assetRenderManager),
+              gconstructor(gconstructor),
+              chain(chain),
+              compositor(compositor) {}
 
-    DeferredRenderer::~DeferredRenderer() = default;
+    DeferredPipeline::~DeferredPipeline() = default;
 
-    void DeferredRenderer::render(RenderTarget &target,
+    void DeferredPipeline::render(RenderTarget &target,
                                   Scene &scene) {
-        for (auto &pass: passOrder) {
-            passes.at(pass)->render(geometryBuffer, scene, assetRenderManager);
+        gconstructor.create(geometryBuffer, scene, assetRenderManager);
+        for (auto &pass: chain.passes) {
+            pass->render(geometryBuffer, scene, assetRenderManager);
         }
-
-        compositor.presentLayers(target, geometryBuffer);
+        compositor.present(target, chain);
     }
 
-    GeometryBuffer &DeferredRenderer::getGeometryBuffer() {
+    GBuffer &DeferredPipeline::getGeometryBuffer() {
         return geometryBuffer;
-    }
-
-    Compositor &DeferredRenderer::getCompositor() {
-        return compositor;
-    }
-
-    void DeferredRenderer::clearRenderPasses() {
-        passes.clear();
-        passOrder.clear();
     }
 }

@@ -27,6 +27,8 @@ namespace xengine {
         ren.renderBegin(target, RenderOptions({},
                                               target.getSize(),
                                               true,
+                                              false,
+                                              1,
                                               {},
                                               1,
                                               true, true, true));

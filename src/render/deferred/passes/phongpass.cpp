@@ -19,11 +19,12 @@
 
 #include "platform/graphics/shadercompiler.hpp"
 #include "render/shader/shaderinclude.hpp"
-#include "render/deferred/passes/phongshadepass.hpp"
-#include "render/deferred/deferredrenderer.hpp"
+#include "render/deferred/passes/phongpass.hpp"
+#include "render/deferred/deferredpipeline.hpp"
 #include "math/rotation.hpp"
 #include "async/threadpool.hpp"
 
+//TODO: Fix phong pass at random times consistently outputting black color for non normal mapped objects.
 const char *SHADER_VERT_LIGHTING = R"###(
 struct VS_INPUT
 {
@@ -70,10 +71,8 @@ struct PS_INPUT {
 };
 
 struct PS_OUTPUT {
-    float4 phong_ambient: SV_TARGET0;
-    float4 phong_diffuse: SV_TARGET1;
-    float4 phong_specular: SV_TARGET2;
-    float4 phong_combined: SV_TARGET3;
+    float4 color: SV_TARGET0;
+    float depth : SV_Depth;
 };
 
 Texture2DMS<float4> position;
@@ -88,38 +87,15 @@ Texture2DMS<float4> depth;
 
 float3 VIEW_POS;
 
-float4 averageMsaa(Texture2DMS<float4> tex, int2 coord, int samples)
+LightComponents getSampleLightComponents(int2 coord, int sampleIndex)
 {
-    float4 ret;
-    for (int i = 0; i < samples; i++) {
-        ret += tex.Load(coord, i);
-    }
-    return ret / samples;
-}
-
-float4 averageMsaaDepth(Texture2DMS<float4> tex, Texture2DMS<float4> depthTexture, int2 coord, int samples)
-{
-    float4 ret;
-    int nSample = 0;
-    for (int i = 0; i < samples; i++) {
-        if (depthTexture.Load(coord, i).r < 1) {
-            ret += tex.Load(coord, i);
-            nSample++;
-        }
-    }
-    return ret / nSample;
-}
-
-LightComponents getAveragedLightComponents(int2 coord, int samples)
-{
-    //Per pixel lighting, this could produce artifacts where two primitives overlap a pixel and different samples belong to different primitives.
-    float3 fragPosition = averageMsaaDepth(position, depth, coord, samples).xyz;
-    float3 fragNormal = averageMsaaDepth(normal, depth, coord, samples).xyz;
-    float3 fragTangent = averageMsaaDepth(tangent, depth, coord, samples).xyz;
-    float4 fragDiffuse = averageMsaa(diffuse, coord, samples);
-    float4 fragSpecular = averageMsaa(specular, coord, samples);
-    float fragShininess = averageMsaa(shininess, coord, samples).r;
-    float3 fragTexNormal = averageMsaaDepth(texNormal, depth, coord, samples).xyz;
+    float3 fragPosition = position.Load(coord, sampleIndex).xyz;
+    float3 fragNormal = normal.Load(coord, sampleIndex).xyz;
+    float3 fragTangent = tangent.Load(coord, sampleIndex).xyz;
+    float4 fragDiffuse = diffuse.Load(coord, sampleIndex);
+    float4 fragSpecular = specular.Load(coord, sampleIndex);
+    float fragShininess = shininess.Load(coord, sampleIndex).x;
+    float3 fragTexNormal = texNormal.Load(coord, sampleIndex).xyz;
 
     if (length(fragTexNormal) > 0)
     {
@@ -147,23 +123,7 @@ LightComponents getAveragedLightComponents(int2 coord, int samples)
     }
 }
 
-//Returns a float between 0 and 1 indicating how many samples are covered for the given fragment coordinates
-float getSampleCoverage(int2 coord, int samples)
-{
-    int coveredSamples = 0;
-    for (int i = 0; i < samples; i++)
-    {
-        float sampleDepth = depth.Load(coord, i);
-        if (sampleDepth < 1)
-        {
-            coveredSamples++;
-        }
-    }
-    float ret = coveredSamples;
-    return ret / samples;
-}
-
-PS_OUTPUT main(PS_INPUT v) {
+PS_OUTPUT main(PS_INPUT v, uint sampleIndex : SV_SampleIndex) {
     PS_OUTPUT ret;
 
     uint2 size;
@@ -171,17 +131,13 @@ PS_OUTPUT main(PS_INPUT v) {
     position.GetDimensions(size.x, size.y, samples);
     int2 coord = v.fUv * size;
 
-    LightComponents comp = getAveragedLightComponents(coord, samples);
+    LightComponents comp = getSampleLightComponents(coord, sampleIndex);
 
-    //Use coverage value as alpha
-    float coverage = getSampleCoverage(coord, samples);
+    float3 comb = comp.ambient + comp.diffuse + comp.specular;
 
-    ret.phong_ambient = float4(comp.ambient, coverage);
-    ret.phong_diffuse = float4(comp.diffuse, coverage);
-    ret.phong_specular = float4(comp.specular, coverage);
-
-    ret.phong_combined = ret.phong_ambient + ret.phong_diffuse + ret.phong_specular;
-    ret.phong_combined.a = coverage;
+    ret.depth = depth.Load(coord, sampleIndex);
+    if (ret.depth < 1)
+        ret.color = float4(comb.r, comb.g, comb.b, 1);
 
     return ret;
 }
@@ -190,12 +146,7 @@ PS_OUTPUT main(PS_INPUT v) {
 namespace xengine {
     using namespace ShaderCompiler;
 
-    const char *PhongShadePass::AMBIENT = "phong_ambient";
-    const char *PhongShadePass::DIFFUSE = "phong_diffuse";
-    const char *PhongShadePass::SPECULAR = "phong_specular";
-    const char *PhongShadePass::COMBINED = "phong_combined";
-
-    PhongShadePass::PhongShadePass(RenderDevice &device)
+    PhongPass::PhongPass(RenderDevice &device)
             : renderDevice(device) {
         vertexShader = ShaderSource(SHADER_VERT_LIGHTING,
                                     "main",
@@ -214,16 +165,48 @@ namespace xengine {
         auto &allocator = device.getAllocator();
 
         shader = allocator.createShaderProgram(vertexShader, fragmentShader);
+
+        multiSampleTarget = allocator.createRenderTarget({1, 1}, 1);
+
+        TextureBuffer::Attributes attr;
+        attr.fixedSampleLocations = true;
+        attr.textureType = TextureBuffer::TEXTURE_2D_MULTISAMPLE;
+        attr.fixedSampleLocations = true;
+
+        multiSampleColor = allocator.createTextureBuffer(attr);
+        attr.format = TextureBuffer::DEPTH_STENCIL;
+        multiSampleDepth = allocator.createTextureBuffer(attr);
+
+        multiSampleTarget->attachColor(0, *multiSampleColor);
+        multiSampleTarget->attachDepthStencil(*multiSampleDepth);
+
+        resizeTextureBuffers({1, 1}, device.getAllocator(), true);
     }
 
-    void PhongShadePass::prepareBuffer(GeometryBuffer &gBuffer) {
-        gBuffer.addBuffer(AMBIENT, TextureBuffer::ColorFormat::RGBA);
-        gBuffer.addBuffer(DIFFUSE, TextureBuffer::ColorFormat::RGBA);
-        gBuffer.addBuffer(SPECULAR, TextureBuffer::ColorFormat::RGBA);
-        gBuffer.addBuffer(COMBINED, TextureBuffer::ColorFormat::RGBA);
-    }
+    void PhongPass::render(GBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) {
+        if (colorBuffer->getAttributes().size != gBuffer.getSize() ||
+            multiSampleTarget->getSamples() != gBuffer.getSamples()) {
+            resizeTextureBuffers(gBuffer.getSize(), renderDevice.getAllocator(), true);
 
-    void PhongShadePass::render(GeometryBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) {
+            auto &allocator = renderDevice.getAllocator();
+
+            multiSampleTarget = allocator.createRenderTarget(gBuffer.getSize(), gBuffer.getSamples());
+
+            TextureBuffer::Attributes attr;
+            attr.fixedSampleLocations = true;
+            attr.textureType = TextureBuffer::TEXTURE_2D_MULTISAMPLE;
+            attr.samples = gBuffer.getSamples();
+            attr.size = gBuffer.getSize();
+            attr.fixedSampleLocations = true;
+
+            multiSampleColor = allocator.createTextureBuffer(attr);
+            attr.format = TextureBuffer::DEPTH_STENCIL;
+            multiSampleDepth = allocator.createTextureBuffer(attr);
+
+            multiSampleTarget->attachColor(0, *multiSampleColor);
+            multiSampleTarget->attachDepthStencil(*multiSampleDepth);
+        }
+
         int dirCount = 0;
         int pointCount = 0;
         int spotCount = 0;
@@ -284,15 +267,15 @@ namespace xengine {
 
         RenderCommand command(*shader, gBuffer.getScreenQuad());
 
-        command.textures.emplace_back(gBuffer.getBuffer("position"));
-        command.textures.emplace_back(gBuffer.getBuffer("normal"));
-        command.textures.emplace_back(gBuffer.getBuffer("tangent"));
-        command.textures.emplace_back(gBuffer.getBuffer("texture_normal"));
-        command.textures.emplace_back(gBuffer.getBuffer("diffuse"));
-        command.textures.emplace_back(gBuffer.getBuffer("ambient"));
-        command.textures.emplace_back(gBuffer.getBuffer("specular"));
-        command.textures.emplace_back(gBuffer.getBuffer("shininess_id"));
-        command.textures.emplace_back(gBuffer.getBuffer("depth"));
+        command.textures.emplace_back(gBuffer.getTexture(GBuffer::POSITION));
+        command.textures.emplace_back(gBuffer.getTexture(GBuffer::NORMAL));
+        command.textures.emplace_back(gBuffer.getTexture(GBuffer::TANGENT));
+        command.textures.emplace_back(gBuffer.getTexture(GBuffer::TEXTURE_NORMAL));
+        command.textures.emplace_back(gBuffer.getTexture(GBuffer::DIFFUSE));
+        command.textures.emplace_back(gBuffer.getTexture(GBuffer::AMBIENT));
+        command.textures.emplace_back(gBuffer.getTexture(GBuffer::SPECULAR));
+        command.textures.emplace_back(gBuffer.getTexture(GBuffer::ID_SHININESS));
+        command.textures.emplace_back(gBuffer.getTexture(GBuffer::DEPTH));
 
         command.properties.enableDepthTest = false;
         command.properties.enableStencilTest = false;
@@ -301,11 +284,23 @@ namespace xengine {
 
         auto &ren = renderDevice.getRenderer();
 
-        gBuffer.attachColor({"phong_ambient", "phong_diffuse", "phong_specular", "phong_combined"});
-        gBuffer.detachDepthStencil();
+        auto &target = gBuffer.getPassTarget();
 
-        ren.renderBegin(gBuffer.getRenderTarget(), RenderOptions({}, gBuffer.getSize()));
+        target.setNumberOfColorAttachments(1);
+        target.attachColor(0, *colorBuffer);
+        target.attachDepthStencil(*depthBuffer);
+
+        ren.renderClear(target, {}, 1);
+
+        ren.renderBegin(*multiSampleTarget, RenderOptions({}, gBuffer.getSize(), true, true));
         ren.addCommand(command);
         ren.renderFinish();
+
+        target.blitColor(*multiSampleTarget, {}, {}, multiSampleTarget->getSize(), target.getSize(),
+                         TextureBuffer::LINEAR, 0, 0);
+        target.blitDepth(*multiSampleTarget, {}, {}, multiSampleTarget->getSize(), target.getSize());
+
+        target.detachColor(0);
+        target.detachDepthStencil();
     }
 }
