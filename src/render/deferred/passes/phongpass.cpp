@@ -292,7 +292,7 @@ namespace xengine {
 
         ren.renderClear(target, {}, 1);
 
-        ren.renderBegin(*multiSampleTarget, RenderOptions({}, gBuffer.getSize(), true, true));
+        ren.renderBegin(*multiSampleTarget, RenderOptions({}, gBuffer.getSize(), true));
         ren.addCommand(command);
         ren.renderFinish();
 

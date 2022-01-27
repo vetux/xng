@@ -190,7 +190,7 @@ namespace xengine {
 
         auto &target = buffer.getRenderTarget();
 
-        ren.renderBegin(target, RenderOptions({}, target.getSize(), true, true));
+        ren.renderBegin(target, RenderOptions({}, target.getSize(), true));
 
         std::vector<std::reference_wrapper<TextureBuffer>> textures;
         textures.reserve(6);
