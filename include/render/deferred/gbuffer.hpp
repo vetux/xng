@@ -25,6 +25,9 @@
 #include "platform/graphics/renderdevice.hpp"
 #include "platform/graphics/texturebuffer.hpp"
 
+#include "asset/scene.hpp"
+#include "asset/manager/assetrendermanager.hpp"
+
 namespace xengine {
     class XENGINE_EXPORT GBuffer {
     public:
@@ -45,7 +48,7 @@ namespace xengine {
             GEOMETRY_TEXTURE_END = DEPTH
         };
 
-        explicit GBuffer(RenderAllocator &allocator, Vec2i size = {640, 320}, int samples = 4);
+        explicit GBuffer(RenderDevice &device, Vec2i size = {640, 320}, int samples = 4);
 
         ~GBuffer();
 
@@ -76,13 +79,6 @@ namespace xengine {
         TextureBuffer &getTexture(GTexture type);
 
         /**
-         * Return the RenderTarget with the geometry textures bound in order.
-         *
-         * @return
-         */
-        RenderTarget &getRenderTarget();
-
-        /**
          * Get a per GBuffer allocated screen quad to avoid having screen quad mesh buffer instantiations in every render pass.
          *
          * @return
@@ -97,10 +93,22 @@ namespace xengine {
          */
         RenderTarget &getPassTarget();
 
+        /**
+         * Update the geometry textures from the given scene data in the given geometry buffer.
+         *
+         * Users may override this function to define custom logic at the start of the pipeline.
+         *
+         * @param buffer
+         * @param scene
+         * @param assetRenderManager
+         */
+        virtual void update(Scene &scene, AssetRenderManager &assetRenderManager);
+
     private:
         void reallocateObjects();
 
-        RenderAllocator &renderAllocator;
+        Renderer &ren;
+        RenderAllocator &allocator;
 
         Vec2i size = {1, 1}; //The current size of the render target of the geometry buffer
         int samples = 1; //The number of msaa samples to use for geometry textures, all geometry textures are TEXTURE_2D_MULTISAMPLE
@@ -109,6 +117,12 @@ namespace xengine {
         std::unique_ptr<RenderTarget> passTarget;
         std::map<GTexture, std::unique_ptr<TextureBuffer>> textures;
         std::unique_ptr<MeshBuffer> screenQuad;
+
+        ShaderSource vs;
+        ShaderSource fs;
+
+        std::unique_ptr<ShaderProgram> shader;
+        std::unique_ptr<TextureBuffer> defaultTexture; //1 pixel texture with value (0, 0, 0, 0)
     };
 }
 

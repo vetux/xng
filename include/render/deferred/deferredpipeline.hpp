@@ -30,7 +30,6 @@
 
 #include "render/deferred/renderpass.hpp"
 #include "render/deferred/compositor.hpp"
-#include "render/deferred/gconstructor.hpp"
 #include "render/pipeline.hpp"
 
 #include "asset/manager/assetrendermanager.hpp"
@@ -40,7 +39,7 @@ namespace xengine {
     public:
         DeferredPipeline(RenderDevice &device,
                          AssetRenderManager &assetRenderManager,
-                         GConstructor &gconstructor,
+                         GBuffer &gBuffer,
                          PassChain &chain,
                          Compositor &compositor);
 
@@ -51,11 +50,8 @@ namespace xengine {
         GBuffer &getGeometryBuffer();
 
     private:
-        GBuffer geometryBuffer;
-
         AssetRenderManager &assetRenderManager;
-
-        GConstructor &gconstructor;
+        GBuffer &geometryBuffer;
         PassChain &chain;
         Compositor &compositor;
     };

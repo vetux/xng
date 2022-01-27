@@ -25,12 +25,11 @@
 namespace xengine {
     DeferredPipeline::DeferredPipeline(RenderDevice &device,
                                        AssetRenderManager &assetRenderManager,
-                                       GConstructor &gconstructor,
+                                       GBuffer &geometryBuffer,
                                        PassChain &chain,
                                        Compositor &compositor)
-            : geometryBuffer(device.getAllocator()),
+            : geometryBuffer(geometryBuffer),
               assetRenderManager(assetRenderManager),
-              gconstructor(gconstructor),
               chain(chain),
               compositor(compositor) {}
 
@@ -38,7 +37,7 @@ namespace xengine {
 
     void DeferredPipeline::render(RenderTarget &target,
                                   Scene &scene) {
-        gconstructor.create(geometryBuffer, scene, assetRenderManager);
+        geometryBuffer.update(scene, assetRenderManager);
         for (auto &pass: chain.passes) {
             pass->render(geometryBuffer, scene, assetRenderManager);
         }

@@ -136,7 +136,6 @@
 #include "render/deferred/deferredpipeline.hpp"
 #include "render/deferred/compositor.hpp"
 #include "render/deferred/passchain.hpp"
-#include "render/deferred/gconstructor.hpp"
 #include "render/deferred/renderpass.hpp"
 #include "render/deferred/gbuffer.hpp"
 #include "render/deferred/passes/forwardpass.hpp"
