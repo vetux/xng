@@ -39,7 +39,9 @@ namespace xengine {
          * A quad mesh which covers the viewport in normalized screen coordinates
          * @return
          */
-        static const Mesh &screenQuad();
+        static const Mesh &normalizedQuad();
+
+        static const Mesh &normalizedCube();
 
         bool indexed = false;
         Primitive primitive = POINT;

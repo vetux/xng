@@ -19,23 +19,87 @@
 
 #include "asset/mesh.hpp"
 
-namespace xengine {
-    static bool screenQuadC = false;
-    static Mesh screenQuadMesh;
+#include <string>
+#include <sstream>
 
-    const xengine::Mesh &xengine::Mesh::screenQuad() {
-        if (!screenQuadC) {
-            screenQuadC = true;
-            screenQuadMesh = {Mesh::TRI,
-                           {
-                                   Vertex({-1, 1, 0}, {0, 1}),
-                                   Vertex({1, 1, 0}, {1, 1}),
-                                   Vertex({1, -1, 0}, {1, 0}),
-                                   Vertex({-1, 1, 0}, {0, 1}),
-                                   Vertex({1, -1, 0}, {1, 0}),
-                                   Vertex({-1, -1, 0}, {0, 0})
-                           }};
+#include "asset/assetimporter.hpp"
+
+static const std::string NORM_CUBE_OBJ = std::string(R"###(
+o Cube
+v 1.000000 1.000000 -1.000000
+v 1.000000 -1.000000 -1.000000
+v 1.000000 1.000000 1.000000
+v 1.000000 -1.000000 1.000000
+v -1.000000 1.000000 -1.000000
+v -1.000000 -1.000000 -1.000000
+v -1.000000 1.000000 1.000000
+v -1.000000 -1.000000 1.000000
+vt 0.000000 1.000000
+vt 1.000000 0.000000
+vt 1.000000 1.000000
+vt 1.000000 1.000000
+vt 0.000000 0.000000
+vt 1.000000 0.000000
+vt 0.000000 1.000000
+vt 1.000000 0.000000
+vt 1.000000 1.000000
+vt 0.000000 1.000000
+vt 0.000000 0.000000
+vt 1.000000 0.000000
+vt 0.000000 0.000000
+vt 0.000000 0.000000
+vt 1.000000 1.000000
+vt 0.000000 1.000000
+vn 0.0000 1.0000 0.0000
+vn 0.0000 0.0000 1.0000
+vn -1.0000 0.0000 0.0000
+vn 0.0000 -1.0000 0.0000
+vn 1.0000 0.0000 0.0000
+vn 0.0000 0.0000 -1.0000
+s off
+f 5/1/1 3/2/1 1/3/1
+f 3/4/2 8/5/2 4/6/2
+f 7/7/3 6/8/3 8/5/3
+f 2/9/4 8/5/4 6/10/4
+f 1/3/5 4/11/5 2/12/5
+f 5/1/6 2/12/6 6/13/6
+f 5/1/1 7/14/1 3/2/1
+f 3/4/2 7/7/2 8/5/2
+f 7/7/3 5/15/3 6/8/3
+f 2/9/4 4/6/4 8/5/4
+f 1/3/5 3/16/5 4/11/5
+f 5/1/6 1/3/6 2/12/6
+)###");
+
+namespace xengine {
+    static bool nQuadC = false;
+    static Mesh nQuad;
+
+    static bool nCubeC = false;
+    static Mesh nCube;
+
+    const xengine::Mesh &xengine::Mesh::normalizedQuad() {
+        if (!nQuadC) {
+            nQuadC = true;
+            nQuad = {Mesh::TRI,
+                     {
+                             Vertex({-1, 1, 0}, {0, 1}),
+                             Vertex({1, 1, 0}, {1, 1}),
+                             Vertex({1, -1, 0}, {1, 0}),
+                             Vertex({-1, 1, 0}, {0, 1}),
+                             Vertex({1, -1, 0}, {1, 0}),
+                             Vertex({-1, -1, 0}, {0, 0})
+                     }};
         }
-        return screenQuadMesh;
+        return nQuad;
+    }
+
+    const Mesh &Mesh::normalizedCube() {
+        if (!nCubeC) {
+            nCubeC = true;
+            std::stringstream stream(NORM_CUBE_OBJ);
+            nCube = AssetImporter::import(stream, ".obj").get<Mesh>();
+        }
+        return nCube;
     }
 }
