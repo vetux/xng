@@ -24,27 +24,33 @@
 
 namespace xengine {
     DeferredPipeline::DeferredPipeline(RenderDevice &device,
-                                       AssetRenderManager &assetRenderManager,
-                                       GBuffer &geometryBuffer,
-                                       PassChain &chain,
-                                       Compositor &compositor)
-            : geometryBuffer(geometryBuffer),
-              assetRenderManager(assetRenderManager),
-              chain(chain),
-              compositor(compositor) {}
+                                       AssetManager &assetManager,
+                                       std::vector<std::unique_ptr<RenderPass>> passes)
+            : gBuffer(std::make_unique<GBuffer>(device)),
+              assetRenderManager(std::make_unique<AssetRenderManager>(assetManager, device.getAllocator())),
+              compositor(std::make_unique<Compositor>(device)),
+              passes(std::move(passes)) {
+
+    }
+
+    DeferredPipeline::DeferredPipeline(RenderDevice &device,
+                                       std::unique_ptr<AssetRenderManager> assetRenderManager,
+                                       std::unique_ptr<GBuffer> gBuffer,
+                                       std::unique_ptr<Compositor> compositor,
+                                       std::vector<std::unique_ptr<RenderPass>> passes)
+            : assetRenderManager(std::move(assetRenderManager)),
+              gBuffer(std::move(gBuffer)),
+              compositor(std::move(compositor)),
+              passes(std::move(passes)) {}
 
     DeferredPipeline::~DeferredPipeline() = default;
 
     void DeferredPipeline::render(RenderTarget &target,
                                   Scene &scene) {
-        geometryBuffer.update(scene, assetRenderManager);
-        for (auto &pass: chain.passes) {
-            pass->render(geometryBuffer, scene, assetRenderManager);
+        gBuffer->update(scene, *assetRenderManager);
+        for (auto &pass: passes) {
+            pass->render(*gBuffer, scene, *assetRenderManager);
         }
-        compositor.present(target, chain);
-    }
-
-    GBuffer &DeferredPipeline::getGeometryBuffer() {
-        return geometryBuffer;
+        compositor->present(target, passes);
     }
 }

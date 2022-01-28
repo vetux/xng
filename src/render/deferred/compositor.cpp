@@ -120,39 +120,49 @@ namespace xengine {
     }
 
     void Compositor::present(RenderTarget &screen,
-                             PassChain &chain) {
+                             std::vector<std::unique_ptr<RenderPass>> &passes) {
         auto &ren = device.getRenderer();
 
         ren.renderClear(screen, clearColor, 1);
 
-        auto nodes = chain.getNodes();
+        auto layers = getLayers(passes);
 
-        if (nodes.empty())
+        if (layers.empty())
             return;
 
         shader->activate();
 
-        for (auto &node: nodes) {
-            drawNode(screen, node);
+        for (auto &node: layers) {
+            drawLayer(screen, node);
         }
     }
 
-    void Compositor::drawNode(RenderTarget &screen,
-                              PassChain::Node &node) {
+    std::vector<Compositor::Layer> Compositor::getLayers(std::vector<std::unique_ptr<RenderPass>> &passes) {
+        std::vector<Layer> ret;
+        for (auto &pass: passes) {
+            Layer l;
+            l.color = pass->getColorBuffer();
+            l.depth = pass->getDepthBuffer();
+            ret.emplace_back(l);
+        }
+        return ret;
+    }
+
+    void Compositor::drawLayer(RenderTarget &screen, const Compositor::Layer &layer) {
         auto &ren = device.getRenderer();
 
         std::string prefix = "globals.layer";
 
         std::vector<std::reference_wrapper<TextureBuffer>> textures;
 
-        if (node.color != nullptr) {
-            textures.emplace_back(*node.color);
+        if (layer.color != nullptr) {
+            textures.emplace_back(*layer.color);
             assert(shader->setTexture(prefix + ".color", 0));
         }
 
-        assert(shader->setInt(prefix + ".has_depth", node.depth != nullptr));
-        if (node.depth != nullptr) {
-            textures.emplace_back(*node.depth);
+        assert(shader->setInt(prefix + ".has_depth", layer.depth != nullptr));
+        if (layer.depth != nullptr) {
+            textures.emplace_back(*layer.depth);
             assert(shader->setTexture(prefix + ".depth", textures.size() - 1));
         }
 
@@ -162,10 +172,10 @@ namespace xengine {
         RenderCommand command(*shader, *screenQuad);
         command.textures = textures;
         command.properties.enableDepthTest = false;
-        command.properties.enableBlending = node.enableBlending;
-        command.properties.depthTestMode = node.depthTestMode;
-        command.properties.blendSourceMode = node.colorBlendModeSource;
-        command.properties.blendDestinationMode = node.colorBlendModeDest;
+        command.properties.enableBlending = layer.enableBlending;
+        command.properties.depthTestMode = layer.depthTestMode;
+        command.properties.blendSourceMode = layer.colorBlendModeSource;
+        command.properties.blendDestinationMode = layer.colorBlendModeDest;
 
         ren.renderBegin(screen, RenderOptions({}, screen.getSize(), false, false, 1, {}, 0, false, false));
         ren.addCommand(command);

@@ -20,8 +20,7 @@
 #ifndef XENGINE_COMPOSITOR_HPP
 #define XENGINE_COMPOSITOR_HPP
 
-#include "render/deferred/passchain.hpp"
-
+#include "render/deferred/renderpass.hpp"
 #include "platform/graphics/renderdevice.hpp"
 #include "platform/graphics/rendercommand.hpp"
 
@@ -40,10 +39,28 @@ namespace xengine {
 
         virtual void setClearColor(ColorRGBA color);
 
-        virtual void present(RenderTarget &screen, PassChain &chain);
+        /**
+         * Users can override this function to access custom pass members.
+         *
+         * @param screen
+         * @param chain
+         */
+        virtual void present(RenderTarget &screen, std::vector<std::unique_ptr<RenderPass>> &passes);
 
     protected:
-        virtual void drawNode(RenderTarget &screen, PassChain::Node &node);
+        struct Layer {
+            std::shared_ptr<TextureBuffer> color;
+            bool enableBlending = true;
+            BlendMode colorBlendModeSource = BlendMode::SRC_ALPHA;
+            BlendMode colorBlendModeDest = BlendMode::ONE_MINUS_SRC_ALPHA;
+
+            std::shared_ptr<TextureBuffer> depth;
+            DepthTestMode depthTestMode = DepthTestMode::DEPTH_TEST_LESS;
+        };
+
+        virtual std::vector<Layer> getLayers(std::vector<std::unique_ptr<RenderPass>> &passes);
+
+        virtual void drawLayer(RenderTarget &screen, const Layer &node);
 
         RenderDevice &device;
         std::unique_ptr<ShaderProgram> shader;

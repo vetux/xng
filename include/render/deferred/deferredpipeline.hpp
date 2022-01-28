@@ -37,23 +37,35 @@
 namespace xengine {
     class XENGINE_EXPORT DeferredPipeline : public Pipeline {
     public:
+        explicit DeferredPipeline(RenderDevice &device,
+                                  AssetManager &assetManager,
+                                  std::vector<std::unique_ptr<RenderPass>> passes);
+
         DeferredPipeline(RenderDevice &device,
-                         AssetRenderManager &assetRenderManager,
-                         GBuffer &gBuffer,
-                         PassChain &chain,
-                         Compositor &compositor);
+                         std::unique_ptr<AssetRenderManager> assetRenderManager,
+                         std::unique_ptr<GBuffer> gBuffer,
+                         std::unique_ptr<Compositor> compositor,
+                         std::vector<std::unique_ptr<RenderPass>> passes);
 
         ~DeferredPipeline();
 
         void render(RenderTarget &target, Scene &scene) override;
 
-        GBuffer &getGeometryBuffer();
+        AssetRenderManager &getAssetRenderManager() { return *assetRenderManager; }
+
+        GBuffer &getGeometryBuffer() { return *gBuffer; }
+
+        Compositor &getCompositor() { return *compositor; }
+
+        std::vector<std::unique_ptr<RenderPass>> &getPasses() { return passes; }
+
+        void setPasses(std::vector<std::unique_ptr<RenderPass>> value) { passes = std::move(value); }
 
     private:
-        AssetRenderManager &assetRenderManager;
-        GBuffer &geometryBuffer;
-        PassChain &chain;
-        Compositor &compositor;
+        std::unique_ptr<AssetRenderManager> assetRenderManager;
+        std::unique_ptr<GBuffer> gBuffer;
+        std::unique_ptr<Compositor> compositor;
+        std::vector<std::unique_ptr<RenderPass>> passes;
     };
 }
 
