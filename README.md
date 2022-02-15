@@ -1,19 +1,18 @@
 # xEngine
-This is a cross-platform game engine library written in C++.
+This is an experimental cross-platform game engine library written in C++.
 
 ## Features
+- Deferred render pipeline
+  - GBuffer multisampling support
+  - User defined render pass support
 - Platform abstraction
     - Audio
       - OpenAL backend 
     - Display / Input
       - GLFW backend 
     - Graphics
-      - Shader cross-compiler which supports SPIRV, HLSL and GLSL
-      - OpenGL 4.6 backend
-      - Qt-OpenGL backend for integrating the engine in a Qt application with a QOpenGLWidget
-- ImGui Compatibility functions
-- Qt Compatibility widget
-- Deferred render pipeline
+      - Shader cross-compiler abstraction with SPIRV, HLSL and GLSL support
+      - OpenGL 4.1 backend
 - ECS with aggregated components storage pattern
 
 ## Programs
