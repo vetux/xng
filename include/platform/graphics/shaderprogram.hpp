@@ -24,7 +24,8 @@
 #include "math/vector3.hpp"
 #include "math/matrix.hpp"
 
-#include "renderobject.hpp"
+#include "platform/graphics/renderobject.hpp"
+#include "platform/graphics/shaderbinary.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT ShaderProgram : public RenderObject {
@@ -122,6 +123,8 @@ namespace xengine {
         virtual bool setMat3(int location, const Mat3f &value) = 0;
 
         virtual bool setMat4(int location, const Mat4f &value) = 0;
+
+        virtual ShaderBinary getBinary() = 0;
     };
 }
 

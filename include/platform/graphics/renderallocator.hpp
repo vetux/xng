@@ -22,11 +22,12 @@
 
 #include <memory>
 
-#include "rendertarget.hpp"
-#include "texturebuffer.hpp"
-#include "meshbuffer.hpp"
-#include "shaderprogram.hpp"
-#include "shadersource.hpp"
+#include "platform/graphics/rendertarget.hpp"
+#include "platform/graphics/texturebuffer.hpp"
+#include "platform/graphics/meshbuffer.hpp"
+#include "platform/graphics/shaderprogram.hpp"
+#include "platform/graphics/shadersource.hpp"
+#include "platform/graphics/shaderbinary.hpp"
 
 #include "asset/mesh.hpp"
 
@@ -132,6 +133,15 @@ namespace xengine {
         virtual std::unique_ptr<ShaderProgram> createShaderProgram(const ShaderSource &vertexShader,
                                                                    const ShaderSource &geometryShader,
                                                                    const ShaderSource &fragmentShader) = 0;
+
+        /**
+         * Attempt to create a shader program from the given shader binary.
+         * May throw an exception if the binary could not be parsed by the allocator.
+         *
+         * @param shader
+         * @return
+         */
+        virtual std::unique_ptr<ShaderProgram> createShaderProgram(const ShaderBinary &shader) = 0;
     };
 }
 

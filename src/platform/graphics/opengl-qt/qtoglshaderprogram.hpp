@@ -50,6 +50,8 @@ namespace xengine {
                                const std::string &fragmentShader,
                                const std::string &prefix = "");
 
+            explicit QtOGLShaderProgram(const ShaderBinary &binary);
+
             ~QtOGLShaderProgram() override;
 
             QtOGLShaderProgram(const QtOGLShaderProgram &copy) = delete;
@@ -122,8 +124,12 @@ namespace xengine {
 
             bool setMat4(int location, const Mat4f &value) override;
 
+            ShaderBinary getBinary() override;
+
         private:
-            GLuint programID;
+            void checkLinkSuccess();
+
+            GLuint programHandle;
             std::string prefix;
             std::map<std::string, GLint> locations;
         };

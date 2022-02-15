@@ -21,6 +21,8 @@
 
 #include <stdexcept>
 
+#include "cast/numeric_cast.hpp"
+
 #include "math/rotation.hpp"
 #include "math/matrixmath.hpp"
 
@@ -29,27 +31,27 @@
 
 namespace xengine {
     namespace opengl {
-        OGLShaderProgram::OGLShaderProgram() : programID(0) {}
+        OGLShaderProgram::OGLShaderProgram() : programHandle(0) {}
 
         OGLShaderProgram::OGLShaderProgram(const std::string &vertexShader,
                                            const std::string &geometryShader,
                                            const std::string &fragmentShader,
                                            const std::string &prefix)
-                : programID(0), prefix(prefix) {
+                : programHandle(0), prefix(prefix) {
             const char *vertexSource = vertexShader.c_str();
             const char *geometrySource = geometryShader.c_str();
             const char *fragmentSource = fragmentShader.c_str();
 
-            programID = glCreateProgram();
+            programHandle = glCreateProgram();
 
 
-            unsigned int vsH = glCreateShader(GL_VERTEX_SHADER);
+            GLuint vsH = glCreateShader(GL_VERTEX_SHADER);
             glShaderSource(vsH, 1, &vertexSource, NULL);
             glCompileShader(vsH);
-            int success;
+            GLint success;
             glGetShaderiv(vsH, GL_COMPILE_STATUS, &success);
             if (!success) {
-                char infoLog[512];
+                GLchar infoLog[512];
                 glGetShaderInfoLog(vsH, 512, NULL, infoLog);
                 glDeleteShader(vsH);
                 std::string error = "Failed to compile vertex shader: ";
@@ -57,9 +59,9 @@ namespace xengine {
                 throw std::runtime_error(error);
             }
 
-            glAttachShader(programID, vsH);
+            glAttachShader(programHandle, vsH);
 
-            unsigned int gsH;
+            GLuint gsH;
 
             if (!geometryShader.empty()) {
                 gsH = glCreateShader(GL_GEOMETRY_SHADER);
@@ -75,15 +77,15 @@ namespace xengine {
                     error.append(infoLog);
                     throw std::runtime_error(error);
                 }
-                glAttachShader(programID, gsH);
+                glAttachShader(programHandle, gsH);
             }
 
-            unsigned int fsH = glCreateShader(GL_FRAGMENT_SHADER);
+            GLuint fsH = glCreateShader(GL_FRAGMENT_SHADER);
             glShaderSource(fsH, 1, &fragmentSource, NULL);
             glCompileShader(fsH);
             glGetShaderiv(fsH, GL_COMPILE_STATUS, &success);
             if (!success) {
-                char infoLog[512];
+                GLchar infoLog[512];
                 glGetShaderInfoLog(fsH, 512, NULL, infoLog);
                 glDeleteShader(vsH);
                 if (!geometryShader.empty())
@@ -93,31 +95,36 @@ namespace xengine {
                 error.append(infoLog);
                 throw std::runtime_error(error);
             }
-            glAttachShader(programID, fsH);
+            glAttachShader(programHandle, fsH);
 
-            glLinkProgram(programID);
+            glLinkProgram(programHandle);
 
             glDeleteShader(vsH);
             glDeleteShader(fsH);
 
-            glGetProgramiv(programID, GL_LINK_STATUS, &success);
-            if (!success) {
-                char infoLog[512];
-                glGetProgramInfoLog(programID, 512, NULL, infoLog);
-                std::string error = "Failed to link shader program: ";
-                error.append(infoLog);
-                throw std::runtime_error(error);
-            }
+            checkLinkSuccess();
+            checkGLError("");
+        }
 
+        OGLShaderProgram::OGLShaderProgram(const ShaderBinary &binary)
+                : programHandle(0), prefix(binary.prefix) {
+            programHandle = glCreateProgram();
+
+            glProgramBinary(programHandle,
+                            binary.token,
+                            binary.buffer.data(),
+                            numeric_cast<GLsizei>(binary.buffer.size()));
+
+            checkLinkSuccess();
             checkGLError("");
         }
 
         OGLShaderProgram::~OGLShaderProgram() {
-            glDeleteProgram(programID);
+            glDeleteProgram(programHandle);
         }
 
         void OGLShaderProgram::activate() {
-            glUseProgram(programID);
+            glUseProgram(programHandle);
             checkGLError("");
         }
 
@@ -126,7 +133,7 @@ namespace xengine {
             auto it = locations.find(name);
             if (it != locations.end())
                 return setTexture(it->second, slot);
-            GLint location = glGetUniformLocation(programID, name.c_str());
+            GLint location = glGetUniformLocation(programHandle, name.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -138,7 +145,7 @@ namespace xengine {
             auto it = locations.find(prefixName);
             if (it != locations.end())
                 return setBool(it->second, value);
-            GLint location = glGetUniformLocation(programID, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -150,7 +157,7 @@ namespace xengine {
             auto it = locations.find(prefixName);
             if (it != locations.end())
                 return setInt(it->second, value);
-            GLint location = glGetUniformLocation(programID, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -162,7 +169,7 @@ namespace xengine {
             auto it = locations.find(prefixName);
             if (it != locations.end())
                 return setFloat(it->second, value);
-            GLint location = glGetUniformLocation(programID, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -174,7 +181,7 @@ namespace xengine {
             auto it = locations.find(prefixName);
             if (it != locations.end())
                 return setVec2(it->second, value);
-            GLint location = glGetUniformLocation(programID, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -186,7 +193,7 @@ namespace xengine {
             auto it = locations.find(prefixName);
             if (it != locations.end())
                 return setVec2(it->second, value);
-            GLint location = glGetUniformLocation(programID, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -198,7 +205,7 @@ namespace xengine {
             auto it = locations.find(prefixName);
             if (it != locations.end())
                 return setVec2(it->second, value);
-            GLint location = glGetUniformLocation(programID, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -210,7 +217,7 @@ namespace xengine {
             auto it = locations.find(prefixName);
             if (it != locations.end())
                 return setVec3(it->second, value);
-            GLint location = glGetUniformLocation(programID, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -222,7 +229,7 @@ namespace xengine {
             auto it = locations.find(prefixName);
             if (it != locations.end())
                 return setVec3(it->second, value);
-            GLint location = glGetUniformLocation(programID, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -234,7 +241,7 @@ namespace xengine {
             auto it = locations.find(prefixName);
             if (it != locations.end())
                 return setVec3(it->second, value);
-            GLint location = glGetUniformLocation(programID, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -246,7 +253,7 @@ namespace xengine {
             auto it = locations.find(prefixName);
             if (it != locations.end())
                 return setVec4(it->second, value);
-            GLint location = glGetUniformLocation(programID, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -258,7 +265,7 @@ namespace xengine {
             auto it = locations.find(prefixName);
             if (it != locations.end())
                 return setVec4(it->second, value);
-            GLint location = glGetUniformLocation(programID, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -270,7 +277,7 @@ namespace xengine {
             auto it = locations.find(prefixName);
             if (it != locations.end())
                 return setVec4(it->second, value);
-            GLint location = glGetUniformLocation(programID, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -292,7 +299,7 @@ namespace xengine {
             auto it = locations.find(prefixName);
             if (it != locations.end())
                 return setMat4(it->second, value);
-            GLint location = glGetUniformLocation(programID, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -445,6 +452,38 @@ namespace xengine {
                 checkGLError();
                 return true;
             }
+        }
+
+        ShaderBinary OGLShaderProgram::getBinary() {
+            ShaderBinary ret;
+
+            ret.prefix = prefix;
+
+            GLint size;
+            glGetProgramiv(programHandle, GL_PROGRAM_BINARY_LENGTH, &size);
+            ret.buffer.resize(size);
+
+            GLsizei length;
+            GLenum format;
+            glGetProgramBinary(programHandle, numeric_cast<GLsizei>(ret.buffer.size()), &length, &format,
+                               ret.buffer.data());
+
+            ret.buffer.resize(length);
+            ret.token = format;
+
+            return ret;
+        }
+    }
+
+    void opengl::OGLShaderProgram::checkLinkSuccess() const {
+        GLint success;
+        glGetProgramiv(programHandle, GL_LINK_STATUS, &success);
+        if (!success) {
+            GLchar infoLog[512];
+            glGetProgramInfoLog(programHandle, 512, NULL, infoLog);
+            std::string error = "Failed to link shader program: ";
+            error.append(infoLog);
+            throw std::runtime_error(error);
         }
     }
 }

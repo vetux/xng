@@ -48,6 +48,8 @@ namespace xengine {
                              const std::string &fragmentShader,
                              const std::string &prefix = "");
 
+            explicit OGLShaderProgram(const ShaderBinary &binary);
+
             ~OGLShaderProgram() override;
 
             OGLShaderProgram(const OGLShaderProgram &copy) = delete;
@@ -120,8 +122,12 @@ namespace xengine {
 
             bool setMat4(int location, const Mat4f &value) override;
 
+            ShaderBinary getBinary() override;
+
         private:
-            GLuint programID;
+            void checkLinkSuccess() const;
+
+            GLuint programHandle;
             std::string prefix;
             std::map<std::string, GLint> locations;
         };

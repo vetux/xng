@@ -414,5 +414,9 @@ namespace xengine {
                                                         getGlslSource(fragmentShader),
                                                         prefix);
         }
+
+        std::unique_ptr<ShaderProgram> QtOGLRenderAllocator::createShaderProgram(const ShaderBinary &shader) {
+            return std::make_unique<QtOGLShaderProgram>(shader);
+        }
     }
 }

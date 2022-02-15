@@ -417,6 +417,10 @@ namespace xengine {
                                                       getGlslSource(fragmentShader),
                                                       prefix);
         }
+
+        std::unique_ptr<ShaderProgram> OGLRenderAllocator::createShaderProgram(const ShaderBinary &shader) {
+            return std::make_unique<OGLShaderProgram>(shader);
+        }
     }
 }
 

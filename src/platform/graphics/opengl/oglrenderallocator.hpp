@@ -47,6 +47,8 @@ namespace xengine {
             std::unique_ptr<ShaderProgram> createShaderProgram(const ShaderSource &vertexShader,
                                                                const ShaderSource &geometryShader,
                                                                const ShaderSource &fragmentShader) override;
+
+            std::unique_ptr<ShaderProgram> createShaderProgram(const ShaderBinary &shader) override;
         };
     }
 }
