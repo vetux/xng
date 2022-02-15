@@ -28,6 +28,7 @@
 #include "platform/graphics/renderdevice.hpp"
 #include "platform/graphics/shadercompiler.hpp"
 
+#include "render/deferred/prepass.hpp"
 #include "render/deferred/renderpass.hpp"
 #include "render/deferred/compositor.hpp"
 #include "render/pipeline.hpp"
@@ -42,9 +43,10 @@ namespace xengine {
                                   std::vector<std::unique_ptr<RenderPass>> passes);
 
         DeferredPipeline(RenderDevice &device,
-                         std::unique_ptr<AssetRenderManager> assetRenderManager,
+                         std::unique_ptr<PrePass> prePass,
                          std::unique_ptr<GBuffer> gBuffer,
                          std::unique_ptr<Compositor> compositor,
+                         std::unique_ptr<AssetRenderManager> assetRenderManager,
                          std::vector<std::unique_ptr<RenderPass>> passes);
 
         ~DeferredPipeline();
@@ -52,6 +54,8 @@ namespace xengine {
         void render(RenderTarget &target, Scene &scene) override;
 
         AssetRenderManager &getAssetRenderManager() { return *assetRenderManager; }
+
+        PrePass &getPrePass() { return *prePass; }
 
         GBuffer &getGeometryBuffer() { return *gBuffer; }
 
@@ -62,9 +66,11 @@ namespace xengine {
         void setPasses(std::vector<std::unique_ptr<RenderPass>> value) { passes = std::move(value); }
 
     private:
-        std::unique_ptr<AssetRenderManager> assetRenderManager;
+        std::unique_ptr<PrePass> prePass;
         std::unique_ptr<GBuffer> gBuffer;
         std::unique_ptr<Compositor> compositor;
+        std::unique_ptr<AssetRenderManager> assetRenderManager;
+
         std::vector<std::unique_ptr<RenderPass>> passes;
     };
 }

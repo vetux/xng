@@ -86,6 +86,11 @@ namespace xengine {
         MeshBuffer &getScreenQuad();
 
         /**
+         * @return A render target with the geometry textures bound in order to the color attachments and depth attachment.
+         */
+        RenderTarget &getRenderTarget();
+
+        /**
          * Convenience method which returns a render target with the size and samples matching the geometry buffer,
          * and no textures bound.
          *
@@ -93,36 +98,19 @@ namespace xengine {
          */
         RenderTarget &getPassTarget();
 
-        /**
-         * Update the geometry textures from the given scene data in the given geometry buffer.
-         *
-         * Users may override this function to define custom logic at the start of the pipeline.
-         *
-         * @param buffer
-         * @param scene
-         * @param assetRenderManager
-         */
-        virtual void update(Scene &scene, AssetRenderManager &assetRenderManager);
-
     private:
         void reallocateObjects();
 
-        Renderer &ren;
-        RenderAllocator &allocator;
-
-        Vec2i size = {1, 1}; //The current size of the render target of the geometry buffer
+        Vec2i size = {1, 1}; //The size of the render target and textures
         int samples = 1; //The number of msaa samples to use for geometry textures, all geometry textures are TEXTURE_2D_MULTISAMPLE
+
+        std::map<GTexture, std::unique_ptr<TextureBuffer>> textures;
+
+        RenderAllocator &allocator;
 
         std::unique_ptr<RenderTarget> renderTarget;
         std::unique_ptr<RenderTarget> passTarget;
-        std::map<GTexture, std::unique_ptr<TextureBuffer>> textures;
         std::unique_ptr<MeshBuffer> screenQuad;
-
-        ShaderSource vs;
-        ShaderSource fs;
-
-        std::unique_ptr<ShaderProgram> shader;
-        std::unique_ptr<TextureBuffer> defaultTexture; //1 pixel texture with value (0, 0, 0, 0)
     };
 }
 

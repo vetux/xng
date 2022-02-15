@@ -31,7 +31,7 @@ namespace xengine {
      * It has the task of relating color and depth textures created by the render passes
      * and outputting the correct pixels for the final image.
      *
-     * The class can be inherited to define custom logic at the end of the pipeline for example for post processing effects.
+     * The class can be inherited to define custom logic at the end of the pipeline.
      */
     class XENGINE_EXPORT Compositor {
     public:
