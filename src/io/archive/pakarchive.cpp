@@ -41,4 +41,8 @@ namespace xengine {
         std::noskipws(*ret);
         return std::move(ret);
     }
+
+    std::unique_ptr<std::iostream> PakArchive::openRW(const std::string &name) {
+        throw std::runtime_error("Writing to pak is not supported");
+    }
 }

@@ -20,9 +20,6 @@
 #ifndef XENGINE_DIRECTORYARCHIVE_HPP
 #define XENGINE_DIRECTORYARCHIVE_HPP
 
-#include <fstream>
-#include <filesystem>
-
 #include "io/archive.hpp"
 
 namespace xengine {
@@ -36,36 +33,20 @@ namespace xengine {
 
         DirectoryArchive() = default;
 
-        explicit DirectoryArchive(std::string directory) : directory(std::move(directory)) {}
+        explicit DirectoryArchive(std::string directory, bool allowWriting = false);
 
         ~DirectoryArchive() override = default;
 
-        bool exists(const std::string &name) override {
-            auto ret = std::filesystem::exists(name);
-            if (ret) {
-                return ret;
-            } else {
-                return std::filesystem::exists(directory + name);
-            }
-        }
+        bool exists(const std::string &name) override;
 
-        std::unique_ptr<std::istream> open(const std::string &path) override {
-            std::string targetPath;
+        std::unique_ptr<std::istream> open(const std::string &path) override;
 
-            //Allow full paths which reference files relative to the directory
-            if (path.find(directory) == 0 && std::filesystem::exists(path)) {
-                targetPath = path;
-            } else {
-                //Allow relative paths without leading slash
-                targetPath = directory + (path.find('/') == 0 ? "" : "/") + path;
-            }
+        std::unique_ptr<std::iostream> openRW(const std::string &path) override;
 
-            auto ret = std::make_unique<std::fstream>(targetPath);
-            if (!*ret) {
-                throw std::runtime_error("Failed to open file " + targetPath);
-            }
-            return ret;
-        }
+    private:
+        std::string getAbsolutePath(const std::string &path);
+
+        bool allowWriting = false;
     };
 }
 

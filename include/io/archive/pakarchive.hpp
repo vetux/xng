@@ -20,14 +20,10 @@
 #ifndef XENGINE_PAKARCHIVE_HPP
 #define XENGINE_PAKARCHIVE_HPP
 
-#include <fstream>
-#include <vector>
 #include <mutex>
 
 #include "io/archive.hpp"
 #include "io/pak.hpp"
-
-class XENGINE_EXPORT AssetPack;
 
 namespace xengine {
     class XENGINE_EXPORT PakArchive : public Archive {
@@ -44,6 +40,8 @@ namespace xengine {
         bool exists(const std::string &path) override;
 
         std::unique_ptr<std::istream> open(const std::string &path) override;
+
+        std::unique_ptr<std::iostream> openRW(const std::string &name) override;
 
     private:
         std::mutex mutex;

@@ -34,6 +34,8 @@ namespace xengine {
         virtual bool exists(const std::string &name) = 0;
 
         virtual std::unique_ptr<std::istream> open(const std::string &name) = 0;
+
+        virtual std::unique_ptr<std::iostream> openRW(const std::string &name) = 0;
     };
 }
 
