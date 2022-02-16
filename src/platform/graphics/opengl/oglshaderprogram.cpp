@@ -26,8 +26,8 @@
 #include "math/rotation.hpp"
 #include "math/matrixmath.hpp"
 
-#include "oglshaderprogram.hpp"
-#include "oglcheckerror.hpp"
+#include "platform/graphics/opengl/oglshaderprogram.hpp"
+#include "platform/graphics/opengl/oglcheckerror.hpp"
 
 namespace xengine {
     namespace opengl {
@@ -43,7 +43,6 @@ namespace xengine {
             const char *fragmentSource = fragmentShader.c_str();
 
             programHandle = glCreateProgram();
-
 
             GLuint vsH = glCreateShader(GL_VERTEX_SHADER);
             glShaderSource(vsH, 1, &vertexSource, NULL);

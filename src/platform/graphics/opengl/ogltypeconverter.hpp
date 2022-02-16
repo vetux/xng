@@ -21,17 +21,12 @@
 #define XENGINE_OGLTYPECONVERTER_HPP
 
 #include "platform/graphics/rendercommand.hpp"
-
-#include "openglinclude.hpp"
+#include "platform/graphics/opengl/openglinclude.hpp"
 
 namespace xengine {
     namespace opengl {
         namespace OGLTypeConverter {
             GLenum getColorAttachment(int index);
-
-            GLint convertPrimitive(int value);
-
-            GLuint convertPrimitive(uint value);
 
             GLenum convert(FaceCullingMode mode);
 

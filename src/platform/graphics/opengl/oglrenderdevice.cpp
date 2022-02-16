@@ -19,11 +19,8 @@
 
 #ifdef BUILD_ENGINE_RENDERER_OPENGL
 
-#include "oglrenderdevice.hpp"
-#include "ogltexturebuffer.hpp"
-#include "oglcheckerror.hpp"
-#include "oglmeshbuffer.hpp"
-#include "oglshaderprogram.hpp"
+#include "platform/graphics/opengl/oglrenderdevice.hpp"
+#include "platform/graphics/opengl/ogltexturebuffer.hpp"
 
 namespace xengine {
     namespace opengl {
@@ -36,7 +33,7 @@ namespace xengine {
         }
 
         int OGLRenderDevice::getMaxSampleCount() {
-            int ret = 0;
+            GLint ret = 0;
             glGetIntegerv(GL_MAX_SAMPLES, &ret);
             return ret;
         }

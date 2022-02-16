@@ -21,23 +21,14 @@
 
 #include <stdexcept>
 
-#include "ogltypeconverter.hpp"
-
-#include "openglinclude.hpp"
+#include "platform/graphics/opengl/ogltypeconverter.hpp"
+#include "platform/graphics/opengl/openglinclude.hpp"
 
 namespace xengine {
     namespace opengl {
         namespace OGLTypeConverter {
             GLenum getColorAttachment(int index) {
                 return GL_COLOR_ATTACHMENT0 + index;
-            }
-
-            GLint convertPrimitive(int value) {
-                return (GLint) value;
-            }
-
-            GLuint convertPrimitive(uint value) {
-                return (GLuint) value;
             }
 
             GLenum convert(FaceCullingMode mode) {

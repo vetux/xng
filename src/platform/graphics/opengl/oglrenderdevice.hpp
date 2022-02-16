@@ -22,8 +22,8 @@
 
 #include "platform/graphics/renderdevice.hpp"
 
-#include "oglrenderer.hpp"
-#include "oglrenderallocator.hpp"
+#include "platform/graphics/opengl/oglrenderer.hpp"
+#include "platform/graphics/opengl/oglrenderallocator.hpp"
 
 namespace xengine {
     namespace opengl {

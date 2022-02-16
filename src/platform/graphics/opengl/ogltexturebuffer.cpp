@@ -19,9 +19,11 @@
 
 #ifdef BUILD_ENGINE_RENDERER_OPENGL
 
-#include "ogltexturebuffer.hpp"
-#include "oglcheckerror.hpp"
-#include "ogltypeconverter.hpp"
+#include "cast/numeric_cast.hpp"
+
+#include "platform/graphics/opengl/ogltexturebuffer.hpp"
+#include "platform/graphics/opengl/oglcheckerror.hpp"
+#include "platform/graphics/opengl/ogltypeconverter.hpp"
 
 using namespace xengine;
 using namespace xengine::opengl;
@@ -36,11 +38,6 @@ OGLTextureBuffer::OGLTextureBuffer(Attributes attributes) : TextureBuffer(attrib
     if (type != GL_TEXTURE_2D_MULTISAMPLE) {
         glTexParameteri(type, GL_TEXTURE_WRAP_S, OGLTypeConverter::convert(attributes.wrapping));
         glTexParameteri(type, GL_TEXTURE_WRAP_T, OGLTypeConverter::convert(attributes.wrapping));
-    }
-
-    checkGLError("OGLTextureBuffer::OGLTextureBuffer()");
-
-    if (type != GL_TEXTURE_2D_MULTISAMPLE) {
         glTexParameteri(type,
                         GL_TEXTURE_MIN_FILTER,
                         OGLTypeConverter::convert(attributes.filterMin));
@@ -72,7 +69,7 @@ OGLTextureBuffer::OGLTextureBuffer(Attributes attributes) : TextureBuffer(attrib
 
         glTexImage2D(type,
                      0,
-                     texInternalFormat,
+                     numeric_cast<GLint>(texInternalFormat),
                      attributes.size.x,
                      attributes.size.y,
                      0,
@@ -98,7 +95,7 @@ OGLTextureBuffer::OGLTextureBuffer(Attributes attributes) : TextureBuffer(attrib
         for (unsigned int i = 0; i < 6; i++) {
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                          0,
-                         OGLTypeConverter::convert(attributes.format),
+                         numeric_cast<GLint>(OGLTypeConverter::convert(attributes.format)),
                          attributes.size.x,
                          attributes.size.y,
                          0,
@@ -135,7 +132,7 @@ void OGLTextureBuffer::upload(const Image<ColorRGB> &buffer) {
     glBindTexture(GL_TEXTURE_2D, handle);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 OGLTypeConverter::convert(attributes.format),
+                 numeric_cast<GLint>(OGLTypeConverter::convert(attributes.format)),
                  attributes.size.x,
                  attributes.size.y,
                  0,
@@ -161,7 +158,7 @@ void OGLTextureBuffer::upload(const Image<ColorRGBA> &buffer) {
     glBindTexture(GL_TEXTURE_2D, handle);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 OGLTypeConverter::convert(attributes.format),
+                 numeric_cast<GLint>(OGLTypeConverter::convert(attributes.format)),
                  attributes.size.x,
                  attributes.size.y,
                  0,
@@ -187,7 +184,7 @@ void OGLTextureBuffer::upload(const Image<float> &buffer) {
     glBindTexture(GL_TEXTURE_2D, handle);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 OGLTypeConverter::convert(attributes.format),
+                 numeric_cast<GLint>(OGLTypeConverter::convert(attributes.format)),
                  attributes.size.x,
                  attributes.size.y,
                  0,
@@ -213,7 +210,7 @@ void OGLTextureBuffer::upload(const Image<int> &buffer) {
     glBindTexture(GL_TEXTURE_2D, handle);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 OGLTypeConverter::convert(attributes.format),
+                 numeric_cast<GLint>(OGLTypeConverter::convert(attributes.format)),
                  attributes.size.x,
                  attributes.size.y,
                  0,
@@ -240,7 +237,7 @@ void OGLTextureBuffer::upload(const Image<char> &buffer) {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 OGLTypeConverter::convert(attributes.format),
+                 numeric_cast<GLint>(OGLTypeConverter::convert(attributes.format)),
                  attributes.size.x,
                  attributes.size.y,
                  0,
@@ -267,7 +264,7 @@ void OGLTextureBuffer::upload(const Image<unsigned char> &buffer) {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 OGLTypeConverter::convert(attributes.format),
+                 numeric_cast<GLint>(OGLTypeConverter::convert(attributes.format)),
                  attributes.size.x,
                  attributes.size.y,
                  0,
@@ -305,7 +302,7 @@ void OGLTextureBuffer::upload(CubeMapFace face, const Image<ColorRGBA> &buffer) 
     glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
     glTexImage2D(OGLTypeConverter::convert(face),
                  0,
-                 OGLTypeConverter::convert(attributes.format),
+                 numeric_cast<GLint>(OGLTypeConverter::convert(attributes.format)),
                  attributes.size.x,
                  attributes.size.y,
                  0,
@@ -395,7 +392,7 @@ void OGLTextureBuffer::setTextureType(TextureType t) {
 
             glTexImage2D(type,
                          0,
-                         texInternalFormat,
+                         numeric_cast<GLint>(texInternalFormat),
                          attributes.size.x,
                          attributes.size.y,
                          0,
@@ -406,7 +403,7 @@ void OGLTextureBuffer::setTextureType(TextureType t) {
             for (unsigned int i = 0; i < 6; i++) {
                 glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                              0,
-                             OGLTypeConverter::convert(attributes.format),
+                             numeric_cast<GLint>(OGLTypeConverter::convert(attributes.format)),
                              attributes.size.x,
                              attributes.size.y,
                              0,

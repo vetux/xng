@@ -20,22 +20,20 @@
 #ifdef BUILD_ENGINE_RENDERER_OPENGL
 
 #include <string>
-#include <set>
 
-#include "math/matrixmath.hpp"
-#include "math/rotation.hpp"
+#include "cast/numeric_cast.hpp"
 
-#include "oglrenderer.hpp"
+#include "platform/graphics/opengl/oglrenderer.hpp"
 
-#include "oglshaderprogram.hpp"
-#include "ogltexturebuffer.hpp"
-#include "oglmeshbuffer.hpp"
-#include "oglrendertarget.hpp"
+#include "platform/graphics/opengl/oglshaderprogram.hpp"
+#include "platform/graphics/opengl/ogltexturebuffer.hpp"
+#include "platform/graphics/opengl/oglmeshbuffer.hpp"
+#include "platform/graphics/opengl/oglrendertarget.hpp"
 
-#include "oglcheckerror.hpp"
-#include "ogltypeconverter.hpp"
+#include "platform/graphics/opengl/oglcheckerror.hpp"
+#include "platform/graphics/opengl/ogltypeconverter.hpp"
 
-#include "openglinclude.hpp"
+#include "platform/graphics/opengl/openglinclude.hpp"
 
 namespace xengine {
     namespace opengl {
@@ -67,11 +65,9 @@ namespace xengine {
         }
 
         void OGLRenderer::renderBegin(RenderTarget &target, const RenderOptions &options) {
-            glClearColor((float) options.clearColorValue.r() / (float) 255,
-                         (float) options.clearColorValue.g() / (float) 255,
-                         (float) options.clearColorValue.b() / (float) 255,
-                         (float) options.clearColorValue.a() / (float) 255);
+            auto clearColor = options.clearColorValue.divide();
 
+            glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
             glClearDepth(options.clearDepthValue);
 
             if (options.multiSample)
@@ -91,7 +87,9 @@ namespace xengine {
             GLint vpData[4];
             glGetIntegerv(GL_VIEWPORT, vpData);
 
-            glViewport(options.viewportOffset.x, options.viewportOffset.y, options.viewportSize.x,
+            glViewport(options.viewportOffset.x,
+                       options.viewportOffset.y,
+                       options.viewportSize.x,
                        options.viewportSize.y);
 
             glBindFramebuffer(GL_FRAMEBUFFER, fb.getFBO());
@@ -146,10 +144,10 @@ namespace xengine {
                 glDisable(GL_DEPTH_TEST);
             }
 
-            glStencilMask(OGLTypeConverter::convertPrimitive(command.properties.stencilTestMask));
+            glStencilMask(command.properties.stencilTestMask);
             glStencilFunc(OGLTypeConverter::convert(command.properties.stencilMode),
-                          OGLTypeConverter::convertPrimitive(command.properties.stencilReference),
-                          OGLTypeConverter::convertPrimitive(command.properties.stencilFunctionMask));
+                          command.properties.stencilReference,
+                          command.properties.stencilFunctionMask);
             glStencilOp(OGLTypeConverter::convert(command.properties.stencilFail),
                         OGLTypeConverter::convert(command.properties.stencilDepthFail),
                         OGLTypeConverter::convert(command.properties.stencilPass));
@@ -187,20 +185,23 @@ namespace xengine {
             if (mesh.indexed) {
                 if (mesh.instanced)
                     glDrawElementsInstanced(mesh.elementType,
-                                            mesh.elementCount,
+                                            numeric_cast<GLsizei>(mesh.elementCount),
                                             GL_UNSIGNED_INT,
                                             0,
-                                            mesh.instanceCount);
+                                            numeric_cast<GLsizei>(mesh.instanceCount));
                 else
                     glDrawElements(mesh.elementType,
-                                   mesh.elementCount,
+                                   numeric_cast<GLsizei>(mesh.elementCount),
                                    GL_UNSIGNED_INT,
                                    0);
             } else {
                 if (mesh.instanced)
-                    glDrawArraysInstanced(mesh.elementType, 0, mesh.elementCount, mesh.instanceCount);
+                    glDrawArraysInstanced(mesh.elementType,
+                                          0,
+                                          numeric_cast<GLsizei>(mesh.elementCount),
+                                          numeric_cast<GLsizei>(mesh.instanceCount));
                 else
-                    glDrawArrays(mesh.elementType, 0, mesh.elementCount);
+                    glDrawArrays(mesh.elementType, 0, numeric_cast<GLsizei>(mesh.elementCount));
             }
             glBindVertexArray(0);
 
@@ -226,11 +227,9 @@ namespace xengine {
         void OGLRenderer::renderClear(RenderTarget &target, ColorRGBA color, float depth) {
             glEnable(GL_MULTISAMPLE);
 
-            glClearColor((float) color.r() / (float) 255,
-                         (float) color.g() / (float) 255,
-                         (float) color.b() / (float) 255,
-                         (float) color.a() / (float) 255);
+            auto clearColor = color.divide();
 
+            glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
             glClearDepth(depth);
 
             auto &fb = dynamic_cast<OGLRenderTarget &>(target);

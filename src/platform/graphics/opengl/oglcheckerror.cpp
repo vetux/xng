@@ -19,11 +19,10 @@
 
 #ifdef BUILD_ENGINE_RENDERER_OPENGL
 
-#include "oglcheckerror.hpp"
-
 #include <stdexcept>
 
-#include "openglinclude.hpp"
+#include "platform/graphics/opengl/oglcheckerror.hpp"
+#include "platform/graphics/opengl/openglinclude.hpp"
 
 void checkGLError(const std::string &source) {
     GLenum er = glGetError();

@@ -22,6 +22,8 @@
 
 #include <cstdint>
 
+#include "math/vector4.hpp"
+
 namespace xengine {
     struct XENGINE_EXPORT ColorRGB {
         uint8_t data[3];
@@ -101,6 +103,13 @@ namespace xengine {
 
         bool operator!=(const ColorRGBA &other) {
             return !(*this == other);
+        }
+
+        Vec4f divide(float divisor = 255) const {
+            return {static_cast<float>(r()) / divisor,
+                    static_cast<float>(g()) / divisor,
+                    static_cast<float>(b()) / divisor,
+                    static_cast<float>(a()) / divisor};
         }
     };
 }

@@ -24,12 +24,13 @@
 #include <map>
 #include <functional>
 
-#include "platform/graphics/shaderprogram.hpp"
 #include "math/vector2.hpp"
 #include "math/vector3.hpp"
 #include "math/matrix.hpp"
 
-#include "openglinclude.hpp"
+#include "platform/graphics/shaderprogram.hpp"
+
+#include "platform/graphics/opengl/openglinclude.hpp"
 
 namespace xengine {
     namespace opengl {

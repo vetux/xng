@@ -19,13 +19,15 @@
 
 #ifdef BUILD_ENGINE_RENDERER_OPENGL
 
-#include "oglrenderallocator.hpp"
+#include "cast/numeric_cast.hpp"
 
-#include "openglinclude.hpp"
-#include "oglrendertarget.hpp"
-#include "ogltexturebuffer.hpp"
-#include "oglmeshbuffer.hpp"
-#include "oglshaderprogram.hpp"
+#include "platform/graphics/opengl/oglrenderallocator.hpp"
+
+#include "platform/graphics/opengl/openglinclude.hpp"
+#include "platform/graphics/opengl/oglrendertarget.hpp"
+#include "platform/graphics/opengl/ogltexturebuffer.hpp"
+#include "platform/graphics/opengl/oglmeshbuffer.hpp"
+#include "platform/graphics/opengl/oglshaderprogram.hpp"
 
 namespace xengine {
     namespace opengl {
@@ -60,7 +62,7 @@ namespace xengine {
         std::unique_ptr<RenderTarget> OGLRenderAllocator::createRenderTarget(Vec2i size) {
             return std::make_unique<OGLRenderTarget>(size);
         }
-        
+
         std::unique_ptr<RenderTarget> OGLRenderAllocator::createRenderTarget(Vec2i size, int samples) {
             return std::make_unique<OGLRenderTarget>(size, samples);
         }
@@ -94,11 +96,15 @@ namespace xengine {
                 glBindVertexArray(ret->VAO);
 
                 glBindBuffer(GL_ARRAY_BUFFER, ret->VBO);
-                glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * mesh.vertices.size(), mesh.vertices.data(),
+                glBufferData(GL_ARRAY_BUFFER,
+                             numeric_cast<GLsizeiptr>(sizeof(Vertex) * mesh.vertices.size()),
+                             mesh.vertices.data(),
                              GL_STATIC_DRAW);
 
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ret->EBO);
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint) * mesh.indices.size(), mesh.indices.data(),
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                             numeric_cast<GLsizeiptr>(sizeof(uint) * mesh.indices.size()),
+                             mesh.indices.data(),
                              GL_STATIC_DRAW);
 
                 glEnableVertexAttribArray(0);
@@ -161,7 +167,7 @@ namespace xengine {
 
                 glBindBuffer(GL_ARRAY_BUFFER, ret->VBO);
                 glBufferData(GL_ARRAY_BUFFER,
-                             sizeof(Vertex) * mesh.vertices.size(),
+                             numeric_cast<GLsizeiptr>(sizeof(Vertex) * mesh.vertices.size()),
                              mesh.vertices.data(),
                              GL_STATIC_DRAW);
 
@@ -255,13 +261,13 @@ namespace xengine {
 
                 glBindBuffer(GL_ARRAY_BUFFER, ret->VBO);
                 glBufferData(GL_ARRAY_BUFFER,
-                             sizeof(Vertex) * mesh.vertices.size(),
+                             numeric_cast<GLsizeiptr>(sizeof(Vertex) * mesh.vertices.size()),
                              mesh.vertices.data(),
                              GL_STATIC_DRAW);
 
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ret->EBO);
                 glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                             sizeof(uint) * mesh.indices.size(),
+                             numeric_cast<GLsizeiptr>(sizeof(uint) * mesh.indices.size()),
                              mesh.indices.data(),
                              GL_STATIC_DRAW);
 
@@ -287,7 +293,10 @@ namespace xengine {
                 glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *) (11 * sizeof(float)));
 
                 glBindBuffer(GL_ARRAY_BUFFER, ret->instanceVBO);
-                glBufferData(GL_ARRAY_BUFFER, sizeof(Mat4f) * offsets.size(), &off[0], GL_STATIC_DRAW);
+                glBufferData(GL_ARRAY_BUFFER,
+                             numeric_cast<GLsizeiptr>(sizeof(Mat4f) * offsets.size()),
+                             &off[0],
+                             GL_STATIC_DRAW);
 
                 // instanceMatrix attribute
                 glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(Mat4f), (void *) 0);
@@ -326,7 +335,7 @@ namespace xengine {
 
                 glBindBuffer(GL_ARRAY_BUFFER, ret->VBO);
                 glBufferData(GL_ARRAY_BUFFER,
-                             sizeof(Vertex) * mesh.vertices.size(),
+                             numeric_cast<GLsizeiptr>(sizeof(Vertex) * mesh.vertices.size()),
                              mesh.vertices.data(),
                              GL_STATIC_DRAW);
 
@@ -352,7 +361,10 @@ namespace xengine {
                 glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *) (11 * sizeof(float)));
 
                 glBindBuffer(GL_ARRAY_BUFFER, ret->instanceVBO);
-                glBufferData(GL_ARRAY_BUFFER, sizeof(Mat4f) * offsets.size(), &off[0], GL_STATIC_DRAW);
+                glBufferData(GL_ARRAY_BUFFER,
+                             numeric_cast<GLsizeiptr>(sizeof(Mat4f) * offsets.size()),
+                             &off[0],
+                             GL_STATIC_DRAW);
 
                 // instanceMatrix attribute
                 glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(Mat4f), (void *) 0);
@@ -393,12 +405,14 @@ namespace xengine {
             std::string prefix;
             if (language == HLSL_SHADER_MODEL_4)
                 prefix = "Globals.";
-            return std::make_unique<OGLShaderProgram>(getGlslSource(vertexShader), "", getGlslSource(fragmentShader),
+            return std::make_unique<OGLShaderProgram>(getGlslSource(vertexShader),
+                                                      "",
+                                                      getGlslSource(fragmentShader),
                                                       prefix);
         }
 
-        std::unique_ptr<MeshBuffer>
-        OGLRenderAllocator::createCustomMeshBuffer(const RenderAllocator::CustomMeshDefinition &mesh) {
+        std::unique_ptr<MeshBuffer> OGLRenderAllocator::createCustomMeshBuffer(
+                const RenderAllocator::CustomMeshDefinition &mesh) {
             throw std::runtime_error("Not Implemented");
         }
 

@@ -20,12 +20,11 @@
 #ifndef XENGINE_OGLMESHBUFFER_HPP
 #define XENGINE_OGLMESHBUFFER_HPP
 
-#include "platform/graphics/meshbuffer.hpp"
 #include "math/matrixmath.hpp"
 
-#include "oglcheckerror.hpp"
-
-#include "openglinclude.hpp"
+#include "platform/graphics/meshbuffer.hpp"
+#include "platform/graphics/opengl/oglcheckerror.hpp"
+#include "platform/graphics/opengl/openglinclude.hpp"
 
 namespace xengine {
     namespace opengl {
