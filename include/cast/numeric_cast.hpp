@@ -25,11 +25,13 @@
 
 template<typename R, typename T>
 R numeric_cast(const T &value) {
-    auto min = std::numeric_limits<R>::min();
+    //TODO: Implement numeric cast
+    return static_cast<R>(value);
+/*    auto min = std::numeric_limits<R>::min();
     auto max = std::numeric_limits<R>::max();
     if (value < min || value > max)
         throw std::runtime_error("Cannot convert value");
-    return static_cast<R>(value);
+    return static_cast<R>(value);*/
 }
 
 #endif //XENGINE_NUMERIC_CAST_HPP
