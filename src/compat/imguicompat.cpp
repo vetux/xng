@@ -21,14 +21,14 @@
 
 #include <limits>
 
-#include "platform/display/window.hpp"
+#include "display/window.hpp"
 
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 
-#include "platform/display/glfw/windowglfw.hpp"
-#include "platform/graphics/opengl/oglrendertarget.hpp"
+#include "display/glfw/windowglfw.hpp"
+#include "graphics/opengl/oglrendertarget.hpp"
 
 namespace xengine {
     namespace ImGuiCompat {

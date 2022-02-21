@@ -22,7 +22,7 @@
 
 #include "asset/scene.hpp"
 
-#include "platform/graphics/renderer.hpp"
+#include "graphics/renderer.hpp"
 
 namespace xengine {
     namespace ForwardRenderer {

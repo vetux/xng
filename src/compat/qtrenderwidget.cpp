@@ -23,8 +23,8 @@
 
 #include <utility>
 
-#include "platform/graphics/opengl-qt/qtoglrenderdevice.hpp"
-#include "platform/graphics/opengl-qt/qtoglrendertarget.hpp"
+#include "graphics/opengl-qt/qtoglrenderdevice.hpp"
+#include "graphics/opengl-qt/qtoglrendertarget.hpp"
 
 namespace xengine {
     std::unique_ptr<RenderTarget> QtRenderWidget::getWidgetRenderTarget() {

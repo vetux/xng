@@ -23,8 +23,7 @@
 
 #include "math/matrixmath.hpp"
 #include "async/threadpool.hpp"
-#include "platform/graphics/shadercompiler.hpp"
-#include "platform/graphics/shadercompiler.hpp"
+#include "shader/shadercompiler.hpp"
 
 static const char *SHADER_VERT = R"###(
 float4x4 MODEL_MATRIX;

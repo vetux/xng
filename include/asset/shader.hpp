@@ -20,7 +20,7 @@
 #ifndef XENGINE_SHADER_HPP
 #define XENGINE_SHADER_HPP
 
-#include "platform/graphics/shadersource.hpp"
+#include "shader/shadersource.hpp"
 
 #include "asset/asset.hpp"
 

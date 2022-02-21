@@ -21,7 +21,7 @@
 #define XENGINE_PIPELINE_HPP
 
 #include "asset/scene.hpp"
-#include "platform/graphics/rendertarget.hpp"
+#include "graphics/rendertarget.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT Pipeline {

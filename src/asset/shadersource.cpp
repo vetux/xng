@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "platform/graphics/shadersource.hpp"
+#include "shader/shadersource.hpp"
 
 namespace xengine {
     ShaderSource::ShaderSource(std::string src,

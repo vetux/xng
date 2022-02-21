@@ -20,7 +20,7 @@
 #ifndef XENGINE_MONOSYNCCOMPONENT_HPP
 #define XENGINE_MONOSYNCCOMPONENT_HPP
 
-#include "platform/script/script.hpp"
+#include "script/script.hpp"
 
 namespace xengine {
     struct XENGINE_EXPORT MonoSyncComponent {

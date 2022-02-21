@@ -18,8 +18,9 @@
  */
 
 #include "render/deferred/prepass.hpp"
-#include "platform/graphics/shadercompiler.hpp"
 #include "render/shader/shaderinclude.hpp"
+
+#include "shader/shadercompiler.hpp"
 
 static const char *SHADER_VERT_GEOMETRY = R"###(#version 460
 

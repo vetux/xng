@@ -33,7 +33,7 @@
 #include "async/threadpool.hpp"
 #include "asset/mesh.hpp"
 
-#include "platform/audio/audioformat.hpp"
+#include "audio/audioformat.hpp"
 
 namespace xengine {
     static ColorRGBA convertJsonColor(const nlohmann::json &j) {

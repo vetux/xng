@@ -20,7 +20,7 @@
 #ifndef XENGINE_MONOSCRIPTCOMPONENT_HPP
 #define XENGINE_MONOSCRIPTCOMPONENT_HPP
 
-#include "platform/script/script.hpp"
+#include "script/script.hpp"
 
 namespace xengine {
     struct XENGINE_EXPORT MonoScriptComponent {

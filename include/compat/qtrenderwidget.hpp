@@ -23,7 +23,7 @@
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_3_3_Core>
 
-#include "platform/graphics/rendertarget.hpp"
+#include "graphics/rendertarget.hpp"
 #include "render/deferred/deferredpipeline.hpp"
 
 #include "render/deferred/passes/skyboxpass.hpp"

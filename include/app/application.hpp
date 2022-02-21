@@ -28,7 +28,7 @@
 #include "io/archive.hpp"
 #include "compat/imguicompat.hpp"
 
-#include "platform/display/displaymanager.hpp"
+#include "display/displaymanager.hpp"
 
 #include "imgui.h"
 

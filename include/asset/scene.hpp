@@ -27,7 +27,7 @@
 #include "asset/shader.hpp"
 #include "asset/assethandle.hpp"
 
-#include "platform/graphics/rendercommand.hpp"
+#include "graphics/rendercommand.hpp"
 
 namespace xengine {
     /**

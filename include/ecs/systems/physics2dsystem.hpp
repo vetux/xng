@@ -22,7 +22,7 @@
 
 #include "ecs/system.hpp"
 
-#include "platform/physics/2d/world2d.hpp"
+#include "physics/2d/world2d.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT Physics2DSystem : public System {

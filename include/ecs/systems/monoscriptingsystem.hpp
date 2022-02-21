@@ -22,10 +22,10 @@
 
 #include "ecs/system.hpp"
 
-#include "platform/script/mono/monoscript.hpp"
-#include "platform/script/mono/monocppassembly.hpp"
+#include "script/mono/monoscript.hpp"
+#include "script/mono/monocppassembly.hpp"
 
-#include "platform/input/input.hpp"
+#include "input/input.hpp"
 #include "io/archive.hpp"
 
 namespace xengine {

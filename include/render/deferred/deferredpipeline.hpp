@@ -24,9 +24,10 @@
 #include <map>
 #include <typeindex>
 
-#include "platform/graphics/renderer.hpp"
-#include "platform/graphics/renderdevice.hpp"
-#include "platform/graphics/shadercompiler.hpp"
+#include "graphics/renderer.hpp"
+#include "graphics/renderdevice.hpp"
+
+#include "shader/shadercompiler.hpp"
 
 #include "render/deferred/prepass.hpp"
 #include "render/deferred/renderpass.hpp"

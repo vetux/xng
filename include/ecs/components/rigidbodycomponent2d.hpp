@@ -20,7 +20,7 @@
 #ifndef XENGINE_RIGIDBODYCOMPONENT2D_HPP
 #define XENGINE_RIGIDBODYCOMPONENT2D_HPP
 
-#include "platform/physics/2d/rigidbody2d.hpp"
+#include "physics/2d/rigidbody2d.hpp"
 
 namespace xengine {
     struct XENGINE_EXPORT RigidBodyComponent2D {

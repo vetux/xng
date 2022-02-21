@@ -20,7 +20,7 @@
 #ifndef XENGINE_AUDIO_HPP
 #define XENGINE_AUDIO_HPP
 
-#include "platform/audio/audioformat.hpp"
+#include "audio/audioformat.hpp"
 
 #include "asset/asset.hpp"
 

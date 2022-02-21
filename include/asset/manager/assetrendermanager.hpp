@@ -26,7 +26,7 @@
 #include "asset/shader.hpp"
 #include "asset/texture.hpp"
 
-#include "platform/graphics/renderallocator.hpp"
+#include "graphics/renderallocator.hpp"
 
 namespace xengine {
     /**

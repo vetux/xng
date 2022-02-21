@@ -20,10 +20,10 @@
 #ifndef XENGINE_IMGUICOMPAT_HPP
 #define XENGINE_IMGUICOMPAT_HPP
 
-#include "platform/graphics/graphicsbackend.hpp"
-#include "platform/graphics/rendertarget.hpp"
-#include "platform/display/displaybackend.hpp"
-#include "platform/display/window.hpp"
+#include "graphics/graphicsbackend.hpp"
+#include "graphics/rendertarget.hpp"
+#include "display/displaybackend.hpp"
+#include "display/window.hpp"
 
 namespace xengine {
     namespace ImGuiCompat {

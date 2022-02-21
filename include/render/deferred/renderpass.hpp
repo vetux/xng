@@ -24,8 +24,8 @@
 #include "asset/scene.hpp"
 #include "gbuffer.hpp"
 
-#include "platform/graphics/renderer.hpp"
-#include "platform/graphics/renderdevice.hpp"
+#include "graphics/renderer.hpp"
+#include "graphics/renderdevice.hpp"
 
 namespace xengine {
     /**

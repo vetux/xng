@@ -30,7 +30,7 @@
 #include "io/archive.hpp"
 #include "asset/assetimporter.hpp"
 
-#include "platform/display/window.hpp"
+#include "display/window.hpp"
 
 namespace xengine {
     class ECS;

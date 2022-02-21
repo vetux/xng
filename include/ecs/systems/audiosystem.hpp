@@ -27,7 +27,7 @@
 #include "ecs/components/audio/audiosourcecomponent.hpp"
 #include "ecs/components/transformcomponent.hpp"
 
-#include "platform/audio/audiodevice.hpp"
+#include "audio/audiodevice.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT AudioSystem : public System, ComponentPool<AudioSourceComponent>::Listener {

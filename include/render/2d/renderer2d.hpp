@@ -22,11 +22,11 @@
 
 #include <set>
 
-#include "platform/graphics/renderer.hpp"
-#include "platform/graphics/renderdevice.hpp"
+#include "graphics/renderer.hpp"
+#include "graphics/renderdevice.hpp"
 
-#include "platform/text/character.hpp"
-#include "platform/text/font.hpp"
+#include "text/character.hpp"
+#include "text/font.hpp"
 
 #include "asset/camera.hpp"
 

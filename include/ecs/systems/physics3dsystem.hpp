@@ -22,7 +22,7 @@
 
 #include "ecs/system.hpp"
 
-#include "platform/physics/3d/world3d.hpp"
+#include "physics/3d/world3d.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT Physics3DSystem : public System {

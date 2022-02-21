@@ -5,14 +5,13 @@ This is an experimental cross-platform game engine library written in C++.
 - Deferred render pipeline
   - GBuffer multisampling support
   - User defined render pass support
-- Platform abstraction
-    - Audio
-      - OpenAL backend 
-    - Display / Input
-      - GLFW backend 
-    - Graphics
-      - Shader cross-compiler abstraction with SPIRV, HLSL and GLSL support
-      - OpenGL 4.1 backend
+- Audio
+  - OpenAL backend 
+- Display / Input
+  - GLFW backend 
+- Graphics
+  - Shader cross-compiler abstraction with SPIRV, HLSL and GLSL support
+  - OpenGL 4.1 backend
 - ECS with aggregated components storage pattern
 
 ## Programs
