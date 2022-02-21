@@ -23,13 +23,13 @@
 #include <map>
 #include <string>
 
-#include "shader/shadercompiler.hpp"
+#include "render/shader/shadercompiler.hpp"
 
 namespace xengine {
     /**
      * Currently provides:
-     * mvp.glsl/hlsl
-     * phong.glsl/hlsl
+     * mvp.glsl
+     * phong.glsl
      */
     namespace ShaderInclude {
         const std::map<std::string, std::string> &getShaderMacros(ShaderLanguage lang);

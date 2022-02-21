@@ -17,17 +17,39 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_FORWARDRENDERER_HPP
-#define XENGINE_FORWARDRENDERER_HPP
+#ifndef XENGINE_RENDERDEVICE_HPP
+#define XENGINE_RENDERDEVICE_HPP
 
-#include "asset/scene.hpp"
+#include <map>
+#include <functional>
 
+#include "render/platform/graphicsbackend.hpp"
 #include "render/platform/renderer.hpp"
+#include "render/platform/renderobject.hpp"
+#include "render/platform/renderallocator.hpp"
+
+#include "asset/mesh.hpp"
 
 namespace xengine {
-    namespace ForwardRenderer {
-        void renderScene(Renderer &ren, RenderTarget &target, Scene &scene);
-    }
+    class XENGINE_EXPORT RenderDevice {
+    public:
+        static std::unique_ptr<RenderDevice> create(GraphicsBackend backend);
+
+        virtual ~RenderDevice() = default;
+
+        virtual Renderer &getRenderer() = 0;
+
+        virtual RenderAllocator &getAllocator() = 0;
+
+        /**
+         * Returns the maximum number of samples supported in a multi sampled render target or texture.
+         *
+         * @return
+         */
+        virtual int getMaxSampleCount() = 0;
+
+        virtual GraphicsBackend getBackend() = 0;
+    };
 }
 
-#endif //XENGINE_FORWARDRENDERER_HPP
+#endif //XENGINE_RENDERDEVICE_HPP

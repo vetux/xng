@@ -28,7 +28,7 @@
 #include "backends/imgui_impl_opengl3.h"
 
 #include "display/glfw/windowglfw.hpp"
-#include "graphics/opengl/oglrendertarget.hpp"
+#include "render/platform/opengl/oglrendertarget.hpp"
 
 namespace xengine {
     namespace ImGuiCompat {

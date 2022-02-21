@@ -17,24 +17,31 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SHADER_HPP
-#define XENGINE_SHADER_HPP
+#ifdef BUILD_ENGINE_RENDERER_OPENGL
 
-#include "render/shader/shadersource.hpp"
-
-#include "asset/asset.hpp"
+#include "render/platform/opengl/oglrenderdevice.hpp"
+#include "render/platform/opengl/ogltexturebuffer.hpp"
 
 namespace xengine {
-    struct XENGINE_EXPORT Shader : public AssetBase {
-        ~Shader() override = default;
-
-        AssetBase *clone() override {
-            return new Shader(*this);
+    namespace opengl {
+        Renderer &OGLRenderDevice::getRenderer() {
+            return dynamic_cast<Renderer &>(renderer);
         }
 
-        ShaderSource vertexShader;
-        ShaderSource geometryShader;
-        ShaderSource fragmentShader;
-    };
+        RenderAllocator &OGLRenderDevice::getAllocator() {
+            return dynamic_cast<RenderAllocator &>(allocator);
+        }
+
+        int OGLRenderDevice::getMaxSampleCount() {
+            GLint ret = 0;
+            glGetIntegerv(GL_MAX_SAMPLES, &ret);
+            return ret;
+        }
+
+        GraphicsBackend OGLRenderDevice::getBackend() {
+            return OPENGL_4_6;
+        }
+    }
 }
-#endif //XENGINE_SHADER_HPP
+
+#endif

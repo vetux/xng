@@ -21,8 +21,8 @@
 #define XENGINE_COMPOSITOR_HPP
 
 #include "render/deferred/renderpass.hpp"
-#include "graphics/renderdevice.hpp"
-#include "graphics/rendercommand.hpp"
+#include "render/platform/renderdevice.hpp"
+#include "render/platform/rendercommand.hpp"
 
 namespace xengine {
     /**

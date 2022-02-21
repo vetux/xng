@@ -20,7 +20,7 @@
 #ifndef XENGINE_TEXTURE_HPP
 #define XENGINE_TEXTURE_HPP
 
-#include "graphics/texturebuffer.hpp"
+#include "render/platform/texturebuffer.hpp"
 #include "asset/assetpath.hpp"
 
 namespace xengine {

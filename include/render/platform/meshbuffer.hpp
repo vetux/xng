@@ -17,24 +17,18 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SHADER_HPP
-#define XENGINE_SHADER_HPP
+#ifndef XENGINE_MESHBUFFER_HPP
+#define XENGINE_MESHBUFFER_HPP
 
-#include "render/shader/shadersource.hpp"
+#include "render/platform/renderobject.hpp"
 
-#include "asset/asset.hpp"
+#include "math/transform.hpp"
 
 namespace xengine {
-    struct XENGINE_EXPORT Shader : public AssetBase {
-        ~Shader() override = default;
-
-        AssetBase *clone() override {
-            return new Shader(*this);
-        }
-
-        ShaderSource vertexShader;
-        ShaderSource geometryShader;
-        ShaderSource fragmentShader;
+    class XENGINE_EXPORT MeshBuffer : public RenderObject {
+    public:
+        ~MeshBuffer() override = default;
     };
 }
-#endif //XENGINE_SHADER_HPP
+
+#endif //XENGINE_MESHBUFFER_HPP

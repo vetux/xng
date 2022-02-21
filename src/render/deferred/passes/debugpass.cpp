@@ -23,7 +23,7 @@
 
 #include "math/rotation.hpp"
 #include "async/threadpool.hpp"
-#include "shader/shadercompiler.hpp"
+#include "render/shader/shadercompiler.hpp"
 
 //TODO: Fix tangent space to local space texture normal transformation
 static const char *SHADER_VERT = R"###(#version 410 core

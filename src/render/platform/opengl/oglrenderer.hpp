@@ -17,24 +17,31 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SHADER_HPP
-#define XENGINE_SHADER_HPP
+#ifndef XENGINE_OGLRENDERER_HPP
+#define XENGINE_OGLRENDERER_HPP
 
-#include "render/shader/shadersource.hpp"
-
-#include "asset/asset.hpp"
+#include "render/platform/renderer.hpp"
 
 namespace xengine {
-    struct XENGINE_EXPORT Shader : public AssetBase {
-        ~Shader() override = default;
+    namespace opengl {
+        class OGLRenderer : public Renderer {
+        public:
+            void renderBegin(RenderTarget &target, const RenderOptions &options) override;
 
-        AssetBase *clone() override {
-            return new Shader(*this);
-        }
+            void addCommand(RenderCommand &command) override;
 
-        ShaderSource vertexShader;
-        ShaderSource geometryShader;
-        ShaderSource fragmentShader;
-    };
+            void renderFinish() override;
+
+            void renderClear(RenderTarget &target, ColorRGBA color, float depth) override;
+
+            void debugDrawCallRecordStart() override;
+
+            unsigned long debugDrawCallRecordStop() override;
+
+        private:
+            unsigned long drawCalls = 0;
+        };
+    }
 }
-#endif //XENGINE_SHADER_HPP
+
+#endif //XENGINE_OGLRENDERER_HPP

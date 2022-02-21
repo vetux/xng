@@ -17,24 +17,20 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SHADER_HPP
-#define XENGINE_SHADER_HPP
+#ifdef BUILD_ENGINE_RENDERER_OPENGL
 
-#include "render/shader/shadersource.hpp"
+#include <stdexcept>
 
-#include "asset/asset.hpp"
+#include "render/platform/opengl/oglcheckerror.hpp"
+#include "render/platform/opengl/openglinclude.hpp"
 
-namespace xengine {
-    struct XENGINE_EXPORT Shader : public AssetBase {
-        ~Shader() override = default;
-
-        AssetBase *clone() override {
-            return new Shader(*this);
-        }
-
-        ShaderSource vertexShader;
-        ShaderSource geometryShader;
-        ShaderSource fragmentShader;
-    };
+void checkGLError(const std::string &source) {
+    GLenum er = glGetError();
+    if (er != GL_NO_ERROR) {
+        std::string error = source + " GLERROR: ";
+        error += std::to_string(er);
+        throw std::runtime_error(error);
+    }
 }
-#endif //XENGINE_SHADER_HPP
+
+#endif

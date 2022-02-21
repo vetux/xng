@@ -22,10 +22,10 @@
 
 #include <set>
 
-#include "graphics/renderer.hpp"
-#include "graphics/renderdevice.hpp"
+#include "render/platform/renderer.hpp"
+#include "render/platform/renderdevice.hpp"
 
-#include "shader/shadersource.hpp"
+#include "render/shader/shadersource.hpp"
 
 #include "text/character.hpp"
 #include "text/font.hpp"

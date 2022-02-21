@@ -20,8 +20,8 @@
 #ifndef XENGINE_IMGUICOMPAT_HPP
 #define XENGINE_IMGUICOMPAT_HPP
 
-#include "graphics/graphicsbackend.hpp"
-#include "graphics/rendertarget.hpp"
+#include "render/platform/graphicsbackend.hpp"
+#include "render/platform/rendertarget.hpp"
 #include "display/displaybackend.hpp"
 #include "display/window.hpp"
 

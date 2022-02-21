@@ -22,8 +22,8 @@
 
 #include <memory>
 
-#include "graphics/renderdevice.hpp"
-#include "graphics/texturebuffer.hpp"
+#include "render/platform/renderdevice.hpp"
+#include "render/platform/texturebuffer.hpp"
 
 #include "asset/scene.hpp"
 #include "asset/manager/assetrendermanager.hpp"

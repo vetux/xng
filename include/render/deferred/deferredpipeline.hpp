@@ -24,10 +24,10 @@
 #include <map>
 #include <typeindex>
 
-#include "graphics/renderer.hpp"
-#include "graphics/renderdevice.hpp"
+#include "render/platform/renderer.hpp"
+#include "render/platform/renderdevice.hpp"
 
-#include "shader/shadercompiler.hpp"
+#include "render/shader/shadercompiler.hpp"
 
 #include "render/deferred/prepass.hpp"
 #include "render/deferred/renderpass.hpp"

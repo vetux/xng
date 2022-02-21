@@ -18,12 +18,11 @@
  */
 
 #include "asset/camera.hpp"
-#include "render/shader/shaderinclude.hpp"
 #include "render/2d/renderer2d.hpp"
 
 #include "math/matrixmath.hpp"
 #include "async/threadpool.hpp"
-#include "shader/shadercompiler.hpp"
+#include "render/shader/shadercompiler.hpp"
 
 static const char *SHADER_VERT = R"###(#version 410 core
 
@@ -154,12 +153,9 @@ namespace xengine {
         fs = ShaderSource(SHADER_FRAG, "main", FRAGMENT, GLSL_410);
         fsText = ShaderSource(SHADER_TEXT_FRAG, "main", FRAGMENT, GLSL_410);
 
-        vs.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                      ShaderInclude::getShaderMacros(GLSL_410));
-        fs.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                      ShaderInclude::getShaderMacros(GLSL_410));
-        fsText.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                          ShaderInclude::getShaderMacros(GLSL_410));
+        vs.preprocess();
+        fs.preprocess();
+        fsText.preprocess();
 
         defaultShader = device.getAllocator().createShaderProgram(vs, fs);
         defaultTextShader = device.getAllocator().createShaderProgram(vs, fsText);
