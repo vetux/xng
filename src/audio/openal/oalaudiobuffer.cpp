@@ -24,6 +24,8 @@
 #include "oalaudiobuffer.hpp"
 #include "oalcheckerror.hpp"
 
+#include "cast/numeric_cast.hpp"
+
 namespace xengine {
     int convertFormat(AudioFormat format) {
         switch (format) {
@@ -51,7 +53,11 @@ namespace xengine {
     }
 
     void OALAudioBuffer::upload(const std::vector<uint8_t> &buffer, AudioFormat format, unsigned int frequency) {
-        alBufferData(handle, convertFormat(format), buffer.data(), buffer.size(), frequency);
+        alBufferData(handle,
+                     convertFormat(format),
+                     buffer.data(),
+                     numeric_cast<ALsizei>(buffer.size()),
+                     numeric_cast<ALsizei>(frequency));
         checkOALError();
     }
 }
