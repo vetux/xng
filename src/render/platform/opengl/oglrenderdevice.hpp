@@ -39,7 +39,7 @@ namespace xengine {
 
             int getMaxSampleCount() override;
 
-            GraphicsBackend getBackend() override;
+            RenderPlatform getBackend() override;
 
         private:
             OGLRenderer renderer;

@@ -304,7 +304,7 @@ namespace xengine {
             }
         }
 
-        RenderTarget &WindowGLFW::getRenderTarget(GraphicsBackend backend) {
+        RenderTarget &WindowGLFW::getRenderTarget(RenderPlatform backend) {
             switch (backend) {
                 case OPENGL_4_6:
                     return *renderTargetGl;

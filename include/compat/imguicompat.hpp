@@ -20,7 +20,7 @@
 #ifndef XENGINE_IMGUICOMPAT_HPP
 #define XENGINE_IMGUICOMPAT_HPP
 
-#include "render/platform/graphicsbackend.hpp"
+#include "render/platform/renderplatform.hpp"
 #include "render/platform/rendertarget.hpp"
 #include "display/displaybackend.hpp"
 #include "display/window.hpp"
@@ -31,19 +31,19 @@ namespace xengine {
          * Calls the Impl*Init* methods and ImGui::CreateContext if it is the first call.
          * @param window
          */
-        XENGINE_EXPORT void Init(Window &window, GraphicsBackend graphicsBackend);
+        XENGINE_EXPORT void Init(Window &window, RenderPlatform graphicsBackend);
 
         /**
          * Calls the Impl*Shutdown methods and ImGui::DestroyContext if it is the last call.
          * @param window
          */
-        XENGINE_EXPORT void Shutdown(Window &window, GraphicsBackend graphicsBackend);
+        XENGINE_EXPORT void Shutdown(Window &window, RenderPlatform graphicsBackend);
 
         /**
          * Calls Impl*NewFrame methods, the user still has to call ImGui::NewFrame afterwards.
          * @param window
          */
-        XENGINE_EXPORT void NewFrame(Window &window, GraphicsBackend graphicsBackend);
+        XENGINE_EXPORT void NewFrame(Window &window, RenderPlatform graphicsBackend);
 
         /**
          * Calls Impl*RenderDrawData and renders the imgui data into the target.
@@ -54,7 +54,7 @@ namespace xengine {
          * @param window
          * @param target
          */
-        XENGINE_EXPORT void DrawData(Window &window, RenderTarget &target, GraphicsBackend graphicsBackend);
+        XENGINE_EXPORT void DrawData(Window &window, RenderTarget &target, RenderPlatform graphicsBackend);
 
         /**
          * Calls Impl*RenderDrawData and renders the imgui data into the target.
@@ -66,9 +66,9 @@ namespace xengine {
          * @param target
          */
         XENGINE_EXPORT  void DrawData(Window &window,
-                                   RenderTarget &target,
-                                   RenderOptions options,
-                                   GraphicsBackend graphicsBackend);
+                                      RenderTarget &target,
+                                      RenderOptions options,
+                                      RenderPlatform graphicsBackend);
     }
 }
 #endif //XENGINE_IMGUICOMPAT_HPP

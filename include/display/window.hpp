@@ -48,7 +48,7 @@ namespace xengine {
          *
          * @return
          */
-        virtual RenderTarget &getRenderTarget(GraphicsBackend backend) = 0;
+        virtual RenderTarget &getRenderTarget(RenderPlatform backend) = 0;
 
         virtual Input &getInput() = 0;
 

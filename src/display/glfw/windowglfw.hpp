@@ -53,7 +53,7 @@ namespace xengine {
 
             ~WindowGLFW() override;
 
-            RenderTarget &getRenderTarget(GraphicsBackend backend) override;
+            RenderTarget &getRenderTarget(RenderPlatform backend) override;
 
             Input &getInput() override;
 

@@ -17,11 +17,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_GRAPHICSBACKEND_HPP
-#define XENGINE_GRAPHICSBACKEND_HPP
+#ifndef XENGINE_RENDERPLATFORM_HPP
+#define XENGINE_RENDERPLATFORM_HPP
 
 namespace xengine {
-    enum GraphicsBackend {
+    enum RenderPlatform {
         OPENGL_4_6, // OpenGL 4.6
         OPENGL_4_6_QT, // OpenGL 4.6 Render implementation which can be used with QOpenGLWidget
         DIRECTX_11,
@@ -29,4 +29,4 @@ namespace xengine {
     };
 }
 
-#endif //XENGINE_GRAPHICSBACKEND_HPP
+#endif //XENGINE_RENDERPLATFORM_HPP

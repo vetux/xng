@@ -116,7 +116,7 @@
 #include "schema/mathschema.hpp"
 #include "render/pipeline.hpp"
 #include "render/platform/rendertarget.hpp"
-#include "render/platform/graphicsbackend.hpp"
+#include "render/platform/renderplatform.hpp"
 #include "render/platform/shaderbinary.hpp"
 #include "render/platform/renderer.hpp"
 #include "render/platform/meshbuffer.hpp"

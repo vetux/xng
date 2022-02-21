@@ -26,7 +26,7 @@
 #include "render/platform/rendertarget.hpp"
 #include "render/platform/meshbuffer.hpp"
 #include "render/platform/texturebuffer.hpp"
-#include "render/platform/graphicsbackend.hpp"
+#include "render/platform/renderplatform.hpp"
 
 namespace xengine {
     struct XENGINE_EXPORT RenderOptions {

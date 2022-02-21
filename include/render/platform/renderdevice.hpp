@@ -23,7 +23,7 @@
 #include <map>
 #include <functional>
 
-#include "render/platform/graphicsbackend.hpp"
+#include "render/platform/renderplatform.hpp"
 #include "render/platform/renderer.hpp"
 #include "render/platform/renderobject.hpp"
 #include "render/platform/renderallocator.hpp"
@@ -33,7 +33,7 @@
 namespace xengine {
     class XENGINE_EXPORT RenderDevice {
     public:
-        static std::unique_ptr<RenderDevice> create(GraphicsBackend backend);
+        static std::unique_ptr<RenderDevice> create(RenderPlatform backend);
 
         virtual ~RenderDevice() = default;
 
@@ -48,7 +48,7 @@ namespace xengine {
          */
         virtual int getMaxSampleCount() = 0;
 
-        virtual GraphicsBackend getBackend() = 0;
+        virtual RenderPlatform getBackend() = 0;
     };
 }
 

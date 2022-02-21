@@ -32,7 +32,7 @@
 
 namespace xengine {
     namespace ImGuiCompat {
-        void Init(Window &window, GraphicsBackend graphicsBackend) {
+        void Init(Window &window, RenderPlatform graphicsBackend) {
             switch (window.getDisplayBackend()) {
                 case GLFW:
                     ImGui_ImplGlfw_InitForOpenGL(dynamic_cast<glfw::WindowGLFW &>(window).windowHandle(), true);
@@ -51,7 +51,7 @@ namespace xengine {
             }
         }
 
-        void Shutdown(Window &window, GraphicsBackend graphicsBackend) {
+        void Shutdown(Window &window, RenderPlatform graphicsBackend) {
             switch (graphicsBackend) {
                 case OPENGL_4_6:
                     ImGui_ImplOpenGL3_Shutdown();
@@ -70,7 +70,7 @@ namespace xengine {
             }
         }
 
-        void NewFrame(Window &window, GraphicsBackend graphicsBackend) {
+        void NewFrame(Window &window, RenderPlatform graphicsBackend) {
             switch (graphicsBackend) {
                 case OPENGL_4_6:
                     ImGui_ImplOpenGL3_NewFrame();
@@ -89,11 +89,11 @@ namespace xengine {
             }
         }
 
-        void DrawData(Window &window, RenderTarget &target, GraphicsBackend graphicsBackend) {
+        void DrawData(Window &window, RenderTarget &target, RenderPlatform graphicsBackend) {
             return DrawData(window, target, RenderOptions({}, target.getSize()), graphicsBackend);
         }
 
-        void DrawData(Window &window, RenderTarget &target, RenderOptions options, GraphicsBackend graphicsBackend) {
+        void DrawData(Window &window, RenderTarget &target, RenderOptions options, RenderPlatform graphicsBackend) {
             switch (graphicsBackend) {
                 case OPENGL_4_6: {
                     auto &t = dynamic_cast<opengl::OGLRenderTarget &>(target);

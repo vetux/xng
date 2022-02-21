@@ -3,7 +3,7 @@
 #include "render/platform/opengl/oglrenderdevice.hpp"
 
 namespace xengine {
-    std::unique_ptr<RenderDevice> RenderDevice::create(GraphicsBackend backend) {
+    std::unique_ptr<RenderDevice> RenderDevice::create(RenderPlatform backend) {
         switch (backend) {
             case OPENGL_4_6:
                 return std::make_unique<opengl::OGLRenderDevice>();
