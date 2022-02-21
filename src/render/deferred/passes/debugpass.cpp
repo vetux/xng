@@ -26,7 +26,7 @@
 #include "shader/shadercompiler.hpp"
 
 //TODO: Fix tangent space to local space texture normal transformation
-static const char *SHADER_VERT = R"###(#version 460 core
+static const char *SHADER_VERT = R"###(#version 410 core
 
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 normal;
@@ -69,7 +69,7 @@ void main()
 }
 )###";
 
-static const char *SHADER_GEOMETRY = R"###(#version 460 core
+static const char *SHADER_GEOMETRY = R"###(#version 410 core
 
 layout(triangles) in;
 layout(line_strip, max_vertices = 218) out;
@@ -209,7 +209,7 @@ void main()
 }
 )###";
 
-static const char *SHADER_VERT_LIGHT = R"###(#version 460 core
+static const char *SHADER_VERT_LIGHT = R"###(#version 410 core
 
 #include "phong.glsl"
 
@@ -254,7 +254,7 @@ void main()
 }
 )###";
 
-static const char *SHADER_GEOMETRY_LIGHT = R"###(#version 460 core
+static const char *SHADER_GEOMETRY_LIGHT = R"###(#version 410 core
 
 #include "phong.glsl"
 
@@ -392,7 +392,7 @@ void main()
 }
 )###";
 
-static const char *SHADER_VERT_WIREFRAME = R"###(#version 460 core
+static const char *SHADER_VERT_WIREFRAME = R"###(#version 410 core
 
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 normal;
@@ -434,7 +434,7 @@ void main()
 }
 )###";
 
-static const char *SHADER_GEOMETRY_WIREFRAME = R"###(#version 460 core
+static const char *SHADER_GEOMETRY_WIREFRAME = R"###(#version 410 core
 
 layout(triangles) in;
 layout(line_strip, max_vertices = 6) out;
@@ -492,7 +492,7 @@ void main()
 }
 )###";
 
-static const char *SHADER_FRAG = R"###(#version 460 core
+static const char *SHADER_FRAG = R"###(#version 410 core
 
 layout(location = 0) in vec4 pos;
 layout(location = 1) in vec4 color;
@@ -511,32 +511,32 @@ namespace xengine {
     DebugPass::DebugPass(RenderDevice &device)
             : device(device) {
 
-        vs = ShaderSource(SHADER_VERT, "main", VERTEX, GLSL_460);
-        gs = ShaderSource(SHADER_GEOMETRY, "main", GEOMETRY, GLSL_460);
-        fs = ShaderSource(SHADER_FRAG, "main", FRAGMENT, GLSL_460);
+        vs = ShaderSource(SHADER_VERT, "main", VERTEX, GLSL_410);
+        gs = ShaderSource(SHADER_GEOMETRY, "main", GEOMETRY, GLSL_410);
+        fs = ShaderSource(SHADER_FRAG, "main", FRAGMENT, GLSL_410);
 
-        vsl = ShaderSource(SHADER_VERT_LIGHT, "main", VERTEX, GLSL_460);
-        gsl = ShaderSource(SHADER_GEOMETRY_LIGHT, "main", GEOMETRY, GLSL_460);
+        vsl = ShaderSource(SHADER_VERT_LIGHT, "main", VERTEX, GLSL_410);
+        gsl = ShaderSource(SHADER_GEOMETRY_LIGHT, "main", GEOMETRY, GLSL_410);
 
-        vsw = ShaderSource(SHADER_VERT_WIREFRAME, "main", VERTEX, GLSL_460);
-        gsw = ShaderSource(SHADER_GEOMETRY_WIREFRAME, "main", GEOMETRY, GLSL_460);
+        vsw = ShaderSource(SHADER_VERT_WIREFRAME, "main", VERTEX, GLSL_410);
+        gsw = ShaderSource(SHADER_GEOMETRY_WIREFRAME, "main", GEOMETRY, GLSL_410);
 
 
         vsl.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                       ShaderInclude::getShaderMacros(GLSL_460));
+                       ShaderInclude::getShaderMacros(GLSL_410));
 
         gsl.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                       ShaderInclude::getShaderMacros(GLSL_460));
+                       ShaderInclude::getShaderMacros(GLSL_410));
 
         vsw.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                       ShaderInclude::getShaderMacros(GLSL_460));
+                       ShaderInclude::getShaderMacros(GLSL_410));
 
         gsw.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                       ShaderInclude::getShaderMacros(GLSL_460));
+                       ShaderInclude::getShaderMacros(GLSL_410));
 
-        shaderWireframe = device.getAllocator().createShaderProgram(vsw.compile(), fs.compile(), gsw.compile());
-        shaderNormals = device.getAllocator().createShaderProgram(vs.compile(), fs.compile(), gs.compile());
-        shaderLight = device.getAllocator().createShaderProgram(vsl.compile(), fs.compile(), gsl.compile());
+        shaderWireframe = device.getAllocator().createShaderProgram(vsw, fs, gsw);
+        shaderNormals = device.getAllocator().createShaderProgram(vs, fs, gs);
+        shaderLight = device.getAllocator().createShaderProgram(vsl, fs, gsl);
 
         meshBuffer = device.getAllocator().createMeshBuffer(Mesh(Mesh::TRI, {Vertex(Vec3f(0))}, {0, 0, 0}));
         resizeTextureBuffers({1, 1}, device.getAllocator(), true);

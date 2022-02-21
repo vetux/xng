@@ -31,6 +31,7 @@
 #include "asset/mesh.hpp"
 
 #include "shader/spirvsource.hpp"
+#include "shader/shadersource.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT RenderAllocator {
@@ -136,6 +137,23 @@ namespace xengine {
         virtual std::unique_ptr<ShaderProgram> createShaderProgram(const SPIRVSource &vertexShader,
                                                                    const SPIRVSource &fragmentShader,
                                                                    const SPIRVSource &geometryShader) = 0;
+
+        /**
+         * Create a shader program instance for the given shader sources.
+         * The implementation may cross compile the sources.
+         * If the source is in hlsl, and the platform cross compiles it the global variables will have to be accessed with a prefix.
+         * Therefore currently hlsl should not be used until there is a proper hlsl to spirv compiler.
+         *
+         * @param vertexShader
+         * @param fragmentShader
+         * @return
+         */
+        virtual std::unique_ptr<ShaderProgram> createShaderProgram(const ShaderSource &vertexShader,
+                                                                   const ShaderSource &fragmentShader) = 0;
+
+        virtual std::unique_ptr<ShaderProgram> createShaderProgram(const ShaderSource &vertexShader,
+                                                                   const ShaderSource &fragmentShader,
+                                                                   const ShaderSource &geometryShader) = 0;
 
         //TODO: Tessellation shader support
 

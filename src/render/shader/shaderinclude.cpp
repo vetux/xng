@@ -52,7 +52,7 @@ namespace xengine {
     const std::map<std::string, std::string> &ShaderInclude::getShaderMacros(ShaderLanguage lang) {
         switch (lang) {
             case HLSL_SHADER_MODEL_4:
-            case GLSL_460:
+            case GLSL_410:
             case GLSL_ES_320:
                 return gMacros;
             default:

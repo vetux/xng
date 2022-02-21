@@ -20,13 +20,11 @@
 #define XENGINE_GLSL_TEXFILTER_HPP
 
 static const char *GLSL_TEXFILTER = R"###(
-vec4 textureMS(sampler2DMS color, vec2 uv)
-{
-    vec4 ret;
+vec4 textureMS(sampler2DMS color, vec2 uv, int samples) {
     ivec2 size = textureSize(color);
-    int samples = textureSamples(color);
     ivec2 pos = ivec2(size.x * uv.x, size.y * uv.y);
 
+    vec4 ret;
     for(int i = 0; i < samples; i++)
     {
         ret += texelFetch(color, pos, i);
@@ -38,7 +36,7 @@ vec4 textureMS(sampler2DMS color, vec2 uv)
 
 //https://stackoverflow.com/a/42179924
 // from http://www.java-gaming.org/index.php?topic=35123.0
-vec4 cubic(float v){
+vec4 cubic(float v) {
     vec4 n = vec4(1.0, 2.0, 3.0, 4.0) - v;
     vec4 s = n * n * n;
     float x = s.x;
@@ -48,8 +46,7 @@ vec4 cubic(float v){
     return vec4(x, y, z, w) * (1.0/6.0);
 }
 
-vec4 textureBicubic(sampler2D sampler, vec2 texCoords){
-
+vec4 textureBicubic(sampler2D sampler, vec2 texCoords) {
     ivec2 texSize = textureSize(sampler, 0);
     vec2 invTexSize = 1.0 / texSize;
 
@@ -77,13 +74,10 @@ vec4 textureBicubic(sampler2D sampler, vec2 texCoords){
     float sx = s.x / (s.x + s.y);
     float sy = s.z / (s.z + s.w);
 
-    return mix(
-            mix(sample3, sample2, sx), mix(sample1, sample0, sx)
-            , sy);
+    return mix(mix(sample3, sample2, sx), mix(sample1, sample0, sx), sy);
 }
 
-vec4 textureBicubic(sampler2DMS sampler, vec2 texCoords){
-
+vec4 textureBicubic(sampler2DMS sampler, vec2 texCoords, int samples) {
     ivec2 texSize = textureSize(sampler);
     vec2 invTexSize = 1.0 / texSize;
 
@@ -102,17 +96,15 @@ vec4 textureBicubic(sampler2DMS sampler, vec2 texCoords){
 
     offset *= invTexSize.xxyy;
 
-    vec4 sample0 = textureMS(sampler, offset.xz);
-    vec4 sample1 = textureMS(sampler, offset.yz);
-    vec4 sample2 = textureMS(sampler, offset.xw);
-    vec4 sample3 = textureMS(sampler, offset.yw);
+    vec4 sample0 = textureMS(sampler, offset.xz, samples);
+    vec4 sample1 = textureMS(sampler, offset.yz, samples);
+    vec4 sample2 = textureMS(sampler, offset.xw, samples);
+    vec4 sample3 = textureMS(sampler, offset.yw, samples);
 
     float sx = s.x / (s.x + s.y);
     float sy = s.z / (s.z + s.w);
 
-    return mix(
-            mix(sample3, sample2, sx), mix(sample1, sample0, sx)
-            , sy);
+    return mix(mix(sample3, sample2, sx), mix(sample1, sample0, sx), sy);
 }
 )###";
 

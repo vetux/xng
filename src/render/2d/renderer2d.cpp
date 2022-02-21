@@ -25,7 +25,7 @@
 #include "async/threadpool.hpp"
 #include "shader/shadercompiler.hpp"
 
-static const char *SHADER_VERT = R"###(#version 460 core
+static const char *SHADER_VERT = R"###(#version 410 core
 
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 normal;
@@ -52,7 +52,7 @@ void main()
 }
 )###";
 
-static const char *SHADER_FRAG = R"###(#version 460 core
+static const char *SHADER_FRAG = R"###(#version 410 core
 
 layout (location = 0) in vec4 fPosition;
 layout (location = 1) in vec2 fUv;
@@ -73,7 +73,7 @@ void main() {
 }
 )###";
 
-static const char *SHADER_TEXT_FRAG = R"###(#version 460 core
+static const char *SHADER_TEXT_FRAG = R"###(#version 410 core
 
 layout (location = 0) in vec4 fPosition;
 layout (location = 1) in vec2 fUv;
@@ -150,19 +150,19 @@ namespace xengine {
 
     Renderer2D::Renderer2D(RenderDevice &device)
             : renderDevice(device) {
-        vs = ShaderSource(SHADER_VERT, "main", VERTEX, GLSL_460);
-        fs = ShaderSource(SHADER_FRAG, "main", FRAGMENT, GLSL_460);
-        fsText = ShaderSource(SHADER_TEXT_FRAG, "main", FRAGMENT, GLSL_460);
+        vs = ShaderSource(SHADER_VERT, "main", VERTEX, GLSL_410);
+        fs = ShaderSource(SHADER_FRAG, "main", FRAGMENT, GLSL_410);
+        fsText = ShaderSource(SHADER_TEXT_FRAG, "main", FRAGMENT, GLSL_410);
 
         vs.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                      ShaderInclude::getShaderMacros(GLSL_460));
+                      ShaderInclude::getShaderMacros(GLSL_410));
         fs.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                      ShaderInclude::getShaderMacros(GLSL_460));
+                      ShaderInclude::getShaderMacros(GLSL_410));
         fsText.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                          ShaderInclude::getShaderMacros(GLSL_460));
+                          ShaderInclude::getShaderMacros(GLSL_410));
 
-        defaultShader = device.getAllocator().createShaderProgram(vs.compile(), fs.compile());
-        defaultTextShader = device.getAllocator().createShaderProgram(vs.compile(), fsText.compile());
+        defaultShader = device.getAllocator().createShaderProgram(vs, fs);
+        defaultTextShader = device.getAllocator().createShaderProgram(vs, fsText);
     }
 
     Renderer2D::~Renderer2D() = default;

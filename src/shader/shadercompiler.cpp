@@ -111,16 +111,16 @@ namespace xengine {
             case HLSL_SHADER_MODEL_4:
                 shaderLang = shaderc_source_language_hlsl;
                 break;
-            case GLSL_460:
-                options.SetTargetEnvironment(shaderc_target_env_opengl, 0);
+            case GLSL_410:
+                options.SetTargetEnvironment(shaderc_target_env_opengl, 410);
                 shaderLang = shaderc_source_language_glsl;
                 break;
-            case GLSL_460_VK:
-                options.SetTargetEnvironment(shaderc_target_env_vulkan, 0);
+            case GLSL_410_VK:
+                options.SetTargetEnvironment(shaderc_target_env_vulkan, 410);
                 shaderLang = shaderc_source_language_glsl;
                 break;
             case GLSL_ES_320:
-                options.SetTargetEnvironment(shaderc_target_env_opengl, 0);
+                options.SetTargetEnvironment(shaderc_target_env_opengl, 320);
                 shaderLang = shaderc_source_language_glsl;
                 break;
         }
@@ -166,15 +166,15 @@ namespace xengine {
 
                 return sCompiler.compile();
             }
-            case GLSL_460_VK:
-            case GLSL_460: {
+            case GLSL_410_VK:
+            case GLSL_410: {
                 spirv_cross::CompilerGLSL sCompiler(source);
                 sCompiler.set_entry_point(entryPoint, convertShaderStage(stage));
 
                 spirv_cross::ShaderResources resources = sCompiler.get_shader_resources();
 
                 spirv_cross::CompilerGLSL::Options sOptions;
-                sOptions.version = 460;
+                sOptions.version = 410;
 
                 //Dont generate glsl which uses the uniform buffer api.
                 sOptions.emit_uniform_buffer_as_plain_uniforms = true;
@@ -215,6 +215,15 @@ namespace xengine {
         }
     }
 
+    static void stripLines(std::string &str, const std::string &needle) {
+        auto it = str.find(needle);
+        while (it != std::string::npos) {
+            auto eol = str.find('\n', it);
+            str.erase(it, eol - it);
+            it = str.find(needle);
+        }
+    }
+
     std::string ShaderCompiler::preprocess(const std::string &source,
                                            ShaderStage stage,
                                            ShaderLanguage language,
@@ -239,8 +248,8 @@ namespace xengine {
             case HLSL_SHADER_MODEL_4:
                 shaderLang = shaderc_source_language_hlsl;
                 break;
-            case GLSL_460:
-            case GLSL_460_VK:
+            case GLSL_410:
+            case GLSL_410_VK:
             case GLSL_ES_320:
                 shaderLang = shaderc_source_language_glsl;
                 break;
@@ -271,22 +280,14 @@ namespace xengine {
             throw std::runtime_error("Failed to preprocess glsl: " + preProcessResult.GetErrorMessage());
         }
 
-        return {preProcessResult.cbegin(), preProcessResult.cend()};
-    }
+        std::string ret = {preProcessResult.cbegin(), preProcessResult.cend()};
 
-    std::string ShaderCompiler::crossCompile(const std::string &source,
-                                             const std::string &entryPoint,
-                                             ShaderStage stage,
-                                             ShaderLanguage sourceLanguage,
-                                             ShaderLanguage targetLanguage,
-                                             OptimizationLevel optimizationLevel) {
-        return decompileSPIRV(compileToSPIRV(source,
-                                             entryPoint,
-                                             stage,
-                                             sourceLanguage,
-                                             optimizationLevel),
-                              entryPoint,
-                              stage,
-                              targetLanguage);
+        if (language != HLSL_SHADER_MODEL_4) {
+            //Remove useless directives which break compilation of the preprocessed glsl.
+            stripLines(ret, "#extension GL_GOOGLE_include_directive");
+            stripLines(ret, "#line");
+        }
+
+        return ret;
     }
 }

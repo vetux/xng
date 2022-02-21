@@ -26,7 +26,7 @@
 #include "async/threadpool.hpp"
 
 // TODO: Fix phong pass at random times consistently outputting black color for non normal mapped objects.
-const char *SHADER_VERT_LIGHTING = R"###(#version 460 core
+const char *SHADER_VERT_LIGHTING = R"###(#version 410 core
 
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 normal;
@@ -53,7 +53,7 @@ void main()
 }
 )###";
 
-const char *SHADER_FRAG_LIGHTING = R"###(#version 460 core
+const char *SHADER_FRAG_LIGHTING = R"###(#version 410 core
 
 #include "phong.glsl"
 
@@ -142,20 +142,20 @@ namespace xengine {
         vertexShader = ShaderSource(SHADER_VERT_LIGHTING,
                                     "main",
                                     VERTEX,
-                                    GLSL_460);
+                                    GLSL_410);
         fragmentShader = ShaderSource(SHADER_FRAG_LIGHTING,
                                       "main",
                                       FRAGMENT,
-                                      GLSL_460);
+                                      GLSL_410);
 
         vertexShader.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                                ShaderInclude::getShaderMacros(GLSL_460));
+                                ShaderInclude::getShaderMacros(GLSL_410));
         fragmentShader.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                                  ShaderInclude::getShaderMacros(GLSL_460));
+                                  ShaderInclude::getShaderMacros(GLSL_410));
 
         auto &allocator = device.getAllocator();
 
-        shader = allocator.createShaderProgram(vertexShader.compile(), fragmentShader.compile());
+        shader = allocator.createShaderProgram(vertexShader, fragmentShader);
 
         multiSampleTarget = allocator.createRenderTarget({1, 1}, 1);
 

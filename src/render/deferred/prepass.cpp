@@ -150,15 +150,15 @@ namespace xengine {
             : ren(device.getRenderer()) {
         auto &allocator = device.getAllocator();
 
-        vs = ShaderSource(SHADER_VERT_GEOMETRY, "main", VERTEX, GLSL_460);
-        fs = ShaderSource(SHADER_FRAG_GEOMETRY, "main", FRAGMENT, GLSL_460);
+        vs = ShaderSource(SHADER_VERT_GEOMETRY, "main", VERTEX, GLSL_410);
+        fs = ShaderSource(SHADER_FRAG_GEOMETRY, "main", FRAGMENT, GLSL_410);
 
         vs.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                      ShaderInclude::getShaderMacros(GLSL_460));
+                      ShaderInclude::getShaderMacros(GLSL_410));
         fs.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                      ShaderInclude::getShaderMacros(GLSL_460));
+                      ShaderInclude::getShaderMacros(GLSL_410));
 
-        shader = allocator.createShaderProgram(vs.compile(), fs.compile());
+        shader = allocator.createShaderProgram(vs, fs);
 
         shader->activate();
         shader->setTexture(8, 0);

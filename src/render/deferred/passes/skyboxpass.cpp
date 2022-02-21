@@ -25,7 +25,7 @@
 
 #include <sstream>
 
-static const char *SHADER_VERT = R"###(#version 460 core
+static const char *SHADER_VERT = R"###(#version 410 core
 
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 normal;
@@ -52,7 +52,7 @@ void main()
 }
 )###";
 
-static const char *SHADER_FRAG = R"###(#version 460 core
+static const char *SHADER_FRAG = R"###(#version 410 core
 
 layout (location = 0) in vec3 worldPos;
 
@@ -73,17 +73,17 @@ void main() {
 namespace xengine {
     SkyboxPass::SkyboxPass(RenderDevice &device)
             : device(device) {
-        vert = ShaderSource(SHADER_VERT, "main", VERTEX, GLSL_460);
-        frag = ShaderSource(SHADER_FRAG, "main", FRAGMENT, GLSL_460);
+        vert = ShaderSource(SHADER_VERT, "main", VERTEX, GLSL_410);
+        frag = ShaderSource(SHADER_FRAG, "main", FRAGMENT, GLSL_410);
 
         vert.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                        ShaderInclude::getShaderMacros(GLSL_460));
+                        ShaderInclude::getShaderMacros(GLSL_410));
         frag.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                        ShaderInclude::getShaderMacros(GLSL_460));
+                        ShaderInclude::getShaderMacros(GLSL_410));
 
         auto &allocator = device.getAllocator();
 
-        shader = allocator.createShaderProgram(vert.compile(), frag.compile());
+        shader = allocator.createShaderProgram(vert, frag);
 
         TextureBuffer::Attributes attributes;
         attributes.size = Vec2i(1, 1);

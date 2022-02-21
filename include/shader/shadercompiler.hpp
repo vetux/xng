@@ -61,6 +61,9 @@ namespace xengine {
         /**
          * Decompile the given spirv to the given output language.
          *
+         * Decompiling spirv to hlsl currently is only possible with vertex and fragment shaders.
+         * https://github.com/KhronosGroup/SPIRV-Cross/issues/904
+         *
          * @param source The spirv binary
          * @param entryPoint The name of the entry point in the spirv binary
          * @param stage The shader stage that the given entry point represents
@@ -72,6 +75,17 @@ namespace xengine {
                                    ShaderStage stage,
                                    ShaderLanguage targetLanguage);
 
+        /**
+         * Preprocess the given source
+         *
+         * @param source
+         * @param stage
+         * @param language
+         * @param include
+         * @param macros
+         * @param optimizationLevel
+         * @return
+         */
         std::string preprocess(const std::string &source,
                                ShaderStage stage,
                                ShaderLanguage language,
@@ -82,13 +96,6 @@ namespace xengine {
         /**
          * Cross compile the source by using spirv as an intermediate.
          *
-         * When compiling hlsl to glsl globals defined in the hlsl source are stored in a struct XENGINE_EXPORT which has an instance
-         * with the name "Globals". When using the render allocator to create a shader program the
-         * implementation will append the prefix automatically when needed.
-         *
-         * Compiling spirv to hlsl currently is only possible with vertex and fragment shaders.
-         * https://github.com/KhronosGroup/SPIRV-Cross/issues/904
-         *
          * @param source
          * @param entryPoint
          * @param stage
@@ -96,12 +103,21 @@ namespace xengine {
          * @param targetLanguage
          * @return
          */
-        std::string crossCompile(const std::string &source,
+        inline std::string crossCompile(const std::string &source,
                                  const std::string &entryPoint,
                                  ShaderStage stage,
-                                 ShaderLanguage language,
+                                 ShaderLanguage sourceLanguage,
                                  ShaderLanguage targetLanguage,
-                                 OptimizationLevel optimizationLevel = OPTIMIZATION_NONE);
+                                 OptimizationLevel optimizationLevel = OPTIMIZATION_NONE) {
+            return decompileSPIRV(compileToSPIRV(source,
+                                                 entryPoint,
+                                                 stage,
+                                                 sourceLanguage,
+                                                 optimizationLevel),
+                                  entryPoint,
+                                  stage,
+                                  targetLanguage);
+        }
     }
 }
 

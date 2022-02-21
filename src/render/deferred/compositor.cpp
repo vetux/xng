@@ -21,7 +21,7 @@
 
 #include "render/shader/shaderinclude.hpp"
 
-static const char *SHADER_VERT = R"###(#version 460 core
+static const char *SHADER_VERT = R"###(#version 410 core
 
 struct Layer {
     sampler2D color;
@@ -58,7 +58,7 @@ void main()
 
 )###";
 
-static const char *SHADER_FRAG = R"###(#version 460 core
+static const char *SHADER_FRAG = R"###(#version 410 core
 
 #include "texfilter.glsl"
 
@@ -108,12 +108,12 @@ void main()
 namespace xengine {
     Compositor::Compositor(RenderDevice &device)
             : device(device), screenQuad(device.getAllocator().createMeshBuffer(Mesh::normalizedQuad())) {
-        ShaderSource shaderVert(SHADER_VERT, "main", VERTEX, GLSL_460);
-        ShaderSource shaderFrag(SHADER_FRAG, "main", FRAGMENT, GLSL_460);
-        shaderFrag.preprocess(ShaderInclude::getShaderIncludeCallback(), ShaderInclude::getShaderMacros(GLSL_460));
-        shaderFrag.crossCompile(GLSL_460);
-        shader = std::unique_ptr<ShaderProgram>(device.getAllocator().createShaderProgram(shaderVert.compile(),
-                                                                                          shaderFrag.compile()));
+        ShaderSource shaderVert(SHADER_VERT, "main", VERTEX, GLSL_410);
+        ShaderSource shaderFrag(SHADER_FRAG, "main", FRAGMENT, GLSL_410);
+        shaderFrag.preprocess(ShaderInclude::getShaderIncludeCallback(), ShaderInclude::getShaderMacros(GLSL_410));
+        shaderFrag.crossCompile(GLSL_410);
+        shader = std::unique_ptr<ShaderProgram>(device.getAllocator().createShaderProgram(shaderVert,
+                                                                                          shaderFrag));
     }
 
     void Compositor::setClearColor(ColorRGBA color) {

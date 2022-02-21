@@ -33,6 +33,17 @@
 
 namespace xengine {
     namespace opengl {
+        static std::string getGlsl(const ShaderSource &source) {
+            if (source.getLanguage() == GLSL_410)
+                return source.getSrc();
+            else
+                return ShaderCompiler::crossCompile(source.getSrc(),
+                                                    source.getEntryPoint(),
+                                                    source.getStage(),
+                                                    source.getLanguage(),
+                                                    GLSL_410);
+        }
+
         static GLenum getElementType(Mesh::Primitive primitive) {
             switch (primitive) {
                 case Mesh::POINT:
@@ -393,17 +404,48 @@ namespace xengine {
         // TODO: Implement GL_ARB_gl_spirv extension support
         std::unique_ptr<ShaderProgram> OGLRenderAllocator::createShaderProgram(const SPIRVSource &vertexShader,
                                                                                const SPIRVSource &fragmentShader) {
-            std::string vs = ShaderCompiler::decompileSPIRV(vertexShader.blob, vertexShader.entryPoint, VERTEX, GLSL_460);
-            std::string fs = ShaderCompiler::decompileSPIRV(fragmentShader.blob, fragmentShader.entryPoint, FRAGMENT, GLSL_460);
+            std::string vs = ShaderCompiler::decompileSPIRV(vertexShader.blob,
+                                                            vertexShader.entryPoint,
+                                                            VERTEX,
+                                                            GLSL_410);
+            std::string fs = ShaderCompiler::decompileSPIRV(fragmentShader.blob,
+                                                            fragmentShader.entryPoint,
+                                                            FRAGMENT,
+                                                            GLSL_410);
             return std::make_unique<OGLShaderProgram>(vs, fs);
         }
 
         std::unique_ptr<ShaderProgram> OGLRenderAllocator::createShaderProgram(const SPIRVSource &vertexShader,
                                                                                const SPIRVSource &fragmentShader,
                                                                                const SPIRVSource &geometryShader) {
-            std::string vs = ShaderCompiler::decompileSPIRV(vertexShader.blob, vertexShader.entryPoint, VERTEX, GLSL_460);
-            std::string fs = ShaderCompiler::decompileSPIRV(fragmentShader.blob, fragmentShader.entryPoint, FRAGMENT, GLSL_460);
-            std::string gs = ShaderCompiler::decompileSPIRV(geometryShader.blob, geometryShader.entryPoint, GEOMETRY, GLSL_460);
+            std::string vs = ShaderCompiler::decompileSPIRV(vertexShader.blob,
+                                                            vertexShader.entryPoint,
+                                                            VERTEX,
+                                                            GLSL_410);
+            std::string fs = ShaderCompiler::decompileSPIRV(fragmentShader.blob,
+                                                            fragmentShader.entryPoint,
+                                                            FRAGMENT,
+                                                            GLSL_410);
+            std::string gs = ShaderCompiler::decompileSPIRV(geometryShader.blob,
+                                                            geometryShader.entryPoint,
+                                                            GEOMETRY,
+                                                            GLSL_410);
+            return std::make_unique<OGLShaderProgram>(vs, fs, gs);
+        }
+
+        std::unique_ptr<ShaderProgram> OGLRenderAllocator::createShaderProgram(const ShaderSource &vertexShader,
+                                                                               const ShaderSource &fragmentShader) {
+            std::string vs = getGlsl(vertexShader);
+            std::string fs = getGlsl(fragmentShader);
+            return std::make_unique<OGLShaderProgram>(vs, fs);
+        }
+
+        std::unique_ptr<ShaderProgram> OGLRenderAllocator::createShaderProgram(const ShaderSource &vertexShader,
+                                                                               const ShaderSource &fragmentShader,
+                                                                               const ShaderSource &geometryShader) {
+            std::string vs = getGlsl(vertexShader);
+            std::string fs = getGlsl(fragmentShader);
+            std::string gs = getGlsl(geometryShader);
             return std::make_unique<OGLShaderProgram>(vs, fs, gs);
         }
 

@@ -20,6 +20,7 @@
 #ifndef XENGINE_OGLRENDERALLOCATOR_HPP
 #define XENGINE_OGLRENDERALLOCATOR_HPP
 
+#include <shader/shadersource.hpp>
 #include "graphics/renderallocator.hpp"
 
 #include "asset/mesh.hpp"
@@ -47,6 +48,13 @@ namespace xengine {
             std::unique_ptr<ShaderProgram> createShaderProgram(const SPIRVSource &vertexShader,
                                                                const SPIRVSource &fragmentShader,
                                                                const SPIRVSource &geometryShader) override;
+
+            std::unique_ptr<ShaderProgram> createShaderProgram(const ShaderSource &vertexShader,
+                                                               const ShaderSource &fragmentShader) override;
+
+            std::unique_ptr<ShaderProgram> createShaderProgram(const ShaderSource &vertexShader,
+                                                               const ShaderSource &fragmentShader,
+                                                               const ShaderSource &geometryShader) override;
 
             std::unique_ptr<ShaderProgram> createShaderProgram(const ShaderBinary &shader) override;
         };
