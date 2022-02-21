@@ -41,12 +41,12 @@ namespace xengine {
 
             std::unique_ptr<MeshBuffer> createCustomMeshBuffer(const CustomMeshDefinition &mesh) override;
 
-            std::unique_ptr<ShaderProgram> createShaderProgram(const ShaderSource &vertexShader,
-                                                               const ShaderSource &fragmentShader) override;
+            std::unique_ptr<ShaderProgram> createShaderProgram(const SPIRVSource &vertexShader,
+                                                               const SPIRVSource &fragmentShader) override;
 
-            std::unique_ptr<ShaderProgram> createShaderProgram(const ShaderSource &vertexShader,
-                                                               const ShaderSource &geometryShader,
-                                                               const ShaderSource &fragmentShader) override;
+            std::unique_ptr<ShaderProgram> createShaderProgram(const SPIRVSource &vertexShader,
+                                                               const SPIRVSource &fragmentShader,
+                                                               const SPIRVSource &geometryShader) override;
 
             std::unique_ptr<ShaderProgram> createShaderProgram(const ShaderBinary &shader) override;
         };

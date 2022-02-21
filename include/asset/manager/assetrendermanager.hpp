@@ -73,11 +73,12 @@ namespace xengine {
             } else if (tid == typeid(ShaderProgram)) {
                 auto shader = assetManager.getAsset<Shader>(path);
                 if (shader.geometryShader.isEmpty())
-                    objects[path] = renderAllocator.createShaderProgram(shader.vertexShader, shader.fragmentShader);
+                    objects[path] = renderAllocator.createShaderProgram(shader.vertexShader.compile(),
+                                                                        shader.fragmentShader.compile());
                 else
-                    objects[path] = renderAllocator.createShaderProgram(shader.vertexShader,
-                                                                        shader.geometryShader,
-                                                                        shader.fragmentShader);
+                    objects[path] = renderAllocator.createShaderProgram(shader.vertexShader.compile(),
+                                                                        shader.geometryShader.compile(),
+                                                                        shader.fragmentShader.compile());
             } else if (tid == typeid(TextureBuffer)) {
                 auto texture = assetManager.getAsset<Texture>(path);
                 auto texbuf = renderAllocator.createTextureBuffer(texture.attributes);

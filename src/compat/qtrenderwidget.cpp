@@ -23,15 +23,10 @@
 
 #include <utility>
 
-#include "graphics/opengl-qt/qtoglrenderdevice.hpp"
-#include "graphics/opengl-qt/qtoglrendertarget.hpp"
-
 namespace xengine {
+    //TODO: Reimplement Qt Opengl backend using macros
     std::unique_ptr<RenderTarget> QtRenderWidget::getWidgetRenderTarget() {
-        return std::move(std::make_unique<opengl::QtOGLRenderTarget>(defaultFramebufferObject(),
-                                                                     Vec2i(frameSize().rwidth(), frameSize().rheight()),
-                                                                     1,
-                                                                     false));
+        throw std::runtime_error("Not Implemented");
     }
 }
 

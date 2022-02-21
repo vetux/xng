@@ -30,6 +30,8 @@
 
 namespace xengine {
     namespace ShaderCompiler {
+        //TODO: Shader uniform buffer support
+
         enum OptimizationLevel {
             OPTIMIZATION_NONE,
             OPTIMIZATION_PERFORMANCE,
@@ -38,6 +40,11 @@ namespace xengine {
 
         /**
          * Compile the given source to spirv.
+         *
+         * BEWARE that when compiling HLSL TO SPIRV the implementation currently uses shaderc which merges
+         * all global variables into a single uniform buffer in the resulting spirv module for some elusive reason.
+         *
+         * Compiling GLSL TO SPIRV should work without issues.
          *
          * @param source
          * @param entryPoint
@@ -51,7 +58,19 @@ namespace xengine {
                                              ShaderLanguage language,
                                              OptimizationLevel optimizationLevel = OPTIMIZATION_NONE);
 
-        std::string decompileSPIRV(const std::vector<uint32_t> &source, ShaderLanguage targetLanguage);
+        /**
+         * Decompile the given spirv to the given output language.
+         *
+         * @param source The spirv binary
+         * @param entryPoint The name of the entry point in the spirv binary
+         * @param stage The shader stage that the given entry point represents
+         * @param targetLanguage The language to decompile spirv to
+         * @return The decompiled spirv
+         */
+        std::string decompileSPIRV(const std::vector<uint32_t> &source,
+                                   const std::string &entryPoint,
+                                   ShaderStage stage,
+                                   ShaderLanguage targetLanguage);
 
         std::string preprocess(const std::string &source,
                                ShaderStage stage,

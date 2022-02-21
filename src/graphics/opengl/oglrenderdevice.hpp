@@ -39,8 +39,6 @@ namespace xengine {
 
             int getMaxSampleCount() override;
 
-            ShaderLanguage getPreferredShaderLanguage() override;
-
             GraphicsBackend getBackend() override;
 
         private:

@@ -59,7 +59,7 @@ namespace xengine {
         }
     };
 
-    shaderc_optimization_level convertOptimizationLevel(ShaderCompiler::OptimizationLevel opt) {
+    static shaderc_optimization_level convertOptimizationLevel(ShaderCompiler::OptimizationLevel opt) {
         switch (opt) {
             case ShaderCompiler::OPTIMIZATION_NONE:
                 return shaderc_optimization_level_zero;
@@ -69,6 +69,19 @@ namespace xengine {
                 return shaderc_optimization_level_size;
             default:
                 throw std::runtime_error("Invalid optimization level " + std::to_string(opt));
+        }
+    }
+
+    static spv::ExecutionModel convertShaderStage(ShaderStage stage) {
+        switch (stage) {
+            case VERTEX:
+                return spv::ExecutionModel::ExecutionModelVertex;
+            case GEOMETRY:
+                return spv::ExecutionModel::ExecutionModelGeometry;
+            case FRAGMENT:
+                return spv::ExecutionModel::ExecutionModelFragment;
+            default:
+                throw std::runtime_error("Unsupported shader stage");
         }
     }
 
@@ -132,23 +145,20 @@ namespace xengine {
     }
 
     std::string ShaderCompiler::decompileSPIRV(const std::vector<uint32_t> &source,
+                                               const std::string &entryPoint,
+                                               ShaderStage stage,
                                                ShaderLanguage targetLanguage) {
         switch (targetLanguage) {
             case HLSL_SHADER_MODEL_4: {
                 spirv_cross::CompilerHLSL sCompiler(source);
+                sCompiler.set_entry_point(entryPoint, convertShaderStage(stage));
 
                 spirv_cross::ShaderResources resources = sCompiler.get_shader_resources();
-
-                // Set the first uniform buffer name to "Globals" because shaderc
-                // merges all uniform variables declared in the source into a single uniform buffer in the SPIRV.
-                if (!resources.uniform_buffers.empty())
-                    sCompiler.set_name(resources.uniform_buffers[0].id, "Globals");
 
                 spirv_cross::CompilerGLSL::Options sOptions;
                 spirv_cross::CompilerHLSL::Options hlslOptions;
 
                 hlslOptions.shader_model = 40;
-
                 sCompiler.set_hlsl_options(hlslOptions);
                 sCompiler.set_common_options(sOptions);
 
@@ -159,13 +169,9 @@ namespace xengine {
             case GLSL_460_VK:
             case GLSL_460: {
                 spirv_cross::CompilerGLSL sCompiler(source);
+                sCompiler.set_entry_point(entryPoint, convertShaderStage(stage));
 
                 spirv_cross::ShaderResources resources = sCompiler.get_shader_resources();
-
-                // Set the first uniform buffer name to "Globals" because shaderc
-                // merges all uniform variables declared in the source into a single uniform buffer in the SPIRV.
-                if (!resources.uniform_buffers.empty())
-                    sCompiler.set_name(resources.uniform_buffers[0].id, "Globals");
 
                 spirv_cross::CompilerGLSL::Options sOptions;
                 sOptions.version = 460;
@@ -183,13 +189,9 @@ namespace xengine {
             }
             case GLSL_ES_320 : {
                 spirv_cross::CompilerGLSL sCompiler(source);
+                sCompiler.set_entry_point(entryPoint, convertShaderStage(stage));
 
                 spirv_cross::ShaderResources resources = sCompiler.get_shader_resources();
-
-                // Set the first uniform buffer name to "Globals" because shaderc
-                // merges all uniform variables declared in the source into a single uniform buffer in the SPIRV.
-                if (!resources.uniform_buffers.empty())
-                    sCompiler.set_name(resources.uniform_buffers[0].id, "Globals");
 
                 spirv_cross::CompilerGLSL::Options sOptions;
                 sOptions.version = 320;
@@ -277,12 +279,14 @@ namespace xengine {
                                              ShaderStage stage,
                                              ShaderLanguage sourceLanguage,
                                              ShaderLanguage targetLanguage,
-                             OptimizationLevel optimizationLevel) {
+                                             OptimizationLevel optimizationLevel) {
         return decompileSPIRV(compileToSPIRV(source,
                                              entryPoint,
                                              stage,
                                              sourceLanguage,
                                              optimizationLevel),
+                              entryPoint,
+                              stage,
                               targetLanguage);
     }
 }

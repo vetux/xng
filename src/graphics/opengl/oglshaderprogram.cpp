@@ -34,13 +34,12 @@ namespace xengine {
         OGLShaderProgram::OGLShaderProgram() : programHandle(0) {}
 
         OGLShaderProgram::OGLShaderProgram(const std::string &vertexShader,
-                                           const std::string &geometryShader,
                                            const std::string &fragmentShader,
-                                           const std::string &prefix)
-                : programHandle(0), prefix(prefix) {
+                                           const std::string &geometryShader)
+                : programHandle(0) {
             const char *vertexSource = vertexShader.c_str();
-            const char *geometrySource = geometryShader.c_str();
             const char *fragmentSource = fragmentShader.c_str();
+            const char *geometrySource = geometryShader.c_str();
 
             programHandle = glCreateProgram();
 
@@ -106,7 +105,7 @@ namespace xengine {
         }
 
         OGLShaderProgram::OGLShaderProgram(const ShaderBinary &binary)
-                : programHandle(0), prefix(binary.prefix) {
+                : programHandle(0) {
             programHandle = glCreateProgram();
 
             glProgramBinary(programHandle,
@@ -140,11 +139,10 @@ namespace xengine {
         }
 
         bool OGLShaderProgram::setBool(const std::string &name, bool value) {
-            std::string prefixName = prefix + name;
-            auto it = locations.find(prefixName);
+            auto it = locations.find(name);
             if (it != locations.end())
                 return setBool(it->second, value);
-            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, name.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -152,11 +150,10 @@ namespace xengine {
         }
 
         bool OGLShaderProgram::setInt(const std::string &name, int value) {
-            std::string prefixName = prefix + name;
-            auto it = locations.find(prefixName);
+            auto it = locations.find(name);
             if (it != locations.end())
                 return setInt(it->second, value);
-            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, name.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -164,11 +161,10 @@ namespace xengine {
         }
 
         bool OGLShaderProgram::setFloat(const std::string &name, float value) {
-            std::string prefixName = prefix + name;
-            auto it = locations.find(prefixName);
+            auto it = locations.find(name);
             if (it != locations.end())
                 return setFloat(it->second, value);
-            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, name.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -176,11 +172,10 @@ namespace xengine {
         }
 
         bool OGLShaderProgram::setVec2(const std::string &name, const Vec2b &value) {
-            std::string prefixName = prefix + name;
-            auto it = locations.find(prefixName);
+            auto it = locations.find(name);
             if (it != locations.end())
                 return setVec2(it->second, value);
-            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, name.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -188,11 +183,10 @@ namespace xengine {
         }
 
         bool OGLShaderProgram::setVec2(const std::string &name, const Vec2i &value) {
-            std::string prefixName = prefix + name;
-            auto it = locations.find(prefixName);
+            auto it = locations.find(name);
             if (it != locations.end())
                 return setVec2(it->second, value);
-            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, name.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -200,11 +194,10 @@ namespace xengine {
         }
 
         bool OGLShaderProgram::setVec2(const std::string &name, const Vec2f &value) {
-            std::string prefixName = prefix + name;
-            auto it = locations.find(prefixName);
+            auto it = locations.find(name);
             if (it != locations.end())
                 return setVec2(it->second, value);
-            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, name.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -212,11 +205,10 @@ namespace xengine {
         }
 
         bool OGLShaderProgram::setVec3(const std::string &name, const Vec3b &value) {
-            std::string prefixName = prefix + name;
-            auto it = locations.find(prefixName);
+            auto it = locations.find(name);
             if (it != locations.end())
                 return setVec3(it->second, value);
-            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, name.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -224,11 +216,10 @@ namespace xengine {
         }
 
         bool OGLShaderProgram::setVec3(const std::string &name, const Vec3i &value) {
-            std::string prefixName = prefix + name;
-            auto it = locations.find(prefixName);
+            auto it = locations.find(name);
             if (it != locations.end())
                 return setVec3(it->second, value);
-            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, name.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -236,11 +227,10 @@ namespace xengine {
         }
 
         bool OGLShaderProgram::setVec3(const std::string &name, const Vec3f &value) {
-            std::string prefixName = prefix + name;
-            auto it = locations.find(prefixName);
+            auto it = locations.find(name);
             if (it != locations.end())
                 return setVec3(it->second, value);
-            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, name.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -248,11 +238,10 @@ namespace xengine {
         }
 
         bool OGLShaderProgram::setVec4(const std::string &name, const Vec4b &value) {
-            std::string prefixName = prefix + name;
-            auto it = locations.find(prefixName);
+            auto it = locations.find(name);
             if (it != locations.end())
                 return setVec4(it->second, value);
-            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, name.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -260,11 +249,10 @@ namespace xengine {
         }
 
         bool OGLShaderProgram::setVec4(const std::string &name, const Vec4i &value) {
-            std::string prefixName = prefix + name;
-            auto it = locations.find(prefixName);
+            auto it = locations.find(name);
             if (it != locations.end())
                 return setVec4(it->second, value);
-            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, name.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -272,11 +260,10 @@ namespace xengine {
         }
 
         bool OGLShaderProgram::setVec4(const std::string &name, const Vec4f &value) {
-            std::string prefixName = prefix + name;
-            auto it = locations.find(prefixName);
+            auto it = locations.find(name);
             if (it != locations.end())
                 return setVec4(it->second, value);
-            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, name.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -284,21 +271,18 @@ namespace xengine {
         }
 
         bool OGLShaderProgram::setMat2(const std::string &name, const Mat2f &value) {
-            std::string prefixName = prefix + name;
             throw std::runtime_error("Not Implemented");
         }
 
         bool OGLShaderProgram::setMat3(const std::string &name, const Mat3f &value) {
-            std::string prefixName = prefix + name;
             throw std::runtime_error("Not Implemented");
         }
 
         bool OGLShaderProgram::setMat4(const std::string &name, const Mat4f &value) {
-            std::string prefixName = prefix + name;
-            auto it = locations.find(prefixName);
+            auto it = locations.find(name);
             if (it != locations.end())
                 return setMat4(it->second, value);
-            GLint location = glGetUniformLocation(programHandle, prefixName.c_str());
+            GLint location = glGetUniformLocation(programHandle, name.c_str());
             checkGLError();
             if (location >= 0)
                 locations[name] = location;
@@ -455,8 +439,6 @@ namespace xengine {
 
         ShaderBinary OGLShaderProgram::getBinary() {
             ShaderBinary ret;
-
-            ret.prefix = prefix;
 
             GLint size;
             glGetProgramiv(programHandle, GL_PROGRAM_BINARY_LENGTH, &size);

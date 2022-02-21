@@ -28,9 +28,9 @@ struct DirectionalLight {
     vec3 specular;
 };
 
-DirectionalLight DIRECTIONAL_LIGHTS[MAX_LIGHTS];
+uniform DirectionalLight DIRECTIONAL_LIGHTS[MAX_LIGHTS];
 
-int DIRECTIONAL_LIGHTS_COUNT;
+uniform int DIRECTIONAL_LIGHTS_COUNT;
 
 struct PointLight {
     vec3 position;
@@ -42,9 +42,9 @@ struct PointLight {
     vec3 specular;
 };
 
-PointLight POINT_LIGHTS[MAX_LIGHTS];
+uniform PointLight POINT_LIGHTS[MAX_LIGHTS];
 
-int POINT_LIGHTS_COUNT;
+uniform int POINT_LIGHTS_COUNT;
 
 struct SpotLight {
     vec3 position;
@@ -59,9 +59,9 @@ struct SpotLight {
     vec3 specular;
 };
 
-SpotLight SPOT_LIGHTS[MAX_LIGHTS];
+uniform SpotLight SPOT_LIGHTS[MAX_LIGHTS];
 
-int SPOT_LIGHTS_COUNT;
+uniform int SPOT_LIGHTS_COUNT;
 
 struct LightComponents
 {

@@ -25,90 +25,78 @@
 #include "math/rotation.hpp"
 #include "async/threadpool.hpp"
 
-//TODO: Fix phong pass at random times consistently outputting black color for non normal mapped objects.
-const char *SHADER_VERT_LIGHTING = R"###(
-struct VS_INPUT
+// TODO: Fix phong pass at random times consistently outputting black color for non normal mapped objects.
+const char *SHADER_VERT_LIGHTING = R"###(#version 460 core
+
+layout (location = 0) in vec3 position;
+layout (location = 1) in vec3 normal;
+layout (location = 2) in vec2 uv;
+layout (location = 3) in vec3 tangent;
+layout (location = 4) in vec3 bitangent;
+layout (location = 5) in vec4 instanceRow0;
+layout (location = 6) in vec4 instanceRow1;
+layout (location = 7) in vec4 instanceRow2;
+layout (location = 8) in vec4 instanceRow3;
+
+layout (location = 0) out vec3 fPos;
+layout (location = 1) out vec3 fNorm;
+layout (location = 2) out vec2 fUv;
+layout (location = 3) out vec4 vPos;
+
+void main()
 {
-    float3 position : POSITION0;
-    float3 normal : NORMAL;
-    float2 uv : TEXCOORD0;
-    float3 tangent: TANGENT;
-    float3 bitangent: BINORMAL;
-    float4 instanceRow0 : POSITION1;
-    float4 instanceRow1 : POSITION2;
-    float4 instanceRow2 : POSITION3;
-    float4 instanceRow3 : POSITION4;
-};
-
-struct VS_OUTPUT
-{
-    float3  fPos : POSITION;
-    float3  fNorm : NORMAL;
-    float2  fUv : TEXCOORD0;
-    float4 vPos : SV_Position;
-};
-
-VS_OUTPUT main(const VS_INPUT v)
-{
-    VS_OUTPUT ret;
-
-    ret.fPos = v.position;
-    ret.fNorm = v.normal;
-    ret.fUv = v.uv;
-
-    ret.vPos = float4(v.position, 1);
-
-    return ret;
+    fPos = position;
+    fNorm = normal;
+    fUv = uv;
+    vPos = vec4(position, 1);
+    gl_Position = vPos;
 }
 )###";
 
-const char *SHADER_FRAG_LIGHTING = R"###(
-#include "phong.hlsl"
+const char *SHADER_FRAG_LIGHTING = R"###(#version 460 core
 
-struct PS_INPUT {
-    float3 fPos: POSITION;
-    float3 fNorm: NORMAL;
-    float2 fUv: TEXCOORD0;
-};
+#include "phong.glsl"
 
-struct PS_OUTPUT {
-    float4 color: SV_TARGET0;
-    float depth : SV_Depth;
-};
+layout (location = 0) in vec3 fPos;
+layout (location = 1) in vec3 fNorm;
+layout (location = 2) in vec2 fUv;
 
-Texture2DMS<float4> position;
-Texture2DMS<float4> normal;
-Texture2DMS<float4> tangent;
-Texture2DMS<float4> texNormal;
-Texture2DMS<float4> diffuse;
-Texture2DMS<float4> ambient;
-Texture2DMS<float4> specular;
-Texture2DMS<float4> shininess;
-Texture2DMS<float4> depth;
+layout (location = 0) out vec4 color;
 
-float3 VIEW_POS;
+uniform sampler2DMS position;
+uniform sampler2DMS normal;
+uniform sampler2DMS tangent;
+uniform sampler2DMS texNormal;
+uniform sampler2DMS diffuse;
+uniform sampler2DMS ambient;
+uniform sampler2DMS specular;
+uniform sampler2DMS shininess;
+uniform sampler2DMS depth;
 
-LightComponents getSampleLightComponents(int2 coord, int sampleIndex)
+uniform vec3 VIEW_POS;
+uniform int NUM_SAMPLES;
+
+LightComponents getSampleLightComponents(ivec2 coord, int sampleIndex)
 {
-    float3 fragPosition = position.Load(coord, sampleIndex).xyz;
-    float3 fragNormal = normal.Load(coord, sampleIndex).xyz;
-    float3 fragTangent = tangent.Load(coord, sampleIndex).xyz;
-    float4 fragDiffuse = diffuse.Load(coord, sampleIndex);
-    float4 fragSpecular = specular.Load(coord, sampleIndex);
-    float fragShininess = shininess.Load(coord, sampleIndex).x;
-    float3 fragTexNormal = texNormal.Load(coord, sampleIndex).xyz;
+    vec3 fragPosition = texelFetch(position, coord, sampleIndex).xyz;
+    vec3 fragNormal = texelFetch(normal, coord, sampleIndex).xyz;
+    vec3 fragTangent = texelFetch(tangent, coord, sampleIndex).xyz;
+    vec4 fragDiffuse = texelFetch(diffuse, coord, sampleIndex);
+    vec4 fragSpecular = texelFetch(specular, coord, sampleIndex);
+    float fragShininess = texelFetch(shininess, coord, sampleIndex).x;
+    vec3 fragTexNormal = texelFetch(texNormal, coord, sampleIndex).xyz;
 
     if (length(fragTexNormal) > 0)
     {
         // Calculate lighting in tangent space, does not output correct value
-        float3x3 TBN = transpose(float3x3(cross(fragNormal, normalize(fragTangent - dot(fragTangent, fragNormal) * fragNormal)), fragTangent, fragNormal));
+        mat3 TBN = transpose(mat3(cross(fragNormal, normalize(fragTangent - dot(fragTangent, fragNormal) * fragNormal)), fragTangent, fragNormal));
 
-        return mana_calculate_light(fragPosition * TBN,
+        return mana_calculate_light(TBN * fragPosition,
                                     fragTexNormal,
                                     fragDiffuse,
                                     fragSpecular,
                                     fragShininess,
-                                    VIEW_POS * TBN,
+                                    TBN * VIEW_POS,
                                     TBN);
     }
     else
@@ -120,52 +108,54 @@ LightComponents getSampleLightComponents(int2 coord, int sampleIndex)
                                 fragSpecular,
                                 fragShininess,
                                 VIEW_POS,
-                                float3x3(1));
+                                mat3(1));
     }
 }
 
-PS_OUTPUT main(PS_INPUT v, uint sampleIndex : SV_SampleIndex) {
-    PS_OUTPUT ret;
+void main() {
+    ivec2 size = textureSize(position);
+    int samples = NUM_SAMPLES;
+    vec2 coordFloat = fUv * vec2(size.x, size.y);
+    ivec2 coord = ivec2(coordFloat.x, coordFloat.y);
 
-    uint2 size;
-    int samples;
-    position.GetDimensions(size.x, size.y, samples);
-    int2 coord = v.fUv * size;
+    float fDepth = texelFetch(depth, coord, gl_SampleID).x;
 
-    LightComponents comp = getSampleLightComponents(coord, sampleIndex);
+    gl_FragDepth = fDepth;
 
-    float3 comb = comp.ambient + comp.diffuse + comp.specular;
-
-    ret.depth = depth.Load(coord, sampleIndex);
-    if (ret.depth < 1)
-        ret.color = float4(comb.r, comb.g, comb.b, 1);
-
-    return ret;
+    if (fDepth < 1) {
+        LightComponents comp = getSampleLightComponents(coord, gl_SampleID);
+        vec3 comb = comp.ambient + comp.diffuse + comp.specular;
+        color = vec4(comb.r, comb.g, comb.b, 1);
+    } else {
+        color = vec4(0, 0, 0, 0); //Even though the texture should be cleared with an alpha value of 0 it apparently isnt.
+    }
 }
 )###";
 
 namespace xengine {
     using namespace ShaderCompiler;
 
+    const int MAX_LIGHTS = 1000;
+
     PhongPass::PhongPass(RenderDevice &device)
             : renderDevice(device) {
         vertexShader = ShaderSource(SHADER_VERT_LIGHTING,
                                     "main",
                                     VERTEX,
-                                    HLSL_SHADER_MODEL_4);
+                                    GLSL_460);
         fragmentShader = ShaderSource(SHADER_FRAG_LIGHTING,
                                       "main",
                                       FRAGMENT,
-                                      HLSL_SHADER_MODEL_4);
+                                      GLSL_460);
 
         vertexShader.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                                ShaderInclude::getShaderMacros(HLSL_SHADER_MODEL_4));
+                                ShaderInclude::getShaderMacros(GLSL_460));
         fragmentShader.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                                  ShaderInclude::getShaderMacros(HLSL_SHADER_MODEL_4));
+                                  ShaderInclude::getShaderMacros(GLSL_460));
 
         auto &allocator = device.getAllocator();
 
-        shader = allocator.createShaderProgram(vertexShader, fragmentShader);
+        shader = allocator.createShaderProgram(vertexShader.compile(), fragmentShader.compile());
 
         multiSampleTarget = allocator.createRenderTarget({1, 1}, 1);
 
@@ -189,6 +179,9 @@ namespace xengine {
         shader->activate();
 
         for (auto &light: scene.lights) {
+            if (dirCount + pointCount + spotCount > MAX_LIGHTS)
+                break;
+
             std::string name;
             switch (light.type) {
                 case LIGHT_DIRECTIONAL:
@@ -239,6 +232,7 @@ namespace xengine {
         shader->setTexture("depth", 8);
 
         shader->setVec3("VIEW_POS", scene.camera.transform.getPosition());
+        shader->setInt("NUM_SAMPLES", gBuffer.getSamples());
 
         RenderCommand command(*shader, gBuffer.getScreenQuad());
 

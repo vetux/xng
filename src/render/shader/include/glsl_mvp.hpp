@@ -20,13 +20,14 @@
 #ifndef XENGINE_GLSL_MVP_HPP
 #define XENGINE_GLSL_MVP_HPP
 
+// The set of uniform matrices assigned by the forward pipeline.
 static const char *GLSL_MVP = R"###(
-    mat4 MANA_M;
-    mat4 MANA_V;
-    mat4 MANA_P;
-    mat4 MANA_MVP;
-    mat4 MANA_M_INVERT;
-    mat4 MANA_VIEW_TRANSLATION;
+    uniform mat4 MANA_M;
+    uniform mat4 MANA_V;
+    uniform mat4 MANA_P;
+    uniform mat4 MANA_MVP;
+    uniform mat4 MANA_M_INVERT;
+    uniform mat4 MANA_VIEW_TRANSLATION;
 )###";
 
 #endif //XENGINE_GLSL_MVP_HPP

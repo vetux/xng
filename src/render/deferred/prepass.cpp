@@ -158,7 +158,7 @@ namespace xengine {
         fs.preprocess(ShaderInclude::getShaderIncludeCallback(),
                       ShaderInclude::getShaderMacros(GLSL_460));
 
-        shader = allocator.createShaderProgram(vs, fs);
+        shader = allocator.createShaderProgram(vs.compile(), fs.compile());
 
         shader->activate();
         shader->setTexture(8, 0);

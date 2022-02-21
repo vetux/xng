@@ -28,9 +28,9 @@
 #include "graphics/shaderprogram.hpp"
 #include "graphics/shaderbinary.hpp"
 
-#include "shader/shadersource.hpp"
-
 #include "asset/mesh.hpp"
+
+#include "shader/spirvsource.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT RenderAllocator {
@@ -119,25 +119,28 @@ namespace xengine {
          */
         virtual std::unique_ptr<MeshBuffer> createCustomMeshBuffer(const CustomMeshDefinition &mesh) = 0;
 
-        /**
-         * Create a shader program instance for the given shader sources.
-         *
-         * The implementation may cross compile the source to a different language using the ShaderCompiler interface.
-         *
-         * @param vertexShader
-         * @param fragmentShader
-         * @return
-         */
-        virtual std::unique_ptr<ShaderProgram> createShaderProgram(const ShaderSource &vertexShader,
-                                                                   const ShaderSource &fragmentShader) = 0;
+         /**
+          * Create a shader program instance for the given shader sources in SPIRV.
+          *
+          * The implementation may cross compile the spirv to a different language using the ShaderCompiler interface.
+          *
+          * @param vertexShader
+          * @param vertexShaderEntryPoint
+          * @param fragmentShader
+          * @param fragmentShaderEntryPoint
+          * @return
+          */
+        virtual std::unique_ptr<ShaderProgram> createShaderProgram(const SPIRVSource &vertexShader,
+                                                                   const SPIRVSource &fragmentShader) = 0;
 
-        virtual std::unique_ptr<ShaderProgram> createShaderProgram(const ShaderSource &vertexShader,
-                                                                   const ShaderSource &geometryShader,
-                                                                   const ShaderSource &fragmentShader) = 0;
+        virtual std::unique_ptr<ShaderProgram> createShaderProgram(const SPIRVSource &vertexShader,
+                                                                   const SPIRVSource &fragmentShader,
+                                                                   const SPIRVSource &geometryShader) = 0;
+
+        //TODO: Tessellation shader support
 
         /**
-         * Attempt to create a shader program from the given shader binary.
-         * May throw an exception if the binary could not be parsed by the allocator.
+         * Create a shader program from a precompiled shader binary.
          *
          * @param shader
          * @return

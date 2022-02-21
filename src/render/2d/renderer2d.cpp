@@ -25,90 +25,70 @@
 #include "async/threadpool.hpp"
 #include "shader/shadercompiler.hpp"
 
-static const char *SHADER_VERT = R"###(
-float4x4 MODEL_MATRIX;
-float USE_TEXTURE;
-float4 COLOR;
+static const char *SHADER_VERT = R"###(#version 460 core
 
-struct VS_INPUT
+layout (location = 0) in vec3 position;
+layout (location = 1) in vec3 normal;
+layout (location = 2) in vec2 uv;
+layout (location = 3) in vec3 tangent;
+layout (location = 4) in vec3 bitangent;
+layout (location = 5) in vec4 instanceRow0;
+layout (location = 6) in vec4 instanceRow1;
+layout (location = 7) in vec4 instanceRow2;
+layout (location = 8) in vec4 instanceRow3;
+
+layout (location = 0) out vec4 fPosition;
+layout (location = 1) out vec2 fUv;
+
+uniform mat4 MODEL_MATRIX;
+uniform float USE_TEXTURE;
+uniform vec4 COLOR;
+
+void main()
 {
-    float3 position : POSITION0;
-    float3 normal : NORMAL;
-    float2 uv : TEXCOORD0;
-    float4 instanceRow0 : POSITION1;
-    float4 instanceRow1 : POSITION2;
-    float4 instanceRow2 : POSITION3;
-    float4 instanceRow3 : POSITION4;
-};
-
-struct VS_OUTPUT
-{
-    float4 position : SV_Position;
-    float2  uv : TEXCOORD0;
-};
-
-VS_OUTPUT main(const VS_INPUT v)
-{
-    VS_OUTPUT ret;
-
-    ret.position = mul(float4(v.position, 1), MODEL_MATRIX);
-    ret.uv = v.uv;
-
-    return ret;
+    fPosition = MODEL_MATRIX * vec4(position, 1);
+    fUv = uv;
+    gl_Position = fPosition;
 }
 )###";
 
-static const char *SHADER_FRAG = R"###(
-float4x4 MODEL_MATRIX;
-float USE_TEXTURE;
-float4 COLOR;
+static const char *SHADER_FRAG = R"###(#version 460 core
 
-struct PS_INPUT {
-    float2 uv: TEXCOORD0;
-};
+layout (location = 0) in vec4 fPosition;
+layout (location = 1) in vec2 fUv;
 
-struct PS_OUTPUT {
-     float4 pixel     :   SV_TARGET0;
-};
+layout (location = 0) out vec4 color;
 
-Texture2D diffuse;
+uniform mat4 MODEL_MATRIX;
+uniform float USE_TEXTURE;
+uniform vec4 COLOR;
 
-SamplerState samplerState_diffuse
-{};
+uniform sampler2D diffuse;
 
-PS_OUTPUT main(PS_INPUT v) {
-    PS_OUTPUT ret;
+void main() {
     if (USE_TEXTURE != 0)
-        ret.pixel = diffuse.Sample(samplerState_diffuse, v.uv);
+        color = texture(diffuse, fUv);
     else
-        ret.pixel = COLOR;
-    return ret;
+        color = COLOR;
 }
 )###";
 
-static const char *SHADER_TEXT_FRAG = R"###(
-float4x4 MODEL_MATRIX;
-float USE_TEXTURE;
-float4 COLOR;
+static const char *SHADER_TEXT_FRAG = R"###(#version 460 core
 
-struct PS_INPUT {
-    float2 uv: TEXCOORD0;
-};
+layout (location = 0) in vec4 fPosition;
+layout (location = 1) in vec2 fUv;
 
-struct PS_OUTPUT {
-     float4 pixel     :   SV_TARGET0;
-};
+layout (location = 0) out vec4 color;
 
-Texture2D diffuse;
+uniform mat4 MODEL_MATRIX;
+uniform float USE_TEXTURE;
+uniform vec4 COLOR;
 
-SamplerState samplerState_diffuse
-{};
+uniform sampler2D diffuse;
 
-PS_OUTPUT main(PS_INPUT v) {
-    PS_OUTPUT ret;
-    float grayscale = diffuse.Sample(samplerState_diffuse, v.uv).r;
-    ret.pixel = COLOR * grayscale;
-    return ret;
+void main() {
+    float grayscale = texture(diffuse, fUv).r;
+    color = COLOR * vec4(grayscale, grayscale, grayscale, grayscale);
 }
 )###";
 
@@ -170,19 +150,19 @@ namespace xengine {
 
     Renderer2D::Renderer2D(RenderDevice &device)
             : renderDevice(device) {
-        vs = ShaderSource(SHADER_VERT, "main", VERTEX, HLSL_SHADER_MODEL_4);
-        fs = ShaderSource(SHADER_FRAG, "main", FRAGMENT, HLSL_SHADER_MODEL_4);
-        fsText = ShaderSource(SHADER_TEXT_FRAG, "main", FRAGMENT, HLSL_SHADER_MODEL_4);
+        vs = ShaderSource(SHADER_VERT, "main", VERTEX, GLSL_460);
+        fs = ShaderSource(SHADER_FRAG, "main", FRAGMENT, GLSL_460);
+        fsText = ShaderSource(SHADER_TEXT_FRAG, "main", FRAGMENT, GLSL_460);
 
         vs.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                      ShaderInclude::getShaderMacros(HLSL_SHADER_MODEL_4));
+                      ShaderInclude::getShaderMacros(GLSL_460));
         fs.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                      ShaderInclude::getShaderMacros(HLSL_SHADER_MODEL_4));
+                      ShaderInclude::getShaderMacros(GLSL_460));
         fsText.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                          ShaderInclude::getShaderMacros(HLSL_SHADER_MODEL_4));
+                          ShaderInclude::getShaderMacros(GLSL_460));
 
-        defaultShader = device.getAllocator().createShaderProgram(vs, fs);
-        defaultTextShader = device.getAllocator().createShaderProgram(vs, fsText);
+        defaultShader = device.getAllocator().createShaderProgram(vs.compile(), fs.compile());
+        defaultTextShader = device.getAllocator().createShaderProgram(vs.compile(), fsText.compile());
     }
 
     Renderer2D::~Renderer2D() = default;

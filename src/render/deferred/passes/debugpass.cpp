@@ -534,15 +534,9 @@ namespace xengine {
         gsw.preprocess(ShaderInclude::getShaderIncludeCallback(),
                        ShaderInclude::getShaderMacros(GLSL_460));
 
-        //Cross Compile glsl to remove "Google" directives from source.
-        vsl.crossCompile(GLSL_460);
-        gsl.crossCompile(GLSL_460);
-        vsw.crossCompile(GLSL_460);
-        gsw.crossCompile(GLSL_460);
-
-        shaderWireframe = device.getAllocator().createShaderProgram(vsw, gsw, fs);
-        shaderNormals = device.getAllocator().createShaderProgram(vs, gs, fs);
-        shaderLight = device.getAllocator().createShaderProgram(vsl, gsl, fs);
+        shaderWireframe = device.getAllocator().createShaderProgram(vsw.compile(), fs.compile(), gsw.compile());
+        shaderNormals = device.getAllocator().createShaderProgram(vs.compile(), fs.compile(), gs.compile());
+        shaderLight = device.getAllocator().createShaderProgram(vsl.compile(), fs.compile(), gsl.compile());
 
         meshBuffer = device.getAllocator().createMeshBuffer(Mesh(Mesh::TRI, {Vertex(Vec3f(0))}, {0, 0, 0}));
         resizeTextureBuffers({1, 1}, device.getAllocator(), true);

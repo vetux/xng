@@ -25,6 +25,8 @@
 #include "graphics/renderer.hpp"
 #include "graphics/renderdevice.hpp"
 
+#include "shader/shadersource.hpp"
+
 #include "text/character.hpp"
 #include "text/font.hpp"
 

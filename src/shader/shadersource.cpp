@@ -32,7 +32,7 @@ namespace xengine {
               preprocessed(preprocessed) {}
 
     void ShaderSource::preprocess(const std::function<std::string(const char *)> &include,
-                                  const std::map <std::string, std::string> &macros,
+                                  const std::map<std::string, std::string> &macros,
                                   ShaderCompiler::OptimizationLevel optimizationLevel) {
         if (preprocessed)
             throw std::runtime_error("Source already preprocessed");
@@ -40,17 +40,21 @@ namespace xengine {
         preprocessed = true;
     }
 
-    void ShaderSource::crossCompile(ShaderLanguage targetLanguage,ShaderCompiler::OptimizationLevel optimizationLevel) {
+    void
+    ShaderSource::crossCompile(ShaderLanguage targetLanguage, ShaderCompiler::OptimizationLevel optimizationLevel) {
         if (!preprocessed)
             preprocess();
         src = ShaderCompiler::crossCompile(src, entryPoint, stage, language, targetLanguage, optimizationLevel);
         language = targetLanguage;
     }
 
-    std::vector <uint32_t> ShaderSource::compile(ShaderCompiler::OptimizationLevel optimizationLevel) {
+    SPIRVSource ShaderSource::compile(ShaderCompiler::OptimizationLevel optimizationLevel) {
         if (!preprocessed)
             this->preprocess({}, {}, optimizationLevel);
-        return compileToSPIRV(src, entryPoint, stage, language, optimizationLevel);
+        SPIRVSource ret;
+        ret.blob = ShaderCompiler::compileToSPIRV(src, entryPoint, stage, language, optimizationLevel);
+        ret.entryPoint = entryPoint;
+        return ret;
     }
 
     const std::string &ShaderSource::getSrc() const { return src; }

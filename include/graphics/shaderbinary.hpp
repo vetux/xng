@@ -38,7 +38,6 @@ namespace xengine {
      */
     struct ShaderBinary {
         unsigned int token; // Platform specific identification token
-        std::string prefix; // The prefix used for accessing shader uniforms by name, see ShaderCompiler::crossCompile
         std::vector<char> buffer; // The shader binary
     };
 }

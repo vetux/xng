@@ -25,89 +25,65 @@
 
 #include <sstream>
 
-static const char *SHADER_VERT = R"###(
-struct VS_INPUT
+static const char *SHADER_VERT = R"###(#version 460 core
+
+layout (location = 0) in vec3 position;
+layout (location = 1) in vec3 normal;
+layout (location = 2) in vec2 uv;
+layout (location = 3) in vec3 tangent;
+layout (location = 4) in vec3 bitangent;
+layout (location = 5) in vec4 instanceRow0;
+layout (location = 6) in vec4 instanceRow1;
+layout (location = 7) in vec4 instanceRow2;
+layout (location = 8) in vec4 instanceRow3;
+
+layout (location = 0) out vec3 worldPos;
+
+uniform mat4 MANA_VIEW_TRANSLATION;
+uniform mat4 MANA_M;
+uniform mat4 MANA_V;
+uniform mat4 MANA_P;
+
+void main()
 {
-    float3 position : POSITION0;
-    float3 normal : NORMAL;
-    float2 uv : TEXCOORD0;
-    float3 tangent: TANGENT;
-    float3 bitangent: BINORMAL;
-    float4 instanceRow0 : POSITION1;
-    float4 instanceRow1 : POSITION2;
-    float4 instanceRow2 : POSITION3;
-    float4 instanceRow3 : POSITION4;
-};
-
-struct VS_OUTPUT
-{
-    float3  fPos : POSITION0;
-    float3  fNorm : NORMAL;
-    float2  fUv : TEXCOORD0;
-    float4 vPos : SV_Position;
-    float3 worldPos : POSITION1;
-};
-
-float4x4 MANA_VIEW_TRANSLATION;
-float4x4 MANA_M;
-float4x4 MANA_V;
-float4x4 MANA_P;
-
-VS_OUTPUT main(const VS_INPUT v)
-{
-    VS_OUTPUT ret;
-
-    float4x4 t = mul(MANA_VIEW_TRANSLATION, mul(MANA_V, MANA_P));
-
-    ret.vPos = mul(float4(v.position, 1), t);
-    ret.fPos = mul(float4(v.position, 1), t).xyz;
-    ret.worldPos = v.position;
-    ret.fNorm = mul(v.normal, MANA_M).xyz;
-    ret.fUv = v.uv;
-
-    return ret;
+    mat4 t = MANA_P * MANA_V * MANA_VIEW_TRANSLATION;
+    worldPos = position;
+    gl_Position = t * vec4(position, 1);
 }
 )###";
 
-static const char *SHADER_FRAG = R"###(
+static const char *SHADER_FRAG = R"###(#version 460 core
 
-struct PS_INPUT {
-    float3 fPos: POSITION0;
-    float3 fNorm: NORMAL;
-    float2 fUv: TEXCOORD0;
-    float3 worldPos : POSITION1;
-};
+layout (location = 0) in vec3 worldPos;
 
-struct PS_OUTPUT {
-     float4 color     :   SV_TARGET0;
-};
+layout (location = 0) out vec4 color;
 
-TextureCube diffuse;
+uniform mat4 MANA_VIEW_TRANSLATION;
+uniform mat4 MANA_M;
+uniform mat4 MANA_V;
+uniform mat4 MANA_P;
 
-SamplerState samplerState_diffuse
-{};
+uniform samplerCube diffuse;
 
-PS_OUTPUT main(PS_INPUT v) {
-    PS_OUTPUT ret;
-    ret.color = diffuse.Sample(samplerState_diffuse, v.worldPos);
-    return ret;
+void main() {
+    color = texture(diffuse, worldPos);
 }
 )###";
 
 namespace xengine {
     SkyboxPass::SkyboxPass(RenderDevice &device)
             : device(device) {
-        vert = ShaderSource(SHADER_VERT, "main", VERTEX, HLSL_SHADER_MODEL_4);
-        frag = ShaderSource(SHADER_FRAG, "main", FRAGMENT, HLSL_SHADER_MODEL_4);
+        vert = ShaderSource(SHADER_VERT, "main", VERTEX, GLSL_460);
+        frag = ShaderSource(SHADER_FRAG, "main", FRAGMENT, GLSL_460);
 
         vert.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                        ShaderInclude::getShaderMacros(HLSL_SHADER_MODEL_4));
+                        ShaderInclude::getShaderMacros(GLSL_460));
         frag.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                        ShaderInclude::getShaderMacros(HLSL_SHADER_MODEL_4));
+                        ShaderInclude::getShaderMacros(GLSL_460));
 
         auto &allocator = device.getAllocator();
 
-        shader = allocator.createShaderProgram(vert, frag);
+        shader = allocator.createShaderProgram(vert.compile(), frag.compile());
 
         TextureBuffer::Attributes attributes;
         attributes.size = Vec2i(1, 1);

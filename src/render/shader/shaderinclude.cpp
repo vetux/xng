@@ -22,32 +22,19 @@
 
 #include "render/shader/shaderinclude.hpp"
 #include "render/shader/include/glsl_mvp.hpp"
-#include "render/shader/include/hlsl_mvp.hpp"
 #include "render/shader/include/glsl_phong_shading.hpp"
-#include "render/shader/include/hlsl_phong_shading.hpp"
 #include "render/shader/include/glsl_pi.hpp"
-#include "render/shader/include/hlsl_pi.hpp"
 #include "render/shader/include/glsl_noise.hpp"
-#include "render/shader/include/hlsl_noise.hpp"
 #include "render/shader/include/glsl_texfilter.hpp"
-#include "render/shader/include/hlsl_texfilter.hpp"
 
 static std::string includeCallback(const char *n) {
     std::string name(n);
-    if (name == "phong.hlsl") {
-        return HLSL_PHONG_SHADING;
-    } else if (name == "phong.glsl") {
+    if (name == "phong.glsl") {
         return GLSL_PHONG_SHADING;
-    } else if (name == "mvp.hlsl") {
-        return HLSL_MVP;
     } else if (name == "mvp.glsl") {
         return GLSL_MVP;
-    } else if (name == "noise.hlsl") {
-        return HLSL_NOISE;
     } else if (name == "noise.glsl") {
         return GLSL_NOISE;
-    } else if (name == "pi.glsl") {
-        return HLSL_PI;
     } else if (name == "pi.glsl") {
         return GLSL_PI;
     } else if (name == "texfilter.glsl") {

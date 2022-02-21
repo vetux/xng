@@ -29,22 +29,10 @@
 #include "graphics/opengl/oglmeshbuffer.hpp"
 #include "graphics/opengl/oglshaderprogram.hpp"
 
+#include "shader/shadercompiler.hpp"
+
 namespace xengine {
     namespace opengl {
-        static std::string getGlslSource(const ShaderSource &source) {
-            ShaderSource ret = source;
-            switch (source.getLanguage()) {
-                case GLSL_460:
-                case GLSL_460_VK:
-                case GLSL_ES_320:
-                    break;
-                default:
-                    ret.crossCompile(GLSL_460);
-                    break;
-            }
-            return ret.getSrc();
-        }
-
         static GLenum getElementType(Mesh::Primitive primitive) {
             switch (primitive) {
                 case Mesh::POINT:
@@ -397,39 +385,26 @@ namespace xengine {
             return ret;
         }
 
-        std::unique_ptr<ShaderProgram> OGLRenderAllocator::createShaderProgram(const ShaderSource &vertexShader,
-                                                                               const ShaderSource &fragmentShader) {
-            auto language = vertexShader.getLanguage();
-            if (fragmentShader.getLanguage() != language)
-                throw std::runtime_error("Mixed language shaders not supported");
-            std::string prefix;
-            if (language == HLSL_SHADER_MODEL_4)
-                prefix = "Globals.";
-            return std::make_unique<OGLShaderProgram>(getGlslSource(vertexShader),
-                                                      "",
-                                                      getGlslSource(fragmentShader),
-                                                      prefix);
-        }
-
         std::unique_ptr<MeshBuffer> OGLRenderAllocator::createCustomMeshBuffer(
                 const RenderAllocator::CustomMeshDefinition &mesh) {
             throw std::runtime_error("Not Implemented");
         }
 
-        std::unique_ptr<ShaderProgram> OGLRenderAllocator::createShaderProgram(const ShaderSource &vertexShader,
-                                                                               const ShaderSource &geometryShader,
-                                                                               const ShaderSource &fragmentShader) {
-            auto language = vertexShader.getLanguage();
-            if (geometryShader.getLanguage() != language
-                || fragmentShader.getLanguage() != language)
-                throw std::runtime_error("Mixed language shaders not supported");
-            std::string prefix;
-            if (language == HLSL_SHADER_MODEL_4)
-                prefix = "Globals.";
-            return std::make_unique<OGLShaderProgram>(getGlslSource(vertexShader),
-                                                      getGlslSource(geometryShader),
-                                                      getGlslSource(fragmentShader),
-                                                      prefix);
+        // TODO: Implement GL_ARB_gl_spirv extension support
+        std::unique_ptr<ShaderProgram> OGLRenderAllocator::createShaderProgram(const SPIRVSource &vertexShader,
+                                                                               const SPIRVSource &fragmentShader) {
+            std::string vs = ShaderCompiler::decompileSPIRV(vertexShader.blob, vertexShader.entryPoint, VERTEX, GLSL_460);
+            std::string fs = ShaderCompiler::decompileSPIRV(fragmentShader.blob, fragmentShader.entryPoint, FRAGMENT, GLSL_460);
+            return std::make_unique<OGLShaderProgram>(vs, fs);
+        }
+
+        std::unique_ptr<ShaderProgram> OGLRenderAllocator::createShaderProgram(const SPIRVSource &vertexShader,
+                                                                               const SPIRVSource &fragmentShader,
+                                                                               const SPIRVSource &geometryShader) {
+            std::string vs = ShaderCompiler::decompileSPIRV(vertexShader.blob, vertexShader.entryPoint, VERTEX, GLSL_460);
+            std::string fs = ShaderCompiler::decompileSPIRV(fragmentShader.blob, fragmentShader.entryPoint, FRAGMENT, GLSL_460);
+            std::string gs = ShaderCompiler::decompileSPIRV(geometryShader.blob, geometryShader.entryPoint, GEOMETRY, GLSL_460);
+            return std::make_unique<OGLShaderProgram>(vs, fs, gs);
         }
 
         std::unique_ptr<ShaderProgram> OGLRenderAllocator::createShaderProgram(const ShaderBinary &shader) {

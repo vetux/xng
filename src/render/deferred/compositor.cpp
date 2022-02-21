@@ -112,7 +112,8 @@ namespace xengine {
         ShaderSource shaderFrag(SHADER_FRAG, "main", FRAGMENT, GLSL_460);
         shaderFrag.preprocess(ShaderInclude::getShaderIncludeCallback(), ShaderInclude::getShaderMacros(GLSL_460));
         shaderFrag.crossCompile(GLSL_460);
-        shader = std::unique_ptr<ShaderProgram>(device.getAllocator().createShaderProgram(shaderVert, shaderFrag));
+        shader = std::unique_ptr<ShaderProgram>(device.getAllocator().createShaderProgram(shaderVert.compile(),
+                                                                                          shaderFrag.compile()));
     }
 
     void Compositor::setClearColor(ColorRGBA color) {
