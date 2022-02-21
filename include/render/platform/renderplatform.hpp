@@ -22,8 +22,8 @@
 
 namespace xengine {
     enum RenderPlatform {
-        OPENGL_4_6, // OpenGL 4.6
-        OPENGL_4_6_QT, // OpenGL 4.6 Render implementation which can be used with QOpenGLWidget
+        OPENGL_4_1, // OpenGL 4.1
+        OPENGL_4_1_QT, // OpenGL 4.1 Render implementation which can be used with QOpenGLWidget
         DIRECTX_11,
         VULKAN
     };

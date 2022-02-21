@@ -41,7 +41,7 @@ namespace xengine {
                     throw std::runtime_error("Not supported");
             }
             switch (graphicsBackend) {
-                case OPENGL_4_6:
+                case OPENGL_4_1:
                     ImGui_ImplOpenGL3_Init("#version 460");
                     break;
                 case DIRECTX_11:
@@ -53,7 +53,7 @@ namespace xengine {
 
         void Shutdown(Window &window, RenderPlatform graphicsBackend) {
             switch (graphicsBackend) {
-                case OPENGL_4_6:
+                case OPENGL_4_1:
                     ImGui_ImplOpenGL3_Shutdown();
                     break;
                 case DIRECTX_11:
@@ -72,7 +72,7 @@ namespace xengine {
 
         void NewFrame(Window &window, RenderPlatform graphicsBackend) {
             switch (graphicsBackend) {
-                case OPENGL_4_6:
+                case OPENGL_4_1:
                     ImGui_ImplOpenGL3_NewFrame();
                     break;
                 case DIRECTX_11:
@@ -95,7 +95,7 @@ namespace xengine {
 
         void DrawData(Window &window, RenderTarget &target, RenderOptions options, RenderPlatform graphicsBackend) {
             switch (graphicsBackend) {
-                case OPENGL_4_6: {
+                case OPENGL_4_1: {
                     auto &t = dynamic_cast<opengl::OGLRenderTarget &>(target);
                     glBindFramebuffer(GL_FRAMEBUFFER, t.getFBO());
                     glViewport(options.viewportOffset.x,

@@ -39,7 +39,7 @@ namespace xengine {
         }
 
         RenderPlatform OGLRenderDevice::getBackend() {
-            return OPENGL_4_6;
+            return OPENGL_4_1;
         }
     }
 }

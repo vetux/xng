@@ -5,9 +5,9 @@
 namespace xengine {
     std::unique_ptr<RenderDevice> RenderDevice::create(RenderPlatform backend) {
         switch (backend) {
-            case OPENGL_4_6:
+            case OPENGL_4_1:
                 return std::make_unique<opengl::OGLRenderDevice>();
-            case OPENGL_4_6_QT:
+            case OPENGL_4_1_QT:
             case DIRECTX_11:
             case VULKAN:
             default:

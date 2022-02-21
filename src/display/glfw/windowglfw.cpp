@@ -306,7 +306,7 @@ namespace xengine {
 
         RenderTarget &WindowGLFW::getRenderTarget(RenderPlatform backend) {
             switch (backend) {
-                case OPENGL_4_6:
+                case OPENGL_4_1:
                     return *renderTargetGl;
                 default:
                     throw std::runtime_error("Unsupported graphics backend");

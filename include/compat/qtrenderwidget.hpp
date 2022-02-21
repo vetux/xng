@@ -61,7 +61,7 @@ namespace xengine {
     protected:
         void initializeGL() override {
             QOpenGLWidget::initializeGL();
-            renderDevice = RenderDevice::create(OPENGL_4_6_QT);
+            renderDevice = RenderDevice::create(OPENGL_4_1_QT);
             assetRenderManager = std::make_unique<AssetRenderManager>(assetManager,
                                                                       renderDevice->getAllocator());
             pipeline = allocator->createPipeline();

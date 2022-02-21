@@ -57,16 +57,16 @@ namespace xengine {
             }
             display = DisplayManager(displayBackend);
 
-            graphicsBackend = GraphicsBackend::OPENGL_4_6;
+            graphicsBackend = RenderPlatform::OPENGL_4_1;
             for (int i = 0; i < args.size(); i++) {
                 if (args.at(i) == "--graphics") {
                     auto str = args.at(i + 1);
                     if (str == "opengl") {
-                        graphicsBackend = GraphicsBackend::OPENGL_4_6;
+                        graphicsBackend = RenderPlatform::OPENGL_4_1;
                     } else if (str == "directx") {
-                        graphicsBackend = GraphicsBackend::DIRECTX_11;
+                        graphicsBackend = RenderPlatform::DIRECTX_11;
                     } else if (str == "vulkan") {
-                        graphicsBackend = GraphicsBackend::VULKAN;
+                        graphicsBackend = RenderPlatform::VULKAN;
                     }
                 }
             }
@@ -143,7 +143,7 @@ namespace xengine {
         DisplayManager display;
 
         DisplayBackend displayBackend;
-        GraphicsBackend graphicsBackend;
+        RenderPlatform graphicsBackend;
 
         std::unique_ptr<Window> window = nullptr;
         std::unique_ptr<RenderDevice> renderDevice = nullptr;
