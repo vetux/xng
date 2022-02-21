@@ -17,17 +17,29 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_FORWARDRENDERER_HPP
-#define XENGINE_FORWARDRENDERER_HPP
+#ifndef XENGINE_FORWARDPIPELINE_HPP
+#define XENGINE_FORWARDPIPELINE_HPP
 
-#include "asset/scene.hpp"
+#include "render/pipeline.hpp"
 
-#include "render/platform/renderer.hpp"
+#include "render/forward/forwardrenderer.hpp"
 
 namespace xengine {
-    namespace ForwardRenderer {
-        XENGINE_EXPORT void renderScene(Renderer &ren, RenderTarget &target, Scene &scene);
-    }
-}
+    class XENGINE_EXPORT ForwardPipeline : public Pipeline {
+    public:
+        ForwardPipeline() = default;
 
-#endif //XENGINE_FORWARDRENDERER_HPP
+        explicit ForwardPipeline(RenderDevice &device)
+                : ren(&device.getRenderer()) {}
+
+        void render(RenderTarget &target, Scene &scene) override {
+            if (ren == nullptr)
+                throw std::runtime_error("Forward pipeline not initialized");
+            ForwardRenderer::renderScene(*ren, target, scene);
+        }
+
+    private:
+        Renderer *ren = nullptr;
+    };
+}
+#endif //XENGINE_FORWARDPIPELINE_HPP
