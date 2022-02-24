@@ -31,56 +31,33 @@ namespace xengine {
         Task() : work(),
                  mutex(),
                  workDone(false),
-                 workDoneCondition() {
-        };
+                 workDoneCondition() {};
 
         Task(const Task &other) : work(other.work),
                                   mutex(),
                                   workDone(false),
-                                  workDoneCondition() {
-        }
+                                  workDoneCondition() {}
 
         explicit Task(std::function<void()> work) : work(std::move(work)),
                                                     mutex(),
                                                     workDone(false),
-                                                    workDoneCondition() {
-        }
+                                                    workDoneCondition() {}
 
-        Task &operator=(const Task &other) {
-            work = other.work;
-            return *this;
-        }
+        Task &operator=(const Task &other);
 
-        void start() {
-            work();
-            {
-                std::unique_lock<std::mutex> lk(mutex);
-                workDone = true;
-                lk.unlock();
-            }
-            workDoneCondition.notify_all();
-        }
+        void start();
 
-        void wait() {
-            std::unique_lock<std::mutex> lk(mutex);
-            while (!workDone) {
-                workDoneCondition.wait(lk, [this] { return static_cast<bool>(workDone); });
-            }
-        }
+        const std::unique_ptr<std::exception> &wait();
 
-        bool wait(long ms) {
-            auto dur = std::chrono::milliseconds(ms);
-            auto start = std::chrono::high_resolution_clock::now();
-            std::unique_lock<std::mutex> lk(mutex);
-            while (!workDone && std::chrono::high_resolution_clock::now() - start < dur) {
-                workDoneCondition.wait_for(lk,
-                                           std::chrono::milliseconds(ms),
-                                           [this] { return static_cast<bool>(workDone); });
-            }
-            return workDone;
-        }
+        bool wait(long ms);
+
+        /**
+         * @return Nullptr if no exception was caught while work was invoked or a copy of an exception caught while work was invoked.
+         */
+        const std::unique_ptr<std::exception> &getException() { return exception; }
 
     private:
+        std::unique_ptr<std::exception> exception; //If an exception was caught while the work was invoked this stores a pointer to a copy of the exception object.
         std::function<void()> work;
         std::mutex mutex;
         std::atomic<bool> workDone;
