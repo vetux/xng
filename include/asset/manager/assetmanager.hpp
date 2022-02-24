@@ -75,12 +75,17 @@ namespace xengine {
 
             auto it = bundles.find(path);
             if (it != bundles.end()) {
+                auto &task = bundleTasks.at(path);
+                if(task->getException())
+                    throw *task->getException();
+
                 return it->second;
             } else {
                 guard.unlock();
 
                 auto &task = bundleTasks.at(path);
-                task->wait();
+                if(task->wait())
+                    throw *task->getException();
 
                 guard.lock();
 
