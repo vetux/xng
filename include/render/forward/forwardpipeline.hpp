@@ -21,8 +21,7 @@
 #define XENGINE_FORWARDPIPELINE_HPP
 
 #include "render/pipeline.hpp"
-
-#include "render/forward/forwardrenderer.hpp"
+#include "render/platform/renderdevice.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT ForwardPipeline : public Pipeline {
@@ -32,11 +31,7 @@ namespace xengine {
         explicit ForwardPipeline(RenderDevice &device)
                 : ren(&device.getRenderer()) {}
 
-        void render(RenderTarget &target, Scene &scene) override {
-            if (ren == nullptr)
-                throw std::runtime_error("Forward pipeline not initialized");
-            ForwardRenderer::renderScene(*ren, target, scene);
-        }
+        void render(RenderTarget &target, Scene &scene) override;
 
     private:
         Renderer *ren = nullptr;

@@ -29,6 +29,7 @@ namespace xengine {
 
         bool castShadows{};
         bool receiveShadows{};
+
         AssetPath mesh{};
         AssetPath material{};
 

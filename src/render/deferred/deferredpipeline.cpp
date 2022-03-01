@@ -24,33 +24,28 @@
 
 namespace xengine {
     DeferredPipeline::DeferredPipeline(RenderDevice &device,
-                                       AssetManager &assetManager,
                                        std::vector<std::unique_ptr<RenderPass>> passes)
-            : prePass(std::make_unique<PrePass>(device)),
-              gBuffer(std::make_unique<GBuffer>(device)),
-              assetRenderManager(std::make_unique<AssetRenderManager>(assetManager, device.getAllocator())),
+            : gBuffer(std::make_unique<GBuffer>(device)),
+              prePass(std::make_unique<PrePass>(device)),
               compositor(std::make_unique<Compositor>(device)),
               passes(std::move(passes)) {}
 
     DeferredPipeline::DeferredPipeline(RenderDevice &device,
                                        std::unique_ptr<PrePass> prePass,
-                                       std::unique_ptr<GBuffer> gBuffer,
                                        std::unique_ptr<Compositor> compositor,
-                                       std::unique_ptr<AssetRenderManager> assetRenderManager,
                                        std::vector<std::unique_ptr<RenderPass>> passes)
-            : prePass(std::move(prePass)),
-              gBuffer(std::move(gBuffer)),
+            : gBuffer(std::make_unique<GBuffer>(device)),
+              prePass(std::move(prePass)),
               compositor(std::move(compositor)),
-              assetRenderManager(std::move(assetRenderManager)),
               passes(std::move(passes)) {}
 
     DeferredPipeline::~DeferredPipeline() = default;
 
     void DeferredPipeline::render(RenderTarget &target,
                                   Scene &scene) {
-        prePass->update(scene, *gBuffer, *assetRenderManager);
+        prePass->update(scene, *gBuffer);
         for (auto &pass: passes) {
-            pass->render(*gBuffer, scene, *assetRenderManager);
+            pass->render(*gBuffer, scene);
         }
         compositor->present(target, passes);
     }

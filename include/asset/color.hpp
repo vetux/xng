@@ -55,6 +55,14 @@ namespace xengine {
             this->g() = v;
             this->b() = v;
         }
+
+        bool operator==(const ColorRGB &other) const {
+            return r() == other.r() && g() == other.g() && b() == other.b();
+        }
+
+        bool operator!=(const ColorRGB &other) const {
+            return !(*this == other);
+        }
     };
 
     struct XENGINE_EXPORT ColorRGBA {
@@ -94,14 +102,14 @@ namespace xengine {
             this->a() = v;
         }
 
-        bool operator==(const ColorRGBA &other) {
+        bool operator==(const ColorRGBA &other) const {
             return r() == other.r()
                    && g() == other.g()
                    && b() == other.b()
                    && a() == other.a();
         }
 
-        bool operator!=(const ColorRGBA &other) {
+        bool operator!=(const ColorRGBA &other) const {
             return !(*this == other);
         }
 

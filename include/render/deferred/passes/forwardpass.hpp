@@ -21,6 +21,7 @@
 #define XENGINE_FORWARDPASS_HPP
 
 #include "render/deferred/renderpass.hpp"
+#include "render/forward/forwardpipeline.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT ForwardPass : public RenderPass {
@@ -29,10 +30,12 @@ namespace xengine {
 
         ~ForwardPass() override;
 
-        void render(GBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) override;
+        void render(GBuffer &gBuffer, Scene &scene) override;
 
     private:
         RenderDevice &device;
+
+        ForwardPipeline pipeline;
     };
 }
 

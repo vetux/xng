@@ -379,7 +379,7 @@ namespace xengine {
             glfwSetWindowTitle(wndH, title.c_str());
         }
 
-        void WindowGLFW::setIcon(Image<ColorRGBA> &buffer) {
+        void WindowGLFW::setIcon(ImageRGBA &buffer) {
             throw std::runtime_error("Not Implemented");
         }
 

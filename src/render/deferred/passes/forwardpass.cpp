@@ -19,8 +19,6 @@
 
 #include "render/deferred/passes/forwardpass.hpp"
 
-#include "render/forward/forwardrenderer.hpp"
-
 namespace xengine {
     ForwardPass::ForwardPass(RenderDevice &device)
             : device(device) {
@@ -29,7 +27,7 @@ namespace xengine {
 
     ForwardPass::~ForwardPass() = default;
 
-    void ForwardPass::render(GBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) {
+    void ForwardPass::render(GBuffer &gBuffer, Scene &scene) {
         auto &target = gBuffer.getPassTarget();
 
         if (colorBuffer->getAttributes().size != gBuffer.getSize()) {
@@ -40,7 +38,7 @@ namespace xengine {
         target.attachColor(0, *colorBuffer);
         target.attachDepthStencil(*depthBuffer);
 
-        ForwardRenderer::renderScene(device.getRenderer(), target, scene);
+        pipeline.render(target, scene);
 
         target.detachColor(0);
         target.detachDepthStencil();

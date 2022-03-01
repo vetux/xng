@@ -27,7 +27,7 @@
 #include "ecs/entitymanager.hpp"
 
 namespace xengine {
-    struct Scene;
+    struct AssetScene;
 
     struct XENGINE_EXPORT TransformComponent {
         static Transform walkHierarchy(const TransformComponent &component, EntityManager &entityManager);

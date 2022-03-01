@@ -20,53 +20,43 @@
 #ifndef XENGINE_SCENE_HPP
 #define XENGINE_SCENE_HPP
 
-#include "asset/camera.hpp"
-#include "asset/light.hpp"
-#include "asset/material.hpp"
-#include "asset/skybox.hpp"
+#include "camera.hpp"
+#include "light.hpp"
+#include "asset/assetmaterial.hpp"
+#include "asset/assetskybox.hpp"
 #include "asset/shader.hpp"
 #include "asset/assethandle.hpp"
+
+#include "render/material.hpp"
+#include "render/skybox.hpp"
 
 #include "render/platform/rendercommand.hpp"
 
 namespace xengine {
-    /**
-     * The collected render scene data.
-     */
     struct XENGINE_EXPORT Scene {
-        // A deferred draw node description with a mesh, material and drawing parameters
-        struct XENGINE_EXPORT DeferredDrawNode {
-            DeferredDrawNode() = default;
+        struct XENGINE_EXPORT Node {
+            Node() = default;
 
-            DeferredDrawNode(Transform t, AssetHandle<Mesh> mesh, AssetHandle<Material> material)
-                    : transform(t), mesh(std::move(mesh)), material(std::move(material)) {}
+            Node(Transform t, MeshBuffer *mesh, Material material)
+                    : transform(t), mesh(mesh), material(material) {}
 
             Transform transform;
-            AssetHandle<Mesh> mesh;
-            AssetHandle<Material> material;
+
+            MeshBuffer *mesh = nullptr;
+            Material material;
 
             bool outline = false;
             ColorRGBA outlineColor;
             float outlineScale = 1.1f;
-        };
 
-        // A forward draw node description with mesh, shaders and textures
-        struct XENGINE_EXPORT ForwardDrawNode {
-            Transform transform;
-            AssetHandle<Mesh> mesh;
-            AssetHandle<Shader> shader;
-            std::vector<AssetHandle<Texture>> textures;
-            RenderProperties properties;
+            bool castShadow = false;
+            bool receiveShadow = false;
         };
 
         Camera camera;
-
-        std::vector<Light> lights;
-
-        std::vector<DeferredDrawNode> deferred;
-        std::vector<ForwardDrawNode> forward;
-
         Skybox skybox;
+        std::vector<Light> lights;
+        std::vector<Node> nodes;
     };
 }
 

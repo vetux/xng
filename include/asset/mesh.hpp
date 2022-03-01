@@ -24,10 +24,12 @@
 
 #include "math/vector3.hpp"
 #include "math/vector2.hpp"
+
 #include "asset/vertex.hpp"
+#include "asset/asset.hpp"
 
 namespace xengine {
-    struct XENGINE_EXPORT Mesh {
+    struct XENGINE_EXPORT Mesh : public Asset {
         enum Primitive {
             POINT = 1,
             LINE = 2,
@@ -42,6 +44,12 @@ namespace xengine {
         static const Mesh &normalizedQuad();
 
         static const Mesh &normalizedCube();
+
+        ~Mesh() override = default;
+
+        Asset *clone() override {
+            return new Mesh(*this);
+        }
 
         bool indexed = false;
         Primitive primitive = POINT;

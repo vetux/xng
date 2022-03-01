@@ -30,7 +30,7 @@
 #include "text/character.hpp"
 #include "text/font.hpp"
 
-#include "asset/camera.hpp"
+#include "render/camera.hpp"
 
 namespace xengine {
     /**

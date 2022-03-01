@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "asset/camera.hpp"
+#include "render/camera.hpp"
 #include "render/2d/renderer2d.hpp"
 
 #include "math/matrixmath.hpp"

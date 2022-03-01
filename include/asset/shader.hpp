@@ -25,10 +25,10 @@
 #include "asset/asset.hpp"
 
 namespace xengine {
-    struct XENGINE_EXPORT Shader : public AssetBase {
+    struct XENGINE_EXPORT Shader : public Asset {
         ~Shader() override = default;
 
-        AssetBase *clone() override {
+        Asset *clone() override {
             return new Shader(*this);
         }
 

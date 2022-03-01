@@ -27,7 +27,7 @@ void streamWriteFunc(void *context, void *data, int size) {
 }
 
 namespace xengine {
-    void AssetExporter::exportImage(std::ostream &stream, const Image<ColorRGBA> &image) {
+    void AssetExporter::exportImage(std::ostream &stream, const ImageRGBA &image) {
         int r = stbi_write_png_to_func(&streamWriteFunc,
                                        &stream,
                                        image.getWidth(),

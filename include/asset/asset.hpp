@@ -21,25 +21,11 @@
 #define XENGINE_ASSET_HPP
 
 namespace xengine {
-    class XENGINE_EXPORT AssetBase {
+    class XENGINE_EXPORT Asset {
     public:
-        virtual ~AssetBase() = default;
+        virtual ~Asset() = default;
 
-        virtual AssetBase *clone() = 0;
-    };
-
-    template<typename T>
-    class XENGINE_EXPORT Asset : public AssetBase {
-    public:
-        Asset() = default;
-
-        explicit Asset(const T &instance) : instance(instance) {}
-
-        AssetBase *clone() override {
-            return new Asset<T>(instance);
-        }
-
-        T instance;
+        virtual Asset *clone() = 0;
     };
 }
 

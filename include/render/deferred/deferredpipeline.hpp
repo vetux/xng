@@ -40,21 +40,16 @@ namespace xengine {
     class XENGINE_EXPORT DeferredPipeline : public Pipeline {
     public:
         explicit DeferredPipeline(RenderDevice &device,
-                                  AssetManager &assetManager,
                                   std::vector<std::unique_ptr<RenderPass>> passes);
 
         DeferredPipeline(RenderDevice &device,
                          std::unique_ptr<PrePass> prePass,
-                         std::unique_ptr<GBuffer> gBuffer,
                          std::unique_ptr<Compositor> compositor,
-                         std::unique_ptr<AssetRenderManager> assetRenderManager,
                          std::vector<std::unique_ptr<RenderPass>> passes);
 
         ~DeferredPipeline();
 
         void render(RenderTarget &target, Scene &scene) override;
-
-        AssetRenderManager &getAssetRenderManager() { return *assetRenderManager; }
 
         PrePass &getPrePass() { return *prePass; }
 
@@ -70,7 +65,6 @@ namespace xengine {
         std::unique_ptr<PrePass> prePass;
         std::unique_ptr<GBuffer> gBuffer;
         std::unique_ptr<Compositor> compositor;
-        std::unique_ptr<AssetRenderManager> assetRenderManager;
 
         std::vector<std::unique_ptr<RenderPass>> passes;
     };

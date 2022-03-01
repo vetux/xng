@@ -63,20 +63,16 @@ namespace xengine {
             auto index = std::type_index(typeid(T));
 
             if (name.empty()) {
-                return dynamic_cast<const T &>(
-                        dynamic_cast<Asset<T> &>(*assets.at(index).begin()->second.at(0)).instance
-                );
+                return dynamic_cast<const T &>(*assets.at(index).begin()->second.at(0));
             } else {
-                return dynamic_cast<const T &>(
-                        dynamic_cast<Asset<T> &>(*assets.at(index).at(name).at(0)).instance
-                );
+                return dynamic_cast<const T &>(*assets.at(index).at(name).at(0));
             }
         }
 
         template<typename T>
-        void add(const std::string &name, const T &asset) {
+        void add(const std::string &name, std::unique_ptr<T> ptr) {
             auto index = std::type_index(typeid(T));
-            assets[index][name].emplace_back(std::move(std::make_unique<Asset<T>>(asset)));
+            assets[index][name].emplace_back(std::move(ptr));
         }
 
         template<typename T>
@@ -85,7 +81,7 @@ namespace xengine {
             assets.at(index).at(name).clear();
         }
 
-        std::map<std::type_index, std::map<std::string, std::vector<std::unique_ptr<AssetBase>>>> assets;
+        std::map<std::type_index, std::map<std::string, std::vector<std::unique_ptr<Asset>>>> assets;
     };
 }
 

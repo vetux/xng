@@ -89,7 +89,7 @@ namespace xengine {
 
         virtual void setTitle(std::string title) = 0;
 
-        virtual void setIcon(Image<ColorRGBA> &buffer) = 0;
+        virtual void setIcon(ImageRGBA &buffer) = 0;
 
         virtual void setWindowPosition(Vec2i position) = 0;
 

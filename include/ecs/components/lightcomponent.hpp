@@ -20,7 +20,7 @@
 #ifndef XENGINE_LIGHTCOMPONENT_HPP
 #define XENGINE_LIGHTCOMPONENT_HPP
 
-#include "asset/light.hpp"
+#include "render/light.hpp"
 
 namespace xengine {
     struct XENGINE_EXPORT LightComponent {

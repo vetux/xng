@@ -25,11 +25,11 @@
 #include "asset/asset.hpp"
 
 namespace xengine {
-    class XENGINE_EXPORT Audio : public AssetBase {
+    class XENGINE_EXPORT Audio : public Asset {
     public:
         ~Audio() override = default;
 
-        AssetBase *clone() override {
+        Asset *clone() override {
             return new Audio(*this);
         }
 

@@ -36,8 +36,8 @@ namespace xengine {
     void uploadScene(MonoCppDomain &runtime,
                      MonoCppAssembly &msCorLib,
                      MonoCppAssembly &manaAssembly,
-                     Scene &scene) {
-        Scene upload;
+                     AssetScene &scene) {
+        AssetScene upload;
         for (auto &n : scene.nodes) {
             if (n.second.hasComponent<MonoSyncComponent>())
                 upload.nodes.insert(n);
@@ -62,11 +62,11 @@ namespace xengine {
     void downloadScene(MonoCppDomain &domain,
                        MonoCppAssembly &msCorLib,
                        MonoCppAssembly &manaAssembly,
-                       Scene &scene) {
+                       AssetScene &scene) {
         auto str = manaAssembly.invokeStaticMethod("Mana.Internal", "SceneInterface", "getSceneJson");
 
         std::stringstream stream(domain.stringToUtf8(str));
-        Scene monoScene;
+        AssetScene monoScene;
         auto message = JsonProtocol().deserialize(stream);
 
         monoScene << message;

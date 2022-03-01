@@ -20,9 +20,9 @@
 #ifndef XENGINE_RENDERPASS_HPP
 #define XENGINE_RENDERPASS_HPP
 
-#include "renderpass.hpp"
-#include "asset/scene.hpp"
-#include "gbuffer.hpp"
+#include "render/scene.hpp"
+
+#include "render/deferred/gbuffer.hpp"
 
 #include "render/platform/renderer.hpp"
 #include "render/platform/renderdevice.hpp"
@@ -41,7 +41,7 @@ namespace xengine {
          * @param gBuffer The gbuffer to sample from.
          * @param scene The scene data.
          */
-        virtual void render(GBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) = 0;
+        virtual void render(GBuffer &gBuffer, Scene &scene) = 0;
 
         /**
          * Return the default color texture which the render pass has written to in the last render call.

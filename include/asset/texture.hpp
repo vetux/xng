@@ -22,9 +22,16 @@
 
 #include "render/platform/texturebuffer.hpp"
 #include "asset/assetpath.hpp"
+#include "asset/asset.hpp"
 
 namespace xengine {
-    struct XENGINE_EXPORT Texture {
+    struct XENGINE_EXPORT Texture : public Asset {
+        ~Texture() override = default;
+
+        Asset *clone() override {
+            return new Texture(*this);
+        }
+
         std::vector<AssetPath> images;
         TextureBuffer::Attributes attributes;
     };

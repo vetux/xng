@@ -57,8 +57,9 @@ namespace xengine {
 
         polyCount = 0;
 
-        //TODO: Culling
-        //Create deferred draw nodes
+        // TODO: Culling
+
+        // Create draw nodes
         for (auto &pair: componentManager.getPool<MeshRenderComponent>()) {
             auto &transform = componentManager.lookup<TransformComponent>(pair.first);
             if (!transform.enabled)
@@ -68,25 +69,30 @@ namespace xengine {
             if (!render.enabled)
                 continue;
 
-            auto mesh = AssetHandle<Mesh>(render.mesh, assetManager, &assetRenderManager);
-            auto material = AssetHandle<Material>(render.material, assetManager);
+            auto mesh = getMesh(render.mesh);
+            auto material = getMaterial(render.material);
 
-            polyCount += mesh.get().polyCount();
+            polyCount += meshes.at(render.mesh).get().polyCount();
+
+            Scene::Node node;
+            node.transform = TransformComponent::walkHierarchy(transform, entityManager);
+            node.mesh = &getMesh(render.mesh);
+            node.material = getMaterial(render.material);
 
             //TODO: Change transform walking / scene creation to allow model matrix caching
-            scene.deferred.emplace_back(Scene::DeferredDrawNode(
-                    TransformComponent::walkHierarchy(transform, entityManager),
-                    mesh,
-                    material));
+            scene.nodes.emplace_back(node);
         }
 
-        //Get Skybox
+        // Update skybox texture
         for (auto &pair: componentManager.getPool<SkyboxComponent>()) {
             auto &comp = pair.second;
-            scene.skybox = comp.skybox;
+            if (comp.skybox.texture)
+                scene.skybox.texture = &getTexture(comp.skybox.texture);
+            else
+                scene.skybox.texture = nullptr;
         }
 
-        //Get Camera
+        // Update Camera
         for (auto &pair: componentManager.getPool<CameraComponent>()) {
             auto &tcomp = componentManager.lookup<TransformComponent>(pair.first);
 
@@ -101,7 +107,7 @@ namespace xengine {
             break;
         }
 
-        //Get lights
+        // Update lights
         for (auto &pair: componentManager.getPool<LightComponent>()) {
             auto &lightComponent = pair.second;
             auto &tcomp = componentManager.getPool<TransformComponent>().lookup(pair.first);
@@ -117,7 +123,7 @@ namespace xengine {
             scene.lights.emplace_back(lightComponent.light);
         }
 
-        //Render
+        // Render
         pipeline.render(screenTarget, scene);
     }
 
@@ -125,82 +131,68 @@ namespace xengine {
         return pipeline;
     }
 
-    void RenderSystem::onComponentCreate(const Entity &entity, const MeshRenderComponent &component) {
-        assetManager.incrementRef(component.mesh);
-        assetManager.incrementRef(component.material);
+    void RenderSystem::onComponentCreate(const Entity &entity, const MeshRenderComponent &component) {}
 
-        auto material = assetManager.getAsset<Material>(component.material);
+    void RenderSystem::onComponentDestroy(const Entity &entity, const MeshRenderComponent &component) {}
 
-        assetRenderManager.incrementRef(component.mesh);
+    void RenderSystem::onComponentCreate(const Entity &entity, const SkyboxComponent &component) {}
 
-        if (!material.diffuseTexture.empty()) {
-            assetRenderManager.incrementRef(material.diffuseTexture);
-        }
-        if (!material.ambientTexture.empty()) {
-            assetRenderManager.incrementRef(material.ambientTexture);
-        }
-        if (!material.specularTexture.empty()) {
-            assetRenderManager.incrementRef(material.specularTexture);
-        }
-        if (!material.emissiveTexture.empty()) {
-            assetRenderManager.incrementRef(material.emissiveTexture);
-        }
-        if (!material.shininessTexture.empty()) {
-            assetRenderManager.incrementRef(material.shininessTexture);
-        }
-        if (!material.normalTexture.empty()) {
-            assetRenderManager.incrementRef(material.normalTexture);
-        }
-    }
-
-    void RenderSystem::onComponentDestroy(const Entity &entity, const MeshRenderComponent &component) {
-        assetRenderManager.decrementRef<Mesh>(component.mesh);
-        auto material = assetManager.getAsset<Material>(component.material);
-        if (!material.diffuseTexture.empty()) {
-            assetRenderManager.decrementRef<Texture>(material.diffuseTexture);
-        }
-        if (!material.ambientTexture.empty()) {
-            assetRenderManager.decrementRef<Texture>(material.ambientTexture);
-        }
-        if (!material.specularTexture.empty()) {
-            assetRenderManager.decrementRef<Texture>(material.specularTexture);
-        }
-        if (!material.emissiveTexture.empty()) {
-            assetRenderManager.decrementRef<Texture>(material.emissiveTexture);
-        }
-        if (!material.shininessTexture.empty()) {
-            assetRenderManager.decrementRef<Texture>(material.shininessTexture);
-        }
-        if (!material.normalTexture.empty()) {
-            assetRenderManager.decrementRef<Texture>(material.normalTexture);
-        }
-        assetManager.decrementRef(component.material);
-        assetManager.decrementRef(component.mesh);
-    }
-
-    void RenderSystem::onComponentCreate(const Entity &entity, const SkyboxComponent &component) {
-        assetRenderManager.incrementRef(component.skybox.texture);
-    }
-
-    void RenderSystem::onComponentDestroy(const Entity &entity, const SkyboxComponent &component) {
-        assetRenderManager.decrementRef<TextureBuffer>(component.skybox.texture);
-    }
+    void RenderSystem::onComponentDestroy(const Entity &entity, const SkyboxComponent &component) {}
 
     void RenderSystem::onComponentUpdate(const Entity &entity,
                                          const MeshRenderComponent &oldValue,
-                                         const MeshRenderComponent &newValue) {
-        if (oldValue == newValue)
-            return;
-        onComponentDestroy(entity, oldValue);
-        onComponentCreate(entity, newValue);
-    }
+                                         const MeshRenderComponent &newValue) {}
 
     void RenderSystem::onComponentUpdate(const Entity &entity,
                                          const SkyboxComponent &oldValue,
-                                         const SkyboxComponent &newValue) {
-        if (oldValue == newValue)
-            return;
-        onComponentDestroy(entity, oldValue);
-        onComponentCreate(entity, newValue);
+                                         const SkyboxComponent &newValue) {}
+
+    template<typename T>
+    AssetHandle<T> &getHandle(std::map<AssetPath, AssetHandle<T>> &map,
+                              const AssetPath &path,
+                              AssetManager &assetManager,
+                              AssetRenderManager &assetRenderManager) {
+        if (map.find(path) == map.end())
+            map[path] = AssetHandle<T>(path, assetManager, &assetRenderManager);
+        return map.at(path);
+    }
+
+    MeshBuffer &RenderSystem::getMesh(const AssetPath &path) {
+        return getHandle<Mesh>(meshes, path, assetManager, assetRenderManager).getRenderObject<MeshBuffer>();
+    }
+
+    TextureBuffer &RenderSystem::getTexture(const AssetPath &path) {
+        return getHandle<Texture>(textures, path, assetManager, assetRenderManager).getRenderObject<TextureBuffer>();
+    }
+
+    Material &RenderSystem::getMaterial(const AssetPath &path) {
+        auto mat = getHandle<AssetMaterial>(materials, path, assetManager, assetRenderManager).get();
+        if (rmaterials.find(path) == rmaterials.end()) {
+            rmaterials[path].diffuse = mat.diffuse;
+            rmaterials[path].ambient = mat.ambient;
+            rmaterials[path].specular = mat.specular;
+            rmaterials[path].emissive = mat.emissive;
+            rmaterials[path].shininess = mat.shininess;
+
+            if (mat.diffuseTexture) {
+                rmaterials[path].diffuseTexture = &getTexture(mat.diffuseTexture);
+            }
+            if (mat.ambientTexture) {
+                rmaterials[path].ambientTexture = &getTexture(mat.ambientTexture);
+            }
+            if (mat.specularTexture) {
+                rmaterials[path].specularTexture = &getTexture(mat.specularTexture);
+            }
+            if (mat.emissiveTexture) {
+                rmaterials[path].emissiveTexture = &getTexture(mat.emissiveTexture);
+            }
+            if (mat.shininessTexture) {
+                rmaterials[path].shininessTexture = &getTexture(mat.shininessTexture);
+            }
+            if (mat.normalTexture) {
+                rmaterials[path].normalTexture = &getTexture(mat.normalTexture);
+            }
+        }
+        return rmaterials.at(path);
     }
 }

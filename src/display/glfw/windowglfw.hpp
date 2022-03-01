@@ -87,7 +87,7 @@ namespace xengine {
 
             void setTitle(std::string title) override;
 
-            void setIcon(Image<ColorRGBA> &buffer) override;
+            void setIcon(ImageRGBA &buffer) override;
 
             void setWindowPosition(Vec2i position) override;
 

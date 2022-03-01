@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-#include "asset/material.hpp"
+#include "asset/assetmaterial.hpp"
 #include "asset/audio.hpp"
 #include "asset/assetbundle.hpp"
 

@@ -79,7 +79,7 @@ namespace xengine {
         bundleMutex.unlock();
     }
 
-    static Image<ColorRGBA> readImage(const std::string &buffer) {
+    static ImageRGBA readImage(const std::string &buffer) {
         int width, height, nrChannels;
         stbi_uc *data = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(buffer.data()),
                                               buffer.size(),
@@ -88,7 +88,7 @@ namespace xengine {
                                               &nrChannels,
                                               4);
         if (data) {
-            auto ret = Image<ColorRGBA>(width, height);
+            auto ret = ImageRGBA(width, height);
             std::memcpy(ret.getData(), data, (width * height) * (sizeof(stbi_uc) * 4));
             stbi_image_free(data);
             return ret;
@@ -162,7 +162,7 @@ namespace xengine {
                 std::string bundle = element["bundle"];
                 std::string asset = element["asset"];
 
-                ret.add<Mesh>(name, refBundles.at(bundle).get<Mesh>(asset));
+                ret.add<Mesh>(name, std::make_unique<Mesh>(refBundles.at(bundle).get<Mesh>(asset)));
             }
         }
 
@@ -174,9 +174,10 @@ namespace xengine {
                 auto it = element.find("bundle");
                 if (it != element.end()) {
                     std::string n = element.value("asset", "");
-                    ret.add<Material>(name, refBundles.at(*it).get<Material>(n));
+                    ret.add<AssetMaterial>(name,
+                                           std::make_unique<AssetMaterial>(refBundles.at(*it).get<AssetMaterial>(n)));
                 } else {
-                    Material mat;
+                    AssetMaterial mat;
 
                     if (element.find("diffuse") != element.end())
                         mat.diffuse = convertJsonColor(element["diffuse"]);
@@ -222,7 +223,7 @@ namespace xengine {
                         mat.normalTexture = path;
                     }
 
-                    ret.add<Material>(name, mat);
+                    ret.add<AssetMaterial>(name, std::make_unique<AssetMaterial>(mat));
                 }
             }
         }
@@ -233,7 +234,7 @@ namespace xengine {
                 std::string name = element["name"];
                 auto s = std::stringstream(element.dump());
                 auto tex = readJsonTexture(s, archive);
-                ret.add<Texture>(name, tex);
+                ret.add<Texture>(name, std::make_unique<Texture>(tex));
             }
         }
 
@@ -244,7 +245,8 @@ namespace xengine {
                 std::string bundle = element["bundle"];
                 std::string asset = element.value("asset", "");
 
-                ret.add<Image<ColorRGBA>>(name, refBundles.at(bundle).get<Image<ColorRGBA>>(asset));
+                ret.add<ImageRGBA>(name, std::make_unique<ImageRGBA>(
+                        refBundles.at(bundle).get<ImageRGBA>(asset)));
             }
         }
 
@@ -293,8 +295,8 @@ namespace xengine {
         return ret;
     }
 
-    static Material convertMaterial(const aiMaterial &assMaterial) {
-        Material ret;
+    static AssetMaterial convertMaterial(const aiMaterial &assMaterial) {
+        AssetMaterial ret;
 
         aiColor3D c;
         assMaterial.Get(AI_MATKEY_COLOR_DIFFUSE, c);
@@ -340,7 +342,7 @@ namespace xengine {
         for (auto i = 0; i < scene.mNumMeshes; i++) {
             const auto &mesh = dynamic_cast<const aiMesh &>(*scene.mMeshes[i]);
             std::string name = mesh.mName.C_Str();
-            ret.add<Mesh>(name, convertMesh(mesh));
+            ret.add<Mesh>(name, std::make_unique<Mesh>(convertMesh(mesh)));
         }
 
         for (auto i = 0; i < scene.mNumMaterials; i++) {
@@ -349,7 +351,7 @@ namespace xengine {
             aiString materialName;
             scene.mMaterials[i]->Get(AI_MATKEY_NAME, materialName);
 
-            ret.add<Material>(materialName.data, material);
+            ret.add<AssetMaterial>(materialName.data, std::make_unique<AssetMaterial>(material));
         }
 
         return ret;
@@ -487,7 +489,7 @@ namespace xengine {
                                           &n) == 1) {
                     //Source is image
                     AssetBundle ret;
-                    ret.add<Image<ColorRGBA>>("0", readImage(buffer));
+                    ret.add<ImageRGBA>("0", std::make_unique<ImageRGBA>(readImage(buffer)));
                     return ret;
                 }
             } catch (const std::exception &e) {}
@@ -508,7 +510,7 @@ namespace xengine {
             //Try to read source as audio
             auto audio = readAudio(buffer);
             AssetBundle ret;
-            ret.add<Audio>("0", audio);
+            ret.add<Audio>("0", std::make_unique<Audio>(audio));
 
             return ret;
         } else {
@@ -534,7 +536,7 @@ namespace xengine {
                                                   &y,
                                                   &n) == 1) {
                             AssetBundle ret;
-                            ret.add<Image<ColorRGBA>>("0", readImage(buffer));
+                            ret.add<ImageRGBA>("0", std::make_unique<ImageRGBA>(readImage(buffer)));
                             return ret;
                         }
                     } catch (const std::exception &e) {}
@@ -542,7 +544,7 @@ namespace xengine {
                     //Try to read source as audio
                     auto audio = readAudio(buffer);
                     AssetBundle ret;
-                    ret.add<Audio>("0", audio);
+                    ret.add<Audio>("0", std::make_unique<Audio>(audio));
                     return ret;
                 }
             }

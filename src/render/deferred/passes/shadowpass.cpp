@@ -20,6 +20,6 @@
 #include "render/deferred/passes/shadowpass.hpp"
 
 namespace xengine {
-    void ShadowPass::render(GBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) {
+    void ShadowPass::render(GBuffer &gBuffer, Scene &scene) {
     }
 }

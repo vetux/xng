@@ -175,7 +175,7 @@ namespace xengine {
     }
 
     //TODO: Implement cursor image change
-    void GLFWInput::setMouseCursorImage(const Image<ColorRGBA> &image) {
+    void GLFWInput::setMouseCursorImage(const ImageRGBA &image) {
         throw std::runtime_error("Not implemented");
     }
 

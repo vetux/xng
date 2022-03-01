@@ -24,6 +24,8 @@
 #include <stdexcept>
 
 #include "asset/color.hpp"
+#include "asset/asset.hpp"
+
 #include "math/rectangle.hpp"
 
 namespace xengine {
@@ -33,23 +35,26 @@ namespace xengine {
      * @tparam T The type to use for a pixel
      */
     template<typename T>
-    class XENGINE_EXPORT Image {
+    class XENGINE_EXPORT Image : public Asset {
     public:
-        Image()
-                : size(), buffer() {}
+        Asset *clone() override {
+            return new Image<T>(*this);
+        }
+
+        Image() : size(), buffer() {}
 
         Image(int width, int height, const std::vector<T> &buffer) : size(width, height),
                                                                      buffer(buffer) {}
 
-        Image(int width, int height)
-                : size(width, height), buffer(width * height) {}
+        Image(int width, int height) : size(width, height), buffer(width * height) {}
 
-        explicit Image(Vec2i size)
-                : size(size), buffer(size.x * size.y) {}
+        explicit Image(Vec2i size) : size(size), buffer(size.x * size.y) {}
 
         Image(const Image &copy) : size(copy.size), buffer(copy.buffer) {}
 
         Image(Image &&other) noexcept: size(std::move(other.size)), buffer(std::move(other.buffer)) {}
+
+        ~Image() override = default;
 
         Image &operator=(const Image &copy) {
             this->size = copy.size;
@@ -143,6 +148,9 @@ namespace xengine {
         Vec2i size;
         std::vector<T> buffer;
     };
+
+    typedef Image<ColorRGBA> ImageRGBA;
+    typedef Image<ColorRGB> ImageRGB;
 }
 
 #endif //XENGINE_IMAGE_HPP

@@ -17,16 +17,28 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_PIPELINE_HPP
-#define XENGINE_PIPELINE_HPP
-
-#include "render/scene.hpp"
-#include "render/platform/rendertarget.hpp"
+#ifndef XENGINE_MATERIAL_HPP
+#define XENGINE_MATERIAL_HPP
 
 namespace xengine {
-    class XENGINE_EXPORT Pipeline {
-    public:
-        virtual void render(RenderTarget &target, Scene &scene) = 0;
+    struct XENGINE_EXPORT Material {
+        Material() = default;
+
+        ~Material() = default;
+
+        ColorRGBA diffuse{};
+        ColorRGBA ambient{};
+        ColorRGBA specular{};
+        ColorRGBA emissive{};
+        float shininess{32};
+
+        TextureBuffer *diffuseTexture = nullptr;
+        TextureBuffer *ambientTexture = nullptr;
+        TextureBuffer *specularTexture = nullptr;
+        TextureBuffer *emissiveTexture = nullptr;
+        TextureBuffer *shininessTexture = nullptr;
+        TextureBuffer *normalTexture = nullptr;
     };
 }
-#endif //XENGINE_PIPELINE_HPP
+
+#endif //XENGINE_MATERIAL_HPP

@@ -162,7 +162,7 @@ namespace xengine {
         resizeTextureBuffers({1, 1}, device.getAllocator(), true);
     }
 
-    void PhongPass::render(GBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) {
+    void PhongPass::render(GBuffer &gBuffer, Scene &scene) {
         if (colorBuffer->getAttributes().size != gBuffer.getSize() ||
             multiSampleTarget->getSamples() != gBuffer.getSamples()) {
             resizeTextureBuffers(gBuffer.getSize(), renderDevice.getAllocator(), true);

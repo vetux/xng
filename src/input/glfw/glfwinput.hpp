@@ -51,7 +51,7 @@ namespace xengine {
 
         std::string getClipboardText() override;
 
-        void setMouseCursorImage(const Image<ColorRGBA> &image) override;
+        void setMouseCursorImage(const ImageRGBA &image) override;
 
         void clearMouseCursorImage() override;
 

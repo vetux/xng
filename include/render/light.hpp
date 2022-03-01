@@ -17,17 +17,42 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_FORWARDRENDERER_HPP
-#define XENGINE_FORWARDRENDERER_HPP
+#ifndef XENGINE_LIGHT_HPP
+#define XENGINE_LIGHT_HPP
 
-#include "asset/scene.hpp"
-
-#include "render/platform/renderer.hpp"
+#include "math/transform.hpp"
 
 namespace xengine {
-    namespace ForwardRenderer {
-        XENGINE_EXPORT void renderScene(Renderer &ren, RenderTarget &target, Scene &scene);
-    }
+    enum LightType {
+        LIGHT_DIRECTIONAL,
+        LIGHT_POINT,
+        LIGHT_SPOT
+    };
+
+    struct XENGINE_EXPORT Light {
+        Light() : type() {}
+
+        explicit Light(LightType type) : type(type) {}
+
+        LightType type;
+
+        Transform transform;
+
+        Vec3f ambient = Vec3f(0.1f);
+        Vec3f diffuse = Vec3f(1.0f);
+        Vec3f specular = Vec3f(1.0f);
+
+        //Directional / Spot
+        Vec3f direction = Vec3f(0);
+
+        float cutOff = 10;
+        float outerCutOff = 14;
+
+        //Point / Spot
+        float constant = 1;
+        float linear = 0.09;
+        float quadratic = 0.032;
+    };
 }
 
-#endif //XENGINE_FORWARDRENDERER_HPP
+#endif //XENGINE_LIGHT_HPP

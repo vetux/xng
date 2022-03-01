@@ -59,7 +59,7 @@ namespace xengine {
         auto bitmap = face->glyph->bitmap;
         auto pitch = bitmap.pitch;
 
-        Image<ColorRGBA> buffer(size);
+        ImageRGBA buffer(size);
         if (pitch > 0) {
             //Ascending
             auto rowLength = pitch;
@@ -86,7 +86,7 @@ namespace xengine {
             }
         } else {
             //No pitch
-            buffer = Image<ColorRGBA>();
+            buffer = ImageRGBA();
         }
 
         return std::move(Character(std::move(buffer), bearing, advance));

@@ -546,7 +546,7 @@ namespace xengine {
 
     DebugPass::~DebugPass() = default;
 
-    void DebugPass::render(GBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) {
+    void DebugPass::render(GBuffer &gBuffer, Scene &scene) {
         auto &ren = device.getRenderer();
 
         auto &target = gBuffer.getPassTarget();
@@ -568,23 +568,22 @@ namespace xengine {
 
         if (enabled) {
             shaderNormals->activate();
-            for (Scene::DeferredDrawNode &deferredCommand: scene.deferred) {
+            for (auto &node: scene.nodes) {
                 if (!shaderNormals->setFloat("globals.scale", 0.1f))
                     throw std::runtime_error("");
-                shaderNormals->setMat4("globals.MODEL", deferredCommand.transform.model());
+                shaderNormals->setMat4("globals.MODEL", node.transform.model());
                 shaderNormals->setMat4("globals.VIEW", scene.camera.view());
                 shaderNormals->setMat4("globals.PROJECTION", scene.camera.projection());
 
-                RenderCommand command(*shaderNormals, deferredCommand.mesh.getRenderObject<MeshBuffer>());
+                RenderCommand command(*shaderNormals, *node.mesh);
 
                 command.properties.enableDepthTest = false;
                 command.properties.depthTestWrite = false;
 
-                if (!deferredCommand.material.get().normalTexture.empty()) {
+                if (node.material.normalTexture) {
                     shaderNormals->setBool("globals.hasNormalTexture", true);
                     shaderNormals->setTexture("normal", 0);
-                    command.textures.emplace_back(
-                            assetRenderManager.get<TextureBuffer>(deferredCommand.material.get().normalTexture));
+                    command.textures.emplace_back(*node.material.normalTexture);
                 } else {
                     shaderNormals->setBool("globals.hasNormalTexture", false);
                 }
@@ -593,13 +592,12 @@ namespace xengine {
             }
 
             shaderWireframe->activate();
-            for (auto &deferredCommand: scene.deferred) {
-                shaderWireframe->setMat4("globals.MODEL", deferredCommand.transform.model());
+            for (auto &node: scene.nodes) {
+                shaderWireframe->setMat4("globals.MODEL", node.transform.model());
                 shaderWireframe->setMat4("globals.VIEW", scene.camera.view());
                 shaderWireframe->setMat4("globals.PROJECTION", scene.camera.projection());
 
-                RenderCommand command = RenderCommand(*shaderWireframe,
-                                                      deferredCommand.mesh.getRenderObject<MeshBuffer>());
+                RenderCommand command = RenderCommand(*shaderWireframe, *node.mesh);
 
                 command.properties.enableDepthTest = false;
 

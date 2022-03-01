@@ -17,16 +17,27 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_PIPELINE_HPP
-#define XENGINE_PIPELINE_HPP
+#ifndef XENGINE_ASSETSKYBOX_HPP
+#define XENGINE_ASSETSKYBOX_HPP
 
-#include "render/scene.hpp"
-#include "render/platform/rendertarget.hpp"
+#include <array>
+
+#include "asset/assetpath.hpp"
+#include "asset/asset.hpp"
+
+#include "color.hpp"
 
 namespace xengine {
-    class XENGINE_EXPORT Pipeline {
-    public:
-        virtual void render(RenderTarget &target, Scene &scene) = 0;
+    struct XENGINE_EXPORT AssetSkybox : public Asset {
+        ~AssetSkybox() override = default;
+
+        Asset *clone() override {
+            return new AssetSkybox(*this);
+        }
+
+        ColorRGBA color = {12, 123, 123, 255}; // If texture is unassigned skybox color is drawn
+        AssetPath texture; // The cube map texture
     };
 }
-#endif //XENGINE_PIPELINE_HPP
+
+#endif //XENGINE_ASSETSKYBOX_HPP

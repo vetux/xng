@@ -27,7 +27,7 @@ namespace xengine {
     public:
         ~ShadowPass() override = default;
 
-        void render(GBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) override;
+        void render(GBuffer &gBuffer, Scene &scene) override;
 
     private:
         std::unique_ptr<RenderTarget> shadowTarget;

@@ -29,7 +29,7 @@ namespace xengine {
 
         ~DebugPass() override;
 
-        void render(GBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) override;
+        void render(GBuffer &gBuffer, Scene &scene) override;
 
         void setEnabled(bool enable) { enabled = enable; }
 

@@ -40,7 +40,7 @@ namespace xengine {
 
             void upload(const Image<ColorRGB> &buffer) override;
 
-            void upload(const Image<ColorRGBA> &buffer) override;
+            void upload(const ImageRGBA &buffer) override;
 
             void upload(const Image<float> &buffer) override;
 
@@ -50,15 +50,15 @@ namespace xengine {
 
             void upload(const Image<unsigned char> &buffer) override;
 
-            Image<ColorRGBA> download() override;
+            ImageRGBA download() override;
 
-            void upload(CubeMapFace face, const Image<ColorRGBA> &buffer) override;
+            void upload(CubeMapFace face, const ImageRGBA &buffer) override;
 
-            Image<ColorRGBA> download(CubeMapFace face) override;
+            ImageRGBA download(CubeMapFace face) override;
 
-            void uploadCubeMap(const Image<ColorRGBA> &buffer) override;
+            void uploadCubeMap(const ImageRGBA &buffer) override;
 
-            Image<ColorRGBA> downloadCubeMap() override;
+            ImageRGBA downloadCubeMap() override;
 
         private:
             void setTextureType(TextureType type);

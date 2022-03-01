@@ -17,50 +17,35 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_LIGHT_HPP
-#define XENGINE_LIGHT_HPP
+#ifndef XENGINE_ASSETMATERIAL_HPP
+#define XENGINE_ASSETMATERIAL_HPP
 
-#include "math/transform.hpp"
+#include "asset/texture.hpp"
 
 #include "asset/asset.hpp"
+#include "asset/texture.hpp"
 
 namespace xengine {
-    enum LightType {
-        LIGHT_DIRECTIONAL,
-        LIGHT_POINT,
-        LIGHT_SPOT
-    };
+    struct XENGINE_EXPORT AssetMaterial : public Asset {
+        ~AssetMaterial() override = default;
 
-    struct XENGINE_EXPORT Light : public AssetBase {
-        Light() : type() {}
-
-        explicit Light(LightType type) : type(type) {}
-
-        ~Light() override = default;
-
-        AssetBase *clone() override {
-            return new Light(*this);
+        Asset *clone() override{
+            return new AssetMaterial(*this);
         }
 
-        LightType type;
+        ColorRGBA diffuse{};
+        ColorRGBA ambient{};
+        ColorRGBA specular{};
+        ColorRGBA emissive{};
+        float shininess{32};
 
-        Transform transform;
-
-        Vec3f ambient = Vec3f(0.1f);
-        Vec3f diffuse = Vec3f(1.0f);
-        Vec3f specular = Vec3f(1.0f);
-
-        //Directional / Spot
-        Vec3f direction = Vec3f(0);
-
-        float cutOff = 10;
-        float outerCutOff = 14;
-
-        //Point / Spot
-        float constant = 1;
-        float linear = 0.09;
-        float quadratic = 0.032;
+        AssetPath diffuseTexture;
+        AssetPath ambientTexture;
+        AssetPath specularTexture;
+        AssetPath emissiveTexture;
+        AssetPath shininessTexture;
+        AssetPath normalTexture;
     };
 }
 
-#endif //XENGINE_LIGHT_HPP
+#endif //XENGINE_ASSETMATERIAL_HPP

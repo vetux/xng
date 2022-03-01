@@ -149,7 +149,7 @@ void OGLTextureBuffer::upload(const Image<ColorRGB> &buffer) {
     checkGLError("OGLTextureBuffer::upload(RGB)");
 }
 
-void OGLTextureBuffer::upload(const Image<ColorRGBA> &buffer) {
+void OGLTextureBuffer::upload(const ImageRGBA &buffer) {
     setTextureType(TextureBuffer::TEXTURE_2D);
 
     attributes.format = TextureBuffer::RGBA;
@@ -281,11 +281,11 @@ void OGLTextureBuffer::upload(const Image<unsigned char> &buffer) {
     checkGLError("OGLTextureBuffer::upload(unsigned char)");
 }
 
-xengine::Image<ColorRGBA> OGLTextureBuffer::download() {
+xengine::ImageRGBA OGLTextureBuffer::download() {
     if (attributes.textureType != TEXTURE_2D)
         throw std::runtime_error("TextureBuffer not texture 2d");
 
-    auto output = Image<ColorRGBA>(attributes.size);
+    auto output = ImageRGBA(attributes.size);
     glBindTexture(GL_TEXTURE_2D, handle);
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void *) output.getData());
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -293,7 +293,7 @@ xengine::Image<ColorRGBA> OGLTextureBuffer::download() {
     return output;
 }
 
-void OGLTextureBuffer::upload(CubeMapFace face, const Image<ColorRGBA> &buffer) {
+void OGLTextureBuffer::upload(CubeMapFace face, const ImageRGBA &buffer) {
     setTextureType(TextureBuffer::TEXTURE_CUBE_MAP);
 
     attributes.format = TextureBuffer::RGBA;
@@ -319,14 +319,14 @@ void OGLTextureBuffer::upload(CubeMapFace face, const Image<ColorRGBA> &buffer) 
     checkGLError("OGLTextureBuffer::upload(CUBEMAP)");
 }
 
-Image<ColorRGBA> OGLTextureBuffer::download(TextureBuffer::CubeMapFace face) {
+ImageRGBA OGLTextureBuffer::download(TextureBuffer::CubeMapFace face) {
     if (attributes.textureType != TEXTURE_CUBE_MAP)
         throw std::runtime_error("TextureBuffer not cubemap");
 
     throw std::runtime_error("Not Implemented");
 }
 
-void OGLTextureBuffer::uploadCubeMap(const Image<ColorRGBA> &buffer) {
+void OGLTextureBuffer::uploadCubeMap(const ImageRGBA &buffer) {
     auto faceSize = buffer.getSize();
     faceSize.x = faceSize.x / 6;
     if (faceSize.x != faceSize.y)
@@ -337,10 +337,10 @@ void OGLTextureBuffer::uploadCubeMap(const Image<ColorRGBA> &buffer) {
     }
 }
 
-Image<ColorRGBA> OGLTextureBuffer::downloadCubeMap() {
+ImageRGBA OGLTextureBuffer::downloadCubeMap() {
     auto size = attributes.size;
     size.x = size.x * 6;
-    Image<ColorRGBA> ret(size);
+    ImageRGBA ret(size);
     for (int i = 0; i < 6; i++) {
         ret.blit({Vec2i(i * attributes.size.x, 0), attributes.size}, download(static_cast<CubeMapFace>(i)));
     }

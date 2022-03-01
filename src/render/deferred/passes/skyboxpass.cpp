@@ -99,7 +99,7 @@ namespace xengine {
         resizeTextureBuffers({1, 1}, device.getAllocator(), false);
     }
 
-    void SkyboxPass::render(GBuffer &gBuffer, Scene &scene, AssetRenderManager &assetRenderManager) {
+    void SkyboxPass::render(GBuffer &gBuffer, Scene &scene) {
         auto &ren = device.getRenderer();
 
         shader->activate();
@@ -131,14 +131,14 @@ namespace xengine {
 
         RenderCommand skyboxCommand(*shader, *meshBuffer);
 
-        if (scene.skybox.texture.empty()) {
+        if (scene.skybox.texture) {
+            skyboxCommand.textures.emplace_back(*scene.skybox.texture);
+        } else {
             for (int i = TextureBuffer::CubeMapFace::POSITIVE_X; i <= TextureBuffer::CubeMapFace::NEGATIVE_Z; i++) {
                 defaultTexture->upload(static_cast<TextureBuffer::CubeMapFace>(i),
-                                       Image<ColorRGBA>(1, 1, {scene.skybox.color}));
+                                       ImageRGBA(1, 1, {scene.skybox.color}));
             }
             skyboxCommand.textures.emplace_back(*defaultTexture);
-        } else {
-            skyboxCommand.textures.emplace_back(assetRenderManager.get<TextureBuffer>(scene.skybox.texture));
         }
 
         skyboxCommand.properties.enableDepthTest = false;

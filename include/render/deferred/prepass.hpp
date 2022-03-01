@@ -20,7 +20,7 @@
 #ifndef XENGINE_PREPASS_HPP
 #define XENGINE_PREPASS_HPP
 
-#include "asset/scene.hpp"
+#include "render/scene.hpp"
 #include "render/deferred/gbuffer.hpp"
 
 namespace xengine {
@@ -38,7 +38,7 @@ namespace xengine {
          * @param buffer
          * @param assetRenderManager
          */
-        virtual void update(Scene scene, GBuffer &buffer, AssetRenderManager &assetRenderManager);
+        virtual void update(Scene &scene, GBuffer &buffer);
 
     private:
         Renderer &ren;

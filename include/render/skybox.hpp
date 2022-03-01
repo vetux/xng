@@ -20,15 +20,10 @@
 #ifndef XENGINE_SKYBOX_HPP
 #define XENGINE_SKYBOX_HPP
 
-#include <array>
-
-#include "asset/assetpath.hpp"
-#include "color.hpp"
-
 namespace xengine {
     struct XENGINE_EXPORT Skybox {
-        ColorRGBA color = {12, 123, 123, 255}; // If texture is unassigned skybox color is drawn
-        AssetPath texture; // The cube map texture
+        ColorRGBA color;
+        TextureBuffer *texture = nullptr;
     };
 }
 

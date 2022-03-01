@@ -17,35 +17,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_MATERIAL_HPP
-#define XENGINE_MATERIAL_HPP
+#include "render/forward/forwardpipeline.hpp"
 
-#include "asset/texture.hpp"
-
-#include "asset/asset.hpp"
-#include "asset/texture.hpp"
-
-namespace xengine {
-    struct XENGINE_EXPORT Material : public AssetBase {
-        ~Material() override = default;
-
-        AssetBase *clone() override{
-            return new Material(*this);
-        }
-
-        ColorRGBA diffuse{};
-        ColorRGBA ambient{};
-        ColorRGBA specular{};
-        ColorRGBA emissive{};
-        float shininess{32};
-
-        AssetPath diffuseTexture;
-        AssetPath ambientTexture;
-        AssetPath specularTexture;
-        AssetPath emissiveTexture;
-        AssetPath shininessTexture;
-        AssetPath normalTexture;
-    };
+namespace xengine
+{
+    void ForwardPipeline::render(RenderTarget &target, Scene &scene) {
+        // TODO: Implement forward render pipeline
+    }
 }
-
-#endif //XENGINE_MATERIAL_HPP

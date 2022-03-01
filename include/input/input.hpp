@@ -39,7 +39,7 @@ namespace xengine {
 
         virtual std::string getClipboardText() = 0;
 
-        virtual void setMouseCursorImage(const Image<ColorRGBA> &image) = 0;
+        virtual void setMouseCursorImage(const ImageRGBA &image) = 0;
 
         virtual void clearMouseCursorImage() = 0;
 

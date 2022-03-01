@@ -25,6 +25,10 @@
 #include "assetmanager.hpp"
 #include "asset/shader.hpp"
 #include "asset/texture.hpp"
+#include "asset/assetskybox.hpp"
+
+#include "render/material.hpp"
+#include "render/skybox.hpp"
 
 #include "render/platform/renderallocator.hpp"
 
@@ -38,7 +42,7 @@ namespace xengine {
                 : assetManager(assetManager), renderAllocator(renderAllocator) {}
 
         void incrementRef(const AssetPath &path) {
-            objectRefCount[path]++;
+             objectRefCount[path]++;
         }
 
         template<typename T>
@@ -55,11 +59,15 @@ namespace xengine {
 
         template<typename T>
         T &get(const AssetPath &path) {
+            if (objectRefCount[path] <= 0) {
+                throw std::runtime_error("Get called while path had 0 reference count");
+            }
             if (objects.find(path) == objects.end()) {
                 loadObject<T>(path);
             }
             return dynamic_cast<T &>(*objects.at(path));
         }
+
 
     private:
         template<typename T>
@@ -89,10 +97,10 @@ namespace xengine {
                 if (texture.attributes.textureType == TextureBuffer::TEXTURE_CUBE_MAP) {
                     for (int i = TextureBuffer::POSITIVE_X; i <= TextureBuffer::NEGATIVE_Z; i++) {
                         texbuf->upload(static_cast<TextureBuffer::CubeMapFace>(i),
-                                       assetManager.getAsset<Image<ColorRGBA>>(texture.images.at(i)));
+                                       assetManager.getAsset<ImageRGBA>(texture.images.at(i)));
                     }
                 } else {
-                    texbuf->upload(assetManager.getAsset<Image<ColorRGBA>>(texture.images.at(0)));
+                    texbuf->upload(assetManager.getAsset<ImageRGBA>(texture.images.at(0)));
                 }
 
                 objects[path] = std::move(texbuf);
@@ -113,8 +121,9 @@ namespace xengine {
                     for (auto &img: texture.images)
                         assetManager.decrementRef(img);
                 }
-                assetManager.decrementRef(path);
             }
+
+            assetManager.decrementRef(path);
         }
 
         AssetManager &assetManager;

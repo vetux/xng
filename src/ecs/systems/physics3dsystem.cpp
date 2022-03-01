@@ -46,7 +46,7 @@ namespace xengine {
 
     void Physics3DSystem::stop() {}
 
-    void Physics3DSystem::update(float deltaTime, Scene &scene) {
+    void Physics3DSystem::update(float deltaTime, AssetScene &scene) {
         for (auto &node : scene.findNodesWithComponent<RigidBodyComponent3D>()) {
             auto &transform = node->getComponent<TransformComponent>();
             auto &rb = node->getComponent<RigidBodyComponent3D>();

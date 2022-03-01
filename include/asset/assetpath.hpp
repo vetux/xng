@@ -40,6 +40,10 @@ namespace xengine {
             return hash(bundle + "%" + asset);
         }
 
+        operator bool() const {
+            return !empty();
+        }
+
         bool empty() const { return bundle.empty() && asset.empty(); }
 
         bool operator<(const AssetPath &other) const {
