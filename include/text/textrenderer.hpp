@@ -17,26 +17,33 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "text/character.hpp"
+#ifndef XENGINE_TEXTRENDERER_HPP
+#define XENGINE_TEXTRENDERER_HPP
+
+#include "text/text.hpp"
+
+#include "render/2d/renderer2d.hpp"
 
 namespace xengine {
-    Recti Character::getMetrics(const std::string &str, const std::map<char, Character> &chars) {
-        Vec2i origin(0); //The origin of the text
-        Vec2i size(0); //The size of the text
-        for (auto c : str) {
-            //Add advance (The only factor for size x increment)
-            size.x += chars.at(c).advance;
+    class TextRenderer {
+    public:
+        TextRenderer(Font &font, RenderDevice &device);
 
-            auto min = origin.y - chars.at(c).bearing.y;
-            if (min < 0) {
-                origin.y += min * -1;
-            }
+        Vec2f getSize(const std::string &str, int maxCharPerLine = 0);
 
-            int height = origin.y + chars.at(c).image.getHeight() - chars.at(c).bearing.y;
-            if (size.y < height) {
-                size.y = height;
-            }
-        }
-        return {origin, size};
-    }
+        Text render(const std::string &text, int maxCharPerLine = 0);
+
+    private:
+        std::map<char, Character> ascii;
+        std::map<char, std::unique_ptr<TextureBuffer>> textures;
+        std::map<char, std::unique_ptr<MeshBuffer>> meshes;
+
+        RenderDevice *device = nullptr;
+
+        Renderer2D ren2d;
+
+        std::unique_ptr<RenderTarget> target;
+        std::unique_ptr<ShaderProgram> shader;
+    };
 }
+#endif //XENGINE_TEXTRENDERER_HPP

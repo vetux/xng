@@ -39,13 +39,13 @@ layout (location = 8) in vec4 instanceRow3;
 layout (location = 0) out vec4 fPosition;
 layout (location = 1) out vec2 fUv;
 
-uniform mat4 MODEL_MATRIX;
+uniform mat4 MVP;
 uniform float USE_TEXTURE;
 uniform vec4 COLOR;
 
 void main()
 {
-    fPosition = MODEL_MATRIX * vec4(position, 1);
+    fPosition = MVP * vec4(position, 1);
     fUv = uv;
     gl_Position = fPosition;
 }
@@ -58,7 +58,7 @@ layout (location = 1) in vec2 fUv;
 
 layout (location = 0) out vec4 color;
 
-uniform mat4 MODEL_MATRIX;
+uniform mat4 MVP;
 uniform float USE_TEXTURE;
 uniform vec4 COLOR;
 
@@ -79,7 +79,7 @@ layout (location = 1) in vec2 fUv;
 
 layout (location = 0) out vec4 color;
 
-uniform mat4 MODEL_MATRIX;
+uniform mat4 MVP;
 uniform float USE_TEXTURE;
 uniform vec4 COLOR;
 
@@ -157,8 +157,8 @@ namespace xengine {
         fs.preprocess();
         fsText.preprocess();
 
-        defaultShader = device.getAllocator().createShaderProgram(vs, fs);
-        defaultTextShader = device.getAllocator().createShaderProgram(vs, fsText);
+        defShader = device.getAllocator().createShaderProgram(vs, fs);
+        textShader = device.getAllocator().createShaderProgram(vs, fsText);
     }
 
     Renderer2D::~Renderer2D() = default;
@@ -213,21 +213,18 @@ namespace xengine {
 
         MeshBuffer &buffer = **allocatedMeshes.insert(renderDevice.getAllocator().createMeshBuffer(mesh)).first;
 
-        Mat4f modelMatrix = MatrixMath::identity();
-        modelMatrix = modelMatrix * MatrixMath::translate(Vec3f(
+        Mat4f model = MatrixMath::identity();
+        model = model * MatrixMath::translate(Vec3f(
                 dstRect.position.x + center.x,
                 dstRect.position.y + center.y,
                 0));
-        modelMatrix = modelMatrix * MatrixMath::rotate(Vec3f(0, 0, rotation));
+        model = model * MatrixMath::rotate(Vec3f(0, 0, rotation));
 
-        modelMatrix = camera.projection() * camera.view() * modelMatrix;
+        auto mvp = camera.projection() * camera.view() * model;
 
         shader.activate();
-        shader.setMat4("MODEL_MATRIX", modelMatrix);
-        shader.setFloat("USE_TEXTURE", 1);
-        shader.setVec4("COLOR", Vec4f(1, 1, 1, 1));
 
-        shader.setTexture("diffuse", 0);
+        shader.setMat4("MVP", mvp);
 
         RenderCommand command(shader, buffer);
         command.textures.emplace_back(texture);
@@ -238,7 +235,12 @@ namespace xengine {
     }
 
     void Renderer2D::draw(Rectf srcRect, Rectf dstRect, TextureBuffer &texture, Vec2f center, float rotation) {
-        draw(srcRect, dstRect, texture, *defaultShader, center, rotation);
+        defShader->activate();
+        defShader->setFloat("USE_TEXTURE", 1);
+        defShader->setVec4("COLOR", Vec4f(1, 1, 1, 1));
+        defShader->setTexture("diffuse", 0);
+
+        draw(srcRect, dstRect, texture, *defShader, center, rotation);
     }
 
     void Renderer2D::draw(Rectf dstRect, TextureBuffer &texture, Vec2f center, float rotation) {
@@ -264,15 +266,15 @@ namespace xengine {
 
         modelMatrix = camera.projection() * camera.view() * modelMatrix;
 
-        defaultShader->activate();
-        defaultShader->setMat4("MODEL_MATRIX", modelMatrix);
-        defaultShader->setFloat("USE_TEXTURE", 0);
-        defaultShader->setVec4("COLOR", Vec4f((float) color.r() / 255,
-                                              (float) color.g() / 255,
-                                              (float) color.b() / 255,
-                                              (float) color.a() / 255));
+        defShader->activate();
+        defShader->setMat4("MVP", modelMatrix);
+        defShader->setFloat("USE_TEXTURE", 0);
+        defShader->setVec4("COLOR", Vec4f((float) color.r() / 255,
+                                       (float) color.g() / 255,
+                                       (float) color.b() / 255,
+                                       (float) color.a() / 255));
 
-        RenderCommand command(*defaultShader, buffer);
+        RenderCommand command(*defShader, buffer);
         command.properties.enableDepthTest = false;
         command.properties.enableBlending = true;
 
@@ -295,15 +297,15 @@ namespace xengine {
 
         modelMatrix = camera.projection() * camera.view() * modelMatrix;
 
-        defaultShader->activate();
-        defaultShader->setMat4("MODEL_MATRIX", modelMatrix);
-        defaultShader->setFloat("USE_TEXTURE", 0);
-        defaultShader->setVec4("COLOR", Vec4f((float) color.r() / 255,
-                                              (float) color.g() / 255,
-                                              (float) color.b() / 255,
-                                              (float) color.a() / 255));
+        defShader->activate();
+        defShader->setMat4("MVP", modelMatrix);
+        defShader->setFloat("USE_TEXTURE", 0);
+        defShader->setVec4("COLOR", Vec4f((float) color.r() / 255,
+                                       (float) color.g() / 255,
+                                       (float) color.b() / 255,
+                                       (float) color.a() / 255));
 
-        RenderCommand command(*defaultShader, buffer);
+        RenderCommand command(*defShader, buffer);
         command.properties.enableDepthTest = false;
         command.properties.enableBlending = true;
 
@@ -320,63 +322,35 @@ namespace xengine {
         Mat4f modelMatrix = MatrixMath::identity();
         modelMatrix = camera.projection() * camera.view() * modelMatrix;
 
-        defaultShader->activate();
-        defaultShader->setMat4("MODEL_MATRIX", modelMatrix);
-        defaultShader->setFloat("USE_TEXTURE", 0);
-        defaultShader->setVec4("COLOR", Vec4f((float) color.r() / 255,
-                                              (float) color.g() / 255,
-                                              (float) color.b() / 255,
-                                              (float) color.a() / 255));
+        defShader->activate();
+        defShader->setMat4("MVP", modelMatrix);
+        defShader->setFloat("USE_TEXTURE", 0);
+        defShader->setVec4("COLOR", Vec4f((float) color.r() / 255,
+                                       (float) color.g() / 255,
+                                       (float) color.b() / 255,
+                                       (float) color.a() / 255));
 
-        RenderCommand command(*defaultShader, buffer);
+        RenderCommand command(*defShader, buffer);
         command.properties.enableDepthTest = false;
         command.properties.enableBlending = true;
 
         renderDevice.getRenderer().addCommand(command);
     }
 
-    void Renderer2D::draw(Vec2f position,
-                          const std::string &text,
-                          ColorRGBA color,
-                          std::map<char, Character> &characters,
-                          std::map<char, std::unique_ptr<TextureBuffer>> &textures) {
-        float x = position.x;
-        float y = position.y;
+    void Renderer2D::draw(Text &text, Rectf dstRect, ColorRGBA color, Vec2f center, float rotation) {
+        textShader->activate();
+        textShader->setVec4("COLOR", Vec4f((float) color.r() / 255,
+                                           (float) color.g() / 255,
+                                           (float) color.b() / 255,
+                                           (float) color.a() / 255));
+        textShader->setTexture("diffuse", 0);
 
-        for (auto &c: text) {
-            auto &character = characters.at(c);
-
-            float xpos = (x + static_cast<float>(character.bearing.x));
-            float ypos = (y - static_cast<float>(character.bearing.y));
-
-            float w = static_cast<float>(character.image.getSize().x);
-            float h = static_cast<float>(character.image.getSize().y);
-
-            x += static_cast<float>(static_cast<float>(character.advance));
-
-            Mesh mesh = getPlane(Vec2f(w, h), Vec2f(), Rectf(Vec2f(), Vec2f(w, h)));
-
-            MeshBuffer &buffer = **allocatedMeshes.insert(renderDevice.getAllocator().createMeshBuffer(mesh)).first;
-
-            Mat4f modelMatrix = MatrixMath::identity();
-            modelMatrix = modelMatrix * MatrixMath::translate(Vec3f(xpos, ypos, 0));
-            modelMatrix = camera.projection() * camera.view() * modelMatrix;
-
-            defaultTextShader->activate();
-            defaultTextShader->setMat4("MODEL_MATRIX", modelMatrix);
-            defaultTextShader->setVec4("COLOR", Vec4f((float) color.r() / 255,
-                                                      (float) color.g() / 255,
-                                                      (float) color.b() / 255,
-                                                      (float) color.a() / 255));
-            defaultTextShader->setTexture("diffuse", 0);
-
-            RenderCommand command(*defaultTextShader, buffer);
-            command.textures.emplace_back(*textures.at(c));
-            command.properties.enableDepthTest = false;
-            command.properties.enableBlending = true;
-
-            renderDevice.getRenderer().addCommand(command);
-        }
+        draw(Rectf({}, text.getTexture().getAttributes().size.convert<float>()),
+             dstRect,
+             text.getTexture(),
+             *textShader,
+             center,
+             rotation);
     }
 
     void Renderer2D::renderPresent() {

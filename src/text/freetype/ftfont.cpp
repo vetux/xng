@@ -54,7 +54,8 @@ namespace xengine {
 
         Vec2i size(face->glyph->bitmap.width, face->glyph->bitmap.rows);
         Vec2i bearing(face->glyph->bitmap_left, face->glyph->bitmap_top);
-        int advance = face->glyph->advance.x >> 6;
+        int advanceX = face->glyph->advance.x >> 6;
+        int advanceY = face->glyph->advance.y >> 6;
 
         auto bitmap = face->glyph->bitmap;
         auto pitch = bitmap.pitch;
@@ -89,15 +90,14 @@ namespace xengine {
             buffer = ImageRGBA();
         }
 
-        return std::move(Character(std::move(buffer), bearing, advance));
+        return std::move(Character(c, std::move(buffer), bearing, {advanceX, advanceY}));
     }
 
     std::map<char, Character> FTFont::renderAscii() {
         std::map<char, Character> ret;
-        for (int i = 0; i <= 127; i++) {
+        for (char i = 0; i <= 127; i++) {
             ret[i] = std::move(renderAscii(static_cast<char>(i)));
         }
         return ret;
     }
-
 }

@@ -21,22 +21,24 @@
 #define XENGINE_CHARACTER_HPP
 
 #include <map>
+#include <memory>
+
+#include "render/platform/texturebuffer.hpp"
 
 #include "asset/image.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT Character {
     public:
-        static Recti getMetrics(const std::string &str, const std::map<char, Character> &chars);
-
-        Image <ColorRGBA> image; //The rasterized character as an image
-        Vec2i bearing;          //The bearing of the character in pixels
-        int advance{};          //The advance of the character in pixels
+        char value{};
+        ImageRGBA image; //The rasterized character as an image
+        Vec2i bearing;   //The bearing of the character in pixels
+        Vec2i advance;   //The advance of the character in pixels
 
         Character() = default;
 
-        Character(Image <ColorRGBA> image, Vec2i bearing, int advance)
-                : image(std::move(image)), bearing(bearing), advance(advance) {}
+        Character(char value, ImageRGBA image, Vec2i bearing, Vec2i advance)
+                : value(value), image(std::move(image)), bearing(bearing), advance(advance) {}
 
         ~Character() = default;
 

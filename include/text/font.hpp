@@ -27,7 +27,6 @@
 
 #include "text/character.hpp"
 
-//TODO: Design text metrics / formatting abstraction
 namespace xengine {
     class XENGINE_EXPORT Font {
     public:
@@ -59,9 +58,8 @@ namespace xengine {
         virtual Character renderAscii(char c) = 0;
 
         /**
-         * Convenience method which rasterizes all ascii characters and returns the character mapping.
+         * Rasterize all ascii characters and return the character mapping.
          *
-         * @param font
          * @return
          */
         virtual std::map<char, Character> renderAscii() = 0;

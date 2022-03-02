@@ -27,10 +27,9 @@
 
 #include "render/shader/shadersource.hpp"
 
-#include "text/character.hpp"
-#include "text/font.hpp"
-
 #include "render/camera.hpp"
+
+#include "text/text.hpp"
 
 namespace xengine {
     /**
@@ -63,7 +62,7 @@ namespace xengine {
 
         ~Renderer2D();
 
-        void renderBegin(RenderTarget &target, bool clear);
+        void renderBegin(RenderTarget &target, bool clear = true);
 
         void renderBegin(RenderTarget &target,
                          bool clear,
@@ -104,16 +103,7 @@ namespace xengine {
 
         void draw(Vec2f point, ColorRGBA color = {});
 
-        /**
-         * @param position The origin of the text
-         * @param text
-         * @param color
-         */
-        void draw(Vec2f position,
-                  const std::string &text,
-                  ColorRGBA color,
-                  std::map<char, Character> &characters,
-                  std::map<char, std::unique_ptr<TextureBuffer>> &textures);
+        void draw(Text &text, Rectf dstRect, ColorRGBA color, Vec2f center = {}, float rotation = 0);
 
         void renderPresent();
 
@@ -124,8 +114,8 @@ namespace xengine {
         ShaderSource fs;
         ShaderSource fsText;
 
-        std::unique_ptr<ShaderProgram> defaultShader = nullptr;
-        std::unique_ptr<ShaderProgram> defaultTextShader = nullptr;
+        std::unique_ptr<ShaderProgram> defShader = nullptr;
+        std::unique_ptr<ShaderProgram> textShader = nullptr;
 
         std::set<std::unique_ptr<MeshBuffer>> allocatedMeshes;
 
