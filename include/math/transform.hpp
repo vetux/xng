@@ -74,6 +74,20 @@ namespace xengine {
             return mRotation;
         }
 
+        /**
+         * Apply the given quaternion rotation to the existing rotation.
+         *
+         * @param quaternion
+         * @param localAxis If true apply the rotation relative to the world origin rotation, else rotate relative to the current rotation.
+         */
+        void applyRotation(const Quaternion &quaternion, bool worldAxis = false) {
+            if (worldAxis) {
+                mRotation = mRotation * quaternion;
+            } else {
+                mRotation = quaternion * mRotation;
+            }
+        }
+
         void setScale(const Vec3f &scale) {
             dirty = true;
             mScale = scale;
@@ -81,6 +95,18 @@ namespace xengine {
 
         const Vec3f &getScale() const {
             return mScale;
+        }
+
+        Vec3f forward() const {
+            return rotate(Vec3f(0, 0, 1));
+        }
+
+        Vec3f up() const {
+            return rotate(Vec3f(0, 1, 0));
+        }
+
+        Vec3f left() const {
+            return rotate(Vec3f(-1, 0, 1));
         }
 
     private:
