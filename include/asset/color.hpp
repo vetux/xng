@@ -24,6 +24,8 @@
 
 #include "math/vector4.hpp"
 
+#include "cast/numeric_cast.hpp"
+
 namespace xengine {
     struct XENGINE_EXPORT ColorRGB {
         uint8_t data[3];
@@ -67,6 +69,78 @@ namespace xengine {
 
     struct XENGINE_EXPORT ColorRGBA {
         uint8_t data[4];
+
+        static ColorRGBA black(float intensity = 0.5, uint8_t alpha = 255) {
+            return {
+                    0,
+                    0,
+                    0,
+                    alpha
+            };
+        }
+
+        static ColorRGBA white(float intensity = 0.5, uint8_t alpha = 255) {
+            return {
+                    numeric_cast<uint8_t>(255 * intensity),
+                    numeric_cast<uint8_t>(255 * intensity),
+                    numeric_cast<uint8_t>(255 * intensity),
+                    alpha
+            };
+        }
+
+        static ColorRGBA grey(float intensity = 0.5, uint8_t alpha = 255) {
+            return {
+                    numeric_cast<uint8_t>(64 * intensity),
+                    numeric_cast<uint8_t>(64 * intensity),
+                    numeric_cast<uint8_t>(64 * intensity),
+                    alpha
+            };
+        }
+
+        static ColorRGBA red(float intensity = 0.5, uint8_t alpha = 255) {
+            return {
+                    numeric_cast<uint8_t>(255 * intensity),
+                    numeric_cast<uint8_t>(5 * intensity),
+                    numeric_cast<uint8_t>(5 * intensity),
+                    alpha
+            };
+        }
+
+        static ColorRGBA green(float intensity = 0.5, uint8_t alpha = 255) {
+            return {
+                    numeric_cast<uint8_t>(5 * intensity),
+                    numeric_cast<uint8_t>(255 * intensity),
+                    numeric_cast<uint8_t>(5 * intensity),
+                    alpha
+            };
+        }
+
+        static ColorRGBA blue(float intensity = 0.5, uint8_t alpha = 255) {
+            return {
+                    numeric_cast<uint8_t>(5 * intensity),
+                    numeric_cast<uint8_t>(5 * intensity),
+                    numeric_cast<uint8_t>(255 * intensity),
+                    alpha
+            };
+        }
+
+        static ColorRGBA yellow(float intensity = 0.5, uint8_t alpha = 255) {
+            return {
+                    numeric_cast<uint8_t>(255 * intensity),
+                    numeric_cast<uint8_t>(255 * intensity),
+                    numeric_cast<uint8_t>(5 * intensity),
+                    alpha
+            };
+        }
+
+        static ColorRGBA cyan(float intensity = 0.5, uint8_t alpha = 255) {
+            return {
+                    numeric_cast<uint8_t>(5 * intensity),
+                    numeric_cast<uint8_t>(255 * intensity),
+                    numeric_cast<uint8_t>(255 * intensity),
+                    alpha
+            };
+        }
 
         uint8_t &r() { return data[0]; }
 
