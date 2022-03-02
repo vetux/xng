@@ -40,6 +40,11 @@ namespace xengine {
             return Vector2<T>(position.x, position.y - dimensions.y / 2);
         }
 
+        template <typename R>
+        operator Rectangle<R>(){
+            return convert<R>();
+        }
+
         template<typename R>
         Rectangle<R> convert() const {
             return Rectangle<R>(Vector2<R>(static_cast<R>(position.x), static_cast<R>(position.y)),

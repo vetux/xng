@@ -65,6 +65,11 @@ namespace xengine {
             return *this;
         }
 
+        template <typename R>
+        operator Vector3<R>(){
+            return convert<R>();
+        }
+
         template<typename R>
         Vector3<R> convert() const {
             return Vector3<R>(static_cast<R>(x), static_cast<R>(y), static_cast<R>(z));

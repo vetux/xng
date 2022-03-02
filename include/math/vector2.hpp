@@ -59,6 +59,11 @@ namespace xengine {
             return *this;
         }
 
+        template <typename R>
+        operator Vector2<R>(){
+            return convert<R>();
+        }
+
         template<typename R>
         Vector2<R> convert() const {
             return Vector2<R>(static_cast<R>(x), static_cast<R>(y));
