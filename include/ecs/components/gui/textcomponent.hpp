@@ -21,7 +21,7 @@
 #define XENGINE_TEXTCOMPONENT_HPP
 
 namespace xengine {
-    struct XENGINE_EXPORT Text {
+    struct XENGINE_EXPORT TextComponent {
     };
 }
 

@@ -78,6 +78,16 @@ namespace xengine {
          */
         void setProjection(const Rectf &projection);
 
+        /**
+         * MVP variable is set on the shader program while this function is executing.
+         *
+         * @param srcRect
+         * @param dstRect
+         * @param texture
+         * @param shader
+         * @param center
+         * @param rotation
+         */
         void draw(Rectf srcRect,
                   Rectf dstRect,
                   TextureBuffer &texture,
