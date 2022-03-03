@@ -119,6 +119,8 @@ namespace xengine {
 
         void draw(Text &text, Rectf dstRect, ColorRGBA color, Vec2f center = {}, float rotation = 0);
 
+        void draw(Text &text, Rectf dstRect, ShaderProgram& shader, Vec2f center = {}, float rotation = 0);
+
         void renderPresent();
 
     private:

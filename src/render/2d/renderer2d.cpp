@@ -364,11 +364,20 @@ namespace xengine {
         textShader->setTexture("diffuse", 0);
 
         auto srcRect = Rectf({}, text.getTexture().getAttributes().size.convert<float>());
-
         draw(srcRect,
              dstRect,
              text.getTexture(),
              *textShader,
+             center,
+             rotation);
+    }
+
+    void Renderer2D::draw(Text &text, Rectf dstRect, ShaderProgram &shader, Vec2f center, float rotation) {
+        auto srcRect = Rectf({}, text.getTexture().getAttributes().size.convert<float>());
+        draw(srcRect,
+             dstRect,
+             text.getTexture(),
+             shader,
              center,
              rotation);
     }
