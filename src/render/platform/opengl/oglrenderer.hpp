@@ -40,6 +40,7 @@ namespace xengine {
 
         private:
             unsigned long drawCalls = 0;
+            bool rendering = false;
         };
     }
 }

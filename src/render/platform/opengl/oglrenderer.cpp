@@ -65,6 +65,11 @@ namespace xengine {
         }
 
         void OGLRenderer::renderBegin(RenderTarget &target, const RenderOptions &options) {
+            if (rendering)
+                throw std::runtime_error("renderBegin called while already rendering (Nested Render Calls?)");
+
+            rendering = true;
+
             auto clearColor = options.clearColorValue.divide();
 
             glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
@@ -118,6 +123,9 @@ namespace xengine {
         }
 
         void OGLRenderer::addCommand(RenderCommand &command) {
+            if (!rendering)
+                throw std::runtime_error("addCommand called while not rendering (Missing renderBegin call?)");
+
             drawCalls++;
 
             //Bind textures
@@ -220,11 +228,17 @@ namespace xengine {
         }
 
         void OGLRenderer::renderFinish() {
+            if (!rendering)
+                throw std::runtime_error("renderFinish called while not rendering (Missing renderBegin / addCommand ?)");
+            rendering = false;
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             checkGLError("OGLRenderer::renderFinish");
         }
 
         void OGLRenderer::renderClear(RenderTarget &target, ColorRGBA color, float depth) {
+            if (rendering)
+                throw std::runtime_error("renderClear called while rendering");
+
             glEnable(GL_MULTISAMPLE);
 
             auto clearColor = color.divide();
