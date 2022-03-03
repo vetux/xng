@@ -41,7 +41,7 @@ namespace xengine {
         }
 
         template <typename R>
-        operator Rectangle<R>(){
+        explicit operator Rectangle<R>(){
             return convert<R>();
         }
 

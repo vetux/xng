@@ -3,6 +3,8 @@
 
 #include <cmath>
 
+#include "cast/numeric_cast.hpp"
+
 namespace xengine {
     template<typename T>
     class XENGINE_EXPORT Vector3 {
@@ -66,13 +68,13 @@ namespace xengine {
         }
 
         template <typename R>
-        operator Vector3<R>(){
+        explicit operator Vector3<R>(){
             return convert<R>();
         }
 
         template<typename R>
         Vector3<R> convert() const {
-            return Vector3<R>(static_cast<R>(x), static_cast<R>(y), static_cast<R>(z));
+            return Vector3<R>(numeric_cast<R>(x), numeric_cast<R>(y), numeric_cast<R>(z));
         }
 
         friend Vector3<T> operator+(const Vector3<T> &lhs, const Vector3<T> &rhs) {
