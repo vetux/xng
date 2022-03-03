@@ -153,7 +153,7 @@ namespace xengine {
 
         target = device->getAllocator().createRenderTarget(size.convert<int>());
 
-        // Render the text (upside down?) to a texture and then render the final text texture with vertical uvs flipped
+        // Render the text (upside down?) to a texture and then render the final text texture using the 2d renderer
         auto tmpTexture = device->getAllocator().createTextureBuffer({size.convert<int>()});
         target->attachColor(0, *tmpTexture);
         ren2d.renderBegin(*target);
@@ -171,7 +171,7 @@ namespace xengine {
         ren2d.renderPresent();
         target->detachColor(0);
 
-        //Render the upside down texture of the text using the 2d renderer to correct the rotation.
+        //Render the upside down texture of the text using the 2d renderer to correct the rotation?
         auto tex = device->getAllocator().createTextureBuffer({size.convert<int>()});
 
         target->attachColor(0, *tex);
