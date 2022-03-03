@@ -26,12 +26,13 @@
 #include "render/platform/renderdevice.hpp"
 
 namespace xengine {
-    struct Text {
+    struct XENGINE_EXPORT Text {
         Text() = default;
 
-        Text(std::string text, int maxCharsPerLine, std::unique_ptr<TextureBuffer> buffer)
+        Text(std::string text, Vec2f origin, int lineWidth, std::unique_ptr<TextureBuffer> buffer)
                 : text(std::move(text)),
-                  maxCharsPerLine(maxCharsPerLine),
+                  origin(origin),
+                  lineWidth(lineWidth),
                   buffer(std::move(buffer)) {}
 
         ~Text() = default;
@@ -41,10 +42,12 @@ namespace xengine {
          */
         const std::string &getText() const { return text; }
 
+        const Vec2f &getOrigin() const { return origin; }
+
         /**
          * @return
          */
-        int getMaxCharsPerLine() const { return maxCharsPerLine; }
+        int getLineWidth() const { return lineWidth; }
 
         /**
          * Get the texture containing the rendered text with the grayscale in the x component.
@@ -55,7 +58,8 @@ namespace xengine {
 
     private:
         std::string text;
-        int maxCharsPerLine{};
+        Vec2f origin;
+        int lineWidth{};
         std::unique_ptr<TextureBuffer> buffer;
     };
 }

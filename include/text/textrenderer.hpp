@@ -25,25 +25,42 @@
 #include "render/2d/renderer2d.hpp"
 
 namespace xengine {
-    class TextRenderer {
+    class XENGINE_EXPORT TextRenderer {
     public:
         TextRenderer(Font &font, RenderDevice &device);
 
-        Vec2f getSize(const std::string &str, int maxCharPerLine = 0);
+        void setFontSize(Vec2i pixelSize);
 
-        Text render(const std::string &text, int maxCharPerLine = 0);
+        Vec2f getSize(const std::string &text,
+                      int lineHeight,
+                      int lineWidth = 0,
+                      int lineSpacing = 10);
+
+        /**
+         * Render the given text to a texture and return it in a Text object.
+         *
+         * @param text
+         * @param lineHeight The distance between the origins of each line and the distance between the top of the texture and the origin of the first line.
+         * @param lineWidth If larger than zero the value in pixels at which a newline is rendered if the widths of characters in the current line exceed it.
+         * @param lineSpacing Additional spacing between lines
+         * @return
+         */
+        Text render(const std::string &text,
+                    int lineHeight,
+                    int lineWidth = 0,
+                    int lineSpacing = 10);
 
     private:
+        Vec2i fontSize{0, 50};
         std::map<char, Character> ascii;
         std::map<char, std::unique_ptr<TextureBuffer>> textures;
-        std::map<char, std::unique_ptr<MeshBuffer>> meshes;
 
+        Font *font;
         RenderDevice *device = nullptr;
 
         Renderer2D ren2d;
 
         std::unique_ptr<RenderTarget> target;
-        std::unique_ptr<ShaderProgram> shader;
     };
 }
 #endif //XENGINE_TEXTRENDERER_HPP

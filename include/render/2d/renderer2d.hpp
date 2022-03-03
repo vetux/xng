@@ -93,13 +93,17 @@ namespace xengine {
                   TextureBuffer &texture,
                   ShaderProgram &shader,
                   Vec2f center = {},
-                  float rotation = 0);
+                  float rotation = 0,
+                  Vec2b flipUv = Vec2b(false),
+                  bool alphaBlending = true);
 
         void draw(Rectf srcRect,
                   Rectf dstRect,
                   TextureBuffer &texture,
                   Vec2f center = {},
-                  float rotation = 0);
+                  float rotation = 0,
+                  Vec2b flipUv = Vec2b(false),
+                  bool alphaBlending = true);
 
         void draw(Rectf dstRect, TextureBuffer &texture, Vec2f center = {}, float rotation = 0);
 

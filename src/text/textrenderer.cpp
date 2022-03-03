@@ -19,151 +19,64 @@
 
 #include "text/textrenderer.hpp"
 
-#include "render/shader/shaderinclude.hpp"
-
-static const char *const SHADER_VERT = R"###("
-#version 410 core
-
-layout (location = 0) in vec3 position;
-layout (location = 1) in vec3 normal;
-layout (location = 2) in vec2 uv;
-layout (location = 3) in vec3 tangent;
-layout (location = 4) in vec3 bitangent;
-layout (location = 5) in vec4 instanceRow0;
-layout (location = 6) in vec4 instanceRow1;
-layout (location = 7) in vec4 instanceRow2;
-layout (location = 8) in vec4 instanceRow3;
-
-layout (location = 0) out vec4 fPosition;
-layout (location = 1) out vec2 fUv;
-
-uniform mat4 MVP;
-
-void main()
-{
-    fPosition = MVP * vec4(position, 1);
-    fUv = uv;
-    gl_Position = fPosition;
-}
-)###";
-
-static const char *const SHADER_FRAG = R"###("
-#version 410 core
-
-layout (location = 0) in vec4 fPosition;
-layout (location = 1) in vec2 fUv;
-
-layout (location = 0) out vec4 color;
-
-uniform mat4 MVP;
-
-uniform sampler2D diffuse;
-
-void main() {
-    color = vec4(texture(diffuse, fUv).r, 0, 0, 0);
-}
-)###";
-
 namespace xengine {
     struct RenderChar {
         std::reference_wrapper<Character> character;
         std::reference_wrapper<TextureBuffer> texture; // The character texture
-        std::reference_wrapper<MeshBuffer> mesh; // The meshbuffer scaled in the x and y plane according to the character dimensions
 
-        Vec2f totalAdvance; // The total advance in the text of the character
+        Vec2f position; // The position of the origin of the character x = Sum of all horizontal advance values before it, y = Sum of all line heights and spacings above it
 
-        RenderChar(Character &character, TextureBuffer &texture, MeshBuffer &mesh)
-                : character(character), texture(texture), mesh(mesh) {}
+        RenderChar(Character &character, TextureBuffer &texture)
+                : character(character), texture(texture) {}
 
         /**
          * @param z The z value
          * @return The model matrix to apply including position, advance and bearing in a text string.
          */
-        Vec2f getPosition() const {
-            return {numeric_cast<float>(character.get().bearing.x) + totalAdvance.x,
-                    numeric_cast<float>(character.get().bearing.y) + totalAdvance.y};
+        Vec2f getPosition(Vec2f origin) const {
+            return {position.x + (origin.x + numeric_cast<float>(character.get().bearing.x)),
+                    (position.y + (origin.y - numeric_cast<float>(character.get().bearing.y)))};
         }
     };
 
-    /**
-     * Get plane mesh with origin at top left offset by center and scaled in the y axis.
-     *
-     * @param size
-     * @return
-     */
-    static Mesh getPlane(Vec2f size, Vec2f center, Rectf uvOffset) {
-        Rectf scaledOffset(
-                {uvOffset.position.x / size.x, uvOffset.position.y / size.y},
-                {uvOffset.dimensions.x / size.x, uvOffset.dimensions.y / size.y});
-        float uvNearX = scaledOffset.position.x;
-        float uvFarX = scaledOffset.position.x + scaledOffset.dimensions.x;
-        float uvNearY = scaledOffset.position.y;
-        float uvFarY = scaledOffset.position.y + scaledOffset.dimensions.y;
-        return Mesh(Mesh::TRI, {
-                Vertex(Vec3f(0 - center.x, 0 - center.y, 0), {uvNearX, uvNearY}),
-                Vertex(Vec3f(size.x - center.x, 0 - center.y, 0), {uvFarX, uvNearY}),
-                Vertex(Vec3f(0 - center.x, size.y - center.y, 0), {uvNearX, uvFarY}),
-                Vertex(Vec3f(0 - center.x, size.y - center.y, 0), {uvNearX, uvFarY}),
-                Vertex(Vec3f(size.x - center.x, 0 - center.y, 0), {uvFarX, uvNearY}),
-                Vertex(Vec3f(size.x - center.x, size.y - center.y, 0), {uvFarX, uvFarY})
-        });
-    }
-
     TextRenderer::TextRenderer(Font &font, RenderDevice &device)
-            : ascii(font.renderAscii()), device(&device), ren2d(device) {
-        ShaderSource vs(SHADER_VERT, "main", VERTEX, GLSL_410);
-        ShaderSource fs(SHADER_FRAG, "main", FRAGMENT, GLSL_410);
-
-        vs.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                      ShaderInclude::getShaderMacros(GLSL_410));
-        fs.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                      ShaderInclude::getShaderMacros(GLSL_410));
-
-        shader = device.getAllocator().createShaderProgram(vs, fs);
-        shader->setTexture("diffuse", 0);
-
+            : ascii(font.renderAscii()), device(&device), font(&font), ren2d(device) {
+        ascii = font.renderAscii();
         for (auto &c: ascii) {
             auto &character = c.second;
 
-            float w = static_cast<float>(character.image.getSize().x);
-            float h = static_cast<float>(character.image.getSize().y);
-
-            Mesh mesh = getPlane(Vec2f(w, h), Vec2f(), Rectf(Vec2f(), Vec2f(w, h)));
-
-            meshes[c.first] = device.getAllocator().createMeshBuffer(mesh);
             textures[c.first] = device.getAllocator().createTextureBuffer({});
-
             textures.at(c.first)->upload(character.image);
         }
     }
 
-    Vec2f TextRenderer::getSize(const std::string &str, int maxCharPerLine) {
+    void TextRenderer::setFontSize(Vec2i pixelSize) {
+        if (fontSize != pixelSize) {
+            fontSize = pixelSize;
+            font->setPixelSize(pixelSize);
+            ascii = font->renderAscii();
+            for (auto &c: ascii) {
+                auto &character = c.second;
+
+                textures[c.first] = device->getAllocator().createTextureBuffer({});
+                textures.at(c.first)->upload(character.image);
+            }
+        }
+    }
+
+    Vec2f TextRenderer::getSize(const std::string &str, int lineHeight, int lineWidth, int lineSpacing) {
         Vec2i size(0); //The total size of the text
 
         Vec2i lineSize(0); // The size of the line and column of the current character
-
         int line = 0; //The index of the current line
-        int lineOffset = 0; //The index into the current line
 
         for (auto c: str) {
-            if (maxCharPerLine > 0 && lineOffset > maxCharPerLine) {
-                line++;
-                lineOffset = 0;
-                lineSize.x = 0;
-            }
+            //Add horizontal advance
+            auto character = ascii.at(c);
+            lineSize.x += character.advance;
 
-            //Add advance (The only factor for size x increment)
-            lineSize.x += ascii.at(c).advance.x;
-
-            // Add vertical advance of all top characters of the current column
-            lineSize.y = 0;
-            for (size_t i = lineOffset;
-                 i < str.size();
-                 i + maxCharPerLine > str.size()
-                 ? i = str.size() - i
-                 : i += maxCharPerLine) {
-                lineSize.y += ascii.at(str.at(i)).advance.y;
-            }
+            lineSize.y = (line * lineSpacing) + (line * lineHeight) +
+                         (lineHeight + character.image.getHeight() - character.bearing.y);
 
             //Assign current horizontal size of the line if it is larger than the current size
             if (lineSize.x > size.x) {
@@ -175,76 +88,98 @@ namespace xengine {
                 size.y = lineSize.y;
             }
 
-            lineOffset++;
+            if (c == '\n' || (lineWidth > 0 && lineSize.x > lineWidth)) {
+                line++;
+                lineSize.x = 0;
+            }
         }
 
-        return size;
+        return size.convert<float>();
     }
 
-    Text TextRenderer::render(const std::string &text, int maxCharPerLine) {
-        if (!device)
+    Text TextRenderer::render(const std::string &text,
+                              int lineHeight,
+                              int lineWidth,
+                              int lineSpacing) {
+        if (device == nullptr)
             throw std::runtime_error("Device not assigned");
 
-        auto size = getSize(text, maxCharPerLine);
+        if (text.empty())
+            throw std::runtime_error("Text cannot be empty");
+
+        auto size = getSize(text, lineHeight, lineWidth, lineSpacing);
 
         std::vector<RenderChar> renderText;
-        float advanceX = 0;
-        int line = 0;
-        size_t lineChars = 0;
-        for (auto &c: text) {
-            if (maxCharPerLine > 0 && lineChars > maxCharPerLine) {
-                //Increment line and reset lineChars and advanceX
-                line++;
-                lineChars = 0;
-                advanceX = 0;
-            }
 
+        Character largestCharacterOfFirstLine;
+
+        float posx = 0;
+
+        int currentLineWidth = 0;
+        int line = 0;
+
+        for (auto &c: text) {
             auto &character = ascii.at(c);
 
-            RenderChar renderChar(ascii.at(c), *textures.at(c), *meshes.at(c));
+            currentLineWidth += character.advance;
 
-            float advanceY;
-
-            if (line > 0) {
-                // Use total advance value of top character
-                auto lineOffset = (line - 1) * maxCharPerLine;
-                auto &topChar = renderText.at(lineOffset + lineChars);
-                advanceY = numeric_cast<float>(topChar.totalAdvance.y);
-            } else {
-                advanceY = 0;
+            if (c == '\n' || (lineWidth > 0 && currentLineWidth > lineWidth)) {
+                line++;
+                posx = 0;
+                currentLineWidth = 0;
             }
 
-            renderChar.totalAdvance.x = advanceX;
-            renderChar.totalAdvance.y = advanceY;
+            if (c < 32)
+                continue; // Skip non printable characters
+
+            RenderChar renderChar(character, *textures.at(c));
+
+            float posy = (numeric_cast<float>(line) * numeric_cast<float>(lineSpacing))
+                         + (numeric_cast<float>(line) * numeric_cast<float>(lineHeight));
+
+            renderChar.position.x = posx;
+            renderChar.position.y = posy;
 
             // Add horizontal advance
-            advanceX += numeric_cast<float>(character.advance.x);
+            posx += numeric_cast<float>(character.advance);
+
+            if (line == 0 && largestCharacterOfFirstLine.image.getHeight() < character.image.getHeight())
+                largestCharacterOfFirstLine = character;
 
             renderText.emplace_back(renderChar);
-
-            lineChars++;
         }
 
-        auto tex = device->getAllocator().createTextureBuffer({size});
+        auto origin = Vec2f(0, numeric_cast<float>(lineHeight));
 
-        target = device->getAllocator().createRenderTarget(size);
+        target = device->getAllocator().createRenderTarget(size.convert<int>());
 
-        // Render the text to a texture
-        target->attachColor(0, *tex);
-
+        // Render the text (upside down?) to a texture and then render the final text texture with vertical uvs flipped
+        auto tmpTexture = device->getAllocator().createTextureBuffer({size.convert<int>()});
+        target->attachColor(0, *tmpTexture);
         ren2d.renderBegin(*target);
-
         for (auto &c: renderText) {
             auto texSize = c.texture.get().getAttributes().size.convert<float>();
+            auto pos = c.getPosition(origin);
             ren2d.draw(Rectf({}, texSize),
-                       Rectf(c.getPosition(), texSize),
-                       c.texture);
+                       Rectf(pos, texSize),
+                       c.texture,
+                       {},
+                       0,
+                       Vec2b(false, false),
+                       false);
         }
-
         ren2d.renderPresent();
-
         target->detachColor(0);
 
-        return {text, maxCharPerLine, std::move(tex)};
+        //Render the upside down texture of the text using the 2d renderer to correct the rotation.
+        auto tex = device->getAllocator().createTextureBuffer({size.convert<int>()});
+
+        target->attachColor(0, *tex);
+        ren2d.renderBegin(*target);
+        ren2d.draw(Rectf({}, size), Rectf({}, size), *tmpTexture, {}, 0, {false, false});
+        ren2d.renderPresent();
+        target->detachColor(0);
+
+        return {text, origin, lineWidth, std::move(tex)};
     }
 }

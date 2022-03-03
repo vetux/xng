@@ -33,11 +33,11 @@ namespace xengine {
         char value{};
         ImageRGBA image; //The rasterized character as an image
         Vec2i bearing;   //The bearing of the character in pixels
-        Vec2i advance;   //The advance of the character in pixels
+        int advance{};   //The advance of the character in pixels
 
         Character() = default;
 
-        Character(char value, ImageRGBA image, Vec2i bearing, Vec2i advance)
+        Character(char value, ImageRGBA image, Vec2i bearing, int advance)
                 : value(value), image(std::move(image)), bearing(bearing), advance(advance) {}
 
         ~Character() = default;

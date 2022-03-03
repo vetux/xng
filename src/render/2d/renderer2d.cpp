@@ -106,7 +106,7 @@ namespace xengine {
      * @param size
      * @return
      */
-    static Mesh getPlane(Vec2f size, Vec2f center, Rectf uvOffset) {
+    static Mesh getPlane(Vec2f size, Vec2f center, Rectf uvOffset, Vec2b flipUv) {
         Rectf scaledOffset(
                 {uvOffset.position.x / size.x, uvOffset.position.y / size.y},
                 {uvOffset.dimensions.x / size.x, uvOffset.dimensions.y / size.y});
@@ -114,14 +114,25 @@ namespace xengine {
         float uvFarX = scaledOffset.position.x + scaledOffset.dimensions.x;
         float uvNearY = scaledOffset.position.y;
         float uvFarY = scaledOffset.position.y + scaledOffset.dimensions.y;
-        return Mesh(Mesh::TRI, {
-                Vertex(Vec3f(0 - center.x, 0 - center.y, 0), {uvNearX, uvNearY}),
-                Vertex(Vec3f(size.x - center.x, 0 - center.y, 0), {uvFarX, uvNearY}),
-                Vertex(Vec3f(0 - center.x, size.y - center.y, 0), {uvNearX, uvFarY}),
-                Vertex(Vec3f(0 - center.x, size.y - center.y, 0), {uvNearX, uvFarY}),
-                Vertex(Vec3f(size.x - center.x, 0 - center.y, 0), {uvFarX, uvNearY}),
-                Vertex(Vec3f(size.x - center.x, size.y - center.y, 0), {uvFarX, uvFarY})
-        });
+        if (flipUv.y) {
+            return Mesh(Mesh::TRI, {
+                    Vertex(Vec3f(0 - center.x, 0 - center.y, 0), {uvNearX, uvFarY}),
+                    Vertex(Vec3f(size.x - center.x, 0 - center.y, 0), {uvFarX, uvFarY}),
+                    Vertex(Vec3f(0 - center.x, size.y - center.y, 0), {uvNearX, uvNearY}),
+                    Vertex(Vec3f(0 - center.x, size.y - center.y, 0), {uvNearX, uvNearY}),
+                    Vertex(Vec3f(size.x - center.x, 0 - center.y, 0), {uvFarX, uvFarY}),
+                    Vertex(Vec3f(size.x - center.x, size.y - center.y, 0), {uvFarX, uvNearY})
+            });
+        } else {
+            return Mesh(Mesh::TRI, {
+                    Vertex(Vec3f(0 - center.x, 0 - center.y, 0), {uvNearX, uvNearY}),
+                    Vertex(Vec3f(size.x - center.x, 0 - center.y, 0), {uvFarX, uvNearY}),
+                    Vertex(Vec3f(0 - center.x, size.y - center.y, 0), {uvNearX, uvFarY}),
+                    Vertex(Vec3f(0 - center.x, size.y - center.y, 0), {uvNearX, uvFarY}),
+                    Vertex(Vec3f(size.x - center.x, 0 - center.y, 0), {uvFarX, uvNearY}),
+                    Vertex(Vec3f(size.x - center.x, size.y - center.y, 0), {uvFarX, uvFarY})
+            });
+        }
     }
 
     static Mesh getSquare(Vec2f size, Vec2f center) {
@@ -166,7 +177,7 @@ namespace xengine {
     void Renderer2D::renderBegin(RenderTarget &target, bool clear) {
         renderDevice.getRenderer().renderBegin(target, RenderOptions({},
                                                                      target.getSize(),
-                                                                     true,
+                                                                     false,
                                                                      false,
                                                                      1,
                                                                      {},
@@ -183,7 +194,7 @@ namespace xengine {
                                  ColorRGBA clearColor) {
         renderDevice.getRenderer().renderBegin(target, RenderOptions(viewportOffset,
                                                                      viewportSize,
-                                                                     true,
+                                                                     false,
                                                                      false,
                                                                      1,
                                                                      clearColor,
@@ -208,8 +219,10 @@ namespace xengine {
                           TextureBuffer &texture,
                           ShaderProgram &shader,
                           Vec2f center,
-                          float rotation) {
-        Mesh mesh = getPlane(dstRect.dimensions, center, srcRect);
+                          float rotation,
+                          Vec2b flipUv,
+                          bool alphaBlending) {
+        Mesh mesh = getPlane(dstRect.dimensions, center, srcRect, flipUv);
 
         MeshBuffer &buffer = **allocatedMeshes.insert(renderDevice.getAllocator().createMeshBuffer(mesh)).first;
 
@@ -229,18 +242,23 @@ namespace xengine {
         RenderCommand command(shader, buffer);
         command.textures.emplace_back(texture);
         command.properties.enableDepthTest = false;
-        command.properties.enableBlending = true;
+        command.properties.enableBlending = alphaBlending;
 
         renderDevice.getRenderer().addCommand(command);
     }
 
-    void Renderer2D::draw(Rectf srcRect, Rectf dstRect, TextureBuffer &texture, Vec2f center, float rotation) {
+    void Renderer2D::draw(Rectf srcRect,
+                          Rectf dstRect,
+                          TextureBuffer &texture,
+                          Vec2f center,
+                          float rotation,
+                          Vec2b flipUv,
+                          bool alphaBlending) {
         defShader->activate();
         defShader->setFloat("USE_TEXTURE", 1);
-        defShader->setVec4("COLOR", Vec4f(1, 1, 1, 1));
         defShader->setTexture("diffuse", 0);
 
-        draw(srcRect, dstRect, texture, *defShader, center, rotation);
+        draw(srcRect, dstRect, texture, *defShader, center, rotation, flipUv, alphaBlending);
     }
 
     void Renderer2D::draw(Rectf dstRect, TextureBuffer &texture, Vec2f center, float rotation) {
@@ -251,7 +269,7 @@ namespace xengine {
         Mesh mesh;
 
         if (fill)
-            mesh = getPlane(rectangle.dimensions, center, Rectf(Vec2f(), rectangle.dimensions));
+            mesh = getPlane(rectangle.dimensions, center, Rectf(Vec2f(), rectangle.dimensions), Vec2b(false));
         else
             mesh = getSquare(rectangle.dimensions, center);
 
@@ -264,15 +282,15 @@ namespace xengine {
                 0));
         modelMatrix = modelMatrix * MatrixMath::rotate(Vec3f(0, 0, rotation));
 
-        modelMatrix = camera.projection() * camera.view() * modelMatrix;
+        auto mvp = camera.projection() * camera.view() * modelMatrix;
 
         defShader->activate();
-        defShader->setMat4("MVP", modelMatrix);
+        defShader->setMat4("MVP", mvp);
         defShader->setFloat("USE_TEXTURE", 0);
         defShader->setVec4("COLOR", Vec4f((float) color.r() / 255,
-                                       (float) color.g() / 255,
-                                       (float) color.b() / 255,
-                                       (float) color.a() / 255));
+                                          (float) color.g() / 255,
+                                          (float) color.b() / 255,
+                                          (float) color.a() / 255));
 
         RenderCommand command(*defShader, buffer);
         command.properties.enableDepthTest = false;
@@ -295,15 +313,15 @@ namespace xengine {
         Mat4f modelMatrix = MatrixMath::identity();
         modelMatrix = modelMatrix * MatrixMath::rotate(Vec3f(0, 0, rotation));
 
-        modelMatrix = camera.projection() * camera.view() * modelMatrix;
+        auto mvp = camera.projection() * camera.view() * modelMatrix;
 
         defShader->activate();
-        defShader->setMat4("MVP", modelMatrix);
+        defShader->setMat4("MVP", mvp);
         defShader->setFloat("USE_TEXTURE", 0);
         defShader->setVec4("COLOR", Vec4f((float) color.r() / 255,
-                                       (float) color.g() / 255,
-                                       (float) color.b() / 255,
-                                       (float) color.a() / 255));
+                                          (float) color.g() / 255,
+                                          (float) color.b() / 255,
+                                          (float) color.a() / 255));
 
         RenderCommand command(*defShader, buffer);
         command.properties.enableDepthTest = false;
@@ -320,15 +338,15 @@ namespace xengine {
         MeshBuffer &buffer = **allocatedMeshes.insert(renderDevice.getAllocator().createMeshBuffer(mesh)).first;
 
         Mat4f modelMatrix = MatrixMath::identity();
-        modelMatrix = camera.projection() * camera.view() * modelMatrix;
+        auto mvp = camera.projection() * camera.view() * modelMatrix;
 
         defShader->activate();
-        defShader->setMat4("MVP", modelMatrix);
+        defShader->setMat4("MVP", mvp);
         defShader->setFloat("USE_TEXTURE", 0);
         defShader->setVec4("COLOR", Vec4f((float) color.r() / 255,
-                                       (float) color.g() / 255,
-                                       (float) color.b() / 255,
-                                       (float) color.a() / 255));
+                                          (float) color.g() / 255,
+                                          (float) color.b() / 255,
+                                          (float) color.a() / 255));
 
         RenderCommand command(*defShader, buffer);
         command.properties.enableDepthTest = false;
@@ -345,7 +363,9 @@ namespace xengine {
                                            (float) color.a() / 255));
         textShader->setTexture("diffuse", 0);
 
-        draw(Rectf({}, text.getTexture().getAttributes().size.convert<float>()),
+        auto srcRect = Rectf({}, text.getTexture().getAttributes().size.convert<float>());
+
+        draw(srcRect,
              dstRect,
              text.getTexture(),
              *textShader,

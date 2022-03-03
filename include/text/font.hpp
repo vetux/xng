@@ -33,9 +33,7 @@ namespace xengine {
         /**
          * Load the font from the stream.
          *
-         * Supported font formats include ttf.
-         *
-         * @param stream The stream pointing to the font data.
+         * @param stream The stream pointing to the ttf font data.
          * @return
          */
         static std::unique_ptr<Font> createFont(std::istream &stream);

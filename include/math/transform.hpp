@@ -106,7 +106,7 @@ namespace xengine {
         }
 
         Vec3f left() const {
-            return rotate(Vec3f(-1, 0, 1));
+            return rotate(Vec3f(-1, 0, 0));
         }
 
     private:

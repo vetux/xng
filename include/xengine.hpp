@@ -20,8 +20,6 @@
 #ifndef XENGINE_ENGINE_HPP
 #define XENGINE_ENGINE_HPP
 
-#include "xengine-export.hpp"
-#include "xengine.hpp"
 #include "script/script.hpp"
 #include "script/mono/monocppvalue.hpp"
 #include "script/mono/monoscript.hpp"
@@ -172,7 +170,9 @@
 #include "event/eventbus.hpp"
 #include "event/eventreceiver.hpp"
 #include "text/font.hpp"
+#include "text/textrenderer.hpp"
 #include "text/character.hpp"
+#include "text/text.hpp"
 #include "async/threadpool.hpp"
 #include "async/task.hpp"
 
