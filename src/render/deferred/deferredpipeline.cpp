@@ -28,7 +28,9 @@ namespace xengine {
             : gBuffer(std::make_unique<GBuffer>(device)),
               prePass(std::make_unique<PrePass>(device)),
               compositor(std::make_unique<Compositor>(device)),
-              passes(std::move(passes)) {}
+              passes(std::move(passes)) {
+        resizePasses();
+    }
 
     DeferredPipeline::DeferredPipeline(RenderDevice &device,
                                        std::unique_ptr<PrePass> prePass,
@@ -37,12 +39,21 @@ namespace xengine {
             : gBuffer(std::make_unique<GBuffer>(device)),
               prePass(std::move(prePass)),
               compositor(std::move(compositor)),
-              passes(std::move(passes)) {}
+              passes(std::move(passes)) {
+        resizePasses();
+    }
 
     DeferredPipeline::~DeferredPipeline() = default;
 
     void DeferredPipeline::render(RenderTarget &target,
                                   Scene &scene) {
+        if (size != gBuffer->getSize()
+            || samples != gBuffer->getSamples()) {
+            size = gBuffer->getSize();
+            samples = gBuffer->getSamples();
+            resizePasses();
+        }
+
         prePass->update(scene, *gBuffer);
         for (auto &pass: passes) {
             pass->render(*gBuffer, scene);

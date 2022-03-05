@@ -72,7 +72,7 @@ void main() {
 
 namespace xengine {
     SkyboxPass::SkyboxPass(RenderDevice &device)
-            : device(device) {
+            : RenderPass(device) {
         vert = ShaderSource(SHADER_VERT, "main", VERTEX, GLSL_410);
         frag = ShaderSource(SHADER_FRAG, "main", FRAGMENT, GLSL_410);
 
@@ -95,8 +95,6 @@ namespace xengine {
         defaultTexture = allocator.createTextureBuffer(attributes);
 
         meshBuffer = allocator.createMeshBuffer(Mesh::normalizedCube());
-
-        resizeTextureBuffers({1, 1}, device.getAllocator(), false);
     }
 
     void SkyboxPass::render(GBuffer &gBuffer, Scene &scene) {
@@ -113,12 +111,8 @@ namespace xengine {
         //Draw skybox
         auto &target = gBuffer.getPassTarget();
 
-        if (colorBuffer->getAttributes().size != gBuffer.getSize()) {
-            resizeTextureBuffers(gBuffer.getSize(), device.getAllocator(), false);
-        }
-
         target.setNumberOfColorAttachments(1);
-        target.attachColor(0, *colorBuffer);
+        target.attachColor(0, *output.color);
 
         ren.renderBegin(target, RenderOptions({}, target.getSize(), false));
 
@@ -149,5 +143,9 @@ namespace xengine {
         ren.renderFinish();
 
         target.detachColor(0);
+    }
+
+    void SkyboxPass::resize(Vec2i size, int samples) {
+        RenderPass::resizeOutputColor(size);
     }
 }

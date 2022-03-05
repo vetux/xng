@@ -142,8 +142,8 @@ namespace xengine {
         std::vector<Layer> ret;
         for (auto &pass: passes) {
             Layer l;
-            l.color = pass->getColorBuffer();
-            l.depth = pass->getDepthBuffer();
+            l.color = pass->output.color.get();
+            l.depth = pass->output.depth.get();
             ret.emplace_back(l);
         }
         return ret;

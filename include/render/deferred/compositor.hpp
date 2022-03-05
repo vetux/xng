@@ -49,12 +49,11 @@ namespace xengine {
 
     protected:
         struct Layer {
-            std::shared_ptr<TextureBuffer> color;
+            TextureBuffer *color = nullptr;
+            TextureBuffer *depth = nullptr;
             bool enableBlending = true;
             BlendMode colorBlendModeSource = BlendMode::SRC_ALPHA;
             BlendMode colorBlendModeDest = BlendMode::ONE_MINUS_SRC_ALPHA;
-
-            std::shared_ptr<TextureBuffer> depth;
             DepthTestMode depthTestMode = DepthTestMode::DEPTH_TEST_LESS;
         };
 

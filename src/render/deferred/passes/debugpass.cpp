@@ -509,7 +509,7 @@ namespace xengine {
     using namespace ShaderCompiler;
 
     DebugPass::DebugPass(RenderDevice &device)
-            : device(device) {
+            : RenderPass(device) {
 
         vs = ShaderSource(SHADER_VERT, "main", VERTEX, GLSL_410);
         gs = ShaderSource(SHADER_GEOMETRY, "main", GEOMETRY, GLSL_410);
@@ -539,7 +539,6 @@ namespace xengine {
         shaderLight = device.getAllocator().createShaderProgram(vsl, fs, gsl);
 
         meshBuffer = device.getAllocator().createMeshBuffer(Mesh(Mesh::TRI, {Vertex(Vec3f(0))}, {0, 0, 0}));
-        resizeTextureBuffers({1, 1}, device.getAllocator(), true);
 
         multiSampleTarget = device.getAllocator().createRenderTarget({1, 1}, 1);
     }
@@ -551,15 +550,9 @@ namespace xengine {
 
         auto &target = gBuffer.getPassTarget();
 
-        if (colorBuffer->getAttributes().size != gBuffer.getSize() ||
-            multiSampleTarget->getSamples() != gBuffer.getSamples()) {
-            resizeTextureBuffers(gBuffer.getSize(), device.getAllocator(), true);
-            multiSampleTarget = device.getAllocator().createRenderTarget(gBuffer.getSize(), gBuffer.getSamples());
-        }
-
         target.setNumberOfColorAttachments(1);
-        target.attachColor(0, *colorBuffer);
-        target.attachDepthStencil(*depthBuffer);
+        target.attachColor(0, *output.color);
+        target.attachDepthStencil(*output.depth);
 
         ren.renderBegin(*multiSampleTarget,
                         RenderOptions({},
@@ -650,5 +643,10 @@ namespace xengine {
 
         target.detachColor(0);
         target.detachDepthStencil();
+    }
+
+    void DebugPass::resize(Vec2i size, int samples) {
+        RenderPass::resize(size, samples);
+        multiSampleTarget = device.getAllocator().createRenderTarget(size, samples);
     }
 }

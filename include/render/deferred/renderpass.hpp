@@ -33,58 +33,44 @@ namespace xengine {
      */
     class XENGINE_EXPORT RenderPass {
     public:
+        struct Output {
+            //The textures used by the default compositor if assigned.
+            std::unique_ptr<TextureBuffer> color = nullptr;
+            std::unique_ptr<TextureBuffer> depth = nullptr;
+        } output;
+
         virtual ~RenderPass() = default;
 
         /**
-         * Run the render logic.
-         *
-         * @param gBuffer The gbuffer to sample from.
-         * @param scene The scene data.
+         * Run the render logic and update the output.
          */
         virtual void render(GBuffer &gBuffer, Scene &scene) = 0;
 
-        /**
-         * Return the default color texture which the render pass has written to in the last render call.
-         * Pass inheritors can expose more color textures via members if needed.
-         *
-         * Returned texture is required to be TEXTURE_2D because a conventional render pass rasterizes a screenquad
-         * and does the multisample resolve while sampling from the GBuffer.
-         *
-         * Returned texture is required to be of the size of the last render Gbuffer size, and may change
-         * when the GBuffer size has changed from a previous render() invocation.
-         *
-         * @return pointer to TextureBuffer.
-         */
-        std::shared_ptr<TextureBuffer> getColorBuffer() { return colorBuffer; }
-
-        /**
-         * Return the default depth texture.
-         *
-         * Returned texture is required to be TEXTURE_2D.
-         *
-         * Returned texture is required to be of the size of the last render Gbuffer size, and may change
-         * when the GBuffer size has changed from a previous render() invocation.
-         *
-         * @return pointer to TextureBuffer or nullptr if no depth texture was created.
-         */
-        std::shared_ptr<TextureBuffer> getDepthBuffer() { return depthBuffer; }
+        virtual void resize(Vec2i size, int samples) {
+            resizeOutputColor(size);
+            resizeOutputDepth(size);
+        };
 
     protected:
-        void resizeTextureBuffers(Vec2i size, RenderAllocator &alloc, bool createDepthBuffer) {
+        void resizeOutputColor(Vec2i size) {
+            auto &alloc = device.getAllocator();
             TextureBuffer::Attributes attrib;
             attrib.size = size;
-
-            colorBuffer = std::shared_ptr<TextureBuffer>(std::move(alloc.createTextureBuffer(attrib)));
-
-            attrib.format = TextureBuffer::DEPTH_STENCIL;
-            if (createDepthBuffer)
-                depthBuffer = std::shared_ptr<TextureBuffer>(std::move(alloc.createTextureBuffer(attrib)));
-            else
-                depthBuffer = nullptr;
+            output.color = std::unique_ptr<TextureBuffer>(std::move(alloc.createTextureBuffer(attrib)));
         }
 
-        std::shared_ptr<TextureBuffer> colorBuffer;
-        std::shared_ptr<TextureBuffer> depthBuffer;
+        void resizeOutputDepth(Vec2i size) {
+            auto &alloc = device.getAllocator();
+            TextureBuffer::Attributes attrib;
+            attrib.size = size;
+            attrib.format = TextureBuffer::DEPTH_STENCIL;
+            output.depth = std::unique_ptr<TextureBuffer>(std::move(alloc.createTextureBuffer(attrib)));
+        }
+
+        explicit RenderPass(RenderDevice &device)
+                : device(device) {}
+
+        RenderDevice &device;
     };
 }
 

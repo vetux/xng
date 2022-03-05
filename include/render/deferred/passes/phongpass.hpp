@@ -25,15 +25,25 @@
 namespace xengine {
     class XENGINE_EXPORT PhongPass : public RenderPass {
     public:
+        struct Input {
+            Vec3f cameraPosition;
+            std::vector<Light> lights;
+            GBuffer &gBuffer;
+        };
+
         explicit PhongPass(RenderDevice &device);
 
         ~PhongPass() override = default;
 
-        void render(GBuffer &gBuffer, Scene &scene) override;
+        void render(GBuffer &gBuffer, Scene &scene) override {
+            render({scene.camera.transform.getPosition(), scene.lights, gBuffer});
+        }
+
+        void render(const Input &input);
+
+        void resize(Vec2i size, int samples) override;
 
     private:
-        RenderDevice &renderDevice;
-
         std::unique_ptr<ShaderProgram> shader;
 
         ShaderSource vertexShader;

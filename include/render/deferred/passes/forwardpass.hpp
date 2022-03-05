@@ -33,8 +33,6 @@ namespace xengine {
         void render(GBuffer &gBuffer, Scene &scene) override;
 
     private:
-        RenderDevice &device;
-
         ForwardPipeline pipeline;
     };
 }

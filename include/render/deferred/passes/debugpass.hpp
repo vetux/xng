@@ -31,11 +31,11 @@ namespace xengine {
 
         void render(GBuffer &gBuffer, Scene &scene) override;
 
+        void resize(Vec2i size, int samples) override;
+
         void setEnabled(bool enable) { enabled = enable; }
 
     private:
-        RenderDevice &device;
-
         ShaderSource vs;
         ShaderSource gs;
         ShaderSource fs;

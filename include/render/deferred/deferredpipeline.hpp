@@ -59,9 +59,20 @@ namespace xengine {
 
         std::vector<std::unique_ptr<RenderPass>> &getPasses() { return passes; }
 
-        void setPasses(std::vector<std::unique_ptr<RenderPass>> value) { passes = std::move(value); }
+        void setPasses(std::vector<std::unique_ptr<RenderPass>> value) {
+            passes = std::move(value);
+            resizePasses();
+        }
 
     private:
+        void resizePasses() {
+            for (auto &pass: passes)
+                pass->resize(size, samples);
+        }
+
+        Vec2i size{1};
+        int samples{1};
+
         std::unique_ptr<PrePass> prePass;
         std::unique_ptr<GBuffer> gBuffer;
         std::unique_ptr<Compositor> compositor;

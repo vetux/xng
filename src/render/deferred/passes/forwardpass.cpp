@@ -21,22 +21,16 @@
 
 namespace xengine {
     ForwardPass::ForwardPass(RenderDevice &device)
-            : device(device) {
-        resizeTextureBuffers({1, 1}, device.getAllocator(), true);
-    }
+            : RenderPass(device), pipeline(device) {}
 
     ForwardPass::~ForwardPass() = default;
 
     void ForwardPass::render(GBuffer &gBuffer, Scene &scene) {
         auto &target = gBuffer.getPassTarget();
 
-        if (colorBuffer->getAttributes().size != gBuffer.getSize()) {
-            resizeTextureBuffers(gBuffer.getSize(), device.getAllocator(), true);
-        }
-
         target.setNumberOfColorAttachments(1);
-        target.attachColor(0, *colorBuffer);
-        target.attachDepthStencil(*depthBuffer);
+        target.attachColor(0, *output.color);
+        target.attachDepthStencil(*output.depth);
 
         pipeline.render(target, scene);
 

@@ -31,9 +31,9 @@ namespace xengine {
 
         void render(GBuffer &gBuffer, Scene &scene) override;
 
-    private:
-        RenderDevice &device;
+        void resize(Vec2i size, int samples) override;
 
+    private:
         std::unique_ptr<ShaderProgram> shader;
         std::unique_ptr<MeshBuffer> meshBuffer;
         std::unique_ptr<TextureBuffer> defaultTexture;

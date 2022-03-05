@@ -26,6 +26,8 @@
 #include "async/threadpool.hpp"
 
 // TODO: Fix phong pass at random times consistently outputting black color for non normal mapped objects.
+// TODO: Fix phong pass randomly outputting artifacts when resizing the window with the mouse or changing gbuffer resolution.
+
 const char *SHADER_VERT_LIGHTING = R"###(#version 410 core
 
 layout (location = 0) in vec3 position;
@@ -138,7 +140,7 @@ namespace xengine {
     const int MAX_LIGHTS = 1000;
 
     PhongPass::PhongPass(RenderDevice &device)
-            : renderDevice(device) {
+            : RenderPass(device) {
         vertexShader = ShaderSource(SHADER_VERT_LIGHTING,
                                     "main",
                                     VERTEX,
@@ -158,19 +160,10 @@ namespace xengine {
         shader = allocator.createShaderProgram(vertexShader, fragmentShader);
 
         multiSampleTarget = allocator.createRenderTarget({1, 1}, 1);
-
-        resizeTextureBuffers({1, 1}, device.getAllocator(), true);
     }
 
-    void PhongPass::render(GBuffer &gBuffer, Scene &scene) {
-        if (colorBuffer->getAttributes().size != gBuffer.getSize() ||
-            multiSampleTarget->getSamples() != gBuffer.getSamples()) {
-            resizeTextureBuffers(gBuffer.getSize(), renderDevice.getAllocator(), true);
-
-            auto &allocator = renderDevice.getAllocator();
-
-            multiSampleTarget = allocator.createRenderTarget(gBuffer.getSize(), gBuffer.getSamples());
-        }
+    void PhongPass::render(const PhongPass::Input &input) {
+        auto &gBuffer = input.gBuffer;
 
         int dirCount = 0;
         int pointCount = 0;
@@ -178,7 +171,7 @@ namespace xengine {
 
         shader->activate();
 
-        for (auto &light: scene.lights) {
+        for (auto &light: input.lights) {
             if (dirCount + pointCount + spotCount > MAX_LIGHTS)
                 break;
 
@@ -231,7 +224,7 @@ namespace xengine {
         shader->setTexture("shininess", 7);
         shader->setTexture("depth", 8);
 
-        shader->setVec3("VIEW_POS", scene.camera.transform.getPosition());
+        shader->setVec3("VIEW_POS", input.cameraPosition);
         shader->setInt("NUM_SAMPLES", gBuffer.getSamples());
 
         RenderCommand command(*shader, gBuffer.getScreenQuad());
@@ -251,13 +244,13 @@ namespace xengine {
         command.properties.enableFaceCulling = false;
         command.properties.enableBlending = false;
 
-        auto &ren = renderDevice.getRenderer();
+        auto &ren = device.getRenderer();
 
         auto &target = gBuffer.getPassTarget();
 
         target.setNumberOfColorAttachments(1);
-        target.attachColor(0, *colorBuffer);
-        target.attachDepthStencil(*depthBuffer);
+        target.attachColor(0, *output.color);
+        target.attachDepthStencil(*output.depth);
 
         ren.renderClear(target, {}, 1);
 
@@ -271,5 +264,11 @@ namespace xengine {
 
         target.detachColor(0);
         target.detachDepthStencil();
+    }
+
+    void PhongPass::resize(Vec2i size, int samples) {
+        RenderPass::resize(size, samples);
+        auto &alloc = device.getAllocator();
+        multiSampleTarget = alloc.createRenderTarget(size, samples);
     }
 }
