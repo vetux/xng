@@ -100,7 +100,7 @@ namespace xengine {
         }
 
         friend bool operator!=(const Vector2<T> &lhs, const Vector2<T> &rhs) {
-            return lhs.x != rhs.x && lhs.y != rhs.y;
+            return !(lhs == rhs);
         }
 
         //https://en.wikipedia.org/wiki/Euclidean_distance
