@@ -28,8 +28,8 @@ namespace xengine {
     void Task::start() {
         try {
             work();
-        } catch (const std::exception &e) {
-            exception = std::make_unique<std::exception>(e);
+        } catch (...) {
+            exception = std::current_exception();
         }
 
         {
@@ -40,7 +40,7 @@ namespace xengine {
         workDoneCondition.notify_all();
     }
 
-    const std::unique_ptr<std::exception> &Task::wait() {
+    const std::exception_ptr &Task::wait() {
         std::unique_lock<std::mutex> lk(mutex);
         while (!workDone) {
             workDoneCondition.wait(lk, [this] { return static_cast<bool>(workDone); });

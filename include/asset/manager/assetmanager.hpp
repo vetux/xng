@@ -76,16 +76,18 @@ namespace xengine {
             auto it = bundles.find(path);
             if (it != bundles.end()) {
                 auto &task = bundleTasks.at(path);
-                if(task->getException())
-                    throw *task->getException();
+
+                if (task->getException())
+                    std::rethrow_exception(task->getException());
 
                 return it->second;
             } else {
                 guard.unlock();
 
                 auto &task = bundleTasks.at(path);
-                if(task->wait())
-                    throw *task->getException();
+
+                if (task->wait())
+                    std::rethrow_exception(task->getException());
 
                 guard.lock();
 
@@ -98,11 +100,9 @@ namespace xengine {
         void loadBundle(const std::string &path) {
             auto &pool = ThreadPool::getPool();
             bundleTasks[path] = pool.addTask([this, path]() {
-                try {
-                    auto bundle = AssetImporter::import(path, archive);
-                    std::lock_guard<std::mutex> guard(bundlesMutex);
-                    bundles[path] = std::move(bundle);
-                } catch (const std::exception &e) { throw e; }
+                auto bundle = AssetImporter::import(path, archive);
+                std::lock_guard<std::mutex> guard(bundlesMutex);
+                bundles[path] = std::move(bundle);
             });
         }
 

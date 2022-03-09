@@ -56,13 +56,13 @@ namespace xengine {
             {
                 const std::lock_guard<std::mutex> l(taskMutex);
                 int index;
-                if (taskCache.empty()) {
+                if (unusedTaskIndices.empty()) {
                     if (taskIndex == std::numeric_limits<int>::max())
                         throw std::runtime_error("Maximum concurrent tasks reached");
                     index = taskIndex++;
                 } else {
-                    index = *taskCache.begin();
-                    taskCache.erase(taskCache.begin());
+                    index = *unusedTaskIndices.begin();
+                    unusedTaskIndices.erase(unusedTaskIndices.begin());
                 }
                 ret = std::make_shared<Task>(work);
                 tasks[index] = ret;
@@ -80,48 +80,30 @@ namespace xengine {
 
         bool isShutdown() const { return mShutdown; }
 
-        bool isError() const { return mError; }
-
-        std::string getErrorText() const { return errorText; }
-
     private:
-        std::mutex taskMutex;
+        std::vector<std::thread> threads;
+        std::map<int, std::shared_ptr<Task>> tasks;
 
         int taskIndex = 0;
-        std::vector<int> taskCache;
-        std::map<int, std::shared_ptr<Task>> tasks;
+        std::vector<int> unusedTaskIndices;
+
+        std::mutex taskMutex;
         std::condition_variable taskVar;
-
-        std::vector<std::thread> threads;
-
         std::atomic<bool> mShutdown = false;
-        std::atomic<bool> mError = false;
-        std::string errorText;
 
         void pollTasks() {
             std::unique_lock<std::mutex> taskLock(taskMutex);
             while (!mShutdown) {
                 if (!tasks.empty()) {
-                    auto task = tasks.begin()->second;
-                    taskCache.emplace_back(tasks.begin()->first);
+                    auto pair = tasks.begin();
+                    int index = pair->first;
+                    std::shared_ptr<Task> task = pair->second;
 
-                    tasks.erase(tasks.begin());
+                    tasks.erase(index);
+                    unusedTaskIndices.emplace_back(index);
 
                     taskLock.unlock();
-                    try {
-                        task->start();
-                    } catch (const std::exception &e) {
-                        // Uncaught exception in task work
-
-                        taskLock.lock();
-                        mShutdown = true;
-                        errorText = e.what();
-                        taskLock.unlock();
-
-                        taskVar.notify_all();
-
-                        break;
-                    }
+                    task->start();
                     taskLock.lock();
                 }
                 taskVar.wait(taskLock, [this] {

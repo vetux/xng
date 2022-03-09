@@ -47,17 +47,17 @@ namespace xengine {
 
         void start();
 
-        const std::unique_ptr<std::exception> &wait();
+        const std::exception_ptr &wait();
 
         bool wait(long ms);
 
         /**
          * @return Nullptr if no exception was caught while work was invoked or a copy of an exception caught while work was invoked.
          */
-        const std::unique_ptr<std::exception> &getException() { return exception; }
+        const std::exception_ptr &getException() { return exception; }
 
     private:
-        std::unique_ptr<std::exception> exception; //If an exception was caught while the work was invoked this stores a pointer to a copy of the exception object.
+        std::exception_ptr exception; //If an exception was caught while the work was invoked this stores a pointer to a copy of the exception object.
         std::function<void()> work;
         std::mutex mutex;
         std::atomic<bool> workDone;
