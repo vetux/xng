@@ -117,6 +117,7 @@ namespace xengine {
 
         virtual void update(float deltaTime) {
             window->update();
+            window->swapBuffers();
         }
     };
 }
