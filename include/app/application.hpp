@@ -25,7 +25,6 @@
 #include <iomanip>
 
 #include "ecs/ecs.hpp"
-#include "io/archive.hpp"
 #include "compat/imguicompat.hpp"
 
 #include "display/displaymanager.hpp"
@@ -38,10 +37,9 @@ namespace xengine {
         /**
          * @param argc
          * @param argv
-         * @param archive The archive instance to use as root archive.
          */
-        explicit Application(int argc, char *argv[], std::unique_ptr<Archive> archive)
-                : archive(std::move(archive)), display() {
+        explicit Application(int argc, char *argv[])
+                : display() {
             std::vector<std::string> args;
             for (int i = 0; i < argc; i++)
                 args.emplace_back(argv[i]);
@@ -147,8 +145,6 @@ namespace xengine {
 
         std::unique_ptr<Window> window = nullptr;
         std::unique_ptr<RenderDevice> renderDevice = nullptr;
-
-        std::unique_ptr<Archive> archive = nullptr;
 
         ImGuiContext *imGuiContext;
 
