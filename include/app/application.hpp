@@ -83,10 +83,6 @@ namespace xengine {
         }
 
         virtual int loop() {
-//Make catch all exception handler optional to be able to use debugger exception handler
-#ifdef ENABLE_APPLICATION_EXCEPTION_HANDLER
-            try {
-#endif
             start();
             auto lastFrame = std::chrono::high_resolution_clock::now();
             float deltaTime = 0;
@@ -97,43 +93,6 @@ namespace xengine {
                 deltaTime = static_cast<float>(frameDelta.count()) / 1000000000.0f;
             }
             stop();
-#ifdef ENABLE_APPLICATION_EXCEPTION_HANDLER
-            }
-            catch (const std::exception &e) {
-                // Show uncaught exception dialog
-                auto time = std::chrono::system_clock::now();
-                auto time_t = std::chrono::system_clock::to_time_t(time);
-                std::stringstream stream;
-                stream << std::put_time(std::localtime(&time_t), "%Y-%m-%d %X");
-                auto timeStr = stream.str();
-
-                while (true) {
-                    window->update();
-
-                    ImGuiCompat::NewFrame(*window, graphicsBackend);
-                    ImGui::NewFrame();
-
-                    ImGui::Begin(("Uncaught Exception " + timeStr).c_str());
-
-                    ImGui::Text("%s", e.what());
-
-                    ImGui::Separator();
-
-                    if (ImGui::Button("Quit") || window->shouldClose()) {
-                        break;
-                    }
-
-                    ImGui::Dummy({600, 0});
-
-                    ImGui::End();
-
-                    ImGui::Render();
-                    ImGuiCompat::DrawData(*window, window->getRenderTarget(graphicsBackend), graphicsBackend);
-
-                    window->swapBuffers();
-                }
-            }
-#endif
             return 0;
         }
 
@@ -156,7 +115,9 @@ namespace xengine {
 
         virtual void stop() {}
 
-        virtual void update(float deltaTime) {}
+        virtual void update(float deltaTime) {
+            window->update();
+        }
     };
 }
 
