@@ -65,6 +65,15 @@ namespace xengine {
         }
     }
 
+    void glfwScrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
+        std::lock_guard<std::mutex> guard(windowMappingMutex);
+        if (windowMapping.find(window) != windowMapping.end()) {
+            windowMapping[window]->glfwScrollCallback(xoffset, yoffset);
+        } else {
+            fprintf(stderr, "Received glfw callback with non registered window.");
+        }
+    }
+
     GLFWInput::GLFWInput(GLFWwindow &wndH) : wndH(wndH) {
         std::lock_guard<std::mutex> guard(windowMappingMutex);
         windowMapping[&wndH] = this;
@@ -72,6 +81,7 @@ namespace xengine {
         glfwSetKeyCallback(&wndH, xengine::glfwKeyCallback);
         glfwSetCursorPosCallback(&wndH, xengine::glfwCursorCallback);
         glfwSetMouseButtonCallback(&wndH, xengine::glfwMouseKeyCallback);
+        glfwSetScrollCallback(&wndH, xengine::glfwScrollCallback);
 
         //GLFW Does not appear to send connected events for joysticks which are already connected when the application starts.
         for (int i = GLFW_JOYSTICK_1; i < GLFW_JOYSTICK_16; i++) {
@@ -118,17 +128,26 @@ namespace xengine {
         switch (button) {
             case GLFW_MOUSE_BUTTON_LEFT:
                 for (auto listener: listeners) {
-                    listener->onMouseKeyDown(LEFT);
+                    if (action == GLFW_PRESS)
+                        listener->onMouseKeyDown(LEFT);
+                    else
+                        listener->onMouseKeyUp(LEFT);
                 }
                 break;
             case GLFW_MOUSE_BUTTON_MIDDLE:
                 for (auto listener: listeners) {
-                    listener->onMouseKeyDown(MIDDLE);
+                    if (action == GLFW_PRESS)
+                        listener->onMouseKeyDown(MIDDLE);
+                    else
+                        listener->onMouseKeyUp(MIDDLE);
                 }
                 break;
             case GLFW_MOUSE_BUTTON_RIGHT:
                 for (auto listener: listeners) {
-                    listener->onMouseKeyDown(RIGHT);
+                    if (action == GLFW_PRESS)
+                        listener->onMouseKeyDown(RIGHT);
+                    else
+                        listener->onMouseKeyUp(RIGHT);
                 }
                 break;
             default:
@@ -153,6 +172,12 @@ namespace xengine {
                     break;
             }
         }
+    }
+
+    void GLFWInput::glfwScrollCallback(double xoffset, double yoffset) {
+        mice.at(0).wheelDelta = yoffset;
+        for (auto listener: listeners)
+            listener->onMouseWheelScroll(yoffset);
     }
 
     void GLFWInput::addListener(InputListener &listener) {

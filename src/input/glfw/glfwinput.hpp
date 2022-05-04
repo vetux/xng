@@ -43,6 +43,8 @@ namespace xengine {
 
         void glfwJoystickCallback(int jid, int event);
 
+        void glfwScrollCallback(double xoffset, double yoffset);
+
         void addListener(InputListener &listener) override;
 
         void removeListener(InputListener &listener) override;
