@@ -178,7 +178,7 @@ namespace xengine {
         command.properties.blendSourceMode = layer.colorBlendModeSource;
         command.properties.blendDestinationMode = layer.colorBlendModeDest;
 
-        ren.renderBegin(screen, RenderOptions({}, screen.getSize(), false, false, 1, {}, 0, false, false));
+        ren.renderBegin(screen, RenderOptions({}, screen.getSize(), true, false, 1, {}, 0, false, false));
         ren.addCommand(command);
         ren.renderFinish();
     }
