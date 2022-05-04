@@ -46,7 +46,7 @@ namespace xengine {
         int bitsDepth = 24;
         int bitsStencil = 8;
 
-        int msaaSamples = 4;
+        int msaaSamples = 0;
 
         bool sRGBCapable = false;
 
