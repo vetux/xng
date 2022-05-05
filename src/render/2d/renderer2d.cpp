@@ -174,13 +174,13 @@ namespace xengine {
 
     Renderer2D::~Renderer2D() = default;
 
-    void Renderer2D::renderBegin(RenderTarget &target, bool clear) {
+    void Renderer2D::renderBegin(RenderTarget &target, bool clear, ColorRGBA clearColor) {
         renderDevice.getRenderer().renderBegin(target, RenderOptions({},
                                                                      target.getSize(),
                                                                      false,
                                                                      false,
                                                                      1,
-                                                                     {},
+                                                                     clearColor,
                                                                      1,
                                                                      clear, clear, clear));
         screenSize = target.getSize();
@@ -189,9 +189,9 @@ namespace xengine {
 
     void Renderer2D::renderBegin(RenderTarget &target,
                                  bool clear,
+                                 ColorRGBA clearColor,
                                  Vec2i viewportOffset,
-                                 Vec2i viewportSize,
-                                 ColorRGBA clearColor) {
+                                 Vec2i viewportSize) {
         renderDevice.getRenderer().renderBegin(target, RenderOptions(viewportOffset,
                                                                      viewportSize,
                                                                      false,

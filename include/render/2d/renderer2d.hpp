@@ -62,13 +62,13 @@ namespace xengine {
 
         ~Renderer2D();
 
-        void renderBegin(RenderTarget &target, bool clear = true);
+        void renderBegin(RenderTarget &target, bool clear = true, ColorRGBA clearColor = ColorRGBA::black());
 
         void renderBegin(RenderTarget &target,
                          bool clear,
+                         ColorRGBA clearColor,
                          Vec2i viewportOffset,
-                         Vec2i viewportSize,
-                         ColorRGBA clearColor = ColorRGBA(0, 0, 0, 0));
+                         Vec2i viewportSize);
 
         /**
          * Set the projection bounds.
@@ -119,7 +119,7 @@ namespace xengine {
 
         void draw(Text &text, Rectf dstRect, ColorRGBA color, Vec2f center = {}, float rotation = 0);
 
-        void draw(Text &text, Rectf dstRect, ShaderProgram& shader, Vec2f center = {}, float rotation = 0);
+        void draw(Text &text, Rectf dstRect, ShaderProgram &shader, Vec2f center = {}, float rotation = 0);
 
         void renderPresent();
 
