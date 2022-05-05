@@ -70,7 +70,7 @@ namespace xengine {
     struct XENGINE_EXPORT ColorRGBA {
         uint8_t data[4];
 
-        static ColorRGBA black(float intensity = 0.5, uint8_t alpha = 255) {
+        static ColorRGBA black(float intensity = 1, uint8_t alpha = 255) {
             return {
                     0,
                     0,
@@ -79,7 +79,7 @@ namespace xengine {
             };
         }
 
-        static ColorRGBA white(float intensity = 0.5, uint8_t alpha = 255) {
+        static ColorRGBA white(float intensity = 1, uint8_t alpha = 255) {
             return {
                     numeric_cast<uint8_t>(255 * intensity),
                     numeric_cast<uint8_t>(255 * intensity),
@@ -88,7 +88,7 @@ namespace xengine {
             };
         }
 
-        static ColorRGBA grey(float intensity = 0.5, uint8_t alpha = 255) {
+        static ColorRGBA grey(float intensity = 1, uint8_t alpha = 255) {
             return {
                     numeric_cast<uint8_t>(64 * intensity),
                     numeric_cast<uint8_t>(64 * intensity),
@@ -97,7 +97,7 @@ namespace xengine {
             };
         }
 
-        static ColorRGBA red(float intensity = 0.5, uint8_t alpha = 255) {
+        static ColorRGBA red(float intensity = 1, uint8_t alpha = 255) {
             return {
                     numeric_cast<uint8_t>(255 * intensity),
                     numeric_cast<uint8_t>(5 * intensity),
@@ -106,7 +106,7 @@ namespace xengine {
             };
         }
 
-        static ColorRGBA green(float intensity = 0.5, uint8_t alpha = 255) {
+        static ColorRGBA green(float intensity = 1, uint8_t alpha = 255) {
             return {
                     numeric_cast<uint8_t>(5 * intensity),
                     numeric_cast<uint8_t>(255 * intensity),
@@ -115,7 +115,7 @@ namespace xengine {
             };
         }
 
-        static ColorRGBA blue(float intensity = 0.5, uint8_t alpha = 255) {
+        static ColorRGBA blue(float intensity = 1, uint8_t alpha = 255) {
             return {
                     numeric_cast<uint8_t>(5 * intensity),
                     numeric_cast<uint8_t>(5 * intensity),
@@ -124,7 +124,7 @@ namespace xengine {
             };
         }
 
-        static ColorRGBA yellow(float intensity = 0.5, uint8_t alpha = 255) {
+        static ColorRGBA yellow(float intensity = 1, uint8_t alpha = 255) {
             return {
                     numeric_cast<uint8_t>(255 * intensity),
                     numeric_cast<uint8_t>(255 * intensity),
@@ -133,7 +133,7 @@ namespace xengine {
             };
         }
 
-        static ColorRGBA cyan(float intensity = 0.5, uint8_t alpha = 255) {
+        static ColorRGBA cyan(float intensity = 1, uint8_t alpha = 255) {
             return {
                     numeric_cast<uint8_t>(5 * intensity),
                     numeric_cast<uint8_t>(255 * intensity),
