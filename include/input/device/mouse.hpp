@@ -22,6 +22,8 @@
 
 #include "math/vector2.hpp"
 
+#include "input/device/buttonstate.hpp"
+
 namespace xengine {
     enum MouseButton {
         LEFT,
@@ -38,12 +40,24 @@ namespace xengine {
     class XENGINE_EXPORT Mouse {
     public:
         bool getButton(MouseButton button) const {
-            return buttonsDown.find(button) != buttonsDown.end();
+            auto it = buttons.find(button);
+            if (it != buttons.end())
+                return it->second != RELEASED;
+            else
+                return false;
+        }
+
+        bool getButtonDown(MouseButton button) const {
+            auto it = buttons.find(button);
+            if (it != buttons.end())
+                return it->second == PRESSED;
+            else
+                return false;
         }
 
         double wheelDelta;
         Vec2d position;
-        std::set<MouseButton> buttonsDown;
+        std::map<MouseButton, ButtonState> buttons;
     };
 }
 

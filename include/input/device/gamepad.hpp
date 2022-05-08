@@ -23,6 +23,7 @@
 #include <map>
 
 #include "math/vector2.hpp"
+#include "input/device/buttonstate.hpp"
 
 namespace xengine {
     enum GamePadAxis {
@@ -64,14 +65,26 @@ namespace xengine {
         }
 
         bool getGamepadButton(GamePadButton button) const {
-            return buttonsDown.find(button) != buttonsDown.end();
+            auto it = buttons.find(button);
+            if (it != buttons.end())
+                return it->second != RELEASED;
+            else
+                return false;
+        }
+
+        bool getGamepadButtonDown(GamePadButton button) const {
+            auto it = buttons.find(button);
+            if (it != buttons.end())
+                return it->second == PRESSED;
+            else
+                return false;
         }
 
         std::string vendor; //Vendor if available eg sony
         std::string model; // Model if available eg ds4
 
         std::map<GamePadAxis, double> axies;
-        std::set<GamePadButton> buttonsDown;
+        std::map<GamePadButton, ButtonState> buttons;
     };
 }
 

@@ -20,6 +20,8 @@
 #ifndef XENGINE_KEYBOARD_HPP
 #define XENGINE_KEYBOARD_HPP
 
+#include "input/device/buttonstate.hpp"
+
 namespace xengine {
     enum KeyboardKey {
         KEY_RETURN,
@@ -126,10 +128,22 @@ namespace xengine {
     class XENGINE_EXPORT Keyboard {
     public:
         bool getKey(KeyboardKey key) const {
-            return keysDown.find(key) != keysDown.end();
+            auto it = keys.find(key);
+            if (it != keys.end())
+                return it->second != RELEASED;
+            else
+                return false;
         }
 
-        std::set<KeyboardKey> keysDown;
+        bool getKeyDown(KeyboardKey key) const {
+            auto it = keys.find(key);
+            if (it != keys.end())
+                return it->second == PRESSED;
+            else
+                return false;
+        }
+
+        std::map<KeyboardKey, ButtonState> keys;
     };
 }
 

@@ -57,6 +57,12 @@ namespace xengine {
 
         void clearMouseCursorImage() override;
 
+        const Keyboard &getKeyboard() const override;
+
+        const Mouse &getMouse() const override;
+
+        const GamePad &getGamePad() const override;
+
         const std::map<int, Keyboard> &getKeyboards() const override;
 
         const std::map<int, Mouse> &getMice() const override;

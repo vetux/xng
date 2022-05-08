@@ -43,6 +43,12 @@ namespace xengine {
 
         virtual void clearMouseCursorImage() = 0;
 
+        virtual const Keyboard &getKeyboard() const = 0;
+
+        virtual const Mouse &getMouse() const = 0;
+
+        virtual const GamePad &getGamePad() const = 0;
+
         virtual const std::map<int, Keyboard> &getKeyboards() const = 0;
 
         virtual const std::map<int, Mouse> &getMice() const = 0;

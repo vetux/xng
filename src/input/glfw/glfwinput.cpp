@@ -208,6 +208,18 @@ namespace xengine {
         throw std::runtime_error("Not implemented");
     }
 
+    const Keyboard &GLFWInput::getKeyboard() const {
+        return keyboards.at(0);
+    }
+
+    const Mouse &GLFWInput::getMouse() const {
+        return mice.at(0);
+    }
+
+    const GamePad &GLFWInput::getGamePad() const {
+        return gamepads.at(0);
+    }
+
     const std::map<int, Keyboard> &GLFWInput::getKeyboards() const {
         return keyboards;
     }
@@ -221,15 +233,37 @@ namespace xengine {
     }
 
     void GLFWInput::update() {
-        mice[0].wheelDelta = 0;
+        for (auto &pair: mice) {
+            pair.second.wheelDelta = 0;
+
+            for (auto &k: pair.second.buttons) {
+                if (k.second == PRESSED)
+                    k.second = HELD;
+            }
+        }
+
+        for (auto &pair: keyboards) {
+            for (auto &k: pair.second.keys) {
+                if (k.second == PRESSED)
+                    k.second = HELD;
+            }
+        }
+
+        for (auto &pair: gamepads) {
+            for (auto &k: pair.second.buttons) {
+                if (k.second == PRESSED)
+                    k.second = HELD;
+            }
+        }
     }
 
     void GLFWInput::onKeyDown(KeyboardKey key) {
-        keyboards[0].keysDown.insert(key);
+        if (keyboards[0].keys[key] != HELD)
+            keyboards[0].keys[key] = PRESSED;
     }
 
     void GLFWInput::onKeyUp(KeyboardKey key) {
-        keyboards[0].keysDown.erase(key);
+        keyboards[0].keys[key] = RELEASED;
     }
 
     void GLFWInput::onMouseMove(double xPos, double yPos) {
@@ -242,11 +276,12 @@ namespace xengine {
     }
 
     void GLFWInput::onMouseKeyDown(MouseButton key) {
-        mice[0].buttonsDown.insert(key);
+        if (mice[0].buttons[key] != HELD)
+            mice[0].buttons[key] = PRESSED;
     }
 
     void GLFWInput::onMouseKeyUp(MouseButton key) {
-        mice[0].buttonsDown.erase(key);
+        mice[0].buttons[key] = RELEASED;
     }
 
     void GLFWInput::onGamepadConnected(int id) {
@@ -262,11 +297,12 @@ namespace xengine {
     }
 
     void GLFWInput::onGamepadButtonDown(int id, GamePadButton button) {
-        gamepads[id].buttonsDown.insert(button);
+        if (gamepads[id].buttons[button] != HELD)
+            gamepads[id].buttons[button] = PRESSED;
     }
 
     void GLFWInput::onGamepadButtonUp(int id, GamePadButton button) {
-        gamepads[id].buttonsDown.erase(button);
+        gamepads[id].buttons[button] = RELEASED;
     }
 }
 
