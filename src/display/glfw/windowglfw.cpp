@@ -330,6 +330,7 @@ namespace xengine {
         }
 
         void WindowGLFW::update() {
+            input->update();
             glfwPollEvents();
         }
 

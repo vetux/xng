@@ -220,6 +220,10 @@ namespace xengine {
         return gamepads;
     }
 
+    void GLFWInput::update() {
+        mice[0].wheelDelta = 0;
+    }
+
     void GLFWInput::onKeyDown(KeyboardKey key) {
         keyboards[0].keysDown.insert(key);
     }

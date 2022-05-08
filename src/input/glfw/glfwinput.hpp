@@ -63,6 +63,8 @@ namespace xengine {
 
         const std::map<int, GamePad> &getGamePads() const override;
 
+        void update();
+
     private:
         void onKeyDown(KeyboardKey key) override;
 
