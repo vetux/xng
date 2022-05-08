@@ -235,7 +235,7 @@ namespace xengine {
     void GLFWInput::update() {
         for (auto &pair: mice) {
             pair.second.wheelDelta = 0;
-
+            pair.second.positionDelta = Vec2d(0);
             for (auto &k: pair.second.buttons) {
                 if (k.second == PRESSED)
                     k.second = HELD;
@@ -267,6 +267,8 @@ namespace xengine {
     }
 
     void GLFWInput::onMouseMove(double xPos, double yPos) {
+        mice[0].positionDelta = mice[0].position - Vec2d(xPos, yPos);
+
         mice[0].position.x = xPos;
         mice[0].position.y = yPos;
     }

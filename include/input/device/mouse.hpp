@@ -56,6 +56,8 @@ namespace xengine {
         }
 
         double wheelDelta;
+        Vec2d positionDelta;
+
         Vec2d position;
         std::map<MouseButton, ButtonState> buttons;
     };
