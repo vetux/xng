@@ -49,9 +49,9 @@ namespace xengine {
         };
 
         QtRenderWidget(QWidget *parent,
-                       AssetManager &assetManager,
+                       ResourceRegistry &registry,
                        std::unique_ptr<Allocator> allocator)
-                : QOpenGLWidget(parent), assetManager(assetManager), allocator(std::move(allocator)) {}
+                : QOpenGLWidget(parent), registry(registry), allocator(std::move(allocator)) {}
 
         void setScene(const Scene &s) {
             scene = s;
@@ -62,8 +62,6 @@ namespace xengine {
         void initializeGL() override {
             QOpenGLWidget::initializeGL();
             renderDevice = RenderDevice::create(OPENGL_4_1_QT);
-            assetRenderManager = std::make_unique<AssetRenderManager>(assetManager,
-                                                                      renderDevice->getAllocator());
             pipeline = allocator->createPipeline();
         }
 
@@ -84,14 +82,13 @@ namespace xengine {
     private:
         std::unique_ptr<RenderTarget> getWidgetRenderTarget();
 
-        AssetManager &assetManager;
+        ResourceRegistry &registry;
 
         Scene scene;
 
         std::unique_ptr<Pipeline> pipeline;
 
         std::unique_ptr<RenderDevice> renderDevice;
-        std::unique_ptr<AssetRenderManager> assetRenderManager;
 
         std::unique_ptr<Allocator> allocator;
     };

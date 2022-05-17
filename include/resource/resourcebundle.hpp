@@ -17,72 +17,67 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_ASSETBUNDLE_HPP
-#define XENGINE_ASSETBUNDLE_HPP
+#ifndef XENGINE_RESOURCEBUNDLE_HPP
+#define XENGINE_RESOURCEBUNDLE_HPP
 
 #include <map>
 #include <string>
 #include <memory>
 #include <typeindex>
 
-#include "asset/asset.hpp"
+#include "resource/resource.hpp"
 
 namespace xengine {
-    class XENGINE_EXPORT AssetBundle {
+    class XENGINE_EXPORT ResourceBundle {
     public:
-        ~AssetBundle() {
+        ResourceBundle() = default;
+
+        ~ResourceBundle() {
             assets.clear();
         }
 
-        AssetBundle() = default;
-
-        AssetBundle(const AssetBundle &other) {
+        ResourceBundle(const ResourceBundle &other) {
             *this = other;
         }
 
-        AssetBundle &operator=(const AssetBundle &other) {
+        ResourceBundle &operator=(const ResourceBundle &other) {
             for (auto &pair: other.assets) {
-                auto index = pair.first;
-                for (auto &assetMap: pair.second)
-                    for (auto &asset: assetMap.second)
-                        assets[index][assetMap.first].emplace_back(asset->clone());
+                assets[pair.first] = std::shared_ptr<Resource>(pair.second->clone());
             }
 
             return *this;
         }
 
-        AssetBundle(AssetBundle &&other) = default;
+        ResourceBundle(ResourceBundle &&other) = default;
 
-        AssetBundle &operator=(AssetBundle &&other) = default;
+        ResourceBundle &operator=(ResourceBundle &&other) = default;
 
         template<typename T>
         const T &get(const std::string &name = "") const {
+            return dynamic_cast<const T &>(*get(name));
+        }
+
+        std::shared_ptr<Resource> get(const std::string &name = "") const {
             if (assets.empty())
                 throw std::runtime_error("Empty bundle map");
 
-            auto index = std::type_index(typeid(T));
-
             if (name.empty()) {
-                return dynamic_cast<const T &>(*assets.at(index).begin()->second.at(0));
+                return assets.begin()->second;
             } else {
-                return dynamic_cast<const T &>(*assets.at(index).at(name).at(0));
+                return assets.at(name);
             }
         }
 
-        template<typename T>
-        void add(const std::string &name, std::unique_ptr<T> ptr) {
-            auto index = std::type_index(typeid(T));
-            assets[index][name].emplace_back(std::move(ptr));
+        void add(const std::string &name, std::unique_ptr<Resource> ptr) {
+            assets[name] = std::move(ptr);
         }
 
-        template<typename T>
         void remove(const std::string &name) {
-            auto index = std::type_index(typeid(T));
-            assets.at(index).at(name).clear();
+            assets.erase(name);
         }
 
-        std::map<std::type_index, std::map<std::string, std::vector<std::unique_ptr<Asset>>>> assets;
+        std::map<std::string, std::shared_ptr<Resource>> assets;
     };
 }
 
-#endif //XENGINE_ASSETBUNDLE_HPP
+#endif //XENGINE_RESOURCEBUNDLE_HPP

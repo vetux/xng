@@ -22,14 +22,14 @@
 
 #include "audio/audioformat.hpp"
 
-#include "asset/asset.hpp"
+#include "resource/resource.hpp"
 
 namespace xengine {
-    class XENGINE_EXPORT Audio : public Asset {
+    class XENGINE_EXPORT Audio : public Resource {
     public:
         ~Audio() override = default;
 
-        Asset *clone() override {
+        Resource *clone() override {
             return new Audio(*this);
         }
 

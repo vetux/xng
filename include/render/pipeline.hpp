@@ -20,7 +20,7 @@
 #ifndef XENGINE_PIPELINE_HPP
 #define XENGINE_PIPELINE_HPP
 
-#include "render/scene.hpp"
+#include "asset/scene.hpp"
 #include "render/platform/rendertarget.hpp"
 
 namespace xengine {

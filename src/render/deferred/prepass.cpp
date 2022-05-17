@@ -175,7 +175,7 @@ namespace xengine {
     }
 
     void PrePass::update(Scene &scene, GBuffer &buffer) {
-        Mat4f model, view, projection;
+      /*  Mat4f model, view, projection;
         view = scene.camera.view();
         projection = scene.camera.projection();
 
@@ -286,6 +286,6 @@ namespace xengine {
             firstCommand = false;
         }
 
-        ren.renderFinish();
+        ren.renderFinish();*/
     }
 }

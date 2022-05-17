@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "asset/assetimporter.hpp"
+#include "resource/resourceimporter.hpp"
 
 #include <filesystem>
 
@@ -48,14 +48,14 @@ namespace xengine {
         throw std::runtime_error("Invalid texture type " + v);
     }
 
-    static AssetBundle readJsonBundle(const std::string &path, Archive &archive, ThreadPool &pool);
+    static ResourceBundle readJsonBundle(const std::string &path, Archive &archive, ThreadPool &pool);
 
     static void sideLoadBundle(const std::string &bundlePath,
                                ThreadPool &pool,
                                Archive &archive,
                                std::mutex &bundleMutex,
                                std::map<std::string, std::shared_ptr<Task>> bundleTasks,
-                               std::map<std::string, AssetBundle> refBundles) {
+                               std::map<std::string, ResourceBundle> refBundles) {
         bundleMutex.lock();
 
         auto bundleIterator = refBundles.find(bundlePath);
@@ -68,7 +68,7 @@ namespace xengine {
                             std::filesystem::path path(bundlePath);
 
                             std::unique_ptr<std::istream> stream(archive.open(bundlePath));
-                            auto bundle = AssetImporter::import(*stream, path.extension(), &archive);
+                            auto bundle = ResourceImporter().import(*stream, path.extension(), &archive);
 
                             std::lock_guard<std::mutex> guard(bundleMutex);
                             refBundles[bundlePath] = std::move(bundle);
@@ -108,7 +108,7 @@ namespace xengine {
         auto it = j.find("images");
         if (it != j.end()) {
             for (auto &element: *it) {
-                texture.images.emplace_back((AssetPath) {element["bundle"], element["asset"]});
+                texture.images.emplace_back(Uri(element["bundle"], element["asset"]));
             }
         }
 
@@ -123,14 +123,14 @@ namespace xengine {
         return texture;
     }
 
-    static AssetBundle readJsonBundle(std::istream &stream, Archive &archive, ThreadPool &pool) {
+    static ResourceBundle readJsonBundle(std::istream &stream, Archive &archive, ThreadPool &pool) {
         std::string buffer((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
         nlohmann::json j = nlohmann::json::parse(buffer);
 
         std::mutex bundleMutex;
 
         std::map<std::string, std::shared_ptr<Task>> bundleTasks;
-        std::map<std::string, AssetBundle> refBundles; //The referenced asset bundles by path
+        std::map<std::string, ResourceBundle> refBundles; //The referenced asset bundles by path
 
         //Begin sideload of all referenced asset bundles
         auto iterator = j.find("meshes");
@@ -152,7 +152,7 @@ namespace xengine {
             task.second->wait();
         }
 
-        AssetBundle ret;
+        ResourceBundle ret;
 
         //Load data from json and referenced bundles
         iterator = j.find("meshes");
@@ -162,7 +162,7 @@ namespace xengine {
                 std::string bundle = element["bundle"];
                 std::string asset = element["asset"];
 
-                ret.add<Mesh>(name, std::make_unique<Mesh>(refBundles.at(bundle).get<Mesh>(asset)));
+                ret.add(name, std::make_unique<Mesh>(refBundles.at(bundle).get<Mesh>(asset)));
             }
         }
 
@@ -174,10 +174,10 @@ namespace xengine {
                 auto it = element.find("bundle");
                 if (it != element.end()) {
                     std::string n = element.value("asset", "");
-                    ret.add<AssetMaterial>(name,
-                                           std::make_unique<AssetMaterial>(refBundles.at(*it).get<AssetMaterial>(n)));
+                    ret.add(name,
+                            std::make_unique<Material>(refBundles.at(*it).get<Material>(n)));
                 } else {
-                    AssetMaterial mat;
+                    Material mat;
 
                     if (element.find("diffuse") != element.end())
                         mat.diffuse = convertJsonColor(element["diffuse"]);
@@ -191,39 +191,39 @@ namespace xengine {
                         mat.shininess = element["shininess"];
 
                     if (element.find("diffuseTexture") != element.end()) {
-                        auto path = AssetPath(element["diffuseTexture"]["bundle"], element["diffuseTexture"]["asset"]);
-                        mat.diffuseTexture = path;
+                        auto path = Uri(element["diffuseTexture"]["bundle"], element["diffuseTexture"]["asset"]);
+                        mat.diffuseTexture = ResourceHandle<ImageRGBA>(path);
                     }
 
                     if (element.find("ambientTexture") != element.end()) {
-                        auto path = AssetPath(element["ambientTexture"]["bundle"], element["ambientTexture"]["asset"]);
-                        mat.ambientTexture = path;
+                        auto path = Uri(element["ambientTexture"]["bundle"], element["ambientTexture"]["asset"]);
+                        mat.ambientTexture = ResourceHandle<ImageRGBA>(path);
                     }
 
                     if (element.find("specularTexture") != element.end()) {
-                        auto path = AssetPath(element["specularTexture"]["bundle"],
+                        auto path = Uri(element["specularTexture"]["bundle"],
                                               element["specularTexture"]["asset"]);
-                        mat.specularTexture = path;
+                        mat.specularTexture = ResourceHandle<ImageRGBA>(path);
                     }
 
                     if (element.find("emissiveTexture") != element.end()) {
-                        auto path = AssetPath(element["emissiveTexture"]["bundle"],
+                        auto path = Uri(element["emissiveTexture"]["bundle"],
                                               element["emissiveTexture"]["asset"]);
-                        mat.emissiveTexture = path;
+                        mat.emissiveTexture = ResourceHandle<ImageRGBA>(path);
                     }
 
                     if (element.find("shininessTexture") != element.end()) {
-                        auto path = AssetPath(element["shininessTexture"]["bundle"],
+                        auto path = Uri(element["shininessTexture"]["bundle"],
                                               element["shininessTexture"]["asset"]);
-                        mat.shininessTexture = path;
+                        mat.shininessTexture = ResourceHandle<ImageRGBA>(path);
                     }
 
                     if (element.find("normalTexture") != element.end()) {
-                        auto path = AssetPath(element["normalTexture"]["bundle"], element["normalTexture"]["asset"]);
-                        mat.normalTexture = path;
+                        auto path = Uri(element["normalTexture"]["bundle"], element["normalTexture"]["asset"]);
+                        mat.normalTexture = ResourceHandle<ImageRGBA>(path);
                     }
 
-                    ret.add<AssetMaterial>(name, std::make_unique<AssetMaterial>(mat));
+                    ret.add(name, std::make_unique<Material>(mat));
                 }
             }
         }
@@ -234,7 +234,7 @@ namespace xengine {
                 std::string name = element["name"];
                 auto s = std::stringstream(element.dump());
                 auto tex = readJsonTexture(s, archive);
-                ret.add<Texture>(name, std::make_unique<Texture>(tex));
+                ret.add(name, std::make_unique<Texture>(tex));
             }
         }
 
@@ -245,7 +245,7 @@ namespace xengine {
                 std::string bundle = element["bundle"];
                 std::string asset = element.value("asset", "");
 
-                ret.add<ImageRGBA>(name, std::make_unique<ImageRGBA>(
+                ret.add(name, std::make_unique<ImageRGBA>(
                         refBundles.at(bundle).get<ImageRGBA>(asset)));
             }
         }
@@ -295,8 +295,8 @@ namespace xengine {
         return ret;
     }
 
-    static AssetMaterial convertMaterial(const aiMaterial &assMaterial) {
-        AssetMaterial ret;
+    static Material convertMaterial(const aiMaterial &assMaterial) {
+        Material ret;
 
         aiColor3D c;
         assMaterial.Get(AI_MATKEY_COLOR_DIFFUSE, c);
@@ -322,7 +322,7 @@ namespace xengine {
         return ret;
     }
 
-    static AssetBundle readAsset(const std::string &assetBuffer, const std::string &hint, Archive *archive) {
+    static ResourceBundle readAsset(const std::string &assetBuffer, const std::string &hint, Archive *archive) {
         //TODO: Implement assimp IOSystem pointing to archive
 
         Assimp::Importer importer;
@@ -337,12 +337,12 @@ namespace xengine {
 
         const auto &scene = dynamic_cast<const aiScene &>(*scenePointer);
 
-        AssetBundle ret;
+        ResourceBundle ret;
 
         for (auto i = 0; i < scene.mNumMeshes; i++) {
             const auto &mesh = dynamic_cast<const aiMesh &>(*scene.mMeshes[i]);
             std::string name = mesh.mName.C_Str();
-            ret.add<Mesh>(name, std::make_unique<Mesh>(convertMesh(mesh)));
+            ret.add(name, std::make_unique<Mesh>(convertMesh(mesh)));
         }
 
         for (auto i = 0; i < scene.mNumMaterials; i++) {
@@ -351,7 +351,7 @@ namespace xengine {
             aiString materialName;
             scene.mMaterials[i]->Get(AI_MATKEY_NAME, materialName);
 
-            ret.add<AssetMaterial>(materialName.data, std::make_unique<AssetMaterial>(material));
+            ret.add(materialName.data, std::make_unique<Material>(material));
         }
 
         return ret;
@@ -475,7 +475,7 @@ namespace xengine {
         return ret;
     }
 
-    AssetBundle AssetImporter::import(std::istream &stream, const std::string &hint, Archive *archive) {
+    ResourceBundle ResourceImporter::import(std::istream &stream, const std::string &hint, Archive *archive) {
         if (hint.empty()) {
             std::string buffer((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
 
@@ -488,8 +488,8 @@ namespace xengine {
                                           &y,
                                           &n) == 1) {
                     //Source is image
-                    AssetBundle ret;
-                    ret.add<ImageRGBA>("0", std::make_unique<ImageRGBA>(readImage(buffer)));
+                    ResourceBundle ret;
+                    ret.add("0", std::make_unique<ImageRGBA>(readImage(buffer)));
                     return ret;
                 }
             } catch (const std::exception &e) {}
@@ -509,8 +509,8 @@ namespace xengine {
 
             //Try to read source as audio
             auto audio = readAudio(buffer);
-            AssetBundle ret;
-            ret.add<Audio>("0", std::make_unique<Audio>(audio));
+            ResourceBundle ret;
+            ret.add("0", std::make_unique<Audio>(audio));
 
             return ret;
         } else {
@@ -535,23 +535,23 @@ namespace xengine {
                                                   &x,
                                                   &y,
                                                   &n) == 1) {
-                            AssetBundle ret;
-                            ret.add<ImageRGBA>("0", std::make_unique<ImageRGBA>(readImage(buffer)));
+                            ResourceBundle ret;
+                            ret.add("0", std::make_unique<ImageRGBA>(readImage(buffer)));
                             return ret;
                         }
                     } catch (const std::exception &e) {}
 
                     //Try to read source as audio
                     auto audio = readAudio(buffer);
-                    AssetBundle ret;
-                    ret.add<Audio>("0", std::make_unique<Audio>(audio));
+                    ResourceBundle ret;
+                    ret.add("0", std::make_unique<Audio>(audio));
                     return ret;
                 }
             }
         }
     }
 
-    AssetBundle AssetImporter::import(const std::string &path, Archive &archive) {
+    ResourceBundle ResourceImporter::import(const std::string &path, Archive &archive) {
         auto stream = archive.open(path);
         return import(*stream, std::filesystem::path(path).extension(), &archive);
     }

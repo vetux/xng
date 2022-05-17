@@ -34,8 +34,6 @@
 #include "render/deferred/compositor.hpp"
 #include "render/pipeline.hpp"
 
-#include "asset/manager/assetrendermanager.hpp"
-
 namespace xengine {
     class XENGINE_EXPORT DeferredPipeline : public Pipeline {
     public:

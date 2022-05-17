@@ -38,9 +38,9 @@ namespace xengine {
 
     XENGINE_EXPORT Message &operator<<(Message &message, LightType type);
 
-    XENGINE_EXPORT AssetPath &operator<<(AssetPath &value, const Message &message);
+    XENGINE_EXPORT Uri &operator<<(Uri &value, const Message &message);
 
-    XENGINE_EXPORT Message &operator<<(Message &message, const AssetPath &path);
+    XENGINE_EXPORT Message &operator<<(Message &message, const Uri &path);
 
     XENGINE_EXPORT CameraComponent &operator<<(CameraComponent &component, const Message &message);
 

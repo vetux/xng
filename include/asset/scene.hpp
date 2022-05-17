@@ -20,30 +20,29 @@
 #ifndef XENGINE_SCENE_HPP
 #define XENGINE_SCENE_HPP
 
-#include "camera.hpp"
-#include "light.hpp"
-#include "asset/assetmaterial.hpp"
-#include "asset/assetskybox.hpp"
-#include "asset/shader.hpp"
-#include "asset/assethandle.hpp"
+#include <utility>
 
-#include "render/material.hpp"
-#include "render/skybox.hpp"
+#include "asset/camera.hpp"
+#include "asset/light.hpp"
+#include "asset/material.hpp"
+#include "asset/skybox.hpp"
+#include "asset/shader.hpp"
+#include "asset/mesh.hpp"
+
+#include "resource/resourcehandle.hpp"
 
 #include "render/platform/rendercommand.hpp"
 
 namespace xengine {
     struct XENGINE_EXPORT Scene {
-        struct XENGINE_EXPORT Node {
-            Node() = default;
-
-            Node(Transform t, MeshBuffer *mesh, Material material)
-                    : transform(t), mesh(mesh), material(material) {}
+        struct XENGINE_EXPORT Object {
+            Object(const Mesh &mesh, const Material &material)
+                    : mesh(&mesh), material(&material) {}
 
             Transform transform;
 
-            MeshBuffer *mesh = nullptr;
-            Material material;
+            const Mesh *mesh;
+            const Material *material;
 
             bool outline = false;
             ColorRGBA outlineColor;
@@ -56,7 +55,7 @@ namespace xengine {
         Camera camera;
         Skybox skybox;
         std::vector<Light> lights;
-        std::vector<Node> nodes;
+        std::vector<Object> nodes;
     };
 }
 

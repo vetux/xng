@@ -17,18 +17,35 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_ASSETEXPORTER_HPP
-#define XENGINE_ASSETEXPORTER_HPP
+#ifndef XENGINE_MATERIAL_HPP
+#define XENGINE_MATERIAL_HPP
 
-#include "asset/image.hpp"
-#include "color.hpp"
+#include "asset/texture.hpp"
 
-#include <ostream>
+#include "resource/resourcehandle.hpp"
+#include "asset/texture.hpp"
 
 namespace xengine {
-    namespace AssetExporter {
-        XENGINE_EXPORT void exportImage(std::ostream &stream, const Image <ColorRGBA> &image);
-    }
+    struct XENGINE_EXPORT Material : public Resource {
+        ~Material() override = default;
+
+        Resource *clone() override {
+            return new Material(*this);
+        }
+
+        ColorRGBA diffuse{};
+        ColorRGBA ambient{};
+        ColorRGBA specular{};
+        ColorRGBA emissive{};
+        float shininess{32};
+
+        ResourceHandle<ImageRGBA> diffuseTexture;
+        ResourceHandle<ImageRGBA> ambientTexture;
+        ResourceHandle<ImageRGBA> specularTexture;
+        ResourceHandle<ImageRGBA> emissiveTexture;
+        ResourceHandle<ImageRGBA> shininessTexture;
+        ResourceHandle<ImageRGBA> normalTexture;
+    };
 }
 
-#endif //XENGINE_ASSETEXPORTER_HPP
+#endif //XENGINE_MATERIAL_HPP

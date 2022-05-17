@@ -28,7 +28,7 @@
 #include "ecs/components/skyboxcomponent.hpp"
 #include "render/deferred/deferredpipeline.hpp"
 #include "io/archive.hpp"
-#include "asset/assetimporter.hpp"
+#include "resource/resourceimporter.hpp"
 
 #include "display/window.hpp"
 
@@ -42,10 +42,6 @@ namespace xengine {
                                         ComponentPool<SkyboxComponent>::Listener {
     public:
         RenderSystem(RenderTarget &screen,
-                     RenderDevice &device,
-                     Archive &archive,
-                     AssetManager &assetManager,
-                     AssetRenderManager &assetRenderManager,
                      Pipeline &pipeline);
 
         ~RenderSystem() override;
@@ -77,30 +73,8 @@ namespace xengine {
                                const SkyboxComponent &oldValue,
                                const SkyboxComponent &newValue) override;
 
-        MeshBuffer &getMesh(const AssetPath &path);
-
-        TextureBuffer &getTexture(const AssetPath &path);
-
-        Material &getMaterial(const AssetPath &path);
-
-        Skybox &getSkybox(const AssetPath &path);
-
-
         Pipeline &pipeline;
-
-        RenderDevice &device;
         RenderTarget &screenTarget;
-
-        Archive &archive;
-        AssetManager &assetManager;
-        AssetRenderManager &assetRenderManager;
-
-        std::map<AssetPath, AssetHandle<AssetSkybox>> skyboxes;
-        std::map<AssetPath, AssetHandle<Mesh>> meshes;
-        std::map<AssetPath, AssetHandle<AssetMaterial>> materials;
-        std::map<AssetPath, AssetHandle<Texture>> textures;
-        std::map<AssetPath, Material> rmaterials;
-        std::map<AssetPath, Skybox> rskyboxes;
 
         size_t polyCount{};
     };

@@ -76,17 +76,16 @@ namespace xengine {
         return message;
     }
 
-    AssetPath &operator<<(AssetPath &value, const Message &message) {
+    Uri &operator<<(Uri &value, const Message &message) {
         auto map = message.getMap();
-        value.bundle = message["bundle"].getString();
-        value.asset = map["asset"].getString();
+        value = Uri(message["bundle"].getString(), map["asset"].getString());
         return value;
     }
 
-    Message &operator<<(Message &message, const AssetPath &path) {
+    Message &operator<<(Message &message, const Uri &path) {
         auto map = std::map<std::string, Message>();
-        map["bundle"] = path.bundle;
-        map["asset"] = path.asset;
+        map["bundle"] = path.getFile();
+        map["asset"] = path.getAsset();
         message = map;
         return message;
     }
@@ -143,8 +142,11 @@ namespace xengine {
         component = MeshRenderComponent();
         component.castShadows = message["castShadows"];
         component.receiveShadows = message["receiveShadows"];
-        component.mesh << message["mesh"];
-        component.material << message["material"];
+        Uri u;
+        u << message["mesh"];
+        component.mesh = ResourceHandle<Mesh>(u);
+        u << message["material"];
+        component.material = ResourceHandle<Material>(u);
         return component;
     }
 
@@ -152,20 +154,21 @@ namespace xengine {
         message = std::map<std::string, Message>();
         message["castShadows"] = component.castShadows;
         message["receiveShadows"] = component.receiveShadows;
-        message["mesh"] << component.mesh;
-        message["material"] << component.material;
+        message["mesh"] << component.mesh.getUri();
+        message["material"] << component.material.getUri();
         return message;
     }
 
     SkyboxComponent &operator<<(SkyboxComponent &component, const Message &message) {
         component = SkyboxComponent();
-        component.skybox.texture = {message["texture"]["bundle"], message["texture"]["asset"]};
+        component.skybox.texture = ResourceHandle<Texture>(Uri(message["texture"]["bundle"],
+                                                               message["texture"]["asset"]));
         return component;
     }
 
     Message &operator<<(Message &message, const SkyboxComponent &component) {
         message = std::map<std::string, Message>();
-        message << component.skybox.texture;
+        message << component.skybox.texture.getUri();
         return message;
     }
 
@@ -259,7 +262,7 @@ namespace xengine {
 
     AudioSourceComponent &operator<<(AudioSourceComponent &component, const Message &message) {
         if (message.getMap().find("audio") != message.getMap().end()) {
-            component.audioPath = AssetPath(message["audio"]["bundle"], message["audio"]["asset"]);
+            component.audioPath = Uri(message["audio"]["bundle"], message["audio"]["asset"]);
             component.play = message.value("play", false);
             component.loop = message.value("loop", false);
         }

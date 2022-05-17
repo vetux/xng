@@ -22,7 +22,7 @@
 #include <string>
 #include <sstream>
 
-#include "asset/assetimporter.hpp"
+#include "resource/resourceimporter.hpp"
 
 static const std::string NORM_CUBE_OBJ = std::string(R"###(
 o Cube
@@ -98,7 +98,7 @@ namespace xengine {
         if (!nCubeC) {
             nCubeC = true;
             std::stringstream stream(NORM_CUBE_OBJ);
-            nCube = AssetImporter::import(stream, ".obj").get<Mesh>();
+            nCube = ResourceImporter().import(stream, ".obj").get<Mesh>();
         }
         return nCube;
     }

@@ -21,7 +21,7 @@
 #include "render/deferred/deferredpipeline.hpp"
 #include "render/shader/shaderinclude.hpp"
 
-#include "asset/assetimporter.hpp"
+#include "resource/resourceimporter.hpp"
 
 #include <sstream>
 
@@ -125,15 +125,15 @@ namespace xengine {
 
         RenderCommand skyboxCommand(*shader, *meshBuffer);
 
-        if (scene.skybox.texture) {
-            skyboxCommand.textures.emplace_back(*scene.skybox.texture);
-        } else {
-            for (int i = TextureBuffer::CubeMapFace::POSITIVE_X; i <= TextureBuffer::CubeMapFace::NEGATIVE_Z; i++) {
-                defaultTexture->upload(static_cast<TextureBuffer::CubeMapFace>(i),
-                                       ImageRGBA(1, 1, {scene.skybox.color}));
-            }
-            skyboxCommand.textures.emplace_back(*defaultTexture);
+        /*  if (scene.skybox.texture) {
+              skyboxCommand.textures.emplace_back(*scene.skybox.texture);
+          } else {*/
+        for (int i = TextureBuffer::CubeMapFace::POSITIVE_X; i <= TextureBuffer::CubeMapFace::NEGATIVE_Z; i++) {
+            defaultTexture->upload(static_cast<TextureBuffer::CubeMapFace>(i),
+                                   ImageRGBA(1, 1, {scene.skybox.color}));
         }
+        skyboxCommand.textures.emplace_back(*defaultTexture);
+        //  }
 
         skyboxCommand.properties.enableDepthTest = false;
         skyboxCommand.properties.enableFaceCulling = false;

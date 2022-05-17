@@ -18,7 +18,7 @@
  */
 
 #include "render/deferred/gbuffer.hpp"
-#include "asset/assetimporter.hpp"
+#include "resource/resourceimporter.hpp"
 
 namespace xengine {
     GBuffer::GBuffer(RenderDevice &device, Vec2i size, int samples)

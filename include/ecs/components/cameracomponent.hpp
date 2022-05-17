@@ -20,7 +20,7 @@
 #ifndef XENGINE_CAMERACOMPONENT_HPP
 #define XENGINE_CAMERACOMPONENT_HPP
 
-#include "render/camera.hpp"
+#include "asset/camera.hpp"
 
 namespace xengine {
     struct XENGINE_EXPORT CameraComponent {

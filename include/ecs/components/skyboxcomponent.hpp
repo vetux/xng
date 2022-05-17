@@ -22,11 +22,11 @@
 
 #include <string>
 
-#include "asset/assetskybox.hpp"
+#include "asset/skybox.hpp"
 
 namespace xengine {
     struct XENGINE_EXPORT SkyboxComponent {
-        AssetSkybox skybox;
+        Skybox skybox;
 
         bool operator==(const SkyboxComponent &other) const {
             return skybox.texture == other.skybox.texture && skybox.color == other.skybox.color;

@@ -21,18 +21,18 @@
 #define XENGINE_TEXTURE_HPP
 
 #include "render/platform/texturebuffer.hpp"
-#include "asset/assetpath.hpp"
-#include "asset/asset.hpp"
+#include "resource/resourcehandle.hpp"
+#include "asset/image.hpp"
 
 namespace xengine {
-    struct XENGINE_EXPORT Texture : public Asset {
+    struct XENGINE_EXPORT Texture : public Resource {
         ~Texture() override = default;
 
-        Asset *clone() override {
+        Resource *clone() override {
             return new Texture(*this);
         }
 
-        std::vector<AssetPath> images;
+        std::vector<ResourceHandle<ImageRGBA>> images;
         TextureBuffer::Attributes attributes;
     };
 }

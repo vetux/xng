@@ -22,13 +22,13 @@
 
 #include "render/shader/shadersource.hpp"
 
-#include "asset/asset.hpp"
+#include "resource/resource.hpp"
 
 namespace xengine {
-    struct XENGINE_EXPORT Shader : public Asset {
+    struct XENGINE_EXPORT Shader : public Resource {
         ~Shader() override = default;
 
-        Asset *clone() override {
+        Resource *clone() override {
             return new Shader(*this);
         }
 

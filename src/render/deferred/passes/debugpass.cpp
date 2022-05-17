@@ -546,7 +546,7 @@ namespace xengine {
     DebugPass::~DebugPass() = default;
 
     void DebugPass::render(GBuffer &gBuffer, Scene &scene) {
-        auto &ren = device.getRenderer();
+    /*    auto &ren = device.getRenderer();
 
         auto &target = gBuffer.getPassTarget();
 
@@ -642,7 +642,7 @@ namespace xengine {
         target.blitDepth(*multiSampleTarget, {}, {}, multiSampleTarget->getSize(), target.getSize());
 
         target.detachColor(0);
-        target.detachDepthStencil();
+        target.detachDepthStencil();*/
     }
 
     void DebugPass::resize(Vec2i size, int samples) {

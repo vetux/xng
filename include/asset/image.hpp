@@ -24,7 +24,7 @@
 #include <stdexcept>
 
 #include "asset/color.hpp"
-#include "asset/asset.hpp"
+#include "resource/resource.hpp"
 
 #include "math/rectangle.hpp"
 
@@ -35,9 +35,9 @@ namespace xengine {
      * @tparam T The type to use for a pixel
      */
     template<typename T>
-    class XENGINE_EXPORT Image : public Asset {
+    class XENGINE_EXPORT Image : public Resource {
     public:
-        Asset *clone() override {
+        Resource *clone() override {
             return new Image<T>(*this);
         }
 
@@ -66,6 +66,10 @@ namespace xengine {
             this->size = std::move(other.size);
             this->buffer = std::move(other.buffer);
             return *this;
+        }
+
+        bool operator()() const {
+            return !empty();
         }
 
         Vec2i getSize() const { return size; }

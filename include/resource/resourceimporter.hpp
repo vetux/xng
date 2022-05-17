@@ -17,21 +17,24 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_ASSETIMPORTER_HPP
-#define XENGINE_ASSETIMPORTER_HPP
+#ifndef XENGINE_RESOURCEIMPORTER_HPP
+#define XENGINE_RESOURCEIMPORTER_HPP
 
 #include <string>
 #include <vector>
 
-#include "asset/assetmaterial.hpp"
+#include "asset/material.hpp"
 #include "asset/audio.hpp"
-#include "asset/assetbundle.hpp"
+#include "resource/resourcebundle.hpp"
 
 #include "async/threadpool.hpp"
 #include "io/archive.hpp"
 
 namespace xengine {
-    namespace AssetImporter {
+    class XENGINE_EXPORT ResourceImporter {
+    public:
+        ResourceImporter() = default;
+
         /**
          * Import the bundle from the stream.
          *
@@ -42,7 +45,7 @@ namespace xengine {
          * @param archive
          * @return
          */
-        XENGINE_EXPORT AssetBundle import(std::istream &stream, const std::string &hint = "", Archive *archive = nullptr);
+        ResourceBundle import(std::istream &stream, const std::string &hint = "", Archive *archive = nullptr);
 
         /**
          * Import the bundle from the path.
@@ -56,8 +59,8 @@ namespace xengine {
          * @param archive
          * @return
          */
-        XENGINE_EXPORT AssetBundle import(const std::string &path, Archive &archive);
-    }
+        ResourceBundle import(const std::string &path, Archive &archive);
+    };
 }
 
-#endif //XENGINE_ASSETIMPORTER_HPP
+#endif //XENGINE_RESOURCEIMPORTER_HPP

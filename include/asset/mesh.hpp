@@ -26,10 +26,10 @@
 #include "math/vector2.hpp"
 
 #include "asset/vertex.hpp"
-#include "asset/asset.hpp"
+#include "resource/resource.hpp"
 
 namespace xengine {
-    struct XENGINE_EXPORT Mesh : public Asset {
+    struct XENGINE_EXPORT Mesh : public Resource {
         enum Primitive {
             POINT = 1,
             LINE = 2,
@@ -47,7 +47,7 @@ namespace xengine {
 
         ~Mesh() override = default;
 
-        Asset *clone() override {
+        Resource *clone() override {
             return new Mesh(*this);
         }
 

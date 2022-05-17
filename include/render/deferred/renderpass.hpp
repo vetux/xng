@@ -20,7 +20,7 @@
 #ifndef XENGINE_RENDERPASS_HPP
 #define XENGINE_RENDERPASS_HPP
 
-#include "render/scene.hpp"
+#include "asset/scene.hpp"
 
 #include "render/deferred/gbuffer.hpp"
 

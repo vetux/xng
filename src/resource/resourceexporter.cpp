@@ -17,35 +17,26 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_ASSETMATERIAL_HPP
-#define XENGINE_ASSETMATERIAL_HPP
+#include "resource/resourceexporter.hpp"
 
-#include "asset/texture.hpp"
+#include "extern/stb_image_write.h"
 
-#include "asset/asset.hpp"
-#include "asset/texture.hpp"
-
-namespace xengine {
-    struct XENGINE_EXPORT AssetMaterial : public Asset {
-        ~AssetMaterial() override = default;
-
-        Asset *clone() override{
-            return new AssetMaterial(*this);
-        }
-
-        ColorRGBA diffuse{};
-        ColorRGBA ambient{};
-        ColorRGBA specular{};
-        ColorRGBA emissive{};
-        float shininess{32};
-
-        AssetPath diffuseTexture;
-        AssetPath ambientTexture;
-        AssetPath specularTexture;
-        AssetPath emissiveTexture;
-        AssetPath shininessTexture;
-        AssetPath normalTexture;
-    };
+void streamWriteFunc(void *context, void *data, int size) {
+    auto &stream = *static_cast<std::ostream *>(context);
+    stream.write(static_cast<char *>(data), size);
 }
 
-#endif //XENGINE_ASSETMATERIAL_HPP
+namespace xengine {
+    void ResourceExporter::exportImage(std::ostream &stream, const ImageRGBA &image) {
+        int r = stbi_write_png_to_func(&streamWriteFunc,
+                                       &stream,
+                                       image.getWidth(),
+                                       image.getHeight(),
+                                       4,
+                                       image.getData(),
+                                       image.getWidth() * 4);
+        if (r != 1) {
+            throw std::runtime_error("Failed to write image");
+        }
+    }
+}

@@ -20,7 +20,7 @@
 #ifndef XENGINE_PREPASS_HPP
 #define XENGINE_PREPASS_HPP
 
-#include "render/scene.hpp"
+#include "asset/scene.hpp"
 #include "render/deferred/gbuffer.hpp"
 
 namespace xengine {

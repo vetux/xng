@@ -107,7 +107,7 @@ namespace xengine {
         auto nodes = scene.findNodesWithComponent<MonoScriptComponent>();
 
         std::sort(nodes.begin(), nodes.end(),
-                  [](const Node *a, const Node *b) -> bool {
+                  [](const Object *a, const Object *b) -> bool {
                       return a->getComponent<MonoScriptComponent>().queue <
                              b->getComponent<MonoScriptComponent>().queue;
                   });

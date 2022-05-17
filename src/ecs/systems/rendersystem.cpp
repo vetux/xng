@@ -25,16 +25,8 @@
 
 namespace xengine {
     RenderSystem::RenderSystem(RenderTarget &screen,
-                               RenderDevice &device,
-                               Archive &archive,
-                               AssetManager &assetManager,
-                               AssetRenderManager &assetRenderManager,
                                Pipeline &pipeline)
             : screenTarget(screen),
-              device(device),
-              archive(archive),
-              assetManager(assetManager),
-              assetRenderManager(assetRenderManager),
               pipeline(pipeline) {
     }
 
@@ -69,15 +61,13 @@ namespace xengine {
             if (!render.enabled)
                 continue;
 
-            auto mesh = getMesh(render.mesh);
-            auto material = getMaterial(render.material);
+            auto &mesh = render.mesh.get();
+            auto &material = render.material.get();
 
-            polyCount += meshes.at(render.mesh).get().polyCount();
+            polyCount += mesh.polyCount();
 
-            Scene::Node node;
+            Scene::Object node(mesh, material);
             node.transform = TransformComponent::walkHierarchy(transform, entityManager);
-            node.mesh = &getMesh(render.mesh);
-            node.material = getMaterial(render.material);
 
             //TODO: Change transform walking / scene creation to allow model matrix caching
             scene.nodes.emplace_back(node);
@@ -86,10 +76,7 @@ namespace xengine {
         // Update skybox texture
         for (auto &pair: componentManager.getPool<SkyboxComponent>()) {
             auto &comp = pair.second;
-            if (comp.skybox.texture)
-                scene.skybox.texture = &getTexture(comp.skybox.texture);
-            else
-                scene.skybox.texture = nullptr;
+            scene.skybox.texture = comp.skybox.texture;
         }
 
         // Update Camera
@@ -148,53 +135,4 @@ namespace xengine {
     void RenderSystem::onComponentUpdate(const Entity &entity,
                                          const SkyboxComponent &oldValue,
                                          const SkyboxComponent &newValue) {}
-
-    template<typename T>
-    AssetHandle<T> &getHandle(std::map<AssetPath, AssetHandle<T>> &map,
-                              const AssetPath &path,
-                              AssetManager &assetManager,
-                              AssetRenderManager &assetRenderManager) {
-        if (map.find(path) == map.end())
-            map[path] = AssetHandle<T>(path, assetManager, &assetRenderManager);
-        return map.at(path);
-    }
-
-    MeshBuffer &RenderSystem::getMesh(const AssetPath &path) {
-        return getHandle<Mesh>(meshes, path, assetManager, assetRenderManager).getRenderObject<MeshBuffer>();
-    }
-
-    TextureBuffer &RenderSystem::getTexture(const AssetPath &path) {
-        return getHandle<Texture>(textures, path, assetManager, assetRenderManager).getRenderObject<TextureBuffer>();
-    }
-
-    Material &RenderSystem::getMaterial(const AssetPath &path) {
-        auto mat = getHandle<AssetMaterial>(materials, path, assetManager, assetRenderManager).get();
-        if (rmaterials.find(path) == rmaterials.end()) {
-            rmaterials[path].diffuse = mat.diffuse;
-            rmaterials[path].ambient = mat.ambient;
-            rmaterials[path].specular = mat.specular;
-            rmaterials[path].emissive = mat.emissive;
-            rmaterials[path].shininess = mat.shininess;
-
-            if (mat.diffuseTexture) {
-                rmaterials[path].diffuseTexture = &getTexture(mat.diffuseTexture);
-            }
-            if (mat.ambientTexture) {
-                rmaterials[path].ambientTexture = &getTexture(mat.ambientTexture);
-            }
-            if (mat.specularTexture) {
-                rmaterials[path].specularTexture = &getTexture(mat.specularTexture);
-            }
-            if (mat.emissiveTexture) {
-                rmaterials[path].emissiveTexture = &getTexture(mat.emissiveTexture);
-            }
-            if (mat.shininessTexture) {
-                rmaterials[path].shininessTexture = &getTexture(mat.shininessTexture);
-            }
-            if (mat.normalTexture) {
-                rmaterials[path].normalTexture = &getTexture(mat.normalTexture);
-            }
-        }
-        return rmaterials.at(path);
-    }
 }

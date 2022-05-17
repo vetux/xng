@@ -28,11 +28,12 @@
 #include "ecs/components/transformcomponent.hpp"
 
 #include "audio/audiodevice.hpp"
+#include "resource/resourceregistry.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT AudioSystem : public System, ComponentPool<AudioSourceComponent>::Listener {
     public:
-        explicit AudioSystem(AudioDevice &device, AssetManager &assetManager);
+        explicit AudioSystem(AudioDevice &device, ResourceRegistry &repo);
 
         ~AudioSystem() override = default;
 
@@ -52,7 +53,7 @@ namespace xengine {
 
     private:
         AudioDevice &device;
-        AssetManager &assetManager;
+        ResourceRegistry &repo;
 
         std::unique_ptr<AudioContext> context;
 

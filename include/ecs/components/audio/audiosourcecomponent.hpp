@@ -21,11 +21,12 @@
 #define XENGINE_AUDIOSOURCECOMPONENT_HPP
 
 #include "asset/audio.hpp"
-#include "asset/assethandle.hpp"
+#include "resource/uri.hpp"
+#include "math/vector3.hpp"
 
 namespace xengine {
     struct XENGINE_EXPORT AudioSourceComponent {
-        AssetPath audioPath;
+        Uri audioPath;
         bool play = false;
         bool loop = false;
         Vec3f velocity = {};

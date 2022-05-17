@@ -20,8 +20,9 @@
 #ifndef XENGINE_MESHRENDERCOMPONENT_HPP
 #define XENGINE_MESHRENDERCOMPONENT_HPP
 
-#include "asset/image.hpp"
-#include "asset/assetpath.hpp"
+#include "asset/material.hpp"
+#include "asset/mesh.hpp"
+#include "resource/resourcehandle.hpp"
 
 namespace xengine {
     struct XENGINE_EXPORT MeshRenderComponent {
@@ -30,8 +31,8 @@ namespace xengine {
         bool castShadows{};
         bool receiveShadows{};
 
-        AssetPath mesh{};
-        AssetPath material{};
+        ResourceHandle<Mesh> mesh;
+        ResourceHandle<Material> material{};
 
         bool operator==(const MeshRenderComponent &other) const {
             return enabled == other.enabled

@@ -22,11 +22,13 @@
 #include "ecs/components/audio/audiolistenercomponent.hpp"
 #include "ecs/components/audio/audiosourcecomponent.hpp"
 
+#include "resource/resourcehandle.hpp"
+
 #define AUDIO_POS_SCALE 1
 
 namespace xengine {
-    AudioSystem::AudioSystem(AudioDevice &device, AssetManager &assetManager)
-            : device(device), assetManager(assetManager) {
+    AudioSystem::AudioSystem(AudioDevice &device, ResourceRegistry &repo)
+            : device(device), repo(repo) {
         context = device.createContext();
         context->makeCurrent();
     }
@@ -74,7 +76,7 @@ namespace xengine {
 
     void AudioSystem::onComponentCreate(const Entity &entity, const AudioSourceComponent &component) {
         if (!component.audioPath.empty()) {
-            auto handle = AssetHandle<Audio>(component.audioPath, assetManager);
+            auto handle = ResourceHandle<Audio>(component.audioPath);
 
             buffers[entity] = context->createBuffer();
             buffers[entity]->upload(handle.get().buffer, handle.get().format, handle.get().frequency);
@@ -94,7 +96,7 @@ namespace xengine {
                                         const AudioSourceComponent &newValue) {
         if (!(oldValue.audioPath == newValue.audioPath)) {
             sources[entity]->stop();
-            auto handle = AssetHandle<Audio>(newValue.audioPath, assetManager);
+            auto handle = ResourceHandle<Audio>(newValue.audioPath);
             buffers.at(entity)->upload(handle.get().buffer, handle.get().format, handle.get().frequency);
             sources.at(entity)->setBuffer(*buffers.at(entity));
         }

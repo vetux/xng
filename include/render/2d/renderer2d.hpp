@@ -27,7 +27,7 @@
 
 #include "render/shader/shadersource.hpp"
 
-#include "render/camera.hpp"
+#include "asset/camera.hpp"
 
 #include "text/text.hpp"
 

@@ -17,26 +17,21 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "asset/assetexporter.hpp"
+#ifndef XENGINE_RESOURCEEXPORTER_HPP
+#define XENGINE_RESOURCEEXPORTER_HPP
 
-#include "extern/stb_image_write.h"
+#include "asset/image.hpp"
+#include "asset/color.hpp"
 
-void streamWriteFunc(void *context, void *data, int size) {
-    auto &stream = *static_cast<std::ostream *>(context);
-    stream.write(static_cast<char *>(data), size);
-}
+#include <ostream>
 
 namespace xengine {
-    void AssetExporter::exportImage(std::ostream &stream, const ImageRGBA &image) {
-        int r = stbi_write_png_to_func(&streamWriteFunc,
-                                       &stream,
-                                       image.getWidth(),
-                                       image.getHeight(),
-                                       4,
-                                       image.getData(),
-                                       image.getWidth() * 4);
-        if (r != 1) {
-            throw std::runtime_error("Failed to write image");
-        }
-    }
+    class XENGINE_EXPORT ResourceExporter {
+    public:
+        ResourceExporter() = default;
+
+        void exportImage(std::ostream &stream, const Image<ColorRGBA> &image);
+    };
 }
+
+#endif //XENGINE_RESOURCEEXPORTER_HPP

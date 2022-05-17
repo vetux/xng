@@ -17,16 +17,16 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_ASSET_HPP
-#define XENGINE_ASSET_HPP
+#ifndef XENGINE_RESOURCE_HPP
+#define XENGINE_RESOURCE_HPP
 
 namespace xengine {
-    class XENGINE_EXPORT Asset {
+    class XENGINE_EXPORT Resource {
     public:
-        virtual ~Asset() = default;
+        virtual ~Resource() = default;
 
-        virtual Asset *clone() = 0;
+        virtual Resource *clone() = 0;
     };
 }
 
-#endif //XENGINE_ASSET_HPP
+#endif //XENGINE_RESOURCE_HPP
