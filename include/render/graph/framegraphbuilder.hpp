@@ -22,15 +22,19 @@
 
 #include "render/graph/framegraphresource.hpp"
 #include "render/graph/framegraph.hpp"
+#include "render/graph/framegraphlayer.hpp"
 
 #include "asset/shader.hpp"
 #include "asset/mesh.hpp"
 #include "asset/texture.hpp"
 
 namespace xengine {
-    class FrameGraphBuilder {
+    class XENGINE_EXPORT FrameGraphBuilder {
     public:
-        FrameGraphBuilder(RenderTarget &backBuffer, ObjectPool &pool);
+        FrameGraphBuilder(RenderTarget &backBuffer,
+                          ObjectPool &pool,
+                          Vec2i renderResolution,
+                          int renderSamples);
 
         FrameGraphResource createMeshBuffer(const Mesh &mesh);
 
@@ -48,13 +52,26 @@ namespace xengine {
 
         FrameGraphResource getBackBuffer();
 
-        FrameGraph build(const std::vector<std::shared_ptr<RenderPass>>& passes);
+        std::pair<Vec2i, int> getBackBufferFormat();
+
+        std::pair<Vec2i, int> getRenderFormat();
+
+        FrameGraph build(const std::vector<std::shared_ptr<RenderPass>> &passes);
+
+        void addLayer(FrameGraphLayer layer) { layers.emplace_back(layer); }
+
+        std::vector<FrameGraphLayer> getLayers() { return layers; }
 
     private:
         ObjectPool &pool;
+        RenderTarget &backBuffer;
         std::vector<std::function<RenderObject &()>> resources;
         std::vector<std::set<FrameGraphResource>> passResources;
         size_t currentPass = 0;
+        std::vector<FrameGraphLayer> layers;
+
+        Vec2i renderRes;
+        int renderSamples;
     };
 }
 #endif //XENGINE_FRAMEGRAPHBUILDER_HPP

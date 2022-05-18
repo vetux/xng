@@ -20,10 +20,12 @@
 #ifndef XENGINE_RENDERPASSRESOURCES_HPP
 #define XENGINE_RENDERPASSRESOURCES_HPP
 
+#include <map>
 #include <memory>
 #include <utility>
 
 #include "render/graph/framegraphresource.hpp"
+#include "render/graph/gbuffer.hpp"
 
 #include "render/platform/texturebuffer.hpp"
 #include "render/platform/meshbuffer.hpp"
@@ -31,7 +33,7 @@
 #include "render/platform/shaderprogram.hpp"
 
 namespace xengine {
-    class RenderPassResources {
+    class XENGINE_EXPORT RenderPassResources {
     public:
         explicit RenderPassResources(std::map<FrameGraphResource, RenderObject *> objects)
                 : objects(std::move(objects)) {}

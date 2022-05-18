@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "render/deferred/compositor.hpp"
+#include "render/graph/passes/compositepass.hpp"
 
 #include "render/shader/shaderinclude.hpp"
 
@@ -106,71 +106,56 @@ void main()
 )###";
 
 namespace xengine {
-    Compositor::Compositor(RenderDevice &device)
-            : device(device), screenQuad(device.getAllocator().createMeshBuffer(Mesh::normalizedQuad())) {
-        ShaderSource shaderVert(SHADER_VERT, "main", VERTEX, GLSL_410);
-        ShaderSource shaderFrag(SHADER_FRAG, "main", FRAGMENT, GLSL_410);
-        shaderFrag.preprocess(ShaderInclude::getShaderIncludeCallback(), ShaderInclude::getShaderMacros(GLSL_410));
-        shaderFrag.crossCompile(GLSL_410);
-        shader = std::unique_ptr<ShaderProgram>(device.getAllocator().createShaderProgram(shaderVert,
-                                                                                          shaderFrag));
+    CompositePass::CompositePass() {
+        shaderSrc.vertexShader = ShaderSource(SHADER_VERT, "main", VERTEX, GLSL_410);
+        shaderSrc.fragmentShader = ShaderSource(SHADER_FRAG, "main", FRAGMENT, GLSL_410);
+        shaderSrc.fragmentShader.preprocess(ShaderInclude::getShaderIncludeCallback(),
+                                            ShaderInclude::getShaderMacros(GLSL_410));
+        shaderSrc.fragmentShader.crossCompile(GLSL_410);
     }
 
-    void Compositor::setClearColor(ColorRGBA color) {
-        clearColor = color;
+    void CompositePass::setup(FrameGraphBuilder &builder) {
+        layers = builder.getLayers();
+        backBuffer = builder.getBackBuffer();
+        shader = builder.createShader(shaderSrc);
+        quadMesh = builder.createMeshBuffer(Mesh::normalizedQuad());
     }
 
-    void Compositor::present(RenderTarget &screen,
-                             std::vector<std::unique_ptr<RenderPass>> &passes) {
-        auto &ren = device.getRenderer();
-
-        ren.renderClear(screen, clearColor, 1);
-
-        auto layers = getLayers(passes);
-
-        if (layers.empty())
-            return;
-
-        shader->activate();
-
-        for (auto &node: layers) {
-            drawLayer(screen, node);
+    void CompositePass::execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) {
+        auto &shaderProgram = resources.getShader(shader);
+        auto &target = resources.getRenderTarget(backBuffer);
+        auto &screenQuad = resources.getMeshBuffer(quadMesh);
+        shaderProgram.activate();
+        for (auto &l: layers) {
+            drawLayer(l, ren, target, resources, shaderProgram, screenQuad);
         }
     }
 
-    std::vector<Compositor::Layer> Compositor::getLayers(std::vector<std::unique_ptr<RenderPass>> &passes) {
-        std::vector<Layer> ret;
-        for (auto &pass: passes) {
-            Layer l;
-            l.color = pass->output.color.get();
-            l.depth = pass->output.depth.get();
-            ret.emplace_back(l);
-        }
-        return ret;
-    }
-
-    void Compositor::drawLayer(RenderTarget &screen, const Compositor::Layer &layer) {
-        auto &ren = device.getRenderer();
-
+    void CompositePass::drawLayer(FrameGraphLayer layer,
+                                  Renderer &ren,
+                                  RenderTarget &target,
+                                  RenderPassResources &resources,
+                                  ShaderProgram &shaderProgram,
+                                  MeshBuffer &screenQuad) {
         std::string prefix = "globals.layer";
 
         std::vector<std::reference_wrapper<TextureBuffer>> textures;
 
-        if (layer.color != nullptr) {
-            textures.emplace_back(*layer.color);
-            assert(shader->setTexture(prefix + ".color", 0));
+        if (layer.color.assigned) {
+            textures.emplace_back(resources.getTextureBuffer(layer.color));
+            assert(shaderProgram.setTexture(prefix + ".color", 0));
         }
 
-        assert(shader->setInt(prefix + ".has_depth", layer.depth != nullptr));
-        if (layer.depth != nullptr) {
-            textures.emplace_back(*layer.depth);
-            assert(shader->setTexture(prefix + ".depth", textures.size() - 1));
+        assert(shaderProgram.setInt(prefix + ".has_depth", layer.depth.assigned));
+        if (layer.depth.assigned) {
+            textures.emplace_back(resources.getTextureBuffer(layer.depth));
+            assert(shaderProgram.setTexture(prefix + ".depth", textures.size() - 1));
         }
 
-        assert(shader->setBool("globals.layer.filterBicubic",
-                               textures.at(0).get().getAttributes().size != screen.getSize()));
+        assert(shaderProgram.setBool("globals.layer.filterBicubic",
+                                     textures.at(0).get().getAttributes().size != target.getSize()));
 
-        RenderCommand command(*shader, *screenQuad);
+        RenderCommand command(shaderProgram, screenQuad);
         command.textures = textures;
         command.properties.enableDepthTest = false;
         command.properties.enableBlending = layer.enableBlending;
@@ -178,7 +163,7 @@ namespace xengine {
         command.properties.blendSourceMode = layer.colorBlendModeSource;
         command.properties.blendDestinationMode = layer.colorBlendModeDest;
 
-        ren.renderBegin(screen, RenderOptions({}, screen.getSize(), true, false, 1, {}, 0, false, false));
+        ren.renderBegin(target, RenderOptions({}, target.getSize(), true, false, 1, {}, 0, false, false));
         ren.addCommand(command);
         ren.renderFinish();
     }

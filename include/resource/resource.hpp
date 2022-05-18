@@ -28,7 +28,9 @@ namespace xengine {
         /**
          * Each resource instance is identified with an Id value.
          */
-        struct Id {
+        struct XENGINE_EXPORT Id {
+            static Counter<size_t> counter;
+
             /**
              * Construct a new id,
              * ids are assigned from one global pool.

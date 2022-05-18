@@ -23,12 +23,12 @@ namespace xengine {
     static std::unique_ptr<TextureBuffer> allocateTexture(const Texture &t, RenderAllocator &allocator) {
         auto texture = allocator.createTextureBuffer(t.attributes);
 
-        if (t.attributes.textureType == TextureBuffer::TEXTURE_CUBE_MAP) {
-            for (int i = TextureBuffer::POSITIVE_X; i <= TextureBuffer::NEGATIVE_Z; i++) {
-                texture->upload(static_cast<TextureBuffer::CubeMapFace>(i), t.images.at(i).get());
-            }
-        } else {
-            if (!t.images.empty()) {
+        if (!t.images.empty()) {
+            if (t.attributes.textureType == TextureBuffer::TEXTURE_CUBE_MAP) {
+                for (int i = TextureBuffer::POSITIVE_X; i <= TextureBuffer::NEGATIVE_Z; i++) {
+                    texture->upload(static_cast<TextureBuffer::CubeMapFace>(i), t.images.at(i).get());
+                }
+            } else {
                 texture->upload(t.images.at(0).get());
             }
         }

@@ -17,38 +17,38 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_PREPASS_HPP
-#define XENGINE_PREPASS_HPP
+#ifndef XENGINE_PHONGPASS_HPP
+#define XENGINE_PHONGPASS_HPP
 
 #include "asset/scene.hpp"
-#include "render/deferred/gbuffer.hpp"
+#include "render/graph/renderpass.hpp"
 
 namespace xengine {
-    class PrePass {
+    class XENGINE_EXPORT PhongPass : public RenderPass {
     public:
-        explicit PrePass(RenderDevice &device);
+        PhongPass(Scene &scene);
 
-        /**
-         * Update the geometry textures from the given scene data.
-         * This is also where skeletal animation matrices are applied.
-         *
-         * Users may override this method to define logic at the start of the pipeline.
-         *
-         * @param scene
-         * @param buffer
-         * @param assetRenderManager
-         */
-        virtual void update(Scene &scene, GBuffer &buffer);
+        ~PhongPass() override = default;
+
+        void setup(FrameGraphBuilder &builder) override;
+
+        void execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) override;
 
     private:
-        Renderer &ren;
+        Scene &scene;
 
-        ShaderSource vs;
-        ShaderSource fs;
+        Shader shaderSrc;
+        Texture outColorTex;
+        Texture outDepthTex;
 
-        std::unique_ptr<ShaderProgram> shader;
-        std::unique_ptr<TextureBuffer> defaultTexture; //1 pixel texture with value (0, 0, 0, 0)
+        FrameGraphResource shader;
+        FrameGraphResource renderTarget;
+        FrameGraphResource quadMesh;
+        FrameGraphResource multiSampleRenderTarget;
+
+        FrameGraphResource outColor;
+        FrameGraphResource outDepth;
     };
 }
 
-#endif //XENGINE_PREPASS_HPP
+#endif //XENGINE_PHONGPASS_HPP

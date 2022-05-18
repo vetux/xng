@@ -22,8 +22,11 @@
 #include "render/graph/renderpass.hpp"
 
 namespace xengine {
-    FrameGraphBuilder::FrameGraphBuilder(RenderTarget &backBuffer, ObjectPool &pool)
-            : pool(pool) {
+    FrameGraphBuilder::FrameGraphBuilder(RenderTarget &backBuffer,
+                                         ObjectPool &pool,
+                                         Vec2i renderResolution,
+                                         int renderSamples)
+            : pool(pool), backBuffer(backBuffer), renderRes(renderResolution), renderSamples(renderSamples) {
         std::function<std::reference_wrapper<RenderObject>()> f = [&backBuffer]() {
             return std::reference_wrapper<RenderObject>(dynamic_cast<RenderObject &>(backBuffer));
         };
@@ -91,8 +94,17 @@ namespace xengine {
         return FrameGraphResource(0);
     }
 
+    std::pair<Vec2i, int> FrameGraphBuilder::getBackBufferFormat() {
+        return {backBuffer.getSize(), backBuffer.getSamples()};
+    }
+
+    std::pair<Vec2i, int> FrameGraphBuilder::getRenderFormat() {
+        return {renderRes, renderSamples};
+    }
+
     FrameGraph FrameGraphBuilder::build(const std::vector<std::shared_ptr<RenderPass>> &passes) {
         auto backBuffer = resources.at(0);
+        layers.clear();
         resources.clear();
         resources.emplace_back(backBuffer);
         passResources.clear();

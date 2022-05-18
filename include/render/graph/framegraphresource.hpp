@@ -23,14 +23,15 @@
 #include <string>
 
 namespace xengine {
-    struct FrameGraphResource {
+    struct XENGINE_EXPORT FrameGraphResource {
         FrameGraphResource() = default;
 
         explicit FrameGraphResource(size_t index) : index(index) {}
 
         bool operator<(const FrameGraphResource &other) const { return index < other.index; }
 
-        size_t index;
+        bool assigned = false;
+        size_t index{};
     };
 }
 #endif //XENGINE_FRAMEGRAPHRESOURCE_HPP

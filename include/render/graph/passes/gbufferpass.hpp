@@ -17,40 +17,37 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_PHONGPASS_HPP
-#define XENGINE_PHONGPASS_HPP
+#ifndef XENGINE_GBUFFERPASS_HPP
+#define XENGINE_GBUFFERPASS_HPP
 
-#include "render/deferred/renderpass.hpp"
+#include "render/graph/renderpass.hpp"
+#include "render/graph/gbuffer.hpp"
+#include "asset/scene.hpp"
 
 namespace xengine {
-    class XENGINE_EXPORT PhongPass : public RenderPass {
+    class XENGINE_EXPORT GBufferPass : public RenderPass {
     public:
-        struct Input {
-            Vec3f cameraPosition;
-            std::vector<Light> lights;
-            GBuffer &gBuffer;
-        };
+        GBufferPass(Scene &scene, RenderDevice &device);
 
-        explicit PhongPass(RenderDevice &device);
+        void setup(FrameGraphBuilder &builder) override;
 
-        ~PhongPass() override = default;
-
-        void render(GBuffer &gBuffer, Scene &scene) override {
-            render({scene.camera.transform.getPosition(), scene.lights, gBuffer});
-        }
-
-        void render(const Input &input);
-
-        void resize(Vec2i size, int samples) override;
+        void execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) override;
 
     private:
-        std::unique_ptr<ShaderProgram> shader;
+        Scene &scene;
+        RenderDevice &device;
 
-        ShaderSource vertexShader;
-        ShaderSource fragmentShader;
+        GBuffer gBuffer;
 
-        std::unique_ptr<RenderTarget> multiSampleTarget;
+        Shader shaderSrc;
+
+        std::shared_ptr<ImageRGBA> defaultImage;
+
+        FrameGraphResource shader{};
+        FrameGraphResource defaultTexture{};
+        FrameGraphResource renderTarget;
+
+        std::map<Resource::Id, FrameGraphResource> sceneResources;
     };
 }
-
-#endif //XENGINE_PHONGPASS_HPP
+#endif //XENGINE_GBUFFERPASS_HPP

@@ -162,7 +162,7 @@ namespace xengine {
                 std::string bundle = element["bundle"];
                 std::string asset = element["asset"];
 
-                ret.add(name, std::make_unique<Mesh>(refBundles.at(bundle).get<Mesh>(asset)));
+                ret.add(name, std::make_shared<Mesh>(refBundles.at(bundle).get<Mesh>(asset)));
             }
         }
 
@@ -175,7 +175,7 @@ namespace xengine {
                 if (it != element.end()) {
                     std::string n = element.value("asset", "");
                     ret.add(name,
-                            std::make_unique<Material>(refBundles.at(*it).get<Material>(n)));
+                            std::make_shared<Material>(refBundles.at(*it).get<Material>(n)));
                 } else {
                     Material mat;
 
@@ -192,38 +192,38 @@ namespace xengine {
 
                     if (element.find("diffuseTexture") != element.end()) {
                         auto path = Uri(element["diffuseTexture"]["bundle"], element["diffuseTexture"]["asset"]);
-                        mat.diffuseTexture = ResourceHandle<ImageRGBA>(path);
+                        mat.diffuseTexture = ResourceHandle<Texture>(path);
                     }
 
                     if (element.find("ambientTexture") != element.end()) {
                         auto path = Uri(element["ambientTexture"]["bundle"], element["ambientTexture"]["asset"]);
-                        mat.ambientTexture = ResourceHandle<ImageRGBA>(path);
+                        mat.ambientTexture = ResourceHandle<Texture>(path);
                     }
 
                     if (element.find("specularTexture") != element.end()) {
                         auto path = Uri(element["specularTexture"]["bundle"],
                                               element["specularTexture"]["asset"]);
-                        mat.specularTexture = ResourceHandle<ImageRGBA>(path);
+                        mat.specularTexture = ResourceHandle<Texture>(path);
                     }
 
                     if (element.find("emissiveTexture") != element.end()) {
                         auto path = Uri(element["emissiveTexture"]["bundle"],
                                               element["emissiveTexture"]["asset"]);
-                        mat.emissiveTexture = ResourceHandle<ImageRGBA>(path);
+                        mat.emissiveTexture = ResourceHandle<Texture>(path);
                     }
 
                     if (element.find("shininessTexture") != element.end()) {
                         auto path = Uri(element["shininessTexture"]["bundle"],
                                               element["shininessTexture"]["asset"]);
-                        mat.shininessTexture = ResourceHandle<ImageRGBA>(path);
+                        mat.shininessTexture = ResourceHandle<Texture>(path);
                     }
 
                     if (element.find("normalTexture") != element.end()) {
                         auto path = Uri(element["normalTexture"]["bundle"], element["normalTexture"]["asset"]);
-                        mat.normalTexture = ResourceHandle<ImageRGBA>(path);
+                        mat.normalTexture = ResourceHandle<Texture>(path);
                     }
 
-                    ret.add(name, std::make_unique<Material>(mat));
+                    ret.add(name, std::make_shared<Material>(mat));
                 }
             }
         }
@@ -234,7 +234,7 @@ namespace xengine {
                 std::string name = element["name"];
                 auto s = std::stringstream(element.dump());
                 auto tex = readJsonTexture(s, archive);
-                ret.add(name, std::make_unique<Texture>(tex));
+                ret.add(name, std::make_shared<Texture>(tex));
             }
         }
 
@@ -245,7 +245,7 @@ namespace xengine {
                 std::string bundle = element["bundle"];
                 std::string asset = element.value("asset", "");
 
-                ret.add(name, std::make_unique<ImageRGBA>(
+                ret.add(name, std::make_shared<ImageRGBA>(
                         refBundles.at(bundle).get<ImageRGBA>(asset)));
             }
         }
@@ -342,7 +342,7 @@ namespace xengine {
         for (auto i = 0; i < scene.mNumMeshes; i++) {
             const auto &mesh = dynamic_cast<const aiMesh &>(*scene.mMeshes[i]);
             std::string name = mesh.mName.C_Str();
-            ret.add(name, std::make_unique<Mesh>(convertMesh(mesh)));
+            ret.add(name, std::make_shared<Mesh>(convertMesh(mesh)));
         }
 
         for (auto i = 0; i < scene.mNumMaterials; i++) {
@@ -351,7 +351,7 @@ namespace xengine {
             aiString materialName;
             scene.mMaterials[i]->Get(AI_MATKEY_NAME, materialName);
 
-            ret.add(materialName.data, std::make_unique<Material>(material));
+            ret.add(materialName.data, std::make_shared<Material>(material));
         }
 
         return ret;
@@ -489,7 +489,7 @@ namespace xengine {
                                           &n) == 1) {
                     //Source is image
                     ResourceBundle ret;
-                    ret.add("0", std::make_unique<ImageRGBA>(readImage(buffer)));
+                    ret.add("0", std::make_shared<ImageRGBA>(readImage(buffer)));
                     return ret;
                 }
             } catch (const std::exception &e) {}
@@ -510,7 +510,7 @@ namespace xengine {
             //Try to read source as audio
             auto audio = readAudio(buffer);
             ResourceBundle ret;
-            ret.add("0", std::make_unique<Audio>(audio));
+            ret.add("0", std::make_shared<Audio>(audio));
 
             return ret;
         } else {
@@ -536,7 +536,7 @@ namespace xengine {
                                                   &y,
                                                   &n) == 1) {
                             ResourceBundle ret;
-                            ret.add("0", std::make_unique<ImageRGBA>(readImage(buffer)));
+                            ret.add("0", std::make_shared<ImageRGBA>(readImage(buffer)));
                             return ret;
                         }
                     } catch (const std::exception &e) {}
@@ -544,7 +544,7 @@ namespace xengine {
                     //Try to read source as audio
                     auto audio = readAudio(buffer);
                     ResourceBundle ret;
-                    ret.add("0", std::make_unique<Audio>(audio));
+                    ret.add("0", std::make_shared<Audio>(audio));
                     return ret;
                 }
             }

@@ -28,11 +28,15 @@
 #include "render/platform/renderdevice.hpp"
 
 namespace xengine {
-    class FrameGraphPipeline : public Pipeline {
+    class XENGINE_EXPORT FrameGraphPipeline : public Pipeline {
     public:
         explicit FrameGraphPipeline(RenderDevice &device);
 
         void render(RenderTarget &target, Scene &scene) override;
+
+        void setRenderResolution(Vec2i res) override { renderResolution = res; }
+
+        void setRenderSamples(int samples) override { renderSamples = samples; }
 
         void setPasses(std::vector<std::shared_ptr<RenderPass>> passes);
 
@@ -42,6 +46,8 @@ namespace xengine {
         RenderDevice &device;
         std::vector<std::shared_ptr<RenderPass>> passes;
         ObjectPool pool;
+        Vec2i renderResolution = {640, 480};
+        int renderSamples{};
     };
 }
 #endif //XENGINE_FRAMEGRAPHPIPELINE_HPP

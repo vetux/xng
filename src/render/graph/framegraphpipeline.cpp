@@ -23,7 +23,8 @@ namespace xengine {
     FrameGraphPipeline::FrameGraphPipeline(RenderDevice &device)
             : device(device), pool(device.getAllocator()) {}
 
-    void FrameGraphPipeline::render(RenderTarget &target, Scene &scene) {
+    void FrameGraphPipeline::render(RenderTarget &target,
+                                    Scene &scene) {
         auto graph = setup(target);
         graph.render(device.getRenderer());
         pool.endFrame();
@@ -34,6 +35,6 @@ namespace xengine {
     }
 
     FrameGraph FrameGraphPipeline::setup(RenderTarget &target) {
-        return FrameGraphBuilder(target, pool).build(passes);
+        return FrameGraphBuilder(target, pool, renderResolution, renderSamples).build(passes);
     }
 }

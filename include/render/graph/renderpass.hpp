@@ -22,17 +22,18 @@
 
 #include "render/graph/renderpassresources.hpp"
 #include "render/graph/framegraphbuilder.hpp"
+#include "render/graph/framegraphblackboard.hpp"
 
 #include "render/platform/renderer.hpp"
 
 namespace xengine {
-    class RenderPass {
+    class XENGINE_EXPORT RenderPass {
     public:
         virtual ~RenderPass() = default;
 
         virtual void setup(FrameGraphBuilder &builder) = 0;
 
-        virtual void execute(RenderPassResources &resources, Renderer &ren) = 0;
+        virtual void execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) = 0;
     };
 }
 

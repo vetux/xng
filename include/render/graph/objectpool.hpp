@@ -29,12 +29,14 @@
 #include "asset/texture.hpp"
 #include "asset/shader.hpp"
 
+#include "render/graph/gbuffer.hpp"
+
 namespace xengine {
     /**
      * The object pool is used for storing the allocations in the FrameGraphBuilder across frames
      * for platforms which dont support explicit resource management eg. opengl.
      */
-    class ObjectPool {
+    class XENGINE_EXPORT ObjectPool {
     public:
         explicit ObjectPool(RenderAllocator &allocator);
 
@@ -48,6 +50,8 @@ namespace xengine {
 
         RenderTarget &getRenderTarget(Vec2i size, int samples);
 
+        GBuffer &getGBuffer(Vec2i size, int samples);
+
         /**
          * Called when all allocations of the frame have been done,
          * this deallocates unused render objects and keeps objects which were used in the current frame allocated.
@@ -60,6 +64,7 @@ namespace xengine {
         std::map<Resource::Id, std::unique_ptr<RenderObject>> idObjects;
         std::map<Resource::Id, std::unique_ptr<RenderObject>> instancedMeshBuffers;
         std::map<std::pair<std::pair<int, int>, int>, std::unique_ptr<RenderObject>> renderTargets;
+        std::map<std::pair<std::pair<int, int>, int>, std::unique_ptr<GBuffer>> gBuffers;
 
         std::set<Resource::Id> usedIds;
         std::set<Resource::Id> usedInstancedMeshes;

@@ -39,12 +39,12 @@ namespace xengine {
         ColorRGBA emissive{};
         float shininess{32};
 
-        ResourceHandle<ImageRGBA> diffuseTexture;
-        ResourceHandle<ImageRGBA> ambientTexture;
-        ResourceHandle<ImageRGBA> specularTexture;
-        ResourceHandle<ImageRGBA> emissiveTexture;
-        ResourceHandle<ImageRGBA> shininessTexture;
-        ResourceHandle<ImageRGBA> normalTexture;
+        ResourceHandle<Texture> diffuseTexture;
+        ResourceHandle<Texture> ambientTexture;
+        ResourceHandle<Texture> specularTexture;
+        ResourceHandle<Texture> emissiveTexture;
+        ResourceHandle<Texture> shininessTexture;
+        ResourceHandle<Texture> normalTexture;
     };
 }
 

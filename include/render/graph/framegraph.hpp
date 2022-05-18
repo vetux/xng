@@ -28,11 +28,12 @@
 #include "render/graph/objectpool.hpp"
 #include "render/graph/framegraphresource.hpp"
 #include "render/graph/renderpassresources.hpp"
+#include "render/graph/framegraphblackboard.hpp"
 
 namespace xengine {
     class RenderPass;
 
-    class FrameGraph {
+    class XENGINE_EXPORT FrameGraph {
     public:
         FrameGraph(std::vector<std::shared_ptr<RenderPass>> passes,
                    std::vector<std::set<FrameGraphResource>> passResources,
@@ -50,6 +51,8 @@ namespace xengine {
         std::vector<std::function<RenderObject &()>> resources;
 
         std::vector<RenderPassResources> passData;
+
+        FrameGraphBlackboard blackboard;
     };
 }
 

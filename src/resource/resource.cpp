@@ -17,24 +17,16 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_FORWARDPASS_HPP
-#define XENGINE_FORWARDPASS_HPP
-
-#include "render/deferred/renderpass.hpp"
-#include "render/forward/forwardpipeline.hpp"
+#include "resource/resource.hpp"
 
 namespace xengine {
-    class XENGINE_EXPORT ForwardPass : public RenderPass {
-    public:
-        explicit ForwardPass(RenderDevice &device);
+    Counter<size_t> Resource::Id::counter;
 
-        ~ForwardPass() override;
+    Resource::Id::Id() {
+        value = counter.get();
+    }
 
-        void render(GBuffer &gBuffer, Scene &scene) override;
-
-    private:
-        ForwardPipeline pipeline;
-    };
+    Resource::Id::~Id() {
+        counter.put(value);
+    }
 }
-
-#endif //XENGINE_FORWARDPASS_HPP

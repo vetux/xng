@@ -27,6 +27,10 @@ namespace xengine {
     class XENGINE_EXPORT Pipeline {
     public:
         virtual void render(RenderTarget &target, Scene &scene) = 0;
+
+        virtual void setRenderResolution(Vec2i res) = 0;
+
+        virtual void setRenderSamples(int samples) = 0;
     };
 }
 #endif //XENGINE_PIPELINE_HPP

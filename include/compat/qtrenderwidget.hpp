@@ -24,73 +24,11 @@
 #include <QOpenGLFunctions_3_3_Core>
 
 #include "render/platform/rendertarget.hpp"
-#include "render/deferred/deferredpipeline.hpp"
-
-#include "render/deferred/passes/skyboxpass.hpp"
-#include "render/deferred/passes/phongpass.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT QtRenderWidget : public QOpenGLWidget {
     public:
-        /**
-         * The implementation of this interface creates the pipeline when the QOpenGLWidget is initializing.
-         * This is needed to be a delayed operation because QOpenGLWidget only allows usage of OpenGL calls at
-         * specific points (initializeGL() ...)
-         */
-        class Allocator {
-        public:
-            /**
-             * Create the pipeline.
-             *
-             * @param device
-             * @param ren
-             */
-            virtual std::unique_ptr<Pipeline> createPipeline() = 0;
-        };
 
-        QtRenderWidget(QWidget *parent,
-                       ResourceRegistry &registry,
-                       std::unique_ptr<Allocator> allocator)
-                : QOpenGLWidget(parent), registry(registry), allocator(std::move(allocator)) {}
-
-        void setScene(const Scene &s) {
-            scene = s;
-            update();
-        }
-
-    protected:
-        void initializeGL() override {
-            QOpenGLWidget::initializeGL();
-            renderDevice = RenderDevice::create(OPENGL_4_1_QT);
-            pipeline = allocator->createPipeline();
-        }
-
-        void resizeGL(int w, int h) override {
-            QOpenGLWidget::resizeGL(w, h);
-        }
-
-        void paintGL() override {
-            QOpenGLWidget::paintGL();
-            std::unique_ptr<RenderTarget> target = getWidgetRenderTarget();
-            if (!target->isComplete())
-                return;
-            scene.camera.aspectRatio = static_cast<float>( target->getSize().x)
-                                       / static_cast<float>(target->getSize().y);
-            pipeline->render(*target, scene);
-        }
-
-    private:
-        std::unique_ptr<RenderTarget> getWidgetRenderTarget();
-
-        ResourceRegistry &registry;
-
-        Scene scene;
-
-        std::unique_ptr<Pipeline> pipeline;
-
-        std::unique_ptr<RenderDevice> renderDevice;
-
-        std::unique_ptr<Allocator> allocator;
     };
 }
 

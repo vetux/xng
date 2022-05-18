@@ -42,9 +42,10 @@ namespace xengine {
     }
 
     void FrameGraph::execute(Renderer &ren) {
+        blackboard.clear();
         int i = 0;
         for (auto &p: passes) {
-            p->execute(passData.at(i++), ren);
+            p->execute(passData.at(i++), ren, blackboard);
         }
     }
 }

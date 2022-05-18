@@ -26,17 +26,10 @@
 #include "ecs/system.hpp"
 #include "ecs/components/meshrendercomponent.hpp"
 #include "ecs/components/skyboxcomponent.hpp"
-#include "render/deferred/deferredpipeline.hpp"
-#include "io/archive.hpp"
-#include "resource/resourceimporter.hpp"
 
-#include "display/window.hpp"
+#include "render/pipeline.hpp"
 
 namespace xengine {
-    class ECS;
-
-    class DebugPass;
-
     class XENGINE_EXPORT RenderSystem : public System,
                                         ComponentPool<MeshRenderComponent>::Listener,
                                         ComponentPool<SkyboxComponent>::Listener {
@@ -53,6 +46,8 @@ namespace xengine {
         void update(float deltaTime, EntityManager &entityManager) override;
 
         Pipeline &getPipeline();
+
+        Scene &getScene();
 
         size_t getPolyCount() const { return polyCount; }
 
@@ -75,6 +70,8 @@ namespace xengine {
 
         Pipeline &pipeline;
         RenderTarget &screenTarget;
+
+        Scene scene;
 
         size_t polyCount{};
     };

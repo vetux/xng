@@ -29,7 +29,7 @@ namespace xengine {
      * Eg. /mydir/myfile.fbx:cube
      * or /mydir/myimage.png
      */
-    class Uri {
+    class XENGINE_EXPORT Uri {
     public:
         Uri() = default;
 

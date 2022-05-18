@@ -39,7 +39,7 @@ namespace xengine {
                                 std::shared_ptr<Resource> resource = nullptr)
                 : uri(std::move(uri)), registry(std::move(registry)), resource(std::move(resource)) {
             loadTask = ThreadPool::getPool().addTask([this] {
-                if (this->registry) {
+                if (this->registry != nullptr) {
                     this->resource = this->registry->get(this->uri);
                 } else {
                     this->resource = ResourceRegistry::getDefaultRegistry().get(this->uri);
@@ -51,18 +51,22 @@ namespace xengine {
             syncWithLoader();
         };
 
-        ResourceHandle(const ResourceHandle &other) = default;
+        ResourceHandle(const ResourceHandle<T> &other) = default;
 
-        ResourceHandle(ResourceHandle &&other) noexcept = default;
+        ResourceHandle(ResourceHandle<T> &&other) noexcept = default;
 
-        ResourceHandle &operator=(const ResourceHandle &other) = default;
+        ResourceHandle<T> &operator=(const ResourceHandle<T> &other) = default;
 
-        ResourceHandle &operator=(ResourceHandle &&other) noexcept = default;
+        ResourceHandle<T> &operator=(ResourceHandle<T> &&other) noexcept = default;
 
-        bool operator==(const ResourceHandle &other) const {
+        bool operator==(const ResourceHandle<T> &other) const {
             return uri == other.uri
                    && resource == other.resource
                    && registry == other.registry;
+        }
+
+        operator bool() const {
+            return !uri.empty() || resource;
         }
 
         const Uri &getUri() const {
@@ -75,7 +79,7 @@ namespace xengine {
 
         const std::shared_ptr<Resource> &getResource() const {
             syncWithLoader();
-            if (!resource) {
+            if (resource == nullptr) {
                 throw std::runtime_error("Failed to load resource");
             }
             return resource;
@@ -83,7 +87,8 @@ namespace xengine {
 
     private:
         void syncWithLoader() const {
-            loadTask->wait();
+            if (loadTask)
+                loadTask->wait();
         }
 
         Uri uri;

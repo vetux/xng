@@ -45,27 +45,23 @@ namespace xengine {
             GEOMETRY_TEXTURE_END = DEPTH
         };
 
+        GBuffer() = default;
+
         explicit GBuffer(RenderDevice &device, Vec2i size = {640, 320}, int samples = 4);
 
         ~GBuffer();
 
-        /**
-         * Set the geometry buffer size, this reallocates the render target and buffers.
-         *
-         * @param s
-         */
-        void setSize(const Vec2i &s);
+        GBuffer(const GBuffer &other) = default;
 
-        Vec2i getSize();
+        GBuffer(GBuffer &&other) = default;
 
-        /**
-         * Set the number of samples to use for the textures, this reallocates the render target and buffers.
-         *
-         * @param samples
-         */
-        void setSamples(int samples);
+        GBuffer &operator=(const GBuffer &other) = default;
 
-        int getSamples();
+        GBuffer &operator=(GBuffer &&other) = default;
+
+        Vec2i getSize() const;
+
+        int getSamples() const;
 
         /**
          * Get the texture buffer object for the given type.
@@ -73,41 +69,13 @@ namespace xengine {
          * @param type
          * @return
          */
-        TextureBuffer &getTexture(GTexture type);
-
-        /**
-         * Get a per GBuffer allocated screen quad to avoid having screen quad mesh buffer instantiations in every render pass.
-         *
-         * @return
-         */
-        MeshBuffer &getScreenQuad();
-
-        /**
-         * @return A render target with the geometry textures bound in order to the color attachments and depth attachment.
-         */
-        RenderTarget &getRenderTarget();
-
-        /**
-         * Convenience method which returns a render target with the size and samples matching the geometry buffer,
-         * and no textures bound.
-         *
-         * @return
-         */
-        RenderTarget &getPassTarget();
+        TextureBuffer &getTexture(GTexture type) const;
 
     private:
-        void reallocateObjects();
-
-        Vec2i size = {1, 1}; //The size of the render target and textures
+        Vec2i size = {1, 1}; //The size of the geometry textures
         int samples = 1; //The number of msaa samples to use for geometry textures, all geometry textures are TEXTURE_2D_MULTISAMPLE
 
-        std::map<GTexture, std::unique_ptr<TextureBuffer>> textures;
-
-        RenderAllocator &allocator;
-
-        std::unique_ptr<RenderTarget> renderTarget;
-        std::unique_ptr<RenderTarget> passTarget;
-        std::unique_ptr<MeshBuffer> screenQuad;
+        std::map<GTexture, std::shared_ptr<TextureBuffer>> textures;
     };
 }
 

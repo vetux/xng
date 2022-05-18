@@ -17,21 +17,19 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SHADOWPASS_HPP
-#define XENGINE_SHADOWPASS_HPP
+#ifndef XENGINE_FRAMEGRAPHLAYER_HPP
+#define XENGINE_FRAMEGRAPHLAYER_HPP
 
-#include "render/deferred/renderpass.hpp"
+#include "render/platform/texturebuffer.hpp"
 
 namespace xengine {
-    class XENGINE_EXPORT ShadowPass : public RenderPass {
-    public:
-        ~ShadowPass() override = default;
-
-        void render(GBuffer &gBuffer, Scene &scene) override;
-
-    private:
-        std::unique_ptr<RenderTarget> shadowTarget;
+    struct XENGINE_EXPORT FrameGraphLayer {
+        FrameGraphResource color;
+        FrameGraphResource depth;
+        bool enableBlending = true;
+        BlendMode colorBlendModeSource = BlendMode::SRC_ALPHA;
+        BlendMode colorBlendModeDest = BlendMode::ONE_MINUS_SRC_ALPHA;
+        DepthTestMode depthTestMode = DepthTestMode::DEPTH_TEST_LESS;
     };
 }
-
-#endif //XENGINE_SHADOWPASS_HPP
+#endif //XENGINE_FRAMEGRAPHLAYER_HPP

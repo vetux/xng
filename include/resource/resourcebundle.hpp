@@ -68,7 +68,7 @@ namespace xengine {
             }
         }
 
-        void add(const std::string &name, std::unique_ptr<Resource> ptr) {
+        void add(const std::string &name, std::shared_ptr<Resource> ptr) {
             assets[name] = std::move(ptr);
         }
 

@@ -55,7 +55,7 @@ namespace xengine {
         Camera camera;
         Skybox skybox;
         std::vector<Light> lights;
-        std::vector<Object> nodes;
+        std::vector<Object> objects;
     };
 }
 

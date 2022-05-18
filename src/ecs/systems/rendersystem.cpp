@@ -45,7 +45,7 @@ namespace xengine {
     void RenderSystem::update(float deltaTime, EntityManager &entityManager) {
         auto &componentManager = entityManager.getComponentManager();
 
-        Scene scene;
+        scene = {};
 
         polyCount = 0;
 
@@ -70,7 +70,7 @@ namespace xengine {
             node.transform = TransformComponent::walkHierarchy(transform, entityManager);
 
             //TODO: Change transform walking / scene creation to allow model matrix caching
-            scene.nodes.emplace_back(node);
+            scene.objects.emplace_back(node);
         }
 
         // Update skybox texture
@@ -118,6 +118,10 @@ namespace xengine {
 
     Pipeline &RenderSystem::getPipeline() {
         return pipeline;
+    }
+
+    Scene &RenderSystem::getScene() {
+        return scene;
     }
 
     void RenderSystem::onComponentCreate(const Entity &entity, const MeshRenderComponent &component) {}

@@ -17,9 +17,38 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "render/deferred/passes/shadowpass.hpp"
+#ifndef XENGINE_SKYBOXPASS_HPP
+#define XENGINE_SKYBOXPASS_HPP
+
+#include "render/graph/renderpass.hpp"
+
+#include "asset/scene.hpp"
 
 namespace xengine {
-    void ShadowPass::render(GBuffer &gBuffer, Scene &scene) {
-    }
+    class XENGINE_EXPORT SkyboxPass : public RenderPass {
+    public:
+        SkyboxPass(Scene &scene);
+
+        ~SkyboxPass() override = default;
+
+        void setup(FrameGraphBuilder &builder) override;
+
+        void execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) override;
+
+    private:
+        Scene &scene;
+
+        Shader shaderSrc;
+        Texture defTex;
+        Texture colorTex;
+
+        FrameGraphResource shader;
+        FrameGraphResource skyboxMesh;
+        FrameGraphResource defaultTex;
+        FrameGraphResource renderTarget;
+        FrameGraphResource outColor;
+
+        FrameGraphResource skyboxTex;
+    };
 }
+#endif //XENGINE_SKYBOXPASS_HPP
