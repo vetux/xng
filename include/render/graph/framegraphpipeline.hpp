@@ -17,14 +17,31 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SKYBOX_HPP
-#define XENGINE_SKYBOX_HPP
+#ifndef XENGINE_FRAMEGRAPHPIPELINE_HPP
+#define XENGINE_FRAMEGRAPHPIPELINE_HPP
+
+#include "render/pipeline.hpp"
+
+#include "render/graph/objectpool.hpp"
+#include "render/graph/renderpass.hpp"
+
+#include "render/platform/renderdevice.hpp"
 
 namespace xengine {
-    struct XENGINE_EXPORT Skybox {
-        ColorRGBA color;
-        TextureBuffer *texture = nullptr;
+    class FrameGraphPipeline : public Pipeline {
+    public:
+        explicit FrameGraphPipeline(RenderDevice &device);
+
+        void render(RenderTarget &target, Scene &scene) override;
+
+        void setPasses(std::vector<std::shared_ptr<RenderPass>> passes);
+
+    private:
+        FrameGraph setup(RenderTarget &target);
+
+        RenderDevice &device;
+        std::vector<std::shared_ptr<RenderPass>> passes;
+        ObjectPool pool;
     };
 }
-
-#endif //XENGINE_SKYBOX_HPP
+#endif //XENGINE_FRAMEGRAPHPIPELINE_HPP

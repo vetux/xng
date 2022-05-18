@@ -54,6 +54,11 @@ namespace xengine {
 
         ~ResourceRegistry();
 
+        template<typename T>
+        const T &get(const Uri &uri) {
+            return dynamic_cast<const T &>(*get(uri));
+        }
+
         std::shared_ptr<Resource> get(const Uri &uri);
 
         /**

@@ -65,18 +65,17 @@ namespace xengine {
 
         Mesh() = default;
 
-        Mesh(bool indexed, Primitive primitive, std::vector<Vertex> vertices,
-             std::vector<uint> indices) :
-                indexed(indexed),
-                primitive(primitive),
-                vertices(std::move(vertices)),
-                indices(std::move(indices)) {}
+        Mesh(Primitive primitive, std::vector<Vertex> vertices) :
+                indexed(false), primitive(primitive), vertices(std::move(vertices)), indices() {}
 
         Mesh(Primitive primitive, std::vector<Vertex> vertices, std::vector<uint> indices) :
                 indexed(true), primitive(primitive), vertices(std::move(vertices)), indices(std::move(indices)) {}
 
-        Mesh(Primitive primitive, std::vector<Vertex> vertices) :
-                indexed(false), primitive(primitive), vertices(std::move(vertices)), indices() {}
+        Mesh(bool indexed, Primitive primitive, std::vector<Vertex> vertices, std::vector<uint> indices)
+                : indexed(indexed),
+                  primitive(primitive),
+                  vertices(std::move(vertices)),
+                  indices(std::move(indices)) {}
     };
 }
 

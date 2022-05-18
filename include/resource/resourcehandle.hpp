@@ -69,11 +69,11 @@ namespace xengine {
             return uri;
         }
 
-        const T &get() {
+        const T &get() const {
             return dynamic_cast<const T &>(*getResource());
         }
 
-        const std::shared_ptr<Resource> &getResource() {
+        const std::shared_ptr<Resource> &getResource() const {
             syncWithLoader();
             if (!resource) {
                 throw std::runtime_error("Failed to load resource");
@@ -82,11 +82,8 @@ namespace xengine {
         }
 
     private:
-        void syncWithLoader() {
-            if (loadTask) {
-                loadTask->wait();
-                loadTask = nullptr;
-            }
+        void syncWithLoader() const {
+            loadTask->wait();
         }
 
         Uri uri;

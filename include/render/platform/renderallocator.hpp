@@ -120,17 +120,17 @@ namespace xengine {
          */
         virtual std::unique_ptr<MeshBuffer> createCustomMeshBuffer(const CustomMeshDefinition &mesh) = 0;
 
-         /**
-          * Create a shader program instance for the given shader sources in SPIRV.
-          *
-          * The implementation may cross compile the spirv to a different language using the ShaderCompiler interface.
-          *
-          * @param vertexShader
-          * @param vertexShaderEntryPoint
-          * @param fragmentShader
-          * @param fragmentShaderEntryPoint
-          * @return
-          */
+        /**
+         * Create a shader program instance for the given shader sources in SPIRV.
+         *
+         * The implementation may cross compile the spirv to a different language using the ShaderCompiler interface.
+         *
+         * @param vertexShader
+         * @param vertexShaderEntryPoint
+         * @param fragmentShader
+         * @param fragmentShaderEntryPoint
+         * @return
+         */
         virtual std::unique_ptr<ShaderProgram> createShaderProgram(const SPIRVSource &vertexShader,
                                                                    const SPIRVSource &fragmentShader) = 0;
 
