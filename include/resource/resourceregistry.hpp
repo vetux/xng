@@ -33,6 +33,10 @@
 #include "resource/resource.hpp"
 #include "resource/resourcebundle.hpp"
 
+#include "async/threadpool.hpp"
+
+#include "algo/refcounter.hpp"
+
 namespace xengine {
     /**
      * A registry loads asset bundles from an archive and deallocates the bundles from a separate garbage collection thread.
@@ -49,17 +53,9 @@ namespace xengine {
          */
         static ResourceRegistry &getDefaultRegistry();
 
-        explicit ResourceRegistry(const std::chrono::high_resolution_clock::duration
-                                  &gcInterval = std::chrono::seconds(30));
+        ResourceRegistry();
 
         ~ResourceRegistry();
-
-        template<typename T>
-        const T &get(const Uri &uri) {
-            return dynamic_cast<const T &>(*get(uri));
-        }
-
-        std::shared_ptr<Resource> get(const Uri &uri);
 
         /**
          * Set the archive instance to use for resolving the uri file paths.
@@ -68,18 +64,26 @@ namespace xengine {
          */
         void setArchive(std::shared_ptr<Archive> archive);
 
+        const Resource &get(const Uri &uri);
+
+        void incRef(const Uri &uri);
+
+        void decRef(const Uri &uri);
+
     private:
-        std::shared_ptr<Resource> getData(const Uri &uri);
+        void load(const Uri &uri);
 
-        ResourceBundle loadBundle(const std::string &path);
+        void unload(const Uri &uri);
 
-        void gcLoop();
+        const Resource &getData(const Uri &uri);
 
-        std::thread gcThread;
-        std::atomic<bool> gcShutdown = false;
-        std::condition_variable gcCondition;
-        std::mutex gcMutex;
-        const std::chrono::high_resolution_clock::duration gcInterval;
+        ResourceBundle loadBundle(const std::filesystem::path &path);
+
+        std::mutex mutex;
+
+        RefCounter<std::string, ulong> bundleRefCounter;
+
+        std::map<std::string, std::shared_ptr<Task>> loadTasks;
 
         std::shared_ptr<Archive> archive;
         std::map<std::string, ResourceBundle> bundles;

@@ -149,7 +149,7 @@ namespace xengine {
 
         //Wait for sideload to finish
         for (auto &task: bundleTasks) {
-            task.second->wait();
+            task.second->join();
         }
 
         ResourceBundle ret;
@@ -162,7 +162,7 @@ namespace xengine {
                 std::string bundle = element["bundle"];
                 std::string asset = element["asset"];
 
-                ret.add(name, std::make_shared<Mesh>(refBundles.at(bundle).get<Mesh>(asset)));
+                ret.add(name, std::make_unique<Mesh>(refBundles.at(bundle).get<Mesh>(asset)));
             }
         }
 
@@ -175,7 +175,7 @@ namespace xengine {
                 if (it != element.end()) {
                     std::string n = element.value("asset", "");
                     ret.add(name,
-                            std::make_shared<Material>(refBundles.at(*it).get<Material>(n)));
+                            std::make_unique<Material>(refBundles.at(*it).get<Material>(n)));
                 } else {
                     Material mat;
 
@@ -223,7 +223,7 @@ namespace xengine {
                         mat.normalTexture = ResourceHandle<Texture>(path);
                     }
 
-                    ret.add(name, std::make_shared<Material>(mat));
+                    ret.add(name, std::make_unique<Material>(mat));
                 }
             }
         }
@@ -234,7 +234,7 @@ namespace xengine {
                 std::string name = element["name"];
                 auto s = std::stringstream(element.dump());
                 auto tex = readJsonTexture(s, archive);
-                ret.add(name, std::make_shared<Texture>(tex));
+                ret.add(name, std::make_unique<Texture>(tex));
             }
         }
 
@@ -245,7 +245,7 @@ namespace xengine {
                 std::string bundle = element["bundle"];
                 std::string asset = element.value("asset", "");
 
-                ret.add(name, std::make_shared<ImageRGBA>(
+                ret.add(name, std::make_unique<ImageRGBA>(
                         refBundles.at(bundle).get<ImageRGBA>(asset)));
             }
         }
@@ -342,7 +342,7 @@ namespace xengine {
         for (auto i = 0; i < scene.mNumMeshes; i++) {
             const auto &mesh = dynamic_cast<const aiMesh &>(*scene.mMeshes[i]);
             std::string name = mesh.mName.C_Str();
-            ret.add(name, std::make_shared<Mesh>(convertMesh(mesh)));
+            ret.add(name, std::make_unique<Mesh>(convertMesh(mesh)));
         }
 
         for (auto i = 0; i < scene.mNumMaterials; i++) {
@@ -351,7 +351,7 @@ namespace xengine {
             aiString materialName;
             scene.mMaterials[i]->Get(AI_MATKEY_NAME, materialName);
 
-            ret.add(materialName.data, std::make_shared<Material>(material));
+            ret.add(materialName.data, std::make_unique<Material>(material));
         }
 
         return ret;
@@ -489,7 +489,7 @@ namespace xengine {
                                           &n) == 1) {
                     //Source is image
                     ResourceBundle ret;
-                    ret.add("0", std::make_shared<ImageRGBA>(readImage(buffer)));
+                    ret.add("0", std::make_unique<ImageRGBA>(readImage(buffer)));
                     return ret;
                 }
             } catch (const std::exception &e) {}
@@ -510,7 +510,7 @@ namespace xengine {
             //Try to read source as audio
             auto audio = readAudio(buffer);
             ResourceBundle ret;
-            ret.add("0", std::make_shared<Audio>(audio));
+            ret.add("0", std::make_unique<Audio>(audio));
 
             return ret;
         } else {
@@ -536,7 +536,7 @@ namespace xengine {
                                                   &y,
                                                   &n) == 1) {
                             ResourceBundle ret;
-                            ret.add("0", std::make_shared<ImageRGBA>(readImage(buffer)));
+                            ret.add("0", std::make_unique<ImageRGBA>(readImage(buffer)));
                             return ret;
                         }
                     } catch (const std::exception &e) {}
@@ -544,7 +544,7 @@ namespace xengine {
                     //Try to read source as audio
                     auto audio = readAudio(buffer);
                     ResourceBundle ret;
-                    ret.add("0", std::make_shared<Audio>(audio));
+                    ret.add("0", std::make_unique<Audio>(audio));
                     return ret;
                 }
             }

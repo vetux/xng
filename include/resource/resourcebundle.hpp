@@ -42,7 +42,7 @@ namespace xengine {
 
         ResourceBundle &operator=(const ResourceBundle &other) {
             for (auto &pair: other.assets) {
-                assets[pair.first] = std::shared_ptr<Resource>(pair.second->clone());
+                assets[pair.first] = std::unique_ptr<Resource>(pair.second->clone());
             }
 
             return *this;
@@ -54,21 +54,21 @@ namespace xengine {
 
         template<typename T>
         const T &get(const std::string &name = "") const {
-            return dynamic_cast<const T &>(*get(name));
+            return dynamic_cast<const T &>(get(name));
         }
 
-        std::shared_ptr<Resource> get(const std::string &name = "") const {
+        const Resource &get(const std::string &name = "") const {
             if (assets.empty())
                 throw std::runtime_error("Empty bundle map");
 
             if (name.empty()) {
-                return assets.begin()->second;
+                return *assets.begin()->second;
             } else {
-                return assets.at(name);
+                return *assets.at(name);
             }
         }
 
-        void add(const std::string &name, std::shared_ptr<Resource> ptr) {
+        void add(const std::string &name, std::unique_ptr<Resource> ptr) {
             assets[name] = std::move(ptr);
         }
 
@@ -76,7 +76,7 @@ namespace xengine {
             assets.erase(name);
         }
 
-        std::map<std::string, std::shared_ptr<Resource>> assets;
+        std::map<std::string, std::unique_ptr<Resource>> assets;
     };
 }
 

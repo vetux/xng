@@ -40,7 +40,7 @@ namespace xengine {
         workDoneCondition.notify_all();
     }
 
-    const std::exception_ptr &Task::wait() {
+    const std::exception_ptr &Task::join() {
         std::unique_lock<std::mutex> lk(mutex);
         while (!workDone) {
             workDoneCondition.wait(lk, [this] { return static_cast<bool>(workDone); });

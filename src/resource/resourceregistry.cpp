@@ -22,7 +22,7 @@
 #include "resource/resourceimporter.hpp"
 
 namespace xengine {
-    static std::unique_ptr<ResourceRegistry> defRepo;
+    static std::unique_ptr<ResourceRegistry> defRepo = nullptr;
 
     ResourceRegistry &ResourceRegistry::getDefaultRegistry() {
         if (!defRepo) {
@@ -31,27 +31,74 @@ namespace xengine {
         return *defRepo;
     }
 
-    ResourceRegistry::ResourceRegistry(const std::chrono::high_resolution_clock::duration &gcInterval)
-            : gcInterval(gcInterval) {
-        gcThread = std::thread([this] { gcLoop(); });
+    ResourceRegistry::ResourceRegistry() {
     }
 
     ResourceRegistry::~ResourceRegistry() {
-        gcShutdown.store(true);
-        gcCondition.notify_all();
-        gcThread.join();
-    }
-
-    std::shared_ptr<Resource> ResourceRegistry::get(const Uri &uri) {
-        return getData(uri);
+        for (auto &pair: loadTasks) {
+            pair.second->join();
+        }
     }
 
     void ResourceRegistry::setArchive(std::shared_ptr<Archive> a) {
         archive = std::move(a);
     }
 
-    std::shared_ptr<Resource> ResourceRegistry::getData(const Uri &uri) {
-        std::lock_guard<std::mutex> g(gcMutex);
+    const Resource &ResourceRegistry::get(const Uri &uri) {
+        return getData(uri);
+    }
+
+    void ResourceRegistry::incRef(const Uri &uri) {
+        if (bundleRefCounter.inc(uri.getFile())) {
+            load(uri);
+        }
+    }
+
+    void ResourceRegistry::decRef(const Uri &uri) {
+        if (bundleRefCounter.dec(uri.getFile())) {
+            unload(uri);
+        }
+    }
+
+    void ResourceRegistry::load(const Uri &uri) {
+        std::lock_guard<std::mutex> g(mutex);
+        auto path = uri.getFile();
+
+        auto it = loadTasks.find(path);
+        if (it == loadTasks.end()) {
+            loadTasks[path] = ThreadPool::getPool().addTask([this, path]() {
+                std::filesystem::path p(path);
+                auto stream = archive->open(path);
+                auto bundle = ResourceImporter().import(*stream, p.extension(), archive.get());
+                std::lock_guard<std::mutex> g(mutex);
+                bundles[path] = std::move(bundle);
+            });
+        }
+    }
+
+    void ResourceRegistry::unload(const Uri &uri) {
+        auto path = uri.getFile();
+
+        std::shared_ptr<Task> task;
+        {
+            std::lock_guard<std::mutex> g(mutex);
+
+            auto it = loadTasks.find(path);
+            if (it == loadTasks.end()) {
+                return;
+            } else {
+                task = it->second;
+            }
+        }
+
+        task->join();
+
+        std::lock_guard<std::mutex> g(mutex);
+        loadTasks.erase(path);
+    }
+
+    const Resource &ResourceRegistry::getData(const Uri &uri) {
+        std::lock_guard<std::mutex> g(mutex);
         auto &path = uri.getFile();
         auto it = bundles.find(path);
         if (it == bundles.end()) {
@@ -60,36 +107,11 @@ namespace xengine {
         return bundles[path].get(uri.getAsset());
     }
 
-    ResourceBundle ResourceRegistry::loadBundle(const std::string &path) {
+    ResourceBundle ResourceRegistry::loadBundle(const std::filesystem::path &path) {
         if (!archive) {
             throw std::runtime_error("No archive assigned in repository");
         }
         auto stream = archive->open(path);
-        return ResourceImporter().import(*stream);
-    }
-
-    void ResourceRegistry::gcLoop() {
-        while (!gcShutdown) {
-            std::unique_lock<std::mutex> gcLock(gcMutex);
-            std::set<std::string> unusedBundles;
-            for (auto &pair: bundles) {
-                bool bundleUse = false;
-                for (auto &ap: pair.second.assets) {
-                    if (ap.second.use_count() > 1) {
-                        bundleUse = true;
-                        break;
-                    }
-                }
-                if (!bundleUse) {
-                    unusedBundles.insert(pair.first);
-                }
-            }
-            for (auto &bundle: unusedBundles) {
-                bundles.erase(bundle);
-            }
-            gcCondition.wait_for(gcLock, gcInterval, [this] {
-                return gcShutdown.load();
-            });
-        }
+        return ResourceImporter().import(*stream, path.extension(), archive.get());
     }
 }

@@ -20,50 +20,14 @@
 #ifndef XENGINE_RESOURCE_HPP
 #define XENGINE_RESOURCE_HPP
 
-#include "algo/counter.hpp"
-
 namespace xengine {
     class XENGINE_EXPORT Resource {
     public:
-        /**
-         * Each resource instance is identified with an Id value.
-         */
-        struct XENGINE_EXPORT Id {
-            static Counter<size_t> counter;
-
-            /**
-             * Construct a new id,
-             * ids are assigned from one global pool.
-             */
-            Id();
-
-            /**
-             * Deconstruct the id,
-             * the id value is stored in the implementation and reused on a future call to the Id() constructor.
-             */
-            ~Id();
-
-            size_t get() const { return value; }
-
-            bool operator<(const Id &other) const {
-                return value < other.value;
-            }
-
-        private:
-            size_t value;
-        };
-
-
         Resource() {}
 
         virtual ~Resource() = default;
 
         virtual Resource *clone() = 0;
-
-        virtual Id getId() const { return id; }
-
-    protected:
-        Id id;
     };
 }
 

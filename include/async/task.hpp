@@ -47,7 +47,7 @@ namespace xengine {
 
         void start();
 
-        const std::exception_ptr &wait();
+        const std::exception_ptr &join();
 
         bool wait(long ms);
 

@@ -34,30 +34,47 @@ namespace xengine {
     public:
         ResourceHandle() = default;
 
-        explicit ResourceHandle(Uri uri,
-                                std::shared_ptr<ResourceRegistry> registry = nullptr,
-                                std::shared_ptr<Resource> resource = nullptr)
-                : uri(std::move(uri)), registry(std::move(registry)), resource(std::move(resource)) {
-            loadTask = ThreadPool::getPool().addTask([this] {
-                if (this->registry != nullptr) {
-                    this->resource = this->registry->get(this->uri);
-                } else {
-                    this->resource = ResourceRegistry::getDefaultRegistry().get(this->uri);
-                }
-            });
+        explicit ResourceHandle(Uri u,
+                                ResourceRegistry *r = nullptr,
+                                Resource *res = nullptr)
+                : uri(std::move(u)), registry(r), resource(res) {
+            if (!uri.empty()) {
+                getRegistry().incRef(uri);
+            }
         }
 
         ~ResourceHandle() {
-            syncWithLoader();
+            if (!uri.empty()) {
+                getRegistry().decRef(uri);
+            }
         };
 
-        ResourceHandle(const ResourceHandle<T> &other) = default;
+        ResourceHandle(const ResourceHandle<T> &other) {
+            uri = other.uri;
+            registry = other.registry;
+            resource = other.resource;
+            if (!uri.empty()) {
+                getRegistry().incRef(uri);
+            }
+        }
 
-        ResourceHandle(ResourceHandle<T> &&other) noexcept = default;
+        ResourceHandle<T> &operator=(const ResourceHandle<T> &other) {
+            if (this == &other)
+                return *this;
 
-        ResourceHandle<T> &operator=(const ResourceHandle<T> &other) = default;
+            uri = other.uri;
+            registry = other.registry;
+            resource = other.resource;
+            if (!uri.empty()) {
+                getRegistry().incRef(uri);
+            }
 
-        ResourceHandle<T> &operator=(ResourceHandle<T> &&other) noexcept = default;
+            return *this;
+        }
+
+        ResourceHandle(ResourceHandle<T> &&other) = default;
+
+        ResourceHandle<T> &operator=(ResourceHandle<T> &&other) = default;
 
         bool operator==(const ResourceHandle<T> &other) const {
             return uri == other.uri
@@ -74,28 +91,29 @@ namespace xengine {
         }
 
         const T &get() const {
-            return dynamic_cast<const T &>(*getResource());
+            return dynamic_cast<const T &>(getResource());
         }
 
-        const std::shared_ptr<Resource> &getResource() const {
-            syncWithLoader();
-            if (resource == nullptr) {
-                throw std::runtime_error("Failed to load resource");
+        const Resource &getResource() const {
+            if (resource != nullptr) {
+                return *resource;
+            } else {
+                return getRegistry().get(uri);
             }
-            return resource;
+        }
+
+        ResourceRegistry &getRegistry() const {
+            if (registry != nullptr) {
+                return *registry;
+            } else {
+                return ResourceRegistry::getDefaultRegistry();
+            }
         }
 
     private:
-        void syncWithLoader() const {
-            if (loadTask)
-                loadTask->wait();
-        }
-
         Uri uri;
-        std::shared_ptr<Resource> resource;
-        std::shared_ptr<ResourceRegistry> registry;
-
-        std::shared_ptr<Task> loadTask;
+        ResourceRegistry *registry = nullptr;
+        Resource *resource = nullptr; //Optional pointer to a resource object
     };
 }
 
