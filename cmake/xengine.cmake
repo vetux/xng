@@ -3,6 +3,7 @@ option(DRIVER_OPENGL "Build the OpenGL render driver (Window and Render implemen
 option(DRIVER_QT_RENDERER "Build the Qt render driver (Window and Render implementations)" ON)
 option(DRIVER_MONO "Build the mono script driver" ON)
 option(DRIVER_BOX2D "Build the box2d physics driver" ON)
+option(DRIVER_BULLET3 "Build the bullet3 physics driver" ON)
 option(DRIVER_OPENAL "Build the OpenAL audio driver" ON)
 
 set(Engine.Dir.INCLUDE engine/include/)
@@ -16,6 +17,10 @@ endif ()
 
 if (DRIVER_BOX2D)
     set(Engine.String.GLOBEXPR ${Engine.String.GLOBEXPR} drivers/box2d/*.cpp drivers/box2d/*.c)
+endif ()
+
+if (DRIVER_BULLET3)
+    set(Engine.String.GLOBEXPR ${Engine.String.GLOBEXPR} drivers/bullet3/*.cpp drivers/bullet3/*.c)
 endif ()
 
 if (DRIVER_OPENAL)
@@ -49,9 +54,9 @@ target_link_libraries(xengine
         sndfile
         cryptopp)
 
-if(UNIX AND CMAKE_COMPILER_IS_GNUCXX)
+if (UNIX AND CMAKE_COMPILER_IS_GNUCXX)
     target_compile_options(xengine PUBLIC -fvisibility=hidden)
-endif()
+endif ()
 
 if (DRIVER_MONO)
     add_compile_definitions(DRIVER_MONO)
@@ -64,6 +69,10 @@ if (DRIVER_BOX2D)
     add_compile_definitions(DRIVER_BOX2D)
     target_link_libraries(xengine ${BOX2D_LIB})
     target_include_directories(xengine PRIVATE drivers/box2d/)
+endif ()
+
+if (DRIVER_BULLET3)
+    target_include_directories(xengine PRIVATE drivers/bullet3/)
 endif ()
 
 if (DRIVER_OPENAL)
