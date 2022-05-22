@@ -1,7 +1,9 @@
 #include "render/platform/renderdevice.hpp"
 
 #ifdef DRIVER_OPENGL
+
 #include "render/platform/opengl/oglrenderdevice.hpp"
+
 #endif
 
 namespace xengine {

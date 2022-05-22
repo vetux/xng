@@ -19,14 +19,19 @@
 
 #include "physics/3d/world3d.hpp"
 
+#ifdef DRIVER_BULLET3
 #include "physics/bullet3/worldbt3.hpp"
+#endif
 
 #include <stdexcept>
 
 std::unique_ptr<xengine::World3D> xengine::World3D::create(xengine::World3D::Backend backend) {
     switch (backend) {
+#ifdef DRIVER_BULLET3
         case BULLET3:
             return std::make_unique<xengine::WorldBt3>();
+#endif
+        default:
+            throw std::runtime_error("Physics driver not supported " + std::to_string(backend));
     }
-    throw std::runtime_error("Invalid 3d physics backend " + std::to_string(backend));
 }

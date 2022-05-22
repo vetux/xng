@@ -72,6 +72,7 @@ if (DRIVER_BOX2D)
 endif ()
 
 if (DRIVER_BULLET3)
+    add_compile_definitions(DRIVER_BULLET3)
     target_include_directories(xengine PRIVATE drivers/bullet3/)
 endif ()
 

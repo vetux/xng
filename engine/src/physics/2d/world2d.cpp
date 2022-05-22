@@ -19,14 +19,21 @@
 
 #include "physics/2d/world2d.hpp"
 
+#ifdef DRIVER_BOX2D
+
 #include "physics/box2d/worldbox2d.hpp"
+
+#endif
 
 #include <stdexcept>
 
 std::unique_ptr<xengine::World2D> xengine::World2D::create(xengine::World2D::Backend backend) {
     switch (backend) {
+#ifdef DRIVER_BOX2D
         case BOX2D:
             return std::make_unique<WorldBox2D>();
+#endif
+        default:
+            throw std::runtime_error("Physics backend not supported " + std::to_string(backend));
     }
-    throw std::runtime_error("Invalid 2d physics backend " + std::to_string(backend));
 }
