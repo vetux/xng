@@ -21,6 +21,7 @@
 #define XENGINE_MESH_HPP
 
 #include <vector>
+#include <typeindex>
 
 #include "math/vector3.hpp"
 #include "math/vector2.hpp"
@@ -50,6 +51,9 @@ namespace xengine {
         Resource *clone() override {
             return new Mesh(*this);
         }
+
+
+        std::type_index getTypeIndex() override;
 
         bool indexed = false;
         Primitive primitive = POINT;

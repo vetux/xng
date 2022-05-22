@@ -102,4 +102,8 @@ namespace xengine {
         }
         return nCube;
     }
+
+    std::type_index Mesh::getTypeIndex() {
+        return typeid(Mesh);
+    }
 }

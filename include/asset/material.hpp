@@ -33,18 +33,22 @@ namespace xengine {
             return new Material(*this);
         }
 
+        std::type_index getTypeIndex() override {
+            return typeid(Material);
+        }
+
         ColorRGBA diffuse{};
         ColorRGBA ambient{};
         ColorRGBA specular{};
         ColorRGBA emissive{};
         float shininess{32};
 
-        ResourceHandle<Texture> diffuseTexture;
-        ResourceHandle<Texture> ambientTexture;
-        ResourceHandle<Texture> specularTexture;
-        ResourceHandle<Texture> emissiveTexture;
-        ResourceHandle<Texture> shininessTexture;
-        ResourceHandle<Texture> normalTexture;
+        ResourceHandle <Texture> diffuseTexture;
+        ResourceHandle <Texture> ambientTexture;
+        ResourceHandle <Texture> specularTexture;
+        ResourceHandle <Texture> emissiveTexture;
+        ResourceHandle <Texture> shininessTexture;
+        ResourceHandle <Texture> normalTexture;
     };
 }
 

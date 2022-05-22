@@ -33,6 +33,10 @@ namespace xengine {
             return new Audio(*this);
         }
 
+        std::type_index getTypeIndex() override {
+            return typeid(Audio);
+        }
+
         std::vector<uint8_t> buffer;
         AudioFormat format;
         unsigned int frequency;

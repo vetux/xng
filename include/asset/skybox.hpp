@@ -36,6 +36,10 @@ namespace xengine {
             return new Skybox(*this);
         }
 
+        std::type_index getTypeIndex() override {
+            return typeid(Skybox);
+        }
+
         ColorRGBA color = {12, 123, 123, 255}; // If texture is unassigned skybox color is drawn
         ResourceHandle<Texture> texture; // The cube map texture
     };

@@ -32,6 +32,10 @@ namespace xengine {
             return new Shader(*this);
         }
 
+        std::type_index getTypeIndex() override {
+            return typeid(Shader);
+        }
+
         ShaderSource vertexShader;
         ShaderSource geometryShader;
         ShaderSource fragmentShader;

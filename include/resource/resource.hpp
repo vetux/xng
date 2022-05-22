@@ -20,6 +20,8 @@
 #ifndef XENGINE_RESOURCE_HPP
 #define XENGINE_RESOURCE_HPP
 
+#include <typeindex>
+
 namespace xengine {
     class XENGINE_EXPORT Resource {
     public:
@@ -28,6 +30,8 @@ namespace xengine {
         virtual ~Resource() = default;
 
         virtual Resource *clone() = 0;
+
+        virtual std::type_index getTypeIndex() = 0;
     };
 }
 

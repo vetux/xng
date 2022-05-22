@@ -32,6 +32,10 @@ namespace xengine {
             return new Texture(*this);
         }
 
+        std::type_index getTypeIndex() override {
+            return typeid(Texture);
+        }
+
         std::vector<ResourceHandle<ImageRGBA>> images;
         TextureBuffer::Attributes attributes;
     };

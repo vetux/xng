@@ -22,6 +22,7 @@
 
 #include <vector>
 #include <stdexcept>
+#include <typeindex>
 
 #include "asset/color.hpp"
 #include "resource/resource.hpp"
@@ -39,6 +40,10 @@ namespace xengine {
     public:
         Resource *clone() override {
             return new Image<T>(*this);
+        }
+
+        std::type_index getTypeIndex() override {
+            return typeid(Image<T>);
         }
 
         Image() : size(), buffer() {}
