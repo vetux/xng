@@ -21,14 +21,14 @@
 
 #include <stdexcept>
 
-#ifdef BUILD_ENGINE_AUDIO_OPENAL
+#ifdef DRIVER_OPENAL
 #include "audio/openal/oalaudiodevice.hpp"
 #endif
 
 namespace xengine {
     std::vector<std::string> AudioDevice::getDeviceNames(AudioBackend backend) {
         switch (backend) {
-#ifdef BUILD_ENGINE_AUDIO_OPENAL
+#ifdef DRIVER_OPENAL
             case OpenAL:
                 return OALAudioDevice::getDeviceNames();
 #endif
@@ -39,7 +39,7 @@ namespace xengine {
 
     std::unique_ptr<AudioDevice> AudioDevice::createDevice(AudioBackend backend, const std::string &name) {
         switch (backend) {
-#ifdef BUILD_ENGINE_AUDIO_OPENAL
+#ifdef DRIVER_OPENAL
             case OpenAL:
                 return std::make_unique<OALAudioDevice>(name);
 #endif
@@ -50,7 +50,7 @@ namespace xengine {
 
     std::unique_ptr<AudioDevice> AudioDevice::createDevice(AudioBackend backend) {
         switch (backend) {
-#ifdef BUILD_ENGINE_AUDIO_OPENAL
+#ifdef DRIVER_OPENAL
             case OpenAL:
                 return std::make_unique<OALAudioDevice>();
 #endif

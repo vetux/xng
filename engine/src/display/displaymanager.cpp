@@ -19,7 +19,7 @@
 
 #include "display/displaymanager.hpp"
 
-#ifdef BUILD_ENGINE_DISPLAY_GLFW
+#ifdef DRIVER_GLFW
 #include "display/glfw/glfwdisplay.hpp"
 #endif
 
@@ -32,7 +32,7 @@ namespace xengine {
 
     std::unique_ptr<Monitor> DisplayManager::getPrimaryMonitor() const {
         switch (backend) {
-#ifdef BUILD_ENGINE_DISPLAY_GLFW
+#ifdef DRIVER_GLFW
             case GLFW:
                 return glfw::getPrimaryMonitor();
 #endif
@@ -43,7 +43,7 @@ namespace xengine {
 
     std::set<std::unique_ptr<Monitor>> DisplayManager::getMonitors() const {
         switch (backend) {
-#ifdef BUILD_ENGINE_DISPLAY_GLFW
+#ifdef DRIVER_GLFW
             case GLFW:
                 return glfw::getMonitors();
 #endif
@@ -54,7 +54,7 @@ namespace xengine {
 
     std::unique_ptr<Window> DisplayManager::createWindow() const {
         switch (backend) {
-#ifdef BUILD_ENGINE_DISPLAY_GLFW
+#ifdef DRIVER_GLFW
             case GLFW:
                 return glfw::createWindow();
 #endif
@@ -66,7 +66,7 @@ namespace xengine {
     std::unique_ptr<Window>
     DisplayManager::createWindow(const std::string &title, Vec2i size, WindowAttributes attributes) const {
         switch (backend) {
-#ifdef BUILD_ENGINE_DISPLAY_GLFW
+#ifdef DRIVER_GLFW
             case GLFW:
                 return glfw::createWindow(title, size, attributes);
 #endif
@@ -79,7 +79,7 @@ namespace xengine {
     DisplayManager::createWindow(const std::string &title, Vec2i size, WindowAttributes attributes, Monitor &monitor,
                                  VideoMode mode) const {
         switch (backend) {
-#ifdef BUILD_ENGINE_DISPLAY_GLFW
+#ifdef DRIVER_GLFW
             case GLFW:
                 return glfw::createWindow( title, size, attributes, monitor, mode);
 #endif
