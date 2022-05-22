@@ -26,6 +26,7 @@
 #include <set>
 #include <atomic>
 #include <condition_variable>
+#include <filesystem>
 
 #include "io/archive.hpp"
 

@@ -24,17 +24,14 @@ namespace xengine {
             : device(device), pool(device.getAllocator()) {}
 
     void FrameGraphPipeline::render(RenderTarget &target,
-                                    Scene &scene) {
-        auto graph = setup(target);
+                                    const Scene &scene) {
+        FrameGraphBuilder builder(target, pool,scene, renderResolution, renderSamples);
+        auto graph = builder.build(passes);
         graph.render(device.getRenderer());
         pool.endFrame();
     }
 
     void FrameGraphPipeline::setPasses(std::vector<std::shared_ptr<RenderPass>> p) {
         passes = std::move(p);
-    }
-
-    FrameGraph FrameGraphPipeline::setup(RenderTarget &target) {
-        return FrameGraphBuilder(target, pool, renderResolution, renderSamples).build(passes);
     }
 }

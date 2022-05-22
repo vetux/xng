@@ -61,12 +61,9 @@ namespace xengine {
             if (!render.enabled)
                 continue;
 
-            auto &mesh = render.mesh.get();
-            auto &material = render.material.get();
+            polyCount += render.mesh.get().polyCount();
 
-            polyCount += mesh.polyCount();
-
-            Scene::Object node(mesh, material);
+            Scene::Object node(render.mesh, render.material);
             node.transform = TransformComponent::walkHierarchy(transform, entityManager);
 
             //TODO: Change transform walking / scene creation to allow model matrix caching

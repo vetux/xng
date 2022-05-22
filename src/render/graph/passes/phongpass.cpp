@@ -23,6 +23,8 @@
 
 #include "math/rotation.hpp"
 
+#include "render/graph/passes/compositepass.hpp"
+
 // TODO: Fix phong pass outputting artifacts when resizing the window with the mouse or changing gbuffer resolution.
 
 const char *SHADER_VERT_LIGHTING = R"###(#version 410 core
@@ -137,8 +139,8 @@ namespace xengine {
 
     const int MAX_LIGHTS = 1000;
 
-    PhongPass::PhongPass(Scene &scene)
-            : scene(scene) {
+    PhongPass::PhongPass(RenderDevice &device) {
+        Shader shaderSrc;
         shaderSrc.vertexShader = ShaderSource(SHADER_VERT_LIGHTING,
                                               "main",
                                               VERTEX,
@@ -152,39 +154,27 @@ namespace xengine {
                                           ShaderInclude::getShaderMacros(GLSL_410));
         shaderSrc.fragmentShader.preprocess(ShaderInclude::getShaderIncludeCallback(),
                                             ShaderInclude::getShaderMacros(GLSL_410));
-        outDepthTex.attributes.format = TextureBuffer::DEPTH_STENCIL;
+
+        shader = device.getAllocator().createShaderProgram(shaderSrc.vertexShader, shaderSrc.fragmentShader);
+        quadMesh = device.getAllocator().createMeshBuffer(Mesh::normalizedQuad());
     }
 
     void PhongPass::setup(FrameGraphBuilder &builder) {
-        shader = builder.createShader(shaderSrc);
+        scene = builder.getScene();
 
         auto format = builder.getRenderFormat();
 
         renderTarget = builder.createRenderTarget(format.first, 1);
         multiSampleRenderTarget = builder.createRenderTarget(format.first, format.second);
 
-        quadMesh = builder.createMeshBuffer(Mesh::normalizedQuad());
-
-        if (format.first != outColorTex.attributes.size) {
-            outColorTex.attributes.size = builder.getBackBufferFormat().first;
-            outDepthTex.attributes.size = builder.getBackBufferFormat().first;
-        }
-
-        outColor = builder.createTextureBuffer(outColorTex);
-        outDepth = builder.createTextureBuffer(outDepthTex);
-
-        FrameGraphLayer layer;
-        layer.color = outColor;
-        layer.depth = outDepth;
-        builder.addLayer(layer);
+        outColor = builder.createTextureBuffer(TextureBuffer::Attributes{.size = builder.getBackBufferFormat().first});
+        outDepth = builder.createTextureBuffer(TextureBuffer::Attributes{.size = builder.getBackBufferFormat().first, .format = TextureBuffer::DEPTH_STENCIL});
     }
 
     void PhongPass::execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) {
         auto &gBuffer = board.get<GBuffer>();
-        auto &shaderProgram = resources.getShader(shader);
         auto &target = resources.getRenderTarget(renderTarget);
         auto &multiSampleTarget = resources.getRenderTarget(multiSampleRenderTarget);
-        auto &screenQuad = resources.getMeshBuffer(quadMesh);
         auto &color = resources.getTextureBuffer(outColor);
         auto &depth = resources.getTextureBuffer(outDepth);
 
@@ -192,7 +182,7 @@ namespace xengine {
         int pointCount = 0;
         int spotCount = 0;
 
-        shaderProgram.activate();
+        shader->activate();
 
         for (auto &light: scene.lights) {
             if (dirCount + pointCount + spotCount > MAX_LIGHTS)
@@ -202,55 +192,55 @@ namespace xengine {
             switch (light.type) {
                 case LIGHT_DIRECTIONAL:
                     name = "DIRECTIONAL_LIGHTS[" + std::to_string(dirCount++) + "].";
-                    shaderProgram.setVec3(name + "direction", light.direction);
-                    shaderProgram.setVec3(name + "ambient", light.ambient);
-                    shaderProgram.setVec3(name + "diffuse", light.diffuse);
-                    shaderProgram.setVec3(name + "specular", light.specular);
+                    shader->setVec3(name + "direction", light.direction);
+                    shader->setVec3(name + "ambient", light.ambient);
+                    shader->setVec3(name + "diffuse", light.diffuse);
+                    shader->setVec3(name + "specular", light.specular);
                     break;
                 case LIGHT_POINT:
                     name = "POINT_LIGHTS[" + std::to_string(pointCount++) + "].";
-                    shaderProgram.setVec3(name + "position", light.transform.getPosition());
-                    shaderProgram.setFloat(name + "constantValue", light.constant);
-                    shaderProgram.setFloat(name + "linearValue", light.linear);
-                    shaderProgram.setFloat(name + "quadraticValue", light.quadratic);
-                    shaderProgram.setVec3(name + "ambient", light.ambient);
-                    shaderProgram.setVec3(name + "diffuse", light.diffuse);
-                    shaderProgram.setVec3(name + "specular", light.specular);
+                    shader->setVec3(name + "position", light.transform.getPosition());
+                    shader->setFloat(name + "constantValue", light.constant);
+                    shader->setFloat(name + "linearValue", light.linear);
+                    shader->setFloat(name + "quadraticValue", light.quadratic);
+                    shader->setVec3(name + "ambient", light.ambient);
+                    shader->setVec3(name + "diffuse", light.diffuse);
+                    shader->setVec3(name + "specular", light.specular);
                     break;
                 case LIGHT_SPOT:
                     name = "SPOT_LIGHTS[" + std::to_string(spotCount++) + "].";
-                    shaderProgram.setVec3(name + "position", light.transform.getPosition());
-                    shaderProgram.setVec3(name + "direction", light.direction);
-                    shaderProgram.setFloat(name + "cutOff", cosf(degreesToRadians(light.cutOff)));
-                    shaderProgram.setFloat(name + "outerCutOff", cosf(degreesToRadians(light.outerCutOff)));
-                    shaderProgram.setFloat(name + "constantValue", light.constant);
-                    shaderProgram.setFloat(name + "linearValue", light.linear);
-                    shaderProgram.setFloat(name + "quadraticValue", light.quadratic);
-                    shaderProgram.setVec3(name + "ambient", light.ambient);
-                    shaderProgram.setVec3(name + "diffuse", light.diffuse);
-                    shaderProgram.setVec3(name + "specular", light.specular);
+                    shader->setVec3(name + "position", light.transform.getPosition());
+                    shader->setVec3(name + "direction", light.direction);
+                    shader->setFloat(name + "cutOff", cosf(degreesToRadians(light.cutOff)));
+                    shader->setFloat(name + "outerCutOff", cosf(degreesToRadians(light.outerCutOff)));
+                    shader->setFloat(name + "constantValue", light.constant);
+                    shader->setFloat(name + "linearValue", light.linear);
+                    shader->setFloat(name + "quadraticValue", light.quadratic);
+                    shader->setVec3(name + "ambient", light.ambient);
+                    shader->setVec3(name + "diffuse", light.diffuse);
+                    shader->setVec3(name + "specular", light.specular);
                     break;
             }
         }
 
-        shaderProgram.setInt("DIRECTIONAL_LIGHTS_COUNT", dirCount);
-        shaderProgram.setInt("POINT_LIGHTS_COUNT", pointCount);
-        shaderProgram.setInt("SPOT_LIGHTS_COUNT", spotCount);
+        shader->setInt("DIRECTIONAL_LIGHTS_COUNT", dirCount);
+        shader->setInt("POINT_LIGHTS_COUNT", pointCount);
+        shader->setInt("SPOT_LIGHTS_COUNT", spotCount);
 
-        shaderProgram.setTexture("position", 0);
-        shaderProgram.setTexture("normal", 1);
-        shaderProgram.setTexture("tangent", 2);
-        shaderProgram.setTexture("texNormal", 3);
-        shaderProgram.setTexture("diffuse", 4);
-        shaderProgram.setTexture("ambient", 5);
-        shaderProgram.setTexture("specular", 6);
-        shaderProgram.setTexture("shininess", 7);
-        shaderProgram.setTexture("depth", 8);
+        shader->setTexture("position", 0);
+        shader->setTexture("normal", 1);
+        shader->setTexture("tangent", 2);
+        shader->setTexture("texNormal", 3);
+        shader->setTexture("diffuse", 4);
+        shader->setTexture("ambient", 5);
+        shader->setTexture("specular", 6);
+        shader->setTexture("shininess", 7);
+        shader->setTexture("depth", 8);
 
-        shaderProgram.setVec3("VIEW_POS", scene.camera.transform.getPosition());
-        shaderProgram.setInt("NUM_SAMPLES", gBuffer.getSamples());
+        shader->setVec3("VIEW_POS", scene.camera.transform.getPosition());
+        shader->setInt("NUM_SAMPLES", gBuffer.getSamples());
 
-        RenderCommand command(shaderProgram, screenQuad);
+        RenderCommand command(*shader, *quadMesh);
 
         command.textures.emplace_back(gBuffer.getTexture(GBuffer::POSITION));
         command.textures.emplace_back(gBuffer.getTexture(GBuffer::NORMAL));
@@ -271,7 +261,8 @@ namespace xengine {
         target.attachColor(0, color);
         target.attachDepthStencil(depth);
 
-        ren.renderClear(target, {}, 1);
+        ren.renderClear(target, ColorRGBA::green(), 0);
+        ren.renderClear(multiSampleTarget, ColorRGBA::green(), 0);
 
         ren.renderBegin(multiSampleTarget, RenderOptions({}, gBuffer.getSize(), true));
         ren.addCommand(command);
@@ -293,5 +284,11 @@ namespace xengine {
 
         target.detachColor(0);
         target.detachDepthStencil();
+
+        auto layers = board.get<std::vector<CompositePass::Layer>>();
+
+        layers.emplace_back(CompositePass::Layer(&color, &depth));
+
+        board.set(layers);
     }
 }

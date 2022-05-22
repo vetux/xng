@@ -46,7 +46,6 @@ namespace xengine {
             textures[tex] = allocator.createTextureBuffer(attr);
         }
 
-        attr.textureType = TextureBuffer::TEXTURE_2D;
         attr.format = TextureBuffer::DEPTH_STENCIL;
 
         textures[DEPTH] = allocator.createTextureBuffer(attr);

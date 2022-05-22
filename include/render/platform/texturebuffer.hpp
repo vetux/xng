@@ -23,7 +23,10 @@
 #include "asset/image.hpp"
 #include "render/platform/renderobject.hpp"
 
+#include "algo/hashcombine.hpp"
+
 namespace xengine {
+
     /**
      * A texture buffer.
      * The texture type, size and format is changed when calling the upload methods.
@@ -139,7 +142,7 @@ namespace xengine {
         };
 
         struct XENGINE_EXPORT Attributes {
-            Vec2i size = {1,1};
+            Vec2i size = {1, 1};
             int samples = 1; //Ignored if texture is not TEXTURE_2D_MULTISAMPLE
             TextureType textureType = TEXTURE_2D;
             ColorFormat format = RGBA;
@@ -149,6 +152,19 @@ namespace xengine {
             bool generateMipmap = false;
             MipMapFiltering mipmapFilter = NEAREST_MIPMAP_NEAREST;
             bool fixedSampleLocations = false;
+
+            bool operator==(const Attributes &other) const {
+                return size == other.size
+                       && samples == other.samples
+                       && textureType == other.textureType
+                       && format == other.format
+                       && wrapping == other.wrapping
+                       && filterMin == other.filterMin
+                       && filterMag == other.filterMag
+                       && generateMipmap == other.generateMipmap
+                       && mipmapFilter == other.mipmapFilter
+                       && fixedSampleLocations == other.fixedSampleLocations;
+            }
         };
 
         explicit TextureBuffer(Attributes attributes) : attributes(attributes) {}
@@ -157,9 +173,9 @@ namespace xengine {
 
         const Attributes &getAttributes() const { return attributes; }
 
-        virtual void upload(const Image <ColorRGB> &buffer) = 0;
+        virtual void upload(const Image<ColorRGB> &buffer) = 0;
 
-        virtual void upload(const Image <ColorRGBA> &buffer) = 0;
+        virtual void upload(const Image<ColorRGBA> &buffer) = 0;
 
         virtual void upload(const Image<float> &buffer) = 0;
 
@@ -169,15 +185,15 @@ namespace xengine {
 
         virtual void upload(const Image<unsigned char> &buffer) = 0;
 
-        virtual Image <ColorRGBA> download() = 0;
+        virtual Image<ColorRGBA> download() = 0;
 
-        virtual void upload(CubeMapFace face, const Image <ColorRGBA> &buffer) = 0;
+        virtual void upload(CubeMapFace face, const Image<ColorRGBA> &buffer) = 0;
 
-        virtual Image <ColorRGBA> download(CubeMapFace face) = 0;
+        virtual Image<ColorRGBA> download(CubeMapFace face) = 0;
 
-        virtual void uploadCubeMap(const Image <ColorRGBA> &buffer) = 0;
+        virtual void uploadCubeMap(const Image<ColorRGBA> &buffer) = 0;
 
-        virtual Image <ColorRGBA> downloadCubeMap() = 0;
+        virtual Image<ColorRGBA> downloadCubeMap() = 0;
 
     protected:
         Attributes attributes;

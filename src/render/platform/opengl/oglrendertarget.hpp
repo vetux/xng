@@ -93,10 +93,9 @@ namespace xengine {
 
         protected:
             GLuint FBO{};
-            GLuint colorRBO{};
-            GLuint depthStencilRBO{};
             Vec2i size;
             int samples{};
+            int colorAttachments = 0;
         };
     }
 }

@@ -22,27 +22,36 @@
 
 #include "render/graph/framegraphresource.hpp"
 #include "render/graph/framegraph.hpp"
-#include "render/graph/framegraphlayer.hpp"
 
 #include "asset/shader.hpp"
 #include "asset/mesh.hpp"
 #include "asset/texture.hpp"
+#include "asset/scene.hpp"
 
 namespace xengine {
+    /**
+     * Not really a framegraph architecture currently because the graph handles only allocation of resources with an uri or render targets and textures which do not require a cpu upload.
+     *
+     * The render passes allocate static render objects using a passed render device, and share render objects with the blackboard which makes transient resource allocation not possible.
+     *
+     * This is because i could not find a efficient way to identify individual resource instances just based on their data (Would need to compare the complete data vectors of meshes and images)
+     * In a real framegraph you allocate the resources transiently and minimize resource lifetime throughout a frame in eg Vulkan.
+     */
     class XENGINE_EXPORT FrameGraphBuilder {
     public:
         FrameGraphBuilder(RenderTarget &backBuffer,
                           ObjectPool &pool,
+                          const Scene &scene,
                           Vec2i renderResolution,
                           int renderSamples);
 
-        FrameGraphResource createMeshBuffer(const Mesh &mesh);
+        FrameGraphResource createMeshBuffer(const ResourceHandle<Mesh> &handle);
 
-        FrameGraphResource createInstancedMeshBuffer(const Mesh &mesh, const std::vector<Transform> &offsets);
+        FrameGraphResource createTextureBuffer(const ResourceHandle<Texture> &handle);
 
-        FrameGraphResource createTextureBuffer(const Texture &texture);
+        FrameGraphResource createShader(const ResourceHandle<Shader> &handle);
 
-        FrameGraphResource createShader(const Shader &shader);
+        FrameGraphResource createTextureBuffer(const TextureBuffer::Attributes &attribs);
 
         FrameGraphResource createRenderTarget(Vec2i size, int samples);
 
@@ -56,19 +65,17 @@ namespace xengine {
 
         std::pair<Vec2i, int> getRenderFormat();
 
+        const Scene &getScene();
+
         FrameGraph build(const std::vector<std::shared_ptr<RenderPass>> &passes);
-
-        void addLayer(FrameGraphLayer layer) { layers.emplace_back(layer); }
-
-        std::vector<FrameGraphLayer> getLayers() { return layers; }
 
     private:
         ObjectPool &pool;
         RenderTarget &backBuffer;
+        const Scene &scene;
         std::vector<std::function<RenderObject &()>> resources;
         std::vector<std::set<FrameGraphResource>> passResources;
         size_t currentPass = 0;
-        std::vector<FrameGraphLayer> layers;
 
         Vec2i renderRes;
         int renderSamples;

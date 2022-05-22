@@ -26,7 +26,19 @@
 namespace xengine {
     class XENGINE_EXPORT CompositePass : public RenderPass {
     public:
-        CompositePass();
+        struct XENGINE_EXPORT Layer {
+            explicit Layer(TextureBuffer *color = nullptr, TextureBuffer *depth = nullptr)
+                    : color(color), depth(depth) {}
+
+            TextureBuffer *color;
+            TextureBuffer *depth;
+            bool enableBlending = true;
+            BlendMode colorBlendModeSource = BlendMode::SRC_ALPHA;
+            BlendMode colorBlendModeDest = BlendMode::ONE_MINUS_SRC_ALPHA;
+            DepthTestMode depthTestMode = DepthTestMode::DEPTH_TEST_LESS;
+        };
+
+        explicit CompositePass(RenderDevice &device);
 
         ~CompositePass() override = default;
 
@@ -37,19 +49,18 @@ namespace xengine {
         void setClearColor(ColorRGBA color) { clearColor = color; }
 
     private:
-        void drawLayer(FrameGraphLayer layer,
+        void drawLayer(Layer layer,
                        Renderer &ren,
                        RenderTarget &target,
-                       RenderPassResources &resources,
                        ShaderProgram &shaderProgram,
                        MeshBuffer &screenQuad);
 
-        Shader shaderSrc;
-        ColorRGBA clearColor;
-        std::vector<FrameGraphLayer> layers;
+        ColorRGBA clearColor = ColorRGBA::white();
+
+        std::unique_ptr<ShaderProgram> shader;
+        std::unique_ptr<MeshBuffer> quadMesh;
+
         FrameGraphResource backBuffer;
-        FrameGraphResource shader;
-        FrameGraphResource quadMesh;
     };
 }
 

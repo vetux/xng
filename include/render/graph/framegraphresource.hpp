@@ -26,7 +26,7 @@ namespace xengine {
     struct XENGINE_EXPORT FrameGraphResource {
         FrameGraphResource() = default;
 
-        explicit FrameGraphResource(size_t index) : index(index) {}
+        explicit FrameGraphResource(size_t index) : index(index), assigned(true) {}
 
         bool operator<(const FrameGraphResource &other) const { return index < other.index; }
 

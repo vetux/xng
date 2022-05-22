@@ -106,49 +106,50 @@ void main()
 )###";
 
 namespace xengine {
-    CompositePass::CompositePass() {
+    CompositePass::CompositePass(RenderDevice &device) {
+        Shader shaderSrc;
         shaderSrc.vertexShader = ShaderSource(SHADER_VERT, "main", VERTEX, GLSL_410);
         shaderSrc.fragmentShader = ShaderSource(SHADER_FRAG, "main", FRAGMENT, GLSL_410);
         shaderSrc.fragmentShader.preprocess(ShaderInclude::getShaderIncludeCallback(),
                                             ShaderInclude::getShaderMacros(GLSL_410));
         shaderSrc.fragmentShader.crossCompile(GLSL_410);
+
+        shader = device.getAllocator().createShaderProgram(shaderSrc.vertexShader, shaderSrc.fragmentShader);
+        quadMesh = device.getAllocator().createMeshBuffer(Mesh::normalizedQuad());
     }
 
     void CompositePass::setup(FrameGraphBuilder &builder) {
-        layers = builder.getLayers();
         backBuffer = builder.getBackBuffer();
-        shader = builder.createShader(shaderSrc);
-        quadMesh = builder.createMeshBuffer(Mesh::normalizedQuad());
     }
 
     void CompositePass::execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) {
-        auto &shaderProgram = resources.getShader(shader);
         auto &target = resources.getRenderTarget(backBuffer);
-        auto &screenQuad = resources.getMeshBuffer(quadMesh);
-        shaderProgram.activate();
+        shader->activate();
+        ren.renderClear(target, clearColor, 1);
+        auto layers = board.get<std::vector<Layer>>();
         for (auto &l: layers) {
-            drawLayer(l, ren, target, resources, shaderProgram, screenQuad);
+            drawLayer(l, ren, target, *shader, *quadMesh);
         }
     }
 
-    void CompositePass::drawLayer(FrameGraphLayer layer,
+    //Does not seem to draw the contents of the texture.
+    void CompositePass::drawLayer(Layer layer,
                                   Renderer &ren,
                                   RenderTarget &target,
-                                  RenderPassResources &resources,
                                   ShaderProgram &shaderProgram,
                                   MeshBuffer &screenQuad) {
         std::string prefix = "globals.layer";
 
         std::vector<std::reference_wrapper<TextureBuffer>> textures;
 
-        if (layer.color.assigned) {
-            textures.emplace_back(resources.getTextureBuffer(layer.color));
+        if (layer.color != nullptr) {
+            textures.emplace_back(*layer.color);
             assert(shaderProgram.setTexture(prefix + ".color", 0));
         }
 
-        assert(shaderProgram.setInt(prefix + ".has_depth", layer.depth.assigned));
-        if (layer.depth.assigned) {
-            textures.emplace_back(resources.getTextureBuffer(layer.depth));
+        assert(shaderProgram.setInt(prefix + ".has_depth", layer.depth != nullptr));
+        if (layer.depth != nullptr) {
+            textures.emplace_back(*layer.depth);
             assert(shaderProgram.setTexture(prefix + ".depth", textures.size() - 1));
         }
 

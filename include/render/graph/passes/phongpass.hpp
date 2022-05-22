@@ -26,7 +26,7 @@
 namespace xengine {
     class XENGINE_EXPORT PhongPass : public RenderPass {
     public:
-        PhongPass(Scene &scene);
+        PhongPass(RenderDevice &device);
 
         ~PhongPass() override = default;
 
@@ -35,15 +35,12 @@ namespace xengine {
         void execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) override;
 
     private:
-        Scene &scene;
+        std::unique_ptr<ShaderProgram> shader;
+        std::unique_ptr<MeshBuffer> quadMesh;
 
-        Shader shaderSrc;
-        Texture outColorTex;
-        Texture outDepthTex;
+        Scene scene;
 
-        FrameGraphResource shader;
         FrameGraphResource renderTarget;
-        FrameGraphResource quadMesh;
         FrameGraphResource multiSampleRenderTarget;
 
         FrameGraphResource outColor;

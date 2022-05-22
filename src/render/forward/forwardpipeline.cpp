@@ -21,7 +21,7 @@
 
 namespace xengine
 {
-    void ForwardPipeline::render(RenderTarget &target, Scene &scene) {
+    void ForwardPipeline::render(RenderTarget &target, const Scene &scene) {
         // TODO: Implement forward render pipeline
     }
 }

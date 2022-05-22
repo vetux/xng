@@ -27,27 +27,25 @@
 namespace xengine {
     class XENGINE_EXPORT GBufferPass : public RenderPass {
     public:
-        GBufferPass(Scene &scene, RenderDevice &device);
+        explicit GBufferPass(RenderDevice &device);
 
         void setup(FrameGraphBuilder &builder) override;
 
         void execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) override;
 
     private:
-        Scene &scene;
         RenderDevice &device;
 
         GBuffer gBuffer;
 
-        Shader shaderSrc;
+        Scene scene;
 
-        std::shared_ptr<ImageRGBA> defaultImage;
+        std::unique_ptr<TextureBuffer> defaultTexture;
+        std::unique_ptr<ShaderProgram> shader;
 
-        FrameGraphResource shader{};
-        FrameGraphResource defaultTexture{};
         FrameGraphResource renderTarget;
 
-        std::map<Resource::Id, FrameGraphResource> sceneResources;
+        std::map<Uri, FrameGraphResource> sceneResources;
     };
 }
 #endif //XENGINE_GBUFFERPASS_HPP

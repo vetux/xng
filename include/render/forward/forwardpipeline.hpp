@@ -31,7 +31,7 @@ namespace xengine {
         explicit ForwardPipeline(RenderDevice &device)
                 : ren(&device.getRenderer()) {}
 
-        void render(RenderTarget &target, Scene &scene) override;
+        void render(RenderTarget &target, const Scene &scene) override;
 
     private:
         Renderer *ren = nullptr;

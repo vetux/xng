@@ -21,6 +21,8 @@
 
 #include "render/shader/shaderinclude.hpp"
 
+#include "render/graph/passes/compositepass.hpp"
+
 static const char *SHADER_VERT = R"###(#version 410 core
 
 layout (location = 0) in vec3 position;
@@ -67,8 +69,8 @@ void main() {
 )###";
 
 namespace xengine {
-    SkyboxPass::SkyboxPass(Scene &scene)
-            : scene(scene) {
+    SkyboxPass::SkyboxPass(RenderDevice &device) {
+        Shader shaderSrc;
         shaderSrc.vertexShader = ShaderSource(SHADER_VERT, "main", VERTEX, GLSL_410);
         shaderSrc.fragmentShader = ShaderSource(SHADER_FRAG, "main", FRAGMENT, GLSL_410);
 
@@ -77,51 +79,46 @@ namespace xengine {
         shaderSrc.fragmentShader.preprocess(ShaderInclude::getShaderIncludeCallback(),
                                             ShaderInclude::getShaderMacros(GLSL_410));
 
+        shader = device.getAllocator().createShaderProgram(shaderSrc.vertexShader, shaderSrc.fragmentShader);
+
         TextureBuffer::Attributes attributes;
-        defTex.attributes.size = Vec2i(1, 1);
-        defTex.attributes.format = TextureBuffer::RGBA;
-        defTex.attributes.textureType = TextureBuffer::TEXTURE_CUBE_MAP;
-        defTex.attributes.generateMipmap = false;
-        defTex.attributes.wrapping = TextureBuffer::REPEAT;
+        attributes.size = Vec2i(1, 1);
+        attributes.format = TextureBuffer::RGBA;
+        attributes.textureType = TextureBuffer::TEXTURE_CUBE_MAP;
+        attributes.generateMipmap = false;
+        attributes.wrapping = TextureBuffer::REPEAT;
+
+        defaultTexture = device.getAllocator().createTextureBuffer(attributes);
+
+        skyboxCube = device.getAllocator().createMeshBuffer(Mesh::normalizedCube());
     }
 
     void SkyboxPass::setup(FrameGraphBuilder &builder) {
-        shader = builder.createShader(shaderSrc);
-        skyboxMesh = builder.createMeshBuffer(Mesh::normalizedCube());
-        defaultTex = builder.createTextureBuffer(defTex);
+        scene = builder.getScene();
 
         auto format = builder.getRenderFormat();
         renderTarget = builder.createRenderTarget(format.first, format.second);
 
-        if (colorTex.attributes.size != format.first || colorTex.attributes.samples != format.second) {
-            colorTex = Texture();
-            colorTex.attributes.size = format.first;
-            colorTex.attributes.samples = format.second;
-        }
-
-        outColor = builder.createTextureBuffer(colorTex);
+        outColor = builder.createTextureBuffer(TextureBuffer::Attributes{.size = format.first, });
 
         if (scene.skybox.texture) {
-            skyboxTex = builder.createTextureBuffer(scene.skybox.texture.get());
+            skyboxTexture = builder.createTextureBuffer(scene.skybox.texture);
         } else {
-            skyboxTex = {};
+            skyboxTexture = {};
         }
 
-        FrameGraphLayer layer;
-        layer.color = outColor;
-        builder.addLayer(layer);
+        outDepth = builder.createTextureBuffer(
+                TextureBuffer::Attributes{.size = format.first, .format = TextureBuffer::DEPTH_STENCIL});
     }
 
     void SkyboxPass::execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) {
-        auto &shaderProgram = resources.getShader(shader);
-        auto &skybox = resources.getMeshBuffer(skyboxMesh);
-        auto &defaultTexture = resources.getTextureBuffer(defaultTex);
         auto &target = resources.getRenderTarget(renderTarget);
         auto &color = resources.getTextureBuffer(outColor);
+        auto &depth = resources.getTextureBuffer(outDepth);
         auto &gBuffer = board.get<GBuffer>();
 
-        shaderProgram.activate();
-        shaderProgram.setTexture("diffuse", 0);
+        shader->activate();
+        shader->setTexture("diffuse", 0);
 
         Mat4f model, view, projection, cameraTranslation;
         view = scene.camera.view();
@@ -129,29 +126,29 @@ namespace xengine {
         cameraTranslation = MatrixMath::translate(scene.camera.transform.getPosition());
 
         //Draw skybox
-
         target.setNumberOfColorAttachments(1);
         target.attachColor(0, color);
+        target.attachDepthStencil(depth);
 
         ren.renderBegin(target, RenderOptions({}, target.getSize(), false));
 
-        shaderProgram.setMat4("MANA_M", model);
-        shaderProgram.setMat4("MANA_V", view);
-        shaderProgram.setMat4("MANA_P", projection);
-        shaderProgram.setMat4("MANA_MVP", projection * view * model);
-        shaderProgram.setMat4("MANA_M_INVERT", MatrixMath::inverse(model));
-        shaderProgram.setMat4("MANA_VIEW_TRANSLATION", cameraTranslation);
+        shader->setMat4("MANA_M", model);
+        shader->setMat4("MANA_V", view);
+        shader->setMat4("MANA_P", projection);
+        shader->setMat4("MANA_MVP", projection * view * model);
+        shader->setMat4("MANA_M_INVERT", MatrixMath::inverse(model));
+        shader->setMat4("MANA_VIEW_TRANSLATION", cameraTranslation);
 
-        RenderCommand skyboxCommand(shaderProgram, skybox);
+        RenderCommand skyboxCommand(*shader, *skyboxCube);
 
-        if (skyboxTex.assigned) {
-            skyboxCommand.textures.emplace_back(resources.getTextureBuffer(skyboxTex));
+        if (skyboxTexture.assigned) {
+            skyboxCommand.textures.emplace_back(resources.getTextureBuffer(skyboxTexture));
         } else {
             for (int i = TextureBuffer::CubeMapFace::POSITIVE_X; i <= TextureBuffer::CubeMapFace::NEGATIVE_Z; i++) {
-                defaultTexture.upload(static_cast<TextureBuffer::CubeMapFace>(i),
-                                      ImageRGBA(1, 1, {scene.skybox.color}));
+                defaultTexture->upload(static_cast<TextureBuffer::CubeMapFace>(i),
+                                       ImageRGBA(1, 1, {scene.skybox.color}));
             }
-            skyboxCommand.textures.emplace_back(defaultTexture);
+            skyboxCommand.textures.emplace_back(*defaultTexture);
         }
 
         skyboxCommand.properties.enableDepthTest = false;
@@ -162,5 +159,11 @@ namespace xengine {
         ren.renderFinish();
 
         target.detachColor(0);
+
+        auto layers = board.get<std::vector<CompositePass::Layer>>();
+
+        layers.emplace_back(CompositePass::Layer(&color));
+
+        board.set(layers);
     }
 }

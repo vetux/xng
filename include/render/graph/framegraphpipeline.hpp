@@ -32,7 +32,7 @@ namespace xengine {
     public:
         explicit FrameGraphPipeline(RenderDevice &device);
 
-        void render(RenderTarget &target, Scene &scene) override;
+        void render(RenderTarget &target, const Scene &scene) override;
 
         void setRenderResolution(Vec2i res) override { renderResolution = res; }
 
@@ -41,8 +41,6 @@ namespace xengine {
         void setPasses(std::vector<std::shared_ptr<RenderPass>> passes);
 
     private:
-        FrameGraph setup(RenderTarget &target);
-
         RenderDevice &device;
         std::vector<std::shared_ptr<RenderPass>> passes;
         ObjectPool pool;

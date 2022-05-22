@@ -17,19 +17,19 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_FRAMEGRAPHLAYER_HPP
-#define XENGINE_FRAMEGRAPHLAYER_HPP
+#ifndef XENGINE_HASHCOMBINE_HPP
+#define XENGINE_HASHCOMBINE_HPP
 
-#include "render/platform/texturebuffer.hpp"
+#include <functional>
 
 namespace xengine {
-    struct XENGINE_EXPORT FrameGraphLayer {
-        FrameGraphResource color;
-        FrameGraphResource depth;
-        bool enableBlending = true;
-        BlendMode colorBlendModeSource = BlendMode::SRC_ALPHA;
-        BlendMode colorBlendModeDest = BlendMode::ONE_MINUS_SRC_ALPHA;
-        DepthTestMode depthTestMode = DepthTestMode::DEPTH_TEST_LESS;
-    };
+    //https://stackoverflow.com/a/2595226
+    void hash_combine(std::size_t &seed, std::size_t v);
+
+    template<typename T>
+    void hash_combine(std::size_t &seed, const T &v) {
+        std::hash<T> hash;
+        return hash_combine(seed, hash(v));
+    }
 }
-#endif //XENGINE_FRAMEGRAPHLAYER_HPP
+#endif //XENGINE_HASHCOMBINE_HPP

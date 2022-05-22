@@ -25,79 +25,24 @@
 #include "render/platform/opengl/ogltexturebuffer.hpp"
 
 namespace xengine {
-    opengl::OGLRenderTarget::OGLRenderTarget() : FBO(0), colorRBO(0), depthStencilRBO(0), size(), samples() {}
+    opengl::OGLRenderTarget::OGLRenderTarget() : FBO(0), size(), samples() {}
 
     opengl::OGLRenderTarget::OGLRenderTarget(Vec2i size)
-            : FBO(0), colorRBO(0), depthStencilRBO(0), size(size), samples() {
+            : FBO(0), size(size), samples() {
         glGenFramebuffers(1, &FBO);
-        glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-
-        glGenRenderbuffers(1, &colorRBO);
-        glBindRenderbuffer(GL_RENDERBUFFER, colorRBO);
-
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA, size.x, size.y);
-
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRBO);
-
-        glGenRenderbuffers(1, &depthStencilRBO);
-        glBindRenderbuffer(GL_RENDERBUFFER, depthStencilRBO);
-
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, size.x, size.y);
-
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilRBO);
-
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-            throw std::runtime_error("Failed to setup framebuffer");
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
         checkGLError("OGLRenderAllocator::allocateFrameBuffer");
     }
 
     opengl::OGLRenderTarget::OGLRenderTarget(Vec2i size, int samples)
-            : FBO(), colorRBO(), depthStencilRBO(), size(size), samples(samples) {
+            : FBO(), size(size), samples(samples) {
         glGenFramebuffers(1, &FBO);
-        glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-
-        glGenRenderbuffers(1, &colorRBO);
-        glBindRenderbuffer(GL_RENDERBUFFER, colorRBO);
-
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGBA, size.x, size.y);
-
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRBO);
-
-        glGenRenderbuffers(1, &depthStencilRBO);
-        glBindRenderbuffer(GL_RENDERBUFFER, depthStencilRBO);
-
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH24_STENCIL8, size.x, size.y);
-
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilRBO);
-
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-            throw std::runtime_error("Failed to setup framebuffer");
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
         checkGLError("OGLRenderAllocator::allocateFrameBuffer");
     }
 
     opengl::OGLRenderTarget::~OGLRenderTarget() {
         //Check if FBO is 0 which is the default framebuffer managed by the display manager.
         if (FBO != 0) {
-            glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, 0);
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, 0);
-
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-            if (colorRBO != 0)
-                glDeleteRenderbuffers(1, &colorRBO);
-            if (depthStencilRBO != 0)
-                glDeleteRenderbuffers(1, &depthStencilRBO);
-
             glDeleteFramebuffers(1, &FBO);
-
             checkGLError();
         }
     }
@@ -266,6 +211,9 @@ namespace xengine {
     }
 
     void opengl::OGLRenderTarget::setNumberOfColorAttachments(int count) {
+        for (int i = 0; i < colorAttachments; i++) {
+            detachColor(i);
+        }
         unsigned int attachments[count];
         for (int i = 0; i < count; i++) {
             attachments[i] = GL_COLOR_ATTACHMENT0 + i;
@@ -274,9 +222,11 @@ namespace xengine {
         glDrawBuffers(count, attachments);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         checkGLError();
+        colorAttachments = count;
     }
 
     void opengl::OGLRenderTarget::attachColor(int index, TextureBuffer &texture) {
+        detachColor(index);
         auto &tex = dynamic_cast< OGLTextureBuffer &>(texture);
         glBindFramebuffer(GL_FRAMEBUFFER, FBO);
         glFramebufferTexture2D(GL_FRAMEBUFFER,
@@ -289,6 +239,7 @@ namespace xengine {
     }
 
     void opengl::OGLRenderTarget::attachDepth(TextureBuffer &texture) {
+        detachDepth();
         auto &tex = dynamic_cast< OGLTextureBuffer &>(texture);
         glBindFramebuffer(GL_FRAMEBUFFER, FBO);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
@@ -298,6 +249,7 @@ namespace xengine {
     }
 
     void opengl::OGLRenderTarget::attachStencil(TextureBuffer &texture) {
+        detachStencil();
         auto &tex = dynamic_cast< OGLTextureBuffer &>(texture);
         glBindFramebuffer(GL_FRAMEBUFFER, FBO);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
@@ -307,6 +259,7 @@ namespace xengine {
     }
 
     void opengl::OGLRenderTarget::attachDepthStencil(TextureBuffer &texture) {
+        detachDepthStencil();
         auto &tex = dynamic_cast< OGLTextureBuffer &>(texture);
         glBindFramebuffer(GL_FRAMEBUFFER, FBO);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
@@ -318,6 +271,7 @@ namespace xengine {
     void opengl::OGLRenderTarget::attachColor(int index, TextureBuffer::CubeMapFace face, TextureBuffer &texture) {
         auto &tex = dynamic_cast< OGLTextureBuffer &>(texture);
         glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, OGLTypeConverter::convert(face), 0, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, OGLTypeConverter::convert(face), tex.handle, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         checkGLError();
@@ -326,6 +280,7 @@ namespace xengine {
     void opengl::OGLRenderTarget::attachDepth(TextureBuffer::CubeMapFace face, TextureBuffer &texture) {
         auto &tex = dynamic_cast< OGLTextureBuffer &>(texture);
         glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, OGLTypeConverter::convert(face), 0, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, OGLTypeConverter::convert(face), tex.handle, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         checkGLError();
@@ -334,6 +289,7 @@ namespace xengine {
     void opengl::OGLRenderTarget::attachStencil(TextureBuffer::CubeMapFace face, TextureBuffer &texture) {
         auto &tex = dynamic_cast< OGLTextureBuffer &>(texture);
         glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, OGLTypeConverter::convert(face), 0, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, OGLTypeConverter::convert(face), tex.handle, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         checkGLError();
@@ -343,6 +299,7 @@ namespace xengine {
                                                      TextureBuffer &texture) {
         auto &tex = dynamic_cast< OGLTextureBuffer &>(texture);
         glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, OGLTypeConverter::convert(face), 0, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, OGLTypeConverter::convert(face), tex.handle,
                                0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -357,30 +314,30 @@ namespace xengine {
         glBindFramebuffer(GL_FRAMEBUFFER, FBO);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, GL_TEXTURE_2D, 0, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, GL_TEXTURE_2D_MULTISAMPLE, 0, 0);
-        if (index == 0) {
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRBO);
-        }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         checkGLError();
     }
 
     void opengl::OGLRenderTarget::detachDepth() {
         glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRBO);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, 0, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         checkGLError();
     }
 
     void opengl::OGLRenderTarget::detachStencil() {
         glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilRBO);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, 0, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         checkGLError();
     }
 
     void opengl::OGLRenderTarget::detachDepthStencil() {
         glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilRBO);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, 0, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         checkGLError();
     }

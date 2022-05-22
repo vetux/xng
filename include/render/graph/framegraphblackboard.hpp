@@ -28,13 +28,16 @@ namespace xengine {
     class XENGINE_EXPORT FrameGraphBlackboard {
     public:
         template<typename T>
-        void add(const T &instance) {
+        void set(const T &instance) {
             data[typeid(T)] = std::make_unique<Entry < T>>
             (instance);
         }
 
         template<typename T>
         const T &get() {
+            if (data.find(typeid(T)) == data.end()) {
+                data[typeid(T)] = std::make_unique<Entry<T>>(T());
+            }
             return dynamic_cast<Entry <T> &>(*data[typeid(T)].get()).value;
         }
 

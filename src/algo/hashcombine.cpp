@@ -17,16 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "resource/resource.hpp"
+#include "algo/hashcombine.hpp"
 
-namespace xengine {
-    Counter<size_t> Resource::Id::counter;
-
-    Resource::Id::Id() {
-        value = counter.get();
-    }
-
-    Resource::Id::~Id() {
-        counter.put(value);
-    }
+void xengine::hash_combine(std::size_t &seed, std::size_t v) {
+    seed ^= v + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }

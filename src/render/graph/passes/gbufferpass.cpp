@@ -146,14 +146,16 @@ namespace xengine {
     }
 
     static void bindTextures(RenderTarget &target, GBuffer &gBuffer) {
-        target.setNumberOfColorAttachments(GBuffer::GEOMETRY_TEXTURE_END + 1);
+        target.setNumberOfColorAttachments(GBuffer::GEOMETRY_TEXTURE_END);
         for (int i = GBuffer::GEOMETRY_TEXTURE_BEGIN; i < GBuffer::GEOMETRY_TEXTURE_END; i++) {
             target.attachColor(i, gBuffer.getTexture((GBuffer::GTexture) i));
         }
+        target.attachDepthStencil(gBuffer.getTexture(GBuffer::DEPTH));
     }
 
-    GBufferPass::GBufferPass(Scene &scene, RenderDevice &device)
-            : scene(scene), device(device), gBuffer(device) {
+    GBufferPass::GBufferPass(RenderDevice &device)
+            : device(device), gBuffer(device) {
+        Shader shaderSrc;
         shaderSrc.vertexShader = ShaderSource(SHADER_VERT_GEOMETRY, "main", VERTEX, GLSL_410);
         shaderSrc.fragmentShader = ShaderSource(SHADER_FRAG_GEOMETRY, "main", FRAGMENT, GLSL_410);
 
@@ -162,36 +164,34 @@ namespace xengine {
         shaderSrc.fragmentShader.preprocess(ShaderInclude::getShaderIncludeCallback(),
                                             ShaderInclude::getShaderMacros(GLSL_410));
 
-        defaultImage = std::make_shared<ImageRGBA>(1,
-                                                   1,
-                                                   std::vector<ColorRGBA>({ColorRGBA::black()}));
+        shader = device.getAllocator().createShaderProgram(shaderSrc.vertexShader, shaderSrc.fragmentShader);
+
+        auto defaultImage = ImageRGBA(1,
+                                      1,
+                                      std::vector<ColorRGBA>({ColorRGBA::black()}));
+
+        defaultTexture = device.getAllocator().createTextureBuffer({.size = {1, 1}, .samples = 1});
+        defaultTexture->upload(defaultImage);
     }
 
     void GBufferPass::setup(FrameGraphBuilder &builder) {
-        Texture tex;
-        tex.attributes.size = {1, 1};
-        tex.images.emplace_back(ResourceHandle<ImageRGBA>(Uri(),
-                                                          nullptr,
-                                                          defaultImage));
+        scene = builder.getScene();
 
-        defaultTexture = builder.createTextureBuffer(tex);
         for (auto &object: scene.objects) {
-            sceneResources[object.mesh->getId()] = builder.createMeshBuffer(*object.mesh);
-            sceneResources[object.material->diffuseTexture.get().getId()]
-                    = builder.createTextureBuffer(object.material->diffuseTexture.get());
-            sceneResources[object.material->ambientTexture.get().getId()] = builder.createTextureBuffer(
-                    object.material->ambientTexture.get());
-            sceneResources[object.material->specularTexture.get().getId()] = builder.createTextureBuffer(
-                    object.material->specularTexture.get());
-            sceneResources[object.material->emissiveTexture.get().getId()] = builder.createTextureBuffer(
-                    object.material->emissiveTexture.get());
-            sceneResources[object.material->shininessTexture.get().getId()] = builder.createTextureBuffer(
-                    object.material->shininessTexture.get());
-            sceneResources[object.material->normalTexture.get().getId()] = builder.createTextureBuffer(
-                    object.material->normalTexture.get());
+            sceneResources[object.mesh.getUri()] = builder.createMeshBuffer(object.mesh);
+            if (object.material.get().diffuseTexture)
+                sceneResources[object.material.get().diffuseTexture.getUri()] = builder.createTextureBuffer(object.material.get().diffuseTexture);
+            if (object.material.get().ambientTexture)
+                sceneResources[object.material.get().ambientTexture.getUri()] = builder.createTextureBuffer(object.material.get().ambientTexture);
+            if (object.material.get().specularTexture)
+                sceneResources[object.material.get().specularTexture.getUri()] = builder.createTextureBuffer(object.material.get().specularTexture);
+            if (object.material.get().emissiveTexture)
+                sceneResources[object.material.get().emissiveTexture.getUri()] = builder.createTextureBuffer(object.material.get().emissiveTexture);
+            if (object.material.get().shininessTexture)
+                sceneResources[object.material.get().shininessTexture.getUri()] = builder.createTextureBuffer(object.material.get().shininessTexture);
+            if (object.material.get().normalTexture)
+                sceneResources[object.material.get().normalTexture.getUri()] = builder.createTextureBuffer(object.material.get().normalTexture);
         }
-
-        shader = builder.createShader(shaderSrc);
 
         auto format = builder.getRenderFormat();
         if (format.first != gBuffer.getSize() || format.second != gBuffer.getSamples()) {
@@ -201,9 +201,7 @@ namespace xengine {
     }
 
     void GBufferPass::execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) {
-        auto &shaderProgram = resources.getShader(shader);
         auto &target = resources.getRenderTarget(renderTarget);
-        auto &defTex = resources.getTextureBuffer(defaultTexture);
 
         bindTextures(target, gBuffer);
 
@@ -211,13 +209,13 @@ namespace xengine {
         view = scene.camera.view();
         projection = scene.camera.projection();
 
-        shaderProgram.activate();
-        shaderProgram.setTexture(8, 0);
-        shaderProgram.setTexture(9, 1);
-        shaderProgram.setTexture(10, 2);
-        shaderProgram.setTexture(11, 3);
-        shaderProgram.setTexture(12, 4);
-        shaderProgram.setTexture(13, 5);
+        shader->activate();
+        shader->setTexture(8, 0);
+        shader->setTexture(9, 1);
+        shader->setTexture(10, 2);
+        shader->setTexture(11, 3);
+        shader->setTexture(12, 4);
+        shader->setTexture(13, 5);
 
         std::vector<std::reference_wrapper<TextureBuffer>> textures;
         textures.reserve(6);
@@ -228,108 +226,108 @@ namespace xengine {
         ren.renderBegin(target, RenderOptions({}, target.getSize(), true));
 
         for (auto &object: scene.objects) {
-            auto &mesh = resources.getMeshBuffer(sceneResources.at(object.mesh->getId()));
-            auto &diffuseTexture = resources.getTextureBuffer(
-                    sceneResources.at(object.material->diffuseTexture.get().getId()));
-            auto &ambientTexture = resources.getTextureBuffer(
-                    sceneResources.at(object.material->ambientTexture.get().getId()));
-            auto &specularTexture = resources.getTextureBuffer(
-                    sceneResources.at(object.material->specularTexture.get().getId()));
-            auto &emissiveTexture = resources.getTextureBuffer(
-                    sceneResources.at(object.material->emissiveTexture.get().getId()));
-            auto &shininessTexture = resources.getTextureBuffer(
-                    sceneResources.at(object.material->shininessTexture.get().getId()));
-            auto &normalTexture = resources.getTextureBuffer(
-                    sceneResources.at(object.material->normalTexture.get().getId()));
+            auto &mesh = resources.getMeshBuffer(sceneResources.at(object.mesh.getUri()));
 
             textures.clear();
 
-            if (object.material->diffuseTexture) {
+            if (object.material.get().diffuseTexture) {
+                auto &diffuseTexture = resources.getTextureBuffer(
+                        sceneResources.at(object.material.get().diffuseTexture.getUri()));
                 if (firstCommand || shaderMaterial.diffuse != ColorRGBA()) {
                     shaderMaterial.diffuse = ColorRGBA();
-                    shaderProgram.setVec4(3, Vec4f());
+                    shader->setVec4(3, Vec4f());
                 }
                 textures.emplace_back(diffuseTexture);
             } else {
-                if (firstCommand || shaderMaterial.diffuse != object.material->diffuse) {
-                    shaderMaterial.diffuse = object.material->diffuse;
-                    shaderProgram.setVec4(3, scaleColor(object.material->diffuse));
+                if (firstCommand || shaderMaterial.diffuse != object.material.get().diffuse) {
+                    shaderMaterial.diffuse = object.material.get().diffuse;
+                    shader->setVec4(3, scaleColor(object.material.get().diffuse));
                 }
-                textures.emplace_back(defTex);
+                textures.emplace_back(*defaultTexture);
             }
 
-            if (object.material->ambientTexture) {
+            if (object.material.get().ambientTexture) {
+                auto &ambientTexture = resources.getTextureBuffer(
+                        sceneResources.at(object.material.get().ambientTexture.getUri()));
                 if (firstCommand || shaderMaterial.ambient != ColorRGBA()) {
                     shaderMaterial.ambient = ColorRGBA();
-                    shaderProgram.setVec4(4, Vec4f());
+                    shader->setVec4(4, Vec4f());
                 }
                 textures.emplace_back(ambientTexture);
             } else {
-                if (firstCommand || shaderMaterial.ambient != object.material->ambient) {
-                    shaderMaterial.ambient = object.material->ambient;
-                    shaderProgram.setVec4(4, scaleColor(object.material->ambient));
+                if (firstCommand || shaderMaterial.ambient != object.material.get().ambient) {
+                    shaderMaterial.ambient = object.material.get().ambient;
+                    shader->setVec4(4, scaleColor(object.material.get().ambient));
                 }
-                textures.emplace_back(defTex);
+                textures.emplace_back(*defaultTexture);
             }
 
-            if (object.material->specularTexture) {
+            if (object.material.get().specularTexture) {
+                auto &specularTexture = resources.getTextureBuffer(
+                        sceneResources.at(object.material.get().specularTexture.getUri()));
                 if (firstCommand || shaderMaterial.specular != ColorRGBA()) {
                     shaderMaterial.specular = ColorRGBA();
-                    shaderProgram.setVec4(5, Vec4f());
+                    shader->setVec4(5, Vec4f());
                 }
                 textures.emplace_back(specularTexture);
             } else {
-                if (firstCommand || shaderMaterial.specular != object.material->specular) {
-                    shaderMaterial.specular = object.material->specular;
-                    shaderProgram.setVec4(5, scaleColor(object.material->specular));
+                if (firstCommand || shaderMaterial.specular != object.material.get().specular) {
+                    shaderMaterial.specular = object.material.get().specular;
+                    shader->setVec4(5, scaleColor(object.material.get().specular));
                 }
-                textures.emplace_back(defTex);
+                textures.emplace_back(*defaultTexture);
             }
 
-            if (object.material->shininessTexture) {
+            if (object.material.get().shininessTexture) {
+                auto &shininessTexture = resources.getTextureBuffer(
+                        sceneResources.at(object.material.get().shininessTexture.getUri()));
                 if (firstCommand || shaderMaterial.shininess != 0) {
                     shaderMaterial.shininess = 0;
-                    shaderProgram.setFloat(6, 0);
+                    shader->setFloat(6, 0);
                 }
                 textures.emplace_back(shininessTexture);
             } else {
-                if (firstCommand || shaderMaterial.shininess != object.material->shininess) {
-                    shaderMaterial.shininess = object.material->shininess;
-                    shaderProgram.setFloat(6, object.material->shininess);
+                if (firstCommand || shaderMaterial.shininess != object.material.get().shininess) {
+                    shaderMaterial.shininess = object.material.get().shininess;
+                    shader->setFloat(6, object.material.get().shininess);
                 }
-                textures.emplace_back(defTex);
+                textures.emplace_back(*defaultTexture);
             }
 
-            if (object.material->emissiveTexture) {
+            if (object.material.get().emissiveTexture) {
+                auto &emissiveTexture = resources.getTextureBuffer(
+                        sceneResources.at(object.material.get().emissiveTexture.getUri()));
                 if (firstCommand || shaderMaterial.emissive != ColorRGBA()) {
                     shaderMaterial.emissive = ColorRGBA();
-                    shaderProgram.setVec4(7, Vec4f());
+                    shader->setVec4(7, Vec4f());
                 }
                 textures.emplace_back(emissiveTexture);
             } else {
-                if (firstCommand || shaderMaterial.emissive != object.material->emissive) {
-                    shaderMaterial.emissive = object.material->emissive;
-                    shaderProgram.setVec4(7, scaleColor(object.material->emissive));
+                if (firstCommand || shaderMaterial.emissive != object.material.get().emissive) {
+                    shaderMaterial.emissive = object.material.get().emissive;
+                    shader->setVec4(7, scaleColor(object.material.get().emissive));
                 }
-                textures.emplace_back(defTex);
+                textures.emplace_back(*defaultTexture);
             }
 
             if (firstCommand
-                || shaderMaterial.normalTexture != object.material->normalTexture) {
-                shaderMaterial.normalTexture = object.material->normalTexture;
-                shaderProgram.setInt(2, (object.material->normalTexture));
+                || shaderMaterial.normalTexture != object.material.get().normalTexture) {
+                shaderMaterial.normalTexture = object.material.get().normalTexture;
+                shader->setInt(2, (object.material.get().normalTexture));
             }
 
-            if (object.material->normalTexture) {
+            if (object.material.get().normalTexture) {
+                auto &normalTexture = resources.getTextureBuffer(
+                        sceneResources.at(object.material.get().normalTexture.getUri()));
                 textures.emplace_back(normalTexture);
             }
 
             model = object.transform.model();
 
-            shaderProgram.setMat4(0, model);
-            shaderProgram.setMat4(1, projection * view * model);
+            shader->setMat4(0, model);
+            shader->setMat4(1, projection * view * model);
 
-            RenderCommand c(shaderProgram, mesh);
+            RenderCommand c(*shader, mesh);
             c.textures = textures;
             c.properties.enableFaceCulling = true;
             ren.addCommand(c);
@@ -341,6 +339,6 @@ namespace xengine {
 
         target.setNumberOfColorAttachments(0);
 
-        board.add<GBuffer>(gBuffer);
+        board.set<GBuffer>(gBuffer);
     }
 }

@@ -39,46 +39,38 @@ namespace xengine {
     ObjectPool::ObjectPool(RenderAllocator &allocator)
             : allocator(allocator) {}
 
-    MeshBuffer &ObjectPool::getMeshBuffer(const Mesh &mesh) {
-        usedIds.insert(mesh.getId());
-        auto it = idObjects.find(mesh.getId());
-        if (it == idObjects.end()) {
-            idObjects[mesh.getId()] = allocator.createMeshBuffer(mesh);
+    MeshBuffer &ObjectPool::getMeshBuffer(const ResourceHandle<Mesh> &handle) {
+        usedUris.insert(handle.getUri());
+        auto it = uriObjects.find(handle.getUri());
+        if (it == uriObjects.end()) {
+            uriObjects[handle.getUri()] = allocator.createMeshBuffer(handle.get());
         }
-        return dynamic_cast<MeshBuffer &>(*idObjects[mesh.getId()]);
+        return dynamic_cast<MeshBuffer &>(*uriObjects[handle.getUri()]);
     }
 
-    MeshBuffer &ObjectPool::getInstancedBuffer(const Mesh &mesh, const std::vector<Transform> &offsets) {
-        usedInstancedMeshes.insert(mesh.getId());
-        auto it = instancedMeshBuffers.find(mesh.getId());
-        if (it == instancedMeshBuffers.end()) {
-            instancedMeshBuffers[mesh.getId()] = allocator.createInstancedMeshBuffer(mesh, offsets);
+    TextureBuffer &ObjectPool::getTextureBuffer(const ResourceHandle<Texture> &handle) {
+        usedUris.insert(handle.getUri());
+        auto it = uriObjects.find(handle.getUri());
+        if (it == uriObjects.end()) {
+            uriObjects[handle.getUri()] = allocateTexture(handle.get(), allocator);
         }
-        return dynamic_cast<MeshBuffer &>(*instancedMeshBuffers[mesh.getId()]);
+        return dynamic_cast<TextureBuffer &>(*uriObjects[handle.getUri()]);
     }
 
-    TextureBuffer &ObjectPool::getTextureBuffer(const Texture &texture) {
-        usedIds.insert(texture.getId());
-        auto it = idObjects.find(texture.getId());
-        if (it == idObjects.end()) {
-            idObjects[texture.getId()] = allocateTexture(texture, allocator);
-        }
-        return dynamic_cast<TextureBuffer &>(*idObjects[texture.getId()]);
-    }
-
-    ShaderProgram &ObjectPool::getShaderProgram(const Shader &shader) {
-        usedIds.insert(shader.getId());
-        auto it = idObjects.find(shader.getId());
-        if (it == idObjects.end()) {
+    ShaderProgram &ObjectPool::getShaderProgram(const ResourceHandle<Shader> &handle) {
+        usedUris.insert(handle.getUri());
+        auto it = uriObjects.find(handle.getUri());
+        if (it == uriObjects.end()) {
+            auto &shader = handle.get();
             if (shader.geometryShader.isEmpty())
-                idObjects[shader.getId()] = allocator.createShaderProgram(shader.vertexShader,
-                                                                          shader.fragmentShader);
+                uriObjects[handle.getUri()] = allocator.createShaderProgram(shader.vertexShader,
+                                                                            shader.fragmentShader);
             else
-                idObjects[shader.getId()] = allocator.createShaderProgram(shader.vertexShader,
-                                                                          shader.fragmentShader,
-                                                                          shader.geometryShader);
+                uriObjects[handle.getUri()] = allocator.createShaderProgram(shader.vertexShader,
+                                                                            shader.fragmentShader,
+                                                                            shader.geometryShader);
         }
-        return dynamic_cast<ShaderProgram &>(*idObjects[shader.getId()]);
+        return dynamic_cast<ShaderProgram &>(*uriObjects[handle.getUri()]);
     }
 
     RenderTarget &ObjectPool::getRenderTarget(Vec2i size, int samples) {
@@ -91,18 +83,21 @@ namespace xengine {
         return dynamic_cast<RenderTarget &>(*renderTargets[pair]);
     }
 
-    void ObjectPool::endFrame() {
-        std::set<Resource::Id> unusedIds;
-        for (auto &pair: idObjects) {
-            if (usedIds.find(pair.first) == usedIds.end()) {
-                unusedIds.insert(pair.first);
-            }
+    TextureBuffer &ObjectPool::getTextureBuffer(TextureBuffer::Attributes attributes) {
+        auto index = usedTextures[attributes]++;
+        if (textures[attributes].size() <= index) {
+            textures[attributes].resize(usedTextures[attributes]);
+            textures[attributes].at(index) = allocator.createTextureBuffer(attributes);
         }
+        return *textures[attributes].at(index);
+    }
 
-        std::set<Resource::Id> unusedInstancedMeshes;
-        for (auto &pair: instancedMeshBuffers) {
-            if (usedInstancedMeshes.find(pair.first) == usedInstancedMeshes.end()) {
-                unusedInstancedMeshes.insert(pair.first);
+    void ObjectPool::endFrame() {
+        std::set<Uri> unusedUris;
+
+        for (auto &pair: uriObjects) {
+            if (usedUris.find(pair.first) == usedUris.end()) {
+                unusedUris.insert(pair.first);
             }
         }
 
@@ -113,18 +108,27 @@ namespace xengine {
             }
         }
 
-        for (auto &id: unusedIds) {
-            idObjects.erase(id);
+        for (auto &id: unusedUris) {
+            uriObjects.erase(id);
         }
-        for (auto &id: unusedInstancedMeshes) {
-            instancedMeshBuffers.erase(id);
-        }
+
         for (auto &pair: unusedTargets) {
             renderTargets.erase(pair);
         }
 
-        usedIds.clear();
-        usedInstancedMeshes.clear();
+        usedUris.clear();
         usedTargets.clear();
+
+        std::unordered_set<TextureBuffer::Attributes, TextureAttributesHashFunction> unusedTextures;
+
+        for (auto &pair: textures) {
+            if (usedTextures.find(pair.first) == usedTextures.end()) {
+                unusedTextures.insert(pair.first);
+            } else {
+                pair.second.resize(usedTextures.at(pair.first));
+            }
+        }
+
+        usedTextures.clear();
     }
 }

@@ -26,7 +26,7 @@
 namespace xengine {
     class XENGINE_EXPORT Pipeline {
     public:
-        virtual void render(RenderTarget &target, Scene &scene) = 0;
+        virtual void render(RenderTarget &target, const Scene &scene) = 0;
 
         virtual void setRenderResolution(Vec2i res) = 0;
 

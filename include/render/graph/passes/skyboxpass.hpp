@@ -27,7 +27,7 @@
 namespace xengine {
     class XENGINE_EXPORT SkyboxPass : public RenderPass {
     public:
-        SkyboxPass(Scene &scene);
+        SkyboxPass(RenderDevice &device);
 
         ~SkyboxPass() override = default;
 
@@ -36,19 +36,17 @@ namespace xengine {
         void execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) override;
 
     private:
-        Scene &scene;
+        Scene scene;
 
-        Shader shaderSrc;
-        Texture defTex;
-        Texture colorTex;
+        std::unique_ptr<ShaderProgram> shader;
+        std::unique_ptr<MeshBuffer> skyboxCube;
+        std::unique_ptr<TextureBuffer> defaultTexture;
 
-        FrameGraphResource shader;
-        FrameGraphResource skyboxMesh;
-        FrameGraphResource defaultTex;
         FrameGraphResource renderTarget;
         FrameGraphResource outColor;
+        FrameGraphResource outDepth;
 
-        FrameGraphResource skyboxTex;
+        FrameGraphResource skyboxTexture;
     };
 }
 #endif //XENGINE_SKYBOXPASS_HPP

@@ -36,13 +36,13 @@
 namespace xengine {
     struct XENGINE_EXPORT Scene {
         struct XENGINE_EXPORT Object {
-            Object(const Mesh &mesh, const Material &material)
-                    : mesh(&mesh), material(&material) {}
+            Object(ResourceHandle<Mesh> mesh, ResourceHandle<Material> material)
+                    : mesh(std::move(mesh)), material(std::move(material)) {}
 
             Transform transform;
 
-            const Mesh *mesh;
-            const Material *material;
+            ResourceHandle<Mesh> mesh;
+            ResourceHandle<Material> material;
 
             bool outline = false;
             ColorRGBA outlineColor;
