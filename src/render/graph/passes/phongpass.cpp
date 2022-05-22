@@ -168,7 +168,10 @@ namespace xengine {
         multiSampleRenderTarget = builder.createRenderTarget(format.first, format.second);
 
         outColor = builder.createTextureBuffer(TextureBuffer::Attributes{.size = builder.getBackBufferFormat().first});
-        outDepth = builder.createTextureBuffer(TextureBuffer::Attributes{.size = builder.getBackBufferFormat().first, .format = TextureBuffer::DEPTH_STENCIL});
+        outDepth = builder.createTextureBuffer(TextureBuffer::Attributes{
+                .size = builder.getBackBufferFormat().first,
+                .format = TextureBuffer::DEPTH_STENCIL
+        });
     }
 
     void PhongPass::execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) {
@@ -260,9 +263,6 @@ namespace xengine {
         target.setNumberOfColorAttachments(1);
         target.attachColor(0, color);
         target.attachDepthStencil(depth);
-
-        ren.renderClear(target, ColorRGBA::green(), 0);
-        ren.renderClear(multiSampleTarget, ColorRGBA::green(), 0);
 
         ren.renderBegin(multiSampleTarget, RenderOptions({}, gBuffer.getSize(), true));
         ren.addCommand(command);

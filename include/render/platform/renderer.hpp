@@ -35,7 +35,7 @@ namespace xengine {
                                bool multiSample = true,
                                bool multiSampleEnableFrequency = false,
                                float multiSampleFrequency = 1,
-                               ColorRGBA clearColorValue = {0, 0, 0, 0},
+                               ColorRGBA clearColorValue = ColorRGBA::black(),
                                float clearDepthValue = 1,
                                bool clearColor = true,
                                bool clearDepth = true,
