@@ -106,7 +106,8 @@ void main()
 )###";
 
 namespace xengine {
-    CompositePass::CompositePass(RenderDevice &device) {
+    CompositePass::CompositePass(RenderDevice &device, ColorRGBA clearColor)
+            : clearColor(clearColor) {
         Shader shaderSrc;
         shaderSrc.vertexShader = ShaderSource(SHADER_VERT, "main", VERTEX, GLSL_410);
         shaderSrc.fragmentShader = ShaderSource(SHADER_FRAG, "main", FRAGMENT, GLSL_410);

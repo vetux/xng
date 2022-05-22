@@ -38,7 +38,7 @@ namespace xengine {
             DepthTestMode depthTestMode = DepthTestMode::DEPTH_TEST_LESS;
         };
 
-        explicit CompositePass(RenderDevice &device);
+        explicit CompositePass(RenderDevice &device, ColorRGBA clearColor = ColorRGBA::black());
 
         ~CompositePass() override = default;
 
