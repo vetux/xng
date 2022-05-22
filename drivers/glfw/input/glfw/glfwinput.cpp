@@ -17,8 +17,6 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifdef BUILD_ENGINE_DISPLAY_GLFW
-
 #include <map>
 #include <stdexcept>
 #include <mutex>
@@ -307,5 +305,3 @@ namespace xengine {
         gamepads[id].buttons[button] = RELEASED;
     }
 }
-
-#endif

@@ -17,10 +17,6 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifdef BUILD_ENGINE_PHYSICS_BOX2D
-
 #include "jointbox2d.hpp"
 
 namespace xengine {}
-
-#endif

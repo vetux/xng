@@ -21,33 +21,6 @@
 
 #include "script/mono/monocppassembly.hpp"
 
-#ifndef BUILD_ENGINE_SCRIPT_MONO
-
-#define ERROR throw std::runtime_error("Mono support not built");
-
-xengine::MonoCppAssembly::MonoCppAssembly(void *domainPointer, void *assemblyPointer, void *imagePointer) { ERROR }
-
-xengine::MonoCppAssembly::~MonoCppAssembly() {  }
-
-xengine::MonoCppObject
-xengine::MonoCppAssembly::invokeStaticMethod(const std::string &nameSpace, const std::string &className,
-                                            const std::string &functionName,
-                                            const xengine::MonoCppArguments &args) const { ERROR }
-
-void xengine::MonoCppAssembly::setStaticField(const std::string &nameSpace, const std::string &className,
-                                             const std::string &fieldName,
-                                             xengine::MonoCppValue value) const { ERROR }
-
-xengine::MonoCppObject
-xengine::MonoCppAssembly::getStaticField(const std::string &nameSpace, const std::string &className,
-                                        const std::string &fieldName) const { ERROR }
-
-xengine::MonoCppObject
-xengine::MonoCppAssembly::createObject(const std::string &nameSpace, const std::string &className,
-                                      bool pinned) const { ERROR }
-
-#else
-
 #include "mono.hpp"
 
 namespace xengine {
@@ -121,5 +94,3 @@ namespace xengine {
         return std::move(MonoCppObject(o, pinned));
     }
 }
-
-#endif // BUILD_ENGINE_SCRIPT_MONO

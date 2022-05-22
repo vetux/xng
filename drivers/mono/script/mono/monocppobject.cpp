@@ -21,39 +21,6 @@
 
 #include <stdexcept>
 
-#ifndef BUILD_ENGINE_SCRIPT_MONO
-
-#define ERROR throw std::runtime_error("Mono support not built");
-
-xengine::MonoCppObject::MonoCppObject() { ERROR }
-
-xengine::MonoCppObject::MonoCppObject(void *objectPointer, bool pinned) { ERROR }
-
-xengine::MonoCppObject::~MonoCppObject() {}
-
-xengine::MonoCppObject::MonoCppObject(xengine::MonoCppObject &&other) noexcept {}
-
-xengine::MonoCppObject &xengine::MonoCppObject::operator=(xengine::MonoCppObject &&other) noexcept { return other; }
-
-xengine::MonoCppObject
-xengine::MonoCppObject::invokeMethod(const std::string &name, const xengine::MonoCppArguments &args) const { ERROR }
-
-void xengine::MonoCppObject::setField(const std::string &name, const xengine::MonoCppValue &value) const { ERROR }
-
-void xengine::MonoCppObject::getFieldValuePtr(const std::string &name, void *data) const { ERROR }
-
-bool xengine::MonoCppObject::isNull() const { ERROR }
-
-bool xengine::MonoCppObject::isPinned() const { ERROR }
-
-void *xengine::MonoCppObject::getObjectPointer() const { ERROR }
-
-std::string xengine::MonoCppObject::getClassNamespace() const { ERROR }
-
-std::string xengine::MonoCppObject::getClassName() const { ERROR }
-
-#else
-
 #include <mono/jit/jit.h>
 #include <mono/metadata/loader.h>
 #include <mono/metadata/assembly.h>
@@ -174,5 +141,3 @@ namespace xengine {
         return mono_object_unbox(static_cast<MonoObject *>(objectPointer));
     }
 }
-
-#endif

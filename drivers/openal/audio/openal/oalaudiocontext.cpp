@@ -17,8 +17,6 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifdef BUILD_ENGINE_AUDIO_OPENAL
-
 #include "oalaudiocontext.hpp"
 #include "oalaudiobuffer.hpp"
 #include "oalaudiosource.hpp"
@@ -61,5 +59,3 @@ namespace xengine {
         return context;
     }
 }
-
-#endif

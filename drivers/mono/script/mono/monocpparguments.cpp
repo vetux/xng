@@ -17,8 +17,6 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifdef BUILD_ENGINE_SCRIPT_MONO
-
 #include "script/mono/monocpparguments.hpp"
 
 #include "script/mono/monocppobject.hpp"
@@ -52,5 +50,3 @@ namespace xengine {
         return args.size();
     }
 }
-
-#endif

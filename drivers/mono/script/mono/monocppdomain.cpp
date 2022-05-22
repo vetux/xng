@@ -19,28 +19,6 @@
 
 #include "script/mono/monocppdomain.hpp"
 
-#ifndef BUILD_ENGINE_SCRIPT_MONO
-
-#define ERROR throw std::runtime_error("Mono support not built");
-
-xengine::MonoCppDomain::MonoCppDomain() { ERROR }
-
-xengine::MonoCppDomain::MonoCppDomain(const std::string &domainName) { ERROR }
-
-xengine::MonoCppDomain::~MonoCppDomain() {  }
-
-xengine::MonoCppAssembly &xengine::MonoCppDomain::getMsCorLibAssembly() { ERROR }
-
-std::unique_ptr<xengine::MonoCppAssembly> xengine::MonoCppDomain::loadAssembly(const std::string &filePath) { ERROR }
-
-std::unique_ptr<xengine::MonoCppAssembly> xengine::MonoCppDomain::loadAssembly(std::istream &source) { ERROR }
-
-xengine::MonoCppObject xengine::MonoCppDomain::stringFromUtf8(const std::string &str, bool pinned) { ERROR }
-
-std::string xengine::MonoCppDomain::stringToUtf8(const xengine::MonoCppObject &strObject) { ERROR }
-
-#else
-
 #include <iterator>
 #include <string>
 #include <sstream>
@@ -114,5 +92,3 @@ namespace xengine {
         return mono_string_to_utf8(static_cast<MonoString *>(strObject.getObjectPointer()));
     }
 }
-
-#endif

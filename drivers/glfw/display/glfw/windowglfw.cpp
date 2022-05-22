@@ -17,8 +17,6 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifdef BUILD_ENGINE_DISPLAY_GLFW
-
 #include <stdexcept>
 #include <mutex>
 
@@ -484,5 +482,3 @@ namespace xengine {
         }
     }
 }
-
-#endif
