@@ -27,7 +27,7 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 
-#include "display/glfw/windowglfw.hpp"
+#include "display/glfw/windowglfwgl.hpp"
 #include "render/platform/opengl/oglrendertarget.hpp"
 
 namespace xengine {
@@ -35,7 +35,7 @@ namespace xengine {
         void Init(Window &window, RenderPlatform graphicsBackend) {
             switch (window.getDisplayBackend()) {
                 case GLFW:
-                    ImGui_ImplGlfw_InitForOpenGL(dynamic_cast<glfw::WindowGLFW &>(window).windowHandle(), true);
+                    ImGui_ImplGlfw_InitForOpenGL(dynamic_cast<glfw::WindowGLFWGL &>(window).windowHandle(), true);
                     break;
                 default:
                     throw std::runtime_error("Not supported");

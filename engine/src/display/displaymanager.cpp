@@ -20,7 +20,9 @@
 #include "display/displaymanager.hpp"
 
 #ifdef DRIVER_GLFW
+
 #include "display/glfw/glfwdisplay.hpp"
+
 #endif
 
 namespace xengine {
@@ -52,11 +54,11 @@ namespace xengine {
         }
     }
 
-    std::unique_ptr<Window> DisplayManager::createWindow() const {
+    std::unique_ptr<Window> DisplayManager::createWindow(RenderPlatform platform) const {
         switch (backend) {
 #ifdef DRIVER_GLFW
             case GLFW:
-                return glfw::createWindow();
+                return glfw::createWindow(platform);
 #endif
             default:
                 throw std::runtime_error("Unsupported display api");
@@ -64,24 +66,27 @@ namespace xengine {
     }
 
     std::unique_ptr<Window>
-    DisplayManager::createWindow(const std::string &title, Vec2i size, WindowAttributes attributes) const {
+    DisplayManager::createWindow(RenderPlatform platform, const std::string &title, Vec2i size,
+                                 WindowAttributes attributes) const {
         switch (backend) {
 #ifdef DRIVER_GLFW
             case GLFW:
-                return glfw::createWindow(title, size, attributes);
+                return glfw::createWindow(platform, title, size, attributes);
 #endif
             default:
                 throw std::runtime_error("Unsupported display api");
         }
     }
 
-    std::unique_ptr<Window>
-    DisplayManager::createWindow(const std::string &title, Vec2i size, WindowAttributes attributes, Monitor &monitor,
-                                 VideoMode mode) const {
+    std::unique_ptr<Window> DisplayManager::createWindow(RenderPlatform platform,
+                                                         const std::string &title, Vec2i size,
+                                                         WindowAttributes attributes,
+                                                         Monitor &monitor,
+                                                         VideoMode mode) const {
         switch (backend) {
 #ifdef DRIVER_GLFW
             case GLFW:
-                return glfw::createWindow( title, size, attributes, monitor, mode);
+                return glfw::createWindow(platform, title, size, attributes, monitor, mode);
 #endif
             default:
                 throw std::runtime_error("Unsupported display api");

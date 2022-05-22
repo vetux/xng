@@ -40,11 +40,15 @@ namespace xengine {
 
         std::set<std::unique_ptr<Monitor>> getMonitors() const;
 
-        std::unique_ptr<Window> createWindow() const;
+        std::unique_ptr<Window> createWindow(RenderPlatform backend) const;
 
-        std::unique_ptr<Window> createWindow(const std::string &title, Vec2i size, WindowAttributes attributes) const;
+        std::unique_ptr<Window> createWindow(RenderPlatform backend,
+                                             const std::string &title,
+                                             Vec2i size,
+                                             WindowAttributes attributes) const;
 
-        std::unique_ptr<Window> createWindow(const std::string &title,
+        std::unique_ptr<Window> createWindow(RenderPlatform backend,
+                                             const std::string &title,
                                              Vec2i size,
                                              WindowAttributes attributes,
                                              Monitor &monitor,

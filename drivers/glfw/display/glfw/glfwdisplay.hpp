@@ -18,7 +18,7 @@
  */
 
 
-#include "windowglfw.hpp"
+#include "windowglfwgl.hpp"
 #include "monitorglfw.hpp" //Has to come after windowglfw because of glad include collision with glfw (Including glfw and then glad afterwards gives compiler error, the reverse is legal)
 
 namespace xengine {
@@ -39,26 +39,43 @@ namespace xengine {
             return ret;
         }
 
-        std::unique_ptr<Window> createWindow() {
-            return std::make_unique<WindowGLFW>("Window GLFW", Vec2i(600, 300), WindowAttributes());
+        std::unique_ptr<Window> createWindow(RenderPlatform platform) {
+            switch (platform) {
+                case OPENGL_4_1:
+                    return std::make_unique<WindowGLFWGL>("Window GLFW", Vec2i(600, 300), WindowAttributes());
+                default:
+                    throw std::runtime_error("Unsupported render platform");
+            }
         }
 
-        std::unique_ptr<Window> createWindow(const std::string &title,
+        std::unique_ptr<Window> createWindow(RenderPlatform platform,
+                                             const std::string &title,
                                              Vec2i size,
                                              WindowAttributes attributes) {
-            return std::make_unique<WindowGLFW>(title, size, attributes);
+            switch (platform) {
+                case OPENGL_4_1:
+                    return std::make_unique<WindowGLFWGL>(title, size, attributes);
+                default:
+                    throw std::runtime_error("Unsupported render platform");
+            }
         }
 
-        std::unique_ptr<Window> createWindow(const std::string &title,
+        std::unique_ptr<Window> createWindow(RenderPlatform platform,
+                                             const std::string &title,
                                              Vec2i size,
                                              WindowAttributes attributes,
                                              Monitor &monitor,
                                              VideoMode mode) {
-            return std::make_unique<WindowGLFW>(title,
-                                                  size,
-                                                  attributes,
-                                                  dynamic_cast<MonitorGLFW &>(monitor),
-                                                  mode);
+            switch (platform) {
+                case OPENGL_4_1:
+                    return std::make_unique<WindowGLFWGL>(title,
+                                                          size,
+                                                          attributes,
+                                                          dynamic_cast<MonitorGLFW &>(monitor),
+                                                          mode);
+                default:
+                    throw std::runtime_error("Unsupported render platform");
+            }
         }
     }
 }

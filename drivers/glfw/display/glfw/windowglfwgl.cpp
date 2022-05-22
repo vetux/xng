@@ -20,7 +20,7 @@
 #include <stdexcept>
 #include <mutex>
 
-#include "windowglfw.hpp"
+#include "windowglfwgl.hpp"
 
 namespace GLFWCounter {
     std::mutex counterMutex;
@@ -44,7 +44,7 @@ namespace GLFWCounter {
 namespace xengine {
     namespace glfw {
         std::mutex windowMappingMutex;
-        std::map<GLFWwindow *, WindowGLFW *> _windowMapping;
+        std::map<GLFWwindow *, WindowGLFWGL *> _windowMapping;
 
         void glfwWindowCloseCallback(GLFWwindow *window) {
             std::lock_guard<std::mutex> guard(windowMappingMutex);
@@ -163,7 +163,7 @@ namespace xengine {
         }
 
         //TODO: GLFW Window implementation synchronization
-        WindowGLFW::WindowGLFW(const std::string &title, Vec2i size, WindowAttributes attributes) {
+        WindowGLFWGL::WindowGLFWGL(const std::string &title, Vec2i size, WindowAttributes attributes) {
             GLFWCounter::join();
 
             glfwDefaultWindowHints();
@@ -197,11 +197,11 @@ namespace xengine {
             setCallbacks(wndH);
         }
 
-        WindowGLFW::WindowGLFW(const std::string &title,
-                               Vec2i size,
-                               WindowAttributes attributes,
-                               MonitorGLFW &monitor,
-                               VideoMode videoMode) {
+        WindowGLFWGL::WindowGLFWGL(const std::string &title,
+                                   Vec2i size,
+                                   WindowAttributes attributes,
+                                   MonitorGLFW &monitor,
+                                   VideoMode videoMode) {
             GLFWCounter::join();
 
             glfwDefaultWindowHints();
@@ -240,208 +240,207 @@ namespace xengine {
             setCallbacks(wndH);
         }
 
-        WindowGLFW::~WindowGLFW() {
+        WindowGLFWGL::~WindowGLFWGL() {
             std::lock_guard<std::mutex> guard(windowMappingMutex);
             _windowMapping.erase(wndH);
             glfwDestroyWindow(wndH);
             GLFWCounter::leave();
         }
 
-        void WindowGLFW::glfwWindowCloseCallback() {
+        void WindowGLFWGL::glfwWindowCloseCallback() {
             for (auto listener: listeners) {
                 listener->onWindowClose();
             }
         }
 
-        void WindowGLFW::glfwWindowMoveCallback(Vec2i pos) {
+        void WindowGLFWGL::glfwWindowMoveCallback(Vec2i pos) {
             for (auto listener: listeners) {
                 listener->onWindowMove(pos);
             }
         }
 
-        void WindowGLFW::glfwWindowSizeCallback(int width, int height) {
+        void WindowGLFWGL::glfwWindowSizeCallback(int width, int height) {
             renderTargetGl->size = {width, height};
             for (auto listener: listeners) {
                 listener->onWindowResize(Vec2i(width, height));
             }
         }
 
-        void WindowGLFW::glfwWindowRefreshCallback() {
+        void WindowGLFWGL::glfwWindowRefreshCallback() {
             for (auto listener: listeners) {
                 listener->onWindowRefresh();
             }
         }
 
-        void WindowGLFW::glfwWindowFocusCallback(bool focused) {
+        void WindowGLFWGL::glfwWindowFocusCallback(bool focused) {
             for (auto listener: listeners) {
                 listener->onWindowFocus(focused);
             }
         }
 
-        void WindowGLFW::glfwWindowMinimizeCallback() {
+        void WindowGLFWGL::glfwWindowMinimizeCallback() {
             for (auto listener: listeners) {
                 listener->onWindowMinimize();
             }
         }
 
-        void WindowGLFW::glfwWindowMaximizeCallback() {
+        void WindowGLFWGL::glfwWindowMaximizeCallback() {
             for (auto listener: listeners) {
                 listener->onWindowMaximize();
             }
         }
 
-        void WindowGLFW::glfwWindowContentScaleCallback(Vec2f scale) {
+        void WindowGLFWGL::glfwWindowContentScaleCallback(Vec2f scale) {
             for (auto listener: listeners) {
                 listener->onWindowContentScale(scale);
             }
         }
 
-        void WindowGLFW::glfwFrameBufferSizeCallback(Vec2i size) {
+        void WindowGLFWGL::glfwFrameBufferSizeCallback(Vec2i size) {
             for (auto listener: listeners) {
                 listener->onFramebufferResize(size);
             }
         }
 
-        RenderTarget &WindowGLFW::getRenderTarget(RenderPlatform backend) {
-            switch (backend) {
-                case OPENGL_4_1:
-                    return *renderTargetGl;
-                default:
-                    throw std::runtime_error("Unsupported graphics backend");
-            }
+        RenderTarget &WindowGLFWGL::getRenderTarget() {
+            return *renderTargetGl;
         }
 
-        Input &WindowGLFW::getInput() {
+        Input &WindowGLFWGL::getInput() {
             return dynamic_cast<Input &>(*input);
         }
 
-        DisplayBackend WindowGLFW::getDisplayBackend() {
+        DisplayBackend WindowGLFWGL::getDisplayBackend() {
             return GLFW;
         }
 
-        void WindowGLFW::makeCurrent() {
+        RenderPlatform WindowGLFWGL::getRenderPlatform() {
+            return OPENGL_4_1;
+        }
+
+        void WindowGLFWGL::makeCurrent() {
             glfwMakeContextCurrent(wndH);
         }
 
-        void WindowGLFW::swapBuffers() {
+        void WindowGLFWGL::swapBuffers() {
             glfwSwapBuffers(wndH);
         }
 
-        void WindowGLFW::update() {
+        void WindowGLFWGL::update() {
             input->update();
             glfwPollEvents();
         }
 
-        bool WindowGLFW::shouldClose() {
+        bool WindowGLFWGL::shouldClose() {
             return glfwWindowShouldClose(wndH);
         }
 
-        void WindowGLFW::registerListener(WindowListener &listener) {
+        void WindowGLFWGL::registerListener(WindowListener &listener) {
             if (listeners.find(&listener) != listeners.end())
                 throw std::runtime_error("Listener already registered");
             listeners.insert(&listener);
         }
 
-        void WindowGLFW::unregisterListener(WindowListener &listener) {
+        void WindowGLFWGL::unregisterListener(WindowListener &listener) {
             listeners.erase(&listener);
         }
 
-        void WindowGLFW::maximize() {
+        void WindowGLFWGL::maximize() {
             glfwMaximizeWindow(wndH);
         }
 
-        void WindowGLFW::minimize() {
+        void WindowGLFWGL::minimize() {
             glfwIconifyWindow(wndH);
         }
 
-        void WindowGLFW::restore() {
+        void WindowGLFWGL::restore() {
             glfwRestoreWindow(wndH);
         }
 
-        void WindowGLFW::show() {
+        void WindowGLFWGL::show() {
             glfwShowWindow(wndH);
         }
 
-        void WindowGLFW::hide() {
+        void WindowGLFWGL::hide() {
             glfwHideWindow(wndH);
         }
 
-        void WindowGLFW::focus() {
+        void WindowGLFWGL::focus() {
             glfwFocusWindow(wndH);
         }
 
-        void WindowGLFW::requestAttention() {
+        void WindowGLFWGL::requestAttention() {
             glfwRequestWindowAttention(wndH);
         }
 
-        void WindowGLFW::setTitle(std::string title) {
+        void WindowGLFWGL::setTitle(std::string title) {
             glfwSetWindowTitle(wndH, title.c_str());
         }
 
-        void WindowGLFW::setIcon(ImageRGBA &buffer) {
+        void WindowGLFWGL::setIcon(ImageRGBA &buffer) {
             throw std::runtime_error("Not Implemented");
         }
 
-        void WindowGLFW::setWindowPosition(Vec2i position) {
+        void WindowGLFWGL::setWindowPosition(Vec2i position) {
             glfwSetWindowPos(wndH, position.x, position.y);
         }
 
-        Vec2i WindowGLFW::getWindowPosition() {
+        Vec2i WindowGLFWGL::getWindowPosition() {
             int x, y;
             glfwGetWindowPos(wndH, &x, &y);
             return {x, y};
         }
 
-        void WindowGLFW::setWindowSize(Vec2i size) {
+        void WindowGLFWGL::setWindowSize(Vec2i size) {
             glfwSetWindowSize(wndH, size.x, size.y);
         }
 
-        Vec2i WindowGLFW::getWindowSize() {
+        Vec2i WindowGLFWGL::getWindowSize() {
             int x, y;
             glfwGetWindowSize(wndH, &x, &y);
             return {x, y};
         }
 
-        void WindowGLFW::setWindowSizeLimit(Vec2i sizeMin, Vec2i sizeMax) {
+        void WindowGLFWGL::setWindowSizeLimit(Vec2i sizeMin, Vec2i sizeMax) {
             glfwSetWindowSizeLimits(wndH, sizeMin.x, sizeMin.y, sizeMax.x, sizeMax.y);
         }
 
-        void WindowGLFW::setWindowAspectRatio(Vec2i ratio) {
+        void WindowGLFWGL::setWindowAspectRatio(Vec2i ratio) {
             glfwSetWindowAspectRatio(wndH, ratio.x, ratio.y);
         }
 
-        Vec2i WindowGLFW::getFramebufferSize() {
+        Vec2i WindowGLFWGL::getFramebufferSize() {
             int x, y;
             glfwGetFramebufferSize(wndH, &x, &y);
             return {x, y};
         }
 
-        Vec4i WindowGLFW::getFrameSize() {
+        Vec4i WindowGLFWGL::getFrameSize() {
             int x, y, z, w;
             glfwGetWindowFrameSize(wndH, &x, &y, &z, &w);
             return {x, y, z, w};
         }
 
-        Vec2f WindowGLFW::getWindowContentScale() {
+        Vec2f WindowGLFWGL::getWindowContentScale() {
             float x, y;
             glfwGetWindowContentScale(wndH, &x, &y);
             return {x, y};
         }
 
-        float WindowGLFW::getWindowOpacity() {
+        float WindowGLFWGL::getWindowOpacity() {
             float ret = glfwGetWindowOpacity(wndH);
             return ret;
         }
 
-        void WindowGLFW::setWindowOpacity(float opacity) {
+        void WindowGLFWGL::setWindowOpacity(float opacity) {
             glfwSetWindowOpacity(wndH, opacity);
         }
 
-        std::unique_ptr<Monitor> WindowGLFW::getMonitor() {
+        std::unique_ptr<Monitor> WindowGLFWGL::getMonitor() {
             return std::make_unique<MonitorGLFW>(glfwGetWindowMonitor(wndH));
         }
 
-        void WindowGLFW::setMonitor(Monitor &monitor, Recti rect, int refreshRate) {
+        void WindowGLFWGL::setMonitor(Monitor &monitor, Recti rect, int refreshRate) {
             auto &mon = dynamic_cast<MonitorGLFW &>(monitor);
             glfwSetWindowMonitor(wndH,
                                  mon.monH,
@@ -452,31 +451,31 @@ namespace xengine {
                                  refreshRate);
         }
 
-        void WindowGLFW::setWindowed() {
+        void WindowGLFWGL::setWindowed() {
             glfwSetWindowMonitor(wndH, nullptr, 0, 0, 0, 0, 0);
         }
 
-        void WindowGLFW::setWindowDecorated(bool decorated) {
+        void WindowGLFWGL::setWindowDecorated(bool decorated) {
             glfwSetWindowAttrib(wndH, GLFW_DECORATED, decorated);
         }
 
-        void WindowGLFW::setWindowResizable(bool resizable) {
+        void WindowGLFWGL::setWindowResizable(bool resizable) {
             glfwSetWindowAttrib(wndH, GLFW_RESIZABLE, resizable);
         }
 
-        void WindowGLFW::setWindowAlwaysOnTop(bool alwaysOnTop) {
+        void WindowGLFWGL::setWindowAlwaysOnTop(bool alwaysOnTop) {
             glfwSetWindowAttrib(wndH, GLFW_FLOATING, alwaysOnTop);
         }
 
-        void WindowGLFW::setWindowAutoMinimize(bool autoMinimize) {
+        void WindowGLFWGL::setWindowAutoMinimize(bool autoMinimize) {
             glfwSetWindowAttrib(wndH, GLFW_AUTO_ICONIFY, autoMinimize);
         }
 
-        void WindowGLFW::setWindowFocusOnShow(bool focusOnShow) {
+        void WindowGLFWGL::setWindowFocusOnShow(bool focusOnShow) {
             glfwSetWindowAttrib(wndH, GLFW_FOCUS_ON_SHOW, focusOnShow);
         }
 
-        void WindowGLFW::setSwapInterval(int interval) {
+        void WindowGLFWGL::setSwapInterval(int interval) {
             makeCurrent();
             glfwSwapInterval(interval);
         }

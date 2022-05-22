@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_WINDOWGLFW_HPP
-#define XENGINE_WINDOWGLFW_HPP
+#ifndef XENGINE_WINDOWGLFWGL_HPP
+#define XENGINE_WINDOWGLFWGL_HPP
 
 #include <set>
 
@@ -37,27 +37,25 @@
 
 namespace xengine {
     namespace glfw {
-        /**
-         * Currently implemented is opengl render target support.
-         * GLFW supports vulkan window surfaces.
-         */
-        class WindowGLFW : public Window {
+        class WindowGLFWGL : public Window {
         public:
-            WindowGLFW(const std::string &title, Vec2i size, WindowAttributes attributes);
+            WindowGLFWGL(const std::string &title, Vec2i size, WindowAttributes attributes);
 
-            WindowGLFW(const std::string &title,
-                       Vec2i size,
-                       WindowAttributes attributes,
-                       MonitorGLFW &monitor,
-                       VideoMode videoMode);
+            WindowGLFWGL(const std::string &title,
+                         Vec2i size,
+                         WindowAttributes attributes,
+                         MonitorGLFW &monitor,
+                         VideoMode videoMode);
 
-            ~WindowGLFW() override;
+            ~WindowGLFWGL() override;
 
-            RenderTarget &getRenderTarget(RenderPlatform backend) override;
+            RenderTarget &getRenderTarget() override;
 
             Input &getInput() override;
 
             DisplayBackend getDisplayBackend() override;
+
+            RenderPlatform getRenderPlatform() override;
 
             void makeCurrent() override;
 
@@ -158,4 +156,4 @@ namespace xengine {
     }
 }
 
-#endif //XENGINE_WINDOWGLFW_HPP
+#endif //XENGINE_WINDOWGLFWGL_HPP
