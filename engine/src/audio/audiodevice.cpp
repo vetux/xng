@@ -22,7 +22,7 @@
 #include <stdexcept>
 
 #ifdef BUILD_ENGINE_AUDIO_OPENAL
-#include "openal/oalaudiodevice.hpp"
+#include "audio/openal/oalaudiodevice.hpp"
 #endif
 
 namespace xengine {

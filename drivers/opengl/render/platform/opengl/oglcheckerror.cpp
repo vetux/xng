@@ -17,31 +17,16 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifdef BUILD_ENGINE_RENDERER_OPENGL
+#include <stdexcept>
 
-#include "render/platform/opengl/oglrenderdevice.hpp"
-#include "render/platform/opengl/ogltexturebuffer.hpp"
+#include "render/platform/opengl/oglcheckerror.hpp"
+#include "render/platform/opengl/openglinclude.hpp"
 
-namespace xengine {
-    namespace opengl {
-        Renderer &OGLRenderDevice::getRenderer() {
-            return dynamic_cast<Renderer &>(renderer);
-        }
-
-        RenderAllocator &OGLRenderDevice::getAllocator() {
-            return dynamic_cast<RenderAllocator &>(allocator);
-        }
-
-        int OGLRenderDevice::getMaxSampleCount() {
-            GLint ret = 0;
-            glGetIntegerv(GL_MAX_SAMPLES, &ret);
-            return ret;
-        }
-
-        RenderPlatform OGLRenderDevice::getBackend() {
-            return OPENGL_4_1;
-        }
+void checkGLError(const std::string &source) {
+    GLenum er = glGetError();
+    if (er != GL_NO_ERROR) {
+        std::string error = source + " GLERROR: ";
+        error += std::to_string(er);
+        throw std::runtime_error(error);
     }
 }
-
-#endif

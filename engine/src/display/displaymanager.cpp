@@ -20,7 +20,7 @@
 #include "display/displaymanager.hpp"
 
 #ifdef BUILD_ENGINE_DISPLAY_GLFW
-#include "glfw/glfwdisplay.hpp"
+#include "display/glfw/glfwdisplay.hpp"
 #endif
 
 namespace xengine {

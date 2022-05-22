@@ -17,8 +17,6 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifdef BUILD_ENGINE_RENDERER_OPENGL
-
 #include "render/platform/opengl/oglrendertarget.hpp"
 #include "render/platform/opengl/ogltypeconverter.hpp"
 #include "render/platform/opengl/oglcheckerror.hpp"
@@ -350,5 +348,3 @@ namespace xengine {
         return ret == GL_FRAMEBUFFER_COMPLETE;
     }
 }
-
-#endif
