@@ -21,17 +21,29 @@
 #define XENGINE_AUDIOSOURCECOMPONENT_HPP
 
 #include "asset/audio.hpp"
-#include "resource/uri.hpp"
 #include "math/vector3.hpp"
+#include "resource/resourcehandle.hpp"
 
 namespace xengine {
     struct XENGINE_EXPORT AudioSourceComponent {
-        Uri audioPath;
+        ResourceHandle<Audio> audio;
         bool play = false;
         bool loop = false;
         Vec3f velocity = {};
 
         bool playing = false;
+
+        bool operator==(const AudioSourceComponent &other) const {
+            return audio == other.audio
+                   && play == other.play
+                   && loop == other.loop
+                   && velocity == other.velocity
+                   && playing == other.playing;
+        }
+
+        bool operator!=(const AudioSourceComponent &other) const {
+            return !(*this == other);
+        }
     };
 }
 

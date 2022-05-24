@@ -262,7 +262,7 @@ namespace xengine {
 
     AudioSourceComponent &operator<<(AudioSourceComponent &component, const Message &message) {
         if (message.getMap().find("audio") != message.getMap().end()) {
-            component.audioPath = Uri(message["audio"]["bundle"], message["audio"]["asset"]);
+            component.audio = ResourceHandle<Audio>(Uri(message["audio"]["bundle"], message["audio"]["asset"]));
             component.play = message.value("play", false);
             component.loop = message.value("loop", false);
         }

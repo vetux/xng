@@ -75,11 +75,12 @@ namespace xengine {
     }
 
     void AudioSystem::onComponentCreate(const Entity &entity, const AudioSourceComponent &component) {
-        if (!component.audioPath.empty()) {
-            auto handle = ResourceHandle<Audio>(component.audioPath);
-
+        if (component.audio) {
+            auto& buffer = component.audio.get();
             buffers[entity] = context->createBuffer();
-            buffers[entity]->upload(handle.get().buffer, handle.get().format, handle.get().frequency);
+            buffers[entity]->upload(buffer.buffer,
+                                    buffer.format,
+                                    buffer.frequency);
 
             sources[entity] = context->createSource();
             sources[entity]->setBuffer(*buffers[entity]);
@@ -94,10 +95,12 @@ namespace xengine {
     void AudioSystem::onComponentUpdate(const Entity &entity,
                                         const AudioSourceComponent &oldValue,
                                         const AudioSourceComponent &newValue) {
-        if (!(oldValue.audioPath == newValue.audioPath)) {
+        if (oldValue != newValue) {
+            auto& buffer = newValue.audio.get();
             sources[entity]->stop();
-            auto handle = ResourceHandle<Audio>(newValue.audioPath);
-            buffers.at(entity)->upload(handle.get().buffer, handle.get().format, handle.get().frequency);
+            // Unbind buffer before uploading
+            sources.at(entity)->clearBuffer();
+            buffers.at(entity)->upload(buffer.buffer, buffer.format, buffer.frequency);
             sources.at(entity)->setBuffer(*buffers.at(entity));
         }
     }
