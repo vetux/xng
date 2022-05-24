@@ -133,7 +133,7 @@ void main() {
 }
 )###";
 
-
+//TODO: Fix phong pass rendering black texture depending on camera orientation
 namespace xengine {
     using namespace ShaderCompiler;
 
@@ -273,7 +273,7 @@ namespace xengine {
         multiSampleTarget.attachColor(0, colorMs);
         multiSampleTarget.attachDepthStencil(depthMs);
 
-        ren.renderBegin(multiSampleTarget, RenderOptions({}, gBuffer.getSize(), true));
+        ren.renderBegin(multiSampleTarget, RenderOptions({}, multiSampleTarget.getSize(), true));
         ren.addCommand(command);
         ren.renderFinish();
 
