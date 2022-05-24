@@ -167,11 +167,18 @@ namespace xengine {
         renderTarget = builder.createRenderTarget(format.first, 1);
         multiSampleRenderTarget = builder.createRenderTarget(format.first, format.second);
 
-        outColor = builder.createTextureBuffer(TextureBuffer::Attributes{.size = builder.getBackBufferFormat().first});
+        colorMultisample = builder.createTextureBuffer(TextureBuffer::Attributes{.size = format.first,
+                .samples = format.second,
+                .textureType = TextureBuffer::TEXTURE_2D_MULTISAMPLE});
+        depthMultisample = builder.createTextureBuffer(TextureBuffer::Attributes{.size = format.first,
+                .samples = format.second,
+                .textureType = TextureBuffer::TEXTURE_2D_MULTISAMPLE,
+                .format = TextureBuffer::DEPTH_STENCIL});
+
+        outColor = builder.createTextureBuffer(TextureBuffer::Attributes{.size = format.first});
         outDepth = builder.createTextureBuffer(TextureBuffer::Attributes{
-                .size = builder.getBackBufferFormat().first,
-                .format = TextureBuffer::DEPTH_STENCIL
-        });
+                .size = format.first,
+                .format = TextureBuffer::DEPTH_STENCIL});
     }
 
     void PhongPass::execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) {
@@ -180,6 +187,8 @@ namespace xengine {
         auto &multiSampleTarget = resources.getRenderTarget(multiSampleRenderTarget);
         auto &color = resources.getTextureBuffer(outColor);
         auto &depth = resources.getTextureBuffer(outDepth);
+        auto &colorMs = resources.getTextureBuffer(colorMultisample);
+        auto &depthMs = resources.getTextureBuffer(depthMultisample);
 
         int dirCount = 0;
         int pointCount = 0;
@@ -260,13 +269,19 @@ namespace xengine {
         command.properties.enableFaceCulling = false;
         command.properties.enableBlending = false;
 
-        target.setNumberOfColorAttachments(1);
-        target.attachColor(0, color);
-        target.attachDepthStencil(depth);
+        multiSampleTarget.setNumberOfColorAttachments(1);
+        multiSampleTarget.attachColor(0, colorMs);
+        multiSampleTarget.attachDepthStencil(depthMs);
 
         ren.renderBegin(multiSampleTarget, RenderOptions({}, gBuffer.getSize(), true));
         ren.addCommand(command);
         ren.renderFinish();
+
+        target.setNumberOfColorAttachments(1);
+        target.attachColor(0, color);
+        target.attachDepthStencil(depth);
+
+        ren.renderClear(target, ColorRGBA(0), 1);
 
         target.blitColor(multiSampleTarget,
                          {},
@@ -284,6 +299,9 @@ namespace xengine {
 
         target.detachColor(0);
         target.detachDepthStencil();
+
+        multiSampleTarget.detachColor(0);
+        multiSampleTarget.detachDepthStencil();
 
         auto layers = board.get<std::vector<CompositePass::Layer>>();
 

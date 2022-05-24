@@ -80,13 +80,13 @@ namespace xengine {
         RenderAllocator &allocator;
 
         std::map<Uri, std::unique_ptr<RenderObject>> uriObjects;
-        std::map<std::pair<std::pair<int, int>, int>, std::unique_ptr<RenderObject>> renderTargets;
+        std::map<std::pair<std::pair<int, int>, int>, std::vector<std::unique_ptr<RenderTarget>>> renderTargets;
         std::unordered_map<TextureBuffer::Attributes,
                 std::vector<std::unique_ptr<TextureBuffer>>,
                 TextureAttributesHashFunction> textures;
 
         std::set<Uri> usedUris;
-        std::set<std::pair<std::pair<int, int>, int>> usedTargets;
+        std::map<std::pair<std::pair<int, int>, int>, int> usedTargets;
         std::unordered_map<TextureBuffer::Attributes, int, TextureAttributesHashFunction> usedTextures;
     };
 }

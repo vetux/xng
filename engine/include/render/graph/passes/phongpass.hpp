@@ -43,6 +43,9 @@ namespace xengine {
         FrameGraphResource renderTarget;
         FrameGraphResource multiSampleRenderTarget;
 
+        FrameGraphResource colorMultisample;
+        FrameGraphResource depthMultisample;
+
         FrameGraphResource outColor;
         FrameGraphResource outDepth;
     };

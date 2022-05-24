@@ -75,12 +75,12 @@ namespace xengine {
 
     RenderTarget &ObjectPool::getRenderTarget(Vec2i size, int samples) {
         auto pair = std::pair<std::pair<int, int>, int>({size.x, size.y}, samples);
-        usedTargets.insert(pair);
-        auto it = renderTargets.find(pair);
-        if (it == renderTargets.end()) {
-            renderTargets[pair] = allocator.createRenderTarget(size, samples);
+        auto index = usedTargets[pair]++;
+        if (renderTargets[pair].size() <= index) {
+            renderTargets[pair].resize(usedTargets[pair]);
+            renderTargets[pair].at(index) = allocator.createRenderTarget(size, samples);
         }
-        return dynamic_cast<RenderTarget &>(*renderTargets[pair]);
+        return *renderTargets[pair].at(index);
     }
 
     TextureBuffer &ObjectPool::getTextureBuffer(TextureBuffer::Attributes attributes) {
@@ -105,6 +105,8 @@ namespace xengine {
         for (auto &pair: renderTargets) {
             if (usedTargets.find(pair.first) == usedTargets.end()) {
                 unusedTargets.insert(pair.first);
+            } else {
+                pair.second.resize(usedTargets.at(pair.first));
             }
         }
 
@@ -127,6 +129,10 @@ namespace xengine {
             } else {
                 pair.second.resize(usedTextures.at(pair.first));
             }
+        }
+
+        for (auto &a: unusedTextures) {
+            textures.erase(a);
         }
 
         usedTextures.clear();
