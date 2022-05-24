@@ -68,7 +68,7 @@ namespace xengine {
                     }
                 }
             }
-            window = display.createWindow();
+            window = display.createWindow(graphicsBackend);
             window->update();
 
             renderDevice = RenderDevice::create(graphicsBackend);
