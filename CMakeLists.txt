@@ -24,4 +24,5 @@ else ()
     add_compile_definitions(XENGINE_EXPORT=)
 endif ()
 
-include(cmake/xengine.cmake)
+include(cmake/drivers.cmake)
+include(cmake/engine.cmake)
