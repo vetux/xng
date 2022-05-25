@@ -25,7 +25,7 @@
 #include "render/graph/objectpool.hpp"
 #include "render/graph/renderpass.hpp"
 
-#include "render/platform/renderdevice.hpp"
+#include "graphics/renderdevice.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT FrameGraphPipeline : public Pipeline {

@@ -21,7 +21,7 @@
 #define XENGINE_FORWARDPIPELINE_HPP
 
 #include "render/pipeline.hpp"
-#include "render/platform/renderdevice.hpp"
+#include "graphics/renderdevice.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT ForwardPipeline : public Pipeline {

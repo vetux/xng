@@ -22,8 +22,8 @@
 
 #include "resource/resourcehandle.hpp"
 
-#include "render/platform/renderobject.hpp"
-#include "render/platform/renderer.hpp"
+#include "graphics/renderobject.hpp"
+#include "graphics/renderer.hpp"
 
 #include "render/graph/objectpool.hpp"
 #include "render/graph/framegraphresource.hpp"

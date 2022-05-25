@@ -19,110 +19,89 @@
 
 #include "compat/imguicompat.hpp"
 
-#include <limits>
-
 #include "display/window.hpp"
 
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 
-#include "display/glfw/windowglfwgl.hpp"
-#include "render/platform/opengl/oglrendertarget.hpp"
+#include "display/glfw/opengl/windowglfwgl.hpp"
+#include "graphics/opengl/oglrendertarget.hpp"
 
 namespace xengine {
     namespace ImGuiCompat {
-        void Init(Window &window, RenderPlatform graphicsBackend) {
-            switch (window.getDisplayBackend()) {
-                case GLFW:
-                    ImGui_ImplGlfw_InitForOpenGL(dynamic_cast<glfw::WindowGLFWGL &>(window).windowHandle(), true);
-                    break;
-                default:
-                    throw std::runtime_error("Not supported");
-            }
-            switch (graphicsBackend) {
-                case OPENGL_4_1:
-                    ImGui_ImplOpenGL3_Init("#version 460");
-                    break;
-                case DIRECTX_11:
-                case VULKAN:
-                default:
-                    throw std::runtime_error("Not supported");
+        void Init(Window &window) {
+            auto displayDriver = window.getDisplayDriver();
+            auto graphicsDriver = window.getGraphicsDriver();
+            if (displayDriver == "glfw" && graphicsDriver == "opengl") {
+                ImGui_ImplGlfw_InitForOpenGL(dynamic_cast<glfw::WindowGLFWGL &>(window).windowHandle(), true);
+                ImGui_ImplOpenGL3_Init("#version 460");
+            } else {
+                throw std::runtime_error("Unsupported display or graphics driver");
             }
         }
 
-        void Shutdown(Window &window, RenderPlatform graphicsBackend) {
-            switch (graphicsBackend) {
-                case OPENGL_4_1:
-                    ImGui_ImplOpenGL3_Shutdown();
-                    break;
-                case DIRECTX_11:
-                case VULKAN:
-                default:
-                    throw std::runtime_error("Not supported");
-            }
-            switch (window.getDisplayBackend()) {
-                case GLFW:
-                    ImGui_ImplGlfw_Shutdown();
-                    break;
-                default:
-                    throw std::runtime_error("Not supported");
+        void Shutdown(Window &window) {
+            auto displayDriver = window.getDisplayDriver();
+            auto graphicsDriver = window.getGraphicsDriver();
+
+            if (displayDriver == "glfw" && graphicsDriver == "opengl") {
+                ImGui_ImplOpenGL3_Shutdown();
+                ImGui_ImplGlfw_Shutdown();
+            } else {
+                throw std::runtime_error("Unsupported display or graphics driver");
             }
         }
 
-        void NewFrame(Window &window, RenderPlatform graphicsBackend) {
-            switch (graphicsBackend) {
-                case OPENGL_4_1:
-                    ImGui_ImplOpenGL3_NewFrame();
-                    break;
-                case DIRECTX_11:
-                case VULKAN:
-                default:
-                    throw std::runtime_error("Not supported");
+        void NewFrame(Window &window) {
+            auto displayDriver = window.getDisplayDriver();
+            auto graphicsDriver = window.getGraphicsDriver();
+
+            if (graphicsDriver == "opengl") {
+                ImGui_ImplOpenGL3_NewFrame();
+            } else {
+                throw std::runtime_error("Unsupported graphics driver");
             }
-            switch (window.getDisplayBackend()) {
-                case GLFW:
-                    ImGui_ImplGlfw_NewFrame();
-                    break;
-                default:
-                    throw std::runtime_error("Not supported");
+
+            if (displayDriver == "glfw") {
+                ImGui_ImplGlfw_NewFrame();
+            } else {
+                throw std::runtime_error("Unsupported display driver");
             }
         }
 
-        void DrawData(Window &window, RenderTarget &target, RenderPlatform graphicsBackend) {
-            return DrawData(window, target, RenderOptions({}, target.getSize()), graphicsBackend);
+        void DrawData(Window &window, RenderTarget &target) {
+            return DrawData(window, target, RenderOptions({}, target.getSize()));
         }
 
-        void DrawData(Window &window, RenderTarget &target, RenderOptions options, RenderPlatform graphicsBackend) {
-            switch (graphicsBackend) {
-                case OPENGL_4_1: {
-                    auto &t = dynamic_cast<opengl::OGLRenderTarget &>(target);
-                    glBindFramebuffer(GL_FRAMEBUFFER, t.getFBO());
-                    glViewport(options.viewportOffset.x,
-                               options.viewportOffset.y,
-                               options.viewportSize.x,
-                               options.viewportSize.y);
-                    glClearColor(options.clearColorValue.r(),
-                                 options.clearColorValue.g(),
-                                 options.clearColorValue.b(),
-                                 options.clearColorValue.a());
-                    GLenum clearFlags = 0;
-                    if (options.clearColor)
-                        clearFlags |= GL_COLOR_BUFFER_BIT;
-                    if (options.clearDepth)
-                        clearFlags |= GL_DEPTH_BUFFER_BIT;
-                    if (options.clearStencil)
-                        clearFlags |= GL_STENCIL_BUFFER_BIT;
-                    glClear(clearFlags);
-                    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-                    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-                    checkGLError("ImGuiCompat");
-                    break;
-                }
-                case DIRECTX_11:
-                case VULKAN:
-                default:
-                    throw std::runtime_error("Not supported");
+        void DrawData(Window &window, RenderTarget &target, RenderOptions options) {
+            auto displayDriver = window.getDisplayDriver();
+            auto graphicsDriver = window.getGraphicsDriver();
+
+            if (graphicsDriver == "opengl") {
+                auto &t = dynamic_cast<opengl::OGLRenderTarget &>(target);
+                glBindFramebuffer(GL_FRAMEBUFFER, t.getFBO());
+                glViewport(options.viewportOffset.x,
+                           options.viewportOffset.y,
+                           options.viewportSize.x,
+                           options.viewportSize.y);
+                glClearColor(options.clearColorValue.r(),
+                             options.clearColorValue.g(),
+                             options.clearColorValue.b(),
+                             options.clearColorValue.a());
+                GLenum clearFlags = 0;
+                if (options.clearColor)
+                    clearFlags |= GL_COLOR_BUFFER_BIT;
+                if (options.clearDepth)
+                    clearFlags |= GL_DEPTH_BUFFER_BIT;
+                if (options.clearStencil)
+                    clearFlags |= GL_STENCIL_BUFFER_BIT;
+                glClear(clearFlags);
+                ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                checkGLError("ImGuiCompat");
+            } else {
+                throw std::runtime_error("Unsupported graphics driver");
             }
         }
     }

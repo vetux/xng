@@ -24,10 +24,13 @@
 #include <thread>
 #include <iomanip>
 
-#include "ecs/ecs.hpp"
 #include "compat/imguicompat.hpp"
 
-#include "display/displaymanager.hpp"
+#include "audio/audiodriver.hpp"
+#include "display/displaydriver.hpp"
+#include "graphics/graphicsdriver.hpp"
+
+#include "driver/drivermanager.hpp"
 
 #include "imgui.h"
 
@@ -38,47 +41,45 @@ namespace xengine {
          * @param argc
          * @param argv
          */
-        explicit Application(int argc, char *argv[])
-                : display() {
+        explicit Application(int argc, char *argv[]) {
             std::vector<std::string> args;
             for (int i = 0; i < argc; i++)
                 args.emplace_back(argv[i]);
 
-            displayBackend = DisplayBackend::GLFW;
             for (int i = 0; i < args.size(); i++) {
                 if (args.at(i) == "--display") {
-                    auto str = args.at(i + 1);
-                    if (str == "glfw") {
-                        displayBackend = DisplayBackend::GLFW;
-                    }
+                    displayDriverName = args.at(i + 1);
                 }
             }
-            display = DisplayManager(displayBackend);
 
-            graphicsBackend = RenderPlatform::OPENGL_4_1;
             for (int i = 0; i < args.size(); i++) {
                 if (args.at(i) == "--graphics") {
-                    auto str = args.at(i + 1);
-                    if (str == "opengl") {
-                        graphicsBackend = RenderPlatform::OPENGL_4_1;
-                    } else if (str == "directx") {
-                        graphicsBackend = RenderPlatform::DIRECTX_11;
-                    } else if (str == "vulkan") {
-                        graphicsBackend = RenderPlatform::VULKAN;
-                    }
+                    graphicsDriverName = args.at(i + 1);
                 }
             }
-            window = display.createWindow(graphicsBackend);
+
+            for (int i = 0; i < args.size(); i++) {
+                if (args.at(i) == "--audio") {
+                    audioDriverName = args.at(i + 1);
+                }
+            }
+
+            displayDriver = DriverManager::load<DisplayDriver>(displayDriverName);
+            graphicsDriver = DriverManager::load<GraphicsDriver>(graphicsDriverName);
+            audioDriver = DriverManager::load<AudioDriver>(audioDriverName);
+
+            window = displayDriver->createWindow(graphicsDriverName);
+            renderDevice = graphicsDriver->createRenderDevice();
+            audioDevice = audioDriver->createDevice();
+
             window->update();
 
-            renderDevice = RenderDevice::create(graphicsBackend);
-
             imGuiContext = ImGui::CreateContext();
-            ImGuiCompat::Init(*window, graphicsBackend);
+            ImGuiCompat::Init(*window);
         }
 
         virtual ~Application() {
-            ImGuiCompat::Shutdown(*window, graphicsBackend);
+            ImGuiCompat::Shutdown(*window);
             ImGui::DestroyContext(imGuiContext);
         }
 
@@ -97,17 +98,19 @@ namespace xengine {
         }
 
     protected:
-        DisplayManager display;
+        std::string displayDriverName = "glfw";
+        std::string graphicsDriverName = "opengl";
+        std::string audioDriverName = "openal-soft";
 
-        DisplayBackend displayBackend;
-        RenderPlatform graphicsBackend;
+        std::unique_ptr<DisplayDriver> displayDriver = nullptr;
+        std::unique_ptr<GraphicsDriver> graphicsDriver = nullptr;
+        std::unique_ptr<AudioDriver> audioDriver = nullptr;
 
         std::unique_ptr<Window> window = nullptr;
         std::unique_ptr<RenderDevice> renderDevice = nullptr;
+        std::unique_ptr<AudioDevice> audioDevice = nullptr;
 
         ImGuiContext *imGuiContext;
-
-        float fpsLimit = 0;
 
         bool shutdown = false;
 

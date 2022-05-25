@@ -27,10 +27,10 @@
 #include "render/graph/framegraphresource.hpp"
 #include "render/graph/gbuffer.hpp"
 
-#include "render/platform/texturebuffer.hpp"
-#include "render/platform/meshbuffer.hpp"
-#include "render/platform/rendertarget.hpp"
-#include "render/platform/shaderprogram.hpp"
+#include "graphics/texturebuffer.hpp"
+#include "graphics/meshbuffer.hpp"
+#include "graphics/rendertarget.hpp"
+#include "graphics/shaderprogram.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT RenderPassResources {

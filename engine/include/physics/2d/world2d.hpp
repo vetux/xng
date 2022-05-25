@@ -23,15 +23,11 @@
 #include "physics/2d/rigidbody2d.hpp"
 #include "physics/2d/joint2d.hpp"
 
+#include "driver/driver.hpp"
+
 namespace xengine {
-    class XENGINE_EXPORT World2D {
+    class XENGINE_EXPORT World2D : public Driver {
     public:
-        enum Backend {
-            BOX2D
-        };
-
-        static std::unique_ptr<World2D> create(Backend backend);
-
         struct XENGINE_EXPORT Contact {
             Collider2D *colliderA;
             Collider2D *colliderB;
@@ -48,7 +44,7 @@ namespace xengine {
             virtual void endContact(Contact &contact) {}
         };
 
-        virtual ~World2D() = default;
+        ~World2D() override = default;
 
         virtual RigidBody2D *createRigidBody() = 0;
 

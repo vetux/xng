@@ -20,10 +20,10 @@
 #ifndef XENGINE_GLFWRENDERTARGETGL_HPP
 #define XENGINE_GLFWRENDERTARGETGL_HPP
 
-#include "render/platform/opengl/oglrendertarget.hpp"
+#include "graphics/opengl/oglrendertarget.hpp"
 
-#include "render/platform/opengl/ogltypeconverter.hpp"
-#include "render/platform/opengl/oglcheckerror.hpp"
+#include "graphics/opengl/ogltypeconverter.hpp"
+#include "graphics/opengl/oglcheckerror.hpp"
 
 namespace xengine {
     namespace glfw {

@@ -19,7 +19,11 @@
 
 #include "worldbt3.hpp"
 
+#include "driver/drivermanager.hpp"
+
 namespace xengine {
+    static bool driverRegistered = REGISTER_DRIVER("bullet3", WorldBt3);
+
     RigidBody3D *WorldBt3::createRigidBody() {
         return nullptr;
     }
@@ -58,5 +62,9 @@ namespace xengine {
 
     void WorldBt3::step(float deltaTime) {
 
+    }
+
+    std::type_index WorldBt3::getType() {
+        return typeid(WorldBt3);
     }
 }

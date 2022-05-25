@@ -23,7 +23,7 @@
 #include <map>
 #include <memory>
 
-#include "render/platform/texturebuffer.hpp"
+#include "graphics/texturebuffer.hpp"
 
 #include "asset/image.hpp"
 

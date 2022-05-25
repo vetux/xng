@@ -21,7 +21,11 @@
 #include "rigidbodybox2d.hpp"
 #include "commonbox2d.hpp"
 
+#include "driver/drivermanager.hpp"
+
 namespace xengine {
+    static bool driverRegistered = REGISTER_DRIVER("box2d", WorldBox2D);
+
     WorldBox2D::WorldBox2D()
             : world(b2Vec2(0.0f, -1.0f)) {}
 
@@ -90,5 +94,9 @@ namespace xengine {
 
     void WorldBox2D::step(float deltaTime) {
         world.Step(deltaTime, 10, 10);
+    }
+
+    std::type_index WorldBox2D::getType() {
+        return typeid(WorldBox2D);
     }
 }

@@ -22,8 +22,8 @@
 
 #include <set>
 
-#include "render/platform/renderer.hpp"
-#include "render/platform/renderdevice.hpp"
+#include "graphics/renderer.hpp"
+#include "graphics/renderdevice.hpp"
 
 #include "render/shader/shadersource.hpp"
 

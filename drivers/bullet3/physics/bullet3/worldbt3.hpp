@@ -45,6 +45,8 @@ namespace xengine {
         void setGravity(const Vec3f &gravity) override;
 
         void step(float deltaTime) override;
+
+        std::type_index getType() override;
     };
 }
 

@@ -23,7 +23,7 @@
 #include "text/font.hpp"
 #include "cast/numeric_cast.hpp"
 
-#include "render/platform/renderdevice.hpp"
+#include "graphics/renderdevice.hpp"
 
 namespace xengine {
     struct XENGINE_EXPORT Text {

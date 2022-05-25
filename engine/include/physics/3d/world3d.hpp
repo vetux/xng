@@ -23,15 +23,11 @@
 #include "physics/3d/rigidbody3d.hpp"
 #include "physics/3d/joint3d.hpp"
 
+#include "driver/driver.hpp"
+
 namespace xengine {
-    class XENGINE_EXPORT World3D {
+    class XENGINE_EXPORT World3D : public Driver {
     public:
-        enum Backend {
-            BULLET3
-        };
-
-        static std::unique_ptr<World3D> create(Backend backend);
-
         struct XENGINE_EXPORT Contact {
             Collider3D *colliderA;
             Collider3D *colliderB;

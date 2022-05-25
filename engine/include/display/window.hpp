@@ -20,15 +20,14 @@
 #ifndef XENGINE_WINDOW_HPP
 #define XENGINE_WINDOW_HPP
 
-#include "render/platform/renderdevice.hpp"
-#include "render/platform/rendertarget.hpp"
+#include "graphics/renderdevice.hpp"
+#include "graphics/rendertarget.hpp"
 
 #include "asset/image.hpp"
 
 #include "display/windowlistener.hpp"
 #include "display/windowattributes.hpp"
 #include "display/monitor.hpp"
-#include "display/displaybackend.hpp"
 
 #include "input/input.hpp"
 #include "math/vector2.hpp"
@@ -49,9 +48,9 @@ namespace xengine {
 
         virtual Input &getInput() = 0;
 
-        virtual DisplayBackend getDisplayBackend() = 0;
+        virtual std::string getDisplayDriver() = 0;
 
-        virtual RenderPlatform getRenderPlatform() = 0;
+        virtual std::string getGraphicsDriver() = 0;
 
         /**
          * When using multiple windows or multiple threads call this method before using

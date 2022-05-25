@@ -24,17 +24,10 @@
 #include <memory>
 
 #include "audio/audiocontext.hpp"
-#include "audio/audiobackend.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT AudioDevice {
     public:
-        static std::vector<std::string> getDeviceNames(AudioBackend backend);
-
-        static std::unique_ptr<AudioDevice> createDevice(AudioBackend backend, const std::string &name);
-
-        static std::unique_ptr<AudioDevice> createDevice(AudioBackend backend);
-
         virtual ~AudioDevice() = default;
 
         virtual std::unique_ptr<AudioContext> createContext() = 0;

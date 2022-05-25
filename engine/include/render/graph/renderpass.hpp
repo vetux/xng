@@ -24,7 +24,7 @@
 #include "render/graph/framegraphbuilder.hpp"
 #include "render/graph/framegraphblackboard.hpp"
 
-#include "render/platform/renderer.hpp"
+#include "graphics/renderer.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT RenderPass {

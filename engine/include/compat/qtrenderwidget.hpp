@@ -23,7 +23,7 @@
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_3_3_Core>
 
-#include "render/platform/rendertarget.hpp"
+#include "graphics/rendertarget.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT QtRenderWidget : public QOpenGLWidget {

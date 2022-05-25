@@ -27,6 +27,8 @@
 #include "rigidbodybox2d.hpp"
 #include "jointbox2d.hpp"
 
+#include "driver/driver.hpp"
+
 namespace xengine {
     class WorldBox2D : public World2D {
     public:
@@ -58,6 +60,8 @@ namespace xengine {
         void setGravity(const Vec2f &gravity) override;
 
         void step(float deltaTime) override;
+
+        std::type_index getType() override;
     };
 }
 

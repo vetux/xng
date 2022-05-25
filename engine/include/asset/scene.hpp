@@ -31,7 +31,7 @@
 
 #include "resource/resourcehandle.hpp"
 
-#include "render/platform/rendercommand.hpp"
+#include "graphics/rendercommand.hpp"
 
 namespace xengine {
     struct XENGINE_EXPORT Scene {

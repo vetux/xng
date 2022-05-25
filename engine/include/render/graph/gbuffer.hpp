@@ -22,8 +22,8 @@
 
 #include <memory>
 
-#include "render/platform/renderdevice.hpp"
-#include "render/platform/texturebuffer.hpp"
+#include "graphics/renderdevice.hpp"
+#include "graphics/texturebuffer.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT GBuffer {
