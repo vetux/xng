@@ -209,6 +209,9 @@ namespace xengine {
     }
 
     void opengl::OGLRenderTarget::setNumberOfColorAttachments(int count) {
+        if (count < 1)
+            throw std::runtime_error("Invalid color attachment count");
+
         for (int i = 0; i < colorAttachments; i++) {
             detachColor(i);
         }

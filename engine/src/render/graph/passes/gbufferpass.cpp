@@ -153,6 +153,13 @@ namespace xengine {
         target.attachDepthStencil(gBuffer.getTexture(GBuffer::DEPTH));
     }
 
+    static void unbindTextures(RenderTarget &target) {
+        for (int i = GBuffer::GEOMETRY_TEXTURE_BEGIN; i < GBuffer::GEOMETRY_TEXTURE_END; i++) {
+            target.detachColor(i);
+        }
+        target.detachDepthStencil();
+    }
+
     GBufferPass::GBufferPass(RenderDevice &device)
             : device(device), gBuffer(device) {
         Shader shaderSrc;
@@ -180,17 +187,23 @@ namespace xengine {
         for (auto &object: scene.objects) {
             sceneResources[object.mesh.getUri()] = builder.createMeshBuffer(object.mesh);
             if (object.material.get().diffuseTexture)
-                sceneResources[object.material.get().diffuseTexture.getUri()] = builder.createTextureBuffer(object.material.get().diffuseTexture);
+                sceneResources[object.material.get().diffuseTexture.getUri()] = builder.createTextureBuffer(
+                        object.material.get().diffuseTexture);
             if (object.material.get().ambientTexture)
-                sceneResources[object.material.get().ambientTexture.getUri()] = builder.createTextureBuffer(object.material.get().ambientTexture);
+                sceneResources[object.material.get().ambientTexture.getUri()] = builder.createTextureBuffer(
+                        object.material.get().ambientTexture);
             if (object.material.get().specularTexture)
-                sceneResources[object.material.get().specularTexture.getUri()] = builder.createTextureBuffer(object.material.get().specularTexture);
+                sceneResources[object.material.get().specularTexture.getUri()] = builder.createTextureBuffer(
+                        object.material.get().specularTexture);
             if (object.material.get().emissiveTexture)
-                sceneResources[object.material.get().emissiveTexture.getUri()] = builder.createTextureBuffer(object.material.get().emissiveTexture);
+                sceneResources[object.material.get().emissiveTexture.getUri()] = builder.createTextureBuffer(
+                        object.material.get().emissiveTexture);
             if (object.material.get().shininessTexture)
-                sceneResources[object.material.get().shininessTexture.getUri()] = builder.createTextureBuffer(object.material.get().shininessTexture);
+                sceneResources[object.material.get().shininessTexture.getUri()] = builder.createTextureBuffer(
+                        object.material.get().shininessTexture);
             if (object.material.get().normalTexture)
-                sceneResources[object.material.get().normalTexture.getUri()] = builder.createTextureBuffer(object.material.get().normalTexture);
+                sceneResources[object.material.get().normalTexture.getUri()] = builder.createTextureBuffer(
+                        object.material.get().normalTexture);
         }
 
         auto format = builder.getRenderFormat();
@@ -337,7 +350,7 @@ namespace xengine {
 
         ren.renderFinish();
 
-        target.setNumberOfColorAttachments(0);
+        unbindTextures(target);
 
         board.set<GBuffer>(gBuffer);
     }
