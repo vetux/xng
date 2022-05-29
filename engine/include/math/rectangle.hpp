@@ -40,8 +40,8 @@ namespace xengine {
             return Vector2<T>(position.x, position.y - dimensions.y / 2);
         }
 
-        template <typename R>
-        explicit operator Rectangle<R>(){
+        template<typename R>
+        explicit operator Rectangle<R>() {
             return convert<R>();
         }
 
@@ -67,6 +67,14 @@ namespace xengine {
                 return false;
             else
                 return true;
+        }
+
+        friend bool operator==(const Rectangle<T> &lhs, const Rectangle<T> &rhs) {
+            return lhs.position == rhs.position && lhs.dimensions == rhs.dimensions;
+        }
+
+        friend bool operator!=(const Rectangle<T> &lhs, const Rectangle<T> &rhs) {
+            return !(lhs == rhs);
         }
     };
 
