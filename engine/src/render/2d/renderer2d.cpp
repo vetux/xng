@@ -45,7 +45,13 @@ uniform vec4 COLOR;
 
 void main()
 {
-    fPosition = MVP * vec4(position, 1);
+    mat4 instanceMatrix;
+    instanceMatrix[0] = instanceRow0;
+    instanceMatrix[1] = instanceRow1;
+    instanceMatrix[2] = instanceRow2;
+    instanceMatrix[3] = instanceRow3;
+
+    fPosition = (MVP * instanceMatrix) * vec4(position, 1);
     fUv = uv;
     gl_Position = fPosition;
 }
@@ -106,7 +112,7 @@ namespace xengine {
      * @param size
      * @return
      */
-    static Mesh getPlane(Vec2f size, Vec2f center, Rectf uvOffset, Vec2b flipUv) {
+    static Mesh createPlane(Vec2f size, Vec2f center, Rectf uvOffset, Vec2b flipUv) {
         Rectf scaledOffset(
                 {uvOffset.position.x / size.x, uvOffset.position.y / size.y},
                 {uvOffset.dimensions.x / size.x, uvOffset.dimensions.y / size.y});
@@ -135,7 +141,7 @@ namespace xengine {
         }
     }
 
-    static Mesh getSquare(Vec2f size, Vec2f center) {
+    static Mesh createSquare(Vec2f size, Vec2f center) {
         return Mesh(Mesh::LINE, {
                 Vertex(Vec3f(0 - center.x, 0 - center.y, 0)),
                 Vertex(Vec3f(size.x - center.x, 0 - center.y, 0)),
@@ -151,7 +157,7 @@ namespace xengine {
         });
     }
 
-    static Mesh getLine(Vec2f start, Vec2f end, Vec2f center) {
+    static Mesh createLine(Vec2f start, Vec2f end, Vec2f center) {
         return Mesh(Mesh::LINE, {
                 Vertex(Vec3f(start.x - center.x, start.y - center.y, 0)),
                 Vertex(Vec3f(end.x - center.x, end.y - center.y, 0))
@@ -222,9 +228,7 @@ namespace xengine {
                           float rotation,
                           Vec2b flipUv,
                           bool alphaBlending) {
-        Mesh mesh = getPlane(dstRect.dimensions, center, srcRect, flipUv);
-
-        MeshBuffer &buffer = **allocatedMeshes.insert(renderDevice.getAllocator().createMeshBuffer(mesh)).first;
+        MeshBuffer &buffer = getPlane({dstRect.dimensions, center, srcRect, flipUv});
 
         Mat4f model = MatrixMath::identity();
         model = model * MatrixMath::translate(Vec3f(
@@ -268,12 +272,11 @@ namespace xengine {
     void Renderer2D::draw(Rectf rectangle, ColorRGBA color, bool fill, Vec2f center, float rotation) {
         Mesh mesh;
 
+        MeshBuffer *buffer;
         if (fill)
-            mesh = getPlane(rectangle.dimensions, center, Rectf(Vec2f(), rectangle.dimensions), Vec2b(false));
+            buffer = &getPlane({rectangle.dimensions, center, Rectf(Vec2f(), rectangle.dimensions), Vec2b(false)});
         else
-            mesh = getSquare(rectangle.dimensions, center);
-
-        MeshBuffer &buffer = **allocatedMeshes.insert(renderDevice.getAllocator().createMeshBuffer(mesh)).first;
+            buffer = &getSquare({rectangle.dimensions, center});
 
         Mat4f modelMatrix = MatrixMath::identity();
         modelMatrix = modelMatrix * MatrixMath::translate(Vec3f(
@@ -292,7 +295,7 @@ namespace xengine {
                                           (float) color.b() / 255,
                                           (float) color.a() / 255));
 
-        RenderCommand command(*defShader, buffer);
+        RenderCommand command(*defShader, *buffer);
         command.properties.enableDepthTest = false;
         command.properties.enableBlending = true;
 
@@ -304,11 +307,7 @@ namespace xengine {
                           ColorRGBA color,
                           Vec2f center,
                           float rotation) {
-        Mesh mesh = getLine(start, end, center);
-
-        auto it = allocatedMeshes.insert(renderDevice.getAllocator().createMeshBuffer(mesh));
-
-        MeshBuffer &buffer = **it.first;
+        MeshBuffer &buffer = getLine({start, end, center});
 
         Mat4f modelMatrix = MatrixMath::identity();
         modelMatrix = modelMatrix * MatrixMath::rotate(Vec3f(0, 0, rotation));
@@ -331,11 +330,7 @@ namespace xengine {
     }
 
     void Renderer2D::draw(Vec2f point, ColorRGBA color) {
-        Mesh mesh(Mesh::POINT, {
-                Vertex(Vec3f(point.x, point.y, 0))
-        });
-
-        MeshBuffer &buffer = **allocatedMeshes.insert(renderDevice.getAllocator().createMeshBuffer(mesh)).first;
+        MeshBuffer &buffer = getPoint(point);
 
         Mat4f modelMatrix = MatrixMath::identity();
         auto mvp = camera.projection() * camera.view() * modelMatrix;
@@ -382,8 +377,152 @@ namespace xengine {
              rotation);
     }
 
+    void Renderer2D::drawInstanced(const std::vector<std::pair<Vec2f, float>> &positions,
+                                   Vec2f size,
+                                   ColorRGBA color,
+                                   bool fill,
+                                   Vec2f center) {
+        Mesh mesh = Mesh(Mesh::TRI, {
+                Vertex(Vec3f(0 - center.x, 0 - center.y, 0), {0, 0}),
+                Vertex(Vec3f(size.x - center.x, 0 - center.y, 0), {0, 0}),
+                Vertex(Vec3f(0 - center.x, size.y - center.y, 0), {0, 0}),
+                Vertex(Vec3f(0 - center.x, size.y - center.y, 0), {0, 0}),
+                Vertex(Vec3f(size.x - center.x, 0 - center.y, 0), {0, 0}),
+                Vertex(Vec3f(size.x - center.x, size.y - center.y, 0), {0, 0})
+        });
+
+        std::vector<Transform> offsets;
+        for (auto &p: positions) {
+            Transform t;
+            t.setPosition(Vec3f(
+                    p.first.x + center.x,
+                    p.first.y + center.y,
+                    0));
+            t.setRotation(Quaternion(Vec3f(0, 0, p.second)));
+            offsets.emplace_back(t);
+        }
+
+        allocatedInstancedMeshes.emplace_back(renderDevice.getAllocator().createInstancedMeshBuffer(mesh, offsets));
+
+        auto &meshBuffer = *allocatedInstancedMeshes.at(allocatedInstancedMeshes.size() - 1);
+
+        Mat4f modelMatrix = MatrixMath::identity();
+
+        auto mvp = camera.projection() * camera.view() * modelMatrix;
+
+        defShader->activate();
+        defShader->setMat4("MVP", mvp);
+        defShader->setFloat("USE_TEXTURE", 0);
+        defShader->setVec4("COLOR", Vec4f((float) color.r() / 255,
+                                          (float) color.g() / 255,
+                                          (float) color.b() / 255,
+                                          (float) color.a() / 255));
+
+        RenderCommand command(*defShader, meshBuffer);
+        command.properties.enableDepthTest = false;
+        command.properties.enableBlending = true;
+
+        renderDevice.getRenderer().addCommand(command);
+    }
+
     void Renderer2D::renderPresent() {
         renderDevice.getRenderer().renderFinish();
-        allocatedMeshes.clear();
+
+        std::unordered_set<PlaneDescription, PlaneDescriptionHashFunction> unusedPlanes;
+        for (auto &pair: allocatedPlanes) {
+            if (usedPlanes.find(pair.first) == usedPlanes.end()) {
+                unusedPlanes.insert(pair.first);
+            }
+        }
+
+        std::unordered_set<SquareDescription, SquareDescriptionHashFunction> unusedSquares;
+        for (auto &pair: allocatedSquares) {
+            if (usedSquares.find(pair.first) == usedSquares.end()) {
+                unusedSquares.insert(pair.first);
+            }
+        }
+
+        std::unordered_set<LineDescription, LineDescriptionHashFunction> unusedLines;
+        for (auto &pair: allocatedLines) {
+            if (usedLines.find(pair.first) == usedLines.end()) {
+                unusedLines.insert(pair.first);
+            }
+        }
+
+        std::unordered_set<Vec2f, Vector2HashFunction<float>> unusedPoints;
+        for (auto &pair: allocatedPoints) {
+            if (usedPoints.find(pair.first) == usedPoints.end()) {
+                unusedPoints.insert(pair.first);
+            }
+        }
+
+        for (auto &v: unusedPlanes)
+            allocatedPlanes.erase(v);
+
+        for (auto &v: unusedSquares)
+            allocatedSquares.erase(v);
+
+        for (auto &v: unusedLines)
+            allocatedLines.erase(v);
+
+        for (auto &v: unusedPoints)
+            allocatedPoints.erase(v);
+
+        usedPlanes.clear();
+        usedSquares.clear();
+        usedLines.clear();
+        usedPoints.clear();
+
+        allocatedInstancedMeshes.clear();
+    }
+
+    MeshBuffer &Renderer2D::getPlane(const Renderer2D::PlaneDescription &desc) {
+        usedPlanes.insert(desc);
+        auto it = allocatedPlanes.find(desc);
+        if (it != allocatedPlanes.end()) {
+            return *it->second;
+        } else {
+            auto mesh = createPlane(desc.size, desc.center, desc.uvOffset, desc.flipUv);
+            allocatedPlanes[desc] = renderDevice.getAllocator().createMeshBuffer(mesh);
+            return *allocatedPlanes[desc];
+        }
+    }
+
+    MeshBuffer &Renderer2D::getSquare(const Renderer2D::SquareDescription &desc) {
+        usedSquares.insert(desc);
+        auto it = allocatedSquares.find(desc);
+        if (it != allocatedSquares.end()) {
+            return *it->second;
+        } else {
+            auto mesh = createSquare(desc.size, desc.center);
+            allocatedSquares[desc] = renderDevice.getAllocator().createMeshBuffer(mesh);
+            return *allocatedSquares[desc];
+        }
+    }
+
+    MeshBuffer &Renderer2D::getLine(const Renderer2D::LineDescription &desc) {
+        usedLines.insert(desc);
+        auto it = allocatedLines.find(desc);
+        if (it != allocatedLines.end()) {
+            return *it->second;
+        } else {
+            auto mesh = createLine(desc.start, desc.end, desc.center);
+            allocatedLines[desc] = renderDevice.getAllocator().createMeshBuffer(mesh);
+            return *allocatedLines[desc];
+        }
+    }
+
+    MeshBuffer &Renderer2D::getPoint(const Vec2f &point) {
+        usedPoints.insert(point);
+        auto it = allocatedPoints.find(point);
+        if (it != allocatedPoints.end()) {
+            return *it->second;
+        } else {
+            Mesh mesh(Mesh::POINT, {
+                    Vertex(Vec3f(point.x, point.y, 0))
+            });
+            allocatedPoints[point] = renderDevice.getAllocator().createMeshBuffer(mesh);
+            return *allocatedPoints[point];
+        }
     }
 }
