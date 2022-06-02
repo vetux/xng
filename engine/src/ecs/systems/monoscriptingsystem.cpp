@@ -16,7 +16,7 @@
  *  with this program; if not, write to the Free Software Foundation, Inc.,
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-
+/*
 #include <algorithm>
 #include <memory>
 #include <sstream>
@@ -28,7 +28,7 @@
 #include "io/protocol/jsonprotocol.hpp"
 
 namespace xengine {
-    /*struct RuntimeScript : Component::UserData {
+    struct RuntimeScript : Component::UserData {
         bool enabled = false;
         std::unique_ptr<Script> script = nullptr; //TODO: OnDisable is not called when the component is destroyed.
     };
@@ -79,7 +79,7 @@ namespace xengine {
             scene.nodes.at(node.first).getComponent<TransformComponent>().transform = comp.transform;
             scene.nodes.at(node.first).getComponent<TransformComponent>().parent = comp.parent;
         }
-    }*/
+    }
 
     MonoScriptingSystem::MonoScriptingSystem(Input &input,
                                              MonoCppDomain &domain,
@@ -100,7 +100,7 @@ namespace xengine {
     }
 
     void MonoScriptingSystem::update(float deltaTime, EntityManager &manager) {
-        /*manaAssembly.setStaticField("Mana", "Time", "deltaTime", &deltaTime);
+        manaAssembly.setStaticField("Mana", "Time", "deltaTime", &deltaTime);
 
         uploadScene(domain, msCorLib, manaAssembly, scene);
 
@@ -156,10 +156,10 @@ namespace xengine {
         }
 
         downloadScene(domain, msCorLib, manaAssembly, scene);
-        manaAssembly.invokeStaticMethod("Mana", "Input", "OnFrameEnd");*/
+        manaAssembly.invokeStaticMethod("Mana", "Input", "OnFrameEnd");
     }
 
- /*  void MonoScriptingSystem::onKeyDown(Key key) {
+   void MonoScriptingSystem::onKeyDown(Key key) {
         MonoCppArguments args;
         int v = key;
         args.add(v);
@@ -213,5 +213,5 @@ namespace xengine {
             assemblies[path] = domain.loadAssembly(*stream);
         }
         return *assemblies[path];
-    }*/
-}
+    }
+}*/

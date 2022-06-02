@@ -19,7 +19,7 @@
 
 #ifndef XENGINE_SCRIPTINGSYSTEM_H
 #define XENGINE_SCRIPTINGSYSTEM_H
-
+/*
 #include "ecs/system.hpp"
 
 #include "script/mono/monoscript.hpp"
@@ -56,5 +56,5 @@ namespace xengine {
         std::map<std::string, std::unique_ptr<MonoCppAssembly>> assemblies;
     };
 }
-
+*/
 #endif //XENGINE_SCRIPTINGSYSTEM_H
