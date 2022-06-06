@@ -59,7 +59,9 @@ namespace xengine {
          * Unfortunately needed to be a user call when using OpenGL graphics api because of the tight coupling
          * between opengl and the window system and the per thread static context binding based api of opengl.
          */
-        virtual void makeCurrent() = 0;
+        virtual void bindGraphics() = 0;
+
+        virtual void unbindGraphics() = 0;
 
         virtual void swapBuffers() = 0;
 

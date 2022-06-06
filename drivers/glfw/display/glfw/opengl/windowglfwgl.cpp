@@ -318,8 +318,12 @@ namespace xengine {
             return "opengl";
         }
 
-        void WindowGLFWGL::makeCurrent() {
+        void WindowGLFWGL::bindGraphics() {
             glfwMakeContextCurrent(wndH);
+        }
+
+        void WindowGLFWGL::unbindGraphics() {
+            glfwMakeContextCurrent(nullptr);
         }
 
         void WindowGLFWGL::swapBuffers() {
@@ -476,7 +480,7 @@ namespace xengine {
         }
 
         void WindowGLFWGL::setSwapInterval(int interval) {
-            makeCurrent();
+            bindGraphics();
             glfwSwapInterval(interval);
         }
     }

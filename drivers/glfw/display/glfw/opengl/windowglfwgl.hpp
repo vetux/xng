@@ -57,7 +57,9 @@ namespace xengine {
 
             std::string getGraphicsDriver() override;
 
-            void makeCurrent() override;
+            void bindGraphics() override;
+
+            void unbindGraphics() override;
 
             void swapBuffers() override;
 
