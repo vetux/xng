@@ -53,14 +53,16 @@ namespace xengine {
         virtual std::string getGraphicsDriver() = 0;
 
         /**
-         * When using multiple windows or multiple threads call this method before using
-         * any rendering related api including RenderObject destructors.
+         * These methods are needed when using the graphics driver on a different thread than the one which created the window,
+         * because of opengl tight coupling to windowing system.
          *
-         * Unfortunately needed to be a user call when using OpenGL graphics api because of the tight coupling
-         * between opengl and the window system and the per thread static context binding based api of opengl.
+         * Bind the graphics "context" to the calling thread.
          */
         virtual void bindGraphics() = 0;
 
+        /**
+         * Unbind the graphics "context" from the calling thread.
+         */
         virtual void unbindGraphics() = 0;
 
         virtual void swapBuffers() = 0;
