@@ -17,16 +17,22 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SHADERPROGRAM_HPP
-#define XENGINE_SHADERPROGRAM_HPP
+#ifndef XENGINE_RENDERPIPELINE_HPP
+#define XENGINE_RENDERPIPELINE_HPP
 
 #include "graphics/renderobject.hpp"
+#include "graphics/rendertarget.hpp"
+#include "graphics/rendercommand.hpp"
 
 namespace xengine {
-    class XENGINE_EXPORT ShaderProgram : public RenderObject {
+    class RenderPipeline : public RenderObject {
     public:
-        ~ShaderProgram() override = default;
+        ~RenderPipeline() override = default;
+
+        virtual void render(RenderTarget &target, const std::vector<RenderCommand> &commands) = 0;
+
+        virtual std::vector<uint8_t> cache() = 0;
     };
 }
 
-#endif //XENGINE_SHADERPROGRAM_HPP
+#endif //XENGINE_RENDERPIPELINE_HPP

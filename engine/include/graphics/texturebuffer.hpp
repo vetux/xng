@@ -20,18 +20,16 @@
 #ifndef XENGINE_TEXTUREBUFFER_HPP
 #define XENGINE_TEXTUREBUFFER_HPP
 
-#include "asset/image.hpp"
-#include "graphics/renderobject.hpp"
+#include "graphics/renderbuffer.hpp"
 
-#include "algo/hashcombine.hpp"
+#include "asset/image.hpp"
 
 namespace xengine {
-
     /**
      * A texture buffer.
      * The texture type, size and format is changed when calling the upload methods.
      */
-    class XENGINE_EXPORT TextureBuffer : public RenderObject {
+    class XENGINE_EXPORT TextureBuffer : public RenderBuffer {
     public:
         enum TextureType {
             TEXTURE_2D,

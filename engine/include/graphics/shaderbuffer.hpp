@@ -17,16 +17,31 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SHADERPROGRAM_HPP
-#define XENGINE_SHADERPROGRAM_HPP
+#ifndef XENGINE_SHADERBUFFER_HPP
+#define XENGINE_SHADERBUFFER_HPP
 
 #include "graphics/renderobject.hpp"
 
 namespace xengine {
-    class XENGINE_EXPORT ShaderProgram : public RenderObject {
+    class ShaderBuffer : public RenderObject {
     public:
-        ~ShaderProgram() override = default;
+        ~ShaderBuffer() override = default;
+
+        virtual size_t getSize() = 0;
+
+        /**
+         * Upload the given data to the shader buffer,
+         * size has to match the size of the shader buffer.
+         *
+         * @param data
+         * @param size
+         */
+        virtual void upload(const uint8_t *data, size_t size) = 0;
+
+        template<typename T>
+        void upload(const T &data) {
+            upload(reinterpret_cast<const uint8_t *>(&data), sizeof(T));
+        }
     };
 }
-
-#endif //XENGINE_SHADERPROGRAM_HPP
+#endif //XENGINE_SHADERBUFFER_HPP

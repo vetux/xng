@@ -29,8 +29,7 @@ namespace xengine {
     class XENGINE_EXPORT GraphicsDriver : public Driver {
     public:
         /**
-         * @return Return the information objects of the available render devices,
-         *          on platforms which dont support device selection the returned vector is empty.
+         * @return Return the information objects of the available render devices.
          */
         virtual std::vector<RenderDeviceInfo> getAvailableRenderDevices() = 0;
 

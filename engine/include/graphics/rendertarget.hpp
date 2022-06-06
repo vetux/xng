@@ -53,31 +53,14 @@ namespace xengine {
                                  Vec2i sourceRect,
                                  Vec2i targetRect) = 0;
 
-        virtual void setNumberOfColorAttachments(int count) = 0;
+        virtual void setColorAttachments(const std::vector<TextureBuffer *> &textures) = 0;
 
-        virtual void attachColor(int index, TextureBuffer &texture) = 0;
+        virtual void setDepthStencilAttachment(TextureBuffer *texture) = 0;
 
-        virtual void attachDepth(TextureBuffer &texture) = 0;
+        virtual void setColorAttachments(TextureBuffer::CubeMapFace face,
+                                         const std::vector<TextureBuffer *> &textures) = 0;
 
-        virtual void attachStencil(TextureBuffer &texture) = 0;
-
-        virtual void attachDepthStencil(TextureBuffer &texture) = 0;
-
-        virtual void attachColor(int index, TextureBuffer::CubeMapFace face, TextureBuffer &texture) = 0;
-
-        virtual void attachDepth(TextureBuffer::CubeMapFace face, TextureBuffer &texture) = 0;
-
-        virtual void attachStencil(TextureBuffer::CubeMapFace face, TextureBuffer &texture) = 0;
-
-        virtual void attachDepthStencil(TextureBuffer::CubeMapFace face, TextureBuffer &texture) = 0;
-
-        virtual void detachColor(int index) = 0;
-
-        virtual void detachDepth() = 0;
-
-        virtual void detachStencil() = 0;
-
-        virtual void detachDepthStencil() = 0;
+        virtual void setDepthStencilAttachment(TextureBuffer::CubeMapFace face, TextureBuffer *texture) = 0;
 
         virtual bool isComplete() = 0;
     };

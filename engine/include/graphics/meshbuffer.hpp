@@ -20,12 +20,12 @@
 #ifndef XENGINE_MESHBUFFER_HPP
 #define XENGINE_MESHBUFFER_HPP
 
-#include "graphics/renderobject.hpp"
+#include "graphics/renderbuffer.hpp"
 
 #include "math/transform.hpp"
 
 namespace xengine {
-    class XENGINE_EXPORT MeshBuffer : public RenderObject {
+    class XENGINE_EXPORT MeshBuffer : public RenderBuffer {
     public:
         ~MeshBuffer() override = default;
     };
