@@ -21,23 +21,25 @@
 #define XENGINE_RENDERTARGET_HPP
 
 #include "graphics/renderobject.hpp"
+#include "graphics/textureproperties.hpp"
 #include "graphics/texturebuffer.hpp"
+#include "graphics/rendertargetdesc.hpp"
+
+#include "math/vector2.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT RenderTarget : public RenderObject {
     public:
         ~RenderTarget() override = default;
 
-        virtual Vec2i getSize() = 0;
-
-        virtual int getSamples() = 0;
+        virtual const RenderTargetDesc &getDescription() = 0;
 
         virtual void blitColor(RenderTarget &source,
                                Vec2i sourceOffset,
                                Vec2i targetOffset,
                                Vec2i sourceRect,
                                Vec2i targetRect,
-                               TextureBuffer::TextureFiltering filter,
+                               TextureFiltering filter,
                                int sourceIndex,
                                int targetIndex) = 0;
 
@@ -57,10 +59,9 @@ namespace xengine {
 
         virtual void setDepthStencilAttachment(TextureBuffer *texture) = 0;
 
-        virtual void setColorAttachments(TextureBuffer::CubeMapFace face,
-                                         const std::vector<TextureBuffer *> &textures) = 0;
+        virtual void setColorAttachments(const std::vector<std::pair<CubeMapFace, TextureBuffer *>> &textures) = 0;
 
-        virtual void setDepthStencilAttachment(TextureBuffer::CubeMapFace face, TextureBuffer *texture) = 0;
+        virtual void setDepthStencilAttachment(CubeMapFace face, TextureBuffer *texture) = 0;
 
         virtual bool isComplete() = 0;
     };

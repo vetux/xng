@@ -30,7 +30,7 @@
 
 namespace xengine {
     struct XENGINE_EXPORT RenderCommand {
-        explicit RenderCommand(MeshBuffer &mesh) : mesh(&mesh) {}
+        explicit RenderCommand(MeshBufferView &mesh) : mesh(&mesh) {}
 
         RenderCommand(const RenderCommand &other) = default;
 
@@ -47,7 +47,7 @@ namespace xengine {
             BindingType type;
             RenderObject *object;
 
-            explicit Binding(TextureBuffer &textureBuffer) {
+            explicit Binding(TextureBufferView &textureBuffer) {
                 type = TEXTURE_BUFFER;
                 object = &textureBuffer;
             }
@@ -57,13 +57,13 @@ namespace xengine {
                 object = &shaderBuffer;
             }
 
-            TextureBuffer &getTextureBuffer() { return dynamic_cast<TextureBuffer &>(*object); }
+            TextureBufferView &getTextureBuffer() { return dynamic_cast<TextureBufferView &>(*object); }
 
             ShaderBuffer &getShaderBuffer() { return dynamic_cast<ShaderBuffer &>(*object); }
         };
 
-        MeshBuffer *mesh;
-        std::vector<Binding> shaderBindings;
+        MeshBufferView *mesh;
+        std::vector<Binding> shaderBindings; // The bindings accessible to the shader in the pipeline in order.
     };
 }
 

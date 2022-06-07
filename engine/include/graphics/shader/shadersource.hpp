@@ -21,7 +21,7 @@
 #define XENGINE_SHADERSOURCE_HPP
 
 #include "render/shader/shadercompiler.hpp"
-#include "graphics/spirvsource.hpp"
+#include "graphics/spirvbuffer.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT ShaderSource {

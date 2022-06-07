@@ -25,9 +25,8 @@
 #include <cstdint>
 
 namespace xengine {
-    struct SPIRVSource {
+    struct SPIRVBuffer {
         std::vector<uint32_t> blob;
-        std::string entryPoint;
     };
 }
 

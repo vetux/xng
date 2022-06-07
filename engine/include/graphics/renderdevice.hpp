@@ -23,12 +23,19 @@
 #include <map>
 #include <functional>
 
-#include "graphics/renderobject.hpp"
 #include "graphics/renderpipeline.hpp"
-#include "graphics/renderpipelinedesc.hpp"
-#include "graphics/renderproperties.hpp"
+#include "graphics/rendertarget.hpp"
+#include "graphics/texturebuffer.hpp"
+#include "graphics/meshbuffer.hpp"
+
 #include "graphics/vertexattribute.hpp"
-#include "graphics/spirvsource.hpp"
+
+#include "graphics/renderpipelinedesc.hpp"
+#include "graphics/shaderprogramdesc.hpp"
+#include "graphics/shaderbufferdesc.hpp"
+#include "graphics/meshbufferdesc.hpp"
+#include "graphics/rendertargetdesc.hpp"
+#include "graphics/texturebufferdesc.hpp"
 
 #include "asset/mesh.hpp"
 
@@ -41,24 +48,15 @@ namespace xengine {
 
         virtual std::unique_ptr<RenderPipeline> createPipeline(const uint8_t *cacheData, size_t size) = 0;
 
-        virtual std::unique_ptr<RenderTarget> createRenderTarget(Vec2i size) = 0;
+        virtual std::unique_ptr<RenderTarget> createRenderTarget(const RenderTargetDesc &desc) = 0;
 
-        virtual std::unique_ptr<RenderTarget> createRenderTarget(Vec2i size, int samples) = 0;
+        virtual std::unique_ptr<TextureBuffer> createTextureBuffer(const TextureBufferDesc &desc) = 0;
 
-        virtual std::unique_ptr<TextureBuffer> createTextureBuffer(TextureBuffer::Attributes attributes) = 0;
+        virtual std::unique_ptr<MeshBuffer> createMeshBuffer(const MeshBufferDesc &desc) = 0;
 
-        virtual std::unique_ptr<MeshBuffer> createMeshBuffer(const std::vector<VertexAttribute> &layout,
-                                                             const uint8_t *buffer,
-                                                             size_t numberOfVertices,
-                                                             const std::vector<uint> &indices) = 0;
+        virtual std::unique_ptr<ShaderProgram> createShaderProgram(const ShaderProgramDesc &desc) = 0;
 
-        virtual std::unique_ptr<MeshBuffer> createInstancedMeshBuffer(const std::vector<VertexAttribute> &layout,
-                                                                      const uint8_t *buffer,
-                                                                      const std::vector<VertexAttribute> &instanceLayout,
-                                                                      const uint8_t *instanceBuffer,
-                                                                      size_t numberOfVertices,
-                                                                      size_t numberOfInstances,
-                                                                      const std::vector<uint> &indices) = 0;
+        virtual std::unique_ptr<ShaderBuffer> createShaderBuffer(const ShaderBufferDesc &desc) = 0;
 
         /**
          * GLSL:
@@ -90,7 +88,7 @@ namespace xengine {
          * @return
          */
         virtual std::unique_ptr<MeshBuffer> createMeshBuffer(const Mesh &mesh) {
-            static const std::vector<VertexAttribute> layout = {
+            const std::vector<VertexAttribute> layout = {
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT),
@@ -101,15 +99,19 @@ namespace xengine {
                     VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT)
             };
-            return createMeshBuffer(layout,
-                                    reinterpret_cast<const uint8_t *>(mesh.vertices.data()),
-                                    mesh.vertices.size(),
-                                    mesh.indices);
+
+            const MeshBufferDesc desc = {
+                    .vertexLayout = layout,
+                    .numberOfVertices = mesh.vertices.size()
+            };
+            auto ret = createMeshBuffer(desc);
+            ret->upload(mesh);
+            return ret;
         }
 
         virtual std::unique_ptr<MeshBuffer> createInstancedMeshBuffer(const Mesh &mesh,
                                                                       const std::vector<Transform> &offsets) {
-            static const std::vector<VertexAttribute> layout = {
+            const std::vector<VertexAttribute> layout = {
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT),
@@ -121,55 +123,20 @@ namespace xengine {
                     VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT)
             };
 
-            static const std::vector<VertexAttribute> instanceLayout = {
+            const std::vector<VertexAttribute> instanceLayout = {
                     VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT)
             };
 
-            return createInstancedMeshBuffer(layout,
-                                             reinterpret_cast<const uint8_t *>(mesh.vertices.data()),
-                                             instanceLayout,
-                                             reinterpret_cast<const uint8_t *>(offsets.data()),
-                                             mesh.vertices.size(),
-                                             offsets.size(),
-                                             mesh.indices);
+            const MeshBufferDesc desc = {
+                    .vertexLayout = layout,
+                    .instanceLayout = instanceLayout,
+                    .numberOfVertices = mesh.vertices.size(),
+                    .numberOfInstances = offsets.size()
+            };
         }
-
-        /**
-         * Create a shader program instance for the given shader sources in SPIRV.
-         *
-         * The implementation may cross compile the spirv to a different language using the ShaderCompiler interface.
-         *
-         * The shaders are required to store all global variables in uniform buffers.
-         * The bindings of uniform buffers and samplers have to be specified in the source.
-         *
-         *  The shaders specify the layout of the uniform buffers and users have to ensure that
-         *  layout of data passed to createShaderBuffer matches the layout specified in the shader.
-         *
-         *  The shaders specify the layout of the vertex input data and users have to ensure that
-         *  the layout of the mesh buffers matches the layout specified in the vertex shader.
-         *
-         * @param vertexShader
-         * @param vertexShaderEntryPoint
-         * @param fragmentShader
-         * @param fragmentShaderEntryPoint
-         * @return
-         */
-        virtual std::unique_ptr<ShaderProgram> createShaderProgram(const SPIRVSource &vertexShader,
-                                                                   const SPIRVSource &fragmentShader) = 0;
-
-        virtual std::unique_ptr<ShaderProgram> createShaderProgram(const SPIRVSource &vertexShader,
-                                                                   const SPIRVSource &fragmentShader,
-                                                                   const SPIRVSource &geometryShader) = 0;
-
-        virtual std::unique_ptr<ShaderProgram> createShaderProgram(const SPIRVSource &vertexShader,
-                                                                   const SPIRVSource &fragmentShader,
-                                                                   const SPIRVSource &geometryShader,
-                                                                   const SPIRVSource &tessellationShader) = 0;
-
-        virtual std::unique_ptr<ShaderBuffer> createShaderBuffer(size_t size) = 0;
     };
 }
 

@@ -20,14 +20,44 @@
 #ifndef XENGINE_MESHBUFFER_HPP
 #define XENGINE_MESHBUFFER_HPP
 
-#include "graphics/renderbuffer.hpp"
+#include "graphics/renderobject.hpp"
+#include "graphics/meshbufferdesc.hpp"
+#include "graphics/meshbufferview.hpp"
+
+#include "asset/mesh.hpp"
 
 #include "math/transform.hpp"
 
 namespace xengine {
-    class XENGINE_EXPORT MeshBuffer : public RenderBuffer {
+    class XENGINE_EXPORT MeshBuffer : public RenderObject {
     public:
         ~MeshBuffer() override = default;
+
+        virtual const MeshBufferDesc &getDescription() = 0;
+
+        virtual std::unique_ptr<MeshBufferView> createView() = 0;
+
+        /**
+         * Upload the data from the specified buffers to the mesh buffer,
+         * the layout of the passed buffers must match the layout specified in the mesh buffer description.
+         *
+         * @param buffer
+         * @param instanceBuffer
+         * @param indices
+         */
+        virtual void upload(const uint8_t *buffer,
+                            size_t bufferSize,
+                            const uint8_t *instanceBuffer,
+                            size_t instanceBufferSize,
+                            const std::vector<uint> &indices) = 0;
+
+        virtual void upload(const Mesh &mesh) {
+            upload(reinterpret_cast<const uint8_t *>(mesh.vertices.data()),
+                   sizeof(Vertex) * mesh.vertices.size(),
+                   nullptr,
+                   0,
+                   mesh.indices);
+        }
     };
 }
 

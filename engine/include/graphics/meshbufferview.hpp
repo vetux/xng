@@ -17,25 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RENDERPIPELINE_HPP
-#define XENGINE_RENDERPIPELINE_HPP
+#ifndef XENGINE_MESHBUFFERVIEW_HPP
+#define XENGINE_MESHBUFFERVIEW_HPP
 
 #include "graphics/renderobject.hpp"
-#include "graphics/rendertarget.hpp"
-#include "graphics/rendercommand.hpp"
-#include "graphics/renderpipelinedesc.hpp"
 
 namespace xengine {
-    class RenderPipeline : public RenderObject {
+    class MeshBufferView : public RenderObject {
     public:
-        ~RenderPipeline() override = default;
-
-        virtual const RenderPipelineDesc &getDescription() = 0;
-
-        virtual void render(RenderTarget &target, const std::vector<RenderCommand> &commands) = 0;
-
-        virtual std::vector<uint8_t> cache() = 0;
+        ~MeshBufferView() override = default;
     };
 }
-
-#endif //XENGINE_RENDERPIPELINE_HPP
+#endif //XENGINE_MESHBUFFERVIEW_HPP

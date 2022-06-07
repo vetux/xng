@@ -21,11 +21,14 @@
 #define XENGINE_SHADERPROGRAM_HPP
 
 #include "graphics/renderobject.hpp"
+#include "graphics/shaderprogramdesc.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT ShaderProgram : public RenderObject {
     public:
         ~ShaderProgram() override = default;
+
+        virtual const ShaderProgramDesc &getDescription() = 0;
     };
 }
 

@@ -17,25 +17,31 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RENDERBUFFER_HPP
-#define XENGINE_RENDERBUFFER_HPP
+#ifndef XENGINE_SHADERBUFFERDESC_HPP
+#define XENGINE_SHADERBUFFERDESC_HPP
 
-#include "graphics/renderobject.hpp"
+#include <cstddef>
 
 namespace xengine {
-    class RenderBuffer : public RenderObject {
-    public:
-        ~RenderBuffer() override = default;
+    struct ShaderBufferDesc {
+        size_t size;
 
-        /**
-         * Optional transient allocation api for graphics platforms which support it.
-         * Transient allocation would mean for example a staging buffer in vulkan.
-         */
-        virtual void uploadGpuMemory() = 0;
-
-        virtual void clearGpuMemory() = 0;
-
-        virtual void syncGpuMemory() = 0;
+        bool operator==(const ShaderBufferDesc &other) const {
+            return size == other.size;
+        }
     };
 }
-#endif //XENGINE_RENDERBUFFER_HPP
+
+using namespace xengine;
+namespace std {
+    template<>
+    struct hash<ShaderBufferDesc> {
+        std::size_t operator()(const ShaderBufferDesc &k) const {
+            size_t ret = 0;
+            hash_combine(ret, k.size);
+            return ret;
+        }
+    };
+}
+
+#endif //XENGINE_SHADERBUFFERDESC_HPP
