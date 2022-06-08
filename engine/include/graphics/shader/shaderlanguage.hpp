@@ -23,8 +23,8 @@
 namespace xengine {
     enum ShaderLanguage {
         HLSL_SHADER_MODEL_4,
-        GLSL_410, //GLSL 4.1 with OpenGL semantics
-        GLSL_410_VK, //GLSL 4.1 with Vulkan semantics
+        GLSL_420, //GLSL 4.2 with OpenGL semantics
+        GLSL_420_VK, //GLSL 4.2 with Vulkan semantics
         GLSL_ES_320 //GLSL 3.2 ES with OpenGL semantics
     };
 }

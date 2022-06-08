@@ -111,12 +111,12 @@ namespace xengine {
             case HLSL_SHADER_MODEL_4:
                 shaderLang = shaderc_source_language_hlsl;
                 break;
-            case GLSL_410:
-                options.SetTargetEnvironment(shaderc_target_env_opengl, 410);
+            case GLSL_420:
+                options.SetTargetEnvironment(shaderc_target_env_opengl, 420);
                 shaderLang = shaderc_source_language_glsl;
                 break;
-            case GLSL_410_VK:
-                options.SetTargetEnvironment(shaderc_target_env_vulkan, 410);
+            case GLSL_420_VK:
+                options.SetTargetEnvironment(shaderc_target_env_vulkan, 420);
                 shaderLang = shaderc_source_language_glsl;
                 break;
             case GLSL_ES_320:
@@ -166,15 +166,15 @@ namespace xengine {
 
                 return sCompiler.compile();
             }
-            case GLSL_410_VK:
-            case GLSL_410: {
+            case GLSL_420_VK:
+            case GLSL_420: {
                 spirv_cross::CompilerGLSL sCompiler(source);
                 sCompiler.set_entry_point(entryPoint, convertShaderStage(stage));
 
                 spirv_cross::ShaderResources resources = sCompiler.get_shader_resources();
 
                 spirv_cross::CompilerGLSL::Options sOptions;
-                sOptions.version = 410;
+                sOptions.version = 420;
 
                 //Dont generate glsl which uses the uniform buffer api.
                 sOptions.emit_uniform_buffer_as_plain_uniforms = true;
@@ -248,8 +248,8 @@ namespace xengine {
             case HLSL_SHADER_MODEL_4:
                 shaderLang = shaderc_source_language_hlsl;
                 break;
-            case GLSL_410:
-            case GLSL_410_VK:
+            case GLSL_420:
+            case GLSL_420_VK:
             case GLSL_ES_320:
                 shaderLang = shaderc_source_language_glsl;
                 break;

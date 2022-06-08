@@ -61,7 +61,7 @@ namespace xengine {
                 vert = ShaderCompiler::decompileSPIRV(desc.buffers.at(it->second.bufferIndex).blob,
                                                       it->second.entryPoint,
                                                       VERTEX,
-                                                      GLSL_410);
+                                                      GLSL_420);
                 vertexSource = vert.data();
 
                 it = desc.entries.find(FRAGMENT);
@@ -71,7 +71,7 @@ namespace xengine {
                 frag = ShaderCompiler::decompileSPIRV(desc.buffers.at(it->second.bufferIndex).blob,
                                                       it->second.entryPoint,
                                                       FRAGMENT,
-                                                      GLSL_410);
+                                                      GLSL_420);
                 fragmentSource = frag.data();
 
                 it = desc.entries.find(GEOMETRY);
@@ -79,7 +79,7 @@ namespace xengine {
                     geo = ShaderCompiler::decompileSPIRV(desc.buffers.at(it->second.bufferIndex).blob,
                                                          it->second.entryPoint,
                                                          GEOMETRY,
-                                                         GLSL_410);
+                                                         GLSL_420);
                     geometrySource = geo.data();
                 }
 
