@@ -45,7 +45,7 @@ QOpenGLFunctions_4_2_Core::initializeOpenGLFunctions(); \
 
 #else
 
-#include "graphics/opengl/openglinclude.hpp"
+#include "glad/glad.h"
 #define OPENGL_INHERIT
 #define OPENGL_TYPENAME(name) OGL##name
 
