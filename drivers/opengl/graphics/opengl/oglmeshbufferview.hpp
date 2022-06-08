@@ -17,11 +17,25 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_OGLCHECKERROR_HPP
-#define XENGINE_OGLCHECKERROR_HPP
+#ifndef XENGINE_OGLMESHBUFFERVIEW_HPP
+#define XENGINE_OGLMESHBUFFERVIEW_HPP
 
-#include <string>
+#include "graphics/meshbufferview.hpp"
 
-void checkGLError(const std::string &source = "");
+#include "graphics/opengl/oglbuildmacro.hpp"
 
-#endif //XENGINE_OGLCHECKERROR_HPP
+namespace xengine::opengl {
+    class OPENGL_TYPENAME(MeshBuffer);
+
+    class OPENGL_TYPENAME(MeshBufferView) : public MeshBufferView OPENGL_INHERIT {
+    public:
+        OPENGL_TYPENAME(MeshBufferView)() {
+            initialize();
+        }
+
+        OPENGL_TYPENAME(MeshBuffer) *buffer = nullptr;
+
+        OPENGL_MEMBERS
+    };
+}
+#endif //XENGINE_OGLMESHBUFFERVIEW_HPP

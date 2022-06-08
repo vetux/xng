@@ -17,32 +17,22 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_OGLRENDERER_HPP
-#define XENGINE_OGLRENDERER_HPP
+#ifndef XENGINE_OGLQTGRAPHICSDRIVER_HPP
+#define XENGINE_OGLQTGRAPHICSDRIVER_HPP
 
-#include "graphics/renderer.hpp"
+#include "graphics/graphicsdriver.hpp"
 
 namespace xengine {
-    namespace opengl {
-        class OGLRenderer : public Renderer {
-        public:
-            void renderBegin(RenderTarget &target, const RenderOptions &options) override;
+    class OGLQtGraphicsDriver : public GraphicsDriver {
+    public:
+        std::vector<RenderDeviceInfo> getAvailableRenderDevices() override;
 
-            void addCommand(RenderCommand &command) override;
+        std::unique_ptr<RenderDevice> createRenderDevice() override;
 
-            void renderFinish() override;
+        std::unique_ptr<RenderDevice> createRenderDevice(const std::string &deviceName) override;
 
-            void renderClear(RenderTarget &target, ColorRGBA color, float depth) override;
-
-            void debugDrawCallRecordStart() override;
-
-            unsigned long debugDrawCallRecordStop() override;
-
-        private:
-            unsigned long drawCalls = 0;
-            bool rendering = false;
-        };
-    }
+        std::type_index getType() override;
+    };
 }
 
-#endif //XENGINE_OGLRENDERER_HPP
+#endif //XENGINE_OGLQTGRAPHICSDRIVER_HPP

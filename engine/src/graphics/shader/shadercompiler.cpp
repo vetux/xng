@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "render/shader/shadercompiler.hpp"
+#include "graphics/shader/shadercompiler.hpp"
 
 #include <stdexcept>
 

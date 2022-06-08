@@ -17,6 +17,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#warning NOT IMPLEMENTED
+/*
+
 #include "render/graph/passes/skyboxpass.hpp"
 
 #include "render/shader/shaderinclude.hpp"
@@ -167,3 +170,4 @@ namespace xengine {
         board.set(layers);
     }
 }
+ */

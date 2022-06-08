@@ -27,6 +27,10 @@
 namespace xengine {
     struct SPIRVBuffer {
         std::vector<uint32_t> blob;
+
+        bool operator==(const SPIRVBuffer &other) const {
+            return blob == other.blob;
+        }
     };
 }
 

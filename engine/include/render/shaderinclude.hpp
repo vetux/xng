@@ -23,7 +23,7 @@
 #include <map>
 #include <string>
 
-#include "render/shader/shadercompiler.hpp"
+#include "graphics/shader/shadercompiler.hpp"
 
 namespace xengine {
     /**

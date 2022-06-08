@@ -20,6 +20,8 @@
 #ifndef XENGINE_TEXTUREBUFFER_HPP
 #define XENGINE_TEXTUREBUFFER_HPP
 
+#include <memory>
+
 #include "graphics/renderobject.hpp"
 #include "graphics/textureproperties.hpp"
 #include "graphics/texturebufferdesc.hpp"
@@ -40,47 +42,19 @@ namespace xengine {
         virtual std::unique_ptr<TextureBufferView> createView() = 0;
 
         /**
-         * Create a view which references the given face of the cube map texture as a TEXTURE_2D.
-         *
-         * @param face
-         * @return
-         */
-        virtual std::unique_ptr<TextureBufferView> createView(CubeMapFace face) = 0;
-
-        /**
          * Upload the image buffer.
          *
-         * The size of the buffer has to match the size in the texture description.
+         * The size and format of the buffer has to match the texture description.
          *
          * @param buffer
          */
-        virtual void upload(const Image<ColorRGB> &buffer) = 0;
-
-        virtual void upload(const Image<ColorRGBA> &buffer) = 0;
-
-        virtual void upload(const Image<float> &buffer) = 0;
-
-        virtual void upload(const Image<int> &buffer) = 0;
-
-        virtual void upload(const Image<char> &buffer) = 0;
-
-        virtual void upload(const Image<unsigned char> &buffer) = 0;
+        virtual void upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize) = 0;
 
         virtual Image<ColorRGBA> download() = 0;
 
-        virtual void upload(CubeMapFace face, const Image<ColorRGBA> &buffer) = 0;
+        virtual void upload(CubeMapFace face, ColorFormat format, const uint8_t *buffer, size_t bufferSize) = 0;
 
         virtual Image<ColorRGBA> download(CubeMapFace face) = 0;
-
-        /**
-         * Upload a cube map in the following format:
-         * ....
-         *
-         * @param buffer
-         */
-        virtual void uploadCubeMap(const Image<ColorRGBA> &buffer) = 0;
-
-        virtual Image<ColorRGBA> downloadCubeMap() = 0;
     };
 }
 

@@ -29,12 +29,12 @@ namespace xengine {
         ForwardPipeline() = default;
 
         explicit ForwardPipeline(RenderDevice &device)
-                : ren(&device.getRenderer()) {}
+                : device(&device) {}
 
         void render(RenderTarget &target, const Scene &scene) override;
 
     private:
-        Renderer *ren = nullptr;
+        RenderDevice *device;
     };
 }
 #endif //XENGINE_FORWARDPIPELINE_HPP

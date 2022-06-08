@@ -22,46 +22,189 @@
 
 #include "graphics/texturebuffer.hpp"
 
-#include "openglinclude.hpp"
+#include "graphics/opengl/oglbuildmacro.hpp"
+
+#include "graphics/opengl/ogltexturebufferview.hpp"
 
 namespace xengine {
     namespace opengl {
-        class OGLTextureBuffer : public TextureBuffer {
+        class OPENGL_TYPENAME(TextureBuffer) : public TextureBuffer OPENGL_INHERIT {
         public:
+            TextureBufferDesc desc;
             GLuint handle;
 
-            explicit OGLTextureBuffer(Attributes attributes);
+            OPENGL_TYPENAME(TextureBuffer)(const TextureBufferDesc &desc) {
+                initialize();
 
-            OGLTextureBuffer(const OGLTextureBuffer &copy) = delete;
+                GLenum type = convert(desc.textureType);
 
-            OGLTextureBuffer &operator=(const OGLTextureBuffer &copy) = delete;
+                glGenTextures(1, &handle);
+                glBindTexture(type, handle);
 
-            ~OGLTextureBuffer() override;
+                if (type != GL_TEXTURE_2D_MULTISAMPLE) {
+                    glTexParameteri(type, GL_TEXTURE_WRAP_S, convert(desc.wrapping));
+                    glTexParameteri(type, GL_TEXTURE_WRAP_T, convert(desc.wrapping));
+                    glTexParameteri(type,
+                                    GL_TEXTURE_MIN_FILTER,
+                                    convert(desc.filterMin));
+                    glTexParameteri(type,
+                                    GL_TEXTURE_MAG_FILTER,
+                                    convert(desc.filterMag));
+                }
+                checkGLError("OGLTextureBuffer::OGLTextureBuffer()");
 
-            void upload(const Image<ColorRGB> &buffer) override;
+                if (desc.textureType == TEXTURE_2D) {
+                    GLuint texInternalFormat = convert(desc.format);
+                    GLuint texFormat = GL_RGBA;
 
-            void upload(const ImageRGBA &buffer) override;
+                    if (desc.format >= R8I) {
+                        texFormat = GL_RGBA_INTEGER; //Integer formats require _INTEGER format
+                    }
 
-            void upload(const Image<float> &buffer) override;
+                    GLuint texType = GL_UNSIGNED_BYTE;
 
-            void upload(const Image<int> &buffer) override;
+                    if (desc.format == ColorFormat::DEPTH) {
+                        texInternalFormat = GL_DEPTH;
+                        texFormat = GL_DEPTH_COMPONENT;
+                        texType = GL_FLOAT;
+                    } else if (desc.format == ColorFormat::DEPTH_STENCIL) {
+                        texInternalFormat = GL_DEPTH24_STENCIL8;
+                        texFormat = GL_DEPTH_STENCIL;
+                        texType = GL_UNSIGNED_INT_24_8;
+                    }
 
-            void upload(const Image<char> &buffer) override;
+                    glTexImage2D(type,
+                                 0,
+                                 numeric_cast<GLint>(texInternalFormat),
+                                 desc.size.x,
+                                 desc.size.y,
+                                 0,
+                                 texFormat,
+                                 texType,
+                                 NULL);
+                } else if (desc.textureType == TEXTURE_2D_MULTISAMPLE) {
+                    GLuint texInternalFormat = convert(desc.format);
 
-            void upload(const Image<unsigned char> &buffer) override;
+                    if (desc.format == ColorFormat::DEPTH) {
+                        texInternalFormat = GL_DEPTH;
+                    } else if (desc.format == ColorFormat::DEPTH_STENCIL) {
+                        texInternalFormat = GL_DEPTH24_STENCIL8;
+                    }
 
-            ImageRGBA download() override;
+                    glTexImage2DMultisample(type,
+                                            desc.samples,
+                                            texInternalFormat,
+                                            desc.size.x,
+                                            desc.size.y,
+                                            desc.fixedSampleLocations ? GL_TRUE : GL_FALSE);
+                } else {
+                    for (unsigned int i = 0; i < 6; i++) {
+                        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                                     0,
+                                     numeric_cast<GLint>(convert(desc.format)),
+                                     desc.size.x,
+                                     desc.size.y,
+                                     0,
+                                     GL_RGBA,
+                                     GL_UNSIGNED_BYTE,
+                                     NULL);
+                    }
+                }
+                checkGLError("OGLTextureBuffer::OGLTextureBuffer()");
 
-            void upload(CubeMapFace face, const ImageRGBA &buffer) override;
+                if (type != GL_TEXTURE_2D_MULTISAMPLE && desc.generateMipmap) {
+                    glGenerateMipmap(type);
+                    glTexParameteri(type, GL_TEXTURE_MIN_FILTER,
+                                    convert(desc.mipmapFilter));
+                    glTexParameteri(type, GL_TEXTURE_MAG_FILTER,
+                                    convert(desc.filterMag));
+                }
 
-            ImageRGBA download(CubeMapFace face) override;
+                glBindTexture(type, 0);
 
-            void uploadCubeMap(const ImageRGBA &buffer) override;
+                checkGLError("OGLTextureBuffer::OGLTextureBuffer()");
+            }
 
-            ImageRGBA downloadCubeMap() override;
+            ~OPENGL_TYPENAME(TextureBuffer)() override {
+                glDeleteTextures(1, &handle);
+            }
 
-        private:
-            void setTextureType(TextureType type);
+            const TextureBufferDesc &getDescription() override {
+                return desc;
+            }
+
+            std::unique_ptr<TextureBufferView> createView() override {
+                auto ret = std::make_unique<OPENGL_TYPENAME(TextureBufferView)>();
+                ret->buffer = this;
+                return ret;
+            }
+
+            void upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize) override {
+                //TODO: Range check the buffer
+                glBindTexture(GL_TEXTURE_2D, handle);
+                glTexImage2D(GL_TEXTURE_2D,
+                             0,
+                             numeric_cast<GLint>(convert(desc.format)),
+                             desc.size.x,
+                             desc.size.y,
+                             0,
+                             convert(format),
+                             GL_UNSIGNED_BYTE,
+                             buffer);
+
+                if (desc.generateMipmap) {
+                    glGenerateMipmap(GL_TEXTURE_2D);
+                }
+
+                glBindTexture(GL_TEXTURE_2D, 0);
+
+                checkGLError("OGLTextureBuffer::upload(RGB)");
+            }
+
+            void upload(CubeMapFace face, ColorFormat format, const uint8_t *buffer, size_t bufferSize) override {
+                //TODO: Range check the buffer
+                glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
+                glTexImage2D(convert(face),
+                             0,
+                             numeric_cast<GLint>(convert(desc.format)),
+                             desc.size.x,
+                             desc.size.y,
+                             0,
+                             convert(format),
+                             GL_UNSIGNED_BYTE,
+                             buffer);
+
+                if (desc.generateMipmap) {
+                    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+                }
+
+                glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+                checkGLError("OGLTextureBuffer::upload(CUBEMAP)");
+            }
+
+            Image<ColorRGBA> download() override {
+                if (desc.textureType != TEXTURE_2D)
+                    throw std::runtime_error("TextureBuffer not texture 2d");
+
+                auto output = ImageRGBA(desc.size);
+                glBindTexture(GL_TEXTURE_2D, handle);
+                glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void *) output.getData());
+                glBindTexture(GL_TEXTURE_2D, 0);
+                checkGLError("OGLTextureBuffer::download");
+                return output;
+            }
+
+            Image<ColorRGBA> download(CubeMapFace face) override {
+                if (desc.textureType != TEXTURE_CUBE_MAP)
+                    throw std::runtime_error("TextureBuffer not cubemap");
+
+                throw std::runtime_error("Not Implemented");
+            }
+
+            OPENGL_MEMBERS
+
+            OPENGL_CONVERSION_MEMBERS
         };
     }
 }

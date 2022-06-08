@@ -25,7 +25,6 @@
 namespace xengine {
     struct XENGINE_EXPORT RenderDeviceInfo {
         std::string name;
-        int maxSampleCount; // The maximum number of samples supported in a multi sampled render target or texture
     };
 }
 

@@ -57,9 +57,9 @@ namespace xengine {
                 object = &shaderBuffer;
             }
 
-            TextureBufferView &getTextureBuffer() { return dynamic_cast<TextureBufferView &>(*object); }
+            TextureBufferView &getTextureBuffer() const { return dynamic_cast<TextureBufferView &>(*object); }
 
-            ShaderBuffer &getShaderBuffer() { return dynamic_cast<ShaderBuffer &>(*object); }
+            ShaderBuffer &getShaderBuffer() const { return dynamic_cast<ShaderBuffer &>(*object); }
         };
 
         MeshBufferView *mesh;

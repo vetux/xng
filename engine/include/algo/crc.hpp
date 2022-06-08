@@ -31,29 +31,7 @@ namespace xengine {
     typedef std::uint_fast32_t HashCRC;
 
     // Generates a lookup table for the checksums of all 8-bit values.
-    std::array<HashCRC, 256> generate_crc_lookup_table() noexcept {
-        auto const reversed_polynomial = HashCRC{0xEDB88320uL};
-
-        // This is a function object that calculates the checksum for a value,
-        // then increments the value, starting from zero.
-        struct byte_checksum {
-            HashCRC operator()() noexcept {
-                auto checksum = static_cast<HashCRC>(n++);
-
-                for (auto i = 0; i < 8; ++i)
-                    checksum = (checksum >> 1) ^ ((checksum & 0x1u) ? reversed_polynomial : 0);
-
-                return checksum;
-            }
-
-            unsigned n = 0;
-        };
-
-        auto table = std::array<HashCRC, 256>{};
-        std::generate(table.begin(), table.end(), byte_checksum{});
-
-        return table;
-    }
+    std::array<HashCRC, 256> generate_crc_lookup_table() noexcept;
 
 // Calculates the CRC for any sequence of values. (You could use type traits and a
 // static assert to ensure the values can be converted to 8 bits.)

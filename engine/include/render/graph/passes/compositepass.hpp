@@ -44,13 +44,13 @@ namespace xengine {
 
         void setup(FrameGraphBuilder &builder) override;
 
-        void execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) override;
+        void execute(RenderPassResources &resources, RenderDevice &ren, FrameGraphBlackboard &board) override;
 
         void setClearColor(ColorRGBA color) { clearColor = color; }
 
     private:
         void drawLayer(Layer layer,
-                       Renderer &ren,
+                       RenderDevice &ren,
                        RenderTarget &target,
                        ShaderProgram &shaderProgram,
                        MeshBuffer &screenQuad);

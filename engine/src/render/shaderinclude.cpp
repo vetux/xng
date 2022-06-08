@@ -20,6 +20,8 @@
 #ifndef XENGINE_SHADER_INCLUDER_HPP
 #define XENGINE_SHADER_INCLUDER_HPP
 
+#warning NOT IMPLEMENTED
+/*
 #include "render/shader/shaderinclude.hpp"
 #include "render/shader/include/glsl_mvp.hpp"
 #include "render/shader/include/glsl_phong_shading.hpp"
@@ -64,4 +66,5 @@ namespace xengine {
         return gIncludeFunc;
     }
 }
+ */
 #endif //XENGINE_SHADER_INCLUDER_HPP

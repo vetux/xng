@@ -20,8 +20,8 @@
 #ifndef XENGINE_SHADERSOURCE_HPP
 #define XENGINE_SHADERSOURCE_HPP
 
-#include "render/shader/shadercompiler.hpp"
-#include "graphics/spirvbuffer.hpp"
+#include "graphics/shader/shadercompiler.hpp"
+#include "graphics/shader/spirvbuffer.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT ShaderSource {
@@ -41,7 +41,7 @@ namespace xengine {
         void crossCompile(ShaderLanguage targetLanguage,
                           ShaderCompiler::OptimizationLevel optimizationLevel = ShaderCompiler::OPTIMIZATION_NONE);
 
-        SPIRVSource compile(ShaderCompiler::OptimizationLevel optimizationLevel = ShaderCompiler::OPTIMIZATION_NONE);
+        SPIRVBuffer compile(ShaderCompiler::OptimizationLevel optimizationLevel = ShaderCompiler::OPTIMIZATION_NONE);
 
         const std::string &getSrc() const;
 

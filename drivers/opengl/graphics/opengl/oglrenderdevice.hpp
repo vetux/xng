@@ -22,28 +22,60 @@
 
 #include "graphics/renderdevice.hpp"
 
-#include "graphics/opengl/oglrenderer.hpp"
-#include "graphics/opengl/oglrenderallocator.hpp"
+#include "graphics/opengl/oglbuildmacro.hpp"
 
-namespace xengine {
-    namespace opengl {
-        class OGLRenderDevice : public RenderDevice {
-        public:
-            OGLRenderDevice() = default;
+#include "graphics/opengl/oglrenderpipeline.hpp"
+#include "graphics/opengl/oglrendertarget.hpp"
+#include "graphics/opengl/ogltexturebuffer.hpp"
+#include "graphics/opengl/oglmeshbuffer.hpp"
+#include "graphics/opengl/oglshaderprogram.hpp"
+#include "graphics/opengl/oglshaderbuffer.hpp"
 
-            ~OGLRenderDevice() override = default;
+namespace xengine::opengl {
+    class OPENGL_TYPENAME(RenderDevice) : public RenderDevice OPENGL_INHERIT {
+    public:
+        OPENGL_TYPENAME(RenderDevice)() {
+            initialize();
+        }
 
-            Renderer &getRenderer() override;
+        ~OPENGL_TYPENAME(RenderDevice)() override = default;
 
-            RenderAllocator &getAllocator() override;
+        int getMaxSampleCount() override {
+            GLint ret = 0;
+            glGetIntegerv(GL_MAX_SAMPLES, &ret);
+            return ret;
+        }
 
-            int getMaxSampleCount() override;
+        std::unique_ptr<RenderPipeline> createPipeline(RenderPipelineDesc &desc) override {
+            return std::make_unique<OPENGL_TYPENAME(RenderPipeline)>(desc);
+        }
 
-        private:
-            OGLRenderer renderer;
-            OGLRenderAllocator allocator;
-        };
-    }
+        std::unique_ptr<RenderPipeline> createPipeline(const uint8_t *cacheData, size_t size) override {
+            throw std::runtime_error("Not implemented");
+        }
+
+        std::unique_ptr<RenderTarget> createRenderTarget(const RenderTargetDesc &desc) override {
+            return std::make_unique<OPENGL_TYPENAME(RenderTarget)>(desc);
+        }
+
+        std::unique_ptr<TextureBuffer> createTextureBuffer(const TextureBufferDesc &desc) override {
+            return std::make_unique<OPENGL_TYPENAME(TextureBuffer)>(desc);
+        }
+
+        std::unique_ptr<MeshBuffer> createMeshBuffer(const MeshBufferDesc &desc) override {
+            return std::make_unique<OPENGL_TYPENAME(MeshBuffer)>(desc);
+        }
+
+        std::unique_ptr<ShaderProgram> createShaderProgram(const ShaderProgramDesc &desc) override {
+            return std::make_unique<OPENGL_TYPENAME(ShaderProgram)>(desc);
+        }
+
+        std::unique_ptr<ShaderBuffer> createShaderBuffer(const ShaderBufferDesc &desc) override {
+            return std::make_unique<OPENGL_TYPENAME(ShaderBuffer)>(desc);
+        }
+
+        OPENGL_MEMBERS
+    };
 }
 
 #endif //XENGINE_OGLRENDERDEVICE_HPP

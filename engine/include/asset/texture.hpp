@@ -37,7 +37,7 @@ namespace xengine {
         }
 
         std::vector<ResourceHandle<ImageRGBA>> images;
-        TextureBuffer::Attributes attributes;
+        TextureBufferDesc textureDescription;
     };
 }
 

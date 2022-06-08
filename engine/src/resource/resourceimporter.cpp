@@ -40,11 +40,11 @@ namespace xengine {
         return ColorRGBA(j["r"], j["g"], j["b"], j["a"]);
     }
 
-    static TextureBuffer::TextureType convertJsonTextureType(const std::string &v) {
+    static TextureType convertJsonTextureType(const std::string &v) {
         if (v == "texture2d")
-            return TextureBuffer::TEXTURE_2D;
+            return TEXTURE_2D;
         else if (v == "cubemap")
-            return TextureBuffer::TEXTURE_CUBE_MAP;
+            return TEXTURE_CUBE_MAP;
         throw std::runtime_error("Invalid texture type " + v);
     }
 
@@ -114,9 +114,10 @@ namespace xengine {
 
         auto attr = j.find("attributes");
         if (attr != j.end()) {
-            texture.attributes.textureType = convertJsonTextureType(attr->value("textureType", "texture2d"));
-            texture.attributes.generateMipmap = attr->value("generateMipmap", texture.attributes.textureType !=
-                                                                              TextureBuffer::TEXTURE_CUBE_MAP);
+            texture.textureDescription.textureType = convertJsonTextureType(attr->value("textureType", "texture2d"));
+            texture.textureDescription.generateMipmap = attr->value("generateMipmap",
+                                                                    texture.textureDescription.textureType !=
+                                                                    TEXTURE_CUBE_MAP);
             //TODO Parse texture attributes
         }
 
@@ -202,19 +203,19 @@ namespace xengine {
 
                     if (element.find("specularTexture") != element.end()) {
                         auto path = Uri(element["specularTexture"]["bundle"],
-                                              element["specularTexture"]["asset"]);
+                                        element["specularTexture"]["asset"]);
                         mat.specularTexture = ResourceHandle<Texture>(path);
                     }
 
                     if (element.find("emissiveTexture") != element.end()) {
                         auto path = Uri(element["emissiveTexture"]["bundle"],
-                                              element["emissiveTexture"]["asset"]);
+                                        element["emissiveTexture"]["asset"]);
                         mat.emissiveTexture = ResourceHandle<Texture>(path);
                     }
 
                     if (element.find("shininessTexture") != element.end()) {
                         auto path = Uri(element["shininessTexture"]["bundle"],
-                                              element["shininessTexture"]["asset"]);
+                                        element["shininessTexture"]["asset"]);
                         mat.shininessTexture = ResourceHandle<Texture>(path);
                     }
 

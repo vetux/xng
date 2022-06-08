@@ -31,7 +31,7 @@ namespace xengine {
 
         void setup(FrameGraphBuilder &builder) override;
 
-        void execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) override;
+        void execute(RenderPassResources &resources, RenderDevice &ren, FrameGraphBlackboard &board) override;
 
     private:
         RenderDevice &device;

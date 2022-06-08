@@ -27,28 +27,26 @@ namespace xengine {
         if (samples < 1)
             throw std::runtime_error("Invalid samples");
 
-        auto &allocator = device.getAllocator();
-
-        TextureBuffer::Attributes attr;
-        attr.textureType = TextureBuffer::TEXTURE_2D_MULTISAMPLE;
+        TextureBufferDesc attr;
+        attr.textureType = TEXTURE_2D_MULTISAMPLE;
         attr.size = size;
         attr.samples = samples;
 
         for (int i = GEOMETRY_TEXTURE_BEGIN, index = 0; i < GEOMETRY_TEXTURE_END; i++, index++) {
             auto tex = static_cast<GTexture>(i);
             if (i < DIFFUSE) {
-                attr.format = TextureBuffer::RGBA32F;
+                attr.format = RGBA32F;
             } else if (i < ID_SHININESS) {
-                attr.format = TextureBuffer::RGBA;
+                attr.format = RGBA;
             } else {
-                attr.format = TextureBuffer::RGBA32I;
+                attr.format = RGBA32I;
             }
-            textures[tex] = allocator.createTextureBuffer(attr);
+            textures[tex] = device.createTextureBuffer(attr);
         }
 
-        attr.format = TextureBuffer::DEPTH_STENCIL;
+        attr.format = DEPTH_STENCIL;
 
-        textures[DEPTH] = allocator.createTextureBuffer(attr);
+        textures[DEPTH] = device.createTextureBuffer(attr);
     }
 
     GBuffer::~GBuffer() = default;

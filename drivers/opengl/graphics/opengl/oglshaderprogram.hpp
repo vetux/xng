@@ -23,6 +23,7 @@
 #include <string>
 #include <map>
 #include <functional>
+#include <utility>
 
 #include "math/vector2.hpp"
 #include "math/vector3.hpp"
@@ -30,104 +31,158 @@
 
 #include "graphics/shaderprogram.hpp"
 
-#include "graphics/opengl/openglinclude.hpp"
+#include "graphics/opengl/oglbuildmacro.hpp"
+
+#include "graphics/shader/shadercompiler.hpp"
 
 namespace xengine {
     namespace opengl {
-        class OGLShaderProgram : public ShaderProgram {
+        class OPENGL_TYPENAME(ShaderProgram) : public ShaderProgram OPENGL_INHERIT {
         public:
-            OGLShaderProgram();
+            ShaderProgramDesc desc;
+            GLuint programHandle = 0;
 
             /**
              * @param vertexShader The preprocessed glsl vertex shader.
              * @param fragmentShader The preprocessed glsl fragment shader.
              * @param geometryShader The preprocessed glsl geometry shader, if empty no geometry shader is used.
              */
-            OGLShaderProgram(const std::string &vertexShader,
-                             const std::string &fragmentShader,
-                             const std::string &geometryShader = "");
+            explicit OPENGL_TYPENAME(ShaderProgram)(ShaderProgramDesc desc)
+                    : desc(std::move(desc)) {
+                initialize();
 
-            explicit OGLShaderProgram(const ShaderBinary &binary);
+                char *vertexSource, *fragmentSource, *geometrySource = nullptr;
 
-            ~OGLShaderProgram() override;
+                std::string vert, frag, geo;
+                auto it = desc.entries.find(VERTEX);
+                if (it == desc.entries.end())
+                    throw std::runtime_error("No vertex shader");
 
-            OGLShaderProgram(const OGLShaderProgram &copy) = delete;
+                vert = ShaderCompiler::decompileSPIRV(desc.buffers.at(it->second.bufferIndex).blob,
+                                                      it->second.entryPoint,
+                                                      VERTEX,
+                                                      GLSL_410);
+                vertexSource = vert.data();
 
-            OGLShaderProgram &operator=(const OGLShaderProgram &) = delete;
+                it = desc.entries.find(FRAGMENT);
+                if (it == desc.entries.end())
+                    throw std::runtime_error("No fragment shader");
 
-            void activate() override;
+                frag = ShaderCompiler::decompileSPIRV(desc.buffers.at(it->second.bufferIndex).blob,
+                                                      it->second.entryPoint,
+                                                      FRAGMENT,
+                                                      GLSL_410);
+                fragmentSource = frag.data();
 
-            bool setTexture(const std::string &name, int slot) override;
+                it = desc.entries.find(GEOMETRY);
+                if (it != desc.entries.end()) {
+                    geo = ShaderCompiler::decompileSPIRV(desc.buffers.at(it->second.bufferIndex).blob,
+                                                         it->second.entryPoint,
+                                                         GEOMETRY,
+                                                         GLSL_410);
+                    geometrySource = geo.data();
+                }
 
-            bool setBool(const std::string &name, bool value) override;
+                programHandle = glCreateProgram();
 
-            bool setInt(const std::string &name, int value) override;
+                GLuint vsH = glCreateShader(GL_VERTEX_SHADER);
+                glShaderSource(vsH, 1, &vertexSource, NULL);
+                glCompileShader(vsH);
+                GLint success;
+                glGetShaderiv(vsH, GL_COMPILE_STATUS, &success);
+                if (!success) {
+                    GLchar infoLog[512];
+                    glGetShaderInfoLog(vsH, 512, NULL, infoLog);
+                    glDeleteShader(vsH);
+                    std::string error = "Failed to compile vertex shader: ";
+                    error.append(infoLog);
+                    throw std::runtime_error(error);
+                }
 
-            bool setFloat(const std::string &name, float value) override;
+                glAttachShader(programHandle, vsH);
 
-            bool setVec2(const std::string &name, const Vec2b &value) override;
+                GLuint gsH;
 
-            bool setVec2(const std::string &name, const Vec2i &value) override;
+                if (geometrySource != nullptr) {
+                    gsH = glCreateShader(GL_GEOMETRY_SHADER);
+                    glShaderSource(gsH, 1, &geometrySource, NULL);
+                    glCompileShader(gsH);
+                    glGetShaderiv(gsH, GL_COMPILE_STATUS, &success);
+                    if (!success) {
+                        char infoLog[512];
+                        glGetShaderInfoLog(gsH, 512, NULL, infoLog);
+                        glDeleteShader(vsH);
+                        glDeleteShader(gsH);
+                        std::string error = "Failed to compile geometry shader: ";
+                        error.append(infoLog);
+                        throw std::runtime_error(error);
+                    }
+                    glAttachShader(programHandle, gsH);
+                }
 
-            bool setVec2(const std::string &name, const Vec2f &value) override;
+                GLuint fsH = glCreateShader(GL_FRAGMENT_SHADER);
+                glShaderSource(fsH, 1, &fragmentSource, NULL);
+                glCompileShader(fsH);
+                glGetShaderiv(fsH, GL_COMPILE_STATUS, &success);
+                if (!success) {
+                    GLchar infoLog[512];
+                    glGetShaderInfoLog(fsH, 512, NULL, infoLog);
+                    glDeleteShader(vsH);
+                    if (geometrySource != nullptr)
+                        glDeleteShader(gsH);
+                    glDeleteShader(fsH);
+                    std::string error = "Failed to compile fragment shader: ";
+                    error.append(infoLog);
+                    throw std::runtime_error(error);
+                }
+                glAttachShader(programHandle, fsH);
 
-            bool setVec3(const std::string &name, const Vec3b &value) override;
+                glLinkProgram(programHandle);
 
-            bool setVec3(const std::string &name, const Vec3i &value) override;
+                glDeleteShader(vsH);
+                glDeleteShader(fsH);
 
-            bool setVec3(const std::string &name, const Vec3f &value) override;
+                checkLinkSuccess();
+                checkGLError("");
+            }
 
-            bool setVec4(const std::string &name, const Vec4b &value) override;
+            ~OPENGL_TYPENAME(ShaderProgram)() override {
+                glDeleteProgram(programHandle);
+            }
 
-            bool setVec4(const std::string &name, const Vec4i &value) override;
+            OPENGL_TYPENAME(ShaderProgram)(const OPENGL_TYPENAME(ShaderProgram) &copy) = delete;
 
-            bool setVec4(const std::string &name, const Vec4f &value) override;
+            OPENGL_TYPENAME(ShaderProgram) &operator=(const OPENGL_TYPENAME(ShaderProgram) &) = delete;
 
-            bool setMat2(const std::string &name, const Mat2f &value) override;
+            const ShaderProgramDesc &getDescription() override {
+                return desc;
+            }
 
-            bool setMat3(const std::string &name, const Mat3f &value) override;
+            void activate() {
+                glUseProgram(programHandle);
+                checkGLError("");
+            }
 
-            bool setMat4(const std::string &name, const Mat4f &value) override;
+            void checkLinkSuccess() {
+                auto msg = getLinkError();
+                if (!msg.empty())
+                    throw std::runtime_error(msg);
+            }
 
-            bool setTexture(int location, int slot) override;
+            std::string getLinkError() {
+                GLint success;
+                glGetProgramiv(programHandle, GL_LINK_STATUS, &success);
+                if (!success) {
+                    GLchar infoLog[512];
+                    glGetProgramInfoLog(programHandle, 512, NULL, infoLog);
+                    std::string error = "Failed to link shader program: ";
+                    error.append(infoLog);
+                    return error;
+                }
+                return "";
+            }
 
-            bool setBool(int location, bool value) override;
-
-            bool setInt(int location, int value) override;
-
-            bool setFloat(int location, float value) override;
-
-            bool setVec2(int location, const Vec2b &value) override;
-
-            bool setVec2(int location, const Vec2i &value) override;
-
-            bool setVec2(int location, const Vec2f &value) override;
-
-            bool setVec3(int location, const Vec3b &value) override;
-
-            bool setVec3(int location, const Vec3i &value) override;
-
-            bool setVec3(int location, const Vec3f &value) override;
-
-            bool setVec4(int location, const Vec4b &value) override;
-
-            bool setVec4(int location, const Vec4i &value) override;
-
-            bool setVec4(int location, const Vec4f &value) override;
-
-            bool setMat2(int location, const Mat2f &value) override;
-
-            bool setMat3(int location, const Mat3f &value) override;
-
-            bool setMat4(int location, const Mat4f &value) override;
-
-            ShaderBinary getBinary() override;
-
-        private:
-            void checkLinkSuccess() const;
-
-            GLuint programHandle;
-            std::map<std::string, GLint> locations;
+            OPENGL_MEMBERS
         };
     }
 }

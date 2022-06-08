@@ -17,9 +17,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#warning NOT IMPLEMENTED
+/*
 #include "render/graph/passes/gbufferpass.hpp"
 
-#include "render/shader/shaderinclude.hpp"
+#include "render/shaderinclude.hpp"
 
 static const char *SHADER_VERT_GEOMETRY = R"###(#version 460
 
@@ -350,8 +352,10 @@ namespace xengine {
 
         ren.renderFinish();
 
+        ren.renderClear(target, ColorRGBA::blue(), 0);
+
         unbindTextures(target);
 
         board.set<GBuffer>(gBuffer);
     }
-}
+}*/

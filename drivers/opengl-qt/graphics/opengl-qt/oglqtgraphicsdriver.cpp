@@ -17,25 +17,30 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "graphics/opengl-qt/oglqtgraphicsdriver.hpp"
+
+#define OPENGL_BUILD_QT
+
 #include "graphics/opengl/oglrenderdevice.hpp"
-#include "graphics/opengl/ogltexturebuffer.hpp"
 
 #include "driver/drivermanager.hpp"
 
 namespace xengine {
-    namespace opengl {
-        Renderer &OGLRenderDevice::getRenderer() {
-            return dynamic_cast<Renderer &>(renderer);
-        }
+    static bool dr = REGISTER_DRIVER("opengl-qt", OGLQtGraphicsDriver);
 
-        RenderAllocator &OGLRenderDevice::getAllocator() {
-            return dynamic_cast<RenderAllocator &>(allocator);
-        }
+    std::vector<RenderDeviceInfo> OGLQtGraphicsDriver::getAvailableRenderDevices() {
+        return {{.name = "default"}};
+    }
 
-        int OGLRenderDevice::getMaxSampleCount() {
-            GLint ret = 0;
-            glGetIntegerv(GL_MAX_SAMPLES, &ret);
-            return ret;
-        }
+    std::unique_ptr<RenderDevice> OGLQtGraphicsDriver::createRenderDevice() {
+        return std::make_unique<opengl::OGLQtRenderDevice>();
+    }
+
+    std::unique_ptr<RenderDevice> OGLQtGraphicsDriver::createRenderDevice(const std::string &deviceName) {
+        return std::make_unique<opengl::OGLQtRenderDevice>();
+    }
+
+    std::type_index OGLQtGraphicsDriver::getType() {
+        return typeid(OGLQtGraphicsDriver);
     }
 }

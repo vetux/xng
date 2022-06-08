@@ -52,6 +52,8 @@ namespace xengine {
                     return 4;
                 case DOUBLE:
                     return 8;
+                default:
+                    throw std::runtime_error("Invalid component");
             }
         }
 
@@ -70,16 +72,22 @@ namespace xengine {
                     return 9;
                 case MAT4:
                     return 16;
+                default:
+                    throw std::runtime_error("Invalid type");
             }
         }
 
-        int offset() const {
+        int stride() const {
             return getBytes(component) * getCount(type);
         }
 
         VertexAttribute() = default;
 
         VertexAttribute(Type type, Component component) : type(type), component(component) {}
+
+        bool operator==(const VertexAttribute &other) const {
+            return type == other.type && component == other.component;
+        }
 
         Type type;
         Component component;

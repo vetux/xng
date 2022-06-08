@@ -27,9 +27,6 @@
 #include "display/window.hpp"
 #include "display/windowattributes.hpp"
 
-#include "graphics/opengl/oglrenderdevice.hpp"
-#include "graphics/opengl/oglrendertarget.hpp"
-
 #include "display/glfw/monitorglfw.hpp"
 #include "display/glfw/opengl/glfwrendertargetgl.hpp"
 

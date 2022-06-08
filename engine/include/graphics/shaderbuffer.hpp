@@ -22,12 +22,14 @@
 
 #include "graphics/renderobject.hpp"
 
+#include "graphics/shaderbufferdesc.hpp"
+
 namespace xengine {
     class ShaderBuffer : public RenderObject {
     public:
         ~ShaderBuffer() override = default;
 
-        virtual size_t getSize() = 0;
+        virtual const ShaderBufferDesc &getDescription() = 0;
 
         /**
          * Upload the given data to the shader buffer,

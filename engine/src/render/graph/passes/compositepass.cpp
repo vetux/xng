@@ -17,9 +17,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#warning NOT IMPLEMENTED
+/*
 #include "render/graph/passes/compositepass.hpp"
 
-#include "render/shader/shaderinclude.hpp"
+#include "render/shaderinclude.hpp"
 
 static const char *SHADER_VERT = R"###(#version 410 core
 
@@ -115,8 +117,8 @@ namespace xengine {
                                             ShaderInclude::getShaderMacros(GLSL_410));
         shaderSrc.fragmentShader.crossCompile(GLSL_410);
 
-        shader = device.getAllocator().createShaderProgram(shaderSrc.vertexShader, shaderSrc.fragmentShader);
-        quadMesh = device.getAllocator().createMeshBuffer(Mesh::normalizedQuad());
+        shader = device.createShaderProgram(shaderSrc.vertexShader, shaderSrc.fragmentShader);
+        quadMesh = device.createMeshBuffer(Mesh::normalizedQuad());
     }
 
     void CompositePass::setup(FrameGraphBuilder &builder) {
@@ -127,7 +129,7 @@ namespace xengine {
         auto &target = resources.getRenderTarget(backBuffer);
         shader->activate();
         ren.renderClear(target, clearColor, 1);
-        auto layers = board.get<std::vector<Layer>>();
+        auto &layers = board.get<std::vector<Layer>>();
         for (auto &l: layers) {
             drawLayer(l, ren, target, *shader, *quadMesh);
         }
@@ -169,4 +171,4 @@ namespace xengine {
         ren.addCommand(command);
         ren.renderFinish();
     }
-}
+}*/

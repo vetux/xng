@@ -23,12 +23,13 @@
 #include <set>
 #include <unordered_set>
 
-#include "graphics/renderer.hpp"
 #include "graphics/renderdevice.hpp"
 
-#include "render/shader/shadersource.hpp"
+#include "graphics/shader/shadersource.hpp"
 
 #include "asset/camera.hpp"
+
+#include "algo/hashcombine.hpp"
 
 #include "text/text.hpp"
 

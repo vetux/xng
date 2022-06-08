@@ -145,7 +145,7 @@ namespace xengine {
             glfwWindowHint(GLFW_ALPHA_BITS, attribs.bitsAlpha);
             glfwWindowHint(GLFW_DEPTH_BITS, attribs.bitsDepth);
             glfwWindowHint(GLFW_STENCIL_BITS, attribs.bitsStencil);
-            glfwWindowHint(GLFW_SAMPLES, attribs.msaaSamples);
+            glfwWindowHint(GLFW_SAMPLES, attribs.samples);
             glfwWindowHint(GLFW_SRGB_CAPABLE, attribs.sRGBCapable);
             glfwWindowHint(GLFW_DOUBLEBUFFER, attribs.doubleBuffer);
         }
@@ -188,7 +188,14 @@ namespace xengine {
 
             glfwSwapInterval(attributes.swapInterval);
 
-            renderTargetGl = std::make_unique<GLFWRenderTargetGL>();
+            RenderTargetDesc desc;
+            desc.size = size;
+            desc.multisample = attributes.multiSample;
+            desc.samples = attributes.samples;
+            desc.numberOfColorAttachments = 1;
+            desc.hasDepthStencilAttachment = true;
+            
+            renderTargetGl = std::make_unique<GLFWRenderTargetGL>(desc);
 
             input = std::make_unique<GLFWInput>(*wndH);
 
@@ -230,8 +237,14 @@ namespace xengine {
                 throw std::runtime_error("Failed to initialize glad");
             }
 
+            RenderTargetDesc desc;
+            desc.size = size;
+            desc.multisample = attributes.multiSample;
+            desc.samples = attributes.samples;
+            desc.numberOfColorAttachments = 1;
+            desc.hasDepthStencilAttachment = true;
 
-            renderTargetGl = std::make_unique<GLFWRenderTargetGL>();
+            renderTargetGl = std::make_unique<GLFWRenderTargetGL>(desc);
 
             input = std::make_unique<GLFWInput>(*wndH);
 
@@ -260,7 +273,7 @@ namespace xengine {
         }
 
         void WindowGLFWGL::glfwWindowSizeCallback(int width, int height) {
-            renderTargetGl->size = {width, height};
+            renderTargetGl->desc.size = {width, height};
             for (auto listener: listeners) {
                 listener->onWindowResize(Vec2i(width, height));
             }

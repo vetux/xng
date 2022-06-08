@@ -24,7 +24,7 @@
 #include "render/graph/framegraphbuilder.hpp"
 #include "render/graph/framegraphblackboard.hpp"
 
-#include "graphics/renderer.hpp"
+#include "graphics/renderdevice.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT RenderPass {
@@ -33,7 +33,7 @@ namespace xengine {
 
         virtual void setup(FrameGraphBuilder &builder) = 0;
 
-        virtual void execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) = 0;
+        virtual void execute(RenderPassResources &resources, RenderDevice &ren, FrameGraphBlackboard &board) = 0;
     };
 }
 

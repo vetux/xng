@@ -22,18 +22,12 @@
 
 #include "graphics/opengl/oglrendertarget.hpp"
 
-#include "graphics/opengl/ogltypeconverter.hpp"
-#include "graphics/opengl/oglcheckerror.hpp"
-
 namespace xengine {
     namespace glfw {
         class GLFWRenderTargetGL : public opengl::OGLRenderTarget {
         public:
-            Vec2i size;
-
-            Vec2i getSize() override {
-                return size;
-            };
+            explicit GLFWRenderTargetGL(RenderTargetDesc desc)
+                    : opengl::OGLRenderTarget(desc) {}
 
             GLuint getFBO() override {
                 return 0;

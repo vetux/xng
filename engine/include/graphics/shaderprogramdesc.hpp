@@ -42,7 +42,12 @@ namespace xengine {
         struct ShaderEntry {
             std::string entryPoint; // The name of the entry point.
             size_t bufferIndex; // The index into the buffers vector of the buffer containing the entry point.
+
+            bool operator==(const ShaderEntry &other) const {
+                return entryPoint == other.entryPoint && bufferIndex == other.bufferIndex;
+            }
         };
+
         std::map<ShaderStage, ShaderEntry> entries;
         std::vector<SPIRVBuffer> buffers;
 
@@ -63,7 +68,7 @@ namespace std {
                 hash_combine(ret, e.second.bufferIndex);
             }
             for (auto &e: k.buffers) {
-                hash_combine(ret, e.blob);
+                hash_combine(ret, crc(e.blob.begin(), e.blob.end()));
             }
             return ret;
         }

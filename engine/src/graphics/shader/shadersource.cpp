@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "render/shader/shadersource.hpp"
+#include "graphics/shader/shadersource.hpp"
 
 namespace xengine {
     ShaderSource::ShaderSource(std::string src,
@@ -48,12 +48,11 @@ namespace xengine {
         language = targetLanguage;
     }
 
-    SPIRVSource ShaderSource::compile(ShaderCompiler::OptimizationLevel optimizationLevel) {
+    SPIRVBuffer ShaderSource::compile(ShaderCompiler::OptimizationLevel optimizationLevel) {
         if (!preprocessed)
             this->preprocess({}, {}, optimizationLevel);
-        SPIRVSource ret;
+        SPIRVBuffer ret;
         ret.blob = ShaderCompiler::compileToSPIRV(src, entryPoint, stage, language, optimizationLevel);
-        ret.entryPoint = entryPoint;
         return ret;
     }
 

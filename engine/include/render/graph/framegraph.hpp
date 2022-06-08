@@ -23,7 +23,6 @@
 #include "resource/resourcehandle.hpp"
 
 #include "graphics/renderobject.hpp"
-#include "graphics/renderer.hpp"
 
 #include "render/graph/objectpool.hpp"
 #include "render/graph/framegraphresource.hpp"
@@ -39,12 +38,12 @@ namespace xengine {
                    std::vector<std::set<FrameGraphResource>> passResources,
                    std::vector<std::function<RenderObject &()>> resources);
 
-        void render(Renderer &ren);
+        void render(RenderDevice &ren);
 
     private:
         void compile();
 
-        void execute(Renderer &ren);
+        void execute(RenderDevice &ren);
 
         std::vector<std::shared_ptr<RenderPass>> passes;
         std::vector<std::set<FrameGraphResource>> passResources;

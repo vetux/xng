@@ -17,16 +17,34 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <stdexcept>
+#ifndef XENGINE_OGLSHADERBUFFER_HPP
+#define XENGINE_OGLSHADERBUFFER_HPP
 
-#include "graphics/opengl/oglcheckerror.hpp"
-#include "graphics/opengl/openglinclude.hpp"
+#include "graphics/shaderbuffer.hpp"
 
-void checkGLError(const std::string &source) {
-    GLenum er = glGetError();
-    if (er != GL_NO_ERROR) {
-        std::string error = source + " GLERROR: ";
-        error += std::to_string(er);
-        throw std::runtime_error(error);
-    }
+#include "graphics/opengl/oglbuildmacro.hpp"
+
+namespace xengine::opengl {
+    class OPENGL_TYPENAME(ShaderBuffer) : public ShaderBuffer OPENGL_INHERIT {
+    public:
+        ShaderBufferDesc desc;
+
+        explicit OPENGL_TYPENAME(ShaderBuffer)(ShaderBufferDesc desc)
+                : desc(desc) {
+            initialize();
+#warning NOT IMPLEMENTED
+        }
+
+        const ShaderBufferDesc &getDescription() override {
+            return desc;
+        }
+
+        void upload(const uint8_t *data, size_t size) override {
+#warning NOT IMPLEMENTED
+        }
+
+        OPENGL_MEMBERS
+    };
 }
+
+#endif //XENGINE_OGLSHADERBUFFER_HPP

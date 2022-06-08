@@ -21,6 +21,7 @@
 #define XENGINE_FRAMEGRAPHRESOURCE_HPP
 
 #include <string>
+#include <stdexcept>
 
 namespace xengine {
     struct XENGINE_EXPORT FrameGraphResource {
@@ -28,7 +29,11 @@ namespace xengine {
 
         explicit FrameGraphResource(size_t index) : index(index), assigned(true) {}
 
-        bool operator<(const FrameGraphResource &other) const { return index < other.index; }
+        bool operator<(const FrameGraphResource &other) const {
+            if (!assigned || !other.assigned)
+                throw std::runtime_error("Unassigned resource");
+            return index < other.index;
+        }
 
         bool assigned = false;
         size_t index{};

@@ -85,7 +85,8 @@ namespace xengine {
 
             auto &comp = pair.second;
 
-            comp.camera.aspectRatio = (float) screenTarget.getSize().x / (float) screenTarget.getSize().y;
+            comp.camera.aspectRatio =
+                    (float) screenTarget.getDescription().size.x / (float) screenTarget.getDescription().size.y;
 
             scene.camera = comp.camera;
             scene.camera.transform = TransformComponent::walkHierarchy(tcomp, entityManager);

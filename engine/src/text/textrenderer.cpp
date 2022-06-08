@@ -45,8 +45,11 @@ namespace xengine {
         for (auto &c: ascii) {
             auto &character = c.second;
 
-            textures[c.first] = device.getAllocator().createTextureBuffer({});
-            textures.at(c.first)->upload(character.image);
+            textures[c.first] = device.createTextureBuffer({.size = character.image.getSize()});
+            textures.at(c.first)->upload(RGBA,
+                                         reinterpret_cast<const uint8_t *>(character.image.getData()),
+                                         sizeof(ColorRGBA) * (character.image.getSize().x *
+                                                              character.image.getSize().y));
         }
     }
 
@@ -58,8 +61,11 @@ namespace xengine {
             for (auto &c: ascii) {
                 auto &character = c.second;
 
-                textures[c.first] = device->getAllocator().createTextureBuffer({});
-                textures.at(c.first)->upload(character.image);
+                textures[c.first] = device->createTextureBuffer({.size = character.image.getSize()});
+                textures.at(c.first)->upload(RGBA,
+                                             reinterpret_cast<const uint8_t *>(character.image.getData()),
+                                             sizeof(ColorRGBA) * (character.image.getSize().x *
+                                                                  character.image.getSize().y));
             }
         }
     }
@@ -151,14 +157,14 @@ namespace xengine {
 
         auto origin = Vec2f(0, numeric_cast<float>(lineHeight));
 
-        target = device->getAllocator().createRenderTarget(size.convert<int>());
+        target = device->createRenderTarget({.size = size.convert<int>()});
 
         // Render the text (upside down?) to a texture and then render the final text texture using the 2d renderer
-        auto tmpTexture = device->getAllocator().createTextureBuffer({size.convert<int>()});
-        target->attachColor(0, *tmpTexture);
+        auto tmpTexture = device->createTextureBuffer({.size = size.convert<int>()});
+        target->setColorAttachments({tmpTexture.get()});
         ren2d.renderBegin(*target);
         for (auto &c: renderText) {
-            auto texSize = c.texture.get().getAttributes().size.convert<float>();
+            auto texSize = c.texture.get().getDescription().size.convert<float>();
             auto pos = c.getPosition(origin);
             ren2d.draw(Rectf({}, texSize),
                        Rectf(pos, texSize),
@@ -169,16 +175,17 @@ namespace xengine {
                        false);
         }
         ren2d.renderPresent();
-        target->detachColor(0);
+
+        target->setColorAttachments(std::vector<TextureBuffer *>());
 
         //Render the upside down texture of the text using the 2d renderer to correct the rotation?
-        auto tex = device->getAllocator().createTextureBuffer({size.convert<int>()});
+        auto tex = device->createTextureBuffer({size.convert<int>()});
 
-        target->attachColor(0, *tex);
+        target->setColorAttachments({tex.get()});
         ren2d.renderBegin(*target);
         ren2d.draw(Rectf({}, size), Rectf({}, size), *tmpTexture, {}, 0, {false, false});
         ren2d.renderPresent();
-        target->detachColor(0);
+        target->setColorAttachments(std::vector<TextureBuffer *>());
 
         return {text, origin, lineWidth, std::move(tex)};
     }

@@ -44,6 +44,8 @@ namespace xengine {
     public:
         ~RenderDevice() override = default;
 
+        virtual int getMaxSampleCount() = 0;
+
         virtual std::unique_ptr<RenderPipeline> createPipeline(RenderPipelineDesc &) = 0;
 
         virtual std::unique_ptr<RenderPipeline> createPipeline(const uint8_t *cacheData, size_t size) = 0;
@@ -136,6 +138,9 @@ namespace xengine {
                     .numberOfVertices = mesh.vertices.size(),
                     .numberOfInstances = offsets.size()
             };
+            auto ret = createMeshBuffer(desc);
+            ret->upload(mesh, offsets);
+            return ret;
         }
     };
 }

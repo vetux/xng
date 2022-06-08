@@ -18,16 +18,15 @@
  */
 
 #include "graphics/opengl/oglgraphicsdriver.hpp"
-#include "graphics/opengl/openglinclude.hpp"
 #include "graphics/opengl/oglrenderdevice.hpp"
 
 #include "driver/drivermanager.hpp"
 
-namespace xengine {
+namespace xengine::opengl {
     static bool dr = REGISTER_DRIVER("opengl", OGLGraphicsDriver);
 
     std::vector<RenderDeviceInfo> OGLGraphicsDriver::getAvailableRenderDevices() {
-        return {};
+        return {{.name = "default"}};
     }
 
     std::unique_ptr<RenderDevice> OGLGraphicsDriver::createRenderDevice() {

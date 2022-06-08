@@ -25,6 +25,7 @@
 #include "graphics/vertexattribute.hpp"
 
 #include "algo/hashcombine.hpp"
+#include "algo/crc.hpp"
 
 namespace xengine {
     struct MeshBufferDesc {
@@ -32,6 +33,7 @@ namespace xengine {
         std::vector<VertexAttribute> instanceLayout{}; // the layout of one instance
         size_t numberOfVertices = 0;
         size_t numberOfInstances = 0;
+        size_t numberOfIndices = 0;
 
         bool operator==(const MeshBufferDesc &other) const {
             return vertexLayout == other.vertexLayout

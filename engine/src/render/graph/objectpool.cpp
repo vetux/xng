@@ -20,6 +20,8 @@
 #include "render/graph/objectpool.hpp"
 
 namespace xengine {
+#warning  NOT IMPLEMENTED
+    /*
     static std::unique_ptr<TextureBuffer> allocateTexture(const Texture &t, RenderAllocator &allocator) {
         auto texture = allocator.createTextureBuffer(t.attributes);
 
@@ -136,5 +138,5 @@ namespace xengine {
         }
 
         usedTextures.clear();
-    }
+    }*/
 }

@@ -70,7 +70,7 @@ namespace xengine {
         return ret;
     }
 
-    FrameGraphResource FrameGraphBuilder::createTextureBuffer(const TextureBuffer::Attributes &attribs) {
+    FrameGraphResource FrameGraphBuilder::createTextureBuffer(const TextureBufferDesc &attribs) {
         std::function<std::reference_wrapper<RenderObject>()> f = [this, attribs]() {
             return std::reference_wrapper<RenderObject>(dynamic_cast<RenderObject &>(pool.getTextureBuffer(attribs)));
         };
@@ -106,7 +106,7 @@ namespace xengine {
     }
 
     std::pair<Vec2i, int> FrameGraphBuilder::getBackBufferFormat() {
-        return {backBuffer.getSize(), backBuffer.getSamples()};
+        return {backBuffer.getDescription().size, backBuffer.getDescription().samples};
     }
 
     std::pair<Vec2i, int> FrameGraphBuilder::getRenderFormat() {

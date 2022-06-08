@@ -23,42 +23,23 @@
 #include <map>
 #include <unordered_set>
 
-#include "graphics/renderallocator.hpp"
-
 #include "resource/uri.hpp"
 
 #include "asset/texture.hpp"
 #include "asset/shader.hpp"
 
+#include "algo/hashcombine.hpp"
+
 #include "render/graph/gbuffer.hpp"
 
 namespace xengine {
-    class TextureAttributesHashFunction {
-    public:
-        size_t operator()(const TextureBuffer::Attributes &p) const {
-            size_t ret;
-            hash_combine(ret, p.size.x);
-            hash_combine(ret, p.size.y);
-            hash_combine(ret, p.samples);
-            hash_combine(ret, p.textureType);
-            hash_combine(ret, p.format);
-            hash_combine(ret, p.wrapping);
-            hash_combine(ret, p.filterMin);
-            hash_combine(ret, p.filterMag);
-            hash_combine(ret, p.generateMipmap);
-            hash_combine(ret, p.mipmapFilter);
-            hash_combine(ret, p.fixedSampleLocations);
-            return ret;
-        }
-    };
-
     /**
      * The object pool is used for storing the uri resource allocations.
      * This makes the framegraph abstraction depend on the resource abstraction which should be avoided.
      */
     class XENGINE_EXPORT ObjectPool {
     public:
-        explicit ObjectPool(RenderAllocator &allocator);
+        explicit ObjectPool(RenderDevice &device);
 
         MeshBuffer &getMeshBuffer(const ResourceHandle<Mesh> &uri);
 
@@ -68,7 +49,7 @@ namespace xengine {
 
         RenderTarget &getRenderTarget(Vec2i size, int samples);
 
-        TextureBuffer &getTextureBuffer(TextureBuffer::Attributes attributes);
+        TextureBuffer &getTextureBuffer(TextureBufferDesc attributes);
 
         /**
          * Called when all allocations of the frame have been done,
@@ -77,17 +58,15 @@ namespace xengine {
         void endFrame();
 
     private:
-        RenderAllocator &allocator;
+        RenderDevice &device;
 
         std::map<Uri, std::unique_ptr<RenderObject>> uriObjects;
         std::map<std::pair<std::pair<int, int>, int>, std::vector<std::unique_ptr<RenderTarget>>> renderTargets;
-        std::unordered_map<TextureBuffer::Attributes,
-                std::vector<std::unique_ptr<TextureBuffer>>,
-                TextureAttributesHashFunction> textures;
+        std::unordered_map<TextureBufferDesc, std::vector<std::unique_ptr<TextureBuffer>>> textures;
 
         std::set<Uri> usedUris;
         std::map<std::pair<std::pair<int, int>, int>, int> usedTargets;
-        std::unordered_map<TextureBuffer::Attributes, int, TextureAttributesHashFunction> usedTextures;
+        std::unordered_map<TextureBufferDesc, int> usedTextures;
     };
 }
 #endif //XENGINE_OBJECTPOOL_HPP

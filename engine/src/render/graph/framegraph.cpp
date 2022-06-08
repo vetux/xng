@@ -26,7 +26,7 @@ namespace xengine {
                            std::vector<std::function<RenderObject &()>> resources)
             : passes(std::move(passes)), passResources(std::move(passResources)), resources(std::move(resources)) {}
 
-    void FrameGraph::render(Renderer &ren) {
+    void FrameGraph::render(RenderDevice &ren) {
         compile();
         execute(ren);
     }
@@ -41,7 +41,7 @@ namespace xengine {
         }
     }
 
-    void FrameGraph::execute(Renderer &ren) {
+    void FrameGraph::execute(RenderDevice &ren) {
         blackboard.clear();
         int i = 0;
         for (auto &p: passes) {

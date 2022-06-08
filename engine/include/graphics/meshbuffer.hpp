@@ -58,6 +58,15 @@ namespace xengine {
                    0,
                    mesh.indices);
         }
+
+        virtual void upload(const Mesh &mesh,
+                            const std::vector<Transform> &offsets) {
+            upload(reinterpret_cast<const uint8_t *>(mesh.vertices.data()),
+                   sizeof(Vertex) * mesh.vertices.size(),
+                   reinterpret_cast<const uint8_t *>(offsets.data()),
+                   sizeof(Transform) * offsets.size(),
+                   mesh.indices);
+        }
     };
 }
 

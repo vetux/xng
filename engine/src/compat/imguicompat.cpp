@@ -70,36 +70,31 @@ namespace xengine {
             }
         }
 
-        void DrawData(Window &window, RenderTarget &target) {
-            return DrawData(window, target, RenderOptions({}, target.getSize()));
-        }
-
-        void DrawData(Window &window, RenderTarget &target, RenderOptions options) {
+        void DrawData(Window &window, RenderTarget &target, bool clear) {
             auto displayDriver = window.getDisplayDriver();
             auto graphicsDriver = window.getGraphicsDriver();
 
             if (graphicsDriver == "opengl") {
                 auto &t = dynamic_cast<opengl::OGLRenderTarget &>(target);
                 glBindFramebuffer(GL_FRAMEBUFFER, t.getFBO());
-                glViewport(options.viewportOffset.x,
-                           options.viewportOffset.y,
-                           options.viewportSize.x,
-                           options.viewportSize.y);
-                glClearColor(options.clearColorValue.r(),
-                             options.clearColorValue.g(),
-                             options.clearColorValue.b(),
-                             options.clearColorValue.a());
+                glViewport(0,
+                           0,
+                           t.desc.size.x,
+                           t.desc.size.y);
+                const auto clearColor = ColorRGBA::black();
+                glClearColor(clearColor.r(),
+                             clearColor.g(),
+                             clearColor.b(),
+                             clearColor.a());
                 GLenum clearFlags = 0;
-                if (options.clearColor)
+                if (clear) {
                     clearFlags |= GL_COLOR_BUFFER_BIT;
-                if (options.clearDepth)
                     clearFlags |= GL_DEPTH_BUFFER_BIT;
-                if (options.clearStencil)
                     clearFlags |= GL_STENCIL_BUFFER_BIT;
+                }
                 glClear(clearFlags);
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
-                checkGLError("ImGuiCompat");
             } else {
                 throw std::runtime_error("Unsupported graphics driver");
             }

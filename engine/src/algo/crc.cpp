@@ -17,21 +17,31 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "render/graph/framegraphpipeline.hpp"
+#include "algo/crc.hpp"
 
 namespace xengine {
-    FrameGraphPipeline::FrameGraphPipeline(RenderDevice &device)
-            : device(device), pool(device) {}
+    std::array<HashCRC, 256> generate_crc_lookup_table() noexcept {
+        auto const reversed_polynomial = HashCRC{0xEDB88320uL};
 
-    void FrameGraphPipeline::render(RenderTarget &target,
-                                    const Scene &scene) {
-        FrameGraphBuilder builder(target, pool,scene, renderResolution, renderSamples);
-        auto graph = builder.build(passes);
-        graph.render(device);
-        pool.endFrame();
-    }
+        // This is a function object that calculates the checksum for a value,
+        // then increments the value, starting from zero.
+        struct byte_checksum {
+            HashCRC operator()() noexcept {
+                auto checksum = static_cast<HashCRC>(n++);
 
-    void FrameGraphPipeline::setPasses(std::vector<std::shared_ptr<RenderPass>> p) {
-        passes = std::move(p);
+                for (auto i = 0; i < 8; ++i)
+                    checksum = (checksum >> 1) ^ ((checksum & 0x1u) ? reversed_polynomial : 0);
+
+                return checksum;
+            }
+
+            unsigned n = 0;
+        };
+
+        auto table = std::array<HashCRC, 256>{};
+        std::generate(table.begin(), table.end(), byte_checksum{});
+
+        return table;
     }
 }
+

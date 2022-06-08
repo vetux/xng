@@ -22,7 +22,7 @@
 
 #include "math/matrixmath.hpp"
 #include "async/threadpool.hpp"
-#include "render/shader/shadercompiler.hpp"
+#include "graphics/shader/shadercompiler.hpp"
 
 static const char *SHADER_VERT = R"###(#version 410 core
 
@@ -166,7 +166,7 @@ namespace xengine {
 
     Renderer2D::Renderer2D(RenderDevice &device)
             : renderDevice(device) {
-        vs = ShaderSource(SHADER_VERT, "main", VERTEX, GLSL_410);
+     /*   vs = ShaderSource(SHADER_VERT, "main", VERTEX, GLSL_410);
         fs = ShaderSource(SHADER_FRAG, "main", FRAGMENT, GLSL_410);
         fsText = ShaderSource(SHADER_TEXT_FRAG, "main", FRAGMENT, GLSL_410);
 
@@ -175,13 +175,13 @@ namespace xengine {
         fsText.preprocess();
 
         defShader = device.getAllocator().createShaderProgram(vs, fs);
-        textShader = device.getAllocator().createShaderProgram(vs, fsText);
+        textShader = device.getAllocator().createShaderProgram(vs, fsText);*/
     }
 
     Renderer2D::~Renderer2D() = default;
 
     void Renderer2D::renderBegin(RenderTarget &target, bool clear, ColorRGBA clearColor) {
-        renderDevice.getRenderer().renderBegin(target, RenderOptions({},
+      /*  renderDevice.getRenderer().renderBegin(target, RenderOptions({},
                                                                      target.getSize(),
                                                                      false,
                                                                      false,
@@ -190,7 +190,7 @@ namespace xengine {
                                                                      1,
                                                                      clear, clear, clear));
         screenSize = target.getSize();
-        setProjection({{}, screenSize.convert<float>()});
+        setProjection({{}, screenSize.convert<float>()});*/
     }
 
     void Renderer2D::renderBegin(RenderTarget &target,
@@ -198,7 +198,7 @@ namespace xengine {
                                  ColorRGBA clearColor,
                                  Vec2i viewportOffset,
                                  Vec2i viewportSize) {
-        renderDevice.getRenderer().renderBegin(target, RenderOptions(viewportOffset,
+       /* renderDevice.getRenderer().renderBegin(target, RenderOptions(viewportOffset,
                                                                      viewportSize,
                                                                      false,
                                                                      false,
@@ -207,7 +207,7 @@ namespace xengine {
                                                                      1,
                                                                      clear, clear, clear));
         screenSize = viewportSize;
-        setProjection({{}, screenSize.convert<float>()});
+        setProjection({{}, screenSize.convert<float>()});*/
     }
 
 
@@ -219,7 +219,7 @@ namespace xengine {
         camera.top = projection.position.y;
         camera.bottom = projection.dimensions.y;
     }
-
+/*
     void Renderer2D::draw(Rectf srcRect,
                           Rectf dstRect,
                           TextureBuffer &texture,
@@ -524,5 +524,5 @@ namespace xengine {
             allocatedPoints[point] = renderDevice.getAllocator().createMeshBuffer(mesh);
             return *allocatedPoints[point];
         }
-    }
+    }*/
 }

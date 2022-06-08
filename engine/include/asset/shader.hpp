@@ -20,7 +20,7 @@
 #ifndef XENGINE_SHADER_HPP
 #define XENGINE_SHADER_HPP
 
-#include "render/shader/shadersource.hpp"
+#include "graphics/shader/shadersource.hpp"
 
 #include "resource/resource.hpp"
 

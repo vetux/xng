@@ -51,7 +51,7 @@ namespace xengine {
 
         FrameGraphResource createShader(const ResourceHandle<Shader> &handle);
 
-        FrameGraphResource createTextureBuffer(const TextureBuffer::Attributes &attribs);
+        FrameGraphResource createTextureBuffer(const TextureBufferDesc &attribs);
 
         FrameGraphResource createRenderTarget(Vec2i size, int samples);
 
