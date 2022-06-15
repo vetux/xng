@@ -102,10 +102,6 @@ namespace xengine {
                     VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT)
             };
 
             const VertexBufferDesc desc = {
@@ -124,6 +120,7 @@ namespace xengine {
          *  layout (location = 2) in vec2 uv;
          *  layout (location = 3) in vec3 tangent;
          *  layout (location = 4) in vec3 bitangent;
+         *  -- Instance Start --
          *  layout (location = 5) in vec4 instanceRow0;
          *  layout (location = 6) in vec4 instanceRow1;
          *  layout (location = 7) in vec4 instanceRow2;
@@ -133,7 +130,7 @@ namespace xengine {
          * @param offsets
          * @return
          */
-        virtual std::unique_ptr<VertexBuffer> createInstanceVertexBuffer(const Mesh &mesh,
+        virtual std::unique_ptr<VertexBuffer> createInstancedVertexBuffer(const Mesh &mesh,
                                                                          const std::vector<Transform> &offsets) {
             const std::vector<VertexAttribute> layout = {
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
@@ -141,10 +138,6 @@ namespace xengine {
                     VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT)
             };
 
             const std::vector<VertexAttribute> instanceLayout = {

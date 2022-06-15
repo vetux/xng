@@ -42,11 +42,11 @@ namespace xengine {
          */
         void collectGarbage();
 
-        VertexBuffer &getMesh(ResourceHandle<Mesh> handle);
+        VertexBuffer &getMesh(const ResourceHandle<Mesh>& handle);
 
-        TextureBuffer &getTexture(ResourceHandle<Texture> handle);
+        TextureBuffer &getTexture(const ResourceHandle<Texture>& handle);
 
-        ShaderProgram &getShader(ResourceHandle<Shader> handle);
+        ShaderProgram &getShader(const ResourceHandle<Shader>& handle);
 
         TextureBuffer &createTextureBuffer(const TextureBufferDesc &desc);
 

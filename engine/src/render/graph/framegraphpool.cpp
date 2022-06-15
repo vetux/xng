@@ -100,17 +100,18 @@ namespace xengine {
         usedPipelines.clear();
     }
 
-    VertexBuffer &FrameGraphPool::getMesh(ResourceHandle<Mesh> handle) {
+    VertexBuffer &FrameGraphPool::getMesh(const ResourceHandle<Mesh>& handle) {
         usedUris.insert(handle.getUri());
         auto it = uriObjects.find(handle.getUri());
         if (it == uriObjects.end()) {
-            auto &o = uriObjects[handle.getUri()];
-            o = device->createVertexBuffer(handle.get());
+            auto vertexBuffer = device->createInstancedVertexBuffer(handle.get(), {Transform()});
+            vertexBuffer->upload(handle.get(), {Transform()});
+            uriObjects[handle.getUri()] = std::move(vertexBuffer);
         }
         return dynamic_cast<VertexBuffer &>(*uriObjects.at(handle.getUri()));
     }
 
-    TextureBuffer &FrameGraphPool::getTexture(ResourceHandle<Texture> handle) {
+    TextureBuffer &FrameGraphPool::getTexture(const ResourceHandle<Texture>& handle) {
         usedUris.insert(handle.getUri());
         auto it = uriObjects.find(handle.getUri());
         if (it == uriObjects.end()) {
@@ -119,7 +120,7 @@ namespace xengine {
         return dynamic_cast<TextureBuffer &>(*uriObjects.at(handle.getUri()));
     }
 
-    ShaderProgram &FrameGraphPool::getShader(ResourceHandle<Shader> handle) {
+    ShaderProgram &FrameGraphPool::getShader(const ResourceHandle<Shader>& handle) {
         usedUris.insert(handle.getUri());
         auto it = uriObjects.find(handle.getUri());
         if (it == uriObjects.end()) {
