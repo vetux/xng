@@ -27,7 +27,7 @@
 #include "graphics/opengl/oglrenderpipeline.hpp"
 #include "graphics/opengl/oglrendertarget.hpp"
 #include "graphics/opengl/ogltexturebuffer.hpp"
-#include "graphics/opengl/oglmeshbuffer.hpp"
+#include "graphics/opengl/oglvertexbuffer.hpp"
 #include "graphics/opengl/oglshaderprogram.hpp"
 #include "graphics/opengl/oglshaderbuffer.hpp"
 
@@ -62,8 +62,8 @@ namespace xengine::opengl {
             return std::make_unique<OPENGL_TYPENAME(TextureBuffer)>(desc);
         }
 
-        std::unique_ptr<MeshBuffer> createMeshBuffer(const MeshBufferDesc &desc) override {
-            return std::make_unique<OPENGL_TYPENAME(MeshBuffer)>(desc);
+        std::unique_ptr<VertexBuffer> createVertexBuffer(const VertexBufferDesc &desc) override {
+            return std::make_unique<OPENGL_TYPENAME(VertexBuffer)>(desc);
         }
 
         std::unique_ptr<ShaderProgram> createShaderProgram(const ShaderProgramDesc &desc) override {

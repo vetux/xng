@@ -20,9 +20,9 @@
 #ifndef XENGINE_OGLSHADERBUFFER_HPP
 #define XENGINE_OGLSHADERBUFFER_HPP
 
-#include "graphics/shaderbuffer.hpp"
-
 #include "graphics/opengl/oglbuildmacro.hpp"
+
+#warning NOT IMPLEMENTED
 
 namespace xengine::opengl {
     class OPENGL_TYPENAME(ShaderBuffer) : public ShaderBuffer OPENGL_INHERIT {
@@ -32,15 +32,17 @@ namespace xengine::opengl {
         explicit OPENGL_TYPENAME(ShaderBuffer)(ShaderBufferDesc desc)
                 : desc(desc) {
             initialize();
-#warning NOT IMPLEMENTED
         }
+
+        void pinGpuMemory() override {}
+
+        void unpinGpuMemory() override {}
 
         const ShaderBufferDesc &getDescription() override {
             return desc;
         }
 
         void upload(const uint8_t *data, size_t size) override {
-#warning NOT IMPLEMENTED
         }
 
         OPENGL_MEMBERS

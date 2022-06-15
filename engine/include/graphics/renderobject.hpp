@@ -17,18 +17,35 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_OBJECT_HPP
-#define XENGINE_OBJECT_HPP
+#ifndef XENGINE_RENDEROBJECT_HPP
+#define XENGINE_RENDEROBJECT_HPP
 
 namespace xengine {
-    /**
-     * A render object is a dynamically allocated graphics api dependent object which can be deallocated by
-     * calling the destructor.
-     */
-    class XENGINE_EXPORT RenderObject {
+    class RenderObject {
     public:
+        enum Type {
+            VERTEX_BUFFER,
+            TEXTURE_BUFFER,
+            SHADER_BUFFER,
+            SHADER_PROGRAM,
+            RENDER_TARGET,
+            RENDER_PIPELINE
+        };
+
         virtual ~RenderObject() = default;
+
+        virtual Type getType() = 0;
+
+        /**
+         * Pin the render object to the implementations fastest memory type.
+         * If the implementation supports different memory types
+         * it shall move the object's data to the fastest memory while it is pinned. (Eg. Staging buffer in Vulkan)
+         * In render pipeline executions the implementation ensures that the objects data is accessible somehow regardless if its pinned or not.
+         */
+        virtual void pinGpuMemory() = 0;
+
+        virtual void unpinGpuMemory() = 0;
     };
 }
 
-#endif //XENGINE_OBJECT_HPP
+#endif //XENGINE_RENDEROBJECT_HPP

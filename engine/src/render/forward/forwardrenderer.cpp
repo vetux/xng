@@ -17,15 +17,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_TEXTUREBUFFERVIEW_HPP
-#define XENGINE_TEXTUREBUFFERVIEW_HPP
-
-#include "graphics/renderobject.hpp"
+#include "render/forward/forwardrenderer.hpp"
 
 namespace xengine {
-    class TextureBufferView : public RenderObject {
-    public:
-        ~TextureBufferView() override = default;
-    };
+    void ForwardRenderer::render(RenderTarget &target, const Scene &scene) {
+        // TODO: Implement forward renderer
+    }
 }
-#endif //XENGINE_TEXTUREBUFFERVIEW_HPP

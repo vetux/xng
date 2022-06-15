@@ -20,7 +20,7 @@
 #ifndef XENGINE_SKYBOXPASS_HPP
 #define XENGINE_SKYBOXPASS_HPP
 
-#include "render/graph/renderpass.hpp"
+#include "render/graph/framegraphpass.hpp"
 
 #include "asset/scene.hpp"
 

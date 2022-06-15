@@ -21,7 +21,7 @@
 #define XENGINE_PHONGPASS_HPP
 
 #include "asset/scene.hpp"
-#include "render/graph/renderpass.hpp"
+#include "render/graph/framegraphpass.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT PhongPass : public RenderPass {

@@ -17,24 +17,35 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RENDERPASS_HPP
-#define XENGINE_RENDERPASS_HPP
+#ifndef XENGINE_FRAMEGRAPHRENDERER_HPP
+#define XENGINE_FRAMEGRAPHRENDERER_HPP
 
-#include "render/graph/renderpassresources.hpp"
-#include "render/graph/framegraphbuilder.hpp"
-#include "render/graph/framegraphblackboard.hpp"
+#include "render/scenerenderer.hpp"
+
+#include "render/graph/framegraphpool.hpp"
+#include "render/graph/framegraphpass.hpp"
 
 #include "graphics/renderdevice.hpp"
 
 namespace xengine {
-    class XENGINE_EXPORT RenderPass {
+    class XENGINE_EXPORT FrameGraphRenderer : public SceneRenderer {
     public:
-        virtual ~RenderPass() = default;
+        explicit FrameGraphRenderer(RenderDevice &device);
 
-        virtual void setup(FrameGraphBuilder &builder) = 0;
+        void render(RenderTarget &target, const Scene &scene) override;
 
-        virtual void execute(RenderPassResources &resources, RenderDevice &ren, FrameGraphBlackboard &board) = 0;
+        void setRenderResolution(Vec2i res) override { renderResolution = res; }
+
+        void setRenderSamples(int samples) override { renderSamples = samples; }
+
+        void setPasses(std::vector<std::shared_ptr<FrameGraphPass>> passes);
+
+    private:
+        RenderDevice &device;
+        std::vector<std::shared_ptr<FrameGraphPass>> passes;
+        FrameGraphPool pool;
+        Vec2i renderResolution = {640, 480};
+        int renderSamples{};
     };
 }
-
-#endif //XENGINE_RENDERPASS_HPP
+#endif //XENGINE_FRAMEGRAPHRENDERER_HPP

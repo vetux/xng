@@ -19,7 +19,11 @@
 
 #include "resource/resourceregistry.hpp"
 
+#include <utility>
+
 #include "resource/resourceimporter.hpp"
+
+#include "io/archive/memoryarchive.hpp"
 
 namespace xengine {
     static std::unique_ptr<ResourceRegistry> defRepo = nullptr;
@@ -32,6 +36,7 @@ namespace xengine {
     }
 
     ResourceRegistry::ResourceRegistry() {
+        archives["memory"] = std::make_shared<MemoryArchive>();
     }
 
     ResourceRegistry::~ResourceRegistry() {
@@ -40,8 +45,20 @@ namespace xengine {
         }
     }
 
-    void ResourceRegistry::setArchive(std::shared_ptr<Archive> a) {
-        archive = std::move(a);
+    void ResourceRegistry::addArchive(const std::string &scheme, std::shared_ptr<Archive> archive) {
+        std::unique_lock g(archiveMutex);
+        if (archives.find(scheme) != archives.end())
+            throw std::runtime_error("Archive with scheme " + scheme + " already exists");
+        archives[scheme] = std::move(archive);
+    }
+
+    void ResourceRegistry::removeArchive(const std::string &scheme) {
+        std::unique_lock g(archiveMutex);
+        archives.erase(scheme);
+    }
+
+    Archive &ResourceRegistry::getArchive(const std::string &scheme) {
+        return *archives.at(scheme);
     }
 
     const Resource &ResourceRegistry::get(const Uri &uri) {
@@ -62,14 +79,15 @@ namespace xengine {
 
     void ResourceRegistry::load(const Uri &uri) {
         std::lock_guard<std::mutex> g(mutex);
-        auto path = uri.getFile();
 
-        auto it = loadTasks.find(path);
+        auto it = loadTasks.find(uri);
         if (it == loadTasks.end()) {
-            loadTasks[path] = ThreadPool::getPool().addTask([this, path]() {
-                std::filesystem::path p(path);
-                auto stream = archive->open(path);
-                auto bundle = ResourceImporter().import(*stream, p.extension(), archive.get());
+            loadTasks[uri] = ThreadPool::getPool().addTask([this, uri]() {
+                auto &archive = resolveUri(uri);
+                std::filesystem::path path(uri.getFile());
+                auto stream = archive.open(path);
+                auto bundle = ResourceImporter().import(*stream, path.extension(), &archive);
+
                 std::lock_guard<std::mutex> g(mutex);
                 bundles[path] = std::move(bundle);
             });
@@ -77,13 +95,11 @@ namespace xengine {
     }
 
     void ResourceRegistry::unload(const Uri &uri) {
-        auto path = uri.getFile();
-
         std::shared_ptr<Task> task;
         {
             std::lock_guard<std::mutex> g(mutex);
 
-            auto it = loadTasks.find(path);
+            auto it = loadTasks.find(uri);
             if (it == loadTasks.end()) {
                 return;
             } else {
@@ -94,24 +110,36 @@ namespace xengine {
         task->join();
 
         std::lock_guard<std::mutex> g(mutex);
-        loadTasks.erase(path);
+        loadTasks.erase(uri);
     }
 
     const Resource &ResourceRegistry::getData(const Uri &uri) {
         std::lock_guard<std::mutex> g(mutex);
-        auto &path = uri.getFile();
-        auto it = bundles.find(path);
+        auto it = bundles.find(uri.getFile());
         if (it == bundles.end()) {
-            bundles[path] = loadBundle(path);
+            bundles[uri.getFile()] = loadBundle(uri);
         }
-        return bundles[path].get(uri.getAsset());
+        return bundles[uri.getFile()].get(uri.getAsset());
     }
 
-    ResourceBundle ResourceRegistry::loadBundle(const std::filesystem::path &path) {
-        if (!archive) {
-            throw std::runtime_error("No archive assigned in repository");
+    ResourceBundle ResourceRegistry::loadBundle(const Uri &uri) {
+        auto &archive = resolveUri(uri);
+        std::filesystem::path path(uri.getFile());
+        auto stream = archive.open(path);
+        return ResourceImporter().import(*stream, path.extension(), &archive);
+    }
+
+    Archive &ResourceRegistry::resolveUri(const Uri &uri) {
+        std::shared_lock g(archiveMutex);
+        if (uri.getScheme().empty()) {
+            for (auto &a: archives) {
+                if (a.second->exists(uri.getFile())) {
+                    return *a.second;
+                }
+            }
+            throw std::runtime_error("Failed to resolve uri " + uri.toString());
+        } else {
+            return *archives.at(uri.getScheme());
         }
-        auto stream = archive->open(path);
-        return ResourceImporter().import(*stream, path.extension(), archive.get());
     }
 }

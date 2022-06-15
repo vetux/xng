@@ -25,7 +25,6 @@
 #include "graphics/renderobject.hpp"
 #include "graphics/textureproperties.hpp"
 #include "graphics/texturebufferdesc.hpp"
-#include "graphics/texturebufferview.hpp"
 
 #include "asset/image.hpp"
 
@@ -39,7 +38,9 @@ namespace xengine {
 
         virtual const TextureBufferDesc &getDescription() = 0;
 
-        virtual std::unique_ptr<TextureBufferView> createView() = 0;
+        Type getType() override {
+            return TEXTURE_BUFFER;
+        }
 
         /**
          * Upload the image buffer.

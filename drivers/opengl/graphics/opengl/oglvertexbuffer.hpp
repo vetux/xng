@@ -17,22 +17,21 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_OGLMESHBUFFER_HPP
-#define XENGINE_OGLMESHBUFFER_HPP
+#ifndef XENGINE_OGLVERTEXBUFFER_HPP
+#define XENGINE_OGLVERTEXBUFFER_HPP
 
-#include "graphics/meshbuffer.hpp"
+#include "graphics/vertexbuffer.hpp"
 
 #include <utility>
 
 #include "graphics/opengl/oglbuildmacro.hpp"
-#include "graphics/opengl/oglmeshbufferview.hpp"
 
 #include "math/matrixmath.hpp"
 
 namespace xengine ::opengl {
-    class OPENGL_TYPENAME(MeshBuffer) : public MeshBuffer OPENGL_INHERIT {
+    class OPENGL_TYPENAME(VertexBuffer) : public VertexBuffer OPENGL_INHERIT {
     public:
-        MeshBufferDesc desc;
+        VertexBufferDesc desc;
 
         GLuint VAO = 0;
         GLuint VBO = 0;
@@ -47,7 +46,7 @@ namespace xengine ::opengl {
         size_t instanceCount = 0;
         GLuint instanceVBO = 0;
 
-        explicit OPENGL_TYPENAME(MeshBuffer)(MeshBufferDesc desc) :
+        explicit OPENGL_TYPENAME(VertexBuffer)(VertexBufferDesc desc) :
                 desc(std::move(desc)) {
             initialize();
             glGenVertexArrays(1, &VAO);
@@ -56,25 +55,23 @@ namespace xengine ::opengl {
             glGenBuffers(1, &instanceVBO);
         }
 
-        OPENGL_TYPENAME(MeshBuffer)(const OPENGL_TYPENAME(MeshBuffer) &copy) = delete;
+        OPENGL_TYPENAME(VertexBuffer)(const OPENGL_TYPENAME(VertexBuffer) &copy) = delete;
 
-        OPENGL_TYPENAME(MeshBuffer) &operator=(const OPENGL_TYPENAME(MeshBuffer) &copy) = delete;
+        OPENGL_TYPENAME(VertexBuffer) &operator=(const OPENGL_TYPENAME(VertexBuffer) &copy) = delete;
 
-        ~OPENGL_TYPENAME(MeshBuffer)() override {
+        ~OPENGL_TYPENAME(VertexBuffer)() override {
             glDeleteVertexArrays(1, &VAO);
             glDeleteBuffers(1, &VBO);
             glDeleteBuffers(1, &EBO);
             glDeleteBuffers(1, &instanceVBO);
         }
 
-        const MeshBufferDesc &getDescription() override {
-            return desc;
-        }
+        void pinGpuMemory() override {}
 
-        std::unique_ptr<MeshBufferView> createView() override {
-            auto ret = std::make_unique<OPENGL_TYPENAME(MeshBufferView)>();
-            ret->buffer = this;
-            return ret;
+        void unpinGpuMemory() override {}
+
+        const VertexBufferDesc &getDescription() override {
+            return desc;
         }
 
         void upload(const uint8_t *buffer,
@@ -244,4 +241,4 @@ namespace xengine ::opengl {
     };
 }
 
-#endif //XENGINE_OGLMESHBUFFER_HPP
+#endif //XENGINE_OGLVERTEXBUFFER_HPP

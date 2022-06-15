@@ -22,12 +22,16 @@
 
 #include "graphics/renderobject.hpp"
 
-#include "graphics/shaderbufferdesc.hpp"
+#include "shaderbufferdesc.hpp"
 
 namespace xengine {
     class ShaderBuffer : public RenderObject {
     public:
         ~ShaderBuffer() override = default;
+
+        Type getType() override {
+            return SHADER_BUFFER;
+        }
 
         virtual const ShaderBufferDesc &getDescription() = 0;
 

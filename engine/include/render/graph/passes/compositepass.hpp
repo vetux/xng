@@ -20,7 +20,7 @@
 #ifndef XENGINE_COMPOSITEPASS_HPP
 #define XENGINE_COMPOSITEPASS_HPP
 
-#include "render/graph/renderpass.hpp"
+#include "render/graph/framegraphpass.hpp"
 
 
 namespace xengine {

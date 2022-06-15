@@ -27,7 +27,7 @@
 #include "graphics/opengl/oglrendertarget.hpp"
 #include "graphics/opengl/oglshaderprogram.hpp"
 #include "graphics/opengl/oglshaderbuffer.hpp"
-#include "graphics/opengl/oglmeshbuffer.hpp"
+#include "graphics/opengl/oglvertexbuffer.hpp"
 #include "graphics/opengl/ogltexturebuffer.hpp"
 
 namespace xengine::opengl {
@@ -40,11 +40,15 @@ namespace xengine::opengl {
             initialize();
         }
 
+        void pinGpuMemory() override {}
+
+        void unpinGpuMemory() override {}
+
         const RenderPipelineDesc &getDescription() override {
             return desc;
         }
 
-        void render(RenderTarget &target, const std::vector<RenderCommand> &commands) override {
+        void render(RenderTarget &target, const std::vector<RenderPass> &passes) override {
             auto clearColor = desc.clearColorValue.divide();
 
             glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
@@ -95,11 +99,8 @@ namespace xengine::opengl {
             glClear(clearMask);
 
             // Bind shader program
-            if (desc.shader == nullptr)
-                throw std::runtime_error("Nullptr shader");
-
-            auto &shader = dynamic_cast<OPENGL_TYPENAME(ShaderProgram) &>(*desc.shader);
-            shader.activate();
+            auto &oglShader = dynamic_cast<OPENGL_TYPENAME(ShaderProgram) &>(desc.shader);
+            oglShader.activate();
 
             // Setup pipeline state
             glDepthFunc(convert(desc.depthTestMode));
@@ -152,20 +153,20 @@ namespace xengine::opengl {
             checkGLError("Render Pipeline Setup");
 
             // Draw commands
-            for (auto &c: commands) {
+            for (auto &c: passes) {
                 // Bind textures and uniform buffers
-                for (int i = 0; i < c.shaderBindings.size(); i++) {
-                    auto &b = c.shaderBindings.at(i);
-                    OPENGL_TYPENAME(TextureBufferView) *texture;
+                for (int i = 0; i < c.getBindings().size(); i++) {
+                    auto &b = c.getBindings().at(i);
+                    OPENGL_TYPENAME(TextureBuffer) *texture;
                     OPENGL_TYPENAME(ShaderBuffer) *shaderBuffer;
-                    switch (b.type) {
-                        case RenderCommand::TEXTURE_BUFFER:
-                            texture = dynamic_cast<OPENGL_TYPENAME(TextureBufferView) *>(&b.getTextureBuffer());
+                    switch (b.getType()) {
+                        case RenderPass::TEXTURE_BUFFER:
+                            texture = dynamic_cast<OPENGL_TYPENAME(TextureBuffer) *>(&b.getTextureBuffer());
                             glActiveTexture(getTextureSlot(i));
-                            glBindTexture(convert(texture->buffer->getDescription().textureType),
-                                          texture->buffer->handle);
+                            glBindTexture(convert(texture->getDescription().textureType),
+                                          texture->handle);
                             break;
-                        case RenderCommand::SHADER_BUFFER:
+                        case RenderPass::SHADER_BUFFER:
                             shaderBuffer = dynamic_cast<OPENGL_TYPENAME(ShaderBuffer) *>(&b.getShaderBuffer());
 #warning NOT IMPLEMENTED
                             break;
@@ -173,8 +174,7 @@ namespace xengine::opengl {
                 }
 
                 //Bind VAO and draw.
-                auto &meshView = dynamic_cast<const OPENGL_TYPENAME(MeshBufferView) &>(*c.mesh);
-                auto &mesh = *meshView.buffer;
+                auto &mesh = dynamic_cast<const OPENGL_TYPENAME(VertexBuffer) &>(c.getVertexBuffer());
 
                 glBindVertexArray(mesh.VAO);
 
@@ -203,16 +203,16 @@ namespace xengine::opengl {
                 glBindVertexArray(0);
 
                 //Unbind textures and uniform buffers
-                for (int i = 0; i < c.shaderBindings.size(); i++) {
-                    auto &b = c.shaderBindings.at(i);
-                    switch (b.type) {
-                        case RenderCommand::TEXTURE_BUFFER:
+                for (int i = 0; i < c.getBindings().size(); i++) {
+                    auto &b = c.getBindings().at(i);
+                    switch (b.getType()) {
+                        case RenderPass::TEXTURE_BUFFER:
                             glActiveTexture(getTextureSlot(i));
                             glBindTexture(GL_TEXTURE_2D, 0);
                             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
                             break;
-                        case RenderCommand::SHADER_BUFFER:
-#warning NOT IMPLEMENTED
+                        case RenderPass::SHADER_BUFFER:
+// NOT IMPLEMENTED
                             break;
                     }
                 }

@@ -20,10 +20,10 @@
 #ifndef XENGINE_RENDERTARGET_HPP
 #define XENGINE_RENDERTARGET_HPP
 
-#include "graphics/renderobject.hpp"
 #include "graphics/textureproperties.hpp"
 #include "graphics/texturebuffer.hpp"
 #include "graphics/rendertargetdesc.hpp"
+#include "graphics/renderobject.hpp"
 
 #include "math/vector2.hpp"
 
@@ -31,6 +31,10 @@ namespace xengine {
     class XENGINE_EXPORT RenderTarget : public RenderObject {
     public:
         ~RenderTarget() override = default;
+
+        Type getType() override {
+            return RENDER_TARGET;
+        }
 
         virtual const RenderTargetDesc &getDescription() = 0;
 

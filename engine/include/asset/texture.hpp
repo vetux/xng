@@ -38,6 +38,9 @@ namespace xengine {
 
         std::vector<ResourceHandle<ImageRGBA>> images;
         TextureBufferDesc textureDescription;
+
+        bool clear = false;
+        ColorRGBA clearColor;
     };
 }
 

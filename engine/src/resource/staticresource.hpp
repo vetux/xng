@@ -17,21 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "render/graph/framegraphpipeline.hpp"
+#ifndef XENGINE_STATICRESOURCE_HPP
+#define XENGINE_STATICRESOURCE_HPP
 
-namespace xengine {
-    FrameGraphPipeline::FrameGraphPipeline(RenderDevice &device)
-            : device(device), pool(device) {}
+#include "resource/resourceregistry.hpp"
 
-    void FrameGraphPipeline::render(RenderTarget &target,
-                                    const Scene &scene) {
-        FrameGraphBuilder builder(target, pool,scene, renderResolution, renderSamples);
-        auto graph = builder.build(passes);
-        graph.render(device);
-        pool.endFrame();
-    }
+#define _STATIC_RES_COMBINE(first, second) first##second
 
-    void FrameGraphPipeline::setPasses(std::vector<std::shared_ptr<RenderPass>> p) {
-        passes = std::move(p);
-    }
-}
+#define RESOURCE_CREATE(name, path) static bool _STATIC_RES_COMBINE(name, Loaded) = ResourceRegistry::getDefaultRegistry().getArchiveT<MemoryArchive>("memory").addData(path, name);
+
+#endif //XENGINE_STATICRESOURCE_HPP

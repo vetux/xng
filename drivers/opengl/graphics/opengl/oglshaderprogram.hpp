@@ -30,16 +30,14 @@
 #include "math/matrix.hpp"
 
 #include "graphics/shaderprogram.hpp"
-
 #include "graphics/opengl/oglbuildmacro.hpp"
 
-#include "graphics/shader/shadercompiler.hpp"
+#include "shader/shadercompiler.hpp"
 
 namespace xengine {
     namespace opengl {
         class OPENGL_TYPENAME(ShaderProgram) : public ShaderProgram OPENGL_INHERIT {
         public:
-            ShaderProgramDesc desc;
             GLuint programHandle = 0;
 
             /**
@@ -47,37 +45,36 @@ namespace xengine {
              * @param fragmentShader The preprocessed glsl fragment shader.
              * @param geometryShader The preprocessed glsl geometry shader, if empty no geometry shader is used.
              */
-            explicit OPENGL_TYPENAME(ShaderProgram)(ShaderProgramDesc desc)
-                    : desc(std::move(desc)) {
+            explicit OPENGL_TYPENAME(ShaderProgram)(const ShaderProgramDesc &desc) {
                 initialize();
 
                 char *vertexSource, *fragmentSource, *geometrySource = nullptr;
 
                 std::string vert, frag, geo;
-                auto it = desc.entries.find(VERTEX);
-                if (it == desc.entries.end())
+                auto it = desc.shaders.find(VERTEX);
+                if (it == desc.shaders.end())
                     throw std::runtime_error("No vertex shader");
 
-                vert = ShaderCompiler::decompileSPIRV(desc.buffers.at(it->second.bufferIndex).blob,
-                                                      it->second.entryPoint,
+                vert = ShaderCompiler::decompileSPIRV(desc.shaders.at(VERTEX).getBlob(),
+                                                      it->second.getEntryPoint(),
                                                       VERTEX,
                                                       GLSL_420);
                 vertexSource = vert.data();
 
-                it = desc.entries.find(FRAGMENT);
-                if (it == desc.entries.end())
+                it = desc.shaders.find(FRAGMENT);
+                if (it == desc.shaders.end())
                     throw std::runtime_error("No fragment shader");
 
-                frag = ShaderCompiler::decompileSPIRV(desc.buffers.at(it->second.bufferIndex).blob,
-                                                      it->second.entryPoint,
+                frag = ShaderCompiler::decompileSPIRV(desc.shaders.at(FRAGMENT).getBlob(),
+                                                      it->second.getEntryPoint(),
                                                       FRAGMENT,
                                                       GLSL_420);
                 fragmentSource = frag.data();
 
-                it = desc.entries.find(GEOMETRY);
-                if (it != desc.entries.end()) {
-                    geo = ShaderCompiler::decompileSPIRV(desc.buffers.at(it->second.bufferIndex).blob,
-                                                         it->second.entryPoint,
+                it = desc.shaders.find(GEOMETRY);
+                if (it != desc.shaders.end()) {
+                    geo = ShaderCompiler::decompileSPIRV(desc.shaders.at(GEOMETRY).getBlob(),
+                                                         it->second.getEntryPoint(),
                                                          GEOMETRY,
                                                          GLSL_420);
                     geometrySource = geo.data();
@@ -154,9 +151,9 @@ namespace xengine {
 
             OPENGL_TYPENAME(ShaderProgram) &operator=(const OPENGL_TYPENAME(ShaderProgram) &) = delete;
 
-            const ShaderProgramDesc &getDescription() override {
-                return desc;
-            }
+            void pinGpuMemory() override {}
+
+            void unpinGpuMemory() override {}
 
             void activate() {
                 glUseProgram(programHandle);

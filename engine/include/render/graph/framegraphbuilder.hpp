@@ -22,6 +22,7 @@
 
 #include "render/graph/framegraphresource.hpp"
 #include "render/graph/framegraph.hpp"
+#include "render/graph/framegraphpool.hpp"
 
 #include "asset/shader.hpp"
 #include "asset/mesh.hpp"
@@ -29,18 +30,10 @@
 #include "asset/scene.hpp"
 
 namespace xengine {
-    /**
-     * Not really a framegraph architecture currently because the graph handles only allocation of resources with an uri or render targets and textures which do not require a cpu upload.
-     *
-     * The render passes allocate static render objects using a passed render device, and share render objects with the blackboard which makes transient resource allocation not possible.
-     *
-     * This is because i could not find a efficient way to identify individual resource instances just based on their data (Would need to compare the complete data vectors of meshes and images)
-     * In a real framegraph you allocate the resources transiently and minimize resource lifetime throughout a frame in eg Vulkan.
-     */
     class XENGINE_EXPORT FrameGraphBuilder {
     public:
         FrameGraphBuilder(RenderTarget &backBuffer,
-                          ObjectPool &pool,
+                          FrameGraphPool &pool,
                           const Scene &scene,
                           Vec2i renderResolution,
                           int renderSamples);
@@ -55,6 +48,8 @@ namespace xengine {
 
         FrameGraphResource createRenderTarget(Vec2i size, int samples);
 
+        FrameGraphResource createPipeline(const ResourceHandle<Shader> &handle, const RenderPipelineDesc &desc);
+
         void write(FrameGraphResource target);
 
         void read(FrameGraphResource source);
@@ -67,10 +62,10 @@ namespace xengine {
 
         const Scene &getScene();
 
-        FrameGraph build(const std::vector<std::shared_ptr<RenderPass>> &passes);
+        FrameGraph build(const std::vector<std::shared_ptr<FrameGraphPass>> &passes);
 
     private:
-        ObjectPool &pool;
+        FrameGraphPool &pool;
         RenderTarget &backBuffer;
         const Scene &scene;
         std::vector<std::function<RenderObject &()>> resources;

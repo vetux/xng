@@ -27,6 +27,7 @@
 #include <atomic>
 #include <condition_variable>
 #include <filesystem>
+#include <shared_mutex>
 
 #include "io/archive.hpp"
 
@@ -39,16 +40,12 @@
 #include "algo/refcounter.hpp"
 
 namespace xengine {
-    /**
-     * A registry loads asset bundles from an archive and deallocates the bundles from a separate garbage collection thread.
-     * The garbage collector uses the shared pointer reference counts in the resource bundles to determine unused bundles.
-     */
     class XENGINE_EXPORT ResourceRegistry {
     public:
         /**
          * The default registry used by resource handle if no registry is specified.
          *
-         * Users should set the archive instance on the repository before instantiating resource handles.
+         * Users must set schemes with their archive instances before instantiating resource handles referencing the schemes.
          *
          * @return
          */
@@ -59,12 +56,27 @@ namespace xengine {
         ~ResourceRegistry();
 
         /**
-         * Set the archive instance to use for resolving the uri file paths.
+         * Set the archive instances with their corresponding scheme to use for resolving the uri file paths.
          *
          * @param archive
          */
-        void setArchive(std::shared_ptr<Archive> archive);
+        void addArchive(const std::string &scheme, std::shared_ptr<Archive> archive);
 
+        void removeArchive(const std::string &scheme);
+
+        Archive &getArchive(const std::string &scheme);
+
+        template<typename T>
+        T &getArchiveT(const std::string &name) {
+            return dynamic_cast<T &>(getArchive(name));
+        }
+
+        /**
+         * If the scheme on uri is not set the registry returns the first archive for which the uri file exists otherwise an exception is thrown.
+         *
+         * @param uri
+         * @return
+         */
         const Resource &get(const Uri &uri);
 
         void incRef(const Uri &uri);
@@ -78,15 +90,19 @@ namespace xengine {
 
         const Resource &getData(const Uri &uri);
 
-        ResourceBundle loadBundle(const std::filesystem::path &path);
+        ResourceBundle loadBundle(const Uri &uri);
+
+        Archive &resolveUri(const Uri &uri);
 
         std::mutex mutex;
 
+        std::shared_mutex archiveMutex;
+
         RefCounter<std::string, ulong> bundleRefCounter;
 
-        std::map<std::string, std::shared_ptr<Task>> loadTasks;
+        std::unordered_map<Uri, std::shared_ptr<Task>> loadTasks;
 
-        std::shared_ptr<Archive> archive;
+        std::map<std::string, std::shared_ptr<Archive>> archives;
         std::map<std::string, ResourceBundle> bundles;
     };
 }

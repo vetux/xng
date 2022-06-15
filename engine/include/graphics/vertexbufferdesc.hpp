@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_MESHBUFFERDESC_HPP
-#define XENGINE_MESHBUFFERDESC_HPP
+#ifndef XENGINE_VERTEXBUFFERDESC_HPP
+#define XENGINE_VERTEXBUFFERDESC_HPP
 
 #include <vector>
 
@@ -28,14 +28,14 @@
 #include "algo/crc.hpp"
 
 namespace xengine {
-    struct MeshBufferDesc {
+    struct VertexBufferDesc {
         std::vector<VertexAttribute> vertexLayout{}; // The layout of one vertex
         std::vector<VertexAttribute> instanceLayout{}; // the layout of one instance
         size_t numberOfVertices = 0;
         size_t numberOfInstances = 0;
         size_t numberOfIndices = 0;
 
-        bool operator==(const MeshBufferDesc &other) const {
+        bool operator==(const VertexBufferDesc &other) const {
             return vertexLayout == other.vertexLayout
                    && instanceLayout == other.instanceLayout
                    && numberOfVertices == other.numberOfVertices
@@ -47,8 +47,8 @@ namespace xengine {
 using namespace xengine;
 namespace std {
     template<>
-    struct hash<MeshBufferDesc> {
-        std::size_t operator()(const MeshBufferDesc &k) const {
+    struct hash<VertexBufferDesc> {
+        std::size_t operator()(const VertexBufferDesc &k) const {
             size_t ret = 0;
             for (auto v: k.vertexLayout) {
                 hash_combine(ret, v.type);
@@ -65,4 +65,4 @@ namespace std {
     };
 }
 
-#endif //XENGINE_MESHBUFFERDESC_HPP
+#endif //XENGINE_VERTEXBUFFERDESC_HPP

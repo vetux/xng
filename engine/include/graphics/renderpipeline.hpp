@@ -21,18 +21,22 @@
 #define XENGINE_RENDERPIPELINE_HPP
 
 #include "graphics/renderobject.hpp"
-#include "graphics/rendertarget.hpp"
-#include "graphics/rendercommand.hpp"
 #include "graphics/renderpipelinedesc.hpp"
+#include "graphics/renderpass.hpp"
+#include "graphics/rendertarget.hpp"
 
 namespace xengine {
     class RenderPipeline : public RenderObject {
     public:
         ~RenderPipeline() override = default;
 
-        virtual const RenderPipelineDesc &getDescription() = 0;
+        Type getType() override {
+            return RENDER_PIPELINE;
+        }
 
-        virtual void render(RenderTarget &target, const std::vector<RenderCommand> &commands) = 0;
+        virtual void render(RenderTarget &target, const std::vector<RenderPass> &passes) = 0;
+
+        virtual const RenderPipelineDesc &getDescription() = 0;
 
         virtual std::vector<uint8_t> cache() = 0;
     };

@@ -27,7 +27,7 @@
 #include "ecs/components/meshrendercomponent.hpp"
 #include "ecs/components/skyboxcomponent.hpp"
 
-#include "render/pipeline.hpp"
+#include "render/scenerenderer.hpp"
 
 namespace xengine {
     class XENGINE_EXPORT RenderSystem : public System,
@@ -35,7 +35,7 @@ namespace xengine {
                                         ComponentPool<SkyboxComponent>::Listener {
     public:
         RenderSystem(RenderTarget &screen,
-                     Pipeline &pipeline);
+                     SceneRenderer &pipeline);
 
         ~RenderSystem() override;
 
@@ -45,7 +45,7 @@ namespace xengine {
 
         void update(float deltaTime, EntityManager &entityManager) override;
 
-        Pipeline &getPipeline();
+        SceneRenderer &getPipeline();
 
         Scene &getScene();
 
@@ -68,7 +68,7 @@ namespace xengine {
                                const SkyboxComponent &oldValue,
                                const SkyboxComponent &newValue) override;
 
-        Pipeline &pipeline;
+        SceneRenderer &pipeline;
         RenderTarget &screenTarget;
 
         Scene scene;

@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RENDERPASSRESOURCES_HPP
-#define XENGINE_RENDERPASSRESOURCES_HPP
+#ifndef XENGINE_FRAMEGRAPHPASSRESOURCES_HPP
+#define XENGINE_FRAMEGRAPHPASSRESOURCES_HPP
 
 #include <map>
 #include <memory>
@@ -28,18 +28,18 @@
 #include "render/graph/gbuffer.hpp"
 
 #include "graphics/texturebuffer.hpp"
-#include "graphics/meshbuffer.hpp"
+#include "graphics/vertexbuffer.hpp"
 #include "graphics/rendertarget.hpp"
 #include "graphics/shaderprogram.hpp"
 
 namespace xengine {
-    class XENGINE_EXPORT RenderPassResources {
+    class XENGINE_EXPORT FrameGraphPassResources {
     public:
-        explicit RenderPassResources(std::map<FrameGraphResource, RenderObject *> objects)
+        explicit FrameGraphPassResources(std::map<FrameGraphResource, RenderObject *> objects)
                 : objects(std::move(objects)) {}
 
-        MeshBuffer &getMeshBuffer(FrameGraphResource resource) {
-            return dynamic_cast<MeshBuffer &>(*objects.at(resource));
+        VertexBuffer &getMeshBuffer(FrameGraphResource resource) {
+            return dynamic_cast<VertexBuffer &>(*objects.at(resource));
         }
 
         TextureBuffer &getTextureBuffer(FrameGraphResource resource) {
@@ -58,4 +58,4 @@ namespace xengine {
         std::map<FrameGraphResource, RenderObject *> objects;
     };
 }
-#endif //XENGINE_RENDERPASSRESOURCES_HPP
+#endif //XENGINE_FRAMEGRAPHPASSRESOURCES_HPP

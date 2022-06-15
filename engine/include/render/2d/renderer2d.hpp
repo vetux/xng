@@ -25,7 +25,7 @@
 
 #include "graphics/renderdevice.hpp"
 
-#include "graphics/shader/shadersource.hpp"
+#include "shader/shadersource.hpp"
 
 #include "asset/camera.hpp"
 
@@ -228,13 +228,13 @@ namespace xengine {
             }
         };
 
-        MeshBuffer &getPlane(const PlaneDescription &desc);
+        VertexBuffer &getPlane(const PlaneDescription &desc);
 
-        MeshBuffer &getSquare(const SquareDescription &desc);
+        VertexBuffer &getSquare(const SquareDescription &desc);
 
-        MeshBuffer &getLine(const LineDescription &desc);
+        VertexBuffer &getLine(const LineDescription &desc);
 
-        MeshBuffer &getPoint(const Vec2f &point);
+        VertexBuffer &getPoint(const Vec2f &point);
 
         RenderDevice &renderDevice;
 
@@ -245,12 +245,12 @@ namespace xengine {
         std::unique_ptr<ShaderProgram> defShader = nullptr;
         std::unique_ptr<ShaderProgram> textShader = nullptr;
 
-        std::unordered_map<PlaneDescription, std::unique_ptr<MeshBuffer>, PlaneDescriptionHashFunction> allocatedPlanes;
-        std::unordered_map<SquareDescription, std::unique_ptr<MeshBuffer>, SquareDescriptionHashFunction> allocatedSquares;
-        std::unordered_map<LineDescription, std::unique_ptr<MeshBuffer>, LineDescriptionHashFunction> allocatedLines;
-        std::unordered_map<Vec2f, std::unique_ptr<MeshBuffer>, Vector2HashFunction<float>> allocatedPoints;
+        std::unordered_map<PlaneDescription, std::unique_ptr<VertexBuffer>, PlaneDescriptionHashFunction> allocatedPlanes;
+        std::unordered_map<SquareDescription, std::unique_ptr<VertexBuffer>, SquareDescriptionHashFunction> allocatedSquares;
+        std::unordered_map<LineDescription, std::unique_ptr<VertexBuffer>, LineDescriptionHashFunction> allocatedLines;
+        std::unordered_map<Vec2f, std::unique_ptr<VertexBuffer>, Vector2HashFunction<float>> allocatedPoints;
 
-        std::vector<std::unique_ptr<MeshBuffer>> allocatedInstancedMeshes;
+        std::vector<std::unique_ptr<VertexBuffer>> allocatedInstancedMeshes;
 
         std::unordered_set<PlaneDescription, PlaneDescriptionHashFunction> usedPlanes;
         std::unordered_set<SquareDescription, SquareDescriptionHashFunction> usedSquares;

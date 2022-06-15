@@ -17,26 +17,21 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_OGLTEXTUREBUFFERVIEW_HPP
-#define XENGINE_OGLTEXTUREBUFFERVIEW_HPP
+#include "render/graph/framegraphrenderer.hpp"
 
-#include "graphics/texturebufferview.hpp"
+namespace xengine {
+    FrameGraphRenderer::FrameGraphRenderer(RenderDevice &device)
+            : device(device), pool(device) {}
 
-#include "graphics/opengl/oglbuildmacro.hpp"
+    void FrameGraphRenderer::render(RenderTarget &target,
+                                    const Scene &scene) {
+        FrameGraphBuilder builder(target, pool,scene, renderResolution, renderSamples);
+        auto graph = builder.build(passes);
+        graph.render(device);
+        pool.collectGarbage();
+    }
 
-namespace xengine::opengl {
-    class OPENGL_TYPENAME(TextureBuffer);
-
-    class OPENGL_TYPENAME(TextureBufferView) : public TextureBufferView OPENGL_INHERIT {
-    public:
-        OPENGL_TYPENAME(TextureBufferView)() {
-            initialize();
-        }
-
-        OPENGL_TYPENAME(TextureBuffer) *buffer = nullptr;
-
-        OPENGL_MEMBERS
-    };
+    void FrameGraphRenderer::setPasses(std::vector<std::shared_ptr<FrameGraphPass>> p) {
+        passes = std::move(p);
+    }
 }
-
-#endif //XENGINE_OGLTEXTUREBUFFERVIEW_HPP

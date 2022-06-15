@@ -62,6 +62,10 @@ namespace xengine {
                 }
             }
 
+            void pinGpuMemory() override {}
+
+            void unpinGpuMemory() override {}
+
             const RenderTargetDesc &getDescription() override {
                 return desc;
             }

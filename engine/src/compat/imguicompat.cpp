@@ -25,6 +25,8 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 
+#ifdef DRIVER_OPENGL
+
 #include "display/glfw/opengl/windowglfwgl.hpp"
 #include "graphics/opengl/oglrendertarget.hpp"
 
@@ -101,3 +103,5 @@ namespace xengine {
         }
     }
 }
+
+#endif

@@ -20,7 +20,7 @@
 #ifndef XENGINE_GBUFFERPASS_HPP
 #define XENGINE_GBUFFERPASS_HPP
 
-#include "render/graph/renderpass.hpp"
+#include "render/graph/framegraphpass.hpp"
 #include "render/graph/gbuffer.hpp"
 #include "asset/scene.hpp"
 

@@ -28,6 +28,8 @@
 namespace xengine {
     class XENGINE_EXPORT GraphicsDriver : public Driver {
     public:
+        ~GraphicsDriver() override = default;
+
         /**
          * @return Return the information objects of the available render devices.
          */

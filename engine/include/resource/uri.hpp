@@ -23,28 +23,60 @@
 #include <string>
 #include <tuple>
 #include <utility>
+#include <filesystem>
+#include <cassert>
+
+#include "algo/hashcombine.hpp"
 
 namespace xengine {
     /**
-     * Eg. /mydir/myfile.fbx:cube
-     * or /mydir/myimage.png
+     * Components of an uri can contain any sequence of ascii values only the sequence "://" and the '$' character are reserved.
+     *
+     * The scheme and asset specification is optional.
+     *
+     * SCHEME :// FILE $ ASSET
+     *
+     * Eg.
+     * memory://shaders/shader.spirv
+     * file://mesh/cube.obj
+     * /mydir/myfile.fbx$cube
+     * /mydir/myimage.png
      */
     class XENGINE_EXPORT Uri {
     public:
         Uri() = default;
 
         explicit Uri(const std::string &value) {
-            auto it = value.find(':');
-            if (it != std::string::npos) {
-                file = value.substr(0, it);
-                asset = value.substr(it + 1);
+            auto schemeIndex = value.find("://");
+            auto assetIndex = value.find('$');
+
+            if (schemeIndex != std::string::npos) {
+                scheme = value.substr(0, schemeIndex);
+            }
+
+            if (assetIndex != std::string::npos) {
+                if (schemeIndex != std::string::npos) {
+                    file = value.substr(schemeIndex + 1, assetIndex - (schemeIndex + 1));
+                } else {
+                    file = value.substr(0, assetIndex);
+                }
+                if (assetIndex + 1 < value.size()) {
+                    asset = value.substr(assetIndex + 1);
+                }
             } else {
-                file = value;
+                if (schemeIndex != std::string::npos) {
+                    file = value.substr(schemeIndex + 1);
+                } else {
+                    file = value;
+                }
             }
         }
 
         Uri(std::string file, std::string asset)
                 : file(std::move(file)), asset(std::move(asset)) {}
+
+        Uri(std::string scheme, std::string file, std::string asset)
+                : scheme(std::move(scheme)), file(std::move(file)), asset(std::move(asset)) {}
 
         Uri(const Uri &other) = default;
 
@@ -54,23 +86,18 @@ namespace xengine {
 
         Uri &operator=(Uri &&other) = default;
 
-        bool operator()() const{
+        bool operator()() const {
             return !empty();
         }
-        /**
-         * eg. /mydir/myfile.fbx
-         * @return
-         */
+
+        const std::string &getScheme() const { return scheme; }
+
         const std::string &getFile() const { return file; }
 
-        /**
-         * eg. cube
-         * @return
-         */
         const std::string &getAsset() const { return asset; }
 
         std::string toString() const {
-            return file + ":" + asset;
+            return (scheme.empty() ? "" : scheme) + file + ":" + asset;
         }
 
         bool empty() const {
@@ -78,16 +105,32 @@ namespace xengine {
         }
 
         bool operator==(const Uri &other) const {
-            return std::tie(file, asset) < std::tie(other.file, other.asset);
+            return std::tie(file, asset, scheme) < std::tie(other.file, other.asset, other.scheme);
         }
 
         bool operator<(const Uri &other) const {
-            return std::tie(file, asset) < std::tie(other.file, other.asset);
+            return std::tie(file, asset, scheme) < std::tie(other.file, other.asset, other.scheme);
         }
 
     private:
+        std::string scheme;
         std::string file;
         std::string asset;
     };
 }
+
+using namespace xengine;
+namespace std {
+    template<>
+    struct hash<Uri> {
+        std::size_t operator()(const Uri &k) const {
+            size_t ret = 0;
+            hash_combine(ret, k.getScheme());
+            hash_combine(ret, k.getFile());
+            hash_combine(ret, k.getAsset());
+            return ret;
+        }
+    };
+}
+
 #endif //XENGINE_URI_HPP

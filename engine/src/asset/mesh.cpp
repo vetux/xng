@@ -24,6 +24,8 @@
 
 #include "resource/resourceimporter.hpp"
 
+#include "resource/staticresource.hpp"
+
 static const std::string NORM_CUBE_OBJ = std::string(R"###(
 o Cube
 v 1.000000 1.000000 -1.000000

@@ -23,36 +23,20 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <set>
 
-#include "graphics/shader/spirvbuffer.hpp"
-#include "graphics/shader/shaderstage.hpp"
+#include "shader/spirvbundle.hpp"
+#include "shader/shaderstage.hpp"
+
+#include "algo/hashcombine.hpp"
+#include "algo/crc.hpp"
 
 namespace xengine {
-    /**
-     * The shaders are required to store all global variables in uniform buffers.
-     * The bindings of uniform buffers and samplers have to be specified in the source.
-     *
-     *  The shaders specify the layout of the uniform buffers and users have to ensure that
-     *  the layout of data the shader buffers matches the layout specified in the shaders.
-     *
-     *  The shaders specify the layout of the vertex input data and users have to ensure that
-     *  the layout of the mesh buffers matches the layout specified in the vertex shader.
-     */
     struct ShaderProgramDesc {
-        struct ShaderEntry {
-            std::string entryPoint; // The name of the entry point.
-            size_t bufferIndex; // The index into the buffers vector of the buffer containing the entry point.
-
-            bool operator==(const ShaderEntry &other) const {
-                return entryPoint == other.entryPoint && bufferIndex == other.bufferIndex;
-            }
-        };
-
-        std::map<ShaderStage, ShaderEntry> entries;
-        std::vector<SPIRVBuffer> buffers;
+        std::map<ShaderStage, SPIRVShader> shaders;
 
         bool operator==(const ShaderProgramDesc &other) const {
-            return entries == other.entries && buffers == other.buffers;
+            return shaders == other.shaders;
         }
     };
 }
@@ -63,12 +47,11 @@ namespace std {
     struct hash<ShaderProgramDesc> {
         std::size_t operator()(const ShaderProgramDesc &k) const {
             size_t ret = 0;
-            for (auto &e: k.entries) {
-                hash_combine(ret, e.second.entryPoint);
-                hash_combine(ret, e.second.bufferIndex);
-            }
-            for (auto &e: k.buffers) {
-                hash_combine(ret, crc(e.blob.begin(), e.blob.end()));
+            for (auto &e: k.shaders) {
+                hash_combine(ret, e.first);
+                hash_combine(ret, e.second.getStage());
+                hash_combine(ret, e.second.getEntryPoint());
+                hash_combine(ret, crc(e.second.getBlob().begin(), e.second.getBlob().end()));
             }
             return ret;
         }

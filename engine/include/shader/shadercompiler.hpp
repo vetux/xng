@@ -25,8 +25,8 @@
 #include <functional>
 #include <stdexcept>
 
-#include "graphics/shader/shaderlanguage.hpp"
-#include "graphics/shader/shaderstage.hpp"
+#include "shader/shaderlanguage.hpp"
+#include "shader/shaderstage.hpp"
 
 namespace xengine {
     namespace ShaderCompiler {

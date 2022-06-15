@@ -17,20 +17,24 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_PIPELINE_HPP
-#define XENGINE_PIPELINE_HPP
+#ifndef XENGINE_FORWARDPIPELINE_HPP
+#define XENGINE_FORWARDPIPELINE_HPP
 
-#include "asset/scene.hpp"
-#include "graphics/rendertarget.hpp"
+#include "render/scenerenderer.hpp"
+#include "graphics/renderdevice.hpp"
 
 namespace xengine {
-    class XENGINE_EXPORT Pipeline {
+    class XENGINE_EXPORT ForwardRenderer : public SceneRenderer {
     public:
-        virtual void render(RenderTarget &target, const Scene &scene) = 0;
+        ForwardRenderer() = default;
 
-        virtual void setRenderResolution(Vec2i res) = 0;
+        explicit ForwardRenderer(RenderDevice &device)
+                : device(&device) {}
 
-        virtual void setRenderSamples(int samples) = 0;
+        void render(RenderTarget &target, const Scene &scene) override;
+
+    private:
+        RenderDevice *device;
     };
 }
-#endif //XENGINE_PIPELINE_HPP
+#endif //XENGINE_FORWARDPIPELINE_HPP

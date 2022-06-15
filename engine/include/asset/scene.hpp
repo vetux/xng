@@ -31,8 +31,6 @@
 
 #include "resource/resourcehandle.hpp"
 
-#include "graphics/rendercommand.hpp"
-
 namespace xengine {
     struct XENGINE_EXPORT Scene {
         struct XENGINE_EXPORT Object {

@@ -17,25 +17,26 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_MESHBUFFER_HPP
-#define XENGINE_MESHBUFFER_HPP
+#ifndef XENGINE_VERTEXBUFFER_HPP
+#define XENGINE_VERTEXBUFFER_HPP
 
 #include "graphics/renderobject.hpp"
-#include "graphics/meshbufferdesc.hpp"
-#include "graphics/meshbufferview.hpp"
+#include "graphics/vertexbufferdesc.hpp"
 
 #include "asset/mesh.hpp"
 
 #include "math/transform.hpp"
 
 namespace xengine {
-    class XENGINE_EXPORT MeshBuffer : public RenderObject {
+    class XENGINE_EXPORT VertexBuffer : public RenderObject {
     public:
-        ~MeshBuffer() override = default;
+        ~VertexBuffer() override = default;
 
-        virtual const MeshBufferDesc &getDescription() = 0;
+        virtual const VertexBufferDesc &getDescription() = 0;
 
-        virtual std::unique_ptr<MeshBufferView> createView() = 0;
+        Type getType() override {
+            return Type::VERTEX_BUFFER;
+        }
 
         /**
          * Upload the data from the specified buffers to the mesh buffer,
@@ -70,4 +71,4 @@ namespace xengine {
     };
 }
 
-#endif //XENGINE_MESHBUFFER_HPP
+#endif //XENGINE_VERTEXBUFFER_HPP

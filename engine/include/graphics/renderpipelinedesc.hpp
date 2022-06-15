@@ -22,13 +22,15 @@
 
 #include <functional>
 
-#include "graphics/shaderprogram.hpp"
-
+#include "shaderprogram.hpp"
 #include "graphics/renderproperties.hpp"
+#include "asset/color.hpp"
+
+#include "math/vector2.hpp"
 
 namespace xengine {
     struct RenderPipelineDesc {
-        ShaderProgram *shader = nullptr;
+        ShaderProgram &shader;
 
         Vec2i viewportOffset;
         Vec2i viewportSize;
@@ -64,6 +66,37 @@ namespace xengine {
         bool enableBlending = false;
         BlendMode blendSourceMode = BlendMode::SRC_ALPHA;
         BlendMode blendDestinationMode = BlendMode::ONE_MINUS_SRC_ALPHA;
+
+        ~RenderPipelineDesc() = default;
+
+        bool operator==(const RenderPipelineDesc &other) const {
+            return viewportOffset == other.viewportOffset
+                   && viewportSize == other.viewportSize
+                   && multiSample == other.multiSample
+                   && multiSampleEnableFrequency == other.multiSampleEnableFrequency
+                   && clearColorValue == other.clearColorValue
+                   && clearDepthValue == other.clearDepthValue
+                   && clearColor == other.clearColor
+                   && clearDepth == other.clearDepth
+                   && clearStencil == other.clearStencil
+                   && enableDepthTest == other.enableDepthTest
+                   && depthTestWrite == other.depthTestWrite
+                   && depthTestMode == other.depthTestMode
+                   && enableStencilTest == other.enableStencilTest
+                   && stencilTestMask == other.stencilTestMask
+                   && stencilMode == other.stencilMode
+                   && stencilReference == other.stencilReference
+                   && stencilFunctionMask == other.stencilFunctionMask
+                   && stencilFail == other.stencilFail
+                   && stencilDepthFail == other.stencilDepthFail
+                   && stencilPass == other.stencilPass
+                   && enableFaceCulling == other.enableFaceCulling
+                   && faceCullMode == other.faceCullMode
+                   && faceCullClockwiseWinding == other.faceCullClockwiseWinding
+                   && enableBlending == other.enableBlending
+                   && blendSourceMode == other.blendSourceMode
+                   && blendDestinationMode == other.blendDestinationMode;
+        }
     };
 }
 
@@ -73,7 +106,7 @@ namespace std {
     struct hash<RenderPipelineDesc> {
         std::size_t operator()(const RenderPipelineDesc &k) const {
             size_t ret = 0;
-            hash_combine(ret, reinterpret_cast<uintptr_t> (k.shader));
+            hash_combine(ret, reinterpret_cast<uintptr_t>(&k.shader));
             hash_combine(ret, k.viewportOffset.x);
             hash_combine(ret, k.viewportOffset.y);
             hash_combine(ret, k.viewportSize.x);

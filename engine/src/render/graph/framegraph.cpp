@@ -18,10 +18,10 @@
  */
 
 #include "render/graph/framegraph.hpp"
-#include "render/graph/renderpass.hpp"
+#include "render/graph/framegraphpass.hpp"
 
 namespace xengine {
-    FrameGraph::FrameGraph(std::vector<std::shared_ptr<RenderPass>> passes,
+    FrameGraph::FrameGraph(std::vector<std::shared_ptr<FrameGraphPass>> passes,
                            std::vector<std::set<FrameGraphResource>> passResources,
                            std::vector<std::function<RenderObject &()>> resources)
             : passes(std::move(passes)), passResources(std::move(passResources)), resources(std::move(resources)) {}
@@ -37,7 +37,7 @@ namespace xengine {
             for (auto &res: s) {
                 objects[res] = &resources.at(res.index)();
             }
-            passData.emplace_back(RenderPassResources(objects));
+            passData.emplace_back(FrameGraphPassResources(objects));
         }
     }
 

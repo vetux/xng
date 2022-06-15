@@ -25,7 +25,7 @@
 
 namespace xengine {
     RenderSystem::RenderSystem(RenderTarget &screen,
-                               Pipeline &pipeline)
+                               SceneRenderer &pipeline)
             : screenTarget(screen),
               pipeline(pipeline) {
     }
@@ -114,7 +114,7 @@ namespace xengine {
         pipeline.render(screenTarget, scene);
     }
 
-    Pipeline &RenderSystem::getPipeline() {
+    SceneRenderer &RenderSystem::getPipeline() {
         return pipeline;
     }
 

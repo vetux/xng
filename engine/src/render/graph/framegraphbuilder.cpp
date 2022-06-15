@@ -19,11 +19,11 @@
 
 #include "render/graph/framegraphbuilder.hpp"
 
-#include "render/graph/renderpass.hpp"
+#include "render/graph/framegraphpass.hpp"
 
 namespace xengine {
     FrameGraphBuilder::FrameGraphBuilder(RenderTarget &backBuffer,
-                                         ObjectPool &pool,
+                                         FrameGraphPool &pool,
                                          const Scene &scene,
                                          Vec2i renderResolution,
                                          int renderSamples)
@@ -41,7 +41,7 @@ namespace xengine {
     FrameGraphResource FrameGraphBuilder::createMeshBuffer(const ResourceHandle<Mesh> &h) {
         std::function<std::reference_wrapper<RenderObject>()> f = [this, h]() {
             return std::reference_wrapper<RenderObject>(
-                    dynamic_cast<RenderObject &>(pool.getMeshBuffer(h)));
+                    dynamic_cast<RenderObject &>(pool.getMesh(h)));
         };
         resources.emplace_back(std::move(f));
         auto ret = FrameGraphResource(resources.size() - 1);
@@ -52,7 +52,7 @@ namespace xengine {
     FrameGraphResource FrameGraphBuilder::createTextureBuffer(const ResourceHandle<Texture> &h) {
         std::function<std::reference_wrapper<RenderObject>()> f = [this, h]() {
             return std::reference_wrapper<RenderObject>(
-                    dynamic_cast<RenderObject &>(pool.getTextureBuffer(h)));
+                    dynamic_cast<RenderObject &>(pool.getTexture(h)));
         };
         resources.emplace_back(std::move(f));
         auto ret = FrameGraphResource(resources.size() - 1);
@@ -62,7 +62,7 @@ namespace xengine {
 
     FrameGraphResource FrameGraphBuilder::createShader(const ResourceHandle<Shader> &h) {
         std::function<std::reference_wrapper<RenderObject>()> f = [this, h]() {
-            return std::reference_wrapper<RenderObject>(dynamic_cast<RenderObject &>(pool.getShaderProgram(h)));
+            return std::reference_wrapper<RenderObject>(dynamic_cast<RenderObject &>(pool.getShader(h)));
         };
         resources.emplace_back(std::move(f));
         auto ret = FrameGraphResource(resources.size() - 1);
@@ -70,9 +70,9 @@ namespace xengine {
         return ret;
     }
 
-    FrameGraphResource FrameGraphBuilder::createTextureBuffer(const TextureBufferDesc &attribs) {
-        std::function<std::reference_wrapper<RenderObject>()> f = [this, attribs]() {
-            return std::reference_wrapper<RenderObject>(dynamic_cast<RenderObject &>(pool.getTextureBuffer(attribs)));
+    FrameGraphResource FrameGraphBuilder::createTextureBuffer(const TextureBufferDesc &desc) {
+        std::function<std::reference_wrapper<RenderObject>()> f = [this, desc]() {
+            return std::reference_wrapper<RenderObject>(dynamic_cast<RenderObject &>(pool.createTextureBuffer(desc)));
         };
         resources.emplace_back(std::move(f));
         auto ret = FrameGraphResource(resources.size() - 1);
@@ -83,7 +83,18 @@ namespace xengine {
     FrameGraphResource FrameGraphBuilder::createRenderTarget(Vec2i size, int samples) {
         std::function<std::reference_wrapper<RenderObject>()> f = [this, size, samples]() {
             return std::reference_wrapper<RenderObject>(
-                    dynamic_cast<RenderObject &>(pool.getRenderTarget(size, samples)));
+                    dynamic_cast<RenderObject &>(pool.createRenderTarget({.size = size, .samples = samples})));
+        };
+        resources.emplace_back(std::move(f));
+        auto ret = FrameGraphResource(resources.size() - 1);
+        passResources.at(currentPass).insert(ret);
+        return ret;
+    }
+
+    FrameGraphResource FrameGraphBuilder::createPipeline(const ResourceHandle<Shader> &shader,
+                                                         const RenderPipelineDesc &desc) {
+        std::function<std::reference_wrapper<RenderObject>()> f = [this, shader, desc]() {
+            return std::reference_wrapper<RenderObject>(dynamic_cast<RenderObject &>(pool.getPipeline(shader, desc)));
         };
         resources.emplace_back(std::move(f));
         auto ret = FrameGraphResource(resources.size() - 1);
@@ -117,7 +128,7 @@ namespace xengine {
         return scene;
     }
 
-    FrameGraph FrameGraphBuilder::build(const std::vector<std::shared_ptr<RenderPass>> &passes) {
+    FrameGraph FrameGraphBuilder::build(const std::vector<std::shared_ptr<FrameGraphPass>> &passes) {
         auto screen = resources.at(0);
         resources.clear();
         resources.emplace_back(screen);

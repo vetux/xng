@@ -17,24 +17,14 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_FORWARDPIPELINE_HPP
-#define XENGINE_FORWARDPIPELINE_HPP
+#ifndef XENGINE_SPIRVBLOB_HPP
+#define XENGINE_SPIRVBLOB_HPP
 
-#include "render/pipeline.hpp"
-#include "graphics/renderdevice.hpp"
+#include <vector>
+#include <cstdint>
 
 namespace xengine {
-    class XENGINE_EXPORT ForwardPipeline : public Pipeline {
-    public:
-        ForwardPipeline() = default;
-
-        explicit ForwardPipeline(RenderDevice &device)
-                : device(&device) {}
-
-        void render(RenderTarget &target, const Scene &scene) override;
-
-    private:
-        RenderDevice *device;
-    };
+    typedef std::vector<uint32_t> SPIRVBlob;
 }
-#endif //XENGINE_FORWARDPIPELINE_HPP
+
+#endif //XENGINE_SPIRVBLOB_HPP

@@ -24,8 +24,6 @@
 
 #include "graphics/opengl/oglbuildmacro.hpp"
 
-#include "graphics/opengl/ogltexturebufferview.hpp"
-
 namespace xengine {
     namespace opengl {
         class OPENGL_TYPENAME(TextureBuffer) : public TextureBuffer OPENGL_INHERIT {
@@ -129,14 +127,12 @@ namespace xengine {
                 glDeleteTextures(1, &handle);
             }
 
+            void pinGpuMemory() override {}
+
+            void unpinGpuMemory() override {}
+
             const TextureBufferDesc &getDescription() override {
                 return desc;
-            }
-
-            std::unique_ptr<TextureBufferView> createView() override {
-                auto ret = std::make_unique<OPENGL_TYPENAME(TextureBufferView)>();
-                ret->buffer = this;
-                return ret;
             }
 
             void upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize) override {
