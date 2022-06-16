@@ -229,6 +229,10 @@ namespace xengine::opengl {
             throw std::runtime_error("Caching not implemented");
         }
 
+        void setViewportSize(Vec2i viewportSize) override {
+            desc.viewportSize = viewportSize;
+        }
+
         OPENGL_MEMBERS
 
         OPENGL_CONVERSION_MEMBERS

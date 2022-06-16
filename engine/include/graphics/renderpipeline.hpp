@@ -39,6 +39,8 @@ namespace xengine {
         virtual const RenderPipelineDesc &getDescription() = 0;
 
         virtual std::vector<uint8_t> cache() = 0;
+
+        virtual void setViewportSize(Vec2i viewportSize) = 0;
     };
 }
 
