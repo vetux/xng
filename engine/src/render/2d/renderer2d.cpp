@@ -215,6 +215,65 @@ namespace xengine {
         setProjection({{}, screenSize.convert<float>()});
     }
 
+    void Renderer2D::renderPresent() {
+        if (userTarget == nullptr) {
+            throw std::runtime_error("Target not assigned");
+        }
+
+        pipeline->render(*userTarget, passes);
+
+        userTarget = nullptr;
+
+        std::unordered_set<PlaneDescription, PlaneDescriptionHashFunction> unusedPlanes;
+        for (auto &pair: allocatedPlanes) {
+            if (usedPlanes.find(pair.first) == usedPlanes.end()) {
+                unusedPlanes.insert(pair.first);
+            }
+        }
+
+        std::unordered_set<SquareDescription, SquareDescriptionHashFunction> unusedSquares;
+        for (auto &pair: allocatedSquares) {
+            if (usedSquares.find(pair.first) == usedSquares.end()) {
+                unusedSquares.insert(pair.first);
+            }
+        }
+
+        std::unordered_set<LineDescription, LineDescriptionHashFunction> unusedLines;
+        for (auto &pair: allocatedLines) {
+            if (usedLines.find(pair.first) == usedLines.end()) {
+                unusedLines.insert(pair.first);
+            }
+        }
+
+        std::unordered_set<Vec2f, Vector2HashFunction<float>> unusedPoints;
+        for (auto &pair: allocatedPoints) {
+            if (usedPoints.find(pair.first) == usedPoints.end()) {
+                unusedPoints.insert(pair.first);
+            }
+        }
+
+        for (auto &v: unusedPlanes)
+            allocatedPlanes.erase(v);
+
+        for (auto &v: unusedSquares)
+            allocatedSquares.erase(v);
+
+        for (auto &v: unusedLines)
+            allocatedLines.erase(v);
+
+        for (auto &v: unusedPoints)
+            allocatedPoints.erase(v);
+
+        usedPlanes.clear();
+        usedSquares.clear();
+        usedLines.clear();
+        usedPoints.clear();
+
+        allocatedInstancedMeshes.clear();
+        allocatedShaderBuffers.clear();
+
+        passes.clear();
+    }
 
     void Renderer2D::setProjection(const Rectf &projection) {
         camera.type = ORTHOGRAPHIC;
@@ -429,63 +488,6 @@ namespace xengine {
         bindings.emplace_back(RenderPass::ShaderBinding(*allocatedShaderBuffers.at(allocatedShaderBuffers.size() - 1)));
 
         passes.emplace_back(RenderPass(meshBuffer, bindings));
-    }
-
-    void Renderer2D::renderPresent() {
-        if (userTarget == nullptr) {
-            throw std::runtime_error("Target not assigned");
-        }
-
-        pipeline->render(*userTarget, passes);
-
-        userTarget = nullptr;
-
-        std::unordered_set<PlaneDescription, PlaneDescriptionHashFunction> unusedPlanes;
-        for (auto &pair: allocatedPlanes) {
-            if (usedPlanes.find(pair.first) == usedPlanes.end()) {
-                unusedPlanes.insert(pair.first);
-            }
-        }
-
-        std::unordered_set<SquareDescription, SquareDescriptionHashFunction> unusedSquares;
-        for (auto &pair: allocatedSquares) {
-            if (usedSquares.find(pair.first) == usedSquares.end()) {
-                unusedSquares.insert(pair.first);
-            }
-        }
-
-        std::unordered_set<LineDescription, LineDescriptionHashFunction> unusedLines;
-        for (auto &pair: allocatedLines) {
-            if (usedLines.find(pair.first) == usedLines.end()) {
-                unusedLines.insert(pair.first);
-            }
-        }
-
-        std::unordered_set<Vec2f, Vector2HashFunction<float>> unusedPoints;
-        for (auto &pair: allocatedPoints) {
-            if (usedPoints.find(pair.first) == usedPoints.end()) {
-                unusedPoints.insert(pair.first);
-            }
-        }
-
-        for (auto &v: unusedPlanes)
-            allocatedPlanes.erase(v);
-
-        for (auto &v: unusedSquares)
-            allocatedSquares.erase(v);
-
-        for (auto &v: unusedLines)
-            allocatedLines.erase(v);
-
-        for (auto &v: unusedPoints)
-            allocatedPoints.erase(v);
-
-        usedPlanes.clear();
-        usedSquares.clear();
-        usedLines.clear();
-        usedPoints.clear();
-
-        allocatedInstancedMeshes.clear();
     }
 
     VertexBuffer &Renderer2D::getPlane(const Renderer2D::PlaneDescription &desc) {
