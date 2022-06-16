@@ -117,7 +117,7 @@ namespace xengine ::opengl {
                 for (int i = 0; i < desc.vertexLayout.size(); i++) {
                     auto index = i;
                     glEnableVertexAttribArray(index);
-                    auto &binding = desc.vertexLayout.at(index);
+                    auto &binding = desc.vertexLayout.at(i);
                     glVertexAttribPointer(index,
                                           VertexAttribute::getCount(binding.type),
                                           getType(binding.component),
@@ -138,7 +138,7 @@ namespace xengine ::opengl {
                     for (int i = 0; i < desc.instanceLayout.size(); i++) {
                         auto index = desc.vertexLayout.size() + i;
                         glEnableVertexAttribArray(index);
-                        auto &binding = desc.instanceLayout.at(index);
+                        auto &binding = desc.instanceLayout.at(i);
                         glVertexAttribPointer(index,
                                               VertexAttribute::getCount(binding.type),
                                               getType(binding.component),
@@ -179,7 +179,7 @@ namespace xengine ::opengl {
                 for (int i = 0; i < desc.vertexLayout.size(); i++) {
                     auto index = i;
                     glEnableVertexAttribArray(index);
-                    auto &binding = desc.vertexLayout.at(index);
+                    auto &binding = desc.vertexLayout.at(i);
                     glVertexAttribPointer(index,
                                           VertexAttribute::getCount(binding.type),
                                           getType(binding.component),
@@ -201,7 +201,7 @@ namespace xengine ::opengl {
                     for (int i = 0; i < desc.instanceLayout.size(); i++) {
                         auto index = desc.vertexLayout.size() + i;
                         glEnableVertexAttribArray(index);
-                        auto &binding = desc.instanceLayout.at(index);
+                        auto &binding = desc.instanceLayout.at(i);
                         glVertexAttribPointer(index,
                                               VertexAttribute::getCount(binding.type),
                                               getType(binding.component),
