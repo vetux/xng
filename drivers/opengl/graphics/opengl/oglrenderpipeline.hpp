@@ -155,20 +155,20 @@ namespace xengine::opengl {
             // Draw commands
             for (auto &c: passes) {
                 // Bind textures and uniform buffers
-                for (int i = 0; i < c.getBindings().size(); i++) {
-                    auto &b = c.getBindings().at(i);
+                for (int bindingPoint = 0; bindingPoint < c.getBindings().size(); bindingPoint++) {
+                    auto &b = c.getBindings().at(bindingPoint);
                     OPENGL_TYPENAME(TextureBuffer) *texture;
                     OPENGL_TYPENAME(ShaderBuffer) *shaderBuffer;
                     switch (b.getType()) {
                         case RenderPass::TEXTURE_BUFFER:
                             texture = dynamic_cast<OPENGL_TYPENAME(TextureBuffer) *>(&b.getTextureBuffer());
-                            glActiveTexture(getTextureSlot(i));
+                            glActiveTexture(getTextureSlot(bindingPoint));
                             glBindTexture(convert(texture->getDescription().textureType),
                                           texture->handle);
                             break;
                         case RenderPass::SHADER_BUFFER:
                             shaderBuffer = dynamic_cast<OPENGL_TYPENAME(ShaderBuffer) *>(&b.getShaderBuffer());
-#warning NOT IMPLEMENTED
+                            glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, shaderBuffer->ubo);
                             break;
                     }
                 }
@@ -203,16 +203,16 @@ namespace xengine::opengl {
                 glBindVertexArray(0);
 
                 //Unbind textures and uniform buffers
-                for (int i = 0; i < c.getBindings().size(); i++) {
-                    auto &b = c.getBindings().at(i);
+                for (int bindingPoint = 0; bindingPoint < c.getBindings().size(); bindingPoint++) {
+                    auto &b = c.getBindings().at(bindingPoint);
                     switch (b.getType()) {
                         case RenderPass::TEXTURE_BUFFER:
-                            glActiveTexture(getTextureSlot(i));
+                            glActiveTexture(getTextureSlot(bindingPoint));
                             glBindTexture(GL_TEXTURE_2D, 0);
                             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
                             break;
                         case RenderPass::SHADER_BUFFER:
-// NOT IMPLEMENTED
+                            glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, 0);
                             break;
                     }
                 }

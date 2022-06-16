@@ -22,16 +22,23 @@
 
 #include "graphics/opengl/oglbuildmacro.hpp"
 
-#warning NOT IMPLEMENTED
-
 namespace xengine::opengl {
     class OPENGL_TYPENAME(ShaderBuffer) : public ShaderBuffer OPENGL_INHERIT {
     public:
         ShaderBufferDesc desc;
+        GLuint ubo;
 
         explicit OPENGL_TYPENAME(ShaderBuffer)(ShaderBufferDesc desc)
                 : desc(desc) {
             initialize();
+            glGenBuffers(1, &ubo);
+            glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+            glBufferData(GL_UNIFORM_BUFFER, numeric_cast<GLsizeiptr>(desc.size), NULL, GL_STATIC_DRAW);
+            glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        }
+
+        ~OPENGL_TYPENAME(ShaderBuffer)() override {
+            glDeleteBuffers(1, &ubo);
         }
 
         void pinGpuMemory() override {}
@@ -43,6 +50,11 @@ namespace xengine::opengl {
         }
 
         void upload(const uint8_t *data, size_t size) override {
+            if (size != desc.size)
+                throw std::runtime_error("Upload size does not match buffer size");
+            glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+            glBufferData(GL_UNIFORM_BUFFER, numeric_cast<GLsizeiptr>(size), data, GL_STATIC_DRAW);
+            glBindBuffer(GL_UNIFORM_BUFFER, 0);
         }
 
         OPENGL_MEMBERS
