@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "schema/mathschema.hpp"
+#include "io/schema/mathschema.hpp"
 
 namespace xengine {
     Grid &operator<<(Grid &value, const Message &message) {

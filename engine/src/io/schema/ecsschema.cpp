@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "schema/ecsschema.hpp"
-#include "schema/mathschema.hpp"
+#include "io/schema/ecsschema.hpp"
+#include "io/schema/mathschema.hpp"
 
 namespace xengine {
     CameraType &operator<<(CameraType &value, const Message &message) {

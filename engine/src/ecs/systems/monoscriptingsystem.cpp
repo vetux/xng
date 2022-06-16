@@ -24,7 +24,7 @@
 #include "ecs/systems/monoscriptingsystem.hpp"
 #include "ecs/components.hpp"
 
-#include "schema/ecsschema.hpp"
+#include "io/schema/ecsschema.hpp"
 #include "io/protocol/jsonprotocol.hpp"
 
 namespace xengine {
