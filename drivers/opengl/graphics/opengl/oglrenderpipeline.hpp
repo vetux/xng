@@ -35,7 +35,7 @@ namespace xengine::opengl {
     public:
         RenderPipelineDesc desc;
 
-        explicit OPENGL_TYPENAME(RenderPipeline)(RenderPipelineDesc desc)
+        explicit OPENGL_TYPENAME(RenderPipeline)(const RenderPipelineDesc &desc)
                 : desc(desc) {
             initialize();
         }

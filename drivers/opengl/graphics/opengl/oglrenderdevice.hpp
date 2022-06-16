@@ -46,7 +46,7 @@ namespace xengine::opengl {
             return ret;
         }
 
-        std::unique_ptr<RenderPipeline> createPipeline(RenderPipelineDesc &desc) override {
+        std::unique_ptr<RenderPipeline> createPipeline(const RenderPipelineDesc &desc) override {
             return std::make_unique<OPENGL_TYPENAME(RenderPipeline)>(desc);
         }
 

@@ -72,7 +72,7 @@ namespace xengine {
          */
         virtual std::unique_ptr<ShaderProgram> createShaderProgram(const ShaderProgramDesc &desc) = 0;
 
-        virtual std::unique_ptr<RenderPipeline> createPipeline(RenderPipelineDesc &desc) = 0;
+        virtual std::unique_ptr<RenderPipeline> createPipeline(const RenderPipelineDesc &desc) = 0;
 
         virtual std::unique_ptr<RenderPipeline> createPipeline(const uint8_t *cacheData, size_t size) = 0;
 
@@ -131,7 +131,7 @@ namespace xengine {
          * @return
          */
         virtual std::unique_ptr<VertexBuffer> createInstancedVertexBuffer(const Mesh &mesh,
-                                                                         const std::vector<Transform> &offsets) {
+                                                                          const std::vector<Transform> &offsets) {
             const std::vector<VertexAttribute> layout = {
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
