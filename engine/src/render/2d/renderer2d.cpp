@@ -39,12 +39,13 @@ layout (location = 8) in vec4 instanceRow3;
 layout (location = 0) out vec4 fPosition;
 layout (location = 1) out vec2 fUv;
 
-layout(binding = 0, std140) uniform gvars
+layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
     mat4 mvp;
     vec4 color;
     float use_texture;
-};
+    float is_text;
+} gvars;
 
 void main()
 {
@@ -71,13 +72,13 @@ uniform mat4 MVP;
 uniform float USE_TEXTURE;
 uniform vec4 COLOR;
 
-layout(binding = 0, std140) uniform gvars
+layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
     mat4 mvp;
     vec4 color;
     float use_texture;
     float is_text;
-};
+} gvars;
 
 layout(binding = 1) uniform sampler2D diffuse;
 

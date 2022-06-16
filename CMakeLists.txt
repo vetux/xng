@@ -15,7 +15,8 @@ set(DEBUG_COMPILER_FLAGS)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(RELEASE_COMPILER_FLAGS -O3)
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        set(DEBUG_COMPILER_FLAGS "${DEBUG_COMPILER_FLAGS} -fsanitize=leak -fsanitize=undefined -fsanitize-address-use-after-scope")
+        # Optional sanitization flags, breaks debugging
+        # set(DEBUG_COMPILER_FLAGS "${DEBUG_COMPILER_FLAGS} -fsanitize=leak -fsanitize=undefined -fsanitize-address-use-after-scope")
     endif ()
 endif ()
 

@@ -30,8 +30,6 @@
 
 namespace xengine {
     namespace ShaderCompiler {
-        //TODO: Shader uniform buffer support
-
         enum OptimizationLevel {
             OPTIMIZATION_NONE,
             OPTIMIZATION_PERFORMANCE,
@@ -41,10 +39,8 @@ namespace xengine {
         /**
          * Compile the given source to spirv.
          *
-         * BEWARE that when compiling HLSL TO SPIRV the implementation currently uses shaderc which merges
-         * all global variables into a single uniform buffer in the resulting spirv module for some elusive reason.
-         *
-         * Compiling GLSL TO SPIRV should work without issues.
+         * Beware that when compiling HLSL TO SPIRV the implementation currently uses shaderc which merges
+         * all global variables into a single uniform buffer.
          *
          * @param source
          * @param entryPoint

@@ -34,6 +34,9 @@ namespace xengine {
 
             GLuint FBO = 0;
 
+            int attachedColor = 0;
+            bool attachedDepthStencil = false;
+
             explicit OPENGL_TYPENAME(RenderTarget)(RenderTargetDesc desc)
                     : desc(desc) {
                 initialize();
@@ -228,32 +231,48 @@ namespace xengine {
             void setColorAttachments(const std::vector<TextureBuffer *> &textures) override {
                 glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
-                if (textures.size() != desc.numberOfColorAttachments)
-                    throw std::runtime_error("Invalid number of color attachments");
-
-                int index = 0;
-                for (auto &texture: textures) {
-                    if (texture == nullptr) {
+                if (textures.empty()) {
+                    for (int i = 0; i < attachedColor; i++) {
                         if (desc.multisample)
                             glFramebufferTexture2D(GL_FRAMEBUFFER,
-                                                   GL_COLOR_ATTACHMENT0 + index,
+                                                   GL_COLOR_ATTACHMENT0 + i,
                                                    GL_TEXTURE_2D_MULTISAMPLE,
                                                    0,
                                                    0);
                         else
-                            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, GL_TEXTURE_2D, 0, 0);
-                    } else {
-                        auto &tex = dynamic_cast<OPENGL_TYPENAME(TextureBuffer) &>(*texture);
-                        glFramebufferTexture2D(GL_FRAMEBUFFER,
-                                               GL_COLOR_ATTACHMENT0 + index,
-                                               convert(tex.getDescription().textureType),
-                                               tex.handle,
-                                               0);
+                            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, 0, 0);
                     }
-                    index++;
+                } else {
+                    if (textures.size() != desc.numberOfColorAttachments)
+                        throw std::runtime_error("Invalid number of color attachments");
+
+                    int index = 0;
+                    for (auto &texture: textures) {
+                        if (texture == nullptr) {
+                            if (desc.multisample)
+                                glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                                       GL_COLOR_ATTACHMENT0 + index,
+                                                       GL_TEXTURE_2D_MULTISAMPLE,
+                                                       0,
+                                                       0);
+                            else
+                                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, GL_TEXTURE_2D, 0,
+                                                       0);
+                        } else {
+                            auto &tex = dynamic_cast<OPENGL_TYPENAME(TextureBuffer) &>(*texture);
+                            glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                                   GL_COLOR_ATTACHMENT0 + index,
+                                                   convert(tex.getDescription().textureType),
+                                                   tex.handle,
+                                                   0);
+                        }
+                        index++;
+                    }
                 }
 
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+                attachedColor = textures.size();
 
                 checkGLError();
             }
@@ -286,29 +305,44 @@ namespace xengine {
             void setColorAttachments(const std::vector<std::pair<CubeMapFace, TextureBuffer *>> &textures) override {
                 glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
-                if (textures.size() != desc.numberOfColorAttachments)
-                    throw std::runtime_error("Invalid number of color attachments");
-
-                int index = 0;
-                for (auto &pair: textures) {
-                    if (pair.second == nullptr) {
-                        glFramebufferTexture2D(GL_FRAMEBUFFER,
-                                               GL_COLOR_ATTACHMENT0 + index,
-                                               convert(pair.first),
-                                               0,
-                                               0);
-                    } else {
-                        auto &tex = dynamic_cast<OPENGL_TYPENAME(TextureBuffer) &>(*pair.second);
-                        glFramebufferTexture2D(GL_FRAMEBUFFER,
-                                               GL_COLOR_ATTACHMENT0 + index,
-                                               convert(pair.first),
-                                               tex.handle,
-                                               0);
+                if (textures.empty()) {
+                    for (int i = 0; i < attachedColor; i++) {
+                        if (desc.multisample)
+                            glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                                   GL_COLOR_ATTACHMENT0 + i,
+                                                   GL_TEXTURE_2D_MULTISAMPLE,
+                                                   0,
+                                                   0);
+                        else
+                            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, 0, 0);
                     }
-                    index++;
+                } else {
+                    if (textures.size() != desc.numberOfColorAttachments)
+                        throw std::runtime_error("Invalid number of color attachments");
+
+                    int index = 0;
+                    for (auto &pair: textures) {
+                        if (pair.second == nullptr) {
+                            glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                                   GL_COLOR_ATTACHMENT0 + index,
+                                                   convert(pair.first),
+                                                   0,
+                                                   0);
+                        } else {
+                            auto &tex = dynamic_cast<OPENGL_TYPENAME(TextureBuffer) &>(*pair.second);
+                            glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                                   GL_COLOR_ATTACHMENT0 + index,
+                                                   convert(pair.first),
+                                                   tex.handle,
+                                                   0);
+                        }
+                        index++;
+                    }
                 }
 
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+                attachedColor = textures.size();
 
                 checkGLError();
             }

@@ -126,7 +126,7 @@ namespace xengine {
         }
 
         options.SetSourceLanguage(shaderLang);
-        options.SetAutoBindUniforms(false);
+        options.SetAutoBindUniforms(true);
         options.SetAutoSampledTextures(true);
         options.SetAutoMapLocations(true);
         options.SetOptimizationLevel(convertOptimizationLevel(optimizationLevel));
@@ -176,10 +176,6 @@ namespace xengine {
                 spirv_cross::CompilerGLSL::Options sOptions;
                 sOptions.version = 420;
 
-                //Dont generate glsl which uses the uniform buffer api.
-                sOptions.emit_uniform_buffer_as_plain_uniforms = true;
-                sOptions.separate_shader_objects = true;
-
                 sCompiler.set_common_options(sOptions);
 
                 sCompiler.build_dummy_sampler_for_combined_images();
@@ -195,10 +191,6 @@ namespace xengine {
 
                 spirv_cross::CompilerGLSL::Options sOptions;
                 sOptions.version = 320;
-
-                //Dont generate glsl which uses the uniform buffer api.
-                sOptions.emit_uniform_buffer_as_plain_uniforms = true;
-                sOptions.separate_shader_objects = true;
 
                 sOptions.es = true;
 

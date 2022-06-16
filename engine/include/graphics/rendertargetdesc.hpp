@@ -29,7 +29,7 @@ namespace xengine {
         Vec2i size{};
         bool multisample = false;
         int samples = 0;
-        int numberOfColorAttachments = 0;
+        int numberOfColorAttachments = 1;
         bool hasDepthStencilAttachment = false;
 
         bool operator==(const RenderTargetDesc &other) const {
