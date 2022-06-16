@@ -125,7 +125,7 @@
 #include "render/scenerenderer.hpp"
 #include "render/shaderinclude.hpp"
 #include "render/2d/renderer2d.hpp"
-#include "render/forward/forwardpipeline.hpp"
+#include "render/forward/forwardrenderer.hpp"
 #include "render/graph/framegraphbuilder.hpp"
 #include "render/graph/framegraphblackboard.hpp"
 #include "render/graph/framegraphpassresources.hpp"

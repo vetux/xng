@@ -171,8 +171,7 @@ namespace xengine {
                        c.texture,
                        {},
                        0,
-                       Vec2b(false, false),
-                       false);
+                       Vec2b(false, false));
         }
         ren2d.renderPresent();
 

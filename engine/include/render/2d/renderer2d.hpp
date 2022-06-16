@@ -64,6 +64,13 @@ namespace xengine {
 
         ~Renderer2D();
 
+        /**
+         * Must be called before calling draw methods.
+         *
+         * @param target
+         * @param clear
+         * @param clearColor
+         */
         void renderBegin(RenderTarget &target, bool clear = true, ColorRGBA clearColor = ColorRGBA::black());
 
         void renderBegin(RenderTarget &target,
@@ -71,6 +78,11 @@ namespace xengine {
                          ColorRGBA clearColor,
                          Vec2i viewportOffset,
                          Vec2i viewportSize);
+
+        /**
+         * Present the recorded drawing commands to the target specified in renderBegin.
+         */
+        void renderPresent();
 
         /**
          * Set the projection bounds.
@@ -81,49 +93,72 @@ namespace xengine {
         void setProjection(const Rectf &projection);
 
         /**
-         * MVP variable is set on the shader program while this function is executing.
+         * Draw texture
          *
          * @param srcRect
          * @param dstRect
          * @param texture
-         * @param shader
          * @param center
          * @param rotation
+         * @param flipUv
          */
         void draw(Rectf srcRect,
                   Rectf dstRect,
                   TextureBuffer &texture,
-                  ShaderProgram &shader,
                   Vec2f center = {},
                   float rotation = 0,
-                  Vec2b flipUv = Vec2b(false),
-                  bool alphaBlending = true);
-
-        void draw(Rectf srcRect,
-                  Rectf dstRect,
-                  TextureBuffer &texture,
-                  Vec2f center = {},
-                  float rotation = 0,
-                  Vec2b flipUv = Vec2b(false),
-                  bool alphaBlending = true);
+                  Vec2b flipUv = Vec2b(false));
 
         void draw(Rectf dstRect, TextureBuffer &texture, Vec2f center = {}, float rotation = 0);
 
+        /**
+         * Draw rectangle
+         *
+         * @param rectangle
+         * @param color
+         * @param fill
+         * @param center
+         * @param rotation
+         */
         void draw(Rectf rectangle,
                   ColorRGBA color,
                   bool fill = true,
                   Vec2f center = {},
                   float rotation = 0);
 
+        /**
+         * Draw line
+         *
+         * @param start
+         * @param end
+         * @param color
+         * @param center
+         * @param rotation
+         */
         void draw(Vec2f start, Vec2f end, ColorRGBA color, Vec2f center = {}, float rotation = 0);
 
+        /**
+         * Draw point
+         *
+         * @param point
+         * @param color
+         */
         void draw(Vec2f point, ColorRGBA color = {});
 
+        /**
+         * Draw text
+         *
+         * @param text
+         * @param dstRect
+         * @param color
+         * @param center
+         * @param rotation
+         */
         void draw(Text &text, Rectf dstRect, ColorRGBA color, Vec2f center = {}, float rotation = 0);
 
-        void draw(Text &text, Rectf dstRect, ShaderProgram &shader, Vec2f center = {}, float rotation = 0);
-
         /**
+         * Draw instanced rectangles
+         *
          * @param offsets The position and rotation of every instance
          * @param size
          * @param color
@@ -135,8 +170,6 @@ namespace xengine {
                            ColorRGBA color,
                            bool fill = true,
                            Vec2f center = {});
-
-        void renderPresent();
 
     private:
         struct PlaneDescription {
@@ -242,8 +275,9 @@ namespace xengine {
         ShaderSource fs;
         ShaderSource fsText;
 
-        std::unique_ptr<ShaderProgram> defShader = nullptr;
-        std::unique_ptr<ShaderProgram> textShader = nullptr;
+        std::unique_ptr<ShaderProgram> shader = nullptr;
+
+        std::unique_ptr<RenderPipeline> pipeline;
 
         std::unordered_map<PlaneDescription, std::unique_ptr<VertexBuffer>, PlaneDescriptionHashFunction> allocatedPlanes;
         std::unordered_map<SquareDescription, std::unique_ptr<VertexBuffer>, SquareDescriptionHashFunction> allocatedSquares;
@@ -252,10 +286,16 @@ namespace xengine {
 
         std::vector<std::unique_ptr<VertexBuffer>> allocatedInstancedMeshes;
 
+        std::vector<std::unique_ptr<ShaderBuffer>> allocatedShaderBuffers;
+
         std::unordered_set<PlaneDescription, PlaneDescriptionHashFunction> usedPlanes;
         std::unordered_set<SquareDescription, SquareDescriptionHashFunction> usedSquares;
         std::unordered_set<LineDescription, LineDescriptionHashFunction> usedLines;
         std::unordered_set<Vec2f, Vector2HashFunction<float>> usedPoints;
+
+        std::vector<RenderPass> passes;
+
+        RenderTarget *userTarget = nullptr;
 
         Vec2i screenSize;
 

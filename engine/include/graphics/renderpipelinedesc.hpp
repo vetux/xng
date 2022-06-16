@@ -32,8 +32,8 @@ namespace xengine {
     struct RenderPipelineDesc {
         ShaderProgram &shader;
 
-        Vec2i viewportOffset;
-        Vec2i viewportSize;
+        Vec2i viewportOffset = Vec2i(0);
+        Vec2i viewportSize = Vec2i(1);
 
         bool multiSample = true;
         bool multiSampleEnableFrequency = false;
