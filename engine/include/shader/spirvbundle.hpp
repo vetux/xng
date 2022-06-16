@@ -52,6 +52,12 @@ namespace xengine {
 
         const std::vector<SPIRVShader> &getShaders() { return modules; }
 
+        const SPIRVShader &getShader() {
+            if (modules.empty())
+                throw std::runtime_error("No modules");
+            return modules.at(0);
+        }
+
         bool operator==(const SPIRVBundle &other) const {
             return modules == other.modules && blobs == other.blobs;
         }
