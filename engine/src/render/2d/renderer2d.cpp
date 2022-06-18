@@ -206,6 +206,7 @@ namespace xengine {
                     {.shader =*shader,
                             .viewportOffset = viewportOffset,
                             .viewportSize = viewportSize,
+                            .clearColorValue = clearColor,
                             .clearColor = clear,
                             .clearDepth = clear,
                             .clearStencil = clear});
