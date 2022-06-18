@@ -55,7 +55,7 @@ void main()
     instanceMatrix[2] = instanceRow2;
     instanceMatrix[3] = instanceRow3;
 
-    fPosition = vec4(position, 1);
+    fPosition = (gvars.mvp * instanceMatrix) * vec4(position, 1);
     fUv = uv;
     gl_Position = fPosition;
 }
