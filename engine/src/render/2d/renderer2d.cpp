@@ -108,9 +108,9 @@ static float distance(float val1, float val2) {
 
 namespace xengine {
     struct ShaderUniformBuffer {
-        Mat4f mvp{};
-        float use_texture{};
-        Vec4f color{};
+        Mat4f mvp = MatrixMath::identity();
+        float use_texture = 0;
+        Vec4f color = Vec4f(1);
     };
 
     /**
