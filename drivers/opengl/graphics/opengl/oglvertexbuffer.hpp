@@ -54,9 +54,9 @@ namespace xengine::opengl {
             indexed = desc.numberOfIndices != 0;
             instanced = desc.numberOfInstances != 0;
             if (indexed) {
-                elementCount = desc.numberOfIndices / desc.primitive;
+                elementCount = desc.numberOfIndices;
             } else {
-                elementCount = desc.numberOfVertices / desc.primitive;
+                elementCount = desc.numberOfVertices;
             }
             switch (desc.primitive) {
                 case Mesh::POINT:
