@@ -26,9 +26,11 @@
 
 #include "graphics/opengl/oglbuildmacro.hpp"
 
+#include "asset/mesh.hpp"
+
 #include "math/matrixmath.hpp"
 
-namespace xengine ::opengl {
+namespace xengine::opengl {
     class OPENGL_TYPENAME(VertexBuffer) : public VertexBuffer OPENGL_INHERIT {
     public:
         VertexBufferDesc desc;
@@ -49,9 +51,29 @@ namespace xengine ::opengl {
         explicit OPENGL_TYPENAME(VertexBuffer)(VertexBufferDesc desc) :
                 desc(std::move(desc)) {
             initialize();
-            elementType = GL_TRIANGLES;
             indexed = desc.numberOfIndices != 0;
             instanced = desc.numberOfInstances != 0;
+            if (indexed) {
+                elementCount = desc.numberOfIndices / desc.primitive;
+            } else {
+                elementCount = desc.numberOfVertices / desc.primitive;
+            }
+            switch (desc.primitive) {
+                case Mesh::POINT:
+                    elementType = GL_POINTS;
+                    break;
+                case Mesh::LINE:
+                    elementType = GL_LINES;
+                    break;
+                case Mesh::TRI:
+                    elementType = GL_TRIANGLES;
+                    break;
+                case Mesh::QUAD:
+                    elementType = GL_QUADS;
+                    break;
+                default:
+                    throw std::runtime_error("Invalid primitive");
+            }
             glGenVertexArrays(1, &VAO);
             glGenBuffers(1, &VBO);
             glGenBuffers(1, &EBO);
@@ -81,141 +103,93 @@ namespace xengine ::opengl {
             return desc;
         }
 
-        void upload(const uint8_t *buffer,
-                    size_t bufferSize,
+        void upload(const uint8_t *vertexBuffer,
+                    size_t vertexBufferSize,
                     const uint8_t *instanceBuffer,
                     size_t instanceBufferSize,
                     const std::vector<uint> &indices) override {
+            int vertexStride = 0;
+            for (auto &binding: desc.vertexLayout) {
+                vertexStride += binding.stride();
+            }
+
+            int instanceStride = 0;
+            for (auto &binding: desc.instanceLayout) {
+                instanceStride += binding.stride();
+            }
+
+            auto indexBufferSize = indices.size() * sizeof(uint);
+
+            auto vertexByteCount = numeric_cast<GLsizei>(vertexStride * desc.numberOfVertices);
+            auto instanceByteCount = numeric_cast<GLsizei>(instanceStride * desc.numberOfInstances);
+            auto indexByteCount = numeric_cast<GLsizei>(sizeof(uint) * desc.numberOfIndices);
+
+            if (vertexBufferSize != vertexByteCount) {
+                throw std::runtime_error("Invalid vertex buffer size");
+            } else if (instanceBufferSize != instanceByteCount) {
+                throw std::runtime_error("Invalid instance buffer size");
+            } else if (indexBufferSize != indexByteCount) {
+                throw std::runtime_error("Invalid index buffer size");
+            }
+
+            glBindVertexArray(VAO);
+
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glBufferData(GL_ARRAY_BUFFER,
+                         vertexByteCount,
+                         vertexBuffer,
+                         GL_STATIC_DRAW);
+
             if (indexed) {
-                elementCount = indices.size();
-
-                int stride = 0;
-                for (auto &binding: desc.vertexLayout) {
-                    stride += binding.stride();
-                }
-
-                int instanceStride = 0;
-                for (auto &binding: desc.instanceLayout) {
-                    instanceStride += binding.stride();
-                }
-
-                glBindVertexArray(VAO);
-
-                glBindBuffer(GL_ARRAY_BUFFER, VBO);
-                glBufferData(GL_ARRAY_BUFFER,
-                             numeric_cast<GLsizeiptr>(stride * desc.numberOfVertices),
-                             buffer,
-                             GL_STATIC_DRAW);
-
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
                 glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                             numeric_cast<GLsizeiptr>(sizeof(uint) * indices.size()),
+                             indexByteCount,
                              indices.data(),
                              GL_STATIC_DRAW);
+            }
 
-                size_t currentOffset = 0;
-                for (int i = 0; i < desc.vertexLayout.size(); i++) {
-                    auto index = i;
-                    glEnableVertexAttribArray(index);
-                    auto &binding = desc.vertexLayout.at(i);
-                    glVertexAttribPointer(index,
-                                          VertexAttribute::getCount(binding.type),
-                                          getType(binding.component),
-                                          GL_FALSE,
-                                          stride,
-                                          (void *) (currentOffset));
-                    currentOffset += binding.stride();
-                }
+            size_t currentOffset = 0;
+            for (int i = 0; i < desc.vertexLayout.size(); i++) {
+                auto &binding = desc.vertexLayout.at(i);
+                glEnableVertexAttribArray(i);
+                glVertexAttribPointer(i,
+                                      VertexAttribute::getCount(binding.type),
+                                      getType(binding.component),
+                                      GL_FALSE,
+                                      vertexStride,
+                                      (void *) (currentOffset));
+                currentOffset += binding.stride();
+            }
 
-                if (instanced) {
-                    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-                    glBufferData(GL_ARRAY_BUFFER,
-                                 numeric_cast<int>(instanceBufferSize * desc.numberOfInstances),
-                                 instanceBuffer,
-                                 GL_STATIC_DRAW);
+            if (instanced) {
+                currentOffset = 0;
 
-                    currentOffset = 0;
-                    for (int i = 0; i < desc.instanceLayout.size(); i++) {
-                        auto index = desc.vertexLayout.size() + i;
-                        glEnableVertexAttribArray(index);
-                        auto &binding = desc.instanceLayout.at(i);
-                        glVertexAttribPointer(index,
-                                              VertexAttribute::getCount(binding.type),
-                                              getType(binding.component),
-                                              GL_FALSE,
-                                              instanceStride,
-                                              (void *) currentOffset);
-                        glVertexAttribDivisor(index, 1);
-                        currentOffset += binding.stride();
-                    }
-                }
-
-                glBindVertexArray(0);
-
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-            } else {
-                elementCount = desc.numberOfVertices;
-
-                int stride = 0;
-                for (auto &binding: desc.vertexLayout) {
-                    stride += binding.stride();
-                }
-
-                int instanceStride = 0;
-                for (auto &binding: desc.instanceLayout) {
-                    instanceStride += binding.stride();
-                }
-
-                glBindVertexArray(VAO);
-
-                glBindBuffer(GL_ARRAY_BUFFER, VBO);
+                glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
                 glBufferData(GL_ARRAY_BUFFER,
-                             numeric_cast<GLsizeiptr>(stride * desc.numberOfVertices),
-                             buffer,
+                             numeric_cast<int>(instanceByteCount),
+                             instanceBuffer,
                              GL_STATIC_DRAW);
 
-                size_t currentOffset = 0;
-                for (int i = 0; i < desc.vertexLayout.size(); i++) {
-                    auto index = i;
+                for (int i = 0; i < desc.instanceLayout.size(); i++) {
+                    auto &binding = desc.instanceLayout.at(i);
+                    auto index = desc.vertexLayout.size() + i;
                     glEnableVertexAttribArray(index);
-                    auto &binding = desc.vertexLayout.at(i);
                     glVertexAttribPointer(index,
                                           VertexAttribute::getCount(binding.type),
                                           getType(binding.component),
                                           GL_FALSE,
-                                          stride,
-                                          (void *) (currentOffset));
+                                          instanceStride,
+                                          (void *) currentOffset);
+                    glVertexAttribDivisor(index, 1);
                     currentOffset += binding.stride();
                 }
+            }
 
-                if (instanced) {
-                    currentOffset = 0;
+            glBindVertexArray(0);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-                    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-                    glBufferData(GL_ARRAY_BUFFER,
-                                 numeric_cast<int>(instanceBufferSize * desc.numberOfInstances),
-                                 instanceBuffer,
-                                 GL_STATIC_DRAW);
-
-                    for (int i = 0; i < desc.instanceLayout.size(); i++) {
-                        auto index = desc.vertexLayout.size() + i;
-                        glEnableVertexAttribArray(index);
-                        auto &binding = desc.instanceLayout.at(i);
-                        glVertexAttribPointer(index,
-                                              VertexAttribute::getCount(binding.type),
-                                              getType(binding.component),
-                                              GL_FALSE,
-                                              instanceStride,
-                                              (void *) currentOffset);
-                        glVertexAttribDivisor(index, 1);
-                        currentOffset += binding.stride();
-                    }
-                }
-
-                glBindVertexArray(0);
-
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
+            if (indexed) {
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             }
 
             checkGLError("OGLRenderAllocator::createMeshBuffer");

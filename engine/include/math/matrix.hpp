@@ -37,25 +37,33 @@ namespace xengine {
         void set(int col, int row, T v) {
             assert(col >= 0 && col < W);
             assert(row >= 0 && row < H);
-            data[H * col + row] = v;
+            data[getIndex(col, row)] = v;
         }
 
         const T &get(int col, int row) const {
             assert(col >= 0 && col < W);
             assert(row >= 0 && row < H);
-            return data[H * col + row];
+            return data[getIndex(col, row)];
         }
 
         T &get(int col, int row) {
             assert(col >= 0 && col < W);
             assert(row >= 0 && row < H);
-            return data[H * col + row];
+            return data[getIndex(col, row)];
+        }
+
+        size_t getIndex(int col, int row) const {
+            return H * col + row; // Column Major
+        }
+
+        size_t getIndexRowMajor(int col, int row) const {
+            return W * row + col; // Row Major
         }
 
         Matrix<T, W, H> &operator+=(const Matrix<T, W, H> &other) {
             for (int col = 0; col < W; col++) {
                 for (int row = 0; row < H; row++) {
-                    data[H * col + row] += other.get(col, row);
+                    data[getIndex(col, row)] += other.get(col, row);
                 }
             }
             return *this;
@@ -64,7 +72,7 @@ namespace xengine {
         Matrix<T, W, H> &operator-=(const Matrix<T, W, H> &other) {
             for (int col = 0; col < W; col++) {
                 for (int row = 0; row < H; row++) {
-                    data[H * col + row] -= other.get(col, row);
+                    data[getIndex(col, row)] -= other.get(col, row);
                 }
             }
             return *this;

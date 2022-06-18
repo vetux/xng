@@ -2,6 +2,7 @@
 #define VECTOR4_HPP
 
 #include <cmath>
+#include <array>
 
 #include "cast/numeric_cast.hpp"
 
@@ -24,6 +25,11 @@ namespace xengine {
 
         Vector4(T x, T y, T z, T w)
                 : x(x), y(y), z(z), w(w) {
+        }
+
+        std::array<float, 4> getMemory() {
+            static_assert(sizeof(std::array<T, 4>) == sizeof(T[4]));
+            return std::array<float, 4>{x, y, z, w};
         }
 
         Vector4<T> &operator+=(const Vector4<T> &v) {
@@ -74,8 +80,8 @@ namespace xengine {
             return *this;
         }
 
-        template <typename R>
-        explicit operator Vector4<R>(){
+        template<typename R>
+        explicit operator Vector4<R>() {
             return convert<R>();
         }
 

@@ -100,18 +100,16 @@ namespace xengine {
         usedPipelines.clear();
     }
 
-    VertexBuffer &FrameGraphPool::getMesh(const ResourceHandle<Mesh>& handle) {
+    VertexBuffer &FrameGraphPool::getMesh(const ResourceHandle<Mesh> &handle) {
         usedUris.insert(handle.getUri());
         auto it = uriObjects.find(handle.getUri());
         if (it == uriObjects.end()) {
-            auto vertexBuffer = device->createInstancedVertexBuffer(handle.get(), {Transform()});
-            vertexBuffer->upload(handle.get(), {Transform()});
-            uriObjects[handle.getUri()] = std::move(vertexBuffer);
+            uriObjects[handle.getUri()] = device->createInstancedVertexBuffer(handle.get(), {MatrixMath::identity()});
         }
         return dynamic_cast<VertexBuffer &>(*uriObjects.at(handle.getUri()));
     }
 
-    TextureBuffer &FrameGraphPool::getTexture(const ResourceHandle<Texture>& handle) {
+    TextureBuffer &FrameGraphPool::getTexture(const ResourceHandle<Texture> &handle) {
         usedUris.insert(handle.getUri());
         auto it = uriObjects.find(handle.getUri());
         if (it == uriObjects.end()) {
@@ -120,16 +118,21 @@ namespace xengine {
         return dynamic_cast<TextureBuffer &>(*uriObjects.at(handle.getUri()));
     }
 
-    ShaderProgram &FrameGraphPool::getShader(const ResourceHandle<Shader>& handle) {
+    ShaderProgram &FrameGraphPool::getShader(const ResourceHandle<Shader> &handle) {
         usedUris.insert(handle.getUri());
         auto it = uriObjects.find(handle.getUri());
         if (it == uriObjects.end()) {
             auto &shader = handle.get();
             ShaderProgramDesc desc;
-            desc.shaders.insert(std::pair<ShaderStage, SPIRVShader>(ShaderStage::VERTEX, shader.vertexShader.compile().getShaders().at(0)));
-            desc.shaders.insert(std::pair<ShaderStage, SPIRVShader>(ShaderStage::FRAGMENT, shader.fragmentShader.compile().getShaders().at(0)));
+            desc.shaders.insert(std::pair<ShaderStage, SPIRVShader>(ShaderStage::VERTEX,
+                                                                    shader.vertexShader.compile().getShaders().at(0)));
+            desc.shaders.insert(std::pair<ShaderStage, SPIRVShader>(ShaderStage::FRAGMENT,
+                                                                    shader.fragmentShader.compile().getShaders().at(
+                                                                            0)));
             if (!shader.geometryShader.isEmpty()) {
-                desc.shaders.insert(std::pair<ShaderStage, SPIRVShader>(ShaderStage::GEOMETRY, shader.geometryShader.compile().getShaders().at(0)));
+                desc.shaders.insert(std::pair<ShaderStage, SPIRVShader>(ShaderStage::GEOMETRY,
+                                                                        shader.geometryShader.compile().getShaders().at(
+                                                                                0)));
             }
             uriObjects[handle.getUri()] = device->createShaderProgram(desc);
         }

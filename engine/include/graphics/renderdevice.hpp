@@ -105,8 +105,10 @@ namespace xengine {
             };
 
             const VertexBufferDesc desc = {
+                    .primitive = mesh.primitive,
                     .vertexLayout = layout,
-                    .numberOfVertices = mesh.vertices.size()
+                    .numberOfVertices = mesh.vertices.size(),
+                    .numberOfIndices = mesh.indices.size()
             };
             auto ret = createVertexBuffer(desc);
             ret->upload(mesh);
@@ -131,7 +133,7 @@ namespace xengine {
          * @return
          */
         virtual std::unique_ptr<VertexBuffer> createInstancedVertexBuffer(const Mesh &mesh,
-                                                                          const std::vector<Transform> &offsets) {
+                                                                          const std::vector<Mat4f> &offsets) {
             const std::vector<VertexAttribute> layout = {
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
@@ -148,10 +150,12 @@ namespace xengine {
             };
 
             const VertexBufferDesc desc = {
+                    .primitive = mesh.primitive,
                     .vertexLayout = layout,
                     .instanceLayout = instanceLayout,
                     .numberOfVertices = mesh.vertices.size(),
-                    .numberOfInstances = offsets.size()
+                    .numberOfInstances = offsets.size(),
+                    .numberOfIndices = mesh.indices.size(),
             };
             auto ret = createVertexBuffer(desc);
             ret->upload(mesh, offsets);

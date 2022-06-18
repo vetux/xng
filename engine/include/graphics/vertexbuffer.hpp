@@ -42,12 +42,12 @@ namespace xengine {
          * Upload the data from the specified buffers to the mesh buffer,
          * the layout of the passed buffers must match the layout specified in the mesh buffer description.
          *
-         * @param buffer
+         * @param vertexBuffer
          * @param instanceBuffer
          * @param indices
          */
-        virtual void upload(const uint8_t *buffer,
-                            size_t bufferSize,
+        virtual void upload(const uint8_t *vertexBuffer,
+                            size_t vertexBufferSize,
                             const uint8_t *instanceBuffer,
                             size_t instanceBufferSize,
                             const std::vector<uint> &indices) = 0;
@@ -61,11 +61,11 @@ namespace xengine {
         }
 
         virtual void upload(const Mesh &mesh,
-                            const std::vector<Transform> &offsets) {
+                            const std::vector<Mat4f> &offsets) {
             upload(reinterpret_cast<const uint8_t *>(mesh.vertices.data()),
                    sizeof(Vertex) * mesh.vertices.size(),
                    reinterpret_cast<const uint8_t *>(offsets.data()),
-                   sizeof(Transform) * offsets.size(),
+                   sizeof(Mat4f) * offsets.size(),
                    mesh.indices);
         }
     };

@@ -48,16 +48,11 @@ namespace xengine {
             return Vec3f(ret.x, ret.y, ret.z);
         }
 
-        Mat4f model() {
-            if (dirty) {
-                dirty = false;
-                mModel = MatrixMath::translate(mPosition) * mRotation.matrix() * MatrixMath::scale(mScale);
-            }
-            return mModel;
+        Mat4f model() const {
+            return MatrixMath::translate(mPosition) * mRotation.matrix() * MatrixMath::scale(mScale);
         }
 
         void setPosition(Vec3f position) {
-            dirty = true;
             mPosition = position;
         }
 
@@ -66,7 +61,6 @@ namespace xengine {
         }
 
         void setRotation(const Quaternion &quaternion) {
-            dirty = true;
             mRotation = quaternion;
         }
 
@@ -89,7 +83,6 @@ namespace xengine {
         }
 
         void setScale(const Vec3f &scale) {
-            dirty = true;
             mScale = scale;
         }
 
@@ -114,7 +107,6 @@ namespace xengine {
         Vec3f mPosition;
         Quaternion mRotation;
         Vec3f mScale = Vec3f(1);
-        bool dirty = true;
     };
 }
 

@@ -2,6 +2,7 @@
 #define VECTOR3_HPP
 
 #include <cmath>
+#include <array>
 
 #include "cast/numeric_cast.hpp"
 
@@ -23,6 +24,11 @@ namespace xengine {
 
         Vector3(T x, T y, T z)
                 : x(x), y(y), z(z) {
+        }
+
+        std::array<float, 3> getMemory() {
+            static_assert(sizeof(std::array<T, 3>) == sizeof(T[3]));
+            return std::array<float, 3>{x, y, z};
         }
 
         Vector3<T> &operator+=(const Vector3<T> &v) {
@@ -67,8 +73,8 @@ namespace xengine {
             return *this;
         }
 
-        template <typename R>
-        explicit operator Vector3<R>(){
+        template<typename R>
+        explicit operator Vector3<R>() {
             return convert<R>();
         }
 

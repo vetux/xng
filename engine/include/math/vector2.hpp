@@ -2,6 +2,7 @@
 #define VECTOR2_HPP
 
 #include <cmath>
+#include <array>
 
 #include "cast/numeric_cast.hpp"
 
@@ -22,6 +23,11 @@ namespace xengine {
 
         Vector2(T x, T y)
                 : x(x), y(y) {
+        }
+
+        std::array<float, 2> getMemory() {
+            static_assert(sizeof(std::array<T, 2>) == sizeof(T[2]));
+            return std::array<float, 2>({x, y});
         }
 
         Vector2<T> &operator+=(const Vector2<T> &v) {
@@ -48,7 +54,6 @@ namespace xengine {
             return *this;
         }
 
-
         Vector2<T> &operator*=(const T &v) {
             x *= v;
             y *= v;
@@ -61,10 +66,10 @@ namespace xengine {
             return *this;
         }
 
-       /* template <typename R>
-        explicit operator Vector2<R>(){
-            return convert<R>();
-        }*/
+        /* template <typename R>
+         explicit operator Vector2<R>(){
+             return convert<R>();
+         }*/
 
         template<typename R>
         Vector2<R> convert() const {
