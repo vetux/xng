@@ -55,7 +55,10 @@ void main()
     instanceMatrix[2] = instanceRow2;
     instanceMatrix[3] = instanceRow3;
 
-    fPosition = (gvars.mvp * instanceMatrix) * vec4(position, 1);
+// instanceMatrix should contain identity matrix but it does not.
+// Which means invalid matrix data was passed to this vertex shader or the data passed is obfuscated.
+// No combination of transpose and inverse is correct either.
+    fPosition = (/* gvars.mvp * */instanceMatrix) * vec4(position, 1);
     fUv = uv;
     gl_Position = fPosition;
 }
