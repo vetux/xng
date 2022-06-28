@@ -179,25 +179,27 @@ namespace xengine::opengl {
                 glBindVertexArray(mesh.VAO);
 
                 if (mesh.indexed) {
-                    if (mesh.instanced)
+                    if (mesh.instanced) {
                         glDrawElementsInstanced(mesh.elementType,
                                                 numeric_cast<GLsizei>(mesh.elementCount),
                                                 GL_UNSIGNED_INT,
                                                 0,
                                                 numeric_cast<GLsizei>(mesh.instanceCount));
-                    else
+                    } else {
                         glDrawElements(mesh.elementType,
                                        numeric_cast<GLsizei>(mesh.elementCount),
                                        GL_UNSIGNED_INT,
                                        0);
+                    }
                 } else {
-                    if (mesh.instanced)
+                    if (mesh.instanced) {
                         glDrawArraysInstanced(mesh.elementType,
                                               0,
                                               numeric_cast<GLsizei>(mesh.elementCount),
                                               numeric_cast<GLsizei>(mesh.instanceCount));
-                    else
+                    } else {
                         glDrawArrays(mesh.elementType, 0, numeric_cast<GLsizei>(mesh.elementCount));
+                    }
                 }
 
                 glBindVertexArray(0);

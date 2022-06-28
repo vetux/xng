@@ -31,6 +31,8 @@
 #include "math/matrixmath.hpp"
 
 namespace xengine::opengl {
+#warning "BUG: Instanced vertex buffers are not rendered"
+
     class OPENGL_TYPENAME(VertexBuffer) : public VertexBuffer OPENGL_INHERIT {
     public:
         VertexBufferDesc desc;
@@ -48,8 +50,8 @@ namespace xengine::opengl {
         size_t instanceCount = 0;
         GLuint instanceVBO = 0;
 
-        explicit OPENGL_TYPENAME(VertexBuffer)(VertexBufferDesc desc) :
-                desc(std::move(desc)) {
+        explicit OPENGL_TYPENAME(VertexBuffer)(VertexBufferDesc inputDescription) :
+                desc(std::move(inputDescription)) {
             initialize();
             indexed = desc.numberOfIndices != 0;
             instanced = desc.numberOfInstances != 0;
@@ -148,10 +150,17 @@ namespace xengine::opengl {
                              GL_STATIC_DRAW);
             }
 
+            for (int i = 0; i < desc.vertexLayout.size(); i++) {
+                glEnableVertexAttribArray(i);
+            }
+
+            for (int i = 0; i < desc.instanceLayout.size(); i++) {
+                glEnableVertexAttribArray(desc.vertexLayout.size() + i);
+            }
+
             size_t currentOffset = 0;
             for (int i = 0; i < desc.vertexLayout.size(); i++) {
                 auto &binding = desc.vertexLayout.at(i);
-                glEnableVertexAttribArray(i);
                 glVertexAttribPointer(i,
                                       VertexAttribute::getCount(binding.type),
                                       getType(binding.component),
@@ -173,15 +182,17 @@ namespace xengine::opengl {
                 for (int i = 0; i < desc.instanceLayout.size(); i++) {
                     auto &binding = desc.instanceLayout.at(i);
                     auto index = desc.vertexLayout.size() + i;
-                    glEnableVertexAttribArray(index);
                     glVertexAttribPointer(index,
                                           VertexAttribute::getCount(binding.type),
                                           getType(binding.component),
                                           GL_FALSE,
                                           instanceStride,
                                           (void *) currentOffset);
-                    glVertexAttribDivisor(index, 1);
                     currentOffset += binding.stride();
+                }
+
+                for (int i = 0; i < desc.instanceLayout.size(); i++) {
+                    glVertexAttribDivisor(desc.vertexLayout.size() + i, 1);
                 }
             }
 

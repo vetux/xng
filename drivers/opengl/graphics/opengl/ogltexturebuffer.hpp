@@ -31,7 +31,8 @@ namespace xengine {
             TextureBufferDesc desc;
             GLuint handle;
 
-            OPENGL_TYPENAME(TextureBuffer)(const TextureBufferDesc &desc) {
+            OPENGL_TYPENAME(TextureBuffer)(const TextureBufferDesc &inputDescription)
+                    : desc(std::move(inputDescription)) {
                 initialize();
 
                 GLenum type = convert(desc.textureType);

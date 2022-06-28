@@ -28,8 +28,8 @@ namespace xengine::opengl {
         ShaderBufferDesc desc;
         GLuint ubo;
 
-        explicit OPENGL_TYPENAME(ShaderBuffer)(ShaderBufferDesc desc)
-                : desc(desc) {
+        explicit OPENGL_TYPENAME(ShaderBuffer)(ShaderBufferDesc inputDescription)
+                : desc(std::move(inputDescription)) {
             initialize();
             glGenBuffers(1, &ubo);
             glBindBuffer(GL_UNIFORM_BUFFER, ubo);

@@ -37,8 +37,8 @@ namespace xengine {
             int attachedColor = 0;
             bool attachedDepthStencil = false;
 
-            explicit OPENGL_TYPENAME(RenderTarget)(RenderTargetDesc desc)
-                    : desc(desc) {
+            explicit OPENGL_TYPENAME(RenderTarget)(RenderTargetDesc inputDescription)
+                    : desc(inputDescription) {
                 initialize();
 
                 glGenFramebuffers(1, &FBO);
