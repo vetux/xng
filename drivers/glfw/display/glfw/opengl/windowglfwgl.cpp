@@ -187,15 +187,8 @@ namespace xengine {
             }
 
             glfwSwapInterval(attributes.swapInterval);
-
-            RenderTargetDesc desc;
-            desc.size = size;
-            desc.multisample = attributes.multiSample;
-            desc.samples = attributes.samples;
-            desc.numberOfColorAttachments = 1;
-            desc.hasDepthStencilAttachment = true;
             
-            renderTargetGl = std::make_unique<GLFWRenderTargetGL>(desc);
+            renderTargetGl = std::make_unique<GLFWRenderTargetGL>(*wndH);
 
             input = std::make_unique<GLFWInput>(*wndH);
 
@@ -237,14 +230,7 @@ namespace xengine {
                 throw std::runtime_error("Failed to initialize glad");
             }
 
-            RenderTargetDesc desc;
-            desc.size = size;
-            desc.multisample = attributes.multiSample;
-            desc.samples = attributes.samples;
-            desc.numberOfColorAttachments = 1;
-            desc.hasDepthStencilAttachment = true;
-
-            renderTargetGl = std::make_unique<GLFWRenderTargetGL>(desc);
+            renderTargetGl = std::make_unique<GLFWRenderTargetGL>(*wndH);
 
             input = std::make_unique<GLFWInput>(*wndH);
 

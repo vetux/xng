@@ -26,8 +26,19 @@ namespace xengine {
     namespace glfw {
         class GLFWRenderTargetGL : public opengl::OGLRenderTarget {
         public:
-            explicit GLFWRenderTargetGL(RenderTargetDesc desc)
-                    : opengl::OGLRenderTarget(desc) {}
+            GLFWwindow *wndH;
+
+            explicit GLFWRenderTargetGL(GLFWwindow &wnd)
+                    : opengl::OGLRenderTarget({}),
+                      wndH(&wnd) {
+                desc.samples = glfwGetWindowAttrib(wndH, GLFW_SAMPLES);
+                desc.multisample = desc.samples != 0;
+            }
+
+            const RenderTargetDesc &getDescription() override {
+                glfwGetFramebufferSize(wndH, &desc.size.x, &desc.size.y);
+                return desc;
+            }
 
             GLuint getFBO() override {
                 return 0;
