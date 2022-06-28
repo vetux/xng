@@ -300,6 +300,8 @@ namespace xengine {
         Vec2i screenSize;
 
         Camera camera;
+
+        bool isRendering = false;
     };
 }
 

@@ -52,6 +52,22 @@ namespace xengine {
             return data[getIndex(col, row)];
         }
 
+        std::array<T, W> getRow(int row) {
+            std::array<T, W> ret;
+            for (int i = 0; i < W; i++) {
+                ret[i] = get(i, row);
+            }
+            return ret;
+        }
+
+        std::array<T, H> getColumn(int col) {
+            std::array<T, H> ret;
+            for (int i = 0; i < H; i++) {
+                ret[i] = get(col, i);
+            }
+            return ret;
+        }
+
         size_t getIndex(int col, int row) const {
             return H * col + row; // Column Major
         }

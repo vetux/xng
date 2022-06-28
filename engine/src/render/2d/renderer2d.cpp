@@ -55,10 +55,7 @@ void main()
     instanceMatrix[2] = instanceRow2;
     instanceMatrix[3] = instanceRow3;
 
-// instanceMatrix should contain identity matrix but it does not.
-// Which means invalid matrix data was passed to this vertex shader or the data passed is obfuscated.
-// No combination of transpose and inverse is correct either.
-    fPosition = (/* gvars.mvp * */instanceMatrix) * vec4(position, 1);
+    fPosition =  (gvars.mvp /* * instanceMatrix */) * vec4(position, 1);
     fUv = uv;
     gl_Position = fPosition;
 }
@@ -70,10 +67,6 @@ layout (location = 0) in vec4 fPosition;
 layout (location = 1) in vec2 fUv;
 
 layout (location = 0) out vec4 color;
-
-uniform mat4 MVP;
-uniform float USE_TEXTURE;
-uniform vec4 COLOR;
 
 layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
@@ -203,6 +196,10 @@ namespace xengine {
                                  ColorRGBA clearColor,
                                  Vec2i viewportOffset,
                                  Vec2i viewportSize) {
+        if (isRendering)
+            throw std::runtime_error("Already rendering. ( Nested renderBegin calls? )");
+        isRendering = true;
+
         userTarget = &target;
         if (pipeline->getDescription().clearColor != clear
             || pipeline->getDescription().clearColorValue != clearColor) {
@@ -210,10 +207,11 @@ namespace xengine {
                     {.shader =*shader,
                             .viewportOffset = viewportOffset,
                             .viewportSize = viewportSize,
+                            .multiSample = false,
                             .clearColorValue = clearColor,
                             .clearColor = clear,
-                            .clearDepth = clear,
-                            .clearStencil = clear});
+                            .enableDepthTest = false,
+                            .enableBlending = true});
         }
         pipeline->setViewportSize(viewportSize);
         screenSize = viewportSize;
@@ -221,9 +219,9 @@ namespace xengine {
     }
 
     void Renderer2D::renderPresent() {
-        if (userTarget == nullptr) {
-            throw std::runtime_error("Target not assigned");
-        }
+        if (!isRendering)
+            throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
+        isRendering = false;
 
         pipeline->render(*userTarget, passes);
 
@@ -281,6 +279,9 @@ namespace xengine {
     }
 
     void Renderer2D::setProjection(const Rectf &projection) {
+        if (!isRendering)
+            throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
+
         camera.type = ORTHOGRAPHIC;
         camera.transform.setPosition({0, 0, 1});
         camera.left = projection.position.x;
@@ -295,6 +296,9 @@ namespace xengine {
                           Vec2f center,
                           float rotation,
                           Vec2b flipUv) {
+        if (!isRendering)
+            throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
+
         VertexBuffer &buffer = getPlane({dstRect.dimensions, center, srcRect, flipUv});
 
         Mat4f model = MatrixMath::identity();
@@ -326,6 +330,9 @@ namespace xengine {
     }
 
     void Renderer2D::draw(Rectf rectangle, ColorRGBA color, bool fill, Vec2f center, float rotation) {
+        if (!isRendering)
+            throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
+
         Mesh mesh;
 
         VertexBuffer *buffer;
@@ -366,6 +373,9 @@ namespace xengine {
                           ColorRGBA color,
                           Vec2f center,
                           float rotation) {
+        if (!isRendering)
+            throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
+
         VertexBuffer &buffer = getLine({start, end, center});
 
         Mat4f modelMatrix = MatrixMath::identity();
@@ -392,6 +402,9 @@ namespace xengine {
     }
 
     void Renderer2D::draw(Vec2f point, ColorRGBA color) {
+        if (!isRendering)
+            throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
+
         VertexBuffer &buffer = getPoint(point);
 
         Mat4f modelMatrix = MatrixMath::identity();
@@ -416,6 +429,9 @@ namespace xengine {
     }
 
     void Renderer2D::draw(Text &text, Rectf dstRect, ColorRGBA color, Vec2f center, float rotation) {
+        if (!isRendering)
+            throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
+
         auto srcRect = Rectf({}, text.getTexture().getDescription().size.convert<float>());
 
         VertexBuffer &buffer = getPlane({dstRect.dimensions, center, srcRect, Vec2b(false)});
@@ -450,14 +466,10 @@ namespace xengine {
                                    ColorRGBA color,
                                    bool fill,
                                    Vec2f center) {
-        Mesh mesh = Mesh(Mesh::TRI, {
-                Vertex(Vec3f(0 - center.x, 0 - center.y, 0), {0, 0}),
-                Vertex(Vec3f(size.x - center.x, 0 - center.y, 0), {0, 0}),
-                Vertex(Vec3f(0 - center.x, size.y - center.y, 0), {0, 0}),
-                Vertex(Vec3f(0 - center.x, size.y - center.y, 0), {0, 0}),
-                Vertex(Vec3f(size.x - center.x, 0 - center.y, 0), {0, 0}),
-                Vertex(Vec3f(size.x - center.x, size.y - center.y, 0), {0, 0})
-        });
+        if (!isRendering)
+            throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
+
+        Mesh mesh = createPlane(size, center, {}, Vec2b(false));
 
         std::vector<Mat4f> offsets;
         for (auto &p: positions) {
@@ -496,6 +508,7 @@ namespace xengine {
         passes.emplace_back(RenderPass(meshBuffer, bindings));
     }
 
+    // Giving an offset to createInstancedVertexBuffer causes vertex buffers to not be displayed when only applying mvp, so instanced vertex buffers somehow break the vertex layout.
     VertexBuffer &Renderer2D::getPlane(const Renderer2D::PlaneDescription &desc) {
         usedPlanes.insert(desc);
         auto it = allocatedPlanes.find(desc);
@@ -503,7 +516,7 @@ namespace xengine {
             return *it->second;
         } else {
             auto mesh = createPlane(desc.size, desc.center, desc.uvOffset, desc.flipUv);
-            allocatedPlanes[desc] = renderDevice.createInstancedVertexBuffer(mesh, {MatrixMath::identity()});
+            allocatedPlanes[desc] = renderDevice.createInstancedVertexBuffer(mesh, {});
             return *allocatedPlanes[desc];
         }
     }
@@ -515,7 +528,7 @@ namespace xengine {
             return *it->second;
         } else {
             auto mesh = createSquare(desc.size, desc.center);
-            allocatedSquares[desc] = renderDevice.createInstancedVertexBuffer(mesh, {MatrixMath::identity()});
+            allocatedSquares[desc] = renderDevice.createInstancedVertexBuffer(mesh, {});
             return *allocatedSquares[desc];
         }
     }
@@ -527,7 +540,7 @@ namespace xengine {
             return *it->second;
         } else {
             auto mesh = createLine(desc.start, desc.end, desc.center);
-            allocatedLines[desc] = renderDevice.createInstancedVertexBuffer(mesh, {MatrixMath::identity()});
+            allocatedLines[desc] = renderDevice.createInstancedVertexBuffer(mesh, {});
             return *allocatedLines[desc];
         }
     }
@@ -541,7 +554,7 @@ namespace xengine {
             Mesh mesh(Mesh::POINT, {
                     Vertex(Vec3f(point.x, point.y, 0))
             });
-            allocatedPoints[point] = renderDevice.createInstancedVertexBuffer(mesh, {MatrixMath::identity()});
+            allocatedPoints[point] = renderDevice.createInstancedVertexBuffer(mesh, {});
             return *allocatedPoints[point];
         }
     }
