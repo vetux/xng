@@ -184,7 +184,7 @@ namespace xengine::opengl {
                                                 numeric_cast<GLsizei>(mesh.elementCount),
                                                 GL_UNSIGNED_INT,
                                                 0,
-                                                numeric_cast<GLsizei>(mesh.instanceCount));
+                                                numeric_cast<GLsizei>(mesh.desc.numberOfInstances));
                     } else {
                         glDrawElements(mesh.elementType,
                                        numeric_cast<GLsizei>(mesh.elementCount),
@@ -196,7 +196,7 @@ namespace xengine::opengl {
                         glDrawArraysInstanced(mesh.elementType,
                                               0,
                                               numeric_cast<GLsizei>(mesh.elementCount),
-                                              numeric_cast<GLsizei>(mesh.instanceCount));
+                                              numeric_cast<GLsizei>(mesh.desc.numberOfInstances));
                     } else {
                         glDrawArrays(mesh.elementType, 0, numeric_cast<GLsizei>(mesh.elementCount));
                     }

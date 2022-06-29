@@ -31,8 +31,6 @@
 #include "math/matrixmath.hpp"
 
 namespace xengine::opengl {
-#warning "BUG: Instanced vertex buffers are not rendered"
-
     class OPENGL_TYPENAME(VertexBuffer) : public VertexBuffer OPENGL_INHERIT {
     public:
         VertexBufferDesc desc;
@@ -40,15 +38,13 @@ namespace xengine::opengl {
         GLuint VAO = 0;
         GLuint VBO = 0;
         GLuint EBO = 0;
+        GLuint instanceVBO = 0;
 
         size_t elementCount = 0;
         GLuint elementType = 0;
 
         bool indexed = false;
-
         bool instanced = false;
-        size_t instanceCount = 0;
-        GLuint instanceVBO = 0;
 
         explicit OPENGL_TYPENAME(VertexBuffer)(VertexBufferDesc inputDescription) :
                 desc(std::move(inputDescription)) {
@@ -110,27 +106,27 @@ namespace xengine::opengl {
                     const uint8_t *instanceBuffer,
                     size_t instanceBufferSize,
                     const std::vector<uint> &indices) override {
-            int vertexStride = 0;
+            int vertexSize = 0;
             for (auto &binding: desc.vertexLayout) {
-                vertexStride += binding.stride();
+                vertexSize += binding.stride();
             }
 
-            int instanceStride = 0;
+            int instanceSize = 0;
             for (auto &binding: desc.instanceLayout) {
-                instanceStride += binding.stride();
+                instanceSize += binding.stride();
             }
 
-            auto indexBufferSize = indices.size() * sizeof(uint);
+            int indexSize = sizeof(uint);
 
-            auto vertexByteCount = numeric_cast<GLsizei>(vertexStride * desc.numberOfVertices);
-            auto instanceByteCount = numeric_cast<GLsizei>(instanceStride * desc.numberOfInstances);
-            auto indexByteCount = numeric_cast<GLsizei>(sizeof(uint) * desc.numberOfIndices);
+            auto totalVerticesSize = numeric_cast<GLsizei>(vertexSize * desc.numberOfVertices);
+            auto totalInstancesSize = numeric_cast<GLsizei>(instanceSize * desc.numberOfInstances);
+            auto totalIndicesSize = numeric_cast<GLsizei>(indexSize * desc.numberOfIndices);
 
-            if (vertexBufferSize != vertexByteCount) {
+            if (vertexBufferSize != totalVerticesSize) {
                 throw std::runtime_error("Invalid vertex buffer size");
-            } else if (instanceBufferSize != instanceByteCount) {
+            } else if (instanceBufferSize != totalInstancesSize) {
                 throw std::runtime_error("Invalid instance buffer size");
-            } else if (indexBufferSize != indexByteCount) {
+            } else if (indices.size() != desc.numberOfIndices) {
                 throw std::runtime_error("Invalid index buffer size");
             }
 
@@ -138,14 +134,14 @@ namespace xengine::opengl {
 
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
             glBufferData(GL_ARRAY_BUFFER,
-                         vertexByteCount,
+                         totalVerticesSize,
                          vertexBuffer,
                          GL_STATIC_DRAW);
 
             if (indexed) {
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
                 glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                             indexByteCount,
+                             totalIndicesSize,
                              indices.data(),
                              GL_STATIC_DRAW);
             }
@@ -165,7 +161,7 @@ namespace xengine::opengl {
                                       VertexAttribute::getCount(binding.type),
                                       getType(binding.component),
                                       GL_FALSE,
-                                      vertexStride,
+                                      vertexSize,
                                       (void *) (currentOffset));
                 currentOffset += binding.stride();
             }
@@ -175,7 +171,7 @@ namespace xengine::opengl {
 
                 glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
                 glBufferData(GL_ARRAY_BUFFER,
-                             numeric_cast<int>(instanceByteCount),
+                             totalInstancesSize,
                              instanceBuffer,
                              GL_STATIC_DRAW);
 
@@ -186,7 +182,7 @@ namespace xengine::opengl {
                                           VertexAttribute::getCount(binding.type),
                                           getType(binding.component),
                                           GL_FALSE,
-                                          instanceStride,
+                                          instanceSize,
                                           (void *) currentOffset);
                     currentOffset += binding.stride();
                 }

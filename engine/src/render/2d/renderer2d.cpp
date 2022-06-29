@@ -55,7 +55,7 @@ void main()
     instanceMatrix[2] = instanceRow2;
     instanceMatrix[3] = instanceRow3;
 
-    fPosition =  (gvars.mvp /* * instanceMatrix */) * vec4(position, 1);
+    fPosition =  (gvars.mvp * instanceMatrix) * vec4(position, 1);
     fUv = uv;
     gl_Position = fPosition;
 }
@@ -516,7 +516,7 @@ namespace xengine {
             return *it->second;
         } else {
             auto mesh = createPlane(desc.size, desc.center, desc.uvOffset, desc.flipUv);
-            allocatedPlanes[desc] = renderDevice.createInstancedVertexBuffer(mesh, {});
+            allocatedPlanes[desc] = renderDevice.createInstancedVertexBuffer(mesh, {MatrixMath::identity()});
             return *allocatedPlanes[desc];
         }
     }
@@ -528,7 +528,7 @@ namespace xengine {
             return *it->second;
         } else {
             auto mesh = createSquare(desc.size, desc.center);
-            allocatedSquares[desc] = renderDevice.createInstancedVertexBuffer(mesh, {});
+            allocatedSquares[desc] = renderDevice.createInstancedVertexBuffer(mesh, {MatrixMath::identity()});
             return *allocatedSquares[desc];
         }
     }
@@ -540,7 +540,7 @@ namespace xengine {
             return *it->second;
         } else {
             auto mesh = createLine(desc.start, desc.end, desc.center);
-            allocatedLines[desc] = renderDevice.createInstancedVertexBuffer(mesh, {});
+            allocatedLines[desc] = renderDevice.createInstancedVertexBuffer(mesh, {MatrixMath::identity()});
             return *allocatedLines[desc];
         }
     }
@@ -554,7 +554,7 @@ namespace xengine {
             Mesh mesh(Mesh::POINT, {
                     Vertex(Vec3f(point.x, point.y, 0))
             });
-            allocatedPoints[point] = renderDevice.createInstancedVertexBuffer(mesh, {});
+            allocatedPoints[point] = renderDevice.createInstancedVertexBuffer(mesh, {MatrixMath::identity()});
             return *allocatedPoints[point];
         }
     }
