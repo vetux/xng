@@ -25,7 +25,7 @@
 #include "graphics/renderpass.hpp"
 #include "graphics/rendertarget.hpp"
 
-namespace xengine {
+namespace xng {
     class RenderPipeline : public RenderObject {
     public:
         ~RenderPipeline() override = default;

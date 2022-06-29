@@ -22,7 +22,7 @@
 
 #include "math/matrix.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Quaternion {
     public:
         float w, x, y, z;

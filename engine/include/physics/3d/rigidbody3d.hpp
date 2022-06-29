@@ -25,7 +25,7 @@
 
 #include "physics/3d/collider3d.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT RigidBody3D {
     public:
         enum RigidBodyType {

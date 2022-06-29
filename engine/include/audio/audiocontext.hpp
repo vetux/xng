@@ -26,7 +26,7 @@
 #include "audio/audiobuffer.hpp"
 #include "audio/audiosource.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT AudioContext {
     public:
         virtual ~AudioContext() = default;

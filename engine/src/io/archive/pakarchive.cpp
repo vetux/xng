@@ -23,7 +23,7 @@
 #include <sstream>
 #include <utility>
 
-namespace xengine {
+namespace xng {
     PakArchive::PakArchive(std::vector<std::unique_ptr<std::istream>> streams,
                            bool verifyHashes,
                            const AES::Key &key,

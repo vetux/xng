@@ -23,7 +23,7 @@
 #include <vector>
 #include <string>
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT MonoCppObject;
 
     struct XENGINE_EXPORT MonoCppArguments {

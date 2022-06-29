@@ -22,7 +22,7 @@
 
 #include <functional>
 
-namespace xengine {
+namespace xng {
     //https://stackoverflow.com/a/2595226
     void hash_combine(std::size_t &seed, std::size_t v);
 

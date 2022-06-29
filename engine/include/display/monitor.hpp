@@ -27,7 +27,7 @@
 #include "math/vector2.hpp"
 #include "math/rectangle.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Monitor {
     public:
         virtual ~Monitor() = default;

@@ -22,7 +22,7 @@
 
 #include "display/displaydriver.hpp"
 
-namespace xengine {
+namespace xng {
     namespace glfw {
         class GLFWDisplayDriver : public DisplayDriver {
         public:

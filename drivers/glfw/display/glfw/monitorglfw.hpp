@@ -24,7 +24,7 @@
 
 #include "display/monitor.hpp"
 
-namespace xengine {
+namespace xng {
     namespace glfw {
         class MonitorGLFW : public Monitor {
         public:

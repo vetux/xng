@@ -50,7 +50,7 @@ static const std::map<std::string, std::string> gMacros = {{"MAX_LIGHTS", "20"}}
 
 static const std::function<std::string(const char *)> gIncludeFunc = {includeCallback};
 
-namespace xengine {
+namespace xng {
     const std::map<std::string, std::string> &ShaderInclude::getShaderMacros(ShaderLanguage lang) {
         switch (lang) {
             case HLSL_SHADER_MODEL_4:

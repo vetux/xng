@@ -22,7 +22,7 @@
 
 #include "asset/light.hpp"
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT LightComponent {
         bool enabled = true;
 

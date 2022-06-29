@@ -41,7 +41,7 @@ namespace GLFWCounter {
     }
 }
 
-namespace xengine {
+namespace xng {
     namespace glfw {
         std::mutex windowMappingMutex;
         std::map<GLFWwindow *, WindowGLFWGL *> _windowMapping;

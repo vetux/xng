@@ -26,7 +26,7 @@
 
 #include "ecs/entity.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT ComponentPoolBase {
     public:
         virtual ~ComponentPoolBase() = default;

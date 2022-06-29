@@ -20,7 +20,7 @@
 #ifndef XENGINE_MONITORMODE_HPP
 #define XENGINE_MONITORMODE_HPP
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT VideoMode {
         int width;
         int height;

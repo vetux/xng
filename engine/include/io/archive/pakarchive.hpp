@@ -25,7 +25,7 @@
 #include "io/archive.hpp"
 #include "io/pak.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT PakArchive : public Archive {
     public:
         PakArchive() = default;

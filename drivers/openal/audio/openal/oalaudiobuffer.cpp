@@ -24,7 +24,7 @@
 
 #include "cast/numeric_cast.hpp"
 
-namespace xengine {
+namespace xng {
     int convertFormat(AudioFormat format) {
         switch (format) {
             case MONO8:

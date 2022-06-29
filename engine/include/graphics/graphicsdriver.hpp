@@ -25,7 +25,7 @@
 #include "graphics/renderdevice.hpp"
 #include "graphics/renderdeviceinfo.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT GraphicsDriver : public Driver {
     public:
         ~GraphicsDriver() override = default;

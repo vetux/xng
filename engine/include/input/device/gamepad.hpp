@@ -25,7 +25,7 @@
 #include "math/vector2.hpp"
 #include "input/device/buttonstate.hpp"
 
-namespace xengine {
+namespace xng {
     enum GamePadAxis {
         LEFT_X,
         LEFT_Y,

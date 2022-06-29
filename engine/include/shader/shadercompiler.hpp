@@ -28,7 +28,7 @@
 #include "shader/shaderlanguage.hpp"
 #include "shader/shaderstage.hpp"
 
-namespace xengine {
+namespace xng {
     namespace ShaderCompiler {
         enum OptimizationLevel {
             OPTIMIZATION_NONE,

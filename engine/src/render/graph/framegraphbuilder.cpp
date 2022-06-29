@@ -21,7 +21,7 @@
 
 #include "render/graph/framegraphpass.hpp"
 
-namespace xengine {
+namespace xng {
     FrameGraphBuilder::FrameGraphBuilder(RenderTarget &backBuffer,
                                          FrameGraphPool &pool,
                                          const Scene &scene,

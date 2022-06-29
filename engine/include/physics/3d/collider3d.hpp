@@ -24,7 +24,7 @@
 
 #include "math/vector3.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Collider3D {
     public:
         virtual void setShape(const std::vector<Vec3f> &vertices) = 0;

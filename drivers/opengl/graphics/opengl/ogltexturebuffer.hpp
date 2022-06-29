@@ -24,7 +24,7 @@
 
 #include "graphics/opengl/oglbuildmacro.hpp"
 
-namespace xengine {
+namespace xng {
     namespace opengl {
         class OPENGL_TYPENAME(TextureBuffer) : public TextureBuffer OPENGL_INHERIT {
         public:

@@ -22,7 +22,7 @@
 
 #include "graphics/graphicsdriver.hpp"
 
-namespace xengine {
+namespace xng {
     class OGLQtGraphicsDriver : public GraphicsDriver {
     public:
         std::vector<RenderDeviceInfo> getAvailableRenderDevices() override;

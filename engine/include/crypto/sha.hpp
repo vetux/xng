@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-namespace xengine {
+namespace xng {
     namespace SHA {
         XENGINE_EXPORT std::string sha256(const char *data, size_t length);
 

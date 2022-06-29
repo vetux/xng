@@ -25,7 +25,7 @@
 
 #include "audio/audiocontext.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT AudioDevice {
     public:
         virtual ~AudioDevice() = default;

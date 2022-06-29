@@ -23,7 +23,7 @@
 
 #include "mono.hpp"
 
-namespace xengine {
+namespace xng {
     MonoCppAssembly::MonoCppAssembly(void *domainPointer, void *assemblyPointer, void *imagePointer)
             : domainPointer(domainPointer),
               assemblyPointer(assemblyPointer),

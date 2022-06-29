@@ -27,7 +27,7 @@
 
 #include "asset/image.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Character {
     public:
         char value{};

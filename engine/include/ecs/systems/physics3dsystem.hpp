@@ -24,7 +24,7 @@
 
 #include "physics/3d/world3d.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Physics3DSystem : public System {
     public:
         explicit Physics3DSystem(World3D &world);

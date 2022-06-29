@@ -22,7 +22,7 @@
 
 #include <typeindex>
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Resource {
     public:
         Resource() {}

@@ -29,7 +29,7 @@
 
 #include "render/scenerenderer.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT RenderSystem : public System,
                                         ComponentPool<MeshRenderComponent>::Listener,
                                         ComponentPool<SkyboxComponent>::Listener {

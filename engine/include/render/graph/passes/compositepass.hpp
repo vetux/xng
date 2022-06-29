@@ -23,7 +23,7 @@
 #include "render/graph/framegraphpass.hpp"
 
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT CompositePass : public RenderPass {
     public:
         struct XENGINE_EXPORT Layer {

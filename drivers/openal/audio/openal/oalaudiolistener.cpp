@@ -22,7 +22,7 @@
 
 #include "openal.hpp"
 
-namespace xengine {
+namespace xng {
     OALAudioListener::OALAudioListener() {}
 
     OALAudioListener::~OALAudioListener() = default;

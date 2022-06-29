@@ -29,7 +29,7 @@
 #include "shader/spirvshader.hpp"
 #include "shader/spirvblob.hpp"
 
-namespace xengine {
+namespace xng {
     /**
      * A SPIRV bundle owns a set of SPIRVBlob objects and SPIRVShader objects referencing the blobs.
      */

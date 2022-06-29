@@ -19,7 +19,7 @@
 
 #include "async/task.hpp"
 
-namespace xengine {
+namespace xng {
     Task &Task::operator=(const Task &other) {
         work = other.work;
         return *this;

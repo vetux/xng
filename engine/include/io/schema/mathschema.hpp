@@ -30,7 +30,7 @@
 #include "math/vector3.hpp"
 #include "math/vector4.hpp"
 
-namespace xengine {
+namespace xng {
     XENGINE_EXPORT Grid &operator<<(Grid &grid, const Message &message);
 
     XENGINE_EXPORT Message &operator<<(Message &message, const Grid &grid);

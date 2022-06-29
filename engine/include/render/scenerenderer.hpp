@@ -23,7 +23,7 @@
 #include "asset/scene.hpp"
 #include "graphics/rendertarget.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT SceneRenderer {
     public:
         virtual void render(RenderTarget &target, const Scene &scene) = 0;

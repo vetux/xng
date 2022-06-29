@@ -28,7 +28,7 @@
 #include "shaderbuffer.hpp"
 #include "shaderprogram.hpp"
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT RenderPass {
         enum BindingType {
             TEXTURE_BUFFER,

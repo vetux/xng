@@ -28,7 +28,7 @@
 
 #include "driver/drivermanager.hpp"
 
-namespace xengine {
+namespace xng {
     static bool dr = REGISTER_DRIVER("openal-soft", OALAudioDriver);
 
     std::vector<std::string> OALAudioDriver::getDeviceNames() {

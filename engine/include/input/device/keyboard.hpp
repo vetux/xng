@@ -22,7 +22,7 @@
 
 #include "input/device/buttonstate.hpp"
 
-namespace xengine {
+namespace xng {
     enum KeyboardKey {
         KEY_RETURN,
         KEY_ESCAPE,

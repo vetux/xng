@@ -25,7 +25,7 @@
 
 #include "driver/drivermanager.hpp"
 
-namespace xengine {
+namespace xng {
     static bool dr = REGISTER_DRIVER("opengl-qt", OGLQtGraphicsDriver);
 
     std::vector<RenderDeviceInfo> OGLQtGraphicsDriver::getAvailableRenderDevices() {

@@ -29,7 +29,7 @@
 
 #include "asset/mesh.hpp"
 
-namespace xengine {
+namespace xng {
     struct VertexBufferDesc {
         Mesh::Primitive primitive = Mesh::TRI;
         std::vector<VertexAttribute> vertexLayout{}; // The layout of one vertex
@@ -47,7 +47,7 @@ namespace xengine {
     };
 }
 
-using namespace xengine;
+using namespace xng;
 namespace std {
     template<>
     struct hash<VertexBufferDesc> {

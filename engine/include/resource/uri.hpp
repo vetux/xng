@@ -28,7 +28,7 @@
 
 #include "algo/hashcombine.hpp"
 
-namespace xengine {
+namespace xng {
     /**
      * Components of an uri can contain any sequence of ascii values only the sequence "://" and the '$' character are reserved.
      *
@@ -119,7 +119,7 @@ namespace xengine {
     };
 }
 
-using namespace xengine;
+using namespace xng;
 namespace std {
     template<>
     struct hash<Uri> {

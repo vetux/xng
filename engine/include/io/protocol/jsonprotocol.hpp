@@ -22,7 +22,7 @@
 
 #include "io/protocol.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT JsonProtocol : public Protocol {
     public:
         void serialize(std::ostream &stream, const Message &message) override;

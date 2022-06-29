@@ -19,7 +19,7 @@
 
 #include "io/schema/mathschema.hpp"
 
-namespace xengine {
+namespace xng {
     Grid &operator<<(Grid &value, const Message &message) {
         value.size << message["size"];
         value.nCol = message["nCol"];

@@ -22,7 +22,7 @@
 
 #include <memory>
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Library {
     public:
         /**

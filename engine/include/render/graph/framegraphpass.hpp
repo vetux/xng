@@ -26,7 +26,7 @@
 
 #include "graphics/renderdevice.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT FrameGraphPass {
     public:
         virtual ~FrameGraphPass() = default;

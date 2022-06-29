@@ -20,7 +20,7 @@
 #ifndef XENGINE_SHADERLANGUAGE_HPP
 #define XENGINE_SHADERLANGUAGE_HPP
 
-namespace xengine {
+namespace xng {
     enum ShaderLanguage {
         HLSL_SHADER_MODEL_4,
         GLSL_420, //GLSL 4.2 with OpenGL semantics

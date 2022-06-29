@@ -21,7 +21,7 @@
 #define XENGINE_SCRIPT_HPP
 
 //TODO: Redesign Script abstraction
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Script {
     public:
         virtual void onEnable() const {};

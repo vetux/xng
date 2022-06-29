@@ -30,7 +30,7 @@
 #include "audio/audiodevice.hpp"
 #include "resource/resourceregistry.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT AudioSystem : public System, ComponentPool<AudioSourceComponent>::Listener {
     public:
         explicit AudioSystem(AudioDevice &device, ResourceRegistry &repo);

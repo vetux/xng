@@ -26,7 +26,7 @@
 
 #include "graphics/opengl/ogltexturebuffer.hpp"
 
-namespace xengine {
+namespace xng {
     namespace opengl {
         class OPENGL_TYPENAME(RenderTarget) : public RenderTarget OPENGL_INHERIT {
         public:

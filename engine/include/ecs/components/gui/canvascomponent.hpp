@@ -20,7 +20,7 @@
 #ifndef XENGINE_CANVASCOMPONENT_HPP
 #define XENGINE_CANVASCOMPONENT_HPP
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT CanvasComponent {
     };
 }

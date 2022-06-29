@@ -20,7 +20,7 @@
 #ifndef XENGINE_TEXTCOMPONENT_HPP
 #define XENGINE_TEXTCOMPONENT_HPP
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT TextComponent {
     };
 }

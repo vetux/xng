@@ -25,7 +25,7 @@
 
 #include "io/archive/memoryarchive.hpp"
 
-namespace xengine {
+namespace xng {
     static std::unique_ptr<ResourceRegistry> defRepo = nullptr;
 
     ResourceRegistry &ResourceRegistry::getDefaultRegistry() {

@@ -21,7 +21,7 @@
 
 #include "script/mono/monocppobject.hpp"
 
-namespace xengine {
+namespace xng {
     void MonoCppArguments::add(int &value) {
         args.emplace_back(&value);
     }

@@ -19,7 +19,7 @@
 
 #include "ecs/components/transformcomponent.hpp"
 
-namespace xengine {
+namespace xng {
     Transform TransformComponent::walkHierarchy(const TransformComponent &component, EntityManager &entityManager) {
         Transform ret = component.transform;
         if (!component.parent.empty()) {

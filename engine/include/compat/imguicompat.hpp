@@ -23,7 +23,7 @@
 #include "graphics/rendertarget.hpp"
 #include "display/window.hpp"
 
-namespace xengine {
+namespace xng {
     namespace ImGuiCompat {
         /**
          * Calls the Impl*Init* methods and ImGui::CreateContext if it is the first call.

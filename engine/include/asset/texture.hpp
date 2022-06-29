@@ -24,7 +24,7 @@
 #include "resource/resourcehandle.hpp"
 #include "asset/image.hpp"
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT Texture : public Resource {
         ~Texture() override = default;
 

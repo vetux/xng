@@ -26,7 +26,7 @@
 
 #include "oalaudiolistener.hpp"
 
-namespace xengine {
+namespace xng {
     class OALAudioContext : public AudioContext {
     public:
         explicit OALAudioContext(ALCcontext *context);

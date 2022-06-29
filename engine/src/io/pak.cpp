@@ -29,7 +29,7 @@
 #include "compression/gzip.hpp"
 #include "crypto/sha.hpp"
 
-namespace xengine {
+namespace xng {
     std::map<std::string, std::vector<char>> Pak::readEntries(const std::string &directory, bool recursive) {
         std::map<std::string, std::vector<char>> ret;
         for (auto &file: std::filesystem::recursive_directory_iterator(directory)) {
@@ -299,14 +299,14 @@ namespace xengine {
 
         if (encrypted) {
             try {
-                headerStr = xengine::AES::decrypt(key, {}, headerStr);
+                headerStr = xng::AES::decrypt(key, {}, headerStr);
             } catch (const std::exception &e) {
                 std::string error = "Failed to decrypt pak header (Wrong Key?): " + std::string(e.what());
                 throw std::runtime_error(error);
             }
         }
 
-        headerStr = xengine::GZip::decompress(headerStr);
+        headerStr = xng::GZip::decompress(headerStr);
 
         auto headerJson = nlohmann::json::parse(headerStr);
 

@@ -24,7 +24,7 @@
 #include "asset/mesh.hpp"
 #include "resource/resourcehandle.hpp"
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT MeshRenderComponent {
         bool enabled = true;
 

@@ -27,7 +27,7 @@
 
 #include "resource/resource.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT ResourceBundle {
     public:
         ResourceBundle() = default;

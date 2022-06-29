@@ -19,7 +19,7 @@
 
 #include "colliderbt3.hpp"
 
-namespace xengine {
+namespace xng {
     void ColliderBt3::setShape(const std::vector<Vec3f> &vertices) {
 
     }

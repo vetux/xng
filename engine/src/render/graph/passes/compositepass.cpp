@@ -107,7 +107,7 @@ void main()
 }
 )###";
 
-namespace xengine {
+namespace xng {
     CompositePass::CompositePass(RenderDevice &device, ColorRGBA clearColor)
             : clearColor(clearColor) {
         Shader shaderSrc;

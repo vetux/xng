@@ -27,7 +27,7 @@
 
 #include "math/vector2.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT RenderTarget : public RenderObject {
     public:
         ~RenderTarget() override = default;

@@ -24,7 +24,7 @@
 
 #include "shader/spirvblob.hpp"
 
-namespace xengine {
+namespace xng {
     /**
      * A SPIRV shader contains an non owning reference to a SPIRV blob.
      */

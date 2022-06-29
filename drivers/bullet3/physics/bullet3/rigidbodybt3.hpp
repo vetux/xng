@@ -22,7 +22,7 @@
 
 #include "physics/3d/rigidbody3d.hpp"
 
-namespace xengine {
+namespace xng {
     class RigidBodyBt3 : public RigidBody3D {
     public:
         void setRigidBodyType(RigidBodyType type) override;

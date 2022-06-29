@@ -24,7 +24,7 @@
 
 #include "math/vector2.hpp"
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT ColliderComponent2D {
         std::vector<Vec2f> shape;
     };

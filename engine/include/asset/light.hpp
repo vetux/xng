@@ -22,7 +22,7 @@
 
 #include "math/transform.hpp"
 
-namespace xengine {
+namespace xng {
     enum LightType {
         LIGHT_DIRECTIONAL,
         LIGHT_POINT,

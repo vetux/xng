@@ -26,7 +26,7 @@ void streamWriteFunc(void *context, void *data, int size) {
     stream.write(static_cast<char *>(data), size);
 }
 
-namespace xengine {
+namespace xng {
     void ResourceExporter::exportImage(std::ostream &stream, const ImageRGBA &image) {
         int r = stbi_write_png_to_func(&streamWriteFunc,
                                        &stream,

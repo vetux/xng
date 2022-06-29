@@ -39,7 +39,7 @@
 
 #include "algo/refcounter.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT ResourceRegistry {
     public:
         /**

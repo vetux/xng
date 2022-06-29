@@ -25,7 +25,7 @@
 
 #include "shader/shadercompiler.hpp"
 
-namespace xengine {
+namespace xng {
     /**
      * Currently provides:
      * mvp.glsl

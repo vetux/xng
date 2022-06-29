@@ -23,7 +23,7 @@
 #include "shader/shadercompiler.hpp"
 #include "shader/spirvbundle.hpp"
 
-namespace xengine {
+namespace xng {
     /**
      * An object oriented wrapper around the shader compiler.
      */

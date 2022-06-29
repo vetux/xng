@@ -31,7 +31,7 @@
 
 #include "resource/resourcehandle.hpp"
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT Scene {
         struct XENGINE_EXPORT Object {
             Object(ResourceHandle<Mesh> mesh, ResourceHandle<Material> material)

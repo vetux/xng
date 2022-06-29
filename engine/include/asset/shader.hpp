@@ -24,7 +24,7 @@
 
 #include "resource/resource.hpp"
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT Shader : public Resource {
         ~Shader() override = default;
 

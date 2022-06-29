@@ -30,7 +30,7 @@
 #include "asset/mesh.hpp"
 #include "asset/shader.hpp"
 
-namespace xengine {
+namespace xng {
     class FrameGraphPool {
     public:
         FrameGraphPool() = default;

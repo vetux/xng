@@ -22,7 +22,7 @@
 
 #include <cstddef>
 
-namespace xengine {
+namespace xng {
     struct ShaderBufferDesc {
         size_t size;
 
@@ -32,7 +32,7 @@ namespace xengine {
     };
 }
 
-using namespace xengine;
+using namespace xng;
 namespace std {
     template<>
     struct hash<ShaderBufferDesc> {

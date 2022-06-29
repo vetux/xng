@@ -28,7 +28,7 @@
 
 #include "math/vector2.hpp"
 
-namespace xengine {
+namespace xng {
     struct RenderPipelineDesc {
         ShaderProgram &shader;
 
@@ -100,7 +100,7 @@ namespace xengine {
     };
 }
 
-using namespace xengine;
+using namespace xng;
 namespace std {
     template<>
     struct hash<RenderPipelineDesc> {

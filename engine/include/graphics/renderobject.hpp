@@ -20,7 +20,7 @@
 #ifndef XENGINE_RENDEROBJECT_HPP
 #define XENGINE_RENDEROBJECT_HPP
 
-namespace xengine {
+namespace xng {
     class RenderObject {
     public:
         enum Type {

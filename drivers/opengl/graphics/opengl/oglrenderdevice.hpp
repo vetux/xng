@@ -31,7 +31,7 @@
 #include "graphics/opengl/oglshaderprogram.hpp"
 #include "graphics/opengl/oglshaderbuffer.hpp"
 
-namespace xengine::opengl {
+namespace xng::opengl {
     class OPENGL_TYPENAME(RenderDevice) : public RenderDevice OPENGL_INHERIT {
     public:
         OPENGL_TYPENAME(RenderDevice)() {

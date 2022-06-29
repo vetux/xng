@@ -29,7 +29,7 @@
 
 #include "task.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT ThreadPool {
     public:
         static ThreadPool &getPool();

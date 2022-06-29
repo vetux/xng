@@ -27,7 +27,7 @@
 
 #include "math/transform.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT VertexBuffer : public RenderObject {
     public:
         ~VertexBuffer() override = default;

@@ -29,7 +29,7 @@
 
 #include "driver/driver.hpp"
 
-namespace xengine {
+namespace xng {
     class WorldBox2D : public World2D {
     public:
         b2World world;

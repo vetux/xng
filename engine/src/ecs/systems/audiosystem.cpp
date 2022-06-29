@@ -26,7 +26,7 @@
 
 #define AUDIO_POS_SCALE 1
 
-namespace xengine {
+namespace xng {
     AudioSystem::AudioSystem(AudioDevice &device, ResourceRegistry &repo)
             : device(device), repo(repo) {
         context = device.createContext();

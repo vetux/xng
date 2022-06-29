@@ -19,7 +19,7 @@
 
 #include "algo/crc.hpp"
 
-namespace xengine {
+namespace xng {
     std::array<HashCRC, 256> generate_crc_lookup_table() noexcept {
         auto const reversed_polynomial = HashCRC{0xEDB88320uL};
 

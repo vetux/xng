@@ -20,7 +20,7 @@
 #ifndef XENGINE_RENDERPROPERTIES_HPP
 #define XENGINE_RENDERPROPERTIES_HPP
 
-namespace xengine {
+namespace xng {
     enum DepthTestMode {
         DEPTH_TEST_ALWAYS,
         DEPTH_TEST_NEVER,

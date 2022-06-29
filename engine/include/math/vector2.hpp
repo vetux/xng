@@ -6,7 +6,7 @@
 
 #include "cast/numeric_cast.hpp"
 
-namespace xengine {
+namespace xng {
     template<typename T>
     class XENGINE_EXPORT Vector2 {
     public:

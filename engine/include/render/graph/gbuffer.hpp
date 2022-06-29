@@ -25,7 +25,7 @@
 #include "graphics/renderdevice.hpp"
 #include "graphics/texturebuffer.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT GBuffer {
     public:
         /**

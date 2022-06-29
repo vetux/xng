@@ -24,7 +24,7 @@
 
 #include "render/2d/renderer2d.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT TextRenderer {
     public:
         TextRenderer(Font &font, RenderDevice &device);

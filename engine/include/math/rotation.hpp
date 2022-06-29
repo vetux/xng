@@ -7,7 +7,7 @@
 
 #define PI 3.141592653589793238463
 
-namespace xengine {
+namespace xng {
     inline double radiansToDegrees(double radians) {
         return radians * (180.0 / PI);
     }

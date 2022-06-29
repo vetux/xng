@@ -23,7 +23,7 @@
 #include <vector>
 #include <cstdint>
 
-namespace xengine {
+namespace xng {
     typedef std::vector<uint32_t> SPIRVBlob;
 }
 

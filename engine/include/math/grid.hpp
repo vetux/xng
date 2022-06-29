@@ -7,7 +7,7 @@
 #include "rectangle.hpp"
 #include "math/vector2.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Grid {
     public:
         int nCol, nRow;

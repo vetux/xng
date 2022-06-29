@@ -23,7 +23,7 @@
 #include "audio/audiolistener.hpp"
 #include "audio/audiocontext.hpp"
 
-namespace xengine {
+namespace xng {
     class OALAudioListener : public AudioListener {
     public:
         OALAudioListener();

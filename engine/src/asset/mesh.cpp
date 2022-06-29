@@ -73,14 +73,14 @@ f 1/3/5 3/16/5 4/11/5
 f 5/1/6 1/3/6 2/12/6
 )###");
 
-namespace xengine {
+namespace xng {
     static bool nQuadC = false;
     static Mesh nQuad;
 
     static bool nCubeC = false;
     static Mesh nCube;
 
-    const xengine::Mesh &xengine::Mesh::normalizedQuad() {
+    const xng::Mesh &xng::Mesh::normalizedQuad() {
         if (!nQuadC) {
             nQuadC = true;
             nQuad = {Mesh::TRI,

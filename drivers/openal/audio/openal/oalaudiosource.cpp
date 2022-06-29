@@ -21,7 +21,7 @@
 #include "oalcheckerror.hpp"
 #include "oalaudiobuffer.hpp"
 
-namespace xengine {
+namespace xng {
     int convertType(AudioSource::SourceType type) {
         switch (type) {
             case AudioSource::UNDETERMINED:

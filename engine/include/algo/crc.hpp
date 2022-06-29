@@ -27,7 +27,7 @@
 #include <cstdint>
 #include <numeric>
 
-namespace xengine {
+namespace xng {
     typedef std::uint_fast32_t HashCRC;
 
     // Generates a lookup table for the checksums of all 8-bit values.

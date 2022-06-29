@@ -25,7 +25,7 @@
 
 #include "graphics/renderdevice.hpp"
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT Text {
         Text() = default;
 

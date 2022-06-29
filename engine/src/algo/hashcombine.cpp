@@ -19,6 +19,6 @@
 
 #include "algo/hashcombine.hpp"
 
-void xengine::hash_combine(std::size_t &seed, std::size_t v) {
+void xng::hash_combine(std::size_t &seed, std::size_t v) {
     seed ^= v + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }

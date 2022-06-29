@@ -26,7 +26,7 @@
 
 #include "ecs/entitymanager.hpp"
 
-namespace xengine {
+namespace xng {
     struct AssetScene;
 
     struct XENGINE_EXPORT TransformComponent {

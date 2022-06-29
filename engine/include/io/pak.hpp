@@ -9,7 +9,7 @@
 
 #include "crypto/aes.hpp"
 
-namespace xengine {
+namespace xng {
     static const std::string PAK_FORMAT_VERSION = "00";
     static const std::string PAK_HEADER_MAGIC = "\xa9pak\xff" + PAK_FORMAT_VERSION + "\xa9";
 

@@ -22,7 +22,7 @@
 
 #include "driver/drivermanager.hpp"
 
-namespace xengine::opengl {
+namespace xng::opengl {
     static bool dr = REGISTER_DRIVER("opengl", OGLGraphicsDriver);
 
     std::vector<RenderDeviceInfo> OGLGraphicsDriver::getAvailableRenderDevices() {

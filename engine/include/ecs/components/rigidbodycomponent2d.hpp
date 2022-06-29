@@ -22,7 +22,7 @@
 
 #include "physics/2d/rigidbody2d.hpp"
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT RigidBodyComponent2D {
         RigidBody2D::RigidBodyType type;
     };

@@ -22,7 +22,7 @@
 #include <utility>
 #include <algorithm>
 
-namespace xengine {
+namespace xng {
     ECS::ECS(std::vector<System *> systems)
             : systems(std::move(systems)) {}
 

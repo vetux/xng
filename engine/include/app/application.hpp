@@ -34,7 +34,7 @@
 
 #include "imgui.h"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Application {
     public:
         /**

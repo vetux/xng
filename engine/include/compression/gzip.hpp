@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-namespace xengine {
+namespace xng {
     namespace GZip {
         XENGINE_EXPORT std::vector<char> compress(const char *data, size_t length);
 

@@ -136,7 +136,7 @@ void main() {
 )###";
 
 //TODO: Fix phong pass rendering black texture depending on camera orientation
-namespace xengine {
+namespace xng {
     using namespace ShaderCompiler;
 
     const int MAX_LIGHTS = 1000;

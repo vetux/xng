@@ -19,4 +19,4 @@
 
 #include "jointbox2d.hpp"
 
-namespace xengine {}
+namespace xng {}

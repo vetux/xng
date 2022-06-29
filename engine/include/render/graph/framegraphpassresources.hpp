@@ -32,7 +32,7 @@
 #include "graphics/rendertarget.hpp"
 #include "graphics/shaderprogram.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT FrameGraphPassResources {
     public:
         explicit FrameGraphPassResources(std::map<FrameGraphResource, RenderObject *> objects)

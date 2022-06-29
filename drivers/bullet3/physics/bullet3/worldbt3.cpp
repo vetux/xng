@@ -21,7 +21,7 @@
 
 #include "driver/drivermanager.hpp"
 
-namespace xengine {
+namespace xng {
     static bool driverRegistered = REGISTER_DRIVER("bullet3", WorldBt3);
 
     RigidBody3D *WorldBt3::createRigidBody() {

@@ -33,7 +33,7 @@
 
 #include "text/text.hpp"
 
-namespace xengine {
+namespace xng {
     /**
      * This is a SDL inspired 2d renderer.
      * It uses a similar interface to SDL in a object oriented manner.

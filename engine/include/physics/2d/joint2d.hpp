@@ -23,7 +23,7 @@
 #include "math/vector2.hpp"
 #include "math/vector3.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Joint2D {
     public:
         //TODO: Define physics joints api

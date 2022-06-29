@@ -28,7 +28,7 @@
 #include "input/input.hpp"
 #include "io/archive.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT MonoScriptingSystem : public System, InputListener {
     public:
         MonoScriptingSystem(Input &input,

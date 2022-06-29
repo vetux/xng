@@ -30,7 +30,7 @@
 #include "async/threadpool.hpp"
 #include "io/archive.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT ResourceImporter {
     public:
         ResourceImporter() = default;

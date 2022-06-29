@@ -24,7 +24,7 @@
 
 #include "input/device/buttonstate.hpp"
 
-namespace xengine {
+namespace xng {
     enum MouseButton {
         LEFT,
         MIDDLE,

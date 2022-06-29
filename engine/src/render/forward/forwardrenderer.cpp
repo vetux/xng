@@ -19,7 +19,7 @@
 
 #include "render/forward/forwardrenderer.hpp"
 
-namespace xengine {
+namespace xng {
     void ForwardRenderer::render(RenderTarget &target, const Scene &scene) {
         // TODO: Implement forward renderer
     }

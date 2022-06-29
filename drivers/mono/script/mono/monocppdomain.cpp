@@ -29,7 +29,7 @@
 #include <mono/metadata/debug-helpers.h>
 #include <mono/metadata/mono-config.h>
 
-namespace xengine {
+namespace xng {
     MonoCppDomain::MonoCppDomain()
             : msCorLib(nullptr, nullptr, nullptr) {
         domainPointer = mono_jit_init("DefaultDomain");

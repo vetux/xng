@@ -23,7 +23,7 @@
 #include "ecs/systems/rendersystem.hpp"
 #include "ecs/components.hpp"
 
-namespace xengine {
+namespace xng {
     RenderSystem::RenderSystem(RenderTarget &screen,
                                SceneRenderer &pipeline)
             : screenTarget(screen),

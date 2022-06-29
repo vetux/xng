@@ -24,7 +24,7 @@
 
 #include "colliderbox2d.hpp"
 
-namespace xengine {
+namespace xng {
     class WorldBox2D;
 
     class RigidBodyBox2D : public RigidBody2D {

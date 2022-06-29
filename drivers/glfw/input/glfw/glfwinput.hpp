@@ -28,7 +28,7 @@
 #include "asset/image.hpp"
 #include "input/input.hpp"
 
-namespace xengine {
+namespace xng {
     class GLFWInput : public Input, InputListener {
     public:
         explicit GLFWInput(GLFWwindow &wndH);

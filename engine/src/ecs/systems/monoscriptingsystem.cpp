@@ -27,7 +27,7 @@
 #include "io/schema/ecsschema.hpp"
 #include "io/protocol/jsonprotocol.hpp"
 
-namespace xengine {
+namespace xng {
     struct RuntimeScript : Component::UserData {
         bool enabled = false;
         std::unique_ptr<Script> script = nullptr; //TODO: OnDisable is not called when the component is destroyed.

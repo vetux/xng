@@ -71,7 +71,7 @@ void main() {
 }
 )###";
 
-namespace xengine {
+namespace xng {
     SkyboxPass::SkyboxPass(RenderDevice &device) {
         Shader shaderSrc;
         shaderSrc.vertexShader = ShaderSource(SHADER_VERT, "main", VERTEX, GLSL_410);

@@ -22,7 +22,7 @@
 
 #include "script/script.hpp"
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT MonoScriptComponent {
         std::string assembly;
         std::string nameSpace;

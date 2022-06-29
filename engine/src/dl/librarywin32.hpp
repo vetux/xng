@@ -25,7 +25,7 @@
 #include <string>
 #include <windows.h>
 
-namespace xengine {
+namespace xng {
     class LibraryWin32 : public Library {
     public:
         explicit LibraryWin32(const std::string &filePath)

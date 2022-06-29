@@ -25,7 +25,7 @@
 
 #include "physics/2d/collider2d.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT RigidBody2D {
     public:
         enum RigidBodyType {

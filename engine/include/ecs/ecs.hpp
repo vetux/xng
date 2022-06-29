@@ -24,7 +24,7 @@
 
 #include "ecs/system.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT ECS {
     public:
         explicit ECS(std::vector<System *> systems = {});

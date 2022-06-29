@@ -24,7 +24,7 @@
 #include "math/vector3.hpp"
 #include "resource/resourcehandle.hpp"
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT AudioSourceComponent {
         ResourceHandle<Audio> audio;
         bool play = false;

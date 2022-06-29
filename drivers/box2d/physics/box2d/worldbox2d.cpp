@@ -23,7 +23,7 @@
 
 #include "driver/drivermanager.hpp"
 
-namespace xengine {
+namespace xng {
     static bool driverRegistered = REGISTER_DRIVER("box2d", WorldBox2D);
 
     WorldBox2D::WorldBox2D()

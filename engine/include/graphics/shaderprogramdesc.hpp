@@ -31,7 +31,7 @@
 #include "algo/hashcombine.hpp"
 #include "algo/crc.hpp"
 
-namespace xengine {
+namespace xng {
     struct ShaderProgramDesc {
         std::map<ShaderStage, SPIRVShader> shaders;
 
@@ -41,7 +41,7 @@ namespace xengine {
     };
 }
 
-using namespace xengine;
+using namespace xng;
 namespace std {
     template<>
     struct hash<ShaderProgramDesc> {

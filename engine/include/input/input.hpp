@@ -26,7 +26,7 @@
 
 #include "asset/image.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Input {
     public:
         virtual ~Input() = default;

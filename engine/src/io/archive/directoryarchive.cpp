@@ -22,7 +22,7 @@
 
 #include "io/archive/directoryarchive.hpp"
 
-namespace xengine {
+namespace xng {
     DirectoryArchive::DirectoryArchive(std::string directory, bool allowWriting) : directory(std::move(directory)),
                                                                                    allowWriting(allowWriting) {}
 

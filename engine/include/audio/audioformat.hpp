@@ -20,7 +20,7 @@
 #ifndef XENGINE_AUDIOFORMAT_HPP
 #define XENGINE_AUDIOFORMAT_HPP
 
-namespace xengine {
+namespace xng {
     enum AudioFormat {
         MONO8,
         MONO16,

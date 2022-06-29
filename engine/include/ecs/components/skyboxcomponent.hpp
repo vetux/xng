@@ -24,7 +24,7 @@
 
 #include "asset/skybox.hpp"
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT SkyboxComponent {
         Skybox skybox;
 

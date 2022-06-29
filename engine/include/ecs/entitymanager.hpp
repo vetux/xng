@@ -25,7 +25,7 @@
 
 #include "ecs/componentmanager.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT EntityManager {
     public:
         EntityManager() = default;

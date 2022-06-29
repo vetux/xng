@@ -21,7 +21,7 @@
 
 #include "freetype/ftfont.hpp"
 
-namespace xengine {
+namespace xng {
     std::unique_ptr<Font> Font::createFont(std::istream &stream) {
         return std::make_unique<FTFont>(stream);
     }

@@ -20,7 +20,7 @@
 #ifndef XENGINE_VERTEXATTRIBUTE_HPP
 #define XENGINE_VERTEXATTRIBUTE_HPP
 
-namespace xengine {
+namespace xng {
     struct VertexAttribute {
         enum Type {
             SINGLE,

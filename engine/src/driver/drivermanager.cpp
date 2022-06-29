@@ -22,7 +22,7 @@
 #include <stdexcept>
 #include <utility>
 
-namespace xengine {
+namespace xng {
     static std::map<std::string, std::function<Driver *()>> drivers;
 
     const std::map<std::string, std::function<Driver *()>> &DriverManager::getAvailableDrivers() {

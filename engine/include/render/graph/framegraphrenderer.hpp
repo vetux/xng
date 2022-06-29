@@ -27,7 +27,7 @@
 
 #include "graphics/renderdevice.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT FrameGraphRenderer : public SceneRenderer {
     public:
         explicit FrameGraphRenderer(RenderDevice &device);

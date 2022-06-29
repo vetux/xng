@@ -23,7 +23,7 @@
 #include "asset/scene.hpp"
 #include "render/graph/framegraphpass.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT PhongPass : public RenderPass {
     public:
         PhongPass(RenderDevice &device);

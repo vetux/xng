@@ -25,7 +25,7 @@
 
 #include "io/archive.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT MemoryArchive : public Archive {
     public:
         MemoryArchive() = default;

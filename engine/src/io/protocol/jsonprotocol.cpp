@@ -21,7 +21,7 @@
 
 #include "extern/json.hpp"
 
-namespace xengine {
+namespace xng {
     nlohmann::json convertMessage(const Message &message) {
         nlohmann::json ret;
         switch (message.getType()) {

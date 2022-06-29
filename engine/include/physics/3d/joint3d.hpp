@@ -20,7 +20,7 @@
 #ifndef XENGINE_JOINT3D_HPP
 #define XENGINE_JOINT3D_HPP
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Joint3D {
     public:
         //TODO: Define physics joints api

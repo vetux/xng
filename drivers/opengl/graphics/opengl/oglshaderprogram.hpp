@@ -34,7 +34,7 @@
 
 #include "shader/shadercompiler.hpp"
 
-namespace xengine {
+namespace xng {
     namespace opengl {
         class OPENGL_TYPENAME(ShaderProgram) : public ShaderProgram OPENGL_INHERIT {
         public:

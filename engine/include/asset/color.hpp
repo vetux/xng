@@ -26,7 +26,7 @@
 
 #include "cast/numeric_cast.hpp"
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT ColorRGB {
         uint8_t data[3];
 

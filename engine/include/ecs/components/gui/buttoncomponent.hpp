@@ -20,7 +20,7 @@
 #ifndef XENGINE_BUTTONCOMPONENT_HPP
 #define XENGINE_BUTTONCOMPONENT_HPP
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT ButtonComponent {
     };
 }

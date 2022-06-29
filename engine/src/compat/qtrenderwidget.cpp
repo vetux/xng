@@ -23,7 +23,7 @@
 
 #include <utility>
 
-namespace xengine {
+namespace xng {
     //TODO: Reimplement Qt Opengl backend using macros
     /*std::unique_ptr<RenderTarget> QtRenderWidget::getWidgetRenderTarget() {
         throw std::runtime_error("Not Implemented");

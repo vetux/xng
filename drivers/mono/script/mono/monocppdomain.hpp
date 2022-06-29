@@ -24,7 +24,7 @@
 
 #include "script/mono/monocppassembly.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT MonoCppDomain {
     public:
         MonoCppDomain();

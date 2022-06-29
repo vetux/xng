@@ -20,7 +20,7 @@
 #ifndef XENGINE_MATHINTERFACE_HPP
 #define XENGINE_MATHINTERFACE_HPP
 
-namespace xengine {
+namespace xng {
     namespace MathInterface {
         extern "C"
         {

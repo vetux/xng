@@ -29,7 +29,7 @@
 #include "asset/texture.hpp"
 #include "asset/scene.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT FrameGraphBuilder {
     public:
         FrameGraphBuilder(RenderTarget &backBuffer,

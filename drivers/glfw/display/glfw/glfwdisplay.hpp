@@ -21,7 +21,7 @@
 #include "windowglfwgl.hpp"
 #include "monitorglfw.hpp" //Has to come after windowglfw because of glad include collision with glfw (Including glfw and then glad afterwards gives compiler error, the reverse is legal)
 
-namespace xengine {
+namespace xng {
     namespace glfw {
         std::unique_ptr<Monitor> getPrimaryMonitor() {
             return std::make_unique<MonitorGLFW>(glfwGetPrimaryMonitor());

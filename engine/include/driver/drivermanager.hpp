@@ -27,9 +27,9 @@
 
 #include "driver/driver.hpp"
 
-#define REGISTER_DRIVER(NAME, CLASS)   xengine::DriverManager::registerDriver(NAME, []() { return static_cast<Driver*>(new CLASS()); })
+#define REGISTER_DRIVER(NAME, CLASS)   xng::DriverManager::registerDriver(NAME, []() { return static_cast<Driver*>(new CLASS()); })
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT DriverManager {
     public:
         typedef std::function<Driver *()> DriverCreator;

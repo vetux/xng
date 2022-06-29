@@ -29,7 +29,7 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace xengine {
+namespace xng {
     static Vec3f convertToRadian(const Vec3f &degrees) {
         return {degreesToRadians(degrees.x), degreesToRadians(degrees.y), degreesToRadians(degrees.z)};
     }

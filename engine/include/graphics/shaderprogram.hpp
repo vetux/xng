@@ -23,7 +23,7 @@
 #include "graphics/renderobject.hpp"
 #include "shaderprogramdesc.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT ShaderProgram : public RenderObject {
     public:
         ~ShaderProgram() override = default;

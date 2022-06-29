@@ -30,7 +30,7 @@
 #include "graphics/opengl/oglvertexbuffer.hpp"
 #include "graphics/opengl/ogltexturebuffer.hpp"
 
-namespace xengine::opengl {
+namespace xng::opengl {
     class OPENGL_TYPENAME(RenderPipeline) : public RenderPipeline OPENGL_INHERIT {
     public:
         RenderPipelineDesc desc;

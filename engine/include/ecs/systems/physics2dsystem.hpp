@@ -24,7 +24,7 @@
 
 #include "physics/2d/world2d.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Physics2DSystem : public System {
     public:
         explicit Physics2DSystem(World2D &world);

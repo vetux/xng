@@ -24,7 +24,7 @@
 
 #include "message.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Protocol {
     public:
         virtual void serialize(std::ostream &stream, const Message &message) = 0;

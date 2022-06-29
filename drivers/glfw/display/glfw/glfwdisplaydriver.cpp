@@ -24,7 +24,7 @@
 
 #include "driver/drivermanager.hpp"
 
-namespace xengine {
+namespace xng {
     namespace glfw {
         static bool dr = REGISTER_DRIVER("glfw", GLFWDisplayDriver);
 

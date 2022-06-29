@@ -24,7 +24,7 @@
 
 #include "asset/scene.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT SkyboxPass : public RenderPass {
     public:
         SkyboxPass(RenderDevice &device);

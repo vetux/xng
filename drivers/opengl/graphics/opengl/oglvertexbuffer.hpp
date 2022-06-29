@@ -30,7 +30,7 @@
 
 #include "math/matrixmath.hpp"
 
-namespace xengine::opengl {
+namespace xng::opengl {
     class OPENGL_TYPENAME(VertexBuffer) : public VertexBuffer OPENGL_INHERIT {
     public:
         VertexBufferDesc desc;

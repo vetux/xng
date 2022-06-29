@@ -28,7 +28,7 @@
 
 #include "async/threadpool.hpp"
 
-namespace xengine {
+namespace xng {
     template<typename T>
     class XENGINE_EXPORT ResourceHandle {
     public:

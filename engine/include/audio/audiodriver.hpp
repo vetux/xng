@@ -24,7 +24,7 @@
 
 #include "audio/audiodevice.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT AudioDriver : public Driver {
     public:
         virtual std::vector<std::string> getDeviceNames() = 0;

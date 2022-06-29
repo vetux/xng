@@ -27,7 +27,7 @@
 #endif
 #endif
 
-namespace xengine {
+namespace xng {
     std::unique_ptr <Library> Library::load(const std::string &path) {
         return std::make_unique<LibraryOS>(path);
     }

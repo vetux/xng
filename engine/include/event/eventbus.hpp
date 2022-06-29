@@ -27,7 +27,7 @@
 
 #include "event/eventreceiver.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT EventBus {
     public:
         template<typename T>

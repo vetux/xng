@@ -20,7 +20,7 @@
 #ifndef XENGINE_EVENTRECEIVER_HPP
 #define XENGINE_EVENTRECEIVER_HPP
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT EventReceiverBase {
     };
 

@@ -102,7 +102,7 @@ static float distance(float val1, float val2) {
         return abs;
 }
 
-namespace xengine {
+namespace xng {
     struct ShaderUniformBuffer {
         Mat4f mvp = MatrixMath::identity();
         std::array<float, 4> color = Vec4f(1).getMemory();

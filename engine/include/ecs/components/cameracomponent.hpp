@@ -22,7 +22,7 @@
 
 #include "asset/camera.hpp"
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT CameraComponent {
         Camera camera;
     };

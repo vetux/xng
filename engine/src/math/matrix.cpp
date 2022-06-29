@@ -19,7 +19,7 @@
 
 #include "math/matrix.hpp"
 
-namespace xengine {
+namespace xng {
     Vector4<float> operator*(const Matrix<float, 4, 4> &lhs, const Vector4<float> &rhs) {
         //TODO Fix matrix multiplication operators
         Vector4<float> ret;

@@ -28,7 +28,7 @@
 
 #include "asset/color.hpp"
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT Skybox : public Resource {
         ~Skybox() override = default;
 

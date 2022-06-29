@@ -28,7 +28,7 @@
 #include "render/graph/framegraphpassresources.hpp"
 #include "render/graph/framegraphblackboard.hpp"
 
-namespace xengine {
+namespace xng {
     class FrameGraphPass;
 
     class XENGINE_EXPORT FrameGraph {

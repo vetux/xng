@@ -23,7 +23,7 @@
 #include "script/script.hpp"
 #include "script/mono/monocppdomain.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT MonoScript : public Script {
     public:
         MonoScript();

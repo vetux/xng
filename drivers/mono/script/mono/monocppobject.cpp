@@ -26,7 +26,7 @@
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/debug-helpers.h>
 
-namespace xengine {
+namespace xng {
     MonoCppObject::MonoCppObject() : objectPointer(nullptr), gcHandle(0), pinned(false) {}
 
     MonoCppObject::MonoCppObject(void *objectPointer, bool pinned) : objectPointer(objectPointer),

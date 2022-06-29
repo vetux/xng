@@ -22,7 +22,7 @@
 
 #include "math/vector2.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT WindowListener {
     public:
         virtual void onWindowClose() {};

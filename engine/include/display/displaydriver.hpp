@@ -23,7 +23,7 @@
 #include "driver/driver.hpp"
 #include "display/window.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT DisplayDriver : public Driver {
     public:
         virtual std::unique_ptr<Monitor> getPrimaryMonitor() = 0;

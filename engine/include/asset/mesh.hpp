@@ -29,7 +29,7 @@
 #include "asset/vertex.hpp"
 #include "resource/resource.hpp"
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT Mesh : public Resource {
         enum Primitive {
             POINT = 1,

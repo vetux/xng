@@ -20,7 +20,7 @@
 #ifndef XENGINE_SHADERSTAGE_HPP
 #define XENGINE_SHADERSTAGE_HPP
 
-namespace xengine {
+namespace xng {
     enum ShaderStage {
         VERTEX,
         GEOMETRY,

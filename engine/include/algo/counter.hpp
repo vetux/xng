@@ -25,7 +25,7 @@
 #include <stdexcept>
 #include <mutex>
 
-namespace xengine {
+namespace xng {
     template<typename T>
     class Counter {
     public:

@@ -25,7 +25,7 @@
 #include "script/mono/monocpparguments.hpp"
 #include "script/mono/monocppvalue.hpp"
 
-namespace xengine {
+namespace xng {
     /**
      * A monocpp object wraps a MonoObject instance.
      *

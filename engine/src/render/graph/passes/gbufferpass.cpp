@@ -139,7 +139,7 @@ void main() {
 }
 )###";
 
-namespace xengine {
+namespace xng {
     static inline Vec4f scaleColor(const ColorRGBA &color) {
         return {static_cast<float>(color.r()) / 255,
                 static_cast<float>(color.g()) / 255,

@@ -22,7 +22,7 @@
 
 #include "math/vector3.hpp"
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT AudioListenerComponent {
         Vec3f velocity;
     };

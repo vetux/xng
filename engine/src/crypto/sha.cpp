@@ -24,7 +24,7 @@
 #include "cryptopp/sha.h"
 #include "cryptopp/hex.h"
 
-namespace xengine{
+namespace xng{
     std::string SHA::sha256(const char *data, size_t length) {
         std::string tmp;
         std::string ret;

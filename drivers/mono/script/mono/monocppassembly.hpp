@@ -26,7 +26,7 @@
 #include "script/mono/monocpparguments.hpp"
 #include "script/mono/monocppvalue.hpp"
 
-namespace xengine {
+namespace xng {
     //TODO: Refactor mono abstraction
     class XENGINE_EXPORT MonoCppAssembly {
     public:

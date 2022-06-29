@@ -23,7 +23,7 @@
 #include <string>
 #include <stdexcept>
 
-namespace xengine {
+namespace xng {
     void checkOALError(const std::string &caller = "None");
 }
 

@@ -25,7 +25,7 @@
 #include <mutex>
 #include <atomic>
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Task {
     public:
         Task() : work(),

@@ -26,7 +26,7 @@
 
 #include "audio/audioformat.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT AudioBuffer {
     public:
         virtual ~AudioBuffer() = default;

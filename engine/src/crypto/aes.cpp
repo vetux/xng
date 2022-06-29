@@ -24,7 +24,7 @@
 #include "cryptopp/modes.h"
 #include "cryptopp/cryptlib.h"
 
-namespace xengine {
+namespace xng {
     static std::vector<CryptoPP::byte> parseKey(const std::string &inKey) {
         auto keyLength = CryptoPP::AES::StaticGetValidKeyLength(inKey.size());
         std::vector<CryptoPP::byte> key(keyLength, 0);

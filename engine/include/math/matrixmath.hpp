@@ -25,7 +25,7 @@
 #include "math/vector4.hpp"
 #include "math/matrix.hpp"
 
-namespace xengine {
+namespace xng {
     namespace MatrixMath {
         XENGINE_EXPORT Mat4f identity();
 

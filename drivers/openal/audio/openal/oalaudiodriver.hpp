@@ -24,7 +24,7 @@
 
 #include "audio/audiodriver.hpp"
 
-namespace xengine {
+namespace xng {
     class OALAudioDriver : public AudioDriver {
     public:
         std::vector<std::string> getDeviceNames() override;

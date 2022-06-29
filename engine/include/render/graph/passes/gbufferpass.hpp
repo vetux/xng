@@ -24,7 +24,7 @@
 #include "render/graph/gbuffer.hpp"
 #include "asset/scene.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT GBufferPass : public RenderPass {
     public:
         explicit GBufferPass(RenderDevice &device);

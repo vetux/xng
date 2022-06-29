@@ -19,7 +19,7 @@
 
 #include "text/textrenderer.hpp"
 
-namespace xengine {
+namespace xng {
     struct RenderChar {
         std::reference_wrapper<Character> character;
         std::reference_wrapper<TextureBuffer> texture; // The character texture

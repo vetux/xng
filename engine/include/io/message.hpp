@@ -24,7 +24,7 @@
 #include <vector>
 #include <stdexcept>
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Message;
 
     class XENGINE_EXPORT Message {

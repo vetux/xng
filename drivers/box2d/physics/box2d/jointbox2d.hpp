@@ -24,7 +24,7 @@
 
 #include "physics/2d/joint2d.hpp"
 
-namespace xengine {
+namespace xng {
     class JointBox2D : public Joint2D {
     public:
         b2Joint *joint;

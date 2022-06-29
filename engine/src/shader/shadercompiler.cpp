@@ -26,7 +26,7 @@
 #include "spirv_glsl.hpp"
 #include "spirv_hlsl.hpp"
 
-namespace xengine {
+namespace xng {
     class IncludeHandler : public shaderc::CompileOptions::IncluderInterface {
     public:
         std::function<std::string(const char *)> callback;

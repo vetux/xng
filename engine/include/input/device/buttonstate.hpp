@@ -20,7 +20,7 @@
 #ifndef XENGINE_BUTTONSTATE_HPP
 #define XENGINE_BUTTONSTATE_HPP
 
-namespace xengine {
+namespace xng {
     enum ButtonState : int {
         RELEASED = 0,
         PRESSED = 1,

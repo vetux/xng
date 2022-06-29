@@ -26,7 +26,7 @@
 
 #include "algo/hashcombine.hpp"
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT TextureBufferDesc {
         Vec2i size = {1, 1};
         int samples = 1; //Ignored if texture is not TEXTURE_2D_MULTISAMPLE
@@ -54,7 +54,7 @@ namespace xengine {
     };
 }
 
-using namespace xengine;
+using namespace xng;
 namespace std {
     template<>
     struct hash<TextureBufferDesc> {

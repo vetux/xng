@@ -22,7 +22,7 @@
 
 #include "io/archive.hpp"
 
-namespace xengine {
+namespace xng {
     /**
      * A directory representing an archive.
      * Only files relative to the specified directory can be accessed by full or relative path,

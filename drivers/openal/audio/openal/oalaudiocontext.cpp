@@ -23,32 +23,32 @@
 
 #include "oalcheckerror.hpp"
 
-namespace xengine {
+namespace xng {
     OALAudioContext::OALAudioContext(ALCcontext *context) : context(context), listener() {}
 
-    xengine::OALAudioContext::~OALAudioContext() {
+    xng::OALAudioContext::~OALAudioContext() {
         if (alcGetCurrentContext() == context)
             alcMakeContextCurrent(nullptr);
         alcDestroyContext(context); //TODO:Fix: Destroying a openal context seems to always set invalid operation error
     }
 
-    void xengine::OALAudioContext::makeCurrent() {
+    void xng::OALAudioContext::makeCurrent() {
         alcMakeContextCurrent(context);
         checkOALError();
     }
 
-    AudioListener &xengine::OALAudioContext::getListener() {
+    AudioListener &xng::OALAudioContext::getListener() {
         return listener;
     }
 
-    std::unique_ptr<AudioBuffer> xengine::OALAudioContext::createBuffer() {
+    std::unique_ptr<AudioBuffer> xng::OALAudioContext::createBuffer() {
         ALuint n;
         alGenBuffers(1, &n);
         checkOALError();
         return std::make_unique<OALAudioBuffer>(n);
     }
 
-    std::unique_ptr<AudioSource> xengine::OALAudioContext::createSource() {
+    std::unique_ptr<AudioSource> xng::OALAudioContext::createSource() {
         ALuint n;
         alGenSources(1, &n);
         checkOALError();

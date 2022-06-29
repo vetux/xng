@@ -24,7 +24,7 @@
 
 #include "shaderbufferdesc.hpp"
 
-namespace xengine {
+namespace xng {
     class ShaderBuffer : public RenderObject {
     public:
         ~ShaderBuffer() override = default;

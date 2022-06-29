@@ -30,7 +30,7 @@
 #include "display/glfw/opengl/windowglfwgl.hpp"
 #include "graphics/opengl/oglrendertarget.hpp"
 
-namespace xengine {
+namespace xng {
     namespace ImGuiCompat {
         void Init(Window &window) {
             auto displayDriver = window.getDisplayDriver();

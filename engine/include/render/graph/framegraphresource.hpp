@@ -23,7 +23,7 @@
 #include <string>
 #include <stdexcept>
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT FrameGraphResource {
         FrameGraphResource() = default;
 

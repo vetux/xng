@@ -24,7 +24,7 @@
 
 #include "algo/hashcombine.hpp"
 
-namespace xengine {
+namespace xng {
     struct RenderTargetDesc {
         Vec2i size{};
         bool multisample = false;
@@ -42,7 +42,7 @@ namespace xengine {
     };
 }
 
-using namespace xengine;
+using namespace xng;
 namespace std {
     template<>
     struct hash<RenderTargetDesc> {

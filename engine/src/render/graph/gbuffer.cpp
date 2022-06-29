@@ -19,7 +19,7 @@
 
 #include "render/graph/gbuffer.hpp"
 
-namespace xengine {
+namespace xng {
     GBuffer::GBuffer(RenderDevice &device, Vec2i size, int samples)
             : size(size), samples(samples) {
         if (size.x < 1 || size.y < 1)

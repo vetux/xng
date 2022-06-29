@@ -20,7 +20,7 @@
 #ifndef XENGINE_WINDOWATTRIBUTES_HPP
 #define XENGINE_WINDOWATTRIBUTES_HPP
 
-namespace xengine {
+namespace xng {
     /**
      * The attributes of a window which are required for creation.
      * Some attributes may be changed for an existing window, for which

@@ -20,7 +20,7 @@
 #ifndef XENGINE_ENTITY_HPP
 #define XENGINE_ENTITY_HPP
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT Entity {
         static const int INVALID_ID = -1;
 

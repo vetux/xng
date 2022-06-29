@@ -24,7 +24,7 @@
 #include <typeindex>
 #include <memory>
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT FrameGraphBlackboard {
     public:
         template<typename T>

@@ -25,7 +25,7 @@
 
 #include <ostream>
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT ResourceExporter {
     public:
         ResourceExporter() = default;

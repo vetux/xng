@@ -26,7 +26,7 @@
 
 #include "text/font.hpp"
 
-namespace xengine {
+namespace xng {
     class FTFont : public Font {
     public:
         FT_Library library{};

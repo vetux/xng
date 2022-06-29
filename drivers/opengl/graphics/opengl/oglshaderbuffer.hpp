@@ -22,7 +22,7 @@
 
 #include "graphics/opengl/oglbuildmacro.hpp"
 
-namespace xengine::opengl {
+namespace xng::opengl {
     class OPENGL_TYPENAME(ShaderBuffer) : public ShaderBuffer OPENGL_INHERIT {
     public:
         ShaderBufferDesc desc;

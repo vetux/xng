@@ -28,7 +28,7 @@
 
 #include "asset/image.hpp"
 
-namespace xengine {
+namespace xng {
     /**
      * A texture buffer.
      */

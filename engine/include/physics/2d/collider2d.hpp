@@ -24,7 +24,7 @@
 
 #include "math/vector2.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Collider2D {
     public:
         virtual void setShape(const std::vector<Vec2f> &vertices) = 0;

@@ -23,7 +23,7 @@
 #include "render/scenerenderer.hpp"
 #include "graphics/renderdevice.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT ForwardRenderer : public SceneRenderer {
     public:
         ForwardRenderer() = default;

@@ -26,7 +26,7 @@
 
 #include "math/vector3.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT AudioSource {
     public:
         enum SourceType {

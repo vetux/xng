@@ -19,7 +19,7 @@
 
 #include "render/graph/framegraphpool.hpp"
 
-namespace xengine {
+namespace xng {
     static std::unique_ptr<TextureBuffer> allocateTexture(const Texture &t, RenderDevice &device) {
         auto texture = device.createTextureBuffer(t.textureDescription);
         if (!t.images.empty()) {

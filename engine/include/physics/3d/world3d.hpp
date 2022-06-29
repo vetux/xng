@@ -25,7 +25,7 @@
 
 #include "driver/driver.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT World3D : public Driver {
     public:
         struct XENGINE_EXPORT Contact {

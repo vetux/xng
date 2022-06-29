@@ -20,7 +20,7 @@
 #ifndef XENGINE_TEXTUREPROPERTIES_HPP
 #define XENGINE_TEXTUREPROPERTIES_HPP
 
-namespace xengine {
+namespace xng {
     enum TextureType {
         TEXTURE_2D,
         TEXTURE_2D_MULTISAMPLE,

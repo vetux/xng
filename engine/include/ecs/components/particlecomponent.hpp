@@ -20,7 +20,7 @@
 #ifndef XENGINE_PARTICLECOMPONENT_HPP
 #define XENGINE_PARTICLECOMPONENT_HPP
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT ParticleComponent {
     };
 }

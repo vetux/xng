@@ -20,7 +20,7 @@
 #include "render/graph/framegraph.hpp"
 #include "render/graph/framegraphpass.hpp"
 
-namespace xengine {
+namespace xng {
     FrameGraph::FrameGraph(std::vector<std::shared_ptr<FrameGraphPass>> passes,
                            std::vector<std::set<FrameGraphResource>> passResources,
                            std::vector<std::function<RenderObject &()>> resources)

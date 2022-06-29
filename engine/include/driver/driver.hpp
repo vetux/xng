@@ -22,7 +22,7 @@
 
 #include <typeindex>
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Driver {
     public:
         virtual ~Driver() = default;

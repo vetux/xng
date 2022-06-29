@@ -29,7 +29,7 @@
 
 #include "math/rectangle.hpp"
 
-namespace xengine {
+namespace xng {
     /**
      * Stores 2d image data in row major format.
      *

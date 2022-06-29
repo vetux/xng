@@ -27,7 +27,7 @@
 
 #include "text/character.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Font {
     public:
         /**

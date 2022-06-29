@@ -22,7 +22,7 @@
 
 #include <string>
 
-namespace xengine {
+namespace xng {
     struct XENGINE_EXPORT RenderDeviceInfo {
         std::string name;
     };

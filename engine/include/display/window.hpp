@@ -32,7 +32,7 @@
 #include "input/input.hpp"
 #include "math/vector2.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Window {
     public:
         virtual ~Window() = default;

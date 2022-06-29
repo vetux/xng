@@ -32,7 +32,7 @@
 
 #include "input/glfw/glfwinput.hpp"
 
-namespace xengine {
+namespace xng {
     namespace glfw {
         class WindowGLFWGL : public Window {
         public:

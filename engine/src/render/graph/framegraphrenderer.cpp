@@ -19,7 +19,7 @@
 
 #include "render/graph/framegraphrenderer.hpp"
 
-namespace xengine {
+namespace xng {
     FrameGraphRenderer::FrameGraphRenderer(RenderDevice &device)
             : device(device), pool(device) {}
 

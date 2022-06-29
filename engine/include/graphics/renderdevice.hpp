@@ -43,7 +43,7 @@
 
 #include "asset/mesh.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT RenderDevice {
     public:
         virtual ~RenderDevice() = default;

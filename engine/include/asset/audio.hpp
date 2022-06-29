@@ -24,7 +24,7 @@
 
 #include "resource/resource.hpp"
 
-namespace xengine {
+namespace xng {
     class XENGINE_EXPORT Audio : public Resource {
     public:
         ~Audio() override = default;
