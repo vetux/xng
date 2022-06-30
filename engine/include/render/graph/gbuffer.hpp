@@ -71,6 +71,10 @@ namespace xng {
          */
         TextureBuffer &getTexture(GTexture type) const;
 
+        void attachTextures(RenderTarget &target) const;
+
+        void detachTextures(RenderTarget &target) const;
+
     private:
         Vec2i size = {1, 1}; //The size of the geometry textures
         int samples = 1; //The number of msaa samples to use for geometry textures, all geometry textures are TEXTURE_2D_MULTISAMPLE

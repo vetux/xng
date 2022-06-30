@@ -25,13 +25,13 @@
 #include "asset/scene.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT GBufferPass : public RenderPass {
+    class XENGINE_EXPORT GBufferPass : public FrameGraphPass {
     public:
         explicit GBufferPass(RenderDevice &device);
 
         void setup(FrameGraphBuilder &builder) override;
 
-        void execute(RenderPassResources &resources, RenderDevice &ren, FrameGraphBlackboard &board) override;
+        void execute(FrameGraphPassResources &resources, RenderDevice &ren, FrameGraphBlackboard &board) override;
 
     private:
         RenderDevice &device;
@@ -40,9 +40,8 @@ namespace xng {
 
         Scene scene;
 
-        std::unique_ptr<TextureBuffer> defaultTexture;
-        std::unique_ptr<ShaderProgram> shader;
-
+        FrameGraphResource defaultTexture;
+        FrameGraphResource shader;
         FrameGraphResource renderTarget;
 
         std::map<Uri, FrameGraphResource> sceneResources;

@@ -476,6 +476,8 @@ namespace xng {
         return ret;
     }
 
+
+
     ResourceBundle ResourceImporter::import(std::istream &stream, const std::string &hint, Archive *archive) {
         if (hint.empty()) {
             std::string buffer((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
@@ -550,10 +552,5 @@ namespace xng {
                 }
             }
         }
-    }
-
-    ResourceBundle ResourceImporter::import(const std::string &path, Archive &archive) {
-        auto stream = archive.open(path);
-        return import(*stream, std::filesystem::path(path).extension(), &archive);
     }
 }

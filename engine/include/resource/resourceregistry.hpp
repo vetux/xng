@@ -71,8 +71,11 @@ namespace xng {
             return dynamic_cast<T &>(getArchive(name));
         }
 
+        void setDefaultScheme(const std::string &scheme) { defaultScheme = scheme; }
+
         /**
-         * If the scheme on uri is not set the registry returns the first archive for which the uri file exists otherwise an exception is thrown.
+         * If the scheme on uri is not set the registry uses the archive of the default scheme and if no default archive is set it
+         * returns the first archive for which the uri file exists otherwise an exception is thrown.
          *
          * @param uri
          * @return
@@ -104,6 +107,8 @@ namespace xng {
 
         std::map<std::string, std::shared_ptr<Archive>> archives;
         std::map<std::string, ResourceBundle> bundles;
+
+        std::string defaultScheme;
     };
 }
 #endif //XENGINE_RESOURCEREGISTRY_HPP

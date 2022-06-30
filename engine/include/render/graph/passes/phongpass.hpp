@@ -24,7 +24,7 @@
 #include "render/graph/framegraphpass.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT PhongPass : public RenderPass {
+    class XENGINE_EXPORT PhongPass : public FrameGraphPass {
     public:
         PhongPass(RenderDevice &device);
 
@@ -32,11 +32,11 @@ namespace xng {
 
         void setup(FrameGraphBuilder &builder) override;
 
-        void execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) override;
+        void execute(FrameGraphPassResources &resources, RenderDevice &ren, FrameGraphBlackboard &board) override;
 
     private:
         std::unique_ptr<ShaderProgram> shader;
-        std::unique_ptr<MeshBuffer> quadMesh;
+        std::unique_ptr<VertexBuffer> quadMesh;
 
         Scene scene;
 

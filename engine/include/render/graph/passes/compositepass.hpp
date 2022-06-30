@@ -24,7 +24,7 @@
 
 
 namespace xng {
-    class XENGINE_EXPORT CompositePass : public RenderPass {
+    class XENGINE_EXPORT CompositePass : public FrameGraphPass {
     public:
         struct XENGINE_EXPORT Layer {
             explicit Layer(TextureBuffer *color = nullptr, TextureBuffer *depth = nullptr)
@@ -44,7 +44,7 @@ namespace xng {
 
         void setup(FrameGraphBuilder &builder) override;
 
-        void execute(RenderPassResources &resources, RenderDevice &ren, FrameGraphBlackboard &board) override;
+        void execute(FrameGraphPassResources &resources, RenderDevice &ren, FrameGraphBlackboard &board) override;
 
         void setClearColor(ColorRGBA color) { clearColor = color; }
 
@@ -53,12 +53,12 @@ namespace xng {
                        RenderDevice &ren,
                        RenderTarget &target,
                        ShaderProgram &shaderProgram,
-                       MeshBuffer &screenQuad);
+                       VertexBuffer &screenQuad);
 
         ColorRGBA clearColor = ColorRGBA::white();
 
         std::unique_ptr<ShaderProgram> shader;
-        std::unique_ptr<MeshBuffer> quadMesh;
+        std::unique_ptr<VertexBuffer> quadMesh;
 
         FrameGraphResource backBuffer;
     };

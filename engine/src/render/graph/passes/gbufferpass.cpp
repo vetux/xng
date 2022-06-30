@@ -17,13 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#warning NOT IMPLEMENTED
-/*
 #include "render/graph/passes/gbufferpass.hpp"
 
 #include "render/shaderinclude.hpp"
 
-static const char *SHADER_VERT_GEOMETRY = R"###(#version 460
+#include "io/archive/memoryarchive.hpp"
+
+static const char *SHADER_VERT_GEOMETRY = R"###(#version 420 core
 
 layout (location = 0) in vec3 vPosition;
 layout (location = 1) in vec3 vNormal;
@@ -41,34 +41,35 @@ layout(location = 2) out vec3 fTan;
 layout(location = 3) out vec2 fUv;
 layout(location = 4) out vec4 vPos;
 
-layout(location = 0) uniform mat4 MANA_M;
-layout(location = 1) uniform mat4 MANA_MVP;
+layout(binding = 0, std140) uniform ShaderUniformBuffer
+{
+    mat4 MANA_M;
+    mat4 MANA_MVP;
 
-layout(location = 2) uniform int hasTextureNormal;
+    int hasTextureNormal;
 
-layout(location = 3) uniform vec4 diffuseColor;
-layout(location = 4) uniform vec4 ambientColor;
-layout(location = 5) uniform vec4 specularColor;
-layout(location = 6) uniform float shininessColor;
+    vec4 diffuseColor;
+    vec4 ambientColor;
+    vec4 specularColor;
+    float shininessColor;
+    vec4 emissiveColor;
 
-layout(location = 7) uniform vec4 emissiveColor;
+    mat4 TRANSFORM_ROTATION;
+} globs;
 
-layout(location = 8) uniform sampler2D diffuse;
-layout(location = 9) uniform sampler2D ambient;
-layout(location = 10) uniform sampler2D specular;
-layout(location = 11) uniform sampler2D shininess;
-layout(location = 12) uniform sampler2D emissive;
-
-layout(location = 13) uniform sampler2D normal;
-
-layout(location = 14) uniform mat4 TRANSFORM_ROTATION;
+layout(binding = 1) uniform sampler2D diffuse;
+layout(binding = 2) uniform sampler2D ambient;
+layout(binding = 3) uniform sampler2D specular;
+layout(binding = 4) uniform sampler2D shininess;
+layout(binding = 5) uniform sampler2D emissive;
+layout(binding = 6) uniform sampler2D normal;
 
 void main()
 {
     mat4 instanceMatrix = mat4(vInstanceRow0, vInstanceRow1, vInstanceRow2, vInstanceRow3);
 
-    vPos = (instanceMatrix * MANA_MVP) * vec4(vPosition, 1);
-    fPos = ((instanceMatrix * MANA_M) * vec4(vPosition, 1)).xyz;
+    vPos = (instanceMatrix * globs.MANA_MVP) * vec4(vPosition, 1);
+    fPos = ((instanceMatrix * globs.MANA_M) * vec4(vPosition, 1)).xyz;
     fUv = vUv;
 
     fNorm = normalize(vNormal);
@@ -78,7 +79,7 @@ void main()
 }
 )###";
 
-static const char *SHADER_FRAG_GEOMETRY = R"###(#version 460
+static const char *SHADER_FRAG_GEOMETRY = R"###(#version 420 core
 
 layout(location = 0) in vec3 fPos;
 layout(location = 1) in vec3 fNorm;
@@ -95,38 +96,39 @@ layout(location = 5) out vec4 oAmbient;
 layout(location = 6) out vec4 oSpecular;
 layout(location = 7) out vec4 oShininess;
 
-layout(location = 0) uniform mat4 MANA_M;
-layout(location = 1) uniform mat4 MANA_MVP;
+layout(binding = 0, std140) uniform ShaderUniformBuffer
+{
+    mat4 MANA_M;
+    mat4 MANA_MVP;
 
-layout(location = 2) uniform int hasTextureNormal;
+    int hasTextureNormal;
 
-layout(location = 3) uniform vec4 diffuseColor;
-layout(location = 4) uniform vec4 ambientColor;
-layout(location = 5) uniform vec4 specularColor;
-layout(location = 6) uniform float shininessColor;
+    vec4 diffuseColor;
+    vec4 ambientColor;
+    vec4 specularColor;
+    float shininessColor;
+    vec4 emissiveColor;
+} globs;
 
-layout(location = 7) uniform vec4 emissiveColor;
-
-layout(location = 8) uniform sampler2D diffuse;
-layout(location = 9) uniform sampler2D ambient;
-layout(location = 10) uniform sampler2D specular;
-layout(location = 11) uniform sampler2D shininess;
-layout(location = 12) uniform sampler2D emissive;
-
-layout(location = 13) uniform sampler2D normal;
+layout(binding = 1) uniform sampler2D diffuse;
+layout(binding = 2) uniform sampler2D ambient;
+layout(binding = 3) uniform sampler2D specular;
+layout(binding = 4) uniform sampler2D shininess;
+layout(binding = 5) uniform sampler2D emissive;
+layout(binding = 6) uniform sampler2D normal;
 
 void main() {
     oPosition = vec4(fPos, 1);
-    oDiffuse = texture(diffuse, fUv) + diffuseColor;
-    oAmbient = texture(ambient, fUv) + ambientColor;
-    oSpecular = texture(specular, fUv) + specularColor;
-    oShininess.r = texture(shininess, fUv).r + shininessColor;
+    oDiffuse = texture(diffuse, fUv) + globs.diffuseColor;
+    oAmbient = texture(ambient, fUv) + globs.ambientColor;
+    oSpecular = texture(specular, fUv) + globs.specularColor;
+    oShininess.r = texture(shininess, fUv).r + globs.shininessColor;
 
-    mat3 normalMatrix = transpose(inverse(mat3(MANA_M)));
+    mat3 normalMatrix = transpose(inverse(mat3(globs.MANA_M)));
     oNormal = vec4(normalize(normalMatrix * fNorm), 1);
     oTangent = vec4(normalize(normalMatrix * fTan), 1);
 
-    if (hasTextureNormal != 0)
+    if (globs.hasTextureNormal != 0)
     {
         vec3 texNormal = texture(normal, fUv).xyz;
         texNormal = normalize(texNormal * 2.0 - 1.0);
@@ -139,7 +141,24 @@ void main() {
 }
 )###";
 
-namespace xng {
+#warning "NOT IMPLEMENTED"
+namespace xng {/*
+    static bool shaderLoaded = false;
+
+    static const Uri shaderUri = Uri("memory", "/shaders/gbufferpass", "");
+
+    static void initShaderResource() {
+        if (!shaderLoaded) {
+            shaderLoaded = true;
+            Shader shaderSrc;
+            shaderSrc.vertexShader = ShaderSource(SHADER_VERT_GEOMETRY, "main", VERTEX, GLSL_420, false);
+            shaderSrc.fragmentShader = ShaderSource(SHADER_FRAG_GEOMETRY, "main", FRAGMENT, GLSL_420, false);
+
+            shaderSrc.vertexShader.preprocess();
+            shaderSrc.fragmentShader.preprocess();
+        }
+    }
+
     static inline Vec4f scaleColor(const ColorRGBA &color) {
         return {static_cast<float>(color.r()) / 255,
                 static_cast<float>(color.g()) / 255,
@@ -147,33 +166,9 @@ namespace xng {
                 static_cast<float>(color.a()) / 255};
     }
 
-    static void bindTextures(RenderTarget &target, GBuffer &gBuffer) {
-        target.setNumberOfColorAttachments(GBuffer::GEOMETRY_TEXTURE_END);
-        for (int i = GBuffer::GEOMETRY_TEXTURE_BEGIN; i < GBuffer::GEOMETRY_TEXTURE_END; i++) {
-            target.attachColor(i, gBuffer.getTexture((GBuffer::GTexture) i));
-        }
-        target.attachDepthStencil(gBuffer.getTexture(GBuffer::DEPTH));
-    }
-
-    static void unbindTextures(RenderTarget &target) {
-        for (int i = GBuffer::GEOMETRY_TEXTURE_BEGIN; i < GBuffer::GEOMETRY_TEXTURE_END; i++) {
-            target.detachColor(i);
-        }
-        target.detachDepthStencil();
-    }
-
     GBufferPass::GBufferPass(RenderDevice &device)
             : device(device), gBuffer(device) {
-        Shader shaderSrc;
-        shaderSrc.vertexShader = ShaderSource(SHADER_VERT_GEOMETRY, "main", VERTEX, GLSL_410);
-        shaderSrc.fragmentShader = ShaderSource(SHADER_FRAG_GEOMETRY, "main", FRAGMENT, GLSL_410);
-
-        shaderSrc.vertexShader.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                                          ShaderInclude::getShaderMacros(GLSL_410));
-        shaderSrc.fragmentShader.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                                            ShaderInclude::getShaderMacros(GLSL_410));
-
-        shader = device.getAllocator().createShaderProgram(shaderSrc.vertexShader, shaderSrc.fragmentShader);
+        ShaderProgramDesc desc;
 
         auto defaultImage = ImageRGBA(1,
                                       1,
@@ -357,5 +352,5 @@ namespace xng {
         unbindTextures(target);
 
         board.set<GBuffer>(gBuffer);
-    }
-}*/
+    }*/
+}

@@ -25,7 +25,7 @@
 #include "asset/scene.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT SkyboxPass : public RenderPass {
+    class XENGINE_EXPORT SkyboxPass : public FrameGraphPass {
     public:
         SkyboxPass(RenderDevice &device);
 
@@ -33,13 +33,13 @@ namespace xng {
 
         void setup(FrameGraphBuilder &builder) override;
 
-        void execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) override;
+        void execute(FrameGraphPassResources &resources, RenderDevice &ren, FrameGraphBlackboard &board) override;
 
     private:
         Scene scene;
 
         std::unique_ptr<ShaderProgram> shader;
-        std::unique_ptr<MeshBuffer> skyboxCube;
+        std::unique_ptr<VertexBuffer> skyboxCube;
         std::unique_ptr<TextureBuffer> defaultTexture;
 
         FrameGraphResource renderTarget;

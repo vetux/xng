@@ -62,4 +62,18 @@ namespace xng {
     TextureBuffer &GBuffer::getTexture(GBuffer::GTexture type) const {
         return *textures.at(type);
     }
+
+    void GBuffer::attachTextures(RenderTarget &target) const {
+        std::vector<TextureBuffer *> tex;
+        for (int i = GBuffer::GEOMETRY_TEXTURE_BEGIN; i < GBuffer::GEOMETRY_TEXTURE_END; i++) {
+            tex.emplace_back(&getTexture((GTexture)i));
+        }
+        target.setColorAttachments(tex);
+        target.setDepthStencilAttachment(&getTexture(DEPTH));
+    }
+
+    void GBuffer::detachTextures(RenderTarget &target) const {
+        target.setColorAttachments(std::vector<TextureBuffer*>());
+        target.setDepthStencilAttachment(nullptr);
+    }
 }

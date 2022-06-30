@@ -25,6 +25,8 @@
 
 #include "io/archive/memoryarchive.hpp"
 
+#include "xengine.hpp"
+
 namespace xng {
     static std::unique_ptr<ResourceRegistry> defRepo = nullptr;
 
@@ -86,7 +88,7 @@ namespace xng {
                 auto &archive = resolveUri(uri);
                 std::filesystem::path path(uri.getFile());
                 auto stream = archive.open(path);
-                auto bundle = ResourceImporter().import(*stream, path.extension(), &archive);
+                auto bundle = ResourceImporter().import(*stream, path.extension());
 
                 std::lock_guard<std::mutex> g(mutex);
                 bundles[path] = std::move(bundle);
@@ -126,18 +128,22 @@ namespace xng {
         auto &archive = resolveUri(uri);
         std::filesystem::path path(uri.getFile());
         auto stream = archive.open(path);
-        return ResourceImporter().import(*stream, path.extension(), &archive);
+        return ResourceImporter().import(*stream, path.extension());
     }
 
     Archive &ResourceRegistry::resolveUri(const Uri &uri) {
         std::shared_lock g(archiveMutex);
         if (uri.getScheme().empty()) {
-            for (auto &a: archives) {
-                if (a.second->exists(uri.getFile())) {
-                    return *a.second;
+            if (defaultScheme.empty()) {
+                for (auto &a: archives) {
+                    if (a.second->exists(uri.getFile())) {
+                        return *a.second;
+                    }
                 }
+                throw std::runtime_error("Failed to resolve uri " + uri.toString());
+            } else {
+                return *archives.at(defaultScheme);
             }
-            throw std::runtime_error("Failed to resolve uri " + uri.toString());
         } else {
             return *archives.at(uri.getScheme());
         }

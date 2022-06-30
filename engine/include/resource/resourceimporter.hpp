@@ -31,6 +31,9 @@
 #include "io/archive.hpp"
 
 namespace xng {
+    /**
+     * The resource importer is the abstraction around resource formats such as fbx, obj, mp3, png etc.
+     */
     class XENGINE_EXPORT ResourceImporter {
     public:
         ResourceImporter() = default;
@@ -38,28 +41,15 @@ namespace xng {
         /**
          * Import the bundle from the stream.
          *
-         * If the bundle format references other bundles and nullptr archive is passed a exception is thrown.
+         * If the bundle format references other bundles (For example fbx) the importer uses the archive instance
+         * to resolve the paths, and throws if a path could not be resolved.
          *
          * @param stream
-         * @param hint
+         * @param hint The file extension
          * @param archive
          * @return
          */
         ResourceBundle import(std::istream &stream, const std::string &hint = "", Archive *archive = nullptr);
-
-        /**
-         * Import the bundle from the path.
-         *
-         * The bundle path is resolved using the passed archive instance.
-         *
-         * If the bundle format references other bundles by name they are resolved using the
-         * passed archive instance.
-         *
-         * @param stream
-         * @param archive
-         * @return
-         */
-        ResourceBundle import(const std::string &path, Archive &archive);
     };
 }
 
