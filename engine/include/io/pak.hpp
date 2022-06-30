@@ -24,50 +24,22 @@ namespace xng {
             std::string hash;
         };
 
-        static std::map<std::string, std::vector<char>> readEntries(const std::string &path, bool recursive = true);
-
-        /**
-         * Create a pak buffer from the passed entries and return it.
-         *
-         * @param entries
-         * @param chunkSize The maximum number of bytes stored in a single pak chunk
-         * @return The ordered pak chunks
-         */
-        static std::vector<std::vector<char>> createPak(const std::map<std::string, std::vector<char>> &entries,
-                                                        long chunkSize = -1,
-                                                        bool compressData = true);
-
-        /**
-         * Create a pak buffer from the passed entries and return it.
-         * Additionally apply aes encryption to the asset data using the supplied key and initialization vector.
-         *
-         * @param entries
-         * @param chunkSize
-         * @param key
-         * @param iv
-         * @return The ordered pak chunks
-         */
-        static std::vector<std::vector<char>> createPak(const std::map<std::string, std::vector<char>> &entries,
-                                                        long chunkSize,
-                                                        bool compressData,
-                                                        const AES::Key &key,
-                                                        const AES::InitializationVector &iv);
-
         Pak() = default;
 
         /**
-         * Load a pak buffer from stream.
-         *
-         * @param streams
-         * @param key
-         * @param iv
+         * @param streams The chunk streams in the order returned by PakBuilder::build
+         * @param key The key used to decrypt encrypted entries
+         * @param iv The iv used to decrypt encrypted entries
          */
-        explicit Pak(std::vector<std::unique_ptr<std::istream>> streams,
+        explicit Pak(std::vector<std::reference_wrapper<std::istream>> streams,
                      AES::Key key = {},
                      AES::InitializationVector iv = {});
 
         /**
-         * Load the pak entry from the stream, and optionally verify its hash.
+         * Load the pak entry from the corresponding chunk stream,
+         * and optionally verify its hash.
+         *
+         * The data of the entry is loaded into memory from the chunk streams when this method is called.
          *
          * @param path The path of the entry
          * @param verifyHash If true the hash of the returned data is checked against a hash stored in the pak header and an exception is thrown on mismatch.
@@ -86,11 +58,12 @@ namespace xng {
 
         std::istream &getStreamForOffset(size_t globalOffset);
 
-        std::vector<std::unique_ptr<std::istream>> streams;
+        std::vector<std::reference_wrapper<std::istream>> streams;
         std::map<std::string, HeaderEntry> entries; // The header entries with global offsets
         long chunkSize{};
         bool encrypted{};
         bool compressed{};
+
         AES::Key key{};
         AES::InitializationVector iv{};
     };

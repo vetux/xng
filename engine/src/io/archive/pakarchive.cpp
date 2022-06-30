@@ -24,7 +24,7 @@
 #include <utility>
 
 namespace xng {
-    PakArchive::PakArchive(std::vector<std::unique_ptr<std::istream>> streams,
+    PakArchive::PakArchive(std::vector<std::reference_wrapper<std::istream>> streams,
                            bool verifyHashes,
                            const AES::Key &key,
                            const AES::InitializationVector &iv)

@@ -30,120 +30,9 @@
 #include "crypto/sha.hpp"
 
 namespace xng {
-    std::map<std::string, std::vector<char>> Pak::readEntries(const std::string &directory, bool recursive) {
-        std::map<std::string, std::vector<char>> ret;
-        for (auto &file: std::filesystem::recursive_directory_iterator(directory)) {
-            if (file.is_regular_file()) {
-                auto path = "/" + std::filesystem::relative(file.path(), directory).string();
-                auto data = readFile(file.path().string());
-                ret[path] = data;
-            }
-        }
-        return ret;
-    }
-
-    static std::vector<std::vector<char>> createPakInternal(const std::map<std::string, std::vector<char>> &entries,
-                                                            long chunkSize,
-                                                            bool compress,
-                                                            bool encrypt,
-                                                            const AES::Key &key,
-                                                            const AES::InitializationVector &iv) {
-        std::vector<char> data;
-        size_t currentOffset = 0;
-
-        std::map<std::string, Pak::HeaderEntry> headerEntries;
-        for (auto &pair: entries) {
-            auto d = pair.second;
-
-            if (compress) {
-                d = GZip::compress(d);
-            }
-
-            if (encrypt) {
-                d = AES::encrypt(key, iv, d);
-            }
-
-            headerEntries[pair.first].offset = currentOffset;
-            headerEntries[pair.first].size = d.size();
-            headerEntries[pair.first].hash = SHA::sha256(pair.second);
-
-            currentOffset += d.size();
-
-            data.insert(data.begin() + static_cast<long>(data.size()), d.begin(), d.end());
-        }
-
-        nlohmann::json headerJson;
-        headerJson["chunkSize"] = chunkSize;
-        headerJson["compressed"] = compress;
-        for (auto &pair: headerEntries) {
-            auto &element = headerJson["entries"][pair.first];
-            element["offset"] = pair.second.offset;
-            element["size"] = pair.second.size;
-            element["hash"] = pair.second.hash;
-        }
-
-        auto headerStr = headerJson.dump();
-        headerStr = GZip::compress(headerStr);
-
-        if (encrypt) {
-            headerStr = AES::encrypt(key, iv, headerStr);
-        }
-
-        nlohmann::json outHeaderJson;
-        outHeaderJson["encrypted"] = encrypt;
-        outHeaderJson["data"] = base64_encode(headerStr);
-
-        auto outHeaderStr = outHeaderJson.dump();
-
-        auto hdr = PAK_HEADER_MAGIC + outHeaderStr;
-
-        if (chunkSize > 0) {
-            auto totalSize = hdr.size() + data.size();
-            auto totalWholeChunks = totalSize / chunkSize;
-            auto totalRemainder = totalSize % chunkSize;
-
-            auto totalChunks = totalWholeChunks;
-            if (totalRemainder != 0)
-                totalChunks += 1;
-
-            std::vector<std::vector<char>> ret(totalChunks);
-
-            size_t chunkIndex = 0;
-            for (auto i = 0; i < totalSize; i++) {
-                auto &chunk = ret.at(chunkIndex);
-
-                if (i < hdr.size()) {
-                    chunk.emplace_back(hdr.at(i));
-                } else {
-                    chunk.emplace_back(data.at(i - hdr.size()));
-                }
-
-                if (chunk.size() == chunkSize)
-                    chunkIndex++;
-            }
-
-            return ret;
-        } else {
-            data.insert(data.begin(), hdr.begin(), hdr.end());
-            return {data};
-        }
-    }
-
-    std::vector<std::vector<char>> Pak::createPak(const std::map<std::string, std::vector<char>> &entries,
-                                                  long chunkSize,
-                                                  bool compressData) {
-        return createPakInternal(entries, chunkSize, compressData, false, {}, {});
-    }
-
-    std::vector<std::vector<char>> Pak::createPak(const std::map<std::string, std::vector<char>> &entries,
-                                                  long chunkSize,
-                                                  bool compressData,
-                                                  const AES::Key &key,
-                                                  const AES::InitializationVector &iv) {
-        return createPakInternal(entries, chunkSize, compressData, true, key, iv);
-    }
-
-    Pak::Pak(std::vector<std::unique_ptr<std::istream>> streams, AES::Key key, AES::InitializationVector iv)
+    Pak::Pak(std::vector<std::reference_wrapper<std::istream>> streams,
+             AES::Key key,
+             AES::InitializationVector iv)
             : streams(std::move(streams)),
               key(std::move(key)),
               iv(iv) {
@@ -153,19 +42,6 @@ namespace xng {
     std::vector<char> Pak::get(const std::string &path, bool verifyHash) {
         std::vector<char> ret;
         auto hEntry = entries.at(path);
-
-        /*
-        // Simple but slow, read each character sequentially.
-        for (auto i = 0; i < hEntry.size; i++) {
-            auto pos = hEntry.offset + i;
-            auto relOff = getRelativeOffset(pos); // The offset relative to the stream
-            auto &stream = getStreamForOffset(pos); // The stream which provides the offset
-            stream.seekg(static_cast<std::streamoff>(relOff));
-            stream.read(&ret.at(i), static_cast<std::streamoff>(1));
-            if (stream.gcount() != 1)
-                throw std::runtime_error("Invalid pak entry data length");
-        }
-        */
 
         auto beginOffset = hEntry.offset % chunkSize; // The offset into the first chunk stream
         auto beginCount = chunkSize - beginOffset; // The number of bytes in the first chunk stream
@@ -250,7 +126,7 @@ namespace xng {
         int streamIndex = 0;
         auto calChunkSize = 0;
         for (auto i = 0; i < std::numeric_limits<size_t>::max(); i++) {
-            auto &s = *streams.at(streamIndex);
+            auto &s = streams.at(streamIndex).get();
             auto offset = i - ((calChunkSize) * streamIndex);
 
             s.seekg(static_cast<std::streamoff>(offset));
@@ -264,7 +140,7 @@ namespace xng {
 
                 offset = i - ((calChunkSize) * streamIndex);
 
-                auto &tmp = *streams.at(streamIndex);
+                auto &tmp = streams.at(streamIndex).get();
                 tmp.seekg(static_cast<std::streamoff>(offset));
                 tmp.read(&c, 1);
             } else if (s.gcount() == 0) {
@@ -337,8 +213,8 @@ namespace xng {
 
     std::istream &Pak::getStreamForOffset(size_t globalOffset) {
         if (chunkSize <= 0)
-            return *streams.at(0);
+            return streams.at(0);
         auto nChunk = globalOffset / chunkSize;
-        return *streams.at(nChunk);
+        return streams.at(nChunk);
     }
 }

@@ -17,37 +17,27 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_PAKARCHIVE_HPP
-#define XENGINE_PAKARCHIVE_HPP
+#ifndef XENGINE_PAKBUILDER_HPP
+#define XENGINE_PAKBUILDER_HPP
 
-#include <mutex>
-
-#include "io/archive.hpp"
 #include "io/pak.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT PakArchive : public Archive {
+    class PakBuilder {
     public:
-        PakArchive() = default;
+        PakBuilder() = default;
 
-        explicit PakArchive(std::vector<std::reference_wrapper<std::istream>> stream,
-                            bool verifyHashes = true,
-                            const AES::Key &key = {},
-                            const AES::InitializationVector &iv = {});
+        void addEntry(const std::string &name, const std::vector<char> &buffer);
 
-        ~PakArchive() override = default;
-
-        bool exists(const std::string &path) override;
-
-        std::unique_ptr<std::istream> open(const std::string &path) override;
-
-        std::unique_ptr<std::iostream> openRW(const std::string &name) override;
+        std::vector<std::vector<char>> build(size_t chunkSize = 0,
+                                             bool compressData = true,
+                                             bool encryptData = false,
+                                             const AES::Key &key = {},
+                                             const AES::InitializationVector &iv = {});
 
     private:
-        std::mutex mutex;
-        Pak pak;
-        bool verifyHashes;
+        std::map<std::string, std::vector<char>> entries;
     };
 }
 
-#endif //XENGINE_PAKARCHIVE_HPP
+#endif //XENGINE_PAKBUILDER_HPP
