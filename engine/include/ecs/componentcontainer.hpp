@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_COMPONENTMANAGER_HPP
-#define XENGINE_COMPONENTMANAGER_HPP
+#ifndef XENGINE_COMPONENTCONTAINER_HPP
+#define XENGINE_COMPONENTCONTAINER_HPP
 
 #include <map>
 #include <vector>
@@ -35,27 +35,27 @@ namespace xng {
      * The engine defines some default components which are used by provided default systems (Rendering, Physics etc.)
      * The user can define custom component types and systems which use these types.
      */
-    class XENGINE_EXPORT ComponentManager {
+    class XENGINE_EXPORT ComponentContainer {
     public:
-        ComponentManager() = default;
+        ComponentContainer() = default;
 
-        ~ComponentManager() {
+        ~ComponentContainer() {
             for (auto &p: pools) {
                 delete p.second;
             }
         }
 
-        ComponentManager(const ComponentManager &other) {
+        ComponentContainer(const ComponentContainer &other) {
             for (auto &p: other.pools) {
                 pools[p.first] = p.second->clone();
             }
         }
 
-        ComponentManager(ComponentManager &&other) noexcept = default;
+        ComponentContainer(ComponentContainer &&other) noexcept = default;
 
-        ComponentManager &operator=(const ComponentManager &other) = default;
+        ComponentContainer &operator=(const ComponentContainer &other) = default;
 
-        ComponentManager &operator=(ComponentManager &&other) noexcept = default;
+        ComponentContainer &operator=(ComponentContainer &&other) noexcept = default;
 
         template<typename T>
         ComponentPool<T> &getPool() {
@@ -137,4 +137,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_COMPONENTMANAGER_HPP
+#endif //XENGINE_COMPONENTCONTAINER_HPP

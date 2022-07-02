@@ -21,10 +21,10 @@
 #define XENGINE_ENGINE_HPP
 
 #include "script/script.hpp"
-#include "ecs/componentmanager.hpp"
+#include "ecs/componentcontainer.hpp"
 #include "ecs/components.hpp"
 #include "ecs/entity.hpp"
-#include "ecs/entitymanager.hpp"
+#include "ecs/entitycontainer.hpp"
 #include "ecs/system.hpp"
 #include "ecs/ecs.hpp"
 #include "ecs/componentpool.hpp"

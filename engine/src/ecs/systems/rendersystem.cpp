@@ -32,17 +32,17 @@ namespace xng {
 
     RenderSystem::~RenderSystem() = default;
 
-    void RenderSystem::start(EntityManager &entityManager) {
+    void RenderSystem::start(EntityContainer &entityManager) {
         entityManager.getComponentManager().getPool<MeshRenderComponent>().addListener(this);
         entityManager.getComponentManager().getPool<SkyboxComponent>().addListener(this);
     }
 
-    void RenderSystem::stop(EntityManager &entityManager) {
+    void RenderSystem::stop(EntityContainer &entityManager) {
         entityManager.getComponentManager().getPool<MeshRenderComponent>().removeListener(this);
         entityManager.getComponentManager().getPool<SkyboxComponent>().removeListener(this);
     }
 
-    void RenderSystem::update(float deltaTime, EntityManager &entityManager) {
+    void RenderSystem::update(float deltaTime, EntityContainer &entityManager) {
         auto &componentManager = entityManager.getComponentManager();
 
         scene = {};

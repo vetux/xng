@@ -26,7 +26,7 @@
 #include "ecs/components/audio/audiolistenercomponent.hpp"
 
 #include "ecs/components.hpp"
-#include "ecs/entitymanager.hpp"
+#include "ecs/entitycontainer.hpp"
 
 namespace xng {
     //TODO: Design better schema generation method
@@ -78,9 +78,9 @@ namespace xng {
 
     XENGINE_EXPORT Message &operator<<(Message &message, const AudioListenerComponent &component);
 
-    XENGINE_EXPORT EntityManager &operator<<(EntityManager &manager, const Message &message);
+    XENGINE_EXPORT EntityContainer &operator<<(EntityContainer &manager, const Message &message);
 
-    XENGINE_EXPORT Message &operator<<(Message &message, EntityManager &manager);
+    XENGINE_EXPORT Message &operator<<(Message &message, EntityContainer &manager);
 }
 
 #endif //XENGINE_ECSSCHEMA_HPP

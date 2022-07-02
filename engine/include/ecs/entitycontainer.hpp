@@ -17,28 +17,28 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_ENTITYMANAGER_HPP
-#define XENGINE_ENTITYMANAGER_HPP
+#ifndef XENGINE_ENTITYCONTAINER_HPP
+#define XENGINE_ENTITYCONTAINER_HPP
 
 #include <set>
 #include <limits>
 
-#include "ecs/componentmanager.hpp"
+#include "ecs/componentcontainer.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT EntityManager {
+    class XENGINE_EXPORT EntityContainer {
     public:
-        EntityManager() = default;
+        EntityContainer() = default;
 
-        ~EntityManager() = default;
+        ~EntityContainer() = default;
 
-        EntityManager(const EntityManager &other) = default;
+        EntityContainer(const EntityContainer &other) = default;
 
-        EntityManager(EntityManager &&other) noexcept = default;
+        EntityContainer(EntityContainer &&other) noexcept = default;
 
-        EntityManager &operator=(const EntityManager &other) = default;
+        EntityContainer &operator=(const EntityContainer &other) = default;
 
-        EntityManager &operator=(EntityManager &&other) noexcept = default;
+        EntityContainer &operator=(EntityContainer &&other) noexcept = default;
 
         /**
          * Optional name mapping.
@@ -80,7 +80,7 @@ namespace xng {
         }
 
         void destroy(const Entity &entity) {
-            componentManager.destroy(entity);
+            components.destroy(entity);
             idStore.insert(entity.id);
             entities.erase(entity);
             entityNames.erase(entityNamesReverse.at(entity));
@@ -88,7 +88,7 @@ namespace xng {
         }
 
         void clear() {
-            componentManager.clear();
+            components.clear();
             idStore.clear();
             idCounter = 0;
             entities.clear();
@@ -100,24 +100,24 @@ namespace xng {
             return entities;
         }
 
-        ComponentManager &getComponentManager() {
-            return componentManager;
+        ComponentContainer &getComponentManager() {
+            return components;
         }
 
-        const ComponentManager &getComponentManager() const {
-            return componentManager;
+        const ComponentContainer &getComponentManager() const {
+            return components;
         }
 
     private:
         std::set<int> idStore;
         int idCounter = 0;
-        std::set<Entity> entities;
 
         std::map<std::string, Entity> entityNames;
         std::map<Entity, std::string> entityNamesReverse;
 
-        ComponentManager componentManager;
+        std::set<Entity> entities;
+        ComponentContainer components;
     };
 }
 
-#endif //XENGINE_ENTITYMANAGER_HPP
+#endif //XENGINE_ENTITYCONTAINER_HPP

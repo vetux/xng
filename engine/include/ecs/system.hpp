@@ -20,7 +20,7 @@
 #ifndef XENGINE_SYSTEM_HPP
 #define XENGINE_SYSTEM_HPP
 
-#include "ecs/entitymanager.hpp"
+#include "ecs/entitycontainer.hpp"
 
 namespace xng {
     /**
@@ -30,11 +30,11 @@ namespace xng {
     public:
         virtual ~System() = default;
 
-        virtual void start(EntityManager &entityManager) {};
+        virtual void start(EntityContainer &entityManager) {};
 
-        virtual void stop(EntityManager &entityManager) {};
+        virtual void stop(EntityContainer &entityManager) {};
 
-        virtual void update(float deltaTime, EntityManager &entityManager) {};
+        virtual void update(float deltaTime, EntityContainer &entityManager) {};
     };
 }
 #endif //XENGINE_SYSTEM_HPP

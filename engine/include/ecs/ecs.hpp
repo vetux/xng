@@ -42,10 +42,10 @@ namespace xng {
 
         void stop();
 
-        EntityManager &getEntityManager();
+        EntityContainer &getEntityContainer();
 
     private:
-        EntityManager entityManager;
+        EntityContainer entityManager;
         std::vector<std::unique_ptr<System>> systems;
     };
 }

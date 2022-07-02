@@ -31,11 +31,11 @@ namespace xng {
 
         ~Physics2DSystem() override = default;
 
-        void start(EntityManager &entityManager) override;
+        void start(EntityContainer &entityManager) override;
 
-        void stop(EntityManager &entityManager) override;
+        void stop(EntityContainer &entityManager) override;
 
-        void update(float deltaTime, EntityManager &entityManager) override;
+        void update(float deltaTime, EntityContainer &entityManager) override;
 
     private:
         World2D *world;

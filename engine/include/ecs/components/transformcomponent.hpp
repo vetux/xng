@@ -24,13 +24,13 @@
 
 #include <string>
 
-#include "ecs/entitymanager.hpp"
+#include "ecs/entitycontainer.hpp"
 
 namespace xng {
     struct AssetScene;
 
     struct XENGINE_EXPORT TransformComponent {
-        static Transform walkHierarchy(const TransformComponent &component, EntityManager &entityManager);
+        static Transform walkHierarchy(const TransformComponent &component, EntityContainer &entityManager);
 
         bool enabled = true;
         Transform transform;

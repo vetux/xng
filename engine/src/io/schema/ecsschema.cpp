@@ -281,7 +281,7 @@ namespace xng {
         return message;
     }
 
-    EntityManager &operator<<(EntityManager &entityManager, const Message &message) {
+    EntityContainer &operator<<(EntityContainer &entityManager, const Message &message) {
         auto &componentManager = entityManager.getComponentManager();
 
         entityManager.clear();
@@ -342,7 +342,7 @@ namespace xng {
         return entityManager;
     }
 
-    Message &operator<<(Message &message, EntityManager &manager) {
+    Message &operator<<(Message &message, EntityContainer &manager) {
         message["entities"] = Message(std::map<std::string, Message>());
 
         auto &componentManager = manager.getComponentManager();

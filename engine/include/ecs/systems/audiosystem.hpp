@@ -37,11 +37,11 @@ namespace xng {
 
         ~AudioSystem() override = default;
 
-        void start(EntityManager &entityManager) override;
+        void start(EntityContainer &entityManager) override;
 
-        void stop(EntityManager &entityManager) override;
+        void stop(EntityContainer &entityManager) override;
 
-        void update(float deltaTime, EntityManager &entityManager) override;
+        void update(float deltaTime, EntityContainer &entityManager) override;
 
     private:
         void onComponentCreate(const Entity &entity, const AudioSourceComponent &component) override;

@@ -50,7 +50,7 @@ namespace xng {
         }
     }
 
-    EntityManager &ECS::getEntityManager() {
+    EntityContainer &ECS::getEntityContainer() {
         return entityManager;
     }
 }

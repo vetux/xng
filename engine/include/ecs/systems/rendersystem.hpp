@@ -39,11 +39,11 @@ namespace xng {
 
         ~RenderSystem() override;
 
-        void start(EntityManager &entityManager) override;
+        void start(EntityContainer &entityManager) override;
 
-        void stop(EntityManager &entityManager) override;
+        void stop(EntityContainer &entityManager) override;
 
-        void update(float deltaTime, EntityManager &entityManager) override;
+        void update(float deltaTime, EntityContainer &entityManager) override;
 
         SceneRenderer &getPipeline();
 
