@@ -28,7 +28,7 @@
 namespace xng {
     class XENGINE_EXPORT ECS {
     public:
-        explicit ECS(std::vector<std::unique_ptr<System>> systems = {});
+        explicit ECS(std::vector<std::reference_wrapper<System>> systems = {});
 
         ~ECS();
 
@@ -42,11 +42,17 @@ namespace xng {
 
         void stop();
 
-        EntityContainer &getEntityContainer();
+        const EntityContainer &getEntityContainer() const;
+
+        void setEntityContainer(const EntityContainer &container);
+
+        const std::vector<std::reference_wrapper<System>> &getSystems() const;
+
+        void setSystems(const std::vector<std::reference_wrapper<System>> &systems);
 
     private:
-        EntityContainer entityManager;
-        std::vector<std::unique_ptr<System>> systems;
+        EntityContainer entityContainer;
+        std::vector<std::reference_wrapper<System>> systems;
     };
 }
 

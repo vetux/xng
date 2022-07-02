@@ -23,7 +23,7 @@
 #include <algorithm>
 
 namespace xng {
-    ECS::ECS(std::vector<std::unique_ptr<System>> systems)
+    ECS::ECS(std::vector<std::reference_wrapper<System>> systems)
             : systems(std::move(systems)) {}
 
     ECS::~ECS() = default;
@@ -34,23 +34,36 @@ namespace xng {
 
     void ECS::start() {
         for (auto &system: systems) {
-            system->start(entityManager);
+            system.get().start(entityContainer);
         }
     }
 
     void ECS::update(float deltaTime) {
         for (auto &system: systems) {
-            system->update(deltaTime, entityManager);
+            system.get().update(deltaTime, entityContainer);
         }
     }
 
     void ECS::stop() {
         for (auto &system: systems) {
-            system->stop(entityManager);
+            system.get().stop(entityContainer);
         }
     }
 
-    EntityContainer &ECS::getEntityContainer() {
-        return entityManager;
+   const  EntityContainer &ECS::getEntityContainer() const {
+        return entityContainer;
+    }
+
+    void ECS::setEntityContainer(const EntityContainer &container) {
+        entityContainer = container;
+    }
+
+    const std::vector<std::reference_wrapper<System>> &ECS::getSystems() const {
+        return systems;
+    }
+
+    void ECS::setSystems(const std::vector<std::reference_wrapper<System>> &v) {
+        stop();
+        systems = v;
     }
 }
