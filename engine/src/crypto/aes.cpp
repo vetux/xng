@@ -34,7 +34,8 @@ namespace xng {
         return key;
     }
 
-    static std::array<CryptoPP::byte, CryptoPP::AES::BLOCKSIZE> parseIv(const std::array<char, AES::BLOCKSIZE> &inIv) {
+    static std::array<CryptoPP::byte, CryptoPP::AES::BLOCKSIZE>
+    parseIv(const std::array<unsigned char, AES::BLOCKSIZE> &inIv) {
         std::array<CryptoPP::byte, CryptoPP::AES::BLOCKSIZE> iv{};
         for (auto i = 0; i < iv.size(); i++) {
             iv.at(i) = inIv.at(i);
@@ -43,7 +44,7 @@ namespace xng {
     }
 
     std::string AES::encrypt(const std::string &inKey,
-                             const std::array<char, BLOCKSIZE> &inIv,
+                             const InitializationVector &inIv,
                              const std::string &plaintext) {
         std::string ciphertext;
 
@@ -61,7 +62,7 @@ namespace xng {
     }
 
     std::string AES::decrypt(const std::string &inKey,
-                             const std::array<char, BLOCKSIZE> &inIv,
+                             const InitializationVector &inIv,
                              const std::string &ciphertext) {
         std::string plaintext;
 
@@ -79,16 +80,22 @@ namespace xng {
     }
 
     std::vector<char> AES::encrypt(const std::string &key,
-                                   const std::array<char, BLOCKSIZE> &iv,
+                                   const InitializationVector &iv,
                                    const std::vector<char> &plaintext) {
         auto ret = encrypt(key, iv, std::string(plaintext.begin(), plaintext.end()));
         return {ret.begin(), ret.end()};
     }
 
     std::vector<char> AES::decrypt(const std::string &key,
-                                   const std::array<char, BLOCKSIZE> &iv,
+                                   const InitializationVector &iv,
                                    const std::vector<char> &ciphertext) {
         auto ret = decrypt(key, iv, std::string(ciphertext.begin(), ciphertext.end()));
         return {ret.begin(), ret.end()};
+    }
+
+    AES::InitializationVector AES::getRandomIv(Random &rand) {
+        InitializationVector ret;
+        rand.block(ret.data(), ret.size());
+        return ret;
     }
 }

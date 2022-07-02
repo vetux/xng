@@ -24,22 +24,36 @@
 #include <vector>
 #include <array>
 
+#include "crypto/random.hpp"
+
 namespace xng {
     namespace AES {
         const int BLOCKSIZE = 128;
 
         typedef std::string Key;
-        typedef std::array<char, BLOCKSIZE> InitializationVector;
+        typedef std::array<unsigned char, BLOCKSIZE> InitializationVector;
 
-        XENGINE_EXPORT std::string encrypt(const Key &key, const InitializationVector &iv, const std::string &plaintext);
+        XENGINE_EXPORT std::string encrypt(const Key &key,
+                                           const InitializationVector &iv,
+                                           const std::string &plaintext);
 
-        XENGINE_EXPORT std::string decrypt(const Key &key, const InitializationVector &iv, const std::string &ciphertext);
+        XENGINE_EXPORT std::string decrypt(const Key &key,
+                                           const InitializationVector &iv,
+                                           const std::string &ciphertext);
 
-        XENGINE_EXPORT std::vector<char> encrypt(const Key &key, const InitializationVector &iv,
-                                              const std::vector<char> &plaintext);
+        XENGINE_EXPORT std::vector<char> encrypt(const Key &key,
+                                                 const InitializationVector &iv,
+                                                 const std::vector<char> &plaintext);
 
-        XENGINE_EXPORT std::vector<char> decrypt(const Key &key, const InitializationVector &iv,
-                                              const std::vector<char> &ciphertext);
+        XENGINE_EXPORT std::vector<char> decrypt(const Key &key,
+                                                 const InitializationVector &iv,
+                                                 const std::vector<char> &ciphertext);
+
+        /**
+         * @param rand The random generator to use when generating the iv data
+         * @return Cryptographically secure random iv
+         */
+        XENGINE_EXPORT InitializationVector getRandomIv(Random &rand);
     }
 }
 
