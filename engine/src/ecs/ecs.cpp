@@ -23,33 +23,29 @@
 #include <algorithm>
 
 namespace xng {
-    ECS::ECS(std::vector<System *> systems)
+    ECS::ECS(std::vector<std::unique_ptr<System>> systems)
             : systems(std::move(systems)) {}
 
-    ECS::~ECS() {
-        for (auto *system : systems) {
-            delete system;
-        }
-    }
+    ECS::~ECS() = default;
 
     ECS::ECS(ECS &&other) noexcept = default;
 
     ECS &ECS::operator=(ECS &&other) noexcept = default;
 
     void ECS::start() {
-        for (auto *system : systems) {
+        for (auto &system: systems) {
             system->start(entityManager);
         }
     }
 
     void ECS::update(float deltaTime) {
-        for (auto *system : systems) {
+        for (auto &system: systems) {
             system->update(deltaTime, entityManager);
         }
     }
 
     void ECS::stop() {
-        for (auto *system : systems) {
+        for (auto &system: systems) {
             system->stop(entityManager);
         }
     }

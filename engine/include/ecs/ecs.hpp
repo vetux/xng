@@ -21,13 +21,14 @@
 #define XENGINE_ECS_HPP
 
 #include <set>
+#include <memory>
 
 #include "ecs/system.hpp"
 
 namespace xng {
     class XENGINE_EXPORT ECS {
     public:
-        explicit ECS(std::vector<System *> systems = {});
+        explicit ECS(std::vector<std::unique_ptr<System>> systems = {});
 
         ~ECS();
 
@@ -45,7 +46,7 @@ namespace xng {
 
     private:
         EntityManager entityManager;
-        std::vector<System *> systems;
+        std::vector<std::unique_ptr<System>> systems;
     };
 }
 
