@@ -6,7 +6,7 @@ This is an experimental cross-platform game engine library written in C++.
   - Display and Input
     - GLFW implementation
   - Graphics
-    - OpenGL 4.1 implementation
+    - OpenGL 4.2 implementation
   - Audio
     - OpenAL implementation
 - Frame Graph Renderer
