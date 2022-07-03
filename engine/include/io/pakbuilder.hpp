@@ -23,7 +23,7 @@
 #include "io/pak.hpp"
 
 namespace xng {
-    class PakBuilder {
+    class XENGINE_EXPORT PakBuilder {
     public:
         PakBuilder() = default;
 

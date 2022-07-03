@@ -22,10 +22,7 @@
 #include <utility>
 
 #include "resource/resourceimporter.hpp"
-
 #include "io/archive/memoryarchive.hpp"
-
-#include "xengine.hpp"
 
 namespace xng {
     static std::unique_ptr<ResourceRegistry> defRepo = nullptr;
