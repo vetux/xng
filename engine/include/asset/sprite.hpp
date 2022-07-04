@@ -17,39 +17,40 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_MATERIAL_HPP
-#define XENGINE_MATERIAL_HPP
+#ifndef XENGINE_SPRITE_HPP
+#define XENGINE_SPRITE_HPP
 
-#include "asset/texture.hpp"
-
+#include "resource/resource.hpp"
 #include "resource/resourcehandle.hpp"
+#include "math/rectangle.hpp"
+#include "graphics/renderdevice.hpp"
 #include "asset/texture.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT Material : public Resource {
-        ~Material() override = default;
+    /**
+     * A sprite is a texture displayed on a planar quad mesh perpendicular to the camera.
+     */
+    struct Sprite : public Resource {
+        Sprite() = default;
+
+        Sprite(ResourceHandle<Texture> texture,
+               Recti offset)
+                : texture(std::move(texture)),
+                  offset(offset) {}
+
+        ~Sprite() override = default;
 
         Resource *clone() override {
-            return new Material(*this);
+            return new Sprite(*this);
         }
 
         std::type_index getTypeIndex() override {
-            return typeid(Material);
+            return typeid(Sprite);
         }
 
-        ColorRGBA diffuse{};
-        ColorRGBA ambient{};
-        ColorRGBA specular{};
-        ColorRGBA emissive{};
-        float shininess{32};
-
-        ResourceHandle<Texture> diffuseTexture;
-        ResourceHandle<Texture> ambientTexture;
-        ResourceHandle<Texture> specularTexture;
-        ResourceHandle<Texture> emissiveTexture;
-        ResourceHandle<Texture> shininessTexture;
-        ResourceHandle<Texture> normalTexture;
+        ResourceHandle<Texture> texture{};
+        Recti offset{}; // The part of the texture which contains the sprite
     };
 }
 
-#endif //XENGINE_MATERIAL_HPP
+#endif //XENGINE_SPRITE_HPP

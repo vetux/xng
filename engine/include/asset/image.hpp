@@ -79,6 +79,8 @@ namespace xng {
 
         Vec2i getSize() const { return size; }
 
+        size_t getDataSize() const { return buffer.size(); }
+
         const T *getData() const { return buffer.data(); }
 
         T *getData() { return buffer.data(); }

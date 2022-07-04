@@ -23,18 +23,47 @@
 #include <cassert>
 
 namespace xng {
-    SpriteAnimation::SpriteAnimation(std::vector<std::reference_wrapper<TextureBuffer>> frames,
+    SpriteAnimation::SpriteAnimation(std::vector<SpriteKeyframe> inputFrames,
                                      float animationDuration,
                                      bool loop,
                                      bool clampDelta)
-            : frames(std::move(frames)),
+            : keyframes(std::move(inputFrames)),
               animationDuration(animationDuration),
               clampDelta(clampDelta),
               loop(loop) {
-        frameTime = animationDuration / numeric_cast<float>(frames.size());
+        frameTime = animationDuration / numeric_cast<float>(keyframes.size());
+        for (auto i = 0; i < keyframes.size(); i++) {
+            auto &keyframe = keyframes.at(i);
+            for (int v = 0; v < keyframe.duration; v++) {
+                frames.emplace_back(keyframes.begin() + i);
+            }
+        }
     }
 
-    TextureBuffer &SpriteAnimation::getFrame(float deltaTime) {
+    SpriteAnimation::SpriteAnimation(std::vector<SpriteKeyframe> inputFrames,
+                                     int animationFps,
+                                     bool loop,
+                                     bool clampDelta)
+            : keyframes(std::move(inputFrames)),
+              clampDelta(clampDelta),
+              loop(loop) {
+        int totalFrames = 0;
+        for (auto &v: keyframes)
+            totalFrames += v.duration;
+        animationDuration = (1.0f / numeric_cast<float>(animationFps)) * numeric_cast<float>(totalFrames);
+        frameTime = animationDuration / numeric_cast<float>(keyframes.size());
+        for (auto i = 0; i < keyframes.size(); i++) {
+            auto &keyframe = keyframes.at(i);
+            for (int v = 0; v < keyframe.duration; v++) {
+                frames.emplace_back(keyframes.begin() + i);
+            }
+        }
+    }
+
+    const ResourceHandle<Sprite> &SpriteAnimation::getFrame(float deltaTime) {
+        if (frames.empty())
+            throw std::runtime_error("Animation not initialized");
+
         if (!loop || currentTime < animationDuration) {
             if (clampDelta) {
                 if (deltaTime > frameTime) {
@@ -57,9 +86,7 @@ namespace xng {
         }
 
         auto frame = numeric_cast<size_t>(currentTime / frameTime);
-
         assert(frame < frames.size());
-
-        return frames.at(frame);
+        return frames.at(frame)->sprite;
     }
 }
