@@ -50,7 +50,23 @@ namespace xng {
         }
     }
 
-   const  EntityContainer &ECS::getEntityContainer() const {
+    Entity ECS::createEntity() {
+        return Entity(entityContainer.create(), entityContainer);
+    }
+
+    Entity ECS::createEntity(const std::string &name) {
+        return Entity(entityContainer.create(name), entityContainer);
+    }
+
+    void ECS::destroyEntity(const Entity &entity) {
+        entityContainer.destroy(entity.getHandle());
+    }
+
+    Entity ECS::getEntity(const std::string &name) {
+        return Entity(entityContainer.getByName(name), entityContainer);
+    }
+
+    const EntityContainer &ECS::getEntityContainer() const {
         return entityContainer;
     }
 

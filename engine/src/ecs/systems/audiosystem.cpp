@@ -34,15 +34,15 @@ namespace xng {
     }
 
     void AudioSystem::start(EntityContainer &entityManager) {
-        entityManager.getComponentManager().getPool<AudioSourceComponent>().addListener(this);
+        entityManager.getComponentContainer().getPool<AudioSourceComponent>().addListener(this);
     }
 
     void AudioSystem::stop(EntityContainer &entityManager) {
-        entityManager.getComponentManager().getPool<AudioSourceComponent>().removeListener(this);
+        entityManager.getComponentContainer().getPool<AudioSourceComponent>().removeListener(this);
     }
 
     void AudioSystem::update(float deltaTime, EntityContainer &entityManager) {
-        auto &componentManager = entityManager.getComponentManager();
+        auto &componentManager = entityManager.getComponentContainer();
 
         for (auto &pair: componentManager.getPool<AudioListenerComponent>()) {
             auto &transform = componentManager.lookup<TransformComponent>(pair.first);
@@ -74,7 +74,7 @@ namespace xng {
         }
     }
 
-    void AudioSystem::onComponentCreate(const Entity &entity, const AudioSourceComponent &component) {
+    void AudioSystem::onComponentCreate(const EntityHandle &entity, const AudioSourceComponent &component) {
         if (component.audio) {
             auto& buffer = component.audio.get();
             buffers[entity] = context->createBuffer();
@@ -87,12 +87,12 @@ namespace xng {
         }
     }
 
-    void AudioSystem::onComponentDestroy(const Entity &entity, const AudioSourceComponent &component) {
+    void AudioSystem::onComponentDestroy(const EntityHandle &entity, const AudioSourceComponent &component) {
         sources.erase(entity);
         buffers.erase(entity);
     }
 
-    void AudioSystem::onComponentUpdate(const Entity &entity,
+    void AudioSystem::onComponentUpdate(const EntityHandle &entity,
                                         const AudioSourceComponent &oldValue,
                                         const AudioSourceComponent &newValue) {
         if (oldValue != newValue) {

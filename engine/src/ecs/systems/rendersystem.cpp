@@ -33,17 +33,17 @@ namespace xng {
     RenderSystem::~RenderSystem() = default;
 
     void RenderSystem::start(EntityContainer &entityManager) {
-        entityManager.getComponentManager().getPool<MeshRenderComponent>().addListener(this);
-        entityManager.getComponentManager().getPool<SkyboxComponent>().addListener(this);
+        entityManager.getComponentContainer().getPool<MeshRenderComponent>().addListener(this);
+        entityManager.getComponentContainer().getPool<SkyboxComponent>().addListener(this);
     }
 
     void RenderSystem::stop(EntityContainer &entityManager) {
-        entityManager.getComponentManager().getPool<MeshRenderComponent>().removeListener(this);
-        entityManager.getComponentManager().getPool<SkyboxComponent>().removeListener(this);
+        entityManager.getComponentContainer().getPool<MeshRenderComponent>().removeListener(this);
+        entityManager.getComponentContainer().getPool<SkyboxComponent>().removeListener(this);
     }
 
     void RenderSystem::update(float deltaTime, EntityContainer &entityManager) {
-        auto &componentManager = entityManager.getComponentManager();
+        auto &componentManager = entityManager.getComponentContainer();
 
         scene = {};
 
@@ -122,19 +122,19 @@ namespace xng {
         return scene;
     }
 
-    void RenderSystem::onComponentCreate(const Entity &entity, const MeshRenderComponent &component) {}
+    void RenderSystem::onComponentCreate(const EntityHandle &entity, const MeshRenderComponent &component) {}
 
-    void RenderSystem::onComponentDestroy(const Entity &entity, const MeshRenderComponent &component) {}
+    void RenderSystem::onComponentDestroy(const EntityHandle &entity, const MeshRenderComponent &component) {}
 
-    void RenderSystem::onComponentCreate(const Entity &entity, const SkyboxComponent &component) {}
+    void RenderSystem::onComponentCreate(const EntityHandle &entity, const SkyboxComponent &component) {}
 
-    void RenderSystem::onComponentDestroy(const Entity &entity, const SkyboxComponent &component) {}
+    void RenderSystem::onComponentDestroy(const EntityHandle &entity, const SkyboxComponent &component) {}
 
-    void RenderSystem::onComponentUpdate(const Entity &entity,
+    void RenderSystem::onComponentUpdate(const EntityHandle &entity,
                                          const MeshRenderComponent &oldValue,
                                          const MeshRenderComponent &newValue) {}
 
-    void RenderSystem::onComponentUpdate(const Entity &entity,
+    void RenderSystem::onComponentUpdate(const EntityHandle &entity,
                                          const SkyboxComponent &oldValue,
                                          const SkyboxComponent &newValue) {}
 }

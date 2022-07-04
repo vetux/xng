@@ -24,6 +24,7 @@
 #include <memory>
 
 #include "ecs/system.hpp"
+#include "ecs/entity.hpp"
 
 namespace xng {
     class XENGINE_EXPORT ECS {
@@ -41,6 +42,14 @@ namespace xng {
         void update(float deltaTime);
 
         void stop();
+
+        Entity createEntity();
+
+        Entity createEntity(const std::string &name);
+
+        void destroyEntity(const Entity &entity);
+
+        Entity getEntity(const std::string &name);
 
         const EntityContainer &getEntityContainer() const;
 

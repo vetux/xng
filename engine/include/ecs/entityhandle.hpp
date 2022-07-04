@@ -17,16 +17,18 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ecs/components/transformcomponent.hpp"
+#ifndef XENGINE_ENTITYHANDLE_HPP
+#define XENGINE_ENTITYHANDLE_HPP
 
 namespace xng {
-    Transform TransformComponent::walkHierarchy(const TransformComponent &component, EntityContainer &entityManager) {
-        Transform ret = component.transform;
-        if (!component.parent.empty()) {
-            auto &c = entityManager.getComponentContainer();
-            ret += walkHierarchy(c.lookup<TransformComponent>(entityManager.getByName(component.parent)),
-                                 entityManager);
+    struct XENGINE_EXPORT EntityHandle {
+        int id;
+
+        explicit EntityHandle(int id) : id(id) {}
+
+        bool operator<(const EntityHandle &other) const {
+            return id < other.id;
         }
-        return ret;
-    }
+    };
 }
+#endif //XENGINE_ENTITYHANDLE_HPP

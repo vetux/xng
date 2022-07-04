@@ -48,38 +48,52 @@ namespace xng {
          * @param entity
          * @param name
          */
-        void setName(const Entity &entity, const std::string &name) {
+        void setName(const EntityHandle &entity, const std::string &name) {
             if (entityNames.find(name) != entityNames.end())
                 throw std::runtime_error("Entity with name " + name + " already exists");
-            entityNames[name] = entity;
+            entityNames.insert(std::make_pair(name, entity));
             entityNamesReverse[entity] = name;
         }
 
-        const std::string &getName(const Entity &entity) {
+        void clearName(const EntityHandle &entity) {
+            if (entityNamesReverse.find(entity) == entityNamesReverse.end())
+                throw std::runtime_error("Entity does not have a name mapping");
+            auto name = entityNamesReverse.at(entity);
+            entityNames.erase(name);
+            entityNamesReverse.erase(entity);
+        }
+
+        const std::string &getName(const EntityHandle &entity) const {
             return entityNamesReverse.at(entity);
         }
 
-        Entity getByName(const std::string &name) {
+        EntityHandle getByName(const std::string &name) const {
             return entityNames.at(name);
         }
 
-        Entity create() {
+        EntityHandle create() {
             if (idStore.empty()) {
                 if (idCounter == std::numeric_limits<int>::max())
                     throw std::runtime_error("Cannot create entity, id overflow");
-                auto ret = Entity(idCounter++);
+                auto ret = EntityHandle(idCounter++);
                 entities.insert(ret);
                 return ret;
             } else {
                 auto it = idStore.begin();
-                Entity ret(*it);
+                EntityHandle ret(*it);
                 idStore.erase(it);
                 entities.insert(ret);
                 return ret;
             }
         }
 
-        void destroy(const Entity &entity) {
+        EntityHandle create(const std::string &name){
+            auto ret = create();
+            setName(ret, name);
+            return ret;
+        }
+
+        void destroy(const EntityHandle &entity) {
             components.destroy(entity);
             idStore.insert(entity.id);
             entities.erase(entity);
@@ -96,15 +110,15 @@ namespace xng {
             entityNamesReverse.clear();
         }
 
-        const std::set<Entity> &getEntities() const {
+        const std::set<EntityHandle> &getEntities() const {
             return entities;
         }
 
-        ComponentContainer &getComponentManager() {
+        ComponentContainer &getComponentContainer() {
             return components;
         }
 
-        const ComponentContainer &getComponentManager() const {
+        const ComponentContainer &getComponentContainer() const {
             return components;
         }
 
@@ -112,10 +126,10 @@ namespace xng {
         std::set<int> idStore;
         int idCounter = 0;
 
-        std::map<std::string, Entity> entityNames;
-        std::map<Entity, std::string> entityNamesReverse;
+        std::map<std::string, EntityHandle> entityNames;
+        std::map<EntityHandle, std::string> entityNamesReverse;
 
-        std::set<Entity> entities;
+        std::set<EntityHandle> entities;
         ComponentContainer components;
     };
 }

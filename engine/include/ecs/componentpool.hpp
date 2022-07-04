@@ -24,7 +24,7 @@
 #include <stdexcept>
 #include <set>
 
-#include "ecs/entity.hpp"
+#include "ecs/entityhandle.hpp"
 
 namespace xng {
     class XENGINE_EXPORT ComponentPoolBase {
@@ -35,7 +35,7 @@ namespace xng {
 
         virtual void clear() = 0;
 
-        virtual void destroy(const Entity &entity) = 0;
+        virtual void destroy(const EntityHandle &entity) = 0;
     };
 
     template<typename T>
@@ -43,11 +43,11 @@ namespace xng {
     public:
         class XENGINE_EXPORT Listener {
         public:
-            virtual void onComponentCreate(const Entity &entity, const T &component) = 0;
+            virtual void onComponentCreate(const EntityHandle &entity, const T &component) = 0;
 
-            virtual void onComponentDestroy(const Entity &entity, const T &component) = 0;
+            virtual void onComponentDestroy(const EntityHandle &entity, const T &component) = 0;
 
-            virtual void onComponentUpdate(const Entity &entity, const T &oldValue, const T &newValue) = 0;
+            virtual void onComponentUpdate(const EntityHandle &entity, const T &oldValue, const T &newValue) = 0;
         };
 
         ComponentPool() = default;
@@ -72,7 +72,7 @@ namespace xng {
             components.clear();
         }
 
-        void destroy(const Entity &entity) override {
+        void destroy(const EntityHandle &entity) override {
             if (components.find(entity) != components.end()) {
                 for (auto &listener: listeners) {
                     listener->onComponentDestroy(entity, components.at(entity));
@@ -81,15 +81,15 @@ namespace xng {
             }
         }
 
-        typename std::map<Entity, T>::iterator begin() {
+        typename std::map<EntityHandle, T>::iterator begin() {
             return components.begin();
         }
 
-        typename std::map<Entity, T>::iterator end() {
+        typename std::map<EntityHandle, T>::iterator end() {
             return components.end();
         }
 
-        const T &create(const Entity &entity, const T &value = {}) {
+        const T &create(const EntityHandle &entity, const T &value = {}) {
             if (components.find(entity) != components.end())
                 throw std::runtime_error("Entity "
                                          + std::to_string(entity.id)
@@ -103,7 +103,7 @@ namespace xng {
             return comp;
         }
 
-        const T &lookup(const Entity &entity) const {
+        const T &lookup(const EntityHandle &entity) const {
             return components.at(entity);
         }
 
@@ -116,7 +116,7 @@ namespace xng {
          * @param value
          * @return True if the component was not present and was created, otherwise false
          */
-        bool update(const Entity &entity, const T &value = {}) {
+        bool update(const EntityHandle &entity, const T &value = {}) {
             auto it = components.find(entity);
             if (it == components.end()) {
                 create(entity, value);
@@ -132,7 +132,7 @@ namespace xng {
             }
         }
 
-        bool check(const Entity &entity) const {
+        bool check(const EntityHandle &entity) const {
             return components.find(entity) != components.end();
         }
 
@@ -146,7 +146,7 @@ namespace xng {
 
     private:
         std::set<Listener *> listeners;
-        std::map<Entity, T> components;
+        std::map<EntityHandle, T> components;
     };
 }
 

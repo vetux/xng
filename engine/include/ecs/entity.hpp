@@ -20,19 +20,92 @@
 #ifndef XENGINE_ENTITY_HPP
 #define XENGINE_ENTITY_HPP
 
+#include "ecs/entityhandle.hpp"
+#include "ecs/entitycontainer.hpp"
+#include "ecs/componentcontainer.hpp"
+
 namespace xng {
-    struct XENGINE_EXPORT Entity {
-        static const int INVALID_ID = -1;
+    /**
+     * Convenience wrapper around the container classes
+     */
+    class Entity {
+    public:
+        Entity() = default;
 
-        int id;
+        Entity(EntityHandle handle,
+               EntityContainer &entityContainer)
+                : handle(handle),
+                  entityContainer(&entityContainer) {}
 
-        Entity() : id(INVALID_ID) {}
-
-        explicit Entity(int id) : id(id) {}
-
-        bool operator<(const Entity &other) const {
-            return id < other.id;
+        void setName(const std::string &name) {
+            checkPointer();
+            entityContainer->setName(handle, name);
         }
+
+        void clearName() {
+            checkPointer();
+            entityContainer->clearName(handle);
+        }
+
+        const std::string &getName() {
+            checkPointer();
+            return entityContainer->getName(handle);
+        }
+
+        template<typename T>
+        const T &createComponent(const T &value = {}) {
+            checkPointer();
+            return entityContainer->getComponentContainer().create<T>(handle, value);
+        }
+
+        template<typename T>
+        void destroyComponent() {
+            checkPointer();
+            return entityContainer->getComponentContainer().destroy(handle);
+        }
+
+        template<typename T>
+        const T &getComponent() {
+            checkPointer();
+            return entityContainer->getComponentContainer().lookup<T>(handle);
+        }
+
+        template<typename T>
+        bool updateComponent(const T &value = {}) {
+            checkPointer();
+            return entityContainer->getComponentContainer().update<T>(handle, value);
+        }
+
+        template<typename T>
+        bool checkComponent(const T &value = {}) {
+            checkPointer();
+            return entityContainer->getComponentContainer().check<T>(value);
+        }
+
+        const EntityHandle &getHandle() const {
+            checkPointer();
+            return handle;
+        }
+
+        EntityContainer &getEntityContainer() {
+            checkPointer();
+            return *entityContainer;
+        }
+
+        const EntityContainer &getEntityContainer() const {
+            checkPointer();
+            return *entityContainer;
+        }
+
+    private:
+        void checkPointer() const {
+            if (entityContainer == nullptr)
+                throw std::runtime_error("Entity not initialized.");
+        }
+
+        EntityHandle handle = EntityHandle(0);
+        EntityContainer *entityContainer = nullptr;
     };
 }
+
 #endif //XENGINE_ENTITY_HPP

@@ -24,7 +24,7 @@
 #include <vector>
 #include <typeindex>
 
-#include "ecs/entity.hpp"
+#include "ecs/entityhandle.hpp"
 
 #include "ecs/componentpool.hpp"
 
@@ -76,36 +76,36 @@ namespace xng {
         }
 
         template<typename T>
-        typename std::map<Entity, T>::iterator begin() {
+        typename std::map<EntityHandle, T>::iterator begin() {
             return getPool<T>().begin();
         }
 
         template<typename T>
-        typename std::map<Entity, T>::iterator begin() const {
+        typename std::map<EntityHandle, T>::iterator begin() const {
             return getPool<T>().begin();
         }
 
         template<typename T>
-        typename std::map<Entity, T>::iterator end() {
+        typename std::map<EntityHandle, T>::iterator end() {
             return getPool<T>().end();
         }
 
         template<typename T>
-        typename std::map<Entity, T>::iterator end() const {
+        typename std::map<EntityHandle, T>::iterator end() const {
             return getPool<T>().end();
         }
 
         template<typename T>
-        const T &create(const Entity &entity, const T &value = {}) {
+        const T &create(const EntityHandle &entity, const T &value = {}) {
             return getPool<T>().create(entity, value);
         }
 
         template<typename T>
-        void destroy(const Entity &entity) {
+        void destroy(const EntityHandle &entity) {
             getPool<T>()->destroy(entity);
         }
 
-        void destroy(const Entity &entity) {
+        void destroy(const EntityHandle &entity) {
             for (auto &p: pools) {
                 p.second->destroy(entity);
             }
@@ -118,17 +118,17 @@ namespace xng {
         }
 
         template<typename T>
-        const T &lookup(const Entity &entity) const {
+        const T &lookup(const EntityHandle &entity) const {
             return getPool<T>().lookup(entity);
         }
 
         template<typename T>
-        bool update(const Entity &entity, const T &value) {
+        bool update(const EntityHandle &entity, const T &value) {
             return getPool<T>().update(entity, value);
         }
 
         template<typename T>
-        bool check(const Entity &entity) const {
+        bool check(const EntityHandle &entity) const {
             return getPool<T>().check(entity);
         }
 

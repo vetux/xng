@@ -22,6 +22,7 @@
 
 #include "script/script.hpp"
 #include "ecs/entitycontainer.hpp"
+#include "ecs/entityhandle.hpp"
 #include "ecs/components.hpp"
 #include "ecs/entity.hpp"
 #include "ecs/componentcontainer.hpp"

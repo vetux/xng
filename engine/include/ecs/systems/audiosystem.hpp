@@ -44,11 +44,11 @@ namespace xng {
         void update(float deltaTime, EntityContainer &entityManager) override;
 
     private:
-        void onComponentCreate(const Entity &entity, const AudioSourceComponent &component) override;
+        void onComponentCreate(const EntityHandle &entity, const AudioSourceComponent &component) override;
 
-        void onComponentDestroy(const Entity &entity, const AudioSourceComponent &component) override;
+        void onComponentDestroy(const EntityHandle &entity, const AudioSourceComponent &component) override;
 
-        void onComponentUpdate(const Entity &entity, const AudioSourceComponent &oldValue,
+        void onComponentUpdate(const EntityHandle &entity, const AudioSourceComponent &oldValue,
                                const AudioSourceComponent &newValue) override;
 
     private:
@@ -57,8 +57,8 @@ namespace xng {
 
         std::unique_ptr<AudioContext> context;
 
-        std::map<Entity, std::unique_ptr<AudioSource>> sources;
-        std::map<Entity, std::unique_ptr<AudioBuffer>> buffers;
+        std::map<EntityHandle, std::unique_ptr<AudioSource>> sources;
+        std::map<EntityHandle, std::unique_ptr<AudioBuffer>> buffers;
     };
 }
 
