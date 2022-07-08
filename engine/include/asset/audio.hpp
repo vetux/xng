@@ -29,8 +29,8 @@ namespace xng {
     public:
         ~Audio() override = default;
 
-        Resource *clone() override {
-            return new Audio(*this);
+        std::unique_ptr<Resource> clone() override {
+            return std::make_unique<Audio>(*this);
         }
 
         std::type_index getTypeIndex() override {

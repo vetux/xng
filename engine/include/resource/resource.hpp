@@ -21,6 +21,7 @@
 #define XENGINE_RESOURCE_HPP
 
 #include <typeindex>
+#include <memory>
 
 namespace xng {
     class XENGINE_EXPORT Resource {
@@ -29,7 +30,7 @@ namespace xng {
 
         virtual ~Resource() = default;
 
-        virtual Resource *clone() = 0;
+        virtual std::unique_ptr<Resource> clone() = 0;
 
         virtual std::type_index getTypeIndex() = 0;
     };

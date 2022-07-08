@@ -29,8 +29,8 @@ namespace xng {
     struct XENGINE_EXPORT Material : public Resource {
         ~Material() override = default;
 
-        Resource *clone() override {
-            return new Material(*this);
+        std::unique_ptr<Resource> clone() override {
+            return std::make_unique<Material>(*this);
         }
 
         std::type_index getTypeIndex() override {

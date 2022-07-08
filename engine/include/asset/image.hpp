@@ -38,8 +38,8 @@ namespace xng {
     template<typename T>
     class XENGINE_EXPORT Image : public Resource {
     public:
-        Resource *clone() override {
-            return new Image<T>(*this);
+        std::unique_ptr<Resource> clone() override {
+            return std::make_unique<Image<T>>(*this);
         }
 
         std::type_index getTypeIndex() override {

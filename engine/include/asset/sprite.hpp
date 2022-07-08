@@ -40,8 +40,8 @@ namespace xng {
 
         ~Sprite() override = default;
 
-        Resource *clone() override {
-            return new Sprite(*this);
+        std::unique_ptr<Resource> clone() override {
+            return std::make_unique<Sprite>(*this);
         }
 
         std::type_index getTypeIndex() override {

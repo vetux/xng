@@ -42,7 +42,7 @@ namespace xng {
 
         ResourceBundle &operator=(const ResourceBundle &other) {
             for (auto &pair: other.assets) {
-                assets[pair.first] = std::unique_ptr<Resource>(pair.second->clone());
+                assets[pair.first] = pair.second->clone();
             }
 
             return *this;

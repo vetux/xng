@@ -32,8 +32,8 @@ namespace xng {
     struct XENGINE_EXPORT Skybox : public Resource {
         ~Skybox() override = default;
 
-        Resource *clone() override {
-            return new Skybox(*this);
+        std::unique_ptr<Resource> clone() override {
+            return std::make_unique<Skybox>(*this);
         }
 
         std::type_index getTypeIndex() override {

@@ -28,8 +28,8 @@ namespace xng {
     struct XENGINE_EXPORT Texture : public Resource {
         ~Texture() override = default;
 
-        Resource *clone() override {
-            return new Texture(*this);
+        std::unique_ptr<Resource> clone() override {
+            return std::make_unique<Texture>(*this);
         }
 
         std::type_index getTypeIndex() override {

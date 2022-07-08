@@ -28,8 +28,8 @@ namespace xng {
     struct XENGINE_EXPORT Shader : public Resource {
         ~Shader() override = default;
 
-        Resource *clone() override {
-            return new Shader(*this);
+        std::unique_ptr<Resource> clone() override {
+            return std::make_unique<Shader>(*this);
         }
 
         std::type_index getTypeIndex() override {

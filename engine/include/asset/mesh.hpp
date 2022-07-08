@@ -42,8 +42,8 @@ namespace xng {
 
         ~Mesh() override = default;
 
-        Resource *clone() override {
-            return new Mesh(*this);
+        std::unique_ptr<Resource> clone() override {
+            return std::make_unique<Mesh>(*this);
         }
 
 
