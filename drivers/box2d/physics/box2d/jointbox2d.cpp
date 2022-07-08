@@ -17,6 +17,6 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "jointbox2d.hpp"
+#include "physics/box2d/jointbox2d.hpp"
 
 namespace xng {}

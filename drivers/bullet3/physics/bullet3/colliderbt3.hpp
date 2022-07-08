@@ -20,18 +20,11 @@
 #ifndef XENGINE_COLLIDERBT3_HPP
 #define XENGINE_COLLIDERBT3_HPP
 
-#include "physics/3d/collider3d.hpp"
+#include "physics/collider.hpp"
 
 namespace xng {
-    class ColliderBt3 : Collider3D {
+    class ColliderBt3 : Collider {
     public:
-        void setShape(const std::vector<Vec3f> &vertices) override;
-
-        void setShape(const std::vector<Vec3f> &vertices, const std::vector<std::size_t> &indices) override;
-
-        void setDensity(float density) override;
-
-        float getDensity() override;
     };
 }
 

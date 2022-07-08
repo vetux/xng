@@ -17,30 +17,21 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_WORLDBT3_HPP
-#define XENGINE_WORLDBT3_HPP
+#include "physics/bullet3/physicsdriverbt3.hpp"
+#include "physics/bullet3/worldbt3.hpp"
 
+#include "driver/drivermacro.hpp"
 
-#include "physics/world.hpp"
+#warning "Not Implemented"
 
 namespace xng {
-    class WorldBt3 : public World {
-    public:
-        std::unique_ptr<Collider> createCollider(const ColliderShape &shape) override;
+    static bool driverRegistered = REGISTER_DRIVER("bullet3", PhysicsDriverBt3);
 
-        std::unique_ptr<RigidBody> createRigidBody() override;
+    std::type_index PhysicsDriverBt3::getType() {
+        return typeid(PhysicsDriverBt3);
+    }
 
-        std::unique_ptr<Joint> createJoint() override;
-
-        void addContactListener(ContactListener &listener) override;
-
-        void removeContactListener(ContactListener &listener) override;
-
-        void setGravity(const Vec3f &gravity) override;
-
-        void step(float deltaTime) override;
-    };
+    std::unique_ptr<World> PhysicsDriverBt3::createWorld() {
+        return std::make_unique<WorldBt3>();
+    }
 }
-
-
-#endif //XENGINE_WORLDBT3_HPP

@@ -20,17 +20,13 @@
 #ifndef XENGINE_RIGIDBODYBOX2D_HPP
 #define XENGINE_RIGIDBODYBOX2D_HPP
 
-#include "physics/2d/rigidbody2d.hpp"
-
-#include "colliderbox2d.hpp"
+#include "physics/rigidbody.hpp"
+#include "physics/box2d/colliderbox2d.hpp"
 
 namespace xng {
-    class WorldBox2D;
-
-    class RigidBodyBox2D : public RigidBody2D {
+    class RigidBodyBox2D : public RigidBody {
     public:
         b2Body *body{};
-        std::set<ColliderBox2D *> colliders;
 
         RigidBodyBox2D() = default;
 
@@ -42,27 +38,23 @@ namespace xng {
 
         RigidBodyType getRigidBodyType() override;
 
-        void setPosition(const Vec2f &position) override;
+        void setPosition(const Vec3f &position) override;
 
-        Vec2f getPosition() override;
+        Vec3f getPosition() override;
 
-        void setVelocity(const Vec2f &velocity) override;
+        void setVelocity(const Vec3f &velocity) override;
 
-        Vec2f getVelocity() override;
+        Vec3f getVelocity() override;
 
-        void setRotation(float rotation) override;
+        void setRotation(const Vec3f &rotation) override;
 
-        float getRotation() override;
+        Vec3f getRotation() override;
 
-        void setAngularVelocity(float angularVelocity) override;
+        void setAngularVelocity(const Vec3f &angularVelocity) override;
 
-        float getAngularVelocity() override;
+        Vec3f getAngularVelocity() override;
 
-        Collider2D *createCollider() override;
-
-        void destroyCollider(Collider2D *collider) override;
-
-        std::set<Collider2D *> getColliders() override;
+        void setColliders(std::vector<std::reference_wrapper<Collider>> colliders) override;
     };
 }
 

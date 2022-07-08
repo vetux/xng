@@ -22,10 +22,10 @@
 
 #include <Box2D/Dynamics/b2Body.h>
 
-#include "physics/2d/joint2d.hpp"
+#include "physics/joint.hpp"
 
 namespace xng {
-    class JointBox2D : public Joint2D {
+    class JointBox2D : public Joint {
     public:
         b2Joint *joint;
 

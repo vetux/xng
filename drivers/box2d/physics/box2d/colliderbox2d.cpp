@@ -31,26 +31,4 @@ namespace xng {
     ColliderBox2D::~ColliderBox2D() {
         fixture->GetBody()->DestroyFixture(fixture);
     }
-
-    void ColliderBox2D::setShape(const std::vector<Vec2f> &vertices) {
-        auto *body = fixture->GetBody();
-        body->DestroyFixture(fixture);
-
-        auto shape = convert(vertices);
-        b2FixtureDef def;
-        def.shape = &shape;
-        fixture = body->CreateFixture(&def);
-    }
-
-    void ColliderBox2D::setShape(const std::vector<Vec2f> &vertices, const std::vector<std::size_t> &indices) {
-        throw std::runtime_error("Indexed shapes not supported");
-    }
-
-    void ColliderBox2D::setDensity(float density) {
-        fixture->SetDensity(density);
-    }
-
-    float ColliderBox2D::getDensity() {
-        return fixture->GetDensity();
-    }
 }

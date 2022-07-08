@@ -24,79 +24,36 @@
 #include "driver/drivermanager.hpp"
 
 namespace xng {
-    static bool driverRegistered = REGISTER_DRIVER("box2d", WorldBox2D);
-
     WorldBox2D::WorldBox2D()
             : world(b2Vec2(0.0f, -1.0f)) {}
 
-    WorldBox2D::~WorldBox2D() {
-        for (auto *p : bodies) {
-            delete p;
-        }
-        for (auto *p : joints) {
-            delete p;
-        }
+    WorldBox2D::~WorldBox2D() {}
+
+    std::unique_ptr<Collider> WorldBox2D::createCollider(const ColliderShape &shape) {
+        return std::unique_ptr<Collider>();
     }
 
-    RigidBody2D *WorldBox2D::createRigidBody() {
-        auto *ret = new RigidBodyBox2D(world);
-        bodies.insert(ret);
-        return ret;
+    std::unique_ptr<RigidBody> WorldBox2D::createRigidBody() {
+        return std::unique_ptr<RigidBody>();
     }
 
-    void WorldBox2D::destroyRigidBody(RigidBody2D *body) {
-        auto it = bodies.find(dynamic_cast<RigidBodyBox2D *>(body));
-        if (it != bodies.end()) {
-            delete *it;
-            bodies.erase(it);
-        }
+    std::unique_ptr<Joint> WorldBox2D::createJoint() {
+        return std::unique_ptr<Joint>();
     }
 
-    std::set<RigidBody2D *> WorldBox2D::getRigidBodies() {
-        std::set<RigidBody2D *> ret;
-        for (auto *ptr : bodies)
-            ret.insert(dynamic_cast<RigidBody2D *>(ptr));
-        return ret;
+    void WorldBox2D::addContactListener(World::ContactListener &listener) {
+
     }
 
-    Joint2D *WorldBox2D::createJoint() {
-        auto *ret = new JointBox2D();
-        joints.insert(ret);
-        return ret;
+    void WorldBox2D::removeContactListener(World::ContactListener &listener) {
+
     }
 
-    void WorldBox2D::destroyJoint(Joint2D *joint) {
-        auto it = joints.find(dynamic_cast<JointBox2D *>(joint));
-        if (it != joints.end()) {
-            delete *it;
-            joints.erase(it);
-        }
-    }
-
-    std::set<Joint2D *> WorldBox2D::getJoints() {
-        std::set<Joint2D *> ret;
-        for (auto *ptr : joints)
-            ret.insert(dynamic_cast<Joint2D *>(ptr));
-        return ret;
-    }
-
-    void WorldBox2D::addContactListener(ContactListener *listener) {
-        throw std::runtime_error("Not implemented");
-    }
-
-    void WorldBox2D::removeContactListener(ContactListener *listener) {
-        throw std::runtime_error("Not implemented");
-    }
-
-    void WorldBox2D::setGravity(const Vec2f &gravity) {
+    void WorldBox2D::setGravity(const Vec3f &gravity) {
         world.SetGravity(convert(gravity));
     }
 
     void WorldBox2D::step(float deltaTime) {
         world.Step(deltaTime, 10, 10);
-    }
-
-    std::type_index WorldBox2D::getType() {
-        return typeid(WorldBox2D);
     }
 }

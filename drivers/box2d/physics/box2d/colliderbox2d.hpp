@@ -20,26 +20,18 @@
 #ifndef XENGINE_COLLIDERBOX2D_HPP
 #define XENGINE_COLLIDERBOX2D_HPP
 
-#include "box2d.hpp"
+#include "physics/box2d/box2d.hpp"
 
-#include "physics/2d/collider2d.hpp"
+#include "physics/collider.hpp"
 
 namespace xng {
-    class ColliderBox2D : public Collider2D {
+    class ColliderBox2D : public Collider {
     public:
         b2Fixture *fixture;
 
         explicit ColliderBox2D(b2Body &body);
 
         ~ColliderBox2D() override;
-
-        void setShape(const std::vector<Vec2f> &vertices) override;
-
-        void setShape(const std::vector<Vec2f> &vertices, const std::vector<std::size_t> &indices) override;
-
-        void setDensity(float density) override;
-
-        float getDensity() override;
     };
 }
 

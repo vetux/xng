@@ -20,11 +20,11 @@
 #include "rigidbodybt3.hpp"
 
 namespace xng {
-    void RigidBodyBt3::setRigidBodyType(RigidBody3D::RigidBodyType type) {
+    void RigidBodyBt3::setRigidBodyType(RigidBody::RigidBodyType type) {
 
     }
 
-    RigidBody3D::RigidBodyType RigidBodyBt3::getRigidBodyType() {
+    RigidBody::RigidBodyType RigidBodyBt3::getRigidBodyType() {
         return DYNAMIC;
     }
 
@@ -60,15 +60,7 @@ namespace xng {
         return Vec3f();
     }
 
-    Collider3D *RigidBodyBt3::createCollider() {
-        return nullptr;
-    }
+    void RigidBodyBt3::setColliders(std::vector<std::reference_wrapper<Collider>> colliders) {
 
-    void RigidBodyBt3::destroyCollider(Collider3D *collider) {
-
-    }
-
-    std::set<Collider3D *> RigidBodyBt3::getColliders() {
-        return std::set<Collider3D *>();
     }
 }

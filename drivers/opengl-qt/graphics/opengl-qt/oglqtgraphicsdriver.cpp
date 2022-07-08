@@ -23,7 +23,7 @@
 
 #include "graphics/opengl/oglrenderdevice.hpp"
 
-#include "driver/drivermanager.hpp"
+#include "driver/drivermacro.hpp"
 
 namespace xng {
     static bool dr = REGISTER_DRIVER("opengl-qt", OGLQtGraphicsDriver);

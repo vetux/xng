@@ -17,42 +17,42 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "commonbox2d.hpp"
+#include "physics/box2d/commonbox2d.hpp"
 
 namespace xng {
-    Vec2f convert(const b2Vec2 &vec) {
+    Vec3f convert(const b2Vec2 &vec) {
+        return {vec.x, vec.y, 0};
+    }
+
+    b2Vec2 convert(const Vec3f &vec) {
         return {vec.x, vec.y};
     }
 
-    b2Vec2 convert(const Vec2f &vec) {
-        return {vec.x, vec.y};
-    }
-
-    RigidBody2D::RigidBodyType convert(b2BodyType type) {
+    RigidBody::RigidBodyType convert(b2BodyType type) {
         switch (type) {
             case b2_staticBody:
-                return RigidBody2D::STATIC;
+                return RigidBody::STATIC;
             case b2_kinematicBody:
-                return RigidBody2D::KINEMATIC;
+                return RigidBody::KINEMATIC;
             case b2_dynamicBody:
-                return RigidBody2D::DYNAMIC;
+                return RigidBody::DYNAMIC;
         }
         throw std::runtime_error("");
     }
 
-    b2BodyType convert(RigidBody2D::RigidBodyType type) {
+    b2BodyType convert(RigidBody::RigidBodyType type) {
         switch (type) {
-            case RigidBody2D::STATIC:
+            case RigidBody::STATIC:
                 return b2_staticBody;
-            case RigidBody2D::KINEMATIC:
+            case RigidBody::KINEMATIC:
                 return b2_kinematicBody;
-            case RigidBody2D::DYNAMIC:
+            case RigidBody::DYNAMIC:
                 return b2_dynamicBody;
         }
         throw std::runtime_error("");
     }
 
-    b2PolygonShape convert(const std::vector<Vec2f> &points) {
+    b2PolygonShape convert(const std::vector<Vec3f> &points) {
         b2Vec2 bPoints[points.size()];
         for (int i = 0; i < points.size(); i++)
             bPoints[i] = convert(points.at(i));

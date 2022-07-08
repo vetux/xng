@@ -18,11 +18,10 @@
  */
 
 #include "display/glfw/glfwdisplaydriver.hpp"
-
 #include "display/glfw/opengl/windowglfwgl.hpp"
 #include "display/glfw/monitorglfw.hpp" //Has to come after windowglfw because of glad include collision with glfw (Including glfw and then glad afterwards gives compiler error, the reverse is legal)
 
-#include "driver/drivermanager.hpp"
+#include "driver/drivermacro.hpp"
 
 namespace xng {
     namespace glfw {

@@ -20,10 +20,10 @@
 #ifndef XENGINE_RIGIDBODYBT3_HPP
 #define XENGINE_RIGIDBODYBT3_HPP
 
-#include "physics/3d/rigidbody3d.hpp"
+#include "physics/rigidbody.hpp"
 
 namespace xng {
-    class RigidBodyBt3 : public RigidBody3D {
+    class RigidBodyBt3 : public RigidBody {
     public:
         void setRigidBodyType(RigidBodyType type) override;
 
@@ -45,11 +45,7 @@ namespace xng {
 
         Vec3f getAngularVelocity() override;
 
-        Collider3D *createCollider() override;
-
-        void destroyCollider(Collider3D *collider) override;
-
-        std::set<Collider3D *> getColliders() override;
+        void setColliders(std::vector<std::reference_wrapper<Collider>> colliders) override;
     };
 }
 

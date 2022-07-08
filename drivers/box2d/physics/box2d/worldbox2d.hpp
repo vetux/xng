@@ -22,46 +22,33 @@
 
 #include "box2d.hpp"
 
-#include "physics/2d/world2d.hpp"
+#include "physics/world.hpp"
 
-#include "rigidbodybox2d.hpp"
-#include "jointbox2d.hpp"
-
-#include "driver/driver.hpp"
+#include "physics/box2d/rigidbodybox2d.hpp"
+#include "physics/box2d/jointbox2d.hpp"
 
 namespace xng {
-    class WorldBox2D : public World2D {
+    class WorldBox2D : public World {
     public:
         b2World world;
-
-        std::set<RigidBodyBox2D *> bodies;
-        std::set<JointBox2D *> joints;
 
         WorldBox2D();
 
         ~WorldBox2D() override;
 
-        RigidBody2D *createRigidBody() override;
+        std::unique_ptr<Collider> createCollider(const ColliderShape &shape) override;
 
-        void destroyRigidBody(RigidBody2D *ptr) override;
+        std::unique_ptr<RigidBody> createRigidBody() override;
 
-        std::set<RigidBody2D *> getRigidBodies() override;
+        std::unique_ptr<Joint> createJoint() override;
 
-        Joint2D *createJoint() override;
+        void addContactListener(ContactListener &listener) override;
 
-        void destroyJoint(Joint2D *ptr) override;
+        void removeContactListener(ContactListener &listener) override;
 
-        std::set<Joint2D *> getJoints() override;
-
-        void addContactListener(ContactListener *listener) override;
-
-        void removeContactListener(ContactListener *listener) override;
-
-        void setGravity(const Vec2f &gravity) override;
+        void setGravity(const Vec3f &gravity) override;
 
         void step(float deltaTime) override;
-
-        std::type_index getType() override;
     };
 }
 

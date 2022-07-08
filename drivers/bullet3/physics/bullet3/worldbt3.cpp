@@ -19,40 +19,24 @@
 
 #include "worldbt3.hpp"
 
-#include "driver/drivermanager.hpp"
-
 namespace xng {
-    static bool driverRegistered = REGISTER_DRIVER("bullet3", WorldBt3);
-
-    RigidBody3D *WorldBt3::createRigidBody() {
-        return nullptr;
+    std::unique_ptr<Collider> WorldBt3::createCollider(const ColliderShape &shape) {
+        return std::unique_ptr<Collider>();
     }
 
-    void WorldBt3::destroyRigidBody(RigidBody3D *ptr) {
-
+    std::unique_ptr<RigidBody> WorldBt3::createRigidBody() {
+        return std::unique_ptr<RigidBody>();
     }
 
-    std::set<RigidBody3D *> WorldBt3::getRigidBodies() {
-        return std::set<RigidBody3D *>();
+    std::unique_ptr<Joint> WorldBt3::createJoint() {
+        return std::unique_ptr<Joint>();
     }
 
-    Joint3D *WorldBt3::createJoint() {
-        return nullptr;
-    }
-
-    void WorldBt3::destroyJoint(Joint3D *ptr) {
+    void WorldBt3::addContactListener(World::ContactListener &listener) {
 
     }
 
-    std::set<Joint3D *> WorldBt3::getJoints() {
-        return std::set<Joint3D *>();
-    }
-
-    void WorldBt3::addContactListener(World3D::ContactListener *listener) {
-
-    }
-
-    void WorldBt3::removeContactListener(World3D::ContactListener *listener) {
+    void WorldBt3::removeContactListener(World::ContactListener &listener) {
 
     }
 
@@ -62,9 +46,5 @@ namespace xng {
 
     void WorldBt3::step(float deltaTime) {
 
-    }
-
-    std::type_index WorldBt3::getType() {
-        return typeid(WorldBt3);
     }
 }

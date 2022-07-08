@@ -17,30 +17,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_WORLDBT3_HPP
-#define XENGINE_WORLDBT3_HPP
+#ifndef XENGINE_DRIVERMACRO_HPP
+#define XENGINE_DRIVERMACRO_HPP
 
+#include "driver/drivermanager.hpp"
 
-#include "physics/world.hpp"
+#define REGISTER_DRIVER(NAME, CLASS)   xng::DriverManager::registerDriver(NAME, []() { return static_cast<Driver*>(new CLASS()); })
 
-namespace xng {
-    class WorldBt3 : public World {
-    public:
-        std::unique_ptr<Collider> createCollider(const ColliderShape &shape) override;
-
-        std::unique_ptr<RigidBody> createRigidBody() override;
-
-        std::unique_ptr<Joint> createJoint() override;
-
-        void addContactListener(ContactListener &listener) override;
-
-        void removeContactListener(ContactListener &listener) override;
-
-        void setGravity(const Vec3f &gravity) override;
-
-        void step(float deltaTime) override;
-    };
-}
-
-
-#endif //XENGINE_WORLDBT3_HPP
+#endif //XENGINE_DRIVERMACRO_HPP

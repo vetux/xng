@@ -21,20 +21,21 @@
 #define XENGINE_COMMONBOX2D_HPP
 
 #include <stdexcept>
-#include "box2d.hpp"
 
-#include "physics/2d/rigidbody2d.hpp"
+#include "physics/box2d/box2d.hpp"
+
+#include "physics/rigidbody.hpp"
 
 namespace xng {
-    Vec2f convert(const b2Vec2 &vec);
+    Vec3f convert(const b2Vec2 &vec);
 
-    b2Vec2 convert(const Vec2f &vec);
+    b2Vec2 convert(const Vec3f &vec);
 
-    RigidBody2D::RigidBodyType convert(b2BodyType type);
+    RigidBody::RigidBodyType convert(b2BodyType type);
 
-    b2BodyType convert(RigidBody2D::RigidBodyType type);
+    b2BodyType convert(RigidBody::RigidBodyType type);
 
-    b2PolygonShape convert(const std::vector<Vec2f> &points);
+    b2PolygonShape convert(const std::vector<Vec3f> &points);
 }
 
 #endif //XENGINE_COMMONBOX2D_HPP

@@ -34,60 +34,41 @@ namespace xng {
         body->SetType(convert(type));
     }
 
-    RigidBody2D::RigidBodyType RigidBodyBox2D::getRigidBodyType() {
+    RigidBody::RigidBodyType RigidBodyBox2D::getRigidBodyType() {
         return convert(body->GetType());
     }
 
-    void RigidBodyBox2D::setPosition(const Vec2f &position) {
+    void RigidBodyBox2D::setPosition(const Vec3f &position) {
         body->SetTransform(convert(position), 0);
     }
 
-    Vec2f RigidBodyBox2D::getPosition() {
+    Vec3f RigidBodyBox2D::getPosition() {
         return convert(body->GetPosition());
     }
 
-    void RigidBodyBox2D::setVelocity(const Vec2f &velocity) {
+    void RigidBodyBox2D::setVelocity(const Vec3f &velocity) {
         body->SetLinearVelocity(convert(velocity));
     }
 
-    Vec2f RigidBodyBox2D::getVelocity() {
+    Vec3f RigidBodyBox2D::getVelocity() {
         return convert(body->GetLinearVelocity());
     }
 
-    void RigidBodyBox2D::setRotation(float rotation) {
-        body->SetTransform(body->GetPosition(), rotation);
+    void RigidBodyBox2D::setRotation(const Vec3f &rotation) {
+        body->SetTransform(body->GetPosition(), rotation.z);
     }
 
-    float RigidBodyBox2D::getRotation() {
-        return body->GetAngle();
+    Vec3f RigidBodyBox2D::getRotation() {
+        return {0, 0, body->GetAngle()};
     }
 
-    void RigidBodyBox2D::setAngularVelocity(float angularVelocity) {
-        body->SetAngularVelocity(angularVelocity);
+    void RigidBodyBox2D::setAngularVelocity(const Vec3f &angularVelocity) {
+        body->SetAngularVelocity(angularVelocity.z);
     }
 
-    float RigidBodyBox2D::getAngularVelocity() {
-        return body->GetAngularVelocity();
+    Vec3f RigidBodyBox2D::getAngularVelocity() {
+        return {0, 0, body->GetAngularVelocity()};
     }
 
-    Collider2D *RigidBodyBox2D::createCollider() {
-        auto *ret = new ColliderBox2D(*body);
-        colliders.insert(ret);
-        return ret;
-    }
-
-    void RigidBodyBox2D::destroyCollider(Collider2D *collider) {
-        auto it = colliders.find(dynamic_cast<ColliderBox2D *>(collider));
-        if (it != colliders.end()) {
-            delete *it;
-            colliders.erase(it);
-        }
-    }
-
-    std::set<Collider2D *> RigidBodyBox2D::getColliders() {
-        std::set<Collider2D *> ret;
-        for (auto &collider: colliders)
-            ret.insert(static_cast< Collider2D *>(collider));
-        return ret;
-    }
+    void RigidBodyBox2D::setColliders(std::vector<std::reference_wrapper<Collider>> colliders) {}
 }
