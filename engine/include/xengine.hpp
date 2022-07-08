@@ -20,8 +20,6 @@
 #ifndef XENGINE_ENGINE_HPP
 #define XENGINE_ENGINE_HPP
 
-#include "xengine-export.hpp"
-#include "xengine.hpp"
 #include "script/script.hpp"
 #include "ecs/entitycontainer.hpp"
 #include "ecs/entityhandle.hpp"
@@ -61,8 +59,6 @@
 #include "display/windowattributes.hpp"
 #include "display/videomode.hpp"
 #include "display/window.hpp"
-#include "compat/imguicompat.hpp"
-#include "compat/qtrenderwidget.hpp"
 #include "algo/refcounter.hpp"
 #include "algo/hashcombine.hpp"
 #include "algo/crc.hpp"
