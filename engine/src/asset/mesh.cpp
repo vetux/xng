@@ -83,7 +83,7 @@ namespace xng {
     const xng::Mesh &xng::Mesh::normalizedQuad() {
         if (!nQuadC) {
             nQuadC = true;
-            nQuad = {Mesh::TRI,
+            nQuad = {TRI,
                      {
                              Vertex({-1, 1, 0}, {0, 1}),
                              Vertex({1, 1, 0}, {1, 1}),

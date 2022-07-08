@@ -27,17 +27,11 @@
 #include "math/vector2.hpp"
 
 #include "asset/vertex.hpp"
+#include "asset/primitive.hpp"
 #include "resource/resource.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT Mesh : public Resource {
-        enum Primitive {
-            POINT = 1,
-            LINE = 2,
-            TRI = 3,
-            QUAD = 4
-        };
-
         /**
          * A quad mesh which covers the viewport in normalized screen coordinates
          * @return
@@ -55,31 +49,24 @@ namespace xng {
 
         std::type_index getTypeIndex() override;
 
-        bool indexed = false;
         Primitive primitive = POINT;
         std::vector<Vertex> vertices;
         std::vector<uint> indices;
 
         size_t polyCount() const {
-            if (indexed)
-                return indices.size() / primitive;
-            else
+            if (indices.empty())
                 return vertices.size() / primitive;
+            else
+                return indices.size() / primitive;
         }
 
         Mesh() = default;
 
         Mesh(Primitive primitive, std::vector<Vertex> vertices) :
-                indexed(false), primitive(primitive), vertices(std::move(vertices)), indices() {}
+                primitive(primitive), vertices(std::move(vertices)), indices() {}
 
         Mesh(Primitive primitive, std::vector<Vertex> vertices, std::vector<uint> indices) :
-                indexed(true), primitive(primitive), vertices(std::move(vertices)), indices(std::move(indices)) {}
-
-        Mesh(bool indexed, Primitive primitive, std::vector<Vertex> vertices, std::vector<uint> indices)
-                : indexed(indexed),
-                  primitive(primitive),
-                  vertices(std::move(vertices)),
-                  indices(std::move(indices)) {}
+                primitive(primitive), vertices(std::move(vertices)), indices(std::move(indices)) {}
     };
 }
 

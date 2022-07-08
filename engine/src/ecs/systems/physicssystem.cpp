@@ -17,27 +17,23 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_COLLIDER_HPP
-#define XENGINE_COLLIDER_HPP
+#include "ecs/systems/physicssystem.hpp"
 
-#include <vector>
-
-#include "math/vector2.hpp"
+#include "ecs/components.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT Collider2D {
-    public:
-        virtual void setShape(const std::vector<Vec2f> &vertices) = 0;
+    PhysicsSystem::PhysicsSystem(World &world)
+            : world(world) {}
 
-        virtual void setShape(const std::vector<Vec2f> &vertices, const std::vector<std::size_t> &indices) = 0;
+    void PhysicsSystem::start(EntityContainer &entityManager) {
+        System::start(entityManager);
+    }
 
-        virtual void setDensity(float density) = 0;
+    void PhysicsSystem::stop(EntityContainer &entityManager) {
+        System::stop(entityManager);
+    }
 
-        virtual float getDensity() = 0;
-
-    protected:
-        virtual ~Collider2D() = default;
-    };
+    void PhysicsSystem::update(float deltaTime, EntityContainer &entityManager) {
+        System::update(deltaTime, entityManager);
+    }
 }
-
-#endif //XENGINE_COLLIDER_HPP

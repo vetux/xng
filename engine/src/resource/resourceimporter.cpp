@@ -46,8 +46,7 @@ namespace xng {
 
     static Mesh convertMesh(const aiMesh &assMesh) {
         Mesh ret;
-        ret.primitive = Mesh::TRI;
-        ret.indexed = true;
+        ret.primitive = TRI;
         for (int y = 0; y < assMesh.mNumFaces; y++) {
             const auto &face = dynamic_cast<const aiFace &>(assMesh.mFaces[y]);
             if (face.mNumIndices != 3)

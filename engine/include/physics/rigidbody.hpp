@@ -17,22 +17,26 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RIGIDBODY3D_HPP
-#define XENGINE_RIGIDBODY3D_HPP
+#ifndef XENGINE_RIGIDBODY_HPP
+#define XENGINE_RIGIDBODY_HPP
 
 #include <set>
 #include <memory>
 
-#include "physics/3d/collider3d.hpp"
+#include "physics/collider.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT RigidBody3D {
+    class World;
+
+    class XENGINE_EXPORT RigidBody {
     public:
-        enum RigidBodyType {
+        enum XENGINE_EXPORT RigidBodyType {
             STATIC,
             KINEMATIC,
             DYNAMIC
         };
+
+        virtual ~RigidBody() = default;
 
         virtual void setRigidBodyType(RigidBodyType type) = 0;
 
@@ -54,14 +58,7 @@ namespace xng {
 
         virtual Vec3f getAngularVelocity() = 0;
 
-        virtual Collider3D *createCollider() = 0;
-
-        virtual void destroyCollider(Collider3D *collider) = 0;
-
-        virtual std::set<Collider3D *> getColliders() = 0;
-
-    protected:
-        virtual ~RigidBody3D() = default;
+        virtual void setColliders(std::vector<std::reference_wrapper<Collider>> colliders) = 0;
     };
 }
-#endif //XENGINE_RIGIDBODY3D_HPP
+#endif //XENGINE_RIGIDBODY_HPP

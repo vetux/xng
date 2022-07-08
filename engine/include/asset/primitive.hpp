@@ -17,17 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_COLLIDERCOMPONENT2D_HPP
-#define XENGINE_COLLIDERCOMPONENT2D_HPP
-
-#include <vector>
-
-#include "math/vector2.hpp"
+#ifndef XENGINE_PRIMITIVE_HPP
+#define XENGINE_PRIMITIVE_HPP
 
 namespace xng {
-    struct XENGINE_EXPORT ColliderComponent2D {
-        std::vector<Vec2f> shape;
+    enum Primitive {
+        POINT = 1,
+        LINE = 2,
+        TRI = 3,
+        QUAD = 4
     };
 }
-
-#endif //XENGINE_COLLIDERCOMPONENT2D_HPP
+#endif //XENGINE_PRIMITIVE_HPP

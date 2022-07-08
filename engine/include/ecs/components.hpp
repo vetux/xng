@@ -20,14 +20,10 @@
 #ifndef XENGINE_COMPONENTS_HPP
 #define XENGINE_COMPONENTS_HPP
 
-#include "ecs/components/collidercomponent2d.hpp"
-#include "ecs/components/collidercomponent3d.hpp"
 #include "ecs/components/cameracomponent.hpp"
 #include "ecs/components/transformcomponent.hpp"
 #include "ecs/components/lightcomponent.hpp"
 #include "ecs/components/particlecomponent.hpp"
-#include "ecs/components/rigidbodycomponent3d.hpp"
-#include "ecs/components/rigidbodycomponent2d.hpp"
 #include "ecs/components/monoscriptcomponent.hpp"
 #include "ecs/components/monosynccomponent.hpp"
 #include "ecs/components/skyboxcomponent.hpp"
@@ -35,5 +31,7 @@
 #include "ecs/components/gui/textcomponent.hpp"
 #include "ecs/components/gui/canvascomponent.hpp"
 #include "ecs/components/gui/buttoncomponent.hpp"
+#include "ecs/components/physics/collidercomponent.hpp"
+#include "ecs/components/physics/rigidbodycomponent.hpp"
 
 #endif //XENGINE_COMPONENTS_HPP

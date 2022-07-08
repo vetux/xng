@@ -31,7 +31,7 @@
 
 namespace xng {
     struct VertexBufferDesc {
-        Mesh::Primitive primitive = Mesh::TRI;
+        Primitive primitive = TRI;
         std::vector<VertexAttribute> vertexLayout{}; // The layout of one vertex
         std::vector<VertexAttribute> instanceLayout{}; // the layout of one instance
         size_t numberOfVertices = 0;

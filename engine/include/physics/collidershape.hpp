@@ -17,15 +17,29 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_COLLIDERCOMPONENT3D_HPP
-#define XENGINE_COLLIDERCOMPONENT3D_HPP
+#ifndef XENGINE_COLLIDERSHAPE_HPP
+#define XENGINE_COLLIDERSHAPE_HPP
 
-#include "math/vector3.hpp"
+#include "asset/mesh.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT ColliderComponent3D {
-        std::vector<Vec3f> shape;
+    struct ColliderShape {
+        Primitive primitive = TRI;
+        std::vector<Vec3f> vertices;
+        std::vector<size_t> indices; // If not empty the indices into vertices in order.
+
+        static ColliderShape fromMesh(const Mesh &mesh) {
+            ColliderShape ret;
+            ret.primitive = mesh.primitive;
+            for (auto &v: mesh.vertices) {
+                ret.vertices.emplace_back(v.position());
+            }
+            for (auto &v: mesh.indices) {
+                ret.indices.emplace_back(v);
+            }
+            return ret;
+        }
     };
 }
 
-#endif //XENGINE_COLLIDERCOMPONENT3D_HPP
+#endif //XENGINE_COLLIDERSHAPE_HPP

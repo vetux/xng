@@ -17,16 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_JOINT3D_HPP
-#define XENGINE_JOINT3D_HPP
+#ifndef XENGINE_COLLIDERCOMPONENT_HPP
+#define XENGINE_COLLIDERCOMPONENT_HPP
+
+#include "math/vector3.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT Joint3D {
-    public:
-        //TODO: Define physics joints api
-    protected:
-        virtual ~Joint3D() = default;
+    struct XENGINE_EXPORT ColliderComponent {
+        std::vector<Vec3f> shape;
     };
 }
 
-#endif //XENGINE_JOINT3D_HPP
+#endif //XENGINE_COLLIDERCOMPONENT_HPP

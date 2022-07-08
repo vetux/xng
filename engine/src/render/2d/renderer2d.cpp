@@ -125,7 +125,7 @@ namespace xng {
         float uvNearY = scaledOffset.position.y;
         float uvFarY = scaledOffset.position.y + scaledOffset.dimensions.y;
         if (flipUv.y) {
-            return Mesh(Mesh::TRI, {
+            return Mesh(TRI, {
                     Vertex(Vec3f(0 - center.x, 0 - center.y, 0), {uvNearX, uvFarY}),
                     Vertex(Vec3f(size.x - center.x, 0 - center.y, 0), {uvFarX, uvFarY}),
                     Vertex(Vec3f(0 - center.x, size.y - center.y, 0), {uvNearX, uvNearY}),
@@ -134,7 +134,7 @@ namespace xng {
                     Vertex(Vec3f(size.x - center.x, size.y - center.y, 0), {uvFarX, uvNearY})
             });
         } else {
-            return Mesh(Mesh::TRI, {
+            return Mesh(TRI, {
                     Vertex(Vec3f(0 - center.x, 0 - center.y, 0), {uvNearX, uvNearY}),
                     Vertex(Vec3f(size.x - center.x, 0 - center.y, 0), {uvFarX, uvNearY}),
                     Vertex(Vec3f(0 - center.x, size.y - center.y, 0), {uvNearX, uvFarY}),
@@ -146,7 +146,7 @@ namespace xng {
     }
 
     static Mesh createSquare(Vec2f size, Vec2f center) {
-        return Mesh(Mesh::LINE, {
+        return Mesh(LINE, {
                 Vertex(Vec3f(0 - center.x, 0 - center.y, 0)),
                 Vertex(Vec3f(size.x - center.x, 0 - center.y, 0)),
 
@@ -162,7 +162,7 @@ namespace xng {
     }
 
     static Mesh createLine(Vec2f start, Vec2f end, Vec2f center) {
-        return Mesh(Mesh::LINE, {
+        return Mesh(LINE, {
                 Vertex(Vec3f(start.x - center.x, start.y - center.y, 0)),
                 Vertex(Vec3f(end.x - center.x, end.y - center.y, 0))
         });
@@ -551,7 +551,7 @@ namespace xng {
         if (it != allocatedPoints.end()) {
             return *it->second;
         } else {
-            Mesh mesh(Mesh::POINT, {
+            Mesh mesh(POINT, {
                     Vertex(Vec3f(point.x, point.y, 0))
             });
             allocatedPoints[point] = renderDevice.createInstancedVertexBuffer(mesh, {MatrixMath::identity()});

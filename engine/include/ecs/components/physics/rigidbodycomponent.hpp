@@ -17,29 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_PHYSICSSYSTEM3D_HPP
-#define XENGINE_PHYSICSSYSTEM3D_HPP
+#ifndef XENGINE_RIGIDBODYCOMPONENT_HPP
+#define XENGINE_RIGIDBODYCOMPONENT_HPP
 
-#include "ecs/system.hpp"
-
-#include "physics/2d/world2d.hpp"
+#include "physics/rigidbody.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT Physics2DSystem : public System {
-    public:
-        explicit Physics2DSystem(World2D &world);
-
-        ~Physics2DSystem() override = default;
-
-        void start(EntityContainer &entityManager) override;
-
-        void stop(EntityContainer &entityManager) override;
-
-        void update(float deltaTime, EntityContainer &entityManager) override;
-
-    private:
-        World2D *world;
+    struct XENGINE_EXPORT RigidBodyComponent3D {
+        RigidBody::RigidBodyType type;
     };
 }
 
-#endif //XENGINE_PHYSICSSYSTEM3D_HPP
+#endif //XENGINE_RIGIDBODYCOMPONENT_HPP

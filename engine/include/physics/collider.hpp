@@ -17,15 +17,18 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RIGIDBODYCOMPONENT2D_HPP
-#define XENGINE_RIGIDBODYCOMPONENT2D_HPP
+#ifndef XENGINE_COLLIDER_HPP
+#define XENGINE_COLLIDER_HPP
 
-#include "physics/2d/rigidbody2d.hpp"
+#include <vector>
+
+#include "math/vector3.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT RigidBodyComponent2D {
-        RigidBody2D::RigidBodyType type;
+    class XENGINE_EXPORT Collider {
+    public:
+        virtual ~Collider() = default;
     };
 }
 
-#endif //XENGINE_RIGIDBODYCOMPONENT2D_HPP
+#endif //XENGINE_COLLIDER_HPP

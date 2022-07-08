@@ -20,15 +20,12 @@
 #ifndef XENGINE_JOINT_HPP
 #define XENGINE_JOINT_HPP
 
-#include "math/vector2.hpp"
-#include "math/vector3.hpp"
-
 namespace xng {
-    class XENGINE_EXPORT Joint2D {
+    class XENGINE_EXPORT Joint {
     public:
+        virtual ~Joint() = default;
+
         //TODO: Define physics joints api
-    protected:
-        virtual ~Joint2D() = default;
     };
 }
 

@@ -20,18 +20,16 @@
 #ifndef XENGINE_WORLD3D_HPP
 #define XENGINE_WORLD3D_HPP
 
-#include "physics/3d/rigidbody3d.hpp"
-#include "physics/3d/joint3d.hpp"
-
-#include "driver/driver.hpp"
+#include "physics/rigidbody.hpp"
+#include "physics/joint.hpp"
+#include "physics/collidershape.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT World3D : public Driver {
+    class XENGINE_EXPORT World {
     public:
         struct XENGINE_EXPORT Contact {
-            Collider3D *colliderA;
-            Collider3D *colliderB;
-
+            std::reference_wrapper<Collider> colliderA;
+            std::reference_wrapper<Collider> colliderB;
             std::vector<Vec3f> points;
         };
 
@@ -44,23 +42,17 @@ namespace xng {
             virtual void endContact(Contact &contact) {}
         };
 
-        virtual ~World3D() = default;
+        virtual ~World() = default;
 
-        virtual RigidBody3D *createRigidBody() = 0;
+        virtual std::unique_ptr<Collider> createCollider(const ColliderShape &shape) = 0;
 
-        virtual void destroyRigidBody(RigidBody3D *ptr) = 0;
+        virtual std::unique_ptr<RigidBody> createRigidBody() = 0;
 
-        virtual std::set<RigidBody3D *> getRigidBodies() = 0;
+        virtual std::unique_ptr<Joint> createJoint() = 0;
 
-        virtual Joint3D *createJoint() = 0;
+        virtual void addContactListener(ContactListener &listener) = 0;
 
-        virtual void destroyJoint(Joint3D *ptr) = 0;
-
-        virtual std::set<Joint3D *> getJoints() = 0;
-
-        virtual void addContactListener(ContactListener *listener) = 0;
-
-        virtual void removeContactListener(ContactListener *listener) = 0;
+        virtual void removeContactListener(ContactListener &listener) = 0;
 
         virtual void setGravity(const Vec3f &gravity) = 0;
 

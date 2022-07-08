@@ -17,27 +17,29 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_COLLIDER3D_HPP
-#define XENGINE_COLLIDER3D_HPP
+#ifndef XENGINE_PHYISCS3DSYSTEM_HPP
+#define XENGINE_PHYISCS3DSYSTEM_HPP
 
-#include <vector>
+#include "ecs/system.hpp"
 
-#include "math/vector3.hpp"
+#include "physics/world.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT Collider3D {
+    class XENGINE_EXPORT PhysicsSystem : public System {
     public:
-        virtual void setShape(const std::vector<Vec3f> &vertices) = 0;
+        explicit PhysicsSystem(World &world);
 
-        virtual void setShape(const std::vector<Vec3f> &vertices, const std::vector<std::size_t> &indices) = 0;
+        ~PhysicsSystem() override = default;
 
-        virtual void setDensity(float density) = 0;
+        void start(EntityContainer &entityManager) override;
 
-        virtual float getDensity() = 0;
+        void stop(EntityContainer &entityManager) override;
 
-    protected:
-        virtual ~Collider3D() = default;
+        void update(float deltaTime, EntityContainer &entityManager) override;
+
+    private:
+        World &world;
     };
 }
 
-#endif //XENGINE_COLLIDER3D_HPP
+#endif //XENGINE_PHYISCS3DSYSTEM_HPP

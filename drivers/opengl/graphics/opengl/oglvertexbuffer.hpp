@@ -57,16 +57,16 @@ namespace xng::opengl {
                 elementCount = desc.numberOfVertices;
             }
             switch (desc.primitive) {
-                case Mesh::POINT:
+                case POINT:
                     elementType = GL_POINTS;
                     break;
-                case Mesh::LINE:
+                case LINE:
                     elementType = GL_LINES;
                     break;
-                case Mesh::TRI:
+                case TRI:
                     elementType = GL_TRIANGLES;
                     break;
-                case Mesh::QUAD:
+                case QUAD:
                     elementType = GL_QUADS;
                     break;
                 default:

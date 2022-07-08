@@ -17,15 +17,20 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RIGIDBODYCOMPONENT3D_HPP
-#define XENGINE_RIGIDBODYCOMPONENT3D_HPP
+#ifndef XENGINE_PHYSICSDRIVER_HPP
+#define XENGINE_PHYSICSDRIVER_HPP
 
-#include "physics/3d/rigidbody3d.hpp"
+#include <memory>
+
+#include "driver/driver.hpp"
+
+#include "physics/world.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT RigidBodyComponent3D {
-        RigidBody3D::RigidBodyType type;
+    class XENGINE_EXPORT PhysicsDriver : public Driver {
+    public:
+        virtual std::unique_ptr<World> createWorld() = 0;
     };
 }
 
-#endif //XENGINE_RIGIDBODYCOMPONENT3D_HPP
+#endif //XENGINE_PHYSICSDRIVER_HPP
