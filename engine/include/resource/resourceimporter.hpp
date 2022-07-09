@@ -26,6 +26,7 @@
 #include "asset/material.hpp"
 #include "asset/audio.hpp"
 #include "resource/resourcebundle.hpp"
+#include "resource/resourceparser.hpp"
 
 #include "async/threadpool.hpp"
 #include "io/archive.hpp"
@@ -36,7 +37,12 @@ namespace xng {
      */
     class XENGINE_EXPORT ResourceImporter {
     public:
-        ResourceImporter() = default;
+        /**
+         * Use the default parsers
+         */
+        explicit ResourceImporter();
+
+        ResourceImporter(std::vector<std::unique_ptr<ResourceParser>> parsers);
 
         /**
          * Import the bundle from the stream.
@@ -45,11 +51,15 @@ namespace xng {
          * to resolve the paths, and throws if a path could not be resolved.
          *
          * @param stream
-         * @param hint The file extension
          * @param archive
+         * @param hint The file extension
+         *
          * @return
          */
         ResourceBundle import(std::istream &stream, const std::string &hint = "", Archive *archive = nullptr);
+
+    private:
+        std::vector<std::unique_ptr<ResourceParser>> parsers;
     };
 }
 
