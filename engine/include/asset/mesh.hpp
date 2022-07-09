@@ -20,6 +20,7 @@
 #ifndef XENGINE_MESH_HPP
 #define XENGINE_MESH_HPP
 
+#include <utility>
 #include <vector>
 #include <typeindex>
 
@@ -29,6 +30,7 @@
 #include "asset/vertex.hpp"
 #include "asset/primitive.hpp"
 #include "resource/resource.hpp"
+#include "animation/skeletal/rig.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT Mesh : public Resource {
@@ -46,12 +48,13 @@ namespace xng {
             return std::make_unique<Mesh>(*this);
         }
 
-
         std::type_index getTypeIndex() override;
 
         Primitive primitive = POINT;
         std::vector<Vertex> vertices;
         std::vector<uint> indices;
+
+        Rig rig;
 
         size_t polyCount() const {
             if (indices.empty())
@@ -62,11 +65,17 @@ namespace xng {
 
         Mesh() = default;
 
-        Mesh(Primitive primitive, std::vector<Vertex> vertices) :
-                primitive(primitive), vertices(std::move(vertices)), indices() {}
+        Mesh(Primitive primitive, std::vector<Vertex> vertices)
+                : primitive(primitive), vertices(std::move(vertices)), indices() {}
 
-        Mesh(Primitive primitive, std::vector<Vertex> vertices, std::vector<uint> indices) :
-                primitive(primitive), vertices(std::move(vertices)), indices(std::move(indices)) {}
+        Mesh(Primitive primitive, std::vector<Vertex> vertices, std::vector<uint> indices)
+                : primitive(primitive), vertices(std::move(vertices)), indices(std::move(indices)) {}
+
+        Mesh(Primitive primitive, std::vector<Vertex> vertices, std::vector<uint> indices, Rig rig)
+                : primitive(primitive),
+                  vertices(std::move(vertices)),
+                  indices(std::move(indices)),
+                  rig(std::move(rig)) {}
     };
 }
 
