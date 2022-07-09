@@ -112,4 +112,11 @@ namespace xng {
         ret.normalize();
         return ret;
     }
+
+    Quaternion Quaternion::slerp(const Quaternion &a, const Quaternion &b, float advance) {
+        glm::quat qa(a.w, a.x, a.y, a.z);
+        glm::quat qb(b.w, b.x, b.y, b.z);
+        auto ret = glm::slerp(qa, qb, advance);
+        return {ret.w, ret.x, ret.y, ret.z};
+    }
 }

@@ -62,6 +62,8 @@ namespace xng {
         void normalize();
 
         static Quaternion normalize(const Quaternion &q);
+
+        static Quaternion slerp(const Quaternion &a, const Quaternion &b, float advance);
     };
 }
 
