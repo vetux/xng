@@ -31,7 +31,7 @@ namespace xng {
     public:
         virtual ~ComponentPoolBase() = default;
 
-        virtual ComponentPoolBase *clone() = 0;
+        virtual std::unique_ptr<ComponentPoolBase> clone() = 0;
 
         virtual void clear() = 0;
 
@@ -59,8 +59,8 @@ namespace xng {
 
         ~ComponentPool() override = default;
 
-        ComponentPoolBase *clone() override {
-            return new ComponentPool<T>(*this);
+        std::unique_ptr<ComponentPoolBase> clone() override {
+            return std::make_unique<ComponentPool<T>>(*this);
         }
 
         void clear() override {

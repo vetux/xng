@@ -23,9 +23,9 @@
 #include <map>
 #include <vector>
 #include <typeindex>
+#include <memory>
 
 #include "ecs/entityhandle.hpp"
-
 #include "ecs/componentpool.hpp"
 
 namespace xng {
@@ -39,11 +39,7 @@ namespace xng {
     public:
         ComponentContainer() = default;
 
-        ~ComponentContainer() {
-            for (auto &p: pools) {
-                delete p.second;
-            }
-        }
+        ~ComponentContainer() = default;
 
         ComponentContainer(const ComponentContainer &other) {
             for (auto &p: other.pools) {
@@ -51,9 +47,15 @@ namespace xng {
             }
         }
 
-        ComponentContainer(ComponentContainer &&other) noexcept = default;
+        ComponentContainer &operator=(const ComponentContainer &other) {
+            pools.clear();
+            for (auto &p: other.pools) {
+                pools[p.first] = p.second->clone();
+            }
+            return *this;
+        }
 
-        ComponentContainer &operator=(const ComponentContainer &other) = default;
+        ComponentContainer(ComponentContainer &&other) noexcept = default;
 
         ComponentContainer &operator=(ComponentContainer &&other) noexcept = default;
 
@@ -61,7 +63,7 @@ namespace xng {
         ComponentPool<T> &getPool() {
             auto it = pools.find(typeid(T));
             if (it == pools.end()) {
-                pools[typeid(T)] = new ComponentPool<T>();
+                pools[typeid(T)] = std::make_unique<ComponentPool<T>>();
             }
             return dynamic_cast<ComponentPool<T> &>(*pools[typeid(T)]);
         }
@@ -133,7 +135,7 @@ namespace xng {
         }
 
     private:
-        std::map<std::type_index, ComponentPoolBase *> pools;
+        std::map<std::type_index, std::unique_ptr<ComponentPoolBase>> pools;
     };
 }
 
