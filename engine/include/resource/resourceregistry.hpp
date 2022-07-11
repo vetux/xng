@@ -40,6 +40,11 @@
 #include "algo/refcounter.hpp"
 
 namespace xng {
+    /**
+     * A resource registry is responsible for managing resource data.
+     * It uses reference counting for resource lifetime management.
+     * ResourceHandle can be used to do the reference counting with a RAII interface.
+     */
     class XENGINE_EXPORT ResourceRegistry {
     public:
         /**
@@ -58,6 +63,7 @@ namespace xng {
         /**
          * Set the archive instances with their corresponding scheme to use for resolving the uri file paths.
          *
+         * @param scheme The scheme under which the archive should be made available.
          * @param archive
          */
         void addArchive(const std::string &scheme, std::shared_ptr<Archive> archive);
@@ -71,6 +77,9 @@ namespace xng {
             return dynamic_cast<T &>(getArchive(name));
         }
 
+        /**
+         * @param scheme The scheme to use when an uri does not specify a scheme.
+         */
         void setDefaultScheme(const std::string &scheme) { defaultScheme = scheme; }
 
         /**

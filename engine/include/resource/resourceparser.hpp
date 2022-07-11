@@ -29,6 +29,9 @@
 namespace xng {
     class ResourceImporter;
 
+    /**
+     * A parser creates resource objects from the data in buffers.
+     */
     class ResourceParser {
     public:
         virtual ~ResourceParser() = default;
@@ -38,14 +41,16 @@ namespace xng {
          *
          * @param buffer
          * @param hint
-         * @param archive The archive instance to use for resolving referenced assets.
+         * @param importer The importer instance to use for importing referenced asset data
+         * @param archive The archive instance to use for resolving referenced asset paths.
          * @return
          */
         virtual ResourceBundle parse(const std::string &buffer,
                                      const std::string &hint,
+                                     const ResourceImporter &importer,
                                      Archive *archive) const = 0;
 
-        virtual std::set<std::string> getSupportedFormats() const = 0;
+        virtual const std::set<std::string> & getSupportedFormats() const = 0;
     };
 }
 

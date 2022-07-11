@@ -39,6 +39,7 @@ namespace xng {
     static void loadBundle(const std::string &bundlePath,
                            ThreadPool &pool,
                            Archive &archive,
+                           const ResourceImporter &importer,
                            std::mutex &bundleMutex,
                            std::map<std::string, std::shared_ptr<Task>> bundleTasks,
                            std::map<std::string, ResourceBundle> refBundles) {
@@ -50,11 +51,11 @@ namespace xng {
             auto taskIterator = bundleTasks.find(bundlePath);
             if (taskIterator == bundleTasks.end()) {
                 bundleTasks[bundlePath] = pool.addTask(
-                        [&archive, &bundleMutex, &refBundles, &bundlePath, &pool]() {
+                        [&archive, &importer, &bundleMutex, &refBundles, &bundlePath, &pool]() {
                             std::filesystem::path path(bundlePath);
 
                             std::unique_ptr<std::istream> stream(archive.open(bundlePath));
-                            auto bundle = ResourceImporter().import(*stream, path.extension(), &archive);
+                            auto bundle = importer.import(*stream, path.extension(), &archive);
 
                             std::lock_guard<std::mutex> guard(bundleMutex);
                             refBundles[bundlePath] = std::move(bundle);
@@ -94,7 +95,8 @@ namespace xng {
         return texture;
     }
 
-    static ResourceBundle readJsonBundle(const std::string &buffer, Archive &archive, ThreadPool &pool) {
+    static ResourceBundle
+    readJsonBundle(const std::string &buffer, const ResourceImporter &importer, Archive &archive, ThreadPool &pool) {
         nlohmann::json j = nlohmann::json::parse(buffer);
 
         std::mutex bundleMutex;
@@ -106,7 +108,8 @@ namespace xng {
         auto iterator = j.find("meshes");
         if (iterator != j.end()) {
             for (auto &element: *iterator) {
-                loadBundle(Uri(element["uri"]).getFile(), pool, archive, bundleMutex, bundleTasks, referencedBundles);
+                loadBundle(Uri(element["uri"]).getFile(), pool, archive, importer, bundleMutex, bundleTasks,
+                           referencedBundles);
             }
         }
 
@@ -115,7 +118,8 @@ namespace xng {
             for (auto &element: *iterator) {
                 auto it = element.find("uri");
                 if (it != element.end()) {
-                    loadBundle(Uri(*it).getFile(), pool, archive, bundleMutex, bundleTasks, referencedBundles);
+                    loadBundle(Uri(*it).getFile(), pool, archive, importer, bundleMutex, bundleTasks,
+                               referencedBundles);
                 }
             }
         }
@@ -123,7 +127,8 @@ namespace xng {
         iterator = j.find("images");
         if (iterator != j.end()) {
             for (auto &element: *iterator) {
-                loadBundle(Uri(element).getFile(), pool, archive, bundleMutex, bundleTasks, referencedBundles);
+                loadBundle(Uri(element).getFile(), pool, archive, importer, bundleMutex, bundleTasks,
+                           referencedBundles);
             }
         }
 
@@ -229,13 +234,15 @@ namespace xng {
 
     ResourceBundle JsonParser::parse(const std::string &buffer,
                                      const std::string &hint,
+                                     const ResourceImporter &importer,
                                      Archive *archive) const {
         if (archive == nullptr)
             throw std::runtime_error("Json parser invoked with nullptr archive");
-        return readJsonBundle(buffer, *archive, ThreadPool::getPool());
+        return readJsonBundle(buffer, importer, *archive, ThreadPool::getPool());
     }
 
-    std::set<std::string> JsonParser::getSupportedFormats() const {
-        return {"json", "bundle"};
+    const std::set<std::string> &JsonParser::getSupportedFormats() const {
+        static const std::set<std::string> formats = {"json", "bundle"};
+        return formats;
     }
 }

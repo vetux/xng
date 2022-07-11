@@ -147,13 +147,15 @@ namespace xng {
 
     ResourceBundle SndFileParser::parse(const std::string &buffer,
                                         const std::string &hint,
+                                        const ResourceImporter &importer,
                                         Archive *archive) const {
         ResourceBundle ret;
         ret.add("", std::make_unique<Audio>(readAudio(buffer)));
         return ret;
     }
 
-    std::set<std::string> SndFileParser::getSupportedFormats() const {
-        return {"mp3", "wav"};
+    const std::set<std::string> &SndFileParser::getSupportedFormats() const {
+        static const std::set<std::string> formats = {"mp3", "wav"};
+        return formats;
     }
 }

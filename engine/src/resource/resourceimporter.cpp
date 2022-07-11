@@ -39,21 +39,21 @@ namespace xng {
     ResourceImporter::ResourceImporter(std::vector<std::unique_ptr<ResourceParser>> parsers)
             : parsers(std::move(parsers)) {}
 
-    ResourceBundle ResourceImporter::import(std::istream &stream, const std::string &hint, Archive *archive) {
+    ResourceBundle ResourceImporter::import(std::istream &stream, const std::string &hint, Archive *archive) const {
         std::string buffer = {std::istreambuf_iterator<char>(stream), {}};
 
         // Use parser which supports hint if exists.
         for (auto &parser: parsers) {
             auto formats = parser->getSupportedFormats();
             if (formats.find(hint) != formats.end()) {
-                return parser->parse(buffer, hint, archive);
+                return parser->parse(buffer, hint, *this, archive);
             }
         }
 
         // Otherwise try every parser
         for (auto &parser: parsers) {
             try {
-                return parser->parse(buffer, hint, archive);
+                return parser->parse(buffer, hint, *this, archive);
             } catch (const std::exception &e) {}
         }
         throw std::runtime_error("Failed to read bundle");

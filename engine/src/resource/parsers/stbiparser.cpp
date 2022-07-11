@@ -47,6 +47,7 @@ namespace xng {
 
     ResourceBundle StbiParser::parse(const std::string &buffer,
                                      const std::string &hint,
+                                     const ResourceImporter &importer,
                                      Archive *archive) const {
         //Try to read source as image
         int x, y, n;
@@ -64,7 +65,8 @@ namespace xng {
         }
     }
 
-    std::set<std::string> StbiParser::getSupportedFormats() const {
-        return {"png", "jpeg", "gif"};
+    const std::set<std::string> &StbiParser::getSupportedFormats() const {
+        static const std::set<std::string> formats = {"png", "jpeg", "gif"};
+        return formats;
     }
 }

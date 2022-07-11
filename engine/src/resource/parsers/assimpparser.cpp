@@ -132,11 +132,13 @@ namespace xng {
 
     ResourceBundle AssImpParser::parse(const std::string &buffer,
                                        const std::string &hint,
+                                       const ResourceImporter &importer,
                                        Archive *archive) const {
         return readAsset(buffer, hint, archive);
     }
 
-    std::set<std::string> AssImpParser::getSupportedFormats() const {
-        return {"fbx", "obj"};
+    const std::set<std::string> &AssImpParser::getSupportedFormats() const {
+        static const std::set<std::string> formats = {"fbx", "obj"};
+        return formats;
     }
 }

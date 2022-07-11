@@ -27,9 +27,10 @@ namespace xng {
     public:
         ResourceBundle parse(const std::string &buffer,
                              const std::string &hint,
+                             const ResourceImporter &importer,
                              Archive *archive) const override;
 
-        std::set<std::string> getSupportedFormats() const override;
+        const std::set<std::string> &getSupportedFormats() const override;
     };
 }
 

@@ -33,30 +33,35 @@
 
 namespace xng {
     /**
-     * The resource importer is the abstraction around resource formats such as fbx, obj, mp3, png etc.
+     * The resource importer handles importing of resources from streams pointing to resource data.
+     * The set resource parsers define the formats that the resource importer can import.
+     *
+     * It handles a set of parsers and decides which parsers to invoke for given inputs.
      */
     class XENGINE_EXPORT ResourceImporter {
     public:
         /**
          * Use the default parsers
          */
-        explicit ResourceImporter();
+        ResourceImporter();
 
-        ResourceImporter(std::vector<std::unique_ptr<ResourceParser>> parsers);
+        /**
+         * @param parsers The set of parsers to use when importing data.
+         */
+        explicit ResourceImporter(std::vector<std::unique_ptr<ResourceParser>> parsers);
 
         /**
          * Import the bundle from the stream.
          *
-         * If the bundle format references other bundles (For example fbx) the importer uses the archive instance
-         * to resolve the paths, and throws if a path could not be resolved.
+         * If the bundle format references other bundles by path (For example fbx) the importer uses the archive instance
+         * to resolve the paths, and imports the resolved data using this->import().
          *
-         * @param stream
-         * @param archive
+         * @param stream The stream to the data to be imported.
          * @param hint The file extension
-         *
+         * @param archive The archive instance to use when resolving paths in the stream data.
          * @return
          */
-        ResourceBundle import(std::istream &stream, const std::string &hint = "", Archive *archive = nullptr);
+        ResourceBundle import(std::istream &stream, const std::string &hint = "", Archive *archive = nullptr) const;
 
     private:
         std::vector<std::unique_ptr<ResourceParser>> parsers;
