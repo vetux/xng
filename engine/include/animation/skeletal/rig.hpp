@@ -32,7 +32,7 @@ namespace xng {
     public:
         Rig() = default;
 
-        Rig(std::vector<Bone> bones)
+        explicit Rig(std::vector<Bone> bones)
                 : bones(std::move(bones)) {
             for (auto i = 0; i < this->bones.size(); i++) {
                 auto &bone = this->bones.at(i);

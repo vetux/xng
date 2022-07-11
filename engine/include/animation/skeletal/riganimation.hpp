@@ -30,7 +30,7 @@ namespace xng {
         std::string name; // The name of this animation
         double duration; // Total duration in ticks
         double ticksPerSecond; // The number of ticks to show per second
-        std::map<std::string, BoneAnimation> channels; // The animation objects for each bone identified by the name of the bone.
+        std::vector<BoneAnimation> channels; // The animation channels.
     };
 }
 
