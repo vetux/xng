@@ -30,7 +30,7 @@ namespace xng {
     /**
      * A sprite is a texture displayed on a planar quad mesh perpendicular to the camera.
      */
-    struct Sprite : public Resource {
+    struct XENGINE_EXPORT Sprite : public Resource {
         Sprite() = default;
 
         Sprite(ResourceHandle<Texture> texture,

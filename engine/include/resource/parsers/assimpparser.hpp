@@ -23,7 +23,7 @@
 #include "resource/resourceparser.hpp"
 
 namespace xng {
-    class AssImpParser : public ResourceParser {
+    class XENGINE_EXPORT AssImpParser : public ResourceParser {
     public:
         ResourceBundle parse(const std::string &buffer,
                              const std::string &hint,

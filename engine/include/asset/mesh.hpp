@@ -29,8 +29,11 @@
 
 #include "asset/vertex.hpp"
 #include "asset/primitive.hpp"
+
 #include "resource/resource.hpp"
+
 #include "animation/skeletal/rig.hpp"
+#include "animation/skeletal/riganimation.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT Mesh : public Resource {
@@ -54,7 +57,8 @@ namespace xng {
         std::vector<Vertex> vertices;
         std::vector<uint> indices;
 
-        Rig rig;
+        Rig rig; // If rig is assigned the vertex bone ids are indices into rig.getBones()
+        std::vector<std::shared_ptr<RigAnimation>> animations; // The set of available animations for the rig
 
         size_t polyCount() const {
             if (indices.empty())

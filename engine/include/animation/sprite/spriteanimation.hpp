@@ -22,6 +22,8 @@
 
 #include "animation/sprite/spritekeyframe.hpp"
 
+#include "types/deltatime.hpp"
+
 namespace xng {
     /**
      * A sprite animation is a sequence of frames which are displayed sequentially to create the illusion of an animation.
@@ -38,7 +40,7 @@ namespace xng {
          * @param clampDelta If true the animation will clamp deltaTime to frame time,
          * causing the animation to be advanced at most one frame per call to getFrame.
          * This causes animations to slow down when the framerate drops below the animation framerate.
-         * The user can verify that an animation has finished by calling getCurrentTime()
+         * The user can verify that an animation has finished by calling getTime()
          */
         SpriteAnimation(std::vector<SpriteKeyframe> frames,
                         float animationDuration,
@@ -56,7 +58,7 @@ namespace xng {
          * @param deltaTime The passed time in seconds. If 0 no change of frame is made.
          * @return The texture corresponding to the current animation frame.
          */
-        const ResourceHandle<Sprite> &getFrame(float deltaTime = 0);
+        const ResourceHandle<Sprite> &getFrame(DeltaTime deltaTime = 0);
 
         const std::vector<SpriteKeyframe> &getKeyframes() { return keyframes; }
 
@@ -75,19 +77,19 @@ namespace xng {
         float getFrameTime() const { return frameTime; }
 
         /**
-         * @return The current total animation time. If currentTime == animationDuration and !loop the animation has finished.
+         * @return The current total animation time. Never larger than animationDuration, If currentTime == animationDuration and !loop the animation has finished.
          */
-        float getCurrentTime() const { return currentTime; }
+        float getTime() const { return time; }
 
     private:
         std::vector<SpriteKeyframe> keyframes;
-        float animationDuration;
-        bool clampDelta;
-        bool loop;
+        float animationDuration{};
+        bool clampDelta{};
+        bool loop{};
 
-        std::vector<std::vector<SpriteKeyframe>::iterator> frames;
-        float frameTime;
-        float currentTime = 0;
+        std::vector<std::vector<SpriteKeyframe>::iterator> frames; // Each frame of the animation
+        float frameTime{}; // The time in seconds that one frame should be visible for
+        float time = 0; // The currently accumulated time
     };
 }
 #endif //XENGINE_SPRITEANIMATION_HPP

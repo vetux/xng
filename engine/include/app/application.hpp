@@ -32,6 +32,8 @@
 
 #include "driver/drivermanager.hpp"
 
+#include "types/deltatime.hpp"
+
 #include "imgui.h"
 
 namespace xng {
@@ -86,12 +88,12 @@ namespace xng {
         virtual int loop() {
             start();
             auto lastFrame = std::chrono::high_resolution_clock::now();
-            float deltaTime = 0;
+            DeltaTime deltaTime = 0;
             while (!window->shouldClose() && !shutdown) {
                 auto frameStart = std::chrono::high_resolution_clock::now();
                 update(deltaTime);
                 auto frameDelta = std::chrono::high_resolution_clock::now() - frameStart;
-                deltaTime = static_cast<float>(frameDelta.count()) / 1000000000.0f;
+                deltaTime = static_cast<DeltaTime>(frameDelta.count()) / 1000000000.0f;
             }
             stop();
             return 0;
@@ -118,7 +120,7 @@ namespace xng {
 
         virtual void stop() {}
 
-        virtual void update(float deltaTime) {
+        virtual void update(DeltaTime deltaTime) {
             window->update();
             window->swapBuffers();
         }

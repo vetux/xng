@@ -29,7 +29,7 @@ namespace xng {
      *
      * }
      */
-    class JsonParser : public ResourceParser {
+    class XENGINE_EXPORT JsonParser : public ResourceParser {
     public:
         ResourceBundle parse(const std::string &buffer,
                              const std::string &hint,

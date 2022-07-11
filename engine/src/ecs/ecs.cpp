@@ -38,7 +38,7 @@ namespace xng {
         }
     }
 
-    void ECS::update(float deltaTime) {
+    void ECS::update(DeltaTime deltaTime) {
         for (auto &system: systems) {
             system.get().update(deltaTime, entityContainer);
         }

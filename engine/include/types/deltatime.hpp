@@ -17,17 +17,14 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SKELETALANIMATION_HPP
-#define XENGINE_SKELETALANIMATION_HPP
-
-#include "animation/skeletal/rigkeyframe.hpp"
+#ifndef XENGINE_DELTATIME_HPP
+#define XENGINE_DELTATIME_HPP
 
 namespace xng {
-    struct SkeletalAnimation {
-        double duration;
-        double ticksPerSecond;
-        std::vector<RigKeyframe> channels;
-    };
+    /**
+     * The type used to store differences in time between frames in seconds.
+     */
+    typedef float DeltaTime;
 }
 
-#endif //XENGINE_SKELETALANIMATION_HPP
+#endif //XENGINE_DELTATIME_HPP

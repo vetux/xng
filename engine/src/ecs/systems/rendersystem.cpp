@@ -42,7 +42,7 @@ namespace xng {
         entityManager.getComponentContainer().getPool<SkyboxComponent>().removeListener(this);
     }
 
-    void RenderSystem::update(float deltaTime, EntityContainer &entityManager) {
+    void RenderSystem::update(DeltaTime deltaTime, EntityContainer &entityManager) {
         auto &componentManager = entityManager.getComponentContainer();
 
         scene = {};

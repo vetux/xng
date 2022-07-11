@@ -21,12 +21,14 @@
 #define XENGINE_VERTEX_HPP
 
 #include "math/vector3.hpp"
+#include "math/vector4.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT Vertex {
-        float data[14];
+        float data[22];
 
-        Vertex(Vec3f position, Vec3f normal, Vec2f uv, Vec3f tangent, Vec3f bitangent) : data() {
+        Vertex(Vec3f position, Vec3f normal, Vec2f uv, Vec3f tangent, Vec3f bitangent, Vec4i boneIds, Vec4f boneWeights)
+                : data() {
             data[0] = position.x;
             data[1] = position.y;
             data[2] = position.z;
@@ -41,11 +43,24 @@ namespace xng {
             data[11] = bitangent.x;
             data[12] = bitangent.y;
             data[13] = bitangent.z;
+            // Hack: Cast data values to int references for id assignment which should work as long as sizeof(float) == sizeof(int)
+            static_assert(sizeof(float) == sizeof(int));
+            reinterpret_cast<int &>(data[14]) = boneIds.x;
+            reinterpret_cast<int &>(data[15]) = boneIds.y;
+            reinterpret_cast<int &>(data[16]) = boneIds.z;
+            reinterpret_cast<int &>(data[17]) = boneIds.w;
+            data[18] = boneWeights.x;
+            data[19] = boneWeights.y;
+            data[20] = boneWeights.z;
+            data[21] = boneWeights.w;
         }
 
-        Vertex(Vec3f position, Vec2f uv) : Vertex(position, {}, uv, {}, {}) {}
+        Vertex(Vec3f position, Vec3f normal, Vec2f uv, Vec3f tangent, Vec3f bitangent)
+                : Vertex(position, normal, uv, tangent, bitangent, {}, {}) {}
 
-        explicit Vertex(Vec3f position) : Vertex(position, {}, {}, {}, {}) {}
+        Vertex(Vec3f position, Vec2f uv) : Vertex(position, {}, uv, {}, {}, {}, {}) {}
+
+        explicit Vertex(Vec3f position) : Vertex(position, {}, {}, {}, {}, {}, {}) {}
 
         Vertex() = default;
 
@@ -67,6 +82,17 @@ namespace xng {
 
         Vec3f bitangent() const {
             return {data[11], data[12], data[13]};
+        }
+
+        Vec4i boneIds() const {
+            return {reinterpret_cast<const int &>(data[14]),
+                    reinterpret_cast<const int &>(data[15]),
+                    reinterpret_cast<const int &>(data[16]),
+                    reinterpret_cast<const int &>(data[17])};
+        }
+
+        Vec4f boneWeights() const {
+            return {data[18], data[19], data[20], data[21]};
         }
     };
 }

@@ -41,7 +41,7 @@ namespace xng {
         entityManager.getComponentContainer().getPool<AudioSourceComponent>().removeListener(this);
     }
 
-    void AudioSystem::update(float deltaTime, EntityContainer &entityManager) {
+    void AudioSystem::update(DeltaTime deltaTime, EntityContainer &entityManager) {
         auto &componentManager = entityManager.getComponentContainer();
 
         for (auto &pair: componentManager.getPool<AudioListenerComponent>()) {

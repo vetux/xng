@@ -20,13 +20,39 @@
 #ifndef XENGINE_RIG_HPP
 #define XENGINE_RIG_HPP
 
+#include <map>
+#include <utility>
+#include <vector>
+#include <string>
+
 #include "animation/skeletal/bone.hpp"
-#include "animation/skeletal/skeletalanimation.hpp"
 
 namespace xng {
-    struct Rig {
+    class XENGINE_EXPORT Rig {
+    public:
+        Rig() = default;
+
+        Rig(std::vector<Bone> bones)
+                : bones(std::move(bones)) {
+            for (auto i = 0; i < this->bones.size(); i++) {
+                auto &bone = this->bones.at(i);
+                boneNameMapping[bone.name] = this->bones.begin() + i;
+            }
+        }
+
+        const std::vector<Bone> &getBones() const { return bones; }
+
+        Bone &getBone(size_t index) { return bones.at(index); }
+
+        Bone &getBone(const std::string &name) { return *boneNameMapping.at(name); }
+
+        operator bool() const {
+            return !bones.empty();
+        }
+
+    private:
         std::vector<Bone> bones;
-        std::vector<SkeletalAnimation> animations;
+        std::map<std::string, std::vector<Bone>::iterator> boneNameMapping;
     };
 }
 

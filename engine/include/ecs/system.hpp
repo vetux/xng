@@ -22,6 +22,8 @@
 
 #include "ecs/entitycontainer.hpp"
 
+#include "types/deltatime.hpp"
+
 namespace xng {
     /**
      * Systems provide logic.
@@ -34,7 +36,7 @@ namespace xng {
 
         virtual void stop(EntityContainer &entityManager) {};
 
-        virtual void update(float deltaTime, EntityContainer &entityManager) {};
+        virtual void update(DeltaTime deltaTime, EntityContainer &entityManager) {};
     };
 }
 #endif //XENGINE_SYSTEM_HPP

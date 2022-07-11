@@ -22,13 +22,10 @@
 
 #include "math/matrix.hpp"
 
-#include "animation/skeletal/vertexweight.hpp"
-
 namespace xng {
-    struct Bone {
-        std::string name;
-        Mat4f offset;
-        std::vector<VertexWeight> weights;
+    struct XENGINE_EXPORT Bone {
+        std::string name; // The name of the bone
+        Mat4f offset; // The offset of the bone
     };
 }
 

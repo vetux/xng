@@ -17,14 +17,6 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_VERTEXWEIGHT_HPP
-#define XENGINE_VERTEXWEIGHT_HPP
+#include "animation/skeletal/riganimator.hpp"
 
-namespace xng {
-    struct VertexWeight {
-        size_t vertexIndex; // The index of the vertex in Mesh::vertices
-        float weight;
-    };
-}
-
-#endif //XENGINE_VERTEXWEIGHT_HPP
+#warning "Not Implemented"

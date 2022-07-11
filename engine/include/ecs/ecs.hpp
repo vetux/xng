@@ -26,6 +26,8 @@
 #include "ecs/system.hpp"
 #include "ecs/entity.hpp"
 
+#include "types/deltatime.hpp"
+
 namespace xng {
     class XENGINE_EXPORT ECS {
     public:
@@ -39,7 +41,7 @@ namespace xng {
 
         void start();
 
-        void update(float deltaTime);
+        void update(DeltaTime deltaTime);
 
         void stop();
 

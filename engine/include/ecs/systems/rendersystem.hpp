@@ -43,7 +43,7 @@ namespace xng {
 
         void stop(EntityContainer &entityManager) override;
 
-        void update(float deltaTime, EntityContainer &entityManager) override;
+        void update(DeltaTime deltaTime, EntityContainer &entityManager) override;
 
         SceneRenderer &getPipeline();
 

@@ -23,7 +23,7 @@
 #include "asset/mesh.hpp"
 
 namespace xng {
-    struct ColliderShape {
+    struct XENGINE_EXPORT ColliderShape {
         Primitive primitive = TRI;
         std::vector<Vec3f> vertices;
         std::vector<size_t> indices; // If not empty the indices into vertices in order.

@@ -60,11 +60,11 @@ namespace xng {
         }
     }
 
-    const ResourceHandle<Sprite> &SpriteAnimation::getFrame(float deltaTime) {
+    const ResourceHandle<Sprite> &SpriteAnimation::getFrame(DeltaTime deltaTime) {
         if (frames.empty())
             throw std::runtime_error("Animation not initialized");
 
-        if (!loop || currentTime < animationDuration) {
+        if (!loop || time < animationDuration) {
             if (clampDelta) {
                 if (deltaTime > frameTime) {
                     // If deltaTime is larger than frameTime we would skip frames therefore we clamp deltaTime to frameTime
@@ -73,19 +73,19 @@ namespace xng {
                 }
             }
 
-            currentTime += deltaTime;
+            time += deltaTime;
 
-            if (currentTime > animationDuration) {
+            if (time > animationDuration) {
                 if (loop) {
                     // Set currentTime to difference
-                    currentTime = currentTime - animationDuration;
+                    time = time - animationDuration;
                 } else {
-                    currentTime = animationDuration;
+                    time = animationDuration;
                 }
             }
         }
 
-        auto frame = numeric_cast<size_t>(currentTime / frameTime);
+        auto frame = numeric_cast<size_t>(time / frameTime);
         assert(frame < frames.size());
         return frames.at(frame)->sprite;
     }

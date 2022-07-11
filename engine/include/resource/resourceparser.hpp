@@ -32,7 +32,7 @@ namespace xng {
     /**
      * A parser creates resource objects from the data in buffers.
      */
-    class ResourceParser {
+    class XENGINE_EXPORT ResourceParser {
     public:
         virtual ~ResourceParser() = default;
 

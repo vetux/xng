@@ -33,7 +33,7 @@ namespace xng {
         System::stop(entityManager);
     }
 
-    void PhysicsSystem::update(float deltaTime, EntityContainer &entityManager) {
+    void PhysicsSystem::update(DeltaTime deltaTime, EntityContainer &entityManager) {
         System::update(deltaTime, entityManager);
     }
 }

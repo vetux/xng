@@ -41,7 +41,7 @@ namespace xng {
 
         void stop(EntityContainer &entityManager) override;
 
-        void update(float deltaTime, EntityContainer &entityManager) override;
+        void update(DeltaTime deltaTime, EntityContainer &entityManager) override;
 
     private:
         void onComponentCreate(const EntityHandle &entity, const AudioSourceComponent &component) override;
