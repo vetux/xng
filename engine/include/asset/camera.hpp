@@ -35,12 +35,12 @@ namespace xng {
     /**
      * A camera provides a view and projection matrix.
      */
-    struct XENGINE_EXPORT Camera {
+    struct XENGINE_EXPORT Camera : public Messageable {
         Camera() {}
 
         explicit Camera(CameraType type) : type(type) {}
 
-        Mat4f view() const {
+        static Mat4f view(const Transform &transform) {
             Mat4f ret = transform.getRotation().matrix();
 
             // "The engines move the universe" - Futurama (Negate camera position)
@@ -66,9 +66,34 @@ namespace xng {
             }
         }
 
-        CameraType type = PERSPECTIVE;
+        Messageable &operator<<(const Message &message) override {
+            type = message.value("type", PERSPECTIVE);
+            nearClip = message.value("nearClip", 0.1f);
+            farClip = message.value("farClip", 1000.0f);
+            fov = message.value("fov", 60.0f);
+            aspectRatio = message.value("aspectRatio", 4.0f / 3.0f);
+            left = message.value("left", -1.0f);
+            top = message.value("top", 1.0f);
+            right = message.value("right", 1.0f);
+            bottom = message.value("bottom", -1.0f);
+            return *this;
+        }
 
-        Transform transform;
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            message["type"] = type;
+            message["nearClip"] = nearClip;
+            message["farClip"] = farClip;
+            message["fov"] = fov;
+            message["aspectRatio"] = aspectRatio;
+            message["left"] = left;
+            message["top"] = top;
+            message["right"] = right;
+            message["bottom"] = bottom;
+            return message;
+        }
+
+        CameraType type = PERSPECTIVE;
 
         float nearClip = 0.1f;
         float farClip = 1000.0f;

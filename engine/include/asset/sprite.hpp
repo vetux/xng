@@ -35,7 +35,7 @@ namespace xng {
     /**
      * A sprite is a texture displayed on a planar quad mesh perpendicular to the camera.
      */
-    struct XENGINE_EXPORT Sprite : public Resource , public Messageable {
+    struct XENGINE_EXPORT Sprite : public Resource, public Messageable {
         Sprite() = default;
 
         Sprite(ResourceHandle<Texture> texture,
@@ -62,7 +62,8 @@ namespace xng {
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             offset >> message["offset"];
-            texture >> message["texture"];
+            if (texture)
+                texture >> message["texture"];
             return message;
         }
 

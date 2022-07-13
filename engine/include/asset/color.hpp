@@ -213,12 +213,11 @@ namespace xng {
         }
 
         Message &operator>>(Message &message) const override {
-            auto map = std::map<std::string, Message>();
-            map["r"] = r();
-            map["g"] = g();
-            map["b"] = b();
-            map["a"] = a();
-            message = map;
+            message = Message(Message::DICTIONARY);
+            message["r"] = r();
+            message["g"] = g();
+            message["b"] = b();
+            message["a"] = a();
             return message;
         }
 
