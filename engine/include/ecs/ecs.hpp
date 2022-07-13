@@ -26,6 +26,8 @@
 #include "ecs/system.hpp"
 #include "ecs/entity.hpp"
 
+#include "event/eventbus.hpp"
+
 #include "types/deltatime.hpp"
 
 namespace xng {
@@ -45,24 +47,16 @@ namespace xng {
 
         void stop();
 
-        Entity createEntity();
+        const EntityScene &getScene() const;
 
-        Entity createEntity(const std::string &name);
-
-        void destroyEntity(const Entity &entity);
-
-        Entity getEntity(const std::string &name);
-
-        const EntityContainer &getEntityContainer() const;
-
-        void setEntityContainer(const EntityContainer &container);
+        void setScene(const EntityScene &scene);
 
         const std::vector<std::reference_wrapper<System>> &getSystems() const;
 
         void setSystems(const std::vector<std::reference_wrapper<System>> &systems);
 
     private:
-        EntityContainer entityContainer;
+        EntityScene scene;
         std::vector<std::reference_wrapper<System>> systems;
     };
 }

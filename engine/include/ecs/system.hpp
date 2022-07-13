@@ -20,9 +20,8 @@
 #ifndef XENGINE_SYSTEM_HPP
 #define XENGINE_SYSTEM_HPP
 
-#include "ecs/entitycontainer.hpp"
-
 #include "types/deltatime.hpp"
+#include "ecs/entityscene.hpp"
 
 namespace xng {
     /**
@@ -32,11 +31,11 @@ namespace xng {
     public:
         virtual ~System() = default;
 
-        virtual void start(EntityContainer &entityManager) {};
+        virtual void start(EntityScene &scene) {};
 
-        virtual void stop(EntityContainer &entityManager) {};
+        virtual void stop(EntityScene &scene) {};
 
-        virtual void update(DeltaTime deltaTime, EntityContainer &entityManager) {};
+        virtual void update(DeltaTime deltaTime, EntityScene &scene) {};
     };
 }
 #endif //XENGINE_SYSTEM_HPP

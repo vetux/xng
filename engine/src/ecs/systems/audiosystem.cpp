@@ -33,15 +33,15 @@ namespace xng {
         context->makeCurrent();
     }
 
-    void AudioSystem::start(EntityContainer &entityManager) {
+    void AudioSystem::start(EntityScene &entityManager) {
         entityManager.getComponentContainer().getPool<AudioSourceComponent>().addListener(this);
     }
 
-    void AudioSystem::stop(EntityContainer &entityManager) {
+    void AudioSystem::stop(EntityScene &entityManager) {
         entityManager.getComponentContainer().getPool<AudioSourceComponent>().removeListener(this);
     }
 
-    void AudioSystem::update(DeltaTime deltaTime, EntityContainer &entityManager) {
+    void AudioSystem::update(DeltaTime deltaTime, EntityScene &entityManager) {
         auto &componentManager = entityManager.getComponentContainer();
 
         for (auto &pair: componentManager.getPool<AudioListenerComponent>()) {

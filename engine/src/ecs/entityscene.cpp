@@ -17,12 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ecs/entitycontainer.hpp"
-
+#include "ecs/entityscene.hpp"
 #include "ecs/components.hpp"
+#include "ecs/entity.hpp"
 
 namespace xng {
-    void EntityContainer::serializeEntity(const EntityHandle &entity, Message &message) const {
+    void EntityScene::serializeEntity(const EntityHandle &entity, Message &message) const {
         message = Message(Message::DICTIONARY);
         auto it = entityNamesReverse.find(entity);
         if (it != entityNamesReverse.end()) {
@@ -38,7 +38,7 @@ namespace xng {
         message["components"] = clist;
     }
 
-    void EntityContainer::deserializeEntity(const Message &message) {
+    void EntityScene::deserializeEntity(const Message &message) {
         EntityHandle entity(0);
         if (message.has("name")) {
             entity = create(message.at("name"));
@@ -50,12 +50,28 @@ namespace xng {
         }
     }
 
-    void EntityContainer::deserializeComponent(const EntityHandle &entity, const Message &message) {
+    void EntityScene::deserializeComponent(const EntityHandle &entity, const Message &message) {
         auto type = message.value("type", std::string(""));
         if (type == "transform") {
             TransformComponent component;
             component << message;
             components.create(entity, component);
         }
+    }
+
+    Entity EntityScene::createEntity() {
+        return Entity(create(), *this);
+    }
+
+    Entity EntityScene::createEntity(const std::string &name) {
+        return Entity(create(name), *this);
+    }
+
+    void EntityScene::destroyEntity(const Entity &entity) {
+        destroy(entity.getHandle());
+    }
+
+    Entity EntityScene::getEntity(const std::string &name) {
+        return Entity(getByName(name), *this);
     }
 }

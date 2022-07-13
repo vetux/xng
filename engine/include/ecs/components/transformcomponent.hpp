@@ -24,7 +24,7 @@
 
 #include <string>
 
-#include "ecs/entitycontainer.hpp"
+#include "ecs/entityscene.hpp"
 
 #include "io/messageable.hpp"
 
@@ -32,7 +32,7 @@ namespace xng {
     struct AssetScene;
 
     struct XENGINE_EXPORT TransformComponent : public Messageable {
-        static Transform walkHierarchy(const TransformComponent &component, EntityContainer &entityManager);
+        static Transform walkHierarchy(const TransformComponent &component, EntityScene &entityManager);
 
         bool enabled = true;
         Transform transform;

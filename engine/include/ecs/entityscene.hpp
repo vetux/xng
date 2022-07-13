@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_ENTITYCONTAINER_HPP
-#define XENGINE_ENTITYCONTAINER_HPP
+#ifndef XENGINE_ENTITYSCENE_HPP
+#define XENGINE_ENTITYSCENE_HPP
 
 #include <set>
 #include <limits>
@@ -28,19 +28,21 @@
 #include "io/messageable.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT EntityContainer : public Messageable {
+    class Entity;
+
+    class XENGINE_EXPORT EntityScene : public Messageable {
     public:
-        EntityContainer() = default;
+        EntityScene() = default;
 
-        ~EntityContainer() = default;
+        ~EntityScene() = default;
 
-        EntityContainer(const EntityContainer &other) = default;
+        EntityScene(const EntityScene &other) = default;
 
-        EntityContainer(EntityContainer &&other) noexcept = default;
+        EntityScene(EntityScene &&other) noexcept = default;
 
-        EntityContainer &operator=(const EntityContainer &other) = default;
+        EntityScene &operator=(const EntityScene &other) = default;
 
-        EntityContainer &operator=(EntityContainer &&other) noexcept = default;
+        EntityScene &operator=(EntityScene &&other) noexcept = default;
 
         /**
          * Optional name mapping.
@@ -112,6 +114,14 @@ namespace xng {
             entityNamesReverse.clear();
         }
 
+        Entity createEntity();
+
+        Entity createEntity(const std::string &name);
+
+        void destroyEntity(const Entity &entity);
+
+        Entity getEntity(const std::string &name);
+
         const std::set<EntityHandle> &getEntities() const {
             return entities;
         }
@@ -164,4 +174,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_ENTITYCONTAINER_HPP
+#endif //XENGINE_ENTITYSCENE_HPP

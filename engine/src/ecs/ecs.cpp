@@ -34,44 +34,28 @@ namespace xng {
 
     void ECS::start() {
         for (auto &system: systems) {
-            system.get().start(entityContainer);
+            system.get().start(scene);
         }
     }
 
     void ECS::update(DeltaTime deltaTime) {
         for (auto &system: systems) {
-            system.get().update(deltaTime, entityContainer);
+            system.get().update(deltaTime, scene);
         }
     }
 
     void ECS::stop() {
         for (auto &system: systems) {
-            system.get().stop(entityContainer);
+            system.get().stop(scene);
         }
     }
 
-    Entity ECS::createEntity() {
-        return Entity(entityContainer.create(), entityContainer);
+    const EntityScene &ECS::getScene() const {
+        return scene;
     }
 
-    Entity ECS::createEntity(const std::string &name) {
-        return Entity(entityContainer.create(name), entityContainer);
-    }
-
-    void ECS::destroyEntity(const Entity &entity) {
-        entityContainer.destroy(entity.getHandle());
-    }
-
-    Entity ECS::getEntity(const std::string &name) {
-        return Entity(entityContainer.getByName(name), entityContainer);
-    }
-
-    const EntityContainer &ECS::getEntityContainer() const {
-        return entityContainer;
-    }
-
-    void ECS::setEntityContainer(const EntityContainer &container) {
-        entityContainer = container;
+    void ECS::setScene(const EntityScene &v) {
+        scene = v;
     }
 
     const std::vector<std::reference_wrapper<System>> &ECS::getSystems() const {

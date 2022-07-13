@@ -25,15 +25,15 @@ namespace xng {
     PhysicsSystem::PhysicsSystem(World &world)
             : world(world) {}
 
-    void PhysicsSystem::start(EntityContainer &entityManager) {
+    void PhysicsSystem::start(EntityScene &entityManager) {
         System::start(entityManager);
     }
 
-    void PhysicsSystem::stop(EntityContainer &entityManager) {
+    void PhysicsSystem::stop(EntityScene &entityManager) {
         System::stop(entityManager);
     }
 
-    void PhysicsSystem::update(DeltaTime deltaTime, EntityContainer &entityManager) {
+    void PhysicsSystem::update(DeltaTime deltaTime, EntityScene &entityManager) {
         System::update(deltaTime, entityManager);
     }
 }

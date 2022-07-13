@@ -21,7 +21,7 @@
 #define XENGINE_ENTITY_HPP
 
 #include "ecs/entityhandle.hpp"
-#include "ecs/entitycontainer.hpp"
+#include "ecs/entityscene.hpp"
 #include "ecs/componentcontainer.hpp"
 
 namespace xng {
@@ -33,53 +33,53 @@ namespace xng {
         Entity() = default;
 
         Entity(EntityHandle handle,
-               EntityContainer &entityContainer)
+               EntityScene &entityContainer)
                 : handle(handle),
-                  entityContainer(&entityContainer) {}
+                  scene(&entityContainer) {}
 
         void setName(const std::string &name) {
             checkPointer();
-            entityContainer->setName(handle, name);
+            scene->setName(handle, name);
         }
 
         void clearName() {
             checkPointer();
-            entityContainer->clearName(handle);
+            scene->clearName(handle);
         }
 
         const std::string &getName() {
             checkPointer();
-            return entityContainer->getName(handle);
+            return scene->getName(handle);
         }
 
         template<typename T>
         const T &createComponent(const T &value = {}) {
             checkPointer();
-            return entityContainer->getComponentContainer().create<T>(handle, value);
+            return scene->getComponentContainer().create<T>(handle, value);
         }
 
         template<typename T>
         void destroyComponent() {
             checkPointer();
-            return entityContainer->getComponentContainer().destroy(handle);
+            return scene->getComponentContainer().destroy(handle);
         }
 
         template<typename T>
         const T &getComponent() {
             checkPointer();
-            return entityContainer->getComponentContainer().lookup<T>(handle);
+            return scene->getComponentContainer().lookup<T>(handle);
         }
 
         template<typename T>
         bool updateComponent(const T &value = {}) {
             checkPointer();
-            return entityContainer->getComponentContainer().update<T>(handle, value);
+            return scene->getComponentContainer().update<T>(handle, value);
         }
 
         template<typename T>
         bool checkComponent(const T &value = {}) {
             checkPointer();
-            return entityContainer->getComponentContainer().check<T>(value);
+            return scene->getComponentContainer().check<T>(value);
         }
 
         const EntityHandle &getHandle() const {
@@ -87,24 +87,24 @@ namespace xng {
             return handle;
         }
 
-        EntityContainer &getEntityContainer() {
+        EntityScene &getScene() {
             checkPointer();
-            return *entityContainer;
+            return *scene;
         }
 
-        const EntityContainer &getEntityContainer() const {
+        const EntityScene &getScene() const {
             checkPointer();
-            return *entityContainer;
+            return *scene;
         }
 
     private:
         void checkPointer() const {
-            if (entityContainer == nullptr)
+            if (scene == nullptr)
                 throw std::runtime_error("Entity not initialized.");
         }
 
         EntityHandle handle = EntityHandle(0);
-        EntityContainer *entityContainer = nullptr;
+        EntityScene *scene = nullptr;
     };
 }
 

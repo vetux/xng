@@ -21,7 +21,7 @@
 #define XENGINE_ENGINE_HPP
 
 #include "script/script.hpp"
-#include "ecs/entitycontainer.hpp"
+#include "ecs/entityscene.hpp"
 #include "ecs/entityhandle.hpp"
 #include "ecs/components.hpp"
 #include "ecs/entity.hpp"
