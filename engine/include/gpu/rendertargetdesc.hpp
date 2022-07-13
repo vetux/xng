@@ -22,7 +22,7 @@
 
 #include "math/vector2.hpp"
 
-#include "algo/hashcombine.hpp"
+#include "util/hashcombine.hpp"
 
 namespace xng {
     struct RenderTargetDesc {

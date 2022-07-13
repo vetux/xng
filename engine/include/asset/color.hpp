@@ -24,7 +24,7 @@
 
 #include "math/vector4.hpp"
 
-#include "cast/numeric_cast.hpp"
+#include "util/numeric_cast.hpp"
 
 #include "io/messageable.hpp"
 

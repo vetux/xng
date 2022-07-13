@@ -4,7 +4,7 @@
 #include <cmath>
 #include <array>
 
-#include "cast/numeric_cast.hpp"
+#include "util/numeric_cast.hpp"
 
 #include "io/messageable.hpp"
 

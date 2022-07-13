@@ -24,7 +24,7 @@
 
 #include "gpu/textureproperties.hpp"
 
-#include "algo/hashcombine.hpp"
+#include "util/hashcombine.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT TextureBufferDesc {

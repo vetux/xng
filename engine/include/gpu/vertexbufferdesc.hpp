@@ -24,8 +24,8 @@
 
 #include "gpu/vertexattribute.hpp"
 
-#include "algo/hashcombine.hpp"
-#include "algo/crc.hpp"
+#include "util/hashcombine.hpp"
+#include "util/crc.hpp"
 
 #include "asset/mesh.hpp"
 

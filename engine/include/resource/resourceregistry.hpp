@@ -37,7 +37,7 @@
 
 #include "async/threadpool.hpp"
 
-#include "algo/refcounter.hpp"
+#include "util/refcounter.hpp"
 
 namespace xng {
     /**

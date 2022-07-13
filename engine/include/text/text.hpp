@@ -21,7 +21,7 @@
 #define XENGINE_TEXT_HPP
 
 #include "text/font.hpp"
-#include "cast/numeric_cast.hpp"
+#include "util/numeric_cast.hpp"
 
 #include "gpu/renderdevice.hpp"
 

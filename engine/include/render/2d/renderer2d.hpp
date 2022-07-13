@@ -29,7 +29,7 @@
 
 #include "asset/camera.hpp"
 
-#include "algo/hashcombine.hpp"
+#include "util/hashcombine.hpp"
 
 #include "text/text.hpp"
 

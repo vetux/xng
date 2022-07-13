@@ -28,8 +28,8 @@
 #include "shader/spirvbundle.hpp"
 #include "shader/shaderstage.hpp"
 
-#include "algo/hashcombine.hpp"
-#include "algo/crc.hpp"
+#include "util/hashcombine.hpp"
+#include "util/crc.hpp"
 
 namespace xng {
     struct ShaderProgramDesc {

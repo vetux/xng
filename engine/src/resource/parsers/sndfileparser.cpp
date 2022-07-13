@@ -27,7 +27,7 @@
 #include "audio/audioformat.hpp"
 #include "asset/audio.hpp"
 
-#include "cast/numeric_cast.hpp"
+#include "util/numeric_cast.hpp"
 
 #include <sndfile.h>
 

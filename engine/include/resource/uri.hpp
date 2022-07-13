@@ -26,7 +26,7 @@
 #include <filesystem>
 #include <cassert>
 
-#include "algo/hashcombine.hpp"
+#include "util/hashcombine.hpp"
 
 #include "io/messageable.hpp"
 
