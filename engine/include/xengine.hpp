@@ -96,7 +96,7 @@
 #include "gpu/rendertarget.hpp"
 #include "gpu/vertexbufferdesc.hpp"
 #include "gpu/rendertargetdesc.hpp"
-#include "gpu/graphicsdriver.hpp"
+#include "gpu/gpudriver.hpp"
 #include "gpu/vertexattribute.hpp"
 #include "gpu/renderproperties.hpp"
 #include "gpu/shaderprogramdesc.hpp"

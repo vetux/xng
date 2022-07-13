@@ -20,7 +20,7 @@
 #ifndef XENGINE_OGLGPUDRIVER_HPP
 #define XENGINE_OGLGPUDRIVER_HPP
 
-#include "gpu/graphicsdriver.hpp"
+#include "gpu/gpudriver.hpp"
 
 namespace xng::opengl {
     class OGLGpuDriver : public GpuDriver {

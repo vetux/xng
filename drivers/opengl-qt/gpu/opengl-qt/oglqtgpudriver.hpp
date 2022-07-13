@@ -20,7 +20,7 @@
 #ifndef XENGINE_OGLQTGPUDRIVER_HPP
 #define XENGINE_OGLQTGPUDRIVER_HPP
 
-#include "gpu/graphicsdriver.hpp"
+#include "gpu/gpudriver.hpp"
 
 namespace xng {
     /**

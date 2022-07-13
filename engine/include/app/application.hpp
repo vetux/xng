@@ -28,7 +28,7 @@
 
 #include "audio/audiodriver.hpp"
 #include "display/displaydriver.hpp"
-#include "gpu/graphicsdriver.hpp"
+#include "gpu/gpudriver.hpp"
 
 #include "driver/drivermanager.hpp"
 

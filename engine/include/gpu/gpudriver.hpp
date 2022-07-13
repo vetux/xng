@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_GRAPHICSDRIVER_HPP
-#define XENGINE_GRAPHICSDRIVER_HPP
+#ifndef XENGINE_GPUDRIVER_HPP
+#define XENGINE_GPUDRIVER_HPP
 
 #include "driver/driver.hpp"
 
@@ -40,4 +40,4 @@ namespace xng {
         virtual std::unique_ptr<RenderDevice> createRenderDevice(const std::string &deviceName) = 0;
     };
 }
-#endif //XENGINE_GRAPHICSDRIVER_HPP
+#endif //XENGINE_GPUDRIVER_HPP
