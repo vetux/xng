@@ -22,8 +22,8 @@
 
 #include <memory>
 
-#include "graphics/renderdevice.hpp"
-#include "graphics/texturebuffer.hpp"
+#include "gpu/renderdevice.hpp"
+#include "gpu/texturebuffer.hpp"
 
 namespace xng {
     class XENGINE_EXPORT GBuffer {

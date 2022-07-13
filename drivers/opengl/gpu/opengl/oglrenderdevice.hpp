@@ -20,16 +20,16 @@
 #ifndef XENGINE_OGLRENDERDEVICE_HPP
 #define XENGINE_OGLRENDERDEVICE_HPP
 
-#include "graphics/renderdevice.hpp"
+#include "gpu/renderdevice.hpp"
 
-#include "graphics/opengl/oglbuildmacro.hpp"
+#include "gpu/opengl/oglbuildmacro.hpp"
 
-#include "graphics/opengl/oglrenderpipeline.hpp"
-#include "graphics/opengl/oglrendertarget.hpp"
-#include "graphics/opengl/ogltexturebuffer.hpp"
-#include "graphics/opengl/oglvertexbuffer.hpp"
-#include "graphics/opengl/oglshaderprogram.hpp"
-#include "graphics/opengl/oglshaderbuffer.hpp"
+#include "gpu/opengl/oglrenderpipeline.hpp"
+#include "gpu/opengl/oglrendertarget.hpp"
+#include "gpu/opengl/ogltexturebuffer.hpp"
+#include "gpu/opengl/oglvertexbuffer.hpp"
+#include "gpu/opengl/oglshaderprogram.hpp"
+#include "gpu/opengl/oglshaderbuffer.hpp"
 
 namespace xng::opengl {
     class OPENGL_TYPENAME(RenderDevice) : public RenderDevice OPENGL_INHERIT {

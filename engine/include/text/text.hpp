@@ -23,7 +23,7 @@
 #include "text/font.hpp"
 #include "cast/numeric_cast.hpp"
 
-#include "graphics/renderdevice.hpp"
+#include "gpu/renderdevice.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT Text {

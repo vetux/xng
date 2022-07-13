@@ -28,7 +28,7 @@
 #ifdef DRIVER_OPENGL
 
 #include "display/glfw/opengl/windowglfwgl.hpp"
-#include "graphics/opengl/oglrendertarget.hpp"
+#include "gpu/opengl/oglrendertarget.hpp"
 
 namespace xng {
     namespace ImGuiCompat {

@@ -23,8 +23,8 @@
 #include <vector>
 #include <memory>
 
-#include "graphics/vertexbuffer.hpp"
-#include "graphics/texturebuffer.hpp"
+#include "gpu/vertexbuffer.hpp"
+#include "gpu/texturebuffer.hpp"
 #include "shaderbuffer.hpp"
 #include "shaderprogram.hpp"
 

@@ -17,31 +17,27 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RENDERPIPELINE_HPP
-#define XENGINE_RENDERPIPELINE_HPP
+#include "gpu/opengl/oglgpudriver.hpp"
+#include "gpu/opengl/oglrenderdevice.hpp"
 
-#include "graphics/renderobject.hpp"
-#include "graphics/renderpipelinedesc.hpp"
-#include "graphics/renderpass.hpp"
-#include "graphics/rendertarget.hpp"
+#include "driver/drivermacro.hpp"
 
-namespace xng {
-    class RenderPipeline : public RenderObject {
-    public:
-        ~RenderPipeline() override = default;
+namespace xng::opengl {
+    static bool dr = REGISTER_DRIVER("opengl", OGLGpuDriver);
 
-        Type getType() override {
-            return RENDER_PIPELINE;
-        }
+    std::vector<RenderDeviceInfo> OGLGpuDriver::getAvailableRenderDevices() {
+        return {{.name = "default"}};
+    }
 
-        virtual void render(RenderTarget &target, const std::vector<RenderPass> &passes) = 0;
+    std::unique_ptr<RenderDevice> OGLGpuDriver::createRenderDevice() {
+        return std::make_unique<opengl::OGLRenderDevice>();
+    }
 
-        virtual const RenderPipelineDesc &getDescription() = 0;
+    std::unique_ptr<RenderDevice> OGLGpuDriver::createRenderDevice(const std::string &deviceName) {
+        return std::make_unique<opengl::OGLRenderDevice>();
+    }
 
-        virtual std::vector<uint8_t> cache() = 0;
-
-        virtual void setViewportSize(Vec2i viewportSize) = 0;
-    };
+    std::type_index OGLGpuDriver::getType() {
+        return typeid(OGLGpuDriver);
+    }
 }
-
-#endif //XENGINE_RENDERPIPELINE_HPP

@@ -20,8 +20,8 @@
 #ifndef XENGINE_WINDOW_HPP
 #define XENGINE_WINDOW_HPP
 
-#include "graphics/renderdevice.hpp"
-#include "graphics/rendertarget.hpp"
+#include "gpu/renderdevice.hpp"
+#include "gpu/rendertarget.hpp"
 
 #include "asset/image.hpp"
 

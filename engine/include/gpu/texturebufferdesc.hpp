@@ -22,7 +22,7 @@
 
 #include "math/vector2.hpp"
 
-#include "graphics/textureproperties.hpp"
+#include "gpu/textureproperties.hpp"
 
 #include "algo/hashcombine.hpp"
 

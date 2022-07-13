@@ -17,13 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_OGLQTGRAPHICSDRIVER_HPP
-#define XENGINE_OGLQTGRAPHICSDRIVER_HPP
+#ifndef XENGINE_OGLGPUDRIVER_HPP
+#define XENGINE_OGLGPUDRIVER_HPP
 
-#include "graphics/graphicsdriver.hpp"
+#include "gpu/graphicsdriver.hpp"
 
-namespace xng {
-    class OGLQtGraphicsDriver : public GraphicsDriver {
+namespace xng::opengl {
+    class OGLGpuDriver : public GpuDriver {
     public:
         std::vector<RenderDeviceInfo> getAvailableRenderDevices() override;
 
@@ -35,4 +35,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_OGLQTGRAPHICSDRIVER_HPP
+#endif //XENGINE_OGLGPUDRIVER_HPP

@@ -22,9 +22,9 @@
 
 #include <memory>
 
-#include "graphics/renderobject.hpp"
-#include "graphics/textureproperties.hpp"
-#include "graphics/texturebufferdesc.hpp"
+#include "gpu/renderobject.hpp"
+#include "gpu/textureproperties.hpp"
+#include "gpu/texturebufferdesc.hpp"
 
 #include "asset/image.hpp"
 

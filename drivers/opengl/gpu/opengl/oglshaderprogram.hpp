@@ -29,8 +29,8 @@
 #include "math/vector3.hpp"
 #include "math/matrix.hpp"
 
-#include "graphics/shaderprogram.hpp"
-#include "graphics/opengl/oglbuildmacro.hpp"
+#include "gpu/shaderprogram.hpp"
+#include "gpu/opengl/oglbuildmacro.hpp"
 
 #include "shader/shadercompiler.hpp"
 

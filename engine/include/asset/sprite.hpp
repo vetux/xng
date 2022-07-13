@@ -25,7 +25,7 @@
 
 #include "math/rectangle.hpp"
 
-#include "graphics/renderdevice.hpp"
+#include "gpu/renderdevice.hpp"
 
 #include "asset/texture.hpp"
 

@@ -17,37 +17,27 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SHADERBUFFER_HPP
-#define XENGINE_SHADERBUFFER_HPP
+#ifndef XENGINE_GRAPHICSDRIVER_HPP
+#define XENGINE_GRAPHICSDRIVER_HPP
 
-#include "graphics/renderobject.hpp"
+#include "driver/driver.hpp"
 
-#include "shaderbufferdesc.hpp"
+#include "gpu/renderdevice.hpp"
+#include "gpu/renderdeviceinfo.hpp"
 
 namespace xng {
-    class ShaderBuffer : public RenderObject {
+    class XENGINE_EXPORT GpuDriver : public Driver {
     public:
-        ~ShaderBuffer() override = default;
-
-        Type getType() override {
-            return SHADER_BUFFER;
-        }
-
-        virtual const ShaderBufferDesc &getDescription() = 0;
+        ~GpuDriver() override = default;
 
         /**
-         * Upload the given data to the shader buffer,
-         * size has to match the size of the shader buffer.
-         *
-         * @param data
-         * @param size
+         * @return Return the information objects of the available render devices.
          */
-        virtual void upload(const uint8_t *data, size_t size) = 0;
+        virtual std::vector<RenderDeviceInfo> getAvailableRenderDevices() = 0;
 
-        template<typename T>
-        void upload(const T &data) {
-            upload(reinterpret_cast<const uint8_t *>(&data), sizeof(T));
-        }
+        virtual std::unique_ptr<RenderDevice> createRenderDevice() = 0;
+
+        virtual std::unique_ptr<RenderDevice> createRenderDevice(const std::string &deviceName) = 0;
     };
 }
-#endif //XENGINE_SHADERBUFFER_HPP
+#endif //XENGINE_GRAPHICSDRIVER_HPP

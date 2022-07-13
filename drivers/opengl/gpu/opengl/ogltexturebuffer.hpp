@@ -20,9 +20,9 @@
 #ifndef XENGINE_OGLTEXTUREBUFFER_HPP
 #define XENGINE_OGLTEXTUREBUFFER_HPP
 
-#include "graphics/texturebuffer.hpp"
+#include "gpu/texturebuffer.hpp"
 
-#include "graphics/opengl/oglbuildmacro.hpp"
+#include "gpu/opengl/oglbuildmacro.hpp"
 
 namespace xng {
     namespace opengl {

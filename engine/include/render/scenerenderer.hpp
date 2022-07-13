@@ -21,7 +21,7 @@
 #define XENGINE_SCENERENDERER_HPP
 
 #include "asset/scene.hpp"
-#include "graphics/rendertarget.hpp"
+#include "gpu/rendertarget.hpp"
 
 namespace xng {
     class XENGINE_EXPORT SceneRenderer {

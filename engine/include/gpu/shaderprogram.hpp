@@ -20,7 +20,7 @@
 #ifndef XENGINE_SHADERPROGRAM_HPP
 #define XENGINE_SHADERPROGRAM_HPP
 
-#include "graphics/renderobject.hpp"
+#include "gpu/renderobject.hpp"
 #include "shaderprogramdesc.hpp"
 
 namespace xng {

@@ -24,7 +24,7 @@
 #include "render/graph/framegraphbuilder.hpp"
 #include "render/graph/framegraphblackboard.hpp"
 
-#include "graphics/renderdevice.hpp"
+#include "gpu/renderdevice.hpp"
 
 namespace xng {
     class XENGINE_EXPORT FrameGraphPass {

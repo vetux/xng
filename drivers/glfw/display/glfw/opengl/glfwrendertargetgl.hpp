@@ -20,7 +20,7 @@
 #ifndef XENGINE_GLFWRENDERTARGETGL_HPP
 #define XENGINE_GLFWRENDERTARGETGL_HPP
 
-#include "graphics/opengl/oglrendertarget.hpp"
+#include "gpu/opengl/oglrendertarget.hpp"
 
 namespace xng {
     namespace glfw {

@@ -20,8 +20,8 @@
 #ifndef XENGINE_VERTEXBUFFER_HPP
 #define XENGINE_VERTEXBUFFER_HPP
 
-#include "graphics/renderobject.hpp"
-#include "graphics/vertexbufferdesc.hpp"
+#include "gpu/renderobject.hpp"
+#include "gpu/vertexbufferdesc.hpp"
 
 #include "asset/mesh.hpp"
 

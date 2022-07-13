@@ -17,22 +17,37 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_OGLGRAPHICSDRIVER_HPP
-#define XENGINE_OGLGRAPHICSDRIVER_HPP
+#ifndef XENGINE_SHADERBUFFER_HPP
+#define XENGINE_SHADERBUFFER_HPP
 
-#include "graphics/graphicsdriver.hpp"
+#include "gpu/renderobject.hpp"
 
-namespace xng::opengl {
-    class OGLGraphicsDriver : public GraphicsDriver {
+#include "shaderbufferdesc.hpp"
+
+namespace xng {
+    class ShaderBuffer : public RenderObject {
     public:
-        std::vector<RenderDeviceInfo> getAvailableRenderDevices() override;
+        ~ShaderBuffer() override = default;
 
-        std::unique_ptr<RenderDevice> createRenderDevice() override;
+        Type getType() override {
+            return SHADER_BUFFER;
+        }
 
-        std::unique_ptr<RenderDevice> createRenderDevice(const std::string &deviceName) override;
+        virtual const ShaderBufferDesc &getDescription() = 0;
 
-        std::type_index getType() override;
+        /**
+         * Upload the given data to the shader buffer,
+         * size has to match the size of the shader buffer.
+         *
+         * @param data
+         * @param size
+         */
+        virtual void upload(const uint8_t *data, size_t size) = 0;
+
+        template<typename T>
+        void upload(const T &data) {
+            upload(reinterpret_cast<const uint8_t *>(&data), sizeof(T));
+        }
     };
 }
-
-#endif //XENGINE_OGLGRAPHICSDRIVER_HPP
+#endif //XENGINE_SHADERBUFFER_HPP

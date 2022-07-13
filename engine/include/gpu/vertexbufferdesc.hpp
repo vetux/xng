@@ -22,7 +22,7 @@
 
 #include <vector>
 
-#include "graphics/vertexattribute.hpp"
+#include "gpu/vertexattribute.hpp"
 
 #include "algo/hashcombine.hpp"
 #include "algo/crc.hpp"

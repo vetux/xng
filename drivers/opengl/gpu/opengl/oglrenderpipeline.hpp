@@ -20,15 +20,15 @@
 #ifndef XENGINE_OGLRENDERPIPELINE_HPP
 #define XENGINE_OGLRENDERPIPELINE_HPP
 
-#include "graphics/renderpipeline.hpp"
+#include "gpu/renderpipeline.hpp"
 
-#include "graphics/opengl/oglbuildmacro.hpp"
+#include "gpu/opengl/oglbuildmacro.hpp"
 
-#include "graphics/opengl/oglrendertarget.hpp"
-#include "graphics/opengl/oglshaderprogram.hpp"
-#include "graphics/opengl/oglshaderbuffer.hpp"
-#include "graphics/opengl/oglvertexbuffer.hpp"
-#include "graphics/opengl/ogltexturebuffer.hpp"
+#include "gpu/opengl/oglrendertarget.hpp"
+#include "gpu/opengl/oglshaderprogram.hpp"
+#include "gpu/opengl/oglshaderbuffer.hpp"
+#include "gpu/opengl/oglvertexbuffer.hpp"
+#include "gpu/opengl/ogltexturebuffer.hpp"
 
 namespace xng::opengl {
     class OPENGL_TYPENAME(RenderPipeline) : public RenderPipeline OPENGL_INHERIT {

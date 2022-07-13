@@ -20,11 +20,11 @@
 #ifndef XENGINE_OGLRENDERTARGET_HPP
 #define XENGINE_OGLRENDERTARGET_HPP
 
-#include "graphics/rendertarget.hpp"
+#include "gpu/rendertarget.hpp"
 
-#include "graphics/opengl/oglbuildmacro.hpp"
+#include "gpu/opengl/oglbuildmacro.hpp"
 
-#include "graphics/opengl/ogltexturebuffer.hpp"
+#include "gpu/opengl/ogltexturebuffer.hpp"
 
 namespace xng {
     namespace opengl {

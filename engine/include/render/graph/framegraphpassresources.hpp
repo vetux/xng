@@ -27,10 +27,10 @@
 #include "render/graph/framegraphresource.hpp"
 #include "render/graph/gbuffer.hpp"
 
-#include "graphics/texturebuffer.hpp"
-#include "graphics/vertexbuffer.hpp"
-#include "graphics/rendertarget.hpp"
-#include "graphics/shaderprogram.hpp"
+#include "gpu/texturebuffer.hpp"
+#include "gpu/vertexbuffer.hpp"
+#include "gpu/rendertarget.hpp"
+#include "gpu/shaderprogram.hpp"
 
 namespace xng {
     class XENGINE_EXPORT FrameGraphPassResources {

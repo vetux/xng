@@ -23,7 +23,7 @@
 #include <functional>
 
 #include "shaderprogram.hpp"
-#include "graphics/renderproperties.hpp"
+#include "gpu/renderproperties.hpp"
 #include "asset/color.hpp"
 
 #include "math/vector2.hpp"

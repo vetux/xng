@@ -23,23 +23,23 @@
 #include <map>
 #include <functional>
 
-#include "graphics/renderpipeline.hpp"
-#include "graphics/rendertarget.hpp"
-#include "graphics/texturebuffer.hpp"
-#include "graphics/vertexbuffer.hpp"
+#include "gpu/renderpipeline.hpp"
+#include "gpu/rendertarget.hpp"
+#include "gpu/texturebuffer.hpp"
+#include "gpu/vertexbuffer.hpp"
 #include "shaderprogram.hpp"
 #include "shaderbuffer.hpp"
 
-#include "graphics/vertexattribute.hpp"
+#include "gpu/vertexattribute.hpp"
 
-#include "graphics/renderpipelinedesc.hpp"
+#include "gpu/renderpipelinedesc.hpp"
 #include "shaderprogramdesc.hpp"
 #include "shaderbufferdesc.hpp"
-#include "graphics/vertexbufferdesc.hpp"
-#include "graphics/rendertargetdesc.hpp"
-#include "graphics/texturebufferdesc.hpp"
+#include "gpu/vertexbufferdesc.hpp"
+#include "gpu/rendertargetdesc.hpp"
+#include "gpu/texturebufferdesc.hpp"
 
-#include "graphics/renderpass.hpp"
+#include "gpu/renderpass.hpp"
 
 #include "asset/mesh.hpp"
 

@@ -23,7 +23,7 @@
 #include <set>
 #include <unordered_set>
 
-#include "graphics/renderdevice.hpp"
+#include "gpu/renderdevice.hpp"
 
 #include "shader/shadersource.hpp"
 

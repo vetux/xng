@@ -62,8 +62,8 @@ void initialize() { \
 
 #endif
 
-#include "graphics/renderproperties.hpp"
-#include "graphics/textureproperties.hpp"
+#include "gpu/renderproperties.hpp"
+#include "gpu/textureproperties.hpp"
 
 #define OPENGL_CONVERSION_MEMBERS GLenum getColorAttachment(int index) {\
 return GL_COLOR_ATTACHMENT0 + index;\

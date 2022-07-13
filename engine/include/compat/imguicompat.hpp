@@ -20,7 +20,7 @@
 #ifndef XENGINE_IMGUICOMPAT_HPP
 #define XENGINE_IMGUICOMPAT_HPP
 
-#include "graphics/rendertarget.hpp"
+#include "gpu/rendertarget.hpp"
 #include "display/window.hpp"
 
 namespace xng {

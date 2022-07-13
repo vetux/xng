@@ -24,7 +24,7 @@
 
 #include "resource/resourcehandle.hpp"
 
-#include "graphics/renderdevice.hpp"
+#include "gpu/renderdevice.hpp"
 
 #include "asset/texture.hpp"
 #include "asset/mesh.hpp"

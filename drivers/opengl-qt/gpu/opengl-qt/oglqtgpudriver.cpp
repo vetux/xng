@@ -17,27 +17,30 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_GRAPHICSDRIVER_HPP
-#define XENGINE_GRAPHICSDRIVER_HPP
+#include "gpu/opengl-qt/oglqtgpudriver.hpp"
 
-#include "driver/driver.hpp"
+#define OPENGL_BUILD_QT
 
-#include "graphics/renderdevice.hpp"
-#include "graphics/renderdeviceinfo.hpp"
+#include "gpu/opengl/oglrenderdevice.hpp"
+
+#include "driver/drivermacro.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT GraphicsDriver : public Driver {
-    public:
-        ~GraphicsDriver() override = default;
+    static bool dr = REGISTER_DRIVER("opengl-qt", OGLQtGpuDriver);
 
-        /**
-         * @return Return the information objects of the available render devices.
-         */
-        virtual std::vector<RenderDeviceInfo> getAvailableRenderDevices() = 0;
+    std::vector<RenderDeviceInfo> OGLQtGpuDriver::getAvailableRenderDevices() {
+        return {{.name = "default"}};
+    }
 
-        virtual std::unique_ptr<RenderDevice> createRenderDevice() = 0;
+    std::unique_ptr<RenderDevice> OGLQtGpuDriver::createRenderDevice() {
+        return std::make_unique<opengl::OGLQtRenderDevice>();
+    }
 
-        virtual std::unique_ptr<RenderDevice> createRenderDevice(const std::string &deviceName) = 0;
-    };
+    std::unique_ptr<RenderDevice> OGLQtGpuDriver::createRenderDevice(const std::string &deviceName) {
+        return std::make_unique<opengl::OGLQtRenderDevice>();
+    }
+
+    std::type_index OGLQtGpuDriver::getType() {
+        return typeid(OGLQtGpuDriver);
+    }
 }
-#endif //XENGINE_GRAPHICSDRIVER_HPP

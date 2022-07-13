@@ -22,7 +22,7 @@
 
 #include "resource/resourcehandle.hpp"
 
-#include "graphics/renderobject.hpp"
+#include "gpu/renderobject.hpp"
 
 #include "render/graph/framegraphresource.hpp"
 #include "render/graph/framegraphpassresources.hpp"

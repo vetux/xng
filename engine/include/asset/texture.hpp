@@ -20,7 +20,7 @@
 #ifndef XENGINE_TEXTURE_HPP
 #define XENGINE_TEXTURE_HPP
 
-#include "graphics/texturebuffer.hpp"
+#include "gpu/texturebuffer.hpp"
 #include "resource/resourcehandle.hpp"
 #include "asset/image.hpp"
 

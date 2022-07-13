@@ -21,7 +21,7 @@
 #define XENGINE_FORWARDPIPELINE_HPP
 
 #include "render/scenerenderer.hpp"
-#include "graphics/renderdevice.hpp"
+#include "gpu/renderdevice.hpp"
 
 namespace xng {
     class XENGINE_EXPORT ForwardRenderer : public SceneRenderer {

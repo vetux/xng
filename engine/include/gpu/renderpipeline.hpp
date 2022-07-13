@@ -17,30 +17,31 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "graphics/opengl-qt/oglqtgraphicsdriver.hpp"
+#ifndef XENGINE_RENDERPIPELINE_HPP
+#define XENGINE_RENDERPIPELINE_HPP
 
-#define OPENGL_BUILD_QT
-
-#include "graphics/opengl/oglrenderdevice.hpp"
-
-#include "driver/drivermacro.hpp"
+#include "gpu/renderobject.hpp"
+#include "gpu/renderpipelinedesc.hpp"
+#include "gpu/renderpass.hpp"
+#include "gpu/rendertarget.hpp"
 
 namespace xng {
-    static bool dr = REGISTER_DRIVER("opengl-qt", OGLQtGraphicsDriver);
+    class RenderPipeline : public RenderObject {
+    public:
+        ~RenderPipeline() override = default;
 
-    std::vector<RenderDeviceInfo> OGLQtGraphicsDriver::getAvailableRenderDevices() {
-        return {{.name = "default"}};
-    }
+        Type getType() override {
+            return RENDER_PIPELINE;
+        }
 
-    std::unique_ptr<RenderDevice> OGLQtGraphicsDriver::createRenderDevice() {
-        return std::make_unique<opengl::OGLQtRenderDevice>();
-    }
+        virtual void render(RenderTarget &target, const std::vector<RenderPass> &passes) = 0;
 
-    std::unique_ptr<RenderDevice> OGLQtGraphicsDriver::createRenderDevice(const std::string &deviceName) {
-        return std::make_unique<opengl::OGLQtRenderDevice>();
-    }
+        virtual const RenderPipelineDesc &getDescription() = 0;
 
-    std::type_index OGLQtGraphicsDriver::getType() {
-        return typeid(OGLQtGraphicsDriver);
-    }
+        virtual std::vector<uint8_t> cache() = 0;
+
+        virtual void setViewportSize(Vec2i viewportSize) = 0;
+    };
 }
+
+#endif //XENGINE_RENDERPIPELINE_HPP

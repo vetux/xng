@@ -25,7 +25,7 @@
 #include "render/graph/framegraphpool.hpp"
 #include "render/graph/framegraphpass.hpp"
 
-#include "graphics/renderdevice.hpp"
+#include "gpu/renderdevice.hpp"
 
 namespace xng {
     class XENGINE_EXPORT FrameGraphRenderer : public SceneRenderer {

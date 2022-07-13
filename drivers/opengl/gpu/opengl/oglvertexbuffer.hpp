@@ -20,11 +20,11 @@
 #ifndef XENGINE_OGLVERTEXBUFFER_HPP
 #define XENGINE_OGLVERTEXBUFFER_HPP
 
-#include "graphics/vertexbuffer.hpp"
+#include "gpu/vertexbuffer.hpp"
 
 #include <utility>
 
-#include "graphics/opengl/oglbuildmacro.hpp"
+#include "gpu/opengl/oglbuildmacro.hpp"
 
 #include "asset/mesh.hpp"
 

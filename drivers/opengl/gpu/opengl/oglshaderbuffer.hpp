@@ -20,7 +20,7 @@
 #ifndef XENGINE_OGLSHADERBUFFER_HPP
 #define XENGINE_OGLSHADERBUFFER_HPP
 
-#include "graphics/opengl/oglbuildmacro.hpp"
+#include "gpu/opengl/oglbuildmacro.hpp"
 
 namespace xng::opengl {
     class OPENGL_TYPENAME(ShaderBuffer) : public ShaderBuffer OPENGL_INHERIT {
