@@ -67,7 +67,7 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            type = message.value("type", PERSPECTIVE);
+            type = static_cast<CameraType>(message.value("type", static_cast<int>(PERSPECTIVE)));
             nearClip = message.value("nearClip", 0.1f);
             farClip = message.value("farClip", 1000.0f);
             fov = message.value("fov", 60.0f);
@@ -81,7 +81,7 @@ namespace xng {
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            message["type"] = type;
+            message["type"] = static_cast<int>(type);
             message["nearClip"] = nearClip;
             message["farClip"] = farClip;
             message["fov"] = fov;

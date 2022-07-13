@@ -50,6 +50,7 @@ namespace xng {
             bool receiveShadow = false;
         };
 
+        Transform cameraTransform;
         Camera camera;
         Skybox skybox;
         std::vector<Light> lights;

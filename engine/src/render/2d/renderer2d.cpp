@@ -94,6 +94,8 @@ void main() {
 }
 )###";
 
+static const Transform cameraPosition = Transform({0, 0, 1}, Vec3f(), {});
+
 static float distance(float val1, float val2) {
     float abs = val1 - val2;
     if (abs < 0)
@@ -283,7 +285,6 @@ namespace xng {
             throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
 
         camera.type = ORTHOGRAPHIC;
-        camera.transform.setPosition({0, 0, 1});
         camera.left = projection.position.x;
         camera.right = projection.dimensions.x;
         camera.top = projection.position.y;
@@ -308,7 +309,7 @@ namespace xng {
                 0));
         model = model * MatrixMath::rotate(Vec3f(0, 0, rotation));
 
-        auto mvp = camera.projection() * camera.view() * model;
+        auto mvp = camera.projection() * camera.view(cameraPosition) * model;
 
         ShaderUniformBuffer shaderBufferUniform;
         shaderBufferUniform.use_texture = 1;
@@ -348,7 +349,7 @@ namespace xng {
                 0));
         modelMatrix = modelMatrix * MatrixMath::rotate(Vec3f(0, 0, rotation));
 
-        auto mvp = camera.projection() * camera.view() * modelMatrix;
+        auto mvp = camera.projection() * camera.view(cameraPosition) * modelMatrix;
 
         ShaderUniformBuffer shaderBufferUniform;
         shaderBufferUniform.use_texture = 0;
@@ -381,7 +382,7 @@ namespace xng {
         Mat4f modelMatrix = MatrixMath::identity();
         modelMatrix = modelMatrix * MatrixMath::rotate(Vec3f(0, 0, rotation));
 
-        auto mvp = camera.projection() * camera.view() * modelMatrix;
+        auto mvp = camera.projection() * camera.view(cameraPosition) * modelMatrix;
 
         ShaderUniformBuffer shaderBufferUniform;
         shaderBufferUniform.use_texture = 0;
@@ -408,7 +409,7 @@ namespace xng {
         VertexBuffer &buffer = getPoint(point);
 
         Mat4f modelMatrix = MatrixMath::identity();
-        auto mvp = camera.projection() * camera.view() * modelMatrix;
+        auto mvp = camera.projection() * camera.view(cameraPosition) * modelMatrix;
 
         ShaderUniformBuffer shaderBufferUniform;
         shaderBufferUniform.use_texture = 0;
@@ -443,7 +444,7 @@ namespace xng {
                 0));
         model = model * MatrixMath::rotate(Vec3f(0, 0, rotation));
 
-        auto mvp = camera.projection() * camera.view() * model;
+        auto mvp = camera.projection() * camera.view(cameraPosition) * model;
 
         ShaderUniformBuffer shaderBufferUniform;
         shaderBufferUniform.use_texture = 1;
@@ -488,7 +489,7 @@ namespace xng {
 
         Mat4f modelMatrix = MatrixMath::identity();
 
-        auto mvp = camera.projection() * camera.view() * modelMatrix;
+        auto mvp = camera.projection() * camera.view(cameraPosition) * modelMatrix;
 
         ShaderUniformBuffer shaderBufferUniform;
         shaderBufferUniform.use_texture = 0;

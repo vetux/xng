@@ -89,7 +89,7 @@ namespace xng {
                     (float) screenTarget.getDescription().size.x / (float) screenTarget.getDescription().size.y;
 
             scene.camera = comp.camera;
-            scene.camera.transform = TransformComponent::walkHierarchy(tcomp, entityManager);
+            scene.cameraTransform = TransformComponent::walkHierarchy(tcomp, entityManager);
 
             break;
         }
