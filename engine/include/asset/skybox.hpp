@@ -27,9 +27,10 @@
 #include "asset/texture.hpp"
 
 #include "asset/color.hpp"
+#include "io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT Skybox : public Resource {
+    struct XENGINE_EXPORT Skybox : public Resource, public Messageable {
         ~Skybox() override = default;
 
         std::unique_ptr<Resource> clone() override {
@@ -38,6 +39,20 @@ namespace xng {
 
         std::type_index getTypeIndex() override {
             return typeid(Skybox);
+        }
+
+        Messageable &operator<<(const Message &message) override {
+            color << message.value("color");
+            texture << message.value("texture");
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            color >> message["color"];
+            if (texture)
+                texture >> message["texture"];
+            return message;
         }
 
         ColorRGBA color = {12, 123, 123, 255}; // If texture is unassigned skybox color is drawn

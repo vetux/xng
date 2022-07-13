@@ -7,6 +7,8 @@
 #include "math/vector3.hpp"
 #include "math/vector4.hpp"
 
+#include "io/messageable.hpp"
+
 namespace xng {
     /**
      * Data is stored in COLUMN MAJOR layout.
@@ -16,23 +18,27 @@ namespace xng {
      * @tparam H The row count of the matrix.
      */
     template<typename T, int W, int H>
-    class XENGINE_EXPORT Matrix {
+    class XENGINE_EXPORT Matrix : public Messageable {
     public:
         static const size_t ROW_SIZE = W * sizeof(T);
         static const size_t COLUMN_SIZE = H * sizeof(T);
+
+        static int width() {
+            return W;
+        }
+
+        static int height() {
+            return H;
+        }
+
+        static int size() {
+            return W * H;
+        }
 
         //Public to ensure address of instance = first element of data, Array to ensure contiguous memory.
         T data[W * H];
 
         Matrix() : data() {};
-
-        int width() const {
-            return W;
-        }
-
-        int height() const {
-            return H;
-        }
 
         void set(int col, int row, T v) {
             assert(col >= 0 && col < W);
@@ -112,6 +118,26 @@ namespace xng {
                 }
             }
             return ret;
+        }
+
+        Messageable &operator<<(const Message &message) override {
+            if (message.getType() == Message::LIST) {
+                auto v = message.asList();
+                for (int i = 0; i < Matrix<T, W, H>::size() && i < v.size(); i++) {
+                    data[i] = v.at(i);
+                }
+            } else {
+                std::fill_n(data, size(), 0);
+            }
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::LIST);
+            for (int i = 0; i < Matrix<T, W, H>::size(); i++) {
+                message[i] = data[i];
+            }
+            return message;
         }
     };
 

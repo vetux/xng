@@ -134,6 +134,8 @@ namespace xng {
             return getPool<T>().check(entity);
         }
 
+        const std::map<std::type_index, std::unique_ptr<ComponentPoolBase>> &getPools() { return pools; }
+
     private:
         std::map<std::type_index, std::unique_ptr<ComponentPoolBase>> pools;
     };

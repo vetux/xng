@@ -21,18 +21,50 @@
 #define XENGINE_LIGHT_HPP
 
 #include "math/transform.hpp"
+#include "io/messageable.hpp"
 
 namespace xng {
-    enum LightType {
-        LIGHT_DIRECTIONAL,
-        LIGHT_POINT,
-        LIGHT_SPOT
+    enum LightType : int {
+        LIGHT_DIRECTIONAL = 0,
+        LIGHT_POINT = 1,
+        LIGHT_SPOT = 2
     };
 
-    struct XENGINE_EXPORT Light {
+    struct XENGINE_EXPORT Light : public Messageable {
         Light() : type() {}
 
         explicit Light(LightType type) : type(type) {}
+
+        Messageable &operator<<(const Message &message) override {
+            type = static_cast<LightType>(message.value("type", 0));
+            transform << message.value("transform");
+            ambient << message.value("ambient");
+            diffuse << message.value("diffuse");
+            specular << message.value("specular");
+            direction << message.value("direction");
+            cutOff = message.value("cutOff", 0.0f);
+            outerCutOff = message.value("outerCutOff", 0.0f);
+            constant = message.value("constant", 0.0f);
+            linear = message.value("linear", 0.0f);
+            quadratic = message.value("quadratic", 0.0f);
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            message["type"] = static_cast<int>(type);
+            transform >> message["transform"];
+            ambient >> message["ambient"];
+            diffuse >> message["diffuse"];
+            specular >> message["specular"];
+            direction >> message["direction"];
+            message["cutOff"] = cutOff;
+            message["outerCutOff"] = outerCutOff;
+            message["constant"] = constant;
+            message["linear"] = linear;
+            message["quadratic"] = quadratic;
+            return message;
+        }
 
         LightType type;
 

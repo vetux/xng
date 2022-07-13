@@ -24,8 +24,10 @@
 #include "quaternion.hpp"
 #include "math/matrixmath.hpp"
 
+#include "io/messageable.hpp"
+
 namespace xng {
-    struct XENGINE_EXPORT Transform {
+    struct XENGINE_EXPORT Transform : public Messageable {
         Transform() = default;
 
         Transform(Vec3f position, Vec3f rotation, Vec3f scale) : mPosition(position),
@@ -100,6 +102,23 @@ namespace xng {
 
         Vec3f left() const {
             return rotate(Vec3f(-1, 0, 0));
+        }
+
+        Messageable &operator<<(const Message &message) override {
+            mPosition << message.value("position");
+            Vec3f euler;
+            euler << message.value("rotation");
+            mRotation = Quaternion(euler);
+            mScale << message.value("scale");
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            mPosition >> message["position"];
+            mRotation.getEulerAngles() >> message["rotation"];
+            mScale >> message["scale"];
+            return message;
         }
 
     private:

@@ -21,12 +21,11 @@
 #define XENGINE_MATERIAL_HPP
 
 #include "asset/texture.hpp"
-
 #include "resource/resourcehandle.hpp"
-#include "asset/texture.hpp"
+#include "io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT Material : public Resource {
+    struct XENGINE_EXPORT Material : public Resource, public Messageable {
         ~Material() override = default;
 
         std::unique_ptr<Resource> clone() override {
@@ -35,6 +34,43 @@ namespace xng {
 
         std::type_index getTypeIndex() override {
             return typeid(Material);
+        }
+
+        Messageable &operator<<(const Message &message) override {
+            diffuse << message.value("diffuse");
+            ambient << message.value("ambient");
+            specular << message.value("specular");
+            emissive << message.value("emissive");
+            shininess = message.value("shininess", 32.0f);
+            diffuseTexture << message.value("diffuseTexture");
+            ambientTexture << message.value("ambientTexture");
+            specularTexture << message.value("specularTexture");
+            emissiveTexture <<message.value("emissiveTexture");
+            shininessTexture << message.value("shininessTexture");
+            normalTexture << message.value("normalTexture");
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            diffuse >> message["diffuse"];
+            ambient >> message["ambient"];
+            specular >> message["specular"];
+            emissive >> message["emissive"];
+            message["shininess"] = shininess;
+            if (diffuseTexture)
+                diffuseTexture >> message["diffuseTexture"];
+            if (ambientTexture)
+                ambientTexture >> message["ambientTexture"];
+            if (specularTexture)
+                specularTexture >> message["specularTexture"];
+            if (emissiveTexture)
+                emissiveTexture >> message["emissiveTexture"];
+            if (shininessTexture)
+                shininessTexture >> message["shininessTexture"];
+            if (normalTexture)
+                normalTexture >> message["normalTexture"];
+            return message;
         }
 
         ColorRGBA diffuse{};

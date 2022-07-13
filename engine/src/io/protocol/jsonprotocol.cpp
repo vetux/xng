@@ -26,21 +26,21 @@ namespace xng {
         nlohmann::json ret;
         switch (message.getType()) {
             case Message::INT:
-                ret = message.get<long>();
+                ret = message.as<long>();
                 break;
             case Message::FLOAT:
-                ret = message.get<double>();
+                ret = message.as<double>();
                 break;
             case Message::STRING:
-                ret = message.get<std::string>();
+                ret = message.as<std::string>();
                 break;
             case Message::DICTIONARY:
-                for (auto &m : message.get<std::map<std::string, Message>>()) {
+                for (auto &m : message.as<std::map<std::string, Message>>()) {
                     ret[m.first] = convertMessage(m.second);
                 }
                 break;
             case Message::LIST:
-                for (auto &m : message.get<std::vector<Message>>()) {
+                for (auto &m : message.as<std::vector<Message>>()) {
                     ret.emplace_back(convertMessage(m));
                 }
                 break;

@@ -22,8 +22,10 @@
 
 #include "math/matrix.hpp"
 
+#include "io/messageable.hpp"
+
 namespace xng {
-    class XENGINE_EXPORT Quaternion {
+    class XENGINE_EXPORT Quaternion : public Messageable {
     public:
         float w, x, y, z;
 
@@ -64,6 +66,10 @@ namespace xng {
         static Quaternion normalize(const Quaternion &q);
 
         static Quaternion slerp(const Quaternion &a, const Quaternion &b, float advance);
+
+        Messageable &operator<<(const Message &message) override;
+
+        Message &operator>>(Message &message) const override;
     };
 }
 

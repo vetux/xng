@@ -26,8 +26,10 @@
 
 #include "cast/numeric_cast.hpp"
 
+#include "io/messageable.hpp"
+
 namespace xng {
-    struct XENGINE_EXPORT ColorRGB {
+    struct XENGINE_EXPORT ColorRGB : public Messageable {
         uint8_t data[3];
 
         uint8_t &r() { return data[0]; }
@@ -65,9 +67,24 @@ namespace xng {
         bool operator!=(const ColorRGB &other) const {
             return !(*this == other);
         }
+
+        Messageable &operator<<(const Message &message) override {
+            r() = message.value("r", 0);
+            g() = message.value("g", 0);
+            b() = message.value("b", 0);
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            message["r"] = r();
+            message["g"] = g();
+            message["b"] = b();
+            return message;
+        }
     };
 
-    struct XENGINE_EXPORT ColorRGBA {
+    struct XENGINE_EXPORT ColorRGBA : public Messageable {
         uint8_t data[4];
 
         static ColorRGBA black(float intensity = 1, uint8_t alpha = 255) {
@@ -185,6 +202,24 @@ namespace xng {
 
         bool operator!=(const ColorRGBA &other) const {
             return !(*this == other);
+        }
+
+        Messageable &operator<<(const Message &message) override {
+            r() = message.value("r", 0);
+            g() = message.value("g", 0);
+            b() = message.value("b", 0);
+            a() = message.value("a", 0);
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            auto map = std::map<std::string, Message>();
+            map["r"] = r();
+            map["g"] = g();
+            map["b"] = b();
+            map["a"] = a();
+            message = map;
+            return message;
         }
 
         Vec4f divide(float divisor = 255) const {

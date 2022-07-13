@@ -23,6 +23,7 @@
 #include <map>
 #include <vector>
 #include <stdexcept>
+#include <set>
 
 namespace xng {
     class XENGINE_EXPORT Message;
@@ -30,6 +31,7 @@ namespace xng {
     class XENGINE_EXPORT Message {
     public:
         enum DataType {
+            NUL,
             INT,
             FLOAT,
             STRING,
@@ -37,7 +39,7 @@ namespace xng {
             LIST
         };
 
-        Message() : type(INT) { ival = 0; }
+        explicit Message(DataType type = NUL) : type(type) {}
 
         Message(int value) : type(INT) { ival = value; }
 
@@ -70,6 +72,8 @@ namespace xng {
         Message &operator[](int index) {
             if (type != LIST)
                 throw std::runtime_error("Type error");
+            if (vval.size() >= index)
+                vval.resize(index + 1);
             return vval.at(index);
         }
 
@@ -77,6 +81,12 @@ namespace xng {
             if (type != LIST)
                 throw std::runtime_error("Type error");
             return vval.at(index);
+        }
+
+        bool has(const char *name) const {
+            if (type != DICTIONARY)
+                throw std::runtime_error("Type error");
+            return mval.find(name) != mval.end();
         }
 
         Message &at(const char *name) {
@@ -146,49 +156,59 @@ namespace xng {
         DataType getType() const { return type; }
 
         template<typename T>
-        T get() const {
+        T as() const {
             return static_cast<T>(*this);
         }
 
-        int getInt() const {
-            return get<int>();
+        int asInt() const {
+            return as<int>();
         }
 
-        long getLong() const {
-            return get<long>();
+        long asLong() const {
+            return as<long>();
         }
 
-        bool getBool() const {
-            return get<bool>();
+        bool asBool() const {
+            return as<bool>();
         }
 
-        float getFloat() const {
-            return get<float>();
+        float asFloat() const {
+            return as<float>();
         }
 
-        double getDouble() const {
-            return get<double>();
+        double asDouble() const {
+            return as<double>();
         }
 
-        std::string getString() const {
-            return get<std::string>();
+        std::string asString() const {
+            return as<std::string>();
         }
 
-        std::map<std::string, Message> getMap() const {
-            return get<std::map<std::string, Message>>();
+        std::map<std::string, Message> asMap() const {
+            return as<std::map<std::string, Message>>();
         }
 
-        std::vector<Message> getVector() const {
-            return get<std::vector<Message>>();
+        std::vector<Message> asList() const {
+            return as<std::vector<Message>>();
+        }
+
+        template<typename T>
+        T valueOf(const std::set<std::string> &names, T defValue) const {
+            for (auto &name: names) {
+                auto it = mval.find(name);
+                if (it != mval.end())
+                    return it->second;
+            }
+            return defValue;
         }
 
         template<typename T>
         T value(const std::string &name, T defValue) const {
-            auto it = mval.find(name);
-            if (it != mval.end())
-                return it->second;
-            else
-                return defValue;
+            return valueOf({name}, defValue);
+        }
+
+        Message value(const std::string &name) const {
+            return valueOf({name}, Message());
         }
 
     private:

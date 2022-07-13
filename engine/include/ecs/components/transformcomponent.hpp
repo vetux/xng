@@ -26,15 +26,32 @@
 
 #include "ecs/entitycontainer.hpp"
 
+#include "io/messageable.hpp"
+
 namespace xng {
     struct AssetScene;
 
-    struct XENGINE_EXPORT TransformComponent {
+    struct XENGINE_EXPORT TransformComponent : public Messageable {
         static Transform walkHierarchy(const TransformComponent &component, EntityContainer &entityManager);
 
         bool enabled = true;
         Transform transform;
         std::string parent; //The name of the parent transform entity
+
+        Messageable &operator<<(const Message &message) override {
+            enabled = message.value("enabled", true);
+            transform << message.value("transform");
+            parent = message.value("parent", std::string());
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            message["enabled"] = enabled;
+            transform >> message["transform"];
+            message["parent"] = parent;
+            return message;
+        }
     };
 }
 

@@ -22,15 +22,20 @@
 
 #include "resource/resource.hpp"
 #include "resource/resourcehandle.hpp"
+
 #include "math/rectangle.hpp"
+
 #include "graphics/renderdevice.hpp"
+
 #include "asset/texture.hpp"
+
+#include "io/messageable.hpp"
 
 namespace xng {
     /**
      * A sprite is a texture displayed on a planar quad mesh perpendicular to the camera.
      */
-    struct XENGINE_EXPORT Sprite : public Resource {
+    struct XENGINE_EXPORT Sprite : public Resource , public Messageable {
         Sprite() = default;
 
         Sprite(ResourceHandle<Texture> texture,
@@ -48,8 +53,21 @@ namespace xng {
             return typeid(Sprite);
         }
 
-        ResourceHandle<Texture> texture{};
+        Messageable &operator<<(const Message &message) override {
+            offset << message.value("offset");
+            texture << message.value("texture");
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            offset >> message["offset"];
+            texture >> message["texture"];
+            return message;
+        }
+
         Recti offset{}; // The part of the texture which contains the sprite
+        ResourceHandle<Texture> texture{};
     };
 }
 

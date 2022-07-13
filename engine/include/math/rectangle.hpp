@@ -3,12 +3,14 @@
 
 #include "math/vector2.hpp"
 
+#include "io/messageable.hpp"
+
 namespace xng {
     /**
      * A axis aligned rectangle defining position and dimensions.
      * */
     template<typename T>
-    struct XENGINE_EXPORT Rectangle {
+    struct XENGINE_EXPORT Rectangle : public Messageable {
         Vector2<T> position; //Top left point of the rectangle
         Vector2<T> dimensions;
 
@@ -75,6 +77,19 @@ namespace xng {
 
         friend bool operator!=(const Rectangle<T> &lhs, const Rectangle<T> &rhs) {
             return !(lhs == rhs);
+        }
+
+        Messageable &operator<<(const Message &message) override {
+            position << message.value("position");
+            dimensions << message.value("dimensions");
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            position >> message["position"] ;
+            dimensions >> message["rotation"];
+            return message;
         }
     };
 

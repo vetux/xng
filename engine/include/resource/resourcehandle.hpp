@@ -28,9 +28,11 @@
 
 #include "async/threadpool.hpp"
 
+#include "io/messageable.hpp"
+
 namespace xng {
     template<typename T>
-    class XENGINE_EXPORT ResourceHandle {
+    class XENGINE_EXPORT ResourceHandle : public Messageable {
     public:
         ResourceHandle() = default;
 
@@ -108,6 +110,18 @@ namespace xng {
             } else {
                 return ResourceRegistry::getDefaultRegistry();
             }
+        }
+
+        Messageable &operator<<(const Message &message) override {
+            uri << message.value("uri");
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            auto map = std::map<std::string, Message>();
+            uri >> map["uri"];
+            message = map;
+            return message;
         }
 
     private:

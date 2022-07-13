@@ -25,8 +25,10 @@
 
 #include "ecs/componentcontainer.hpp"
 
+#include "io/messageable.hpp"
+
 namespace xng {
-    class XENGINE_EXPORT EntityContainer {
+    class XENGINE_EXPORT EntityContainer : public Messageable {
     public:
         EntityContainer() = default;
 
@@ -87,7 +89,7 @@ namespace xng {
             }
         }
 
-        EntityHandle create(const std::string &name){
+        EntityHandle create(const std::string &name) {
             auto ret = create();
             setName(ret, name);
             return ret;
@@ -121,6 +123,34 @@ namespace xng {
         const ComponentContainer &getComponentContainer() const {
             return components;
         }
+
+        Messageable &operator<<(const Message &message) override {
+            for (auto &msg: message.asList()) {
+                deserializeEntity(msg);
+            }
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            auto list = std::vector<Message>();
+            for (auto &ent: entities) {
+                Message msg;
+                serializeEntity(ent, msg);
+                list.emplace_back(msg);
+            }
+            message = list;
+            return message;
+        }
+
+        /**
+         * To serialize user component types the user can subclass entity container and override these methods
+         * to define serialization logic for the user component types.
+         */
+        virtual void serializeEntity(const EntityHandle &entity, Message &message) const;
+
+        virtual void deserializeEntity(const Message &message);
+
+        virtual void deserializeComponent(const EntityHandle &entity, const Message &message);
 
     private:
         std::set<int> idStore;

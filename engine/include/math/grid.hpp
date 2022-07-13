@@ -7,8 +7,10 @@
 #include "rectangle.hpp"
 #include "math/vector2.hpp"
 
+#include "io/messageable.hpp"
+
 namespace xng {
-    class XENGINE_EXPORT Grid {
+    class XENGINE_EXPORT Grid : public Messageable {
     public:
         int nCol, nRow;
         Vec2i size;
@@ -63,6 +65,21 @@ namespace xng {
                 ret.push_back(getCell(col, row));
             }
             return ret;
+        }
+
+        Messageable &operator<<(const Message &message) override {
+            nCol = message.value("nCol", 0);
+            nRow = message.value("nRow", 0);
+            size << message.value("size");
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            message["nCol"] = nCol;
+            message["nRow"] = nRow;
+            size >> message["size"];
+            return message;
         }
     };
 }

@@ -119,4 +119,21 @@ namespace xng {
         auto ret = glm::slerp(qa, qb, advance);
         return {ret.w, ret.x, ret.y, ret.z};
     }
+
+    Messageable &Quaternion::operator<<(const Message &message) {
+        w = message.value("w", 0.0f);
+        x = message.value("x", 0.0f);
+        y = message.value("y", 0.0f);
+        z = message.value("z", 0.0f);
+        return *this;
+    }
+
+    Message &Quaternion::operator>>(Message &message) const {
+        message = Message(Message::DICTIONARY);
+        message["w"] = w;
+        message["x"] = x;
+        message["y"] = y;
+        message["z"] = z;
+        return message;
+    }
 }

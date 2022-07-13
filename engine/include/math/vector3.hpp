@@ -6,9 +6,11 @@
 
 #include "cast/numeric_cast.hpp"
 
+#include "io/messageable.hpp"
+
 namespace xng {
     template<typename T>
-    class XENGINE_EXPORT Vector3 {
+    class XENGINE_EXPORT Vector3 : public Messageable {
     public:
         T x;
         T y;
@@ -76,6 +78,21 @@ namespace xng {
         template<typename R>
         explicit operator Vector3<R>() {
             return convert<R>();
+        }
+
+        Messageable &operator<<(const Message &message) override {
+            x = message.valueOf({"x", "r"}, 0);
+            y = message.valueOf({"y", "g"}, 0);
+            z = message.valueOf({"z", "b"}, 0);
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            message["x"] = x;
+            message["y"] = y;
+            message["z"] = z;
+            return message;
         }
 
         template<typename R>

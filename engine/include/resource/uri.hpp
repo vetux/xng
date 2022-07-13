@@ -28,6 +28,8 @@
 
 #include "algo/hashcombine.hpp"
 
+#include "io/messageable.hpp"
+
 namespace xng {
     /**
      * Components of an uri can contain any sequence of ascii values only the sequence "://" and the '$' character are reserved.
@@ -42,7 +44,7 @@ namespace xng {
      * /mydir/myfile.fbx$cube
      * /mydir/myimage.png
      */
-    class XENGINE_EXPORT Uri {
+    class XENGINE_EXPORT Uri : public Messageable {
     public:
         Uri() = default;
 
@@ -88,6 +90,16 @@ namespace xng {
 
         bool operator()() const {
             return !empty();
+        }
+
+        Messageable &operator<<(const Message &message) override {
+            *this = Uri(message);
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = toString();
+            return message;
         }
 
         const std::string &getScheme() const { return scheme; }
