@@ -81,7 +81,7 @@
 #include "math/matrix.hpp"
 #include "math/rectangle.hpp"
 #include "math/vector4.hpp"
-#include "dl/library.hpp"
+#include "io/library.hpp"
 #include "audio/audiosource.hpp"
 #include "audio/audiobuffer.hpp"
 #include "audio/audioformat.hpp"

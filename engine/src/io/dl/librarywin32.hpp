@@ -17,35 +17,35 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_LIBRARYLINUX_HPP
-#define XENGINE_LIBRARYLINUX_HPP
+#ifndef XENGINE_LIBRARYWIN32_HPP
+#define XENGINE_LIBRARYWIN32_HPP
 
-#include "dl/library.hpp"
+#include "io/library.hpp"
 
 #include <string>
-#include <dlfcn.h>
+#include <windows.h>
 
 namespace xng {
-    class LibraryLinux : public Library {
+    class LibraryWin32 : public Library {
     public:
-        explicit LibraryLinux(const std::string &filePath)
-                : filePath(filePath) {
-            handle = dlopen(filePath.c_str(), RTLD_LAZY);
+        explicit LibraryWin32(const std::string &filePath)
+                : filePath(filePath){
+            handle = LoadLibrary(TEXT(filePath.c_str()));
         }
 
-        ~LibraryLinux() override {
-            dlclose(handle);
+        ~LibraryWin32() override {
+            FreeLibrary(handle);
         }
 
         void *getSymbolAddress(const std::string &address) override {
-            return dlsym(handle, address.c_str());
+            return GetProcAddress(handle, address.c_str());
         }
 
         std::string filePath;
-        void *handle;
+        HINSTANCE handle;
     };
 
-    typedef LibraryLinux LibraryOS;
+    typedef LibraryWin32 LibraryOS;
 }
 
-#endif //XENGINE_LIBRARYLINUX_HPP
+#endif //XENGINE_LIBRARYWIN32_HPP

@@ -17,35 +17,18 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_LIBRARYWIN32_HPP
-#define XENGINE_LIBRARYWIN32_HPP
+#include "io/library.hpp"
 
-#include "dl/library.hpp"
-
-#include <string>
-#include <windows.h>
+#ifdef __linux__
+#include "io/dl/librarylinux.hpp"
+#else
+#ifdef _WIN32
+#include "dl/librarywin32.hpp"
+#endif
+#endif
 
 namespace xng {
-    class LibraryWin32 : public Library {
-    public:
-        explicit LibraryWin32(const std::string &filePath)
-                : filePath(filePath){
-            handle = LoadLibrary(TEXT(filePath.c_str()));
-        }
-
-        ~LibraryWin32() override {
-            FreeLibrary(handle);
-        }
-
-        void *getSymbolAddress(const std::string &address) override {
-            return GetProcAddress(handle, address.c_str());
-        }
-
-        std::string filePath;
-        HINSTANCE handle;
-    };
-
-    typedef LibraryWin32 LibraryOS;
+    std::unique_ptr <Library> Library::load(const std::string &path) {
+        return std::make_unique<LibraryOS>(path);
+    }
 }
-
-#endif //XENGINE_LIBRARYWIN32_HPP
