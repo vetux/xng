@@ -33,7 +33,7 @@
 namespace xng {
     class XENGINE_EXPORT ECS {
     public:
-        explicit ECS(std::vector<std::reference_wrapper<System>> systems = {});
+        explicit ECS(std::vector<std::reference_wrapper<System>> systems = {}, EntityScene scene = {});
 
         ~ECS();
 

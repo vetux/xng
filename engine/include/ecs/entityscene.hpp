@@ -22,6 +22,7 @@
 
 #include <set>
 #include <limits>
+#include <any>
 
 #include "ecs/componentcontainer.hpp"
 
@@ -32,6 +33,26 @@ namespace xng {
 
     class XENGINE_EXPORT EntityScene : public Messageable {
     public:
+        class Listener {
+        public:
+            virtual void onEntityCreate(const EntityHandle &entity) {};
+
+            virtual void onEntityDestroy(const EntityHandle &entity) {};
+
+            virtual void onComponentCreate(const EntityHandle &entity,
+                                           const std::any &component,
+                                           std::type_index componentType) {};
+
+            virtual void onComponentDestroy(const EntityHandle &entity,
+                                            const std::any &component,
+                                            std::type_index componentType) {};
+
+            virtual void onComponentUpdate(const EntityHandle &entity,
+                                           const std::any &oldComponent,
+                                           const std::any &newComponent,
+                                           std::type_index componentType) {};
+        };
+
         EntityScene() = default;
 
         ~EntityScene() = default;
@@ -81,12 +102,18 @@ namespace xng {
                     throw std::runtime_error("Cannot create entity, id overflow");
                 auto ret = EntityHandle(idCounter++);
                 entities.insert(ret);
+                for (auto &listener: listeners) {
+                    listener->onEntityCreate(ret);
+                }
                 return ret;
             } else {
                 auto it = idStore.begin();
                 EntityHandle ret(*it);
                 idStore.erase(it);
                 entities.insert(ret);
+                for (auto &listener: listeners) {
+                    listener->onEntityCreate(ret);
+                }
                 return ret;
             }
         }
@@ -98,6 +125,9 @@ namespace xng {
         }
 
         void destroy(const EntityHandle &entity) {
+            for (auto &listener: listeners) {
+                listener->onEntityDestroy(entity);
+            }
             components.destroy(entity);
             idStore.insert(entity.id);
             entities.erase(entity);
@@ -106,6 +136,18 @@ namespace xng {
         }
 
         void clear() {
+            for (auto &pair: components.getPools()) {
+                for (auto &cpair: pair.second->getComponents()) {
+                    for (auto &listener: listeners) {
+                        listener->onComponentDestroy(cpair.first, cpair.second, pair.first);
+                    }
+                }
+            }
+            for (auto &ent: entities) {
+                for (auto &listener: listeners) {
+                    listener->onEntityDestroy(ent);
+                }
+            }
             components.clear();
             idStore.clear();
             idCounter = 0;
@@ -152,6 +194,14 @@ namespace xng {
             return message;
         }
 
+        void addListener(Listener &listener) {
+            listeners.insert(&listener);
+        }
+
+        void removeListener(Listener &listener) {
+            listeners.erase(&listener);
+        }
+
         /**
          * To serialize user component types the user can subclass entity container and override these methods
          * to define serialization logic for the user component types.
@@ -171,6 +221,8 @@ namespace xng {
 
         std::set<EntityHandle> entities;
         ComponentContainer components;
+
+        std::set<Listener *> listeners;
     };
 }
 

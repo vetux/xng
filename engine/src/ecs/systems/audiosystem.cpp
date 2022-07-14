@@ -33,12 +33,12 @@ namespace xng {
         context->makeCurrent();
     }
 
-    void AudioSystem::start(EntityScene &entityManager) {
-        entityManager.getComponentContainer().getPool<AudioSourceComponent>().addListener(this);
+    void AudioSystem::start(EntityScene &scene) {
+        scene.addListener(*this);
     }
 
-    void AudioSystem::stop(EntityScene &entityManager) {
-        entityManager.getComponentContainer().getPool<AudioSourceComponent>().removeListener(this);
+    void AudioSystem::stop(EntityScene &scene) {
+        scene.removeListener(*this);
     }
 
     void AudioSystem::update(DeltaTime deltaTime, EntityScene &entityManager) {
@@ -74,34 +74,48 @@ namespace xng {
         }
     }
 
-    void AudioSystem::onComponentCreate(const EntityHandle &entity, const AudioSourceComponent &component) {
-        if (component.audio) {
-            auto& buffer = component.audio.get();
-            buffers[entity] = context->createBuffer();
-            buffers[entity]->upload(buffer.buffer,
-                                    buffer.format,
-                                    buffer.frequency);
+    void AudioSystem::onComponentCreate(const EntityHandle &entity,
+                                        const std::any &value,
+                                        std::type_index componentType) {
+        if (componentType == typeid(AudioSourceComponent)) {
+            auto component = std::any_cast<AudioSourceComponent>(value);
+            if (component.audio) {
+                auto &buffer = component.audio.get();
+                buffers[entity] = context->createBuffer();
+                buffers[entity]->upload(buffer.buffer,
+                                        buffer.format,
+                                        buffer.frequency);
 
-            sources[entity] = context->createSource();
-            sources[entity]->setBuffer(*buffers[entity]);
+                sources[entity] = context->createSource();
+                sources[entity]->setBuffer(*buffers[entity]);
+            }
         }
     }
 
-    void AudioSystem::onComponentDestroy(const EntityHandle &entity, const AudioSourceComponent &component) {
-        sources.erase(entity);
-        buffers.erase(entity);
+    void AudioSystem::onComponentDestroy(const EntityHandle &entity,
+                                         const std::any &component,
+                                         std::type_index componentType) {
+        if (componentType == typeid(AudioSourceComponent)) {
+            sources.erase(entity);
+            buffers.erase(entity);
+        }
     }
 
     void AudioSystem::onComponentUpdate(const EntityHandle &entity,
-                                        const AudioSourceComponent &oldValue,
-                                        const AudioSourceComponent &newValue) {
-        if (oldValue != newValue) {
-            auto& buffer = newValue.audio.get();
-            sources[entity]->stop();
-            // Unbind buffer before uploading
-            sources.at(entity)->clearBuffer();
-            buffers.at(entity)->upload(buffer.buffer, buffer.format, buffer.frequency);
-            sources.at(entity)->setBuffer(*buffers.at(entity));
+                                        const std::any &oldComponent,
+                                        const std::any &newComponent,
+                                        std::type_index componentType) {
+        if (componentType == typeid(AudioSourceComponent)) {
+            auto oldValue = std::any_cast<AudioSourceComponent>(oldComponent);
+            auto newValue = std::any_cast<AudioSourceComponent>(newComponent);
+            if (oldValue != newValue) {
+                auto &buffer = newValue.audio.get();
+                sources[entity]->stop();
+                // Unbind buffer before uploading
+                sources.at(entity)->clearBuffer();
+                buffers.at(entity)->upload(buffer.buffer, buffer.format, buffer.frequency);
+                sources.at(entity)->setBuffer(*buffers.at(entity));
+            }
         }
     }
 }

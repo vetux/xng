@@ -23,8 +23,8 @@
 #include <algorithm>
 
 namespace xng {
-    ECS::ECS(std::vector<std::reference_wrapper<System>> systems)
-            : systems(std::move(systems)) {}
+    ECS::ECS(std::vector<std::reference_wrapper<System>> systems, EntityScene scene)
+            : systems(std::move(systems)), scene(std::move(scene)) {}
 
     ECS::~ECS() = default;
 
@@ -55,6 +55,7 @@ namespace xng {
     }
 
     void ECS::setScene(const EntityScene &v) {
+        stop();
         scene = v;
     }
 

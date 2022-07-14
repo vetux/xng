@@ -32,15 +32,9 @@ namespace xng {
 
     RenderSystem::~RenderSystem() = default;
 
-    void RenderSystem::start(EntityScene &entityManager) {
-        entityManager.getComponentContainer().getPool<MeshRenderComponent>().addListener(this);
-        entityManager.getComponentContainer().getPool<SkyboxComponent>().addListener(this);
-    }
+    void RenderSystem::start(EntityScene &entityManager) {}
 
-    void RenderSystem::stop(EntityScene &entityManager) {
-        entityManager.getComponentContainer().getPool<MeshRenderComponent>().removeListener(this);
-        entityManager.getComponentContainer().getPool<SkyboxComponent>().removeListener(this);
-    }
+    void RenderSystem::stop(EntityScene &entityManager) {}
 
     void RenderSystem::update(DeltaTime deltaTime, EntityScene &entityManager) {
         auto &componentManager = entityManager.getComponentContainer();
@@ -121,20 +115,4 @@ namespace xng {
     Scene &RenderSystem::getScene() {
         return scene;
     }
-
-    void RenderSystem::onComponentCreate(const EntityHandle &entity, const MeshRenderComponent &component) {}
-
-    void RenderSystem::onComponentDestroy(const EntityHandle &entity, const MeshRenderComponent &component) {}
-
-    void RenderSystem::onComponentCreate(const EntityHandle &entity, const SkyboxComponent &component) {}
-
-    void RenderSystem::onComponentDestroy(const EntityHandle &entity, const SkyboxComponent &component) {}
-
-    void RenderSystem::onComponentUpdate(const EntityHandle &entity,
-                                         const MeshRenderComponent &oldValue,
-                                         const MeshRenderComponent &newValue) {}
-
-    void RenderSystem::onComponentUpdate(const EntityHandle &entity,
-                                         const SkyboxComponent &oldValue,
-                                         const SkyboxComponent &newValue) {}
 }

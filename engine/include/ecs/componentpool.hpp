@@ -23,6 +23,7 @@
 #include <map>
 #include <stdexcept>
 #include <set>
+#include <any>
 
 #include "ecs/entityhandle.hpp"
 
@@ -36,24 +37,16 @@ namespace xng {
         virtual void clear() = 0;
 
         virtual void destroy(const EntityHandle &entity) = 0;
+
+        virtual std::map<EntityHandle, std::any> getComponents() = 0;
     };
 
     template<typename T>
     class XENGINE_EXPORT ComponentPool : public ComponentPoolBase {
     public:
-        class XENGINE_EXPORT Listener {
-        public:
-            virtual void onComponentCreate(const EntityHandle &entity, const T &component) = 0;
-
-            virtual void onComponentDestroy(const EntityHandle &entity, const T &component) = 0;
-
-            virtual void onComponentUpdate(const EntityHandle &entity, const T &oldValue, const T &newValue) = 0;
-        };
-
         ComponentPool() = default;
 
         ComponentPool(const ComponentPool<T> &other) {
-            listeners = other.listeners;
             components = other.components;
         }
 
@@ -64,21 +57,21 @@ namespace xng {
         }
 
         void clear() override {
-            for (auto &pair: components) {
-                for (auto &l: listeners) {
-                    l->onComponentDestroy(pair.first, pair.second);
-                }
-            }
             components.clear();
         }
 
         void destroy(const EntityHandle &entity) override {
             if (components.find(entity) != components.end()) {
-                for (auto &listener: listeners) {
-                    listener->onComponentDestroy(entity, components.at(entity));
-                }
                 components.erase(entity);
             }
+        }
+
+        std::map<EntityHandle, std::any> getComponents() override {
+            auto ret = std::map<EntityHandle, std::any>();
+            for (auto &pair: components) {
+                ret[pair.first] = pair.second;
+            }
+            return ret;
         }
 
         typename std::map<EntityHandle, T>::iterator begin() {
@@ -97,9 +90,6 @@ namespace xng {
                                          + typeid(T).name());
             auto &comp = components[entity];
             comp = value;
-            for (auto &listener: listeners) {
-                listener->onComponentCreate(entity, comp);
-            }
             return comp;
         }
 
@@ -122,12 +112,7 @@ namespace xng {
                 create(entity, value);
                 return true;
             } else {
-                auto &comp = it->second;
-                auto val = comp;
-                comp = value;
-                for (auto &listener: listeners) {
-                    listener->onComponentUpdate(entity, val, comp);
-                }
+                it->second = value;
                 return false;
             }
         }
@@ -136,16 +121,7 @@ namespace xng {
             return components.find(entity) != components.end();
         }
 
-        void addListener(Listener *listener) {
-            listeners.insert(listener);
-        }
-
-        void removeListener(Listener *listener) {
-            listeners.erase(listener);
-        }
-
     private:
-        std::set<Listener *> listeners;
         std::map<EntityHandle, T> components;
     };
 }

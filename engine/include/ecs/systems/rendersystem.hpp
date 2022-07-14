@@ -30,9 +30,7 @@
 #include "render/scenerenderer.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT RenderSystem : public System,
-                                        ComponentPool<MeshRenderComponent>::Listener,
-                                        ComponentPool<SkyboxComponent>::Listener {
+    class XENGINE_EXPORT RenderSystem : public System {
     public:
         RenderSystem(RenderTarget &screen,
                      SceneRenderer &pipeline);
@@ -52,22 +50,6 @@ namespace xng {
         size_t getPolyCount() const { return polyCount; }
 
     private:
-        void onComponentCreate(const EntityHandle &entity, const MeshRenderComponent &component) override;
-
-        void onComponentDestroy(const EntityHandle &entity, const MeshRenderComponent &component) override;
-
-        void onComponentCreate(const EntityHandle &entity, const SkyboxComponent &component) override;
-
-        void onComponentDestroy(const EntityHandle &entity, const SkyboxComponent &component) override;
-
-        void onComponentUpdate(const EntityHandle &entity,
-                               const MeshRenderComponent &oldValue,
-                               const MeshRenderComponent &newValue) override;
-
-        void onComponentUpdate(const EntityHandle &entity,
-                               const SkyboxComponent &oldValue,
-                               const SkyboxComponent &newValue) override;
-
         SceneRenderer &pipeline;
         RenderTarget &screenTarget;
 
