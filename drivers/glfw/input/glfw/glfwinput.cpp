@@ -20,6 +20,7 @@
 #include <map>
 #include <stdexcept>
 #include <mutex>
+#include <functional>
 
 #include "glfwinput.hpp"
 
@@ -178,16 +179,6 @@ namespace xng {
             listener->onMouseWheelScroll(yoffset);
     }
 
-    void GLFWInput::addListener(InputListener &listener) {
-        if (listeners.find(&listener) != listeners.end())
-            throw std::runtime_error("Input listener already registered");
-        listeners.insert(&listener);
-    }
-
-    void GLFWInput::removeListener(InputListener &listener) {
-        listeners.erase(&listener);
-    }
-
     //TODO: Implement clipboard support
     void GLFWInput::setClipboardText(std::string text) {
         throw std::runtime_error("Not Implemented");
@@ -303,5 +294,18 @@ namespace xng {
 
     void GLFWInput::onGamepadButtonUp(int id, GamePadButton button) {
         gamepads[id].buttons[button] = RELEASED;
+    }
+
+    std::function<void()> GLFWInput::addListener(InputListener &listener) {
+        if (listeners.find(&listener) != listeners.end())
+            throw std::runtime_error("Input listener already registered");
+        listeners.insert(&listener);
+        return [this, &listener]() {
+            removeListener(listener);
+        };
+    }
+
+    void GLFWInput::removeListener(InputListener &listener) {
+        listeners.erase(&listener);
     }
 }

@@ -64,10 +64,6 @@ namespace xng {
 
             bool shouldClose() override;
 
-            void registerListener(WindowListener &listener) override;
-
-            void unregisterListener(WindowListener &listener) override;
-
             void maximize() override;
 
             void minimize() override;
@@ -143,6 +139,10 @@ namespace xng {
             void glfwWindowContentScaleCallback(Vec2f scale);
 
             void glfwFrameBufferSizeCallback(Vec2i size);
+
+            UnregisterCallback addListener(WindowListener &listener) override;
+
+            void removeListener(WindowListener &listener) override;
 
             GLFWwindow *windowHandle() { return wndH; }
 

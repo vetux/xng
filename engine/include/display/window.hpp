@@ -32,8 +32,10 @@
 #include "input/input.hpp"
 #include "math/vector2.hpp"
 
+#include "util/listenable.hpp"
+
 namespace xng {
-    class XENGINE_EXPORT Window {
+    class XENGINE_EXPORT Window : public Listenable<WindowListener> {
     public:
         virtual ~Window() = default;
 
@@ -70,10 +72,6 @@ namespace xng {
         virtual void update() = 0;
 
         virtual bool shouldClose() = 0;
-
-        virtual void registerListener(WindowListener &listener) = 0;
-
-        virtual void unregisterListener(WindowListener &listener) = 0;
 
         virtual void maximize() = 0;
 

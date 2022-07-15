@@ -21,12 +21,12 @@
 
 namespace xng {
     EventSystem::EventSystem(Window &wnd, EventBus &eventBus) : wnd(wnd), eventBus(eventBus) {
-        wnd.registerListener(*this);
+        wnd.addListener(*this);
         wnd.getInput().addListener(*this);
     }
 
     EventSystem::~EventSystem() {
-        wnd.unregisterListener(*this);
+        wnd.removeListener(*this);
         wnd.getInput().removeListener(*this);
     }
 

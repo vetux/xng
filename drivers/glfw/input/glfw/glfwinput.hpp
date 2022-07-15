@@ -45,10 +45,6 @@ namespace xng {
 
         void glfwScrollCallback(double xoffset, double yoffset);
 
-        void addListener(InputListener &listener) override;
-
-        void removeListener(InputListener &listener) override;
-
         void setClipboardText(std::string text) override;
 
         std::string getClipboardText() override;
@@ -70,6 +66,10 @@ namespace xng {
         const std::map<int, GamePad> &getGamePads() const override;
 
         void update();
+
+        UnregisterCallback addListener(InputListener &listener) override;
+
+        void removeListener(InputListener &listener) override;
 
     private:
         void onKeyDown(KeyboardKey key) override;

@@ -26,9 +26,10 @@
 
 #include "event/event.hpp"
 #include "event/eventlistener.hpp"
+#include "util/listenable.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT EventBus {
+    class XENGINE_EXPORT EventBus : public Listenable<EventListener> {
     public:
         void invoke(const Event &event) {
             std::lock_guard<std::mutex> guard(mutex);
@@ -37,12 +38,15 @@ namespace xng {
             }
         }
 
-        void subscribe(EventListener &listener) {
+        UnregisterCallback addListener(EventListener &listener) override {
             std::lock_guard<std::mutex> guard(mutex);
             listeners.insert(&listener);
+            return [this, &listener]() {
+                removeListener(listener);
+            };
         }
 
-        void unsubscribe(EventListener &listener) {
+        void removeListener(EventListener &listener) override {
             std::lock_guard<std::mutex> guard(mutex);
             listeners.erase(&listener);
         }

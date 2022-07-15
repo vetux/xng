@@ -187,7 +187,7 @@ namespace xng {
             }
 
             glfwSwapInterval(attributes.swapInterval);
-            
+
             renderTargetGl = std::make_unique<GLFWRenderTargetGL>(*wndH);
 
             input = std::make_unique<GLFWInput>(*wndH);
@@ -338,16 +338,6 @@ namespace xng {
             return glfwWindowShouldClose(wndH);
         }
 
-        void WindowGLFWGL::registerListener(WindowListener &listener) {
-            if (listeners.find(&listener) != listeners.end())
-                throw std::runtime_error("Listener already registered");
-            listeners.insert(&listener);
-        }
-
-        void WindowGLFWGL::unregisterListener(WindowListener &listener) {
-            listeners.erase(&listener);
-        }
-
         void WindowGLFWGL::maximize() {
             glfwMaximizeWindow(wndH);
         }
@@ -481,6 +471,19 @@ namespace xng {
         void WindowGLFWGL::setSwapInterval(int interval) {
             bindGraphics();
             glfwSwapInterval(interval);
+        }
+
+        Listenable<WindowListener>::UnregisterCallback WindowGLFWGL::addListener(WindowListener &listener) {
+            if (listeners.find(&listener) != listeners.end())
+                throw std::runtime_error("Listener already registered");
+            listeners.insert(&listener);
+            return [this, &listener]() {
+                removeListener(listener);
+            };
+        }
+
+        void WindowGLFWGL::removeListener(WindowListener &listener) {
+            listeners.erase(&listener);
         }
     }
 }

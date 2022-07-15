@@ -23,17 +23,13 @@
 #include <set>
 
 #include "input/inputlistener.hpp"
-
 #include "asset/image.hpp"
+#include "util/listenable.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT Input {
+    class XENGINE_EXPORT Input : public Listenable<InputListener> {
     public:
         virtual ~Input() = default;
-
-        virtual void addListener(InputListener &listener) = 0;
-
-        virtual void removeListener(InputListener &listener) = 0;
 
         virtual void setClipboardText(std::string text) = 0;
 
