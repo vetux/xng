@@ -56,16 +56,6 @@ namespace xng {
             return std::make_unique<ComponentPool<T>>(*this);
         }
 
-        void clear() override {
-            components.clear();
-        }
-
-        void destroy(const EntityHandle &entity) override {
-            if (components.find(entity) != components.end()) {
-                components.erase(entity);
-            }
-        }
-
         std::map<EntityHandle, std::any> getComponents() override {
             auto ret = std::map<EntityHandle, std::any>();
             for (auto &pair: components) {
@@ -93,27 +83,26 @@ namespace xng {
             return comp;
         }
 
+        void destroy(const EntityHandle &entity) override {
+            if (components.find(entity) != components.end()) {
+                components.erase(entity);
+            }
+        }
+
+        void clear() override {
+            components.clear();
+        }
+
         const T &lookup(const EntityHandle &entity) const {
             return components.at(entity);
         }
 
-        /**
-         * Update the component value, components can only be updated by calling this method.
-         *
-         * The pool calls the onComponentUpdate callback on all listeners.
-         *
-         * @param entity
-         * @param value
-         * @return True if the component was not present and was created, otherwise false
-         */
         bool update(const EntityHandle &entity, const T &value = {}) {
             auto it = components.find(entity);
             if (it == components.end()) {
                 create(entity, value);
-                return true;
             } else {
-                it->second = value;
-                return false;
+                throw std::runtime_error("No component of given type in entity " + std::to_string(entity.id));
             }
         }
 
