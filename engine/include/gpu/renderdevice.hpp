@@ -102,6 +102,8 @@ namespace xng {
                     VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
+                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::SIGNED_INT),
+                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
             };
 
             const VertexBufferDesc desc = {
@@ -140,6 +142,8 @@ namespace xng {
                     VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
+                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::SIGNED_INT),
+                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
             };
 
             const std::vector<VertexAttribute> instanceLayout = {
