@@ -186,7 +186,10 @@ namespace xng {
         shader = device.createShaderProgram({.shaders = {{ShaderStage::VERTEX,   vsSrc.getShader()},
                                                          {ShaderStage::FRAGMENT, fsSrc.getShader()}}});
 
-        pipeline = device.createPipeline({.shader = *shader});
+        pipeline = device.createPipeline({.shader = *shader,
+                                                 .multiSample = false,
+                                                 .enableDepthTest = false,
+                                                 .enableBlending = true});
     }
 
     Renderer2D::~Renderer2D() = default;
@@ -206,7 +209,8 @@ namespace xng {
 
         userTarget = &target;
         if (pipeline->getDescription().clearColor != clear
-            || pipeline->getDescription().clearColorValue != clearColor) {
+            || pipeline->getDescription().clearColorValue != clearColor
+            || pipeline->getDescription().viewportOffset != viewportOffset) {
             pipeline = renderDevice.createPipeline(
                     {.shader =*shader,
                             .viewportOffset = viewportOffset,
@@ -511,7 +515,6 @@ namespace xng {
         passes.emplace_back(RenderPass(meshBuffer, bindings));
     }
 
-    // Giving an offset to createInstancedVertexBuffer causes vertex buffers to not be displayed when only applying mvp, so instanced vertex buffers somehow break the vertex layout.
     VertexBuffer &Renderer2D::getPlane(const Renderer2D::PlaneDescription &desc) {
         usedPlanes.insert(desc);
         auto it = allocatedPlanes.find(desc);
