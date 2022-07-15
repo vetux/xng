@@ -22,7 +22,6 @@
 
 #include "types/deltatime.hpp"
 #include "ecs/entityscene.hpp"
-#include "event/eventbus.hpp"
 
 namespace xng {
     /**
@@ -32,11 +31,12 @@ namespace xng {
     public:
         virtual ~System() = default;
 
-        virtual void start(EntityScene &scene) = 0;
+        // If these methods are declared pure virtual there are undefined references to the methods when linking to the resulting binary.
+        virtual void start(EntityScene &scene) {};
 
-        virtual void stop(EntityScene &scene) = 0;
+        virtual void stop(EntityScene &scene) {};
 
-        virtual void update(DeltaTime deltaTime, EntityScene &scene) = 0;
+        virtual void update(DeltaTime deltaTime, EntityScene &scene) {};
     };
 }
 #endif //XENGINE_SYSTEM_HPP
