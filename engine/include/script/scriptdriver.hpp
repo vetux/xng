@@ -17,22 +17,17 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SCRIPT_HPP
-#define XENGINE_SCRIPT_HPP
+#ifndef XENGINE_SCRIPTDRIVER_HPP
+#define XENGINE_SCRIPTDRIVER_HPP
 
-#include "event/eventlistener.hpp"
+#include "driver/driver.hpp"
+#include "script/scriptruntime.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT Script : public EventListener {
+    class ScriptDriver : public Driver {
     public:
-        virtual ~Script() = default;
-
-        virtual void onEnable() const {};
-
-        virtual void onDisable() const {};
-
-        virtual void onUpdate() const {};
+        virtual std::unique_ptr<ScriptRuntime> createRuntime() = 0;
     };
 }
 
-#endif //XENGINE_SCRIPT_HPP
+#endif //XENGINE_SCRIPTDRIVER_HPP
