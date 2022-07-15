@@ -67,7 +67,7 @@ namespace xng {
             }
 
             displayDriver = DriverManager::load<DisplayDriver>(displayDriverName);
-            graphicsDriver = DriverManager::load<GraphicsDriver>(graphicsDriverName);
+            graphicsDriver = DriverManager::load<GpuDriver>(graphicsDriverName);
             audioDriver = DriverManager::load<AudioDriver>(audioDriverName);
 
             window = displayDriver->createWindow(graphicsDriverName);
@@ -105,7 +105,7 @@ namespace xng {
         std::string audioDriverName = "openal-soft";
 
         std::unique_ptr<DisplayDriver> displayDriver = nullptr;
-        std::unique_ptr<GraphicsDriver> graphicsDriver = nullptr;
+        std::unique_ptr<GpuDriver> graphicsDriver = nullptr;
         std::unique_ptr<AudioDriver> audioDriver = nullptr;
 
         std::unique_ptr<Window> window = nullptr;
