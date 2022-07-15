@@ -23,6 +23,7 @@
 #include "ecs/system.hpp"
 
 #include "event/event.hpp"
+#include "event/eventbus.hpp"
 #include "event/events/entityevent.hpp"
 #include "event/events/inputevent.hpp"
 #include "event/events/windowevent.hpp"
@@ -30,10 +31,10 @@
 #include "display/window.hpp"
 
 namespace xng {
-    class EventSystem : public System,
-                        public InputListener,
-                        public WindowListener,
-                        public EntityScene::Listener {
+    class XENGINE_EXPORT EventSystem : public System,
+                                       public InputListener,
+                                       public WindowListener,
+                                       public EntityScene::Listener {
     public:
         explicit EventSystem(Window &wnd, EventBus &eventBus);
 

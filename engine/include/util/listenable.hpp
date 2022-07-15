@@ -20,6 +20,8 @@
 #ifndef XENGINE_LISTENABLE_HPP
 #define XENGINE_LISTENABLE_HPP
 
+#include <functional>
+
 namespace xng {
     template<typename T>
     class Listenable {
