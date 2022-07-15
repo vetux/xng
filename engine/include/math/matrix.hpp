@@ -18,10 +18,11 @@ namespace xng {
      * @tparam H The row count of the matrix.
      */
     template<typename T, int W, int H>
-    class XENGINE_EXPORT Matrix : public Messageable {
+    class XENGINE_EXPORT Matrix {
     public:
-        static const size_t ROW_SIZE = W * sizeof(T);
-        static const size_t COLUMN_SIZE = H * sizeof(T);
+        static size_t columnSize() { return H * sizeof(T); }
+
+        static size_t rowSize() { return W * sizeof(T); }
 
         static int width() {
             return W;
@@ -120,7 +121,7 @@ namespace xng {
             return ret;
         }
 
-        Messageable &operator<<(const Message &message) override {
+        Messageable &operator<<(const Message &message) {
             if (message.getType() == Message::LIST) {
                 auto v = message.asList();
                 for (int i = 0; i < Matrix<T, W, H>::size() && i < v.size(); i++) {
@@ -132,7 +133,7 @@ namespace xng {
             return *this;
         }
 
-        Message &operator>>(Message &message) const override {
+        Message &operator>>(Message &message) const {
             message = Message(Message::LIST);
             for (int i = 0; i < Matrix<T, W, H>::size(); i++) {
                 message[i] = data[i];
