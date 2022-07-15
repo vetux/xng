@@ -23,7 +23,7 @@
 #include <algorithm>
 
 namespace xng {
-    ECS::ECS(std::vector<std::reference_wrapper<System>> systems, EntityScene scene)
+    ECS::ECS(std::vector<std::reference_wrapper<System>> systems, std::shared_ptr<EntityScene> scene)
             : systems(std::move(systems)), scene(std::move(scene)) {}
 
     ECS::~ECS() = default;
@@ -33,28 +33,32 @@ namespace xng {
     ECS &ECS::operator=(ECS &&other) noexcept = default;
 
     void ECS::start() {
+        if (!scene) {
+            throw std::runtime_error("No scene assigned.");
+        }
+
         for (auto &system: systems) {
-            system.get().start(scene);
+            system.get().start(*scene);
         }
     }
 
     void ECS::update(DeltaTime deltaTime) {
         for (auto &system: systems) {
-            system.get().update(deltaTime, scene);
+            system.get().update(deltaTime, *scene);
         }
     }
 
     void ECS::stop() {
         for (auto &system: systems) {
-            system.get().stop(scene);
+            system.get().stop(*scene);
         }
     }
 
-    const EntityScene &ECS::getScene() const {
+    const std::shared_ptr<EntityScene> &ECS::getScene() const {
         return scene;
     }
 
-    void ECS::setScene(const EntityScene &v) {
+    void ECS::setScene(const std::shared_ptr<EntityScene> &v) {
         stop();
         scene = v;
     }

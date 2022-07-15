@@ -27,7 +27,7 @@
 #include "input/device/mouse.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT XENGINE_EXPORT InputListener {
+    class XENGINE_EXPORT InputListener {
     public:
         virtual void onKeyDown(KeyboardKey key) {};
 

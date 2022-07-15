@@ -33,7 +33,7 @@
 namespace xng {
     class XENGINE_EXPORT ECS {
     public:
-        explicit ECS(std::vector<std::reference_wrapper<System>> systems = {}, EntityScene scene = {});
+        explicit ECS(std::vector<std::reference_wrapper<System>> systems = {}, std::shared_ptr<EntityScene> scene = {});
 
         ~ECS();
 
@@ -47,16 +47,16 @@ namespace xng {
 
         void stop();
 
-        const EntityScene &getScene() const;
+        const std::shared_ptr<EntityScene> &getScene() const;
 
-        void setScene(const EntityScene &scene);
+        void setScene(const std::shared_ptr<EntityScene> &scene);
 
         const std::vector<std::reference_wrapper<System>> &getSystems() const;
 
         void setSystems(const std::vector<std::reference_wrapper<System>> &systems);
 
     private:
-        EntityScene scene;
+        std::shared_ptr<EntityScene> scene;
         std::vector<std::reference_wrapper<System>> systems;
     };
 }

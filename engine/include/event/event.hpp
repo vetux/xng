@@ -17,40 +17,19 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_EVENTBUS_HPP
-#define XENGINE_EVENTBUS_HPP
+#ifndef XENGINE_ECSEVENT_HPP
+#define XENGINE_ECSEVENT_HPP
 
-#include <functional>
-#include <set>
-#include <mutex>
-
-#include "event/event.hpp"
-#include "event/eventlistener.hpp"
+#include <typeindex>
 
 namespace xng {
-    class XENGINE_EXPORT EventBus {
-    public:
-        void invoke(const Event &event) {
-            std::lock_guard<std::mutex> guard(mutex);
-            for (auto *receiver: listeners) {
-                receiver->onEvent(event);
-            }
-        }
+    struct Event {
+        virtual std::type_index getEventType() const = 0;
 
-        void subscribe(EventListener &listener) {
-            std::lock_guard<std::mutex> guard(mutex);
-            listeners.insert(&listener);
+        template<typename T>
+        const T &as() const {
+            return dynamic_cast<const T &>(*this);
         }
-
-        void unsubscribe(EventListener &listener) {
-            std::lock_guard<std::mutex> guard(mutex);
-            listeners.erase(&listener);
-        }
-
-    private:
-        std::mutex mutex;
-        std::set<EventListener *> listeners;
     };
 }
-
-#endif //XENGINE_EVENTBUS_HPP
+#endif //XENGINE_ECSEVENT_HPP

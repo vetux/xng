@@ -17,40 +17,36 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_EVENTBUS_HPP
-#define XENGINE_EVENTBUS_HPP
-
-#include <functional>
-#include <set>
-#include <mutex>
+#ifndef XENGINE_WINDOWEVENT_HPP
+#define XENGINE_WINDOWEVENT_HPP
 
 #include "event/event.hpp"
-#include "event/eventlistener.hpp"
+#include "math/vector2.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT EventBus {
-    public:
-        void invoke(const Event &event) {
-            std::lock_guard<std::mutex> guard(mutex);
-            for (auto *receiver: listeners) {
-                receiver->onEvent(event);
-            }
+    struct WindowEvent : public Event {
+        std::type_index getEventType() const override {
+            return typeid(WindowEvent);
         }
 
-        void subscribe(EventListener &listener) {
-            std::lock_guard<std::mutex> guard(mutex);
-            listeners.insert(&listener);
-        }
+        enum Type {
+            WINDOW_CLOSE,
+            WINDOW_MOVE,
+            WINDOW_RESIZE,
+            WINDOW_FOCUS,
+            WINDOW_FBRESIZE
+        } type{};
 
-        void unsubscribe(EventListener &listener) {
-            std::lock_guard<std::mutex> guard(mutex);
-            listeners.erase(&listener);
-        }
+        Vec2i value{};
+        bool focus{};
 
-    private:
-        std::mutex mutex;
-        std::set<EventListener *> listeners;
+        WindowEvent() = default;
+
+        WindowEvent(Type type, Vec2i value, bool focus)
+                : type(type), value(value), focus(focus) {
+
+        }
     };
 }
 
-#endif //XENGINE_EVENTBUS_HPP
+#endif //XENGINE_WINDOWEVENT_HPP

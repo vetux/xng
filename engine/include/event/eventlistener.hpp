@@ -17,21 +17,19 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_EVENTRECEIVER_HPP
-#define XENGINE_EVENTRECEIVER_HPP
+#ifndef XENGINE_EVENTLISTENER_HPP
+#define XENGINE_EVENTLISTENER_HPP
+
+#include "event/event.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT EventReceiverBase {
-    };
-
-    template<typename T>
-    class XENGINE_EXPORT EventReceiver : public EventReceiverBase {
+    class XENGINE_EXPORT EventListener {
     public:
-        /**
+        /**T
          * @param event
          */
-        virtual void onEvent(const T &event) = 0;
+        virtual void onEvent(const Event &event) = 0;
     };
 }
 
-#endif //XENGINE_EVENTRECEIVER_HPP
+#endif //XENGINE_EVENTLISTENER_HPP

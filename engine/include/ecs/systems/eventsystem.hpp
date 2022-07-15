@@ -20,4 +20,63 @@
 #ifndef XENGINE_EVENTSYSTEM_HPP
 #define XENGINE_EVENTSYSTEM_HPP
 
+#include "ecs/system.hpp"
+
+#include "event/event.hpp"
+#include "event/events/entityevent.hpp"
+#include "event/events/inputevent.hpp"
+#include "event/events/windowevent.hpp"
+
+#include "display/window.hpp"
+
+namespace xng {
+    class EventSystem : public System,
+                        public InputListener,
+                        public WindowListener,
+                        public EntityScene::Listener {
+    public:
+        explicit EventSystem(Window &wnd, EventBus &eventBus);
+
+        ~EventSystem() override;
+
+        void start(EntityScene &scene) override;
+
+        void stop(EntityScene &scene) override;
+
+        void update(DeltaTime deltaTime, EntityScene &scene) override;
+
+        void onKeyDown(KeyboardKey key) override;
+
+        void onKeyUp(KeyboardKey key) override;
+
+        void onMouseMove(double xPos, double yPos) override;
+
+        void onMouseWheelScroll(double amount) override;
+
+        void onMouseKeyDown(MouseButton key) override;
+
+        void onMouseKeyUp(MouseButton key) override;
+
+        void onTextInput(const std::string &text) override;
+
+        void onGamepadConnected(int id) override;
+
+        void onGamepadDisconnected(int id) override;
+
+        void onGamepadAxis(int id, GamePadAxis axis, double amount) override;
+
+        void onGamepadButtonDown(int id, GamePadButton button) override;
+
+        void onGamepadButtonUp(int id, GamePadButton button) override;
+
+        void onWindowClose() override;
+
+        void onWindowResize(Vec2i size) override;
+
+    private:
+        Window &wnd;
+        EventBus &eventBus;
+    };
+}
+
 #endif //XENGINE_EVENTSYSTEM_HPP

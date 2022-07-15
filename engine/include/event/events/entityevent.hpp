@@ -17,40 +17,34 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_EVENTBUS_HPP
-#define XENGINE_EVENTBUS_HPP
+#ifndef XENGINE_ENTITYEVENT_HPP
+#define XENGINE_ENTITYEVENT_HPP
 
-#include <functional>
-#include <set>
-#include <mutex>
+#include <typeindex>
+#include <any>
 
 #include "event/event.hpp"
-#include "event/eventlistener.hpp"
+#include "ecs/entityhandle.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT EventBus {
-    public:
-        void invoke(const Event &event) {
-            std::lock_guard<std::mutex> guard(mutex);
-            for (auto *receiver: listeners) {
-                receiver->onEvent(event);
-            }
+    struct EntityEvent : public Event {
+        std::type_index getEventType() const override {
+            return typeid(EntityEvent);
         }
 
-        void subscribe(EventListener &listener) {
-            std::lock_guard<std::mutex> guard(mutex);
-            listeners.insert(&listener);
-        }
+        enum Type {
+            ENTITY_ADD,
+            ENTITY_REMOVE,
+            COMPONENT_ADD,
+            COMPONENT_REMOVE,
+            COMPONENT_UPDATE
+        } type;
 
-        void unsubscribe(EventListener &listener) {
-            std::lock_guard<std::mutex> guard(mutex);
-            listeners.erase(&listener);
-        }
-
-    private:
-        std::mutex mutex;
-        std::set<EventListener *> listeners;
+        EntityHandle entity;
+        std::type_index componentType;
+        std::any component;
+        std::any secondComponent;
     };
 }
 
-#endif //XENGINE_EVENTBUS_HPP
+#endif //XENGINE_ENTITYEVENT_HPP
