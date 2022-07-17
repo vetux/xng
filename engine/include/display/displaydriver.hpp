@@ -43,6 +43,11 @@ namespace xng {
                                                      WindowAttributes attributes,
                                                      Monitor &monitor,
                                                      VideoMode mode) = 0;
+
+    private:
+        std::type_index getBaseType() override {
+            return typeid(DisplayDriver);
+        }
     };
 }
 #endif //XENGINE_DISPLAYDRIVER_HPP

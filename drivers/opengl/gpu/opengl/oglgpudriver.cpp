@@ -23,7 +23,7 @@
 #include "driver/registerdriver.hpp"
 
 namespace xng::opengl {
-    static bool dr = REGISTER_DRIVER("opengl", OGLGpuDriver);
+    static bool dr = REGISTER_DRIVER("opengl", GpuDriver, OGLGpuDriver);
 
     std::vector<RenderDeviceInfo> OGLGpuDriver::getAvailableRenderDevices() {
         return {{.name = "default"}};

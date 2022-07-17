@@ -22,6 +22,6 @@
 
 #include "driver/driverregistry.hpp"
 
-#define REGISTER_DRIVER(NAME, CLASS) xng::DriverRegistry::registerDriver(NAME, []() { return static_cast<Driver*>(new CLASS()); })
+#define REGISTER_DRIVER(NAME, BASE, CLASS) xng::DriverRegistry::registerDriver(NAME, typeid(BASE), []() { static_assert(std::is_base_of<BASE, CLASS>()); return static_cast<Driver*>(new CLASS()); })
 
 #endif //XENGINE_REGISTERDRIVER_HPP

@@ -38,6 +38,11 @@ namespace xng {
         virtual std::unique_ptr<RenderDevice> createRenderDevice() = 0;
 
         virtual std::unique_ptr<RenderDevice> createRenderDevice(const std::string &deviceName) = 0;
+
+    private:
+        std::type_index getBaseType() override {
+            return typeid(GpuDriver);
+        }
     };
 }
 #endif //XENGINE_GPUDRIVER_HPP

@@ -25,7 +25,7 @@
 #warning "Not Implemented"
 
 namespace xng {
-    static bool driverRegistered = REGISTER_DRIVER("box2d", PhysicsDriverBox2D);
+    static bool dr = REGISTER_DRIVER("box2d", PhysicsDriver, PhysicsDriverBox2D);
 
     std::type_index xng::PhysicsDriverBox2D::getType() {
         return {typeid(PhysicsDriverBox2D)};

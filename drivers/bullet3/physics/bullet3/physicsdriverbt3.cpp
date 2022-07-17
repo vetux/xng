@@ -25,7 +25,7 @@
 #warning "Not Implemented"
 
 namespace xng {
-    static bool driverRegistered = REGISTER_DRIVER("bullet3", PhysicsDriverBt3);
+    static bool dr = REGISTER_DRIVER("bullet3", PhysicsDriver, PhysicsDriverBt3);
 
     std::type_index PhysicsDriverBt3::getType() {
         return typeid(PhysicsDriverBt3);

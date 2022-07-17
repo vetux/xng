@@ -24,6 +24,7 @@
 #include <map>
 #include <memory>
 #include <functional>
+#include <stdexcept>
 
 #include "driver/driver.hpp"
 
@@ -32,16 +33,47 @@ namespace xng {
     public:
         typedef std::function<Driver *()> DriverCreator;
 
-        static const std::map<std::string, DriverCreator> &getAvailableDrivers();
-
-        static Driver *loadDriver(const std::string &name);
-
+        /**
+         * Retrieve the available driver creators for a given driver base class.
+         *
+         * @tparam T The driver base class
+         * @return
+         */
         template<typename T>
-        static std::unique_ptr<T> load(const std::string &name) {
-            return std::unique_ptr<T>(dynamic_cast<T *>(loadDriver(name)));
+        static const std::map<std::string, DriverCreator> &getAvailableDrivers() {
+            return drivers.at(typeid(T));
         }
 
-        static bool registerDriver(const std::string &name, DriverCreator creator) noexcept;
+        /**
+         * @tparam T The driver base class.
+         * @param name The unique identifier for the driver base class implementation
+         * @return A new instance of the driver implementation
+         */
+        template<typename T>
+        static std::unique_ptr<T> load(const std::string &name) {
+            auto dIt = drivers.find(typeid(T));
+            if (dIt == drivers.end()) {
+                throw std::runtime_error("No driver found for type " + std::string(typeid(T).name()) + " with name " + name);
+            }
+            auto nIt = dIt->second.find(name);
+            if (nIt == dIt->second.end()){
+                throw std::runtime_error("No driver found for type " + std::string(typeid(T).name()) + " with name " + name);
+            }
+            return std::unique_ptr<T>(dynamic_cast<T *>(drivers.at(typeid(T)).at(name)()));
+        }
+
+        /**
+         * Register a driver creator for a given name.
+         *
+         * @param name The name under which the driver will be accessible in load()
+         * @param baseType The base type of the driver must be a direct ancestor of xng::Driver
+         * @param creator The function object which constructors new instances of the base type implementation.
+         * @return True if the driver was registered, or false if there was already a driver of the given base type with the given name.
+         */
+        static bool registerDriver(const std::string &name, std::type_index baseType, DriverCreator creator) noexcept;
+
+    private:
+        static std::map<std::type_index, std::map<std::string, DriverCreator>> drivers; // The driver creators for each base class
     };
 }
 

@@ -32,6 +32,11 @@ namespace xng {
         virtual std::unique_ptr<AudioDevice> createDevice() = 0;
 
         virtual std::unique_ptr<AudioDevice> createDevice(const std::string &deviceName) = 0;
+
+    private:
+        std::type_index getBaseType() override {
+            return typeid(AudioDriver);
+        }
     };
 }
 #endif //XENGINE_AUDIODRIVER_HPP

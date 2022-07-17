@@ -25,7 +25,7 @@
 
 namespace xng {
     namespace glfw {
-        static bool dr = REGISTER_DRIVER("glfw", GLFWDisplayDriver);
+        static bool dr = REGISTER_DRIVER("glfw", DisplayDriver, GLFWDisplayDriver);
 
         std::unique_ptr<Monitor> GLFWDisplayDriver::getPrimaryMonitor() {
             return std::make_unique<MonitorGLFW>(glfwGetPrimaryMonitor());

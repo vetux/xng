@@ -27,6 +27,11 @@ namespace xng {
     class XENGINE_EXPORT FontDriver : public Driver {
     public:
         virtual std::unique_ptr<Font> createFont(std::istream &data) = 0;
+
+    private:
+        std::type_index getBaseType() override {
+            return typeid(FontDriver);
+        }
     };
 }
 #endif //XENGINE_FONTDRIVER_HPP

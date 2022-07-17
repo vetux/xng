@@ -26,7 +26,7 @@
 #include "driver/registerdriver.hpp"
 
 namespace xng {
-    static bool dr = REGISTER_DRIVER("opengl-qt", OGLQtGpuDriver);
+    static bool dr = REGISTER_DRIVER("opengl-qt", GpuDriver, OGLQtGpuDriver);
 
     std::vector<RenderDeviceInfo> OGLQtGpuDriver::getAvailableRenderDevices() {
         return {{.name = "default"}};

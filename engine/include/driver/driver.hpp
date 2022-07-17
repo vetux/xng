@@ -23,10 +23,23 @@
 #include <typeindex>
 
 namespace xng {
+    /**
+     * Classes which inherit from this interface act as an entry point to some interface.
+     *
+     * Implementations of these classes can be registered and retrieved at runtime through the driver registry.
+     */
     class XENGINE_EXPORT Driver {
     public:
         virtual ~Driver() = default;
 
+        /**
+         * @return The base type of the driver (Accessible in engine/include, or User defined driver base type)
+         */
+        virtual std::type_index getBaseType() = 0;
+
+        /**
+         * @return The concrete type of the driver (Encapsulated in drivers/ and not accessible to the user, or User defined driver type)
+         */
         virtual std::type_index getType() = 0;
     };
 }

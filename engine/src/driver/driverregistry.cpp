@@ -23,21 +23,16 @@
 #include <utility>
 
 namespace xng {
-    static std::map<std::string, std::function<Driver *()>> drivers;
+    std::map<std::type_index, std::map<std::string, DriverRegistry::DriverCreator>> DriverRegistry::drivers;
 
-    const std::map<std::string, std::function<Driver *()>> &DriverRegistry::getAvailableDrivers() {
-        return drivers;
-    }
-
-    Driver *DriverRegistry::loadDriver(const std::string &name) {
-        return drivers.at(name)();
-    }
-
-    bool DriverRegistry::registerDriver(const std::string &name, DriverRegistry::DriverCreator creator) noexcept {
-        if (drivers.find(name) != drivers.end()) {
+    bool DriverRegistry::registerDriver(const std::string &name,
+                                        std::type_index baseType,
+                                        DriverRegistry::DriverCreator creator) noexcept {
+        auto nIt = drivers[baseType].find(name);
+        if (nIt != drivers[baseType].end()) {
             return false;
         } else {
-            drivers[name] = std::move(creator);
+            drivers[baseType][name] = std::move(creator);
             return true;
         }
     }

@@ -27,6 +27,11 @@ namespace xng {
     class ScriptDriver : public Driver {
     public:
         virtual std::unique_ptr<ScriptRuntime> createRuntime() = 0;
+
+    private:
+        std::type_index getBaseType() override {
+            return typeid(ScriptDriver);
+        }
     };
 }
 

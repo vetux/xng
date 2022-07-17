@@ -23,7 +23,7 @@
 #include "driver/registerdriver.hpp"
 
 namespace xng {
-    static const bool reg = REGISTER_DRIVER("freetype", FtFontDriver);
+    static const bool reg = REGISTER_DRIVER("freetype", FontDriver, FtFontDriver);
 
     std::unique_ptr<Font> FtFontDriver::createFont(std::istream &data) {
         return std::make_unique<FTFont>(data);

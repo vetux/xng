@@ -30,6 +30,11 @@ namespace xng {
     class XENGINE_EXPORT PhysicsDriver : public Driver {
     public:
         virtual std::unique_ptr<World> createWorld() = 0;
+
+    private:
+        std::type_index getBaseType() override {
+            return typeid(PhysicsDriver);
+        }
     };
 }
 
