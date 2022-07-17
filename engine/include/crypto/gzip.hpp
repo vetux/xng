@@ -24,19 +24,20 @@
 #include <vector>
 
 namespace xng {
-    namespace GZip {
-        XENGINE_EXPORT std::vector<char> compress(const char *data, size_t length);
+    class GZip {
+    public:
+        virtual std::vector<char> compress(const char *data, size_t length) = 0;
 
-        XENGINE_EXPORT std::vector<char> decompress(const char *data, size_t length);
+        virtual std::vector<char> decompress(const char *data, size_t length) = 0;
 
-        XENGINE_EXPORT std::vector<char> compress(const std::vector<char> &data);
+        virtual std::vector<char> compress(const std::vector<char> &data) = 0;
 
-        XENGINE_EXPORT std::vector<char> decompress(const std::vector<char> &data);
+        virtual std::vector<char> decompress(const std::vector<char> &data) = 0;
 
-        XENGINE_EXPORT std::string compress(const std::string &data);
+        virtual std::string compress(const std::string &data) = 0;
 
-        XENGINE_EXPORT std::string decompress(const std::string &data);
-    }
+        virtual std::string decompress(const std::string &data) = 0;
+    };
 }
 
 #endif //XENGINE_GZIP_HPP

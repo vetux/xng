@@ -10,7 +10,7 @@ option(DRIVER_ASSIMP "Build the AssImp resource parser driver (For 3D asset file
 option(DRIVER_SNDFILE "Build the SndFile resource parser driver (For Audio file formats)" ON)
 option(DRIVER_SHADERC "Build the ShaderC shader compiler driver" ON)
 option(DRIVER_SPIRVCROSS "Build the SPIRV-Cross shader decompiler driver" ON)
-
+option(DRIVER_CRYPTOPP "Build the CryptoPP driver" ON)
 
 set(DRIVERS_INCLUDE)
 set(DRIVERS_SRC)
@@ -103,6 +103,13 @@ if (DRIVER_SPIRVCROSS)
     add_compile_definitions(DRIVER_SPIRVCROSS)
     set(DRIVERS_INCLUDE ${DRIVERS_INCLUDE} drivers/spirv-cross/)
     set(DRIVERS_LINK ${DRIVERS_LINK} spirv-cross-core spirv-cross-glsl spirv-cross-hlsl)
+endif ()
+
+if (DRIVER_CRYPTOPP)
+    set(Drivers.GLOBEXPR ${Drivers.GLOBEXPR} drivers/cryptopp/*.cpp drivers/cryptopp/*.c)
+    add_compile_definitions(DRIVER_CRYPTOPP)
+    set(DRIVERS_INCLUDE ${DRIVERS_INCLUDE} drivers/cryptopp/)
+    set(DRIVERS_LINK ${DRIVERS_LINK} cryptopp)
 endif ()
 
 file(GLOB_RECURSE DRIVERS_SRC ${Drivers.GLOBEXPR})

@@ -21,7 +21,7 @@
 
 #include "extern/json.hpp"
 #include "extern/base64.hpp"
-#include "compression/gzip.hpp"
+#include "crypto/gzip.hpp"
 #include "crypto/sha.hpp"
 
 namespace xng {
@@ -34,6 +34,9 @@ namespace xng {
     std::vector<std::vector<char>> PakBuilder::build(size_t chunkSize,
                                                      bool compressData,
                                                      bool encryptData,
+                                                     SHA &sha,
+                                                     GZip &zip,
+                                                     AES &aes,
                                                      const AES::Key &key,
                                                      const AES::InitializationVector &iv) {
         std::vector<char> data;
@@ -44,16 +47,16 @@ namespace xng {
             auto d = pair.second;
 
             if (compressData) {
-                d = GZip::compress(d);
+                d = zip.compress(d);
             }
 
             if (encryptData) {
-                d = AES::encrypt(key, iv, d);
+                d = aes.encrypt(key, iv, d);
             }
 
             headerEntries[pair.first].offset = currentOffset;
             headerEntries[pair.first].size = d.size();
-            headerEntries[pair.first].hash = SHA::sha256(pair.second);
+            headerEntries[pair.first].hash = sha.sha256(pair.second);
 
             currentOffset += d.size();
 
@@ -73,7 +76,7 @@ namespace xng {
         auto headerStr = headerJson.dump();
 
         if (encryptData) {
-            headerStr = AES::encrypt(key, iv, headerStr);
+            headerStr = aes.encrypt(key, iv, headerStr);
         }
 
         nlohmann::json outHeaderJson;

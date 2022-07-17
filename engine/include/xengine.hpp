@@ -146,7 +146,7 @@
 #include "input/device/mouse.hpp"
 #include "input/device/gamepad.hpp"
 #include "input/device/buttonstate.hpp"
-#include "compression/gzip.hpp"
+#include "crypto/gzip.hpp"
 #include "animation/skeletal/rig.hpp"
 #include "animation/skeletal/riganimator.hpp"
 #include "animation/skeletal/bone.hpp"

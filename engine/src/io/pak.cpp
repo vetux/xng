@@ -26,11 +26,19 @@
 #include "extern/base64.hpp"
 
 #include "io/readfile.hpp"
-#include "compression/gzip.hpp"
+#include "crypto/gzip.hpp"
 #include "crypto/sha.hpp"
 
 namespace xng {
+    Pak::Pak(std::vector<std::reference_wrapper<std::istream>> streams, GZip &gzip, SHA &sha)
+            : streams(std::move(streams)), gzip(&gzip), sha(&sha) {
+        loadHeader();
+    }
+
     Pak::Pak(std::vector<std::reference_wrapper<std::istream>> streams,
+             GZip &gzip,
+             SHA &sha,
+             AES &aes,
              AES::Key key,
              AES::InitializationVector iv)
             : streams(std::move(streams)),
@@ -101,15 +109,15 @@ namespace xng {
         }
 
         if (encrypted) {
-            ret = AES::decrypt(key, iv, ret);
+            ret = aes->decrypt(key, iv, ret);
         }
 
         if (compressed) {
-            ret = GZip::decompress(ret);
+            ret = gzip->decompress(ret);
         }
 
         if (verifyHash) {
-            auto hash = SHA::sha256(ret);
+            auto hash = sha->sha256(ret);
             if (hEntry.hash != hash) {
                 throw std::runtime_error("Pak entry data hash mismatch");
             }
@@ -171,18 +179,22 @@ namespace xng {
 
         encrypted = headerWrap["encrypted"];
 
+        if (encrypted && aes == nullptr) {
+            throw std::runtime_error("Pak data is encrypted and no decryption key was specified.");
+        }
+
         headerStr = base64_decode(static_cast<std::string>(headerWrap["data"]));
 
         if (encrypted) {
             try {
-                headerStr = xng::AES::decrypt(key, {}, headerStr);
+                headerStr = aes->decrypt(key, {}, headerStr);
             } catch (const std::exception &e) {
                 std::string error = "Failed to decrypt pak header (Wrong Key?): " + std::string(e.what());
                 throw std::runtime_error(error);
             }
         }
 
-        headerStr = xng::GZip::decompress(headerStr);
+        headerStr = gzip->decompress(headerStr);
 
         auto headerJson = nlohmann::json::parse(headerStr);
 

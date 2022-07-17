@@ -8,6 +8,8 @@
 #include <map>
 
 #include "crypto/aes.hpp"
+#include "crypto/gzip.hpp"
+#include "crypto/sha.hpp"
 
 namespace xng {
     static const std::string PAK_FORMAT_VERSION = "00";
@@ -26,14 +28,19 @@ namespace xng {
 
         Pak() = default;
 
+        Pak(std::vector<std::reference_wrapper<std::istream>> streams, GZip &gzip, SHA &sha);
+
         /**
          * @param streams The chunk streams in the order returned by PakBuilder::build
          * @param key The key used to decrypt encrypted entries
          * @param iv The iv used to decrypt encrypted entries
          */
-        explicit Pak(std::vector<std::reference_wrapper<std::istream>> streams,
-                     AES::Key key = {},
-                     AES::InitializationVector iv = {});
+        Pak(std::vector<std::reference_wrapper<std::istream>> streams,
+            GZip &gzip,
+            SHA &sha,
+            AES &aes,
+            AES::Key key,
+            AES::InitializationVector iv);
 
         /**
          * Load the pak entry from the corresponding chunk stream,
@@ -64,8 +71,12 @@ namespace xng {
         bool encrypted{};
         bool compressed{};
 
+        AES *aes = nullptr;
         AES::Key key{};
         AES::InitializationVector iv{};
+
+        GZip *gzip = nullptr;
+        SHA *sha = nullptr;
     };
 }
 

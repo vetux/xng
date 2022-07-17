@@ -27,34 +27,37 @@
 #include "crypto/random.hpp"
 
 namespace xng {
-    namespace AES {
-        const int BLOCKSIZE = 128;
+    class XENGINE_EXPORT AES {
+    public:
+        static const int BLOCKSIZE = 128;
 
         typedef std::string Key;
         typedef std::array<unsigned char, BLOCKSIZE> InitializationVector;
 
-        XENGINE_EXPORT std::string encrypt(const Key &key,
-                                           const InitializationVector &iv,
-                                           const std::string &plaintext);
+        virtual ~AES() = default;
 
-        XENGINE_EXPORT std::string decrypt(const Key &key,
-                                           const InitializationVector &iv,
-                                           const std::string &ciphertext);
+        virtual std::string encrypt(const Key &key,
+                                    const InitializationVector &iv,
+                                    const std::string &plaintext) = 0;
 
-        XENGINE_EXPORT std::vector<char> encrypt(const Key &key,
-                                                 const InitializationVector &iv,
-                                                 const std::vector<char> &plaintext);
+        virtual std::string decrypt(const Key &key,
+                                    const InitializationVector &iv,
+                                    const std::string &ciphertext) = 0;
 
-        XENGINE_EXPORT std::vector<char> decrypt(const Key &key,
-                                                 const InitializationVector &iv,
-                                                 const std::vector<char> &ciphertext);
+        virtual std::vector<char> encrypt(const Key &key,
+                                          const InitializationVector &iv,
+                                          const std::vector<char> &plaintext) = 0;
+
+        virtual std::vector<char> decrypt(const Key &key,
+                                          const InitializationVector &iv,
+                                          const std::vector<char> &ciphertext) = 0;
 
         /**
          * @param rand The random generator to use when generating the iv data
          * @return Cryptographically secure random iv
          */
-        XENGINE_EXPORT InitializationVector getRandomIv(Random &rand);
-    }
+        virtual InitializationVector getRandomIv(Random &rand) = 0;
+    };
 }
 
 #endif //XENGINE_AES_HPP

@@ -17,35 +17,23 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "crypto/random.hpp"
+#ifndef XENGINE_CRYPTOPPDRIVER_HPP
+#define XENGINE_CRYPTOPPDRIVER_HPP
 
-#include <cryptopp/osrng.h>
+#include "crypto/cryptodriver.hpp"
 
 namespace xng {
-    struct MemberCryptoPP : public Random::Member {
-        CryptoPP::AutoSeededRandomPool pool;
+    class CryptoPPDriver : public CryptoDriver {
+    public:
+        std::unique_ptr<AES> createAES() override;
+
+        std::unique_ptr<GZip> createGzip() override;
+
+        std::unique_ptr<Random> createRandom() override;
+
+        std::unique_ptr<SHA> createSHA() override;
+
+        std::type_index getType() override { return typeid(CryptoPPDriver); }
     };
-
-    Random::Random()
-            : members(std::make_unique<MemberCryptoPP>()) {}
-
-    unsigned char Random::byte() {
-        return getMembers<MemberCryptoPP>().pool.GenerateByte();
-    }
-
-    unsigned int Random::bit() {
-        return getMembers<MemberCryptoPP>().pool.GenerateBit();
-    }
-
-    unsigned int Random::word(unsigned int min, unsigned int max) {
-        return getMembers<MemberCryptoPP>().pool.GenerateWord32(min, max);
-    }
-
-    void Random::block(unsigned char *data, size_t size) {
-        getMembers<MemberCryptoPP>().pool.GenerateBlock(data, size);
-    }
-
-    void Random::discard(size_t size) {
-        getMembers<MemberCryptoPP>().pool.DiscardBytes(size);
-    }
 }
+#endif //XENGINE_CRYPTOPPDRIVER_HPP

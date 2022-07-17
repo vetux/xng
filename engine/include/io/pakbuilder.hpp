@@ -29,11 +29,14 @@ namespace xng {
 
         void addEntry(const std::string &name, const std::vector<char> &buffer);
 
-        std::vector<std::vector<char>> build(size_t chunkSize = 0,
-                                             bool compressData = true,
-                                             bool encryptData = false,
-                                             const AES::Key &key = {},
-                                             const AES::InitializationVector &iv = {});
+        std::vector<std::vector<char>> build(size_t chunkSize,
+                                             bool compressData,
+                                             bool encryptData,
+                                             SHA &sha,
+                                             GZip &zip,
+                                             AES &aes,
+                                             const AES::Key &key,
+                                             const AES::InitializationVector &iv);
 
     private:
         std::map<std::string, std::vector<char>> entries;

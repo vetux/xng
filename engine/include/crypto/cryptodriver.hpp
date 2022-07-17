@@ -17,36 +17,30 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RANDOM_HPP
-#define XENGINE_RANDOM_HPP
+#ifndef XENGINE_CRYPTODRIVER_HPP
+#define XENGINE_CRYPTODRIVER_HPP
 
-#include <cstddef>
-#include <memory>
-#include <vector>
-#include <limits>
+#include "driver/driver.hpp"
+
+#include "crypto/aes.hpp"
+#include "crypto/gzip.hpp"
+#include "crypto/random.hpp"
+#include "crypto/sha.hpp"
 
 namespace xng {
-    /**
-     * Cryptographically secure random number generator.
-     */
-    class XENGINE_EXPORT Random {
+    class CryptoDriver : public Driver {
     public:
-        /**
-         * Create the generator instance and seed it using os supplied entropy.
-         */
-        virtual ~Random() = default;
+        virtual std::unique_ptr<AES> createAES() = 0;
 
-        virtual unsigned char byte() = 0;
+        virtual std::unique_ptr<GZip> createGzip() = 0;
 
-        virtual unsigned int bit() = 0;
+        virtual std::unique_ptr<Random> createRandom() = 0;
 
-        virtual unsigned int word(unsigned int min = 0,
-                                  unsigned int max = std::numeric_limits<unsigned int>::max()) = 0;
+        virtual std::unique_ptr<SHA> createSHA() = 0;
 
-        virtual void block(unsigned char *data, size_t size) = 0;
-
-        virtual void discard(size_t size) = 0;
+        std::type_index getBaseType() override {
+            return typeid(CryptoDriver);
+        }
     };
 }
-
-#endif //XENGINE_RANDOM_HPP
+#endif //XENGINE_CRYPTODRIVER_HPP

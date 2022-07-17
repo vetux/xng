@@ -17,31 +17,38 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "crypto/sha.hpp"
+#ifndef XENGINE_CRYPTOPPRANDOM_HPP
+#define XENGINE_CRYPTOPPRANDOM_HPP
 
-#include "cryptopp/filters.h"
-#include "cryptopp/cryptlib.h"
-#include "cryptopp/sha.h"
-#include "cryptopp/hex.h"
+#include "crypto/random.hpp"
 
-namespace xng{
-    std::string SHA::sha256(const char *data, size_t length) {
-        std::string tmp;
-        std::string ret;
-        CryptoPP::SHA256 hash;
-        CryptoPP::HexEncoder encoder(new CryptoPP::StringSink(ret));
-        hash.Update((const CryptoPP::byte *) data, length);
-        tmp.resize(hash.DigestSize());
-        hash.Final((CryptoPP::byte *) &tmp[0]);
-        CryptoPP::StringSource(tmp, true, new CryptoPP::Redirector(encoder));
-        return ret;
-    }
+#include <cryptopp/osrng.h>
 
-    std::string SHA::sha256(const std::string &data) {
-        return sha256(data.data(), data.size());
-    }
+namespace xng {
+    class CryptoPPRandom : public Random {
+    public:
+        unsigned char byte() override {
+            return pool.GenerateByte();
+        }
 
-    std::string SHA::sha256(const std::vector<char> &data) {
-        return sha256(data.data(), data.size());
-    }
+        unsigned int bit() override {
+            return pool.GenerateBit();
+        }
+
+        unsigned int word(unsigned int min, unsigned int max) override {
+            return pool.GenerateWord32(min, max);
+        }
+
+        void block(unsigned char *data, size_t size) override {
+            pool.GenerateBlock(data, size);
+        }
+
+        void discard(size_t size) override {
+            pool.DiscardBytes(size);
+        }
+
+    private:
+        CryptoPP::AutoSeededRandomPool pool;
+    };
 }
+#endif //XENGINE_CRYPTOPPRANDOM_HPP

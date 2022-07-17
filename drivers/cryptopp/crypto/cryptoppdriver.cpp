@@ -17,36 +17,31 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RANDOM_HPP
-#define XENGINE_RANDOM_HPP
+#include "crypto/cryptoppdriver.hpp"
 
-#include <cstddef>
-#include <memory>
-#include <vector>
-#include <limits>
+#include "crypto/cryptoppaes.hpp"
+#include "crypto/cryptoppgzip.hpp"
+#include "crypto/cryptopprandom.hpp"
+#include "crypto/cryptoppsha.hpp"
+
+#include "driver/registerdriver.hpp"
 
 namespace xng {
-    /**
-     * Cryptographically secure random number generator.
-     */
-    class XENGINE_EXPORT Random {
-    public:
-        /**
-         * Create the generator instance and seed it using os supplied entropy.
-         */
-        virtual ~Random() = default;
+    static const bool dr = REGISTER_DRIVER("cryptopp", CryptoDriver, CryptoPPDriver);
 
-        virtual unsigned char byte() = 0;
+    std::unique_ptr<AES> CryptoPPDriver::createAES() {
+        return std::make_unique<CryptoPPAES>();
+    }
 
-        virtual unsigned int bit() = 0;
+    std::unique_ptr<GZip> CryptoPPDriver::createGzip() {
+        return std::make_unique<CryptoPPGzip>();
+    }
 
-        virtual unsigned int word(unsigned int min = 0,
-                                  unsigned int max = std::numeric_limits<unsigned int>::max()) = 0;
+    std::unique_ptr<Random> CryptoPPDriver::createRandom() {
+        return std::make_unique<CryptoPPRandom>();
+    }
 
-        virtual void block(unsigned char *data, size_t size) = 0;
-
-        virtual void discard(size_t size) = 0;
-    };
+    std::unique_ptr<SHA> CryptoPPDriver::createSHA() {
+        return std::make_unique<CryptoPPSHA>();
+    }
 }
-
-#endif //XENGINE_RANDOM_HPP

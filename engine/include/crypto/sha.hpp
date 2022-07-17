@@ -24,13 +24,16 @@
 #include <vector>
 
 namespace xng {
-    namespace SHA {
-        XENGINE_EXPORT std::string sha256(const char *data, size_t length);
+    class SHA {
+    public:
+        virtual ~SHA() = default;
 
-        XENGINE_EXPORT std::string sha256(const std::string &data);
+        virtual std::string sha256(const char *data, size_t length) = 0;
 
-        XENGINE_EXPORT std::string sha256(const std::vector<char> &data);
-    }
+        virtual std::string sha256(const std::string &data) = 0;
+
+        virtual std::string sha256(const std::vector<char> &data) = 0;
+    };
 }
 
 #endif //XENGINE_SHA_HPP

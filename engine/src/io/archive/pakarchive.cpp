@@ -26,9 +26,20 @@
 namespace xng {
     PakArchive::PakArchive(std::vector<std::reference_wrapper<std::istream>> streams,
                            bool verifyHashes,
-                           const AES::Key &key,
-                           const AES::InitializationVector &iv)
-            : pak(std::move(streams), key, iv), verifyHashes(verifyHashes) {}
+                           GZip &gzip,
+                           SHA &sha)
+            : pak(std::move(streams), gzip, sha),
+              verifyHashes(verifyHashes) {}
+
+    PakArchive::PakArchive(std::vector<std::reference_wrapper<std::istream>> streams,
+                           bool verifyHashes,
+                           GZip &gzip,
+                           SHA &sha,
+                           AES &aes,
+                           AES::Key key,
+                           AES::InitializationVector iv)
+            : pak(std::move(streams), gzip, sha, aes, std::move(key), iv),
+              verifyHashes(verifyHashes) {}
 
     bool PakArchive::exists(const std::string &path) {
         return pak.exists(path);

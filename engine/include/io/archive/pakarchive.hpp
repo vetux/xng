@@ -30,10 +30,18 @@ namespace xng {
     public:
         PakArchive() = default;
 
-        explicit PakArchive(std::vector<std::reference_wrapper<std::istream>> stream,
-                            bool verifyHashes = true,
-                            const AES::Key &key = {},
-                            const AES::InitializationVector &iv = {});
+        PakArchive(std::vector<std::reference_wrapper<std::istream>> streams,
+                   bool verifyHashes,
+                   GZip &gzip,
+                   SHA &sha);
+
+        PakArchive(std::vector<std::reference_wrapper<std::istream>> streams,
+                   bool verifyHashes,
+                   GZip &gzip,
+                   SHA &sha,
+                   AES &aes,
+                   AES::Key key,
+                   AES::InitializationVector iv);
 
         ~PakArchive() override = default;
 
