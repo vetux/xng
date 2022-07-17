@@ -27,6 +27,7 @@
 #include "gpu/renderdevice.hpp"
 
 #include "shader/shadersource.hpp"
+#include "shader/spirvcompiler.hpp"
 
 #include "asset/camera.hpp"
 
@@ -61,7 +62,7 @@ namespace xng {
      */
     class XENGINE_EXPORT Renderer2D {
     public:
-        explicit Renderer2D(RenderDevice &device);
+        explicit Renderer2D(RenderDevice &device, SPIRVCompiler &shaderCompiler, SPIRVDecompiler &shaderDecompiler);
 
         ~Renderer2D();
 

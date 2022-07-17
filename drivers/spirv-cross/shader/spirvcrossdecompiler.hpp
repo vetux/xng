@@ -17,22 +17,21 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SHADERINCLUDE_HPP
-#define XENGINE_SHADERINCLUDE_HPP
+#ifndef XENGINE_SPIRVCROSSDECOMPILER_HPP
+#define XENGINE_SPIRVCROSSDECOMPILER_HPP
 
-#include <map>
-#include <string>
+#include "shader/spirvdecompiler.hpp"
 
 namespace xng {
-    /**
-     * Currently provides:
-     * mvp.glsl
-     * phong.glsl
-     */
-    namespace ShaderInclude {
-        const std::map<std::string, std::string> &getShaderMacros(ShaderLanguage lang);
+    class SpirvCrossDecompiler : public SPIRVDecompiler {
+    public:
+        std::type_index getType() override { return typeid(SpirvCrossDecompiler); }
 
-        const std::function<std::string(const char *)> &getShaderIncludeCallback();
-    }
+        std::string decompile(const std::vector<uint32_t> &source,
+                              const std::string &entryPoint,
+                              ShaderStage stage,
+                              ShaderLanguage targetLanguage) const override;
+    };
 }
-#endif //XENGINE_SHADERINCLUDE_HPP
+
+#endif //XENGINE_SPIRVCROSSDECOMPILER_HPP

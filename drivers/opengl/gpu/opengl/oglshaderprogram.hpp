@@ -32,7 +32,7 @@
 #include "gpu/shaderprogram.hpp"
 #include "gpu/opengl/oglbuildmacro.hpp"
 
-#include "shader/shadercompiler.hpp"
+#include "shader/spirvdecompiler.hpp"
 
 namespace xng {
     namespace opengl {
@@ -45,7 +45,7 @@ namespace xng {
              * @param fragmentShader The preprocessed glsl fragment shader.
              * @param geometryShader The preprocessed glsl geometry shader, if empty no geometry shader is used.
              */
-            explicit OPENGL_TYPENAME(ShaderProgram)(const ShaderProgramDesc &desc) {
+            explicit OPENGL_TYPENAME(ShaderProgram)(const SPIRVDecompiler &decompiler, const ShaderProgramDesc &desc) {
                 initialize();
 
                 char *vertexSource, *fragmentSource, *geometrySource = nullptr;
@@ -55,7 +55,7 @@ namespace xng {
                 if (it == desc.shaders.end())
                     throw std::runtime_error("No vertex shader");
 
-                vert = ShaderCompiler::decompileSPIRV(desc.shaders.at(VERTEX).getBlob(),
+                vert = decompiler.decompile(desc.shaders.at(VERTEX).getBlob(),
                                                       it->second.getEntryPoint(),
                                                       VERTEX,
                                                       GLSL_420);
@@ -65,7 +65,7 @@ namespace xng {
                 if (it == desc.shaders.end())
                     throw std::runtime_error("No fragment shader");
 
-                frag = ShaderCompiler::decompileSPIRV(desc.shaders.at(FRAGMENT).getBlob(),
+                frag = decompiler.decompile(desc.shaders.at(FRAGMENT).getBlob(),
                                                       it->second.getEntryPoint(),
                                                       FRAGMENT,
                                                       GLSL_420);
@@ -73,7 +73,7 @@ namespace xng {
 
                 it = desc.shaders.find(GEOMETRY);
                 if (it != desc.shaders.end()) {
-                    geo = ShaderCompiler::decompileSPIRV(desc.shaders.at(GEOMETRY).getBlob(),
+                    geo = decompiler.decompile(desc.shaders.at(GEOMETRY).getBlob(),
                                                          it->second.getEntryPoint(),
                                                          GEOMETRY,
                                                          GLSL_420);

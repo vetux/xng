@@ -66,8 +66,9 @@ namespace xng::opengl {
             return std::make_unique<OPENGL_TYPENAME(VertexBuffer)>(desc);
         }
 
-        std::unique_ptr<ShaderProgram> createShaderProgram(const ShaderProgramDesc &desc) override {
-            return std::make_unique<OPENGL_TYPENAME(ShaderProgram)>(desc);
+        std::unique_ptr<ShaderProgram> createShaderProgram(const SPIRVDecompiler &decompiler,
+                                                           const ShaderProgramDesc &desc) override {
+            return std::make_unique<OPENGL_TYPENAME(ShaderProgram)>(decompiler, desc);
         }
 
         std::unique_ptr<ShaderBuffer> createShaderBuffer(const ShaderBufferDesc &desc) override {

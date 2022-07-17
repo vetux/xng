@@ -22,7 +22,7 @@
 
 #include "math/matrixmath.hpp"
 #include "async/threadpool.hpp"
-#include "shader/shadercompiler.hpp"
+#include "shader/shadersource.hpp"
 
 static const char *SHADER_VERT = R"###(#version 420 core
 
@@ -195,30 +195,33 @@ namespace xng {
         });
     }
 
-    Renderer2D::Renderer2D(RenderDevice &device)
+    Renderer2D::Renderer2D(RenderDevice &device, SPIRVCompiler &shaderCompiler, SPIRVDecompiler &shaderDecompiler)
             : renderDevice(device) {
         vs = ShaderSource(SHADER_VERT, "main", VERTEX, GLSL_420, false);
         fsColor = ShaderSource(SHADER_FRAG_COLOR, "main", FRAGMENT, GLSL_420, false);
         fsTexture = ShaderSource(SHADER_FRAG_TEXTURE, "main", FRAGMENT, GLSL_420, false);
         fsText = ShaderSource(SHADER_FRAG_TEXT, "main", FRAGMENT, GLSL_420, false);
 
-        vs = vs.preprocess();
-        fsColor = fsColor.preprocess();
-        fsTexture = fsTexture.preprocess();
-        fsText = fsText.preprocess();
+        vs = vs.preprocess(shaderCompiler);
+        fsColor = fsColor.preprocess(shaderCompiler);
+        fsTexture = fsTexture.preprocess(shaderCompiler);
+        fsText = fsText.preprocess(shaderCompiler);
 
-        auto vsSrc = vs.compile();
-        auto fsColSrc = fsColor.compile();
-        auto fsTexSrc = fsTexture.compile();
-        auto fsTextSrc = fsText.compile();
+        auto vsSrc = vs.compile(shaderCompiler);
+        auto fsColSrc = fsColor.compile(shaderCompiler);
+        auto fsTexSrc = fsTexture.compile(shaderCompiler);
+        auto fsTextSrc = fsText.compile(shaderCompiler);
 
-        colorShader = device.createShaderProgram({.shaders = {{ShaderStage::VERTEX,   vsSrc.getShader()},
+        colorShader = device.createShaderProgram(shaderDecompiler,
+                                                 {.shaders = {{ShaderStage::VERTEX,   vsSrc.getShader()},
                                                               {ShaderStage::FRAGMENT, fsColSrc.getShader()}}});
 
-        textureShader = device.createShaderProgram({.shaders = {{ShaderStage::VERTEX,   vsSrc.getShader()},
+        textureShader = device.createShaderProgram(shaderDecompiler,
+                                                   {.shaders = {{ShaderStage::VERTEX,   vsSrc.getShader()},
                                                                 {ShaderStage::FRAGMENT, fsTexSrc.getShader()}}});
 
-        textShader = device.createShaderProgram({.shaders = {{ShaderStage::VERTEX,   vsSrc.getShader()},
+        textShader = device.createShaderProgram(shaderDecompiler,
+                                                {.shaders = {{ShaderStage::VERTEX,   vsSrc.getShader()},
                                                              {ShaderStage::FRAGMENT, fsTextSrc.getShader()}}});
 
         reallocatePipelines();
@@ -388,7 +391,7 @@ namespace xng {
         ShaderUniformBuffer shaderBufferUniform;
         shaderBufferUniform.mvp = mvp;
 
-        auto& shaderBuffer = getShaderBuffer();
+        auto &shaderBuffer = getShaderBuffer();
         shaderBuffer.upload(shaderBufferUniform);
 
         std::vector<RenderPass::ShaderBinding> bindings;
@@ -430,7 +433,7 @@ namespace xng {
                                           (float) color.b() / 255,
                                           (float) color.a() / 255).getMemory();
 
-        auto& shaderBuffer = getShaderBuffer();
+        auto &shaderBuffer = getShaderBuffer();
         shaderBuffer.upload(shaderBufferUniform);
 
         std::vector<RenderPass::ShaderBinding> bindings;
@@ -461,7 +464,7 @@ namespace xng {
                                           (float) color.b() / 255,
                                           (float) color.a() / 255).getMemory();
 
-        auto& shaderBuffer = getShaderBuffer();
+        auto &shaderBuffer = getShaderBuffer();
         shaderBuffer.upload(shaderBufferUniform);
 
         std::vector<RenderPass::ShaderBinding> bindings;

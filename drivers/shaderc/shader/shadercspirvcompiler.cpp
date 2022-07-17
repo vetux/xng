@@ -17,16 +17,16 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "shader/shadercompiler.hpp"
-
 #include <stdexcept>
 
-#include "shaderc/shaderc.hpp"
+#include "shader/shadercspirvcompiler.hpp"
+#include "driver/registerdriver.hpp"
 
-#include "spirv_glsl.hpp"
-#include "spirv_hlsl.hpp"
+#include <shaderc/shaderc.hpp>
 
 namespace xng {
+    static const bool dr = REGISTER_DRIVER("shaderc", SPIRVCompiler, ShadercSPIRVCompiler);
+
     class IncludeHandler : public shaderc::CompileOptions::IncluderInterface {
     public:
         std::function<std::string(const char *)> callback;
@@ -59,37 +59,33 @@ namespace xng {
         }
     };
 
-    static shaderc_optimization_level convertOptimizationLevel(ShaderCompiler::OptimizationLevel opt) {
+    static shaderc_optimization_level convertOptimizationLevel(SPIRVCompiler::OptimizationLevel opt) {
         switch (opt) {
-            case ShaderCompiler::OPTIMIZATION_NONE:
+            case SPIRVCompiler::OPTIMIZATION_NONE:
                 return shaderc_optimization_level_zero;
-            case ShaderCompiler::OPTIMIZATION_PERFORMANCE:
+            case SPIRVCompiler::OPTIMIZATION_PERFORMANCE:
                 return shaderc_optimization_level_performance;
-            case ShaderCompiler::OPTIMIZATION_SIZE:
+            case SPIRVCompiler::OPTIMIZATION_SIZE:
                 return shaderc_optimization_level_size;
             default:
                 throw std::runtime_error("Invalid optimization level " + std::to_string(opt));
         }
     }
 
-    static spv::ExecutionModel convertShaderStage(ShaderStage stage) {
-        switch (stage) {
-            case VERTEX:
-                return spv::ExecutionModel::ExecutionModelVertex;
-            case GEOMETRY:
-                return spv::ExecutionModel::ExecutionModelGeometry;
-            case FRAGMENT:
-                return spv::ExecutionModel::ExecutionModelFragment;
-            default:
-                throw std::runtime_error("Unsupported shader stage");
+    static void stripLines(std::string &str, const std::string &needle) {
+        auto it = str.find(needle);
+        while (it != std::string::npos) {
+            auto eol = str.find('\n', it);
+            str.erase(it, eol - it);
+            it = str.find(needle);
         }
     }
 
-    std::vector<uint32_t> ShaderCompiler::compileToSPIRV(const std::string &source,
-                                                         const std::string &entryPoint,
-                                                         ShaderStage stage,
-                                                         ShaderLanguage language,
-                                                         OptimizationLevel optimizationLevel) {
+    std::vector<uint32_t> ShadercSPIRVCompiler::compile(const std::string &source,
+                                                        const std::string &entryPoint,
+                                                        ShaderStage stage,
+                                                        ShaderLanguage language,
+                                                        OptimizationLevel optimizationLevel) const {
         shaderc::Compiler compiler;
         shaderc::CompileOptions options;
 
@@ -144,84 +140,12 @@ namespace xng {
         return {compileResult.cbegin(), compileResult.cend()};
     }
 
-    std::string ShaderCompiler::decompileSPIRV(const std::vector<uint32_t> &source,
-                                               const std::string &entryPoint,
-                                               ShaderStage stage,
-                                               ShaderLanguage targetLanguage) {
-        switch (targetLanguage) {
-            case HLSL_SHADER_MODEL_4: {
-                spirv_cross::CompilerHLSL sCompiler(source);
-                sCompiler.set_entry_point(entryPoint, convertShaderStage(stage));
-
-                spirv_cross::ShaderResources resources = sCompiler.get_shader_resources();
-
-                spirv_cross::CompilerGLSL::Options sOptions;
-                spirv_cross::CompilerHLSL::Options hlslOptions;
-
-                hlslOptions.shader_model = 40;
-                sCompiler.set_hlsl_options(hlslOptions);
-                sCompiler.set_common_options(sOptions);
-
-                sCompiler.build_combined_image_samplers();
-
-                return sCompiler.compile();
-            }
-            case GLSL_420_VK:
-            case GLSL_420: {
-                spirv_cross::CompilerGLSL sCompiler(source);
-                sCompiler.set_entry_point(entryPoint, convertShaderStage(stage));
-
-                spirv_cross::ShaderResources resources = sCompiler.get_shader_resources();
-
-                spirv_cross::CompilerGLSL::Options sOptions;
-                sOptions.version = 420;
-
-                sCompiler.set_common_options(sOptions);
-
-                sCompiler.build_dummy_sampler_for_combined_images();
-                sCompiler.build_combined_image_samplers();
-
-                return sCompiler.compile();
-            }
-            case GLSL_ES_320 : {
-                spirv_cross::CompilerGLSL sCompiler(source);
-                sCompiler.set_entry_point(entryPoint, convertShaderStage(stage));
-
-                spirv_cross::ShaderResources resources = sCompiler.get_shader_resources();
-
-                spirv_cross::CompilerGLSL::Options sOptions;
-                sOptions.version = 320;
-
-                sOptions.es = true;
-
-                //Set medium precision because high precision is optional in OpenGL ES
-                sOptions.fragment.default_float_precision = sOptions.Mediump;
-                sOptions.fragment.default_int_precision = sOptions.Mediump;
-
-                sCompiler.set_common_options(sOptions);
-
-                return sCompiler.compile();
-            }
-            default:
-                throw std::runtime_error("");
-        }
-    }
-
-    static void stripLines(std::string &str, const std::string &needle) {
-        auto it = str.find(needle);
-        while (it != std::string::npos) {
-            auto eol = str.find('\n', it);
-            str.erase(it, eol - it);
-            it = str.find(needle);
-        }
-    }
-
-    std::string ShaderCompiler::preprocess(const std::string &source,
-                                           ShaderStage stage,
-                                           ShaderLanguage language,
-                                           const std::function<std::string(const char *)> &include,
-                                           const std::map<std::string, std::string> &macros,
-                                           OptimizationLevel optimizationLevel) {
+    std::string ShadercSPIRVCompiler::preprocess(const std::string &source,
+                                                 ShaderStage stage,
+                                                 ShaderLanguage language,
+                                                 const std::function<std::string(const char *)> &include,
+                                                 const std::map<std::string, std::string> &macros,
+                                                 OptimizationLevel optimizationLevel) const {
         shaderc_shader_kind shaderStage;
         switch (stage) {
             case VERTEX:

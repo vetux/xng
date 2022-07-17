@@ -43,6 +43,8 @@
 
 #include "asset/mesh.hpp"
 
+#include "shader/spirvdecompiler.hpp"
+
 namespace xng {
     class XENGINE_EXPORT RenderDevice {
     public:
@@ -69,8 +71,11 @@ namespace xng {
          * {
          *      vec3 data;
          * };
+         *
+         * @param decompiler If the implementation does not support SPIRV natively this decompiler is used to decompile the spirv to the target language.
          */
-        virtual std::unique_ptr<ShaderProgram> createShaderProgram(const ShaderProgramDesc &desc) = 0;
+        virtual std::unique_ptr<ShaderProgram> createShaderProgram(const SPIRVDecompiler &decompiler,
+                                                                   const ShaderProgramDesc &desc) = 0;
 
         virtual std::unique_ptr<RenderPipeline> createPipeline(const RenderPipelineDesc &desc) = 0;
 

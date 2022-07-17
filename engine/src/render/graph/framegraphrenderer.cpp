@@ -20,8 +20,8 @@
 #include "render/graph/framegraphrenderer.hpp"
 
 namespace xng {
-    FrameGraphRenderer::FrameGraphRenderer(RenderDevice &device)
-            : device(device), pool(device) {}
+    FrameGraphRenderer::FrameGraphRenderer(RenderDevice &device, SPIRVCompiler &spirvCompiler, SPIRVDecompiler &spirvDecompiler)
+            : device(device), pool(device, spirvCompiler, spirvDecompiler) {}
 
     void FrameGraphRenderer::render(RenderTarget &target,
                                     const Scene &scene) {

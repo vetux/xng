@@ -42,8 +42,8 @@ namespace xng {
         return texture;
     }
 
-    FrameGraphPool::FrameGraphPool(RenderDevice &device)
-            : device(&device) {}
+    FrameGraphPool::FrameGraphPool(RenderDevice &device, SPIRVCompiler &spirvCompiler, SPIRVDecompiler &spirvDecompiler)
+            : device(&device), shaderCompiler(&spirvCompiler), shaderDecompiler(&spirvDecompiler) {}
 
     void FrameGraphPool::collectGarbage() {
         std::set<Uri> unusedUris;
@@ -125,16 +125,19 @@ namespace xng {
             auto &shader = handle.get();
             ShaderProgramDesc desc;
             desc.shaders.insert(std::pair<ShaderStage, SPIRVShader>(ShaderStage::VERTEX,
-                                                                    shader.vertexShader.compile().getShaders().at(0)));
+                                                                    shader.vertexShader.compile(
+                                                                            *shaderCompiler).getShaders().at(0)));
             desc.shaders.insert(std::pair<ShaderStage, SPIRVShader>(ShaderStage::FRAGMENT,
-                                                                    shader.fragmentShader.compile().getShaders().at(
+                                                                    shader.fragmentShader.compile(
+                                                                            *shaderCompiler).getShaders().at(
                                                                             0)));
             if (!shader.geometryShader.isEmpty()) {
                 desc.shaders.insert(std::pair<ShaderStage, SPIRVShader>(ShaderStage::GEOMETRY,
-                                                                        shader.geometryShader.compile().getShaders().at(
+                                                                        shader.geometryShader.compile(
+                                                                                *shaderCompiler).getShaders().at(
                                                                                 0)));
             }
-            uriObjects[handle.getUri()] = device->createShaderProgram(desc);
+            uriObjects[handle.getUri()] = device->createShaderProgram(*shaderDecompiler, desc);
         }
         return dynamic_cast<ShaderProgram &>(*uriObjects.at(handle.getUri()));
     }

@@ -35,7 +35,7 @@ namespace xng {
     public:
         FrameGraphPool() = default;
 
-        FrameGraphPool(RenderDevice &device);
+        FrameGraphPool(RenderDevice &device, SPIRVCompiler &shaderCompiler, SPIRVDecompiler &spirvDecompiler);
 
         /**
          * Deallocates buffers which have not been used since the last call to collectGarbage.
@@ -75,6 +75,8 @@ namespace xng {
         };
 
         RenderDevice *device = nullptr;
+        SPIRVCompiler *shaderCompiler = nullptr;
+        SPIRVDecompiler *shaderDecompiler = nullptr;
 
         std::unordered_map<Uri, std::unique_ptr<RenderObject>> uriObjects;
         std::unordered_map<TextureBufferDesc, std::vector<std::unique_ptr<TextureBuffer>>> textures;

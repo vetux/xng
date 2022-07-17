@@ -27,7 +27,7 @@
 namespace xng {
     class XENGINE_EXPORT TextRenderer {
     public:
-        TextRenderer(Font &font, RenderDevice &device);
+        TextRenderer(Font &font, RenderDevice &device, SPIRVCompiler &spirvCompiler, SPIRVDecompiler &spirvDecompiler);
 
         void setFontSize(Vec2i pixelSize);
 

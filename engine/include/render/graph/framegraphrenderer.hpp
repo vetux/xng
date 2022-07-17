@@ -30,7 +30,7 @@
 namespace xng {
     class XENGINE_EXPORT FrameGraphRenderer : public SceneRenderer {
     public:
-        explicit FrameGraphRenderer(RenderDevice &device);
+        explicit FrameGraphRenderer(RenderDevice &device, SPIRVCompiler &spirvCompiler, SPIRVDecompiler &spirvDecompiler);
 
         void render(RenderTarget &target, const Scene &scene) override;
 

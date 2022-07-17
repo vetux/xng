@@ -39,8 +39,11 @@ namespace xng {
         }
     };
 
-    TextRenderer::TextRenderer(Font &font, RenderDevice &device)
-            : ascii(font.renderAscii()), device(device), font(font), ren2d(device) {
+    TextRenderer::TextRenderer(Font &font,
+                               RenderDevice &device,
+                               SPIRVCompiler &spirvCompiler,
+                               SPIRVDecompiler &spirvDecompiler)
+            : ascii(font.renderAscii()), device(device), font(font), ren2d(device, spirvCompiler, spirvDecompiler) {
         ascii = font.renderAscii();
         for (auto &c: ascii) {
             auto &character = c.second;
