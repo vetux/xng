@@ -190,6 +190,8 @@ namespace xng {
                                                  .multiSample = false,
                                                  .enableDepthTest = false,
                                                  .enableBlending = true});
+
+        shaderBuffer = device.createShaderBuffer({.size = sizeof(ShaderUniformBuffer)});
     }
 
     Renderer2D::~Renderer2D() = default;
@@ -281,7 +283,6 @@ namespace xng {
         usedPoints.clear();
 
         allocatedInstancedMeshes.clear();
-        allocatedShaderBuffers.clear();
 
         passes.clear();
     }
@@ -321,12 +322,10 @@ namespace xng {
         shaderBufferUniform.use_texture = 1;
         shaderBufferUniform.mvp = mvp;
 
-        auto shaderBuffer = renderDevice.createShaderBuffer({.size = sizeof(ShaderUniformBuffer)});
         shaderBuffer->upload(shaderBufferUniform);
-        allocatedShaderBuffers.emplace_back(std::move(shaderBuffer));
 
         std::vector<RenderPass::ShaderBinding> bindings;
-        bindings.emplace_back(RenderPass::ShaderBinding(*allocatedShaderBuffers.at(allocatedShaderBuffers.size() - 1)));
+        bindings.emplace_back(RenderPass::ShaderBinding(*shaderBuffer));
         bindings.emplace_back(RenderPass::ShaderBinding(texture));
 
         passes.emplace_back(RenderPass(buffer, bindings));
@@ -365,12 +364,10 @@ namespace xng {
                                           (float) color.b() / 255,
                                           (float) color.a() / 255).getMemory();
 
-        auto shaderBuffer = renderDevice.createShaderBuffer({.size = sizeof(ShaderUniformBuffer)});
         shaderBuffer->upload(shaderBufferUniform);
-        allocatedShaderBuffers.emplace_back(std::move(shaderBuffer));
 
         std::vector<RenderPass::ShaderBinding> bindings;
-        bindings.emplace_back(RenderPass::ShaderBinding(*allocatedShaderBuffers.at(allocatedShaderBuffers.size() - 1)));
+        bindings.emplace_back(RenderPass::ShaderBinding(*shaderBuffer));
 
         passes.emplace_back(RenderPass(*buffer, bindings));
     }
@@ -398,12 +395,10 @@ namespace xng {
                                           (float) color.b() / 255,
                                           (float) color.a() / 255).getMemory();
 
-        auto shaderBuffer = renderDevice.createShaderBuffer({.size = sizeof(ShaderUniformBuffer)});
         shaderBuffer->upload(shaderBufferUniform);
-        allocatedShaderBuffers.emplace_back(std::move(shaderBuffer));
 
         std::vector<RenderPass::ShaderBinding> bindings;
-        bindings.emplace_back(RenderPass::ShaderBinding(*allocatedShaderBuffers.at(allocatedShaderBuffers.size() - 1)));
+        bindings.emplace_back(RenderPass::ShaderBinding(*shaderBuffer));
 
         passes.emplace_back(RenderPass(buffer, bindings));
     }
@@ -425,12 +420,10 @@ namespace xng {
                                           (float) color.b() / 255,
                                           (float) color.a() / 255).getMemory();
 
-        auto shaderBuffer = renderDevice.createShaderBuffer({.size = sizeof(ShaderUniformBuffer)});
         shaderBuffer->upload(shaderBufferUniform);
-        allocatedShaderBuffers.emplace_back(std::move(shaderBuffer));
 
         std::vector<RenderPass::ShaderBinding> bindings;
-        bindings.emplace_back(RenderPass::ShaderBinding(*allocatedShaderBuffers.at(allocatedShaderBuffers.size() - 1)));
+        bindings.emplace_back(RenderPass::ShaderBinding(*shaderBuffer));
 
         passes.emplace_back(RenderPass(buffer, bindings));
     }
@@ -457,12 +450,10 @@ namespace xng {
         shaderBufferUniform.is_text = 1;
         shaderBufferUniform.mvp = mvp;
 
-        auto shaderBuffer = renderDevice.createShaderBuffer({.size = sizeof(ShaderUniformBuffer)});
         shaderBuffer->upload(shaderBufferUniform);
-        allocatedShaderBuffers.emplace_back(std::move(shaderBuffer));
 
         std::vector<RenderPass::ShaderBinding> bindings;
-        bindings.emplace_back(RenderPass::ShaderBinding(*allocatedShaderBuffers.at(allocatedShaderBuffers.size() - 1)));
+        bindings.emplace_back(RenderPass::ShaderBinding(*shaderBuffer));
         bindings.emplace_back(RenderPass::ShaderBinding(text.getTexture()));
 
         passes.emplace_back(RenderPass(buffer, bindings));
@@ -505,12 +496,10 @@ namespace xng {
                                           (float) color.b() / 255,
                                           (float) color.a() / 255).getMemory();
 
-        auto shaderBuffer = renderDevice.createShaderBuffer({.size = sizeof(ShaderUniformBuffer)});
         shaderBuffer->upload(shaderBufferUniform);
-        allocatedShaderBuffers.emplace_back(std::move(shaderBuffer));
 
         std::vector<RenderPass::ShaderBinding> bindings;
-        bindings.emplace_back(RenderPass::ShaderBinding(*allocatedShaderBuffers.at(allocatedShaderBuffers.size() - 1)));
+        bindings.emplace_back(RenderPass::ShaderBinding(*shaderBuffer));
 
         passes.emplace_back(RenderPass(meshBuffer, bindings));
     }

@@ -286,12 +286,12 @@ namespace xng {
 
         std::vector<std::unique_ptr<VertexBuffer>> allocatedInstancedMeshes;
 
-        std::vector<std::unique_ptr<ShaderBuffer>> allocatedShaderBuffers;
-
         std::unordered_set<PlaneDescription, PlaneDescriptionHashFunction> usedPlanes;
         std::unordered_set<SquareDescription, SquareDescriptionHashFunction> usedSquares;
         std::unordered_set<LineDescription, LineDescriptionHashFunction> usedLines;
         std::unordered_set<Vec2f, Vector2HashFunction<float>> usedPoints;
+
+        std::unique_ptr<ShaderBuffer> shaderBuffer;
 
         std::vector<RenderPass> passes;
 
