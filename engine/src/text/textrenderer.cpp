@@ -40,7 +40,7 @@ namespace xng {
     };
 
     TextRenderer::TextRenderer(Font &font, RenderDevice &device)
-            : ascii(font.renderAscii()), device(&device), font(&font), ren2d(device) {
+            : ascii(font.renderAscii()), device(device), font(font), ren2d(device) {
         ascii = font.renderAscii();
         for (auto &c: ascii) {
             auto &character = c.second;
@@ -56,12 +56,12 @@ namespace xng {
     void TextRenderer::setFontSize(Vec2i pixelSize) {
         if (fontSize != pixelSize) {
             fontSize = pixelSize;
-            font->setPixelSize(pixelSize);
-            ascii = font->renderAscii();
+            font.setPixelSize(pixelSize);
+            ascii = font.renderAscii();
             for (auto &c: ascii) {
                 auto &character = c.second;
 
-                textures[c.first] = device->createTextureBuffer({.size = character.image.getSize()});
+                textures[c.first] = device.createTextureBuffer({.size = character.image.getSize()});
                 textures.at(c.first)->upload(RGBA,
                                              reinterpret_cast<const uint8_t *>(character.image.getData()),
                                              sizeof(ColorRGBA) * (character.image.getSize().x *
@@ -107,9 +107,6 @@ namespace xng {
                               int lineHeight,
                               int lineWidth,
                               int lineSpacing) {
-        if (device == nullptr)
-            throw std::runtime_error("Device not assigned");
-
         if (text.empty())
             throw std::runtime_error("Text cannot be empty");
 
@@ -157,10 +154,10 @@ namespace xng {
 
         auto origin = Vec2f(0, numeric_cast<float>(lineHeight));
 
-        target = device->createRenderTarget({.size = size.convert<int>()});
+        target = device.createRenderTarget({.size = size.convert<int>()});
 
         // Render the text (upside down?) to a texture and then render the final text texture using the 2d renderer
-        auto tmpTexture = device->createTextureBuffer({.size = size.convert<int>()});
+        auto tmpTexture = device.createTextureBuffer({.size = size.convert<int>()});
         target->setColorAttachments({tmpTexture.get()});
         ren2d.renderBegin(*target);
         for (auto &c: renderText) {
@@ -178,7 +175,7 @@ namespace xng {
         target->setColorAttachments(std::vector<TextureBuffer *>());
 
         //Render the upside down texture of the text using the 2d renderer to correct the rotation?
-        auto tex = device->createTextureBuffer({size.convert<int>()});
+        auto tex = device.createTextureBuffer({size.convert<int>()});
 
         target->setColorAttachments({tex.get()});
         ren2d.renderBegin(*target);

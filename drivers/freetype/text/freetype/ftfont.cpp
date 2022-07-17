@@ -100,4 +100,8 @@ namespace xng {
         }
         return ret;
     }
+
+    Character FTFont::renderUnicode(wchar_t c) {
+        throw std::runtime_error("FreeType unicode rendering not implemented yet.");
+    }
 }

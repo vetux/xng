@@ -55,8 +55,8 @@ namespace xng {
         std::map<char, Character> ascii;
         std::map<char, std::unique_ptr<TextureBuffer>> textures;
 
-        Font *font;
-        RenderDevice *device = nullptr;
+        Font &font;
+        RenderDevice &device;
 
         Renderer2D ren2d;
 

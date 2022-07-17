@@ -190,6 +190,7 @@
 #include "event/eventbus.hpp"
 #include "event/eventlistener.hpp"
 #include "text/font.hpp"
+#include "text/fontdriver.hpp"
 #include "text/textrenderer.hpp"
 #include "text/character.hpp"
 #include "text/text.hpp"

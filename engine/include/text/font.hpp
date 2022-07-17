@@ -28,16 +28,11 @@
 #include "text/character.hpp"
 
 namespace xng {
+    /**
+     * A software font rendering interface.
+     */
     class XENGINE_EXPORT Font {
     public:
-        /**
-         * Load the font from the stream.
-         *
-         * @param stream The stream pointing to the ttf font data.
-         * @return
-         */
-        static std::unique_ptr<Font> createFont(std::istream &stream);
-
         virtual ~Font() = default;
 
         /**
@@ -48,7 +43,7 @@ namespace xng {
         virtual void setPixelSize(Vec2i size) = 0;
 
         /**
-         *  Rasterize the given ascii character.
+         * Rasterize the given ascii character.
          *
          * @param c
          * @return
@@ -62,7 +57,13 @@ namespace xng {
          */
         virtual std::map<char, Character> renderAscii() = 0;
 
-        //TODO: Unicode character rasterization
+        /**
+         * Rasterize the given unicode character.
+         *
+         * @param c
+         * @return
+         */
+        virtual Character renderUnicode(wchar_t c) = 0;
     };
 }
 

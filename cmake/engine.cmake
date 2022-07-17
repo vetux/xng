@@ -10,7 +10,6 @@ target_include_directories(xengine PRIVATE ${Engine.Dir.SRC} ${DRIVERS_INCLUDE})
 
 target_link_libraries(xengine
         Threads::Threads
-        freetype
         shaderc_combined
         spirv-cross-core
         spirv-cross-glsl

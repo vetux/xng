@@ -33,7 +33,7 @@ namespace xng {
         FT_Face face{};
         std::vector<char> bytes; //Freetype requires the data to stay in memory when loading with FT_New_Memory_Face
 
-        FTFont(std::istream &stream);
+        explicit FTFont(std::istream &stream);
 
         ~FTFont() override;
 
@@ -42,6 +42,8 @@ namespace xng {
         Character renderAscii(char c) override;
 
         std::map<char, Character> renderAscii() override;
+
+        Character renderUnicode(wchar_t c) override;
     };
 }
 

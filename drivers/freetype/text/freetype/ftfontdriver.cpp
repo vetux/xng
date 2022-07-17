@@ -17,12 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "text/font.hpp"
+#include "text/freetype/ftfontdriver.hpp"
+#include "text/freetype/ftfont.hpp"
 
-#include "freetype/ftfont.hpp"
+#include "driver/registerdriver.hpp"
 
 namespace xng {
-    std::unique_ptr<Font> Font::createFont(std::istream &stream) {
-        return std::make_unique<FTFont>(stream);
+    static const bool reg = REGISTER_DRIVER("freetype", FtFontDriver);
+
+    std::unique_ptr<Font> FtFontDriver::createFont(std::istream &data) {
+        return std::make_unique<FTFont>(data);
     }
 }
