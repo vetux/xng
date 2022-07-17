@@ -41,7 +41,7 @@ namespace xng {
          */
         template<typename T>
         static const std::map<std::string, DriverCreator> &getAvailableDrivers() {
-            return drivers.at(typeid(T));
+            return drivers[typeid(T)];
         }
 
         /**
