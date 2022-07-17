@@ -45,25 +45,22 @@ layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
     mat4 mvp;
     vec4 color;
-    float use_texture;
-    float is_text;
-} gvars;
+} vars;
 
-void main()
-{
+void main() {
     mat4 instanceMatrix;
     instanceMatrix[0] = instanceRow0;
     instanceMatrix[1] = instanceRow1;
     instanceMatrix[2] = instanceRow2;
     instanceMatrix[3] = instanceRow3;
 
-    fPosition =  (gvars.mvp * instanceMatrix) * vec4(position, 1);
+    fPosition =  (vars.mvp * instanceMatrix) * vec4(position, 1);
     fUv = uv;
     gl_Position = fPosition;
 }
 )###";
 
-static const char *SHADER_FRAG = R"###(#version 420 core
+static const char *SHADER_FRAG_COLOR = R"###(#version 420 core
 
 layout (location = 0) in vec4 fPosition;
 layout (location = 1) in vec2 fUv;
@@ -74,25 +71,53 @@ layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
     mat4 mvp;
     vec4 color;
-    float use_texture;
-    float is_text;
-} gvars;
+} vars;
 
 layout(binding = 1) uniform sampler2D diffuse;
 
 void main() {
-    if (gvars.is_text != 0)
-    {
-            float grayscale = texture(diffuse, fUv).r;
-            color = gvars.color * vec4(grayscale, grayscale, grayscale, grayscale);
-    }
-    else
-    {
-        if (gvars.use_texture != 0)
-            color = texture(diffuse, fUv);
-        else
-            color = gvars.color;
-    }
+    color = vars.color;
+}
+)###";
+
+static const char *SHADER_FRAG_TEXTURE = R"###(#version 420 core
+
+layout (location = 0) in vec4 fPosition;
+layout (location = 1) in vec2 fUv;
+
+layout (location = 0) out vec4 color;
+
+layout(binding = 0, std140) uniform ShaderUniformBuffer
+{
+    mat4 mvp;
+    vec4 color;
+} vars;
+
+layout(binding = 1) uniform sampler2D diffuse;
+
+void main() {
+    color = texture(diffuse, fUv);
+}
+)###";
+
+static const char *SHADER_FRAG_TEXT = R"###(#version 420 core
+
+layout (location = 0) in vec4 fPosition;
+layout (location = 1) in vec2 fUv;
+
+layout (location = 0) out vec4 color;
+
+layout(binding = 0, std140) uniform ShaderUniformBuffer
+{
+    mat4 mvp;
+    vec4 color;
+} vars;
+
+layout(binding = 1) uniform sampler2D diffuse;
+
+void main() {
+    float grayscale = texture(diffuse, fUv).r;
+    color = vars.color * vec4(grayscale, grayscale, grayscale, grayscale);
 }
 )###";
 
@@ -110,8 +135,6 @@ namespace xng {
     struct ShaderUniformBuffer {
         Mat4f mvp = MatrixMath::identity();
         std::array<float, 4> color = Vec4f(1).getMemory();
-        float use_texture = 0;
-        float is_text = 0;
     };
 
     /**
@@ -175,23 +198,30 @@ namespace xng {
     Renderer2D::Renderer2D(RenderDevice &device)
             : renderDevice(device) {
         vs = ShaderSource(SHADER_VERT, "main", VERTEX, GLSL_420, false);
-        fs = ShaderSource(SHADER_FRAG, "main", FRAGMENT, GLSL_420, false);
+        fsColor = ShaderSource(SHADER_FRAG_COLOR, "main", FRAGMENT, GLSL_420, false);
+        fsTexture = ShaderSource(SHADER_FRAG_TEXTURE, "main", FRAGMENT, GLSL_420, false);
+        fsText = ShaderSource(SHADER_FRAG_TEXT, "main", FRAGMENT, GLSL_420, false);
 
         vs = vs.preprocess();
-        fs = fs.preprocess();
+        fsColor = fsColor.preprocess();
+        fsTexture = fsTexture.preprocess();
+        fsText = fsText.preprocess();
 
         auto vsSrc = vs.compile();
-        auto fsSrc = fs.compile();
+        auto fsColSrc = fsColor.compile();
+        auto fsTexSrc = fsTexture.compile();
+        auto fsTextSrc = fsText.compile();
 
-        shader = device.createShaderProgram({.shaders = {{ShaderStage::VERTEX,   vsSrc.getShader()},
-                                                         {ShaderStage::FRAGMENT, fsSrc.getShader()}}});
+        colorShader = device.createShaderProgram({.shaders = {{ShaderStage::VERTEX,   vsSrc.getShader()},
+                                                              {ShaderStage::FRAGMENT, fsColSrc.getShader()}}});
 
-        pipeline = device.createPipeline({.shader = *shader,
-                                                 .multiSample = false,
-                                                 .enableDepthTest = false,
-                                                 .enableBlending = true});
+        textureShader = device.createShaderProgram({.shaders = {{ShaderStage::VERTEX,   vsSrc.getShader()},
+                                                                {ShaderStage::FRAGMENT, fsTexSrc.getShader()}}});
 
-        shaderBuffer = device.createShaderBuffer({.size = sizeof(ShaderUniformBuffer)});
+        textShader = device.createShaderProgram({.shaders = {{ShaderStage::VERTEX,   vsSrc.getShader()},
+                                                             {ShaderStage::FRAGMENT, fsTextSrc.getShader()}}});
+
+        reallocatePipelines();
     }
 
     Renderer2D::~Renderer2D() = default;
@@ -210,22 +240,23 @@ namespace xng {
         isRendering = true;
 
         userTarget = &target;
-        if (pipeline->getDescription().clearColor != clear
-            || pipeline->getDescription().clearColorValue != clearColor
-            || pipeline->getDescription().viewportOffset != viewportOffset) {
-            pipeline = renderDevice.createPipeline(
-                    {.shader =*shader,
-                            .viewportOffset = viewportOffset,
-                            .viewportSize = viewportSize,
-                            .multiSample = false,
-                            .clearColorValue = clearColor,
-                            .clearColor = clear,
-                            .enableDepthTest = false,
-                            .enableBlending = true});
+
+        this->viewportSize = viewportSize;
+        if (this->clear != clear
+            || this->clearColor != clearColor
+            || this->viewportOffset != viewportOffset) {
+            this->clear = clear;
+            this->clearColor = clearColor;
+            this->viewportOffset = viewportOffset;
+            reallocatePipelines();
         }
-        pipeline->setViewportSize(viewportSize);
-        screenSize = viewportSize;
-        setProjection({{}, screenSize.convert<float>()});
+
+        clearPipeline->setViewportSize(viewportSize);
+        colorPipeline->setViewportSize(viewportSize);
+        texturePipeline->setViewportSize(viewportSize);
+        textPipeline->setViewportSize(viewportSize);
+
+        setProjection({{}, viewportSize.convert<float>()});
     }
 
     void Renderer2D::renderPresent() {
@@ -233,7 +264,40 @@ namespace xng {
             throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
         isRendering = false;
 
-        pipeline->render(*userTarget, passes);
+        clearPipeline->render(*userTarget, {});
+
+        Pass::Type currentType = Pass::COLOR;
+        std::vector<RenderPass> currentPasses;
+        for (auto &pass: passes) {
+            if (pass.type != currentType) {
+                switch (currentType) {
+                    case Pass::COLOR:
+                        colorPipeline->render(*userTarget, currentPasses);
+                        break;
+                    case Pass::TEXTURE:
+                        texturePipeline->render(*userTarget, currentPasses);
+                        break;
+                    case Pass::TEXT:
+                        textPipeline->render(*userTarget, currentPasses);
+                        break;
+                }
+                currentPasses.clear();
+                currentType = pass.type;
+            }
+            currentPasses.emplace_back(pass.pass);
+        }
+
+        switch (currentType) {
+            case Pass::COLOR:
+                colorPipeline->render(*userTarget, currentPasses);
+                break;
+            case Pass::TEXTURE:
+                texturePipeline->render(*userTarget, currentPasses);
+                break;
+            case Pass::TEXT:
+                textPipeline->render(*userTarget, currentPasses);
+                break;
+        }
 
         userTarget = nullptr;
 
@@ -285,6 +349,9 @@ namespace xng {
         allocatedInstancedMeshes.clear();
 
         passes.clear();
+
+        shaderBuffers.resize(usedShaderBuffers);
+        usedShaderBuffers = 0;
     }
 
     void Renderer2D::setProjection(const Rectf &projection) {
@@ -319,16 +386,16 @@ namespace xng {
         auto mvp = camera.projection() * camera.view(cameraPosition) * model;
 
         ShaderUniformBuffer shaderBufferUniform;
-        shaderBufferUniform.use_texture = 1;
         shaderBufferUniform.mvp = mvp;
 
-        shaderBuffer->upload(shaderBufferUniform);
+        auto& shaderBuffer = getShaderBuffer();
+        shaderBuffer.upload(shaderBufferUniform);
 
         std::vector<RenderPass::ShaderBinding> bindings;
-        bindings.emplace_back(RenderPass::ShaderBinding(*shaderBuffer));
+        bindings.emplace_back(RenderPass::ShaderBinding(shaderBuffer));
         bindings.emplace_back(RenderPass::ShaderBinding(texture));
 
-        passes.emplace_back(RenderPass(buffer, bindings));
+        passes.emplace_back(Pass(Pass::TEXTURE, RenderPass(buffer, bindings)));
     }
 
     void Renderer2D::draw(Rectf dstRect, TextureBuffer &texture, Vec2f center, float rotation) {
@@ -357,19 +424,19 @@ namespace xng {
         auto mvp = camera.projection() * camera.view(cameraPosition) * modelMatrix;
 
         ShaderUniformBuffer shaderBufferUniform;
-        shaderBufferUniform.use_texture = 0;
         shaderBufferUniform.mvp = mvp;
         shaderBufferUniform.color = Vec4f((float) color.r() / 255,
                                           (float) color.g() / 255,
                                           (float) color.b() / 255,
                                           (float) color.a() / 255).getMemory();
 
-        shaderBuffer->upload(shaderBufferUniform);
+        auto& shaderBuffer = getShaderBuffer();
+        shaderBuffer.upload(shaderBufferUniform);
 
         std::vector<RenderPass::ShaderBinding> bindings;
-        bindings.emplace_back(RenderPass::ShaderBinding(*shaderBuffer));
+        bindings.emplace_back(RenderPass::ShaderBinding(shaderBuffer));
 
-        passes.emplace_back(RenderPass(*buffer, bindings));
+        passes.emplace_back(Pass(Pass::COLOR, RenderPass(*buffer, bindings)));
     }
 
     void Renderer2D::draw(Vec2f start,
@@ -388,19 +455,19 @@ namespace xng {
         auto mvp = camera.projection() * camera.view(cameraPosition) * modelMatrix;
 
         ShaderUniformBuffer shaderBufferUniform;
-        shaderBufferUniform.use_texture = 0;
         shaderBufferUniform.mvp = mvp;
         shaderBufferUniform.color = Vec4f((float) color.r() / 255,
                                           (float) color.g() / 255,
                                           (float) color.b() / 255,
                                           (float) color.a() / 255).getMemory();
 
-        shaderBuffer->upload(shaderBufferUniform);
+        auto& shaderBuffer = getShaderBuffer();
+        shaderBuffer.upload(shaderBufferUniform);
 
         std::vector<RenderPass::ShaderBinding> bindings;
-        bindings.emplace_back(RenderPass::ShaderBinding(*shaderBuffer));
+        bindings.emplace_back(RenderPass::ShaderBinding(shaderBuffer));
 
-        passes.emplace_back(RenderPass(buffer, bindings));
+        passes.emplace_back(Pass(Pass::COLOR, RenderPass(buffer, bindings)));
     }
 
     void Renderer2D::draw(Vec2f point, ColorRGBA color) {
@@ -413,19 +480,19 @@ namespace xng {
         auto mvp = camera.projection() * camera.view(cameraPosition) * modelMatrix;
 
         ShaderUniformBuffer shaderBufferUniform;
-        shaderBufferUniform.use_texture = 0;
         shaderBufferUniform.mvp = mvp;
         shaderBufferUniform.color = Vec4f((float) color.r() / 255,
                                           (float) color.g() / 255,
                                           (float) color.b() / 255,
                                           (float) color.a() / 255).getMemory();
 
-        shaderBuffer->upload(shaderBufferUniform);
+        auto &shaderBuffer = getShaderBuffer();
+        shaderBuffer.upload(shaderBufferUniform);
 
         std::vector<RenderPass::ShaderBinding> bindings;
-        bindings.emplace_back(RenderPass::ShaderBinding(*shaderBuffer));
+        bindings.emplace_back(RenderPass::ShaderBinding(shaderBuffer));
 
-        passes.emplace_back(RenderPass(buffer, bindings));
+        passes.emplace_back(Pass(Pass::COLOR, RenderPass(buffer, bindings)));
     }
 
     void Renderer2D::draw(Text &text, Rectf dstRect, ColorRGBA color, Vec2f center, float rotation) {
@@ -446,17 +513,16 @@ namespace xng {
         auto mvp = camera.projection() * camera.view(cameraPosition) * model;
 
         ShaderUniformBuffer shaderBufferUniform;
-        shaderBufferUniform.use_texture = 1;
-        shaderBufferUniform.is_text = 1;
         shaderBufferUniform.mvp = mvp;
 
-        shaderBuffer->upload(shaderBufferUniform);
+        auto &shaderBuffer = getShaderBuffer();
+        shaderBuffer.upload(shaderBufferUniform);
 
         std::vector<RenderPass::ShaderBinding> bindings;
-        bindings.emplace_back(RenderPass::ShaderBinding(*shaderBuffer));
+        bindings.emplace_back(RenderPass::ShaderBinding(shaderBuffer));
         bindings.emplace_back(RenderPass::ShaderBinding(text.getTexture()));
 
-        passes.emplace_back(RenderPass(buffer, bindings));
+        passes.emplace_back(Pass(Pass::TEXT, RenderPass(buffer, bindings)));
     }
 
     void Renderer2D::drawInstanced(const std::vector<std::pair<Vec2f, float>> &positions,
@@ -489,19 +555,19 @@ namespace xng {
         auto mvp = camera.projection() * camera.view(cameraPosition) * modelMatrix;
 
         ShaderUniformBuffer shaderBufferUniform;
-        shaderBufferUniform.use_texture = 0;
         shaderBufferUniform.mvp = mvp;
         shaderBufferUniform.color = Vec4f((float) color.r() / 255,
                                           (float) color.g() / 255,
                                           (float) color.b() / 255,
                                           (float) color.a() / 255).getMemory();
 
-        shaderBuffer->upload(shaderBufferUniform);
+        auto &shaderBuffer = getShaderBuffer();
+        shaderBuffer.upload(shaderBufferUniform);
 
         std::vector<RenderPass::ShaderBinding> bindings;
-        bindings.emplace_back(RenderPass::ShaderBinding(*shaderBuffer));
+        bindings.emplace_back(RenderPass::ShaderBinding(shaderBuffer));
 
-        passes.emplace_back(RenderPass(meshBuffer, bindings));
+        passes.emplace_back(Pass(Pass::COLOR, RenderPass(meshBuffer, bindings)));
     }
 
     VertexBuffer &Renderer2D::getPlane(const Renderer2D::PlaneDescription &desc) {
@@ -552,5 +618,51 @@ namespace xng {
             allocatedPoints[point] = renderDevice.createInstancedVertexBuffer(mesh, {MatrixMath::identity()});
             return *allocatedPoints[point];
         }
+    }
+
+    ShaderBuffer &Renderer2D::getShaderBuffer() {
+        if (shaderBuffers.size() <= usedShaderBuffers) {
+            shaderBuffers.emplace_back(renderDevice.createShaderBuffer({.size = sizeof(ShaderUniformBuffer)}));
+        }
+        return *shaderBuffers.at(usedShaderBuffers++);
+    }
+
+    void Renderer2D::reallocatePipelines() {
+        clearPipeline = renderDevice.createPipeline({.shader = *colorShader,
+                                                            .viewportOffset = viewportOffset,
+                                                            .viewportSize = viewportSize,
+                                                            .multiSample = false,
+                                                            .clearColorValue = clearColor,
+                                                            .clearColor = clear,
+                                                            .clearStencil = clear,
+                                                            .enableDepthTest = false,
+                                                            .enableBlending = true});
+
+        colorPipeline = renderDevice.createPipeline({.shader = *colorShader,
+                                                            .viewportOffset = viewportOffset,
+                                                            .viewportSize = viewportSize,
+                                                            .multiSample = false,
+                                                            .clearColor = false,
+                                                            .clearStencil = false,
+                                                            .enableDepthTest = false,
+                                                            .enableBlending = true});
+
+        texturePipeline = renderDevice.createPipeline({.shader = *textureShader,
+                                                              .viewportOffset = viewportOffset,
+                                                              .viewportSize = viewportSize,
+                                                              .multiSample = false,
+                                                              .clearColor = false,
+                                                              .clearStencil = false,
+                                                              .enableDepthTest = false,
+                                                              .enableBlending = true});
+
+        textPipeline = renderDevice.createPipeline({.shader = *textShader,
+                                                           .viewportOffset = viewportOffset,
+                                                           .viewportSize = viewportSize,
+                                                           .multiSample = false,
+                                                           .clearColor = false,
+                                                           .clearStencil = false,
+                                                           .enableDepthTest = false,
+                                                           .enableBlending = true});
     }
 }

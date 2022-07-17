@@ -22,6 +22,7 @@
 
 #include <set>
 #include <unordered_set>
+#include <utility>
 
 #include "gpu/renderdevice.hpp"
 
@@ -261,6 +262,8 @@ namespace xng {
             }
         };
 
+        void reallocatePipelines();
+
         VertexBuffer &getPlane(const PlaneDescription &desc);
 
         VertexBuffer &getSquare(const SquareDescription &desc);
@@ -269,15 +272,23 @@ namespace xng {
 
         VertexBuffer &getPoint(const Vec2f &point);
 
+        ShaderBuffer &getShaderBuffer();
+
         RenderDevice &renderDevice;
 
         ShaderSource vs;
-        ShaderSource fs;
+        ShaderSource fsColor;
+        ShaderSource fsTexture;
         ShaderSource fsText;
 
-        std::unique_ptr<ShaderProgram> shader = nullptr;
+        std::unique_ptr<ShaderProgram> colorShader = nullptr;
+        std::unique_ptr<ShaderProgram> textureShader = nullptr;
+        std::unique_ptr<ShaderProgram> textShader = nullptr;
 
-        std::unique_ptr<RenderPipeline> pipeline;
+        std::unique_ptr<RenderPipeline> clearPipeline;
+        std::unique_ptr<RenderPipeline> colorPipeline;
+        std::unique_ptr<RenderPipeline> texturePipeline;
+        std::unique_ptr<RenderPipeline> textPipeline;
 
         std::unordered_map<PlaneDescription, std::unique_ptr<VertexBuffer>, PlaneDescriptionHashFunction> allocatedPlanes;
         std::unordered_map<SquareDescription, std::unique_ptr<VertexBuffer>, SquareDescriptionHashFunction> allocatedSquares;
@@ -291,17 +302,38 @@ namespace xng {
         std::unordered_set<LineDescription, LineDescriptionHashFunction> usedLines;
         std::unordered_set<Vec2f, Vector2HashFunction<float>> usedPoints;
 
-        std::unique_ptr<ShaderBuffer> shaderBuffer;
+        std::vector<std::unique_ptr<ShaderBuffer>> shaderBuffers;
 
-        std::vector<RenderPass> passes;
+        size_t usedShaderBuffers = 0;
+
+        struct Pass {
+            enum Type {
+                COLOR,
+                TEXTURE,
+                TEXT
+            } type{};
+
+            RenderPass pass;
+
+            Pass() = default;
+
+            Pass(Type type, RenderPass pass) : type(type), pass(std::move(pass)) {}
+        };
+
+        std::vector<Pass> passes;
 
         RenderTarget *userTarget = nullptr;
-
-        Vec2i screenSize;
 
         Camera camera;
 
         bool isRendering = false;
+
+        int layer = 0;
+
+        bool clear = false;
+        ColorRGBA clearColor = ColorRGBA::black();
+        Vec2i viewportOffset = {};
+        Vec2i viewportSize = Vec2i(1);
     };
 }
 
