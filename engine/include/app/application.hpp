@@ -66,9 +66,9 @@ namespace xng {
                 }
             }
 
-            displayDriver = DriverManager::load<DisplayDriver>(displayDriverName);
-            graphicsDriver = DriverManager::load<GpuDriver>(graphicsDriverName);
-            audioDriver = DriverManager::load<AudioDriver>(audioDriverName);
+            displayDriver = DriverRegistry::load<DisplayDriver>(displayDriverName);
+            graphicsDriver = DriverRegistry::load<GpuDriver>(graphicsDriverName);
+            audioDriver = DriverRegistry::load<AudioDriver>(audioDriverName);
 
             window = displayDriver->createWindow(graphicsDriverName);
             renderDevice = graphicsDriver->createRenderDevice();
