@@ -30,7 +30,7 @@
 #include "display/displaydriver.hpp"
 #include "gpu/gpudriver.hpp"
 
-#include "driver/drivermanager.hpp"
+#include "driver/driverregistry.hpp"
 
 #include "types/deltatime.hpp"
 

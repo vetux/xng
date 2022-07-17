@@ -17,11 +17,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_DRIVERMACRO_HPP
-#define XENGINE_DRIVERMACRO_HPP
+#ifndef XENGINE_REGISTERDRIVER_HPP
+#define XENGINE_REGISTERDRIVER_HPP
 
-#include "driver/drivermanager.hpp"
+#include "driver/driverregistry.hpp"
 
-#define REGISTER_DRIVER(NAME, CLASS)   xng::DriverManager::registerDriver(NAME, []() { return static_cast<Driver*>(new CLASS()); })
+#define REGISTER_DRIVER(NAME, CLASS) xng::DriverRegistry::registerDriver(NAME, []() { return static_cast<Driver*>(new CLASS()); })
 
-#endif //XENGINE_DRIVERMACRO_HPP
+#endif //XENGINE_REGISTERDRIVER_HPP

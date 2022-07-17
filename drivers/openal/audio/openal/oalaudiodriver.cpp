@@ -26,7 +26,7 @@
 
 #include "audio/openal/oalaudiodevice.hpp"
 
-#include "driver/drivermacro.hpp"
+#include "driver/registerdriver.hpp"
 
 namespace xng {
     static bool dr = REGISTER_DRIVER("openal-soft", OALAudioDriver);

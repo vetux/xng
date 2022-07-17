@@ -21,7 +21,7 @@
 #include "rigidbodybox2d.hpp"
 #include "commonbox2d.hpp"
 
-#include "driver/drivermanager.hpp"
+#include "driver/driverregistry.hpp"
 
 namespace xng {
     WorldBox2D::WorldBox2D()

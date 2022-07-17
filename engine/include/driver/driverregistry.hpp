@@ -17,28 +17,32 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "driver/drivermanager.hpp"
+#ifndef XENGINE_DRIVERREGISTRY_HPP
+#define XENGINE_DRIVERREGISTRY_HPP
 
-#include <stdexcept>
-#include <utility>
+#include <string>
+#include <map>
+#include <memory>
+#include <functional>
+
+#include "driver/driver.hpp"
 
 namespace xng {
-    static std::map<std::string, std::function<Driver *()>> drivers;
+    class XENGINE_EXPORT DriverRegistry {
+    public:
+        typedef std::function<Driver *()> DriverCreator;
 
-    const std::map<std::string, std::function<Driver *()>> &DriverManager::getAvailableDrivers() {
-        return drivers;
-    }
+        static const std::map<std::string, DriverCreator> &getAvailableDrivers();
 
-    Driver *DriverManager::loadDriver(const std::string &name) {
-        return drivers.at(name)();
-    }
+        static Driver *loadDriver(const std::string &name);
 
-    bool DriverManager::registerDriver(const std::string &name, DriverManager::DriverCreator creator) noexcept {
-        if (drivers.find(name) != drivers.end()) {
-            return false;
-        } else {
-            drivers[name] = std::move(creator);
-            return true;
+        template<typename T>
+        static std::unique_ptr<T> load(const std::string &name) {
+            return std::unique_ptr<T>(dynamic_cast<T *>(loadDriver(name)));
         }
-    }
+
+        static bool registerDriver(const std::string &name, DriverCreator creator) noexcept;
+    };
 }
+
+#endif //XENGINE_DRIVERREGISTRY_HPP

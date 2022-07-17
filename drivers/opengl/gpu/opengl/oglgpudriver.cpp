@@ -20,7 +20,7 @@
 #include "gpu/opengl/oglgpudriver.hpp"
 #include "gpu/opengl/oglrenderdevice.hpp"
 
-#include "driver/drivermacro.hpp"
+#include "driver/registerdriver.hpp"
 
 namespace xng::opengl {
     static bool dr = REGISTER_DRIVER("opengl", OGLGpuDriver);
