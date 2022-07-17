@@ -27,7 +27,7 @@
 namespace xng {
     class XENGINE_EXPORT TextRenderer {
     public:
-        TextRenderer(Font &font, RenderDevice &device, SPIRVCompiler &spirvCompiler, SPIRVDecompiler &spirvDecompiler);
+        TextRenderer(Font &font, Renderer2D &renderer2D);
 
         void setFontSize(Vec2i pixelSize);
 
@@ -56,9 +56,7 @@ namespace xng {
         std::map<char, std::unique_ptr<TextureBuffer>> textures;
 
         Font &font;
-        RenderDevice &device;
-
-        Renderer2D ren2d;
+        Renderer2D &ren2d;
 
         std::unique_ptr<RenderTarget> target;
     };

@@ -173,6 +173,8 @@ namespace xng {
                            bool fill = true,
                            Vec2f center = {});
 
+        RenderDevice &getDevice() { return renderDevice; }
+
     private:
         struct PlaneDescription {
             Vec2f size;
