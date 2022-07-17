@@ -23,9 +23,14 @@
 #include "math/matrix.hpp"
 
 namespace xng {
+    struct VertexWeight {
+        size_t vertex; // The index of the vertex in Mesh::vertices
+        float weight;
+    };
     struct XENGINE_EXPORT Bone {
         std::string name; // The name of the bone
         Mat4f offset; // The offset of the bone
+        std::vector<VertexWeight> weights;
     };
 }
 

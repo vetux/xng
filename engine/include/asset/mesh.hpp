@@ -58,7 +58,6 @@ namespace xng {
         std::vector<uint> indices;
 
         Rig rig; // If rig is assigned the vertex bone ids are indices into rig.getBones()
-        std::vector<std::shared_ptr<RigAnimation>> animations; // The set of available animations for the rig
 
         size_t polyCount() const {
             if (indices.empty())

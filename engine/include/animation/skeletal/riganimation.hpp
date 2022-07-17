@@ -25,12 +25,22 @@
 
 #include "animation/skeletal/boneanimation.hpp"
 
+#include "resource/resource.hpp"
+
 namespace xng {
-    struct XENGINE_EXPORT RigAnimation {
+    struct XENGINE_EXPORT RigAnimation : public Resource {
         std::string name; // The name of this animation
         double duration; // Total duration in ticks
         double ticksPerSecond; // The number of ticks to show per second
         std::vector<BoneAnimation> channels; // The animation channels.
+
+        std::unique_ptr<Resource> clone() override {
+            return std::make_unique<RigAnimation>(*this);
+        }
+
+        std::type_index getTypeIndex() override {
+            return typeid(RigAnimation);
+        }
     };
 }
 

@@ -36,6 +36,8 @@ namespace xng {
             REPEAT // The animation is repeated. If the animation key go from n to m and the current time is t, use the value at (t-n) % (|m-n|).
         };
 
+        std::string name; // The name of the bone which is influenced by this animation
+
         // Define how the animation behaves outside the defined time range
         Behaviour preState;
         Behaviour postState;
