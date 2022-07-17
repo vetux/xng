@@ -25,7 +25,7 @@
 namespace xng {
     class ShadercSPIRVCompiler : public SPIRVCompiler {
     public:
-        std::type_index getType() override;
+        std::type_index getType() override { return typeid(ShadercSPIRVCompiler); }
 
         std::vector<uint32_t> compile(const std::string &source,
                                       const std::string &entryPoint,
