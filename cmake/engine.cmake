@@ -15,8 +15,6 @@ target_link_libraries(xengine
         spirv-cross-glsl
         spirv-cross-hlsl
         imgui
-        assimp
-        sndfile
         cryptopp
         ${DRIVERS_LINK})
 

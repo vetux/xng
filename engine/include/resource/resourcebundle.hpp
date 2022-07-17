@@ -24,6 +24,7 @@
 #include <string>
 #include <memory>
 #include <typeindex>
+#include <stdexcept>
 
 #include "resource/resource.hpp"
 

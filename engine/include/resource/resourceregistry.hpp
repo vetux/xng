@@ -34,6 +34,7 @@
 #include "resource/uri.hpp"
 #include "resource/resource.hpp"
 #include "resource/resourcebundle.hpp"
+#include "resource/resourceimporter.hpp"
 
 #include "async/threadpool.hpp"
 
@@ -41,8 +42,9 @@
 
 namespace xng {
     /**
-     * A resource registry is responsible for managing resource data.
-     * It uses reference counting for resource lifetime management.
+     * A resource registry is responsible for loading and managing resource data.
+     * The registry invokes the set importer for importing data.
+     * The registry uses reference counting for resource lifetime management.
      * ResourceHandle can be used to do the reference counting with a RAII interface.
      */
     class XENGINE_EXPORT ResourceRegistry {
@@ -50,7 +52,7 @@ namespace xng {
         /**
          * The default registry used by resource handle if no registry is specified.
          *
-         * Users must set schemes with their archive instances before instantiating resource handles referencing the schemes.
+         * Users must set importers and schemes with their archive instances before instantiating resource handles referencing the schemes.
          *
          * @return
          */
@@ -69,6 +71,8 @@ namespace xng {
         void addArchive(const std::string &scheme, std::shared_ptr<Archive> archive);
 
         void removeArchive(const std::string &scheme);
+
+        void setImporter(ResourceImporter importer);
 
         Archive &getArchive(const std::string &scheme);
 
@@ -118,6 +122,9 @@ namespace xng {
         std::map<std::string, ResourceBundle> bundles;
 
         std::string defaultScheme;
+
+        std::shared_mutex importerMutex;
+        ResourceImporter importer;
     };
 }
 #endif //XENGINE_RESOURCEREGISTRY_HPP

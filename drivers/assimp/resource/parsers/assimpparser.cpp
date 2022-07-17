@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "resource/parsers/assimpparser.hpp"
+#include "assimpparser.hpp"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -26,7 +26,11 @@
 #include "asset/mesh.hpp"
 #include "asset/material.hpp"
 
+#include "driver/registerdriver.hpp"
+
 namespace xng {
+    static const bool dr = REGISTER_DRIVER("assimp", ResourceParser, AssImpParser);
+
     static Mesh convertMesh(const aiMesh &assMesh) {
         Mesh ret;
         ret.primitive = TRI;
@@ -130,15 +134,17 @@ namespace xng {
         return ret;
     }
 
-    ResourceBundle AssImpParser::parse(const std::string &buffer,
-                                       const std::string &hint,
-                                       const ResourceImporter &importer,
-                                       Archive *archive) const {
+    ResourceBundle AssImpParser::read(const std::string &buffer,
+                                      const std::string &hint,
+                                      const ResourceImporter &importer,
+                                      Archive *archive) const {
         return readAsset(buffer, hint, archive);
     }
 
     const std::set<std::string> &AssImpParser::getSupportedFormats() const {
-        static const std::set<std::string> formats = {"fbx", "obj"};
+        static const std::set<std::string> formats = {".fbx", ".dae", ".gltf", ".glb", ".blend", ".3ds", ".ase", ".obj",
+                                                      ".ifc", ".xgl", ".zgl", ".ply", ".dxf", ".lwo", ".lws", ".lxo",
+                                                      ".stl", ".x", ".ac", ".ms3d", ".cob", ".scn"};
         return formats;
     }
 }

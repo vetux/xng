@@ -25,12 +25,14 @@
 namespace xng {
     class XENGINE_EXPORT SndFileParser : public ResourceParser {
     public:
-        ResourceBundle parse(const std::string &buffer,
-                             const std::string &hint,
-                             const ResourceImporter &importer,
-                             Archive *archive) const override;
+        ResourceBundle read(const std::string &buffer,
+                            const std::string &hint,
+                            const ResourceImporter &importer,
+                            Archive *archive) const override;
 
         const std::set<std::string> &getSupportedFormats() const override;
+
+        std::type_index getType() override { return typeid(SndFileParser); }
     };
 }
 

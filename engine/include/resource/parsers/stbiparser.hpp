@@ -25,10 +25,10 @@
 namespace xng {
     class XENGINE_EXPORT StbiParser : public ResourceParser {
     public:
-        ResourceBundle parse(const std::string &buffer,
-                             const std::string &hint,
-                             const ResourceImporter &importer,
-                             Archive *archive) const override;
+        ResourceBundle read(const std::string &buffer,
+                            const std::string &hint,
+                            const ResourceImporter &importer,
+                            Archive *archive) const override;
 
         const std::set<std::string> &getSupportedFormats() const override;
     };

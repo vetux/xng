@@ -52,8 +52,13 @@ namespace xng {
     }
 
     void ResourceRegistry::removeArchive(const std::string &scheme) {
-        std::unique_lock g(archiveMutex);
+        std::unique_lock l(archiveMutex);
         archives.erase(scheme);
+    }
+
+    void ResourceRegistry::setImporter(ResourceImporter value) {
+        std::unique_lock l(importerMutex);
+        importer = std::move(value);
     }
 
     Archive &ResourceRegistry::getArchive(const std::string &scheme) {
@@ -82,10 +87,12 @@ namespace xng {
         auto it = loadTasks.find(uri);
         if (it == loadTasks.end()) {
             loadTasks[uri] = ThreadPool::getPool().addTask([this, uri]() {
+                std::shared_lock l(importerMutex);
+
                 auto &archive = resolveUri(uri);
                 std::filesystem::path path(uri.getFile());
                 auto stream = archive.open(path);
-                auto bundle = ResourceImporter().import(*stream, path.extension());
+                auto bundle = importer.import(*stream, path.extension());
 
                 std::lock_guard<std::mutex> g(mutex);
                 bundles[path] = std::move(bundle);
@@ -129,7 +136,7 @@ namespace xng {
     }
 
     Archive &ResourceRegistry::resolveUri(const Uri &uri) {
-        std::shared_lock g(archiveMutex);
+        std::shared_lock l(archiveMutex);
         if (uri.getScheme().empty()) {
             if (defaultScheme.empty()) {
                 for (auto &a: archives) {

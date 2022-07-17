@@ -24,6 +24,7 @@
 
 #include "asset/texture.hpp"
 #include "asset/mesh.hpp"
+#include "asset/material.hpp"
 
 #include "resource/resourceimporter.hpp"
 
@@ -232,10 +233,10 @@ namespace xng {
         return ret;
     }
 
-    ResourceBundle JsonParser::parse(const std::string &buffer,
-                                     const std::string &hint,
-                                     const ResourceImporter &importer,
-                                     Archive *archive) const {
+    ResourceBundle JsonParser::read(const std::string &buffer,
+                                    const std::string &hint,
+                                    const ResourceImporter &importer,
+                                    Archive *archive) const {
         if (archive == nullptr)
             throw std::runtime_error("Json parser invoked with nullptr archive");
         return readJsonBundle(buffer, importer, *archive, ThreadPool::getPool());

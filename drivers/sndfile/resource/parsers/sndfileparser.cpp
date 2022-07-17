@@ -22,7 +22,7 @@
 #include <cstring>
 #include <string>
 
-#include "resource/parsers/sndfileparser.hpp"
+#include "sndfileparser.hpp"
 
 #include "audio/audioformat.hpp"
 #include "asset/audio.hpp"
@@ -31,7 +31,11 @@
 
 #include <sndfile.h>
 
+#include "driver/registerdriver.hpp"
+
 namespace xng {
+    static const bool dr = REGISTER_DRIVER("sndfile", ResourceParser, SndFileParser);
+
     struct LibSndBuffer {
         std::string data;
         size_t pos;
@@ -145,10 +149,10 @@ namespace xng {
         return ret;
     }
 
-    ResourceBundle SndFileParser::parse(const std::string &buffer,
-                                        const std::string &hint,
-                                        const ResourceImporter &importer,
-                                        Archive *archive) const {
+    ResourceBundle SndFileParser::read(const std::string &buffer,
+                                       const std::string &hint,
+                                       const ResourceImporter &importer,
+                                       Archive *archive) const {
         ResourceBundle ret;
         ret.add("", std::make_unique<Audio>(readAudio(buffer)));
         return ret;

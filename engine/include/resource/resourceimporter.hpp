@@ -23,12 +23,9 @@
 #include <string>
 #include <vector>
 
-#include "asset/material.hpp"
-#include "asset/audio.hpp"
 #include "resource/resourcebundle.hpp"
 #include "resource/resourceparser.hpp"
 
-#include "async/threadpool.hpp"
 #include "io/archive.hpp"
 
 namespace xng {
@@ -40,9 +37,6 @@ namespace xng {
      */
     class XENGINE_EXPORT ResourceImporter {
     public:
-        /**
-         * Use the default parsers
-         */
         ResourceImporter();
 
         /**

@@ -25,6 +25,7 @@
 
 #include "io/archive.hpp"
 #include "resource/resourcebundle.hpp"
+#include "driver/driver.hpp"
 
 namespace xng {
     class ResourceImporter;
@@ -32,10 +33,8 @@ namespace xng {
     /**
      * A parser creates resource objects from the data in buffers.
      */
-    class XENGINE_EXPORT ResourceParser {
+    class XENGINE_EXPORT ResourceParser : public Driver {
     public:
-        virtual ~ResourceParser() = default;
-
         /**
          * Read the bundle data from the buffer.
          *
@@ -45,12 +44,20 @@ namespace xng {
          * @param archive The archive instance to use for resolving referenced asset paths.
          * @return
          */
-        virtual ResourceBundle parse(const std::string &buffer,
-                                     const std::string &hint,
-                                     const ResourceImporter &importer,
-                                     Archive *archive) const = 0;
+        virtual ResourceBundle read(const std::string &buffer,
+                                    const std::string &hint,
+                                    const ResourceImporter &importer,
+                                    Archive *archive) const = 0;
 
-        virtual const std::set<std::string> & getSupportedFormats() const = 0;
+        /**
+         * @return The set of supported file extensions with each containing the preceding dot
+         */
+        virtual const std::set<std::string> &getSupportedFormats() const = 0;
+
+    private:
+        std::type_index getBaseType() override {
+            return typeid(ResourceParser);
+        }
     };
 }
 

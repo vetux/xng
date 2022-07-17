@@ -19,22 +19,10 @@
 
 #include "resource/resourceimporter.hpp"
 
-#include <filesystem>
-
-#include "resource/parsers/assimpparser.hpp"
-#include "resource/parsers/jsonparser.hpp"
-#include "resource/parsers/sndfileparser.hpp"
-#include "resource/parsers/stbiparser.hpp"
-
 namespace xng {
 
     ResourceImporter::ResourceImporter()
-            : parsers() {
-        parsers.emplace_back(std::make_unique<AssImpParser>());
-        parsers.emplace_back(std::make_unique<StbiParser>());
-        parsers.emplace_back(std::make_unique<SndFileParser>());
-        parsers.emplace_back(std::make_unique<JsonParser>());
-    }
+            : parsers() {}
 
     ResourceImporter::ResourceImporter(std::vector<std::unique_ptr<ResourceParser>> parsers)
             : parsers(std::move(parsers)) {}
@@ -42,20 +30,20 @@ namespace xng {
     ResourceBundle ResourceImporter::import(std::istream &stream, const std::string &hint, Archive *archive) const {
         std::string buffer = {std::istreambuf_iterator<char>(stream), {}};
 
-        // Use parser which supports hint if exists.
+        // Use parser which supports hint if it exists.
         for (auto &parser: parsers) {
             auto formats = parser->getSupportedFormats();
             if (formats.find(hint) != formats.end()) {
-                return parser->parse(buffer, hint, *this, archive);
+                return parser->read(buffer, hint, *this, archive);
             }
         }
 
-        // Otherwise try every parser
+        // Try every parser until one succeeds and throw if none succeeded.
         for (auto &parser: parsers) {
             try {
-                return parser->parse(buffer, hint, *this, archive);
+                return parser->read(buffer, hint, *this, archive);
             } catch (const std::exception &e) {}
         }
-        throw std::runtime_error("Failed to read bundle");
+        throw std::runtime_error("Failed to import bundle from stream");
     }
 }
