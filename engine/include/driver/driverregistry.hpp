@@ -66,7 +66,7 @@ namespace xng {
          * Register a driver creator for a given name.
          *
          * @param name The name under which the driver will be accessible in load()
-         * @param baseType The base type of the driver must be a direct ancestor of xng::Driver
+         * @param baseType The base type of the driver, baseType must inherit xng::Driver, and the type of the object returned by the creator must inherit baseType.
          * @param creator The function object which constructors new instances of the base type implementation.
          * @return True if the driver was registered, or false if there was already a driver of the given base type with the given name.
          */
