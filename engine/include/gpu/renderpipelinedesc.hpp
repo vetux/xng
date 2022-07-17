@@ -35,19 +35,19 @@ namespace xng {
         Vec2i viewportOffset = Vec2i(0);
         Vec2i viewportSize = Vec2i(1);
 
-        bool multiSample = true;
+        bool multiSample = false;
         bool multiSampleEnableFrequency = false;
         float multiSampleFrequency = 1;
 
         ColorRGBA clearColorValue = ColorRGBA::black();
         float clearDepthValue = 1;
 
-        bool clearColor = true;
-        bool clearDepth = true;
-        bool clearStencil = true;
+        bool clearColor = false;
+        bool clearDepth = false;
+        bool clearStencil = false;
 
-        bool enableDepthTest = true;
-        bool depthTestWrite = true;
+        bool enableDepthTest = false;
+        bool depthTestWrite = false;
         DepthTestMode depthTestMode = DepthTestMode::DEPTH_TEST_LESS;
 
         bool enableStencilTest = false;
