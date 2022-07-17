@@ -23,7 +23,10 @@ This is an experimental cross-platform game engine library written in C++.
     - SPIRV-Cross implementation
   - Crypto
     - CryptoPP implementation
-- Frame Graph Renderer
+- Frame Graph Renderer (WIP)
+  - PBR Materials
+  - Phong Shading
+  - Shadow Mapping
 - 2D Renderer
 - Skeletal Animation abstraction (WIP)
 - Sprite Animation abstraction
