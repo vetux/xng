@@ -5,17 +5,30 @@ This is an experimental cross-platform game engine library written in C++.
 - Interface based Driver Abstractions
   - Display and Input
     - GLFW implementation
-  - Graphics
+  - GPU
     - OpenGL 4.2 implementation
-  - Audio
+  - 3D Audio Playback
     - OpenAL implementation
+  - Font Renderer
+    - FreeType implementation
+  - Physics Simulation
+    - Bullet3 implementation (WIP)
+    - Box2D implementation (WIP)
+  - Resource Parsers
+    - AssImp implementation
+    - libsndfile implementation
+  - SPIRV-Compiler
+    - ShaderC implementation
+  - SPIRV-Decompiler
+    - SPIRV-Cross implementation
+  - Crypto
+    - CryptoPP implementation
 - Frame Graph Renderer
 - 2D Renderer
-- Text Rendering
+- Skeletal Animation abstraction (WIP)
+- Sprite Animation abstraction
 - PAK file format
 - ECS with data oriented architecture
-- Shader Cross-Compiler Abstraction with SPIRV, HLSL and GLSL support
-
 
 ## Programs
 - [xEditor](https://github.com/vetux/xeditor)
