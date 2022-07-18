@@ -23,8 +23,16 @@
 namespace xng {
     enum ShaderStage {
         VERTEX,
+        TESSELLATION_CONTROL,
+        TESSELLATION_EVALUATION,
         GEOMETRY,
-        FRAGMENT
+        FRAGMENT,
+        COMPUTE,
+        RAY_GENERATE,
+        RAY_HIT_ANY,
+        RAY_HIT_CLOSEST,
+        RAY_MISS,
+        RAY_INTERSECT
     };
 }
 

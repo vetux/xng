@@ -35,6 +35,22 @@ namespace xng {
                 return spv::ExecutionModel::ExecutionModelGeometry;
             case FRAGMENT:
                 return spv::ExecutionModel::ExecutionModelFragment;
+            case TESSELLATION_CONTROL:
+                return spv::ExecutionModelTessellationControl;
+            case TESSELLATION_EVALUATION:
+                return spv::ExecutionModelTessellationEvaluation;
+            case COMPUTE:
+                return spv::ExecutionModelGLCompute;
+            case RAY_GENERATE:
+                return spv::ExecutionModelRayGenerationKHR;
+            case RAY_HIT_ANY:
+                return spv::ExecutionModelAnyHitKHR;
+            case RAY_HIT_CLOSEST:
+                return spv::ExecutionModelClosestHitKHR;
+            case RAY_MISS:
+                return spv::ExecutionModelMissKHR;
+            case RAY_INTERSECT:
+                return spv::ExecutionModelIntersectionKHR;
             default:
                 throw std::runtime_error("Unsupported shader stage");
         }

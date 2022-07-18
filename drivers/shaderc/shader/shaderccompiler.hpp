@@ -17,15 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SHADERCSPIRVCOMPILER_HPP
-#define XENGINE_SHADERCSPIRVCOMPILER_HPP
+#ifndef XENGINE_SHADERCCOMPILER_HPP
+#define XENGINE_SHADERCCOMPILER_HPP
 
 #include "shader/spirvcompiler.hpp"
 
 namespace xng {
-    class ShadercSPIRVCompiler : public SPIRVCompiler {
+    class ShaderCCompiler : public SPIRVCompiler {
     public:
-        std::type_index getType() override { return typeid(ShadercSPIRVCompiler); }
+        std::type_index getType() override { return typeid(ShaderCCompiler); }
 
         std::vector<uint32_t> compile(const std::string &source,
                                       const std::string &entryPoint,
@@ -42,4 +42,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_SHADERCSPIRVCOMPILER_HPP
+#endif //XENGINE_SHADERCCOMPILER_HPP

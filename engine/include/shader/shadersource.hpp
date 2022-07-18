@@ -26,9 +26,6 @@
 #include "shader/spirvdecompiler.hpp"
 
 namespace xng {
-    /**
-     * An object oriented wrapper around the shader compiler.
-     */
     class XENGINE_EXPORT ShaderSource {
     public:
         ShaderSource() = default;

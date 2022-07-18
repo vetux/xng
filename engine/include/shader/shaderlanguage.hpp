@@ -21,7 +21,7 @@
 #define XENGINE_SHADERLANGUAGE_HPP
 
 namespace xng {
-    enum ShaderLanguage {
+    enum ShaderLanguage : int {
         HLSL_SHADER_MODEL_4,
         GLSL_420, //GLSL 4.2 with OpenGL semantics
         GLSL_420_VK, //GLSL 4.2 with Vulkan semantics

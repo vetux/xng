@@ -32,6 +32,9 @@
 #include "shader/shaderstage.hpp"
 
 namespace xng {
+    /**
+     * A SPIRVCompiler preprocesses and compiles shader source from the languages defined in ShaderLanguage to SPIRV
+     */
     class XENGINE_EXPORT SPIRVCompiler : public Driver {
     public:
         enum OptimizationLevel {

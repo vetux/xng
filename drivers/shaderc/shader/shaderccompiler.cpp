@@ -19,13 +19,13 @@
 
 #include <stdexcept>
 
-#include "shader/shadercspirvcompiler.hpp"
+#include "shader/shaderccompiler.hpp"
 #include "driver/registerdriver.hpp"
 
 #include <shaderc/shaderc.hpp>
 
 namespace xng {
-    static const bool dr = REGISTER_DRIVER("shaderc", SPIRVCompiler, ShadercSPIRVCompiler);
+    static const bool dr = REGISTER_DRIVER("shaderc", SPIRVCompiler, ShaderCCompiler);
 
     class IncludeHandler : public shaderc::CompileOptions::IncluderInterface {
     public:
@@ -72,23 +72,7 @@ namespace xng {
         }
     }
 
-    static void stripLines(std::string &str, const std::string &needle) {
-        auto it = str.find(needle);
-        while (it != std::string::npos) {
-            auto eol = str.find('\n', it);
-            str.erase(it, eol - it);
-            it = str.find(needle);
-        }
-    }
-
-    std::vector<uint32_t> ShadercSPIRVCompiler::compile(const std::string &source,
-                                                        const std::string &entryPoint,
-                                                        ShaderStage stage,
-                                                        ShaderLanguage language,
-                                                        OptimizationLevel optimizationLevel) const {
-        shaderc::Compiler compiler;
-        shaderc::CompileOptions options;
-
+    static shaderc_shader_kind convertShaderStage(ShaderStage stage) {
         shaderc_shader_kind shaderStage;
         switch (stage) {
             case VERTEX:
@@ -100,7 +84,52 @@ namespace xng {
             case FRAGMENT:
                 shaderStage = shaderc_fragment_shader;
                 break;
+            case TESSELLATION_CONTROL:
+                shaderStage = shaderc_tess_control_shader;
+                break;
+            case TESSELLATION_EVALUATION:
+                shaderStage = shaderc_tess_evaluation_shader;
+                break;
+            case COMPUTE:
+                shaderStage = shaderc_compute_shader;
+                break;
+            case RAY_GENERATE:
+                shaderStage = shaderc_raygen_shader;
+                break;
+            case RAY_HIT_ANY:
+                shaderStage = shaderc_anyhit_shader;
+                break;
+            case RAY_HIT_CLOSEST:
+                shaderStage = shaderc_closesthit_shader;
+                break;
+            case RAY_MISS:
+                shaderStage = shaderc_miss_shader;
+                break;
+            case RAY_INTERSECT:
+                shaderStage = shaderc_intersection_shader;
+                break;
         }
+        return shaderStage;
+    }
+
+    static void stripLines(std::string &str, const std::string &needle) {
+        auto it = str.find(needle);
+        while (it != std::string::npos) {
+            auto eol = str.find('\n', it);
+            str.erase(it, eol - it);
+            it = str.find(needle);
+        }
+    }
+
+    std::vector<uint32_t> ShaderCCompiler::compile(const std::string &source,
+                                                   const std::string &entryPoint,
+                                                   ShaderStage stage,
+                                                   ShaderLanguage language,
+                                                   OptimizationLevel optimizationLevel) const {
+        shaderc::Compiler compiler;
+        shaderc::CompileOptions options;
+
+        shaderc_shader_kind shaderStage = convertShaderStage(stage);
 
         shaderc_source_language shaderLang;
         switch (language) {
@@ -140,24 +169,13 @@ namespace xng {
         return {compileResult.cbegin(), compileResult.cend()};
     }
 
-    std::string ShadercSPIRVCompiler::preprocess(const std::string &source,
-                                                 ShaderStage stage,
-                                                 ShaderLanguage language,
-                                                 const std::function<std::string(const char *)> &include,
-                                                 const std::map<std::string, std::string> &macros,
-                                                 OptimizationLevel optimizationLevel) const {
-        shaderc_shader_kind shaderStage;
-        switch (stage) {
-            case VERTEX:
-                shaderStage = shaderc_vertex_shader;
-                break;
-            case GEOMETRY:
-                shaderStage = shaderc_geometry_shader;
-                break;
-            case FRAGMENT:
-                shaderStage = shaderc_fragment_shader;
-                break;
-        }
+    std::string ShaderCCompiler::preprocess(const std::string &source,
+                                            ShaderStage stage,
+                                            ShaderLanguage language,
+                                            const std::function<std::string(const char *)> &include,
+                                            const std::map<std::string, std::string> &macros,
+                                            OptimizationLevel optimizationLevel) const {
+        shaderc_shader_kind shaderStage = convertShaderStage(stage);
 
         shaderc_source_language shaderLang;
         switch (language) {

@@ -29,6 +29,9 @@
 #include "shader/shaderstage.hpp"
 
 namespace xng {
+    /**
+     * A SPIRVDecompiler decompiles SPIRV to the languages defined in ShaderLanguage.
+     */
     class XENGINE_EXPORT SPIRVDecompiler : public Driver {
     public:
         /**
