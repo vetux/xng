@@ -22,6 +22,8 @@
 
 #include "gpu/renderdevice.hpp"
 
+#include <utility>
+
 #include "gpu/opengl/oglbuildmacro.hpp"
 
 #include "gpu/opengl/oglrenderpipeline.hpp"
@@ -34,16 +36,16 @@
 namespace xng::opengl {
     class OPENGL_TYPENAME(RenderDevice) : public RenderDevice OPENGL_INHERIT {
     public:
-        OPENGL_TYPENAME(RenderDevice)() {
+        RenderDeviceInfo info;
+
+        explicit OPENGL_TYPENAME(RenderDevice)(RenderDeviceInfo info) : info(std::move(info)) {
             initialize();
         }
 
         ~OPENGL_TYPENAME(RenderDevice)() override = default;
 
-        int getMaxSampleCount() override {
-            GLint ret = 0;
-            glGetIntegerv(GL_MAX_SAMPLES, &ret);
-            return ret;
+        const RenderDeviceInfo &getInfo() override {
+            return info;
         }
 
         std::unique_ptr<RenderPipeline> createPipeline(const RenderPipelineDesc &desc) override {

@@ -23,8 +23,17 @@
 #include <string>
 
 namespace xng {
+    /**
+     * A render device info presents information about a physical gpu device available on the system.
+     * The user can then create a RenderDevice instance from a physical device identifier which then represents a logical gpu device.
+     */
     struct XENGINE_EXPORT RenderDeviceInfo {
-        std::string name;
+        std::string name; // The unique identifier of this physical render device
+        int maxSampleCount = 0; // The maximum supported amount of msaa samples per texture or render target.
+        size_t availableDeviceMemory = 0; // The total amount of video memory available on the device in bytes
+                                            // (E.g. in Vulkan The sum of the device memory pool sizes excluding System (CPU) pools),
+                                            // or 0 if the platform does not support querying for it.
+                                            // All RenderDevice instances for this name share the memory.
     };
 }
 

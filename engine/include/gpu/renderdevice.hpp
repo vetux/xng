@@ -27,17 +27,18 @@
 #include "gpu/rendertarget.hpp"
 #include "gpu/texturebuffer.hpp"
 #include "gpu/vertexbuffer.hpp"
-#include "shaderprogram.hpp"
-#include "shaderbuffer.hpp"
+#include "gpu/shaderprogram.hpp"
+#include "gpu/shaderbuffer.hpp"
 
 #include "gpu/vertexattribute.hpp"
 
 #include "gpu/renderpipelinedesc.hpp"
-#include "shaderprogramdesc.hpp"
-#include "shaderbufferdesc.hpp"
+#include "gpu/shaderprogramdesc.hpp"
+#include "gpu/shaderbufferdesc.hpp"
 #include "gpu/vertexbufferdesc.hpp"
 #include "gpu/rendertargetdesc.hpp"
 #include "gpu/texturebufferdesc.hpp"
+#include "gpu/renderdeviceinfo.hpp"
 
 #include "gpu/renderpass.hpp"
 
@@ -50,7 +51,7 @@ namespace xng {
     public:
         virtual ~RenderDevice() = default;
 
-        virtual int getMaxSampleCount() = 0;
+        virtual const RenderDeviceInfo & getInfo() = 0;
 
         /**
          * The shaders are required to store all global variables in uniform buffers.

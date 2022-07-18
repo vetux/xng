@@ -28,13 +28,18 @@ namespace xng {
      */
     class OGLQtGpuDriver : public GpuDriver {
     public:
-        std::vector<RenderDeviceInfo> getAvailableRenderDevices() override;
+        const std::vector<RenderDeviceInfo> &getAvailableRenderDevices() override;
 
         std::unique_ptr<RenderDevice> createRenderDevice() override;
 
         std::unique_ptr<RenderDevice> createRenderDevice(const std::string &deviceName) override;
 
         std::type_index getType() override;
+
+    private:
+        std::vector<RenderDeviceInfo> deviceInfos = {{.name = "default"}};
+        bool retrievedMaxSamples = false;
+
     };
 }
 

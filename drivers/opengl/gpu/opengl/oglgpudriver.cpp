@@ -25,16 +25,20 @@
 namespace xng::opengl {
     static bool dr = REGISTER_DRIVER("opengl", GpuDriver, OGLGpuDriver);
 
-    std::vector<RenderDeviceInfo> OGLGpuDriver::getAvailableRenderDevices() {
-        return {{.name = "default"}};
+    const std::vector<RenderDeviceInfo> &OGLGpuDriver::getAvailableRenderDevices() {
+        if (!retrievedMaxSamples) {
+            retrievedMaxSamples = true;
+            glGetIntegerv(GL_MAX_SAMPLES, &deviceInfos.at(0).maxSampleCount);
+        }
+        return deviceInfos;
     }
 
     std::unique_ptr<RenderDevice> OGLGpuDriver::createRenderDevice() {
-        return std::make_unique<opengl::OGLRenderDevice>();
+        return std::make_unique<opengl::OGLRenderDevice>(getAvailableRenderDevices().at(0));
     }
 
     std::unique_ptr<RenderDevice> OGLGpuDriver::createRenderDevice(const std::string &deviceName) {
-        return std::make_unique<opengl::OGLRenderDevice>();
+        return std::make_unique<opengl::OGLRenderDevice>(getAvailableRenderDevices().at(0));
     }
 
     std::type_index OGLGpuDriver::getType() {

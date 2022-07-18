@@ -28,16 +28,20 @@
 namespace xng {
     static bool dr = REGISTER_DRIVER("opengl-qt", GpuDriver, OGLQtGpuDriver);
 
-    std::vector<RenderDeviceInfo> OGLQtGpuDriver::getAvailableRenderDevices() {
-        return {{.name = "default"}};
+    const std::vector<RenderDeviceInfo> &OGLQtGpuDriver::getAvailableRenderDevices() {
+        if (!retrievedMaxSamples) {
+            retrievedMaxSamples = true;
+            glGetIntegerv(GL_MAX_SAMPLES, &deviceInfos.at(0).maxSampleCount);
+        }
+        return deviceInfos;
     }
 
     std::unique_ptr<RenderDevice> OGLQtGpuDriver::createRenderDevice() {
-        return std::make_unique<opengl::OGLQtRenderDevice>();
+        return std::make_unique<opengl::OGLQtRenderDevice>(getAvailableRenderDevices().at(0));
     }
 
     std::unique_ptr<RenderDevice> OGLQtGpuDriver::createRenderDevice(const std::string &deviceName) {
-        return std::make_unique<opengl::OGLQtRenderDevice>();
+        return std::make_unique<opengl::OGLQtRenderDevice>(getAvailableRenderDevices().at(0));
     }
 
     std::type_index OGLQtGpuDriver::getType() {
