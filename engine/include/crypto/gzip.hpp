@@ -24,6 +24,9 @@
 #include <vector>
 
 namespace xng {
+    /**
+     * GZip Compression and Decompression
+     */
     class GZip {
     public:
         virtual std::vector<char> compress(const char *data, size_t length) = 0;

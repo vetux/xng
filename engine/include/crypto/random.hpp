@@ -31,9 +31,6 @@ namespace xng {
      */
     class XENGINE_EXPORT Random {
     public:
-        /**
-         * Create the generator instance and seed it using os supplied entropy.
-         */
         virtual ~Random() = default;
 
         virtual unsigned char byte() = 0;

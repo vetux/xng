@@ -27,6 +27,9 @@
 #include "crypto/random.hpp"
 
 namespace xng {
+    /**
+     * AES Encryption and Decryption
+     */
     class XENGINE_EXPORT AES {
     public:
         static const int BLOCKSIZE = 128;
@@ -56,7 +59,11 @@ namespace xng {
          * @param rand The random generator to use when generating the iv data
          * @return Cryptographically secure random iv
          */
-        virtual InitializationVector getRandomIv(Random &rand) = 0;
+        static InitializationVector getRandomIv(Random &rand) {
+            InitializationVector ret;
+            rand.block(ret.data(), ret.size());
+            return ret;
+        }
     };
 }
 

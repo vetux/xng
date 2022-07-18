@@ -34,6 +34,10 @@ namespace xng {
 
         virtual std::unique_ptr<GZip> createGzip() = 0;
 
+        /**
+         * Create a random generator instance and seed it using os supplied entropy.
+         * @return
+         */
         virtual std::unique_ptr<Random> createRandom() = 0;
 
         virtual std::unique_ptr<SHA> createSHA() = 0;

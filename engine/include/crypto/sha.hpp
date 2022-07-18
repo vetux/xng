@@ -24,6 +24,9 @@
 #include <vector>
 
 namespace xng {
+    /**
+     * SHA256 hashing
+     */
     class SHA {
     public:
         virtual ~SHA() = default;

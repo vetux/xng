@@ -96,12 +96,6 @@ namespace xng {
             auto ret = decrypt(key, iv, std::string(ciphertext.begin(), ciphertext.end()));
             return {ret.begin(), ret.end()};
         }
-
-        AES::InitializationVector getRandomIv(Random &rand) override {
-            InitializationVector ret;
-            rand.block(ret.data(), ret.size());
-            return ret;
-        }
     };
 }
 
