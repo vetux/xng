@@ -12,104 +12,95 @@ option(DRIVER_SHADERC "Build the ShaderC shader compiler driver" ON)
 option(DRIVER_SPIRVCROSS "Build the SPIRV-Cross shader decompiler driver" ON)
 option(DRIVER_CRYPTOPP "Build the CryptoPP driver" ON)
 
-set(DRIVERS_INCLUDE)
-set(DRIVERS_SRC)
-set(DRIVERS_LINK)
+set(DRIVERS_INCLUDE) # The drivers include directories in a list
+set(DRIVERS_SRC) # The drivers source files in a list
+set(DRIVERS_LINK) # The drivers linked library names in a list
+set(Drivers.GLOBEXPR) # The globexpr used to generate DRIVERS_SRC
 
-set(Drivers.GLOBEXPR)
+# @DIR = The directory in drivers/ which contains the driver source
+# @COMPILE_DEFS = Compile definitions
+# @DRIVER_LINK = The library name/s which the driver links to. There can be multiple DRIVER_LINK arguments.
+function(CompileDriver COMPILE_DEFS DIR)
+    set(Drivers.GLOBEXPR ${Drivers.GLOBEXPR} drivers/${DIR}/*.cpp drivers/${DIR}/*.c PARENT_SCOPE)
+    add_compile_definitions(${COMPILE_DEFS})
+    set(DRIVERS_INCLUDE ${DRIVERS_INCLUDE} drivers/${DIR}/ PARENT_SCOPE)
+    # Each additional argument is treated as a library name
+    set(MAXINDEX ${ARGC})
+    MATH(EXPR MAXINDEX "${MAXINDEX}-1")
+    foreach (index RANGE 2 ${MAXINDEX})
+        list(GET ARGV ${index} LIBNAME)
+        set(DRIVER_LINK ${DRIVER_LINK} ${LIBNAME})
+    endforeach ()
+    set(DRIVERS_LINK ${DRIVERS_LINK} ${DRIVER_LINK} PARENT_SCOPE)
+endfunction()
 
-if (DRIVER_MONO)
-    set(Drivers.GLOBEXPR ${Drivers.GLOBEXPR} drivers/mono/*.cpp drivers/mono/*.c)
-    add_compile_definitions(DRIVER_MONO)
-    set(DRIVERS_INCLUDE ${DRIVERS_INCLUDE} drivers/mono/)
-    set(DRIVERS_LINK ${DRIVERS_LINK} mono-2.0)
-endif ()
-
-if (DRIVER_BOX2D)
-    set(Drivers.GLOBEXPR ${Drivers.GLOBEXPR} drivers/box2d/*.cpp drivers/box2d/*.c)
-    add_compile_definitions(BOX2D_VERSION=${BOX2D_VERSION})
-    add_compile_definitions(DRIVER_BOX2D)
-    set(DRIVERS_INCLUDE ${DRIVERS_INCLUDE} drivers/box2d/)
-    set(DRIVERS_LINK ${DRIVERS_LINK} ${BOX2D_LIB})
-endif ()
-
-if (DRIVER_BULLET3)
-    set(Drivers.GLOBEXPR ${Drivers.GLOBEXPR} drivers/bullet3/*.cpp drivers/bullet3/*.c)
-    add_compile_definitions(DRIVER_BULLET3)
-    set(DRIVERS_INCLUDE ${DRIVERS_INCLUDE} drivers/bullet3/)
-endif ()
-
-if (DRIVER_OPENAL)
-    set(Drivers.GLOBEXPR ${Drivers.GLOBEXPR} drivers/openal/*.cpp drivers/openal/*.c)
-    add_compile_definitions(DRIVER_OPENAL)
-    set(DRIVERS_INCLUDE ${DRIVERS_INCLUDE} drivers/openal/)
-    set(DRIVERS_LINK ${DRIVERS_LINK} openal)
-endif ()
+### --  Start Driver Definitions -- ###
 
 if (DRIVER_GLFW)
-    set(Drivers.GLOBEXPR ${Drivers.GLOBEXPR} drivers/glfw/*.cpp drivers/glfw/*.c)
-    add_compile_definitions(DRIVER_GLFW)
-    set(DRIVERS_INCLUDE ${DRIVERS_INCLUDE} drivers/glfw/)
-    set(DRIVERS_LINK ${DRIVERS_LINK} glfw)
+    CompileDriver(DRIVER_GLFW glfw glfw)
 endif ()
 
 if (DRIVER_OPENGL)
-    set(Drivers.GLOBEXPR ${Drivers.GLOBEXPR} drivers/opengl/*.cpp drivers/opengl/*.c)
-    add_compile_definitions(DRIVER_OPENGL)
-    set(DRIVERS_INCLUDE ${DRIVERS_INCLUDE} drivers/opengl/)
-    set(DRIVERS_LINK ${DRIVERS_LINK} GL)
+    CompileDriver(DRIVER_OPENGL opengl GL)
 endif ()
 
 if (DRIVER_OPENGL_QT)
     find_package(Qt5Core REQUIRED)
     find_package(Qt5Widgets REQUIRED)
+    CompileDriver(DRIVER_OPENGL_QT opengl-qt GL Qt5::Core Qt5::Widgets)
+endif ()
 
-    set(Drivers.GLOBEXPR ${Drivers.GLOBEXPR} drivers/opengl-qt/*.cpp drivers/opengl-qt/*.c)
-    add_compile_definitions(DRIVER_OPENGL_QT)
-    set(DRIVERS_INCLUDE ${DRIVERS_INCLUDE} drivers/opengl-qt/)
-    set(DRIVERS_LINK ${DRIVERS_LINK} GL Qt5::Core Qt5::Widgets)
+if (DRIVER_MONO)
+    CompileDriver(DRIVER_MONO mono mono-2.0)
+endif ()
+
+if (DRIVER_BOX2D)
+    add_compile_definitions(BOX2D_VERSION=${BOX2D_VERSION})
+    CompileDriver(DRIVER_BOX2D box2d ${BOX2D_LIB})
+endif ()
+
+if (DRIVER_OPENAL)
+    CompileDriver(DRIVER_OPENAL openal openal)
 endif ()
 
 if (DRIVER_FREETYPE)
-    set(Drivers.GLOBEXPR ${Drivers.GLOBEXPR} drivers/freetype/*.cpp drivers/freetype/*.c)
-    add_compile_definitions(DRIVER_FREETYPE)
-    set(DRIVERS_INCLUDE ${DRIVERS_INCLUDE} drivers/freetype/)
-    set(DRIVERS_LINK ${DRIVERS_LINK} freetype)
+    CompileDriver(DRIVER_FREETYPE freetype freetype)
 endif ()
 
 if (DRIVER_ASSIMP)
-    set(Drivers.GLOBEXPR ${Drivers.GLOBEXPR} drivers/assimp/*.cpp drivers/assimp/*.c)
-    add_compile_definitions(DRIVER_ASSIMP)
-    set(DRIVERS_INCLUDE ${DRIVERS_INCLUDE} drivers/assimp/)
-    set(DRIVERS_LINK ${DRIVERS_LINK} assimp)
+    CompileDriver(DRIVER_ASSIMP assimp assimp)
 endif ()
 
 if (DRIVER_SNDFILE)
-    set(Drivers.GLOBEXPR ${Drivers.GLOBEXPR} drivers/sndfile/*.cpp drivers/sndfile/*.c)
-    add_compile_definitions(DRIVER_SNDFILE)
-    set(DRIVERS_INCLUDE ${DRIVERS_INCLUDE} drivers/sndfile/)
-    set(DRIVERS_LINK ${DRIVERS_LINK} sndfile)
+    CompileDriver(DRIVER_SNDFILE sndfile sndfile)
 endif ()
 
 if (DRIVER_SHADERC)
-    set(Drivers.GLOBEXPR ${Drivers.GLOBEXPR} drivers/shaderc/*.cpp drivers/shaderc/*.c)
-    add_compile_definitions(DRIVER_SHADERC)
-    set(DRIVERS_INCLUDE ${DRIVERS_INCLUDE} drivers/shaderc/)
-    set(DRIVERS_LINK ${DRIVERS_LINK} shaderc_combined)
+    CompileDriver(DRIVER_SHADERC shaderc shaderc_combined)
 endif ()
 
 if (DRIVER_SPIRVCROSS)
-    set(Drivers.GLOBEXPR ${Drivers.GLOBEXPR} drivers/spirv-cross/*.cpp drivers/spirv-cross/*.c)
-    add_compile_definitions(DRIVER_SPIRVCROSS)
-    set(DRIVERS_INCLUDE ${DRIVERS_INCLUDE} drivers/spirv-cross/)
-    set(DRIVERS_LINK ${DRIVERS_LINK} spirv-cross-core spirv-cross-glsl spirv-cross-hlsl)
+    CompileDriver(DRIVER_SPIRVCROSS spirv-cross spirv-cross-core spirv-cross-glsl spirv-cross-hlsl)
 endif ()
 
 if (DRIVER_CRYPTOPP)
-    set(Drivers.GLOBEXPR ${Drivers.GLOBEXPR} drivers/cryptopp/*.cpp drivers/cryptopp/*.c)
-    add_compile_definitions(DRIVER_CRYPTOPP)
-    set(DRIVERS_INCLUDE ${DRIVERS_INCLUDE} drivers/cryptopp/)
-    set(DRIVERS_LINK ${DRIVERS_LINK} cryptopp)
+    CompileDriver(DRIVER_CRYPTOPP cryptopp cryptopp)
 endif ()
+
+### --  Stop Driver Definitions -- ###
+
+set(STR_LIBRARIES "")
+foreach (val IN LISTS DRIVERS_LINK)
+    set(STR_LIBRARIES "${STR_LIBRARIES}${val} ")
+endforeach ()
+
+list(LENGTH DRIVERS_INCLUDE LEN_DRIVERS_INCLUDE)
+
+message("${LEN_DRIVERS_INCLUDE} Drivers Loaded :")
+foreach (val IN LISTS DRIVERS_INCLUDE)
+    message("   ${val}")
+endforeach ()
+
+message("Linked Libraries: ${STR_LIBRARIES}")
 
 file(GLOB_RECURSE DRIVERS_SRC ${Drivers.GLOBEXPR})
