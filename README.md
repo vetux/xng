@@ -1,5 +1,5 @@
 # xEngine
-This is an experimental cross-platform game engine library for C++.
+xEngine is a cross-platform c++ game engine library.
 
 ## Features
 - Interface based Driver Abstractions
