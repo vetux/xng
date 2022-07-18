@@ -24,12 +24,16 @@
 #include <functional>
 
 #include "gpu/renderpipeline.hpp"
+#include "gpu/rendercommand.hpp"
+#include "gpu/compute/computepipeline.hpp"
+#include "gpu/compute/computecommand.hpp"
+#include "gpu/raytrace/raytracepipeline.hpp"
+#include "gpu/raytrace/raytracecommand.hpp"
 #include "gpu/rendertarget.hpp"
 #include "gpu/texturebuffer.hpp"
 #include "gpu/vertexbuffer.hpp"
 #include "gpu/shaderprogram.hpp"
 #include "gpu/shaderbuffer.hpp"
-#include "gpu/renderpass.hpp"
 #include "gpu/vertexattribute.hpp"
 #include "gpu/renderpipelinedesc.hpp"
 #include "gpu/shaderprogramdesc.hpp"
@@ -48,7 +52,7 @@ namespace xng {
     public:
         virtual ~RenderDevice() = default;
 
-        virtual const RenderDeviceInfo & getInfo() = 0;
+        virtual const RenderDeviceInfo &getInfo() = 0;
 
         /**
          * The shaders are required to store all global variables in uniform buffers.
@@ -75,9 +79,13 @@ namespace xng {
         virtual std::unique_ptr<ShaderProgram> createShaderProgram(const SPIRVDecompiler &decompiler,
                                                                    const ShaderProgramDesc &desc) = 0;
 
-        virtual std::unique_ptr<RenderPipeline> createPipeline(const RenderPipelineDesc &desc) = 0;
+        virtual std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDesc &desc) = 0;
 
-        virtual std::unique_ptr<RenderPipeline> createPipeline(const uint8_t *cacheData, size_t size) = 0;
+        virtual std::unique_ptr<RenderPipeline> createRenderPipeline(const uint8_t *cacheData, size_t size) = 0;
+
+        virtual std::unique_ptr<ComputePipeline> createComputePipeline(const ComputePipelineDesc &desc) = 0;
+
+        virtual std::unique_ptr<RaytracePipeline> createRaytracePipeline(const RaytracePipelineDesc &desc) = 0;
 
         virtual std::unique_ptr<RenderTarget> createRenderTarget(const RenderTargetDesc &desc) = 0;
 

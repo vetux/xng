@@ -29,7 +29,9 @@ namespace xng {
             SHADER_BUFFER,
             SHADER_PROGRAM,
             RENDER_TARGET,
-            RENDER_PIPELINE
+            RENDER_PIPELINE,
+            COMPUTE_PIPELINE,
+            RAYTRACE_PIPELINE
         };
 
         virtual ~RenderObject() = default;

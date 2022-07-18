@@ -48,11 +48,19 @@ namespace xng::opengl {
             return info;
         }
 
-        std::unique_ptr<RenderPipeline> createPipeline(const RenderPipelineDesc &desc) override {
+        std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDesc &desc) override {
             return std::make_unique<OPENGL_TYPENAME(RenderPipeline)>(desc);
         }
 
-        std::unique_ptr<RenderPipeline> createPipeline(const uint8_t *cacheData, size_t size) override {
+        std::unique_ptr<RenderPipeline> createRenderPipeline(const uint8_t *cacheData, size_t size) override {
+            throw std::runtime_error("Not implemented");
+        }
+
+        std::unique_ptr<ComputePipeline> createComputePipeline(const ComputePipelineDesc &desc) override {
+            throw std::runtime_error("Not implemented");
+        }
+
+        std::unique_ptr<RaytracePipeline> createRaytracePipeline(const RaytracePipelineDesc &desc) override {
             throw std::runtime_error("Not implemented");
         }
 

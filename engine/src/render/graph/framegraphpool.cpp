@@ -151,7 +151,7 @@ namespace xng {
         usedPipelines.insert(pair);
         auto it = pipelines.find(pair);
         if (it == pipelines.end()) {
-            pipelines[pair] = device->createPipeline(desc);
+            pipelines[pair] = device->createRenderPipeline(desc);
         }
         return dynamic_cast<RenderPipeline &>(*pipelines.at(pair));
     }

@@ -48,7 +48,7 @@ namespace xng::opengl {
             return desc;
         }
 
-        void render(RenderTarget &target, const std::vector<RenderPass> &passes) override {
+        void render(RenderTarget &target, const std::vector<RenderCommand> &passes) override {
             auto clearColor = desc.clearColorValue.divide();
 
             glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
@@ -160,13 +160,13 @@ namespace xng::opengl {
                     OPENGL_TYPENAME(TextureBuffer) *texture;
                     OPENGL_TYPENAME(ShaderBuffer) *shaderBuffer;
                     switch (b.getType()) {
-                        case RenderPass::TEXTURE_BUFFER:
+                        case ShaderBinding::BINDING_TEXTURE_BUFFER:
                             texture = dynamic_cast<OPENGL_TYPENAME(TextureBuffer) *>(&b.getTextureBuffer());
                             glActiveTexture(getTextureSlot(bindingPoint));
                             glBindTexture(convert(texture->getDescription().textureType),
                                           texture->handle);
                             break;
-                        case RenderPass::SHADER_BUFFER:
+                        case ShaderBinding::BINDING_SHADER_BUFFER:
                             shaderBuffer = dynamic_cast<OPENGL_TYPENAME(ShaderBuffer) *>(&b.getShaderBuffer());
                             glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, shaderBuffer->ubo);
                             break;
@@ -208,12 +208,12 @@ namespace xng::opengl {
                 for (int bindingPoint = 0; bindingPoint < c.getBindings().size(); bindingPoint++) {
                     auto &b = c.getBindings().at(bindingPoint);
                     switch (b.getType()) {
-                        case RenderPass::TEXTURE_BUFFER:
+                        case ShaderBinding::BINDING_TEXTURE_BUFFER:
                             glActiveTexture(getTextureSlot(bindingPoint));
                             glBindTexture(GL_TEXTURE_2D, 0);
                             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
                             break;
-                        case RenderPass::SHADER_BUFFER:
+                        case ShaderBinding::BINDING_SHADER_BUFFER:
                             glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, 0);
                             break;
                     }
@@ -231,7 +231,8 @@ namespace xng::opengl {
             throw std::runtime_error("Caching not implemented");
         }
 
-        void setViewportSize(Vec2i viewportSize) override {
+        void setViewport(Vec2i viewportOffset, Vec2i viewportSize) override {
+            desc.viewportOffset = viewportOffset;
             desc.viewportSize = viewportSize;
         }
 

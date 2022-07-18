@@ -316,11 +316,11 @@ namespace xng {
                 TEXT
             } type{};
 
-            RenderPass pass;
+            RenderCommand pass;
 
             Pass() = default;
 
-            Pass(Type type, RenderPass pass) : type(type), pass(std::move(pass)) {}
+            Pass(Type type, RenderCommand pass) : type(type), pass(std::move(pass)) {}
         };
 
         std::vector<Pass> passes;

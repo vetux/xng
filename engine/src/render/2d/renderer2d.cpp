@@ -245,18 +245,17 @@ namespace xng {
 
         this->viewportSize = viewportSize;
         if (this->clear != clear
-            || this->clearColor != clearColor
-            || this->viewportOffset != viewportOffset) {
+            || this->clearColor != clearColor) {
             this->clear = clear;
             this->clearColor = clearColor;
             this->viewportOffset = viewportOffset;
             reallocatePipelines();
         }
 
-        clearPipeline->setViewportSize(viewportSize);
-        colorPipeline->setViewportSize(viewportSize);
-        texturePipeline->setViewportSize(viewportSize);
-        textPipeline->setViewportSize(viewportSize);
+        clearPipeline->setViewport(viewportOffset, viewportSize);
+        colorPipeline->setViewport(viewportOffset, viewportSize);
+        texturePipeline->setViewport(viewportOffset, viewportSize);
+        textPipeline->setViewport(viewportOffset, viewportSize);
 
         setProjection({{}, viewportSize.convert<float>()});
     }
@@ -269,7 +268,7 @@ namespace xng {
         clearPipeline->render(*userTarget, {});
 
         Pass::Type currentType = Pass::COLOR;
-        std::vector<RenderPass> currentPasses;
+        std::vector<RenderCommand> currentPasses;
         for (auto &pass: passes) {
             if (pass.type != currentType) {
                 switch (currentType) {
@@ -393,11 +392,11 @@ namespace xng {
         auto &shaderBuffer = getShaderBuffer();
         shaderBuffer.upload(shaderBufferUniform);
 
-        std::vector<RenderPass::ShaderBinding> bindings;
-        bindings.emplace_back(RenderPass::ShaderBinding(shaderBuffer));
-        bindings.emplace_back(RenderPass::ShaderBinding(texture));
+        std::vector<ShaderBinding> bindings;
+        bindings.emplace_back(ShaderBinding(shaderBuffer));
+        bindings.emplace_back(ShaderBinding(texture));
 
-        passes.emplace_back(Pass(Pass::TEXTURE, RenderPass(buffer, bindings)));
+        passes.emplace_back(Pass(Pass::TEXTURE, RenderCommand(buffer, bindings)));
     }
 
     void Renderer2D::draw(Rectf dstRect, TextureBuffer &texture, Vec2f center, float rotation) {
@@ -435,10 +434,10 @@ namespace xng {
         auto &shaderBuffer = getShaderBuffer();
         shaderBuffer.upload(shaderBufferUniform);
 
-        std::vector<RenderPass::ShaderBinding> bindings;
-        bindings.emplace_back(RenderPass::ShaderBinding(shaderBuffer));
+        std::vector<ShaderBinding> bindings;
+        bindings.emplace_back(ShaderBinding(shaderBuffer));
 
-        passes.emplace_back(Pass(Pass::COLOR, RenderPass(*buffer, bindings)));
+        passes.emplace_back(Pass(Pass::COLOR, RenderCommand(*buffer, bindings)));
     }
 
     void Renderer2D::draw(Vec2f start,
@@ -466,10 +465,10 @@ namespace xng {
         auto &shaderBuffer = getShaderBuffer();
         shaderBuffer.upload(shaderBufferUniform);
 
-        std::vector<RenderPass::ShaderBinding> bindings;
-        bindings.emplace_back(RenderPass::ShaderBinding(shaderBuffer));
+        std::vector<ShaderBinding> bindings;
+        bindings.emplace_back(ShaderBinding(shaderBuffer));
 
-        passes.emplace_back(Pass(Pass::COLOR, RenderPass(buffer, bindings)));
+        passes.emplace_back(Pass(Pass::COLOR, RenderCommand(buffer, bindings)));
     }
 
     void Renderer2D::draw(Vec2f point, ColorRGBA color) {
@@ -491,10 +490,10 @@ namespace xng {
         auto &shaderBuffer = getShaderBuffer();
         shaderBuffer.upload(shaderBufferUniform);
 
-        std::vector<RenderPass::ShaderBinding> bindings;
-        bindings.emplace_back(RenderPass::ShaderBinding(shaderBuffer));
+        std::vector<ShaderBinding> bindings;
+        bindings.emplace_back(ShaderBinding(shaderBuffer));
 
-        passes.emplace_back(Pass(Pass::COLOR, RenderPass(buffer, bindings)));
+        passes.emplace_back(Pass(Pass::COLOR, RenderCommand(buffer, bindings)));
     }
 
     void Renderer2D::draw(Text &text, Rectf dstRect, ColorRGBA color, Vec2f center, float rotation) {
@@ -520,11 +519,11 @@ namespace xng {
         auto &shaderBuffer = getShaderBuffer();
         shaderBuffer.upload(shaderBufferUniform);
 
-        std::vector<RenderPass::ShaderBinding> bindings;
-        bindings.emplace_back(RenderPass::ShaderBinding(shaderBuffer));
-        bindings.emplace_back(RenderPass::ShaderBinding(text.getTexture()));
+        std::vector<ShaderBinding> bindings;
+        bindings.emplace_back(ShaderBinding(shaderBuffer));
+        bindings.emplace_back(ShaderBinding(text.getTexture()));
 
-        passes.emplace_back(Pass(Pass::TEXT, RenderPass(buffer, bindings)));
+        passes.emplace_back(Pass(Pass::TEXT, RenderCommand(buffer, bindings)));
     }
 
     void Renderer2D::drawInstanced(const std::vector<std::pair<Vec2f, float>> &positions,
@@ -566,10 +565,10 @@ namespace xng {
         auto &shaderBuffer = getShaderBuffer();
         shaderBuffer.upload(shaderBufferUniform);
 
-        std::vector<RenderPass::ShaderBinding> bindings;
-        bindings.emplace_back(RenderPass::ShaderBinding(shaderBuffer));
+        std::vector<ShaderBinding> bindings;
+        bindings.emplace_back(ShaderBinding(shaderBuffer));
 
-        passes.emplace_back(Pass(Pass::COLOR, RenderPass(meshBuffer, bindings)));
+        passes.emplace_back(Pass(Pass::COLOR, RenderCommand(meshBuffer, bindings)));
     }
 
     VertexBuffer &Renderer2D::getPlane(const Renderer2D::PlaneDescription &desc) {
@@ -630,41 +629,41 @@ namespace xng {
     }
 
     void Renderer2D::reallocatePipelines() {
-        clearPipeline = renderDevice.createPipeline({.shader = *colorShader,
-                                                            .viewportOffset = viewportOffset,
-                                                            .viewportSize = viewportSize,
-                                                            .multiSample = false,
-                                                            .clearColorValue = clearColor,
-                                                            .clearColor = clear,
-                                                            .clearStencil = clear,
-                                                            .enableDepthTest = false,
-                                                            .enableBlending = true});
+        clearPipeline = renderDevice.createRenderPipeline({.shader = *colorShader,
+                                                                  .viewportOffset = viewportOffset,
+                                                                  .viewportSize = viewportSize,
+                                                                  .multiSample = false,
+                                                                  .clearColorValue = clearColor,
+                                                                  .clearColor = clear,
+                                                                  .clearStencil = clear,
+                                                                  .enableDepthTest = false,
+                                                                  .enableBlending = true});
 
-        colorPipeline = renderDevice.createPipeline({.shader = *colorShader,
-                                                            .viewportOffset = viewportOffset,
-                                                            .viewportSize = viewportSize,
-                                                            .multiSample = false,
-                                                            .clearColor = false,
-                                                            .clearStencil = false,
-                                                            .enableDepthTest = false,
-                                                            .enableBlending = true});
+        colorPipeline = renderDevice.createRenderPipeline({.shader = *colorShader,
+                                                                  .viewportOffset = viewportOffset,
+                                                                  .viewportSize = viewportSize,
+                                                                  .multiSample = false,
+                                                                  .clearColor = false,
+                                                                  .clearStencil = false,
+                                                                  .enableDepthTest = false,
+                                                                  .enableBlending = true});
 
-        texturePipeline = renderDevice.createPipeline({.shader = *textureShader,
-                                                              .viewportOffset = viewportOffset,
-                                                              .viewportSize = viewportSize,
-                                                              .multiSample = false,
-                                                              .clearColor = false,
-                                                              .clearStencil = false,
-                                                              .enableDepthTest = false,
-                                                              .enableBlending = true});
+        texturePipeline = renderDevice.createRenderPipeline({.shader = *textureShader,
+                                                                    .viewportOffset = viewportOffset,
+                                                                    .viewportSize = viewportSize,
+                                                                    .multiSample = false,
+                                                                    .clearColor = false,
+                                                                    .clearStencil = false,
+                                                                    .enableDepthTest = false,
+                                                                    .enableBlending = true});
 
-        textPipeline = renderDevice.createPipeline({.shader = *textShader,
-                                                           .viewportOffset = viewportOffset,
-                                                           .viewportSize = viewportSize,
-                                                           .multiSample = false,
-                                                           .clearColor = false,
-                                                           .clearStencil = false,
-                                                           .enableDepthTest = false,
-                                                           .enableBlending = true});
+        textPipeline = renderDevice.createRenderPipeline({.shader = *textShader,
+                                                                 .viewportOffset = viewportOffset,
+                                                                 .viewportSize = viewportSize,
+                                                                 .multiSample = false,
+                                                                 .clearColor = false,
+                                                                 .clearStencil = false,
+                                                                 .enableDepthTest = false,
+                                                                 .enableBlending = true});
     }
 }

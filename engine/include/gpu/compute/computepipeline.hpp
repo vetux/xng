@@ -17,29 +17,24 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RENDERPIPELINE_HPP
-#define XENGINE_RENDERPIPELINE_HPP
+#ifndef XENGINE_COMPUTEPIPELINE_HPP
+#define XENGINE_COMPUTEPIPELINE_HPP
 
 #include "gpu/renderobject.hpp"
-#include "gpu/renderpipelinedesc.hpp"
-#include "gpu/rendercommand.hpp"
-#include "gpu/rendertarget.hpp"
+#include "computecommand.hpp"
+#include "computepipelinedesc.hpp"
 
 namespace xng {
-    class RenderPipeline : public RenderObject {
+    class ComputePipeline : public RenderObject {
     public:
         Type getType() override {
-            return RENDER_PIPELINE;
+            return COMPUTE_PIPELINE;
         }
 
-        virtual void setViewport(Vec2i viewportOffset, Vec2i viewportSize) = 0;
+        virtual void execute(const std::vector<ComputeCommand> &commands) = 0;
 
-        virtual void render(RenderTarget &target, const std::vector<RenderCommand> &commands) = 0;
-
-        virtual std::vector<uint8_t> cache() = 0;
-
-        virtual const RenderPipelineDesc &getDescription() = 0;
+        virtual const ComputePipelineDesc &getDescription() = 0;
     };
 }
 
-#endif //XENGINE_RENDERPIPELINE_HPP
+#endif //XENGINE_COMPUTEPIPELINE_HPP
