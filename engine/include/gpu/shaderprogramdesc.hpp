@@ -33,10 +33,16 @@
 
 namespace xng {
     struct ShaderProgramDesc {
+        enum ShaderEnvironment {
+            ENV_RENDER,
+            ENV_COMPUTE,
+            ENV_RAYTRACE
+        } environment = ENV_RENDER;
+
         std::map<ShaderStage, SPIRVShader> shaders;
 
         bool operator==(const ShaderProgramDesc &other) const {
-            return shaders == other.shaders;
+            return environment == other.environment && shaders == other.shaders;
         }
     };
 }
@@ -47,6 +53,7 @@ namespace std {
     struct hash<ShaderProgramDesc> {
         std::size_t operator()(const ShaderProgramDesc &k) const {
             size_t ret = 0;
+            hash_combine(ret, k.environment);
             for (auto &e: k.shaders) {
                 hash_combine(ret, e.first);
                 hash_combine(ret, e.second.getStage());
