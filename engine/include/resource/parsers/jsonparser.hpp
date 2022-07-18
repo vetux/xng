@@ -37,6 +37,10 @@ namespace xng {
                             Archive *archive) const override;
 
         const std::set<std::string> &getSupportedFormats() const override;
+
+        std::type_index getType() override {
+            return typeid(JsonParser);
+        }
     };
 }
 
