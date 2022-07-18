@@ -26,10 +26,8 @@
 
 #include "util/numeric_cast.hpp"
 
-#include "io/messageable.hpp"
-
 namespace xng {
-    struct XENGINE_EXPORT ColorRGB : public Messageable {
+    struct XENGINE_EXPORT ColorRGB {
         uint8_t data[3];
 
         uint8_t &r() { return data[0]; }
@@ -68,14 +66,14 @@ namespace xng {
             return !(*this == other);
         }
 
-        Messageable &operator<<(const Message &message) override {
+        ColorRGB &operator<<(const Message &message) {
             r() = message.value("r", 0);
             g() = message.value("g", 0);
             b() = message.value("b", 0);
             return *this;
         }
 
-        Message &operator>>(Message &message) const override {
+        Message &operator>>(Message &message) const {
             message = Message(Message::DICTIONARY);
             message["r"] = r();
             message["g"] = g();
@@ -84,7 +82,7 @@ namespace xng {
         }
     };
 
-    struct XENGINE_EXPORT ColorRGBA : public Messageable {
+    struct XENGINE_EXPORT ColorRGBA {
         uint8_t data[4];
 
         static ColorRGBA black(float intensity = 1, uint8_t alpha = 255) {
@@ -204,7 +202,7 @@ namespace xng {
             return !(*this == other);
         }
 
-        Messageable &operator<<(const Message &message) override {
+        ColorRGBA &operator<<(const Message &message)  {
             r() = message.value("r", 0);
             g() = message.value("g", 0);
             b() = message.value("b", 0);
@@ -212,7 +210,7 @@ namespace xng {
             return *this;
         }
 
-        Message &operator>>(Message &message) const override {
+        Message &operator>>(Message &message) const {
             message = Message(Message::DICTIONARY);
             message["r"] = r();
             message["g"] = g();
