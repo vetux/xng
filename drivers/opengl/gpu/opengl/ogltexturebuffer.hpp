@@ -32,7 +32,7 @@ namespace xng {
             GLuint handle;
 
             OPENGL_TYPENAME(TextureBuffer)(const TextureBufferDesc &inputDescription)
-                    : desc(std::move(inputDescription)) {
+                    : desc(inputDescription) {
                 initialize();
 
                 GLenum type = convert(desc.textureType);
@@ -53,7 +53,7 @@ namespace xng {
                 checkGLError("OGLTextureBuffer::OGLTextureBuffer()");
 
                 if (desc.textureType == TEXTURE_2D) {
-                    GLuint texInternalFormat = convert(desc.format);
+                    GLint texInternalFormat = convert(desc.format);
                     GLuint texFormat = GL_RGBA;
 
                     if (desc.format >= R8I) {
@@ -74,7 +74,7 @@ namespace xng {
 
                     glTexImage2D(type,
                                  0,
-                                 numeric_cast<GLint>(texInternalFormat),
+                                 texInternalFormat,
                                  desc.size.x,
                                  desc.size.y,
                                  0,
@@ -137,11 +137,10 @@ namespace xng {
             }
 
             void upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize) override {
-                //TODO: Range check the buffer
                 glBindTexture(GL_TEXTURE_2D, handle);
                 glTexImage2D(GL_TEXTURE_2D,
                              0,
-                             numeric_cast<GLint>(convert(desc.format)),
+                             convert(desc.format),
                              desc.size.x,
                              desc.size.y,
                              0,
@@ -163,7 +162,7 @@ namespace xng {
                 glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
                 glTexImage2D(convert(face),
                              0,
-                             numeric_cast<GLint>(convert(desc.format)),
+                             convert(desc.format),
                              desc.size.x,
                              desc.size.y,
                              0,

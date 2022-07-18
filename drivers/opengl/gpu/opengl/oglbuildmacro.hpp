@@ -211,7 +211,7 @@ GLenum convert(CubeMapFace face) {\
     }\
 }\
 \
-GLenum convert(ColorFormat format) {\
+GLint convert(ColorFormat format) {\
     switch (format) {\
         case DEPTH:\
             return GL_DEPTH_COMPONENT;\
