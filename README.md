@@ -28,8 +28,8 @@ This is an experimental cross-platform game engine library written in C++.
   - Phong Shading
   - Shadow Mapping
 - 2D Renderer
-- Skeletal Animation abstraction (WIP)
-- Sprite Animation abstraction
+- Skeletal Animation (WIP)
+- Sprite Animation
 - PAK file format
 - ECS with data oriented architecture
 
