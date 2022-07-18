@@ -5,7 +5,7 @@ This is an experimental cross-platform game engine library written in C++.
 - Interface based Driver Abstractions
   - Display and Input
     - GLFW implementation
-  - GPU
+  - GPU Abstraction with optional Compute and Raytracing support (WIP)
     - OpenGL 4.2 implementation
   - 3D Audio Playback
     - OpenAL implementation
