@@ -35,7 +35,7 @@ namespace xng {
                                               4);
         if (data) {
             auto ret = ImageRGBA(width, height);
-            std::memcpy(ret.getData(), data, (width * height) * (sizeof(stbi_uc) * 4));
+            std::memcpy(reinterpret_cast<stbi_uc *>(ret.getData()), data, ret.getDataSize() * sizeof(ColorRGBA));
             stbi_image_free(data);
             return ret;
         } else {
