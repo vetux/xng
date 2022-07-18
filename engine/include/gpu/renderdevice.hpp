@@ -29,9 +29,8 @@
 #include "gpu/vertexbuffer.hpp"
 #include "gpu/shaderprogram.hpp"
 #include "gpu/shaderbuffer.hpp"
-
+#include "gpu/renderpass.hpp"
 #include "gpu/vertexattribute.hpp"
-
 #include "gpu/renderpipelinedesc.hpp"
 #include "gpu/shaderprogramdesc.hpp"
 #include "gpu/shaderbufferdesc.hpp"
@@ -40,11 +39,9 @@
 #include "gpu/texturebufferdesc.hpp"
 #include "gpu/renderdeviceinfo.hpp"
 
-#include "gpu/renderpass.hpp"
+#include "shader/spirvdecompiler.hpp"
 
 #include "asset/mesh.hpp"
-
-#include "shader/spirvdecompiler.hpp"
 
 namespace xng {
     class XENGINE_EXPORT RenderDevice {
