@@ -21,7 +21,6 @@
 #include "render/2d/renderer2d.hpp"
 
 #include "math/matrixmath.hpp"
-#include "async/threadpool.hpp"
 #include "shader/shadersource.hpp"
 
 static const char *SHADER_VERT = R"###(#version 420 core
