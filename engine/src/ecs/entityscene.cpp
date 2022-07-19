@@ -24,13 +24,11 @@
 namespace xng {
 
 #define SERIALIZE_COMPONENT(NAME, TYPE) \
-    if (components.check<TYPE>(entity)) { \
+    if (components.check<TYPE>(entity)) {\
         Message component; \
         components.lookup<TYPE>(entity) >> component; \
-        component["type"] = NAME; \
-        clist.emplace_back(component);      \
-    }                                   \
-
+        cmap[NAME] = component; \
+    }
 
     void EntityScene::serializeEntity(const EntityHandle &entity, Message &message) const {
         message = Message(Message::DICTIONARY);
@@ -38,7 +36,13 @@ namespace xng {
         if (it != entityNamesReverse.end()) {
             message["name"] = it->second;
         }
-        auto clist = std::vector<Message>();
+        auto cmap = std::map<std::string, Message>();
+
+        if (components.check<AudioSourceComponent>(entity)) {
+            Message component;
+            components.lookup<AudioSourceComponent>(entity) >> component;
+            cmap["test"] = component;
+        }
 
         SERIALIZE_COMPONENT("audio_listener", AudioListenerComponent)
         SERIALIZE_COMPONENT("audio_source", AudioSourceComponent)
@@ -57,7 +61,7 @@ namespace xng {
         SERIALIZE_COMPONENT("text", TextComponent)
         SERIALIZE_COMPONENT("transform", TransformComponent)
 
-        message["components"] = clist;
+        message["components"] = cmap;
     }
 
     void EntityScene::deserializeEntity(const Message &message) {
@@ -67,8 +71,8 @@ namespace xng {
         } else {
             entity = create();
         }
-        for (auto &c: message.value("components", std::vector<Message>())) {
-            deserializeComponent(entity, c);
+        for (auto &c: message.value("components", std::map<std::string, Message>())) {
+            deserializeComponent(entity, c.first, c.second);
         }
     }
 
@@ -79,8 +83,7 @@ namespace xng {
         components.create(entity, component); \
 
 
-    void EntityScene::deserializeComponent(const EntityHandle &entity, const Message &message) {
-        auto type = message.value("type", std::string(""));
+    void EntityScene::deserializeComponent(const EntityHandle &entity, const std::string &type, const Message &message) {
         if (false) {
         DESERIALIZE_COMPONENT("audio_listener", AudioListenerComponent)
         DESERIALIZE_COMPONENT("audio_source", AudioSourceComponent)

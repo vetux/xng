@@ -270,7 +270,7 @@ namespace xng {
 
         virtual void deserializeEntity(const Message &message);
 
-        virtual void deserializeComponent(const EntityHandle &entity, const Message &message);
+        virtual void deserializeComponent(const EntityHandle &entity, const std::string &type, const Message &message);
 
     private:
         std::set<int> idStore;
