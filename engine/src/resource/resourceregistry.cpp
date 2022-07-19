@@ -40,7 +40,10 @@ namespace xng {
 
     ResourceRegistry::~ResourceRegistry() {
         for (auto &pair: loadTasks) {
-            pair.second->join();
+            auto ex = pair.second->join();
+            if (ex) {
+                std::rethrow_exception(ex);
+            }
         }
     }
 
@@ -113,26 +116,31 @@ namespace xng {
             }
         }
 
-        task->join();
+        auto ex = task->join();
+        if (ex) {
+            std::rethrow_exception(ex);
+        }
 
         std::lock_guard<std::mutex> g(mutex);
         loadTasks.erase(uri);
     }
 
     const Resource &ResourceRegistry::getData(const Uri &uri) {
-        std::lock_guard<std::mutex> g(mutex);
-        auto it = bundles.find(uri.getFile());
-        if (it == bundles.end()) {
-            bundles[uri.getFile()] = loadBundle(uri);
+        mutex.lock();
+        auto it = loadTasks.find(uri);
+        if (it == loadTasks.end()) {
+            mutex.unlock();
+            load(uri);
+            mutex.lock();
         }
+        auto task = loadTasks.at(uri);
+        mutex.unlock();
+        auto ex = task->join();
+        if (ex) {
+            std::rethrow_exception(ex);
+        }
+        mutex.lock();
         return bundles[uri.getFile()].get(uri.getAsset());
-    }
-
-    ResourceBundle ResourceRegistry::loadBundle(const Uri &uri) {
-        auto &archive = resolveUri(uri);
-        std::filesystem::path path(uri.getFile());
-        auto stream = archive.open(path);
-        return ResourceImporter().import(*stream, path.extension());
     }
 
     Archive &ResourceRegistry::resolveUri(const Uri &uri) {

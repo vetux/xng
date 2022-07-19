@@ -106,8 +106,6 @@ namespace xng {
 
         const Resource &getData(const Uri &uri);
 
-        ResourceBundle loadBundle(const Uri &uri);
-
         Archive &resolveUri(const Uri &uri);
 
         std::mutex mutex;
