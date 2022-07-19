@@ -25,7 +25,7 @@
 #include "asset/image.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT Texture : public Resource {
+    struct XENGINE_EXPORT Texture : public Resource, public Messageable {
         ~Texture() override = default;
 
         std::unique_ptr<Resource> clone() override {
@@ -36,11 +36,42 @@ namespace xng {
             return typeid(Texture);
         }
 
+        Messageable &operator<<(const Message &message) override {
+            images.clear();
+            auto vec = message.value("images");
+            if (vec.getType() == Message::LIST) {
+                for (auto &img: vec.asList()) {
+                    ResourceHandle<ImageRGBA> handle;
+                    handle << img;
+                    images.emplace_back(handle);
+                }
+            }
+            clear = message.value("clear", false);
+            clearColor << message.value("clearColor");
+            //TODO: Serialize texture description
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            auto vec = std::vector<Message>();
+            for (auto &img: images) {
+                Message msg;
+                img >> msg;
+                vec.emplace_back(msg);
+            }
+            message["images"] = vec;
+            message["clear"] = clear;
+            clearColor >> message["clearColor"];
+            return message;
+        }
+
         std::vector<ResourceHandle<ImageRGBA>> images;
-        TextureBufferDesc textureDescription;
 
         bool clear = false;
         ColorRGBA clearColor;
+
+        TextureBufferDesc textureDescription;
     };
 }
 

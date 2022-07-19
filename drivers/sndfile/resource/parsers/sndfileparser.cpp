@@ -159,7 +159,7 @@ namespace xng {
     }
 
     const std::set<std::string> &SndFileParser::getSupportedFormats() const {
-        static const std::set<std::string> formats = {"mp3", "wav"};
+        static const std::set<std::string> formats = {".wav"};
         return formats;
     }
 }

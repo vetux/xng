@@ -25,12 +25,27 @@
 #include "asset/sprite.hpp"
 
 namespace xng {
-    struct SpriteKeyframe {
+    struct SpriteKeyframe : public Messageable {
+        SpriteKeyframe() = default;
+
         explicit SpriteKeyframe(ResourceHandle<Sprite> sprite, int duration = 1)
                 : sprite(std::move(sprite)), duration(duration) {}
 
+        Messageable &operator<<(const Message &message) override {
+            sprite << message.value("sprite");
+            duration = message.value("duration", 0);
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            sprite >> message[sprite];
+            message["duration"] = duration;
+            return message;
+        }
+
         ResourceHandle<Sprite> sprite; // The sprite to display
-        int duration; // The duration in frames for which the keyframe should be displayed, if larger than 1 essentially the same as duplicating the keyframes in the sprite animation.
+        int duration{}; // The duration in frames for which the keyframe should be displayed, if larger than 1 essentially the same as duplicating the keyframes in the sprite animation.
     };
 }
 #endif //XENGINE_SPRITEKEYFRAME_HPP

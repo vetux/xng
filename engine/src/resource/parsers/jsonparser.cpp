@@ -20,23 +20,18 @@
 #include "resource/parsers/jsonparser.hpp"
 
 #include "async/threadpool.hpp"
-#include "extern/json.hpp"
 
 #include "asset/texture.hpp"
 #include "asset/mesh.hpp"
 #include "asset/material.hpp"
+#include "animation/sprite/spriteanimation.hpp"
+#include "ecs/entityscene.hpp"
+
+#include "io/protocol/jsonprotocol.hpp"
 
 #include "resource/resourceimporter.hpp"
 
 namespace xng {
-    static TextureType convertTextureType(const std::string &v) {
-        if (v == "texture2d")
-            return TEXTURE_2D;
-        else if (v == "cubemap")
-            return TEXTURE_CUBE_MAP;
-        throw std::runtime_error("Invalid texture type " + v);
-    }
-
     static void loadBundle(const std::string &bundlePath,
                            ThreadPool &pool,
                            Archive &archive,
@@ -67,166 +62,57 @@ namespace xng {
         bundleMutex.unlock();
     }
 
-    static ColorRGBA readColor(const nlohmann::json &j) {
-        return ColorRGBA(j["r"], j["g"], j["b"], j["a"]);
-    }
-
-    static Texture readJsonTexture(std::istream &stream, Archive &archive) {
-        std::string buffer((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
-        nlohmann::json j = nlohmann::json::parse(buffer);
-
-        Texture texture;
-
-        auto it = j.find("images");
-        if (it != j.end()) {
-            for (auto &element: *it) {
-                texture.images.emplace_back(Uri(element));
-            }
-        }
-
-        auto attr = j.find("attributes");
-        if (attr != j.end()) {
-            texture.textureDescription.textureType = convertTextureType(attr->value("textureType", "texture2d"));
-            texture.textureDescription.generateMipmap = attr->value("generateMipmap",
-                                                                    texture.textureDescription.textureType !=
-                                                                    TEXTURE_CUBE_MAP);
-            //TODO Parse texture attributes
-        }
-
-        return texture;
-    }
-
-    static ResourceBundle
-    readJsonBundle(const std::string &buffer, const ResourceImporter &importer, Archive &archive, ThreadPool &pool) {
-        nlohmann::json j = nlohmann::json::parse(buffer);
-
-        std::mutex bundleMutex;
-
-        std::map<std::string, std::shared_ptr<Task>> bundleTasks;
-        std::map<std::string, ResourceBundle> referencedBundles; //The referenced json bundles by path
-
-        //Begin loading of all referenced asset bundles on a thread pool
-        auto iterator = j.find("meshes");
-        if (iterator != j.end()) {
-            for (auto &element: *iterator) {
-                loadBundle(Uri(element["uri"]).getFile(), pool, archive, importer, bundleMutex, bundleTasks,
-                           referencedBundles);
-            }
-        }
-
-        iterator = j.find("materials");
-        if (iterator != j.end()) {
-            for (auto &element: *iterator) {
-                auto it = element.find("uri");
-                if (it != element.end()) {
-                    loadBundle(Uri(*it).getFile(), pool, archive, importer, bundleMutex, bundleTasks,
-                               referencedBundles);
-                }
-            }
-        }
-
-        iterator = j.find("images");
-        if (iterator != j.end()) {
-            for (auto &element: *iterator) {
-                loadBundle(Uri(element).getFile(), pool, archive, importer, bundleMutex, bundleTasks,
-                           referencedBundles);
-            }
-        }
-
-        //Wait for loading to finish
-        for (auto &task: bundleTasks) {
-            task.second->join();
-        }
+    static ResourceBundle readJsonBundle(const std::string &buffer,
+                                         const ResourceImporter &importer,
+                                         Archive &archive,
+                                         ThreadPool &pool) {
+        auto stream = std::stringstream(buffer);
+        const Message m = JsonProtocol().deserialize(stream);
 
         ResourceBundle ret;
 
-        //Load data from json and referenced bundles
-
-        iterator = j.find("meshes");
-        if (iterator != j.end()) {
-            for (auto &element: *iterator) {
+        if (m.has("materials") && m.at("materials").getType() == Message::LIST) {
+            for (auto &element: m.at("materials").asList()) {
                 std::string name = element["name"];
-                auto uri = Uri(element["uri"]);
-                ret.add(name, std::make_unique<Mesh>(referencedBundles.at(uri.getFile()).get<Mesh>(uri.getAsset())));
+                Material mat;
+                mat << element;
+                ret.add(name, std::make_unique<Material>(mat));
             }
         }
 
-        iterator = j.find("materials");
-        if (iterator != j.end()) {
-            for (auto &element: *iterator) {
+        if (m.has("textures") && m.at("textures").getType() == Message::LIST) {
+            for (auto &element: m.at("textures").asList()) {
                 std::string name = element["name"];
-                auto it = element.find("uri");
-                if (it != element.end()) {
-                    auto uri = Uri(*it);
-                    ret.add(name,
-                            std::make_unique<Material>(
-                                    referencedBundles.at(uri.getFile()).get<Material>(uri.getAsset())));
-                } else {
-                    Material mat;
-
-                    if (element.find("diffuse") != element.end())
-                        mat.diffuse = readColor(element["diffuse"]);
-                    if (element.find("ambient") != element.end())
-                        mat.ambient = readColor(element["ambient"]);
-                    if (element.find("specular") != element.end())
-                        mat.specular = readColor(element["specular"]);
-                    if (element.find("emissive") != element.end())
-                        mat.emissive = readColor(element["emissive"]);
-                    if (element.find("shininess") != element.end())
-                        mat.shininess = element["shininess"];
-
-                    if (element.find("diffuseTexture") != element.end()) {
-                        auto path = Uri(element["diffuseTexture"]);
-                        mat.diffuseTexture = ResourceHandle<Texture>(path);
-                    }
-
-                    if (element.find("ambientTexture") != element.end()) {
-                        auto path = Uri(element["ambientTexture"]);
-                        mat.ambientTexture = ResourceHandle<Texture>(path);
-                    }
-
-                    if (element.find("specularTexture") != element.end()) {
-                        auto path = Uri(element["specularTexture"]);
-                        mat.specularTexture = ResourceHandle<Texture>(path);
-                    }
-
-                    if (element.find("emissiveTexture") != element.end()) {
-                        auto path = Uri(element["emissiveTexture"]);
-                        mat.emissiveTexture = ResourceHandle<Texture>(path);
-                    }
-
-                    if (element.find("shininessTexture") != element.end()) {
-                        auto path = Uri(element["shininessTexture"]);
-                        mat.shininessTexture = ResourceHandle<Texture>(path);
-                    }
-
-                    if (element.find("normalTexture") != element.end()) {
-                        auto path = Uri(element["normalTexture"]);
-                        mat.normalTexture = ResourceHandle<Texture>(path);
-                    }
-
-                    ret.add(name, std::make_unique<Material>(mat));
-                }
-            }
-        }
-
-        iterator = j.find("textures");
-        if (iterator != j.end()) {
-            for (auto &element: *iterator) {
-                std::string name = element["name"];
-                auto s = std::stringstream(element.dump());
-                auto tex = readJsonTexture(s, archive);
+                Texture tex;
+                tex << element;
                 ret.add(name, std::make_unique<Texture>(tex));
             }
         }
 
-        iterator = j.find("images");
-        if (iterator != j.end()) {
-            for (auto &element: *iterator) {
+        if (m.has("sprites") && m.at("sprites").getType() == Message::LIST) {
+            for (auto &element: m.at("sprites").asList()) {
                 std::string name = element["name"];
-                auto uri = Uri(element["uri"]);
-                ret.add(name, std::make_unique<ImageRGBA>(
-                        referencedBundles.at(uri.getFile()).get<ImageRGBA>(uri.getAsset())));
+                Sprite sprite;
+                sprite << element;
+                ret.add(name, std::make_unique<Sprite>(sprite));
+            }
+        }
+
+        if (m.has("sprite-animations") && m.at("sprite-animations").getType() == Message::LIST) {
+            for (auto &element: m.at("sprite-animations").asList()) {
+                std::string name = element["name"];
+                SpriteAnimation animation;
+                animation << element;
+                ret.add(name, std::make_unique<SpriteAnimation>(animation));
+            }
+        }
+
+        if (m.has("scenes") && m.at("scenes").getType() == Message::LIST) {
+            for (auto &element: m.at("scenes").asList()) {
+                std::string name = element["name"];
+                EntityScene scene;
+                scene << element;
+                ret.add(name, std::make_unique<EntityScene>(scene));
             }
         }
 
@@ -243,7 +129,7 @@ namespace xng {
     }
 
     const std::set<std::string> &JsonParser::getSupportedFormats() const {
-        static const std::set<std::string> formats = {"json", "bundle"};
+        static const std::set<std::string> formats = {".json", ".bundle"};
         return formats;
     }
 }

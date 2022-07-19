@@ -25,13 +25,14 @@
 #include <any>
 
 #include "ecs/componentcontainer.hpp"
+#include "resource/resource.hpp"
 
 #include "io/messageable.hpp"
 
 namespace xng {
     class Entity;
 
-    class XENGINE_EXPORT EntityScene : public Messageable {
+    class XENGINE_EXPORT EntityScene : public Resource, public Messageable {
     public:
         class Listener {
         public:
@@ -64,6 +65,10 @@ namespace xng {
         EntityScene &operator=(const EntityScene &other) = default;
 
         EntityScene &operator=(EntityScene &&other) noexcept = default;
+
+        std::unique_ptr<Resource> clone() override;
+
+        std::type_index getTypeIndex() override;
 
         /**
          * Optional name mapping.

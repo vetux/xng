@@ -28,7 +28,7 @@ namespace xng {
     /**
      * A sprite animation is a sequence of frames which are displayed sequentially to create the illusion of an animation.
      */
-    class XENGINE_EXPORT SpriteAnimation {
+    class XENGINE_EXPORT SpriteAnimation : public Resource, public Messageable {
     public:
         SpriteAnimation() = default;
 
@@ -51,6 +51,10 @@ namespace xng {
                         int animationFps,
                         bool loop = true,
                         bool clampDelta = false);
+
+        std::unique_ptr<Resource> clone() override;
+
+        std::type_index getTypeIndex() override;
 
         /**
          * Retrieve the current frame of the animation.
@@ -81,7 +85,13 @@ namespace xng {
          */
         float getTime() const { return time; }
 
+        Messageable &operator<<(const Message &message) override;
+
+        Message &operator>>(Message &message) const override;
+
     private:
+        void initFrames();
+
         std::vector<SpriteKeyframe> keyframes;
         float animationDuration{};
         bool clampDelta{};

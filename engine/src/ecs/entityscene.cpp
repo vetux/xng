@@ -116,4 +116,12 @@ namespace xng {
     Entity EntityScene::getEntity(const std::string &name) {
         return {getByName(name), *this};
     }
+
+    std::unique_ptr<Resource> EntityScene::clone() {
+        return std::make_unique<EntityScene>(*this);
+    }
+
+    std::type_index EntityScene::getTypeIndex() {
+        return typeid(EntityScene);
+    }
 }

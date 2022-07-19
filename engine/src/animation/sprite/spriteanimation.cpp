@@ -32,12 +32,7 @@ namespace xng {
               clampDelta(clampDelta),
               loop(loop) {
         frameTime = animationDuration / numeric_cast<float>(keyframes.size());
-        for (auto i = 0; i < keyframes.size(); i++) {
-            auto &keyframe = keyframes.at(i);
-            for (int v = 0; v < keyframe.duration; v++) {
-                frames.emplace_back(keyframes.begin() + i);
-            }
-        }
+        initFrames();
     }
 
     SpriteAnimation::SpriteAnimation(std::vector<SpriteKeyframe> inputFrames,
@@ -52,12 +47,7 @@ namespace xng {
             totalFrames += v.duration;
         animationDuration = (1.0f / numeric_cast<float>(animationFps)) * numeric_cast<float>(totalFrames);
         frameTime = animationDuration / numeric_cast<float>(keyframes.size());
-        for (auto i = 0; i < keyframes.size(); i++) {
-            auto &keyframe = keyframes.at(i);
-            for (int v = 0; v < keyframe.duration; v++) {
-                frames.emplace_back(keyframes.begin() + i);
-            }
-        }
+        initFrames();
     }
 
     const ResourceHandle<Sprite> &SpriteAnimation::getFrame(DeltaTime deltaTime) {
@@ -88,5 +78,58 @@ namespace xng {
         auto frame = numeric_cast<size_t>(time / frameTime);
         assert(frame < frames.size());
         return frames.at(frame)->sprite;
+    }
+
+    Messageable &SpriteAnimation::operator<<(const Message &message) {
+        auto vec = message.value("keyframes");
+        if (vec.getType() == Message::LIST) {
+            for (auto &kf: vec.asList()) {
+                SpriteKeyframe keyframe;
+                keyframe << kf;
+                keyframes.emplace_back(keyframe);
+            }
+        }
+        animationDuration = message.value("animationDuration", 0.0f);
+        clampDelta = message.value("clampDelta", false);
+        loop = message.value("loop", true);
+
+        initFrames();
+        frameTime = animationDuration / frames.size();
+        time = 0;
+
+        return *this;
+    }
+
+    Message &SpriteAnimation::operator>>(Message &message) const {
+        message = Message(Message::DICTIONARY);
+        auto vec = std::vector<Message>();
+        for (auto &kf: keyframes) {
+            Message msg;
+            kf >> msg;
+            vec.emplace_back(msg);
+        }
+        message["keyframes"] = vec;
+        message["animationDuration"] = animationDuration;
+        message["clampDelta"] = clampDelta;
+        message["loop"] = loop;
+        return message;
+    }
+
+    void SpriteAnimation::initFrames() {
+        frames.clear();
+        for (auto i = 0; i < keyframes.size(); i++) {
+            auto &keyframe = keyframes.at(i);
+            for (int v = 0; v < keyframe.duration; v++) {
+                frames.emplace_back(keyframes.begin() + i);
+            }
+        }
+    }
+
+    std::unique_ptr<Resource> SpriteAnimation::clone() {
+        return std::make_unique<SpriteAnimation>(*this);
+    }
+
+    std::type_index SpriteAnimation::getTypeIndex() {
+        return typeid(SpriteAnimation);
     }
 }

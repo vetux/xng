@@ -66,7 +66,7 @@ namespace xng {
     }
 
     const std::set<std::string> &StbiParser::getSupportedFormats() const {
-        static const std::set<std::string> formats = {"png", "jpeg", "gif"};
+        static const std::set<std::string> formats = {".png", ".jpeg", ".gif"};
         return formats;
     }
 }
