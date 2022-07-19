@@ -56,6 +56,10 @@ namespace xng {
         virtual void upload(CubeMapFace face, ColorFormat format, const uint8_t *buffer, size_t bufferSize) = 0;
 
         virtual Image<ColorRGBA> download(CubeMapFace face) = 0;
+
+        void upload(const Image<ColorRGBA> &image) {
+            upload(RGBA, reinterpret_cast<const uint8_t *>(image.getData()), image.getDataSize() * sizeof(ColorRGBA));
+        }
     };
 }
 

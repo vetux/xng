@@ -101,8 +101,10 @@ namespace xng {
             auto it = components.find(entity);
             if (it == components.end()) {
                 create(entity, value);
+                return true;
             } else {
-                throw std::runtime_error("No component of given type in entity " + std::to_string(entity.id));
+                it->second = value;
+                return false;
             }
         }
 

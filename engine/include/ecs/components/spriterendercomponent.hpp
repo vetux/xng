@@ -30,8 +30,10 @@ namespace xng {
      * and the transform position x and y component is used for positioning the sprite and the z component is used for layering.
      */
     struct XENGINE_EXPORT SpriteRenderComponent {
-        Recti displayRect{}; // The offset of the transform from the top left of the sprite and the display size in camera pixels
-        Sprite sprite; // The sprite to draw
+        bool enabled;
+        Rectf displayRect{}; // The offset of the transform from the top left of the sprite and the display size in pixels
+        ResourceHandle<Sprite> sprite; // The sprite to draw
+        int layer; // The drawing layer of the sprite
     };
 }
 

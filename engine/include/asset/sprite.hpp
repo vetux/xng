@@ -38,9 +38,9 @@ namespace xng {
     struct XENGINE_EXPORT Sprite : public Resource, public Messageable {
         Sprite() = default;
 
-        Sprite(ResourceHandle<Texture> texture,
+        Sprite(ResourceHandle<ImageRGBA> image,
                Recti offset)
-                : texture(std::move(texture)),
+                : image(std::move(image)),
                   offset(offset) {}
 
         ~Sprite() override = default;
@@ -55,20 +55,20 @@ namespace xng {
 
         Messageable &operator<<(const Message &message) override {
             offset << message.value("offset");
-            texture << message.value("texture");
+            image << message.value("texture");
             return *this;
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             offset >> message["offset"];
-            if (texture)
-                texture >> message["texture"];
+            if (image)
+                image >> message["texture"];
             return message;
         }
 
-        Recti offset{}; // The part of the texture which contains the sprite
-        ResourceHandle<Texture> texture{};
+        Recti offset{}; // The part of the image which contains the sprite
+        ResourceHandle<ImageRGBA> image{}; // The image which contains the sprite
     };
 }
 

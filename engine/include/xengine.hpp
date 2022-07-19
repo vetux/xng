@@ -32,7 +32,7 @@
 #include "ecs/componentpool.hpp"
 #include "ecs/entityscene.hpp"
 #include "ecs/systems/animationsystem.hpp"
-#include "ecs/systems/rendersystem.hpp"
+#include "ecs/systems/meshrendersystem.hpp"
 #include "ecs/systems/monoscriptingsystem.hpp"
 #include "ecs/systems/audiosystem.hpp"
 #include "ecs/systems/physicssystem.hpp"

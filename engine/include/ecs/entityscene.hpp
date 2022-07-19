@@ -156,6 +156,61 @@ namespace xng {
             entityNamesReverse.clear();
         }
 
+        template<typename T>
+        ComponentPool<T> &getPool() {
+            return components.getPool<T>();
+        }
+
+        template<typename T>
+        const ComponentPool<T> &getPool() const {
+            return components.getPool<T>();
+        }
+
+        template<typename T>
+        typename std::map<EntityHandle, T>::iterator begin() {
+            return components.begin<T>();
+        }
+
+        template<typename T>
+        typename std::map<EntityHandle, T>::iterator begin() const {
+            return components.begin<T>();
+        }
+
+        template<typename T>
+        typename std::map<EntityHandle, T>::iterator end() {
+            return components.end<T>();
+        }
+
+        template<typename T>
+        typename std::map<EntityHandle, T>::iterator end() const {
+            return components.end<T>();
+        }
+
+        template<typename T>
+        const T &createComponent(const EntityHandle &entity, const T &value = {}) {
+            return components.create(entity, value);
+        }
+
+        template<typename T>
+        void destroyComponent(const EntityHandle &entity) {
+            components.getPool<T>()->destroy(entity);
+        }
+
+        template<typename T>
+        const T &lookupComponent(const EntityHandle &entity) const {
+            return components.lookup<T>(entity);
+        }
+
+        template<typename T>
+        bool updateComponent(const EntityHandle &entity, const T &value) {
+            return components.update(entity, value);
+        }
+
+        template<typename T>
+        bool checkComponent(const EntityHandle &entity) const {
+            return components.check<T>(entity);
+        }
+
         Entity createEntity();
 
         Entity createEntity(const std::string &name);

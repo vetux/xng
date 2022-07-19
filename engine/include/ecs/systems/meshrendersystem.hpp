@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RENDERSYSTEM_HPP
-#define XENGINE_RENDERSYSTEM_HPP
+#ifndef XENGINE_MESHRENDERSYSTEM_HPP
+#define XENGINE_MESHRENDERSYSTEM_HPP
 
 #include <map>
 #include <string>
@@ -30,12 +30,12 @@
 #include "render/scenerenderer.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT RenderSystem : public System {
+    class XENGINE_EXPORT MeshRenderSystem : public System {
     public:
-        RenderSystem(RenderTarget &screen,
-                     SceneRenderer &pipeline);
+        MeshRenderSystem(RenderTarget &screen,
+                         SceneRenderer &pipeline);
 
-        ~RenderSystem() override;
+        ~MeshRenderSystem() override;
 
         void start(EntityScene &entityManager) override;
 
@@ -59,4 +59,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_RENDERSYSTEM_HPP
+#endif //XENGINE_MESHRENDERSYSTEM_HPP

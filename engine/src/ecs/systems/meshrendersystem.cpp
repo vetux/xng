@@ -20,23 +20,23 @@
 #include <algorithm>
 #include <filesystem>
 
-#include "ecs/systems/rendersystem.hpp"
+#include "ecs/systems/meshrendersystem.hpp"
 #include "ecs/components.hpp"
 
 namespace xng {
-    RenderSystem::RenderSystem(RenderTarget &screen,
-                               SceneRenderer &pipeline)
+    MeshRenderSystem::MeshRenderSystem(RenderTarget &screen,
+                                       SceneRenderer &pipeline)
             : screenTarget(screen),
               pipeline(pipeline) {
     }
 
-    RenderSystem::~RenderSystem() = default;
+    MeshRenderSystem::~MeshRenderSystem() = default;
 
-    void RenderSystem::start(EntityScene &entityManager) {}
+    void MeshRenderSystem::start(EntityScene &entityManager) {}
 
-    void RenderSystem::stop(EntityScene &entityManager) {}
+    void MeshRenderSystem::stop(EntityScene &entityManager) {}
 
-    void RenderSystem::update(DeltaTime deltaTime, EntityScene &entityManager) {
+    void MeshRenderSystem::update(DeltaTime deltaTime, EntityScene &entityManager) {
         auto &componentManager = entityManager.getComponentContainer();
 
         scene = {};
@@ -108,11 +108,11 @@ namespace xng {
         pipeline.render(screenTarget, scene);
     }
 
-    SceneRenderer &RenderSystem::getPipeline() {
+    SceneRenderer &MeshRenderSystem::getPipeline() {
         return pipeline;
     }
 
-    Scene &RenderSystem::getScene() {
+    Scene &MeshRenderSystem::getScene() {
         return scene;
     }
 }

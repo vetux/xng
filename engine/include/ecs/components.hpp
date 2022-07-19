@@ -24,8 +24,6 @@
 #include "ecs/components/transformcomponent.hpp"
 #include "ecs/components/lightcomponent.hpp"
 #include "ecs/components/particlecomponent.hpp"
-#include "ecs/components/monoscriptcomponent.hpp"
-#include "ecs/components/monosynccomponent.hpp"
 #include "ecs/components/skyboxcomponent.hpp"
 #include "ecs/components/meshrendercomponent.hpp"
 #include "ecs/components/gui/textcomponent.hpp"

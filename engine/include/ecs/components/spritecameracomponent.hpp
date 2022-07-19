@@ -27,6 +27,7 @@ namespace xng {
      * It can be offset in the x and y and rotated in the z using the transform component values.
      */
     struct SpriteCameraComponent {
+        bool enabled;
         float nearClip = 0.1f;
         float farClip = 1000.0f;
     };

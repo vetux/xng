@@ -29,7 +29,7 @@ namespace xng {
      */
     struct XENGINE_EXPORT SpriteAnimationComponent {
         bool enabled = true;
-        SpriteAnimation animation{};
+        ResourceHandle<SpriteAnimation> animation{};
     };
 }
 #endif //XENGINE_SPRITEANIMATIONCOMPONENT_HPP
