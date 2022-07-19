@@ -30,7 +30,7 @@ namespace xng {
         int lineSpacing;
         std::string fontPath;
         std::string text;
-        Vec4f textColor;
+        ColorRGBA textColor;
         int layer; // The render layer of the text
 
         Messageable &operator<<(const Message &message) override {
@@ -47,6 +47,14 @@ namespace xng {
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
+            pixelSize >> message["pixelSize"];
+            message["lineHeight"] = lineHeight;
+            message["lineWidth"] = lineWidth;
+            message["lineSpacing"] = lineSpacing;
+            message["fontPath"] = fontPath;
+            message["text"] = text;
+            textColor >> message["textColor"];
+            message["layer"] = layer;
             return message;
         }
     };
