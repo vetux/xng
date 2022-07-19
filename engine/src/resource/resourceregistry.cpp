@@ -138,7 +138,9 @@ namespace xng {
             std::rethrow_exception(ex);
         }
         mutex.lock();
-        return bundles[uri.getFile()].get(uri.getAsset());
+        auto &ret = bundles[uri.getFile()].get(uri.getAsset());
+        mutex.unlock();
+        return ret;
     }
 
     Archive &ResourceRegistry::resolveUri(const Uri &uri) {

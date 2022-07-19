@@ -30,16 +30,16 @@ void SpriteAnimationSystem::stop(EntityScene &scene) {
 }
 
 void SpriteAnimationSystem::update(DeltaTime deltaTime, EntityScene &scene) {
-    for (auto &c: scene.getComponentContainer().getPool<SpriteAnimationComponent>()) {
+    for (const auto &c: scene.getPool<SpriteAnimationComponent>()) {
         if (!c.second.enabled)
             continue;
         // Advance animation
         auto &f = animations.at(c.first).getFrame(deltaTime);
         // Update sprite
-        if (scene.getComponentContainer().check<SpriteComponent>(c.first)) {
-            auto ren = scene.getComponentContainer().lookup<SpriteComponent>(c.first);
+        if (scene.check<SpriteComponent>(c.first)) {
+            auto ren = scene.lookup<SpriteComponent>(c.first);
             ren.sprite = f;
-            scene.getComponentContainer().update(c.first, ren);
+            scene.updateComponent(c.first, ren);
         }
     }
 }

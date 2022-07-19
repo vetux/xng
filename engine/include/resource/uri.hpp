@@ -58,7 +58,7 @@ namespace xng {
 
             if (assetIndex != std::string::npos) {
                 if (schemeIndex != std::string::npos) {
-                    file = value.substr(schemeIndex + 1, assetIndex - (schemeIndex + 1));
+                    file = value.substr(schemeIndex + 3, assetIndex - (schemeIndex + 3));
                 } else {
                     file = value.substr(0, assetIndex);
                 }
@@ -67,7 +67,7 @@ namespace xng {
                 }
             } else {
                 if (schemeIndex != std::string::npos) {
-                    file = value.substr(schemeIndex + 1);
+                    file = value.substr(schemeIndex + 3);
                 } else {
                     file = value;
                 }
@@ -117,7 +117,9 @@ namespace xng {
         }
 
         bool operator==(const Uri &other) const {
-            return std::tie(file, asset, scheme) < std::tie(other.file, other.asset, other.scheme);
+            return file == other.file
+                   && asset == other.asset
+                   && scheme == other.scheme;
         }
 
         bool operator<(const Uri &other) const {

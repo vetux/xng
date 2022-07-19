@@ -64,11 +64,11 @@ namespace xng {
             return ret;
         }
 
-        typename std::map<EntityHandle, T>::iterator begin() {
+        typename std::map<EntityHandle, T>::const_iterator begin() const {
             return components.begin();
         }
 
-        typename std::map<EntityHandle, T>::iterator end() {
+        typename std::map<EntityHandle, T>::const_iterator end() const {
             return components.end();
         }
 

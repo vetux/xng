@@ -422,7 +422,7 @@ namespace xng {
     }
 
     void Renderer2D::draw(Rectf dstRect, TextureBuffer &texture, Vec2f center, float rotation) {
-        draw(Rectf({}, dstRect.dimensions), dstRect, texture, center, rotation);
+        draw(Rectf({}, dstRect.dimensions), dstRect, texture, std::move(center), rotation);
     }
 
     void Renderer2D::draw(Rectf rectangle, ColorRGBA color, bool fill, Vec2f center, float rotation) {

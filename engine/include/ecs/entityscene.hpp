@@ -162,12 +162,17 @@ namespace xng {
         }
 
         template<typename T>
+        const ComponentPool<T> &getPool() const {
+            return components.getPool<T>();
+        }
+
+        template<typename T>
         typename std::map<EntityHandle, T>::iterator begin() {
             return components.begin<T>();
         }
 
         template<typename T>
-        typename std::map<EntityHandle, T>::iterator begin() const {
+        typename std::map<EntityHandle, T>::const_iterator begin() const {
             return components.begin<T>();
         }
 
@@ -177,7 +182,7 @@ namespace xng {
         }
 
         template<typename T>
-        typename std::map<EntityHandle, T>::iterator end() const {
+        typename std::map<EntityHandle, T>::const_iterator end() const {
             return components.end<T>();
         }
 
@@ -192,26 +197,26 @@ namespace xng {
         template<typename T>
         void destroyComponent(const EntityHandle &entity) {
             for (auto &listener: listeners) {
-                listener->onComponentDestroy(entity, lookupComponent<T>(entity), typeid(T));
+                listener->onComponentDestroy(entity, lookup<T>(entity), typeid(T));
             }
             components.getPool<T>()->destroy(entity);
         }
 
         template<typename T>
-        const T &lookupComponent(const EntityHandle &entity) const {
+        const T &lookup(const EntityHandle &entity) const {
             return components.lookup<T>(entity);
         }
 
         template<typename T>
         bool updateComponent(const EntityHandle &entity, const T &value) {
             for (auto &listener: listeners) {
-                listener->onComponentUpdate(entity, lookupComponent<T>(entity), value, typeid(T));
+                listener->onComponentUpdate(entity, lookup<T>(entity), value, typeid(T));
             }
             return components.update(entity, value);
         }
 
         template<typename T>
-        bool checkComponent(const EntityHandle &entity) const {
+        bool check(const EntityHandle &entity) const {
             return components.check<T>(entity);
         }
 
@@ -225,14 +230,6 @@ namespace xng {
 
         const std::set<EntityHandle> &getEntities() const {
             return entities;
-        }
-
-        ComponentContainer &getComponentContainer() {
-            return components;
-        }
-
-        const ComponentContainer &getComponentContainer() const {
-            return components;
         }
 
         Messageable &operator<<(const Message &message) override {

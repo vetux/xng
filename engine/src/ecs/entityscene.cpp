@@ -80,7 +80,7 @@ namespace xng {
     } else if (type == (NAME)) { \
         TYPE component;  \
         component << message; \
-        components.create(entity, component); \
+        createComponent(entity, component); \
 
 
     void EntityScene::deserializeComponent(const EntityHandle &entity, const std::string &type, const Message &message) {

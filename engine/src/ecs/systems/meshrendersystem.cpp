@@ -36,9 +36,7 @@ namespace xng {
 
     void MeshRenderSystem::stop(EntityScene &entityManager) {}
 
-    void MeshRenderSystem::update(DeltaTime deltaTime, EntityScene &entityManager) {
-        auto &componentManager = entityManager.getComponentContainer();
-
+    void MeshRenderSystem::update(DeltaTime deltaTime, EntityScene &entScene) {
         scene = {};
 
         polyCount = 0;
@@ -46,8 +44,8 @@ namespace xng {
         // TODO: Culling
 
         // Create draw nodes
-        for (auto &pair: componentManager.getPool<MeshRenderComponent>()) {
-            auto &transform = componentManager.lookup<TransformComponent>(pair.first);
+        for (auto &pair: entScene.getPool<MeshRenderComponent>()) {
+            auto &transform = entScene.lookup<TransformComponent>(pair.first);
             if (!transform.enabled)
                 continue;
 
@@ -58,40 +56,42 @@ namespace xng {
             polyCount += render.mesh.get().polyCount();
 
             Scene::Object node(render.mesh, render.material);
-            node.transform = TransformComponent::walkHierarchy(transform, entityManager);
+            node.transform = TransformComponent::walkHierarchy(transform, entScene);
 
             //TODO: Change transform walking / scene creation to allow model matrix caching
             scene.objects.emplace_back(node);
         }
 
         // Update skybox texture
-        for (auto &pair: componentManager.getPool<SkyboxComponent>()) {
+        for (auto &pair: entScene.getPool<SkyboxComponent>()) {
             auto &comp = pair.second;
             scene.skybox.texture = comp.skybox.texture;
         }
 
         // Update Camera
-        for (auto &pair: componentManager.getPool<CameraComponent>()) {
-            auto &tcomp = componentManager.lookup<TransformComponent>(pair.first);
+        for (auto &pair: entScene.getPool<CameraComponent>()) {
+            auto &tcomp = entScene.lookup<TransformComponent>(pair.first);
 
             if (!tcomp.enabled)
                 continue;
 
-            auto &comp = pair.second;
+            auto comp = pair.second;
 
-            comp.camera.aspectRatio =
-                    (float) screenTarget.getDescription().size.x / (float) screenTarget.getDescription().size.y;
+            comp.camera.aspectRatio = (float) screenTarget.getDescription().size.x
+                                      / (float) screenTarget.getDescription().size.y;
+
+            entScene.updateComponent(pair.first, comp);
 
             scene.camera = comp.camera;
-            scene.cameraTransform = TransformComponent::walkHierarchy(tcomp, entityManager);
+            scene.cameraTransform = TransformComponent::walkHierarchy(tcomp, entScene);
 
             break;
         }
 
         // Update lights
-        for (auto &pair: componentManager.getPool<LightComponent>()) {
-            auto &lightComponent = pair.second;
-            auto &tcomp = componentManager.getPool<TransformComponent>().lookup(pair.first);
+        for (auto &pair: entScene.getPool<LightComponent>()) {
+            auto lightComponent = pair.second;
+            auto &tcomp = entScene.getPool<TransformComponent>().lookup(pair.first);
 
             if (!lightComponent.enabled)
                 continue;
@@ -100,6 +100,8 @@ namespace xng {
                 continue;
 
             lightComponent.light.transform = tcomp.transform;
+
+            entScene.updateComponent(pair.first, lightComponent);
 
             scene.lights.emplace_back(lightComponent.light);
         }

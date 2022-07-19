@@ -41,11 +41,9 @@ namespace xng {
         scene.removeListener(*this);
     }
 
-    void AudioSystem::update(DeltaTime deltaTime, EntityScene &entityManager) {
-        auto &componentManager = entityManager.getComponentContainer();
-
-        for (auto &pair: componentManager.getPool<AudioListenerComponent>()) {
-            auto &transform = componentManager.lookup<TransformComponent>(pair.first);
+    void AudioSystem::update(DeltaTime deltaTime, EntityScene &scene) {
+        for (const auto &pair: scene.getPool<AudioListenerComponent>()) {
+            auto &transform = scene.lookup<TransformComponent>(pair.first);
             auto &listener = context->getListener();
             listener.setPosition(transform.transform.getPosition() * AUDIO_POS_SCALE);
             listener.setOrientation({transform.transform.getPosition()},
@@ -53,9 +51,9 @@ namespace xng {
             listener.setVelocity(pair.second.velocity);
         }
 
-        for (auto &pair: componentManager.getPool<AudioSourceComponent>()) {
-            auto &comp = pair.second;
-            auto &transform = componentManager.lookup<TransformComponent>(pair.first);
+        for (auto &pair: scene.getPool<AudioSourceComponent>()) {
+            auto comp = pair.second;
+            auto &transform = scene.lookup<TransformComponent>(pair.first);
             auto &source = sources.at(pair.first);
 
             source->setPosition(transform.transform.getPosition() * AUDIO_POS_SCALE);
@@ -71,6 +69,8 @@ namespace xng {
                 source->pause();
                 comp.playing = false;
             }
+
+            scene.updateComponent(pair.first, comp);
         }
     }
 

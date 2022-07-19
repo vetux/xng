@@ -55,31 +55,31 @@ namespace xng {
         template<typename T>
         const T &createComponent(const T &value = {}) {
             checkPointer();
-            return scene->getComponentContainer().create<T>(handle, value);
+            return scene->createComponent<T>(handle, value);
         }
 
         template<typename T>
         void destroyComponent() {
             checkPointer();
-            return scene->getComponentContainer().destroy(handle);
+            return scene->destroyComponent<T>(handle);
         }
 
         template<typename T>
         const T &getComponent() {
             checkPointer();
-            return scene->getComponentContainer().lookup<T>(handle);
+            return scene->lookup<T>(handle);
         }
 
         template<typename T>
         bool updateComponent(const T &value = {}) {
             checkPointer();
-            return scene->getComponentContainer().update<T>(handle, value);
+            return scene->updateComponent<T>(handle, value);
         }
 
         template<typename T>
         bool checkComponent(const T &value = {}) {
             checkPointer();
-            return scene->getComponentContainer().check<T>(value);
+            return scene->check<T>(value);
         }
 
         const EntityHandle &getHandle() const {

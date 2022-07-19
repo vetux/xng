@@ -43,22 +43,22 @@ namespace xng {
         //TODO: Implement rect transform nesting support.
 
         std::map<int, std::vector<EntityHandle>> drawCalls;
-        for (auto &p: scene.getComponentContainer().getPool<RectTransform>()) {
+        for (auto &p: scene.getPool<RectTransform>()) {
             if (!p.second.enabled)
                 continue;
-            auto &c = scene.lookupComponent<CanvasComponent>(scene.getByName(p.second.parent));
+            auto &c = scene.lookup<CanvasComponent>(scene.getByName(p.second.parent));
             drawCalls[c.layer].emplace_back(p.first);
         }
 
         for (auto &pair: drawCalls) {
             ren2d.renderBegin(target, false);
             for (auto &ent: pair.second) {
-                auto &rt = scene.lookupComponent<RectTransform>(ent);
-                auto &t = scene.lookupComponent<CanvasComponent>(scene.getByName(rt.parent));
+                auto &rt = scene.lookup<RectTransform>(ent);
+                auto &t = scene.lookup<CanvasComponent>(scene.getByName(rt.parent));
                 ren2d.setCameraPosition(t.cameraPosition);
 
-                if (scene.checkComponent<SpriteComponent>(ent)) {
-                    auto &comp = scene.lookupComponent<SpriteComponent>(ent);
+                if (scene.check<SpriteComponent>(ent)) {
+                    auto &comp = scene.lookup<SpriteComponent>(ent);
                     if (comp.sprite) {
                         auto dstRect = Rectf(rt.rect.position +
                                              RectTransform::getOffset(rt.anchor,
@@ -69,8 +69,8 @@ namespace xng {
                                    comp.offset,
                                    rt.rotation);
                     }
-                } else if (scene.checkComponent<TextComponent>(ent)) {
-                    auto &comp = scene.lookupComponent<TextComponent>(ent);
+                } else if (scene.check<TextComponent>(ent)) {
+                    auto &comp = scene.lookup<TextComponent>(ent);
                     if (!comp.text.empty()) {
                         auto texSize = renderedTexts.at(ent).getTexture().getDescription().size.convert<float>();
                         Vec2f displaySize(0);
@@ -140,9 +140,13 @@ namespace xng {
 
     void CanvasRenderSystem::createTexture(const EntityHandle &ent, const SpriteComponent &t) {
         if (t.sprite) {
-            spriteTextures[ent] = ren2d.getDevice().createTextureBuffer({t.sprite.get().offset.dimensions});
+            Vec2i dimensions = t.sprite.get().offset.dimensions;
+            if (dimensions.x * dimensions.y == 0) {
+                dimensions = t.sprite.get().image.get().getSize();
+            }
+            spriteTextures[ent] = ren2d.getDevice().createTextureBuffer({dimensions});
             auto &img = t.sprite.get().image.get();
-            if (img.getSize() != t.sprite.get().offset.dimensions) {
+            if (img.getSize() != dimensions) {
                 // Upload a slice of an image
                 auto slice = img.slice(t.sprite.get().offset);
                 spriteTextures[ent]->upload(slice);

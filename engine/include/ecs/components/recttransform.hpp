@@ -43,6 +43,7 @@ namespace xng {
 
         Messageable &operator<<(const Message &message) override {
             enabled = message.value("enabled", true);
+            anchor = convertAnchor(message.value("anchor", std::string("top_left")));
             rect << message.value("rect");
             rotation = message.value("rotation", 0.0f);
             parent = message.value("parent", std::string());
@@ -52,10 +53,60 @@ namespace xng {
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             message["enabled"] = enabled;
+            message["anchor"] = convertAnchor(anchor);
             rect >> message["rect"];
             message["rotation"] = rotation;
             message["parent"] = parent;
             return message;
+        }
+
+        static Anchor convertAnchor(const std::string &str) {
+            if (str == "top_left") {
+                return TOP_LEFT;
+            } else if (str == "top_center") {
+                return TOP_CENTER;
+            } else if (str == "top_right") {
+                return TOP_RIGHT;
+            } else if (str == "left") {
+                return LEFT;
+            } else if (str == "center") {
+                return CENTER;
+            } else if (str == "right") {
+                return RIGHT;
+            } else if (str == "bottom_left") {
+                return BOTTOM_LEFT;
+            } else if (str == "bottom_center") {
+                return BOTTOM_CENTER;
+            } else if (str == "bottom_right") {
+                return BOTTOM_RIGHT;
+            } else {
+                throw std::runtime_error("Invalid anchor value");
+            }
+        }
+
+        static std::string convertAnchor(Anchor anchor) {
+            switch (anchor) {
+                case TOP_LEFT:
+                    return "top_left";
+                case TOP_CENTER:
+                    return "top_center";
+                case TOP_RIGHT:
+                    return "top_right";
+                case LEFT:
+                    return "left";
+                case CENTER:
+                    return "center";
+                case RIGHT:
+                    return "right";
+                case BOTTOM_LEFT:
+                    return "bottom_left";
+                case BOTTOM_CENTER:
+                    return "bottom_center";
+                case BOTTOM_RIGHT:
+                    return "bottom_right";
+                default:
+                    throw std::runtime_error("Invalid anchor");
+            }
         }
 
         static Vec2f getOffset(Anchor anchor, Vec2f canvasSize) {

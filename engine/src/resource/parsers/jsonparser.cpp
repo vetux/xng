@@ -61,10 +61,7 @@ namespace xng {
         bundleMutex.unlock();
     }
 
-    static ResourceBundle readJsonBundle(const std::string &buffer,
-                                         const ResourceImporter &importer,
-                                         Archive &archive,
-                                         ThreadPool &pool) {
+    static ResourceBundle readJsonBundle(const std::string &buffer, const ResourceImporter &importer) {
         auto stream = std::stringstream(buffer);
         const Message m = JsonProtocol().deserialize(stream);
 
@@ -122,9 +119,7 @@ namespace xng {
                                     const std::string &hint,
                                     const ResourceImporter &importer,
                                     Archive *archive) const {
-        if (archive == nullptr)
-            throw std::runtime_error("Json parser invoked with nullptr archive");
-        return readJsonBundle(buffer, importer, *archive, ThreadPool::getPool());
+        return readJsonBundle(buffer, importer);
     }
 
     const std::set<std::string> &JsonParser::getSupportedFormats() const {

@@ -55,7 +55,7 @@ namespace xng {
 
         Messageable &operator<<(const Message &message) override {
             offset << message.value("offset");
-            image << message.value("texture");
+            image << message.value("image");
             return *this;
         }
 
@@ -63,7 +63,7 @@ namespace xng {
             message = Message(Message::DICTIONARY);
             offset >> message["offset"];
             if (image)
-                image >> message["texture"];
+                image >> message["image"];
             return message;
         }
 
