@@ -129,9 +129,7 @@ namespace xng {
         mutex.lock();
         auto it = loadTasks.find(uri);
         if (it == loadTasks.end()) {
-            mutex.unlock();
-            load(uri);
-            mutex.lock();
+            throw std::runtime_error("IncRef not called for uri " + uri.toString());
         }
         auto task = loadTasks.at(uri);
         mutex.unlock();
