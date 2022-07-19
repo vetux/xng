@@ -40,6 +40,7 @@ namespace xng {
         for (auto &system: systems) {
             system.get().start(*scene);
         }
+        started = true;
     }
 
     void ECS::update(DeltaTime deltaTime) {
@@ -52,6 +53,7 @@ namespace xng {
         for (auto &system: systems) {
             system.get().stop(*scene);
         }
+        started = false;
     }
 
     const std::shared_ptr<EntityScene> &ECS::getScene() const {
@@ -59,7 +61,8 @@ namespace xng {
     }
 
     void ECS::setScene(const std::shared_ptr<EntityScene> &v) {
-        stop();
+        if (started)
+            stop();
         scene = v;
     }
 

@@ -56,6 +56,7 @@ namespace xng {
         void setSystems(const std::vector<std::reference_wrapper<System>> &systems);
 
     private:
+        bool started = false;
         std::shared_ptr<EntityScene> scene;
         std::vector<std::reference_wrapper<System>> systems;
     };
