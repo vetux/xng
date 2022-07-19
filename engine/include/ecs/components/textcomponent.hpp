@@ -22,6 +22,14 @@
 
 namespace xng {
     struct XENGINE_EXPORT TextComponent {
+        Vec2i pixelSize;
+        int lineHeight;
+        int lineWidth;
+        int lineSpacing;
+        std::string fontPath;
+        std::string text;
+        ColorRGBA textColor;
+        int layer; // The render layer of the text
     };
 }
 

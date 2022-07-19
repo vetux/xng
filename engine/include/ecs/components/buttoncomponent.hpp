@@ -17,20 +17,16 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SPRITECAMERACOMPONENT_HPP
-#define XENGINE_SPRITECAMERACOMPONENT_HPP
+#ifndef XENGINE_BUTTONCOMPONENT_HPP
+#define XENGINE_BUTTONCOMPONENT_HPP
+
+#include "asset/sprite.hpp"
 
 namespace xng {
-    /**
-     * A sprite camera is a orthographic camera with the bounds set to the screen dimensions and 0,0 at the top left of the screen
-     * It is used by the sprite render system when rendering sprites.
-     * It can be offset in the x and y and rotated in the z using the transform component values.
-     */
-    struct SpriteCameraComponent {
-        bool enabled;
-        float nearClip = 0.1f;
-        float farClip = 1000.0f;
+    struct XENGINE_EXPORT ButtonComponent {
+        std::string id;
+        int layer; // The layer of this button used for resolving inputs on overlapping buttons
     };
 }
 
-#endif //XENGINE_SPRITECAMERACOMPONENT_HPP
+#endif //XENGINE_BUTTONCOMPONENT_HPP

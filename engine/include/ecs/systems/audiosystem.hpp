@@ -24,7 +24,7 @@
 #include "ecs/system.hpp"
 
 
-#include "ecs/components/audio/audiosourcecomponent.hpp"
+#include "ecs/components/audiosourcecomponent.hpp"
 #include "ecs/components/transformcomponent.hpp"
 
 #include "audio/audiodevice.hpp"

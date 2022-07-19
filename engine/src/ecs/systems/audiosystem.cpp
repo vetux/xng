@@ -19,8 +19,8 @@
 
 #include "ecs/systems/audiosystem.hpp"
 
-#include "ecs/components/audio/audiolistenercomponent.hpp"
-#include "ecs/components/audio/audiosourcecomponent.hpp"
+#include "ecs/components/audiolistenercomponent.hpp"
+#include "ecs/components/audiosourcecomponent.hpp"
 
 #include "resource/resourcehandle.hpp"
 

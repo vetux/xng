@@ -19,7 +19,7 @@
 
 #include "ecs/systems/spriteanimationsystem.hpp"
 
-#include "ecs/components/spriterendercomponent.hpp"
+#include "ecs/components/spritecomponent.hpp"
 
 void SpriteAnimationSystem::start(EntityScene &scene) {
     scene.addListener(*this);
@@ -36,8 +36,8 @@ void SpriteAnimationSystem::update(DeltaTime deltaTime, EntityScene &scene) {
         // Advance animation
         auto &f = animations.at(c.first).getFrame(deltaTime);
         // Update sprite
-        if (scene.getComponentContainer().check<SpriteRenderComponent>(c.first)) {
-            auto ren = scene.getComponentContainer().lookup<SpriteRenderComponent>(c.first);
+        if (scene.getComponentContainer().check<SpriteComponent>(c.first)) {
+            auto ren = scene.getComponentContainer().lookup<SpriteComponent>(c.first);
             ren.sprite = f;
             scene.getComponentContainer().update(c.first, ren);
         }

@@ -17,12 +17,14 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_BUTTONCOMPONENT_HPP
-#define XENGINE_BUTTONCOMPONENT_HPP
+#ifndef XENGINE_CANVASCOMPONENT_HPP
+#define XENGINE_CANVASCOMPONENT_HPP
 
 namespace xng {
-    struct XENGINE_EXPORT ButtonComponent {
+    struct XENGINE_EXPORT CanvasComponent {
+        Vec2f cameraPosition;
+        int layer; // The sorting layer of this canvas
     };
 }
 
-#endif //XENGINE_BUTTONCOMPONENT_HPP
+#endif //XENGINE_CANVASCOMPONENT_HPP

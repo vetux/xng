@@ -17,23 +17,30 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SPRITERENDERSYSTEM_HPP
-#define XENGINE_SPRITERENDERSYSTEM_HPP
-
-#include <map>
-#include <string>
+#ifndef XENGINE_CANVASRENDERSYSTEM_HPP
+#define XENGINE_CANVASRENDERSYSTEM_HPP
 
 #include "ecs/system.hpp"
-#include "ecs/components/spriterendercomponent.hpp"
+#include "ecs/components/spritecomponent.hpp"
+#include "ecs/components/textcomponent.hpp"
+
+#include "text/fontdriver.hpp"
+#include "text/textrenderer.hpp"
 
 #include "render/2d/renderer2d.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT SpriteRenderSystem : public System, public EntityScene::Listener {
+    /**
+     * The canvas render system handles drawing of 2d elements
+     */
+    class CanvasRenderSystem : public System, public EntityScene::Listener {
     public:
-        explicit SpriteRenderSystem(Renderer2D &renderer2D, RenderTarget &target);
+        CanvasRenderSystem(Renderer2D &renderer2D,
+                           RenderTarget &target,
+                           FontDriver &fontDriver,
+                           Archive &archive);
 
-        ~SpriteRenderSystem() override = default;
+        ~CanvasRenderSystem() override = default;
 
         void start(EntityScene &scene) override;
 
@@ -55,15 +62,19 @@ namespace xng {
                                std::type_index componentType) override;
 
     private:
-        void createTexture(const EntityHandle &ent, const SpriteRenderComponent &comp);
+        void createTexture(const EntityHandle &ent, const SpriteComponent &comp);
 
-        Mesh getPlane(const Rectf &displayRect);
+        void createText(const EntityHandle &ent, const TextComponent &comp);
 
         Renderer2D &ren2d;
         RenderTarget &target;
+        FontDriver &fontDriver;
+        Archive &archive;
 
-        std::map<EntityHandle, std::unique_ptr<TextureBuffer>> textures;
+        std::map<std::string, std::unique_ptr<Font>> fonts;
+        std::map<std::string, TextRenderer> textRenderers;
+        std::map<EntityHandle, std::unique_ptr<TextureBuffer>> spriteTextures;
+        std::map<EntityHandle, Text> renderedTexts;
     };
 }
-
-#endif //XENGINE_SPRITERENDERSYSTEM_HPP
+#endif //XENGINE_CANVASRENDERSYSTEM_HPP

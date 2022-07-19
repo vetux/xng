@@ -23,17 +23,10 @@
 #include "asset/sprite.hpp"
 
 namespace xng {
-    /**
-     * Sprite components are rendered by a sprite render system independently of the mesh render system.
-     *
-     * The transform component euler rotation z component is used for rotating the sprites around the transform center,
-     * and the transform position x and y component is used for positioning the sprite and the z component is used for layering.
-     */
-    struct XENGINE_EXPORT SpriteRenderComponent {
-        bool enabled;
-        Rectf displayRect{}; // The offset of the transform from the top left of the sprite and the display size in pixels
+    struct SpriteComponent {
+        Vec2f offset; // The offset of the sprite to the rect transform
         ResourceHandle<Sprite> sprite; // The sprite to draw
-        int layer; // The drawing layer of the sprite
+        int layer; // The render layer of the sprite on this canvas
     };
 }
 

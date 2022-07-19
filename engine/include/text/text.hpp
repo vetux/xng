@@ -37,6 +37,8 @@ namespace xng {
 
         ~Text() = default;
 
+        Text(Text &&other) = default;
+
         /**
          * @return
          */
