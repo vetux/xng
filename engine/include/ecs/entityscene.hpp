@@ -162,16 +162,6 @@ namespace xng {
         }
 
         template<typename T>
-        ComponentPool<T> &getPool() {
-            return components.getPool<T>();
-        }
-
-        template<typename T>
-        const ComponentPool<T> &getPool() const {
-            return components.getPool<T>();
-        }
-
-        template<typename T>
         typename std::map<EntityHandle, T>::iterator begin() {
             return components.begin<T>();
         }
@@ -193,11 +183,17 @@ namespace xng {
 
         template<typename T>
         const T &createComponent(const EntityHandle &entity, const T &value = {}) {
+            for (auto &listener: listeners) {
+                listener->onComponentCreate(entity, value, typeid(T));
+            }
             return components.create(entity, value);
         }
 
         template<typename T>
         void destroyComponent(const EntityHandle &entity) {
+            for (auto &listener: listeners) {
+                listener->onComponentDestroy(entity, lookupComponent<T>(entity), typeid(T));
+            }
             components.getPool<T>()->destroy(entity);
         }
 
@@ -208,6 +204,9 @@ namespace xng {
 
         template<typename T>
         bool updateComponent(const EntityHandle &entity, const T &value) {
+            for (auto &listener: listeners) {
+                listener->onComponentUpdate(entity, lookupComponent<T>(entity), value, typeid(T));
+            }
             return components.update(entity, value);
         }
 
