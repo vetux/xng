@@ -114,6 +114,9 @@ namespace xng {
 
         Messageable &operator<<(const Message &message) override {
             uri << message.value("uri");
+            if (!uri.empty()) {
+                getRegistry().incRef(uri);
+            }
             return *this;
         }
 
