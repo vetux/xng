@@ -537,6 +537,7 @@ namespace xng {
 
         ShaderUniformBuffer shaderBufferUniform;
         shaderBufferUniform.mvp = mvp;
+        shaderBufferUniform.color = color.divide().getMemory();
 
         auto &shaderBuffer = getShaderBuffer();
         shaderBuffer.upload(shaderBufferUniform);
