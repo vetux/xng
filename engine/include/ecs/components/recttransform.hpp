@@ -42,6 +42,7 @@ namespace xng {
         std::string parent;
 
         Messageable &operator<<(const Message &message) override {
+            enabled = message.value("enabled", true);
             rect << message.value("rect");
             rotation = message.value("rotation", 0.0f);
             parent = message.value("parent", std::string());
@@ -50,6 +51,7 @@ namespace xng {
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
+            message["enabled"] = enabled;
             rect >> message["rect"];
             message["rotation"] = rotation;
             message["parent"] = parent;
