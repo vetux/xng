@@ -22,7 +22,6 @@
 #include "async/threadpool.hpp"
 
 #include "asset/texture.hpp"
-#include "asset/mesh.hpp"
 #include "asset/material.hpp"
 #include "animation/sprite/spriteanimation.hpp"
 #include "ecs/entityscene.hpp"
