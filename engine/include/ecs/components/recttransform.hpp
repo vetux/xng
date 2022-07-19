@@ -20,8 +20,10 @@
 #ifndef XENGINE_RECTTRANSFORM_HPP
 #define XENGINE_RECTTRANSFORM_HPP
 
+#include "io/messageable.hpp"
+
 namespace xng {
-    struct XENGINE_EXPORT RectTransform {
+    struct XENGINE_EXPORT RectTransform : public Messageable {
         bool enabled;
         enum Anchor {
             TOP_LEFT,
@@ -39,9 +41,23 @@ namespace xng {
         float rotation;
         std::string parent;
 
+        Messageable &operator<<(const Message &message) override {
+            rect << message.value("rect");
+            rotation = message.value("rotation", 0.0f);
+            parent = message.value("parent", std::string());
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            rect >> message["rect"];
+            message["rotation"] = rotation;
+            message["parent"] = parent;
+            return message;
+        }
+
         static Vec2f getOffset(Anchor anchor, Vec2f canvasSize) {
-            switch(anchor)
-            {
+            switch (anchor) {
                 default:
                 case TOP_LEFT:
                     return {};

@@ -63,12 +63,6 @@ namespace xng {
             return mval[name];
         }
 
-        const Message &operator[](const char *name) const {
-            if (type != DICTIONARY)
-                throw std::runtime_error("Type error");
-            return mval.at(name);
-        }
-
         Message &operator[](int index) {
             if (type != LIST)
                 throw std::runtime_error("Type error");

@@ -20,8 +20,18 @@
 #ifndef XENGINE_PARTICLECOMPONENT_HPP
 #define XENGINE_PARTICLECOMPONENT_HPP
 
+#include "io/messageable.hpp"
+
 namespace xng {
-    struct XENGINE_EXPORT ParticleComponent {
+    struct XENGINE_EXPORT ParticleComponent : public Messageable {
+        Messageable &operator<<(const Message &message) override {
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            return message;
+        }
     };
 }
 

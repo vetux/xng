@@ -21,10 +21,18 @@
 #define XENGINE_RIGIDBODYCOMPONENT_HPP
 
 #include "physics/rigidbody.hpp"
+#include "io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT RigidBodyComponent3D {
-        RigidBody::RigidBodyType type;
+    struct XENGINE_EXPORT RigidBodyComponent : public Messageable {
+        Messageable &operator<<(const Message &message) override {
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            return message;
+        }
     };
 }
 

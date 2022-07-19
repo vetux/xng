@@ -22,14 +22,29 @@
 
 #include "animation/sprite/spriteanimation.hpp"
 
+#include "io/messageable.hpp"
+
 namespace xng {
     /**
      * A sprite animation system updates the sprite animations each update
      * and sets the sprite instance on the sprite render component of the entity if it exists.
      */
-    struct XENGINE_EXPORT SpriteAnimationComponent {
+    struct XENGINE_EXPORT SpriteAnimationComponent : public Messageable {
         bool enabled = true;
         ResourceHandle<SpriteAnimation> animation{};
+
+        Messageable &operator<<(const Message &message) override {
+            enabled = message.value("enabled", true);
+            animation << message.value("animation");
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            message["enabled"] = enabled;
+            animation >> message["animation"];
+            return message;
+        }
     };
 }
 #endif //XENGINE_SPRITEANIMATIONCOMPONENT_HPP

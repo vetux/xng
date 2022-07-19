@@ -22,6 +22,16 @@
 #include "ecs/entity.hpp"
 
 namespace xng {
+
+#define SERIALIZE_COMPONENT(NAME, TYPE) \
+    if (components.check<TYPE>(entity)) { \
+        Message component; \
+        components.lookup<TYPE>(entity) >> component; \
+        component["type"] = NAME; \
+        clist.emplace_back(component);      \
+    }                                   \
+
+
     void EntityScene::serializeEntity(const EntityHandle &entity, Message &message) const {
         message = Message(Message::DICTIONARY);
         auto it = entityNamesReverse.find(entity);
@@ -29,12 +39,24 @@ namespace xng {
             message["name"] = it->second;
         }
         auto clist = std::vector<Message>();
-        if (components.check<TransformComponent>(entity)) {
-            Message component;
-            components.lookup<TransformComponent>(entity) >> component;
-            component["type"] = "transform";
-            clist.emplace_back(component);
-        }
+
+        SERIALIZE_COMPONENT("audio_listener", AudioListenerComponent)
+        SERIALIZE_COMPONENT("audio_source", AudioSourceComponent)
+        SERIALIZE_COMPONENT("button", ButtonComponent)
+        SERIALIZE_COMPONENT("camera", CameraComponent)
+        SERIALIZE_COMPONENT("canvas", CanvasComponent)
+        SERIALIZE_COMPONENT("collider", ColliderComponent)
+        SERIALIZE_COMPONENT("light", LightComponent)
+        SERIALIZE_COMPONENT("render", MeshRenderComponent)
+        SERIALIZE_COMPONENT("particle", ParticleComponent)
+        SERIALIZE_COMPONENT("rect_transform", RectTransform)
+        SERIALIZE_COMPONENT("rigidbody", RigidBodyComponent)
+        SERIALIZE_COMPONENT("skybox", SkyboxComponent)
+        SERIALIZE_COMPONENT("sprite_animation", SpriteAnimationComponent)
+        SERIALIZE_COMPONENT("sprite", SpriteComponent)
+        SERIALIZE_COMPONENT("text", TextComponent)
+        SERIALIZE_COMPONENT("transform", TransformComponent)
+
         message["components"] = clist;
     }
 
@@ -50,21 +72,41 @@ namespace xng {
         }
     }
 
+#define DESERIALIZE_COMPONENT(NAME, TYPE) \
+    } else if (type == (NAME)) { \
+        TYPE component;  \
+        component << message; \
+        components.create(entity, component); \
+
+
     void EntityScene::deserializeComponent(const EntityHandle &entity, const Message &message) {
         auto type = message.value("type", std::string(""));
-        if (type == "transform") {
-            TransformComponent component;
-            component << message;
-            components.create(entity, component);
+        if (false) {
+        DESERIALIZE_COMPONENT("audio_listener", AudioListenerComponent)
+        DESERIALIZE_COMPONENT("audio_source", AudioSourceComponent)
+        DESERIALIZE_COMPONENT("button", ButtonComponent)
+        DESERIALIZE_COMPONENT("camera", CameraComponent)
+        DESERIALIZE_COMPONENT("canvas", CanvasComponent)
+        DESERIALIZE_COMPONENT("collider", ColliderComponent)
+        DESERIALIZE_COMPONENT("light", LightComponent)
+        DESERIALIZE_COMPONENT("render", MeshRenderComponent)
+        DESERIALIZE_COMPONENT("particle", ParticleComponent)
+        DESERIALIZE_COMPONENT("rect_transform", RectTransform)
+        DESERIALIZE_COMPONENT("rigidbody", RigidBodyComponent)
+        DESERIALIZE_COMPONENT("skybox", SkyboxComponent)
+        DESERIALIZE_COMPONENT("sprite_animation", SpriteAnimationComponent)
+        DESERIALIZE_COMPONENT("sprite", SpriteComponent)
+        DESERIALIZE_COMPONENT("text", TextComponent)
+        DESERIALIZE_COMPONENT("transform", TransformComponent)
         }
     }
 
     Entity EntityScene::createEntity() {
-        return Entity(create(), *this);
+        return {create(), *this};
     }
 
     Entity EntityScene::createEntity(const std::string &name) {
-        return Entity(create(name), *this);
+        return {create(name), *this};
     }
 
     void EntityScene::destroyEntity(const Entity &entity) {
@@ -72,6 +114,6 @@ namespace xng {
     }
 
     Entity EntityScene::getEntity(const std::string &name) {
-        return Entity(getByName(name), *this);
+        return {getByName(name), *this};
     }
 }

@@ -20,16 +20,21 @@
 #ifndef XENGINE_COMPONENTS_HPP
 #define XENGINE_COMPONENTS_HPP
 
-#include "ecs/components/cameracomponent.hpp"
-#include "ecs/components/transformcomponent.hpp"
-#include "ecs/components/lightcomponent.hpp"
-#include "ecs/components/particlecomponent.hpp"
-#include "ecs/components/skyboxcomponent.hpp"
-#include "ecs/components/meshrendercomponent.hpp"
-#include "ecs/components/textcomponent.hpp"
-#include "ecs/components/canvascomponent.hpp"
+#include "ecs/components/audiolistenercomponent.hpp"
+#include "ecs/components/audiosourcecomponent.hpp"
 #include "ecs/components/buttoncomponent.hpp"
+#include "ecs/components/cameracomponent.hpp"
+#include "ecs/components/canvascomponent.hpp"
 #include "ecs/components/collidercomponent.hpp"
+#include "ecs/components/lightcomponent.hpp"
+#include "ecs/components/meshrendercomponent.hpp"
+#include "ecs/components/particlecomponent.hpp"
+#include "ecs/components/recttransform.hpp"
 #include "ecs/components/rigidbodycomponent.hpp"
+#include "ecs/components/skyboxcomponent.hpp"
+#include "ecs/components/spriteanimationcomponent.hpp"
+#include "ecs/components/spritecomponent.hpp"
+#include "ecs/components/textcomponent.hpp"
+#include "ecs/components/transformcomponent.hpp"
 
 #endif //XENGINE_COMPONENTS_HPP

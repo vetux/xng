@@ -22,9 +22,22 @@
 
 #include "math/vector3.hpp"
 
+#include "io/messageable.hpp"
+
 namespace xng {
-    struct XENGINE_EXPORT AudioListenerComponent {
+    struct XENGINE_EXPORT AudioListenerComponent : public Messageable {
         Vec3f velocity;
+
+        Messageable &operator<<(const Message &message) override {
+            velocity << message.value("velocity");
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            velocity >> message["velocity"];
+            return message;
+        }
     };
 }
 #endif //XENGINE_AUDIOLISTENERCOMPONENT_HPP

@@ -157,6 +157,13 @@ namespace xng {
             };
         }
 
+        static ColorRGBA fromVector(const Vec4f &vec, float scale = 255) {
+            return {ColorRGBA(numeric_cast<uint8_t>(vec.x * scale),
+                              numeric_cast<uint8_t>(vec.y * scale),
+                              numeric_cast<uint8_t>(vec.z * scale),
+                              numeric_cast<uint8_t>(vec.w * scale))};
+        }
+
         uint8_t &r() { return data[0]; }
 
         uint8_t &g() { return data[1]; }
@@ -202,7 +209,7 @@ namespace xng {
             return !(*this == other);
         }
 
-        ColorRGBA &operator<<(const Message &message)  {
+        ColorRGBA &operator<<(const Message &message) {
             r() = message.value("r", 0);
             g() = message.value("g", 0);
             b() = message.value("b", 0);

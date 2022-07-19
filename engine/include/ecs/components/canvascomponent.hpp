@@ -20,10 +20,25 @@
 #ifndef XENGINE_CANVASCOMPONENT_HPP
 #define XENGINE_CANVASCOMPONENT_HPP
 
+#include "io/messageable.hpp"
+
 namespace xng {
-    struct XENGINE_EXPORT CanvasComponent {
+    struct XENGINE_EXPORT CanvasComponent : public Messageable {
         Vec2f cameraPosition;
         int layer; // The sorting layer of this canvas
+
+        Messageable &operator<<(const Message &message) override {
+            cameraPosition << message.value("cameraPosition");
+            layer = message.value("layer", 0);
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            cameraPosition >> message["cameraPosition"];
+            message["layer"] = layer;
+            return message;
+        }
     };
 }
 

@@ -22,11 +22,28 @@
 
 #include "asset/sprite.hpp"
 
+#include "io/messageable.hpp"
+
 namespace xng {
-    struct SpriteComponent {
+    struct SpriteComponent : public Messageable {
         Vec2f offset; // The offset of the sprite to the rect transform
         ResourceHandle<Sprite> sprite; // The sprite to draw
         int layer; // The render layer of the sprite on this canvas
+
+        Messageable &operator<<(const Message &message) override {
+            offset << message.value("offset");
+            sprite << message.value("sprite");
+            layer = message.value("layer", 0);
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            offset >> message["offset"];
+            sprite >> message["sprite"];
+            message["layer"] = layer;
+            return message;
+        }
     };
 }
 

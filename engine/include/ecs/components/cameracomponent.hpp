@@ -21,10 +21,22 @@
 #define XENGINE_CAMERACOMPONENT_HPP
 
 #include "asset/camera.hpp"
+#include "io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT CameraComponent {
+    struct XENGINE_EXPORT CameraComponent : public Messageable {
         Camera camera;
+
+        Messageable &operator<<(const Message &message) override {
+            camera << message.value("camera");
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            camera >> message["camera"];
+            return message;
+        }
     };
 }
 

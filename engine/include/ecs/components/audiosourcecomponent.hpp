@@ -23,9 +23,10 @@
 #include "asset/audio.hpp"
 #include "math/vector3.hpp"
 #include "resource/resourcehandle.hpp"
+#include "io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT AudioSourceComponent {
+    struct XENGINE_EXPORT AudioSourceComponent : public Messageable {
         ResourceHandle<Audio> audio;
         bool play = false;
         bool loop = false;
@@ -43,6 +44,23 @@ namespace xng {
 
         bool operator!=(const AudioSourceComponent &other) const {
             return !(*this == other);
+        }
+
+        Messageable &operator<<(const Message &message) override {
+            audio << message.value("audio");
+            play = message.value("play", false);
+            loop = message.value("loop", false);
+            velocity << message.value("velocity");
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            audio >> message["audio"];
+            message["play"] = play;
+            message["loop"] = loop;
+            velocity >> message["velocity"];
+            return message;
         }
     };
 }

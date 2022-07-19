@@ -20,16 +20,35 @@
 #ifndef XENGINE_TEXTCOMPONENT_HPP
 #define XENGINE_TEXTCOMPONENT_HPP
 
+#include "io/messageable.hpp"
+
 namespace xng {
-    struct XENGINE_EXPORT TextComponent {
+    struct XENGINE_EXPORT TextComponent : public Messageable {
         Vec2i pixelSize;
         int lineHeight;
         int lineWidth;
         int lineSpacing;
         std::string fontPath;
         std::string text;
-        ColorRGBA textColor;
+        Vec4f textColor;
         int layer; // The render layer of the text
+
+        Messageable &operator<<(const Message &message) override {
+            pixelSize << message.value("pixelSize");
+            lineHeight = message.value("lineHeight", 0);
+            lineWidth = message.value("lineWidth", 0);
+            lineSpacing = message.value("lineSpacing", 0);
+            fontPath = message.value("fontPath", std::string());
+            text = message.value("text", std::string());
+            textColor << message.value("textColor");
+            layer = message.value("layer", 0);
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            return message;
+        }
     };
 }
 

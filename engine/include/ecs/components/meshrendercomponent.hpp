@@ -23,9 +23,10 @@
 #include "asset/material.hpp"
 #include "asset/mesh.hpp"
 #include "resource/resourcehandle.hpp"
+#include "io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT MeshRenderComponent {
+    struct XENGINE_EXPORT MeshRenderComponent : public Messageable {
         bool enabled = true;
 
         bool castShadows{};
@@ -40,6 +41,25 @@ namespace xng {
                    && receiveShadows == other.receiveShadows
                    && mesh == other.mesh
                    && material == other.material;
+        }
+
+        Messageable &operator<<(const Message &message) override {
+            enabled = message.value("enabled", true);
+            castShadows = message.value("castShadows", false);
+            receiveShadows = message.value("receiveShadows", false);
+            mesh << message.value("mesh");
+            material << message.value("material");
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            message["enabled"] = enabled;
+            message["castShadows"] = castShadows;
+            message["receiveShadows"] = receiveShadows;
+            mesh >> message["mesh"];
+            material >> message["material"];
+            return message;
         }
     };
 }

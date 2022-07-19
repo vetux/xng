@@ -21,12 +21,26 @@
 #define XENGINE_LIGHTCOMPONENT_HPP
 
 #include "asset/light.hpp"
+#include "io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT LightComponent {
+    struct XENGINE_EXPORT LightComponent : public Messageable {
         bool enabled = true;
 
         Light light;
+
+        Messageable &operator<<(const Message &message) override {
+            enabled = message.value("enabled", true);
+            light << message.value("light");
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            message["enabled"] = enabled;
+            light >> message["light"];
+            return message;
+        }
     };
 }
 

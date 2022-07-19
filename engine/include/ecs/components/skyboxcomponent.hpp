@@ -24,12 +24,25 @@
 
 #include "asset/skybox.hpp"
 
+#include "io/messageable.hpp"
+
 namespace xng {
-    struct XENGINE_EXPORT SkyboxComponent {
+    struct XENGINE_EXPORT SkyboxComponent : public Messageable {
         Skybox skybox;
 
         bool operator==(const SkyboxComponent &other) const {
             return skybox.texture == other.skybox.texture && skybox.color == other.skybox.color;
+        }
+
+        Messageable &operator<<(const Message &message) override {
+            skybox << message.value("skybox");
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            skybox >> message["skybox"];
+            return message;
         }
     };
 }

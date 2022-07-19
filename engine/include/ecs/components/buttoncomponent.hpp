@@ -21,11 +21,25 @@
 #define XENGINE_BUTTONCOMPONENT_HPP
 
 #include "asset/sprite.hpp"
+#include "io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT ButtonComponent {
+    struct XENGINE_EXPORT ButtonComponent : public Messageable {
         std::string id;
         int layer; // The layer of this button used for resolving inputs on overlapping buttons
+
+        Messageable &operator<<(const Message &message) override {
+            id = message.value("id", std::string());
+            layer = message.value("layer", 0);
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            message["id"] = id;
+            message["layer"] = layer;
+            return message;
+        }
     };
 }
 

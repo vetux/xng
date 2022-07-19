@@ -21,10 +21,18 @@
 #define XENGINE_COLLIDERCOMPONENT_HPP
 
 #include "math/vector3.hpp"
+#include "io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT ColliderComponent {
-        std::vector<Vec3f> shape;
+    struct XENGINE_EXPORT ColliderComponent : public Messageable {
+        Messageable &operator<<(const Message &message) override {
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            return message;
+        }
     };
 }
 
