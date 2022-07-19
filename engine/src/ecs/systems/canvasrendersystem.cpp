@@ -90,7 +90,7 @@ namespace xng {
                         }
                         auto dstRect = Rectf(rt.rect.position + displayOffset, displaySize);
                         auto center = Vec2f(displaySize.x / 2, displaySize.y / 2);
-                        ren2d.draw(renderedTexts.at(ent), dstRect, ColorRGBA::fromVector(comp.textColor), center);
+                        ren2d.draw(renderedTexts.at(ent), dstRect, comp.textColor, center);
                     }
                 }
             }
