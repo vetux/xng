@@ -163,12 +163,15 @@ namespace xng {
             if (it == fonts.end()) {
                 auto stream = archive.open(comp.fontPath);
                 fonts[comp.fontPath] = fontDriver.createFont(*stream);
-                textRenderers.insert(std::make_pair(comp.fontPath, TextRenderer(*fonts[comp.fontPath], ren2d)));
             }
-            fonts.at(comp.fontPath)->setPixelSize(comp.pixelSize);
-            renderedTexts.insert(std::make_pair(ent, textRenderers.at(comp.fontPath).render(comp.text, comp.lineHeight,
-                                                                                            comp.lineWidth,
-                                                                                            comp.lineSpacing)));
+            auto rIt = textRenderers.find(ent);
+            if (rIt == textRenderers.end()) {
+                fonts.at(comp.fontPath)->setPixelSize(comp.pixelSize);
+                textRenderers.insert(std::make_pair(ent, TextRenderer(*fonts[comp.fontPath], ren2d)));
+            }
+            renderedTexts.insert(std::make_pair(ent, textRenderers.at(ent).render(comp.text, comp.lineHeight,
+                                                                                  comp.lineWidth,
+                                                                                  comp.lineSpacing)));
         }
     }
 }
