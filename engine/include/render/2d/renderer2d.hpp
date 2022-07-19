@@ -86,6 +86,11 @@ namespace xng {
          */
         void renderPresent();
 
+        void renderClear(RenderTarget &target,
+                         ColorRGBA clearColor,
+                         Vec2i viewportOffset,
+                         Vec2i viewportSize);
+
         /**
          * Set the projection bounds.
          * The projection bounds are set to 0,0 and target size when calling renderBegin

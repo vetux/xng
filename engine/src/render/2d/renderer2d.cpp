@@ -20,6 +20,8 @@
 #include "asset/camera.hpp"
 #include "render/2d/renderer2d.hpp"
 
+#include <utility>
+
 #include "math/matrixmath.hpp"
 #include "shader/shadersource.hpp"
 
@@ -356,6 +358,21 @@ namespace xng {
         usedShaderBuffers = 0;
     }
 
+    void Renderer2D::renderClear(RenderTarget &target, ColorRGBA clearColor, Vec2i viewportOffset, Vec2i viewportSize) {
+        if (!this->clear
+            || this->clearColor != clearColor) {
+            this->clear = true;
+            this->clearColor = clearColor;
+            this->viewportOffset = viewportOffset;
+            this->viewportSize = viewportSize;
+            reallocatePipelines();
+        }
+
+        clearPipeline->setViewport(viewportOffset, viewportSize);
+
+        clearPipeline->render(target, {});
+    }
+
     void Renderer2D::setProjection(const Rectf &projection) {
         if (!isRendering)
             throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
@@ -640,7 +657,6 @@ namespace xng {
                                                                   .multiSample = false,
                                                                   .clearColorValue = clearColor,
                                                                   .clearColor = clear,
-                                                                  .clearStencil = clear,
                                                                   .enableDepthTest = false,
                                                                   .enableBlending = true});
 
@@ -649,7 +665,6 @@ namespace xng {
                                                                   .viewportSize = viewportSize,
                                                                   .multiSample = false,
                                                                   .clearColor = false,
-                                                                  .clearStencil = false,
                                                                   .enableDepthTest = false,
                                                                   .enableBlending = true});
 
@@ -658,7 +673,6 @@ namespace xng {
                                                                     .viewportSize = viewportSize,
                                                                     .multiSample = false,
                                                                     .clearColor = false,
-                                                                    .clearStencil = false,
                                                                     .enableDepthTest = false,
                                                                     .enableBlending = true});
 
@@ -667,7 +681,6 @@ namespace xng {
                                                                  .viewportSize = viewportSize,
                                                                  .multiSample = false,
                                                                  .clearColor = false,
-                                                                 .clearStencil = false,
                                                                  .enableDepthTest = false,
                                                                  .enableBlending = true});
     }
