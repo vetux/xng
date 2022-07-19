@@ -120,7 +120,7 @@ void main() {
 }
 )###";
 
-static const Transform cameraPosition = Transform({0, 0, 1}, Vec3f(), {});
+static Transform cameraPosition = Transform({0, 0, 1}, Vec3f(), {});
 
 static float distance(float val1, float val2) {
     float abs = val1 - val2;
@@ -258,6 +258,7 @@ namespace xng {
         textPipeline->setViewport(viewportOffset, viewportSize);
 
         setProjection({{}, viewportSize.convert<float>()});
+        setCameraPosition({});
     }
 
     void Renderer2D::renderPresent() {
@@ -364,6 +365,10 @@ namespace xng {
         camera.right = projection.dimensions.x;
         camera.top = projection.position.y;
         camera.bottom = projection.dimensions.y;
+    }
+
+    void Renderer2D::setCameraPosition(const Vec2f &pos) {
+        cameraPosition.setPosition({pos.x, pos.y, 1});
     }
 
     void Renderer2D::draw(Rectf srcRect,

@@ -94,6 +94,8 @@ namespace xng {
          */
         void setProjection(const Rectf &projection);
 
+        void setCameraPosition(const Vec2f &pos);
+
         /**
          * Draw texture
          *
