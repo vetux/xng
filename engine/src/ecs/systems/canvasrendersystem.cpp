@@ -66,7 +66,7 @@ namespace xng {
                                              rt.rect.dimensions);
                         ren2d.draw(dstRect,
                                    *spriteTextures.at(ent),
-                                   comp.offset,
+                                   comp.center,
                                    rt.rotation);
                     }
                 } else if (scene.check<TextComponent>(ent)) {

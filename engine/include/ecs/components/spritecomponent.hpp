@@ -26,12 +26,12 @@
 
 namespace xng {
     struct SpriteComponent : public Messageable {
-        Vec2f offset; // The offset of the sprite to the rect transform
+        Vec2f center; // The center of the sprite
         ResourceHandle<Sprite> sprite; // The sprite to draw
         int layer; // The render layer of the sprite on this canvas
 
         Messageable &operator<<(const Message &message) override {
-            offset << message.value("offset");
+            center << message.value("center");
             sprite << message.value("sprite");
             layer = message.value("layer", 0);
             return *this;
@@ -39,7 +39,7 @@ namespace xng {
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            offset >> message["offset"];
+            center >> message["center"];
             sprite >> message["sprite"];
             message["layer"] = layer;
             return message;
