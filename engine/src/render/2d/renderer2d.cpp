@@ -401,8 +401,8 @@ namespace xng {
 
         Mat4f model = MatrixMath::identity();
         model = model * MatrixMath::translate(Vec3f(
-                dstRect.position.x + center.x,
-                dstRect.position.y + center.y,
+                dstRect.position.x,
+                dstRect.position.y,
                 0));
         model = model * MatrixMath::rotate(Vec3f(0, 0, rotation));
 
@@ -439,8 +439,8 @@ namespace xng {
 
         Mat4f modelMatrix = MatrixMath::identity();
         modelMatrix = modelMatrix * MatrixMath::translate(Vec3f(
-                rectangle.position.x + center.x,
-                rectangle.position.y + center.y,
+                rectangle.position.x,
+                rectangle.position.y,
                 0));
         modelMatrix = modelMatrix * MatrixMath::rotate(Vec3f(0, 0, rotation));
 
@@ -528,8 +528,8 @@ namespace xng {
 
         Mat4f model = MatrixMath::identity();
         model = model * MatrixMath::translate(Vec3f(
-                dstRect.position.x + center.x,
-                dstRect.position.y + center.y,
+                dstRect.position.x,
+                dstRect.position.y,
                 0));
         model = model * MatrixMath::rotate(Vec3f(0, 0, rotation));
 
@@ -562,8 +562,8 @@ namespace xng {
         for (auto &p: positions) {
             Transform t;
             t.setPosition(Vec3f(
-                    p.first.x + center.x,
-                    p.first.y + center.y,
+                    p.first.x,
+                    p.first.y,
                     0));
             t.setRotation(Quaternion(Vec3f(0, 0, p.second)));
             offsets.emplace_back(t.model());
