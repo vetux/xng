@@ -33,7 +33,7 @@ namespace xng {
     /**
      * The canvas render system handles drawing of 2d elements
      */
-    class CanvasRenderSystem : public System, public EntityScene::Listener {
+    class XENGINE_EXPORT CanvasRenderSystem : public System, public EntityScene::Listener {
     public:
         CanvasRenderSystem(Renderer2D &renderer2D,
                            RenderTarget &target,
