@@ -69,7 +69,7 @@ namespace xng {
 
         if (m.has("materials") && m.at("materials").getType() == Message::LIST) {
             for (auto &element: m.at("materials").asList()) {
-                std::string name = element["name"];
+                std::string name = element.value("name", std::string());
                 Material mat;
                 mat << element;
                 ret.add(name, std::make_unique<Material>(mat));
@@ -78,7 +78,7 @@ namespace xng {
 
         if (m.has("textures") && m.at("textures").getType() == Message::LIST) {
             for (auto &element: m.at("textures").asList()) {
-                std::string name = element["name"];
+                std::string name = element.value("name", std::string());
                 Texture tex;
                 tex << element;
                 ret.add(name, std::make_unique<Texture>(tex));
@@ -87,7 +87,7 @@ namespace xng {
 
         if (m.has("sprites") && m.at("sprites").getType() == Message::LIST) {
             for (auto &element: m.at("sprites").asList()) {
-                std::string name = element["name"];
+                std::string name = element.value("name", std::string());
                 Sprite sprite;
                 sprite << element;
                 ret.add(name, std::make_unique<Sprite>(sprite));
@@ -96,7 +96,7 @@ namespace xng {
 
         if (m.has("sprite-animations") && m.at("sprite-animations").getType() == Message::LIST) {
             for (auto &element: m.at("sprite-animations").asList()) {
-                std::string name = element["name"];
+                std::string name = element.value("name", std::string());
                 SpriteAnimation animation;
                 animation << element;
                 ret.add(name, std::make_unique<SpriteAnimation>(animation));
@@ -105,7 +105,7 @@ namespace xng {
 
         if (m.has("scenes") && m.at("scenes").getType() == Message::LIST) {
             for (auto &element: m.at("scenes").asList()) {
-                std::string name = element["name"];
+                std::string name = element.value("name", std::string());
                 EntityScene scene;
                 scene << element;
                 ret.add(name, std::make_unique<EntityScene>(scene));
