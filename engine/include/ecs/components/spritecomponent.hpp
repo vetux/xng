@@ -29,11 +29,13 @@ namespace xng {
         Vec2f center; // The center of the sprite
         ResourceHandle<Sprite> sprite; // The sprite to draw
         int layer; // The render layer of the sprite on this canvas
+        Vec2b flipSprite;
 
         Messageable &operator<<(const Message &message) override {
             center << message.value("center");
             sprite << message.value("sprite");
             layer = message.value("layer", 0);
+            flipSprite << message.value("flipSprite");
             return *this;
         }
 
@@ -42,6 +44,7 @@ namespace xng {
             center >> message["center"];
             sprite >> message["sprite"];
             message["layer"] = layer;
+            flipSprite >> message["flipSprite"];
             return message;
         }
     };

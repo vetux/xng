@@ -76,10 +76,12 @@ namespace xng {
                                                  RectTransform::getOffset(rt.anchor,
                                                                           target.getDescription().size.convert<float>()),
                                                  rt.rect.dimensions);
-                            ren2d.draw(dstRect,
+                            ren2d.draw(Rectf({}, dstRect.dimensions),
+                                        dstRect,
                                        *spriteTextures.at(ent),
                                        comp.center,
-                                       rt.rotation);
+                                       rt.rotation,
+                                       comp.flipSprite);
                         }
                     } else if (scene.check<TextComponent>(ent)) {
                         auto &comp = scene.lookup<TextComponent>(ent);
