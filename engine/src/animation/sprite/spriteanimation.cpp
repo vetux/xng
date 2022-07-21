@@ -89,12 +89,21 @@ namespace xng {
                 keyframes.emplace_back(keyframe);
             }
         }
-        animationDuration = message.value("animationDuration", 0.0f);
+        if (message.has("animationFps")){
+            auto fps = message.value("animationFps", 0);
+            int totalFrames = 0;
+            for (auto &v: keyframes)
+                totalFrames += v.duration;
+            animationDuration = (1.0f / numeric_cast<float>(fps)) * numeric_cast<float>(totalFrames);
+        } else {
+            animationDuration = message.value("animationDuration", 0.0f);
+        }
         clampDelta = message.value("clampDelta", false);
         loop = message.value("loop", true);
 
         initFrames();
-        frameTime = animationDuration / frames.size();
+
+        frameTime = animationDuration / numeric_cast<float>(frames.size());
         time = 0;
 
         return *this;
