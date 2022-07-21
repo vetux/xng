@@ -39,6 +39,25 @@ namespace xng {
             LIST
         };
 
+        static std::string getDataTypeName(DataType type) {
+            switch (type) {
+                case NUL:
+                    return "NUL";
+                case INT:
+                    return "INT";
+                case FLOAT:
+                    return "FLOAT";
+                case STRING:
+                    return "STRING";
+                case DICTIONARY:
+                    return "DICTIONARY";
+                case LIST:
+                    return "LIST";
+                default:
+                    throw std::runtime_error("Invalid data type");
+            }
+        }
+
         explicit Message(DataType type = NUL) : type(type) {}
 
         Message(int value) : type(INT) { ival = value; }
@@ -59,13 +78,13 @@ namespace xng {
 
         Message &operator[](const char *name) {
             if (type != DICTIONARY)
-                throw std::runtime_error("Type error");
+                throw std::runtime_error("Attempted to call array operator on message of type " + getDataTypeName(type));
             return mval[name];
         }
 
         const Message &operator[](const char *name) const {
             if (type != DICTIONARY)
-                throw std::runtime_error("Type error");
+                throw std::runtime_error("Attempted to call array operator on message of type " + getDataTypeName(type));
             return mval.at(name);
         }
 
@@ -73,84 +92,94 @@ namespace xng {
             if (type != LIST)
                 throw std::runtime_error("Type error");
             if (vval.size() >= index)
-                vval.resize(index + 1);
+                throw std::runtime_error("Attempted to call array operator on message of type " + getDataTypeName(type));
             return vval.at(index);
         }
 
         const Message &operator[](int index) const {
             if (type != LIST)
-                throw std::runtime_error("Type error");
+                throw std::runtime_error("Attempted to call array operator on message of type " + getDataTypeName(type));
             return vval.at(index);
         }
 
         bool has(const char *name) const {
             if (type != DICTIONARY)
-                throw std::runtime_error("Type error");
+                throw std::runtime_error("Attempted to call has on message of type " + getDataTypeName(type));
             return mval.find(name) != mval.end();
         }
 
         Message &at(const char *name) {
             if (type != DICTIONARY)
-                throw std::runtime_error("Type error");
+                throw std::runtime_error("Attempted to call at on message of type " + getDataTypeName(type));
             return mval.at(name);
         }
 
         const Message &at(const char *name) const {
             if (type != DICTIONARY)
-                throw std::runtime_error("Type error");
+                throw std::runtime_error("Attempted to call at on message of type " + getDataTypeName(type));
             return mval.at(name);
         }
 
         operator int() const {
             if (type != INT)
-                throw std::runtime_error("Type mismatch");
+                throw std::runtime_error(
+                        "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
+                        " to int");
             return this->ival;
         }
 
         operator long() const {
             if (type != INT)
-                throw std::runtime_error("Type mismatch");
+                throw std::runtime_error(
+                        "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
+                        " to long");
             return ival;
         }
 
         operator bool() const {
             if (type != INT)
-                throw std::runtime_error("Type mismatch");
-            return ival;
+                throw std::runtime_error(
+                        "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
+                        " to bool");            return ival;
         }
 
         operator float() const {
             if (type == INT)
                 return ival;
             if (type != FLOAT)
-                throw std::runtime_error("Type mismatch");
-            return fval;
+                throw std::runtime_error(
+                        "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
+                        " to float");            return fval;
         }
 
         operator double() const {
             if (type == INT)
                 return ival;
             if (type != FLOAT)
-                throw std::runtime_error("Type mismatch");
-            return fval;
+                throw std::runtime_error(
+                        "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
+                        " to double");            return fval;
         }
 
         operator std::string() const {
             if (type != STRING)
-                throw std::runtime_error("Type mismatch");
-            return sval;
+                throw std::runtime_error(
+                        "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
+                        " to string");            return sval;
         }
 
         operator std::map<std::string, Message>() const {
             if (type != DICTIONARY)
-                throw std::runtime_error("Type mismatch");
-            return mval;
+                throw std::runtime_error(
+                        "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
+                        " to dictionary");            return mval;
         }
 
         operator std::vector<Message>() const {
             if (type != LIST)
-                throw std::runtime_error("Type mismatch");
-            return vval;
+                throw std::runtime_error(
+                        "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
+                        " to list");            return vval;
         }
 
         DataType getType() const { return type; }
