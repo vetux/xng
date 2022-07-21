@@ -97,7 +97,7 @@ namespace xng {
         bool clampDelta{};
         bool loop{};
 
-        std::vector<std::vector<SpriteKeyframe>::iterator> frames; // Each frame of the animation
+        std::vector<size_t> frames; // Each frame of the animation
         float frameTime{}; // The time in seconds that one frame should be visible for
         float time = 0; // The currently accumulated time
     };

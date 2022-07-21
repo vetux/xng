@@ -62,7 +62,7 @@ namespace xng {
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             offset >> message["offset"];
-            if (image)
+            if (image.assigned())
                 image >> message["image"];
             return message;
         }

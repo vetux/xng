@@ -79,7 +79,7 @@ namespace xng {
                                         std::type_index componentType) {
         if (componentType == typeid(AudioSourceComponent)) {
             auto component = std::any_cast<AudioSourceComponent>(value);
-            if (component.audio) {
+            if (component.audio.assigned()) {
                 auto &buffer = component.audio.get();
                 buffers[entity] = context->createBuffer();
                 buffers[entity]->upload(buffer.buffer,

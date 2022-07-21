@@ -59,7 +59,7 @@ namespace xng {
 
                 if (scene.check<SpriteComponent>(ent)) {
                     auto &comp = scene.lookup<SpriteComponent>(ent);
-                    if (comp.sprite) {
+                    if (comp.sprite.assigned()) {
                         auto dstRect = Rectf(rt.rect.position +
                                              RectTransform::getOffset(rt.anchor,
                                                                       target.getDescription().size.convert<float>()),
@@ -139,7 +139,7 @@ namespace xng {
     }
 
     void CanvasRenderSystem::createTexture(const EntityHandle &ent, const SpriteComponent &t) {
-        if (t.sprite) {
+        if (t.sprite.assigned()) {
             Vec2i dimensions = t.sprite.get().offset.dimensions;
             if (dimensions.x * dimensions.y == 0) {
                 dimensions = t.sprite.get().image.get().getSize();

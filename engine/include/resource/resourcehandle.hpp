@@ -84,7 +84,11 @@ namespace xng {
                    && registry == other.registry;
         }
 
-        operator bool() const {
+        bool operator!=(const ResourceHandle<T> &other) const {
+            return !(*this == other);
+        }
+
+        bool assigned() const {
             return !uri.empty() || resource;
         }
 

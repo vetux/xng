@@ -50,7 +50,7 @@ namespace xng {
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             color >> message["color"];
-            if (texture)
+            if (texture.assigned())
                 texture >> message["texture"];
             return message;
         }

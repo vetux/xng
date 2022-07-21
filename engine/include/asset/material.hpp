@@ -58,17 +58,17 @@ namespace xng {
             specular >> message["specular"];
             emissive >> message["emissive"];
             message["shininess"] = shininess;
-            if (diffuseTexture)
+            if (diffuseTexture.assigned())
                 diffuseTexture >> message["diffuseTexture"];
-            if (ambientTexture)
+            if (ambientTexture.assigned())
                 ambientTexture >> message["ambientTexture"];
-            if (specularTexture)
+            if (specularTexture.assigned())
                 specularTexture >> message["specularTexture"];
-            if (emissiveTexture)
+            if (emissiveTexture.assigned())
                 emissiveTexture >> message["emissiveTexture"];
-            if (shininessTexture)
+            if (shininessTexture.assigned())
                 shininessTexture >> message["shininessTexture"];
-            if (normalTexture)
+            if (normalTexture.assigned())
                 normalTexture >> message["normalTexture"];
             return message;
         }

@@ -77,7 +77,7 @@ namespace xng {
 
         auto frame = numeric_cast<size_t>(time / frameTime);
         assert(frame < frames.size());
-        return frames.at(frame)->sprite;
+        return keyframes.at(frames.at(frame)).sprite;
     }
 
     Messageable &SpriteAnimation::operator<<(const Message &message) {
@@ -129,7 +129,7 @@ namespace xng {
         for (auto i = 0; i < keyframes.size(); i++) {
             auto &keyframe = keyframes.at(i);
             for (int v = 0; v < keyframe.duration; v++) {
-                frames.emplace_back(keyframes.begin() + i);
+                frames.emplace_back(i);
             }
         }
     }

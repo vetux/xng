@@ -39,7 +39,7 @@ namespace xng {
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            sprite >> message[sprite];
+            sprite >> message["sprite"];
             message["duration"] = duration;
             return message;
         }
