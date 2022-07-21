@@ -98,7 +98,7 @@ namespace xng {
                                 displaySize.y = rt.rect.dimensions.y;
                             } else {
                                 displaySize.y = texSize.y;
-                                displayOffset.y += (rt.rect.dimensions.y - texSize.y) / 2;
+                                displayOffset.y -= (rt.rect.dimensions.y - texSize.y) / 2;
                             }
                             auto dstRect = Rectf(rt.rect.position + displayOffset, displaySize);
                             auto center = Vec2f(displaySize.x / 2, displaySize.y / 2);
