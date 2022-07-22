@@ -25,7 +25,7 @@
 #include "input/input.hpp"
 
 namespace xng {
-    class GuiEventSystem : public System {
+    class XENGINE_EXPORT GuiEventSystem : public System {
     public:
         GuiEventSystem(Input &input, EventBus &eventBus);
 

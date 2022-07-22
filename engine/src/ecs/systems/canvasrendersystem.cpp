@@ -106,6 +106,13 @@ namespace xng {
                                            rt.center,
                                            rt.rotation,
                                            comp.flipSprite);
+                                if (drawDebug) {
+                                    ren2d.draw(dstRect, ColorRGBA::yellow(), false, rt.center, rt.rotation);
+                                    auto dCenter = dstRect.position;
+                                    const int len = 20;
+                                    ren2d.draw(dCenter + Vec2f(-len, 0), dCenter + Vec2f(len, 0), ColorRGBA::green());
+                                    ren2d.draw(dCenter + Vec2f(0, len), dCenter + Vec2f(0, -len), ColorRGBA::green());
+                                }
                             }
                             break;
                         }
@@ -121,17 +128,22 @@ namespace xng {
                                     displaySize.x = rt.rect.dimensions.x;
                                 } else {
                                     displaySize.x = texSize.x;
-                                    displayOffset.x += (rt.rect.dimensions.x - texSize.x) / 2;
                                 }
                                 if (texSize.y > rt.rect.dimensions.y) {
                                     displaySize.y = rt.rect.dimensions.y;
                                 } else {
                                     displaySize.y = texSize.y;
-                                    displayOffset.y -= (rt.rect.dimensions.y - texSize.y) / 2;
                                 }
-                                auto dstRect = Rectf(rt.rect.position + displayOffset, displaySize);
                                 auto center = Vec2f(displaySize.x / 2, displaySize.y / 2);
+                                auto dstRect = Rectf(rt.rect.position + displayOffset, displaySize);
                                 ren2d.draw(renderedTexts.at(pass.ent), dstRect, tcomp.textColor, center, rt.rotation);
+                                if (drawDebug) {
+                                    ren2d.draw(dstRect, ColorRGBA::yellow(), false, center, rt.rotation);
+                                    auto dCenter = dstRect.position;
+                                    const int len = 20;
+                                    ren2d.draw(dCenter + Vec2f(-len, 0), dCenter + Vec2f(len, 0), ColorRGBA::green());
+                                    ren2d.draw(dCenter + Vec2f(0, len), dCenter + Vec2f(0, -len), ColorRGBA::green());
+                                }
                             }
                             break;
                         }
