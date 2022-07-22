@@ -74,11 +74,6 @@ namespace xng {
             }
         }
 
-        for (auto &pair: canvases) {
-            for (auto &ent: pair.second) {
-
-            }
-        }
         ren2d.renderBegin(target, false);
 
         for (auto &pair: canvases) {
