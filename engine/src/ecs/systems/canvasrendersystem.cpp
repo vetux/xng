@@ -66,6 +66,9 @@ namespace xng {
             if (scene.check<SpriteComponent>(p.first)) {
                 auto &r = scene.lookup<SpriteComponent>(p.first);
                 canvases[c.layer][r.layer].emplace_back(p.first);
+            } else if (scene.check<TextComponent>(p.first)) {
+                auto &r = scene.lookup<TextComponent>(p.first);
+                canvases[c.layer][r.layer].emplace_back(p.first);
             } else {
                 canvases[c.layer][0].emplace_back(p.first);
             }
