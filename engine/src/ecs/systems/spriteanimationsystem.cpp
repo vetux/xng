@@ -23,10 +23,16 @@
 
 void SpriteAnimationSystem::start(EntityScene &scene) {
     scene.addListener(*this);
+    for (auto &pair: scene.getPool<SpriteAnimationComponent>()) {
+        if (animations.find(pair.first) == animations.end()) {
+            animations[pair.first] = pair.second.animation.get();
+        }
+    }
 }
 
 void SpriteAnimationSystem::stop(EntityScene &scene) {
     scene.removeListener(*this);
+    animations.clear();
 }
 
 void SpriteAnimationSystem::update(DeltaTime deltaTime, EntityScene &scene) {

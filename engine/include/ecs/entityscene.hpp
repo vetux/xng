@@ -70,11 +70,11 @@ namespace xng {
 
         std::type_index getTypeIndex() override;
 
-        const std::string &getName()const {
+        const std::string &getName() const {
             return name;
         }
 
-        void setName(const std::string &v){
+        void setName(const std::string &v) {
             name = v;
         }
 

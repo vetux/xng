@@ -33,10 +33,26 @@ namespace xng {
 
     void CanvasRenderSystem::start(EntityScene &scene) {
         scene.addListener(*this);
+        for (auto &pair: scene.getPool<SpriteComponent>()) {
+            if (!pair.second.sprite.assigned())
+                continue;
+            if (spriteTextures.find(pair.first) == spriteTextures.end()) {
+                createTexture(pair.first, pair.second);
+            }
+        }
+        for (auto &pair: scene.getPool<TextComponent>()) {
+            if (renderedTexts.find(pair.first) == renderedTexts.end()) {
+                createText(pair.first, pair.second);
+            }
+        }
     }
 
     void CanvasRenderSystem::stop(EntityScene &scene) {
         scene.removeListener(*this);
+        spriteTextures.clear();
+        textRenderers.clear();
+        renderedTexts.clear();
+        fonts.clear();
     }
 
     void CanvasRenderSystem::update(DeltaTime deltaTime, EntityScene &scene) {
@@ -77,7 +93,7 @@ namespace xng {
                                                                           target.getDescription().size.convert<float>()),
                                                  rt.rect.dimensions);
                             ren2d.draw(Rectf({}, dstRect.dimensions),
-                                        dstRect,
+                                       dstRect,
                                        *spriteTextures.at(ent),
                                        comp.center,
                                        rt.rotation,

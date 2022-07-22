@@ -61,9 +61,12 @@ namespace xng {
     }
 
     void ECS::setScene(const std::shared_ptr<EntityScene> &v) {
+        auto restart = started;
         if (started)
             stop();
         scene = v;
+        if (restart)
+            start();
     }
 
     const std::vector<std::reference_wrapper<System>> &ECS::getSystems() const {

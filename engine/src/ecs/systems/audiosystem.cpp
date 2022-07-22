@@ -35,10 +35,25 @@ namespace xng {
 
     void AudioSystem::start(EntityScene &scene) {
         scene.addListener(*this);
+
+        for (auto &pair: scene.getPool<AudioSourceComponent>()) {
+            if (buffers.find(pair.first) == buffers.end()){
+                auto &buffer = pair.second.audio.get();
+                buffers[pair.first] = context->createBuffer();
+                buffers[pair.first]->upload(buffer.buffer,
+                                        buffer.format,
+                                        buffer.frequency);
+
+                sources[pair.first] = context->createSource();
+                sources[pair.first]->setBuffer(*buffers[pair.first]);
+            }
+        }
     }
 
     void AudioSystem::stop(EntityScene &scene) {
         scene.removeListener(*this);
+        sources.clear();
+        buffers.clear();
     }
 
     void AudioSystem::update(DeltaTime deltaTime, EntityScene &scene) {
