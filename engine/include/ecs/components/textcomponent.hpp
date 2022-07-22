@@ -23,6 +23,11 @@
 #include "io/messageable.hpp"
 
 namespace xng {
+    /**
+     * A text component renders the given text.
+     * If the resulting rendered text is smaller than the set rect transform dimensions the texture is centered in the
+     * rect transform.
+     */
     struct XENGINE_EXPORT TextComponent : public Messageable {
         Vec2i pixelSize;
         int lineHeight;

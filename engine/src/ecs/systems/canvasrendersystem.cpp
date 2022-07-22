@@ -95,7 +95,7 @@ namespace xng {
                             ren2d.draw(Rectf({}, dstRect.dimensions),
                                        dstRect,
                                        *spriteTextures.at(ent),
-                                       comp.center,
+                                       rt.center,
                                        rt.rotation,
                                        comp.flipSprite);
                         }
@@ -120,7 +120,7 @@ namespace xng {
                             }
                             auto dstRect = Rectf(rt.rect.position + displayOffset, displaySize);
                             auto center = Vec2f(displaySize.x / 2, displaySize.y / 2);
-                            ren2d.draw(renderedTexts.at(ent), dstRect, comp.textColor, center);
+                            ren2d.draw(renderedTexts.at(ent), dstRect, comp.textColor, center, rt.rotation);
                         }
                     }
                 }

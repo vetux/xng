@@ -24,7 +24,6 @@
 
 namespace xng {
     struct XENGINE_EXPORT RectTransform : public Messageable {
-        bool enabled;
         enum Anchor {
             TOP_LEFT,
             TOP_CENTER,
@@ -37,14 +36,19 @@ namespace xng {
             BOTTOM_RIGHT
         } anchor = TOP_LEFT;
 
+        bool enabled;
+
         Rectf rect;
+        Vec2f center;
         float rotation;
+
         std::string parent;
 
         Messageable &operator<<(const Message &message) override {
-            enabled = message.value("enabled", true);
             anchor = convertAnchor(message.value("anchor", std::string("top_left")));
+            enabled = message.value("enabled", true);
             rect << message.value("rect");
+            center << message.value("center");
             rotation = message.value("rotation", 0.0f);
             parent = message.value("parent", std::string());
             return *this;
@@ -52,9 +56,10 @@ namespace xng {
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            message["enabled"] = enabled;
             message["anchor"] = convertAnchor(anchor);
+            message["enabled"] = enabled;
             rect >> message["rect"];
+            center >> message["center"];
             message["rotation"] = rotation;
             message["parent"] = parent;
             return message;
@@ -109,7 +114,7 @@ namespace xng {
             }
         }
 
-        static Vec2f getOffset(Anchor anchor, Vec2f canvasSize) {
+        static Vec2f getOffset(Anchor anchor, const Vec2f &canvasSize) {
             switch (anchor) {
                 default:
                 case TOP_LEFT:
