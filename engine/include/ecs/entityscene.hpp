@@ -242,20 +242,24 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            for (auto &msg: message.asList()) {
-                deserializeEntity(msg);
+            name = message.value("name", std::string());
+            if (message.value("entities").getType() == Message::LIST) {
+                for (auto &msg: message.value("entities").asList()) {
+                    deserializeEntity(msg);
+                }
             }
             return *this;
         }
 
         Message &operator>>(Message &message) const override {
+            message["name"] = name;
             auto list = std::vector<Message>();
             for (auto &ent: entities) {
                 Message msg;
                 serializeEntity(ent, msg);
                 list.emplace_back(msg);
             }
-            message = list;
+            message["entities"] = list;
             return message;
         }
 
