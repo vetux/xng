@@ -22,12 +22,12 @@
 
 #include "ecs/system.hpp"
 #include "event/eventbus.hpp"
-#include "input/input.hpp"
+#include "display/window.hpp"
 
 namespace xng {
     class XENGINE_EXPORT GuiEventSystem : public System {
     public:
-        GuiEventSystem(Input &input, EventBus &eventBus);
+        GuiEventSystem(Window &window, EventBus &eventBus);
 
         ~GuiEventSystem() override = default;
 
@@ -38,10 +38,11 @@ namespace xng {
         void stop(EntityScene &scene) override;
 
     private:
-        Input &input;
+        Window &window;
         EventBus &eventBus;
 
         std::set<EntityHandle> hoverButtons;
+        std::set<EntityHandle> clickButtons;
     };
 }
 

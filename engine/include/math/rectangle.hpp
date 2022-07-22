@@ -54,8 +54,10 @@ namespace xng {
         }
 
         bool testPoint(Vector2<T> point) const {
-            return point.x >= position.x && point.y <= position.y && point.x <= position.x + dimensions.x &&
-                   point.y >= position.y - dimensions.y;
+            return point.x >= position.x
+            && point.y <= position.y
+            && point.x <= position.x + dimensions.x
+            && point.y >= position.y - dimensions.y;
         }
 
         bool testOverlap(Rectangle<T> other) const {

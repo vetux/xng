@@ -25,8 +25,8 @@
 #include "event/events/guievent.hpp"
 
 namespace xng {
-    GuiEventSystem::GuiEventSystem(Input &input, EventBus &eventBus)
-            : input(input), eventBus(eventBus) {}
+    GuiEventSystem::GuiEventSystem(Window &window, EventBus &eventBus)
+            : window(window), eventBus(eventBus) {}
 
     void GuiEventSystem::start(EntityScene &scene) {}
 
@@ -38,12 +38,21 @@ namespace xng {
         for (auto &pair: scene.getPool<ButtonComponent>()) {
             auto &rt = scene.lookup<RectTransform>(pair.first);
             ResourceHandle<Sprite> sprite;
-            if (rt.rect.testPoint(input.getMouse().position.convert<float>())) {
-                if (input.getMouse().getButtonDown(LEFT)) {
-                    // Pressing
-                    eventBus.invoke(GuiEvent(GuiEvent::BUTTON_CLICK, pair.second.id));
+            auto rect = Rectf(rt.rect.position + RectTransform::getOffset(rt.anchor,
+                                                                          window.getRenderTarget().getDescription().size.convert<float>())
+                              + Vec2f(0, rt.center.y)
+                              - Vec2f(rt.center.x, 0),
+                              rt.rect.dimensions);
+            if (rect.testPoint(window.getInput().getMouse().position.convert<float>())) {
+                if (window.getInput().getMouse().getButton(LEFT)) {
+                    if (clickButtons.find(pair.first) == clickButtons.end()){
+                        // Pressing
+                        eventBus.invoke(GuiEvent(GuiEvent::BUTTON_CLICK, pair.second.id));
+                        clickButtons.insert(pair.first);
+                    }
                     sprite = pair.second.spritePressed;
                 } else {
+                    clickButtons.erase(pair.first);
                     // Hovering
                     if (hoverButtons.find(pair.first) == hoverButtons.end()) {
                         eventBus.invoke(GuiEvent(GuiEvent::BUTTON_HOVER_START, pair.second.id));
@@ -53,6 +62,7 @@ namespace xng {
                 hoverButtons.insert(pair.first);
             } else {
                 // Not hovering
+                clickButtons.erase(pair.first);
                 if (hoverButtons.find(pair.first) != hoverButtons.end()) {
                     eventBus.invoke(GuiEvent(GuiEvent::BUTTON_HOVER_STOP, pair.second.id));
                     hoverButtons.erase(pair.first);
