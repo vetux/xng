@@ -22,28 +22,28 @@ namespace xng {
                 : position(position), dimensions(dimensions) {
         }
 
-        Vector2<T> center() {
+        Vector2<T> center() const {
             return Vector2<T>(position.x + dimensions.x / 2, position.y - dimensions.y / 2);
         }
 
-        Vector2<T> top() {
+        Vector2<T> top() const {
             return Vector2<T>(position.x + dimensions.x / 2, position.y);
         }
 
-        Vector2<T> right() {
+        Vector2<T> right() const {
             return Vector2<T>(position.x + dimensions.x, position.y - dimensions.y / 2);
         }
 
-        Vector2<T> bottom() {
+        Vector2<T> bottom() const {
             return Vector2<T>(position.x + dimensions.x / 2, position.y - dimensions.y);
         }
 
-        Vector2<T> left() {
+        Vector2<T> left() const {
             return Vector2<T>(position.x, position.y - dimensions.y / 2);
         }
 
         template<typename R>
-        explicit operator Rectangle<R>() {
+        explicit operator Rectangle<R>() const {
             return convert<R>();
         }
 
@@ -53,12 +53,12 @@ namespace xng {
                                 Vector2<R>(static_cast<R>(dimensions.x), static_cast<R>(dimensions.y)));
         }
 
-        bool testPoint(Vector2<T> point) {
+        bool testPoint(Vector2<T> point) const {
             return point.x >= position.x && point.y <= position.y && point.x <= position.x + dimensions.x &&
                    point.y >= position.y - dimensions.y;
         }
 
-        bool testOverlap(Rectangle<T> other) {
+        bool testOverlap(Rectangle<T> other) const {
             if (position.x > other.position.x + other.dimensions.x)
                 return false;
             else if (position.y < other.position.y - other.dimensions.y)
@@ -87,7 +87,7 @@ namespace xng {
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            position >> message["position"] ;
+            position >> message["position"];
             dimensions >> message["rotation"];
             return message;
         }

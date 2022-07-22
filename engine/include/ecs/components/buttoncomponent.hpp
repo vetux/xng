@@ -27,10 +27,16 @@ namespace xng {
     struct XENGINE_EXPORT ButtonComponent : public Messageable {
         std::string id;
         int layer; // The layer of this button used for resolving inputs on overlapping buttons
+        ResourceHandle<Sprite> sprite;
+        ResourceHandle<Sprite> spriteHover;
+        ResourceHandle<Sprite> spritePressed;
 
         Messageable &operator<<(const Message &message) override {
             id = message.value("id", std::string());
             layer = message.value("layer", 0);
+            sprite << message.value("sprite");
+            spriteHover << message.value("spriteHover");
+            spritePressed << message.value("spritePressed");
             return *this;
         }
 
@@ -38,6 +44,9 @@ namespace xng {
             message = Message(Message::DICTIONARY);
             message["id"] = id;
             message["layer"] = layer;
+            sprite >> message["sprite"];
+            spriteHover >> message["spriteHover"];
+            spritePressed >> message["spritePressed"];
             return message;
         }
     };
