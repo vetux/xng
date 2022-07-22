@@ -26,7 +26,7 @@
 
 namespace xng {
     /**
-     * Convenience wrapper around the container classes
+     * Wrapper class for representing entities as objects in code.
      */
     class Entity {
     public:
@@ -39,17 +39,17 @@ namespace xng {
 
         void setName(const std::string &name) {
             checkPointer();
-            scene->setName(handle, name);
+            scene->setEntityName(handle, name);
         }
 
         void clearName() {
             checkPointer();
-            scene->clearName(handle);
+            scene->clearEntityName(handle);
         }
 
         const std::string &getName() {
             checkPointer();
-            return scene->getName(handle);
+            return scene->getEntityName(handle);
         }
 
         template<typename T>

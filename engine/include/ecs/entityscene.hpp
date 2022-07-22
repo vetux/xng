@@ -70,22 +70,31 @@ namespace xng {
 
         std::type_index getTypeIndex() override;
 
+        const std::string &getName()const {
+            return name;
+        }
+
+        void setName(const std::string &v){
+            name = v;
+        }
+
+
         /**
          * Optional name mapping.
          * Set the name of the given entity to the passed value.
-         * The entity can then be accessed by name by calling getByName().
+         * The entity can then be accessed by name by calling getEntityByName().
          *
          * @param entity
          * @param name
          */
-        void setName(const EntityHandle &entity, const std::string &name) {
+        void setEntityName(const EntityHandle &entity, const std::string &name) {
             if (entityNames.find(name) != entityNames.end())
                 throw std::runtime_error("Entity with name " + name + " already exists");
             entityNames.insert(std::make_pair(name, entity));
             entityNamesReverse[entity] = name;
         }
 
-        void clearName(const EntityHandle &entity) {
+        void clearEntityName(const EntityHandle &entity) {
             if (entityNamesReverse.find(entity) == entityNamesReverse.end())
                 throw std::runtime_error("Entity does not have a name mapping");
             auto name = entityNamesReverse.at(entity);
@@ -93,11 +102,11 @@ namespace xng {
             entityNamesReverse.erase(entity);
         }
 
-        const std::string &getName(const EntityHandle &entity) const {
+        const std::string &getEntityName(const EntityHandle &entity) const {
             return entityNamesReverse.at(entity);
         }
 
-        EntityHandle getByName(const std::string &name) const {
+        EntityHandle getEntityByName(const std::string &name) const {
             return entityNames.at(name);
         }
 
@@ -125,7 +134,7 @@ namespace xng {
 
         EntityHandle create(const std::string &name) {
             auto ret = create();
-            setName(ret, name);
+            setEntityName(ret, name);
             return ret;
         }
 
@@ -279,6 +288,8 @@ namespace xng {
         ComponentContainer components;
 
         std::set<Listener *> listeners;
+
+        std::string name;
     };
 }
 

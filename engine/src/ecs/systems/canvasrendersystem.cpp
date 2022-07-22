@@ -46,7 +46,7 @@ namespace xng {
         for (auto &p: scene.getPool<RectTransform>()) {
             if (!p.second.enabled)
                 continue;
-            auto &c = scene.lookup<CanvasComponent>(scene.getByName(p.second.parent));
+            auto &c = scene.lookup<CanvasComponent>(scene.getEntityByName(p.second.parent));
             if (scene.check<SpriteComponent>(p.first)) {
                 auto &r = scene.lookup<SpriteComponent>(p.first);
                 canvases[c.layer][r.layer].emplace_back(p.first);
@@ -66,7 +66,7 @@ namespace xng {
             for (auto &entPair: pair.second) {
                 for (auto &ent: entPair.second) {
                     auto &rt = scene.lookup<RectTransform>(ent);
-                    auto &t = scene.lookup<CanvasComponent>(scene.getByName(rt.parent));
+                    auto &t = scene.lookup<CanvasComponent>(scene.getEntityByName(rt.parent));
                     ren2d.setCameraPosition(t.cameraPosition);
 
                     if (scene.check<SpriteComponent>(ent)) {

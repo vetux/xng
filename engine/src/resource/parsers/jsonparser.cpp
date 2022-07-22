@@ -108,6 +108,7 @@ namespace xng {
                 std::string name = element.value("name", std::string());
                 EntityScene scene;
                 scene << element;
+                scene.setName(name);
                 ret.add(name, std::make_unique<EntityScene>(scene));
             }
         }
