@@ -159,7 +159,7 @@ namespace xng {
 
         // Render the text (upside down?) to a texture and then render the final text texture using the 2d renderer
         auto tmpTexture = ren2d.getDevice().createTextureBuffer({.size = size.convert<int>()});
-        target->setColorAttachments({tmpTexture.get()});
+        target->setColorAttachments({*tmpTexture});
         ren2d.renderBegin(*target);
         for (auto &c: renderText) {
             auto texSize = c.texture.get().getDescription().size.convert<float>();
@@ -173,16 +173,16 @@ namespace xng {
         }
         ren2d.renderPresent();
 
-        target->setColorAttachments(std::vector<TextureBuffer *>());
+        target->setColorAttachments({});
 
         //Render the upside down texture of the text using the 2d renderer to correct the rotation?
         auto tex = ren2d.getDevice().createTextureBuffer({size.convert<int>()});
 
-        target->setColorAttachments({tex.get()});
+        target->setColorAttachments({*tex});
         ren2d.renderBegin(*target);
         ren2d.draw(Rectf({}, size), Rectf({}, size), *tmpTexture, {}, 0, {false, false});
         ren2d.renderPresent();
-        target->setColorAttachments(std::vector<TextureBuffer *>());
+        target->setColorAttachments({});
 
         return {text, origin, lineWidth, std::move(tex)};
     }

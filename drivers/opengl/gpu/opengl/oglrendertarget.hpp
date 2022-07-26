@@ -22,6 +22,8 @@
 
 #include "gpu/rendertarget.hpp"
 
+#include <utility>
+
 #include "gpu/opengl/oglbuildmacro.hpp"
 
 #include "gpu/opengl/ogltexturebuffer.hpp"
@@ -38,7 +40,7 @@ namespace xng {
             bool attachedDepthStencil = false;
 
             explicit OPENGL_TYPENAME(RenderTarget)(RenderTargetDesc inputDescription)
-                    : desc(inputDescription) {
+                    : desc(std::move(inputDescription)) {
                 initialize();
 
                 glGenFramebuffers(1, &FBO);
@@ -228,7 +230,7 @@ namespace xng {
                 checkGLError("OGLUserFrameBuffer::blitFramebuffer");
             }
 
-            void setColorAttachments(const std::vector<TextureBuffer *> &textures) override {
+            void setColorAttachments(const std::vector<std::reference_wrapper<TextureBuffer>> &textures) override {
                 glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
                 if (textures.empty()) {
@@ -248,31 +250,19 @@ namespace xng {
 
                     int index = 0;
                     for (auto &texture: textures) {
-                        if (texture == nullptr) {
-                            if (desc.multisample)
-                                glFramebufferTexture2D(GL_FRAMEBUFFER,
-                                                       GL_COLOR_ATTACHMENT0 + index,
-                                                       GL_TEXTURE_2D_MULTISAMPLE,
-                                                       0,
-                                                       0);
-                            else
-                                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, GL_TEXTURE_2D, 0,
-                                                       0);
-                        } else {
-                            auto &tex = dynamic_cast<OPENGL_TYPENAME(TextureBuffer) &>(*texture);
-                            glFramebufferTexture2D(GL_FRAMEBUFFER,
-                                                   GL_COLOR_ATTACHMENT0 + index,
-                                                   convert(tex.getDescription().textureType),
-                                                   tex.handle,
-                                                   0);
-                        }
+                        auto &tex = dynamic_cast<OPENGL_TYPENAME(TextureBuffer) &>(texture.get());
+                        glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                               GL_COLOR_ATTACHMENT0 + index,
+                                               convert(tex.getDescription().textureType),
+                                               tex.handle,
+                                               0);
                         index++;
                     }
                 }
 
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-                attachedColor = textures.size();
+                attachedColor = numeric_cast<int>(textures.size());
 
                 checkGLError();
             }
@@ -302,7 +292,8 @@ namespace xng {
                 checkGLError();
             }
 
-            void setColorAttachments(const std::vector<std::pair<CubeMapFace, TextureBuffer *>> &textures) override {
+            void setCubeMapColorAttachments(
+                    const std::vector<std::pair<CubeMapFace, std::reference_wrapper<TextureBuffer>>> &textures) override {
                 glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
                 if (textures.empty()) {
@@ -322,32 +313,24 @@ namespace xng {
 
                     int index = 0;
                     for (auto &pair: textures) {
-                        if (pair.second == nullptr) {
-                            glFramebufferTexture2D(GL_FRAMEBUFFER,
-                                                   GL_COLOR_ATTACHMENT0 + index,
-                                                   convert(pair.first),
-                                                   0,
-                                                   0);
-                        } else {
-                            auto &tex = dynamic_cast<OPENGL_TYPENAME(TextureBuffer) &>(*pair.second);
-                            glFramebufferTexture2D(GL_FRAMEBUFFER,
-                                                   GL_COLOR_ATTACHMENT0 + index,
-                                                   convert(pair.first),
-                                                   tex.handle,
-                                                   0);
-                        }
+                        auto &tex = dynamic_cast<OPENGL_TYPENAME(TextureBuffer) &>(pair.second.get());
+                        glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                               GL_COLOR_ATTACHMENT0 + index,
+                                               convert(pair.first),
+                                               tex.handle,
+                                               0);
                         index++;
                     }
                 }
 
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-                attachedColor = textures.size();
+                attachedColor = numeric_cast<int>(textures.size());
 
                 checkGLError();
             }
 
-            void setDepthStencilAttachment(CubeMapFace face, TextureBuffer *texture) override {
+            void setCubeMapDepthStencilAttachment(CubeMapFace face, TextureBuffer *texture) override {
                 if (texture == nullptr) {
                     glBindFramebuffer(GL_FRAMEBUFFER, FBO);
                     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);

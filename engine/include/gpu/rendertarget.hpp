@@ -59,13 +59,13 @@ namespace xng {
                                  Vec2i sourceRect,
                                  Vec2i targetRect) = 0;
 
-        virtual void setColorAttachments(const std::vector<TextureBuffer *> &textures) = 0;
+        virtual void setColorAttachments(const std::vector<std::reference_wrapper<TextureBuffer>> &textures) = 0;
 
         virtual void setDepthStencilAttachment(TextureBuffer *texture) = 0;
 
-        virtual void setColorAttachments(const std::vector<std::pair<CubeMapFace, TextureBuffer *>> &textures) = 0;
+        virtual void setCubeMapColorAttachments(const std::vector<std::pair<CubeMapFace, std::reference_wrapper<TextureBuffer>>> &textures) = 0;
 
-        virtual void setDepthStencilAttachment(CubeMapFace face, TextureBuffer *texture) = 0;
+        virtual void setCubeMapDepthStencilAttachment(CubeMapFace face, TextureBuffer *texture) = 0;
 
         virtual bool isComplete() = 0;
     };
