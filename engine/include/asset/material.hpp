@@ -26,6 +26,22 @@
 
 namespace xng {
     struct XENGINE_EXPORT Material : public Resource, public Messageable {
+        enum LightingModel : int {
+            PHONG = 0,
+            PBR = 1
+        };
+
+        static LightingModel deserializeModel(int model) {
+            switch (model) {
+                case PHONG:
+                    return PHONG;
+                case PBR:
+                    return PBR;
+                default:
+                    throw std::runtime_error("Invalid model id");
+            }
+        }
+
         ~Material() override = default;
 
         std::unique_ptr<Resource> clone() override {
@@ -37,54 +53,101 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
+            model = deserializeModel(message.value("model", static_cast<int>(PHONG)));
+
             diffuse << message.value("diffuse");
             ambient << message.value("ambient");
             specular << message.value("specular");
-            emissive << message.value("emissive");
             shininess = message.value("shininess", 32.0f);
+
             diffuseTexture << message.value("diffuseTexture");
             ambientTexture << message.value("ambientTexture");
             specularTexture << message.value("specularTexture");
-            emissiveTexture <<message.value("emissiveTexture");
             shininessTexture << message.value("shininessTexture");
-            normalTexture << message.value("normalTexture");
+
+            albedo << message.value("albedo");
+            metallic = message.value("metallic", 0.0f);
+            roughness = message.value("roughness", 1.0f);
+            ambientOcclusion = message.value("ambientOcclusion", 1.0f);
+
+            albedoTexture << message.value("albedoTexture");
+            metallicTexture << message.value("metallicTexture");
+            roughnessTexture << message.value("roughnessTexture");
+            ambientOcclusionTexture << message.value("ambientOcclusionTexture");
+
+            normal << message.value("normal");
+
+            receiveShadows = message.value("receiveShadows", false);
+
             return *this;
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
+
+            message["model"] = model;
+
             diffuse >> message["diffuse"];
             ambient >> message["ambient"];
             specular >> message["specular"];
-            emissive >> message["emissive"];
             message["shininess"] = shininess;
+
             if (diffuseTexture.assigned())
                 diffuseTexture >> message["diffuseTexture"];
             if (ambientTexture.assigned())
                 ambientTexture >> message["ambientTexture"];
             if (specularTexture.assigned())
                 specularTexture >> message["specularTexture"];
-            if (emissiveTexture.assigned())
-                emissiveTexture >> message["emissiveTexture"];
             if (shininessTexture.assigned())
                 shininessTexture >> message["shininessTexture"];
-            if (normalTexture.assigned())
-                normalTexture >> message["normalTexture"];
+
+            albedo >> message["albedo"];
+            message["metallic"] = metallic;
+            message["roughness"] = roughness;
+            message["ambientOcclusion"] = ambientOcclusion;
+
+            if (albedoTexture.assigned())
+                albedoTexture >> message["albedoTexture"];
+            if (metallicTexture.assigned())
+                metallicTexture >> message["metallicTexture"];
+            if (roughnessTexture.assigned())
+                roughnessTexture >> message["roughnessTexture"];
+            if (ambientOcclusionTexture.assigned())
+                ambientOcclusionTexture >> message["ambientOcclusionTexture"];
+
+            if (normal.assigned())
+                normal >> message["normal"];
+
+            message["receiveShadows"] = receiveShadows;
+
             return message;
         }
+
+        LightingModel model{};
 
         ColorRGBA diffuse{};
         ColorRGBA ambient{};
         ColorRGBA specular{};
-        ColorRGBA emissive{};
-        float shininess{32};
+        float shininess;
 
         ResourceHandle<Texture> diffuseTexture;
         ResourceHandle<Texture> ambientTexture;
         ResourceHandle<Texture> specularTexture;
-        ResourceHandle<Texture> emissiveTexture;
         ResourceHandle<Texture> shininessTexture;
-        ResourceHandle<Texture> normalTexture;
+
+        ColorRGBA albedo{};
+        float metallic{};
+        float roughness{};
+        float ambientOcclusion{};
+
+        ResourceHandle<ImageRGBA> albedoTexture;
+        ResourceHandle<ImageRGBA> metallicTexture;
+        ResourceHandle<ImageRGBA> roughnessTexture;
+        ResourceHandle<ImageRGBA> ambientOcclusionTexture;
+
+        ResourceHandle<ImageRGBA> normal; // If assigned the sampled normals are used otherwise vertex normals.
+
+        bool receiveShadows; // If true fragments belonging to this material are shadowed by other objects in the scene.
     };
 }
 
