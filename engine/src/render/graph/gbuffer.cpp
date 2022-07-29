@@ -19,9 +19,23 @@
 
 #include "render/graph/gbuffer.hpp"
 
+#include <utility>
+
 namespace xng {
-    GBuffer::GBuffer(RenderDevice &device, Vec2i size, int samples)
-            : size(size), samples(samples) {
+    GBuffer::GBuffer(Vec2i size, int samples)
+            : size(std::move(size)), samples(samples) {}
+
+    GBuffer::~GBuffer() = default;
+
+    Vec2i GBuffer::getSize() const {
+        return size;
+    }
+
+    int GBuffer::getSamples() const {
+        return samples;
+    }
+
+    void GBuffer::setup(FrameGraphBuilder &builder) {
         if (size.x < 1 || size.y < 1)
             throw std::runtime_error("Invalid size");
         if (samples < 1)
@@ -34,46 +48,22 @@ namespace xng {
 
         for (int i = GEOMETRY_TEXTURE_BEGIN, index = 0; i < GEOMETRY_TEXTURE_END; i++, index++) {
             auto tex = static_cast<GTexture>(i);
-            if (i < DIFFUSE) {
+            if (i < GEOMETRY_TEXTURE_ALBEDO) {
                 attr.format = RGBA32F;
-            } else if (i < ID_SHININESS) {
+            } else if (i < GEOMETRY_TEXTURE_LIGHTMODEL_OBJECT) {
                 attr.format = RGBA;
             } else {
                 attr.format = RGBA32I;
             }
-            textures[tex] = device.createTextureBuffer(attr);
+            textures[tex] = builder.createTextureBuffer(attr);
         }
 
         attr.format = DEPTH_STENCIL;
 
-        textures[DEPTH] = device.createTextureBuffer(attr);
+        textures[GEOMETRY_TEXTURE_DEPTH] = builder.createTextureBuffer(attr);
     }
 
-    GBuffer::~GBuffer() = default;
-
-    Vec2i GBuffer::getSize() const {
-        return size;
-    }
-
-    int GBuffer::getSamples() const {
-        return samples;
-    }
-
-    TextureBuffer &GBuffer::getTexture(GBuffer::GTexture type) const {
-        return *textures.at(type);
-    }
-
-    void GBuffer::attachTextures(RenderTarget &target) const {
-        std::vector<TextureBuffer *> tex;
-        for (int i = GBuffer::GEOMETRY_TEXTURE_BEGIN; i < GBuffer::GEOMETRY_TEXTURE_END; i++) {
-            tex.emplace_back(&getTexture((GTexture)i));
-        }
-        target.setColorAttachments(tex);
-        target.setDepthStencilAttachment(&getTexture(DEPTH));
-    }
-
-    void GBuffer::detachTextures(RenderTarget &target) const {
-        target.setColorAttachments(std::vector<TextureBuffer*>());
-        target.setDepthStencilAttachment(nullptr);
+    TextureBuffer &GBuffer::getTexture(GBuffer::GTexture type, FrameGraphPassResources &resources) const {
+        return resources.getTextureBuffer(textures.at(type));
     }
 }

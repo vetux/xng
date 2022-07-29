@@ -25,7 +25,6 @@
 #include <utility>
 
 #include "render/graph/framegraphresource.hpp"
-#include "render/graph/gbuffer.hpp"
 
 #include "gpu/texturebuffer.hpp"
 #include "gpu/vertexbuffer.hpp"

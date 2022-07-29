@@ -36,8 +36,6 @@ namespace xng {
     private:
         RenderDevice &device;
 
-        GBuffer gBuffer;
-
         Scene scene;
 
         FrameGraphResource defaultTexture;

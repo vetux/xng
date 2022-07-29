@@ -22,32 +22,35 @@
 
 #include <memory>
 
-#include "gpu/renderdevice.hpp"
+#include "render/graph/framegraphresource.hpp"
+#include "render/graph/framegraphbuilder.hpp"
+#include "render/graph/framegraphpassresources.hpp"
+
+#include "math/vector2.hpp"
+
+#include "gpu/rendertarget.hpp"
 #include "gpu/texturebuffer.hpp"
 
 namespace xng {
     class XENGINE_EXPORT GBuffer {
     public:
-        /**
-         * X are currently unused components.
-         */
         enum GTexture : int {
-            POSITION = 0, // RGBA32F : World Space Position xyz, w = X
-            NORMAL = 1, // RGBA32F : Vertex Normal xyz, w = X
-            TANGENT = 2, // RGBA32F : Vertex Tangent xyz, w = X
-            TEXTURE_NORMAL = 3, // RGBA32F : Texture Normal in tangent space or a vector of zero length if no texture normals, xyz, w = X
-            DIFFUSE = 4, // RGBA : The diffuse color value with alpha in the w channel.
-            AMBIENT = 5, // RGBA : The ambient color value xyz, w = X
-            SPECULAR = 6, // RGBA : The specular color value xyz, w = X
-            ID_SHININESS = 7, // RGBA32I : .x = ID, .y = SHININESS, .z = X, .w = X
-            DEPTH = 8, // DEPTH_STENCIL : The depth value in the x component
-            GEOMETRY_TEXTURE_BEGIN = POSITION,
-            GEOMETRY_TEXTURE_END = DEPTH
+            GEOMETRY_TEXTURE_POSITION = 0, // RGBA32F : World Space Position xyz, w = X
+            GEOMETRY_TEXTURE_NORMAL = 1, // RGBA32F : Vertex or Texture Normal xyz, w = X
+            GEOMETRY_TEXTURE_TANGENT = 2, // RGBA32F : Vertex Tangent xyz, w = X
+            GEOMETRY_TEXTURE_ROUGHNESS_METALLIC_AO = 3, // RGBA32f : .x = pbr roughness or phong shininess, .y = pbr metallic, .z = pbr ambient occlusion
+            GEOMETRY_TEXTURE_ALBEDO = 4, // RGBA : The pbr albedo or phong diffuse color value
+            GEOMETRY_TEXTURE_AMBIENT = 5, // RGBA : The phong ambient color value
+            GEOMETRY_TEXTURE_SPECULAR = 6, // RGBA : The phong specular color value
+            GEOMETRY_TEXTURE_LIGHTMODEL_OBJECT = 7, // RGBA32I : .x = Lighting Model ID, .y = Object ID
+            GEOMETRY_TEXTURE_DEPTH = 8, // DEPTH_STENCIL : The depth value in the x component
+            GEOMETRY_TEXTURE_BEGIN = GEOMETRY_TEXTURE_POSITION,
+            GEOMETRY_TEXTURE_END = GEOMETRY_TEXTURE_DEPTH
         };
 
         GBuffer() = default;
 
-        explicit GBuffer(RenderDevice &device, Vec2i size = {640, 320}, int samples = 4);
+        explicit GBuffer(Vec2i size = {640, 320}, int samples = 4);
 
         ~GBuffer();
 
@@ -64,22 +67,25 @@ namespace xng {
         int getSamples() const;
 
         /**
+         * Create the resource handles.
+         *
+         * @param builder
+         */
+        void setup(FrameGraphBuilder &builder);
+
+        /**
          * Get the texture buffer object for the given type.
          *
          * @param type
          * @return
          */
-        TextureBuffer &getTexture(GTexture type) const;
-
-        void attachTextures(RenderTarget &target) const;
-
-        void detachTextures(RenderTarget &target) const;
+        TextureBuffer &getTexture(GTexture type, FrameGraphPassResources &resources) const;
 
     private:
-        Vec2i size = {1, 1}; //The size of the geometry textures
+        Vec2i size = {1, 1}; //The size of the textures
         int samples = 1; //The number of msaa samples to use for geometry textures, all geometry textures are TEXTURE_2D_MULTISAMPLE
 
-        std::map<GTexture, std::shared_ptr<TextureBuffer>> textures;
+        std::map<GTexture, FrameGraphResource> textures;
     };
 }
 
