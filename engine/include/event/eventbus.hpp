@@ -22,7 +22,6 @@
 
 #include <functional>
 #include <set>
-#include <mutex>
 
 #include "event/event.hpp"
 #include "event/eventlistener.hpp"
@@ -32,14 +31,12 @@ namespace xng {
     class XENGINE_EXPORT EventBus : public Listenable<EventListener> {
     public:
         void invoke(const Event &event) {
-            std::lock_guard<std::mutex> guard(mutex);
             for (auto *receiver: listeners) {
                 receiver->onEvent(event);
             }
         }
 
         UnregisterCallback addListener(EventListener &listener) override {
-            std::lock_guard<std::mutex> guard(mutex);
             listeners.insert(&listener);
             return [this, &listener]() {
                 removeListener(listener);
@@ -47,12 +44,10 @@ namespace xng {
         }
 
         void removeListener(EventListener &listener) override {
-            std::lock_guard<std::mutex> guard(mutex);
             listeners.erase(&listener);
         }
 
     private:
-        std::mutex mutex;
         std::set<EventListener *> listeners;
     };
 }
