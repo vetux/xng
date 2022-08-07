@@ -42,19 +42,14 @@ namespace xng {
         return polyShape;
     }
 
-    ColliderBox2D::ColliderBox2D(RigidBodyBox2D &body,
-                                 const ColliderShape &shape,
-                                 float friction,
-                                 float restitution,
-                                 float density,
-                                 bool isSensor) : body(body) {
-        b2PolygonShape polygonShape = convertShape(shape);
+    ColliderBox2D::ColliderBox2D(RigidBodyBox2D &body, const ColliderDesc &desc) : body(body) {
+        b2PolygonShape polygonShape = convertShape(desc.shape);
         b2FixtureDef fixtureDef;
         fixtureDef.shape = &polygonShape;
-        fixtureDef.friction = friction;
-        fixtureDef.restitution = restitution;
-        fixtureDef.density = density;
-        fixtureDef.isSensor = isSensor;
+        fixtureDef.friction = desc.friction;
+        fixtureDef.restitution = desc.restitution;
+        fixtureDef.density = desc.density;
+        fixtureDef.isSensor = desc.isSensor;
         fixture = body.body->CreateFixture(&fixtureDef);
 
         body.world.fixtureColliderMapping[fixture] = this;

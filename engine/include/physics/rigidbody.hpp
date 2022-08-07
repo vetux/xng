@@ -25,6 +25,7 @@
 
 #include "physics/collider.hpp"
 #include "collidershape.hpp"
+#include "colliderdesc.hpp"
 
 namespace xng {
     class World;
@@ -59,11 +60,7 @@ namespace xng {
 
         virtual Vec3f getAngularVelocity() = 0;
 
-        virtual std::unique_ptr<Collider> createCollider(const ColliderShape &shape,
-                                                         float friction,
-                                                         float restitution,
-                                                         float density,
-                                                         bool isSensor) = 0;
+        virtual std::unique_ptr<Collider> createCollider(const ColliderDesc &desc) = 0;
     };
 }
 #endif //XENGINE_RIGIDBODY_HPP

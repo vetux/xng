@@ -20,7 +20,8 @@
 #ifndef XENGINE_COLLIDERBOX2D_HPP
 #define XENGINE_COLLIDERBOX2D_HPP
 
-#include <physics/collidershape.hpp>
+#include "physics/collidershape.hpp"
+#include "physics/colliderdesc.hpp"
 #include "physics/box2d/box2d.hpp"
 
 #include "physics/collider.hpp"
@@ -33,12 +34,7 @@ namespace xng {
         RigidBodyBox2D &body;
         b2Fixture *fixture;
 
-        ColliderBox2D(RigidBodyBox2D &body,
-                      const ColliderShape &shape,
-                      float friction,
-                      float restitution,
-                      float density,
-                      bool isSensor);
+        ColliderBox2D(RigidBodyBox2D &body, const ColliderDesc &desc);
 
         ~ColliderBox2D() override;
 

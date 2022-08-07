@@ -57,11 +57,7 @@ namespace xng {
 
         Vec3f getAngularVelocity() override;
 
-        std::unique_ptr<Collider> createCollider(const ColliderShape &shape,
-                                                 float friction,
-                                                 float restitution,
-                                                 float density,
-                                                 bool isSensor) override;
+        std::unique_ptr<Collider> createCollider(const ColliderDesc &desc) override;
     };
 }
 

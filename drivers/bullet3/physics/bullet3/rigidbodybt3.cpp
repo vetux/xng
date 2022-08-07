@@ -60,9 +60,7 @@ namespace xng {
         return Vec3f();
     }
 
-    std::unique_ptr<Collider>
-    RigidBodyBt3::createCollider(const ColliderShape &shape, float friction, float restitution, float density,
-                                 bool isSensor) {
+    std::unique_ptr<Collider> RigidBodyBt3::createCollider(const ColliderDesc &desc) {
         return std::unique_ptr<Collider>();
     }
 }

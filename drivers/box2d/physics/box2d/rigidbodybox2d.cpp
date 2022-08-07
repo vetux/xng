@@ -72,11 +72,7 @@ namespace xng {
         return {0, 0, body->GetAngularVelocity()};
     }
 
-    std::unique_ptr<Collider> RigidBodyBox2D::createCollider(const ColliderShape &shape,
-                                                             float friction,
-                                                             float restitution,
-                                                             float density,
-                                                             bool isSensor) {
-        return std::make_unique<ColliderBox2D>(*this, shape, friction, restitution, density, isSensor);
+    std::unique_ptr<Collider> RigidBodyBox2D::createCollider(const ColliderDesc &desc) {
+        return std::make_unique<ColliderBox2D>(*this, desc);
     }
 }
