@@ -76,7 +76,8 @@ namespace xng {
         }
 
         auto frame = numeric_cast<size_t>(time / frameTime);
-        assert(frame < frames.size());
+        if (frame >= frames.size())
+            frame = frames.size() - 1;
         return keyframes.at(frames.at(frame)).sprite;
     }
 
