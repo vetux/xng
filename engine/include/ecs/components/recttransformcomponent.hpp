@@ -17,13 +17,16 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RECTTRANSFORM_HPP
-#define XENGINE_RECTTRANSFORM_HPP
+#ifndef XENGINE_RECTTRANSFORMCOMPONENT_HPP
+#define XENGINE_RECTTRANSFORMCOMPONENT_HPP
 
 #include "io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT RectTransform : public Messageable {
+    /**
+     * If the entity contains a TransformComponent the position(.x, .y) and rotation(.z) are added to the rect transform values.
+     */
+    struct XENGINE_EXPORT RectTransformComponent : public Messageable {
         enum Anchor {
             TOP_LEFT,
             TOP_CENTER,
@@ -139,4 +142,4 @@ namespace xng {
         }
     };
 }
-#endif //XENGINE_RECTTRANSFORM_HPP
+#endif //XENGINE_RECTTRANSFORMCOMPONENT_HPP

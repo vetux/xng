@@ -49,12 +49,11 @@ namespace xng {
         SERIALIZE_COMPONENT("button", ButtonComponent)
         SERIALIZE_COMPONENT("camera", CameraComponent)
         SERIALIZE_COMPONENT("canvas", CanvasComponent)
-        SERIALIZE_COMPONENT("collider", ColliderComponent)
+        SERIALIZE_COMPONENT("rigidbody", RigidBodyComponent)
         SERIALIZE_COMPONENT("light", LightComponent)
         SERIALIZE_COMPONENT("render", MeshRenderComponent)
         SERIALIZE_COMPONENT("particle", ParticleComponent)
-        SERIALIZE_COMPONENT("rect_transform", RectTransform)
-        SERIALIZE_COMPONENT("rigidbody", RigidBodyComponent)
+        SERIALIZE_COMPONENT("rect_transform", RectTransformComponent)
         SERIALIZE_COMPONENT("skybox", SkyboxComponent)
         SERIALIZE_COMPONENT("sprite_animation", SpriteAnimationComponent)
         SERIALIZE_COMPONENT("sprite", SpriteComponent)
@@ -65,7 +64,7 @@ namespace xng {
     }
 
     void EntityScene::deserializeEntity(const Message &message) {
-        EntityHandle entity(0);
+        EntityHandle entity;
         if (message.has("name")) {
             entity = create(message.at("name"));
         } else {
@@ -90,12 +89,11 @@ namespace xng {
         DESERIALIZE_COMPONENT("button", ButtonComponent)
         DESERIALIZE_COMPONENT("camera", CameraComponent)
         DESERIALIZE_COMPONENT("canvas", CanvasComponent)
-        DESERIALIZE_COMPONENT("collider", ColliderComponent)
+        DESERIALIZE_COMPONENT("rigidbody", RigidBodyComponent)
         DESERIALIZE_COMPONENT("light", LightComponent)
         DESERIALIZE_COMPONENT("render", MeshRenderComponent)
         DESERIALIZE_COMPONENT("particle", ParticleComponent)
-        DESERIALIZE_COMPONENT("rect_transform", RectTransform)
-        DESERIALIZE_COMPONENT("rigidbody", RigidBodyComponent)
+        DESERIALIZE_COMPONENT("rect_transform", RectTransformComponent)
         DESERIALIZE_COMPONENT("skybox", SkyboxComponent)
         DESERIALIZE_COMPONENT("sprite_animation", SpriteAnimationComponent)
         DESERIALIZE_COMPONENT("sprite", SpriteComponent)

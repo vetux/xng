@@ -19,7 +19,7 @@
 
 #include "ecs/systems/guieventsystem.hpp"
 
-#include "ecs/components/recttransform.hpp"
+#include "ecs/components/recttransformcomponent.hpp"
 #include "ecs/components/buttoncomponent.hpp"
 #include "ecs/components/spritecomponent.hpp"
 #include "event/events/guievent.hpp"
@@ -36,10 +36,10 @@ namespace xng {
 
     void GuiEventSystem::update(DeltaTime deltaTime, EntityScene &scene) {
         for (auto &pair: scene.getPool<ButtonComponent>()) {
-            auto &rt = scene.lookup<RectTransform>(pair.first);
+            auto &rt = scene.lookup<RectTransformComponent>(pair.first);
             ResourceHandle<Sprite> sprite;
-            auto rect = Rectf(rt.rect.position + RectTransform::getOffset(rt.anchor,
-                                                                          window.getRenderTarget().getDescription().size.convert<float>())
+            auto rect = Rectf(rt.rect.position + RectTransformComponent::getOffset(rt.anchor,
+                                                                                   window.getRenderTarget().getDescription().size.convert<float>())
                               + Vec2f(0, rt.center.y)
                               - Vec2f(rt.center.x, 0),
                               rt.rect.dimensions);

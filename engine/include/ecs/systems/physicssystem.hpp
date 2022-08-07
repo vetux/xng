@@ -20,14 +20,15 @@
 #ifndef XENGINE_PHYISCS3DSYSTEM_HPP
 #define XENGINE_PHYISCS3DSYSTEM_HPP
 
+#include "event/eventbus.hpp"
 #include "ecs/system.hpp"
 
 #include "physics/world.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT PhysicsSystem : public System {
+    class XENGINE_EXPORT PhysicsSystem : public System, public EntityScene::Listener, public World::ContactListener {
     public:
-        explicit PhysicsSystem(World &world);
+        PhysicsSystem(World &world, EventBus &eventBus);
 
         ~PhysicsSystem() override = default;
 
@@ -37,8 +38,31 @@ namespace xng {
 
         void update(DeltaTime deltaTime, EntityScene &entityManager) override;
 
+        void onComponentCreate(const EntityHandle &entity,
+                               const std::any &component,
+                               std::type_index componentType) override;
+
+        void onComponentDestroy(const EntityHandle &entity,
+                                const std::any &component,
+                                std::type_index componentType) override;
+
+        void onComponentUpdate(const EntityHandle &entity,
+                               const std::any &oldComponent,
+                               const std::any &newComponent,
+                               std::type_index componentType) override;
+
+        void beginContact(World::Contact &contact) override;
+
+        void endContact(World::Contact &contact) override;
+
     private:
         World &world;
+        EventBus &eventBus;
+
+        std::map<EntityHandle, std::unique_ptr<RigidBody>> rigidbodies;
+        std::map<RigidBody *, EntityHandle> rigidbodiesReverse;
+        std::map<EntityHandle, std::vector<std::unique_ptr<Collider>>> colliders;
+        std::map<Collider *, size_t> colliderIndices;
     };
 }
 

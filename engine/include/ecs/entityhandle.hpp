@@ -24,6 +24,8 @@ namespace xng {
     struct XENGINE_EXPORT EntityHandle {
         int id;
 
+        EntityHandle() : id(-1) {}
+
         explicit EntityHandle(int id) : id(id) {}
 
         bool operator<(const EntityHandle &other) const {

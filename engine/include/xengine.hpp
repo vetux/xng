@@ -51,7 +51,7 @@
 #include "ecs/components/canvascomponent.hpp"
 #include "ecs/components/audiolistenercomponent.hpp"
 #include "ecs/components/spriteanimationcomponent.hpp"
-#include "ecs/components/recttransform.hpp"
+#include "ecs/components/recttransformcomponent.hpp"
 #include "ecs/components/transformcomponent.hpp"
 #include "ecs/components/lightcomponent.hpp"
 #include "display/monitor.hpp"

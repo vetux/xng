@@ -20,7 +20,7 @@
 #include "ecs/systems/canvasrendersystem.hpp"
 
 #include "ecs/components/transformcomponent.hpp"
-#include "ecs/components/recttransform.hpp"
+#include "ecs/components/recttransformcomponent.hpp"
 #include "ecs/components/canvascomponent.hpp"
 #include "ecs/components/textcomponent.hpp"
 
@@ -67,7 +67,7 @@ namespace xng {
         //TODO: Implement rect transform nesting support.
 
         std::map<int, std::map<int, std::vector<Pass>>> passes;
-        for (auto &p: scene.getPool<RectTransform>()) {
+        for (auto &p: scene.getPool<RectTransformComponent>()) {
             if (!p.second.enabled)
                 continue;
             auto &c = scene.lookup<CanvasComponent>(scene.getEntityByName(p.second.parent));
@@ -88,8 +88,9 @@ namespace xng {
         for (auto &pair: passes) {
             for (auto &entPair: pair.second) {
                 for (auto &pass: entPair.second) {
-                    auto &rt = scene.lookup<RectTransform>(pass.ent);
+                    auto &rt = scene.lookup<RectTransformComponent>(pass.ent);
                     auto &t = scene.lookup<CanvasComponent>(scene.getEntityByName(rt.parent));
+                    float rotation = rt.rotation;
                     ren2d.setCameraPosition(t.cameraPosition);
 
                     switch (pass.type) {
@@ -97,17 +98,23 @@ namespace xng {
                             auto &comp = scene.lookup<SpriteComponent>(pass.ent);
                             if (comp.sprite.assigned()) {
                                 auto dstRect = Rectf(rt.rect.position +
-                                                     RectTransform::getOffset(rt.anchor,
-                                                                              target.getDescription().size.convert<float>()),
+                                                             RectTransformComponent::getOffset(rt.anchor,
+                                                                                               target.getDescription().size.convert<float>()),
                                                      rt.rect.dimensions);
+                                if (scene.check<TransformComponent>(pass.ent)){
+                                    auto &vec =  scene.lookup<TransformComponent>(pass.ent);
+                                    dstRect.position.x += vec.transform.getPosition().x;
+                                    dstRect.position.y += vec.transform.getPosition().y;
+                                    rotation += vec.transform.getRotation().z;
+                                }
                                 ren2d.draw(Rectf({}, dstRect.dimensions),
                                            dstRect,
                                            *spriteTextures.at(pass.ent),
                                            rt.center,
-                                           rt.rotation,
+                                           rotation,
                                            comp.flipSprite);
                                 if (drawDebug) {
-                                    ren2d.draw(dstRect, ColorRGBA::yellow(), false, rt.center, rt.rotation);
+                                    ren2d.draw(dstRect, ColorRGBA::yellow(), false, rt.center, rotation);
                                     auto dCenter = dstRect.position;
                                     const int len = 20;
                                     ren2d.draw(dCenter + Vec2f(-len, 0), dCenter + Vec2f(len, 0), ColorRGBA::green());
@@ -122,8 +129,8 @@ namespace xng {
                                 auto texSize = renderedTexts.at(
                                         pass.ent).getTexture().getDescription().size.convert<float>();
                                 Vec2f displaySize(0);
-                                Vec2f displayOffset = RectTransform::getOffset(rt.anchor,
-                                                                               target.getDescription().size.convert<float>());
+                                Vec2f displayOffset = RectTransformComponent::getOffset(rt.anchor,
+                                                                                        target.getDescription().size.convert<float>());
                                 if (texSize.x > rt.rect.dimensions.x) {
                                     displaySize.x = rt.rect.dimensions.x;
                                 } else {
@@ -136,9 +143,15 @@ namespace xng {
                                 }
                                 auto center = Vec2f(displaySize.x / 2, displaySize.y / 2);
                                 auto dstRect = Rectf(rt.rect.position + displayOffset, displaySize);
-                                ren2d.draw(renderedTexts.at(pass.ent), dstRect, tcomp.textColor, center, rt.rotation);
+                                if (scene.check<TransformComponent>(pass.ent)){
+                                    auto &vec =  scene.lookup<TransformComponent>(pass.ent);
+                                    dstRect.position.x += vec.transform.getPosition().x;
+                                    dstRect.position.y += vec.transform.getPosition().y;
+                                    rotation += vec.transform.getRotation().z;
+                                }
+                                ren2d.draw(renderedTexts.at(pass.ent), dstRect, tcomp.textColor, center, rotation);
                                 if (drawDebug) {
-                                    ren2d.draw(dstRect, ColorRGBA::yellow(), false, center, rt.rotation);
+                                    ren2d.draw(dstRect, ColorRGBA::yellow(), false, center, rotation);
                                     auto dCenter = dstRect.position;
                                     const int len = 20;
                                     ren2d.draw(dCenter + Vec2f(-len, 0), dCenter + Vec2f(len, 0), ColorRGBA::green());

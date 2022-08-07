@@ -25,12 +25,31 @@
 
 namespace xng {
     struct XENGINE_EXPORT RigidBodyComponent : public Messageable {
+        bool syncTransform = true; // If true the simulated position and rotation values are applied to the TransformComponent
+        std::vector<ColliderDesc> colliders;
+
         Messageable &operator<<(const Message &message) override {
+            syncTransform = message.value("syncTransform", true);
+            auto list = message.value("colliders");
+            if (list.getType() == Message::LIST) {
+                for (auto &col: list.asList()) {
+                    ColliderDesc desc;
+                    desc << col;
+                    colliders.emplace_back(desc);
+                }
+            }
             return *this;
         }
 
         Message &operator>>(Message &message) const override {
-            message = Message(Message::DICTIONARY);
+            message["syncTransform"] = syncTransform;
+            auto vec = std::vector<Message>();
+            for (auto &col : colliders){
+                Message msg;
+                col >> msg;
+                vec.emplace_back(msg);
+            }
+            message["colliders"] = vec;
             return message;
         }
     };
