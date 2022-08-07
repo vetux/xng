@@ -72,6 +72,14 @@ namespace xng {
         return {0, 0, body->GetAngularVelocity()};
     }
 
+    void RigidBodyBox2D::applyForce(const Vec3f &force, const Vec3f &point) {
+        body->ApplyForce(convert(force), convert(point), true);
+    }
+
+    void RigidBodyBox2D::applyTorque(const Vec3f &torque) {
+        body->ApplyTorque(torque.z, true);
+    }
+
     std::unique_ptr<Collider> RigidBodyBox2D::createCollider(const ColliderDesc &desc) {
         return std::make_unique<ColliderBox2D>(*this, desc);
     }

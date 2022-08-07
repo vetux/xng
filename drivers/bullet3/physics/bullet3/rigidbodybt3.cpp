@@ -63,4 +63,10 @@ namespace xng {
     std::unique_ptr<Collider> RigidBodyBt3::createCollider(const ColliderDesc &desc) {
         return std::unique_ptr<Collider>();
     }
+
+    void RigidBodyBt3::applyForce(const Vec3f &force, const Vec3f &point) {
+    }
+
+    void RigidBodyBt3::applyTorque(const Vec3f &torque) {
+    }
 }

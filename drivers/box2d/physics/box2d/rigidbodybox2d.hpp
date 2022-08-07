@@ -57,6 +57,10 @@ namespace xng {
 
         Vec3f getAngularVelocity() override;
 
+        void applyForce(const Vec3f &force, const Vec3f &point) override;
+
+        void applyTorque(const Vec3f &torque) override;
+
         std::unique_ptr<Collider> createCollider(const ColliderDesc &desc) override;
     };
 }

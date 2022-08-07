@@ -60,6 +60,10 @@ namespace xng {
 
         virtual Vec3f getAngularVelocity() = 0;
 
+        virtual void applyForce(const Vec3f &force, const Vec3f &point) = 0;
+
+        virtual void applyTorque(const Vec3f &torque) = 0;
+
         virtual std::unique_ptr<Collider> createCollider(const ColliderDesc &desc) = 0;
     };
 }
