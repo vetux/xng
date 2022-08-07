@@ -28,17 +28,19 @@
 #include "physics/box2d/jointbox2d.hpp"
 
 namespace xng {
-    class WorldBox2D : public World {
+    class WorldBox2D : public World, public b2ContactListener {
     public:
         b2World world;
+
+        std::set<World::ContactListener *> contactListeners;
+
+        std::map<b2Fixture *, ColliderBox2D *> fixtureColliderMapping;
 
         WorldBox2D();
 
         ~WorldBox2D() override;
 
-        std::unique_ptr<Collider> createCollider(const ColliderShape &shape) override;
-
-        std::unique_ptr<RigidBody> createRigidBody() override;
+        std::unique_ptr<RigidBody> createBody() override;
 
         std::unique_ptr<Joint> createJoint() override;
 
@@ -49,6 +51,10 @@ namespace xng {
         void setGravity(const Vec3f &gravity) override;
 
         void step(float deltaTime) override;
+
+        void BeginContact(b2Contact *contact) override;
+
+        void EndContact(b2Contact *contact) override;
     };
 }
 

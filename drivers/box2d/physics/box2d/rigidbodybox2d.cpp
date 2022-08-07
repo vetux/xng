@@ -19,11 +19,13 @@
 
 #include "rigidbodybox2d.hpp"
 #include "commonbox2d.hpp"
+#include "physics/box2d/worldbox2d.hpp"
 
 namespace xng {
-    RigidBodyBox2D::RigidBodyBox2D(b2World &world) {
+    RigidBodyBox2D::RigidBodyBox2D(WorldBox2D &world)
+            : world(world) {
         b2BodyDef def;
-        body = world.CreateBody(&def);
+        body = world.world.CreateBody(&def);
     }
 
     RigidBodyBox2D::~RigidBodyBox2D() {
@@ -70,5 +72,11 @@ namespace xng {
         return {0, 0, body->GetAngularVelocity()};
     }
 
-    void RigidBodyBox2D::setColliders(std::vector<std::reference_wrapper<Collider>> colliders) {}
+    std::unique_ptr<Collider> RigidBodyBox2D::createCollider(const ColliderShape &shape,
+                                                             float friction,
+                                                             float restitution,
+                                                             float density,
+                                                             bool isSensor) {
+        return std::make_unique<ColliderBox2D>(*this, shape, friction, restitution, density, isSensor);
+    }
 }

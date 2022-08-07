@@ -21,14 +21,51 @@
 
 #include "colliderbox2d.hpp"
 #include "commonbox2d.hpp"
+#include "physics/box2d/rigidbodybox2d.hpp"
+#include "physics/box2d/worldbox2d.hpp"
 
 namespace xng {
-    ColliderBox2D::ColliderBox2D(b2Body &body) {
-        b2FixtureDef def;
-        fixture = body.CreateFixture(&def);
+    b2PolygonShape convertShape(const ColliderShape &shape) {
+        std::vector<b2Vec2> points;
+        if (shape.indices.empty()) {
+            for (auto &vert: shape.vertices) {
+                points.emplace_back(convert(vert));
+            }
+        } else {
+            for (auto &index: shape.indices) {
+                auto &vert = shape.vertices.at(index);
+                points.emplace_back(convert(vert));
+            }
+        }
+        b2PolygonShape polyShape;
+        polyShape.Set(points.data(), numeric_cast<int>(points.size()));
+        return polyShape;
+    }
+
+    ColliderBox2D::ColliderBox2D(RigidBodyBox2D &body,
+                                 const ColliderShape &shape,
+                                 float friction,
+                                 float restitution,
+                                 float density,
+                                 bool isSensor) : body(body) {
+        b2PolygonShape polygonShape = convertShape(shape);
+        b2FixtureDef fixtureDef;
+        fixtureDef.shape = &polygonShape;
+        fixtureDef.friction = friction;
+        fixtureDef.restitution = restitution;
+        fixtureDef.density = density;
+        fixtureDef.isSensor = isSensor;
+        fixture = body.body->CreateFixture(&fixtureDef);
+
+        body.world.fixtureColliderMapping[fixture] = this;
     }
 
     ColliderBox2D::~ColliderBox2D() {
+        body.world.fixtureColliderMapping.erase(fixture);
         fixture->GetBody()->DestroyFixture(fixture);
+    }
+
+    RigidBody &ColliderBox2D::getBody() {
+        return body;
     }
 }

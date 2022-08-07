@@ -25,9 +25,13 @@
 #include "math/vector3.hpp"
 
 namespace xng {
+    class RigidBody;
+
     class XENGINE_EXPORT Collider {
     public:
         virtual ~Collider() = default;
+
+        virtual RigidBody &getBody() = 0;
     };
 }
 

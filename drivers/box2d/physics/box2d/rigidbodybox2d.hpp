@@ -24,13 +24,16 @@
 #include "physics/box2d/colliderbox2d.hpp"
 
 namespace xng {
+    class WorldBox2D;
+
     class RigidBodyBox2D : public RigidBody {
     public:
+        WorldBox2D &world;
         b2Body *body{};
 
         RigidBodyBox2D() = default;
 
-        explicit RigidBodyBox2D(b2World &world);
+        explicit RigidBodyBox2D(WorldBox2D &world);
 
         ~RigidBodyBox2D() override;
 
@@ -54,7 +57,11 @@ namespace xng {
 
         Vec3f getAngularVelocity() override;
 
-        void setColliders(std::vector<std::reference_wrapper<Collider>> colliders) override;
+        std::unique_ptr<Collider> createCollider(const ColliderShape &shape,
+                                                 float friction,
+                                                 float restitution,
+                                                 float density,
+                                                 bool isSensor) override;
     };
 }
 

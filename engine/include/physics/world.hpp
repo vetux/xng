@@ -30,7 +30,6 @@ namespace xng {
         struct XENGINE_EXPORT Contact {
             std::reference_wrapper<Collider> colliderA;
             std::reference_wrapper<Collider> colliderB;
-            std::vector<Vec3f> points;
         };
 
         class XENGINE_EXPORT ContactListener {
@@ -44,9 +43,7 @@ namespace xng {
 
         virtual ~World() = default;
 
-        virtual std::unique_ptr<Collider> createCollider(const ColliderShape &shape) = 0;
-
-        virtual std::unique_ptr<RigidBody> createRigidBody() = 0;
+        virtual std::unique_ptr<RigidBody> createBody() = 0;
 
         virtual std::unique_ptr<Joint> createJoint() = 0;
 

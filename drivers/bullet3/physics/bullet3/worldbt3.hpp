@@ -26,9 +26,7 @@
 namespace xng {
     class WorldBt3 : public World {
     public:
-        std::unique_ptr<Collider> createCollider(const ColliderShape &shape) override;
-
-        std::unique_ptr<RigidBody> createRigidBody() override;
+        std::unique_ptr<RigidBody> createBody() override;
 
         std::unique_ptr<Joint> createJoint() override;
 

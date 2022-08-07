@@ -64,6 +64,8 @@ namespace xng {
 
         Message(long value) : type(INT) { ival = value; }
 
+        Message(unsigned long value) : type(INT) { ival = value; }
+
         Message(float value) : type(FLOAT) { fval = value; }
 
         Message(double value) : type(FLOAT) { fval = value; }
@@ -129,6 +131,14 @@ namespace xng {
         }
 
         operator long() const {
+            if (type != INT)
+                throw std::runtime_error(
+                        "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
+                        " to long");
+            return ival;
+        }
+
+        operator unsigned long () const {
             if (type != INT)
                 throw std::runtime_error(
                         "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +

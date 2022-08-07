@@ -20,18 +20,29 @@
 #ifndef XENGINE_COLLIDERBOX2D_HPP
 #define XENGINE_COLLIDERBOX2D_HPP
 
+#include <physics/collidershape.hpp>
 #include "physics/box2d/box2d.hpp"
 
 #include "physics/collider.hpp"
 
 namespace xng {
+    class RigidBodyBox2D;
+
     class ColliderBox2D : public Collider {
     public:
+        RigidBodyBox2D &body;
         b2Fixture *fixture;
 
-        explicit ColliderBox2D(b2Body &body);
+        ColliderBox2D(RigidBodyBox2D &body,
+                      const ColliderShape &shape,
+                      float friction,
+                      float restitution,
+                      float density,
+                      bool isSensor);
 
         ~ColliderBox2D() override;
+
+        RigidBody &getBody() override;
     };
 }
 

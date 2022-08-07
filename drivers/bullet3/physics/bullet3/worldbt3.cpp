@@ -20,11 +20,7 @@
 #include "worldbt3.hpp"
 
 namespace xng {
-    std::unique_ptr<Collider> WorldBt3::createCollider(const ColliderShape &shape) {
-        return std::unique_ptr<Collider>();
-    }
-
-    std::unique_ptr<RigidBody> WorldBt3::createRigidBody() {
+    std::unique_ptr<RigidBody> WorldBt3::createBody() {
         return std::unique_ptr<RigidBody>();
     }
 

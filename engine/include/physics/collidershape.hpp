@@ -21,12 +21,79 @@
 #define XENGINE_COLLIDERSHAPE_HPP
 
 #include "asset/mesh.hpp"
+#include "io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT ColliderShape {
+    struct XENGINE_EXPORT ColliderShape : public Messageable {
         Primitive primitive = TRI;
         std::vector<Vec3f> vertices;
         std::vector<size_t> indices; // If not empty the indices into vertices in order.
+
+        Primitive getPrimitive(const std::string &str) const {
+            static const std::map<Primitive, std::string> primNames = std::map<Primitive, std::string>(
+                    {
+                            {Primitive::POINT, "point"},
+                            {Primitive::LINE,  "line"},
+                            {Primitive::TRI,   "tri"},
+                            {Primitive::QUAD,  "quad"},
+                    });
+            static const std::map<std::string, Primitive> namePrims = std::map<std::string, Primitive>(
+                    {
+                            {primNames.at(POINT), POINT},
+                            {primNames.at(LINE),  LINE},
+                            {primNames.at(TRI),   TRI},
+                            {primNames.at(QUAD),  QUAD},
+                    });
+            return namePrims.at(str);
+        }
+
+        std::string getPrimitive(Primitive prim) const {
+            static const std::map<Primitive, std::string> primNames = std::map<Primitive, std::string>(
+                    {
+                            {Primitive::POINT, "point"},
+                            {Primitive::LINE,  "line"},
+                            {Primitive::TRI,   "tri"},
+                            {Primitive::QUAD,  "quad"},
+                    });
+            return primNames.at(prim);
+        }
+
+        Messageable &operator<<(const Message &message) override {
+            primitive = getPrimitive(message.value("primitive", std::string("tri")));
+            auto vec = message.value("vertices");
+            if (vec.getType() == Message::LIST) {
+                for (auto &vert : vec.asList()){
+                    Vec3f vertex;
+                    vertex << vert;
+                    vertices.emplace_back(vertex);
+                }
+            }
+            vec = message.value("indices");
+            if (vec.getType() == Message::LIST){
+                for (auto &index : vec.asList()){
+                    indices.emplace_back(index.asLong());
+                }
+            }
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            message["primitive"] = getPrimitive(primitive);
+            auto vec = std::vector<Message>();
+            for (auto &vert : vertices){
+                Message msg;
+                vert >> msg;
+                vec.emplace_back(msg);
+            }
+            message["vertices"] = vec;
+            vec.clear();
+            for (auto &index : indices){
+                vec.emplace_back(Message(index));
+            }
+            message["indices"] = vec;
+            return message;
+        }
 
         static ColliderShape fromMesh(const Mesh &mesh) {
             ColliderShape ret;
