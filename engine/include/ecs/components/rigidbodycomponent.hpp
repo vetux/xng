@@ -26,10 +26,37 @@
 namespace xng {
     struct XENGINE_EXPORT RigidBodyComponent : public Messageable {
         bool syncTransform = true; // If true the simulated position and rotation values are applied to the TransformComponent
+        RigidBody::RigidBodyType type;
         std::vector<ColliderDesc> colliders;
+
+        Vec3f force = Vec3f();
+        Vec3f forcePoint = Vec3f();
+        Vec3f torque = Vec3f();
+
+        RigidBody::RigidBodyType convert(const std::string &text) const {
+            if (text == "static")
+                return RigidBody::STATIC;
+            else if (text == "kinematic")
+                return RigidBody::KINEMATIC;
+            else
+                return RigidBody::DYNAMIC;
+        }
+
+        std::string convert(RigidBody::RigidBodyType type) const {
+            switch (type) {
+                case RigidBody::STATIC:
+                    return "static";
+                case RigidBody::KINEMATIC:
+                    return "kinematic";
+                case RigidBody::DYNAMIC:
+                default:
+                    return "dynamic";
+            }
+        }
 
         Messageable &operator<<(const Message &message) override {
             syncTransform = message.value("syncTransform", true);
+            type = convert(message.value("type", std::string("static")));
             auto list = message.value("colliders");
             if (list.getType() == Message::LIST) {
                 for (auto &col: list.asList()) {
@@ -43,8 +70,9 @@ namespace xng {
 
         Message &operator>>(Message &message) const override {
             message["syncTransform"] = syncTransform;
+            message["type"] = convert(type);
             auto vec = std::vector<Message>();
-            for (auto &col : colliders){
+            for (auto &col: colliders) {
                 Message msg;
                 col >> msg;
                 vec.emplace_back(msg);

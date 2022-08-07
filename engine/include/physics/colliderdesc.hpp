@@ -31,6 +31,14 @@ namespace xng {
         float density{};
         bool isSensor{};
 
+        bool operator==(const ColliderDesc &other) const {
+            return shape == other.shape
+                   && friction == other.friction
+                   && restitution == other.restitution
+                   && density == other.density
+                   && isSensor == other.isSensor;
+        }
+
         Messageable &operator<<(const Message &message) override {
             shape << message.value("shape");
             friction = message.value("friction", 1.0f);

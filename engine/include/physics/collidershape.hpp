@@ -29,6 +29,12 @@ namespace xng {
         std::vector<Vec3f> vertices;
         std::vector<size_t> indices; // If not empty the indices into vertices in order.
 
+        bool operator==(const ColliderShape &other) const {
+            return primitive == other.primitive
+                   && vertices == other.vertices
+                   && indices == other.indices;
+        }
+
         Primitive getPrimitive(const std::string &str) const {
             static const std::map<Primitive, std::string> primNames = std::map<Primitive, std::string>(
                     {
@@ -62,15 +68,15 @@ namespace xng {
             primitive = getPrimitive(message.value("primitive", std::string("tri")));
             auto vec = message.value("vertices");
             if (vec.getType() == Message::LIST) {
-                for (auto &vert : vec.asList()){
+                for (auto &vert: vec.asList()) {
                     Vec3f vertex;
                     vertex << vert;
                     vertices.emplace_back(vertex);
                 }
             }
             vec = message.value("indices");
-            if (vec.getType() == Message::LIST){
-                for (auto &index : vec.asList()){
+            if (vec.getType() == Message::LIST) {
+                for (auto &index: vec.asList()) {
                     indices.emplace_back(index.asLong());
                 }
             }
@@ -81,14 +87,14 @@ namespace xng {
             message = Message(Message::DICTIONARY);
             message["primitive"] = getPrimitive(primitive);
             auto vec = std::vector<Message>();
-            for (auto &vert : vertices){
+            for (auto &vert: vertices) {
                 Message msg;
                 vert >> msg;
                 vec.emplace_back(msg);
             }
             message["vertices"] = vec;
             vec.clear();
-            for (auto &index : indices){
+            for (auto &index: indices) {
                 vec.emplace_back(Message(index));
             }
             message["indices"] = vec;

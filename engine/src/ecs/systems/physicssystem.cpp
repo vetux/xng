@@ -36,11 +36,17 @@ namespace xng {
 
     void PhysicsSystem::update(DeltaTime deltaTime, EntityScene &scene) {
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
-            if (pair.second.syncTransform){
+            if (pair.second.syncTransform) {
                 auto &rb = *rigidbodies.at(pair.first).get();
                 auto tcomp = scene.lookup<TransformComponent>(pair.first);
                 tcomp.transform.setPosition(rb.getPosition());
                 tcomp.transform.setRotation(Quaternion(rb.getRotation()));
+                rb.applyForce(pair.second.force, pair.second.forcePoint);
+                rb.applyTorque(pair.second.torque);
+                RigidBodyComponent comp = pair.second;
+                comp.force = Vec3f();
+                comp.torque = Vec3f();
+                scene.updateComponent(pair.first, comp);
             }
         }
     }
@@ -51,6 +57,8 @@ namespace xng {
         if (componentType == typeid(RigidBodyComponent)) {
             auto &comp = *std::any_cast<RigidBodyComponent>(&component);
             auto body = world.createBody();
+
+            body->setRigidBodyType(comp.type);
 
             for (auto i = 0; i < comp.colliders.size(); i++) {
                 auto collider = body->createCollider(comp.colliders.at(i));
@@ -84,15 +92,19 @@ namespace xng {
             auto &oComp = *std::any_cast<RigidBodyComponent>(&oldComponent);
             auto &nComp = *std::any_cast<RigidBodyComponent>(&newComponent);
 
-            for (auto &col: colliders.at(entity)) {
-                colliderIndices.erase(col.get());
-            }
-            colliders.erase(entity);
+            rigidbodies.at(entity)->setRigidBodyType(nComp.type);
 
-            for (auto i = 0; i < nComp.colliders.size(); i++) {
-                auto collider = rigidbodies.at(entity)->createCollider(nComp.colliders.at(i));
-                colliderIndices[collider.get()] = i;
-                colliders[entity].emplace_back(std::move(collider));
+            if (oComp.colliders != nComp.colliders) {
+                for (auto &col: colliders.at(entity)) {
+                    colliderIndices.erase(col.get());
+                }
+                colliders.erase(entity);
+
+                for (auto i = 0; i < nComp.colliders.size(); i++) {
+                    auto collider = rigidbodies.at(entity)->createCollider(nComp.colliders.at(i));
+                    colliderIndices[collider.get()] = i;
+                    colliders[entity].emplace_back(std::move(collider));
+                }
             }
         }
     }
