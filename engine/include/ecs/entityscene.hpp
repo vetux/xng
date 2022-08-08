@@ -262,6 +262,7 @@ namespace xng {
         }
 
         Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
             message["name"] = name;
             auto list = std::vector<Message>();
             for (auto &ent: entities) {

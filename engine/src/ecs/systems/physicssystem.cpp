@@ -27,6 +27,11 @@ namespace xng {
             : world(world), eventBus(eventBus) {}
 
     void PhysicsSystem::start(EntityScene &scene) {
+        for (auto &pair: scene.getPool<RigidBodyComponent>()) {
+            if (rigidbodies.find(pair.first) == rigidbodies.end()){
+                onComponentCreate(pair.first, pair.second, typeid(RigidBodyComponent));
+            }
+        }
         scene.addListener(*this);
     }
 

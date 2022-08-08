@@ -87,10 +87,10 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            x = message.valueOf({"x", "r"}, 0);
-            y = message.valueOf({"y", "g"}, 0);
-            z = message.valueOf({"z", "b"}, 0);
-            w = message.valueOf({"w", "a"}, 0);
+            x = message.valueOf({"x", "r"}, 0.0f);
+            y = message.valueOf({"y", "g"}, 0.0f);
+            z = message.valueOf({"z", "b"}, 0.0f);
+            w = message.valueOf({"w", "a"}, 0.0f);
             return *this;
         }
 

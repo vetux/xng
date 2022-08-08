@@ -64,7 +64,9 @@ namespace xng {
         auto restart = started;
         if (started)
             stop();
+
         scene = v;
+
         if (restart)
             start();
     }
@@ -74,7 +76,8 @@ namespace xng {
     }
 
     void ECS::setSystems(const std::vector<std::reference_wrapper<System>> &v) {
-        stop();
+        if (started)
+            stop();
         systems = v;
     }
 }

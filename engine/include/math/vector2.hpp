@@ -74,8 +74,8 @@ namespace xng {
          }
 
         Messageable &operator<<(const Message &message) override {
-            x = message.valueOf({"x", "r"}, 0);
-            y = message.valueOf({"y", "g"}, 0);
+            x = message.valueOf({"x", "r"}, 0.0f);
+            y = message.valueOf({"y", "g"}, 0.0f);
             return *this;
         }
 
