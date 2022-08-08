@@ -54,24 +54,22 @@ namespace xng {
         if (frames.empty())
             throw std::runtime_error("Animation not initialized");
 
-        if (!loop || time < animationDuration) {
-            if (clampDelta) {
-                if (deltaTime > frameTime) {
-                    // If deltaTime is larger than frameTime we would skip frames therefore we clamp deltaTime to frameTime
-                    // which makes the animation advance at most one frame per call to getFrame.
-                    deltaTime = frameTime;
-                }
+        if (clampDelta) {
+            if (deltaTime > frameTime) {
+                // If deltaTime is larger than frameTime we would skip frames therefore we clamp deltaTime to frameTime
+                // which makes the animation advance at most one frame per call to getFrame.
+                deltaTime = frameTime;
             }
+        }
 
-            time += deltaTime;
+        time += deltaTime;
 
-            if (time > animationDuration) {
-                if (loop) {
-                    // Set currentTime to difference
-                    time = time - animationDuration;
-                } else {
-                    time = animationDuration;
-                }
+        if (time > animationDuration) {
+            if (loop) {
+                // Set currentTime to difference
+                time = time - animationDuration;
+            } else {
+                time = animationDuration;
             }
         }
 
@@ -90,7 +88,7 @@ namespace xng {
                 keyframes.emplace_back(keyframe);
             }
         }
-        if (message.has("animationFps")){
+        if (message.has("animationFps")) {
             auto fps = message.value("animationFps", 0);
             int totalFrames = 0;
             for (auto &v: keyframes)
