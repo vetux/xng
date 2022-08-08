@@ -65,6 +65,7 @@ namespace xng {
                 comp.force = Vec3f();
                 comp.torque = Vec3f();
                 scene.updateComponent(pair.first, comp);
+                scene.updateComponent(pair.first, tcomp);
             }
         }
     }
