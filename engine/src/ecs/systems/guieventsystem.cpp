@@ -45,7 +45,7 @@ namespace xng {
                               rt.rect.dimensions);
             if (rect.testPoint(window.getInput().getMouse().position.convert<float>())) {
                 if (window.getInput().getMouse().getButton(LEFT)) {
-                    if (clickButtons.find(pair.first) == clickButtons.end()){
+                    if (clickButtons.find(pair.first) == clickButtons.end()) {
                         // Pressing
                         eventBus.invoke(GuiEvent(GuiEvent::BUTTON_CLICK, pair.second.id));
                         clickButtons.insert(pair.first);

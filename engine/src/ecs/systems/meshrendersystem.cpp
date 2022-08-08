@@ -62,6 +62,7 @@ namespace xng {
             scene.objects.emplace_back(node);
         }
 
+
         // Update skybox texture
         for (auto &pair: entScene.getPool<SkyboxComponent>()) {
             auto &comp = pair.second;

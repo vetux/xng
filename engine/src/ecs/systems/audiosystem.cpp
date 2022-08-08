@@ -37,12 +37,12 @@ namespace xng {
         scene.addListener(*this);
 
         for (auto &pair: scene.getPool<AudioSourceComponent>()) {
-            if (buffers.find(pair.first) == buffers.end()){
+            if (buffers.find(pair.first) == buffers.end()) {
                 auto &buffer = pair.second.audio.get();
                 buffers[pair.first] = context->createBuffer();
                 buffers[pair.first]->upload(buffer.buffer,
-                                        buffer.format,
-                                        buffer.frequency);
+                                            buffer.format,
+                                            buffer.frequency);
 
                 sources[pair.first] = context->createSource();
                 sources[pair.first]->setBuffer(*buffers[pair.first]);

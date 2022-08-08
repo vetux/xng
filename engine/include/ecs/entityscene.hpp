@@ -171,8 +171,18 @@ namespace xng {
         }
 
         template<typename T>
+        const ComponentPool<T> &getPool() {
+            return components.getPool<T>();
+        }
+
+        template<typename T>
         const ComponentPool<T> &getPool() const {
             return components.getPool<T>();
+        }
+
+        template<typename T>
+        bool checkPool() const {
+            return components.checkPool<T>();
         }
 
         template<typename T>

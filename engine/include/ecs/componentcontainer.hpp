@@ -131,7 +131,12 @@ namespace xng {
 
         template<typename T>
         bool check(const EntityHandle &entity) const {
-            return pools.find(typeid(T)) != pools.end() && getPool<T>().check(entity);
+            return checkPool<T>() && getPool<T>().check(entity);
+        }
+
+        template<typename  T>
+        bool checkPool() const {
+            return pools.find(typeid(T)) != pools.end();
         }
 
         const std::map<std::type_index, std::unique_ptr<ComponentPoolBase>> &getPools() { return pools; }

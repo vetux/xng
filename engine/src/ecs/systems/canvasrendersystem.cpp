@@ -67,6 +67,7 @@ namespace xng {
         //TODO: Implement rect transform nesting support.
 
         std::map<int, std::map<int, std::vector<Pass>>> passes;
+
         for (auto &p: scene.getPool<RectTransformComponent>()) {
             if (!p.second.enabled)
                 continue;
@@ -98,11 +99,11 @@ namespace xng {
                             auto &comp = scene.lookup<SpriteComponent>(pass.ent);
                             if (comp.sprite.assigned()) {
                                 auto dstRect = Rectf(rt.rect.position +
-                                                             RectTransformComponent::getOffset(rt.anchor,
-                                                                                               target.getDescription().size.convert<float>()),
+                                                     RectTransformComponent::getOffset(rt.anchor,
+                                                                                       target.getDescription().size.convert<float>()),
                                                      rt.rect.dimensions);
-                                if (scene.check<TransformComponent>(pass.ent)){
-                                    auto &vec =  scene.lookup<TransformComponent>(pass.ent);
+                                if (scene.check<TransformComponent>(pass.ent)) {
+                                    auto &vec = scene.lookup<TransformComponent>(pass.ent);
                                     dstRect.position.x += vec.transform.getPosition().x;
                                     dstRect.position.y += vec.transform.getPosition().y;
                                     rotation += vec.transform.getRotation().z;
@@ -143,8 +144,8 @@ namespace xng {
                                 }
                                 auto center = Vec2f(displaySize.x / 2, displaySize.y / 2);
                                 auto dstRect = Rectf(rt.rect.position + displayOffset, displaySize);
-                                if (scene.check<TransformComponent>(pass.ent)){
-                                    auto &vec =  scene.lookup<TransformComponent>(pass.ent);
+                                if (scene.check<TransformComponent>(pass.ent)) {
+                                    auto &vec = scene.lookup<TransformComponent>(pass.ent);
                                     dstRect.position.x += vec.transform.getPosition().x;
                                     dstRect.position.y += vec.transform.getPosition().y;
                                     rotation += vec.transform.getRotation().z;
