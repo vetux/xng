@@ -23,6 +23,7 @@
 #include <set>
 #include <unordered_set>
 #include <utility>
+#include <variant>
 
 #include "gpu/renderdevice.hpp"
 
@@ -121,6 +122,22 @@ namespace xng {
         void draw(Rectf dstRect, TextureBuffer &texture, Vec2f center = {}, float rotation = 0);
 
         /**
+        * Draw Polygon
+        *
+        * @param poly
+        * @param position
+        * @param color
+        * @param fill
+        * @param center
+        * @param rotation
+        */
+        void draw(std::vector<Vec2f> poly,
+                  Vec2f position,
+                  ColorRGBA color,
+                  Vec2f center = {},
+                  float rotation = 0);
+
+        /**
          * Draw rectangle
          *
          * @param rectangle
@@ -141,10 +158,8 @@ namespace xng {
          * @param start
          * @param end
          * @param color
-         * @param center
-         * @param rotation
          */
-        void draw(Vec2f start, Vec2f end, ColorRGBA color, Vec2f center = {}, float rotation = 0);
+        void draw(Vec2f start, Vec2f end, ColorRGBA color);
 
         /**
          * Draw point
@@ -164,21 +179,6 @@ namespace xng {
          * @param rotation
          */
         void draw(Text &text, Rectf dstRect, ColorRGBA color, Vec2f center = {}, float rotation = 0);
-
-        /**
-         * Draw instanced rectangles
-         *
-         * @param offsets The position and rotation of every instance
-         * @param size
-         * @param color
-         * @param fill
-         * @param center
-         */
-        void drawInstanced(const std::vector<std::pair<Vec2f, float>> &offsets,
-                           Vec2f size,
-                           ColorRGBA color,
-                           bool fill = true,
-                           Vec2f center = {});
 
         RenderDevice &getDevice() { return renderDevice; }
 
@@ -262,25 +262,25 @@ namespace xng {
         };
 
         template<typename T>
-        class Vector2HashFunction {
+        class PolyHashFunction {
         public:
-            size_t operator()(const Vector2<T> &p) const {
+            size_t operator()(const std::vector<Vector2<T>> &p) const {
                 size_t ret;
-                hash_combine(ret, p.x);
-                hash_combine(ret, p.y);
+                for (auto &v: p) {
+                    hash_combine(ret, v.x);
+                    hash_combine(ret, v.y);
+                }
                 return ret;
             }
         };
 
         void reallocatePipelines();
 
+        VertexBuffer &getPoly(const std::vector<Vec2f> &poly, const Vec2f& center);
+
         VertexBuffer &getPlane(const PlaneDescription &desc);
 
-        VertexBuffer &getSquare(const SquareDescription &desc);
-
-        VertexBuffer &getLine(const LineDescription &desc);
-
-        VertexBuffer &getPoint(const Vec2f &point);
+        std::vector<Vec2f> getSquare(const SquareDescription &desc);
 
         ShaderBuffer &getShaderBuffer();
 
@@ -301,16 +301,10 @@ namespace xng {
         std::unique_ptr<RenderPipeline> textPipeline;
 
         std::unordered_map<PlaneDescription, std::unique_ptr<VertexBuffer>, PlaneDescriptionHashFunction> allocatedPlanes;
-        std::unordered_map<SquareDescription, std::unique_ptr<VertexBuffer>, SquareDescriptionHashFunction> allocatedSquares;
-        std::unordered_map<LineDescription, std::unique_ptr<VertexBuffer>, LineDescriptionHashFunction> allocatedLines;
-        std::unordered_map<Vec2f, std::unique_ptr<VertexBuffer>, Vector2HashFunction<float>> allocatedPoints;
-
-        std::vector<std::unique_ptr<VertexBuffer>> allocatedInstancedMeshes;
+        std::unordered_map<std::vector<Vec2f>, std::unique_ptr<VertexBuffer>, PolyHashFunction<float>> allocatedPolys;
 
         std::unordered_set<PlaneDescription, PlaneDescriptionHashFunction> usedPlanes;
-        std::unordered_set<SquareDescription, SquareDescriptionHashFunction> usedSquares;
-        std::unordered_set<LineDescription, LineDescriptionHashFunction> usedLines;
-        std::unordered_set<Vec2f, Vector2HashFunction<float>> usedPoints;
+        std::unordered_set<std::vector<Vec2f>, PolyHashFunction<float>> usedPolys;
 
         std::vector<std::unique_ptr<ShaderBuffer>> shaderBuffers;
 
@@ -319,15 +313,54 @@ namespace xng {
         struct Pass {
             enum Type {
                 COLOR,
+                COLOR_SOLID,
                 TEXTURE,
                 TEXT
             } type{};
 
-            RenderCommand pass;
+            Vec2f position;
+            float rotation = 0;
+            Vec2f center;
+            ColorRGBA color;
+            TextureBuffer *texture = nullptr;
+            std::variant<PlaneDescription, std::vector<Vec2f>> geometry;
 
             Pass() = default;
 
-            Pass(Type type, RenderCommand pass) : type(type), pass(std::move(pass)) {}
+            Pass(Vec2f position,
+                 float rotation,
+                 std::vector<Vec2f> poly,
+                 Vec2f center,
+                 ColorRGBA color)
+                    : type(COLOR), position(std::move(position)), rotation(rotation), geometry(poly), center(std::move(center)), color(color) {}
+
+            Pass(Vec2f position,
+                 float rotation,
+                 PlaneDescription plane,
+                 ColorRGBA color)
+                    : type(COLOR), position(std::move(position)), rotation(rotation), geometry(plane), color(color) {}
+
+            Pass(Vec2f position,
+                 float rotation,
+                 PlaneDescription plane,
+                 TextureBuffer &texture)
+                    : type(TEXTURE),
+                      position(std::move(position)),
+                      rotation(rotation),
+                      geometry(plane),
+                      texture(&texture) {}
+
+            Pass(Vec2f position,
+                 float rotation,
+                 PlaneDescription plane,
+                 Text &text,
+                 ColorRGBA color)
+                    : type(TEXT),
+                      position(std::move(position)),
+                      rotation(rotation),
+                      geometry(plane),
+                      texture(&text.getTexture()),
+                      color(color) {}
         };
 
         std::vector<Pass> passes;

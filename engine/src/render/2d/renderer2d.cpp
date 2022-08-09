@@ -270,12 +270,129 @@ namespace xng {
 
         clearPipeline->render(*userTarget, {});
 
-        Pass::Type currentType = Pass::COLOR;
-        std::vector<RenderCommand> currentPasses;
+        std::vector<std::pair<Pass::Type, RenderCommand>> commands;
+//TODO: Instance commands with identical geometry and shading
         for (auto &pass: passes) {
-            if (pass.type != currentType) {
+            RenderCommand command;
+            switch (pass.type) {
+                case Pass::COLOR: {
+                    auto &vb = getPoly(std::get<std::vector<Vec2f>>(pass.geometry), pass.center);
+
+                    Mat4f modelMatrix = MatrixMath::identity();
+                    modelMatrix = modelMatrix * MatrixMath::translate(Vec3f(
+                            pass.position.x,
+                            pass.position.y,
+                            0));
+                    modelMatrix = modelMatrix * MatrixMath::rotate(Vec3f(0, 0, pass.rotation));
+
+                    auto mvp = camera.projection() * camera.view(cameraPosition) * modelMatrix;
+
+                    ShaderUniformBuffer shaderBufferUniform;
+                    shaderBufferUniform.mvp = mvp;
+                    shaderBufferUniform.color = Vec4f((float) pass.color.r() / 255,
+                                                      (float) pass.color.g() / 255,
+                                                      (float) pass.color.b() / 255,
+                                                      (float) pass.color.a() / 255).getMemory();
+
+                    auto &shaderBuffer = getShaderBuffer();
+                    shaderBuffer.upload(shaderBufferUniform);
+
+                    std::vector<ShaderBinding> bindings;
+                    bindings.emplace_back(ShaderBinding(shaderBuffer));
+
+                    command = RenderCommand(vb, bindings);
+                }
+                    break;
+                case Pass::COLOR_SOLID: {
+                    auto &vb = getPlane(std::get<PlaneDescription>(pass.geometry));
+
+                    Mat4f modelMatrix = MatrixMath::identity();
+                    modelMatrix = modelMatrix * MatrixMath::translate(Vec3f(
+                            pass.position.x,
+                            pass.position.y,
+                            0));
+                    modelMatrix = modelMatrix * MatrixMath::rotate(Vec3f(0, 0, pass.rotation));
+
+                    auto mvp = camera.projection() * camera.view(cameraPosition) * modelMatrix;
+
+                    ShaderUniformBuffer shaderBufferUniform;
+                    shaderBufferUniform.mvp = mvp;
+                    shaderBufferUniform.color = Vec4f((float) pass.color.r() / 255,
+                                                      (float) pass.color.g() / 255,
+                                                      (float) pass.color.b() / 255,
+                                                      (float) pass.color.a() / 255).getMemory();
+
+                    auto &shaderBuffer = getShaderBuffer();
+                    shaderBuffer.upload(shaderBufferUniform);
+
+                    std::vector<ShaderBinding> bindings;
+                    bindings.emplace_back(ShaderBinding(shaderBuffer));
+
+                    command = RenderCommand(vb, bindings);
+                }
+                    break;
+                case Pass::TEXTURE: {
+                    auto &vb = getPlane(std::get<PlaneDescription>(pass.geometry));
+
+                    Mat4f model = MatrixMath::identity();
+                    model = model * MatrixMath::translate(Vec3f(
+                            pass.position.x,
+                            pass.position.y,
+                            0));
+                    model = model * MatrixMath::rotate(Vec3f(0, 0, pass.rotation));
+
+                    auto mvp = camera.projection() * camera.view(cameraPosition) * model;
+
+                    ShaderUniformBuffer shaderBufferUniform;
+                    shaderBufferUniform.mvp = mvp;
+
+                    auto &shaderBuffer = getShaderBuffer();
+                    shaderBuffer.upload(shaderBufferUniform);
+
+                    std::vector<ShaderBinding> bindings;
+                    bindings.emplace_back(ShaderBinding(shaderBuffer));
+                    bindings.emplace_back(ShaderBinding(*pass.texture));
+
+                    command = RenderCommand(vb, bindings);
+                }
+                case Pass::TEXT: {
+                    auto &vb = getPlane(std::get<PlaneDescription>(pass.geometry));
+
+                    Mat4f model = MatrixMath::identity();
+                    model = model * MatrixMath::translate(Vec3f(
+                            pass.position.x,
+                            pass.position.y,
+                            0));
+                    model = model * MatrixMath::rotate(Vec3f(0, 0, pass.rotation));
+
+                    auto mvp = camera.projection() * camera.view(cameraPosition) * model;
+
+                    ShaderUniformBuffer shaderBufferUniform;
+                    shaderBufferUniform.mvp = mvp;
+                    shaderBufferUniform.color = pass.color.divide().getMemory();
+
+                    auto &shaderBuffer = getShaderBuffer();
+                    shaderBuffer.upload(shaderBufferUniform);
+
+                    std::vector<ShaderBinding> bindings;
+                    bindings.emplace_back(ShaderBinding(shaderBuffer));
+                    bindings.emplace_back(ShaderBinding(*pass.texture));
+
+                    command = RenderCommand(vb, bindings);
+                }
+                    break;
+            }
+            commands.emplace_back(std::make_pair(pass.type, command));
+        }
+
+        Pass::Type currentType = Pass::COLOR;
+
+        std::vector<RenderCommand> currentPasses;
+        for (auto &cmd: commands) {
+            if (cmd.first != currentType) {
                 switch (currentType) {
                     case Pass::COLOR:
+                    case Pass::COLOR_SOLID:
                         colorPipeline->render(*userTarget, currentPasses);
                         break;
                     case Pass::TEXTURE:
@@ -286,13 +403,14 @@ namespace xng {
                         break;
                 }
                 currentPasses.clear();
-                currentType = pass.type;
+                currentType = cmd.first;
             }
-            currentPasses.emplace_back(pass.pass);
+            currentPasses.emplace_back(cmd.second);
         }
 
         switch (currentType) {
             case Pass::COLOR:
+            case Pass::COLOR_SOLID:
                 colorPipeline->render(*userTarget, currentPasses);
                 break;
             case Pass::TEXTURE:
@@ -312,45 +430,20 @@ namespace xng {
             }
         }
 
-        std::unordered_set<SquareDescription, SquareDescriptionHashFunction> unusedSquares;
-        for (auto &pair: allocatedSquares) {
-            if (usedSquares.find(pair.first) == usedSquares.end()) {
-                unusedSquares.insert(pair.first);
+        std::unordered_set<std::vector<Vec2f>, PolyHashFunction<float>> unusedPolys;
+        for (auto &pair: allocatedPolys) {
+            if (usedPolys.find(pair.first) == usedPolys.end()) {
+                unusedPolys.insert(pair.first);
             }
         }
 
-        std::unordered_set<LineDescription, LineDescriptionHashFunction> unusedLines;
-        for (auto &pair: allocatedLines) {
-            if (usedLines.find(pair.first) == usedLines.end()) {
-                unusedLines.insert(pair.first);
-            }
-        }
-
-        std::unordered_set<Vec2f, Vector2HashFunction<float>> unusedPoints;
-        for (auto &pair: allocatedPoints) {
-            if (usedPoints.find(pair.first) == usedPoints.end()) {
-                unusedPoints.insert(pair.first);
-            }
-        }
-
+        for (auto &v: unusedPolys)
+            allocatedPolys.erase(v);
         for (auto &v: unusedPlanes)
             allocatedPlanes.erase(v);
 
-        for (auto &v: unusedSquares)
-            allocatedSquares.erase(v);
-
-        for (auto &v: unusedLines)
-            allocatedLines.erase(v);
-
-        for (auto &v: unusedPoints)
-            allocatedPoints.erase(v);
-
         usedPlanes.clear();
-        usedSquares.clear();
-        usedLines.clear();
-        usedPoints.clear();
-
-        allocatedInstancedMeshes.clear();
+        usedPolys.clear();
 
         passes.clear();
 
@@ -397,125 +490,55 @@ namespace xng {
         if (!isRendering)
             throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
 
-        VertexBuffer &buffer = getPlane({dstRect.dimensions, center, srcRect, flipUv});
-
-        Mat4f model = MatrixMath::identity();
-        model = model * MatrixMath::translate(Vec3f(
-                dstRect.position.x,
-                dstRect.position.y,
-                0));
-        model = model * MatrixMath::rotate(Vec3f(0, 0, rotation));
-
-        auto mvp = camera.projection() * camera.view(cameraPosition) * model;
-
-        ShaderUniformBuffer shaderBufferUniform;
-        shaderBufferUniform.mvp = mvp;
-
-        auto &shaderBuffer = getShaderBuffer();
-        shaderBuffer.upload(shaderBufferUniform);
-
-        std::vector<ShaderBinding> bindings;
-        bindings.emplace_back(ShaderBinding(shaderBuffer));
-        bindings.emplace_back(ShaderBinding(texture));
-
-        passes.emplace_back(Pass(Pass::TEXTURE, RenderCommand(buffer, bindings)));
+        PlaneDescription desc({dstRect.dimensions, center, srcRect, flipUv});
+        passes.emplace_back(Pass(dstRect.position, rotation, desc, texture));
     }
 
     void Renderer2D::draw(Rectf dstRect, TextureBuffer &texture, Vec2f center, float rotation) {
         draw(Rectf({}, dstRect.dimensions), dstRect, texture, std::move(center), rotation);
     }
 
-    void Renderer2D::draw(Rectf rectangle, ColorRGBA color, bool fill, Vec2f center, float rotation) {
-        if (!isRendering)
-            throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
-
-        Mesh mesh;
-
-        VertexBuffer *buffer;
-        if (fill)
-            buffer = &getPlane({rectangle.dimensions, center, Rectf(Vec2f(), rectangle.dimensions), Vec2b(false)});
-        else
-            buffer = &getSquare({rectangle.dimensions, center});
-
-        Mat4f modelMatrix = MatrixMath::identity();
-        modelMatrix = modelMatrix * MatrixMath::translate(Vec3f(
-                rectangle.position.x,
-                rectangle.position.y,
-                0));
-        modelMatrix = modelMatrix * MatrixMath::rotate(Vec3f(0, 0, rotation));
-
-        auto mvp = camera.projection() * camera.view(cameraPosition) * modelMatrix;
-
-        ShaderUniformBuffer shaderBufferUniform;
-        shaderBufferUniform.mvp = mvp;
-        shaderBufferUniform.color = Vec4f((float) color.r() / 255,
-                                          (float) color.g() / 255,
-                                          (float) color.b() / 255,
-                                          (float) color.a() / 255).getMemory();
-
-        auto &shaderBuffer = getShaderBuffer();
-        shaderBuffer.upload(shaderBufferUniform);
-
-        std::vector<ShaderBinding> bindings;
-        bindings.emplace_back(ShaderBinding(shaderBuffer));
-
-        passes.emplace_back(Pass(Pass::COLOR, RenderCommand(*buffer, bindings)));
-    }
-
-    void Renderer2D::draw(Vec2f start,
-                          Vec2f end,
+    void Renderer2D::draw(std::vector<Vec2f> poly,
+                          Vec2f position,
                           ColorRGBA color,
                           Vec2f center,
                           float rotation) {
         if (!isRendering)
             throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
+        passes.emplace_back(Pass(position, rotation, poly, center, color));
+    }
 
-        VertexBuffer &buffer = getLine({start, end, center});
+    void Renderer2D::draw(Rectf rectangle, ColorRGBA color, bool fill, Vec2f center, float rotation) {
+        if (!isRendering)
+            throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
 
-        Mat4f modelMatrix = MatrixMath::identity();
-        modelMatrix = modelMatrix * MatrixMath::rotate(Vec3f(0, 0, rotation));
+        if (fill)
+            passes.emplace_back(Pass(rectangle.position,
+                                     rotation,
+                                     {rectangle.dimensions, center, Rectf(Vec2f(), rectangle.dimensions), Vec2b(false)},
+                                     color));
+        else
+            passes.emplace_back(Pass(rectangle.position,
+                                     rotation,
+                                     getSquare({rectangle.dimensions, center}),
+                                     center,
+                                     color));
+    }
 
-        auto mvp = camera.projection() * camera.view(cameraPosition) * modelMatrix;
+    void Renderer2D::draw(Vec2f start,
+                          Vec2f end,
+                          ColorRGBA color) {
+        if (!isRendering)
+            throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
 
-        ShaderUniformBuffer shaderBufferUniform;
-        shaderBufferUniform.mvp = mvp;
-        shaderBufferUniform.color = Vec4f((float) color.r() / 255,
-                                          (float) color.g() / 255,
-                                          (float) color.b() / 255,
-                                          (float) color.a() / 255).getMemory();
-
-        auto &shaderBuffer = getShaderBuffer();
-        shaderBuffer.upload(shaderBufferUniform);
-
-        std::vector<ShaderBinding> bindings;
-        bindings.emplace_back(ShaderBinding(shaderBuffer));
-
-        passes.emplace_back(Pass(Pass::COLOR, RenderCommand(buffer, bindings)));
+        passes.emplace_back(Pass({}, 0, std::vector<Vec2f>({std::move(start), std::move(end)}), {}, color));
     }
 
     void Renderer2D::draw(Vec2f point, ColorRGBA color) {
         if (!isRendering)
             throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
 
-        VertexBuffer &buffer = getPoint(point);
-
-        Mat4f modelMatrix = MatrixMath::identity();
-        auto mvp = camera.projection() * camera.view(cameraPosition) * modelMatrix;
-
-        ShaderUniformBuffer shaderBufferUniform;
-        shaderBufferUniform.mvp = mvp;
-        shaderBufferUniform.color = Vec4f((float) color.r() / 255,
-                                          (float) color.g() / 255,
-                                          (float) color.b() / 255,
-                                          (float) color.a() / 255).getMemory();
-
-        auto &shaderBuffer = getShaderBuffer();
-        shaderBuffer.upload(shaderBufferUniform);
-
-        std::vector<ShaderBinding> bindings;
-        bindings.emplace_back(ShaderBinding(shaderBuffer));
-
-        passes.emplace_back(Pass(Pass::COLOR, RenderCommand(buffer, bindings)));
+        passes.emplace_back(Pass({}, 0, std::vector<Vec2f>({std::move(point)}), {}, color));
     }
 
     void Renderer2D::draw(Text &text, Rectf dstRect, ColorRGBA color, Vec2f center, float rotation) {
@@ -523,75 +546,31 @@ namespace xng {
             throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
 
         auto srcRect = Rectf({}, text.getTexture().getDescription().size.convert<float>());
-
-        VertexBuffer &buffer = getPlane({dstRect.dimensions, center, srcRect, Vec2b(false)});
-
-        Mat4f model = MatrixMath::identity();
-        model = model * MatrixMath::translate(Vec3f(
-                dstRect.position.x,
-                dstRect.position.y,
-                0));
-        model = model * MatrixMath::rotate(Vec3f(0, 0, rotation));
-
-        auto mvp = camera.projection() * camera.view(cameraPosition) * model;
-
-        ShaderUniformBuffer shaderBufferUniform;
-        shaderBufferUniform.mvp = mvp;
-        shaderBufferUniform.color = color.divide().getMemory();
-
-        auto &shaderBuffer = getShaderBuffer();
-        shaderBuffer.upload(shaderBufferUniform);
-
-        std::vector<ShaderBinding> bindings;
-        bindings.emplace_back(ShaderBinding(shaderBuffer));
-        bindings.emplace_back(ShaderBinding(text.getTexture()));
-
-        passes.emplace_back(Pass(Pass::TEXT, RenderCommand(buffer, bindings)));
+        passes.emplace_back(Pass(dstRect.position,
+                                 rotation,
+                                 {dstRect.dimensions, center, srcRect, Vec2b(false)},
+                                 text,
+                                 color));
     }
 
-    void Renderer2D::drawInstanced(const std::vector<std::pair<Vec2f, float>> &positions,
-                                   Vec2f size,
-                                   ColorRGBA color,
-                                   bool fill,
-                                   Vec2f center) {
-        if (!isRendering)
-            throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
-
-        Mesh mesh = createPlane(size, center, {}, Vec2b(false));
-
-        std::vector<Mat4f> offsets;
-        for (auto &p: positions) {
-            Transform t;
-            t.setPosition(Vec3f(
-                    p.first.x,
-                    p.first.y,
-                    0));
-            t.setRotation(Quaternion(Vec3f(0, 0, p.second)));
-            offsets.emplace_back(t.model());
+    VertexBuffer &Renderer2D::getPoly(const std::vector<Vec2f> &poly, const Vec2f &center) {
+        usedPolys.insert(poly);
+        auto it = allocatedPolys.find(poly);
+        if (it != allocatedPolys.end()) {
+            return *it->second;
+        } else {
+            std::vector<Vertex> vertices;
+            vertices.reserve(poly.size());
+            for (auto &vec: poly) {
+                vertices.emplace_back(Vertex(Vec3f(vec.x - center.x, vec.y - center.y, 0)));
+            }
+            if (poly.size() / 2 != 0) {
+                vertices.emplace_back(Vertex(Vec3f(poly.at(0).x - center.x, poly.at(0).y - center.y, 0)));
+            }
+            auto mesh = Mesh(Primitive::LINE, vertices);
+            allocatedPolys[poly] = renderDevice.createInstancedVertexBuffer(mesh, {MatrixMath::identity()});
+            return *allocatedPolys[poly];
         }
-
-        allocatedInstancedMeshes.emplace_back(renderDevice.createInstancedVertexBuffer(mesh, offsets));
-
-        auto &meshBuffer = *allocatedInstancedMeshes.at(allocatedInstancedMeshes.size() - 1);
-
-        Mat4f modelMatrix = MatrixMath::identity();
-
-        auto mvp = camera.projection() * camera.view(cameraPosition) * modelMatrix;
-
-        ShaderUniformBuffer shaderBufferUniform;
-        shaderBufferUniform.mvp = mvp;
-        shaderBufferUniform.color = Vec4f((float) color.r() / 255,
-                                          (float) color.g() / 255,
-                                          (float) color.b() / 255,
-                                          (float) color.a() / 255).getMemory();
-
-        auto &shaderBuffer = getShaderBuffer();
-        shaderBuffer.upload(shaderBufferUniform);
-
-        std::vector<ShaderBinding> bindings;
-        bindings.emplace_back(ShaderBinding(shaderBuffer));
-
-        passes.emplace_back(Pass(Pass::COLOR, RenderCommand(meshBuffer, bindings)));
     }
 
     VertexBuffer &Renderer2D::getPlane(const Renderer2D::PlaneDescription &desc) {
@@ -606,42 +585,20 @@ namespace xng {
         }
     }
 
-    VertexBuffer &Renderer2D::getSquare(const Renderer2D::SquareDescription &desc) {
-        usedSquares.insert(desc);
-        auto it = allocatedSquares.find(desc);
-        if (it != allocatedSquares.end()) {
-            return *it->second;
+    std::vector<Vec2f> Renderer2D::getSquare(const Renderer2D::SquareDescription &desc) {
+        auto mesh = createSquare(desc.size, desc.center);
+        std::vector<Vec2f> ret;
+        if (mesh.indices.empty()) {
+            for (auto &vert: mesh.vertices) {
+                ret.emplace_back(Vec2f{vert.position().x, vert.position().y});
+            }
         } else {
-            auto mesh = createSquare(desc.size, desc.center);
-            allocatedSquares[desc] = renderDevice.createInstancedVertexBuffer(mesh, {MatrixMath::identity()});
-            return *allocatedSquares[desc];
+            for (auto &index: mesh.indices) {
+                auto &vert = mesh.vertices.at(index);
+                ret.emplace_back(Vec2f{vert.position().x, vert.position().y});
+            }
         }
-    }
-
-    VertexBuffer &Renderer2D::getLine(const Renderer2D::LineDescription &desc) {
-        usedLines.insert(desc);
-        auto it = allocatedLines.find(desc);
-        if (it != allocatedLines.end()) {
-            return *it->second;
-        } else {
-            auto mesh = createLine(desc.start, desc.end, desc.center);
-            allocatedLines[desc] = renderDevice.createInstancedVertexBuffer(mesh, {MatrixMath::identity()});
-            return *allocatedLines[desc];
-        }
-    }
-
-    VertexBuffer &Renderer2D::getPoint(const Vec2f &point) {
-        usedPoints.insert(point);
-        auto it = allocatedPoints.find(point);
-        if (it != allocatedPoints.end()) {
-            return *it->second;
-        } else {
-            Mesh mesh(POINT, {
-                    Vertex(Vec3f(point.x, point.y, 0))
-            });
-            allocatedPoints[point] = renderDevice.createInstancedVertexBuffer(mesh, {MatrixMath::identity()});
-            return *allocatedPoints[point];
-        }
+        return ret;
     }
 
     ShaderBuffer &Renderer2D::getShaderBuffer() {
