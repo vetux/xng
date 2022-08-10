@@ -17,38 +17,37 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SHADERBUFFER_HPP
-#define XENGINE_SHADERBUFFER_HPP
+#ifndef XENGINE_FENCE_HPP
+#define XENGINE_FENCE_HPP
 
-#include "gpu/renderobject.hpp"
-#include "gpu/fence.hpp"
-
-#include "shaderbufferdesc.hpp"
+#include <stdexcept>
 
 namespace xng {
-    class ShaderBuffer : public RenderObject {
+    /**
+     * A fence represents a task which is executed on the gpu device and can be awaited from the cpu.
+     */
+    class Fence {
     public:
-        ~ShaderBuffer() override = default;
-
-        Type getType() override {
-            return SHADER_BUFFER;
-        }
-
-        virtual const ShaderBufferDesc &getDescription() = 0;
+        /**
+         * The destructor waits for the gpu task to finish before destroying the object.
+         */
+        virtual ~Fence() = default;
 
         /**
-         * Upload the given data to the shader buffer,
-         * size has to match the size of the shader buffer.
-         *
-         * @param data
-         * @param size
+         * Wait for the gpu task to finish or return an exception ptr if the task threw an exception.
+         * @return
          */
-        virtual std::unique_ptr<Fence> upload(const uint8_t *data, size_t size) = 0;
+        virtual std::exception_ptr wait() = 0;
 
-        template<typename T>
-        std::unique_ptr<Fence> upload(const T &data) {
-            return upload(reinterpret_cast<const uint8_t *>(&data), sizeof(T));
-        }
+        /**
+         * @return true if the task has completed
+         */
+        virtual bool isComplete() = 0;
+
+        /**
+         * @return nullptr or the exception object if an exception was thrown in the gpu task
+         */
+        virtual std::exception_ptr getException() = 0;
     };
 }
-#endif //XENGINE_SHADERBUFFER_HPP
+#endif //XENGINE_FENCE_HPP

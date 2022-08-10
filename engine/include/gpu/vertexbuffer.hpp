@@ -22,6 +22,7 @@
 
 #include "gpu/renderobject.hpp"
 #include "gpu/vertexbufferdesc.hpp"
+#include "gpu/fence.hpp"
 
 #include "asset/mesh.hpp"
 
@@ -46,27 +47,27 @@ namespace xng {
          * @param instanceBuffer
          * @param indices
          */
-        virtual void upload(const uint8_t *vertexBuffer,
-                            size_t vertexBufferSize,
-                            const uint8_t *instanceBuffer,
-                            size_t instanceBufferSize,
-                            const std::vector<uint> &indices) = 0;
+        virtual std::unique_ptr<Fence> upload(const uint8_t *vertexBuffer,
+                                              size_t vertexBufferSize,
+                                              const uint8_t *instanceBuffer,
+                                              size_t instanceBufferSize,
+                                              const std::vector<uint> &indices) = 0;
 
-        virtual void upload(const Mesh &mesh) {
-            upload(reinterpret_cast<const uint8_t *>(mesh.vertices.data()),
-                   sizeof(Vertex) * mesh.vertices.size(),
-                   nullptr,
-                   0,
-                   mesh.indices);
+        virtual std::unique_ptr<Fence> upload(const Mesh &mesh) {
+            return upload(reinterpret_cast<const uint8_t *>(mesh.vertices.data()),
+                          sizeof(Vertex) * mesh.vertices.size(),
+                          nullptr,
+                          0,
+                          mesh.indices);
         }
 
-        virtual void upload(const Mesh &mesh,
-                            const std::vector<Mat4f> &offsets) {
-            upload(reinterpret_cast<const uint8_t *>(mesh.vertices.data()),
-                   sizeof(Vertex) * mesh.vertices.size(),
-                   reinterpret_cast<const uint8_t *>(offsets.data()),
-                   sizeof(Mat4f) * offsets.size(),
-                   mesh.indices);
+        virtual std::unique_ptr<Fence> upload(const Mesh &mesh,
+                                              const std::vector<Mat4f> &offsets) {
+            return upload(reinterpret_cast<const uint8_t *>(mesh.vertices.data()),
+                          sizeof(Vertex) * mesh.vertices.size(),
+                          reinterpret_cast<const uint8_t *>(offsets.data()),
+                          sizeof(Mat4f) * offsets.size(),
+                          mesh.indices);
         }
     };
 }

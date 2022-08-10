@@ -25,6 +25,7 @@
 #include "gpu/renderobject.hpp"
 #include "gpu/textureproperties.hpp"
 #include "gpu/texturebufferdesc.hpp"
+#include "gpu/fence.hpp"
 
 #include "asset/image.hpp"
 
@@ -49,16 +50,16 @@ namespace xng {
          *
          * @param buffer
          */
-        virtual void upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize) = 0;
+        virtual std::unique_ptr<Fence> upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize) = 0;
 
         virtual Image<ColorRGBA> download() = 0;
 
-        virtual void upload(CubeMapFace face, ColorFormat format, const uint8_t *buffer, size_t bufferSize) = 0;
+        virtual std::unique_ptr<Fence> upload(CubeMapFace face, ColorFormat format, const uint8_t *buffer, size_t bufferSize) = 0;
 
         virtual Image<ColorRGBA> download(CubeMapFace face) = 0;
 
-        void upload(const Image<ColorRGBA> &image) {
-            upload(RGBA, reinterpret_cast<const uint8_t *>(image.getData()), image.getDataSize() * sizeof(ColorRGBA));
+        std::unique_ptr<Fence> upload(const Image<ColorRGBA> &image) {
+            return upload(RGBA, reinterpret_cast<const uint8_t *>(image.getData()), image.getDataSize() * sizeof(ColorRGBA));
         }
     };
 }

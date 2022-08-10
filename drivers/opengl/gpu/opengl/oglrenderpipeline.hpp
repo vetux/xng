@@ -29,6 +29,7 @@
 #include "gpu/opengl/oglshaderbuffer.hpp"
 #include "gpu/opengl/oglvertexbuffer.hpp"
 #include "gpu/opengl/ogltexturebuffer.hpp"
+#include "gpu/opengl/oglfence.hpp"
 
 namespace xng::opengl {
     class OPENGL_TYPENAME(RenderPipeline) : public RenderPipeline OPENGL_INHERIT {
@@ -48,7 +49,7 @@ namespace xng::opengl {
             return desc;
         }
 
-        void render(RenderTarget &target, const std::vector<RenderCommand> &passes) override {
+        std::unique_ptr<Fence> render(RenderTarget &target, const std::vector<RenderCommand> &passes) override {
             auto clearColor = desc.clearColorValue.divide();
 
             glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
@@ -225,6 +226,8 @@ namespace xng::opengl {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
             checkGLError("OGLRenderer::renderFinish");
+
+            return std::make_unique<OGLFence>();
         }
 
         std::vector<uint8_t> cache() override {

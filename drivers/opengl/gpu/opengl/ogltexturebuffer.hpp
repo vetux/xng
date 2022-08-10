@@ -23,6 +23,7 @@
 #include "gpu/texturebuffer.hpp"
 
 #include "gpu/opengl/oglbuildmacro.hpp"
+#include "gpu/opengl/oglfence.hpp"
 
 namespace xng {
     namespace opengl {
@@ -136,7 +137,7 @@ namespace xng {
                 return desc;
             }
 
-            void upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize) override {
+            std::unique_ptr<Fence> upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize) override {
                 glBindTexture(GL_TEXTURE_2D, handle);
                 glTexImage2D(GL_TEXTURE_2D,
                              0,
@@ -155,9 +156,11 @@ namespace xng {
                 glBindTexture(GL_TEXTURE_2D, 0);
 
                 checkGLError("OGLTextureBuffer::upload(RGB)");
+
+                return std::make_unique<OGLFence>();
             }
 
-            void upload(CubeMapFace face, ColorFormat format, const uint8_t *buffer, size_t bufferSize) override {
+            std::unique_ptr<Fence> upload(CubeMapFace face, ColorFormat format, const uint8_t *buffer, size_t bufferSize) override {
                 //TODO: Range check the buffer
                 glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
                 glTexImage2D(convert(face),
@@ -177,6 +180,7 @@ namespace xng {
                 glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
                 checkGLError("OGLTextureBuffer::upload(CUBEMAP)");
+                return std::make_unique<OGLFence>();
             }
 
             Image<ColorRGBA> download() override {

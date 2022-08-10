@@ -21,6 +21,7 @@
 #define XENGINE_OGLSHADERBUFFER_HPP
 
 #include "gpu/opengl/oglbuildmacro.hpp"
+#include "gpu/opengl/oglfence.hpp"
 
 namespace xng::opengl {
     class OPENGL_TYPENAME(ShaderBuffer) : public ShaderBuffer OPENGL_INHERIT {
@@ -49,12 +50,13 @@ namespace xng::opengl {
             return desc;
         }
 
-        void upload(const uint8_t *data, size_t size) override {
+        std::unique_ptr<Fence> upload(const uint8_t *data, size_t size) override {
             if (size != desc.size)
                 throw std::runtime_error("Upload size does not match buffer size");
             glBindBuffer(GL_UNIFORM_BUFFER, ubo);
             glBufferData(GL_UNIFORM_BUFFER, numeric_cast<GLsizeiptr>(size), data, GL_STATIC_DRAW);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
+            return std::make_unique<OGLFence>();
         }
 
         OPENGL_MEMBERS

@@ -25,6 +25,7 @@
 #include <utility>
 
 #include "gpu/opengl/oglbuildmacro.hpp"
+#include "gpu/opengl/oglfence.hpp"
 
 #include "asset/mesh.hpp"
 
@@ -101,11 +102,11 @@ namespace xng::opengl {
             return desc;
         }
 
-        void upload(const uint8_t *vertexBuffer,
-                    size_t vertexBufferSize,
-                    const uint8_t *instanceBuffer,
-                    size_t instanceBufferSize,
-                    const std::vector<uint> &indices) override {
+        std::unique_ptr<Fence> upload(const uint8_t *vertexBuffer,
+                                      size_t vertexBufferSize,
+                                      const uint8_t *instanceBuffer,
+                                      size_t instanceBufferSize,
+                                      const std::vector<uint> &indices) override {
             int vertexSize = 0;
             for (auto &binding: desc.vertexLayout) {
                 vertexSize += binding.stride();
@@ -200,6 +201,8 @@ namespace xng::opengl {
             }
 
             checkGLError("OGLRenderAllocator::createMeshBuffer");
+
+            return std::make_unique<OGLFence>();
         }
 
         static GLenum getType(VertexAttribute::Component c) {

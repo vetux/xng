@@ -25,8 +25,8 @@
 #include <utility>
 
 #include "gpu/opengl/oglbuildmacro.hpp"
-
 #include "gpu/opengl/ogltexturebuffer.hpp"
+#include "gpu/opengl/oglfence.hpp"
 
 namespace xng {
     namespace opengl {
@@ -75,14 +75,14 @@ namespace xng {
                 return desc;
             }
 
-            void blitColor(RenderTarget &source,
-                           Vec2i sourceOffset,
-                           Vec2i targetOffset,
-                           Vec2i sourceRect,
-                           Vec2i targetRect,
-                           TextureFiltering filter,
-                           int sourceIndex,
-                           int targetIndex) override {
+            std::unique_ptr<Fence> blitColor(RenderTarget &source,
+                                             Vec2i sourceOffset,
+                                             Vec2i targetOffset,
+                                             Vec2i sourceRect,
+                                             Vec2i targetRect,
+                                             TextureFiltering filter,
+                                             int sourceIndex,
+                                             int targetIndex) override {
                 if (sourceRect.x < 0 || sourceRect.y < 0) {
                     throw std::runtime_error("Rect cannot be negative");
                 }
@@ -134,13 +134,15 @@ namespace xng {
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
                 checkGLError("OGLUserFrameBuffer::blitFramebuffer");
+
+                return std::make_unique<OGLFence>();
             }
 
-            void blitDepth(RenderTarget &source,
-                           Vec2i sourceOffset,
-                           Vec2i targetOffset,
-                           Vec2i sourceRect,
-                           Vec2i targetRect) override {
+            std::unique_ptr<Fence> blitDepth(RenderTarget &source,
+                                             Vec2i sourceOffset,
+                                             Vec2i targetOffset,
+                                             Vec2i sourceRect,
+                                             Vec2i targetRect) override {
                 if (sourceRect.x < 0 || sourceRect.y < 0) {
                     throw std::runtime_error("Rect cannot be negative");
                 }
@@ -182,13 +184,15 @@ namespace xng {
                 glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
                 checkGLError("OGLUserFrameBuffer::blitFramebuffer");
+
+                return std::make_unique<OGLFence>();
             }
 
-            void blitStencil(RenderTarget &source,
-                             Vec2i sourceOffset,
-                             Vec2i targetOffset,
-                             Vec2i sourceRect,
-                             Vec2i targetRect) override {
+            std::unique_ptr<Fence> blitStencil(RenderTarget &source,
+                                               Vec2i sourceOffset,
+                                               Vec2i targetOffset,
+                                               Vec2i sourceRect,
+                                               Vec2i targetRect) override {
                 if (sourceRect.x < 0 || sourceRect.y < 0) {
                     throw std::runtime_error("Rect cannot be negative");
                 }
@@ -228,9 +232,12 @@ namespace xng {
                 glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
                 checkGLError("OGLUserFrameBuffer::blitFramebuffer");
+
+                return std::make_unique<OGLFence>();
             }
 
-            void setColorAttachments(const std::vector<std::reference_wrapper<TextureBuffer>> &textures) override {
+            std::unique_ptr<Fence>
+            setColorAttachments(const std::vector<std::reference_wrapper<TextureBuffer>> &textures) override {
                 glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
                 if (textures.empty()) {
@@ -265,9 +272,11 @@ namespace xng {
                 attachedColor = numeric_cast<int>(textures.size());
 
                 checkGLError();
+
+                return std::make_unique<OGLFence>();
             }
 
-            void setDepthStencilAttachment(TextureBuffer *texture) override {
+            std::unique_ptr<Fence> setDepthStencilAttachment(TextureBuffer *texture) override {
                 if (texture == nullptr) {
                     glBindFramebuffer(GL_FRAMEBUFFER, FBO);
                     if (desc.multisample)
@@ -290,9 +299,10 @@ namespace xng {
                     glBindFramebuffer(GL_FRAMEBUFFER, 0);
                 }
                 checkGLError();
+                return std::make_unique<OGLFence>();
             }
 
-            void setCubeMapColorAttachments(
+            std::unique_ptr<Fence> setCubeMapColorAttachments(
                     const std::vector<std::pair<CubeMapFace, std::reference_wrapper<TextureBuffer>>> &textures) override {
                 glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
@@ -328,9 +338,10 @@ namespace xng {
                 attachedColor = numeric_cast<int>(textures.size());
 
                 checkGLError();
+                return std::make_unique<OGLFence>();
             }
 
-            void setCubeMapDepthStencilAttachment(CubeMapFace face, TextureBuffer *texture) override {
+            std::unique_ptr<Fence> setCubeMapDepthStencilAttachment(CubeMapFace face, TextureBuffer *texture) override {
                 if (texture == nullptr) {
                     glBindFramebuffer(GL_FRAMEBUFFER, FBO);
                     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
@@ -352,6 +363,7 @@ namespace xng {
                     glBindFramebuffer(GL_FRAMEBUFFER, 0);
                 }
                 checkGLError();
+                return std::make_unique<OGLFence>();
             }
 
             bool isComplete() override {

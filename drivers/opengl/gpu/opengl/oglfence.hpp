@@ -17,38 +17,28 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SHADERBUFFER_HPP
-#define XENGINE_SHADERBUFFER_HPP
+#ifndef XENGINE_OGLFENCE_HPP
+#define XENGINE_OGLFENCE_HPP
 
-#include "gpu/renderobject.hpp"
 #include "gpu/fence.hpp"
 
-#include "shaderbufferdesc.hpp"
-
 namespace xng {
-    class ShaderBuffer : public RenderObject {
-    public:
-        ~ShaderBuffer() override = default;
+    namespace opengl {
+        class OGLFence : public Fence {
+        public:
+            std::exception_ptr wait() override {
+                return nullptr;
+            }
 
-        Type getType() override {
-            return SHADER_BUFFER;
-        }
+            bool isComplete() override {
+                return true;
+            }
 
-        virtual const ShaderBufferDesc &getDescription() = 0;
-
-        /**
-         * Upload the given data to the shader buffer,
-         * size has to match the size of the shader buffer.
-         *
-         * @param data
-         * @param size
-         */
-        virtual std::unique_ptr<Fence> upload(const uint8_t *data, size_t size) = 0;
-
-        template<typename T>
-        std::unique_ptr<Fence> upload(const T &data) {
-            return upload(reinterpret_cast<const uint8_t *>(&data), sizeof(T));
-        }
-    };
+            std::exception_ptr getException() override {
+                return nullptr;
+            }
+        };
+    }
 }
-#endif //XENGINE_SHADERBUFFER_HPP
+
+#endif //XENGINE_OGLFENCE_HPP
