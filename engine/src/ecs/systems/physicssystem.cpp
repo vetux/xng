@@ -41,32 +41,28 @@ namespace xng {
 
     void PhysicsSystem::update(DeltaTime deltaTime, EntityScene &scene) {
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
-            if (pair.second.syncTransform) {
-                auto &rb = *rigidbodies.at(pair.first).get();
-                auto tcomp = scene.lookup<TransformComponent>(pair.first);
-                rb.setPosition(tcomp.transform.getPosition());
-                rb.setRotation(tcomp.transform.getRotation().getEulerAngles());
-                rb.applyForce(pair.second.force, pair.second.forcePoint);
-                rb.applyTorque(pair.second.torque);
-            }
+            auto &rb = *rigidbodies.at(pair.first).get();
+            auto tcomp = scene.lookup<TransformComponent>(pair.first);
+            rb.setPosition(tcomp.transform.getPosition());
+            rb.setRotation(tcomp.transform.getRotation().getEulerAngles());
+            rb.applyForce(pair.second.force, pair.second.forcePoint);
+            rb.applyTorque(pair.second.torque);
         }
 
         world.step(deltaTime);
 
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
-            if (pair.second.syncTransform) {
-                auto &rb = *rigidbodies.at(pair.first).get();
-                auto tcomp = scene.lookup<TransformComponent>(pair.first);
+            auto &rb = *rigidbodies.at(pair.first).get();
+            auto tcomp = scene.lookup<TransformComponent>(pair.first);
 
-                tcomp.transform.setPosition(rb.getPosition());
-                tcomp.transform.setRotation(Quaternion(rb.getRotation()));
+            tcomp.transform.setPosition(rb.getPosition());
+            tcomp.transform.setRotation(Quaternion(rb.getRotation()));
 
-                RigidBodyComponent comp = pair.second;
-                comp.force = Vec3f();
-                comp.torque = Vec3f();
-                scene.updateComponent(pair.first, comp);
-                scene.updateComponent(pair.first, tcomp);
-            }
+            RigidBodyComponent comp = pair.second;
+            comp.force = Vec3f();
+            comp.torque = Vec3f();
+            scene.updateComponent(pair.first, comp);
+            scene.updateComponent(pair.first, tcomp);
         }
     }
 

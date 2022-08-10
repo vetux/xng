@@ -24,6 +24,8 @@
 #include "ecs/components/canvascomponent.hpp"
 #include "ecs/components/textcomponent.hpp"
 
+#include "ecs/components/rigidbodycomponent.hpp"
+
 namespace xng {
     CanvasRenderSystem::CanvasRenderSystem(Renderer2D &renderer2D,
                                            RenderTarget &target,
@@ -91,22 +93,27 @@ namespace xng {
                 for (auto &pass: entPair.second) {
                     auto &rt = scene.lookup<RectTransformComponent>(pass.ent);
                     auto &t = scene.lookup<CanvasComponent>(scene.getEntityByName(rt.parent));
-                    float rotation = rt.rotation;
+
                     ren2d.setCameraPosition(t.cameraPosition);
+
+                    Rectf dstRect;
+                    Vec2f center;
+                    float rotation = rt.rotation;
 
                     switch (pass.type) {
                         case Pass::SPRITE: {
                             auto &comp = scene.lookup<SpriteComponent>(pass.ent);
                             if (comp.sprite.assigned()) {
-                                auto dstRect = Rectf(rt.rect.position +
-                                                     RectTransformComponent::getOffset(rt.anchor,
-                                                                                       target.getDescription().size.convert<float>()),
-                                                     rt.rect.dimensions);
+                                dstRect = Rectf(rt.rect.position +
+                                                RectTransformComponent::getOffset(rt.anchor,
+                                                                                  target.getDescription().size.convert<float>()),
+                                                rt.rect.dimensions);
+                                center = rt.center;
                                 if (scene.check<TransformComponent>(pass.ent)) {
                                     auto &vec = scene.lookup<TransformComponent>(pass.ent);
-                                    dstRect.position.x += vec.transform.getPosition().x;
-                                    dstRect.position.y += vec.transform.getPosition().y;
-                                    rotation += vec.transform.getRotation().z;
+                                    dstRect.position.x -= vec.transform.getPosition().x;
+                                    dstRect.position.y -= vec.transform.getPosition().y;
+                                    rotation += vec.transform.getRotation().getEulerAngles().z;
                                 }
                                 ren2d.draw(Rectf({}, dstRect.dimensions),
                                            dstRect,
@@ -114,13 +121,6 @@ namespace xng {
                                            rt.center,
                                            rotation,
                                            comp.flipSprite);
-                                if (drawDebug) {
-                                    ren2d.draw(dstRect, ColorRGBA::yellow(), false, rt.center, rotation);
-                                    auto dCenter = dstRect.position;
-                                    const int len = 20;
-                                    ren2d.draw(dCenter + Vec2f(-len, 0), dCenter + Vec2f(len, 0), ColorRGBA::green());
-                                    ren2d.draw(dCenter + Vec2f(0, len), dCenter + Vec2f(0, -len), ColorRGBA::green());
-                                }
                             }
                             break;
                         }
@@ -142,30 +142,52 @@ namespace xng {
                                 } else {
                                     displaySize.y = texSize.y;
                                 }
-                                auto center = Vec2f(displaySize.x / 2, displaySize.y / 2);
-                                auto dstRect = Rectf(rt.rect.position + displayOffset, displaySize);
+                                dstRect = Rectf(rt.rect.position + displayOffset, displaySize);
+                                center = Vec2f(displaySize.x / 2, displaySize.y / 2);
                                 if (scene.check<TransformComponent>(pass.ent)) {
                                     auto &vec = scene.lookup<TransformComponent>(pass.ent);
-                                    dstRect.position.x += vec.transform.getPosition().x;
-                                    dstRect.position.y += vec.transform.getPosition().y;
+                                    dstRect.position.x -= vec.transform.getPosition().x;
+                                    dstRect.position.y -= vec.transform.getPosition().y;
                                     rotation += vec.transform.getRotation().z;
                                 }
                                 ren2d.draw(renderedTexts.at(pass.ent), dstRect, tcomp.textColor, center, rotation);
-                                if (drawDebug) {
-                                    ren2d.draw(dstRect, ColorRGBA::yellow(), false, center, rotation);
-                                    auto dCenter = dstRect.position;
-                                    const int len = 20;
-                                    ren2d.draw(dCenter + Vec2f(-len, 0), dCenter + Vec2f(len, 0), ColorRGBA::green());
-                                    ren2d.draw(dCenter + Vec2f(0, len), dCenter + Vec2f(0, -len), ColorRGBA::green());
-                                }
                             }
                             break;
                         }
                     }
+
+                    if (drawDebug) {
+                        ren2d.draw(dstRect, ColorRGBA::yellow(), false, center, rotation);
+                        auto dCenter = dstRect.position;
+                        const int len = 20;
+                        ren2d.draw(dCenter + Vec2f(-len, 0), dCenter + Vec2f(len, 0), ColorRGBA::red());
+                        ren2d.draw(dCenter + Vec2f(0, len), dCenter + Vec2f(0, -len), ColorRGBA::red());
+
+                        if (scene.check<RigidBodyComponent>(pass.ent)) {
+                            auto &rb = scene.lookup<RigidBodyComponent>(pass.ent);
+                            if (rb.is2D) {
+                                auto &tcomp = scene.lookup<TransformComponent>(pass.ent);
+                                for (auto &col: rb.colliders) {
+                                    if (!col.shape.vertices.empty()) {
+                                        std::vector<Vec2f> poly;
+                                        for (auto &vert: col.shape.vertices) {
+                                            poly.emplace_back(Vec2f(vert.x, -vert.y));
+                                        }
+                                        ren2d.draw(poly,
+                                                   Vec2f(-tcomp.transform.getPosition().x,
+                                                         -tcomp.transform.getPosition().y),
+                                                   ColorRGBA::green(),
+                                                   {},
+                                                   tcomp.transform.getRotation().getEulerAngles().z);
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
+            ren2d.renderPresent();
         }
-        ren2d.renderPresent();
     }
 
     void CanvasRenderSystem::onComponentCreate(const EntityHandle &entity,

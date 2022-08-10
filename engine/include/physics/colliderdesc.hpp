@@ -28,6 +28,7 @@ namespace xng {
         ColliderShape shape;
         float friction{};
         float restitution{};
+        float restitution_threshold{};
         float density{};
         bool isSensor{};
 
@@ -35,6 +36,7 @@ namespace xng {
             return shape == other.shape
                    && friction == other.friction
                    && restitution == other.restitution
+                   && restitution_threshold == other.restitution_threshold
                    && density == other.density
                    && isSensor == other.isSensor;
         }
@@ -43,7 +45,8 @@ namespace xng {
             shape << message.value("shape");
             friction = message.value("friction", 1.0f);
             restitution = message.value("restitution", 0.0f);
-            density = message.value("density", 0.0f);
+            restitution_threshold = message.value("restitution_threshold", 0.0f);
+            density = message.value("density", 1.0f);
             isSensor = message.value("isSensor", false);
             return *this;
         }
@@ -53,6 +56,7 @@ namespace xng {
             shape >> message["shape"];
             message["friction"] = friction;
             message["restitution"] = restitution;
+            message["restitution_threshold"] = restitution_threshold;
             message["density"] = friction;
             message["isSensor"] = isSensor;
             return message;

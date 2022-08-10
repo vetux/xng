@@ -25,7 +25,7 @@
 
 namespace xng {
     struct XENGINE_EXPORT RigidBodyComponent : public Messageable {
-        bool syncTransform = true; // If true the simulated position and rotation values are applied to the TransformComponent
+        bool is2D = false; // Flag for canvas debug render if true the collider shapes are drawn as 2d polygons.
         RigidBody::RigidBodyType type;
         std::vector<ColliderDesc> colliders;
 
@@ -55,7 +55,7 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            syncTransform = message.value("syncTransform", true);
+            is2D = message.value("is2D", false);
             type = convert(message.value("type", std::string("static")));
             auto list = message.value("colliders");
             if (list.getType() == Message::LIST) {
@@ -69,7 +69,7 @@ namespace xng {
         }
 
         Message &operator>>(Message &message) const override {
-            message["syncTransform"] = syncTransform;
+            message["is2D"] = is2D;
             message["type"] = convert(type);
             auto vec = std::vector<Message>();
             for (auto &col: colliders) {
