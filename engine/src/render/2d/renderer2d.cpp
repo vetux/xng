@@ -559,14 +559,18 @@ namespace xng {
         if (it != allocatedPolys.end()) {
             return *it->second;
         } else {
+            if (poly.size() < 2) {
+                throw std::runtime_error("Invalid polygon vertices size");
+            }
             std::vector<Vertex> vertices;
-            vertices.reserve(poly.size());
-            for (auto &vec: poly) {
+            for (auto i = 0; i < poly.size() - 1; i++) {
+                auto &vec = poly.at(i);
+                auto &nVec = poly.at(i + 1);
                 vertices.emplace_back(Vertex(Vec3f(vec.x - center.x, vec.y - center.y, 0)));
+                vertices.emplace_back(Vertex(Vec3f(nVec.x - center.x, nVec.y - center.y, 0)));
             }
-            if (poly.size() / 2 != 0) {
-                vertices.emplace_back(Vertex(Vec3f(poly.at(0).x - center.x, poly.at(0).y - center.y, 0)));
-            }
+            vertices.emplace_back(Vertex(Vec3f(poly.at(0).x - center.x, poly.at(0).y - center.y, 0)));
+            vertices.emplace_back(Vertex(Vec3f(poly.at(poly.size() - 1).x - center.x, poly.at(poly.size() - 1).y - center.y, 0)));
             auto mesh = Mesh(Primitive::LINE, vertices);
             allocatedPolys[poly] = renderDevice.createInstancedVertexBuffer(mesh, {MatrixMath::identity()});
             return *allocatedPolys[poly];
