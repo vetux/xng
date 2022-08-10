@@ -56,8 +56,8 @@ namespace xng {
     }
 
     ColliderBox2D::~ColliderBox2D() {
-        body.world.fixtureColliderMapping.erase(fixture);
         fixture->GetBody()->DestroyFixture(fixture);
+        body.world.fixtureColliderMapping.erase(fixture);
     }
 
     RigidBody &ColliderBox2D::getBody() {
