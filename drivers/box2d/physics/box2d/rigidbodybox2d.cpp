@@ -20,6 +20,7 @@
 #include "rigidbodybox2d.hpp"
 #include "commonbox2d.hpp"
 #include "physics/box2d/worldbox2d.hpp"
+#include "math/rotation.hpp"
 
 namespace xng {
     RigidBodyBox2D::RigidBodyBox2D(WorldBox2D &world)
@@ -57,11 +58,11 @@ namespace xng {
     }
 
     void RigidBodyBox2D::setRotation(const Vec3f &rotation) {
-        body->SetTransform(body->GetPosition(), rotation.z);
+        body->SetTransform(body->GetPosition(), degreesToRadians(rotation.z));
     }
 
     Vec3f RigidBodyBox2D::getRotation() {
-        return {0, 0, body->GetAngle()};
+        return {0, 0, radiansToDegrees(body->GetAngle())};
     }
 
     void RigidBodyBox2D::setAngularVelocity(const Vec3f &angularVelocity) {
