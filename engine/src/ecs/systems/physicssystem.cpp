@@ -33,9 +33,11 @@ namespace xng {
             }
         }
         scene.addListener(*this);
+        world.addContactListener(*this);
     }
 
     void PhysicsSystem::stop(EntityScene &scene) {
+        world.removeContactListener(*this);
         scene.removeListener(*this);
     }
 
