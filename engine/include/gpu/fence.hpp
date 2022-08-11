@@ -29,7 +29,7 @@ namespace xng {
     class Fence {
     public:
         /**
-         * The destructor waits for the gpu task to finish before destroying the object.
+         * The destructor waits for the gpu task to finish before destroying the fence object.
          */
         virtual ~Fence() = default;
 

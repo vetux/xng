@@ -368,6 +368,7 @@ namespace xng {
         RenderTarget *userTarget = nullptr;
 
         Camera camera;
+        Transform cameraTransform;
 
         bool isRendering = false;
 

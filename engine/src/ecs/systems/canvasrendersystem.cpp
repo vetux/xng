@@ -186,6 +186,7 @@ namespace xng {
                     }
                 }
             }
+
             ren2d.renderPresent();
         }
     }

@@ -122,8 +122,6 @@ void main() {
 }
 )###";
 
-static Transform cameraPosition = Transform({0, 0, 1}, Vec3f(), {});
-
 static float distance(float val1, float val2) {
     float abs = val1 - val2;
     if (abs < 0)
@@ -285,7 +283,7 @@ namespace xng {
                             0));
                     modelMatrix = modelMatrix * MatrixMath::rotate(Vec3f(0, 0, pass.rotation));
 
-                    auto mvp = camera.projection() * camera.view(cameraPosition) * modelMatrix;
+                    auto mvp = camera.projection() * camera.view(cameraTransform) * modelMatrix;
 
                     ShaderUniformBuffer shaderBufferUniform;
                     shaderBufferUniform.mvp = mvp;
@@ -313,7 +311,7 @@ namespace xng {
                             0));
                     modelMatrix = modelMatrix * MatrixMath::rotate(Vec3f(0, 0, pass.rotation));
 
-                    auto mvp = camera.projection() * camera.view(cameraPosition) * modelMatrix;
+                    auto mvp = camera.projection() * camera.view(cameraTransform) * modelMatrix;
 
                     ShaderUniformBuffer shaderBufferUniform;
                     shaderBufferUniform.mvp = mvp;
@@ -341,7 +339,7 @@ namespace xng {
                             0));
                     model = model * MatrixMath::rotate(Vec3f(0, 0, pass.rotation));
 
-                    auto mvp = camera.projection() * camera.view(cameraPosition) * model;
+                    auto mvp = camera.projection() * camera.view(cameraTransform) * model;
 
                     ShaderUniformBuffer shaderBufferUniform;
                     shaderBufferUniform.mvp = mvp;
@@ -365,7 +363,7 @@ namespace xng {
                             0));
                     model = model * MatrixMath::rotate(Vec3f(0, 0, pass.rotation));
 
-                    auto mvp = camera.projection() * camera.view(cameraPosition) * model;
+                    auto mvp = camera.projection() * camera.view(cameraTransform) * model;
 
                     ShaderUniformBuffer shaderBufferUniform;
                     shaderBufferUniform.mvp = mvp;
@@ -478,7 +476,7 @@ namespace xng {
     }
 
     void Renderer2D::setCameraPosition(const Vec2f &pos) {
-        cameraPosition.setPosition({pos.x, pos.y, 1});
+        cameraTransform.setPosition({pos.x, pos.y, 1});
     }
 
     void Renderer2D::draw(Rectf srcRect,
@@ -570,7 +568,8 @@ namespace xng {
                 vertices.emplace_back(Vertex(Vec3f(nVec.x - center.x, nVec.y - center.y, 0)));
             }
             vertices.emplace_back(Vertex(Vec3f(poly.at(0).x - center.x, poly.at(0).y - center.y, 0)));
-            vertices.emplace_back(Vertex(Vec3f(poly.at(poly.size() - 1).x - center.x, poly.at(poly.size() - 1).y - center.y, 0)));
+            vertices.emplace_back(
+                    Vertex(Vec3f(poly.at(poly.size() - 1).x - center.x, poly.at(poly.size() - 1).y - center.y, 0)));
             auto mesh = Mesh(Primitive::LINE, vertices);
             allocatedPolys[poly] = renderDevice.createInstancedVertexBuffer(mesh, {MatrixMath::identity()});
             return *allocatedPolys[poly];
