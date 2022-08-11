@@ -23,8 +23,25 @@
 #include "ecs/components.hpp"
 
 namespace xng {
-    PhysicsSystem::PhysicsSystem(World &world, EventBus &eventBus)
-            : world(world), eventBus(eventBus) {}
+    static ColliderDesc applyScale(const ColliderDesc &desc, float scale) {
+        ColliderDesc ret = desc;
+        ret.shape = {};
+        ret.shape.primitive = desc.shape.primitive;
+        if (desc.shape.indices.empty()) {
+            for (auto &vert: desc.shape.vertices) {
+                ret.shape.vertices.emplace_back(vert / scale);
+            }
+        } else {
+            for (auto &index: desc.shape.indices) {
+                auto &vert = desc.shape.vertices.at(index);
+                ret.shape.vertices.emplace_back(vert / scale);
+            }
+        }
+        return ret;
+    }
+
+    PhysicsSystem::PhysicsSystem(World &world, EventBus &eventBus, float scale)
+            : world(world), eventBus(eventBus), scale(scale) {}
 
     void PhysicsSystem::start(EntityScene &scene) {
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
@@ -45,9 +62,9 @@ namespace xng {
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
             auto &rb = *rigidbodies.at(pair.first).get();
             auto tcomp = scene.lookup<TransformComponent>(pair.first);
-            rb.setPosition(tcomp.transform.getPosition());
+            rb.setPosition(tcomp.transform.getPosition() / scale);
             rb.setRotation(tcomp.transform.getRotation().getEulerAngles());
-            rb.applyForce(pair.second.force, pair.second.forcePoint);
+            rb.applyForce(pair.second.force, pair.second.forcePoint / scale);
             rb.applyTorque(pair.second.torque);
         }
 
@@ -57,7 +74,7 @@ namespace xng {
             auto &rb = *rigidbodies.at(pair.first).get();
             auto tcomp = scene.lookup<TransformComponent>(pair.first);
 
-            tcomp.transform.setPosition(rb.getPosition());
+            tcomp.transform.setPosition(rb.getPosition() * scale);
             tcomp.transform.setRotation(Quaternion(rb.getRotation()));
 
             RigidBodyComponent comp = pair.second;
@@ -78,7 +95,7 @@ namespace xng {
             body->setRigidBodyType(comp.type);
 
             for (auto i = 0; i < comp.colliders.size(); i++) {
-                auto collider = body->createCollider(comp.colliders.at(i));
+                auto collider = body->createCollider(applyScale(comp.colliders.at(i), scale));
                 colliderIndices[collider.get()] = i;
                 colliders[entity].emplace_back(std::move(collider));
             }
@@ -118,7 +135,7 @@ namespace xng {
                 colliders.erase(entity);
 
                 for (auto i = 0; i < nComp.colliders.size(); i++) {
-                    auto collider = rigidbodies.at(entity)->createCollider(nComp.colliders.at(i));
+                    auto collider = rigidbodies.at(entity)->createCollider(applyScale(nComp.colliders.at(i), scale));
                     colliderIndices[collider.get()] = i;
                     colliders[entity].emplace_back(std::move(collider));
                 }

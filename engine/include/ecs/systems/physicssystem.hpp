@@ -28,7 +28,7 @@
 namespace xng {
     class XENGINE_EXPORT PhysicsSystem : public System, public EntityScene::Listener, public World::ContactListener {
     public:
-        PhysicsSystem(World &world, EventBus &eventBus);
+        PhysicsSystem(World &world, EventBus &eventBus, float scale);
 
         ~PhysicsSystem() override = default;
 
@@ -63,6 +63,8 @@ namespace xng {
         std::map<RigidBody *, EntityHandle> rigidbodiesReverse;
         std::map<EntityHandle, std::vector<std::unique_ptr<Collider>>> colliders;
         std::map<Collider *, size_t> colliderIndices;
+
+        float scale = 20; // The number of units which correspond to a metre in the physics world.
     };
 }
 
