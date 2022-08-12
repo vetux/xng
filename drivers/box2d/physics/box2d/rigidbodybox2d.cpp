@@ -84,4 +84,8 @@ namespace xng {
     std::unique_ptr<Collider> RigidBodyBox2D::createCollider(const ColliderDesc &desc) {
         return std::make_unique<ColliderBox2D>(*this, desc);
     }
+
+    void RigidBodyBox2D::setLockedRotationAxes(const Vec3b &ax) {
+        body->SetFixedRotation(ax.z);
+    }
 }

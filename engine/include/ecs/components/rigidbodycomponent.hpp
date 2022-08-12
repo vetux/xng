@@ -28,6 +28,7 @@ namespace xng {
         bool is2D = false; // Flag for canvas debug render if true the collider shapes are drawn as 2d polygons.
         RigidBody::RigidBodyType type;
         std::vector<ColliderDesc> colliders;
+        Vec3b lockedAxes;
 
         Vec3f force = Vec3f();
         Vec3f forcePoint = Vec3f();
@@ -57,6 +58,7 @@ namespace xng {
         Messageable &operator<<(const Message &message) override {
             is2D = message.value("is2D", false);
             type = convert(message.value("type", std::string("static")));
+            lockedAxes << message.value("lockedAxes");
             auto list = message.value("colliders");
             if (list.getType() == Message::LIST) {
                 for (auto &col: list.asList()) {
@@ -71,6 +73,7 @@ namespace xng {
         Message &operator>>(Message &message) const override {
             message["is2D"] = is2D;
             message["type"] = convert(type);
+            lockedAxes >> message["lockedAxes"];
             auto vec = std::vector<Message>();
             for (auto &col: colliders) {
                 Message msg;

@@ -69,4 +69,8 @@ namespace xng {
 
     void RigidBodyBt3::applyTorque(const Vec3f &torque) {
     }
+
+    void RigidBodyBt3::setLockedRotationAxes(const Vec3b &ax) {
+
+    }
 }

@@ -93,6 +93,7 @@ namespace xng {
             auto body = world.createBody();
 
             body->setRigidBodyType(comp.type);
+            body->setLockedRotationAxes(comp.lockedAxes);
 
             for (auto i = 0; i < comp.colliders.size(); i++) {
                 auto collider = body->createCollider(applyScale(comp.colliders.at(i), scale));
@@ -127,6 +128,7 @@ namespace xng {
             auto &nComp = *std::any_cast<RigidBodyComponent>(&newComponent);
 
             rigidbodies.at(entity)->setRigidBodyType(nComp.type);
+            rigidbodies.at(entity)->setLockedRotationAxes(nComp.lockedAxes);
 
             if (oComp.colliders != nComp.colliders) {
                 for (auto &col: colliders.at(entity)) {
