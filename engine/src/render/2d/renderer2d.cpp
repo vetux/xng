@@ -274,7 +274,7 @@ namespace xng {
             RenderCommand command;
             switch (pass.type) {
                 case Pass::COLOR: {
-                    auto &vb = getPoly(std::get<std::vector<Vec2f>>(pass.geometry), pass.center);
+                    auto &vb = getPoly(std::get<std::vector<Vec2f>>(pass.geometry));
 
                     Mat4f modelMatrix = MatrixMath::identity();
                     modelMatrix = modelMatrix * MatrixMath::translate(Vec3f(
@@ -503,7 +503,9 @@ namespace xng {
                           float rotation) {
         if (!isRendering)
             throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
-        passes.emplace_back(Pass(position, rotation, poly, center, color));
+        for (auto &vec : poly)
+            vec += center;
+        passes.emplace_back(Pass(position, rotation, poly, color));
     }
 
     void Renderer2D::draw(Rectf rectangle, ColorRGBA color, bool fill, Vec2f center, float rotation) {
@@ -519,7 +521,6 @@ namespace xng {
             passes.emplace_back(Pass(rectangle.position,
                                      rotation,
                                      getSquare({rectangle.dimensions, center}),
-                                     center,
                                      color));
     }
 
@@ -529,14 +530,14 @@ namespace xng {
         if (!isRendering)
             throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
 
-        passes.emplace_back(Pass({}, 0, std::vector<Vec2f>({std::move(start), std::move(end)}), {}, color));
+        passes.emplace_back(Pass({}, 0, std::vector<Vec2f>({std::move(start), std::move(end)}), color));
     }
 
     void Renderer2D::draw(Vec2f point, ColorRGBA color) {
         if (!isRendering)
             throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
 
-        passes.emplace_back(Pass({}, 0, std::vector<Vec2f>({std::move(point)}), {}, color));
+        passes.emplace_back(Pass({}, 0, std::vector<Vec2f>({std::move(point)}), color));
     }
 
     void Renderer2D::draw(Text &text, Rectf dstRect, ColorRGBA color, Vec2f center, float rotation) {
@@ -551,7 +552,7 @@ namespace xng {
                                  color));
     }
 
-    VertexBuffer &Renderer2D::getPoly(const std::vector<Vec2f> &poly, const Vec2f &center) {
+    VertexBuffer &Renderer2D::getPoly(const std::vector<Vec2f> &poly) {
         usedPolys.insert(poly);
         auto it = allocatedPolys.find(poly);
         if (it != allocatedPolys.end()) {
@@ -564,12 +565,12 @@ namespace xng {
             for (auto i = 0; i < poly.size() - 1; i++) {
                 auto &vec = poly.at(i);
                 auto &nVec = poly.at(i + 1);
-                vertices.emplace_back(Vertex(Vec3f(vec.x - center.x, vec.y - center.y, 0)));
-                vertices.emplace_back(Vertex(Vec3f(nVec.x - center.x, nVec.y - center.y, 0)));
+                vertices.emplace_back(Vertex(Vec3f(vec.x, vec.y, 0)));
+                vertices.emplace_back(Vertex(Vec3f(nVec.x, nVec.y, 0)));
             }
-            vertices.emplace_back(Vertex(Vec3f(poly.at(0).x - center.x, poly.at(0).y - center.y, 0)));
+            vertices.emplace_back(Vertex(Vec3f(poly.at(0).x, poly.at(0).y, 0)));
             vertices.emplace_back(
-                    Vertex(Vec3f(poly.at(poly.size() - 1).x - center.x, poly.at(poly.size() - 1).y - center.y, 0)));
+                    Vertex(Vec3f(poly.at(poly.size() - 1).x, poly.at(poly.size() - 1).y, 0)));
             auto mesh = Mesh(Primitive::LINE, vertices);
             allocatedPolys[poly] = renderDevice.createInstancedVertexBuffer(mesh, {MatrixMath::identity()});
             return *allocatedPolys[poly];

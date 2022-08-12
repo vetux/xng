@@ -276,7 +276,7 @@ namespace xng {
 
         void reallocatePipelines();
 
-        VertexBuffer &getPoly(const std::vector<Vec2f> &poly, const Vec2f& center);
+        VertexBuffer &getPoly(const std::vector<Vec2f> &poly);
 
         VertexBuffer &getPlane(const PlaneDescription &desc);
 
@@ -320,7 +320,6 @@ namespace xng {
 
             Vec2f position;
             float rotation = 0;
-            Vec2f center;
             ColorRGBA color;
             TextureBuffer *texture = nullptr;
             std::variant<PlaneDescription, std::vector<Vec2f>> geometry;
@@ -330,9 +329,8 @@ namespace xng {
             Pass(Vec2f position,
                  float rotation,
                  std::vector<Vec2f> poly,
-                 Vec2f center,
                  ColorRGBA color)
-                    : type(COLOR), position(std::move(position)), rotation(rotation), geometry(poly), center(std::move(center)), color(color) {}
+                    : type(COLOR), position(std::move(position)), rotation(rotation), geometry(poly), color(color) {}
 
             Pass(Vec2f position,
                  float rotation,
