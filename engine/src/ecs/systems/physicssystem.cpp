@@ -64,6 +64,8 @@ namespace xng {
             auto tcomp = scene.lookup<TransformComponent>(pair.first);
             rb.setPosition(tcomp.transform.getPosition() / scale);
             rb.setRotation(tcomp.transform.getRotation().getEulerAngles());
+            rb.setVelocity(pair.second.velocity);
+            rb.setAngularVelocity(pair.second.angularVelocity);
             rb.applyForce(pair.second.force, pair.second.forcePoint / scale);
             rb.applyTorque(pair.second.torque);
         }
@@ -80,6 +82,8 @@ namespace xng {
             RigidBodyComponent comp = pair.second;
             comp.force = Vec3f();
             comp.torque = Vec3f();
+            comp.velocity = rb.getVelocity();
+            comp.angularVelocity = rb.getAngularVelocity();
             scene.updateComponent(pair.first, comp);
             scene.updateComponent(pair.first, tcomp);
         }

@@ -30,6 +30,9 @@ namespace xng {
         std::vector<ColliderDesc> colliders;
         Vec3b lockedAxes;
 
+        Vec3f velocity;
+        Vec3f angularVelocity;
+
         Vec3f force = Vec3f();
         Vec3f forcePoint = Vec3f();
         Vec3f torque = Vec3f();
@@ -59,6 +62,8 @@ namespace xng {
             is2D = message.value("is2D", false);
             type = convert(message.value("type", std::string("static")));
             lockedAxes << message.value("lockedAxes");
+            velocity << message.value("velocity");
+            angularVelocity << message.value("angularVelocity");
             auto list = message.value("colliders");
             if (list.getType() == Message::LIST) {
                 for (auto &col: list.asList()) {
@@ -74,6 +79,8 @@ namespace xng {
             message["is2D"] = is2D;
             message["type"] = convert(type);
             lockedAxes >> message["lockedAxes"];
+            velocity >> message["velocity"];
+            angularVelocity >> message["angularVelocity"];
             auto vec = std::vector<Message>();
             for (auto &col: colliders) {
                 Message msg;
