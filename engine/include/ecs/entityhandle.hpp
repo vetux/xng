@@ -31,6 +31,11 @@ namespace xng {
         bool operator<(const EntityHandle &other) const {
             return id < other.id;
         }
+
+        operator bool() const {
+            return id != -1;
+        }
     };
 }
+
 #endif //XENGINE_ENTITYHANDLE_HPP
