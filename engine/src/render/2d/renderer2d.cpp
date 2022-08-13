@@ -150,25 +150,20 @@ namespace xng {
         float uvFarX = scaledOffset.position.x + scaledOffset.dimensions.x;
         float uvNearY = scaledOffset.position.y;
         float uvFarY = scaledOffset.position.y + scaledOffset.dimensions.y;
-        if (flipUv.y) {
-            return Mesh(TRI, {
-                    Vertex(Vec3f(0 - center.x, 0 - center.y, 0), {uvNearX, uvFarY}),
-                    Vertex(Vec3f(size.x - center.x, 0 - center.y, 0), {uvFarX, uvFarY}),
-                    Vertex(Vec3f(0 - center.x, size.y - center.y, 0), {uvNearX, uvNearY}),
-                    Vertex(Vec3f(0 - center.x, size.y - center.y, 0), {uvNearX, uvNearY}),
-                    Vertex(Vec3f(size.x - center.x, 0 - center.y, 0), {uvFarX, uvFarY}),
-                    Vertex(Vec3f(size.x - center.x, size.y - center.y, 0), {uvFarX, uvNearY})
-            });
-        } else {
-            return Mesh(TRI, {
-                    Vertex(Vec3f(0 - center.x, 0 - center.y, 0), {uvNearX, uvNearY}),
-                    Vertex(Vec3f(size.x - center.x, 0 - center.y, 0), {uvFarX, uvNearY}),
-                    Vertex(Vec3f(0 - center.x, size.y - center.y, 0), {uvNearX, uvFarY}),
-                    Vertex(Vec3f(0 - center.x, size.y - center.y, 0), {uvNearX, uvFarY}),
-                    Vertex(Vec3f(size.x - center.x, 0 - center.y, 0), {uvFarX, uvNearY}),
-                    Vertex(Vec3f(size.x - center.x, size.y - center.y, 0), {uvFarX, uvFarY})
-            });
-        }
+        return Mesh(TRI, {
+                Vertex(Vec3f(0 - center.x, 0 - center.y, 0),
+                       {flipUv.x ? uvFarX : uvNearX, flipUv.y ? uvFarY : uvNearY}),
+                Vertex(Vec3f(size.x - center.x, 0 - center.y, 0),
+                       {flipUv.x ? uvNearX : uvFarX, flipUv.y ? uvFarY : uvNearY}),
+                Vertex(Vec3f(0 - center.x, size.y - center.y, 0),
+                       {flipUv.x ? uvFarX : uvNearX, flipUv.y ? uvNearY : uvFarY}),
+                Vertex(Vec3f(0 - center.x, size.y - center.y, 0),
+                       {flipUv.x ? uvFarX : uvNearX, flipUv.y ? uvNearY : uvFarY}),
+                Vertex(Vec3f(size.x - center.x, 0 - center.y, 0),
+                       {flipUv.x ? uvNearX : uvFarX, flipUv.y ? uvFarY : uvNearY}),
+                Vertex(Vec3f(size.x - center.x, size.y - center.y, 0),
+                       {flipUv.x ? uvNearX : uvFarX, flipUv.y ? uvNearY : uvFarY})
+        });
     }
 
     static Mesh createSquare(Vec2f size, Vec2f center) {
@@ -503,7 +498,7 @@ namespace xng {
                           float rotation) {
         if (!isRendering)
             throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
-        for (auto &vec : poly)
+        for (auto &vec: poly)
             vec += center;
         passes.emplace_back(Pass(position, rotation, poly, color));
     }
