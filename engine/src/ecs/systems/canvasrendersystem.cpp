@@ -176,7 +176,7 @@ namespace xng {
                                         ren2d.draw(poly,
                                                    Vec2f(-tcomp.transform.getPosition().x,
                                                          -tcomp.transform.getPosition().y),
-                                                   ColorRGBA::green(),
+                                                   col.isSensor ? ColorRGBA(0, 153, 255, 255) : ColorRGBA::green(),
                                                    {},
                                                    tcomp.transform.getRotation().getEulerAngles().z);
                                     }
