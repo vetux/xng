@@ -68,6 +68,8 @@ namespace xng {
         void setLockedRotationAxes(const Vec3b &ax) override;
 
         std::unique_ptr<Collider> createCollider(const ColliderDesc &desc) override;
+
+        float getMass() override;
     };
 }
 

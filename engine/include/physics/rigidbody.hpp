@@ -71,6 +71,8 @@ namespace xng {
         virtual void setLockedRotationAxes(const Vec3b &axes) = 0;
 
         virtual std::unique_ptr<Collider> createCollider(const ColliderDesc &desc) = 0;
+
+        virtual float getMass() = 0;
     };
 }
 #endif //XENGINE_RIGIDBODY_HPP

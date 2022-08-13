@@ -96,4 +96,8 @@ namespace xng {
     void RigidBodyBox2D::setLockedRotationAxes(const Vec3b &ax) {
         body->SetFixedRotation(ax.z);
     }
+
+    float RigidBodyBox2D::getMass() {
+        return body->GetMass();
+    }
 }

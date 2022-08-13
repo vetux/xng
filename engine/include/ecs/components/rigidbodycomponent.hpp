@@ -41,6 +41,8 @@ namespace xng {
         Vec3f impulsePoint = Vec3f();
         Vec3f angularImpulse = Vec3f();
 
+        float mass = 0;
+
         RigidBody::RigidBodyType convert(const std::string &text) const {
             if (text == "static")
                 return RigidBody::STATIC;

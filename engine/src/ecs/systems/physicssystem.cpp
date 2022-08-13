@@ -88,6 +88,7 @@ namespace xng {
             comp.angularImpulse = Vec3f();
             comp.velocity = rb.getVelocity();
             comp.angularVelocity = rb.getAngularVelocity();
+            comp.mass = rb.getMass();
             scene.updateComponent(pair.first, comp);
             scene.updateComponent(pair.first, tcomp);
         }
