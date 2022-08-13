@@ -34,6 +34,10 @@ namespace xng {
         ret.y = std::sin(radians) * (vector.x - point.x) + std::cos(radians) * (vector.y - point.y) + point.y;
         return ret;
     }
+
+    inline double getAngle(const Vec2f &vec) {
+        return radiansToDegrees(atan2(vec.y, vec.y));
+    }
 }
 
 #endif // ROTATION_HPP
