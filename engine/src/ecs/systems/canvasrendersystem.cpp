@@ -115,12 +115,23 @@ namespace xng {
                                     dstRect.position.y -= vec.transform.getPosition().y;
                                     rotation += vec.transform.getRotation().getEulerAngles().z;
                                 }
-                                ren2d.draw(Rectf({}, dstRect.dimensions),
-                                           dstRect,
-                                           *spriteTextures.at(pass.ent),
-                                           rt.center,
-                                           rotation,
-                                           comp.flipSprite);
+                                if (comp.spriteB.assigned()) {
+                                    ren2d.draw(Rectf({}, dstRect.dimensions),
+                                               dstRect,
+                                               *spriteTextures.at(pass.ent),
+                                               *spriteTexturesB.at(pass.ent),
+                                               comp.blendScale,
+                                               center,
+                                               rotation,
+                                               comp.flipSprite);
+                                } else {
+                                    ren2d.draw(Rectf({}, dstRect.dimensions),
+                                               dstRect,
+                                               *spriteTextures.at(pass.ent),
+                                               rt.center,
+                                               rotation,
+                                               comp.flipSprite);
+                                }
                             }
                             break;
                         }
@@ -204,6 +215,7 @@ namespace xng {
     void CanvasRenderSystem::onComponentDestroy(const EntityHandle &entity, const std::any &component) {
         if (component.type() == typeid(SpriteComponent)) {
             spriteTextures.erase(entity);
+            spriteTexturesB.erase(entity);
         } else if (component.type() == typeid(TextComponent)) {
             renderedTexts.erase(entity);
         }
@@ -217,6 +229,7 @@ namespace xng {
             auto *ns = std::any_cast<SpriteComponent>(&newComponent);
             if (os->sprite != ns->sprite) {
                 spriteTextures.erase(entity);
+                spriteTexturesB.erase(entity);
                 createTexture(entity, *ns);
             }
         } else if (oldComponent.type() == typeid(TextComponent)) {
@@ -241,6 +254,22 @@ namespace xng {
             } else {
                 // Upload the whole image
                 spriteTextures[ent]->upload(img);
+            }
+        }
+        if (t.spriteB.assigned()) {
+            Vec2i dimensions = t.spriteB.get().offset.dimensions;
+            if (dimensions.x * dimensions.y == 0) {
+                dimensions = t.spriteB.get().image.get().getSize();
+            }
+            spriteTexturesB[ent] = ren2d.getDevice().createTextureBuffer({dimensions});
+            auto &img = t.spriteB.get().image.get();
+            if (img.getSize() != dimensions) {
+                // Upload a slice of an image
+                auto slice = img.slice(t.spriteB.get().offset);
+                spriteTexturesB[ent]->upload(slice);
+            } else {
+                // Upload the whole image
+                spriteTexturesB[ent]->upload(img);
             }
         }
     }

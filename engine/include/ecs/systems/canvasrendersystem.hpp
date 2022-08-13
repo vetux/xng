@@ -72,6 +72,7 @@ namespace xng {
         std::map<std::string, std::unique_ptr<Font>> fonts;
         std::map<EntityHandle, TextRenderer> textRenderers;
         std::map<EntityHandle, std::unique_ptr<TextureBuffer>> spriteTextures;
+        std::map<EntityHandle, std::unique_ptr<TextureBuffer>> spriteTexturesB;
         std::map<EntityHandle, Text> renderedTexts;
     };
 }

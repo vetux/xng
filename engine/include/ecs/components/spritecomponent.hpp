@@ -27,11 +27,15 @@
 namespace xng {
     struct SpriteComponent : public Messageable {
         ResourceHandle<Sprite> sprite; // The sprite to draw
+        ResourceHandle<Sprite> spriteB; // If assigned the resulting sprite is the blend between sprite and spriteB colors.
+        float blendScale = 0;
         int layer; // The render layer of the sprite on this canvas
         Vec2b flipSprite;
 
         Messageable &operator<<(const Message &message) override {
             sprite << message.value("sprite");
+            spriteB << message.value("spriteB");
+            blendScale = message.value("blendScale", 0.0f);
             layer = message.value("layer", 0);
             flipSprite << message.value("flipSprite");
             return *this;
@@ -40,6 +44,8 @@ namespace xng {
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             sprite >> message["sprite"];
+            spriteB >> message["spriteB"];
+            message["blendScale"] = blendScale;
             message["layer"] = layer;
             flipSprite >> message["flipSprite"];
             return message;
