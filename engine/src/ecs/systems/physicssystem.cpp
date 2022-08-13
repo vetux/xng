@@ -68,6 +68,8 @@ namespace xng {
             rb.setAngularVelocity(pair.second.angularVelocity);
             rb.applyForce(pair.second.force, pair.second.forcePoint / scale);
             rb.applyTorque(pair.second.torque);
+            rb.applyLinearImpulse(pair.second.impulse, pair.second.impulsePoint);
+            rb.applyAngularImpulse(pair.second.angularImpulse);
         }
 
         world.step(deltaTime);
@@ -82,6 +84,8 @@ namespace xng {
             RigidBodyComponent comp = pair.second;
             comp.force = Vec3f();
             comp.torque = Vec3f();
+            comp.impulse = Vec3f();
+            comp.angularImpulse = Vec3f();
             comp.velocity = rb.getVelocity();
             comp.angularVelocity = rb.getAngularVelocity();
             scene.updateComponent(pair.first, comp);

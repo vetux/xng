@@ -64,6 +64,10 @@ namespace xng {
 
         virtual void applyTorque(const Vec3f &torque) = 0;
 
+        virtual void applyLinearImpulse(const Vec3f &impulse, const Vec3f &point) = 0;
+
+        virtual void applyAngularImpulse(const Vec3f &impulse) = 0;
+
         virtual void setLockedRotationAxes(const Vec3b &axes) = 0;
 
         virtual std::unique_ptr<Collider> createCollider(const ColliderDesc &desc) = 0;

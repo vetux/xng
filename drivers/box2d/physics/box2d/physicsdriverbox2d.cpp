@@ -22,8 +22,6 @@
 
 #include "driver/registerdriver.hpp"
 
-#warning "Not Implemented"
-
 namespace xng {
     static bool dr = REGISTER_DRIVER("box2d", PhysicsDriver, PhysicsDriverBox2D);
 

@@ -81,6 +81,14 @@ namespace xng {
         body->ApplyTorque(torque.z, true);
     }
 
+    void RigidBodyBox2D::applyLinearImpulse(const Vec3f &impulse, const Vec3f &point) {
+        body->ApplyLinearImpulse(convert(impulse), convert(point), true);
+    }
+
+    void RigidBodyBox2D::applyAngularImpulse(const Vec3f &impulse) {
+        body->ApplyAngularImpulse(impulse.z, true);
+    }
+
     std::unique_ptr<Collider> RigidBodyBox2D::createCollider(const ColliderDesc &desc) {
         return std::make_unique<ColliderBox2D>(*this, desc);
     }

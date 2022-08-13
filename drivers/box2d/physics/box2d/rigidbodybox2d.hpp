@@ -61,6 +61,10 @@ namespace xng {
 
         void applyTorque(const Vec3f &torque) override;
 
+        void applyLinearImpulse(const Vec3f &impulse, const Vec3f &point) override;
+
+        void applyAngularImpulse(const Vec3f &impulse) override;
+
         void setLockedRotationAxes(const Vec3b &ax) override;
 
         std::unique_ptr<Collider> createCollider(const ColliderDesc &desc) override;

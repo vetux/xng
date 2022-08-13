@@ -37,6 +37,10 @@ namespace xng {
         Vec3f forcePoint = Vec3f();
         Vec3f torque = Vec3f();
 
+        Vec3f impulse = Vec3f();
+        Vec3f impulsePoint = Vec3f();
+        Vec3f angularImpulse = Vec3f();
+
         RigidBody::RigidBodyType convert(const std::string &text) const {
             if (text == "static")
                 return RigidBody::STATIC;
