@@ -43,18 +43,12 @@ namespace xng {
 
         void update(DeltaTime deltaTime, EntityScene &entityManager) override;
 
-        void onComponentCreate(const EntityHandle &entity,
-                               const std::any &component,
-                               std::type_index componentType) override;
+        void onComponentCreate(const EntityHandle &entity, const std::any &component) override;
 
-        void onComponentDestroy(const EntityHandle &entity,
-                                const std::any &component,
-                                std::type_index componentType) override;
+        void onComponentDestroy(const EntityHandle &entity, const std::any &component) override;
 
-        void onComponentUpdate(const EntityHandle &entity,
-                               const std::any &oldComponent,
-                               const std::any &newComponent,
-                               std::type_index componentType) override;
+        void onComponentUpdate(const EntityHandle &entity, const std::any &oldComponent,
+                               const std::any &newComponent) override;
 
     private:
         AudioDevice &device;

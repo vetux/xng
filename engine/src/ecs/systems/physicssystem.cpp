@@ -46,7 +46,7 @@ namespace xng {
     void PhysicsSystem::start(EntityScene &scene) {
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
             if (rigidbodies.find(pair.first) == rigidbodies.end()) {
-                onComponentCreate(pair.first, pair.second, typeid(RigidBodyComponent));
+                onComponentCreate(pair.first, pair.second);
             }
         }
         scene.addListener(*this);
@@ -89,10 +89,8 @@ namespace xng {
         }
     }
 
-    void PhysicsSystem::onComponentCreate(const EntityHandle &entity,
-                                          const std::any &component,
-                                          std::type_index componentType) {
-        if (componentType == typeid(RigidBodyComponent)) {
+    void PhysicsSystem::onComponentCreate(const EntityHandle &entity, const std::any &component) {
+        if (component.type() == typeid(RigidBodyComponent)) {
             auto &comp = *std::any_cast<RigidBodyComponent>(&component);
             auto body = world.createBody();
 
@@ -110,10 +108,8 @@ namespace xng {
         }
     }
 
-    void PhysicsSystem::onComponentDestroy(const EntityHandle &entity,
-                                           const std::any &component,
-                                           std::type_index componentType) {
-        if (componentType == typeid(RigidBodyComponent)) {
+    void PhysicsSystem::onComponentDestroy(const EntityHandle &entity, const std::any &component) {
+        if (component.type() == typeid(RigidBodyComponent)) {
             auto &comp = *std::any_cast<RigidBodyComponent>(&component);
             for (auto &col: colliders.at(entity)) {
                 colliderIndices.erase(col.get());
@@ -125,9 +121,8 @@ namespace xng {
 
     void PhysicsSystem::onComponentUpdate(const EntityHandle &entity,
                                           const std::any &oldComponent,
-                                          const std::any &newComponent,
-                                          std::type_index componentType) {
-        if (componentType == typeid(RigidBodyComponent)) {
+                                          const std::any &newComponent) {
+        if (oldComponent.type() == typeid(RigidBodyComponent)) {
             auto &oComp = *std::any_cast<RigidBodyComponent>(&oldComponent);
             auto &nComp = *std::any_cast<RigidBodyComponent>(&newComponent);
 

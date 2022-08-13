@@ -40,18 +40,13 @@ namespace xng {
 
             virtual void onEntityDestroy(const EntityHandle &entity) {};
 
-            virtual void onComponentCreate(const EntityHandle &entity,
-                                           const std::any &component,
-                                           std::type_index componentType) {};
+            virtual void onComponentCreate(const EntityHandle &entity, const std::any &component) {};
 
-            virtual void onComponentDestroy(const EntityHandle &entity,
-                                            const std::any &component,
-                                            std::type_index componentType) {};
+            virtual void onComponentDestroy(const EntityHandle &entity, const std::any &component) {};
 
             virtual void onComponentUpdate(const EntityHandle &entity,
                                            const std::any &oldComponent,
-                                           const std::any &newComponent,
-                                           std::type_index componentType) {};
+                                           const std::any &newComponent) {};
         };
 
         EntityScene() = default;
@@ -153,7 +148,7 @@ namespace xng {
             for (auto &pair: components.getPools()) {
                 for (auto &cpair: pair.second->getComponents()) {
                     for (auto &listener: listeners) {
-                        listener->onComponentDestroy(cpair.first, cpair.second, pair.first);
+                        listener->onComponentDestroy(cpair.first, cpair.second);
                     }
                 }
             }
@@ -208,7 +203,7 @@ namespace xng {
         template<typename T>
         const T &createComponent(const EntityHandle &entity, const T &value = {}) {
             for (auto &listener: listeners) {
-                listener->onComponentCreate(entity, value, typeid(T));
+                listener->onComponentCreate(entity, value);
             }
             return components.create(entity, value);
         }
@@ -216,7 +211,7 @@ namespace xng {
         template<typename T>
         void destroyComponent(const EntityHandle &entity) {
             for (auto &listener: listeners) {
-                listener->onComponentDestroy(entity, lookup<T>(entity), typeid(T));
+                listener->onComponentDestroy(entity, lookup<T>(entity));
             }
             components.getPool<T>()->destroy(entity);
         }
@@ -229,7 +224,7 @@ namespace xng {
         template<typename T>
         bool updateComponent(const EntityHandle &entity, const T &value) {
             for (auto &listener: listeners) {
-                listener->onComponentUpdate(entity, lookup<T>(entity), value, typeid(T));
+                listener->onComponentUpdate(entity, lookup<T>(entity), value);
             }
             return components.update(entity, value);
         }

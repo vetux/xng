@@ -50,29 +50,24 @@ void SpriteAnimationSystem::update(DeltaTime deltaTime, EntityScene &scene) {
     }
 }
 
-void SpriteAnimationSystem::onComponentCreate(const EntityHandle &entity,
-                                              const std::any &component,
-                                              std::type_index componentType) {
-    if (componentType == typeid(SpriteAnimationComponent)) {
+void SpriteAnimationSystem::onComponentCreate(const EntityHandle &entity, const std::any &component) {
+    if (component.type() == typeid(SpriteAnimationComponent)) {
         const auto *v = std::any_cast<SpriteAnimationComponent>(&component);
         auto animation = v->animation.get();
         animations[entity] = animation;
     }
 }
 
-void SpriteAnimationSystem::onComponentDestroy(const EntityHandle &entity,
-                                               const std::any &component,
-                                               std::type_index componentType) {
-    if (componentType == typeid(SpriteAnimationComponent)) {
+void SpriteAnimationSystem::onComponentDestroy(const EntityHandle &entity, const std::any &component) {
+    if (component.type() == typeid(SpriteAnimationComponent)) {
         animations.erase(entity);
     }
 }
 
 void SpriteAnimationSystem::onComponentUpdate(const EntityHandle &entity,
                                               const std::any &oldComponent,
-                                              const std::any &newComponent,
-                                              std::type_index componentType) {
-    if (componentType == typeid(SpriteAnimationComponent)) {
+                                              const std::any &newComponent) {
+    if (oldComponent.type() == typeid(SpriteAnimationComponent)) {
         const auto *ov = std::any_cast<SpriteAnimationComponent>(&oldComponent);
         const auto *nv = std::any_cast<SpriteAnimationComponent>(&newComponent);
         if (ov->animation != nv->animation) {

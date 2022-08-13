@@ -89,10 +89,8 @@ namespace xng {
         }
     }
 
-    void AudioSystem::onComponentCreate(const EntityHandle &entity,
-                                        const std::any &value,
-                                        std::type_index componentType) {
-        if (componentType == typeid(AudioSourceComponent)) {
+    void AudioSystem::onComponentCreate(const EntityHandle &entity, const std::any &value) {
+        if (value.type() == typeid(AudioSourceComponent)) {
             auto component = std::any_cast<AudioSourceComponent>(value);
             if (component.audio.assigned()) {
                 auto &buffer = component.audio.get();
@@ -107,10 +105,8 @@ namespace xng {
         }
     }
 
-    void AudioSystem::onComponentDestroy(const EntityHandle &entity,
-                                         const std::any &component,
-                                         std::type_index componentType) {
-        if (componentType == typeid(AudioSourceComponent)) {
+    void AudioSystem::onComponentDestroy(const EntityHandle &entity, const std::any &component) {
+        if (component.type() == typeid(AudioSourceComponent)) {
             sources.erase(entity);
             buffers.erase(entity);
         }
@@ -118,9 +114,8 @@ namespace xng {
 
     void AudioSystem::onComponentUpdate(const EntityHandle &entity,
                                         const std::any &oldComponent,
-                                        const std::any &newComponent,
-                                        std::type_index componentType) {
-        if (componentType == typeid(AudioSourceComponent)) {
+                                        const std::any &newComponent) {
+        if (oldComponent.type() == typeid(AudioSourceComponent)) {
             auto oldValue = std::any_cast<AudioSourceComponent>(oldComponent);
             auto newValue = std::any_cast<AudioSourceComponent>(newComponent);
             if (oldValue != newValue) {
