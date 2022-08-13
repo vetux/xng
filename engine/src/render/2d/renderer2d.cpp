@@ -46,6 +46,7 @@ layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
     mat4 mvp;
     vec4 color;
+    float blendScale;
 } vars;
 
 void main() {
@@ -72,6 +73,7 @@ layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
     mat4 mvp;
     vec4 color;
+    float blendScale;
 } vars;
 
 layout(binding = 1) uniform sampler2D diffuse;
@@ -92,6 +94,7 @@ layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
     mat4 mvp;
     vec4 color;
+    float blendScale;
 } vars;
 
 layout(binding = 1) uniform sampler2D diffuse;
@@ -112,6 +115,7 @@ layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
     mat4 mvp;
     vec4 color;
+    float blendScale;
 } vars;
 
 layout(binding = 1) uniform sampler2D diffuse;
@@ -119,6 +123,28 @@ layout(binding = 1) uniform sampler2D diffuse;
 void main() {
     float grayscale = texture(diffuse, fUv).r;
     color = vars.color * vec4(grayscale, grayscale, grayscale, grayscale);
+}
+)###";
+
+static const char *SHADER_FRAG_TEXTURE_BLEND = R"###(#version 420 core
+
+layout (location = 0) in vec4 fPosition;
+layout (location = 1) in vec2 fUv;
+
+layout (location = 0) out vec4 color;
+
+layout(binding = 0, std140) uniform ShaderUniformBuffer
+{
+    mat4 mvp;
+    vec4 color;
+    float blendScale;
+} vars;
+
+layout(binding = 1) uniform sampler2D diffuseA;
+layout(binding = 2) uniform sampler2D diffuseB;
+
+void main() {
+    color = mix(texture(diffuseA, fUv), texture(diffuseB, fUv), vars.blendScale);
 }
 )###";
 
@@ -134,6 +160,7 @@ namespace xng {
     struct ShaderUniformBuffer {
         Mat4f mvp = MatrixMath::identity();
         std::array<float, 4> color = Vec4f(1).getMemory();
+        float blendScale = 0;
     };
 
     /**
@@ -195,16 +222,19 @@ namespace xng {
         fsColor = ShaderSource(SHADER_FRAG_COLOR, "main", FRAGMENT, GLSL_420, false);
         fsTexture = ShaderSource(SHADER_FRAG_TEXTURE, "main", FRAGMENT, GLSL_420, false);
         fsText = ShaderSource(SHADER_FRAG_TEXT, "main", FRAGMENT, GLSL_420, false);
+        fsBlend = ShaderSource(SHADER_FRAG_TEXTURE_BLEND, "main", FRAGMENT, GLSL_420, false);
 
         vs = vs.preprocess(shaderCompiler);
         fsColor = fsColor.preprocess(shaderCompiler);
         fsTexture = fsTexture.preprocess(shaderCompiler);
         fsText = fsText.preprocess(shaderCompiler);
+        fsBlend = fsBlend.preprocess(shaderCompiler);
 
         auto vsSrc = vs.compile(shaderCompiler);
         auto fsColSrc = fsColor.compile(shaderCompiler);
         auto fsTexSrc = fsTexture.compile(shaderCompiler);
         auto fsTextSrc = fsText.compile(shaderCompiler);
+        auto fsBlendSrc = fsBlend.compile(shaderCompiler);
 
         colorShader = device.createShaderProgram(shaderDecompiler,
                                                  {.shaders = {{ShaderStage::VERTEX,   vsSrc.getShader()},
@@ -217,6 +247,10 @@ namespace xng {
         textShader = device.createShaderProgram(shaderDecompiler,
                                                 {.shaders = {{ShaderStage::VERTEX,   vsSrc.getShader()},
                                                              {ShaderStage::FRAGMENT, fsTextSrc.getShader()}}});
+
+        blendShader = device.createShaderProgram(shaderDecompiler,
+                                                 {.shaders = {{ShaderStage::VERTEX,   vsSrc.getShader()},
+                                                              {ShaderStage::FRAGMENT, fsBlendSrc.getShader()}}});
 
         reallocatePipelines();
     }
@@ -251,6 +285,7 @@ namespace xng {
         colorPipeline->setViewport(viewportOffset, viewportSize);
         texturePipeline->setViewport(viewportOffset, viewportSize);
         textPipeline->setViewport(viewportOffset, viewportSize);
+        textureBlendPipeline->setViewport(viewportOffset, viewportSize);
 
         setProjection({{}, viewportSize.convert<float>()});
         setCameraPosition({});
@@ -348,6 +383,34 @@ namespace xng {
 
                     command = RenderCommand(vb, bindings);
                 }
+                    break;
+                case Pass::TEXTURE_BLEND: {
+                    auto &vb = getPlane(std::get<PlaneDescription>(pass.geometry));
+
+                    Mat4f model = MatrixMath::identity();
+                    model = model * MatrixMath::translate(Vec3f(
+                            pass.position.x,
+                            pass.position.y,
+                            0));
+                    model = model * MatrixMath::rotate(Vec3f(0, 0, pass.rotation));
+
+                    auto mvp = camera.projection() * camera.view(cameraTransform) * model;
+
+                    ShaderUniformBuffer shaderBufferUniform;
+                    shaderBufferUniform.mvp = mvp;
+                    shaderBufferUniform.blendScale = pass.blendScale;
+
+                    auto &shaderBuffer = getShaderBuffer();
+                    shaderBuffer.upload(shaderBufferUniform);
+
+                    std::vector<ShaderBinding> bindings;
+                    bindings.emplace_back(ShaderBinding(shaderBuffer));
+                    bindings.emplace_back(ShaderBinding(*pass.texture));
+                    bindings.emplace_back(ShaderBinding(*pass.textureB));
+
+                    command = RenderCommand(vb, bindings);
+                }
+                    break;
                 case Pass::TEXT: {
                     auto &vb = getPlane(std::get<PlaneDescription>(pass.geometry));
 
@@ -391,6 +454,9 @@ namespace xng {
                     case Pass::TEXTURE:
                         texturePipeline->render(*userTarget, currentPasses);
                         break;
+                    case Pass::TEXTURE_BLEND:
+                        textureBlendPipeline->render(*userTarget, currentPasses);
+                        break;
                     case Pass::TEXT:
                         textPipeline->render(*userTarget, currentPasses);
                         break;
@@ -408,6 +474,9 @@ namespace xng {
                 break;
             case Pass::TEXTURE:
                 texturePipeline->render(*userTarget, currentPasses);
+                break;
+            case Pass::TEXTURE_BLEND:
+                textureBlendPipeline->render(*userTarget, currentPasses);
                 break;
             case Pass::TEXT:
                 textPipeline->render(*userTarget, currentPasses);
@@ -485,6 +554,18 @@ namespace xng {
 
         PlaneDescription desc({dstRect.dimensions, center, srcRect, flipUv});
         passes.emplace_back(Pass(dstRect.position, rotation, desc, texture));
+    }
+
+    void Renderer2D::draw(Rectf srcRect,
+                          Rectf dstRect,
+                          TextureBuffer &textureA,
+                          TextureBuffer &textureB,
+                          float blendScale,
+                          Vec2f center,
+                          float rotation,
+                          Vec2b flipUv) {
+        PlaneDescription desc({dstRect.dimensions, center, srcRect, flipUv});
+        passes.emplace_back(Pass(dstRect.position, rotation, desc, textureA, textureB, blendScale));
     }
 
     void Renderer2D::draw(Rectf dstRect, TextureBuffer &texture, Vec2f center, float rotation) {
@@ -640,5 +721,13 @@ namespace xng {
                                                                  .clearColor = false,
                                                                  .enableDepthTest = false,
                                                                  .enableBlending = true});
+
+        textureBlendPipeline = renderDevice.createRenderPipeline({.shader = *blendShader,
+                                                                         .viewportOffset = viewportOffset,
+                                                                         .viewportSize = viewportSize,
+                                                                         .multiSample = false,
+                                                                         .clearColor = false,
+                                                                         .enableDepthTest = false,
+                                                                         .enableBlending = true});
     }
 }

@@ -119,6 +119,30 @@ namespace xng {
                   float rotation = 0,
                   Vec2b flipUv = Vec2b(false));
 
+        /**
+         * Draw a texture which is the result of blending between textureA and textureB with the progress indicating blend (0 - 1)
+         *
+         * textureA -------- | --- textureB
+         *                  blendScale
+         *
+         * @param srcRect
+         * @param dstRect
+         * @param textureA
+         * @param textureB
+         * @param blendScale
+         * @param center
+         * @param rotation
+         * @param flipUv
+         */
+        void draw(Rectf srcRect,
+                  Rectf dstRect,
+                  TextureBuffer &textureA,
+                  TextureBuffer &textureB,
+                  float blendScale,
+                  Vec2f center = {},
+                  float rotation = 0,
+                  Vec2b flipUv = Vec2b(false));
+
         void draw(Rectf dstRect, TextureBuffer &texture, Vec2f center = {}, float rotation = 0);
 
         /**
@@ -290,15 +314,18 @@ namespace xng {
         ShaderSource fsColor;
         ShaderSource fsTexture;
         ShaderSource fsText;
+        ShaderSource fsBlend;
 
         std::unique_ptr<ShaderProgram> colorShader = nullptr;
         std::unique_ptr<ShaderProgram> textureShader = nullptr;
         std::unique_ptr<ShaderProgram> textShader = nullptr;
+        std::unique_ptr<ShaderProgram> blendShader = nullptr;
 
         std::unique_ptr<RenderPipeline> clearPipeline;
         std::unique_ptr<RenderPipeline> colorPipeline;
         std::unique_ptr<RenderPipeline> texturePipeline;
         std::unique_ptr<RenderPipeline> textPipeline;
+        std::unique_ptr<RenderPipeline> textureBlendPipeline;
 
         std::unordered_map<PlaneDescription, std::unique_ptr<VertexBuffer>, PlaneDescriptionHashFunction> allocatedPlanes;
         std::unordered_map<std::vector<Vec2f>, std::unique_ptr<VertexBuffer>, PolyHashFunction<float>> allocatedPolys;
@@ -315,6 +342,7 @@ namespace xng {
                 COLOR,
                 COLOR_SOLID,
                 TEXTURE,
+                TEXTURE_BLEND,
                 TEXT
             } type{};
 
@@ -322,6 +350,8 @@ namespace xng {
             float rotation = 0;
             ColorRGBA color;
             TextureBuffer *texture = nullptr;
+            TextureBuffer *textureB = nullptr;
+            float blendScale = 0;
             std::variant<PlaneDescription, std::vector<Vec2f>> geometry;
 
             Pass() = default;
@@ -347,6 +377,20 @@ namespace xng {
                       rotation(rotation),
                       geometry(plane),
                       texture(&texture) {}
+
+            Pass(Vec2f position,
+                 float rotation,
+                 PlaneDescription plane,
+                 TextureBuffer &textureA,
+                 TextureBuffer &textureB,
+                 float blendScale)
+                    : type(TEXTURE_BLEND),
+                      position(std::move(position)),
+                      rotation(rotation),
+                      geometry(plane),
+                      texture(&textureA),
+                      textureB(&textureB),
+                      blendScale(blendScale) {}
 
             Pass(Vec2f position,
                  float rotation,
