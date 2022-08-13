@@ -227,7 +227,7 @@ namespace xng {
         if (oldComponent.type() == typeid(SpriteComponent)) {
             auto *os = std::any_cast<SpriteComponent>(&oldComponent);
             auto *ns = std::any_cast<SpriteComponent>(&newComponent);
-            if (os->sprite != ns->sprite) {
+            if (os->sprite != ns->sprite || os->spriteB != ns->spriteB) {
                 spriteTextures.erase(entity);
                 spriteTexturesB.erase(entity);
                 createTexture(entity, *ns);
