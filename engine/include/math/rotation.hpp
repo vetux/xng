@@ -36,7 +36,7 @@ namespace xng {
     }
 
     inline double getAngle(const Vec2f &vec) {
-        return radiansToDegrees(atan2(vec.y, vec.y));
+        return radiansToDegrees(atan2(vec.y, vec.x));
     }
 }
 
