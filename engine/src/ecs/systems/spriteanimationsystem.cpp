@@ -25,7 +25,8 @@ void SpriteAnimationSystem::start(EntityScene &scene) {
     scene.addListener(*this);
     for (auto &pair: scene.getPool<SpriteAnimationComponent>()) {
         if (animations.find(pair.first) == animations.end()) {
-            animations[pair.first] = pair.second.animation.get();
+            if (pair.second.animation.assigned())
+                animations[pair.first] = pair.second.animation.get();
         }
     }
 }
@@ -39,13 +40,21 @@ void SpriteAnimationSystem::update(DeltaTime deltaTime, EntityScene &scene) {
     for (const auto &c: scene.getPool<SpriteAnimationComponent>()) {
         if (!c.second.enabled)
             continue;
-        // Advance animation
-        auto &f = animations.at(c.first).getFrame(deltaTime);
-        // Update sprite
-        if (scene.check<SpriteComponent>(c.first)) {
-            auto ren = scene.lookup<SpriteComponent>(c.first);
-            ren.sprite = f;
-            scene.updateComponent(c.first, ren);
+        if (c.second.animation.assigned()) {
+            // Advance animation
+            auto &anim = animations.at(c.first);
+            auto &f = anim.getFrame(deltaTime);
+            if (anim.getTime() == anim.getDuration() && !anim.isLooping()){
+                SpriteAnimationComponent comp = c.second;
+                comp.finished = true;
+                scene.updateComponent(c.first, comp);
+            }
+            // Update sprite
+            if (scene.check<SpriteComponent>(c.first)) {
+                auto ren = scene.lookup<SpriteComponent>(c.first);
+                ren.sprite = f;
+                scene.updateComponent(c.first, ren);
+            }
         }
     }
 }
@@ -53,8 +62,10 @@ void SpriteAnimationSystem::update(DeltaTime deltaTime, EntityScene &scene) {
 void SpriteAnimationSystem::onComponentCreate(const EntityHandle &entity, const std::any &component) {
     if (component.type() == typeid(SpriteAnimationComponent)) {
         const auto *v = std::any_cast<SpriteAnimationComponent>(&component);
-        auto animation = v->animation.get();
-        animations[entity] = animation;
+        if (v->animation.assigned()) {
+            auto animation = v->animation.get();
+            animations[entity] = animation;
+        }
     }
 }
 
@@ -71,7 +82,10 @@ void SpriteAnimationSystem::onComponentUpdate(const EntityHandle &entity,
         const auto *ov = std::any_cast<SpriteAnimationComponent>(&oldComponent);
         const auto *nv = std::any_cast<SpriteAnimationComponent>(&newComponent);
         if (ov->animation != nv->animation) {
-            animations[entity] = nv->animation.get();
+            if (nv->animation.assigned())
+                animations[entity] = nv->animation.get();
+            else
+                animations.erase(entity);
         }
     }
 }
