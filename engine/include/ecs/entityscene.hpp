@@ -140,8 +140,11 @@ namespace xng {
             components.destroy(entity);
             idStore.insert(entity.id);
             entities.erase(entity);
-            entityNames.erase(entityNamesReverse.at(entity));
-            entityNamesReverse.erase(entity);
+            auto it = entityNamesReverse.find(entity);
+            if (it != entityNamesReverse.end()) {
+                entityNames.erase(it->second);
+                entityNamesReverse.erase(entity);
+            }
         }
 
         void clear() {
