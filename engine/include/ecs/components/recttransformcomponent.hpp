@@ -39,11 +39,11 @@ namespace xng {
             BOTTOM_RIGHT
         } anchor = TOP_LEFT;
 
-        bool enabled;
+        bool enabled = true;
 
         Rectf rect;
         Vec2f center;
-        float rotation;
+        float rotation = 0;
 
         std::string parent;
 
