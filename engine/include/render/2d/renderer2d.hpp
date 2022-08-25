@@ -353,56 +353,86 @@ namespace xng {
             TextureBuffer *textureB = nullptr;
             float blendScale = 0;
             std::variant<PlaneDescription, std::vector<Vec2f>> geometry;
+            Camera camera;
+            Transform cameraTransform;
 
             Pass() = default;
 
             Pass(Vec2f position,
                  float rotation,
                  std::vector<Vec2f> poly,
-                 ColorRGBA color)
-                    : type(COLOR), position(std::move(position)), rotation(rotation), geometry(poly), color(color) {}
+                 ColorRGBA color,
+                 Camera camera,
+                 Transform cameraTransform)
+                    : type(COLOR),
+                      position(std::move(position)),
+                      rotation(rotation),
+                      geometry(poly),
+                      color(color),
+                      camera(std::move(camera)),
+                      cameraTransform(std::move(cameraTransform)) {}
 
             Pass(Vec2f position,
                  float rotation,
                  PlaneDescription plane,
-                 ColorRGBA color)
-                    : type(COLOR), position(std::move(position)), rotation(rotation), geometry(plane), color(color) {}
+                 ColorRGBA color,
+                 Camera camera,
+                 Transform cameraTransform)
+                    : type(COLOR),
+                      position(std::move(position)),
+                      rotation(rotation),
+                      geometry(plane),
+                      color(color),
+                      camera(std::move(camera)),
+                      cameraTransform(std::move(cameraTransform)) {}
 
             Pass(Vec2f position,
                  float rotation,
                  PlaneDescription plane,
-                 TextureBuffer &texture)
+                 TextureBuffer &texture,
+                 Camera camera,
+                 Transform cameraTransform)
                     : type(TEXTURE),
                       position(std::move(position)),
                       rotation(rotation),
                       geometry(plane),
-                      texture(&texture) {}
+                      texture(&texture),
+                      camera(std::move(camera)),
+                      cameraTransform(std::move(cameraTransform)) {}
 
             Pass(Vec2f position,
                  float rotation,
                  PlaneDescription plane,
                  TextureBuffer &textureA,
                  TextureBuffer &textureB,
-                 float blendScale)
+                 float blendScale,
+                 Camera camera,
+                 Transform cameraTransform)
                     : type(TEXTURE_BLEND),
                       position(std::move(position)),
                       rotation(rotation),
                       geometry(plane),
                       texture(&textureA),
                       textureB(&textureB),
-                      blendScale(blendScale) {}
+                      blendScale(blendScale),
+                      camera(std::move(camera)),
+                      cameraTransform(std::move(cameraTransform)) {}
 
             Pass(Vec2f position,
                  float rotation,
                  PlaneDescription plane,
                  Text &text,
-                 ColorRGBA color)
+                 ColorRGBA color,
+                 Camera camera,
+                 Transform cameraTransform)
                     : type(TEXT),
                       position(std::move(position)),
                       rotation(rotation),
                       geometry(plane),
                       texture(&text.getTexture()),
-                      color(color) {}
+                      color(color),
+                      camera(std::move(camera)),
+                      cameraTransform(std::move(cameraTransform)) {}
         };
 
         std::vector<Pass> passes;

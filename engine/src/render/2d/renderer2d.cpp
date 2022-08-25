@@ -313,7 +313,7 @@ namespace xng {
                             0));
                     modelMatrix = modelMatrix * MatrixMath::rotate(Vec3f(0, 0, pass.rotation));
 
-                    auto mvp = camera.projection() * camera.view(cameraTransform) * modelMatrix;
+                    auto mvp = pass.camera.projection() * pass.camera.view(pass.cameraTransform) * modelMatrix;
 
                     ShaderUniformBuffer shaderBufferUniform;
                     shaderBufferUniform.mvp = mvp;
@@ -341,7 +341,7 @@ namespace xng {
                             0));
                     modelMatrix = modelMatrix * MatrixMath::rotate(Vec3f(0, 0, pass.rotation));
 
-                    auto mvp = camera.projection() * camera.view(cameraTransform) * modelMatrix;
+                    auto mvp = pass.camera.projection() * pass.camera.view(pass.cameraTransform) * modelMatrix;
 
                     ShaderUniformBuffer shaderBufferUniform;
                     shaderBufferUniform.mvp = mvp;
@@ -369,7 +369,7 @@ namespace xng {
                             0));
                     model = model * MatrixMath::rotate(Vec3f(0, 0, pass.rotation));
 
-                    auto mvp = camera.projection() * camera.view(cameraTransform) * model;
+                    auto mvp = pass.camera.projection() * pass.camera.view(pass.cameraTransform) * model;
 
                     ShaderUniformBuffer shaderBufferUniform;
                     shaderBufferUniform.mvp = mvp;
@@ -394,7 +394,7 @@ namespace xng {
                             0));
                     model = model * MatrixMath::rotate(Vec3f(0, 0, pass.rotation));
 
-                    auto mvp = camera.projection() * camera.view(cameraTransform) * model;
+                    auto mvp = pass.camera.projection() * pass.camera.view(pass.cameraTransform) * model;
 
                     ShaderUniformBuffer shaderBufferUniform;
                     shaderBufferUniform.mvp = mvp;
@@ -421,7 +421,7 @@ namespace xng {
                             0));
                     model = model * MatrixMath::rotate(Vec3f(0, 0, pass.rotation));
 
-                    auto mvp = camera.projection() * camera.view(cameraTransform) * model;
+                    auto mvp = pass.camera.projection() * pass.camera.view(pass.cameraTransform) * model;
 
                     ShaderUniformBuffer shaderBufferUniform;
                     shaderBufferUniform.mvp = mvp;
@@ -553,7 +553,7 @@ namespace xng {
             throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
 
         PlaneDescription desc({dstRect.dimensions, center, srcRect, flipUv});
-        passes.emplace_back(Pass(dstRect.position, rotation, desc, texture));
+        passes.emplace_back(Pass(dstRect.position, rotation, desc, texture, camera, cameraTransform));
     }
 
     void Renderer2D::draw(Rectf srcRect,
@@ -565,7 +565,7 @@ namespace xng {
                           float rotation,
                           Vec2b flipUv) {
         PlaneDescription desc({dstRect.dimensions, center, srcRect, flipUv});
-        passes.emplace_back(Pass(dstRect.position, rotation, desc, textureA, textureB, blendScale));
+        passes.emplace_back(Pass(dstRect.position, rotation, desc, textureA, textureB, blendScale, camera, cameraTransform));
     }
 
     void Renderer2D::draw(Rectf dstRect, TextureBuffer &texture, Vec2f center, float rotation) {
@@ -581,7 +581,7 @@ namespace xng {
             throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
         for (auto &vec: poly)
             vec += center;
-        passes.emplace_back(Pass(position, rotation, poly, color));
+        passes.emplace_back(Pass(position, rotation, poly, color, camera, cameraTransform));
     }
 
     void Renderer2D::draw(Rectf rectangle, ColorRGBA color, bool fill, Vec2f center, float rotation) {
@@ -592,12 +592,12 @@ namespace xng {
             passes.emplace_back(Pass(rectangle.position,
                                      rotation,
                                      {rectangle.dimensions, center, Rectf(Vec2f(), rectangle.dimensions), Vec2b(false)},
-                                     color));
+                                     color, camera, cameraTransform));
         else
             passes.emplace_back(Pass(rectangle.position,
                                      rotation,
                                      getSquare({rectangle.dimensions, center}),
-                                     color));
+                                     color, camera, cameraTransform));
     }
 
     void Renderer2D::draw(Vec2f start,
@@ -606,14 +606,14 @@ namespace xng {
         if (!isRendering)
             throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
 
-        passes.emplace_back(Pass({}, 0, std::vector<Vec2f>({std::move(start), std::move(end)}), color));
+        passes.emplace_back(Pass({}, 0, std::vector<Vec2f>({std::move(start), std::move(end)}), color, camera, cameraTransform));
     }
 
     void Renderer2D::draw(Vec2f point, ColorRGBA color) {
         if (!isRendering)
             throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
 
-        passes.emplace_back(Pass({}, 0, std::vector<Vec2f>({std::move(point)}), color));
+        passes.emplace_back(Pass({}, 0, std::vector<Vec2f>({std::move(point)}), color, camera, cameraTransform));
     }
 
     void Renderer2D::draw(Text &text, Rectf dstRect, ColorRGBA color, Vec2f center, float rotation) {
@@ -625,7 +625,7 @@ namespace xng {
                                  rotation,
                                  {dstRect.dimensions, center, srcRect, Vec2b(false)},
                                  text,
-                                 color));
+                                 color, camera, cameraTransform));
     }
 
     VertexBuffer &Renderer2D::getPoly(const std::vector<Vec2f> &poly) {
