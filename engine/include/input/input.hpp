@@ -39,6 +39,8 @@ namespace xng {
 
         virtual void clearMouseCursorImage() = 0;
 
+        virtual void setMouseCursorHidden(bool cursorHidden) = 0;
+
         virtual const Keyboard &getKeyboard() const = 0;
 
         virtual const Mouse &getMouse() const = 0;

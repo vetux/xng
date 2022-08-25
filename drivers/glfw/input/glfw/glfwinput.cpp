@@ -197,6 +197,10 @@ namespace xng {
         throw std::runtime_error("Not implemented");
     }
 
+    void GLFWInput::setMouseCursorHidden(bool cursorHidden) {
+        glfwSetInputMode(&wndH, GLFW_CURSOR, cursorHidden ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL);
+    }
+
     const Keyboard &GLFWInput::getKeyboard() const {
         return keyboards.at(0);
     }

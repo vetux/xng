@@ -53,6 +53,8 @@ namespace xng {
 
         void clearMouseCursorImage() override;
 
+        void setMouseCursorHidden(bool cursorHidden) override;
+
         const Keyboard &getKeyboard() const override;
 
         const Mouse &getMouse() const override;
