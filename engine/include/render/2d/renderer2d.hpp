@@ -111,13 +111,17 @@ namespace xng {
          * @param center
          * @param rotation
          * @param flipUv
+         * @param mix
+         * @param mixColor
          */
         void draw(Rectf srcRect,
                   Rectf dstRect,
                   TextureBuffer &texture,
                   Vec2f center = {},
                   float rotation = 0,
-                  Vec2b flipUv = Vec2b(false));
+                  Vec2b flipUv = Vec2b(false),
+                  float mix = 0,
+                  ColorRGBA mixColor = ColorRGBA::black());
 
         /**
          * Draw a texture which is the result of blending between textureA and textureB with the progress indicating blend (0 - 1)
@@ -142,8 +146,6 @@ namespace xng {
                   Vec2f center = {},
                   float rotation = 0,
                   Vec2b flipUv = Vec2b(false));
-
-        void draw(Rectf dstRect, TextureBuffer &texture, Vec2f center = {}, float rotation = 0);
 
         /**
         * Draw Polygon
@@ -355,6 +357,8 @@ namespace xng {
             std::variant<PlaneDescription, std::vector<Vec2f>> geometry;
             Camera camera;
             Transform cameraTransform;
+            float mix = 0;
+            ColorRGBA mixColor;
 
             Pass() = default;
 
@@ -391,14 +395,18 @@ namespace xng {
                  PlaneDescription plane,
                  TextureBuffer &texture,
                  Camera camera,
-                 Transform cameraTransform)
+                 Transform cameraTransform,
+                 float mix,
+                 ColorRGBA mixColor)
                     : type(TEXTURE),
                       position(std::move(position)),
                       rotation(rotation),
                       geometry(plane),
                       texture(&texture),
                       camera(std::move(camera)),
-                      cameraTransform(std::move(cameraTransform)) {}
+                      cameraTransform(std::move(cameraTransform)),
+                      mix(mix),
+                      mixColor(mixColor) {}
 
             Pass(Vec2f position,
                  float rotation,

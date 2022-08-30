@@ -46,7 +46,7 @@ layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
     mat4 mvp;
     vec4 color;
-    float blendScale;
+    float scale;
 } vars;
 
 void main() {
@@ -73,7 +73,7 @@ layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
     mat4 mvp;
     vec4 color;
-    float blendScale;
+    float scale;
 } vars;
 
 layout(binding = 1) uniform sampler2D diffuse;
@@ -94,13 +94,13 @@ layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
     mat4 mvp;
     vec4 color;
-    float blendScale;
+    float scale;
 } vars;
 
 layout(binding = 1) uniform sampler2D diffuse;
 
 void main() {
-    color = texture(diffuse, fUv);
+    color = mix(texture(diffuse, fUv), vars.color, vars.scale);
 }
 )###";
 
@@ -115,7 +115,7 @@ layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
     mat4 mvp;
     vec4 color;
-    float blendScale;
+    float scale;
 } vars;
 
 layout(binding = 1) uniform sampler2D diffuse;
@@ -137,14 +137,14 @@ layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
     mat4 mvp;
     vec4 color;
-    float blendScale;
+    float scale;
 } vars;
 
 layout(binding = 1) uniform sampler2D diffuseA;
 layout(binding = 2) uniform sampler2D diffuseB;
 
 void main() {
-    color = mix(texture(diffuseA, fUv), texture(diffuseB, fUv), vars.blendScale);
+    color = mix(texture(diffuseA, fUv), texture(diffuseB, fUv), vars.scale);
 }
 )###";
 
@@ -160,7 +160,7 @@ namespace xng {
     struct ShaderUniformBuffer {
         Mat4f mvp = MatrixMath::identity();
         std::array<float, 4> color = Vec4f(1).getMemory();
-        float blendScale = 0;
+        float scale = 0;
     };
 
     /**
@@ -373,6 +373,8 @@ namespace xng {
 
                     ShaderUniformBuffer shaderBufferUniform;
                     shaderBufferUniform.mvp = mvp;
+                    shaderBufferUniform.color = pass.mixColor.divide().getMemory();
+                    shaderBufferUniform.scale = pass.mix;
 
                     auto &shaderBuffer = getShaderBuffer();
                     shaderBuffer.upload(shaderBufferUniform);
@@ -398,7 +400,7 @@ namespace xng {
 
                     ShaderUniformBuffer shaderBufferUniform;
                     shaderBufferUniform.mvp = mvp;
-                    shaderBufferUniform.blendScale = pass.blendScale;
+                    shaderBufferUniform.scale = pass.blendScale;
 
                     auto &shaderBuffer = getShaderBuffer();
                     shaderBuffer.upload(shaderBufferUniform);
@@ -548,12 +550,14 @@ namespace xng {
                           TextureBuffer &texture,
                           Vec2f center,
                           float rotation,
-                          Vec2b flipUv) {
+                          Vec2b flipUv,
+                          float mix,
+                          ColorRGBA mixColor) {
         if (!isRendering)
             throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
 
         PlaneDescription desc({dstRect.dimensions, center, srcRect, flipUv});
-        passes.emplace_back(Pass(dstRect.position, rotation, desc, texture, camera, cameraTransform));
+        passes.emplace_back(Pass(dstRect.position, rotation, desc, texture, camera, cameraTransform, mix, mixColor));
     }
 
     void Renderer2D::draw(Rectf srcRect,
@@ -566,10 +570,6 @@ namespace xng {
                           Vec2b flipUv) {
         PlaneDescription desc({dstRect.dimensions, center, srcRect, flipUv});
         passes.emplace_back(Pass(dstRect.position, rotation, desc, textureA, textureB, blendScale, camera, cameraTransform));
-    }
-
-    void Renderer2D::draw(Rectf dstRect, TextureBuffer &texture, Vec2f center, float rotation) {
-        draw(Rectf({}, dstRect.dimensions), dstRect, texture, std::move(center), rotation);
     }
 
     void Renderer2D::draw(std::vector<Vec2f> poly,
