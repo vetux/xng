@@ -130,7 +130,9 @@ namespace xng {
                                                *spriteTextures.at(pass.ent),
                                                rt.center,
                                                rotation,
-                                               comp.flipSprite);
+                                               comp.flipSprite,
+                                               comp.mix,
+                                               comp.mixColor);
                                 }
                             }
                             break;

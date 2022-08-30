@@ -31,6 +31,8 @@ namespace xng {
         float blendScale = 0;
         int layer = 0; // The render layer of the sprite on this canvas
         Vec2b flipSprite;
+        float mix = 0;
+        ColorRGBA mixColor = {};
 
         Messageable &operator<<(const Message &message) override {
             sprite << message.value("sprite");
@@ -38,6 +40,8 @@ namespace xng {
             blendScale = message.value("blendScale", 0.0f);
             layer = message.value("layer", 0);
             flipSprite << message.value("flipSprite");
+            mix = message.value("mix", 0.0f);
+            mixColor << message.value("mixColor");
             return *this;
         }
 
@@ -48,6 +52,8 @@ namespace xng {
             message["blendScale"] = blendScale;
             message["layer"] = layer;
             flipSprite >> message["flipSprite"];
+            message["mix"] = mix;
+            mixColor >> message["mixColor"];
             return message;
         }
     };
