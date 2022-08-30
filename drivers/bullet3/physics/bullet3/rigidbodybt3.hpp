@@ -52,6 +52,14 @@ namespace xng {
         void setLockedRotationAxes(const Vec3b &ax) override;
 
         std::unique_ptr<Collider> createCollider(const ColliderDesc &desc) override;
+
+        void applyLinearImpulse(const Vec3f &impulse, const Vec3f &point) override;
+
+        void applyAngularImpulse(const Vec3f &impulse) override;
+
+        float getMass() override;
+
+        void setGravityScale(float scale) override;
     };
 }
 

@@ -100,4 +100,8 @@ namespace xng {
     float RigidBodyBox2D::getMass() {
         return body->GetMass();
     }
+
+    void RigidBodyBox2D::setGravityScale(float scale) {
+        body->SetGravityScale(scale);
+    }
 }

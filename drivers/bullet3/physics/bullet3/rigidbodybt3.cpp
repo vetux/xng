@@ -73,4 +73,20 @@ namespace xng {
     void RigidBodyBt3::setLockedRotationAxes(const Vec3b &ax) {
 
     }
+
+    void RigidBodyBt3::applyLinearImpulse(const Vec3f &impulse, const Vec3f &point) {
+
+    }
+
+    void RigidBodyBt3::applyAngularImpulse(const Vec3f &impulse) {
+
+    }
+
+    float RigidBodyBt3::getMass() {
+        return 0;
+    }
+
+    void RigidBodyBt3::setGravityScale(float scale) {
+
+    }
 }
