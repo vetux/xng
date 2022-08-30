@@ -101,6 +101,7 @@ namespace xng {
 
             body->setRigidBodyType(comp.type);
             body->setLockedRotationAxes(comp.lockedAxes);
+            body->setGravityScale(comp.gravityScale);
 
             for (auto i = 0; i < comp.colliders.size(); i++) {
                 auto collider = body->createCollider(applyScale(comp.colliders.at(i), scale));
@@ -133,6 +134,7 @@ namespace xng {
 
             rigidbodies.at(entity)->setRigidBodyType(nComp.type);
             rigidbodies.at(entity)->setLockedRotationAxes(nComp.lockedAxes);
+            rigidbodies.at(entity)->setGravityScale(nComp.gravityScale);
 
             if (oComp.colliders != nComp.colliders) {
                 for (auto &col: colliders.at(entity)) {

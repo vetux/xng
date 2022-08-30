@@ -43,6 +43,8 @@ namespace xng {
 
         float mass = 0;
 
+        float gravityScale = 1;
+
         RigidBody::RigidBodyType convert(const std::string &text) const {
             if (text == "static")
                 return RigidBody::STATIC;
