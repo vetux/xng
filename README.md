@@ -3,10 +3,15 @@
 xEngine is a cross-platform c++ game engine library.
 
 ## Features
-
-- 3D Audio abstraction
-- GPU Abstraction (Compute, Raytracing(WIP))
-- Text Rendering Abstraction
+- Driver Interfaces
+- Display Manager abstraction
+  - GLFW implementation
+- 3D Audio
+  - OpenAL-Soft implementation
+- GPU (Render, Compute, Raytracing(WIP))
+  - OpenGL implementation 
+- Text Rendering
+- Physics Simulation
 - Frame Graph Renderer (WIP)
 - 2D Renderer
 - Skeletal Animation (WIP)
