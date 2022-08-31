@@ -32,7 +32,15 @@ namespace xng {
             return id < other.id;
         }
 
-        operator bool() const {
+        bool operator==(const EntityHandle &other) const {
+            return id == other.id;
+        }
+
+        bool operator!=(const EntityHandle &other) const {
+            return id != other.id;
+        }
+
+        explicit operator bool() const {
             return id != -1;
         }
     };
