@@ -32,6 +32,7 @@ namespace xng {
     struct XENGINE_EXPORT SpriteAnimationComponent : public Messageable {
         bool enabled = true;
         ResourceHandle<SpriteAnimation> animation{};
+        float animationDurationOverride = -1;
         bool finished = false;
 
         Messageable &operator<<(const Message &message) override {

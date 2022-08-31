@@ -71,6 +71,8 @@ namespace xng {
          */
         float getDuration() const { return animationDuration; }
 
+        void setDuration(float duration) { animationDuration = duration; }
+
         bool isClampingDelta() const { return clampDelta; }
 
         bool isLooping() const { return loop; }

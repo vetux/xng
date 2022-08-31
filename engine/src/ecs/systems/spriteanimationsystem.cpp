@@ -43,8 +43,13 @@ void SpriteAnimationSystem::update(DeltaTime deltaTime, EntityScene &scene) {
         if (c.second.animation.assigned()) {
             // Advance animation
             auto &anim = animations.at(c.first);
+            if (c.second.animationDurationOverride > 0) {
+                anim.setDuration(c.second.animationDurationOverride);
+            } else {
+                anim.setDuration(c.second.animation.get().getDuration());
+            }
             auto &f = anim.getFrame(deltaTime);
-            if (anim.getTime() == anim.getDuration() && !anim.isLooping()){
+            if (anim.getTime() == anim.getDuration() && !anim.isLooping()) {
                 SpriteAnimationComponent comp = c.second;
                 comp.finished = true;
                 scene.updateComponent(c.first, comp);
