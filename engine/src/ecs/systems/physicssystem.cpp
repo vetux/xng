@@ -121,6 +121,7 @@ namespace xng {
                 colliderIndices.erase(col.get());
             }
             colliders.erase(entity);
+            rigidbodiesReverse.erase(rigidbodies.at(entity).get());
             rigidbodies.erase(entity);
         }
     }
@@ -131,10 +132,6 @@ namespace xng {
         if (oldComponent.type() == typeid(RigidBodyComponent)) {
             auto &oComp = *std::any_cast<RigidBodyComponent>(&oldComponent);
             auto &nComp = *std::any_cast<RigidBodyComponent>(&newComponent);
-
-            rigidbodies.at(entity)->setRigidBodyType(nComp.type);
-            rigidbodies.at(entity)->setLockedRotationAxes(nComp.lockedAxes);
-            rigidbodies.at(entity)->setGravityScale(nComp.gravityScale);
 
             if (oComp.colliders != nComp.colliders) {
                 for (auto &col: colliders.at(entity)) {
@@ -148,6 +145,10 @@ namespace xng {
                     colliders[entity].emplace_back(std::move(collider));
                 }
             }
+
+            rigidbodies.at(entity)->setRigidBodyType(nComp.type);
+            rigidbodies.at(entity)->setLockedRotationAxes(nComp.lockedAxes);
+            rigidbodies.at(entity)->setGravityScale(nComp.gravityScale);
         }
     }
 
