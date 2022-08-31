@@ -121,7 +121,7 @@ namespace xng {
                   float rotation = 0,
                   Vec2b flipUv = Vec2b(false),
                   float mix = 0,
-                  ColorRGBA mixColor = ColorRGBA::black());
+                  ColorRGB mixColor = ColorRGB());
 
         /**
          * Draw a texture which is the result of blending between textureA and textureB with the progress indicating blend (0 - 1)
@@ -358,7 +358,7 @@ namespace xng {
             Camera camera;
             Transform cameraTransform;
             float mix = 0;
-            ColorRGBA mixColor;
+            ColorRGB mixColor;
 
             Pass() = default;
 
@@ -397,7 +397,7 @@ namespace xng {
                  Camera camera,
                  Transform cameraTransform,
                  float mix,
-                 ColorRGBA mixColor)
+                 ColorRGB mixColor)
                     : type(TEXTURE),
                       position(std::move(position)),
                       rotation(rotation),

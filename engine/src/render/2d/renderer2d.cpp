@@ -100,7 +100,9 @@ layout(binding = 0, std140) uniform ShaderUniformBuffer
 layout(binding = 1) uniform sampler2D diffuse;
 
 void main() {
-    color = mix(texture(diffuse, fUv), vars.color, vars.scale);
+    color = texture(diffuse, fUv);
+    vec3 mixColor = mix(color.rgb, vars.color.rgb, vars.scale);
+    color = vec4(mixColor.rgb, color.a);
 }
 )###";
 
@@ -373,7 +375,7 @@ namespace xng {
 
                     ShaderUniformBuffer shaderBufferUniform;
                     shaderBufferUniform.mvp = mvp;
-                    shaderBufferUniform.color = pass.mixColor.divide().getMemory();
+                    shaderBufferUniform.color = ColorRGBA(pass.mixColor.r(), pass.mixColor.g(), pass.mixColor.b(), 0).divide().getMemory();
                     shaderBufferUniform.scale = pass.mix;
 
                     auto &shaderBuffer = getShaderBuffer();
@@ -552,7 +554,7 @@ namespace xng {
                           float rotation,
                           Vec2b flipUv,
                           float mix,
-                          ColorRGBA mixColor) {
+                          ColorRGB mixColor) {
         if (!isRendering)
             throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
 

@@ -32,7 +32,7 @@ namespace xng {
         int layer = 0; // The render layer of the sprite on this canvas
         Vec2b flipSprite;
         float mix = 0;
-        ColorRGBA mixColor = {};
+        ColorRGB mixColor = {};
 
         Messageable &operator<<(const Message &message) override {
             sprite << message.value("sprite");
