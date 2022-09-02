@@ -40,14 +40,12 @@ namespace xng {
             auto windowSize = window.getRenderTarget().getDescription().size.convert<float>();
             auto canvas = scene.getEntity(rt.canvas).getComponent<CanvasComponent>();
             ResourceHandle<Sprite> sprite;
-            Vec2f scale{1};
-            if (canvas.canvasProjectionSize.magnitude() > 0) {
-                scale = canvas.canvasProjectionSize / windowSize;
-            }
-            auto rect = Rectf(rt.rect.position + rt.getOffset(scene, windowSize)
-                              + Vec2f(-rt.center.x, rt.center.y) ,
-                              rt.rect.dimensions);
-            if (rect.testPoint(window.getInput().getMouse().position.convert<float>() * scale)) {
+            auto scale = canvas.getScale(windowSize);
+            auto rect = Rectf((rt.rect.position + rt.getOffset(scene, windowSize)
+                               + Vec2f(-rt.center.x, rt.center.y)) * scale,
+                              rt.rect.dimensions * scale);
+            auto mousePos = (window.getInput().getMouse().position.convert<float>()) - (canvas.getMargins(windowSize) / 2);
+            if (rect.testPoint(mousePos)) {
                 if (window.getInput().getMouse().getButton(LEFT)) {
                     if (clickButtons.find(pair.first) == clickButtons.end()) {
                         // Pressing

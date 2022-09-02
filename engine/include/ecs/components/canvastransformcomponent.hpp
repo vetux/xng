@@ -74,9 +74,9 @@ namespace xng {
 
         Vec2f getOffset(EntityScene &scene, Vec2f screenSize) const {
             auto &c = scene.getEntity(canvas).getComponent<CanvasComponent>();
-            return getOffset(anchor, c.canvasProjectionSize.magnitude() > 0 ?
-                                     c.canvasProjectionSize
-                                                                            : screenSize);
+            return getOffset(anchor, c.projectionSize.magnitude() > 0 ?
+                                     c.projectionSize
+                                                                      : screenSize);
         }
 
         static Anchor convertAnchor(const std::string &str) {

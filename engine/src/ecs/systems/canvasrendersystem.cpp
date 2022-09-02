@@ -93,13 +93,28 @@ namespace xng {
 
         for (auto &canvasLayer: canvases) {
             for (auto &canvasName: canvasLayer.second) {
-                auto &canvas = scene.lookup<CanvasComponent>(scene.getEntityByName(canvasName));
+                auto canvasEnt = scene.getEntityByName(canvasName);
+                auto canvas = scene.lookup<CanvasComponent>(canvasEnt);
 
-                ren2d.renderBegin(target, false);
+                if (canvas.lockAspectRatio) {
+                    canvas.fitProjectionToScreen(target.getDescription().size);
+                    scene.updateComponent(canvasEnt, canvas);
+                }
+
+                if (canvas.viewportSize.magnitude() > 0
+                    || canvas.viewportOffset.magnitude() > 0) {
+                    ren2d.renderBegin(target,
+                                      canvas.clear,
+                                      canvas.clearColor,
+                                      canvas.viewportOffset,
+                                      canvas.viewportSize);
+                } else {
+                    ren2d.renderBegin(target, canvas.clear, canvas.clearColor);
+                }
 
                 ren2d.setCameraPosition(canvas.cameraPosition);
-                if (canvas.canvasProjectionSize.magnitude() > 0) {
-                    ren2d.setProjection(Rectf({}, canvas.canvasProjectionSize));
+                if (canvas.projectionSize.magnitude() > 0) {
+                    ren2d.setProjection(Rectf({}, canvas.projectionSize));
                 }
 
                 for (auto &pair: passes.at(canvasName)) {
