@@ -17,16 +17,20 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RECTTRANSFORMCOMPONENT_HPP
-#define XENGINE_RECTTRANSFORMCOMPONENT_HPP
+#ifndef XENGINE_CANVASTRANSFORMCOMPONENT_HPP
+#define XENGINE_CANVASTRANSFORMCOMPONENT_HPP
 
 #include "io/messageable.hpp"
+
+#include "ecs/entity.hpp"
+
+#include "ecs/components/canvascomponent.hpp"
 
 namespace xng {
     /**
      * If the entity contains a TransformComponent the position(.x, .y) and rotation(.z) are added to the rect transform values.
      */
-    struct XENGINE_EXPORT RectTransformComponent : public Messageable {
+    struct XENGINE_EXPORT CanvasTransformComponent : public Messageable {
         enum Anchor {
             TOP_LEFT,
             TOP_CENTER,
@@ -39,21 +43,21 @@ namespace xng {
             BOTTOM_RIGHT
         } anchor = TOP_LEFT;
 
-        bool enabled = true;
+        std::string canvas;
 
         Rectf rect;
         Vec2f center;
-        float rotation = 0;
+        float rotation;
 
-        std::string parent;
+        bool enabled = true;
 
         Messageable &operator<<(const Message &message) override {
             anchor = convertAnchor(message.value("anchor", std::string("top_left")));
             enabled = message.value("enabled", true);
             rect << message.value("rect");
             center << message.value("center");
-            rotation = message.value("rotation", 0.0f);
-            parent = message.value("parent", std::string());
+            rotation = message.value("rotation");
+            canvas = message.value("canvas", std::string());
             return *this;
         }
 
@@ -64,8 +68,15 @@ namespace xng {
             rect >> message["rect"];
             center >> message["center"];
             message["rotation"] = rotation;
-            message["parent"] = parent;
+            message["canvas"] = canvas;
             return message;
+        }
+
+        Vec2f getOffset(EntityScene &scene, Vec2f screenSize) const {
+            auto &c = scene.getEntity(canvas).getComponent<CanvasComponent>();
+            return getOffset(anchor, c.canvasProjectionSize.magnitude() > 0 ?
+                                     c.canvasProjectionSize
+                                                                            : screenSize);
         }
 
         static Anchor convertAnchor(const std::string &str) {
@@ -117,6 +128,7 @@ namespace xng {
             }
         }
 
+    private:
         static Vec2f getOffset(Anchor anchor, const Vec2f &canvasSize) {
             switch (anchor) {
                 default:
@@ -142,4 +154,4 @@ namespace xng {
         }
     };
 }
-#endif //XENGINE_RECTTRANSFORMCOMPONENT_HPP
+#endif //XENGINE_CANVASTRANSFORMCOMPONENT_HPP

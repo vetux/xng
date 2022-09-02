@@ -19,7 +19,7 @@
 
 #include "ecs/systems/guieventsystem.hpp"
 
-#include "ecs/components/recttransformcomponent.hpp"
+#include "ecs/components/canvastransformcomponent.hpp"
 #include "ecs/components/buttoncomponent.hpp"
 #include "ecs/components/spritecomponent.hpp"
 #include "event/events/guievent.hpp"
@@ -36,14 +36,18 @@ namespace xng {
 
     void GuiEventSystem::update(DeltaTime deltaTime, EntityScene &scene) {
         for (auto &pair: scene.getPool<ButtonComponent>()) {
-            auto &rt = scene.lookup<RectTransformComponent>(pair.first);
+            auto &rt = scene.lookup<CanvasTransformComponent>(pair.first);
+            auto windowSize = window.getRenderTarget().getDescription().size.convert<float>();
+            auto canvas = scene.getEntity(rt.canvas).getComponent<CanvasComponent>();
             ResourceHandle<Sprite> sprite;
-            auto rect = Rectf(rt.rect.position + RectTransformComponent::getOffset(rt.anchor,
-                                                                                   window.getRenderTarget().getDescription().size.convert<float>())
-                              + Vec2f(0, rt.center.y)
-                              - Vec2f(rt.center.x, 0),
+            Vec2f scale{1};
+            if (canvas.canvasProjectionSize.magnitude() > 0) {
+                scale = canvas.canvasProjectionSize / windowSize;
+            }
+            auto rect = Rectf(rt.rect.position + rt.getOffset(scene, windowSize)
+                              + Vec2f(-rt.center.x, rt.center.y) ,
                               rt.rect.dimensions);
-            if (rect.testPoint(window.getInput().getMouse().position.convert<float>())) {
+            if (rect.testPoint(window.getInput().getMouse().position.convert<float>() * scale)) {
                 if (window.getInput().getMouse().getButton(LEFT)) {
                     if (clickButtons.find(pair.first) == clickButtons.end()) {
                         // Pressing

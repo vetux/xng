@@ -68,10 +68,10 @@ namespace xng {
             return *this;
         }
 
-        template <typename R>
-         explicit operator Vector2<R>(){
-             return convert<R>();
-         }
+        template<typename R>
+        explicit operator Vector2<R>() {
+            return convert<R>();
+        }
 
         Messageable &operator<<(const Message &message) override {
             x = message.valueOf({"x", "r"}, 0.0f);
@@ -123,8 +123,20 @@ namespace xng {
             return !(lhs == rhs);
         }
 
+        T magnitude() const {
+            return magnitude(*this);
+        }
+
+        T distance(const Vector2<T> &other) const {
+            return distance(*this, other);
+        }
+
+        static T magnitude(const Vector2<T> &vec) {
+            return std::sqrt(std::pow(vec.x, 2) + std::pow(vec.y, 2));
+        }
+
         //https://en.wikipedia.org/wiki/Euclidean_distance
-        XENGINE_EXPORT static double distance(const Vector2<T> &start, const Vector2<T> end) {
+        static T distance(const Vector2<T> &start, const Vector2<T> end) {
             return std::sqrt(std::pow(start.x - end.x, 2) + std::pow(start.y - end.y, 2));
         }
     };

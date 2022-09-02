@@ -23,19 +23,28 @@
 #include "io/messageable.hpp"
 
 namespace xng {
+    /*
+     * A canvas renders child canvas transform components to the screen using Renderer2D with the supplied cameraPosition and projection size
+     */
     struct XENGINE_EXPORT CanvasComponent : public Messageable {
+        bool enabled = true;
         Vec2f cameraPosition;
+        Vec2f canvasProjectionSize; // If magnitude larger than 0 the size of the projection when rendering canvas elements
         int layer; // The sorting layer of this canvas
 
         Messageable &operator<<(const Message &message) override {
+            enabled = message.value("enabled", true);
             cameraPosition << message.value("cameraPosition");
+            canvasProjectionSize << message.value("canvasProjectionSize");
             layer = message.value("layer", 0);
             return *this;
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
+            message["enabled"] = enabled;
             cameraPosition >> message["cameraPosition"];
+            canvasProjectionSize >> message["canvasProjectionSize"];
             message["layer"] = layer;
             return message;
         }

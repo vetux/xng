@@ -140,11 +140,24 @@ namespace xng {
             return !(lhs == rhs);
         }
 
+        T magnitude() const {
+            return magnitude(*this);
+        }
+
+        T distance(const Vector4<T> &other) const {
+            return distance(*this, other);
+        }
+
+        static T magnitude(const Vector4<T> &vec) {
+            return std::sqrt(std::pow(vec.x, 2) + std::pow(vec.y, 2) + std::pow(vec.z, 2) + std::pow(vec.w, 2));
+        }
+
         //https://en.wikipedia.org/wiki/Euclidean_distance
-        XENGINE_EXPORT static double distance(const Vector4<T> &start, const Vector4<T> end) {
-            return std::sqrt(
-                    std::pow(start.x - end.x, 2) + std::pow(start.y - end.y, 2) + std::pow(start.z - end.z, 2) +
-                    std::pow(start.w - end.w, 2));
+        static T distance(const Vector4<T> &start, const Vector4<T> end) {
+            return std::sqrt(std::pow(start.x - end.x, 2)
+                             + std::pow(start.y - end.y, 2)
+                             + std::pow(start.z - end.z, 2)
+                             + std::pow(start.w - end.w, 2));
         }
     };
 

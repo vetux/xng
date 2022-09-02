@@ -27,7 +27,8 @@
 #include "io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT Transform : public Messageable {
+    class XENGINE_EXPORT Transform : public Messageable {
+    public:
         Transform() = default;
 
         Transform(Vec3f position, Vec3f rotation, Vec3f scale) : mPosition(position),

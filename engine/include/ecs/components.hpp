@@ -28,7 +28,7 @@
 #include "ecs/components/lightcomponent.hpp"
 #include "ecs/components/meshrendercomponent.hpp"
 #include "ecs/components/particlecomponent.hpp"
-#include "ecs/components/recttransformcomponent.hpp"
+#include "ecs/components/canvastransformcomponent.hpp"
 #include "ecs/components/rigidbodycomponent.hpp"
 #include "ecs/components/skyboxcomponent.hpp"
 #include "ecs/components/spriteanimationcomponent.hpp"
