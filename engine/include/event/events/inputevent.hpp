@@ -27,7 +27,7 @@
 #include "input/input.hpp"
 
 namespace xng {
-    struct GamePadEvent {
+    struct GamePadEventData {
         enum Type {
             GAMEPAD_CONNECTED,
             GAMEPAD_DISCONNECTED,
@@ -42,7 +42,7 @@ namespace xng {
         double amount;
     };
 
-    struct KeyboardEvent {
+    struct KeyboardEventData {
         enum Type {
             KEYBOARD_TEXT_INPUT,
             KEYBOARD_KEY_DOWN,
@@ -53,7 +53,7 @@ namespace xng {
         std::string text;
     };
 
-    struct MouseEvent {
+    struct MouseEventData {
         enum Type {
             MOUSE_MOVE,
             MOUSE_WHEEL_SCROLL,
@@ -74,11 +74,11 @@ namespace xng {
 
         InputEvent() = default;
 
-        explicit InputEvent(GamePadEvent event) : event(event), deviceType(DEVICE_GAMEPAD) {}
+        explicit InputEvent(GamePadEventData event) : data(event), deviceType(DEVICE_GAMEPAD) {}
 
-        explicit InputEvent(KeyboardEvent event) : event(event), deviceType(DEVICE_KEYBOARD) {}
+        explicit InputEvent(KeyboardEventData event) : data(event), deviceType(DEVICE_KEYBOARD) {}
 
-        explicit InputEvent(MouseEvent event) : event(event), deviceType(DEVICE_MOUSE) {}
+        explicit InputEvent(MouseEventData event) : data(event), deviceType(DEVICE_MOUSE) {}
 
         enum DeviceType {
             DEVICE_GAMEPAD,
@@ -86,7 +86,7 @@ namespace xng {
             DEVICE_MOUSE
         } deviceType;
 
-        std::variant<GamePadEvent, KeyboardEvent, MouseEvent> event;
+        std::variant<GamePadEventData, KeyboardEventData, MouseEventData> data;
     };
 }
 

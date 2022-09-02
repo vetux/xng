@@ -175,4 +175,22 @@ namespace xng {
                                      indexA,
                                      indexB));
     }
+
+    void PhysicsSystem::onEntityDestroy(const EntityHandle &entity) {
+        auto itc = colliders.find(entity);
+        if (itc != colliders.end()) {
+            std::set<Collider *> ptrs;
+            for (auto &c: itc->second)
+                ptrs.insert(c.get());
+            colliders.erase(entity);
+            for (auto &c: ptrs)
+                colliderIndices.erase(c);
+        }
+        auto it = rigidbodies.find(entity);
+        if (it != rigidbodies.end()) {
+            auto ptr = it->second.get();
+            rigidbodies.erase(entity);
+            rigidbodiesReverse.erase(ptr);
+        }
+    }
 }

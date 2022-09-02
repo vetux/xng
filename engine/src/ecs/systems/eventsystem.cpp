@@ -41,52 +41,52 @@ namespace xng {
     void EventSystem::update(DeltaTime deltaTime, EntityScene &scene) {}
 
     void EventSystem::onKeyDown(KeyboardKey key) {
-        eventBus.invoke(InputEvent(KeyboardEvent{.type = KeyboardEvent::KEYBOARD_KEY_DOWN, .key = key}));
+        eventBus.invoke(InputEvent(KeyboardEventData{.type = KeyboardEventData::KEYBOARD_KEY_DOWN, .key = key}));
     }
 
     void EventSystem::onKeyUp(KeyboardKey key) {
-        eventBus.invoke(InputEvent(KeyboardEvent{.type = KeyboardEvent::KEYBOARD_KEY_UP, .key = key}));
+        eventBus.invoke(InputEvent(KeyboardEventData{.type = KeyboardEventData::KEYBOARD_KEY_UP, .key = key}));
     }
 
     void EventSystem::onMouseMove(double xPos, double yPos) {
-        eventBus.invoke(InputEvent(MouseEvent{.type = MouseEvent::MOUSE_MOVE, .xPos = xPos, .yPos = yPos}));
+        eventBus.invoke(InputEvent(MouseEventData{.type = MouseEventData::MOUSE_MOVE, .xPos = xPos, .yPos = yPos}));
     }
 
     void EventSystem::onMouseWheelScroll(double amount) {
-        eventBus.invoke(InputEvent(MouseEvent{.type = MouseEvent::MOUSE_WHEEL_SCROLL, .amount = amount}));
+        eventBus.invoke(InputEvent(MouseEventData{.type = MouseEventData::MOUSE_WHEEL_SCROLL, .amount = amount}));
     }
 
     void EventSystem::onMouseKeyDown(MouseButton key) {
-        eventBus.invoke(InputEvent(MouseEvent{.type = MouseEvent::MOUSE_KEY_DOWN, .key = key}));
+        eventBus.invoke(InputEvent(MouseEventData{.type = MouseEventData::MOUSE_KEY_DOWN, .key = key}));
     }
 
     void EventSystem::onMouseKeyUp(MouseButton key) {
-        eventBus.invoke(InputEvent(MouseEvent{.type = MouseEvent::MOUSE_KEY_UP, .key = key}));
+        eventBus.invoke(InputEvent(MouseEventData{.type = MouseEventData::MOUSE_KEY_UP, .key = key}));
     }
 
     void EventSystem::onTextInput(const std::string &text) {
-        eventBus.invoke(InputEvent(KeyboardEvent{.type = KeyboardEvent::KEYBOARD_TEXT_INPUT, .text=text}));
+        eventBus.invoke(InputEvent(KeyboardEventData{.type = KeyboardEventData::KEYBOARD_TEXT_INPUT, .text=text}));
     }
 
     void EventSystem::onGamepadConnected(int id) {
-        eventBus.invoke(InputEvent(GamePadEvent{.type = GamePadEvent::GAMEPAD_CONNECTED, .id=id}));
+        eventBus.invoke(InputEvent(GamePadEventData{.type = GamePadEventData::GAMEPAD_CONNECTED, .id=id}));
     }
 
     void EventSystem::onGamepadDisconnected(int id) {
-        eventBus.invoke(InputEvent(GamePadEvent{.type = GamePadEvent::GAMEPAD_DISCONNECTED, .id=id}));
+        eventBus.invoke(InputEvent(GamePadEventData{.type = GamePadEventData::GAMEPAD_DISCONNECTED, .id=id}));
     }
 
     void EventSystem::onGamepadAxis(int id, GamePadAxis axis, double amount) {
-        eventBus.invoke(InputEvent(GamePadEvent{.type = GamePadEvent::GAMEPAD_AXIS,
+        eventBus.invoke(InputEvent(GamePadEventData{.type = GamePadEventData::GAMEPAD_AXIS,
                 .id=id, .axis=axis, .amount=amount}));
     }
 
     void EventSystem::onGamepadButtonDown(int id, GamePadButton button) {
-        eventBus.invoke(InputEvent(GamePadEvent{.type = GamePadEvent::GAMEPAD_BUTTON_DOWN, .id=id, .button = button}));
+        eventBus.invoke(InputEvent(GamePadEventData{.type = GamePadEventData::GAMEPAD_BUTTON_DOWN, .id=id, .button = button}));
     }
 
     void EventSystem::onGamepadButtonUp(int id, GamePadButton button) {
-        eventBus.invoke(InputEvent(GamePadEvent{.type = GamePadEvent::GAMEPAD_BUTTON_UP, .id=id, .button = button}));
+        eventBus.invoke(InputEvent(GamePadEventData{.type = GamePadEventData::GAMEPAD_BUTTON_UP, .id=id, .button = button}));
     }
 
     void EventSystem::onWindowClose() {

@@ -84,6 +84,22 @@ namespace xng {
         }
     }
 
+    void ResourceRegistry::reloadAllResources() {
+        std::vector<std::pair<Uri, std::shared_ptr<Task>>> tasks;
+        {
+            std::lock_guard<std::mutex> g(mutex);
+            for (auto &task: loadTasks)
+                tasks.emplace_back(task);
+        }
+        for (auto &task : tasks)
+            task.second->join();
+        loadTasks.clear();
+        bundles.clear();
+        for (auto &task : tasks){
+            load(task.first);
+        }
+    }
+
     void ResourceRegistry::load(const Uri &uri) {
         std::lock_guard<std::mutex> g(mutex);
 

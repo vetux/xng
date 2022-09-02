@@ -99,6 +99,8 @@ namespace xng {
 
         void decRef(const Uri &uri);
 
+        void reloadAllResources();
+
     private:
         void load(const Uri &uri);
 

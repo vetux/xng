@@ -45,6 +45,8 @@ namespace xng {
         void onComponentUpdate(const EntityHandle &entity, const std::any &oldComponent,
                                const std::any &newComponent) override;
 
+        void onEntityDestroy(const EntityHandle &entity) override;
+
         void beginContact(World::Contact &contact) override;
 
         void endContact(World::Contact &contact) override;
