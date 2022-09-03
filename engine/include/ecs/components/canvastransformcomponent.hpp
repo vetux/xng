@@ -72,11 +72,11 @@ namespace xng {
             return message;
         }
 
-        Vec2f getOffset(EntityScene &scene, Vec2f screenSize) const {
+        Vec2f getOffset(EntityScene &scene, Vec2i screenSize) const {
             auto &c = scene.getEntity(canvas).getComponent<CanvasComponent>();
-            return getOffset(anchor, c.projectionSize.magnitude() > 0 ?
-                                     c.projectionSize
-                                                                      : screenSize);
+            return getOffset(anchor, c.projectionSize.magnitude() > 0
+                                     ? c.projectionSize
+                                     : screenSize.convert<float>());
         }
 
         static Anchor convertAnchor(const std::string &str) {

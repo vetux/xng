@@ -37,14 +37,15 @@ namespace xng {
     void GuiEventSystem::update(DeltaTime deltaTime, EntityScene &scene) {
         for (auto &pair: scene.getPool<ButtonComponent>()) {
             auto &rt = scene.lookup<CanvasTransformComponent>(pair.first);
-            auto windowSize = window.getRenderTarget().getDescription().size.convert<float>();
+            auto windowSize = window.getRenderTarget().getDescription().size;
             auto canvas = scene.getEntity(rt.canvas).getComponent<CanvasComponent>();
             ResourceHandle<Sprite> sprite;
-            auto scale = canvas.getScale(windowSize);
+            auto scale = canvas.getViewportScale(windowSize);
             auto rect = Rectf((rt.rect.position + rt.getOffset(scene, windowSize)
                                + Vec2f(-rt.center.x, rt.center.y)) * scale,
                               rt.rect.dimensions * scale);
-            auto mousePos = (window.getInput().getMouse().position.convert<float>()) - (canvas.getMargins(windowSize) / 2);
+            auto mousePos = (window.getInput().getMouse().position.convert<float>())
+                            - (canvas.getViewportOffset(windowSize).convert<float>() / 2);
             if (rect.testPoint(mousePos)) {
                 if (window.getInput().getMouse().getButton(LEFT)) {
                     if (clickButtons.find(pair.first) == clickButtons.end()) {

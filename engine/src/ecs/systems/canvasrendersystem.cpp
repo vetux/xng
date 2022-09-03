@@ -95,10 +95,8 @@ namespace xng {
                 auto canvasEnt = scene.getEntityByName(canvasName);
                 auto canvas = scene.lookup<CanvasComponent>(canvasEnt);
 
-                if (canvas.lockAspectRatio) {
-                    canvas.fitProjectionToScreen(target.getDescription().size);
-                    scene.updateComponent(canvasEnt, canvas);
-                }
+                canvas.updateViewport(target.getDescription().size);
+                scene.updateComponent(canvasEnt, canvas);
 
                 if (canvas.viewportSize.magnitude() > 0
                     || canvas.viewportOffset.magnitude() > 0) {
@@ -137,7 +135,7 @@ namespace xng {
                                 auto &comp = scene.lookup<SpriteComponent>(pass.ent);
                                 if (comp.sprite.assigned()) {
                                     dstRect = Rectf(rt.rect.position +
-                                                    rt.getOffset(scene, target.getDescription().size.convert<float>()),
+                                                    rt.getOffset(scene, target.getDescription().size),
                                                     rt.rect.dimensions);
                                     center = rt.center;
 
@@ -170,12 +168,11 @@ namespace xng {
                             case Pass::TEXT: {
                                 auto &tcomp = scene.lookup<TextComponent>(pass.ent);
                                 if (!tcomp.text.empty()
-                                && tcomp.font.assigned()) {
+                                    && tcomp.font.assigned()) {
                                     auto texSize = renderedTexts.at(
                                             pass.ent).getTexture().getDescription().size.convert<float>();
                                     Vec2f displaySize(0);
-                                    Vec2f displayOffset = rt.getOffset(scene,
-                                                                       target.getDescription().size.convert<float>());
+                                    Vec2f displayOffset = rt.getOffset(scene, target.getDescription().size);
                                     if (texSize.x > rt.rect.dimensions.x) {
                                         displaySize.x = rt.rect.dimensions.x;
                                     } else {

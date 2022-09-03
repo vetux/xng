@@ -24,22 +24,19 @@
 
 namespace xng {
     /*
-     * A canvas renders child canvas transform components to the screen using Renderer2D with the supplied cameraPosition and projection size
+     * A canvas renders child canvas transform components to the screen using Renderer2D
      */
     struct XENGINE_EXPORT CanvasComponent : public Messageable {
         bool enabled = true;
         Vec2f cameraPosition;
 
-        Vec2f projectionSize; // If magnitude larger than 0 the size of the projection when rendering canvas elements
-
         Vec2i viewportSize;
         Vec2i viewportOffset;
 
-        bool lockAspectRatio = false; // If true the viewport is adjusted so that the projection aspect ratio matches the projectionSize
-
-        // If false the viewport size matches the projectionSize and the canvas is cut off if the window is smaller than projectionSize
-        // If true the viewport size is stretched to the screenSize while the aspect ratio of projectionSize is preserved
-        bool stretchProjection = false;
+        Vec2f projectionSize; // If magnitude larger than 0 the size of the projection when rendering canvas elements, otherwise screenSize is used as viewport size
+        bool lockAspectRatio; // If true the viewport is adjusted so that its dimensions match projectionSize and its position is centered on the screen
+        bool fitToScreen; // If lockAspectRatio is enabled and fitToScreen is enabled the viewport is stretched to fit the screen while preserving aspect ratio of projectionSize if lockAspectRatio is set
+        bool lockViewport; // If true the viewport is not updated by the canvas render system to allow the user to implement custom viewport handling
 
         bool clear = false;
         ColorRGBA clearColor = ColorRGBA::black();
@@ -52,7 +49,8 @@ namespace xng {
             viewportSize << message.value("viewportSize");
             viewportOffset << message.value("viewportOffset");
             lockAspectRatio = message.value("lockAspectRatio", false);
-            stretchProjection = message.value("stretchProjection", false);
+            fitToScreen = message.value("fitToScreen", false);
+            lockViewport = message.value("lockViewport", false);
             clear = message.value("clear", false);
             clearColor << message.value("clearColor");
             layer = message.value("layer", 0);
@@ -67,14 +65,15 @@ namespace xng {
             viewportSize >> message["viewportSize"];
             viewportOffset >> message["viewportOffset"];
             message["lockAspectRatio"] = lockAspectRatio;
-            message["stretchProjection"] = stretchProjection;
+            message["fitToScreen"] = fitToScreen;
+            message["lockViewport"] = lockViewport;
             message["clear"] = clear;
             clearColor >> message["clearColor"];
             message["layer"] = layer;
             return message;
         }
 
-        float getScale(const Vec2f &screenSize) const {
+        float getViewportScale(const Vec2i &screenSize) const {
             float scale = 1;
             if (screenSize.x > screenSize.y) {
                 scale = screenSize.y / projectionSize.y;
@@ -90,10 +89,10 @@ namespace xng {
             return scale;
         }
 
-        Vec2f getSize(const Vec2f &screenSize) const {
+        Vec2i getViewportSize(const Vec2i &screenSize) const {
             if (projectionSize.magnitude() > 0) {
-                if (stretchProjection) {
-                    float scale = getScale(screenSize);
+                if (fitToScreen) {
+                    float scale = getViewportScale(screenSize);
                     Vec2f ret = projectionSize * scale;
                     if (ret.x <= 0) {
                         ret.x = 1;
@@ -101,24 +100,29 @@ namespace xng {
                     if (ret.y <= 0) {
                         ret.y = 1;
                     }
-                    return ret;
+                    return ret.convert<int>();
                 } else {
-                    return projectionSize;
+                    return projectionSize.convert<int>();
                 }
             } else {
                 return screenSize;
             }
         }
 
-        Vec2f getMargins(const Vec2f &screenSize) const {
-            return screenSize - getSize(screenSize.convert<float>());
+        Vec2i getViewportOffset(const Vec2i &screenSize) const {
+            return (screenSize - getViewportSize(screenSize)) / 2;
         }
 
-        void fitProjectionToScreen(const Vec2i &screenSize) {
-            auto size = getSize(screenSize.convert<float>());
-            auto margins = getMargins(screenSize.convert<float>());
-            viewportOffset = margins.convert<int>() / 2;
-            viewportSize = size.convert<int>();
+        /**
+         * Called by the canvas render system before drawing the canvas transform
+         *
+         * @param screenSize
+         */
+        void updateViewport(const Vec2i &screenSize) {
+            if (!lockViewport) {
+                viewportOffset = getViewportOffset(screenSize);
+                viewportSize = getViewportSize(screenSize);
+            }
         }
     };
 }
