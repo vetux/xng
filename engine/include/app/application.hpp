@@ -44,33 +44,28 @@ namespace xng {
          * @param argv
          */
         explicit Application(int argc, char *argv[]) {
-            std::vector<std::string> args;
-            for (int i = 0; i < argc; i++)
-                args.emplace_back(argv[i]);
-
-            for (int i = 0; i < args.size(); i++) {
-                if (args.at(i) == "--display") {
-                    displayDriverName = args.at(i + 1);
-                }
-            }
-
-            for (int i = 0; i < args.size(); i++) {
-                if (args.at(i) == "--graphics") {
-                    graphicsDriverName = args.at(i + 1);
-                }
-            }
-
-            for (int i = 0; i < args.size(); i++) {
-                if (args.at(i) == "--audio") {
-                    audioDriverName = args.at(i + 1);
-                }
-            }
-
-            displayDriver = DriverRegistry::load<DisplayDriver>(displayDriverName);
-            graphicsDriver = DriverRegistry::load<GpuDriver>(graphicsDriverName);
-            audioDriver = DriverRegistry::load<AudioDriver>(audioDriverName);
+            parseArgs(argc, argv);
+            loadDrivers();
 
             window = displayDriver->createWindow(graphicsDriverName);
+            renderDevice = graphicsDriver->createRenderDevice();
+            audioDevice = audioDriver->createDevice();
+
+            window->update();
+
+            imGuiContext = ImGui::CreateContext();
+            ImGuiCompat::Init(*window);
+        }
+
+        explicit Application(int argc,
+                             char *argv[],
+                             const std::string &windowTitle,
+                             const Vec2i &windowSize,
+                             const WindowAttributes &windowAttributes = {}) {
+            parseArgs(argc, argv);
+            loadDrivers();
+
+            window = displayDriver->createWindow(graphicsDriverName, windowTitle, windowSize, windowAttributes);
             renderDevice = graphicsDriver->createRenderDevice();
             audioDevice = audioDriver->createDevice();
 
@@ -123,6 +118,36 @@ namespace xng {
         virtual void update(DeltaTime deltaTime) {
             window->update();
             window->swapBuffers();
+        }
+
+        virtual void parseArgs(int argc, char *argv[]) {
+            std::vector<std::string> args;
+            for (int i = 0; i < argc; i++)
+                args.emplace_back(argv[i]);
+
+            for (int i = 0; i < args.size(); i++) {
+                if (args.at(i) == "--display") {
+                    displayDriverName = args.at(i + 1);
+                }
+            }
+
+            for (int i = 0; i < args.size(); i++) {
+                if (args.at(i) == "--graphics") {
+                    graphicsDriverName = args.at(i + 1);
+                }
+            }
+
+            for (int i = 0; i < args.size(); i++) {
+                if (args.at(i) == "--audio") {
+                    audioDriverName = args.at(i + 1);
+                }
+            }
+        }
+
+        virtual void loadDrivers() {
+            displayDriver = DriverRegistry::load<DisplayDriver>(displayDriverName);
+            graphicsDriver = DriverRegistry::load<GpuDriver>(graphicsDriverName);
+            audioDriver = DriverRegistry::load<AudioDriver>(audioDriverName);
         }
     };
 }
