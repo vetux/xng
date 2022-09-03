@@ -22,6 +22,8 @@
 
 #include "io/messageable.hpp"
 
+#include "asset/rawasset.hpp"
+
 namespace xng {
     /**
      * A text component renders the given text.
@@ -29,12 +31,16 @@ namespace xng {
      * rect transform.
      */
     struct XENGINE_EXPORT TextComponent : public Messageable {
+        std::string text;
+
         Vec2i pixelSize;
+
         int lineHeight;
         int lineWidth;
         int lineSpacing;
-        std::string fontPath;
-        std::string text;
+
+        ResourceHandle<RawAsset> font;
+
         ColorRGBA textColor;
         int layer; // The render layer of the text
 
@@ -43,7 +49,7 @@ namespace xng {
             lineHeight = message.value("lineHeight", 0);
             lineWidth = message.value("lineWidth", 0);
             lineSpacing = message.value("lineSpacing", 0);
-            fontPath = message.value("fontPath", std::string());
+            font << message.value("font");
             text = message.value("text", std::string());
             textColor << message.value("textColor");
             layer = message.value("layer", 0);
@@ -56,7 +62,7 @@ namespace xng {
             message["lineHeight"] = lineHeight;
             message["lineWidth"] = lineWidth;
             message["lineSpacing"] = lineSpacing;
-            message["fontPath"] = fontPath;
+            font >> message["font"];
             message["text"] = text;
             textColor >> message["textColor"];
             message["layer"] = layer;

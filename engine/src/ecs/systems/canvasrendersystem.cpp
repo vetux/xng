@@ -29,9 +29,8 @@
 namespace xng {
     CanvasRenderSystem::CanvasRenderSystem(Renderer2D &renderer2D,
                                            RenderTarget &target,
-                                           FontDriver &fontDriver,
-                                           Archive &archive)
-            : ren2d(renderer2D), target(target), fontDriver(fontDriver), archive(archive) {}
+                                           FontDriver &fontDriver)
+            : ren2d(renderer2D), target(target), fontDriver(fontDriver) {}
 
     void CanvasRenderSystem::start(EntityScene &scene) {
         scene.addListener(*this);
@@ -170,7 +169,8 @@ namespace xng {
                             }
                             case Pass::TEXT: {
                                 auto &tcomp = scene.lookup<TextComponent>(pass.ent);
-                                if (!tcomp.text.empty()) {
+                                if (!tcomp.text.empty()
+                                && tcomp.font.assigned()) {
                                     auto texSize = renderedTexts.at(
                                             pass.ent).getTexture().getDescription().size.convert<float>();
                                     Vec2f displaySize(0);
@@ -307,16 +307,18 @@ namespace xng {
     }
 
     void CanvasRenderSystem::createText(const EntityHandle &ent, const TextComponent &comp) {
-        if (!comp.text.empty()) {
-            auto it = fonts.find(comp.fontPath);
+        if (!comp.text.empty()
+            && comp.font.assigned()) {
+            auto it = fonts.find(comp.font.getUri());
             if (it == fonts.end()) {
-                auto stream = archive.open(comp.fontPath);
-                fonts[comp.fontPath] = fontDriver.createFont(*stream);
+                std::string str = std::string(comp.font.get().bytes.begin(), comp.font.get().bytes.end());
+                auto stream = std::stringstream(str);
+                fonts[comp.font.getUri()] = fontDriver.createFont(stream);
             }
             auto rIt = textRenderers.find(ent);
             if (rIt == textRenderers.end()) {
-                fonts.at(comp.fontPath)->setPixelSize(comp.pixelSize);
-                textRenderers.insert(std::make_pair(ent, TextRenderer(*fonts[comp.fontPath], ren2d)));
+                fonts.at(comp.font.getUri())->setPixelSize(comp.pixelSize);
+                textRenderers.insert(std::make_pair(ent, TextRenderer(*fonts[comp.font.getUri()], ren2d)));
             }
             renderedTexts.insert(std::make_pair(ent, textRenderers.at(ent).render(comp.text, comp.lineHeight,
                                                                                   comp.lineWidth,

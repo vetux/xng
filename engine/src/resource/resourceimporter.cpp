@@ -19,6 +19,8 @@
 
 #include "resource/resourceimporter.hpp"
 
+#include "asset/rawasset.hpp"
+
 namespace xng {
 
     ResourceImporter::ResourceImporter()
@@ -38,12 +40,11 @@ namespace xng {
             }
         }
 
-        // Try every parser until one succeeds and throw if none succeeded.
-        for (auto &parser: parsers) {
-            try {
-                return parser->read(buffer, hint, *this, archive);
-            } catch (const std::exception &e) {}
-        }
-        throw std::runtime_error("Failed to import bundle from stream");
+        // Import as raw
+        ResourceBundle ret;
+        RawAsset asset;
+        asset.bytes = std::vector<uint8_t>(buffer.begin(), buffer.end());
+        ret.add("0", std::make_unique<RawAsset>(asset));
+        return ret;
     }
 }

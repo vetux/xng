@@ -37,8 +37,7 @@ namespace xng {
     public:
         CanvasRenderSystem(Renderer2D &renderer2D,
                            RenderTarget &target,
-                           FontDriver &fontDriver,
-                           Archive &archive);
+                           FontDriver &fontDriver);
 
         ~CanvasRenderSystem() override = default;
 
@@ -65,11 +64,10 @@ namespace xng {
         Renderer2D &ren2d;
         RenderTarget &target;
         FontDriver &fontDriver;
-        Archive &archive;
 
         bool drawDebug = false;
 
-        std::map<std::string, std::unique_ptr<Font>> fonts;
+        std::map<Uri, std::unique_ptr<Font>> fonts;
         std::map<EntityHandle, TextRenderer> textRenderers;
         std::map<EntityHandle, std::unique_ptr<TextureBuffer>> spriteTextures;
         std::map<EntityHandle, std::unique_ptr<TextureBuffer>> spriteTexturesB;
