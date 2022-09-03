@@ -116,7 +116,7 @@ namespace xng {
 
         RefCounter<std::string, ulong> bundleRefCounter;
 
-        std::unordered_map<Uri, std::shared_ptr<Task>> loadTasks;
+        std::unordered_map<std::string, std::shared_ptr<Task>> loadTasks;
 
         std::map<std::string, std::shared_ptr<Archive>> archives;
         std::map<std::string, ResourceBundle> bundles;

@@ -103,9 +103,9 @@ namespace xng {
     void ResourceRegistry::load(const Uri &uri) {
         std::lock_guard<std::mutex> g(mutex);
 
-        auto it = loadTasks.find(uri);
+        auto it = loadTasks.find(uri.getFile());
         if (it == loadTasks.end()) {
-            loadTasks[uri] = ThreadPool::getPool().addTask([this, uri]() {
+            loadTasks[uri.getFile()] = ThreadPool::getPool().addTask([this, uri]() {
                 std::shared_lock l(importerMutex);
 
                 auto &archive = resolveUri(uri);
@@ -124,7 +124,7 @@ namespace xng {
         {
             std::lock_guard<std::mutex> g(mutex);
 
-            auto it = loadTasks.find(uri);
+            auto it = loadTasks.find(uri.getFile());
             if (it == loadTasks.end()) {
                 return;
             } else {
@@ -138,16 +138,16 @@ namespace xng {
         }
 
         std::lock_guard<std::mutex> g(mutex);
-        loadTasks.erase(uri);
+        loadTasks.erase(uri.getFile());
     }
 
     const Resource &ResourceRegistry::getData(const Uri &uri) {
         mutex.lock();
-        auto it = loadTasks.find(uri);
+        auto it = loadTasks.find(uri.getFile());
         if (it == loadTasks.end()) {
-            throw std::runtime_error("IncRef not called for uri " + uri.toString());
+            throw std::runtime_error("IncRef not called for bundle pointed at by uri " + uri.toString());
         }
-        auto task = loadTasks.at(uri);
+        auto task = loadTasks.at(uri.getFile());
         mutex.unlock();
         auto ex = task->join();
         if (ex) {
