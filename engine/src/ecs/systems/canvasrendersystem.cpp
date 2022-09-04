@@ -230,7 +230,7 @@ namespace xng {
                                     rotation += worldTransform.getRotation().getEulerAngles().z;
 
                                     Rectf srcRect;
-                                    srcRect.position = tcomp.textScroll;
+                                    srcRect.position = tcomp.textScroll * texSize;
                                     srcRect.dimensions = dstRect.dimensions;
 
                                     ren2d.draw(renderedTexts.at(pass.ent),
