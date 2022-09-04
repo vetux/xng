@@ -74,7 +74,9 @@ namespace xng {
         }
 
         float getViewportScale(const Vec2i &screenSize) const {
-            float scale = 1;
+            if (projectionSize.magnitude() == 0)
+                return 1;
+            float scale;
             if (screenSize.x > screenSize.y) {
                 scale = screenSize.y / projectionSize.y;
                 if (scale > screenSize.x / projectionSize.x) {
