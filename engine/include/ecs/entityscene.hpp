@@ -23,6 +23,7 @@
 #include <set>
 #include <limits>
 #include <any>
+#include <functional>
 
 #include "ecs/componentcontainer.hpp"
 #include "resource/resource.hpp"
@@ -34,6 +35,21 @@ namespace xng {
 
     class XENGINE_EXPORT EntityScene : public Resource, public Messageable {
     public:
+        typedef std::function<void(EntityScene &scene, EntityHandle ent, const Message &msg)> ComponentDeserializer;
+
+        static const std::map<std::string, ComponentDeserializer> &getComponentDeserializers();
+
+        static void addComponentDeserializer(const std::string &componentName, ComponentDeserializer deserializer);
+
+        template<typename T>
+        static void addComponentDeserializer(const std::string &componentName) {
+            addComponentDeserializer(componentName, [](EntityScene &scene, EntityHandle ent, const Message &msg) {
+                T comp;
+                comp << msg;
+                scene.createComponent(ent, comp);
+            });
+        }
+
         class Listener {
         public:
             virtual void onEntityCreate(const EntityHandle &entity) {};
@@ -284,11 +300,9 @@ namespace xng {
          * To serialize user component types the user can subclass entity container and override these methods
          * to define serialization logic for the user component types.
          */
-        virtual void serializeEntity(const EntityHandle &entity, Message &message) const;
+        void serializeEntity(const EntityHandle &entity, Message &message) const;
 
-        virtual void deserializeEntity(const Message &message);
-
-        virtual void deserializeComponent(const EntityHandle &entity, const std::string &type, const Message &message);
+        void deserializeEntity(const Message &message);
 
     private:
         std::set<int> idStore;

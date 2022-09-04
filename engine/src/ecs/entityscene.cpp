@@ -23,6 +23,46 @@
 
 namespace xng {
 
+#define DESERIALIZE_COMPONENT(NAME, TYPE) \
+                { \
+    NAME,\
+    [](EntityScene &scene, EntityHandle ent, const Message &msg) {\
+    TYPE comp;\
+    comp << msg;\
+    scene.createComponent(ent, comp);\
+    }\
+    },\
+
+    static std::map<std::string, EntityScene::ComponentDeserializer> componentDeserializers = {
+            DESERIALIZE_COMPONENT("audio_listener", AudioListenerComponent)
+            DESERIALIZE_COMPONENT("audio_source", AudioSourceComponent)
+            DESERIALIZE_COMPONENT("button", ButtonComponent)
+            DESERIALIZE_COMPONENT("camera", CameraComponent)
+            DESERIALIZE_COMPONENT("canvas", CanvasComponent)
+            DESERIALIZE_COMPONENT("rigidbody", RigidBodyComponent)
+            DESERIALIZE_COMPONENT("light", LightComponent)
+            DESERIALIZE_COMPONENT("render", MeshRenderComponent)
+            DESERIALIZE_COMPONENT("particle", ParticleComponent)
+            DESERIALIZE_COMPONENT("canvas_transform", CanvasTransformComponent)
+            DESERIALIZE_COMPONENT("skybox", SkyboxComponent)
+            DESERIALIZE_COMPONENT("sprite_animation", SpriteAnimationComponent)
+            DESERIALIZE_COMPONENT("sprite", SpriteComponent)
+            DESERIALIZE_COMPONENT("text", TextComponent)
+            DESERIALIZE_COMPONENT("transform", TransformComponent)
+    };
+
+    const std::map<std::string, EntityScene::ComponentDeserializer> &EntityScene::getComponentDeserializers() {
+        return componentDeserializers;
+    }
+
+    void EntityScene::addComponentDeserializer(const std::string &componentName,
+                                               EntityScene::ComponentDeserializer deserializer) {
+        if (componentDeserializers.find(componentName) != componentDeserializers.end()) {
+            throw std::runtime_error("Component deserializer for " + componentName + " already exists");
+        }
+        componentDeserializers[componentName] = deserializer;
+    }
+
 #define SERIALIZE_COMPONENT(NAME, TYPE) \
     if (components.check<TYPE>(entity)) {\
         Message component; \
@@ -53,7 +93,7 @@ namespace xng {
         SERIALIZE_COMPONENT("light", LightComponent)
         SERIALIZE_COMPONENT("render", MeshRenderComponent)
         SERIALIZE_COMPONENT("particle", ParticleComponent)
-        SERIALIZE_COMPONENT("rect_transform", CanvasTransformComponent)
+        SERIALIZE_COMPONENT("canvas_transform", CanvasTransformComponent)
         SERIALIZE_COMPONENT("skybox", SkyboxComponent)
         SERIALIZE_COMPONENT("sprite_animation", SpriteAnimationComponent)
         SERIALIZE_COMPONENT("sprite", SpriteComponent)
@@ -71,34 +111,13 @@ namespace xng {
             entity = create();
         }
         for (auto &c: message.value("components", std::map<std::string, Message>())) {
-            deserializeComponent(entity, c.first, c.second);
-        }
-    }
-
-#define DESERIALIZE_COMPONENT(NAME, TYPE) \
-    } else if (type == (NAME)) { \
-        TYPE component;  \
-        component << message; \
-        createComponent(entity, component); \
-
-
-    void EntityScene::deserializeComponent(const EntityHandle &entity, const std::string &type, const Message &message) {
-        if (false) {
-        DESERIALIZE_COMPONENT("audio_listener", AudioListenerComponent)
-        DESERIALIZE_COMPONENT("audio_source", AudioSourceComponent)
-        DESERIALIZE_COMPONENT("button", ButtonComponent)
-        DESERIALIZE_COMPONENT("camera", CameraComponent)
-        DESERIALIZE_COMPONENT("canvas", CanvasComponent)
-        DESERIALIZE_COMPONENT("rigidbody", RigidBodyComponent)
-        DESERIALIZE_COMPONENT("light", LightComponent)
-        DESERIALIZE_COMPONENT("render", MeshRenderComponent)
-        DESERIALIZE_COMPONENT("particle", ParticleComponent)
-        DESERIALIZE_COMPONENT("canvas_transform", CanvasTransformComponent)
-        DESERIALIZE_COMPONENT("skybox", SkyboxComponent)
-        DESERIALIZE_COMPONENT("sprite_animation", SpriteAnimationComponent)
-        DESERIALIZE_COMPONENT("sprite", SpriteComponent)
-        DESERIALIZE_COMPONENT("text", TextComponent)
-        DESERIALIZE_COMPONENT("transform", TransformComponent)
+            auto &deser = getComponentDeserializers();
+            auto it = deser.find(c.first);
+            if (it == deser.end()) {
+                throw std::runtime_error("Component deserializer for name " + c.first + " not found");
+            } else {
+                it->second(*this, entity, c.second);
+            }
         }
     }
 
