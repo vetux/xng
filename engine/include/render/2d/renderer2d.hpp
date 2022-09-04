@@ -105,8 +105,8 @@ namespace xng {
         /**
          * Draw texture
          *
-         * @param srcRect
-         * @param dstRect
+         * @param srcRect The part of the of texture to sample
+         * @param dstRect The part of the screen to display the sampled part into
          * @param texture
          * @param center
          * @param rotation
@@ -204,7 +204,7 @@ namespace xng {
          * @param center
          * @param rotation
          */
-        void draw(Text &text, Rectf dstRect, ColorRGBA color, Vec2f center = {}, float rotation = 0);
+        void draw(Text &text, Rectf srcRect, Rectf dstRect, ColorRGBA color, Vec2f center = {}, float rotation = 0);
 
         RenderDevice &getDevice() { return renderDevice; }
 
@@ -213,6 +213,7 @@ namespace xng {
             Vec2f size;
             Vec2f center;
             Rectf uvOffset;
+            Vec2f uvSize;
             Vec2b flipUv;
 
             bool operator==(const PlaneDescription &other) const {
@@ -233,6 +234,8 @@ namespace xng {
                 hash_combine(ret, p.center.y);
                 hash_combine(ret, p.uvOffset.position.x);
                 hash_combine(ret, p.uvOffset.position.y);
+                hash_combine(ret, p.uvSize.x);
+                hash_combine(ret, p.uvSize.y);
                 hash_combine(ret, p.flipUv.x);
                 hash_combine(ret, p.flipUv.y);
                 return ret;
@@ -382,7 +385,7 @@ namespace xng {
                  ColorRGBA color,
                  Camera camera,
                  Transform cameraTransform)
-                    : type(COLOR),
+                    : type(COLOR_SOLID),
                       position(std::move(position)),
                       rotation(rotation),
                       geometry(plane),

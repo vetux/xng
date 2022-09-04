@@ -144,7 +144,8 @@ namespace xng {
                                     rotation += worldTransform.getRotation().getEulerAngles().z;
 
                                     if (comp.spriteB.assigned()) {
-                                        ren2d.draw(Rectf({}, dstRect.dimensions),
+                                        ren2d.draw(Rectf({}, spriteTextures.at(
+                                                           pass.ent).get()->getDescription().size.convert<float>()),
                                                    dstRect,
                                                    *spriteTextures.at(pass.ent),
                                                    *spriteTexturesB.at(pass.ent),
@@ -153,7 +154,8 @@ namespace xng {
                                                    rotation,
                                                    comp.flipSprite);
                                     } else {
-                                        ren2d.draw(Rectf({}, dstRect.dimensions),
+                                        ren2d.draw(Rectf({}, spriteTextures.at(
+                                                           pass.ent).get()->getDescription().size.convert<float>()),
                                                    dstRect,
                                                    *spriteTextures.at(pass.ent),
                                                    rt.center,
@@ -171,8 +173,8 @@ namespace xng {
                                     && tcomp.font.assigned()) {
                                     auto texSize = renderedTexts.at(
                                             pass.ent).getTexture().getDescription().size.convert<float>();
+
                                     Vec2f displaySize(0);
-                                    Vec2f displayOffset = rt.getOffset(scene, target.getDescription().size);
                                     if (texSize.x > rt.rect.dimensions.x) {
                                         displaySize.x = rt.rect.dimensions.x;
                                     } else {
@@ -183,21 +185,72 @@ namespace xng {
                                     } else {
                                         displaySize.y = texSize.y;
                                     }
+
+                                    Vec2f displayOffset = rt.getOffset(scene, target.getDescription().size);
+
                                     dstRect = Rectf(rt.rect.position + displayOffset, displaySize);
-                                    center = Vec2f(displaySize.x / 2, displaySize.y / 2);
+                                    center = displaySize / 2;
+
+                                    auto diff = rt.rect.dimensions - displaySize;
+                                    switch (tcomp.textAnchor) {
+                                        case CanvasTransformComponent::TOP_LEFT:
+                                            dstRect.position.x -= diff.x / 2;
+                                            dstRect.position.y -= diff.y / 2;
+                                            break;
+                                        case CanvasTransformComponent::LEFT:
+                                            dstRect.position.x -= diff.x / 2;
+                                            break;
+                                        case CanvasTransformComponent::BOTTOM_LEFT:
+                                            dstRect.position.x -= diff.x / 2;
+                                            dstRect.position.y += diff.y / 2;
+                                            break;
+                                        case CanvasTransformComponent::TOP_CENTER:
+                                            dstRect.position.y -= diff.y / 2;
+                                            break;
+                                        case CanvasTransformComponent::CENTER:
+                                            break;
+                                        case CanvasTransformComponent::BOTTOM_CENTER:
+                                            dstRect.position.y += diff.y / 2;
+                                            break;
+                                        case CanvasTransformComponent::TOP_RIGHT:
+                                            dstRect.position.x += diff.x / 2;
+                                            dstRect.position.y -= diff.y / 2;
+                                            break;
+                                        case CanvasTransformComponent::RIGHT:
+                                            dstRect.position.x += diff.x / 2;
+                                            break;
+                                        case CanvasTransformComponent::BOTTOM_RIGHT:
+                                            dstRect.position.x += diff.x / 2;
+                                            dstRect.position.y += diff.y / 2;
+                                            break;
+                                    }
 
                                     dstRect.position.x -= worldTransform.getPosition().x;
                                     dstRect.position.y -= worldTransform.getPosition().y;
                                     rotation += worldTransform.getRotation().getEulerAngles().z;
 
-                                    ren2d.draw(renderedTexts.at(pass.ent), dstRect, tcomp.textColor, center, rotation);
+                                    Rectf srcRect;
+                                    srcRect.position = tcomp.textScroll;
+                                    srcRect.dimensions = dstRect.dimensions;
+
+                                    ren2d.draw(renderedTexts.at(pass.ent),
+                                               srcRect,
+                                               dstRect,
+                                               tcomp.textColor,
+                                               center,
+                                               rotation);
                                 }
                                 break;
                             }
                         }
 
                         if (drawDebug) {
-                            ren2d.draw(dstRect, ColorRGBA::yellow(), false, center, rotation);
+                            ren2d.draw(dstRect, ColorRGBA::blue(), false, center, rotation);
+
+                            Rectf rtRect = {rt.rect.position + rt.getOffset(scene, target.getDescription().size),
+                                            rt.rect.dimensions};
+                            ren2d.draw(rtRect, ColorRGBA::yellow(), false, rt.rect.dimensions / 2, rotation);
+
                             auto dCenter = dstRect.position;
                             const int len = 20;
                             ren2d.draw(dCenter + Vec2f(-len, 0), dCenter + Vec2f(len, 0), ColorRGBA::red());
@@ -317,9 +370,11 @@ namespace xng {
                 fonts.at(comp.font.getUri())->setPixelSize(comp.pixelSize);
                 textRenderers.insert(std::make_pair(ent, TextRenderer(*fonts[comp.font.getUri()], ren2d)));
             }
-            renderedTexts.insert(std::make_pair(ent, textRenderers.at(ent).render(comp.text, comp.lineHeight,
-                                                                                  comp.lineWidth,
-                                                                                  comp.lineSpacing)));
+            renderedTexts.insert(
+                    std::make_pair(ent, textRenderers.at(ent).render(comp.text, TextRenderProperties{comp.lineHeight,
+                                                                                                     comp.lineWidth,
+                                                                                                     comp.lineSpacing,
+                                                                                                     comp.alignment})));
         }
     }
 }

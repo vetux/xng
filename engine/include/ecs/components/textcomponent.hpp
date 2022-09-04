@@ -24,11 +24,14 @@
 
 #include "asset/rawasset.hpp"
 
+#include "text/alignment.hpp"
+
+#include "ecs/components/canvastransformcomponent.hpp"
+
 namespace xng {
     /**
      * A text component renders the given text.
-     * If the resulting rendered text is smaller than the set rect transform dimensions the texture is centered in the
-     * rect transform.
+     * If the resulting rendered text size is larger than the rect dimensions the text is cropped
      */
     struct XENGINE_EXPORT TextComponent : public Messageable {
         std::string text;
@@ -38,11 +41,37 @@ namespace xng {
         int lineHeight;
         int lineWidth;
         int lineSpacing;
+        Alignment alignment;
 
         ResourceHandle<RawAsset> font;
 
+        CanvasTransformComponent::Anchor textAnchor; // Controls where the rendered text is laid out in the rect
+
+        Vec2f textScroll;
+
         ColorRGBA textColor;
         int layer; // The render layer of the text
+
+        static std::string convertAlignment(Alignment alignment) {
+            switch (alignment) {
+                default:
+                case ALIGN_LEFT:
+                    return "left";
+                case ALIGN_CENTER:
+                    return "center";
+                case ALIGN_RIGHT:
+                    return "right";
+            }
+        }
+
+        static Alignment convertAlignment(const std::string &str) {
+            if (str == "left")
+                return ALIGN_LEFT;
+            else if (str == "center")
+                return ALIGN_CENTER;
+            else
+                return ALIGN_RIGHT;
+        }
 
         Messageable &operator<<(const Message &message) override {
             pixelSize << message.value("pixelSize");
@@ -50,6 +79,11 @@ namespace xng {
             lineWidth = message.value("lineWidth", 0);
             lineSpacing = message.value("lineSpacing", 0);
             font << message.value("font");
+            alignment = convertAlignment(message.value("alignment", convertAlignment(ALIGN_LEFT)));
+            textAnchor = CanvasTransformComponent::convertAnchor(message.value("textAnchor",
+                                                                               CanvasTransformComponent::convertAnchor(
+                                                                                       CanvasTransformComponent::LEFT)));
+            textScroll << message.value("textScroll");
             text = message.value("text", std::string());
             textColor << message.value("textColor");
             layer = message.value("layer", 0);
@@ -63,7 +97,10 @@ namespace xng {
             message["lineWidth"] = lineWidth;
             message["lineSpacing"] = lineSpacing;
             font >> message["font"];
+            message["alignment"] = convertAlignment(alignment);
+            message["textAnchor"] = CanvasTransformComponent::convertAnchor(textAnchor);
             message["text"] = text;
+            textScroll >> message["textScroll"];
             textColor >> message["textColor"];
             message["layer"] = layer;
             return message;

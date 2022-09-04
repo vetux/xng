@@ -31,7 +31,7 @@ namespace xng {
 
         /**
          * @param z The z value
-         * @return The model matrix to apply including position, advance and bearing in a text string.
+         * @return
          */
         Vec2f getPosition(Vec2f origin) const {
             return {position.x + (origin.x + numeric_cast<float>(character.get().bearing.x)),
@@ -71,7 +71,7 @@ namespace xng {
         }
     }
 
-    Vec2f TextRenderer::getSize(const std::string &str, int lineHeight, int lineWidth, int lineSpacing) {
+    Vec2f TextRenderer::getSize(const std::string &str, const TextRenderProperties &properties) {
         Vec2i size(0); //The total size of the text
 
         Vec2i lineSize(0); // The size of the line and column of the current character
@@ -82,8 +82,8 @@ namespace xng {
             auto character = ascii.at(c);
             lineSize.x += character.advance;
 
-            lineSize.y = (line * lineSpacing) + (line * lineHeight) +
-                         (lineHeight + character.image.getHeight() - character.bearing.y);
+            lineSize.y = (line * properties.lineSpacing) + (line * properties.lineHeight) +
+                         (properties.lineHeight + character.image.getHeight() - character.bearing.y);
 
             //Assign current horizontal size of the line if it is larger than the current size
             if (lineSize.x > size.x) {
@@ -95,7 +95,7 @@ namespace xng {
                 size.y = lineSize.y;
             }
 
-            if (c == '\n' || (lineWidth > 0 && lineSize.x > lineWidth)) {
+            if (c == '\n' || (properties.lineWidth > 0 && lineSize.x > properties.lineWidth)) {
                 line++;
                 lineSize.x = 0;
             }
@@ -104,42 +104,52 @@ namespace xng {
         return size.convert<float>();
     }
 
-    Text TextRenderer::render(const std::string &text,
-                              int lineHeight,
-                              int lineWidth,
-                              int lineSpacing) {
+
+    int getWidth(const std::vector<RenderChar> &line) {
+        auto ret = 0;
+        for (auto &c: line) {
+            ret += c.character.get().advance;
+        }
+        return ret;
+    }
+
+    Text TextRenderer::render(const std::string &text, const TextRenderProperties &properties) {
         if (text.empty())
             throw std::runtime_error("Text cannot be empty");
 
-        auto size = getSize(text, lineHeight, lineWidth, lineSpacing);
-
-        std::vector<RenderChar> renderText;
+        auto size = getSize(text, properties);
 
         Character largestCharacterOfFirstLine;
 
         float posx = 0;
 
-        int currentLineWidth = 0;
-        int line = 0;
+        int largestWidth = 0;
+        std::vector<std::vector<RenderChar>> lines = std::vector<std::vector<RenderChar>>();
+        lines.emplace_back(std::vector<RenderChar>());
 
         for (auto &c: text) {
+            auto lineIndex = lines.size() - 1;
             auto &character = ascii.at(c);
+            auto lineWidth = getWidth(lines.at(lineIndex));
 
-            currentLineWidth += character.advance;
-
-            if (c == '\n' || (lineWidth > 0 && currentLineWidth > lineWidth)) {
-                line++;
+            if (c == '\n'
+                || (properties.lineWidth > 0 && lineWidth + character.advance > properties.lineWidth)) {
+                lines.emplace_back(std::vector<RenderChar>());
                 posx = 0;
-                currentLineWidth = 0;
+                lineIndex = lines.size() - 1;
+                lineWidth = 0;
             }
 
             if (c < 32)
                 continue; // Skip non printable characters
 
+            if (lineWidth + character.advance > largestWidth)
+                largestWidth = lineWidth + character.advance;
+
             RenderChar renderChar(character, *textures.at(c));
 
-            float posy = (numeric_cast<float>(line) * numeric_cast<float>(lineSpacing))
-                         + (numeric_cast<float>(line) * numeric_cast<float>(lineHeight));
+            float posy = (numeric_cast<float>(lineIndex) * numeric_cast<float>(properties.lineSpacing))
+                         + (numeric_cast<float>(lineIndex) * numeric_cast<float>(properties.lineHeight));
 
             renderChar.position.x = posx;
             renderChar.position.y = posy;
@@ -147,13 +157,38 @@ namespace xng {
             // Add horizontal advance
             posx += numeric_cast<float>(character.advance);
 
-            if (line == 0 && largestCharacterOfFirstLine.image.getHeight() < character.image.getHeight())
+            if (lines.size() == 1 && largestCharacterOfFirstLine.image.getHeight() < character.image.getHeight())
                 largestCharacterOfFirstLine = character;
 
-            renderText.emplace_back(renderChar);
+            lines.at(lineIndex).emplace_back(renderChar);
         }
 
-        auto origin = Vec2f(0, numeric_cast<float>(lineHeight));
+        // Apply alignment offset
+        std::vector<RenderChar> renderText;
+        for (auto line: lines) {
+            auto width = getWidth(line);
+            auto diff = largestWidth - width;
+
+            int offset = 0;
+            switch (properties.alignment) {
+                default:
+                case ALIGN_LEFT:
+                    break;
+                case ALIGN_CENTER:
+                    offset = diff / 2;
+                    break;
+                case ALIGN_RIGHT:
+                    offset = diff;
+                    break;
+            }
+
+            for (auto c: line) {
+                c.position.x += offset;
+                renderText.emplace_back(c);
+            }
+        }
+
+        auto origin = Vec2f(0, numeric_cast<float>(properties.lineHeight));
 
         target = ren2d.getDevice().createRenderTarget({.size = size.convert<int>()});
 
@@ -184,6 +219,6 @@ namespace xng {
         ren2d.renderPresent();
         target->setColorAttachments({});
 
-        return {text, origin, lineWidth, std::move(tex)};
+        return {text, origin, properties.lineWidth, std::move(tex)};
     }
 }

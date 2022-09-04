@@ -171,10 +171,10 @@ namespace xng {
      * @param size
      * @return
      */
-    static Mesh createPlane(Vec2f size, Vec2f center, Rectf uvOffset, Vec2b flipUv) {
+    static Mesh createPlane(Vec2f size, Vec2f center, Rectf uvOffset, Vec2f uvSize, Vec2b flipUv) {
         Rectf scaledOffset(
-                {uvOffset.position.x / size.x, uvOffset.position.y / size.y},
-                {uvOffset.dimensions.x / size.x, uvOffset.dimensions.y / size.y});
+                {uvOffset.position.x / uvSize.x, uvOffset.position.y / uvSize.y},
+                {uvOffset.dimensions.x / uvSize.x, uvOffset.dimensions.y / uvSize.y});
         float uvNearX = scaledOffset.position.x;
         float uvFarX = scaledOffset.position.x + scaledOffset.dimensions.x;
         float uvNearY = scaledOffset.position.y;
@@ -375,7 +375,8 @@ namespace xng {
 
                     ShaderUniformBuffer shaderBufferUniform;
                     shaderBufferUniform.mvp = mvp;
-                    shaderBufferUniform.color = ColorRGBA(pass.mixColor.r(), pass.mixColor.g(), pass.mixColor.b(), 0).divide().getMemory();
+                    shaderBufferUniform.color = ColorRGBA(pass.mixColor.r(), pass.mixColor.g(), pass.mixColor.b(),
+                                                          0).divide().getMemory();
                     shaderBufferUniform.scale = pass.mix;
 
                     auto &shaderBuffer = getShaderBuffer();
@@ -558,7 +559,7 @@ namespace xng {
         if (!isRendering)
             throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
 
-        PlaneDescription desc({dstRect.dimensions, center, srcRect, flipUv});
+        PlaneDescription desc({dstRect.dimensions, center, srcRect, texture.getDescription().size.convert<float>(), flipUv});
         passes.emplace_back(Pass(dstRect.position, rotation, desc, texture, camera, cameraTransform, mix, mixColor));
     }
 
@@ -570,8 +571,9 @@ namespace xng {
                           Vec2f center,
                           float rotation,
                           Vec2b flipUv) {
-        PlaneDescription desc({dstRect.dimensions, center, srcRect, flipUv});
-        passes.emplace_back(Pass(dstRect.position, rotation, desc, textureA, textureB, blendScale, camera, cameraTransform));
+        PlaneDescription desc({dstRect.dimensions, center, srcRect, textureA.getDescription().size.convert<float>(), flipUv});
+        passes.emplace_back(
+                Pass(dstRect.position, rotation, desc, textureA, textureB, blendScale, camera, cameraTransform));
     }
 
     void Renderer2D::draw(std::vector<Vec2f> poly,
@@ -593,7 +595,7 @@ namespace xng {
         if (fill)
             passes.emplace_back(Pass(rectangle.position,
                                      rotation,
-                                     {rectangle.dimensions, center, Rectf(Vec2f(), rectangle.dimensions), Vec2b(false)},
+                                     {rectangle.dimensions, center, Rectf(Vec2f(), rectangle.dimensions), rectangle.dimensions, Vec2b(false)},
                                      color, camera, cameraTransform));
         else
             passes.emplace_back(Pass(rectangle.position,
@@ -608,7 +610,8 @@ namespace xng {
         if (!isRendering)
             throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
 
-        passes.emplace_back(Pass({}, 0, std::vector<Vec2f>({std::move(start), std::move(end)}), color, camera, cameraTransform));
+        passes.emplace_back(
+                Pass({}, 0, std::vector<Vec2f>({std::move(start), std::move(end)}), color, camera, cameraTransform));
     }
 
     void Renderer2D::draw(Vec2f point, ColorRGBA color) {
@@ -618,16 +621,17 @@ namespace xng {
         passes.emplace_back(Pass({}, 0, std::vector<Vec2f>({std::move(point)}), color, camera, cameraTransform));
     }
 
-    void Renderer2D::draw(Text &text, Rectf dstRect, ColorRGBA color, Vec2f center, float rotation) {
+    void Renderer2D::draw(Text &text, Rectf srcRect, Rectf dstRect, ColorRGBA color, Vec2f center, float rotation) {
         if (!isRendering)
             throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
 
-        auto srcRect = Rectf({}, text.getTexture().getDescription().size.convert<float>());
         passes.emplace_back(Pass(dstRect.position,
                                  rotation,
-                                 {dstRect.dimensions, center, srcRect, Vec2b(false)},
+                                 {dstRect.dimensions, center, srcRect, text.getTexture().getDescription().size.convert<float>(), Vec2b(false)},
                                  text,
-                                 color, camera, cameraTransform));
+                                 color,
+                                 camera,
+                                 cameraTransform));
     }
 
     VertexBuffer &Renderer2D::getPoly(const std::vector<Vec2f> &poly) {
@@ -661,7 +665,7 @@ namespace xng {
         if (it != allocatedPlanes.end()) {
             return *it->second;
         } else {
-            auto mesh = createPlane(desc.size, desc.center, desc.uvOffset, desc.flipUv);
+            auto mesh = createPlane(desc.size, desc.center, desc.uvOffset, desc.uvSize, desc.flipUv);
             allocatedPlanes[desc] = renderDevice.createInstancedVertexBuffer(mesh, {MatrixMath::identity()});
             return *allocatedPlanes[desc];
         }

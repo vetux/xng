@@ -52,6 +52,14 @@ namespace xng {
         virtual const std::map<int, Mouse> &getMice() const = 0;
 
         virtual const std::map<int, GamePad> &getGamePads() const = 0;
+
+        bool getKey(KeyboardKey key) {
+            return getKeyboard().getKey(key);
+        }
+
+        bool getKeyDown(KeyboardKey key) {
+            return getKeyboard().getKeyDown(key);
+        }
     };
 }
 
