@@ -101,6 +101,8 @@ namespace xng {
 
         void reloadAllResources();
 
+        void awaitImports();
+
     private:
         void load(const Uri &uri);
 

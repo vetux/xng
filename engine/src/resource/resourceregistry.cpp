@@ -91,12 +91,18 @@ namespace xng {
             for (auto &task: loadTasks)
                 tasks.emplace_back(task);
         }
-        for (auto &task : tasks)
+        for (auto &task: tasks)
             task.second->join();
         loadTasks.clear();
         bundles.clear();
-        for (auto &task : tasks){
+        for (auto &task: tasks) {
             load(task.first);
+        }
+    }
+
+    void ResourceRegistry::awaitImports() {
+        for (auto &task: loadTasks) {
+            task.second->join();
         }
     }
 
