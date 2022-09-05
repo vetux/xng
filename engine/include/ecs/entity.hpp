@@ -77,9 +77,9 @@ namespace xng {
         }
 
         template<typename T>
-        bool checkComponent(const T &value = {}) {
+        bool checkComponent() {
             checkPointer();
-            return scene->check<T>(value);
+            return scene->check<T>(handle);
         }
 
         const EntityHandle &getHandle() const {
