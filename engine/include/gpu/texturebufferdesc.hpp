@@ -32,7 +32,7 @@ namespace xng {
         int samples = 1; //Ignored if texture is not TEXTURE_2D_MULTISAMPLE
         TextureType textureType = TEXTURE_2D;
         ColorFormat format = RGBA;
-        TextureWrapping wrapping = CLAMP_TO_EDGE;
+        TextureWrapping wrapping = CLAMP_TO_BORDER;
         TextureFiltering filterMin = NEAREST;
         TextureFiltering filterMag = NEAREST;
         bool generateMipmap = false;
