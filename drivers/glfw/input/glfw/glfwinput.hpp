@@ -37,6 +37,8 @@ namespace xng {
 
         void glfwKeyCallback(int key, int scancode, int action, int mods);
 
+        void glfwCharCallback(unsigned int codepoint);
+
         void glfwCursorCallback(double xpos, double ypos);
 
         void glfwMouseKeyCallback(int button, int action, int mods);
@@ -77,6 +79,8 @@ namespace xng {
         void onKeyDown(KeyboardKey key) override;
 
         void onKeyUp(KeyboardKey key) override;
+
+        void onCharacterInput(char32_t value) override;
 
         void onMouseMove(double xPos, double yPos) override;
 

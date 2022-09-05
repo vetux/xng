@@ -29,10 +29,14 @@
 namespace xng {
     class XENGINE_EXPORT InputListener {
     public:
+        // Keyboard
         virtual void onKeyDown(KeyboardKey key) {};
 
         virtual void onKeyUp(KeyboardKey key) {};
 
+        virtual void onCharacterInput(char32_t value) {};
+
+        // Mouse
         /**
          * @param xPos The mouse x position in pixels relative to the window.
          * @param yPos The mouse y position in pixels relative to the window.
@@ -48,8 +52,7 @@ namespace xng {
 
         virtual void onMouseKeyUp(MouseButton key) {};
 
-        virtual void onTextInput(const std::string &text) {};
-
+        // Gamepad
         virtual void onGamepadConnected(int id) {};
 
         virtual void onGamepadDisconnected(int id) {};

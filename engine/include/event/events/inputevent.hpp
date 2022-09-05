@@ -44,13 +44,13 @@ namespace xng {
 
     struct KeyboardEventData {
         enum Type {
-            KEYBOARD_TEXT_INPUT,
+            KEYBOARD_CHAR_INPUT,
             KEYBOARD_KEY_DOWN,
             KEYBOARD_KEY_UP
         } type;
 
         KeyboardKey key;
-        std::string text;
+        char32_t character;
     };
 
     struct MouseEventData {

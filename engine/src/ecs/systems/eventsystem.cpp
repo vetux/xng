@@ -64,8 +64,8 @@ namespace xng {
         eventBus.invoke(InputEvent(MouseEventData{.type = MouseEventData::MOUSE_KEY_UP, .key = key}));
     }
 
-    void EventSystem::onTextInput(const std::string &text) {
-        eventBus.invoke(InputEvent(KeyboardEventData{.type = KeyboardEventData::KEYBOARD_TEXT_INPUT, .text=text}));
+    void EventSystem::onCharacterInput(char32_t val) {
+        eventBus.invoke(InputEvent(KeyboardEventData{.type = KeyboardEventData::KEYBOARD_CHAR_INPUT, .character=val}));
     }
 
     void EventSystem::onGamepadConnected(int id) {

@@ -23,7 +23,7 @@
 #include "input/device/buttonstate.hpp"
 
 namespace xng {
-    enum KeyboardKey {
+    enum KeyboardKey : int {
         KEY_RETURN,
         KEY_ESCAPE,
         KEY_BACKSPACE,
@@ -143,6 +143,7 @@ namespace xng {
                 return false;
         }
 
+        std::u32string characterInput;
         std::map<KeyboardKey, ButtonState> keys;
     };
 }

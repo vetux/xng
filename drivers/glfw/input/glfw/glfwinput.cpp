@@ -39,6 +39,15 @@ namespace xng {
         }
     }
 
+    void glfwCharCallback(GLFWwindow *window, unsigned int codepoint) {
+        std::lock_guard<std::mutex> guard(windowMappingMutex);
+        if (windowMapping.find(window) != windowMapping.end()) {
+            windowMapping[window]->glfwCharCallback(codepoint);
+        } else {
+            fprintf(stderr, "Received glfw callback with non registered window.");
+        }
+    }
+
     void glfwCursorCallback(GLFWwindow *window, double xpos, double ypos) {
         std::lock_guard<std::mutex> guard(windowMappingMutex);
         if (windowMapping.find(window) != windowMapping.end()) {
@@ -81,6 +90,7 @@ namespace xng {
         glfwSetCursorPosCallback(&wndH, xng::glfwCursorCallback);
         glfwSetMouseButtonCallback(&wndH, xng::glfwMouseKeyCallback);
         glfwSetScrollCallback(&wndH, xng::glfwScrollCallback);
+        glfwSetCharCallback(&wndH, xng::glfwCharCallback);
 
         //GLFW Does not appear to send connected events for joysticks which are already connected when the application starts.
         for (int i = GLFW_JOYSTICK_1; i < GLFW_JOYSTICK_16; i++) {
@@ -114,6 +124,12 @@ namespace xng {
                 listener->onKeyDown(k);
             else
                 listener->onKeyUp(k);
+        }
+    }
+
+    void GLFWInput::glfwCharCallback(unsigned int codepoint) {
+        for (auto listener: listeners) {
+            listener->onCharacterInput(codepoint);
         }
     }
 
@@ -257,6 +273,10 @@ namespace xng {
 
     void GLFWInput::onKeyUp(KeyboardKey key) {
         keyboards[0].keys[key] = RELEASED;
+    }
+
+    void GLFWInput::onCharacterInput(char32_t value) {
+        keyboards[0].characterInput += value;
     }
 
     void GLFWInput::onMouseMove(double xPos, double yPos) {

@@ -58,7 +58,7 @@ namespace xng {
 
         void onMouseKeyUp(MouseButton key) override;
 
-        void onTextInput(const std::string &text) override;
+        void onCharacterInput(char32_t val) override;
 
         void onGamepadConnected(int id) override;
 
