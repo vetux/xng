@@ -121,6 +121,10 @@ namespace xng {
             return entityNames.at(name);
         }
 
+        bool checkEntityName(const std::string &name) const {
+            return entityNames.find(name) == entityNames.end();
+        }
+
         EntityHandle create() {
             if (idStore.empty()) {
                 if (idCounter == std::numeric_limits<int>::max())
