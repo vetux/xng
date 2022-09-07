@@ -25,8 +25,10 @@
 #include <any>
 #include <functional>
 
-#include "ecs/componentcontainer.hpp"
 #include "resource/resource.hpp"
+
+#include "ecs/entityhandle.hpp"
+#include "ecs/componentpool.hpp"
 
 #include "io/messageable.hpp"
 
@@ -69,11 +71,11 @@ namespace xng {
 
         ~EntityScene() = default;
 
-        EntityScene(const EntityScene &other) = default;
+        EntityScene(const EntityScene &other);
 
         EntityScene(EntityScene &&other) noexcept = default;
 
-        EntityScene &operator=(const EntityScene &other) = default;
+        EntityScene &operator=(const EntityScene &other);
 
         EntityScene &operator=(EntityScene &&other) noexcept = default;
 
@@ -121,8 +123,12 @@ namespace xng {
             return entityNames.at(name);
         }
 
-        bool checkEntityName(const std::string &name) const {
-            return entityNames.find(name) == entityNames.end();
+        bool entityNameExists(const std::string &name) const {
+            return entityNames.find(name) != entityNames.end();
+        }
+
+        bool entityHasName(EntityHandle handle) const {
+            return entityNamesReverse.find(handle) != entityNamesReverse.end();
         }
 
         EntityHandle create() {
@@ -157,7 +163,14 @@ namespace xng {
             for (auto &listener: listeners) {
                 listener->onEntityDestroy(entity);
             }
-            components.destroy(entity);
+            for (auto &p: components) {
+                if (p.second->check(entity)) {
+                    for (auto &listener: listeners) {
+
+                    }
+                    p.second->destroy(entity);
+                }
+            }
             idStore.insert(entity.id);
             entities.erase(entity);
             auto it = entityNamesReverse.find(entity);
@@ -168,7 +181,7 @@ namespace xng {
         }
 
         void clear() {
-            for (auto &pair: components.getPools()) {
+            for (auto &pair: components) {
                 for (auto &cpair: pair.second->getComponents()) {
                     for (auto &listener: listeners) {
                         listener->onComponentDestroy(cpair.first, cpair.second);
@@ -189,46 +202,55 @@ namespace xng {
         }
 
         template<typename T>
-        const ComponentPool<T> &getPool() {
-            return components.getPool<T>();
+        ComponentPool<T> &getPool() {
+            auto it = components.find(typeid(T));
+            if (it == components.end()) {
+                components[typeid(T)] = std::make_unique<ComponentPool<T>>();
+            }
+            return dynamic_cast<ComponentPool<T> &>(*components[typeid(T)]);
         }
 
         template<typename T>
         const ComponentPool<T> &getPool() const {
-            return components.getPool<T>();
+            auto it = components.find(typeid(T));
+            if (it == components.end()) {
+                throw std::runtime_error("Pool does not exist");
+            }
+            return dynamic_cast<ComponentPool<T> &>(*components.at(typeid(T)));
         }
 
         template<typename T>
         bool checkPool() const {
-            return components.checkPool<T>();
+            return components.find(typeid(T)) != components.end();
         }
 
         template<typename T>
         typename std::map<EntityHandle, T>::iterator begin() {
-            return components.begin<T>();
+            return getPool<T>().begin();
         }
 
         template<typename T>
         typename std::map<EntityHandle, T>::const_iterator begin() const {
-            return components.begin<T>();
+            return getPool<T>().begin();
         }
 
         template<typename T>
         typename std::map<EntityHandle, T>::iterator end() {
-            return components.end<T>();
+            return getPool<T>().end();
         }
 
         template<typename T>
         typename std::map<EntityHandle, T>::const_iterator end() const {
-            return components.end<T>();
+            return getPool<T>().end();
         }
 
         template<typename T>
         const T &createComponent(const EntityHandle &entity, const T &value = {}) {
+            auto &ret = getPool<T>().create(entity, value);
             for (auto &listener: listeners) {
                 listener->onComponentCreate(entity, value);
             }
-            return components.create(entity, value);
+            return ret;
         }
 
         template<typename T>
@@ -236,12 +258,12 @@ namespace xng {
             for (auto &listener: listeners) {
                 listener->onComponentDestroy(entity, lookup<T>(entity));
             }
-            components.getPool<T>()->destroy(entity);
+            getPool<T>().destroy(entity);
         }
 
         template<typename T>
         const T &lookup(const EntityHandle &entity) const {
-            return components.lookup<T>(entity);
+            return getPool<T>().lookup(entity);
         }
 
         template<typename T>
@@ -249,12 +271,12 @@ namespace xng {
             for (auto &listener: listeners) {
                 listener->onComponentUpdate(entity, lookup<T>(entity), value);
             }
-            return components.update(entity, value);
+            return getPool<T>().update(entity, value);
         }
 
         template<typename T>
         bool check(const EntityHandle &entity) const {
-            return components.check<T>(entity);
+            return checkPool<T>() && getPool<T>().check(entity);
         }
 
         Entity createEntity();
@@ -316,7 +338,7 @@ namespace xng {
         std::map<EntityHandle, std::string> entityNamesReverse;
 
         std::set<EntityHandle> entities;
-        ComponentContainer components;
+        std::map<std::type_index, std::unique_ptr<ComponentPoolBase>> components;
 
         std::set<Listener *> listeners;
 

@@ -36,6 +36,8 @@ namespace xng {
 
         virtual void clear() = 0;
 
+        virtual bool check(const EntityHandle &entity) const = 0;
+
         virtual void destroy(const EntityHandle &entity) = 0;
 
         virtual std::map<EntityHandle, std::any> getComponents() = 0;
@@ -108,7 +110,7 @@ namespace xng {
             }
         }
 
-        bool check(const EntityHandle &entity) const {
+        bool check(const EntityHandle &entity) const override {
             return components.find(entity) != components.end();
         }
 

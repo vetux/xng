@@ -64,9 +64,9 @@ namespace xng {
     }
 
 #define SERIALIZE_COMPONENT(NAME, TYPE) \
-    if (components.check<TYPE>(entity)) {\
+    if (check<TYPE>(entity)) {\
         Message component; \
-        components.lookup<TYPE>(entity) >> component; \
+        lookup<TYPE>(entity) >> component; \
         cmap[NAME] = component; \
     }
 
@@ -78,9 +78,9 @@ namespace xng {
         }
         auto cmap = std::map<std::string, Message>();
 
-        if (components.check<AudioSourceComponent>(entity)) {
+        if (check<AudioSourceComponent>(entity)) {
             Message component;
-            components.lookup<AudioSourceComponent>(entity) >> component;
+            lookup<AudioSourceComponent>(entity) >> component;
             cmap["test"] = component;
         }
 
@@ -143,5 +143,32 @@ namespace xng {
 
     std::type_index EntityScene::getTypeIndex() {
         return typeid(EntityScene);
+    }
+
+    EntityScene::EntityScene(const EntityScene &other) {
+        components.clear();
+        for (auto &p: other.components) {
+            components[p.first] = p.second->clone();
+        }
+        entities = other.entities;
+        entityNames = other.entityNames;
+        entityNamesReverse = other.entityNamesReverse;
+        name = other.name;
+        idCounter = other.idCounter;
+        idStore = other.idStore;
+    }
+
+    EntityScene &EntityScene::operator=(const EntityScene &other) {
+        components.clear();
+        for (auto &p: other.components) {
+            components[p.first] = p.second->clone();
+        }
+        entities = other.entities;
+        entityNames = other.entityNames;
+        entityNamesReverse = other.entityNamesReverse;
+        name = other.name;
+        idCounter = other.idCounter;
+        idStore = other.idStore;
+        return *this;
     }
 }

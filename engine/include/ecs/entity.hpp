@@ -22,7 +22,6 @@
 
 #include "ecs/entityhandle.hpp"
 #include "ecs/entityscene.hpp"
-#include "ecs/componentcontainer.hpp"
 
 namespace xng {
     /**
@@ -50,6 +49,11 @@ namespace xng {
         const std::string &getName() {
             checkPointer();
             return scene->getEntityName(handle);
+        }
+
+        bool hasName() {
+            checkPointer();
+            return scene->entityHasName(handle);
         }
 
         template<typename T>
