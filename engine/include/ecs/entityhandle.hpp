@@ -20,6 +20,8 @@
 #ifndef XENGINE_ENTITYHANDLE_HPP
 #define XENGINE_ENTITYHANDLE_HPP
 
+#include <string>
+
 namespace xng {
     struct XENGINE_EXPORT EntityHandle {
         int id;
@@ -42,6 +44,10 @@ namespace xng {
 
         explicit operator bool() const {
             return id != -1;
+        }
+
+        std::string toString() const {
+            return std::to_string(id);
         }
     };
 }

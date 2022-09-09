@@ -58,7 +58,7 @@ namespace xng {
 
     void AudioSystem::update(DeltaTime deltaTime, EntityScene &scene) {
         for (const auto &pair: scene.getPool<AudioListenerComponent>()) {
-            auto &transform = scene.lookup<TransformComponent>(pair.first);
+            auto &transform = scene.getComponent<TransformComponent>(pair.first);
             auto &listener = context->getListener();
             listener.setPosition(transform.transform.getPosition() * AUDIO_POS_SCALE);
             listener.setOrientation({transform.transform.getPosition()},
@@ -68,7 +68,7 @@ namespace xng {
 
         for (auto &pair: scene.getPool<AudioSourceComponent>()) {
             auto comp = pair.second;
-            auto &transform = scene.lookup<TransformComponent>(pair.first);
+            auto &transform = scene.getComponent<TransformComponent>(pair.first);
             auto &source = sources.at(pair.first);
 
             source->setPosition(transform.transform.getPosition() * AUDIO_POS_SCALE);

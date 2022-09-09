@@ -29,6 +29,7 @@
 
 #include "ecs/entityhandle.hpp"
 #include "ecs/componentpool.hpp"
+#include "ecs/componentregistry.hpp"
 
 #include "io/messageable.hpp"
 
@@ -37,21 +38,6 @@ namespace xng {
 
     class XENGINE_EXPORT EntityScene : public Resource, public Messageable {
     public:
-        typedef std::function<void(EntityScene &scene, EntityHandle ent, const Message &msg)> ComponentDeserializer;
-
-        static const std::map<std::string, ComponentDeserializer> &getComponentDeserializers();
-
-        static void addComponentDeserializer(const std::string &componentName, ComponentDeserializer deserializer);
-
-        template<typename T>
-        static void addComponentDeserializer(const std::string &componentName) {
-            addComponentDeserializer(componentName, [](EntityScene &scene, EntityHandle ent, const Message &msg) {
-                T comp;
-                comp << msg;
-                scene.createComponent(ent, comp);
-            });
-        }
-
         class Listener {
         public:
             virtual void onEntityCreate(const EntityHandle &entity) {};
@@ -90,7 +76,6 @@ namespace xng {
         void setName(const std::string &v) {
             name = v;
         }
-
 
         /**
          * Optional name mapping.
@@ -163,7 +148,7 @@ namespace xng {
             for (auto &listener: listeners) {
                 listener->onEntityDestroy(entity);
             }
-            for (auto &p: components) {
+            for (auto &p: componentPools) {
                 if (p.second->check(entity)) {
                     for (auto &listener: listeners) {
 
@@ -181,7 +166,7 @@ namespace xng {
         }
 
         void clear() {
-            for (auto &pair: components) {
+            for (auto &pair: componentPools) {
                 for (auto &cpair: pair.second->getComponents()) {
                     for (auto &listener: listeners) {
                         listener->onComponentDestroy(cpair.first, cpair.second);
@@ -193,7 +178,7 @@ namespace xng {
                     listener->onEntityDestroy(ent);
                 }
             }
-            components.clear();
+            componentPools.clear();
             idStore.clear();
             idCounter = 0;
             entities.clear();
@@ -201,27 +186,31 @@ namespace xng {
             entityNamesReverse.clear();
         }
 
+        /**
+         * Template interface used when the component type is known at compile time.
+         */
+
         template<typename T>
         ComponentPool<T> &getPool() {
-            auto it = components.find(typeid(T));
-            if (it == components.end()) {
-                components[typeid(T)] = std::make_unique<ComponentPool<T>>();
+            auto it = componentPools.find(typeid(T));
+            if (it == componentPools.end()) {
+                componentPools[typeid(T)] = std::make_unique<ComponentPool<T>>();
             }
-            return dynamic_cast<ComponentPool<T> &>(*components[typeid(T)]);
+            return dynamic_cast<ComponentPool<T> &>(*componentPools[typeid(T)]);
         }
 
         template<typename T>
         const ComponentPool<T> &getPool() const {
-            auto it = components.find(typeid(T));
-            if (it == components.end()) {
+            auto it = componentPools.find(typeid(T));
+            if (it == componentPools.end()) {
                 throw std::runtime_error("Pool does not exist");
             }
-            return dynamic_cast<ComponentPool<T> &>(*components.at(typeid(T)));
+            return dynamic_cast<ComponentPool<T> &>(*componentPools.at(typeid(T)));
         }
 
         template<typename T>
         bool checkPool() const {
-            return components.find(typeid(T)) != components.end();
+            return componentPools.find(typeid(T)) != componentPools.end();
         }
 
         template<typename T>
@@ -255,28 +244,56 @@ namespace xng {
 
         template<typename T>
         void destroyComponent(const EntityHandle &entity) {
-            for (auto &listener: listeners) {
-                listener->onComponentDestroy(entity, lookup<T>(entity));
-            }
+            auto comp = getComponent<T>(entity);
             getPool<T>().destroy(entity);
+            for (auto &listener: listeners) {
+                listener->onComponentDestroy(entity, comp);
+            }
         }
 
         template<typename T>
-        const T &lookup(const EntityHandle &entity) const {
+        const T &getComponent(const EntityHandle &entity) const {
             return getPool<T>().lookup(entity);
         }
 
         template<typename T>
-        bool updateComponent(const EntityHandle &entity, const T &value) {
+        void updateComponent(const EntityHandle &entity, const T &value) {
             for (auto &listener: listeners) {
-                listener->onComponentUpdate(entity, lookup<T>(entity), value);
+                listener->onComponentUpdate(entity, getComponent<T>(entity), value);
             }
-            return getPool<T>().update(entity, value);
+            getPool<T>().update(entity, value);
         }
 
         template<typename T>
-        bool check(const EntityHandle &entity) const {
+        bool checkComponent(const EntityHandle &entity) const {
             return checkPool<T>() && getPool<T>().check(entity);
+        }
+
+        /**
+         * Generic interface use for component types that are not known at compile time.
+         */
+
+        void createComponent(const EntityHandle &entity, const std::type_index &type) {
+            ComponentRegistry::instance().getConstructor(type)(*this, entity);
+        }
+
+        void updateComponent(const EntityHandle &entity,
+                             const std::type_index &type,
+                             const std::any &value) {
+            ComponentRegistry::instance().getUpdater(type)(*this, entity, value);
+        }
+
+        void destroyComponent(const EntityHandle &entity,
+                              const std::type_index &type) {
+            componentPools.at(type)->destroy(entity);
+        }
+
+        bool checkComponent(const EntityHandle &entity, const std::type_index &type) {
+            return checkPool(type) && componentPools.at(type)->check(entity);
+        }
+
+        bool checkPool(const std::type_index &type) const {
+            return componentPools.find(type) != componentPools.end();
         }
 
         Entity createEntity();
@@ -322,10 +339,6 @@ namespace xng {
             listeners.erase(&listener);
         }
 
-        /**
-         * To serialize user component types the user can subclass entity container and override these methods
-         * to define serialization logic for the user component types.
-         */
         void serializeEntity(const EntityHandle &entity, Message &message) const;
 
         void deserializeEntity(const Message &message);
@@ -338,7 +351,7 @@ namespace xng {
         std::map<EntityHandle, std::string> entityNamesReverse;
 
         std::set<EntityHandle> entities;
-        std::map<std::type_index, std::unique_ptr<ComponentPoolBase>> components;
+        std::map<std::type_index, std::unique_ptr<ComponentPoolBase>> componentPools;
 
         std::set<Listener *> listeners;
 

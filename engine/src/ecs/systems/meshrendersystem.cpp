@@ -45,7 +45,7 @@ namespace xng {
 
         // Create draw nodes
         for (auto &pair: entScene.getPool<MeshRenderComponent>()) {
-            auto &transform = entScene.lookup<TransformComponent>(pair.first);
+            auto &transform = entScene.getComponent<TransformComponent>(pair.first);
             if (!transform.enabled)
                 continue;
 
@@ -71,7 +71,7 @@ namespace xng {
 
         // Update Camera
         for (auto &pair: entScene.getPool<CameraComponent>()) {
-            auto &tcomp = entScene.lookup<TransformComponent>(pair.first);
+            auto &tcomp = entScene.getComponent<TransformComponent>(pair.first);
 
             if (!tcomp.enabled)
                 continue;

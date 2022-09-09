@@ -99,14 +99,15 @@ namespace xng {
             return components.at(entity);
         }
 
-        bool update(const EntityHandle &entity, const T &value = {}) {
+        void update(const EntityHandle &entity, const T &value = {}) {
             auto it = components.find(entity);
             if (it == components.end()) {
-                create(entity, value);
-                return true;
+                throw std::runtime_error("No component for type "
+                                         + std::string(typeid(T).name())
+                                         + " on entity "
+                                         + entity.toString());
             } else {
                 it->second = value;
-                return false;
             }
         }
 

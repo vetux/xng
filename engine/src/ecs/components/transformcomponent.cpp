@@ -23,7 +23,7 @@ namespace xng {
     Transform TransformComponent::walkHierarchy(const TransformComponent &component, EntityScene &scene) {
         Transform ret = component.transform;
         if (!component.parent.empty()) {
-            ret += walkHierarchy(scene.lookup<TransformComponent>(scene.getEntityByName(component.parent)), scene);
+            ret += walkHierarchy(scene.getComponent<TransformComponent>(scene.getEntityByName(component.parent)), scene);
         }
         return ret;
     }

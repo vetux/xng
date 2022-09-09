@@ -55,8 +55,8 @@ void SpriteAnimationSystem::update(DeltaTime deltaTime, EntityScene &scene) {
                 scene.updateComponent(c.first, comp);
             }
             // Update sprite
-            if (scene.check<SpriteComponent>(c.first)) {
-                auto ren = scene.lookup<SpriteComponent>(c.first);
+            if (scene.checkComponent<SpriteComponent>(c.first)) {
+                auto ren = scene.getComponent<SpriteComponent>(c.first);
                 ren.sprite = f;
                 scene.updateComponent(c.first, ren);
             }

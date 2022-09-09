@@ -1,0 +1,90 @@
+/**
+ *  This file is part of xEngine, a C++ game engine library.
+ *  Copyright (C) 2021  Julian Zampiccoli
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+#include "ecs/componentregistry.hpp"
+#include "ecs/components.hpp"
+
+namespace xng {
+    std::unique_ptr<ComponentRegistry> ComponentRegistry::inst = nullptr;
+
+    ComponentRegistry &ComponentRegistry::instance() {
+        if (inst == nullptr) {
+            inst = std::make_unique<ComponentRegistry>();
+            REGISTER_COMPONENT(AudioListenerComponent)
+            REGISTER_COMPONENT(AudioSourceComponent)
+            REGISTER_COMPONENT(ButtonComponent)
+            REGISTER_COMPONENT(CameraComponent)
+            REGISTER_COMPONENT(CanvasComponent)
+            REGISTER_COMPONENT(CanvasTransformComponent)
+            REGISTER_COMPONENT(LightComponent)
+            REGISTER_COMPONENT(MeshRenderComponent)
+            REGISTER_COMPONENT(ParticleComponent)
+            REGISTER_COMPONENT(RigidBodyComponent)
+            REGISTER_COMPONENT(SkyboxComponent)
+            REGISTER_COMPONENT(SpriteAnimationComponent)
+            REGISTER_COMPONENT(SpriteComponent)
+            REGISTER_COMPONENT(TextComponent)
+            REGISTER_COMPONENT(TransformComponent)
+        }
+        return *inst;
+    }
+
+    bool ComponentRegistry::registerComponent(std::type_index type,
+                                              const std::string &typeName,
+                                              const Serializer &serializer,
+                                              const Deserializer &deserializer,
+                                              const Constructor &constructor,
+                                              const Updater &updater) {
+        if (nameMapping.find(type) != nameMapping.end()) {
+            throw std::runtime_error("Type " + typeName + " already registered with name " + nameMapping.at(type));
+        }
+
+        nameMapping[type] = typeName;
+        nameReverseMapping.insert(std::pair(typeName, type));
+        serializers[type] = serializer;
+        deserializers[type] = deserializer;
+        constructors[type] = constructor;
+        updaters[type] = updater;
+        return true;
+    }
+
+    const std::type_index &ComponentRegistry::getTypeFromName(const std::string &typeName) {
+        return nameReverseMapping.at(typeName);
+    }
+
+    const std::string &ComponentRegistry::getNameFromType(const std::type_index &index) {
+        return nameMapping.at(index);
+    }
+
+    const ComponentRegistry::Serializer &ComponentRegistry::getSerializer(const std::type_index &index) {
+        return serializers.at(index);
+    }
+
+    const ComponentRegistry::Deserializer &ComponentRegistry::getDeserializer(const std::type_index &index) {
+        return deserializers.at(index);
+    }
+
+    const ComponentRegistry::Constructor &ComponentRegistry::getConstructor(const std::type_index &index) {
+        return constructors.at(index);
+    }
+
+    const ComponentRegistry::Updater &ComponentRegistry::getUpdater(const std::type_index &index) {
+        return updaters.at(index);
+    }
+}

@@ -72,19 +72,19 @@ namespace xng {
             if (!p.second.enabled)
                 continue;
             auto canvas = scene.getEntityByName(p.second.canvas);
-            auto &c = scene.lookup<CanvasComponent>(canvas);
+            auto &c = scene.getComponent<CanvasComponent>(canvas);
             if (!c.enabled) {
                 continue;
             }
 
-            if (scene.check<SpriteComponent>(p.first)) {
-                auto &r = scene.lookup<SpriteComponent>(p.first);
+            if (scene.checkComponent<SpriteComponent>(p.first)) {
+                auto &r = scene.getComponent<SpriteComponent>(p.first);
                 passes[p.second.canvas][r.layer].emplace_back(Pass{Pass::SPRITE, p.first});
                 canvases[c.layer].insert(p.second.canvas);
             }
 
-            if (scene.check<TextComponent>(p.first)) {
-                auto &r = scene.lookup<TextComponent>(p.first);
+            if (scene.checkComponent<TextComponent>(p.first)) {
+                auto &r = scene.getComponent<TextComponent>(p.first);
                 passes[p.second.canvas][r.layer].emplace_back(Pass{Pass::TEXT, p.first});
                 canvases[c.layer].insert(p.second.canvas);
             }
@@ -93,7 +93,7 @@ namespace xng {
         for (auto &canvasLayer: canvases) {
             for (auto &canvasName: canvasLayer.second) {
                 auto canvasEnt = scene.getEntityByName(canvasName);
-                auto canvas = scene.lookup<CanvasComponent>(canvasEnt);
+                auto canvas = scene.getComponent<CanvasComponent>(canvasEnt);
 
                 canvas.updateViewport(target.getDescription().size);
                 scene.updateComponent(canvasEnt, canvas);
@@ -116,7 +116,7 @@ namespace xng {
 
                 for (auto &pair: passes.at(canvasName)) {
                     for (auto &pass: pair.second) {
-                        auto &rt = scene.lookup<CanvasTransformComponent>(pass.ent);
+                        auto &rt = scene.getComponent<CanvasTransformComponent>(pass.ent);
 
                         Rectf dstRect;
                         Vec2f center;
@@ -124,15 +124,15 @@ namespace xng {
 
                         Transform worldTransform;
 
-                        if (scene.check<TransformComponent>(pass.ent)) {
+                        if (scene.checkComponent<TransformComponent>(pass.ent)) {
                             worldTransform = TransformComponent::walkHierarchy(
-                                    scene.lookup<TransformComponent>(pass.ent),
+                                    scene.getComponent<TransformComponent>(pass.ent),
                                     scene);
                         }
 
                         switch (pass.type) {
                             case Pass::SPRITE: {
-                                auto &comp = scene.lookup<SpriteComponent>(pass.ent);
+                                auto &comp = scene.getComponent<SpriteComponent>(pass.ent);
                                 if (comp.sprite.assigned()) {
                                     dstRect = Rectf(rt.rect.position +
                                                     rt.getOffset(scene, target.getDescription().size),
@@ -168,7 +168,7 @@ namespace xng {
                                 break;
                             }
                             case Pass::TEXT: {
-                                auto &tcomp = scene.lookup<TextComponent>(pass.ent);
+                                auto &tcomp = scene.getComponent<TextComponent>(pass.ent);
                                 if (!tcomp.text.empty()
                                     && tcomp.font.assigned()) {
                                     auto texSize = renderedTexts.at(
@@ -256,10 +256,10 @@ namespace xng {
                             ren2d.draw(dCenter + Vec2f(-len, 0), dCenter + Vec2f(len, 0), ColorRGBA::red());
                             ren2d.draw(dCenter + Vec2f(0, len), dCenter + Vec2f(0, -len), ColorRGBA::red());
 
-                            if (scene.check<RigidBodyComponent>(pass.ent)) {
-                                auto &rb = scene.lookup<RigidBodyComponent>(pass.ent);
+                            if (scene.checkComponent<RigidBodyComponent>(pass.ent)) {
+                                auto &rb = scene.getComponent<RigidBodyComponent>(pass.ent);
                                 if (rb.is2D) {
-                                    auto &tcomp = scene.lookup<TransformComponent>(pass.ent);
+                                    auto &tcomp = scene.getComponent<TransformComponent>(pass.ent);
                                     for (auto &col: rb.colliders) {
                                         if (!col.shape.vertices.empty()) {
                                             std::vector<Vec2f> poly;

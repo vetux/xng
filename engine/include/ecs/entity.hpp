@@ -46,12 +46,12 @@ namespace xng {
             scene->clearEntityName(handle);
         }
 
-        const std::string &getName() {
+        const std::string &getName() const {
             checkPointer();
             return scene->getEntityName(handle);
         }
 
-        bool hasName() {
+        bool hasName() const {
             checkPointer();
             return scene->entityHasName(handle);
         }
@@ -69,21 +69,21 @@ namespace xng {
         }
 
         template<typename T>
-        const T &getComponent() {
+        const T &getComponent() const {
             checkPointer();
-            return scene->lookup<T>(handle);
+            return scene->getComponent<T>(handle);
         }
 
         template<typename T>
-        bool updateComponent(const T &value = {}) {
+        void updateComponent(const T &value = {}) {
             checkPointer();
-            return scene->updateComponent<T>(handle, value);
+            scene->updateComponent<T>(handle, value);
         }
 
         template<typename T>
-        bool checkComponent() {
+        bool checkComponent() const {
             checkPointer();
-            return scene->check<T>(handle);
+            return scene->checkComponent<T>(handle);
         }
 
         const EntityHandle &getHandle() const {
@@ -99,6 +99,12 @@ namespace xng {
         const EntityScene &getScene() const {
             checkPointer();
             return *scene;
+        }
+
+        std::string toString() const {
+            if (hasName()){
+                return "Entity { Name:" + getName() + " Id: " + std::to_string(handle.id) + " }";
+            }
         }
 
     private:

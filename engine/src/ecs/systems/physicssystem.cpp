@@ -61,7 +61,7 @@ namespace xng {
     void PhysicsSystem::update(DeltaTime deltaTime, EntityScene &scene) {
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
             auto &rb = *rigidbodies.at(pair.first).get();
-            auto tcomp = scene.lookup<TransformComponent>(pair.first);
+            auto tcomp = scene.getComponent<TransformComponent>(pair.first);
             rb.setPosition(tcomp.transform.getPosition() / scale);
             rb.setRotation(tcomp.transform.getRotation().getEulerAngles());
             rb.setVelocity(pair.second.velocity);
@@ -76,7 +76,7 @@ namespace xng {
 
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
             auto &rb = *rigidbodies.at(pair.first).get();
-            auto tcomp = scene.lookup<TransformComponent>(pair.first);
+            auto tcomp = scene.getComponent<TransformComponent>(pair.first);
 
             tcomp.transform.setPosition(rb.getPosition() * scale);
             tcomp.transform.setRotation(Quaternion(rb.getRotation()));
