@@ -29,7 +29,6 @@ namespace xng {
     public:
         void beginFrame() {
             frameStart = std::chrono::high_resolution_clock::now();
-            frameSamples.clear();
         }
 
         void beginSystemUpdate() {
@@ -52,6 +51,8 @@ namespace xng {
             frame.duration = std::chrono::duration_cast<std::chrono::milliseconds>(frameEnd - frameStart).count();
             frame.samples = frameSamples;
             frames.addFrame(frame);
+
+            frameSamples.clear();
         }
 
         const ECSFrameList &getFrames() const {
