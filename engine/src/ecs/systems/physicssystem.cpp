@@ -99,6 +99,17 @@ namespace xng {
             comp.velocity = rb.getVelocity();
             comp.angularVelocity = rb.getAngularVelocity();
             comp.mass = rb.getMass();
+
+            comp.touchingColliders.clear();
+            for (int i = 0; i < comp.colliders.size(); i++) {
+                auto it = touchingColliders.find(std::pair(pair.first, i));
+                if (it != touchingColliders.end()) {
+                    for (auto &entIndexPair: it->second) {
+                        comp.touchingColliders[entIndexPair.first].insert(entIndexPair.second);
+                    }
+                }
+            }
+
             scene.updateComponent(pair.first, comp);
             scene.updateComponent(pair.first, tcomp);
         }
@@ -167,6 +178,10 @@ namespace xng {
         auto entB = rigidbodiesReverse.at(&contact.colliderB.get().getBody());
         auto indexA = colliderIndices.at(&contact.colliderA.get());
         auto indexB = colliderIndices.at(&contact.colliderB.get());
+
+        touchingColliders[std::pair(entA, indexA)].insert(std::pair(entB, indexB));
+        touchingColliders[std::pair(entB, indexB)].insert(std::pair(entA, indexA));
+
         eventBus.invoke(ContactEvent(ContactEvent::BEGIN_CONTACT,
                                      entA,
                                      entB,
@@ -179,6 +194,10 @@ namespace xng {
         auto entB = rigidbodiesReverse.at(&contact.colliderB.get().getBody());
         auto indexA = colliderIndices.at(&contact.colliderA.get());
         auto indexB = colliderIndices.at(&contact.colliderB.get());
+
+        touchingColliders[std::pair(entA, indexA)].erase(std::pair(entB, indexB));
+        touchingColliders[std::pair(entB, indexB)].erase(std::pair(entA, indexA));
+
         eventBus.invoke(ContactEvent(ContactEvent::END_CONTACT,
                                      entA,
                                      entB,

@@ -62,6 +62,8 @@ namespace xng {
         std::map<EntityHandle, std::vector<std::unique_ptr<Collider>>> colliders;
         std::map<Collider *, size_t> colliderIndices;
 
+        std::map<std::pair<EntityHandle, int>, std::set<std::pair<EntityHandle, int>>> touchingColliders;
+
         float scale = 20; // The number of units which correspond to a metre in the physics world.
         float timeStep = 1.0f / 30; // The duration of one physics world step
         float deltaAccumulator = 0;

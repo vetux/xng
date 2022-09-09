@@ -45,6 +45,8 @@ namespace xng {
 
         float gravityScale = 1;
 
+        std::map<EntityHandle, std::set<int>> touchingColliders; // For every touching entity the indices of the touching collider
+
         RigidBody::RigidBodyType convert(const std::string &text) const {
             if (text == "static")
                 return RigidBody::STATIC;
