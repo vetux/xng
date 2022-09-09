@@ -25,6 +25,7 @@
 
 #include "ecs/system.hpp"
 #include "ecs/entity.hpp"
+#include "ecs/profiling/ecsprofiler.hpp"
 
 #include "event/eventbus.hpp"
 
@@ -55,7 +56,15 @@ namespace xng {
 
         void setSystems(const std::vector<std::reference_wrapper<System>> &systems);
 
+        void setEnableProfiling(bool value) {
+            enableProfiling = value;
+        }
+
+        const ECSFrameList &getFrameList() const;
+
     private:
+        bool enableProfiling = false;
+        ECSProfiler profiler;
         bool started = false;
         std::shared_ptr<EntityScene> scene;
         std::vector<std::reference_wrapper<System>> systems;

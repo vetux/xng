@@ -17,25 +17,31 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SYSTEM_HPP
-#define XENGINE_SYSTEM_HPP
+#ifndef XENGINE_ECSSAMPLE_HPP
+#define XENGINE_ECSSAMPLE_HPP
 
-#include "types/deltatime.hpp"
-#include "ecs/entityscene.hpp"
+#include <string>
+
+#include "io/messageable.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT System {
-    public:
-        virtual ~System() = default;
+    struct ECSSample : public Messageable {
+        std::string systemName; // The name of the system
+        long time; // The time the system update has taken to complete in milliseconds
 
-        // If these methods are declared pure virtual there are undefined references to the methods when linking to the resulting binary.
-        virtual void start(EntityScene &scene) {}
+        Messageable &operator<<(const Message &message) override {
+            systemName = message.value("systemName", std::string());
+            time = message.value("time", 0);
+            return *this;
+        }
 
-        virtual void stop(EntityScene &scene) {}
-
-        virtual void update(DeltaTime deltaTime, EntityScene &scene) {}
-
-        virtual std::string getName() { return "System"; }
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            message["systemName"] = systemName;
+            message["time"] = time;
+            return message;
+        }
     };
 }
-#endif //XENGINE_SYSTEM_HPP
+
+#endif //XENGINE_ECSSAMPLE_HPP

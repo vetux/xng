@@ -44,8 +44,18 @@ namespace xng {
     }
 
     void ECS::update(DeltaTime deltaTime) {
-        for (auto &system: systems) {
-            system.get().update(deltaTime, *scene);
+        if (enableProfiling) {
+            profiler.beginFrame();
+            for (auto &system: systems) {
+                profiler.beginSystemUpdate();
+                system.get().update(deltaTime, *scene);
+                profiler.endSystemUpdate(system.get().getName());
+            }
+            profiler.endFrame();
+        } else {
+            for (auto &system: systems) {
+                system.get().update(deltaTime, *scene);
+            }
         }
     }
 
@@ -79,5 +89,9 @@ namespace xng {
         if (started)
             stop();
         systems = v;
+    }
+
+    const ECSFrameList &ECS::getFrameList() const {
+        return profiler.getFrames();
     }
 }
