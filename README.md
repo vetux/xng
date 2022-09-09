@@ -1,26 +1,43 @@
 # xEngine
 
-xEngine is a cross-platform c++ game engine library.
+xEngine is a cross-platform c++ game engine library. 
+
+[xng-tools](https://github.com/vetux/xng-tools) provides an editor application and various tools to simplify and accelerate the game creation workflow
 
 ## Features
-- Driver Interfaces
-  - Display Manager abstraction
-    - GLFW implementation
+- Drivers
+  - Display Manager
+    - GLFW
   - 3D Audio
-    - OpenAL-Soft implementation
-  - GPU (Render, Compute, Raytracing(WIP))
-    - OpenGL implementation 
-  - Text Rendering
+    - OpenAL-Soft
+  - GPU (Render, Compute, Raytracing)
+    - OpenGL
+  - Shader Compiler
+    - ShaderC 
+  - Font Rendering
+    - FreeType
   - Physics Simulation
-- Frame Graph Renderer (WIP)
+    - Box2D
+  - Resource Parsers
+    - AssImp
+    - libSndFile
+
+- ECS with data oriented architecture
+- Text Rendering
 - 2D Renderer
-- Skeletal Animation (WIP)
 - Sprite Animation
 - PAK file format
-- ECS with data oriented architecture
+
+## Planned Features
+- Vulkan GPU driver
+- Frame Graph Renderer
+  - PBR Material support 
+- Skeletal animation
+- Bullet3 physics driver
+- Scripting Abstraction
 
 ## Programs
-- [xEditor](https://github.com/vetux/xeditor) (WIP) - The editor and tools which utilize xng and provide gui for creating games with xng
+- [xng-tools](https://github.com/vetux/xng-tools) - The editor and tools for creating games with xng
 - [Foxtrot](https://github.com/vetux/foxtrot) - A 2D Platformer Game
 
 # Building
