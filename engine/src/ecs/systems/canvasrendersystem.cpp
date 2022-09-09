@@ -186,42 +186,43 @@ namespace xng {
                                         displaySize.y = texSize.y;
                                     }
 
-                                    Vec2f displayOffset = rt.getOffset(scene, target.getDescription().size);
+                                    Vec2f displayOffset = rt.getOffset(scene, target.getDescription().size)
+                                                          - rt.center;
 
-                                    dstRect = Rectf(rt.rect.position + displayOffset, displaySize);
-                                    center = displaySize / 2;
-
+                                    dstRect = Rectf(rt.rect.position + displayOffset,
+                                                    displaySize);
+                                    center = {};
                                     auto diff = rt.rect.dimensions - displaySize;
                                     switch (tcomp.textAnchor) {
                                         case CanvasTransformComponent::TOP_LEFT:
-                                            dstRect.position.x -= diff.x / 2;
-                                            dstRect.position.y -= diff.y / 2;
                                             break;
                                         case CanvasTransformComponent::LEFT:
-                                            dstRect.position.x -= diff.x / 2;
+                                            dstRect.position.y += diff.y / 2;
                                             break;
                                         case CanvasTransformComponent::BOTTOM_LEFT:
-                                            dstRect.position.x -= diff.x / 2;
-                                            dstRect.position.y += diff.y / 2;
+                                            dstRect.position.y += diff.y;
                                             break;
                                         case CanvasTransformComponent::TOP_CENTER:
-                                            dstRect.position.y -= diff.y / 2;
+                                            dstRect.position.x += diff.x / 2;
                                             break;
                                         case CanvasTransformComponent::CENTER:
+                                            dstRect.position.x += diff.x / 2;
+                                            dstRect.position.y += diff.y / 2;
                                             break;
                                         case CanvasTransformComponent::BOTTOM_CENTER:
-                                            dstRect.position.y += diff.y / 2;
+                                            dstRect.position.x += diff.x / 2;
+                                            dstRect.position.y += diff.y;
                                             break;
                                         case CanvasTransformComponent::TOP_RIGHT:
-                                            dstRect.position.x += diff.x / 2;
-                                            dstRect.position.y -= diff.y / 2;
+                                            dstRect.position.x += diff.x;
                                             break;
                                         case CanvasTransformComponent::RIGHT:
-                                            dstRect.position.x += diff.x / 2;
+                                            dstRect.position.x += diff.x;
+                                            dstRect.position.y += diff.y / 2;
                                             break;
                                         case CanvasTransformComponent::BOTTOM_RIGHT:
-                                            dstRect.position.x += diff.x / 2;
-                                            dstRect.position.y += diff.y / 2;
+                                            dstRect.position.x += diff.x;
+                                            dstRect.position.y += diff.y;
                                             break;
                                     }
 
@@ -244,12 +245,13 @@ namespace xng {
                             }
                         }
 
-                        if (drawDebug) {
+                        if (drawDebugGeometry) {
                             ren2d.draw(dstRect, ColorRGBA::blue(), false, center, rotation);
 
-                            Rectf rtRect = {rt.rect.position + rt.getOffset(scene, target.getDescription().size),
+                            Rectf rtRect = {rt.rect.position + rt.getOffset(scene, target.getDescription().size)
+                                            + Vec2f(worldTransform.getPosition().x, worldTransform.getPosition().y),
                                             rt.rect.dimensions};
-                            ren2d.draw(rtRect, ColorRGBA::yellow(), false, rt.rect.dimensions / 2, rotation);
+                            ren2d.draw(rtRect, ColorRGBA::yellow(), false, rt.center, rotation);
 
                             auto dCenter = dstRect.position;
                             const int len = 20;

@@ -28,7 +28,7 @@
 namespace xng {
     class XENGINE_EXPORT PhysicsSystem : public System, public EntityScene::Listener, public World::ContactListener {
     public:
-        PhysicsSystem(World &world, EventBus &eventBus, float scale);
+        PhysicsSystem(World &world, EventBus &eventBus, float scale, float timeStep);
 
         ~PhysicsSystem() override = default;
 
@@ -61,6 +61,8 @@ namespace xng {
         std::map<Collider *, size_t> colliderIndices;
 
         float scale = 20; // The number of units which correspond to a metre in the physics world.
+        float timeStep = 1.0f / 30; // The duration of one physics world step
+        float deltaAccumulator = 0;
     };
 }
 

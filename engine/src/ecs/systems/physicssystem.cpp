@@ -40,8 +40,8 @@ namespace xng {
         return ret;
     }
 
-    PhysicsSystem::PhysicsSystem(World &world, EventBus &eventBus, float scale)
-            : world(world), eventBus(eventBus), scale(scale) {}
+    PhysicsSystem::PhysicsSystem(World &world, EventBus &eventBus, float scale, float timeStep)
+            : world(world), eventBus(eventBus), scale(scale), timeStep(timeStep) {}
 
     void PhysicsSystem::start(EntityScene &scene) {
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
@@ -59,6 +59,10 @@ namespace xng {
     }
 
     void PhysicsSystem::update(DeltaTime deltaTime, EntityScene &scene) {
+        deltaAccumulator += deltaTime;
+        int steps = static_cast<int>(deltaAccumulator / timeStep);
+        deltaAccumulator -= timeStep * static_cast<float>(steps);
+
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
             auto &rb = *rigidbodies.at(pair.first).get();
             auto tcomp = scene.getComponent<TransformComponent>(pair.first);
@@ -66,13 +70,19 @@ namespace xng {
             rb.setRotation(tcomp.transform.getRotation().getEulerAngles());
             rb.setVelocity(pair.second.velocity);
             rb.setAngularVelocity(pair.second.angularVelocity);
-            rb.applyForce(pair.second.force, pair.second.forcePoint / scale);
-            rb.applyTorque(pair.second.torque);
-            rb.applyLinearImpulse(pair.second.impulse, pair.second.impulsePoint);
-            rb.applyAngularImpulse(pair.second.angularImpulse);
         }
 
-        world.step(deltaTime);
+        for (int i = 0; i < steps; i++) {
+            for (auto &pair: scene.getPool<RigidBodyComponent>()) {
+                auto &rb = *rigidbodies.at(pair.first).get();
+                rb.applyForce(pair.second.force, pair.second.forcePoint / scale);
+                rb.applyTorque(pair.second.torque);
+                rb.applyLinearImpulse(pair.second.impulse, pair.second.impulsePoint);
+                rb.applyAngularImpulse(pair.second.angularImpulse);
+            }
+
+            world.step(timeStep);
+        }
 
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
             auto &rb = *rigidbodies.at(pair.first).get();
