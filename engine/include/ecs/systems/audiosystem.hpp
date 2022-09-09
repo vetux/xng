@@ -50,6 +50,8 @@ namespace xng {
         void onComponentUpdate(const EntityHandle &entity, const std::any &oldComponent,
                                const std::any &newComponent) override;
 
+        std::string getName() override { return "AudioSystem"; }
+
     private:
         AudioDevice &device;
         ResourceRegistry &repo;

@@ -56,6 +56,8 @@ namespace xng {
         void onComponentUpdate(const EntityHandle &entity, const std::any &oldComponent,
                                const std::any &newComponent) override;
 
+        std::string getName() override { return "CanvasRenderSystem"; }
+
     private:
         void createTexture(const EntityHandle &ent, const SpriteComponent &comp);
 

@@ -46,6 +46,8 @@ namespace xng {
 
         void update(DeltaTime deltaTime, EntityScene &scene) override;
 
+        std::string getName() override { return "EventSystem"; }
+
         void onKeyDown(KeyboardKey key) override;
 
         void onKeyUp(KeyboardKey key) override;

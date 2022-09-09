@@ -43,6 +43,8 @@ namespace xng {
 
         void update(DeltaTime deltaTime, EntityScene &entityManager) override;
 
+        std::string getName() override { return "MeshRenderSystem"; }
+
         SceneRenderer &getPipeline();
 
         Scene &getScene();

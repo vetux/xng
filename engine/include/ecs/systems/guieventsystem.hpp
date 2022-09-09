@@ -37,6 +37,8 @@ namespace xng {
 
         void stop(EntityScene &scene) override;
 
+        std::string getName() override { return "GuiEventSystem"; }
+
     private:
         Window &window;
         EventBus &eventBus;

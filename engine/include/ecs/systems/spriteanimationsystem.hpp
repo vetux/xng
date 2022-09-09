@@ -35,6 +35,8 @@ namespace xng {
 
         void update(DeltaTime deltaTime, EntityScene &scene) override;
 
+        std::string getName() override { return "SpriteAnimationSystem"; }
+
         void onComponentCreate(const EntityHandle &entity, const std::any &component) override;
 
         void onComponentDestroy(const EntityHandle &entity, const std::any &component) override;

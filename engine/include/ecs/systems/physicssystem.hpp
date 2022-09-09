@@ -38,6 +38,8 @@ namespace xng {
 
         void update(DeltaTime deltaTime, EntityScene &entityManager) override;
 
+        std::string getName() override { return "PhysicsSystem"; }
+
         void onComponentCreate(const EntityHandle &entity, const std::any &component) override;
 
         void onComponentDestroy(const EntityHandle &entity, const std::any &component) override;
