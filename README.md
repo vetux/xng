@@ -1,3 +1,20 @@
+<div>
+
+
+<div align="right">
+  <img alt="CODE_LINES" src="https://img.shields.io/tokei/lines/github/vetux/xng" align="left">
+  <img alt="LICENSE" src="https://img.shields.io/github/license/vetux/xng" align="right">
+  <img alt="LAST_COMMIT" src="https://img.shields.io/github/last-commit/vetux/canora" align="right">
+</div>
+
+<br>
+
+<div align="center">
+  <img src="https://github.com/xenotux/canora/blob/master/docs/mainIcon.png" alt="MainIcon" width="300" height="300"/>
+</div>
+
+</div>
+
 # xEngine
 
 xEngine is a cross-platform c++ game engine library. 
@@ -21,7 +38,6 @@ xEngine is a cross-platform c++ game engine library.
   - Resource Parsers
     - AssImp
     - libSndFile
-
 - ECS with data oriented architecture
 - Text Rendering
 - 2D Renderer
@@ -30,10 +46,10 @@ xEngine is a cross-platform c++ game engine library.
 
 ## Planned Features
 - Vulkan GPU driver
+- Bullet3 physics driver
 - Frame Graph Renderer
   - PBR Material support 
 - Skeletal animation
-- Bullet3 physics driver
 - Scripting Abstraction
 
 ## Programs
