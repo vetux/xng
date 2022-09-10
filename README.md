@@ -1,6 +1,5 @@
 <div>
 
-
 <div align="right">
   <img alt="CODE_LINES" src="https://img.shields.io/tokei/lines/github/vetux/xng" align="left">
   <img alt="LICENSE" src="https://img.shields.io/github/license/vetux/xng" align="right">
@@ -8,10 +7,6 @@
 </div>
 
 <br>
-
-<div align="center">
-  <img src="https://github.com/xenotux/canora/blob/master/docs/mainIcon.png" alt="MainIcon" width="300" height="300"/>
-</div>
 
 </div>
 
