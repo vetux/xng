@@ -39,6 +39,8 @@ namespace xng {
 
         Text(Text &&other) = default;
 
+        Text &operator=(Text &&other) = default;
+
         /**
          * @return
          */

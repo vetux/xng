@@ -24,7 +24,7 @@
 
 namespace xng {
     /*
-     * A canvas renders child canvas transform components to the screen using Renderer2D
+     * A canvas renders CanvasTransformComponents to the screen using Renderer2D
      */
     struct XENGINE_EXPORT CanvasComponent : public Messageable {
         bool enabled = true;
@@ -33,24 +33,25 @@ namespace xng {
         Vec2i viewportSize;
         Vec2i viewportOffset;
 
-        Vec2f projectionSize; // If magnitude larger than 0 the size of the projection when rendering canvas elements, otherwise screenSize is used as viewport size
-        bool lockAspectRatio; // If true the viewport is adjusted so that its dimensions match projectionSize and its position is centered on the screen
-        bool fitToScreen; // If lockAspectRatio is enabled and fitToScreen is enabled the viewport is stretched to fit the screen while preserving aspect ratio of projectionSize if lockAspectRatio is set
-        bool lockViewport; // If true the viewport is not updated by the canvas render system to allow the user to implement custom viewport handling
+        Vec2f projectionSize; // The size of the projection or zero to use screensize as projection size
 
-        bool clear = false;
+        bool lockViewport; // If true the viewport values are not updated by the canvas render system to allow the user to implement custom viewport handling
+        bool stretchViewport; // If true the viewport is stretched to fit the screen while preserving aspect ratio of projectionSize if lockAspectRatio is set
+        bool lockAspectRatio; // If true the viewport aspect ratio always matches projectionSize ratio
+
+        bool clear = false; // Wheter or not to clear the viewport when rendering this canvas
         ColorRGBA clearColor = ColorRGBA::black();
-        int layer; // The sorting layer of this canvas
+        int layer; // The sorting layer of this canvas relative to other canvases
 
         Messageable &operator<<(const Message &message) override {
             enabled = message.value("enabled", true);
             cameraPosition << message.value("cameraPosition");
-            projectionSize << message.value("projectionSize");
             viewportSize << message.value("viewportSize");
             viewportOffset << message.value("viewportOffset");
-            lockAspectRatio = message.value("lockAspectRatio", false);
-            fitToScreen = message.value("fitToScreen", false);
             lockViewport = message.value("lockViewport", false);
+            projectionSize << message.value("projectionSize");
+            lockAspectRatio = message.value("lockAspectRatio", false);
+            stretchViewport = message.value("fitToScreen", false);
             clear = message.value("clear", false);
             clearColor << message.value("clearColor");
             layer = message.value("layer", 0);
@@ -65,7 +66,7 @@ namespace xng {
             viewportSize >> message["viewportSize"];
             viewportOffset >> message["viewportOffset"];
             message["lockAspectRatio"] = lockAspectRatio;
-            message["fitToScreen"] = fitToScreen;
+            message["fitToScreen"] = stretchViewport;
             message["lockViewport"] = lockViewport;
             message["clear"] = clear;
             clearColor >> message["clearColor"];
@@ -93,7 +94,7 @@ namespace xng {
 
         Vec2i getViewportSize(const Vec2i &screenSize) const {
             if (projectionSize.magnitude() > 0) {
-                if (fitToScreen) {
+                if (stretchViewport) {
                     float scale = getViewportScale(screenSize);
                     Vec2f ret = projectionSize * scale;
                     if (ret.x <= 0) {

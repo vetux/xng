@@ -249,7 +249,7 @@ namespace xng {
                             ren2d.draw(dstRect, ColorRGBA::blue(), false, center, rotation);
 
                             Rectf rtRect = {rt.rect.position + rt.getOffset(scene, target.getDescription().size)
-                                            + Vec2f(worldTransform.getPosition().x, worldTransform.getPosition().y),
+                                            - Vec2f(worldTransform.getPosition().x, worldTransform.getPosition().y),
                                             rt.rect.dimensions};
                             ren2d.draw(rtRect, ColorRGBA::yellow(), false, rt.center, rotation);
 
