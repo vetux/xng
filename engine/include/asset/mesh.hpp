@@ -55,7 +55,7 @@ namespace xng {
 
         Primitive primitive = POINT;
         std::vector<Vertex> vertices;
-        std::vector<uint> indices;
+        std::vector<unsigned int> indices;
 
         Rig rig; // If rig is assigned the vertex bone ids are indices into rig.getBones()
 
@@ -71,10 +71,10 @@ namespace xng {
         Mesh(Primitive primitive, std::vector<Vertex> vertices)
                 : primitive(primitive), vertices(std::move(vertices)), indices() {}
 
-        Mesh(Primitive primitive, std::vector<Vertex> vertices, std::vector<uint> indices)
+        Mesh(Primitive primitive, std::vector<Vertex> vertices, std::vector<unsigned int> indices)
                 : primitive(primitive), vertices(std::move(vertices)), indices(std::move(indices)) {}
 
-        Mesh(Primitive primitive, std::vector<Vertex> vertices, std::vector<uint> indices, Rig rig)
+        Mesh(Primitive primitive, std::vector<Vertex> vertices, std::vector<unsigned int> indices, Rig rig)
                 : primitive(primitive),
                   vertices(std::move(vertices)),
                   indices(std::move(indices)),

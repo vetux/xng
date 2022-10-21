@@ -22,7 +22,7 @@
 
 namespace xng {
     struct ComputeCommand {
-        Vector3<uint> num_groups; // The number of work groups in each dimension, cannot be zero.
+        Vector3<unsigned int> num_groups; // The number of work groups in each dimension, cannot be zero.
         std::vector<ShaderBinding> bindings; // The bindings accessible to the shader with explicit binding
     };
 }

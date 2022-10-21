@@ -106,7 +106,7 @@ namespace xng::opengl {
                                       size_t vertexBufferSize,
                                       const uint8_t *instanceBuffer,
                                       size_t instanceBufferSize,
-                                      const std::vector<uint> &indices) override {
+                                      const std::vector<unsigned int> &indices) override {
             int vertexSize = 0;
             for (auto &binding: desc.vertexLayout) {
                 vertexSize += binding.stride();
@@ -117,7 +117,7 @@ namespace xng::opengl {
                 instanceSize += binding.stride();
             }
 
-            int indexSize = sizeof(uint);
+            int indexSize = sizeof(unsigned int);
 
             auto totalVerticesSize = numeric_cast<GLsizei>(vertexSize * desc.numberOfVertices);
             auto totalInstancesSize = numeric_cast<GLsizei>(instanceSize * desc.numberOfInstances);

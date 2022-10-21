@@ -116,7 +116,7 @@ namespace xng {
 
         std::shared_mutex archiveMutex;
 
-        RefCounter<std::string, ulong> bundleRefCounter;
+        RefCounter<std::string, unsigned long> bundleRefCounter;
 
         std::unordered_map<std::string, std::shared_ptr<Task>> loadTasks;
 

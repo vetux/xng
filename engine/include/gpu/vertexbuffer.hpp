@@ -51,7 +51,7 @@ namespace xng {
                                               size_t vertexBufferSize,
                                               const uint8_t *instanceBuffer,
                                               size_t instanceBufferSize,
-                                              const std::vector<uint> &indices) = 0;
+                                              const std::vector<unsigned int> &indices) = 0;
 
         virtual std::unique_ptr<Fence> upload(const Mesh &mesh) {
             return upload(reinterpret_cast<const uint8_t *>(mesh.vertices.data()),

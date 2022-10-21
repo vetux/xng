@@ -9019,25 +9019,25 @@ class binary_reader
                 return get_number(input_format_t::msgpack, number) && sax->number_float(static_cast<number_float_t>(number), "");
             }
 
-            case 0xCC: // uint 8
+            case 0xCC: // unsigned int 8
             {
                 std::uint8_t number{};
                 return get_number(input_format_t::msgpack, number) && sax->number_unsigned(number);
             }
 
-            case 0xCD: // uint 16
+            case 0xCD: // unsigned int 16
             {
                 std::uint16_t number{};
                 return get_number(input_format_t::msgpack, number) && sax->number_unsigned(number);
             }
 
-            case 0xCE: // uint 32
+            case 0xCE: // unsigned int 32
             {
                 std::uint32_t number{};
                 return get_number(input_format_t::msgpack, number) && sax->number_unsigned(number);
             }
 
-            case 0xCF: // uint 64
+            case 0xCF: // unsigned int 64
             {
                 std::uint64_t number{};
                 return get_number(input_format_t::msgpack, number) && sax->number_unsigned(number);
@@ -13127,25 +13127,25 @@ class binary_writer
                     }
                     else if (j.m_value.number_unsigned <= (std::numeric_limits<std::uint8_t>::max)())
                     {
-                        // uint 8
+                        // unsigned int 8
                         oa->write_character(to_char_type(0xCC));
                         write_number(static_cast<std::uint8_t>(j.m_value.number_integer));
                     }
                     else if (j.m_value.number_unsigned <= (std::numeric_limits<std::uint16_t>::max)())
                     {
-                        // uint 16
+                        // unsigned int 16
                         oa->write_character(to_char_type(0xCD));
                         write_number(static_cast<std::uint16_t>(j.m_value.number_integer));
                     }
                     else if (j.m_value.number_unsigned <= (std::numeric_limits<std::uint32_t>::max)())
                     {
-                        // uint 32
+                        // unsigned int 32
                         oa->write_character(to_char_type(0xCE));
                         write_number(static_cast<std::uint32_t>(j.m_value.number_integer));
                     }
                     else if (j.m_value.number_unsigned <= (std::numeric_limits<std::uint64_t>::max)())
                     {
-                        // uint 64
+                        // unsigned int 64
                         oa->write_character(to_char_type(0xCF));
                         write_number(static_cast<std::uint64_t>(j.m_value.number_integer));
                     }
@@ -13198,25 +13198,25 @@ class binary_writer
                 }
                 else if (j.m_value.number_unsigned <= (std::numeric_limits<std::uint8_t>::max)())
                 {
-                    // uint 8
+                    // unsigned int 8
                     oa->write_character(to_char_type(0xCC));
                     write_number(static_cast<std::uint8_t>(j.m_value.number_integer));
                 }
                 else if (j.m_value.number_unsigned <= (std::numeric_limits<std::uint16_t>::max)())
                 {
-                    // uint 16
+                    // unsigned int 16
                     oa->write_character(to_char_type(0xCD));
                     write_number(static_cast<std::uint16_t>(j.m_value.number_integer));
                 }
                 else if (j.m_value.number_unsigned <= (std::numeric_limits<std::uint32_t>::max)())
                 {
-                    // uint 32
+                    // unsigned int 32
                     oa->write_character(to_char_type(0xCE));
                     write_number(static_cast<std::uint32_t>(j.m_value.number_integer));
                 }
                 else if (j.m_value.number_unsigned <= (std::numeric_limits<std::uint64_t>::max)())
                 {
-                    // uint 64
+                    // unsigned int 64
                     oa->write_character(to_char_type(0xCF));
                     write_number(static_cast<std::uint64_t>(j.m_value.number_integer));
                 }
@@ -23586,15 +23586,15 @@ class basic_json
     number_integer  | -128..-33                         | int8             | 0xD0
     number_integer  | -32..-1                           | negative fixint  | 0xE0..0xFF
     number_integer  | 0..127                            | positive fixint  | 0x00..0x7F
-    number_integer  | 128..255                          | uint 8           | 0xCC
-    number_integer  | 256..65535                        | uint 16          | 0xCD
-    number_integer  | 65536..4294967295                 | uint 32          | 0xCE
-    number_integer  | 4294967296..18446744073709551615  | uint 64          | 0xCF
+    number_integer  | 128..255                          | unsigned int 8           | 0xCC
+    number_integer  | 256..65535                        | unsigned int 16          | 0xCD
+    number_integer  | 65536..4294967295                 | unsigned int 32          | 0xCE
+    number_integer  | 4294967296..18446744073709551615  | unsigned int 64          | 0xCF
     number_unsigned | 0..127                            | positive fixint  | 0x00..0x7F
-    number_unsigned | 128..255                          | uint 8           | 0xCC
-    number_unsigned | 256..65535                        | uint 16          | 0xCD
-    number_unsigned | 65536..4294967295                 | uint 32          | 0xCE
-    number_unsigned | 4294967296..18446744073709551615  | uint 64          | 0xCF
+    number_unsigned | 128..255                          | unsigned int 8           | 0xCC
+    number_unsigned | 256..65535                        | unsigned int 16          | 0xCD
+    number_unsigned | 65536..4294967295                 | unsigned int 32          | 0xCE
+    number_unsigned | 4294967296..18446744073709551615  | unsigned int 64          | 0xCF
     number_float    | *any value representable by a float*     | float 32 | 0xCA
     number_float    | *any value NOT representable by a float* | float 64 | 0xCB
     string          | *length*: 0..31                   | fixstr           | 0xA0..0xBF
@@ -24031,10 +24031,10 @@ class basic_json
     true             | `true`          | 0xC3
     float 32         | number_float    | 0xCA
     float 64         | number_float    | 0xCB
-    uint 8           | number_unsigned | 0xCC
-    uint 16          | number_unsigned | 0xCD
-    uint 32          | number_unsigned | 0xCE
-    uint 64          | number_unsigned | 0xCF
+    unsigned int 8           | number_unsigned | 0xCC
+    unsigned int 16          | number_unsigned | 0xCD
+    unsigned int 32          | number_unsigned | 0xCE
+    unsigned int 64          | number_unsigned | 0xCF
     int 8            | number_integer  | 0xD0
     int 16           | number_integer  | 0xD1
     int 32           | number_integer  | 0xD2

@@ -51,10 +51,10 @@ namespace xng {
         DepthTestMode depthTestMode = DepthTestMode::DEPTH_TEST_LESS;
 
         bool enableStencilTest = false;
-        uint stencilTestMask = 0xFF;
+        unsigned int stencilTestMask = 0xFF;
         StencilMode stencilMode = StencilMode::STENCIL_ALWAYS;
         int stencilReference = 1;
-        uint stencilFunctionMask = 0xFF;
+        unsigned int stencilFunctionMask = 0xFF;
         StencilAction stencilFail = StencilAction::STENCIL_KEEP;
         StencilAction stencilDepthFail = StencilAction::STENCIL_KEEP;
         StencilAction stencilPass = StencilAction::STENCIL_KEEP;
