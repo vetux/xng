@@ -1,4 +1,4 @@
-# The platform specific global build settings, users can edit this to build on the target platform
+# The platform specific global build settings, users should only need to edit this file to be able to build on the target platform
 
 # Defaults
 include_directories(${PROJECT_SOURCE_DIR}/lib/include)

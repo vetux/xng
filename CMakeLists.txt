@@ -25,8 +25,8 @@ set(CMAKE_CXX_FLAGS_RELEASE ${RELEASE_COMPILER_FLAGS})
 set(CMAKE_C_FLAGS_DEBUG ${DEBUG_COMPILER_FLAGS})
 set(CMAKE_CXX_FLAGS_DEBUG  ${DEBUG_COMPILER_FLAGS})
 
-include(cmake/imgui.cmake)
 include(cmake/config.cmake)
+include(cmake/imgui.cmake)
 
 if (UNIX)
     add_compile_definitions(XENGINE_EXPORT=__attribute__\(\(visibility\("default"\)\)\))
