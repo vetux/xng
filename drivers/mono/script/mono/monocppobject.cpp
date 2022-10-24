@@ -71,12 +71,12 @@ namespace xng {
         if (method == nullptr)
             throw std::runtime_error("Failed to find method " + name);
 
-        void *a[args.count()];
+        std::vector<void *>a(args.count());
         for (int i = 0; i < args.count(); i++) {
             a[i] = args.data()[i];
         }
 
-        return std::move(MonoCppObject(mono_runtime_invoke(method, objectPointer, a, nullptr)));
+        return std::move(MonoCppObject(mono_runtime_invoke(method, objectPointer, a.data(), nullptr)));
     }
 
     void MonoCppObject::setField(const std::string &name, const MonoCppValue &value) const {

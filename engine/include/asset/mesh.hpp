@@ -23,6 +23,7 @@
 #include <utility>
 #include <vector>
 #include <typeindex>
+#include <cstdint>
 
 #include "math/vector3.hpp"
 #include "math/vector2.hpp"

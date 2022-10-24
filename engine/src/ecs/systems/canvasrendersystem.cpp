@@ -17,6 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <sstream>
+
 #include "ecs/systems/canvasrendersystem.hpp"
 
 #include "ecs/components/transformcomponent.hpp"

@@ -17,6 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <sstream>
+
 #include "resource/parsers/jsonparser.hpp"
 
 #include "async/threadpool.hpp"
@@ -50,7 +52,7 @@ namespace xng {
                             std::filesystem::path path(bundlePath);
 
                             std::unique_ptr<std::istream> stream(archive.open(bundlePath));
-                            auto bundle = importer.import(*stream, path.extension(), &archive);
+                            auto bundle = importer.import(*stream, path.extension().string(), &archive);
 
                             std::lock_guard<std::mutex> guard(bundleMutex);
                             refBundles[bundlePath] = std::move(bundle);

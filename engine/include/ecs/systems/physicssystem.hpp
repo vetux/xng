@@ -32,6 +32,10 @@ namespace xng {
 
         ~PhysicsSystem() override = default;
 
+        PhysicsSystem(const PhysicsSystem &other) = delete;
+
+        PhysicsSystem & operator=(const PhysicsSystem &other) = delete;
+
         void start(EntityScene &entityManager) override;
 
         void stop(EntityScene &entityManager) override;

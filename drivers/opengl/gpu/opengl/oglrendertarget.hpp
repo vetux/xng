@@ -48,12 +48,12 @@ namespace xng {
                 if (desc.numberOfColorAttachments < 1)
                     throw std::runtime_error("Invalid color attachment count");
 
-                unsigned int attachments[desc.numberOfColorAttachments];
+                std::vector<unsigned int> attachments(desc.numberOfColorAttachments);
                 for (int i = 0; i < desc.numberOfColorAttachments; i++) {
                     attachments[i] = GL_COLOR_ATTACHMENT0 + i;
                 }
                 glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-                glDrawBuffers(desc.numberOfColorAttachments, attachments);
+                glDrawBuffers(desc.numberOfColorAttachments, attachments.data());
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
                 checkGLError("OGLRenderAllocator::allocateFrameBuffer");

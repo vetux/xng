@@ -23,7 +23,7 @@
 #include "io/message.hpp"
 
 namespace xng {
-    class Messageable {
+    class XENGINE_EXPORT Messageable {
     public:
         virtual Messageable &operator<<(const Message &message) { return *this; };
 

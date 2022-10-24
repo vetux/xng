@@ -19,4 +19,4 @@
 
 #include "animation/skeletal/riganimator.hpp"
 
-#warning "Not Implemented"
+#pragma message "Not Implemented"

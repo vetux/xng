@@ -38,7 +38,7 @@ namespace xng {
 
     class XENGINE_EXPORT EntityScene : public Resource, public Messageable {
     public:
-        class Listener {
+        class XENGINE_EXPORT Listener {
         public:
             virtual void onEntityCreate(const EntityHandle &entity) {};
 

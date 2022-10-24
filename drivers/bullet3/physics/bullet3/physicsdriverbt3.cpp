@@ -22,7 +22,7 @@
 
 #include "driver/registerdriver.hpp"
 
-#warning "Not Implemented"
+#pragma message "Not Implemented"
 
 namespace xng {
     static bool dr = REGISTER_DRIVER("bullet3", PhysicsDriver, PhysicsDriverBt3);

@@ -41,7 +41,7 @@ namespace xng {
                 default:
                     assert(false);
             }
-            
+
             for (int column = 0; column < lhs.width(); column++) {
                 float in;
                 switch (column) {

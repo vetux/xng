@@ -94,7 +94,7 @@ namespace xng {
             }
             message["vertices"] = vec;
             vec.clear();
-            for (auto &index: indices) {
+            for (const int &index: indices) {
                 vec.emplace_back(Message(index));
             }
             message["indices"] = vec;

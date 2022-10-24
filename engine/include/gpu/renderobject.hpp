@@ -21,7 +21,7 @@
 #define XENGINE_RENDEROBJECT_HPP
 
 namespace xng {
-    class RenderObject {
+    class XENGINE_EXPORT RenderObject {
     public:
         enum Type {
             VERTEX_BUFFER,

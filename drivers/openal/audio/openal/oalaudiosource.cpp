@@ -302,13 +302,13 @@ namespace xng {
 
     void OALAudioSource::queueBuffers(std::vector<std::reference_wrapper<const AudioBuffer>> buffers) {
         //TODO: Queued buffers clear
-        ALuint b[buffers.size()];
+        std::vector<ALuint> b(buffers.size());
         for (int i = 0; i < buffers.size(); i++) {
             auto &ob = dynamic_cast<const OALAudioBuffer &>(buffers[i].get());
             b[i] = ob.handle;
             bufferMapping.insert(std::pair<ALuint, std::reference_wrapper<const AudioBuffer>>(ob.handle, ob));
         }
-        alSourceQueueBuffers(handle, buffers.size(), b);
+        alSourceQueueBuffers(handle, buffers.size(), b.data());
         checkOALError();
     }
 
@@ -316,8 +316,8 @@ namespace xng {
         int available;
         alGetSourcei(handle, AL_BUFFERS_PROCESSED, &available);
         checkOALError();
-        ALuint b[available];
-        alSourceUnqueueBuffers(handle, available, b);
+        std::vector<ALuint> b(available);
+        alSourceUnqueueBuffers(handle, available, b.data());
         checkOALError();
         std::vector<std::reference_wrapper<const AudioBuffer>> ret;
         for (int i = 0; i < available; i++) {

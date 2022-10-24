@@ -31,11 +31,15 @@
 #include "asset/shader.hpp"
 
 namespace xng {
-    class FrameGraphPool {
+    class XENGINE_EXPORT FrameGraphPool {
     public:
         FrameGraphPool() = default;
 
         FrameGraphPool(RenderDevice &device, SPIRVCompiler &shaderCompiler, SPIRVDecompiler &spirvDecompiler);
+
+        FrameGraphPool(const FrameGraphPool &other) = delete;
+
+        FrameGraphPool& operator=(const FrameGraphPool &other) = delete;
 
         /**
          * Deallocates buffers which have not been used since the last call to collectGarbage.
@@ -58,6 +62,12 @@ namespace xng {
         struct PipelinePair {
             Uri uri;
             RenderPipelineDesc desc;
+
+            PipelinePair() = default;
+
+            PipelinePair(Uri uri, RenderPipelineDesc desc) : uri(std::move(uri)), desc(std::move(desc)) {}
+
+            ~PipelinePair() = default;
 
             bool operator==(const PipelinePair &other) const {
                 return uri == other.uri && desc == other.desc;

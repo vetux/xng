@@ -116,11 +116,11 @@ namespace xng {
 
                 auto &archive = resolveUri(uri);
                 std::filesystem::path path(uri.getFile());
-                auto stream = archive.open(path);
-                auto bundle = importer.import(*stream, path.extension());
+                auto stream = archive.open(path.string());
+                auto bundle = importer.import(*stream, path.extension().string());
 
                 std::lock_guard<std::mutex> g(mutex);
-                bundles[path] = std::move(bundle);
+                bundles[path.string()] = std::move(bundle);
             });
         }
     }

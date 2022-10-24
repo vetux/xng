@@ -30,7 +30,7 @@ namespace xng {
      */
     class XENGINE_EXPORT Driver {
     public:
-        virtual ~Driver() = default;
+        virtual ~Driver() noexcept = default;
 
         /**
          * @return The base type of the driver (Accessible in engine/include, or User defined driver base type)

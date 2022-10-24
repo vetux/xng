@@ -147,7 +147,7 @@ namespace xng {
         auto &shader = getShader(shaderRes);
         auto desc = descIn;
         desc.shader = shader;
-        auto pair = PipelinePair({.uri = shaderRes.getUri(), .desc = desc});
+        auto pair = PipelinePair(shaderRes.getUri(), desc);
         usedPipelines.insert(pair);
         auto it = pipelines.find(pair);
         if (it == pipelines.end()) {

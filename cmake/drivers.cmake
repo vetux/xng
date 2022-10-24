@@ -1,7 +1,7 @@
 option(DRIVER_GLFW "Build the glfw display driver" ON)
 option(DRIVER_OPENGL "Build the OpenGL render driver (Window and Render implementations" ON)
 option(DRIVER_OPENGL_QT "Build the Qt render driver (Window and Render implementations)" ON)
-option(DRIVER_MONO "Build the mono script driver" ON)
+option(DRIVER_MONO "Build the mono script driver" OFF)
 option(DRIVER_BOX2D "Build the box2d physics driver" ON)
 option(DRIVER_BULLET3 "Build the bullet3 physics driver" ON)
 option(DRIVER_OPENAL "Build the OpenAL audio driver" ON)

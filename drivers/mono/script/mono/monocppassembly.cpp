@@ -45,12 +45,12 @@ namespace xng {
         if (m == nullptr)
             throw std::runtime_error("Failed to find method " + functionName);
 
-        void *a[args.data().size()];
+        std::vector<void *> a(args.data().size());
         for (int i = 0; i < args.count(); i++) {
             a[i] = args.data()[i];
         }
 
-        return MonoCppObject(mono_runtime_invoke(m, nullptr, a, nullptr));
+        return MonoCppObject(mono_runtime_invoke(m, nullptr, a.data(), nullptr));
     }
 
     void MonoCppAssembly::setStaticField(const std::string &nameSpace,

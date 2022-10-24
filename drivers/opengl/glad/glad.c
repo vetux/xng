@@ -19,6 +19,14 @@
         https://glad.dav1d.de/#profile=core&language=c&specification=gl&loader=on&api=gl%3D4.2
 */
 
+// Edit Begin
+// Disable pedantic warnings
+#ifdef unix
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+#endif
+// Edit Stop
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1449,3 +1457,6 @@ int gladLoadGLLoader(GLADloadproc load) {
 	return GLVersion.major != 0 || GLVersion.minor != 0;
 }
 
+// Edit Begin
+#pragma GCC diagnostic pop
+// Edit Stop

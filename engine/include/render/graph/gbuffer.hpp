@@ -50,7 +50,7 @@ namespace xng {
 
         GBuffer() = default;
 
-        explicit GBuffer(Vec2i size = {640, 320}, int samples = 4);
+        explicit GBuffer(Vec2i size, int samples);
 
         ~GBuffer();
 

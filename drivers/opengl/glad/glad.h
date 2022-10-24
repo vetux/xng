@@ -19,6 +19,13 @@
         https://glad.dav1d.de/#profile=core&language=c&specification=gl&loader=on&api=gl%3D4.2
 */
 
+// Edit Begin
+// Disable pedantic warnings
+#ifdef unix
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+#endif
+// Edit Stop
 
 #ifndef __glad_h_
 #define __glad_h_
@@ -2802,3 +2809,7 @@ GLAPI PFNGLDRAWTRANSFORMFEEDBACKSTREAMINSTANCEDPROC glad_glDrawTransformFeedback
 #endif
 
 #endif
+
+// Edit Begin
+#pragma GCC diagnostic pop
+// Edit Stop

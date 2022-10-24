@@ -48,6 +48,8 @@ namespace xng {
         std::unique_ptr<System> create(const std::type_index &index);
 
     private:
+        SystemRegistry() = default;
+
         static std::unique_ptr<SystemRegistry> inst;
 
         std::map<std::type_index, std::string> typeNameMapping;

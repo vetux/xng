@@ -44,6 +44,14 @@ namespace xng {
          */
         explicit ResourceImporter(std::vector<std::unique_ptr<ResourceParser>> parsers);
 
+        ResourceImporter(const ResourceImporter&other) = delete;
+
+        ResourceImporter &operator=(const ResourceImporter&other) = delete;
+
+        ResourceImporter(ResourceImporter&&other) = default;
+
+        ResourceImporter &operator=(ResourceImporter &&other) = default;
+
         /**
          * Import the bundle from the stream.
          *

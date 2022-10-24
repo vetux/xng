@@ -62,6 +62,8 @@ namespace xng {
 
         Message(int value) : type(INT) { ival = value; }
 
+        Message(unsigned int value) : type(INT) { ival = value; }
+
         Message(long value) : type(INT) { ival = value; }
 
         Message(unsigned long value) : type(INT) { ival = value; }

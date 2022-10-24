@@ -37,6 +37,10 @@ namespace xng {
 
         ~AudioSystem() override = default;
 
+        AudioSystem(const AudioSystem &other) = delete;
+
+        AudioSystem & operator=(const AudioSystem &other) = delete;
+
         void start(EntityScene &scene) override;
 
         void stop(EntityScene &scene) override;

@@ -31,7 +31,7 @@
 namespace xng {
     class EntityScene;
 
-    class EntityHandle;
+    struct EntityHandle;
 
     class Messageable;
 }

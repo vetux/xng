@@ -23,6 +23,8 @@
 
 #include "io/archive/memoryarchive.hpp"
 
+#pragma message "Not Implemented"
+
 static const char *SHADER_VERT_GEOMETRY = R"###(#version 420 core
 
 layout (location = 0) in vec3 vPosition;
@@ -141,7 +143,6 @@ void main() {
 }
 )###";
 
-#warning "NOT IMPLEMENTED"
 namespace xng {/*
     static bool shaderLoaded = false;
 

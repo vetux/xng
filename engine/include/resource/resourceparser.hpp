@@ -35,6 +35,8 @@ namespace xng {
      */
     class XENGINE_EXPORT ResourceParser : public Driver {
     public:
+        virtual ~ResourceParser() noexcept override = default;
+
         /**
          * Read the bundle data from the buffer.
          *

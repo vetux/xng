@@ -53,12 +53,12 @@ namespace xng {
     }
 
     b2PolygonShape convert(const std::vector<Vec3f> &points) {
-        b2Vec2 bPoints[points.size()];
+        std::vector<b2Vec2> bPoints(points.size());
         for (int i = 0; i < points.size(); i++)
             bPoints[i] = convert(points.at(i));
 
         b2PolygonShape ret;
-        ret.Set(bPoints, points.size());
+        ret.Set(bPoints.data(), points.size());
         return ret;
     }
 }

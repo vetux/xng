@@ -21,6 +21,7 @@
 #define XENGINE_LIBRARY_HPP
 
 #include <memory>
+#include <string>
 
 namespace xng {
     class XENGINE_EXPORT Library {

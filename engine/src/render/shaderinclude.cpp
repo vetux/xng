@@ -20,7 +20,7 @@
 #ifndef XENGINE_SHADER_INCLUDER_HPP
 #define XENGINE_SHADER_INCLUDER_HPP
 
-#warning NOT IMPLEMENTED
+#pragma message "Not Implemented"
 /*
 #include "render/shader/shaderinclude.hpp"
 #include "render/shader/include/glsl_mvp.hpp"

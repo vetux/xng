@@ -27,16 +27,32 @@
 namespace xng {
     class XENGINE_EXPORT FrameGraphBlackboard {
     public:
+        FrameGraphBlackboard() =default;
+
+        FrameGraphBlackboard(const FrameGraphBlackboard &other){
+            *this = other;
+        }
+
+        FrameGraphBlackboard(FrameGraphBlackboard &&other) = default;
+
+        FrameGraphBlackboard & operator=(const FrameGraphBlackboard &other) {
+            for (auto &pair : other.data){
+                data[pair.first] = pair.second->clone();
+            }
+            return *this;
+        }
+
+        FrameGraphBlackboard & operator=(FrameGraphBlackboard &&other) = default;
+
         template<typename T>
         void set(const T &instance) {
-            data[typeid(T)] = std::make_unique<Entry < T>>
-            (instance);
+            data[typeid(T)] = std::make_unique<Entry<T>>(instance);
         }
 
         template<typename T>
         const T &get() {
             if (data.find(typeid(T)) == data.end()) {
-                data[typeid(T)] = std::make_unique<Entry<T>>(T());
+                data[typeid(T)] = std::make_unique<Entry<T>>();
             }
             return dynamic_cast<Entry <T> &>(*data[typeid(T)].get()).value;
         }
@@ -48,6 +64,8 @@ namespace xng {
     private:
         struct EntryBase {
             virtual ~EntryBase() = default;
+
+            virtual std::unique_ptr<EntryBase> clone() = 0;
         };
 
         template<typename T>
@@ -56,6 +74,10 @@ namespace xng {
                     : value(std::move(value)) {}
 
             ~Entry() override = default;
+
+            std::unique_ptr<EntryBase> clone() override {
+                return std::make_unique<Entry<T>>(value);
+            }
 
             T value;
         };

@@ -37,6 +37,10 @@ namespace xng {
 
         ~Text() = default;
 
+        Text(const Text &other) = default;
+
+        Text &operator=(const Text& other) = default;
+
         Text(Text &&other) = default;
 
         Text &operator=(Text &&other) = default;

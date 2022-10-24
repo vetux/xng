@@ -41,6 +41,10 @@ namespace xng {
 
         ~CanvasRenderSystem() override = default;
 
+        CanvasRenderSystem(const CanvasRenderSystem &other) = delete;
+
+        CanvasRenderSystem & operator=(const CanvasRenderSystem &other) = delete;
+
         void start(EntityScene &scene) override;
 
         void stop(EntityScene &scene) override;
