@@ -37,6 +37,12 @@ namespace xng {
     public:
         static SystemRegistry &instance();
 
+        SystemRegistry() = default;
+
+        SystemRegistry(const SystemRegistry &other) = delete;
+
+        SystemRegistry&operator=(const SystemRegistry &other) = delete;
+
         void registerSystem(const std::type_index &typeIndex,
                             const std::string &typeName,
                             const std::function<std::unique_ptr<System>()> &constructor);
@@ -48,8 +54,6 @@ namespace xng {
         std::unique_ptr<System> create(const std::type_index &index);
 
     private:
-        SystemRegistry() = default;
-
         static std::unique_ptr<SystemRegistry> inst;
 
         std::map<std::type_index, std::string> typeNameMapping;
