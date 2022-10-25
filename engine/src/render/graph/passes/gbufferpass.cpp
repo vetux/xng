@@ -165,22 +165,22 @@ namespace xng {/*
                 static_cast<float>(color.g()) / 255,
                 static_cast<float>(color.b()) / 255,
                 static_cast<float>(color.a()) / 255};
-    }
+    }*/
 
     GBufferPass::GBufferPass(RenderDevice &device)
-            : device(device), gBuffer(device) {
-        ShaderProgramDesc desc;
+            : device(device) {
+        /*ShaderProgramDesc desc;
 
         auto defaultImage = ImageRGBA(1,
                                       1,
                                       std::vector<ColorRGBA>({ColorRGBA::black()}));
 
         defaultTexture = device.getAllocator().createTextureBuffer({.size = {1, 1}, .samples = 1});
-        defaultTexture->upload(defaultImage);
+        defaultTexture->upload(defaultImage);*/
     }
 
     void GBufferPass::setup(FrameGraphBuilder &builder) {
-        scene = builder.getScene();
+       /* scene = builder.getScene();
 
         for (auto &object: scene.objects) {
             sceneResources[object.mesh.getUri()] = builder.createMeshBuffer(object.mesh);
@@ -208,11 +208,11 @@ namespace xng {/*
         if (format.first != gBuffer.getSize() || format.second != gBuffer.getSamples()) {
             gBuffer = GBuffer(device, format.first, format.second);
         }
-        renderTarget = builder.createRenderTarget(format.first, format.second);
+        renderTarget = builder.createRenderTarget(format.first, format.second);*/
     }
 
-    void GBufferPass::execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) {
-        auto &target = resources.getRenderTarget(renderTarget);
+    void GBufferPass::execute(FrameGraphPassResources &resources, RenderDevice &ren, FrameGraphBlackboard &board) {
+      /*  auto &target = resources.getRenderTarget(renderTarget);
 
         bindTextures(target, gBuffer);
 
@@ -352,6 +352,6 @@ namespace xng {/*
 
         unbindTextures(target);
 
-        board.set<GBuffer>(gBuffer);
-    }*/
+        board.set<GBuffer>(gBuffer);*/
+    }
 }
