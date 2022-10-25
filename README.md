@@ -51,8 +51,23 @@ xEngine is a cross-platform c++ game engine library.
 - [xng-tools](https://github.com/vetux/xng-tools) - The editor and tools for creating games with xng
 - [Foxtrot](https://github.com/vetux/foxtrot) - A 2D Platformer Game
 
-# Building
+## Building
+### Supported Platforms
+- Linux
+  - Tested Compiler: GCC 10.2.1 64bit
+- Windows 
+  - Tested Compiler: MSVC 2017 64bit
 
-- Ensure the external dependencies are provided. ([install_dependencies.sh](install_dependencies.sh]))
+### Build Instructions
+- Ensure that the include and library files of the external dependencies are available.
+  - For linux: check ([install_dependencies.sh](install_dependencies.sh]))
+  - For windows: download or build the driver dependencies and configure the paths to the built artifacts and include files in [config.cmake](cmake/config.cmake), Make sure that the names of the lib files match the selected driver library names in the cmake output.
 - Clone the [imgui](submodules/imgui) submodule
-- Load [CMakeLists.txt](CMakeLists.txt) and build the engine target
+- Load [CMakeLists.txt](CMakeLists.txt) and build the engine target 
+
+Eg. from the command line:
+<code>mkdir build/ <br>
+cd build/ <br>
+cmake ../ <br>
+cmake --build . <br>
+</code>
