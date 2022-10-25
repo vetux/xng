@@ -32,16 +32,18 @@
 
 namespace xng {
     /**
-     * Components of an uri can contain any sequence of ascii values only the sequence "://" and the '$' character are reserved.
+     * Components of an uri can contain any sequence of ascii values only the sequence "://" is reserved.
      *
      * The scheme and asset specification is optional.
      *
-     * SCHEME :// FILE $ ASSET
+     * To specify an asset the file must have an extension.
      *
-     * Eg.
+     * SCHEME :// FILE / ASSET
+     *
+     * For example:
      * memory://shaders/shader.spirv
      * file://mesh/cube.obj
-     * /mydir/myfile.fbx$cube
+     * /mydir/myfile.fbx/myAssetDir/cube
      * /mydir/myimage.png
      */
     class XENGINE_EXPORT Uri : public Messageable {
@@ -50,27 +52,32 @@ namespace xng {
 
         explicit Uri(const std::string &value) {
             auto schemeIndex = value.find("://");
-            auto assetIndex = value.find('$');
 
+            auto pathStr = value;
             if (schemeIndex != std::string::npos) {
                 scheme = value.substr(0, schemeIndex);
+                pathStr = value.substr(schemeIndex + 3);
             }
 
-            if (assetIndex != std::string::npos) {
-                if (schemeIndex != std::string::npos) {
-                    file = value.substr(schemeIndex + 3, assetIndex - (schemeIndex + 3));
-                } else {
-                    file = value.substr(0, assetIndex);
+            auto path = std::filesystem::path(pathStr);
+            if (path.has_parent_path()){
+                auto parent = path;
+                bool foundExtension = false;
+                while(parent.has_parent_path()){
+                    parent = parent.parent_path();
+                    if (parent.has_extension()){
+                        asset = pathStr.substr(parent.string().size() + 1);
+                        foundExtension = true;
+                        break;
+                    }
                 }
-                if (assetIndex + 1 < value.size()) {
-                    asset = value.substr(assetIndex + 1);
+                if (foundExtension){
+                    file = parent.string();
+                } else {
+                    file = pathStr;
                 }
             } else {
-                if (schemeIndex != std::string::npos) {
-                    file = value.substr(schemeIndex + 3);
-                } else {
-                    file = value;
-                }
+                file = pathStr;
             }
         }
 
