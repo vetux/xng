@@ -68,7 +68,7 @@ xEngine is a cross-platform c++ game engine library.
 - Load [CMakeLists.txt](CMakeLists.txt) and build the engine target 
 
 Eg. from the command line:
-<code>mkdir build/</code>
-<code>cd build/</code>
+<code>mkdir mybuild/</code>
+<code>cd mybuild/</code>
 <code>cmake ../</code>
 <code>cmake --build .</code>
