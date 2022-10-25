@@ -17,32 +17,37 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_OGLQTGPUDRIVER_HPP
-#define XENGINE_OGLQTGPUDRIVER_HPP
+#ifndef XENGINE_GPUFENCE_HPP
+#define XENGINE_GPUFENCE_HPP
 
-#include "gpu/gpudriver.hpp"
+#include <stdexcept>
 
 namespace xng {
     /**
-     * OpenGL driver for use in a QOpenGLWidget
+     * A fence represents a task which is executed on the gpu device and can be awaited from the cpu.
      */
-    class OGLQtGpuDriver : public GpuDriver {
+    class XENGINE_EXPORT GpuFence {
     public:
-        const std::vector<RenderDeviceInfo> &getAvailableRenderDevices() override;
+        /**
+         * The destructor waits for the gpu task to finish before destroying the fence object.
+         */
+        virtual ~GpuFence() = default;
 
-        std::unique_ptr<RenderDevice> createRenderDevice() override;
+        /**
+         * Wait for the gpu task to finish or return an exception ptr if the task threw an exception.
+         * @return
+         */
+        virtual std::exception_ptr wait() = 0;
 
-        std::unique_ptr<RenderDevice> createRenderDevice(const std::string &deviceName) override;
+        /**
+         * @return true if the task has completed
+         */
+        virtual bool isComplete() = 0;
 
-        std::type_index getType() override;
-
-        std::set<GpuFeature> getSupportedFeatures() override;
-
-    private:
-        std::vector<RenderDeviceInfo> deviceInfos = {{.name = "default"}};
-        bool retrievedMaxSamples = false;
-
+        /**
+         * @return nullptr or the exception object if an exception was thrown in the gpu task
+         */
+        virtual std::exception_ptr getException() = 0;
     };
 }
-
-#endif //XENGINE_OGLQTGPUDRIVER_HPP
+#endif //XENGINE_GPUFENCE_HPP

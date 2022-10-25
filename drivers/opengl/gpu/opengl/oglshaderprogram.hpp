@@ -151,10 +151,6 @@ namespace xng {
 
             OPENGL_TYPENAME(ShaderProgram) &operator=(const OPENGL_TYPENAME(ShaderProgram) &) = delete;
 
-            void pinGpuMemory() override {}
-
-            void unpinGpuMemory() override {}
-
             void activate() {
                 glUseProgram(programHandle);
                 checkGLError("");

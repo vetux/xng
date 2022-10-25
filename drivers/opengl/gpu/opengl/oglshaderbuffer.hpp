@@ -42,21 +42,21 @@ namespace xng::opengl {
             glDeleteBuffers(1, &ubo);
         }
 
-        void pinGpuMemory() override {}
-
-        void unpinGpuMemory() override {}
-
         const ShaderBufferDesc &getDescription() override {
             return desc;
         }
 
-        std::unique_ptr<Fence> upload(const uint8_t *data, size_t size) override {
+        std::unique_ptr<GpuFence> upload(const uint8_t *data, size_t size) override {
             if (size != desc.size)
                 throw std::runtime_error("Upload size does not match buffer size");
             glBindBuffer(GL_UNIFORM_BUFFER, ubo);
             glBufferData(GL_UNIFORM_BUFFER, numeric_cast<GLsizeiptr>(size), data, GL_STATIC_DRAW);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
             return std::make_unique<OGLFence>();
+        }
+
+        void copy(RenderBuffer &other) override {
+            throw std::runtime_error("Not Implemented");
         }
 
         OPENGL_MEMBERS

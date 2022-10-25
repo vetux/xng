@@ -21,13 +21,16 @@
 #define XENGINE_SHADERBUFFERDESC_HPP
 
 #include <cstddef>
+#include "gpu/renderbuffertype.hpp"
 
 namespace xng {
     struct ShaderBufferDesc {
-        size_t size;
+        size_t size = 0;
+        RenderBufferType bufferType = HOST_VISIBLE;
 
         bool operator==(const ShaderBufferDesc &other) const {
-            return size == other.size;
+            return size == other.size
+                   && bufferType == other.bufferType;
         }
     };
 }
@@ -39,6 +42,7 @@ namespace std {
         std::size_t operator()(const ShaderBufferDesc &k) const {
             size_t ret = 0;
             hash_combine(ret, k.size);
+            hash_combine(ret, k.bufferType);
             return ret;
         }
     };

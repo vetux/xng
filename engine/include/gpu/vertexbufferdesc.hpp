@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "gpu/vertexattribute.hpp"
+#include "gpu/renderbuffertype.hpp"
 
 #include "util/hashcombine.hpp"
 #include "util/crc.hpp"
@@ -37,12 +38,14 @@ namespace xng {
         size_t numberOfVertices = 0;
         size_t numberOfInstances = 0;
         size_t numberOfIndices = 0;
+        RenderBufferType bufferType = HOST_VISIBLE;
 
         bool operator==(const VertexBufferDesc &other) const {
             return vertexLayout == other.vertexLayout
                    && instanceLayout == other.instanceLayout
                    && numberOfVertices == other.numberOfVertices
-                   && numberOfInstances == other.numberOfInstances;
+                   && numberOfInstances == other.numberOfInstances
+                   && bufferType == other.bufferType;
         }
     };
 }
@@ -63,6 +66,7 @@ namespace std {
             }
             hash_combine(ret, k.numberOfVertices);
             hash_combine(ret, k.numberOfInstances);
+            hash_combine(ret, k.bufferType);
             return ret;
         }
     };

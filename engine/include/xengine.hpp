@@ -106,7 +106,7 @@
 #include "gpu/shaderbinding.hpp"
 #include "gpu/renderpipelinedesc.hpp"
 #include "gpu/shaderprogram.hpp"
-#include "gpu/fence.hpp"
+#include "gpu/gpufence.hpp"
 #include "gpu/texturebufferdesc.hpp"
 #include "gpu/renderpipeline.hpp"
 #include "gpu/renderdevice.hpp"

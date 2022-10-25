@@ -44,4 +44,8 @@ namespace xng::opengl {
     std::type_index OGLGpuDriver::getType() {
         return typeid(OGLGpuDriver);
     }
+
+    std::set<GpuFeature> OGLGpuDriver::getSupportedFeatures() {
+        return {};
+    }
 }

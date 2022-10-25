@@ -24,6 +24,7 @@
 
 #include "gpu/renderdevice.hpp"
 #include "gpu/renderdeviceinfo.hpp"
+#include "gpu/gpufeature.hpp"
 
 namespace xng {
     class XENGINE_EXPORT GpuDriver : public Driver {
@@ -38,6 +39,8 @@ namespace xng {
         virtual std::unique_ptr<RenderDevice> createRenderDevice() = 0;
 
         virtual std::unique_ptr<RenderDevice> createRenderDevice(const std::string &deviceName) = 0;
+
+        virtual std::set<GpuFeature> getSupportedFeatures() = 0;
 
     private:
         std::type_index getBaseType() override {

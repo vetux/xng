@@ -24,7 +24,7 @@
 #include "gpu/texturebuffer.hpp"
 #include "gpu/rendertargetdesc.hpp"
 #include "gpu/renderobject.hpp"
-#include "gpu/fence.hpp"
+#include "gpu/gpufence.hpp"
 
 #include "math/vector2.hpp"
 
@@ -39,36 +39,36 @@ namespace xng {
 
         virtual const RenderTargetDesc &getDescription() = 0;
 
-        virtual std::unique_ptr<Fence> blitColor(RenderTarget &source,
-                                                 Vec2i sourceOffset,
-                                                 Vec2i targetOffset,
-                                                 Vec2i sourceRect,
-                                                 Vec2i targetRect,
-                                                 TextureFiltering filter,
-                                                 int sourceIndex,
-                                                 int targetIndex) = 0;
+        virtual std::unique_ptr<GpuFence> blitColor(RenderTarget &source,
+                                                    Vec2i sourceOffset,
+                                                    Vec2i targetOffset,
+                                                    Vec2i sourceRect,
+                                                    Vec2i targetRect,
+                                                    TextureFiltering filter,
+                                                    int sourceIndex,
+                                                    int targetIndex) = 0;
 
-        virtual std::unique_ptr<Fence> blitDepth(RenderTarget &source,
-                                                 Vec2i sourceOffset,
-                                                 Vec2i targetOffset,
-                                                 Vec2i sourceRect,
-                                                 Vec2i targetRect) = 0;
+        virtual std::unique_ptr<GpuFence> blitDepth(RenderTarget &source,
+                                                    Vec2i sourceOffset,
+                                                    Vec2i targetOffset,
+                                                    Vec2i sourceRect,
+                                                    Vec2i targetRect) = 0;
 
-        virtual std::unique_ptr<Fence> blitStencil(RenderTarget &source,
-                                                   Vec2i sourceOffset,
-                                                   Vec2i targetOffset,
-                                                   Vec2i sourceRect,
-                                                   Vec2i targetRect) = 0;
+        virtual std::unique_ptr<GpuFence> blitStencil(RenderTarget &source,
+                                                      Vec2i sourceOffset,
+                                                      Vec2i targetOffset,
+                                                      Vec2i sourceRect,
+                                                      Vec2i targetRect) = 0;
 
-        virtual std::unique_ptr<Fence> setColorAttachments(
+        virtual std::unique_ptr<GpuFence> setColorAttachments(
                 const std::vector<std::reference_wrapper<TextureBuffer>> &textures) = 0;
 
-        virtual std::unique_ptr<Fence> setDepthStencilAttachment(TextureBuffer *texture) = 0;
+        virtual std::unique_ptr<GpuFence> setDepthStencilAttachment(TextureBuffer *texture) = 0;
 
-        virtual std::unique_ptr<Fence> setCubeMapColorAttachments(const std::vector<std::pair<CubeMapFace,
+        virtual std::unique_ptr<GpuFence> setCubeMapColorAttachments(const std::vector<std::pair<CubeMapFace,
                 std::reference_wrapper<TextureBuffer>>> &textures) = 0;
 
-        virtual std::unique_ptr<Fence> setCubeMapDepthStencilAttachment(CubeMapFace face, TextureBuffer *texture) = 0;
+        virtual std::unique_ptr<GpuFence> setCubeMapDepthStencilAttachment(CubeMapFace face, TextureBuffer *texture) = 0;
 
         virtual bool isComplete() = 0;
     };

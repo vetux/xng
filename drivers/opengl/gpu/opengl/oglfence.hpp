@@ -20,11 +20,11 @@
 #ifndef XENGINE_OGLFENCE_HPP
 #define XENGINE_OGLFENCE_HPP
 
-#include "gpu/fence.hpp"
+#include "gpu/gpufence.hpp"
 
 namespace xng {
     namespace opengl {
-        class OGLFence : public Fence {
+        class OGLFence : public GpuFence {
         public:
             std::exception_ptr wait() override {
                 return nullptr;

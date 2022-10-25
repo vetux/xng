@@ -33,6 +33,8 @@ namespace xng::opengl {
 
         std::type_index getType() override;
 
+        std::set<GpuFeature> getSupportedFeatures() override;
+
     private:
         std::vector<RenderDeviceInfo> deviceInfos = {{.name = "default"}};
         bool retrievedMaxSamples = false;

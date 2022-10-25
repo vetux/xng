@@ -22,21 +22,21 @@
 
 #include <vector>
 #include <memory>
+#include <variant>
 
 #include "gpu/vertexbuffer.hpp"
 #include "gpu/texturebuffer.hpp"
 #include "gpu/shaderbuffer.hpp"
 #include "gpu/shaderprogram.hpp"
-#include "gpu/shaderbinding.hpp"
 
 namespace xng {
     /**
-     * A render command
+     * A render command specifying a vertex buffer and the set of texture buffers and shader buffers to bind to the shader.
      */
     struct XENGINE_EXPORT RenderCommand {
         RenderCommand() = default;
 
-        RenderCommand(VertexBuffer &vertexBuffer, std::vector<ShaderBinding> bindings)
+        RenderCommand(VertexBuffer &vertexBuffer, std::vector<std::variant<TextureBuffer*, ShaderBuffer*>> bindings)
                 : vertexBuffer(&vertexBuffer), bindings(std::move(bindings)) {}
 
         VertexBuffer &getVertexBuffer() const {
@@ -45,7 +45,7 @@ namespace xng {
             return *vertexBuffer;
         }
 
-        const std::vector<ShaderBinding> &getBindings() const {
+        const std::vector<std::variant<TextureBuffer*, ShaderBuffer*>> &getBindings() const {
             if (vertexBuffer == nullptr)
                 throw std::runtime_error("Pass not initialized");
             return bindings;
@@ -53,7 +53,7 @@ namespace xng {
 
     private:
         VertexBuffer *vertexBuffer = nullptr;
-        std::vector<ShaderBinding> bindings;
+        std::vector<std::variant<TextureBuffer*, ShaderBuffer*>> bindings;
     };
 }
 

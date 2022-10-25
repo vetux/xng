@@ -41,15 +41,13 @@ namespace xng::opengl {
             initialize();
         }
 
-        void pinGpuMemory() override {}
 
-        void unpinGpuMemory() override {}
 
         const RenderPipelineDesc &getDescription() override {
             return desc;
         }
 
-        std::unique_ptr<Fence> render(RenderTarget &target, const std::vector<RenderCommand> &passes) override {
+        std::unique_ptr<GpuFence> render(RenderTarget &target, const std::vector<RenderCommand> &passes) override {
             auto clearColor = desc.clearColorValue.divide();
 
             glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
@@ -160,15 +158,15 @@ namespace xng::opengl {
                     auto &b = c.getBindings().at(bindingPoint);
                     OPENGL_TYPENAME(TextureBuffer) *texture;
                     OPENGL_TYPENAME(ShaderBuffer) *shaderBuffer;
-                    switch (b.getType()) {
-                        case ShaderBinding::BINDING_TEXTURE_BUFFER:
-                            texture = dynamic_cast<OPENGL_TYPENAME(TextureBuffer) *>(&b.getTextureBuffer());
+                    switch (b.index()) {
+                        case 0:
+                            texture = dynamic_cast<OPENGL_TYPENAME(TextureBuffer) *>(std::get<TextureBuffer*>(b));
                             glActiveTexture(getTextureSlot(bindingPoint));
                             glBindTexture(convert(texture->getDescription().textureType),
                                           texture->handle);
                             break;
-                        case ShaderBinding::BINDING_SHADER_BUFFER:
-                            shaderBuffer = dynamic_cast<OPENGL_TYPENAME(ShaderBuffer) *>(&b.getShaderBuffer());
+                        case 1:
+                            shaderBuffer = dynamic_cast<OPENGL_TYPENAME(ShaderBuffer) *>(std::get<ShaderBuffer*>(b));
                             glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, shaderBuffer->ubo);
                             break;
                     }
@@ -208,13 +206,13 @@ namespace xng::opengl {
                 //Unbind textures and uniform buffers
                 for (int bindingPoint = 0; bindingPoint < c.getBindings().size(); bindingPoint++) {
                     auto &b = c.getBindings().at(bindingPoint);
-                    switch (b.getType()) {
-                        case ShaderBinding::BINDING_TEXTURE_BUFFER:
+                    switch (b.index()) {
+                        case 0:
                             glActiveTexture(getTextureSlot(bindingPoint));
                             glBindTexture(GL_TEXTURE_2D, 0);
                             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
                             break;
-                        case ShaderBinding::BINDING_SHADER_BUFFER:
+                        case 1:
                             glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, 0);
                             break;
                     }

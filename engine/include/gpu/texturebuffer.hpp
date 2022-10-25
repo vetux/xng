@@ -22,10 +22,10 @@
 
 #include <memory>
 
-#include "gpu/renderobject.hpp"
+#include "gpu/renderbuffer.hpp"
 #include "gpu/textureproperties.hpp"
 #include "gpu/texturebufferdesc.hpp"
-#include "gpu/fence.hpp"
+#include "gpu/gpufence.hpp"
 
 #include "asset/image.hpp"
 
@@ -33,11 +33,15 @@ namespace xng {
     /**
      * A texture buffer.
      */
-    class XENGINE_EXPORT TextureBuffer : public RenderObject {
+    class XENGINE_EXPORT TextureBuffer : public RenderBuffer {
     public:
         ~TextureBuffer() override = default;
 
         virtual const TextureBufferDesc &getDescription() = 0;
+
+        RenderBufferType getBufferType() override {
+            return getDescription().bufferType;
+        }
 
         Type getType() override {
             return TEXTURE_BUFFER;
@@ -48,18 +52,26 @@ namespace xng {
          *
          * The size and format of the buffer has to match the texture description.
          *
+         * @param format The format of the data pointed at by buffer
          * @param buffer
+         * @param bufferSize
+         * @return
          */
-        virtual std::unique_ptr<Fence> upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize) = 0;
+        virtual std::unique_ptr<GpuFence> upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize) = 0;
 
         virtual Image<ColorRGBA> download() = 0;
 
-        virtual std::unique_ptr<Fence> upload(CubeMapFace face, ColorFormat format, const uint8_t *buffer, size_t bufferSize) = 0;
+        virtual std::unique_ptr<GpuFence> upload(CubeMapFace face,
+                                                 ColorFormat format,
+                                                 const uint8_t *buffer,
+                                                 size_t bufferSize) = 0;
 
         virtual Image<ColorRGBA> download(CubeMapFace face) = 0;
 
-        std::unique_ptr<Fence> upload(const Image<ColorRGBA> &image) {
-            return upload(RGBA, reinterpret_cast<const uint8_t *>(image.getData()), image.getDataSize() * sizeof(ColorRGBA));
+        std::unique_ptr<GpuFence> upload(const Image<ColorRGBA> &image) {
+            return upload(RGBA,
+                          reinterpret_cast<const uint8_t *>(image.getData()),
+                          image.getDataSize() * sizeof(ColorRGBA));
         }
     };
 }

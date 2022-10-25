@@ -94,19 +94,13 @@ namespace xng::opengl {
             }
         }
 
-        void pinGpuMemory() override {}
-
-        void unpinGpuMemory() override {}
-
         const VertexBufferDesc &getDescription() override {
             return desc;
         }
 
-        std::unique_ptr<Fence> upload(const uint8_t *vertexBuffer,
-                                      size_t vertexBufferSize,
-                                      const uint8_t *instanceBuffer,
-                                      size_t instanceBufferSize,
-                                      const std::vector<unsigned int> &indices) override {
+        std::unique_ptr<GpuFence>
+        upload(const uint8_t *vertexBuffer, size_t vertexBufferSize, const std::vector<unsigned int> &indices,
+               const uint8_t *instanceBuffer, size_t instanceBufferSize) override {
             int vertexSize = 0;
             for (auto &binding: desc.vertexLayout) {
                 vertexSize += binding.stride();
@@ -222,6 +216,10 @@ namespace xng::opengl {
                 default:
                     throw std::runtime_error("Invalid component");
             }
+        }
+
+        void copy(RenderBuffer &other) override {
+            throw std::runtime_error("Not Implemented");
         }
 
         OPENGL_MEMBERS

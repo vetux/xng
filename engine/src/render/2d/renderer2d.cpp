@@ -327,8 +327,8 @@ namespace xng {
                     auto &shaderBuffer = getShaderBuffer();
                     shaderBuffer.upload(shaderBufferUniform);
 
-                    std::vector<ShaderBinding> bindings;
-                    bindings.emplace_back(ShaderBinding(shaderBuffer));
+                    std::vector<std::variant<TextureBuffer*, ShaderBuffer*>> bindings;
+                    bindings.emplace_back(&shaderBuffer);
 
                     command = RenderCommand(vb, bindings);
                 }
@@ -355,8 +355,8 @@ namespace xng {
                     auto &shaderBuffer = getShaderBuffer();
                     shaderBuffer.upload(shaderBufferUniform);
 
-                    std::vector<ShaderBinding> bindings;
-                    bindings.emplace_back(ShaderBinding(shaderBuffer));
+                    std::vector<std::variant<TextureBuffer*, ShaderBuffer*>> bindings;
+                    bindings.emplace_back(&shaderBuffer);
 
                     command = RenderCommand(vb, bindings);
                 }
@@ -382,9 +382,9 @@ namespace xng {
                     auto &shaderBuffer = getShaderBuffer();
                     shaderBuffer.upload(shaderBufferUniform);
 
-                    std::vector<ShaderBinding> bindings;
-                    bindings.emplace_back(ShaderBinding(shaderBuffer));
-                    bindings.emplace_back(ShaderBinding(*pass.texture));
+                    std::vector<std::variant<TextureBuffer*, ShaderBuffer*>> bindings;
+                    bindings.emplace_back(&shaderBuffer);
+                    bindings.emplace_back(pass.texture);
 
                     command = RenderCommand(vb, bindings);
                 }
@@ -408,10 +408,10 @@ namespace xng {
                     auto &shaderBuffer = getShaderBuffer();
                     shaderBuffer.upload(shaderBufferUniform);
 
-                    std::vector<ShaderBinding> bindings;
-                    bindings.emplace_back(ShaderBinding(shaderBuffer));
-                    bindings.emplace_back(ShaderBinding(*pass.texture));
-                    bindings.emplace_back(ShaderBinding(*pass.textureB));
+                    std::vector<std::variant<TextureBuffer*, ShaderBuffer*>> bindings;
+                    bindings.emplace_back(&shaderBuffer);
+                    bindings.emplace_back(pass.texture);
+                    bindings.emplace_back(pass.textureB);
 
                     command = RenderCommand(vb, bindings);
                 }
@@ -435,9 +435,9 @@ namespace xng {
                     auto &shaderBuffer = getShaderBuffer();
                     shaderBuffer.upload(shaderBufferUniform);
 
-                    std::vector<ShaderBinding> bindings;
-                    bindings.emplace_back(ShaderBinding(shaderBuffer));
-                    bindings.emplace_back(ShaderBinding(*pass.texture));
+                    std::vector<std::variant<TextureBuffer*, ShaderBuffer*>> bindings;
+                    bindings.emplace_back(&shaderBuffer);
+                    bindings.emplace_back(pass.texture);
 
                     command = RenderCommand(vb, bindings);
                 }

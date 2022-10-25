@@ -20,20 +20,24 @@
 #ifndef XENGINE_VERTEXBUFFER_HPP
 #define XENGINE_VERTEXBUFFER_HPP
 
-#include "gpu/renderobject.hpp"
+#include "gpu/renderbuffer.hpp"
 #include "gpu/vertexbufferdesc.hpp"
-#include "gpu/fence.hpp"
+#include "gpu/gpufence.hpp"
 
 #include "asset/mesh.hpp"
 
 #include "math/transform.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT VertexBuffer : public RenderObject {
+    class XENGINE_EXPORT VertexBuffer : public RenderBuffer {
     public:
         ~VertexBuffer() override = default;
 
         virtual const VertexBufferDesc &getDescription() = 0;
+
+        RenderBufferType getBufferType() override {
+            return getDescription().bufferType;
+        }
 
         Type getType() override {
             return Type::VERTEX_BUFFER;
@@ -47,27 +51,27 @@ namespace xng {
          * @param instanceBuffer
          * @param indices
          */
-        virtual std::unique_ptr<Fence> upload(const uint8_t *vertexBuffer,
-                                              size_t vertexBufferSize,
-                                              const uint8_t *instanceBuffer,
-                                              size_t instanceBufferSize,
-                                              const std::vector<unsigned int> &indices) = 0;
+        virtual std::unique_ptr<GpuFence> upload(const uint8_t *vertexBuffer,
+                                                 size_t vertexBufferSize,
+                                                 const std::vector<unsigned int> &indices,
+                                                 const uint8_t *instanceBuffer,
+                                                 size_t instanceBufferSize) = 0;
 
-        virtual std::unique_ptr<Fence> upload(const Mesh &mesh) {
+        virtual std::unique_ptr<GpuFence> upload(const Mesh &mesh) {
             return upload(reinterpret_cast<const uint8_t *>(mesh.vertices.data()),
                           sizeof(Vertex) * mesh.vertices.size(),
+                          mesh.indices,
                           nullptr,
-                          0,
-                          mesh.indices);
+                          0);
         }
 
-        virtual std::unique_ptr<Fence> upload(const Mesh &mesh,
-                                              const std::vector<Mat4f> &offsets) {
+        virtual std::unique_ptr<GpuFence> upload(const Mesh &mesh,
+                                                 const std::vector<Mat4f> &offsets) {
             return upload(reinterpret_cast<const uint8_t *>(mesh.vertices.data()),
                           sizeof(Vertex) * mesh.vertices.size(),
+                          mesh.indices,
                           reinterpret_cast<const uint8_t *>(offsets.data()),
-                          sizeof(Mat4f) * offsets.size(),
-                          mesh.indices);
+                          sizeof(Mat4f) * offsets.size());
         }
     };
 }

@@ -17,27 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RENDEROBJECT_HPP
-#define XENGINE_RENDEROBJECT_HPP
+#ifndef XENGINE_GPUFEATURE_HPP
+#define XENGINE_GPUFEATURE_HPP
 
 namespace xng {
-    class XENGINE_EXPORT RenderObject {
-    public:
-        enum Type {
-            VERTEX_BUFFER,
-            TEXTURE_BUFFER,
-            SHADER_BUFFER,
-            SHADER_PROGRAM,
-            RENDER_TARGET,
-            RENDER_PIPELINE,
-            COMPUTE_PIPELINE,
-            RAYTRACE_PIPELINE
-        };
-
-        virtual ~RenderObject() = default;
-
-        virtual Type getType() = 0;
+    enum GpuFeature {
+        GPU_FEATURE_EXPLICIT_SYNCHRONIZATION,
+        GPU_FEATURE_COMPUTE,
+        GPU_FEATURE_RAYTRACING
     };
 }
 
-#endif //XENGINE_RENDEROBJECT_HPP
+#endif //XENGINE_GPUFEATURE_HPP

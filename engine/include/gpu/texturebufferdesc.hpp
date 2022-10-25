@@ -23,6 +23,7 @@
 #include "math/vector2.hpp"
 
 #include "gpu/textureproperties.hpp"
+#include "gpu/renderbuffertype.hpp"
 
 #include "util/hashcombine.hpp"
 
@@ -38,6 +39,7 @@ namespace xng {
         bool generateMipmap = false;
         MipMapFiltering mipmapFilter = NEAREST_MIPMAP_NEAREST;
         bool fixedSampleLocations = false;
+        RenderBufferType bufferType = HOST_VISIBLE;
 
         bool operator==(const TextureBufferDesc &other) const {
             return size == other.size
@@ -49,7 +51,8 @@ namespace xng {
                    && filterMag == other.filterMag
                    && generateMipmap == other.generateMipmap
                    && mipmapFilter == other.mipmapFilter
-                   && fixedSampleLocations == other.fixedSampleLocations;
+                   && fixedSampleLocations == other.fixedSampleLocations
+                   && bufferType == other.bufferType;
         }
     };
 }
@@ -71,6 +74,7 @@ namespace std {
             hash_combine(ret, k.generateMipmap);
             hash_combine(ret, k.mipmapFilter);
             hash_combine(ret, k.fixedSampleLocations);
+            hash_combine(ret, k.bufferType);
             return ret;
         }
     };

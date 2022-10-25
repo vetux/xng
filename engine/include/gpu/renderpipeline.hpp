@@ -24,7 +24,7 @@
 #include "gpu/renderpipelinedesc.hpp"
 #include "gpu/rendercommand.hpp"
 #include "gpu/rendertarget.hpp"
-#include "gpu/fence.hpp"
+#include "gpu/gpufence.hpp"
 
 namespace xng {
     class RenderPipeline : public RenderObject {
@@ -35,7 +35,7 @@ namespace xng {
 
         virtual void setViewport(Vec2i viewportOffset, Vec2i viewportSize) = 0;
 
-        virtual std::unique_ptr<Fence> render(RenderTarget &target, const std::vector<RenderCommand> &commands) = 0;
+        virtual std::unique_ptr<GpuFence> render(RenderTarget &target, const std::vector<RenderCommand> &commands) = 0;
 
         virtual std::vector<uint8_t> cache() = 0;
 

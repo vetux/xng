@@ -129,15 +129,11 @@ namespace xng {
                 glDeleteTextures(1, &handle);
             }
 
-            void pinGpuMemory() override {}
-
-            void unpinGpuMemory() override {}
-
             const TextureBufferDesc &getDescription() override {
                 return desc;
             }
 
-            std::unique_ptr<Fence> upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize) override {
+            std::unique_ptr<GpuFence> upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize) override {
                 glBindTexture(GL_TEXTURE_2D, handle);
                 glTexImage2D(GL_TEXTURE_2D,
                              0,
@@ -160,7 +156,7 @@ namespace xng {
                 return std::make_unique<OGLFence>();
             }
 
-            std::unique_ptr<Fence> upload(CubeMapFace face, ColorFormat format, const uint8_t *buffer, size_t bufferSize) override {
+            std::unique_ptr<GpuFence> upload(CubeMapFace face, ColorFormat format, const uint8_t *buffer, size_t bufferSize) override {
                 //TODO: Range check the buffer
                 glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
                 glTexImage2D(convert(face),
@@ -199,6 +195,10 @@ namespace xng {
                 if (desc.textureType != TEXTURE_CUBE_MAP)
                     throw std::runtime_error("TextureBuffer not cubemap");
 
+                throw std::runtime_error("Not Implemented");
+            }
+
+            void copy(RenderBuffer &other) override {
                 throw std::runtime_error("Not Implemented");
             }
 

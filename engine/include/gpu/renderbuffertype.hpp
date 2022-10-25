@@ -17,27 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RENDEROBJECT_HPP
-#define XENGINE_RENDEROBJECT_HPP
+#ifndef XENGINE_MEMORYTYPE_HPP
+#define XENGINE_MEMORYTYPE_HPP
 
 namespace xng {
-    class XENGINE_EXPORT RenderObject {
-    public:
-        enum Type {
-            VERTEX_BUFFER,
-            TEXTURE_BUFFER,
-            SHADER_BUFFER,
-            SHADER_PROGRAM,
-            RENDER_TARGET,
-            RENDER_PIPELINE,
-            COMPUTE_PIPELINE,
-            RAYTRACE_PIPELINE
-        };
-
-        virtual ~RenderObject() = default;
-
-        virtual Type getType() = 0;
+    enum RenderBufferType {
+        DEVICE_LOCAL, // Upload/Download methods on buffers cannot be called by the user. To access the data the user must copy to a host visible buffer.
+        HOST_VISIBLE, // Buffer interfaces can be used normally
+        LAZILY_ALLOCATED // Same as DEVICE_LOCAL but the implementation may allocate the buffer data lazily
     };
 }
 
-#endif //XENGINE_RENDEROBJECT_HPP
+#endif //XENGINE_MEMORYTYPE_HPP

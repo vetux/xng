@@ -17,37 +17,24 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_FENCE_HPP
-#define XENGINE_FENCE_HPP
+#ifndef XENGINE_RENDERBUFFER_HPP
+#define XENGINE_RENDERBUFFER_HPP
 
-#include <stdexcept>
+#include "gpu/renderobject.hpp"
+#include "gpu/renderbuffertype.hpp"
 
 namespace xng {
-    /**
-     * A fence represents a task which is executed on the gpu device and can be awaited from the cpu.
-     */
-    class Fence {
+    class RenderBuffer : public RenderObject {
     public:
         /**
-         * The destructor waits for the gpu task to finish before destroying the fence object.
+         * Copy the data in other buffer to this buffer.
+         *
+         * @param other The concrete type of other must be compatible and have the same properties as this buffer.
          */
-        virtual ~Fence() = default;
+        virtual void copy(RenderBuffer &other) = 0;
 
-        /**
-         * Wait for the gpu task to finish or return an exception ptr if the task threw an exception.
-         * @return
-         */
-        virtual std::exception_ptr wait() = 0;
-
-        /**
-         * @return true if the task has completed
-         */
-        virtual bool isComplete() = 0;
-
-        /**
-         * @return nullptr or the exception object if an exception was thrown in the gpu task
-         */
-        virtual std::exception_ptr getException() = 0;
+        virtual RenderBufferType getBufferType() = 0;
     };
 }
-#endif //XENGINE_FENCE_HPP
+
+#endif //XENGINE_RENDERBUFFER_HPP

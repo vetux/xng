@@ -20,13 +20,13 @@
 #ifndef XENGINE_SHADERBUFFER_HPP
 #define XENGINE_SHADERBUFFER_HPP
 
-#include "gpu/renderobject.hpp"
-#include "gpu/fence.hpp"
+#include "gpu/renderbuffer.hpp"
+#include "gpu/gpufence.hpp"
 
 #include "shaderbufferdesc.hpp"
 
 namespace xng {
-    class ShaderBuffer : public RenderObject {
+    class ShaderBuffer : public RenderBuffer {
     public:
         ~ShaderBuffer() override = default;
 
@@ -36,17 +36,20 @@ namespace xng {
 
         virtual const ShaderBufferDesc &getDescription() = 0;
 
+        RenderBufferType getBufferType() override {
+            return getDescription().bufferType;
+        }
+
         /**
          * Upload the given data to the shader buffer,
-         * size has to match the size of the shader buffer.
          *
          * @param data
-         * @param size
+         * @param size must match the size specified at creation of the shader buffer
          */
-        virtual std::unique_ptr<Fence> upload(const uint8_t *data, size_t size) = 0;
+        virtual std::unique_ptr<GpuFence> upload(const uint8_t *data, size_t size) = 0;
 
         template<typename T>
-        std::unique_ptr<Fence> upload(const T &data) {
+        std::unique_ptr<GpuFence> upload(const T &data) {
             return upload(reinterpret_cast<const uint8_t *>(&data), sizeof(T));
         }
     };
