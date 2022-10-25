@@ -57,6 +57,8 @@ xEngine is a cross-platform c++ game engine library.
   - Tested Compiler: GCC 10.2.1 64bit
 - Windows 
   - Tested Compiler: MSVC 2017 64bit
+    - Build warnings are emitted due to the fact that xng uses STL types in dllexport types. 
+    - Users must ensure that their application is built with the same compiler version as the linked library because windows uses multiple STL dll files and allows loading of multiple STL version dlls into the same process. If the user links to a different STL version than the one used for building the engine dll there can be problems when passing types through the dll interface.
 
 ### Build Instructions
 - Ensure that the include and library files of the external dependencies are available.
