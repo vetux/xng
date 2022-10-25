@@ -25,7 +25,7 @@
 #include "computepipelinedesc.hpp"
 
 namespace xng {
-    class ComputePipeline : public RenderObject {
+    class XENGINE_EXPORT ComputePipeline : public RenderObject {
     public:
         Type getType() override {
             return COMPUTE_PIPELINE;

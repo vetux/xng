@@ -25,7 +25,7 @@
 
 namespace xng {
     // TODO: Design Raytracing abstraction
-    class RaytracePipeline : public RenderObject  {
+    class XENGINE_EXPORT RaytracePipeline : public RenderObject  {
     public:
         Type getType() override {
             return RAYTRACE_PIPELINE;
