@@ -33,7 +33,7 @@ namespace xng {
     /**
      * A render command specifying a vertex buffer and the set of texture buffers and shader buffers to bind to the shader.
      */
-    struct XENGINE_EXPORT RenderCommand {
+    struct RenderCommand {
         RenderCommand() = default;
 
         RenderCommand(VertexBuffer &vertexBuffer, std::vector<std::variant<TextureBuffer*, ShaderBuffer*>> bindings)

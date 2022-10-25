@@ -26,7 +26,7 @@
 #include "shaderbufferdesc.hpp"
 
 namespace xng {
-    class ShaderBuffer : public RenderBuffer {
+    class XENGINE_EXPORT ShaderBuffer : public RenderBuffer {
     public:
         ~ShaderBuffer() override = default;
 

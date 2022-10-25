@@ -27,7 +27,7 @@
 #include "gpu/gpufence.hpp"
 
 namespace xng {
-    class RenderPipeline : public RenderObject {
+    class XENGINE_EXPORT RenderPipeline : public RenderObject {
     public:
         Type getType() override {
             return RENDER_PIPELINE;

@@ -24,7 +24,7 @@
 #include "gpu/renderbuffertype.hpp"
 
 namespace xng {
-    class RenderBuffer : public RenderObject {
+    class XENGINE_EXPORT RenderBuffer : public RenderObject {
     public:
         /**
          * Copy the data in other buffer to this buffer.

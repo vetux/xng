@@ -28,7 +28,7 @@
 #include "util/hashcombine.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT TextureBufferDesc {
+    struct TextureBufferDesc {
         Vec2i size = {1, 1};
         int samples = 1; //Ignored if texture is not TEXTURE_2D_MULTISAMPLE
         TextureType textureType = TEXTURE_2D;
