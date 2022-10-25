@@ -37,7 +37,7 @@
 #include "imgui.h"
 
 namespace xng {
-    class XENGINE_EXPORT Application {
+    class Application {
     public:
         /**
          * @param argc

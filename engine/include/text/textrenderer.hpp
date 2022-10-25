@@ -26,6 +26,9 @@
 #include "render/2d/renderer2d.hpp"
 
 namespace xng {
+    /**
+     * A hardware text renderer.
+     */
     class XENGINE_EXPORT TextRenderer {
     public:
         TextRenderer(Font &font, Renderer2D &renderer2D);

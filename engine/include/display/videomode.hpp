@@ -21,7 +21,7 @@
 #define XENGINE_MONITORMODE_HPP
 
 namespace xng {
-    struct XENGINE_EXPORT VideoMode {
+    struct VideoMode {
         int width;
         int height;
         int redBits;

@@ -26,7 +26,7 @@ namespace xng {
      * Some attributes may be changed for an existing window, for which
      * individual member functions are added to the window class XENGINE_EXPORT.
      */
-    struct XENGINE_EXPORT WindowAttributes {
+    struct WindowAttributes {
         bool resizable = true;
         bool visible = true;
         bool decorated = true;
