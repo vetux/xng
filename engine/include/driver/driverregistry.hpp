@@ -53,13 +53,17 @@ namespace xng {
         static std::unique_ptr<T> load(const std::string &name) {
             auto dIt = drivers.find(typeid(T));
             if (dIt == drivers.end()) {
-                throw std::runtime_error("No driver found for type " + std::string(typeid(T).name()) + " with name " + name);
+                throw std::runtime_error(
+                        "No driver found for type " + std::string(typeid(T).name()) + " with name " + name);
             }
             auto nIt = dIt->second.find(name);
-            if (nIt == dIt->second.end()){
-                throw std::runtime_error("No driver found for type " + std::string(typeid(T).name()) + " with name " + name);
+            if (nIt == dIt->second.end()) {
+                throw std::runtime_error(
+                        "No driver found for type " + std::string(typeid(T).name()) + " with name " + name);
             }
-            return std::unique_ptr<T>(dynamic_cast<T *>(drivers.at(typeid(T)).at(name)()));
+            auto creator = drivers.at(typeid(T)).at(name);
+            auto *ret = creator();
+            return std::unique_ptr<T>(dynamic_cast<T *>(ret));
         }
 
         /**
