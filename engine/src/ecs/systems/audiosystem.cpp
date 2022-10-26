@@ -46,6 +46,7 @@ namespace xng {
 
                 sources[pair.first] = context->createSource();
                 sources[pair.first]->setBuffer(*buffers[pair.first]);
+                playingSources.erase(pair.first);
             }
         }
     }
@@ -77,16 +78,22 @@ namespace xng {
 
             //TODO: Source Volume and Distance
 
-            if (comp.play && !comp.playing) {
+            if (comp.play && playingSources.find(pair.first) == playingSources.end()) {
                 source->play();
-                comp.playing = true;
-            } else if (!comp.play && comp.playing) {
+                playingSources.insert(pair.first);
+            } else if (!comp.play && playingSources.find(pair.first) != playingSources.end()) {
                 source->pause();
-                comp.playing = false;
+                playingSources.erase(pair.first);
             }
 
             scene.updateComponent(pair.first, comp);
         }
+    }
+
+    void AudioSystem::onEntityDestroy(const EntityHandle &entity) {
+        sources.erase(entity);
+        buffers.erase(entity);
+        playingSources.erase(entity);
     }
 
     void AudioSystem::onComponentCreate(const EntityHandle &entity, const std::any &value) {
@@ -109,6 +116,7 @@ namespace xng {
         if (component.type() == typeid(AudioSourceComponent)) {
             sources.erase(entity);
             buffers.erase(entity);
+            playingSources.erase(entity);
         }
     }
 
@@ -119,16 +127,14 @@ namespace xng {
             auto oldValue = std::any_cast<AudioSourceComponent>(oldComponent);
             auto newValue = std::any_cast<AudioSourceComponent>(newComponent);
             if (oldValue != newValue) {
-                if (oldValue.audio != newValue.audio){
+                if (oldValue.audio != newValue.audio) {
                     auto &buffer = newValue.audio.get();
                     sources[entity]->stop();
                     // Unbind buffer before uploading
                     sources.at(entity)->clearBuffer();
                     buffers.at(entity)->upload(buffer.buffer, buffer.format, buffer.frequency);
                     sources.at(entity)->setBuffer(*buffers.at(entity));
-                    if (newValue.playing){
-                        sources[entity]->play();
-                    }
+                    playingSources.erase(entity);
                 }
             }
         }

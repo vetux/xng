@@ -56,6 +56,8 @@ namespace xng {
 
         std::string getName() override { return "AudioSystem"; }
 
+        void onEntityDestroy(const EntityHandle &entity) override;
+
     private:
         AudioDevice &device;
         ResourceRegistry &repo;
@@ -64,6 +66,7 @@ namespace xng {
 
         std::map<EntityHandle, std::unique_ptr<AudioSource>> sources;
         std::map<EntityHandle, std::unique_ptr<AudioBuffer>> buffers;
+        std::set<EntityHandle> playingSources;
     };
 }
 

@@ -63,7 +63,7 @@ namespace xng {
             if (path.has_parent_path()){
                 auto parent = path;
                 bool foundExtension = false;
-                while(parent.has_parent_path()){
+                while(parent.has_parent_path() && parent.has_relative_path()){
                     parent = parent.parent_path();
                     if (parent.has_extension()){
                         asset = pathStr.substr(parent.string().size() + 1);

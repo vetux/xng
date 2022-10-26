@@ -32,14 +32,11 @@ namespace xng {
         bool loop = false;
         Vec3f velocity = {};
 
-        bool playing = false;
-
         bool operator==(const AudioSourceComponent &other) const {
             return audio == other.audio
                    && play == other.play
                    && loop == other.loop
-                   && velocity == other.velocity
-                   && playing == other.playing;
+                   && velocity == other.velocity;
         }
 
         bool operator!=(const AudioSourceComponent &other) const {
