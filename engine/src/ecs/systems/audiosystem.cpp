@@ -119,12 +119,17 @@ namespace xng {
             auto oldValue = std::any_cast<AudioSourceComponent>(oldComponent);
             auto newValue = std::any_cast<AudioSourceComponent>(newComponent);
             if (oldValue != newValue) {
-                auto &buffer = newValue.audio.get();
-                sources[entity]->stop();
-                // Unbind buffer before uploading
-                sources.at(entity)->clearBuffer();
-                buffers.at(entity)->upload(buffer.buffer, buffer.format, buffer.frequency);
-                sources.at(entity)->setBuffer(*buffers.at(entity));
+                if (oldValue.audio != newValue.audio){
+                    auto &buffer = newValue.audio.get();
+                    sources[entity]->stop();
+                    // Unbind buffer before uploading
+                    sources.at(entity)->clearBuffer();
+                    buffers.at(entity)->upload(buffer.buffer, buffer.format, buffer.frequency);
+                    sources.at(entity)->setBuffer(*buffers.at(entity));
+                    if (newValue.playing){
+                        sources[entity]->play();
+                    }
+                }
             }
         }
     }

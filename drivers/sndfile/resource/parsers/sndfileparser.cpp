@@ -93,14 +93,13 @@ namespace xng {
 
         LibSndBuffer buffer{buf, 0};
         SF_INFO sfinfo;
+        sfinfo.format = 0;
         SNDFILE *sndfile = sf_open_virtual(&virtio, SFM_READ, &sfinfo, &buffer);
         if (!sndfile) {
             throw std::runtime_error("Failed to open audio buffer");
         }
 
-        if (sfinfo.frames<1
-                          || sfinfo.frames>(sf_count_t)(std::numeric_limits<int>::max() / sizeof(short)) /
-            sfinfo.channels) {
+        if (sfinfo.frames < 1) {
             sf_close(sndfile);
             throw std::runtime_error("Bad sample count in audio buffer");
         }
@@ -132,17 +131,19 @@ namespace xng {
 
         ret.frequency = sfinfo.samplerate;
 
-        std::vector<short> buff((sfinfo.frames * sfinfo.channels) * sizeof(short));
+        std::vector<short> buff((sfinfo.frames * sfinfo.channels));
 
         sf_count_t num_frames = sf_readf_short(sndfile, buff.data(), sfinfo.frames);
-        if (num_frames < 1) {
+        if (num_frames != sfinfo.frames) {
             sf_close(sndfile);
             throw std::runtime_error("Failed to read samples from audio data");
         }
 
-        auto num_shorts = numeric_cast<sf_count_t>(num_frames) * sfinfo.channels;
+        ret.buffer.resize(buff.size() * sizeof(short));
 
-        ret.buffer.insert(ret.buffer.begin(), buff.begin(), buff.begin() + num_shorts);
+        for (auto i = 0; i < ret.buffer.size(); i++) {
+            ret.buffer[i] = ((uint8_t *)buff.data())[i];
+        }
 
         sf_close(sndfile);
 
