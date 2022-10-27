@@ -208,7 +208,7 @@ namespace xng {
 
         aiColor3D c;
         assMaterial.Get(AI_MATKEY_COLOR_DIFFUSE, c);
-        ret.diffuse = {static_cast<uint8_t>(255 * c.r),
+        ret.albedo = {static_cast<uint8_t>(255 * c.r),
                        static_cast<uint8_t>(255 * c.g),
                        static_cast<uint8_t>(255 * c.b),
                        255};
@@ -225,7 +225,7 @@ namespace xng {
                         static_cast<uint8_t>(255 * c.b),
                         255};
 
-        assMaterial.Get(AI_MATKEY_SHININESS, ret.shininess);
+        ret.roughness = 128.0f - (float)assMaterial.Get(AI_MATKEY_SHININESS, c);
 
         return ret;
     }

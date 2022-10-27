@@ -46,7 +46,10 @@ namespace xng {
         for (auto &c: ascii) {
             auto &character = c.second;
 
-            textures[c.first] = ren2D.getDevice().createTextureBuffer({.size = character.image.getSize()});
+            TextureBufferDesc desc;
+            desc.size = character.image.getSize();
+
+            textures[c.first] = ren2D.getDevice().createTextureBuffer(desc);
             textures.at(c.first)->upload(RGBA,
                                          reinterpret_cast<const uint8_t *>(character.image.getData()),
                                          sizeof(ColorRGBA) * (character.image.getSize().x *
@@ -62,7 +65,10 @@ namespace xng {
             for (auto &c: ascii) {
                 auto &character = c.second;
 
-                textures[c.first] = ren2d.getDevice().createTextureBuffer({.size = character.image.getSize()});
+                TextureBufferDesc desc;
+                desc.size = character.image.getSize();
+
+                textures[c.first] = ren2d.getDevice().createTextureBuffer(desc);
                 textures.at(c.first)->upload(RGBA,
                                              reinterpret_cast<const uint8_t *>(character.image.getData()),
                                              sizeof(ColorRGBA) * (character.image.getSize().x *
@@ -192,8 +198,11 @@ namespace xng {
 
         target = ren2d.getDevice().createRenderTarget({.size = size.convert<int>()});
 
+        TextureBufferDesc desc;
+        desc.size = size.convert<int>();
+
         // Render the text (upside down?) to a texture and then render the final text texture using the 2d renderer
-        auto tmpTexture = ren2d.getDevice().createTextureBuffer({.size = size.convert<int>()});
+        auto tmpTexture = ren2d.getDevice().createTextureBuffer(desc);
         target->setColorAttachments({*tmpTexture});
         ren2d.renderBegin(*target);
         for (auto &c: renderText) {
@@ -211,7 +220,7 @@ namespace xng {
         target->setColorAttachments({});
 
         //Render the upside down texture of the text using the 2d renderer to correct the rotation?
-        auto tex = ren2d.getDevice().createTextureBuffer({size.convert<int>()});
+        auto tex = ren2d.getDevice().createTextureBuffer(desc);
 
         target->setColorAttachments({*tex});
         ren2d.renderBegin(*target);

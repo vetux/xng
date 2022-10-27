@@ -31,7 +31,7 @@
 #include "asset/shader.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT FrameGraphPool {
+    class XENGINE_EXPORT                                                                                   FrameGraphPool {
     public:
         FrameGraphPool() = default;
 
@@ -42,21 +42,54 @@ namespace xng {
         FrameGraphPool& operator=(const FrameGraphPool &other) = delete;
 
         /**
-         * Deallocates buffers which have not been used since the last call to collectGarbage.
+         * Deallocates buffers for resource handles which have not been used since the last call to collectGarbage.
          */
         void collectGarbage();
 
+        /// ResourceHandle objects, allocated with DEVICE_LOCAL storage.
         VertexBuffer &getMesh(const ResourceHandle<Mesh>& handle);
 
         TextureBuffer &getTexture(const ResourceHandle<Texture>& handle);
 
         ShaderProgram &getShader(const ResourceHandle<Shader>& handle);
 
+        /**
+         * The shader in desc must be assigned.
+         *
+         * @param descIn
+         * @return The RenderPipeline instance for the given description
+         */
+        RenderPipeline &getPipeline(const ResourceHandle<Shader> &shader, const RenderPipelineDesc &desc);
+
+        /// Editable objects, allocated with the specified buffer type
+
+        /**
+         * Each call creates a new instance of TextureBuffer.
+         *
+         * @param desc
+         * @return A new TextureBuffer instance
+         */
         TextureBuffer &createTextureBuffer(const TextureBufferDesc &desc);
 
+        void destroyTextureBuffer(TextureBuffer &buffer);
+
+        /**
+         * @param desc
+         * @return A new ShaderBuffer instance
+         */
+        ShaderBuffer &createShaderBuffer(const ShaderBufferDesc &desc);
+
+        void destroyShaderBuffer(ShaderBuffer &buffer);
+
+        /**
+         * Each call creates a new instance of RenderTarget.
+         *
+         * @param desc
+         * @return A new RenderTarget instance
+         */
         RenderTarget &createRenderTarget(const RenderTargetDesc &desc);
 
-        RenderPipeline &getPipeline(const ResourceHandle<Shader>& shader, const RenderPipelineDesc &desc);
+        void destroyRenderTarget(RenderTarget &target);
 
     private:
         struct PipelinePair {
@@ -89,14 +122,18 @@ namespace xng {
         SPIRVDecompiler *shaderDecompiler = nullptr;
 
         std::unordered_map<Uri, std::unique_ptr<RenderObject>> uriObjects;
-        std::unordered_map<TextureBufferDesc, std::vector<std::unique_ptr<TextureBuffer>>> textures;
-        std::unordered_map<RenderTargetDesc, std::vector<std::unique_ptr<RenderTarget>>> targets;
         std::unordered_map<PipelinePair, std::unique_ptr<RenderPipeline>, PipelinePairHash> pipelines;
 
+        std::unordered_map<TextureBufferDesc, std::vector<std::unique_ptr<TextureBuffer>>> textures;
+        std::unordered_map<ShaderBufferDesc, std::vector<std::unique_ptr<ShaderBuffer>>> shaderBuffers;
+        std::unordered_map<RenderTargetDesc, std::vector<std::unique_ptr<RenderTarget>>> targets;
+
         std::set<Uri> usedUris;
-        std::unordered_map<TextureBufferDesc, int> usedTextures;
-        std::unordered_map<RenderTargetDesc, int> usedTargets;
         std::unordered_set<PipelinePair, PipelinePairHash> usedPipelines;
+
+        std::unordered_map<TextureBufferDesc, int> usedTextures;
+        std::unordered_map<ShaderBufferDesc, int> usedShaderBuffers;
+        std::unordered_map<RenderTargetDesc, int> usedTargets;
     };
 }
 #endif //XENGINE_FRAMEGRAPHPOOL_HPP

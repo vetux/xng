@@ -32,22 +32,45 @@
 #include "resource/resourcehandle.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT Scene {
-        struct XENGINE_EXPORT Object {
-            Object(ResourceHandle<Mesh> mesh, ResourceHandle<Material> material)
-                    : mesh(std::move(mesh)), material(std::move(material)) {}
-
+    struct XENGINE_EXPORT Scene : public Messageable {
+        struct XENGINE_EXPORT Object : public Messageable {
             Transform transform;
 
             ResourceHandle<Mesh> mesh;
             ResourceHandle<Material> material;
 
-            bool outline = false;
+            bool castShadows = false;
+            bool receiveShadows = false;
+
+            bool outline = false; // If true the object that the material belongs to is redrawn with object.scale * outlineScale scale and all fragments not belonging to the unscaled object are colored with the specified color, and faded alpha values towards the edges beginning at borderWidth * fadeStart.
             ColorRGBA outlineColor;
             float outlineScale = 1.1f;
+            float outlineFadeStart = 0.5f;
 
-            bool castShadow = false;
-            bool receiveShadow = false;
+            Messageable &operator<<(const Message &message) override {
+                transform << message.value("transform");
+                mesh << message.value("mesh");
+                material << message.value("material");
+                castShadows = message.value("castShadows", false);
+                receiveShadows = message.value("receiveShadows", false);
+                outline = message.value("outline", false);
+                outlineScale = message.value("outlineScale", 1.1f);
+                outlineFadeStart = message.value("outlineFadeStart", 0.5f);
+                return *this;
+            }
+
+            Message &operator>>(Message &message) const override {
+                message = Message(Message::DICTIONARY);
+                transform >> message["transform"];
+                mesh >> message["mesh"];
+                material >> message["material"];
+                message["castShadows"] = castShadows;
+                message["receiveShadows"] = receiveShadows;
+                message["outline"] = outline;
+                message["outlineScale"] = outlineScale;
+                message["outlineFadeStart"] = outlineFadeStart;
+                return message;
+            }
         };
 
         Transform cameraTransform;
@@ -55,6 +78,55 @@ namespace xng {
         Skybox skybox;
         std::vector<Light> lights;
         std::vector<Object> objects;
+
+        Messageable &operator<<(const Message &message) override {
+            cameraTransform << message.value("cameraTransform");
+            camera << message.value("camera");
+            skybox << message.value("skybox");
+
+            if (message.has("lights") && message.value("lights").getType() == Message::LIST) {
+                for (auto &v: message.value("lights").asList()) {
+                    Light l;
+                    l << v;
+                    lights.emplace_back(l);
+                }
+            }
+
+            if (message.has("objects") && message.value("objects").getType() == Message::LIST) {
+                for (auto &v: message.value("objects").asList()) {
+                    Object o;
+                    o << v;
+                    objects.emplace_back(o);
+                }
+            }
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+
+            cameraTransform >> message["cameraTransform"];
+            camera >> message[""];
+            skybox >> message [""];
+
+            std::vector<Message> vec;
+            for (auto &light : lights){
+                Message msg;
+                light >> msg;
+                vec.emplace_back(msg);
+            }
+            message["lights"] = vec;
+
+            vec.clear();
+            for (auto &obj : objects){
+                Message msg;
+                obj >> msg;
+                vec.emplace_back(msg);
+            }
+            message["objects"] = vec;
+
+            return message;
+        }
     };
 }
 

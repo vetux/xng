@@ -30,22 +30,38 @@
 namespace xng {
     class XENGINE_EXPORT FrameGraphRenderer : public SceneRenderer {
     public:
-        explicit FrameGraphRenderer(RenderDevice &device, SPIRVCompiler &spirvCompiler, SPIRVDecompiler &spirvDecompiler);
+        explicit FrameGraphRenderer(RenderDevice &device,
+                                    SPIRVCompiler &spirvCompiler,
+                                    SPIRVDecompiler &spirvDecompiler);
 
         void render(RenderTarget &target, const Scene &scene) override;
 
-        void setRenderResolution(Vec2i res) override { renderResolution = res; }
+        void setPasses(const std::vector<std::reference_wrapper<FrameGraphPass>> &value) {
+            passes = value;
+        }
 
-        void setRenderSamples(int samples) override { renderSamples = samples; }
+        void setProperties(const GenericMapString &value) {
+            properties = value;
+        }
 
-        void setPasses(std::vector<std::shared_ptr<FrameGraphPass>> passes);
+        GenericMapString &getProperties() {
+            return properties;
+        }
+
+        const GenericMapString &getProperties() const {
+            return properties;
+        }
 
     private:
         RenderDevice &device;
-        std::vector<std::shared_ptr<FrameGraphPass>> passes;
+
+        std::vector<std::reference_wrapper<FrameGraphPass>> passes;
+        std::map<std::type_index, std::reference_wrapper<FrameGraphPass>> passTypeNameMapping;
+
+        GenericMapString properties;
+
         FrameGraphPool pool;
-        Vec2i renderResolution = {640, 480};
-        int renderSamples{};
+        GenericMapString blackboard;
     };
 }
 #endif //XENGINE_FRAMEGRAPHRENDERER_HPP

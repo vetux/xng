@@ -21,19 +21,40 @@
 #define XENGINE_FRAMEGRAPHPASS_HPP
 
 #include "render/graph/framegraphpassresources.hpp"
-#include "render/graph/framegraphbuilder.hpp"
-#include "render/graph/framegraphblackboard.hpp"
+#include "types/genericmap.hpp"
 
 #include "gpu/renderdevice.hpp"
 
 namespace xng {
+    class FrameGraphBuilder;
+
     class XENGINE_EXPORT FrameGraphPass {
     public:
         virtual ~FrameGraphPass() = default;
 
-        virtual void setup(FrameGraphBuilder &builder) = 0;
+        /**
+         * Declare the dependencies of the execute call.
+         *
+         * @param builder
+         */
+        virtual void setup(FrameGraphBuilder &builder, const GenericMapString &properties) = 0;
 
-        virtual void execute(FrameGraphPassResources &resources, RenderDevice &ren, FrameGraphBlackboard &board) = 0;
+        /**
+         * Run the pass.
+         * Resources created previously in the setup() call can be accessed in the resources object.
+         * Results can be stored in the sharedData map which is passed on to child passes.
+         *
+         * @param resources
+         * @param sharedData
+         */
+        virtual void execute(FrameGraphPassResources &resources, GenericMapString &sharedData) = 0;
+
+        /**
+         * The returned type name is used for defining dependencies between passes.
+         *
+         * @return The type index of the concrete pass type
+         */
+        virtual std::type_index getTypeName() = 0;
     };
 }
 

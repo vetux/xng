@@ -21,7 +21,10 @@
 #define XENGINE_MATERIAL_HPP
 
 #include "asset/texture.hpp"
+#include "asset/shader.hpp"
+
 #include "resource/resourcehandle.hpp"
+
 #include "io/messageable.hpp"
 
 namespace xng {
@@ -55,15 +58,13 @@ namespace xng {
         Messageable &operator<<(const Message &message) override {
             model = deserializeModel(message.value("model", static_cast<int>(PHONG)));
 
-            diffuse << message.value("diffuse");
+            shader << message.value("shader");
+
             ambient << message.value("ambient");
             specular << message.value("specular");
-            shininess = message.value("shininess", 32.0f);
 
-            diffuseTexture << message.value("diffuseTexture");
             ambientTexture << message.value("ambientTexture");
             specularTexture << message.value("specularTexture");
-            shininessTexture << message.value("shininessTexture");
 
             albedo << message.value("albedo");
             metallic = message.value("metallic", 0.0f);
@@ -77,8 +78,6 @@ namespace xng {
 
             normal << message.value("normal");
 
-            receiveShadows = message.value("receiveShadows", false);
-
             return *this;
         }
 
@@ -87,19 +86,15 @@ namespace xng {
 
             message["model"] = model;
 
-            diffuse >> message["diffuse"];
+            shader >> message["shader"];
+
             ambient >> message["ambient"];
             specular >> message["specular"];
-            message["shininess"] = shininess;
 
-            if (diffuseTexture.assigned())
-                diffuseTexture >> message["diffuseTexture"];
             if (ambientTexture.assigned())
                 ambientTexture >> message["ambientTexture"];
             if (specularTexture.assigned())
                 specularTexture >> message["specularTexture"];
-            if (shininessTexture.assigned())
-                shininessTexture >> message["shininessTexture"];
 
             albedo >> message["albedo"];
             message["metallic"] = metallic;
@@ -118,26 +113,32 @@ namespace xng {
             if (normal.assigned())
                 normal >> message["normal"];
 
-            message["receiveShadows"] = receiveShadows;
-
             return message;
         }
 
         LightingModel model{};
 
-        ColorRGBA diffuse{};
-        ColorRGBA ambient{};
-        ColorRGBA specular{};
-        float shininess;
+        /**
+         * Optional user specified shader.
+         *
+         * Currently only glsl user shaders are supported.
+         *
+         * In a deferred pipeline the vertex/geometry shaders would replace the shaders in the gbuffer construction pass
+         * and the fragment shader would replace the lighting pass.
+         *
+         * The vertex/geometry shaders might be run with platform specific fragment shaders and
+         * the fragment shader might be run with a platform specific vertex/geometry shader (Deferred Shading).
+         *
+         * To make shader code compatible across pipelines the shaders must access external resources
+         * through the stable shader interface described in framegraphshader.hpp
+         * by including either "fragment.glsl" or "vertex.glsl" respectively.
+         */
+        ResourceHandle<Shader> shader;
 
-        ResourceHandle<Texture> diffuseTexture;
-        ResourceHandle<Texture> ambientTexture;
-        ResourceHandle<Texture> specularTexture;
-        ResourceHandle<Texture> shininessTexture;
-
-        ColorRGBA albedo{};
+        // PBR
+        ColorRGBA albedo{}; // -> diffuse in phong
         float metallic{};
-        float roughness{};
+        float roughness{}; // -> invert for shininess in phong
         float ambientOcclusion{};
 
         ResourceHandle<ImageRGBA> albedoTexture;
@@ -145,9 +146,14 @@ namespace xng {
         ResourceHandle<ImageRGBA> roughnessTexture;
         ResourceHandle<ImageRGBA> ambientOcclusionTexture;
 
-        ResourceHandle<ImageRGBA> normal; // If assigned the sampled normals are used otherwise vertex normals.
+        // Phong Shading
+        ColorRGBA ambient{};
+        ColorRGBA specular{};
 
-        bool receiveShadows; // If true fragments belonging to this material are shadowed by other objects in the scene.
+        ResourceHandle<ImageRGBA> ambientTexture;
+        ResourceHandle<ImageRGBA> specularTexture;
+
+        ResourceHandle<ImageRGBA> normal; // If assigned the sampled normals are used otherwise vertex normals.
     };
 }
 

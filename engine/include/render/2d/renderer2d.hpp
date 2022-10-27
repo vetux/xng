@@ -27,7 +27,7 @@
 
 #include "gpu/renderdevice.hpp"
 
-#include "shader/shadersource.hpp"
+#include "asset/shadersource.hpp"
 #include "shader/spirvcompiler.hpp"
 
 #include "asset/camera.hpp"

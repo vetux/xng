@@ -18,12 +18,13 @@
  */
 
 #include "render/graph/framegraphpool.hpp"
+#include "render/graph/shader/framegraphshader.hpp"
 
 namespace xng {
     static std::unique_ptr<TextureBuffer> allocateTexture(const Texture &t, RenderDevice &device) {
-        auto texture = device.createTextureBuffer(t.textureDescription);
+        auto texture = device.createTextureBuffer(t.description);
         if (!t.images.empty()) {
-            if (t.textureDescription.textureType == TEXTURE_CUBE_MAP) {
+            if (t.description.textureType == TEXTURE_CUBE_MAP) {
                 for (int i = POSITIVE_X; i <= NEGATIVE_Z; i++) {
                     auto size = t.images.at(i).get().getSize();
                     texture->upload(static_cast<CubeMapFace>(i),
@@ -53,24 +54,6 @@ namespace xng {
             }
         }
 
-        std::unordered_set<TextureBufferDesc> unusedTextures;
-        for (auto &pair: textures) {
-            if (usedTextures.find(pair.first) == usedTextures.end()) {
-                unusedTextures.insert(pair.first);
-            } else {
-                pair.second.resize(usedTextures.at(pair.first));
-            }
-        }
-
-        std::unordered_set<RenderTargetDesc> unusedTargets;
-        for (auto &pair: targets) {
-            if (usedTargets.find(pair.first) == usedTargets.end()) {
-                unusedTargets.insert(pair.first);
-            } else {
-                pair.second.resize(usedTargets.at(pair.first));
-            }
-        }
-
         std::unordered_set<PipelinePair, PipelinePairHash> unusedPipelines;
         for (auto &pair: pipelines) {
             if (usedPipelines.find(pair.first) == usedPipelines.end()) {
@@ -82,14 +65,6 @@ namespace xng {
             uriObjects.erase(v);
         }
 
-        for (auto &v: unusedTextures) {
-            textures.erase(v);
-        }
-
-        for (auto &v: unusedTargets) {
-            targets.erase(v);
-        }
-
         for (auto &v: unusedPipelines) {
             pipelines.erase(v);
         }
@@ -98,6 +73,10 @@ namespace xng {
         usedTextures.clear();
         usedTargets.clear();
         usedPipelines.clear();
+
+        textures.clear();
+        shaderBuffers.clear();
+        targets.clear();
     }
 
     VertexBuffer &FrameGraphPool::getMesh(const ResourceHandle<Mesh> &handle) {
@@ -124,6 +103,9 @@ namespace xng {
         if (it == uriObjects.end()) {
             auto &shader = handle.get();
             ShaderProgramDesc desc;
+            shader.vertexShader.preprocess(*shaderCompiler, FrameGraphShader::getShaderInclude());
+            shader.fragmentShader.preprocess(*shaderCompiler, FrameGraphShader::getShaderInclude());
+            shader.geometryShader.preprocess(*shaderCompiler, FrameGraphShader::getShaderInclude());
             desc.shaders.insert(std::pair<ShaderStage, SPIRVShader>(ShaderStage::VERTEX,
                                                                     shader.vertexShader.compile(
                                                                             *shaderCompiler).getShaders().at(0)));
@@ -142,16 +124,13 @@ namespace xng {
         return dynamic_cast<ShaderProgram &>(*uriObjects.at(handle.getUri()));
     }
 
-    RenderPipeline &FrameGraphPool::getPipeline(const ResourceHandle<Shader> &shaderRes,
-                                                const RenderPipelineDesc &descIn) {
-        auto &shader = getShader(shaderRes);
-        auto desc = descIn;
-        desc.shader = shader;
-        auto pair = PipelinePair(shaderRes.getUri(), desc);
+    RenderPipeline &FrameGraphPool::getPipeline(const ResourceHandle<Shader> &shader, const RenderPipelineDesc &desc) {
+        auto pair = PipelinePair(shader.getUri(), desc);
         usedPipelines.insert(pair);
+        usedUris.insert(shader.getUri());
         auto it = pipelines.find(pair);
         if (it == pipelines.end()) {
-            pipelines[pair] = device->createRenderPipeline(desc);
+            pipelines[pair] = device->createRenderPipeline(desc, getShader(shader));
         }
         return dynamic_cast<RenderPipeline &>(*pipelines.at(pair));
     }
@@ -165,6 +144,45 @@ namespace xng {
         return *textures[desc].at(index);
     }
 
+    void FrameGraphPool::destroyTextureBuffer(TextureBuffer &buffer) {
+        usedTextures[buffer.getDescription()]--;
+        bool found = false;
+        long index = 0;
+        for (auto i = 0; i < textures[buffer.getDescription()].size(); i++) {
+            if (textures[buffer.getDescription()][i].get() == &buffer) {
+                index = i;
+                found = true;
+                break;
+            }
+        }
+        assert(found);
+        textures[buffer.getDescription()].erase(textures[buffer.getDescription()].begin() + index);
+    }
+
+    ShaderBuffer &FrameGraphPool::createShaderBuffer(const ShaderBufferDesc &desc) {
+        auto index = usedShaderBuffers[desc]++;
+        if (shaderBuffers[desc].size() <= index) {
+            shaderBuffers[desc].resize(usedShaderBuffers[desc]);
+            shaderBuffers[desc].at(index) = device->createShaderBuffer(desc);
+        }
+        return *shaderBuffers[desc].at(index);
+    }
+
+    void FrameGraphPool::destroyShaderBuffer(ShaderBuffer &buffer) {
+        usedShaderBuffers[buffer.getDescription()]--;
+        bool found = false;
+        long index = 0;
+        for (auto i = 0; i < shaderBuffers[buffer.getDescription()].size(); i++) {
+            if (shaderBuffers[buffer.getDescription()][i].get() == &buffer) {
+                index = i;
+                found = true;
+                break;
+            }
+        }
+        assert(found);
+        shaderBuffers[buffer.getDescription()].erase(shaderBuffers[buffer.getDescription()].begin() + index);
+    }
+
     RenderTarget &FrameGraphPool::createRenderTarget(const RenderTargetDesc &desc) {
         auto index = usedTargets[desc]++;
         if (targets[desc].size() <= index) {
@@ -172,5 +190,20 @@ namespace xng {
             targets[desc].at(index) = device->createRenderTarget(desc);
         }
         return *targets[desc].at(index);
+    }
+
+    void FrameGraphPool::destroyRenderTarget(RenderTarget &target) {
+        usedTargets[target.getDescription()]--;
+        bool found = false;
+        long index = 0;
+        for (auto i = 0; i < targets[target.getDescription()].size(); i++) {
+            if (targets[target.getDescription()][i].get() == &target) {
+                index = i;
+                found = true;
+                break;
+            }
+        }
+        assert(found);
+        targets[target.getDescription()].erase(targets[target.getDescription()].begin() + index);
     }
 }

@@ -46,9 +46,7 @@ namespace xng {
                     images.emplace_back(handle);
                 }
             }
-            clear = message.value("clear", false);
-            clearColor << message.value("clearColor");
-            //TODO: Serialize texture description
+            description << message.value("description");
             return *this;
         }
 
@@ -61,17 +59,12 @@ namespace xng {
                 vec.emplace_back(msg);
             }
             message["images"] = vec;
-            message["clear"] = clear;
-            clearColor >> message["clearColor"];
+            description >> message["description"];
             return message;
         }
 
         std::vector<ResourceHandle<ImageRGBA>> images;
-
-        bool clear = false;
-        ColorRGBA clearColor;
-
-        TextureBufferDesc textureDescription;
+        TextureBufferDesc description;
     };
 }
 

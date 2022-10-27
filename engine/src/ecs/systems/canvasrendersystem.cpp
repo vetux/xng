@@ -331,7 +331,9 @@ namespace xng {
             if (dimensions.x * dimensions.y == 0) {
                 dimensions = t.sprite.get().image.get().getSize();
             }
-            spriteTextures[ent] = ren2d.getDevice().createTextureBuffer({dimensions});
+            TextureBufferDesc desc;
+            desc.size = dimensions;
+            spriteTextures[ent] = ren2d.getDevice().createTextureBuffer(desc);
             auto &img = t.sprite.get().image.get();
             if (img.getSize() != dimensions) {
                 // Upload a slice of an image
@@ -347,7 +349,9 @@ namespace xng {
             if (dimensions.x * dimensions.y == 0) {
                 dimensions = t.spriteB.get().image.get().getSize();
             }
-            spriteTexturesB[ent] = ren2d.getDevice().createTextureBuffer({dimensions});
+            TextureBufferDesc desc;
+            desc.size = dimensions;
+            spriteTexturesB[ent] = ren2d.getDevice().createTextureBuffer(desc);
             auto &img = t.spriteB.get().image.get();
             if (img.getSize() != dimensions) {
                 // Upload a slice of an image

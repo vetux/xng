@@ -25,9 +25,9 @@
 namespace xng {
     class XENGINE_EXPORT Messageable {
     public:
-        virtual Messageable &operator<<(const Message &message) { return *this; };
+        virtual Messageable &operator<<(const Message &message) = 0;
 
-        virtual Message &operator>>(Message &message) const { return message; };
+        virtual Message &operator>>(Message &message) const = 0;
     };
 }
 #endif //XENGINE_SERIALIZABLE_HPP

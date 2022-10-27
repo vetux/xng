@@ -21,22 +21,27 @@
 #define XENGINE_FRAMEGRAPHBUILDER_HPP
 
 #include "render/graph/framegraphresource.hpp"
-#include "render/graph/framegraph.hpp"
 #include "render/graph/framegraphpool.hpp"
+#include "render/graph/framegraph.hpp"
 
-#include "asset/shader.hpp"
-#include "asset/mesh.hpp"
-#include "asset/texture.hpp"
 #include "asset/scene.hpp"
 
 namespace xng {
     class XENGINE_EXPORT FrameGraphBuilder {
     public:
         FrameGraphBuilder(RenderTarget &backBuffer,
-                          FrameGraphPool &pool,
                           const Scene &scene,
-                          Vec2i renderResolution,
-                          int renderSamples);
+                          const GenericMapString &properties);
+
+        /**
+         * Setup and compile a frame graph using the supplied passes.
+         *
+         * @param passes
+         * @return
+         */
+        FrameGraph build(const std::vector<std::reference_wrapper<FrameGraphPass>> &passes);
+
+        /// Resource Read   --------------------------------------
 
         FrameGraphResource createMeshBuffer(const ResourceHandle<Mesh> &handle);
 
@@ -44,36 +49,63 @@ namespace xng {
 
         FrameGraphResource createShader(const ResourceHandle<Shader> &handle);
 
+        FrameGraphResource createPipeline(FrameGraphResource shader, const RenderPipelineDesc& desc);
+
         FrameGraphResource createTextureBuffer(const TextureBufferDesc &attribs);
 
-        FrameGraphResource createRenderTarget(Vec2i size, int samples);
+        FrameGraphResource createShaderBuffer(const ShaderBufferDesc &desc);
 
-        FrameGraphResource createPipeline(const ResourceHandle<Shader> &handle, const RenderPipelineDesc &desc);
+        FrameGraphResource createRenderTarget(const Vec2i& size, int samples);
 
         void write(FrameGraphResource target);
 
         void read(FrameGraphResource source);
 
+        /**
+         * Defines a dependency to the specified pass.
+         * The execute call on the calling pass is run after the specified pass.
+         *
+         * @param pass The type index of the pass to run before
+         */
+        void setDependency(const std::type_index &pass);
+
+        /// Pass data retrieval --------------------------------------
+
+        /**
+         * @return The resource handle of the back buffer to render into.
+         */
         FrameGraphResource getBackBuffer();
 
+        /**
+         * @return The size and sample count of the buffer returned by getBackBuffer().
+         */
         std::pair<Vec2i, int> getBackBufferFormat();
 
-        std::pair<Vec2i, int> getRenderFormat();
-
+        /**
+         * @return The scene containing the user specified data.
+         */
         const Scene &getScene();
 
-        FrameGraph build(const std::vector<std::shared_ptr<FrameGraphPass>> &passes);
-
     private:
-        FrameGraphPool &pool;
+        struct PassSetup {
+            std::unique_ptr<std::type_index> passDependency;
+            std::set<FrameGraphResource> allocations;
+            std::set<FrameGraphResource> writes;
+            std::set<FrameGraphResource> reads;
+        };
+
         RenderTarget &backBuffer;
         const Scene &scene;
-        std::vector<std::function<RenderObject &()>> resources;
-        std::vector<std::set<FrameGraphResource>> passResources;
-        size_t currentPass = 0;
+        const GenericMapString &properties;
 
-        Vec2i renderRes;
-        int renderSamples;
+        FrameGraph graph;
+
+        PassSetup currentPass;
+        std::map<std::type_index, PassSetup> passSetups;
+
+        std::map<Uri, FrameGraphResource> uriResources;
+
+        int resourceCounter = 1;
     };
 }
 #endif //XENGINE_FRAMEGRAPHBUILDER_HPP

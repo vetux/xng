@@ -23,7 +23,7 @@
 #include <utility>
 
 #include "math/matrixmath.hpp"
-#include "shader/shadersource.hpp"
+#include "asset/shadersource.hpp"
 
 static const char *SHADER_VERT = R"###(#version 420 core
 
@@ -327,7 +327,7 @@ namespace xng {
                     auto &shaderBuffer = getShaderBuffer();
                     shaderBuffer.upload(shaderBufferUniform);
 
-                    std::vector<std::variant<TextureBuffer*, ShaderBuffer*>> bindings;
+                    std::vector<std::variant<TextureBuffer *, ShaderBuffer *>> bindings;
                     bindings.emplace_back(&shaderBuffer);
 
                     command = RenderCommand(vb, bindings);
@@ -355,7 +355,7 @@ namespace xng {
                     auto &shaderBuffer = getShaderBuffer();
                     shaderBuffer.upload(shaderBufferUniform);
 
-                    std::vector<std::variant<TextureBuffer*, ShaderBuffer*>> bindings;
+                    std::vector<std::variant<TextureBuffer *, ShaderBuffer *>> bindings;
                     bindings.emplace_back(&shaderBuffer);
 
                     command = RenderCommand(vb, bindings);
@@ -382,7 +382,7 @@ namespace xng {
                     auto &shaderBuffer = getShaderBuffer();
                     shaderBuffer.upload(shaderBufferUniform);
 
-                    std::vector<std::variant<TextureBuffer*, ShaderBuffer*>> bindings;
+                    std::vector<std::variant<TextureBuffer *, ShaderBuffer *>> bindings;
                     bindings.emplace_back(&shaderBuffer);
                     bindings.emplace_back(pass.texture);
 
@@ -408,7 +408,7 @@ namespace xng {
                     auto &shaderBuffer = getShaderBuffer();
                     shaderBuffer.upload(shaderBufferUniform);
 
-                    std::vector<std::variant<TextureBuffer*, ShaderBuffer*>> bindings;
+                    std::vector<std::variant<TextureBuffer *, ShaderBuffer *>> bindings;
                     bindings.emplace_back(&shaderBuffer);
                     bindings.emplace_back(pass.texture);
                     bindings.emplace_back(pass.textureB);
@@ -435,7 +435,7 @@ namespace xng {
                     auto &shaderBuffer = getShaderBuffer();
                     shaderBuffer.upload(shaderBufferUniform);
 
-                    std::vector<std::variant<TextureBuffer*, ShaderBuffer*>> bindings;
+                    std::vector<std::variant<TextureBuffer *, ShaderBuffer *>> bindings;
                     bindings.emplace_back(&shaderBuffer);
                     bindings.emplace_back(pass.texture);
 
@@ -559,7 +559,8 @@ namespace xng {
         if (!isRendering)
             throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
 
-        PlaneDescription desc({dstRect.dimensions, center, srcRect, texture.getDescription().size.convert<float>(), flipUv});
+        PlaneDescription desc(
+                {dstRect.dimensions, center, srcRect, texture.getDescription().size.convert<float>(), flipUv});
         passes.emplace_back(Pass(dstRect.position, rotation, desc, texture, camera, cameraTransform, mix, mixColor));
     }
 
@@ -571,7 +572,8 @@ namespace xng {
                           Vec2f center,
                           float rotation,
                           Vec2b flipUv) {
-        PlaneDescription desc({dstRect.dimensions, center, srcRect, textureA.getDescription().size.convert<float>(), flipUv});
+        PlaneDescription desc(
+                {dstRect.dimensions, center, srcRect, textureA.getDescription().size.convert<float>(), flipUv});
         passes.emplace_back(
                 Pass(dstRect.position, rotation, desc, textureA, textureB, blendScale, camera, cameraTransform));
     }
@@ -595,7 +597,8 @@ namespace xng {
         if (fill)
             passes.emplace_back(Pass(rectangle.position,
                                      rotation,
-                                     {rectangle.dimensions, center, Rectf(Vec2f(), rectangle.dimensions), rectangle.dimensions, Vec2b(false)},
+                                     {rectangle.dimensions, center, Rectf(Vec2f(), rectangle.dimensions),
+                                      rectangle.dimensions, Vec2b(false)},
                                      color, camera, cameraTransform));
         else
             passes.emplace_back(Pass(rectangle.position,
@@ -627,7 +630,8 @@ namespace xng {
 
         passes.emplace_back(Pass(dstRect.position,
                                  rotation,
-                                 {dstRect.dimensions, center, srcRect, text.getTexture().getDescription().size.convert<float>(), Vec2b(false)},
+                                 {dstRect.dimensions, center, srcRect,
+                                  text.getTexture().getDescription().size.convert<float>(), Vec2b(false)},
                                  text,
                                  color,
                                  camera,
@@ -695,45 +699,45 @@ namespace xng {
     }
 
     void Renderer2D::reallocatePipelines() {
-        clearPipeline = renderDevice.createRenderPipeline({.shader = *colorShader,
-                                                                  .viewportOffset = viewportOffset,
+        clearPipeline = renderDevice.createRenderPipeline({.viewportOffset = viewportOffset,
                                                                   .viewportSize = viewportSize,
                                                                   .multiSample = false,
                                                                   .clearColorValue = clearColor,
                                                                   .clearColor = clear,
                                                                   .enableDepthTest = false,
-                                                                  .enableBlending = true});
+                                                                  .enableBlending = true},
+                                                          *colorShader);
 
-        colorPipeline = renderDevice.createRenderPipeline({.shader = *colorShader,
-                                                                  .viewportOffset = viewportOffset,
+        colorPipeline = renderDevice.createRenderPipeline({.viewportOffset = viewportOffset,
                                                                   .viewportSize = viewportSize,
                                                                   .multiSample = false,
                                                                   .clearColor = false,
                                                                   .enableDepthTest = false,
-                                                                  .enableBlending = true});
+                                                                  .enableBlending = true},
+                                                          *colorShader);
 
-        texturePipeline = renderDevice.createRenderPipeline({.shader = *textureShader,
-                                                                    .viewportOffset = viewportOffset,
+        texturePipeline = renderDevice.createRenderPipeline({.viewportOffset = viewportOffset,
                                                                     .viewportSize = viewportSize,
                                                                     .multiSample = false,
                                                                     .clearColor = false,
                                                                     .enableDepthTest = false,
-                                                                    .enableBlending = true});
+                                                                    .enableBlending = true},
+                                                            *textureShader);
 
-        textPipeline = renderDevice.createRenderPipeline({.shader = *textShader,
-                                                                 .viewportOffset = viewportOffset,
+        textPipeline = renderDevice.createRenderPipeline({.viewportOffset = viewportOffset,
                                                                  .viewportSize = viewportSize,
                                                                  .multiSample = false,
                                                                  .clearColor = false,
                                                                  .enableDepthTest = false,
-                                                                 .enableBlending = true});
+                                                                 .enableBlending = true},
+                                                         *textShader);
 
-        textureBlendPipeline = renderDevice.createRenderPipeline({.shader = *blendShader,
-                                                                         .viewportOffset = viewportOffset,
+        textureBlendPipeline = renderDevice.createRenderPipeline({.viewportOffset = viewportOffset,
                                                                          .viewportSize = viewportSize,
                                                                          .multiSample = false,
                                                                          .clearColor = false,
                                                                          .enableDepthTest = false,
-                                                                         .enableBlending = true});
+                                                                         .enableBlending = true},
+                                                                 *blendShader);
     }
 }

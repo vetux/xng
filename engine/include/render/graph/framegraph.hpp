@@ -1,6 +1,6 @@
 /**
  *  This file is part of xEngine, a C++ game engine library.
- *  Copyright (C) 2022  Julian Zampiccoli
+ *  Copyright (C) 2021  Julian Zampiccoli
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser General Public License as published by
@@ -20,37 +20,33 @@
 #ifndef XENGINE_FRAMEGRAPH_HPP
 #define XENGINE_FRAMEGRAPH_HPP
 
-#include "resource/resourcehandle.hpp"
-
-#include "gpu/renderdevice.hpp"
-
 #include "render/graph/framegraphresource.hpp"
-#include "render/graph/framegraphpassresources.hpp"
-#include "render/graph/framegraphblackboard.hpp"
+#include "render/graph/framegraphpass.hpp"
 
 namespace xng {
-    class FrameGraphPass;
+    struct FrameGraph {
+        struct PassExecution {
+            std::type_index pass = typeid(FrameGraphPass); // The pass to call execute() on
+            std::set<FrameGraphResource> allocations; // The set of resources created by the pass
+            std::set<FrameGraphResource> writes; // The set of resources that are written to by the pass
+            std::set<FrameGraphResource> reads; // The set of resources that are read by the pass
+            std::vector<PassExecution> childPasses; // The set of child passes
 
-    class XENGINE_EXPORT FrameGraph {
-    public:
-        FrameGraph(std::vector<std::shared_ptr<FrameGraphPass>> passes,
-                   std::vector<std::set<FrameGraphResource>> passResources,
-                   std::vector<std::function<RenderObject &()>> resources);
+            PassExecution() = default;
+        };
 
-        void render(RenderDevice &ren);
+        struct PassAllocation {
+            RenderObject::Type objectType;
+            bool isUri;
+            std::variant<Uri,
+                    std::pair<FrameGraphResource, RenderPipelineDesc>,
+                    TextureBufferDesc,
+                    ShaderBufferDesc,
+                    std::pair<Vec2i, int>> allocationData;
+        };
 
-    private:
-        void compile();
-
-        void execute(RenderDevice &ren);
-
-        std::vector<std::shared_ptr<FrameGraphPass>> passes;
-        std::vector<std::set<FrameGraphResource>> passResources;
-        std::vector<std::function<RenderObject &()>> resources;
-
-        std::vector<FrameGraphPassResources> passData;
-
-        FrameGraphBlackboard blackboard;
+        std::vector<PassExecution> passExecutions; // The set of passes without specified dependencies
+        std::map<FrameGraphResource, PassAllocation> allocatedObjects; // The map of render objects that were allocated for this frame identified by their resource id
     };
 }
 

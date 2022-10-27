@@ -26,7 +26,7 @@
 #include "shader/spirvdecompiler.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT ShaderSource {
+    class XENGINE_EXPORT ShaderSource : public Messageable {
     public:
         ShaderSource() = default;
 
@@ -89,9 +89,27 @@ namespace xng {
 
         bool isEmpty() const { return src.empty(); }
 
+        Messageable &operator<<(const Message &message) override {
+            src = message.value("src", std::string());
+            entryPoint = message.value("entryPoint", std::string());
+            stage = (ShaderStage) message.value("stage", (int) VERTEX);
+            language = (ShaderLanguage) message.value("language", (int) GLSL_420);
+            preprocessed = message.value("preprocessed", false);
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            message["src"] = src;
+            message["entryPoint"] = entryPoint;
+            message["stage"] = (int) stage;
+            message["language"] = (int) language;
+            message["preprocessed"] = preprocessed;
+            return message;
+        }
+
     private:
         std::string src{};
-
         std::string entryPoint{};
         ShaderStage stage{};
         ShaderLanguage language{};

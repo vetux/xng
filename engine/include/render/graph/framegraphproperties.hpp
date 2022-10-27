@@ -1,6 +1,6 @@
 /**
  *  This file is part of xEngine, a C++ game engine library.
- *  Copyright (C) 2022  Julian Zampiccoli
+ *  Copyright (C) 2021  Julian Zampiccoli
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser General Public License as published by
@@ -17,28 +17,20 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SHADER_HPP
-#define XENGINE_SHADER_HPP
+#ifndef XENGINE_FRAMEGRAPHPROPERTIES_HPP
+#define XENGINE_FRAMEGRAPHPROPERTIES_HPP
 
-#include "asset/shadersource.hpp"
-
-#include "resource/resource.hpp"
+#include <string>
 
 namespace xng {
-    struct XENGINE_EXPORT Shader : public Resource {
-        ~Shader() override = default;
-
-        std::unique_ptr<Resource> clone() override {
-            return std::make_unique<Shader>(*this);
-        }
-
-        std::type_index getTypeIndex() override {
-            return typeid(Shader);
-        }
-
-        ShaderSource vertexShader;
-        ShaderSource geometryShader;
-        ShaderSource fragmentShader;
-    };
+    /**
+     * The keys of the optional default properties supplied by the renderer.
+     * Frame graphs can define other properties.
+     */
+    namespace FrameGraphProperties {
+        static const std::string &RENDER_RESOLUTION = "RENDER_RESOLUTION"; // Vec2i, the resolution to render at, if not defined the back buffer resolution is used
+        static const std::string &RENDER_SAMPLES = "RENDER_SAMPLES"; // int, the number of msaa samples per pixel, if not defined the back buffer sample count is used
+    }
 }
-#endif //XENGINE_SHADER_HPP
+
+#endif //XENGINE_FRAMEGRAPHPROPERTIES_HPP

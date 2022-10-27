@@ -30,7 +30,7 @@ namespace xng {
 
         ~PhongPass() override = default;
 
-        void setup(FrameGraphBuilder &builder) override;
+        void setup(FrameGraphBuilder &builder, const GenericMapString &properties) override;
 
         void execute(FrameGraphPassResources &resources, RenderDevice &ren, FrameGraphBlackboard &board) override;
 

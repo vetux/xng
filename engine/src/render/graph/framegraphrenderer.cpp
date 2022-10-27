@@ -18,6 +18,7 @@
  */
 
 #include "render/graph/framegraphrenderer.hpp"
+#include "render/graph/framegraphbuilder.hpp"
 
 namespace xng {
     FrameGraphRenderer::FrameGraphRenderer(RenderDevice &device, SPIRVCompiler &spirvCompiler, SPIRVDecompiler &spirvDecompiler)
@@ -25,13 +26,19 @@ namespace xng {
 
     void FrameGraphRenderer::render(RenderTarget &target,
                                     const Scene &scene) {
-        FrameGraphBuilder builder(target, pool,scene, renderResolution, renderSamples);
-        auto graph = builder.build(passes);
-        graph.render(device);
-        pool.collectGarbage();
-    }
+        /// Setup
+        auto frame = FrameGraphBuilder(target, scene, properties).build(passes);
 
-    void FrameGraphRenderer::setPasses(std::vector<std::shared_ptr<FrameGraphPass>> p) {
-        passes = std::move(p);
+        blackboard.clear();
+
+        for (auto &p: passes) {
+            /// Compile
+            FrameGraphPassResources res({});
+
+            /// Execute
+            p.get().execute(res, blackboard);
+        }
+
+        pool.collectGarbage();
     }
 }

@@ -55,8 +55,10 @@ namespace xng {
 
             polyCount += render.mesh.get().polyCount();
 
-            Scene::Object node(render.mesh, render.material);
+            Scene::Object node;
             node.transform = TransformComponent::walkHierarchy(transform, entScene);
+            node.mesh = render.mesh;
+            node.material = render.material;
 
             //TODO: Change transform walking / scene creation to allow model matrix caching
             scene.objects.emplace_back(node);

@@ -32,6 +32,9 @@
 #include "gpu/shaderprogram.hpp"
 
 namespace xng {
+    /**
+     * The set of resources passed to a frame graph pass in the execute() method
+     */
     class XENGINE_EXPORT FrameGraphPassResources {
     public:
         explicit FrameGraphPassResources(std::map<FrameGraphResource, RenderObject *> objects)

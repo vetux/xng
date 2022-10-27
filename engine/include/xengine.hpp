@@ -171,7 +171,7 @@
 #include "render/2d/renderer2d.hpp"
 #include "render/forward/forwardrenderer.hpp"
 #include "render/graph/framegraphbuilder.hpp"
-#include "render/graph/framegraphblackboard.hpp"
+#include "types/genericmap.hpp"
 #include "render/graph/framegraphpassresources.hpp"
 #include "render/graph/framegraphrenderer.hpp"
 #include "render/graph/framegraphresource.hpp"
@@ -222,6 +222,6 @@
 #include "shader/shaderstage.hpp"
 #include "shader/spirvdecompiler.hpp"
 #include "shader/spirvblob.hpp"
-#include "shader/shadersource.hpp"
+#include "asset/shadersource.hpp"
 
 #endif // XENGINE_ENGINE_HPP
