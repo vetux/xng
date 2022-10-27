@@ -95,7 +95,8 @@ namespace xng {
                    && faceCullClockwiseWinding == other.faceCullClockwiseWinding
                    && enableBlending == other.enableBlending
                    && blendSourceMode == other.blendSourceMode
-                   && blendDestinationMode == other.blendDestinationMode;
+                   && blendDestinationMode == other.blendDestinationMode
+                   && &shader == &other.shader;
         }
     };
 }

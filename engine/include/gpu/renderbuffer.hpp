@@ -22,6 +22,7 @@
 
 #include "gpu/renderobject.hpp"
 #include "gpu/renderbuffertype.hpp"
+#include "gpu/gpufence.hpp"
 
 namespace xng {
     class XENGINE_EXPORT RenderBuffer : public RenderObject {
@@ -30,8 +31,9 @@ namespace xng {
          * Copy the data in other buffer to this buffer.
          *
          * @param other The concrete type of other must be compatible and have the same properties as this buffer.
+         * @return
          */
-        virtual void copy(RenderBuffer &other) = 0;
+        virtual std::unique_ptr<GpuFence> copy(RenderBuffer &other) = 0;
 
         virtual RenderBufferType getBufferType() = 0;
     };

@@ -218,7 +218,7 @@ namespace xng::opengl {
             }
         }
 
-        void copy(RenderBuffer &other) override {
+        std::unique_ptr<GpuFence> copy(RenderBuffer &other) override {
             throw std::runtime_error("Not Implemented");
         }
 
