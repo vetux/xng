@@ -55,12 +55,12 @@ namespace xng {
             } else {
                 attr.format = RGBA32I;
             }
-            textures[tex] = builder.createTextureBuffer(attr);
+            textures[tex] = builder.createTextureBuffer(attr, true);
         }
 
         attr.format = DEPTH_STENCIL;
 
-        textures[GEOMETRY_TEXTURE_DEPTH] = builder.createTextureBuffer(attr);
+        textures[GEOMETRY_TEXTURE_DEPTH] = builder.createTextureBuffer(attr, true);
     }
 
     TextureBuffer &GBuffer::getTexture(GBuffer::GTexture type, FrameGraphPassResources &resources) const {

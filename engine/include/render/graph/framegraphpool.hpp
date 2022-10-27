@@ -31,7 +31,7 @@
 #include "asset/shader.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT                                                                                   FrameGraphPool {
+    class XENGINE_EXPORT FrameGraphPool {
     public:
         FrameGraphPool() = default;
 
@@ -39,19 +39,20 @@ namespace xng {
 
         FrameGraphPool(const FrameGraphPool &other) = delete;
 
-        FrameGraphPool& operator=(const FrameGraphPool &other) = delete;
+        FrameGraphPool &operator=(const FrameGraphPool &other) = delete;
 
         /**
          * Deallocates buffers for resource handles which have not been used since the last call to collectGarbage.
          */
         void collectGarbage();
 
-        /// ResourceHandle objects, allocated with DEVICE_LOCAL storage.
-        VertexBuffer &getMesh(const ResourceHandle<Mesh>& handle);
+        /// ResourceHandle buffers are allocated with DEVICE_LOCAL storage.
 
-        TextureBuffer &getTexture(const ResourceHandle<Texture>& handle);
+        VertexBuffer &getMesh(const ResourceHandle<Mesh> &handle);
 
-        ShaderProgram &getShader(const ResourceHandle<Shader>& handle);
+        TextureBuffer &getTexture(const ResourceHandle<Texture> &handle);
+
+        ShaderProgram &getShader(const ResourceHandle<Shader> &handle);
 
         /**
          * The shader in desc must be assigned.
@@ -60,8 +61,6 @@ namespace xng {
          * @return The RenderPipeline instance for the given description
          */
         RenderPipeline &getPipeline(const ResourceHandle<Shader> &shader, const RenderPipelineDesc &desc);
-
-        /// Editable objects, allocated with the specified buffer type
 
         /**
          * Each call creates a new instance of TextureBuffer.

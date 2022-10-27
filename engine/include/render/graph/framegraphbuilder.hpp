@@ -41,7 +41,7 @@ namespace xng {
          */
         FrameGraph build(const std::vector<std::reference_wrapper<FrameGraphPass>> &passes);
 
-        /// Resource Read   --------------------------------------
+        /// Pass Interface   --------------------------------------
 
         FrameGraphResource createMeshBuffer(const ResourceHandle<Mesh> &handle);
 
@@ -51,7 +51,12 @@ namespace xng {
 
         FrameGraphResource createPipeline(FrameGraphResource shader, const RenderPipelineDesc& desc);
 
-        FrameGraphResource createTextureBuffer(const TextureBufferDesc &attribs);
+        /**
+         * @param attribs
+         * @param persistent If true the created texture is not deallocated until the end of the frame.
+         * @return
+         */
+        FrameGraphResource createTextureBuffer(const TextureBufferDesc &attribs, bool persistent);
 
         FrameGraphResource createShaderBuffer(const ShaderBufferDesc &desc);
 
@@ -68,8 +73,6 @@ namespace xng {
          * @param pass The type index of the pass to run before
          */
         void setDependency(const std::type_index &pass);
-
-        /// Pass data retrieval --------------------------------------
 
         /**
          * @return The resource handle of the back buffer to render into.

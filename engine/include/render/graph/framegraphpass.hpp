@@ -42,7 +42,7 @@ namespace xng {
         /**
          * Run the pass.
          * Resources created previously in the setup() call can be accessed in the resources object.
-         * Results can be stored in the sharedData map which is passed on to child passes.
+         * Data stored in the sharedData map is passed on to child passes.
          *
          * @param resources
          * @param sharedData

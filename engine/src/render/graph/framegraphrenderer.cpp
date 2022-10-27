@@ -35,6 +35,8 @@ namespace xng {
             /// Compile
             FrameGraphPassResources res({});
 
+#pragma message "Not Implemented"
+
             /// Execute
             p.get().execute(res, blackboard);
         }

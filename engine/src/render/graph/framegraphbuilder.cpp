@@ -90,11 +90,11 @@ namespace xng {
         return ret;
     }
 
-    FrameGraphResource FrameGraphBuilder::createTextureBuffer(const TextureBufferDesc &desc) {
+    FrameGraphResource FrameGraphBuilder::createTextureBuffer(const TextureBufferDesc &desc, bool persistent) {
         auto ret = FrameGraphResource(resourceCounter++);
         graph.allocatedObjects[ret] = FrameGraph::PassAllocation{RenderObject::TEXTURE_BUFFER,
                                                                  false,
-                                                                 desc};
+                                                                 std::make_pair<>(desc, persistent)};
         currentPass.allocations.insert(ret);
         return ret;
     }

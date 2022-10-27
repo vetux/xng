@@ -40,7 +40,7 @@ namespace xng {
             bool isUri;
             std::variant<Uri,
                     std::pair<FrameGraphResource, RenderPipelineDesc>,
-                    TextureBufferDesc,
+                    std::pair<TextureBufferDesc, bool>,
                     ShaderBufferDesc,
                     std::pair<Vec2i, int>> allocationData;
         };
