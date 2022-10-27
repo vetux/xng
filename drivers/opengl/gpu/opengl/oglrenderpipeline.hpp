@@ -22,6 +22,8 @@
 
 #include "gpu/renderpipeline.hpp"
 
+#include <utility>
+
 #include "gpu/opengl/oglbuildmacro.hpp"
 
 #include "gpu/opengl/oglrendertarget.hpp"
@@ -34,14 +36,13 @@
 namespace xng::opengl {
     class OPENGL_TYPENAME(RenderPipeline) : public RenderPipeline OPENGL_INHERIT {
     public:
+        OPENGL_TYPENAME(ShaderProgram) &shader;
         RenderPipelineDesc desc;
 
-        explicit OPENGL_TYPENAME(RenderPipeline)(const RenderPipelineDesc &desc)
-                : desc(desc) {
+        explicit OPENGL_TYPENAME(RenderPipeline)(RenderPipelineDesc desc, OPENGL_TYPENAME(ShaderProgram) &shader)
+                : desc(std::move(desc)), shader(shader) {
             initialize();
         }
-
-
 
         const RenderPipelineDesc &getDescription() override {
             return desc;
@@ -98,8 +99,7 @@ namespace xng::opengl {
             glClear(clearMask);
 
             // Bind shader program
-            auto &oglShader = dynamic_cast<OPENGL_TYPENAME(ShaderProgram) &>(desc.shader);
-            oglShader.activate();
+            shader.activate();
 
             // Setup pipeline state
             glDepthFunc(convert(desc.depthTestMode));

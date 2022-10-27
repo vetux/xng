@@ -48,8 +48,9 @@ namespace xng::opengl {
             return info;
         }
 
-        std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDesc &desc) override {
-            return std::make_unique<OPENGL_TYPENAME(RenderPipeline)>(desc);
+        std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDesc &desc,
+                                                             ShaderProgram &shader) override {
+            return std::make_unique<OPENGL_TYPENAME(RenderPipeline)>(desc, dynamic_cast<OPENGL_TYPENAME(ShaderProgram)&>(shader));
         }
 
         std::unique_ptr<RenderPipeline> createRenderPipeline(const uint8_t *cacheData, size_t size) override {

@@ -30,8 +30,6 @@
 
 namespace xng {
     struct RenderPipelineDesc {
-        ShaderProgram &shader;
-
         Vec2i viewportOffset = Vec2i(0);
         Vec2i viewportSize = Vec2i(1);
 
@@ -67,8 +65,6 @@ namespace xng {
         BlendMode blendSourceMode = BlendMode::SRC_ALPHA;
         BlendMode blendDestinationMode = BlendMode::ONE_MINUS_SRC_ALPHA;
 
-        ~RenderPipelineDesc() = default;
-
         bool operator==(const RenderPipelineDesc &other) const {
             return viewportOffset == other.viewportOffset
                    && viewportSize == other.viewportSize
@@ -95,8 +91,7 @@ namespace xng {
                    && faceCullClockwiseWinding == other.faceCullClockwiseWinding
                    && enableBlending == other.enableBlending
                    && blendSourceMode == other.blendSourceMode
-                   && blendDestinationMode == other.blendDestinationMode
-                   && &shader == &other.shader;
+                   && blendDestinationMode == other.blendDestinationMode;
         }
     };
 }
@@ -107,7 +102,6 @@ namespace std {
     struct hash<RenderPipelineDesc> {
         std::size_t operator()(const RenderPipelineDesc &k) const {
             size_t ret = 0;
-            hash_combine(ret, reinterpret_cast<uintptr_t>(&k.shader));
             hash_combine(ret, k.viewportOffset.x);
             hash_combine(ret, k.viewportOffset.y);
             hash_combine(ret, k.viewportSize.x);

@@ -27,8 +27,10 @@
 
 #include "util/hashcombine.hpp"
 
+#include "io/messageable.hpp"
+
 namespace xng {
-    struct TextureBufferDesc {
+    struct TextureBufferDesc : public Messageable {
         Vec2i size = {1, 1};
         int samples = 1; //Ignored if texture is not TEXTURE_2D_MULTISAMPLE
         TextureType textureType = TEXTURE_2D;
@@ -40,6 +42,8 @@ namespace xng {
         MipMapFiltering mipmapFilter = NEAREST_MIPMAP_NEAREST;
         bool fixedSampleLocations = false;
         RenderBufferType bufferType = HOST_VISIBLE;
+
+        TextureBufferDesc() = default;
 
         bool operator==(const TextureBufferDesc &other) const {
             return size == other.size
@@ -53,6 +57,37 @@ namespace xng {
                    && mipmapFilter == other.mipmapFilter
                    && fixedSampleLocations == other.fixedSampleLocations
                    && bufferType == other.bufferType;
+        }
+
+        Messageable &operator<<(const Message &message) override {
+            size << message.value("size");
+            samples = message.value("samples", 0);
+            textureType = (TextureType) message.value("textureType", (int) TEXTURE_2D);
+            format = (ColorFormat) message.value("format", (int) RGBA);
+            wrapping = (TextureWrapping) message.value("wrapping", (int)CLAMP_TO_BORDER);
+            filterMin = (TextureFiltering) message.value("filterMin", (int)NEAREST);
+            filterMag = (TextureFiltering) message.value("filterMax", (int)NEAREST);
+            generateMipmap = message.value("generateMipmap", false);
+            mipmapFilter = (MipMapFiltering)message.value("mipmapFilter", (int)NEAREST_MIPMAP_NEAREST);
+            fixedSampleLocations = message.value("fixedSampleLocations", false);
+            bufferType = (RenderBufferType)message.value("bufferType", (int)(HOST_VISIBLE));
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            size >> message["size"];
+            message["samples"] = samples;
+            message["textureType"] = (int)textureType;
+            message["format"] = (int)format;
+            message["wrapping"] = (int)wrapping;
+            message["filterMin"] = (int)filterMin;
+            message["filterMag"] = (int)filterMag;
+            message["generateMipmap"] = (int)generateMipmap;
+            message["mipmapFilter"] = (int)mipmapFilter;
+            message["fixedSampleLocations"] = fixedSampleLocations;
+            message["bufferType"] = (int) bufferType;
+            return message;
         }
     };
 }
