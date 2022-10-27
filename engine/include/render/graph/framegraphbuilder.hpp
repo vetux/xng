@@ -39,7 +39,8 @@ namespace xng {
          * @param passes
          * @return
          */
-        FrameGraph build(const std::vector<std::reference_wrapper<FrameGraphPass>> &passes);
+        FrameGraph build(std::vector<std::reference_wrapper<FrameGraphPass>> passes,
+                         const std::map<std::type_index, std::unique_ptr<std::type_index>> &passDependencies);
 
         /// Pass Interface   --------------------------------------
 
@@ -49,30 +50,17 @@ namespace xng {
 
         FrameGraphResource createShader(const ResourceHandle<Shader> &handle);
 
-        FrameGraphResource createPipeline(FrameGraphResource shader, const RenderPipelineDesc& desc);
+        FrameGraphResource createPipeline(FrameGraphResource shader, const RenderPipelineDesc &desc);
 
-        /**
-         * @param attribs
-         * @param persistent If true the created texture is not deallocated until the end of the frame.
-         * @return
-         */
-        FrameGraphResource createTextureBuffer(const TextureBufferDesc &attribs, bool persistent);
+        FrameGraphResource createTextureBuffer(const TextureBufferDesc &attribs);
 
         FrameGraphResource createShaderBuffer(const ShaderBufferDesc &desc);
 
-        FrameGraphResource createRenderTarget(const Vec2i& size, int samples);
+        FrameGraphResource createRenderTarget(const Vec2i &size, int samples);
 
         void write(FrameGraphResource target);
 
         void read(FrameGraphResource source);
-
-        /**
-         * Defines a dependency to the specified pass.
-         * The execute call on the calling pass is run after the specified pass.
-         *
-         * @param pass The type index of the pass to run before
-         */
-        void setDependency(const std::type_index &pass);
 
         /**
          * @return The resource handle of the back buffer to render into.
@@ -91,11 +79,19 @@ namespace xng {
 
     private:
         struct PassSetup {
-            std::unique_ptr<std::type_index> passDependency;
             std::set<FrameGraphResource> allocations;
             std::set<FrameGraphResource> writes;
             std::set<FrameGraphResource> reads;
         };
+
+        struct PassEntry {
+            std::reference_wrapper<FrameGraphPass> pass;
+            std::vector<PassEntry> childEntries;
+        };
+
+        void executeEntryRecursive(PassEntry &entry);
+
+        PassEntry *findEntryRecursive(std::type_index needle, PassEntry &entry);
 
         RenderTarget &backBuffer;
         const Scene &scene;
@@ -104,11 +100,12 @@ namespace xng {
         FrameGraph graph;
 
         PassSetup currentPass;
-        std::map<std::type_index, PassSetup> passSetups;
 
         std::map<Uri, FrameGraphResource> uriResources;
 
         int resourceCounter = 1;
+
+        GenericMapString blackboard;
     };
 }
 #endif //XENGINE_FRAMEGRAPHBUILDER_HPP

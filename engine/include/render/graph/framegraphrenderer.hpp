@@ -37,7 +37,16 @@ namespace xng {
         void render(RenderTarget &target, const Scene &scene) override;
 
         void setPasses(const std::vector<std::reference_wrapper<FrameGraphPass>> &value) {
+            passTypeNameMapping.clear();
+            passDependencies.clear();
             passes = value;
+            for (auto &pass: passes) {
+                passTypeNameMapping[pass.get().getTypeName()] = &pass.get();
+                auto dep = pass.get().getDependency();
+                if (dep != nullptr) {
+                    passDependencies[pass.get().getTypeName()] = std::make_unique<std::type_index>(*dep);
+                }
+            }
         }
 
         void setProperties(const GenericMapString &value) {
@@ -56,7 +65,8 @@ namespace xng {
         RenderDevice &device;
 
         std::vector<std::reference_wrapper<FrameGraphPass>> passes;
-        std::map<std::type_index, std::reference_wrapper<FrameGraphPass>> passTypeNameMapping;
+        std::map<std::type_index, FrameGraphPass*> passTypeNameMapping;
+        std::map<std::type_index, std::unique_ptr<std::type_index>> passDependencies;
 
         GenericMapString properties;
 

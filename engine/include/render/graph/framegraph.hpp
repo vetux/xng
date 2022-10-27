@@ -30,7 +30,6 @@ namespace xng {
             std::set<FrameGraphResource> allocations; // The set of resources created by the pass
             std::set<FrameGraphResource> writes; // The set of resources that are written to by the pass
             std::set<FrameGraphResource> reads; // The set of resources that are read by the pass
-            std::vector<PassExecution> childPasses; // The set of child passes
 
             PassExecution() = default;
         };
@@ -40,7 +39,7 @@ namespace xng {
             bool isUri;
             std::variant<Uri,
                     std::pair<FrameGraphResource, RenderPipelineDesc>,
-                    std::pair<TextureBufferDesc, bool>,
+                    TextureBufferDesc,
                     ShaderBufferDesc,
                     std::pair<Vec2i, int>> allocationData;
         };

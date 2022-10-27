@@ -27,18 +27,19 @@ namespace xng {
     void FrameGraphRenderer::render(RenderTarget &target,
                                     const Scene &scene) {
         /// Setup
-        auto frame = FrameGraphBuilder(target, scene, properties).build(passes);
+        auto frame = FrameGraphBuilder(target, scene, properties).build(passes, passDependencies);
 
         blackboard.clear();
 
-        for (auto &p: passes) {
-            /// Compile
-            FrameGraphPassResources res({});
-
 #pragma message "Not Implemented"
 
-            /// Execute
-            p.get().execute(res, blackboard);
+        /// Compile
+
+        /// Execute
+        for (auto &p: passes) {
+            FrameGraphPassResources res({});
+
+            p.get().execute(res);
         }
 
         pool.collectGarbage();

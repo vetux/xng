@@ -29,9 +29,10 @@ namespace xng {
     public:
         explicit GBufferPass(RenderDevice &device);
 
-        void setup(FrameGraphBuilder &builder, const GenericMapString &properties) override;
+        void
+        setup(FrameGraphBuilder &builder, const GenericMapString &properties, GenericMapString &sharedData) override;
 
-        void execute(FrameGraphPassResources &resources, GenericMapString &board) override;
+        void execute(FrameGraphPassResources &resources) override;
 
     private:
         RenderDevice &device;

@@ -31,7 +31,8 @@ namespace xng {
 
         ~SkyboxPass() override = default;
 
-        void setup(FrameGraphBuilder &builder, const GenericMapString &properties) override;
+        void
+        setup(FrameGraphBuilder &builder, const GenericMapString &properties, GenericMapString &sharedData) override;
 
         void execute(FrameGraphPassResources &resources, RenderDevice &ren, FrameGraphBlackboard &board) override;
 

@@ -179,7 +179,8 @@ namespace xng {/*
         defaultTexture->upload(defaultImage);*/
     }
 
-    void GBufferPass::setup(FrameGraphBuilder &builder, const GenericMapString &properties) {
+    void
+    GBufferPass::setup(FrameGraphBuilder &builder, const GenericMapString &properties, GenericMapString &sharedData) {
        /* scene = builder.getScene();
 
         for (auto &object: scene.objects) {
@@ -211,7 +212,7 @@ namespace xng {/*
         renderTarget = builder.createRenderTarget(format.first, format.second);*/
     }
 
-    void GBufferPass::execute(FrameGraphPassResources &resources, GenericMapString &board) {
+    void GBufferPass::execute(FrameGraphPassResources &resources) {
       /*  auto &target = resources.getRenderTarget(renderTarget);
 
         bindTextures(target, gBuffer);
