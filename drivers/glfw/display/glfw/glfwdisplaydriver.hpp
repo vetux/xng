@@ -22,26 +22,25 @@
 
 #include "display/displaydriver.hpp"
 
-namespace xng {
-    namespace glfw {
-        class GLFWDisplayDriver : public DisplayDriver {
-        public:
-            std::unique_ptr<Monitor> getPrimaryMonitor() override;
+namespace xng::glfw {
+    class GLFWDisplayDriver : public DisplayDriver {
+    public:
+        std::unique_ptr<Monitor> getPrimaryMonitor() override;
 
-            std::set<std::unique_ptr<Monitor>> getMonitors() override;
+        std::set<std::unique_ptr<Monitor>> getMonitors() override;
 
-            std::unique_ptr<Window> createWindow(const std::string &graphicsDriver) override;
+        std::unique_ptr<Window> createWindow(const std::string &graphicsDriver) override;
 
-            std::unique_ptr<Window>
-            createWindow(const std::string &graphicsDriver, const std::string &title, Vec2i size,
-                         WindowAttributes attributes) override;
+        std::unique_ptr<Window>
+        createWindow(const std::string &graphicsDriver, const std::string &title, Vec2i size,
+                     WindowAttributes attributes) override;
 
-            std::unique_ptr<Window>
-            createWindow(const std::string &graphicsDriver, const std::string &title, Vec2i size,
-                         WindowAttributes attributes, Monitor &monitor, VideoMode mode) override;
+        std::unique_ptr<Window>
+        createWindow(const std::string &graphicsDriver, const std::string &title, Vec2i size,
+                     WindowAttributes attributes, Monitor &monitor, VideoMode mode) override;
 
-            std::type_index getType() override;
-        };
-    }
+        std::type_index getType() override;
+    };
 }
+
 #endif //XENGINE_GLFWDISPLAYDRIVER_HPP

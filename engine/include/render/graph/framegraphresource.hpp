@@ -29,6 +29,8 @@ namespace xng {
 
         explicit FrameGraphResource(size_t index) : index(index), assigned(true) {}
 
+        FrameGraphResource(const FrameGraphResource &other) = default;
+
         bool operator<(const FrameGraphResource &other) const {
             if (!assigned || !other.assigned)
                 throw std::runtime_error("Unassigned resource");

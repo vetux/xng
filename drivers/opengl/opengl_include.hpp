@@ -1,6 +1,6 @@
 /**
  *  This file is part of xEngine, a C++ game engine library.
- *  Copyright (C) 2022  Julian Zampiccoli
+ *  Copyright (C) 2021  Julian Zampiccoli
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser General Public License as published by
@@ -17,31 +17,20 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RENDERBUFFER_HPP
-#define XENGINE_RENDERBUFFER_HPP
+#ifndef XENGINE_OPENGL_INCLUDE_HPP
+#define XENGINE_OPENGL_INCLUDE_HPP
 
-#include "gpu/renderobject.hpp"
-#include "gpu/renderbuffertype.hpp"
-#include "gpu/gpufence.hpp"
+// Disable pedantic warnings
+#ifdef unix
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+#endif
 
-namespace xng {
-    class XENGINE_EXPORT RenderBuffer : public RenderObject {
-    public:
-        /**
-         * Copy the data in source buffer to this buffer.
-         *
-         * @param source The concrete type of other must be compatible and have the same properties as this buffer.
-         * @return
-         */
-        virtual std::unique_ptr<GpuFence> copy(RenderBuffer &source) = 0;
+#include "glad/glad.h"
 
-        /**
-         * @return The size of the buffer in bytes
-         */
-        virtual size_t getMemoryUsage() = 0;
+#pragma GCC diagnostic pop
 
-        virtual RenderBufferType getBufferType() = 0;
-    };
-}
+#include "opengl_checkerror.hpp"
+#include "opengl_conversion.hpp"
 
-#endif //XENGINE_RENDERBUFFER_HPP
+#endif //XENGINE_OPENGL_INCLUDE_HPP

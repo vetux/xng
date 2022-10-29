@@ -23,60 +23,62 @@
 
 #include "driver/registerdriver.hpp"
 
-namespace xng {
-    namespace glfw {
-        static bool dr = REGISTER_DRIVER("glfw", DisplayDriver, GLFWDisplayDriver);
+namespace xng::glfw {
+    static bool dr = REGISTER_DRIVER("glfw", DisplayDriver, GLFWDisplayDriver);
 
-        std::unique_ptr<Monitor> GLFWDisplayDriver::getPrimaryMonitor() {
-            return std::make_unique<MonitorGLFW>(glfwGetPrimaryMonitor());
+    std::unique_ptr<Monitor> GLFWDisplayDriver::getPrimaryMonitor() {
+        return std::make_unique<MonitorGLFW>(glfwGetPrimaryMonitor());
+    }
+
+    std::set<std::unique_ptr<Monitor>> GLFWDisplayDriver::getMonitors() {
+        std::set<std::unique_ptr<Monitor>> ret;
+
+        int count;
+        GLFWmonitor **monitors = glfwGetMonitors(&count);
+        for (int i = 0; i < count; i++) {
+            ret.insert(std::make_unique<MonitorGLFW>(monitors[i]));
         }
 
-        std::set<std::unique_ptr<Monitor>> GLFWDisplayDriver::getMonitors() {
-            std::set<std::unique_ptr<Monitor>> ret;
+        return ret;
+    }
 
-            int count;
-            GLFWmonitor **monitors = glfwGetMonitors(&count);
-            for (int i = 0; i < count; i++) {
-                ret.insert(std::make_unique<MonitorGLFW>(monitors[i]));
-            }
-
-            return ret;
+    std::unique_ptr<Window> GLFWDisplayDriver::createWindow(const std::string &graphicsDriver) {
+        if (graphicsDriver == "opengl") {
+            return std::make_unique<WindowGLFWGL>("Window GLFW", Vec2i(600, 300), WindowAttributes());
+        } else {
+            throw std::runtime_error("Unsupported render driver");
         }
+    }
 
-        std::unique_ptr<Window> GLFWDisplayDriver::createWindow(const std::string &graphicsDriver) {
-            if (graphicsDriver == "opengl") {
-                return std::make_unique<WindowGLFWGL>("Window GLFW", Vec2i(600, 300), WindowAttributes());
-            } else {
-                throw std::runtime_error("Unsupported render driver");
-            }
+    std::unique_ptr<Window>
+    GLFWDisplayDriver::createWindow(const std::string &graphicsDriver,
+                                    const std::string &title,
+                                    Vec2i size,
+                                    WindowAttributes attributes) {
+        if (graphicsDriver == "opengl") {
+            return std::make_unique<WindowGLFWGL>(title, size, attributes);
+        } else {
+            throw std::runtime_error("Unsupported render driver");
         }
+    }
 
-        std::unique_ptr<Window>
-        GLFWDisplayDriver::createWindow(const std::string &graphicsDriver, const std::string &title, Vec2i size,
-                                        WindowAttributes attributes) {
-            if (graphicsDriver == "opengl") {
-                return std::make_unique<WindowGLFWGL>(title, size, attributes);
-            } else {
-                throw std::runtime_error("Unsupported render driver");
-            }
+    std::unique_ptr<Window> GLFWDisplayDriver::createWindow(const std::string &graphicsDriver,
+                                                            const std::string &title, Vec2i size,
+                                                            WindowAttributes attributes,
+                                                            Monitor &monitor,
+                                                            VideoMode mode) {
+        if (graphicsDriver == "opengl") {
+            return std::make_unique<WindowGLFWGL>(title,
+                                                  size,
+                                                  attributes,
+                                                  dynamic_cast<MonitorGLFW &>(monitor),
+                                                  mode);
+        } else {
+            throw std::runtime_error("Unsupported render driver");
         }
+    }
 
-        std::unique_ptr<Window>
-        GLFWDisplayDriver::createWindow(const std::string &graphicsDriver, const std::string &title, Vec2i size,
-                                        WindowAttributes attributes, Monitor &monitor, VideoMode mode) {
-            if (graphicsDriver == "opengl") {
-                return std::make_unique<WindowGLFWGL>(title,
-                                                      size,
-                                                      attributes,
-                                                      dynamic_cast<MonitorGLFW &>(monitor),
-                                                      mode);
-            } else {
-                throw std::runtime_error("Unsupported render driver");
-            }
-        }
-
-        std::type_index GLFWDisplayDriver::getType() {
-            return typeid(GLFWDisplayDriver);
-        }
+    std::type_index GLFWDisplayDriver::getType() {
+        return typeid(GLFWDisplayDriver);
     }
 }

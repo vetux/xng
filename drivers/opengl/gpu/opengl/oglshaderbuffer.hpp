@@ -20,25 +20,34 @@
 #ifndef XENGINE_OGLSHADERBUFFER_HPP
 #define XENGINE_OGLSHADERBUFFER_HPP
 
-#include "gpu/opengl/oglbuildmacro.hpp"
+#include "opengl_include.hpp"
 #include "gpu/opengl/oglfence.hpp"
 
 namespace xng::opengl {
-    class OPENGL_TYPENAME(ShaderBuffer) : public ShaderBuffer OPENGL_INHERIT {
+    class OGLShaderBuffer : public ShaderBuffer {
     public:
         ShaderBufferDesc desc;
-        GLuint ubo;
+        GLuint ubo = 0;
 
-        explicit OPENGL_TYPENAME(ShaderBuffer)(ShaderBufferDesc inputDescription)
-                : desc(std::move(inputDescription)) {
-            initialize();
+        explicit OGLShaderBuffer(ShaderBufferDesc inputDescription)
+                : desc(inputDescription) {
+
+            checkGLError();
+
             glGenBuffers(1, &ubo);
+            checkGLError();
+
             glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-            glBufferData(GL_UNIFORM_BUFFER, numeric_cast<GLsizeiptr>(desc.size), NULL, GL_STATIC_DRAW);
+            checkGLError();
+
+            glBufferData(GL_UNIFORM_BUFFER, numeric_cast<GLsizeiptr>(desc.size), nullptr, GL_STATIC_DRAW);
+            checkGLError();
+
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
+            checkGLError();
         }
 
-        ~OPENGL_TYPENAME(ShaderBuffer)() override {
+        ~OGLShaderBuffer() override {
             glDeleteBuffers(1, &ubo);
         }
 
@@ -49,17 +58,29 @@ namespace xng::opengl {
         std::unique_ptr<GpuFence> upload(const uint8_t *data, size_t size) override {
             if (size != desc.size)
                 throw std::runtime_error("Upload size does not match buffer size");
+            if (desc.bufferType != HOST_VISIBLE)
+                throw std::runtime_error("Upload called on non host visible buffer.");
             glBindBuffer(GL_UNIFORM_BUFFER, ubo);
             glBufferData(GL_UNIFORM_BUFFER, numeric_cast<GLsizeiptr>(size), data, GL_STATIC_DRAW);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
+            checkGLError();
             return std::make_unique<OGLFence>();
         }
 
         std::unique_ptr<GpuFence> copy(RenderBuffer &other) override {
-            throw std::runtime_error("Not Implemented");
+            auto &source = dynamic_cast<OGLShaderBuffer &>(other);
+            glBindBuffer(GL_COPY_WRITE_BUFFER, ubo);
+            glBindBuffer(GL_COPY_READ_BUFFER, source.ubo);
+            glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, numeric_cast<GLsizeiptr>(desc.size));
+            glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
+            glBindBuffer(GL_COPY_READ_BUFFER, 0);
+            checkGLError();
+            return std::make_unique<OGLFence>();
         }
 
-        OPENGL_MEMBERS
+        size_t getMemoryUsage() override {
+            return desc.size;
+        }
     };
 }
 

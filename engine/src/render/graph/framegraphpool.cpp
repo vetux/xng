@@ -22,25 +22,32 @@
 
 namespace xng {
     static std::unique_ptr<TextureBuffer> allocateTexture(const Texture &t, RenderDevice &device) {
-        auto texture = device.createTextureBuffer(t.description);
+        auto desc = t.description;
+        desc.bufferType = HOST_VISIBLE;
+        auto stagingBuffer = device.createTextureBuffer(desc);
+
         if (!t.images.empty()) {
             if (t.description.textureType == TEXTURE_CUBE_MAP) {
                 for (int i = POSITIVE_X; i <= NEGATIVE_Z; i++) {
                     auto size = t.images.at(i).get().getSize();
-                    texture->upload(static_cast<CubeMapFace>(i),
-                                    RGBA,
-                                    reinterpret_cast<const uint8_t *>(t.images.at(i).get().getData()),
-                                    sizeof(ColorRGBA) * (size.x * size.y));
+                    stagingBuffer->upload(static_cast<CubeMapFace>(i),
+                                          RGBA,
+                                          reinterpret_cast<const uint8_t *>(t.images.at(i).get().getData()),
+                                          sizeof(ColorRGBA) * (size.x * size.y));
                 }
             } else {
                 auto size = t.images.at(0).get().getSize();
-                texture->upload(RGBA,
-                                reinterpret_cast<const uint8_t *>(t.images.at(0).get().getData()),
-                                sizeof(ColorRGBA) * (size.x * size.y));
+                stagingBuffer->upload(RGBA,
+                                      reinterpret_cast<const uint8_t *>(t.images.at(0).get().getData()),
+                                      sizeof(ColorRGBA) * (size.x * size.y));
             }
         }
 
-        return texture;
+        desc.bufferType = DEVICE_LOCAL;
+        auto ret = device.createTextureBuffer(desc);
+        ret->copy(*stagingBuffer);
+
+        return ret;
     }
 
     FrameGraphPool::FrameGraphPool(RenderDevice &device, SPIRVCompiler &spirvCompiler, SPIRVDecompiler &spirvDecompiler)
@@ -144,21 +151,6 @@ namespace xng {
         return *textures[desc].at(index);
     }
 
-    void FrameGraphPool::destroyTextureBuffer(TextureBuffer &buffer) {
-        usedTextures[buffer.getDescription()]--;
-        bool found = false;
-        long index = 0;
-        for (auto i = 0; i < textures[buffer.getDescription()].size(); i++) {
-            if (textures[buffer.getDescription()][i].get() == &buffer) {
-                index = i;
-                found = true;
-                break;
-            }
-        }
-        assert(found);
-        textures[buffer.getDescription()].erase(textures[buffer.getDescription()].begin() + index);
-    }
-
     ShaderBuffer &FrameGraphPool::createShaderBuffer(const ShaderBufferDesc &desc) {
         auto index = usedShaderBuffers[desc]++;
         if (shaderBuffers[desc].size() <= index) {
@@ -166,21 +158,6 @@ namespace xng {
             shaderBuffers[desc].at(index) = device->createShaderBuffer(desc);
         }
         return *shaderBuffers[desc].at(index);
-    }
-
-    void FrameGraphPool::destroyShaderBuffer(ShaderBuffer &buffer) {
-        usedShaderBuffers[buffer.getDescription()]--;
-        bool found = false;
-        long index = 0;
-        for (auto i = 0; i < shaderBuffers[buffer.getDescription()].size(); i++) {
-            if (shaderBuffers[buffer.getDescription()][i].get() == &buffer) {
-                index = i;
-                found = true;
-                break;
-            }
-        }
-        assert(found);
-        shaderBuffers[buffer.getDescription()].erase(shaderBuffers[buffer.getDescription()].begin() + index);
     }
 
     RenderTarget &FrameGraphPool::createRenderTarget(const RenderTargetDesc &desc) {
@@ -192,18 +169,56 @@ namespace xng {
         return *targets[desc].at(index);
     }
 
-    void FrameGraphPool::destroyRenderTarget(RenderTarget &target) {
-        usedTargets[target.getDescription()]--;
-        bool found = false;
-        long index = 0;
-        for (auto i = 0; i < targets[target.getDescription()].size(); i++) {
-            if (targets[target.getDescription()][i].get() == &target) {
-                index = i;
-                found = true;
+    void FrameGraphPool::destroy(RenderObject &obj) {
+        switch (obj.getType()) {
+            case RenderObject::TEXTURE_BUFFER: {
+                auto &buffer = dynamic_cast<TextureBuffer&>(obj);
+                usedTextures[buffer.getDescription()]--;
+                bool found = false;
+                long index = 0;
+                for (auto i = 0; i < textures[buffer.getDescription()].size(); i++) {
+                    if (textures[buffer.getDescription()][i].get() == &buffer) {
+                        index = i;
+                        found = true;
+                        break;
+                    }
+                }
+                assert(found);
+                textures[buffer.getDescription()].erase(textures[buffer.getDescription()].begin() + index);
+            }
+                break;
+            case RenderObject::SHADER_BUFFER: {
+                auto &buffer = dynamic_cast<ShaderBuffer&>(obj);
+                usedShaderBuffers[buffer.getDescription()]--;
+                bool found = false;
+                long index = 0;
+                for (auto i = 0; i < shaderBuffers[buffer.getDescription()].size(); i++) {
+                    if (shaderBuffers[buffer.getDescription()][i].get() == &buffer) {
+                        index = i;
+                        found = true;
+                        break;
+                    }
+                }
+                assert(found);
+                shaderBuffers[buffer.getDescription()].erase(shaderBuffers[buffer.getDescription()].begin() + index);
+                break;
+            }
+            case RenderObject::RENDER_TARGET: {
+                auto &target = dynamic_cast<RenderTarget&>(obj);
+                usedTargets[target.getDescription()]--;
+                bool found = false;
+                long index = 0;
+                for (auto i = 0; i < targets[target.getDescription()].size(); i++) {
+                    if (targets[target.getDescription()][i].get() == &target) {
+                        index = i;
+                        found = true;
+                        break;
+                    }
+                }
+                assert(found);
+                targets[target.getDescription()].erase(targets[target.getDescription()].begin() + index);
                 break;
             }
         }
-        assert(found);
-        targets[target.getDescription()].erase(targets[target.getDescription()].begin() + index);
     }
 }

@@ -23,36 +23,35 @@
 #include "gpu/rendertarget.hpp"
 #include "display/window.hpp"
 
-namespace xng {
-    namespace ImGuiCompat {
-        /**
-         * Calls the Impl*Init* methods and ImGui::CreateContext if it is the first call.
-         * @param window
-         */
-        XENGINE_EXPORT void Init(Window &window);
+namespace xng::ImGuiCompat {
+    /**
+     * Calls the Impl*Init* methods and ImGui::CreateContext if it is the first call.
+     * @param window
+     */
+    XENGINE_EXPORT void Init(Window &window);
 
-        /**
-         * Calls the Impl*Shutdown methods and ImGui::DestroyContext if it is the last call.
-         * @param window
-         */
-        XENGINE_EXPORT void Shutdown(Window &window);
+    /**
+     * Calls the Impl*Shutdown methods and ImGui::DestroyContext if it is the last call.
+     * @param window
+     */
+    XENGINE_EXPORT void Shutdown(Window &window);
 
-        /**
-         * Calls Impl*NewFrame methods, the user still has to call ImGui::NewFrame afterwards.
-         * @param window
-         */
-        XENGINE_EXPORT void NewFrame(Window &window);
+    /**
+     * Calls Impl*NewFrame methods, the user still has to call ImGui::NewFrame afterwards.
+     * @param window
+     */
+    XENGINE_EXPORT void NewFrame(Window &window);
 
-        /**
-         * Calls Impl*RenderDrawData and renders the imgui data into the target.
-         * The user still has to call ImGui::Render beforehand.
-         *
-         * Users can attach a texture buffer to the window render target to access the result.
-         *
-         * @param window
-         * @param target
-         */
-        XENGINE_EXPORT void DrawData(Window &window, RenderTarget &target, bool clear);
-    }
+    /**
+     * Calls Impl*RenderDrawData and renders the imgui data into the target.
+     * The user still has to call ImGui::Render beforehand.
+     *
+     * Users can attach a texture buffer to the window render target to access the result.
+     *
+     * @param window
+     * @param target
+     */
+    XENGINE_EXPORT void DrawData(Window &window, RenderTarget &target, bool clear);
 }
+
 #endif //XENGINE_IMGUICOMPAT_HPP

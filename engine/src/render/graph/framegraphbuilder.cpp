@@ -17,6 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <render/graph/framegraphlayout.hpp>
 #include "render/graph/framegraphbuilder.hpp"
 
 #include "render/graph/framegraphpass.hpp"
@@ -33,9 +34,9 @@ namespace xng {
         auto it = uriResources.find(h.getUri());
         if (it == uriResources.end()) {
             auto ret = FrameGraphResource(resourceCounter++);
-            graph.allocatedObjects[ret] = FrameGraph::PassAllocation{RenderObject::VERTEX_BUFFER,
-                                                                     true,
-                                                                     h.getUri()};
+            graph.allocations[ret] = FrameGraphAllocation{RenderObject::VERTEX_BUFFER,
+                                                          true,
+                                                          h.getUri()};
             currentPass.allocations.insert(ret);
             uriResources[h.getUri()] = ret;
             return ret;
@@ -50,9 +51,9 @@ namespace xng {
         auto it = uriResources.find(h.getUri());
         if (it == uriResources.end()) {
             auto ret = FrameGraphResource(resourceCounter++);
-            graph.allocatedObjects[ret] = FrameGraph::PassAllocation{RenderObject::TEXTURE_BUFFER,
-                                                                     true,
-                                                                     h.getUri()};
+            graph.allocations[ret] = FrameGraphAllocation{RenderObject::TEXTURE_BUFFER,
+                                                          true,
+                                                          h.getUri()};
             currentPass.allocations.insert(ret);
             uriResources[h.getUri()] = ret;
             return ret;
@@ -63,56 +64,39 @@ namespace xng {
         }
     }
 
-    FrameGraphResource FrameGraphBuilder::createShader(const ResourceHandle<Shader> &h) {
-        auto it = uriResources.find(h.getUri());
-        if (it == uriResources.end()) {
-            auto ret = FrameGraphResource(resourceCounter++);
-            graph.allocatedObjects[ret] = FrameGraph::PassAllocation{RenderObject::SHADER_PROGRAM,
-                                                                     true,
-                                                                     h.getUri()};
-            currentPass.allocations.insert(ret);
-            uriResources[h.getUri()] = ret;
-            return ret;
-        } else {
-            auto ret = it->second;
-            currentPass.allocations.insert(ret);
-            return ret;
-        }
-    }
-
-    FrameGraphResource FrameGraphBuilder::createPipeline(FrameGraphResource shader,
+    FrameGraphResource FrameGraphBuilder::createPipeline(const ResourceHandle<Shader> &shader,
                                                          const RenderPipelineDesc &desc) {
         auto ret = FrameGraphResource(resourceCounter++);
-        graph.allocatedObjects[ret] = FrameGraph::PassAllocation{RenderObject::RENDER_PIPELINE,
-                                                                 false,
-                                                                 std::make_pair<>(shader, desc)};
+        graph.allocations[ret] = FrameGraphAllocation{RenderObject::RENDER_PIPELINE,
+                                                      false,
+                                                      std::make_pair<>(shader, desc)};
+        currentPass.allocations.insert(ret);
+        return ret;
+    }
+
+    FrameGraphResource FrameGraphBuilder::createRenderTarget(const RenderTargetDesc &desc) {
+        auto ret = FrameGraphResource(resourceCounter++);
+        graph.allocations[ret] = FrameGraphAllocation{RenderObject::RENDER_TARGET,
+                                                      false,
+                                                      desc};
         currentPass.allocations.insert(ret);
         return ret;
     }
 
     FrameGraphResource FrameGraphBuilder::createTextureBuffer(const TextureBufferDesc &attribs) {
         auto ret = FrameGraphResource(resourceCounter++);
-        graph.allocatedObjects[ret] = FrameGraph::PassAllocation{RenderObject::TEXTURE_BUFFER,
-                                                                 false,
-                                                                 attribs};
+        graph.allocations[ret] = FrameGraphAllocation{RenderObject::TEXTURE_BUFFER,
+                                                      false,
+                                                      attribs};
         currentPass.allocations.insert(ret);
         return ret;
     }
 
     FrameGraphResource FrameGraphBuilder::createShaderBuffer(const ShaderBufferDesc &desc) {
         auto ret = FrameGraphResource(resourceCounter++);
-        graph.allocatedObjects[ret] = FrameGraph::PassAllocation{RenderObject::SHADER_BUFFER,
-                                                                 false,
-                                                                 desc};
-        currentPass.allocations.insert(ret);
-        return ret;
-    }
-
-    FrameGraphResource FrameGraphBuilder::createRenderTarget(const Vec2i &size, int samples) {
-        auto ret = FrameGraphResource(resourceCounter++);
-        graph.allocatedObjects[ret] = FrameGraph::PassAllocation{RenderObject::RENDER_TARGET,
-                                                                 false,
-                                                                 std::make_pair<>(size, samples)};
+        graph.allocations[ret] = FrameGraphAllocation{RenderObject::SHADER_BUFFER,
+                                                      false,
+                                                      desc};
         currentPass.allocations.insert(ret);
         return ret;
     }
@@ -137,72 +121,20 @@ namespace xng {
         return scene;
     }
 
-    FrameGraphBuilder::PassEntry *FrameGraphBuilder::findEntryRecursive(std::type_index needle,
-                                                                        FrameGraphBuilder::PassEntry &entry) {
-        if (entry.pass.get().getTypeName() == needle) {
-            return &entry;
-        } else {
-            for (auto &child: entry.childEntries) {
-                auto *ptr = findEntryRecursive(needle, child);
-                if (ptr) {
-                    return ptr;
-                }
-            }
-            return nullptr;
-        }
-    }
-
-    void FrameGraphBuilder::executeEntryRecursive(PassEntry &entry) {
-        currentPass = {};
-        entry.pass.get().setup(*this, properties, blackboard);
-        FrameGraph::PassExecution exec;
-        exec.pass = entry.pass.get().getTypeName();
-        exec.allocations = currentPass.allocations;
-        exec.reads = currentPass.reads;
-        exec.writes = currentPass.writes;
-        graph.passExecutions.emplace_back(exec);
-
-        for (auto &child: entry.childEntries) {
-            executeEntryRecursive(child);
-        }
-    }
-
-    FrameGraph FrameGraphBuilder::build(std::vector<std::reference_wrapper<FrameGraphPass>> passes,
-                                        const std::map<std::type_index, std::unique_ptr<std::type_index>> &passDependencies) {
+    FrameGraph FrameGraphBuilder::build(const FrameGraphLayout &layout) {
         blackboard.clear();
         graph = {};
         resourceCounter = 1;
 
-        std::vector<PassEntry> entries;
-
-        // Brute force pass tree creation
-        while (!passes.empty()) {
-            std::set<int> delPasses;
-            for (auto i = 0; i < passes.size(); i++) {
-                auto &pass = passes.at(i);
-                auto it = passDependencies.find(pass.get().getTypeName());
-                for (auto &entry: entries) {
-                    if (it != passDependencies.end()) {
-                        auto *ptr = findEntryRecursive(it->first, entry);
-                        if (ptr) {
-                            ptr->childEntries.emplace_back(PassEntry{.pass = pass});
-                            delPasses.insert(i);
-                            break;
-                        }
-                    } else {
-                        entries.emplace_back(PassEntry{.pass = pass});
-                        delPasses.insert(i);
-                        break;
-                    }
-                }
-            }
-            for (auto it = delPasses.rbegin(); it != delPasses.rend(); it++) {
-                passes.erase(passes.begin() + *it);
-            }
-        }
-
-        for (auto &entry: entries) {
-            executeEntryRecursive(entry);
+        for (auto &pass: layout.getOrderedPasses()) {
+            currentPass = {};
+            pass.get().setup(*this, properties, blackboard);
+            FrameGraph::Stage exec;
+            exec.pass = pass.get().getTypeName();
+            exec.resources = currentPass.allocations;
+            exec.reads = currentPass.reads;
+            exec.writes = currentPass.writes;
+            graph.stages.emplace_back(exec);
         }
 
         return graph;

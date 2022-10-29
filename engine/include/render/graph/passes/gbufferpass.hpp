@@ -27,18 +27,17 @@
 namespace xng {
     class XENGINE_EXPORT GBufferPass : public FrameGraphPass {
     public:
-        explicit GBufferPass(RenderDevice &device);
+        GBufferPass();
 
-        void
-        setup(FrameGraphBuilder &builder, const GenericMapString &properties, GenericMapString &sharedData) override;
+        void setup(FrameGraphBuilder &builder,
+                   const GenericMapString &properties,
+                   GenericMapString &sharedData) override;
 
         void execute(FrameGraphPassResources &resources) override;
 
+        std::type_index getTypeName() override;
+
     private:
-        RenderDevice &device;
-
-        Scene scene;
-
         FrameGraphResource defaultTexture;
         FrameGraphResource shader;
         FrameGraphResource renderTarget;

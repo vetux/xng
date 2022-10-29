@@ -1,6 +1,6 @@
 /**
  *  This file is part of xEngine, a C++ game engine library.
- *  Copyright (C) 2022  Julian Zampiccoli
+ *  Copyright (C) 2021  Julian Zampiccoli
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser General Public License as published by
@@ -17,19 +17,20 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_QTRENDERWIDGET_HPP
-#define XENGINE_QTRENDERWIDGET_HPP
+#ifndef XENGINE_FRAMEGRAPHALLOCATOR_HPP
+#define XENGINE_FRAMEGRAPHALLOCATOR_HPP
 
-#include <QOpenGLWidget>
-#include <QOpenGLFunctions_3_3_Core>
-
-#include "gpu/rendertarget.hpp"
+#include "render/graph/framegraphallocation.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT QtRenderWidget : public QOpenGLWidget {
+    class XENGINE_EXPORT FrameGraphAllocator {
     public:
+        virtual void collectGarbage() = 0;
 
+        virtual FrameGraphResource allocate(const FrameGraphAllocation &allocation) = 0;
+
+        virtual void deallocate(const FrameGraphResource &resource) = 0;
     };
 }
 
-#endif //XENGINE_QTRENDERWIDGET_HPP
+#endif //XENGINE_FRAMEGRAPHALLOCATOR_HPP

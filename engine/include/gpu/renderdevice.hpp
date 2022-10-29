@@ -109,7 +109,8 @@ namespace xng {
          * @param mesh
          * @return
          */
-        virtual std::unique_ptr<VertexBuffer> createVertexBuffer(const Mesh &mesh) {
+        virtual std::unique_ptr<VertexBuffer> createVertexBuffer(const Mesh &mesh,
+                                                                 RenderBufferType bufferType = DEVICE_LOCAL) {
             const std::vector<VertexAttribute> layout = {
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
@@ -120,15 +121,27 @@ namespace xng {
                     VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
             };
 
-            const VertexBufferDesc desc = {
+            VertexBufferDesc desc = {
                     .primitive = mesh.primitive,
                     .vertexLayout = layout,
                     .numberOfVertices = mesh.vertices.size(),
                     .numberOfIndices = mesh.indices.size()
             };
-            auto ret = createVertexBuffer(desc);
-            ret->upload(mesh);
-            return ret;
+
+            if (bufferType == DEVICE_LOCAL || bufferType == LAZILY_ALLOCATED) {
+                // Use staging buffer for buffer allocation
+                auto stagingBuffer = createVertexBuffer(desc);
+                stagingBuffer->upload(mesh);
+                desc.bufferType = bufferType;
+                auto ret = createVertexBuffer(desc);
+                ret->copy(*stagingBuffer);
+                return ret;
+            } else {
+                desc.bufferType = bufferType;
+                auto ret = createVertexBuffer(desc);
+                ret->upload(mesh);
+                return ret;
+            }
         }
 
         /**
@@ -151,7 +164,8 @@ namespace xng {
          * @return
          */
         virtual std::unique_ptr<VertexBuffer> createInstancedVertexBuffer(const Mesh &mesh,
-                                                                          const std::vector<Mat4f> &offsets) {
+                                                                          const std::vector<Mat4f> &offsets,
+                                                                          RenderBufferType bufferType = DEVICE_LOCAL) {
             const std::vector<VertexAttribute> layout = {
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
@@ -169,7 +183,7 @@ namespace xng {
                     VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT)
             };
 
-            const VertexBufferDesc desc = {
+             VertexBufferDesc desc = {
                     .primitive = mesh.primitive,
                     .vertexLayout = layout,
                     .instanceLayout = instanceLayout,
@@ -177,9 +191,33 @@ namespace xng {
                     .numberOfInstances = offsets.size(),
                     .numberOfIndices = mesh.indices.size(),
             };
-            auto ret = createVertexBuffer(desc);
-            ret->upload(mesh, offsets);
-            return ret;
+            if (bufferType == DEVICE_LOCAL || bufferType == LAZILY_ALLOCATED) {
+                // Use staging buffer for buffer allocation
+                auto stagingBuffer = createVertexBuffer(desc);
+                stagingBuffer->upload(mesh, offsets);
+                desc.bufferType = bufferType;
+                auto ret = createVertexBuffer(desc);
+                ret->copy(*stagingBuffer);
+                return ret;
+            } else {
+                auto ret = createVertexBuffer(desc);
+                ret->upload(mesh, offsets);
+                return ret;
+            }
+
+             if (bufferType == DEVICE_LOCAL || bufferType == LAZILY_ALLOCATED){
+                 // Use staging buffer for buffer allocation
+                 auto stagingBuffer = createVertexBuffer(desc);
+                 stagingBuffer->upload(mesh, offsets);
+                 desc.bufferType = bufferType;
+                 auto ret = createVertexBuffer(desc);
+                 ret->copy(*stagingBuffer);
+                 return ret;
+             } else {
+                 auto ret = createVertexBuffer(desc);
+                 ret->upload(mesh, offsets);
+                 return ret;
+             }
         }
     };
 }

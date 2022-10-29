@@ -17,13 +17,35 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#pragma message "Not Implemented"
+
+#include "render/graph/passes/gbufferpass.hpp"
+
+namespace xng {
+    GBufferPass::GBufferPass() {
+
+    }
+
+    void
+    GBufferPass::setup(FrameGraphBuilder &builder, const GenericMapString &properties, GenericMapString &sharedData) {
+
+    }
+
+    void GBufferPass::execute(FrameGraphPassResources &resources) {
+
+    }
+
+    std::type_index GBufferPass::getTypeName() {
+        return typeid(GBufferPass);
+    }
+}
+/*
+
 #include "render/graph/passes/gbufferpass.hpp"
 
 #include "render/shaderinclude.hpp"
 
 #include "io/archive/memoryarchive.hpp"
-
-#pragma message "Not Implemented"
 
 static const char *SHADER_VERT_GEOMETRY = R"###(#version 420 core
 
@@ -143,7 +165,7 @@ void main() {
 }
 )###";
 
-namespace xng {/*
+namespace xng {
     static bool shaderLoaded = false;
 
     static const Uri shaderUri = Uri("memory", "/shaders/gbufferpass", "");
@@ -165,23 +187,23 @@ namespace xng {/*
                 static_cast<float>(color.g()) / 255,
                 static_cast<float>(color.b()) / 255,
                 static_cast<float>(color.a()) / 255};
-    }*/
+    }
 
     GBufferPass::GBufferPass(RenderDevice &device)
             : device(device) {
-        /*ShaderProgramDesc desc;
+        ShaderProgramDesc desc;
 
         auto defaultImage = ImageRGBA(1,
                                       1,
                                       std::vector<ColorRGBA>({ColorRGBA::black()}));
 
         defaultTexture = device.getAllocator().createTextureBuffer({.size = {1, 1}, .samples = 1});
-        defaultTexture->upload(defaultImage);*/
+        defaultTexture->upload(defaultImage);
     }
 
     void
     GBufferPass::setup(FrameGraphBuilder &builder, const GenericMapString &properties, GenericMapString &sharedData) {
-       /* scene = builder.getScene();
+        scene = builder.getScene();
 
         for (auto &object: scene.objects) {
             sceneResources[object.mesh.getUri()] = builder.createMeshBuffer(object.mesh);
@@ -209,11 +231,11 @@ namespace xng {/*
         if (format.first != gBuffer.getSize() || format.second != gBuffer.getSamples()) {
             gBuffer = GBuffer(device, format.first, format.second);
         }
-        renderTarget = builder.createRenderTarget(format.first, format.second);*/
+        renderTarget = builder.createRenderTarget(format.first, format.second);
     }
 
     void GBufferPass::execute(FrameGraphPassResources &resources) {
-      /*  auto &target = resources.getRenderTarget(renderTarget);
+        auto &target = resources.getRenderTarget(renderTarget);
 
         bindTextures(target, gBuffer);
 
@@ -353,6 +375,7 @@ namespace xng {/*
 
         unbindTextures(target);
 
-        board.set<GBuffer>(gBuffer);*/
+        board.set<GBuffer>(gBuffer);
     }
 }
+*/

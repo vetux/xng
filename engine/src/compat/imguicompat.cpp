@@ -30,76 +30,74 @@
 #include "display/glfw/opengl/windowglfwgl.hpp"
 #include "gpu/opengl/oglrendertarget.hpp"
 
-namespace xng {
-    namespace ImGuiCompat {
-        void Init(Window &window) {
-            auto displayDriver = window.getDisplayDriver();
-            auto graphicsDriver = window.getGraphicsDriver();
-            if (displayDriver == "glfw" && graphicsDriver == "opengl") {
-                ImGui_ImplGlfw_InitForOpenGL(dynamic_cast<glfw::WindowGLFWGL &>(window).windowHandle(), true);
-                ImGui_ImplOpenGL3_Init("#version 460");
-            } else {
-                throw std::runtime_error("Unsupported display or graphics driver");
-            }
+namespace xng::ImGuiCompat {
+    void Init(Window &window) {
+        auto displayDriver = window.getDisplayDriver();
+        auto graphicsDriver = window.getGraphicsDriver();
+        if (displayDriver == "glfw" && graphicsDriver == "opengl") {
+            ImGui_ImplGlfw_InitForOpenGL(dynamic_cast<glfw::WindowGLFWGL &>(window).windowHandle(), true);
+            ImGui_ImplOpenGL3_Init("#version 460");
+        } else {
+            throw std::runtime_error("Unsupported display or graphics driver");
+        }
+    }
+
+    void Shutdown(Window &window) {
+        auto displayDriver = window.getDisplayDriver();
+        auto graphicsDriver = window.getGraphicsDriver();
+
+        if (displayDriver == "glfw" && graphicsDriver == "opengl") {
+            ImGui_ImplOpenGL3_Shutdown();
+            ImGui_ImplGlfw_Shutdown();
+        } else {
+            throw std::runtime_error("Unsupported display or graphics driver");
+        }
+    }
+
+    void NewFrame(Window &window) {
+        auto displayDriver = window.getDisplayDriver();
+        auto graphicsDriver = window.getGraphicsDriver();
+
+        if (graphicsDriver == "opengl") {
+            ImGui_ImplOpenGL3_NewFrame();
+        } else {
+            throw std::runtime_error("Unsupported graphics driver");
         }
 
-        void Shutdown(Window &window) {
-            auto displayDriver = window.getDisplayDriver();
-            auto graphicsDriver = window.getGraphicsDriver();
-
-            if (displayDriver == "glfw" && graphicsDriver == "opengl") {
-                ImGui_ImplOpenGL3_Shutdown();
-                ImGui_ImplGlfw_Shutdown();
-            } else {
-                throw std::runtime_error("Unsupported display or graphics driver");
-            }
+        if (displayDriver == "glfw") {
+            ImGui_ImplGlfw_NewFrame();
+        } else {
+            throw std::runtime_error("Unsupported display driver");
         }
+    }
 
-        void NewFrame(Window &window) {
-            auto displayDriver = window.getDisplayDriver();
-            auto graphicsDriver = window.getGraphicsDriver();
+    void DrawData(Window &window, RenderTarget &target, bool clear) {
+        auto displayDriver = window.getDisplayDriver();
+        auto graphicsDriver = window.getGraphicsDriver();
 
-            if (graphicsDriver == "opengl") {
-                ImGui_ImplOpenGL3_NewFrame();
-            } else {
-                throw std::runtime_error("Unsupported graphics driver");
+        if (graphicsDriver == "opengl") {
+            auto &t = dynamic_cast<opengl::OGLRenderTarget &>(target);
+            glBindFramebuffer(GL_FRAMEBUFFER, t.getFBO());
+            glViewport(0,
+                       0,
+                       t.desc.size.x,
+                       t.desc.size.y);
+            const auto clearColor = ColorRGBA::black();
+            glClearColor(clearColor.r(),
+                         clearColor.g(),
+                         clearColor.b(),
+                         clearColor.a());
+            GLenum clearFlags = 0;
+            if (clear) {
+                clearFlags |= GL_COLOR_BUFFER_BIT;
+                clearFlags |= GL_DEPTH_BUFFER_BIT;
+                clearFlags |= GL_STENCIL_BUFFER_BIT;
             }
-
-            if (displayDriver == "glfw") {
-                ImGui_ImplGlfw_NewFrame();
-            } else {
-                throw std::runtime_error("Unsupported display driver");
-            }
-        }
-
-        void DrawData(Window &window, RenderTarget &target, bool clear) {
-            auto displayDriver = window.getDisplayDriver();
-            auto graphicsDriver = window.getGraphicsDriver();
-
-            if (graphicsDriver == "opengl") {
-                auto &t = dynamic_cast<opengl::OGLRenderTarget &>(target);
-                glBindFramebuffer(GL_FRAMEBUFFER, t.getFBO());
-                glViewport(0,
-                           0,
-                           t.desc.size.x,
-                           t.desc.size.y);
-                const auto clearColor = ColorRGBA::black();
-                glClearColor(clearColor.r(),
-                             clearColor.g(),
-                             clearColor.b(),
-                             clearColor.a());
-                GLenum clearFlags = 0;
-                if (clear) {
-                    clearFlags |= GL_COLOR_BUFFER_BIT;
-                    clearFlags |= GL_DEPTH_BUFFER_BIT;
-                    clearFlags |= GL_STENCIL_BUFFER_BIT;
-                }
-                glClear(clearFlags);
-                ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-                glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            } else {
-                throw std::runtime_error("Unsupported graphics driver");
-            }
+            glClear(clearFlags);
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        } else {
+            throw std::runtime_error("Unsupported graphics driver");
         }
     }
 }

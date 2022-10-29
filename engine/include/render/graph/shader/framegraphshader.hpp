@@ -23,7 +23,7 @@
 #include <functional>
 #include <string>
 
-namespace xng {
+namespace xng::FrameGraphShader {
     /**
      * Defines the following headers:
      *
@@ -68,9 +68,9 @@ namespace xng {
      *
      * Output method, call this to set the output color of your fragment:
      * void setColor(vec4 color)
+     * @return
      */
-    namespace FrameGraphShader {
-        std::function<std::string(const char *)> getShaderInclude();
-    }
+    XENGINE_EXPORT std::function<std::string(const char *)> getShaderInclude();
 }
+
 #endif //XENGINE_FRAMEGRAPHSHADER_HPP

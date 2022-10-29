@@ -58,12 +58,6 @@ namespace xng {
          * @return The type index of the concrete pass type
          */
         virtual std::type_index getTypeName() = 0;
-
-        /**
-         *
-         * @return if not nullptr the execute call on the calling pass will be run after the specified pass.
-         */
-        virtual std::type_index *getDependency() = 0;
     };
 }
 

@@ -18,6 +18,29 @@
  */
 
 #pragma message "Not Implemented"
+
+#include "render/graph/passes/compositepass.hpp"
+
+namespace xng {
+    CompositePass::CompositePass() {
+
+    }
+
+    void CompositePass::setup(FrameGraphBuilder &builder,
+                              const GenericMapString &properties,
+                              GenericMapString &sharedData) {
+
+    }
+
+    void CompositePass::execute(FrameGraphPassResources &resources) {
+
+    }
+
+    std::type_index CompositePass::getTypeName() {
+        return typeid(CompositePass);
+    }
+}
+
 /*
 #include "render/graph/passes/compositepass.hpp"
 

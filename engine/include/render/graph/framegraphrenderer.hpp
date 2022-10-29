@@ -24,29 +24,21 @@
 
 #include "render/graph/framegraphpool.hpp"
 #include "render/graph/framegraphpass.hpp"
+#include "render/graph/framegraphlayout.hpp"
+#include "render/graph/framegraphallocator.hpp"
+#include "render/graph/allocators/framegraphpoolallocator.hpp"
 
 #include "gpu/renderdevice.hpp"
 
 namespace xng {
     class XENGINE_EXPORT FrameGraphRenderer : public SceneRenderer {
     public:
-        explicit FrameGraphRenderer(RenderDevice &device,
-                                    SPIRVCompiler &spirvCompiler,
-                                    SPIRVDecompiler &spirvDecompiler);
+        explicit FrameGraphRenderer(std::unique_ptr<FrameGraphAllocator> allocator);
 
         void render(RenderTarget &target, const Scene &scene) override;
 
-        void setPasses(const std::vector<std::reference_wrapper<FrameGraphPass>> &value) {
-            passTypeNameMapping.clear();
-            passDependencies.clear();
-            passes = value;
-            for (auto &pass: passes) {
-                passTypeNameMapping[pass.get().getTypeName()] = &pass.get();
-                auto dep = pass.get().getDependency();
-                if (dep != nullptr) {
-                    passDependencies[pass.get().getTypeName()] = std::make_unique<std::type_index>(*dep);
-                }
-            }
+        void setLayout(const FrameGraphLayout &v) {
+            layout = v;
         }
 
         void setProperties(const GenericMapString &value) {
@@ -62,15 +54,11 @@ namespace xng {
         }
 
     private:
-        RenderDevice &device;
+        std::unique_ptr<FrameGraphAllocator> allocator;
 
-        std::vector<std::reference_wrapper<FrameGraphPass>> passes;
-        std::map<std::type_index, FrameGraphPass*> passTypeNameMapping;
-        std::map<std::type_index, std::unique_ptr<std::type_index>> passDependencies;
+        FrameGraphLayout layout;
 
         GenericMapString properties;
-
-        FrameGraphPool pool;
         GenericMapString blackboard;
     };
 }

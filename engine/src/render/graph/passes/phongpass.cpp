@@ -19,6 +19,28 @@
 
 #pragma message "Not Implemented"
 
+#include "render/graph/passes/phongpass.hpp"
+
+namespace xng {
+    PhongPass::PhongPass() {
+
+    }
+
+    void PhongPass::setup(FrameGraphBuilder &builder,
+                          const GenericMapString &properties,
+                          GenericMapString &sharedData) {
+
+    }
+
+    void PhongPass::execute(FrameGraphPassResources &resources) {
+
+    }
+
+    std::type_index PhongPass::getTypeName() {
+        return typeid(PhongPass);
+    }
+}
+
 /*
 #include "render/graph/passes/phongpass.hpp"
 

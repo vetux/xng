@@ -18,6 +18,25 @@
  */
 
 #pragma message "Not Implemented"
+
+#include "render/graph/passes/skyboxpass.hpp"
+
+SkyboxPass::SkyboxPass() {
+
+}
+
+void xng::SkyboxPass::setup(FrameGraphBuilder &builder, const GenericMapString &properties, GenericMapString &sharedData) {
+
+}
+
+void xng::SkyboxPass::execute(FrameGraphPassResources &resources) {
+
+}
+
+std::type_index xng::SkyboxPass::getTypeName() {
+    return typeid(xng::SkyboxPass);
+}
+
 /*
 
 #include "render/graph/passes/skyboxpass.hpp"

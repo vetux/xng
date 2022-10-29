@@ -22,23 +22,21 @@
 
 #include "gpu/gpufence.hpp"
 
-namespace xng {
-    namespace opengl {
-        class OGLFence : public GpuFence {
-        public:
-            std::exception_ptr wait() override {
-                return nullptr;
-            }
+namespace xng::opengl {
+    class OGLFence : public GpuFence {
+    public:
+        std::exception_ptr wait() override {
+            return nullptr;
+        }
 
-            bool isComplete() override {
-                return true;
-            }
+        bool isComplete() override {
+            return true;
+        }
 
-            std::exception_ptr getException() override {
-                return nullptr;
-            }
-        };
-    }
+        std::exception_ptr getException() override {
+            return nullptr;
+        }
+    };
 }
 
 #endif //XENGINE_OGLFENCE_HPP

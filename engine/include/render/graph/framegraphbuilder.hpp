@@ -21,6 +21,7 @@
 #define XENGINE_FRAMEGRAPHBUILDER_HPP
 
 #include "render/graph/framegraphresource.hpp"
+#include "render/graph/framegraphlayout.hpp"
 #include "render/graph/framegraphpool.hpp"
 #include "render/graph/framegraph.hpp"
 
@@ -33,34 +34,38 @@ namespace xng {
                           const Scene &scene,
                           const GenericMapString &properties);
 
+        /// -------------------------------------- Renderer Interface  --------------------------------------
         /**
          * Setup and compile a frame graph using the supplied passes.
          *
          * @param passes
          * @return
          */
-        FrameGraph build(std::vector<std::reference_wrapper<FrameGraphPass>> passes,
-                         const std::map<std::type_index, std::unique_ptr<std::type_index>> &passDependencies);
+        FrameGraph build(const FrameGraphLayout &layout);
 
-        /// Pass Interface   --------------------------------------
+        /// -------------------------------------- Pass Interface      --------------------------------------
 
-        FrameGraphResource createMeshBuffer(const ResourceHandle<Mesh> &handle);
+        FrameGraphResource createPipeline(const ResourceHandle<Shader> &shader, const RenderPipelineDesc &desc);
 
-        FrameGraphResource createTextureBuffer(const ResourceHandle<Texture> &handle);
+        FrameGraphResource createRenderTarget(const RenderTargetDesc &desc);
 
-        FrameGraphResource createShader(const ResourceHandle<Shader> &handle);
-
-        FrameGraphResource createPipeline(FrameGraphResource shader, const RenderPipelineDesc &desc);
-
+        ////    Description allocations, These allocate with whatever buffer type was specified
         FrameGraphResource createTextureBuffer(const TextureBufferDesc &attribs);
 
         FrameGraphResource createShaderBuffer(const ShaderBufferDesc &desc);
 
-        FrameGraphResource createRenderTarget(const Vec2i &size, int samples);
+        ////    ResourceHandle allocations, These allocate with DEVICE_LOCAL buffer types
+        FrameGraphResource createMeshBuffer(const ResourceHandle<Mesh> &handle);
+
+        FrameGraphResource createTextureBuffer(const ResourceHandle<Texture> &handle);
+
+        ////    Resource reads/writes must be declared by calling these methods.
 
         void write(FrameGraphResource target);
 
         void read(FrameGraphResource source);
+
+        //// Static frame data retrieval interface
 
         /**
          * @return The resource handle of the back buffer to render into.
@@ -83,15 +88,6 @@ namespace xng {
             std::set<FrameGraphResource> writes;
             std::set<FrameGraphResource> reads;
         };
-
-        struct PassEntry {
-            std::reference_wrapper<FrameGraphPass> pass;
-            std::vector<PassEntry> childEntries;
-        };
-
-        void executeEntryRecursive(PassEntry &entry);
-
-        PassEntry *findEntryRecursive(std::type_index needle, PassEntry &entry);
 
         RenderTarget &backBuffer;
         const Scene &scene;

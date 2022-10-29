@@ -21,13 +21,13 @@
 #include "render/graph/framegraphbuilder.hpp"
 
 namespace xng {
-    FrameGraphRenderer::FrameGraphRenderer(RenderDevice &device, SPIRVCompiler &spirvCompiler, SPIRVDecompiler &spirvDecompiler)
-            : device(device), pool(device, spirvCompiler, spirvDecompiler) {}
+    FrameGraphRenderer::FrameGraphRenderer(std::unique_ptr<FrameGraphAllocator> allocator)
+            : allocator(std::move(allocator)) {}
 
     void FrameGraphRenderer::render(RenderTarget &target,
                                     const Scene &scene) {
         /// Setup
-        auto frame = FrameGraphBuilder(target, scene, properties).build(passes, passDependencies);
+        auto frame = FrameGraphBuilder(target, scene, properties).build(layout);
 
         blackboard.clear();
 
@@ -36,12 +36,12 @@ namespace xng {
         /// Compile
 
         /// Execute
-        for (auto &p: passes) {
+        for (auto &p: layout.getOrderedPasses()) {
             FrameGraphPassResources res({});
 
             p.get().execute(res);
         }
 
-        pool.collectGarbage();
+        allocator->collectGarbage();
     }
 }

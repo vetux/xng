@@ -26,20 +26,21 @@
 namespace xng {
     class XENGINE_EXPORT PhongPass : public FrameGraphPass {
     public:
-        PhongPass(RenderDevice &device);
+        PhongPass();
 
         ~PhongPass() override = default;
 
-        void
-        setup(FrameGraphBuilder &builder, const GenericMapString &properties, GenericMapString &sharedData) override;
+        void setup(FrameGraphBuilder &builder,
+                   const GenericMapString &properties,
+                   GenericMapString &sharedData) override;
 
-        void execute(FrameGraphPassResources &resources, RenderDevice &ren, FrameGraphBlackboard &board) override;
+        void execute(FrameGraphPassResources &resources) override;
+
+        std::type_index getTypeName() override;
 
     private:
-        std::unique_ptr<ShaderProgram> shader;
-        std::unique_ptr<VertexBuffer> quadMesh;
-
-        Scene scene;
+        FrameGraphResource shader;
+        FrameGraphResource quadMesh;
 
         FrameGraphResource renderTarget;
         FrameGraphResource multiSampleRenderTarget;

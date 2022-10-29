@@ -1,6 +1,6 @@
 /**
  *  This file is part of xEngine, a C++ game engine library.
- *  Copyright (C) 2022  Julian Zampiccoli
+ *  Copyright (C) 2021  Julian Zampiccoli
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser General Public License as published by
@@ -17,32 +17,29 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_OGLQTGPUDRIVER_HPP
-#define XENGINE_OGLQTGPUDRIVER_HPP
+#ifndef XENGINE_OPENGL_CHECKERROR_HPP
+#define XENGINE_OPENGL_CHECKERROR_HPP
 
-#include "gpu/gpudriver.hpp"
-
-namespace xng {
-    /**
-     * OpenGL driver for use in a QOpenGLWidget
-     */
-    class OGLQtGpuDriver : public GpuDriver {
-    public:
-        const std::vector<RenderDeviceInfo> &getAvailableRenderDevices() override;
-
-        std::unique_ptr<RenderDevice> createRenderDevice() override;
-
-        std::unique_ptr<RenderDevice> createRenderDevice(const std::string &deviceName) override;
-
-        std::type_index getType() override;
-
-        std::set<GpuFeature> getSupportedFeatures() override;
-
-    private:
-        std::vector<RenderDeviceInfo> deviceInfos = {{.name = "default"}};
-        bool retrievedMaxSamples = false;
-
-    };
+static std::string getGLErrorString(GLenum error){
+    switch(error){
+        case GL_INVALID_ENUM:
+            return "GL_INVALID_ENUM";
+        case GL_INVALID_VALUE:
+            return "GL_INVALID_VALUE";
+        case GL_INVALID_OPERATION:
+            return "GL_INVALID_OPERATION";
+        case GL_OUT_OF_MEMORY:
+            return "GL_OUT_OF_MEMORY";
+        default:
+            return "Unknown " + std::to_string(error);
+    }
 }
 
-#endif //XENGINE_OGLQTGPUDRIVER_HPP
+static void checkGLError() {
+    GLenum er = glGetError();
+    if (er != GL_NO_ERROR) {
+        throw std::runtime_error(getGLErrorString(er));
+    }
+}
+
+#endif //XENGINE_OPENGL_CHECKERROR_HPP

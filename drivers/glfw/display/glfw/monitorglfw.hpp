@@ -24,79 +24,77 @@
 
 #include "display/monitor.hpp"
 
-namespace xng {
-    namespace glfw {
-        class MonitorGLFW : public Monitor {
-        public:
-            explicit MonitorGLFW(GLFWmonitor *monitor) : monH(monitor) {}
+namespace xng::glfw {
+    class MonitorGLFW : public Monitor {
+    public:
+        explicit MonitorGLFW(GLFWmonitor *monitor) : monH(monitor) {}
 
-            ~MonitorGLFW() override = default;
+        ~MonitorGLFW() override = default;
 
-            Vec2i getVirtualPosition() override {
-                int posx, posy;
-                glfwGetMonitorPos(monH, &posx, &posy);
-                return {posx, posy};
+        Vec2i getVirtualPosition() override {
+            int posx, posy;
+            glfwGetMonitorPos(monH, &posx, &posy);
+            return {posx, posy};
+        }
+
+        Recti getWorkArea() override {
+            int posx, posy, width, height;
+            glfwGetMonitorWorkarea(monH, &posx, &posy, &width, &height);
+            return {Vec2i(posx, posy), Vec2i(width, height)};
+        }
+
+        Vec2i getPhysicalSize() override {
+            int sizex, sizey;
+            glfwGetMonitorPhysicalSize(monH, &sizex, &sizey);
+            return {sizex, sizey};
+        }
+
+        Vec2f getContentScale() override {
+            float scalex, scaley;
+            glfwGetMonitorContentScale(monH, &scalex, &scaley);
+            return {scalex, scaley};
+        }
+
+        std::string getName() override {
+            return {glfwGetMonitorName(monH)};
+        }
+
+        VideoMode getVideoMode() override {
+            const GLFWvidmode *v = glfwGetVideoMode(monH);
+            VideoMode ret{};
+            ret.width = v->width;
+            ret.height = v->height;
+            ret.redBits = v->redBits;
+            ret.greenBits = v->greenBits;
+            ret.blueBits = v->blueBits;
+            ret.refreshRate = v->refreshRate;
+            return ret;
+        }
+
+        std::vector<VideoMode> getSupportedVideoModes() override {
+            int count;
+            const GLFWvidmode *modes = glfwGetVideoModes(monH, &count);
+
+            std::vector<VideoMode> ret;
+            for (int i = 0; i < count; i++) {
+                VideoMode r{};
+                const GLFWvidmode *v = &modes[i];
+
+                r.width = v->width;
+                r.height = v->height;
+                r.redBits = v->redBits;
+                r.greenBits = v->greenBits;
+                r.blueBits = v->blueBits;
+                r.refreshRate = v->refreshRate;
+
+                ret.emplace_back(r);
             }
 
-            Recti getWorkArea() override {
-                int posx, posy, width, height;
-                glfwGetMonitorWorkarea(monH, &posx, &posy, &width, &height);
-                return {Vec2i(posx, posy), Vec2i(width, height)};
-            }
+            return ret;
+        }
 
-            Vec2i getPhysicalSize() override {
-                int sizex, sizey;
-                glfwGetMonitorPhysicalSize(monH, &sizex, &sizey);
-                return {sizex, sizey};
-            }
-
-            Vec2f getContentScale() override {
-                float scalex, scaley;
-                glfwGetMonitorContentScale(monH, &scalex, &scaley);
-                return {scalex, scaley};
-            }
-
-            std::string getName() override {
-                return {glfwGetMonitorName(monH)};
-            }
-
-            VideoMode getVideoMode() override {
-                const GLFWvidmode *v = glfwGetVideoMode(monH);
-                VideoMode ret{};
-                ret.width = v->width;
-                ret.height = v->height;
-                ret.redBits = v->redBits;
-                ret.greenBits = v->greenBits;
-                ret.blueBits = v->blueBits;
-                ret.refreshRate = v->refreshRate;
-                return ret;
-            }
-
-            std::vector<VideoMode> getSupportedVideoModes() override {
-                int count;
-                const GLFWvidmode *modes = glfwGetVideoModes(monH, &count);
-
-                std::vector<VideoMode> ret;
-                for (int i = 0; i < count; i++) {
-                    VideoMode r{};
-                    const GLFWvidmode *v = &modes[i];
-
-                    r.width = v->width;
-                    r.height = v->height;
-                    r.redBits = v->redBits;
-                    r.greenBits = v->greenBits;
-                    r.blueBits = v->blueBits;
-                    r.refreshRate = v->refreshRate;
-
-                    ret.emplace_back(r);
-                }
-
-                return ret;
-            }
-
-            GLFWmonitor *monH = nullptr;
-        };
-    }
+        GLFWmonitor *monH = nullptr;
+    };
 }
 
 #endif //XENGINE_MONITORGLFW_HPP

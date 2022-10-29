@@ -22,191 +22,355 @@
 
 #include "gpu/texturebuffer.hpp"
 
-#include "gpu/opengl/oglbuildmacro.hpp"
+#include "opengl_include.hpp"
 #include "gpu/opengl/oglfence.hpp"
 
-namespace xng {
-    namespace opengl {
-        class OPENGL_TYPENAME(TextureBuffer) : public TextureBuffer OPENGL_INHERIT {
-        public:
-            TextureBufferDesc desc;
-            GLuint handle;
+namespace xng::opengl {
+    class OGLTextureBuffer : public TextureBuffer {
+    public:
+        TextureBufferDesc desc;
+        GLuint handle;
 
-            OPENGL_TYPENAME(TextureBuffer)(const TextureBufferDesc &inputDescription)
-                    : desc(inputDescription) {
-                initialize();
+        GLenum textureType;
 
-                GLenum type = convert(desc.textureType);
+        OGLTextureBuffer(const TextureBufferDesc &inputDescription)
+                : desc(inputDescription) {
+            textureType = convert(desc.textureType);
 
-                glGenTextures(1, &handle);
-                glBindTexture(type, handle);
+            glGenTextures(1, &handle);
+            glBindTexture(textureType, handle);
 
-                if (type != GL_TEXTURE_2D_MULTISAMPLE) {
-                    glTexParameteri(type, GL_TEXTURE_WRAP_S, convert(desc.wrapping));
-                    glTexParameteri(type, GL_TEXTURE_WRAP_T, convert(desc.wrapping));
-                    glTexParameteri(type,
-                                    GL_TEXTURE_MIN_FILTER,
-                                    convert(desc.filterMin));
-                    glTexParameteri(type,
-                                    GL_TEXTURE_MAG_FILTER,
-                                    convert(desc.filterMag));
+            if (textureType != GL_TEXTURE_2D_MULTISAMPLE) {
+                glTexParameteri(textureType, GL_TEXTURE_WRAP_S, convert(desc.wrapping));
+                glTexParameteri(textureType, GL_TEXTURE_WRAP_T, convert(desc.wrapping));
+                glTexParameteri(textureType,
+                                GL_TEXTURE_MIN_FILTER,
+                                convert(desc.filterMin));
+                glTexParameteri(textureType,
+                                GL_TEXTURE_MAG_FILTER,
+                                convert(desc.filterMag));
+            }
+            checkGLError();
+
+            if (desc.textureType == TEXTURE_2D) {
+                GLint texInternalFormat = convert(desc.format);
+                GLuint texFormat = GL_RGBA;
+
+                if (desc.format >= R8I) {
+                    texFormat = GL_RGBA_INTEGER; //Integer formats require _INTEGER format
                 }
-                checkGLError("OGLTextureBuffer::OGLTextureBuffer()");
 
-                if (desc.textureType == TEXTURE_2D) {
-                    GLint texInternalFormat = convert(desc.format);
-                    GLuint texFormat = GL_RGBA;
+                GLuint texType = GL_UNSIGNED_BYTE;
 
-                    if (desc.format >= R8I) {
-                        texFormat = GL_RGBA_INTEGER; //Integer formats require _INTEGER format
-                    }
+                if (desc.format == ColorFormat::DEPTH) {
+                    texInternalFormat = GL_DEPTH;
+                    texFormat = GL_DEPTH_COMPONENT;
+                    texType = GL_FLOAT;
+                } else if (desc.format == ColorFormat::DEPTH_STENCIL) {
+                    texInternalFormat = GL_DEPTH24_STENCIL8;
+                    texFormat = GL_DEPTH_STENCIL;
+                    texType = GL_UNSIGNED_INT_24_8;
+                }
 
-                    GLuint texType = GL_UNSIGNED_BYTE;
+                glTexImage2D(textureType,
+                             0,
+                             texInternalFormat,
+                             desc.size.x,
+                             desc.size.y,
+                             0,
+                             texFormat,
+                             texType,
+                             nullptr);
+            } else if (desc.textureType == TEXTURE_2D_MULTISAMPLE) {
+                GLuint texInternalFormat = convert(desc.format);
 
-                    if (desc.format == ColorFormat::DEPTH) {
-                        texInternalFormat = GL_DEPTH;
-                        texFormat = GL_DEPTH_COMPONENT;
-                        texType = GL_FLOAT;
-                    } else if (desc.format == ColorFormat::DEPTH_STENCIL) {
-                        texInternalFormat = GL_DEPTH24_STENCIL8;
-                        texFormat = GL_DEPTH_STENCIL;
-                        texType = GL_UNSIGNED_INT_24_8;
-                    }
+                if (desc.format == ColorFormat::DEPTH) {
+                    texInternalFormat = GL_DEPTH;
+                } else if (desc.format == ColorFormat::DEPTH_STENCIL) {
+                    texInternalFormat = GL_DEPTH24_STENCIL8;
+                }
 
-                    glTexImage2D(type,
+                glTexImage2DMultisample(textureType,
+                                        desc.samples,
+                                        texInternalFormat,
+                                        desc.size.x,
+                                        desc.size.y,
+                                        desc.fixedSampleLocations ? GL_TRUE : GL_FALSE);
+            } else {
+                for (unsigned int i = 0; i < 6; i++) {
+                    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                                  0,
-                                 texInternalFormat,
+                                 numeric_cast<GLint>(convert(desc.format)),
                                  desc.size.x,
                                  desc.size.y,
                                  0,
-                                 texFormat,
-                                 texType,
-                                 NULL);
-                } else if (desc.textureType == TEXTURE_2D_MULTISAMPLE) {
-                    GLuint texInternalFormat = convert(desc.format);
-
-                    if (desc.format == ColorFormat::DEPTH) {
-                        texInternalFormat = GL_DEPTH;
-                    } else if (desc.format == ColorFormat::DEPTH_STENCIL) {
-                        texInternalFormat = GL_DEPTH24_STENCIL8;
-                    }
-
-                    glTexImage2DMultisample(type,
-                                            desc.samples,
-                                            texInternalFormat,
-                                            desc.size.x,
-                                            desc.size.y,
-                                            desc.fixedSampleLocations ? GL_TRUE : GL_FALSE);
-                } else {
-                    for (unsigned int i = 0; i < 6; i++) {
-                        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-                                     0,
-                                     numeric_cast<GLint>(convert(desc.format)),
-                                     desc.size.x,
-                                     desc.size.y,
-                                     0,
-                                     GL_RGBA,
-                                     GL_UNSIGNED_BYTE,
-                                     NULL);
-                    }
+                                 GL_RGBA,
+                                 GL_UNSIGNED_BYTE,
+                                 nullptr);
                 }
-                checkGLError("OGLTextureBuffer::OGLTextureBuffer()");
+            }
+            checkGLError();
 
-                if (type != GL_TEXTURE_2D_MULTISAMPLE && desc.generateMipmap) {
-                    glGenerateMipmap(type);
-                    glTexParameteri(type, GL_TEXTURE_MIN_FILTER,
-                                    convert(desc.mipmapFilter));
-                    glTexParameteri(type, GL_TEXTURE_MAG_FILTER,
-                                    convert(desc.filterMag));
-                }
-
-                glBindTexture(type, 0);
-
-                checkGLError("OGLTextureBuffer::OGLTextureBuffer()");
+            if (textureType != GL_TEXTURE_2D_MULTISAMPLE && desc.generateMipmap) {
+                glTexParameteri(textureType,
+                                GL_TEXTURE_MIN_FILTER,
+                                convert(desc.mipmapFilter));
+                glTexParameteri(textureType,
+                                GL_TEXTURE_MAG_FILTER,
+                                convert(desc.filterMag));
+                glGenerateMipmap(textureType);
             }
 
-            ~OPENGL_TYPENAME(TextureBuffer)() override {
-                glDeleteTextures(1, &handle);
+            glBindTexture(textureType, 0);
+
+            checkGLError();
+        }
+
+        ~OGLTextureBuffer() override {
+            glDeleteTextures(1, &handle);
+        }
+
+        const TextureBufferDesc &getDescription() override {
+            return desc;
+        }
+
+        std::unique_ptr<GpuFence> upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize) override {
+            if (desc.textureType == TEXTURE_CUBE_MAP) {
+                throw std::runtime_error(
+                        "Attempted to upload texture on cube map texture without specifying a target face.");
             }
 
-            const TextureBufferDesc &getDescription() override {
-                return desc;
+            glBindTexture(GL_TEXTURE_2D, handle);
+            glTexImage2D(GL_TEXTURE_2D,
+                         0,
+                         convert(desc.format),
+                         desc.size.x,
+                         desc.size.y,
+                         0,
+                         convert(format),
+                         GL_UNSIGNED_BYTE,
+                         buffer);
+
+            if (textureType != GL_TEXTURE_2D_MULTISAMPLE && desc.generateMipmap) {
+                glTexParameteri(textureType,
+                                GL_TEXTURE_MIN_FILTER,
+                                convert(desc.mipmapFilter));
+                glTexParameteri(textureType,
+                                GL_TEXTURE_MAG_FILTER,
+                                convert(desc.filterMag));
+                glGenerateMipmap(textureType);
             }
 
-            std::unique_ptr<GpuFence> upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize) override {
-                glBindTexture(GL_TEXTURE_2D, handle);
-                glTexImage2D(GL_TEXTURE_2D,
-                             0,
-                             convert(desc.format),
-                             desc.size.x,
-                             desc.size.y,
-                             0,
-                             convert(format),
-                             GL_UNSIGNED_BYTE,
-                             buffer);
+            glBindTexture(GL_TEXTURE_2D, 0);
 
-                if (desc.generateMipmap) {
-                    glGenerateMipmap(GL_TEXTURE_2D);
-                }
+            checkGLError();
 
-                glBindTexture(GL_TEXTURE_2D, 0);
+            return std::make_unique<OGLFence>();
+        }
 
-                checkGLError("OGLTextureBuffer::upload(RGB)");
-
-                return std::make_unique<OGLFence>();
+        std::unique_ptr<GpuFence> upload(CubeMapFace face,
+                                         ColorFormat format,
+                                         const uint8_t *buffer,
+                                         size_t bufferSize) override {
+            if (desc.bufferType != HOST_VISIBLE) {
+                throw std::runtime_error("Upload called on non host visible buffer.");
             }
 
-            std::unique_ptr<GpuFence> upload(CubeMapFace face, ColorFormat format, const uint8_t *buffer, size_t bufferSize) override {
-                //TODO: Range check the buffer
-                glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
-                glTexImage2D(convert(face),
-                             0,
-                             convert(desc.format),
-                             desc.size.x,
-                             desc.size.y,
-                             0,
-                             convert(format),
-                             GL_UNSIGNED_BYTE,
-                             buffer);
-
-                if (desc.generateMipmap) {
-                    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-                }
-
-                glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-
-                checkGLError("OGLTextureBuffer::upload(CUBEMAP)");
-                return std::make_unique<OGLFence>();
+            if (desc.textureType != TEXTURE_CUBE_MAP) {
+                throw std::runtime_error("Attempted to upload a cube map face on a non cube map texture");
             }
 
-            Image<ColorRGBA> download() override {
-                if (desc.textureType != TEXTURE_2D)
-                    throw std::runtime_error("TextureBuffer not texture 2d");
+            glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
+            glTexImage2D(convert(face),
+                         0,
+                         convert(desc.format),
+                         desc.size.x,
+                         desc.size.y,
+                         0,
+                         convert(format),
+                         GL_UNSIGNED_BYTE,
+                         buffer);
 
-                auto output = ImageRGBA(desc.size);
-                glBindTexture(GL_TEXTURE_2D, handle);
-                glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void *) output.getData());
-                glBindTexture(GL_TEXTURE_2D, 0);
-                checkGLError("OGLTextureBuffer::download");
-                return output;
+            if (desc.textureType != TEXTURE_2D_MULTISAMPLE && desc.generateMipmap) {
+                glTexParameteri(textureType,
+                                GL_TEXTURE_MIN_FILTER,
+                                convert(desc.mipmapFilter));
+                glTexParameteri(textureType,
+                                GL_TEXTURE_MAG_FILTER,
+                                convert(desc.filterMag));
+                glGenerateMipmap(textureType);
             }
 
-            Image<ColorRGBA> download(CubeMapFace face) override {
-                if (desc.textureType != TEXTURE_CUBE_MAP)
-                    throw std::runtime_error("TextureBuffer not cubemap");
+            glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
-                throw std::runtime_error("Not Implemented");
+            checkGLError();
+            return std::make_unique<OGLFence>();
+        }
+
+        Image<ColorRGBA> download() override {
+            if (desc.textureType == TEXTURE_CUBE_MAP)
+                throw std::runtime_error(
+                        "Attempted to download a cube map texture without specifying the target face.");
+
+            auto ret = ImageRGBA(desc.size);
+            glBindTexture(GL_TEXTURE_2D, handle);
+            glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void *) ret.getData());
+            glBindTexture(GL_TEXTURE_2D, 0);
+            checkGLError();
+            return ret;
+        }
+
+        Image<ColorRGBA> download(CubeMapFace face) override {
+            if (desc.textureType != TEXTURE_CUBE_MAP)
+                throw std::runtime_error("Attempted to download face of a non cube map texture.");
+
+            auto ret = ImageRGBA(desc.size);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
+            glGetTexImage(convert(face), 0, GL_RGBA, GL_UNSIGNED_BYTE, (void *) ret.getData());
+            glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+            checkGLError();
+            return ret;
+        }
+
+        std::unique_ptr<GpuFence> copy(RenderBuffer &other) override {
+            auto &src = dynamic_cast<OGLTextureBuffer &>(other);
+            glCopyImageSubData(src.handle,
+                               GL_TEXTURE_2D,
+                               0,
+                               0,
+                               0,
+                               0,
+                               handle,
+                               GL_TEXTURE_2D,
+                               0,
+                               0,
+                               0,
+                               0,
+                               src.desc.size.x,
+                               src.desc.size.y,
+                               1);
+            checkGLError();
+            return std::make_unique<OGLFence>();
+        }
+
+        size_t getMemoryUsage() override {
+            return desc.size.x * desc.size.y * getTextureFormatUnitSize();
+        }
+
+    protected:
+        size_t getTextureFormatUnitSize() const {
+            // Estimate
+            switch (desc.format) {
+                default:
+                    throw std::runtime_error("Invalid texture format");
+                case DEPTH:
+                case DEPTH_STENCIL:
+                    return 2;
+                case R:
+                    return 4;
+                case RG:
+                    return 8;
+                case RGB:
+                    return 12;
+                case RGBA:
+                    return 16;
+                case R_COMPRESSED:
+                    return 4;
+                case RG_COMPRESSED:
+                    return 8;
+                case RGB_COMPRESSED:
+                    return 12;
+                case RGBA_COMPRESSED:
+                    return 16;
+                case R8:
+                    return 1;
+                case RG8:
+                    return 2;
+                case RGB8:
+                    return 3;
+                case RGBA8:
+                    return 4;
+                case R16:
+                    return 2;
+                case RG16:
+                    return 4;
+                case RGB16:
+                    return 8;
+                case RGBA16:
+                    return 10;
+                case RGB12:
+                    return 5;
+                case RGBA12:
+                    return 6;
+                case RGB10:
+                    return 4;
+                case R16F:
+                    return 2;
+                case RG16F:
+                    return 4;
+                case RGB16F:
+                    return 6;
+                case RGBA16F:
+                    return 8;
+                case R32F:
+                    return 4;
+                case RG32F:
+                    return 8;
+                case RGB32F:
+                    return 12;
+                case RGBA32F:
+                    return 16;
+                case R8I:
+                    return 1;
+                case RG8I:
+                    return 2;
+                case RGB8I:
+                    return 3;
+                case RGBA8I:
+                    return 4;
+                case R16I:
+                    return 2;
+                case RG16I:
+                    return 4;
+                case RGB16I:
+                    return 6;
+                case RGBA16I:
+                    return 8;
+                case R32I:
+                    return 4;
+                case RG32I:
+                    return 8;
+                case RGB32I:
+                    return 12;
+                case RGBA32I:
+                    return 16;
+                case R8UI:
+                    return 1;
+                case RG8UI:
+                    return 2;
+                case RGB8UI:
+                    return 3;
+                case RGBA8UI:
+                    return 4;
+                case R16UI:
+                    return 2;
+                case RG16UI:
+                    return 4;
+                case RGB16UI:
+                    return 6;
+                case RGBA16UI:
+                    return 8;
+                case R32UI:
+                    return 4;
+                case RG32UI:
+                    return 8;
+                case RGB32UI:
+                    return 12;
+                case RGBA32UI:
+                    return 16;
             }
-
-            std::unique_ptr<GpuFence> copy(RenderBuffer &other) override {
-                throw std::runtime_error("Not Implemented");
-            }
-
-            OPENGL_MEMBERS
-
-            OPENGL_CONVERSION_MEMBERS
-        };
-    }
+        }
+    };
 }
 
 #endif //XENGINE_OGLTEXTUREBUFFER_HPP

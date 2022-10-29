@@ -52,11 +52,8 @@ namespace xng {
 
         TextureBuffer &getTexture(const ResourceHandle<Texture> &handle);
 
-        ShaderProgram &getShader(const ResourceHandle<Shader> &handle);
-
         /**
-         * The shader in desc must be assigned.
-         *
+         * @param shader
          * @param descIn
          * @return The RenderPipeline instance for the given description
          */
@@ -70,15 +67,11 @@ namespace xng {
          */
         TextureBuffer &createTextureBuffer(const TextureBufferDesc &desc);
 
-        void destroyTextureBuffer(TextureBuffer &buffer);
-
         /**
          * @param desc
          * @return A new ShaderBuffer instance
          */
         ShaderBuffer &createShaderBuffer(const ShaderBufferDesc &desc);
-
-        void destroyShaderBuffer(ShaderBuffer &buffer);
 
         /**
          * Each call creates a new instance of RenderTarget.
@@ -88,9 +81,11 @@ namespace xng {
          */
         RenderTarget &createRenderTarget(const RenderTargetDesc &desc);
 
-        void destroyRenderTarget(RenderTarget &target);
+        void destroy(RenderObject &obj);
 
     private:
+        ShaderProgram &getShader(const ResourceHandle<Shader> &handle);
+
         struct PipelinePair {
             Uri uri;
             RenderPipelineDesc desc;

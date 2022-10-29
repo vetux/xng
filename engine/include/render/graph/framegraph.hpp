@@ -22,30 +22,21 @@
 
 #include "render/graph/framegraphresource.hpp"
 #include "render/graph/framegraphpass.hpp"
+#include "render/graph/framegraphallocation.hpp"
 
 namespace xng {
     struct FrameGraph {
-        struct PassExecution {
+        struct Stage {
             std::type_index pass = typeid(FrameGraphPass); // The pass to call execute() on
-            std::set<FrameGraphResource> allocations; // The set of resources created by the pass
+            std::set<FrameGraphResource> resources; // The set of resources created by the pass
             std::set<FrameGraphResource> writes; // The set of resources that are written to by the pass
             std::set<FrameGraphResource> reads; // The set of resources that are read by the pass
 
-            PassExecution() = default;
+            Stage() = default;
         };
 
-        struct PassAllocation {
-            RenderObject::Type objectType;
-            bool isUri;
-            std::variant<Uri,
-                    std::pair<FrameGraphResource, RenderPipelineDesc>,
-                    TextureBufferDesc,
-                    ShaderBufferDesc,
-                    std::pair<Vec2i, int>> allocationData;
-        };
-
-        std::vector<PassExecution> passExecutions; // The set of passes without specified dependencies
-        std::map<FrameGraphResource, PassAllocation> allocatedObjects; // The map of render objects that were allocated for this frame identified by their resource id
+        std::vector<Stage> stages; // The set of pass stages to be run in order
+        std::map<FrameGraphResource, FrameGraphAllocation> allocations; // The map of render objects that were allocated for this frame identified by their resource id
     };
 }
 

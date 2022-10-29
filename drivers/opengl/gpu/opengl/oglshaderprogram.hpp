@@ -30,154 +30,143 @@
 #include "math/matrix.hpp"
 
 #include "gpu/shaderprogram.hpp"
-#include "gpu/opengl/oglbuildmacro.hpp"
+#include "opengl_include.hpp"
 
 #include "shader/spirvdecompiler.hpp"
 
-namespace xng {
-    namespace opengl {
-        class OPENGL_TYPENAME(ShaderProgram) : public ShaderProgram OPENGL_INHERIT {
-        public:
-            GLuint programHandle = 0;
+namespace xng::opengl {
+    class OGLShaderProgram : public ShaderProgram {
+    public:
+        GLuint programHandle = 0;
 
-            /**
-             * @param vertexShader The preprocessed glsl vertex shader.
-             * @param fragmentShader The preprocessed glsl fragment shader.
-             * @param geometryShader The preprocessed glsl geometry shader, if empty no geometry shader is used.
-             */
-            explicit OPENGL_TYPENAME(ShaderProgram)(const SPIRVDecompiler &decompiler, const ShaderProgramDesc &desc) {
-                initialize();
+        explicit OGLShaderProgram(const SPIRVDecompiler &decompiler, const ShaderProgramDesc &desc) {
+            char *vertexSource, *fragmentSource, *geometrySource = nullptr;
 
-                char *vertexSource, *fragmentSource, *geometrySource = nullptr;
+            std::string vert, frag, geo;
+            auto it = desc.shaders.find(VERTEX);
+            if (it == desc.shaders.end())
+                throw std::runtime_error("No vertex shader");
 
-                std::string vert, frag, geo;
-                auto it = desc.shaders.find(VERTEX);
-                if (it == desc.shaders.end())
-                    throw std::runtime_error("No vertex shader");
+            vert = decompiler.decompile(desc.shaders.at(VERTEX).getBlob(),
+                                        it->second.getEntryPoint(),
+                                        VERTEX,
+                                        GLSL_420);
+            vertexSource = vert.data();
 
-                vert = decompiler.decompile(desc.shaders.at(VERTEX).getBlob(),
-                                                      it->second.getEntryPoint(),
-                                                      VERTEX,
-                                                      GLSL_420);
-                vertexSource = vert.data();
+            it = desc.shaders.find(FRAGMENT);
+            if (it == desc.shaders.end())
+                throw std::runtime_error("No fragment shader");
 
-                it = desc.shaders.find(FRAGMENT);
-                if (it == desc.shaders.end())
-                    throw std::runtime_error("No fragment shader");
+            frag = decompiler.decompile(desc.shaders.at(FRAGMENT).getBlob(),
+                                        it->second.getEntryPoint(),
+                                        FRAGMENT,
+                                        GLSL_420);
+            fragmentSource = frag.data();
 
-                frag = decompiler.decompile(desc.shaders.at(FRAGMENT).getBlob(),
-                                                      it->second.getEntryPoint(),
-                                                      FRAGMENT,
-                                                      GLSL_420);
-                fragmentSource = frag.data();
+            it = desc.shaders.find(GEOMETRY);
+            if (it != desc.shaders.end()) {
+                geo = decompiler.decompile(desc.shaders.at(GEOMETRY).getBlob(),
+                                           it->second.getEntryPoint(),
+                                           GEOMETRY,
+                                           GLSL_420);
+                geometrySource = geo.data();
+            }
 
-                it = desc.shaders.find(GEOMETRY);
-                if (it != desc.shaders.end()) {
-                    geo = decompiler.decompile(desc.shaders.at(GEOMETRY).getBlob(),
-                                                         it->second.getEntryPoint(),
-                                                         GEOMETRY,
-                                                         GLSL_420);
-                    geometrySource = geo.data();
-                }
+            programHandle = glCreateProgram();
 
-                programHandle = glCreateProgram();
-
-                GLuint vsH = glCreateShader(GL_VERTEX_SHADER);
-                glShaderSource(vsH, 1, &vertexSource, NULL);
-                glCompileShader(vsH);
-                GLint success;
-                glGetShaderiv(vsH, GL_COMPILE_STATUS, &success);
-                if (!success) {
-                    GLchar infoLog[512];
-                    glGetShaderInfoLog(vsH, 512, NULL, infoLog);
-                    glDeleteShader(vsH);
-                    std::string error = "Failed to compile vertex shader: ";
-                    error.append(infoLog);
-                    throw std::runtime_error(error);
-                }
-
-                glAttachShader(programHandle, vsH);
-
-                GLuint gsH;
-
-                if (geometrySource != nullptr) {
-                    gsH = glCreateShader(GL_GEOMETRY_SHADER);
-                    glShaderSource(gsH, 1, &geometrySource, NULL);
-                    glCompileShader(gsH);
-                    glGetShaderiv(gsH, GL_COMPILE_STATUS, &success);
-                    if (!success) {
-                        char infoLog[512];
-                        glGetShaderInfoLog(gsH, 512, NULL, infoLog);
-                        glDeleteShader(vsH);
-                        glDeleteShader(gsH);
-                        std::string error = "Failed to compile geometry shader: ";
-                        error.append(infoLog);
-                        throw std::runtime_error(error);
-                    }
-                    glAttachShader(programHandle, gsH);
-                }
-
-                GLuint fsH = glCreateShader(GL_FRAGMENT_SHADER);
-                glShaderSource(fsH, 1, &fragmentSource, NULL);
-                glCompileShader(fsH);
-                glGetShaderiv(fsH, GL_COMPILE_STATUS, &success);
-                if (!success) {
-                    GLchar infoLog[512];
-                    glGetShaderInfoLog(fsH, 512, NULL, infoLog);
-                    glDeleteShader(vsH);
-                    if (geometrySource != nullptr)
-                        glDeleteShader(gsH);
-                    glDeleteShader(fsH);
-                    std::string error = "Failed to compile fragment shader: ";
-                    error.append(infoLog);
-                    throw std::runtime_error(error);
-                }
-                glAttachShader(programHandle, fsH);
-
-                glLinkProgram(programHandle);
-
+            GLuint vsH = glCreateShader(GL_VERTEX_SHADER);
+            glShaderSource(vsH, 1, &vertexSource, nullptr);
+            glCompileShader(vsH);
+            GLint success;
+            glGetShaderiv(vsH, GL_COMPILE_STATUS, &success);
+            if (!success) {
+                GLchar infoLog[512];
+                glGetShaderInfoLog(vsH, 512, nullptr, infoLog);
                 glDeleteShader(vsH);
-                glDeleteShader(fsH);
-
-                checkLinkSuccess();
-                checkGLError("");
+                std::string error = "Failed to compile vertex shader: ";
+                error.append(infoLog);
+                throw std::runtime_error(error);
             }
 
-            ~OPENGL_TYPENAME(ShaderProgram)() override {
-                glDeleteProgram(programHandle);
-            }
+            glAttachShader(programHandle, vsH);
 
-            OPENGL_TYPENAME(ShaderProgram)(const OPENGL_TYPENAME(ShaderProgram) &copy) = delete;
+            GLuint gsH;
 
-            OPENGL_TYPENAME(ShaderProgram) &operator=(const OPENGL_TYPENAME(ShaderProgram) &) = delete;
-
-            void activate() {
-                glUseProgram(programHandle);
-                checkGLError("");
-            }
-
-            void checkLinkSuccess() {
-                auto msg = getLinkError();
-                if (!msg.empty())
-                    throw std::runtime_error(msg);
-            }
-
-            std::string getLinkError() {
-                GLint success;
-                glGetProgramiv(programHandle, GL_LINK_STATUS, &success);
+            if (geometrySource != nullptr) {
+                gsH = glCreateShader(GL_GEOMETRY_SHADER);
+                glShaderSource(gsH, 1, &geometrySource, nullptr);
+                glCompileShader(gsH);
+                glGetShaderiv(gsH, GL_COMPILE_STATUS, &success);
                 if (!success) {
-                    GLchar infoLog[512];
-                    glGetProgramInfoLog(programHandle, 512, NULL, infoLog);
-                    std::string error = "Failed to link shader program: ";
+                    char infoLog[512];
+                    glGetShaderInfoLog(gsH, 512, nullptr, infoLog);
+                    glDeleteShader(vsH);
+                    glDeleteShader(gsH);
+                    std::string error = "Failed to compile geometry shader: ";
                     error.append(infoLog);
-                    return error;
+                    throw std::runtime_error(error);
                 }
-                return "";
+                glAttachShader(programHandle, gsH);
             }
 
-            OPENGL_MEMBERS
-        };
-    }
+            GLuint fsH = glCreateShader(GL_FRAGMENT_SHADER);
+            glShaderSource(fsH, 1, &fragmentSource, nullptr);
+            glCompileShader(fsH);
+            glGetShaderiv(fsH, GL_COMPILE_STATUS, &success);
+            if (!success) {
+                GLchar infoLog[512];
+                glGetShaderInfoLog(fsH, 512, nullptr, infoLog);
+                glDeleteShader(vsH);
+                if (geometrySource != nullptr)
+                    glDeleteShader(gsH);
+                glDeleteShader(fsH);
+                std::string error = "Failed to compile fragment shader: ";
+                error.append(infoLog);
+                throw std::runtime_error(error);
+            }
+            glAttachShader(programHandle, fsH);
+
+            glLinkProgram(programHandle);
+
+            glDeleteShader(vsH);
+            glDeleteShader(fsH);
+
+            checkLinkSuccess();
+            checkGLError();
+        }
+
+        ~OGLShaderProgram() override {
+            glDeleteProgram(programHandle);
+        }
+
+        OGLShaderProgram(const OGLShaderProgram &copy) = delete;
+
+        OGLShaderProgram &operator=(const OGLShaderProgram &) = delete;
+
+        void activate() const {
+            glUseProgram(programHandle);
+            checkGLError();
+        }
+
+        void checkLinkSuccess() const {
+            auto msg = getLinkError();
+            if (!msg.empty())
+                throw std::runtime_error(msg);
+        }
+
+        std::string getLinkError() const {
+            GLint success;
+            glGetProgramiv(programHandle, GL_LINK_STATUS, &success);
+            if (!success) {
+                GLchar infoLog[512];
+                glGetProgramInfoLog(programHandle, 512, nullptr, infoLog);
+                std::string error = "Failed to link shader program: ";
+                error.append(infoLog);
+                return error;
+            }
+            return "";
+        }
+    };
 }
 
 #endif //XENGINE_OGLSHADERPROGRAM_HPP

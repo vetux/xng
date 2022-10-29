@@ -24,7 +24,7 @@
 
 #include <utility>
 
-#include "gpu/opengl/oglbuildmacro.hpp"
+#include "opengl_include.hpp"
 
 #include "gpu/opengl/oglrenderpipeline.hpp"
 #include "gpu/opengl/oglrendertarget.hpp"
@@ -34,15 +34,13 @@
 #include "gpu/opengl/oglshaderbuffer.hpp"
 
 namespace xng::opengl {
-    class OPENGL_TYPENAME(RenderDevice) : public RenderDevice OPENGL_INHERIT {
+    class OGLRenderDevice : public RenderDevice {
     public:
         RenderDeviceInfo info;
 
-        explicit OPENGL_TYPENAME(RenderDevice)(RenderDeviceInfo info) : info(std::move(info)) {
-            initialize();
-        }
+        explicit OGLRenderDevice(RenderDeviceInfo info) : info(std::move(info)) {}
 
-        ~OPENGL_TYPENAME(RenderDevice)() override = default;
+        ~OGLRenderDevice() override = default;
 
         const RenderDeviceInfo &getInfo() override {
             return info;
@@ -50,7 +48,9 @@ namespace xng::opengl {
 
         std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDesc &desc,
                                                              ShaderProgram &shader) override {
-            return std::make_unique<OPENGL_TYPENAME(RenderPipeline)>(desc, dynamic_cast<OPENGL_TYPENAME(ShaderProgram)&>(shader));
+            auto ret = std::make_unique<OGLRenderPipeline>(desc, dynamic_cast<OGLShaderProgram &>(shader));
+            checkGLError();
+            return ret;
         }
 
         std::unique_ptr<RenderPipeline> createRenderPipeline(const uint8_t *cacheData, size_t size) override {
@@ -66,27 +66,35 @@ namespace xng::opengl {
         }
 
         std::unique_ptr<RenderTarget> createRenderTarget(const RenderTargetDesc &desc) override {
-            return std::make_unique<OPENGL_TYPENAME(RenderTarget)>(desc);
+            auto ret = std::make_unique<OGLRenderTarget>(desc);
+            checkGLError();
+            return ret;
         }
 
         std::unique_ptr<TextureBuffer> createTextureBuffer(const TextureBufferDesc &desc) override {
-            return std::make_unique<OPENGL_TYPENAME(TextureBuffer)>(desc);
+            auto ret = std::make_unique<OGLTextureBuffer>(desc);
+            checkGLError();
+            return ret;
         }
 
         std::unique_ptr<VertexBuffer> createVertexBuffer(const VertexBufferDesc &desc) override {
-            return std::make_unique<OPENGL_TYPENAME(VertexBuffer)>(desc);
+            auto ret = std::make_unique<OGLVertexBuffer>(desc);
+            checkGLError();
+            return ret;
         }
 
         std::unique_ptr<ShaderProgram> createShaderProgram(const SPIRVDecompiler &decompiler,
                                                            const ShaderProgramDesc &desc) override {
-            return std::make_unique<OPENGL_TYPENAME(ShaderProgram)>(decompiler, desc);
+            auto ret = std::make_unique<OGLShaderProgram>(decompiler, desc);
+            checkGLError();
+            return ret;
         }
 
         std::unique_ptr<ShaderBuffer> createShaderBuffer(const ShaderBufferDesc &desc) override {
-            return std::make_unique<OPENGL_TYPENAME(ShaderBuffer)>(desc);
+            auto ret = std::make_unique<OGLShaderBuffer>(desc);
+            checkGLError();
+            return ret;
         }
-
-        OPENGL_MEMBERS
     };
 }
 

@@ -27,41 +27,34 @@ namespace xng {
     class XENGINE_EXPORT CompositePass : public FrameGraphPass {
     public:
         struct XENGINE_EXPORT Layer {
-            explicit Layer(TextureBuffer *color = nullptr, TextureBuffer *depth = nullptr)
+            explicit Layer(FrameGraphResource color, FrameGraphResource *depth = nullptr)
                     : color(color), depth(depth) {}
 
-            TextureBuffer *color;
-            TextureBuffer *depth;
+            FrameGraphResource color;
+            FrameGraphResource *depth;
             bool enableBlending = true;
             BlendMode colorBlendModeSource = BlendMode::SRC_ALPHA;
             BlendMode colorBlendModeDest = BlendMode::ONE_MINUS_SRC_ALPHA;
             DepthTestMode depthTestMode = DepthTestMode::DEPTH_TEST_LESS;
         };
 
-        explicit CompositePass(RenderDevice &device, ColorRGBA clearColor = ColorRGBA::black());
+        CompositePass();
 
         ~CompositePass() override = default;
 
-        void
-        setup(FrameGraphBuilder &builder, const GenericMapString &properties, GenericMapString &sharedData) override;
+        void setup(FrameGraphBuilder &builder,
+                  const GenericMapString &properties,
+                  GenericMapString &sharedData) override;
 
-        void execute(FrameGraphPassResources &resources, RenderDevice &ren, FrameGraphBlackboard &board) override;
+        void execute(FrameGraphPassResources &resources) override;
 
-        void setClearColor(ColorRGBA color) { clearColor = color; }
+        std::type_index getTypeName() override;
 
     private:
-        void drawLayer(Layer layer,
-                       RenderDevice &ren,
-                       RenderTarget &target,
-                       ShaderProgram &shaderProgram,
-                       VertexBuffer &screenQuad);
-
-        ColorRGBA clearColor = ColorRGBA::white();
-
-        std::unique_ptr<ShaderProgram> shader;
-        std::unique_ptr<VertexBuffer> quadMesh;
-
+        FrameGraphResource shader;
+        FrameGraphResource quadMesh;
         FrameGraphResource backBuffer;
+        std::vector<Layer> layers;
     };
 }
 

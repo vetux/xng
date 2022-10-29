@@ -24,7 +24,7 @@
 
 #include <utility>
 
-#include "gpu/opengl/oglbuildmacro.hpp"
+#include "opengl_include.hpp"
 
 #include "gpu/opengl/oglrendertarget.hpp"
 #include "gpu/opengl/oglshaderprogram.hpp"
@@ -34,14 +34,14 @@
 #include "gpu/opengl/oglfence.hpp"
 
 namespace xng::opengl {
-    class OPENGL_TYPENAME(RenderPipeline) : public RenderPipeline OPENGL_INHERIT {
+    class OGLRenderPipeline : public RenderPipeline {
     public:
-        OPENGL_TYPENAME(ShaderProgram) &shader;
+        OGLShaderProgram &shader;
         RenderPipelineDesc desc;
 
-        explicit OPENGL_TYPENAME(RenderPipeline)(RenderPipelineDesc desc, OPENGL_TYPENAME(ShaderProgram) &shader)
+        explicit OGLRenderPipeline(RenderPipelineDesc desc, OGLShaderProgram &shader)
                 : desc(std::move(desc)), shader(shader) {
-            initialize();
+
         }
 
         const RenderPipelineDesc &getDescription() override {
@@ -66,7 +66,7 @@ namespace xng::opengl {
 
             glSampleCoverage(desc.multiSampleFrequency, GL_TRUE);
 
-            auto &fb = dynamic_cast<OPENGL_TYPENAME(RenderTarget) &>(target);
+            auto &fb = dynamic_cast<OGLRenderTarget &>(target);
 
             GLint vpData[4];
             glGetIntegerv(GL_VIEWPORT, vpData);
@@ -149,31 +149,31 @@ namespace xng::opengl {
                 glDisable(GL_BLEND);
             }
 
-            checkGLError("Render Pipeline Setup");
+            checkGLError();
 
             // Draw commands
             for (auto &c: passes) {
                 // Bind textures and uniform buffers
                 for (int bindingPoint = 0; bindingPoint < c.getBindings().size(); bindingPoint++) {
                     auto &b = c.getBindings().at(bindingPoint);
-                    OPENGL_TYPENAME(TextureBuffer) *texture;
-                    OPENGL_TYPENAME(ShaderBuffer) *shaderBuffer;
+                    OGLTextureBuffer *texture;
+                    OGLShaderBuffer *shaderBuffer;
                     switch (b.index()) {
                         case 0:
-                            texture = dynamic_cast<OPENGL_TYPENAME(TextureBuffer) *>(std::get<TextureBuffer*>(b));
+                            texture = dynamic_cast<OGLTextureBuffer *>(std::get<TextureBuffer *>(b));
                             glActiveTexture(getTextureSlot(bindingPoint));
                             glBindTexture(convert(texture->getDescription().textureType),
                                           texture->handle);
                             break;
                         case 1:
-                            shaderBuffer = dynamic_cast<OPENGL_TYPENAME(ShaderBuffer) *>(std::get<ShaderBuffer*>(b));
+                            shaderBuffer = dynamic_cast<OGLShaderBuffer *>(std::get<ShaderBuffer *>(b));
                             glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, shaderBuffer->ubo);
                             break;
                     }
                 }
 
                 //Bind VAO and draw.
-                auto &mesh = dynamic_cast<const OPENGL_TYPENAME(VertexBuffer) &>(c.getVertexBuffer());
+                auto &mesh = dynamic_cast<const OGLVertexBuffer &>(c.getVertexBuffer());
 
                 glBindVertexArray(mesh.VAO);
 
@@ -218,12 +218,12 @@ namespace xng::opengl {
                     }
                 }
 
-                checkGLError("OGLRenderer::addCommand");
+                checkGLError();
             }
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-            checkGLError("OGLRenderer::renderFinish");
+            checkGLError();
 
             return std::make_unique<OGLFence>();
         }
@@ -236,10 +236,6 @@ namespace xng::opengl {
             desc.viewportOffset = viewportOffset;
             desc.viewportSize = viewportSize;
         }
-
-        OPENGL_MEMBERS
-
-        OPENGL_CONVERSION_MEMBERS
 
     private:
         static GLuint getTextureSlot(int slot) {

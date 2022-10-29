@@ -27,21 +27,20 @@
 namespace xng {
     class XENGINE_EXPORT SkyboxPass : public FrameGraphPass {
     public:
-        SkyboxPass(RenderDevice &device);
+        SkyboxPass();
 
         ~SkyboxPass() override = default;
 
-        void
-        setup(FrameGraphBuilder &builder, const GenericMapString &properties, GenericMapString &sharedData) override;
+        void setup(FrameGraphBuilder &builder, const GenericMapString &properties, GenericMapString &sharedData) override;
 
-        void execute(FrameGraphPassResources &resources, RenderDevice &ren, FrameGraphBlackboard &board) override;
+        void execute(FrameGraphPassResources &resources) override;
+
+        std::type_index getTypeName() override;
 
     private:
-        Scene scene;
-
-        std::unique_ptr<ShaderProgram> shader;
-        std::unique_ptr<VertexBuffer> skyboxCube;
-        std::unique_ptr<TextureBuffer> defaultTexture;
+        FrameGraphResource shader;
+        FrameGraphResource skyboxCube;
+        FrameGraphResource defaultTexture;
 
         FrameGraphResource renderTarget;
         FrameGraphResource outColor;

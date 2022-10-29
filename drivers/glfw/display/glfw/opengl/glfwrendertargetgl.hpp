@@ -22,29 +22,27 @@
 
 #include "gpu/opengl/oglrendertarget.hpp"
 
-namespace xng {
-    namespace glfw {
-        class GLFWRenderTargetGL : public opengl::OGLRenderTarget {
-        public:
-            GLFWwindow *wndH;
+namespace xng::glfw {
+    class GLFWRenderTargetGL : public opengl::OGLRenderTarget {
+    public:
+        GLFWwindow *wndH;
 
-            explicit GLFWRenderTargetGL(GLFWwindow &wnd)
-                    : opengl::OGLRenderTarget({}),
-                      wndH(&wnd) {
-                desc.samples = glfwGetWindowAttrib(wndH, GLFW_SAMPLES);
-                desc.multisample = desc.samples != 0;
-            }
+        explicit GLFWRenderTargetGL(GLFWwindow &wnd)
+                : opengl::OGLRenderTarget({}),
+                  wndH(&wnd) {
+            desc.samples = glfwGetWindowAttrib(wndH, GLFW_SAMPLES);
+            desc.multisample = desc.samples != 0;
+        }
 
-            const RenderTargetDesc &getDescription() override {
-                glfwGetFramebufferSize(wndH, &desc.size.x, &desc.size.y);
-                return desc;
-            }
+        const RenderTargetDesc &getDescription() override {
+            glfwGetFramebufferSize(wndH, &desc.size.x, &desc.size.y);
+            return desc;
+        }
 
-            GLuint getFBO() override {
-                return 0;
-            };
+        GLuint getFBO() override {
+            return 0;
         };
-    }
+    };
 }
 
 #endif //XENGINE_GLFWRENDERTARGETGL_HPP
