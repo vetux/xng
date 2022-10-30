@@ -53,6 +53,10 @@ namespace xng {
             return properties;
         }
 
+        void setRenderResolution(Vec2i res) override;
+
+        void setRenderSamples(int samples) override;
+
     private:
         std::unique_ptr<FrameGraphAllocator> allocator;
 
