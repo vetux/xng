@@ -1,14 +1,5 @@
-<div>
-
-<div align="right">
-  <img alt="CODE_LINES" src="https://img.shields.io/tokei/lines/github/vetux/xng" align="left">
-  <img alt="LICENSE" src="https://img.shields.io/github/license/vetux/xng" align="right">
-  <img alt="LAST_COMMIT" src="https://img.shields.io/github/last-commit/vetux/canora" align="right">
-</div>
-
-<br>
-
-</div>
+<img alt="CODE_LINES" src="https://img.shields.io/tokei/lines/github/vetux/xng">
+<img alt="LICENSE" src="https://img.shields.io/github/license/vetux/xng">
 
 # xEngine
 
