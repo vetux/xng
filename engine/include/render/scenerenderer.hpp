@@ -24,13 +24,27 @@
 #include "gpu/rendertarget.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT SceneRenderer {
+    /**
+     * A scene renderer produces an image from a given a scene and target.
+     * The scene renderer depends on the gpu and display drivers.
+     *
+     * xng is designed to allow writing cross platform renderers through the gpu / display interface.
+     *
+     * However if a user wishes to implement a renderer without using the provided interfaces
+     * or use a 3rd party renderer the drivers can be reimplemented as needed
+     * and the renderer implemented as a SceneRenderer driver.
+     */
+    class XENGINE_EXPORT SceneRenderer : public Driver {
     public:
         virtual void render(RenderTarget &target, const Scene &scene) = 0;
 
         virtual void setRenderResolution(Vec2i res) = 0;
 
         virtual void setRenderSamples(int samples) = 0;
+
+        std::type_index getBaseType() override {
+            return typeid(SceneRenderer);
+        }
     };
 }
 #endif //XENGINE_SCENERENDERER_HPP

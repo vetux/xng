@@ -19,8 +19,18 @@
 
 #include "render/forward/forwardrenderer.hpp"
 
+#pragma message "Not Implemented"
+
 namespace xng {
     void ForwardRenderer::render(RenderTarget &target, const Scene &scene) {
         // TODO: Implement forward renderer
+    }
+
+    void ForwardRenderer::setRenderResolution(Vec2i res) {
+
+    }
+
+    void ForwardRenderer::setRenderSamples(int samples) {
+
     }
 }

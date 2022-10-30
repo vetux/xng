@@ -33,8 +33,14 @@ namespace xng {
 
         void render(RenderTarget &target, const Scene &scene) override;
 
+        std::type_index getType() override { return typeid(ForwardRenderer); }
+
+        void setRenderResolution(Vec2i res) override;
+
+        void setRenderSamples(int samples) override;
+
     private:
-        RenderDevice *device;
+        RenderDevice *device = nullptr;
     };
 }
 #endif //XENGINE_FORWARDPIPELINE_HPP

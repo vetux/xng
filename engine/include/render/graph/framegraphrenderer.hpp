@@ -57,6 +57,8 @@ namespace xng {
 
         void setRenderSamples(int samples) override;
 
+        std::type_index getType() override { return typeid(FrameGraphRenderer); }
+
     private:
         std::unique_ptr<FrameGraphAllocator> allocator;
 
