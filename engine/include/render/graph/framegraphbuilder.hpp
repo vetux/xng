@@ -61,11 +61,21 @@ namespace xng {
 
         ////    Resource reads/writes must be declared by calling these methods.
 
+        /**
+         * Declare that the pass will write to the specified resource handle.
+         * Resources which have not been declared with write / read or have been created can not be accessed by the pass.
+         *
+         * @param target
+         */
         void write(FrameGraphResource target);
 
+        /**
+         * Declare that the pass will read from the specified resource handle.
+         * Resources which have not been declared with write / read or have been created can not be accessed by the pass.
+         *
+         * @param source
+         */
         void read(FrameGraphResource source);
-
-        //// Static frame data retrieval interface
 
         /**
          * @return The resource handle of the back buffer to render into.

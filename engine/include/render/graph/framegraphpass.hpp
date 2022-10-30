@@ -28,6 +28,15 @@
 namespace xng {
     class FrameGraphBuilder;
 
+    /**
+     * A frame graph pass executes rendering logic.
+     *
+     * A framework for creating resources is provided through the builder interface passed in the setup stage.
+     * The resources can then be retrieved in the execution stage in the passed resources object.
+     *
+     * Passes can depend on other pass data.
+     * Resource handles and other data can be shared between passes through the sharedData map passed in the setup stage.
+     */
     class XENGINE_EXPORT FrameGraphPass {
     public:
         virtual ~FrameGraphPass() = default;

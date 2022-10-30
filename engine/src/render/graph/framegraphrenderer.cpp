@@ -20,6 +20,8 @@
 #include "render/graph/framegraphrenderer.hpp"
 #include "render/graph/framegraphbuilder.hpp"
 
+#include "render/graph/framegraphproperties.hpp"
+
 namespace xng {
     FrameGraphRenderer::FrameGraphRenderer(std::unique_ptr<FrameGraphAllocator> allocator)
             : allocator(std::move(allocator)) {}
@@ -31,25 +33,21 @@ namespace xng {
 
         blackboard.clear();
 
-#pragma message "Not Implemented"
-
         /// Compile
+        allocator->setFrame(frame);
 
         /// Execute
         for (auto &p: layout.getOrderedPasses()) {
-            FrameGraphPassResources res({});
-
+            auto res = allocator->allocateNext();
             p.get().execute(res);
         }
-
-        allocator->collectGarbage();
     }
 
     void FrameGraphRenderer::setRenderResolution(Vec2i res) {
-
+        properties.set(FrameGraphProperties::RENDER_RESOLUTION, res);
     }
 
     void FrameGraphRenderer::setRenderSamples(int samples) {
-
+        properties.set(FrameGraphProperties::RENDER_SAMPLES, samples);
     }
 }

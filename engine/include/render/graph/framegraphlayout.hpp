@@ -27,6 +27,9 @@
 #include "render/graph/framegraphpass.hpp"
 
 namespace xng {
+    /**
+     * A frame graph layout describes a set of passes and the dependencies between them.
+     */
     class FrameGraphLayout {
     public:
         FrameGraphLayout() = default;
