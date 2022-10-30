@@ -82,12 +82,13 @@ namespace xng {
 
         virtual int loop() {
             start();
-            auto lastFrame = std::chrono::high_resolution_clock::now();
+            auto frameStart = std::chrono::high_resolution_clock::now();
             DeltaTime deltaTime = 0;
             while (!window->shouldClose() && !shutdown) {
-                auto frameStart = std::chrono::high_resolution_clock::now();
                 update(deltaTime);
-                auto frameDelta = std::chrono::high_resolution_clock::now() - frameStart;
+                auto frameEnd = std::chrono::high_resolution_clock::now();
+                auto frameDelta = frameEnd - frameStart;
+                frameStart = frameEnd;
                 deltaTime = static_cast<DeltaTime>(frameDelta.count()) / 1000000000.0f;
             }
             stop();
