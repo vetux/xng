@@ -44,4 +44,12 @@ namespace xng {
 
         allocator->collectGarbage();
     }
+
+    void FrameGraphRenderer::setRenderResolution(Vec2i res) {
+
+    }
+
+    void FrameGraphRenderer::setRenderSamples(int samples) {
+
+    }
 }
