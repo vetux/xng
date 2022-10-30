@@ -155,7 +155,7 @@ namespace xng {
 
                 auto frameTime = 1.0f / frameRate;
                 if (deltaTime < frameTime) {
-                    std::this_thread::sleep_for(std::chrono::milliseconds((size_t) (deltaTime * 1000)));
+                    std::this_thread::sleep_for(std::chrono::milliseconds((size_t) ((frameTime - deltaTime) * 1000)));
                 }
             }
         }
