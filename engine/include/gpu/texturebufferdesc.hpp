@@ -43,8 +43,6 @@ namespace xng {
         bool fixedSampleLocations = false;
         RenderBufferType bufferType = HOST_VISIBLE;
 
-        TextureBufferDesc() = default;
-
         bool operator==(const TextureBufferDesc &other) const {
             return size == other.size
                    && samples == other.samples
