@@ -115,9 +115,9 @@ namespace xng {
         }
     }
 
-    void PhysicsSystem::onComponentCreate(const EntityHandle &entity, const std::any &component) {
-        if (component.type() == typeid(RigidBodyComponent)) {
-            auto &comp = *std::any_cast<RigidBodyComponent>(&component);
+    void PhysicsSystem::onComponentCreate(const EntityHandle &entity, const Component &component) {
+        if (component.getType() == typeid(RigidBodyComponent)) {
+            auto &comp = dynamic_cast<const RigidBodyComponent &>(component);
             auto body = world.createBody();
 
             body->setRigidBodyType(comp.type);
@@ -135,9 +135,9 @@ namespace xng {
         }
     }
 
-    void PhysicsSystem::onComponentDestroy(const EntityHandle &entity, const std::any &component) {
-        if (component.type() == typeid(RigidBodyComponent)) {
-            auto &comp = *std::any_cast<RigidBodyComponent>(&component);
+    void PhysicsSystem::onComponentDestroy(const EntityHandle &entity, const Component &component) {
+        if (component.getType() == typeid(RigidBodyComponent)) {
+            auto &comp = dynamic_cast<const RigidBodyComponent &>(component);
             for (auto &col: colliders.at(entity)) {
                 colliderIndices.erase(col.get());
             }
@@ -148,11 +148,11 @@ namespace xng {
     }
 
     void PhysicsSystem::onComponentUpdate(const EntityHandle &entity,
-                                          const std::any &oldComponent,
-                                          const std::any &newComponent) {
-        if (oldComponent.type() == typeid(RigidBodyComponent)) {
-            auto &oComp = *std::any_cast<RigidBodyComponent>(&oldComponent);
-            auto &nComp = *std::any_cast<RigidBodyComponent>(&newComponent);
+                                          const Component &oldComponent,
+                                          const Component &newComponent) {
+        if (oldComponent.getType() == typeid(RigidBodyComponent)) {
+            auto &oComp = dynamic_cast<const RigidBodyComponent &>(oldComponent);
+            auto &nComp = dynamic_cast<const RigidBodyComponent &>(newComponent);
 
             if (oComp.colliders != nComp.colliders) {
                 for (auto &col: colliders.at(entity)) {

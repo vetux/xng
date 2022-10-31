@@ -288,40 +288,40 @@ namespace xng {
         }
     }
 
-    void CanvasRenderSystem::onComponentCreate(const EntityHandle &entity, const std::any &component) {
-        if (component.type() == typeid(SpriteComponent)) {
-            auto *t = std::any_cast<SpriteComponent>(&component);
-            createTexture(entity, *t);
-        } else if (component.type() == typeid(TextComponent)) {
-            auto *t = std::any_cast<TextComponent>(&component);
-            createText(entity, *t);
+    void CanvasRenderSystem::onComponentCreate(const EntityHandle &entity, const Component &component) {
+        if (component.getType() == typeid(SpriteComponent)) {
+            const auto &t = dynamic_cast<const SpriteComponent &>(component);
+            createTexture(entity, t);
+        } else if (component.getType() == typeid(TextComponent)) {
+            const auto &t = dynamic_cast<const TextComponent &>(component);
+            createText(entity, t);
         }
     }
 
-    void CanvasRenderSystem::onComponentDestroy(const EntityHandle &entity, const std::any &component) {
-        if (component.type() == typeid(SpriteComponent)) {
+    void CanvasRenderSystem::onComponentDestroy(const EntityHandle &entity, const Component &component) {
+        if (component.getType() == typeid(SpriteComponent)) {
             spriteTextures.erase(entity);
             spriteTexturesB.erase(entity);
-        } else if (component.type() == typeid(TextComponent)) {
+        } else if (component.getType() == typeid(TextComponent)) {
             renderedTexts.erase(entity);
         }
     }
 
     void CanvasRenderSystem::onComponentUpdate(const EntityHandle &entity,
-                                               const std::any &oldComponent,
-                                               const std::any &newComponent) {
-        if (oldComponent.type() == typeid(SpriteComponent)) {
-            auto *os = std::any_cast<SpriteComponent>(&oldComponent);
-            auto *ns = std::any_cast<SpriteComponent>(&newComponent);
-            if (os->sprite != ns->sprite || os->spriteB != ns->spriteB) {
+                                               const Component &oldComponent,
+                                               const Component &newComponent) {
+        if (oldComponent.getType() == typeid(SpriteComponent)) {
+            auto &os = dynamic_cast<const SpriteComponent &>(oldComponent);
+            auto &ns = dynamic_cast<const SpriteComponent &>(newComponent);
+            if (os.sprite != ns.sprite || os.spriteB != ns.spriteB) {
                 spriteTextures.erase(entity);
                 spriteTexturesB.erase(entity);
-                createTexture(entity, *ns);
+                createTexture(entity, ns);
             }
-        } else if (oldComponent.type() == typeid(TextComponent)) {
-            auto *ns = std::any_cast<TextComponent>(&newComponent);
+        } else if (oldComponent.getType() == typeid(TextComponent)) {
+            auto &ns = dynamic_cast<const TextComponent &>(newComponent);
             renderedTexts.erase(entity);
-            createText(entity, *ns);
+            createText(entity, ns);
         }
     }
 

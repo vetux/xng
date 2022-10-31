@@ -20,18 +20,17 @@
 #ifndef XENGINE_TRANSFORMCOMPONENT_HPP
 #define XENGINE_TRANSFORMCOMPONENT_HPP
 
-#include "math/transform.hpp"
-
 #include <string>
 
+#include "math/transform.hpp"
 #include "ecs/entityscene.hpp"
-
+#include "ecs/component.hpp"
 #include "io/messageable.hpp"
 
 namespace xng {
     struct AssetScene;
 
-    struct XENGINE_EXPORT TransformComponent : public Messageable {
+    struct XENGINE_EXPORT TransformComponent : public Component {
         static Transform walkHierarchy(const TransformComponent &component, EntityScene &entityManager);
 
         bool enabled = true;
@@ -51,6 +50,10 @@ namespace xng {
             transform >> message["transform"];
             message["parent"] = parent;
             return message;
+        }
+
+        std::type_index getType() const override {
+            return typeid(TransformComponent);
         }
     };
 }

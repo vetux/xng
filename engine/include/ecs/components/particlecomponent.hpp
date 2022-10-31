@@ -21,9 +21,10 @@
 #define XENGINE_PARTICLECOMPONENT_HPP
 
 #include "io/messageable.hpp"
+#include "ecs/component.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT ParticleComponent : public Messageable {
+    struct XENGINE_EXPORT ParticleComponent : public Component {
         Messageable &operator<<(const Message &message) override {
             return *this;
         }
@@ -31,6 +32,10 @@ namespace xng {
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             return message;
+        }
+
+        std::type_index getType() const override {
+            return typeid(ParticleComponent);
         }
     };
 }

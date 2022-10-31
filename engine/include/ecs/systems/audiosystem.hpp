@@ -47,12 +47,13 @@ namespace xng {
 
         void update(DeltaTime deltaTime, EntityScene &entityManager) override;
 
-        void onComponentCreate(const EntityHandle &entity, const std::any &component) override;
+        void onComponentCreate(const EntityHandle &entity, const Component &component) override;
 
-        void onComponentDestroy(const EntityHandle &entity, const std::any &component) override;
+        void onComponentDestroy(const EntityHandle &entity, const Component &component) override;
 
-        void onComponentUpdate(const EntityHandle &entity, const std::any &oldComponent,
-                               const std::any &newComponent) override;
+        void onComponentUpdate(const EntityHandle &entity,
+                               const Component &oldComponent,
+                               const Component &newComponent) override;
 
         std::string getName() override { return "AudioSystem"; }
 

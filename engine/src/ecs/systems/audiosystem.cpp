@@ -96,9 +96,9 @@ namespace xng {
         playingSources.erase(entity);
     }
 
-    void AudioSystem::onComponentCreate(const EntityHandle &entity, const std::any &value) {
-        if (value.type() == typeid(AudioSourceComponent)) {
-            auto component = std::any_cast<AudioSourceComponent>(value);
+    void AudioSystem::onComponentCreate(const EntityHandle &entity, const Component &value) {
+        if (value.getType() == typeid(AudioSourceComponent)) {
+            const auto &component = dynamic_cast<const AudioSourceComponent &>(value);
             if (component.audio.assigned()) {
                 auto &buffer = component.audio.get();
                 buffers[entity] = context->createBuffer();
@@ -112,8 +112,8 @@ namespace xng {
         }
     }
 
-    void AudioSystem::onComponentDestroy(const EntityHandle &entity, const std::any &component) {
-        if (component.type() == typeid(AudioSourceComponent)) {
+    void AudioSystem::onComponentDestroy(const EntityHandle &entity, const Component &component) {
+        if (component.getType() == typeid(AudioSourceComponent)) {
             sources.erase(entity);
             buffers.erase(entity);
             playingSources.erase(entity);
@@ -121,11 +121,11 @@ namespace xng {
     }
 
     void AudioSystem::onComponentUpdate(const EntityHandle &entity,
-                                        const std::any &oldComponent,
-                                        const std::any &newComponent) {
-        if (oldComponent.type() == typeid(AudioSourceComponent)) {
-            auto oldValue = std::any_cast<AudioSourceComponent>(oldComponent);
-            auto newValue = std::any_cast<AudioSourceComponent>(newComponent);
+                                        const Component &oldComponent,
+                                        const Component &newComponent) {
+        if (oldComponent.getType() == typeid(AudioSourceComponent)) {
+            const auto &oldValue = dynamic_cast<const AudioSourceComponent &>(oldComponent);
+            const auto &newValue = dynamic_cast<const AudioSourceComponent &>(newComponent);
             if (oldValue != newValue) {
                 if (oldValue.audio != newValue.audio) {
                     auto &buffer = newValue.audio.get();

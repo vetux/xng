@@ -64,31 +64,35 @@ void SpriteAnimationSystem::update(DeltaTime deltaTime, EntityScene &scene) {
     }
 }
 
-void SpriteAnimationSystem::onComponentCreate(const EntityHandle &entity, const std::any &component) {
-    if (component.type() == typeid(SpriteAnimationComponent)) {
-        const auto *v = std::any_cast<SpriteAnimationComponent>(&component);
-        if (v->animation.assigned()) {
-            auto animation = v->animation.get();
+void SpriteAnimationSystem::onComponentCreate(const EntityHandle &entity, const Component &component) {
+    if (component.getType() == typeid(SpriteAnimationComponent)) {
+        const auto &v = dynamic_cast<const SpriteAnimationComponent&>(component);
+        if (v.animation.assigned()) {
+            auto animation = v.animation.get();
             animations[entity] = animation;
         }
     }
 }
 
-void SpriteAnimationSystem::onComponentDestroy(const EntityHandle &entity, const std::any &component) {
-    if (component.type() == typeid(SpriteAnimationComponent)) {
+void SpriteAnimationSystem::onComponentDestroy(const EntityHandle &entity, const Component &component) {
+    if (component.getType() == typeid(SpriteAnimationComponent)) {
         animations.erase(entity);
     }
 }
 
+void SpriteAnimationSystem::onEntityDestroy(const EntityHandle &entity) {
+    animations.erase(entity);
+}
+
 void SpriteAnimationSystem::onComponentUpdate(const EntityHandle &entity,
-                                              const std::any &oldComponent,
-                                              const std::any &newComponent) {
-    if (oldComponent.type() == typeid(SpriteAnimationComponent)) {
-        const auto *ov = std::any_cast<SpriteAnimationComponent>(&oldComponent);
-        const auto *nv = std::any_cast<SpriteAnimationComponent>(&newComponent);
-        if (ov->animation != nv->animation) {
-            if (nv->animation.assigned())
-                animations[entity] = nv->animation.get();
+                                              const Component &oldComponent,
+                                              const Component &newComponent) {
+    if (oldComponent.getType() == typeid(SpriteAnimationComponent)) {
+        const auto& ov = dynamic_cast<const SpriteAnimationComponent&>(oldComponent);
+        const auto &nv = dynamic_cast<const SpriteAnimationComponent&>(newComponent);
+        if (ov.animation != nv.animation) {
+            if (nv.animation.assigned())
+                animations[entity] = nv.animation.get();
             else
                 animations.erase(entity);
         }

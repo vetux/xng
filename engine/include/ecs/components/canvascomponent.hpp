@@ -21,12 +21,13 @@
 #define XENGINE_CANVASCOMPONENT_HPP
 
 #include "io/messageable.hpp"
+#include "ecs/component.hpp"
 
 namespace xng {
     /*
      * A canvas renders CanvasTransformComponents to the screen using Renderer2D
      */
-    struct XENGINE_EXPORT CanvasComponent : public Messageable {
+    struct XENGINE_EXPORT CanvasComponent : public Component {
         bool enabled = true;
         Vec2f cameraPosition;
 
@@ -72,6 +73,10 @@ namespace xng {
             clearColor >> message["clearColor"];
             message["layer"] = layer;
             return message;
+        }
+
+        std::type_index getType() const override {
+            return typeid(CanvasComponent);
         }
 
         float getViewportScale(const Vec2i &screenSize) const {

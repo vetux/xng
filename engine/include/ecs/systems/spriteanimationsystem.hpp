@@ -37,12 +37,15 @@ namespace xng {
 
         std::string getName() override { return "SpriteAnimationSystem"; }
 
-        void onComponentCreate(const EntityHandle &entity, const std::any &component) override;
+        void onComponentCreate(const EntityHandle &entity, const Component &component) override;
 
-        void onComponentDestroy(const EntityHandle &entity, const std::any &component) override;
+        void onComponentDestroy(const EntityHandle &entity, const Component &component) override;
 
-        void onComponentUpdate(const EntityHandle &entity, const std::any &oldComponent,
-                               const std::any &newComponent) override;
+        void onComponentUpdate(const EntityHandle &entity,
+                               const Component &oldComponent,
+                               const Component &newComponent) override;
+
+        void onEntityDestroy(const EntityHandle &entity) override;
 
     private:
         std::map<EntityHandle, SpriteAnimation> animations;

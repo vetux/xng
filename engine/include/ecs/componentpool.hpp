@@ -23,9 +23,9 @@
 #include <map>
 #include <stdexcept>
 #include <set>
-#include <any>
 
 #include "ecs/entityhandle.hpp"
+#include "ecs/component.hpp"
 
 namespace xng {
     class XENGINE_EXPORT ComponentPoolBase {
@@ -38,11 +38,23 @@ namespace xng {
 
         virtual bool check(const EntityHandle &entity) const = 0;
 
+        virtual const Component &get(const EntityHandle &entity) const = 0;
+
         virtual void destroy(const EntityHandle &entity) = 0;
 
-        virtual std::map<EntityHandle, std::any> getComponents() = 0;
+        virtual std::map<EntityHandle, Component *> getComponents() = 0;
+
+        template<typename T>
+        const T &get(const EntityHandle &entity) const {
+            return dynamic_cast<const T &>(get(entity));
+        }
     };
 
+    /**
+     * Component pools handle the memory layout of components.
+     *
+     * @tparam T The concrete type of the component, must extend Component
+     */
     template<typename T>
     class XENGINE_EXPORT ComponentPool : public ComponentPoolBase {
     public:
@@ -58,10 +70,29 @@ namespace xng {
             return std::make_unique<ComponentPool<T>>(*this);
         }
 
-        std::map<EntityHandle, std::any> getComponents() override {
-            auto ret = std::map<EntityHandle, std::any>();
+
+        void clear() override {
+            components.clear();
+        }
+
+        bool check(const EntityHandle &entity) const override {
+            return components.find(entity) != components.end();
+        }
+
+        const Component &get(const EntityHandle &entity) const override {
+            return components.at(entity);
+        }
+
+        void destroy(const EntityHandle &entity) override {
+            if (components.find(entity) != components.end()) {
+                components.erase(entity);
+            }
+        }
+
+        std::map<EntityHandle, Component *> getComponents() override {
+            auto ret = std::map<EntityHandle, Component *>();
             for (auto &pair: components) {
-                ret[pair.first] = pair.second;
+                ret[pair.first] = dynamic_cast<Component *>(&pair.second);
             }
             return ret;
         }
@@ -85,16 +116,6 @@ namespace xng {
             return comp;
         }
 
-        void destroy(const EntityHandle &entity) override {
-            if (components.find(entity) != components.end()) {
-                components.erase(entity);
-            }
-        }
-
-        void clear() override {
-            components.clear();
-        }
-
         const T &lookup(const EntityHandle &entity) const {
             return components.at(entity);
         }
@@ -111,12 +132,8 @@ namespace xng {
             }
         }
 
-        bool check(const EntityHandle &entity) const override {
-            return components.find(entity) != components.end();
-        }
-
     private:
-        std::map<EntityHandle, T> components;
+        std::map<EntityHandle, T> components; // TODO: Allocate components in contiguous memory.
     };
 }
 

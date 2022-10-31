@@ -21,11 +21,11 @@
 #define XENGINE_SPRITECOMPONENT_HPP
 
 #include "asset/sprite.hpp"
-
 #include "io/messageable.hpp"
+#include "ecs/component.hpp"
 
 namespace xng {
-    struct SpriteComponent : public Messageable {
+    struct SpriteComponent : public Component {
         ResourceHandle<Sprite> sprite; // The sprite to draw
         ResourceHandle<Sprite> spriteB; // If assigned the resulting sprite is the blend between sprite and spriteB colors.
         float blendScale = 0;
@@ -55,6 +55,10 @@ namespace xng {
             message["mix"] = mix;
             mixColor >> message["mixColor"];
             return message;
+        }
+
+        std::type_index getType() const override {
+            return typeid(SpriteComponent);
         }
     };
 }

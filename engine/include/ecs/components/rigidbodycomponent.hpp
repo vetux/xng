@@ -22,9 +22,10 @@
 
 #include "physics/rigidbody.hpp"
 #include "io/messageable.hpp"
+#include "ecs/component.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT RigidBodyComponent : public Messageable {
+    struct XENGINE_EXPORT RigidBodyComponent : public Component {
         bool is2D = false; // Flag for canvas debug render if true the collider shapes are drawn as 2d polygons.
         RigidBody::RigidBodyType type;
         std::vector<ColliderDesc> colliders;
@@ -99,6 +100,10 @@ namespace xng {
             }
             message["colliders"] = vec;
             return message;
+        }
+
+        std::type_index getType() const override {
+            return typeid(RigidBodyComponent);
         }
     };
 }

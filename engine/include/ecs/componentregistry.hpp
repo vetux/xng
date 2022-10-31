@@ -23,10 +23,11 @@
 #include <string>
 #include <functional>
 #include <typeindex>
-#include <any>
 #include <memory>
 
 #include "io/message.hpp"
+
+#include "ecs/component.hpp"
 
 namespace xng {
     class EntityScene;
@@ -38,15 +39,14 @@ namespace xng {
 
 /**
  * Register the given component type to the registry.
- * The component type must implement Messageable and be default constructible
+ * The component type must extend Component and be default constructable
  */
 #define REGISTER_COMPONENT(type) \
 bool r_##type = xng::ComponentRegistry::instance().registerComponent(typeid(type), \
                                                                              #type, \
                                                                              [](const xng::EntityScene &scene,\
                                                                                 xng::EntityHandle ent, xng::Message &msg) {\
-                                                                                 scene.getComponent<type>(\
-                                                                                         ent) >> msg;\
+                                                                                 scene.getComponent<type>(ent) >> msg;\
                                                                              },\
                                                                              [](xng::EntityScene &scene, xng::EntityHandle ent,\
                                                                                 const xng::Message &msg) {\
@@ -60,9 +60,9 @@ bool r_##type = xng::ComponentRegistry::instance().registerComponent(typeid(type
                                                                              },\
                                                                              [](xng::EntityScene &scene,\
                                                                                 xng::EntityHandle ent,\
-                                                                                const std::any &value) {\
+                                                                                const Component &value) {\
                                                                                  scene.updateComponent(ent,\
-                                                                                                       std::any_cast<type>(\
+                                                                                                       dynamic_cast<const type &>(\
                                                                                                                value));\
                                                                              });
 
@@ -77,7 +77,7 @@ namespace xng {
         typedef std::function<void(const EntityScene &, EntityHandle, Message &)> Serializer;
         typedef std::function<void(EntityScene &, EntityHandle, const Message &)> Deserializer;
         typedef std::function<void(EntityScene &scene, EntityHandle ent)> Constructor;
-        typedef std::function<void(EntityScene &scene, EntityHandle ent, const std::any &value)> Updater;
+        typedef std::function<void(EntityScene &scene, EntityHandle ent, const Component &value)> Updater;
 
         /**
          * @return The component registry instance with the engine components already registered.

@@ -21,15 +21,15 @@
 #define XENGINE_SPRITEANIMATIONCOMPONENT_HPP
 
 #include "animation/sprite/spriteanimation.hpp"
-
 #include "io/messageable.hpp"
+#include "ecs/component.hpp"
 
 namespace xng {
     /**
      * A sprite animation system updates the sprite animations each update
      * and sets the sprite instance on the sprite render component of the entity if it exists.
      */
-    struct XENGINE_EXPORT SpriteAnimationComponent : public Messageable {
+    struct XENGINE_EXPORT SpriteAnimationComponent : public Component {
         bool enabled = true;
         ResourceHandle<SpriteAnimation> animation{};
         float animationDurationOverride = -1;
@@ -46,6 +46,10 @@ namespace xng {
             message["enabled"] = enabled;
             animation >> message["animation"];
             return message;
+        }
+
+        std::type_index getType() const override {
+            return typeid(SpriteAnimationComponent);
         }
     };
 }

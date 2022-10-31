@@ -23,14 +23,14 @@
 #include "io/messageable.hpp"
 
 #include "ecs/entity.hpp"
-
 #include "ecs/components/canvascomponent.hpp"
+#include "ecs/component.hpp"
 
 namespace xng {
     /**
      * If the entity contains a TransformComponent the position(.x, .y) and rotation(.z) are added to the rect transform values.
      */
-    struct XENGINE_EXPORT CanvasTransformComponent : public Messageable {
+    struct XENGINE_EXPORT CanvasTransformComponent : public Component {
         enum Anchor {
             TOP_LEFT,
             TOP_CENTER,
@@ -70,6 +70,10 @@ namespace xng {
             message["rotation"] = rotation;
             message["canvas"] = canvas;
             return message;
+        }
+
+        std::type_index getType() const override {
+            return typeid(CanvasTransformComponent);
         }
 
         Vec2f getOffset(EntityScene &scene, Vec2i screenSize) const {

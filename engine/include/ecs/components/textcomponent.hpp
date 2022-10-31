@@ -21,19 +21,17 @@
 #define XENGINE_TEXTCOMPONENT_HPP
 
 #include "io/messageable.hpp"
-
 #include "asset/rawasset.hpp"
-
 #include "text/alignment.hpp"
-
 #include "ecs/components/canvastransformcomponent.hpp"
+#include "ecs/component.hpp"
 
 namespace xng {
     /**
      * A text component renders the given text.
      * If the resulting rendered text size is larger than the rect dimensions the text is cropped
      */
-    struct XENGINE_EXPORT TextComponent : public Messageable {
+    struct XENGINE_EXPORT TextComponent : public Component {
         std::string text;
 
         Vec2i pixelSize;
@@ -104,6 +102,10 @@ namespace xng {
             textColor >> message["textColor"];
             message["layer"] = layer;
             return message;
+        }
+
+        std::type_index getType() const override {
+            return typeid(TextComponent);
         }
     };
 }

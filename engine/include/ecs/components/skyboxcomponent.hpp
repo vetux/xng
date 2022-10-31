@@ -23,11 +23,11 @@
 #include <string>
 
 #include "asset/skybox.hpp"
-
 #include "io/messageable.hpp"
+#include "ecs/component.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT SkyboxComponent : public Messageable {
+    struct XENGINE_EXPORT SkyboxComponent : public Component {
         Skybox skybox;
 
         bool operator==(const SkyboxComponent &other) const {
@@ -43,6 +43,10 @@ namespace xng {
             message = Message(Message::DICTIONARY);
             skybox >> message["skybox"];
             return message;
+        }
+
+        std::type_index getType() const override {
+            return typeid(SkyboxComponent);
         }
     };
 }

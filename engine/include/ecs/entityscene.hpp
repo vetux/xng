@@ -22,7 +22,6 @@
 
 #include <set>
 #include <limits>
-#include <any>
 #include <functional>
 
 #include "resource/resource.hpp"
@@ -44,13 +43,13 @@ namespace xng {
 
             virtual void onEntityDestroy(const EntityHandle &entity) {};
 
-            virtual void onComponentCreate(const EntityHandle &entity, const std::any &component) {};
+            virtual void onComponentCreate(const EntityHandle &entity, const Component &component) {};
 
-            virtual void onComponentDestroy(const EntityHandle &entity, const std::any &component) {};
+            virtual void onComponentDestroy(const EntityHandle &entity, const Component &component) {};
 
             virtual void onComponentUpdate(const EntityHandle &entity,
-                                           const std::any &oldComponent,
-                                           const std::any &newComponent) {};
+                                           const Component &oldComponent,
+                                           const Component &newComponent) {};
         };
 
         EntityScene() = default;
@@ -169,7 +168,7 @@ namespace xng {
             for (auto &pair: componentPools) {
                 for (auto &cpair: pair.second->getComponents()) {
                     for (auto &listener: listeners) {
-                        listener->onComponentDestroy(cpair.first, cpair.second);
+                        listener->onComponentDestroy(cpair.first, *cpair.second);
                     }
                 }
             }
@@ -279,7 +278,7 @@ namespace xng {
 
         void updateComponent(const EntityHandle &entity,
                              const std::type_index &type,
-                             const std::any &value) {
+                             const Component &value) {
             ComponentRegistry::instance().getUpdater(type)(*this, entity, value);
         }
 

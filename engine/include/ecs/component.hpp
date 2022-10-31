@@ -17,33 +17,18 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_AUDIOLISTENERCOMPONENT_HPP
-#define XENGINE_AUDIOLISTENERCOMPONENT_HPP
-
-#include "ecs/component.hpp"
-
-#include "math/vector3.hpp"
+#ifndef XENGINE_COMPONENT_HPP
+#define XENGINE_COMPONENT_HPP
 
 #include "io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT AudioListenerComponent : public Component {
-        Vec3f velocity;
-
-        Messageable &operator<<(const Message &message) override {
-            velocity << message.value("velocity");
-            return *this;
-        }
-
-        Message &operator>>(Message &message) const override {
-            message = Message(Message::DICTIONARY);
-            velocity >> message["velocity"];
-            return message;
-        }
-
-        std::type_index getType() const override {
-            return typeid(AudioListenerComponent);
-        }
+    /**
+     * Component types must extend this type.
+     */
+    struct XENGINE_EXPORT Component : public Messageable {
+        virtual std::type_index getType() const = 0;
     };
 }
-#endif //XENGINE_AUDIOLISTENERCOMPONENT_HPP
+
+#endif //XENGINE_COMPONENT_HPP

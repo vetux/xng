@@ -24,9 +24,10 @@
 #include "asset/mesh.hpp"
 #include "resource/resourcehandle.hpp"
 #include "io/messageable.hpp"
+#include "ecs/component.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT MeshRenderComponent : public Messageable {
+    struct XENGINE_EXPORT MeshRenderComponent : public Component {
         bool enabled = true;
 
         bool castShadows{};
@@ -60,6 +61,10 @@ namespace xng {
             mesh >> message["mesh"];
             material >> message["material"];
             return message;
+        }
+
+        std::type_index getType() const override {
+            return typeid(MeshRenderComponent);
         }
     };
 }

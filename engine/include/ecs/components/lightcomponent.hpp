@@ -22,9 +22,10 @@
 
 #include "asset/light.hpp"
 #include "io/messageable.hpp"
+#include "ecs/component.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT LightComponent : public Messageable {
+    struct XENGINE_EXPORT LightComponent : public Component {
         bool enabled = true;
 
         Light light;
@@ -40,6 +41,10 @@ namespace xng {
             message["enabled"] = enabled;
             light >> message["light"];
             return message;
+        }
+
+        std::type_index getType() const override {
+            return typeid(LightComponent);
         }
     };
 }

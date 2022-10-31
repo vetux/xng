@@ -20,13 +20,14 @@
 #ifndef XENGINE_AUDIOSOURCECOMPONENT_HPP
 #define XENGINE_AUDIOSOURCECOMPONENT_HPP
 
+#include "ecs/component.hpp"
 #include "asset/audio.hpp"
 #include "math/vector3.hpp"
 #include "resource/resourcehandle.hpp"
 #include "io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT AudioSourceComponent : public Messageable {
+    struct XENGINE_EXPORT AudioSourceComponent : public Component {
         ResourceHandle<Audio> audio;
         bool play = false;
         bool loop = false;
@@ -58,6 +59,10 @@ namespace xng {
             message["loop"] = loop;
             velocity >> message["velocity"];
             return message;
+        }
+
+        std::type_index getType() const override {
+            return typeid(AudioSourceComponent);
         }
     };
 }

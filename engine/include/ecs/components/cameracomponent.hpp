@@ -22,9 +22,10 @@
 
 #include "asset/camera.hpp"
 #include "io/messageable.hpp"
+#include "ecs/component.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT CameraComponent : public Messageable {
+    struct XENGINE_EXPORT CameraComponent : public Component {
         Camera camera; // The camera used to render meshes. The camera aspect ratio must be updated by the user.
 
         Messageable &operator<<(const Message &message) override {
@@ -36,6 +37,10 @@ namespace xng {
             message = Message(Message::DICTIONARY);
             camera >> message["camera"];
             return message;
+        }
+
+        std::type_index getType() const override {
+            return typeid(CameraComponent);
         }
     };
 }
