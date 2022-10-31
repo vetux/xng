@@ -32,8 +32,7 @@
 namespace xng {
     class XENGINE_EXPORT MeshRenderSystem : public System {
     public:
-        MeshRenderSystem(RenderTarget &screen,
-                         SceneRenderer &pipeline);
+        MeshRenderSystem(SceneRenderer &pipeline);
 
         ~MeshRenderSystem() override;
 
@@ -47,16 +46,10 @@ namespace xng {
 
         SceneRenderer &getPipeline();
 
-        Scene &getScene();
-
         size_t getPolyCount() const { return polyCount; }
 
     private:
         SceneRenderer &pipeline;
-        RenderTarget &screenTarget;
-
-        Scene scene;
-
         size_t polyCount{};
     };
 }

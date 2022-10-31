@@ -17,26 +17,14 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "render/graph/framegraphrenderer.hpp"
-#include "render/graph/framegraphbuilder.hpp"
+#ifndef XENGINE_FORWARDRENDERPROPERTIES_HPP
+#define XENGINE_FORWARDRENDERPROPERTIES_HPP
 
 namespace xng {
-    FrameGraphRenderer::FrameGraphRenderer(RenderTarget &target, std::unique_ptr<FrameGraphAllocator> allocator)
-            : target(target), allocator(std::move(allocator)) {}
-
-    void FrameGraphRenderer::render(const Scene &scene) {
-        /// Setup
-        auto frame = FrameGraphBuilder(target, scene, properties).build(layout);
-
-        blackboard.clear();
-
-        /// Compile
-        allocator->setFrame(frame);
-
-        /// Execute
-        for (auto &p: layout.getOrderedPasses()) {
-            auto res = allocator->allocateNext();
-            p.get().execute(res);
-        }
+    namespace ForwardRenderProperties {
+        static const char *RENDER_RESOLUTION = "RENDER_RESOLUTION"; // Vec2i, the resolution to render at, if not defined the back buffer resolution is used
+        static const char *RENDER_SAMPLES = "RENDER_SAMPLES"; // int, the number of msaa samples per pixel, if not defined the back buffer sample count is used
     }
 }
+
+#endif //XENGINE_FORWARDRENDERPROPERTIES_HPP

@@ -24,10 +24,8 @@
 #include "ecs/components.hpp"
 
 namespace xng {
-    MeshRenderSystem::MeshRenderSystem(RenderTarget &screen,
-                                       SceneRenderer &pipeline)
-            : screenTarget(screen),
-              pipeline(pipeline) {
+    MeshRenderSystem::MeshRenderSystem(SceneRenderer &pipeline)
+            : pipeline(pipeline) {
     }
 
     MeshRenderSystem::~MeshRenderSystem() = default;
@@ -37,7 +35,7 @@ namespace xng {
     void MeshRenderSystem::stop(EntityScene &entityManager) {}
 
     void MeshRenderSystem::update(DeltaTime deltaTime, EntityScene &entScene) {
-        scene = {};
+        Scene scene = {};
 
         polyCount = 0;
 
@@ -64,7 +62,6 @@ namespace xng {
             scene.objects.emplace_back(node);
         }
 
-
         // Update skybox texture
         for (auto &pair: entScene.getPool<SkyboxComponent>()) {
             auto &comp = pair.second;
@@ -78,12 +75,7 @@ namespace xng {
             if (!tcomp.enabled)
                 continue;
 
-            auto comp = pair.second;
-
-            comp.camera.aspectRatio = (float) screenTarget.getDescription().size.x
-                                      / (float) screenTarget.getDescription().size.y;
-
-            entScene.updateComponent(pair.first, comp);
+            auto& comp = pair.second;
 
             scene.camera = comp.camera;
             scene.cameraTransform = TransformComponent::walkHierarchy(tcomp, entScene);
@@ -110,14 +102,10 @@ namespace xng {
         }
 
         // Render
-        pipeline.render(screenTarget, scene);
+        pipeline.render(scene);
     }
 
     SceneRenderer &MeshRenderSystem::getPipeline() {
         return pipeline;
-    }
-
-    Scene &MeshRenderSystem::getScene() {
-        return scene;
     }
 }

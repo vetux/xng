@@ -28,8 +28,8 @@ namespace xng {
      * Frame graphs can define other properties.
      */
     namespace FrameGraphProperties {
-        static const std::string &RENDER_RESOLUTION = "RENDER_RESOLUTION"; // Vec2i, the resolution to render at, if not defined the back buffer resolution is used
-        static const std::string &RENDER_SAMPLES = "RENDER_SAMPLES"; // int, the number of msaa samples per pixel, if not defined the back buffer sample count is used
+        static const char *RENDER_RESOLUTION = "RENDER_RESOLUTION"; // Vec2i, the resolution to render at, if not defined the back buffer resolution is used
+        static const char *RENDER_SAMPLES = "RENDER_SAMPLES"; // int, the number of msaa samples per pixel, if not defined the back buffer sample count is used
     }
 }
 

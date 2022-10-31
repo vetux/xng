@@ -21,26 +21,39 @@
 #define XENGINE_FORWARDPIPELINE_HPP
 
 #include "render/scenerenderer.hpp"
+#include "render/forward/forwardrenderproperties.hpp"
+
+#include "types/genericmap.hpp"
+
 #include "gpu/renderdevice.hpp"
 
 namespace xng {
     class XENGINE_EXPORT ForwardRenderer : public SceneRenderer {
     public:
-        ForwardRenderer() = default;
+        ForwardRenderer(RenderTarget &target, RenderDevice &device)
+                : target(target), device(device) {}
 
-        explicit ForwardRenderer(RenderDevice &device)
-                : device(&device) {}
-
-        void render(RenderTarget &target, const Scene &scene) override;
+        void render(const Scene &scene) override;
 
         std::type_index getType() override { return typeid(ForwardRenderer); }
 
-        void setRenderResolution(Vec2i res) override;
+        void setProperties(const GenericMapString &value) override {
+            properties = value;
+        }
 
-        void setRenderSamples(int samples) override;
+        GenericMapString &getProperties() override {
+            return properties;
+        }
+
+        const GenericMapString &getProperties() const override {
+            return properties;
+        }
 
     private:
-        RenderDevice *device = nullptr;
+        RenderTarget &target;
+        RenderDevice &device;
+
+        GenericMapString properties;
     };
 }
 #endif //XENGINE_FORWARDPIPELINE_HPP

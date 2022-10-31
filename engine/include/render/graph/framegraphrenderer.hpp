@@ -33,33 +33,30 @@
 namespace xng {
     class XENGINE_EXPORT FrameGraphRenderer : public SceneRenderer {
     public:
-        explicit FrameGraphRenderer(std::unique_ptr<FrameGraphAllocator> allocator);
+        explicit FrameGraphRenderer(RenderTarget &target, std::unique_ptr<FrameGraphAllocator> allocator);
 
-        void render(RenderTarget &target, const Scene &scene) override;
+        void render(const Scene &scene) override;
 
         void setLayout(const FrameGraphLayout &v) {
             layout = v;
         }
 
-        void setProperties(const GenericMapString &value) {
+        void setProperties(const GenericMapString &value) override {
             properties = value;
         }
 
-        GenericMapString &getProperties() {
+        GenericMapString &getProperties() override {
             return properties;
         }
 
-        const GenericMapString &getProperties() const {
+        const GenericMapString &getProperties() const override {
             return properties;
         }
-
-        void setRenderResolution(Vec2i res) override;
-
-        void setRenderSamples(int samples) override;
 
         std::type_index getType() override { return typeid(FrameGraphRenderer); }
 
     private:
+        RenderTarget &target;
         std::unique_ptr<FrameGraphAllocator> allocator;
 
         FrameGraphLayout layout;

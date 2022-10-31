@@ -21,26 +21,30 @@
 #define XENGINE_SCENERENDERER_HPP
 
 #include "asset/scene.hpp"
+
+#include "types/genericmap.hpp"
+
 #include "gpu/rendertarget.hpp"
 
 namespace xng {
     /**
-     * A scene renderer produces an image from a given a scene and target.
-     * The scene renderer depends on the gpu and display drivers.
+     * A scene renderer produces an image from a given a scene using the set properties.
      *
-     * xng is designed to allow writing cross platform renderers through the gpu / display interface.
+     * Properties are renderer specific.
      *
-     * However if a user wishes to implement a renderer without using the provided interfaces
-     * or use a 3rd party renderer the drivers can be reimplemented as needed
-     * and the renderer implemented as a SceneRenderer driver.
+     * To integrate 3rd party renderers or create a renderer which doesnt use the gpu / display abstraction
+     * the user can either subclass scene renderer and pass the instance to the mesh render system
+     * or subclass system to create a custom rendering system.
      */
     class XENGINE_EXPORT SceneRenderer : public Driver {
     public:
-        virtual void render(RenderTarget &target, const Scene &scene) = 0;
+        virtual void render(const Scene &scene) = 0;
 
-        virtual void setRenderResolution(Vec2i res) = 0;
+        virtual void setProperties(const GenericMapString &value) = 0;
 
-        virtual void setRenderSamples(int samples) = 0;
+        virtual GenericMapString &getProperties() = 0;
+
+        virtual const GenericMapString &getProperties() const = 0;
 
         std::type_index getBaseType() override {
             return typeid(SceneRenderer);
