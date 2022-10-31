@@ -82,14 +82,24 @@ namespace xng {
 
         virtual int loop() {
             start();
-            auto frameStart = std::chrono::high_resolution_clock::now();
+            auto frameStart = std::chrono::steady_clock::now();
             DeltaTime deltaTime = 0;
             while (!window->shouldClose() && !shutdown) {
                 update(deltaTime);
-                auto frameEnd = std::chrono::high_resolution_clock::now();
+                auto frameEnd = std::chrono::steady_clock::now();
                 auto frameDelta = frameEnd - frameStart;
+                deltaTime = static_cast<DeltaTime>(static_cast<long double>(frameDelta.count()) / (long double) 1000000000.0f);
+                if (targetFramerate > 0) {
+                    auto frameDur = std::chrono::steady_clock::duration((int) ((long double)(1.0f / targetFramerate) * (long double)1000000000.0f));
+                    if (frameDelta < frameDur) {
+                        std::this_thread::sleep_for(frameDur - frameDelta);
+                    }
+                    frameEnd = std::chrono::steady_clock::now();
+                    frameDelta = frameEnd - frameStart;
+                    deltaTime = static_cast<DeltaTime>(static_cast<long double>(frameDelta.count()) /
+                                                       (long double) 1000000000.0f);
+                }
                 frameStart = frameEnd;
-                deltaTime = static_cast<DeltaTime>(frameDelta.count()) / 1000000000.0f;
             }
             stop();
             return 0;
@@ -111,6 +121,8 @@ namespace xng {
         ImGuiContext *imGuiContext;
 
         bool shutdown = false;
+
+        long double targetFramerate = 0;
 
         virtual void start() {}
 
