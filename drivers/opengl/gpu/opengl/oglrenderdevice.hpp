@@ -37,10 +37,26 @@ namespace xng::opengl {
     class OGLRenderDevice : public RenderDevice {
     public:
         RenderDeviceInfo info;
+        std::set<RenderObject *> objects;
 
-        explicit OGLRenderDevice(RenderDeviceInfo info) : info(std::move(info)) {}
+        std::function<void(RenderObject *)> destructor;
 
-        ~OGLRenderDevice() override = default;
+        explicit OGLRenderDevice(RenderDeviceInfo info) : info(std::move(info)) {
+            destructor = [this](RenderObject *obj) {
+                objects.erase(obj);
+            };
+        }
+
+        ~OGLRenderDevice() override {
+            std::set<RenderObject *> o = objects;
+            for (auto *ptr: o) {
+                delete ptr;
+            }
+        }
+
+        std::set<RenderObject *> getAllocatedObjects() override {
+            return objects;
+        }
 
         const RenderDeviceInfo &getInfo() override {
             return info;
@@ -48,7 +64,7 @@ namespace xng::opengl {
 
         std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDesc &desc,
                                                              ShaderProgram &shader) override {
-            auto ret = std::make_unique<OGLRenderPipeline>(desc, dynamic_cast<OGLShaderProgram &>(shader));
+            auto ret = std::make_unique<OGLRenderPipeline>(destructor, desc, dynamic_cast<OGLShaderProgram &>(shader));
             checkGLError();
             return ret;
         }
@@ -66,32 +82,32 @@ namespace xng::opengl {
         }
 
         std::unique_ptr<RenderTarget> createRenderTarget(const RenderTargetDesc &desc) override {
-            auto ret = std::make_unique<OGLRenderTarget>(desc);
+            auto ret = std::make_unique<OGLRenderTarget>(destructor, desc);
             checkGLError();
             return ret;
         }
 
         std::unique_ptr<TextureBuffer> createTextureBuffer(const TextureBufferDesc &desc) override {
-            auto ret = std::make_unique<OGLTextureBuffer>(desc);
+            auto ret = std::make_unique<OGLTextureBuffer>(destructor, desc);
             checkGLError();
             return ret;
         }
 
         std::unique_ptr<VertexBuffer> createVertexBuffer(const VertexBufferDesc &desc) override {
-            auto ret = std::make_unique<OGLVertexBuffer>(desc);
+            auto ret = std::make_unique<OGLVertexBuffer>(destructor, desc);
             checkGLError();
             return ret;
         }
 
         std::unique_ptr<ShaderProgram> createShaderProgram(const SPIRVDecompiler &decompiler,
                                                            const ShaderProgramDesc &desc) override {
-            auto ret = std::make_unique<OGLShaderProgram>(decompiler, desc);
+            auto ret = std::make_unique<OGLShaderProgram>(destructor, decompiler, desc);
             checkGLError();
             return ret;
         }
 
         std::unique_ptr<ShaderBuffer> createShaderBuffer(const ShaderBufferDesc &desc) override {
-            auto ret = std::make_unique<OGLShaderBuffer>(desc);
+            auto ret = std::make_unique<OGLShaderBuffer>(destructor, desc);
             checkGLError();
             return ret;
         }

@@ -34,6 +34,8 @@
 namespace xng::opengl {
     class OGLVertexBuffer : public VertexBuffer {
     public:
+        std::function<void(RenderObject*)> destructor;
+
         VertexBufferDesc desc;
 
         GLuint VAO = 0;
@@ -47,7 +49,7 @@ namespace xng::opengl {
         GLsizei vertexSize = 0;
         GLsizeiptr vertexBufferSize = 0;
 
-        GLsizei indexSize;
+        GLsizei indexSize = 0;
         GLsizeiptr indexBufferSize = 0;
 
         GLsizei instanceSize = 0;
@@ -58,9 +60,8 @@ namespace xng::opengl {
         bool indexed = false;
         bool instanced = false;
 
-        explicit OGLVertexBuffer(VertexBufferDesc inputDescription) :
-                desc(std::move(inputDescription)) {
-
+        OGLVertexBuffer(std::function<void(RenderObject*)> destructor, VertexBufferDesc inputDescription)
+                : destructor(std::move(destructor)), desc(std::move(inputDescription)) {
             indexed = desc.numberOfIndices != 0;
             instanced = desc.numberOfInstances != 0;
             if (indexed) {
@@ -106,6 +107,7 @@ namespace xng::opengl {
             if (instanced) {
                 glDeleteBuffers(1, &instanceVBO);
             }
+            destructor(this);
         }
 
         const VertexBufferDesc &getDescription() override {

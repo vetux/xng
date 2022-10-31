@@ -37,9 +37,13 @@
 namespace xng::opengl {
     class OGLShaderProgram : public ShaderProgram {
     public:
+        std::function<void(RenderObject*)> destructor;
         GLuint programHandle = 0;
 
-        explicit OGLShaderProgram(const SPIRVDecompiler &decompiler, const ShaderProgramDesc &desc) {
+        explicit OGLShaderProgram(std::function<void(RenderObject*)> destructor,
+                                  const SPIRVDecompiler &decompiler,
+                                  const ShaderProgramDesc &desc)
+                : destructor(std::move(destructor)) {
             char *vertexSource, *fragmentSource, *geometrySource = nullptr;
 
             std::string vert, frag, geo;
@@ -137,6 +141,7 @@ namespace xng::opengl {
 
         ~OGLShaderProgram() override {
             glDeleteProgram(programHandle);
+            destructor(this);
         }
 
         OGLShaderProgram(const OGLShaderProgram &copy) = delete;

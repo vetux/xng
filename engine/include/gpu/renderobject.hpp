@@ -34,6 +34,10 @@ namespace xng {
             RAYTRACE_PIPELINE
         };
 
+        /**
+         * Calling this destructor deallocates all memory associated with the object
+         * and removes the object from the device objects.
+         */
         virtual ~RenderObject() = default;
 
         virtual Type getType() = 0;

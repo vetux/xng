@@ -26,11 +26,12 @@
 namespace xng::opengl {
     class OGLShaderBuffer : public ShaderBuffer {
     public:
+        std::function<void(RenderObject*)> destructor;
         ShaderBufferDesc desc;
         GLuint ubo = 0;
 
-        explicit OGLShaderBuffer(ShaderBufferDesc inputDescription)
-                : desc(inputDescription) {
+        explicit OGLShaderBuffer(std::function<void(RenderObject*)> destructor, ShaderBufferDesc inputDescription)
+                : destructor(std::move(destructor)), desc(inputDescription) {
 
             checkGLError();
 
@@ -49,6 +50,7 @@ namespace xng::opengl {
 
         ~OGLShaderBuffer() override {
             glDeleteBuffers(1, &ubo);
+            destructor(this);
         }
 
         const ShaderBufferDesc &getDescription() override {

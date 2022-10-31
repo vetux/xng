@@ -22,19 +22,22 @@
 
 #include "gpu/texturebuffer.hpp"
 
+#include <utility>
+
 #include "opengl_include.hpp"
 #include "gpu/opengl/oglfence.hpp"
 
 namespace xng::opengl {
     class OGLTextureBuffer : public TextureBuffer {
     public:
+        std::function<void(RenderObject*)> destructor;
         TextureBufferDesc desc;
-        GLuint handle;
+        GLuint handle = 0;
 
         GLenum textureType;
 
-        OGLTextureBuffer(const TextureBufferDesc &inputDescription)
-                : desc(inputDescription) {
+        OGLTextureBuffer(std::function<void(RenderObject*)> destructor, TextureBufferDesc inputDescription)
+                : destructor(std::move(destructor)), desc(std::move(inputDescription)) {
             textureType = convert(desc.textureType);
 
             glGenTextures(1, &handle);
@@ -128,6 +131,7 @@ namespace xng::opengl {
 
         ~OGLTextureBuffer() override {
             glDeleteTextures(1, &handle);
+            destructor(this);
         }
 
         const TextureBufferDesc &getDescription() override {

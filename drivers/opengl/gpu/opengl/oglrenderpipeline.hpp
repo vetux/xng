@@ -36,12 +36,15 @@
 namespace xng::opengl {
     class OGLRenderPipeline : public RenderPipeline {
     public:
+        std::function<void(RenderObject*)> destructor;
         OGLShaderProgram &shader;
         RenderPipelineDesc desc;
 
-        explicit OGLRenderPipeline(RenderPipelineDesc desc, OGLShaderProgram &shader)
-                : desc(std::move(desc)), shader(shader) {
+        explicit OGLRenderPipeline(std::function<void(RenderObject*)> destructor, RenderPipelineDesc desc, OGLShaderProgram &shader)
+                : destructor(std::move(destructor)), desc(std::move(desc)), shader(shader) {}
 
+        ~OGLRenderPipeline() override {
+            destructor(this);
         }
 
         const RenderPipelineDesc &getDescription() override {

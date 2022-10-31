@@ -48,11 +48,26 @@
 #include "asset/mesh.hpp"
 
 namespace xng {
+    /**
+     * The render device allocates gpu resources.
+     *
+     * Smart pointers are used as return type to ensure that user programs are memory safe by default,
+     * the user can unbox the returned pointers to use different memory management patterns.
+     */
     class XENGINE_EXPORT RenderDevice {
     public:
+        /**
+         * Deallocates all objects belonging to this device which have not been deallocated yet.
+         * Deallocating objects returned by this device after calling this destructor results in undefined behaviour.
+         */
         virtual ~RenderDevice() = default;
 
         virtual const RenderDeviceInfo &getInfo() = 0;
+
+        /**
+         * @return The list of currently allocated render objects
+         */
+        virtual std::set<RenderObject*> getAllocatedObjects() = 0;
 
         /**
          * The shaders are required to store all global variables in uniform buffers.
@@ -183,7 +198,7 @@ namespace xng {
                     VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT)
             };
 
-             VertexBufferDesc desc = {
+            VertexBufferDesc desc = {
                     .primitive = mesh.primitive,
                     .vertexLayout = layout,
                     .instanceLayout = instanceLayout,
@@ -205,19 +220,19 @@ namespace xng {
                 return ret;
             }
 
-             if (bufferType == DEVICE_LOCAL || bufferType == LAZILY_ALLOCATED){
-                 // Use staging buffer for buffer allocation
-                 auto stagingBuffer = createVertexBuffer(desc);
-                 stagingBuffer->upload(mesh, offsets);
-                 desc.bufferType = bufferType;
-                 auto ret = createVertexBuffer(desc);
-                 ret->copy(*stagingBuffer);
-                 return ret;
-             } else {
-                 auto ret = createVertexBuffer(desc);
-                 ret->upload(mesh, offsets);
-                 return ret;
-             }
+            if (bufferType == DEVICE_LOCAL || bufferType == LAZILY_ALLOCATED) {
+                // Use staging buffer for buffer allocation
+                auto stagingBuffer = createVertexBuffer(desc);
+                stagingBuffer->upload(mesh, offsets);
+                desc.bufferType = bufferType;
+                auto ret = createVertexBuffer(desc);
+                ret->copy(*stagingBuffer);
+                return ret;
+            } else {
+                auto ret = createVertexBuffer(desc);
+                ret->upload(mesh, offsets);
+                return ret;
+            }
         }
     };
 }
