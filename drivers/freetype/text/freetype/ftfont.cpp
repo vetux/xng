@@ -25,13 +25,17 @@ namespace xng {
     FTFont::FTFont(std::istream &stream) {
         bytes = std::vector<char>((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
 
-        FT_Init_FreeType(&library);
+        auto r = FT_Init_FreeType(&library);
 
-        auto r = FT_New_Memory_Face(library,
-                                    reinterpret_cast<const FT_Byte *>(bytes.data()),
-                                    bytes.size(),
-                                    0,
-                                    &face);
+        if (r != 0) {
+            throw std::runtime_error("Failed to initalize freetype: " + std::to_string(r));
+        }
+
+        r = FT_New_Memory_Face(library,
+                               (const FT_Byte *) (bytes.data()),
+                               bytes.size(),
+                               0,
+                               &face);
 
         if (r != 0) {
             throw std::runtime_error("Failed to create face from memory " + std::to_string(r));

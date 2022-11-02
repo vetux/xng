@@ -28,7 +28,7 @@
 #include "ecs/component.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT ComponentPoolBase {
+    class ComponentPoolBase {
     public:
         virtual ~ComponentPoolBase() = default;
 
@@ -56,7 +56,7 @@ namespace xng {
      * @tparam T The concrete type of the component, must extend Component
      */
     template<typename T>
-    class XENGINE_EXPORT ComponentPool : public ComponentPoolBase {
+    class ComponentPool : public ComponentPoolBase {
     public:
         ComponentPool() = default;
 

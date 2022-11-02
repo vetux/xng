@@ -30,7 +30,15 @@ namespace xng {
             : parsers(std::move(parsers)) {}
 
     ResourceBundle ResourceImporter::import(std::istream &stream, const std::string &hint, Archive *archive) const {
-        std::string buffer = {std::istreambuf_iterator<char>(stream), {}};
+        std::vector<char> buffer;
+
+        char c;
+        while (!stream.eof()) {
+            stream.read(&c, 1);
+            if (stream.gcount() == 1) {
+                buffer.emplace_back(c);
+            }
+        }
 
         // Use parser which supports hint if it exists.
         for (auto &parser: parsers) {

@@ -230,7 +230,7 @@ namespace xng {
         return ret;
     }
 
-    static ResourceBundle readAsset(const std::string &assetBuffer, const std::string &hint, Archive *archive) {
+    static ResourceBundle readAsset(const std::vector<char> &assetBuffer, const std::string &hint, Archive *archive) {
         //TODO: Implement assimp IOSystem pointing to archive
 
         Assimp::Importer importer;
@@ -271,7 +271,7 @@ namespace xng {
         return ret;
     }
 
-    ResourceBundle AssImpParser::read(const std::string &buffer,
+    ResourceBundle AssImpParser::read(const std::vector<char>&buffer,
                                       const std::string &hint,
                                       const ResourceImporter &importer,
                                       Archive *archive) const {

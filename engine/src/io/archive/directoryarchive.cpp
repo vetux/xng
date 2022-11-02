@@ -38,13 +38,13 @@ namespace xng {
     std::unique_ptr<std::istream> DirectoryArchive::open(const std::string &path) {
         std::string targetPath = getAbsolutePath(path);
 
-        auto ret = std::make_unique<std::ifstream>(targetPath);
+        auto ret = std::make_unique<std::ifstream>(targetPath, std::ios_base::in | std::ios_base::binary);
 
         if (!*ret) {
             throw std::runtime_error("Failed to open file " + targetPath);
         }
 
-        return ret;
+        return std::move(ret);
     }
 
     std::unique_ptr<std::iostream> DirectoryArchive::openRW(const std::string &path) {
@@ -53,13 +53,13 @@ namespace xng {
 
         std::string targetPath = getAbsolutePath(path);
 
-        auto ret = std::make_unique<std::fstream>(targetPath);
+        auto ret = std::make_unique<std::fstream>(targetPath, std::ios_base::in | std::ios_base::binary);
 
         if (!*ret) {
             throw std::runtime_error("Failed to open file " + targetPath);
         }
 
-        return ret;
+        return std::move(ret);
     }
 
     std::string DirectoryArchive::getAbsolutePath(const std::string &path) {

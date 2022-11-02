@@ -63,8 +63,8 @@ namespace xng {
         bundleMutex.unlock();
     }
 
-    static ResourceBundle readJsonBundle(const std::string &buffer, const ResourceImporter &importer) {
-        auto stream = std::stringstream(buffer);
+    static ResourceBundle readJsonBundle(const std::vector<char>&buffer, const ResourceImporter &importer) {
+        auto stream = std::stringstream(std::string(buffer.begin(), buffer.end()));
         const Message m = JsonProtocol().deserialize(stream);
 
         ResourceBundle ret;
@@ -118,7 +118,7 @@ namespace xng {
         return ret;
     }
 
-    ResourceBundle JsonParser::read(const std::string &buffer,
+    ResourceBundle JsonParser::read(const std::vector<char>&buffer,
                                     const std::string &hint,
                                     const ResourceImporter &importer,
                                     Archive *archive) const {

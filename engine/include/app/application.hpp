@@ -72,6 +72,7 @@ namespace xng {
             window->update();
 
             imGuiContext = ImGui::CreateContext();
+            ImGuiCompat::SetContext(imGuiContext);
             ImGuiCompat::Init(*window);
         }
 

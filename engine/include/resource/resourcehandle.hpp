@@ -32,7 +32,7 @@
 
 namespace xng {
     template<typename T>
-    class XENGINE_EXPORT ResourceHandle : public Messageable {
+    class ResourceHandle : public Messageable {
     public:
         ResourceHandle() = default;
 

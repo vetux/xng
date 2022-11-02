@@ -22,6 +22,7 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "io/archive.hpp"
 #include "resource/resourcebundle.hpp"
@@ -46,7 +47,7 @@ namespace xng {
          * @param archive The archive instance to use for resolving referenced asset paths.
          * @return
          */
-        virtual ResourceBundle read(const std::string &buffer,
+        virtual ResourceBundle read(const std::vector<char> &buffer,
                                     const std::string &hint,
                                     const ResourceImporter &importer,
                                     Archive *archive) const = 0;

@@ -23,6 +23,7 @@
 
 #include "resource/resourceimporter.hpp"
 #include "io/archive/memoryarchive.hpp"
+#include "log/log.hpp"
 
 namespace xng {
     static std::unique_ptr<ResourceRegistry> defRepo = nullptr;
@@ -112,15 +113,20 @@ namespace xng {
         auto it = loadTasks.find(uri.getFile());
         if (it == loadTasks.end()) {
             loadTasks[uri.getFile()] = ThreadPool::getPool().addTask([this, uri]() {
-                std::shared_lock l(importerMutex);
+                try {
+                    std::shared_lock l(importerMutex);
 
-                auto &archive = resolveUri(uri);
-                std::filesystem::path path(uri.getFile());
-                auto stream = archive.open(path.string());
-                auto bundle = importer.import(*stream, path.extension().string());
+                    auto &archive = resolveUri(uri);
+                    std::filesystem::path path(uri.getFile());
+                    auto stream = archive.open(path.string());
+                    auto bundle = importer.import(*stream, path.extension().string());
 
-                std::lock_guard<std::mutex> g(mutex);
-                bundles[path.string()] = std::move(bundle);
+                    std::lock_guard<std::mutex> g(mutex);
+                    bundles[path.string()] = std::move(bundle);
+                } catch (const std::runtime_error &e) {
+                    Log::instance().log(ERROR, e.what());
+                    throw e;
+                }
             });
         }
     }

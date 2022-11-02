@@ -20,12 +20,11 @@
 #ifndef XENGINE_ENGINE_HPP
 #define XENGINE_ENGINE_HPP
 
-#include "xengine-export.hpp"
-#include "xengine.hpp"
 #include "script/script.hpp"
 #include "script/scriptruntime.hpp"
 #include "script/scriptdriver.hpp"
 #include "ecs/componentregistry.hpp"
+#include "ecs/component.hpp"
 #include "ecs/entityhandle.hpp"
 #include "ecs/components.hpp"
 #include "ecs/entity.hpp"
@@ -66,7 +65,6 @@
 #include "display/windowattributes.hpp"
 #include "display/videomode.hpp"
 #include "display/window.hpp"
-#include "compat/imguicompat.hpp"
 #include "physics/collider.hpp"
 #include "physics/world.hpp"
 #include "physics/collidershape.hpp"
@@ -180,6 +178,7 @@
 #include "render/scenerenderer.hpp"
 #include "render/2d/renderer2d.hpp"
 #include "render/forward/forwardrenderer.hpp"
+#include "render/forward/forwardrenderproperties.hpp"
 #include "render/graph/framegraphbuilder.hpp"
 #include "render/graph/framegraphpassresources.hpp"
 #include "render/graph/framegraphrenderer.hpp"
@@ -238,5 +237,7 @@
 #include "shader/shaderstage.hpp"
 #include "shader/spirvdecompiler.hpp"
 #include "shader/spirvblob.hpp"
+#include "log/loglevel.hpp"
+#include "log/log.hpp"
 
 #endif // XENGINE_ENGINE_HPP

@@ -17,21 +17,16 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_PHYSICSDRIVERBOX2D_HPP
-#define XENGINE_PHYSICSDRIVERBOX2D_HPP
-
-#include "physics/physicsdriver.hpp"
+#ifndef XENGINE_LOGLEVEL_HPP
+#define XENGINE_LOGLEVEL_HPP
 
 namespace xng {
-    //TODO: Fix box2d on windows returning invalid values for positions after stepping the world.
-    class PhysicsDriverBox2D : public PhysicsDriver {
-    public:
-        ~PhysicsDriverBox2D() override = default;
-
-        std::type_index getType() override;
-
-        std::unique_ptr<World> createWorld() override;
+    enum LogLevel {
+        VERBOSE,
+        DEBUG, // Debug messages shown only in debug mode
+        WARNING, // Problem in execution which does not prevent the application from continuing
+        ERROR // Severe execution error which prevents the application from continuing
     };
 }
 
-#endif //XENGINE_PHYSICSDRIVERBOX2D_HPP
+#endif //XENGINE_LOGLEVEL_HPP

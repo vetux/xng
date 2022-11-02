@@ -31,7 +31,7 @@ namespace xng {
      */
     class XENGINE_EXPORT JsonParser : public ResourceParser {
     public:
-        ResourceBundle read(const std::string &buffer,
+        ResourceBundle read(const std::vector<char>&buffer,
                             const std::string &hint,
                             const ResourceImporter &importer,
                             Archive *archive) const override;

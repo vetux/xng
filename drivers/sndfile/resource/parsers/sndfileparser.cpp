@@ -37,7 +37,7 @@ namespace xng {
     static const bool dr = REGISTER_DRIVER("sndfile", ResourceParser, SndFileParser);
 
     struct LibSndBuffer {
-        std::string data;
+        std::vector<char> data;
         size_t pos;
     };
 
@@ -83,7 +83,7 @@ namespace xng {
         return buffer->pos;
     }
 
-    static Audio readAudio(const std::string &buf) {
+    static Audio readAudio(const std::vector<char> &buf) {
         SF_VIRTUAL_IO virtio;
         virtio.get_filelen = &sf_vio_get_filelen;
         virtio.seek = &sf_vio_seek;
@@ -150,7 +150,7 @@ namespace xng {
         return ret;
     }
 
-    ResourceBundle SndFileParser::read(const std::string &buffer,
+    ResourceBundle SndFileParser::read(const std::vector<char>&buffer,
                                        const std::string &hint,
                                        const ResourceImporter &importer,
                                        Archive *archive) const {

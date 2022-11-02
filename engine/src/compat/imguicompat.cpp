@@ -100,6 +100,10 @@ namespace xng::ImGuiCompat {
             throw std::runtime_error("Unsupported graphics driver");
         }
     }
+
+    void SetContext(ImGuiContext* context) {
+        ImGui::SetCurrentContext(context);
+    }
 }
 
 #endif

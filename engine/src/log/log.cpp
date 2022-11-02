@@ -17,21 +17,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_PHYSICSDRIVERBOX2D_HPP
-#define XENGINE_PHYSICSDRIVERBOX2D_HPP
+#include "log/log.hpp"
 
-#include "physics/physicsdriver.hpp"
-
-namespace xng {
-    //TODO: Fix box2d on windows returning invalid values for positions after stepping the world.
-    class PhysicsDriverBox2D : public PhysicsDriver {
-    public:
-        ~PhysicsDriverBox2D() override = default;
-
-        std::type_index getType() override;
-
-        std::unique_ptr<World> createWorld() override;
-    };
+xng::Log &xng::Log::instance() {
+    static xng::Log ptr;
+    return ptr;
 }
-
-#endif //XENGINE_PHYSICSDRIVERBOX2D_HPP

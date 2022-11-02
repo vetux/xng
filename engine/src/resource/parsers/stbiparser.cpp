@@ -25,7 +25,7 @@
 #include <cstring>
 
 namespace xng {
-    static ImageRGBA readImage(const std::string &buffer) {
+    static ImageRGBA readImage(const std::vector<char>&buffer) {
         int width, height, nrChannels;
         stbi_uc *data = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(buffer.data()),
                                               buffer.size(),
@@ -45,23 +45,24 @@ namespace xng {
         }
     }
 
-    ResourceBundle StbiParser::read(const std::string &buffer,
+    ResourceBundle StbiParser::read(const std::vector<char>&buffer,
                                     const std::string &hint,
                                     const ResourceImporter &importer,
                                     Archive *archive) const {
         //Try to read source as image
         int x, y, n;
-        if (stbi_info_from_memory(reinterpret_cast<const stbi_uc *>(buffer.data()),
-                                  buffer.size(),
-                                  &x,
-                                  &y,
-                                  &n) == 1) {
+        auto r = stbi_info_from_memory((const stbi_uc*)(buffer.data()),
+            buffer.size(),
+            &x,
+            &y,
+            &n);
+        if (r == 1) {
             //Source is image
             ResourceBundle ret;
             ret.add("", std::make_unique<ImageRGBA>(readImage(buffer)));
             return ret;
         } else {
-            throw std::runtime_error("Failed to read image info");
+            throw std::runtime_error("Failed to read image info: " + std::string(stbi_failure_reason()));
         }
     }
 

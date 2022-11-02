@@ -20,6 +20,7 @@
 #ifndef XENGINE_IMGUICOMPAT_HPP
 #define XENGINE_IMGUICOMPAT_HPP
 
+#include "imgui.h"
 #include "gpu/rendertarget.hpp"
 #include "display/window.hpp"
 
@@ -52,6 +53,8 @@ namespace xng::ImGuiCompat {
      * @param target
      */
     XENGINE_EXPORT void DrawData(Window &window, RenderTarget &target, bool clear);
+
+    XENGINE_EXPORT void SetContext(ImGuiContext* context);
 }
 
 #endif //XENGINE_IMGUICOMPAT_HPP
