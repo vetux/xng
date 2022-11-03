@@ -25,7 +25,7 @@ set(CMAKE_CXX_FLAGS_RELEASE ${RELEASE_COMPILER_FLAGS})
 set(CMAKE_C_FLAGS_DEBUG ${DEBUG_COMPILER_FLAGS})
 set(CMAKE_CXX_FLAGS_DEBUG  ${DEBUG_COMPILER_FLAGS})
 
-include(cmake/config.cmake)
+include(config.cmake OPTIONAL)
 include(cmake/imgui.cmake)
 
 if (UNIX)

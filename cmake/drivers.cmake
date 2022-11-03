@@ -55,8 +55,7 @@ if (DRIVER_MONO)
 endif ()
 
 if (DRIVER_BOX2D)
-    add_compile_definitions(BOX2D_VERSION=${BOX2D_VERSION})
-    CompileDriver(DRIVER_BOX2D box2d ${BOX2D_LIB})
+    CompileDriver(DRIVER_BOX2D box2d box2d)
 endif ()
 
 if (DRIVER_BULLET3)

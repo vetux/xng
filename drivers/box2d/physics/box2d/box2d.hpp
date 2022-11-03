@@ -20,10 +20,8 @@
 #ifndef XENGINE_BOX2D_HPP
 #define XENGINE_BOX2D_HPP
 
-#if BOX2D_VERSION >= 240 || BOX2D_VERSION == 0
-#include <box2d/box2d.hpp>
-#else
+// Requires Box2D version 2.4.1
+
 #include <Box2D/Box2D.h>
-#endif
 
 #endif //XENGINE_BOX2D_HPP
