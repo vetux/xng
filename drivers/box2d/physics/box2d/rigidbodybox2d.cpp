@@ -184,6 +184,21 @@ namespace xng {
     }
 
     std::unique_ptr<Collider> RigidBodyBox2D::createCollider(const ColliderDesc &desc) {
+        if (std::isnan(desc.density)
+            || std::isnan(desc.friction)
+            || std::isnan(desc.restitution)
+            || std::isnan(desc.restitution_threshold)) {
+            throw std::runtime_error("Attempted to set NaN value.");
+        }
+
+        for (auto &v: desc.shape.vertices) {
+            if (std::isnan(v.x)
+                || std::isnan(v.y)
+                || std::isnan(v.z)) {
+                throw std::runtime_error("Attempted to set NaN value.");
+            }
+        }
+
         return std::make_unique<ColliderBox2D>(*this, desc);
     }
 
@@ -200,5 +215,21 @@ namespace xng {
             throw std::runtime_error("Attempted to set NaN value.");
         }
         body->SetGravityScale(scale);
+    }
+
+    void RigidBodyBox2D::setMass(float mass, const Vec3f &center, const Vec3f &rotationalInertia) {
+        if (std::isnan(mass)
+            || std::isnan(center.x)
+            || std::isnan(center.y)
+            || std::isnan(center.z)
+            || std::isnan(rotationalInertia.x)
+            || std::isnan(rotationalInertia.y)
+            || std::isnan(rotationalInertia.z))
+            throw std::runtime_error("Attempted to set NaN value.");
+        b2MassData data;
+        data.mass = mass;
+        data.center = convert(center);
+        data.I = rotationalInertia.z;
+        body->SetMassData(&data);
     }
 }

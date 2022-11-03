@@ -42,7 +42,9 @@ namespace xng {
         Vec3f impulsePoint = Vec3f();
         Vec3f angularImpulse = Vec3f();
 
-        float mass = 0;
+        float mass = -1;
+        Vec3f massCenter = Vec3f();
+        Vec3f rotationalInertia = Vec3f();
 
         float gravityScale = 1;
 
@@ -75,6 +77,9 @@ namespace xng {
             lockedAxes << message.value("lockedAxes");
             velocity << message.value("velocity");
             angularVelocity << message.value("angularVelocity");
+            mass = message.value("mass", -1);
+            massCenter << message.value("massCenter");
+            rotationalInertia << message.value("rotationalInertia");
             auto list = message.value("colliders");
             if (list.getType() == Message::LIST) {
                 for (auto &col: list.asList()) {
@@ -92,6 +97,9 @@ namespace xng {
             lockedAxes >> message["lockedAxes"];
             velocity >> message["velocity"];
             angularVelocity >> message["angularVelocity"];
+            message["mass"] = mass;
+            massCenter >> message["massCenter"];
+            rotationalInertia >> message["rotationalInertia"];
             auto vec = std::vector<Message>();
             for (auto &col: colliders) {
                 Message msg;

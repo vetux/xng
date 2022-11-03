@@ -33,11 +33,11 @@ namespace xng {
             }
         } else {
             for (auto &index: shape.indices) {
-                auto &vert = shape.vertices.at(index);
+                const auto &vert = shape.vertices.at(index);
                 points.emplace_back(convert(vert));
             }
         }
-        b2PolygonShape polyShape;
+        b2PolygonShape polyShape = b2PolygonShape();
         polyShape.Set(points.data(), numeric_cast<int>(points.size()));
         return polyShape;
     }

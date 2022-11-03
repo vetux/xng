@@ -69,6 +69,8 @@ namespace xng {
 
         std::unique_ptr<Collider> createCollider(const ColliderDesc &desc) override;
 
+        void setMass(float mass, const Vec3f &center, const Vec3f &rotationalInertia) override;
+
         float getMass() override;
 
         void setGravityScale(float scale) override;

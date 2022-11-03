@@ -72,6 +72,8 @@ namespace xng {
 
         virtual std::unique_ptr<Collider> createCollider(const ColliderDesc &desc) = 0;
 
+        virtual void setMass(float mass, const Vec3f &center, const Vec3f &rotationalInertia) = 0;
+
         virtual float getMass() = 0;
 
         virtual void setGravityScale(float scale) = 0;

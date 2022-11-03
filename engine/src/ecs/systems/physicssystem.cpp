@@ -70,6 +70,9 @@ namespace xng {
             rb.setRotation(tcomp.transform.getRotation().getEulerAngles());
             rb.setVelocity(pair.second.velocity);
             rb.setAngularVelocity(pair.second.angularVelocity);
+            if (pair.second.mass > 0){
+                rb.setMass(pair.second.mass, pair.second.massCenter, pair.second.rotationalInertia);
+            }
         }
 
         for (int i = 0; i < steps; i++) {
