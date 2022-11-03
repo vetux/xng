@@ -59,7 +59,7 @@ namespace xng {
     Quaternion::Quaternion(Vec4f vec)
             : w(vec.w), x(vec.x), y(vec.y), z(vec.z) {}
 
-    Quaternion::Quaternion(Vec3f eulerAngles)
+    Quaternion::Quaternion(const Vec3f& eulerAngles)
             : w(0), x(0), y(0), z(0) {
         eulerToQuaternion(*this, eulerAngles);
     }

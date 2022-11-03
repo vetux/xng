@@ -25,7 +25,7 @@
 namespace xng {
     RigidBodyBox2D::RigidBodyBox2D(WorldBox2D &world)
             : world(world) {
-        b2BodyDef def;
+        b2BodyDef def = b2BodyDef();
         body = world.world.CreateBody(&def);
     }
 
@@ -42,51 +42,145 @@ namespace xng {
     }
 
     void RigidBodyBox2D::setPosition(const Vec3f &position) {
-        body->SetTransform(convert(position), 0);
+        auto v = convert(position);
+        if (std::isnan(v.x)
+            || std::isnan(v.y)
+            || std::isnan(position.x)
+            || std::isnan(position.y)
+            || std::isnan(position.z)) {
+            throw std::runtime_error("Attempted to set NaN value.");
+        }
+        body->SetTransform(v, 0);
     }
 
     Vec3f RigidBodyBox2D::getPosition() {
-        return convert(body->GetPosition());
+        auto position = body->GetPosition();
+        auto v = convert(position);
+        if (std::isnan(v.x)
+            || std::isnan(v.y)
+            || std::isnan(position.x)
+            || std::isnan(position.y)) {
+            throw std::runtime_error("Box2D returned NaN value.");
+        }
+        return v;
     }
 
     void RigidBodyBox2D::setVelocity(const Vec3f &velocity) {
-        body->SetLinearVelocity(convert(velocity));
+        auto v = convert(velocity);
+        if (std::isnan(v.x)
+            || std::isnan(v.y)
+            || std::isnan(velocity.x)
+            || std::isnan(velocity.y)
+            || std::isnan(velocity.z)) {
+            throw std::runtime_error("Attempted to set NaN value.");
+        }
+        body->SetLinearVelocity(v);
     }
 
     Vec3f RigidBodyBox2D::getVelocity() {
-        return convert(body->GetLinearVelocity());
+        auto value = body->GetLinearVelocity();
+        auto v = convert(value);
+        if (std::isnan(v.x)
+            || std::isnan(v.y)
+            || std::isnan(value.x)
+            || std::isnan(value.y)) {
+            throw std::runtime_error("Box2D returned NaN value.");
+        }
+        return v;
     }
 
     void RigidBodyBox2D::setRotation(const Vec3f &rotation) {
+        auto v = convert(rotation);
+        if (std::isnan(v.x)
+            || std::isnan(v.y)
+            || std::isnan(rotation.x)
+            || std::isnan(rotation.y)
+            || std::isnan(rotation.z)) {
+            throw std::runtime_error("Attempted to set NaN value.");
+        }
         body->SetTransform(body->GetPosition(), degreesToRadians(rotation.z));
     }
 
     Vec3f RigidBodyBox2D::getRotation() {
-        return {0, 0, radiansToDegrees(body->GetAngle())};
+        auto angle = body->GetAngle();
+        auto v = radiansToDegrees(angle);
+        if (std::isnan(v)
+            || std::isnan(angle)) {
+            throw std::runtime_error("Box2D returned NaN value.");
+        }
+        return {0, 0, v};
     }
 
     void RigidBodyBox2D::setAngularVelocity(const Vec3f &angularVelocity) {
-        body->SetAngularVelocity(angularVelocity.z);
+        float v = angularVelocity.z;
+        if (std::isnan(v)) {
+            throw std::runtime_error("Attempted to set NaN value.");
+        }
+        body->SetAngularVelocity(v);
     }
 
     Vec3f RigidBodyBox2D::getAngularVelocity() {
-        return {0, 0, body->GetAngularVelocity()};
+        auto v = body->GetAngularVelocity();
+        if (std::isnan(v)) {
+            throw std::runtime_error("Box2D returned NaN value.");
+        }
+        return {0, 0, v};
     }
 
     void RigidBodyBox2D::applyForce(const Vec3f &force, const Vec3f &point) {
-        body->ApplyForce(convert(force), convert(point), true);
+        auto v = convert(force);
+        if (std::isnan(v.x)
+            || std::isnan(v.y)
+            || std::isnan(force.x)
+            || std::isnan(force.y)
+            || std::isnan(force.z)) {
+            throw std::runtime_error("Attempted to set NaN value.");
+        }
+        auto d = convert(point);
+        if (std::isnan(d.x)
+            || std::isnan(d.y)
+            || std::isnan(point.x)
+            || std::isnan(point.y)
+            || std::isnan(point.z)) {
+            throw std::runtime_error("Attempted to set NaN value.");
+        }
+        body->ApplyForce(v, d, true);
     }
 
     void RigidBodyBox2D::applyTorque(const Vec3f &torque) {
-        body->ApplyTorque(torque.z, true);
+        auto v = torque.z;
+        if (std::isnan(v)) {
+            throw std::runtime_error("Attempted to set NaN value.");
+        }
+        body->ApplyTorque(v, true);
     }
 
     void RigidBodyBox2D::applyLinearImpulse(const Vec3f &impulse, const Vec3f &point) {
-        body->ApplyLinearImpulse(convert(impulse), convert(point), true);
+        auto v = convert(impulse);
+        if (std::isnan(v.x)
+            || std::isnan(v.y)
+            || std::isnan(impulse.x)
+            || std::isnan(impulse.y)
+            || std::isnan(impulse.z)) {
+            throw std::runtime_error("Attempted to set NaN value.");
+        }
+        auto d = convert(point);
+        if (std::isnan(d.x)
+            || std::isnan(d.y)
+            || std::isnan(point.x)
+            || std::isnan(point.y)
+            || std::isnan(point.z)) {
+            throw std::runtime_error("Attempted to set NaN value.");
+        }
+        body->ApplyLinearImpulse(v, d, true);
     }
 
     void RigidBodyBox2D::applyAngularImpulse(const Vec3f &impulse) {
-        body->ApplyAngularImpulse(impulse.z, true);
+        auto v = impulse.z;
+        if (std::isnan(v)) {
+            throw std::runtime_error("Attempted to set NaN value.");
+        }
+        body->ApplyAngularImpulse(v, true);
     }
 
     std::unique_ptr<Collider> RigidBodyBox2D::createCollider(const ColliderDesc &desc) {
@@ -102,6 +196,9 @@ namespace xng {
     }
 
     void RigidBodyBox2D::setGravityScale(float scale) {
+        if (std::isnan(scale)) {
+            throw std::runtime_error("Attempted to set NaN value.");
+        }
         body->SetGravityScale(scale);
     }
 }

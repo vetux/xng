@@ -82,13 +82,15 @@ namespace xng {
 
         Message &operator[](const char *name) {
             if (type != DICTIONARY)
-                throw std::runtime_error("Attempted to call array operator on message of type " + getDataTypeName(type));
+                throw std::runtime_error(
+                        "Attempted to call array operator on message of type " + getDataTypeName(type));
             return mval[name];
         }
 
         const Message &operator[](const char *name) const {
             if (type != DICTIONARY)
-                throw std::runtime_error("Attempted to call array operator on message of type " + getDataTypeName(type));
+                throw std::runtime_error(
+                        "Attempted to call array operator on message of type " + getDataTypeName(type));
             return mval.at(name);
         }
 
@@ -96,13 +98,15 @@ namespace xng {
             if (type != LIST)
                 throw std::runtime_error("Type error");
             if (vval.size() >= index)
-                throw std::runtime_error("Attempted to call array operator on message of type " + getDataTypeName(type));
+                throw std::runtime_error(
+                        "Attempted to call array operator on message of type " + getDataTypeName(type));
             return vval.at(index);
         }
 
         const Message &operator[](int index) const {
             if (type != LIST)
-                throw std::runtime_error("Attempted to call array operator on message of type " + getDataTypeName(type));
+                throw std::runtime_error(
+                        "Attempted to call array operator on message of type " + getDataTypeName(type));
             return vval.at(index);
         }
 
@@ -140,7 +144,7 @@ namespace xng {
             return ival;
         }
 
-        operator unsigned long () const {
+        operator unsigned long() const {
             if (type != INT)
                 throw std::runtime_error(
                         "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
@@ -152,7 +156,8 @@ namespace xng {
             if (type != INT)
                 throw std::runtime_error(
                         "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
-                        " to bool");            return ival;
+                        " to bool");
+            return ival;
         }
 
         operator float() const {
@@ -161,7 +166,8 @@ namespace xng {
             if (type != FLOAT)
                 throw std::runtime_error(
                         "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
-                        " to float");            return fval;
+                        " to float");
+            return fval;
         }
 
         operator double() const {
@@ -170,28 +176,32 @@ namespace xng {
             if (type != FLOAT)
                 throw std::runtime_error(
                         "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
-                        " to double");            return fval;
+                        " to double");
+            return fval;
         }
 
         operator std::string() const {
             if (type != STRING)
                 throw std::runtime_error(
                         "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
-                        " to string");            return sval;
+                        " to string");
+            return sval;
         }
 
         operator std::map<std::string, Message>() const {
             if (type != DICTIONARY)
                 throw std::runtime_error(
                         "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
-                        " to dictionary");            return mval;
+                        " to dictionary");
+            return mval;
         }
 
         operator std::vector<Message>() const {
             if (type != LIST)
                 throw std::runtime_error(
                         "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
-                        " to list");            return vval;
+                        " to list");
+            return vval;
         }
 
         DataType getType() const { return type; }
@@ -237,8 +247,9 @@ namespace xng {
         T valueOf(const std::set<std::string> &names, T defValue) const {
             for (auto &name: names) {
                 auto it = mval.find(name);
-                if (it != mval.end())
+                if (it != mval.end()) {
                     return it->second;
+                }
             }
             return defValue;
         }
@@ -255,11 +266,11 @@ namespace xng {
     private:
         DataType type;
 
-        long ival;
-        double fval;
-        std::string sval;
-        std::map<std::string, Message> mval;
-        std::vector<Message> vval;
+        long ival = 0;
+        double fval = 0;
+        std::string sval = {};
+        std::map<std::string, Message> mval = {};
+        std::vector<Message> vval = {};
     };
 }
 

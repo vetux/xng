@@ -37,7 +37,7 @@ namespace xng {
             case b2_dynamicBody:
                 return RigidBody::DYNAMIC;
         }
-        throw std::runtime_error("");
+        throw std::runtime_error("Invalid body type");
     }
 
     b2BodyType convert(RigidBody::RigidBodyType type) {
@@ -49,7 +49,7 @@ namespace xng {
             case RigidBody::DYNAMIC:
                 return b2_dynamicBody;
         }
-        throw std::runtime_error("");
+        throw std::runtime_error("Invalid body type");
     }
 
     b2PolygonShape convert(const std::vector<Vec3f> &points) {
@@ -58,7 +58,7 @@ namespace xng {
             bPoints[i] = convert(points.at(i));
 
         b2PolygonShape ret;
-        ret.Set(bPoints.data(), points.size());
+        ret.Set(bPoints.data(), (int)points.size());
         return ret;
     }
 }

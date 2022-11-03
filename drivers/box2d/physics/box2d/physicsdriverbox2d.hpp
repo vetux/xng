@@ -23,7 +23,7 @@
 #include "physics/physicsdriver.hpp"
 
 namespace xng {
-    //TODO: Fix box2d on windows returning invalid values for positions after stepping the world.
+    //TODO: Fix box2d returning nan values for positions after stepping the world.
     class PhysicsDriverBox2D : public PhysicsDriver {
     public:
         ~PhysicsDriverBox2D() override = default;

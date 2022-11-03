@@ -37,7 +37,7 @@ namespace xng {
 
         explicit Quaternion(Vec4f vec);
 
-        explicit Quaternion(Vec3f eulerAngles);
+        explicit Quaternion(const Vec3f& eulerAngles);
 
         Quaternion &operator=(const Quaternion &other) = default;
 
