@@ -28,7 +28,7 @@ namespace xng::glfw {
         GLFWwindow *wndH;
 
         explicit GLFWRenderTargetGL(GLFWwindow &wnd)
-                : opengl::OGLRenderTarget([](RenderObject *) {}, {}),
+                : opengl::OGLRenderTarget(),
                   wndH(&wnd) {
             desc.samples = glfwGetWindowAttrib(wndH, GLFW_SAMPLES);
             desc.multisample = desc.samples != 0;

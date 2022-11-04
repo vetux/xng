@@ -31,7 +31,7 @@
 namespace xng::opengl {
     class OGLRenderTarget : public RenderTarget {
     public:
-        std::function<void(RenderObject*)> destructor;
+        std::function<void(RenderObject *)> destructor;
         RenderTargetDesc desc;
 
         GLuint FBO = 0;
@@ -39,7 +39,9 @@ namespace xng::opengl {
         int attachedColor = 0;
         bool attachedDepthStencil = false;
 
-        explicit OGLRenderTarget(std::function<void(RenderObject*)> destructor, RenderTargetDesc inputDescription)
+        OGLRenderTarget() = default;
+
+        explicit OGLRenderTarget(std::function<void(RenderObject *)> destructor, RenderTargetDesc inputDescription)
                 : destructor(std::move(destructor)), desc(std::move(inputDescription)) {
             glGenFramebuffers(1, &FBO);
 
@@ -63,7 +65,9 @@ namespace xng::opengl {
                 glDeleteFramebuffers(1, &FBO);
                 checkGLError();
             }
-            destructor(this);
+            if (destructor) {
+                destructor(this);
+            }
         }
 
         const RenderTargetDesc &getDescription() override {

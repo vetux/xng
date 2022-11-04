@@ -24,8 +24,6 @@
 #include <thread>
 #include <iomanip>
 
-#include "compat/imguicompat.hpp"
-
 #include "audio/audiodriver.hpp"
 #include "display/displaydriver.hpp"
 #include "gpu/gpudriver.hpp"
@@ -33,8 +31,6 @@
 #include "driver/driverregistry.hpp"
 
 #include "types/deltatime.hpp"
-
-#include "imgui.h"
 
 namespace xng {
     class Application {
@@ -52,9 +48,6 @@ namespace xng {
             audioDevice = audioDriver->createDevice();
 
             window->update();
-
-            imGuiContext = ImGui::CreateContext();
-            ImGuiCompat::Init(*window);
         }
 
         explicit Application(int argc,
@@ -70,16 +63,9 @@ namespace xng {
             audioDevice = audioDriver->createDevice();
 
             window->update();
-
-            imGuiContext = ImGui::CreateContext();
-            ImGuiCompat::SetContext(imGuiContext);
-            ImGuiCompat::Init(*window);
         }
 
-        virtual ~Application() {
-            ImGuiCompat::Shutdown(*window);
-            ImGui::DestroyContext(imGuiContext);
-        }
+        virtual ~Application() = default;
 
         virtual int loop() {
             start();
@@ -118,8 +104,6 @@ namespace xng {
         std::unique_ptr<Window> window = nullptr;
         std::unique_ptr<RenderDevice> renderDevice = nullptr;
         std::unique_ptr<AudioDevice> audioDevice = nullptr;
-
-        ImGuiContext *imGuiContext;
 
         bool shutdown = false;
 
