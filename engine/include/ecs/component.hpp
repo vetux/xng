@@ -28,6 +28,14 @@ namespace xng {
      */
     struct XENGINE_EXPORT Component : public Messageable {
         virtual std::type_index getType() const = 0;
+
+        Messageable &operator<<(const Message &message) override {
+            throw std::runtime_error("Message insert operator not implemented in component");
+        }
+
+        Message &operator>>(Message &message) const override {
+            throw std::runtime_error("Message extract operator not implemented in component");
+        }
     };
 }
 
