@@ -11,7 +11,6 @@ debian_11()
   	libglfw3 libglfw3-dev \
   	libsndfile1 libsndfile1-dev \
   	libglm-dev \
-  	libbox2d-dev libbox2d2.3.0 \
   	libfreetype-dev libfreetype6 \
   	mono-complete \
     libcrypto++-dev
