@@ -20,7 +20,7 @@
 #ifndef XENGINE_JOINTBOX2D_HPP
 #define XENGINE_JOINTBOX2D_HPP
 
-#include <Box2D/Dynamics/b2Body.h>
+#include "physics/box2d/box2d.hpp"
 
 #include "physics/joint.hpp"
 

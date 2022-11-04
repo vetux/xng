@@ -70,3 +70,7 @@ Eg. from the command line:
 <code>cd mybuild/</code>
 <code>cmake ../</code>
 <code>cmake --build .</code>
+
+#### Box2D
+The box2d physics driver requires version 2.4.1 of box2d.
+Make sure to not have conflicting versions of the library on the include / link paths.

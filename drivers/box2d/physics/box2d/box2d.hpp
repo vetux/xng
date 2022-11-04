@@ -22,6 +22,6 @@
 
 // Requires Box2D version 2.4.1
 
-#include <Box2D/Box2D.h>
+#include <box2d/box2d.h>
 
 #endif //XENGINE_BOX2D_HPP

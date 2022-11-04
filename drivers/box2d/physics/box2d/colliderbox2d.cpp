@@ -50,7 +50,16 @@ namespace xng {
         fixtureDef.restitution = desc.restitution;
         fixtureDef.density = desc.density;
         fixtureDef.isSensor = desc.isSensor;
+
         fixture = body.body->CreateFixture(&fixtureDef);
+
+        b2MassData mass;
+        fixture->GetMassData(&mass);
+
+        auto v = 1.0f / mass.mass;
+        if (std::isnan(v) || std::isinf(v)) {
+            throw std::runtime_error("Computed mass for fixture is invalid. Check your collider density / shape configuration.");
+        }
 
         body.world.fixtureColliderMapping[fixture] = this;
     }
