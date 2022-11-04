@@ -36,11 +36,11 @@ namespace xng {
 
         ~MeshRenderSystem() override;
 
-        void start(EntityScene &entityManager) override;
+        void start(EntityScene &entityManager, EventBus &eventBus) override;
 
-        void stop(EntityScene &entityManager) override;
+        void stop(EntityScene &entityManager, EventBus &eventBus) override;
 
-        void update(DeltaTime deltaTime, EntityScene &entityManager) override;
+        void update(DeltaTime deltaTime, EntityScene &entityManager, EventBus &eventBus) override;
 
         std::string getName() override { return "MeshRenderSystem"; }
 

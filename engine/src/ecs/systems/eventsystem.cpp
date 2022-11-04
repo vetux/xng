@@ -20,7 +20,7 @@
 #include "ecs/systems/eventsystem.hpp"
 
 namespace xng {
-    EventSystem::EventSystem(Window &wnd, EventBus &eventBus) : wnd(wnd), eventBus(eventBus) {
+    EventSystem::EventSystem(Window &wnd) : wnd(wnd) {
         wnd.addListener(*this);
         wnd.getInput().addListener(*this);
     }
@@ -30,70 +30,88 @@ namespace xng {
         wnd.getInput().removeListener(*this);
     }
 
-    void EventSystem::start(EntityScene &scene) {
+    void EventSystem::start(EntityScene &scene, EventBus &eventBus) {
+        bus = &eventBus;
         scene.addListener(*this);
     }
 
-    void EventSystem::stop(EntityScene &scene) {
+    void EventSystem::stop(EntityScene &scene, EventBus &eventBus) {
         scene.removeListener(*this);
+        bus = nullptr;
     }
 
-    void EventSystem::update(DeltaTime deltaTime, EntityScene &scene) {}
+    void EventSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {}
 
     void EventSystem::onKeyDown(KeyboardKey key) {
-        eventBus.invoke(InputEvent(KeyboardEventData{.type = KeyboardEventData::KEYBOARD_KEY_DOWN, .key = key}));
+        if (bus != nullptr)
+            bus->invoke(InputEvent(KeyboardEventData{.type = KeyboardEventData::KEYBOARD_KEY_DOWN, .key = key}));
     }
 
     void EventSystem::onKeyUp(KeyboardKey key) {
-        eventBus.invoke(InputEvent(KeyboardEventData{.type = KeyboardEventData::KEYBOARD_KEY_UP, .key = key}));
+        if (bus != nullptr)
+            bus->invoke(InputEvent(KeyboardEventData{.type = KeyboardEventData::KEYBOARD_KEY_UP, .key = key}));
     }
 
     void EventSystem::onMouseMove(double xPos, double yPos) {
-        eventBus.invoke(InputEvent(MouseEventData{.type = MouseEventData::MOUSE_MOVE, .xPos = xPos, .yPos = yPos}));
+        if (bus != nullptr)
+            bus->invoke(InputEvent(MouseEventData{.type = MouseEventData::MOUSE_MOVE, .xPos = xPos, .yPos = yPos}));
     }
 
     void EventSystem::onMouseWheelScroll(double amount) {
-        eventBus.invoke(InputEvent(MouseEventData{.type = MouseEventData::MOUSE_WHEEL_SCROLL, .amount = amount}));
+        if (bus != nullptr)
+            bus->invoke(InputEvent(MouseEventData{.type = MouseEventData::MOUSE_WHEEL_SCROLL, .amount = amount}));
     }
 
     void EventSystem::onMouseKeyDown(MouseButton key) {
-        eventBus.invoke(InputEvent(MouseEventData{.type = MouseEventData::MOUSE_KEY_DOWN, .key = key}));
+        if (bus != nullptr)
+            bus->invoke(InputEvent(MouseEventData{.type = MouseEventData::MOUSE_KEY_DOWN, .key = key}));
     }
 
     void EventSystem::onMouseKeyUp(MouseButton key) {
-        eventBus.invoke(InputEvent(MouseEventData{.type = MouseEventData::MOUSE_KEY_UP, .key = key}));
+        if (bus != nullptr)
+            bus->invoke(InputEvent(MouseEventData{.type = MouseEventData::MOUSE_KEY_UP, .key = key}));
     }
 
     void EventSystem::onCharacterInput(char32_t val) {
-        eventBus.invoke(InputEvent(KeyboardEventData{.type = KeyboardEventData::KEYBOARD_CHAR_INPUT, .character=val}));
+        if (bus != nullptr)
+            bus->invoke(InputEvent(KeyboardEventData{.type = KeyboardEventData::KEYBOARD_CHAR_INPUT, .character=val}));
     }
 
     void EventSystem::onGamepadConnected(int id) {
-        eventBus.invoke(InputEvent(GamePadEventData{.type = GamePadEventData::GAMEPAD_CONNECTED, .id=id}));
+        if (bus != nullptr)
+            bus->invoke(InputEvent(GamePadEventData{.type = GamePadEventData::GAMEPAD_CONNECTED, .id=id}));
     }
 
     void EventSystem::onGamepadDisconnected(int id) {
-        eventBus.invoke(InputEvent(GamePadEventData{.type = GamePadEventData::GAMEPAD_DISCONNECTED, .id=id}));
+        if (bus != nullptr)
+            bus->invoke(InputEvent(GamePadEventData{.type = GamePadEventData::GAMEPAD_DISCONNECTED, .id=id}));
     }
 
     void EventSystem::onGamepadAxis(int id, GamePadAxis axis, double amount) {
-        eventBus.invoke(InputEvent(GamePadEventData{.type = GamePadEventData::GAMEPAD_AXIS,
-                .id=id, .axis=axis, .amount=amount}));
+        if (bus != nullptr)
+            bus->invoke(InputEvent(GamePadEventData{.type = GamePadEventData::GAMEPAD_AXIS,
+                    .id=id, .axis=axis, .amount=amount}));
     }
 
     void EventSystem::onGamepadButtonDown(int id, GamePadButton button) {
-        eventBus.invoke(InputEvent(GamePadEventData{.type = GamePadEventData::GAMEPAD_BUTTON_DOWN, .id=id, .button = button}));
+        if (bus != nullptr)
+            bus->invoke(InputEvent(
+                    GamePadEventData{.type = GamePadEventData::GAMEPAD_BUTTON_DOWN, .id=id, .button = button}));
     }
 
     void EventSystem::onGamepadButtonUp(int id, GamePadButton button) {
-        eventBus.invoke(InputEvent(GamePadEventData{.type = GamePadEventData::GAMEPAD_BUTTON_UP, .id=id, .button = button}));
+        if (bus != nullptr)
+            bus->invoke(InputEvent(
+                    GamePadEventData{.type = GamePadEventData::GAMEPAD_BUTTON_UP, .id=id, .button = button}));
     }
 
     void EventSystem::onWindowClose() {
-        eventBus.invoke(WindowEvent(WindowEvent::WINDOW_CLOSE, {}, {}));
+        if (bus != nullptr)
+            bus->invoke(WindowEvent(WindowEvent::WINDOW_CLOSE, {}, {}));
     }
 
     void EventSystem::onWindowResize(Vec2i size) {
-        eventBus.invoke(WindowEvent(WindowEvent::WINDOW_RESIZE, size, {}));
+        if (bus != nullptr)
+            bus->invoke(WindowEvent(WindowEvent::WINDOW_RESIZE, size, {}));
     }
 }

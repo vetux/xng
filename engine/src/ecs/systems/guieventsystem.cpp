@@ -25,16 +25,16 @@
 #include "event/events/guievent.hpp"
 
 namespace xng {
-    GuiEventSystem::GuiEventSystem(Window &window, EventBus &eventBus)
-            : window(window), eventBus(eventBus) {}
+    GuiEventSystem::GuiEventSystem(Window &window)
+            : window(window) {}
 
-    void GuiEventSystem::start(EntityScene &scene) {}
+    void GuiEventSystem::start(EntityScene &scene, EventBus &eventBus) {}
 
-    void GuiEventSystem::stop(EntityScene &scene) {
+    void GuiEventSystem::stop(EntityScene &scene, EventBus &eventBus) {
         hoverButtons.clear();
     }
 
-    void GuiEventSystem::update(DeltaTime deltaTime, EntityScene &scene) {
+    void GuiEventSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {
         for (auto &pair: scene.getPool<ButtonComponent>()) {
             auto &rt = scene.getComponent<CanvasTransformComponent>(pair.first);
             auto windowSize = window.getRenderTarget().getDescription().size;

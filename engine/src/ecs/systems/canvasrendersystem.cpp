@@ -34,7 +34,7 @@ namespace xng {
                                            FontDriver &fontDriver)
             : ren2d(renderer2D), target(target), fontDriver(fontDriver) {}
 
-    void CanvasRenderSystem::start(EntityScene &scene) {
+    void CanvasRenderSystem::start(EntityScene &scene, EventBus &eventBus) {
         scene.addListener(*this);
         for (auto &pair: scene.getPool<SpriteComponent>()) {
             if (!pair.second.sprite.assigned())
@@ -50,7 +50,7 @@ namespace xng {
         }
     }
 
-    void CanvasRenderSystem::stop(EntityScene &scene) {
+    void CanvasRenderSystem::stop(EntityScene &scene, EventBus &eventBus) {
         scene.removeListener(*this);
         spriteTextures.clear();
         textRenderers.clear();
@@ -66,7 +66,7 @@ namespace xng {
         EntityHandle ent;
     };
 
-    void CanvasRenderSystem::update(DeltaTime deltaTime, EntityScene &scene) {
+    void CanvasRenderSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {
         std::map<int, std::set<std::string>> canvases;
         std::map<std::string, std::map<int, std::vector<Pass>>> passes;
 

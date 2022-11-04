@@ -21,7 +21,7 @@
 
 #include "ecs/components/spritecomponent.hpp"
 
-void SpriteAnimationSystem::start(EntityScene &scene) {
+void SpriteAnimationSystem::start(EntityScene &scene, EventBus &eventBus) {
     scene.addListener(*this);
     for (auto &pair: scene.getPool<SpriteAnimationComponent>()) {
         if (animations.find(pair.first) == animations.end()) {
@@ -31,12 +31,12 @@ void SpriteAnimationSystem::start(EntityScene &scene) {
     }
 }
 
-void SpriteAnimationSystem::stop(EntityScene &scene) {
+void SpriteAnimationSystem::stop(EntityScene &scene, EventBus &eventBus) {
     scene.removeListener(*this);
     animations.clear();
 }
 
-void SpriteAnimationSystem::update(DeltaTime deltaTime, EntityScene &scene) {
+void SpriteAnimationSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {
     for (const auto &c: scene.getPool<SpriteAnimationComponent>()) {
         if (!c.second.enabled)
             continue;

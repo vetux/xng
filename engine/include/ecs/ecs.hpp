@@ -62,12 +62,32 @@ namespace xng {
 
         const ECSFrameList &getFrameList() const;
 
+        void setEventBus(const std::shared_ptr<EventBus> &ptr) {
+            bool reset = started;
+            if (started) {
+                stop();
+            }
+            if (ptr) {
+                eventBus = ptr;
+            } else {
+                eventBus = std::make_shared<EventBus>();
+            }
+            if (reset){
+                start();
+            }
+        }
+
+        std::shared_ptr<EventBus> getEventBus() const {
+            return eventBus;
+        }
+
     private:
         bool enableProfiling = false;
         ECSProfiler profiler;
         bool started = false;
         std::shared_ptr<EntityScene> scene;
         std::vector<std::reference_wrapper<System>> systems;
+        std::shared_ptr<EventBus> eventBus;
     };
 }
 

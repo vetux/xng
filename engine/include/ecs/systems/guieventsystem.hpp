@@ -27,21 +27,20 @@
 namespace xng {
     class XENGINE_EXPORT GuiEventSystem : public System {
     public:
-        GuiEventSystem(Window &window, EventBus &eventBus);
+        GuiEventSystem(Window &window);
 
         ~GuiEventSystem() override = default;
 
-        void update(DeltaTime deltaTime, EntityScene &scene) override;
+        void update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) override;
 
-        void start(EntityScene &scene) override;
+        void start(EntityScene &scene, EventBus &eventBus) override;
 
-        void stop(EntityScene &scene) override;
+        void stop(EntityScene &scene, EventBus &eventBus) override;
 
         std::string getName() override { return "GuiEventSystem"; }
 
     private:
         Window &window;
-        EventBus &eventBus;
 
         std::set<EntityHandle> hoverButtons;
         std::set<EntityHandle> clickButtons;

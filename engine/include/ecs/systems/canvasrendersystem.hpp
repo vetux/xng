@@ -45,11 +45,11 @@ namespace xng {
 
         CanvasRenderSystem & operator=(const CanvasRenderSystem &other) = delete;
 
-        void start(EntityScene &scene) override;
+        void start(EntityScene &scene, EventBus &eventBus) override;
 
-        void stop(EntityScene &scene) override;
+        void stop(EntityScene &scene, EventBus &eventBus) override;
 
-        void update(DeltaTime deltaTime, EntityScene &scene) override;
+        void update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) override;
 
         void setDrawDebugGeometry(bool v) { drawDebugGeometry = v; }
 

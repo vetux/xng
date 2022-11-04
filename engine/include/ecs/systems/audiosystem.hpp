@@ -41,11 +41,11 @@ namespace xng {
 
         AudioSystem & operator=(const AudioSystem &other) = delete;
 
-        void start(EntityScene &scene) override;
+        void start(EntityScene &scene, EventBus &eventBus) override;
 
-        void stop(EntityScene &scene) override;
+        void stop(EntityScene &scene, EventBus &eventBus) override;
 
-        void update(DeltaTime deltaTime, EntityScene &entityManager) override;
+        void update(DeltaTime deltaTime, EntityScene &entityManager, EventBus &eventBus) override;
 
         void onComponentCreate(const EntityHandle &entity, const Component &component) override;
 

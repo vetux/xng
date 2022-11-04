@@ -29,11 +29,11 @@ namespace xng {
     public:
         ~SpriteAnimationSystem() override = default;
 
-        void start(EntityScene &scene) override;
+        void start(EntityScene &scene, EventBus &eventBus) override;
 
-        void stop(EntityScene &scene) override;
+        void stop(EntityScene &scene, EventBus &eventBus) override;
 
-        void update(DeltaTime deltaTime, EntityScene &scene) override;
+        void update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) override;
 
         std::string getName() override { return "SpriteAnimationSystem"; }
 

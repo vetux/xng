@@ -28,7 +28,7 @@
 namespace xng {
     class XENGINE_EXPORT PhysicsSystem : public System, public EntityScene::Listener, public World::ContactListener {
     public:
-        PhysicsSystem(World &world, EventBus &eventBus, float scale, float timeStep);
+        PhysicsSystem(World &world, float scale, float timeStep);
 
         ~PhysicsSystem() override = default;
 
@@ -36,11 +36,11 @@ namespace xng {
 
         PhysicsSystem & operator=(const PhysicsSystem &other) = delete;
 
-        void start(EntityScene &entityManager) override;
+        void start(EntityScene &entityManager, EventBus &eventBus) override;
 
-        void stop(EntityScene &entityManager) override;
+        void stop(EntityScene &entityManager, EventBus &eventBus) override;
 
-        void update(DeltaTime deltaTime, EntityScene &entityManager) override;
+        void update(DeltaTime deltaTime, EntityScene &entityManager, EventBus &eventBus) override;
 
         std::string getName() override { return "PhysicsSystem"; }
 
@@ -60,7 +60,7 @@ namespace xng {
 
     private:
         World &world;
-        EventBus &eventBus;
+        EventBus *bus = nullptr;
 
         std::map<EntityHandle, std::unique_ptr<RigidBody>> rigidbodies;
         std::map<RigidBody *, EntityHandle> rigidbodiesReverse;

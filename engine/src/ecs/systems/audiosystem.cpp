@@ -33,7 +33,7 @@ namespace xng {
         context->makeCurrent();
     }
 
-    void AudioSystem::start(EntityScene &scene) {
+    void AudioSystem::start(EntityScene &scene, EventBus &eventBus) {
         scene.addListener(*this);
 
         for (auto &pair: scene.getPool<AudioSourceComponent>()) {
@@ -51,13 +51,13 @@ namespace xng {
         }
     }
 
-    void AudioSystem::stop(EntityScene &scene) {
+    void AudioSystem::stop(EntityScene &scene, EventBus &eventBus) {
         scene.removeListener(*this);
         sources.clear();
         buffers.clear();
     }
 
-    void AudioSystem::update(DeltaTime deltaTime, EntityScene &scene) {
+    void AudioSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {
         for (const auto &pair: scene.getPool<AudioListenerComponent>()) {
             auto &transform = scene.getComponent<TransformComponent>(pair.first);
             auto &listener = context->getListener();

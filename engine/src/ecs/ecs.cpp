@@ -38,7 +38,7 @@ namespace xng {
         }
 
         for (auto &system: systems) {
-            system.get().start(*scene);
+            system.get().start(*scene, *eventBus);
         }
         started = true;
     }
@@ -48,20 +48,20 @@ namespace xng {
             profiler.beginFrame();
             for (auto &system: systems) {
                 profiler.beginSystemUpdate();
-                system.get().update(deltaTime, *scene);
+                system.get().update(deltaTime, *scene, *eventBus);
                 profiler.endSystemUpdate(system.get().getName());
             }
             profiler.endFrame();
         } else {
             for (auto &system: systems) {
-                system.get().update(deltaTime, *scene);
+                system.get().update(deltaTime, *scene, *eventBus);
             }
         }
     }
 
     void ECS::stop() {
         for (auto &system: systems) {
-            system.get().stop(*scene);
+            system.get().stop(*scene,*eventBus);
         }
         started = false;
     }

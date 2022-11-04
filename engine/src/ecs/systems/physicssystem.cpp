@@ -40,25 +40,27 @@ namespace xng {
         return ret;
     }
 
-    PhysicsSystem::PhysicsSystem(World &world, EventBus &eventBus, float scale, float timeStep)
-            : world(world), eventBus(eventBus), scale(scale), timeStep(timeStep) {}
+    PhysicsSystem::PhysicsSystem(World &world, float scale, float timeStep)
+            : world(world), scale(scale), timeStep(timeStep) {}
 
-    void PhysicsSystem::start(EntityScene &scene) {
+    void PhysicsSystem::start(EntityScene &scene, EventBus &eventBus) {
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
             if (rigidbodies.find(pair.first) == rigidbodies.end()) {
                 onComponentCreate(pair.first, pair.second);
             }
         }
+        bus = &eventBus;
         scene.addListener(*this);
         world.addContactListener(*this);
     }
 
-    void PhysicsSystem::stop(EntityScene &scene) {
+    void PhysicsSystem::stop(EntityScene &scene, EventBus &eventBus) {
         world.removeContactListener(*this);
         scene.removeListener(*this);
+        bus = nullptr;
     }
 
-    void PhysicsSystem::update(DeltaTime deltaTime, EntityScene &scene) {
+    void PhysicsSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {
         deltaAccumulator += deltaTime;
         int steps = static_cast<int>(deltaAccumulator / timeStep);
         deltaAccumulator -= timeStep * static_cast<float>(steps);
@@ -70,7 +72,7 @@ namespace xng {
             rb.setRotation(tcomp.transform.getRotation().getEulerAngles());
             rb.setVelocity(pair.second.velocity);
             rb.setAngularVelocity(pair.second.angularVelocity);
-            if (pair.second.mass > 0){
+            if (pair.second.mass > 0) {
                 rb.setMass(pair.second.mass, pair.second.massCenter, pair.second.rotationalInertia);
             }
         }
@@ -185,7 +187,8 @@ namespace xng {
         touchingColliders[std::pair(entA, indexA)].insert(std::pair(entB, indexB));
         touchingColliders[std::pair(entB, indexB)].insert(std::pair(entA, indexA));
 
-        eventBus.invoke(ContactEvent(ContactEvent::BEGIN_CONTACT,
+        if (bus != nullptr)
+            bus->invoke(ContactEvent(ContactEvent::BEGIN_CONTACT,
                                      entA,
                                      entB,
                                      indexA,
@@ -201,7 +204,8 @@ namespace xng {
         touchingColliders[std::pair(entA, indexA)].erase(std::pair(entB, indexB));
         touchingColliders[std::pair(entB, indexB)].erase(std::pair(entA, indexA));
 
-        eventBus.invoke(ContactEvent(ContactEvent::END_CONTACT,
+        if (bus != nullptr)
+            bus->invoke(ContactEvent(ContactEvent::END_CONTACT,
                                      entA,
                                      entB,
                                      indexA,

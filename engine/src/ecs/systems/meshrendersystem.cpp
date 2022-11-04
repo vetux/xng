@@ -30,11 +30,11 @@ namespace xng {
 
     MeshRenderSystem::~MeshRenderSystem() = default;
 
-    void MeshRenderSystem::start(EntityScene &entityManager) {}
+    void MeshRenderSystem::start(EntityScene &entityManager, EventBus &eventBus) {}
 
-    void MeshRenderSystem::stop(EntityScene &entityManager) {}
+    void MeshRenderSystem::stop(EntityScene &entityManager, EventBus &eventBus) {}
 
-    void MeshRenderSystem::update(DeltaTime deltaTime, EntityScene &entScene) {
+    void MeshRenderSystem::update(DeltaTime deltaTime, EntityScene &entScene, EventBus &eventBus) {
         Scene scene = {};
 
         polyCount = 0;

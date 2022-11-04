@@ -23,17 +23,19 @@
 #include "types/deltatime.hpp"
 #include "ecs/entityscene.hpp"
 
+#include "event/eventbus.hpp"
+
 namespace xng {
     class XENGINE_EXPORT System {
     public:
         virtual ~System() = default;
 
         // If these methods are declared pure virtual there are undefined references to the methods when linking to the resulting binary.
-        virtual void start(EntityScene &scene) {}
+        virtual void start(EntityScene &scene, EventBus &eventBus) {}
 
-        virtual void stop(EntityScene &scene) {}
+        virtual void stop(EntityScene &scene, EventBus &eventBus) {}
 
-        virtual void update(DeltaTime deltaTime, EntityScene &scene) {}
+        virtual void update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {}
 
         virtual std::string getName() { return "System"; }
     };
