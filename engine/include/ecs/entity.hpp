@@ -102,8 +102,10 @@ namespace xng {
         }
 
         std::string toString() const {
-            if (hasName()){
+            if (hasName()) {
                 return "Entity { Name:" + getName() + " Id: " + std::to_string(handle.id) + " }";
+            } else {
+                return "Entity { Id: " + std::to_string(handle.id) + " }";
             }
         }
 

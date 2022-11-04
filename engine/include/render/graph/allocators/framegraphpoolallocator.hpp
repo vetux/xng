@@ -134,6 +134,8 @@ namespace xng {
                     throw std::runtime_error("Compute pipeline allocation is not supported yet");
                 case RenderObject::RAYTRACE_PIPELINE:
                     throw std::runtime_error("Raytrace pipeline allocation is not supported yet");
+                default:
+                    throw std::runtime_error("Invalid render object type");
             }
         }
 

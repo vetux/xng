@@ -35,16 +35,26 @@
 namespace xng {
     class Application {
     public:
+        static Application &getCurrentApplication() {
+            if (currentApplication == nullptr) {
+                throw std::runtime_error("Application not initialized");
+            } else {
+                return *currentApplication;
+            }
+        }
+
         /**
          * @param argc
          * @param argv
          */
         explicit Application(int argc, char *argv[]) {
+            currentApplication = this;
+
             parseArgs(argc, argv);
             loadDrivers();
 
-            window = displayDriver->createWindow(graphicsDriverName);
-            renderDevice = graphicsDriver->createRenderDevice();
+            window = displayDriver->createWindow(gpuDriverName);
+            renderDevice = gpuDriver->createRenderDevice();
             audioDevice = audioDriver->createDevice();
 
             window->update();
@@ -55,17 +65,21 @@ namespace xng {
                              const std::string &windowTitle,
                              const Vec2i &windowSize,
                              const WindowAttributes &windowAttributes = {}) {
+            currentApplication = this;
+
             parseArgs(argc, argv);
             loadDrivers();
 
-            window = displayDriver->createWindow(graphicsDriverName, windowTitle, windowSize, windowAttributes);
-            renderDevice = graphicsDriver->createRenderDevice();
+            window = displayDriver->createWindow(gpuDriverName, windowTitle, windowSize, windowAttributes);
+            renderDevice = gpuDriver->createRenderDevice();
             audioDevice = audioDriver->createDevice();
 
             window->update();
         }
 
-        virtual ~Application() = default;
+        virtual ~Application() {
+            currentApplication = nullptr;
+        }
 
         virtual int loop() {
             start();
@@ -75,9 +89,11 @@ namespace xng {
                 update(deltaTime);
                 auto frameEnd = std::chrono::steady_clock::now();
                 auto frameDelta = frameEnd - frameStart;
-                deltaTime = static_cast<DeltaTime>(static_cast<long double>(frameDelta.count()) / (long double) 1000000000.0f);
+                deltaTime = static_cast<DeltaTime>(static_cast<long double>(frameDelta.count()) /
+                                                   (long double) 1000000000.0f);
                 if (targetFramerate > 0) {
-                    auto frameDur = std::chrono::steady_clock::duration((int) ((long double)(1.0f / targetFramerate) * (long double)1000000000.0f));
+                    auto frameDur = std::chrono::steady_clock::duration(
+                            (int) ((long double) (1.0f / targetFramerate) * (long double) 1000000000.0f));
                     if (frameDelta < frameDur) {
                         std::this_thread::sleep_for(frameDur - frameDelta);
                     }
@@ -92,13 +108,73 @@ namespace xng {
             return 0;
         }
 
+        virtual std::string getDisplayDriverName() const {
+            return displayDriverName;
+        }
+
+        virtual const std::string &getGpuDriverName() const {
+            return gpuDriverName;
+        }
+
+        virtual const std::string &getAudioDriverName() const {
+            return audioDriverName;
+        }
+
+        virtual DisplayDriver &getDisplayDriver() {
+            if (!displayDriver) {
+                throw std::runtime_error("Display driver not initialized");
+            }
+            return *displayDriver;
+        }
+
+        virtual GpuDriver &getGpuDriver() {
+            if (!gpuDriver) {
+                throw std::runtime_error("Gpu driver not initialized");
+            }
+            return *gpuDriver;
+        }
+
+        virtual AudioDriver &getAudioDriver() {
+            if (!audioDriver) {
+                throw std::runtime_error("Audio driver not initialized");
+            }
+            return *audioDriver;
+        }
+
+        virtual Window &getWindow() {
+            if (!window) {
+                throw std::runtime_error("Window not initialized");
+            }
+            return *window;
+        }
+
+        virtual RenderDevice &getRenderDevice() {
+            if (!renderDevice) {
+                throw std::runtime_error("Render device not initialized");
+            }
+            return *renderDevice;
+        }
+
+        virtual AudioDevice &getAudioDevice() {
+            if (!audioDevice) {
+                throw std::runtime_error("Audio device not initialized");
+            }
+            return *audioDevice;
+        }
+
+        virtual RenderTarget &getScreenTarget() {
+            return window->getRenderTarget();
+        }
+
     protected:
+        static Application *currentApplication;
+
         std::string displayDriverName = "glfw";
-        std::string graphicsDriverName = "opengl";
+        std::string gpuDriverName = "opengl";
         std::string audioDriverName = "openal-soft";
 
         std::unique_ptr<DisplayDriver> displayDriver = nullptr;
-        std::unique_ptr<GpuDriver> graphicsDriver = nullptr;
+        std::unique_ptr<GpuDriver> gpuDriver = nullptr;
         std::unique_ptr<AudioDriver> audioDriver = nullptr;
 
         std::unique_ptr<Window> window = nullptr;
@@ -131,7 +207,7 @@ namespace xng {
 
             for (int i = 0; i < args.size(); i++) {
                 if (args.at(i) == "--graphics") {
-                    graphicsDriverName = args.at(i + 1);
+                    gpuDriverName = args.at(i + 1);
                 }
             }
 
@@ -144,7 +220,7 @@ namespace xng {
 
         virtual void loadDrivers() {
             displayDriver = DriverRegistry::load<DisplayDriver>(displayDriverName);
-            graphicsDriver = DriverRegistry::load<GpuDriver>(graphicsDriverName);
+            gpuDriver = DriverRegistry::load<GpuDriver>(gpuDriverName);
             audioDriver = DriverRegistry::load<AudioDriver>(audioDriverName);
         }
     };
