@@ -89,7 +89,7 @@ namespace xng {
                                const Serializer &serializer,
                                const Deserializer &deserializer,
                                const Constructor &constructor,
-                               const Updater &updater);
+                               const Updater &updater) noexcept;
 
         const std::type_index &getTypeFromName(const std::string &typeName);
 

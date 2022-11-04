@@ -28,15 +28,15 @@ namespace xng {
         return *inst;
     }
 
-    void SystemRegistry::registerSystem(const std::type_index &typeIndex,
+    bool SystemRegistry::registerSystem(const std::type_index &typeIndex,
                                         const std::string &typeName,
-                                        const std::function<std::unique_ptr<System>()> &constructor) {
+                                        const std::function<std::unique_ptr<System>()> &constructor) noexcept {
         if (typeNameMapping.find(typeIndex) != typeNameMapping.end())
-            throw std::runtime_error(
-                    "System " + typeName + " is already registered as " + typeNameMapping.at(typeIndex));
+            return false;
         typeNameMapping[typeIndex] = typeName;
         typeNameReverseMapping.insert(std::pair(typeName, typeIndex));
         constructors[typeIndex] = constructor;
+        return true;
     }
 
     const std::type_index &SystemRegistry::getTypeFromName(const std::string &typeName) {

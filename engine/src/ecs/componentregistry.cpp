@@ -50,9 +50,9 @@ namespace xng {
                                               const Serializer &serializer,
                                               const Deserializer &deserializer,
                                               const Constructor &constructor,
-                                              const Updater &updater) {
+                                              const Updater &updater) noexcept {
         if (nameMapping.find(type) != nameMapping.end()) {
-            throw std::runtime_error("Type " + typeName + " already registered with name " + nameMapping.at(type));
+            return false;
         }
 
         nameMapping[type] = typeName;

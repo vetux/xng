@@ -29,6 +29,13 @@
 #include "ecs/system.hpp"
 
 namespace xng {
+#define REGISTER_SYSTEM(type) \
+bool r_##type = xng::SystemRegistry::instance().registerSystem(typeid(type), \
+                                                                             #type, \
+                                                                             []() {\
+                                                                                 return std::make_unique<type>();\
+                                                                             });
+
     /**
      * The system registry is used by the editor to instantiate user defined systems based on their name
      * by loading a shared library containing the register directives for the user system types at runtime.
@@ -43,9 +50,9 @@ namespace xng {
 
         SystemRegistry&operator=(const SystemRegistry &other) = delete;
 
-        void registerSystem(const std::type_index &typeIndex,
+        bool registerSystem(const std::type_index &typeIndex,
                             const std::string &typeName,
-                            const std::function<std::unique_ptr<System>()> &constructor);
+                            const std::function<std::unique_ptr<System>()> &constructor) noexcept;
 
         const std::type_index &getTypeFromName(const std::string &typeName);
 
