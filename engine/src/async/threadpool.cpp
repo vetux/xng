@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "async/threadpool.hpp"
+#include "xng/async/threadpool.hpp"
 
 namespace xng {
     std::unique_ptr<ThreadPool> pool = nullptr;

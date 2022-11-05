@@ -20,7 +20,7 @@
 #ifndef XENGINE_COLLIDERBT3_HPP
 #define XENGINE_COLLIDERBT3_HPP
 
-#include "physics/collider.hpp"
+#include "xng/physics/collider.hpp"
 
 namespace xng {
     class ColliderBt3 : Collider {

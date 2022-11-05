@@ -23,10 +23,10 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "asset/mesh.hpp"
-#include "asset/material.hpp"
+#include "xng/asset/mesh.hpp"
+#include "xng/asset/material.hpp"
 
-#include "driver/registerdriver.hpp"
+#include "xng/driver/registerdriver.hpp"
 
 namespace xng {
     static const bool dr = REGISTER_DRIVER("assimp", ResourceParser, AssImpParser);

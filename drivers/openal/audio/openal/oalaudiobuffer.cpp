@@ -22,7 +22,7 @@
 #include "oalaudiobuffer.hpp"
 #include "oalcheckerror.hpp"
 
-#include "util/numeric_cast.hpp"
+#include "xng/util/numeric_cast.hpp"
 
 namespace xng {
     int convertFormat(AudioFormat format) {

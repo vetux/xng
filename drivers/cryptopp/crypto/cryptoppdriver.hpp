@@ -20,7 +20,7 @@
 #ifndef XENGINE_CRYPTOPPDRIVER_HPP
 #define XENGINE_CRYPTOPPDRIVER_HPP
 
-#include "crypto/cryptodriver.hpp"
+#include "xng/crypto/cryptodriver.hpp"
 
 namespace xng {
     class CryptoPPDriver : public CryptoDriver {

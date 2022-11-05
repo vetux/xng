@@ -20,7 +20,7 @@
 #ifndef XENGINE_GLFWDISPLAYDRIVER_HPP
 #define XENGINE_GLFWDISPLAYDRIVER_HPP
 
-#include "display/displaydriver.hpp"
+#include "xng/display/displaydriver.hpp"
 
 namespace xng::glfw {
     class GLFWDisplayDriver : public DisplayDriver {

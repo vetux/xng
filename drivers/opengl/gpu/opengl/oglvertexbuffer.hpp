@@ -20,16 +20,16 @@
 #ifndef XENGINE_OGLVERTEXBUFFER_HPP
 #define XENGINE_OGLVERTEXBUFFER_HPP
 
-#include "gpu/vertexbuffer.hpp"
+#include "xng/gpu/vertexbuffer.hpp"
 
 #include <utility>
 
 #include "opengl_include.hpp"
 #include "gpu/opengl/oglfence.hpp"
 
-#include "asset/mesh.hpp"
+#include "xng/asset/mesh.hpp"
 
-#include "math/matrixmath.hpp"
+#include "xng/math/matrixmath.hpp"
 
 namespace xng::opengl {
     class OGLVertexBuffer : public VertexBuffer {

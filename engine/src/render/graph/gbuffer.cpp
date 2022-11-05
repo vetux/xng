@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "render/graph/gbuffer.hpp"
+#include "xng/render/graph/gbuffer.hpp"
 
 #include <utility>
 

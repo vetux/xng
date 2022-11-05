@@ -22,7 +22,7 @@
 
 #include "openal.hpp"
 
-#include "audio/audiocontext.hpp"
+#include "xng/audio/audiocontext.hpp"
 
 #include "oalaudiolistener.hpp"
 

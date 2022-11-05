@@ -22,7 +22,7 @@
 
 #include "openal.hpp"
 
-#include "audio/audiobuffer.hpp"
+#include "xng/audio/audiobuffer.hpp"
 
 namespace xng {
     class OALAudioBuffer : public AudioBuffer {

@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "resource/resourceexporter.hpp"
+#include "xng/resource/resourceexporter.hpp"
 
 #include "extern/stb_image_write.h"
 

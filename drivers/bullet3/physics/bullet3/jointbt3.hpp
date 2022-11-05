@@ -20,7 +20,7 @@
 #ifndef XENGINE_JOINTBT3_HPP
 #define XENGINE_JOINTBT3_HPP
 
-#include "physics/joint.hpp"
+#include "xng/physics/joint.hpp"
 
 namespace xng {
     class JointBt3 : public Joint {

@@ -25,14 +25,14 @@
 #include <functional>
 #include <utility>
 
-#include "math/vector2.hpp"
-#include "math/vector3.hpp"
-#include "math/matrix.hpp"
+#include "xng/math/vector2.hpp"
+#include "xng/math/vector3.hpp"
+#include "xng/math/matrix.hpp"
 
-#include "gpu/shaderprogram.hpp"
+#include "xng/gpu/shaderprogram.hpp"
 #include "opengl_include.hpp"
 
-#include "shader/spirvdecompiler.hpp"
+#include "xng/shader/spirvdecompiler.hpp"
 
 namespace xng::opengl {
     class OGLShaderProgram : public ShaderProgram {

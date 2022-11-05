@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ecs/systems/eventsystem.hpp"
+#include "xng/ecs/systems/eventsystem.hpp"
 
 namespace xng {
     EventSystem::EventSystem(Window &wnd) : wnd(wnd) {

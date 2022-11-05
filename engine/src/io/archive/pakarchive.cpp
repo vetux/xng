@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "io/archive/pakarchive.hpp"
+#include "xng/io/archive/pakarchive.hpp"
 
 #include <filesystem>
 #include <sstream>

@@ -20,7 +20,7 @@
 #include <fstream>
 #include <filesystem>
 
-#include "io/archive/directoryarchive.hpp"
+#include "xng/io/archive/directoryarchive.hpp"
 
 namespace xng {
     DirectoryArchive::DirectoryArchive(std::string directory, bool allowWriting) : directory(std::move(directory)),

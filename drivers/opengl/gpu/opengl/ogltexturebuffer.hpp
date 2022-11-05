@@ -20,7 +20,7 @@
 #ifndef XENGINE_OGLTEXTUREBUFFER_HPP
 #define XENGINE_OGLTEXTUREBUFFER_HPP
 
-#include "gpu/texturebuffer.hpp"
+#include "xng/gpu/texturebuffer.hpp"
 
 #include <utility>
 

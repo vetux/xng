@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "render/graph/framegraphrenderer.hpp"
-#include "render/graph/framegraphbuilder.hpp"
+#include "xng/render/graph/framegraphrenderer.hpp"
+#include "xng/render/graph/framegraphbuilder.hpp"
 
 namespace xng {
     FrameGraphRenderer::FrameGraphRenderer(RenderTarget &target, std::unique_ptr<FrameGraphAllocator> allocator)

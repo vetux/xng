@@ -20,7 +20,7 @@
 #ifndef XENGINE_OGLRENDERPIPELINE_HPP
 #define XENGINE_OGLRENDERPIPELINE_HPP
 
-#include "gpu/renderpipeline.hpp"
+#include "xng/gpu/renderpipeline.hpp"
 
 #include <utility>
 

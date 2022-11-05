@@ -17,9 +17,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "script/mono/monocpparguments.hpp"
+#include "xng/script/mono/monocpparguments.hpp"
 
-#include "script/mono/monocppobject.hpp"
+#include "xng/script/mono/monocppobject.hpp"
 
 namespace xng {
     void MonoCppArguments::add(int &value) {

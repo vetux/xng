@@ -17,12 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ecs/systems/guieventsystem.hpp"
+#include "xng/ecs/systems/guieventsystem.hpp"
 
-#include "ecs/components/canvastransformcomponent.hpp"
-#include "ecs/components/buttoncomponent.hpp"
-#include "ecs/components/spritecomponent.hpp"
-#include "event/events/guievent.hpp"
+#include "xng/ecs/components/canvastransformcomponent.hpp"
+#include "xng/ecs/components/buttoncomponent.hpp"
+#include "xng/ecs/components/spritecomponent.hpp"
+#include "xng/event/events/guievent.hpp"
 
 namespace xng {
     GuiEventSystem::GuiEventSystem(Window &window)

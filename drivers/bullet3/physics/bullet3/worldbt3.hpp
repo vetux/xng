@@ -21,7 +21,7 @@
 #define XENGINE_WORLDBT3_HPP
 
 
-#include "physics/world.hpp"
+#include "xng/physics/world.hpp"
 
 namespace xng {
     class WorldBt3 : public World {

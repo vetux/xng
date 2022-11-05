@@ -20,8 +20,8 @@
 #ifndef XENGINE_OPENGL_CONVERSION_HPP
 #define XENGINE_OPENGL_CONVERSION_HPP
 
-#include "gpu/renderproperties.hpp"
-#include "gpu/textureproperties.hpp"
+#include "xng/gpu/renderproperties.hpp"
+#include "xng/gpu/textureproperties.hpp"
 
 static GLenum getColorAttachment(int index) {
     return GL_COLOR_ATTACHMENT0 + index;

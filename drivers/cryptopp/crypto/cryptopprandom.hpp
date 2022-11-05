@@ -20,7 +20,7 @@
 #ifndef XENGINE_CRYPTOPPRANDOM_HPP
 #define XENGINE_CRYPTOPPRANDOM_HPP
 
-#include "crypto/random.hpp"
+#include "xng/crypto/random.hpp"
 
 #include <cryptopp/osrng.h>
 

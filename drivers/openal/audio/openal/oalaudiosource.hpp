@@ -1,6 +1,6 @@
 #include "openal.hpp"
 
-#include "audio/audiosource.hpp"
+#include "xng/audio/audiosource.hpp"
 
 #include <map>
 

@@ -20,7 +20,7 @@
 #ifndef XENGINE_OGLFENCE_HPP
 #define XENGINE_OGLFENCE_HPP
 
-#include "gpu/gpufence.hpp"
+#include "xng/gpu/gpufence.hpp"
 
 namespace xng::opengl {
     class OGLFence : public GpuFence {

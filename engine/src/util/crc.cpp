@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "util/crc.hpp"
+#include "xng/util/crc.hpp"
 
 namespace xng {
     std::array<HashCRC, 256> generate_crc_lookup_table() noexcept {

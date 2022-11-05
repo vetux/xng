@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ecs/systemregistry.hpp"
+#include "xng/ecs/systemregistry.hpp"
 
 namespace xng {
     std::unique_ptr<SystemRegistry> SystemRegistry::inst = nullptr;

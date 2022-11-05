@@ -17,9 +17,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ecs/systems/spriteanimationsystem.hpp"
+#include "xng/ecs/systems/spriteanimationsystem.hpp"
 
-#include "ecs/components/spritecomponent.hpp"
+#include "xng/ecs/components/spritecomponent.hpp"
 
 void SpriteAnimationSystem::start(EntityScene &scene, EventBus &eventBus) {
     scene.addListener(*this);

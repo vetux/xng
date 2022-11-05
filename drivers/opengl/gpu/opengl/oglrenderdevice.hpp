@@ -20,7 +20,7 @@
 #ifndef XENGINE_OGLRENDERDEVICE_HPP
 #define XENGINE_OGLRENDERDEVICE_HPP
 
-#include "gpu/renderdevice.hpp"
+#include "xng/gpu/renderdevice.hpp"
 
 #include <utility>
 

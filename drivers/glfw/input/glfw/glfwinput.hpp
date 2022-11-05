@@ -25,8 +25,8 @@
 
 #include <GLFW/glfw3.h>
 
-#include "asset/image.hpp"
-#include "input/input.hpp"
+#include "xng/asset/image.hpp"
+#include "xng/input/input.hpp"
 
 namespace xng {
     class GLFWInput : public Input, InputListener {

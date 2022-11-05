@@ -22,7 +22,7 @@
 
 #include <memory>
 
-#include "script/mono/monocppassembly.hpp"
+#include "xng/script/mono/monocppassembly.hpp"
 
 namespace xng {
     class XENGINE_EXPORT MonoCppDomain {

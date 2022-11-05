@@ -23,10 +23,9 @@
 
 #include "audio/openal/oalaudiocontext.hpp"
 #include "audio/openal/oalcheckerror.hpp"
-
 #include "audio/openal/oalaudiodevice.hpp"
 
-#include "driver/registerdriver.hpp"
+#include "xng/driver/registerdriver.hpp"
 
 namespace xng {
     static bool dr = REGISTER_DRIVER("openal-soft", AudioDriver, OALAudioDriver);

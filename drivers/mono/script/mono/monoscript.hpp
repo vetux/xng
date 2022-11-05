@@ -20,8 +20,8 @@
 #ifndef XENGINE_MONOSCRIPT_HPP
 #define XENGINE_MONOSCRIPT_HPP
 
-#include "script/script.hpp"
-#include "script/mono/monocppdomain.hpp"
+#include "xng/script/script.hpp"
+#include "xng/script/mono/monocppdomain.hpp"
 
 namespace xng {
     class XENGINE_EXPORT MonoScript : public Script {

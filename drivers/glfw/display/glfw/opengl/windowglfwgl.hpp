@@ -24,8 +24,8 @@
 
 #include "glad/glad.h"
 
-#include "display/window.hpp"
-#include "display/windowattributes.hpp"
+#include "xng/display/window.hpp"
+#include "xng/display/windowattributes.hpp"
 
 #include "display/glfw/monitorglfw.hpp"
 #include "display/glfw/opengl/glfwrendertargetgl.hpp"

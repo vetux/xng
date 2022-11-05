@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "text/textrenderer.hpp"
+#include "xng/text/textrenderer.hpp"
 
 namespace xng {
     struct RenderChar {

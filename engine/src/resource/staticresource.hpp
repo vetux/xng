@@ -20,7 +20,7 @@
 #ifndef XENGINE_STATICRESOURCE_HPP
 #define XENGINE_STATICRESOURCE_HPP
 
-#include "resource/resourceregistry.hpp"
+#include "xng/resource/resourceregistry.hpp"
 
 #define _STATIC_RES_COMBINE(first, second) first##second
 

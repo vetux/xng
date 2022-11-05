@@ -17,12 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ecs/systems/audiosystem.hpp"
+#include "xng/ecs/systems/audiosystem.hpp"
 
-#include "ecs/components/audiolistenercomponent.hpp"
-#include "ecs/components/audiosourcecomponent.hpp"
+#include "xng/ecs/components/audiolistenercomponent.hpp"
+#include "xng/ecs/components/audiosourcecomponent.hpp"
 
-#include "resource/resourcehandle.hpp"
+#include "xng/resource/resourcehandle.hpp"
 
 #define AUDIO_POS_SCALE 1
 

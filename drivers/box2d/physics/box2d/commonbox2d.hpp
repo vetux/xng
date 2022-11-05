@@ -24,7 +24,7 @@
 
 #include "physics/box2d/box2d.hpp"
 
-#include "physics/rigidbody.hpp"
+#include "xng/physics/rigidbody.hpp"
 
 namespace xng {
     Vec3f convert(const b2Vec2 &vec);

@@ -20,7 +20,7 @@
 #include "rigidbodybox2d.hpp"
 #include "commonbox2d.hpp"
 #include "physics/box2d/worldbox2d.hpp"
-#include "math/rotation.hpp"
+#include "xng/math/rotation.hpp"
 
 namespace xng {
     RigidBodyBox2D::RigidBodyBox2D(WorldBox2D &world)

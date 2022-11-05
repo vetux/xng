@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ecs/componentregistry.hpp"
-#include "ecs/components.hpp"
+#include "xng/ecs/componentregistry.hpp"
+#include "xng/ecs/components.hpp"
 
 namespace xng {
     std::unique_ptr<ComponentRegistry> ComponentRegistry::inst = nullptr;

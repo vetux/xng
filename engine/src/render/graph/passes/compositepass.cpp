@@ -19,7 +19,7 @@
 
 #pragma message "Not Implemented"
 
-#include "render/graph/passes/compositepass.hpp"
+#include "xng/render/graph/passes/compositepass.hpp"
 
 namespace xng {
     CompositePass::CompositePass() {
@@ -42,9 +42,9 @@ namespace xng {
 }
 
 /*
-#include "render/graph/passes/compositepass.hpp"
+#include "xng/render/graph/passes/compositepass.hpp"
 
-#include "render/shaderinclude.hpp"
+#include "xng/render/shaderinclude.hpp"
 
 static const char *SHADER_VERT = R"###(#version 410 core
 

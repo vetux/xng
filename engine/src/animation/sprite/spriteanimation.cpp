@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "animation/sprite/spriteanimation.hpp"
+#include "xng/animation/sprite/spriteanimation.hpp"
 
 #include <cmath>
 #include <cassert>

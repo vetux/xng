@@ -17,10 +17,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "resource/parsers/stbiparser.hpp"
+#include "xng/resource/parsers/stbiparser.hpp"
 
 #include "extern/stb_image.h"
-#include "asset/image.hpp"
+#include "xng/asset/image.hpp"
 
 #include <cstring>
 

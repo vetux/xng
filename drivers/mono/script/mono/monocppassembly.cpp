@@ -19,7 +19,7 @@
 
 #include <stdexcept>
 
-#include "script/mono/monocppassembly.hpp"
+#include "xng/script/mono/monocppassembly.hpp"
 
 #include "mono.hpp"
 

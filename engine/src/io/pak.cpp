@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "io/pak.hpp"
+#include "xng/io/pak.hpp"
 
 #include <utility>
 #include <filesystem>
@@ -25,9 +25,9 @@
 #include "extern/json.hpp"
 #include "extern/base64.hpp"
 
-#include "io/readfile.hpp"
-#include "crypto/gzip.hpp"
-#include "crypto/sha.hpp"
+#include "xng/io/readfile.hpp"
+#include "xng/crypto/gzip.hpp"
+#include "xng/crypto/sha.hpp"
 
 namespace xng {
     Pak::Pak(std::vector<std::reference_wrapper<std::istream>> streams, GZip &gzip, SHA &sha)

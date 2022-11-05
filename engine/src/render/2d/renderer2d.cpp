@@ -17,13 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "asset/camera.hpp"
-#include "render/2d/renderer2d.hpp"
+#include "xng/asset/camera.hpp"
+#include "xng/render/2d/renderer2d.hpp"
 
 #include <utility>
 
-#include "math/matrixmath.hpp"
-#include "asset/shadersource.hpp"
+#include "xng/math/matrixmath.hpp"
+#include "xng/asset/shadersource.hpp"
 
 static const char *SHADER_VERT = R"###(#version 420 core
 

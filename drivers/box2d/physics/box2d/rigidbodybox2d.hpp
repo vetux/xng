@@ -20,7 +20,7 @@
 #ifndef XENGINE_RIGIDBODYBOX2D_HPP
 #define XENGINE_RIGIDBODYBOX2D_HPP
 
-#include "physics/rigidbody.hpp"
+#include "xng/physics/rigidbody.hpp"
 #include "physics/box2d/colliderbox2d.hpp"
 
 namespace xng {

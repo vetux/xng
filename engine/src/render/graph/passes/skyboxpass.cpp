@@ -19,7 +19,7 @@
 
 #pragma message "Not Implemented"
 
-#include "render/graph/passes/skyboxpass.hpp"
+#include "xng/render/graph/passes/skyboxpass.hpp"
 
 SkyboxPass::SkyboxPass() {
 
@@ -39,11 +39,11 @@ std::type_index xng::SkyboxPass::getTypeName() {
 
 /*
 
-#include "render/graph/passes/skyboxpass.hpp"
+#include "xng/render/graph/passes/skyboxpass.hpp"
 
-#include "render/shader/shaderinclude.hpp"
+#include "xng/render/shader/shaderinclude.hpp"
 
-#include "render/graph/passes/compositepass.hpp"
+#include "xng/render/graph/passes/compositepass.hpp"
 
 static const char *SHADER_VERT = R"###(#version 410 core
 

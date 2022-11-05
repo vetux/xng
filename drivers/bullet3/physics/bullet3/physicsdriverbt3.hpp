@@ -20,7 +20,7 @@
 #ifndef XENGINE_PHYSICSDRIVERBT3_HPP
 #define XENGINE_PHYSICSDRIVERBT3_HPP
 
-#include "physics/physicsdriver.hpp"
+#include "xng/physics/physicsdriver.hpp"
 
 namespace xng {
     class PhysicsDriverBt3 : public PhysicsDriver {

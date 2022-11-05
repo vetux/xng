@@ -24,7 +24,7 @@
 #include "crypto/cryptopprandom.hpp"
 #include "crypto/cryptoppsha.hpp"
 
-#include "driver/registerdriver.hpp"
+#include "xng/driver/registerdriver.hpp"
 
 namespace xng {
     static const bool dr = REGISTER_DRIVER("cryptopp", CryptoDriver, CryptoPPDriver);

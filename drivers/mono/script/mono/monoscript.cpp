@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "script/mono/monoscript.hpp"
+#include "xng/script/mono/monoscript.hpp"
 
 namespace xng {
     MonoScript::MonoScript() : object(nullptr),

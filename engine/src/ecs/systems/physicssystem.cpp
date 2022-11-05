@@ -17,10 +17,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <event/events/contactevent.hpp>
-#include "ecs/systems/physicssystem.hpp"
+#include "xng/event/events/contactevent.hpp"
 
-#include "ecs/components.hpp"
+#include "xng/ecs/systems/physicssystem.hpp"
+#include "xng/ecs/components.hpp"
 
 namespace xng {
     static ColliderDesc applyScale(const ColliderDesc &desc, float scale) {

@@ -22,7 +22,7 @@
 
 #include "physics/box2d/box2d.hpp"
 
-#include "physics/joint.hpp"
+#include "xng/physics/joint.hpp"
 
 namespace xng {
     class JointBox2D : public Joint {

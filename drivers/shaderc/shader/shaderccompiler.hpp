@@ -20,7 +20,7 @@
 #ifndef XENGINE_SHADERCCOMPILER_HPP
 #define XENGINE_SHADERCCOMPILER_HPP
 
-#include "shader/spirvcompiler.hpp"
+#include "xng/shader/spirvcompiler.hpp"
 
 namespace xng {
     class ShaderCCompiler : public SPIRVCompiler {

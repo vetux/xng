@@ -20,7 +20,7 @@
 #ifndef XENGINE_LIBRARYWIN32_HPP
 #define XENGINE_LIBRARYWIN32_HPP
 
-#include "io/library.hpp"
+#include "xng/io/library.hpp"
 
 #include <string>
 #include <windows.h>

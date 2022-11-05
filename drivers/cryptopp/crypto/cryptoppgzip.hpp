@@ -20,7 +20,7 @@
 #ifndef XENGINE_CRYPTOPPGZIP_HPP
 #define XENGINE_CRYPTOPPGZIP_HPP
 
-#include "crypto/gzip.hpp"
+#include "xng/crypto/gzip.hpp"
 
 #include "cryptopp/filters.h"
 #include "cryptopp/gzip.h"

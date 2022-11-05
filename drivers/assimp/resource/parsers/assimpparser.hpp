@@ -20,7 +20,7 @@
 #ifndef XENGINE_ASSIMPPARSER_HPP
 #define XENGINE_ASSIMPPARSER_HPP
 
-#include "resource/resourceparser.hpp"
+#include "xng/resource/resourceparser.hpp"
 
 namespace xng {
     class XENGINE_EXPORT AssImpParser : public ResourceParser {

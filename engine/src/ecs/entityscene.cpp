@@ -17,9 +17,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ecs/entityscene.hpp"
-#include "ecs/components.hpp"
-#include "ecs/entity.hpp"
+#include "xng/ecs/entityscene.hpp"
+#include "xng/ecs/components.hpp"
+#include "xng/ecs/entity.hpp"
 
 namespace xng {
     void EntityScene::serializeEntity(const EntityHandle &entity, Message &message) const {

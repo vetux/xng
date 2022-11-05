@@ -22,7 +22,7 @@
 
 #include "openal.hpp"
 
-#include "audio/audiodevice.hpp"
+#include "xng/audio/audiodevice.hpp"
 
 namespace xng {
     class OALAudioDevice : public AudioDevice {

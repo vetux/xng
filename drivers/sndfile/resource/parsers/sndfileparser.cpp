@@ -24,14 +24,14 @@
 
 #include "sndfileparser.hpp"
 
-#include "audio/audioformat.hpp"
-#include "asset/audio.hpp"
+#include "xng/audio/audioformat.hpp"
+#include "xng/asset/audio.hpp"
 
-#include "util/numeric_cast.hpp"
+#include "xng/util/numeric_cast.hpp"
 
 #include <sndfile.h>
 
-#include "driver/registerdriver.hpp"
+#include "xng/driver/registerdriver.hpp"
 
 namespace xng {
     static const bool dr = REGISTER_DRIVER("sndfile", ResourceParser, SndFileParser);

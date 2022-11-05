@@ -20,7 +20,7 @@
 #ifndef XENGINE_FTFONTDRIVER_HPP
 #define XENGINE_FTFONTDRIVER_HPP
 
-#include "text/fontdriver.hpp"
+#include "xng/text/fontdriver.hpp"
 
 namespace xng {
     class FtFontDriver : public FontDriver {

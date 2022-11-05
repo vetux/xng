@@ -20,9 +20,9 @@
 #ifndef XENGINE_OALAUDIODRIVER_HPP
 #define XENGINE_OALAUDIODRIVER_HPP
 
-#include "driver/driver.hpp"
+#include "xng/driver/driver.hpp"
 
-#include "audio/audiodriver.hpp"
+#include "xng/audio/audiodriver.hpp"
 
 namespace xng {
     class OALAudioDriver : public AudioDriver {

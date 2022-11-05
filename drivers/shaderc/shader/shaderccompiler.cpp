@@ -20,7 +20,8 @@
 #include <stdexcept>
 
 #include "shader/shaderccompiler.hpp"
-#include "driver/registerdriver.hpp"
+
+#include "xng/driver/registerdriver.hpp"
 
 #include <shaderc/shaderc.hpp>
 

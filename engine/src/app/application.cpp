@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "app/application.hpp"
+#include "xng/app/application.hpp"
 
 namespace xng {
     Application *Application::currentApplication = nullptr;

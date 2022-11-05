@@ -22,7 +22,7 @@
 
 #include "box2d.hpp"
 
-#include "physics/world.hpp"
+#include "xng/physics/world.hpp"
 
 #include "physics/box2d/rigidbodybox2d.hpp"
 #include "physics/box2d/jointbox2d.hpp"

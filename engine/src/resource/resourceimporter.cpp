@@ -17,9 +17,9 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "resource/resourceimporter.hpp"
+#include "xng/resource/resourceimporter.hpp"
 
-#include "asset/rawasset.hpp"
+#include "xng/asset/rawasset.hpp"
 
 namespace xng {
 

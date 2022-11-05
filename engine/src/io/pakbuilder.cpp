@@ -17,12 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "io/pakbuilder.hpp"
+#include "xng/io/pakbuilder.hpp"
 
 #include "extern/json.hpp"
 #include "extern/base64.hpp"
-#include "crypto/gzip.hpp"
-#include "crypto/sha.hpp"
+#include "xng/crypto/gzip.hpp"
+#include "xng/crypto/sha.hpp"
 
 namespace xng {
     void PakBuilder::addEntry(const std::string &name, const std::vector<char> &buffer) {

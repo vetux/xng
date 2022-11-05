@@ -22,7 +22,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include "display/monitor.hpp"
+#include "xng/display/monitor.hpp"
 
 namespace xng::glfw {
     class MonitorGLFW : public Monitor {

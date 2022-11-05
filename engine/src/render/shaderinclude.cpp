@@ -22,12 +22,12 @@
 
 #pragma message "Not Implemented"
 /*
-#include "render/shader/shaderinclude.hpp"
-#include "render/shader/include/glsl_mvp.hpp"
-#include "render/shader/include/glsl_phong_shading.hpp"
-#include "render/shader/include/glsl_pi.hpp"
-#include "render/shader/include/glsl_noise.hpp"
-#include "render/shader/include/glsl_texfilter.hpp"
+#include "xng/render/shader/shaderinclude.hpp"
+#include "xng/render/shader/include/glsl_mvp.hpp"
+#include "xng/render/shader/include/glsl_phong_shading.hpp"
+#include "xng/render/shader/include/glsl_pi.hpp"
+#include "xng/render/shader/include/glsl_noise.hpp"
+#include "xng/render/shader/include/glsl_texfilter.hpp"
 
 static std::string includeCallback(const char *n) {
     std::string name(n);

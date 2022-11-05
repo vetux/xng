@@ -20,8 +20,8 @@
 #ifndef XENGINE_OALAUDIOLISTENER_HPP
 #define XENGINE_OALAUDIOLISTENER_HPP
 
-#include "audio/audiolistener.hpp"
-#include "audio/audiocontext.hpp"
+#include "xng/audio/audiolistener.hpp"
+#include "xng/audio/audiocontext.hpp"
 
 namespace xng {
     class OALAudioListener : public AudioListener {

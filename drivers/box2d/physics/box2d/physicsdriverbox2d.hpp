@@ -20,7 +20,7 @@
 #ifndef XENGINE_PHYSICSDRIVERBOX2D_HPP
 #define XENGINE_PHYSICSDRIVERBOX2D_HPP
 
-#include "physics/physicsdriver.hpp"
+#include "xng/physics/physicsdriver.hpp"
 
 namespace xng {
     //TODO: Fix box2d returning nan values for positions after stepping the world.

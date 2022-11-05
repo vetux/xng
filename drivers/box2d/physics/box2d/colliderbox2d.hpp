@@ -20,11 +20,11 @@
 #ifndef XENGINE_COLLIDERBOX2D_HPP
 #define XENGINE_COLLIDERBOX2D_HPP
 
-#include "physics/collidershape.hpp"
-#include "physics/colliderdesc.hpp"
+#include "xng/physics/collidershape.hpp"
+#include "xng/physics/colliderdesc.hpp"
 #include "physics/box2d/box2d.hpp"
 
-#include "physics/collider.hpp"
+#include "xng/physics/collider.hpp"
 
 namespace xng {
     class RigidBodyBox2D;

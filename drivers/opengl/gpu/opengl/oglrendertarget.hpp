@@ -20,7 +20,7 @@
 #ifndef XENGINE_OGLRENDERTARGET_HPP
 #define XENGINE_OGLRENDERTARGET_HPP
 
-#include "gpu/rendertarget.hpp"
+#include "xng/gpu/rendertarget.hpp"
 
 #include <utility>
 

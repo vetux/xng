@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ecs/components/transformcomponent.hpp"
+#include "xng/ecs/components/transformcomponent.hpp"
 
 namespace xng {
     Transform TransformComponent::walkHierarchy(const TransformComponent &component, EntityScene &scene) {

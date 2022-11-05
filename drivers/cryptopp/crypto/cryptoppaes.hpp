@@ -20,7 +20,7 @@
 #ifndef XENGINE_CRYPTOPPAES_HPP
 #define XENGINE_CRYPTOPPAES_HPP
 
-#include "crypto/aes.hpp"
+#include "xng/crypto/aes.hpp"
 
 #include "cryptopp/aes.h"
 #include "cryptopp/filters.h"

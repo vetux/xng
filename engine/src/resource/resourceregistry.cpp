@@ -17,13 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "resource/resourceregistry.hpp"
+#include "xng/resource/resourceregistry.hpp"
 
 #include <utility>
 
-#include "resource/resourceimporter.hpp"
-#include "io/archive/memoryarchive.hpp"
-#include "log/log.hpp"
+#include "xng/resource/resourceimporter.hpp"
+#include "xng/io/archive/memoryarchive.hpp"
+#include "xng/log/log.hpp"
 
 namespace xng {
     static std::unique_ptr<ResourceRegistry> defRepo = nullptr;

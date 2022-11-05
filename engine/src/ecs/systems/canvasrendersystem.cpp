@@ -19,14 +19,14 @@
 
 #include <sstream>
 
-#include "ecs/systems/canvasrendersystem.hpp"
+#include "xng/ecs/systems/canvasrendersystem.hpp"
 
-#include "ecs/components/transformcomponent.hpp"
-#include "ecs/components/canvastransformcomponent.hpp"
-#include "ecs/components/canvascomponent.hpp"
-#include "ecs/components/textcomponent.hpp"
+#include "xng/ecs/components/transformcomponent.hpp"
+#include "xng/ecs/components/canvastransformcomponent.hpp"
+#include "xng/ecs/components/canvascomponent.hpp"
+#include "xng/ecs/components/textcomponent.hpp"
 
-#include "ecs/components/rigidbodycomponent.hpp"
+#include "xng/ecs/components/rigidbodycomponent.hpp"
 
 namespace xng {
     CanvasRenderSystem::CanvasRenderSystem(Renderer2D &renderer2D,

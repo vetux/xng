@@ -20,8 +20,8 @@
 #include <algorithm>
 #include <filesystem>
 
-#include "ecs/systems/meshrendersystem.hpp"
-#include "ecs/components.hpp"
+#include "xng/ecs/systems/meshrendersystem.hpp"
+#include "xng/ecs/components.hpp"
 
 namespace xng {
     MeshRenderSystem::MeshRenderSystem(SceneRenderer &pipeline)

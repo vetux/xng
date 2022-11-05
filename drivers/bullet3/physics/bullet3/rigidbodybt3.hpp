@@ -20,7 +20,7 @@
 #ifndef XENGINE_RIGIDBODYBT3_HPP
 #define XENGINE_RIGIDBODYBT3_HPP
 
-#include "physics/rigidbody.hpp"
+#include "xng/physics/rigidbody.hpp"
 
 namespace xng {
     class RigidBodyBt3 : public RigidBody {

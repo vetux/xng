@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "log/log.hpp"
+#include "xng/log/log.hpp"
 
 xng::Log &xng::Log::instance() {
     static xng::Log ptr;

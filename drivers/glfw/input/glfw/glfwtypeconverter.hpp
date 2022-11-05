@@ -24,9 +24,9 @@
 
 #include <GLFW/glfw3.h>
 
-#include "input/device/gamepad.hpp"
-#include "input/device/keyboard.hpp"
-#include "input/device/mouse.hpp"
+#include "xng/input/device/gamepad.hpp"
+#include "xng/input/device/keyboard.hpp"
+#include "xng/input/device/mouse.hpp"
 
 namespace xng {
     class GLFWTypeConverter {

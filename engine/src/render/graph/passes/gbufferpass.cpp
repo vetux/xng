@@ -19,7 +19,7 @@
 
 #pragma message "Not Implemented"
 
-#include "render/graph/passes/gbufferpass.hpp"
+#include "xng/render/graph/passes/gbufferpass.hpp"
 
 namespace xng {
     GBufferPass::GBufferPass() {
@@ -41,11 +41,11 @@ namespace xng {
 }
 /*
 
-#include "render/graph/passes/gbufferpass.hpp"
+#include "xng/render/graph/passes/gbufferpass.hpp"
 
-#include "render/shaderinclude.hpp"
+#include "xng/render/shaderinclude.hpp"
 
-#include "io/archive/memoryarchive.hpp"
+#include "xng/io/archive/memoryarchive.hpp"
 
 static const char *SHADER_VERT_GEOMETRY = R"###(#version 420 core
 

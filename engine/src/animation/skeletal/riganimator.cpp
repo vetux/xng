@@ -17,6 +17,6 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "animation/skeletal/riganimator.hpp"
+#include "xng/animation/skeletal/riganimator.hpp"
 
 #pragma message "Not Implemented"

@@ -24,7 +24,7 @@
 
 #include "freetype/freetype.h"
 
-#include "text/font.hpp"
+#include "xng/text/font.hpp"
 
 namespace xng {
     class FTFont : public Font {

@@ -17,10 +17,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "math/quaternion.hpp"
+#include "xng/math/quaternion.hpp"
 
-#include "math/rotation.hpp"
-#include "math/matrixmath.hpp"
+#include "xng/math/rotation.hpp"
+#include "xng/math/matrixmath.hpp"
 
 #include<glm/glm.hpp>
 #include<glm/gtc/quaternion.hpp>

@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "render/graph/framegraphpool.hpp"
-#include "render/graph/shader/framegraphshader.hpp"
+#include "xng/render/graph/framegraphpool.hpp"
+#include "xng/render/graph/shader/framegraphshader.hpp"
 
 namespace xng {
     static std::unique_ptr<TextureBuffer> allocateTexture(const Texture &t, RenderDevice &device) {

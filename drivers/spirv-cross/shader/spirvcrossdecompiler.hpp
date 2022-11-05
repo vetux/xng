@@ -20,7 +20,7 @@
 #ifndef XENGINE_SPIRVCROSSDECOMPILER_HPP
 #define XENGINE_SPIRVCROSSDECOMPILER_HPP
 
-#include "shader/spirvdecompiler.hpp"
+#include "xng/shader/spirvdecompiler.hpp"
 
 namespace xng {
     class SpirvCrossDecompiler : public SPIRVDecompiler {

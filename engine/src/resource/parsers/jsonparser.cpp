@@ -19,18 +19,18 @@
 
 #include <sstream>
 
-#include "resource/parsers/jsonparser.hpp"
+#include "xng/resource/parsers/jsonparser.hpp"
 
-#include "async/threadpool.hpp"
+#include "xng/async/threadpool.hpp"
 
-#include "asset/texture.hpp"
-#include "asset/material.hpp"
-#include "animation/sprite/spriteanimation.hpp"
-#include "ecs/entityscene.hpp"
+#include "xng/asset/texture.hpp"
+#include "xng/asset/material.hpp"
+#include "xng/animation/sprite/spriteanimation.hpp"
+#include "xng/ecs/entityscene.hpp"
 
-#include "io/protocol/jsonprotocol.hpp"
+#include "xng/io/protocol/jsonprotocol.hpp"
 
-#include "resource/resourceimporter.hpp"
+#include "xng/resource/resourceimporter.hpp"
 
 namespace xng {
     static void loadBundle(const std::string &bundlePath,

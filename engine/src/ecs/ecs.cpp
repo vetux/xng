@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ecs/ecs.hpp"
+#include "xng/ecs/ecs.hpp"
 
 #include <utility>
 #include <algorithm>

@@ -19,7 +19,7 @@
 
 #include <stdexcept>
 
-#include "render/graph/shader/framegraphshader.hpp"
+#include "xng/render/graph/shader/framegraphshader.hpp"
 
 static const char *SHADER_VERTEX = R"###(
 // Layout bindings might be different on other pipelines.

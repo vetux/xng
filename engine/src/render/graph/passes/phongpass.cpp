@@ -19,7 +19,7 @@
 
 #pragma message "Not Implemented"
 
-#include "render/graph/passes/phongpass.hpp"
+#include "xng/render/graph/passes/phongpass.hpp"
 
 namespace xng {
     PhongPass::PhongPass() {
@@ -42,13 +42,13 @@ namespace xng {
 }
 
 /*
-#include "render/graph/passes/phongpass.hpp"
+#include "xng/render/graph/passes/phongpass.hpp"
 
-#include "render/shader/shaderinclude.hpp"
+#include "xng/render/shader/shaderinclude.hpp"
 
-#include "math/rotation.hpp"
+#include "xng/math/rotation.hpp"
 
-#include "render/graph/passes/compositepass.hpp"
+#include "xng/render/graph/passes/compositepass.hpp"
 
 // TODO: Fix phong pass outputting artifacts when resizing the window with the mouse or changing gbuffer resolution.
 

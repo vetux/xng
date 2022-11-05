@@ -19,7 +19,7 @@
 
 #include "shader/spirvcrossdecompiler.hpp"
 
-#include "driver/registerdriver.hpp"
+#include "xng/driver/registerdriver.hpp"
 
 #include <spirv_glsl.hpp>
 #include <spirv_hlsl.hpp>

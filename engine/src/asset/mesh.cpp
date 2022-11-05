@@ -17,12 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "asset/mesh.hpp"
+#include "xng/asset/mesh.hpp"
 
 #include <string>
 #include <sstream>
 
-#include "resource/resourceimporter.hpp"
+#include "xng/resource/resourceimporter.hpp"
 
 #include "resource/staticresource.hpp"
 

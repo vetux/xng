@@ -20,7 +20,7 @@
 #include "text/freetype/ftfontdriver.hpp"
 #include "text/freetype/ftfont.hpp"
 
-#include "driver/registerdriver.hpp"
+#include "xng/driver/registerdriver.hpp"
 
 namespace xng {
     static const bool reg = REGISTER_DRIVER("freetype", FontDriver, FtFontDriver);

@@ -22,8 +22,8 @@
 
 #include <string>
 
-#include "script/mono/monocpparguments.hpp"
-#include "script/mono/monocppvalue.hpp"
+#include "xng/script/mono/monocpparguments.hpp"
+#include "xng/script/mono/monocppvalue.hpp"
 
 namespace xng {
     /**

@@ -17,13 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "io/library.hpp"
+#include "xng/io/library.hpp"
 
 #ifdef __linux__
 #include "io/dl/librarylinux.hpp"
 #else
 #ifdef _WIN32
-#include "dl/librarywin32.hpp"
+#include "io/dl/librarywin32.hpp"
 #endif
 #endif
 

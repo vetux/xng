@@ -20,7 +20,7 @@
 #ifndef XENGINE_LIBRARYLINUX_HPP
 #define XENGINE_LIBRARYLINUX_HPP
 
-#include "io/library.hpp"
+#include "xng/io/library.hpp"
 
 #include <string>
 #include <dlfcn.h>

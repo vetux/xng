@@ -20,7 +20,7 @@
 #ifndef XENGINE_CRYPTOPPSHA_HPP
 #define XENGINE_CRYPTOPPSHA_HPP
 
-#include "crypto/sha.hpp"
+#include "xng/crypto/sha.hpp"
 
 #include "cryptopp/filters.h"
 #include "cryptopp/cryptlib.h"
