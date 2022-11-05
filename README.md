@@ -9,7 +9,7 @@
 
 xEngine is a cross-platform c++ game engine library.
 
-[xng-editor](https://github.com/vetux/xng-tools) - Editor application to simplify and accelerate the game creation workflow
+[xng-editor](https://github.com/vetux/xng-editor) - Editor application to simplify and accelerate the game creation workflow
 
 ## Features
 - Drivers
