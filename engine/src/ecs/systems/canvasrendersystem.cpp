@@ -73,6 +73,9 @@ namespace xng {
         for (auto &p: scene.getPool<CanvasTransformComponent>()) {
             if (!p.second.enabled)
                 continue;
+            if (p.second.canvas.empty())
+                continue;
+
             auto canvas = scene.getEntityByName(p.second.canvas);
             auto &c = scene.getComponent<CanvasComponent>(canvas);
             if (!c.enabled) {
