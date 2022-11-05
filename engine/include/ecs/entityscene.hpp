@@ -277,9 +277,8 @@ namespace xng {
         }
 
         void updateComponent(const EntityHandle &entity,
-                             const std::type_index &type,
                              const Component &value) {
-            ComponentRegistry::instance().getUpdater(type)(*this, entity, value);
+            ComponentRegistry::instance().getUpdater(value.getType())(*this, entity, value);
         }
 
         void destroyComponent(const EntityHandle &entity,
