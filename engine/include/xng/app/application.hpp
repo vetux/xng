@@ -35,20 +35,14 @@
 namespace xng {
     class Application {
     public:
-        static Application &getCurrentApplication() {
-            if (currentApplication == nullptr) {
-                throw std::runtime_error("Application not initialized");
-            } else {
-                return *currentApplication;
-            }
-        }
+        XENGINE_EXPORT static Application &getCurrentApplication();
 
         /**
          * @param argc
          * @param argv
          */
         explicit Application(int argc, char *argv[]) {
-            currentApplication = this;
+            setCurrentApplication(this);
 
             parseArgs(argc, argv);
             loadDrivers();
@@ -65,7 +59,7 @@ namespace xng {
                              const std::string &windowTitle,
                              const Vec2i &windowSize,
                              const WindowAttributes &windowAttributes = {}) {
-            currentApplication = this;
+            setCurrentApplication(this);
 
             parseArgs(argc, argv);
             loadDrivers();
@@ -78,7 +72,7 @@ namespace xng {
         }
 
         virtual ~Application() {
-            currentApplication = nullptr;
+            setCurrentApplication(nullptr);
         }
 
         virtual int loop() {
@@ -167,7 +161,7 @@ namespace xng {
         }
 
     protected:
-        static Application *currentApplication;
+        XENGINE_EXPORT static void setCurrentApplication(Application *ptr);
 
         std::string displayDriverName = "glfw";
         std::string gpuDriverName = "opengl";

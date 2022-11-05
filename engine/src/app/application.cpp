@@ -20,5 +20,17 @@
 #include "xng/app/application.hpp"
 
 namespace xng {
-    Application *Application::currentApplication = nullptr;
+    static Application *app = nullptr;
+
+    Application &Application::getCurrentApplication() {
+        if (app == nullptr) {
+            throw std::runtime_error("No current application");
+        } else {
+            return *app;
+        }
+    }
+
+    void Application::setCurrentApplication(Application *ptr) {
+        app = ptr;
+    }
 }
