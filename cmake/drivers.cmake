@@ -166,7 +166,7 @@ endforeach ()
 set(DRIVERS_GENERATOR "${DRIVERS_REGISTRATION_HEADER}\nnamespace xng::DriverGenerator { inline void setup(std::map<std::string, Driver::Creator> &drivers) {\n${DRIVERS_REGISTRATION}} }")
 
 # Write the header file included by driverloader.cpp
-file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/engine/include/compiled_drivers.h ${DRIVERS_GENERATOR})
+file(WRITE ${Engine.Dir.SRC}/compiled_drivers.h ${DRIVERS_GENERATOR})
 
 set(STR_LIBRARIES "")
 foreach (val IN LISTS DRIVERS_LINK)

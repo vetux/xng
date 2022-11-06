@@ -1,5 +1,5 @@
-set(Engine.Dir.INCLUDE engine/include/)
-set(Engine.Dir.SRC engine/src/)
+set(Engine.Dir.INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/engine/include/)
+set(Engine.Dir.SRC ${CMAKE_CURRENT_SOURCE_DIR}/engine/src/)
 
 file(GLOB_RECURSE Engine.File.SRC ${Engine.Dir.SRC}*.cpp ${Engine.Dir.SRC}*.c)
 
