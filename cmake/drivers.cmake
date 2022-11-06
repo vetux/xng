@@ -21,9 +21,7 @@ set(DRIVERS_NAMES) # The driver names
 
 # @COMPILE_DEFS = Compile definitions
 # @DIR = The directory in drivers/ which contains the driver source
-# @NAME = The name under which the driver is made available in the DriverLoader
 # @CLASS = The class name that this driver defines
-# @BASECLASS = The name of the driver base class
 # @INCLUDE = The include path of the driver class
 # @DRIVER_LINK = The library name/s which the driver links to. There can be multiple DRIVER_LINK arguments.
 function(CompileDriver COMPILE_DEFS DIR CLASS INCLUDE)
