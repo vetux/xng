@@ -28,7 +28,7 @@
 #include "xng/display/displaydriver.hpp"
 #include "xng/gpu/gpudriver.hpp"
 
-#include "xng/driver/driverregistry.hpp"
+#include "xng/driver/driverloader.hpp"
 
 #include "xng/types/deltatime.hpp"
 
@@ -213,9 +213,9 @@ namespace xng {
         }
 
         virtual void loadDrivers() {
-            displayDriver = DriverRegistry::load<DisplayDriver>(displayDriverName);
-            gpuDriver = DriverRegistry::load<GpuDriver>(gpuDriverName);
-            audioDriver = DriverRegistry::load<AudioDriver>(audioDriverName);
+            displayDriver = DriverLoader::load<DisplayDriver>(displayDriverName);
+            gpuDriver = DriverLoader::load<GpuDriver>(gpuDriverName);
+            audioDriver = DriverLoader::load<AudioDriver>(audioDriverName);
         }
     };
 }

@@ -24,11 +24,7 @@
 #include "crypto/cryptopprandom.hpp"
 #include "crypto/cryptoppsha.hpp"
 
-#include "xng/driver/registerdriver.hpp"
-
 namespace xng {
-    static const bool dr = REGISTER_DRIVER("cryptopp", CryptoDriver, CryptoPPDriver);
-
     std::unique_ptr<AES> CryptoPPDriver::createAES() {
         return std::make_unique<CryptoPPAES>();
     }

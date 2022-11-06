@@ -20,11 +20,7 @@
 #include "physics/box2d/physicsdriverbox2d.hpp"
 #include "physics/box2d/worldbox2d.hpp"
 
-#include "xng/driver/registerdriver.hpp"
-
 namespace xng {
-    static bool dr = REGISTER_DRIVER("box2d", PhysicsDriver, PhysicsDriverBox2D);
-
     std::type_index xng::PhysicsDriverBox2D::getType() {
         return {typeid(PhysicsDriverBox2D)};
     }

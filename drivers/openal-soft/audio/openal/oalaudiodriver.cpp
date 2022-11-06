@@ -25,11 +25,7 @@
 #include "audio/openal/oalcheckerror.hpp"
 #include "audio/openal/oalaudiodevice.hpp"
 
-#include "xng/driver/registerdriver.hpp"
-
 namespace xng {
-    static bool dr = REGISTER_DRIVER("openal-soft", AudioDriver, OALAudioDriver);
-
     std::vector<std::string> OALAudioDriver::getDeviceNames() {
         const char *dev = alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
         std::vector<std::string> ret;

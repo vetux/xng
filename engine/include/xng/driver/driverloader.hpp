@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_DRIVERREGISTRY_HPP
-#define XENGINE_DRIVERREGISTRY_HPP
+#ifndef XENGINE_DRIVERLOADER_HPP
+#define XENGINE_DRIVERLOADER_HPP
 
 #include <string>
 #include <map>
@@ -29,7 +29,7 @@
 #include "driver.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT DriverRegistry {
+    class XENGINE_EXPORT DriverLoader {
     public:
         typedef std::function<Driver *()> DriverCreator;
 
@@ -41,7 +41,7 @@ namespace xng {
          */
         template<typename T>
         static const std::map<std::string, DriverCreator> &getAvailableDrivers() {
-            return drivers[typeid(T)];
+            return getDriversInstance()[typeid(T)];
         }
 
         /**
@@ -51,6 +51,7 @@ namespace xng {
          */
         template<typename T>
         static std::unique_ptr<T> load(const std::string &name) {
+            auto &drivers = getDriversInstance();
             auto dIt = drivers.find(typeid(T));
             if (dIt == drivers.end()) {
                 throw std::runtime_error(
@@ -66,19 +67,9 @@ namespace xng {
             return std::unique_ptr<T>(dynamic_cast<T *>(ret));
         }
 
-        /**
-         * Register a driver creator for a given name.
-         *
-         * @param name The name under which the driver will be accessible in load()
-         * @param baseType The base type of the driver, baseType must inherit xng::Driver, and the type of the object returned by the creator must inherit baseType.
-         * @param creator The function object which constructors new instances of the base type implementation.
-         * @return True if the driver was registered, or false if there was already a driver of the given base type with the given name.
-         */
-        static bool registerDriver(const std::string &name, std::type_index baseType, DriverCreator creator) noexcept;
-
     private:
-        static std::map<std::type_index, std::map<std::string, DriverCreator>> drivers; // The driver creators for each base class
+        static std::map<std::type_index, std::map<std::string, DriverLoader::DriverCreator>> &getDriversInstance();
     };
 }
 
-#endif //XENGINE_DRIVERREGISTRY_HPP
+#endif //XENGINE_DRIVERLOADER_HPP

@@ -20,11 +20,7 @@
 #include "gpu/opengl/oglgpudriver.hpp"
 #include "gpu/opengl/oglrenderdevice.hpp"
 
-#include "xng/driver/registerdriver.hpp"
-
 namespace xng::opengl {
-    static bool dr = REGISTER_DRIVER("opengl", GpuDriver, OGLGpuDriver);
-
     const std::vector<RenderDeviceInfo> &OGLGpuDriver::getAvailableRenderDevices() {
         if (!retrievedMaxSamples) {
             retrievedMaxSamples = true;

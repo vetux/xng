@@ -19,14 +19,10 @@
 
 #include "shader/spirvcrossdecompiler.hpp"
 
-#include "xng/driver/registerdriver.hpp"
-
 #include <spirv_glsl.hpp>
 #include <spirv_hlsl.hpp>
 
 namespace xng {
-    static const bool dr = REGISTER_DRIVER("spirv-cross", SPIRVDecompiler, SpirvCrossDecompiler);
-
     static spv::ExecutionModel convertShaderStage(ShaderStage stage) {
         switch (stage) {
             case VERTEX:

@@ -31,11 +31,7 @@
 
 #include <sndfile.h>
 
-#include "xng/driver/registerdriver.hpp"
-
 namespace xng {
-    static const bool dr = REGISTER_DRIVER("sndfile", ResourceParser, SndFileParser);
-
     struct LibSndBuffer {
         std::vector<char> data;
         size_t pos;

@@ -26,11 +26,7 @@
 #include "xng/asset/mesh.hpp"
 #include "xng/asset/material.hpp"
 
-#include "xng/driver/registerdriver.hpp"
-
 namespace xng {
-    static const bool dr = REGISTER_DRIVER("assimp", ResourceParser, AssImpParser);
-
     static Mat4f convertMat4(const aiMatrix4x4 &mat) {
         Mat4f ret;
         ret.set(0, 0, mat.a1);

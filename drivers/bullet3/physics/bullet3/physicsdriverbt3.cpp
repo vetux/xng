@@ -20,13 +20,9 @@
 #include "physics/bullet3/physicsdriverbt3.hpp"
 #include "physics/bullet3/worldbt3.hpp"
 
-#include "xng/driver/registerdriver.hpp"
-
 #pragma message "Not Implemented"
 
 namespace xng {
-    static bool dr = REGISTER_DRIVER("bullet3", PhysicsDriver, PhysicsDriverBt3);
-
     std::type_index PhysicsDriverBt3::getType() {
         return typeid(PhysicsDriverBt3);
     }

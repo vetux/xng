@@ -21,11 +21,7 @@
 #include "display/glfw/opengl/windowglfwgl.hpp"
 #include "display/glfw/monitorglfw.hpp" //Has to come after windowglfw because of glad include collision with glfw (Including glfw and then glad afterwards gives compiler error, the reverse is legal)
 
-#include "xng/driver/registerdriver.hpp"
-
 namespace xng::glfw {
-    static bool dr = REGISTER_DRIVER("glfw", DisplayDriver, GLFWDisplayDriver);
-
     std::unique_ptr<Monitor> GLFWDisplayDriver::getPrimaryMonitor() {
         return std::make_unique<MonitorGLFW>(glfwGetPrimaryMonitor());
     }

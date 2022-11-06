@@ -21,13 +21,9 @@
 
 #include "shader/shaderccompiler.hpp"
 
-#include "xng/driver/registerdriver.hpp"
-
 #include <shaderc/shaderc.hpp>
 
 namespace xng {
-    static const bool dr = REGISTER_DRIVER("shaderc", SPIRVCompiler, ShaderCCompiler);
-
     class IncludeHandler : public shaderc::CompileOptions::IncluderInterface {
     public:
         std::function<std::string(const char *)> callback;
