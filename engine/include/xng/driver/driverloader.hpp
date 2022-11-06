@@ -29,6 +29,10 @@
 #include "driver.hpp"
 
 namespace xng {
+    /**
+     * The driver loader allows the user to create instances of the driver types which where enabled when compiling the engine
+     * without having access to their type definitions.
+     */
     class XENGINE_EXPORT DriverLoader {
     public:
         typedef std::function<Driver *()> DriverCreator;
