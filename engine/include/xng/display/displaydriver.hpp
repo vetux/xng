@@ -24,8 +24,21 @@
 #include "window.hpp"
 
 namespace xng {
+    enum DisplayDriverBackend {
+        GLFW
+    };
+
     class XENGINE_EXPORT DisplayDriver : public Driver {
     public:
+        static std::unique_ptr<DisplayDriver> load(DisplayDriverBackend backend) {
+            switch (backend) {
+                case GLFW:
+                    return std::unique_ptr<DisplayDriver>(
+                            dynamic_cast<DisplayDriver *>(Driver::load("glfw").release()));
+            }
+            throw std::runtime_error("Invalid backend");
+        }
+
         virtual std::unique_ptr<Monitor> getPrimaryMonitor() = 0;
 
         virtual std::set<std::unique_ptr<Monitor>> getMonitors() = 0;

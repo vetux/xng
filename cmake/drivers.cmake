@@ -16,7 +16,6 @@ set(DRIVERS_SRC) # The drivers source files in a list
 set(DRIVERS_LINK) # The drivers linked library names in a list
 set(Drivers.GLOBEXPR) # The globexpr used to generate DRIVERS_SRC
 set(DRIVERS_CLASSES) # The driver class names
-set(DRIVERS_BASE_CLASSES) # The driver base class names
 set(DRIVERS_INCLUDES) # The driver include paths
 set(DRIVERS_NAMES) # The driver names
 
@@ -27,19 +26,18 @@ set(DRIVERS_NAMES) # The driver names
 # @BASECLASS = The name of the driver base class
 # @INCLUDE = The include path of the driver class
 # @DRIVER_LINK = The library name/s which the driver links to. There can be multiple DRIVER_LINK arguments.
-function(CompileDriver COMPILE_DEFS DIR CLASS BASECLASS INCLUDE)
+function(CompileDriver COMPILE_DEFS DIR CLASS INCLUDE)
     set(Drivers.GLOBEXPR ${Drivers.GLOBEXPR} drivers/${DIR}/*.cpp drivers/${DIR}/*.c PARENT_SCOPE)
     add_compile_definitions(${COMPILE_DEFS})
     set(DRIVERS_INCLUDE ${DRIVERS_INCLUDE} drivers/${DIR}/ PARENT_SCOPE)
     set(DRIVERS_CLASSES "${DRIVERS_CLASSES}${CLASS};" PARENT_SCOPE)
-    set(DRIVERS_BASE_CLASSES "${DRIVERS_BASE_CLASSES}${BASECLASS};" PARENT_SCOPE)
     set(DRIVERS_INCLUDES "${DRIVERS_INCLUDES}${INCLUDE};" PARENT_SCOPE)
     set(DRIVERS_NAMES "${DRIVERS_NAMES}${DIR};" PARENT_SCOPE)
-    if (${ARGC} GREATER 5)
+    if (${ARGC} GREATER 4)
         # Each additional argument is treated as a library name
         set(MAXINDEX ${ARGC})
         MATH(EXPR MAXINDEX "${MAXINDEX}-1")
-        foreach (index RANGE 5 ${MAXINDEX})
+        foreach (index RANGE 4 ${MAXINDEX})
             list(GET ARGV ${index} LIBNAME)
             set(DRIVER_LINK ${DRIVER_LINK} ${LIBNAME})
         endforeach ()
@@ -53,7 +51,6 @@ if (DRIVER_GLFW)
     CompileDriver(DRIVER_GLFW
             glfw
             glfw::GLFWDisplayDriver
-            DisplayDriver
             display/glfw/glfwdisplaydriver.hpp
             glfw)
 endif ()
@@ -67,7 +64,6 @@ if (DRIVER_OPENGL)
     CompileDriver(DRIVER_OPENGL
             opengl
             opengl::OGLGpuDriver
-            GpuDriver
             gpu/opengl/oglgpudriver.hpp
             ${GL_LIBNAME})
 endif ()
@@ -80,15 +76,14 @@ if (DRIVER_BOX2D)
     CompileDriver(DRIVER_BOX2D
             box2d
             PhysicsDriverBox2D
-            PhysicsDriver
             physics/box2d/physicsdriverbox2d.hpp
             box2d)
 endif ()
 
 if (DRIVER_BULLET3)
     CompileDriver(DRIVER_BULLET3
-            bullet3 PhysicsDriverBt3
-            PhysicsDriver
+            bullet3
+            PhysicsDriverBt3
             physics/bullet3/physicsdriverbt3.hpp)
 endif ()
 
@@ -101,7 +96,6 @@ if (DRIVER_OPENAL)
     CompileDriver(DRIVER_OPENAL
             openal-soft
             OALAudioDriver
-            AudioDriver
             audio/openal/oalaudiodriver.hpp
             ${AL_LIBNAME})
 endif ()
@@ -110,7 +104,6 @@ if (DRIVER_FREETYPE)
     CompileDriver(DRIVER_FREETYPE
             freetype
             FtFontDriver
-            FontDriver
             text/freetype/ftfontdriver.hpp
             freetype)
 endif ()
@@ -119,7 +112,6 @@ if (DRIVER_ASSIMP)
     CompileDriver(DRIVER_ASSIMP
             assimp
             AssImpParser
-            ResourceParser
             resource/parsers/assimpparser.hpp
             assimp)
 endif ()
@@ -128,7 +120,6 @@ if (DRIVER_SNDFILE)
     CompileDriver(DRIVER_SNDFILE
             sndfile
             SndFileParser
-            ResourceParser
             resource/parsers/sndfileparser.hpp
             sndfile)
 endif ()
@@ -137,7 +128,6 @@ if (DRIVER_SHADERC)
     CompileDriver(DRIVER_SHADERC
             shaderc
             ShaderCCompiler
-            SPIRVCompiler
             shader/shaderccompiler.hpp
             shaderc_combined)
 endif ()
@@ -146,7 +136,6 @@ if (DRIVER_SPIRVCROSS)
     CompileDriver(DRIVER_SPIRVCROSS
             spirv-cross
             SpirvCrossDecompiler
-            SPIRVDecompiler
             shader/spirvcrossdecompiler.hpp
             spirv-cross-core spirv-cross-glsl spirv-cross-hlsl)
 endif ()
@@ -155,7 +144,6 @@ if (DRIVER_CRYPTOPP)
     CompileDriver(DRIVER_CRYPTOPP
             cryptopp
             CryptoPPDriver
-            CryptoDriver
             crypto/cryptoppdriver.hpp
             cryptopp)
 endif ()
@@ -168,17 +156,16 @@ set(DRIVERS_REGISTRATION "")
 list(LENGTH DRIVERS_CLASSES DRIVERS_CLASSES_LEN)
 foreach (index RANGE 0 ${DRIVERS_CLASSES_LEN})
     list(GET DRIVERS_CLASSES ${index} CLASS)
-    list(GET DRIVERS_BASE_CLASSES ${index} BASE_CLASS)
     list(GET DRIVERS_INCLUDES ${index} INCLUDE)
     list(GET DRIVERS_NAMES ${index} NAME)
     if (CLASS STREQUAL "")
         break()
     endif ()
     set(DRIVERS_REGISTRATION_HEADER "${DRIVERS_REGISTRATION_HEADER}#include \"${INCLUDE}\"\n")
-    set(DRIVERS_REGISTRATION "${DRIVERS_REGISTRATION}drivers[typeid(${BASE_CLASS})][\"${NAME}\"] = [](){ return new ${CLASS}()\; }\;\n")
+    set(DRIVERS_REGISTRATION "${DRIVERS_REGISTRATION}drivers[\"${NAME}\"] = [](){ return std::make_unique<${CLASS}>()\; }\;\n")
 endforeach ()
 
-set(DRIVERS_GENERATOR "${DRIVERS_REGISTRATION_HEADER}\nnamespace xng::DriverGenerator { inline void setup(std::map<std::type_index, std::map<std::string, DriverLoader::DriverCreator>> &drivers) {\n${DRIVERS_REGISTRATION}} }")
+set(DRIVERS_GENERATOR "${DRIVERS_REGISTRATION_HEADER}\nnamespace xng::DriverGenerator { inline void setup(std::map<std::string, Driver::Creator> &drivers) {\n${DRIVERS_REGISTRATION}} }")
 
 # Write the header file included by driverloader.cpp
 file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/engine/include/compiled_drivers.h ${DRIVERS_GENERATOR})

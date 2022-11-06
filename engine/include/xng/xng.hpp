@@ -91,7 +91,6 @@
 #include "xng/audio/audiocontext.hpp"
 #include "xng/audio/audiodevice.hpp"
 #include "xng/driver/driver.hpp"
-#include "xng/driver/driverloader.hpp"
 #include "xng/gpu/renderdeviceinfo.hpp"
 #include "xng/gpu/rendertarget.hpp"
 #include "xng/gpu/renderbuffer.hpp"

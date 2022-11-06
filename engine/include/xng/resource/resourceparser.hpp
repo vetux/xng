@@ -31,11 +31,28 @@
 namespace xng {
     class ResourceImporter;
 
+    enum ResourceParserBackend {
+        ASSIMP, // Asset files (.obj, .fbx etc)
+        LIBSNDFILE // Audio files
+    };
+
     /**
      * A parser creates resource objects from the data in buffers.
      */
     class XENGINE_EXPORT ResourceParser : public Driver {
     public:
+        static std::unique_ptr<ResourceParser> load(ResourceParserBackend backend) {
+            switch (backend) {
+                case ASSIMP:
+                    return std::unique_ptr<ResourceParser>(
+                            dynamic_cast<ResourceParser *>(Driver::load("assimp").release()));
+                case LIBSNDFILE:
+                    return std::unique_ptr<ResourceParser>(
+                            dynamic_cast<ResourceParser *>(Driver::load("sndfile").release()));
+            }
+            throw std::runtime_error("Invalid backend");
+        }
+
         virtual ~ResourceParser() noexcept override = default;
 
         /**

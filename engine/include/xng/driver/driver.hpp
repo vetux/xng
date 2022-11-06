@@ -21,6 +21,9 @@
 #define XENGINE_DRIVER_HPP
 
 #include <typeindex>
+#include <memory>
+#include <string>
+#include <functional>
 
 namespace xng {
     /**
@@ -30,6 +33,24 @@ namespace xng {
      */
     class XENGINE_EXPORT Driver {
     public:
+        typedef std::function<std::unique_ptr<Driver>()> Creator;
+
+        /**
+         * Create instances of driver types which were declared when compiling the engine and are not visible to the user.
+         *
+         * The names are hardcoded magic strings, users should use the respective driver subclass load methods.
+         *
+         * @throws If no driver with the given name exists.
+         * @param name
+         * @return
+         */
+        static std::unique_ptr<Driver> load(const std::string &name);
+
+        template<typename T>
+        static std::unique_ptr<T> load(const std::string &name) {
+            return std::unique_ptr<T>(dynamic_cast<T *>(load(name).release()));
+        }
+
         virtual ~Driver() noexcept = default;
 
         /**

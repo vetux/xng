@@ -27,8 +27,21 @@
 #include "gpufeature.hpp"
 
 namespace xng {
+    enum GpuDriverBackend {
+        OPENGL_4_6
+    };
+
     class XENGINE_EXPORT GpuDriver : public Driver {
     public:
+        static std::unique_ptr<GpuDriver> load(GpuDriverBackend backend) {
+            switch (backend) {
+                case OPENGL_4_6:
+                    return std::unique_ptr<GpuDriver>(
+                            dynamic_cast<GpuDriver *>(Driver::load("opengl").release()));
+            }
+            throw std::runtime_error("Invalid backend");
+        }
+
         ~GpuDriver() override = default;
 
         /**

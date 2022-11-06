@@ -29,11 +29,24 @@
 #include "shaderstage.hpp"
 
 namespace xng {
+    enum SPIRVDecompilerBackend {
+        SPIRV_CROSS
+    };
+
     /**
      * A SPIRVDecompiler decompiles SPIRV to the languages defined in ShaderLanguage.
      */
     class XENGINE_EXPORT SPIRVDecompiler : public Driver {
     public:
+        static std::unique_ptr<SPIRVDecompiler> load(SPIRVDecompilerBackend backend) {
+            switch (backend) {
+                case SPIRV_CROSS:
+                    return std::unique_ptr<SPIRVDecompiler>(
+                            dynamic_cast<SPIRVDecompiler *>(Driver::load("spirv-cross").release()));
+            }
+            throw std::runtime_error("Invalid backend");
+        }
+
         /**
          * Decompile the given spirv to the given output language.
          *

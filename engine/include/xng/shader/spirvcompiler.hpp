@@ -32,11 +32,24 @@
 #include "shaderstage.hpp"
 
 namespace xng {
+    enum SPIRVCompilerBackend {
+        SHADERC
+    };
+
     /**
      * A SPIRVCompiler preprocesses and compiles shader source from the languages defined in ShaderLanguage to SPIRV
      */
     class XENGINE_EXPORT SPIRVCompiler : public Driver {
     public:
+        static std::unique_ptr<SPIRVCompiler> load(SPIRVCompilerBackend backend) {
+            switch (backend) {
+                case SHADERC:
+                    return std::unique_ptr<SPIRVCompiler>(
+                            dynamic_cast<SPIRVCompiler *>(Driver::load("shaderc").release()));
+            }
+            throw std::runtime_error("Invalid backend");
+        }
+
         enum OptimizationLevel {
             OPTIMIZATION_NONE,
             OPTIMIZATION_PERFORMANCE,

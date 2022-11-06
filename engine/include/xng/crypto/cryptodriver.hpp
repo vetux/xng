@@ -28,8 +28,21 @@
 #include "sha.hpp"
 
 namespace xng {
+    enum CryptoDriverBackend {
+        CRYPTOPP
+    };
+
     class CryptoDriver : public Driver {
     public:
+        static std::unique_ptr<CryptoDriver> load(CryptoDriverBackend backend) {
+            switch (backend) {
+                case CRYPTOPP:
+                    return std::unique_ptr<CryptoDriver>(
+                            dynamic_cast<CryptoDriver *>(Driver::load("cryptopp").release()));
+            }
+            throw std::runtime_error("Invalid backend");
+        }
+
         virtual std::unique_ptr<AES> createAES() = 0;
 
         virtual std::unique_ptr<GZip> createGzip() = 0;

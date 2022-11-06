@@ -21,8 +21,6 @@
 #include "rigidbodybox2d.hpp"
 #include "commonbox2d.hpp"
 
-#include "xng/driver/driverloader.hpp"
-
 namespace xng {
     WorldBox2D::WorldBox2D()
             : world(b2Vec2(0.0f, -1.0f)) {

@@ -24,8 +24,21 @@
 #include "font.hpp"
 
 namespace xng {
+    enum FontDriverBackend {
+        FREETYPE
+    };
+
     class XENGINE_EXPORT FontDriver : public Driver {
     public:
+        static std::unique_ptr<FontDriver> load(FontDriverBackend backend) {
+            switch (backend) {
+                case FREETYPE:
+                    return std::unique_ptr<FontDriver>(
+                            dynamic_cast<FontDriver *>(Driver::load("freetype").release()));
+            }
+            throw std::runtime_error("Invalid backend");
+        }
+
         virtual std::unique_ptr<Font> createFont(std::istream &data) = 0;
 
     private:
