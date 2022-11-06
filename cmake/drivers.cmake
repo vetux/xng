@@ -165,7 +165,7 @@ endforeach ()
 
 set(DRIVERS_GENERATOR "${DRIVERS_REGISTRATION_HEADER}\nnamespace xng::DriverGenerator { inline void setup(std::map<std::string, Driver::Creator> &drivers) {\n${DRIVERS_REGISTRATION}} }")
 
-# Write the header file included by driverloader.cpp
+# Write the header file included by engine/src/driver/driver.cpp
 file(WRITE ${Engine.Dir.SRC}/compiled_drivers.h ${DRIVERS_GENERATOR})
 
 set(STR_LIBRARIES "")
