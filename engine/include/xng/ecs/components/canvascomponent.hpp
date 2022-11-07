@@ -43,8 +43,6 @@ namespace xng {
         ColorRGBA clearColor = ColorRGBA::black();
         int layer; // The sorting layer of this canvas relative to other canvases
 
-        bool drawDebug = false; // Wheter or not to render the debug geometry for this canvas
-
         Messageable &operator<<(const Message &message) override {
             cameraPosition << message.value("cameraPosition");
             viewportSize << message.value("viewportSize");
@@ -56,7 +54,6 @@ namespace xng {
             clear = message.value("clear", false);
             clearColor << message.value("clearColor");
             layer = message.value("layer", 0);
-            drawDebug = message.value("drawDebug", false);
             return Component::operator<<(message);
         }
 
@@ -72,7 +69,6 @@ namespace xng {
             message["clear"] = clear;
             clearColor >> message["clearColor"];
             message["layer"] = layer;
-            message["drawDebug"] = drawDebug;
             return Component::operator>>(message);
         }
 
