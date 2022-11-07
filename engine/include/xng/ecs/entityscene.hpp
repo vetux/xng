@@ -271,10 +271,11 @@ namespace xng {
 
         template<typename T>
         void updateComponent(const EntityHandle &entity, const T &value) {
-            for (auto &listener: listeners) {
-                listener->onComponentUpdate(entity, getComponent<T>(entity), value);
-            }
+            auto oldValue = getComponent<T>(entity);
             getPool<T>().update(entity, value);
+            for (auto &listener: listeners) {
+                listener->onComponentUpdate(entity, oldValue, value);
+            }
         }
 
         template<typename T>
