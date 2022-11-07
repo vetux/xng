@@ -28,6 +28,8 @@
 #include "xng/animation/sprite/spriteanimation.hpp"
 #include "xng/ecs/entityscene.hpp"
 
+#include "xng/physics/colliderdesc.hpp"
+
 #include "xng/io/protocol/jsonprotocol.hpp"
 
 #include "xng/resource/resourceimporter.hpp"
@@ -63,7 +65,70 @@ namespace xng {
         bundleMutex.unlock();
     }
 
-    static ResourceBundle readJsonBundle(const std::vector<char>&buffer, const ResourceImporter &importer) {
+    Message JsonParser::createBundle(const std::map<std::string, std::reference_wrapper<Resource>> &resources) {
+        auto materials = std::vector<Message>();
+        auto textures = std::vector<Message>();
+        auto sprites = std::vector<Message>();
+        auto colliders = std::vector<Message>();
+        auto animations = std::vector<Message>();
+        auto scenes = std::vector<Message>();
+
+        for (auto &pair: resources) {
+            auto msg = Message(Message::DICTIONARY);
+            msg["name"] = pair.first;
+            auto type = pair.second.get().getTypeIndex();
+            if (type == typeid(Material)) {
+                auto &res = dynamic_cast<Material &>(pair.second.get());
+                res >> msg;
+                materials.emplace_back(msg);
+            } else if (type == typeid(Texture)) {
+                auto &res = dynamic_cast<Texture &>(pair.second.get());
+                res >> msg;
+                textures.emplace_back(msg);
+            } else if (type == typeid(Sprite)) {
+                auto &res = dynamic_cast<Sprite &>(pair.second.get());
+                res >> msg;
+                sprites.emplace_back(msg);
+            } else if (type == typeid(ColliderDesc)) {
+                auto &res = dynamic_cast<ColliderDesc &>(pair.second.get());
+                res >> msg;
+                colliders.emplace_back(msg);
+            } else if (type == typeid(SpriteAnimation)) {
+                auto &res = dynamic_cast<SpriteAnimation &>(pair.second.get());
+                res >> msg;
+                animations.emplace_back(msg);
+            } else if (type == typeid(EntityScene)) {
+                auto &res = dynamic_cast<EntityScene &>(pair.second.get());
+                res >> msg;
+                scenes.emplace_back(msg);
+            } else {
+                throw std::runtime_error("Unsupported resource type: " + std::string(type.name()));
+            }
+        }
+
+        Message ret = Message(Message::DICTIONARY);
+        if (!materials.empty()) {
+            ret["materials"] = materials;
+        }
+        if (!textures.empty()) {
+            ret["textures"] = textures;
+        }
+        if (!sprites.empty()) {
+            ret["sprites"] = sprites;
+        }
+        if (!colliders.empty()) {
+            ret["colliders"] = colliders;
+        }
+        if (!animations.empty()) {
+            ret["sprite-animations"] = animations;
+        }
+        if (!scenes.empty()) {
+            ret["scenes"] = scenes;
+        }
+        return ret;
+    }
+
+    static ResourceBundle readJsonBundle(const std::vector<char> &buffer, const ResourceImporter &importer) {
         auto stream = std::stringstream(std::string(buffer.begin(), buffer.end()));
         const Message m = JsonProtocol().deserialize(stream);
 
@@ -96,6 +161,15 @@ namespace xng {
             }
         }
 
+        if (m.has("colliders") && m.at("colliders").getType() == Message::LIST) {
+            for (auto &element: m.at("colliders").asList()) {
+                std::string name = element.value("name", std::string());
+                ColliderDesc desc;
+                desc << element;
+                ret.add(name, std::make_unique<ColliderDesc>(desc));
+            }
+        }
+
         if (m.has("sprite-animations") && m.at("sprite-animations").getType() == Message::LIST) {
             for (auto &element: m.at("sprite-animations").asList()) {
                 std::string name = element.value("name", std::string());
@@ -118,7 +192,7 @@ namespace xng {
         return ret;
     }
 
-    ResourceBundle JsonParser::read(const std::vector<char>&buffer,
+    ResourceBundle JsonParser::read(const std::vector<char> &buffer,
                                     const std::string &hint,
                                     const ResourceImporter &importer,
                                     Archive *archive) const {

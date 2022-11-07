@@ -20,17 +20,25 @@
 #ifndef XENGINE_COLLIDERDEF_HPP
 #define XENGINE_COLLIDERDEF_HPP
 
-#include "xng/io/messageable.hpp"
+#include "xng/resource/resource.hpp"
 #include "collidershape.hpp"
 
 namespace xng {
-    struct ColliderDesc : public Messageable {
+    struct ColliderDesc : public Resource, public Messageable {
         ColliderShape shape;
         float friction{};
         float restitution{};
         float restitution_threshold{};
         float density{};
         bool isSensor{};
+
+        std::unique_ptr<Resource> clone() override {
+            return std::make_unique<ColliderDesc>(*this);
+        }
+
+        std::type_index getTypeIndex() override {
+            return typeid(ColliderDesc);
+        }
 
         bool operator==(const ColliderDesc &other) const {
             return shape == other.shape

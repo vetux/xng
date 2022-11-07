@@ -22,6 +22,8 @@
 
 #include "xng/resource/resourceparser.hpp"
 
+#include "xng/io/message.hpp"
+
 namespace xng {
     /**
      * Custom json resource bundle format:
@@ -31,7 +33,9 @@ namespace xng {
      */
     class XENGINE_EXPORT JsonParser : public ResourceParser {
     public:
-        ResourceBundle read(const std::vector<char>&buffer,
+        static Message createBundle(const std::map<std::string, std::reference_wrapper<Resource>> &resources);
+
+        ResourceBundle read(const std::vector<char> &buffer,
                             const std::string &hint,
                             const ResourceImporter &importer,
                             Archive *archive) const override;
