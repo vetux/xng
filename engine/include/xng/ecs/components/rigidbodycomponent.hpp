@@ -47,7 +47,7 @@ namespace xng {
 
         float gravityScale = 1;
 
-        std::vector<ColliderDesc> colliders;
+        std::vector<ResourceHandle<ColliderDesc>> colliders;
 
         std::map<EntityHandle, std::set<int>> touchingColliders; // Updated at runtime by the physics system, for every touching entity the indices of the touching collider
 
@@ -83,7 +83,7 @@ namespace xng {
             auto list = message.value("colliders");
             if (list.getType() == Message::LIST) {
                 for (auto &col: list.asList()) {
-                    ColliderDesc desc;
+                    ResourceHandle<ColliderDesc> desc;
                     desc << col;
                     colliders.emplace_back(desc);
                 }

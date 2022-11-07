@@ -266,7 +266,8 @@ namespace xng {
                             if (scene.checkComponent<RigidBodyComponent>(pass.ent)) {
                                 auto &rb = scene.getComponent<RigidBodyComponent>(pass.ent);
                                 auto &tcomp = scene.getComponent<TransformComponent>(pass.ent);
-                                for (auto &col: rb.colliders) {
+                                for (auto &handle: rb.colliders) {
+                                    auto &col = handle.get();
                                     if (col.shape.type == COLLIDER_2D
                                         && !col.shape.vertices.empty()) {
                                         std::vector<Vec2f> poly;

@@ -130,7 +130,7 @@ namespace xng {
             body->setGravityScale(comp.gravityScale);
 
             for (auto i = 0; i < comp.colliders.size(); i++) {
-                auto collider = body->createCollider(applyScale(comp.colliders.at(i), scale));
+                auto collider = body->createCollider(applyScale(comp.colliders.at(i).get(), scale));
                 colliderIndices[collider.get()] = i;
                 colliders[entity].emplace_back(std::move(collider));
             }
@@ -166,7 +166,7 @@ namespace xng {
                 colliders.erase(entity);
 
                 for (auto i = 0; i < nComp.colliders.size(); i++) {
-                    auto collider = rigidbodies.at(entity)->createCollider(applyScale(nComp.colliders.at(i), scale));
+                    auto collider = rigidbodies.at(entity)->createCollider(applyScale(nComp.colliders.at(i).get(), scale));
                     colliderIndices[collider.get()] = i;
                     colliders[entity].emplace_back(std::move(collider));
                 }
