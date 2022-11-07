@@ -26,21 +26,17 @@
 
 namespace xng {
     struct XENGINE_EXPORT LightComponent : public Component {
-        bool enabled = true;
-
         Light light;
 
         Messageable &operator<<(const Message &message) override {
-            enabled = message.value("enabled", true);
             light << message.value("light");
-            return *this;
+            return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            message["enabled"] = enabled;
             light >> message["light"];
-            return message;
+            return Component::operator>>(message);
         }
 
         std::type_index getType() const override {

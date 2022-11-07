@@ -88,7 +88,7 @@ namespace xng {
                     colliders.emplace_back(desc);
                 }
             }
-            return *this;
+            return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
@@ -107,7 +107,7 @@ namespace xng {
                 vec.emplace_back(msg);
             }
             message["colliders"] = vec;
-            return message;
+            return Component::operator>>(message);
         }
 
         std::type_index getType() const override {

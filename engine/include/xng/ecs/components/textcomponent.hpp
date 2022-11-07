@@ -85,7 +85,7 @@ namespace xng {
             text = message.value("text", std::string());
             textColor << message.value("textColor");
             layer = message.value("layer", 0);
-            return *this;
+            return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
@@ -101,7 +101,7 @@ namespace xng {
             textScroll >> message["textScroll"];
             textColor >> message["textColor"];
             message["layer"] = layer;
-            return message;
+            return Component::operator>>(message);
         }
 
         std::type_index getType() const override {

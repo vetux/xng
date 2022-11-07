@@ -28,8 +28,6 @@
 
 namespace xng {
     struct XENGINE_EXPORT MeshRenderComponent : public Component {
-        bool enabled = true;
-
         bool castShadows{};
         bool receiveShadows{};
 
@@ -45,22 +43,20 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            enabled = message.value("enabled", true);
             castShadows = message.value("castShadows", false);
             receiveShadows = message.value("receiveShadows", false);
             mesh << message.value("mesh");
             material << message.value("material");
-            return *this;
+            return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            message["enabled"] = enabled;
             message["castShadows"] = castShadows;
             message["receiveShadows"] = receiveShadows;
             mesh >> message["mesh"];
             material >> message["material"];
-            return message;
+            return Component::operator>>(message);
         }
 
         std::type_index getType() const override {

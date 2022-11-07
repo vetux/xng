@@ -49,7 +49,7 @@ namespace xng {
             play = message.value("play", false);
             loop = message.value("loop", false);
             velocity << message.value("velocity");
-            return *this;
+            return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
@@ -58,7 +58,7 @@ namespace xng {
             message["play"] = play;
             message["loop"] = loop;
             velocity >> message["velocity"];
-            return message;
+            return Component::operator>>(message);
         }
 
         std::type_index getType() const override {

@@ -28,7 +28,6 @@ namespace xng {
      * A canvas renders CanvasTransformComponents to the screen using Renderer2D
      */
     struct XENGINE_EXPORT CanvasComponent : public Component {
-        bool enabled = true;
         Vec2f cameraPosition;
 
         Vec2i viewportSize;
@@ -45,7 +44,6 @@ namespace xng {
         int layer; // The sorting layer of this canvas relative to other canvases
 
         Messageable &operator<<(const Message &message) override {
-            enabled = message.value("enabled", true);
             cameraPosition << message.value("cameraPosition");
             viewportSize << message.value("viewportSize");
             viewportOffset << message.value("viewportOffset");
@@ -56,12 +54,11 @@ namespace xng {
             clear = message.value("clear", false);
             clearColor << message.value("clearColor");
             layer = message.value("layer", 0);
-            return *this;
+            return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            message["enabled"] = enabled;
             cameraPosition >> message["cameraPosition"];
             projectionSize >> message["projectionSize"];
             viewportSize >> message["viewportSize"];
@@ -72,7 +69,7 @@ namespace xng {
             message["clear"] = clear;
             clearColor >> message["clearColor"];
             message["layer"] = layer;
-            return message;
+            return Component::operator>>(message);
         }
 
         std::type_index getType() const override {

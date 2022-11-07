@@ -30,13 +30,13 @@ namespace xng {
 
         Messageable &operator<<(const Message &message) override {
             camera << message.value("camera");
-            return *this;
+            return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             camera >> message["camera"];
-            return message;
+            return Component::operator>>(message);
         }
 
         std::type_index getType() const override {

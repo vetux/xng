@@ -49,16 +49,13 @@ namespace xng {
         Vec2f center;
         float rotation;
 
-        bool enabled = true;
-
         Messageable &operator<<(const Message &message) override {
             anchor = convertAnchor(message.value("anchor", std::string("top_left")));
-            enabled = message.value("enabled", true);
             rect << message.value("rect");
             center << message.value("center");
             rotation = message.value("rotation");
             canvas = message.value("canvas", std::string());
-            return *this;
+            return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
@@ -69,7 +66,7 @@ namespace xng {
             center >> message["center"];
             message["rotation"] = rotation;
             message["canvas"] = canvas;
-            return message;
+            return Component::operator>>(message);
         }
 
         std::type_index getType() const override {

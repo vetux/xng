@@ -38,7 +38,7 @@ namespace xng {
             sprite << message.value("sprite");
             spriteHover << message.value("spriteHover");
             spritePressed << message.value("spritePressed");
-            return *this;
+            return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
@@ -48,7 +48,7 @@ namespace xng {
             sprite >> message["sprite"];
             spriteHover >> message["spriteHover"];
             spritePressed >> message["spritePressed"];
-            return message;
+            return Component::operator>>(message);
         }
 
         std::type_index getType() const override {

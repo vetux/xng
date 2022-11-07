@@ -33,23 +33,20 @@ namespace xng {
     struct XENGINE_EXPORT TransformComponent : public Component {
         static Transform walkHierarchy(const TransformComponent &component, EntityScene &entityManager);
 
-        bool enabled = true;
         Transform transform;
         std::string parent; //The name of the parent transform entity
 
         Messageable &operator<<(const Message &message) override {
-            enabled = message.value("enabled", true);
             transform << message.value("transform");
             parent = message.value("parent", std::string());
-            return *this;
+            return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            message["enabled"] = enabled;
             transform >> message["transform"];
             message["parent"] = parent;
-            return message;
+            return Component::operator>>(message);
         }
 
         std::type_index getType() const override {

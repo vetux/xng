@@ -30,22 +30,19 @@ namespace xng {
      * and sets the sprite instance on the sprite render component of the entity if it exists.
      */
     struct XENGINE_EXPORT SpriteAnimationComponent : public Component {
-        bool enabled = true;
         ResourceHandle<SpriteAnimation> animation{};
         float animationDurationOverride = -1;
         bool finished = false;
 
         Messageable &operator<<(const Message &message) override {
-            enabled = message.value("enabled", true);
             animation << message.value("animation");
-            return *this;
+            return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            message["enabled"] = enabled;
             animation >> message["animation"];
-            return message;
+            return Component::operator>>(message);
         }
 
         std::type_index getType() const override {

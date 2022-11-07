@@ -42,6 +42,7 @@ namespace xng {
             flipSprite << message.value("flipSprite");
             mix = message.value("mix", 0.0f);
             mixColor << message.value("mixColor");
+            Component::operator<<(message);
             return *this;
         }
 
@@ -54,6 +55,7 @@ namespace xng {
             flipSprite >> message["flipSprite"];
             message["mix"] = mix;
             mixColor >> message["mixColor"];
+            Component::operator>>(message);
             return message;
         }
 

@@ -26,12 +26,12 @@
 namespace xng {
     struct XENGINE_EXPORT ParticleComponent : public Component {
         Messageable &operator<<(const Message &message) override {
-            return *this;
+            return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            return message;
+            return Component::operator>>(message);
         }
 
         std::type_index getType() const override {

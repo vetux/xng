@@ -30,12 +30,20 @@ namespace xng {
         virtual std::type_index getType() const = 0;
 
         Messageable &operator<<(const Message &message) override {
-            throw std::runtime_error("Message insert operator not implemented in component");
+            enabled = message.value("enabled", true);
+            return *this;
         }
 
+        /**
+         * @param message Must be of type DICTIONARY
+         * @return
+         */
         Message &operator>>(Message &message) const override {
-            throw std::runtime_error("Message extract operator not implemented in component");
+            message["enabled"] = enabled;
+            return message;
         }
+
+        bool enabled;
     };
 }
 
