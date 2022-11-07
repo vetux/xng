@@ -23,54 +23,57 @@
 #include "xng/io/archive/directoryarchive.hpp"
 
 namespace xng {
-    DirectoryArchive::DirectoryArchive(std::string directory, bool allowWriting) : directory(std::move(directory)),
-                                                                                   allowWriting(allowWriting) {}
+    DirectoryArchive::DirectoryArchive(std::filesystem::path directory, bool readOnly)
+            : directory(std::move(directory)),
+              readOnly(readOnly) {}
 
     bool DirectoryArchive::exists(const std::string &name) {
         auto ret = std::filesystem::exists(name);
         if (ret) {
             return ret;
         } else {
-            return std::filesystem::exists(directory + name);
+            auto dir = directory;
+            dir.append(name);
+            return std::filesystem::exists(dir);
         }
     }
 
     std::unique_ptr<std::istream> DirectoryArchive::open(const std::string &path) {
-        std::string targetPath = getAbsolutePath(path);
+        auto targetPath = getAbsolutePath(path);
 
-        auto ret = std::make_unique<std::ifstream>(targetPath, std::ios_base::in | std::ios_base::binary);
+        auto ret = std::make_unique<std::ifstream>(targetPath.string(), std::ios_base::in | std::ios_base::binary);
 
         if (!*ret) {
-            throw std::runtime_error("Failed to open file " + targetPath);
+            throw std::runtime_error("Failed to open file " + targetPath.string());
         }
 
         return std::move(ret);
     }
 
     std::unique_ptr<std::iostream> DirectoryArchive::openRW(const std::string &path) {
-        if (!allowWriting)
-            throw std::runtime_error("Writing to directory archive at not allowed");
+        if (readOnly)
+            throw std::runtime_error("Attempted to open RW on read only directory archive.");
 
-        std::string targetPath = getAbsolutePath(path);
+        auto targetPath = getAbsolutePath(path);
 
-        auto ret = std::make_unique<std::fstream>(targetPath, std::ios_base::in | std::ios_base::binary);
+        auto ret = std::make_unique<std::fstream>(targetPath.string(), std::ios_base::in | std::ios_base::binary);
 
         if (!*ret) {
-            throw std::runtime_error("Failed to open file " + targetPath);
+            throw std::runtime_error("Failed to open file " + targetPath.string());
         }
 
         return std::move(ret);
     }
 
-    std::string DirectoryArchive::getAbsolutePath(const std::string &path) {
-        if (path.find(directory) == 0 && std::filesystem::exists(path)) {
+    std::filesystem::path DirectoryArchive::getAbsolutePath(const std::string &path) {
+        if (path.find(directory.string()) == 0 && std::filesystem::exists(path)) {
             //Allow absolute paths which reference files relative to the directory
             return path;
         } else if (path.find('/') != 0) {
             //Allow relative paths without leading slash
-            return directory + "/" + path;
+            return directory.string() + "/" + path;
         } else {
-            return directory + path;
+            return directory.string() + path;
         }
     }
 }

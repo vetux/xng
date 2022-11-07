@@ -29,11 +29,9 @@ namespace xng {
      */
     class XENGINE_EXPORT DirectoryArchive : public Archive {
     public:
-        std::string directory;
-
         DirectoryArchive() = default;
 
-        explicit DirectoryArchive(std::string directory, bool allowWriting = false);
+        explicit DirectoryArchive(std::filesystem::path directory, bool readOnly = true);
 
         ~DirectoryArchive() override = default;
 
@@ -44,9 +42,10 @@ namespace xng {
         std::unique_ptr<std::iostream> openRW(const std::string &path) override;
 
     private:
-        std::string getAbsolutePath(const std::string &path);
+        std::filesystem::path getAbsolutePath(const std::string &path);
 
-        bool allowWriting = false;
+        std::filesystem::path directory;
+        bool readOnly = true;
     };
 }
 
