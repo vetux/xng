@@ -30,7 +30,7 @@ namespace xng {
     };
 
     struct XENGINE_EXPORT ColliderShape : public Messageable {
-        ColliderShapeType type = COLLIDER_3D;
+        ColliderShapeType type = COLLIDER_2D;
         Primitive primitive = TRI;
         std::vector<Vec3f> vertices;
         std::vector<size_t> indices; // If not empty the indices into vertices in order.
@@ -112,6 +112,7 @@ namespace xng {
 
         static ColliderShape fromMesh(const Mesh &mesh) {
             ColliderShape ret;
+            ret.type = COLLIDER_3D;
             ret.primitive = mesh.primitive;
             for (auto &v: mesh.vertices) {
                 ret.vertices.emplace_back(v.position());

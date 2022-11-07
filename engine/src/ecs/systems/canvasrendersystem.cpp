@@ -250,7 +250,7 @@ namespace xng {
                             }
                         }
 
-                        if (canvas.drawDebug) {
+                        if (drawDebugGeometry || canvas.drawDebug) {
                             ren2d.draw(dstRect, ColorRGBA::blue(), false, center, rotation);
 
                             Rectf rtRect = {rt.rect.position + rt.getOffset(scene, target.getDescription().size)

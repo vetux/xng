@@ -51,6 +51,8 @@ namespace xng {
 
         void update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) override;
 
+        void setDrawDebugGeometry(bool v) { drawDebugGeometry = v; }
+
         void onComponentCreate(const EntityHandle &entity, const Component &component) override;
 
         void onComponentDestroy(const EntityHandle &entity, const Component &component) override;
@@ -69,6 +71,8 @@ namespace xng {
         Renderer2D &ren2d;
         RenderTarget &target;
         FontDriver &fontDriver;
+
+        bool drawDebugGeometry = false;
 
         std::map<Uri, std::unique_ptr<Font>> fonts;
         std::map<EntityHandle, TextRenderer> textRenderers;
