@@ -26,9 +26,8 @@
 
 namespace xng {
     struct XENGINE_EXPORT RigidBodyComponent : public Component {
-        bool is2D = false; // Flag for canvas debug render if true the collider shapes are drawn as 2d polygons.
         RigidBody::RigidBodyType type;
-        std::vector<ColliderDesc> colliders;
+
         Vec3b lockedAxes;
 
         Vec3f velocity;
@@ -48,7 +47,9 @@ namespace xng {
 
         float gravityScale = 1;
 
-        std::map<EntityHandle, std::set<int>> touchingColliders; // For every touching entity the indices of the touching collider
+        std::vector<ColliderDesc> colliders;
+
+        std::map<EntityHandle, std::set<int>> touchingColliders; // Updated at runtime by the physics system, for every touching entity the indices of the touching collider
 
         RigidBody::RigidBodyType convert(const std::string &text) const {
             if (text == "static")
@@ -72,7 +73,6 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            is2D = message.value("is2D", false);
             type = convert(message.value("type", std::string("static")));
             lockedAxes << message.value("lockedAxes");
             velocity << message.value("velocity");
@@ -92,7 +92,6 @@ namespace xng {
         }
 
         Message &operator>>(Message &message) const override {
-            message["is2D"] = is2D;
             message["type"] = convert(type);
             lockedAxes >> message["lockedAxes"];
             velocity >> message["velocity"];

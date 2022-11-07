@@ -24,13 +24,20 @@
 #include "xng/io/messageable.hpp"
 
 namespace xng {
+    enum ColliderShapeType {
+        COLLIDER_2D, // The vertices / indices are treated as 2D points describing a polygon facing in the z axis.
+        COLLIDER_3D // The vertices / indices are interpreted according to the set primitive.
+    };
+
     struct XENGINE_EXPORT ColliderShape : public Messageable {
+        ColliderShapeType type = COLLIDER_3D;
         Primitive primitive = TRI;
         std::vector<Vec3f> vertices;
         std::vector<size_t> indices; // If not empty the indices into vertices in order.
 
         bool operator==(const ColliderShape &other) const {
-            return primitive == other.primitive
+            return type == other.type
+                   && primitive == other.primitive
                    && vertices == other.vertices
                    && indices == other.indices;
         }
@@ -65,6 +72,7 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
+            type = (ColliderShapeType) message.value("type", (int) COLLIDER_3D);
             primitive = getPrimitive(message.value("primitive", std::string("tri")));
             auto vec = message.value("vertices");
             if (vec.getType() == Message::LIST) {
@@ -85,6 +93,7 @@ namespace xng {
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
+            message["type"] = (int) type;
             message["primitive"] = getPrimitive(primitive);
             auto vec = std::vector<Message>();
             for (auto &vert: vertices) {

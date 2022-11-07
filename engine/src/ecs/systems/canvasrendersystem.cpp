@@ -250,7 +250,7 @@ namespace xng {
                             }
                         }
 
-                        if (drawDebugGeometry) {
+                        if (canvas.drawDebug) {
                             ren2d.draw(dstRect, ColorRGBA::blue(), false, center, rotation);
 
                             Rectf rtRect = {rt.rect.position + rt.getOffset(scene, target.getDescription().size)
@@ -265,21 +265,20 @@ namespace xng {
 
                             if (scene.checkComponent<RigidBodyComponent>(pass.ent)) {
                                 auto &rb = scene.getComponent<RigidBodyComponent>(pass.ent);
-                                if (rb.is2D) {
-                                    auto &tcomp = scene.getComponent<TransformComponent>(pass.ent);
-                                    for (auto &col: rb.colliders) {
-                                        if (!col.shape.vertices.empty()) {
-                                            std::vector<Vec2f> poly;
-                                            for (auto &vert: col.shape.vertices) {
-                                                poly.emplace_back(Vec2f(vert.x, -vert.y));
-                                            }
-                                            ren2d.draw(poly,
-                                                       Vec2f(-tcomp.transform.getPosition().x,
-                                                             -tcomp.transform.getPosition().y),
-                                                       col.isSensor ? ColorRGBA(0, 153, 255, 255) : ColorRGBA::green(),
-                                                       {},
-                                                       tcomp.transform.getRotation().getEulerAngles().z);
+                                auto &tcomp = scene.getComponent<TransformComponent>(pass.ent);
+                                for (auto &col: rb.colliders) {
+                                    if (col.shape.type == COLLIDER_2D
+                                        && !col.shape.vertices.empty()) {
+                                        std::vector<Vec2f> poly;
+                                        for (auto &vert: col.shape.vertices) {
+                                            poly.emplace_back(Vec2f(vert.x, -vert.y));
                                         }
+                                        ren2d.draw(poly,
+                                                   Vec2f(-tcomp.transform.getPosition().x,
+                                                         -tcomp.transform.getPosition().y),
+                                                   col.isSensor ? ColorRGBA(0, 153, 255, 255) : ColorRGBA::green(),
+                                                   {},
+                                                   tcomp.transform.getRotation().getEulerAngles().z);
                                     }
                                 }
                             }

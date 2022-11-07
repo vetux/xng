@@ -43,7 +43,7 @@ namespace xng {
             return message;
         }
 
-        bool enabled;
+        bool enabled = true;
     };
 }
 

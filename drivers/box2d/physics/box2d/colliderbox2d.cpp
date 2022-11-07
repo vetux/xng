@@ -26,6 +26,10 @@
 
 namespace xng {
     b2PolygonShape convertShape(const ColliderShape &shape) {
+        if (shape.type != COLLIDER_2D){
+            throw std::runtime_error("Collider must be COLLIDER_2D for box2d physics driver.");
+        }
+
         std::vector<b2Vec2> points;
         if (shape.indices.empty()) {
             for (auto &vert: shape.vertices) {
