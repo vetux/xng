@@ -43,6 +43,10 @@ namespace xng {
 
             virtual void onEntityDestroy(const EntityHandle &entity) {};
 
+            virtual void onEntityNameChanged(const EntityHandle &entity,
+                                             const std::string &newName,
+                                             const std::string &oldName) {};
+
             virtual void onComponentCreate(const EntityHandle &entity, const Component &component) {};
 
             virtual void onComponentDestroy(const EntityHandle &entity, const Component &component) {};
@@ -85,18 +89,22 @@ namespace xng {
          * @param name
          */
         void setEntityName(const EntityHandle &entity, const std::string &name) {
-            if (entityNames.find(name) != entityNames.end())
-                throw std::runtime_error("Entity with name " + name + " already exists");
-            entityNames.insert(std::make_pair(name, entity));
-            entityNamesReverse[entity] = name;
-        }
-
-        void clearEntityName(const EntityHandle &entity) {
-            if (entityNamesReverse.find(entity) == entityNamesReverse.end())
-                throw std::runtime_error("Entity does not have a name mapping");
-            auto name = entityNamesReverse.at(entity);
-            entityNames.erase(name);
+            auto it = entityNamesReverse.find(entity);
+            std::string oldName;
+            if (it != entityNamesReverse.end()) {
+                oldName = it->second;
+            }
             entityNamesReverse.erase(entity);
+            entityNames.erase(oldName);
+            if (!name.empty()) {
+                if (entityNames.find(name) != entityNames.end())
+                    throw std::runtime_error("Entity with name " + name + " already exists");
+                entityNames.insert(std::make_pair(name, entity));
+                entityNamesReverse[entity] = name;
+            }
+            for (auto &listener: listeners) {
+                listener->onEntityNameChanged(entity, name, oldName);
+            }
         }
 
         const std::string &getEntityName(const EntityHandle &entity) const {
@@ -104,10 +112,16 @@ namespace xng {
         }
 
         EntityHandle getEntityByName(const std::string &name) const {
+            if (name.empty()) {
+                throw std::runtime_error("Empty name passed to getEntityByName");
+            }
             return entityNames.at(name);
         }
 
         bool entityNameExists(const std::string &name) const {
+            if (name.empty()) {
+                return false;
+            }
             return entityNames.find(name) != entityNames.end();
         }
 
@@ -283,7 +297,12 @@ namespace xng {
 
         void destroyComponent(const EntityHandle &entity,
                               const std::type_index &type) {
-            componentPools.at(type)->destroy(entity);
+            auto r = componentPools.at(type)->destroy(entity);
+            for (auto &comp: r) {
+                for (auto &listener: listeners) {
+                    listener->onComponentDestroy(entity, *comp);
+                }
+            }
         }
 
         bool checkComponent(const EntityHandle &entity, const std::type_index &type) {

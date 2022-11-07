@@ -41,11 +41,6 @@ namespace xng {
             scene->setEntityName(handle, name);
         }
 
-        void clearName() {
-            checkPointer();
-            scene->clearEntityName(handle);
-        }
-
         const std::string &getName() const {
             checkPointer();
             return scene->getEntityName(handle);
@@ -107,6 +102,10 @@ namespace xng {
             } else {
                 return "Entity { Id: " + std::to_string(handle.id) + " }";
             }
+        }
+
+        explicit operator bool() const {
+            return handle && scene != nullptr;
         }
 
     private:

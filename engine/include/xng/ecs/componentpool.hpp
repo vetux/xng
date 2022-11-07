@@ -40,7 +40,7 @@ namespace xng {
 
         virtual const Component &get(const EntityHandle &entity) const = 0;
 
-        virtual void destroy(const EntityHandle &entity) = 0;
+        virtual std::vector<std::unique_ptr<Component>> destroy(const EntityHandle &entity) = 0;
 
         virtual std::map<EntityHandle, Component *> getComponents() = 0;
 
@@ -83,10 +83,13 @@ namespace xng {
             return components.at(entity);
         }
 
-        void destroy(const EntityHandle &entity) override {
+        std::vector<std::unique_ptr<Component>> destroy(const EntityHandle &entity) override {
+            std::vector<std::unique_ptr<Component>> ret;
             if (components.find(entity) != components.end()) {
+                ret.emplace_back(std::make_unique<T>(components.at(entity)));
                 components.erase(entity);
             }
+            return ret;
         }
 
         std::map<EntityHandle, Component *> getComponents() override {
