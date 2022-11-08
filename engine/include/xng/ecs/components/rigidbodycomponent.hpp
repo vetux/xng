@@ -80,9 +80,8 @@ namespace xng {
             mass = message.value("mass", -1);
             massCenter << message.value("massCenter");
             rotationalInertia << message.value("rotationalInertia");
-            auto list = message.value("colliders");
-            if (list.getType() == Message::LIST) {
-                for (auto &col: list.asList()) {
+            if (message.has("colliders") && message.value("colliders").getType() == Message::LIST) {
+                for (auto &col: message.value("colliders").asList()) {
                     ResourceHandle<ColliderDesc> desc;
                     desc << col;
                     colliders.emplace_back(desc);
