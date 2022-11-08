@@ -63,12 +63,14 @@ namespace xng {
                 msgs.emplace_back(convertMessage(n));
             }
             return msgs;
-        } else {
+        } else if (j.is_object()){
             std::map<std::string, Message> msgs;
             for (auto &it : j.get<nlohmann::json::object_t>()) {
                 msgs[it.first] = convertMessage(it.second);
             }
             return msgs;
+        } else {
+            return Message();
         }
     }
 

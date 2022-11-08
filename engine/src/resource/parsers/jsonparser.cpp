@@ -107,12 +107,12 @@ namespace xng {
         }
 
         Message ret = Message(Message::DICTIONARY);
-        ret["materials"] = materials;
-        ret["textures"] = textures;
-        ret["sprites"] = sprites;
-        ret["colliders"] = colliders;
-        ret["sprite-animations"] = animations;
-        ret["scenes"] = scenes;
+        ret["materials"] = Message(materials);
+        ret["textures"] = Message(textures);
+        ret["sprites"] = Message(sprites);
+        ret["colliders"] = Message(colliders);
+        ret["sprite-animations"] = Message(animations);
+        ret["scenes"] = Message(scenes);
         return ret;
     }
 
