@@ -72,7 +72,7 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            type = (ColliderShapeType) message.value("type", (int) COLLIDER_3D);
+            type = (ColliderShapeType) message.value("type", (int) COLLIDER_2D);
             primitive = getPrimitive(message.value("primitive", std::string("tri")));
             auto vec = message.value("vertices");
             if (vec.getType() == Message::LIST) {
