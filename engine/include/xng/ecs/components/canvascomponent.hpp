@@ -30,14 +30,13 @@ namespace xng {
     struct XENGINE_EXPORT CanvasComponent : public Component {
         Vec2f cameraPosition;
 
+        bool overrideViewport; // If true the specified viewport values are used, the values are generated based on screen size.
         Vec2i viewportSize;
         Vec2i viewportOffset;
 
         Vec2f projectionSize; // The size of the projection or zero to use screensize as projection size
 
-        bool lockViewport; // If true the viewport values are not updated by the canvas render system to allow the user to implement custom viewport handling
-        bool stretchViewport; // If true the viewport is stretched to fit the screen while preserving aspect ratio of projectionSize if lockAspectRatio is set
-        bool lockAspectRatio; // If true the viewport aspect ratio always matches projectionSize ratio
+        bool stretchViewport; // If true the viewport is stretched to fit the screen while preserving aspect ratio of projectionSize
 
         bool clear = false; // Wheter or not to clear the viewport when rendering this canvas
         ColorRGBA clearColor = ColorRGBA::black();
@@ -47,10 +46,9 @@ namespace xng {
             cameraPosition << message.value("cameraPosition");
             viewportSize << message.value("viewportSize");
             viewportOffset << message.value("viewportOffset");
-            lockViewport = message.value("lockViewport", false);
+            overrideViewport = message.value("overrideViewport", false);
             projectionSize << message.value("projectionSize");
-            lockAspectRatio = message.value("lockAspectRatio", false);
-            stretchViewport = message.value("fitToScreen", false);
+            stretchViewport = message.value("stretchViewport", false);
             clear = message.value("clear", false);
             clearColor << message.value("clearColor");
             layer = message.value("layer", 0);
@@ -63,9 +61,8 @@ namespace xng {
             projectionSize >> message["projectionSize"];
             viewportSize >> message["viewportSize"];
             viewportOffset >> message["viewportOffset"];
-            message["lockAspectRatio"] = lockAspectRatio;
-            message["fitToScreen"] = stretchViewport;
-            message["lockViewport"] = lockViewport;
+            message["stretchViewport"] = stretchViewport;
+            message["overrideViewport"] = overrideViewport;
             message["clear"] = clear;
             clearColor >> message["clearColor"];
             message["layer"] = layer;
@@ -118,15 +115,11 @@ namespace xng {
             return (screenSize - getViewportSize(screenSize)) / 2;
         }
 
-        /**
-         * Called by the canvas render system before drawing the canvas transform
-         *
-         * @param screenSize
-         */
-        void updateViewport(const Vec2i &screenSize) {
-            if (!lockViewport) {
-                viewportOffset = getViewportOffset(screenSize);
-                viewportSize = getViewportSize(screenSize);
+        std::pair<Vec2i, Vec2i> getViewport(const Vec2i &screenSize) const {
+            if (overrideViewport) {
+                return {viewportSize, viewportOffset};
+            } else {
+                return {getViewportSize(screenSize), getViewportOffset(screenSize)};
             }
         }
     };

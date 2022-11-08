@@ -98,18 +98,17 @@ namespace xng {
         for (auto &canvasLayer: canvases) {
             for (auto &canvasName: canvasLayer.second) {
                 auto canvasEnt = scene.getEntityByName(canvasName);
-                auto canvas = scene.getComponent<CanvasComponent>(canvasEnt);
+                auto& canvas = scene.getComponent<CanvasComponent>(canvasEnt);
 
-                canvas.updateViewport(target.getDescription().size);
-                scene.updateComponent(canvasEnt, canvas);
+                auto viewport = canvas.getViewport(target.getDescription().size);
 
-                if (canvas.viewportSize.magnitude() > 0
-                    || canvas.viewportOffset.magnitude() > 0) {
+                if (viewport.first.magnitude() > 0
+                    || viewport.second.magnitude() > 0) {
                     ren2d.renderBegin(target,
                                       canvas.clear,
                                       canvas.clearColor,
-                                      canvas.viewportOffset,
-                                      canvas.viewportSize);
+                                      viewport.second,
+                                      viewport.first);
                 } else {
                     ren2d.renderBegin(target, canvas.clear, canvas.clearColor);
                 }
