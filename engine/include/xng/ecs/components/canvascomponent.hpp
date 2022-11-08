@@ -36,7 +36,7 @@ namespace xng {
 
         Vec2f projectionSize; // The size of the projection or zero to use screensize as projection size
 
-        bool stretchViewport; // If true the viewport is stretched to fit the screen while preserving aspect ratio of projectionSize
+        bool fitViewport; // If true the viewport is fitted to the next smallest screen size with aspect ratio matching projection size
 
         bool clear = false; // Wheter or not to clear the viewport when rendering this canvas
         ColorRGBA clearColor = ColorRGBA::black();
@@ -48,7 +48,7 @@ namespace xng {
             viewportOffset << message.value("viewportOffset");
             overrideViewport = message.value("overrideViewport", false);
             projectionSize << message.value("projectionSize");
-            stretchViewport = message.value("stretchViewport", false);
+            fitViewport = message.value("fitViewport", false);
             clear = message.value("clear", false);
             clearColor << message.value("clearColor");
             layer = message.value("layer", 0);
@@ -61,7 +61,7 @@ namespace xng {
             projectionSize >> message["projectionSize"];
             viewportSize >> message["viewportSize"];
             viewportOffset >> message["viewportOffset"];
-            message["stretchViewport"] = stretchViewport;
+            message["fitViewport"] = fitViewport;
             message["overrideViewport"] = overrideViewport;
             message["clear"] = clear;
             clearColor >> message["clearColor"];
@@ -93,7 +93,7 @@ namespace xng {
 
         Vec2i getViewportSize(const Vec2i &screenSize) const {
             if (projectionSize.magnitude() > 0) {
-                if (stretchViewport) {
+                if (fitViewport) {
                     float scale = getViewportScale(screenSize);
                     Vec2f ret = projectionSize * scale;
                     if (ret.x <= 0) {
