@@ -267,10 +267,7 @@ namespace xng {
         return ret;
     }
 
-    ResourceBundle AssImpParser::read(const std::vector<char>&buffer,
-                                      const std::string &hint,
-                                      const ResourceImporter &importer,
-                                      Archive *archive) const {
+    ResourceBundle AssImpParser::read(const std::vector<char> &buffer, const std::string &hint, Archive *archive) const {
         return readAsset(buffer, hint, archive);
     }
 

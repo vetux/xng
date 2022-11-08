@@ -44,7 +44,7 @@ namespace xng {
         for (auto &parser: parsers) {
             auto formats = parser->getSupportedFormats();
             if (formats.find(hint) != formats.end()) {
-                return parser->read(buffer, hint, *this, archive);
+                return parser->read(buffer, hint, archive);
             }
         }
 

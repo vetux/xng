@@ -35,36 +35,6 @@
 #include "xng/resource/resourceimporter.hpp"
 
 namespace xng {
-    static void loadBundle(const std::string &bundlePath,
-                           ThreadPool &pool,
-                           Archive &archive,
-                           const ResourceImporter &importer,
-                           std::mutex &bundleMutex,
-                           std::map<std::string, std::shared_ptr<Task>> bundleTasks,
-                           std::map<std::string, ResourceBundle> refBundles) {
-        bundleMutex.lock();
-
-        auto bundleIterator = refBundles.find(bundlePath);
-
-        if (bundleIterator == refBundles.end()) {
-            auto taskIterator = bundleTasks.find(bundlePath);
-            if (taskIterator == bundleTasks.end()) {
-                bundleTasks[bundlePath] = pool.addTask(
-                        [&archive, &importer, &bundleMutex, &refBundles, &bundlePath, &pool]() {
-                            std::filesystem::path path(bundlePath);
-
-                            std::unique_ptr<std::istream> stream(archive.open(bundlePath));
-                            auto bundle = importer.import(*stream, path.extension().string(), &archive);
-
-                            std::lock_guard<std::mutex> guard(bundleMutex);
-                            refBundles[bundlePath] = std::move(bundle);
-                        });
-            }
-        }
-
-        bundleMutex.unlock();
-    }
-
     Message JsonParser::createBundle(const std::map<std::string, std::reference_wrapper<Resource>> &resources) {
         auto materials = std::vector<Message>();
         auto textures = std::vector<Message>();
@@ -116,7 +86,7 @@ namespace xng {
         return ret;
     }
 
-    static ResourceBundle readJsonBundle(const std::vector<char> &buffer, const ResourceImporter &importer) {
+    static ResourceBundle readJsonBundle(const std::vector<char> &buffer) {
         auto stream = std::stringstream(std::string(buffer.begin(), buffer.end()));
         const Message m = JsonProtocol().deserialize(stream);
 
@@ -180,11 +150,8 @@ namespace xng {
         return ret;
     }
 
-    ResourceBundle JsonParser::read(const std::vector<char> &buffer,
-                                    const std::string &hint,
-                                    const ResourceImporter &importer,
-                                    Archive *archive) const {
-        return readJsonBundle(buffer, importer);
+    ResourceBundle JsonParser::read(const std::vector<char> &buffer, const std::string &hint, Archive *archive) const {
+        return readJsonBundle(buffer);
     }
 
     const std::set<std::string> &JsonParser::getSupportedFormats() const {

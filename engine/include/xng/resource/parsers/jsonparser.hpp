@@ -35,10 +35,7 @@ namespace xng {
     public:
         static Message createBundle(const std::map<std::string, std::reference_wrapper<Resource>> &resources);
 
-        ResourceBundle read(const std::vector<char> &buffer,
-                            const std::string &hint,
-                            const ResourceImporter &importer,
-                            Archive *archive) const override;
+        ResourceBundle read(const std::vector<char> &buffer, const std::string &hint, Archive *archive) const override;
 
         const std::set<std::string> &getSupportedFormats() const override;
 

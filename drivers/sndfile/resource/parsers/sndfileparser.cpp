@@ -146,10 +146,7 @@ namespace xng {
         return ret;
     }
 
-    ResourceBundle SndFileParser::read(const std::vector<char>&buffer,
-                                       const std::string &hint,
-                                       const ResourceImporter &importer,
-                                       Archive *archive) const {
+    ResourceBundle SndFileParser::read(const std::vector<char> &buffer, const std::string &hint, Archive *archive) const {
         ResourceBundle ret;
         ret.add("", std::make_unique<Audio>(readAudio(buffer)));
         return ret;

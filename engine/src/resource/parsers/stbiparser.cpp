@@ -45,10 +45,7 @@ namespace xng {
         }
     }
 
-    ResourceBundle StbiParser::read(const std::vector<char>&buffer,
-                                    const std::string &hint,
-                                    const ResourceImporter &importer,
-                                    Archive *archive) const {
+    ResourceBundle StbiParser::read(const std::vector<char> &buffer, const std::string &hint, Archive *archive) const {
         //Try to read source as image
         int x, y, n;
         auto r = stbi_info_from_memory((const stbi_uc*)(buffer.data()),
