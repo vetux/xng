@@ -112,6 +112,8 @@ namespace xng {
 
         Archive &resolveUri(const Uri &uri);
 
+        std::mutex userMutex;
+
         std::mutex mutex;
 
         std::shared_mutex archiveMutex;

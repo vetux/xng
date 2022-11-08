@@ -26,9 +26,11 @@
 #include "xng/log/log.hpp"
 
 namespace xng {
+    static std::mutex defMutex;
     static std::unique_ptr<ResourceRegistry> defRepo = nullptr;
 
     ResourceRegistry &ResourceRegistry::getDefaultRegistry() {
+        std::lock_guard<std::mutex> guard(defMutex);
         if (!defRepo) {
             defRepo = std::make_unique<ResourceRegistry>();
         }
@@ -49,6 +51,7 @@ namespace xng {
     }
 
     void ResourceRegistry::addArchive(const std::string &scheme, std::shared_ptr<Archive> archive) {
+        std::lock_guard<std::mutex> guard(userMutex);
         std::unique_lock g(archiveMutex);
         if (archives.find(scheme) != archives.end())
             throw std::runtime_error("Archive with scheme " + scheme + " already exists");
@@ -56,36 +59,43 @@ namespace xng {
     }
 
     void ResourceRegistry::removeArchive(const std::string &scheme) {
+        std::lock_guard<std::mutex> guard(userMutex);
         std::unique_lock l(archiveMutex);
         archives.erase(scheme);
     }
 
     void ResourceRegistry::setImporter(ResourceImporter value) {
+        std::lock_guard<std::mutex> guard(userMutex);
         std::unique_lock l(importerMutex);
         importer = std::move(value);
     }
 
     Archive &ResourceRegistry::getArchive(const std::string &scheme) {
+        std::lock_guard<std::mutex> guard(userMutex);
         return *archives.at(scheme);
     }
 
     const Resource &ResourceRegistry::get(const Uri &uri) {
+        std::lock_guard<std::mutex> guard(userMutex);
         return getData(uri);
     }
 
     void ResourceRegistry::incRef(const Uri &uri) {
+        std::lock_guard<std::mutex> guard(userMutex);
         if (bundleRefCounter.inc(uri.getFile())) {
             load(uri);
         }
     }
 
     void ResourceRegistry::decRef(const Uri &uri) {
+        std::lock_guard<std::mutex> guard(userMutex);
         if (bundleRefCounter.dec(uri.getFile())) {
             unload(uri);
         }
     }
 
     void ResourceRegistry::reloadAllResources() {
+        std::lock_guard<std::mutex> guard(userMutex);
         std::vector<std::pair<Uri, std::shared_ptr<Task>>> tasks;
         {
             std::lock_guard<std::mutex> g(mutex);
@@ -102,6 +112,7 @@ namespace xng {
     }
 
     void ResourceRegistry::awaitImports() {
+        std::lock_guard<std::mutex> guard(userMutex);
         for (auto &task: loadTasks) {
             task.second->join();
         }
