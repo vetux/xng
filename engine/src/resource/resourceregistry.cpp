@@ -76,7 +76,6 @@ namespace xng {
     }
 
     const Resource &ResourceRegistry::get(const Uri &uri) {
-        std::lock_guard<std::mutex> guard(userMutex);
         return getData(uri);
     }
 
@@ -112,8 +111,10 @@ namespace xng {
     }
 
     void ResourceRegistry::awaitImports() {
-        std::lock_guard<std::mutex> guard(userMutex);
-        for (auto &task: loadTasks) {
+        userMutex.lock();
+        auto tasks = loadTasks;
+        userMutex.unlock();
+        for (auto &task: tasks) {
             task.second->join();
         }
     }
@@ -165,19 +166,23 @@ namespace xng {
     }
 
     const Resource &ResourceRegistry::getData(const Uri &uri) {
+        userMutex.lock();
         mutex.lock();
         auto it = loadTasks.find(uri.getFile());
         if (it == loadTasks.end()) {
             throw std::runtime_error("IncRef not called for bundle pointed at by uri " + uri.toString());
         }
         auto task = loadTasks.at(uri.getFile());
+        userMutex.unlock();
         mutex.unlock();
         auto ex = task->join();
         if (ex) {
             std::rethrow_exception(ex);
         }
+        userMutex.lock();
         mutex.lock();
         auto &ret = bundles[uri.getFile()].get(uri.getAsset());
+        userMutex.unlock();
         mutex.unlock();
         return ret;
     }
