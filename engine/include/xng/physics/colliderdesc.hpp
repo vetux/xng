@@ -65,7 +65,7 @@ namespace xng {
             message["friction"] = friction;
             message["restitution"] = restitution;
             message["restitution_threshold"] = restitution_threshold;
-            message["density"] = friction;
+            message["density"] = density;
             message["isSensor"] = isSensor;
             return message;
         }
