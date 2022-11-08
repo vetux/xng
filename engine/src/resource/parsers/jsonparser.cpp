@@ -107,24 +107,12 @@ namespace xng {
         }
 
         Message ret = Message(Message::DICTIONARY);
-        if (!materials.empty()) {
-            ret["materials"] = materials;
-        }
-        if (!textures.empty()) {
-            ret["textures"] = textures;
-        }
-        if (!sprites.empty()) {
-            ret["sprites"] = sprites;
-        }
-        if (!colliders.empty()) {
-            ret["colliders"] = colliders;
-        }
-        if (!animations.empty()) {
-            ret["sprite-animations"] = animations;
-        }
-        if (!scenes.empty()) {
-            ret["scenes"] = scenes;
-        }
+        ret["materials"] = materials;
+        ret["textures"] = textures;
+        ret["sprites"] = sprites;
+        ret["colliders"] = colliders;
+        ret["sprite-animations"] = animations;
+        ret["scenes"] = scenes;
         return ret;
     }
 
