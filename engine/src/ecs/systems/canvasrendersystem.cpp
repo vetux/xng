@@ -148,13 +148,13 @@ namespace xng {
                                     dstRect.position.y -= worldTransform.getPosition().y;
                                     rotation += worldTransform.getRotation().getEulerAngles().z;
 
-                                    if (comp.spriteB.assigned()) {
+                                    if (comp.mixSprite.assigned()) {
                                         ren2d.draw(Rectf({}, spriteTextures.at(
                                                            pass.ent).get()->getDescription().size.convert<float>()),
                                                    dstRect,
                                                    *spriteTextures.at(pass.ent),
                                                    *spriteTexturesB.at(pass.ent),
-                                                   comp.blendScale,
+                                                   comp.mix,
                                                    center,
                                                    rotation,
                                                    comp.flipSprite);
@@ -316,7 +316,7 @@ namespace xng {
         if (oldComponent.getType() == typeid(SpriteComponent)) {
             auto &os = dynamic_cast<const SpriteComponent &>(oldComponent);
             auto &ns = dynamic_cast<const SpriteComponent &>(newComponent);
-            if (os.sprite != ns.sprite || os.spriteB != ns.spriteB) {
+            if (os.sprite != ns.sprite || os.mixSprite != ns.mixSprite) {
                 spriteTextures.erase(entity);
                 spriteTexturesB.erase(entity);
                 createTexture(entity, ns);
@@ -347,18 +347,18 @@ namespace xng {
                 spriteTextures[ent]->upload(img);
             }
         }
-        if (t.spriteB.assigned()) {
-            Vec2i dimensions = t.spriteB.get().offset.dimensions;
+        if (t.mixSprite.assigned()) {
+            Vec2i dimensions = t.mixSprite.get().offset.dimensions;
             if (dimensions.x * dimensions.y == 0) {
-                dimensions = t.spriteB.get().image.get().getSize();
+                dimensions = t.mixSprite.get().image.get().getSize();
             }
             TextureBufferDesc desc;
             desc.size = dimensions;
             spriteTexturesB[ent] = ren2d.getDevice().createTextureBuffer(desc);
-            auto &img = t.spriteB.get().image.get();
+            auto &img = t.mixSprite.get().image.get();
             if (img.getSize() != dimensions) {
                 // Upload a slice of an image
-                auto slice = img.slice(t.spriteB.get().offset);
+                auto slice = img.slice(t.mixSprite.get().offset);
                 spriteTexturesB[ent]->upload(slice);
             } else {
                 // Upload the whole image
