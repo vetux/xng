@@ -74,17 +74,15 @@ namespace xng {
         Messageable &operator<<(const Message &message) override {
             type = (ColliderShapeType) message.value("type", (int) COLLIDER_2D);
             primitive = getPrimitive(message.value("primitive", std::string("tri")));
-            auto vec = message.value("vertices");
-            if (vec.getType() == Message::LIST) {
-                for (auto &vert: vec.asList()) {
+            if (message.has("vertices") && message.value("vertices").getType() == Message::LIST) {
+                for (auto &vert: message.value("vertices").asList()) {
                     Vec3f vertex;
                     vertex << vert;
                     vertices.emplace_back(vertex);
                 }
             }
-            vec = message.value("indices");
-            if (vec.getType() == Message::LIST) {
-                for (auto &index: vec.asList()) {
+            if (message.has("indices") && message.value("indices").getType() == Message::LIST) {
+                for (auto &index: message.value("indices").asList()) {
                     indices.emplace_back(index.asLong());
                 }
             }
