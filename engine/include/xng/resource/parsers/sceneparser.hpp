@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_JSONPARSER_HPP
-#define XENGINE_JSONPARSER_HPP
+#ifndef XENGINE_SCENEPARSER_HPP
+#define XENGINE_SCENEPARSER_HPP
 
 #include "xng/resource/resourceparser.hpp"
 
@@ -26,23 +26,16 @@
 
 namespace xng {
     /**
-     * Formats:
-     * .xbundle
-     * {
-     *      "materials": ...
-     *      "textures": ...
-     *      "sprites": ...
-     *      "colliders": ...
-     *      "sprite-animations": ...
-     * }
-     *
+     * Extension:
      * .xscene
+     *
+     * Scene json format:
      * {
      *      "name": "",
      *      "entities"...
      * }
      */
-    class XENGINE_EXPORT JsonParser : public ResourceParser {
+    class XENGINE_EXPORT SceneParser : public ResourceParser {
     public:
         static Message createBundle(const std::map<std::string, std::reference_wrapper<Resource>> &resources);
 
@@ -56,4 +49,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_JSONPARSER_HPP
+#endif //XENGINE_SCENEPARSER_HPP

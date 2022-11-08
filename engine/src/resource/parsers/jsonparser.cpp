@@ -67,10 +67,6 @@ namespace xng {
                 auto &res = dynamic_cast<SpriteAnimation &>(pair.second.get());
                 res >> msg;
                 animations.emplace_back(msg);
-            } else if (type == typeid(EntityScene)) {
-                auto &res = dynamic_cast<EntityScene &>(pair.second.get());
-                res >> msg;
-                scenes.emplace_back(msg);
             } else {
                 throw std::runtime_error("Unsupported resource type: " + std::string(type.name()));
             }
@@ -82,7 +78,6 @@ namespace xng {
         ret["sprites"] = Message(sprites);
         ret["colliders"] = Message(colliders);
         ret["sprite-animations"] = Message(animations);
-        ret["scenes"] = Message(scenes);
         return ret;
     }
 
@@ -92,61 +87,59 @@ namespace xng {
 
         ResourceBundle ret;
 
-        if (m.has("materials") && m.at("materials").getType() == Message::LIST) {
-            for (auto &element: m.at("materials").asList()) {
-                std::string name = element.value("name", std::string());
-                Material mat;
-                mat << element;
-                ret.add(name, std::make_unique<Material>(mat));
+        if (m.has("name") || m.has("entities")){
+            // Parse as xscene
+            auto name = m.value("name", std::string());
+            EntityScene scene;
+            scene << m;
+            ret.add(name, std::make_unique<EntityScene>(scene));
+        } else {
+            // Parse as xbundle
+            if (m.has("materials") && m.at("materials").getType() == Message::LIST) {
+                for (auto &element: m.at("materials").asList()) {
+                    std::string name = element.value("name", std::string());
+                    Material mat;
+                    mat << element;
+                    ret.add(name, std::make_unique<Material>(mat));
+                }
+            }
+
+            if (m.has("textures") && m.at("textures").getType() == Message::LIST) {
+                for (auto &element: m.at("textures").asList()) {
+                    std::string name = element.value("name", std::string());
+                    Texture tex;
+                    tex << element;
+                    ret.add(name, std::make_unique<Texture>(tex));
+                }
+            }
+
+            if (m.has("sprites") && m.at("sprites").getType() == Message::LIST) {
+                for (auto &element: m.at("sprites").asList()) {
+                    std::string name = element.value("name", std::string());
+                    Sprite sprite;
+                    sprite << element;
+                    ret.add(name, std::make_unique<Sprite>(sprite));
+                }
+            }
+
+            if (m.has("colliders") && m.at("colliders").getType() == Message::LIST) {
+                for (auto &element: m.at("colliders").asList()) {
+                    std::string name = element.value("name", std::string());
+                    ColliderDesc desc;
+                    desc << element;
+                    ret.add(name, std::make_unique<ColliderDesc>(desc));
+                }
+            }
+
+            if (m.has("sprite-animations") && m.at("sprite-animations").getType() == Message::LIST) {
+                for (auto &element: m.at("sprite-animations").asList()) {
+                    std::string name = element.value("name", std::string());
+                    SpriteAnimation animation;
+                    animation << element;
+                    ret.add(name, std::make_unique<SpriteAnimation>(animation));
+                }
             }
         }
-
-        if (m.has("textures") && m.at("textures").getType() == Message::LIST) {
-            for (auto &element: m.at("textures").asList()) {
-                std::string name = element.value("name", std::string());
-                Texture tex;
-                tex << element;
-                ret.add(name, std::make_unique<Texture>(tex));
-            }
-        }
-
-        if (m.has("sprites") && m.at("sprites").getType() == Message::LIST) {
-            for (auto &element: m.at("sprites").asList()) {
-                std::string name = element.value("name", std::string());
-                Sprite sprite;
-                sprite << element;
-                ret.add(name, std::make_unique<Sprite>(sprite));
-            }
-        }
-
-        if (m.has("colliders") && m.at("colliders").getType() == Message::LIST) {
-            for (auto &element: m.at("colliders").asList()) {
-                std::string name = element.value("name", std::string());
-                ColliderDesc desc;
-                desc << element;
-                ret.add(name, std::make_unique<ColliderDesc>(desc));
-            }
-        }
-
-        if (m.has("sprite-animations") && m.at("sprite-animations").getType() == Message::LIST) {
-            for (auto &element: m.at("sprite-animations").asList()) {
-                std::string name = element.value("name", std::string());
-                SpriteAnimation animation;
-                animation << element;
-                ret.add(name, std::make_unique<SpriteAnimation>(animation));
-            }
-        }
-
-        if (m.has("scenes") && m.at("scenes").getType() == Message::LIST) {
-            for (auto &element: m.at("scenes").asList()) {
-                std::string name = element.value("name", std::string());
-                EntityScene scene;
-                scene << element;
-                scene.setName(name);
-                ret.add(name, std::make_unique<EntityScene>(scene));
-            }
-        }
-
         return ret;
     }
 
@@ -155,7 +148,7 @@ namespace xng {
     }
 
     const std::set<std::string> &JsonParser::getSupportedFormats() const {
-        static const std::set<std::string> formats = {".json", ".bundle"};
+        static const std::set<std::string> formats = {".xbundle", ".xscene"};
         return formats;
     }
 }
