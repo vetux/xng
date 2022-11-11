@@ -31,6 +31,9 @@ namespace xng {
         explicit LibraryWin32(const std::string &filePath)
                 : filePath(filePath){
             handle = LoadLibrary(TEXT(filePath.c_str()));
+            if (handle == nullptr){
+                throw std::runtime_error("Failed to open library at: " + filePath);
+            }
         }
 
         ~LibraryWin32() override {

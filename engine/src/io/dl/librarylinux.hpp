@@ -31,6 +31,9 @@ namespace xng {
         explicit LibraryLinux(const std::string &filePath)
                 : filePath(filePath) {
             handle = dlopen(filePath.c_str(), RTLD_LAZY);
+            if (handle == nullptr){
+                throw std::runtime_error("Failed to open library at: " + filePath + " Error: " + dlerror());
+            }
         }
 
         ~LibraryLinux() override {
