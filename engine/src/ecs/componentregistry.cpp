@@ -87,4 +87,8 @@ namespace xng {
     const ComponentRegistry::Updater &ComponentRegistry::getUpdater(const std::type_index &index) {
         return updaters.at(index);
     }
+
+    const std::map<std::type_index, std::string> &ComponentRegistry::getComponents() {
+        return nameMapping;
+    }
 }

@@ -103,6 +103,8 @@ namespace xng {
 
         const Updater &getUpdater(const std::type_index &index);
 
+        const std::map<std::type_index, std::string> &getComponents();
+
     private:
         static std::unique_ptr<ComponentRegistry> inst;
 
