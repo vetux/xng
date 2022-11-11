@@ -34,6 +34,10 @@ namespace xng {
          */
         static std::unique_ptr<Library> load(const std::string &path);
 
+        static const char *getPlatformFilePrefix();
+
+        static const char *getPlatformFileExtension();
+
         /**
          * Unload the library, returned symbol addresses become invalid.
          */

@@ -32,3 +32,23 @@ namespace xng {
         return std::make_unique<LibraryOS>(path);
     }
 }
+
+const char *xng::Library::getPlatformFilePrefix() {
+#ifdef __linux__
+return "lib";
+#else
+#ifdef _WIN32
+return "";
+#endif
+#endif
+}
+
+const char *xng::Library::getPlatformFileExtension() {
+#ifdef __linux__
+return ".so";
+#else
+#ifdef _WIN32
+return ".dll";
+#endif
+#endif
+}
