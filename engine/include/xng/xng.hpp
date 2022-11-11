@@ -55,6 +55,7 @@
 #include "xng/ecs/components/spriteanimationcomponent.hpp"
 #include "xng/ecs/components/transformcomponent.hpp"
 #include "xng/ecs/components/lightcomponent.hpp"
+#include "xng/ecs/components/genericcomponent.hpp"
 #include "xng/ecs/profiling/ecsprofiler.hpp"
 #include "xng/ecs/profiling/ecssample.hpp"
 #include "xng/ecs/profiling/ecsframelist.hpp"

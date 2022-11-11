@@ -262,7 +262,8 @@ namespace xng {
                             ren2d.draw(dCenter + Vec2f(-len, 0), dCenter + Vec2f(len, 0), ColorRGBA::red());
                             ren2d.draw(dCenter + Vec2f(0, len), dCenter + Vec2f(0, -len), ColorRGBA::red());
 
-                            if (scene.checkComponent<RigidBodyComponent>(pass.ent)) {
+                            if (scene.checkComponent<RigidBodyComponent>(pass.ent)
+                                    && scene.checkComponent<TransformComponent>(pass.ent)) {
                                 auto &rb = scene.getComponent<RigidBodyComponent>(pass.ent);
                                 auto &tcomp = scene.getComponent<TransformComponent>(pass.ent);
                                 for (auto &handle: rb.colliders) {

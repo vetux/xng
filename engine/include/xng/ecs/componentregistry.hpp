@@ -66,6 +66,8 @@ bool r_##type = xng::ComponentRegistry::instance().registerComponent(typeid(type
                                                                                                                value));\
                                                                              });
 
+#define UNREGISTER_COMPONENT(type) xng::ComponentRegistry::instance().unregisterComponent(typeid(type));
+
 namespace xng {
     /**
      * The component registry is used by the entity scene when serializing / deserializing and when using the non template interface of the entity scene.
@@ -90,6 +92,8 @@ namespace xng {
                                const Deserializer &deserializer,
                                const Constructor &constructor,
                                const Updater &updater) noexcept;
+
+        void unregisterComponent(std::type_index type) noexcept;
 
         const std::type_index &getTypeFromName(const std::string &typeName);
 

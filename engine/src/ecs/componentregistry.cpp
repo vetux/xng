@@ -64,6 +64,16 @@ namespace xng {
         return true;
     }
 
+    void ComponentRegistry::unregisterComponent(std::type_index type) noexcept {
+        auto &name = nameMapping.at(type);
+        nameReverseMapping.erase(name);
+        nameMapping.erase(type);
+        serializers.erase(type);
+        deserializers.erase(type);
+        constructors.erase(type);
+        updaters.erase(type);
+    }
+
     const std::type_index &ComponentRegistry::getTypeFromName(const std::string &typeName) {
         return nameReverseMapping.at(typeName);
     }
