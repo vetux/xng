@@ -21,7 +21,7 @@
 #define XENGINE_TEXTCOMPONENT_HPP
 
 #include "xng/io/messageable.hpp"
-#include "xng/asset/rawasset.hpp"
+#include "xng/resource/rawresource.hpp"
 #include "xng/text/alignment.hpp"
 #include "canvastransformcomponent.hpp"
 #include "xng/ecs/component.hpp"
@@ -41,7 +41,7 @@ namespace xng {
         int lineSpacing;
         Alignment alignment;
 
-        ResourceHandle<RawAsset> font;
+        ResourceHandle<RawResource> font;
 
         CanvasTransformComponent::Anchor textAnchor; // Controls where the rendered text is laid out in the rect
 

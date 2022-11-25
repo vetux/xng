@@ -196,7 +196,7 @@
 #include "xng/render/graph/passes/gbufferpass.hpp"
 #include "xng/render/graph/allocators/framegraphpoolallocator.hpp"
 #include "xng/render/graph/shader/framegraphshader.hpp"
-#include "xng/asset/rawasset.hpp"
+#include "xng/resource/rawresource.hpp"
 #include "xng/asset/skybox.hpp"
 #include "xng/asset/audio.hpp"
 #include "xng/asset/light.hpp"

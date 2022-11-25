@@ -19,7 +19,7 @@
 
 #include "xng/resource/resourceimporter.hpp"
 
-#include "xng/asset/rawasset.hpp"
+#include "xng/resource/rawresource.hpp"
 
 namespace xng {
 
@@ -50,9 +50,9 @@ namespace xng {
 
         // Import as raw
         ResourceBundle ret;
-        RawAsset asset;
+        RawResource asset;
         asset.bytes = std::vector<uint8_t>(buffer.begin(), buffer.end());
-        ret.add("0", std::make_unique<RawAsset>(asset));
+        ret.add("0", std::make_unique<RawResource>(asset));
         return ret;
     }
 }

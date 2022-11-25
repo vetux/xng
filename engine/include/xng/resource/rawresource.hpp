@@ -17,23 +17,26 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RAWASSET_HPP
-#define XENGINE_RAWASSET_HPP
+#ifndef XENGINE_RAWRESOURCE_HPP
+#define XENGINE_RAWRESOURCE_HPP
 
 #include "xng/resource/resource.hpp"
 
 using namespace xng;
 
-struct RawAsset : public Resource {
+/**
+ * A raw resource makes the byte data of the resource available for custom parsing.
+ */
+struct RawResource : public Resource {
     std::vector<uint8_t> bytes;
 
     std::unique_ptr<Resource> clone() override {
-        return std::make_unique<RawAsset>(*this);
+        return std::make_unique<RawResource>(*this);
     }
 
     std::type_index getTypeIndex() override {
-        return typeid(RawAsset);
+        return typeid(RawResource);
     }
 };
 
-#endif //XENGINE_RAWASSET_HPP
+#endif //XENGINE_RAWRESOURCE_HPP
