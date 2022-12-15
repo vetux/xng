@@ -66,7 +66,8 @@ namespace xng {
             filterMin = (TextureFiltering) message.getMessage("filterMin", Message((int) NEAREST)).asInt();
             filterMag = (TextureFiltering) message.getMessage("filterMax", Message((int) NEAREST)).asInt();
             message.value("generateMipmap", generateMipmap);
-            mipmapFilter = (MipMapFiltering) message.getMessage("mipmapFilter", Message((int) NEAREST_MIPMAP_NEAREST)).asInt();
+            mipmapFilter = (MipMapFiltering) message.getMessage("mipmapFilter",
+                                                                Message((int) NEAREST_MIPMAP_NEAREST)).asInt();
             message.value("fixedSampleLocations", fixedSampleLocations);
             bufferType = (RenderBufferType) message.getMessage("bufferType", Message((int) HOST_VISIBLE)).asInt();
             return *this;
@@ -90,24 +91,23 @@ namespace xng {
     };
 }
 
-using namespace xng;
 namespace std {
     template<>
-    struct hash<TextureBufferDesc> {
-        std::size_t operator()(const TextureBufferDesc &k) const {
+    struct hash<xng::TextureBufferDesc> {
+        std::size_t operator()(const xng::TextureBufferDesc &k) const {
             size_t ret = 0;
-            hash_combine(ret, k.size.x);
-            hash_combine(ret, k.size.y);
-            hash_combine(ret, k.samples);
-            hash_combine(ret, k.textureType);
-            hash_combine(ret, k.format);
-            hash_combine(ret, k.wrapping);
-            hash_combine(ret, k.filterMin);
-            hash_combine(ret, k.filterMag);
-            hash_combine(ret, k.generateMipmap);
-            hash_combine(ret, k.mipmapFilter);
-            hash_combine(ret, k.fixedSampleLocations);
-            hash_combine(ret, k.bufferType);
+            xng::hash_combine(ret, k.size.x);
+            xng::hash_combine(ret, k.size.y);
+            xng::hash_combine(ret, k.samples);
+            xng::hash_combine(ret, k.textureType);
+            xng::hash_combine(ret, k.format);
+            xng::hash_combine(ret, k.wrapping);
+            xng::hash_combine(ret, k.filterMin);
+            xng::hash_combine(ret, k.filterMag);
+            xng::hash_combine(ret, k.generateMipmap);
+            xng::hash_combine(ret, k.mipmapFilter);
+            xng::hash_combine(ret, k.fixedSampleLocations);
+            xng::hash_combine(ret, k.bufferType);
             return ret;
         }
     };

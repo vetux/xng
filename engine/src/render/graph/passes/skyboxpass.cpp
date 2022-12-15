@@ -21,21 +21,24 @@
 
 #include "xng/render/graph/passes/skyboxpass.hpp"
 
-SkyboxPass::SkyboxPass() {
+namespace xng {
 
-}
+    SkyboxPass::SkyboxPass() {
 
-void xng::SkyboxPass::setup(FrameGraphBuilder &builder, const GenericMapString &properties, GenericMapString &sharedData) {
+    }
 
-}
+    void xng::SkyboxPass::setup(FrameGraphBuilder &builder, const GenericMapString &properties,
+                                GenericMapString &sharedData) {
 
-void xng::SkyboxPass::execute(FrameGraphPassResources &resources) {
+    }
 
-}
+    void xng::SkyboxPass::execute(FrameGraphPassResources &resources) {
 
-std::type_index xng::SkyboxPass::getTypeName() {
-    return typeid(xng::SkyboxPass);
-}
+    }
+
+    std::type_index xng::SkyboxPass::getTypeName() {
+        return typeid(xng::SkyboxPass);
+    }
 
 /*
 
@@ -190,3 +193,4 @@ namespace xng {
     }
 }
  */
+}

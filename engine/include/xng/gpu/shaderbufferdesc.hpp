@@ -35,14 +35,13 @@ namespace xng {
     };
 }
 
-using namespace xng;
 namespace std {
     template<>
-    struct hash<ShaderBufferDesc> {
-        std::size_t operator()(const ShaderBufferDesc &k) const {
+    struct hash<xng::ShaderBufferDesc> {
+        std::size_t operator()(const xng::ShaderBufferDesc &k) const {
             size_t ret = 0;
-            hash_combine(ret, k.size);
-            hash_combine(ret, k.bufferType);
+            xng::hash_combine(ret, k.size);
+            xng::hash_combine(ret, k.bufferType);
             return ret;
         }
     };

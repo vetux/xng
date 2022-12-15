@@ -42,18 +42,17 @@ namespace xng {
     };
 }
 
-using namespace xng;
 namespace std {
     template<>
-    struct hash<RenderTargetDesc> {
-        std::size_t operator()(const RenderTargetDesc &k) const {
+    struct hash<xng::RenderTargetDesc> {
+        std::size_t operator()(const xng::RenderTargetDesc &k) const {
             size_t ret = 0;
-            hash_combine(ret, k.size.x);
-            hash_combine(ret, k.size.y);
-            hash_combine(ret, k.multisample);
-            hash_combine(ret, k.samples);
-            hash_combine(ret, k.numberOfColorAttachments);
-            hash_combine(ret, k.hasDepthStencilAttachment);
+            xng::hash_combine(ret, k.size.x);
+            xng::hash_combine(ret, k.size.y);
+            xng::hash_combine(ret, k.multisample);
+            xng::hash_combine(ret, k.samples);
+            xng::hash_combine(ret, k.numberOfColorAttachments);
+            xng::hash_combine(ret, k.hasDepthStencilAttachment);
             return ret;
         }
     };

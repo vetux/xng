@@ -50,23 +50,22 @@ namespace xng {
     };
 }
 
-using namespace xng;
 namespace std {
     template<>
-    struct hash<VertexBufferDesc> {
-        std::size_t operator()(const VertexBufferDesc &k) const {
+    struct hash<xng::VertexBufferDesc> {
+        std::size_t operator()(const xng::VertexBufferDesc &k) const {
             size_t ret = 0;
             for (auto v: k.vertexLayout) {
-                hash_combine(ret, v.type);
-                hash_combine(ret, v.component);
+                xng::hash_combine(ret, v.type);
+                xng::hash_combine(ret, v.component);
             }
             for (auto v: k.instanceLayout) {
-                hash_combine(ret, v.type);
-                hash_combine(ret, v.component);
+                xng::hash_combine(ret, v.type);
+                xng::hash_combine(ret, v.component);
             }
-            hash_combine(ret, k.numberOfVertices);
-            hash_combine(ret, k.numberOfInstances);
-            hash_combine(ret, k.bufferType);
+            xng::hash_combine(ret, k.numberOfVertices);
+            xng::hash_combine(ret, k.numberOfInstances);
+            xng::hash_combine(ret, k.bufferType);
             return ret;
         }
     };

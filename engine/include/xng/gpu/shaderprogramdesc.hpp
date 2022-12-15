@@ -47,18 +47,17 @@ namespace xng {
     };
 }
 
-using namespace xng;
 namespace std {
     template<>
-    struct hash<ShaderProgramDesc> {
-        std::size_t operator()(const ShaderProgramDesc &k) const {
+    struct hash<xng::ShaderProgramDesc> {
+        std::size_t operator()(const xng::ShaderProgramDesc &k) const {
             size_t ret = 0;
-            hash_combine(ret, k.environment);
+            xng::hash_combine(ret, k.environment);
             for (auto &e: k.shaders) {
-                hash_combine(ret, e.first);
-                hash_combine(ret, e.second.getStage());
-                hash_combine(ret, e.second.getEntryPoint());
-                hash_combine(ret, crc(e.second.getBlob().begin(), e.second.getBlob().end()));
+                xng::hash_combine(ret, e.first);
+                xng::hash_combine(ret, e.second.getStage());
+                xng::hash_combine(ret, e.second.getEntryPoint());
+                xng::hash_combine(ret, xng::crc(e.second.getBlob().begin(), e.second.getBlob().end()));
             }
             return ret;
         }

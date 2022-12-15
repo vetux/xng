@@ -140,15 +140,14 @@ namespace xng {
     };
 }
 
-using namespace xng;
 namespace std {
     template<>
-    struct hash<Uri> {
-        std::size_t operator()(const Uri &k) const {
+    struct hash<xng::Uri> {
+        std::size_t operator()(const xng::Uri &k) const {
             size_t ret = 0;
-            hash_combine(ret, k.getScheme());
-            hash_combine(ret, k.getFile());
-            hash_combine(ret, k.getAsset());
+            xng::hash_combine(ret, k.getScheme());
+            xng::hash_combine(ret, k.getFile());
+            xng::hash_combine(ret, k.getAsset());
             return ret;
         }
     };

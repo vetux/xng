@@ -22,21 +22,21 @@
 
 #include "xng/resource/resource.hpp"
 
-using namespace xng;
+namespace xng {
+    /**
+     * A raw resource makes the byte data of the resource available for custom parsing.
+     */
+    struct RawResource : public Resource {
+        std::vector<uint8_t> bytes;
 
-/**
- * A raw resource makes the byte data of the resource available for custom parsing.
- */
-struct RawResource : public Resource {
-    std::vector<uint8_t> bytes;
+        std::unique_ptr<Resource> clone() override {
+            return std::make_unique<RawResource>(*this);
+        }
 
-    std::unique_ptr<Resource> clone() override {
-        return std::make_unique<RawResource>(*this);
-    }
-
-    std::type_index getTypeIndex() override {
-        return typeid(RawResource);
-    }
-};
+        std::type_index getTypeIndex() override {
+            return typeid(RawResource);
+        }
+    };
+}
 
 #endif //XENGINE_RAWRESOURCE_HPP
