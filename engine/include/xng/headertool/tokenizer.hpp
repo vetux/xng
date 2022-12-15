@@ -17,12 +17,21 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_MONO_HPP
-#define XENGINE_MONO_HPP
+#ifndef XENGINE_TOKENIZER_HPP
+#define XENGINE_TOKENIZER_HPP
 
-#include <mono/jit/jit.h>
-#include <mono/metadata/loader.h>
-#include <mono/metadata/assembly.h>
-#include <mono/metadata/debug-helpers.h>
+#include <vector>
+#include <istream>
 
-#endif //XENGINE_MONO_HPP
+#include "xng/headertool/token.hpp"
+
+namespace xng {
+    /**
+     * A custom lexer which converts c++ source code into tokens.
+     */
+    class XENGINE_EXPORT Tokenizer {
+    public:
+        std::vector<Token> tokenize(std::istream &source);
+    };
+}
+#endif //XENGINE_TOKENIZER_HPP

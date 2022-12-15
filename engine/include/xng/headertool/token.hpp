@@ -17,33 +17,39 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_MONOSCRIPT_HPP
-#define XENGINE_MONOSCRIPT_HPP
+#ifndef XENGINE_TOKEN_HPP
+#define XENGINE_TOKEN_HPP
 
-#include "xng/script/script.hpp"
-#include "xng/script/mono/monocppdomain.hpp"
+#include <string>
 
 namespace xng {
-    class XENGINE_EXPORT MonoScript : public Script {
-    public:
-        MonoScript();
+    struct Token {
+        enum TokenType {
+            BRACKET_OPEN,
+            BRACKET_CLOSE,
+            SQUARE_BRACKET_OPEN,
+            SQUARE_BRACKET_CLOSE,
+            CURLY_BRACKET_OPEN,
+            CURLY_BRACKET_CLOSE,
+            ASTERISK,
+            AMPERSAND,
+            SEMICOLON,
+            LESS_THAN,
+            GREATER_THAN,
+            EQUAL_SIGN,
+            COMMA,
+            IDENTIFIER,
+            LITERAL_STRING,
+            LITERAL_NUMERIC,
+            COMMENT
+        } type{};
 
-        MonoScript(MonoCppAssembly *assembly,
-                   const std::string &scriptClassNameSpace,
-                   const std::string &scriptClass);
+        std::string value{};
 
-        ~MonoScript();
+        Token() = default;
 
-        void onEnable() const override;
-
-        void onDisable() const override;
-
-        void onUpdate() const override;
-
-    private:
-        MonoCppAssembly *assembly;
-        MonoCppObject object;
+        explicit Token(TokenType type, std::string value = "")
+                : type(type), value(std::move(value)) {}
     };
 }
-
-#endif //XENGINE_MONOSCRIPT_HPP
+#endif //XENGINE_TOKEN_HPP

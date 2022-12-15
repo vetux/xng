@@ -37,3 +37,4 @@ endif ()
 
 include(cmake/drivers.cmake)
 include(cmake/engine.cmake)
+include(cmake/tools.cmake)

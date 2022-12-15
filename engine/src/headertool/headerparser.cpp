@@ -17,31 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_MONOCPPVALUE_HPP
-#define XENGINE_MONOCPPVALUE_HPP
+#include "xng/headertool/headerparser.hpp"
 
 #include <stdexcept>
 
 namespace xng {
-    struct XENGINE_EXPORT MonoCppValue {
-        MonoCppValue() = default;
-
-        MonoCppValue(void *ptr) : ptr(ptr) {}
-
-        void *ptr = nullptr;
-
-        template<typename T>
-        const T &get() {
-            if (ptr == nullptr)
-                throw std::runtime_error("null return value");
-            return static_cast<const T &>(*static_cast<T *>(ptr));
-        }
-
-        template<typename T>
-        void setValue(T &p) {
-            ptr = p;
-        }
-    };
+    std::vector<ComponentMetadata> HeaderParser::parseTokens(const std::vector<Token> &tokens) {
+        throw std::runtime_error("Not Implemented");
+    }
 }
-
-#endif //XENGINE_MONOCPPVALUE_HPP

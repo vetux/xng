@@ -17,33 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_MONOCPPTYPE_HPP
-#define XENGINE_MONOCPPTYPE_HPP
+#include <stdexcept>
 
-#include <vector>
-#include <string>
+#include "xng/headertool/headergenerator.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT MonoCppObject;
-
-    struct XENGINE_EXPORT MonoCppArguments {
-        void add(int &value);
-
-        void add(float &value);
-
-        void add(double &value);
-
-        void add(const MonoCppObject &value);
-
-        void clear();
-
-        const std::vector<void *> &data() const;
-
-        size_t count() const;
-
-    private:
-        std::vector<void *> args;
-    };
+    std::string HeaderGenerator::generateHeader(const ComponentMetadata &metadata) {
+        throw std::runtime_error("Not Implemented");
+    }
 }
-
-#endif //XENGINE_MONOCPPTYPE_HPP
