@@ -1,6 +1,5 @@
 option(DRIVER_GLFW "Build the glfw display driver" ON)
 option(DRIVER_OPENGL "Build the OpenGL render driver (Window and Render implementations" ON)
-option(DRIVER_MONO "Build the mono script driver" OFF)
 option(DRIVER_BOX2D "Build the box2d physics driver" ON)
 option(DRIVER_BULLET3 "Build the bullet3 physics driver" ON)
 option(DRIVER_OPENAL "Build the OpenAL audio driver" ON)
@@ -64,10 +63,6 @@ if (DRIVER_OPENGL)
             opengl::OGLGpuDriver
             gpu/opengl/oglgpudriver.hpp
             ${GL_LIBNAME})
-endif ()
-
-if (DRIVER_MONO)
-    #CompileDriver(DRIVER_MONO mono mono-2.0)
 endif ()
 
 if (DRIVER_BOX2D)
