@@ -90,11 +90,11 @@ namespace xng {
         bool isEmpty() const { return src.empty(); }
 
         Messageable &operator<<(const Message &message) override {
-            src = message.value("src", std::string());
-            entryPoint = message.value("entryPoint", std::string());
-            stage = (ShaderStage) message.value("stage", (int) VERTEX);
-            language = (ShaderLanguage) message.value("language", (int) GLSL_420);
-            preprocessed = message.value("preprocessed", false);
+            message.value("src", src);
+            message.value("entryPoint", entryPoint);
+            stage = (ShaderStage) message.getMessage("stage", Message((int) VERTEX)).asInt();
+            language = (ShaderLanguage) message.getMessage("language", Message((int) GLSL_420)).asInt();
+            message.value("preprocessed", preprocessed);
             return *this;
         }
 

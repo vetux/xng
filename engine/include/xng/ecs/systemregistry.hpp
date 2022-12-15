@@ -37,7 +37,7 @@ bool r_##type = xng::SystemRegistry::instance().registerSystem(typeid(type), \
                                                                              });
 
     /**
-     * The system registry is used by the editor to instantiate user defined systems based on their name
+     * The system registry is used for the editor playmode to instantiate user defined systems based on their name
      * by loading a shared library containing the register directives for the user system types at runtime.
      */
     class XENGINE_EXPORT SystemRegistry {

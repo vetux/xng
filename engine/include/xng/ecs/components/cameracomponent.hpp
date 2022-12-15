@@ -29,7 +29,7 @@ namespace xng {
         Camera camera; // The camera used to render meshes. The camera aspect ratio must be updated by the user.
 
         Messageable &operator<<(const Message &message) override {
-            camera << message.value("camera");
+            camera << message.getMessage("camera");
             return Component::operator<<(message);
         }
 

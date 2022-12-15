@@ -26,9 +26,9 @@
 
 #include "xng/resource/resource.hpp"
 
-#include "entityhandle.hpp"
-#include "componentpool.hpp"
-#include "componentregistry.hpp"
+#include "xng/ecs/entityhandle.hpp"
+#include "xng/ecs/componentpool.hpp"
+#include "xng/ecs/componentregistry.hpp"
 
 #include "xng/io/messageable.hpp"
 
@@ -327,9 +327,9 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            name = message.value("name", std::string());
-            if (message.value("entities").getType() == Message::LIST) {
-                for (auto &msg: message.value("entities").asList()) {
+            message.value("name", name);
+            if (message.getMessage("entities").getType() == Message::LIST) {
+                for (auto &msg: message.getMessage("entities").asList()) {
                     deserializeEntity(msg);
                 }
             }

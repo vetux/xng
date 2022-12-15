@@ -67,9 +67,9 @@ namespace xng {
         }
 
         ColorRGB &operator<<(const Message &message) {
-            r() = message.value("r", 0);
-            g() = message.value("g", 0);
-            b() = message.value("b", 0);
+            r() = message.getMessage("r", 0).asInt();
+            g() = message.getMessage("g", 0).asInt();
+            b() = message.getMessage("b", 0).asInt();
             return *this;
         }
 
@@ -210,10 +210,10 @@ namespace xng {
         }
 
         ColorRGBA &operator<<(const Message &message) {
-            r() = message.value("r", 0);
-            g() = message.value("g", 0);
-            b() = message.value("b", 0);
-            a() = message.value("a", 0);
+            r() = message.getMessage("r", 0).asInt();
+            g() = message.getMessage("g", 0).asInt();
+            b() = message.getMessage("b", 0).asInt();
+            a() = message.getMessage("a", 0).asInt();
             return *this;
         }
 

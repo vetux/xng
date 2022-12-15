@@ -58,17 +58,17 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            size << message.value("size");
-            samples = message.value("samples", 0);
-            textureType = (TextureType) message.value("textureType", (int) TEXTURE_2D);
-            format = (ColorFormat) message.value("format", (int) RGBA);
-            wrapping = (TextureWrapping) message.value("wrapping", (int)CLAMP_TO_BORDER);
-            filterMin = (TextureFiltering) message.value("filterMin", (int)NEAREST);
-            filterMag = (TextureFiltering) message.value("filterMax", (int)NEAREST);
-            generateMipmap = message.value("generateMipmap", false);
-            mipmapFilter = (MipMapFiltering)message.value("mipmapFilter", (int)NEAREST_MIPMAP_NEAREST);
-            fixedSampleLocations = message.value("fixedSampleLocations", false);
-            bufferType = (RenderBufferType)message.value("bufferType", (int)(HOST_VISIBLE));
+            size << message.getMessage("size");
+            message.value("samples", samples);
+            textureType = (TextureType) message.getMessage("textureType", Message((int) TEXTURE_2D)).asInt();
+            format = (ColorFormat) message.getMessage("format", Message((int) RGBA)).asInt();
+            wrapping = (TextureWrapping) message.getMessage("wrapping", Message((int) CLAMP_TO_BORDER)).asInt();
+            filterMin = (TextureFiltering) message.getMessage("filterMin", Message((int) NEAREST)).asInt();
+            filterMag = (TextureFiltering) message.getMessage("filterMax", Message((int) NEAREST)).asInt();
+            message.value("generateMipmap", generateMipmap);
+            mipmapFilter = (MipMapFiltering) message.getMessage("mipmapFilter", Message((int) NEAREST_MIPMAP_NEAREST)).asInt();
+            message.value("fixedSampleLocations", fixedSampleLocations);
+            bufferType = (RenderBufferType) message.getMessage("bufferType", Message((int) HOST_VISIBLE)).asInt();
             return *this;
         }
 
@@ -76,13 +76,13 @@ namespace xng {
             message = Message(Message::DICTIONARY);
             size >> message["size"];
             message["samples"] = samples;
-            message["textureType"] = (int)textureType;
-            message["format"] = (int)format;
-            message["wrapping"] = (int)wrapping;
-            message["filterMin"] = (int)filterMin;
-            message["filterMag"] = (int)filterMag;
-            message["generateMipmap"] = (int)generateMipmap;
-            message["mipmapFilter"] = (int)mipmapFilter;
+            message["textureType"] = (int) textureType;
+            message["format"] = (int) format;
+            message["wrapping"] = (int) wrapping;
+            message["filterMin"] = (int) filterMin;
+            message["filterMag"] = (int) filterMag;
+            message["generateMipmap"] = (int) generateMipmap;
+            message["mipmapFilter"] = (int) mipmapFilter;
             message["fixedSampleLocations"] = fixedSampleLocations;
             message["bufferType"] = (int) bufferType;
             return message;

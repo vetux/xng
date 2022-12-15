@@ -43,15 +43,15 @@ namespace xng {
         int layer; // The sorting layer of this canvas relative to other canvases
 
         Messageable &operator<<(const Message &message) override {
-            cameraPosition << message.value("cameraPosition");
-            viewportSize << message.value("viewportSize");
-            viewportOffset << message.value("viewportOffset");
-            overrideViewport = message.value("overrideViewport", false);
-            projectionSize << message.value("projectionSize");
-            fitViewport = message.value("fitViewport", false);
-            clear = message.value("clear", false);
-            clearColor << message.value("clearColor");
-            layer = message.value("layer", 0);
+            cameraPosition << message.getMessage("cameraPosition");
+            viewportSize << message.getMessage("viewportSize");
+            viewportOffset << message.getMessage("viewportOffset");
+            message.value("overrideViewport", overrideViewport);
+            projectionSize << message.getMessage("projectionSize");
+             message.value("fitViewport", fitViewport);
+             message.value("clear", clear);
+            clearColor << message.getMessage("clearColor");
+            message.value("layer", layer);
             return Component::operator<<(message);
         }
 

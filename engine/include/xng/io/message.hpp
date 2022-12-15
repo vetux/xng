@@ -128,7 +128,7 @@ namespace xng {
             return mval.at(name);
         }
 
-        operator int() const {
+        explicit operator int() const {
             if (type != INT)
                 throw std::runtime_error(
                         "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
@@ -136,7 +136,7 @@ namespace xng {
             return this->ival;
         }
 
-        operator long() const {
+        explicit operator long() const {
             if (type != INT)
                 throw std::runtime_error(
                         "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
@@ -144,7 +144,7 @@ namespace xng {
             return ival;
         }
 
-        operator unsigned long() const {
+        explicit operator unsigned long() const {
             if (type != INT)
                 throw std::runtime_error(
                         "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
@@ -152,7 +152,7 @@ namespace xng {
             return ival;
         }
 
-        operator bool() const {
+        explicit operator bool() const {
             if (type != INT)
                 throw std::runtime_error(
                         "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
@@ -160,7 +160,7 @@ namespace xng {
             return ival;
         }
 
-        operator float() const {
+        explicit operator float() const {
             if (type == INT)
                 return ival;
             if (type != FLOAT)
@@ -170,7 +170,7 @@ namespace xng {
             return fval;
         }
 
-        operator double() const {
+        explicit operator double() const {
             if (type == INT)
                 return ival;
             if (type != FLOAT)
@@ -180,7 +180,7 @@ namespace xng {
             return fval;
         }
 
-        operator std::string() const {
+        explicit operator std::string() const {
             if (type != STRING)
                 throw std::runtime_error(
                         "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
@@ -188,7 +188,7 @@ namespace xng {
             return sval;
         }
 
-        operator std::map<std::string, Message>() const {
+        explicit operator std::map<std::string, Message>() const {
             if (type != DICTIONARY)
                 throw std::runtime_error(
                         "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
@@ -196,7 +196,7 @@ namespace xng {
             return mval;
         }
 
-        operator std::vector<Message>() const {
+        explicit  operator std::vector<Message>() const {
             if (type != LIST)
                 throw std::runtime_error(
                         "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
@@ -235,7 +235,7 @@ namespace xng {
             return as<std::string>();
         }
 
-        std::map<std::string, Message> asMap() const {
+        std::map<std::string, Message> asDictionary() const {
             return as<std::map<std::string, Message>>();
         }
 
@@ -244,23 +244,34 @@ namespace xng {
         }
 
         template<typename T>
-        T valueOf(const std::set<std::string> &names, T defValue) const {
+        void valueOf(const std::set<std::string> &names, T &value, const T &defaultValue = T()) const {
+            for (auto &name: names) {
+                auto it = mval.find(name);
+                if (it != mval.end()) {
+                    value = it->second.as<T>();
+                    return;
+                }
+            }
+            value = defaultValue;
+        }
+
+        template<typename T>
+        void value(const std::string &name, T &value, const T &defaultValue = T()) const {
+            valueOf({name}, value);
+        }
+
+        const Message &getMessageOf(const std::set<std::string> &names, const Message &defaultValue = Message()) const {
             for (auto &name: names) {
                 auto it = mval.find(name);
                 if (it != mval.end()) {
                     return it->second;
                 }
             }
-            return defValue;
+            return defaultValue;
         }
 
-        template<typename T>
-        T value(const std::string &name, T defValue) const {
-            return valueOf({name}, defValue);
-        }
-
-        Message value(const std::string &name) const {
-            return valueOf({name}, Message());
+        const Message &getMessage(const std::string &name, const Message &defaultValue = Message()) const {
+            return getMessageOf({name}, defaultValue);
         }
 
     private:

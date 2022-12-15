@@ -82,8 +82,8 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            position << message.value("position");
-            dimensions << message.value("dimensions");
+            position << message.getMessage("position");
+            dimensions << message.getMessage("dimensions");
             return *this;
         }
 

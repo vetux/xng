@@ -106,11 +106,11 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            mPosition << message.value("position");
+            mPosition << message.getMessage("position");
             Vec3f euler;
-            euler << message.value("rotation");
+            euler << message.getMessage("rotation");
             mRotation = Quaternion(euler);
-            mScale << message.value("scale");
+            mScale << message.getMessage("scale");
             return *this;
         }
 

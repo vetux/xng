@@ -54,8 +54,8 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            offset << message.value("offset");
-            image << message.value("image");
+            offset << message.getMessage("offset");
+            image << message.getMessage("image");
             return *this;
         }
 

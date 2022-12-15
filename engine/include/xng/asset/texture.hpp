@@ -38,7 +38,7 @@ namespace xng {
 
         Messageable &operator<<(const Message &message) override {
             images.clear();
-            auto vec = message.value("images");
+            auto vec = message.getMessage("images");
             if (vec.getType() == Message::LIST) {
                 for (auto &img: vec.asList()) {
                     ResourceHandle<ImageRGBA> handle;
@@ -46,7 +46,7 @@ namespace xng {
                     images.emplace_back(handle);
                 }
             }
-            description << message.value("description");
+            description << message.getMessage("description");
             return *this;
         }
 

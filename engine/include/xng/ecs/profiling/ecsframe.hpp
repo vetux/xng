@@ -30,7 +30,7 @@ namespace xng {
 
         Messageable &operator<<(const Message &message) override {
             samples.clear();
-            duration = message.value("duration", 0);
+            message.value("duration", duration);
             for (auto &msg: message["samples"].asList()) {
                 ECSSample sample;
                 sample << msg;

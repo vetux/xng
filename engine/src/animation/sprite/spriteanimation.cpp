@@ -80,7 +80,7 @@ namespace xng {
     }
 
     Messageable &SpriteAnimation::operator<<(const Message &message) {
-        auto vec = message.value("keyframes");
+        auto vec = message.getMessage("keyframes");
         if (vec.getType() == Message::LIST) {
             for (auto &kf: vec.asList()) {
                 SpriteKeyframe keyframe;
@@ -89,16 +89,16 @@ namespace xng {
             }
         }
         if (message.has("animationFps")) {
-            auto fps = message.value("animationFps", 0);
+            auto fps = message.getMessage("animationFps", 0);
             int totalFrames = 0;
             for (auto &v: keyframes)
                 totalFrames += v.duration;
             animationDuration = (1.0f / numeric_cast<float>(fps)) * numeric_cast<float>(totalFrames);
         } else {
-            animationDuration = message.value("animationDuration", 0.0f);
+            message.value("animationDuration", animationDuration);
         }
-        clampDelta = message.value("clampDelta", false);
-        loop = message.value("loop", true);
+        message.value("clampDelta", clampDelta);
+        message.value("loop", loop, true);
 
         initFrames();
 

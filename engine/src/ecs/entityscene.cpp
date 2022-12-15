@@ -44,11 +44,11 @@ namespace xng {
     void EntityScene::deserializeEntity(const Message &message) {
         EntityHandle entity;
         if (message.has("name")) {
-            entity = create(message.at("name"));
+            entity = create(message.at("name").asString());
         } else {
             entity = create();
         }
-        for (auto &c: message.value("components", std::map<std::string, Message>())) {
+        for (auto &c: message.getMessage("components", std::map<std::string, Message>()).asDictionary()) {
             auto deserializer = ComponentRegistry::instance().getDeserializer(ComponentRegistry::instance().getTypeFromName(c.first));
             deserializer(*this, entity, c.second);
         }

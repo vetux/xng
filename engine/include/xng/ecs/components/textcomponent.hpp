@@ -50,41 +50,19 @@ namespace xng {
         ColorRGBA textColor;
         int layer; // The render layer of the text
 
-        static std::string convertAlignment(Alignment alignment) {
-            switch (alignment) {
-                default:
-                case ALIGN_LEFT:
-                    return "left";
-                case ALIGN_CENTER:
-                    return "center";
-                case ALIGN_RIGHT:
-                    return "right";
-            }
-        }
-
-        static Alignment convertAlignment(const std::string &str) {
-            if (str == "left")
-                return ALIGN_LEFT;
-            else if (str == "center")
-                return ALIGN_CENTER;
-            else
-                return ALIGN_RIGHT;
-        }
-
         Messageable &operator<<(const Message &message) override {
-            pixelSize << message.value("pixelSize");
-            lineHeight = message.value("lineHeight", 0);
-            lineWidth = message.value("lineWidth", 0);
-            lineSpacing = message.value("lineSpacing", 0);
-            font << message.value("font");
-            alignment = convertAlignment(message.value("alignment", convertAlignment(ALIGN_LEFT)));
-            textAnchor = CanvasTransformComponent::convertAnchor(message.value("textAnchor",
-                                                                               CanvasTransformComponent::convertAnchor(
-                                                                                       CanvasTransformComponent::LEFT)));
-            textScroll << message.value("textScroll");
-            text = message.value("text", std::string());
-            textColor << message.value("textColor");
-            layer = message.value("layer", 0);
+            pixelSize << message.getMessage("pixelSize");
+            message.value("lineHeight", lineHeight);
+            message.value("lineWidth", lineWidth);
+            message.value("lineSpacing", lineSpacing);
+            font << message.getMessage("font");
+            alignment = (Alignment) message.getMessage("alignment", Message((int) ALIGN_LEFT)).asInt();
+            textAnchor = (CanvasTransformComponent::Anchor) message.getMessage("textAnchor",
+                                                                          Message((int) CanvasTransformComponent::LEFT)).asInt();
+            textScroll << message.getMessage("textScroll");
+            message.value("text", text);
+            textColor << message.getMessage("textColor");
+            message.value("layer", layer);
             return Component::operator<<(message);
         }
 
@@ -95,8 +73,8 @@ namespace xng {
             message["lineWidth"] = lineWidth;
             message["lineSpacing"] = lineSpacing;
             font >> message["font"];
-            message["alignment"] = convertAlignment(alignment);
-            message["textAnchor"] = CanvasTransformComponent::convertAnchor(textAnchor);
+            message["alignment"] = (int)alignment;
+            message["textAnchor"] = (int)textAnchor;
             message["text"] = text;
             textScroll >> message["textScroll"];
             textColor >> message["textColor"];

@@ -50,17 +50,17 @@ namespace xng {
         float rotation;
 
         Messageable &operator<<(const Message &message) override {
-            anchor = convertAnchor(message.value("anchor", std::string("top_left")));
-            rect << message.value("rect");
-            center << message.value("center");
-            rotation = message.value("rotation");
-            canvas = message.value("canvas", std::string());
+            anchor = (Anchor) message.getMessage("anchor", Message((int)TOP_LEFT)).asInt();
+            rect << message.getMessage("rect");
+            center << message.getMessage("center");
+            message.value("rotation", rotation);
+            message.value("canvas", canvas);
             return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            message["anchor"] = convertAnchor(anchor);
+            message["anchor"] = (int)anchor;
             message["enabled"] = enabled;
             rect >> message["rect"];
             center >> message["center"];
@@ -78,55 +78,6 @@ namespace xng {
             return getOffset(anchor, c.projectionSize.magnitude() > 0
                                      ? c.projectionSize
                                      : screenSize.convert<float>());
-        }
-
-        static Anchor convertAnchor(const std::string &str) {
-            if (str == "top_left") {
-                return TOP_LEFT;
-            } else if (str == "top_center") {
-                return TOP_CENTER;
-            } else if (str == "top_right") {
-                return TOP_RIGHT;
-            } else if (str == "left") {
-                return LEFT;
-            } else if (str == "center") {
-                return CENTER;
-            } else if (str == "right") {
-                return RIGHT;
-            } else if (str == "bottom_left") {
-                return BOTTOM_LEFT;
-            } else if (str == "bottom_center") {
-                return BOTTOM_CENTER;
-            } else if (str == "bottom_right") {
-                return BOTTOM_RIGHT;
-            } else {
-                throw std::runtime_error("Invalid anchor value");
-            }
-        }
-
-        static std::string convertAnchor(Anchor anchor) {
-            switch (anchor) {
-                case TOP_LEFT:
-                    return "top_left";
-                case TOP_CENTER:
-                    return "top_center";
-                case TOP_RIGHT:
-                    return "top_right";
-                case LEFT:
-                    return "left";
-                case CENTER:
-                    return "center";
-                case RIGHT:
-                    return "right";
-                case BOTTOM_LEFT:
-                    return "bottom_left";
-                case BOTTOM_CENTER:
-                    return "bottom_center";
-                case BOTTOM_RIGHT:
-                    return "bottom_right";
-                default:
-                    throw std::runtime_error("Invalid anchor");
-            }
         }
 
     private:

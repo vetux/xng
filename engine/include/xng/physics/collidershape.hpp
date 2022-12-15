@@ -42,47 +42,18 @@ namespace xng {
                    && indices == other.indices;
         }
 
-        Primitive getPrimitive(const std::string &str) const {
-            static const std::map<Primitive, std::string> primNames = std::map<Primitive, std::string>(
-                    {
-                            {Primitive::POINT, "point"},
-                            {Primitive::LINE,  "line"},
-                            {Primitive::TRI,   "tri"},
-                            {Primitive::QUAD,  "quad"},
-                    });
-            static const std::map<std::string, Primitive> namePrims = std::map<std::string, Primitive>(
-                    {
-                            {primNames.at(POINT), POINT},
-                            {primNames.at(LINE),  LINE},
-                            {primNames.at(TRI),   TRI},
-                            {primNames.at(QUAD),  QUAD},
-                    });
-            return namePrims.at(str);
-        }
-
-        std::string getPrimitive(Primitive prim) const {
-            static const std::map<Primitive, std::string> primNames = std::map<Primitive, std::string>(
-                    {
-                            {Primitive::POINT, "point"},
-                            {Primitive::LINE,  "line"},
-                            {Primitive::TRI,   "tri"},
-                            {Primitive::QUAD,  "quad"},
-                    });
-            return primNames.at(prim);
-        }
-
         Messageable &operator<<(const Message &message) override {
-            type = (ColliderShapeType) message.value("type", (int) COLLIDER_2D);
-            primitive = getPrimitive(message.value("primitive", std::string("tri")));
-            if (message.has("vertices") && message.value("vertices").getType() == Message::LIST) {
-                for (auto &vert: message.value("vertices").asList()) {
+            type = (ColliderShapeType) message.getMessage("type", Message((int) COLLIDER_2D)).asInt();
+            primitive = (Primitive) message.getMessage("primitive", Message((int) TRI)).asInt();
+            if (message.has("vertices") && message.getMessage("vertices").getType() == Message::LIST) {
+                for (auto &vert: message.getMessage("vertices").asList()) {
                     Vec3f vertex;
                     vertex << vert;
                     vertices.emplace_back(vertex);
                 }
             }
-            if (message.has("indices") && message.value("indices").getType() == Message::LIST) {
-                for (auto &index: message.value("indices").asList()) {
+            if (message.has("indices") && message.getMessage("indices").getType() == Message::LIST) {
+                for (auto &index: message.getMessage("indices").asList()) {
                     indices.emplace_back(index.asLong());
                 }
             }
@@ -92,7 +63,7 @@ namespace xng {
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             message["type"] = (int) type;
-            message["primitive"] = getPrimitive(primitive);
+            message["primitive"] = (int) primitive;
             auto vec = std::vector<Message>();
             for (auto &vert: vertices) {
                 Message msg;

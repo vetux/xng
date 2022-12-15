@@ -36,17 +36,17 @@ namespace xng {
         explicit Light(LightType type) : type(type) {}
 
         Messageable &operator<<(const Message &message) override {
-            type = static_cast<LightType>(message.value("type", 0));
-            transform << message.value("transform");
-            ambient << message.value("ambient");
-            diffuse << message.value("diffuse");
-            specular << message.value("specular");
-            direction << message.value("direction");
-            cutOff = message.value("cutOff", 0.0f);
-            outerCutOff = message.value("outerCutOff", 0.0f);
-            constant = message.value("constant", 0.0f);
-            linear = message.value("linear", 0.0f);
-            quadratic = message.value("quadratic", 0.0f);
+            type = (LightType)message.getMessage("type", Message((int)LIGHT_DIRECTIONAL)).asInt();
+            transform << message.getMessage("transform");
+            ambient << message.getMessage("ambient");
+            diffuse << message.getMessage("diffuse");
+            specular << message.getMessage("specular");
+            direction << message.getMessage("direction");
+            message.value("cutOff", cutOff);
+            message.value("outerCutOff", outerCutOff);
+            message.value("constant", constant);
+            message.value("linear", linear);
+            message.value("quadratic", quadratic);
             return *this;
         }
 

@@ -59,7 +59,7 @@ namespace xng {
     Quaternion::Quaternion(Vec4f vec)
             : w(vec.w), x(vec.x), y(vec.y), z(vec.z) {}
 
-    Quaternion::Quaternion(const Vec3f& eulerAngles)
+    Quaternion::Quaternion(const Vec3f &eulerAngles)
             : w(0), x(0), y(0), z(0) {
         eulerToQuaternion(*this, eulerAngles);
     }
@@ -121,10 +121,10 @@ namespace xng {
     }
 
     Messageable &Quaternion::operator<<(const Message &message) {
-        w = message.value("w", 0.0f);
-        x = message.value("x", 0.0f);
-        y = message.value("y", 0.0f);
-        z = message.value("z", 0.0f);
+        message.value("w", w);
+        message.value("x", x);
+        message.value("y", y);
+        message.value("z", z);
         return *this;
     }
 

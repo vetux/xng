@@ -34,17 +34,6 @@ namespace xng {
             PBR = 1
         };
 
-        static LightingModel deserializeModel(int model) {
-            switch (model) {
-                case PHONG:
-                    return PHONG;
-                case PBR:
-                    return PBR;
-                default:
-                    throw std::runtime_error("Invalid model id");
-            }
-        }
-
         ~Material() override = default;
 
         std::unique_ptr<Resource> clone() override {
@@ -56,27 +45,27 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            model = deserializeModel(message.value("model", static_cast<int>(PHONG)));
+            model = (LightingModel) message.getMessage("model", Message((int) PHONG)).asInt();
 
-            shader << message.value("shader");
+            shader << message.getMessage("shader");
 
-            ambient << message.value("ambient");
-            specular << message.value("specular");
+            ambient << message.getMessage("ambient");
+            specular << message.getMessage("specular");
 
-            ambientTexture << message.value("ambientTexture");
-            specularTexture << message.value("specularTexture");
+            ambientTexture << message.getMessage("ambientTexture");
+            specularTexture << message.getMessage("specularTexture");
 
-            albedo << message.value("albedo");
-            metallic = message.value("metallic", 0.0f);
-            roughness = message.value("roughness", 1.0f);
-            ambientOcclusion = message.value("ambientOcclusion", 1.0f);
+            albedo << message.getMessage("albedo");
+            message.value("metallic", metallic);
+            message.value("roughness", roughness, 1.0f);
+            message.value("ambientOcclusion", ambientOcclusion, 1.0f);
 
-            albedoTexture << message.value("albedoTexture");
-            metallicTexture << message.value("metallicTexture");
-            roughnessTexture << message.value("roughnessTexture");
-            ambientOcclusionTexture << message.value("ambientOcclusionTexture");
+            albedoTexture << message.getMessage("albedoTexture");
+            metallicTexture << message.getMessage("metallicTexture");
+            roughnessTexture << message.getMessage("roughnessTexture");
+            ambientOcclusionTexture << message.getMessage("ambientOcclusionTexture");
 
-            normal << message.value("normal");
+            normal << message.getMessage("normal");
 
             return *this;
         }

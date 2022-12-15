@@ -30,8 +30,8 @@ namespace xng {
         long time; // The time the system update has taken to complete in milliseconds
 
         Messageable &operator<<(const Message &message) override {
-            systemName = message.value("systemName", std::string());
-            time = message.value("time", 0);
+            message.value("systemName", systemName);
+            message.value("time", time);
             return *this;
         }
 

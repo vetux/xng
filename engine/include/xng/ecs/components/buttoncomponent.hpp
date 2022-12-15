@@ -33,11 +33,11 @@ namespace xng {
         ResourceHandle<Sprite> spritePressed;
 
         Messageable &operator<<(const Message &message) override {
-            id = message.value("id", std::string());
-            layer = message.value("layer", 0);
-            sprite << message.value("sprite");
-            spriteHover << message.value("spriteHover");
-            spritePressed << message.value("spritePressed");
+            message.value("id", id);
+            message.value("layer", layer);
+            sprite << message.getMessage("sprite");
+            spriteHover << message.getMessage("spriteHover");
+            spritePressed << message.getMessage("spritePressed");
             return Component::operator<<(message);
         }
 

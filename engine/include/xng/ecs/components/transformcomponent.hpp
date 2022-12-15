@@ -37,8 +37,8 @@ namespace xng {
         std::string parent; //The name of the parent transform entity
 
         Messageable &operator<<(const Message &message) override {
-            transform << message.value("transform");
-            parent = message.value("parent", std::string());
+            transform << message.getMessage("transform");
+            message.value("parent", parent);
             return Component::operator<<(message);
         }
 

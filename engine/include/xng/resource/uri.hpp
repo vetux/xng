@@ -100,7 +100,7 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            *this = Uri(message.getType() == Message::STRING ? message : "");
+            *this = Uri(message.getType() == Message::STRING ? message.asString() : "");
             return *this;
         }
 

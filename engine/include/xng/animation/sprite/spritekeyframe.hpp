@@ -32,8 +32,8 @@ namespace xng {
                 : sprite(std::move(sprite)), duration(duration) {}
 
         Messageable &operator<<(const Message &message) override {
-            sprite << message.value("sprite");
-            duration = message.value("duration", 0);
+            sprite << message.getMessage("sprite");
+            message.value("duration", duration);
             return *this;
         }
 

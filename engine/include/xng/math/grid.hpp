@@ -68,9 +68,9 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            nCol = message.value("nCol", 0);
-            nRow = message.value("nRow", 0);
-            size << message.value("size");
+            message.value("nCol", nCol);
+            message.value("nRow", nRow);
+            size << message.getMessage("size");
             return *this;
         }
 

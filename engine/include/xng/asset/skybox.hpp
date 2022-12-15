@@ -42,8 +42,8 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            color << message.value("color");
-            texture << message.value("texture");
+            color << message.getMessage("color");
+            texture << message.getMessage("texture");
             return *this;
         }
 

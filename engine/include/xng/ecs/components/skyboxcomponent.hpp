@@ -35,7 +35,7 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            skybox << message.value("skybox");
+            skybox << message.getMessage("skybox");
             return Component::operator<<(message);
         }
 

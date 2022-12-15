@@ -50,12 +50,12 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            shape << message.value("shape");
-            friction = message.value("friction", 1.0f);
-            restitution = message.value("restitution", 0.0f);
-            restitution_threshold = message.value("restitution_threshold", 0.0f);
-            density = message.value("density", 1.0f);
-            isSensor = message.value("isSensor", false);
+            shape << message.getMessage("shape");
+            message.value("friction", friction, 1.0f);
+            message.value("restitution", restitution, 0.0f);
+            message.value("restitution_threshold", restitution_threshold, 0.0f);
+            message.value("density", density, 1.0f);
+            message.value("isSensor", isSensor, false);
             return *this;
         }
 

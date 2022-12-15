@@ -45,10 +45,10 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            audio << message.value("audio");
-            play = message.value("play", false);
-            loop = message.value("loop", false);
-            velocity << message.value("velocity");
+            audio << message.getMessage("audio");
+            message.value("play", play);
+            message.value("loop", loop);
+            velocity << message.getMessage("velocity");
             return Component::operator<<(message);
         }
 

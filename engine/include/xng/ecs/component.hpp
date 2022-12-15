@@ -30,7 +30,7 @@ namespace xng {
         virtual std::type_index getType() const = 0;
 
         Messageable &operator<<(const Message &message) override {
-            enabled = message.value("enabled", true);
+            message.value("enabled", enabled, true);
             return *this;
         }
 

@@ -43,10 +43,10 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            castShadows = message.value("castShadows", false);
-            receiveShadows = message.value("receiveShadows", false);
-            mesh << message.value("mesh");
-            material << message.value("material");
+            message.value("castShadows", castShadows);
+            message.value("receiveShadows", receiveShadows);
+            mesh << message.getMessage("mesh");
+            material << message.getMessage("material");
             return Component::operator<<(message);
         }
 

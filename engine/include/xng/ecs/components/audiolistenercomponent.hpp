@@ -31,7 +31,7 @@ namespace xng {
         Vec3f velocity;
 
         Messageable &operator<<(const Message &message) override {
-            velocity << message.value("velocity");
+            velocity << message.getMessage("velocity");
             return Component::operator<<(message);
         }
 

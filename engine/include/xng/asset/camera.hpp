@@ -69,15 +69,15 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            type = static_cast<CameraType>(message.value("type", static_cast<int>(PERSPECTIVE)));
-            nearClip = message.value("nearClip", 0.1f);
-            farClip = message.value("farClip", 1000.0f);
-            fov = message.value("fov", 60.0f);
-            aspectRatio = message.value("aspectRatio", 4.0f / 3.0f);
-            left = message.value("left", -1.0f);
-            top = message.value("top", 1.0f);
-            right = message.value("right", 1.0f);
-            bottom = message.value("bottom", -1.0f);
+            type = (CameraType) message.getMessage("type", Message((int) PERSPECTIVE)).asInt();
+            message.value("nearClip", nearClip, 0.1f);
+            message.value("farClip", farClip, 1000.0f);
+            message.value("fov", fov, 60.0f);
+            message.value("aspectRatio", aspectRatio, 4.0f / 3.0f);
+            message.value("left", left, -1.0f);
+            message.value("top", top, 1.0f);
+            message.value("right", right, 1.0f);
+            message.value("bottom", bottom, -1.0f);
             return *this;
         }
 

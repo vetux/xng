@@ -51,37 +51,16 @@ namespace xng {
 
         std::map<EntityHandle, std::set<int>> touchingColliders; // Updated at runtime by the physics system, for every touching entity the indices of the touching collider
 
-        RigidBody::RigidBodyType convert(const std::string &text) const {
-            if (text == "static")
-                return RigidBody::STATIC;
-            else if (text == "kinematic")
-                return RigidBody::KINEMATIC;
-            else
-                return RigidBody::DYNAMIC;
-        }
-
-        std::string convert(RigidBody::RigidBodyType type) const {
-            switch (type) {
-                case RigidBody::STATIC:
-                    return "static";
-                case RigidBody::KINEMATIC:
-                    return "kinematic";
-                case RigidBody::DYNAMIC:
-                default:
-                    return "dynamic";
-            }
-        }
-
         Messageable &operator<<(const Message &message) override {
-            type = convert(message.value("type", std::string("static")));
-            lockedAxes << message.value("lockedAxes");
-            velocity << message.value("velocity");
-            angularVelocity << message.value("angularVelocity");
-            mass = message.value("mass", -1);
-            massCenter << message.value("massCenter");
-            rotationalInertia << message.value("rotationalInertia");
-            if (message.has("colliders") && message.value("colliders").getType() == Message::LIST) {
-                for (auto &col: message.value("colliders").asList()) {
+            type = (RigidBody::RigidBodyType)message.getMessage("type", Message((int)RigidBody::STATIC)).asInt();
+            lockedAxes << message.getMessage("lockedAxes");
+            velocity << message.getMessage("velocity");
+            angularVelocity << message.getMessage("angularVelocity");
+            message.value("mass", mass, -1.0f);
+            massCenter << message.getMessage("massCenter");
+            rotationalInertia << message.getMessage("rotationalInertia");
+            if (message.has("colliders") && message.getMessage("colliders").getType() == Message::LIST) {
+                for (auto &col: message.getMessage("colliders").asList()) {
                     ResourceHandle<ColliderDesc> desc;
                     desc << col;
                     colliders.emplace_back(desc);
@@ -91,7 +70,7 @@ namespace xng {
         }
 
         Message &operator>>(Message &message) const override {
-            message["type"] = convert(type);
+            message["type"] = (int)type;
             lockedAxes >> message["lockedAxes"];
             velocity >> message["velocity"];
             angularVelocity >> message["angularVelocity"];
