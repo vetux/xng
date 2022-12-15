@@ -40,7 +40,6 @@ xEngine is a cross-platform c++ game engine library.
 - Frame Graph Renderer
   - PBR Material support 
 - Skeletal animation
-- Scripting Abstraction
 
 ## Programs
 - [xng-tools](https://github.com/vetux/xng-tools) - The editor and tools for creating games with xng
