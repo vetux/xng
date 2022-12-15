@@ -5,7 +5,7 @@ It parses component definitions in the following format:
 
     ...
 
-    #include "filename.generated.h" // Must be included before headertoolmacros.hpp
+    #include "filename.generated.h" // Must be included after headertoolmacros.hpp
 
     XCOMPONENT(Category="MyComponents/SubMenu/AnotherSubMenu")
     struct UserComponent : public Component {
