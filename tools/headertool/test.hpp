@@ -1,9 +1,13 @@
 #include "filename.generated.h" // Must be included before headertoolmacros.hpp
 
+int functionCall() {
+    return 33;
+}
+
 XCOMPONENT(Category="MyComponents/DubDub/AnotherSubMenu")
 struct UserComponent : public Component {
     XVARIABLE(Minimum=-5,Maximum=15)
-    int integerVariable;
+    int integerVariable = functionCall();
 
     XVARIABLE()
     std::string strVariable = "DefaultValue";
