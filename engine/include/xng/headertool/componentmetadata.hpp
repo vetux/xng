@@ -25,40 +25,39 @@
 #include <string>
 #include <map>
 
+#include "xng/headertool/token.hpp"
+
 namespace xng {
     struct ComponentMetadata {
-        enum MetadataProperty  {
-            MINIMUM, // The minimum value for numeric values
-            MAXIMUM // The maximum value for numeric values
-        };
-
         struct TypeMetadata {
             std::string typeName;
-            std::vector<std::string> templateArguments; // The list of template arguments
+            std::vector<TypeMetadata> templateArguments; // The list of template arguments
 
-            std::string fullTypeName() {
-                return typeName
-                       + "<"
-                       + combineArguments()
-                       + ">";
+            std::string fullTypeName() const {
+                return typeName + combineArguments();
             }
 
-            std::string combineArguments() {
+            std::string combineArguments() const {
                 std::string ret;
-                for (auto &str: templateArguments) {
-                    ret += str + ",";
+                if (!templateArguments.empty()){
+                    ret += "<";
+                    for (auto &arg: templateArguments) {
+                        ret += arg.fullTypeName() + ",";
+                    }
+                    if (!ret.empty())
+                        ret.pop_back();
+                    ret += ">";
                 }
-                if (!ret.empty())
-                    ret.pop_back();
                 return ret;
             }
         };
 
         struct MemberMetadata {
-            std::map<MetadataProperty, std::string> properties;
             TypeMetadata typeMetadata;
             std::string instanceName;
             std::string defaultValue;
+            Token minimum;
+            Token maximum;
         };
 
         std::string typeName;

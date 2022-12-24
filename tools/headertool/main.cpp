@@ -50,7 +50,7 @@ void printToken(const xng::Token &token) {
             std::cout << "ASTERISK";
             break;
         case xng::Token::AMPERSAND:
-            std::cout<<"AMPERSAND";
+            std::cout << "AMPERSAND";
             break;
         case xng::Token::SEMICOLON:
             std::cout << "SEMICOLON";
@@ -80,7 +80,24 @@ void printToken(const xng::Token &token) {
             std::cout << "COMMENT   \t\t" + token.value;
             break;
     }
-    std::cout << "\n";
+    std::cout << "\t" << token.lineNumber << "\n";
+}
+
+void printMetadata(const xng::ComponentMetadata &metadata) {
+    std::cout << metadata.typeName << "(" << metadata.category << ")" << "\n";
+    for (auto &mem: metadata.members) {
+        std::cout << "\t"
+                  << mem.typeMetadata.fullTypeName()
+                  << " "
+                  << mem.instanceName
+                  << " = "
+                  << mem.defaultValue
+                  << " min:"
+                  << mem.minimum.value
+                  << " max:"
+                  << mem.maximum.value
+                  << "\n";
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -100,11 +117,22 @@ int main(int argc, char *argv[]) {
     xng::Tokenizer tokenizer;
     auto tokens = tokenizer.tokenize(fs);
 
+    std::cout << "--------- Lexer ----------\n";
+
     for (auto &token: tokens) {
         printToken(token);
     }
 
-    std::cout << "Done.";
+    std::cout << "--------- Parser ----------\n";
+
+    xng::HeaderParser parser;
+    auto metadata = parser.parseTokens(sourceFile, tokens);
+
+    for(auto &m : metadata){
+        printMetadata(m);
+    }
+
+    std::cout << "-------------------\n";
 
     return 0;
 }

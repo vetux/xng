@@ -46,10 +46,12 @@ namespace xng {
 
         std::string value{};
 
+        size_t lineNumber {};
+
         Token() = default;
 
-        explicit Token(TokenType type, std::string value = "")
-                : type(type), value(std::move(value)) {}
+        explicit Token(TokenType type, size_t lineNumber, std::string value)
+                : type(type), lineNumber(lineNumber), value(std::move(value)) {}
     };
 }
 #endif //XENGINE_TOKEN_HPP

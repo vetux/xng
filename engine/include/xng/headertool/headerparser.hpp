@@ -21,14 +21,25 @@
 #define XENGINE_HEADERPARSER_HPP
 
 #include <vector>
+#include <functional>
 
 #include "xng/headertool/componentmetadata.hpp"
 #include "xng/headertool/token.hpp"
 
+#include "xng/headertool/syntaxexception.hpp"
+
 namespace xng {
     class XENGINE_EXPORT HeaderParser {
     public:
-        std::vector<ComponentMetadata> parseTokens(const std::vector<Token> &tokens);
+        /**
+         * Parse the list of tokens and return all available component metadata declarations.
+         *
+         * @param fileName The string describing the source of the tokens, Used when building SyntaxExceptions
+         * @param tokens The list of tokens to parse
+         * @return
+         */
+        std::vector<ComponentMetadata> parseTokens(const std::string &fileName,
+                                                   const std::vector<Token> &tokens);
     };
 }
 #endif //XENGINE_HEADERPARSER_HPP
