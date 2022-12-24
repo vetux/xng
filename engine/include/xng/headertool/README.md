@@ -32,7 +32,7 @@ Available header tool macros are:
 - XVARIABLE() - Declares a member, Properties: 
   - Minimum - Define the minimum value for a numeric value
   - Maximum - Define the maximum value for a numeric value
-- XGENERATED_OPERATORS() - Defines the Messageable stream operators which serialize and deserialize the defined XVARIABLE instances.
+- XGENERATED_OPERATORS() - Defines the Messageable stream operators which serialize and deserialize the defined XVARIABLE instances using the optionally defined default assignment values as default values.
 
 By adding XCOMPONENT() before a component type definition allows the user to create an instance of the component in the scene component create gui under the specified category. Categories that are separated with a slash character become submenus.
 
