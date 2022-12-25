@@ -24,7 +24,7 @@
 #include "quaternion.hpp"
 #include "matrixmath.hpp"
 
-#include "xng/io/messageable.hpp"
+#include "xng/io/message.hpp"
 
 namespace xng {
     class XENGINE_EXPORT Transform : public Messageable {

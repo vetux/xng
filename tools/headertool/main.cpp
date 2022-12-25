@@ -123,16 +123,20 @@ int main(int argc, char *argv[]) {
         printToken(token);
     }
 
-    std::cout << "--------- Parser ----------\n";
+    std::cout << "--------- Parser/Generator ----------\n";
 
+    xng::HeaderGenerator generator;
     xng::HeaderParser parser;
     auto metadata = parser.parseTokens(sourceFile, tokens);
 
     for(auto &m : metadata){
         printMetadata(m);
+        auto hdr = generator.generateHeader(m);
+        std::cout << "Generated Header:\n" << hdr << "\n";
     }
 
-    std::cout << "-------------------\n";
+    std::cout << "--------- Generator ----------\n";
+
 
     return 0;
 }

@@ -45,18 +45,18 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            audio << message.getMessage("audio");
+            message.value("audio", audio);
             message.value("play", play);
             message.value("loop", loop);
-            velocity << message.getMessage("velocity");
+            message.value("velocity", velocity);
             return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             audio >> message["audio"];
-            message["play"] = play;
-            message["loop"] = loop;
+            play >> message["play"];
+            loop >> message["loop"];
             velocity >> message["velocity"];
             return Component::operator>>(message);
         }

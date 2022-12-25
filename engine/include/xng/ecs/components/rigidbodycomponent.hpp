@@ -52,38 +52,29 @@ namespace xng {
         std::map<EntityHandle, std::set<int>> touchingColliders; // Updated at runtime by the physics system, for every touching entity the indices of the touching collider
 
         Messageable &operator<<(const Message &message) override {
-            type = (RigidBody::RigidBodyType)message.getMessage("type", Message((int)RigidBody::STATIC)).asInt();
-            lockedAxes << message.getMessage("lockedAxes");
-            velocity << message.getMessage("velocity");
-            angularVelocity << message.getMessage("angularVelocity");
+            message.value("type", (int&)type, (int)RigidBody::STATIC);
+            message.value("lockedAxes", lockedAxes);
+            message.value("velocity", velocity);
+            message.value("angularVelocity", angularVelocity);
+
             message.value("mass", mass, -1.0f);
-            massCenter << message.getMessage("massCenter");
-            rotationalInertia << message.getMessage("rotationalInertia");
-            if (message.has("colliders") && message.getMessage("colliders").getType() == Message::LIST) {
-                for (auto &col: message.getMessage("colliders").asList()) {
-                    ResourceHandle<ColliderDesc> desc;
-                    desc << col;
-                    colliders.emplace_back(desc);
-                }
-            }
+            message.value("massCenter", massCenter);
+            message.value("rotationalInertia", rotationalInertia);
+
+            message.value("colliders", colliders);
+
             return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
-            message["type"] = (int)type;
+            type >> message["type"];
             lockedAxes >> message["lockedAxes"];
             velocity >> message["velocity"];
             angularVelocity >> message["angularVelocity"];
-            message["mass"] = mass;
+            mass >> message["mass"];
             massCenter >> message["massCenter"];
             rotationalInertia >> message["rotationalInertia"];
-            auto vec = std::vector<Message>();
-            for (auto &col: colliders) {
-                Message msg;
-                col >> msg;
-                vec.emplace_back(msg);
-            }
-            message["colliders"] = vec;
+            colliders >> message["colliders"];
             return Component::operator>>(message);
         }
 

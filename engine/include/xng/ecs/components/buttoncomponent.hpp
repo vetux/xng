@@ -35,16 +35,16 @@ namespace xng {
         Messageable &operator<<(const Message &message) override {
             message.value("id", id);
             message.value("layer", layer);
-            sprite << message.getMessage("sprite");
-            spriteHover << message.getMessage("spriteHover");
-            spritePressed << message.getMessage("spritePressed");
+            message.value("sprite", sprite);
+            message.value("spriteHover", sprite);
+            message.value("spritePressed", sprite);
             return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            message["id"] = id;
-            message["layer"] = layer;
+            id >> message["id"];
+            layer >> message["layer"];
             sprite >> message["sprite"];
             spriteHover >> message["spriteHover"];
             spritePressed >> message["spritePressed"];

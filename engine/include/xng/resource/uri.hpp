@@ -28,7 +28,7 @@
 
 #include "xng/util/hashcombine.hpp"
 
-#include "xng/io/messageable.hpp"
+#include "xng/io/message.hpp"
 
 namespace xng {
     /**

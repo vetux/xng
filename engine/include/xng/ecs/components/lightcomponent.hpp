@@ -29,7 +29,7 @@ namespace xng {
         Light light;
 
         Messageable &operator<<(const Message &message) override {
-            light << message.getMessage("light");
+            message.value("light", light);
             return Component::operator<<(message);
         }
 

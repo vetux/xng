@@ -36,26 +36,24 @@ namespace xng {
         ResourceHandle<Sprite> mixSprite;
 
         Messageable &operator<<(const Message &message) override {
-            sprite << message.getMessage("sprite");
+            message.value("sprite", sprite);
             message.value("layer", layer);
-            flipSprite << message.getMessage("flipSprite");
+            message.value("flipSprite", flipSprite);
             message.value("mix", mix);
-            mixColor << message.getMessage("mixColor");
-            mixSprite << message.getMessage("mixSprite");
-            Component::operator<<(message);
-            return *this;
+            message.value("mixColor", mixColor);
+            message.value("mixSprite", mixSprite);
+            return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             sprite >> message["sprite"];
-            message["layer"] = layer;
+            layer >> message["layer"];
             flipSprite >> message["flipSprite"];
-            message["mix"] = mix;
+            mix >> message["mix"];
             mixColor >> message["mixColor"];
             mixSprite >> message["mixSprite"];
-            Component::operator>>(message);
-            return message;
+            return Component::operator>>(message);
         }
 
         std::type_index getType() const override {

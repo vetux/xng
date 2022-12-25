@@ -37,7 +37,7 @@ namespace xng {
         std::string parent; //The name of the parent transform entity
 
         Messageable &operator<<(const Message &message) override {
-            transform << message.getMessage("transform");
+            message.value("transform", transform);
             message.value("parent", parent);
             return Component::operator<<(message);
         }
@@ -45,7 +45,7 @@ namespace xng {
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             transform >> message["transform"];
-            message["parent"] = parent;
+            parent >> message["parent"];
             return Component::operator>>(message);
         }
 

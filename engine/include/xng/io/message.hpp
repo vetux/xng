@@ -25,8 +25,13 @@
 #include <stdexcept>
 #include <set>
 
+#include "xng/io/messageable.hpp"
+
 namespace xng {
     class XENGINE_EXPORT Message;
+
+    template<typename T>
+    T &operator<<(T &v, const Message &message);
 
     class XENGINE_EXPORT Message {
     public:
@@ -73,8 +78,6 @@ namespace xng {
         Message(double value) : type(FLOAT) { fval = value; }
 
         Message(const std::string &value) : type(STRING) { sval = value; }
-
-        Message(const char *value) : type(STRING) { sval = std::string(value); }
 
         Message(const std::map<std::string, Message> &value) : type(DICTIONARY) { mval = value; }
 
@@ -129,78 +132,42 @@ namespace xng {
         }
 
         explicit operator int() const {
-            if (type != INT)
-                throw std::runtime_error(
-                        "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
-                        " to int");
-            return this->ival;
+            return ival;
         }
 
         explicit operator long() const {
-            if (type != INT)
-                throw std::runtime_error(
-                        "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
-                        " to long");
             return ival;
         }
 
         explicit operator unsigned long() const {
-            if (type != INT)
-                throw std::runtime_error(
-                        "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
-                        " to long");
             return ival;
         }
 
         explicit operator bool() const {
-            if (type != INT)
-                throw std::runtime_error(
-                        "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
-                        " to bool");
             return ival;
         }
 
         explicit operator float() const {
             if (type == INT)
                 return ival;
-            if (type != FLOAT)
-                throw std::runtime_error(
-                        "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
-                        " to float");
             return fval;
         }
 
         explicit operator double() const {
             if (type == INT)
                 return ival;
-            if (type != FLOAT)
-                throw std::runtime_error(
-                        "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
-                        " to double");
             return fval;
         }
 
         explicit operator std::string() const {
-            if (type != STRING)
-                throw std::runtime_error(
-                        "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
-                        " to string");
             return sval;
         }
 
         explicit operator std::map<std::string, Message>() const {
-            if (type != DICTIONARY)
-                throw std::runtime_error(
-                        "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
-                        " to dictionary");
             return mval;
         }
 
         explicit  operator std::vector<Message>() const {
-            if (type != LIST)
-                throw std::runtime_error(
-                        "Attempted to perform invalid cast from message of type " + getDataTypeName(type) +
-                        " to list");
             return vval;
         }
 
@@ -244,20 +211,27 @@ namespace xng {
         }
 
         template<typename T>
-        void valueOf(const std::set<std::string> &names, T &value, const T &defaultValue = T()) const {
+        bool valueOf(const std::set<std::string> &names, T &v, const T &defaultValue = T()) const {
             for (auto &name: names) {
-                auto it = mval.find(name);
-                if (it != mval.end()) {
-                    value = it->second.as<T>();
-                    return;
+                if (value(name, v, defaultValue)) {
+                    return true;
                 }
             }
-            value = defaultValue;
+            v = defaultValue;
+            return false;
         }
 
+
         template<typename T>
-        void value(const std::string &name, T &value, const T &defaultValue = T()) const {
-            valueOf({name}, value);
+        bool value(const std::string &name, T &v, const T &defaultValue = T()) const {
+            auto it = mval.find(name);
+            if (it != mval.end()) {
+                v << it->second;
+                return true;
+            } else {
+                v = defaultValue;
+                return false;
+            }
         }
 
         const Message &getMessageOf(const std::set<std::string> &names, const Message &defaultValue = Message()) const {
@@ -283,6 +257,85 @@ namespace xng {
         std::map<std::string, Message> mval = {};
         std::vector<Message> vval = {};
     };
+
+    /**
+     * These operators are invoked for any type which does not have an explicitly defined stream operator (Messageable or statically defined)
+     * and is convertable from/to Message.
+     *
+     * @tparam T
+     * @param v
+     * @param message
+     * @return
+     */
+    template<typename T>
+    T &operator<<(T &v, const Message &message) {
+        v = message.as<T>();
+        return v;
+    }
+
+    template<typename T>
+    Message &operator>>(const T &v, Message &message) {
+        message = Message(v);
+        return message;
+    }
+
+    /**
+     * These operators invoke the streaming operators on a vector or map.
+     *
+     * @tparam T
+     * @param vec
+     * @param message
+     * @return
+     */
+    template<typename T>
+    std::vector<T> &operator<<(std::vector<T> &vec, const Message &message) {
+        vec.clear();
+        if (message.getType() == Message::LIST) {
+            for (auto &msg: message.asList()) {
+                T val;
+                val << msg;
+                vec.emplace_back(val);
+            }
+        }
+        return vec;
+    }
+
+    template<typename T>
+    Message &operator>>(const std::vector<T> &vec, Message &message) {
+        std::vector<Message> msgs;
+        for (auto &v: vec) {
+            Message msg;
+            v >> msg;
+            msgs.emplace_back(msg);
+        }
+        message = Message(msgs);
+        return message;
+    }
+
+    template<typename T>
+    std::map<std::string, T> &operator<<(std::map<std::string, T> &map, const Message &message) {
+        map.clear();
+        if (message.getType() == Message::DICTIONARY) {
+            for (auto &pair: message.asDictionary()) {
+                T val;
+                val << pair.second;
+                map[pair.first] = val;
+            }
+        }
+        return map;
+    }
+
+    template<typename T>
+    Message &operator>>(const std::map<std::string, T> &map, Message &message) {
+        std::map<std::string, Message> msgs;
+        for (auto &pair: map) {
+            Message msg;
+            pair.second >> msg;
+            msgs[pair.first] = msg;
+        }
+        message = Message(msgs);
+        return message;
+    }
 }
 
 #endif //XENGINE_MESSAGE_HPP

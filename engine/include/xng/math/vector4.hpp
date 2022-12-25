@@ -5,7 +5,7 @@
 #include <array>
 
 #include "xng/util/numeric_cast.hpp"
-#include "xng/io/messageable.hpp"
+#include "xng/io/message.hpp"
 
 namespace xng {
     template<typename T>

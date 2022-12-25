@@ -51,17 +51,16 @@ namespace xng {
         int layer; // The render layer of the text
 
         Messageable &operator<<(const Message &message) override {
-            pixelSize << message.getMessage("pixelSize");
+            message.value("pixelSize", pixelSize);
             message.value("lineHeight", lineHeight);
             message.value("lineWidth", lineWidth);
             message.value("lineSpacing", lineSpacing);
-            font << message.getMessage("font");
-            alignment = (Alignment) message.getMessage("alignment", Message((int) ALIGN_LEFT)).asInt();
-            textAnchor = (CanvasTransformComponent::Anchor) message.getMessage("textAnchor",
-                                                                          Message((int) CanvasTransformComponent::LEFT)).asInt();
-            textScroll << message.getMessage("textScroll");
+            message.value("font", font);
+            message.value("alignment", (int &) alignment, (int) ALIGN_LEFT);
+            message.value("textAnchor", (int &) textAnchor, (int) CanvasTransformComponent::LEFT);
+            message.value("textScroll", textScroll);
             message.value("text", text);
-            textColor << message.getMessage("textColor");
+            message.value("textColor", textColor);
             message.value("layer", layer);
             return Component::operator<<(message);
         }
@@ -69,16 +68,16 @@ namespace xng {
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             pixelSize >> message["pixelSize"];
-            message["lineHeight"] = lineHeight;
-            message["lineWidth"] = lineWidth;
-            message["lineSpacing"] = lineSpacing;
+            lineHeight >> message["lineHeight"];
+            lineWidth >> message["lineWidth"];
+            lineSpacing >> message["lineSpacing"];
             font >> message["font"];
-            message["alignment"] = (int)alignment;
-            message["textAnchor"] = (int)textAnchor;
-            message["text"] = text;
+            alignment >> message["alignment"];
+            textAnchor >> message["textAnchor"];
+            text >> message["text"];
             textScroll >> message["textScroll"];
             textColor >> message["textColor"];
-            message["layer"] = layer;
+            layer >> message["layer"];
             return Component::operator>>(message);
         }
 

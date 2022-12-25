@@ -29,10 +29,10 @@ struct OtherComponent : public Component {
     int sd;
 
     XVARIABLE()
-    std::string de = "DefaultValue";
+    std::string de = std::string("DefaultValue"); // Make sure to initialize strings with std::string and not string literals.
 
     XVARIABLE()
-    ResourceHandle<std::vector<Vector3<int>>, std::string<float>> da = ResourceHandle<Texture>(asdf, ff);
+    ResourceHandle<Texture> da = ResourceHandle<Texture>();
 
     XVARIABLE()
     EntityName Blu;

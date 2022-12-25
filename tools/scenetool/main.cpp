@@ -17,34 +17,39 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_COMPONENT_HPP
-#define XENGINE_COMPONENT_HPP
+#include "xng/xng.hpp"
 
-#include "xng/io/message.hpp"
+#include <fstream>
+#include <iostream>
+#include <filesystem>
 
-namespace xng {
-    /**
-     * Component types must extend this type.
-     */
-    struct XENGINE_EXPORT Component : public Messageable {
-        virtual std::type_index getType() const = 0;
-
-        Messageable &operator<<(const Message &message) override {
-            message.value("enabled", enabled, true);
-            return *this;
-        }
-
-        /**
-         * @param message Must be of type DICTIONARY
-         * @return
-         */
-        Message &operator>>(Message &message) const override {
-            enabled >> message["enabled"];
-            return message;
-        }
-
-        bool enabled = true;
-    };
+void printUsage() {
+    std::cout << "Usage: PROGRAM PathToScene";
 }
 
-#endif //XENGINE_COMPONENT_HPP
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        printUsage();
+        return 0;
+    }
+
+    std::filesystem::path filePath = std::filesystem::path(argv[1]);
+
+    std::fstream fs(filePath);
+
+    if (!fs.is_open()) {
+        std::cout << "Failed to open file " + filePath.string() << "\n";
+        return 0;
+    }
+
+    xng::JsonParser parser;
+    auto bundle = parser.read(xng::readFile(filePath), filePath.extension(), nullptr);
+
+    for (auto &pair: bundle.assets) {
+        if (pair.second->getTypeIndex() == typeid(xng::EntityScene)) {
+            std::cout << "EntityScene: " + dynamic_cast<xng::EntityScene*>(pair.second.get())->getName() << "\n";
+        }
+    }
+
+    return 0;
+}

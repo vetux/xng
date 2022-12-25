@@ -32,7 +32,7 @@ namespace xng {
 
     class XENGINE_EXPORT RigidBody {
     public:
-        enum XENGINE_EXPORT RigidBodyType {
+        enum XENGINE_EXPORT RigidBodyType : int {
             STATIC,
             KINEMATIC,
             DYNAMIC

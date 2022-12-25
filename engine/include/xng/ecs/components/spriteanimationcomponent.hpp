@@ -35,7 +35,7 @@ namespace xng {
         bool finished = false;
 
         Messageable &operator<<(const Message &message) override {
-            animation << message.getMessage("animation");
+            message.value("animation", animation);
             return Component::operator<<(message);
         }
 

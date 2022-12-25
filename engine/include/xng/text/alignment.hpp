@@ -21,7 +21,7 @@
 #define XENGINE_ALIGNMENT_HPP
 
 namespace xng {
-    enum Alignment {
+    enum Alignment : int {
         ALIGN_LEFT,
         ALIGN_CENTER,
         ALIGN_RIGHT

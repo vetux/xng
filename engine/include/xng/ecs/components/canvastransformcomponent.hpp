@@ -31,7 +31,7 @@ namespace xng {
      * If the entity contains a TransformComponent the position(.x, .y) and rotation(.z) are added to the rect transform values.
      */
     struct XENGINE_EXPORT CanvasTransformComponent : public Component {
-        enum Anchor {
+        enum Anchor : int {
             TOP_LEFT,
             TOP_CENTER,
             TOP_RIGHT,
@@ -50,9 +50,9 @@ namespace xng {
         float rotation;
 
         Messageable &operator<<(const Message &message) override {
-            anchor = (Anchor) message.getMessage("anchor", Message((int)TOP_LEFT)).asInt();
-            rect << message.getMessage("rect");
-            center << message.getMessage("center");
+            message.value("anchor", (int&)anchor, (int)TOP_LEFT);
+            message.value("rect", rect);
+            message.value("center", center);
             message.value("rotation", rotation);
             message.value("canvas", canvas);
             return Component::operator<<(message);
@@ -60,12 +60,12 @@ namespace xng {
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            message["anchor"] = (int)anchor;
-            message["enabled"] = enabled;
+            anchor >> message["anchor"];
+            enabled >> message["enabled"];
             rect >> message["rect"];
             center >> message["center"];
-            message["rotation"] = rotation;
-            message["canvas"] = canvas;
+            rotation >> message["rotation"];
+            canvas >> message["canvas"];
             return Component::operator>>(message);
         }
 
