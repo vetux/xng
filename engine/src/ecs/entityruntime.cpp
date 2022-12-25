@@ -17,22 +17,22 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/ecs/ecs.hpp"
+#include "xng/ecs/entityruntime.hpp"
 
 #include <utility>
 #include <algorithm>
 
 namespace xng {
-    ECS::ECS(std::vector<std::reference_wrapper<System>> systems, std::shared_ptr<EntityScene> scene)
+    EntityRuntime::EntityRuntime(std::vector<std::reference_wrapper<System>> systems, std::shared_ptr<EntityScene> scene)
             : systems(std::move(systems)), scene(std::move(scene)) {}
 
-    ECS::~ECS() = default;
+    EntityRuntime::~EntityRuntime() = default;
 
-    ECS::ECS(ECS &&other) noexcept = default;
+    EntityRuntime::EntityRuntime(EntityRuntime &&other) noexcept = default;
 
-    ECS &ECS::operator=(ECS &&other) noexcept = default;
+    EntityRuntime &EntityRuntime::operator=(EntityRuntime &&other) noexcept = default;
 
-    void ECS::start() {
+    void EntityRuntime::start() {
         if (!scene) {
             throw std::runtime_error("No scene assigned.");
         }
@@ -43,7 +43,7 @@ namespace xng {
         started = true;
     }
 
-    void ECS::update(DeltaTime deltaTime) {
+    void EntityRuntime::update(DeltaTime deltaTime) {
         if (enableProfiling) {
             profiler.beginFrame();
             for (auto &system: systems) {
@@ -59,18 +59,18 @@ namespace xng {
         }
     }
 
-    void ECS::stop() {
+    void EntityRuntime::stop() {
         for (auto &system: systems) {
             system.get().stop(*scene,*eventBus);
         }
         started = false;
     }
 
-    const std::shared_ptr<EntityScene> &ECS::getScene() const {
+    const std::shared_ptr<EntityScene> &EntityRuntime::getScene() const {
         return scene;
     }
 
-    void ECS::setScene(const std::shared_ptr<EntityScene> &v) {
+    void EntityRuntime::setScene(const std::shared_ptr<EntityScene> &v) {
         auto restart = started;
         if (started)
             stop();
@@ -81,17 +81,17 @@ namespace xng {
             start();
     }
 
-    const std::vector<std::reference_wrapper<System>> &ECS::getSystems() const {
+    const std::vector<std::reference_wrapper<System>> &EntityRuntime::getSystems() const {
         return systems;
     }
 
-    void ECS::setSystems(const std::vector<std::reference_wrapper<System>> &v) {
+    void EntityRuntime::setSystems(const std::vector<std::reference_wrapper<System>> &v) {
         if (started)
             stop();
         systems = v;
     }
 
-    const ECSFrameList &ECS::getFrameList() const {
+    const ECSFrameList &EntityRuntime::getFrameList() const {
         return profiler.getFrames();
     }
 }

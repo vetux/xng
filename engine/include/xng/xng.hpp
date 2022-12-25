@@ -31,7 +31,7 @@
 #include "xng/ecs/entity.hpp"
 #include "xng/ecs/systemregistry.hpp"
 #include "xng/ecs/system.hpp"
-#include "xng/ecs/ecs.hpp"
+#include "xng/ecs/entityruntime.hpp"
 #include "xng/ecs/componentpool.hpp"
 #include "xng/ecs/entityscene.hpp"
 #include "xng/ecs/systems/meshrendersystem.hpp"
