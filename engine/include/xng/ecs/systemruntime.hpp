@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_ENTITYRUNTIME_HPP
-#define XENGINE_ENTITYRUNTIME_HPP
+#ifndef XENGINE_SYSTEMRUNTIME_HPP
+#define XENGINE_SYSTEMRUNTIME_HPP
 
 #include <set>
 #include <memory>
@@ -32,15 +32,15 @@
 #include "xng/types/deltatime.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT EntityRuntime {
+    class XENGINE_EXPORT SystemRuntime {
     public:
-        explicit EntityRuntime(std::vector<std::reference_wrapper<System>> systems = {}, std::shared_ptr<EntityScene> scene = {});
+        explicit SystemRuntime(std::vector<std::reference_wrapper<System>> systems = {}, std::shared_ptr<EntityScene> scene = {});
 
-        ~EntityRuntime();
+        ~SystemRuntime();
 
-        EntityRuntime(EntityRuntime &&other) noexcept;
+        SystemRuntime(SystemRuntime &&other) noexcept;
 
-        EntityRuntime &operator=(EntityRuntime &&other) noexcept;
+        SystemRuntime &operator=(SystemRuntime &&other) noexcept;
 
         void start();
 
@@ -91,4 +91,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_ENTITYRUNTIME_HPP
+#endif //XENGINE_SYSTEMRUNTIME_HPP

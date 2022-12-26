@@ -17,22 +17,22 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/ecs/entityruntime.hpp"
+#include "xng/ecs/systemruntime.hpp"
 
 #include <utility>
 #include <algorithm>
 
 namespace xng {
-    EntityRuntime::EntityRuntime(std::vector<std::reference_wrapper<System>> systems, std::shared_ptr<EntityScene> scene)
+    SystemRuntime::SystemRuntime(std::vector<std::reference_wrapper<System>> systems, std::shared_ptr<EntityScene> scene)
             : systems(std::move(systems)), scene(std::move(scene)) {}
 
-    EntityRuntime::~EntityRuntime() = default;
+    SystemRuntime::~SystemRuntime() = default;
 
-    EntityRuntime::EntityRuntime(EntityRuntime &&other) noexcept = default;
+    SystemRuntime::SystemRuntime(SystemRuntime &&other) noexcept = default;
 
-    EntityRuntime &EntityRuntime::operator=(EntityRuntime &&other) noexcept = default;
+    SystemRuntime &SystemRuntime::operator=(SystemRuntime &&other) noexcept = default;
 
-    void EntityRuntime::start() {
+    void SystemRuntime::start() {
         if (!scene) {
             throw std::runtime_error("No scene assigned.");
         }
@@ -43,7 +43,7 @@ namespace xng {
         started = true;
     }
 
-    void EntityRuntime::update(DeltaTime deltaTime) {
+    void SystemRuntime::update(DeltaTime deltaTime) {
         if (enableProfiling) {
             profiler.beginFrame();
             for (auto &system: systems) {
@@ -59,18 +59,18 @@ namespace xng {
         }
     }
 
-    void EntityRuntime::stop() {
+    void SystemRuntime::stop() {
         for (auto &system: systems) {
             system.get().stop(*scene,*eventBus);
         }
         started = false;
     }
 
-    const std::shared_ptr<EntityScene> &EntityRuntime::getScene() const {
+    const std::shared_ptr<EntityScene> &SystemRuntime::getScene() const {
         return scene;
     }
 
-    void EntityRuntime::setScene(const std::shared_ptr<EntityScene> &v) {
+    void SystemRuntime::setScene(const std::shared_ptr<EntityScene> &v) {
         auto restart = started;
         if (started)
             stop();
@@ -81,17 +81,17 @@ namespace xng {
             start();
     }
 
-    const std::vector<std::reference_wrapper<System>> &EntityRuntime::getSystems() const {
+    const std::vector<std::reference_wrapper<System>> &SystemRuntime::getSystems() const {
         return systems;
     }
 
-    void EntityRuntime::setSystems(const std::vector<std::reference_wrapper<System>> &v) {
+    void SystemRuntime::setSystems(const std::vector<std::reference_wrapper<System>> &v) {
         if (started)
             stop();
         systems = v;
     }
 
-    const ECSFrameList &EntityRuntime::getFrameList() const {
+    const ECSFrameList &SystemRuntime::getFrameList() const {
         return profiler.getFrames();
     }
 }
