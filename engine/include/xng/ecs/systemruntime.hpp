@@ -23,8 +23,9 @@
 #include <set>
 #include <memory>
 
-#include "system.hpp"
-#include "entity.hpp"
+#include "xng/ecs/system.hpp"
+#include "xng/ecs/entity.hpp"
+#include "xng/ecs/systempipeline.hpp"
 #include "xng/ecs/profiling/ecsprofiler.hpp"
 
 #include "xng/event/eventbus.hpp"
@@ -34,7 +35,7 @@
 namespace xng {
     class XENGINE_EXPORT SystemRuntime {
     public:
-        explicit SystemRuntime(std::vector<std::reference_wrapper<System>> systems = {}, std::shared_ptr<EntityScene> scene = {});
+        explicit SystemRuntime(std::vector<SystemPipeline> pipelines = {}, std::shared_ptr<EntityScene> scene = {});
 
         ~SystemRuntime();
 
@@ -52,15 +53,15 @@ namespace xng {
 
         void setScene(const std::shared_ptr<EntityScene> &scene);
 
-        const std::vector<std::reference_wrapper<System>> &getSystems() const;
+        const std::vector<SystemPipeline> &getPipelines() const;
 
-        void setSystems(const std::vector<std::reference_wrapper<System>> &systems);
+        void setPipelines(const std::vector<SystemPipeline> &systems);
 
         void setEnableProfiling(bool value) {
             enableProfiling = value;
         }
 
-        const ECSFrameList &getFrameList() const;
+        const ECSProfiler &getProfiler() const;
 
         void setEventBus(const std::shared_ptr<EventBus> &ptr) {
             bool reset = started;
@@ -86,7 +87,7 @@ namespace xng {
         ECSProfiler profiler;
         bool started = false;
         std::shared_ptr<EntityScene> scene;
-        std::vector<std::reference_wrapper<System>> systems;
+        std::vector<SystemPipeline> pipelines;
         std::shared_ptr<EventBus> eventBus;
     };
 }

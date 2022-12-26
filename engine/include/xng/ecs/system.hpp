@@ -30,7 +30,7 @@ namespace xng {
     public:
         virtual ~System() = default;
 
-        // If these methods are declared pure virtual there are undefined references to the methods when linking to the resulting binary.
+        // Bug: If these methods are declared pure virtual there are undefined references to the methods when linking to the resulting binary.
         virtual void start(EntityScene &scene, EventBus &eventBus) {}
 
         virtual void stop(EntityScene &scene, EventBus &eventBus) {}

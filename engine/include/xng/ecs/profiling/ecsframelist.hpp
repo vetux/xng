@@ -25,6 +25,7 @@
 
 namespace xng {
     struct ECSFrameList : public Messageable {
+        long totalDuration;
         std::vector<ECSFrame> frames;
 
         void addFrame(const ECSFrame &frame) {

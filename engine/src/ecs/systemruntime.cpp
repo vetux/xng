@@ -23,8 +23,8 @@
 #include <algorithm>
 
 namespace xng {
-    SystemRuntime::SystemRuntime(std::vector<std::reference_wrapper<System>> systems, std::shared_ptr<EntityScene> scene)
-            : systems(std::move(systems)), scene(std::move(scene)) {}
+    SystemRuntime::SystemRuntime(std::vector<SystemPipeline> systems, std::shared_ptr<EntityScene> scene)
+            : pipelines(std::move(systems)), scene(std::move(scene)) {}
 
     SystemRuntime::~SystemRuntime() = default;
 
@@ -37,8 +37,8 @@ namespace xng {
             throw std::runtime_error("No scene assigned.");
         }
 
-        for (auto &system: systems) {
-            system.get().start(*scene, *eventBus);
+        for (auto &pipeline: pipelines) {
+            pipeline.start(*scene, *eventBus);
         }
         started = true;
     }
@@ -46,22 +46,22 @@ namespace xng {
     void SystemRuntime::update(DeltaTime deltaTime) {
         if (enableProfiling) {
             profiler.beginFrame();
-            for (auto &system: systems) {
-                profiler.beginSystemUpdate();
-                system.get().update(deltaTime, *scene, *eventBus);
-                profiler.endSystemUpdate(system.get().getName());
+            for (auto &pipeline: pipelines) {
+                profiler.beginPipelineUpdate();
+                pipeline.update(deltaTime, *scene, *eventBus, profiler, enableProfiling);
+                profiler.endPipelineUpdate(pipeline.getName());
             }
             profiler.endFrame();
         } else {
-            for (auto &system: systems) {
-                system.get().update(deltaTime, *scene, *eventBus);
+            for (auto &pipeline: pipelines) {
+                pipeline.update(deltaTime, *scene, *eventBus, profiler, enableProfiling);
             }
         }
     }
 
     void SystemRuntime::stop() {
-        for (auto &system: systems) {
-            system.get().stop(*scene,*eventBus);
+        for (auto &pipeline: pipelines) {
+            pipeline.stop(*scene, *eventBus);
         }
         started = false;
     }
@@ -81,17 +81,17 @@ namespace xng {
             start();
     }
 
-    const std::vector<std::reference_wrapper<System>> &SystemRuntime::getSystems() const {
-        return systems;
+    const std::vector<SystemPipeline> &SystemRuntime::getPipelines() const {
+        return pipelines;
     }
 
-    void SystemRuntime::setSystems(const std::vector<std::reference_wrapper<System>> &v) {
+    void SystemRuntime::setPipelines(const std::vector<SystemPipeline> &v) {
         if (started)
             stop();
-        systems = v;
+        pipelines = v;
     }
 
-    const ECSFrameList &SystemRuntime::getFrameList() const {
-        return profiler.getFrames();
+    const ECSProfiler &SystemRuntime::getProfiler() const {
+        return profiler;
     }
 }

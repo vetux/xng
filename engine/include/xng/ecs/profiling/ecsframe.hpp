@@ -26,6 +26,7 @@
 namespace xng {
     struct ECSFrame : public Messageable {
         long duration; // Total duration of the frame in milliseconds
+        std::string pipeline; // The name of the pipeline that this frame represents
         std::vector<ECSSample> samples;
 
         Messageable &operator<<(const Message &message) override {
