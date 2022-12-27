@@ -46,7 +46,6 @@ namespace xng {
         };
 
         /**
-         *
          * @param tickMode
          * @param fixedStepDuration
          * @param fixedStepMaxSteps Specify the maximum number of steps to take in TICK_CLAMP and TICK_FIXED modes preventing the "Spiral of death" at the cost of stuttering of clamped/fixed ticks.
@@ -56,16 +55,29 @@ namespace xng {
         SystemPipeline(TickMode tickMode,
                        DeltaTime fixedStepDuration,
                        int fixedStepMaxSteps,
-                       bool runAsync = false,
                        std::vector<std::shared_ptr<System>> systems = {},
+                       bool runAsync = false,
                        std::string name = "Unnamed Pipeline")
                 : tickMode(tickMode),
                   fixedStepDuration(fixedStepDuration),
                   fixedStepMaxSteps(fixedStepMaxSteps),
                   runAsync(runAsync),
                   systems(std::move(systems)),
-                  name(std::move(name)){}
+                  name(std::move(name)) {}
 
+        /**
+         * Create a TICK_FRAME pipeline
+         *
+         * @param systems
+         * @param name
+         */
+        explicit SystemPipeline(std::vector<std::shared_ptr<System>> systems = {},
+                                bool runAsync = false,
+                                std::string name = "Unnamed Pipeline")
+                : tickMode(TICK_FRAME),
+                  runAsync(runAsync),
+                  systems(std::move(systems)),
+                  name(std::move(name)) {}
 
         void addSystem(const std::shared_ptr<System> &ptr) {
             systems.emplace_back(ptr);
@@ -73,13 +85,13 @@ namespace xng {
 
         void start(EntityScene &scene, EventBus &eventBus) {
             for (auto &ptr: systems) {
-                ptr->start( scene, eventBus);
+                ptr->start(scene, eventBus);
             }
         }
 
         void stop(EntityScene &scene, EventBus &eventBus) {
             for (auto &ptr: systems) {
-                ptr->stop( scene, eventBus);
+                ptr->stop(scene, eventBus);
             }
         }
 
@@ -87,7 +99,8 @@ namespace xng {
          * Return when all the system updates have completed,
          * optionally scheduling the updates on the global thread pool.
          */
-        void update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus, ECSProfiler &profiler, bool enableProfiling) {
+        void update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus, ECSProfiler &profiler,
+                    bool enableProfiling) {
             switch (tickMode) {
                 case TICK_FRAME: {
                     invokeUpdate(deltaTime, scene, eventBus, profiler, enableProfiling);
@@ -118,7 +131,7 @@ namespace xng {
             }
         }
 
-        const std::string &getName(){
+        const std::string &getName() {
             return name;
         }
 
@@ -132,26 +145,28 @@ namespace xng {
 
         DeltaTime fixedStepAccumulator = 0;
 
-        void invokeUpdate(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus, ECSProfiler &profiler, bool enableProfiling) {
+        void invokeUpdate(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus, ECSProfiler &profiler,
+                          bool enableProfiling) {
             if (runAsync) {
                 std::vector<std::shared_ptr<Task>> tasks;
                 for (auto &ptr: systems) {
-                    tasks.emplace_back(ThreadPool::getPool().addTask([ptr, deltaTime, &scene, &eventBus, &profiler, enableProfiling]() {
-                        if (enableProfiling){
-                            int id = profiler.beginSystemUpdate();
-                            ptr->update(deltaTime, scene, eventBus);
-                            profiler.endSystemUpdate(ptr->getName(), id);
-                        } else {
-                            ptr->update(deltaTime, scene, eventBus);
-                        }
-                    }));
+                    tasks.emplace_back(ThreadPool::getPool().addTask(
+                            [ptr, deltaTime, &scene, &eventBus, &profiler, enableProfiling]() {
+                                if (enableProfiling) {
+                                    int id = profiler.beginSystemUpdate();
+                                    ptr->update(deltaTime, scene, eventBus);
+                                    profiler.endSystemUpdate(ptr->getName(), id);
+                                } else {
+                                    ptr->update(deltaTime, scene, eventBus);
+                                }
+                            }));
                 }
                 for (auto &task: tasks) {
                     task->join();
                 }
             } else {
                 for (auto &ptr: systems) {
-                    if (enableProfiling){
+                    if (enableProfiling) {
                         int id = profiler.beginSystemUpdate();
                         ptr->update(deltaTime, scene, eventBus);
                         profiler.endSystemUpdate(ptr->getName(), id);
