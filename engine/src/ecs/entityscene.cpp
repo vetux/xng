@@ -30,11 +30,11 @@ namespace xng {
         }
         auto cmap = std::map<std::string, Message>();
         for (auto &pair: componentPools) {
-            if (pair.first == typeid(MetadataComponent)) {
+            if (pair.first == typeid(GenericComponent)) {
                 if (pair.second->check(entity)) {
-                    auto &comp = pair.second->get<MetadataComponent>(entity);
-                    for (auto &p: comp.entries) {
-                        cmap[p.first] = p.second.value;
+                    auto &comp = pair.second->get<GenericComponent>(entity);
+                    for (auto &p: comp.components) {
+                        cmap[p.first] = p.second;
                     }
                 }
 
@@ -57,9 +57,18 @@ namespace xng {
             entity = create();
         }
         for (auto &c: message.getMessage("components", std::map<std::string, Message>()).asDictionary()) {
-            auto deserializer = ComponentRegistry::instance().getDeserializer(
-                    ComponentRegistry::instance().getTypeFromName(c.first));
-            deserializer(*this, entity, c.second);
+            auto type = ComponentRegistry::instance().getTypeFromName(c.first);
+            if (ComponentRegistry::instance().checkDeserializer(type)) {
+                auto deserializer = ComponentRegistry::instance().getDeserializer(type);
+                deserializer(*this, entity, c.second);
+            } else {
+                if (!checkComponent<GenericComponent>(entity)) {
+                    createComponent(entity, GenericComponent());
+                }
+                auto comp = getComponent<GenericComponent>(entity);
+                comp.components[c.first] = c.second;
+                updateComponent(entity, comp);
+            }
         }
     }
 

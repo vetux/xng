@@ -103,6 +103,8 @@ namespace xng {
 
         const Deserializer &getDeserializer(const std::type_index &index);
 
+        bool checkDeserializer(const std::type_index &index);
+
         const Constructor &getConstructor(const std::type_index &index);
 
         const Updater &getUpdater(const std::type_index &index);

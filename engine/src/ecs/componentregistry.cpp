@@ -90,6 +90,10 @@ namespace xng {
         return deserializers.at(index);
     }
 
+    bool ComponentRegistry::checkDeserializer(const std::type_index &index) {
+        return deserializers.find(index) != deserializers.end();
+    }
+
     const ComponentRegistry::Constructor &ComponentRegistry::getConstructor(const std::type_index &index) {
         return constructors.at(index);
     }

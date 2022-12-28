@@ -17,31 +17,24 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_METADATACOMPONENT_HPP
-#define XENGINE_METADATACOMPONENT_HPP
+#ifndef XENGINE_GENERICCOMPONENT_HPP
+#define XENGINE_GENERICCOMPONENT_HPP
 
 #include "xng/headertool/componentmetadata.hpp"
 #include "xng/ecs/component.hpp"
 
 namespace xng {
     /**
-     * This component creates multiple components from metadata entries when serializing.
-     * It cannot be deserialized.
-     *
-     * Used by the editor.
+     * When serializing a component for every entry in components is created.
+     * When unknown type names are encountered when deserializing the data is stored in a generic component.
      */
-    struct MetadataComponent : public Component {
-        struct Entry {
-            ComponentMetadata metadata;
-            Message value;
-        };
-
-        std::map<std::string, Entry> entries;
+    struct GenericComponent : public Component {
+        std::map<std::string, Message> components;
 
         std::type_index getType() const override {
-            return typeid(MetadataComponent);
+            return typeid(GenericComponent);
         }
     };
 }
 
-#endif //XENGINE_METADATACOMPONENT_HPP
+#endif //XENGINE_GENERICCOMPONENT_HPP
