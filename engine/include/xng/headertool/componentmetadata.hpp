@@ -56,6 +56,8 @@ namespace xng {
             TypeMetadata typeMetadata;
             std::string instanceName;
             std::string defaultValue;
+            std::string displayName;
+            std::string description;
             Token minimum;
             Token maximum;
         };

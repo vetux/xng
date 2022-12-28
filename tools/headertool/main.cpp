@@ -90,7 +90,11 @@ void printMetadata(const xng::ComponentMetadata &metadata) {
                   << mem.typeMetadata.fullTypeName()
                   << " "
                   << mem.instanceName
-                  << " = "
+                  << "("
+                  << mem.displayName
+                  << ", "
+                  << mem.description
+                  << ") = "
                   << mem.defaultValue
                   << " min:"
                   << mem.minimum.value

@@ -30,6 +30,8 @@ Available header tool macros are:
 - XCOMPONENT() - Declare a component class, Properties:
   - Category - Define the menu category under which the component is made available in the component create menu 
 - XVARIABLE() - Declares a member, Properties: 
+  - Name - Define the name to display in the editor user interface 
+  - Description - Define the description to display in the editor user interface
   - Minimum - Define the minimum value for a numeric value
   - Maximum - Define the maximum value for a numeric value
 - XGENERATED_OPERATORS() - Defines the Messageable stream operators which serialize and deserialize the defined XVARIABLE instances using the optionally defined default assignment values as default values.

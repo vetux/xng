@@ -28,13 +28,13 @@ struct OtherComponent : public Component {
     XVARIABLE(Minimum=-5,Maximum=15)
     int sd;
 
-    XVARIABLE()
+    XVARIABLE(Description="Lorem Ipsum Lopsum")
     std::string de = std::string("DefaultValue"); // Make sure to initialize strings with std::string and not string literals.
 
-    XVARIABLE()
+    XVARIABLE(Name="TheVariable")
     ResourceHandle<Texture> da = ResourceHandle<Texture>();
 
-    XVARIABLE()
+    XVARIABLE(Name="ImportantValue", Description="Very important")
     EntityName Blu;
 
     float constantVariable = 5l;

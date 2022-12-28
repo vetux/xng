@@ -302,7 +302,11 @@ namespace xng {
                 auto varBracketCloseIndex = parseMacro(fileName, tokens, varBegin, varMacroArgs);
 
                 for (auto &arg: varMacroArgs) {
-                    if (arg.lhs.value == "Minimum") {
+                    if (arg.lhs.value == "Name") {
+                        member.displayName = arg.rhs.value;
+                    } else if (arg.lhs.value == "Description") {
+                        member.description = arg.rhs.value;
+                    } else if (arg.lhs.value == "Minimum") {
                         member.minimum = arg.rhs;
                     } else if (arg.lhs.value == "Maximum") {
                         member.maximum = arg.rhs;
