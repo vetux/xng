@@ -35,5 +35,6 @@
 #include "xng/ecs/components/spritecomponent.hpp"
 #include "xng/ecs/components/textcomponent.hpp"
 #include "xng/ecs/components/transformcomponent.hpp"
+#include "xng/ecs/components/metadatacomponent.hpp"
 
 #endif //XENGINE_COMPONENTS_HPP

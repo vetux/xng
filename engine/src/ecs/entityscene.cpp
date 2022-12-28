@@ -30,7 +30,15 @@ namespace xng {
         }
         auto cmap = std::map<std::string, Message>();
         for (auto &pair: componentPools) {
-            if (pair.second->check(entity)) {
+            if (pair.first == typeid(MetadataComponent)) {
+                if (pair.second->check(entity)) {
+                    auto &comp = pair.second->get<MetadataComponent>(entity);
+                    for (auto &entry: comp.entries) {
+                        cmap[entry.metadata.typeName] = entry.value;
+                    }
+                }
+
+            } else if (pair.second->check(entity)) {
                 auto serializer = ComponentRegistry::instance().getSerializer(pair.first);
                 Message msg;
                 serializer(*this, entity, msg);
@@ -49,7 +57,8 @@ namespace xng {
             entity = create();
         }
         for (auto &c: message.getMessage("components", std::map<std::string, Message>()).asDictionary()) {
-            auto deserializer = ComponentRegistry::instance().getDeserializer(ComponentRegistry::instance().getTypeFromName(c.first));
+            auto deserializer = ComponentRegistry::instance().getDeserializer(
+                    ComponentRegistry::instance().getTypeFromName(c.first));
             deserializer(*this, entity, c.second);
         }
     }
