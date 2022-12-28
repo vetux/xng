@@ -33,8 +33,8 @@ namespace xng {
             if (pair.first == typeid(MetadataComponent)) {
                 if (pair.second->check(entity)) {
                     auto &comp = pair.second->get<MetadataComponent>(entity);
-                    for (auto &entry: comp.entries) {
-                        cmap[entry.metadata.typeName] = entry.value;
+                    for (auto &p: comp.entries) {
+                        cmap[p.first] = p.second.value;
                     }
                 }
 

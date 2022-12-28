@@ -36,7 +36,7 @@ namespace xng {
             Message value;
         };
 
-        std::vector<Entry> entries;
+        std::map<std::string, Entry> entries;
 
         std::type_index getType() const override {
             return typeid(MetadataComponent);
