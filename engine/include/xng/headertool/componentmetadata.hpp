@@ -53,7 +53,7 @@ namespace xng {
         };
 
         struct MemberMetadata {
-            TypeMetadata typeMetadata;
+            TypeMetadata type;
             std::string instanceName;
             std::string defaultValue;
             std::string displayName;

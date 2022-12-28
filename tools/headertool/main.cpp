@@ -87,7 +87,7 @@ void printMetadata(const xng::ComponentMetadata &metadata) {
     std::cout << metadata.typeName << "(" << metadata.category << ")" << "\n";
     for (auto &mem: metadata.members) {
         std::cout << "\t"
-                  << mem.typeMetadata.fullTypeName()
+                  << mem.type.fullTypeName()
                   << " "
                   << mem.instanceName
                   << "("

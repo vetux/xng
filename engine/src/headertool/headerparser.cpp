@@ -326,7 +326,7 @@ namespace xng {
                 ComponentMetadata::TypeMetadata typeMetadata;
                 auto varTypeEnd = parseType(fileName, varTypeBegin, componentEnd, tokens, typeMetadata);
 
-                member.typeMetadata = typeMetadata;
+                member.type = typeMetadata;
 
                 // Check instance name
                 auto varInstanceName = varTypeEnd;
