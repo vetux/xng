@@ -336,6 +336,32 @@ namespace xng {
         message = Message(msgs);
         return message;
     }
+
+
+    template<typename T>
+    std::set<T> &operator<<(std::set<T> &set, const Message &message) {
+        set.clear();
+        if (message.getType() == Message::LIST) {
+            for (auto &msg: message.asList()) {
+                T value;
+                value << msg;
+                set.insert(value);
+            }
+        }
+        return set;
+    }
+
+    template<typename T>
+    Message &operator>>(const std::set<T> &set, Message &message) {
+        std::vector<Message> msgs;
+        for (auto &value: set) {
+            Message msg;
+            value >> msg;
+            msgs.emplace_back(msg);
+        }
+        message = Message(msgs);
+        return message;
+    }
 }
 
 #endif //XENGINE_MESSAGE_HPP
