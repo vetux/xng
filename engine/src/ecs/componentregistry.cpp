@@ -82,16 +82,16 @@ namespace xng {
         return nameMapping.at(index);
     }
 
+    bool ComponentRegistry::checkTypeName(const std::string &typeName) {
+        return nameReverseMapping.find(typeName) != nameReverseMapping.end();
+    }
+
     const ComponentRegistry::Serializer &ComponentRegistry::getSerializer(const std::type_index &index) {
         return serializers.at(index);
     }
 
     const ComponentRegistry::Deserializer &ComponentRegistry::getDeserializer(const std::type_index &index) {
         return deserializers.at(index);
-    }
-
-    bool ComponentRegistry::checkDeserializer(const std::type_index &index) {
-        return deserializers.find(index) != deserializers.end();
     }
 
     const ComponentRegistry::Constructor &ComponentRegistry::getConstructor(const std::type_index &index) {

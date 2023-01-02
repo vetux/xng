@@ -99,11 +99,11 @@ namespace xng {
 
         const std::string &getNameFromType(const std::type_index &index);
 
+        bool checkTypeName(const std::string &typeName);
+
         const Serializer &getSerializer(const std::type_index &index);
 
         const Deserializer &getDeserializer(const std::type_index &index);
-
-        bool checkDeserializer(const std::type_index &index);
 
         const Constructor &getConstructor(const std::type_index &index);
 

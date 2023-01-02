@@ -57,8 +57,8 @@ namespace xng {
             entity = create();
         }
         for (auto &c: message.getMessage("components", std::map<std::string, Message>()).asDictionary()) {
-            auto type = ComponentRegistry::instance().getTypeFromName(c.first);
-            if (ComponentRegistry::instance().checkDeserializer(type)) {
+            if (ComponentRegistry::instance().checkTypeName(c.first)) {
+                auto type = ComponentRegistry::instance().getTypeFromName(c.first);
                 auto deserializer = ComponentRegistry::instance().getDeserializer(type);
                 deserializer(*this, entity, c.second);
             } else {
