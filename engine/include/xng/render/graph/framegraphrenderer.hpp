@@ -22,11 +22,12 @@
 
 #include "xng/render/scenerenderer.hpp"
 
-#include "framegraphpool.hpp"
-#include "framegraphpass.hpp"
-#include "framegraphlayout.hpp"
-#include "framegraphallocator.hpp"
+#include "xng/render/graph/framegraphpool.hpp"
+#include "xng/render/graph/framegraphpass.hpp"
+#include "xng/render/graph/framegraphlayout.hpp"
+#include "xng/render/graph/framegraphallocator.hpp"
 #include "xng/render/graph/allocators/framegraphpoolallocator.hpp"
+#include "xng/render/graph/framegraphshader.hpp"
 
 #include "xng/gpu/renderdevice.hpp"
 
@@ -54,6 +55,8 @@ namespace xng {
         }
 
         std::type_index getType() override { return typeid(FrameGraphRenderer); }
+
+        const ShaderInterface & getShaderInterface() override;
 
     private:
         RenderTarget &target;

@@ -17,30 +17,18 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/render/graph/framegraphrenderer.hpp"
-#include "xng/render/graph/framegraphbuilder.hpp"
+#ifndef XENGINE_FRAMEGRAPHSHADER_HPP
+#define XENGINE_FRAMEGRAPHSHADER_HPP
+
+#include "xng/render/shaderinterface.hpp"
 
 namespace xng {
-    FrameGraphRenderer::FrameGraphRenderer(RenderTarget &target, std::unique_ptr<FrameGraphAllocator> allocator)
-            : target(target), allocator(std::move(allocator)) {}
+    class FrameGraphShader : public ShaderInterface {
+    public:
+        static const FrameGraphShader &instance();
 
-    void FrameGraphRenderer::render(const Scene &scene) {
-        /// Setup
-        auto frame = FrameGraphBuilder(target, scene, properties).build(layout);
-
-        blackboard.clear();
-
-        /// Compile
-        allocator->setFrame(frame);
-
-        /// Execute
-        for (auto &p: layout.getOrderedPasses()) {
-            auto res = allocator->allocateNext();
-            p.get().execute(res);
-        }
-    }
-
-    const ShaderInterface & FrameGraphRenderer::getShaderInterface() {
-        return FrameGraphShader::instance();
-    }
+        std::function<std::string(const char *)> getShaderInclude() const override;
+    };
 }
+
+#endif //XENGINE_FRAMEGRAPHSHADER_HPP

@@ -26,6 +26,8 @@
 
 #include "xng/gpu/rendertarget.hpp"
 
+#include "xng/render/shaderinterface.hpp"
+
 namespace xng {
     /**
      * A scene renderer produces an image from a given a scene using the set properties.
@@ -45,6 +47,8 @@ namespace xng {
         virtual GenericMapString &getProperties() = 0;
 
         virtual const GenericMapString &getProperties() const = 0;
+
+        virtual const ShaderInterface & getShaderInterface() = 0;
 
         std::type_index getBaseType() override {
             return typeid(SceneRenderer);

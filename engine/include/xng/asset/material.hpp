@@ -119,7 +119,7 @@ namespace xng {
          * the fragment shader might be run with a platform specific vertex/geometry shader (Deferred Shading).
          *
          * To make shader code compatible across pipelines the shaders must access external resources
-         * through the stable shader interface described in framegraphshader.hpp
+         * through the stable shader interface described in xng/render/shaderinterface.hpp
          * by including either "fragment.glsl" or "vertex.glsl" respectively.
          */
         ResourceHandle<Shader> shader;

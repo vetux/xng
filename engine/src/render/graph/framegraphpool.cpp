@@ -18,7 +18,8 @@
  */
 
 #include "xng/render/graph/framegraphpool.hpp"
-#include "xng/render/graph/shader/framegraphshader.hpp"
+#include "xng/render/graph/framegraphshader.hpp"
+#include "xng/render/shaderinterface.hpp"
 
 namespace xng {
     static std::unique_ptr<TextureBuffer> allocateTexture(const Texture &t, RenderDevice &device) {
@@ -110,9 +111,9 @@ namespace xng {
         if (it == uriObjects.end()) {
             auto &shader = handle.get();
             ShaderProgramDesc desc;
-            shader.vertexShader.preprocess(*shaderCompiler, FrameGraphShader::getShaderInclude());
-            shader.fragmentShader.preprocess(*shaderCompiler, FrameGraphShader::getShaderInclude());
-            shader.geometryShader.preprocess(*shaderCompiler, FrameGraphShader::getShaderInclude());
+            shader.vertexShader.preprocess(*shaderCompiler, FrameGraphShader::instance().getShaderInclude());
+            shader.fragmentShader.preprocess(*shaderCompiler, FrameGraphShader::instance().getShaderInclude());
+            shader.geometryShader.preprocess(*shaderCompiler, FrameGraphShader::instance().getShaderInclude());
             desc.shaders.insert(std::pair<ShaderStage, SPIRVShader>(ShaderStage::VERTEX,
                                                                     shader.vertexShader.compile(
                                                                             *shaderCompiler).getShaders().at(0)));

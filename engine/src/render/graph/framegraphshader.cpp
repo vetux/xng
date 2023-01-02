@@ -19,7 +19,7 @@
 
 #include <stdexcept>
 
-#include "xng/render/graph/shader/framegraphshader.hpp"
+#include "xng/render/graph/framegraphshader.hpp"
 
 static const char *SHADER_VERTEX = R"###(
 // Layout bindings might be different on other pipelines.
@@ -179,7 +179,12 @@ void setColor(vec4 color) {
 )###";
 
 namespace xng {
-    std::function<std::string(const char *)> FrameGraphShader::getShaderInclude() {
+    const FrameGraphShader &FrameGraphShader::instance() {
+        static const FrameGraphShader ret;
+        return ret;
+    }
+
+    std::function<std::string(const char *)>FrameGraphShader::getShaderInclude() const {
         return [](const char *includeName) {
             if (std::string(includeName) == "vertex.glsl") {
                 return SHADER_VERTEX;
