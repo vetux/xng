@@ -32,6 +32,9 @@
 #include "xng/resource/resourcehandle.hpp"
 
 namespace xng {
+    /**
+     * The scene data used for rendering.
+     */
     struct XENGINE_EXPORT Scene : public Messageable {
         struct XENGINE_EXPORT Object : public Messageable {
             Transform transform;
