@@ -306,9 +306,9 @@ namespace xng {
                         member.displayName = arg.rhs.value;
                     } else if (arg.lhs.value == "Description") {
                         member.description = arg.rhs.value;
-                    } else if (arg.lhs.value == "Minimum") {
+                    } else if (arg.lhs.value == "Minimum" || arg.lhs.value == "Min") {
                         member.minimum = arg.rhs;
-                    } else if (arg.lhs.value == "Maximum") {
+                    } else if (arg.lhs.value == "Maximum" || arg.lhs.value == "Max") {
                         member.maximum = arg.rhs;
                     }
                 }
