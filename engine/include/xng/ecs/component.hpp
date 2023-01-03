@@ -20,7 +20,7 @@
 #ifndef XENGINE_COMPONENT_HPP
 #define XENGINE_COMPONENT_HPP
 
-#include "xng/io/message.hpp"
+#include "xng/io/messageable.hpp"
 
 namespace xng {
     /**

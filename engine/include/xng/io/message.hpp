@@ -25,8 +25,6 @@
 #include <stdexcept>
 #include <set>
 
-#include "xng/io/messageable.hpp"
-
 namespace xng {
     class XENGINE_EXPORT Message;
 

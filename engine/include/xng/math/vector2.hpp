@@ -6,7 +6,7 @@
 
 #include "xng/util/numeric_cast.hpp"
 
-#include "xng/io/message.hpp"
+#include "xng/io/messageable.hpp"
 
 namespace xng {
     template<typename T>

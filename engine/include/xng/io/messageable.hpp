@@ -20,9 +20,9 @@
 #ifndef XENGINE_SERIALIZABLE_HPP
 #define XENGINE_SERIALIZABLE_HPP
 
-namespace xng {
-    class Message;
+#include "xng/io/message.hpp"
 
+namespace xng {
     class XENGINE_EXPORT Messageable {
     public:
         virtual Messageable &operator<<(const Message &message) = 0;
