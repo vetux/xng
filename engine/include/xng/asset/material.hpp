@@ -73,34 +73,28 @@ namespace xng {
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
 
-            message["model"] = model;
+            model >> message["model"];
 
             shader >> message["shader"];
 
+            normal >> message["normal"];
+
+            albedo >> message["albedo"];
+            metallic >> message["metallic"];
+            roughness >> message["roughness"];
+            ambientOcclusion >> message["ambientOcclusion"];
+
+            albedoTexture >> message["albedoTexture"];
+            metallicTexture >> message["metallicTexture"];
+            roughnessTexture >> message["roughnessTexture"];
+            ambientOcclusionTexture >> message["ambientOcclusionTexture"];
+
+            diffuse >> message["diffuse"];
             ambient >> message["ambient"];
             specular >> message["specular"];
 
-            if (ambientTexture.assigned())
-                ambientTexture >> message["ambientTexture"];
-            if (specularTexture.assigned())
-                specularTexture >> message["specularTexture"];
-
-            albedo >> message["albedo"];
-            message["metallic"] = metallic;
-            message["roughness"] = roughness;
-            message["ambientOcclusion"] = ambientOcclusion;
-
-            if (albedoTexture.assigned())
-                albedoTexture >> message["albedoTexture"];
-            if (metallicTexture.assigned())
-                metallicTexture >> message["metallicTexture"];
-            if (roughnessTexture.assigned())
-                roughnessTexture >> message["roughnessTexture"];
-            if (ambientOcclusionTexture.assigned())
-                ambientOcclusionTexture >> message["ambientOcclusionTexture"];
-
-            if (normal.assigned())
-                normal >> message["normal"];
+            ambientTexture >> message["ambientTexture"];
+            specularTexture >> message["specularTexture"];
 
             return message;
         }
@@ -124,10 +118,12 @@ namespace xng {
          */
         ResourceHandle<Shader> shader;
 
-        // PBR
-        ColorRGBA albedo{}; // -> diffuse in phong
+        ResourceHandle<ImageRGBA> normal; // If assigned the sampled normals are used otherwise vertex normals.
+
+        // Physically Based Rendering
+        ColorRGBA albedo{};
         float metallic{};
-        float roughness{}; // -> invert for shininess in phong
+        float roughness{};
         float ambientOcclusion{};
 
         ResourceHandle<ImageRGBA> albedoTexture;
@@ -136,13 +132,15 @@ namespace xng {
         ResourceHandle<ImageRGBA> ambientOcclusionTexture;
 
         // Phong Shading
+        ColorRGBA diffuse{};
         ColorRGBA ambient{};
         ColorRGBA specular{};
 
+        ResourceHandle<ImageRGBA> diffuseTexture;
         ResourceHandle<ImageRGBA> ambientTexture;
         ResourceHandle<ImageRGBA> specularTexture;
 
-        ResourceHandle<ImageRGBA> normal; // If assigned the sampled normals are used otherwise vertex normals.
+        float shininess;
     };
 }
 
