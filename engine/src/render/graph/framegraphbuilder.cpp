@@ -121,14 +121,22 @@ namespace xng {
         return scene;
     }
 
+    const GenericMapString &FrameGraphBuilder::getProperties() {
+        return properties;
+    }
+
+    GenericMapString &FrameGraphBuilder::getSharedData() {
+        return sharedData;
+    }
+
     FrameGraph FrameGraphBuilder::build(const FrameGraphLayout &layout) {
-        blackboard.clear();
+        sharedData.clear();
         graph = {};
         resourceCounter = 1;
 
         for (auto &pass: layout.getOrderedPasses()) {
             currentPass = {};
-            pass.get().setup(*this, properties, blackboard);
+            pass.get().setup(*this);
             FrameGraph::Stage exec;
             exec.pass = pass.get().getTypeName();
             exec.resources = currentPass.allocations;

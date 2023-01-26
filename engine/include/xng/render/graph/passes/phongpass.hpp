@@ -24,15 +24,16 @@
 #include "xng/render/graph/framegraphpass.hpp"
 
 namespace xng {
+    /**
+     * The SHADE_PHONG* shading model implementation.
+     */
     class XENGINE_EXPORT PhongPass : public FrameGraphPass {
     public:
         PhongPass();
 
         ~PhongPass() override = default;
 
-        void setup(FrameGraphBuilder &builder,
-                   const GenericMapString &properties,
-                   GenericMapString &sharedData) override;
+        void setup(FrameGraphBuilder &builder) override;
 
         void execute(FrameGraphPassResources &resources) override;
 

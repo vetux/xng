@@ -23,6 +23,10 @@
 #include "xng/render/graph/framegraphpass.hpp"
 
 namespace xng {
+    /**
+     * The composite pass combines the texture layers produced by previous passes
+     * and outputs the final composited image to the backbuffer.
+     */
     class XENGINE_EXPORT CompositePass : public FrameGraphPass {
     public:
         struct XENGINE_EXPORT Layer {
@@ -41,9 +45,7 @@ namespace xng {
 
         ~CompositePass() override = default;
 
-        void setup(FrameGraphBuilder &builder,
-                  const GenericMapString &properties,
-                  GenericMapString &sharedData) override;
+        void setup(FrameGraphBuilder &builder) override;
 
         void execute(FrameGraphPassResources &resources) override;
 

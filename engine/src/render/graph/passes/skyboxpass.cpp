@@ -27,8 +27,7 @@ namespace xng {
 
     }
 
-    void xng::SkyboxPass::setup(FrameGraphBuilder &builder, const GenericMapString &properties,
-                                GenericMapString &sharedData) {
+    void xng::SkyboxPass::setup(FrameGraphBuilder &builder) {
 
     }
 

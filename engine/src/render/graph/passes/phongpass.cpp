@@ -26,9 +26,7 @@ namespace xng {
 
     }
 
-    void PhongPass::setup(FrameGraphBuilder &builder,
-                          const GenericMapString &properties,
-                          GenericMapString &sharedData) {
+    void PhongPass::setup(FrameGraphBuilder &builder) {
 
     }
 

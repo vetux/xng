@@ -25,13 +25,16 @@
 #include "xng/asset/scene.hpp"
 
 namespace xng {
+    /**
+     * Draws a cubemap texture around the camera.
+     */
     class XENGINE_EXPORT SkyboxPass : public FrameGraphPass {
     public:
         SkyboxPass();
 
         ~SkyboxPass() override = default;
 
-        void setup(FrameGraphBuilder &builder, const GenericMapString &properties, GenericMapString &sharedData) override;
+        void setup(FrameGraphBuilder &builder) override;
 
         void execute(FrameGraphPassResources &resources) override;
 

@@ -92,6 +92,26 @@ namespace xng {
          */
         const Scene &getScene();
 
+        /**
+         * The properties map contains static configuration data.
+         *
+         * @return
+         */
+        const GenericMapString &getProperties();
+
+        /**
+         * Return the shared data generic map.
+         * Data added to this map is accessible to subsequent passes in the setup phase.
+         *
+         * FrameGraphResource's can be exported to subsequent passes by adding the handles to the shared data map.
+         * Subsequent Passes can then declare a read or write usage in the FrameGraphBuilder
+         * to the FrameGraphResource handles in the shared data
+         * which causes the resource to persist to the last read / write usage.
+         *
+         * @return
+         */
+        GenericMapString &getSharedData();
+
     private:
         struct PassSetup {
             std::set<FrameGraphResource> allocations;
@@ -111,7 +131,7 @@ namespace xng {
 
         int resourceCounter = 1;
 
-        GenericMapString blackboard;
+        GenericMapString sharedData;
     };
 }
 #endif //XENGINE_FRAMEGRAPHBUILDER_HPP

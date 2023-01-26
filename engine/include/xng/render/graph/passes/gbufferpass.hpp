@@ -29,17 +29,13 @@ namespace xng {
     public:
         GBufferPass();
 
-        void setup(FrameGraphBuilder &builder,
-                   const GenericMapString &properties,
-                   GenericMapString &sharedData) override;
+        void setup(FrameGraphBuilder &builder) override;
 
         void execute(FrameGraphPassResources &resources) override;
 
         std::type_index getTypeName() override;
 
     private:
-        FrameGraphResource defaultTexture;
-        FrameGraphResource shader;
         FrameGraphResource renderTarget;
 
         std::map<Uri, FrameGraphResource> sceneResources;

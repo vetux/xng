@@ -42,16 +42,12 @@ namespace xng {
         virtual ~FrameGraphPass() = default;
 
         /**
-         * Declare the dependencies of the execute call and store exported resource handles in the shared data map
-         * so that child passes can declare read / write usages.
+         * Define the resource allocations and usages for the next execute invocation.
+         *
          *
          * @param builder
-         * @param properties
-         * @param sharedData
          */
-        virtual void setup(FrameGraphBuilder &builder,
-                           const GenericMapString &properties,
-                           GenericMapString &sharedData) = 0;
+        virtual void setup(FrameGraphBuilder &builder) = 0;
 
         /**
          * Run the pass.

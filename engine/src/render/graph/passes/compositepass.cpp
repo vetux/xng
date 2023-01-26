@@ -26,9 +26,7 @@ namespace xng {
 
     }
 
-    void CompositePass::setup(FrameGraphBuilder &builder,
-                              const GenericMapString &properties,
-                              GenericMapString &sharedData) {
+    void CompositePass::setup(FrameGraphBuilder &builder) {
 
     }
 

@@ -27,7 +27,7 @@ namespace xng {
     }
 
     void
-    GBufferPass::setup(FrameGraphBuilder &builder, const GenericMapString &properties, GenericMapString &sharedData) {
+    GBufferPass::setup(FrameGraphBuilder &builder) {
 
     }
 
