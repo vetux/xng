@@ -20,20 +20,24 @@
 #ifndef XENGINE_MATERIAL_HPP
 #define XENGINE_MATERIAL_HPP
 
-#include "texture.hpp"
-#include "shader.hpp"
+#include <variant>
+
+#include "xng/asset/texture.hpp"
+#include "xng/asset/shader.hpp"
 
 #include "xng/resource/resourcehandle.hpp"
 
 #include "xng/io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT Material : public Resource, public Messageable {
-        enum LightingModel : int {
-            PHONG = 0,
-            PBR = 1
-        };
+    enum ShadingModel : int {
+        SHADE_PBR, // PBR Shading
+        SHADE_PHONG, // Per fragment phong shading
+        SHADE_PHONG_GOURAUD, // Per vertex phong shading
+        SHADE_PHONG_FLAT // Per polygon phong shading
+    };
 
+    struct XENGINE_EXPORT Material : public Resource, public Messageable {
         ~Material() override = default;
 
         std::unique_ptr<Resource> clone() override {
@@ -45,27 +49,29 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            model = (LightingModel) message.getMessage("model", Message((int) PHONG)).asInt();
+            message.value("model", (int &) model, (int) ShadingModel::SHADE_PBR);
+            message.value("shader", shader);
+            message.value("normal", normal);
 
-            shader << message.getMessage("shader");
+            message.value("diffuse", diffuse);
+            message.value("ambient", ambient);
+            message.value("specular", specular);
+            message.value("shininess", shininess);
 
-            ambient << message.getMessage("ambient");
-            specular << message.getMessage("specular");
+            message.value("diffuseTexture", diffuseTexture);
+            message.value("ambientTexture", ambientTexture);
+            message.value("specularTexture", specularTexture);
+            message.value("shininessTexture", shininessTexture);
 
-            ambientTexture << message.getMessage("ambientTexture");
-            specularTexture << message.getMessage("specularTexture");
-
-            albedo << message.getMessage("albedo");
+            message.value("albedo", albedo);
             message.value("metallic", metallic);
             message.value("roughness", roughness, 1.0f);
             message.value("ambientOcclusion", ambientOcclusion, 1.0f);
 
-            albedoTexture << message.getMessage("albedoTexture");
-            metallicTexture << message.getMessage("metallicTexture");
-            roughnessTexture << message.getMessage("roughnessTexture");
-            ambientOcclusionTexture << message.getMessage("ambientOcclusionTexture");
-
-            normal << message.getMessage("normal");
+            message.value("albedoTexture", albedoTexture);
+            message.value("metallicTexture", metallicTexture);
+            message.value("roughnessTexture", roughnessTexture);
+            message.value("ambientOcclusionTexture", ambientOcclusionTexture);
 
             return *this;
         }
@@ -74,10 +80,18 @@ namespace xng {
             message = Message(Message::DICTIONARY);
 
             model >> message["model"];
-
             shader >> message["shader"];
-
             normal >> message["normal"];
+
+            diffuse >> message["diffuse"];
+            ambient >> message["ambient"];
+            specular >> message["specular"];
+            shininess >> message["shininess"];
+
+            diffuseTexture >> message["diffuseTexture"];
+            ambientTexture >> message["ambientTexture"];
+            specularTexture >> message["specularTexture"];
+            shininessTexture >> message["shininessTexture"];
 
             albedo >> message["albedo"];
             metallic >> message["metallic"];
@@ -89,17 +103,10 @@ namespace xng {
             roughnessTexture >> message["roughnessTexture"];
             ambientOcclusionTexture >> message["ambientOcclusionTexture"];
 
-            diffuse >> message["diffuse"];
-            ambient >> message["ambient"];
-            specular >> message["specular"];
-
-            ambientTexture >> message["ambientTexture"];
-            specularTexture >> message["specularTexture"];
-
             return message;
         }
 
-        LightingModel model{};
+        ShadingModel model;
 
         /**
          * Optional user specified shader.
@@ -118,9 +125,14 @@ namespace xng {
          */
         ResourceHandle<Shader> shader;
 
-        ResourceHandle<ImageRGBA> normal; // If assigned the sampled normals are used otherwise vertex normals.
+        /**
+         * If assigned the contained normals are sampled otherwise vertex normals are used.
+         */
+        ResourceHandle<ImageRGBA> normal;
 
-        // Physically Based Rendering
+        /**
+         * PBR Shading Data
+         */
         ColorRGBA albedo{};
         float metallic{};
         float roughness{};
@@ -131,16 +143,18 @@ namespace xng {
         ResourceHandle<ImageRGBA> roughnessTexture;
         ResourceHandle<ImageRGBA> ambientOcclusionTexture;
 
-        // Phong Shading
+        /**
+         * Phong Shading Data
+         */
         ColorRGBA diffuse{};
         ColorRGBA ambient{};
         ColorRGBA specular{};
+        float shininess{};
 
         ResourceHandle<ImageRGBA> diffuseTexture;
         ResourceHandle<ImageRGBA> ambientTexture;
         ResourceHandle<ImageRGBA> specularTexture;
-
-        float shininess;
+        ResourceHandle<ImageRGBA> shininessTexture;
     };
 }
 

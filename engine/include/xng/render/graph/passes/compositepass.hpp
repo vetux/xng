@@ -22,7 +22,6 @@
 
 #include "xng/render/graph/framegraphpass.hpp"
 
-
 namespace xng {
     class XENGINE_EXPORT CompositePass : public FrameGraphPass {
     public:
