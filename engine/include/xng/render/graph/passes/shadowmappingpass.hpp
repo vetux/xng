@@ -17,26 +17,28 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/render/graph/framegraphrenderer.hpp"
-#include "xng/render/graph/framegraphbuilder.hpp"
+#ifndef XENGINE_SHADOWMAPPINGPASS_HPP
+#define XENGINE_SHADOWMAPPINGPASS_HPP
+
+#include "xng/render/graph/framegraphpass.hpp"
 
 namespace xng {
-    FrameGraphRenderer::FrameGraphRenderer(RenderTarget &target, std::unique_ptr<FrameGraphAllocator> allocator)
-            : target(target), allocator(std::move(allocator)) {}
+    /**
+     * The shadow mapping pass creates a shadow map which contains shadowing data for a rendered frame.
+     * The lighting model resolve pass applies the shadow map to the shaded image.
+     *
+     * No Dependencies
+     */
+    class XENGINE_EXPORT ShadowMappingPass : public FrameGraphPass {
+    public:
+        //FrameGraphResource to a Texture R : Contains values between 0 - 1 indicating if a pixel is in shadow or not.
+        SHARED_PROPERTY(ShadowMappingPass, SHADOW_MAP)
 
-    void FrameGraphRenderer::render(const Scene &scene) {
-        /// Setup
-        auto frame = FrameGraphBuilder(target, scene, properties).build(layout);
+        void setup(FrameGraphBuilder &builder) override;
 
-        blackboard.clear();
+        void execute(FrameGraphPassResources &resources) override;
 
-        /// Compile
-        allocator->setFrame(frame);
-
-        /// Execute
-        for (auto &p: layout.getOrderedPasses()) {
-            auto res = allocator->allocateNext();
-            p.get().execute(res);
-        }
-    }
+        std::type_index getTypeName() override;
+    };
 }
+#endif //XENGINE_SHADOWMAPPINGPASS_HPP

@@ -17,18 +17,30 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_FRAMEGRAPHSHADER_HPP
-#define XENGINE_FRAMEGRAPHSHADER_HPP
+#ifndef XENGINE_USERSHADEPASS_HPP
+#define XENGINE_USERSHADEPASS_HPP
 
-#include "xng/render/shaderinterface.hpp"
+#include "xng/render/graph/framegraphpass.hpp"
 
 namespace xng {
-    class FrameGraphShader : public ShaderInterface {
+    /**
+     * Handles drawing of objects with materials that contain a user specified shader and creates the user shade compositor layer.
+     *
+     * No Dependencies
+     */
+    class XENGINE_EXPORT UserShadePass : public FrameGraphPass {
     public:
-        static const FrameGraphShader &instance();
+        // Texture RGBA : The output color of the user shaders
+        SHARED_PROPERTY(UserShadePass, COLOR)
 
-        std::function<std::string(const char *)> getShaderInclude() const override;
+        // Texture DEPTH_STENCIL : The output depth of the user shaders
+        SHARED_PROPERTY(UserShadePass, DEPTH)
+
+        void setup(FrameGraphBuilder &builder) override;
+
+        void execute(FrameGraphPassResources &resources) override;
+
+        std::type_index getTypeName() override;
     };
 }
-
-#endif //XENGINE_FRAMEGRAPHSHADER_HPP
+#endif //XENGINE_USERSHADEPASS_HPP

@@ -52,6 +52,7 @@ namespace xng {
             message.value("model", (int &) model, (int) ShadingModel::SHADE_PBR);
             message.value("shader", shader);
             message.value("normal", normal);
+            message.value("transparent", transparent, false);
 
             message.value("diffuse", diffuse);
             message.value("ambient", ambient);
@@ -82,6 +83,7 @@ namespace xng {
             model >> message["model"];
             shader >> message["shader"];
             normal >> message["normal"];
+            transparent >> message["transparent"];
 
             diffuse >> message["diffuse"];
             ambient >> message["ambient"];
@@ -113,15 +115,7 @@ namespace xng {
          *
          * Currently only glsl user shaders are supported.
          *
-         * In a deferred pipeline the vertex/geometry shaders would replace the shaders in the gbuffer construction pass
-         * and the fragment shader would replace the lighting pass.
-         *
-         * The vertex/geometry shaders might be run with platform specific fragment shaders and
-         * the fragment shader might be run with a platform specific vertex/geometry shader (Deferred Shading).
-         *
-         * To make shader code compatible across pipelines the shaders must access external resources
-         * through the stable shader interface described in xng/render/shaderinterface.hpp
-         * by including either "fragment.glsl" or "vertex.glsl" respectively.
+         * User shaders are always drawn using forward shading.
          */
         ResourceHandle<Shader> shader;
 
@@ -129,6 +123,11 @@ namespace xng {
          * If assigned the contained normals are sampled otherwise vertex normals are used.
          */
         ResourceHandle<ImageRGBA> normal;
+
+        /**
+         * Whether or not the material contains transparency. If this is set to true the object which this material belongs to is drawn using forward rendering.
+         */
+        bool transparent;
 
         /**
          * PBR Shading Data

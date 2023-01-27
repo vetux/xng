@@ -17,26 +17,18 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/render/graph/framegraphrenderer.hpp"
-#include "xng/render/graph/framegraphbuilder.hpp"
+#pragma message "Not Implemented"
 
-namespace xng {
-    FrameGraphRenderer::FrameGraphRenderer(RenderTarget &target, std::unique_ptr<FrameGraphAllocator> allocator)
-            : target(target), allocator(std::move(allocator)) {}
+#include "xng/render/graph/passes/usershadepass.hpp"
 
-    void FrameGraphRenderer::render(const Scene &scene) {
-        /// Setup
-        auto frame = FrameGraphBuilder(target, scene, properties).build(layout);
+void xng::UserShadePass::setup(xng::FrameGraphBuilder &builder) {
 
-        blackboard.clear();
+}
 
-        /// Compile
-        allocator->setFrame(frame);
+void xng::UserShadePass::execute(xng::FrameGraphPassResources &resources) {
 
-        /// Execute
-        for (auto &p: layout.getOrderedPasses()) {
-            auto res = allocator->allocateNext();
-            p.get().execute(res);
-        }
-    }
+}
+
+std::type_index xng::UserShadePass::getTypeName() {
+    return typeid(UserShadePass);
 }

@@ -22,14 +22,23 @@
 
 #include <string>
 
+#define USER_PROPERTY(name) static const char *name = #name;
+
 namespace xng {
     /**
      * The keys of the optional default properties supplied by the renderer.
      * Frame graphs can define other properties.
      */
     namespace FrameGraphProperties {
-        static const char *RENDER_RESOLUTION = "RENDER_RESOLUTION"; // Vec2i, the resolution to render at, if not defined the back buffer resolution is used
-        static const char *RENDER_SAMPLES = "RENDER_SAMPLES"; // int, the number of msaa samples per pixel, if not defined the back buffer sample count is used
+        // float, Range(0, inf) Render resolution is backbuffer size * scale, if not defined the full backbuffer resolution is used, the rendered images are projected to fit the backbuffer resolution.
+        USER_PROPERTY(RENDER_SCALE)
+
+        // int, the number of sub samples per pixel (MSAA) to use when forward rendering, if not defined the back buffer sample count is used.
+        USER_PROPERTY(RENDER_SAMPLES_FORWARD)
+
+        // int, the number of sub samples per pixel (MSAA) to use for the geometry buffer textures, if not defined the back buffer sample count is used.
+        // GBuffer textures can be multisampled but using render scale to overscan the frame should produce the same result at almost the same cost as multisampling because the expensive lighting calculations need to be done per sample.
+        USER_PROPERTY(RENDER_SAMPLES_GBUFFER)
     }
 }
 

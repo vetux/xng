@@ -19,23 +19,23 @@
 
 #pragma message "Not Implemented"
 
-#include "xng/render/graph/passes/phongpass.hpp"
+#include "xng/render/graph/passes/phongdeferredpass.hpp"
 
 namespace xng {
-    PhongPass::PhongPass() {
+    PhongDeferredPass::PhongDeferredPass() {
 
     }
 
-    void PhongPass::setup(FrameGraphBuilder &builder) {
+    void PhongDeferredPass::setup(FrameGraphBuilder &builder) {
 
     }
 
-    void PhongPass::execute(FrameGraphPassResources &resources) {
+    void PhongDeferredPass::execute(FrameGraphPassResources &resources) {
 
     }
 
-    std::type_index PhongPass::getTypeName() {
-        return typeid(PhongPass);
+    std::type_index PhongDeferredPass::getTypeName() {
+        return typeid(PhongDeferredPass);
     }
 }
 

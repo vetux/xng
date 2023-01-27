@@ -17,44 +17,32 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SKYBOXPASS_HPP
-#define XENGINE_SKYBOXPASS_HPP
+#ifndef XENGINE_PHONGRESOLVEPASS_HPP
+#define XENGINE_PHONGRESOLVEPASS_HPP
 
 #include "xng/render/graph/framegraphpass.hpp"
 
-#include "xng/asset/scene.hpp"
-
 namespace xng {
     /**
-     * Draws a cubemap texture around the camera and creates the skybox compositor layer.
+     * The resolve pass creates a single color and depth texture from the deferred and forward phong shade textures,
+     *  applies the shadow map and creates the phong shading compositor layer.
      *
-     * No Dependencies
+     * Depends on PhongForwardPass, PhongDeferredPass and ShadowMappingPass
      */
-    class XENGINE_EXPORT SkyboxPass : public FrameGraphPass {
+    class PhongResolvePass : public FrameGraphPass {
     public:
-        // Texture RGBA : The output color of the projected cubemap texture
-        SHARED_PROPERTY(UserShadePass, COLOR)
+        // FrameGraphResource to a Texture RGBA : The combined lighting textures with shadowing applied
+        SHARED_PROPERTY(PhongResolvePass, COLOR)
 
-        SkyboxPass();
-
-        ~SkyboxPass() override = default;
+        // FrameGraphResource to a Texture DEPTH_STENCIL : The combined depth textures
+        SHARED_PROPERTY(PhongResolvePass, DEPTH)
 
         void setup(FrameGraphBuilder &builder) override;
 
         void execute(FrameGraphPassResources &resources) override;
 
         std::type_index getTypeName() override;
-
-    private:
-        FrameGraphResource shader;
-        FrameGraphResource skyboxCube;
-        FrameGraphResource defaultTexture;
-
-        FrameGraphResource renderTarget;
-        FrameGraphResource outColor;
-        FrameGraphResource outDepth;
-
-        FrameGraphResource skyboxTexture;
     };
 }
-#endif //XENGINE_SKYBOXPASS_HPP
+
+#endif //XENGINE_PHONGRESOLVEPASS_HPP

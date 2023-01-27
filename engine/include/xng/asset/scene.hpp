@@ -45,7 +45,7 @@ namespace xng {
             bool castShadows = false;
             bool receiveShadows = false;
 
-            bool outline = false; // If true the object that the material belongs to is redrawn with object.scale * outlineScale scale and all fragments not belonging to the unscaled object are colored with the specified color, and faded alpha values towards the edges beginning at borderWidth * fadeStart.
+            bool outline = false; // If true the object is redrawn with object.scale * outlineScale scale and all fragments not belonging to the unscaled object are colored with the specified color, and faded alpha values towards the edges beginning at borderWidth * fadeStart.
             ColorRGBA outlineColor;
             float outlineScale = 1.1f;
             float outlineFadeStart = 0.5f;

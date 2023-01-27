@@ -21,12 +21,44 @@
 #define XENGINE_GBUFFERPASS_HPP
 
 #include "xng/render/graph/framegraphpass.hpp"
-#include "xng/render/graph/gbuffer.hpp"
-#include "xng/asset/scene.hpp"
+#include "xng/resource/uri.hpp"
 
 namespace xng {
+    /**
+     * The GBufferPass creates geometry buffer textures which contain the data of the objects
+     * which dont contain a user specified shader and are not marked as transparent.
+     *
+     * No Dependencies
+     */
     class XENGINE_EXPORT GBufferPass : public FrameGraphPass {
     public:
+        // FrameGraphResource to a Texture RGBA32F : World Space Position xyz, w = X
+        SHARED_PROPERTY(GBufferPass, GEOMETRY_BUFFER_POSITION)
+
+        // FrameGraphResource to a Texture RGBA32F : Vertex or Texture Normal xyz, w = X
+        SHARED_PROPERTY(GBufferPass, GEOMETRY_BUFFER_NORMAL)
+
+        // FrameGraphResource to a Texture RGBA32F : Vertex Tangent xyz, w = X
+        SHARED_PROPERTY(GBufferPass, GEOMETRY_BUFFER_TANGENT)
+
+        // FrameGraphResource to a Texture RGBA32f : .x = pbr roughness or phong shininess, .y = pbr metallic, .z = pbr ambient occlusion
+        SHARED_PROPERTY(GBufferPass, GEOMETRY_BUFFER_ROUGHNESS_METALLIC_AO)
+
+        // FrameGraphResource to a Texture RGBA : The pbr albedo or phong diffuse color value
+        SHARED_PROPERTY(GBufferPass, GEOMETRY_BUFFER_ALBEDO)
+
+        // FrameGraphResource to a Texture RGBA : The phong ambient color value
+        SHARED_PROPERTY(GBufferPass, GEOMETRY_BUFFER_AMBIENT)
+
+        // FrameGraphResource to a  Texture RGBA : The phong specular color value
+        SHARED_PROPERTY(GBufferPass, GEOMETRY_BUFFER_SPECULAR)
+
+        // FrameGraphResource to a Texture RGBA32I : .x = Lighting Model ID, .y = Object ID
+        SHARED_PROPERTY(GBufferPass, GEOMETRY_BUFFER_MODEL_OBJECT)
+
+        // FrameGraphResource to a Texture DEPTH_STENCIL : The depth value in the x component
+        SHARED_PROPERTY(GBufferPass, GEOMETRY_BUFFER_DEPTH)
+
         GBufferPass();
 
         void setup(FrameGraphBuilder &builder) override;
@@ -38,7 +70,19 @@ namespace xng {
     private:
         FrameGraphResource renderTarget;
 
-        std::map<Uri, FrameGraphResource> sceneResources;
+        FrameGraphResource gBufferPosition;
+        FrameGraphResource gBufferNormal;
+        FrameGraphResource gBufferTangent;
+        FrameGraphResource gBufferRoughnessMetallicAmbientOcclusion;
+        FrameGraphResource gBufferAlbedo;
+        FrameGraphResource gBufferAmbient;
+        FrameGraphResource gBufferSpecular;
+        FrameGraphResource gBufferModelObject;
+        FrameGraphResource gBufferDepth;
+
+        std::map<Uri, FrameGraphResource> meshBuffers;
+        std::map<Uri, FrameGraphResource> textureBuffers;
+        std::map<Uri, FrameGraphResource> userPipelines;
     };
 }
 #endif //XENGINE_GBUFFERPASS_HPP

@@ -17,38 +17,32 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_COMPOSITEPASS_HPP
-#define XENGINE_COMPOSITEPASS_HPP
+#ifndef XENGINE_PHONGDEFERREDPASS_HPP
+#define XENGINE_PHONGDEFERREDPASS_HPP
 
+#include "xng/asset/scene.hpp"
 #include "xng/render/graph/framegraphpass.hpp"
 
 namespace xng {
     /**
-     * The composite pass combines the texture layers produced by previous passes
-     * and outputs the final composited image to the backbuffer.
+     * The deferred SHADE_PHONG* shading model implementation for non transparent objects.
      *
-     * No Dependencies
+     * Depends on GBufferPass
      */
-    class XENGINE_EXPORT CompositePass : public FrameGraphPass {
+    class XENGINE_EXPORT PhongDeferredPass : public FrameGraphPass {
     public:
-        // std::vector<CompositePass::Layer> : The composite layers that are appended to by preceding passes and read by the composite pass in the setup phase.
-        SHARED_PROPERTY(CompositePass, LAYERS)
+        // FrameGraphResource to a Texture RGBA : Contains the ambient color values
+        SHARED_PROPERTY(PhongDeferredPass, AMBIENT)
 
-        struct XENGINE_EXPORT Layer {
-            explicit Layer(FrameGraphResource color, FrameGraphResource *depth = nullptr)
-                    : color(color), depth(depth) {}
+        // FrameGraphResource to a Texture RGBA : Contains the diffuse color values
+        SHARED_PROPERTY(PhongDeferredPass, DIFFUSE)
 
-            FrameGraphResource color;
-            FrameGraphResource *depth;
-            bool enableBlending = true;
-            BlendMode colorBlendModeSource = BlendMode::SRC_ALPHA;
-            BlendMode colorBlendModeDest = BlendMode::ONE_MINUS_SRC_ALPHA;
-            DepthTestMode depthTestMode = DepthTestMode::DEPTH_TEST_LESS;
-        };
+        // FrameGraphResource to a Texture RGBA : Contains the specular color values
+        SHARED_PROPERTY(PhongDeferredPass, SPECULAR)
 
-        CompositePass();
+        PhongDeferredPass();
 
-        ~CompositePass() override = default;
+        ~PhongDeferredPass() override = default;
 
         void setup(FrameGraphBuilder &builder) override;
 
@@ -59,9 +53,16 @@ namespace xng {
     private:
         FrameGraphResource shader;
         FrameGraphResource quadMesh;
-        FrameGraphResource backBuffer;
-        std::vector<Layer> layers;
+
+        FrameGraphResource renderTarget;
+        FrameGraphResource multiSampleRenderTarget;
+
+        FrameGraphResource colorMultisample;
+        FrameGraphResource depthMultisample;
+
+        FrameGraphResource outColor;
+        FrameGraphResource outDepth;
     };
 }
 
-#endif //XENGINE_COMPOSITEPASS_HPP
+#endif //XENGINE_PHONGDEFERREDPASS_HPP

@@ -17,41 +17,36 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_PHONGPASS_HPP
-#define XENGINE_PHONGPASS_HPP
+#ifndef XENGINE_PHONGFORWARDPASS_HPP
+#define XENGINE_PHONGFORWARDPASS_HPP
 
-#include "xng/asset/scene.hpp"
 #include "xng/render/graph/framegraphpass.hpp"
 
 namespace xng {
     /**
-     * The SHADE_PHONG* shading model implementation.
+     * The forward SHADE_PHONG* shading model implementation used for transparent objects.
+     *
+     * No dependencies
      */
-    class XENGINE_EXPORT PhongPass : public FrameGraphPass {
+    class XENGINE_EXPORT PhongForwardPass : public FrameGraphPass {
     public:
-        PhongPass();
+        // FrameGraphResource to a Texture RGBA : Contains the ambient color values
+        SHARED_PROPERTY(PhongForwardPass, AMBIENT)
 
-        ~PhongPass() override = default;
+        // FrameGraphResource to a Texture RGBA : Contains the diffuse color values
+        SHARED_PROPERTY(PhongForwardPass, DIFFUSE)
+
+        // FrameGraphResource to a Texture RGBA : Contains the specular color values
+        SHARED_PROPERTY(PhongForwardPass, SPECULAR)
+
+        // FrameGraphResource to a Texture DEPTH_STENCIL : The depth values
+        SHARED_PROPERTY(PhongForwardPass, DEPTH)
 
         void setup(FrameGraphBuilder &builder) override;
 
         void execute(FrameGraphPassResources &resources) override;
 
         std::type_index getTypeName() override;
-
-    private:
-        FrameGraphResource shader;
-        FrameGraphResource quadMesh;
-
-        FrameGraphResource renderTarget;
-        FrameGraphResource multiSampleRenderTarget;
-
-        FrameGraphResource colorMultisample;
-        FrameGraphResource depthMultisample;
-
-        FrameGraphResource outColor;
-        FrameGraphResource outDepth;
     };
 }
-
-#endif //XENGINE_PHONGPASS_HPP
+#endif //XENGINE_PHONGFORWARDPASS_HPP
