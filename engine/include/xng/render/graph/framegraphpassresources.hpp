@@ -30,6 +30,7 @@
 #include "xng/gpu/vertexbuffer.hpp"
 #include "xng/gpu/rendertarget.hpp"
 #include "xng/gpu/shaderprogram.hpp"
+#include "xng/gpu/renderpipeline.hpp"
 
 namespace xng {
     /**
@@ -54,6 +55,14 @@ namespace xng {
 
         ShaderProgram &getShader(FrameGraphResource resource) {
             return dynamic_cast<ShaderProgram &>(*objects.at(resource));
+        }
+
+        ShaderBuffer &getShaderBuffer(FrameGraphResource resource){
+            return dynamic_cast<ShaderBuffer &>(*objects.at(resource));
+        }
+
+        RenderPipeline &getPipeline(FrameGraphResource resource) {
+            return dynamic_cast<RenderPipeline &>(*objects.at(resource));
         }
 
     private:

@@ -34,7 +34,7 @@ namespace xng {
 
     }
 
-    std::type_index PhongDeferredPass::getTypeName() {
+    std::type_index PhongDeferredPass::getTypeIndex() {
         return typeid(PhongDeferredPass);
     }
 }

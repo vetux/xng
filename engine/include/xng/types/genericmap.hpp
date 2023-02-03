@@ -31,24 +31,26 @@ namespace xng {
 
         explicit GenericMap(std::map<KeyType, std::any> values) : values(std::move(values)) {}
 
-        const std::any &get(const KeyType &key) {
+        const std::any &getAny(const KeyType &key) const {
             return values.at(key);
         }
 
         template<typename T>
-        const T &get(const KeyType &key, const T &defaultValue) {
+        const T &get(const KeyType &key, const T &defaultValue) const {
             if (values.find(key) == values.end()) {
-                values[key] = defaultValue;
+                return defaultValue;
+            } else {
+                return std::any_cast<const T &>(getAny(key));
             }
-            return std::any_cast<const T &>(get(key));
         }
 
         template<typename T>
-        const T &get(const KeyType &key) {
+        T get(const KeyType &key) const {
             if (values.find(key) == values.end()) {
-                values[key] = T();
+                return T();
+            } else {
+                return std::any_cast<const T &>(getAny(key));
             }
-            return std::any_cast<const T &>(get(key));
         }
 
         void set(const KeyType &key, const std::any &value) {
@@ -63,7 +65,7 @@ namespace xng {
             values.clear();
         }
 
-        bool has(const KeyType &key) {
+        bool has(const KeyType &key) const {
             return values.find(key) != values.end();
         }
 
@@ -76,6 +78,18 @@ namespace xng {
         }
 
         typename std::map<KeyType, std::any>::iterator end() {
+            return values.end();
+        }
+
+        typename std::map<KeyType, std::any>::iterator find(const KeyType &key) const {
+            return values.find(key);
+        }
+
+        typename std::map<KeyType, std::any>::iterator begin() const {
+            return values.begin();
+        }
+
+        typename std::map<KeyType, std::any>::iterator end() const {
             return values.end();
         }
 

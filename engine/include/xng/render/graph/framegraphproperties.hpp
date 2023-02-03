@@ -34,11 +34,7 @@ namespace xng {
         USER_PROPERTY(RENDER_SCALE)
 
         // int, the number of sub samples per pixel (MSAA) to use when forward rendering, if not defined the back buffer sample count is used.
-        USER_PROPERTY(RENDER_SAMPLES_FORWARD)
-
-        // int, the number of sub samples per pixel (MSAA) to use for the geometry buffer textures, if not defined the back buffer sample count is used.
-        // GBuffer textures can be multisampled but using render scale to overscan the frame should produce the same result at almost the same cost as multisampling because the expensive lighting calculations need to be done per sample.
-        USER_PROPERTY(RENDER_SAMPLES_GBUFFER)
+        USER_PROPERTY(RENDER_SAMPLES)
     }
 }
 

@@ -17,7 +17,6 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/render/graph/framegraphlayout.hpp"
 #include "xng/render/graph/framegraphbuilder.hpp"
 
 #include "xng/render/graph/framegraphpass.hpp"
@@ -117,11 +116,11 @@ namespace xng {
         return {backBuffer.getDescription().size, backBuffer.getDescription().samples};
     }
 
-    const Scene &FrameGraphBuilder::getScene() {
+    const Scene &FrameGraphBuilder::getScene() const {
         return scene;
     }
 
-    const GenericMapString &FrameGraphBuilder::getProperties() {
+    const GenericMapString &FrameGraphBuilder::getProperties() const {
         return properties;
     }
 
@@ -129,16 +128,16 @@ namespace xng {
         return sharedData;
     }
 
-    FrameGraph FrameGraphBuilder::build(const FrameGraphLayout &layout) {
+    FrameGraph FrameGraphBuilder::build(const std::vector<std::shared_ptr<FrameGraphPass>> &passes) {
         sharedData.clear();
         graph = {};
         resourceCounter = 1;
 
-        for (auto &pass: layout.getOrderedPasses()) {
+        for (auto &pass: passes) {
             currentPass = {};
-            pass.get().setup(*this);
+            pass->setup(*this);
             FrameGraph::Stage exec;
-            exec.pass = pass.get().getTypeName();
+            exec.pass = pass->getTypeIndex();
             exec.resources = currentPass.allocations;
             exec.reads = currentPass.reads;
             exec.writes = currentPass.writes;

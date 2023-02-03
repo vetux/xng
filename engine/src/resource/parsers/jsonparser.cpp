@@ -38,7 +38,7 @@ namespace xng {
     const char *JsonParser::EXTENSION_SCENE = ".xscene";
     const char *JsonParser::EXTENSION_BUNDLE = ".xbundle";
 
-    Message JsonParser::createBundle(const std::map<std::string, std::reference_wrapper<Resource>> &resources) {
+    Message JsonParser::createBundle(const ResourceBundle &bundle) {
         auto materials = std::vector<Message>();
         auto textures = std::vector<Message>();
         auto sprites = std::vector<Message>();
@@ -46,28 +46,28 @@ namespace xng {
         auto animations = std::vector<Message>();
         auto scenes = std::vector<Message>();
 
-        for (auto &pair: resources) {
+        for (auto &pair: bundle.assets) {
             auto msg = Message(Message::DICTIONARY);
             msg["name"] = pair.first;
-            auto type = pair.second.get().getTypeIndex();
+            auto type = pair.second.get()->getTypeIndex();
             if (type == typeid(Material)) {
-                auto &res = dynamic_cast<Material &>(pair.second.get());
+                auto &res = dynamic_cast<Material &>(*pair.second);
                 res >> msg;
                 materials.emplace_back(msg);
             } else if (type == typeid(Texture)) {
-                auto &res = dynamic_cast<Texture &>(pair.second.get());
+                auto &res = dynamic_cast<Texture &>(*pair.second);
                 res >> msg;
                 textures.emplace_back(msg);
             } else if (type == typeid(Sprite)) {
-                auto &res = dynamic_cast<Sprite &>(pair.second.get());
+                auto &res = dynamic_cast<Sprite &>(*pair.second);
                 res >> msg;
                 sprites.emplace_back(msg);
             } else if (type == typeid(ColliderDesc)) {
-                auto &res = dynamic_cast<ColliderDesc &>(pair.second.get());
+                auto &res = dynamic_cast<ColliderDesc &>(*pair.second);
                 res >> msg;
                 colliders.emplace_back(msg);
             } else if (type == typeid(SpriteAnimation)) {
-                auto &res = dynamic_cast<SpriteAnimation &>(pair.second.get());
+                auto &res = dynamic_cast<SpriteAnimation &>(*pair.second);
                 res >> msg;
                 animations.emplace_back(msg);
             } else {

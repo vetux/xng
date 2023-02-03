@@ -22,6 +22,7 @@
 
 #include "xng/render/graph/framegraphpass.hpp"
 #include "xng/resource/uri.hpp"
+#include "xng/asset/scene.hpp"
 
 namespace xng {
     /**
@@ -53,7 +54,7 @@ namespace xng {
         // FrameGraphResource to a  Texture RGBA : The phong specular color value
         SHARED_PROPERTY(GBufferPass, GEOMETRY_BUFFER_SPECULAR)
 
-        // FrameGraphResource to a Texture RGBA32I : .x = Lighting Model ID, .y = Object ID
+        // FrameGraphResource to a Texture RGBA32I : .x = Shading Model ID, .y = Object ID
         SHARED_PROPERTY(GBufferPass, GEOMETRY_BUFFER_MODEL_OBJECT)
 
         // FrameGraphResource to a Texture DEPTH_STENCIL : The depth value in the x component
@@ -65,10 +66,17 @@ namespace xng {
 
         void execute(FrameGraphPassResources &resources) override;
 
-        std::type_index getTypeName() override;
+        std::type_index getTypeIndex() override;
 
     private:
         FrameGraphResource renderTarget;
+        FrameGraphResource phongPipeline;
+        FrameGraphResource pbrPipeline;
+
+        FrameGraphResource pbrShaderBuffer;
+        FrameGraphResource phongShaderBuffer;
+
+        FrameGraphResource defaultTexture;
 
         FrameGraphResource gBufferPosition;
         FrameGraphResource gBufferNormal;
@@ -82,7 +90,14 @@ namespace xng {
 
         std::map<Uri, FrameGraphResource> meshBuffers;
         std::map<Uri, FrameGraphResource> textureBuffers;
-        std::map<Uri, FrameGraphResource> userPipelines;
+
+        std::map<uint, FrameGraphResource> shaderBuffers; // The shader buffer of each object in the scene
+
+        std::vector<std::pair<uint, Scene::Object>> phongObjects;
+        std::vector<std::pair<uint, Scene::Object>> pbrObjects;
+
+        Camera camera;
+        Transform cameraTransform;
     };
 }
 #endif //XENGINE_GBUFFERPASS_HPP

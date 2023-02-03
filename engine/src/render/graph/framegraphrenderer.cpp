@@ -26,7 +26,7 @@ namespace xng {
 
     void FrameGraphRenderer::render(const Scene &scene) {
         /// Setup
-        auto frame = FrameGraphBuilder(target, scene, properties).build(layout);
+        auto frame = FrameGraphBuilder(target, scene, properties).build(passes);
 
         blackboard.clear();
 
@@ -34,9 +34,9 @@ namespace xng {
         allocator->setFrame(frame);
 
         /// Execute
-        for (auto &p: layout.getOrderedPasses()) {
+        for (auto &p: passes) {
             auto res = allocator->allocateNext();
-            p.get().execute(res);
+            p->execute(res);
         }
     }
 }

@@ -38,16 +38,15 @@ namespace xng {
      * //TODO: Cache view and projection matrices
      */
     struct XENGINE_EXPORT Camera : public Messageable {
+        static Mat4f view(const Transform &cameraTransform) {
+            Mat4f ret = cameraTransform.getRotation().matrix();
+            // "The engines move the universe" - Futurama (Negate camera position)
+            return ret * MatrixMath::translate(cameraTransform.getPosition() * -1);
+        }
+
         Camera() {}
 
         explicit Camera(CameraType type) : type(type) {}
-
-        Mat4f view(const Transform &transform) {
-            Mat4f ret = transform.getRotation().matrix();
-
-            // "The engines move the universe" - Futurama (Negate camera position)
-            return ret * MatrixMath::translate(transform.getPosition() * -1);
-        }
 
         Mat4f projection() const {
             switch (type) {

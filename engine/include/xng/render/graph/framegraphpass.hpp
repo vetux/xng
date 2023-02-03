@@ -25,7 +25,7 @@
 
 #include "xng/gpu/renderdevice.hpp"
 
-#define SHARED_PROPERTY(type, name) constexpr static const char *const name = #type "::" #name;
+#define SHARED_PROPERTY(pass, name) constexpr static const char *const name = #pass "::" #name;
 
 namespace xng {
     class FrameGraphBuilder;
@@ -64,7 +64,7 @@ namespace xng {
          *
          * @return The type index of the concrete pass type
          */
-        virtual std::type_index getTypeName() = 0;
+        virtual std::type_index getTypeIndex() = 0;
     };
 }
 

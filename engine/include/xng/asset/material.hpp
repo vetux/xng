@@ -49,7 +49,7 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            message.value("model", (int &) model, (int) ShadingModel::SHADE_PBR);
+            message.value("model", (int &) shadingModel, (int) ShadingModel::SHADE_PBR);
             message.value("shader", shader);
             message.value("normal", normal);
             message.value("transparent", transparent, false);
@@ -80,7 +80,7 @@ namespace xng {
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
 
-            model >> message["model"];
+            shadingModel >> message["model"];
             shader >> message["shader"];
             normal >> message["normal"];
             transparent >> message["transparent"];
@@ -108,7 +108,7 @@ namespace xng {
             return message;
         }
 
-        ShadingModel model;
+        ShadingModel shadingModel;
 
         /**
          * Optional user specified shader.
@@ -122,7 +122,7 @@ namespace xng {
         /**
          * If assigned the contained normals are sampled otherwise vertex normals are used.
          */
-        ResourceHandle<ImageRGBA> normal;
+        ResourceHandle<Texture> normal;
 
         /**
          * Whether or not the material contains transparency. If this is set to true the object which this material belongs to is drawn using forward rendering.
@@ -137,10 +137,10 @@ namespace xng {
         float roughness{};
         float ambientOcclusion{};
 
-        ResourceHandle<ImageRGBA> albedoTexture;
-        ResourceHandle<ImageRGBA> metallicTexture;
-        ResourceHandle<ImageRGBA> roughnessTexture;
-        ResourceHandle<ImageRGBA> ambientOcclusionTexture;
+        ResourceHandle<Texture> albedoTexture;
+        ResourceHandle<Texture> metallicTexture;
+        ResourceHandle<Texture> roughnessTexture;
+        ResourceHandle<Texture> ambientOcclusionTexture;
 
         /**
          * Phong Shading Data
@@ -150,10 +150,10 @@ namespace xng {
         ColorRGBA specular{};
         float shininess{};
 
-        ResourceHandle<ImageRGBA> diffuseTexture;
-        ResourceHandle<ImageRGBA> ambientTexture;
-        ResourceHandle<ImageRGBA> specularTexture;
-        ResourceHandle<ImageRGBA> shininessTexture;
+        ResourceHandle<Texture> diffuseTexture;
+        ResourceHandle<Texture> ambientTexture;
+        ResourceHandle<Texture> specularTexture;
+        ResourceHandle<Texture> shininessTexture;
     };
 }
 

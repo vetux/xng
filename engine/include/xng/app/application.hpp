@@ -27,6 +27,7 @@
 #include "xng/audio/audiodriver.hpp"
 #include "xng/display/displaydriver.hpp"
 #include "xng/gpu/gpudriver.hpp"
+#include "xng/util/framelimiter.hpp"
 
 #include "xng/types/deltatime.hpp"
 
@@ -75,26 +76,9 @@ namespace xng {
 
         virtual int loop() {
             start();
-            auto frameStart = std::chrono::steady_clock::now();
-            DeltaTime deltaTime = 0;
+            frameLimiter.reset();
             while (!window->shouldClose() && !shutdown) {
-                update(deltaTime);
-                auto frameEnd = std::chrono::steady_clock::now();
-                auto frameDelta = frameEnd - frameStart;
-                deltaTime = static_cast<DeltaTime>(static_cast<long double>(frameDelta.count()) /
-                                                   (long double) 1000000000.0f);
-                if (targetFramerate > 0) {
-                    auto frameDur = std::chrono::steady_clock::duration(
-                            (int) ((long double) (1.0f / targetFramerate) * (long double) 1000000000.0f));
-                    if (frameDelta < frameDur) {
-                        std::this_thread::sleep_for(frameDur - frameDelta);
-                    }
-                    frameEnd = std::chrono::steady_clock::now();
-                    frameDelta = frameEnd - frameStart;
-                    deltaTime = static_cast<DeltaTime>(static_cast<long double>(frameDelta.count()) /
-                                                       (long double) 1000000000.0f);
-                }
-                frameStart = frameEnd;
+                update(frameLimiter.newFrame());
             }
             stop();
             return 0;
@@ -175,7 +159,7 @@ namespace xng {
 
         bool shutdown = false;
 
-        long double targetFramerate = 0;
+        FrameLimiter frameLimiter;
 
         virtual void start() {}
 
@@ -186,7 +170,7 @@ namespace xng {
             window->swapBuffers();
         }
 
-        virtual void parseArgs(int argc, char *argv[]) {
+        void parseArgs(int argc, char *argv[]) {
             std::vector<std::string> args;
             for (int i = 0; i < argc; i++)
                 args.emplace_back(argv[i]);
@@ -210,7 +194,7 @@ namespace xng {
             }
         }
 
-        virtual void loadDrivers() {
+        void loadDrivers() {
             displayDriver = Driver::load<DisplayDriver>(displayDriverName);
             gpuDriver = Driver::load<GpuDriver>(gpuDriverName);
             audioDriver = Driver::load<AudioDriver>(audioDriverName);

@@ -40,7 +40,7 @@ namespace xng {
 
         void execute(FrameGraphPassResources &resources) override;
 
-        std::type_index getTypeName() override;
+        std::type_index getTypeIndex() override;
     };
 }
 #endif //XENGINE_USERSHADEPASS_HPP

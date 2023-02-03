@@ -48,7 +48,7 @@ namespace xng {
 
         void execute(FrameGraphPassResources &resources) override;
 
-        std::type_index getTypeName() override;
+        std::type_index getTypeIndex() override;
 
     private:
         FrameGraphResource shader;

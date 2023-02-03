@@ -20,12 +20,23 @@
 #ifndef XENGINE_SHADER_HPP
 #define XENGINE_SHADER_HPP
 
+#include <utility>
+
 #include "shadersource.hpp"
 
 #include "xng/resource/resource.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT Shader : public Resource {
+        Shader() = default;
+
+        Shader(ShaderSource vertexShader,
+               ShaderSource geometryShader,
+               ShaderSource fragmentShader)
+                : vertexShader(std::move(vertexShader)),
+                geometryShader(std::move(geometryShader)),
+                fragmentShader(std::move(fragmentShader)) {}
+
         ~Shader() override = default;
 
         std::unique_ptr<Resource> clone() override {

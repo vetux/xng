@@ -29,6 +29,6 @@ void xng::PhongResolvePass::execute(xng::FrameGraphPassResources &resources) {
 
 }
 
-std::type_index xng::PhongResolvePass::getTypeName() {
+std::type_index xng::PhongResolvePass::getTypeIndex() {
     return typeid(PhongResolvePass);
 }

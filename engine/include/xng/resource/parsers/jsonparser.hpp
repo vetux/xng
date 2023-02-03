@@ -47,7 +47,7 @@ namespace xng {
         static const char *EXTENSION_SCENE;
         static const char *EXTENSION_BUNDLE;
 
-        static Message createBundle(const std::map<std::string, std::reference_wrapper<Resource>> &resources);
+        static Message createBundle(const ResourceBundle &bundle);
 
         ResourceBundle read(const std::vector<char> &buffer, const std::string &hint, Archive *archive) const override;
 

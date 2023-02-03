@@ -34,7 +34,7 @@ namespace xng {
 
     }
 
-    std::type_index CompositePass::getTypeName() {
+    std::type_index CompositePass::getTypeIndex() {
         return typeid(CompositePass);
     }
 }

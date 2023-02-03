@@ -20,10 +20,9 @@
 #ifndef XENGINE_FRAMEGRAPHBUILDER_HPP
 #define XENGINE_FRAMEGRAPHBUILDER_HPP
 
-#include "framegraphresource.hpp"
-#include "framegraphlayout.hpp"
-#include "framegraphpool.hpp"
-#include "framegraph.hpp"
+#include "xng/render/graph/framegraphresource.hpp"
+#include "xng/render/graph/framegraphpool.hpp"
+#include "xng/render/graph/framegraph.hpp"
 
 #include "xng/asset/scene.hpp"
 
@@ -41,7 +40,7 @@ namespace xng {
          * @param passes
          * @return
          */
-        FrameGraph build(const FrameGraphLayout &layout);
+        FrameGraph build(const std::vector<std::shared_ptr<FrameGraphPass>> &passes);
 
         /// -------------------------------------- Pass Interface      --------------------------------------
 
@@ -90,14 +89,14 @@ namespace xng {
         /**
          * @return The scene containing the user specified data.
          */
-        const Scene &getScene();
+        const Scene &getScene() const;
 
         /**
          * The properties map contains static configuration data.
          *
          * @return
          */
-        const GenericMapString &getProperties();
+        const GenericMapString &getProperties() const;
 
         /**
          * Return the shared data generic map.

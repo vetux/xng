@@ -64,8 +64,8 @@ namespace xng {
             w /= v.w;
             return *this;
         }
-
-        Vector4<T> &operator*=(const T &v) {
+        template <typename R>
+        Vector4<T> &operator*=(const R &v) {
             x *= v;
             y *= v;
             z *= v;
@@ -73,7 +73,8 @@ namespace xng {
             return *this;
         }
 
-        Vector4<T> &operator/=(const T &v) {
+        template <typename R>
+        Vector4<T> &operator/=(const R &v) {
             x /= v;
             y /= v;
             z /= v;
@@ -116,14 +117,6 @@ namespace xng {
             return Vector4<T>(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w);
         }
 
-        friend Vector4<T> operator*(const Vector4<T> &lhs, const T &rhs) {
-            return Vector4<T>(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs, lhs.w * rhs);
-        }
-
-        friend Vector4<T> operator/(const Vector4<T> &lhs, const T &rhs) {
-            return Vector4<T>(lhs.x / rhs, lhs.y / rhs, lhs.z / rhs, lhs.w / rhs);
-        }
-
         friend Vector4<T> operator*(const Vector4<T> &lhs, const Vector4<T> &rhs) {
             return Vector4<T>(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w);
         }
@@ -138,6 +131,16 @@ namespace xng {
 
         friend bool operator!=(const Vector4<T> &lhs, const Vector4<T> &rhs) {
             return !(lhs == rhs);
+        }
+
+        template <typename R>
+        friend Vector4<T> operator*(const Vector4<T> &lhs, const R &rhs) {
+            return Vector4<T>(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs, lhs.w * rhs);
+        }
+
+        template <typename R>
+        friend Vector4<T> operator/(const Vector4<T> &lhs, const R &rhs) {
+            return Vector4<T>(lhs.x / rhs, lhs.y / rhs, lhs.z / rhs, lhs.w / rhs);
         }
 
         T magnitude() const {

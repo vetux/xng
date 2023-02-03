@@ -24,7 +24,6 @@
 
 #include "xng/render/graph/framegraphpool.hpp"
 #include "xng/render/graph/framegraphpass.hpp"
-#include "xng/render/graph/framegraphlayout.hpp"
 #include "xng/render/graph/framegraphallocator.hpp"
 #include "xng/render/graph/allocators/framegraphpoolallocator.hpp"
 
@@ -37,8 +36,8 @@ namespace xng {
 
         void render(const Scene &scene) override;
 
-        void setLayout(const FrameGraphLayout &v) {
-            layout = v;
+        void setPasses(const std::vector<std::shared_ptr<FrameGraphPass>> &v) {
+            passes = v;
         }
 
         void setProperties(const GenericMapString &value) override {
@@ -59,7 +58,7 @@ namespace xng {
         RenderTarget &target;
         std::unique_ptr<FrameGraphAllocator> allocator;
 
-        FrameGraphLayout layout;
+        std::vector<std::shared_ptr<FrameGraphPass>> passes;
 
         GenericMapString properties;
         GenericMapString blackboard;
