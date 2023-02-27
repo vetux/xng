@@ -17,15 +17,26 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RAYTRACEPIPELINEDESC_HPP
-#define XENGINE_RAYTRACEPIPELINEDESC_HPP
+#ifndef XENGINE_VERTEXARRAYBUFFERDESC_HPP
+#define XENGINE_VERTEXARRAYBUFFERDESC_HPP
+
+#include <vector>
+
+#include "xng/gpu/vertexattribute.hpp"
+#include "xng/asset/primitive.hpp"
 
 namespace xng {
-    struct RaytracePipelineDesc {
-        bool operator==(const RaytracePipelineDesc &other) const {
-            return true;
+    struct VertexArrayBufferDesc {
+        Primitive primitive = TRI;
+        std::vector<VertexAttribute> vertexLayout{}; // The layout of one vertex in the vertex buffer
+        std::vector<VertexAttribute> instanceArrayLayout{}; // The layout of one entry in the instance buffer
+
+        bool operator==(const VertexArrayBufferDesc &other) const {
+            return primitive == other.primitive
+                   && vertexLayout == other.vertexLayout
+                   && instanceArrayLayout == other.instanceArrayLayout;
         }
     };
 }
 
-#endif //XENGINE_RAYTRACEPIPELINEDESC_HPP
+#endif //XENGINE_VERTEXARRAYBUFFERDESC_HPP

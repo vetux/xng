@@ -20,22 +20,73 @@
 #ifndef XENGINE_RENDERPIPELINE_HPP
 #define XENGINE_RENDERPIPELINE_HPP
 
-#include "renderobject.hpp"
-#include "renderpipelinedesc.hpp"
-#include "rendercommand.hpp"
-#include "rendertarget.hpp"
-#include "gpufence.hpp"
+#include "xng/gpu/renderobject.hpp"
+#include "xng/gpu/renderpipelinedesc.hpp"
+#include "xng/gpu/vertexbuffer.hpp"
+#include "xng/gpu/rendertarget.hpp"
+#include "xng/gpu/gpufence.hpp"
+#include "xng/gpu/rendercommand.hpp"
+#include "xng/gpu/vertexarraybuffer.hpp"
+#include "xng/gpu/texturearraybuffer.hpp"
 
 namespace xng {
     class XENGINE_EXPORT RenderPipeline : public RenderObject {
     public:
+        typedef std::variant<
+                std::reference_wrapper<TextureBuffer>,
+                std::reference_wrapper<TextureArrayBuffer>,
+                std::reference_wrapper<ShaderBuffer>
+        > Binding;
+
         Type getType() override {
             return RENDER_PIPELINE;
         }
 
-        virtual void setViewport(Vec2i viewportOffset, Vec2i viewportSize) = 0;
+        /**
+         * Render the vertex array without indexing.
+         *
+         * The size and format of the target must match the values specified in RenderPipelineDesc.
+         *
+         * The bindings must match the bindings layout specified in the RenderPipelineDesc.
+         *
+         * @param target
+         * @param vertexBuffers
+         * @param bindings
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> drawArray(RenderTarget &target,
+                                                    VertexArrayBuffer &vertexArrayBuffer,
+                                                    const std::vector<RenderCommand> &commands,
+                                                    const std::vector<Binding> &bindings) = 0;
 
-        virtual std::unique_ptr<GpuFence> render(RenderTarget &target, const std::vector<RenderCommand> &commands) = 0;
+        virtual std::unique_ptr<GpuFence> drawArrayInstanced(RenderTarget &target,
+                                                             VertexArrayBuffer &vertexArrayBuffer,
+                                                             const RenderCommand &command,
+                                                             const std::vector<Binding> &bindings,
+                                                             size_t numberOfInstances) = 0;
+
+        /**
+         * Render the vertex array with indexing.
+         *
+         * The size and format of the target must match the values specified in RenderPipelineDesc.
+         *
+         * The bindings must match the bindings layout specified in the RenderPipelineDesc.
+         *
+         * @param target
+         * @param vertexBuffers
+         * @param bindings
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> drawIndexed(RenderTarget &target,
+                                                      VertexArrayBuffer &vertexArrayBuffer,
+                                                      const std::vector<RenderCommand> &commands,
+                                                      const std::vector<Binding> &bindings) = 0;
+
+        virtual std::unique_ptr<GpuFence> drawIndexedInstanced(RenderTarget &target,
+                                                             VertexArrayBuffer &vertexArrayBuffer,
+                                                             const RenderCommand &command,
+                                                             const std::vector<Binding> &bindings,
+                                                             size_t numberOfInstances) = 0;
 
         virtual std::vector<uint8_t> cache() = 0;
 

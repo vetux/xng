@@ -17,15 +17,35 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RAYTRACEPIPELINEDESC_HPP
-#define XENGINE_RAYTRACEPIPELINEDESC_HPP
+#ifndef XENGINE_INDEXBUFFERDESC_HPP
+#define XENGINE_INDEXBUFFERDESC_HPP
+
+#include "xng/gpu/renderbuffertype.hpp"
 
 namespace xng {
-    struct RaytracePipelineDesc {
-        bool operator==(const RaytracePipelineDesc &other) const {
-            return true;
+    struct IndexBufferDesc {
+        RenderBufferType type;
+        size_t size;
+
+        bool operator==(const IndexBufferDesc &other) const {
+            return type == other.type
+                   && size == other.size;
         }
     };
 }
 
-#endif //XENGINE_RAYTRACEPIPELINEDESC_HPP
+namespace std {
+    template<>
+    struct hash<xng::IndexBufferDesc> {
+        std::size_t operator()(const xng::IndexBufferDesc &k) const {
+            size_t ret = 0;
+
+            xng::hash_combine(ret, k.type);
+            xng::hash_combine(ret, k.size);
+
+            return ret;
+        }
+    };
+}
+
+#endif //XENGINE_INDEXBUFFERDESC_HPP

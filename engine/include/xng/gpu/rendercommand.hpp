@@ -20,40 +20,15 @@
 #ifndef XENGINE_RENDERCOMMAND_HPP
 #define XENGINE_RENDERCOMMAND_HPP
 
-#include <vector>
-#include <memory>
-#include <variant>
+#include "xng/gpu/vertexarraybuffer.hpp"
 
-#include "vertexbuffer.hpp"
-#include "texturebuffer.hpp"
-#include "shaderbuffer.hpp"
-#include "shaderprogram.hpp"
+#include "xng/gpu/indexbuffer.hpp"
 
 namespace xng {
-    /**
-     * A render command specifying a vertex buffer and the set of texture buffers and shader buffers to bind to the shader.
-     */
     struct RenderCommand {
-        RenderCommand() = default;
-
-        RenderCommand(VertexBuffer &vertexBuffer, std::vector<std::variant<TextureBuffer*, ShaderBuffer*>> bindings)
-                : vertexBuffer(&vertexBuffer), bindings(std::move(bindings)) {}
-
-        VertexBuffer &getVertexBuffer() const {
-            if (vertexBuffer == nullptr)
-                throw std::runtime_error("Pass not initialized");
-            return *vertexBuffer;
-        }
-
-        const std::vector<std::variant<TextureBuffer*, ShaderBuffer*>> &getBindings() const {
-            if (vertexBuffer == nullptr)
-                throw std::runtime_error("Pass not initialized");
-            return bindings;
-        }
-
-    private:
-        VertexBuffer *vertexBuffer = nullptr;
-        std::vector<std::variant<TextureBuffer*, ShaderBuffer*>> bindings;
+        size_t offset = 0; // The offset into the index or vertex buffer at which to begin reading indices or vertices
+        size_t count = 0; // The number of indices or vertices to draw.
+        IndexBuffer::IndexType indexType = IndexBuffer::UNSIGNED_INT; // The type of the indices, ignored when not indexing
     };
 }
 

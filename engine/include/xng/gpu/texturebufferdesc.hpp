@@ -22,8 +22,8 @@
 
 #include "xng/math/vector2.hpp"
 
-#include "textureproperties.hpp"
-#include "renderbuffertype.hpp"
+#include "xng/gpu/textureproperties.hpp"
+#include "xng/gpu/renderbuffertype.hpp"
 
 #include "xng/util/hashcombine.hpp"
 

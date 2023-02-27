@@ -22,9 +22,7 @@
 
 namespace xng {
     struct ComputePipelineDesc {
-        ShaderProgram &shader;
-
-        bool operator==(const RenderPipelineDesc &other) const {
+        bool operator==(const ComputePipelineDesc &other) const {
             return true;
         }
     };

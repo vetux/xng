@@ -31,9 +31,7 @@ namespace xng {
             return RAYTRACE_PIPELINE;
         }
 
-        virtual void setViewport(Vec2i viewportOffset, Vec2i viewportSize) = 0;
-
-        virtual void render(RenderTarget &target, const std::vector<RaytraceCommand> &commands) = 0;
+        virtual void execute(const std::vector<RaytraceCommand> &commands) = 0;
 
         virtual const RaytracePipelineDesc &getDescription() = 0;
     };

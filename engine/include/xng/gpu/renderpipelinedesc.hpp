@@ -21,15 +21,40 @@
 #define XENGINE_RENDERPIPELINEDESC_HPP
 
 #include <functional>
+#include <variant>
 
-#include "shaderprogram.hpp"
-#include "renderproperties.hpp"
 #include "xng/asset/color.hpp"
 
 #include "xng/math/vector2.hpp"
 
+#include "xng/gpu/texturebuffer.hpp"
+#include "xng/gpu/shaderbuffer.hpp"
+#include "xng/gpu/renderproperties.hpp"
+#include "xng/gpu/vertexattribute.hpp"
+
+#include "xng/shader/shaderstage.hpp"
+#include "xng/shader/spirvshader.hpp"
+
+#include "xng/util/crc.hpp"
+
+#include "xng/asset/primitive.hpp"
+
 namespace xng {
+    enum RenderPipelineBindingType : int {
+        BIND_TEXTURE_BUFFER,
+        BIND_TEXTURE_ARRAY_BUFFER,
+        BIND_SHADER_BUFFER
+    };
+
     struct RenderPipelineDesc {
+        std::vector<RenderPipelineBindingType> bindings; // The set of binding types in order
+
+        std::map<ShaderStage, SPIRVShader> shaders; // The shaders to use for this pipeline
+
+        Primitive primitive = TRI;
+        std::vector<VertexAttribute> vertexLayout{}; // The layout of one vertex
+        std::vector<VertexAttribute> instanceArrayLayout{}; // Layout of the instanced array, The instance array attributes are appended to the vertex attributes and made available if numberOfInstances is > 0
+
         Vec2i viewportOffset = Vec2i(0);
         Vec2i viewportSize = Vec2i(1);
 
@@ -66,7 +91,9 @@ namespace xng {
         BlendMode blendDestinationMode = BlendMode::ONE_MINUS_SRC_ALPHA;
 
         bool operator==(const RenderPipelineDesc &other) const {
-            return viewportOffset == other.viewportOffset
+            return bindings == other.bindings
+                   && shaders == other.shaders
+                   && viewportOffset == other.viewportOffset
                    && viewportSize == other.viewportSize
                    && multiSample == other.multiSample
                    && multiSampleEnableFrequency == other.multiSampleEnableFrequency
@@ -101,6 +128,15 @@ namespace std {
     struct hash<xng::RenderPipelineDesc> {
         std::size_t operator()(const xng::RenderPipelineDesc &k) const {
             size_t ret = 0;
+            for (auto &b : k.bindings){
+                xng::hash_combine(ret, b);
+            }
+            for (auto &pair : k.shaders){
+                xng::hash_combine(ret, pair.first);
+                xng::hash_combine(ret, pair.second.getStage());
+                xng::hash_combine(ret, pair.second.getEntryPoint());
+                xng::hash_combine(ret, xng::crc(pair.second.getBlob().begin(), pair.second.getBlob().end()));
+            }
             xng::hash_combine(ret, k.viewportOffset.x);
             xng::hash_combine(ret, k.viewportOffset.y);
             xng::hash_combine(ret, k.viewportSize.x);

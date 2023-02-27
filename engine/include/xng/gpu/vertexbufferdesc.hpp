@@ -22,30 +22,22 @@
 
 #include <vector>
 
-#include "vertexattribute.hpp"
-#include "renderbuffertype.hpp"
+#include "xng/gpu/vertexattribute.hpp"
+#include "xng/gpu/renderbuffertype.hpp"
 
 #include "xng/util/hashcombine.hpp"
 #include "xng/util/crc.hpp"
 
-#include "xng/asset/mesh.hpp"
+#include "xng/asset/primitive.hpp"
 
 namespace xng {
     struct VertexBufferDesc {
-        Primitive primitive = TRI;
-        std::vector<VertexAttribute> vertexLayout{}; // The layout of one vertex
-        std::vector<VertexAttribute> instanceLayout{}; // the layout of one instance
-        size_t numberOfVertices = 0;
-        size_t numberOfInstances = 0;
-        size_t numberOfIndices = 0;
         RenderBufferType bufferType = HOST_VISIBLE;
+        size_t size = 0;
 
         bool operator==(const VertexBufferDesc &other) const {
-            return vertexLayout == other.vertexLayout
-                   && instanceLayout == other.instanceLayout
-                   && numberOfVertices == other.numberOfVertices
-                   && numberOfInstances == other.numberOfInstances
-                   && bufferType == other.bufferType;
+            return bufferType == other.bufferType
+                   && size == other.size;
         }
     };
 }
@@ -55,17 +47,10 @@ namespace std {
     struct hash<xng::VertexBufferDesc> {
         std::size_t operator()(const xng::VertexBufferDesc &k) const {
             size_t ret = 0;
-            for (auto v: k.vertexLayout) {
-                xng::hash_combine(ret, v.type);
-                xng::hash_combine(ret, v.component);
-            }
-            for (auto v: k.instanceLayout) {
-                xng::hash_combine(ret, v.type);
-                xng::hash_combine(ret, v.component);
-            }
-            xng::hash_combine(ret, k.numberOfVertices);
-            xng::hash_combine(ret, k.numberOfInstances);
+
             xng::hash_combine(ret, k.bufferType);
+            xng::hash_combine(ret, k.size);
+
             return ret;
         }
     };

@@ -17,45 +17,42 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_VERTEXBUFFER_HPP
-#define XENGINE_VERTEXBUFFER_HPP
+#ifndef XENGINE_INDEXBUFFER_HPP
+#define XENGINE_INDEXBUFFER_HPP
 
-#include "renderbuffer.hpp"
-#include "vertexbufferdesc.hpp"
-#include "gpufence.hpp"
+#include "xng/gpu/renderbuffer.hpp"
 
-#include "xng/asset/mesh.hpp"
-
-#include "xng/math/transform.hpp"
+#include "xng/gpu/indexbufferdesc.hpp"
 
 namespace xng {
     /**
-     * A VertexBuffer represents a buffer for storing vertex data.
+     * IndexBuffer represents a buffer for storing indices.
      *
-     * On OpenGL this would be a GL_ARRAY_BUFFER
+     * On OpenGL this woule be a GL_ELEMENT_ARRAY_BUFFER
      */
-    class XENGINE_EXPORT VertexBuffer : public RenderBuffer {
+    class IndexBuffer : public RenderBuffer {
     public:
-        ~VertexBuffer() override = default;
+        enum IndexType {
+            UNSIGNED_INT
+        };
 
         size_t getMemoryUsage() override {
             return getDescription().size;
         }
 
         RenderBufferType getBufferType() override {
-            return getDescription().bufferType;
+            return getDescription().type;
         }
 
         Type getType() override {
-            return Type::VERTEX_BUFFER;
+            return INDEX_BUFFER;
         }
 
-        virtual const VertexBufferDesc &getDescription() = 0;
+        virtual const IndexBufferDesc &getDescription() = 0;
 
         virtual std::unique_ptr<GpuFence> upload(size_t offset,
                                                  const uint8_t *data,
                                                  size_t dataSize) = 0;
     };
 }
-
-#endif //XENGINE_VERTEXBUFFER_HPP
+#endif //XENGINE_INDEXBUFFER_HPP

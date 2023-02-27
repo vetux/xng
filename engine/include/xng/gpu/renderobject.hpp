@@ -25,9 +25,11 @@ namespace xng {
     public:
         enum Type {
             VERTEX_BUFFER,
+            VERTEX_ARRAY_BUFFER,
             TEXTURE_BUFFER,
+            TEXTURE_ARRAY_BUFFER,
             SHADER_BUFFER,
-            SHADER_PROGRAM,
+            INDEX_BUFFER,
             RENDER_TARGET,
             RENDER_PIPELINE,
             COMPUTE_PIPELINE,

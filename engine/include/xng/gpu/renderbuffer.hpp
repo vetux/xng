@@ -25,6 +25,9 @@
 #include "gpufence.hpp"
 
 namespace xng {
+    /**
+     * A RenderBuffer represents a buffer of some sort that depending on the implementation may or may not be hardware backed.
+     */
     class XENGINE_EXPORT RenderBuffer : public RenderObject {
     public:
         /**
