@@ -17,35 +17,36 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_VERTEXARRAYBUFFER_HPP
-#define XENGINE_VERTEXARRAYBUFFER_HPP
+#ifndef XENGINE_VERTEXARRAYOBJECT_HPP
+#define XENGINE_VERTEXARRAYOBJECT_HPP
 
 #include "xng/gpu/renderobject.hpp"
 
 #include "xng/gpu/vertexbuffer.hpp"
 #include "xng/gpu/indexbuffer.hpp"
-#include "xng/gpu/vertexarraybufferdesc.hpp"
+#include "xng/gpu/vertexarrayobjectdesc.hpp"
 
 namespace xng {
     /**
-     * A array buffer accesses vertex data from a set of buffers and uses a layout to specify
+     * The array object accesses vertex data from a set of buffers and uses a layout to specify
      * how the buffers should be used to generate the vertex attributes for the vertex shader.
      *
      * On OpenGL this would represent a vertex array (glBindVertexArray) with the corresponding vertex attribute pointer setup.
      */
-    class VertexArrayBuffer : public RenderObject {
+    class VertexArrayObject : public RenderObject {
     public:
         Type getType() override {
             return VERTEX_ARRAY_BUFFER;
         }
 
-        virtual const VertexArrayBufferDesc &getDescription() = 0;
+        virtual const VertexArrayObjectDesc &getDescription() = 0;
 
         virtual VertexBuffer *getVertexBuffer() = 0;
 
         /**
          * Optional index buffer for specifying indices into the vertex buffer for elements instead of reading
          * the elements directly from the vertex buffer.
+         *
          * @return
          */
         virtual IndexBuffer *getIndexBuffer() = 0;
@@ -54,7 +55,7 @@ namespace xng {
          * The instance buffer is vertex attribute data that is updated for each instance instead of each vertex
          * by the graphics driver and accessed using the instanceArrayLayout specified in the mesh buffer layout.
          *
-         * Shader attribute bindings can access the instance attributes by using index vertexLayout.size
+         * Shader attribute bindings can access the instance attributes by using indices beginning at vertexLayout.size
          *
          * @return
          */
@@ -70,4 +71,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_VERTEXARRAYBUFFER_HPP
+#endif //XENGINE_VERTEXARRAYOBJECT_HPP

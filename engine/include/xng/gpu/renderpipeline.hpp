@@ -26,7 +26,7 @@
 #include "xng/gpu/rendertarget.hpp"
 #include "xng/gpu/gpufence.hpp"
 #include "xng/gpu/rendercommand.hpp"
-#include "xng/gpu/vertexarraybuffer.hpp"
+#include "xng/gpu/vertexarrayobject.hpp"
 #include "xng/gpu/texturearraybuffer.hpp"
 
 namespace xng {
@@ -55,12 +55,12 @@ namespace xng {
          * @return
          */
         virtual std::unique_ptr<GpuFence> drawArray(RenderTarget &target,
-                                                    VertexArrayBuffer &vertexArrayBuffer,
+                                                    VertexArrayObject &vertexArrayBuffer,
                                                     const std::vector<RenderCommand> &commands,
                                                     const std::vector<Binding> &bindings) = 0;
 
         virtual std::unique_ptr<GpuFence> drawArrayInstanced(RenderTarget &target,
-                                                             VertexArrayBuffer &vertexArrayBuffer,
+                                                             VertexArrayObject &vertexArrayBuffer,
                                                              const RenderCommand &command,
                                                              const std::vector<Binding> &bindings,
                                                              size_t numberOfInstances) = 0;
@@ -78,15 +78,15 @@ namespace xng {
          * @return
          */
         virtual std::unique_ptr<GpuFence> drawIndexed(RenderTarget &target,
-                                                      VertexArrayBuffer &vertexArrayBuffer,
+                                                      VertexArrayObject &vertexArrayBuffer,
                                                       const std::vector<RenderCommand> &commands,
                                                       const std::vector<Binding> &bindings) = 0;
 
         virtual std::unique_ptr<GpuFence> drawIndexedInstanced(RenderTarget &target,
-                                                             VertexArrayBuffer &vertexArrayBuffer,
-                                                             const RenderCommand &command,
-                                                             const std::vector<Binding> &bindings,
-                                                             size_t numberOfInstances) = 0;
+                                                               VertexArrayObject &vertexArrayBuffer,
+                                                               const RenderCommand &command,
+                                                               const std::vector<Binding> &bindings,
+                                                               size_t numberOfInstances) = 0;
 
         virtual std::vector<uint8_t> cache() = 0;
 

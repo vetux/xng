@@ -40,7 +40,7 @@
 #include "xng/gpu/rendertargetdesc.hpp"
 #include "xng/gpu/texturebufferdesc.hpp"
 #include "xng/gpu/renderdeviceinfo.hpp"
-#include "xng/gpu/vertexarraybuffer.hpp"
+#include "xng/gpu/vertexarrayobject.hpp"
 
 #include "xng/shader/spirvdecompiler.hpp"
 
@@ -93,7 +93,7 @@ namespace xng {
 
         virtual std::unique_ptr<IndexBuffer> createIndexBuffer(const IndexBufferDesc &desc) = 0;
 
-        virtual std::unique_ptr<VertexArrayBuffer> createVertexArrayBuffer(const VertexArrayBufferDesc &desc) = 0;
+        virtual std::unique_ptr<VertexArrayObject> createVertexArrayObject(const VertexArrayObjectDesc &desc) = 0;
 
         virtual std::unique_ptr<ShaderBuffer> createShaderBuffer(const ShaderBufferDesc &desc) = 0;
     };

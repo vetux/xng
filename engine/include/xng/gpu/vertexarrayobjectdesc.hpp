@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_VERTEXARRAYBUFFERDESC_HPP
-#define XENGINE_VERTEXARRAYBUFFERDESC_HPP
+#ifndef XENGINE_VERTEXARRAYOBJECTDESC_HPP
+#define XENGINE_VERTEXARRAYOBJECTDESC_HPP
 
 #include <vector>
 
@@ -26,12 +26,12 @@
 #include "xng/asset/primitive.hpp"
 
 namespace xng {
-    struct VertexArrayBufferDesc {
+    struct VertexArrayObjectDesc {
         Primitive primitive = TRI;
         std::vector<VertexAttribute> vertexLayout{}; // The layout of one vertex in the vertex buffer
         std::vector<VertexAttribute> instanceArrayLayout{}; // The layout of one entry in the instance buffer
 
-        bool operator==(const VertexArrayBufferDesc &other) const {
+        bool operator==(const VertexArrayObjectDesc &other) const {
             return primitive == other.primitive
                    && vertexLayout == other.vertexLayout
                    && instanceArrayLayout == other.instanceArrayLayout;
@@ -39,4 +39,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_VERTEXARRAYBUFFERDESC_HPP
+#endif //XENGINE_VERTEXARRAYOBJECTDESC_HPP

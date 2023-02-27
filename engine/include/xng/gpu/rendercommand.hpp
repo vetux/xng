@@ -20,7 +20,7 @@
 #ifndef XENGINE_RENDERCOMMAND_HPP
 #define XENGINE_RENDERCOMMAND_HPP
 
-#include "xng/gpu/vertexarraybuffer.hpp"
+#include "xng/gpu/vertexarrayobject.hpp"
 
 #include "xng/gpu/indexbuffer.hpp"
 
