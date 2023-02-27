@@ -43,50 +43,94 @@ namespace xng {
         }
 
         /**
-         * Render the vertex array without indexing.
-         *
-         * The size and format of the target must match the values specified in RenderPipelineDesc.
-         *
-         * The bindings must match the bindings layout specified in the RenderPipelineDesc.
+         * Draw without indexing.
          *
          * @param target
-         * @param vertexBuffers
+         * @param vertexArrayObject
+         * @param command
          * @param bindings
          * @return
          */
         virtual std::unique_ptr<GpuFence> drawArray(RenderTarget &target,
-                                                    VertexArrayObject &vertexArrayBuffer,
-                                                    const std::vector<RenderCommand> &commands,
+                                                    VertexArrayObject &vertexArrayObject,
+                                                    const RenderCommand &command,
                                                     const std::vector<Binding> &bindings) = 0;
 
-        virtual std::unique_ptr<GpuFence> drawArrayInstanced(RenderTarget &target,
-                                                             VertexArrayObject &vertexArrayBuffer,
+        /**
+         * Draw with indexing.
+         *
+         * @param target
+         * @param vertexArrayObject
+         * @param command
+         * @param bindings
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> drawIndexed(RenderTarget &target,
+                                                      VertexArrayObject &vertexArrayObject,
+                                                      const RenderCommand &command,
+                                                      const std::vector<Binding> &bindings) = 0;
+
+        /**
+         * Requires RenderDeviceCapability.RENDER_PIPELINE_INSTANCING
+         *
+         * gl_InstanceID can be used in shaders to access the current instance index
+         *
+         * @param target
+         * @param vertexArrayObject
+         * @param command
+         * @param bindings
+         * @param numberOfInstances
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> instancedDrawArray(RenderTarget &target,
+                                                             VertexArrayObject &vertexArrayObject,
                                                              const RenderCommand &command,
                                                              const std::vector<Binding> &bindings,
                                                              size_t numberOfInstances) = 0;
 
         /**
-         * Render the vertex array with indexing.
-         *
-         * The size and format of the target must match the values specified in RenderPipelineDesc.
-         *
-         * The bindings must match the bindings layout specified in the RenderPipelineDesc.
          *
          * @param target
-         * @param vertexBuffers
+         * @param vertexArrayObject
+         * @param command
          * @param bindings
+         * @param numberOfInstances
          * @return
          */
-        virtual std::unique_ptr<GpuFence> drawIndexed(RenderTarget &target,
-                                                      VertexArrayObject &vertexArrayBuffer,
-                                                      const std::vector<RenderCommand> &commands,
-                                                      const std::vector<Binding> &bindings) = 0;
-
-        virtual std::unique_ptr<GpuFence> drawIndexedInstanced(RenderTarget &target,
-                                                               VertexArrayObject &vertexArrayBuffer,
+        virtual std::unique_ptr<GpuFence> instancedDrawIndexed(RenderTarget &target,
+                                                               VertexArrayObject &vertexArrayObject,
                                                                const RenderCommand &command,
                                                                const std::vector<Binding> &bindings,
                                                                size_t numberOfInstances) = 0;
+
+        /**
+         * Requires RenderDeviceCapability.RENDER_PIPELINE_MULTI_DRAW
+         *
+         * gl_DrawID can be used in shaders to access the current command index
+         *
+         * @param target
+         * @param vertexArrayBuffer
+         * @param commands
+         * @param bindings
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> multiDrawIndexed(RenderTarget &target,
+                                                           VertexArrayObject &vertexArrayBuffer,
+                                                           const std::vector<RenderCommand> &commands,
+                                                           const std::vector<Binding> &bindings) = 0;
+
+        /**
+         *
+         * @param target
+         * @param vertexArrayBuffer
+         * @param commands
+         * @param bindings
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> multiDrawArray(RenderTarget &target,
+                                                         VertexArrayObject &vertexArrayBuffer,
+                                                         const std::vector<RenderCommand> &commands,
+                                                         const std::vector<Binding> &bindings) = 0;
 
         virtual std::vector<uint8_t> cache() = 0;
 

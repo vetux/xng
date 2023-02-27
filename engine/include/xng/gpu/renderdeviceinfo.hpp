@@ -22,6 +22,8 @@
 
 #include <string>
 
+#include "xng/gpu/renderdevicecapability.hpp"
+
 namespace xng {
     /**
      * A render device info presents information about a physical gpu device available on the system.
@@ -29,11 +31,16 @@ namespace xng {
      */
     struct RenderDeviceInfo {
         std::string name; // The unique identifier of this physical render device
-        int maxSampleCount = 0; // The maximum supported amount of msaa samples per texture or render target.
-        size_t availableDeviceMemory = 0; // The total amount of video memory available on the device in bytes
-                                            // (E.g. in Vulkan The sum of the device memory pool sizes excluding System (CPU) pools),
-                                            // or 0 if the platform does not support querying for it.
-                                            // All RenderDevice instances for this name share the memory.
+
+        int maxSampleCount = 0; // The maximum supported amount of msaa samples per texture or render target. 0 if msaa is not supported.
+
+        // The total amount of video memory available on the device in bytes
+        // (E.g. in Vulkan The sum of the device memory pool sizes excluding System (CPU) pools),
+        // or 0 if the platform does not support querying for it.
+        // All RenderDevice instances for this name share the memory.
+        size_t availableDeviceMemory = 0;
+
+        std::set<RenderDeviceCapability> capabilities;
     };
 }
 
