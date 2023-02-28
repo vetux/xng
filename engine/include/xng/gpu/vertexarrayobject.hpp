@@ -69,7 +69,7 @@ namespace xng {
                                                      IndexBuffer &indexBuffer) = 0;
 
         /**
-         * @param vertexOffset The offset to apply to the vertex attribute pointer. Causes the attributes to be read starting at baseOffset from the vertex buffer
+         * @param vertexOffset The base offset to apply to the vertex attribute pointers.
          * @param vertexBuffer
          * @param indexBuffer
          * @param instanceBuffer
