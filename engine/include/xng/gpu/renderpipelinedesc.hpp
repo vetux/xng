@@ -55,9 +55,6 @@ namespace xng {
         std::vector<VertexAttribute> vertexLayout{}; // The layout of one vertex
         std::vector<VertexAttribute> instanceArrayLayout{}; // Layout of the instanced array, The instance array attributes are appended to the vertex attributes and made available if numberOfInstances is > 0
 
-        Vec2i viewportOffset = Vec2i(0);
-        Vec2i viewportSize = Vec2i(1);
-
         bool multiSample = false;
         bool multiSampleEnableFrequency = false;
         float multiSampleFrequency = 1;
@@ -93,8 +90,6 @@ namespace xng {
         bool operator==(const RenderPipelineDesc &other) const {
             return bindings == other.bindings
                    && shaders == other.shaders
-                   && viewportOffset == other.viewportOffset
-                   && viewportSize == other.viewportSize
                    && multiSample == other.multiSample
                    && multiSampleEnableFrequency == other.multiSampleEnableFrequency
                    && clearColorValue == other.clearColorValue
@@ -137,10 +132,7 @@ namespace std {
                 xng::hash_combine(ret, pair.second.getEntryPoint());
                 xng::hash_combine(ret, xng::crc(pair.second.getBlob().begin(), pair.second.getBlob().end()));
             }
-            xng::hash_combine(ret, k.viewportOffset.x);
-            xng::hash_combine(ret, k.viewportOffset.y);
-            xng::hash_combine(ret, k.viewportSize.x);
-            xng::hash_combine(ret, k.viewportSize.y);
+
             xng::hash_combine(ret, k.multiSample);
             xng::hash_combine(ret, k.multiSampleEnableFrequency);
             xng::hash_combine(ret, k.multiSampleFrequency);
