@@ -177,10 +177,10 @@ namespace xng {
          * @param bindings
          * @return
          */
-        virtual void drawIndexedBaseVertex(const DrawCall &drawCall,
-                                           const std::vector<Binding> &bindings,
-                                           VertexArrayObject &vertexArrayObject,
-                                           size_t baseVertex) = 0;
+        virtual void drawIndexed(const DrawCall &drawCall,
+                                 const std::vector<Binding> &bindings,
+                                 VertexArrayObject &vertexArrayObject,
+                                 size_t baseVertex) = 0;
 
         /**
          * Draw using instancing and optional offset to apply when indexing into the vertex buffer.
@@ -198,11 +198,11 @@ namespace xng {
          * @param numberOfInstances
          * @return
          */
-        virtual void instancedDrawIndexedBaseVertex(const DrawCall &drawCall,
-                                                    const std::vector<Binding> &bindings,
-                                                    VertexArrayObject &vertexArrayObject,
-                                                    size_t numberOfInstances,
-                                                    size_t baseVertex) = 0;
+        virtual void instancedDrawIndexed(const DrawCall &drawCall,
+                                          const std::vector<Binding> &bindings,
+                                          VertexArrayObject &vertexArrayObject,
+                                          size_t numberOfInstances,
+                                          size_t baseVertex) = 0;
 
         /**
          * Draw multiple commands with one draw call and optional offset to apply when indexing into the vertex buffer.
@@ -219,10 +219,10 @@ namespace xng {
          * @param bindings
          * @return
          */
-        virtual void multiDrawIndexedBaseVertex(const std::vector<DrawCall> &drawCalls,
-                                                const std::vector<Binding> &bindings,
-                                                VertexArrayObject &vertexArrayObject,
-                                                size_t baseVertex) = 0;
+        virtual void multiDrawIndexed(const std::vector<DrawCall> &drawCalls,
+                                      const std::vector<Binding> &bindings,
+                                      VertexArrayObject &vertexArrayObject,
+                                      size_t baseVertex) = 0;
 
         virtual std::vector<uint8_t> cache() = 0;
 
