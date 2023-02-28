@@ -29,7 +29,7 @@ namespace xng {
     struct VertexArrayObjectDesc {
         Primitive primitive = TRI;
         std::vector<VertexAttribute> vertexLayout{}; // The layout of one vertex in the vertex buffer
-        std::vector<VertexAttribute> instanceArrayLayout{}; // The layout of one entry in the instance buffer
+        std::vector<VertexAttribute> instanceArrayLayout{}; // The layout of one entry in the instance buffer (optional)
 
         bool operator==(const VertexArrayObjectDesc &other) const {
             return primitive == other.primitive

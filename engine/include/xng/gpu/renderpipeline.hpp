@@ -71,6 +71,8 @@ namespace xng {
                                                       const std::vector<Binding> &bindings) = 0;
 
         /**
+         * Draw using instancing.
+         *
          * Requires RenderDeviceCapability.RENDER_PIPELINE_INSTANCING
          *
          * gl_InstanceID can be used in shaders to access the current instance index
@@ -89,6 +91,11 @@ namespace xng {
                                                              size_t numberOfInstances) = 0;
 
         /**
+         * Draw using instancing.
+         *
+         * Requires RenderDeviceCapability.RENDER_PIPELINE_INSTANCING
+         *
+         * gl_InstanceID can be used in shaders to access the current instance index
          *
          * @param target
          * @param vertexArrayObject
@@ -104,33 +111,103 @@ namespace xng {
                                                                size_t numberOfInstances) = 0;
 
         /**
+         * Draw multiple commands with one draw call.
+         *
          * Requires RenderDeviceCapability.RENDER_PIPELINE_MULTI_DRAW
          *
          * gl_DrawID can be used in shaders to access the current command index
          *
          * @param target
-         * @param vertexArrayBuffer
-         * @param commands
-         * @param bindings
-         * @return
-         */
-        virtual std::unique_ptr<GpuFence> multiDrawIndexed(RenderTarget &target,
-                                                           VertexArrayObject &vertexArrayBuffer,
-                                                           const std::vector<RenderCommand> &commands,
-                                                           const std::vector<Binding> &bindings) = 0;
-
-        /**
-         *
-         * @param target
-         * @param vertexArrayBuffer
+         * @param vertexArrayObject
          * @param commands
          * @param bindings
          * @return
          */
         virtual std::unique_ptr<GpuFence> multiDrawArray(RenderTarget &target,
-                                                         VertexArrayObject &vertexArrayBuffer,
+                                                         VertexArrayObject &vertexArrayObject,
                                                          const std::vector<RenderCommand> &commands,
                                                          const std::vector<Binding> &bindings) = 0;
+
+        /**
+         * Draw multiple commands with one draw call.
+         *
+         * Requires RenderDeviceCapability.RENDER_PIPELINE_MULTI_DRAW
+         *
+         * gl_DrawID can be used in shaders to access the current command index
+         *
+         * @param target
+         * @param vertexArrayObject
+         * @param commands
+         * @param bindings
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> multiDrawIndexed(RenderTarget &target,
+                                                           VertexArrayObject &vertexArrayObject,
+                                                           const std::vector<RenderCommand> &commands,
+                                                           const std::vector<Binding> &bindings) = 0;
+
+        /**
+         * Draw with indexing and optional offset to apply when indexing into the vertex buffer.
+         *
+         * The baseVertex is an offset that is applied to each index read from the index buffer before indexing the vertex buffer.
+         *
+         * Requires RenderDeviceCapability.RENDER_PIPELINE_BASE_VERTEX
+         *
+         * @param target
+         * @param vertexArrayObject
+         * @param command
+         * @param bindings
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> drawIndexedBaseVertex(RenderTarget &target,
+                                                                VertexArrayObject &vertexArrayObject,
+                                                                const RenderCommand &command,
+                                                                const std::vector<Binding> &bindings,
+                                                                size_t baseVertex) = 0;
+
+        /**
+         * Draw using instancing and optional offset to apply when indexing into the vertex buffer.
+         *
+         * The baseVertex is an offset that is applied to each index read from the index buffer before indexing the vertex buffer.
+         *
+         * Requires RenderDeviceCapability.RENDER_PIPELINE_BASE_VERTEX and RenderDeviceCapability.RENDER_PIPELINE_INSTANCING
+         *
+         * gl_InstanceID can be used in shaders to access the current instance index
+         *
+         * @param target
+         * @param vertexArrayObject
+         * @param command
+         * @param bindings
+         * @param numberOfInstances
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> instancedDrawIndexedBaseVertex(RenderTarget &target,
+                                                                         VertexArrayObject &vertexArrayObject,
+                                                                         const RenderCommand &command,
+                                                                         const std::vector<Binding> &bindings,
+                                                                         size_t numberOfInstances,
+                                                                         size_t baseVertex) = 0;
+
+        /**
+         * Draw multiple commands with one draw call and optional offset to apply when indexing into the vertex buffer.
+         *
+         * The baseVertex is an offset that is applied to each index read from the index buffer before indexing the vertex buffer.
+         *
+         * Requires RenderDeviceCapability.RENDER_PIPELINE_BASE_VERTEX and RenderDeviceCapability.RENDER_PIPELINE_INSTANCING
+         *
+         * gl_DrawID can be used in shaders to access the current command index
+         *
+         * @param target
+         * @param vertexArrayObject
+         * @param commands
+         * @param bindings
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> multiDrawIndexedBaseVertex(RenderTarget &target,
+                                                                     VertexArrayObject &vertexArrayObject,
+                                                                     const std::vector<RenderCommand> &commands,
+                                                                     const std::vector<Binding> &bindings,
+                                                                     size_t baseVertex) = 0;
 
         virtual std::vector<uint8_t> cache() = 0;
 

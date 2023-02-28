@@ -24,6 +24,7 @@ namespace xng {
     enum RenderDeviceCapability {
         RENDER_PIPELINE_MULTI_DRAW, // Support for multiDraw* methods of the RenderPipeline interface eg glMultiDraw on OpenGL
         RENDER_PIPELINE_INSTANCING, // Support for instancedDraw* methods of the RenderPipeline interface eg glDraw*Instanced on OpenGL
+        RENDER_PIPELINE_BASE_VERTEX, // Support for *DrawIndexedBaseVertex methods of the RenderPipeline interface eg glDrawElements*BaseVertex on OpenGL
     };
 }
 

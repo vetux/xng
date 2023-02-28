@@ -53,7 +53,7 @@ namespace xng {
 
         /**
          * The instance buffer is vertex attribute data that is updated for each instance instead of each vertex
-         * by the graphics driver and accessed using the instanceArrayLayout specified in the mesh buffer layout.
+         * by the graphics driver and accessed using the instanceArrayLayout specified in the vertex array object description.
          *
          * Shader attribute bindings can access the instance attributes by using indices beginning at vertexLayout.size
          *
@@ -61,11 +61,22 @@ namespace xng {
          */
         virtual VertexBuffer *getInstanceBuffer() = 0;
 
-        virtual std::unique_ptr<GpuFence> setBuffers(VertexBuffer &vertexBuffer) = 0;
+        virtual std::unique_ptr<GpuFence> setBuffers(size_t vertexOffset,
+                                                     VertexBuffer &vertexBuffer) = 0;
 
-        virtual std::unique_ptr<GpuFence> setBuffers(VertexBuffer &vertexBuffer, IndexBuffer &indexBuffer) = 0;
+        virtual std::unique_ptr<GpuFence> setBuffers(size_t vertexOffset,
+                                                     VertexBuffer &vertexBuffer,
+                                                     IndexBuffer &indexBuffer) = 0;
 
-        virtual std::unique_ptr<GpuFence> setBuffers(VertexBuffer &vertexBuffer,
+        /**
+         * @param vertexOffset The offset to apply to the vertex attribute pointer. Causes the attributes to be read starting at baseOffset from the vertex buffer
+         * @param vertexBuffer
+         * @param indexBuffer
+         * @param instanceBuffer
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> setBuffers(size_t vertexOffset,
+                                                     VertexBuffer &vertexBuffer,
                                                      IndexBuffer &indexBuffer,
                                                      VertexBuffer &instanceBuffer) = 0;
     };
