@@ -34,7 +34,7 @@ namespace xng {
         ~RenderTarget() override = default;
 
         Type getType() override {
-            return RENDER_TARGET;
+            return RENDER_OBJECT_RENDER_TARGET;
         }
 
         virtual const RenderTargetDesc &getDescription() = 0;

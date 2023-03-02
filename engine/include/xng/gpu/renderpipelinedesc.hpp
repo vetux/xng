@@ -47,13 +47,12 @@ namespace xng {
     };
 
     struct RenderPipelineDesc {
-        std::vector<RenderPipelineBindingType> bindings; // The set of binding types in order
-
         std::map<ShaderStage, SPIRVShader> shaders; // The shaders to use for this pipeline
+        std::vector<RenderPipelineBindingType> bindings; // The set of binding types in order
 
         Primitive primitive = TRI;
         std::vector<VertexAttribute> vertexLayout{}; // The layout of one vertex
-        std::vector<VertexAttribute> instanceArrayLayout{}; // Layout of the instanced array, The instance array attributes are appended to the vertex attributes and made available if numberOfInstances is > 0
+        std::vector<VertexAttribute> instanceArrayLayout{}; // Layout of the instanced array (Optional)
 
         bool multiSample = false;
         bool multiSampleEnableFrequency = false;

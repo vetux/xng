@@ -47,7 +47,7 @@ namespace xng {
         };
 
         Type getType() override {
-            return RENDER_PIPELINE;
+            return RENDER_OBJECT_RENDER_PIPELINE;
         }
 
         /**
@@ -57,17 +57,28 @@ namespace xng {
          * @param viewportOffset
          * @param viewportSize
          */
-        virtual void renderBegin(RenderTarget &target, Vec2i viewportOffset, Vec2i viewportSize) = 0;
+        virtual void renderBegin(RenderTarget &target,
+                                 Vec2i viewportOffset,
+                                 Vec2i viewportSize) = 0;
 
         /**
          * Run the recorded drawing operations.
          *
-         * @return The fence indicating when the drawing operations have finished.
+         * @return The fence indicating when the render operation has finished.
          */
         virtual std::unique_ptr<GpuFence> renderPresent() = 0;
 
         /**
          * The bound vertex array object is used in subsequent draw calls.
+         *
+         * In one render operation multiple vertex array objects can be bound and used similar to opengl the currently
+         * bound object will be used for drawing.
+         *
+         * Unlike opengl the drawing operations are deferred until the fence
+         * returned by renderPresent returns and all data required for a render operation is supplied between renderBegin/Present
+         * calls which allows vulkan implementations to use more efficient ways to handle the draw operations.
+         *
+         * Modifying a vertex array object used in a render operation before it has finished causes undefined behaviour.
          *
          * Must be called before using any draw calls.
          *
@@ -77,6 +88,8 @@ namespace xng {
 
         /**
          * The bound shader data is made available to shaders in subsequent draw calls.
+         *
+         * Modifying a binding used in a render operation before it has finished causes undefined behaviour.
          *
          * @param bindings
          */

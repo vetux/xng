@@ -28,7 +28,7 @@ namespace xng {
     class XENGINE_EXPORT RaytracePipeline : public RenderObject  {
     public:
         Type getType() override {
-            return RAYTRACE_PIPELINE;
+            return RENDER_OBJECT_RAYTRACE_PIPELINE;
         }
 
         virtual void execute(const std::vector<RaytraceCommand> &commands) = 0;

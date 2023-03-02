@@ -47,7 +47,7 @@ namespace xng {
         }
 
         Type getType() override {
-            return Type::VERTEX_BUFFER;
+            return Type::RENDER_OBJECT_VERTEX_BUFFER;
         }
 
         virtual const VertexBufferDesc &getDescription() = 0;

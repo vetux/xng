@@ -28,7 +28,7 @@ namespace xng {
     class XENGINE_EXPORT ComputePipeline : public RenderObject {
     public:
         Type getType() override {
-            return COMPUTE_PIPELINE;
+            return RENDER_OBJECT_COMPUTE_PIPELINE;
         }
 
         virtual void execute(const std::vector<ComputeCommand> &commands) = 0;

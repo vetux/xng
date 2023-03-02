@@ -26,12 +26,15 @@
 #include "shaderbufferdesc.hpp"
 
 namespace xng {
+    /**
+     * A bindable shader buffer, eg uniform buffer in opengl
+     */
     class XENGINE_EXPORT ShaderBuffer : public RenderBuffer {
     public:
         ~ShaderBuffer() override = default;
 
         Type getType() override {
-            return SHADER_BUFFER;
+            return RENDER_OBJECT_SHADER_BUFFER;
         }
 
         virtual const ShaderBufferDesc &getDescription() = 0;

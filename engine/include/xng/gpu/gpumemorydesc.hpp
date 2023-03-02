@@ -17,19 +17,32 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RENDERDEVICECAPABILITY_HPP
-#define XENGINE_RENDERDEVICECAPABILITY_HPP
+#ifndef XENGINE_GPUMEMORYDESC_HPP
+#define XENGINE_GPUMEMORYDESC_HPP
 
 namespace xng {
-    enum RenderDeviceCapability {
-        RENDER_COMPUTE, // Support for compute pipelines
-        RENDER_RAYTRACING, // Support for ray tracing pipelines
-        RENDER_GPU_MEMORY, // Support for GpuMemory interface implementation
+    struct GpuMemoryDesc {
+        size_t size; // The size of this memory object
+        std::set<RenderObject::Type> bufferTypes; // The list of buffer types which can be created in this memory object
 
-        RENDER_PIPELINE_MULTI_DRAW, // Support for multiDraw* methods of the RenderPipeline interface eg glMultiDraw on OpenGL
-        RENDER_PIPELINE_INSTANCING, // Support for instancedDraw* methods of the RenderPipeline interface eg glDraw*Instanced on OpenGL
-        RENDER_PIPELINE_BASE_VERTEX, // Support for *DrawIndexedBaseVertex methods of the RenderPipeline interface eg glDrawElements*BaseVertex on OpenGL
+        bool operator==(const GpuMemoryDesc &other) const {
+            return size == other.size
+                   && bufferTypes == other.bufferTypes;
+        }
     };
 }
 
-#endif //XENGINE_RENDERDEVICECAPABILITY_HPP
+namespace std {
+    template<>
+    struct hash<xng::GpuMemoryDesc> {
+        std::size_t operator()(const xng::GpuMemoryDesc &k) const {
+            size_t ret = 0;
+            xng::hash_combine(ret, k.size);
+            for (auto &v : k.bufferTypes)
+                xng::hash_combine(ret, v);
+            return ret;
+        }
+    };
+}
+
+#endif //XENGINE_GPUMEMORYDESC_HPP

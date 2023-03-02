@@ -45,7 +45,7 @@ namespace xng {
         }
 
         Type getType() override {
-            return INDEX_BUFFER;
+            return RENDER_OBJECT_INDEX_BUFFER;
         }
 
         virtual const IndexBufferDesc &getDescription() = 0;

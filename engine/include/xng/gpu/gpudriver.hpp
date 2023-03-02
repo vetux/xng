@@ -22,9 +22,8 @@
 
 #include "xng/driver/driver.hpp"
 
-#include "renderdevice.hpp"
-#include "renderdeviceinfo.hpp"
-#include "gpufeature.hpp"
+#include "xng/gpu/renderdevice.hpp"
+#include "xng/gpu/renderdeviceinfo.hpp"
 
 namespace xng {
     enum GpuDriverBackend {
@@ -52,8 +51,6 @@ namespace xng {
         virtual std::unique_ptr<RenderDevice> createRenderDevice() = 0;
 
         virtual std::unique_ptr<RenderDevice> createRenderDevice(const std::string &deviceName) = 0;
-
-        virtual std::set<GpuFeature> getSupportedFeatures() = 0;
 
     private:
         std::type_index getBaseType() override {

@@ -31,7 +31,7 @@
 
 namespace xng {
     /**
-     * A texture buffer.
+     * A bindable texture buffer eg sampler2D in glsl
      */
     class XENGINE_EXPORT TextureBuffer : public RenderBuffer {
     public:
@@ -44,7 +44,7 @@ namespace xng {
         }
 
         Type getType() override {
-            return TEXTURE_BUFFER;
+            return RENDER_OBJECT_TEXTURE_BUFFER;
         }
 
         /**

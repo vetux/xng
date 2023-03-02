@@ -24,16 +24,17 @@ namespace xng {
     class XENGINE_EXPORT RenderObject {
     public:
         enum Type {
-            VERTEX_BUFFER,
-            VERTEX_ARRAY_BUFFER,
-            TEXTURE_BUFFER,
-            TEXTURE_ARRAY_BUFFER,
-            SHADER_BUFFER,
-            INDEX_BUFFER,
-            RENDER_TARGET,
-            RENDER_PIPELINE,
-            COMPUTE_PIPELINE,
-            RAYTRACE_PIPELINE
+            RENDER_OBJECT_MEMORY,
+            RENDER_OBJECT_VERTEX_BUFFER,
+            RENDER_OBJECT_VERTEX_ARRAY_OBJECT,
+            RENDER_OBJECT_TEXTURE_BUFFER,
+            RENDER_OBJECT_TEXTURE_ARRAY_BUFFER,
+            RENDER_OBJECT_SHADER_BUFFER,
+            RENDER_OBJECT_INDEX_BUFFER,
+            RENDER_OBJECT_RENDER_TARGET,
+            RENDER_OBJECT_RENDER_PIPELINE,
+            RENDER_OBJECT_COMPUTE_PIPELINE,
+            RENDER_OBJECT_RAYTRACE_PIPELINE
         };
 
         /**

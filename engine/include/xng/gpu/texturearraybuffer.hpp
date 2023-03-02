@@ -42,7 +42,7 @@ namespace xng {
         }
 
         Type getType() override {
-            return TEXTURE_ARRAY_BUFFER;
+            return RENDER_OBJECT_TEXTURE_ARRAY_BUFFER;
         }
 
         /**

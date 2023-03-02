@@ -31,12 +31,16 @@ namespace xng {
      * The array object accesses vertex data from a set of buffers and uses a layout to specify
      * how the buffers should be used to generate the vertex attributes for the vertex shader.
      *
+     * This solves the discrepancy between vulkan and opengl where in vulkan the vertex buffer attributes are specified
+     * by the pipeline and in OpenGL it must be specified in a vertex array object.
+     *
      * On OpenGL this would represent a vertex array (glBindVertexArray) with the corresponding vertex attribute pointer setup.
+     * On vulkan this would hold the buffers for the pipeline to bind when drawing.
      */
     class VertexArrayObject : public RenderObject {
     public:
         Type getType() override {
-            return VERTEX_ARRAY_BUFFER;
+            return RENDER_OBJECT_VERTEX_ARRAY_OBJECT;
         }
 
         virtual const VertexArrayObjectDesc &getDescription() = 0;
@@ -61,24 +65,22 @@ namespace xng {
          */
         virtual VertexBuffer *getInstanceBuffer() = 0;
 
-        virtual std::unique_ptr<GpuFence> setBuffers(size_t vertexOffset,
-                                                     VertexBuffer &vertexBuffer) = 0;
+        virtual void bindBuffers(VertexBuffer &vertexBuffer) = 0;
 
-        virtual std::unique_ptr<GpuFence> setBuffers(size_t vertexOffset,
-                                                     VertexBuffer &vertexBuffer,
-                                                     IndexBuffer &indexBuffer) = 0;
+        virtual void bindBuffers(VertexBuffer &vertexBuffer,
+                                 IndexBuffer &indexBuffer) = 0;
 
         /**
-         * @param vertexOffset The base offset to apply to the vertex attribute pointers.
+         * Set the buffers to bind when this array object is bound to a pipeline.
+         *
          * @param vertexBuffer
          * @param indexBuffer
          * @param instanceBuffer
          * @return
          */
-        virtual std::unique_ptr<GpuFence> setBuffers(size_t vertexOffset,
-                                                     VertexBuffer &vertexBuffer,
-                                                     IndexBuffer &indexBuffer,
-                                                     VertexBuffer &instanceBuffer) = 0;
+        virtual void bindBuffers(VertexBuffer &vertexBuffer,
+                                 IndexBuffer &indexBuffer,
+                                 VertexBuffer &instanceBuffer) = 0;
     };
 }
 

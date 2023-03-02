@@ -25,8 +25,8 @@
 
 namespace xng {
     struct ShaderBufferDesc {
-        size_t size = 0;
         RenderBufferType bufferType = HOST_VISIBLE;
+        size_t size = 0;
 
         bool operator==(const ShaderBufferDesc &other) const {
             return size == other.size
