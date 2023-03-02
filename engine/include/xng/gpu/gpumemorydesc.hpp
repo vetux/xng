@@ -20,6 +20,10 @@
 #ifndef XENGINE_GPUMEMORYDESC_HPP
 #define XENGINE_GPUMEMORYDESC_HPP
 
+#include <set>
+
+#include "xng/util/hashcombine.hpp"
+
 namespace xng {
     struct GpuMemoryDesc {
         size_t size; // The size of this memory object

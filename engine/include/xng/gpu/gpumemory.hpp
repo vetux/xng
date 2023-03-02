@@ -23,11 +23,11 @@
 #include "xng/gpu/renderobject.hpp"
 #include "xng/gpu/gpumemorydesc.hpp"
 
-#include "xng/gpu/shaderbufferdesc.hpp"
-#include "xng/gpu/vertexbufferdesc.hpp"
-#include "xng/gpu/texturebufferdesc.hpp"
-#include "xng/gpu/texturearraybufferdesc.hpp"
-#include "xng/gpu/indexbufferdesc.hpp"
+#include "xng/gpu/indexbuffer.hpp"
+#include "xng/gpu/vertexbuffer.hpp"
+#include "xng/gpu/shaderbuffer.hpp"
+#include "xng/gpu/texturebuffer.hpp"
+#include "xng/gpu/texturearraybuffer.hpp"
 
 namespace xng {
     /**

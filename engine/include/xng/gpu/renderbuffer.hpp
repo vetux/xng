@@ -20,6 +20,8 @@
 #ifndef XENGINE_RENDERBUFFER_HPP
 #define XENGINE_RENDERBUFFER_HPP
 
+#include <memory>
+
 #include "xng/gpu/renderobject.hpp"
 #include "xng/gpu/renderbuffertype.hpp"
 #include "xng/gpu/gpufence.hpp"
@@ -39,9 +41,20 @@ namespace xng {
         virtual std::unique_ptr<GpuFence> copy(RenderBuffer &source) = 0;
 
         /**
+         * Copy the data in source buffer to this buffer.
+         *
+         * @param source The concrete type of other must be compatible and have the same properties as this buffer.
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> copy(RenderBuffer &source,
+                                               size_t readOffset,
+                                               size_t writeOffset,
+                                               size_t count) = 0;
+
+        /**
          * @return The size of the buffer in bytes
          */
-        virtual size_t getMemoryUsage() = 0;
+        virtual size_t getSize() = 0;
 
         virtual RenderBufferType getBufferType() = 0;
     };

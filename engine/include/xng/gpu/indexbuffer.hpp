@@ -35,7 +35,7 @@ namespace xng {
             UNSIGNED_INT
         };
 
-        size_t getMemoryUsage() override {
+        size_t getSize() override {
             return getDescription().size;
         }
 
