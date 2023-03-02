@@ -68,6 +68,10 @@ namespace xng {
          */
         virtual std::unique_ptr<GpuFence> renderPresent() = 0;
 
+        virtual void clearColorAttachments(ColorRGBA clearColor) = 0;
+
+        virtual void clearDepthAttachments(float clearDepthValue) = 0;
+
         /**
          * The bound vertex array object is used in subsequent draw calls.
          *
@@ -192,9 +196,9 @@ namespace xng {
          * gl_DrawID can be used in shaders to access the current command index
          *
          * @param drawCalls
-         * @param baseVertex
+         * @param baseVertices
          */
-        virtual void multiDrawIndexed(const std::vector<DrawCall> &drawCalls, size_t baseVertex) = 0;
+        virtual void multiDrawIndexed(const std::vector<DrawCall> &drawCalls, std::vector<size_t> baseVertices) = 0;
 
         virtual std::vector<uint8_t> cache() = 0;
 

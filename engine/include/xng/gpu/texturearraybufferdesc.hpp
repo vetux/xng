@@ -34,7 +34,7 @@
 namespace xng {
     struct TextureArrayBufferDesc : public Messageable {
         size_t textureCount{}; // The number of textures in the array
-        TextureBufferDesc textureDesc; // The format of the textures
+        TextureBufferDesc textureDesc{}; // The format of the textures
 
         bool operator==(const TextureArrayBufferDesc &other) const {
             return textureCount == other.textureCount

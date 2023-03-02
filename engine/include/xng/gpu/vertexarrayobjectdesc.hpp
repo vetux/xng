@@ -23,7 +23,8 @@
 #include <vector>
 
 #include "xng/gpu/vertexattribute.hpp"
-#include "xng/asset/primitive.hpp"
+
+#include "xng/geometry/primitive.hpp"
 
 namespace xng {
     struct VertexArrayObjectDesc {

@@ -21,7 +21,7 @@
 #define XENGINE_PRIMITIVE_HPP
 
 namespace xng {
-    enum Primitive {
+    enum Primitive : int {
         POINT = 1,
         LINE = 2,
         TRI = 3,
