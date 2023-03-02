@@ -83,7 +83,7 @@ namespace xng {
 
         VertexAttribute() = default;
 
-        VertexAttribute(Type type, Component component, size_t offset) : type(type),
+        VertexAttribute(Type type, Component component, size_t offset = 0) : type(type),
                                                                          component(component),
                                                                          offset(offset) {}
 

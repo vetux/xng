@@ -35,10 +35,10 @@ namespace xng {
     public:
         ~TextureArrayBuffer() override = default;
 
-        virtual const TextureBufferDesc &getDescription() = 0;
+        virtual const TextureArrayBufferDesc &getDescription() = 0;
 
         RenderBufferType getBufferType() override {
-            return getDescription().bufferType;
+            return getDescription().textureDesc.bufferType;
         }
 
         Type getType() override {
