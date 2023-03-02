@@ -83,14 +83,17 @@ namespace xng {
 
         VertexAttribute() = default;
 
-        VertexAttribute(Type type, Component component) : type(type), component(component) {}
+        VertexAttribute(Type type, Component component, size_t offset) : type(type),
+                                                                         component(component),
+                                                                         offset(offset) {}
 
         bool operator==(const VertexAttribute &other) const {
-            return type == other.type && component == other.component;
+            return type == other.type && component == other.component && offset == other.offset;
         }
 
         Type type;
         Component component;
+        size_t offset; // The offset that is applied to the attribute pointer.
     };
 }
 #endif //XENGINE_VERTEXATTRIBUTE_HPP
