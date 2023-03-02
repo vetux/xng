@@ -35,7 +35,7 @@ namespace xng {
                 std::reference_wrapper<TextureBuffer>,
                 std::reference_wrapper<TextureArrayBuffer>,
                 std::reference_wrapper<ShaderBuffer>
-        > Binding;
+        > ShaderData;
 
         /**
          * A DrawCall specifies which portion of the bound index or vertex buffer to draw.
@@ -51,7 +51,7 @@ namespace xng {
         }
 
         /**
-         * Must be called before using the drawing methods.
+         * Must be called before using any of the methods.
          *
          * @param target
          * @param viewportOffset
@@ -67,30 +67,34 @@ namespace xng {
         virtual std::unique_ptr<GpuFence> renderPresent() = 0;
 
         /**
+         * The bound vertex array object is used in subsequent draw calls.
+         *
+         * Must be called before using any draw calls.
+         *
+         * @param vertexArrayObject
+         */
+        virtual void bindVertexArrayObject(VertexArrayObject &vertexArrayObject) = 0;
+
+        /**
+         * The bound shader data is made available to shaders in subsequent draw calls.
+         *
+         * @param bindings
+         */
+        virtual void bindShaderData(const std::vector<ShaderData> &bindings) = 0;
+
+        /**
          * Draw without indexing.
          *
-         * @param target
-         * @param vertexArrayObject
-         * @param command
-         * @param bindings
-         * @return
+         * @param drawCall
          */
-        virtual void drawArray(const DrawCall &drawCall,
-                               const std::vector<Binding> &bindings,
-                               VertexArrayObject &vertexArrayObject) = 0;
+        virtual void drawArray(const DrawCall &drawCall) = 0;
 
         /**
          * Draw with indexing.
          *
-         * @param target
-         * @param vertexArrayObject
-         * @param command
-         * @param bindings
-         * @return
+         * @param drawCall
          */
-        virtual void drawIndexed(const DrawCall &drawCall,
-                                 const std::vector<Binding> &bindings,
-                                 VertexArrayObject &vertexArrayObject) = 0;
+        virtual void drawIndexed(const DrawCall &drawCall) = 0;
 
         /**
          * Draw using instancing.
@@ -99,17 +103,10 @@ namespace xng {
          *
          * gl_InstanceID can be used in shaders to access the current instance index
          *
-         * @param target
-         * @param vertexArrayObject
-         * @param command
-         * @param bindings
+         * @param drawCall
          * @param numberOfInstances
-         * @return
          */
-        virtual void instancedDrawArray(const DrawCall &drawCall,
-                                        const std::vector<Binding> &bindings,
-                                        VertexArrayObject &vertexArrayObject,
-                                        size_t numberOfInstances) = 0;
+        virtual void instancedDrawArray(const DrawCall &drawCall, size_t numberOfInstances) = 0;
 
         /**
          * Draw using instancing.
@@ -118,17 +115,10 @@ namespace xng {
          *
          * gl_InstanceID can be used in shaders to access the current instance index
          *
-         * @param target
-         * @param vertexArrayObject
-         * @param command
-         * @param bindings
+         * @param drawCall
          * @param numberOfInstances
-         * @return
          */
-        virtual void instancedDrawIndexed(const DrawCall &drawCall,
-                                          const std::vector<Binding> &bindings,
-                                          VertexArrayObject &vertexArrayObject,
-                                          size_t numberOfInstances) = 0;
+        virtual void instancedDrawIndexed(const DrawCall &drawCall, size_t numberOfInstances) = 0;
 
         /**
          * Draw multiple commands with one draw call.
@@ -137,15 +127,9 @@ namespace xng {
          *
          * gl_DrawID can be used in shaders to access the current command index
          *
-         * @param target
-         * @param vertexArrayObject
-         * @param commands
-         * @param bindings
-         * @return
+         * @param drawCalls
          */
-        virtual void multiDrawArray(const std::vector<DrawCall> &drawCalls,
-                                    const std::vector<Binding> &bindings,
-                                    VertexArrayObject &vertexArrayObject) = 0;
+        virtual void multiDrawArray(const std::vector<DrawCall> &drawCalls) = 0;
 
         /**
          * Draw multiple commands with one draw call.
@@ -154,15 +138,9 @@ namespace xng {
          *
          * gl_DrawID can be used in shaders to access the current command index
          *
-         * @param target
-         * @param vertexArrayObject
-         * @param commands
-         * @param bindings
-         * @return
+         * @param drawCalls
          */
-        virtual void multiDrawIndexed(const std::vector<DrawCall> &drawCalls,
-                                      const std::vector<Binding> &bindings,
-                                      VertexArrayObject &vertexArrayObject) = 0;
+        virtual void multiDrawIndexed(const std::vector<DrawCall> &drawCalls) = 0;
 
         /**
          * Draw with indexing and optional offset to apply when indexing into the vertex buffer.
@@ -171,16 +149,10 @@ namespace xng {
          *
          * Requires RenderDeviceCapability.RENDER_PIPELINE_BASE_VERTEX
          *
-         * @param target
-         * @param vertexArrayObject
-         * @param command
-         * @param bindings
-         * @return
+         * @param drawCall
+         * @param baseVertex
          */
-        virtual void drawIndexed(const DrawCall &drawCall,
-                                 const std::vector<Binding> &bindings,
-                                 VertexArrayObject &vertexArrayObject,
-                                 size_t baseVertex) = 0;
+        virtual void drawIndexed(const DrawCall &drawCall, size_t baseVertex) = 0;
 
         /**
          * Draw using instancing and optional offset to apply when indexing into the vertex buffer.
@@ -191,18 +163,11 @@ namespace xng {
          *
          * gl_InstanceID can be used in shaders to access the current instance index
          *
-         * @param target
-         * @param vertexArrayObject
-         * @param command
-         * @param bindings
+         * @param drawCall
          * @param numberOfInstances
-         * @return
+         * @param baseVertex
          */
-        virtual void instancedDrawIndexed(const DrawCall &drawCall,
-                                          const std::vector<Binding> &bindings,
-                                          VertexArrayObject &vertexArrayObject,
-                                          size_t numberOfInstances,
-                                          size_t baseVertex) = 0;
+        virtual void instancedDrawIndexed(const DrawCall &drawCall, size_t numberOfInstances, size_t baseVertex) = 0;
 
         /**
          * Draw multiple commands with one draw call and optional offset to apply when indexing into the vertex buffer.
@@ -213,16 +178,10 @@ namespace xng {
          *
          * gl_DrawID can be used in shaders to access the current command index
          *
-         * @param target
-         * @param vertexArrayObject
-         * @param commands
-         * @param bindings
-         * @return
+         * @param drawCalls
+         * @param baseVertex
          */
-        virtual void multiDrawIndexed(const std::vector<DrawCall> &drawCalls,
-                                      const std::vector<Binding> &bindings,
-                                      VertexArrayObject &vertexArrayObject,
-                                      size_t baseVertex) = 0;
+        virtual void multiDrawIndexed(const std::vector<DrawCall> &drawCalls, size_t baseVertex) = 0;
 
         virtual std::vector<uint8_t> cache() = 0;
 
