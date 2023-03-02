@@ -25,6 +25,7 @@
 namespace xng {
     /**
      * A fence represents a task which is executed on the gpu device and can be awaited from the cpu.
+     * The gpu driver implementation can batch together tasks for optimal performance.
      */
     class XENGINE_EXPORT GpuFence {
     public:

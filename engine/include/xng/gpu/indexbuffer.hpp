@@ -21,7 +21,6 @@
 #define XENGINE_INDEXBUFFER_HPP
 
 #include "xng/gpu/renderbuffer.hpp"
-
 #include "xng/gpu/indexbufferdesc.hpp"
 
 namespace xng {

@@ -20,9 +20,9 @@
 #ifndef XENGINE_RENDERBUFFER_HPP
 #define XENGINE_RENDERBUFFER_HPP
 
-#include "renderobject.hpp"
-#include "renderbuffertype.hpp"
-#include "gpufence.hpp"
+#include "xng/gpu/renderobject.hpp"
+#include "xng/gpu/renderbuffertype.hpp"
+#include "xng/gpu/gpufence.hpp"
 
 namespace xng {
     /**

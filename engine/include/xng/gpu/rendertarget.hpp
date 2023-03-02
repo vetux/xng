@@ -20,11 +20,11 @@
 #ifndef XENGINE_RENDERTARGET_HPP
 #define XENGINE_RENDERTARGET_HPP
 
-#include "textureproperties.hpp"
-#include "texturebuffer.hpp"
-#include "rendertargetdesc.hpp"
-#include "renderobject.hpp"
-#include "gpufence.hpp"
+#include "xng/gpu/textureproperties.hpp"
+#include "xng/gpu/texturebuffer.hpp"
+#include "xng/gpu/rendertargetdesc.hpp"
+#include "xng/gpu/renderobject.hpp"
+#include "xng/gpu/gpufence.hpp"
 
 #include "xng/math/vector2.hpp"
 
