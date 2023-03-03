@@ -83,7 +83,8 @@ namespace xng {
          * @param bindings The set of buffers to bind to the shader in the given order when rendering vertex buffers
          * @return
          */
-        virtual std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDesc &desc) = 0;
+        virtual std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDesc &desc,
+                                                                     SPIRVDecompiler &decompiler) = 0;
 
         virtual std::unique_ptr<RenderPipeline> createRenderPipeline(const uint8_t *cacheData, size_t size) = 0;
 

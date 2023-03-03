@@ -37,6 +37,19 @@ namespace xng {
                 std::reference_wrapper<ShaderBuffer>
         > ShaderData;
 
+        static RenderPipelineBindingType getShaderDataType(const ShaderData &data){
+                switch(data.index()){
+                    case 0:
+                            return BIND_TEXTURE_BUFFER;
+                    case 1:
+                            return BIND_TEXTURE_ARRAY_BUFFER;
+                    case 2:
+                            return BIND_SHADER_BUFFER;
+                    default:
+                            throw std::runtime_error("Invalid data index");
+                }
+        }
+
         /**
          * A DrawCall specifies which portion of the bound index or vertex buffer to draw.
          */

@@ -45,6 +45,8 @@ namespace xng {
             return RENDER_OBJECT_TEXTURE_ARRAY_BUFFER;
         }
 
+        std::unique_ptr<GpuFence> copy(RenderBuffer &source) override = 0;
+
         std::unique_ptr<GpuFence> copy(RenderBuffer &source,
                                        size_t readOffset,
                                        size_t writeOffset,
@@ -70,15 +72,6 @@ namespace xng {
                                                  size_t bufferSize) = 0;
 
         virtual Image<ColorRGBA> download(size_t index) = 0;
-
-        virtual std::unique_ptr<GpuFence> upload(size_t index,
-                                                 CubeMapFace face,
-                                                 ColorFormat format,
-                                                 const uint8_t *buffer,
-                                                 size_t bufferSize) = 0;
-
-        virtual Image<ColorRGBA> download(size_t index,
-                                          CubeMapFace face) = 0;
 
         std::unique_ptr<GpuFence> upload(size_t index,
                                          const Image<ColorRGBA> &image) {
