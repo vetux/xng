@@ -31,6 +31,7 @@ namespace xng {
             std::set<FrameGraphResource> resources; // The set of resources created by the pass
             std::set<FrameGraphResource> writes; // The set of resources that are written to by the pass
             std::set<FrameGraphResource> reads; // The set of resources that are read by the pass
+            std::set<FrameGraphResource> persists; // The set of resources that are declared to be persistent
 
             Stage() = default;
         };

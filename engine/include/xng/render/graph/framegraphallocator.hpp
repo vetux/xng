@@ -24,17 +24,26 @@
 #include "framegraphallocation.hpp"
 
 namespace xng {
+    /**
+     * The FrameGraphAllocator controls how render objects created and used by passes are stored in memory.
+     *
+     * Currently the gpu abstraction does not allow low level control over where the buffers are allocated themselves.
+     *
+     * Once this is implemented advanced allocator implementations can use this api to allocate the buffers in the most
+     * efficient way possible.
+     *
+     * The passes implement the memory management for data inside the buffers.
+     */
     class XENGINE_EXPORT FrameGraphAllocator {
     public:
         /**
-         * Must be called before calling allocateNext.
+         * Must be called before calling allocateNextPass.
          *
          * Allocators can use the graph data to allocate the objects in the most efficient way possible.
-         * For example by creating the gpu memory buffers adjacent in memory (Not possible yet with the current gpu abstraction)
          *
-         * @param frame The frame graph that contains the resource allocations
+         * @param frame The frame graph that contains the resource allocation information
          */
-        virtual void setFrame(const FrameGraph &frame) = 0;
+        virtual void beginFrame(const FrameGraph &frame) = 0;
 
         /**
          * Allocate the set of resources for the next pass and deallocate any unused resources.
@@ -42,7 +51,7 @@ namespace xng {
          * @throws std::runtime_error when there are no more pass resources to allocate.
          * @return The set of resources to pass to the current pass execute method.
          */
-        virtual FrameGraphPassResources allocateNext() = 0;
+        virtual FrameGraphPassResources allocateNextPass() = 0;
     };
 }
 

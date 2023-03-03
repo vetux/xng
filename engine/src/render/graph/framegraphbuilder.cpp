@@ -29,54 +29,17 @@ namespace xng {
               scene(scene),
               properties(properties) {}
 
-    FrameGraphResource FrameGraphBuilder::createMeshBuffer(const ResourceHandle<Mesh> &h) {
-        auto it = uriResources.find(h.getUri());
-        if (it == uriResources.end()) {
-            auto ret = FrameGraphResource(resourceCounter++);
-            graph.allocations[ret] = FrameGraphAllocation{RenderObject::VERTEX_BUFFER,
-                                                          true,
-                                                          h.getUri()};
-            currentPass.allocations.insert(ret);
-            uriResources[h.getUri()] = ret;
-            return ret;
-        } else {
-            auto ret = it->second;
-            currentPass.allocations.insert(ret);
-            return ret;
-        }
-    }
-
-    FrameGraphResource FrameGraphBuilder::createTextureBuffer(const ResourceHandle<Texture> &h) {
-        auto it = uriResources.find(h.getUri());
-        if (it == uriResources.end()) {
-            auto ret = FrameGraphResource(resourceCounter++);
-            graph.allocations[ret] = FrameGraphAllocation{RenderObject::TEXTURE_BUFFER,
-                                                          true,
-                                                          h.getUri()};
-            currentPass.allocations.insert(ret);
-            uriResources[h.getUri()] = ret;
-            return ret;
-        } else {
-            auto ret = it->second;
-            currentPass.allocations.insert(ret);
-            return ret;
-        }
-    }
-
-    FrameGraphResource FrameGraphBuilder::createPipeline(const ResourceHandle<Shader> &shader,
-                                                         const RenderPipelineDesc &desc) {
+    FrameGraphResource FrameGraphBuilder::createPipeline(const RenderPipelineDesc &desc) {
         auto ret = FrameGraphResource(resourceCounter++);
-        graph.allocations[ret] = FrameGraphAllocation{RenderObject::RENDER_PIPELINE,
-                                                      false,
-                                                      std::make_pair<>(shader, desc)};
+        graph.allocations[ret] = FrameGraphAllocation{RenderObject::RENDER_OBJECT_RENDER_PIPELINE,
+                                                      desc};
         currentPass.allocations.insert(ret);
         return ret;
     }
 
     FrameGraphResource FrameGraphBuilder::createRenderTarget(const RenderTargetDesc &desc) {
         auto ret = FrameGraphResource(resourceCounter++);
-        graph.allocations[ret] = FrameGraphAllocation{RenderObject::RENDER_TARGET,
-                                                      false,
+        graph.allocations[ret] = FrameGraphAllocation{RenderObject::RENDER_OBJECT_RENDER_TARGET,
                                                       desc};
         currentPass.allocations.insert(ret);
         return ret;
@@ -84,8 +47,7 @@ namespace xng {
 
     FrameGraphResource FrameGraphBuilder::createTextureBuffer(const TextureBufferDesc &attribs) {
         auto ret = FrameGraphResource(resourceCounter++);
-        graph.allocations[ret] = FrameGraphAllocation{RenderObject::TEXTURE_BUFFER,
-                                                      false,
+        graph.allocations[ret] = FrameGraphAllocation{RenderObject::RENDER_OBJECT_TEXTURE_BUFFER,
                                                       attribs};
         currentPass.allocations.insert(ret);
         return ret;
@@ -93,11 +55,14 @@ namespace xng {
 
     FrameGraphResource FrameGraphBuilder::createShaderBuffer(const ShaderBufferDesc &desc) {
         auto ret = FrameGraphResource(resourceCounter++);
-        graph.allocations[ret] = FrameGraphAllocation{RenderObject::SHADER_BUFFER,
-                                                      false,
+        graph.allocations[ret] = FrameGraphAllocation{RenderObject::RENDER_OBJECT_SHADER_BUFFER,
                                                       desc};
         currentPass.allocations.insert(ret);
         return ret;
+    }
+
+    FrameGraphResource FrameGraphBuilder::createMeshBuffer(const VertexBufferDesc &desc) {
+        return FrameGraphResource();
     }
 
     void FrameGraphBuilder::write(FrameGraphResource target) {
@@ -106,6 +71,10 @@ namespace xng {
 
     void FrameGraphBuilder::read(FrameGraphResource source) {
         currentPass.reads.insert(source);
+    }
+
+    void FrameGraphBuilder::persist(FrameGraphResource resource) {
+
     }
 
     FrameGraphResource FrameGraphBuilder::getBackBuffer() {

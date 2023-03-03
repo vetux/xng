@@ -31,11 +31,11 @@ namespace xng {
         blackboard.clear();
 
         /// Compile
-        allocator->setFrame(frame);
+        allocator->beginFrame(frame);
 
         /// Execute
         for (auto &p: passes) {
-            auto res = allocator->allocateNext();
+            auto res = allocator->allocateNextPass();
             p->execute(res);
         }
     }

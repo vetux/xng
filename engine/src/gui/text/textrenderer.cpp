@@ -17,8 +17,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/text/textrenderer.hpp"
+#include "xng/gui/text/textrenderer.hpp"
 
+#pragma message "Not Implemented"
+
+/*
 namespace xng {
     struct RenderChar {
         std::reference_wrapper<Character> character;
@@ -29,10 +32,6 @@ namespace xng {
         RenderChar(Character &character, TextureBuffer &texture)
                 : character(character), texture(texture) {}
 
-        /**
-         * @param z The z value
-         * @return
-         */
         Vec2f getPosition(Vec2f origin) const {
             return {position.x + (origin.x + numeric_cast<float>(character.get().bearing.x)),
                     (position.y + (origin.y - numeric_cast<float>(character.get().bearing.y)))};
@@ -77,7 +76,7 @@ namespace xng {
         }
     }
 
-    Vec2f TextRenderer::getSize(const std::string &str, const TextRenderProperties &properties) {
+    Vec2f TextRenderer::getSize(const std::string &str, const TextLayout &layout) {
         Vec2i size(0); //The total size of the text
 
         Vec2i lineSize(0); // The size of the line and column of the current character
@@ -88,8 +87,8 @@ namespace xng {
             auto character = ascii.at(c);
             lineSize.x += character.advance;
 
-            lineSize.y = (line * properties.lineSpacing) + (line * properties.lineHeight) +
-                         (properties.lineHeight + character.image.getHeight() - character.bearing.y);
+            lineSize.y = (line * layout.lineSpacing) + (line * layout.lineHeight) +
+                         (layout.lineHeight + character.image.getHeight() - character.bearing.y);
 
             //Assign current horizontal size of the line if it is larger than the current size
             if (lineSize.x > size.x) {
@@ -101,7 +100,7 @@ namespace xng {
                 size.y = lineSize.y;
             }
 
-            if (c == '\n' || (properties.lineWidth > 0 && lineSize.x > properties.lineWidth)) {
+            if (c == '\n' || (layout.lineWidth > 0 && lineSize.x > layout.lineWidth)) {
                 line++;
                 lineSize.x = 0;
             }
@@ -119,11 +118,11 @@ namespace xng {
         return ret;
     }
 
-    Text TextRenderer::render(const std::string &text, const TextRenderProperties &properties) {
+    Text TextRenderer::render(const std::string &text, const TextLayout &layout, const ColorRGBA &color) {
         if (text.empty())
             throw std::runtime_error("Text cannot be empty");
 
-        auto size = getSize(text, properties);
+        auto size = getSize(text, layout);
 
         Character largestCharacterOfFirstLine;
 
@@ -139,7 +138,7 @@ namespace xng {
             auto lineWidth = getWidth(lines.at(lineIndex));
 
             if (c == '\n'
-                || (properties.lineWidth > 0 && lineWidth + character.advance > properties.lineWidth)) {
+                || (layout.lineWidth > 0 && lineWidth + character.advance > layout.lineWidth)) {
                 lines.emplace_back(std::vector<RenderChar>());
                 posx = 0;
                 lineIndex = lines.size() - 1;
@@ -154,8 +153,8 @@ namespace xng {
 
             RenderChar renderChar(character, *textures.at(c));
 
-            float posy = (numeric_cast<float>(lineIndex) * numeric_cast<float>(properties.lineSpacing))
-                         + (numeric_cast<float>(lineIndex) * numeric_cast<float>(properties.lineHeight));
+            float posy = (numeric_cast<float>(lineIndex) * numeric_cast<float>(layout.lineSpacing))
+                         + (numeric_cast<float>(lineIndex) * numeric_cast<float>(layout.lineHeight));
 
             renderChar.position.x = posx;
             renderChar.position.y = posy;
@@ -176,14 +175,14 @@ namespace xng {
             auto diff = largestWidth - width;
 
             int offset = 0;
-            switch (properties.alignment) {
+            switch (layout.alignment) {
                 default:
-                case ALIGN_LEFT:
+                case TEXT_ALIGN_LEFT:
                     break;
-                case ALIGN_CENTER:
+                case TEXT_ALIGN_CENTER:
                     offset = diff / 2;
                     break;
-                case ALIGN_RIGHT:
+                case TEXT_ALIGN_RIGHT:
                     offset = diff;
                     break;
             }
@@ -194,7 +193,7 @@ namespace xng {
             }
         }
 
-        auto origin = Vec2f(0, numeric_cast<float>(properties.lineHeight));
+        auto origin = Vec2f(0, numeric_cast<float>(layout.lineHeight));
 
         target = ren2d.getDevice().createRenderTarget({.size = size.convert<int>()});
 
@@ -228,6 +227,6 @@ namespace xng {
         ren2d.renderPresent();
         target->setColorAttachments({});
 
-        return {text, origin, properties.lineWidth, std::move(tex)};
+        return {text, origin, layout.lineWidth, std::move(tex)};
     }
-}
+}*/

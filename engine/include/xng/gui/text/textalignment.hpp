@@ -17,21 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SHADERPROGRAM_HPP
-#define XENGINE_SHADERPROGRAM_HPP
-
-#include "renderobject.hpp"
-#include "shaderprogramdesc.hpp"
+#ifndef XENGINE_TEXTALIGNMENT_HPP
+#define XENGINE_TEXTALIGNMENT_HPP
 
 namespace xng {
-    class XENGINE_EXPORT ShaderProgram : public RenderObject {
-    public:
-        ~ShaderProgram() override = default;
-
-        Type getType() override {
-            return SHADER_PROGRAM;
-        }
+    enum TextAlignment : int {
+        TEXT_ALIGN_LEFT,
+        TEXT_ALIGN_CENTER,
+        TEXT_ALIGN_RIGHT
     };
 }
 
-#endif //XENGINE_SHADERPROGRAM_HPP
+#endif //XENGINE_TEXTALIGNMENT_HPP

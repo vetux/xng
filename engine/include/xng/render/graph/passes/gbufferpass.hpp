@@ -22,7 +22,7 @@
 
 #include "xng/render/graph/framegraphpass.hpp"
 #include "xng/resource/uri.hpp"
-#include "xng/asset/scene.hpp"
+#include "xng/render/scene.hpp"
 
 namespace xng {
     /**

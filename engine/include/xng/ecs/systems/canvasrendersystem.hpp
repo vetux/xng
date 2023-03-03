@@ -25,14 +25,11 @@
 #include "xng/ecs/components/textcomponent.hpp"
 
 #include "xng/text/fontdriver.hpp"
-#include "xng/text/textrenderer.hpp"
+#include "xng/gui/text/textrenderer.hpp"
 
 #include "xng/render/2d/renderer2d.hpp"
 
 namespace xng {
-    /**
-     * The canvas render system handles drawing of 2d elements
-     */
     class XENGINE_EXPORT CanvasRenderSystem : public System, public EntityScene::Listener {
     public:
         CanvasRenderSystem(Renderer2D &renderer2D,
@@ -81,4 +78,5 @@ namespace xng {
         std::map<EntityHandle, Text> renderedTexts;
     };
 }
+
 #endif //XENGINE_CANVASRENDERSYSTEM_HPP

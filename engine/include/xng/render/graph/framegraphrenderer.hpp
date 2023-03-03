@@ -22,7 +22,6 @@
 
 #include "xng/render/scenerenderer.hpp"
 
-#include "xng/render/graph/framegraphpool.hpp"
 #include "xng/render/graph/framegraphpass.hpp"
 #include "xng/render/graph/framegraphallocator.hpp"
 #include "xng/render/graph/allocators/framegraphpoolallocator.hpp"

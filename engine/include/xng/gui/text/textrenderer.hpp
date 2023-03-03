@@ -21,28 +21,20 @@
 #define XENGINE_TEXTRENDERER_HPP
 
 #include "text.hpp"
-#include "textrenderproperties.hpp"
+#include "textlayout.hpp"
 
 #include "xng/render/2d/renderer2d.hpp"
 
 namespace xng {
-    /**
-     * A hardware text renderer.
-     */
     class XENGINE_EXPORT TextRenderer {
     public:
         TextRenderer(Font &font, Renderer2D &renderer2D);
 
         void setFontSize(Vec2i pixelSize);
 
-        Vec2f getSize(const std::string &text, const TextRenderProperties &properties);
+        Vec2f getSize(const std::string &text, const TextLayout &layout);
 
-        /**
-         * @param text
-         * @param properties
-         * @return
-         */
-        Text render(const std::string &text, const TextRenderProperties &properties);
+        Text render(const std::string &text, const TextLayout &layout, const ColorRGBA &color);
 
     private:
         Vec2i fontSize{0, 50};

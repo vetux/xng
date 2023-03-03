@@ -20,7 +20,7 @@
 #ifndef XENGINE_PHONGDEFERREDPASS_HPP
 #define XENGINE_PHONGDEFERREDPASS_HPP
 
-#include "xng/asset/scene.hpp"
+#include "xng/render/scene.hpp"
 #include "xng/render/graph/framegraphpass.hpp"
 
 namespace xng {

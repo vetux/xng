@@ -22,7 +22,7 @@
 
 #include "xng/io/messageable.hpp"
 #include "xng/resource/rawresource.hpp"
-#include "xng/text/alignment.hpp"
+#include "xng/gui/text/textalignment.hpp"
 #include "canvastransformcomponent.hpp"
 #include "xng/ecs/component.hpp"
 
@@ -39,7 +39,7 @@ namespace xng {
         int lineHeight;
         int lineWidth;
         int lineSpacing;
-        Alignment alignment;
+        TextAlignment alignment;
 
         ResourceHandle<RawResource> font;
 
@@ -56,7 +56,7 @@ namespace xng {
             message.value("lineWidth", lineWidth);
             message.value("lineSpacing", lineSpacing);
             message.value("font", font);
-            message.value("alignment", (int &) alignment, (int) ALIGN_LEFT);
+            message.value("alignment", (int &) alignment, (int) TEXT_ALIGN_LEFT);
             message.value("textAnchor", (int &) textAnchor, (int) CanvasTransformComponent::LEFT);
             message.value("textScroll", textScroll);
             message.value("text", text);

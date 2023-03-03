@@ -20,10 +20,10 @@
 #ifndef XENGINE_TEXTPROPERTIES_HPP
 #define XENGINE_TEXTPROPERTIES_HPP
 
-#include "alignment.hpp"
+#include "textalignment.hpp"
 
 namespace xng  {
-    struct TextRenderProperties {
+    struct TextLayout {
         /**
          * The distance between the top of the texture and the origin of the first line or the distance between the origins of each consequtive line.
          */
@@ -58,7 +58,7 @@ namespace xng  {
          *     TestTest123
          *         Test123
          */
-        Alignment alignment = ALIGN_LEFT;
+        TextAlignment alignment = TEXT_ALIGN_LEFT;
     };
 }
 #endif //XENGINE_TEXTPROPERTIES_HPP

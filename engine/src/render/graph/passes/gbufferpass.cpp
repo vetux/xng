@@ -19,6 +19,7 @@
 
 #pragma message "Not Implemented"
 
+/*
 #include "xng/render/graph/passes/gbufferpass.hpp"
 
 #include "xng/resource/resourceregistry.hpp"

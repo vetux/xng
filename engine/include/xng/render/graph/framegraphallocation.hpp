@@ -27,7 +27,11 @@
 #include "xng/gpu/renderpipelinedesc.hpp"
 #include "xng/gpu/shaderbufferdesc.hpp"
 
+#include "xng/asset/shader.hpp"
+
 #include "xng/resource/uri.hpp"
+#include "xng/resource/resourcehandle.hpp"
+#include "xng/asset/texture.hpp"
 
 namespace xng {
     /**
@@ -35,9 +39,8 @@ namespace xng {
      */
     struct FrameGraphAllocation {
         RenderObject::Type objectType; // The type of the object to allocate
-        bool isUri; // If true the allocationData is used as a Uri to allocate the object, otherwise the corresponding desc type is used
-        std::variant<Uri,
-                std::pair<ResourceHandle<Shader>, RenderPipelineDesc>,
+        std::variant<RenderPipelineDesc,
+                VertexBufferDesc,
                 TextureBufferDesc,
                 ShaderBufferDesc,
                 RenderTargetDesc> allocationData;

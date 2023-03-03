@@ -16,9 +16,16 @@
  *  with this program; if not, write to the Free Software Foundation, Inc.,
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+ 
+#include "xng/render/graph/allocators/framegraphpoolallocator.hpp"
+
+#include "xng/asset/texture.hpp"
+
+#include "xng/asset/shader.hpp"
+
+#pragma message "Not Implemented"
 
 /*
-#include "xng/render/graph/framegraphpool.hpp"
 
 namespace xng {
     static std::unique_ptr<TextureBuffer> allocateTexture(const Texture &t, RenderDevice &device) {
@@ -50,10 +57,7 @@ namespace xng {
         return ret;
     }
 
-    FrameGraphPool::FrameGraphPool(RenderDevice &device, SPIRVCompiler &spirvCompiler, SPIRVDecompiler &spirvDecompiler)
-            : device(&device), shaderCompiler(&spirvCompiler), shaderDecompiler(&spirvDecompiler) {}
-
-    void FrameGraphPool::collectGarbage() {
+    void FrameGraphPoolAllocator::collectGarbage() {
         std::set<Uri> unusedUris;
         for (auto &pair: uriObjects) {
             if (usedUris.find(pair.first) == usedUris.end()) {
@@ -86,7 +90,7 @@ namespace xng {
         targets.clear();
     }
 
-    VertexBuffer &FrameGraphPool::getMesh(const ResourceHandle<Mesh> &handle) {
+    VertexBuffer &FrameGraphPoolAllocator::getMesh(const ResourceHandle<Mesh> &handle) {
         usedUris.insert(handle.getUri());
         auto it = uriObjects.find(handle.getUri());
         if (it == uriObjects.end()) {
@@ -95,7 +99,7 @@ namespace xng {
         return dynamic_cast<VertexBuffer &>(*uriObjects.at(handle.getUri()));
     }
 
-    TextureBuffer &FrameGraphPool::getTexture(const ResourceHandle<Texture> &handle) {
+    TextureBuffer &FrameGraphPoolAllocator::getTexture(const ResourceHandle<Texture> &handle) {
         usedUris.insert(handle.getUri());
         auto it = uriObjects.find(handle.getUri());
         if (it == uriObjects.end()) {
@@ -104,7 +108,7 @@ namespace xng {
         return dynamic_cast<TextureBuffer &>(*uriObjects.at(handle.getUri()));
     }
 
-    ShaderProgram &FrameGraphPool::getShader(const ResourceHandle<Shader> &handle) {
+    ShaderProgram &FrameGraphPoolAllocator::getShader(const ResourceHandle<Shader> &handle) {
         usedUris.insert(handle.getUri());
         auto it = uriObjects.find(handle.getUri());
         if (it == uriObjects.end()) {
@@ -131,7 +135,7 @@ namespace xng {
         return dynamic_cast<ShaderProgram &>(*uriObjects.at(handle.getUri()));
     }
 
-    RenderPipeline &FrameGraphPool::getPipeline(const ResourceHandle<Shader> &shader, const RenderPipelineDesc &desc) {
+    RenderPipeline &FrameGraphPoolAllocator::getPipeline(const ResourceHandle<Shader> &shader, const RenderPipelineDesc &desc) {
         auto pair = PipelinePair(shader.getUri(), desc);
         usedPipelines.insert(pair);
         usedUris.insert(shader.getUri());
@@ -142,7 +146,7 @@ namespace xng {
         return dynamic_cast<RenderPipeline &>(*pipelines.at(pair));
     }
 
-    TextureBuffer &FrameGraphPool::createTextureBuffer(const TextureBufferDesc &desc) {
+    TextureBuffer &FrameGraphPoolAllocator::createTextureBuffer(const TextureBufferDesc &desc) {
         auto index = usedTextures[desc]++;
         if (textures[desc].size() <= index) {
             textures[desc].resize(usedTextures[desc]);
@@ -151,7 +155,7 @@ namespace xng {
         return *textures[desc].at(index);
     }
 
-    ShaderBuffer &FrameGraphPool::createShaderBuffer(const ShaderBufferDesc &desc) {
+    ShaderBuffer &FrameGraphPoolAllocator::createShaderBuffer(const ShaderBufferDesc &desc) {
         auto index = usedShaderBuffers[desc]++;
         if (shaderBuffers[desc].size() <= index) {
             shaderBuffers[desc].resize(usedShaderBuffers[desc]);
@@ -160,7 +164,7 @@ namespace xng {
         return *shaderBuffers[desc].at(index);
     }
 
-    RenderTarget &FrameGraphPool::createRenderTarget(const RenderTargetDesc &desc) {
+    RenderTarget &FrameGraphPoolAllocator::createRenderTarget(const RenderTargetDesc &desc) {
         auto index = usedTargets[desc]++;
         if (targets[desc].size() <= index) {
             targets[desc].resize(usedTargets[desc]);
@@ -169,7 +173,7 @@ namespace xng {
         return *targets[desc].at(index);
     }
 
-    void FrameGraphPool::destroy(RenderObject &obj) {
+    void FrameGraphPoolAllocator::destroy(RenderObject &obj) {
         switch (obj.getType()) {
             case RenderObject::TEXTURE_BUFFER: {
                 auto &buffer = dynamic_cast<TextureBuffer&>(obj);
@@ -221,5 +225,4 @@ namespace xng {
             }
         }
     }
-}
-*/
+}*/

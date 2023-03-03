@@ -21,10 +21,9 @@
 #define XENGINE_FRAMEGRAPHBUILDER_HPP
 
 #include "xng/render/graph/framegraphresource.hpp"
-#include "xng/render/graph/framegraphpool.hpp"
 #include "xng/render/graph/framegraph.hpp"
 
-#include "xng/asset/scene.hpp"
+#include "xng/render/scene.hpp"
 
 namespace xng {
     class XENGINE_EXPORT FrameGraphBuilder {
@@ -33,32 +32,24 @@ namespace xng {
                           const Scene &scene,
                           const GenericMapString &properties);
 
-        /// -------------------------------------- Renderer Interface  --------------------------------------
         /**
          * Setup and compile a frame graph using the supplied passes.
          *
          * @param passes
+         * @param persistHandles  The mapping of persist handles to the
          * @return
          */
         FrameGraph build(const std::vector<std::shared_ptr<FrameGraphPass>> &passes);
 
-        /// -------------------------------------- Pass Interface      --------------------------------------
-
-        FrameGraphResource createPipeline(const ResourceHandle<Shader> &shader, const RenderPipelineDesc &desc);
-
         FrameGraphResource createRenderTarget(const RenderTargetDesc &desc);
 
-        ////    Description allocations, These allocate with whatever buffer type was specified
-        FrameGraphResource createTextureBuffer(const TextureBufferDesc &attribs);
+        FrameGraphResource createPipeline(const RenderPipelineDesc &desc);
+
+        FrameGraphResource createTextureBuffer(const TextureBufferDesc &desc);
 
         FrameGraphResource createShaderBuffer(const ShaderBufferDesc &desc);
 
-        ////    ResourceHandle allocations, These allocate with DEVICE_LOCAL buffer types
-        FrameGraphResource createMeshBuffer(const ResourceHandle<Mesh> &handle);
-
-        FrameGraphResource createTextureBuffer(const ResourceHandle<Texture> &handle);
-
-        ////    Resource reads/writes must be declared by calling these methods.
+        FrameGraphResource createMeshBuffer(const VertexBufferDesc &desc);
 
         /**
          * Declare that the pass will write to the specified resource handle.
@@ -75,6 +66,23 @@ namespace xng {
          * @param source
          */
         void read(FrameGraphResource source);
+
+        /**
+         * Request the passed resource handle to be persisted to the next frame.
+         *
+         * This allows the pass to avoid reallocating gpu buffers for
+         * resources which do not change such as scene textures or meshes and allowing the pass to implement
+         * memory management techniques for the data inside the buffers allocated by the FrameGraphAllocator.
+         *
+         * The pass can store the handle and reuse it in the next frame to retrieve the persisted resource.
+         * persist must be called again by the pass each frame while the handle should be persisted.
+         *
+         * The render object itself might be moved or reused by the allocator but it is ensured that the data
+         * referred to by the persisted handle is identical in the next frame.
+         *
+         * @param resource
+         */
+        void persist(FrameGraphResource resource);
 
         /**
          * @return The resource handle of the back buffer to render into.

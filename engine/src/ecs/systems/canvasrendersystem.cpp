@@ -28,6 +28,9 @@
 
 #include "xng/ecs/components/rigidbodycomponent.hpp"
 
+#pragma message "Not Implemented"
+
+/*
 namespace xng {
     CanvasRenderSystem::CanvasRenderSystem(Renderer2D &renderer2D,
                                            RenderTarget &target,
@@ -395,4 +398,4 @@ namespace xng {
                                                                                                      comp.alignment})));
         }
     }
-}
+}*/

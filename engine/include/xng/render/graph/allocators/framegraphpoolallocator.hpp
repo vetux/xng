@@ -20,22 +20,26 @@
 #ifndef XENGINE_FRAMEGRAPHPOOLALLOCATOR_HPP
 #define XENGINE_FRAMEGRAPHPOOLALLOCATOR_HPP
 
+#include <unordered_set>
+
 #include "xng/render/graph/framegraphallocator.hpp"
-#include "xng/render/graph/framegraphpool.hpp"
 
-namespace xng {
-    class FrameGraphPoolAllocator : public FrameGraphAllocator {
+namespace xng {}
+    /**
+     * The FrameGraphPoolAllocator using object pool pattern for allocating the render objects.
+     */
+    /*class FrameGraphPoolAllocator : public FrameGraphAllocator {
     public:
-        FrameGraphPoolAllocator(RenderDevice &device, SPIRVCompiler &shaderCompiler, SPIRVDecompiler &spirvDecompiler)
-                : pool(device, shaderCompiler, spirvDecompiler) {}
+        FrameGraphPoolAllocator(RenderDevice &device, SPIRVCompiler &shaderCompiler, SPIRVDecompiler &shaderDecompiler)
+                : device(&device), shaderCompiler(&shaderCompiler), shaderDecompiler(&shaderDecompiler) {}
 
-        void setFrame(const FrameGraph &value) override {
+        void beginFrame(const FrameGraph &value) override {
             frame = value;
-            pool.collectGarbage();
+            collectGarbage();
             currentStage = 0;
         }
 
-        FrameGraphPassResources allocateNext() override {
+        FrameGraphPassResources allocateNextPass() override {
             // Deallocate resources which are not used in any subsequent pass read / write declaration
             if (currentStage != 0) {
                 std::set<FrameGraphResource> delObjects;
@@ -74,14 +78,10 @@ namespace xng {
 
     private:
         RenderObject &allocate(const FrameGraphResource &res, const FrameGraphAllocation &allocation) {
-            Uri uri;
-            if (allocation.isUri) {
-                uri = std::get<Uri>(allocation.allocationData);
-            }
             switch (allocation.objectType) {
                 case RenderObject::VERTEX_BUFFER:
                     if (allocation.isUri) {
-                        auto &mesh = pool.getMesh(ResourceHandle<Mesh>(uri));
+                        auto &mesh = getMesh(ResourceHandle<Mesh>(uri));
                         objects[res] = &mesh;
                         return mesh;
                     } else {
@@ -89,12 +89,12 @@ namespace xng {
                     }
                 case RenderObject::TEXTURE_BUFFER:
                     if (allocation.isUri) {
-                        auto &tex = pool.getTexture(ResourceHandle<Texture>(uri));
+                        auto &tex = getTexture(ResourceHandle<Texture>(uri));
                         objects[res] = &tex;
                         return tex;
                     } else {
                         auto desc = std::get<TextureBufferDesc>(allocation.allocationData);
-                        auto &tex = pool.createTextureBuffer(desc);
+                        auto &tex = createTextureBuffer(desc);
                         objects[res] = &tex;
                         return tex;
                     }
@@ -103,19 +103,16 @@ namespace xng {
                         throw std::runtime_error("Allocation for shader buffer with specified uri is not allowed");
                     } else {
                         auto desc = std::get<ShaderBufferDesc>(allocation.allocationData);
-                        auto &buf = pool.createShaderBuffer(desc);
+                        auto &buf = createShaderBuffer(desc);
                         objects[res] = &buf;
                         return buf;
                     }
-                case RenderObject::SHADER_PROGRAM:
-                    throw std::runtime_error(
-                            "Shader programs cannot be explicitly allocated, Create a render pipeline instead.");
                 case RenderObject::RENDER_TARGET:
                     if (allocation.isUri) {
                         throw std::runtime_error("Allocation for render target with specified uri is not allowed");
                     } else {
                         auto desc = std::get<RenderTargetDesc>(allocation.allocationData);
-                        auto &target = pool.createRenderTarget(desc);
+                        auto &target = createRenderTarget(desc);
                         objects[res] = &target;
                         return target;
 
@@ -124,9 +121,8 @@ namespace xng {
                     if (allocation.isUri) {
                         throw std::runtime_error("Allocation for render pipeline with specified uri is not allowed");
                     } else {
-                        auto pair = std::get<std::pair<ResourceHandle<Shader>, RenderPipelineDesc>>(
-                                allocation.allocationData);
-                        auto &pipeline = pool.getPipeline(pair.first, pair.second);
+                        auto desc = std::get<RenderPipelineDesc>(allocation.allocationData);
+                        auto &pipeline = getPipeline(desc);
                         objects[res] = &pipeline;
                         return pipeline;
                     }
@@ -140,14 +136,70 @@ namespace xng {
         }
 
         void deallocate(const FrameGraphResource &resource) {
-            pool.destroy(*objects.at(resource));
+            destroy(*objects.at(resource));
             objects.erase(resource);
         }
 
+        void collectGarbage();
+
+        RenderPipeline &getPipeline(const RenderPipelineDesc &desc);
+
+        TextureBuffer &createTextureBuffer(const TextureBufferDesc &desc);
+
+        ShaderBuffer &createShaderBuffer(const ShaderBufferDesc &desc);
+
+        RenderTarget &createRenderTarget(const RenderTargetDesc &desc);
+
+        void destroy(RenderObject &obj);
+
+        struct PipelinePair {
+            Uri uri;
+            RenderPipelineDesc desc;
+
+            PipelinePair() = default;
+
+            PipelinePair(Uri uri, RenderPipelineDesc desc) : uri(std::move(uri)), desc(std::move(desc)) {}
+
+            ~PipelinePair() = default;
+
+            bool operator==(const PipelinePair &other) const {
+                return uri == other.uri && desc == other.desc;
+            }
+        };
+
+        class PipelinePairHash {
+        public:
+            std::size_t operator()(const PipelinePair &k) const {
+                size_t ret = 0;
+                hash_combine(ret, k.uri);
+                hash_combine(ret, k.desc);
+                return ret;
+            }
+        };
+
+        RenderDevice *device = nullptr;
+        SPIRVCompiler *shaderCompiler = nullptr;
+        SPIRVDecompiler *shaderDecompiler = nullptr;
+
+        std::unordered_map<Uri, std::unique_ptr<RenderObject>> uriObjects;
+        std::unordered_map<PipelinePair, std::unique_ptr<RenderPipeline>, PipelinePairHash> pipelines;
+
+        std::unordered_map<TextureBufferDesc, std::vector<std::unique_ptr<TextureBuffer>>> textures;
+        std::unordered_map<ShaderBufferDesc, std::vector<std::unique_ptr<ShaderBuffer>>> shaderBuffers;
+        std::unordered_map<RenderTargetDesc, std::vector<std::unique_ptr<RenderTarget>>> targets;
+
+        std::set<Uri> usedUris;
+        std::unordered_set<PipelinePair, PipelinePairHash> usedPipelines;
+
+        std::unordered_map<TextureBufferDesc, int> usedTextures;
+        std::unordered_map<ShaderBufferDesc, int> usedShaderBuffers;
+        std::unordered_map<RenderTargetDesc, int> usedTargets;
+
         FrameGraph frame;
-        FrameGraphPool pool;
+
         std::map<FrameGraphResource, RenderObject *> objects;
         size_t currentStage = 0;
     };
-}
+}*/
+
 #endif //XENGINE_FRAMEGRAPHPOOLALLOCATOR_HPP

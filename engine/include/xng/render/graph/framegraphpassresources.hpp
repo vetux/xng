@@ -29,7 +29,6 @@
 #include "xng/gpu/texturebuffer.hpp"
 #include "xng/gpu/vertexbuffer.hpp"
 #include "xng/gpu/rendertarget.hpp"
-#include "xng/gpu/shaderprogram.hpp"
 #include "xng/gpu/renderpipeline.hpp"
 
 namespace xng {
@@ -51,10 +50,6 @@ namespace xng {
 
         RenderTarget &getRenderTarget(FrameGraphResource resource) {
             return dynamic_cast<RenderTarget &>(*objects.at(resource));
-        }
-
-        ShaderProgram &getShader(FrameGraphResource resource) {
-            return dynamic_cast<ShaderProgram &>(*objects.at(resource));
         }
 
         ShaderBuffer &getShaderBuffer(FrameGraphResource resource){
