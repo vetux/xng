@@ -26,23 +26,21 @@
 namespace xng::opengl {
     class OGLShaderBuffer : public ShaderBuffer {
     public:
-        std::function<void(RenderObject*)> destructor;
+        std::function<void(RenderObject * )> destructor;
         ShaderBufferDesc desc;
         GLuint ubo = 0;
 
-        explicit OGLShaderBuffer(std::function<void(RenderObject*)> destructor, ShaderBufferDesc inputDescription)
+        explicit OGLShaderBuffer(std::function<void(RenderObject * )> destructor,
+                                 ShaderBufferDesc inputDescription)
                 : destructor(std::move(destructor)), desc(inputDescription) {
 
-            checkGLError();
-
             glGenBuffers(1, &ubo);
-            checkGLError();
 
             glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-            checkGLError();
-
-            glBufferData(GL_UNIFORM_BUFFER, numeric_cast<GLsizeiptr>(desc.size), nullptr, GL_STATIC_DRAW);
-            checkGLError();
+            glBufferData(GL_UNIFORM_BUFFER,
+                         static_cast<GLsizeiptr>(desc.size),
+                         nullptr,
+                         GL_STATIC_DRAW);
 
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
             checkGLError();
@@ -50,6 +48,7 @@ namespace xng::opengl {
 
         ~OGLShaderBuffer() override {
             glDeleteBuffers(1, &ubo);
+            checkGLError();
             destructor(this);
         }
 
@@ -69,18 +68,35 @@ namespace xng::opengl {
             return std::make_unique<OGLFence>();
         }
 
-        std::unique_ptr<GpuFence> copy(RenderBuffer &other) override {
+        std::unique_ptr<GpuFence> copy(RenderBuffer &source) override {
+            return copy(source, 0, 0, source.getSize());
+        }
+
+        std::unique_ptr<GpuFence> copy(RenderBuffer &other,
+                                       size_t readOffset,
+                                       size_t writeOffset,
+                                       size_t count) override {
             auto &source = dynamic_cast<OGLShaderBuffer &>(other);
+            if (readOffset >= source.desc.size
+                || readOffset + count >= source.desc.size
+                || writeOffset >= desc.size
+                || writeOffset + count >= desc.size) {
+                throw std::runtime_error("Invalid copy range");
+            }
             glBindBuffer(GL_COPY_WRITE_BUFFER, ubo);
             glBindBuffer(GL_COPY_READ_BUFFER, source.ubo);
-            glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, numeric_cast<GLsizeiptr>(desc.size));
+            glCopyBufferSubData(GL_COPY_READ_BUFFER,
+                                GL_COPY_WRITE_BUFFER,
+                                static_cast<GLintptr>(readOffset),
+                                static_cast<GLintptr>(writeOffset),
+                                numeric_cast<GLsizeiptr>(count));
             glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
             glBindBuffer(GL_COPY_READ_BUFFER, 0);
             checkGLError();
             return std::make_unique<OGLFence>();
         }
 
-        size_t getMemoryUsage() override {
+        size_t getSize() override {
             return desc.size;
         }
     };

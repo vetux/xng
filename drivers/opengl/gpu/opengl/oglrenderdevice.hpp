@@ -32,6 +32,11 @@
 #include "gpu/opengl/oglvertexbuffer.hpp"
 #include "gpu/opengl/oglshaderprogram.hpp"
 #include "gpu/opengl/oglshaderbuffer.hpp"
+#include "gpu/opengl/oglindexbuffer.hpp"
+#include "gpu/opengl/oglvertexbuffer.hpp"
+#include "gpu/opengl/oglvertexarrayobject.hpp"
+#include "gpu/opengl/ogltexturearraybuffer.hpp"
+#include "gpu/opengl/oglgpumemory.hpp"
 
 namespace xng::opengl {
     class OGLRenderDevice : public RenderDevice {
@@ -54,62 +59,61 @@ namespace xng::opengl {
             }
         }
 
-        std::set<RenderObject *> getAllocatedObjects() override {
-            return objects;
-        }
-
         const RenderDeviceInfo &getInfo() override {
             return info;
         }
 
+        std::set<RenderObject *> getAllocatedObjects() override {
+            return objects;
+        }
+
         std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDesc &desc,
-                                                             ShaderProgram &shader) override {
-            auto ret = std::make_unique<OGLRenderPipeline>(destructor, desc, dynamic_cast<OGLShaderProgram &>(shader));
-            checkGLError();
-            return ret;
+                                                             SPIRVDecompiler &decompiler) override {
+            return std::make_unique<OGLRenderPipeline>(destructor, desc, decompiler);
         }
 
         std::unique_ptr<RenderPipeline> createRenderPipeline(const uint8_t *cacheData, size_t size) override {
-            throw std::runtime_error("Not implemented");
+            throw std::runtime_error("Not Implemented");
         }
 
         std::unique_ptr<ComputePipeline> createComputePipeline(const ComputePipelineDesc &desc) override {
-            throw std::runtime_error("Not implemented");
+            throw std::runtime_error("Not Implemented");
         }
 
         std::unique_ptr<RaytracePipeline> createRaytracePipeline(const RaytracePipelineDesc &desc) override {
-            throw std::runtime_error("Not implemented");
+            throw std::runtime_error("Not Implemented");
         }
 
         std::unique_ptr<RenderTarget> createRenderTarget(const RenderTargetDesc &desc) override {
-            auto ret = std::make_unique<OGLRenderTarget>(destructor, desc);
-            checkGLError();
-            return ret;
+            return std::make_unique<OGLRenderTarget>(destructor, desc);
         }
 
-        std::unique_ptr<TextureBuffer> createTextureBuffer(const TextureBufferDesc &desc) override {
-            auto ret = std::make_unique<OGLTextureBuffer>(destructor, desc);
-            checkGLError();
-            return ret;
+        std::unique_ptr<VertexArrayObject> createVertexArrayObject(const VertexArrayObjectDesc &desc) override {
+         return std::make_unique<OGLVertexArrayObject>(destructor, desc);
         }
 
         std::unique_ptr<VertexBuffer> createVertexBuffer(const VertexBufferDesc &desc) override {
-            auto ret = std::make_unique<OGLVertexBuffer>(destructor, desc);
-            checkGLError();
-            return ret;
+            return std::make_unique<OGLVertexBuffer>(destructor, desc);
         }
 
-        std::unique_ptr<ShaderProgram> createShaderProgram(const SPIRVDecompiler &decompiler,
-                                                           const ShaderProgramDesc &desc) override {
-            auto ret = std::make_unique<OGLShaderProgram>(destructor, decompiler, desc);
-            checkGLError();
-            return ret;
+        std::unique_ptr<IndexBuffer> createIndexBuffer(const IndexBufferDesc &desc) override {
+            return std::make_unique<OGLIndexBuffer>(destructor, desc);
         }
 
         std::unique_ptr<ShaderBuffer> createShaderBuffer(const ShaderBufferDesc &desc) override {
-            auto ret = std::make_unique<OGLShaderBuffer>(destructor, desc);
-            checkGLError();
-            return ret;
+            return std::make_unique<OGLShaderBuffer>(destructor, desc);
+        }
+
+        std::unique_ptr<TextureBuffer> createTextureBuffer(const TextureBufferDesc &desc) override {
+            return std::make_unique<OGLTextureBuffer>(destructor, desc);
+        }
+
+        std::unique_ptr<TextureArrayBuffer> createTextureArrayBuffer(const TextureArrayBufferDesc &desc) override {
+            return std::make_unique<OGLTextureArrayBuffer>(destructor, desc);
+        }
+
+        std::unique_ptr<GpuMemory> createMemory(const GpuMemoryDesc &desc) override {
+            return std::make_unique<OGLGpuMemory>(*this, desc);
         }
     };
 }

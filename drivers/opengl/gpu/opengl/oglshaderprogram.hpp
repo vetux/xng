@@ -19,7 +19,7 @@
 
 #ifndef XENGINE_OGLSHADERPROGRAM_HPP
 #define XENGINE_OGLSHADERPROGRAM_HPP
-
+/*
 #include <string>
 #include <map>
 #include <functional>
@@ -173,5 +173,5 @@ namespace xng::opengl {
         }
     };
 }
-
+*/
 #endif //XENGINE_OGLSHADERPROGRAM_HPP

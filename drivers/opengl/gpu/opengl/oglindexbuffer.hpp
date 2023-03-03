@@ -17,46 +17,46 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_OGLVERTEXBUFFER_HPP
-#define XENGINE_OGLVERTEXBUFFER_HPP
+#ifndef XENGINE_OGLINDEXBUFFER_HPP
+#define XENGINE_OGLINDEXBUFFER_HPP
 
-#include "xng/gpu/vertexbuffer.hpp"
+#include "xng/gpu/indexbuffer.hpp"
 
 #include <utility>
 
 #include "opengl_include.hpp"
+#include "opengl_checkerror.hpp"
+
 #include "gpu/opengl/oglfence.hpp"
 
-#include "xng/asset/mesh.hpp"
-
-#include "xng/math/matrixmath.hpp"
-
 namespace xng::opengl {
-    class OGLVertexBuffer : public VertexBuffer {
+    class OGLIndexBuffer : public IndexBuffer {
     public:
         std::function<void(RenderObject * )> destructor;
 
-        VertexBufferDesc desc;
+        GLuint EBO = 0;
 
-        GLuint VBO = 0;
+        IndexBufferDesc desc;
 
-        explicit OGLVertexBuffer(std::function<void(RenderObject * )> destructor,
-                                 VertexBufferDesc desc)
+        explicit OGLIndexBuffer(std::function<void(RenderObject * )> destructor,
+                                IndexBufferDesc desc)
                 : destructor(std::move(destructor)),
                   desc(desc) {
-            glGenBuffers(1, &VBO);
-            glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            glBufferData(GL_ARRAY_BUFFER,
+            glGenBuffers(1, &EBO);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                          (long) desc.size,
                          nullptr,
                          GL_STATIC_COPY);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
             checkGLError();
         }
 
-        ~OGLVertexBuffer() override {
-            glDeleteBuffers(1, &VBO);
+        ~OGLIndexBuffer() override {
+            glDeleteBuffers(1, &EBO);
+            checkGLError();
+
             destructor(this);
         }
 
@@ -68,15 +68,15 @@ namespace xng::opengl {
                                        size_t readOffset,
                                        size_t writeOffset,
                                        size_t count) override {
-            auto buf = dynamic_cast<OGLVertexBuffer &>(source);
+            auto buf = dynamic_cast<OGLIndexBuffer &>(source);
             if (readOffset >= buf.desc.size
                 || readOffset + count >= buf.desc.size
                 || writeOffset >= desc.size
                 || writeOffset + count >= desc.size) {
                 throw std::runtime_error("Invalid copy range");
             }
-            glBindBuffer(GL_COPY_READ_BUFFER, buf.VBO);
-            glBindBuffer(GL_COPY_WRITE_BUFFER, VBO);
+            glBindBuffer(GL_COPY_READ_BUFFER, buf.EBO);
+            glBindBuffer(GL_COPY_WRITE_BUFFER, EBO);
             glCopyBufferSubData(GL_COPY_READ_BUFFER,
                                 GL_COPY_WRITE_BUFFER,
                                 static_cast<GLintptr>(readOffset),
@@ -84,11 +84,11 @@ namespace xng::opengl {
                                 static_cast<GLsizeiptr>(count));
             glBindBuffer(GL_COPY_READ_BUFFER, 0);
             glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
-
+            checkGLError();
             return std::make_unique<OGLFence>();
         }
 
-        const VertexBufferDesc &getDescription() override {
+        const IndexBufferDesc &getDescription() override {
             return desc;
         }
 
@@ -97,15 +97,15 @@ namespace xng::opengl {
                 || offset + dataSize > desc.size) {
                 throw std::runtime_error("Invalid upload range");
             }
-            glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            glBufferSubData(GL_ARRAY_BUFFER,
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER,
                             static_cast<GLintptr>(offset),
                             static_cast<GLsizeiptr>(dataSize),
                             data);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            checkGLError();
             return std::make_unique<OGLFence>();
         }
     };
 }
-
-#endif //XENGINE_OGLVERTEXBUFFER_HPP
+#endif //XENGINE_OGLINDEXBUFFER_HPP

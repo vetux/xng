@@ -32,26 +32,151 @@
 #include "gpu/opengl/oglvertexbuffer.hpp"
 #include "gpu/opengl/ogltexturebuffer.hpp"
 #include "gpu/opengl/oglfence.hpp"
+#include "gpu/opengl/oglvertexarrayobject.hpp"
+#include "gpu/opengl/ogltexturearraybuffer.hpp"
+
+#define TEXTURE_ID(index) GL_TEXTURE#index
 
 namespace xng::opengl {
     class OGLRenderPipeline : public RenderPipeline {
     public:
-        std::function<void(RenderObject*)> destructor;
-        OGLShaderProgram &shader;
+        std::function<void(RenderObject *)> destructor;
         RenderPipelineDesc desc;
 
-        explicit OGLRenderPipeline(std::function<void(RenderObject*)> destructor, RenderPipelineDesc desc, OGLShaderProgram &shader)
-                : destructor(std::move(destructor)), desc(std::move(desc)), shader(shader) {}
+        GLuint programHandle = 0;
+
+        explicit OGLRenderPipeline(std::function<void(RenderObject *)> destructor,
+                                   RenderPipelineDesc descArg,
+                                   SPIRVDecompiler &decompiler)
+                : destructor(std::move(destructor)),
+                  desc(std::move(descArg)) {
+            if (!descArg.shaders.empty()) {
+                char *vertexSource, *fragmentSource, *geometrySource = nullptr;
+
+                std::string vert, frag, geo;
+                auto it = desc.shaders.find(VERTEX);
+                if (it == desc.shaders.end())
+                    throw std::runtime_error("No vertex shader");
+
+                vert = decompiler.decompile(desc.shaders.at(VERTEX).getBlob(),
+                                            it->second.getEntryPoint(),
+                                            VERTEX,
+                                            GLSL_420);
+                vertexSource = vert.data();
+
+                it = desc.shaders.find(FRAGMENT);
+                if (it == desc.shaders.end())
+                    throw std::runtime_error("No fragment shader");
+
+                frag = decompiler.decompile(desc.shaders.at(FRAGMENT).getBlob(),
+                                            it->second.getEntryPoint(),
+                                            FRAGMENT,
+                                            GLSL_420);
+                fragmentSource = frag.data();
+
+                it = desc.shaders.find(GEOMETRY);
+                if (it != desc.shaders.end()) {
+                    geo = decompiler.decompile(desc.shaders.at(GEOMETRY).getBlob(),
+                                               it->second.getEntryPoint(),
+                                               GEOMETRY,
+                                               GLSL_420);
+                    geometrySource = geo.data();
+                }
+
+                programHandle = glCreateProgram();
+
+                GLuint vsH = glCreateShader(GL_VERTEX_SHADER);
+                glShaderSource(vsH, 1, &vertexSource, nullptr);
+                glCompileShader(vsH);
+                GLint success;
+                glGetShaderiv(vsH, GL_COMPILE_STATUS, &success);
+                if (!success) {
+                    GLchar infoLog[512];
+                    glGetShaderInfoLog(vsH, 512, nullptr, infoLog);
+                    glDeleteShader(vsH);
+                    std::string error = "Failed to compile vertex shader: ";
+                    error.append(infoLog);
+                    throw std::runtime_error(error);
+                }
+
+                glAttachShader(programHandle, vsH);
+
+                GLuint gsH;
+
+                if (geometrySource != nullptr) {
+                    gsH = glCreateShader(GL_GEOMETRY_SHADER);
+                    glShaderSource(gsH, 1, &geometrySource, nullptr);
+                    glCompileShader(gsH);
+                    glGetShaderiv(gsH, GL_COMPILE_STATUS, &success);
+                    if (!success) {
+                        char infoLog[512];
+                        glGetShaderInfoLog(gsH, 512, nullptr, infoLog);
+                        glDeleteShader(vsH);
+                        glDeleteShader(gsH);
+                        std::string error = "Failed to compile geometry shader: ";
+                        error.append(infoLog);
+                        throw std::runtime_error(error);
+                    }
+                    glAttachShader(programHandle, gsH);
+                }
+
+                GLuint fsH = glCreateShader(GL_FRAGMENT_SHADER);
+                glShaderSource(fsH, 1, &fragmentSource, nullptr);
+                glCompileShader(fsH);
+                glGetShaderiv(fsH, GL_COMPILE_STATUS, &success);
+                if (!success) {
+                    GLchar infoLog[512];
+                    glGetShaderInfoLog(fsH, 512, nullptr, infoLog);
+                    glDeleteShader(vsH);
+                    if (geometrySource != nullptr)
+                        glDeleteShader(gsH);
+                    glDeleteShader(fsH);
+                    std::string error = "Failed to compile fragment shader: ";
+                    error.append(infoLog);
+                    throw std::runtime_error(error);
+                }
+                glAttachShader(programHandle, fsH);
+
+                glLinkProgram(programHandle);
+
+                glDeleteShader(vsH);
+                glDeleteShader(fsH);
+
+                checkLinkSuccess();
+            }
+
+            checkGLError();
+        }
 
         ~OGLRenderPipeline() override {
+            glDeleteProgram(programHandle);
             destructor(this);
+        }
+
+        void checkLinkSuccess() const {
+            auto msg = getLinkError();
+            if (!msg.empty())
+                throw std::runtime_error(msg);
+        }
+
+        std::string getLinkError() const {
+            GLint success;
+            glGetProgramiv(programHandle, GL_LINK_STATUS, &success);
+            if (!success) {
+                GLchar infoLog[512];
+                glGetProgramInfoLog(programHandle, 512, nullptr, infoLog);
+                std::string error = "Failed to link shader program: ";
+                error.append(infoLog);
+                return error;
+            }
+            return "";
         }
 
         const RenderPipelineDesc &getDescription() override {
             return desc;
         }
 
-        std::unique_ptr<GpuFence> render(RenderTarget &target, const std::vector<RenderCommand> &passes) override {
+        void renderBegin(RenderTarget &target, Vec2i viewportOffset, Vec2i viewportSize) override {
             auto clearColor = desc.clearColorValue.divide();
 
             glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
@@ -74,10 +199,10 @@ namespace xng::opengl {
             GLint vpData[4];
             glGetIntegerv(GL_VIEWPORT, vpData);
 
-            glViewport(desc.viewportOffset.x,
-                       desc.viewportOffset.y,
-                       desc.viewportSize.x,
-                       desc.viewportSize.y);
+            glViewport(viewportOffset.x,
+                       viewportOffset.y,
+                       viewportSize.x,
+                       viewportSize.y);
 
             glBindFramebuffer(GL_FRAMEBUFFER, fb.getFBO());
 
@@ -102,7 +227,11 @@ namespace xng::opengl {
             glClear(clearMask);
 
             // Bind shader program
-            shader.activate();
+            if (programHandle) {
+                glUseProgram(programHandle);
+            }
+
+            checkGLError();
 
             // Setup pipeline state
             glDepthFunc(convert(desc.depthTestMode));
@@ -153,119 +282,213 @@ namespace xng::opengl {
             }
 
             checkGLError();
+        }
 
-            // Draw commands
-            for (auto &c: passes) {
-                // Bind textures and uniform buffers
-                for (int bindingPoint = 0; bindingPoint < c.getBindings().size(); bindingPoint++) {
-                    auto &b = c.getBindings().at(bindingPoint);
-                    OGLTextureBuffer *texture;
-                    OGLShaderBuffer *shaderBuffer;
-                    switch (b.index()) {
-                        case 0:
-                            texture = dynamic_cast<OGLTextureBuffer *>(std::get<TextureBuffer *>(b));
-                            glActiveTexture(getTextureSlot(bindingPoint));
-                            glBindTexture(convert(texture->getDescription().textureType),
-                                          texture->handle);
-                            break;
-                        case 1:
-                            shaderBuffer = dynamic_cast<OGLShaderBuffer *>(std::get<ShaderBuffer *>(b));
-                            glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, shaderBuffer->ubo);
-                            break;
-                    }
+        std::unique_ptr<GpuFence> renderPresent() override {
+            //Unbind textures and uniform buffers
+            for (int bindingPoint = 0; bindingPoint < desc.bindings.size(); bindingPoint++) {
+                auto &b = desc.bindings.at(bindingPoint);
+                switch (b) {
+                    case BIND_TEXTURE_BUFFER:
+                        glActiveTexture(getTextureSlot(bindingPoint));
+                        glBindTexture(GL_TEXTURE_2D, 0);
+                        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+                        break;
+                    case BIND_TEXTURE_ARRAY_BUFFER:
+                        glActiveTexture(getTextureSlot(bindingPoint));
+                        glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+                        break;
+                    case BIND_SHADER_BUFFER:
+                        glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, 0);
+                        break;
                 }
-
-                //Bind VAO and draw.
-                auto &mesh = dynamic_cast<const OGLVertexBuffer &>(c.getVertexBuffer());
-
-                glBindVertexArray(mesh.VAO);
-
-                if (mesh.indexed) {
-                    if (mesh.instanced) {
-                        glDrawElementsInstanced(mesh.elementType,
-                                                numeric_cast<GLsizei>(mesh.elementCount),
-                                                GL_UNSIGNED_INT,
-                                                0,
-                                                numeric_cast<GLsizei>(mesh.desc.numberOfInstances));
-                    } else {
-                        glDrawElements(mesh.elementType,
-                                       numeric_cast<GLsizei>(mesh.elementCount),
-                                       GL_UNSIGNED_INT,
-                                       0);
-                    }
-                } else {
-                    if (mesh.instanced) {
-                        glDrawArraysInstanced(mesh.elementType,
-                                              0,
-                                              numeric_cast<GLsizei>(mesh.elementCount),
-                                              numeric_cast<GLsizei>(mesh.desc.numberOfInstances));
-                    } else {
-                        glDrawArrays(mesh.elementType, 0, numeric_cast<GLsizei>(mesh.elementCount));
-                    }
-                }
-
-                glBindVertexArray(0);
-
-                //Unbind textures and uniform buffers
-                for (int bindingPoint = 0; bindingPoint < c.getBindings().size(); bindingPoint++) {
-                    auto &b = c.getBindings().at(bindingPoint);
-                    switch (b.index()) {
-                        case 0:
-                            glActiveTexture(getTextureSlot(bindingPoint));
-                            glBindTexture(GL_TEXTURE_2D, 0);
-                            glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-                            break;
-                        case 1:
-                            glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, 0);
-                            break;
-                    }
-                }
-
-                checkGLError();
             }
-
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
             checkGLError();
 
             return std::make_unique<OGLFence>();
         }
 
-        std::vector<uint8_t> cache() override {
-            throw std::runtime_error("Caching not implemented");
+        void clearColorAttachments(ColorRGBA val) override {
+            auto clearColor = val.divide();
+            glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
+            glClear(GL_COLOR_BUFFER_BIT);
+            checkGLError();
         }
 
-        void setViewport(Vec2i viewportOffset, Vec2i viewportSize) override {
-            desc.viewportOffset = viewportOffset;
-            desc.viewportSize = viewportSize;
+        void clearDepthAttachments(float clearDepthValue) override {
+            glClearDepth(clearDepthValue);
+            glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+            checkGLError();
+        }
+
+        void bindVertexArrayObject(VertexArrayObject &vertexArrayObject) override {
+            auto &obj = dynamic_cast<OGLVertexArrayObject &>(vertexArrayObject);
+            glBindVertexArray(obj.VAO);
+            checkGLError();
+        }
+
+        void bindShaderData(const std::vector<ShaderData> &bindings) override {
+            if (bindings.size() != desc.bindings.size()) {
+                throw std::runtime_error("Invalid bindings");
+            }
+            for (auto i = 0; i < bindings.size(); i++) {
+                if (getShaderDataType(bindings.at(i)) != desc.bindings.at(i)) {
+                    throw std::runtime_error("Invalid bindings");
+                }
+            }
+
+            // Bind textures and uniform buffers
+            for (int bindingPoint = 0; bindingPoint < bindings.size(); bindingPoint++) {
+                auto &b = bindings.at(bindingPoint);
+                switch (b.index()) {
+                    case 0: {
+                        auto texture = dynamic_cast<OGLTextureBuffer *>(&std::get<std::reference_wrapper<TextureBuffer>>(
+                                b).get());
+                        glActiveTexture(getTextureSlot(bindingPoint));
+                        glBindTexture(convert(texture->getDescription().textureType), texture->handle);
+                    }
+                        break;
+                    case 1: {
+                        auto textureArray = dynamic_cast<OGLTextureArrayBuffer *>(&std::get<std::reference_wrapper<TextureArrayBuffer>>(
+                                b).get());
+                        glActiveTexture(getTextureSlot(bindingPoint));
+                        glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray->handle);
+                    }
+                        break;
+                    case 2: {
+                        auto shaderBuffer = dynamic_cast<OGLShaderBuffer *>(&std::get<std::reference_wrapper<ShaderBuffer>>(
+                                b).get());
+                        glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, shaderBuffer->ubo);
+                    }
+                        break;
+                }
+            }
+            checkGLError();
+        }
+
+        void drawArray(const DrawCall &drawCall) override {
+            glDrawArrays(convert(desc.primitive),
+                         static_cast<GLint>(drawCall.offset),
+                         static_cast<GLsizei>(drawCall.count));
+            checkGLError();
+        }
+
+        void drawIndexed(const DrawCall &drawCall) override {
+            glDrawElements(convert(desc.primitive),
+                           static_cast<GLsizei>(drawCall.count),
+                           convert(drawCall.indexType),
+                           reinterpret_cast<void *>(drawCall.offset));
+            checkGLError();
+        }
+
+        void instancedDrawArray(const DrawCall &drawCall, size_t numberOfInstances) override {
+            glDrawArraysInstanced(convert(desc.primitive),
+                                  static_cast<GLint>(drawCall.offset),
+                                  static_cast<GLsizei>(drawCall.count),
+                                  static_cast<GLsizei>(numberOfInstances));
+            checkGLError();
+        }
+
+        void instancedDrawIndexed(const DrawCall &drawCall, size_t numberOfInstances) override {
+            glDrawElementsInstanced(convert(desc.primitive),
+                                    static_cast<GLsizei>(drawCall.count),
+                                    convert(drawCall.indexType),
+                                    reinterpret_cast<void *>(drawCall.offset),
+                                    static_cast<GLsizei>(numberOfInstances));
+            checkGLError();
+        }
+
+        void multiDrawArray(const std::vector<DrawCall> &drawCalls) override {
+            std::vector<GLint> first;
+            std::vector<GLsizei> count;
+
+            first.reserve(drawCalls.size());
+            count.reserve(drawCalls.size());
+
+            for (auto &call: drawCalls) {
+                first.emplace_back(call.offset);
+                count.emplace_back(call.count);
+            }
+
+            glMultiDrawArrays(convert(desc.primitive),
+                              first.data(),
+                              count.data(),
+                              static_cast<GLsizei>(drawCalls.size()));
+            checkGLError();
+        }
+
+        void multiDrawIndexed(const std::vector<DrawCall> &drawCalls) override {
+            std::vector<GLsizei> count;
+            std::vector<unsigned int> indices;
+
+            count.reserve(drawCalls.size());
+            indices.reserve(drawCalls.size());
+
+            for (auto &call: drawCalls) {
+                count.emplace_back(call.count);
+                indices.emplace_back(call.offset);
+            }
+
+            glMultiDrawElements(convert(desc.primitive),
+                                count.data(),
+                                GL_UNSIGNED_INT,
+                                reinterpret_cast<const void *const *>(indices.data()),
+                                static_cast<GLsizei>(drawCalls.size()));
+            checkGLError();
+        }
+
+        void drawIndexed(const DrawCall &drawCall, size_t baseVertex) override {
+            glDrawElementsBaseVertex(convert(desc.primitive),
+                                     static_cast<GLsizei>(drawCall.count),
+                                     convert(drawCall.indexType),
+                                     reinterpret_cast<void *>(drawCall.offset),
+                                     static_cast<GLint>(baseVertex));
+            checkGLError();
+        }
+
+        void instancedDrawIndexed(const DrawCall &drawCall, size_t numberOfInstances, size_t baseVertex) override {
+            glDrawElementsInstancedBaseVertex(convert(desc.primitive),
+                                              static_cast<GLsizei>(drawCall.count),
+                                              convert(drawCall.indexType),
+                                              reinterpret_cast<void *>(drawCall.offset),
+                                              static_cast<GLsizei>(numberOfInstances),
+                                              static_cast<GLint>(baseVertex));
+            checkGLError();
+        }
+
+        void multiDrawIndexed(const std::vector<DrawCall> &drawCalls, std::vector<size_t> baseVertices) override {
+            std::vector<GLsizei> count;
+            std::vector<unsigned int> indices;
+
+            count.reserve(drawCalls.size());
+            indices.reserve(drawCalls.size());
+
+            for (auto &call: drawCalls) {
+                count.emplace_back(call.count);
+                indices.emplace_back(call.offset);
+            }
+
+            std::vector<GLint> vertices;
+            for (auto &v: baseVertices)
+                vertices.emplace_back(static_cast<GLint>(v));
+
+            glMultiDrawElementsBaseVertex(convert(desc.primitive),
+                                          count.data(),
+                                          GL_UNSIGNED_INT,
+                                          reinterpret_cast<const void *const *>(indices.data()),
+                                          static_cast<GLsizei>(drawCalls.size()),
+                                          vertices.data());
+            checkGLError();
+        }
+
+        std::vector<uint8_t> cache() override {
+            throw std::runtime_error("Not Implemented");
         }
 
     private:
         static GLuint getTextureSlot(int slot) {
-            switch (slot) {
-                case 0:
-                    return GL_TEXTURE0;
-                case 1:
-                    return GL_TEXTURE1;
-                case 2:
-                    return GL_TEXTURE2;
-                case 3:
-                    return GL_TEXTURE3;
-                case 4:
-                    return GL_TEXTURE4;
-                case 5:
-                    return GL_TEXTURE5;
-                case 6:
-                    return GL_TEXTURE6;
-                case 7:
-                    return GL_TEXTURE7;
-                case 8:
-                    return GL_TEXTURE8;
-                case 9:
-                    return GL_TEXTURE9;
-                default:
-                    throw std::runtime_error("Maximum 10 texture slots");
-            }
+            return GL_TEXTURE0 + slot;
         }
     };
 }

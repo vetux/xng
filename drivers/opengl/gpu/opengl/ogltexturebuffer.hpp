@@ -259,7 +259,7 @@ namespace xng::opengl {
             return std::make_unique<OGLFence>();
         }
 
-        size_t getMemoryUsage() override {
+        size_t getSize() override {
             return desc.size.x * desc.size.y * getTextureFormatUnitSize();
         }
 

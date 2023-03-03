@@ -40,6 +40,29 @@ namespace xng::opengl {
         throw std::runtime_error("Unsupported culling mode");
     }
 
+    static GLenum convert(IndexBuffer::IndexType type){
+        switch(type){
+            case IndexBuffer::UNSIGNED_INT:
+                return GL_UNSIGNED_INT;
+        }
+        throw std::runtime_error("Unsupported index type");
+    }
+
+    static GLenum convert(Primitive prim){
+        switch (prim) {
+            case POINT:
+                return GL_POINTS;
+            case LINE:
+                return GL_LINES;
+            case TRI:
+                return GL_TRIANGLES;
+            case QUAD:
+                return GL_QUADS;
+            default:
+                throw std::runtime_error("Invalid primitive");
+        }
+    }
+
     static GLenum convert(const DepthTestMode &mode) {
         switch (mode) {
             case DEPTH_TEST_ALWAYS:
