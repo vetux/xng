@@ -27,15 +27,12 @@
 #include "opengl_include.hpp"
 
 #include "gpu/opengl/oglrendertarget.hpp"
-#include "gpu/opengl/oglshaderprogram.hpp"
 #include "gpu/opengl/oglshaderbuffer.hpp"
 #include "gpu/opengl/oglvertexbuffer.hpp"
 #include "gpu/opengl/ogltexturebuffer.hpp"
 #include "gpu/opengl/oglfence.hpp"
 #include "gpu/opengl/oglvertexarrayobject.hpp"
 #include "gpu/opengl/ogltexturearraybuffer.hpp"
-
-#define TEXTURE_ID(index) GL_TEXTURE#index
 
 namespace xng::opengl {
     class OGLRenderPipeline : public RenderPipeline {
