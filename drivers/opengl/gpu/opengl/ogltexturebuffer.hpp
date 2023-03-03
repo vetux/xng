@@ -36,8 +36,8 @@ namespace xng::opengl {
 
         GLenum textureType;
 
-        OGLTextureBuffer(std::function<void(RenderObject*)> destructor, TextureBufferDesc inputDescription)
-                : destructor(std::move(destructor)), desc(std::move(inputDescription)) {
+        OGLTextureBuffer(std::function<void(RenderObject*)> destructor, TextureBufferDesc descArg)
+                : destructor(std::move(destructor)), desc(std::move(descArg)) {
             textureType = convert(desc.textureType);
 
             glGenTextures(1, &handle);

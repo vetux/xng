@@ -24,7 +24,7 @@
 
 namespace xng {
     struct IndexBufferDesc {
-        RenderBufferType type;
+        RenderBufferType type = HOST_VISIBLE;
         size_t size;
 
         bool operator==(const IndexBufferDesc &other) const {

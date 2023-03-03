@@ -38,9 +38,9 @@ namespace xng::opengl {
         GLuint handle{};
 
         OGLTextureArrayBuffer(std::function<void(RenderObject * )> destructor,
-                              TextureArrayBufferDesc desc)
+                              TextureArrayBufferDesc descArg)
                 : destructor(std::move(destructor)),
-                  desc(std::move(desc)) {
+                  desc(std::move(descArg)) {
             if (desc.textureDesc.textureType != TEXTURE_2D) {
                 throw std::runtime_error("Invalid texture type for array texture");
             }

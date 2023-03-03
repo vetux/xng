@@ -50,7 +50,7 @@ namespace xng::opengl {
                                    SPIRVDecompiler &decompiler)
                 : destructor(std::move(destructor)),
                   desc(std::move(descArg)) {
-            if (!descArg.shaders.empty()) {
+            if (!desc.shaders.empty()) {
                 char *vertexSource, *fragmentSource, *geometrySource = nullptr;
 
                 std::string vert, frag, geo;

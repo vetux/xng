@@ -70,7 +70,7 @@ static const char *SHADER_FRAG_TEXTURE = R"###(#version 460
 
 layout (location = 0) in vec4 fPosition;
 layout (location = 1) in vec2 fUv;
-layout (location = 3) flat in uint drawID;
+layout (location = 2) flat in uint drawID;
 
 layout (location = 0) out vec4 color;
 
@@ -240,10 +240,10 @@ namespace xng {
                                  const Vec2i &viewportSize,
                                  const Vec2f &cameraPosition,
                                  const Rectf &projection) {
-        if (isRendering){
+        if (isRendering) {
             throw std::runtime_error("Already Rendering (Nested Renderer2D::renderBegin calls?)");
         }
-        isRendering  = true;
+        isRendering = true;
         mViewportOffset = viewportOffset;
         mViewportSize = viewportSize;
 
@@ -265,7 +265,7 @@ namespace xng {
     }
 
     void Renderer2D::renderPresent() {
-        if (!isRendering){
+        if (!isRendering) {
             throw std::runtime_error("Not Rendering");
         }
         isRendering = false;
