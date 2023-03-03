@@ -38,7 +38,7 @@ namespace xng {
                 std::chrono::duration_cast<std::chrono::steady_clock::duration>(targetFrameDuration)) {}
 
         /**
-         * Should be called before the first call to newFrame to update the start time point
+         * Should be called before the first call to newFrame to beginFrame the start time point
          */
         void reset() {
             start = std::chrono::steady_clock::now();

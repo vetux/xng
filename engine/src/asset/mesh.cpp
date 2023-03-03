@@ -26,6 +26,8 @@
 
 #include "resource/staticresource.hpp"
 
+#include "xng/geometry/vertexbuilder.hpp"
+
 static const std::string NORM_CUBE_OBJ = std::string(R"###(
 o Cube
 v 1.000000 1.000000 -1.000000
@@ -85,12 +87,12 @@ namespace xng {
             nQuadC = true;
             nQuad = {TRI,
                      {
-                             Vertex({-1, 1, 0}, {0, 1}),
-                             Vertex({1, 1, 0}, {1, 1}),
-                             Vertex({1, -1, 0}, {1, 0}),
-                             Vertex({-1, 1, 0}, {0, 1}),
-                             Vertex({1, -1, 0}, {1, 0}),
-                             Vertex({-1, -1, 0}, {0, 0})
+                             VertexBuilder().addVec3(Vec3f(-1, 1, 0)).addVec2(Vec2f(0, 1)).build(),
+                             VertexBuilder().addVec3(Vec3f(1, 1, 0)).addVec2(Vec2f(1, 1)).build(),
+                             VertexBuilder().addVec3(Vec3f(1, -1, 0)).addVec2(Vec2f(1, 0)).build(),
+                             VertexBuilder().addVec3(Vec3f(-1, 1, 0)).addVec2(Vec2f(0, 1)).build(),
+                             VertexBuilder().addVec3(Vec3f(1, -1, 0)).addVec2(Vec2f(1, 0)).build(),
+                             VertexBuilder().addVec3(Vec3f(-1, -1, 0)).addVec2(Vec2f(0, 0)).build(),
                      }};
         }
         return nQuad;

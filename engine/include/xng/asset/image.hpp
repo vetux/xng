@@ -33,6 +33,14 @@ namespace xng {
     /**
      * Stores 2d image data in row major format.
      *
+     * Image coordinate space is as follows:
+     *
+     *         -y
+     *          |
+     *     -x ----- +x
+     *          |
+     *         +y
+     *
      * @tparam T The type to use for a pixel
      */
     template<typename T>
@@ -103,25 +111,61 @@ namespace xng {
             return y * size.x;
         }
 
+        void copyRow(const Image<T> &source, int srcRow, int srcColumn, int dstRow, int dstColumn, size_t count) {
+            if (source.size.y <= srcRow
+                || source.size.x <= srcColumn
+                || source.size.x < srcColumn + count
+                || size.y <= dstRow
+                || size.x <= dstColumn
+                || size.x < dstColumn + count) {
+                throw std::runtime_error("Invalid copy row / column index or count");
+            }
+
+            auto srcOffset = srcRow * source.size.x + srcColumn;
+            auto dstOffset = dstRow * size.x + dstColumn;
+
+            auto begin = source.buffer.begin() + srcOffset;
+            std::copy(begin,
+                      begin + count,
+                      buffer.begin() + dstOffset);
+        }
+
+        void copyRows(const Image<T> &source, int srcRow, int dstRow, size_t count){
+            if (size != source.size
+            || source.size.y <= srcRow
+            || source.size.y < srcRow + count
+            || size.y <= dstRow
+            || size.y < dstRow + count){
+                throw std::runtime_error("Invalid copy row / column index or count");
+            }
+
+            auto srcOffset = srcRow * source.size.x ;
+            auto dstOffset = dstRow * size.x;
+
+            auto begin = source.buffer.begin() + srcOffset;
+            std::copy(begin,
+                      begin + count * size.x,
+                      buffer.begin() + dstOffset);
+        }
+
         void blit(const Image<T> &source) {
             if (source.size.x != size.x || source.height != size.y) {
                 throw std::runtime_error("Invalid blit source size");
             }
-            for (int x = 0; x < size.x; x++) {
-                for (int y = 0; y < size.y; y++) {
-                    setPixel(x, y, source.getPixel(x, y));
-                }
-            }
+            copyRows(source, 0, 0, size.y);
         }
 
-        void blit(const Recti &targetRect, const Image<T> &source) {
-            if (source.size != targetRect.dimensions) {
-                throw std::runtime_error("Invalid blit source size");
+        void blit(const Vec2i &targetPosition, const Image<T> &source) {
+            if ( targetPosition.x < 0
+            || targetPosition.y < 0
+            || targetPosition.x + source.getWidth() > size.x
+            || targetPosition.y + source.getHeight() > size.y) {
+                throw std::runtime_error("Invalid blit rect");
             }
-            for (int x = 0; x < targetRect.dimensions.x; x++) {
-                for (int y = 0; y < targetRect.dimensions.y; y++) {
-                    setPixel(x + targetRect.position.x, y + targetRect.position.y, source.getPixel(x, y));
-                }
+
+            // Copy rows
+            for (int y = 0; y < source.getHeight(); y++) {
+                copyRow(source, y, 0, y + targetPosition.y, targetPosition.x, source.size.x);
             }
         }
 

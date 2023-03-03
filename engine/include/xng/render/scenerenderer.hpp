@@ -20,7 +20,7 @@
 #ifndef XENGINE_SCENERENDERER_HPP
 #define XENGINE_SCENERENDERER_HPP
 
-#include "xng/asset/scene.hpp"
+#include "scene.hpp"
 
 #include "xng/types/genericmap.hpp"
 
@@ -28,7 +28,7 @@
 
 namespace xng {
     /**
-     * A scene renderer produces an image from a given a scene using the set properties.
+     * A scene renderer produces an image from a given scene using the set properties.
      *
      * Properties are renderer specific.
      *

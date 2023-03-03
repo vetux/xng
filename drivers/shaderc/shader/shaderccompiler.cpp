@@ -141,6 +141,14 @@ namespace xng {
                 options.SetTargetEnvironment(shaderc_target_env_vulkan, 420);
                 shaderLang = shaderc_source_language_glsl;
                 break;
+            case GLSL_460:
+                options.SetTargetEnvironment(shaderc_target_env_opengl, 460);
+                shaderLang = shaderc_source_language_glsl;
+                break;
+            case GLSL_460_VK:
+                options.SetTargetEnvironment(shaderc_target_env_vulkan, 460);
+                shaderLang = shaderc_source_language_glsl;
+                break;
             case GLSL_ES_320:
                 options.SetTargetEnvironment(shaderc_target_env_opengl, 320);
                 shaderLang = shaderc_source_language_glsl;
@@ -181,6 +189,8 @@ namespace xng {
                 break;
             case GLSL_420:
             case GLSL_420_VK:
+            case GLSL_460:
+            case GLSL_460_VK:
             case GLSL_ES_320:
                 shaderLang = shaderc_source_language_glsl;
                 break;

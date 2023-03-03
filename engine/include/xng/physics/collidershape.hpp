@@ -78,19 +78,6 @@ namespace xng {
             message["indices"] = vec;
             return message;
         }
-
-        static ColliderShape fromMesh(const Mesh &mesh) {
-            ColliderShape ret;
-            ret.type = COLLIDER_3D;
-            ret.primitive = mesh.primitive;
-            for (auto &v: mesh.vertices) {
-                ret.vertices.emplace_back(v.position());
-            }
-            for (auto &v: mesh.indices) {
-                ret.indices.emplace_back(v);
-            }
-            return ret;
-        }
     };
 }
 

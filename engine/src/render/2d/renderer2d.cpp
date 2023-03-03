@@ -25,128 +25,83 @@
 #include "xng/math/matrixmath.hpp"
 #include "xng/asset/shadersource.hpp"
 
-static const char *SHADER_VERT = R"###(#version 420 core
+#include "xng/geometry/vertexstream.hpp"
 
-layout (location = 0) in vec3 position;
-layout (location = 1) in vec3 normal;
-layout (location = 2) in vec2 uv;
-layout (location = 3) in vec3 tangent;
-layout (location = 4) in vec3 bitangent;
-layout (location = 5) in ivec4 boneIds;
-layout (location = 6) in vec4 boneWeights;
-layout (location = 7) in vec4 instanceRow0;
-layout (location = 8) in vec4 instanceRow1;
-layout (location = 9) in vec4 instanceRow2;
-layout (location = 10) in vec4 instanceRow3;
+static const char *SHADER_VERT_TEXTURE = R"###(#version 460
+
+#define MAX_DRAW 1000 // Maximum amount of draws per multi draw
+
+layout (location = 0) in vec2 position;
+layout (location = 1) in vec2 uv;
 
 layout (location = 0) out vec4 fPosition;
 layout (location = 1) out vec2 fUv;
+layout (location = 2) flat out uint drawID;
+
+struct PassData {
+    mat4 mvp;
+    vec4 color;
+    float colorMixFactor;
+    int texAtlasLevel;
+    int texIndex;
+    vec2 uvOffset;
+    vec2 uvScale;
+    vec2 atlasScale;
+};
 
 layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
-    mat4 mvp;
-    vec4 color;
-    float scale;
+    PassData passes[MAX_DRAW];
 } vars;
 
-void main() {
-    mat4 instanceMatrix;
-    instanceMatrix[0] = instanceRow0;
-    instanceMatrix[1] = instanceRow1;
-    instanceMatrix[2] = instanceRow2;
-    instanceMatrix[3] = instanceRow3;
+layout(binding = 1) uniform sampler2DArray atlasTextures[12];
 
-    fPosition =  (vars.mvp * instanceMatrix) * vec4(position, 1);
+void main() {
+    fPosition = (vars.passes[gl_DrawID].mvp) * vec4(position, 0, 1);
     fUv = uv;
+    drawID = gl_DrawID;
     gl_Position = fPosition;
 }
 )###";
 
-static const char *SHADER_FRAG_COLOR = R"###(#version 420 core
+static const char *SHADER_FRAG_TEXTURE = R"###(#version 460
+
+#define MAX_DRAW 1000 // Maximum amount of draws per multi draw
 
 layout (location = 0) in vec4 fPosition;
 layout (location = 1) in vec2 fUv;
+layout (location = 3) flat in uint drawID;
 
 layout (location = 0) out vec4 color;
 
-layout(binding = 0, std140) uniform ShaderUniformBuffer
-{
+struct PassData {
     mat4 mvp;
     vec4 color;
-    float scale;
-} vars;
-
-layout(binding = 1) uniform sampler2D diffuse;
-
-void main() {
-    color = vars.color;
-}
-)###";
-
-static const char *SHADER_FRAG_TEXTURE = R"###(#version 420 core
-
-layout (location = 0) in vec4 fPosition;
-layout (location = 1) in vec2 fUv;
-
-layout (location = 0) out vec4 color;
+    float colorMixFactor;
+    int texAtlasLevel;
+    int texIndex;
+    vec2 uvOffset;
+    vec2 uvScale;
+    vec2 atlasScale;
+};
 
 layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
-    mat4 mvp;
-    vec4 color;
-    float scale;
+    PassData passes[MAX_DRAW];
 } vars;
 
-layout(binding = 1) uniform sampler2D diffuse;
+layout(binding = 1) uniform sampler2DArray atlasTextures[12];
 
 void main() {
-    color = texture(diffuse, fUv);
-    vec3 mixColor = mix(color.rgb, vars.color.rgb, vars.scale);
-    color = vec4(mixColor.rgb, color.a);
-}
-)###";
-
-static const char *SHADER_FRAG_TEXT = R"###(#version 420 core
-
-layout (location = 0) in vec4 fPosition;
-layout (location = 1) in vec2 fUv;
-
-layout (location = 0) out vec4 color;
-
-layout(binding = 0, std140) uniform ShaderUniformBuffer
-{
-    mat4 mvp;
-    vec4 color;
-    float scale;
-} vars;
-
-layout(binding = 1) uniform sampler2D diffuse;
-
-void main() {
-    float grayscale = texture(diffuse, fUv).r;
-    color = vars.color * vec4(grayscale, grayscale, grayscale, grayscale);
-}
-)###";
-
-static const char *SHADER_FRAG_TEXTURE_BLEND = R"###(#version 420 core
-
-layout (location = 0) in vec4 fPosition;
-layout (location = 1) in vec2 fUv;
-
-layout (location = 0) out vec4 color;
-
-layout(binding = 0, std140) uniform ShaderUniformBuffer
-{
-    mat4 mvp;
-    vec4 color;
-    float scale;
-} vars;
-
-layout(binding = 1) uniform sampler2D diffuseA;
-layout(binding = 2) uniform sampler2D diffuseB;
-
-void main() {
-    color = mix(texture(diffuseA, fUv), texture(diffuseB, fUv), vars.scale);
+    if (vars.passes[drawID].texIndex >= 0) {
+        vec2 uv = fUv * vars.passes[drawID].uvScale;
+        uv = uv + vars.passes[drawID].uvOffset;
+        uv = uv * vars.passes[drawID].atlasScale;
+        color = texture(atlasTextures[vars.passes[drawID].texAtlasLevel], vec3(uv.x, uv.y, vars.passes[drawID].texIndex));
+        color = mix(color, vars.passes[drawID].color, vars.passes[drawID].colorMixFactor);
+    } else {
+        color = vars.passes[drawID].color;
+    }
 }
 )###";
 
@@ -159,585 +114,502 @@ static float distance(float val1, float val2) {
 }
 
 namespace xng {
-    struct ShaderUniformBuffer {
-        Mat4f mvp = MatrixMath::identity();
-        std::array<float, 4> color = Vec4f(1).getMemory();
-        float scale = 0;
+    static const int MAX_DRAW = 1000;
+
+    struct PassData {
+        Mat4f mvp;
+        std::array<float, 4> color;
+        float colorMixFactor = 0;
+        int texAtlasLevel = -1;
+        int texIndex = -1;
+        std::array<float, 2> uvOffset;
+        std::array<float, 2> uvScale;
+        std::array<float, 2> atlasScale;
     };
 
-    /**
-     * Get plane mesh with origin at top left offset by center and scaled in the y axis.
-     *
-     * @param size
-     * @return
-     */
-    static Mesh createPlane(Vec2f size, Vec2f center, Rectf uvOffset, Vec2f uvSize, Vec2b flipUv) {
-        Rectf scaledOffset(
-                {uvOffset.position.x / uvSize.x, uvOffset.position.y / uvSize.y},
-                {uvOffset.dimensions.x / uvSize.x, uvOffset.dimensions.y / uvSize.y});
-        float uvNearX = scaledOffset.position.x;
-        float uvFarX = scaledOffset.position.x + scaledOffset.dimensions.x;
-        float uvNearY = scaledOffset.position.y;
-        float uvFarY = scaledOffset.position.y + scaledOffset.dimensions.y;
-        return Mesh(TRI, {
-                Vertex(Vec3f(0 - center.x, 0 - center.y, 0),
-                       {flipUv.x ? uvFarX : uvNearX, flipUv.y ? uvFarY : uvNearY}),
-                Vertex(Vec3f(size.x - center.x, 0 - center.y, 0),
-                       {flipUv.x ? uvNearX : uvFarX, flipUv.y ? uvFarY : uvNearY}),
-                Vertex(Vec3f(0 - center.x, size.y - center.y, 0),
-                       {flipUv.x ? uvFarX : uvNearX, flipUv.y ? uvNearY : uvFarY}),
-                Vertex(Vec3f(0 - center.x, size.y - center.y, 0),
-                       {flipUv.x ? uvFarX : uvNearX, flipUv.y ? uvNearY : uvFarY}),
-                Vertex(Vec3f(size.x - center.x, 0 - center.y, 0),
-                       {flipUv.x ? uvNearX : uvFarX, flipUv.y ? uvFarY : uvNearY}),
-                Vertex(Vec3f(size.x - center.x, size.y - center.y, 0),
-                       {flipUv.x ? uvNearX : uvFarX, flipUv.y ? uvNearY : uvFarY})
-        });
-    }
-
-    static Mesh createSquare(Vec2f size, Vec2f center) {
-        return Mesh(LINE, {
-                Vertex(Vec3f(0 - center.x, 0 - center.y, 0)),
-                Vertex(Vec3f(size.x - center.x, 0 - center.y, 0)),
-
-                Vertex(Vec3f(size.x - center.x, 0 - center.y, 0)),
-                Vertex(Vec3f(size.x - center.x, size.y - center.y, 0)),
-
-                Vertex(Vec3f(size.x - center.x, size.y - center.y, 0)),
-                Vertex(Vec3f(0 - center.x, size.y - center.y, 0)),
-
-                Vertex(Vec3f(0 - center.x, size.y - center.y, 0)),
-                Vertex(Vec3f(0 - center.x, 0 - center.y, 0))
-        });
-    }
-
-    static Mesh createLine(Vec2f start, Vec2f end, Vec2f center) {
-        return Mesh(LINE, {
-                Vertex(Vec3f(start.x - center.x, start.y - center.y, 0)),
-                Vertex(Vec3f(end.x - center.x, end.y - center.y, 0))
-        });
-    }
+    struct ShaderUniformBuffer {
+        std::array<PassData, MAX_DRAW> passes;
+    };
 
     Renderer2D::Renderer2D(RenderDevice &device, SPIRVCompiler &shaderCompiler, SPIRVDecompiler &shaderDecompiler)
             : renderDevice(device) {
-        vs = ShaderSource(SHADER_VERT, "main", VERTEX, GLSL_420, false);
-        fsColor = ShaderSource(SHADER_FRAG_COLOR, "main", FRAGMENT, GLSL_420, false);
-        fsTexture = ShaderSource(SHADER_FRAG_TEXTURE, "main", FRAGMENT, GLSL_420, false);
-        fsText = ShaderSource(SHADER_FRAG_TEXT, "main", FRAGMENT, GLSL_420, false);
-        fsBlend = ShaderSource(SHADER_FRAG_TEXTURE_BLEND, "main", FRAGMENT, GLSL_420, false);
+        vertexLayout.emplace_back(VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT));
+        vertexLayout.emplace_back(VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT));
 
-        vs = vs.preprocess(shaderCompiler);
-        fsColor = fsColor.preprocess(shaderCompiler);
+        vsTexture = ShaderSource(SHADER_VERT_TEXTURE, "main", VERTEX, GLSL_460, false);
+        fsTexture = ShaderSource(SHADER_FRAG_TEXTURE, "main", FRAGMENT, GLSL_460, false);
+
+        vsTexture = vsTexture.preprocess(shaderCompiler);
         fsTexture = fsTexture.preprocess(shaderCompiler);
-        fsText = fsText.preprocess(shaderCompiler);
-        fsBlend = fsBlend.preprocess(shaderCompiler);
 
-        auto vsSrc = vs.compile(shaderCompiler);
-        auto fsColSrc = fsColor.compile(shaderCompiler);
-        auto fsTexSrc = fsTexture.compile(shaderCompiler);
-        auto fsTextSrc = fsText.compile(shaderCompiler);
-        auto fsBlendSrc = fsBlend.compile(shaderCompiler);
+        auto vsTexSource = vsTexture.compile(shaderCompiler);
+        auto fsTexSource = fsTexture.compile(shaderCompiler);
 
-        colorShader = device.createShaderProgram(shaderDecompiler,
-                                                 {.shaders = {{ShaderStage::VERTEX,   vsSrc.getShader()},
-                                                              {ShaderStage::FRAGMENT, fsColSrc.getShader()}}});
+        RenderPipelineDesc desc;
 
-        textureShader = device.createShaderProgram(shaderDecompiler,
-                                                   {.shaders = {{ShaderStage::VERTEX,   vsSrc.getShader()},
-                                                                {ShaderStage::FRAGMENT, fsTexSrc.getShader()}}});
+        clearPipeline = device.createRenderPipeline(desc, shaderDecompiler);
 
-        textShader = device.createShaderProgram(shaderDecompiler,
-                                                {.shaders = {{ShaderStage::VERTEX,   vsSrc.getShader()},
-                                                             {ShaderStage::FRAGMENT, fsTextSrc.getShader()}}});
+        desc = {};
+        desc.shaders = {
+                {ShaderStage::VERTEX,   vsTexSource.getShader()},
+                {ShaderStage::FRAGMENT, fsTexSource.getShader()}
+        };
+        desc.bindings = {
+                RenderPipelineBindingType::BIND_SHADER_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+        };
 
-        blendShader = device.createShaderProgram(shaderDecompiler,
-                                                 {.shaders = {{ShaderStage::VERTEX,   vsSrc.getShader()},
-                                                              {ShaderStage::FRAGMENT, fsBlendSrc.getShader()}}});
+        desc.vertexLayout = vertexLayout;
 
-        reallocatePipelines();
+        texturePipeline = device.createRenderPipeline(desc, shaderDecompiler);
+
+        for (int i = TEXTURE_ATLAS_8x8; i < TEXTURE_ATLAS_END; i++) {
+            auto res = (TextureAtlasResolution) i;
+            TextureArrayBufferDesc atlasDesc;
+            atlasDesc.textureDesc.size = TextureAtlas::getResolutionLevelSize(res);
+            atlasTextures[res] = std::move(device.createTextureArrayBuffer(atlasDesc));
+        }
+
+        rebindTextureAtlas({});
     }
 
     Renderer2D::~Renderer2D() = default;
 
-    void Renderer2D::renderBegin(RenderTarget &target, bool clear, ColorRGBA clearColor) {
-        renderBegin(target, clear, clearColor, {}, target.getDescription().size);
+    TextureAtlasHandle Renderer2D::createTexture(const ImageRGBA &texture) {
+        auto res = TextureAtlas::getClosestMatchingResolutionLevel(texture.getSize());
+        auto free = atlas.getFreeSlotCount(res);
+        if (free < 1) {
+            auto desc = atlasTextures.at(res)->getDescription();
+            desc.textureCount += 1;
+            auto buffer = renderDevice.createTextureArrayBuffer(desc);
+            buffer->copy(*atlasTextures.at(res));
+            atlasTextures.at(res) = std::move(buffer);
+            auto occupations = atlas.getBufferOccupations();
+            occupations[res].resize(desc.textureCount, false);
+            rebindTextureAtlas(occupations);
+        }
+        return atlas.add(texture);
+    }
+
+    std::vector<TextureAtlasHandle> Renderer2D::createTextures(const std::vector<ImageRGBA> &textures) {
+        std::map<TextureAtlasResolution, size_t> resolutionCounts;
+        for (auto &img: textures) {
+            auto res = TextureAtlas::getClosestMatchingResolutionLevel(img.getSize());
+            resolutionCounts[res]++;
+        }
+        for (auto &pair: resolutionCounts) {
+            auto free = atlas.getFreeSlotCount(pair.first);
+            if (free < pair.second) {
+                auto desc = atlasTextures.at(pair.first)->getDescription();
+                desc.textureCount += pair.second - free;
+                auto buffer = renderDevice.createTextureArrayBuffer(desc);
+                buffer->copy(*atlasTextures.at(pair.first));
+                atlasTextures.at(pair.first) = std::move(buffer);
+                auto occupations = atlas.getBufferOccupations();
+                occupations[pair.first].resize(desc.textureCount, false);
+                rebindTextureAtlas(occupations);
+            }
+        }
+        std::vector<TextureAtlasHandle> ret;
+        ret.reserve(textures.size());
+        for (auto &img: textures) {
+            ret.emplace_back(atlas.add(img));
+        }
+        return ret;
+    }
+
+    void Renderer2D::destroyTexture(const TextureAtlasHandle &handle) {
+        atlas.remove(handle);
     }
 
     void Renderer2D::renderBegin(RenderTarget &target,
                                  bool clear,
                                  ColorRGBA clearColor,
-                                 Vec2i viewportOffset,
-                                 Vec2i viewportSize) {
-        if (isRendering)
-            throw std::runtime_error("Already rendering. ( Nested renderBegin calls? )");
-        isRendering = true;
-
-        userTarget = &target;
-
-        this->viewportSize = viewportSize;
-        if (this->clear != clear
-            || this->clearColor != clearColor) {
-            this->clear = clear;
-            this->clearColor = clearColor;
-            this->viewportOffset = viewportOffset;
-            reallocatePipelines();
+                                 const Vec2i &viewportOffset,
+                                 const Vec2i &viewportSize,
+                                 const Vec2f &cameraPosition,
+                                 const Rectf &projection) {
+        if (isRendering){
+            throw std::runtime_error("Already Rendering (Nested Renderer2D::renderBegin calls?)");
         }
-
-        clearPipeline->setViewport(viewportOffset, viewportSize);
-        colorPipeline->setViewport(viewportOffset, viewportSize);
-        texturePipeline->setViewport(viewportOffset, viewportSize);
-        textPipeline->setViewport(viewportOffset, viewportSize);
-        textureBlendPipeline->setViewport(viewportOffset, viewportSize);
-
-        setProjection({{}, viewportSize.convert<float>()});
-        setCameraPosition({});
-    }
-
-    void Renderer2D::renderPresent() {
-        if (!isRendering)
-            throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
-        isRendering = false;
-
-        clearPipeline->render(*userTarget, {});
-
-        std::vector<std::pair<Pass::Type, RenderCommand>> commands;
-//TODO: Instance commands with identical geometry and shading
-        for (auto &pass: passes) {
-            RenderCommand command;
-            switch (pass.type) {
-                case Pass::COLOR: {
-                    auto &vb = getPoly(std::get<std::vector<Vec2f>>(pass.geometry));
-
-                    Mat4f modelMatrix = MatrixMath::identity();
-                    modelMatrix = modelMatrix * MatrixMath::translate(Vec3f(
-                            pass.position.x,
-                            pass.position.y,
-                            0));
-                    modelMatrix = modelMatrix * MatrixMath::rotate(Vec3f(0, 0, pass.rotation));
-
-                    auto mvp = pass.camera.projection() * pass.camera.view(pass.cameraTransform) * modelMatrix;
-
-                    ShaderUniformBuffer shaderBufferUniform;
-                    shaderBufferUniform.mvp = mvp;
-                    shaderBufferUniform.color = Vec4f((float) pass.color.r() / 255,
-                                                      (float) pass.color.g() / 255,
-                                                      (float) pass.color.b() / 255,
-                                                      (float) pass.color.a() / 255).getMemory();
-
-                    auto &shaderBuffer = getShaderBuffer();
-                    shaderBuffer.upload(shaderBufferUniform);
-
-                    std::vector<std::variant<TextureBuffer *, ShaderBuffer *>> bindings;
-                    bindings.emplace_back(&shaderBuffer);
-
-                    command = RenderCommand(vb, bindings);
-                }
-                    break;
-                case Pass::COLOR_SOLID: {
-                    auto &vb = getPlane(std::get<PlaneDescription>(pass.geometry));
-
-                    Mat4f modelMatrix = MatrixMath::identity();
-                    modelMatrix = modelMatrix * MatrixMath::translate(Vec3f(
-                            pass.position.x,
-                            pass.position.y,
-                            0));
-                    modelMatrix = modelMatrix * MatrixMath::rotate(Vec3f(0, 0, pass.rotation));
-
-                    auto mvp = pass.camera.projection() * pass.camera.view(pass.cameraTransform) * modelMatrix;
-
-                    ShaderUniformBuffer shaderBufferUniform;
-                    shaderBufferUniform.mvp = mvp;
-                    shaderBufferUniform.color = Vec4f((float) pass.color.r() / 255,
-                                                      (float) pass.color.g() / 255,
-                                                      (float) pass.color.b() / 255,
-                                                      (float) pass.color.a() / 255).getMemory();
-
-                    auto &shaderBuffer = getShaderBuffer();
-                    shaderBuffer.upload(shaderBufferUniform);
-
-                    std::vector<std::variant<TextureBuffer *, ShaderBuffer *>> bindings;
-                    bindings.emplace_back(&shaderBuffer);
-
-                    command = RenderCommand(vb, bindings);
-                }
-                    break;
-                case Pass::TEXTURE: {
-                    auto &vb = getPlane(std::get<PlaneDescription>(pass.geometry));
-
-                    Mat4f model = MatrixMath::identity();
-                    model = model * MatrixMath::translate(Vec3f(
-                            pass.position.x,
-                            pass.position.y,
-                            0));
-                    model = model * MatrixMath::rotate(Vec3f(0, 0, pass.rotation));
-
-                    auto mvp = pass.camera.projection() * pass.camera.view(pass.cameraTransform) * model;
-
-                    ShaderUniformBuffer shaderBufferUniform;
-                    shaderBufferUniform.mvp = mvp;
-                    shaderBufferUniform.color = ColorRGBA(pass.mixColor.r(), pass.mixColor.g(), pass.mixColor.b(),
-                                                          0).divide().getMemory();
-                    shaderBufferUniform.scale = pass.mix;
-
-                    auto &shaderBuffer = getShaderBuffer();
-                    shaderBuffer.upload(shaderBufferUniform);
-
-                    std::vector<std::variant<TextureBuffer *, ShaderBuffer *>> bindings;
-                    bindings.emplace_back(&shaderBuffer);
-                    bindings.emplace_back(pass.texture);
-
-                    command = RenderCommand(vb, bindings);
-                }
-                    break;
-                case Pass::TEXTURE_BLEND: {
-                    auto &vb = getPlane(std::get<PlaneDescription>(pass.geometry));
-
-                    Mat4f model = MatrixMath::identity();
-                    model = model * MatrixMath::translate(Vec3f(
-                            pass.position.x,
-                            pass.position.y,
-                            0));
-                    model = model * MatrixMath::rotate(Vec3f(0, 0, pass.rotation));
-
-                    auto mvp = pass.camera.projection() * pass.camera.view(pass.cameraTransform) * model;
-
-                    ShaderUniformBuffer shaderBufferUniform;
-                    shaderBufferUniform.mvp = mvp;
-                    shaderBufferUniform.scale = pass.blendScale;
-
-                    auto &shaderBuffer = getShaderBuffer();
-                    shaderBuffer.upload(shaderBufferUniform);
-
-                    std::vector<std::variant<TextureBuffer *, ShaderBuffer *>> bindings;
-                    bindings.emplace_back(&shaderBuffer);
-                    bindings.emplace_back(pass.texture);
-                    bindings.emplace_back(pass.textureB);
-
-                    command = RenderCommand(vb, bindings);
-                }
-                    break;
-                case Pass::TEXT: {
-                    auto &vb = getPlane(std::get<PlaneDescription>(pass.geometry));
-
-                    Mat4f model = MatrixMath::identity();
-                    model = model * MatrixMath::translate(Vec3f(
-                            pass.position.x,
-                            pass.position.y,
-                            0));
-                    model = model * MatrixMath::rotate(Vec3f(0, 0, pass.rotation));
-
-                    auto mvp = pass.camera.projection() * pass.camera.view(pass.cameraTransform) * model;
-
-                    ShaderUniformBuffer shaderBufferUniform;
-                    shaderBufferUniform.mvp = mvp;
-                    shaderBufferUniform.color = pass.color.divide().getMemory();
-
-                    auto &shaderBuffer = getShaderBuffer();
-                    shaderBuffer.upload(shaderBufferUniform);
-
-                    std::vector<std::variant<TextureBuffer *, ShaderBuffer *>> bindings;
-                    bindings.emplace_back(&shaderBuffer);
-                    bindings.emplace_back(pass.texture);
-
-                    command = RenderCommand(vb, bindings);
-                }
-                    break;
-            }
-            commands.emplace_back(std::make_pair(pass.type, command));
-        }
-
-        Pass::Type currentType = Pass::COLOR;
-
-        std::vector<RenderCommand> currentPasses;
-        for (auto &cmd: commands) {
-            if (cmd.first != currentType) {
-                switch (currentType) {
-                    case Pass::COLOR:
-                    case Pass::COLOR_SOLID:
-                        colorPipeline->render(*userTarget, currentPasses);
-                        break;
-                    case Pass::TEXTURE:
-                        texturePipeline->render(*userTarget, currentPasses);
-                        break;
-                    case Pass::TEXTURE_BLEND:
-                        textureBlendPipeline->render(*userTarget, currentPasses);
-                        break;
-                    case Pass::TEXT:
-                        textPipeline->render(*userTarget, currentPasses);
-                        break;
-                }
-                currentPasses.clear();
-                currentType = cmd.first;
-            }
-            currentPasses.emplace_back(cmd.second);
-        }
-
-        switch (currentType) {
-            case Pass::COLOR:
-            case Pass::COLOR_SOLID:
-                colorPipeline->render(*userTarget, currentPasses);
-                break;
-            case Pass::TEXTURE:
-                texturePipeline->render(*userTarget, currentPasses);
-                break;
-            case Pass::TEXTURE_BLEND:
-                textureBlendPipeline->render(*userTarget, currentPasses);
-                break;
-            case Pass::TEXT:
-                textPipeline->render(*userTarget, currentPasses);
-                break;
-        }
-
-        userTarget = nullptr;
-
-        std::unordered_set<PlaneDescription, PlaneDescriptionHashFunction> unusedPlanes;
-        for (auto &pair: allocatedPlanes) {
-            if (usedPlanes.find(pair.first) == usedPlanes.end()) {
-                unusedPlanes.insert(pair.first);
-            }
-        }
-
-        std::unordered_set<std::vector<Vec2f>, PolyHashFunction<float>> unusedPolys;
-        for (auto &pair: allocatedPolys) {
-            if (usedPolys.find(pair.first) == usedPolys.end()) {
-                unusedPolys.insert(pair.first);
-            }
-        }
-
-        for (auto &v: unusedPolys)
-            allocatedPolys.erase(v);
-        for (auto &v: unusedPlanes)
-            allocatedPlanes.erase(v);
-
-        usedPlanes.clear();
-        usedPolys.clear();
-
-        passes.clear();
-
-        shaderBuffers.resize(usedShaderBuffers);
-        usedShaderBuffers = 0;
-    }
-
-    void Renderer2D::renderClear(RenderTarget &target, ColorRGBA clearColor, Vec2i viewportOffset, Vec2i viewportSize) {
-        if (!this->clear
-            || this->clearColor != clearColor) {
-            this->clear = true;
-            this->clearColor = clearColor;
-            this->viewportOffset = viewportOffset;
-            this->viewportSize = viewportSize;
-            reallocatePipelines();
-        }
-
-        clearPipeline->setViewport(viewportOffset, viewportSize);
-
-        clearPipeline->render(target, {});
-    }
-
-    void Renderer2D::setProjection(const Rectf &projection) {
-        if (!isRendering)
-            throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
+        isRendering  = true;
+        mViewportOffset = viewportOffset;
+        mViewportSize = viewportSize;
 
         camera.type = ORTHOGRAPHIC;
         camera.left = projection.position.x;
         camera.right = projection.dimensions.x;
         camera.top = projection.position.y;
         camera.bottom = projection.dimensions.y;
+        cameraTransform.setPosition({cameraPosition.x, cameraPosition.y, 1});
+
+        if (clear) {
+            clearPipeline->renderBegin(target, viewportOffset, viewportSize);
+            clearPipeline->clearColorAttachments(clearColor);
+            clearPipeline->clearDepthAttachments(1);
+            clearPipeline->renderPresent();
+        }
+
+        userTarget = &target;
     }
 
-    void Renderer2D::setCameraPosition(const Vec2f &pos) {
-        cameraTransform.setPosition({pos.x, pos.y, 1});
+    void Renderer2D::renderPresent() {
+        if (!isRendering){
+            throw std::runtime_error("Not Rendering");
+        }
+        isRendering = false;
+
+        int drawCycles = 0;
+        if (passes.size() > MAX_DRAW) {
+            drawCycles = passes.size() / MAX_DRAW;
+            if (drawCycles * MAX_DRAW < passes.size()) {
+                drawCycles += 1;
+            }
+        } else {
+            drawCycles = 1;
+        }
+
+        for (int i = 0; i < drawCycles; i++) {
+            std::vector<RenderPipeline::DrawCall> drawCalls;
+            std::vector<size_t> baseVertices;
+            VertexStream vertexStream;
+            std::vector<unsigned int> indices;
+            ShaderUniformBuffer uniformBuffer;
+
+            size_t baseVertex = 0;
+            size_t indexBufferOffset = 0;
+
+            auto currentPassBase = i * MAX_DRAW;
+            for (auto passIndex = 0; passIndex < MAX_DRAW && passIndex + currentPassBase < passes.size(); passIndex++) {
+                auto &pass = passes.at(passIndex + currentPassBase);
+                switch (pass.type) {
+                    case Pass::COLOR_POINT:
+                        vertexStream.addVertex(VertexBuilder()
+                                                       .addVec2(Vec2f())
+                                                       .addVec2(Vec2f())
+                                                       .build());
+                        indices.emplace_back(0);
+                        indices.emplace_back(0);
+                        indices.emplace_back(0);
+                        drawCalls.emplace_back(RenderPipeline::DrawCall{
+                                .offset = indexBufferOffset,
+                                .count = 3});
+                        baseVertices.emplace_back(baseVertex);
+                        baseVertex += 1;
+                        indexBufferOffset += 3;
+                        uniformBuffer.passes.at(passIndex).mvp = MatrixMath::translate({
+                                                                                               pass.center.x,
+                                                                                               pass.center.y,
+                                                                                               0})
+                                                                 * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
+                                                                 * MatrixMath::translate({
+                                                                                                 -pass.center.x,
+                                                                                                 -pass.center.y,
+                                                                                                 0})
+                                                                 * MatrixMath::translate({
+                                                                                                 pass.dstRect.position.x,
+                                                                                                 pass.dstRect.position.y,
+                                                                                                 0})
+                                                                 * Camera::view(cameraTransform)
+                                                                 * camera.projection();
+                        uniformBuffer.passes.at(passIndex).color = pass.color.divide().getMemory();
+                        break;
+                    case Pass::COLOR_LINE:
+                        vertexStream.addVertex(VertexBuilder()
+                                                       .addVec2(pass.dstRect.position)
+                                                       .addVec2(Vec2f())
+                                                       .build());
+                        vertexStream.addVertex(VertexBuilder()
+                                                       .addVec2(pass.dstRect.dimensions)
+                                                       .addVec2(Vec2f())
+                                                       .build());
+                        indices.emplace_back(0);
+                        indices.emplace_back(1);
+                        indices.emplace_back(0);
+                        drawCalls.emplace_back(RenderPipeline::DrawCall{
+                                .offset = indexBufferOffset,
+                                .count = 3});
+                        baseVertices.emplace_back(baseVertex);
+                        baseVertex += 2;
+                        indexBufferOffset += 3;
+                        uniformBuffer.passes.at(passIndex).mvp = MatrixMath::translate({
+                                                                                               pass.center.x,
+                                                                                               pass.center.y,
+                                                                                               0})
+                                                                 * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
+                                                                 * MatrixMath::translate({
+                                                                                                 -pass.center.x,
+                                                                                                 -pass.center.y,
+                                                                                                 0})
+                                                                 * Camera::view(cameraTransform)
+                                                                 * camera.projection();
+                        uniformBuffer.passes.at(passIndex).color = pass.color.divide().getMemory();
+                        break;
+                    case Pass::COLOR_PLANE:
+                        vertexStream.addVertex(VertexBuilder()
+                                                       .addVec2(Vec2f(0, 0))
+                                                       .addVec2(Vec2f(0, 0))
+                                                       .build());
+                        vertexStream.addVertex(VertexBuilder()
+                                                       .addVec2(Vec2f(pass.dstRect.dimensions.x, 0))
+                                                       .addVec2(Vec2f(1, 0))
+                                                       .build());
+                        vertexStream.addVertex(VertexBuilder()
+                                                       .addVec2(Vec2f(0, pass.dstRect.dimensions.y))
+                                                       .addVec2(Vec2f(0, 1))
+                                                       .build());
+                        vertexStream.addVertex(VertexBuilder()
+                                                       .addVec2(Vec2f(pass.dstRect.dimensions.x,
+                                                                      pass.dstRect.dimensions.y))
+                                                       .addVec2(Vec2f(1, 1))
+                                                       .build());
+
+                        baseVertices.emplace_back(baseVertex);
+                        baseVertex += 4;
+
+                        if (pass.fill) {
+                            indices.emplace_back(0);
+                            indices.emplace_back(1);
+                            indices.emplace_back(2);
+
+                            indices.emplace_back(1);
+                            indices.emplace_back(2);
+                            indices.emplace_back(3);
+
+                            drawCalls.emplace_back(RenderPipeline::DrawCall{
+                                    .offset = indexBufferOffset,
+                                    .count = 6});
+                            indexBufferOffset += 6;
+                        } else {
+                            indices.emplace_back(0);
+                            indices.emplace_back(1);
+                            indices.emplace_back(0);
+
+                            indices.emplace_back(1);
+                            indices.emplace_back(3);
+                            indices.emplace_back(1);
+
+                            indices.emplace_back(3);
+                            indices.emplace_back(2);
+                            indices.emplace_back(3);
+
+                            indices.emplace_back(0);
+                            indices.emplace_back(2);
+                            indices.emplace_back(0);
+
+                            drawCalls.emplace_back(RenderPipeline::DrawCall{
+                                    .offset = indexBufferOffset,
+                                    .count = 12});
+                            indexBufferOffset += 12;
+                        }
+
+                        uniformBuffer.passes.at(passIndex).mvp = MatrixMath::translate({
+                                                                                               pass.center.x,
+                                                                                               pass.center.y,
+                                                                                               0})
+                                                                 * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
+                                                                 * MatrixMath::translate({
+                                                                                                 -pass.center.x,
+                                                                                                 -pass.center.y,
+                                                                                                 0})
+                                                                 * MatrixMath::translate({
+                                                                                                 pass.dstRect.position.x,
+                                                                                                 pass.dstRect.position.y,
+                                                                                                 0})
+                                                                 * Camera::view(cameraTransform)
+                                                                 * camera.projection();
+                        uniformBuffer.passes.at(passIndex).color = pass.color.divide().getMemory();
+
+                        break;
+                    case Pass::TEXTURE:
+                        vertexStream.addVertex(VertexBuilder()
+                                                       .addVec2(Vec2f(0, 0))
+                                                       .addVec2(Vec2f(0, 0))
+                                                       .build());
+                        vertexStream.addVertex(VertexBuilder()
+                                                       .addVec2(Vec2f(pass.dstRect.dimensions.x, 0))
+                                                       .addVec2(Vec2f(1, 0))
+                                                       .build());
+                        vertexStream.addVertex(VertexBuilder()
+                                                       .addVec2(Vec2f(0, pass.dstRect.dimensions.y))
+                                                       .addVec2(Vec2f(0, 1))
+                                                       .build());
+                        vertexStream.addVertex(VertexBuilder()
+                                                       .addVec2(Vec2f(pass.dstRect.dimensions.x,
+                                                                      pass.dstRect.dimensions.y))
+                                                       .addVec2(Vec2f(1, 1))
+                                                       .build());
+
+                        baseVertices.emplace_back(baseVertex);
+                        baseVertex += 4;
+
+                        indices.emplace_back(0);
+                        indices.emplace_back(1);
+                        indices.emplace_back(2);
+
+                        indices.emplace_back(1);
+                        indices.emplace_back(2);
+                        indices.emplace_back(3);
+
+                        drawCalls.emplace_back(RenderPipeline::DrawCall{
+                                .offset = indexBufferOffset,
+                                .count = 6});
+                        indexBufferOffset += 6;
+
+                        uniformBuffer.passes.at(passIndex).mvp = MatrixMath::translate({
+                                                                                               pass.center.x,
+                                                                                               pass.center.y,
+                                                                                               0})
+                                                                 * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
+                                                                 * MatrixMath::translate({
+                                                                                                 -pass.center.x,
+                                                                                                 -pass.center.y,
+                                                                                                 0})
+                                                                 * MatrixMath::translate({
+                                                                                                 pass.dstRect.position.x,
+                                                                                                 pass.dstRect.position.y,
+                                                                                                 0})
+                                                                 * Camera::view(cameraTransform)
+                                                                 * camera.projection();
+                        uniformBuffer.passes.at(passIndex).color = pass.color.divide().getMemory();
+                        uniformBuffer.passes.at(passIndex).colorMixFactor = pass.mix;
+                        uniformBuffer.passes.at(passIndex).texAtlasLevel = pass.texture.level;
+                        uniformBuffer.passes.at(passIndex).texIndex = (int) pass.texture.index;
+                        uniformBuffer.passes.at(passIndex).uvOffset = pass.srcRect.position.getMemory();
+                        uniformBuffer.passes.at(passIndex).uvScale = (pass.srcRect.dimensions /
+                                                                      pass.texture.size.convert<float>()).getMemory();
+                        uniformBuffer.passes.at(passIndex).atlasScale = (pass.texture.size.convert<float>() /
+                                                                         TextureAtlas::getResolutionLevelSize(
+                                                                                 pass.texture.level).convert<float>()).getMemory();
+                        break;
+                }
+            }
+
+            VertexBufferDesc vertexBufferDesc;
+            vertexBufferDesc.size = vertexStream.getVertexBuffer().size();
+            auto vertexBuffer = renderDevice.createVertexBuffer(vertexBufferDesc);
+
+            vertexBuffer->upload(0, vertexStream.getVertexBuffer().data(), vertexStream.getVertexBuffer().size());
+
+            IndexBufferDesc indexBufferDesc{};
+            indexBufferDesc.size = indices.size() * sizeof(unsigned int);
+            auto indexBuffer = renderDevice.createIndexBuffer(indexBufferDesc);
+
+            indexBuffer->upload(0,
+                                reinterpret_cast<const uint8_t *>(indices.data()),
+                                indices.size() * sizeof(unsigned int));
+
+            VertexArrayObjectDesc vertexArrayObjectDesc;
+            vertexArrayObjectDesc.vertexLayout = vertexLayout;
+            auto vao = renderDevice.createVertexArrayObject(vertexArrayObjectDesc);
+
+            vao->bindBuffers(*vertexBuffer, *indexBuffer);
+
+            ShaderBufferDesc shaderBufferDesc;
+            shaderBufferDesc.size = sizeof(ShaderUniformBuffer);
+            auto shaderBuffer = renderDevice.createShaderBuffer(shaderBufferDesc);
+
+            shaderBuffer->upload(uniformBuffer);
+
+            texturePipeline->renderBegin(*userTarget, mViewportOffset, mViewportSize);
+            texturePipeline->bindVertexArrayObject(*vao);
+            texturePipeline->bindShaderData({
+                                                    *shaderBuffer,
+                                                    atlas.getBuffer(TEXTURE_ATLAS_8x8),
+                                                    atlas.getBuffer(TEXTURE_ATLAS_16x16),
+                                                    atlas.getBuffer(TEXTURE_ATLAS_32x32),
+                                                    atlas.getBuffer(TEXTURE_ATLAS_64x64),
+                                                    atlas.getBuffer(TEXTURE_ATLAS_128x128),
+                                                    atlas.getBuffer(TEXTURE_ATLAS_256x256),
+                                                    atlas.getBuffer(TEXTURE_ATLAS_512x512),
+                                                    atlas.getBuffer(TEXTURE_ATLAS_1024x1024),
+                                                    atlas.getBuffer(TEXTURE_ATLAS_2048x2048),
+                                                    atlas.getBuffer(TEXTURE_ATLAS_4096x4096),
+                                                    atlas.getBuffer(TEXTURE_ATLAS_8192x8192),
+                                                    atlas.getBuffer(TEXTURE_ATLAS_16384x16384),
+                                            });
+            texturePipeline->multiDrawIndexed(drawCalls, baseVertices);
+            texturePipeline->renderPresent();
+        }
+
+        passes.clear();
     }
 
-    void Renderer2D::draw(Rectf srcRect,
-                          Rectf dstRect,
-                          TextureBuffer &texture,
-                          Vec2f center,
+    void Renderer2D::draw(const Rectf &srcRect,
+                          const Rectf &dstRect,
+                          TextureAtlasHandle &sprite,
+                          const Vec2f &center,
                           float rotation,
-                          Vec2b flipUv,
                           float mix,
-                          ColorRGB mixColor) {
-        if (!isRendering)
-            throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
-
-        PlaneDescription desc(
-                {dstRect.dimensions, center, srcRect, texture.getDescription().size.convert<float>(), flipUv});
-        passes.emplace_back(Pass(dstRect.position, rotation, desc, texture, camera, cameraTransform, mix, mixColor));
-    }
-
-    void Renderer2D::draw(Rectf srcRect,
-                          Rectf dstRect,
-                          TextureBuffer &textureA,
-                          TextureBuffer &textureB,
-                          float blendScale,
-                          Vec2f center,
-                          float rotation,
-                          Vec2b flipUv) {
-        PlaneDescription desc(
-                {dstRect.dimensions, center, srcRect, textureA.getDescription().size.convert<float>(), flipUv});
-        passes.emplace_back(
-                Pass(dstRect.position, rotation, desc, textureA, textureB, blendScale, camera, cameraTransform));
-    }
-
-    void Renderer2D::draw(std::vector<Vec2f> poly,
-                          Vec2f position,
-                          ColorRGBA color,
-                          Vec2f center,
-                          float rotation) {
-        if (!isRendering)
-            throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
-        for (auto &vec: poly)
-            vec += center;
-        passes.emplace_back(Pass(position, rotation, poly, color, camera, cameraTransform));
-    }
-
-    void Renderer2D::draw(Rectf rectangle, ColorRGBA color, bool fill, Vec2f center, float rotation) {
-        if (!isRendering)
-            throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
-
-        if (fill)
-            passes.emplace_back(Pass(rectangle.position,
-                                     rotation,
-                                     {rectangle.dimensions, center, Rectf(Vec2f(), rectangle.dimensions),
-                                      rectangle.dimensions, Vec2b(false)},
-                                     color, camera, cameraTransform));
-        else
-            passes.emplace_back(Pass(rectangle.position,
-                                     rotation,
-                                     getSquare({rectangle.dimensions, center}),
-                                     color, camera, cameraTransform));
-    }
-
-    void Renderer2D::draw(Vec2f start,
-                          Vec2f end,
-                          ColorRGBA color) {
-        if (!isRendering)
-            throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
-
-        passes.emplace_back(
-                Pass({}, 0, std::vector<Vec2f>({std::move(start), std::move(end)}), color, camera, cameraTransform));
-    }
-
-    void Renderer2D::draw(Vec2f point, ColorRGBA color) {
-        if (!isRendering)
-            throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
-
-        passes.emplace_back(Pass({}, 0, std::vector<Vec2f>({std::move(point)}), color, camera, cameraTransform));
-    }
-
-    void Renderer2D::draw(Text &text, Rectf srcRect, Rectf dstRect, ColorRGBA color, Vec2f center, float rotation) {
-        if (!isRendering)
-            throw std::runtime_error("Not rendering. ( Nested renderBegin calls? )");
-
-        passes.emplace_back(Pass(dstRect.position,
+                          ColorRGBA mixColor) {
+        passes.emplace_back(Pass(srcRect,
+                                 dstRect,
+                                 sprite,
+                                 center,
                                  rotation,
-                                 {dstRect.dimensions, center, srcRect,
-                                  text.getTexture().getDescription().size.convert<float>(), Vec2b(false)},
-                                 text,
-                                 color,
-                                 camera,
-                                 cameraTransform));
+                                 mix,
+                                 mixColor));
     }
 
-    VertexBuffer &Renderer2D::getPoly(const std::vector<Vec2f> &poly) {
-        usedPolys.insert(poly);
-        auto it = allocatedPolys.find(poly);
-        if (it != allocatedPolys.end()) {
-            return *it->second;
-        } else {
-            if (poly.size() < 2) {
-                throw std::runtime_error("Invalid polygon vertices size");
-            }
-            std::vector<Vertex> vertices;
-            for (auto i = 0; i < poly.size() - 1; i++) {
-                auto &vec = poly.at(i);
-                auto &nVec = poly.at(i + 1);
-                vertices.emplace_back(Vertex(Vec3f(vec.x, vec.y, 0)));
-                vertices.emplace_back(Vertex(Vec3f(nVec.x, nVec.y, 0)));
-            }
-            vertices.emplace_back(Vertex(Vec3f(poly.at(0).x, poly.at(0).y, 0)));
-            vertices.emplace_back(
-                    Vertex(Vec3f(poly.at(poly.size() - 1).x, poly.at(poly.size() - 1).y, 0)));
-            auto mesh = Mesh(Primitive::LINE, vertices);
-            allocatedPolys[poly] = renderDevice.createInstancedVertexBuffer(mesh, {MatrixMath::identity()});
-            return *allocatedPolys[poly];
-        }
+    void Renderer2D::draw(const Rectf &rectangle, ColorRGBA color, bool fill, const Vec2f &center, float rotation) {
+        passes.emplace_back(Pass(rectangle, color, fill, center, rotation));
     }
 
-    VertexBuffer &Renderer2D::getPlane(const Renderer2D::PlaneDescription &desc) {
-        usedPlanes.insert(desc);
-        auto it = allocatedPlanes.find(desc);
-        if (it != allocatedPlanes.end()) {
-            return *it->second;
-        } else {
-            auto mesh = createPlane(desc.size, desc.center, desc.uvOffset, desc.uvSize, desc.flipUv);
-            allocatedPlanes[desc] = renderDevice.createInstancedVertexBuffer(mesh, {MatrixMath::identity()});
-            return *allocatedPlanes[desc];
-        }
+    void Renderer2D::draw(const Vec2f &start, const Vec2f &end, ColorRGBA color, const Vec2f &center, float rotation) {
+        passes.emplace_back(Pass(start, end, color, center, rotation));
     }
 
-    std::vector<Vec2f> Renderer2D::getSquare(const Renderer2D::SquareDescription &desc) {
-        auto mesh = createSquare(desc.size, desc.center);
-        std::vector<Vec2f> ret;
-        if (mesh.indices.empty()) {
-            for (auto &vert: mesh.vertices) {
-                ret.emplace_back(Vec2f{vert.position().x, vert.position().y});
-            }
-        } else {
-            for (auto &index: mesh.indices) {
-                auto &vert = mesh.vertices.at(index);
-                ret.emplace_back(Vec2f{vert.position().x, vert.position().y});
-            }
-        }
-        return ret;
+    void Renderer2D::draw(const Vec2f &point, ColorRGBA color) {
+        passes.emplace_back(Pass(point, color));
     }
 
-    ShaderBuffer &Renderer2D::getShaderBuffer() {
-        if (shaderBuffers.size() <= usedShaderBuffers) {
-            shaderBuffers.emplace_back(renderDevice.createShaderBuffer({.size = sizeof(ShaderUniformBuffer)}));
-        }
-        return *shaderBuffers.at(usedShaderBuffers++);
-    }
+    void Renderer2D::rebindTextureAtlas(const std::map<TextureAtlasResolution, std::vector<bool>> &occupations) {
+        std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> atlasRef;
 
-    void Renderer2D::reallocatePipelines() {
-        clearPipeline = renderDevice.createRenderPipeline({.viewportOffset = viewportOffset,
-                                                                  .viewportSize = viewportSize,
-                                                                  .multiSample = false,
-                                                                  .clearColorValue = clearColor,
-                                                                  .clearColor = clear,
-                                                                  .enableDepthTest = false,
-                                                                  .enableBlending = true},
-                                                          *colorShader);
+        atlasRef.insert(
+                std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(TEXTURE_ATLAS_8x8,
+                                                                                                   *atlasTextures.at(
+                                                                                                           TEXTURE_ATLAS_8x8).get()));
+        atlasRef.insert(
+                std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(TEXTURE_ATLAS_16x16,
+                                                                                                   *atlasTextures.at(
+                                                                                                           TEXTURE_ATLAS_16x16).get()));
+        atlasRef.insert(
+                std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(TEXTURE_ATLAS_32x32,
+                                                                                                   *atlasTextures.at(
+                                                                                                           TEXTURE_ATLAS_32x32).get()));
+        atlasRef.insert(
+                std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(TEXTURE_ATLAS_64x64,
+                                                                                                   *atlasTextures.at(
+                                                                                                           TEXTURE_ATLAS_64x64).get()));
+        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
+                TEXTURE_ATLAS_128x128, *atlasTextures.at(TEXTURE_ATLAS_128x128).get()));
+        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
+                TEXTURE_ATLAS_256x256, *atlasTextures.at(TEXTURE_ATLAS_256x256).get()));
+        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
+                TEXTURE_ATLAS_512x512, *atlasTextures.at(TEXTURE_ATLAS_512x512).get()));
+        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
+                TEXTURE_ATLAS_1024x1024, *atlasTextures.at(TEXTURE_ATLAS_1024x1024).get()));
+        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
+                TEXTURE_ATLAS_2048x2048, *atlasTextures.at(TEXTURE_ATLAS_2048x2048).get()));
+        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
+                TEXTURE_ATLAS_4096x4096, *atlasTextures.at(TEXTURE_ATLAS_4096x4096).get()));
+        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
+                TEXTURE_ATLAS_8192x8192, *atlasTextures.at(TEXTURE_ATLAS_8192x8192).get()));
+        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
+                TEXTURE_ATLAS_16384x16384, *atlasTextures.at(TEXTURE_ATLAS_16384x16384).get()));
 
-        colorPipeline = renderDevice.createRenderPipeline({.viewportOffset = viewportOffset,
-                                                                  .viewportSize = viewportSize,
-                                                                  .multiSample = false,
-                                                                  .clearColor = false,
-                                                                  .enableDepthTest = false,
-                                                                  .enableBlending = true},
-                                                          *colorShader);
-
-        texturePipeline = renderDevice.createRenderPipeline({.viewportOffset = viewportOffset,
-                                                                    .viewportSize = viewportSize,
-                                                                    .multiSample = false,
-                                                                    .clearColor = false,
-                                                                    .enableDepthTest = false,
-                                                                    .enableBlending = true},
-                                                            *textureShader);
-
-        textPipeline = renderDevice.createRenderPipeline({.viewportOffset = viewportOffset,
-                                                                 .viewportSize = viewportSize,
-                                                                 .multiSample = false,
-                                                                 .clearColor = false,
-                                                                 .enableDepthTest = false,
-                                                                 .enableBlending = true},
-                                                         *textShader);
-
-        textureBlendPipeline = renderDevice.createRenderPipeline({.viewportOffset = viewportOffset,
-                                                                         .viewportSize = viewportSize,
-                                                                         .multiSample = false,
-                                                                         .clearColor = false,
-                                                                         .enableDepthTest = false,
-                                                                         .enableBlending = true},
-                                                                 *blendShader);
+        atlas = TextureAtlas(atlasRef, occupations);
     }
 }

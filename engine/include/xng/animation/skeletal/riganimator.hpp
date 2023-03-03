@@ -64,7 +64,7 @@ namespace xng {
         void stop();
 
         /**
-         * Reset the time value to 0 and update the animated rig.
+         * Reset the time value to 0 and beginFrame the animated rig.
          */
         void reset();
 

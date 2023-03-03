@@ -26,6 +26,8 @@
 #include "xng/asset/mesh.hpp"
 #include "xng/asset/material.hpp"
 
+#include "xng/geometry/vertexbuilder.hpp"
+
 namespace xng {
     static Mat4f convertMat4(const aiMatrix4x4 &mat) {
         Mat4f ret;
@@ -193,7 +195,16 @@ namespace xng {
                     boneId++;
                 }
             }
-            ret.vertices.emplace_back(Vertex(pos, norm, uv, tangent, bitangent, boneIds, boneWeights));
+            
+            ret.vertices.emplace_back(VertexBuilder()
+                                              .addVec3(pos)
+                                              .addVec3(norm)
+                                              .addVec2(uv)
+                                              .addVec3(tangent)
+                                              .addVec3(bitangent)
+                                              .addVec4(boneIds)
+                                              .addVec4(boneWeights)
+                                              .build());
         }
 
         return ret;
@@ -205,9 +216,9 @@ namespace xng {
         aiColor3D c;
         assMaterial.Get(AI_MATKEY_COLOR_DIFFUSE, c);
         ret.albedo = {static_cast<uint8_t>(255 * c.r),
-                       static_cast<uint8_t>(255 * c.g),
-                       static_cast<uint8_t>(255 * c.b),
-                       255};
+                      static_cast<uint8_t>(255 * c.g),
+                      static_cast<uint8_t>(255 * c.b),
+                      255};
 
         assMaterial.Get(AI_MATKEY_COLOR_AMBIENT, c);
         ret.ambient = {static_cast<uint8_t>(255 * c.r),
@@ -221,7 +232,7 @@ namespace xng {
                         static_cast<uint8_t>(255 * c.b),
                         255};
 
-        ret.roughness = 128.0f - (float)assMaterial.Get(AI_MATKEY_SHININESS, c);
+        ret.roughness = 128.0f - (float) assMaterial.Get(AI_MATKEY_SHININESS, c);
 
         return ret;
     }
@@ -267,7 +278,8 @@ namespace xng {
         return ret;
     }
 
-    ResourceBundle AssImpParser::read(const std::vector<char> &buffer, const std::string &hint, Archive *archive) const {
+    ResourceBundle
+    AssImpParser::read(const std::vector<char> &buffer, const std::string &hint, Archive *archive) const {
         return readAsset(buffer, hint, archive);
     }
 

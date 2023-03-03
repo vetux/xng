@@ -17,6 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifdef DRIVER_GLFW_OPENGL
+
 #include <stdexcept>
 #include <mutex>
 
@@ -485,3 +487,5 @@ namespace xng::glfw {
         listeners.erase(&listener);
     }
 }
+
+#endif

@@ -17,19 +17,27 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RENDERCOMMAND_HPP
-#define XENGINE_RENDERCOMMAND_HPP
+#ifndef XENGINE_VERTEXSTREAM_HPP
+#define XENGINE_VERTEXSTREAM_HPP
 
-#include "xng/gpu/vertexarrayobject.hpp"
-
-#include "xng/gpu/indexbuffer.hpp"
+#include "xng/geometry/vertexbuilder.hpp"
 
 namespace xng {
-    struct RenderCommand {
-        size_t offset = 0; // The offset into the index or vertex buffer at which to begin reading indices or vertices
-        size_t count = 0; // The number of indices or vertices to draw.
-        IndexBuffer::IndexType indexType = IndexBuffer::UNSIGNED_INT; // The type of the indices, ignored when not indexing
+    class VertexStream {
+    public:
+        VertexStream &addVertex(const Vertex &vertex) {
+            size_t bytes = vertex.buffer.size() * sizeof(float);
+            vertexBuffer.resize(vertexBuffer.size() + bytes);
+            std::copy(vertex.buffer.begin(), vertex.buffer.end(), vertexBuffer.end() - (long) bytes);
+            return *this;
+        }
+
+        const std::vector<uint8_t> &getVertexBuffer() const { return vertexBuffer; }
+
+    private:
+        std::vector<Vertex> vertices;
+        std::vector<uint8_t> vertexBuffer;
     };
 }
 
-#endif //XENGINE_RENDERCOMMAND_HPP
+#endif //XENGINE_VERTEXSTREAM_HPP

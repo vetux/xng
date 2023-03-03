@@ -74,6 +74,23 @@ namespace xng {
 
                 return sCompiler.compile();
             }
+            case GLSL_460_VK:
+            case GLSL_460:{
+                spirv_cross::CompilerGLSL sCompiler(source);
+                sCompiler.set_entry_point(entryPoint, convertShaderStage(stage));
+
+                spirv_cross::ShaderResources resources = sCompiler.get_shader_resources();
+
+                spirv_cross::CompilerGLSL::Options sOptions;
+                sOptions.version = 460;
+
+                sCompiler.set_common_options(sOptions);
+
+                sCompiler.build_dummy_sampler_for_combined_images();
+                sCompiler.build_combined_image_samplers();
+
+                return sCompiler.compile();
+            }
             case GLSL_420_VK:
             case GLSL_420: {
                 spirv_cross::CompilerGLSL sCompiler(source);

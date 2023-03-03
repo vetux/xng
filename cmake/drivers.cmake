@@ -1,5 +1,6 @@
 option(DRIVER_GLFW "Build the glfw display driver" ON)
-option(DRIVER_OPENGL "Build the OpenGL render driver (Window and Render implementations" ON)
+option(DRIVER_GLFW_OPENGL "Build the opengl support of the glfw display driver" ON)
+option(DRIVER_OPENGL "Build the OpenGL gpu driver" ON)
 option(DRIVER_BOX2D "Build the box2d physics driver" ON)
 option(DRIVER_BULLET3 "Build the bullet3 physics driver" ON)
 option(DRIVER_OPENAL "Build the OpenAL audio driver" ON)
@@ -50,6 +51,10 @@ if (DRIVER_GLFW)
             glfw::GLFWDisplayDriver
             display/glfw/glfwdisplaydriver.hpp
             glfw)
+endif ()
+
+if (DRIVER_GLFW_OPENGL)
+    add_compile_definitions(DRIVER_GLFW_OPENGL)
 endif ()
 
 if (DRIVER_OPENGL)
@@ -155,10 +160,10 @@ foreach (index RANGE 0 ${DRIVERS_CLASSES_LEN})
         break()
     endif ()
     set(DRIVERS_REGISTRATION_HEADER "${DRIVERS_REGISTRATION_HEADER}#include \"${INCLUDE}\"\n")
-    set(DRIVERS_REGISTRATION "${DRIVERS_REGISTRATION}drivers[\"${NAME}\"] = [](){ return std::make_unique<${CLASS}>()\; }\;\n")
+    set(DRIVERS_REGISTRATION "${DRIVERS_REGISTRATION}{\"${NAME}\", [](){ return std::make_unique<${CLASS}>()\; }},")
 endforeach ()
 
-set(DRIVERS_GENERATOR "${DRIVERS_REGISTRATION_HEADER}\nnamespace xng::DriverGenerator { inline void setup(std::map<std::string, Driver::Creator> &drivers) {\n${DRIVERS_REGISTRATION}} }")
+set(DRIVERS_GENERATOR "${DRIVERS_REGISTRATION_HEADER}\nnamespace xng::DriverGenerator { inline const std::map<std::string, Driver::Creator> &getDrivers() { static const std::map<std::string, Driver::Creator> creators = {${DRIVERS_REGISTRATION}}\; return creators\; } }")
 
 # Write the header file included by engine/src/driver/driver.cpp
 file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/engine/src/compiled_drivers.h ${DRIVERS_GENERATOR})

@@ -34,7 +34,9 @@
 
 #include "xng/util/hashcombine.hpp"
 
-#include "xng/text/text.hpp"
+#include "xng/render/textureatlas.hpp"
+
+#include "xng/geometry/vertexstream.hpp"
 
 namespace xng {
     /**
@@ -57,15 +59,63 @@ namespace xng {
      * the triangle will be drawn on top of the rectangle.
      *
      * Drawing operations support blending between draw objects and previous target contents.
-     *
-     * Resources which are passed by the user (Texture buffers, shaders etc.) shall not be deallocated until
-     * render finish is called.
      */
     class XENGINE_EXPORT Renderer2D {
     public:
         explicit Renderer2D(RenderDevice &device, SPIRVCompiler &shaderCompiler, SPIRVDecompiler &shaderDecompiler);
 
         ~Renderer2D();
+
+        TextureAtlasHandle createTexture(const ImageRGBA &texture);
+
+        std::vector<TextureAtlasHandle> createTextures(const std::vector<ImageRGBA> &textures);
+
+        void destroyTexture(const TextureAtlasHandle &handle);
+
+        void renderClear(RenderTarget &target,
+                         ColorRGBA clearColor,
+                         Vec2i viewportOffset,
+                         Vec2i viewportSize) {
+            renderBegin(target, true, clearColor, std::move(viewportOffset), std::move(viewportSize));
+            renderPresent();
+        }
+
+        void renderClear(RenderTarget &target, ColorRGBA clearColor) {
+            renderClear(target, clearColor, {}, target.getDescription().size);
+        }
+
+        /**
+         *
+         * @param target
+         * @param clear
+         * @param clearColor
+         * @param viewportOffset
+         * @param viewportSize
+         * @param projection
+         * @param cameraPosition
+         */
+        void renderBegin(RenderTarget &target,
+                         bool clear,
+                         ColorRGBA clearColor,
+                         const Vec2i &viewportOffset,
+                         const Vec2i &viewportSize,
+                         const Vec2f &cameraPosition,
+                         const Rectf &projection);
+
+        void renderBegin(RenderTarget &target,
+                         bool clear,
+                         ColorRGBA clearColor,
+                         Vec2i viewportOffset,
+                         Vec2i viewportSize,
+                         const Vec2f &cameraPosition = {}) {
+            renderBegin(target,
+                        clear,
+                        clearColor,
+                        viewportOffset,
+                        viewportSize,
+                        cameraPosition,
+                        Rectf({}, target.getDescription().size.convert<float>()));
+        }
 
         /**
          * Must be called before calling draw methods.
@@ -74,94 +124,33 @@ namespace xng {
          * @param clear
          * @param clearColor
          */
-        void renderBegin(RenderTarget &target, bool clear = true, ColorRGBA clearColor = ColorRGBA::black());
-
-        void renderBegin(RenderTarget &target,
-                         bool clear,
-                         ColorRGBA clearColor,
-                         Vec2i viewportOffset,
-                         Vec2i viewportSize);
+        void renderBegin(RenderTarget &target, bool clear = true, ColorRGBA clearColor = ColorRGBA::black()) {
+            renderBegin(target, clear, clearColor, {}, target.getDescription().size);
+        }
 
         /**
          * Present the recorded drawing commands to the target specified in renderBegin.
          */
         void renderPresent();
 
-        void renderClear(RenderTarget &target,
-                         ColorRGBA clearColor,
-                         Vec2i viewportOffset,
-                         Vec2i viewportSize);
-
-        /**
-         * Set the projection bounds.
-         * The projection bounds are set to 0,0 and target size when calling renderBegin
-         *
-         * @param projection The projection bounds to set
-         */
-        void setProjection(const Rectf &projection);
-
-        void setCameraPosition(const Vec2f &pos);
-
         /**
          * Draw texture
          *
          * @param srcRect The part of the of texture to sample
          * @param dstRect The part of the screen to display the sampled part into
-         * @param texture
+         * @param sprite
          * @param center
          * @param rotation
-         * @param flipUv
          * @param mix
          * @param mixColor
          */
-        void draw(Rectf srcRect,
-                  Rectf dstRect,
-                  TextureBuffer &texture,
-                  Vec2f center = {},
+        void draw(const Rectf &srcRect,
+                  const Rectf &dstRect,
+                  TextureAtlasHandle &sprite,
+                  const Vec2f &center = {},
                   float rotation = 0,
-                  Vec2b flipUv = Vec2b(false),
                   float mix = 0,
-                  ColorRGB mixColor = ColorRGB());
-
-        /**
-         * Draw a texture which is the result of blending between textureA and textureB with the progress indicating blend (0 - 1)
-         *
-         * textureA -------- | --- textureB
-         *                  blendScale
-         *
-         * @param srcRect
-         * @param dstRect
-         * @param textureA
-         * @param textureB
-         * @param blendScale
-         * @param center
-         * @param rotation
-         * @param flipUv
-         */
-        void draw(Rectf srcRect,
-                  Rectf dstRect,
-                  TextureBuffer &textureA,
-                  TextureBuffer &textureB,
-                  float blendScale,
-                  Vec2f center = {},
-                  float rotation = 0,
-                  Vec2b flipUv = Vec2b(false));
-
-        /**
-        * Draw Polygon
-        *
-        * @param poly
-        * @param position
-        * @param color
-        * @param fill
-        * @param center
-        * @param rotation
-        */
-        void draw(std::vector<Vec2f> poly,
-                  Vec2f position,
-                  ColorRGBA color,
-                  Vec2f center = {},
-                  float rotation = 0);
+                  ColorRGBA mixColor = ColorRGBA());
 
         /**
          * Draw rectangle
@@ -172,10 +161,10 @@ namespace xng {
          * @param center
          * @param rotation
          */
-        void draw(Rectf rectangle,
+        void draw(const Rectf &rectangle,
                   ColorRGBA color,
                   bool fill = true,
-                  Vec2f center = {},
+                  const Vec2f &center = {},
                   float rotation = 0);
 
         /**
@@ -183,9 +172,11 @@ namespace xng {
          *
          * @param start
          * @param end
+         * @param center
+         * @param rotation
          * @param color
          */
-        void draw(Vec2f start, Vec2f end, ColorRGBA color);
+        void draw(const Vec2f &start, const Vec2f &end, ColorRGBA color, const Vec2f &center = {}, float rotation = 0);
 
         /**
          * Draw point
@@ -193,257 +184,91 @@ namespace xng {
          * @param point
          * @param color
          */
-        void draw(Vec2f point, ColorRGBA color = {});
-
-        /**
-         * Draw text
-         *
-         * @param text
-         * @param dstRect
-         * @param color
-         * @param center
-         * @param rotation
-         */
-        void draw(Text &text, Rectf srcRect, Rectf dstRect, ColorRGBA color, Vec2f center = {}, float rotation = 0);
+        void draw(const Vec2f &point, ColorRGBA color = {});
 
         RenderDevice &getDevice() { return renderDevice; }
 
     private:
-        struct PlaneDescription {
-            Vec2f size;
-            Vec2f center;
-            Rectf uvOffset;
-            Vec2f uvSize;
-            Vec2b flipUv;
-
-            bool operator==(const PlaneDescription &other) const {
-                return size == other.size
-                       && center == other.center
-                       && uvOffset == other.uvOffset
-                       && flipUv == other.flipUv;
-            }
-        };
-
-        class PlaneDescriptionHashFunction {
-        public:
-            size_t operator()(const PlaneDescription &p) const {
-                size_t ret;
-                hash_combine(ret, p.size.x);
-                hash_combine(ret, p.size.y);
-                hash_combine(ret, p.center.x);
-                hash_combine(ret, p.center.y);
-                hash_combine(ret, p.uvOffset.position.x);
-                hash_combine(ret, p.uvOffset.position.y);
-                hash_combine(ret, p.uvSize.x);
-                hash_combine(ret, p.uvSize.y);
-                hash_combine(ret, p.flipUv.x);
-                hash_combine(ret, p.flipUv.y);
-                return ret;
-            }
-        };
-
-        struct SquareDescription {
-            Vec2f size;
-            Vec2f center;
-
-            bool operator==(const SquareDescription &other) const {
-                return size == other.size
-                       && center == other.center;
-            }
-        };
-
-        class SquareDescriptionHashFunction {
-        public:
-            size_t operator()(const SquareDescription &p) const {
-                size_t ret;
-                hash_combine(ret, p.size.x);
-                hash_combine(ret, p.size.y);
-                hash_combine(ret, p.center.x);
-                hash_combine(ret, p.center.y);
-                return ret;
-            }
-        };
-
-        struct LineDescription {
-            Vec2f start;
-            Vec2f end;
-            Vec2f center;
-
-            bool operator==(const LineDescription &other) const {
-                return start == other.start
-                       && end == other.end
-                       && center == other.center;
-            }
-        };
-
-        class LineDescriptionHashFunction {
-        public:
-            size_t operator()(const LineDescription &p) const {
-                size_t ret;
-                hash_combine(ret, p.start.x);
-                hash_combine(ret, p.start.y);
-                hash_combine(ret, p.end.x);
-                hash_combine(ret, p.end.y);
-                hash_combine(ret, p.center.x);
-                hash_combine(ret, p.center.y);
-                return ret;
-            }
-        };
-
-        template<typename T>
-        class PolyHashFunction {
-        public:
-            size_t operator()(const std::vector<Vector2<T>> &p) const {
-                size_t ret;
-                for (auto &v: p) {
-                    hash_combine(ret, v.x);
-                    hash_combine(ret, v.y);
-                }
-                return ret;
-            }
-        };
-
-        void reallocatePipelines();
-
-        VertexBuffer &getPoly(const std::vector<Vec2f> &poly);
-
-        VertexBuffer &getPlane(const PlaneDescription &desc);
-
-        std::vector<Vec2f> getSquare(const SquareDescription &desc);
-
-        ShaderBuffer &getShaderBuffer();
+        void rebindTextureAtlas(const std::map<TextureAtlasResolution, std::vector<bool>> &occupations);
 
         RenderDevice &renderDevice;
 
-        ShaderSource vs;
-        ShaderSource fsColor;
+        ShaderSource vsTexture;
         ShaderSource fsTexture;
-        ShaderSource fsText;
-        ShaderSource fsBlend;
-
-        std::unique_ptr<ShaderProgram> colorShader = nullptr;
-        std::unique_ptr<ShaderProgram> textureShader = nullptr;
-        std::unique_ptr<ShaderProgram> textShader = nullptr;
-        std::unique_ptr<ShaderProgram> blendShader = nullptr;
 
         std::unique_ptr<RenderPipeline> clearPipeline;
-        std::unique_ptr<RenderPipeline> colorPipeline;
         std::unique_ptr<RenderPipeline> texturePipeline;
-        std::unique_ptr<RenderPipeline> textPipeline;
-        std::unique_ptr<RenderPipeline> textureBlendPipeline;
 
-        std::unordered_map<PlaneDescription, std::unique_ptr<VertexBuffer>, PlaneDescriptionHashFunction> allocatedPlanes;
-        std::unordered_map<std::vector<Vec2f>, std::unique_ptr<VertexBuffer>, PolyHashFunction<float>> allocatedPolys;
-
-        std::unordered_set<PlaneDescription, PlaneDescriptionHashFunction> usedPlanes;
-        std::unordered_set<std::vector<Vec2f>, PolyHashFunction<float>> usedPolys;
-
-        std::vector<std::unique_ptr<ShaderBuffer>> shaderBuffers;
-
-        size_t usedShaderBuffers = 0;
+        std::map<TextureAtlasResolution, std::unique_ptr<TextureArrayBuffer>> atlasTextures;
+        TextureAtlas atlas;
 
         struct Pass {
             enum Type {
-                COLOR,
-                COLOR_SOLID,
+                COLOR_POINT,
+                COLOR_LINE,
+                COLOR_PLANE,
                 TEXTURE,
-                TEXTURE_BLEND,
-                TEXT
             } type{};
 
-            Vec2f position;
+            Rectf srcRect;
+            Rectf dstRect; // If line dstRect.position contains the start and dstRect.dimensions the end of the line.
+
+            Vec2f center;
             float rotation = 0;
-            ColorRGBA color;
-            TextureBuffer *texture = nullptr;
-            TextureBuffer *textureB = nullptr;
-            float blendScale = 0;
-            std::variant<PlaneDescription, std::vector<Vec2f>> geometry;
-            Camera camera;
-            Transform cameraTransform;
+
+            bool fill = false;
+
+            TextureAtlasHandle texture;
+
             float mix = 0;
-            ColorRGB mixColor;
+            ColorRGBA color;
 
             Pass() = default;
 
-            Pass(Vec2f position,
-                 float rotation,
-                 std::vector<Vec2f> poly,
-                 ColorRGBA color,
-                 Camera camera,
-                 Transform cameraTransform)
-                    : type(COLOR),
-                      position(std::move(position)),
-                      rotation(rotation),
-                      geometry(poly),
-                      color(color),
-                      camera(std::move(camera)),
-                      cameraTransform(std::move(cameraTransform)) {}
+            Pass(Vec2f point,
+                 ColorRGBA color)
+                    : type(COLOR_POINT),
+                      dstRect(std::move(point), {}),
+                      color(color) {}
 
-            Pass(Vec2f position,
-                 float rotation,
-                 PlaneDescription plane,
+            Pass(Vec2f start,
+                 Vec2f end,
                  ColorRGBA color,
-                 Camera camera,
-                 Transform cameraTransform)
-                    : type(COLOR_SOLID),
-                      position(std::move(position)),
-                      rotation(rotation),
-                      geometry(plane),
+                 Vec2f center,
+                 float rotation)
+                    : type(COLOR_LINE),
+                      dstRect(std::move(start), std::move(end)),
                       color(color),
-                      camera(std::move(camera)),
-                      cameraTransform(std::move(cameraTransform)) {}
+                      center(std::move(center)),
+                      rotation(rotation) {}
 
-            Pass(Vec2f position,
+            Pass(Rectf dstRect,
+                 ColorRGBA color,
+                 bool fill,
+                 Vec2f center,
+                 float rotation)
+                    : type(COLOR_PLANE),
+                      dstRect(std::move(dstRect)),
+                      center(std::move(center)),
+                      rotation(rotation),
+                      color(color),
+                      fill(fill) {}
+
+            Pass(Rectf srcRect,
+                 Rectf dstRect,
+                 TextureAtlasHandle &texture,
+                 Vec2f center,
                  float rotation,
-                 PlaneDescription plane,
-                 TextureBuffer &texture,
-                 Camera camera,
-                 Transform cameraTransform,
                  float mix,
-                 ColorRGB mixColor)
+                 ColorRGBA color)
                     : type(TEXTURE),
-                      position(std::move(position)),
+                      srcRect(std::move(srcRect)),
+                      dstRect(std::move(dstRect)),
+                      center(std::move(center)),
                       rotation(rotation),
-                      geometry(plane),
-                      texture(&texture),
-                      camera(std::move(camera)),
-                      cameraTransform(std::move(cameraTransform)),
+                      texture(std::move(texture)),
                       mix(mix),
-                      mixColor(mixColor) {}
-
-            Pass(Vec2f position,
-                 float rotation,
-                 PlaneDescription plane,
-                 TextureBuffer &textureA,
-                 TextureBuffer &textureB,
-                 float blendScale,
-                 Camera camera,
-                 Transform cameraTransform)
-                    : type(TEXTURE_BLEND),
-                      position(std::move(position)),
-                      rotation(rotation),
-                      geometry(plane),
-                      texture(&textureA),
-                      textureB(&textureB),
-                      blendScale(blendScale),
-                      camera(std::move(camera)),
-                      cameraTransform(std::move(cameraTransform)) {}
-
-            Pass(Vec2f position,
-                 float rotation,
-                 PlaneDescription plane,
-                 Text &text,
-                 ColorRGBA color,
-                 Camera camera,
-                 Transform cameraTransform)
-                    : type(TEXT),
-                      position(std::move(position)),
-                      rotation(rotation),
-                      geometry(plane),
-                      texture(&text.getTexture()),
-                      color(color),
-                      camera(std::move(camera)),
-                      cameraTransform(std::move(cameraTransform)) {}
+                      color(color) {}
         };
 
         std::vector<Pass> passes;
@@ -455,12 +280,10 @@ namespace xng {
 
         bool isRendering = false;
 
-        int layer = 0;
+        Vec2i mViewportOffset = {};
+        Vec2i mViewportSize = Vec2i(1);
 
-        bool clear = false;
-        ColorRGBA clearColor = ColorRGBA::black();
-        Vec2i viewportOffset = {};
-        Vec2i viewportSize = Vec2i(1);
+        std::vector<VertexAttribute> vertexLayout;
     };
 }
 

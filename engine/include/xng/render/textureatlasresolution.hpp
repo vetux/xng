@@ -17,39 +17,24 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/xng.hpp"
+#ifndef XENGINE_TEXTUREATLASRESOLUTION_HPP
+#define XENGINE_TEXTUREATLASRESOLUTION_HPP
 
-#include <fstream>
-#include <iostream>
-#include <filesystem>
-
-void printUsage() {
-    std::cout << "Usage: PROGRAM PathToScene";
+namespace xng {
+    enum TextureAtlasResolution : int {
+        TEXTURE_ATLAS_8x8 = 0,
+        TEXTURE_ATLAS_16x16,
+        TEXTURE_ATLAS_32x32,
+        TEXTURE_ATLAS_64x64,
+        TEXTURE_ATLAS_128x128,
+        TEXTURE_ATLAS_256x256,
+        TEXTURE_ATLAS_512x512,
+        TEXTURE_ATLAS_1024x1024,
+        TEXTURE_ATLAS_2048x2048,
+        TEXTURE_ATLAS_4096x4096,
+        TEXTURE_ATLAS_8192x8192,
+        TEXTURE_ATLAS_16384x16384,
+        TEXTURE_ATLAS_END
+    };
 }
-
-int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        printUsage();
-        return 0;
-    }
-
-    std::filesystem::path filePath = std::filesystem::path(argv[1]);
-
-    std::fstream fs(filePath);
-
-    if (!fs.is_open()) {
-        std::cout << "Failed to open file " + filePath.string() << "\n";
-        return 0;
-    }
-
-    xng::JsonParser parser;
-    auto bundle = parser.read(xng::readFile(filePath), filePath.extension(), nullptr);
-
-    for (auto &pair: bundle.assets) {
-        if (pair.second->getTypeIndex() == typeid(xng::EntityScene)) {
-            std::cout << "EntityScene: " + dynamic_cast<xng::EntityScene*>(pair.second.get())->getName() << "\n";
-        }
-    }
-
-    return 0;
-}
+#endif //XENGINE_TEXTUREATLASRESOLUTION_HPP

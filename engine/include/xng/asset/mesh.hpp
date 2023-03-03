@@ -28,16 +28,97 @@
 #include "xng/math/vector3.hpp"
 #include "xng/math/vector2.hpp"
 
-#include "vertex.hpp"
-#include "primitive.hpp"
+#include "xng/geometry/vertex.hpp"
+#include "xng/geometry/primitive.hpp"
 
 #include "xng/resource/resource.hpp"
 
 #include "xng/animation/skeletal/rig.hpp"
 #include "xng/animation/skeletal/riganimation.hpp"
 
+#include "xng/gpu/vertexarrayobjectdesc.hpp"
+
 namespace xng {
     struct XENGINE_EXPORT Mesh : public Resource {
+
+        /**
+         * Create a standard vertex buffer description which is the format of meshes returned by the resource abstraction.
+         *
+         * eg. GLSL:
+         *  layout (location = 0) in vec3 position;
+         *  layout (location = 1) in vec3 normal;
+         *  layout (location = 2) in vec2 uv;
+         *  layout (location = 3) in vec3 tangent;
+         *  layout (location = 4) in vec3 bitangent;
+         *  layout (location = 5) in ivec4 boneIds;
+         *  layout (location = 6) in vec4 boneWeights;
+         *
+         * @param mesh
+         * @param bufferType
+         *
+         * @return
+         */
+        static VertexArrayObjectDesc getDefaultVertexArrayObjectDesc() {
+            const std::vector<VertexAttribute> layout = {
+                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
+                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
+                    VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT),
+                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
+                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
+                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::SIGNED_INT),
+                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
+            };
+
+            return {
+                    .primitive = TRI,
+                    .vertexLayout = layout
+            };
+        }
+
+        /**
+         * eg. GLSL:
+         *  layout (location = 0) in vec3 position;
+         *  layout (location = 1) in vec3 normal;
+         *  layout (location = 2) in vec2 uv;
+         *  layout (location = 3) in vec3 tangent;
+         *  layout (location = 4) in vec3 bitangent;
+         *  layout (location = 5) in ivec4 boneIds;
+         *  layout (location = 6) in vec4 boneWeights;
+         *  -- Instance Start --
+         *  layout (location = 7) in vec4 instanceRow0;
+         *  layout (location = 8) in vec4 instanceRow1;
+         *  layout (location = 9) in vec4 instanceRow2;
+         *  layout (location = 10) in vec4 instanceRow3;
+         *
+         * @param mesh
+         * @param offsets
+         * @return
+         */
+        static VertexArrayObjectDesc createInstancedVertexArrayBufferDesc() {
+            const std::vector<VertexAttribute> layout = {
+                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
+                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
+                    VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT),
+                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
+                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
+                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::SIGNED_INT),
+                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
+            };
+
+            const std::vector<VertexAttribute> instanceLayout = {
+                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
+                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
+                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
+                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT)
+            };
+
+            return {
+                    .primitive = TRI,
+                    .vertexLayout = layout,
+                    .instanceArrayLayout = instanceLayout
+            };
+        }
+
         /**
          * A quad mesh which covers the viewport in normalized screen coordinates
          * @return
@@ -60,13 +141,6 @@ namespace xng {
 
         Rig rig; // If rig is assigned the vertex bone ids are indices into rig.getBones()
 
-        size_t polyCount() const {
-            if (indices.empty())
-                return vertices.size() / primitive;
-            else
-                return indices.size() / primitive;
-        }
-
         Mesh() = default;
 
         Mesh(Primitive primitive, std::vector<Vertex> vertices)
@@ -80,6 +154,13 @@ namespace xng {
                   vertices(std::move(vertices)),
                   indices(std::move(indices)),
                   rig(std::move(rig)) {}
+
+        size_t polyCount() const {
+            if (indices.empty())
+                return vertices.size() / primitive;
+            else
+                return indices.size() / primitive;
+        }
     };
 }
 
