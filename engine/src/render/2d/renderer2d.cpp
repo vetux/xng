@@ -172,6 +172,8 @@ namespace xng {
 
         desc.vertexLayout = vertexLayout;
 
+        desc.enableBlending = true;
+
         texturePipeline = device.createRenderPipeline(desc, shaderDecompiler);
 
         for (int i = TEXTURE_ATLAS_8x8; i < TEXTURE_ATLAS_END; i++) {
@@ -294,7 +296,7 @@ namespace xng {
             for (auto passIndex = 0; passIndex < MAX_DRAW && passIndex + currentPassBase < passes.size(); passIndex++) {
                 auto &pass = passes.at(passIndex + currentPassBase);
                 switch (pass.type) {
-                    case Pass::COLOR_POINT:
+                    case Pass::COLOR_POINT: {
                         vertexStream.addVertex(VertexBuilder()
                                                        .addVec2(Vec2f())
                                                        .addVec2(Vec2f())
@@ -308,24 +310,26 @@ namespace xng {
                         baseVertices.emplace_back(baseVertex);
                         baseVertex += 1;
                         indexBufferOffset += 3;
-                        uniformBuffer.passes.at(passIndex).mvp = MatrixMath::translate({
-                                                                                               pass.center.x,
-                                                                                               pass.center.y,
-                                                                                               0})
-                                                                 * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
-                                                                 * MatrixMath::translate({
-                                                                                                 -pass.center.x,
-                                                                                                 -pass.center.y,
-                                                                                                 0})
-                                                                 * MatrixMath::translate({
-                                                                                                 pass.dstRect.position.x,
-                                                                                                 pass.dstRect.position.y,
-                                                                                                 0})
+                        auto model = MatrixMath::translate({
+                                                                   pass.center.x,
+                                                                   pass.center.y,
+                                                                   0})
+                                     * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
+                                     * MatrixMath::translate({
+                                                                     -pass.center.x,
+                                                                     -pass.center.y,
+                                                                     0})
+                                     * MatrixMath::translate({
+                                                                     pass.dstRect.position.x,
+                                                                     pass.dstRect.position.y,
+                                                                     0});
+                        uniformBuffer.passes.at(passIndex).mvp = camera.projection()
                                                                  * Camera::view(cameraTransform)
-                                                                 * camera.projection();
+                                                                 * model;
                         uniformBuffer.passes.at(passIndex).color = pass.color.divide().getMemory();
                         break;
-                    case Pass::COLOR_LINE:
+                    }
+                    case Pass::COLOR_LINE: {
                         vertexStream.addVertex(VertexBuilder()
                                                        .addVec2(pass.dstRect.position)
                                                        .addVec2(Vec2f())
@@ -334,29 +338,36 @@ namespace xng {
                                                        .addVec2(pass.dstRect.dimensions)
                                                        .addVec2(Vec2f())
                                                        .build());
+
                         indices.emplace_back(0);
                         indices.emplace_back(1);
                         indices.emplace_back(0);
+
                         drawCalls.emplace_back(RenderPipeline::DrawCall{
                                 .offset = indexBufferOffset,
                                 .count = 3});
                         baseVertices.emplace_back(baseVertex);
                         baseVertex += 2;
+
                         indexBufferOffset += 3;
-                        uniformBuffer.passes.at(passIndex).mvp = MatrixMath::translate({
-                                                                                               pass.center.x,
-                                                                                               pass.center.y,
-                                                                                               0})
-                                                                 * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
-                                                                 * MatrixMath::translate({
-                                                                                                 -pass.center.x,
-                                                                                                 -pass.center.y,
-                                                                                                 0})
+
+                        auto model = MatrixMath::translate({
+                                                                   pass.center.x,
+                                                                   pass.center.y,
+                                                                   0})
+                                     * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
+                                     * MatrixMath::translate({
+                                                                     -pass.center.x,
+                                                                     -pass.center.y,
+                                                                     0});
+
+                        uniformBuffer.passes.at(passIndex).mvp = camera.projection()
                                                                  * Camera::view(cameraTransform)
-                                                                 * camera.projection();
+                                                                 * model;
                         uniformBuffer.passes.at(passIndex).color = pass.color.divide().getMemory();
                         break;
-                    case Pass::COLOR_PLANE:
+                    }
+                    case Pass::COLOR_PLANE: {
                         vertexStream.addVertex(VertexBuilder()
                                                        .addVec2(Vec2f(0, 0))
                                                        .addVec2(Vec2f(0, 0))
@@ -390,6 +401,7 @@ namespace xng {
                             drawCalls.emplace_back(RenderPipeline::DrawCall{
                                     .offset = indexBufferOffset,
                                     .count = 6});
+
                             indexBufferOffset += 6;
                         } else {
                             indices.emplace_back(0);
@@ -411,28 +423,32 @@ namespace xng {
                             drawCalls.emplace_back(RenderPipeline::DrawCall{
                                     .offset = indexBufferOffset,
                                     .count = 12});
+
                             indexBufferOffset += 12;
                         }
 
-                        uniformBuffer.passes.at(passIndex).mvp = MatrixMath::translate({
-                                                                                               pass.center.x,
-                                                                                               pass.center.y,
-                                                                                               0})
-                                                                 * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
-                                                                 * MatrixMath::translate({
-                                                                                                 -pass.center.x,
-                                                                                                 -pass.center.y,
-                                                                                                 0})
-                                                                 * MatrixMath::translate({
-                                                                                                 pass.dstRect.position.x,
-                                                                                                 pass.dstRect.position.y,
-                                                                                                 0})
+                        auto model = MatrixMath::translate({
+                                                                   pass.center.x,
+                                                                   pass.center.y,
+                                                                   0})
+                                     * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
+                                     * MatrixMath::translate({
+                                                                     -pass.center.x,
+                                                                     -pass.center.y,
+                                                                     0})
+                                     * MatrixMath::translate({
+                                                                     pass.dstRect.position.x,
+                                                                     pass.dstRect.position.y,
+                                                                     0});
+
+                        uniformBuffer.passes.at(passIndex).mvp = camera.projection()
                                                                  * Camera::view(cameraTransform)
-                                                                 * camera.projection();
+                                                                 * model;
                         uniformBuffer.passes.at(passIndex).color = pass.color.divide().getMemory();
 
                         break;
-                    case Pass::TEXTURE:
+                    }
+                    case Pass::TEXTURE: {
                         vertexStream.addVertex(VertexBuilder()
                                                        .addVec2(Vec2f(0, 0))
                                                        .addVec2(Vec2f(0, 0))
@@ -465,23 +481,27 @@ namespace xng {
                         drawCalls.emplace_back(RenderPipeline::DrawCall{
                                 .offset = indexBufferOffset,
                                 .count = 6});
+
                         indexBufferOffset += 6;
 
-                        uniformBuffer.passes.at(passIndex).mvp = MatrixMath::translate({
-                                                                                               pass.center.x,
-                                                                                               pass.center.y,
-                                                                                               0})
-                                                                 * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
-                                                                 * MatrixMath::translate({
-                                                                                                 -pass.center.x,
-                                                                                                 -pass.center.y,
-                                                                                                 0})
-                                                                 * MatrixMath::translate({
-                                                                                                 pass.dstRect.position.x,
-                                                                                                 pass.dstRect.position.y,
-                                                                                                 0})
+                        auto model = MatrixMath::translate({
+                                                                   pass.center.x,
+                                                                   pass.center.y,
+                                                                   0})
+                                     * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
+                                     * MatrixMath::translate({
+                                                                     -pass.center.x,
+                                                                     -pass.center.y,
+                                                                     0})
+                                     * MatrixMath::translate({
+                                                                     pass.dstRect.position.x,
+                                                                     pass.dstRect.position.y,
+                                                                     0});
+
+                        uniformBuffer.passes.at(passIndex).mvp = camera.projection()
                                                                  * Camera::view(cameraTransform)
-                                                                 * camera.projection();
+                                                                 * model;
+
                         uniformBuffer.passes.at(passIndex).color = pass.color.divide().getMemory();
                         uniformBuffer.passes.at(passIndex).colorMixFactor = pass.mix;
                         uniformBuffer.passes.at(passIndex).texAtlasLevel = pass.texture.level;
@@ -493,6 +513,7 @@ namespace xng {
                                                                          TextureAtlas::getResolutionLevelSize(
                                                                                  pass.texture.level).convert<float>()).getMemory();
                         break;
+                    }
                 }
             }
 

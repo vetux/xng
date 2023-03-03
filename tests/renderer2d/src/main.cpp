@@ -62,7 +62,9 @@ int main(int argc, char *argv[]) {
                  xng::Rectf({(float) imageA.getWidth(), 0}, imageB.getSize().convert<float>()),
                  texB);
 
-        ren.draw(xng::Vec2f(0, 0), target.getDescription().size.convert<float>(), xng::ColorRGBA::green());
+        ren.draw(xng::Rectf(target.getDescription().size.convert<float>() / 2, imageB.getSize().convert<float>()), xng::ColorRGBA::green());
+
+        ren.draw(xng::Vec2f(0, 0), target.getDescription().size.convert<float>() * xng::Vec2f(-1, 0), xng::ColorRGBA::green());
 
         ren.renderPresent();
 
