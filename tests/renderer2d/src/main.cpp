@@ -19,6 +19,8 @@
 
 #include "xng/xng.hpp"
 
+// Does not draw textures nor lines, seems to be a vertex specification problem.
+
 xng::ImageRGBA loadImage(const std::filesystem::path &filePath) {
     auto imageParser = xng::StbiParser();
     auto data = xng::readFile(filePath.string());
