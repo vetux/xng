@@ -30,7 +30,6 @@
 #include "gpu/opengl/oglrendertarget.hpp"
 #include "gpu/opengl/ogltexturebuffer.hpp"
 #include "gpu/opengl/oglvertexbuffer.hpp"
-#include "gpu/opengl/oglshaderprogram.hpp"
 #include "gpu/opengl/oglshaderbuffer.hpp"
 #include "gpu/opengl/oglindexbuffer.hpp"
 #include "gpu/opengl/oglvertexbuffer.hpp"
