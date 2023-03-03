@@ -27,8 +27,14 @@ namespace xng {
     public:
         VertexStream &addVertex(const Vertex &vertex) {
             size_t bytes = vertex.buffer.size() * sizeof(float);
-            vertexBuffer.resize(vertexBuffer.size() + bytes);
-            std::copy(vertex.buffer.begin(), vertex.buffer.end(), vertexBuffer.end() - (long) bytes);
+            std::vector<uint8_t> vertexBytes;
+            vertexBytes.resize(bytes);
+            for (auto i = 0; i < vertex.buffer.size(); i++){
+                reinterpret_cast<float &>(vertexBytes.at(i * sizeof(float))) = vertex.buffer.at(i);
+            }
+            auto start = vertexBuffer.size();
+            vertexBuffer.resize(start + bytes);
+            std::copy(vertexBytes.begin(), vertexBytes.end(), vertexBuffer.begin() + static_cast<long>(start));
             return *this;
         }
 
