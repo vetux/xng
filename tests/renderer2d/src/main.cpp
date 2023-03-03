@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 
         ren.draw(xng::Rectf(target.getDescription().size.convert<float>() / 2, imageB.getSize().convert<float>()), xng::ColorRGBA::green());
 
-        ren.draw(xng::Vec2f(0, 0), target.getDescription().size.convert<float>() * xng::Vec2f(-1, 0), xng::ColorRGBA::green());
+        ren.draw(xng::Vec2f(0, 0), target.getDescription().size.convert<float>(), xng::ColorRGBA::green());
 
         ren.renderPresent();
 

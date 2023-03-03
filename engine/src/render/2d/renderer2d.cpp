@@ -278,7 +278,7 @@ namespace xng {
             if (drawCycles * MAX_DRAW < passes.size()) {
                 drawCycles += 1;
             }
-        } else {
+        } else if (!passes.empty()) {
             drawCycles = 1;
         }
 
