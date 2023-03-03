@@ -28,34 +28,6 @@ namespace xng {
         std::vector<float> buffer; // TODO: Store vertex data as uint8_t to allow SINGLE Vertex attribute types
 
         Vertex() = default;
-        /* Vertex(Vec3f position, Vec3f normal, Vec2f uv, Vec3f tangent, Vec3f bitangent, Vec4i boneIds, Vec4f boneWeights)
-                 : data() {
-             data[0] = position.x;
-             data[1] = position.y;
-             data[2] = position.z;
-             data[3] = normal.x;
-             data[4] = normal.y;
-             data[5] = normal.z;
-             data[6] = uv.x;
-             data[7] = uv.y;
-             data[8] = tangent.x;
-             data[9] = tangent.y;
-             data[10] = tangent.z;
-             data[11] = bitangent.x;
-             data[12] = bitangent.y;
-             data[13] = bitangent.z;
-             // Hack: Cast data values to int references for id assignment which should work as long as sizeof(float) == sizeof(int)
-             static_assert(sizeof(float) == sizeof(int));
-             reinterpret_cast<int &>(data[14]) = boneIds.x;
-             reinterpret_cast<int &>(data[15]) = boneIds.y;
-             reinterpret_cast<int &>(data[16]) = boneIds.z;
-             reinterpret_cast<int &>(data[17]) = boneIds.w;
-             data[18] = boneWeights.x;
-             data[19] = boneWeights.y;
-             data[20] = boneWeights.z;
-             data[21] = boneWeights.w;
-         }
-         */
     };
 }
 
