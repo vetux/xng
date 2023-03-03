@@ -48,34 +48,34 @@ namespace xng {
         template<typename T>
         VertexBuilder &addValue(const T& value){
             static_assert(sizeof(float) == sizeof(T));
-            vertex.buffer.emplace_back(static_cast<const float&>(value));
+            vertex.buffer.emplace_back(reinterpret_cast<const float&>(value));
             return *this;
         }
 
         template<typename T>
         VertexBuilder &addVec2(const Vector2<T> &value) {
             static_assert(sizeof(float) == sizeof(T));
-            vertex.buffer.emplace_back(static_cast<const float&>(value.x));
-            vertex.buffer.emplace_back(static_cast<const float&>(value.y));
+            vertex.buffer.emplace_back(reinterpret_cast<const float&>(value.x));
+            vertex.buffer.emplace_back(reinterpret_cast<const float&>(value.y));
             return *this;
         }
 
         template<typename T>
         VertexBuilder &addVec3(const Vector3<T> &value) {
             static_assert(sizeof(float) == sizeof(T));
-            vertex.buffer.emplace_back(static_cast<const float&>(value.x));
-            vertex.buffer.emplace_back(static_cast<const float&>(value.y));
-            vertex.buffer.emplace_back(static_cast<const float&>(value.z));
+            vertex.buffer.emplace_back(reinterpret_cast<const float&>(value.x));
+            vertex.buffer.emplace_back(reinterpret_cast<const float&>(value.y));
+            vertex.buffer.emplace_back(reinterpret_cast<const float&>(value.z));
             return *this;
         }
 
         template<typename T>
         VertexBuilder &addVec4(const Vector4<T> &value) {
             static_assert(sizeof(float) == sizeof(T));
-            vertex.buffer.emplace_back(static_cast<const float&>(value.x));
-            vertex.buffer.emplace_back(static_cast<const float&>(value.y));
-            vertex.buffer.emplace_back(static_cast<const float&>(value.z));
-            vertex.buffer.emplace_back(static_cast<const float&>(value.w));
+            vertex.buffer.emplace_back(reinterpret_cast<const float&>(value.x));
+            vertex.buffer.emplace_back(reinterpret_cast<const float&>(value.y));
+            vertex.buffer.emplace_back(reinterpret_cast<const float&>(value.z));
+            vertex.buffer.emplace_back(reinterpret_cast<const float&>(value.w));
             return *this;
         }
 
