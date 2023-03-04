@@ -172,11 +172,17 @@ namespace xng {
          *
          * @param start
          * @param end
+         * @param position
          * @param center
          * @param rotation
          * @param color
          */
-        void draw(const Vec2f &start, const Vec2f &end, ColorRGBA color, const Vec2f &center = {}, float rotation = 0);
+        void draw(const Vec2f &start,
+                  const Vec2f &end,
+                  ColorRGBA color,
+                  const Vec2f &position = {},
+                  const Vec2f &center = {},
+                  float rotation = 0);
 
         /**
          * Draw point
@@ -237,9 +243,11 @@ namespace xng {
             Pass(Vec2f start,
                  Vec2f end,
                  ColorRGBA color,
+                 Vec2f position,
                  Vec2f center,
                  float rotation)
                     : type(COLOR_LINE),
+                      srcRect(std::move(position), {}),
                       dstRect(std::move(start), std::move(end)),
                       color(color),
                       center(std::move(center)),

@@ -338,19 +338,22 @@ namespace xng {
 
                         indexBufferOffset += 1;
 
+                        auto rotMat = MatrixMath::translate({
+                                                                    pass.center.x,
+                                                                    pass.center.y,
+                                                                    0})
+                                      * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
+                                      * MatrixMath::translate({
+                                                                      -pass.center.x,
+                                                                      -pass.center.y,
+                                                                      0});
+
                         auto model = MatrixMath::translate({
-                                                                   pass.center.x,
-                                                                   pass.center.y,
+                                                                   pass.srcRect.position.x,
+                                                                   pass.srcRect.position.y,
                                                                    0})
-                                     * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
-                                     * MatrixMath::translate({
-                                                                     -pass.center.x,
-                                                                     -pass.center.y,
-                                                                     0})
-                                     * MatrixMath::translate({
-                                                                     pass.dstRect.position.x,
-                                                                     pass.dstRect.position.y,
-                                                                     0});
+                                     * rotMat;
+
                         passData[passIndex].mvp = camera.projection()
                                                   * Camera::view(cameraTransform)
                                                   * model;
@@ -383,15 +386,21 @@ namespace xng {
 
                         indexBufferOffset += 2;
 
+                        auto rotMat = MatrixMath::translate({
+                                                                    pass.center.x,
+                                                                    pass.center.y,
+                                                                    0})
+                                      * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
+                                      * MatrixMath::translate({
+                                                                      -pass.center.x,
+                                                                      -pass.center.y,
+                                                                      0});
+
                         auto model = MatrixMath::translate({
-                                                                   pass.center.x,
-                                                                   pass.center.y,
+                                                                   pass.srcRect.position.x,
+                                                                   pass.srcRect.position.y,
                                                                    0})
-                                     * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
-                                     * MatrixMath::translate({
-                                                                     -pass.center.x,
-                                                                     -pass.center.y,
-                                                                     0});
+                                     * rotMat;
 
                         passData[passIndex].mvp = camera.projection()
                                                   * Camera::view(cameraTransform)
@@ -462,19 +471,21 @@ namespace xng {
                             indexBufferOffset += 8;
                         }
 
+                        auto rotMat = MatrixMath::translate({
+                                                                    pass.center.x,
+                                                                    pass.center.y,
+                                                                    0})
+                                      * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
+                                      * MatrixMath::translate({
+                                                                      -pass.center.x,
+                                                                      -pass.center.y,
+                                                                      0});
+
                         auto model = MatrixMath::translate({
-                                                                   pass.center.x,
-                                                                   pass.center.y,
+                                                                   pass.dstRect.position.x,
+                                                                   pass.dstRect.position.y,
                                                                    0})
-                                     * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
-                                     * MatrixMath::translate({
-                                                                     -pass.center.x,
-                                                                     -pass.center.y,
-                                                                     0})
-                                     * MatrixMath::translate({
-                                                                     pass.dstRect.position.x,
-                                                                     pass.dstRect.position.y,
-                                                                     0});
+                                     * rotMat;
 
                         passData[passIndex].mvp = camera.projection()
                                                   * Camera::view(cameraTransform)
@@ -522,19 +533,21 @@ namespace xng {
 
                         indexBufferOffset += 6;
 
+                        auto rotMat = MatrixMath::translate({
+                                                                    pass.center.x,
+                                                                    pass.center.y,
+                                                                    0})
+                                      * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
+                                      * MatrixMath::translate({
+                                                                      -pass.center.x,
+                                                                      -pass.center.y,
+                                                                      0});
+
                         auto model = MatrixMath::translate({
-                                                                   pass.center.x,
-                                                                   pass.center.y,
+                                                                   pass.dstRect.position.x,
+                                                                   pass.dstRect.position.y,
                                                                    0})
-                                     * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
-                                     * MatrixMath::translate({
-                                                                     -pass.center.x,
-                                                                     -pass.center.y,
-                                                                     0})
-                                     * MatrixMath::translate({
-                                                                     pass.dstRect.position.x,
-                                                                     pass.dstRect.position.y,
-                                                                     0});
+                                     * rotMat;
 
                         passData[passIndex].mvp = camera.projection()
                                                   * Camera::view(cameraTransform)
@@ -674,8 +687,8 @@ namespace xng {
         passes.emplace_back(Pass(rectangle, color, fill, center, rotation));
     }
 
-    void Renderer2D::draw(const Vec2f &start, const Vec2f &end, ColorRGBA color, const Vec2f &center, float rotation) {
-        passes.emplace_back(Pass(start, end, color, center, rotation));
+    void Renderer2D::draw(const Vec2f &start, const Vec2f &end, ColorRGBA color, const Vec2f &position, const Vec2f &center, float rotation) {
+        passes.emplace_back(Pass(start, end, color,position, center, rotation));
     }
 
     void Renderer2D::draw(const Vec2f &point, ColorRGBA color) {

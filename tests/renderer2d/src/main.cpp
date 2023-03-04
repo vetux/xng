@@ -47,8 +47,13 @@ int main(int argc, char *argv[]) {
 
     auto frameLimiter = xng::FrameLimiter(60);
 
+    float rotSpeed = 15;
+    float rot = 0;
+
     while (!window->shouldClose()) {
         auto delta = frameLimiter.newFrame();
+
+        rot += rotSpeed * delta;
 
         ren.renderBegin(target);
 
@@ -59,18 +64,24 @@ int main(int argc, char *argv[]) {
         ren.draw(xng::Vec2f(0, targetSize.y), xng::Vec2f(targetSize.x, 0), xng::ColorRGBA::green());
 
         ren.draw(xng::Rectf({}, imageA.getSize().convert<float>()),
-                 xng::Rectf({}, imageA.getSize().convert<float>()),
-                 texA);
+                 xng::Rectf(targetSize / 2- imageA.getSize().convert<float>() / 2, imageA.getSize().convert<float>()),
+                 texA,
+                 {imageA.getSize().convert<float>() / 2},
+                 rot,
+                 0.25,
+                 xng::ColorRGBA::cyan());
 
-        ren.draw(xng::Rectf({}, imageA.getSize().convert<float>()),
+        ren.draw(xng::Rectf(targetSize / 2- imageA.getSize().convert<float>() / 2, imageA.getSize().convert<float>()),
                  xng::ColorRGBA::yellow(),
-                 false);
+                 false,
+                 {imageA.getSize().convert<float>() / 2},
+                 rot);
 
         ren.draw(xng::Rectf({}, imageB.getSize().convert<float>()),
-                 xng::Rectf({(float) imageA.getWidth(), 0}, imageB.getSize().convert<float>()),
+                 xng::Rectf({25, 25}, imageB.getSize().convert<float>()),
                  texB);
 
-        ren.draw(xng::Rectf({(float) imageA.getWidth(), 0}, imageB.getSize().convert<float>()),
+        ren.draw(xng::Rectf({25, 25}, imageB.getSize().convert<float>()),
                  xng::ColorRGBA::yellow(),
                  false);
 
