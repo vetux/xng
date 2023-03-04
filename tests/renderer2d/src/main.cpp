@@ -19,39 +19,48 @@
 
 #include "xng/xng.hpp"
 
-xng::ImageRGBA loadImage(const std::filesystem::path &filePath) {
-    auto imageParser = xng::StbiParser();
-    auto data = xng::readFile(filePath.string());
-    return imageParser.read(data, filePath.extension(), nullptr).get<xng::ImageRGBA>();
+using namespace xng;
+
+ImageRGBA loadImage(const std::filesystem::path &filePath) {
+    auto imageParser = StbiParser();
+    auto data = readFile(filePath.string());
+    return imageParser.read(data, filePath.extension(), nullptr).get<ImageRGBA>();
 }
 
-int main(int argc, char *argv[]) {
-    auto displayDriver = xng::DisplayDriver::load(xng::GLFW);
-    auto gpuDriver = xng::GpuDriver::load(xng::OPENGL_4_6);
-    auto shaderCompiler = xng::SPIRVCompiler::load(xng::SHADERC);
-    auto shaderDecompiler = xng::SPIRVDecompiler::load(xng::SPIRV_CROSS);
+class TestApplication {
+public:
+    Window &window;
+    Renderer2D &ren;
 
-    auto window = displayDriver->createWindow("opengl", "Renderer 2D Test", {640, 480}, {});
-    auto &input = window->getInput();
-    auto &target = window->getRenderTarget();
+    ImageRGBA imageA;
+    ImageRGBA imageB;
 
-    auto renderDevice = gpuDriver->createRenderDevice();
+    TextureAtlasHandle texA;
+    TextureAtlasHandle texB;
 
-    xng::Renderer2D ren(*renderDevice, *shaderCompiler, *shaderDecompiler);
+    float rotSpeed = 55;
+    float rot{};
 
-    auto imageB = loadImage("assets/awesomeface.png");
-    auto imageA = loadImage("assets/tux.png");
+    float performanceGridBase = 2;
 
-    auto texA = ren.createTexture(imageA);
-    auto texB = ren.createTexture(imageB);
+    TestApplication(Window &window,
+                    Renderer2D &ren)
+            : window(window),
+              ren(ren) {
+        imageB = loadImage("assets/awesomeface.png");
+        imageA = loadImage("assets/tux.png");
 
-    auto frameLimiter = xng::FrameLimiter(60);
+        texA = ren.createTexture(imageA);
+        texB = ren.createTexture(imageB);
+    }
 
-    float rotSpeed = 15;
-    float rot = 0;
+    ~TestApplication() {
+        ren.destroyTexture(texA);
+        ren.destroyTexture(texB);
+    }
 
-    while (!window->shouldClose()) {
-        auto delta = frameLimiter.newFrame();
+    void drawHomePage(DeltaTime delta) {
+        auto &target = window.getRenderTarget();
 
         rot += rotSpeed * delta;
 
@@ -59,40 +68,150 @@ int main(int argc, char *argv[]) {
 
         auto targetSize = target.getDescription().size.convert<float>();
 
-        ren.draw(xng::Vec2f(0, 0), targetSize, xng::ColorRGBA::green());
+        ren.draw(Vec2f(0, 0), targetSize, ColorRGBA::green());
 
-        ren.draw(xng::Vec2f(0, targetSize.y), xng::Vec2f(targetSize.x, 0), xng::ColorRGBA::green());
+        ren.draw(Vec2f(0, targetSize.y), Vec2f(targetSize.x, 0), ColorRGBA::green());
 
-        ren.draw(xng::Rectf({}, imageA.getSize().convert<float>()),
-                 xng::Rectf(targetSize / 2- imageA.getSize().convert<float>() / 2, imageA.getSize().convert<float>()),
+        ren.draw(Rectf({}, imageA.getSize().convert<float>()),
+                 Rectf(targetSize / 2 - imageA.getSize().convert<float>() / 2, imageA.getSize().convert<float>()),
                  texA,
                  {imageA.getSize().convert<float>() / 2},
                  rot,
                  0.25,
-                 xng::ColorRGBA::cyan());
+                 ColorRGBA::cyan());
 
-        ren.draw(xng::Rectf(targetSize / 2- imageA.getSize().convert<float>() / 2, imageA.getSize().convert<float>()),
-                 xng::ColorRGBA::yellow(),
+        ren.draw(Rectf(targetSize / 2 - imageA.getSize().convert<float>() / 2, imageA.getSize().convert<float>()),
+                 ColorRGBA::yellow(),
                  false,
                  {imageA.getSize().convert<float>() / 2},
                  rot);
 
-        ren.draw(xng::Rectf({}, imageB.getSize().convert<float>()),
-                 xng::Rectf({25, 25}, imageB.getSize().convert<float>()),
+        ren.draw(Rectf({}, imageB.getSize().convert<float>()),
+                 Rectf({25, 25}, imageB.getSize().convert<float>()),
                  texB);
 
-        ren.draw(xng::Rectf({25, 25}, imageB.getSize().convert<float>()),
-                 xng::ColorRGBA::yellow(),
+        ren.draw(Rectf({25, 25}, imageB.getSize().convert<float>()),
+                 ColorRGBA::yellow(),
                  false);
 
         ren.renderPresent();
+    }
+
+    size_t drawPerformanceTest(DeltaTime delta) {
+        if (window.getInput().getKey(KEY_UP)) {
+            performanceGridBase++;
+        } else if (window.getInput().getKey(xng::KEY_DOWN)) {
+            performanceGridBase--;
+            if (performanceGridBase < 0) {
+                performanceGridBase = 0;
+            }
+        }
+
+        auto &target = window.getRenderTarget();
+
+        rot += rotSpeed * delta;
+
+        ren.renderBegin(target);
+
+        auto targetSize = target.getDescription().size.convert<float>();
+
+        auto performanceGrid = Vec2f(performanceGridBase * (targetSize.x / targetSize.y), performanceGridBase);
+
+        auto padding = 15.0f;
+        auto spacing = 5.0f;
+
+        auto texSize = (targetSize - (Vec2f(spacing) * performanceGrid.convert<float>() + (Vec2f(padding) * 2)))
+                       / performanceGrid.convert<float>();
+
+        float imgAp = static_cast<float>(imageA.getWidth()) / static_cast<float>(imageA.getHeight());
+
+        auto width = texSize.x;
+        auto widthDiff = 0.f;
+
+        auto height = width * imgAp;
+        auto heightDiff = texSize.y - height;
+
+        if (heightDiff < 0) {
+            width = width - ((height - texSize.y) / imgAp);
+            widthDiff = texSize.x - width;
+            height = width * imgAp;
+            heightDiff = texSize.y - height;
+        }
+
+        auto imgSize = Vec2f(height, width);
+
+        auto ret = 0;
+        for (int x = 0; x < performanceGrid.x; x++) {
+            for (int y = 0; y < performanceGrid.y; y++) {
+                Vec2f pos = Vec2f(padding)
+                            + (Vec2f(static_cast<float>(x), static_cast<float>(y)) * Vec2f(spacing))
+                            + (Vec2f(static_cast<float>(x), static_cast<float>(y)) * texSize)
+                            + Vec2f(widthDiff / 2, heightDiff / 2);
+                Vec2f scale = Vec2i(x, y).convert<float>() / performanceGrid.convert<float>();
+                ren.draw(Rectf({}, imageA.getSize().convert<float>()),
+                         Rectf(pos, imgSize),
+                         texA,
+                         imgSize / 2,
+                         rot,
+                         std::clamp((scale.x + scale.y) - 0.5f, 0.0f, 1.0f),
+                         xng::ColorRGBA(static_cast<uint8_t>(125 * scale.x + 25),
+                                        static_cast<uint8_t>(125 * scale.y + 25), 30, 255));
+                ret++;
+            }
+        }
+
+        ren.renderPresent();
+
+        return ret;
+    }
+};
+
+int main(int argc, char *argv[]) {
+    auto displayDriver = DisplayDriver::load(GLFW);
+    auto gpuDriver = GpuDriver::load(OPENGL_4_6);
+    auto shaderCompiler = SPIRVCompiler::load(SHADERC);
+    auto shaderDecompiler = SPIRVDecompiler::load(SPIRV_CROSS);
+
+    auto window = displayDriver->createWindow("opengl", "Renderer 2D Test", {640, 480}, {});
+    auto &input = window->getInput();
+    auto &target = window->getRenderTarget();
+
+    auto renderDevice = gpuDriver->createRenderDevice();
+
+    Renderer2D ren(*renderDevice, *shaderCompiler, *shaderDecompiler);
+
+    auto frameLimiter = FrameLimiter(60);
+
+    TestApplication app(*window, ren);
+
+    size_t currentPage = 0;
+    while (!window->shouldClose()) {
+        auto delta = frameLimiter.newFrame();
+
+        if (input.getKeyDown(KeyboardKey::KEY_1)) {
+            currentPage = 0;
+        } else if (input.getKeyDown(KeyboardKey::KEY_2)) {
+            currentPage = 1;
+        }
+
+        std::cout << "\r";
+
+        switch (currentPage) {
+            default:
+                app.drawHomePage(delta);
+                std::cout << "Drawing Home Page " + std::to_string(ren.getPolyDrawCount()) + " Polys, " +
+                             std::to_string(1.0f / delta) + " fps.";
+                break;
+            case 1:
+                auto c = app.drawPerformanceTest(delta);
+                std::cout << "Drawing Performance Test " + std::to_string(ren.getPolyDrawCount()) + " Polys " +
+                             std::to_string(c) + " Sprites, " + std::to_string(1.0f / delta) + " fps.";
+                break;
+        }
 
         window->swapBuffers();
         window->update();
     }
-
-    ren.destroyTexture(texA);
-    ren.destroyTexture(texB);
 
     return 0;
 }

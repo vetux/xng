@@ -194,8 +194,12 @@ namespace xng {
 
         RenderDevice &getDevice() { return renderDevice; }
 
+        size_t getPolyDrawCount() { return polyCounter; }
+
     private:
         void rebindTextureAtlas(const std::map<TextureAtlasResolution, std::vector<bool>> &occupations);
+
+        size_t polyCounter = 0;
 
         RenderDevice &renderDevice;
 

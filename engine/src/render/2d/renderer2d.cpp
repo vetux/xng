@@ -289,6 +289,8 @@ namespace xng {
         }
 
         userTarget = &target;
+
+        polyCounter = 0;
     }
 
     void Renderer2D::renderPresent() {
@@ -338,6 +340,8 @@ namespace xng {
 
                         indexBufferOffset += 1;
 
+                        polyCounter += 1;
+
                         auto rotMat = MatrixMath::translate({
                                                                     pass.center.x,
                                                                     pass.center.y,
@@ -385,6 +389,8 @@ namespace xng {
                                 .count = 2});
 
                         indexBufferOffset += 2;
+
+                        polyCounter += 1;
 
                         auto rotMat = MatrixMath::translate({
                                                                     pass.center.x,
@@ -449,6 +455,8 @@ namespace xng {
                                     .count = 6});
 
                             indexBufferOffset += 6;
+
+                            polyCounter += 2;
                         } else {
                             primitives.emplace_back(LINES);
 
@@ -469,6 +477,8 @@ namespace xng {
                                     .count = 8});
 
                             indexBufferOffset += 8;
+
+                            polyCounter += 4;
                         }
 
                         auto rotMat = MatrixMath::translate({
@@ -532,6 +542,8 @@ namespace xng {
                                 .count = 6});
 
                         indexBufferOffset += 6;
+
+                        polyCounter += 2;
 
                         auto rotMat = MatrixMath::translate({
                                                                     pass.center.x,
