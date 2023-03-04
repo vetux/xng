@@ -39,14 +39,12 @@ layout (location = 1) out vec2 fUv;
 layout (location = 2) flat out uint drawID;
 
 struct PassData {
-    mat4 mvp;
     vec4 color;
-    float colorMixFactor;
-    int texAtlasLevel;
-    int texIndex;
-    vec2 uvOffset;
-    vec2 uvScale;
-    vec2 atlasScale;
+    vec4 colorMixFactor;
+    ivec4 texAtlasLevel_texAtlasIndex;
+    mat4 mvp;
+    vec4 uvOffset_uvScale;
+    vec4 atlasScale;
 };
 
 layout(binding = 0, std140) uniform ShaderUniformBuffer
@@ -75,14 +73,12 @@ layout (location = 2) flat in uint drawID;
 layout (location = 0) out vec4 color;
 
 struct PassData {
-    mat4 mvp;
     vec4 color;
-    float colorMixFactor;
-    int texAtlasLevel;
-    int texIndex;
-    vec2 uvOffset;
-    vec2 uvScale;
-    vec2 atlasScale;
+    vec4 colorMixFactor;
+    ivec4 texAtlasLevel_texAtlasIndex;
+    mat4 mvp;
+    vec4 uvOffset_uvScale;
+    vec4 atlasScale;
 };
 
 layout(binding = 0, std140) uniform ShaderUniformBuffer
@@ -93,12 +89,14 @@ layout(binding = 0, std140) uniform ShaderUniformBuffer
 layout(binding = 1) uniform sampler2DArray atlasTextures[12];
 
 void main() {
-    if (vars.passes[drawID].texIndex >= 0) {
-        vec2 uv = fUv * vars.passes[drawID].uvScale;
-        uv = uv + vars.passes[drawID].uvOffset;
-        uv = uv * vars.passes[drawID].atlasScale;
-        color = texture(atlasTextures[vars.passes[drawID].texAtlasLevel], vec3(uv.x, uv.y, vars.passes[drawID].texIndex));
-        color = mix(color, vars.passes[drawID].color, vars.passes[drawID].colorMixFactor);
+    if (vars.passes[drawID].texAtlasLevel_texAtlasIndex.y >= 0) {
+        vec2 uv = fUv;
+        uv = uv * vars.passes[drawID].uvOffset_uvScale.zw;
+        uv = uv + vars.passes[drawID].uvOffset_uvScale.xy;
+        uv = uv * vars.passes[drawID].atlasScale.xy;
+        color = texture(atlasTextures[vars.passes[drawID].texAtlasLevel_texAtlasIndex.x],
+                        vec3(uv.x, uv.y, vars.passes[drawID].texAtlasLevel_texAtlasIndex.y));
+        color = mix(color, vars.passes[drawID].color, vars.passes[drawID].colorMixFactor.x);
     } else {
         color = vars.passes[drawID].color;
     }
@@ -116,19 +114,39 @@ static float distance(float val1, float val2) {
 namespace xng {
     static const int MAX_DRAW = 1000;
 
+#pragma pack(push, 1)
+    // If anything other than 4 component vectors are used in uniform buffer data the memory layout becomes unpredictable.
     struct PassData {
+        float color[4];
+        float colorMixFactor[4];
+        int texAtlasLevel_texAtlasIndex[4]{-1, -1};
         Mat4f mvp;
-        std::array<float, 4> color;
-        float colorMixFactor = 0;
-        int texAtlasLevel = -1;
-        int texIndex = -1;
-        std::array<float, 2> uvOffset;
-        std::array<float, 2> uvScale;
-        std::array<float, 2> atlasScale;
+        float uvOffset_uvScale[4];
+        float atlasScale[4];
     };
 
     struct ShaderUniformBuffer {
-        std::array<PassData, MAX_DRAW> passes;
+        PassData passes[MAX_DRAW];
+    };
+#pragma pack(pop)
+
+    static_assert(sizeof(PassData) % 16 == 0);
+    static_assert(sizeof(ShaderUniformBuffer) % 16 == 0);
+
+    /**
+     * A draw cycle consists of one or more draw batches.
+     *
+     * Each draw batch contains draw calls which are dispatched using multiDraw.
+     *
+     * To ensure correct blending consequent draw calls of the same primitive are drawn in the same batch
+     * together but each change in primitive causes a new draw batch to be created which incurs the overhead of
+     * updating the shader uniform buffer.
+     */
+    struct DrawBatch {
+        std::vector<RenderPass::DrawCall> drawCalls;
+        std::vector<size_t> baseVertices;
+        Primitive primitive = TRIANGLES;
+        ShaderUniformBuffer uniformBuffer; // The uniform buffer data for this batch
     };
 
     Renderer2D::Renderer2D(RenderDevice &device, SPIRVCompiler &shaderCompiler, SPIRVDecompiler &shaderDecompiler)
@@ -147,9 +165,6 @@ namespace xng {
 
         RenderPipelineDesc desc;
 
-        clearPipeline = device.createRenderPipeline(desc, shaderDecompiler);
-
-        desc = {};
         desc.shaders = {
                 {ShaderStage::VERTEX,   vsTexSource.getShader()},
                 {ShaderStage::FRAGMENT, fsTexSource.getShader()}
@@ -171,10 +186,15 @@ namespace xng {
         };
 
         desc.vertexLayout = vertexLayout;
-
         desc.enableBlending = true;
 
-        texturePipeline = device.createRenderPipeline(desc, shaderDecompiler);
+        trianglePipeline = device.createRenderPipeline(desc, shaderDecompiler);
+
+        desc.primitive = LINES;
+        linePipeline = device.createRenderPipeline(desc, shaderDecompiler);
+
+        desc.primitive = POINTS;
+        pointPipeline = device.createRenderPipeline(desc, shaderDecompiler);
 
         for (int i = TEXTURE_ATLAS_8x8; i < TEXTURE_ATLAS_END; i++) {
             auto res = (TextureAtlasResolution) i;
@@ -182,6 +202,11 @@ namespace xng {
             atlasDesc.textureDesc.size = TextureAtlas::getResolutionLevelSize(res);
             atlasTextures[res] = std::move(device.createTextureArrayBuffer(atlasDesc));
         }
+
+        RenderPassDesc passDesc;
+        passDesc.numberOfColorAttachments = 1;
+        passDesc.hasDepthStencilAttachment = false;
+        renderPass = device.createRenderPass(passDesc);
 
         rebindTextureAtlas({});
     }
@@ -194,9 +219,9 @@ namespace xng {
         if (free < 1) {
             auto desc = atlasTextures.at(res)->getDescription();
             desc.textureCount += 1;
-            auto buffer = renderDevice.createTextureArrayBuffer(desc);
-            buffer->copy(*atlasTextures.at(res));
-            atlasTextures.at(res) = std::move(buffer);
+            auto buf = std::move(atlasTextures.at(res));
+            atlasTextures.at(res) = renderDevice.createTextureArrayBuffer(desc);
+            atlasTextures.at(res)->copy(*buf);
             auto occupations = atlas.getBufferOccupations();
             occupations[res].resize(desc.textureCount, false);
             rebindTextureAtlas(occupations);
@@ -237,7 +262,7 @@ namespace xng {
 
     void Renderer2D::renderBegin(RenderTarget &target,
                                  bool clear,
-                                 ColorRGBA clearColor,
+                                 const ColorRGBA &clearColor,
                                  const Vec2i &viewportOffset,
                                  const Vec2i &viewportSize,
                                  const Vec2f &cameraPosition,
@@ -257,10 +282,10 @@ namespace xng {
         cameraTransform.setPosition({cameraPosition.x, cameraPosition.y, 1});
 
         if (clear) {
-            clearPipeline->renderBegin(target, viewportOffset, viewportSize);
-            clearPipeline->clearColorAttachments(clearColor);
-            clearPipeline->clearDepthAttachments(1);
-            clearPipeline->renderPresent();
+            renderPass->beginRenderPass(target, viewportOffset, viewportSize);
+            renderPass->clearColorAttachments(clearColor);
+            renderPass->clearDepthAttachments(1);
+            renderPass->endRenderPass();
         }
 
         userTarget = &target;
@@ -283,13 +308,13 @@ namespace xng {
         }
 
         for (int i = 0; i < drawCycles; i++) {
-            std::vector<RenderPipeline::DrawCall> drawCalls;
+            std::vector<RenderPass::DrawCall> drawCalls;
+            std::vector<Primitive> primitives;
             std::vector<size_t> baseVertices;
             VertexStream vertexStream;
             std::vector<unsigned int> indices;
-            ShaderUniformBuffer uniformBuffer;
+            std::vector<PassData> passData(MAX_DRAW);
 
-            size_t baseVertex = 0;
             size_t indexBufferOffset = 0;
 
             auto currentPassBase = i * MAX_DRAW;
@@ -297,19 +322,22 @@ namespace xng {
                 auto &pass = passes.at(passIndex + currentPassBase);
                 switch (pass.type) {
                     case Pass::COLOR_POINT: {
+                        primitives.emplace_back(POINTS);
+                        baseVertices.emplace_back(vertexStream.getVertices().size());
+
                         vertexStream.addVertex(VertexBuilder()
                                                        .addVec2(Vec2f())
                                                        .addVec2(Vec2f())
                                                        .build());
+
                         indices.emplace_back(0);
-                        indices.emplace_back(0);
-                        indices.emplace_back(0);
-                        drawCalls.emplace_back(RenderPipeline::DrawCall{
-                                .offset = indexBufferOffset,
-                                .count = 3});
-                        baseVertices.emplace_back(baseVertex);
-                        baseVertex += 1;
-                        indexBufferOffset += 3;
+
+                        drawCalls.emplace_back(RenderPass::DrawCall{
+                                .offset = indexBufferOffset * sizeof(unsigned int),
+                                .count = 1});
+
+                        indexBufferOffset += 1;
+
                         auto model = MatrixMath::translate({
                                                                    pass.center.x,
                                                                    pass.center.y,
@@ -323,13 +351,20 @@ namespace xng {
                                                                      pass.dstRect.position.x,
                                                                      pass.dstRect.position.y,
                                                                      0});
-                        uniformBuffer.passes.at(passIndex).mvp = camera.projection()
-                                                                 * Camera::view(cameraTransform)
-                                                                 * model;
-                        uniformBuffer.passes.at(passIndex).color = pass.color.divide().getMemory();
+                        passData[passIndex].mvp = camera.projection()
+                                                  * Camera::view(cameraTransform)
+                                                  * model;
+                        auto color = pass.color.divide();
+                        passData[passIndex].color[0] = color.x;
+                        passData[passIndex].color[1] = color.y;
+                        passData[passIndex].color[2] = color.z;
+                        passData[passIndex].color[3] = color.w;
                         break;
                     }
                     case Pass::COLOR_LINE: {
+                        primitives.emplace_back(LINES);
+                        baseVertices.emplace_back(vertexStream.getVertices().size());
+
                         vertexStream.addVertex(VertexBuilder()
                                                        .addVec2(pass.dstRect.position)
                                                        .addVec2(Vec2f())
@@ -341,15 +376,12 @@ namespace xng {
 
                         indices.emplace_back(0);
                         indices.emplace_back(1);
-                        indices.emplace_back(0);
 
-                        drawCalls.emplace_back(RenderPipeline::DrawCall{
-                                .offset = indexBufferOffset,
-                                .count = 3});
-                        baseVertices.emplace_back(baseVertex);
-                        baseVertex += 2;
+                        drawCalls.emplace_back(RenderPass::DrawCall{
+                                .offset = indexBufferOffset * sizeof(unsigned int),
+                                .count = 2});
 
-                        indexBufferOffset += 3;
+                        indexBufferOffset += 2;
 
                         auto model = MatrixMath::translate({
                                                                    pass.center.x,
@@ -361,35 +393,40 @@ namespace xng {
                                                                      -pass.center.y,
                                                                      0});
 
-                        uniformBuffer.passes.at(passIndex).mvp = camera.projection()
-                                                                 * Camera::view(cameraTransform)
-                                                                 * model;
-                        uniformBuffer.passes.at(passIndex).color = pass.color.divide().getMemory();
+                        passData[passIndex].mvp = camera.projection()
+                                                  * Camera::view(cameraTransform)
+                                                  * model;
+                        auto color = pass.color.divide();
+                        passData[passIndex].color[0] = color.x;
+                        passData[passIndex].color[1] = color.y;
+                        passData[passIndex].color[2] = color.z;
+                        passData[passIndex].color[3] = color.w;
                         break;
                     }
                     case Pass::COLOR_PLANE: {
+                        baseVertices.emplace_back(vertexStream.getVertices().size());
+
                         vertexStream.addVertex(VertexBuilder()
                                                        .addVec2(Vec2f(0, 0))
-                                                       .addVec2(Vec2f(0, 0))
+                                                       .addVec2(Vec2f())
                                                        .build());
                         vertexStream.addVertex(VertexBuilder()
                                                        .addVec2(Vec2f(pass.dstRect.dimensions.x, 0))
-                                                       .addVec2(Vec2f(1, 0))
+                                                       .addVec2(Vec2f())
                                                        .build());
                         vertexStream.addVertex(VertexBuilder()
                                                        .addVec2(Vec2f(0, pass.dstRect.dimensions.y))
-                                                       .addVec2(Vec2f(0, 1))
+                                                       .addVec2(Vec2f())
                                                        .build());
                         vertexStream.addVertex(VertexBuilder()
                                                        .addVec2(Vec2f(pass.dstRect.dimensions.x,
                                                                       pass.dstRect.dimensions.y))
-                                                       .addVec2(Vec2f(1, 1))
+                                                       .addVec2(Vec2f())
                                                        .build());
 
-                        baseVertices.emplace_back(baseVertex);
-                        baseVertex += 4;
-
                         if (pass.fill) {
+                            primitives.emplace_back(TRIANGLES);
+
                             indices.emplace_back(0);
                             indices.emplace_back(1);
                             indices.emplace_back(2);
@@ -398,33 +435,31 @@ namespace xng {
                             indices.emplace_back(2);
                             indices.emplace_back(3);
 
-                            drawCalls.emplace_back(RenderPipeline::DrawCall{
-                                    .offset = indexBufferOffset,
+                            drawCalls.emplace_back(RenderPass::DrawCall{
+                                    .offset = indexBufferOffset * sizeof(unsigned int),
                                     .count = 6});
 
                             indexBufferOffset += 6;
                         } else {
+                            primitives.emplace_back(LINES);
+
                             indices.emplace_back(0);
                             indices.emplace_back(1);
-                            indices.emplace_back(0);
 
                             indices.emplace_back(1);
                             indices.emplace_back(3);
-                            indices.emplace_back(1);
 
                             indices.emplace_back(3);
                             indices.emplace_back(2);
-                            indices.emplace_back(3);
 
-                            indices.emplace_back(0);
                             indices.emplace_back(2);
                             indices.emplace_back(0);
 
-                            drawCalls.emplace_back(RenderPipeline::DrawCall{
-                                    .offset = indexBufferOffset,
-                                    .count = 12});
+                            drawCalls.emplace_back(RenderPass::DrawCall{
+                                    .offset = indexBufferOffset * sizeof(unsigned int),
+                                    .count = 8});
 
-                            indexBufferOffset += 12;
+                            indexBufferOffset += 8;
                         }
 
                         auto model = MatrixMath::translate({
@@ -441,14 +476,20 @@ namespace xng {
                                                                      pass.dstRect.position.y,
                                                                      0});
 
-                        uniformBuffer.passes.at(passIndex).mvp = camera.projection()
-                                                                 * Camera::view(cameraTransform)
-                                                                 * model;
-                        uniformBuffer.passes.at(passIndex).color = pass.color.divide().getMemory();
-
+                        passData[passIndex].mvp = camera.projection()
+                                                  * Camera::view(cameraTransform)
+                                                  * model;
+                        auto color = pass.color.divide();
+                        passData[passIndex].color[0] = color.x;
+                        passData[passIndex].color[1] = color.y;
+                        passData[passIndex].color[2] = color.z;
+                        passData[passIndex].color[3] = color.w;
                         break;
                     }
                     case Pass::TEXTURE: {
+                        primitives.emplace_back(TRIANGLES);
+                        baseVertices.emplace_back(vertexStream.getVertices().size());
+
                         vertexStream.addVertex(VertexBuilder()
                                                        .addVec2(Vec2f(0, 0))
                                                        .addVec2(Vec2f(0, 0))
@@ -467,9 +508,6 @@ namespace xng {
                                                        .addVec2(Vec2f(1, 1))
                                                        .build());
 
-                        baseVertices.emplace_back(baseVertex);
-                        baseVertex += 4;
-
                         indices.emplace_back(0);
                         indices.emplace_back(1);
                         indices.emplace_back(2);
@@ -478,8 +516,8 @@ namespace xng {
                         indices.emplace_back(2);
                         indices.emplace_back(3);
 
-                        drawCalls.emplace_back(RenderPipeline::DrawCall{
-                                .offset = indexBufferOffset,
+                        drawCalls.emplace_back(RenderPass::DrawCall{
+                                .offset = indexBufferOffset * sizeof(unsigned int),
                                 .count = 6});
 
                         indexBufferOffset += 6;
@@ -498,20 +536,30 @@ namespace xng {
                                                                      pass.dstRect.position.y,
                                                                      0});
 
-                        uniformBuffer.passes.at(passIndex).mvp = camera.projection()
-                                                                 * Camera::view(cameraTransform)
-                                                                 * model;
+                        passData[passIndex].mvp = camera.projection()
+                                                  * Camera::view(cameraTransform)
+                                                  * model;
 
-                        uniformBuffer.passes.at(passIndex).color = pass.color.divide().getMemory();
-                        uniformBuffer.passes.at(passIndex).colorMixFactor = pass.mix;
-                        uniformBuffer.passes.at(passIndex).texAtlasLevel = pass.texture.level;
-                        uniformBuffer.passes.at(passIndex).texIndex = (int) pass.texture.index;
-                        uniformBuffer.passes.at(passIndex).uvOffset = pass.srcRect.position.getMemory();
-                        uniformBuffer.passes.at(passIndex).uvScale = (pass.srcRect.dimensions /
-                                                                      pass.texture.size.convert<float>()).getMemory();
-                        uniformBuffer.passes.at(passIndex).atlasScale = (pass.texture.size.convert<float>() /
-                                                                         TextureAtlas::getResolutionLevelSize(
-                                                                                 pass.texture.level).convert<float>()).getMemory();
+                        auto color = pass.color.divide();
+                        passData[passIndex].color[0] = color.x;
+                        passData[passIndex].color[1] = color.y;
+                        passData[passIndex].color[2] = color.z;
+                        passData[passIndex].color[3] = color.w;
+                        passData[passIndex].colorMixFactor[0] = pass.mix;
+                        passData[passIndex].texAtlasLevel_texAtlasIndex[0] = pass.texture.level;
+                        passData[passIndex].texAtlasLevel_texAtlasIndex[1] = (int) pass.texture.index;
+                        auto uvOffset = pass.srcRect.position / pass.texture.size.convert<float>();
+                        passData[passIndex].uvOffset_uvScale[0] = uvOffset.x;
+                        passData[passIndex].uvOffset_uvScale[1] = uvOffset.y;
+                        auto uvScale = (pass.srcRect.dimensions /
+                                        pass.texture.size.convert<float>());
+                        passData[passIndex].uvOffset_uvScale[2] = uvScale.x;
+                        passData[passIndex].uvOffset_uvScale[3] = uvScale.y;
+                        auto atlasScale = (pass.texture.size.convert<float>() /
+                                           TextureAtlas::getResolutionLevelSize(
+                                                   pass.texture.level).convert<float>());
+                        passData[passIndex].atlasScale[0] = atlasScale.x;
+                        passData[passIndex].atlasScale[1] = atlasScale.y;
                         break;
                     }
                 }
@@ -537,31 +585,70 @@ namespace xng {
 
             vao->bindBuffers(*vertexBuffer, *indexBuffer);
 
+            std::vector<DrawBatch> batches;
+            DrawBatch currentBatch;
+            size_t currentBatchIndex = 0;
+            for (auto y = 0; y < drawCalls.size(); y++) {
+                auto prim = primitives.at(y);
+                if (prim != currentBatch.primitive) {
+                    if (!currentBatch.drawCalls.empty())
+                        batches.emplace_back(currentBatch);
+                    currentBatch = {};
+                    currentBatch.primitive = prim;
+                    currentBatchIndex = 0;
+                }
+                currentBatch.drawCalls.emplace_back(drawCalls.at(y));
+                currentBatch.baseVertices.emplace_back(baseVertices.at(y));
+                currentBatch.uniformBuffer.passes[currentBatchIndex++] = passData[y];
+            }
+            if (!currentBatch.drawCalls.empty())
+                batches.emplace_back(currentBatch);
+
+            renderPass->beginRenderPass(*userTarget, mViewportOffset, mViewportSize);
+            renderPass->bindVertexArrayObject(*vao);
+
             ShaderBufferDesc shaderBufferDesc;
             shaderBufferDesc.size = sizeof(ShaderUniformBuffer);
             auto shaderBuffer = renderDevice.createShaderBuffer(shaderBufferDesc);
 
-            shaderBuffer->upload(uniformBuffer);
+            renderPass->bindShaderData({
+                                               *shaderBuffer,
+                                               atlas.getBuffer(TEXTURE_ATLAS_8x8),
+                                               atlas.getBuffer(TEXTURE_ATLAS_16x16),
+                                               atlas.getBuffer(TEXTURE_ATLAS_32x32),
+                                               atlas.getBuffer(TEXTURE_ATLAS_64x64),
+                                               atlas.getBuffer(TEXTURE_ATLAS_128x128),
+                                               atlas.getBuffer(TEXTURE_ATLAS_256x256),
+                                               atlas.getBuffer(TEXTURE_ATLAS_512x512),
+                                               atlas.getBuffer(TEXTURE_ATLAS_1024x1024),
+                                               atlas.getBuffer(TEXTURE_ATLAS_2048x2048),
+                                               atlas.getBuffer(TEXTURE_ATLAS_4096x4096),
+                                               atlas.getBuffer(TEXTURE_ATLAS_8192x8192),
+                                               atlas.getBuffer(TEXTURE_ATLAS_16384x16384),
+                                       });
 
-            texturePipeline->renderBegin(*userTarget, mViewportOffset, mViewportSize);
-            texturePipeline->bindVertexArrayObject(*vao);
-            texturePipeline->bindShaderData({
-                                                    *shaderBuffer,
-                                                    atlas.getBuffer(TEXTURE_ATLAS_8x8),
-                                                    atlas.getBuffer(TEXTURE_ATLAS_16x16),
-                                                    atlas.getBuffer(TEXTURE_ATLAS_32x32),
-                                                    atlas.getBuffer(TEXTURE_ATLAS_64x64),
-                                                    atlas.getBuffer(TEXTURE_ATLAS_128x128),
-                                                    atlas.getBuffer(TEXTURE_ATLAS_256x256),
-                                                    atlas.getBuffer(TEXTURE_ATLAS_512x512),
-                                                    atlas.getBuffer(TEXTURE_ATLAS_1024x1024),
-                                                    atlas.getBuffer(TEXTURE_ATLAS_2048x2048),
-                                                    atlas.getBuffer(TEXTURE_ATLAS_4096x4096),
-                                                    atlas.getBuffer(TEXTURE_ATLAS_8192x8192),
-                                                    atlas.getBuffer(TEXTURE_ATLAS_16384x16384),
-                                            });
-            texturePipeline->multiDrawIndexed(drawCalls, baseVertices);
-            texturePipeline->renderPresent();
+            for (auto &batch: batches) {
+                shaderBuffer->upload(batch.uniformBuffer);
+
+                switch (batch.primitive) {
+                    case POINTS:
+                        renderPass->bindPipeline(*pointPipeline);
+                        renderPass->multiDrawIndexed(batch.drawCalls, batch.baseVertices);
+                        break;
+                    case LINES:
+                        renderPass->bindPipeline(*linePipeline);
+                        renderPass->multiDrawIndexed(batch.drawCalls, batch.baseVertices);
+                        break;
+                    case TRIANGLES:
+                        renderPass->bindPipeline(*trianglePipeline);
+                        renderPass->multiDrawIndexed(batch.drawCalls, batch.baseVertices);
+                        break;
+                    default:
+                        throw std::runtime_error("Unsupported primitive");
+                }
+            }
+
+            renderPass->endRenderPass();
         }
 
         passes.clear();

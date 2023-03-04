@@ -31,7 +31,7 @@ namespace xng {
 
     struct XENGINE_EXPORT ColliderShape : public Messageable {
         ColliderShapeType type = COLLIDER_2D;
-        Primitive primitive = TRI;
+        Primitive primitive = TRIANGLES;
         std::vector<Vec3f> vertices;
         std::vector<size_t> indices; // If not empty the indices into vertices in order.
 
@@ -44,7 +44,7 @@ namespace xng {
 
         Messageable &operator<<(const Message &message) override {
             type = (ColliderShapeType) message.getMessage("type", Message((int) COLLIDER_2D)).asInt();
-            primitive = (Primitive) message.getMessage("primitive", Message((int) TRI)).asInt();
+            primitive = (Primitive) message.getMessage("primitive", Message((int) TRIANGLES)).asInt();
             if (message.has("vertices") && message.getMessage("vertices").getType() == Message::LIST) {
                 for (auto &vert: message.getMessage("vertices").asList()) {
                     Vec3f vertex;

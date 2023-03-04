@@ -114,19 +114,23 @@ namespace xng::opengl {
 
             auto count = buf.desc.textureCount > desc.textureCount ? desc.textureCount : buf.desc.textureCount;
 
-            glBindTexture(GL_TEXTURE_2D_ARRAY, handle);
-            for (auto i = 0; i < count; i++) {
-                glCopyTexSubImage3D(GL_TEXTURE_2D_ARRAY,
-                                    0,
-                                    0,
-                                    i,
-                                    0,
-                                    0,
-                                    0,
-                                    desc.textureDesc.size.x,
-                                    desc.textureDesc.size.y);
-            }
-            glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+            if (count > 0)
+                glCopyImageSubData(buf.handle,
+                                   GL_TEXTURE_2D_ARRAY,
+                                   0,
+                                   0,
+                                   0,
+                                   0,
+                                   handle,
+                                   GL_TEXTURE_2D_ARRAY,
+                                   0,
+                                   0,
+                                   0,
+                                   0,
+                                   buf.desc.textureDesc.size.x,
+                                   buf.desc.textureDesc.size.y,
+                                   static_cast<GLsizei>(count));
+            checkGLError();
 
             return std::make_unique<OGLFence>();
         }

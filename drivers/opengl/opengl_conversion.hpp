@@ -50,11 +50,11 @@ namespace xng::opengl {
 
     static GLenum convert(Primitive prim){
         switch (prim) {
-            case POINT:
+            case POINTS:
                 return GL_POINTS;
-            case LINE:
+            case LINES:
                 return GL_LINES;
-            case TRI:
+            case TRIANGLES:
                 return GL_TRIANGLES;
             case QUAD:
                 return GL_QUADS;

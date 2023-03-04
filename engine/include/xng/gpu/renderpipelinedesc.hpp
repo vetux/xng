@@ -50,7 +50,7 @@ namespace xng {
         std::map<ShaderStage, SPIRVShader> shaders; // The shaders to use for this pipeline
         std::vector<RenderPipelineBindingType> bindings; // The set of binding types in order
 
-        Primitive primitive = TRI;
+        Primitive primitive = TRIANGLES;
         std::vector<VertexAttribute> vertexLayout{}; // The layout of one vertex
         std::vector<VertexAttribute> instanceArrayLayout{}; // Layout of the instanced array (Optional)
 

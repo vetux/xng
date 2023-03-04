@@ -165,7 +165,7 @@ namespace xng {
 
             // Copy rows
             for (int y = 0; y < source.getHeight(); y++) {
-                copyRow(source, y, 0, y + targetPosition.y, targetPosition.x, source.size.x);
+                copyRow(source, y, 0, y + targetPosition.y, targetPosition.x, source.getWidth());
             }
         }
 

@@ -36,6 +36,7 @@
 #include "gpu/opengl/oglvertexarrayobject.hpp"
 #include "gpu/opengl/ogltexturearraybuffer.hpp"
 #include "gpu/opengl/oglgpumemory.hpp"
+#include "gpu/opengl/oglrenderpass.hpp"
 
 namespace xng::opengl {
     class OGLRenderDevice : public RenderDevice {
@@ -88,7 +89,11 @@ namespace xng::opengl {
         }
 
         std::unique_ptr<VertexArrayObject> createVertexArrayObject(const VertexArrayObjectDesc &desc) override {
-         return std::make_unique<OGLVertexArrayObject>(destructor, desc);
+            return std::make_unique<OGLVertexArrayObject>(destructor, desc);
+        }
+
+        std::unique_ptr<RenderPass> createRenderPass(const RenderPassDesc &desc) override {
+            return std::make_unique<OGLRenderPass>(destructor, desc);
         }
 
         std::unique_ptr<VertexBuffer> createVertexBuffer(const VertexBufferDesc &desc) override {

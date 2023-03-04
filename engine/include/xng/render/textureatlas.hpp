@@ -38,7 +38,7 @@ namespace xng {
      *
      * There are 12 texture array buffers in total which leaves 4 more texture buffer bindings free to use for other things.
      */
-    class TextureAtlas {
+    class XENGINE_EXPORT TextureAtlas {
     public:
         static Vec2i getResolutionLevelSize(TextureAtlasResolution level) {
             switch (level) {
@@ -109,6 +109,8 @@ namespace xng {
             }
             return ret;
         }
+
+       static ImageRGBA getAlignedImage(const ImageRGBA &texture, TextureAtlasResolution res);
 
     private:
         std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> atlasBuffers;

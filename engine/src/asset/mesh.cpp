@@ -85,7 +85,7 @@ namespace xng {
     const xng::Mesh &xng::Mesh::normalizedQuad() {
         if (!nQuadC) {
             nQuadC = true;
-            nQuad = {TRI,
+            nQuad = {TRIANGLES,
                      {
                              VertexBuilder().addVec3(Vec3f(-1, 1, 0)).addVec2(Vec2f(0, 1)).build(),
                              VertexBuilder().addVec3(Vec3f(1, 1, 0)).addVec2(Vec2f(1, 1)).build(),

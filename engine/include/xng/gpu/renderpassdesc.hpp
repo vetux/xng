@@ -17,15 +17,33 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_PRIMITIVE_HPP
-#define XENGINE_PRIMITIVE_HPP
+#ifndef XENGINE_RENDERPASSDESC_HPP
+#define XENGINE_RENDERPASSDESC_HPP
 
 namespace xng {
-    enum Primitive : int {
-        POINTS = 1,
-        LINES = 2,
-        TRIANGLES = 3,
-        QUAD = 4
+    struct RenderPassDesc {
+        int numberOfColorAttachments = 1;
+        bool hasDepthStencilAttachment = false;
+
+        bool operator==(const RenderTargetDesc &other) const {
+            return numberOfColorAttachments == other.numberOfColorAttachments
+                   && hasDepthStencilAttachment == other.hasDepthStencilAttachment;
+        }
     };
 }
-#endif //XENGINE_PRIMITIVE_HPP
+
+namespace std {
+    template<>
+    struct hash<xng::RenderPassDesc> {
+        std::size_t operator()(const xng::RenderPassDesc &k) const {
+            size_t ret = 0;
+
+            xng::hash_combine(ret, k.numberOfColorAttachments);
+            xng::hash_combine(ret, k.hasDepthStencilAttachment);
+
+            return ret;
+        }
+    };
+}
+
+#endif //XENGINE_RENDERPASSDESC_HPP

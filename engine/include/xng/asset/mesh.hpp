@@ -70,7 +70,7 @@ namespace xng {
             };
 
             return {
-                    .primitive = TRI,
+                    .primitive = TRIANGLES,
                     .vertexLayout = layout
             };
         }
@@ -113,7 +113,7 @@ namespace xng {
             };
 
             return {
-                    .primitive = TRI,
+                    .primitive = TRIANGLES,
                     .vertexLayout = layout,
                     .instanceArrayLayout = instanceLayout
             };
@@ -135,7 +135,7 @@ namespace xng {
 
         std::type_index getTypeIndex() override;
 
-        Primitive primitive = POINT;
+        Primitive primitive = POINTS;
         std::vector<Vertex> vertices;
         std::vector<unsigned int> indices;
 

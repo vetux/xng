@@ -19,8 +19,6 @@
 
 #include "xng/xng.hpp"
 
-// Does not draw textures nor lines, seems to be a vertex specification problem.
-
 xng::ImageRGBA loadImage(const std::filesystem::path &filePath) {
     auto imageParser = xng::StbiParser();
     auto data = xng::readFile(filePath.string());
@@ -41,8 +39,8 @@ int main(int argc, char *argv[]) {
 
     xng::Renderer2D ren(*renderDevice, *shaderCompiler, *shaderDecompiler);
 
-    auto imageA = loadImage("assets/awesomeface.png");
-    auto imageB = loadImage("assets/tux.png");
+    auto imageB = loadImage("assets/awesomeface.png");
+    auto imageA = loadImage("assets/tux.png");
 
     auto texA = ren.createTexture(imageA);
     auto texB = ren.createTexture(imageB);
@@ -54,17 +52,27 @@ int main(int argc, char *argv[]) {
 
         ren.renderBegin(target);
 
+        auto targetSize = target.getDescription().size.convert<float>();
+
+        ren.draw(xng::Vec2f(0, 0), targetSize, xng::ColorRGBA::green());
+
+        ren.draw(xng::Vec2f(0, targetSize.y), xng::Vec2f(targetSize.x, 0), xng::ColorRGBA::green());
+
         ren.draw(xng::Rectf({}, imageA.getSize().convert<float>()),
                  xng::Rectf({}, imageA.getSize().convert<float>()),
                  texA);
+
+        ren.draw(xng::Rectf({}, imageA.getSize().convert<float>()),
+                 xng::ColorRGBA::yellow(),
+                 false);
 
         ren.draw(xng::Rectf({}, imageB.getSize().convert<float>()),
                  xng::Rectf({(float) imageA.getWidth(), 0}, imageB.getSize().convert<float>()),
                  texB);
 
-        ren.draw(xng::Rectf(target.getDescription().size.convert<float>() / 2, imageB.getSize().convert<float>()), xng::ColorRGBA::green());
-
-        ren.draw(xng::Vec2f(0, 0), target.getDescription().size.convert<float>(), xng::ColorRGBA::green());
+        ren.draw(xng::Rectf({(float) imageA.getWidth(), 0}, imageB.getSize().convert<float>()),
+                 xng::ColorRGBA::yellow(),
+                 false);
 
         ren.renderPresent();
 

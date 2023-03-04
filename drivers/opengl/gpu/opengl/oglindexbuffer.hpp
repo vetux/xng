@@ -45,7 +45,7 @@ namespace xng::opengl {
             glGenBuffers(1, &EBO);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                         (long) desc.size,
+                         static_cast<long>(desc.size),
                          nullptr,
                          GL_STATIC_COPY);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

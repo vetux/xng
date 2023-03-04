@@ -34,7 +34,8 @@ namespace xng {
             RENDER_OBJECT_RENDER_TARGET,
             RENDER_OBJECT_RENDER_PIPELINE,
             RENDER_OBJECT_COMPUTE_PIPELINE,
-            RENDER_OBJECT_RAYTRACE_PIPELINE
+            RENDER_OBJECT_RAYTRACE_PIPELINE,
+            RENDER_OBJECT_RENDER_PASS
         };
 
         /**

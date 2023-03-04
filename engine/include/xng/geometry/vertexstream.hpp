@@ -29,14 +29,18 @@ namespace xng {
             size_t bytes = vertex.buffer.size() * sizeof(float);
             std::vector<uint8_t> vertexBytes;
             vertexBytes.resize(bytes);
-            for (auto i = 0; i < vertex.buffer.size(); i++){
+            for (auto i = 0; i < vertex.buffer.size(); i++) {
                 reinterpret_cast<float &>(vertexBytes.at(i * sizeof(float))) = vertex.buffer.at(i);
             }
             auto start = vertexBuffer.size();
             vertexBuffer.resize(start + bytes);
             std::copy(vertexBytes.begin(), vertexBytes.end(), vertexBuffer.begin() + static_cast<long>(start));
+
+            vertices.emplace_back(vertex);
             return *this;
         }
+
+        const std::vector<Vertex> &getVertices() const { return vertices; }
 
         const std::vector<uint8_t> &getVertexBuffer() const { return vertexBuffer; }
 

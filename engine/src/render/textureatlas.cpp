@@ -27,10 +27,7 @@ namespace xng {
               bufferOccupations(std::move(bufferOccupations)) {}
 
     void TextureAtlas::upload(TextureAtlasResolution res, size_t index, const ImageRGBA &texture) {
-        auto size = getResolutionLevelSize(res);
-        ImageRGBA image(size);
-        image.blit(Vec2i(0, size.y - texture.getHeight()), texture);
-        atlasBuffers.at(res).get().upload(index, texture);
+        atlasBuffers.at(res).get().upload(index, getAlignedImage(texture, res));
     }
 
     TextureAtlasHandle TextureAtlas::add(const ImageRGBA &texture) {
@@ -51,5 +48,12 @@ namespace xng {
 
     void TextureAtlas::remove(const TextureAtlasHandle &handle) {
         bufferOccupations.at(handle.level).at(handle.index) = !bufferOccupations.at(handle.level).at(handle.index);
+    }
+
+    ImageRGBA TextureAtlas::getAlignedImage(const ImageRGBA &texture, TextureAtlasResolution res) {
+        auto size = getResolutionLevelSize(res);
+        ImageRGBA image(size);
+        image.blit(Vec2i(0, 0), texture);
+        return image;
     }
 }

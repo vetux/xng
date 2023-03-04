@@ -33,6 +33,7 @@
 #include "xng/gpu/texturebuffer.hpp"
 #include "xng/gpu/vertexbuffer.hpp"
 #include "xng/gpu/shaderbuffer.hpp"
+#include "xng/gpu/renderpass.hpp"
 
 #include "xng/gpu/vertexattribute.hpp"
 
@@ -95,6 +96,8 @@ namespace xng {
         virtual std::unique_ptr<RenderTarget> createRenderTarget(const RenderTargetDesc &desc) = 0;
 
         virtual std::unique_ptr<VertexArrayObject> createVertexArrayObject(const VertexArrayObjectDesc &desc) = 0;
+
+        virtual std::unique_ptr<RenderPass> createRenderPass(const RenderPassDesc &desc) = 0;
 
         /**
          * Create buffer without specifying a backing GpuMemory.

@@ -73,14 +73,14 @@ namespace xng {
         void destroyTexture(const TextureAtlasHandle &handle);
 
         void renderClear(RenderTarget &target,
-                         ColorRGBA clearColor,
-                         Vec2i viewportOffset,
-                         Vec2i viewportSize) {
+                         const ColorRGBA &clearColor,
+                         const Vec2i &viewportOffset,
+                         const Vec2i &viewportSize) {
             renderBegin(target, true, clearColor, std::move(viewportOffset), std::move(viewportSize));
             renderPresent();
         }
 
-        void renderClear(RenderTarget &target, ColorRGBA clearColor) {
+        void renderClear(RenderTarget &target, const ColorRGBA &clearColor) {
             renderClear(target, clearColor, {}, target.getDescription().size);
         }
 
@@ -96,7 +96,7 @@ namespace xng {
          */
         void renderBegin(RenderTarget &target,
                          bool clear,
-                         ColorRGBA clearColor,
+                         const ColorRGBA &clearColor,
                          const Vec2i &viewportOffset,
                          const Vec2i &viewportSize,
                          const Vec2f &cameraPosition,
@@ -104,9 +104,9 @@ namespace xng {
 
         void renderBegin(RenderTarget &target,
                          bool clear,
-                         ColorRGBA clearColor,
-                         Vec2i viewportOffset,
-                         Vec2i viewportSize,
+                         const ColorRGBA &clearColor,
+                         const Vec2i &viewportOffset,
+                         const Vec2i &viewportSize,
                          const Vec2f &cameraPosition = {}) {
             renderBegin(target,
                         clear,
@@ -196,8 +196,11 @@ namespace xng {
         ShaderSource vsTexture;
         ShaderSource fsTexture;
 
-        std::unique_ptr<RenderPipeline> clearPipeline;
-        std::unique_ptr<RenderPipeline> texturePipeline;
+        std::unique_ptr<RenderPipeline> trianglePipeline;
+        std::unique_ptr<RenderPipeline> linePipeline;
+        std::unique_ptr<RenderPipeline> pointPipeline;
+
+        std::unique_ptr<RenderPass> renderPass;
 
         std::map<TextureAtlasResolution, std::unique_ptr<TextureArrayBuffer>> atlasTextures;
         TextureAtlas atlas;
