@@ -293,12 +293,21 @@ namespace xng {
         mViewportOffset = viewportOffset;
         mViewportSize = viewportSize;
 
+        auto prevCam = camera;
+
         camera.type = ORTHOGRAPHIC;
         camera.left = projection.position.x;
         camera.right = projection.dimensions.x;
         camera.top = projection.position.y;
         camera.bottom = projection.dimensions.y;
+
+        auto prevTransform = cameraTransform;
         cameraTransform.setPosition({cameraPosition.x, cameraPosition.y, 1});
+
+        if (camera != prevCam ||
+            cameraPosition != Vec2f{cameraTransform.getPosition().x, cameraTransform.getPosition().y}) {
+            viewProjectionMatrix = camera.projection() * Camera::view(cameraTransform);
+        }
 
         if (clear) {
             renderPass->beginRenderPass(target, viewportOffset, viewportSize);
@@ -362,9 +371,7 @@ namespace xng {
                                                                    0})
                                      * rotMat;
 
-                        passData[passIndex].mvp = camera.projection()
-                                                  * Camera::view(cameraTransform)
-                                                  * model;
+                        passData[passIndex].mvp = viewProjectionMatrix * model;
                         auto color = pass.color.divide();
                         passData[passIndex].color[0] = color.x;
                         passData[passIndex].color[1] = color.y;
@@ -391,9 +398,7 @@ namespace xng {
                                                                    0})
                                      * rotMat;
 
-                        passData[passIndex].mvp = camera.projection()
-                                                  * Camera::view(cameraTransform)
-                                                  * model;
+                        passData[passIndex].mvp = viewProjectionMatrix * model;
                         auto color = pass.color.divide();
                         passData[passIndex].color[0] = color.x;
                         passData[passIndex].color[1] = color.y;
@@ -430,9 +435,7 @@ namespace xng {
                                                                    0})
                                      * rotMat;
 
-                        passData[passIndex].mvp = camera.projection()
-                                                  * Camera::view(cameraTransform)
-                                                  * model;
+                        passData[passIndex].mvp = viewProjectionMatrix * model;
                         auto color = pass.color.divide();
                         passData[passIndex].color[0] = color.x;
                         passData[passIndex].color[1] = color.y;
@@ -458,9 +461,7 @@ namespace xng {
                                                                    0})
                                      * rotMat;
 
-                        passData[passIndex].mvp = camera.projection()
-                                                  * Camera::view(cameraTransform)
-                                                  * model;
+                        passData[passIndex].mvp = viewProjectionMatrix * model;
 
                         auto color = pass.color.divide();
                         passData[passIndex].color[0] = color.x;

@@ -377,6 +377,8 @@ namespace xng {
         Camera camera;
         Transform cameraTransform;
 
+        Mat4f viewProjectionMatrix;
+
         bool isRendering = false;
 
         bool vaoChange = false;

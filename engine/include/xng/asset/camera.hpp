@@ -34,8 +34,6 @@ namespace xng {
 
     /**
      * A camera provides a view and projection matrix.
-     *
-     * //TODO: Cache view and projection matrices
      */
     struct XENGINE_EXPORT Camera : public Messageable {
         static Mat4f view(const Transform &cameraTransform) {
@@ -93,6 +91,18 @@ namespace xng {
             message["bottom"] = bottom;
             return message;
         }
+
+        bool operator==(const Camera &other) const {
+            return type == other.type
+            && nearClip == other.nearClip
+            && farClip == other.farClip
+            && left == other.left
+            && top == other.top
+            && right == other.right
+            && bottom == other.bottom;
+        };
+
+        bool operator!=(const Camera &other) const = default;
 
         CameraType type = PERSPECTIVE;
 
