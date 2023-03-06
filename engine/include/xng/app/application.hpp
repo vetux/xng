@@ -46,7 +46,7 @@ namespace xng {
             parseArgs(argc, argv);
             loadDrivers();
 
-            window = displayDriver->createWindow(gpuDriverName);
+            window = displayDriver->createWindow(gpuDriverBackend);
             renderDevice = gpuDriver->createRenderDevice();
             audioDevice = audioDriver->createDevice();
 
@@ -63,7 +63,7 @@ namespace xng {
             parseArgs(argc, argv);
             loadDrivers();
 
-            window = displayDriver->createWindow(gpuDriverName, windowTitle, windowSize, windowAttributes);
+            window = displayDriver->createWindow(gpuDriverBackend, windowTitle, windowSize, windowAttributes);
             renderDevice = gpuDriver->createRenderDevice();
             audioDevice = audioDriver->createDevice();
 
@@ -84,60 +84,6 @@ namespace xng {
             return 0;
         }
 
-        virtual std::string getDisplayDriverName() const {
-            return displayDriverName;
-        }
-
-        virtual const std::string &getGpuDriverName() const {
-            return gpuDriverName;
-        }
-
-        virtual const std::string &getAudioDriverName() const {
-            return audioDriverName;
-        }
-
-        virtual DisplayDriver &getDisplayDriver() {
-            if (!displayDriver) {
-                throw std::runtime_error("Display driver not initialized");
-            }
-            return *displayDriver;
-        }
-
-        virtual GpuDriver &getGpuDriver() {
-            if (!gpuDriver) {
-                throw std::runtime_error("Gpu driver not initialized");
-            }
-            return *gpuDriver;
-        }
-
-        virtual AudioDriver &getAudioDriver() {
-            if (!audioDriver) {
-                throw std::runtime_error("Audio driver not initialized");
-            }
-            return *audioDriver;
-        }
-
-        virtual Window &getWindow() {
-            if (!window) {
-                throw std::runtime_error("Window not initialized");
-            }
-            return *window;
-        }
-
-        virtual RenderDevice &getRenderDevice() {
-            if (!renderDevice) {
-                throw std::runtime_error("Render device not initialized");
-            }
-            return *renderDevice;
-        }
-
-        virtual AudioDevice &getAudioDevice() {
-            if (!audioDevice) {
-                throw std::runtime_error("Audio device not initialized");
-            }
-            return *audioDevice;
-        }
-
         virtual RenderTarget &getScreenTarget() {
             return window->getRenderTarget();
         }
@@ -145,9 +91,9 @@ namespace xng {
     protected:
         XENGINE_EXPORT static void setCurrentApplication(Application *ptr);
 
-        std::string displayDriverName = "glfw";
-        std::string gpuDriverName = "opengl";
-        std::string audioDriverName = "openal-soft";
+        DisplayDriverBackend displayDriverBackend = GLFW;
+        GpuDriverBackend gpuDriverBackend = OPENGL_4_6;
+        AudioDriverBackend audioDriverBackend = OPENAL_SOFT;
 
         std::unique_ptr<DisplayDriver> displayDriver = nullptr;
         std::unique_ptr<GpuDriver> gpuDriver = nullptr;
@@ -177,27 +123,30 @@ namespace xng {
 
             for (int i = 0; i < args.size(); i++) {
                 if (args.at(i) == "--display") {
-                    displayDriverName = args.at(i + 1);
+                    displayDriverBackend = static_cast<DisplayDriverBackend>(std::stoi(args.at(i + 1)));
+                    break;
                 }
             }
 
             for (int i = 0; i < args.size(); i++) {
-                if (args.at(i) == "--graphics") {
-                    gpuDriverName = args.at(i + 1);
+                if (args.at(i) == "--gpu") {
+                    gpuDriverBackend = static_cast<GpuDriverBackend>(std::stoi(args.at(i + 1)));
+                    break;
                 }
             }
 
             for (int i = 0; i < args.size(); i++) {
                 if (args.at(i) == "--audio") {
-                    audioDriverName = args.at(i + 1);
+                    audioDriverBackend = static_cast<AudioDriverBackend>(std::stoi(args.at(i + 1)));
+                    break;
                 }
             }
         }
 
         void loadDrivers() {
-            displayDriver = Driver::load<DisplayDriver>(displayDriverName);
-            gpuDriver = Driver::load<GpuDriver>(gpuDriverName);
-            audioDriver = Driver::load<AudioDriver>(audioDriverName);
+            displayDriver = DisplayDriver::load(displayDriverBackend);
+            gpuDriver = GpuDriver::load(gpuDriverBackend);
+            audioDriver = AudioDriver::load(audioDriverBackend);
         }
     };
 }

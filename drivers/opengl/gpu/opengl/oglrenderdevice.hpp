@@ -68,7 +68,7 @@ namespace xng::opengl {
         }
 
         std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDesc &desc,
-                                                             SPIRVDecompiler &decompiler) override {
+                                                             ShaderDecompiler &decompiler) override {
             return std::make_unique<OGLRenderPipeline>(destructor, desc, decompiler);
         }
 

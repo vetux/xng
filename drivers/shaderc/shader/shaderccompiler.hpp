@@ -20,10 +20,10 @@
 #ifndef XENGINE_SHADERCCOMPILER_HPP
 #define XENGINE_SHADERCCOMPILER_HPP
 
-#include "xng/shader/spirvcompiler.hpp"
+#include "xng/shader/shadercompiler.hpp"
 
 namespace xng {
-    class ShaderCCompiler : public SPIRVCompiler {
+    class ShaderCCompiler : public ShaderCompiler {
     public:
         std::type_index getType() override { return typeid(ShaderCCompiler); }
 

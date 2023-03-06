@@ -17,50 +17,36 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_CRYPTODRIVER_HPP
-#define XENGINE_CRYPTODRIVER_HPP
+#ifndef XENGINE_FONTDRIVER_HPP
+#define XENGINE_FONTDRIVER_HPP
 
 #include "xng/driver/driver.hpp"
-
-#include "xng/crypto/aes.hpp"
-#include "xng/crypto/gzip.hpp"
-#include "xng/crypto/random.hpp"
-#include "xng/crypto/sha.hpp"
-#include "xng/crypto/cryptodriverbackend.hpp"
+#include "xng/font/font.hpp"
+#include "xng/font/fontdriverbackend.hpp"
 
 namespace xng {
-    class CryptoDriver : public Driver {
+    class XENGINE_EXPORT FontDriver : public Driver {
     public:
-        static std::string getBackendName(CryptoDriverBackend backend){
+        static std::string getBackendName(FontDriverBackend backend){
             switch(backend){
-                case CRYPTOPP:
-                    return "cryptopp";
+                case FREETYPE:
+                    return "freetype";
                 default:
                     throw std::runtime_error("Invalid backend");
             }
         }
 
-        static std::unique_ptr<CryptoDriver> load(CryptoDriverBackend backend) {
-            return std::unique_ptr<CryptoDriver>(dynamic_cast<CryptoDriver *>(
-                    Driver::load(getBackendName(backend)).release()));
+        static std::unique_ptr<FontDriver> load(FontDriverBackend backend) {
+            return std::unique_ptr<FontDriver>(
+                    dynamic_cast<FontDriver *>(Driver::load(getBackendName(backend)).release()));
         }
 
-        virtual std::unique_ptr<AES> createAES() = 0;
+        virtual std::unique_ptr<Font> createFont(std::istream &data) = 0;
 
-        virtual std::unique_ptr<GZip> createGzip() = 0;
-
-        /**
-         * Create a random generator instance and seed it using os supplied entropy.
-         * @return
-         */
-        virtual std::unique_ptr<Random> createRandom() = 0;
-
-        virtual std::unique_ptr<SHA> createSHA() = 0;
-
+    private:
         std::type_index getBaseType() override {
-            return typeid(CryptoDriver);
+            return typeid(FontDriver);
         }
     };
 }
-
-#endif //XENGINE_CRYPTODRIVER_HPP
+#endif //XENGINE_FONTDRIVER_HPP

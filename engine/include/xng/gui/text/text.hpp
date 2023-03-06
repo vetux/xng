@@ -20,7 +20,7 @@
 #ifndef XENGINE_TEXT_HPP
 #define XENGINE_TEXT_HPP
 
-#include "xng/text/font.hpp"
+#include "xng/font/font.hpp"
 #include "xng/util/numeric_cast.hpp"
 
 #include "xng/gpu/renderdevice.hpp"

@@ -22,8 +22,8 @@
 
 #include "xng/shader/spirvbundle.hpp"
 #include "xng/shader/shaderlanguage.hpp"
-#include "xng/shader/spirvcompiler.hpp"
-#include "xng/shader/spirvdecompiler.hpp"
+#include "xng/shader/shadercompiler.hpp"
+#include "xng/shader/shaderdecompiler.hpp"
 
 namespace xng {
     class XENGINE_EXPORT ShaderSource : public Messageable {
@@ -41,10 +41,10 @@ namespace xng {
                   language(language),
                   preprocessed(preprocessed) {}
 
-        ShaderSource preprocess(const SPIRVCompiler &compiler,
+        ShaderSource preprocess(const ShaderCompiler &compiler,
                                 const std::function<std::string(const char *)> &include = {},
                                 const std::map<std::string, std::string> &macros = {},
-                                SPIRVCompiler::OptimizationLevel optimizationLevel = SPIRVCompiler::OPTIMIZATION_NONE) const {
+                                ShaderCompiler::OptimizationLevel optimizationLevel = ShaderCompiler::OPTIMIZATION_NONE) const {
             if (preprocessed)
                 throw std::runtime_error("Source already preprocessed");
             ShaderSource ret(*this);
@@ -53,10 +53,10 @@ namespace xng {
             return ret;
         }
 
-        ShaderSource crossCompile(const SPIRVCompiler &compiler,
-                                  const SPIRVDecompiler &decompiler,
+        ShaderSource crossCompile(const ShaderCompiler &compiler,
+                                  const ShaderDecompiler &decompiler,
                                   ShaderLanguage targetLanguage,
-                                  SPIRVCompiler::OptimizationLevel optimizationLevel) const {
+                                  ShaderCompiler::OptimizationLevel optimizationLevel) const {
             ShaderSource ret(*this);
             if (!ret.preprocessed)
                 ret = ret.preprocess(compiler);
@@ -66,8 +66,8 @@ namespace xng {
             return ret;
         }
 
-        SPIRVBundle compile(const SPIRVCompiler &compiler,
-                            SPIRVCompiler::OptimizationLevel optimizationLevel = SPIRVCompiler::OPTIMIZATION_NONE) const {
+        SPIRVBundle compile(const ShaderCompiler &compiler,
+                            ShaderCompiler::OptimizationLevel optimizationLevel = ShaderCompiler::OPTIMIZATION_NONE) const {
             ShaderSource shader(*this);
             if (!shader.preprocessed)
                 shader = preprocess(compiler, {}, {}, optimizationLevel);

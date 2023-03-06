@@ -88,8 +88,8 @@ int main(int argc, char *argv[]) {
     auto displayDriver = xng::DisplayDriver::load(xng::GLFW);
     auto gpuDriver = xng::GpuDriver::load(xng::OPENGL_4_6);
 
-    auto shaderCompiler = xng::SPIRVCompiler::load(xng::SHADERC);
-    auto shaderDecompiler = xng::SPIRVDecompiler::load(xng::SPIRV_CROSS);
+    auto shaderCompiler = xng::ShaderCompiler::load(xng::SHADERC);
+    auto shaderDecompiler = xng::ShaderDecompiler::load(xng::SPIRV_CROSS);
 
     auto device = gpuDriver->createRenderDevice();
     auto window = displayDriver->createWindow("opengl");

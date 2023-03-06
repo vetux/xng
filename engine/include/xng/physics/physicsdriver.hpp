@@ -24,26 +24,26 @@
 
 #include "xng/driver/driver.hpp"
 
-#include "world.hpp"
+#include "xng/physics/world.hpp"
+#include "xng/physics/physicsdriverbackend.hpp"
 
 namespace xng {
-    enum PhysicsDriverBackend {
-        BOX2D,
-        BULLET3
-    };
-
     class XENGINE_EXPORT PhysicsDriver : public Driver {
     public:
-        static std::unique_ptr<PhysicsDriver> load(PhysicsDriverBackend backend) {
-            switch (backend) {
+        static std::string getBackendName(PhysicsDriverBackend backend){
+            switch(backend){
                 case BOX2D:
-                    return std::unique_ptr<PhysicsDriver>(
-                            dynamic_cast<PhysicsDriver *>(Driver::load("box2d").release()));
+                    return "box2d";
                 case BULLET3:
-                    return std::unique_ptr<PhysicsDriver>(
-                            dynamic_cast<PhysicsDriver *>(Driver::load("bullet3").release()));
+                    return "bullet3";
+                default:
+                    throw std::runtime_error("Invalid backend");
             }
-            throw std::runtime_error("Invalid backend");
+        }
+
+        static std::unique_ptr<PhysicsDriver> load(PhysicsDriverBackend backend) {
+            return std::unique_ptr<PhysicsDriver>(
+                    dynamic_cast<PhysicsDriver *>(Driver::load(getBackendName(backend)).release()));
         }
 
         virtual std::unique_ptr<World> createWorld() = 0;

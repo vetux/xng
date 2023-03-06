@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SPIRVCOMPILER_HPP
-#define XENGINE_SPIRVCOMPILER_HPP
+#ifndef XENGINE_SHADERCOMPILER_HPP
+#define XENGINE_SHADERCOMPILER_HPP
 
 #include <cstdint>
 #include <vector>
@@ -30,24 +30,26 @@
 
 #include "shaderlanguage.hpp"
 #include "shaderstage.hpp"
+#include "xng/shader/shadercompilerbackend.hpp"
 
 namespace xng {
-    enum SPIRVCompilerBackend {
-        SHADERC
-    };
-
     /**
-     * A SPIRVCompiler preprocesses and compiles shader source from the languages defined in ShaderLanguage to SPIRV
+     * A ShaderCompiler preprocesses and compiles shader source from the languages defined in ShaderLanguage to SPIRV
      */
-    class XENGINE_EXPORT SPIRVCompiler : public Driver {
+    class XENGINE_EXPORT ShaderCompiler : public Driver {
     public:
-        static std::unique_ptr<SPIRVCompiler> load(SPIRVCompilerBackend backend) {
-            switch (backend) {
+        static std::string getBackendName(ShaderCompilerBackend backend){
+            switch(backend){
                 case SHADERC:
-                    return std::unique_ptr<SPIRVCompiler>(
-                            dynamic_cast<SPIRVCompiler *>(Driver::load("shaderc").release()));
+                    return "shaderc";
+                default:
+                    throw std::runtime_error("Invalid backend");
             }
-            throw std::runtime_error("Invalid backend");
+        }
+
+        static std::unique_ptr<ShaderCompiler> load(ShaderCompilerBackend backend) {
+            return std::unique_ptr<ShaderCompiler>(
+                    dynamic_cast<ShaderCompiler *>(Driver::load(getBackendName(backend)).release()));
         }
 
         enum OptimizationLevel {
@@ -94,9 +96,9 @@ namespace xng {
                                        OptimizationLevel optimizationLevel) const = 0;
 
         std::type_index getBaseType() override {
-            return typeid(SPIRVCompiler);
+            return typeid(ShaderCompiler);
         }
     };
 }
 
-#endif //XENGINE_SPIRVCOMPILER_HPP
+#endif //XENGINE_SHADERCOMPILER_HPP

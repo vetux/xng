@@ -20,10 +20,10 @@
 #ifndef XENGINE_SPIRVCROSSDECOMPILER_HPP
 #define XENGINE_SPIRVCROSSDECOMPILER_HPP
 
-#include "xng/shader/spirvdecompiler.hpp"
+#include "xng/shader/shaderdecompiler.hpp"
 
 namespace xng {
-    class SpirvCrossDecompiler : public SPIRVDecompiler {
+    class SpirvCrossDecompiler : public ShaderDecompiler {
     public:
         std::type_index getType() override { return typeid(SpirvCrossDecompiler); }
 

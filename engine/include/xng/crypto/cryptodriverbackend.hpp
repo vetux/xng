@@ -17,18 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_FTFONTDRIVER_HPP
-#define XENGINE_FTFONTDRIVER_HPP
+#ifndef XENGINE_CRYPTODRIVERBACKEND_HPP
+#define XENGINE_CRYPTODRIVERBACKEND_HPP
 
-#include "xng/font/fontdriver.hpp"
-
-namespace xng {
-    class FtFontDriver : public FontDriver {
-    public:
-        std::type_index getType() override { return typeid(FtFontDriver); }
-
-        std::unique_ptr<Font> createFont(std::istream &data) override;
+namespace xng  {
+    enum CryptoDriverBackend {
+        CRYPTOPP
     };
 }
 
-#endif //XENGINE_FTFONTDRIVER_HPP
+#endif //XENGINE_CRYPTODRIVERBACKEND_HPP

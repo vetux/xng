@@ -30,17 +30,15 @@
 #include "xng/gpu/gpudriver.hpp"
 
 namespace xng::glfw {
-    static std::unique_ptr<Window> makeWindow(const std::string &graphicsDriver,
+    static std::unique_ptr<Window> makeWindow(GpuDriverBackend gpuBackend,
                                               const std::string &title,
                                               Vec2i size,
                                               WindowAttributes attributes,
                                               Monitor *monitor = nullptr,
                                               VideoMode mode = {}) {
-        if (graphicsDriver.empty()) {
-            throw std::runtime_error("Unsupported graphics driver (Empty)");;
-        }
+        if (false) {}
 #ifdef DRIVER_GLFW_OPENGL
-        else if (graphicsDriver == "opengl") {
+        else if (gpuBackend == OPENGL_4_6) {
             if (monitor) {
                 return std::make_unique<WindowGLFWGL>(title,
                                                       size,
@@ -55,7 +53,7 @@ namespace xng::glfw {
         }
 #endif
         else {
-            throw std::runtime_error("Unsupported graphics driver " + graphicsDriver);
+            throw std::runtime_error("Unsupported gpu backend " + std::to_string(gpuBackend));
         }
     }
 
@@ -75,24 +73,24 @@ namespace xng::glfw {
         return ret;
     }
 
-    std::unique_ptr<Window> GLFWDisplayDriver::createWindow(const std::string &graphicsDriver) {
-        return makeWindow(graphicsDriver, "Window GLFW", Vec2i(600, 300), WindowAttributes());
+    std::unique_ptr<Window> GLFWDisplayDriver::createWindow(GpuDriverBackend gpuBackend) {
+        return makeWindow(gpuBackend, "Window GLFW", Vec2i(600, 300), WindowAttributes());
     }
 
-    std::unique_ptr<Window> GLFWDisplayDriver::createWindow(const std::string &graphicsDriver,
+    std::unique_ptr<Window> GLFWDisplayDriver::createWindow(GpuDriverBackend gpuBackend,
                                                             const std::string &title,
                                                             Vec2i size,
                                                             WindowAttributes attributes) {
-        return makeWindow(graphicsDriver, title, size, WindowAttributes());
+        return makeWindow(gpuBackend, title, size, WindowAttributes());
     }
 
-    std::unique_ptr<Window> GLFWDisplayDriver::createWindow(const std::string &graphicsDriver,
+    std::unique_ptr<Window> GLFWDisplayDriver::createWindow(GpuDriverBackend gpuBackend,
                                                             const std::string &title,
                                                             Vec2i size,
                                                             WindowAttributes attributes,
                                                             Monitor &monitor,
                                                             VideoMode mode) {
-        return makeWindow(graphicsDriver, title, size, WindowAttributes(), &monitor, mode);
+        return makeWindow(gpuBackend, title, size, WindowAttributes(), &monitor, mode);
     }
 
     std::type_index GLFWDisplayDriver::getType() {

@@ -24,18 +24,14 @@
 #include <string>
 #include <vector>
 
-#include "xng/io/archive.hpp"
-#include "resourcebundle.hpp"
 #include "xng/driver/driver.hpp"
 
+#include "xng/io/archive.hpp"
+
+#include "xng/resource/resourcebundle.hpp"
+#include "xng/resource/resourceparserbackend.hpp"
+
 namespace xng {
-    class ResourceImporter;
-
-    enum ResourceParserBackend {
-        ASSIMP, // Asset files (.obj, .fbx etc)
-        LIBSNDFILE // Audio files
-    };
-
     /**
      * A parser creates resource objects from the data in buffers.
      */

@@ -56,13 +56,13 @@ namespace xng {
         }
     };
 
-    static shaderc_optimization_level convertOptimizationLevel(SPIRVCompiler::OptimizationLevel opt) {
+    static shaderc_optimization_level convertOptimizationLevel(ShaderCompiler::OptimizationLevel opt) {
         switch (opt) {
-            case SPIRVCompiler::OPTIMIZATION_NONE:
+            case ShaderCompiler::OPTIMIZATION_NONE:
                 return shaderc_optimization_level_zero;
-            case SPIRVCompiler::OPTIMIZATION_PERFORMANCE:
+            case ShaderCompiler::OPTIMIZATION_PERFORMANCE:
                 return shaderc_optimization_level_performance;
-            case SPIRVCompiler::OPTIMIZATION_SIZE:
+            case ShaderCompiler::OPTIMIZATION_SIZE:
                 return shaderc_optimization_level_size;
             default:
                 throw std::runtime_error("Invalid optimization level " + std::to_string(opt));

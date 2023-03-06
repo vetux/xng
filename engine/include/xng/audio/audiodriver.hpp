@@ -22,22 +22,24 @@
 
 #include "xng/driver/driver.hpp"
 
-#include "audiodevice.hpp"
+#include "xng/audio/audiodevice.hpp"
+#include "xng/audio/audiodriverbackend.hpp"
 
 namespace xng {
-    enum AudioDriverBackend {
-        OPENAL_SOFT
-    };
-
     class XENGINE_EXPORT AudioDriver : public Driver {
     public:
-        static std::unique_ptr<AudioDriver> load(AudioDriverBackend backend) {
-            switch (backend) {
+        static std::string getBackendName(AudioDriverBackend backend){
+            switch(backend){
                 case OPENAL_SOFT:
-                    return std::unique_ptr<AudioDriver>(
-                            dynamic_cast<AudioDriver *>(Driver::load("openal-soft").release()));
+                    return "openal-soft";
+                default:
+                    throw std::runtime_error("Invalid backend");
             }
-            throw std::runtime_error("Invalid backend");
+        }
+
+        static std::unique_ptr<AudioDriver> load(AudioDriverBackend backend) {
+            return std::unique_ptr<AudioDriver>(
+                    dynamic_cast<AudioDriver *>(Driver::load(getBackendName(backend)).release()));
         }
 
         virtual std::vector<std::string> getDeviceNames() = 0;

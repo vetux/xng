@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SPIRVDECOMPILER_HPP
-#define XENGINE_SPIRVDECOMPILER_HPP
+#ifndef XENGINE_SHADERDECOMPILER_HPP
+#define XENGINE_SHADERDECOMPILER_HPP
 
 #include <string>
 #include <vector>
@@ -27,24 +27,26 @@
 
 #include "shaderlanguage.hpp"
 #include "shaderstage.hpp"
+#include "xng/shader/shaderdecompilerbackend.hpp"
 
 namespace xng {
-    enum SPIRVDecompilerBackend {
-        SPIRV_CROSS
-    };
-
     /**
-     * A SPIRVDecompiler decompiles SPIRV to the languages defined in ShaderLanguage.
+     * A ShaderDecompiler decompiles SPIRV to the languages defined in ShaderLanguage.
      */
-    class XENGINE_EXPORT SPIRVDecompiler : public Driver {
+    class XENGINE_EXPORT ShaderDecompiler : public Driver {
     public:
-        static std::unique_ptr<SPIRVDecompiler> load(SPIRVDecompilerBackend backend) {
-            switch (backend) {
+        static std::string getBackendName(ShaderDecompilerBackend backend){
+            switch(backend){
                 case SPIRV_CROSS:
-                    return std::unique_ptr<SPIRVDecompiler>(
-                            dynamic_cast<SPIRVDecompiler *>(Driver::load("spirv-cross").release()));
+                    return "spirv-cross";
+                default:
+                    throw std::runtime_error("Invalid backend");
             }
-            throw std::runtime_error("Invalid backend");
+        }
+
+        static std::unique_ptr<ShaderDecompiler> load(ShaderDecompilerBackend backend) {
+            return std::unique_ptr<ShaderDecompiler>(
+                    dynamic_cast<ShaderDecompiler *>(Driver::load(getBackendName(backend)).release()));
         }
 
         /**
@@ -66,9 +68,9 @@ namespace xng {
                                       ShaderLanguage targetLanguage) const = 0;
 
         std::type_index getBaseType() override {
-            return typeid(SPIRVDecompiler);
+            return typeid(ShaderDecompiler);
         }
     };
 }
 
-#endif //XENGINE_SPIRVDECOMPILER_HPP
+#endif //XENGINE_SHADERDECOMPILER_HPP

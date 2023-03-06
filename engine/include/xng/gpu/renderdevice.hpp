@@ -47,7 +47,7 @@
 
 #include "xng/gpu/gpumemory.hpp"
 
-#include "xng/shader/spirvdecompiler.hpp"
+#include "xng/shader/shaderdecompiler.hpp"
 
 #include "xng/asset/mesh.hpp"
 #include "xng/gpu/renderdeviceinfo.hpp"
@@ -85,7 +85,7 @@ namespace xng {
          * @return
          */
         virtual std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDesc &desc,
-                                                                     SPIRVDecompiler &decompiler) = 0;
+                                                                     ShaderDecompiler &decompiler) = 0;
 
         virtual std::unique_ptr<RenderPipeline> createRenderPipeline(const uint8_t *cacheData, size_t size) = 0;
 

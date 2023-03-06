@@ -140,7 +140,7 @@ public:
 
         auto imgSize = Vec2f(height, width);
 
-        auto ret = 0;
+        auto ret = 0;  
         for (int x = 0; x < performanceGrid.x; x++) {
             for (int y = 0; y < performanceGrid.y; y++) {
                 Vec2f pos = Vec2f(padding)
@@ -169,10 +169,10 @@ public:
 int main(int argc, char *argv[]) {
     auto displayDriver = DisplayDriver::load(GLFW);
     auto gpuDriver = GpuDriver::load(OPENGL_4_6);
-    auto shaderCompiler = SPIRVCompiler::load(SHADERC);
-    auto shaderDecompiler = SPIRVDecompiler::load(SPIRV_CROSS);
+    auto shaderCompiler = ShaderCompiler::load(SHADERC);
+    auto shaderDecompiler = ShaderDecompiler::load(SPIRV_CROSS);
 
-    auto window = displayDriver->createWindow("opengl", "Renderer 2D Test", {640, 480}, {});
+    auto window = displayDriver->createWindow(OPENGL_4_6, "Renderer 2D Test", {640, 480}, {});
     auto &input = window->getInput();
     auto &target = window->getRenderTarget();
 

@@ -44,7 +44,7 @@ namespace xng::opengl {
 
         explicit OGLRenderPipeline(std::function<void(RenderObject *)> destructor,
                                    RenderPipelineDesc descArg,
-                                   SPIRVDecompiler &decompiler)
+                                   ShaderDecompiler &decompiler)
                 : destructor(std::move(destructor)),
                   desc(std::move(descArg)) {
             if (!desc.shaders.empty()) {

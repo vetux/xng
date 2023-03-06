@@ -17,34 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_FONTDRIVER_HPP
-#define XENGINE_FONTDRIVER_HPP
-
-#include "xng/driver/driver.hpp"
-#include "font.hpp"
+#ifndef XENGINE_DISPLAYDRIVERBACKEND_HPP
+#define XENGINE_DISPLAYDRIVERBACKEND_HPP
 
 namespace xng {
-    enum FontDriverBackend {
-        FREETYPE
-    };
-
-    class XENGINE_EXPORT FontDriver : public Driver {
-    public:
-        static std::unique_ptr<FontDriver> load(FontDriverBackend backend) {
-            switch (backend) {
-                case FREETYPE:
-                    return std::unique_ptr<FontDriver>(
-                            dynamic_cast<FontDriver *>(Driver::load("freetype").release()));
-            }
-            throw std::runtime_error("Invalid backend");
-        }
-
-        virtual std::unique_ptr<Font> createFont(std::istream &data) = 0;
-
-    private:
-        std::type_index getBaseType() override {
-            return typeid(FontDriver);
-        }
+    enum DisplayDriverBackend : int {
+        GLFW
     };
 }
-#endif //XENGINE_FONTDRIVER_HPP
+
+#endif //XENGINE_DISPLAYDRIVERBACKEND_HPP

@@ -17,18 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_FTFONTDRIVER_HPP
-#define XENGINE_FTFONTDRIVER_HPP
-
-#include "xng/font/fontdriver.hpp"
+#ifndef XENGINE_GPUDRIVERBACKEND_HPP
+#define XENGINE_GPUDRIVERBACKEND_HPP
 
 namespace xng {
-    class FtFontDriver : public FontDriver {
-    public:
-        std::type_index getType() override { return typeid(FtFontDriver); }
-
-        std::unique_ptr<Font> createFont(std::istream &data) override;
+    enum GpuDriverBackend {
+        OPENGL_4_6
     };
 }
 
-#endif //XENGINE_FTFONTDRIVER_HPP
+#endif //XENGINE_GPUDRIVERBACKEND_HPP

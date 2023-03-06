@@ -21,36 +21,41 @@
 #define XENGINE_DISPLAYDRIVER_HPP
 
 #include "xng/driver/driver.hpp"
-#include "window.hpp"
+
+#include "xng/gpu/gpudriver.hpp"
+
+#include "xng/display/window.hpp"
+#include "xng/display/displaydriverbackend.hpp"
 
 namespace xng {
-    enum DisplayDriverBackend {
-        GLFW
-    };
-
     class XENGINE_EXPORT DisplayDriver : public Driver {
     public:
-        static std::unique_ptr<DisplayDriver> load(DisplayDriverBackend backend) {
-            switch (backend) {
+        static std::string getBackendName(DisplayDriverBackend backend){
+            switch(backend){
                 case GLFW:
-                    return std::unique_ptr<DisplayDriver>(
-                            dynamic_cast<DisplayDriver *>(Driver::load("glfw").release()));
+                    return "glfw";
+                default:
+                    throw std::runtime_error("Invalid backend");
             }
-            throw std::runtime_error("Invalid backend");
+        }
+
+        static std::unique_ptr<DisplayDriver> load(DisplayDriverBackend backend) {
+            return std::unique_ptr<DisplayDriver>(
+                    dynamic_cast<DisplayDriver *>(Driver::load(getBackendName(GLFW)).release()));
         }
 
         virtual std::unique_ptr<Monitor> getPrimaryMonitor() = 0;
 
         virtual std::set<std::unique_ptr<Monitor>> getMonitors() = 0;
 
-        virtual std::unique_ptr<Window> createWindow(const std::string &graphicsDriver) = 0;
+        virtual std::unique_ptr<Window> createWindow(GpuDriverBackend gpuBackend) = 0;
 
-        virtual std::unique_ptr<Window> createWindow(const std::string &graphicsDriver,
+        virtual std::unique_ptr<Window> createWindow(GpuDriverBackend gpuBackend,
                                                      const std::string &title,
                                                      Vec2i size,
                                                      WindowAttributes attributes) = 0;
 
-        virtual std::unique_ptr<Window> createWindow(const std::string &graphicsDriver,
+        virtual std::unique_ptr<Window> createWindow(GpuDriverBackend gpuBackend,
                                                      const std::string &title,
                                                      Vec2i size,
                                                      WindowAttributes attributes,
