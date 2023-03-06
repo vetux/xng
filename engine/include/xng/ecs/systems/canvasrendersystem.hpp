@@ -25,7 +25,7 @@
 #include "xng/ecs/components/textcomponent.hpp"
 
 #include "xng/font/fontdriver.hpp"
-#include "xng/gui/text/textrenderer.hpp"
+#include "xng/gui/textrenderer.hpp"
 
 #include "xng/render/2d/renderer2d.hpp"
 

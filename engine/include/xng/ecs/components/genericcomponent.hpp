@@ -20,7 +20,6 @@
 #ifndef XENGINE_GENERICCOMPONENT_HPP
 #define XENGINE_GENERICCOMPONENT_HPP
 
-#include "xng/headertool/componentmetadata.hpp"
 #include "xng/ecs/component.hpp"
 
 namespace xng {

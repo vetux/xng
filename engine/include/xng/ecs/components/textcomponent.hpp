@@ -22,7 +22,7 @@
 
 #include "xng/io/messageable.hpp"
 #include "xng/resource/rawresource.hpp"
-#include "xng/gui/text/textalignment.hpp"
+#include "xng/gui/textalignment.hpp"
 #include "canvastransformcomponent.hpp"
 #include "xng/ecs/component.hpp"
 
