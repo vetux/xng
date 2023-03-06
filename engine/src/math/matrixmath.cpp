@@ -25,23 +25,13 @@
 //TODO: Remove glm dependency from matrixmath.cpp
 namespace xng {
     glm::mat4 convert(const Mat4f &mat) {
-        glm::mat4 ret;
-        for (int x = 0; x < mat.width(); x++) {
-            for (int y = 0; y < mat.height(); y++) {
-                ret[x][y] = mat.get(x, y);
-            }
-        }
-        return ret;
+        static_assert(sizeof(glm::mat4) == sizeof(Mat4f));
+        return reinterpret_cast<const glm::mat4&>(mat);
     }
 
     Mat4f convert(const glm::mat4 &mat) {
-        Mat4f ret;
-        for (int x = 0; x < 4; x++) {
-            for (int y = 0; y < 4; y++) {
-                ret.set(x, y, mat[x][y]);
-            }
-        }
-        return ret;
+        static_assert(sizeof(glm::mat4) == sizeof(Mat4f));
+        return reinterpret_cast<const Mat4f&>(mat);
     }
 
     Mat4f MatrixMath::identity() {

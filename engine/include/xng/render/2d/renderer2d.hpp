@@ -345,6 +345,8 @@ namespace xng {
 
         void updateVertexArrayObject();
 
+        Mat4f getRotationMatrix(float rotation, Vec2f center);
+
         std::map<Vec2f, MeshDrawData> planeMeshes;
         std::map<Vec2f, MeshDrawData> squareMeshes;
         std::map<std::pair<Vec2f, Vec2f>, MeshDrawData> lineMeshes;
@@ -364,6 +366,9 @@ namespace xng {
         std::unique_ptr<IndexBuffer> indexBuffer;
         std::unique_ptr<VertexBuffer> vertexBuffer;
         std::unique_ptr<VertexArrayObject> vertexArrayObject;
+
+        std::map<std::pair<float, Vec2f>, Mat4f> rotationMatrices;
+        std::set<std::pair<float, Vec2f>> usedRotationMatrices;
 
         std::vector<Pass> passes;
 
