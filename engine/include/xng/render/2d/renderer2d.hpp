@@ -190,7 +190,11 @@ namespace xng {
          * @param point
          * @param color
          */
-        void draw(const Vec2f &point, ColorRGBA color = {});
+        void draw(const Vec2f &point,
+                  ColorRGBA color = {},
+                  const Vec2f &position = {},
+                  const Vec2f &center = {},
+                  float rotation = 0);
 
         RenderDevice &getDevice() { return renderDevice; }
 
@@ -239,10 +243,16 @@ namespace xng {
             Pass() = default;
 
             Pass(Vec2f point,
-                 ColorRGBA color)
+                 ColorRGBA color,
+                 Vec2f position,
+                 Vec2f center,
+                 float rotation)
                     : type(COLOR_POINT),
+                      srcRect(std::move(position), {}),
                       dstRect(std::move(point), {}),
-                      color(color) {}
+                      color(color),
+                      center(std::move(center)),
+                      rotation(rotation) {}
 
             Pass(Vec2f start,
                  Vec2f end,
@@ -286,6 +296,75 @@ namespace xng {
                       color(color) {}
         };
 
+        struct MeshDrawData {
+            Primitive primitive;
+            RenderPass::DrawCall drawCall;
+            size_t baseVertex;
+        };
+
+        struct BufferRange {
+            size_t start;
+            size_t size;
+        };
+
+        MeshDrawData getPlane(const Vec2f &size);
+
+        MeshDrawData getSquare(const Vec2f &size);
+
+        MeshDrawData getLine(const Vec2f &start, const Vec2f &end);
+
+        MeshDrawData getPoint(const Vec2f &point);
+
+        void destroyPlane(const Vec2f &size);
+
+        void destroySquare(const Vec2f &size);
+
+        void destroyLine(const Vec2f &start, const Vec2f &end);
+
+        void destroyPoint(const Vec2f &point);
+
+        /**
+         * @param size number of bytes to allocate
+         * @return The offset in bytes into the index buffer
+         */
+        size_t allocateVertexData(size_t size);
+
+        void deallocateVertexData(size_t offset);
+
+        /**
+         * @param size number of bytes to allocate
+         * @return The offset in bytes into the index buffer
+         */
+        size_t allocateIndexData(size_t size);
+
+        void deallocateIndexData(size_t offset);
+
+        void mergeFreeVertexBufferRanges();
+
+        void mergeFreeIndexBufferRanges();
+
+        void updateVertexArrayObject();
+
+        std::map<Vec2f, MeshDrawData> planeMeshes;
+        std::map<Vec2f, MeshDrawData> squareMeshes;
+        std::map<std::pair<Vec2f, Vec2f>, MeshDrawData> lineMeshes;
+        std::map<Vec2f, MeshDrawData> pointMeshes;
+
+        std::map<size_t, size_t> freeVertexBufferRanges; // start and size of free ranges of vertices with layout vertexLayout in the vertex buffer
+        std::map<size_t, size_t> freeIndexBufferRanges; // start and size of free ranges of bytes in the index buffer
+
+        std::map<size_t, size_t> allocatedVertexRanges;
+        std::map<size_t, size_t> allocatedIndexRanges;
+
+        std::set<Vec2f> usedPlanes;
+        std::set<Vec2f> usedSquares;
+        std::set<std::pair<Vec2f, Vec2f>> usedLines;
+        std::set<Vec2f> usedPoints;
+
+        std::unique_ptr<IndexBuffer> indexBuffer;
+        std::unique_ptr<VertexBuffer> vertexBuffer;
+        std::unique_ptr<VertexArrayObject> vertexArrayObject;
+
         std::vector<Pass> passes;
 
         RenderTarget *userTarget = nullptr;
@@ -295,10 +374,13 @@ namespace xng {
 
         bool isRendering = false;
 
+        bool vaoChange = false;
+
         Vec2i mViewportOffset = {};
         Vec2i mViewportSize = Vec2i(1);
 
         std::vector<VertexAttribute> vertexLayout;
+        size_t vertexSize;
     };
 }
 

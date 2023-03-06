@@ -154,6 +154,25 @@ namespace xng {
         vertexLayout.emplace_back(VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT));
         vertexLayout.emplace_back(VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT));
 
+        vertexSize = 0;
+        for (auto &attr: vertexLayout) {
+            vertexSize += attr.stride();
+        }
+
+        VertexBufferDesc vertexBufferDesc;
+        vertexBufferDesc.size = 0;
+        vertexBuffer = renderDevice.createVertexBuffer(vertexBufferDesc);
+
+        IndexBufferDesc indexBufferDesc;
+        indexBufferDesc.size = 0;
+        indexBuffer = renderDevice.createIndexBuffer(indexBufferDesc);
+
+        vaoChange = true;
+
+        VertexArrayObjectDesc vertexArrayObjectDesc;
+        vertexArrayObjectDesc.vertexLayout = vertexLayout;
+        vertexArrayObject = renderDevice.createVertexArrayObject(vertexArrayObjectDesc);
+
         vsTexture = ShaderSource(SHADER_VERT_TEXTURE, "main", VERTEX, GLSL_460, false);
         fsTexture = ShaderSource(SHADER_FRAG_TEXTURE, "main", FRAGMENT, GLSL_460, false);
 
@@ -310,35 +329,27 @@ namespace xng {
         }
 
         for (int i = 0; i < drawCycles; i++) {
-            std::vector<RenderPass::DrawCall> drawCalls;
-            std::vector<Primitive> primitives;
-            std::vector<size_t> baseVertices;
-            VertexStream vertexStream;
-            std::vector<unsigned int> indices;
-            std::vector<PassData> passData(MAX_DRAW);
+            usedPlanes.clear();
+            usedSquares.clear();
+            usedLines.clear();
+            usedPoints.clear();
 
-            size_t indexBufferOffset = 0;
+            std::vector<RenderPass::DrawCall> drawCalls;
+            std::vector<size_t> baseVertices;
+            std::vector<Primitive> primitives;
+            std::vector<PassData> passData(MAX_DRAW);
 
             auto currentPassBase = i * MAX_DRAW;
             for (auto passIndex = 0; passIndex < MAX_DRAW && passIndex + currentPassBase < passes.size(); passIndex++) {
                 auto &pass = passes.at(passIndex + currentPassBase);
                 switch (pass.type) {
                     case Pass::COLOR_POINT: {
-                        primitives.emplace_back(POINTS);
-                        baseVertices.emplace_back(vertexStream.getVertices().size());
+                        usedPoints.insert(pass.dstRect.position);
+                        auto point = getPoint(pass.dstRect.position);
 
-                        vertexStream.addVertex(VertexBuilder()
-                                                       .addVec2(Vec2f())
-                                                       .addVec2(Vec2f())
-                                                       .build());
-
-                        indices.emplace_back(0);
-
-                        drawCalls.emplace_back(RenderPass::DrawCall{
-                                .offset = indexBufferOffset * sizeof(unsigned int),
-                                .count = 1});
-
-                        indexBufferOffset += 1;
+                        primitives.emplace_back(point.primitive);
+                        baseVertices.emplace_back(point.baseVertex);
+                        drawCalls.emplace_back(point.drawCall);
 
                         polyCounter += 1;
 
@@ -369,26 +380,13 @@ namespace xng {
                         break;
                     }
                     case Pass::COLOR_LINE: {
-                        primitives.emplace_back(LINES);
-                        baseVertices.emplace_back(vertexStream.getVertices().size());
+                        usedLines.insert(std::make_pair(pass.dstRect.position, pass.dstRect.dimensions));
 
-                        vertexStream.addVertex(VertexBuilder()
-                                                       .addVec2(pass.dstRect.position)
-                                                       .addVec2(Vec2f())
-                                                       .build());
-                        vertexStream.addVertex(VertexBuilder()
-                                                       .addVec2(pass.dstRect.dimensions)
-                                                       .addVec2(Vec2f())
-                                                       .build());
+                        auto line = getLine(pass.dstRect.position, pass.dstRect.dimensions);
 
-                        indices.emplace_back(0);
-                        indices.emplace_back(1);
-
-                        drawCalls.emplace_back(RenderPass::DrawCall{
-                                .offset = indexBufferOffset * sizeof(unsigned int),
-                                .count = 2});
-
-                        indexBufferOffset += 2;
+                        primitives.emplace_back(line.primitive);
+                        baseVertices.emplace_back(line.baseVertex);
+                        drawCalls.emplace_back(line.drawCall);
 
                         polyCounter += 1;
 
@@ -419,64 +417,22 @@ namespace xng {
                         break;
                     }
                     case Pass::COLOR_PLANE: {
-                        baseVertices.emplace_back(vertexStream.getVertices().size());
-
-                        vertexStream.addVertex(VertexBuilder()
-                                                       .addVec2(Vec2f(0, 0))
-                                                       .addVec2(Vec2f())
-                                                       .build());
-                        vertexStream.addVertex(VertexBuilder()
-                                                       .addVec2(Vec2f(pass.dstRect.dimensions.x, 0))
-                                                       .addVec2(Vec2f())
-                                                       .build());
-                        vertexStream.addVertex(VertexBuilder()
-                                                       .addVec2(Vec2f(0, pass.dstRect.dimensions.y))
-                                                       .addVec2(Vec2f())
-                                                       .build());
-                        vertexStream.addVertex(VertexBuilder()
-                                                       .addVec2(Vec2f(pass.dstRect.dimensions.x,
-                                                                      pass.dstRect.dimensions.y))
-                                                       .addVec2(Vec2f())
-                                                       .build());
-
                         if (pass.fill) {
-                            primitives.emplace_back(TRIANGLES);
+                            usedPlanes.insert(pass.dstRect.dimensions);
+                            auto plane = getPlane(pass.dstRect.dimensions);
 
-                            indices.emplace_back(0);
-                            indices.emplace_back(1);
-                            indices.emplace_back(2);
-
-                            indices.emplace_back(1);
-                            indices.emplace_back(2);
-                            indices.emplace_back(3);
-
-                            drawCalls.emplace_back(RenderPass::DrawCall{
-                                    .offset = indexBufferOffset * sizeof(unsigned int),
-                                    .count = 6});
-
-                            indexBufferOffset += 6;
+                            primitives.emplace_back(plane.primitive);
+                            baseVertices.emplace_back(plane.baseVertex);
+                            drawCalls.emplace_back(plane.drawCall);
 
                             polyCounter += 2;
                         } else {
-                            primitives.emplace_back(LINES);
+                            usedSquares.insert(pass.dstRect.dimensions);
+                            auto square = getSquare(pass.dstRect.dimensions);
 
-                            indices.emplace_back(0);
-                            indices.emplace_back(1);
-
-                            indices.emplace_back(1);
-                            indices.emplace_back(3);
-
-                            indices.emplace_back(3);
-                            indices.emplace_back(2);
-
-                            indices.emplace_back(2);
-                            indices.emplace_back(0);
-
-                            drawCalls.emplace_back(RenderPass::DrawCall{
-                                    .offset = indexBufferOffset * sizeof(unsigned int),
-                                    .count = 8});
-
-                            indexBufferOffset += 8;
+                            primitives.emplace_back(square.primitive);
+                            baseVertices.emplace_back(square.baseVertex);
+                            drawCalls.emplace_back(square.drawCall);
 
                             polyCounter += 4;
                         }
@@ -508,40 +464,12 @@ namespace xng {
                         break;
                     }
                     case Pass::TEXTURE: {
-                        primitives.emplace_back(TRIANGLES);
-                        baseVertices.emplace_back(vertexStream.getVertices().size());
+                        usedPlanes.insert(pass.dstRect.dimensions);
+                        auto plane = getPlane(pass.dstRect.dimensions);
 
-                        vertexStream.addVertex(VertexBuilder()
-                                                       .addVec2(Vec2f(0, 0))
-                                                       .addVec2(Vec2f(0, 0))
-                                                       .build());
-                        vertexStream.addVertex(VertexBuilder()
-                                                       .addVec2(Vec2f(pass.dstRect.dimensions.x, 0))
-                                                       .addVec2(Vec2f(1, 0))
-                                                       .build());
-                        vertexStream.addVertex(VertexBuilder()
-                                                       .addVec2(Vec2f(0, pass.dstRect.dimensions.y))
-                                                       .addVec2(Vec2f(0, 1))
-                                                       .build());
-                        vertexStream.addVertex(VertexBuilder()
-                                                       .addVec2(Vec2f(pass.dstRect.dimensions.x,
-                                                                      pass.dstRect.dimensions.y))
-                                                       .addVec2(Vec2f(1, 1))
-                                                       .build());
-
-                        indices.emplace_back(0);
-                        indices.emplace_back(1);
-                        indices.emplace_back(2);
-
-                        indices.emplace_back(1);
-                        indices.emplace_back(2);
-                        indices.emplace_back(3);
-
-                        drawCalls.emplace_back(RenderPass::DrawCall{
-                                .offset = indexBufferOffset * sizeof(unsigned int),
-                                .count = 6});
-
-                        indexBufferOffset += 6;
+                        primitives.emplace_back(plane.primitive);
+                        baseVertices.emplace_back(plane.baseVertex);
+                        drawCalls.emplace_back(plane.drawCall);
 
                         polyCounter += 2;
 
@@ -590,25 +518,55 @@ namespace xng {
                 }
             }
 
-            VertexBufferDesc vertexBufferDesc;
-            vertexBufferDesc.size = vertexStream.getVertexBuffer().size();
-            auto vertexBuffer = renderDevice.createVertexBuffer(vertexBufferDesc);
+            std::set<Vec2f> unusedPlanes;
+            std::set<Vec2f> unusedSquares;
+            std::set<std::pair<Vec2f, Vec2f >> unusedLines;
+            std::set<Vec2f> unusedPoints;
 
-            vertexBuffer->upload(0, vertexStream.getVertexBuffer().data(), vertexStream.getVertexBuffer().size());
+            for (auto &pair: planeMeshes) {
+                if (usedPlanes.find(pair.first) == usedPlanes.end()) {
+                    unusedPlanes.insert(pair.first);
+                }
+            }
 
-            IndexBufferDesc indexBufferDesc{};
-            indexBufferDesc.size = indices.size() * sizeof(unsigned int);
-            auto indexBuffer = renderDevice.createIndexBuffer(indexBufferDesc);
+            for (auto &pair: squareMeshes) {
+                if (usedSquares.find(pair.first) == usedSquares.end()) {
+                    unusedSquares.insert(pair.first);
+                }
+            }
 
-            indexBuffer->upload(0,
-                                reinterpret_cast<const uint8_t *>(indices.data()),
-                                indices.size() * sizeof(unsigned int));
+            for (auto &pair: lineMeshes) {
+                if (usedLines.find(pair.first) == usedLines.end()) {
+                    unusedLines.insert(pair.first);
+                }
+            }
 
-            VertexArrayObjectDesc vertexArrayObjectDesc;
-            vertexArrayObjectDesc.vertexLayout = vertexLayout;
-            auto vao = renderDevice.createVertexArrayObject(vertexArrayObjectDesc);
+            for (auto &pair: pointMeshes) {
+                if (usedPoints.find(pair.first) == usedPoints.end()) {
+                    unusedPoints.insert(pair.first);
+                }
+            }
 
-            vao->bindBuffers(*vertexBuffer, *indexBuffer);
+            for (auto &v: unusedPlanes) {
+                destroyPlane(v);
+            }
+
+            for (auto &v: unusedSquares) {
+                destroySquare(v);
+            }
+
+            for (auto &v: unusedLines) {
+                destroyLine(v.first, v.second);
+            }
+
+            for (auto &v: unusedPoints) {
+                destroyPoint(v);
+            }
+
+            mergeFreeVertexBufferRanges();
+            mergeFreeIndexBufferRanges();
+
+            updateVertexArrayObject();
 
             std::vector<DrawBatch> batches;
             DrawBatch currentBatch;
@@ -630,7 +588,8 @@ namespace xng {
                 batches.emplace_back(currentBatch);
 
             renderPass->beginRenderPass(*userTarget, mViewportOffset, mViewportSize);
-            renderPass->bindVertexArrayObject(*vao);
+            renderPass->bindVertexArrayObject(*vertexArrayObject);
+
 
             ShaderBufferDesc shaderBufferDesc;
             shaderBufferDesc.size = sizeof(ShaderUniformBuffer);
@@ -699,12 +658,18 @@ namespace xng {
         passes.emplace_back(Pass(rectangle, color, fill, center, rotation));
     }
 
-    void Renderer2D::draw(const Vec2f &start, const Vec2f &end, ColorRGBA color, const Vec2f &position, const Vec2f &center, float rotation) {
-        passes.emplace_back(Pass(start, end, color,position, center, rotation));
+    void
+    Renderer2D::draw(const Vec2f &start, const Vec2f &end, ColorRGBA color, const Vec2f &position, const Vec2f &center,
+                     float rotation) {
+        passes.emplace_back(Pass(start, end, color, position, center, rotation));
     }
 
-    void Renderer2D::draw(const Vec2f &point, ColorRGBA color) {
-        passes.emplace_back(Pass(point, color));
+    void Renderer2D::draw(const Vec2f &point,
+                          ColorRGBA color,
+                          const Vec2f &position,
+                          const Vec2f &center,
+                          float rotation) {
+        passes.emplace_back(Pass(point, color, position, center, rotation));
     }
 
     void Renderer2D::rebindTextureAtlas(const std::map<TextureAtlasResolution, std::vector<bool>> &occupations) {
@@ -744,5 +709,377 @@ namespace xng {
                 TEXTURE_ATLAS_16384x16384, *atlasTextures.at(TEXTURE_ATLAS_16384x16384).get()));
 
         atlas = TextureAtlas(atlasRef, occupations);
+    }
+
+    Renderer2D::MeshDrawData Renderer2D::getPlane(const Vec2f &size) {
+        auto it = planeMeshes.find(size);
+        if (it != planeMeshes.end()) {
+            return it->second;
+        } else {
+            VertexStream vertexStream;
+
+            vertexStream.addVertex(VertexBuilder()
+                                           .addVec2(Vec2f(0, 0))
+                                           .addVec2(Vec2f(0, 0))
+                                           .build());
+            vertexStream.addVertex(VertexBuilder()
+                                           .addVec2(Vec2f(size.x, 0))
+                                           .addVec2(Vec2f(1, 0))
+                                           .build());
+            vertexStream.addVertex(VertexBuilder()
+                                           .addVec2(Vec2f(0, size.y))
+                                           .addVec2(Vec2f(0, 1))
+                                           .build());
+            vertexStream.addVertex(VertexBuilder()
+                                           .addVec2(Vec2f(size.x,
+                                                          size.y))
+                                           .addVec2(Vec2f(1, 1))
+                                           .build());
+
+            auto vertexBufferOffset = allocateVertexData(vertexStream.getVertexBuffer().size());
+
+            vertexBuffer->upload(vertexBufferOffset,
+                                 vertexStream.getVertexBuffer().data(),
+                                 vertexStream.getVertexBuffer().size());
+
+            std::vector<unsigned int> indices;
+            indices.emplace_back(0);
+            indices.emplace_back(1);
+            indices.emplace_back(2);
+
+            indices.emplace_back(1);
+            indices.emplace_back(2);
+            indices.emplace_back(3);
+
+            auto indexBufferOffset = allocateIndexData(indices.size() * sizeof(unsigned int));
+
+            auto drawCall = RenderPass::DrawCall{
+                    .offset = indexBufferOffset,
+                    .count = indices.size()};
+
+            indexBuffer->upload(indexBufferOffset,
+                                reinterpret_cast<const uint8_t *>(indices.data()),
+                                indices.size() * sizeof(unsigned int));
+
+            planeMeshes[size] = MeshDrawData{.primitive = TRIANGLES,
+                    .drawCall = drawCall,
+                    .baseVertex = vertexBufferOffset / vertexSize};
+
+            return planeMeshes.at(size);
+        }
+    }
+
+    Renderer2D::MeshDrawData Renderer2D::getSquare(const Vec2f &size) {
+        auto it = squareMeshes.find(size);
+        if (it != squareMeshes.end()) {
+            return it->second;
+        } else {
+            VertexStream vertexStream;
+
+            vertexStream.addVertex(VertexBuilder()
+                                           .addVec2(Vec2f(0, 0))
+                                           .addVec2(Vec2f(0, 0))
+                                           .build());
+            vertexStream.addVertex(VertexBuilder()
+                                           .addVec2(Vec2f(size.x, 0))
+                                           .addVec2(Vec2f(1, 0))
+                                           .build());
+            vertexStream.addVertex(VertexBuilder()
+                                           .addVec2(Vec2f(0, size.y))
+                                           .addVec2(Vec2f(0, 1))
+                                           .build());
+            vertexStream.addVertex(VertexBuilder()
+                                           .addVec2(Vec2f(size.x,
+                                                          size.y))
+                                           .addVec2(Vec2f(1, 1))
+                                           .build());
+
+            auto vertexBufferOffset = allocateVertexData(vertexStream.getVertexBuffer().size());
+
+            vertexBuffer->upload(vertexBufferOffset,
+                                 vertexStream.getVertexBuffer().data(),
+                                 vertexStream.getVertexBuffer().size());
+
+            std::vector<unsigned int> indices;
+            indices.emplace_back(0);
+            indices.emplace_back(1);
+
+            indices.emplace_back(1);
+            indices.emplace_back(3);
+
+            indices.emplace_back(3);
+            indices.emplace_back(2);
+
+            indices.emplace_back(2);
+            indices.emplace_back(0);
+
+            auto indexBufferOffset = allocateIndexData(indices.size() * sizeof(unsigned int));
+
+            auto drawCall = RenderPass::DrawCall{
+                    .offset = indexBufferOffset,
+                    .count = indices.size()};
+
+            indexBuffer->upload(indexBufferOffset,
+                                reinterpret_cast<const uint8_t *>(indices.data()),
+                                indices.size() * sizeof(unsigned int));
+
+            squareMeshes[size] = MeshDrawData{.primitive = LINES,
+                    .drawCall = drawCall,
+                    .baseVertex = vertexBufferOffset / vertexSize};
+
+            return squareMeshes.at(size);
+        }
+
+    }
+
+    Renderer2D::MeshDrawData Renderer2D::getLine(const Vec2f &start, const Vec2f &end) {
+        auto pair = std::make_pair(start, end);
+        auto it = lineMeshes.find(pair);
+        if (it != lineMeshes.end()) {
+            return it->second;
+        } else {
+            VertexStream vertexStream;
+
+            vertexStream.addVertex(VertexBuilder()
+                                           .addVec2(start)
+                                           .addVec2(Vec2f())
+                                           .build());
+            vertexStream.addVertex(VertexBuilder()
+                                           .addVec2(end)
+                                           .addVec2(Vec2f())
+                                           .build());
+
+            auto vertexBufferOffset = allocateVertexData(vertexStream.getVertexBuffer().size());
+
+            vertexBuffer->upload(vertexBufferOffset,
+                                 vertexStream.getVertexBuffer().data(),
+                                 vertexStream.getVertexBuffer().size());
+
+            std::vector<unsigned int> indices;
+            indices.emplace_back(0);
+            indices.emplace_back(1);
+
+            auto indexBufferOffset = allocateIndexData(indices.size() * sizeof(unsigned int));
+
+            auto drawCall = RenderPass::DrawCall{
+                    .offset = indexBufferOffset,
+                    .count = indices.size()};
+
+            indexBuffer->upload(indexBufferOffset,
+                                reinterpret_cast<const uint8_t *>(indices.data()),
+                                indices.size() * sizeof(unsigned int));
+
+            lineMeshes[pair] = MeshDrawData{.primitive = LINES,
+                    .drawCall = drawCall,
+                    .baseVertex = vertexBufferOffset / vertexSize};
+
+            return lineMeshes.at(pair);
+        }
+    }
+
+    Renderer2D::MeshDrawData Renderer2D::getPoint(const Vec2f &point) {
+        auto it = pointMeshes.find(point);
+        if (it != pointMeshes.end()) {
+            return it->second;
+        } else {
+            VertexStream vertexStream;
+
+            vertexStream.addVertex(VertexBuilder()
+                                           .addVec2(point)
+                                           .addVec2(Vec2f())
+                                           .build());
+
+            auto vertexBufferOffset = allocateVertexData(vertexStream.getVertexBuffer().size());
+
+            vertexBuffer->upload(vertexBufferOffset,
+                                 vertexStream.getVertexBuffer().data(),
+                                 vertexStream.getVertexBuffer().size());
+
+            std::vector<unsigned int> indices;
+            indices.emplace_back(0);
+
+            auto indexBufferOffset = allocateIndexData(indices.size() * sizeof(unsigned int));
+
+            auto drawCall = RenderPass::DrawCall{
+                    .offset = indexBufferOffset,
+                    .count = indices.size()};
+
+            indexBuffer->upload(indexBufferOffset,
+                                reinterpret_cast<const uint8_t *>(indices.data()),
+                                indices.size() * sizeof(unsigned int));
+
+            pointMeshes[point] = MeshDrawData{.primitive = POINTS,
+                    .drawCall = drawCall,
+                    .baseVertex = vertexBufferOffset / vertexSize};
+
+            return pointMeshes.at(point);
+        }
+    }
+
+    void Renderer2D::destroyPlane(const Vec2f &size) {
+        auto drawData = planeMeshes.at(size);
+        planeMeshes.erase(size);
+        deallocateVertexData(drawData.baseVertex * vertexSize);
+        deallocateIndexData(drawData.drawCall.offset);
+    }
+
+    void Renderer2D::destroySquare(const Vec2f &size) {
+        auto drawData = squareMeshes.at(size);
+        squareMeshes.erase(size);
+        deallocateVertexData(drawData.baseVertex * vertexSize);
+        deallocateIndexData(drawData.drawCall.offset);
+    }
+
+    void Renderer2D::destroyLine(const Vec2f &start, const Vec2f &end) {
+        auto pair = std::make_pair(start, end);
+        auto drawData = lineMeshes.at(pair);
+        lineMeshes.erase(pair);
+        deallocateVertexData(drawData.baseVertex * vertexSize);
+        deallocateIndexData(drawData.drawCall.offset);
+    }
+
+    void Renderer2D::destroyPoint(const Vec2f &point) {
+        auto drawData = pointMeshes.at(point);
+        pointMeshes.erase(point);
+        deallocateVertexData(drawData.baseVertex * vertexSize);
+        deallocateIndexData(drawData.drawCall.offset);
+    }
+
+    size_t Renderer2D::allocateVertexData(size_t size) {
+        bool foundFreeRange = false;
+        auto ret = 0UL;
+        for (auto &range: freeVertexBufferRanges) {
+            if (range.second >= size) {
+                ret = range.first;
+                foundFreeRange = true;
+            }
+        }
+
+        if (foundFreeRange) {
+            auto rangeSize = freeVertexBufferRanges.at(ret) -= size;
+            freeVertexBufferRanges.erase(ret);
+            if (rangeSize > 0) {
+                freeVertexBufferRanges[ret + size] = rangeSize;
+            }
+        } else {
+            ret = vertexBuffer->getDescription().size;
+        }
+
+        if (vertexBuffer->getDescription().size <= ret
+            || vertexBuffer->getDescription().size < ret + size) {
+            VertexBufferDesc desc;
+            desc.size = vertexBuffer->getDescription().size + size;
+            auto nBuffer = renderDevice.createVertexBuffer(desc);
+            if (vertexBuffer->getDescription().size > 0) {
+                nBuffer->copy(*vertexBuffer);
+            }
+            vertexBuffer = std::move(nBuffer);
+            vaoChange = true;
+        }
+
+        allocatedVertexRanges[ret] = size;
+
+        return ret;
+    }
+
+    void Renderer2D::deallocateVertexData(size_t offset) {
+        auto size = allocatedVertexRanges.at(offset);
+        allocatedVertexRanges.erase(offset);
+        freeVertexBufferRanges[offset] = size;
+    }
+
+    size_t Renderer2D::allocateIndexData(size_t size) {
+        bool foundFreeRange = false;
+        auto ret = 0UL;
+        for (auto &range: freeIndexBufferRanges) {
+            if (range.second >= size) {
+                ret = range.first;
+                foundFreeRange = true;
+            }
+        }
+        if (foundFreeRange) {
+            auto rangeSize = freeIndexBufferRanges.at(ret) -= size;
+            freeIndexBufferRanges.erase(ret);
+            if (rangeSize > 0) {
+                freeIndexBufferRanges[ret + size] = rangeSize;
+            }
+        } else {
+            ret = indexBuffer->getDescription().size;
+        }
+
+        if (indexBuffer->getDescription().size <= ret
+            || indexBuffer->getDescription().size <= ret + size) {
+            IndexBufferDesc desc;
+            desc.size = indexBuffer->getDescription().size + size;
+            auto nBuffer = renderDevice.createIndexBuffer(desc);
+            if (indexBuffer->getDescription().size > 0) {
+                nBuffer->copy(*indexBuffer);
+            }
+            indexBuffer = std::move(nBuffer);
+            vaoChange = true;
+        }
+
+        allocatedIndexRanges[ret] = size;
+
+        return ret;
+    }
+
+    void Renderer2D::deallocateIndexData(size_t offset) {
+        auto size = allocatedIndexRanges.at(offset);
+        allocatedIndexRanges.erase(offset);
+        freeIndexBufferRanges[offset] = size;
+    }
+
+    void Renderer2D::mergeFreeVertexBufferRanges() {
+        bool merged = true;
+        while (merged) {
+            merged = false;
+            auto vertexRanges = freeVertexBufferRanges;
+            for (auto range = freeVertexBufferRanges.begin(); range != freeVertexBufferRanges.end(); range++) {
+                auto next = range;
+                next++;
+                if (next != freeVertexBufferRanges.end()) {
+                    if (range->first + range->second == next->first
+                        && vertexRanges.find(range->first) != vertexRanges.end()
+                        && vertexRanges.find(next->first) != vertexRanges.end()) {
+                        merged = true;
+                        vertexRanges.at(range->first) += next->second;
+                        vertexRanges.erase(next->first);
+                        range = next;
+                    }
+                }
+            }
+            freeVertexBufferRanges = vertexRanges;
+        }
+    }
+
+    void Renderer2D::mergeFreeIndexBufferRanges() {
+        bool merged = true;
+        while (merged) {
+            merged = false;
+            auto indexRanges = freeIndexBufferRanges;
+            for (auto range = freeIndexBufferRanges.begin(); range != freeIndexBufferRanges.end(); range++) {
+                auto next = range;
+                next++;
+                if (next != freeIndexBufferRanges.end()) {
+                    if (range->first + range->second == next->first
+                        && indexRanges.find(range->first) != indexRanges.end()
+                        && indexRanges.find(next->first) != indexRanges.end()) {
+                        merged = true;
+                        indexRanges.at(range->first) += next->second;
+                        indexRanges.erase(next->first);
+                        range = next;
+                    }
+                }
+            }
+            freeIndexBufferRanges = indexRanges;
+        }
+    }
+
+    void Renderer2D::updateVertexArrayObject() {
+        if (vaoChange) {
+            vaoChange = false;
+            vertexArrayObject->bindBuffers(*vertexBuffer, *indexBuffer);
+        }
     }
 }

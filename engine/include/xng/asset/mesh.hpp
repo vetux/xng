@@ -70,8 +70,7 @@ namespace xng {
             };
 
             return {
-                    .primitive = TRIANGLES,
-                    .vertexLayout = layout
+                .vertexLayout = layout
             };
         }
 
@@ -113,7 +112,6 @@ namespace xng {
             };
 
             return {
-                    .primitive = TRIANGLES,
                     .vertexLayout = layout,
                     .instanceArrayLayout = instanceLayout
             };
