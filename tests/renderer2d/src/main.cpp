@@ -19,6 +19,8 @@
 
 #include "xng/xng.hpp"
 
+#include <fstream>
+
 using namespace xng;
 
 ImageRGBA loadImage(const std::filesystem::path &filePath) {
@@ -43,10 +45,14 @@ public:
 
     float performanceGridBase = 2;
 
+    TextRenderer textRenderer;
+
     TestApplication(Window &window,
-                    Renderer2D &ren)
+                    Renderer2D &ren,
+                    Font &font)
             : window(window),
-              ren(ren) {
+              ren(ren),
+              textRenderer(font, ren) {
         imageB = loadImage("assets/awesomeface.png");
         imageA = loadImage("assets/tux.png");
 
@@ -60,6 +66,17 @@ public:
     }
 
     void drawHomePage(DeltaTime delta) {
+        auto textLayout = TextLayout();
+        textLayout.lineHeight = 30;
+
+        std::ostringstream out;
+        out.precision(0);
+        out << std::fixed << 1 / delta;
+
+        auto text = textRenderer.render(out.str(), textLayout);
+        auto textImg = text.getTexture().download();
+        auto textHandle = ren.createTexture(textImg);
+
         auto &target = window.getRenderTarget();
 
         rot += rotSpeed * delta;
@@ -78,6 +95,7 @@ public:
                  {imageA.getSize().convert<float>() / 2},
                  rot,
                  0.25,
+                 0,
                  ColorRGBA::cyan());
 
         ren.draw(Rectf(targetSize / 2 - imageA.getSize().convert<float>() / 2, imageA.getSize().convert<float>()),
@@ -88,16 +106,41 @@ public:
 
         ren.draw(Rectf({}, imageB.getSize().convert<float>()),
                  Rectf({25, 25}, imageB.getSize().convert<float>()),
-                 texB);
+                 texB,
+                 {},
+                 0,
+                 0,
+                 0,
+                 {});
 
         ren.draw(Rectf({25, 25}, imageB.getSize().convert<float>()),
                  ColorRGBA::yellow(),
                  false);
 
+        ren.draw(Rectf({}, text.getTexture().getDescription().size.convert<float>()),
+                 Rectf({}, text.getTexture().getDescription().size.convert<float>()),
+                 textHandle,
+                 {},
+                 0,
+                 ColorRGBA::white());
+
         ren.renderPresent();
+
+        ren.destroyTexture(textHandle);
     }
 
     size_t drawPerformanceTest(DeltaTime delta) {
+        auto textLayout = TextLayout();
+        textLayout.lineHeight = 30 ;
+
+        std::ostringstream out;
+        out.precision(0);
+        out << std::fixed << 1 / delta;
+
+        auto text = textRenderer.render(out.str(), textLayout);
+        auto textImg = text.getTexture().download();
+        auto textHandle = ren.createTexture(textImg);
+
         if (window.getInput().getKey(KEY_UP)) {
             performanceGridBase++;
         } else if (window.getInput().getKey(xng::KEY_DOWN)) {
@@ -140,7 +183,7 @@ public:
 
         auto imgSize = Vec2f(height, width);
 
-        auto ret = 0;  
+        auto ret = 0;
         for (int x = 0; x < performanceGrid.x; x++) {
             for (int y = 0; y < performanceGrid.y; y++) {
                 Vec2f pos = Vec2f(padding)
@@ -154,13 +197,23 @@ public:
                          imgSize / 2,
                          rot,
                          std::clamp((scale.x + scale.y) - 0.5f, 0.0f, 1.0f),
+                        0,
                          xng::ColorRGBA(static_cast<uint8_t>(125 * scale.x + 25),
                                         static_cast<uint8_t>(125 * scale.y + 25), 30, 255));
                 ret++;
             }
         }
 
+        ren.draw(Rectf({}, text.getTexture().getDescription().size.convert<float>()),
+                 Rectf({}, text.getTexture().getDescription().size.convert<float>()),
+                 textHandle,
+                 {},
+                 0,
+                 ColorRGBA::white());
+
         ren.renderPresent();
+
+        ren.destroyTexture(textHandle);
 
         return ret;
     }
@@ -171,10 +224,15 @@ int main(int argc, char *argv[]) {
     auto gpuDriver = GpuDriver::load(OPENGL_4_6);
     auto shaderCompiler = ShaderCompiler::load(SHADERC);
     auto shaderDecompiler = ShaderDecompiler::load(SPIRV_CROSS);
+    auto fontDriver = FontDriver::load(FREETYPE);
 
     auto window = displayDriver->createWindow(OPENGL_4_6, "Renderer 2D Test", {640, 480}, {});
     auto &input = window->getInput();
     auto &target = window->getRenderTarget();
+    auto fs = std::ifstream("assets/Sono/static/Sono/Sono-Regular.ttf");
+    auto font = fontDriver->createFont(fs);
+
+    font->setPixelSize({0, 25});
 
     auto renderDevice = gpuDriver->createRenderDevice();
 
@@ -182,7 +240,7 @@ int main(int argc, char *argv[]) {
 
     auto frameLimiter = FrameLimiter(60);
 
-    TestApplication app(*window, ren);
+    TestApplication app(*window, ren, *font);
 
     size_t currentPage = 0;
     while (!window->shouldClose()) {
@@ -197,16 +255,18 @@ int main(int argc, char *argv[]) {
         std::cout << "\r";
 
         switch (currentPage) {
-            default:
+            default: {
                 app.drawHomePage(delta);
-                std::cout << "Drawing Home Page " + std::to_string(ren.getPolyDrawCount()) + " Polys, " +
-                             std::to_string(1.0f / delta) + " fps.";
+                auto msg = "Drawing Home Page " + std::to_string(ren.getPolyDrawCount()) + " Polys, " +
+                           std::to_string(1.0f / delta) + " fps.";
                 break;
-            case 1:
+            }
+            case 1: {
                 auto c = app.drawPerformanceTest(delta);
-                std::cout << "Drawing Performance Test " + std::to_string(ren.getPolyDrawCount()) + " Polys " +
-                             std::to_string(c) + " Sprites, " + std::to_string(1.0f / delta) + " fps.";
+                auto msg = "Drawing Performance Test " + std::to_string(ren.getPolyDrawCount()) + " Polys " +
+                           std::to_string(c) + " Sprites, " + std::to_string(1.0f / delta) + " fps.";
                 break;
+            }
         }
 
         window->swapBuffers();
