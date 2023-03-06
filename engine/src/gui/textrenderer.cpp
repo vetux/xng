@@ -19,20 +19,22 @@
 
 #include "xng/gui/textrenderer.hpp"
 
+#include <utility>
+
 #pragma message "Not Implemented"
 
-/*
+
 namespace xng {
     struct RenderChar {
         std::reference_wrapper<Character> character;
-        std::reference_wrapper<TextureBuffer> texture; // The character texture
+        TextureAtlasHandle texture; // The character texture
 
         Vec2f position; // The position of the origin of the character x = Sum of all horizontal advance values before it, y = Sum of all line heights and spacings above it
 
-        RenderChar(Character &character, TextureBuffer &texture)
-                : character(character), texture(texture) {}
+        RenderChar(Character &character, TextureAtlasHandle texture)
+                : character(character), texture(std::move(texture)) {}
 
-        Vec2f getPosition(Vec2f origin) const {
+        Vec2f getPosition(const Vec2f& origin) const {
             return {position.x + (origin.x + numeric_cast<float>(character.get().bearing.x)),
                     (position.y + (origin.y - numeric_cast<float>(character.get().bearing.y)))};
         }
@@ -41,37 +43,29 @@ namespace xng {
     TextRenderer::TextRenderer(Font &font,
                                Renderer2D &ren2D)
             : ascii(font.renderAscii()), font(font), ren2d(ren2D) {
-        ascii = font.renderAscii();
         for (auto &c: ascii) {
             auto &character = c.second;
-
-            TextureBufferDesc desc;
-            desc.size = character.image.getSize();
-
-            textures[c.first] = ren2D.getDevice().createTextureBuffer(desc);
-            textures.at(c.first)->upload(RGBA,
-                                         reinterpret_cast<const uint8_t *>(character.image.getData()),
-                                         sizeof(ColorRGBA) * (character.image.getSize().x *
-                                                              character.image.getSize().y));
+            textures[c.first] = ren2d.createTexture(character.image);
         }
     }
 
-    void TextRenderer::setFontSize(Vec2i pixelSize) {
+    TextRenderer::~TextRenderer() {
+        for (auto &pair : textures){
+            ren2d.destroyTexture(pair.second);
+        }
+    }
+
+    void TextRenderer::setFontSize(const Vec2i& pixelSize) {
         if (fontSize != pixelSize) {
             fontSize = pixelSize;
             font.setPixelSize(pixelSize);
             ascii = font.renderAscii();
+            for (auto &pair : textures){
+                ren2d.destroyTexture(pair.second);
+            }
             for (auto &c: ascii) {
                 auto &character = c.second;
-
-                TextureBufferDesc desc;
-                desc.size = character.image.getSize();
-
-                textures[c.first] = ren2d.getDevice().createTextureBuffer(desc);
-                textures.at(c.first)->upload(RGBA,
-                                             reinterpret_cast<const uint8_t *>(character.image.getData()),
-                                             sizeof(ColorRGBA) * (character.image.getSize().x *
-                                                                  character.image.getSize().y));
+                textures[c.first] = ren2d.createTexture(character.image);
             }
         }
     }
@@ -118,7 +112,7 @@ namespace xng {
         return ret;
     }
 
-    Text TextRenderer::render(const std::string &text, const TextLayout &layout, const ColorRGBA &color) {
+    Text TextRenderer::render(const std::string &text, const TextLayout &layout) {
         if (text.empty())
             throw std::runtime_error("Text cannot be empty");
 
@@ -151,7 +145,7 @@ namespace xng {
             if (lineWidth + character.advance > largestWidth)
                 largestWidth = lineWidth + character.advance;
 
-            RenderChar renderChar(character, *textures.at(c));
+            RenderChar renderChar(character, textures.at(c));
 
             float posy = (numeric_cast<float>(lineIndex) * numeric_cast<float>(layout.lineSpacing))
                          + (numeric_cast<float>(lineIndex) * numeric_cast<float>(layout.lineHeight));
@@ -200,33 +194,26 @@ namespace xng {
         TextureBufferDesc desc;
         desc.size = size.convert<int>();
 
-        // Render the text (upside down?) to a texture and then render the final text texture using the 2d renderer
-        auto tmpTexture = ren2d.getDevice().createTextureBuffer(desc);
-        target->setColorAttachments({*tmpTexture});
+        auto tex = ren2d.getDevice().createTextureBuffer(desc);
+
+        target->setColorAttachments({*tex});
         ren2d.renderBegin(*target);
         for (auto &c: renderText) {
-            auto texSize = c.texture.get().getDescription().size.convert<float>();
+            auto texSize = c.texture.size.convert<float>();
             auto pos = c.getPosition(origin);
             ren2d.draw(Rectf({}, texSize),
                        Rectf(pos, texSize),
                        c.texture,
                        {},
                        0,
-                       Vec2b(false, false));
+                       0,
+                       0,
+                       ColorRGBA());
         }
         ren2d.renderPresent();
 
         target->setColorAttachments({});
 
-        //Render the upside down texture of the text using the 2d renderer to correct the rotation?
-        auto tex = ren2d.getDevice().createTextureBuffer(desc);
-
-        target->setColorAttachments({*tex});
-        ren2d.renderBegin(*target);
-        ren2d.draw(Rectf({}, size), Rectf({}, size), *tmpTexture, {}, 0, {false, false});
-        ren2d.renderPresent();
-        target->setColorAttachments({});
-
         return {text, origin, layout.lineWidth, std::move(tex)};
     }
-}*/
+}

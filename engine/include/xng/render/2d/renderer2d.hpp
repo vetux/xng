@@ -142,15 +142,36 @@ namespace xng {
          * @param center
          * @param rotation
          * @param mix
+         * @param mixAlpha
          * @param mixColor
          */
         void draw(const Rectf &srcRect,
                   const Rectf &dstRect,
                   TextureAtlasHandle &sprite,
-                  const Vec2f &center = {},
-                  float rotation = 0,
-                  float mix = 0,
-                  ColorRGBA mixColor = ColorRGBA());
+                  const Vec2f &center,
+                  float rotation,
+                  float mix,
+                  float mixAlpha,
+                  ColorRGBA mixColor);
+
+        /**
+         * Draw texture where each fragment color = textureColor * colorFactor
+         *
+         * @param srcRect The part of the of texture to sample
+         * @param dstRect The part of the screen to display the sampled part into
+         * @param sprite
+         * @param center
+         * @param rotation
+         * @param mix
+         * @param mixAlpha
+         * @param mixColor
+         */
+        void draw(const Rectf &srcRect,
+                  const Rectf &dstRect,
+                  TextureAtlasHandle &sprite,
+                  const Vec2f &center,
+                  float rotation,
+                  ColorRGBA colorFactor);
 
         /**
          * Draw rectangle
@@ -238,7 +259,10 @@ namespace xng {
             TextureAtlasHandle texture;
 
             float mix = 0;
+            float alphaMix = 0;
             ColorRGBA color;
+
+            bool colorFactor = false;
 
             Pass() = default;
 
@@ -285,6 +309,7 @@ namespace xng {
                  Vec2f center,
                  float rotation,
                  float mix,
+                 float alphaMix,
                  ColorRGBA color)
                     : type(TEXTURE),
                       srcRect(std::move(srcRect)),
@@ -293,7 +318,23 @@ namespace xng {
                       rotation(rotation),
                       texture(std::move(texture)),
                       mix(mix),
+                      alphaMix(alphaMix),
                       color(color) {}
+
+            Pass(Rectf srcRect,
+                 Rectf dstRect,
+                 TextureAtlasHandle &texture,
+                 Vec2f center,
+                 float rotation,
+                 ColorRGBA color)
+                    : type(TEXTURE),
+                      srcRect(std::move(srcRect)),
+                      dstRect(std::move(dstRect)),
+                      center(std::move(center)),
+                      rotation(rotation),
+                      texture(std::move(texture)),
+                      color(color),
+                      colorFactor(true) {}
         };
 
         struct MeshDrawData {

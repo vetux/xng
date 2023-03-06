@@ -40,7 +40,7 @@ layout (location = 2) flat out uint drawID;
 
 struct PassData {
     vec4 color;
-    vec4 colorMixFactor;
+    vec4 colorMixFactor_alphaMixFactor_colorFactor;
     ivec4 texAtlasLevel_texAtlasIndex;
     mat4 mvp;
     vec4 uvOffset_uvScale;
@@ -74,7 +74,7 @@ layout (location = 0) out vec4 color;
 
 struct PassData {
     vec4 color;
-    vec4 colorMixFactor;
+    vec4 colorMixFactor_alphaMixFactor_colorFactor;
     ivec4 texAtlasLevel_texAtlasIndex;
     mat4 mvp;
     vec4 uvOffset_uvScale;
@@ -94,9 +94,14 @@ void main() {
         uv = uv * vars.passes[drawID].uvOffset_uvScale.zw;
         uv = uv + vars.passes[drawID].uvOffset_uvScale.xy;
         uv = uv * vars.passes[drawID].atlasScale.xy;
-        color = texture(atlasTextures[vars.passes[drawID].texAtlasLevel_texAtlasIndex.x],
+        vec4 texColor = texture(atlasTextures[vars.passes[drawID].texAtlasLevel_texAtlasIndex.x],
                         vec3(uv.x, uv.y, vars.passes[drawID].texAtlasLevel_texAtlasIndex.y));
-        color = mix(color, vars.passes[drawID].color, vars.passes[drawID].colorMixFactor.x);
+        if (vars.passes[drawID].colorMixFactor_alphaMixFactor_colorFactor.z != 0) {
+            color = vars.passes[drawID].color * texColor;
+        } else {
+            color.rgb = mix(texColor.rgb, vars.passes[drawID].color.rgb, vars.passes[drawID].colorMixFactor_alphaMixFactor_colorFactor.x);
+            color.a = mix(texColor.a, vars.passes[drawID].color.a, vars.passes[drawID].colorMixFactor_alphaMixFactor_colorFactor.y);
+        }
     } else {
         color = vars.passes[drawID].color;
     }
@@ -118,7 +123,7 @@ namespace xng {
     // If anything other than 4 component vectors are used in uniform buffer data the memory layout becomes unpredictable.
     struct PassData {
         float color[4];
-        float colorMixFactor[4];
+        float colorMixFactor_alphaMixFactor_colorFactor[4];
         int texAtlasLevel_texAtlasIndex[4]{-1, -1};
         Mat4f mvp;
         float uvOffset_uvScale[4];
@@ -468,7 +473,9 @@ namespace xng {
                         passData[passIndex].color[1] = color.y;
                         passData[passIndex].color[2] = color.z;
                         passData[passIndex].color[3] = color.w;
-                        passData[passIndex].colorMixFactor[0] = pass.mix;
+                        passData[passIndex].colorMixFactor_alphaMixFactor_colorFactor[0] = pass.mix;
+                        passData[passIndex].colorMixFactor_alphaMixFactor_colorFactor[1] = pass.alphaMix;
+                        passData[passIndex].colorMixFactor_alphaMixFactor_colorFactor[2] = pass.colorFactor;
                         passData[passIndex].texAtlasLevel_texAtlasIndex[0] = pass.texture.level;
                         passData[passIndex].texAtlasLevel_texAtlasIndex[1] = (int) pass.texture.index;
                         auto uvOffset = pass.srcRect.position / pass.texture.size.convert<float>();
@@ -625,6 +632,7 @@ namespace xng {
                           const Vec2f &center,
                           float rotation,
                           float mix,
+                          float mixAlpha,
                           ColorRGBA mixColor) {
         passes.emplace_back(Pass(srcRect,
                                  dstRect,
@@ -632,7 +640,22 @@ namespace xng {
                                  center,
                                  rotation,
                                  mix,
+                                 mixAlpha,
                                  mixColor));
+    }
+
+    void Renderer2D::draw(const Rectf &srcRect,
+                          const Rectf &dstRect,
+                          TextureAtlasHandle &sprite,
+                          const Vec2f &center,
+                          float rotation,
+                          ColorRGBA colorFactor) {
+        passes.emplace_back(Pass(srcRect,
+                                 dstRect,
+                                 sprite,
+                                 center,
+                                 rotation,
+                                 colorFactor));
     }
 
     void Renderer2D::draw(const Rectf &rectangle, ColorRGBA color, bool fill, const Vec2f &center, float rotation) {
