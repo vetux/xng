@@ -333,6 +333,7 @@ namespace xng {
             usedSquares.clear();
             usedLines.clear();
             usedPoints.clear();
+            usedRotationMatrices.clear();
 
             std::vector<RenderPass::DrawCall> drawCalls;
             std::vector<size_t> baseVertices;
@@ -353,15 +354,7 @@ namespace xng {
 
                         polyCounter += 1;
 
-                        auto rotMat = MatrixMath::translate({
-                                                                    pass.center.x,
-                                                                    pass.center.y,
-                                                                    0})
-                                      * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
-                                      * MatrixMath::translate({
-                                                                      -pass.center.x,
-                                                                      -pass.center.y,
-                                                                      0});
+                        auto rotMat = getRotationMatrix(pass.rotation, pass.center);
 
                         auto model = MatrixMath::translate({
                                                                    pass.srcRect.position.x,
@@ -390,15 +383,7 @@ namespace xng {
 
                         polyCounter += 1;
 
-                        auto rotMat = MatrixMath::translate({
-                                                                    pass.center.x,
-                                                                    pass.center.y,
-                                                                    0})
-                                      * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
-                                      * MatrixMath::translate({
-                                                                      -pass.center.x,
-                                                                      -pass.center.y,
-                                                                      0});
+                        auto rotMat = getRotationMatrix(pass.rotation, pass.center);
 
                         auto model = MatrixMath::translate({
                                                                    pass.srcRect.position.x,
@@ -437,15 +422,7 @@ namespace xng {
                             polyCounter += 4;
                         }
 
-                        auto rotMat = MatrixMath::translate({
-                                                                    pass.center.x,
-                                                                    pass.center.y,
-                                                                    0})
-                                      * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
-                                      * MatrixMath::translate({
-                                                                      -pass.center.x,
-                                                                      -pass.center.y,
-                                                                      0});
+                        auto rotMat = getRotationMatrix(pass.rotation, pass.center);
 
                         auto model = MatrixMath::translate({
                                                                    pass.dstRect.position.x,
@@ -473,15 +450,7 @@ namespace xng {
 
                         polyCounter += 2;
 
-                        auto rotMat = MatrixMath::translate({
-                                                                    pass.center.x,
-                                                                    pass.center.y,
-                                                                    0})
-                                      * MatrixMath::rotate(Vec3f(0, 0, pass.rotation))
-                                      * MatrixMath::translate({
-                                                                      -pass.center.x,
-                                                                      -pass.center.y,
-                                                                      0});
+                        auto rotMat = getRotationMatrix(pass.rotation, pass.center);
 
                         auto model = MatrixMath::translate({
                                                                    pass.dstRect.position.x,
@@ -520,8 +489,9 @@ namespace xng {
 
             std::set<Vec2f> unusedPlanes;
             std::set<Vec2f> unusedSquares;
-            std::set<std::pair<Vec2f, Vec2f >> unusedLines;
+            std::set<std::pair<Vec2f, Vec2f>> unusedLines;
             std::set<Vec2f> unusedPoints;
+            std::set<std::pair<float, Vec2f>> unusedRotationMatrices;
 
             for (auto &pair: planeMeshes) {
                 if (usedPlanes.find(pair.first) == usedPlanes.end()) {
@@ -547,6 +517,12 @@ namespace xng {
                 }
             }
 
+            for (auto &pair: rotationMatrices) {
+                if (usedRotationMatrices.find(pair.first) == usedRotationMatrices.end()) {
+                    unusedRotationMatrices.insert(pair.first);
+                }
+            }
+
             for (auto &v: unusedPlanes) {
                 destroyPlane(v);
             }
@@ -561,6 +537,10 @@ namespace xng {
 
             for (auto &v: unusedPoints) {
                 destroyPoint(v);
+            }
+
+            for (auto &v: unusedRotationMatrices) {
+                rotationMatrices.erase(v);
             }
 
             mergeFreeVertexBufferRanges();
@@ -1080,6 +1060,26 @@ namespace xng {
         if (vaoChange) {
             vaoChange = false;
             vertexArrayObject->bindBuffers(*vertexBuffer, *indexBuffer);
+        }
+    }
+
+    Mat4f Renderer2D::getRotationMatrix(float rotation, Vec2f center) {
+        auto pair = std::make_pair(rotation, center);
+        usedRotationMatrices.insert(pair);
+        auto it = rotationMatrices.find(pair);
+        if (it != rotationMatrices.end()) {
+            return it->second;
+        } else {
+            rotationMatrices[pair] = MatrixMath::translate({
+                                                                   center.x,
+                                                                   center.y,
+                                                                   0})
+                                     * MatrixMath::rotate(Vec3f(0, 0, rotation))
+                                     * MatrixMath::translate({
+                                                                     -center.x,
+                                                                     -center.y,
+                                                                     0});
+            return rotationMatrices.at(pair);
         }
     }
 }
