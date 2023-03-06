@@ -70,9 +70,9 @@ namespace xng::opengl {
                                        size_t count) override {
             auto buf = dynamic_cast<OGLVertexBuffer &>(source);
             if (readOffset >= buf.desc.size
-                || readOffset + count >= buf.desc.size
+                || readOffset + count > buf.desc.size
                 || writeOffset >= desc.size
-                || writeOffset + count >= desc.size) {
+                || writeOffset + count > desc.size) {
                 throw std::runtime_error("Invalid copy range");
             }
             glBindBuffer(GL_COPY_READ_BUFFER, buf.VBO);
