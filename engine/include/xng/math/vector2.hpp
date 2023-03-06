@@ -5,6 +5,7 @@
 #include <array>
 
 #include "xng/util/numeric_cast.hpp"
+#include "xng/util/hashcombine.hpp"
 
 #include "xng/io/messageable.hpp"
 
@@ -68,6 +69,10 @@ namespace xng {
             x /= v;
             y /= v;
             return *this;
+        }
+
+        bool operator<(const Vector2<T> &v) const {
+            return x < v.x && y < v.y;
         }
 
         template<typename R>
@@ -149,6 +154,18 @@ namespace xng {
     typedef Vector2<int> Vec2i;
     typedef Vector2<float> Vec2f;
     typedef Vector2<double> Vec2d;
+}
+
+namespace std {
+    template<typename T>
+    struct hash<xng::Vector2<T>> {
+        std::size_t operator()(const xng::Vector2<T> &vec) const {
+            size_t ret = 0;
+            xng::hash_combine(ret, vec.x);
+            xng::hash_combine(ret, vec.y);
+            return ret;
+        }
+    };
 }
 
 #endif //VECTOR2_HPP

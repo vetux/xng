@@ -5,6 +5,8 @@
 #include <array>
 
 #include "xng/util/numeric_cast.hpp"
+#include "xng/util/hashcombine.hpp"
+
 #include "xng/io/messageable.hpp"
 
 namespace xng {
@@ -133,6 +135,10 @@ namespace xng {
             return !(lhs == rhs);
         }
 
+        bool operator<(const Vector4<T> &v) const {
+            return x < v.x && y < v.y && z < v.z && w < v.w;
+        }
+
         template <typename R>
         friend Vector4<T> operator*(const Vector4<T> &lhs, const R &rhs) {
             return Vector4<T>(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs, lhs.w * rhs);
@@ -169,5 +175,20 @@ namespace xng {
     typedef Vector4<float> Vec4f;
     typedef Vector4<double> Vec4d;
 }
+
+namespace std {
+    template<typename T>
+    struct hash<xng::Vector4<T>> {
+        std::size_t operator()(const xng::Vector4<T> &vec) const {
+            size_t ret = 0;
+            xng::hash_combine(ret, vec.x);
+            xng::hash_combine(ret, vec.y);
+            xng::hash_combine(ret, vec.z);
+            xng::hash_combine(ret, vec.w);
+            return ret;
+        }
+    };
+}
+
 
 #endif //VECTOR4_HPP
