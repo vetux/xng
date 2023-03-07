@@ -23,6 +23,10 @@
 
 using namespace xng;
 
+static const int fpsFontPixelSize = 30;
+static const int fpsFontPixelLineHeight = 25;
+static const ColorRGBA fpsFontColor = ColorRGBA::fuchsia();
+
 ImageRGBA loadImage(const std::filesystem::path &filePath) {
     auto imageParser = StbiParser();
     auto data = readFile(filePath.string());
@@ -67,7 +71,7 @@ public:
 
     void drawHomePage(DeltaTime delta) {
         auto textLayout = TextLayout();
-        textLayout.lineHeight = 30;
+        textLayout.lineHeight = fpsFontPixelLineHeight;
 
         std::ostringstream out;
         out.precision(0);
@@ -122,7 +126,7 @@ public:
                  textHandle,
                  {},
                  0,
-                 ColorRGBA::fuchsia());
+                 fpsFontColor);
 
         ren.renderPresent();
 
@@ -131,7 +135,7 @@ public:
 
     size_t drawPerformanceTest(DeltaTime delta) {
         auto textLayout = TextLayout();
-        textLayout.lineHeight = 30;
+        textLayout.lineHeight = fpsFontPixelLineHeight;
 
         std::ostringstream out;
         out.precision(0);
@@ -209,7 +213,7 @@ public:
                  textHandle,
                  {},
                  0,
-                 ColorRGBA::fuchsia());
+                 fpsFontColor);
 
         ren.renderPresent();
 
@@ -232,7 +236,7 @@ int main(int argc, char *argv[]) {
     auto fs = std::ifstream("assets/Sono/static/Sono/Sono-Bold.ttf");
     auto font = fontDriver->createFont(fs);
 
-    font->setPixelSize({0, 25});
+    font->setPixelSize({0, fpsFontPixelSize});
 
     auto renderDevice = gpuDriver->createRenderDevice();
 
