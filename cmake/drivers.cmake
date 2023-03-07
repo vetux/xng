@@ -182,6 +182,8 @@ foreach (val IN LISTS DRIVERS_INCLUDE)
     message("   ${val}")
 endforeach ()
 
-message("Linked Libraries: ${STR_LIBRARIES}")
+if (${LEN_DRIVERS_INCLUDE} GREATER 0)
+    message("Linked Libraries: ${STR_LIBRARIES}")
+endif ()
 
 file(GLOB_RECURSE DRIVERS_SRC ${Drivers.GLOBEXPR})

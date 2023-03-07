@@ -10,4 +10,4 @@ include(${BASE_SOURCE_DIR}/cmake/drivers.cmake)
 include(${BASE_SOURCE_DIR}/cmake/engine.cmake)
 include(${BASE_SOURCE_DIR}/cmake/tests.cmake)
 
-add_subdirectory(platforms/android/)
+include(platforms/android.cmake)
