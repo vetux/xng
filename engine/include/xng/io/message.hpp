@@ -24,6 +24,7 @@
 #include <vector>
 #include <stdexcept>
 #include <set>
+#include <string>
 
 namespace xng {
     class XENGINE_EXPORT Message;

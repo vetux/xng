@@ -148,20 +148,22 @@ endif ()
 
 ### --  Stop Driver Definitions -- ###
 
-set(DRIVERS_REGISTRATION_HEADER "")
-set(DRIVERS_REGISTRATION "")
+set(DRIVERS_REGISTRATION_HEADER)
+set(DRIVERS_REGISTRATION)
 
 list(LENGTH DRIVERS_CLASSES DRIVERS_CLASSES_LEN)
-foreach (index RANGE 0 ${DRIVERS_CLASSES_LEN})
-    list(GET DRIVERS_CLASSES ${index} CLASS)
-    list(GET DRIVERS_INCLUDES ${index} INCLUDE)
-    list(GET DRIVERS_NAMES ${index} NAME)
-    if (CLASS STREQUAL "")
-        break()
-    endif ()
-    set(DRIVERS_REGISTRATION_HEADER "${DRIVERS_REGISTRATION_HEADER}#include \"${INCLUDE}\"\n")
-    set(DRIVERS_REGISTRATION "${DRIVERS_REGISTRATION}{\"${NAME}\", [](){ return std::make_unique<${CLASS}>()\; }},")
-endforeach ()
+if (${DRIVERS_CLASSES_LEN} GREATER 0)
+    foreach (index RANGE 0 ${DRIVERS_CLASSES_LEN})
+        list(GET DRIVERS_CLASSES ${index} CLASS)
+        list(GET DRIVERS_INCLUDES ${index} INCLUDE)
+        list(GET DRIVERS_NAMES ${index} NAME)
+        if (CLASS STREQUAL "")
+            break()
+        endif ()
+        set(DRIVERS_REGISTRATION_HEADER "${DRIVERS_REGISTRATION_HEADER}#include \"${INCLUDE}\"\n")
+        set(DRIVERS_REGISTRATION "${DRIVERS_REGISTRATION}{\"${NAME}\", [](){ return std::make_unique<${CLASS}>()\; }},")
+    endforeach ()
+endif ()
 
 set(DRIVERS_GENERATOR "${DRIVERS_REGISTRATION_HEADER}\nnamespace xng::DriverGenerator { inline const std::map<std::string, Driver::Creator> &getDrivers() { static const std::map<std::string, Driver::Creator> creators = {${DRIVERS_REGISTRATION}}\; return creators\; } }")
 
@@ -175,7 +177,7 @@ endforeach ()
 
 list(LENGTH DRIVERS_INCLUDE LEN_DRIVERS_INCLUDE)
 
-message("${LEN_DRIVERS_INCLUDE} Drivers Loaded :")
+message("${LEN_DRIVERS_INCLUDE} Drivers Loaded")
 foreach (val IN LISTS DRIVERS_INCLUDE)
     message("   ${val}")
 endforeach ()

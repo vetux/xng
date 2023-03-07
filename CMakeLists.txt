@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.0.0)
 
 project(xEngine)
 
+include(cmake/user-config-project.cmake)
+
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -24,8 +26,6 @@ set(CMAKE_C_FLAGS_RELEASE ${RELEASE_COMPILER_FLAGS})
 set(CMAKE_CXX_FLAGS_RELEASE ${RELEASE_COMPILER_FLAGS})
 set(CMAKE_C_FLAGS_DEBUG ${DEBUG_COMPILER_FLAGS})
 set(CMAKE_CXX_FLAGS_DEBUG  ${DEBUG_COMPILER_FLAGS})
-
-include(config.cmake OPTIONAL)
 
 if (UNIX)
     add_compile_definitions(XENGINE_EXPORT=__attribute__\(\(visibility\("default"\)\)\))

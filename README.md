@@ -53,23 +53,8 @@ xEngine is a cross-platform c++ game engine library.
   - Tested Compiler: MSVC 2022 64bit
     - Build warnings are emitted due to the fact that xng uses STL types in dllexport types. 
     - Users must ensure that their application is built with the same compiler version as the linked library because windows uses multiple STL dll files and allows loading of multiple STL version dlls into the same process. If the user links to a different STL version than the one used for building the engine dll there can be problems when passing types through the dll interface.
+- Android
+  - Tested Compiler: Android NDK r25c
 
 ### Build Instructions
-- Compilation of each driver can be enabled or disabled by setting the corresponding options in [drivers.cmake](cmake/drivers.cmake)
-- Ensure that the include and library files of the driver dependencies are available.
-  - For linux: check ([install_dependencies.sh](install_dependencies.sh]))
-  - For windows: download or build the dependencies and configure the paths to the built artifacts and include 
-  files in [config.cmake](cmake/config.cmake), Make sure that the names of the lib files match the linked library names
-  in the cmake output.
-- Clone the [imgui](submodules/imgui) submodule
-- Load [CMakeLists.txt](CMakeLists.txt) and build the engine target 
-
-Eg. from the command line:
-<code>mkdir mybuild/</code>
-<code>cd mybuild/</code>
-<code>cmake ../</code>
-<code>cmake --build .</code>
-
-#### Box2D
-The box2d physics driver requires version 2.4.1 of box2d.
-Make sure to not have conflicting versions of the library on the include / link paths.
+Check [BUILDING.md](BUILDING.md) for detailed building instructions.

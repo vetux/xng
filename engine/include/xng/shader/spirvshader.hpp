@@ -38,6 +38,8 @@ namespace xng {
 
         SPIRVShader(const SPIRVShader &other) = default;
 
+        SPIRVShader &operator=(const SPIRVShader &other) = default;
+
         ShaderStage getStage() const {
             if (blob == nullptr)
                 throw std::runtime_error("Shader not initialized");

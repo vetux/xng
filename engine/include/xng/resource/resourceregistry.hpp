@@ -28,6 +28,7 @@
 #include <condition_variable>
 #include <filesystem>
 #include <shared_mutex>
+#include <unordered_map>
 
 #include "xng/io/archive.hpp"
 
