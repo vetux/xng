@@ -157,6 +157,15 @@ namespace xng {
             };
         }
 
+        static ColorRGBA fuchsia(float intensity = 1, uint8_t alpha = 255) {
+            return {
+                    numeric_cast<uint8_t>(255 * intensity),
+                    numeric_cast<uint8_t>(0 * intensity),
+                    numeric_cast<uint8_t>(255 * intensity),
+                    alpha
+            };
+        }
+
         static ColorRGBA fromVector(const Vec4f &vec, float scale = 255) {
             return {ColorRGBA(numeric_cast<uint8_t>(vec.x * scale),
                               numeric_cast<uint8_t>(vec.y * scale),
