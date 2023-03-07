@@ -20,6 +20,8 @@
 #ifndef XENGINE_TEXT_HPP
 #define XENGINE_TEXT_HPP
 
+#include <utility>
+
 #include "xng/font/font.hpp"
 #include "xng/util/numeric_cast.hpp"
 
@@ -29,11 +31,11 @@ namespace xng {
     struct XENGINE_EXPORT Text {
         Text() = default;
 
-        Text(std::string text, Vec2f origin, int lineWidth, std::unique_ptr<TextureBuffer> buffer)
+        Text(std::string text, Vec2f origin, int lineWidth, ImageRGBA buffer)
                 : text(std::move(text)),
-                  origin(origin),
+                  origin(std::move(origin)),
                   lineWidth(lineWidth),
-                  buffer(std::move(buffer)) {}
+                  image(std::move(buffer)) {}
 
         ~Text() = default;
 
@@ -58,17 +60,17 @@ namespace xng {
         int getLineWidth() const { return lineWidth; }
 
         /**
-         * Get the texture containing the rendered text with the grayscale in the x component.
+         * Get the image containing the rendered text with the grayscale in the r,g,b,a components.
          *
          * @return
          */
-        TextureBuffer &getTexture() const { return *buffer; }
+        const ImageRGBA &getImage() const { return image; }
 
     private:
         std::string text;
         Vec2f origin;
         int lineWidth{};
-        std::unique_ptr<TextureBuffer> buffer;
+        ImageRGBA image;
     };
 }
 #endif //XENGINE_TEXT_HPP

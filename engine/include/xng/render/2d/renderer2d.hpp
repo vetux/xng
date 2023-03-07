@@ -76,7 +76,7 @@ namespace xng {
                          const ColorRGBA &clearColor,
                          const Vec2i &viewportOffset,
                          const Vec2i &viewportSize) {
-            renderBegin(target, true, clearColor, std::move(viewportOffset), std::move(viewportSize));
+            renderBegin(target, true, clearColor, viewportOffset, viewportSize, {});
             renderPresent();
         }
 
@@ -107,7 +107,7 @@ namespace xng {
                          const ColorRGBA &clearColor,
                          const Vec2i &viewportOffset,
                          const Vec2i &viewportSize,
-                         const Vec2f &cameraPosition = {}) {
+                         const Vec2f &cameraPosition) {
             renderBegin(target,
                         clear,
                         clearColor,
@@ -124,8 +124,8 @@ namespace xng {
          * @param clear
          * @param clearColor
          */
-        void renderBegin(RenderTarget &target, bool clear = true, ColorRGBA clearColor = ColorRGBA::black()) {
-            renderBegin(target, clear, clearColor, {}, target.getDescription().size);
+        void renderBegin(RenderTarget &target, ColorRGBA clearColor = ColorRGBA::black(1, 0)) {
+            renderBegin(target, true, clearColor, {}, target.getDescription().size, {});
         }
 
         /**

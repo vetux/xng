@@ -21,9 +21,6 @@
 
 #include <utility>
 
-#pragma message "Not Implemented"
-
-
 namespace xng {
     struct RenderChar {
         std::reference_wrapper<Character> character;
@@ -214,6 +211,6 @@ namespace xng {
 
         target->setColorAttachments({});
 
-        return {text, origin, layout.lineWidth, std::move(tex)};
+        return {text, origin, layout.lineWidth, std::move(tex->download())};
     }
 }
