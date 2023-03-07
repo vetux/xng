@@ -256,8 +256,6 @@ int main(int argc, char *argv[]) {
             currentPage = 1;
         }
 
-        std::cout << "\r";
-
         switch (currentPage) {
             default: {
                 app.drawHomePage(delta);
