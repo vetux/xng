@@ -74,14 +74,14 @@ public:
         out << std::fixed << 1 / delta;
 
         auto text = textRenderer.render(out.str(), textLayout);
-        auto textImg = text.getTexture().download();
+        auto &textImg = text.getImage();
         auto textHandle = ren.createTexture(textImg);
 
         auto &target = window.getRenderTarget();
 
         rot += rotSpeed * delta;
 
-        ren.renderBegin(target);
+        ren.renderBegin(target, ColorRGBA::grey(0.3, 0));
 
         auto targetSize = target.getDescription().size.convert<float>();
 
@@ -117,12 +117,12 @@ public:
                  ColorRGBA::yellow(),
                  false);
 
-        ren.draw(Rectf({}, text.getTexture().getDescription().size.convert<float>()),
-                 Rectf({}, text.getTexture().getDescription().size.convert<float>()),
+        ren.draw(Rectf({}, textImg.getSize().convert<float>()),
+                 Rectf({}, textImg.getSize().convert<float>()),
                  textHandle,
                  {},
                  0,
-                 ColorRGBA::white());
+                 ColorRGBA::fuchsia());
 
         ren.renderPresent();
 
@@ -131,14 +131,14 @@ public:
 
     size_t drawPerformanceTest(DeltaTime delta) {
         auto textLayout = TextLayout();
-        textLayout.lineHeight = 30 ;
+        textLayout.lineHeight = 30;
 
         std::ostringstream out;
         out.precision(0);
         out << std::fixed << 1 / delta;
 
         auto text = textRenderer.render(out.str(), textLayout);
-        auto textImg = text.getTexture().download();
+        auto &textImg = text.getImage();
         auto textHandle = ren.createTexture(textImg);
 
         if (window.getInput().getKey(KEY_UP)) {
@@ -154,7 +154,7 @@ public:
 
         rot += rotSpeed * delta;
 
-        ren.renderBegin(target);
+        ren.renderBegin(target, ColorRGBA::grey(0.3, 0));
 
         auto targetSize = target.getDescription().size.convert<float>();
 
@@ -197,19 +197,19 @@ public:
                          imgSize / 2,
                          rot,
                          std::clamp((scale.x + scale.y) - 0.5f, 0.0f, 1.0f),
-                        0,
+                         0,
                          xng::ColorRGBA(static_cast<uint8_t>(125 * scale.x + 25),
                                         static_cast<uint8_t>(125 * scale.y + 25), 30, 255));
                 ret++;
             }
         }
 
-        ren.draw(Rectf({}, text.getTexture().getDescription().size.convert<float>()),
-                 Rectf({}, text.getTexture().getDescription().size.convert<float>()),
+        ren.draw(Rectf({}, textImg.getSize().convert<float>()),
+                 Rectf({}, textImg.getSize().convert<float>()),
                  textHandle,
                  {},
                  0,
-                 ColorRGBA::white());
+                 ColorRGBA::fuchsia());
 
         ren.renderPresent();
 
@@ -229,7 +229,7 @@ int main(int argc, char *argv[]) {
     auto window = displayDriver->createWindow(OPENGL_4_6, "Renderer 2D Test", {640, 480}, {});
     auto &input = window->getInput();
     auto &target = window->getRenderTarget();
-    auto fs = std::ifstream("assets/Sono/static/Sono/Sono-Regular.ttf");
+    auto fs = std::ifstream("assets/Sono/static/Sono/Sono-Bold.ttf");
     auto font = fontDriver->createFont(fs);
 
     font->setPixelSize({0, 25});
