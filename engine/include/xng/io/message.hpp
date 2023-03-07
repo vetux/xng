@@ -138,6 +138,10 @@ namespace xng {
             return ival;
         }
 
+        explicit operator unsigned int() const {
+            return ival;
+        }
+
         explicit operator unsigned long() const {
             return ival;
         }

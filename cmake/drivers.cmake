@@ -25,9 +25,9 @@ set(DRIVERS_NAMES) # The driver names
 # @INCLUDE = The include path of the driver class
 # @DRIVER_LINK = The library name/s which the driver links to. There can be multiple DRIVER_LINK arguments.
 function(CompileDriver COMPILE_DEFS DIR CLASS INCLUDE)
-    set(Drivers.GLOBEXPR ${Drivers.GLOBEXPR} drivers/${DIR}/*.cpp drivers/${DIR}/*.c PARENT_SCOPE)
+    set(Drivers.GLOBEXPR ${Drivers.GLOBEXPR} ${BASE_SOURCE_DIR}/drivers/${DIR}/*.cpp ${BASE_SOURCE_DIR}/drivers/${DIR}/*.c PARENT_SCOPE)
     add_compile_definitions(${COMPILE_DEFS})
-    set(DRIVERS_INCLUDE ${DRIVERS_INCLUDE} drivers/${DIR}/ PARENT_SCOPE)
+    set(DRIVERS_INCLUDE ${DRIVERS_INCLUDE} ${BASE_SOURCE_DIR}/drivers/${DIR}/ PARENT_SCOPE)
     set(DRIVERS_CLASSES "${DRIVERS_CLASSES}${CLASS};" PARENT_SCOPE)
     set(DRIVERS_INCLUDES "${DRIVERS_INCLUDES}${INCLUDE};" PARENT_SCOPE)
     set(DRIVERS_NAMES "${DRIVERS_NAMES}${DIR};" PARENT_SCOPE)
@@ -168,7 +168,7 @@ endif ()
 set(DRIVERS_GENERATOR "${DRIVERS_REGISTRATION_HEADER}\nnamespace xng::DriverGenerator { inline const std::map<std::string, Driver::Creator> &getDrivers() { static const std::map<std::string, Driver::Creator> creators = {${DRIVERS_REGISTRATION}}\; return creators\; } }")
 
 # Write the header file included by engine/src/driver/driver.cpp
-file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/engine/src/compiled_drivers.h ${DRIVERS_GENERATOR})
+file(WRITE ${BASE_SOURCE_DIR}/engine/src/compiled_drivers.h ${DRIVERS_GENERATOR})
 
 set(STR_LIBRARIES "")
 foreach (val IN LISTS DRIVERS_LINK)

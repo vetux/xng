@@ -31,6 +31,8 @@
 
 #include "xng/io/messageable.hpp"
 
+#include "xng/io/message.hpp"
+
 namespace xng {
     struct TextureArrayBufferDesc : public Messageable {
         size_t textureCount{}; // The number of textures in the array
@@ -52,7 +54,7 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            message.value("textureCount", textureCount, 0UL);
+            message.value("textureCount", textureCount, static_cast<size_t>(0));
             message.value("textureDesc", textureDesc);
             return *this;
         }

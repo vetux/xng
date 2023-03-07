@@ -41,14 +41,14 @@ protected:
 
     int underflow()
     {
-        if (m_pos + std::streamsize(1) >= m_len)
+        if (static_cast<std::streamsize>(m_pos) + std::streamsize(1) >= m_len)
             return traits_type::eof();
         return m_sbuf->sgetc();
     }
 
     int uflow()
     {
-        if (m_pos + std::streamsize(1) > m_len)
+        if (static_cast<std::streamsize>(m_pos) + std::streamsize(1) > m_len)
             return traits_type::eof();
         m_pos += std::streamsize(1);
         return m_sbuf->sbumpc();
