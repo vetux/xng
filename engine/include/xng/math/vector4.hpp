@@ -135,10 +135,6 @@ namespace xng {
             return !(lhs == rhs);
         }
 
-        bool operator<(const Vector4<T> &v) const {
-            return x < v.x && y < v.y && z < v.z && w < v.w;
-        }
-
         template <typename R>
         friend Vector4<T> operator*(const Vector4<T> &lhs, const R &rhs) {
             return Vector4<T>(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs, lhs.w * rhs);

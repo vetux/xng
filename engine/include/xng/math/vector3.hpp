@@ -78,10 +78,6 @@ namespace xng {
             return *this;
         }
 
-        bool operator<(const Vector3<T> &v) const {
-            return x < v.x && y < v.y && z < v.z;
-        }
-
         template<typename R>
         explicit operator Vector3<R>() {
             return convert<R>();

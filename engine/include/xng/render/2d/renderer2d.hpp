@@ -388,10 +388,30 @@ namespace xng {
 
         Mat4f getRotationMatrix(float rotation, Vec2f center);
 
-        std::map<Vec2f, MeshDrawData> planeMeshes;
-        std::map<Vec2f, MeshDrawData> squareMeshes;
-        std::map<std::pair<Vec2f, Vec2f>, MeshDrawData> lineMeshes;
-        std::map<Vec2f, MeshDrawData> pointMeshes;
+        class RotationPairHash {
+        public:
+            std::size_t operator()(const std::pair<float, Vec2f> &k) const {
+                size_t ret = 0;
+                hash_combine(ret, k.first);
+                hash_combine(ret, k.second);
+                return ret;
+            }
+        };
+
+        class LinePairHash {
+        public:
+            std::size_t operator()(const std::pair<Vec2f, Vec2f> &k) const {
+                size_t ret = 0;
+                hash_combine(ret, k.first);
+                hash_combine(ret, k.second);
+                return ret;
+            }
+        };
+
+        std::unordered_map<Vec2f, MeshDrawData> planeMeshes;
+        std::unordered_map<Vec2f, MeshDrawData> squareMeshes;
+        std::unordered_map<std::pair<Vec2f, Vec2f>, MeshDrawData, LinePairHash> lineMeshes;
+        std::unordered_map<Vec2f, MeshDrawData> pointMeshes;
 
         std::map<size_t, size_t> freeVertexBufferRanges; // start and size of free ranges of vertices with layout vertexLayout in the vertex buffer
         std::map<size_t, size_t> freeIndexBufferRanges; // start and size of free ranges of bytes in the index buffer
@@ -399,17 +419,17 @@ namespace xng {
         std::map<size_t, size_t> allocatedVertexRanges;
         std::map<size_t, size_t> allocatedIndexRanges;
 
-        std::set<Vec2f> usedPlanes;
-        std::set<Vec2f> usedSquares;
-        std::set<std::pair<Vec2f, Vec2f>> usedLines;
-        std::set<Vec2f> usedPoints;
+        std::unordered_set<Vec2f> usedPlanes;
+        std::unordered_set<Vec2f> usedSquares;
+        std::unordered_set<std::pair<Vec2f, Vec2f>, LinePairHash> usedLines;
+        std::unordered_set<Vec2f> usedPoints;
 
         std::unique_ptr<IndexBuffer> indexBuffer;
         std::unique_ptr<VertexBuffer> vertexBuffer;
         std::unique_ptr<VertexArrayObject> vertexArrayObject;
 
-        std::map<std::pair<float, Vec2f>, Mat4f> rotationMatrices;
-        std::set<std::pair<float, Vec2f>> usedRotationMatrices;
+        std::unordered_map<std::pair<float, Vec2f>, Mat4f, RotationPairHash> rotationMatrices;
+        std::unordered_set<std::pair<float, Vec2f>, RotationPairHash> usedRotationMatrices;
 
         std::vector<Pass> passes;
 

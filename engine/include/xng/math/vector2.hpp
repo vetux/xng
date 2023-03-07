@@ -71,10 +71,6 @@ namespace xng {
             return *this;
         }
 
-        bool operator<(const Vector2<T> &v) const {
-            return x < v.x && y < v.y;
-        }
-
         template<typename R>
         explicit operator Vector2<R>() {
             return convert<R>();

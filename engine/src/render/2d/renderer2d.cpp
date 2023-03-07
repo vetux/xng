@@ -495,11 +495,11 @@ namespace xng {
                 }
             }
 
-            std::set<Vec2f> unusedPlanes;
-            std::set<Vec2f> unusedSquares;
-            std::set<std::pair<Vec2f, Vec2f>> unusedLines;
-            std::set<Vec2f> unusedPoints;
-            std::set<std::pair<float, Vec2f>> unusedRotationMatrices;
+            std::unordered_set<Vec2f> unusedPlanes;
+            std::unordered_set<Vec2f> unusedSquares;
+            std::unordered_set<std::pair<Vec2f, Vec2f>, LinePairHash> unusedLines;
+            std::unordered_set<Vec2f> unusedPoints;
+            std::unordered_set<std::pair<float, Vec2f>, RotationPairHash> unusedRotationMatrices;
 
             for (auto &pair: planeMeshes) {
                 if (usedPlanes.find(pair.first) == usedPlanes.end()) {
