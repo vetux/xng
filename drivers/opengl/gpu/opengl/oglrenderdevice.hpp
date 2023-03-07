@@ -46,10 +46,13 @@ namespace xng::opengl {
 
         std::function<void(RenderObject *)> destructor;
 
-        explicit OGLRenderDevice(RenderDeviceInfo info) : info(std::move(info)) {
+        explicit OGLRenderDevice(RenderDeviceInfo infoArg) : info(std::move(infoArg)) {
             destructor = [this](RenderObject *obj) {
                 objects.erase(obj);
             };
+            info.capabilities.insert(CAPABILITY_BASE_VERTEX);
+            info.capabilities.insert(CAPABILITY_INSTANCING);
+            info.capabilities.insert(CAPABILITY_MULTI_DRAW);
         }
 
         ~OGLRenderDevice() override {

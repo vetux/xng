@@ -27,9 +27,83 @@
 
 #include "xng/geometry/vertexstream.hpp"
 
-static const char *SHADER_VERT_TEXTURE = R"###(#version 460
+static const char *SHADER_VERT_TEXTURE = R"###(#version 320 es
 
-#define MAX_DRAW 1000 // Maximum amount of draws per multi draw
+layout (location = 0) in highp vec2 position;
+layout (location = 1) in highp vec2 uv;
+
+layout (location = 0) out highp vec4 fPosition;
+layout (location = 1) out highp vec2 fUv;
+
+struct PassData {
+    highp vec4 color;
+    highp vec4 colorMixFactor_alphaMixFactor_colorFactor;
+    ivec4 texAtlasLevel_texAtlasIndex;
+    highp mat4 mvp;
+    highp vec4 uvOffset_uvScale;
+    highp vec4 atlasScale;
+};
+
+layout(binding = 0, std140) uniform ShaderUniformBuffer
+{
+    PassData passData;
+} vars;
+
+layout(binding = 1) uniform highp sampler2DArray atlasTextures[12];
+
+void main() {
+    fPosition = (vars.passData.mvp) * vec4(position, 0, 1);
+    fUv = uv;
+    gl_Position = fPosition;
+}
+)###";
+
+static const char *SHADER_FRAG_TEXTURE = R"###(#version 320 es
+
+layout (location = 0) in highp vec4 fPosition;
+layout (location = 1) in highp vec2 fUv;
+
+layout (location = 0) out highp vec4 color;
+
+struct PassData {
+    highp vec4 color;
+    highp vec4 colorMixFactor_alphaMixFactor_colorFactor;
+    ivec4 texAtlasLevel_texAtlasIndex;
+    highp mat4 mvp;
+    highp vec4 uvOffset_uvScale;
+    highp vec4 atlasScale;
+};
+
+layout(binding = 0, std140) uniform ShaderUniformBuffer
+{
+    PassData passData;
+} vars;
+
+layout(binding = 1) uniform highp sampler2DArray atlasTextures[12];
+
+void main() {
+    if (vars.passData.texAtlasLevel_texAtlasIndex.y >= 0) {
+        highp vec2 uv = fUv;
+        uv = uv * vars.passData.uvOffset_uvScale.zw;
+        uv = uv + vars.passData.uvOffset_uvScale.xy;
+        uv = uv * vars.passData.atlasScale.xy;
+        highp vec4 texColor = texture(atlasTextures[vars.passData.texAtlasLevel_texAtlasIndex.x],
+                                        vec3(uv.x, uv.y, vars.passData.texAtlasLevel_texAtlasIndex.y));
+        if (vars.passData.colorMixFactor_alphaMixFactor_colorFactor.z != 0.f) {
+            color = vars.passData.color * texColor;
+        } else {
+            color.rgb = mix(texColor.rgb, vars.passData.color.rgb, vars.passData.colorMixFactor_alphaMixFactor_colorFactor.x);
+            color.a = mix(texColor.a, vars.passData.color.a, vars.passData.colorMixFactor_alphaMixFactor_colorFactor.y);
+        }
+    } else {
+        color = vars.passData.color;
+    }
+}
+)###";
+
+static const char *SHADER_VERT_TEXTURE_MULTIDRAW = R"###(#version 460
+
+#define MAX_MULTI_DRAW_COUNT 1000 // Maximum amount of draws per multi draw
 
 layout (location = 0) in vec2 position;
 layout (location = 1) in vec2 uv;
@@ -49,7 +123,7 @@ struct PassData {
 
 layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
-    PassData passes[MAX_DRAW];
+    PassData passes[MAX_MULTI_DRAW_COUNT];
 } vars;
 
 layout(binding = 1) uniform sampler2DArray atlasTextures[12];
@@ -62,9 +136,9 @@ void main() {
 }
 )###";
 
-static const char *SHADER_FRAG_TEXTURE = R"###(#version 460
+static const char *SHADER_FRAG_TEXTURE_MULTIDRAW = R"###(#version 460
 
-#define MAX_DRAW 1000 // Maximum amount of draws per multi draw
+#define MAX_MULTI_DRAW_COUNT 1000 // Maximum amount of draws per multi draw
 
 layout (location = 0) in vec4 fPosition;
 layout (location = 1) in vec2 fUv;
@@ -83,7 +157,7 @@ struct PassData {
 
 layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
-    PassData passes[MAX_DRAW];
+    PassData passes[MAX_MULTI_DRAW_COUNT];
 } vars;
 
 layout(binding = 1) uniform sampler2DArray atlasTextures[12];
@@ -117,7 +191,7 @@ static float distance(float val1, float val2) {
 }
 
 namespace xng {
-    static const int MAX_DRAW = 1000;
+    static const int MAX_MULTI_DRAW_COUNT = 1000;
 
 #pragma pack(push, 1)
     // If anything other than 4 component vectors are used in uniform buffer data the memory layout becomes unpredictable.
@@ -131,27 +205,40 @@ namespace xng {
     };
 
     struct ShaderUniformBuffer {
-        PassData passes[MAX_DRAW];
+        PassData passData;
+    };
+
+    struct ShaderUniformBufferMultiDraw {
+        PassData passes[MAX_MULTI_DRAW_COUNT];
     };
 #pragma pack(pop)
 
     static_assert(sizeof(PassData) % 16 == 0);
-    static_assert(sizeof(ShaderUniformBuffer) % 16 == 0);
+    static_assert(sizeof(ShaderUniformBufferMultiDraw) % 16 == 0);
+
+    struct DrawBatch {
+        std::vector<RenderPass::DrawCall> drawCalls;
+        std::vector<size_t> baseVertices;
+        Primitive primitive = TRIANGLES;
+        std::vector<ShaderUniformBuffer> uniformBuffers; // The uniform buffer data for this batch
+    };
 
     /**
      * A draw cycle consists of one or more draw batches.
      *
      * Each draw batch contains draw calls which are dispatched using multiDraw.
      *
+     * There is only MAX_MULTI_DRAW_COUNT draw calls per draw cycle.
+     *
      * To ensure correct blending consequent draw calls of the same primitive are drawn in the same batch
      * together but each change in primitive causes a new draw batch to be created which incurs the overhead of
      * updating the shader uniform buffer.
      */
-    struct DrawBatch {
+    struct DrawBatchMultiDraw {
         std::vector<RenderPass::DrawCall> drawCalls;
         std::vector<size_t> baseVertices;
         Primitive primitive = TRIANGLES;
-        ShaderUniformBuffer uniformBuffer; // The uniform buffer data for this batch
+        ShaderUniformBufferMultiDraw uniformBuffer; // The uniform buffer data for this batch
     };
 
     Renderer2D::Renderer2D(RenderDevice &device, ShaderCompiler &shaderCompiler, ShaderDecompiler &shaderDecompiler)
@@ -178,14 +265,23 @@ namespace xng {
         vertexArrayObjectDesc.vertexLayout = vertexLayout;
         vertexArrayObject = renderDevice.createVertexArrayObject(vertexArrayObjectDesc);
 
-        vsTexture = ShaderSource(SHADER_VERT_TEXTURE, "main", VERTEX, GLSL_460, false);
-        fsTexture = ShaderSource(SHADER_FRAG_TEXTURE, "main", FRAGMENT, GLSL_460, false);
+        vsTexture = ShaderSource(SHADER_VERT_TEXTURE, "main", VERTEX, GLSL_ES_320, false);
+        fsTexture = ShaderSource(SHADER_FRAG_TEXTURE, "main", FRAGMENT, GLSL_ES_320, false);
 
         vsTexture = vsTexture.preprocess(shaderCompiler);
         fsTexture = fsTexture.preprocess(shaderCompiler);
 
         auto vsTexSource = vsTexture.compile(shaderCompiler);
         auto fsTexSource = fsTexture.compile(shaderCompiler);
+
+        vsTextureMultiDraw = ShaderSource(SHADER_VERT_TEXTURE_MULTIDRAW, "main", VERTEX, GLSL_460, false);
+        fsTextureMultiDraw = ShaderSource(SHADER_FRAG_TEXTURE_MULTIDRAW, "main", FRAGMENT, GLSL_460, false);
+
+        vsTextureMultiDraw = vsTextureMultiDraw.preprocess(shaderCompiler);
+        fsTextureMultiDraw = fsTextureMultiDraw.preprocess(shaderCompiler);
+
+        auto vsTexSourceMultiDraw = vsTextureMultiDraw.compile(shaderCompiler);
+        auto fsTexSourceMultiDraw = fsTextureMultiDraw.compile(shaderCompiler);
 
         RenderPipelineDesc desc;
 
@@ -212,6 +308,7 @@ namespace xng {
         desc.vertexLayout = vertexLayout;
         desc.enableBlending = true;
 
+        desc.primitive = TRIANGLES;
         trianglePipeline = device.createRenderPipeline(desc, shaderDecompiler);
 
         desc.primitive = LINES;
@@ -219,6 +316,21 @@ namespace xng {
 
         desc.primitive = POINTS;
         pointPipeline = device.createRenderPipeline(desc, shaderDecompiler);
+
+        desc.shaders = {
+                {ShaderStage::VERTEX,   vsTexSourceMultiDraw.getShader()},
+                {ShaderStage::FRAGMENT, fsTexSourceMultiDraw.getShader()}
+        };
+
+        desc.primitive = TRIANGLES;
+        trianglePipelineMultiDraw = device.createRenderPipeline(desc, shaderDecompiler);
+
+        desc.primitive = LINES;
+        linePipelineMultiDraw = device.createRenderPipeline(desc, shaderDecompiler);
+
+        desc.primitive = POINTS;
+        pointPipelineMultiDraw = device.createRenderPipeline(desc, shaderDecompiler);
+
 
         for (int i = TEXTURE_ATLAS_8x8; i < TEXTURE_ATLAS_END; i++) {
             auto res = (TextureAtlasResolution) i;
@@ -332,10 +444,425 @@ namespace xng {
         }
         isRendering = false;
 
+        auto caps = renderDevice.getInfo().capabilities;
+
+        if (caps.find(CAPABILITY_MULTI_DRAW) != caps.end()) {
+            presentMultiDraw();
+        } else {
+            if (caps.find(CAPABILITY_BASE_VERTEX) == caps.end()) {
+                throw std::runtime_error("CAPABILITY_BASE_VERTEX is required");
+            }
+            presentCompat();
+        }
+
+        passes.clear();
+    }
+
+    void Renderer2D::draw(const Rectf &srcRect,
+                          const Rectf &dstRect,
+                          TextureAtlasHandle &sprite,
+                          const Vec2f &center,
+                          float rotation,
+                          float mix,
+                          float mixAlpha,
+                          ColorRGBA mixColor) {
+        passes.emplace_back(Pass(srcRect,
+                                 dstRect,
+                                 sprite,
+                                 center,
+                                 rotation,
+                                 mix,
+                                 mixAlpha,
+                                 mixColor));
+    }
+
+    void Renderer2D::draw(const Rectf &srcRect,
+                          const Rectf &dstRect,
+                          TextureAtlasHandle &sprite,
+                          const Vec2f &center,
+                          float rotation,
+                          ColorRGBA colorFactor) {
+        passes.emplace_back(Pass(srcRect,
+                                 dstRect,
+                                 sprite,
+                                 center,
+                                 rotation,
+                                 colorFactor));
+    }
+
+    void Renderer2D::draw(const Rectf &rectangle, ColorRGBA color, bool fill, const Vec2f &center, float rotation) {
+        passes.emplace_back(Pass(rectangle, color, fill, center, rotation));
+    }
+
+    void
+    Renderer2D::draw(const Vec2f &start, const Vec2f &end, ColorRGBA color, const Vec2f &position, const Vec2f &center,
+                     float rotation) {
+        passes.emplace_back(Pass(start, end, color, position, center, rotation));
+    }
+
+    void Renderer2D::draw(const Vec2f &point,
+                          ColorRGBA color,
+                          const Vec2f &position,
+                          const Vec2f &center,
+                          float rotation) {
+        passes.emplace_back(Pass(point, color, position, center, rotation));
+    }
+
+    void Renderer2D::rebindTextureAtlas(const std::map<TextureAtlasResolution, std::vector<bool>> &occupations) {
+        std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> atlasRef;
+
+        atlasRef.insert(
+                std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(TEXTURE_ATLAS_8x8,
+                                                                                                   *atlasTextures.at(
+                                                                                                           TEXTURE_ATLAS_8x8).get()));
+        atlasRef.insert(
+                std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(TEXTURE_ATLAS_16x16,
+                                                                                                   *atlasTextures.at(
+                                                                                                           TEXTURE_ATLAS_16x16).get()));
+        atlasRef.insert(
+                std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(TEXTURE_ATLAS_32x32,
+                                                                                                   *atlasTextures.at(
+                                                                                                           TEXTURE_ATLAS_32x32).get()));
+        atlasRef.insert(
+                std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(TEXTURE_ATLAS_64x64,
+                                                                                                   *atlasTextures.at(
+                                                                                                           TEXTURE_ATLAS_64x64).get()));
+        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
+                TEXTURE_ATLAS_128x128, *atlasTextures.at(TEXTURE_ATLAS_128x128).get()));
+        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
+                TEXTURE_ATLAS_256x256, *atlasTextures.at(TEXTURE_ATLAS_256x256).get()));
+        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
+                TEXTURE_ATLAS_512x512, *atlasTextures.at(TEXTURE_ATLAS_512x512).get()));
+        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
+                TEXTURE_ATLAS_1024x1024, *atlasTextures.at(TEXTURE_ATLAS_1024x1024).get()));
+        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
+                TEXTURE_ATLAS_2048x2048, *atlasTextures.at(TEXTURE_ATLAS_2048x2048).get()));
+        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
+                TEXTURE_ATLAS_4096x4096, *atlasTextures.at(TEXTURE_ATLAS_4096x4096).get()));
+        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
+                TEXTURE_ATLAS_8192x8192, *atlasTextures.at(TEXTURE_ATLAS_8192x8192).get()));
+        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
+                TEXTURE_ATLAS_16384x16384, *atlasTextures.at(TEXTURE_ATLAS_16384x16384).get()));
+
+        atlas = TextureAtlas(atlasRef, occupations);
+    }
+
+    void Renderer2D::presentCompat() {
+        // Compatibility render path for OpenGL ES 3.2
+
+        usedPlanes.clear();
+        usedSquares.clear();
+        usedLines.clear();
+        usedPoints.clear();
+        usedRotationMatrices.clear();
+
+        std::vector<RenderPass::DrawCall> drawCalls;
+        std::vector<size_t> baseVertices;
+        std::vector<Primitive> primitives;
+        std::vector<ShaderUniformBuffer> shaderBuffers;
+        std::vector<PassData> passData;
+
+        for (auto &pass: passes) {
+            switch (pass.type) {
+                case Pass::COLOR_POINT: {
+                    usedPoints.insert(pass.dstRect.position);
+                    auto point = getPoint(pass.dstRect.position);
+
+                    primitives.emplace_back(point.primitive);
+                    baseVertices.emplace_back(point.baseVertex);
+                    drawCalls.emplace_back(point.drawCall);
+
+                    polyCounter += 1;
+
+                    auto rotMat = getRotationMatrix(pass.rotation, pass.center);
+
+                    auto model = MatrixMath::translate({
+                                                               pass.srcRect.position.x,
+                                                               pass.srcRect.position.y,
+                                                               0})
+                                 * rotMat;
+
+                    ShaderUniformBuffer buffer;
+
+                    buffer.passData.mvp = viewProjectionMatrix * model;
+                    auto color = pass.color.divide();
+                    buffer.passData.color[0] = color.x;
+                    buffer.passData.color[1] = color.y;
+                    buffer.passData.color[2] = color.z;
+                    buffer.passData.color[3] = color.w;
+
+                    shaderBuffers.emplace_back(buffer);
+
+                    break;
+                }
+                case Pass::COLOR_LINE: {
+                    usedLines.insert(std::make_pair(pass.dstRect.position, pass.dstRect.dimensions));
+
+                    auto line = getLine(pass.dstRect.position, pass.dstRect.dimensions);
+
+                    primitives.emplace_back(line.primitive);
+                    baseVertices.emplace_back(line.baseVertex);
+                    drawCalls.emplace_back(line.drawCall);
+
+                    polyCounter += 1;
+
+                    auto rotMat = getRotationMatrix(pass.rotation, pass.center);
+
+                    auto model = MatrixMath::translate({
+                                                               pass.srcRect.position.x,
+                                                               pass.srcRect.position.y,
+                                                               0})
+                                 * rotMat;
+
+                    ShaderUniformBuffer buffer;
+
+                    buffer.passData.mvp = viewProjectionMatrix * model;
+                    auto color = pass.color.divide();
+                    buffer.passData.color[0] = color.x;
+                    buffer.passData.color[1] = color.y;
+                    buffer.passData.color[2] = color.z;
+                    buffer.passData.color[3] = color.w;
+
+                    shaderBuffers.emplace_back(buffer);
+                    break;
+                }
+                case Pass::COLOR_PLANE: {
+                    if (pass.fill) {
+                        usedPlanes.insert(pass.dstRect.dimensions);
+                        auto plane = getPlane(pass.dstRect.dimensions);
+
+                        primitives.emplace_back(plane.primitive);
+                        baseVertices.emplace_back(plane.baseVertex);
+                        drawCalls.emplace_back(plane.drawCall);
+
+                        polyCounter += 2;
+                    } else {
+                        usedSquares.insert(pass.dstRect.dimensions);
+                        auto square = getSquare(pass.dstRect.dimensions);
+
+                        primitives.emplace_back(square.primitive);
+                        baseVertices.emplace_back(square.baseVertex);
+                        drawCalls.emplace_back(square.drawCall);
+
+                        polyCounter += 4;
+                    }
+
+                    auto rotMat = getRotationMatrix(pass.rotation, pass.center);
+
+                    auto model = MatrixMath::translate({
+                                                               pass.dstRect.position.x,
+                                                               pass.dstRect.position.y,
+                                                               0})
+                                 * rotMat;
+
+                    ShaderUniformBuffer buffer;
+
+                    buffer.passData.mvp = viewProjectionMatrix * model;
+                    auto color = pass.color.divide();
+                    buffer.passData.color[0] = color.x;
+                    buffer.passData.color[1] = color.y;
+                    buffer.passData.color[2] = color.z;
+                    buffer.passData.color[3] = color.w;
+
+                    shaderBuffers.emplace_back(buffer);
+                    break;
+                }
+                case Pass::TEXTURE: {
+                    usedPlanes.insert(pass.dstRect.dimensions);
+                    auto plane = getPlane(pass.dstRect.dimensions);
+
+                    primitives.emplace_back(plane.primitive);
+                    baseVertices.emplace_back(plane.baseVertex);
+                    drawCalls.emplace_back(plane.drawCall);
+
+                    polyCounter += 2;
+
+                    auto rotMat = getRotationMatrix(pass.rotation, pass.center);
+
+                    auto model = MatrixMath::translate({
+                                                               pass.dstRect.position.x,
+                                                               pass.dstRect.position.y,
+                                                               0})
+                                 * rotMat;
+
+                    ShaderUniformBuffer buffer;
+
+                    buffer.passData.mvp = viewProjectionMatrix * model;
+                    auto color = pass.color.divide();
+                    buffer.passData.color[0] = color.x;
+                    buffer.passData.color[1] = color.y;
+                    buffer.passData.color[2] = color.z;
+                    buffer.passData.color[3] = color.w;
+
+                    buffer.passData.colorMixFactor_alphaMixFactor_colorFactor[0] = pass.mix;
+                    buffer.passData.colorMixFactor_alphaMixFactor_colorFactor[1] = pass.alphaMix;
+                    buffer.passData.colorMixFactor_alphaMixFactor_colorFactor[2] = pass.colorFactor;
+                    buffer.passData.texAtlasLevel_texAtlasIndex[0] = pass.texture.level;
+                    buffer.passData.texAtlasLevel_texAtlasIndex[1] = (int) pass.texture.index;
+                    auto uvOffset = pass.srcRect.position / pass.texture.size.convert<float>();
+                    buffer.passData.uvOffset_uvScale[0] = uvOffset.x;
+                    buffer.passData.uvOffset_uvScale[1] = uvOffset.y;
+                    auto uvScale = (pass.srcRect.dimensions /
+                                    pass.texture.size.convert<float>());
+                    buffer.passData.uvOffset_uvScale[2] = uvScale.x;
+                    buffer.passData.uvOffset_uvScale[3] = uvScale.y;
+                    auto atlasScale = (pass.texture.size.convert<float>() /
+                                       TextureAtlas::getResolutionLevelSize(
+                                               pass.texture.level).convert<float>());
+                    buffer.passData.atlasScale[0] = atlasScale.x;
+                    buffer.passData.atlasScale[1] = atlasScale.y;
+
+                    shaderBuffers.emplace_back(buffer);
+
+                    break;
+                }
+            }
+        }
+
+        std::unordered_set<Vec2f> unusedPlanes;
+        std::unordered_set<Vec2f> unusedSquares;
+        std::unordered_set<std::pair<Vec2f, Vec2f>, LinePairHash> unusedLines;
+        std::unordered_set<Vec2f> unusedPoints;
+        std::unordered_set<std::pair<float, Vec2f>, RotationPairHash> unusedRotationMatrices;
+
+        for (auto &pair: planeMeshes) {
+            if (usedPlanes.find(pair.first) == usedPlanes.end()) {
+                unusedPlanes.insert(pair.first);
+            }
+        }
+
+        for (auto &pair: squareMeshes) {
+            if (usedSquares.find(pair.first) == usedSquares.end()) {
+                unusedSquares.insert(pair.first);
+            }
+        }
+
+        for (auto &pair: lineMeshes) {
+            if (usedLines.find(pair.first) == usedLines.end()) {
+                unusedLines.insert(pair.first);
+            }
+        }
+
+        for (auto &pair: pointMeshes) {
+            if (usedPoints.find(pair.first) == usedPoints.end()) {
+                unusedPoints.insert(pair.first);
+            }
+        }
+
+        for (auto &pair: rotationMatrices) {
+            if (usedRotationMatrices.find(pair.first) == usedRotationMatrices.end()) {
+                unusedRotationMatrices.insert(pair.first);
+            }
+        }
+
+        for (auto &v: unusedPlanes) {
+            destroyPlane(v);
+        }
+
+        for (auto &v: unusedSquares) {
+            destroySquare(v);
+        }
+
+        for (auto &v: unusedLines) {
+            destroyLine(v.first, v.second);
+        }
+
+        for (auto &v: unusedPoints) {
+            destroyPoint(v);
+        }
+
+        for (auto &v: unusedRotationMatrices) {
+            rotationMatrices.erase(v);
+        }
+
+        mergeFreeVertexBufferRanges();
+        mergeFreeIndexBufferRanges();
+
+        updateVertexArrayObject();
+
+        std::vector<DrawBatch> batches;
+        DrawBatch currentBatch;
+        for (auto y = 0; y < drawCalls.size(); y++) {
+            auto prim = primitives.at(y);
+            if (prim != currentBatch.primitive) {
+                if (!currentBatch.drawCalls.empty())
+                    batches.emplace_back(currentBatch);
+                currentBatch = {};
+                currentBatch.primitive = prim;
+            }
+            currentBatch.drawCalls.emplace_back(drawCalls.at(y));
+            currentBatch.baseVertices.emplace_back(baseVertices.at(y));
+            currentBatch.uniformBuffers.emplace_back(shaderBuffers[y]);
+        }
+        if (!currentBatch.drawCalls.empty())
+            batches.emplace_back(currentBatch);
+
+        renderPass->beginRenderPass(*userTarget, mViewportOffset, mViewportSize);
+        renderPass->bindVertexArrayObject(*vertexArrayObject);
+
+
+        ShaderBufferDesc shaderBufferDesc;
+        shaderBufferDesc.size = sizeof(ShaderUniformBuffer);
+        auto shaderBuffer = renderDevice.createShaderBuffer(shaderBufferDesc);
+
+        renderPass->bindShaderData({
+                                           *shaderBuffer,
+                                           atlas.getBuffer(TEXTURE_ATLAS_8x8),
+                                           atlas.getBuffer(TEXTURE_ATLAS_16x16),
+                                           atlas.getBuffer(TEXTURE_ATLAS_32x32),
+                                           atlas.getBuffer(TEXTURE_ATLAS_64x64),
+                                           atlas.getBuffer(TEXTURE_ATLAS_128x128),
+                                           atlas.getBuffer(TEXTURE_ATLAS_256x256),
+                                           atlas.getBuffer(TEXTURE_ATLAS_512x512),
+                                           atlas.getBuffer(TEXTURE_ATLAS_1024x1024),
+                                           atlas.getBuffer(TEXTURE_ATLAS_2048x2048),
+                                           atlas.getBuffer(TEXTURE_ATLAS_4096x4096),
+                                           atlas.getBuffer(TEXTURE_ATLAS_8192x8192),
+                                           atlas.getBuffer(TEXTURE_ATLAS_16384x16384),
+                                   });
+
+        renderPass->bindPipeline(*trianglePipeline);
+
+        Primitive currentPrimitive = TRIANGLES;
+
+        for (auto &batch: batches) {
+            switch (batch.primitive) {
+                case POINTS:
+                    if (currentPrimitive != batch.primitive) {
+                        currentPrimitive = batch.primitive;
+                        renderPass->bindPipeline(*pointPipeline);
+                    }
+                    break;
+                case LINES:
+                    if (currentPrimitive != batch.primitive) {
+                        currentPrimitive = batch.primitive;
+                        renderPass->bindPipeline(*linePipeline);
+                    }
+                    break;
+                case TRIANGLES:
+                    if (currentPrimitive != batch.primitive) {
+                        currentPrimitive = batch.primitive;
+                        renderPass->bindPipeline(*trianglePipeline);
+                    }
+                    break;
+                default:
+                    throw std::runtime_error("Unsupported primitive");
+            }
+
+            for (auto y = 0; y < batch.drawCalls.size(); y++) {
+                shaderBuffer->upload(batch.uniformBuffers.at(y));
+                renderPass->drawIndexed(batch.drawCalls.at(y), batch.baseVertices.at(y));
+            }
+        }
+
+        renderPass->endRenderPass();
+    }
+
+    void Renderer2D::presentMultiDraw() {
         int drawCycles = 0;
-        if (passes.size() > MAX_DRAW) {
-            drawCycles = passes.size() / MAX_DRAW;
-            if (drawCycles * MAX_DRAW < passes.size()) {
+        if (passes.size() > MAX_MULTI_DRAW_COUNT) {
+            drawCycles = passes.size() / MAX_MULTI_DRAW_COUNT;
+            if (drawCycles * MAX_MULTI_DRAW_COUNT < passes.size()) {
                 drawCycles += 1;
             }
         } else if (!passes.empty()) {
@@ -352,10 +879,12 @@ namespace xng {
             std::vector<RenderPass::DrawCall> drawCalls;
             std::vector<size_t> baseVertices;
             std::vector<Primitive> primitives;
-            std::vector<PassData> passData(MAX_DRAW);
+            std::vector<PassData> passData(MAX_MULTI_DRAW_COUNT);
 
-            auto currentPassBase = i * MAX_DRAW;
-            for (auto passIndex = 0; passIndex < MAX_DRAW && passIndex + currentPassBase < passes.size(); passIndex++) {
+            auto currentPassBase = i * MAX_MULTI_DRAW_COUNT;
+            for (auto passIndex = 0;
+                 passIndex < MAX_MULTI_DRAW_COUNT && passIndex + currentPassBase < passes.size();
+                 passIndex++) {
                 auto &pass = passes.at(passIndex + currentPassBase);
                 switch (pass.type) {
                     case Pass::COLOR_POINT: {
@@ -556,8 +1085,8 @@ namespace xng {
 
             updateVertexArrayObject();
 
-            std::vector<DrawBatch> batches;
-            DrawBatch currentBatch;
+            std::vector<DrawBatchMultiDraw> batches;
+            DrawBatchMultiDraw currentBatch;
             size_t currentBatchIndex = 0;
             for (auto y = 0; y < drawCalls.size(); y++) {
                 auto prim = primitives.at(y);
@@ -572,15 +1101,15 @@ namespace xng {
                 currentBatch.baseVertices.emplace_back(baseVertices.at(y));
                 currentBatch.uniformBuffer.passes[currentBatchIndex++] = passData[y];
             }
+
             if (!currentBatch.drawCalls.empty())
                 batches.emplace_back(currentBatch);
 
             renderPass->beginRenderPass(*userTarget, mViewportOffset, mViewportSize);
             renderPass->bindVertexArrayObject(*vertexArrayObject);
 
-
             ShaderBufferDesc shaderBufferDesc;
-            shaderBufferDesc.size = sizeof(ShaderUniformBuffer);
+            shaderBufferDesc.size = sizeof(ShaderUniformBufferMultiDraw);
             auto shaderBuffer = renderDevice.createShaderBuffer(shaderBufferDesc);
 
             renderPass->bindShaderData({
@@ -599,120 +1128,40 @@ namespace xng {
                                                atlas.getBuffer(TEXTURE_ATLAS_16384x16384),
                                        });
 
+            renderPass->bindPipeline(*trianglePipelineMultiDraw);
+            Primitive currentPrimitive = TRIANGLES;
+
             for (auto &batch: batches) {
                 shaderBuffer->upload(batch.uniformBuffer);
 
                 switch (batch.primitive) {
                     case POINTS:
-                        renderPass->bindPipeline(*pointPipeline);
-                        renderPass->multiDrawIndexed(batch.drawCalls, batch.baseVertices);
+                        if (currentPrimitive != batch.primitive) {
+                            currentPrimitive = batch.primitive;
+                            renderPass->bindPipeline(*pointPipelineMultiDraw);
+                        }
                         break;
                     case LINES:
-                        renderPass->bindPipeline(*linePipeline);
-                        renderPass->multiDrawIndexed(batch.drawCalls, batch.baseVertices);
+                        if (currentPrimitive != batch.primitive) {
+                            currentPrimitive = batch.primitive;
+                            renderPass->bindPipeline(*linePipelineMultiDraw);
+                        }
                         break;
                     case TRIANGLES:
-                        renderPass->bindPipeline(*trianglePipeline);
-                        renderPass->multiDrawIndexed(batch.drawCalls, batch.baseVertices);
+                        if (currentPrimitive != batch.primitive) {
+                            currentPrimitive = batch.primitive;
+                            renderPass->bindPipeline(*trianglePipelineMultiDraw);
+                        }
                         break;
                     default:
                         throw std::runtime_error("Unsupported primitive");
                 }
+
+                renderPass->multiDrawIndexed(batch.drawCalls, batch.baseVertices);
             }
 
             renderPass->endRenderPass();
         }
-
-        passes.clear();
-    }
-
-    void Renderer2D::draw(const Rectf &srcRect,
-                          const Rectf &dstRect,
-                          TextureAtlasHandle &sprite,
-                          const Vec2f &center,
-                          float rotation,
-                          float mix,
-                          float mixAlpha,
-                          ColorRGBA mixColor) {
-        passes.emplace_back(Pass(srcRect,
-                                 dstRect,
-                                 sprite,
-                                 center,
-                                 rotation,
-                                 mix,
-                                 mixAlpha,
-                                 mixColor));
-    }
-
-    void Renderer2D::draw(const Rectf &srcRect,
-                          const Rectf &dstRect,
-                          TextureAtlasHandle &sprite,
-                          const Vec2f &center,
-                          float rotation,
-                          ColorRGBA colorFactor) {
-        passes.emplace_back(Pass(srcRect,
-                                 dstRect,
-                                 sprite,
-                                 center,
-                                 rotation,
-                                 colorFactor));
-    }
-
-    void Renderer2D::draw(const Rectf &rectangle, ColorRGBA color, bool fill, const Vec2f &center, float rotation) {
-        passes.emplace_back(Pass(rectangle, color, fill, center, rotation));
-    }
-
-    void
-    Renderer2D::draw(const Vec2f &start, const Vec2f &end, ColorRGBA color, const Vec2f &position, const Vec2f &center,
-                     float rotation) {
-        passes.emplace_back(Pass(start, end, color, position, center, rotation));
-    }
-
-    void Renderer2D::draw(const Vec2f &point,
-                          ColorRGBA color,
-                          const Vec2f &position,
-                          const Vec2f &center,
-                          float rotation) {
-        passes.emplace_back(Pass(point, color, position, center, rotation));
-    }
-
-    void Renderer2D::rebindTextureAtlas(const std::map<TextureAtlasResolution, std::vector<bool>> &occupations) {
-        std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> atlasRef;
-
-        atlasRef.insert(
-                std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(TEXTURE_ATLAS_8x8,
-                                                                                                   *atlasTextures.at(
-                                                                                                           TEXTURE_ATLAS_8x8).get()));
-        atlasRef.insert(
-                std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(TEXTURE_ATLAS_16x16,
-                                                                                                   *atlasTextures.at(
-                                                                                                           TEXTURE_ATLAS_16x16).get()));
-        atlasRef.insert(
-                std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(TEXTURE_ATLAS_32x32,
-                                                                                                   *atlasTextures.at(
-                                                                                                           TEXTURE_ATLAS_32x32).get()));
-        atlasRef.insert(
-                std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(TEXTURE_ATLAS_64x64,
-                                                                                                   *atlasTextures.at(
-                                                                                                           TEXTURE_ATLAS_64x64).get()));
-        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
-                TEXTURE_ATLAS_128x128, *atlasTextures.at(TEXTURE_ATLAS_128x128).get()));
-        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
-                TEXTURE_ATLAS_256x256, *atlasTextures.at(TEXTURE_ATLAS_256x256).get()));
-        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
-                TEXTURE_ATLAS_512x512, *atlasTextures.at(TEXTURE_ATLAS_512x512).get()));
-        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
-                TEXTURE_ATLAS_1024x1024, *atlasTextures.at(TEXTURE_ATLAS_1024x1024).get()));
-        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
-                TEXTURE_ATLAS_2048x2048, *atlasTextures.at(TEXTURE_ATLAS_2048x2048).get()));
-        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
-                TEXTURE_ATLAS_4096x4096, *atlasTextures.at(TEXTURE_ATLAS_4096x4096).get()));
-        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
-                TEXTURE_ATLAS_8192x8192, *atlasTextures.at(TEXTURE_ATLAS_8192x8192).get()));
-        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
-                TEXTURE_ATLAS_16384x16384, *atlasTextures.at(TEXTURE_ATLAS_16384x16384).get()));
-
-        atlas = TextureAtlas(atlasRef, occupations);
     }
 
     Renderer2D::MeshDrawData Renderer2D::getPlane(const Vec2f &size) {

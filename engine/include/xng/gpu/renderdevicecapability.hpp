@@ -22,13 +22,13 @@
 
 namespace xng {
     enum RenderDeviceCapability {
-        RENDER_COMPUTE, // Support for compute pipelines
-        RENDER_RAYTRACING, // Support for ray tracing pipelines
-        RENDER_GPU_MEMORY, // Support for GpuMemory interface implementation
+        CAPABILITY_COMPUTE, // Support for compute pipelines
+        CAPABILITY_RAYTRACING, // Support for ray tracing pipelines
+        CAPABILITY_GPU_MEMORY, // Support for GpuMemory interface implementation
 
-        RENDER_PIPELINE_MULTI_DRAW, // Support for multiDraw* methods of the RenderPipeline interface eg glMultiDraw on OpenGL
-        RENDER_PIPELINE_INSTANCING, // Support for instancedDraw* methods of the RenderPipeline interface eg glDraw*Instanced on OpenGL
-        RENDER_PIPELINE_BASE_VERTEX, // Support for *DrawIndexedBaseVertex methods of the RenderPipeline interface eg glDrawElements*BaseVertex on OpenGL
+        CAPABILITY_MULTI_DRAW, // Support for multiDraw* methods of the RenderPass interface eg glMultiDraw on OpenGL
+        CAPABILITY_INSTANCING, // Support for instancedDraw* methods of the RenderPass interface eg glDraw*Instanced on OpenGL
+        CAPABILITY_BASE_VERTEX, // Support for *DrawIndexedBaseVertex methods of the RenderPass interface eg glDrawElements*BaseVertex on OpenGL
     };
 }
 

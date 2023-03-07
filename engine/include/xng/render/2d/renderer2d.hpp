@@ -224,22 +224,6 @@ namespace xng {
     private:
         void rebindTextureAtlas(const std::map<TextureAtlasResolution, std::vector<bool>> &occupations);
 
-        size_t polyCounter = 0;
-
-        RenderDevice &renderDevice;
-
-        ShaderSource vsTexture;
-        ShaderSource fsTexture;
-
-        std::unique_ptr<RenderPipeline> trianglePipeline;
-        std::unique_ptr<RenderPipeline> linePipeline;
-        std::unique_ptr<RenderPipeline> pointPipeline;
-
-        std::unique_ptr<RenderPass> renderPass;
-
-        std::map<TextureAtlasResolution, std::unique_ptr<TextureArrayBuffer>> atlasTextures;
-        TextureAtlas atlas;
-
         struct Pass {
             enum Type {
                 COLOR_POINT,
@@ -348,6 +332,10 @@ namespace xng {
             size_t size;
         };
 
+        void presentCompat();
+
+        void presentMultiDraw();
+
         MeshDrawData getPlane(const Vec2f &size);
 
         MeshDrawData getSquare(const Vec2f &size);
@@ -407,6 +395,29 @@ namespace xng {
                 return ret;
             }
         };
+
+        size_t polyCounter = 0;
+
+        RenderDevice &renderDevice;
+
+        ShaderSource vsTexture;
+        ShaderSource fsTexture;
+
+        ShaderSource vsTextureMultiDraw;
+        ShaderSource fsTextureMultiDraw;
+
+        std::unique_ptr<RenderPipeline> trianglePipeline;
+        std::unique_ptr<RenderPipeline> linePipeline;
+        std::unique_ptr<RenderPipeline> pointPipeline;
+
+        std::unique_ptr<RenderPipeline> trianglePipelineMultiDraw;
+        std::unique_ptr<RenderPipeline> linePipelineMultiDraw;
+        std::unique_ptr<RenderPipeline> pointPipelineMultiDraw;
+
+        std::unique_ptr<RenderPass> renderPass;
+
+        std::map<TextureAtlasResolution, std::unique_ptr<TextureArrayBuffer>> atlasTextures;
+        TextureAtlas atlas;
 
         std::unordered_map<Vec2f, MeshDrawData> planeMeshes;
         std::unordered_map<Vec2f, MeshDrawData> squareMeshes;
