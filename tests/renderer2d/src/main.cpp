@@ -224,7 +224,7 @@ public:
 };
 
 int main(int argc, char *argv[]) {
-    auto displayDriver = DisplayDriver::load(GLFW);
+    auto displayDriver = DisplayDriver::load(DISPLAY_GLFW);
     auto gpuDriver = GpuDriver::load(OPENGL_4_6);
     auto shaderCompiler = ShaderCompiler::load(SHADERC);
     auto shaderDecompiler = ShaderDecompiler::load(SPIRV_CROSS);

@@ -66,8 +66,9 @@ namespace xng {
                     return {8192, 8192};
                 case TEXTURE_ATLAS_16384x16384:
                     return {16384, 16384};
+                default:
+                    throw std::runtime_error("Invalid texture atlas resolution level");
             }
-            throw std::runtime_error("Invalid texture atlas resolution level");
         }
 
         static TextureAtlasResolution getClosestMatchingResolutionLevel(const Vec2i &size) {

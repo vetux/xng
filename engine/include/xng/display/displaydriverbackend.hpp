@@ -22,7 +22,8 @@
 
 namespace xng {
     enum DisplayDriverBackend : int {
-        GLFW
+        DISPLAY_GLFW,
+        DISPLAY_ANDROID,
     };
 }
 

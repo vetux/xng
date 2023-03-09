@@ -91,7 +91,7 @@ namespace xng {
     protected:
         XENGINE_EXPORT static void setCurrentApplication(Application *ptr);
 
-        DisplayDriverBackend displayDriverBackend = GLFW;
+        DisplayDriverBackend displayDriverBackend = DISPLAY_GLFW;
         GpuDriverBackend gpuDriverBackend = OPENGL_4_6;
         AudioDriverBackend audioDriverBackend = OPENAL_SOFT;
 

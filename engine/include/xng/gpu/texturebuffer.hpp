@@ -47,8 +47,10 @@ namespace xng {
             return RENDER_OBJECT_TEXTURE_BUFFER;
         }
 
-        std::unique_ptr<GpuFence> copy(RenderBuffer &source, size_t readOffset, size_t writeOffset, size_t count){
-            static_assert(true, "Sub copy operations are not available for texture buffers because the memory is managed by the driver.");
+        std::unique_ptr<GpuFence>
+        copy(RenderBuffer &source, size_t readOffset, size_t writeOffset, size_t count) override {
+            static_assert(true,
+                          "Sub copy operations are not available for texture buffers because the memory is managed by the driver.");
             throw std::runtime_error("Cannot sub copy texture buffer");
         }
 

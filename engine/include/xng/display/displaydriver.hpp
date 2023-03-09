@@ -32,7 +32,7 @@ namespace xng {
     public:
         static std::string getBackendName(DisplayDriverBackend backend){
             switch(backend){
-                case GLFW:
+                case DISPLAY_GLFW:
                     return "glfw";
                 default:
                     throw std::runtime_error("Invalid backend");
@@ -41,7 +41,7 @@ namespace xng {
 
         static std::unique_ptr<DisplayDriver> load(DisplayDriverBackend backend) {
             return std::unique_ptr<DisplayDriver>(
-                    dynamic_cast<DisplayDriver *>(Driver::load(getBackendName(GLFW)).release()));
+                    dynamic_cast<DisplayDriver *>(Driver::load(getBackendName(DISPLAY_GLFW)).release()));
         }
 
         virtual std::unique_ptr<Monitor> getPrimaryMonitor() = 0;

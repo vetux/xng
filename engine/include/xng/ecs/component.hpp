@@ -27,6 +27,8 @@ namespace xng {
      * Component types must extend this type.
      */
     struct XENGINE_EXPORT Component : public Messageable {
+        virtual ~Component() = default;
+
         virtual std::type_index getType() const = 0;
 
         Messageable &operator<<(const Message &message) override {

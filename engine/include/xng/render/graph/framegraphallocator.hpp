@@ -36,6 +36,8 @@ namespace xng {
      */
     class XENGINE_EXPORT FrameGraphAllocator {
     public:
+        virtual ~FrameGraphAllocator() = default;
+
         /**
          * Must be called before calling allocateNextPass.
          *

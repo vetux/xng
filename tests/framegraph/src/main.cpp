@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
 
     createMaterialResource(archive);
 
-    auto displayDriver = xng::DisplayDriver::load(xng::GLFW);
+    auto displayDriver = xng::DisplayDriver::load(xng::DISPLAY_GLFW);
     auto gpuDriver = xng::GpuDriver::load(xng::OPENGL_4_6);
 
     auto shaderCompiler = xng::ShaderCompiler::load(xng::SHADERC);

@@ -1,15 +1,17 @@
-option(DRIVER_GLFW "Build the glfw display driver" ON)
-option(DRIVER_GLFW_OPENGL "Build the opengl support of the glfw display driver" ON)
-option(DRIVER_OPENGL "Build the OpenGL gpu driver" ON)
-option(DRIVER_BOX2D "Build the box2d physics driver" ON)
-option(DRIVER_BULLET3 "Build the bullet3 physics driver" ON)
-option(DRIVER_OPENAL "Build the OpenAL audio driver" ON)
-option(DRIVER_FREETYPE "Build the FreeType font rendering driver" ON)
-option(DRIVER_ASSIMP "Build the AssImp resource parser driver (For 3D asset file formats)" ON)
-option(DRIVER_SNDFILE "Build the SndFile resource parser driver (For Audio file formats)" ON)
-option(DRIVER_SHADERC "Build the ShaderC shader compiler driver" ON)
-option(DRIVER_SPIRVCROSS "Build the SPIRV-Cross shader decompiler driver" ON)
-option(DRIVER_CRYPTOPP "Build the CryptoPP driver" ON)
+option(DRIVER_GLFW "Build the glfw display driver" OFF)
+option(DRIVER_GLFW_OPENGL "Build the opengl support of the glfw display driver" OFF)
+option(DRIVER_OPENGL "Build the OpenGL gpu driver" OFF)
+option(DRIVER_BOX2D "Build the box2d physics driver" OFF)
+option(DRIVER_BULLET3 "Build the bullet3 physics driver" OFF)
+option(DRIVER_OPENAL "Build the OpenAL audio driver" OFF)
+option(DRIVER_FREETYPE "Build the FreeType font rendering driver" OFF)
+option(DRIVER_ASSIMP "Build the AssImp resource parser driver (For 3D asset file formats)" OFF)
+option(DRIVER_SNDFILE "Build the SndFile resource parser driver (For Audio file formats)" OFF)
+option(DRIVER_SHADERC "Build the ShaderC shader compiler driver" OFF)
+option(DRIVER_SPIRVCROSS "Build the SPIRV-Cross shader decompiler driver" OFF)
+option(DRIVER_CRYPTOPP "Build the CryptoPP driver" OFF)
+option(DRIVER_ANDROID "Build the android display driver" OFF)
+option(DRIVER_ANDROID_OPENGL "Build the opengl support of the android display driver" OFF)
 
 set(DRIVERS_INCLUDE) # The drivers include directories in a list
 set(DRIVERS_SRC) # The drivers source files in a list
@@ -57,8 +59,23 @@ if (DRIVER_GLFW_OPENGL)
     add_compile_definitions(DRIVER_GLFW_OPENGL)
 endif ()
 
+if (DRIVER_ANDROID)
+    CompileDriver(DRIVER_ANDROID
+            android
+            android::AndroidDisplayDriver
+            display/android/androiddisplaydriver.hpp
+            android
+            EGL)
+endif ()
+
+if (DRIVER_ANDROID_OPENGL)
+    add_compile_definitions(DRIVER_ANDROID_OPENGL)
+endif ()
+
 if (DRIVER_OPENGL)
-    if (WIN32)
+    if (ANDROID)
+        set(GL_LIBNAME GLESv3)
+    elseif (WIN32)
         set(GL_LIBNAME OpenGL32)
     else ()
         set(GL_LIBNAME GL)
