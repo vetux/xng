@@ -145,9 +145,9 @@ public:
         auto &textImg = text.getImage();
         auto textHandle = ren.createTexture(textImg);
 
-        if (window.getInput().getKey(KEY_UP)) {
+        if (window.getInput().getDevice<Keyboard>().getKey(KEY_UP)) {
             performanceGridBase++;
-        } else if (window.getInput().getKey(xng::KEY_DOWN)) {
+        } else if (window.getInput().getDevice<Keyboard>().getKey(xng::KEY_DOWN)) {
             performanceGridBase--;
             if (performanceGridBase < 0) {
                 performanceGridBase = 0;
@@ -250,9 +250,9 @@ int main(int argc, char *argv[]) {
     while (!window->shouldClose()) {
         auto delta = frameLimiter.newFrame();
 
-        if (input.getKeyDown(KeyboardKey::KEY_1)) {
+        if (input.getDevice<Keyboard>().getKeyDown(KeyboardKey::KEY_1)) {
             currentPage = 0;
-        } else if (input.getKeyDown(KeyboardKey::KEY_2)) {
+        } else if (input.getDevice<Keyboard>().getKeyDown(KeyboardKey::KEY_2)) {
             currentPage = 1;
         }
 

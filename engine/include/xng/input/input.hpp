@@ -22,9 +22,11 @@
 
 #include <set>
 
-#include "inputlistener.hpp"
 #include "xng/asset/image.hpp"
 #include "xng/util/listenable.hpp"
+
+#include "xng/input/inputdevice.hpp"
+#include "xng/input/inputlistener.hpp"
 
 namespace xng {
     class XENGINE_EXPORT Input : public Listenable<InputListener> {
@@ -41,24 +43,22 @@ namespace xng {
 
         virtual void setMouseCursorHidden(bool cursorHidden) = 0;
 
-        virtual const Keyboard &getKeyboard() const = 0;
+        virtual const InputDevice &getDevice(std::type_index deviceType, int id) = 0;
 
-        virtual const Mouse &getMouse() const = 0;
-
-        virtual const GamePad &getGamePad() const = 0;
-
-        virtual const std::map<int, Keyboard> &getKeyboards() const = 0;
-
-        virtual const std::map<int, Mouse> &getMice() const = 0;
-
-        virtual const std::map<int, GamePad> &getGamePads() const = 0;
-
-        bool getKey(KeyboardKey key) {
-            return getKeyboard().getKey(key);
+        template<typename T>
+        const T &getDevice(int id = 0) {
+            return dynamic_cast<const T&>(getDevice(typeid(T), id));
         }
 
-        bool getKeyDown(KeyboardKey key) {
-            return getKeyboard().getKeyDown(key);
+        virtual std::map<int, const std::reference_wrapper<InputDevice>> getDevices(std::type_index deviceType) = 0;
+
+        template<typename T>
+        const std::map<int, std::reference_wrapper<T>> &getDevices(){
+            std::map<int, std::reference_wrapper<T>> ret;
+            for (auto pair : getDevices(typeid(T))){
+                ret[pair.first] = dynamic_cast<T&>(pair.second.get());
+            }
+            return ret;
         }
     };
 }

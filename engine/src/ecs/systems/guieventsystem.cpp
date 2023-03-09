@@ -44,10 +44,10 @@ namespace xng {
             auto rect = Rectf((rt.rect.position + rt.getOffset(scene, windowSize)
                                + Vec2f(-rt.center.x, rt.center.y)) * scale,
                               rt.rect.dimensions * scale);
-            auto mousePos = (window.getInput().getMouse().position.convert<float>())
+            auto mousePos = (window.getInput().getDevice<Mouse>().position.convert<float>())
                             - canvas.getViewportOffset(windowSize).convert<float>();
             if (rect.testPoint(mousePos)) {
-                if (window.getInput().getMouse().getButton(LEFT)) {
+                if (window.getInput().getDevice<Mouse>().getButton(LEFT)) {
                     if (clickButtons.find(pair.first) == clickButtons.end()) {
                         // Pressing
                         eventBus.invoke(GuiEvent(GuiEvent::BUTTON_CLICK, pair.second.id));

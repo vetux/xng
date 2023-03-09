@@ -20,7 +20,8 @@
 #ifndef XENGINE_KEYBOARD_HPP
 #define XENGINE_KEYBOARD_HPP
 
-#include "buttonstate.hpp"
+#include "xng/input/buttonstate.hpp"
+#include "xng/input/inputdevice.hpp"
 
 namespace xng {
     enum KeyboardKey : int {
@@ -125,7 +126,7 @@ namespace xng {
         KEY_UNDEFINED
     };
 
-    class XENGINE_EXPORT Keyboard {
+    class XENGINE_EXPORT Keyboard : public InputDevice {
     public:
         bool getKey(KeyboardKey key) const {
             auto it = keys.find(key);

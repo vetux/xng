@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 
 project(xEngine)
+
 include(user-config-project.cmake OPTIONAL)
 
 set(BASE_SOURCE_DIR ${CMAKE_SOURCE_DIR})

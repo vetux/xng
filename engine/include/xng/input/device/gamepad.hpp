@@ -23,7 +23,8 @@
 #include <map>
 
 #include "xng/math/vector2.hpp"
-#include "buttonstate.hpp"
+#include "xng/input/buttonstate.hpp"
+#include "xng/input/inputdevice.hpp"
 
 namespace xng {
     enum GamePadAxis {
@@ -58,7 +59,7 @@ namespace xng {
         CIRCLE = B
     };
 
-    class XENGINE_EXPORT GamePad {
+    class XENGINE_EXPORT GamePad : public InputDevice {
     public:
         double getGamepadAxis(GamePadAxis axis) const {
             return axies.at(axis);

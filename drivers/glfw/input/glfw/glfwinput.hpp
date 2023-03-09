@@ -57,17 +57,9 @@ namespace xng {
 
         void setMouseCursorHidden(bool cursorHidden) override;
 
-        const Keyboard &getKeyboard() const override;
+        const InputDevice &getDevice(std::type_index deviceType, int id) override;
 
-        const Mouse &getMouse() const override;
-
-        const GamePad &getGamePad() const override;
-
-        const std::map<int, Keyboard> &getKeyboards() const override;
-
-        const std::map<int, Mouse> &getMice() const override;
-
-        const std::map<int, GamePad> &getGamePads() const override;
+         std::map<int, const std::reference_wrapper<InputDevice>> getDevices(std::type_index deviceType) override;
 
         void update();
 

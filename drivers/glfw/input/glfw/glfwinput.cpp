@@ -217,30 +217,6 @@ namespace xng {
         glfwSetInputMode(&wndH, GLFW_CURSOR, cursorHidden ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL);
     }
 
-    const Keyboard &GLFWInput::getKeyboard() const {
-        return keyboards.at(0);
-    }
-
-    const Mouse &GLFWInput::getMouse() const {
-        return mice.at(0);
-    }
-
-    const GamePad &GLFWInput::getGamePad() const {
-        return gamepads.at(0);
-    }
-
-    const std::map<int, Keyboard> &GLFWInput::getKeyboards() const {
-        return keyboards;
-    }
-
-    const std::map<int, Mouse> &GLFWInput::getMice() const {
-        return mice;
-    }
-
-    const std::map<int, GamePad> &GLFWInput::getGamePads() const {
-        return gamepads;
-    }
-
     void GLFWInput::update() {
         for (auto &pair: mice) {
             pair.second.wheelDelta = 0;
@@ -331,5 +307,27 @@ namespace xng {
 
     void GLFWInput::removeListener(InputListener &listener) {
         listeners.erase(&listener);
+    }
+
+    const InputDevice &GLFWInput::getDevice(std::type_index deviceType, int id) {
+        return getDevices(deviceType).at(id);
+    }
+
+    std::map<int, const std::reference_wrapper<InputDevice>> GLFWInput::getDevices(std::type_index deviceType) {
+        std::map<int, const std::reference_wrapper<InputDevice>> ret;
+        if (deviceType == typeid(Keyboard)) {
+            for (auto &pair: keyboards)
+                ret.insert(std::make_pair<int, const std::reference_wrapper<InputDevice>>((const int) pair.first,
+                                                                                          pair.second));
+        } else if (deviceType == typeid(Mouse)) {
+            for (auto &pair: mice)
+                ret.insert(std::make_pair<int, const std::reference_wrapper<InputDevice>>((const int) pair.first,
+                                                                                          pair.second));
+        } else if (deviceType == typeid(GamePad)) {
+            for (auto &pair: gamepads)
+                ret.insert(std::make_pair<int, const std::reference_wrapper<InputDevice>>((const int) pair.first,
+                                                                                          pair.second));
+        }
+        return ret;
     }
 }

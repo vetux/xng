@@ -22,7 +22,8 @@
 
 #include "xng/math/vector2.hpp"
 
-#include "buttonstate.hpp"
+#include "xng/input/buttonstate.hpp"
+#include "xng/input/inputdevice.hpp"
 
 namespace xng {
     enum MouseButton {
@@ -37,7 +38,7 @@ namespace xng {
         MOUSE_BUTTON_UNDEFINED
     };
 
-    class XENGINE_EXPORT Mouse {
+    class XENGINE_EXPORT Mouse : public InputDevice {
     public:
         bool getButton(MouseButton button) const {
             auto it = buttons.find(button);

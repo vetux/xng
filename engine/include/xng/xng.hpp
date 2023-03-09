@@ -183,7 +183,7 @@
 #include "xng/input/device/keyboard.hpp"
 #include "xng/input/device/mouse.hpp"
 #include "xng/input/device/gamepad.hpp"
-#include "xng/input/device/buttonstate.hpp"
+#include "xng/input/buttonstate.hpp"
 #include "xng/animation/skeletal/rig.hpp"
 #include "xng/animation/skeletal/riganimator.hpp"
 #include "xng/animation/skeletal/bone.hpp"
