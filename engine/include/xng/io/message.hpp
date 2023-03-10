@@ -66,11 +66,15 @@ namespace xng {
 
         Message(int value) : type(INT) { ival = value; }
 
-        Message(unsigned int value) : type(INT) { ival = value; }
-
         Message(long value) : type(INT) { ival = value; }
 
-        Message(unsigned long value) : type(INT) { ival = value; }
+        Message(long long value) : type(INT) { ival = static_cast<int>(value); }
+
+        Message(unsigned int value) : type(INT) { ival = static_cast<int>(value); }
+
+        Message(unsigned long value) : type(INT) { ival = static_cast<int>(value); }
+
+        Message(unsigned long long value) : type(INT) { ival = static_cast<int>(value); }
 
         Message(float value) : type(FLOAT) { fval = value; }
 
@@ -138,11 +142,19 @@ namespace xng {
             return ival;
         }
 
-        explicit operator unsigned int() const {
+        explicit operator long long() const {
             return ival;
         }
 
-        explicit operator unsigned long() const {
+        explicit  operator unsigned int() const {
+            return ival;
+        }
+
+        explicit  operator unsigned long() const {
+            return ival;
+        }
+
+        explicit operator unsigned long long() const {
             return ival;
         }
 

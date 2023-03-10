@@ -41,7 +41,7 @@ namespace xng {
         }
 
         void *getSymbolAddress(const std::string &address) override {
-            return GetProcAddress(handle, address.c_str());
+            return reinterpret_cast<void*>(GetProcAddress(handle, address.c_str()));
         }
 
         std::string filePath;
