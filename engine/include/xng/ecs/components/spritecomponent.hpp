@@ -28,31 +28,25 @@ namespace xng {
     struct SpriteComponent : public Component {
         ResourceHandle<Sprite> sprite; // The sprite to draw
 
-        int layer = 0; // The render layer of the sprite on this canvas
-        Vec2b flipSprite;
-
         float mix = 0;
-        ColorRGB mixColor = {};
-        ResourceHandle<Sprite> mixSprite;
+        float mixAlpha = 0;
+        ColorRGBA mixColor = {};
 
         Messageable &operator<<(const Message &message) override {
             message.value("sprite", sprite);
-            message.value("layer", layer);
-            message.value("flipSprite", flipSprite);
             message.value("mix", mix);
             message.value("mixColor", mixColor);
-            message.value("mixSprite", mixSprite);
+            message.value("mix", mix);
+            message.value("mixAlpha", mixAlpha);
             return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             sprite >> message["sprite"];
-            layer >> message["layer"];
-            flipSprite >> message["flipSprite"];
-            mix >> message["mix"];
             mixColor >> message["mixColor"];
-            mixSprite >> message["mixSprite"];
+            mix >> message["mix"];
+            mixAlpha >> message["mixAlpha"];
             return Component::operator>>(message);
         }
 

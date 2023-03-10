@@ -52,12 +52,12 @@ namespace xng {
          * @param runAsync
          * @param systems
          */
-        SystemPipeline(TickMode tickMode,
-                       DeltaTime fixedStepDuration,
-                       int fixedStepMaxSteps,
-                       std::vector<std::shared_ptr<System>> systems = {},
-                       bool runAsync = false,
-                       std::string name = "Unnamed Pipeline")
+        explicit SystemPipeline(TickMode tickMode,
+                                std::vector<std::shared_ptr<System>> systems = {},
+                                DeltaTime fixedStepDuration = 0,
+                                int fixedStepMaxSteps = 0,
+                                bool runAsync = false,
+                                std::string name = "Unnamed Pipeline")
                 : tickMode(tickMode),
                   fixedStepDuration(fixedStepDuration),
                   fixedStepMaxSteps(fixedStepMaxSteps),

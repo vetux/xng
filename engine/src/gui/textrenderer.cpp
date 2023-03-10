@@ -31,7 +31,7 @@ namespace xng {
         RenderChar(Character &character, TextureAtlasHandle texture)
                 : character(character), texture(std::move(texture)) {}
 
-        Vec2f getPosition(const Vec2f& origin) const {
+        Vec2f getPosition(const Vec2f &origin) const {
             return {position.x + (origin.x + numeric_cast<float>(character.get().bearing.x)),
                     (position.y + (origin.y - numeric_cast<float>(character.get().bearing.y)))};
         }
@@ -39,30 +39,36 @@ namespace xng {
 
     TextRenderer::TextRenderer(Font &font,
                                Renderer2D &ren2D)
-            : ascii(font.renderAscii()), font(font), ren2d(ren2D) {
+            : ascii(font.renderAscii()), font(&font), ren2d(&ren2D) {
         for (auto &c: ascii) {
             auto &character = c.second;
-            textures[c.first] = ren2d.createTexture(character.image);
+            textures[c.first] = ren2d->createTexture(character.image);
         }
     }
 
     TextRenderer::~TextRenderer() {
-        for (auto &pair : textures){
-            ren2d.destroyTexture(pair.second);
+        for (auto &pair: textures) {
+            ren2d->destroyTexture(pair.second);
         }
     }
 
-    void TextRenderer::setFontSize(const Vec2i& pixelSize) {
+    TextRenderer::TextRenderer(const TextRenderer &other) {
+        if (other.ren2d) {
+            *this = TextRenderer(*other.font, *other.ren2d);
+        }
+    }
+
+    void TextRenderer::setFontSize(const Vec2i &pixelSize) {
         if (fontSize != pixelSize) {
             fontSize = pixelSize;
-            font.setPixelSize(pixelSize);
-            ascii = font.renderAscii();
-            for (auto &pair : textures){
-                ren2d.destroyTexture(pair.second);
+            font->setPixelSize(pixelSize);
+            ascii = font->renderAscii();
+            for (auto &pair: textures) {
+                ren2d->destroyTexture(pair.second);
             }
             for (auto &c: ascii) {
                 auto &character = c.second;
-                textures[c.first] = ren2d.createTexture(character.image);
+                textures[c.first] = ren2d->createTexture(character.image);
             }
         }
     }
@@ -186,28 +192,28 @@ namespace xng {
 
         auto origin = Vec2f(0, numeric_cast<float>(layout.lineHeight));
 
-        target = ren2d.getDevice().createRenderTarget({.size = size.convert<int>()});
+        auto target = ren2d->getDevice().createRenderTarget({.size = size.convert<int>()});
 
         TextureBufferDesc desc;
         desc.size = size.convert<int>();
 
-        auto tex = ren2d.getDevice().createTextureBuffer(desc);
+        auto tex = ren2d->getDevice().createTextureBuffer(desc);
 
         target->setColorAttachments({*tex});
-        ren2d.renderBegin(*target);
+        ren2d->renderBegin(*target);
         for (auto &c: renderText) {
             auto texSize = c.texture.size.convert<float>();
             auto pos = c.getPosition(origin);
-            ren2d.draw(Rectf({}, texSize),
-                       Rectf(pos, texSize),
-                       c.texture,
-                       {},
-                       0,
-                       0,
-                       0,
-                       ColorRGBA());
+            ren2d->draw(Rectf({}, texSize),
+                        Rectf(pos, texSize),
+                        c.texture,
+                        {},
+                        0,
+                        0,
+                        0,
+                        ColorRGBA());
         }
-        ren2d.renderPresent();
+        ren2d->renderPresent();
 
         target->setColorAttachments({});
 

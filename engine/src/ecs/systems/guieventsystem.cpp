@@ -19,7 +19,7 @@
 
 #include "xng/ecs/systems/guieventsystem.hpp"
 
-#include "xng/ecs/components/canvastransformcomponent.hpp"
+#include "xng/ecs/components/recttransformcomponent.hpp"
 #include "xng/ecs/components/buttoncomponent.hpp"
 #include "xng/ecs/components/spritecomponent.hpp"
 #include "xng/event/events/guievent.hpp"
@@ -37,9 +37,9 @@ namespace xng {
 
     void GuiEventSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {
         for (auto &pair: scene.getPool<ButtonComponent>()) {
-            auto &rt = scene.getComponent<CanvasTransformComponent>(pair.first);
+            auto &rt = scene.getComponent<RectTransformComponent>(pair.first);
             auto windowSize = window.getRenderTarget().getDescription().size;
-            auto canvas = scene.getEntity(rt.canvas).getComponent<CanvasComponent>();
+          /*  auto canvas = scene.getEntity(rt.canvas).getComponent<CanvasComponent>();
             ResourceHandle<Sprite> sprite;
             auto scale = canvas.getViewportScale(windowSize);
             auto rect = Rectf((rt.rect.position + rt.getOffset(scene, windowSize)
@@ -78,7 +78,7 @@ namespace xng {
                 auto comp = scene.getComponent<SpriteComponent>(pair.first);
                 comp.sprite = sprite;
                 scene.updateComponent(pair.first, comp);
-            }
+            }*/
         }
     }
 }

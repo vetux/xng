@@ -35,9 +35,6 @@
 #include "xng/resource/resourceimporter.hpp"
 
 namespace xng {
-    const char *JsonParser::EXTENSION_SCENE = ".xscene";
-    const char *JsonParser::EXTENSION_BUNDLE = ".xbundle";
-
     Message JsonParser::createBundle(const ResourceBundle &bundle) {
         auto materials = std::vector<Message>();
         auto textures = std::vector<Message>();
@@ -151,8 +148,7 @@ namespace xng {
     }
 
     const std::set<std::string> &JsonParser::getSupportedFormats() const {
-        static const std::set<std::string> formats = {EXTENSION_BUNDLE,
-                                                      EXTENSION_SCENE};
+        static const std::set<std::string> formats = {".json"};
         return formats;
     }
 }

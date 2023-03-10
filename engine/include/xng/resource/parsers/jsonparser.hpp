@@ -26,8 +26,7 @@
 
 namespace xng {
     /**
-     * Formats:
-     * .xbundle
+     * ResourceBundle json format:
      * {
      *      "materials": ...
      *      "textures": ...
@@ -36,7 +35,7 @@ namespace xng {
      *      "sprite-animations": ...
      * }
      *
-     * .xscene
+     * Scene json format:
      * {
      *      "name": "",
      *      "entities"...
@@ -44,9 +43,6 @@ namespace xng {
      */
     class XENGINE_EXPORT JsonParser : public ResourceParser {
     public:
-        static const char *EXTENSION_SCENE;
-        static const char *EXTENSION_BUNDLE;
-
         static Message createBundle(const ResourceBundle &bundle);
 
         ResourceBundle read(const std::vector<char> &buffer, const std::string &hint, Archive *archive) const override;

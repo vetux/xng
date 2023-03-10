@@ -28,7 +28,6 @@
 #include "xng/ecs/components/lightcomponent.hpp"
 #include "xng/ecs/components/meshrendercomponent.hpp"
 #include "xng/ecs/components/particlecomponent.hpp"
-#include "xng/ecs/components/canvastransformcomponent.hpp"
 #include "xng/ecs/components/rigidbodycomponent.hpp"
 #include "xng/ecs/components/skyboxcomponent.hpp"
 #include "xng/ecs/components/spriteanimationcomponent.hpp"
@@ -36,5 +35,6 @@
 #include "xng/ecs/components/textcomponent.hpp"
 #include "xng/ecs/components/transformcomponent.hpp"
 #include "xng/ecs/components/genericcomponent.hpp"
+#include "xng/ecs/components/recttransformcomponent.hpp"
 
 #endif //XENGINE_COMPONENTS_HPP

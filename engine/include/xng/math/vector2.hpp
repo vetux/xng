@@ -137,7 +137,7 @@ namespace xng {
         }
 
         static T magnitude(const Vector2<T> &vec) {
-            return std::sqrt(std::pow(vec.x, 2) + std::pow(vec.y, 2));
+            return std::sqrt(std::pow(vec.x, static_cast<T>(2)) + std::pow(vec.y, static_cast<T>(2)));
         }
 
         //https://en.wikipedia.org/wiki/Euclidean_distance

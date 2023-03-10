@@ -31,7 +31,6 @@ namespace xng {
             REGISTER_COMPONENT(ButtonComponent)
             REGISTER_COMPONENT(CameraComponent)
             REGISTER_COMPONENT(CanvasComponent)
-            REGISTER_COMPONENT(CanvasTransformComponent)
             REGISTER_COMPONENT(LightComponent)
             REGISTER_COMPONENT(MeshRenderComponent)
             REGISTER_COMPONENT(ParticleComponent)
@@ -41,6 +40,7 @@ namespace xng {
             REGISTER_COMPONENT(SpriteComponent)
             REGISTER_COMPONENT(TextComponent)
             REGISTER_COMPONENT(TransformComponent)
+            REGISTER_COMPONENT(RectTransformComponent)
         }
         return *inst;
     }

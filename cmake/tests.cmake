@@ -6,4 +6,8 @@ add_executable(test-renderer2d ${BASE_SOURCE_DIR}/tests/renderer2d/src/main.cpp)
 target_include_directories(test-renderer2d PRIVATE ${CMAKE_SOURCE_DIR}/tests/renderer2d/src/)
 target_link_libraries(test-renderer2d Threads::Threads xengine)
 
-file(COPY ${BASE_SOURCE_DIR}/tests/renderer2d/assets DESTINATION ${CMAKE_CURRENT_BINARY_DIR}) # Copy assets
+add_executable(test-canvasrendersystem ${BASE_SOURCE_DIR}/tests/canvasrendersystem/src/main.cpp)
+target_include_directories(test-canvasrendersystem PRIVATE ${CMAKE_SOURCE_DIR}/tests/canvasrendersystem/src/)
+target_link_libraries(test-canvasrendersystem Threads::Threads xengine)
+
+file(COPY ${BASE_SOURCE_DIR}/tests/assets DESTINATION ${CMAKE_CURRENT_BINARY_DIR}) # Copy assets

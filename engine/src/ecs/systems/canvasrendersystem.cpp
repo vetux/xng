@@ -22,15 +22,12 @@
 #include "xng/ecs/systems/canvasrendersystem.hpp"
 
 #include "xng/ecs/components/transformcomponent.hpp"
-#include "xng/ecs/components/canvastransformcomponent.hpp"
+#include "xng/ecs/components/recttransformcomponent.hpp"
 #include "xng/ecs/components/canvascomponent.hpp"
 #include "xng/ecs/components/textcomponent.hpp"
 
 #include "xng/ecs/components/rigidbodycomponent.hpp"
 
-#pragma message "Not Implemented"
-
-/*
 namespace xng {
     CanvasRenderSystem::CanvasRenderSystem(Renderer2D &renderer2D,
                                            RenderTarget &target,
@@ -42,7 +39,7 @@ namespace xng {
         for (auto &pair: scene.getPool<SpriteComponent>()) {
             if (!pair.second.sprite.assigned())
                 continue;
-            if (spriteTextures.find(pair.first) == spriteTextures.end()) {
+            if (spriteTextureHandles.find(pair.first) == spriteTextureHandles.end()) {
                 createTexture(pair.first, pair.second);
             }
         }
@@ -55,7 +52,10 @@ namespace xng {
 
     void CanvasRenderSystem::stop(EntityScene &scene, EventBus &eventBus) {
         scene.removeListener(*this);
-        spriteTextures.clear();
+        for (auto &pair: spriteTextureHandles) {
+            ren2d.destroyTexture(pair.second);
+        }
+        spriteTextureHandles.clear();
         textRenderers.clear();
         renderedTexts.clear();
         fonts.clear();
@@ -69,6 +69,17 @@ namespace xng {
         EntityHandle ent;
     };
 
+    static std::vector<EntityHandle> getDrawingOrderRecursive(EntityHandle rectComp,
+                                                              std::map<EntityHandle, std::set<int>> rects) {
+        std::vector<EntityHandle> ret;
+        ret.emplace_back(rectComp);
+        for (auto &id: rects[rectComp]) {
+            auto order = getDrawingOrderRecursive(EntityHandle(id), rects);
+            ret.insert(ret.begin(), order.begin(), order.end());
+        }
+        return ret;
+    }
+
     void CanvasRenderSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {
         std::map<int, std::set<EntityHandle>> canvases;
 
@@ -78,224 +89,98 @@ namespace xng {
             canvases[p.second.layer].insert(p.first);
         }
 
-        std::map<std::string, std::map<int, std::vector<Pass>>> passes;
+        std::map<int, RectTransform> transforms;
+        std::map<int, int> transformParents;
+        std::map<EntityHandle, std::set<int>> rects;
 
-        for (auto &p: scene.getPool<CanvasTransformComponent>()) {
-            if (!p.second.enabled)
-                continue;
-            if (p.second.canvas.empty())
-                continue;
-
-            auto canvas = scene.getEntityByName(p.second.canvas);
-            auto &c = scene.getComponent<CanvasComponent>(canvas);
-            if (!c.enabled) {
-                continue;
-            }
-
-            if (scene.checkComponent<SpriteComponent>(p.first)) {
-                auto &r = scene.getComponent<SpriteComponent>(p.first);
-                passes[p.second.canvas][r.layer].emplace_back(Pass{Pass::SPRITE, p.first});
-            }
-
-            if (scene.checkComponent<TextComponent>(p.first)) {
-                auto &r = scene.getComponent<TextComponent>(p.first);
-                passes[p.second.canvas][r.layer].emplace_back(Pass{Pass::TEXT, p.first});
+        for (auto &comp: scene.getPool<RectTransformComponent>()) {
+            if (!comp.second.parent.empty()
+                && scene.entityNameExists(comp.second.parent)) {
+                transforms[comp.first.id] = comp.second.rectTransform;
+                auto parentEnt = scene.getEntityByName(comp.second.parent);
+                if (!scene.checkComponent<CanvasComponent>(parentEnt)) {
+                    transformParents[comp.first.id] = parentEnt.id;
+                } else {
+                    // Apply alignment offset relative to the canvas
+                    transforms[comp.first.id].position += RectTransform::getAlignmentOffset(
+                            transforms[comp.first.id].size,
+                            target.getDescription().size.convert<float>(),
+                            transforms[comp.first.id].alignment);
+                }
+                rects[parentEnt].insert(comp.first.id);
+                if (scene.checkComponent<TextComponent>(EntityHandle(comp.first.id))) {
+                    // Entities which contain a text component will get their rect size will be determined by the size of the rendered text.
+                    // The text can then be lain out by using the rect transform parenting alignment.
+                    transforms[comp.first.id].size = renderedTexts.at(
+                            EntityHandle(comp.first.id)).getImage().getSize().convert<float>();
+                }
             }
         }
 
-        for (auto &canvasLayer: canvases) {
-            for (auto &canvasId: canvasLayer.second) {
-                auto &canvas = scene.getComponent<CanvasComponent>(canvasId);
+        std::map<int, RectTransform> absoluteTransforms = RectTransform::getAbsolute(transforms, transformParents);
 
-                auto viewport = canvas.getViewport(target.getDescription().size);
+        for (auto &pair: canvases) {
+            for (auto &canvasHandle: pair.second) {
+                auto &canvasComponent = scene.getComponent<CanvasComponent>(canvasHandle);
 
-                if (viewport.first.magnitude() > 0
-                    || viewport.second.magnitude() > 0) {
+                Vec2f targetSize = target.getDescription().size.convert<float>();
+                if (canvasComponent.projection.dimensions.magnitude() > 0)
                     ren2d.renderBegin(target,
-                                      canvas.clear,
-                                      canvas.clearColor,
-                                      viewport.second,
-                                      viewport.first);
-                } else {
-                    ren2d.renderBegin(target, canvas.clear, canvas.clearColor);
-                }
+                                      canvasComponent.clear,
+                                      canvasComponent.clearColor,
+                                      {},
+                                      target.getDescription().size,
+                                      canvasComponent.cameraPosition,
+                                      canvasComponent.projection);
+                else
+                    ren2d.renderBegin(target,
+                                      canvasComponent.clear,
+                                      canvasComponent.clearColor,
+                                      {},
+                                      target.getDescription().size,
+                                      canvasComponent.cameraPosition);
 
-                ren2d.setCameraPosition(canvas.cameraPosition);
-                if (canvas.projectionSize.magnitude() > 0) {
-                    ren2d.setProjection(Rectf({}, canvas.projectionSize));
-                }
-
-                if (scene.entityHasName(canvasId)) {
-                    auto canvasName = scene.getEntityName(canvasId);
-                    for (auto &pair: passes[canvasName]) {
-                        for (auto &pass: pair.second) {
-                            auto &rt = scene.getComponent<CanvasTransformComponent>(pass.ent);
-
-                            Rectf dstRect;
-                            Vec2f center;
-                            float rotation = rt.rotation;
-
-                            Transform worldTransform;
-
-                            if (scene.checkComponent<TransformComponent>(pass.ent)) {
-                                worldTransform = TransformComponent::walkHierarchy(
-                                        scene.getComponent<TransformComponent>(pass.ent),
-                                        scene);
+                auto &transformIds = rects[canvasHandle];
+                for (auto &id: transformIds) {
+                    auto order = getDrawingOrderRecursive(EntityHandle(EntityHandle(id)), rects);
+                    for (auto &handle: order) {
+                        auto &transform = absoluteTransforms.at(handle.id);
+                        if (scene.checkComponent<SpriteComponent>(handle)) {
+                            auto &comp = scene.getComponent<SpriteComponent>(handle);
+                            if (comp.enabled
+                                && comp.sprite.assigned()) {
+                                ren2d.draw(Rectf(comp.sprite.get().offset),
+                                           Rectf(transform.position, transform.size),
+                                           spriteTextureHandles.at(handle),
+                                           transform.center,
+                                           transform.rotation,
+                                           comp.mix,
+                                           comp.mixAlpha,
+                                           comp.mixColor);
                             }
-
-                            switch (pass.type) {
-                                case Pass::SPRITE: {
-                                    auto &comp = scene.getComponent<SpriteComponent>(pass.ent);
-                                    if (comp.sprite.assigned()) {
-                                        dstRect = Rectf(rt.rect.position +
-                                                        rt.getOffset(scene, target.getDescription().size),
-                                                        rt.rect.dimensions);
-                                        center = rt.center;
-
-                                        dstRect.position.x -= worldTransform.getPosition().x;
-                                        dstRect.position.y -= worldTransform.getPosition().y;
-                                        rotation += worldTransform.getRotation().getEulerAngles().z;
-
-                                        if (comp.mixSprite.assigned()) {
-                                            ren2d.draw(Rectf({}, spriteTextures.at(
-                                                               pass.ent).get()->getDescription().size.convert<float>()),
-                                                       dstRect,
-                                                       *spriteTextures.at(pass.ent),
-                                                       *spriteTexturesB.at(pass.ent),
-                                                       comp.mix,
-                                                       center,
-                                                       rotation,
-                                                       comp.flipSprite);
-                                        } else {
-                                            ren2d.draw(Rectf({}, spriteTextures.at(
-                                                               pass.ent).get()->getDescription().size.convert<float>()),
-                                                       dstRect,
-                                                       *spriteTextures.at(pass.ent),
-                                                       rt.center,
-                                                       rotation,
-                                                       comp.flipSprite,
-                                                       comp.mix,
-                                                       comp.mixColor);
-                                        }
-                                    }
-                                    break;
-                                }
-                                case Pass::TEXT: {
-                                    auto &tcomp = scene.getComponent<TextComponent>(pass.ent);
-                                    if (!tcomp.text.empty()
-                                        && tcomp.font.assigned()) {
-                                        auto texSize = renderedTexts.at(
-                                                pass.ent).getTexture().getDescription().size.convert<float>();
-
-                                        Vec2f displaySize(0);
-                                        if (texSize.x > rt.rect.dimensions.x) {
-                                            displaySize.x = rt.rect.dimensions.x;
-                                        } else {
-                                            displaySize.x = texSize.x;
-                                        }
-                                        if (texSize.y > rt.rect.dimensions.y) {
-                                            displaySize.y = rt.rect.dimensions.y;
-                                        } else {
-                                            displaySize.y = texSize.y;
-                                        }
-
-                                        Vec2f displayOffset = rt.getOffset(scene, target.getDescription().size)
-                                                              - rt.center;
-
-                                        dstRect = Rectf(rt.rect.position + displayOffset,
-                                                        displaySize);
-                                        center = {};
-                                        auto diff = rt.rect.dimensions - displaySize;
-                                        switch (tcomp.textAnchor) {
-                                            case CanvasTransformComponent::TOP_LEFT:
-                                                break;
-                                            case CanvasTransformComponent::LEFT:
-                                                dstRect.position.y += diff.y / 2;
-                                                break;
-                                            case CanvasTransformComponent::BOTTOM_LEFT:
-                                                dstRect.position.y += diff.y;
-                                                break;
-                                            case CanvasTransformComponent::TOP_CENTER:
-                                                dstRect.position.x += diff.x / 2;
-                                                break;
-                                            case CanvasTransformComponent::CENTER:
-                                                dstRect.position.x += diff.x / 2;
-                                                dstRect.position.y += diff.y / 2;
-                                                break;
-                                            case CanvasTransformComponent::BOTTOM_CENTER:
-                                                dstRect.position.x += diff.x / 2;
-                                                dstRect.position.y += diff.y;
-                                                break;
-                                            case CanvasTransformComponent::TOP_RIGHT:
-                                                dstRect.position.x += diff.x;
-                                                break;
-                                            case CanvasTransformComponent::RIGHT:
-                                                dstRect.position.x += diff.x;
-                                                dstRect.position.y += diff.y / 2;
-                                                break;
-                                            case CanvasTransformComponent::BOTTOM_RIGHT:
-                                                dstRect.position.x += diff.x;
-                                                dstRect.position.y += diff.y;
-                                                break;
-                                        }
-
-                                        dstRect.position.x -= worldTransform.getPosition().x;
-                                        dstRect.position.y -= worldTransform.getPosition().y;
-                                        rotation += worldTransform.getRotation().getEulerAngles().z;
-
-                                        Rectf srcRect;
-                                        srcRect.position = tcomp.textScroll * texSize;
-                                        srcRect.dimensions = dstRect.dimensions;
-
-                                        ren2d.draw(renderedTexts.at(pass.ent),
-                                                   srcRect,
-                                                   dstRect,
-                                                   tcomp.textColor,
-                                                   center,
-                                                   rotation);
-                                    }
-                                    break;
-                                }
+                        }
+                        if (scene.checkComponent<TextComponent>(handle)) {
+                            auto &comp = scene.getComponent<TextComponent>(handle);
+                            auto &text = renderedTexts.at(handle);
+                            auto dstPos = transform.position;
+                            if (transformParents.find(handle.id) == transformParents.end()) {
+                                // Apply alignment relative to the screen
+                                dstPos += RectTransform::getAlignmentOffset(transform.size,
+                                                                            targetSize,
+                                                                            transform.alignment);
                             }
-
-                            if (drawDebugGeometry) {
-                                ren2d.draw(dstRect, ColorRGBA::blue(), false, center, rotation);
-
-                                Rectf rtRect = {rt.rect.position + rt.getOffset(scene, target.getDescription().size)
-                                                - Vec2f(worldTransform.getPosition().x, worldTransform.getPosition().y),
-                                                rt.rect.dimensions};
-                                ren2d.draw(rtRect, ColorRGBA::yellow(), false, rt.center, rotation);
-
-                                auto dCenter = dstRect.position;
-                                const int len = 20;
-                                ren2d.draw(dCenter + Vec2f(-len, 0), dCenter + Vec2f(len, 0), ColorRGBA::red());
-                                ren2d.draw(dCenter + Vec2f(0, len), dCenter + Vec2f(0, -len), ColorRGBA::red());
-
-                                if (scene.checkComponent<RigidBodyComponent>(pass.ent)
-                                    && scene.checkComponent<TransformComponent>(pass.ent)) {
-                                    auto &rb = scene.getComponent<RigidBodyComponent>(pass.ent);
-                                    auto &tcomp = scene.getComponent<TransformComponent>(pass.ent);
-                                    for (auto &handle: rb.colliders) {
-                                        auto &col = handle.get();
-                                        if (col.shape.type == COLLIDER_2D
-                                            && !col.shape.vertices.empty()) {
-                                            std::vector<Vec2f> poly;
-                                            for (auto &vert: col.shape.vertices) {
-                                                poly.emplace_back(Vec2f(vert.x, -vert.y));
-                                            }
-                                            ren2d.draw(poly,
-                                                       Vec2f(-tcomp.transform.getPosition().x,
-                                                             -tcomp.transform.getPosition().y),
-                                                       col.isSensor ? ColorRGBA(0, 153, 255, 255) : ColorRGBA::green(),
-                                                       {},
-                                                       tcomp.transform.getRotation().getEulerAngles().z);
-                                        }
-                                    }
-                                }
-                            }
+                            ren2d.draw(Rectf({}, text.getImage().getSize().convert<float>()),
+                                       Rectf(dstPos, transform.size),
+                                       textTextureHandles.at(handle),
+                                       text.getImage().getSize().convert<float>() / 2,
+                                       transform.rotation,
+                                       0,
+                                       0,
+                                       {});
                         }
                     }
                 }
+
                 ren2d.renderPresent();
             }
         }
@@ -313,10 +198,16 @@ namespace xng {
 
     void CanvasRenderSystem::onComponentDestroy(const EntityHandle &entity, const Component &component) {
         if (component.getType() == typeid(SpriteComponent)) {
-            spriteTextures.erase(entity);
-            spriteTexturesB.erase(entity);
+            if (spriteTextureHandles.find(entity) != spriteTextureHandles.end()) {
+                ren2d.destroyTexture(spriteTextureHandles.at(entity));
+                spriteTextureHandles.erase(entity);
+            }
         } else if (component.getType() == typeid(TextComponent)) {
             renderedTexts.erase(entity);
+            if (textTextureHandles.find(entity) != textTextureHandles.end()) {
+                ren2d.destroyTexture(textTextureHandles.at(entity));
+                textTextureHandles.erase(entity);
+            }
         }
     }
 
@@ -326,14 +217,20 @@ namespace xng {
         if (oldComponent.getType() == typeid(SpriteComponent)) {
             auto &os = dynamic_cast<const SpriteComponent &>(oldComponent);
             auto &ns = dynamic_cast<const SpriteComponent &>(newComponent);
-            if (os.sprite != ns.sprite || os.mixSprite != ns.mixSprite) {
-                spriteTextures.erase(entity);
-                spriteTexturesB.erase(entity);
+            if (os.sprite != ns.sprite) {
+                if (spriteTextureHandles.find(entity) != spriteTextureHandles.end()) {
+                    ren2d.destroyTexture(spriteTextureHandles.at(entity));
+                    spriteTextureHandles.erase(entity);
+                }
                 createTexture(entity, ns);
             }
         } else if (oldComponent.getType() == typeid(TextComponent)) {
             auto &ns = dynamic_cast<const TextComponent &>(newComponent);
             renderedTexts.erase(entity);
+            if (textTextureHandles.find(entity) != textTextureHandles.end()) {
+                ren2d.destroyTexture(textTextureHandles.at(entity));
+                textTextureHandles.erase(entity);
+            }
             createText(entity, ns);
         }
     }
@@ -346,33 +243,14 @@ namespace xng {
             }
             TextureBufferDesc desc;
             desc.size = dimensions;
-            spriteTextures[ent] = ren2d.getDevice().createTextureBuffer(desc);
             auto &img = t.sprite.get().image.get();
             if (img.getSize() != dimensions) {
                 // Upload a slice of an image
                 auto slice = img.slice(t.sprite.get().offset);
-                spriteTextures[ent]->upload(slice);
+                spriteTextureHandles[ent] = ren2d.createTexture(slice);
             } else {
                 // Upload the whole image
-                spriteTextures[ent]->upload(img);
-            }
-        }
-        if (t.mixSprite.assigned()) {
-            Vec2i dimensions = t.mixSprite.get().offset.dimensions;
-            if (dimensions.x * dimensions.y == 0) {
-                dimensions = t.mixSprite.get().image.get().getSize();
-            }
-            TextureBufferDesc desc;
-            desc.size = dimensions;
-            spriteTexturesB[ent] = ren2d.getDevice().createTextureBuffer(desc);
-            auto &img = t.mixSprite.get().image.get();
-            if (img.getSize() != dimensions) {
-                // Upload a slice of an image
-                auto slice = img.slice(t.mixSprite.get().offset);
-                spriteTexturesB[ent]->upload(slice);
-            } else {
-                // Upload the whole image
-                spriteTexturesB[ent]->upload(img);
+                spriteTextureHandles[ent] = ren2d.createTexture(img);
             }
         }
     }
@@ -389,13 +267,16 @@ namespace xng {
             auto rIt = textRenderers.find(ent);
             if (rIt == textRenderers.end()) {
                 fonts.at(comp.font.getUri())->setPixelSize(comp.pixelSize);
-                textRenderers.insert(std::make_pair(ent, TextRenderer(*fonts[comp.font.getUri()], ren2d)));
+                textRenderers.insert(std::move(std::make_pair(ent, TextRenderer(*fonts[comp.font.getUri()], ren2d))));
             }
-            renderedTexts.insert(
-                    std::make_pair(ent, textRenderers.at(ent).render(comp.text, TextRenderProperties{comp.lineHeight,
-                                                                                                     comp.lineWidth,
-                                                                                                     comp.lineSpacing,
-                                                                                                     comp.alignment})));
+
+            auto text = textRenderers.at(ent).render(comp.text, TextLayout{comp.lineHeight,
+                                                                           comp.lineWidth,
+                                                                           comp.lineSpacing,
+                                                                           comp.alignment});
+            renderedTexts.insert(std::make_pair(ent, text));
+            textTextureHandles[ent] = ren2d.createTexture(text.getImage());
         }
     }
-}*/
+
+}

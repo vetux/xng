@@ -28,9 +28,15 @@
 namespace xng {
     class XENGINE_EXPORT TextRenderer {
     public:
+        TextRenderer() = default;
+
         TextRenderer(Font &font, Renderer2D &renderer2D);
 
         ~TextRenderer();
+
+        TextRenderer(const TextRenderer &other);
+
+        TextRenderer &operator=(const TextRenderer &other) = default;
 
         void setFontSize(const Vec2i& pixelSize);
 
@@ -43,10 +49,8 @@ namespace xng {
         std::map<char, Character> ascii;
         std::map<char, TextureAtlasHandle> textures;
 
-        Font &font;
-        Renderer2D &ren2d;
-
-        std::unique_ptr<RenderTarget> target;
+        Font *font = nullptr;
+        Renderer2D *ren2d = nullptr;
     };
 }
 #endif //XENGINE_TEXTRENDERER_HPP

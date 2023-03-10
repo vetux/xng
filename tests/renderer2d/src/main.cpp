@@ -57,8 +57,8 @@ public:
             : window(window),
               ren(ren),
               textRenderer(font, ren) {
-        imageB = loadImage("assets/awesomeface.png");
-        imageA = loadImage("assets/tux.png");
+        imageB = loadImage("assets/images/awesomeface.png");
+        imageA = loadImage("assets/images/tux.png");
 
         texA = ren.createTexture(imageA);
         texB = ren.createTexture(imageB);
@@ -233,7 +233,7 @@ int main(int argc, char *argv[]) {
     auto window = displayDriver->createWindow(OPENGL_4_6, "Renderer 2D Test", {640, 480}, {});
     auto &input = window->getInput();
     auto &target = window->getRenderTarget();
-    auto fs = std::ifstream("assets/Sono/static/Sono/Sono-Bold.ttf");
+    auto fs = std::ifstream("assets/fonts/Sono/static/Sono/Sono-Bold.ttf");
     auto font = fontDriver->createFont(fs);
 
     font->setPixelSize({0, fpsFontPixelSize});

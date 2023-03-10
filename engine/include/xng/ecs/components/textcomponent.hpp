@@ -23,7 +23,6 @@
 #include "xng/io/messageable.hpp"
 #include "xng/resource/rawresource.hpp"
 #include "xng/gui/textalignment.hpp"
-#include "canvastransformcomponent.hpp"
 #include "xng/ecs/component.hpp"
 
 namespace xng {
@@ -43,12 +42,9 @@ namespace xng {
 
         ResourceHandle<RawResource> font;
 
-        CanvasTransformComponent::Anchor textAnchor; // Controls where the rendered text is laid out in the rect
-
         Vec2f textScroll;
 
         ColorRGBA textColor;
-        int layer; // The render layer of the text
 
         Messageable &operator<<(const Message &message) override {
             message.value("pixelSize", pixelSize);
@@ -57,11 +53,9 @@ namespace xng {
             message.value("lineSpacing", lineSpacing);
             message.value("font", font);
             message.value("alignment", (int &) alignment, (int) TEXT_ALIGN_LEFT);
-            message.value("textAnchor", (int &) textAnchor, (int) CanvasTransformComponent::LEFT);
             message.value("textScroll", textScroll);
             message.value("text", text);
             message.value("textColor", textColor);
-            message.value("layer", layer);
             return Component::operator<<(message);
         }
 
@@ -73,11 +67,9 @@ namespace xng {
             lineSpacing >> message["lineSpacing"];
             font >> message["font"];
             alignment >> message["alignment"];
-            textAnchor >> message["textAnchor"];
             text >> message["text"];
             textScroll >> message["textScroll"];
             textColor >> message["textColor"];
-            layer >> message["layer"];
             return Component::operator>>(message);
         }
 

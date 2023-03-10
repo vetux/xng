@@ -1,0 +1,15 @@
+{
+  "sprites": [
+    {
+      "offset": {
+        "dimensions": {
+          "x": 265,
+          "y": 314
+        }
+      },
+      "image": {
+        "uri": "assets/images/tux.png"
+      }
+    }
+  ]
+}

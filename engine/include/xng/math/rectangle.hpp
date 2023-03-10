@@ -90,7 +90,7 @@ namespace xng {
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             position >> message["position"];
-            dimensions >> message["rotation"];
+            dimensions >> message["dimensions"];
             return message;
         }
     };
