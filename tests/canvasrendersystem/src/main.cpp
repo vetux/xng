@@ -103,6 +103,7 @@ int main(int argc, char *argv[]) {
 
     FrameLimiter limiter(60);
     while (!window->shouldClose()) {
+        auto delta = limiter.newFrame();
         if (input.getDevice<Keyboard>().getKeyDown(xng::KEY_SPACE)) {
             auto spriteEnt = scene->getEntity("sprite");
             auto comp = spriteEnt.getComponent<RectTransformComponent>();
@@ -118,7 +119,7 @@ int main(int argc, char *argv[]) {
         comp.rectTransform.size = target.getDescription().size.convert<float>();
         centerEnt.updateComponent(comp);
 
-        runtime.update(limiter.newFrame());
+        runtime.update(delta);
         window->update();
         window->swapBuffers();
     }
