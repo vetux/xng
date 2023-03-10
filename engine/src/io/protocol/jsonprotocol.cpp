@@ -44,6 +44,8 @@ namespace xng {
                     ret.emplace_back(convertMessage(m));
                 }
                 break;
+            default:
+                break;
         }
         return ret;
     }
