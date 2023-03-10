@@ -21,25 +21,7 @@
 
 using namespace xng;
 
-int main(int argc, char *argv[]) {
-    auto displayDriver = DisplayDriver::load(DISPLAY_GLFW);
-    auto gpuDriver = GpuDriver::load(OPENGL_4_6);
-    auto shaderCompiler = ShaderCompiler::load(SHADERC);
-    auto shaderDecompiler = ShaderDecompiler::load(SPIRV_CROSS);
-    auto fontDriver = FontDriver::load(FREETYPE);
-
-    auto window = displayDriver->createWindow(OPENGL_4_6, "Renderer 2D Test", {640, 480}, {});
-    auto &input = window->getInput();
-    auto &target = window->getRenderTarget();
-
-    auto renderDevice = gpuDriver->createRenderDevice();
-
-    ResourceRegistry::getDefaultRegistry().addArchive("file", std::make_shared<DirectoryArchive>("assets/"));
-    std::vector<std::unique_ptr<ResourceParser>> parsers;
-    parsers.emplace_back(std::make_unique<StbiParser>());
-    parsers.emplace_back(std::make_unique<JsonParser>());
-    ResourceRegistry::getDefaultRegistry().setImporter(ResourceImporter(std::move(parsers)));
-
+static std::shared_ptr<EntityScene> createScene() {
     std::shared_ptr<EntityScene> scene = std::make_shared<EntityScene>();
 
     auto ent = scene->createEntity("canvas");
@@ -66,6 +48,44 @@ int main(int argc, char *argv[]) {
     rect.rectTransform.alignment = xng::RectTransform::RECT_ALIGN_CENTER_CENTER;
     rect.rectTransform.size = sprite.sprite.get().image.get().getSize().convert<float>();
     ent.createComponent(rect);
+
+    ent = scene->createEntity("text");
+
+    rect = {};
+    rect.parent = "canvas";
+    rect.rectTransform.alignment = xng::RectTransform::RECT_ALIGN_LEFT_TOP;
+    ent.createComponent(rect);
+
+    TextComponent text;
+    text.text = "Press Space Bar to change alignment...";
+    text.font = ResourceHandle<RawResource>(Uri("fonts/Sono/static/Sono/Sono-Bold.ttf"));
+    text.lineHeight = 40;
+    text.pixelSize.y = 50;
+    ent.createComponent(text);
+
+    return scene;
+}
+
+int main(int argc, char *argv[]) {
+    auto displayDriver = DisplayDriver::load(DISPLAY_GLFW);
+    auto gpuDriver = GpuDriver::load(OPENGL_4_6);
+    auto shaderCompiler = ShaderCompiler::load(SHADERC);
+    auto shaderDecompiler = ShaderDecompiler::load(SPIRV_CROSS);
+    auto fontDriver = FontDriver::load(FREETYPE);
+
+    auto window = displayDriver->createWindow(OPENGL_4_6, "Renderer 2D Test", {640, 480}, {});
+    auto &input = window->getInput();
+    auto &target = window->getRenderTarget();
+
+    auto renderDevice = gpuDriver->createRenderDevice();
+
+    ResourceRegistry::getDefaultRegistry().addArchive("file", std::make_shared<DirectoryArchive>("assets/"));
+    std::vector<std::unique_ptr<ResourceParser>> parsers;
+    parsers.emplace_back(std::make_unique<StbiParser>());
+    parsers.emplace_back(std::make_unique<JsonParser>());
+    ResourceRegistry::getDefaultRegistry().setImporter(ResourceImporter(std::move(parsers)));
+
+    auto scene = createScene();
 
     Renderer2D ren(*renderDevice, *shaderCompiler, *shaderDecompiler);
 
