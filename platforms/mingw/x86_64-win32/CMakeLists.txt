@@ -8,4 +8,4 @@ include(${BASE_SOURCE_DIR}/cmake/setup.cmake)
 include(${BASE_SOURCE_DIR}/cmake/drivers.cmake)
 include(${BASE_SOURCE_DIR}/cmake/engine.cmake)
 
-message("Building android-arm64-v8a ${CMAKE_BUILD_TYPE}")
+message("Building mingw-x86_64-win32 ${CMAKE_BUILD_TYPE}")

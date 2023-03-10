@@ -8,6 +8,8 @@
 #    *) cmake -DCMAKE_TOOLCHAIN_FILE=~/mingw-w64-x86_64.cmake ..
 # This is free and unencumbered software released into the public domain.
 
+include(${CMAKE_CURRENT_LIST_DIR}/../user-config-toolchain.cmake OPTIONAL)
+
 set(CMAKE_SYSTEM_NAME Windows)
 set(TOOLCHAIN_PREFIX i686-w64-mingw32)
 
@@ -18,7 +20,7 @@ set(CMAKE_Fortran_COMPILER ${TOOLCHAIN_PREFIX}-gfortran)
 set(CMAKE_RC_COMPILER ${TOOLCHAIN_PREFIX}-windres)
 
 if (NOT DEFINED MINGW_ENV_BASE_DIR)
-    set(MINGW_ENV_BASE_DIR /usr/)
+   set(MINGW_ENV_BASE_DIR /usr/)
 endif()
 
 # target environment on the build host system
