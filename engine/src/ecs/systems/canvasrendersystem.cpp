@@ -75,7 +75,7 @@ namespace xng {
         ret.emplace_back(rectComp);
         for (auto &id: rects[rectComp]) {
             auto order = getDrawingOrderRecursive(EntityHandle(id), rects);
-            ret.insert(ret.begin(), order.begin(), order.end());
+            ret.insert(ret.end(), order.begin(), order.end());
         }
         return ret;
     }
@@ -170,9 +170,7 @@ namespace xng {
                                        textTextureHandles.at(handle),
                                        text.getImage().getSize().convert<float>() / 2,
                                        transform.rotation,
-                                       0,
-                                       0,
-                                       {});
+                                       comp.textColor);
                         }
                     }
                 }

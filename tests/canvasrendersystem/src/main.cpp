@@ -52,7 +52,7 @@ static std::shared_ptr<EntityScene> createScene() {
     ent = scene->createEntity("text");
 
     rect = {};
-    rect.parent = "canvas";
+    rect.parent = "sprite";
     rect.rectTransform.alignment = xng::RectTransform::RECT_ALIGN_CENTER_CENTER;
     ent.createComponent(rect);
 
@@ -61,6 +61,7 @@ static std::shared_ptr<EntityScene> createScene() {
     text.font = ResourceHandle<RawResource>(Uri("fonts/Sono/static/Sono/Sono-Bold.ttf"));
     text.lineHeight = 40;
     text.pixelSize.y = 50;
+    text.textColor = ColorRGBA::blue(1, 200);
     ent.createComponent(text);
 
     return scene;
