@@ -47,8 +47,7 @@ namespace xng {
 
         /**
          * Generate the rect transforms which will be used to draw with the Renderer2D.
-         * The position will be the sum of all parent absolute positions + (position * (parent.size / size))
-         * The size is unmodified
+         * The position will be the sum of all parent absolute positions + position
          * The rotation will be the sum of all parent rotations + rotation
          *
          * @return
