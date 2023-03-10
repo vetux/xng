@@ -32,6 +32,8 @@
 
 #endif
 
+#pragma message "Not Implemented"
+
 namespace xng::android {
     class AndroidDisplayDriver : public DisplayDriver {
     public:

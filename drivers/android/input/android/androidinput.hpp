@@ -26,14 +26,6 @@ namespace xng {
     namespace android {
         class AndroidInput : public Input {
         public:
-            UnregisterCallback addListener(InputListener &listener) override {
-                return xng::Listenable<InputListener>::UnregisterCallback();
-            }
-
-            void removeListener(InputListener &listener) override {
-
-            }
-
             void setClipboardText(std::string text) override {
 
             }
@@ -51,6 +43,14 @@ namespace xng {
             }
 
             void setMouseCursorHidden(bool cursorHidden) override {
+
+            }
+
+            void setEventBus(const EventBus &bus) override {
+
+            }
+
+            void clearEventBus() override {
 
             }
 

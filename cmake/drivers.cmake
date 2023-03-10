@@ -1,5 +1,5 @@
 option(DRIVER_GLFW "Build the glfw display driver")
-option(DRIVER_GLFW_OPENGL "Build the opengl support of the glfw display driver")
+option(DRIVER_GLFW_OPENGL "Build the opengl support of the glfw display driver") # Depends on DRIVER_OPENGL
 option(DRIVER_OPENGL "Build the OpenGL gpu driver")
 option(DRIVER_BOX2D "Build the box2d physics driver")
 option(DRIVER_BULLET3 "Build the bullet3 physics driver")
@@ -11,7 +11,7 @@ option(DRIVER_SHADERC "Build the ShaderC shader compiler driver")
 option(DRIVER_SPIRVCROSS "Build the SPIRV-Cross shader decompiler driver")
 option(DRIVER_CRYPTOPP "Build the CryptoPP driver")
 option(DRIVER_ANDROID "Build the android display driver")
-option(DRIVER_ANDROID_OPENGL "Build the opengl support of the android display driver")
+option(DRIVER_ANDROID_OPENGL "Build the opengl support of the android display driver") # Depends on DRIVER_OPENGL
 
 set(DRIVERS_INCLUDE) # The drivers include directories in a list
 set(DRIVERS_SRC) # The drivers source files in a list
