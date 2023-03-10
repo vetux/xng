@@ -29,7 +29,7 @@
 #include "xng/input/input.hpp"
 
 namespace xng {
-    class GLFWInput : public Input, InputListener {
+    class GLFWInput : public Input {
     public:
         explicit GLFWInput(GLFWwindow &wndH);
 
@@ -57,45 +57,22 @@ namespace xng {
 
         void setMouseCursorHidden(bool cursorHidden) override;
 
+        void setEventBus(const EventBus &bus) override;
+
+        void clearEventBus() override;
+
         const InputDevice &getDevice(std::type_index deviceType, int id) override;
 
          std::map<int, const std::reference_wrapper<InputDevice>> getDevices(std::type_index deviceType) override;
 
         void update();
 
-        UnregisterCallback addListener(InputListener &listener) override;
-
-        void removeListener(InputListener &listener) override;
-
     private:
-        void onKeyDown(KeyboardKey key) override;
+        void invokeEvent(const Event &event);
 
-        void onKeyUp(KeyboardKey key) override;
-
-        void onCharacterInput(char32_t value) override;
-
-        void onMouseMove(double xPos, double yPos) override;
-
-        void onMouseWheelScroll(double amount) override;
-
-        void onMouseKeyDown(MouseButton key) override;
-
-        void onMouseKeyUp(MouseButton key) override;
-
-        void onGamepadConnected(int id) override;
-
-        void onGamepadDisconnected(int id) override;
-
-        void onGamepadAxis(int id, GamePadAxis axis, double amount) override;
-
-        void onGamepadButtonDown(int id, GamePadButton button) override;
-
-        void onGamepadButtonUp(int id, GamePadButton button) override;
-
-    private:
         GLFWwindow &wndH;
 
-        std::set<InputListener *> listeners;
+        const EventBus * eventBus = nullptr;
 
         std::map<int, Keyboard> keyboards;
 

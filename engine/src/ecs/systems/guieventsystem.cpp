@@ -23,6 +23,7 @@
 #include "xng/ecs/components/buttoncomponent.hpp"
 #include "xng/ecs/components/spritecomponent.hpp"
 #include "xng/event/events/guievent.hpp"
+#include "xng/input/device/mouse.hpp"
 
 namespace xng {
     GuiEventSystem::GuiEventSystem(Window &window)

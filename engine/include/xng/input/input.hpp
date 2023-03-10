@@ -23,13 +23,17 @@
 #include <set>
 
 #include "xng/asset/image.hpp"
-#include "xng/util/listenable.hpp"
 
 #include "xng/input/inputdevice.hpp"
-#include "xng/input/inputlistener.hpp"
+
+#include "xng/event/eventbus.hpp"
+
+#include "xng/input/device/keyboard.hpp"
+#include "xng/input/device/mouse.hpp"
+#include "xng/input/device/gamepad.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT Input : public Listenable<InputListener> {
+    class XENGINE_EXPORT Input {
     public:
         virtual ~Input() = default;
 
@@ -42,6 +46,15 @@ namespace xng {
         virtual void clearMouseCursorImage() = 0;
 
         virtual void setMouseCursorHidden(bool cursorHidden) = 0;
+
+        /**
+         * Set the event bus on which input events of devices are dispatched.
+         *
+         * @param bus
+         */
+        virtual void setEventBus(const EventBus &bus) = 0;
+
+        virtual void clearEventBus() = 0;
 
         virtual const InputDevice &getDevice(std::type_index deviceType, int id) = 0;
 

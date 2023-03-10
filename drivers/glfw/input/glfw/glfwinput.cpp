@@ -96,14 +96,11 @@ namespace xng {
         for (int i = GLFW_JOYSTICK_1; i < GLFW_JOYSTICK_16; i++) {
             if (glfwJoystickIsGamepad(i)) {
                 gamepads[i] = GamePad();
-                for (auto listener: listeners)
-                    listener->onGamepadConnected(i);
+                this->glfwJoystickCallback(i, GLFW_CONNECTED);
             }
         }
 
         glfwSetJoystickCallback(xng::glfwJoystickCallback);
-
-        listeners.insert(this);
 
         //GLFW Supports only one keyboard and mouse
         keyboards[0] = Keyboard();
@@ -113,76 +110,102 @@ namespace xng {
     GLFWInput::~GLFWInput() {
         std::lock_guard<std::mutex> guard(windowMappingMutex);
         windowMapping.erase(&wndH);
-        listeners.erase(this);
     }
 
     void GLFWInput::glfwKeyCallback(int key, int scancode, int action, int mods) {
         KeyboardKey k = GLFWTypeConverter::convertKey(key);
         bool kd = action != GLFW_RELEASE;
-        for (auto listener: listeners) {
-            if (kd)
-                listener->onKeyDown(k);
-            else
-                listener->onKeyUp(k);
+        if (kd) {
+            if (keyboards[0].keys[k] != HELD)
+                keyboards[0].keys[k] = PRESSED;
+            auto ev = KeyboardEvent();
+            ev.type = KeyboardEvent::KEYBOARD_KEY_DOWN;
+            ev.key = k;
+            ev.id = 0;
+            invokeEvent(ev);
+        } else {
+            keyboards[0].keys[k] = RELEASED;
+            auto ev = KeyboardEvent();
+            ev.type = KeyboardEvent::KEYBOARD_KEY_UP;
+            ev.key = k;
+            ev.id = 0;
+            invokeEvent(ev);
         }
     }
 
     void GLFWInput::glfwCharCallback(unsigned int codepoint) {
-        for (auto listener: listeners) {
-            listener->onCharacterInput(codepoint);
-        }
+        keyboards[0].characterInput += static_cast<char32_t>(codepoint);
+        auto ev = KeyboardEvent();
+        ev.type = KeyboardEvent::KEYBOARD_CHARACTER_INPUT;
+        ev.value = static_cast<char32_t>(codepoint);
+        ev.id = 0;
+        invokeEvent(ev);
     }
 
-    void GLFWInput::glfwCursorCallback(double xpos, double ypos) {
-        for (auto listener: listeners) {
-            listener->onMouseMove(xpos, ypos);
-        }
+    void GLFWInput::glfwCursorCallback(double xPos, double yPos) {
+        mice[0].positionDelta = mice[0].position - Vec2d(xPos, yPos);
+        mice[0].position.x = xPos;
+        mice[0].position.y = yPos;
+        auto ev = MouseEvent();
+        ev.type = MouseEvent::MOUSE_MOVE;
+        ev.id = 0;
+        ev.xPos = xPos;
+        ev.yPos = yPos;
+        invokeEvent(ev);
     }
 
     void GLFWInput::glfwMouseKeyCallback(int button, int action, int mods) {
+        MouseButton btn;
         switch (button) {
             case GLFW_MOUSE_BUTTON_LEFT:
-                for (auto listener: listeners) {
-                    if (action == GLFW_PRESS)
-                        listener->onMouseKeyDown(LEFT);
-                    else
-                        listener->onMouseKeyUp(LEFT);
-                }
+                btn = LEFT;
                 break;
             case GLFW_MOUSE_BUTTON_MIDDLE:
-                for (auto listener: listeners) {
-                    if (action == GLFW_PRESS)
-                        listener->onMouseKeyDown(MIDDLE);
-                    else
-                        listener->onMouseKeyUp(MIDDLE);
-                }
+                btn = MIDDLE;
                 break;
             case GLFW_MOUSE_BUTTON_RIGHT:
-                for (auto listener: listeners) {
-                    if (action == GLFW_PRESS)
-                        listener->onMouseKeyDown(RIGHT);
-                    else
-                        listener->onMouseKeyUp(RIGHT);
-                }
+                btn = RIGHT;
                 break;
             default:
                 break;
+        }
+        if (action == GLFW_PRESS) {
+            if (mice[0].buttons[btn] != HELD)
+                mice[0].buttons[btn] = PRESSED;
+            auto ev = MouseEvent();
+            ev.type = MouseEvent::MOUSE_KEY_DOWN;
+            ev.id = 0;
+            ev.key = btn;
+            invokeEvent(ev);
+        } else {
+            mice[0].buttons[btn] = RELEASED;
+            auto ev = MouseEvent();
+            ev.type = MouseEvent::MOUSE_KEY_UP;
+            ev.id = 0;
+            ev.key = btn;
+            invokeEvent(ev);
         }
     }
 
     void GLFWInput::glfwJoystickCallback(int jid, int event) {
         if (glfwJoystickIsGamepad(jid)) {
             switch (event) {
-                case GLFW_CONNECTED:
+                case GLFW_CONNECTED: {
                     gamepads[jid] = GamePad();
-                    for (auto listener: listeners)
-                        listener->onGamepadConnected(jid);
+                    auto ev = GamePadEvent();
+                    ev.type = GamePadEvent::GAMEPAD_CONNECTED;
+                    ev.id = jid;
+                    invokeEvent(ev);
                     break;
-                case GLFW_DISCONNECTED:
+                }
+                case GLFW_DISCONNECTED: {
                     gamepads.erase(jid);
-                    for (auto listener: listeners)
-                        listener->onGamepadDisconnected(jid);
+                    auto ev = GamePadEvent();
+                    ev.type = GamePadEvent::GAMEPAD_DISCONNECTED;
+                    ev.id = jid;
+                    invokeEvent(ev);
                     break;
+                }
                 default:
                     break;
             }
@@ -190,9 +213,15 @@ namespace xng {
     }
 
     void GLFWInput::glfwScrollCallback(double xoffset, double yoffset) {
-        mice.at(0).wheelDelta = yoffset;
-        for (auto listener: listeners)
-            listener->onMouseWheelScroll(yoffset);
+        mice[0].wheelDelta.x = xoffset;
+        mice[0].wheelDelta.y = yoffset;
+
+        auto ev = MouseEvent();
+        ev.type = MouseEvent::MOUSE_WHEEL_SCROLL;
+        ev.id = 0;
+        ev.xAmount = xoffset;
+        ev.yAmount = yoffset;
+        invokeEvent(ev);
     }
 
     //TODO: Implement clipboard support
@@ -219,7 +248,7 @@ namespace xng {
 
     void GLFWInput::update() {
         for (auto &pair: mice) {
-            pair.second.wheelDelta = 0;
+            pair.second.wheelDelta = Vec2d(0);
             pair.second.positionDelta = Vec2d(0);
             for (auto &k: pair.second.buttons) {
                 if (k.second == PRESSED)
@@ -242,71 +271,10 @@ namespace xng {
         }
     }
 
-    void GLFWInput::onKeyDown(KeyboardKey key) {
-        if (keyboards[0].keys[key] != HELD)
-            keyboards[0].keys[key] = PRESSED;
-    }
-
-    void GLFWInput::onKeyUp(KeyboardKey key) {
-        keyboards[0].keys[key] = RELEASED;
-    }
-
-    void GLFWInput::onCharacterInput(char32_t value) {
-        keyboards[0].characterInput += value;
-    }
-
-    void GLFWInput::onMouseMove(double xPos, double yPos) {
-        mice[0].positionDelta = mice[0].position - Vec2d(xPos, yPos);
-
-        mice[0].position.x = xPos;
-        mice[0].position.y = yPos;
-    }
-
-    void GLFWInput::onMouseWheelScroll(double amount) {
-        mice[0].wheelDelta = amount;
-    }
-
-    void GLFWInput::onMouseKeyDown(MouseButton key) {
-        if (mice[0].buttons[key] != HELD)
-            mice[0].buttons[key] = PRESSED;
-    }
-
-    void GLFWInput::onMouseKeyUp(MouseButton key) {
-        mice[0].buttons[key] = RELEASED;
-    }
-
-    void GLFWInput::onGamepadConnected(int id) {
-        gamepads[id] = GamePad();
-    }
-
-    void GLFWInput::onGamepadDisconnected(int id) {
-        gamepads.erase(id);
-    }
-
-    void GLFWInput::onGamepadAxis(int id, GamePadAxis axis, double amount) {
-        gamepads[id].axies.at(axis) = amount;
-    }
-
-    void GLFWInput::onGamepadButtonDown(int id, GamePadButton button) {
-        if (gamepads[id].buttons[button] != HELD)
-            gamepads[id].buttons[button] = PRESSED;
-    }
-
-    void GLFWInput::onGamepadButtonUp(int id, GamePadButton button) {
-        gamepads[id].buttons[button] = RELEASED;
-    }
-
-    std::function<void()> GLFWInput::addListener(InputListener &listener) {
-        if (listeners.find(&listener) != listeners.end())
-            throw std::runtime_error("Input listener already registered");
-        listeners.insert(&listener);
-        return [this, &listener]() {
-            removeListener(listener);
-        };
-    }
-
-    void GLFWInput::removeListener(InputListener &listener) {
-        listeners.erase(&listener);
+    void GLFWInput::invokeEvent(const Event &event) {
+        if (eventBus) {
+            eventBus->invoke(event);
+        }
     }
 
     const InputDevice &GLFWInput::getDevice(std::type_index deviceType, int id) {
@@ -329,5 +297,13 @@ namespace xng {
                                                                                           pair.second));
         }
         return ret;
+    }
+
+    void GLFWInput::setEventBus(const EventBus &bus) {
+        eventBus = &bus;
+    }
+
+    void GLFWInput::clearEventBus() {
+        eventBus = nullptr;
     }
 }

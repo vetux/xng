@@ -25,19 +25,9 @@
 #include "xng/input/buttonstate.hpp"
 #include "xng/input/inputdevice.hpp"
 
-namespace xng {
-    enum MouseButton {
-        LEFT,
-        MIDDLE,
-        RIGHT,
-        OPTIONAL_1,
-        OPTIONAL_2,
-        OPTIONAL_3,
-        OPTIONAL_4,
-        OPTIONAL_5,
-        MOUSE_BUTTON_UNDEFINED
-    };
+#include "xng/input/device/mouseevent.hpp"
 
+namespace xng {
     class XENGINE_EXPORT Mouse : public InputDevice {
     public:
         bool getButton(MouseButton button) const {
@@ -56,7 +46,7 @@ namespace xng {
                 return false;
         }
 
-        double wheelDelta;
+        Vec2d wheelDelta;
         Vec2d positionDelta;
 
         Vec2d position;

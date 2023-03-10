@@ -30,7 +30,7 @@
 namespace xng {
     class XENGINE_EXPORT EventBus : public Listenable<EventListener> {
     public:
-        void invoke(const Event &event) {
+        void invoke(const Event &event) const {
             for (auto *receiver: listeners) {
                 receiver->onEvent(event);
             }

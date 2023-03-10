@@ -26,39 +26,9 @@
 #include "xng/input/buttonstate.hpp"
 #include "xng/input/inputdevice.hpp"
 
+#include "xng/input/device/gamepadevent.hpp"
+
 namespace xng {
-    enum GamePadAxis {
-        LEFT_X,
-        LEFT_Y,
-        RIGHT_X,
-        RIGHT_Y,
-        TRIGGER_LEFT,
-        TRIGGER_RIGHT,
-        AXIS_UNDEFINED
-    };
-
-    enum GamePadButton {
-        A,
-        B,
-        X,
-        Y,
-        BUMPER_LEFT,
-        BUMPER_RIGHT,
-        BACK,
-        START,
-        GUIDE,
-        LEFT_STICK,
-        RIGHT_STICK,
-        DPAD_UP,
-        DPAD_RIGHT,
-        DPADP_LEFT,
-        GAMEPAD_BUTTON_UNDEFINED,
-        TRIANGLE = Y,
-        RECTANGLE = X,
-        CROSS = A,
-        CIRCLE = B
-    };
-
     class XENGINE_EXPORT GamePad : public InputDevice {
     public:
         double getGamepadAxis(GamePadAxis axis) const {
