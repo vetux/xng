@@ -126,7 +126,6 @@ namespace xng {
             for (auto &canvasHandle: pair.second) {
                 auto &canvasComponent = scene.getComponent<CanvasComponent>(canvasHandle);
 
-                Vec2f targetSize = target.getDescription().size.convert<float>();
                 if (canvasComponent.projection.dimensions.magnitude() > 0)
                     ren2d.renderBegin(target,
                                       canvasComponent.clear,
@@ -166,12 +165,6 @@ namespace xng {
                             auto &comp = scene.getComponent<TextComponent>(handle);
                             auto &text = renderedTexts.at(handle);
                             auto dstPos = transform.position;
-                            if (transformParents.find(handle.id) == transformParents.end()) {
-                                // Apply alignment relative to the screen
-                                dstPos += RectTransform::getAlignmentOffset(transform.size,
-                                                                            targetSize,
-                                                                            transform.alignment);
-                            }
                             ren2d.draw(Rectf({}, text.getImage().getSize().convert<float>()),
                                        Rectf(dstPos, transform.size),
                                        textTextureHandles.at(handle),
