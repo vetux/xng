@@ -53,7 +53,7 @@ static std::shared_ptr<EntityScene> createScene() {
 
     rect = {};
     rect.parent = "canvas";
-    rect.rectTransform.alignment = xng::RectTransform::RECT_ALIGN_LEFT_TOP;
+    rect.rectTransform.alignment = xng::RectTransform::RECT_ALIGN_CENTER_CENTER;
     ent.createComponent(rect);
 
     TextComponent text;

@@ -98,6 +98,14 @@ namespace xng {
                 && scene.entityNameExists(comp.second.parent)) {
                 transforms[comp.first.id] = comp.second.rectTransform;
                 auto parentEnt = scene.getEntityByName(comp.second.parent);
+
+                if (scene.checkComponent<TextComponent>(EntityHandle(comp.first.id))) {
+                    // Entities which contain a text component will get their rect size will be determined by the size of the rendered text.
+                    // The text can then be lain out by using the rect transform parenting alignment.
+                    transforms[comp.first.id].size = renderedTexts.at(
+                            EntityHandle(comp.first.id)).getImage().getSize().convert<float>();
+                }
+
                 if (!scene.checkComponent<CanvasComponent>(parentEnt)) {
                     transformParents[comp.first.id] = parentEnt.id;
                 } else {
@@ -107,13 +115,8 @@ namespace xng {
                             target.getDescription().size.convert<float>(),
                             transforms[comp.first.id].alignment);
                 }
+
                 rects[parentEnt].insert(comp.first.id);
-                if (scene.checkComponent<TextComponent>(EntityHandle(comp.first.id))) {
-                    // Entities which contain a text component will get their rect size will be determined by the size of the rendered text.
-                    // The text can then be lain out by using the rect transform parenting alignment.
-                    transforms[comp.first.id].size = renderedTexts.at(
-                            EntityHandle(comp.first.id)).getImage().getSize().convert<float>();
-                }
             }
         }
 
