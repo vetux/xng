@@ -68,7 +68,7 @@ namespace xng {
                 tasks[index] = ret;
             }
 
-            taskVar.notify_all();
+            taskVar.notify_one();
 
             return ret;
         }
