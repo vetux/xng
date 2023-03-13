@@ -34,21 +34,20 @@ namespace xng {
     public:
         CanvasRenderSystem(Renderer2D &renderer2D,
                            RenderTarget &target,
-                           FontDriver &fontDriver);
+                           FontDriver &fontDriver,
+                           bool drawDebugGeometry = false);
 
         ~CanvasRenderSystem() override = default;
 
         CanvasRenderSystem(const CanvasRenderSystem &other) = delete;
 
-        CanvasRenderSystem & operator=(const CanvasRenderSystem &other) = delete;
+        CanvasRenderSystem &operator=(const CanvasRenderSystem &other) = delete;
 
         void start(EntityScene &scene, EventBus &eventBus) override;
 
         void stop(EntityScene &scene, EventBus &eventBus) override;
 
         void update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) override;
-
-        void setDrawDebugGeometry(bool v) { drawDebugGeometry = v; }
 
         void onComponentCreate(const EntityHandle &entity, const Component &component) override;
 
@@ -59,6 +58,8 @@ namespace xng {
                                const Component &newComponent) override;
 
         std::string getName() override { return "CanvasRenderSystem"; }
+
+        void setDrawDebugGeometry(bool v) { drawDebugGeometry = v; }
 
     private:
         void createTexture(const EntityHandle &ent, const SpriteComponent &comp);
@@ -71,9 +72,11 @@ namespace xng {
 
         bool drawDebugGeometry = false;
 
-        std::map<Uri, std::unique_ptr<Font>> fonts;
-        std::map<EntityHandle, TextRenderer> textRenderers;
         std::map<EntityHandle, TextureAtlasHandle> spriteTextureHandles;
+
+        std::map<Uri, std::unique_ptr<Font>> fonts;
+
+        std::map<EntityHandle, TextRenderer> textRenderers;
         std::map<EntityHandle, Text> renderedTexts;
         std::map<EntityHandle, TextureAtlasHandle> textTextureHandles;
     };

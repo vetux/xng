@@ -31,20 +31,24 @@ namespace xng {
      * If the resulting rendered text size is larger than the rect dimensions the text is cropped
      */
     struct XENGINE_EXPORT TextComponent : public Component {
-        std::string text;
+        std::string text{};
 
-        Vec2i pixelSize;
+        Vec2i pixelSize{};
 
-        int lineHeight;
-        int lineWidth;
-        int lineSpacing;
-        TextAlignment alignment;
+        int lineHeight{};
+        int lineWidth{};
+        int lineSpacing{};
+        TextAlignment alignment{};
 
-        ResourceHandle<RawResource> font;
+        ResourceHandle<RawResource> font{};
 
-        Vec2f textScroll;
+        Vec2f textScroll{};
 
-        ColorRGBA textColor;
+        ColorRGBA textColor{};
+
+        bool operator==(const TextComponent &other) const = default;
+
+        bool operator!=(const TextComponent &other) const = default;
 
         Messageable &operator<<(const Message &message) override {
             message.value("pixelSize", pixelSize);

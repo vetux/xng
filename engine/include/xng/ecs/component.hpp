@@ -45,6 +45,8 @@ namespace xng {
             return message;
         }
 
+        bool operator==(const Component &other) const = default;
+
         bool enabled = true;
     };
 }

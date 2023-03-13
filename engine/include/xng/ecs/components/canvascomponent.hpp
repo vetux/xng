@@ -22,23 +22,29 @@
 
 #include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
+#include "xng/gui/canvasscalingmode.hpp"
 
 namespace xng {
     /*
      * A canvas renders RectTransformComponents to the screen using Renderer2D
      */
     struct XENGINE_EXPORT CanvasComponent : public Component {
+        CanvasScalingMode scaleMode = SCALE_NO_SCALING;
+
         Vec2f cameraPosition;
 
-        Rectf projection; // The projection or zero to use screensize as projection size
+        Vec2f referenceResolution = {800, 600};
+        float referenceFitWidth = 1;
 
         bool clear = true; // Wheter or not to clear the viewport when rendering this canvas
         ColorRGBA clearColor = ColorRGBA::black();
         int layer; // The sorting layer of this canvas relative to other canvases
 
         Messageable &operator<<(const Message &message) override {
+            message.value("scaleMode", reinterpret_cast<int&>(scaleMode), static_cast<int>(SCALE_NO_SCALING));
             message.value("cameraPosition", cameraPosition);
-            message.value("projection", projection);
+            message.value("referenceResolution", referenceResolution);
+            message.value("referenceFitWidth", referenceFitWidth);
             message.value("clear", clear);
             message.value("clearColor", clearColor);
             message.value("layer", layer);
@@ -47,8 +53,10 @@ namespace xng {
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
+            scaleMode >> message["scaleMode"];
             cameraPosition >> message["cameraPosition"];
-            projection >> message["projection"];
+            referenceResolution >> message["referenceResolution"];
+            referenceFitWidth >> message["referenceFitWidth"];
             clear >> message["clear"];
             clearColor >> message["clearColor"];
             layer >> message["layer"];

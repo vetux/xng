@@ -45,26 +45,6 @@ namespace xng {
         Vec2f center{};
         float rotation{};
 
-        /**
-         * Generate the rect transforms which will be used to draw with the Renderer2D.
-         * The position will be the sum of all parent absolute positions + position
-         * The rotation will be the sum of all parent rotations + rotation
-         *
-         * @return
-         */
-        static std::map<int, RectTransform> getAbsolute(const std::map<int, RectTransform> &rects,
-                                                        const std::map<int, int> &parentMapping);
-
-        /**
-         * Generate the offset for the given alignment relative to the given size
-         *
-         * offset = eg. RECT_ALIGN_CENTER_CENTER dstSize / 2 - srcSize / 2
-         *
-         * @param v
-         * @return
-         */
-        static Vec2f getAlignmentOffset(const Vec2f &srcSize, const Vec2f &dstSize, Alignment v);
-
         Messageable &operator<<(const Message &message) override {
             message.value("alignment", reinterpret_cast<int&>(alignment), static_cast<int>(RECT_ALIGN_LEFT_TOP));
             message.value("position", position);
