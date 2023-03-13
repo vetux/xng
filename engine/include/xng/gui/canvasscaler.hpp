@@ -26,7 +26,7 @@ namespace xng {
     class CanvasScaler {
     public:
         /**
-         * Scale the given rect transform using reference resolution scaling which works identically to unity canvas reference scaling.
+         * Scale the given rect transform using reference resolution scaling which works similar to unity canvas reference scaling.
          *
          * @param absRect
          * @param referenceResolution
