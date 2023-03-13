@@ -91,6 +91,16 @@ namespace xng::opengl {
                                 GL_TEXTURE_MAG_FILTER,
                                 convert(desc.textureDesc.filterMag));
 
+                if ( desc.textureDesc.generateMipmap) {
+                    glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                                    GL_TEXTURE_MIN_FILTER,
+                                    convert(desc.textureDesc.mipmapFilter));
+                    glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                                    GL_TEXTURE_MAG_FILTER,
+                                    convert(desc.textureDesc.filterMag));
+                    glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+                }
+
                 checkGLError();
 
             }

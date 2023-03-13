@@ -331,11 +331,11 @@ namespace xng {
         desc.primitive = POINTS;
         pointPipelineMultiDraw = device.createRenderPipeline(desc, shaderDecompiler);
 
-
         for (int i = TEXTURE_ATLAS_8x8; i < TEXTURE_ATLAS_END; i++) {
             auto res = (TextureAtlasResolution) i;
             TextureArrayBufferDesc atlasDesc;
             atlasDesc.textureDesc.size = TextureAtlas::getResolutionLevelSize(res);
+            atlasDesc.textureDesc.generateMipmap = true;
             atlasTextures[res] = std::move(device.createTextureArrayBuffer(atlasDesc));
         }
 

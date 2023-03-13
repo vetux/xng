@@ -28,7 +28,7 @@ static std::shared_ptr<EntityScene> createScene() {
 
     CanvasComponent canvas;
     canvas.clearColor = ColorRGBA::grey(0.3);
-    canvas.referenceResolution = {1920, 1080};
+    canvas.referenceResolution = {800, 600};
     canvas.scaleMode = xng::SCALE_REFERENCE_RESOLUTION;
     canvas.referenceFitWidth = 0.5;
     ent.createComponent(canvas);
