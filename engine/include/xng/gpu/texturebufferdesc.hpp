@@ -29,6 +29,8 @@
 
 #include "xng/io/messageable.hpp"
 
+#include "xng/asset/color.hpp"
+
 namespace xng {
     struct TextureBufferDesc : public Messageable {
         Vec2i size = {1, 1};
@@ -42,6 +44,7 @@ namespace xng {
         MipMapFiltering mipmapFilter = LINEAR_MIPMAP_LINEAR;
         bool fixedSampleLocations = false;
         RenderBufferType bufferType = HOST_VISIBLE;
+        ColorRGBA borderColor = ColorRGBA(0);
 
         bool operator==(const TextureBufferDesc &other) const {
             return size == other.size
@@ -54,7 +57,8 @@ namespace xng {
                    && generateMipmap == other.generateMipmap
                    && mipmapFilter == other.mipmapFilter
                    && fixedSampleLocations == other.fixedSampleLocations
-                   && bufferType == other.bufferType;
+                   && bufferType == other.bufferType
+                   && borderColor == other.borderColor;
         }
 
         Messageable &operator<<(const Message &message) override {
@@ -70,6 +74,7 @@ namespace xng {
                                                                 Message((int) NEAREST_MIPMAP_NEAREST)).asInt();
             message.value("fixedSampleLocations", fixedSampleLocations);
             bufferType = (RenderBufferType) message.getMessage("bufferType", Message((int) HOST_VISIBLE)).asInt();
+            message.value("borderColor", borderColor);
             return *this;
         }
 
@@ -86,6 +91,7 @@ namespace xng {
             message["mipmapFilter"] = (int) mipmapFilter;
             message["fixedSampleLocations"] = fixedSampleLocations;
             message["bufferType"] = (int) bufferType;
+            borderColor >> message["borderColor"];
             return message;
         }
     };
@@ -108,6 +114,10 @@ namespace std {
             xng::hash_combine(ret, k.mipmapFilter);
             xng::hash_combine(ret, k.fixedSampleLocations);
             xng::hash_combine(ret, k.bufferType);
+            xng::hash_combine(ret, k.borderColor.r());
+            xng::hash_combine(ret, k.borderColor.g());
+            xng::hash_combine(ret, k.borderColor.b());
+            xng::hash_combine(ret, k.borderColor.a());
             return ret;
         }
     };

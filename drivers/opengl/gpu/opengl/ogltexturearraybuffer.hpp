@@ -91,7 +91,7 @@ namespace xng::opengl {
                                 GL_TEXTURE_MAG_FILTER,
                                 convert(desc.textureDesc.filterMag));
 
-                if ( desc.textureDesc.generateMipmap) {
+                if (desc.textureDesc.generateMipmap) {
                     glTexParameteri(GL_TEXTURE_2D_ARRAY,
                                     GL_TEXTURE_MIN_FILTER,
                                     convert(desc.textureDesc.mipmapFilter));
@@ -100,6 +100,10 @@ namespace xng::opengl {
                                     convert(desc.textureDesc.filterMag));
                     glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
                 }
+
+                auto col = desc.textureDesc.borderColor.divide();
+                float borderColor[] = {col.x, col.y, col.z, col.w};
+                glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, borderColor);
 
                 checkGLError();
 

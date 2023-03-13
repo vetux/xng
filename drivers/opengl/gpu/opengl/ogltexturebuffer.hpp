@@ -124,6 +124,10 @@ namespace xng::opengl {
                 glGenerateMipmap(textureType);
             }
 
+            auto col = desc.borderColor.divide();
+            float borderColor[] = {col.x, col.y, col.z, col.w};
+            glTexParameterfv(textureType, GL_TEXTURE_BORDER_COLOR, borderColor);
+
             glBindTexture(textureType, 0);
 
             checkGLError();
