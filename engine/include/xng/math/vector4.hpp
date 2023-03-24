@@ -60,7 +60,7 @@ namespace xng {
         }
 
         Vector4<T> &operator/=(const Vector4<T> &v) {
-            v /= v.x;
+            x /= v.x;
             y /= v.y;
             z /= v.z;
             w /= v.w;

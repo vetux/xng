@@ -56,7 +56,7 @@ namespace xng {
         }
 
         Vector3<T> &operator/=(const Vector3<T> &v) {
-            v /= v.x;
+            x /= v.x;
             y /= v.y;
             z /= v.z;
             return *this;
