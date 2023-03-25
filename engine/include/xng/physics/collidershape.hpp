@@ -26,7 +26,7 @@
 namespace xng {
     enum ColliderShapeType {
         COLLIDER_2D, // The vertices / indices are treated as 2D points describing a polygon facing in the z axis.
-        COLLIDER_3D // The vertices / indices are interpreted according to the set primitive.
+        COLLIDER_3D // The vertices / indices are treated as 3D points which form faces according to the set primitive.
     };
 
     struct XENGINE_EXPORT ColliderShape : public Messageable {
