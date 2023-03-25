@@ -72,7 +72,7 @@ namespace xng {
         }
 
         static TextureAtlasResolution getClosestMatchingResolutionLevel(const Vec2i &size) {
-            for (auto i = (int) TEXTURE_ATLAS_8x8; i < TEXTURE_ATLAS_END; i++) {
+            for (auto i = (int) TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; i++) {
                 auto res = getResolutionLevelSize((TextureAtlasResolution) i);
                 if (size.x <= res.x && size.y <= res.y) {
                     return (TextureAtlasResolution) i;

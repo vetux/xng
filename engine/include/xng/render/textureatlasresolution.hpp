@@ -22,7 +22,7 @@
 
 namespace xng {
     enum TextureAtlasResolution : int {
-        TEXTURE_ATLAS_8x8 = 0,
+        TEXTURE_ATLAS_8x8,
         TEXTURE_ATLAS_16x16,
         TEXTURE_ATLAS_32x32,
         TEXTURE_ATLAS_64x64,
@@ -34,7 +34,8 @@ namespace xng {
         TEXTURE_ATLAS_4096x4096,
         TEXTURE_ATLAS_8192x8192,
         TEXTURE_ATLAS_16384x16384,
-        TEXTURE_ATLAS_END
+        TEXTURE_ATLAS_END,
+        TEXTURE_ATLAS_BEGIN = TEXTURE_ATLAS_8x8
     };
 }
 #endif //XENGINE_TEXTUREATLASRESOLUTION_HPP
