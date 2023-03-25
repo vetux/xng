@@ -26,15 +26,15 @@
 
 namespace xng {
     /*
-     * A canvas renders RectTransformComponents to the screen using Renderer2D
+     * A canvas renders RectTransformComponents of all child entities recursively to the screen using Renderer2D
      */
     struct XENGINE_EXPORT CanvasComponent : public Component {
         CanvasScalingMode scaleMode = SCALE_NO_SCALING;
 
-        Vec2f cameraPosition;
-
         Vec2f referenceResolution = {800, 600};
         float referenceFitWidth = 1;
+
+        Vec2f cameraPosition;
 
         bool clear = true; // Wheter or not to clear the viewport when rendering this canvas
         ColorRGBA clearColor = ColorRGBA::black();
@@ -42,9 +42,9 @@ namespace xng {
 
         Messageable &operator<<(const Message &message) override {
             message.value("scaleMode", reinterpret_cast<int&>(scaleMode), static_cast<int>(SCALE_NO_SCALING));
-            message.value("cameraPosition", cameraPosition);
             message.value("referenceResolution", referenceResolution);
             message.value("referenceFitWidth", referenceFitWidth);
+            message.value("cameraPosition", cameraPosition);
             message.value("clear", clear);
             message.value("clearColor", clearColor);
             message.value("layer", layer);
@@ -54,9 +54,9 @@ namespace xng {
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             scaleMode >> message["scaleMode"];
-            cameraPosition >> message["cameraPosition"];
             referenceResolution >> message["referenceResolution"];
             referenceFitWidth >> message["referenceFitWidth"];
+            cameraPosition >> message["cameraPosition"];
             clear >> message["clear"];
             clearColor >> message["clearColor"];
             layer >> message["layer"];
