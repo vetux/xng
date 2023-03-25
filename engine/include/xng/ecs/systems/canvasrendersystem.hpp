@@ -25,7 +25,9 @@
 #include "xng/ecs/components/textcomponent.hpp"
 
 #include "xng/font/fontdriver.hpp"
+
 #include "xng/gui/textrenderer.hpp"
+#include "xng/gui/canvasscalingmode.hpp"
 
 #include "xng/render/2d/renderer2d.hpp"
 
@@ -64,7 +66,9 @@ namespace xng {
     private:
         void createTexture(const EntityHandle &ent, const SpriteComponent &comp);
 
-        void createText(const EntityHandle &ent, const TextComponent &comp);
+        void updateText(const EntityHandle &ent, const TextComponent &comp, const Vec2f &sizeScale);
+
+        void destroyTextRenderer(const Vec2i &size);
 
         Renderer2D &ren2d;
         RenderTarget &target;
@@ -76,7 +80,9 @@ namespace xng {
 
         std::map<Uri, std::unique_ptr<Font>> fonts;
 
-        std::map<EntityHandle, TextRenderer> textRenderers;
+        std::map<EntityHandle, Vec2i> textPixelSizes;
+        std::unordered_map<Vec2i, TextRenderer> textRenderers;
+
         std::map<EntityHandle, Text> renderedTexts;
         std::map<EntityHandle, TextureAtlasHandle> textTextureHandles;
     };
