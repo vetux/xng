@@ -33,8 +33,13 @@ namespace xng {
     CanvasRenderSystem::CanvasRenderSystem(Renderer2D &renderer2D,
                                            RenderTarget &target,
                                            FontDriver &fontDriver,
-                                           bool drawDebugGeometry)
-            : ren2d(renderer2D), target(target), fontDriver(fontDriver), drawDebugGeometry(drawDebugGeometry) {}
+                                           bool drawDebugGeometry,
+                                           int pixelsPerMeter)
+            : ren2d(renderer2D),
+              target(target),
+              fontDriver(fontDriver),
+              drawDebugGeometry(drawDebugGeometry),
+              pixelToMeter(1.0f / static_cast<float>(pixelsPerMeter)) {}
 
     void CanvasRenderSystem::start(EntityScene &scene, EventBus &eventBus) {
         scene.addListener(*this);
@@ -162,6 +167,13 @@ namespace xng {
 
                     for (auto &handle: order) {
                         auto transform = absoluteTransforms.at(handle.id);
+
+                        if (scene.checkComponent<TransformComponent>(handle)) {
+                            auto &tcomp = scene.getComponent<TransformComponent>(handle);
+                            transform.position.x += tcomp.transform.getPosition().x / pixelToMeter;
+                            transform.position.y += tcomp.transform.getPosition().y / pixelToMeter;
+                            transform.rotation += tcomp.transform.getRotation().getEulerAngles().z;
+                        }
 
                         if (scene.checkComponent<SpriteComponent>(handle)) {
                             auto &comp = scene.getComponent<SpriteComponent>(handle);

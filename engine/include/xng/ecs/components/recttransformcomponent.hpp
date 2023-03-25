@@ -25,6 +25,14 @@
 #include "xng/gui/recttransform.hpp"
 
 namespace xng {
+    /**
+     * Describe a rectangular area on a canvas.
+     * Alignments and positions are relative to the specified parent.
+     * The parent must be the name of an entity which contains a RectTransformComponent.
+     * The top level parent of RectTransformComponents must contain a CanvasComponent.
+     * If the entity contains a TransformComponent the x/y position divided by CanvasRenderSystem.pixelToMeter and z rotation of the transform are added
+     * to the rect transform values when rendering which allows a RectTransformComponent to be animated by RigidbodyComponents.
+     */
     struct XENGINE_EXPORT RectTransformComponent : public Component {
         RectTransform rectTransform;
         std::string parent;

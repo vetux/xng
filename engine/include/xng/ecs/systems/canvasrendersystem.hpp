@@ -37,7 +37,8 @@ namespace xng {
         CanvasRenderSystem(Renderer2D &renderer2D,
                            RenderTarget &target,
                            FontDriver &fontDriver,
-                           bool drawDebugGeometry = false);
+                           bool drawDebugGeometry = false,
+                           int pixelsPerMeter = 50);
 
         ~CanvasRenderSystem() override = default;
 
@@ -75,6 +76,8 @@ namespace xng {
         FontDriver &fontDriver;
 
         bool drawDebugGeometry = false;
+
+        float pixelToMeter;
 
         std::map<EntityHandle, TextureAtlasHandle> spriteTextureHandles;
 
