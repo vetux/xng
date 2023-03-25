@@ -30,7 +30,7 @@ namespace xng {
     public:
         TextRenderer() = default;
 
-        TextRenderer(Font &font, Renderer2D &renderer2D);
+        TextRenderer(Font &font, Renderer2D &renderer2D, const Vec2i &pixelSize);
 
         ~TextRenderer();
 
@@ -38,14 +38,12 @@ namespace xng {
 
         TextRenderer &operator=(const TextRenderer &other) = default;
 
-        void setFontSize(const Vec2i& pixelSize);
-
         Vec2f getSize(const std::string &text, const TextLayout &layout);
 
         Text render(const std::string &text, const TextLayout &layout);
 
     private:
-        Vec2i fontSize{0, 50};
+        Vec2i pixelSize{0, 50};
         std::map<char, Character> ascii;
         std::map<char, TextureAtlasHandle> textures;
 

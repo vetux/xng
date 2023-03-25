@@ -38,8 +38,11 @@ namespace xng {
     };
 
     TextRenderer::TextRenderer(Font &font,
-                               Renderer2D &ren2D)
-            : ascii(font.renderAscii()), font(&font), ren2d(&ren2D) {
+                               Renderer2D &ren2D,
+                               const Vec2i &pixelSize)
+            : font(&font), ren2d(&ren2D), pixelSize(pixelSize) {
+        font.setPixelSize(pixelSize);
+        ascii = font.renderAscii();
         for (auto &c: ascii) {
             auto &character = c.second;
             textures[c.first] = ren2d->createTexture(character.image);
@@ -54,22 +57,7 @@ namespace xng {
 
     TextRenderer::TextRenderer(const TextRenderer &other) {
         if (other.ren2d) {
-            *this = TextRenderer(*other.font, *other.ren2d);
-        }
-    }
-
-    void TextRenderer::setFontSize(const Vec2i &pixelSize) {
-        if (fontSize != pixelSize) {
-            fontSize = pixelSize;
-            font->setPixelSize(pixelSize);
-            ascii = font->renderAscii();
-            for (auto &pair: textures) {
-                ren2d->destroyTexture(pair.second);
-            }
-            for (auto &c: ascii) {
-                auto &character = c.second;
-                textures[c.first] = ren2d->createTexture(character.image);
-            }
+            *this = TextRenderer(*other.font, *other.ren2d, other.pixelSize);
         }
     }
 
