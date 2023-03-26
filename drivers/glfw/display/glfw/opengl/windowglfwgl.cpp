@@ -310,14 +310,6 @@ namespace xng::glfw {
         return dynamic_cast<Input &>(*input);
     }
 
-    std::string WindowGLFWGL::getDisplayDriver() {
-        return "glfw";
-    }
-
-    std::string WindowGLFWGL::getGraphicsDriver() {
-        return "opengl";
-    }
-
     void WindowGLFWGL::bindGraphics() {
         glfwMakeContextCurrent(wndH);
     }

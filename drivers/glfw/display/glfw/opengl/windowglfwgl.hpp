@@ -49,10 +49,6 @@ namespace xng::glfw {
 
         Input &getInput() override;
 
-        std::string getDisplayDriver() override;
-
-        std::string getGraphicsDriver() override;
-
         void bindGraphics() override;
 
         void unbindGraphics() override;

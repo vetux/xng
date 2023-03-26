@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "display/glfw/glfwdisplaydriver.hpp"
+#include "xng/display/glfw/glfwdisplaydriver.hpp"
 
 #ifdef DRIVER_GLFW_OPENGL
 
@@ -91,9 +91,5 @@ namespace xng::glfw {
                                                             Monitor &monitor,
                                                             VideoMode mode) {
         return makeWindow(gpuBackend, title, size, WindowAttributes(), &monitor, mode);
-    }
-
-    std::type_index GLFWDisplayDriver::getType() {
-        return typeid(GLFWDisplayDriver);
     }
 }

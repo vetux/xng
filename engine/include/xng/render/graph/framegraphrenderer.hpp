@@ -51,8 +51,6 @@ namespace xng {
             return properties;
         }
 
-        std::type_index getType() override { return typeid(FrameGraphRenderer); }
-
     private:
         RenderTarget &target;
         std::unique_ptr<FrameGraphAllocator> allocator;

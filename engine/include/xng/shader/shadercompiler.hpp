@@ -26,32 +26,15 @@
 #include <map>
 #include <functional>
 
-#include "xng/driver/driver.hpp"
-
 #include "shaderlanguage.hpp"
 #include "shaderstage.hpp"
-#include "xng/shader/shadercompilerbackend.hpp"
 
 namespace xng {
     /**
      * A ShaderCompiler preprocesses and compiles shader source from the languages defined in ShaderLanguage to SPIRV
      */
-    class XENGINE_EXPORT ShaderCompiler : public Driver {
+    class XENGINE_EXPORT ShaderCompiler {
     public:
-        static std::string getBackendName(ShaderCompilerBackend backend){
-            switch(backend){
-                case SHADERC:
-                    return "shaderc";
-                default:
-                    throw std::runtime_error("Invalid backend");
-            }
-        }
-
-        static std::unique_ptr<ShaderCompiler> load(ShaderCompilerBackend backend) {
-            return std::unique_ptr<ShaderCompiler>(
-                    dynamic_cast<ShaderCompiler *>(Driver::load(getBackendName(backend)).release()));
-        }
-
         enum OptimizationLevel {
             OPTIMIZATION_NONE,
             OPTIMIZATION_PERFORMANCE,
@@ -94,10 +77,6 @@ namespace xng {
                                        const std::function<std::string(const char *)> &include,
                                        const std::map<std::string, std::string> &macros,
                                        OptimizationLevel optimizationLevel) const = 0;
-
-        std::type_index getBaseType() override {
-            return typeid(ShaderCompiler);
-        }
     };
 }
 

@@ -17,22 +17,30 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/display/android/androidapp.hpp"
+#include "xng/display/android/androiddisplaydriver.hpp"
 
-android_app *xng::android::AndroidApp::app = nullptr;
+#include <EGL/egl.h>
 
-namespace xng {
-    namespace android {
-        android_app *AndroidApp::getApp() {
-            if (app) {
-                return app;
-            } else {
-                throw std::runtime_error("No app assigned.");
-            }
-        }
+#ifdef DRIVER_ANDROID_OPENGL
 
-        void AndroidApp::setApp(android_app *appArg) {
-            app = appArg;
+#include "display/android/opengl/androidwindowgles.hpp"
+
+#endif
+
+namespace xng::android {
+    AndroidDisplayDriver::AndroidDisplayDriver() {
+        app = AndroidApp::getApp();
+    }
+
+    std::unique_ptr<Window> AndroidDisplayDriver::getWindow(GpuDriverBackend gpuDriverBackend,
+                                                            WindowAttributes attributes) {
+        switch (gpuDriverBackend) {
+#ifdef DRIVER_ANDROID_OPENGL
+            case OPENGL_4_6:
+                return std::make_unique<AndroidWindowGLES>(app);
+#endif
+            default:
+                throw std::runtime_error("Unsupported gpu backend");
         }
     }
 }

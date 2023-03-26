@@ -22,11 +22,9 @@
 
 #include "xng/shader/shadercompiler.hpp"
 
-namespace xng {
-    class ShaderCCompiler : public ShaderCompiler {
+namespace xng::shaderc {
+    class XENGINE_EXPORT ShaderCCompiler : public ShaderCompiler {
     public:
-        std::type_index getType() override { return typeid(ShaderCCompiler); }
-
         std::vector<uint32_t> compile(const std::string &source,
                                       const std::string &entryPoint,
                                       ShaderStage stage,

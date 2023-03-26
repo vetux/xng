@@ -19,12 +19,12 @@
 
 #include <stdexcept>
 
-#include "shader/shaderccompiler.hpp"
+#include "xng/shader/shaderc/shaderccompiler.hpp"
 
 #include <shaderc/shaderc.hpp>
 
-namespace xng {
-    class IncludeHandler : public shaderc::CompileOptions::IncluderInterface {
+namespace xng::shaderc {
+class IncludeHandler : public ::shaderc::CompileOptions::IncluderInterface {
     public:
         std::function<std::string(const char *)> callback;
 
@@ -123,8 +123,8 @@ namespace xng {
                                                    ShaderStage stage,
                                                    ShaderLanguage language,
                                                    OptimizationLevel optimizationLevel) const {
-        shaderc::Compiler compiler;
-        shaderc::CompileOptions options;
+        ::shaderc::Compiler compiler;
+        ::shaderc::CompileOptions options;
 
         shaderc_shader_kind shaderStage = convertShaderStage(stage);
 
@@ -196,8 +196,8 @@ namespace xng {
                 break;
         }
 
-        shaderc::Compiler compiler;
-        shaderc::CompileOptions options;
+        ::shaderc::Compiler compiler;
+        ::shaderc::CompileOptions options;
 
         for (auto &p: macros)
             options.AddMacroDefinition(p.first, p.second);

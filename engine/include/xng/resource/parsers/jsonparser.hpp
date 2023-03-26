@@ -48,10 +48,6 @@ namespace xng {
         ResourceBundle read(const std::vector<char> &buffer, const std::string &hint, Archive *archive) const override;
 
         const std::set<std::string> &getSupportedFormats() const override;
-
-        std::type_index getType() override {
-            return typeid(JsonParser);
-        }
     };
 }
 

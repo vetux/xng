@@ -20,33 +20,13 @@
 #ifndef XENGINE_FONTDRIVER_HPP
 #define XENGINE_FONTDRIVER_HPP
 
-#include "xng/driver/driver.hpp"
 #include "xng/font/font.hpp"
-#include "xng/font/fontdriverbackend.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT FontDriver : public Driver {
+    class XENGINE_EXPORT FontDriver {
     public:
-        static std::string getBackendName(FontDriverBackend backend){
-            switch(backend){
-                case FREETYPE:
-                    return "freetype";
-                default:
-                    throw std::runtime_error("Invalid backend");
-            }
-        }
-
-        static std::unique_ptr<FontDriver> load(FontDriverBackend backend) {
-            return std::unique_ptr<FontDriver>(
-                    dynamic_cast<FontDriver *>(Driver::load(getBackendName(backend)).release()));
-        }
-
         virtual std::unique_ptr<Font> createFont(std::istream &data) = 0;
-
-    private:
-        std::type_index getBaseType() override {
-            return typeid(FontDriver);
-        }
     };
 }
+
 #endif //XENGINE_FONTDRIVER_HPP

@@ -20,30 +20,13 @@
 #ifndef XENGINE_DISPLAYDRIVER_HPP
 #define XENGINE_DISPLAYDRIVER_HPP
 
-#include "xng/driver/driver.hpp"
-
-#include "xng/gpu/gpudriver.hpp"
+#include "xng/gpu/gpudriverbackend.hpp"
 
 #include "xng/display/window.hpp"
-#include "xng/display/displaydriverbackend.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT DisplayDriver : public Driver {
+    class XENGINE_EXPORT DisplayDriver {
     public:
-        static std::string getBackendName(DisplayDriverBackend backend){
-            switch(backend){
-                case DISPLAY_GLFW:
-                    return "glfw";
-                default:
-                    throw std::runtime_error("Invalid backend");
-            }
-        }
-
-        static std::unique_ptr<DisplayDriver> load(DisplayDriverBackend backend) {
-            return std::unique_ptr<DisplayDriver>(
-                    dynamic_cast<DisplayDriver *>(Driver::load(getBackendName(DISPLAY_GLFW)).release()));
-        }
-
         virtual std::unique_ptr<Monitor> getPrimaryMonitor() = 0;
 
         virtual std::set<std::unique_ptr<Monitor>> getMonitors() = 0;
@@ -61,11 +44,7 @@ namespace xng {
                                                      WindowAttributes attributes,
                                                      Monitor &monitor,
                                                      VideoMode mode) = 0;
-
-    private:
-        std::type_index getBaseType() override {
-            return typeid(DisplayDriver);
-        }
     };
 }
+
 #endif //XENGINE_DISPLAYDRIVER_HPP

@@ -17,13 +17,21 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_CRYPTODRIVERBACKEND_HPP
-#define XENGINE_CRYPTODRIVERBACKEND_HPP
+#ifndef XENGINE_CRYPTOPPDRIVER_HPP
+#define XENGINE_CRYPTOPPDRIVER_HPP
 
-namespace xng  {
-    enum CryptoDriverBackend {
-        CRYPTOPP
+#include "xng/crypto/cryptodriver.hpp"
+
+namespace xng {
+    class XENGINE_EXPORT CryptoPPDriver : public CryptoDriver {
+    public:
+        std::unique_ptr<AES> createAES() override;
+
+        std::unique_ptr<GZip> createGzip() override;
+
+        std::unique_ptr<Random> createRandom() override;
+
+        std::unique_ptr<SHA> createSHA() override;
     };
 }
-
-#endif //XENGINE_CRYPTODRIVERBACKEND_HPP
+#endif //XENGINE_CRYPTOPPDRIVER_HPP

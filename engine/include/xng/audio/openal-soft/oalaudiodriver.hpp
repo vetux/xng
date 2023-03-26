@@ -17,13 +17,20 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_AUDIODRIVERBACKEND_HPP
-#define XENGINE_AUDIODRIVERBACKEND_HPP
+#ifndef XENGINE_OALAUDIODRIVER_HPP
+#define XENGINE_OALAUDIODRIVER_HPP
+
+#include "xng/audio/audiodriver.hpp"
 
 namespace xng {
-    enum AudioDriverBackend {
-        OPENAL_SOFT
+    class XENGINE_EXPORT OALAudioDriver : public AudioDriver {
+    public:
+        std::vector<std::string> getDeviceNames() override;
+
+        std::unique_ptr<AudioDevice> createDevice() override;
+
+        std::unique_ptr<AudioDevice> createDevice(const std::string &deviceName) override;
     };
 }
 
-#endif //XENGINE_AUDIODRIVERBACKEND_HPP
+#endif //XENGINE_OALAUDIODRIVER_HPP

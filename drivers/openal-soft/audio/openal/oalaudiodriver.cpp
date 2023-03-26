@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "audio/openal/oalaudiodriver.hpp"
+#include "xng/audio/openal-soft/oalaudiodriver.hpp"
 
 #include <stdexcept>
 
@@ -53,9 +53,5 @@ namespace xng {
 
     std::unique_ptr<AudioDevice> OALAudioDriver::createDevice(const std::string &deviceName) {
         return std::make_unique<OALAudioDevice>(deviceName);
-    }
-
-    std::type_index OALAudioDriver::getType() {
-        return typeid(OALAudioDriver);
     }
 }

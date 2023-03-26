@@ -20,31 +20,12 @@
 #ifndef XENGINE_GPUDRIVER_HPP
 #define XENGINE_GPUDRIVER_HPP
 
-#include "xng/driver/driver.hpp"
-
 #include "xng/gpu/renderdevice.hpp"
 #include "xng/gpu/renderdeviceinfo.hpp"
-#include "xng/gpu/gpudriverbackend.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT GpuDriver : public Driver {
+    class XENGINE_EXPORT GpuDriver {
     public:
-        static std::string getBackendName(GpuDriverBackend backend){
-            switch(backend){
-                case OPENGL_4_6:
-                    return "opengl";
-                default:
-                    throw std::runtime_error("Invalid backend");
-            }
-        }
-
-        static std::unique_ptr<GpuDriver> load(GpuDriverBackend backend) {
-            return std::unique_ptr<GpuDriver>(
-                    dynamic_cast<GpuDriver *>(Driver::load(getBackendName(backend)).release()));
-        }
-
-        ~GpuDriver() override = default;
-
         /**
          * @return Return the information objects of the available render devices.
          */
@@ -53,11 +34,6 @@ namespace xng {
         virtual std::unique_ptr<RenderDevice> createRenderDevice() = 0;
 
         virtual std::unique_ptr<RenderDevice> createRenderDevice(const std::string &deviceName) = 0;
-
-    private:
-        std::type_index getBaseType() override {
-            return typeid(GpuDriver);
-        }
     };
 }
 #endif //XENGINE_GPUDRIVER_HPP

@@ -17,18 +17,19 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_PHYSICSDRIVERBT3_HPP
-#define XENGINE_PHYSICSDRIVERBT3_HPP
+#ifndef XENGINE_SPIRVCROSSDECOMPILER_HPP
+#define XENGINE_SPIRVCROSSDECOMPILER_HPP
 
-#include "xng/physics/physicsdriver.hpp"
+#include "xng/shader/shaderdecompiler.hpp"
 
-namespace xng {
-    class PhysicsDriverBt3 : public PhysicsDriver {
+namespace xng::spirv_cross {
+    class XENGINE_EXPORT SpirvCrossDecompiler : public ShaderDecompiler {
     public:
-        std::type_index getType() override;
-
-        std::unique_ptr<World> createWorld() override;
+        std::string decompile(const std::vector<uint32_t> &source,
+                              const std::string &entryPoint,
+                              ShaderStage stage,
+                              ShaderLanguage targetLanguage) const override;
     };
 }
 
-#endif //XENGINE_PHYSICSDRIVERBT3_HPP
+#endif //XENGINE_SPIRVCROSSDECOMPILER_HPP

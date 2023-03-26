@@ -20,18 +20,12 @@
 #ifndef XENGINE_SCRIPTDRIVER_HPP
 #define XENGINE_SCRIPTDRIVER_HPP
 
-#include "xng/driver/driver.hpp"
 #include "scriptruntime.hpp"
 
 namespace xng {
-    class ScriptDriver : public Driver {
+    class ScriptDriver {
     public:
         virtual std::unique_ptr<ScriptRuntime> createRuntime() = 0;
-
-    private:
-        std::type_index getBaseType() override {
-            return typeid(ScriptDriver);
-        }
     };
 }
 

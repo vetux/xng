@@ -36,7 +36,7 @@ namespace xng {
      * the user can either subclass scene renderer and pass the instance to the mesh render system
      * or subclass system to create a custom rendering system.
      */
-    class XENGINE_EXPORT SceneRenderer : public Driver {
+    class XENGINE_EXPORT SceneRenderer {
     public:
         virtual void render(const Scene &scene) = 0;
 
@@ -45,10 +45,6 @@ namespace xng {
         virtual GenericMapString &getProperties() = 0;
 
         virtual const GenericMapString &getProperties() const = 0;
-
-        std::type_index getBaseType() override {
-            return typeid(SceneRenderer);
-        }
     };
 }
 #endif //XENGINE_SCENERENDERER_HPP

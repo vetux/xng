@@ -23,10 +23,10 @@
 #include <map>
 #include <functional>
 
-#include "xng/gpu/compute/computepipeline.hpp"
-#include "xng/gpu/compute/computecommand.hpp"
-#include "xng/gpu/raytrace/raytracepipeline.hpp"
-#include "xng/gpu/raytrace/raytracecommand.hpp"
+#include "computepipeline.hpp"
+#include "computecommand.hpp"
+#include "raytracepipeline.hpp"
+#include "raytracecommand.hpp"
 
 #include "xng/gpu/renderpipeline.hpp"
 #include "xng/gpu/rendertarget.hpp"

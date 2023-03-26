@@ -17,14 +17,18 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RESOURCEPARSERBACKEND_HPP
-#define XENGINE_RESOURCEPARSERBACKEND_HPP
+#ifndef XENGINE_ASSIMPPARSER_HPP
+#define XENGINE_ASSIMPPARSER_HPP
+
+#include "xng/resource/resourceparser.hpp"
 
 namespace xng {
-    enum ResourceParserBackend {
-        ASSIMP, // Asset files (.obj, .fbx etc)
-        LIBSNDFILE // Audio files
+    class XENGINE_EXPORT AssImpParser : public ResourceParser {
+    public:
+        ResourceBundle read(const std::vector<char> &buffer, const std::string &hint, Archive *archive) const override;
+
+        const std::set<std::string> &getSupportedFormats() const override;
     };
 }
 
-#endif //XENGINE_RESOURCEPARSERBACKEND_HPP
+#endif //XENGINE_ASSIMPPARSER_HPP

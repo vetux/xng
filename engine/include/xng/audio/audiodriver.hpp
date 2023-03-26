@@ -20,38 +20,17 @@
 #ifndef XENGINE_AUDIODRIVER_HPP
 #define XENGINE_AUDIODRIVER_HPP
 
-#include "xng/driver/driver.hpp"
-
 #include "xng/audio/audiodevice.hpp"
-#include "xng/audio/audiodriverbackend.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT AudioDriver : public Driver {
+    class XENGINE_EXPORT AudioDriver {
     public:
-        static std::string getBackendName(AudioDriverBackend backend){
-            switch(backend){
-                case OPENAL_SOFT:
-                    return "openal-soft";
-                default:
-                    throw std::runtime_error("Invalid backend");
-            }
-        }
-
-        static std::unique_ptr<AudioDriver> load(AudioDriverBackend backend) {
-            return std::unique_ptr<AudioDriver>(
-                    dynamic_cast<AudioDriver *>(Driver::load(getBackendName(backend)).release()));
-        }
-
         virtual std::vector<std::string> getDeviceNames() = 0;
 
         virtual std::unique_ptr<AudioDevice> createDevice() = 0;
 
         virtual std::unique_ptr<AudioDevice> createDevice(const std::string &deviceName) = 0;
-
-    private:
-        std::type_index getBaseType() override {
-            return typeid(AudioDriver);
-        }
     };
 }
+
 #endif //XENGINE_AUDIODRIVER_HPP

@@ -20,26 +20,14 @@
 #ifndef CMAKELISTS_TXT_ANDROIDDISPLAYDRIVER_HPP
 #define CMAKELISTS_TXT_ANDROIDDISPLAYDRIVER_HPP
 
-#include <EGL/egl.h>
-
 #include "xng/display/displaydriver.hpp"
 
-#include "xng/android/androidapp.hpp"
-
-#ifdef DRIVER_ANDROID_OPENGL
-
-#include "display/android/opengl/androidwindowgles.hpp"
-
-#endif
-
-#pragma message "Not Implemented"
+#include "xng/display/android/androidapp.hpp"
 
 namespace xng::android {
-    class AndroidDisplayDriver : public DisplayDriver {
+    class XENGINE_EXPORT AndroidDisplayDriver : public DisplayDriver {
     public:
-        AndroidDisplayDriver() {
-            app = AndroidApp::getApp();
-        }
+        AndroidDisplayDriver();
 
         std::unique_ptr<Monitor> getPrimaryMonitor() override {
             throw std::runtime_error("No monitors support on android");
@@ -69,25 +57,11 @@ namespace xng::android {
             return getWindow(gpuBackend, attributes);
         }
 
-        std::type_index getType() override {
-            return typeid(AndroidDisplayDriver);
-        }
-
         android_app *app;
 
     private:
-        std::unique_ptr<Window> getWindow(GpuDriverBackend gpuDriverBackend, WindowAttributes attributes) {
-            switch (gpuDriverBackend) {
-#ifdef DRIVER_ANDROID_OPENGL
-                case OPENGL_4_6:
-                    return std::make_unique<AndroidWindowGLES>(app);
-#endif
-                default:
-                    throw std::runtime_error("Unsupported gpu backend");
-            }
-        }
+        std::unique_ptr<Window> getWindow(GpuDriverBackend gpuDriverBackend, WindowAttributes attributes);
     };
-
-
 }
+
 #endif //CMAKELISTS_TXT_ANDROIDDISPLAYDRIVER_HPP

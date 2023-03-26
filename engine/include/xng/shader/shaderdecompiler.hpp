@@ -23,32 +23,15 @@
 #include <string>
 #include <vector>
 
-#include "xng/driver/driver.hpp"
-
 #include "shaderlanguage.hpp"
 #include "shaderstage.hpp"
-#include "xng/shader/shaderdecompilerbackend.hpp"
 
 namespace xng {
     /**
      * A ShaderDecompiler decompiles SPIRV to the languages defined in ShaderLanguage.
      */
-    class XENGINE_EXPORT ShaderDecompiler : public Driver {
+    class XENGINE_EXPORT ShaderDecompiler {
     public:
-        static std::string getBackendName(ShaderDecompilerBackend backend){
-            switch(backend){
-                case SPIRV_CROSS:
-                    return "spirv-cross";
-                default:
-                    throw std::runtime_error("Invalid backend");
-            }
-        }
-
-        static std::unique_ptr<ShaderDecompiler> load(ShaderDecompilerBackend backend) {
-            return std::unique_ptr<ShaderDecompiler>(
-                    dynamic_cast<ShaderDecompiler *>(Driver::load(getBackendName(backend)).release()));
-        }
-
         /**
          * Decompile the given spirv to the given output language.
          *
@@ -66,10 +49,6 @@ namespace xng {
                                       const std::string &entryPoint,
                                       ShaderStage stage,
                                       ShaderLanguage targetLanguage) const = 0;
-
-        std::type_index getBaseType() override {
-            return typeid(ShaderDecompiler);
-        }
     };
 }
 

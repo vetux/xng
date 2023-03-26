@@ -24,33 +24,16 @@
 #include <string>
 #include <vector>
 
-#include "xng/driver/driver.hpp"
-
 #include "xng/io/archive.hpp"
 
 #include "xng/resource/resourcebundle.hpp"
-#include "xng/resource/resourceparserbackend.hpp"
 
 namespace xng {
     /**
      * A parser creates resource objects from the data in buffers.
      */
-    class XENGINE_EXPORT ResourceParser : public Driver {
+    class XENGINE_EXPORT ResourceParser {
     public:
-        static std::unique_ptr<ResourceParser> load(ResourceParserBackend backend) {
-            switch (backend) {
-                case ASSIMP:
-                    return std::unique_ptr<ResourceParser>(
-                            dynamic_cast<ResourceParser *>(Driver::load("assimp").release()));
-                case LIBSNDFILE:
-                    return std::unique_ptr<ResourceParser>(
-                            dynamic_cast<ResourceParser *>(Driver::load("sndfile").release()));
-            }
-            throw std::runtime_error("Invalid backend");
-        }
-
-        virtual ~ResourceParser() noexcept override = default;
-
         /**
          * Read the bundle data from the buffer.
          *
@@ -66,11 +49,6 @@ namespace xng {
          * @return The set of supported file extensions with each containing the preceding dot
          */
         virtual const std::set<std::string> &getSupportedFormats() const = 0;
-
-    private:
-        std::type_index getBaseType() override {
-            return typeid(ResourceParser);
-        }
     };
 }
 

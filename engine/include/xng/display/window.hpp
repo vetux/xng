@@ -50,10 +50,6 @@ namespace xng {
 
         virtual Input &getInput() = 0;
 
-        virtual std::string getDisplayDriver() = 0;
-
-        virtual std::string getGraphicsDriver() = 0;
-
         /**
          * A window cannot be bound in multiple threads at the same time.
          *

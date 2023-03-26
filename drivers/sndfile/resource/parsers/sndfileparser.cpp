@@ -22,7 +22,7 @@
 #include <cstring>
 #include <string>
 
-#include "sndfileparser.hpp"
+#include "xng/resource/sndfile/sndfileparser.hpp"
 
 #include "xng/audio/audioformat.hpp"
 #include "xng/asset/audio.hpp"

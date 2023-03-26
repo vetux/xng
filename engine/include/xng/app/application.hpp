@@ -42,32 +42,6 @@ namespace xng {
          */
         explicit Application(int argc, char *argv[]) {
             setCurrentApplication(this);
-
-            parseArgs(argc, argv);
-            loadDrivers();
-
-            window = displayDriver->createWindow(gpuDriverBackend);
-            renderDevice = gpuDriver->createRenderDevice();
-            audioDevice = audioDriver->createDevice();
-
-            window->update();
-        }
-
-        explicit Application(int argc,
-                             char *argv[],
-                             const std::string &windowTitle,
-                             const Vec2i &windowSize,
-                             const WindowAttributes &windowAttributes = {}) {
-            setCurrentApplication(this);
-
-            parseArgs(argc, argv);
-            loadDrivers();
-
-            window = displayDriver->createWindow(gpuDriverBackend, windowTitle, windowSize, windowAttributes);
-            renderDevice = gpuDriver->createRenderDevice();
-            audioDevice = audioDriver->createDevice();
-
-            window->update();
         }
 
         virtual ~Application() {
@@ -77,31 +51,15 @@ namespace xng {
         virtual int loop() {
             start();
             frameLimiter.reset();
-            while (!window->shouldClose() && !shutdown) {
+            while (!shutdown) {
                 update(frameLimiter.newFrame());
             }
             stop();
             return 0;
         }
 
-        virtual RenderTarget &getScreenTarget() {
-            return window->getRenderTarget();
-        }
-
     protected:
         XENGINE_EXPORT static void setCurrentApplication(Application *ptr);
-
-        DisplayDriverBackend displayDriverBackend = DISPLAY_GLFW;
-        GpuDriverBackend gpuDriverBackend = OPENGL_4_6;
-        AudioDriverBackend audioDriverBackend = OPENAL_SOFT;
-
-        std::unique_ptr<DisplayDriver> displayDriver = nullptr;
-        std::unique_ptr<GpuDriver> gpuDriver = nullptr;
-        std::unique_ptr<AudioDriver> audioDriver = nullptr;
-
-        std::unique_ptr<Window> window = nullptr;
-        std::unique_ptr<RenderDevice> renderDevice = nullptr;
-        std::unique_ptr<AudioDevice> audioDevice = nullptr;
 
         bool shutdown = false;
 
@@ -111,43 +69,7 @@ namespace xng {
 
         virtual void stop() {}
 
-        virtual void update(DeltaTime deltaTime) {
-            window->update();
-            window->swapBuffers();
-        }
-
-        void parseArgs(int argc, char *argv[]) {
-            std::vector<std::string> args;
-            for (int i = 0; i < argc; i++)
-                args.emplace_back(argv[i]);
-
-            for (int i = 0; i < args.size(); i++) {
-                if (args.at(i) == "--display") {
-                    displayDriverBackend = static_cast<DisplayDriverBackend>(std::stoi(args.at(i + 1)));
-                    break;
-                }
-            }
-
-            for (int i = 0; i < args.size(); i++) {
-                if (args.at(i) == "--gpu") {
-                    gpuDriverBackend = static_cast<GpuDriverBackend>(std::stoi(args.at(i + 1)));
-                    break;
-                }
-            }
-
-            for (int i = 0; i < args.size(); i++) {
-                if (args.at(i) == "--audio") {
-                    audioDriverBackend = static_cast<AudioDriverBackend>(std::stoi(args.at(i + 1)));
-                    break;
-                }
-            }
-        }
-
-        void loadDrivers() {
-            displayDriver = DisplayDriver::load(displayDriverBackend);
-            gpuDriver = GpuDriver::load(gpuDriverBackend);
-            audioDriver = AudioDriver::load(audioDriverBackend);
-        }
+        virtual void update(DeltaTime deltaTime) {}
     };
 }
 

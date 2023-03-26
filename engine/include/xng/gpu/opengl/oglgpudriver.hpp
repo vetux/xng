@@ -23,15 +23,13 @@
 #include "xng/gpu/gpudriver.hpp"
 
 namespace xng::opengl {
-    class OGLGpuDriver : public GpuDriver {
+    class XENGINE_EXPORT OGLGpuDriver : public GpuDriver {
     public:
         const std::vector<RenderDeviceInfo> &getAvailableRenderDevices() override;
 
         std::unique_ptr<RenderDevice> createRenderDevice() override;
 
         std::unique_ptr<RenderDevice> createRenderDevice(const std::string &deviceName) override;
-
-        std::type_index getType() override;
 
     private:
         std::vector<RenderDeviceInfo> deviceInfos = {{.name = "default"}};

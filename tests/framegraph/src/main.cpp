@@ -85,20 +85,19 @@ int main(int argc, char *argv[]) {
 
     createMaterialResource(archive);
 
-    auto displayDriver = xng::DisplayDriver::load(xng::DISPLAY_GLFW);
-    auto gpuDriver = xng::GpuDriver::load(xng::OPENGL_4_6);
+    auto displayDriver = glfw::GLFWDisplayDriver();
+    auto gpuDriver = opengl::OGLGpuDriver();
+    auto shaderCompiler = shaderc::ShaderCCompiler();
+    auto shaderDecompiler = spirv_cross::SpirvCrossDecompiler();
 
-    auto shaderCompiler = xng::ShaderCompiler::load(xng::SHADERC);
-    auto shaderDecompiler = xng::ShaderDecompiler::load(xng::SPIRV_CROSS);
-
-    auto device = gpuDriver->createRenderDevice();
-    auto window = displayDriver->createWindow("opengl");
+    auto device = gpuDriver.createRenderDevice();
+    auto window = displayDriver.createWindow(OPENGL_4_6);
     auto &input = window->getInput();
 
     xng::FrameGraphRenderer renderer(window->getRenderTarget(),
                                      std::make_unique<xng::FrameGraphPoolAllocator>(*device,
-                                                                                    *shaderCompiler,
-                                                                                    *shaderDecompiler));
+                                                                                    shaderCompiler,
+                                                                                    shaderDecompiler));
 
     renderer.setPasses({
                                std::make_shared<GBufferPass>(),

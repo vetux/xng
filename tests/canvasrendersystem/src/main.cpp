@@ -138,17 +138,17 @@ static std::shared_ptr<EntityScene> createScene() {
 }
 
 int main(int argc, char *argv[]) {
-    auto displayDriver = DisplayDriver::load(DISPLAY_GLFW);
-    auto gpuDriver = GpuDriver::load(OPENGL_4_6);
-    auto shaderCompiler = ShaderCompiler::load(SHADERC);
-    auto shaderDecompiler = ShaderDecompiler::load(SPIRV_CROSS);
-    auto fontDriver = FontDriver::load(FREETYPE);
+    auto displayDriver = glfw::GLFWDisplayDriver();
+    auto gpuDriver = opengl::OGLGpuDriver();
+    auto shaderCompiler = shaderc::ShaderCCompiler();
+    auto shaderDecompiler = spirv_cross::SpirvCrossDecompiler();
+    auto fontDriver = freetype::FtFontDriver();
 
-    auto window = displayDriver->createWindow(OPENGL_4_6, "Renderer 2D Test", {640, 480}, {});
+    auto window = displayDriver.createWindow(OPENGL_4_6, "Renderer 2D Test", {640, 480}, {});
     auto &input = window->getInput();
     auto &target = window->getRenderTarget();
 
-    auto renderDevice = gpuDriver->createRenderDevice();
+    auto renderDevice = gpuDriver.createRenderDevice();
 
     ResourceRegistry::getDefaultRegistry().addArchive("file", std::make_shared<DirectoryArchive>("assets/"));
     std::vector<std::unique_ptr<ResourceParser>> parsers;
@@ -158,13 +158,13 @@ int main(int argc, char *argv[]) {
 
     auto scene = createScene();
 
-    Renderer2D ren(*renderDevice, *shaderCompiler, *shaderDecompiler);
+    Renderer2D ren(*renderDevice, shaderCompiler, shaderDecompiler);
 
     SystemPipeline pipeline(xng::SystemPipeline::TICK_FRAME,
                             {
                                     std::make_shared<CanvasRenderSystem>(ren,
                                                                          target,
-                                                                         *fontDriver,
+                                                                         fontDriver,
                                                                          false)
                             });
 

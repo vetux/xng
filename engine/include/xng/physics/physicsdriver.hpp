@@ -22,36 +22,12 @@
 
 #include <memory>
 
-#include "xng/driver/driver.hpp"
-
 #include "xng/physics/world.hpp"
-#include "xng/physics/physicsdriverbackend.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT PhysicsDriver : public Driver {
+    class XENGINE_EXPORT PhysicsDriver {
     public:
-        static std::string getBackendName(PhysicsDriverBackend backend){
-            switch(backend){
-                case BOX2D:
-                    return "box2d";
-                case BULLET3:
-                    return "bullet3";
-                default:
-                    throw std::runtime_error("Invalid backend");
-            }
-        }
-
-        static std::unique_ptr<PhysicsDriver> load(PhysicsDriverBackend backend) {
-            return std::unique_ptr<PhysicsDriver>(
-                    dynamic_cast<PhysicsDriver *>(Driver::load(getBackendName(backend)).release()));
-        }
-
         virtual std::unique_ptr<World> createWorld() = 0;
-
-    private:
-        std::type_index getBaseType() override {
-            return typeid(PhysicsDriver);
-        }
     };
 }
 

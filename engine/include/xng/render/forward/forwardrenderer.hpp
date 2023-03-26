@@ -35,8 +35,6 @@ namespace xng {
 
         void render(const Scene &scene) override;
 
-        std::type_index getType() override { return typeid(ForwardRenderer); }
-
         void setProperties(const GenericMapString &value) override {
             properties = value;
         }

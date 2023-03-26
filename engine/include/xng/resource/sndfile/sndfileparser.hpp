@@ -17,23 +17,18 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_CRYPTOPPDRIVER_HPP
-#define XENGINE_CRYPTOPPDRIVER_HPP
+#ifndef XENGINE_SNDFILEPARSER_HPP
+#define XENGINE_SNDFILEPARSER_HPP
 
-#include "xng/crypto/cryptodriver.hpp"
+#include "xng/resource/resourceparser.hpp"
 
 namespace xng {
-    class CryptoPPDriver : public CryptoDriver {
+    class XENGINE_EXPORT SndFileParser : public ResourceParser {
     public:
-        std::unique_ptr<AES> createAES() override;
+        ResourceBundle read(const std::vector<char> &buffer, const std::string &hint, Archive *archive) const override;
 
-        std::unique_ptr<GZip> createGzip() override;
-
-        std::unique_ptr<Random> createRandom() override;
-
-        std::unique_ptr<SHA> createSHA() override;
-
-        std::type_index getType() override { return typeid(CryptoPPDriver); }
+        const std::set<std::string> &getSupportedFormats() const override;
     };
 }
-#endif //XENGINE_CRYPTOPPDRIVER_HPP
+
+#endif //XENGINE_SNDFILEPARSER_HPP

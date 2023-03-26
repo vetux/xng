@@ -17,20 +17,16 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_ASSIMPPARSER_HPP
-#define XENGINE_ASSIMPPARSER_HPP
+#ifndef XENGINE_PHYSICSDRIVERBT3_HPP
+#define XENGINE_PHYSICSDRIVERBT3_HPP
 
-#include "xng/resource/resourceparser.hpp"
+#include "xng/physics/physicsdriver.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT AssImpParser : public ResourceParser {
+    class XENGINE_EXPORT PhysicsDriverBt3 : public PhysicsDriver {
     public:
-        ResourceBundle read(const std::vector<char> &buffer, const std::string &hint, Archive *archive) const override;
-
-        const std::set<std::string> &getSupportedFormats() const override;
-
-        std::type_index getType() override { return typeid(AssImpParser); }
+        std::unique_ptr<World> createWorld() override;
     };
 }
 
-#endif //XENGINE_ASSIMPPARSER_HPP
+#endif //XENGINE_PHYSICSDRIVERBT3_HPP

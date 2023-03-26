@@ -43,14 +43,6 @@ namespace xng {
                 return input;
             }
 
-            std::string getDisplayDriver() override {
-                return DisplayDriver::getBackendName(DisplayDriverBackend::DISPLAY_ANDROID);
-            }
-
-            std::string getGraphicsDriver() override {
-                return std::string();
-            }
-
             void bindGraphics() override {
 
             }

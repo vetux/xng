@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "gpu/opengl/oglgpudriver.hpp"
+#include "xng/gpu/opengl/oglgpudriver.hpp"
 #include "gpu/opengl/oglrenderdevice.hpp"
 
 namespace xng::opengl {
@@ -35,9 +35,5 @@ namespace xng::opengl {
 
     std::unique_ptr<RenderDevice> OGLGpuDriver::createRenderDevice(const std::string &deviceName) {
         return std::make_unique<opengl::OGLRenderDevice>(getAvailableRenderDevices().at(0));
-    }
-
-    std::type_index OGLGpuDriver::getType() {
-        return typeid(OGLGpuDriver);
     }
 }

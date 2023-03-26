@@ -23,7 +23,7 @@
 #include "xng/display/displaydriver.hpp"
 
 namespace xng::glfw {
-    class GLFWDisplayDriver : public DisplayDriver {
+    class XENGINE_EXPORT GLFWDisplayDriver : public DisplayDriver {
     public:
         std::unique_ptr<Monitor> getPrimaryMonitor() override;
 
@@ -42,8 +42,6 @@ namespace xng::glfw {
                                              WindowAttributes attributes,
                                              Monitor &monitor,
                                              VideoMode mode) override;
-
-        std::type_index getType() override;
     };
 }
 

@@ -17,12 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "shader/spirvcrossdecompiler.hpp"
+#include "xng/shader/spirv-cross/spirvcrossdecompiler.hpp"
 
 #include <spirv_glsl.hpp>
 #include <spirv_hlsl.hpp>
 
-namespace xng {
+namespace xng::spirv_cross {
     static spv::ExecutionModel convertShaderStage(ShaderStage stage) {
         switch (stage) {
             case VERTEX:
@@ -58,13 +58,13 @@ namespace xng {
                                                 ShaderLanguage targetLanguage) const {
         switch (targetLanguage) {
             case HLSL_SHADER_MODEL_4: {
-                spirv_cross::CompilerHLSL sCompiler(source);
+                ::spirv_cross::CompilerHLSL sCompiler(source);
                 sCompiler.set_entry_point(entryPoint, convertShaderStage(stage));
 
-                spirv_cross::ShaderResources resources = sCompiler.get_shader_resources();
+                ::spirv_cross::ShaderResources resources = sCompiler.get_shader_resources();
 
-                spirv_cross::CompilerGLSL::Options sOptions;
-                spirv_cross::CompilerHLSL::Options hlslOptions;
+                ::spirv_cross::CompilerGLSL::Options sOptions;
+                ::spirv_cross::CompilerHLSL::Options hlslOptions;
 
                 hlslOptions.shader_model = 40;
                 sCompiler.set_hlsl_options(hlslOptions);
@@ -76,12 +76,12 @@ namespace xng {
             }
             case GLSL_460_VK:
             case GLSL_460:{
-                spirv_cross::CompilerGLSL sCompiler(source);
+                ::spirv_cross::CompilerGLSL sCompiler(source);
                 sCompiler.set_entry_point(entryPoint, convertShaderStage(stage));
 
-                spirv_cross::ShaderResources resources = sCompiler.get_shader_resources();
+                ::spirv_cross::ShaderResources resources = sCompiler.get_shader_resources();
 
-                spirv_cross::CompilerGLSL::Options sOptions;
+                ::spirv_cross::CompilerGLSL::Options sOptions;
                 sOptions.version = 460;
 
                 sCompiler.set_common_options(sOptions);
@@ -93,12 +93,12 @@ namespace xng {
             }
             case GLSL_420_VK:
             case GLSL_420: {
-                spirv_cross::CompilerGLSL sCompiler(source);
+                ::spirv_cross::CompilerGLSL sCompiler(source);
                 sCompiler.set_entry_point(entryPoint, convertShaderStage(stage));
 
-                spirv_cross::ShaderResources resources = sCompiler.get_shader_resources();
+                ::spirv_cross::ShaderResources resources = sCompiler.get_shader_resources();
 
-                spirv_cross::CompilerGLSL::Options sOptions;
+                ::spirv_cross::CompilerGLSL::Options sOptions;
                 sOptions.version = 420;
 
                 sCompiler.set_common_options(sOptions);
@@ -109,12 +109,12 @@ namespace xng {
                 return sCompiler.compile();
             }
             case GLSL_ES_320 : {
-                spirv_cross::CompilerGLSL sCompiler(source);
+                ::spirv_cross::CompilerGLSL sCompiler(source);
                 sCompiler.set_entry_point(entryPoint, convertShaderStage(stage));
 
-                spirv_cross::ShaderResources resources = sCompiler.get_shader_resources();
+                ::spirv_cross::ShaderResources resources = sCompiler.get_shader_resources();
 
-                spirv_cross::CompilerGLSL::Options sOptions;
+                ::spirv_cross::CompilerGLSL::Options sOptions;
                 sOptions.version = 320;
 
                 sOptions.es = true;

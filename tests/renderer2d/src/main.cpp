@@ -56,7 +56,7 @@ public:
                     Font &font)
             : window(window),
               ren(ren),
-              textRenderer(font, ren) {
+              textRenderer(font, ren, Vec2i(0, fpsFontPixelSize)) {
         imageB = loadImage("assets/images/awesomeface.png");
         imageA = loadImage("assets/images/tux.png");
 
@@ -224,23 +224,23 @@ public:
 };
 
 int main(int argc, char *argv[]) {
-    auto displayDriver = DisplayDriver::load(DISPLAY_GLFW);
-    auto gpuDriver = GpuDriver::load(OPENGL_4_6);
-    auto shaderCompiler = ShaderCompiler::load(SHADERC);
-    auto shaderDecompiler = ShaderDecompiler::load(SPIRV_CROSS);
-    auto fontDriver = FontDriver::load(FREETYPE);
+    auto displayDriver = glfw::GLFWDisplayDriver();
+    auto gpuDriver = opengl::OGLGpuDriver();
+    auto shaderCompiler = shaderc::ShaderCCompiler();
+    auto shaderDecompiler = spirv_cross::SpirvCrossDecompiler();
+    auto fontDriver = freetype::FtFontDriver();
 
-    auto window = displayDriver->createWindow(OPENGL_4_6, "Renderer 2D Test", {640, 480}, {});
+    auto window = displayDriver.createWindow(OPENGL_4_6, "Renderer 2D Test", {640, 480}, {});
     auto &input = window->getInput();
     auto &target = window->getRenderTarget();
     auto fs = std::ifstream("assets/fonts/Sono/static/Sono/Sono-Bold.ttf");
-    auto font = fontDriver->createFont(fs);
+    auto font = fontDriver.createFont(fs);
 
     font->setPixelSize({0, fpsFontPixelSize});
 
-    auto renderDevice = gpuDriver->createRenderDevice();
+    auto renderDevice = gpuDriver.createRenderDevice();
 
-    Renderer2D ren(*renderDevice, *shaderCompiler, *shaderDecompiler);
+    Renderer2D ren(*renderDevice, shaderCompiler, shaderDecompiler);
 
     auto frameLimiter = FrameLimiter(60);
 

@@ -20,31 +20,14 @@
 #ifndef XENGINE_CRYPTODRIVER_HPP
 #define XENGINE_CRYPTODRIVER_HPP
 
-#include "xng/driver/driver.hpp"
-
 #include "xng/crypto/aes.hpp"
 #include "xng/crypto/gzip.hpp"
 #include "xng/crypto/random.hpp"
 #include "xng/crypto/sha.hpp"
-#include "xng/crypto/cryptodriverbackend.hpp"
 
 namespace xng {
-    class CryptoDriver : public Driver {
+    class CryptoDriver {
     public:
-        static std::string getBackendName(CryptoDriverBackend backend){
-            switch(backend){
-                case CRYPTOPP:
-                    return "cryptopp";
-                default:
-                    throw std::runtime_error("Invalid backend");
-            }
-        }
-
-        static std::unique_ptr<CryptoDriver> load(CryptoDriverBackend backend) {
-            return std::unique_ptr<CryptoDriver>(dynamic_cast<CryptoDriver *>(
-                    Driver::load(getBackendName(backend)).release()));
-        }
-
         virtual std::unique_ptr<AES> createAES() = 0;
 
         virtual std::unique_ptr<GZip> createGzip() = 0;
@@ -56,10 +39,6 @@ namespace xng {
         virtual std::unique_ptr<Random> createRandom() = 0;
 
         virtual std::unique_ptr<SHA> createSHA() = 0;
-
-        std::type_index getBaseType() override {
-            return typeid(CryptoDriver);
-        }
     };
 }
 

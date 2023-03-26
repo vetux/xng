@@ -24,11 +24,11 @@
 
 #include "xng/render/graph/framegraphallocator.hpp"
 
-namespace xng {}
+namespace xng {
     /**
      * The FrameGraphPoolAllocator using object pool pattern for allocating the render objects.
      */
-    /*class FrameGraphPoolAllocator : public FrameGraphAllocator {
+  /*  class FrameGraphPoolAllocator : public FrameGraphAllocator {
     public:
         FrameGraphPoolAllocator(RenderDevice &device, SPIRVCompiler &shaderCompiler, SPIRVDecompiler &shaderDecompiler)
                 : device(&device), shaderCompiler(&shaderCompiler), shaderDecompiler(&shaderDecompiler) {}
@@ -178,8 +178,8 @@ namespace xng {}
         };
 
         RenderDevice *device = nullptr;
-        SPIRVCompiler *shaderCompiler = nullptr;
-        SPIRVDecompiler *shaderDecompiler = nullptr;
+        ShaderCompiler *shaderCompiler = nullptr;
+        ShaderDecompiler *shaderDecompiler = nullptr;
 
         std::unordered_map<Uri, std::unique_ptr<RenderObject>> uriObjects;
         std::unordered_map<PipelinePair, std::unique_ptr<RenderPipeline>, PipelinePairHash> pipelines;
@@ -199,7 +199,7 @@ namespace xng {}
 
         std::map<FrameGraphResource, RenderObject *> objects;
         size_t currentStage = 0;
-    };
-}*/
+    };*/
+}
 
 #endif //XENGINE_FRAMEGRAPHPOOLALLOCATOR_HPP

@@ -17,20 +17,16 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SNDFILEPARSER_HPP
-#define XENGINE_SNDFILEPARSER_HPP
+#ifndef XENGINE_FTFONTDRIVER_HPP
+#define XENGINE_FTFONTDRIVER_HPP
 
-#include "xng/resource/resourceparser.hpp"
+#include "xng/font/fontdriver.hpp"
 
-namespace xng {
-    class XENGINE_EXPORT SndFileParser : public ResourceParser {
+namespace xng::freetype {
+    class XENGINE_EXPORT FtFontDriver : public FontDriver {
     public:
-        ResourceBundle read(const std::vector<char> &buffer, const std::string &hint, Archive *archive) const override;
-
-        const std::set<std::string> &getSupportedFormats() const override;
-
-        std::type_index getType() override { return typeid(SndFileParser); }
+        std::unique_ptr<Font> createFont(std::istream &data) override;
     };
 }
 
-#endif //XENGINE_SNDFILEPARSER_HPP
+#endif //XENGINE_FTFONTDRIVER_HPP
