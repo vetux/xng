@@ -17,14 +17,14 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "crypto/cryptoppdriver.hpp"
+#include "xng/crypto/cryptopp/cryptoppdriver.hpp"
 
 #include "crypto/cryptoppaes.hpp"
 #include "crypto/cryptoppgzip.hpp"
 #include "crypto/cryptopprandom.hpp"
 #include "crypto/cryptoppsha.hpp"
 
-namespace xng {
+namespace xng::cryptopp {
     std::unique_ptr<AES> CryptoPPDriver::createAES() {
         return std::make_unique<CryptoPPAES>();
     }

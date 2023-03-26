@@ -22,7 +22,7 @@
 
 #include "xng/crypto/cryptodriver.hpp"
 
-namespace xng {
+namespace xng::cryptopp {
     class XENGINE_EXPORT CryptoPPDriver : public CryptoDriver {
     public:
         std::unique_ptr<AES> createAES() override;
