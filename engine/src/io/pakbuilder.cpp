@@ -80,12 +80,17 @@ namespace xng {
         }
 
         nlohmann::json outHeaderJson;
-        outHeaderJson["encrypted"] = encryptData;
-        outHeaderJson["data"] = base64_encode(headerStr);
+        if (encryptData) {
+            outHeaderJson["edata"] = std::string(iv.begin(), iv.end()) + headerStr;
+        } else {
+            outHeaderJson = headerJson;
+        }
 
-        auto outHeaderStr = outHeaderJson.dump();
+        auto outHeader = nlohmann::json::to_bson(outHeaderJson);
 
-        auto hdr = PAK_HEADER_MAGIC + outHeaderStr;
+        auto outHeaderStr = std::string(outHeader.begin(), outHeader.end());
+
+        auto hdr = PAK_HEADER_MAGIC + "\xa7" + std::to_string(outHeaderStr.size()) + "\xa7" + outHeaderStr;
 
         if (chunkSize > 0) {
             auto totalSize = hdr.size() + data.size();

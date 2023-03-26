@@ -12,7 +12,7 @@
 #include "xng/crypto/sha.hpp"
 
 namespace xng {
-    static const std::string PAK_FORMAT_VERSION = "00";
+    static const std::string PAK_FORMAT_VERSION = "01";
     static const std::string PAK_HEADER_MAGIC = "\xa9pak\xff" + PAK_FORMAT_VERSION + "\xa9";
 
     /**
@@ -33,14 +33,30 @@ namespace xng {
         /**
          * @param streams The chunk streams in the order returned by PakBuilder::build
          * @param key The key used to decrypt encrypted entries
-         * @param iv The iv used to decrypt encrypted entries
          */
         Pak(std::vector<std::reference_wrapper<std::istream>> streams,
             GZip &gzip,
             SHA &sha,
             AES &aes,
-            AES::Key key,
-            AES::InitializationVector iv);
+            AES::Key key);
+
+        Pak(std::istream &stream, GZip &gzip, SHA &sha) : Pak(std::vector<std::reference_wrapper<std::istream>>{stream},
+                                                              gzip,
+                                                              sha) {}
+
+        /**
+         * @param streams The chunk streams in the order returned by PakBuilder::build
+         * @param key The key used to decrypt encrypted entries
+         */
+        Pak(std::istream &stream,
+            GZip &gzip,
+            SHA &sha,
+            AES &aes,
+            AES::Key key) : Pak(std::vector<std::reference_wrapper<std::istream>>{stream},
+                                gzip,
+                                sha,
+                                aes,
+                                std::move(key)) {}
 
         /**
          * Load the pak entry from the corresponding chunk stream,
@@ -57,6 +73,8 @@ namespace xng {
         bool exists(const std::string &path) {
             return entries.find(path) != entries.end();
         }
+
+        const std::map<std::string, HeaderEntry> &getEntries() const { return entries; }
 
     private:
         void loadHeader();

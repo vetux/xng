@@ -39,11 +39,12 @@ namespace xng {
              GZip &gzip,
              SHA &sha,
              AES &aes,
-             AES::Key key,
-             AES::InitializationVector iv)
+             AES::Key key)
             : streams(std::move(streams)),
               key(std::move(key)),
-              iv(iv) {
+              gzip(&gzip),
+              sha(&sha),
+              aes(&aes) {
         loadHeader();
     }
 
@@ -51,61 +52,71 @@ namespace xng {
         std::vector<char> ret;
         auto hEntry = entries.at(path);
 
-        auto beginOffset = hEntry.offset % chunkSize; // The offset into the first chunk stream
-        auto beginCount = chunkSize - beginOffset; // The number of bytes in the first chunk stream
-
-        if (hEntry.size < beginCount) {
-            beginCount = hEntry.size;
-        }
-
-        auto remainingCount = static_cast<int>(hEntry.size - beginCount); // The number of remaining bytes
-
-        auto remainChunks = remainingCount / chunkSize; // The number of full chunks that the remaining bytes fill
-
-        auto lastCount = remainingCount %
-                         chunkSize; // The number of bytes in the last partial chunk stream. If the data size matches chunk size a "middle" chunk is the end.
-
-        // Read first chunk
-        if (beginCount > 0) {
-            auto &firstStream = getStreamForOffset(hEntry.offset);
-            std::vector<char> tmp(beginCount);
-            firstStream.seekg(static_cast<std::streamoff>(beginOffset));
-            firstStream.read(tmp.data(), static_cast<std::streamoff>(beginCount));
-            if (firstStream.gcount() != beginCount)
+        if (chunkSize == 0) {
+            auto &stream = getStreamForOffset(hEntry.offset);
+            std::vector<char> tmp(hEntry.size);
+            stream.seekg(static_cast<std::streamoff>(hEntry.offset));
+            stream.read(tmp.data(), static_cast<std::streamoff>(hEntry.size));
+            if (stream.gcount() != hEntry.size)
                 throw std::runtime_error("Failed to read pak entry");
             ret.insert(ret.begin(), tmp.begin(), tmp.end());
-        }
+        } else {
+            auto beginOffset = hEntry.offset % chunkSize; // The offset into the first chunk stream
+            auto beginCount = chunkSize - beginOffset; // The number of bytes in the first chunk stream
 
-        if (remainChunks > 0) {
-            //Read full chunks
-            for (int i = 0; i < remainChunks; i++) {
-                std::vector<char> chunk(chunkSize);
-                auto gOffset = hEntry.offset + beginCount + (i * chunkSize);
-                auto &stream = getStreamForOffset(gOffset);
-                stream.seekg(0);
-                stream.read(chunk.data(), static_cast<std::streamoff>(chunk.size()));
-                if (stream.gcount() != chunk.size())
-                    throw std::runtime_error("Failed to read pak chunk");
-                ret.insert(ret.end(), chunk.begin(), chunk.end());
+            if (hEntry.size < beginCount) {
+                beginCount = hEntry.size;
             }
-        }
 
-        if (lastCount > 0) {
-            // Read last partial chunk
-            std::vector<char> lastChunk(lastCount);
-            auto gOffset = hEntry.offset + beginCount + (remainChunks * chunkSize);
-            auto &lastStream = getStreamForOffset(gOffset);
-            lastStream.seekg(0);
-            lastStream.read(lastChunk.data(), static_cast<std::streamoff>(lastChunk.size()));
+            auto remainingCount = static_cast<int>(hEntry.size - beginCount); // The number of remaining bytes
 
-            if (lastStream.gcount() != lastChunk.size())
-                throw std::runtime_error("Failed to read pak chunk");
+            auto remainChunks = remainingCount / chunkSize; // The number of full chunks that the remaining bytes fill
 
-            ret.insert(ret.begin()
-                       + static_cast<std::streamoff>(beginCount)
-                       + static_cast<std::streamoff>(remainChunks) * chunkSize,
-                       lastChunk.begin(),
-                       lastChunk.end());
+            auto lastCount = remainingCount %
+                             chunkSize; // The number of bytes in the last partial chunk stream. If the data size matches chunk size a "middle" chunk is the end.
+
+            // Read first chunk
+            if (beginCount > 0) {
+                auto &firstStream = getStreamForOffset(hEntry.offset);
+                std::vector<char> tmp(beginCount);
+                firstStream.seekg(static_cast<std::streamoff>(beginOffset));
+                firstStream.read(tmp.data(), static_cast<std::streamoff>(beginCount));
+                if (firstStream.gcount() != beginCount)
+                    throw std::runtime_error("Failed to read pak entry");
+                ret.insert(ret.begin(), tmp.begin(), tmp.end());
+            }
+
+            if (remainChunks > 0) {
+                //Read full chunks
+                for (int i = 0; i < remainChunks; i++) {
+                    std::vector<char> chunk(chunkSize);
+                    auto gOffset = hEntry.offset + beginCount + (i * chunkSize);
+                    auto &stream = getStreamForOffset(gOffset);
+                    stream.seekg(0);
+                    stream.read(chunk.data(), static_cast<std::streamoff>(chunk.size()));
+                    if (stream.gcount() != chunk.size())
+                        throw std::runtime_error("Failed to read pak chunk");
+                    ret.insert(ret.end(), chunk.begin(), chunk.end());
+                }
+            }
+
+            if (lastCount > 0) {
+                // Read last partial chunk
+                std::vector<char> lastChunk(lastCount);
+                auto gOffset = hEntry.offset + beginCount + (remainChunks * chunkSize);
+                auto &lastStream = getStreamForOffset(gOffset);
+                lastStream.seekg(0);
+                lastStream.read(lastChunk.data(), static_cast<std::streamoff>(lastChunk.size()));
+
+                if (lastStream.gcount() != lastChunk.size())
+                    throw std::runtime_error("Failed to read pak chunk");
+
+                ret.insert(ret.begin()
+                           + static_cast<std::streamoff>(beginCount)
+                           + static_cast<std::streamoff>(remainChunks) * chunkSize,
+                           lastChunk.begin(),
+                           lastChunk.end());
+            }
         }
 
         if (encrypted) {
@@ -127,8 +138,10 @@ namespace xng {
     }
 
     void Pak::loadHeader() {
-        size_t dataBegin;
-        std::string headerStr;
+        size_t dataBegin{};
+        std::string headerStr{};
+        std::string headerSizeStr{};
+        size_t headerSize{};
         int scope = -1;
         char c;
         int streamIndex = 0;
@@ -141,6 +154,10 @@ namespace xng {
             s.read(&c, 1);
 
             if (s.eof()) {
+                if (streams.size() < streamIndex + 1){
+                    throw std::runtime_error("Failed to load header (End of file)");
+                }
+
                 if (calChunkSize == 0)
                     calChunkSize = i;
 
@@ -152,51 +169,51 @@ namespace xng {
                 tmp.seekg(static_cast<std::streamoff>(offset));
                 tmp.read(&c, 1);
             } else if (s.gcount() == 0) {
-                throw std::runtime_error("Failed to load header (Invalid length)");
+                throw std::runtime_error("Failed to load header (End of file gcount)");
             }
 
             if (i < PAK_HEADER_MAGIC.size())
                 continue;
 
-            headerStr += c;
-
-            if (c == '{') {
-                if (scope == -1)
+            if (c == '\xa7' && scope != 2) {
+                if (scope == -1) {
                     scope = 1;
-                else
-                    scope++;
-            } else if (c == '}') {
-                scope--;
-            }
-
-            if (scope == 0) {
-                dataBegin = i + 1;
-                break;
+                } else {
+                    headerSize = std::stoul(headerSizeStr);
+                    dataBegin = i + 1 + headerSize;
+                    scope = 2;
+                }
+            } else if (scope == 1) {
+                headerSizeStr += c;
+            } else if (scope == 2) {
+                headerStr += c;
+                if (headerStr.size() == headerSize)
+                    break;
             }
         }
 
-        auto headerWrap = nlohmann::json::parse(headerStr);
+        auto headerJson = nlohmann::json::from_bson(headerStr);
+        if (headerJson.contains("edata")) {
+            encrypted = true;
+            auto decodedHeader = static_cast<std::string>(headerJson["edata"]);
+            auto ivStr = std::string(decodedHeader.begin(), decodedHeader.begin() + 128);
+            for (auto i = 0; i < 128; i++)
+                iv.at(i) = ivStr.at(i);
+            decodedHeader.erase(decodedHeader.begin(), decodedHeader.begin() + 128);
 
-        encrypted = headerWrap["encrypted"];
+            if (aes == nullptr) {
+                throw std::runtime_error("Pak data is encrypted but no aes implementation was specified.");
+            }
 
-        if (encrypted && aes == nullptr) {
-            throw std::runtime_error("Pak data is encrypted and no decryption key was specified.");
-        }
-
-        headerStr = base64_decode(static_cast<std::string>(headerWrap["data"]));
-
-        if (encrypted) {
             try {
-                headerStr = aes->decrypt(key, {}, headerStr);
+                decodedHeader = aes->decrypt(key, iv, decodedHeader);
             } catch (const std::exception &e) {
                 std::string error = "Failed to decrypt pak header (Wrong Key?): " + std::string(e.what());
                 throw std::runtime_error(error);
             }
+
+            headerJson = nlohmann::json::parse(decodedHeader);
         }
-
-        headerStr = gzip->decompress(headerStr);
-
-        auto headerJson = nlohmann::json::parse(headerStr);
 
         compressed = headerJson["compressed"];
         chunkSize = headerJson["chunkSize"];
