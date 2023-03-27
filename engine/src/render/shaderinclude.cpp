@@ -20,14 +20,16 @@
 #ifndef XENGINE_SHADER_INCLUDER_HPP
 #define XENGINE_SHADER_INCLUDER_HPP
 
-#pragma message "Not Implemented"
-/*
-#include "xng/render/shader/shaderinclude.hpp"
-#include "xng/render/shader/include/glsl_mvp.hpp"
-#include "xng/render/shader/include/glsl_phong_shading.hpp"
-#include "xng/render/shader/include/glsl_pi.hpp"
-#include "xng/render/shader/include/glsl_noise.hpp"
-#include "xng/render/shader/include/glsl_texfilter.hpp"
+#include <functional>
+#include <stdexcept>
+
+#include "xng/render/shaderinclude.hpp"
+
+#include "shaderinclude/glsl_mvp.hpp"
+#include "shaderinclude/glsl_phong_shading.hpp"
+#include "shaderinclude/glsl_pi.hpp"
+#include "shaderinclude/glsl_noise.hpp"
+#include "shaderinclude/glsl_texfilter.hpp"
 
 static std::string includeCallback(const char *n) {
     std::string name(n);
@@ -54,7 +56,10 @@ namespace xng {
     const std::map<std::string, std::string> &ShaderInclude::getShaderMacros(ShaderLanguage lang) {
         switch (lang) {
             case HLSL_SHADER_MODEL_4:
-            case GLSL_410:
+            case GLSL_460:
+            case GLSL_420:
+            case GLSL_420_VK:
+            case GLSL_460_VK:
             case GLSL_ES_320:
                 return gMacros;
             default:
@@ -66,5 +71,5 @@ namespace xng {
         return gIncludeFunc;
     }
 }
- */
+
 #endif //XENGINE_SHADER_INCLUDER_HPP

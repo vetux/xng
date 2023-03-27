@@ -106,6 +106,38 @@ vec4 textureBicubic(sampler2DMS sampler, vec2 texCoords, int samples) {
 
     return mix(mix(sample3, sample2, sx), mix(sample1, sample0, sx), sy);
 }
+
+vec4 textureBicubic(sampler2DArray sampler, vec3 texCoords3, vec2 size) {
+    vec2 texCoords = texCoords3.xy;
+
+    vec2 invTexSize = 1.0 / size;
+
+    texCoords = texCoords * size - 0.5;
+
+    vec2 fxy = fract(texCoords);
+    texCoords -= fxy;
+
+    vec4 xcubic = cubic(fxy.x);
+    vec4 ycubic = cubic(fxy.y);
+
+    vec4 c = texCoords.xxyy + vec2 (-0.5, +1.5).xyxy;
+
+    vec4 s = vec4(xcubic.xz + xcubic.yw, ycubic.xz + ycubic.yw);
+    vec4 offset = c + vec4 (xcubic.yw, ycubic.yw) / s;
+
+    offset *= invTexSize.xxyy;
+
+    vec4 sample0 = texture(sampler, vec3(offset.x, offset.z, texCoords3.z));
+    vec4 sample1 = texture(sampler, vec3(offset.y, offset.z, texCoords3.z));
+    vec4 sample2 = texture(sampler, vec3(offset.x, offset.w, texCoords3.z));
+    vec4 sample3 = texture(sampler, vec3(offset.y, offset.w, texCoords3.z));
+
+    float sx = s.x / (s.x + s.y);
+    float sy = s.z / (s.z + s.w);
+
+    return mix(mix(sample3, sample2, sx), mix(sample1, sample0, sx), sy);
+}
+
 )###";
 
 #endif //XENGINE_GLSL_TEXFILTER_HPP

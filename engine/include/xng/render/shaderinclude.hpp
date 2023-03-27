@@ -23,11 +23,16 @@
 #include <map>
 #include <string>
 
+#include "xng/shader/shaderlanguage.hpp"
+
 namespace xng {
     /**
-     * Currently provides:
-     * mvp.glsl
+     * Provides the following headers in the include callback:
      * phong.glsl
+     * mvp.glsl
+     * noise.glsl
+     * pi.glsl
+     * texfilter.glsl
      */
     namespace ShaderInclude {
         const std::map<std::string, std::string> &getShaderMacros(ShaderLanguage lang);
