@@ -141,6 +141,7 @@ namespace xng {
          * @param sprite
          * @param center
          * @param rotation
+         * @param filter
          * @param mix
          * @param mixAlpha
          * @param mixColor
@@ -150,6 +151,7 @@ namespace xng {
                   TextureAtlasHandle &sprite,
                   const Vec2f &center,
                   float rotation,
+                  TextureFiltering filter,
                   float mix,
                   float mixAlpha,
                   ColorRGBA mixColor);
@@ -162,6 +164,7 @@ namespace xng {
          * @param sprite
          * @param center
          * @param rotation
+         * @param filter
          * @param mix
          * @param mixAlpha
          * @param mixColor
@@ -171,6 +174,7 @@ namespace xng {
                   TextureAtlasHandle &sprite,
                   const Vec2f &center,
                   float rotation,
+                  TextureFiltering filter,
                   ColorRGBA colorFactor);
 
         /**
@@ -242,6 +246,8 @@ namespace xng {
 
             TextureAtlasHandle texture;
 
+            TextureFiltering filter;
+
             float mix = 0;
             float alphaMix = 0;
             ColorRGBA color;
@@ -292,6 +298,7 @@ namespace xng {
                  TextureAtlasHandle &texture,
                  Vec2f center,
                  float rotation,
+                 TextureFiltering filter,
                  float mix,
                  float alphaMix,
                  ColorRGBA color)
@@ -300,6 +307,7 @@ namespace xng {
                       dstRect(std::move(dstRect)),
                       center(std::move(center)),
                       rotation(rotation),
+                      filter(filter),
                       texture(std::move(texture)),
                       mix(mix),
                       alphaMix(alphaMix),
@@ -310,12 +318,14 @@ namespace xng {
                  TextureAtlasHandle &texture,
                  Vec2f center,
                  float rotation,
+                 TextureFiltering filter,
                  ColorRGBA color)
                     : type(TEXTURE),
                       srcRect(std::move(srcRect)),
                       dstRect(std::move(dstRect)),
                       center(std::move(center)),
                       rotation(rotation),
+                      filter(filter),
                       texture(std::move(texture)),
                       color(color),
                       colorFactor(true) {}

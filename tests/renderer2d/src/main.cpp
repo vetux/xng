@@ -97,22 +97,22 @@ public:
                  Rectf(targetSize / 2 - imageA.getSize().convert<float>() / 2, imageA.getSize().convert<float>()),
                  texA,
                  {imageA.getSize().convert<float>() / 2},
-                 rot,
-                 0.25,
                  0,
-                 ColorRGBA::cyan());
+                 xng::LINEAR,
+                 ColorRGBA(255));
 
         ren.draw(Rectf(targetSize / 2 - imageA.getSize().convert<float>() / 2, imageA.getSize().convert<float>()),
                  ColorRGBA::yellow(),
                  false,
                  {imageA.getSize().convert<float>() / 2},
-                 rot);
+                 0);
 
         ren.draw(Rectf({}, imageB.getSize().convert<float>()),
                  Rectf({25, 25}, imageB.getSize().convert<float>()),
                  texB,
                  {},
                  0,
+                 xng::LINEAR,
                  0,
                  0,
                  {});
@@ -126,6 +126,7 @@ public:
                  textHandle,
                  {},
                  0,
+                 xng::LINEAR,
                  fpsFontColor);
 
         ren.renderPresent();
@@ -200,6 +201,7 @@ public:
                          texA,
                          imgSize / 2,
                          rot,
+                         xng::LINEAR,
                          std::clamp((scale.x + scale.y) - 0.5f, 0.0f, 1.0f),
                          0,
                          xng::ColorRGBA(static_cast<uint8_t>(125 * scale.x + 25),
@@ -213,6 +215,7 @@ public:
                  textHandle,
                  {},
                  0,
+                 xng::LINEAR,
                  fpsFontColor);
 
         ren.renderPresent();

@@ -26,11 +26,13 @@
 
 namespace xng {
     struct SpriteComponent : public Component {
-        ResourceHandle<Sprite> sprite; // The sprite to draw
+        ResourceHandle <Sprite> sprite; // The sprite to draw
 
         float mix = 0;
         float mixAlpha = 0;
         ColorRGBA mixColor = {};
+
+        TextureFiltering filter = NEAREST;
 
         Messageable &operator<<(const Message &message) override {
             message.value("sprite", sprite);
@@ -38,6 +40,7 @@ namespace xng {
             message.value("mixColor", mixColor);
             message.value("mix", mix);
             message.value("mixAlpha", mixAlpha);
+            message.value("filter", (int &) filter, (int) NEAREST);
             return Component::operator<<(message);
         }
 
@@ -47,6 +50,7 @@ namespace xng {
             mixColor >> message["mixColor"];
             mix >> message["mix"];
             mixAlpha >> message["mixAlpha"];
+            filter >> message["filter"];
             return Component::operator>>(message);
         }
 

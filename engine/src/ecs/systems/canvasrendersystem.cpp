@@ -184,6 +184,7 @@ namespace xng {
                                            spriteTextureHandles.at(handle),
                                            transform.center,
                                            transform.rotation,
+                                           comp.filter,
                                            comp.mix,
                                            comp.mixAlpha,
                                            comp.mixColor);
@@ -226,6 +227,7 @@ namespace xng {
                                        textTextureHandles.at(handle),
                                        transform.center,
                                        transform.rotation,
+                                       comp.filter,
                                        comp.textColor);
                             if (drawDebugGeometry) {
                                 ren2d.draw(Rectf(debugTransform.position, debugTransform.size),

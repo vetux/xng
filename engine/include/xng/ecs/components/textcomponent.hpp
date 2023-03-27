@@ -46,6 +46,8 @@ namespace xng {
 
         ColorRGBA textColor{};
 
+        TextureFiltering filter = NEAREST;
+
         bool operator==(const TextComponent &other) const = default;
 
         bool operator!=(const TextComponent &other) const = default;
@@ -60,6 +62,7 @@ namespace xng {
             message.value("textScroll", textScroll);
             message.value("text", text);
             message.value("textColor", textColor);
+            message.value("filter", (int &)filter, (int) NEAREST);
             return Component::operator<<(message);
         }
 
@@ -74,6 +77,7 @@ namespace xng {
             text >> message["text"];
             textScroll >> message["textScroll"];
             textColor >> message["textColor"];
+            filter >> message["filter"];
             return Component::operator>>(message);
         }
 

@@ -197,6 +197,7 @@ namespace xng {
                         c.texture,
                         {},
                         0,
+                        NEAREST,
                         0,
                         0,
                         ColorRGBA());
