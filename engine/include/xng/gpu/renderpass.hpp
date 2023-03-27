@@ -63,6 +63,8 @@ namespace xng {
             return RENDER_OBJECT_RENDER_PASS;
         }
 
+        virtual const RenderPassDesc &getDescription() = 0;
+
         /**
          * Must be called before using any of the methods.
          *

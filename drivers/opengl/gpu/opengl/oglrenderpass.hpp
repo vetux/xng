@@ -42,6 +42,10 @@ namespace xng::opengl {
 
         ~OGLRenderPass() override = default;
 
+        const RenderPassDesc &getDescription() override {
+            return passDesc;
+        }
+
         void beginRenderPass(RenderTarget &target, Vec2i viewportOffset, Vec2i viewportSize) override {
             auto &fb = dynamic_cast<OGLRenderTarget &>(target);
 

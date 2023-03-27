@@ -38,4 +38,19 @@ namespace xng {
     };
 }
 
+namespace std {
+    template<>
+    struct hash<xng::VertexArrayObjectDesc> {
+        std::size_t operator()(const xng::VertexArrayObjectDesc &k) const {
+            size_t ret = 0;
+
+            xng::hash_combine(ret, k.vertexLayout.size());
+            xng::hash_combine(ret, k.instanceArrayLayout.size());
+
+            return ret;
+        }
+    };
+}
+
+
 #endif //XENGINE_VERTEXARRAYOBJECTDESC_HPP

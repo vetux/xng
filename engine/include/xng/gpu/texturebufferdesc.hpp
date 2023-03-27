@@ -38,10 +38,10 @@ namespace xng {
         TextureType textureType = TEXTURE_2D;
         ColorFormat format = RGBA;
         TextureWrapping wrapping = CLAMP_TO_BORDER;
-        TextureFiltering filterMin = LINEAR;
-        TextureFiltering filterMag = LINEAR;
+        TextureFiltering filterMin = NEAREST;
+        TextureFiltering filterMag = NEAREST;
         bool generateMipmap = false;
-        MipMapFiltering mipmapFilter = LINEAR_MIPMAP_LINEAR;
+        MipMapFiltering mipmapFilter = NEAREST_MIPMAP_LINEAR;
         bool fixedSampleLocations = false;
         RenderBufferType bufferType = HOST_VISIBLE;
         ColorRGBA borderColor = ColorRGBA(0);

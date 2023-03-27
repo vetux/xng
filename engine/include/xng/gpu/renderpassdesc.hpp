@@ -25,7 +25,7 @@ namespace xng {
         int numberOfColorAttachments = 1;
         bool hasDepthStencilAttachment = false;
 
-        bool operator==(const RenderTargetDesc &other) const {
+        bool operator==(const RenderPassDesc &other) const {
             return numberOfColorAttachments == other.numberOfColorAttachments
                    && hasDepthStencilAttachment == other.hasDepthStencilAttachment;
         }
