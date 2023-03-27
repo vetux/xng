@@ -21,13 +21,13 @@
 #define XENGINE_TEXTUREPROPERTIES_HPP
 
 namespace xng {
-    enum TextureType {
+    enum TextureType : int {
         TEXTURE_2D,
         TEXTURE_2D_MULTISAMPLE,
         TEXTURE_CUBE_MAP
     };
 
-    enum CubeMapFace {
+    enum CubeMapFace : int {
         POSITIVE_X,
         NEGATIVE_X,
         POSITIVE_Y,
@@ -36,7 +36,7 @@ namespace xng {
         NEGATIVE_Z
     };
 
-    enum ColorFormat {
+    enum ColorFormat : int {
         //Base Formats
         DEPTH,
         DEPTH_STENCIL,
@@ -110,19 +110,19 @@ namespace xng {
         RGBA32UI,
     };
 
-    enum TextureWrapping {
+    enum TextureWrapping : int {
         REPEAT,
         MIRRORED_REPEAT,
         CLAMP_TO_EDGE,
         CLAMP_TO_BORDER
     };
 
-    enum TextureFiltering {
+    enum TextureFiltering : int {
         NEAREST,
         LINEAR
     };
 
-    enum MipMapFiltering {
+    enum MipMapFiltering : int {
         NEAREST_MIPMAP_NEAREST,
         LINEAR_MIPMAP_NEAREST,
         NEAREST_MIPMAP_LINEAR,
