@@ -29,6 +29,6 @@ void xng::PhongForwardPass::execute(xng::FrameGraphPassResources &resources) {
 
 }
 
-std::type_index xng::PhongForwardPass::getTypeIndex() {
+std::type_index xng::PhongForwardPass::getTypeIndex() const {
     return typeid(PhongForwardPass);
 }

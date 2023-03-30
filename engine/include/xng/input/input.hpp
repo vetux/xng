@@ -58,18 +58,24 @@ namespace xng {
 
         virtual const InputDevice &getDevice(std::type_index deviceType, int id) = 0;
 
+        const Keyboard &getKeyboard(int id = 0) { return getDevice < Keyboard > (id); }
+
+        const Mouse &getMouse(int id = 0) { return getDevice < Mouse > (id); }
+
+        const GamePad &getGamePad(int id = 0) { return getDevice < GamePad > (id); }
+
         template<typename T>
         const T &getDevice(int id = 0) {
-            return dynamic_cast<const T&>(getDevice(typeid(T), id));
+            return dynamic_cast<const T &>(getDevice(typeid(T), id));
         }
 
         virtual std::map<int, const std::reference_wrapper<InputDevice>> getDevices(std::type_index deviceType) = 0;
 
         template<typename T>
-        const std::map<int, std::reference_wrapper<T>> &getDevices(){
+        const std::map<int, std::reference_wrapper<T>> &getDevices() {
             std::map<int, std::reference_wrapper<T>> ret;
-            for (auto pair : getDevices(typeid(T))){
-                ret[pair.first] = dynamic_cast<T&>(pair.second.get());
+            for (auto pair: getDevices(typeid(T))) {
+                ret[pair.first] = dynamic_cast<T &>(pair.second.get());
             }
             return ret;
         }

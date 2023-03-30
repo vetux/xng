@@ -34,6 +34,8 @@ namespace xng {
      */
     class XENGINE_EXPORT ResourceParser {
     public:
+        virtual ~ResourceParser() = default;
+
         /**
          * Read the bundle data from the buffer.
          *

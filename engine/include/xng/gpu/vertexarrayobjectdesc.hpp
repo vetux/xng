@@ -22,14 +22,14 @@
 
 #include <vector>
 
-#include "xng/gpu/vertexattribute.hpp"
+#include "xng/gpu/vertexlayout.hpp"
 
 #include "xng/geometry/primitive.hpp"
 
 namespace xng {
     struct VertexArrayObjectDesc {
-        std::vector<VertexAttribute> vertexLayout{}; // The layout of one vertex in the vertex buffer
-        std::vector<VertexAttribute> instanceArrayLayout{}; // The layout of one entry in the instance buffer (optional)
+        VertexLayout vertexLayout{}; // The layout of one vertex in the vertex buffer
+        VertexLayout instanceArrayLayout{}; // The layout of one entry in the instance buffer (optional)
 
         bool operator==(const VertexArrayObjectDesc &other) const {
             return vertexLayout == other.vertexLayout
@@ -44,8 +44,8 @@ namespace std {
         std::size_t operator()(const xng::VertexArrayObjectDesc &k) const {
             size_t ret = 0;
 
-            xng::hash_combine(ret, k.vertexLayout.size());
-            xng::hash_combine(ret, k.instanceArrayLayout.size());
+            xng::hash_combine(ret, k.vertexLayout.getSize());
+            xng::hash_combine(ret, k.instanceArrayLayout.getSize());
 
             return ret;
         }

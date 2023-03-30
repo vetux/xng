@@ -54,7 +54,7 @@ namespace xng {
 
         std::unique_ptr<Resource> clone() override;
 
-        std::type_index getTypeIndex() override;
+        std::type_index getTypeIndex() const override;
 
         /**
          * Retrieve the current frame of the animation.

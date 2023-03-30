@@ -20,9 +20,13 @@
 #ifndef XENGINE_GBUFFERPASS_HPP
 #define XENGINE_GBUFFERPASS_HPP
 
+#include <unordered_set>
+
 #include "xng/render/graph/framegraphpass.hpp"
 #include "xng/resource/uri.hpp"
 #include "xng/render/scene.hpp"
+
+#include "xng/render/graph/framegraphtextureatlas.hpp"
 
 namespace xng {
     /**
@@ -66,17 +70,61 @@ namespace xng {
 
         void execute(FrameGraphPassResources &resources) override;
 
-        std::type_index getTypeIndex() override;
+        std::type_index getTypeIndex() const override;
 
     private:
-        FrameGraphResource renderTarget;
-        FrameGraphResource phongPipeline;
-        FrameGraphResource pbrPipeline;
+        struct MeshDrawData {
+            Primitive primitive;
+            RenderPass::DrawCall drawCall;
+            size_t baseVertex;
+        };
 
-        FrameGraphResource pbrShaderBuffer;
-        FrameGraphResource phongShaderBuffer;
+        TextureAtlasHandle getTexture(const ResourceHandle <Texture> &texture,
+                                      std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> &atlasBuffers);
 
-        FrameGraphResource defaultTexture;
+        MeshDrawData getMesh(const ResourceHandle<Mesh> &mesh);
+
+        void prepareMeshAllocation(const ResourceHandle<Mesh> &mesh);
+
+        void allocateMeshes(VertexBuffer &vertexBuffer, IndexBuffer &indexBuffer);
+
+        void deallocateMesh(const ResourceHandle<Mesh> &mesh);
+
+        void deallocateTexture(const ResourceHandle<Texture> &texture);
+
+        /**
+         * @param size number of bytes to allocate
+         * @return The offset in bytes into the index buffer
+         */
+        size_t allocateVertexData(size_t size);
+
+        void deallocateVertexData(size_t offset);
+
+        /**
+         * @param size number of bytes to allocate
+         * @return The offset in bytes into the index buffer
+         */
+        size_t allocateIndexData(size_t size);
+
+        void deallocateIndexData(size_t offset);
+
+        void mergeFreeVertexBufferRanges();
+
+        void mergeFreeIndexBufferRanges();
+
+        FrameGraphResource renderTargetRes;
+        FrameGraphResource renderPipelineRes;
+        FrameGraphResource renderPassRes;
+        FrameGraphResource shaderBufferRes;
+
+        FrameGraphResource vertexBufferRes;
+        FrameGraphResource indexBufferRes;
+        FrameGraphResource vertexArrayObjectRes;
+
+        FrameGraphResource staleVertexBuffer;
+        FrameGraphResource staleIndexBuffer;
+
+        FrameGraphTextureAtlas atlas;
 
         FrameGraphResource gBufferPosition;
         FrameGraphResource gBufferNormal;
@@ -88,16 +136,35 @@ namespace xng {
         FrameGraphResource gBufferModelObject;
         FrameGraphResource gBufferDepth;
 
-        std::map<Uri, FrameGraphResource> meshBuffers;
-        std::map<Uri, FrameGraphResource> textureBuffers;
-
-        std::map<uint, FrameGraphResource> shaderBuffers; // The shader buffer of each object in the scene
-
-        std::vector<std::pair<uint, Scene::Object>> phongObjects;
-        std::vector<std::pair<uint, Scene::Object>> pbrObjects;
-
         Camera camera;
         Transform cameraTransform;
+
+        std::vector<Scene::Object> objects;
+
+        std::map<Uri, MeshDrawData> meshAllocations;
+        std::map<Uri, MeshDrawData> pendingMeshAllocations;
+        std::map<Uri, ResourceHandle<Mesh>> pendingMeshHandles;
+
+        size_t currentVertexBufferSize{};
+        size_t currentIndexBufferSize{};
+        size_t requestedVertexBufferSize{};
+        size_t requestedIndexBufferSize{};
+
+        std::map<size_t, size_t> freeVertexBufferRanges; // start and size of free ranges of vertices with layout vertexLayout in the vertex buffer
+        std::map<size_t, size_t> freeIndexBufferRanges; // start and size of free ranges of bytes in the index buffer
+
+        std::map<size_t, size_t> allocatedVertexRanges;
+        std::map<size_t, size_t> allocatedIndexRanges;
+
+        std::map<Uri, TextureAtlasHandle> textures;
+
+        Vec2i renderSize;
+
+        SPIRVBundle vsb;
+        SPIRVBundle fsb;
+
+        std::set<Uri> usedTextures;
+        std::set<Uri> usedMeshes;
     };
 }
 #endif //XENGINE_GBUFFERPASS_HPP

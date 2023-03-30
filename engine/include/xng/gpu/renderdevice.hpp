@@ -35,8 +35,6 @@
 #include "xng/gpu/shaderbuffer.hpp"
 #include "xng/gpu/renderpass.hpp"
 
-#include "xng/gpu/vertexattribute.hpp"
-
 #include "xng/gpu/renderpipelinedesc.hpp"
 #include "xng/gpu/shaderbufferdesc.hpp"
 #include "xng/gpu/vertexbufferdesc.hpp"

@@ -115,8 +115,8 @@ namespace xng {
 
         const std::string &getAsset() const { return asset; }
 
-        std::string toString() const {
-            return (scheme.empty() ? "" : scheme + "://") + file +  (asset.empty() ? "" : "$" + asset);
+        std::string toString(bool includeScheme = true) const {
+            return (scheme.empty() || !includeScheme ? "" : scheme + "://") + file +  (asset.empty() ? "" : "$" + asset);
         }
 
         bool empty() const {

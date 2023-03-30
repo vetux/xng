@@ -37,6 +37,10 @@ namespace xng {
             return index < other.index;
         }
 
+        bool operator==(const FrameGraphResource &other) const = default;
+
+        bool operator!=(const FrameGraphResource &other) const = default;
+
         bool assigned = false;
         size_t index{};
     };

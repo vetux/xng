@@ -92,7 +92,7 @@ namespace xng {
         return std::make_unique<EntityScene>(*this);
     }
 
-    std::type_index EntityScene::getTypeIndex() {
+    std::type_index EntityScene::getTypeIndex() const {
         return typeid(EntityScene);
     }
 

@@ -20,22 +20,27 @@
 #include "xng/render/textureatlas.hpp"
 
 namespace xng {
-    TextureAtlas::TextureAtlas(
-            std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> atlasBuffers,
-            std::map<TextureAtlasResolution, std::vector<bool>> bufferOccupations)
-            : atlasBuffers(std::move(atlasBuffers)),
-              bufferOccupations(std::move(bufferOccupations)) {}
-
-    void TextureAtlas::upload(TextureAtlasResolution res, size_t index, const ImageRGBA &texture) {
-        atlasBuffers.at(res).get().upload(index, getAlignedImage(texture, res));
+    ImageRGBA TextureAtlas::getAlignedImage(const ImageRGBA &texture, TextureAtlasResolution res) {
+        auto size = getResolutionLevelSize(res);
+        ImageRGBA image(size);
+        image.blit(Vec2i(0, 0), texture);
+        return image;
     }
+
+    void TextureAtlas::upload(const TextureAtlasHandle &handle,
+                              const std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> &atlasBuffers,
+                              const ImageRGBA &texture) {
+        atlasBuffers.at(handle.level).get().upload(handle.index, getAlignedImage(texture, handle.level));
+    }
+
+    TextureAtlas::TextureAtlas(std::map<TextureAtlasResolution, std::vector<bool>> bufferOccupations)
+            : bufferOccupations(std::move(bufferOccupations)) {}
 
     TextureAtlasHandle TextureAtlas::add(const ImageRGBA &texture) {
         auto res = getClosestMatchingResolutionLevel(texture.getSize());
-        for (size_t i = 0; i < bufferOccupations.at(res).size(); i++) {
+        for (size_t i = 0; i < bufferOccupations[res].size(); i++) {
             if (!bufferOccupations.at(res).at(i)) {
                 bufferOccupations.at(res).at(i) = !bufferOccupations.at(res).at(i);
-                upload(res, i, texture);
                 TextureAtlasHandle ret;
                 ret.index = i;
                 ret.level = res;
@@ -48,12 +53,5 @@ namespace xng {
 
     void TextureAtlas::remove(const TextureAtlasHandle &handle) {
         bufferOccupations.at(handle.level).at(handle.index) = !bufferOccupations.at(handle.level).at(handle.index);
-    }
-
-    ImageRGBA TextureAtlas::getAlignedImage(const ImageRGBA &texture, TextureAtlasResolution res) {
-        auto size = getResolutionLevelSize(res);
-        ImageRGBA image(size);
-        image.blit(Vec2i(0, 0), texture);
-        return image;
     }
 }

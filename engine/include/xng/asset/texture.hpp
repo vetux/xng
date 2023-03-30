@@ -32,7 +32,7 @@ namespace xng {
             return std::make_unique<Texture>(*this);
         }
 
-        std::type_index getTypeIndex() override {
+        std::type_index getTypeIndex() const override {
             return typeid(Texture);
         }
 
@@ -63,7 +63,11 @@ namespace xng {
             return message;
         }
 
-        std::vector<ResourceHandle<ImageRGBA>> images;
+        ResourceHandle <ImageRGBA> getImage(size_t index = 0) const {
+            return images.at(index);
+        }
+
+        std::vector<ResourceHandle < ImageRGBA>> images;
         TextureBufferDesc description;
     };
 }

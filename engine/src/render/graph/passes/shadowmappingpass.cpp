@@ -29,6 +29,6 @@ void xng::ShadowMappingPass::execute(xng::FrameGraphPassResources &resources) {
 
 }
 
-std::type_index xng::ShadowMappingPass::getTypeIndex() {
+std::type_index xng::ShadowMappingPass::getTypeIndex() const {
     return typeid(ShadowMappingPass);
 }

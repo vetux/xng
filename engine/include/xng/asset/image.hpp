@@ -50,7 +50,7 @@ namespace xng {
             return std::make_unique<Image<T>>(*this);
         }
 
-        std::type_index getTypeIndex() override {
+        std::type_index getTypeIndex() const override {
             return typeid(Image<T>);
         }
 

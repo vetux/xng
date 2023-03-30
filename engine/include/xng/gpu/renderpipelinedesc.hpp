@@ -30,7 +30,7 @@
 #include "xng/gpu/texturebuffer.hpp"
 #include "xng/gpu/shaderbuffer.hpp"
 #include "xng/gpu/renderproperties.hpp"
-#include "xng/gpu/vertexattribute.hpp"
+#include "xng/gpu/vertexlayout.hpp"
 
 #include "xng/shader/shaderstage.hpp"
 #include "xng/shader/spirvshader.hpp"
@@ -51,8 +51,8 @@ namespace xng {
         std::vector<RenderPipelineBindingType> bindings; // The set of binding types in order
 
         Primitive primitive = TRIANGLES;
-        std::vector<VertexAttribute> vertexLayout{}; // The layout of one vertex
-        std::vector<VertexAttribute> instanceArrayLayout{}; // Layout of the instanced array (Optional)
+        VertexLayout vertexLayout{}; // The layout of one vertex
+        VertexLayout instanceArrayLayout{}; // Layout of the instanced array (Optional)
 
         bool multiSample = false;
         bool multiSampleEnableFrequency = false;

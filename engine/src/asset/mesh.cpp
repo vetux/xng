@@ -94,6 +94,8 @@ namespace xng {
                              VertexBuilder().addVec3(Vec3f(1, -1, 0)).addVec2(Vec2f(1, 0)).build(),
                              VertexBuilder().addVec3(Vec3f(-1, -1, 0)).addVec2(Vec2f(0, 0)).build(),
                      }};
+            nQuad.vertexLayout = VertexLayout({VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
+                                               VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT)});
         }
         return nQuad;
     }
@@ -107,7 +109,7 @@ namespace xng {
         return nCube;
     }
 
-    std::type_index Mesh::getTypeIndex() {
+    std::type_index Mesh::getTypeIndex() const {
         return typeid(Mesh);
     }
 }

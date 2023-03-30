@@ -58,7 +58,7 @@ namespace xng {
          *
          * @return
          */
-        static VertexArrayObjectDesc getDefaultVertexArrayObjectDesc() {
+        static VertexLayout getDefaultVertexLayout() {
             const std::vector<VertexAttribute> layout = {
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
@@ -69,9 +69,7 @@ namespace xng {
                     VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
             };
 
-            return {
-                .vertexLayout = layout
-            };
+            return VertexLayout(layout);
         }
 
         /**
@@ -93,17 +91,7 @@ namespace xng {
          * @param offsets
          * @return
          */
-        static VertexArrayObjectDesc createInstancedVertexArrayBufferDesc() {
-            const std::vector<VertexAttribute> layout = {
-                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::SIGNED_INT),
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
-            };
-
+        static VertexLayout getDefaultInstanceLayout() {
             const std::vector<VertexAttribute> instanceLayout = {
                     VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
                     VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
@@ -111,10 +99,7 @@ namespace xng {
                     VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT)
             };
 
-            return {
-                    .vertexLayout = layout,
-                    .instanceArrayLayout = instanceLayout
-            };
+            return VertexLayout(instanceLayout);
         }
 
         /**
@@ -131,11 +116,12 @@ namespace xng {
             return std::make_unique<Mesh>(*this);
         }
 
-        std::type_index getTypeIndex() override;
+        std::type_index getTypeIndex() const override;
 
         Primitive primitive = POINTS;
         std::vector<Vertex> vertices;
         std::vector<unsigned int> indices;
+        VertexLayout vertexLayout;
 
         Rig rig; // If rig is assigned the vertex bone ids are indices into rig.getBones()
 

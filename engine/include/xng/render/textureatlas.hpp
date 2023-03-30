@@ -81,24 +81,25 @@ namespace xng {
             throw std::runtime_error("No matching resolution level found");
         }
 
+        static ImageRGBA getAlignedImage(const ImageRGBA &texture, TextureAtlasResolution res);
+
+        static void upload(const TextureAtlasHandle &handle,
+                           const std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> &atlasBuffers,
+                           const ImageRGBA &texture);
+
         TextureAtlas() = default;
 
-        TextureAtlas(std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> atlasBuffers,
-                     std::map<TextureAtlasResolution, std::vector<bool>> bufferOccupations);
-
-        void upload(TextureAtlasResolution res, size_t index, const ImageRGBA &texture);
+        TextureAtlas(std::map<TextureAtlasResolution, std::vector<bool>> bufferOccupations);
 
         TextureAtlasHandle add(const ImageRGBA &texture);
 
         void remove(const TextureAtlasHandle &handle);
 
-        TextureArrayBuffer &getBuffer(TextureAtlasResolution res) { return atlasBuffers.at(res); }
-
-        const std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> &getAtlasBuffers() {
-            return atlasBuffers;
+        const std::map<TextureAtlasResolution, std::vector<bool>> &getBufferOccupations() const {
+            return bufferOccupations;
         }
 
-        const std::map<TextureAtlasResolution, std::vector<bool>> &getBufferOccupations() {
+        std::map<TextureAtlasResolution, std::vector<bool>> &getBufferOccupations() {
             return bufferOccupations;
         }
 
@@ -111,10 +112,7 @@ namespace xng {
             return ret;
         }
 
-       static ImageRGBA getAlignedImage(const ImageRGBA &texture, TextureAtlasResolution res);
-
     private:
-        std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> atlasBuffers;
         std::map<TextureAtlasResolution, std::vector<bool>> bufferOccupations;
     };
 }

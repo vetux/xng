@@ -21,12 +21,12 @@
 #include "xng/render/graph/framegraphbuilder.hpp"
 
 namespace xng {
-    FrameGraphRenderer::FrameGraphRenderer(RenderTarget &target, std::unique_ptr<FrameGraphAllocator> allocator)
-            : target(target), allocator(std::move(allocator)) {}
+    FrameGraphRenderer::FrameGraphRenderer(RenderTarget &target, std::unique_ptr<FrameGraphAllocator> allocator, ShaderCompiler &shaderCompiler, ShaderDecompiler &shaderDecompiler)
+            : target(target), allocator(std::move(allocator)), shaderCompiler(shaderCompiler), shaderDecompiler(shaderDecompiler) {}
 
     void FrameGraphRenderer::render(const Scene &scene) {
         /// Setup
-        auto frame = FrameGraphBuilder(target, scene, properties).build(passes);
+        frame = FrameGraphBuilder(target, scene, properties, frame.getPersistentResources(), shaderCompiler, shaderDecompiler).build(passes);
 
         blackboard.clear();
 

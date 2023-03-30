@@ -28,10 +28,18 @@ namespace xng {
     /**
      * The FrameGraphPoolAllocator using object pool pattern for allocating the render objects.
      */
-  /*  class FrameGraphPoolAllocator : public FrameGraphAllocator {
+    class XENGINE_EXPORT FrameGraphPoolAllocator : public FrameGraphAllocator {
     public:
-        FrameGraphPoolAllocator(RenderDevice &device, SPIRVCompiler &shaderCompiler, SPIRVDecompiler &shaderDecompiler)
-                : device(&device), shaderCompiler(&shaderCompiler), shaderDecompiler(&shaderDecompiler) {}
+        FrameGraphPoolAllocator(RenderDevice &device,
+                                ShaderCompiler &shaderCompiler,
+                                ShaderDecompiler &shaderDecompiler,
+                                RenderTarget &backBuffer,
+                                size_t poolCacheSize = 5)
+                : device(&device),
+                  shaderCompiler(&shaderCompiler),
+                  shaderDecompiler(&shaderDecompiler),
+                  poolCacheSize(poolCacheSize),
+                  backBuffer(&backBuffer) {}
 
         void beginFrame(const FrameGraph &value) override {
             frame = value;
@@ -64,11 +72,43 @@ namespace xng {
 
             auto &stage = frame.stages.at(currentStage);
 
-            // Allocate resources created by this stage
             std::map<FrameGraphResource, RenderObject *> res;
-            for (auto &alloc: stage.resources) {
+
+            // Allocate resources created by this stage
+            for (auto &alloc: stage.allocations) {
                 allocate(alloc, frame.allocations.at(alloc));
-                res[alloc] = objects.at(alloc);
+            }
+
+            // Persist resources
+            for (auto &pRes: stage.persists) {
+                persist(pRes);
+            }
+
+            // Add Read / Write accesses
+            for (auto &read: stage.reads) {
+                if (read.index == 0) {
+                    res[read] = backBuffer;
+                } else {
+                    auto it = persistentObjects.find(read);
+                    if (it != persistentObjects.end()) {
+                        res[read] = persistentObjects.at(read);
+                    } else {
+                        res[read] = objects.at(read);
+                    }
+                }
+            }
+
+            for (auto &write: stage.writes) {
+                if (write.index == 0) {
+                    res[write] = backBuffer;
+                } else {
+                    auto it = persistentObjects.find(write);
+                    if (it != persistentObjects.end()) {
+                        res[write] = persistentObjects.at(write);
+                    } else {
+                        res[write] = objects.at(write);
+                    }
+                }
             }
 
             currentStage++;
@@ -78,73 +118,102 @@ namespace xng {
 
     private:
         RenderObject &allocate(const FrameGraphResource &res, const FrameGraphAllocation &allocation) {
-            switch (allocation.objectType) {
-                case RenderObject::VERTEX_BUFFER:
-                    if (allocation.isUri) {
-                        auto &mesh = getMesh(ResourceHandle<Mesh>(uri));
-                        objects[res] = &mesh;
-                        return mesh;
-                    } else {
-                        throw std::runtime_error("Allocation contains vertex buffer allocation without specified uri");
-                    }
-                case RenderObject::TEXTURE_BUFFER:
-                    if (allocation.isUri) {
-                        auto &tex = getTexture(ResourceHandle<Texture>(uri));
-                        objects[res] = &tex;
-                        return tex;
-                    } else {
-                        auto desc = std::get<TextureBufferDesc>(allocation.allocationData);
-                        auto &tex = createTextureBuffer(desc);
-                        objects[res] = &tex;
-                        return tex;
-                    }
-                case RenderObject::SHADER_BUFFER:
-                    if (allocation.isUri) {
-                        throw std::runtime_error("Allocation for shader buffer with specified uri is not allowed");
-                    } else {
-                        auto desc = std::get<ShaderBufferDesc>(allocation.allocationData);
-                        auto &buf = createShaderBuffer(desc);
-                        objects[res] = &buf;
-                        return buf;
-                    }
-                case RenderObject::RENDER_TARGET:
-                    if (allocation.isUri) {
-                        throw std::runtime_error("Allocation for render target with specified uri is not allowed");
-                    } else {
-                        auto desc = std::get<RenderTargetDesc>(allocation.allocationData);
-                        auto &target = createRenderTarget(desc);
-                        objects[res] = &target;
-                        return target;
+            if (objects.find(res) != objects.end() || persistentObjects.find(res) != persistentObjects.end()) {
+                throw std::runtime_error("Object already allocated for given resource handle");
+            }
 
-                    }
-                case RenderObject::RENDER_PIPELINE:
-                    if (allocation.isUri) {
-                        throw std::runtime_error("Allocation for render pipeline with specified uri is not allowed");
-                    } else {
-                        auto desc = std::get<RenderPipelineDesc>(allocation.allocationData);
-                        auto &pipeline = getPipeline(desc);
-                        objects[res] = &pipeline;
-                        return pipeline;
-                    }
-                case RenderObject::COMPUTE_PIPELINE:
-                    throw std::runtime_error("Compute pipeline allocation is not supported yet");
-                case RenderObject::RAYTRACE_PIPELINE:
-                    throw std::runtime_error("Raytrace pipeline allocation is not supported yet");
+            switch (allocation.objectType) {
+                case RenderObject::RENDER_OBJECT_VERTEX_BUFFER: {
+                    auto desc = std::get<VertexBufferDesc>(allocation.allocationData);
+                    auto &tex = createVertexBuffer(desc);
+                    objects[res] = &tex;
+                    return tex;
+                }
+                case RenderObject::RENDER_OBJECT_INDEX_BUFFER: {
+                    auto desc = std::get<IndexBufferDesc>(allocation.allocationData);
+                    auto &tex = createIndexBuffer(desc);
+                    objects[res] = &tex;
+                    return tex;
+                }
+                case RenderObject::RENDER_OBJECT_VERTEX_ARRAY_OBJECT: {
+                    auto desc = std::get<VertexArrayObjectDesc>(allocation.allocationData);
+                    auto &tex = createVertexArrayObject(desc);
+                    objects[res] = &tex;
+                    return tex;
+                }
+                case RenderObject::RENDER_OBJECT_TEXTURE_BUFFER: {
+                    auto desc = std::get<TextureBufferDesc>(allocation.allocationData);
+                    auto &tex = createTextureBuffer(desc);
+                    objects[res] = &tex;
+                    return tex;
+                }
+                case RenderObject::RENDER_OBJECT_TEXTURE_ARRAY_BUFFER: {
+                    auto desc = std::get<TextureArrayBufferDesc>(allocation.allocationData);
+                    auto &tex = createTextureArrayBuffer(desc);
+                    objects[res] = &tex;
+                    return tex;
+                }
+                case RenderObject::RENDER_OBJECT_SHADER_BUFFER: {
+                    auto desc = std::get<ShaderBufferDesc>(allocation.allocationData);
+                    auto &buf = createShaderBuffer(desc);
+                    objects[res] = &buf;
+                    return buf;
+                }
+                case RenderObject::RENDER_OBJECT_RENDER_TARGET: {
+                    auto desc = std::get<RenderTargetDesc>(allocation.allocationData);
+                    auto &target = createRenderTarget(desc);
+                    objects[res] = &target;
+                    return target;
+                }
+                case RenderObject::RENDER_OBJECT_RENDER_PIPELINE: {
+                    auto desc = std::get<RenderPipelineDesc>(allocation.allocationData);
+                    auto &pipeline = getPipeline(desc);
+                    objects[res] = &pipeline;
+                    return pipeline;
+                }
+                case RenderObject::RENDER_OBJECT_RENDER_PASS: {
+                    auto desc = std::get<RenderPassDesc>(allocation.allocationData);
+                    auto &tex = getRenderPass(desc);
+                    objects[res] = &tex;
+                    return tex;
+                }
                 default:
                     throw std::runtime_error("Invalid render object type");
             }
         }
 
         void deallocate(const FrameGraphResource &resource) {
-            destroy(*objects.at(resource));
-            objects.erase(resource);
+            if (persistentObjects.find(resource) != persistentObjects.end()) {
+                destroy(*persistentObjects.at(resource));
+                persistentObjects.erase(resource);
+            } else {
+                destroy(*objects.at(resource));
+                objects.erase(resource);
+            }
+        }
+
+        void persist(const FrameGraphResource &resource) {
+            if (persistentObjects.find(resource) == persistentObjects.end()) {
+                persistentObjects[resource] = objects[resource];
+                objects.erase(resource);
+            }
         }
 
         void collectGarbage();
 
         RenderPipeline &getPipeline(const RenderPipelineDesc &desc);
 
+        RenderPass &getRenderPass(const RenderPassDesc &desc);
+
+        VertexBuffer &createVertexBuffer(const VertexBufferDesc &desc);
+
+        IndexBuffer &createIndexBuffer(const IndexBufferDesc &desc);
+
+        VertexArrayObject &createVertexArrayObject(const VertexArrayObjectDesc &desc);
+
         TextureBuffer &createTextureBuffer(const TextureBufferDesc &desc);
+
+        TextureArrayBuffer &createTextureArrayBuffer(const TextureArrayBufferDesc &desc);
 
         ShaderBuffer &createShaderBuffer(const ShaderBufferDesc &desc);
 
@@ -152,54 +221,39 @@ namespace xng {
 
         void destroy(RenderObject &obj);
 
-        struct PipelinePair {
-            Uri uri;
-            RenderPipelineDesc desc;
-
-            PipelinePair() = default;
-
-            PipelinePair(Uri uri, RenderPipelineDesc desc) : uri(std::move(uri)), desc(std::move(desc)) {}
-
-            ~PipelinePair() = default;
-
-            bool operator==(const PipelinePair &other) const {
-                return uri == other.uri && desc == other.desc;
-            }
-        };
-
-        class PipelinePairHash {
-        public:
-            std::size_t operator()(const PipelinePair &k) const {
-                size_t ret = 0;
-                hash_combine(ret, k.uri);
-                hash_combine(ret, k.desc);
-                return ret;
-            }
-        };
-
         RenderDevice *device = nullptr;
         ShaderCompiler *shaderCompiler = nullptr;
         ShaderDecompiler *shaderDecompiler = nullptr;
+        RenderTarget *backBuffer = nullptr;
 
-        std::unordered_map<Uri, std::unique_ptr<RenderObject>> uriObjects;
-        std::unordered_map<PipelinePair, std::unique_ptr<RenderPipeline>, PipelinePairHash> pipelines;
-
+        std::unordered_map<RenderPipelineDesc, std::unique_ptr<RenderPipeline>> pipelines;
+        std::unordered_map<RenderPassDesc, std::unique_ptr<RenderPass>> passes;
+        std::unordered_map<VertexBufferDesc, std::vector<std::unique_ptr<VertexBuffer>>> vertexBuffers;
+        std::unordered_map<IndexBufferDesc, std::vector<std::unique_ptr<IndexBuffer>>> indexBuffers;
+        std::unordered_map<VertexArrayObjectDesc, std::vector<std::unique_ptr<VertexArrayObject>>> vertexArrayObjects;
         std::unordered_map<TextureBufferDesc, std::vector<std::unique_ptr<TextureBuffer>>> textures;
+        std::unordered_map<TextureArrayBufferDesc, std::vector<std::unique_ptr<TextureArrayBuffer>>> textureArrays;
         std::unordered_map<ShaderBufferDesc, std::vector<std::unique_ptr<ShaderBuffer>>> shaderBuffers;
         std::unordered_map<RenderTargetDesc, std::vector<std::unique_ptr<RenderTarget>>> targets;
 
-        std::set<Uri> usedUris;
-        std::unordered_set<PipelinePair, PipelinePairHash> usedPipelines;
-
+        std::unordered_map<RenderPipelineDesc, int> usedPipelines;
+        std::unordered_map<RenderPassDesc, int> usedPasses;
+        std::unordered_map<VertexBufferDesc, int> usedVertexBuffers;
+        std::unordered_map<IndexBufferDesc, int> usedIndexBuffers;
+        std::unordered_map<VertexArrayObjectDesc, int> usedVertexArrayObjects;
         std::unordered_map<TextureBufferDesc, int> usedTextures;
+        std::unordered_map<TextureArrayBufferDesc, int> usedTextureArrays;
         std::unordered_map<ShaderBufferDesc, int> usedShaderBuffers;
         std::unordered_map<RenderTargetDesc, int> usedTargets;
 
         FrameGraph frame;
 
         std::map<FrameGraphResource, RenderObject *> objects;
+        std::map<FrameGraphResource, RenderObject *> persistentObjects;
         size_t currentStage = 0;
-    };*/
+
+        size_t poolCacheSize{};
+    };
 }
 
 #endif //XENGINE_FRAMEGRAPHPOOLALLOCATOR_HPP

@@ -28,7 +28,7 @@ namespace xng {
     struct FrameGraph {
         struct Stage {
             std::type_index pass = typeid(FrameGraphPass); // The pass to call execute() on
-            std::set<FrameGraphResource> resources; // The set of resources created by the pass
+            std::set<FrameGraphResource> allocations; // The set of resources created by the pass
             std::set<FrameGraphResource> writes; // The set of resources that are written to by the pass
             std::set<FrameGraphResource> reads; // The set of resources that are read by the pass
             std::set<FrameGraphResource> persists; // The set of resources that are declared to be persistent
@@ -38,6 +38,14 @@ namespace xng {
 
         std::vector<Stage> stages; // The set of pass stages to be run in order
         std::map<FrameGraphResource, FrameGraphAllocation> allocations; // The map of render objects that were allocated for this frame identified by their resource id
+
+        std::set<FrameGraphResource> getPersistentResources() const {
+            std::set<FrameGraphResource> ret;
+            for(auto &stage : stages){
+                ret.insert(stage.persists.begin(), stage.persists.end());
+            }
+            return ret;
+        }
     };
 }
 

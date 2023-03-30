@@ -30,7 +30,10 @@ namespace xng {
     public:
         FrameGraphBuilder(RenderTarget &backBuffer,
                           const Scene &scene,
-                          const GenericMapString &properties);
+                          const GenericMapString &properties,
+                          std::set<FrameGraphResource> persistentResources,
+                          ShaderCompiler &shaderCompiler,
+                          ShaderDecompiler &shaderDecompiler);
 
         /**
          * Setup and compile a frame graph using the supplied passes.
@@ -45,11 +48,19 @@ namespace xng {
 
         FrameGraphResource createPipeline(const RenderPipelineDesc &desc);
 
+        FrameGraphResource createRenderPass(const RenderPassDesc &desc);
+
         FrameGraphResource createTextureBuffer(const TextureBufferDesc &desc);
 
-        FrameGraphResource createShaderBuffer(const ShaderBufferDesc &desc);
+        FrameGraphResource createTextureArrayBuffer(const TextureArrayBufferDesc &desc);
 
-        FrameGraphResource createMeshBuffer(const VertexBufferDesc &desc);
+        FrameGraphResource createVertexBuffer(const VertexBufferDesc &desc);
+
+        FrameGraphResource createIndexBuffer(const IndexBufferDesc &desc);
+
+        FrameGraphResource createVertexArrayObject(const VertexArrayObjectDesc &desc);
+
+        FrameGraphResource createShaderBuffer(const ShaderBufferDesc &desc);
 
         /**
          * Declare that the pass will write to the specified resource handle.
@@ -90,9 +101,9 @@ namespace xng {
         FrameGraphResource getBackBuffer();
 
         /**
-         * @return The size and sample count of the buffer returned by getBackBuffer().
+         * @return The description object of the back buffer target.
          */
-        std::pair<Vec2i, int> getBackBufferFormat();
+        RenderTargetDesc getBackBufferDescription();
 
         /**
          * @return The scene containing the user specified data.
@@ -119,11 +130,18 @@ namespace xng {
          */
         GenericMapString &getSharedData();
 
+        ShaderCompiler &getShaderCompiler();
+
+        ShaderDecompiler &getShaderDecompiler();
+
     private:
+        FrameGraphResource createResourceId();
+
         struct PassSetup {
             std::set<FrameGraphResource> allocations;
             std::set<FrameGraphResource> writes;
             std::set<FrameGraphResource> reads;
+            std::set<FrameGraphResource> persists;
         };
 
         RenderTarget &backBuffer;
@@ -134,11 +152,14 @@ namespace xng {
 
         PassSetup currentPass;
 
-        std::map<Uri, FrameGraphResource> uriResources;
+        std::set<FrameGraphResource> persistentResources;
 
-        int resourceCounter = 1;
+        size_t resourceCounter = 1;
 
         GenericMapString sharedData;
+
+        ShaderCompiler &shaderCompiler;
+        ShaderDecompiler &shaderDecompiler;
     };
 }
 #endif //XENGINE_FRAMEGRAPHBUILDER_HPP

@@ -26,12 +26,15 @@
 #include "xng/render/graph/framegraphallocator.hpp"
 #include "xng/render/graph/allocators/framegraphpoolallocator.hpp"
 
+#include "xng/shader/shadercompiler.hpp"
+#include "xng/shader/shaderdecompiler.hpp"
+
 #include "xng/gpu/renderdevice.hpp"
 
 namespace xng {
     class XENGINE_EXPORT FrameGraphRenderer : public SceneRenderer {
     public:
-        explicit FrameGraphRenderer(RenderTarget &target, std::unique_ptr<FrameGraphAllocator> allocator);
+        explicit FrameGraphRenderer(RenderTarget &target, std::unique_ptr<FrameGraphAllocator> allocator, ShaderCompiler &shaderCompiler, ShaderDecompiler &shaderDecompiler);
 
         void render(const Scene &scene) override;
 
@@ -59,6 +62,11 @@ namespace xng {
 
         GenericMapString properties;
         GenericMapString blackboard;
+
+        FrameGraph frame;
+
+        ShaderCompiler &shaderCompiler;
+        ShaderDecompiler &shaderDecompiler;
     };
 }
 #endif //XENGINE_FRAMEGRAPHRENDERER_HPP

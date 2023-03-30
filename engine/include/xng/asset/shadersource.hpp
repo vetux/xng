@@ -68,7 +68,7 @@ namespace xng {
 
         SPIRVBundle compile(const ShaderCompiler &compiler,
                             ShaderCompiler::OptimizationLevel optimizationLevel = ShaderCompiler::OPTIMIZATION_NONE) const {
-            ShaderSource shader(*this);
+            ShaderSource shader = *this;
             if (!shader.preprocessed)
                 shader = preprocess(compiler, {}, {}, optimizationLevel);
             return SPIRVBundle({{.stage = shader.stage,

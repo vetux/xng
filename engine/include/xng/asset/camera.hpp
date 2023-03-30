@@ -42,7 +42,7 @@ namespace xng {
             return ret * MatrixMath::translate(cameraTransform.getPosition() * -1);
         }
 
-        Camera() {}
+        Camera() = default;
 
         explicit Camera(CameraType type) : type(type) {}
 

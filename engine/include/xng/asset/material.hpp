@@ -44,7 +44,7 @@ namespace xng {
             return std::make_unique<Material>(*this);
         }
 
-        std::type_index getTypeIndex() override {
+        std::type_index getTypeIndex() const override {
             return typeid(Material);
         }
 
@@ -127,7 +127,7 @@ namespace xng {
         /**
          * Whether or not the material contains transparency. If this is set to true the object which this material belongs to is drawn using forward rendering.
          */
-        bool transparent;
+        bool transparent{};
 
         /**
          * PBR Shading Data

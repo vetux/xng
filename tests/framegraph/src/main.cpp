@@ -17,19 +17,21 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <memory>
+
 #include "xng/xng.hpp"
 
 #include "testpass.hpp"
 
-static const char *SPHERE_MATERIAL_PATH = "memory://tests/graph/spherematerial";
-static const char *CUBE_MATERIAL_PATH = "memory://tests/graph/cubematerial";
+static const char *SPHERE_MATERIAL_PATH = "memory://tests/graph/spherematerial.json";
+static const char *CUBE_MATERIAL_PATH = "memory://tests/graph/cubematerial.json";
 
 void createMaterialResource(xng::MemoryArchive &archive) {
     // Sphere
     xng::Material material;
     material.shadingModel = xng::SHADE_PHONG;
     material.diffuse = ColorRGBA::blue(0.8);
-    material.normal = ResourceHandle<Texture>(Uri("assets/sphere_normals.png"));
+    material.normal = ResourceHandle<Texture>(Uri("textures/sphere_normals.json"));
 
     xng::ResourceBundle bundle;
     bundle.add("material", std::make_unique<xng::Material>(material));
@@ -44,7 +46,9 @@ void createMaterialResource(xng::MemoryArchive &archive) {
         vec.emplace_back(c);
     }
 
-    archive.addData(SPHERE_MATERIAL_PATH, vec);
+    Uri uri(SPHERE_MATERIAL_PATH);
+
+    archive.addData(uri.toString(false), vec);
 
     // Cube
     material = {};
@@ -64,7 +68,8 @@ void createMaterialResource(xng::MemoryArchive &archive) {
         vec.emplace_back(c);
     }
 
-    archive.addData(CUBE_MATERIAL_PATH, vec);
+    uri = Uri(CUBE_MATERIAL_PATH);
+    archive.addData(uri.toString(false), vec);
 
 }
 
@@ -80,6 +85,16 @@ int main(int argc, char *argv[]) {
 
     std::string assetDirectory = argv[2];
 
+    std::vector<std::unique_ptr<ResourceParser>> parsers;
+    parsers.emplace_back(std::make_unique<StbiParser>());
+    parsers.emplace_back(std::make_unique<AssImpParser>());
+    parsers.emplace_back(std::make_unique<JsonParser>());
+
+    xng::ResourceRegistry::getDefaultRegistry().setImporter(
+            ResourceImporter(std::move(parsers)));
+
+    xng::ResourceRegistry::getDefaultRegistry().addArchive("file", std::make_shared<DirectoryArchive>("assets/"));
+
     auto &archive = dynamic_cast<xng::MemoryArchive &>(xng::ResourceRegistry::getDefaultRegistry().getArchive(
             "memory"));
 
@@ -90,19 +105,24 @@ int main(int argc, char *argv[]) {
     auto shaderCompiler = shaderc::ShaderCCompiler();
     auto shaderDecompiler = spirv_cross::SpirvCrossDecompiler();
 
-    auto device = gpuDriver.createRenderDevice();
     auto window = displayDriver.createWindow(OPENGL_4_6);
     auto &input = window->getInput();
 
+    window->bindGraphics();
+
+    auto device = gpuDriver.createRenderDevice();
     xng::FrameGraphRenderer renderer(window->getRenderTarget(),
                                      std::make_unique<xng::FrameGraphPoolAllocator>(*device,
                                                                                     shaderCompiler,
-                                                                                    shaderDecompiler));
+                                                                                    shaderDecompiler,
+                                                                                    window->getRenderTarget()),
+                                     shaderCompiler,
+                                     shaderDecompiler);
 
+    auto testPass = std::make_shared<TestPass>();
     renderer.setPasses({
                                std::make_shared<GBufferPass>(),
-                               std::make_shared<TestPass>(),
-                               std::make_shared<CompositePass>()
+                               testPass,
                        });
 
     xng::Light light;
@@ -110,13 +130,13 @@ int main(int argc, char *argv[]) {
     light.transform.setPosition({0, 0, -10});
 
     xng::Scene::Object sphere;
-    sphere.transform.setPosition({5, 0, -10});
-    sphere.mesh = xng::ResourceHandle<xng::Mesh>(xng::Uri("meshes/sphere.obj"));
+    sphere.transform.setPosition({0, 0, 10});
+    sphere.mesh = xng::ResourceHandle<xng::Mesh>(xng::Uri("meshes/sphere.obj/Sphere"));
     sphere.material = xng::ResourceHandle<xng::Material>(xng::Uri(SPHERE_MATERIAL_PATH));
 
     xng::Scene::Object cube;
-    cube.transform.setPosition({-5, 0, -10});
-    cube.mesh = xng::ResourceHandle<xng::Mesh>(xng::Uri("meshes/cube.obj"));
+    cube.transform.setPosition({-0, 0, -10});
+    cube.mesh = xng::ResourceHandle<xng::Mesh>(xng::Uri("meshes/cube.obj/Cube"));
     cube.material = xng::ResourceHandle<xng::Material>(xng::Uri(CUBE_MATERIAL_PATH));
 
     xng::Scene scene;
@@ -132,9 +152,13 @@ int main(int argc, char *argv[]) {
     bool lightDirection = false;
     auto lightSpeed = 10.0f;
 
-    xng::FrameLimiter limiter;
+    testPass->setTex(1);
+
+    xng::FrameLimiter limiter(60);
     limiter.reset();
     while (!window->shouldClose()) {
+        window->update();
+
         auto deltaTime = limiter.newFrame();
 
         scene.camera.aspectRatio = static_cast<float>(window->getWindowSize().x)
@@ -154,8 +178,14 @@ int main(int argc, char *argv[]) {
                 lightRef.transform.setPosition({0, lightPos.y - lightSpeed * deltaTime, -10});
         }
 
+        if (window->getInput().getKeyboard().getKeyDown(xng::KEY_LEFT)){
+            testPass->decrementTex();
+        } else if (window->getInput().getKeyboard().getKeyDown(xng::KEY_RIGHT)) {
+            testPass->incrementTex();
+        }
+
         renderer.render(scene);
-        window->update();
+        window->swapBuffers();
     }
 
     return 0;

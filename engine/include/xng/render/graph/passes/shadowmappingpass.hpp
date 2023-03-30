@@ -38,7 +38,7 @@ namespace xng {
 
         void execute(FrameGraphPassResources &resources) override;
 
-        std::type_index getTypeIndex() override;
+        std::type_index getTypeIndex() const override;
     };
 }
 #endif //XENGINE_SHADOWMAPPINGPASS_HPP

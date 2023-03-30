@@ -35,7 +35,7 @@ namespace xng {
 
     }
 
-    std::type_index xng::SkyboxPass::getTypeIndex() {
+    std::type_index xng::SkyboxPass::getTypeIndex() const {
         return typeid(xng::SkyboxPass);
     }
 

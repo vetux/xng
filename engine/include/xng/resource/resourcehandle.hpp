@@ -97,7 +97,11 @@ namespace xng {
         }
 
         const T &get() const {
-            return dynamic_cast<const T &>(getResource());
+            try {
+                return dynamic_cast<const T &>(getResource());
+            } catch(const std::bad_cast &e){
+                throw std::runtime_error("Invalid Resource Cast, Uri: " + uri.toString() + " Type: " + getResource().getTypeIndex().name() + " Requested: " + typeid(T).name());
+            }
         }
 
         const Resource &getResource() const {

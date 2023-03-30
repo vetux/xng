@@ -64,7 +64,7 @@ namespace xng {
          *
          * @return The type index of the concrete pass type
          */
-        virtual std::type_index getTypeIndex() = 0;
+        virtual std::type_index getTypeIndex() const = 0;
     };
 }
 

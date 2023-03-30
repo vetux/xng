@@ -96,14 +96,14 @@ namespace xng::opengl {
             glBindVertexArray(VAO);
             glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer->VBO);
 
-            GLsizei vertexStride;
-            for (auto &layout: desc.vertexLayout) {
+            GLsizei vertexStride = 0;
+            for (auto &layout: desc.vertexLayout.attributes) {
                 vertexStride += layout.stride();
             }
 
             size_t currentOffset = 0;
-            for (int i = 0; i < desc.vertexLayout.size(); i++) {
-                auto &binding = desc.vertexLayout.at(i);
+            for (int i = 0; i < desc.vertexLayout.attributes.size(); i++) {
+                auto &binding = desc.vertexLayout.attributes.at(i);
                 glEnableVertexAttribArray(i);
                 glVertexAttribPointer(i,
                                       VertexAttribute::getCount(binding.type),
@@ -137,13 +137,13 @@ namespace xng::opengl {
 
             // Vertex Attributes
             GLsizei vertexStride = 0;
-            for (auto &layout: desc.vertexLayout) {
+            for (auto &layout: desc.vertexLayout.attributes) {
                 vertexStride += layout.stride();
             }
 
             size_t currentOffset = 0;
-            for (int i = 0; i < desc.vertexLayout.size(); i++) {
-                auto &attribute = desc.vertexLayout.at(i);
+            for (int i = 0; i < desc.vertexLayout.attributes.size(); i++) {
+                auto &attribute = desc.vertexLayout.attributes.at(i);
                 glEnableVertexAttribArray(i);
                 glVertexAttribPointer(i,
                                       VertexAttribute::getCount(attribute.type),
@@ -178,13 +178,13 @@ namespace xng::opengl {
 
             // Vertex Attributes
             GLsizei vertexStride;
-            for (auto &layout: desc.vertexLayout) {
+            for (auto &layout: desc.vertexLayout.attributes) {
                 vertexStride += layout.stride();
             }
 
             size_t currentOffset = 0;
-            for (int i = 0; i < desc.vertexLayout.size(); i++) {
-                auto &binding = desc.vertexLayout.at(i);
+            for (int i = 0; i < desc.vertexLayout.attributes.size(); i++) {
+                auto &binding = desc.vertexLayout.attributes.at(i);
                 glEnableVertexAttribArray(i);
                 glVertexAttribPointer(i,
                                       VertexAttribute::getCount(binding.type),
@@ -200,14 +200,14 @@ namespace xng::opengl {
 
             // Instance Attributes
             GLsizei instanceStride;
-            for (auto &layout: desc.instanceArrayLayout) {
+            for (auto &layout: desc.instanceArrayLayout.attributes) {
                 instanceStride += layout.stride();
             }
 
             currentOffset = 0;
-            for (int i = 0; i < desc.instanceArrayLayout.size(); i++) {
-                auto &binding = desc.instanceArrayLayout.at(i);
-                auto index = desc.vertexLayout.size() + i;
+            for (int i = 0; i < desc.instanceArrayLayout.attributes.size(); i++) {
+                auto &binding = desc.instanceArrayLayout.attributes.at(i);
+                auto index = desc.vertexLayout.attributes.size() + i;
                 glVertexAttribPointer(index,
                                       VertexAttribute::getCount(binding.type),
                                       getType(binding.component),
@@ -217,8 +217,8 @@ namespace xng::opengl {
                 currentOffset += binding.stride();
             }
 
-            for (int i = 0; i < desc.instanceArrayLayout.size(); i++) {
-                glVertexAttribDivisor(desc.vertexLayout.size() + i, 1);
+            for (int i = 0; i < desc.instanceArrayLayout.attributes.size(); i++) {
+                glVertexAttribDivisor(desc.vertexLayout.attributes.size() + i, 1);
             }
 
             glBindVertexArray(0);

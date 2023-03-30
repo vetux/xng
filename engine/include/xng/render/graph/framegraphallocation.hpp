@@ -40,8 +40,12 @@ namespace xng {
     struct FrameGraphAllocation {
         RenderObject::Type objectType; // The type of the object to allocate
         std::variant<RenderPipelineDesc,
+                RenderPassDesc,
                 VertexBufferDesc,
+                IndexBufferDesc,
+                VertexArrayObjectDesc,
                 TextureBufferDesc,
+                TextureArrayBufferDesc,
                 ShaderBufferDesc,
                 RenderTargetDesc> allocationData;
     };

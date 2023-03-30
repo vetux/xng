@@ -33,7 +33,7 @@ namespace xng {
             return std::make_unique<RawResource>(*this);
         }
 
-        std::type_index getTypeIndex() override {
+        std::type_index getTypeIndex() const override {
             return typeid(RawResource);
         }
     };

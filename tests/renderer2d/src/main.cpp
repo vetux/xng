@@ -126,7 +126,7 @@ public:
                  textHandle,
                  {},
                  0,
-                 xng::LINEAR,
+                 xng::NEAREST,
                  fpsFontColor);
 
         ren.renderPresent();
@@ -215,7 +215,7 @@ public:
                  textHandle,
                  {},
                  0,
-                 xng::LINEAR,
+                 xng::NEAREST,
                  fpsFontColor);
 
         ren.renderPresent();

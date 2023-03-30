@@ -259,13 +259,8 @@ namespace xng {
 
     Renderer2D::Renderer2D(RenderDevice &device, ShaderCompiler &shaderCompiler, ShaderDecompiler &shaderDecompiler)
             : renderDevice(device) {
-        vertexLayout.emplace_back(VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT));
-        vertexLayout.emplace_back(VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT));
-
-        vertexSize = 0;
-        for (auto &attr: vertexLayout) {
-            vertexSize += attr.stride();
-        }
+        vertexLayout.attributes.emplace_back(VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT));
+        vertexLayout.attributes.emplace_back(VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT));
 
         VertexBufferDesc vertexBufferDesc;
         vertexBufferDesc.size = 0;
@@ -278,7 +273,7 @@ namespace xng {
         vaoChange = true;
 
         VertexArrayObjectDesc vertexArrayObjectDesc;
-        vertexArrayObjectDesc.vertexLayout = vertexLayout;
+        vertexArrayObjectDesc.vertexLayout = VertexLayout(vertexLayout);
         vertexArrayObject = renderDevice.createVertexArrayObject(vertexArrayObjectDesc);
 
         vsTexture = ShaderSource(SHADER_VERT_TEXTURE, "main", VERTEX, GLSL_ES_320, false);
@@ -325,7 +320,7 @@ namespace xng {
                 RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
         };
 
-        desc.vertexLayout = vertexLayout;
+        desc.vertexLayout = VertexLayout(vertexLayout);
         desc.enableBlending = true;
 
         desc.primitive = TRIANGLES;
@@ -364,7 +359,7 @@ namespace xng {
         passDesc.hasDepthStencilAttachment = false;
         renderPass = device.createRenderPass(passDesc);
 
-        rebindTextureAtlas({});
+        rebindTextureAtlas();
     }
 
     Renderer2D::~Renderer2D() = default;
@@ -380,9 +375,12 @@ namespace xng {
             atlasTextures.at(res)->copy(*buf);
             auto occupations = atlas.getBufferOccupations();
             occupations[res].resize(desc.textureCount, false);
-            rebindTextureAtlas(occupations);
+            atlas = TextureAtlas(occupations);
+            rebindTextureAtlas();
         }
-        return atlas.add(texture);
+        auto ret = atlas.add(texture);
+        TextureAtlas::upload(ret, atlasRef, texture);
+        return ret;
     }
 
     std::vector<TextureAtlasHandle> Renderer2D::createTextures(const std::vector<ImageRGBA> &textures) {
@@ -401,13 +399,16 @@ namespace xng {
                 atlasTextures.at(pair.first) = std::move(buffer);
                 auto occupations = atlas.getBufferOccupations();
                 occupations[pair.first].resize(desc.textureCount, false);
-                rebindTextureAtlas(occupations);
+                atlas = TextureAtlas(occupations);
+                rebindTextureAtlas();
             }
         }
         std::vector<TextureAtlasHandle> ret;
         ret.reserve(textures.size());
         for (auto &img: textures) {
-            ret.emplace_back(atlas.add(img));
+            auto r = atlas.add(img);
+            TextureAtlas::upload(r, atlasRef, img);
+            ret.emplace_back(r);
         }
         return ret;
     }
@@ -532,43 +533,19 @@ namespace xng {
         passes.emplace_back(Pass(point, color, position, center, rotation));
     }
 
-    void Renderer2D::rebindTextureAtlas(const std::map<TextureAtlasResolution, std::vector<bool>> &occupations) {
-        std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> atlasRef;
-
-        atlasRef.insert(
-                std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(TEXTURE_ATLAS_8x8,
-                                                                                                   *atlasTextures.at(
-                                                                                                           TEXTURE_ATLAS_8x8).get()));
-        atlasRef.insert(
-                std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(TEXTURE_ATLAS_16x16,
-                                                                                                   *atlasTextures.at(
-                                                                                                           TEXTURE_ATLAS_16x16).get()));
-        atlasRef.insert(
-                std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(TEXTURE_ATLAS_32x32,
-                                                                                                   *atlasTextures.at(
-                                                                                                           TEXTURE_ATLAS_32x32).get()));
-        atlasRef.insert(
-                std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(TEXTURE_ATLAS_64x64,
-                                                                                                   *atlasTextures.at(
-                                                                                                           TEXTURE_ATLAS_64x64).get()));
-        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
-                TEXTURE_ATLAS_128x128, *atlasTextures.at(TEXTURE_ATLAS_128x128).get()));
-        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
-                TEXTURE_ATLAS_256x256, *atlasTextures.at(TEXTURE_ATLAS_256x256).get()));
-        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
-                TEXTURE_ATLAS_512x512, *atlasTextures.at(TEXTURE_ATLAS_512x512).get()));
-        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
-                TEXTURE_ATLAS_1024x1024, *atlasTextures.at(TEXTURE_ATLAS_1024x1024).get()));
-        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
-                TEXTURE_ATLAS_2048x2048, *atlasTextures.at(TEXTURE_ATLAS_2048x2048).get()));
-        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
-                TEXTURE_ATLAS_4096x4096, *atlasTextures.at(TEXTURE_ATLAS_4096x4096).get()));
-        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
-                TEXTURE_ATLAS_8192x8192, *atlasTextures.at(TEXTURE_ATLAS_8192x8192).get()));
-        atlasRef.insert(std::make_pair<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>(
-                TEXTURE_ATLAS_16384x16384, *atlasTextures.at(TEXTURE_ATLAS_16384x16384).get()));
-
-        atlas = TextureAtlas(atlasRef, occupations);
+    void Renderer2D::rebindTextureAtlas() {
+        atlasRef.insert_or_assign(TEXTURE_ATLAS_8x8,*atlasTextures.at(TEXTURE_ATLAS_8x8).get());
+        atlasRef.insert_or_assign(TEXTURE_ATLAS_16x16,*atlasTextures.at(TEXTURE_ATLAS_16x16).get());
+        atlasRef.insert_or_assign(TEXTURE_ATLAS_32x32,*atlasTextures.at(TEXTURE_ATLAS_32x32).get());
+        atlasRef.insert_or_assign(TEXTURE_ATLAS_64x64,*atlasTextures.at(TEXTURE_ATLAS_64x64).get());
+        atlasRef.insert_or_assign(TEXTURE_ATLAS_128x128, *atlasTextures.at(TEXTURE_ATLAS_128x128).get());
+        atlasRef.insert_or_assign(TEXTURE_ATLAS_256x256, *atlasTextures.at(TEXTURE_ATLAS_256x256).get());
+        atlasRef.insert_or_assign(TEXTURE_ATLAS_512x512, *atlasTextures.at(TEXTURE_ATLAS_512x512).get());
+        atlasRef.insert_or_assign(TEXTURE_ATLAS_1024x1024, *atlasTextures.at(TEXTURE_ATLAS_1024x1024).get());
+        atlasRef.insert_or_assign(TEXTURE_ATLAS_2048x2048, *atlasTextures.at(TEXTURE_ATLAS_2048x2048).get());
+        atlasRef.insert_or_assign(TEXTURE_ATLAS_4096x4096, *atlasTextures.at(TEXTURE_ATLAS_4096x4096).get());
+        atlasRef.insert_or_assign(TEXTURE_ATLAS_8192x8192, *atlasTextures.at(TEXTURE_ATLAS_8192x8192).get());
+        atlasRef.insert_or_assign(TEXTURE_ATLAS_16384x16384, *atlasTextures.at(TEXTURE_ATLAS_16384x16384).get());
     }
 
     void Renderer2D::presentCompat() {
@@ -834,18 +811,18 @@ namespace xng {
 
         renderPass->bindShaderData({
                                            *shaderBuffer,
-                                           atlas.getBuffer(TEXTURE_ATLAS_8x8),
-                                           atlas.getBuffer(TEXTURE_ATLAS_16x16),
-                                           atlas.getBuffer(TEXTURE_ATLAS_32x32),
-                                           atlas.getBuffer(TEXTURE_ATLAS_64x64),
-                                           atlas.getBuffer(TEXTURE_ATLAS_128x128),
-                                           atlas.getBuffer(TEXTURE_ATLAS_256x256),
-                                           atlas.getBuffer(TEXTURE_ATLAS_512x512),
-                                           atlas.getBuffer(TEXTURE_ATLAS_1024x1024),
-                                           atlas.getBuffer(TEXTURE_ATLAS_2048x2048),
-                                           atlas.getBuffer(TEXTURE_ATLAS_4096x4096),
-                                           atlas.getBuffer(TEXTURE_ATLAS_8192x8192),
-                                           atlas.getBuffer(TEXTURE_ATLAS_16384x16384),
+                                           *atlasTextures.at(TEXTURE_ATLAS_8x8),
+                                           *atlasTextures.at(TEXTURE_ATLAS_16x16),
+                                           *atlasTextures.at(TEXTURE_ATLAS_32x32),
+                                           *atlasTextures.at(TEXTURE_ATLAS_64x64),
+                                           *atlasTextures.at(TEXTURE_ATLAS_128x128),
+                                           *atlasTextures.at(TEXTURE_ATLAS_256x256),
+                                           *atlasTextures.at(TEXTURE_ATLAS_512x512),
+                                           *atlasTextures.at(TEXTURE_ATLAS_1024x1024),
+                                           *atlasTextures.at(TEXTURE_ATLAS_2048x2048),
+                                           *atlasTextures.at(TEXTURE_ATLAS_4096x4096),
+                                           *atlasTextures.at(TEXTURE_ATLAS_8192x8192),
+                                           *atlasTextures.at(TEXTURE_ATLAS_16384x16384),
                                    });
 
         renderPass->bindPipeline(*trianglePipeline);
@@ -1144,18 +1121,18 @@ namespace xng {
 
             renderPass->bindShaderData({
                                                *shaderBuffer,
-                                               atlas.getBuffer(TEXTURE_ATLAS_8x8),
-                                               atlas.getBuffer(TEXTURE_ATLAS_16x16),
-                                               atlas.getBuffer(TEXTURE_ATLAS_32x32),
-                                               atlas.getBuffer(TEXTURE_ATLAS_64x64),
-                                               atlas.getBuffer(TEXTURE_ATLAS_128x128),
-                                               atlas.getBuffer(TEXTURE_ATLAS_256x256),
-                                               atlas.getBuffer(TEXTURE_ATLAS_512x512),
-                                               atlas.getBuffer(TEXTURE_ATLAS_1024x1024),
-                                               atlas.getBuffer(TEXTURE_ATLAS_2048x2048),
-                                               atlas.getBuffer(TEXTURE_ATLAS_4096x4096),
-                                               atlas.getBuffer(TEXTURE_ATLAS_8192x8192),
-                                               atlas.getBuffer(TEXTURE_ATLAS_16384x16384),
+                                               *atlasTextures.at(TEXTURE_ATLAS_8x8),
+                                               *atlasTextures.at(TEXTURE_ATLAS_16x16),
+                                               *atlasTextures.at(TEXTURE_ATLAS_32x32),
+                                               *atlasTextures.at(TEXTURE_ATLAS_64x64),
+                                               *atlasTextures.at(TEXTURE_ATLAS_128x128),
+                                               *atlasTextures.at(TEXTURE_ATLAS_256x256),
+                                               *atlasTextures.at(TEXTURE_ATLAS_512x512),
+                                               *atlasTextures.at(TEXTURE_ATLAS_1024x1024),
+                                               *atlasTextures.at(TEXTURE_ATLAS_2048x2048),
+                                               *atlasTextures.at(TEXTURE_ATLAS_4096x4096),
+                                               *atlasTextures.at(TEXTURE_ATLAS_8192x8192),
+                                               *atlasTextures.at(TEXTURE_ATLAS_16384x16384),
                                        });
 
             renderPass->bindPipeline(*trianglePipelineMultiDraw);
@@ -1246,7 +1223,7 @@ namespace xng {
 
             planeMeshes[size] = MeshDrawData{.primitive = TRIANGLES,
                     .drawCall = drawCall,
-                    .baseVertex = vertexBufferOffset / vertexSize};
+                    .baseVertex = vertexBufferOffset / vertexLayout.getSize()};
 
             return planeMeshes.at(size);
         }
@@ -1308,7 +1285,7 @@ namespace xng {
 
             squareMeshes[size] = MeshDrawData{.primitive = LINES,
                     .drawCall = drawCall,
-                    .baseVertex = vertexBufferOffset / vertexSize};
+                    .baseVertex = vertexBufferOffset / vertexLayout.getSize()};
 
             return squareMeshes.at(size);
         }
@@ -1354,7 +1331,7 @@ namespace xng {
 
             lineMeshes[pair] = MeshDrawData{.primitive = LINES,
                     .drawCall = drawCall,
-                    .baseVertex = vertexBufferOffset / vertexSize};
+                    .baseVertex = vertexBufferOffset / vertexLayout.getSize()};
 
             return lineMeshes.at(pair);
         }
@@ -1393,7 +1370,7 @@ namespace xng {
 
             pointMeshes[point] = MeshDrawData{.primitive = POINTS,
                     .drawCall = drawCall,
-                    .baseVertex = vertexBufferOffset / vertexSize};
+                    .baseVertex = vertexBufferOffset / vertexLayout.getSize()};
 
             return pointMeshes.at(point);
         }
@@ -1402,14 +1379,14 @@ namespace xng {
     void Renderer2D::destroyPlane(const Vec2f &size) {
         auto drawData = planeMeshes.at(size);
         planeMeshes.erase(size);
-        deallocateVertexData(drawData.baseVertex * vertexSize);
+        deallocateVertexData(drawData.baseVertex * vertexLayout.getSize());
         deallocateIndexData(drawData.drawCall.offset);
     }
 
     void Renderer2D::destroySquare(const Vec2f &size) {
         auto drawData = squareMeshes.at(size);
         squareMeshes.erase(size);
-        deallocateVertexData(drawData.baseVertex * vertexSize);
+        deallocateVertexData(drawData.baseVertex * vertexLayout.getSize());
         deallocateIndexData(drawData.drawCall.offset);
     }
 
@@ -1417,14 +1394,14 @@ namespace xng {
         auto pair = std::make_pair(start, end);
         auto drawData = lineMeshes.at(pair);
         lineMeshes.erase(pair);
-        deallocateVertexData(drawData.baseVertex * vertexSize);
+        deallocateVertexData(drawData.baseVertex * vertexLayout.getSize());
         deallocateIndexData(drawData.drawCall.offset);
     }
 
     void Renderer2D::destroyPoint(const Vec2f &point) {
         auto drawData = pointMeshes.at(point);
         pointMeshes.erase(point);
-        deallocateVertexData(drawData.baseVertex * vertexSize);
+        deallocateVertexData(drawData.baseVertex * vertexLayout.getSize());
         deallocateIndexData(drawData.drawCall.offset);
     }
 

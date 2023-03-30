@@ -40,24 +40,9 @@ namespace xng {
         explicit FrameGraphPassResources(std::map<FrameGraphResource, RenderObject *> objects)
                 : objects(std::move(objects)) {}
 
-        VertexBuffer &getMeshBuffer(FrameGraphResource resource) {
-            return dynamic_cast<VertexBuffer &>(*objects.at(resource));
-        }
-
-        TextureBuffer &getTextureBuffer(FrameGraphResource resource) {
-            return dynamic_cast<TextureBuffer &>(*objects.at(resource));
-        }
-
-        RenderTarget &getRenderTarget(FrameGraphResource resource) {
-            return dynamic_cast<RenderTarget &>(*objects.at(resource));
-        }
-
-        ShaderBuffer &getShaderBuffer(FrameGraphResource resource){
-            return dynamic_cast<ShaderBuffer &>(*objects.at(resource));
-        }
-
-        RenderPipeline &getPipeline(FrameGraphResource resource) {
-            return dynamic_cast<RenderPipeline &>(*objects.at(resource));
+        template<typename T>
+        T &get(FrameGraphResource res){
+            return dynamic_cast<T&>(*objects.at(res));
         }
 
     private:

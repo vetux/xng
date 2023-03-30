@@ -37,7 +37,7 @@ namespace xng {
             return std::make_unique<Skybox>(*this);
         }
 
-        std::type_index getTypeIndex() override {
+        std::type_index getTypeIndex() const override {
             return typeid(Skybox);
         }
 

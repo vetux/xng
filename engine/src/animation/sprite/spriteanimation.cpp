@@ -137,7 +137,7 @@ namespace xng {
         return std::make_unique<SpriteAnimation>(*this);
     }
 
-    std::type_index SpriteAnimation::getTypeIndex() {
+    std::type_index SpriteAnimation::getTypeIndex() const {
         return typeid(SpriteAnimation);
     }
 }

@@ -22,7 +22,7 @@
 
 namespace xng {
     enum TextureAtlasResolution : int {
-        TEXTURE_ATLAS_8x8,
+        TEXTURE_ATLAS_8x8 = 0,
         TEXTURE_ATLAS_16x16,
         TEXTURE_ATLAS_32x32,
         TEXTURE_ATLAS_64x64,

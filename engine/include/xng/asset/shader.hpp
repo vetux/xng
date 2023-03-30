@@ -31,8 +31,8 @@ namespace xng {
         Shader() = default;
 
         Shader(ShaderSource vertexShader,
-               ShaderSource geometryShader,
-               ShaderSource fragmentShader)
+               ShaderSource fragmentShader,
+               ShaderSource geometryShader)
                 : vertexShader(std::move(vertexShader)),
                 geometryShader(std::move(geometryShader)),
                 fragmentShader(std::move(fragmentShader)) {}
@@ -43,7 +43,7 @@ namespace xng {
             return std::make_unique<Shader>(*this);
         }
 
-        std::type_index getTypeIndex() override {
+        std::type_index getTypeIndex() const override {
             return typeid(Shader);
         }
 

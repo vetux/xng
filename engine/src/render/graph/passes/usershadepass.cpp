@@ -29,6 +29,6 @@ void xng::UserShadePass::execute(xng::FrameGraphPassResources &resources) {
 
 }
 
-std::type_index xng::UserShadePass::getTypeIndex() {
+std::type_index xng::UserShadePass::getTypeIndex() const {
     return typeid(UserShadePass);
 }

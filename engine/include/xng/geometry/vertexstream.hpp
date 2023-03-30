@@ -40,6 +40,13 @@ namespace xng {
             return *this;
         }
 
+        VertexStream &addVertices(const std::vector<Vertex> &vertices) {
+            for (auto &v: vertices) {
+                addVertex(v);
+            }
+            return *this;
+        }
+
         const std::vector<Vertex> &getVertices() const { return vertices; }
 
         const std::vector<uint8_t> &getVertexBuffer() const { return vertexBuffer; }

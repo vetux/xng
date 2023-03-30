@@ -226,7 +226,7 @@ namespace xng {
         size_t getPolyDrawCount() { return polyCounter; }
 
     private:
-        void rebindTextureAtlas(const std::map<TextureAtlasResolution, std::vector<bool>> &occupations);
+        void rebindTextureAtlas();
 
         struct Pass {
             enum Type {
@@ -426,6 +426,7 @@ namespace xng {
 
         std::unique_ptr<RenderPass> renderPass;
 
+        std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> atlasRef;
         std::map<TextureAtlasResolution, std::unique_ptr<TextureArrayBuffer>> atlasTextures;
         TextureAtlas atlas;
 
@@ -468,8 +469,7 @@ namespace xng {
         Vec2i mViewportOffset = {};
         Vec2i mViewportSize = Vec2i(1);
 
-        std::vector<VertexAttribute> vertexLayout;
-        size_t vertexSize;
+        VertexLayout vertexLayout;
     };
 }
 
