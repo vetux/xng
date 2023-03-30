@@ -117,6 +117,7 @@ namespace xng {
     static Mesh convertMesh(const aiMesh &assMesh) {
         Mesh ret;
         ret.primitive = TRIANGLES;
+        ret.vertexLayout = Mesh::getDefaultVertexLayout();
         for (int faceIndex = 0; faceIndex < assMesh.mNumFaces; faceIndex++) {
             const auto &face = dynamic_cast<const aiFace &>(assMesh.mFaces[faceIndex]);
             if (face.mNumIndices != 3)
@@ -244,8 +245,10 @@ namespace xng {
 
         const auto *scenePointer = importer.ReadFileFromMemory(assetBuffer.data(),
                                                                assetBuffer.size(),
-                                                               aiPostProcessSteps::aiProcess_Triangulate |
-                                                               aiProcess_CalcTangentSpace | aiProcess_FlipUVs,
+                                                               aiPostProcessSteps::aiProcess_Triangulate
+                                                               | aiProcess_CalcTangentSpace
+                                                               | aiProcess_FlipUVs
+                                                               | aiProcess_JoinIdenticalVertices,
                                                                hint.c_str());
 
         if (scenePointer == nullptr)
