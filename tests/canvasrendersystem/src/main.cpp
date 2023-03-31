@@ -41,6 +41,7 @@ static std::shared_ptr<EntityScene> createScene() {
 
     SpriteComponent sprite;
     sprite.sprite = ResourceHandle<Sprite>(Uri("sprites/tux.json"));
+    sprite.filter = xng::LINEAR;
     ent.createComponent(sprite);
 
     rect = {};
@@ -144,7 +145,9 @@ int main(int argc, char *argv[]) {
     auto shaderDecompiler = spirv_cross::SpirvCrossDecompiler();
     auto fontDriver = freetype::FtFontDriver();
 
-    auto window = displayDriver.createWindow(OPENGL_4_6, "Renderer 2D Test", {640, 480}, {});
+    auto window = displayDriver.createWindow(OPENGL_4_6, "Renderer 2D Test", {640, 480}, {
+        .swapInterval = 1
+    });
     auto &input = window->getInput();
     auto &target = window->getRenderTarget();
 
@@ -172,7 +175,7 @@ int main(int argc, char *argv[]) {
 
     runtime.start();
 
-    FrameLimiter limiter(60);
+    FrameLimiter limiter;
     while (!window->shouldClose()) {
         auto delta = limiter.newFrame();
         if (input.getDevice<Keyboard>().getKeyDown(xng::KEY_SPACE)) {

@@ -81,7 +81,7 @@ namespace xng::glfw {
                                                             const std::string &title,
                                                             Vec2i size,
                                                             WindowAttributes attributes) {
-        return makeWindow(gpuBackend, title, size, WindowAttributes());
+        return makeWindow(gpuBackend, title, size, attributes);
     }
 
     std::unique_ptr<Window> GLFWDisplayDriver::createWindow(GpuDriverBackend gpuBackend,
@@ -90,6 +90,6 @@ namespace xng::glfw {
                                                             WindowAttributes attributes,
                                                             Monitor &monitor,
                                                             VideoMode mode) {
-        return makeWindow(gpuBackend, title, size, WindowAttributes(), &monitor, mode);
+        return makeWindow(gpuBackend, title, size, attributes, &monitor, mode);
     }
 }

@@ -233,7 +233,7 @@ int main(int argc, char *argv[]) {
     auto shaderDecompiler = spirv_cross::SpirvCrossDecompiler();
     auto fontDriver = freetype::FtFontDriver();
 
-    auto window = displayDriver.createWindow(OPENGL_4_6, "Renderer 2D Test", {640, 480}, {});
+    auto window = displayDriver.createWindow(OPENGL_4_6, "Renderer 2D Test", {640, 480}, {.swapInterval = 1});
     auto &input = window->getInput();
     auto &target = window->getRenderTarget();
     auto fs = std::ifstream("assets/fonts/Sono/static/Sono/Sono-Bold.ttf");
@@ -245,7 +245,7 @@ int main(int argc, char *argv[]) {
 
     Renderer2D ren(*renderDevice, shaderCompiler, shaderDecompiler);
 
-    auto frameLimiter = FrameLimiter(60);
+    auto frameLimiter = FrameLimiter();
 
     TestApplication app(*window, ren, *font);
 
@@ -274,8 +274,8 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        window->swapBuffers();
         window->update();
+        window->swapBuffers();
     }
 
     return 0;
