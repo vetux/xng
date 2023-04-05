@@ -137,6 +137,8 @@ namespace xng {
     private:
         FrameGraphResource createResourceId();
 
+        void checkResourceHandle(FrameGraphResource res);
+
         struct PassSetup {
             std::set<FrameGraphResource> allocations;
             std::set<FrameGraphResource> writes;

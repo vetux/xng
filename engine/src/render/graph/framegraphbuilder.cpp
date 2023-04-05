@@ -101,14 +101,17 @@ namespace xng {
     }
 
     void FrameGraphBuilder::write(FrameGraphResource target) {
+        checkResourceHandle(target);
         currentPass.writes.insert(target);
     }
 
     void FrameGraphBuilder::read(FrameGraphResource source) {
+        checkResourceHandle(source);
         currentPass.reads.insert(source);
     }
 
     void FrameGraphBuilder::persist(FrameGraphResource resource) {
+        checkResourceHandle(resource);
         currentPass.persists.insert(resource);
     }
 
@@ -152,6 +155,16 @@ namespace xng {
             ret = resourceCounter++;
         }
         return FrameGraphResource(ret);
+    }
+
+    void FrameGraphBuilder::checkResourceHandle(FrameGraphResource res) {
+        if (!res.assigned)
+            throw std::runtime_error("Unassigned resource");
+        if (res.index != 0
+            && graph.allocations.find(res) == graph.allocations.end()
+            && persistentResources.find(res) == persistentResources.end()) {
+            throw std::runtime_error("Unknown resource");
+        }
     }
 
     FrameGraph FrameGraphBuilder::build(const std::vector<std::shared_ptr<FrameGraphPass>> &passes) {
