@@ -74,9 +74,9 @@ namespace xng {
 
     private:
         struct MeshDrawData {
-            Primitive primitive;
-            RenderPass::DrawCall drawCall;
-            size_t baseVertex;
+            Primitive primitive = TRIANGLES;
+            RenderPass::DrawCall drawCall{};
+            size_t baseVertex = 0;
         };
 
         TextureAtlasHandle getTexture(const ResourceHandle <Texture> &texture,
@@ -165,6 +165,8 @@ namespace xng {
 
         std::set<Uri> usedTextures;
         std::set<Uri> usedMeshes;
+
+        bool bindVao = true;
     };
 }
 #endif //XENGINE_GBUFFERPASS_HPP

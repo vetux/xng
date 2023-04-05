@@ -31,7 +31,7 @@
 
 #pragma message "Not Implemented"
 
-//TODO: Fix GBufferPass not drawing the geometry correctly (Clearing the textures is visible in subsequent passes)
+//TODO: Fix GBufferPass only drawing the geometry in the first frame.
 
 static const char *SHADER_VERT_GEOMETRY = R"###(#version 460
 
@@ -190,7 +190,7 @@ void main() {
 
     oPosition = vec4(fPos, 1);
 
-    if (data.shadeModel_objectID.x == 1)
+    if (data.shadeModel_objectID.x == 0)
     {
         oAlbedo = textureAtlas(data.albedo, fUv) + data.albedoColor;
         oRoughnessMetallicAO.r = textureAtlas(data.roughness, fUv).r + data.metallic_roughness_ambientOcclusion_shininess.y;
@@ -219,15 +219,6 @@ void main() {
     oModelObject.r = data.shadeModel_objectID.x;
     oModelObject.g = data.shadeModel_objectID.y;
 
-// Override gbuffer writes with known values for debugging
-    oPosition = vec4(1, 1, 1, 1);
-    oNormal = vec4(1, 1, 1, 1);
-    oTangent = vec4(1, 1, 1, 1);
-    oRoughnessMetallicAO = vec4(1, 1, 1, 1);
-    oAlbedo = vec4(1, 1, 1, 1);
-    oAmbient = vec4(1, 1, 1, 1);
-    oSpecular = vec4(1, 1, 1, 1);
-    oModelObject = vec4(1, 1, 1, 1);
 }
 )###";
 
@@ -247,21 +238,21 @@ namespace xng {
     static const size_t MAX_MULTI_DRAW = 1000;
 
     struct ShaderAtlasTexture {
-        int level_index_filtering_assigned[4];
-        float atlasScale_texSize[4];
+        int level_index_filtering_assigned[4]{0, 0, 0, 0};
+        float atlasScale_texSize[4]{0, 0, 0, 0};
     };
 
     struct ShaderDrawData {
         Mat4f model;
         Mat4f mvp;
 
-        int shadeModel_objectID[4];
-        float albedoColor[4];
-        float metallic_roughness_ambientOcclusion_shininess[4];
+        int shadeModel_objectID[4]{0, 0, 0, 0};
+        float albedoColor[4]{0, 0, 0, 0};
+        float metallic_roughness_ambientOcclusion_shininess[4]{0, 0, 0, 0};
 
-        float diffuseColor[4];
-        float ambientColor[4];
-        float specularColor[4];
+        float diffuseColor[4]{0, 0, 0, 0};
+        float ambientColor[4]{0, 0, 0, 0};
+        float specularColor[4]{0, 0, 0, 0};
 
         ShaderAtlasTexture normal;
 
@@ -327,16 +318,27 @@ namespace xng {
                     .clearColorValue = ColorRGBA(0, 0, 0, 0),
                     .clearColor = true,
                     .clearDepth = true,
+                    .clearStencil = true,
                     .enableDepthTest = true,
                     .depthTestWrite = true,
                     .depthTestMode = DEPTH_TEST_LESS,
-                    .enableFaceCulling = false,
+                    .enableFaceCulling = true,
                     .enableBlending = false
             });
         }
 
         builder.persist(renderPipelineRes);
         builder.read(renderPipelineRes);
+
+        if (!vertexArrayObjectRes.assigned){
+            vertexArrayObjectRes = builder.createVertexArrayObject(VertexArrayObjectDesc{
+                    .vertexLayout = Mesh::getDefaultVertexLayout()
+            });
+        }
+
+        builder.read(vertexArrayObjectRes);
+        builder.write(vertexArrayObjectRes);
+        builder.persist(vertexArrayObjectRes);
 
         renderPassRes = builder.createRenderPass(RenderPassDesc{
                 .numberOfColorAttachments = 8,
@@ -349,12 +351,6 @@ namespace xng {
                 .size = sizeof(ShaderBufferData)
         });
         builder.write(shaderBufferRes);
-
-        vertexArrayObjectRes = builder.createVertexArrayObject(VertexArrayObjectDesc{
-                .vertexLayout = Mesh::getDefaultVertexLayout()
-        });
-        builder.read(vertexArrayObjectRes);
-        builder.write(vertexArrayObjectRes);
 
         auto desc = TextureBufferDesc();
         desc.size = renderSize;
@@ -549,7 +545,8 @@ namespace xng {
             updateVao = true;
         }
 
-        if (updateVao) {
+        if (updateVao || bindVao) {
+            bindVao = false;
             vertexArrayObject.bindBuffers(vertexBuffer, indexBuffer);
         }
 
@@ -659,8 +656,6 @@ namespace xng {
                     data.albedo.atlasScale_texSize[1] = atlasScale.y;
                     data.albedo.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
                     data.albedo.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                } else {
-                    data.albedo.level_index_filtering_assigned[3] = 0;
                 }
 
                 if (material.metallicTexture.assigned()) {
@@ -678,8 +673,6 @@ namespace xng {
                     data.metallic.atlasScale_texSize[1] = atlasScale.y;
                     data.metallic.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
                     data.metallic.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                } else {
-                    data.metallic.level_index_filtering_assigned[3] = 0;
                 }
 
                 if (material.roughnessTexture.assigned()) {
@@ -697,8 +690,6 @@ namespace xng {
                     data.roughness.atlasScale_texSize[1] = atlasScale.y;
                     data.roughness.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
                     data.roughness.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                } else {
-                    data.roughness.level_index_filtering_assigned[3] = 0;
                 }
 
                 if (material.ambientOcclusionTexture.assigned()) {
@@ -716,8 +707,6 @@ namespace xng {
                     data.ambientOcclusion.atlasScale_texSize[1] = atlasScale.y;
                     data.ambientOcclusion.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
                     data.ambientOcclusion.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                } else {
-                    data.ambientOcclusion.level_index_filtering_assigned[3] = 0;
                 }
 
                 if (material.diffuseTexture.assigned()) {
@@ -735,8 +724,6 @@ namespace xng {
                     data.diffuse.atlasScale_texSize[1] = atlasScale.y;
                     data.diffuse.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
                     data.diffuse.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                } else {
-                    data.diffuse.level_index_filtering_assigned[3] = 0;
                 }
 
                 if (material.ambientTexture.assigned()) {
@@ -754,8 +741,6 @@ namespace xng {
                     data.ambient.atlasScale_texSize[1] = atlasScale.y;
                     data.ambient.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
                     data.ambient.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                } else {
-                    data.ambient.level_index_filtering_assigned[3] = 0;
                 }
 
                 if (material.specularTexture.assigned()) {
@@ -773,8 +758,6 @@ namespace xng {
                     data.specular.atlasScale_texSize[1] = atlasScale.y;
                     data.specular.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
                     data.specular.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                } else {
-                    data.specular.level_index_filtering_assigned[3] = 0;
                 }
 
                 if (material.shininessTexture.assigned()) {
@@ -792,8 +775,6 @@ namespace xng {
                     data.shininess.atlasScale_texSize[1] = atlasScale.y;
                     data.shininess.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
                     data.shininess.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                } else {
-                    data.albedo.level_index_filtering_assigned[3] = 0;
                 }
 
                 if (material.normal.assigned()) {
@@ -811,8 +792,6 @@ namespace xng {
                     data.normal.atlasScale_texSize[1] = atlasScale.y;
                     data.normal.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
                     data.normal.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                } else {
-                    data.albedo.level_index_filtering_assigned[3] = 0;
                 }
 
                 shaderData.data[oi - (i * MAX_MULTI_DRAW)] = data;
@@ -946,6 +925,8 @@ namespace xng {
     }
 
     size_t GBufferPass::allocateIndexData(size_t size) {
+        assert(size % sizeof(unsigned int) == 0);
+
         bool foundFreeRange = false;
         auto ret = 0UL;
         for (auto &range: freeIndexBufferRanges) {
