@@ -302,7 +302,39 @@ namespace xng::opengl {
             mShaderBindings.clear();
         }
 
+        void checkBindings(bool indexed) {
+            if (mPipeline == nullptr)
+                throw std::runtime_error("No pipeline bound");
+            if (mVertexObject == nullptr)
+                throw std::runtime_error("No vertex array object bound");
+            else if (mVertexObject->mVertexBuffer == nullptr)
+                throw std::runtime_error("No vertex buffer bound in vertex array object");
+            else if (mVertexObject->mIndexBuffer == nullptr && indexed)
+                throw std::runtime_error("No index buffer bound in vertex array object");
+
+            for (auto i = 0; i < mPipeline->desc.bindings.size(); i++) {
+                if (i >= mShaderBindings.size()) {
+                    throw std::runtime_error("Invalid bound shader data size.");
+                }
+                switch (mShaderBindings.at(i).index()) {
+                    case 0:
+                        if (mPipeline->desc.bindings.at(i) != BIND_TEXTURE_BUFFER)
+                            throw std::runtime_error("Invalid bound shader data type at index " + std::to_string(i));
+                        break;
+                    case 1:
+                        if (mPipeline->desc.bindings.at(i) != BIND_TEXTURE_ARRAY_BUFFER)
+                            throw std::runtime_error("Invalid bound shader data type at index " + std::to_string(i));
+                        break;
+                    case 2:
+                        if (mPipeline->desc.bindings.at(i) != BIND_SHADER_BUFFER)
+                            throw std::runtime_error("Invalid bound shader data type at index " + std::to_string(i));
+                        break;
+                }
+            }
+        }
+
         void drawArray(const DrawCall &drawCall) override {
+            checkBindings(false);
             if (!mPipeline) {
                 throw std::runtime_error("No pipeline bound");
             }
@@ -313,6 +345,7 @@ namespace xng::opengl {
         }
 
         void drawIndexed(const DrawCall &drawCall) override {
+            checkBindings(true);
             if (!mPipeline) {
                 throw std::runtime_error("No pipeline bound");
             }
@@ -324,6 +357,7 @@ namespace xng::opengl {
         }
 
         void instancedDrawArray(const DrawCall &drawCall, size_t numberOfInstances) override {
+            checkBindings(false);
             if (!mPipeline) {
                 throw std::runtime_error("No pipeline bound");
             }
@@ -335,6 +369,7 @@ namespace xng::opengl {
         }
 
         void instancedDrawIndexed(const DrawCall &drawCall, size_t numberOfInstances) override {
+            checkBindings(true);
             if (!mPipeline) {
                 throw std::runtime_error("No pipeline bound");
             }
@@ -347,6 +382,7 @@ namespace xng::opengl {
         }
 
         void multiDrawArray(const std::vector<DrawCall> &drawCalls) override {
+            checkBindings(false);
             if (!mPipeline) {
                 throw std::runtime_error("No pipeline bound");
             }
@@ -369,6 +405,7 @@ namespace xng::opengl {
         }
 
         void multiDrawIndexed(const std::vector<DrawCall> &drawCalls) override {
+            checkBindings(true);
             if (!mPipeline) {
                 throw std::runtime_error("No pipeline bound");
             }
@@ -392,6 +429,7 @@ namespace xng::opengl {
         }
 
         void drawIndexed(const DrawCall &drawCall, size_t baseVertex) override {
+            checkBindings(true);
             if (!mPipeline) {
                 throw std::runtime_error("No pipeline bound");
             }
@@ -404,6 +442,7 @@ namespace xng::opengl {
         }
 
         void instancedDrawIndexed(const DrawCall &drawCall, size_t numberOfInstances, size_t baseVertex) override {
+            checkBindings(true);
             if (!mPipeline) {
                 throw std::runtime_error("No pipeline bound");
             }
@@ -417,6 +456,7 @@ namespace xng::opengl {
         }
 
         void multiDrawIndexed(const std::vector<DrawCall> &drawCalls, std::vector<size_t> baseVertices) override {
+            checkBindings(true);
             if (!mPipeline) {
                 throw std::runtime_error("No pipeline bound");
             }
