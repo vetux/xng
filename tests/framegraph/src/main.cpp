@@ -130,12 +130,12 @@ int main(int argc, char *argv[]) {
     light.transform.setPosition({0, 0, -10});
 
     xng::Scene::Object sphere;
-    sphere.transform.setPosition({0, 0, 10});
+    sphere.transform.setPosition({1.5, 0, -10});
     sphere.mesh = xng::ResourceHandle<xng::Mesh>(xng::Uri("meshes/sphere.obj/Sphere"));
     sphere.material = xng::ResourceHandle<xng::Material>(xng::Uri(SPHERE_MATERIAL_PATH));
 
     xng::Scene::Object cube;
-    cube.transform.setPosition({-0, 0, -10});
+    cube.transform.setPosition({-1.5, 0, -10});
     cube.mesh = xng::ResourceHandle<xng::Mesh>(xng::Uri("meshes/cube.obj/Cube"));
     cube.material = xng::ResourceHandle<xng::Material>(xng::Uri(CUBE_MATERIAL_PATH));
 
