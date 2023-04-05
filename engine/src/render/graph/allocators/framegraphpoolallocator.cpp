@@ -40,7 +40,7 @@ namespace xng {
         }
 
         for (auto &obj: delObjects) {
-            deallocate(obj);
+            persistentObjects.erase(obj);
         }
 
         // Deallocate temporary objects
@@ -300,189 +300,149 @@ namespace xng {
         }
     }
 
-    /* static std::unique_ptr<TextureBuffer> allocateTexture(const Texture &t, RenderDevice &device) {
-         auto desc = t.description;
-         desc.bufferType = HOST_VISIBLE;
-         auto stagingBuffer = device.createTextureBuffer(desc);
-
-         if (!t.images.empty()) {
-             if (t.description.textureType == TEXTURE_CUBE_MAP) {
-                 for (int i = POSITIVE_X; i <= NEGATIVE_Z; i++) {
-                     auto size = t.images.at(i).get().getSize();
-                     stagingBuffer->upload(static_cast<CubeMapFace>(i),
-                                           RGBA,
-                                           reinterpret_cast<const uint8_t *>(t.images.at(i).get().getData()),
-                                           sizeof(ColorRGBA) * (size.x * size.y));
-                 }
-             } else {
-                 auto size = t.images.at(0).get().getSize();
-                 stagingBuffer->upload(RGBA,
-                                       reinterpret_cast<const uint8_t *>(t.images.at(0).get().getData()),
-                                       sizeof(ColorRGBA) * (size.x * size.y));
-             }
-         }
-
-         desc.bufferType = DEVICE_LOCAL;
-         auto ret = device.createTextureBuffer(desc);
-         ret->copy(*stagingBuffer);
-
-         return ret;
-     }
-
-     void FrameGraphPoolAllocator::collectGarbage() {
-         std::unordered_set<RenderPipelineDesc> unusedPipelines;
-         for (auto &pair: pipelines) {
-             if (usedPipelines.find(pair.first) == usedPipelines.end()) {
-                 unusedPipelines.insert(pair.first);
-             }
-         }
-
-         for (auto &v: unusedPipelines) {
-             pipelines.erase(v);
-         }
-
-         usedTextures.clear();
-         usedTargets.clear();
-         usedPipelines.clear();
-
-         textures.clear();
-         shaderBuffers.clear();
-         targets.clear();
-     }
-
-     VertexBuffer &FrameGraphPoolAllocator::getMesh(const ResourceHandle<Mesh> &handle) {
-         usedUris.insert(handle.getUri());
-         auto it = uriObjects.find(handle.getUri());
-         if (it == uriObjects.end()) {
-             uriObjects[handle.getUri()] = device->createInstancedVertexBuffer(handle.get(), {MatrixMath::identity()});
-         }
-         return dynamic_cast<VertexBuffer &>(*uriObjects.at(handle.getUri()));
-     }
-
-     TextureBuffer &FrameGraphPoolAllocator::getTexture(const ResourceHandle<Texture> &handle) {
-         usedUris.insert(handle.getUri());
-         auto it = uriObjects.find(handle.getUri());
-         if (it == uriObjects.end()) {
-             uriObjects[handle.getUri()] = allocateTexture(handle.get(), *device);
-         }
-         return dynamic_cast<TextureBuffer &>(*uriObjects.at(handle.getUri()));
-     }
-
-     ShaderProgram &FrameGraphPoolAllocator::getShader(const ResourceHandle<Shader> &handle) {
-         usedUris.insert(handle.getUri());
-         auto it = uriObjects.find(handle.getUri());
-         if (it == uriObjects.end()) {
-             auto &shader = handle.get();
-             ShaderProgramDesc desc;
-             shader.vertexShader.preprocess(*shaderCompiler);
-             shader.fragmentShader.preprocess(*shaderCompiler);
-             shader.geometryShader.preprocess(*shaderCompiler);
-             desc.shaders.insert(std::pair<ShaderStage, SPIRVShader>(ShaderStage::VERTEX,
-                                                                     shader.vertexShader.compile(
-                                                                             *shaderCompiler).getShaders().at(0)));
-             desc.shaders.insert(std::pair<ShaderStage, SPIRVShader>(ShaderStage::FRAGMENT,
-                                                                     shader.fragmentShader.compile(
-                                                                             *shaderCompiler).getShaders().at(
-                                                                             0)));
-             if (!shader.geometryShader.isEmpty()) {
-                 desc.shaders.insert(std::pair<ShaderStage, SPIRVShader>(ShaderStage::GEOMETRY,
-                                                                         shader.geometryShader.compile(
-                                                                                 *shaderCompiler).getShaders().at(
-                                                                                 0)));
-             }
-             uriObjects[handle.getUri()] = device->createShaderProgram(*shaderDecompiler, desc);
-         }
-         return dynamic_cast<ShaderProgram &>(*uriObjects.at(handle.getUri()));
-     }
-
-     RenderPipeline &FrameGraphPoolAllocator::getPipeline(const ResourceHandle<Shader> &shader, const RenderPipelineDesc &desc) {
-         auto pair = PipelinePair(shader.getUri(), desc);
-         usedPipelines.insert(pair);
-         usedUris.insert(shader.getUri());
-         auto it = pipelines.find(pair);
-         if (it == pipelines.end()) {
-             pipelines[pair] = device->createRenderPipeline(desc, getShader(shader));
-         }
-         return dynamic_cast<RenderPipeline &>(*pipelines.at(pair));
-     }
-
-     TextureBuffer &FrameGraphPoolAllocator::createTextureBuffer(const TextureBufferDesc &desc) {
-         auto index = usedTextures[desc]++;
-         if (textures[desc].size() <= index) {
-             textures[desc].resize(usedTextures[desc]);
-             textures[desc].at(index) = device->createTextureBuffer(desc);
-         }
-         return *textures[desc].at(index);
-     }
-
-     ShaderBuffer &FrameGraphPoolAllocator::createShaderBuffer(const ShaderBufferDesc &desc) {
-         auto index = usedShaderBuffers[desc]++;
-         if (shaderBuffers[desc].size() <= index) {
-             shaderBuffers[desc].resize(usedShaderBuffers[desc]);
-             shaderBuffers[desc].at(index) = device->createShaderBuffer(desc);
-         }
-         return *shaderBuffers[desc].at(index);
-     }
-
-     RenderTarget &FrameGraphPoolAllocator::createRenderTarget(const RenderTargetDesc &desc) {
-         auto index = usedTargets[desc]++;
-         if (targets[desc].size() <= index) {
-             targets[desc].resize(usedTargets[desc]);
-             targets[desc].at(index) = device->createRenderTarget(desc);
-         }
-         return *targets[desc].at(index);
-     }
-
-     void FrameGraphPoolAllocator::destroy(RenderObject &obj) {
-         switch (obj.getType()) {
-             case RenderObject::TEXTURE_BUFFER: {
-                 auto &buffer = dynamic_cast<TextureBuffer&>(obj);
-                 usedTextures[buffer.getDescription()]--;
-                 bool found = false;
-                 long index = 0;
-                 for (auto i = 0; i < textures[buffer.getDescription()].size(); i++) {
-                     if (textures[buffer.getDescription()][i].get() == &buffer) {
-                         index = i;
-                         found = true;
-                         break;
-                     }
-                 }
-                 assert(found);
-                 textures[buffer.getDescription()].erase(textures[buffer.getDescription()].begin() + index);
-             }
-                 break;
-             case RenderObject::SHADER_BUFFER: {
-                 auto &buffer = dynamic_cast<ShaderBuffer&>(obj);
-                 usedShaderBuffers[buffer.getDescription()]--;
-                 bool found = false;
-                 long index = 0;
-                 for (auto i = 0; i < shaderBuffers[buffer.getDescription()].size(); i++) {
-                     if (shaderBuffers[buffer.getDescription()][i].get() == &buffer) {
-                         index = i;
-                         found = true;
-                         break;
-                     }
-                 }
-                 assert(found);
-                 shaderBuffers[buffer.getDescription()].erase(shaderBuffers[buffer.getDescription()].begin() + index);
-                 break;
-             }
-             case RenderObject::RENDER_TARGET: {
-                 auto &target = dynamic_cast<RenderTarget&>(obj);
-                 usedTargets[target.getDescription()]--;
-                 bool found = false;
-                 long index = 0;
-                 for (auto i = 0; i < targets[target.getDescription()].size(); i++) {
-                     if (targets[target.getDescription()][i].get() == &target) {
-                         index = i;
-                         found = true;
-                         break;
-                     }
-                 }
-                 assert(found);
-                 targets[target.getDescription()].erase(targets[target.getDescription()].begin() + index);
-                 break;
-             }
-         }
-     }*/
+    std::unique_ptr<RenderObject> FrameGraphPoolAllocator::persist(RenderObject &obj) {
+        switch (obj.getType()) {
+            default:
+                throw std::runtime_error("Invalid object type");
+            case RenderObject::RENDER_OBJECT_VERTEX_BUFFER: {
+                auto &buffer = dynamic_cast<VertexBuffer &>(obj);
+                usedVertexBuffers[buffer.getDescription()]--;
+                bool found = false;
+                long index = 0;
+                for (auto i = 0; i < vertexBuffers[buffer.getDescription()].size(); i++) {
+                    if (vertexBuffers[buffer.getDescription()][i].get() == &buffer) {
+                        index = i;
+                        found = true;
+                        break;
+                    }
+                }
+                assert(found);
+                auto ret = std::unique_ptr<RenderObject>(vertexBuffers.at(buffer.getDescription()).at(index).release());
+                vertexBuffers.at(buffer.getDescription()).erase(vertexBuffers.at(buffer.getDescription()).begin() + index);
+                return ret;
+            }
+            case RenderObject::RENDER_OBJECT_INDEX_BUFFER: {
+                auto &buffer = dynamic_cast<IndexBuffer &>(obj);
+                usedIndexBuffers[buffer.getDescription()]--;
+                bool found = false;
+                long index = 0;
+                for (auto i = 0; i < indexBuffers[buffer.getDescription()].size(); i++) {
+                    if (indexBuffers[buffer.getDescription()][i].get() == &buffer) {
+                        index = i;
+                        found = true;
+                        break;
+                    }
+                }
+                assert(found);
+                auto ret = std::unique_ptr<RenderObject>(indexBuffers.at(buffer.getDescription()).at(index).release());
+                indexBuffers.at(buffer.getDescription()).erase(indexBuffers.at(buffer.getDescription()).begin() + index);
+                return ret;
+            }
+            case RenderObject::RENDER_OBJECT_VERTEX_ARRAY_OBJECT: {
+                auto &buffer = dynamic_cast<VertexArrayObject &>(obj);
+                usedVertexArrayObjects[buffer.getDescription()]--;
+                bool found = false;
+                long index = 0;
+                for (auto i = 0; i < vertexArrayObjects[buffer.getDescription()].size(); i++) {
+                    if (vertexArrayObjects[buffer.getDescription()][i].get() == &buffer) {
+                        index = i;
+                        found = true;
+                        break;
+                    }
+                }
+                assert(found);
+                auto ret = std::unique_ptr<RenderObject>(vertexArrayObjects.at(buffer.getDescription()).at(index).release());
+                vertexArrayObjects.at(buffer.getDescription()).erase(vertexArrayObjects.at(buffer.getDescription()).begin() + index);
+                return ret;
+            }
+            case RenderObject::RENDER_OBJECT_TEXTURE_BUFFER: {
+                auto &buffer = dynamic_cast<TextureBuffer &>(obj);
+                usedTextures[buffer.getDescription()]--;
+                bool found = false;
+                long index = 0;
+                for (auto i = 0; i < textures[buffer.getDescription()].size(); i++) {
+                    if (textures[buffer.getDescription()][i].get() == &buffer) {
+                        index = i;
+                        found = true;
+                        break;
+                    }
+                }
+                assert(found);
+                auto ret = std::unique_ptr<RenderObject>(textures.at(buffer.getDescription()).at(index).release());
+                textures.at(buffer.getDescription()).erase(textures.at(buffer.getDescription()).begin() + index);
+                return ret;
+            }
+            case RenderObject::RENDER_OBJECT_TEXTURE_ARRAY_BUFFER: {
+                auto &buffer = dynamic_cast<TextureArrayBuffer &>(obj);
+                usedTextureArrays[buffer.getDescription()]--;
+                bool found = false;
+                long index = 0;
+                for (auto i = 0; i < textureArrays[buffer.getDescription()].size(); i++) {
+                    if (textureArrays[buffer.getDescription()][i].get() == &buffer) {
+                        index = i;
+                        found = true;
+                        break;
+                    }
+                }
+                assert(found);
+                auto ret = std::unique_ptr<RenderObject>(textureArrays.at(buffer.getDescription()).at(index).release());
+                textureArrays.at(buffer.getDescription()).erase(textureArrays.at(buffer.getDescription()).begin() + index);
+                return ret;
+            }
+            case RenderObject::RENDER_OBJECT_SHADER_BUFFER: {
+                auto &buffer = dynamic_cast<ShaderBuffer &>(obj);
+                usedShaderBuffers[buffer.getDescription()]--;
+                bool found = false;
+                long index = 0;
+                for (auto i = 0; i < shaderBuffers[buffer.getDescription()].size(); i++) {
+                    if (shaderBuffers[buffer.getDescription()][i].get() == &buffer) {
+                        index = i;
+                        found = true;
+                        break;
+                    }
+                }
+                assert(found);
+                auto ret = std::unique_ptr<RenderObject>(shaderBuffers.at(buffer.getDescription()).at(index).release());
+                shaderBuffers.at(buffer.getDescription()).erase(shaderBuffers.at(buffer.getDescription()).begin() + index);
+                return ret;
+            }
+            case RenderObject::RENDER_OBJECT_RENDER_TARGET: {
+                auto &target = dynamic_cast<RenderTarget &>(obj);
+                bool found = false;
+                long index = 0;
+                for (auto i = 0; i < targets[target.getDescription()].size(); i++) {
+                    if (targets[target.getDescription()][i].get() == &target) {
+                        index = i;
+                        found = true;
+                        break;
+                    }
+                }
+                assert(found);
+                auto ret = device->createRenderTarget(target.getDescription());
+                if (--usedTargets[target.getDescription()] == 0){
+                    usedTargets.erase(target.getDescription());
+                    targets.at(target.getDescription()).erase(targets.at(target.getDescription()).begin() + index);
+                }
+                return ret;
+            }
+            case RenderObject::RENDER_OBJECT_RENDER_PIPELINE: {
+                auto &pipeline = dynamic_cast<RenderPipeline &>(obj);
+                auto ret = device->createRenderPipeline(pipeline.getDescription(), *shaderDecompiler);
+                if (--usedPipelines[pipeline.getDescription()] == 0) {
+                    usedPipelines.erase(pipeline.getDescription());
+                    pipelines.erase(pipeline.getDescription());
+                }
+                return ret;
+            }
+            case RenderObject::RENDER_OBJECT_RENDER_PASS: {
+                auto &pass = dynamic_cast<RenderPass &>(obj);
+                auto ret = device->createRenderPass(pass.getDescription());
+                if (--usedPasses[pass.getDescription()] == 0) {
+                    usedPasses.erase(pass.getDescription());
+                    passes.erase(pass.getDescription());
+                }
+                return ret;
+            }
+        }
+    }
 }

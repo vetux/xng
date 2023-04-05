@@ -91,7 +91,7 @@ namespace xng {
                 } else {
                     auto it = persistentObjects.find(read);
                     if (it != persistentObjects.end()) {
-                        res[read] = persistentObjects.at(read);
+                        res[read] = persistentObjects.at(read).get();
                     } else {
                         res[read] = objects.at(read);
                     }
@@ -104,7 +104,7 @@ namespace xng {
                 } else {
                     auto it = persistentObjects.find(write);
                     if (it != persistentObjects.end()) {
-                        res[write] = persistentObjects.at(write);
+                        res[write] = persistentObjects.at(write).get();
                     } else {
                         res[write] = objects.at(write);
                     }
@@ -184,7 +184,6 @@ namespace xng {
 
         void deallocate(const FrameGraphResource &resource) {
             if (persistentObjects.find(resource) != persistentObjects.end()) {
-                destroy(*persistentObjects.at(resource));
                 persistentObjects.erase(resource);
             } else {
                 destroy(*objects.at(resource));
@@ -194,7 +193,7 @@ namespace xng {
 
         void persist(const FrameGraphResource &resource) {
             if (persistentObjects.find(resource) == persistentObjects.end()) {
-                persistentObjects[resource] = objects[resource];
+                persistentObjects[resource] = persist(*objects[resource]);
                 objects.erase(resource);
             }
         }
@@ -220,6 +219,8 @@ namespace xng {
         RenderTarget &createRenderTarget(const RenderTargetDesc &desc);
 
         void destroy(RenderObject &obj);
+
+        std::unique_ptr<RenderObject> persist(RenderObject &obj);
 
         RenderDevice *device = nullptr;
         ShaderCompiler *shaderCompiler = nullptr;
@@ -248,8 +249,9 @@ namespace xng {
 
         FrameGraph frame;
 
+        std::map<FrameGraphResource, int> objectIndices;
         std::map<FrameGraphResource, RenderObject *> objects;
-        std::map<FrameGraphResource, RenderObject *> persistentObjects;
+        std::map<FrameGraphResource, std::unique_ptr<RenderObject>> persistentObjects;
         size_t currentStage = 0;
 
         size_t poolCacheSize{};
