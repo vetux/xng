@@ -51,7 +51,6 @@ namespace xng {
     }
 
     void ResourceRegistry::addArchive(const std::string &scheme, std::shared_ptr<Archive> archive) {
-        std::lock_guard<std::mutex> guard(userMutex);
         std::unique_lock g(archiveMutex);
         if (archives.find(scheme) != archives.end())
             throw std::runtime_error("Archive with scheme " + scheme + " already exists");
@@ -59,19 +58,16 @@ namespace xng {
     }
 
     void ResourceRegistry::removeArchive(const std::string &scheme) {
-        std::lock_guard<std::mutex> guard(userMutex);
         std::unique_lock l(archiveMutex);
         archives.erase(scheme);
     }
 
     void ResourceRegistry::setImporter(ResourceImporter value) {
-        std::lock_guard<std::mutex> guard(userMutex);
         std::unique_lock l(importerMutex);
         importer = std::move(value);
     }
 
     Archive &ResourceRegistry::getArchive(const std::string &scheme) {
-        std::lock_guard<std::mutex> guard(userMutex);
         return *archives.at(scheme);
     }
 
@@ -80,21 +76,18 @@ namespace xng {
     }
 
     void ResourceRegistry::incRef(const Uri &uri) {
-        std::lock_guard<std::mutex> guard(userMutex);
         if (bundleRefCounter.inc(uri.getFile())) {
             load(uri);
         }
     }
 
     void ResourceRegistry::decRef(const Uri &uri) {
-        std::lock_guard<std::mutex> guard(userMutex);
         if (bundleRefCounter.dec(uri.getFile())) {
             unload(uri);
         }
     }
 
     void ResourceRegistry::reloadAllResources() {
-        std::lock_guard<std::mutex> guard(userMutex);
         std::vector<std::pair<Uri, std::shared_ptr<Task>>> tasks;
         {
             std::lock_guard<std::mutex> g(mutex);
@@ -111,9 +104,9 @@ namespace xng {
     }
 
     void ResourceRegistry::awaitImports() {
-        userMutex.lock();
+        mutex.lock();
         auto tasks = loadTasks;
-        userMutex.unlock();
+        mutex.unlock();
         for (auto &task: tasks) {
             task.second->join();
         }
@@ -166,23 +159,19 @@ namespace xng {
     }
 
     const Resource &ResourceRegistry::getData(const Uri &uri) {
-        userMutex.lock();
         mutex.lock();
         auto it = loadTasks.find(uri.getFile());
         if (it == loadTasks.end()) {
             throw std::runtime_error("IncRef not called for bundle pointed at by uri " + uri.toString());
         }
         auto task = loadTasks.at(uri.getFile());
-        userMutex.unlock();
         mutex.unlock();
         auto ex = task->join();
         if (ex) {
             std::rethrow_exception(ex);
         }
-        userMutex.lock();
         mutex.lock();
         auto &ret = bundles[uri.getFile()].get(uri.getAsset());
-        userMutex.unlock();
         mutex.unlock();
         return ret;
     }
