@@ -45,27 +45,31 @@ namespace xng {
 
         for (auto &pair: bundle.assets) {
             auto msg = Message(Message::DICTIONARY);
-            msg["name"] = pair.first;
             auto type = pair.second.get()->getTypeIndex();
             if (type == typeid(Material)) {
                 auto &res = dynamic_cast<Material &>(*pair.second);
                 res >> msg;
+                msg["name"] = pair.first;
                 materials.emplace_back(msg);
             } else if (type == typeid(Texture)) {
                 auto &res = dynamic_cast<Texture &>(*pair.second);
                 res >> msg;
+                msg["name"] = pair.first;
                 textures.emplace_back(msg);
             } else if (type == typeid(Sprite)) {
                 auto &res = dynamic_cast<Sprite &>(*pair.second);
                 res >> msg;
+                msg["name"] = pair.first;
                 sprites.emplace_back(msg);
             } else if (type == typeid(ColliderDesc)) {
                 auto &res = dynamic_cast<ColliderDesc &>(*pair.second);
                 res >> msg;
+                msg["name"] = pair.first;
                 colliders.emplace_back(msg);
             } else if (type == typeid(SpriteAnimation)) {
                 auto &res = dynamic_cast<SpriteAnimation &>(*pair.second);
                 res >> msg;
+                msg["name"] = pair.first;
                 animations.emplace_back(msg);
             } else {
                 throw std::runtime_error("Unsupported resource type: " + std::string(type.name()));
