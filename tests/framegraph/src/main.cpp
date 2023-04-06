@@ -18,6 +18,7 @@
  */
 
 #include <memory>
+#include <fstream>
 
 #include "xng/xng.hpp"
 
@@ -73,18 +74,7 @@ void createMaterialResource(xng::MemoryArchive &archive) {
 
 }
 
-void printUsage() {
-    std::cout
-            << "Usage: test-framegraph [DIRECTORY]\nExecute the frame graph test using the specified directory path to retrieve assets.";
-}
-
 int main(int argc, char *argv[]) {
-    if (argc < 3) {
-        printUsage();
-    }
-
-    std::string assetDirectory = argv[2];
-
     std::vector<std::unique_ptr<ResourceParser>> parsers;
     parsers.emplace_back(std::make_unique<StbiParser>());
     parsers.emplace_back(std::make_unique<AssImpParser>());
@@ -104,6 +94,10 @@ int main(int argc, char *argv[]) {
     auto gpuDriver = opengl::OGLGpuDriver();
     auto shaderCompiler = shaderc::ShaderCCompiler();
     auto shaderDecompiler = spirv_cross::SpirvCrossDecompiler();
+    auto fontDriver = freetype::FtFontDriver();
+
+    auto fs = std::ifstream("assets/fonts/Sono/static/Sono/Sono-Regular.ttf");
+    auto font = fontDriver.createFont(fs);
 
     auto window = displayDriver.createWindow(OPENGL_4_6);
     auto &input = window->getInput();
@@ -111,6 +105,11 @@ int main(int argc, char *argv[]) {
     window->bindGraphics();
 
     auto device = gpuDriver.createRenderDevice();
+
+    auto ren2d = Renderer2D(*device, shaderCompiler, shaderDecompiler);
+
+    auto textRenderer = TextRenderer(*font, ren2d, {0, 70});
+
     xng::FrameGraphRenderer renderer(window->getRenderTarget(),
                                      std::make_unique<xng::FrameGraphPoolAllocator>(*device,
                                                                                     shaderCompiler,
@@ -152,8 +151,6 @@ int main(int argc, char *argv[]) {
     bool lightDirection = false;
     auto lightSpeed = 10.0f;
 
-    testPass->setTex(1);
-
     xng::FrameLimiter limiter(60);
     limiter.reset();
     while (!window->shouldClose()) {
@@ -178,13 +175,66 @@ int main(int argc, char *argv[]) {
                 lightRef.transform.setPosition({0, lightPos.y - lightSpeed * deltaTime, -10});
         }
 
-        if (window->getInput().getKeyboard().getKeyDown(xng::KEY_LEFT)){
+        if (window->getInput().getKeyboard().getKeyDown(xng::KEY_LEFT)) {
             testPass->decrementTex();
         } else if (window->getInput().getKeyboard().getKeyDown(xng::KEY_RIGHT)) {
             testPass->incrementTex();
         }
 
         renderer.render(scene);
+
+        std::string txt;
+        switch (testPass->getTex()) {
+            case 0:
+                txt = "POSITION";
+                break;
+            case 1:
+                txt = "NORMAL";
+                break;
+            case 2:
+                txt = "TANGENT";
+                break;
+            case 3:
+                txt = "ROUGHNESS_METALLIC_AO";
+                break;
+            case 4:
+                txt = "ALBEDO";
+                break;
+            case 5:
+                txt = "AMBIENT";
+                break;
+            case 6:
+                txt = "SPECULAR";
+                break;
+            case 7:
+                txt = "MODEL_OBJECT";
+                break;
+            case 8:
+                txt = "DEPTH";
+                break;
+        }
+
+        auto text = textRenderer.render(txt, TextLayout{.lineHeight = 70});
+
+        auto tex = ren2d.createTexture(text.getImage());
+
+        ren2d.renderBegin(window->getRenderTarget(),
+                          false,
+                          {},
+                          {},
+                          window->getRenderTarget().getDescription().size,
+                          {});
+        ren2d.draw(Rectf({}, text.getImage().getSize().convert<float>()),
+                   Rectf({}, text.getImage().getSize().convert<float>()),
+                   tex,
+                   {},
+                   0,
+                   NEAREST,
+                   ColorRGBA::white());
+        ren2d.renderPresent();
+
+        ren2d.destroyTexture(tex);
+
         window->swapBuffers();
     }
 

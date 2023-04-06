@@ -137,22 +137,41 @@ public:
                 builder.read(gBufferPosition);
                 break;
             case 1:
+                gBufferNormal = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_NORMAL);
+                builder.read(gBufferNormal);
+                break;
+            case 2:
+                gBufferTangent = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_TANGENT);
+                builder.read(gBufferTangent);
+                break;
+            case 3:
+                gBufferRoughnessMetallicAO = builder.getSharedData().get<FrameGraphResource>(
+                        GBufferPass::GEOMETRY_BUFFER_ROUGHNESS_METALLIC_AO);
+                builder.read(gBufferRoughnessMetallicAO);
+                break;
+            case 4:
                 gBufferAlbedo = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_ALBEDO);
                 builder.read(gBufferAlbedo);
                 break;
-            case 2:
+            case 5:
                 gBufferAmbient = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_AMBIENT);
                 builder.read(gBufferAmbient);
                 break;
-            case 3:
+            case 6:
                 gBufferSpecular = builder.getSharedData().get<FrameGraphResource>(
                         GBufferPass::GEOMETRY_BUFFER_SPECULAR);
                 builder.read(gBufferSpecular);
                 break;
-            case 4:
+            case 7:
+                gBufferModelObject = builder.getSharedData().get<FrameGraphResource>(
+                        GBufferPass::GEOMETRY_BUFFER_MODEL_OBJECT);
+                builder.read(gBufferModelObject);
+                break;
+            case 8:
                 gBufferDepth = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_DEPTH);
                 builder.read(gBufferDepth);
                 break;
+
         }
 
         screenRes = builder.getBackBuffer();
@@ -190,15 +209,27 @@ public:
                 texture = &resources.get<TextureBuffer>(gBufferPosition);
                 break;
             case 1:
-                texture = &resources.get<TextureBuffer>(gBufferAlbedo);
+                texture = &resources.get<TextureBuffer>(gBufferNormal);
                 break;
             case 2:
-                texture = &resources.get<TextureBuffer>(gBufferAmbient);
+                texture = &resources.get<TextureBuffer>(gBufferTangent);
                 break;
             case 3:
-                texture = &resources.get<TextureBuffer>(gBufferSpecular);
+                texture = &resources.get<TextureBuffer>(gBufferRoughnessMetallicAO);
                 break;
             case 4:
+                texture = &resources.get<TextureBuffer>(gBufferAlbedo);
+                break;
+            case 5:
+                texture = &resources.get<TextureBuffer>(gBufferAmbient);
+                break;
+            case 6:
+                texture = &resources.get<TextureBuffer>(gBufferSpecular);
+                break;
+            case 7:
+                texture = &resources.get<TextureBuffer>(gBufferModelObject);
+                break;
+            case 8:
                 texture = &resources.get<TextureBuffer>(gBufferDepth);
                 break;
         }
@@ -223,15 +254,19 @@ public:
         tex = t;
     }
 
+    int getTex() {
+        return tex;
+    }
+
     void incrementTex() {
-        if (++tex >= 4) {
+        if (++tex >= 8) {
             tex = 0;
         }
     }
 
     void decrementTex() {
         if (--tex < 0) {
-            tex = 4;
+            tex = 8;
         }
     }
 
@@ -257,9 +292,12 @@ private:
 
     FrameGraphResource gBufferPosition;
     FrameGraphResource gBufferNormal;
+    FrameGraphResource gBufferTangent;
+    FrameGraphResource gBufferRoughnessMetallicAO;
     FrameGraphResource gBufferAlbedo;
     FrameGraphResource gBufferAmbient;
     FrameGraphResource gBufferSpecular;
+    FrameGraphResource gBufferModelObject;
     FrameGraphResource gBufferDepth;
 };
 
