@@ -44,11 +44,12 @@ layout (location = 6) in vec4 boneWeights;
 layout(location = 0) out vec3 fPos;
 layout(location = 1) out vec3 fNorm;
 layout(location = 2) out vec3 fTan;
-layout(location = 3) out vec3 fBitan;
-layout(location = 4) out vec2 fUv;
-layout(location = 5) out vec4 vPos;
-layout(location = 6) flat out uint drawID;
-layout(location = 7) out mat3x3 tbn;
+layout(location = 3) out vec2 fUv;
+layout(location = 4) out vec4 vPos;
+layout(location = 5) out vec3 fT;
+layout(location = 6) out vec3 fB;
+layout(location = 7) out vec3 fN;
+layout(location = 8) flat out uint drawID;
 
 struct ShaderAtlasTexture {
     ivec4 level_index_filtering_assigned;
@@ -99,10 +100,9 @@ void main()
     fTan = normalize(vTangent);
 
     //https://www.gamedeveloper.com/programming/three-normal-mapping-techniques-explained-for-the-mathematically-uninclined
-    vec3 n = normalize( ( data.model * vec4( vNormal, 0.0 ) ).xyz );
-    vec3 t = normalize( ( data.model * vec4( vTangent, 0.0 ) ).xyz );
-    vec3 b = normalize( ( data.model * vec4( vBitangent, 0.0 ) ).xyz );
-    tbn = mat3( t, b, n );
+    fN = normalize( ( data.model * vec4( vNormal, 0.0 ) ).xyz );
+    fT = normalize( ( data.model * vec4( vTangent, 0.0 ) ).xyz );
+    fB = normalize( ( data.model * vec4( vBitangent, 0.0 ) ).xyz );
 
     gl_Position = vPos;
 
@@ -119,11 +119,12 @@ static const char *SHADER_FRAG_GEOMETRY = R"###(#version 460
 layout(location = 0) in vec3 fPos;
 layout(location = 1) in vec3 fNorm;
 layout(location = 2) in vec3 fTan;
-layout(location = 3) in vec3 fBitan;
-layout(location = 4) in vec2 fUv;
-layout(location = 5) in vec4 vPos;
-layout(location = 6) flat in uint drawID;
-layout(location = 7) in mat3x3 tbn;
+layout(location = 3) in vec2 fUv;
+layout(location = 4) in vec4 vPos;
+layout(location = 5) in vec3 fT;
+layout(location = 6) in vec3 fB;
+layout(location = 7) in vec3 fN;
+layout(location = 8) flat in uint drawID;
 
 layout(location = 0) out vec4 oPosition;
 layout(location = 1) out vec4 oNormal;
@@ -202,6 +203,7 @@ void main() {
         oRoughnessMetallicAO.r = textureAtlas(data.roughness, fUv).r + data.metallic_roughness_ambientOcclusion_shininess.y;
         oRoughnessMetallicAO.g = textureAtlas(data.metallic, fUv).r + data.metallic_roughness_ambientOcclusion_shininess.x;
         oRoughnessMetallicAO.b = textureAtlas(data.ambientOcclusion, fUv).r + data.metallic_roughness_ambientOcclusion_shininess.z;
+        oRoughnessMetallicAO.a = 1;
     }
     else
     {
@@ -209,6 +211,9 @@ void main() {
         oAmbient = textureAtlas(data.ambient, fUv) + data.ambientColor;
         oSpecular = textureAtlas(data.specular, fUv) + data.specularColor;
         oRoughnessMetallicAO.r = textureAtlas(data.shininess, fUv).r + data.metallic_roughness_ambientOcclusion_shininess.w;
+        oRoughnessMetallicAO.g = 0;
+        oRoughnessMetallicAO.b = 0;
+        oRoughnessMetallicAO.a = 1;
     }
 
     mat3 normalMatrix = transpose(inverse(mat3(data.model)));
@@ -217,6 +222,7 @@ void main() {
 
     if (data.normal.level_index_filtering_assigned.w != 0)
     {
+        mat3x3 tbn = mat3( fT, fB, fN );
         vec3 texNormal = textureAtlas(data.normal, fUv).xyz;
         texNormal = tbn * normalize(texNormal * 2.0 - 1.0);
         oNormal = vec4(texNormal, 1);
@@ -224,6 +230,8 @@ void main() {
 
     oModelObject.r = data.shadeModel_objectID.x;
     oModelObject.g = data.shadeModel_objectID.y;
+    oModelObject.b = 0;
+    oModelObject.a = 1;
 }
 )###";
 
