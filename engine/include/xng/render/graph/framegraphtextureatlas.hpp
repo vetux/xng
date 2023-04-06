@@ -27,9 +27,7 @@
 namespace xng {
     class FrameGraphTextureAtlas {
     public:
-        FrameGraphTextureAtlas() {
-
-        }
+        FrameGraphTextureAtlas() = default;
 
         TextureAtlasHandle add(const ImageRGBA &texture) {
             auto level = TextureAtlas::getClosestMatchingResolutionLevel(texture.getSize());
@@ -51,6 +49,7 @@ namespace xng {
 
             if (!currentHandles.tex8x8.assigned) {
                 TextureArrayBufferDesc desc;
+                desc.textureDesc.generateMipmap = true;
                 desc.textureCount = atlas.getBufferOccupations()[TEXTURE_ATLAS_8x8].size();
                 desc.textureDesc.size = {8, 8};
                 currentHandles.tex8x8 = builder.createTextureArrayBuffer(desc);
@@ -171,6 +170,7 @@ namespace xng {
                         bufferSizes[pair.first] = pair.second.size();
                         TextureArrayBufferDesc desc;
                         desc.textureCount = pair.second.size();
+                        desc.textureDesc.generateMipmap = true;
                         switch (pair.first) {
                             case TEXTURE_ATLAS_8x8:
                                 desc.textureDesc.size = {8, 8};
