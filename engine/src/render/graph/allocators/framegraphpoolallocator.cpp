@@ -168,6 +168,8 @@ namespace xng {
 
     void FrameGraphPoolAllocator::destroy(RenderObject &obj) {
         switch (obj.getType()) {
+            default:
+                throw std::runtime_error("Invalid object type");
             case RenderObject::RENDER_OBJECT_VERTEX_BUFFER: {
                 auto &buffer = dynamic_cast<VertexBuffer &>(obj);
                 usedVertexBuffers[buffer.getDescription()]--;

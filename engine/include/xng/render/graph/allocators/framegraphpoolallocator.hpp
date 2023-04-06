@@ -183,17 +183,13 @@ namespace xng {
         }
 
         void deallocate(const FrameGraphResource &resource) {
-            if (persistentObjects.find(resource) != persistentObjects.end()) {
-                persistentObjects.erase(resource);
-            } else {
-                destroy(*objects.at(resource));
-                objects.erase(resource);
-            }
+            destroy(*objects.at(resource));
+            objects.erase(resource);
         }
 
         void persist(const FrameGraphResource &resource) {
             if (persistentObjects.find(resource) == persistentObjects.end()) {
-                persistentObjects[resource] = persist(*objects[resource]);
+                persistentObjects[resource] = persist(*objects.at(resource));
                 objects.erase(resource);
             }
         }
@@ -249,7 +245,6 @@ namespace xng {
 
         FrameGraph frame;
 
-        std::map<FrameGraphResource, int> objectIndices;
         std::map<FrameGraphResource, RenderObject *> objects;
         std::map<FrameGraphResource, std::unique_ptr<RenderObject>> persistentObjects;
         size_t currentStage = 0;
