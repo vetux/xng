@@ -88,7 +88,8 @@ namespace xng::opengl {
             glDepthMask(GL_TRUE);
             glClearDepth(clearDepthValue);
             glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-            if (!mPipeline->getDescription().depthTestWrite) {
+            if (mPipeline != nullptr
+                && !mPipeline->getDescription().depthTestWrite) {
                 glDepthMask(GL_FALSE);
             }
             checkGLError();
