@@ -29,10 +29,6 @@
 
 #include "xng/geometry/vertexstream.hpp"
 
-#pragma message "Not Implemented"
-
-//TODO: Fix GBufferPass only drawing the geometry in the first frame.
-
 static const char *SHADER_VERT_GEOMETRY = R"###(#version 460
 
 #define MAX_MULTI_DRAW 1000
@@ -218,7 +214,6 @@ void main() {
 
     oModelObject.r = data.shadeModel_objectID.x;
     oModelObject.g = data.shadeModel_objectID.y;
-
 }
 )###";
 
@@ -237,6 +232,7 @@ static const xng::Shader shader = xng::Shader(xng::ShaderSource(SHADER_VERT_GEOM
 namespace xng {
     static const size_t MAX_MULTI_DRAW = 1000;
 
+#pragma pack(push, 1)
     struct ShaderAtlasTexture {
         int level_index_filtering_assigned[4]{0, 0, 0, 0};
         float atlasScale_texSize[4]{0, 0, 0, 0};
@@ -270,6 +266,7 @@ namespace xng {
     struct ShaderBufferData {
         ShaderDrawData data[MAX_MULTI_DRAW];
     };
+#pragma pack(pop)
 
     GBufferPass::GBufferPass() {}
 
@@ -454,10 +451,10 @@ namespace xng {
             }
         }
 
+        atlas.setup(builder);
+
         mergeFreeVertexBufferRanges();
         mergeFreeIndexBufferRanges();
-
-        atlas.setup(builder);
 
         if (vertexBufferRes.assigned) {
             builder.read(vertexBufferRes);
