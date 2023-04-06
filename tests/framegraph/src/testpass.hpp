@@ -259,7 +259,7 @@ public:
     }
 
     void incrementTex() {
-        if (++tex >= 8) {
+        if (++tex > 8) {
             tex = 0;
         }
     }
