@@ -44,9 +44,11 @@ layout (location = 6) in vec4 boneWeights;
 layout(location = 0) out vec3 fPos;
 layout(location = 1) out vec3 fNorm;
 layout(location = 2) out vec3 fTan;
-layout(location = 3) out vec2 fUv;
-layout(location = 4) out vec4 vPos;
-layout (location = 5) flat out uint drawID;
+layout(location = 3) out vec3 fBitan;
+layout(location = 4) out vec2 fUv;
+layout(location = 5) out vec4 vPos;
+layout(location = 6) flat out uint drawID;
+layout(location = 7) out mat3x3 tbn;
 
 struct ShaderAtlasTexture {
     ivec4 level_index_filtering_assigned;
@@ -96,6 +98,12 @@ void main()
     fNorm = normalize(vNormal);
     fTan = normalize(vTangent);
 
+    //https://www.gamedeveloper.com/programming/three-normal-mapping-techniques-explained-for-the-mathematically-uninclined
+    vec3 n = normalize( ( data.model * vec4( vNormal, 0.0 ) ).xyz );
+    vec3 t = normalize( ( data.model * vec4( vTangent, 0.0 ) ).xyz );
+    vec3 b = normalize( ( data.model * vec4( vBitangent, 0.0 ) ).xyz );
+    tbn = mat3( t, b, n );
+
     gl_Position = vPos;
 
     drawID = gl_DrawID;
@@ -111,9 +119,11 @@ static const char *SHADER_FRAG_GEOMETRY = R"###(#version 460
 layout(location = 0) in vec3 fPos;
 layout(location = 1) in vec3 fNorm;
 layout(location = 2) in vec3 fTan;
-layout(location = 3) in vec2 fUv;
-layout(location = 4) in vec4 vPos;
-layout (location = 5) flat in uint drawID;
+layout(location = 3) in vec3 fBitan;
+layout(location = 4) in vec2 fUv;
+layout(location = 5) in vec4 vPos;
+layout(location = 6) flat in uint drawID;
+layout(location = 7) in mat3x3 tbn;
 
 layout(location = 0) out vec4 oPosition;
 layout(location = 1) out vec4 oNormal;
@@ -208,7 +218,7 @@ void main() {
     if (data.normal.level_index_filtering_assigned.w != 0)
     {
         vec3 texNormal = textureAtlas(data.normal, fUv).xyz;
-        texNormal = normalize(texNormal * 2.0 - 1.0);
+        texNormal = tbn * normalize(texNormal * 2.0 - 1.0);
         oNormal = vec4(texNormal, 1);
     }
 
