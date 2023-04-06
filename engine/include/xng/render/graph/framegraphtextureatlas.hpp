@@ -49,8 +49,6 @@ namespace xng {
         void setup(FrameGraphBuilder &builder) {
             previousHandles = currentHandles;
 
-            pendingTextures.clear();
-
             if (!currentHandles.tex8x8.assigned) {
                 TextureArrayBufferDesc desc;
                 desc.textureCount = atlas.getBufferOccupations()[TEXTURE_ATLAS_8x8].size();
@@ -267,7 +265,7 @@ namespace xng {
         }
 
         std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>
-        getAtlasBuffers(FrameGraphPassResources &resources) const {
+        getAtlasBuffers(FrameGraphPassResources &resources) {
             if (currentHandles.tex8x8 != previousHandles.tex8x8 && previousHandles.tex8x8.assigned) {
                 auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex8x8);
                 auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex8x8);
@@ -360,6 +358,7 @@ namespace xng {
             for (auto &tex : pendingTextures){
                 TextureAtlas::upload(tex.first, ret, tex.second);
             }
+            pendingTextures.clear();
 
             return ret;
         }
