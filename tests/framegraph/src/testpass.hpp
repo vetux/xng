@@ -123,8 +123,10 @@ public:
                                  BIND_TEXTURE_BUFFER},
                     .primitive = TRIANGLES,
                     .vertexLayout = mesh.vertexLayout,
+                    .clearColorValue = ColorRGBA::gray(),
                     .clearColor = true,
-                    .clearDepth = true
+                    .clearDepth = true,
+                    .enableBlending = true
             });
         }
 
