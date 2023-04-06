@@ -85,8 +85,12 @@ namespace xng::opengl {
         }
 
         void clearDepthAttachments(float clearDepthValue) override {
+            glDepthMask(GL_TRUE);
             glClearDepth(clearDepthValue);
             glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+            if (!mPipeline->getDescription().depthTestWrite) {
+                glDepthMask(GL_FALSE);
+            }
             checkGLError();
         }
 
@@ -122,11 +126,6 @@ namespace xng::opengl {
 
             auto &desc = pipeline.getDescription();
 
-            auto clearColor = desc.clearColorValue.divide();
-
-            glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
-            glClearDepth(desc.clearDepthValue);
-
             if (desc.multiSample)
                 glEnable(GL_MULTISAMPLE);
             else
@@ -138,21 +137,6 @@ namespace xng::opengl {
                 glDisable(GL_SAMPLE_COVERAGE);
 
             glSampleCoverage(desc.multiSampleFrequency, GL_TRUE);
-
-            GLbitfield clearMask = 0;
-            if (desc.clearColor) {
-                clearMask |= GL_COLOR_BUFFER_BIT;
-            }
-
-            if (desc.clearDepth) {
-                clearMask |= GL_DEPTH_BUFFER_BIT;
-            }
-
-            if (desc.clearStencil) {
-                clearMask |= GL_STENCIL_BUFFER_BIT;
-            }
-
-            glClear(clearMask);
 
             // Bind shader program
             if (pip.programHandle) {
@@ -208,6 +192,25 @@ namespace xng::opengl {
             } else {
                 glDisable(GL_BLEND);
             }
+
+            checkGLError();
+
+            // Clear
+            auto clearColor = desc.clearColorValue.divide();
+
+            glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
+            glClearDepth(desc.clearDepthValue);
+
+            GLbitfield clearMask = 0;
+            if (desc.clearColor && !desc.clearDepth && !desc.clearStencil) {
+                clearMask = GL_COLOR_BUFFER_BIT;
+            } else if (desc.clearColor && desc.clearDepth && !desc.clearStencil) {
+                clearMask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
+            } else if (desc.clearColor && desc.clearDepth && desc.clearStencil) {
+                clearMask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
+            }
+
+            glClear(clearMask);
 
             checkGLError();
 
