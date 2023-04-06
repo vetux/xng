@@ -35,6 +35,7 @@ layout(location = 1) out vec2 fUv;
 layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
     mat4 mvp;
+    vec4 visualizeDepth_near_far;
 } globs;
 
 layout(binding = 1) uniform sampler2D tex;
@@ -58,17 +59,27 @@ layout(location = 0) out vec4 oColor;
 layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
     mat4 mvp;
+    vec4 visualizeDepth_near_far;
 } globs;
 
 layout(binding = 1) uniform sampler2D tex;
 
 void main() {
     oColor = texture(tex, fUv);
+    if (globs.visualizeDepth_near_far.x != 0)
+    {
+        float near = globs.visualizeDepth_near_far.y;
+        float far = globs.visualizeDepth_near_far.z;
+        float ndc = oColor.r * 2.0 - 1.0;
+        float linearDepth = (2.0 * near * far) / (far + near - ndc * (far - near)) / far;
+        oColor = vec4(linearDepth, linearDepth, linearDepth, 1);
+    }
 }
 )###";
 
 struct ShaderUniformBuffer {
     Mat4f mvp;
+    float visualizeDepth_near_far[4];
 };
 
 class TestPass : public FrameGraphPass {
@@ -176,6 +187,8 @@ public:
 
         screenRes = builder.getBackBuffer();
         builder.write(screenRes);
+
+        camera = builder.getScene().camera;
     }
 
     void execute(FrameGraphPassResources &resources) override {
@@ -200,6 +213,9 @@ public:
 
         ShaderUniformBuffer buf;
         buf.mvp = MatrixMath::identity();
+        buf.visualizeDepth_near_far[0] = tex == 8;
+        buf.visualizeDepth_near_far[1] = camera.nearClip;
+        buf.visualizeDepth_near_far[2] = camera.farClip;
 
         shaderBuffer.upload(buf);
 
@@ -299,6 +315,8 @@ private:
     FrameGraphResource gBufferSpecular;
     FrameGraphResource gBufferModelObject;
     FrameGraphResource gBufferDepth;
+
+    Camera camera;
 };
 
 #endif //XENGINE_TESTPASS_HPP
