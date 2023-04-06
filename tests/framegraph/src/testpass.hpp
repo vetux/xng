@@ -71,7 +71,7 @@ void main() {
         float near = globs.visualizeDepth_near_far.y;
         float far = globs.visualizeDepth_near_far.z;
         float ndc = oColor.r * 2.0 - 1.0;
-        float linearDepth = (2.0 * near * far) / (far + near - ndc * (far - near)) / far;
+        float linearDepth = 1 - ((2.0 * near * far) / (far + near - ndc * (far - near)) / far);
         oColor = vec4(linearDepth, linearDepth, linearDepth, 1);
     }
 }
