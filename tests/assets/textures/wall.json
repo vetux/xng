@@ -5,7 +5,10 @@
         {
           "uri": "images/wall.png"
         }
-      ]
+      ],
+      "description": {
+        "filterMag": 1
+      }
     }
   ]
 }
