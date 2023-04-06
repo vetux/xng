@@ -24,18 +24,31 @@
 
 #include "testpass.hpp"
 
-static const char *SPHERE_MATERIAL_PATH = "memory://tests/graph/spherematerial.json";
-static const char *CUBE_MATERIAL_PATH = "memory://tests/graph/cubematerial.json";
+static const char *MATERIALS_PATH = "memory://tests/graph/materials.json";
 
 void createMaterialResource(xng::MemoryArchive &archive) {
     // Sphere
     xng::Material material;
     material.shadingModel = xng::SHADE_PHONG;
-    material.diffuse = ColorRGBA::blue(0.8);
+    material.diffuseTexture = ResourceHandle<Texture>(Uri("textures/wall.json"));
     material.normal = ResourceHandle<Texture>(Uri("textures/sphere_normals.json"));
 
     xng::ResourceBundle bundle;
-    bundle.add("material", std::make_unique<xng::Material>(material));
+    bundle.add("sphere", std::make_unique<xng::Material>(material));
+
+    // Cube Smiley
+    material = {};
+    material.shadingModel = xng::SHADE_PHONG;
+    material.diffuseTexture = ResourceHandle<Texture>(Uri("textures/awesomeface.json"));
+
+    bundle.add("cube", std::make_unique<xng::Material>(material));
+
+    // Cube Wall
+    material = {};
+    material.shadingModel = xng::SHADE_PHONG;
+    material.diffuseTexture = ResourceHandle<Texture>(Uri("textures/wall.json"));
+
+    bundle.add("cubeWall", std::make_unique<xng::Material>(material));
 
     auto msg = xng::JsonParser::createBundle(bundle);
 
@@ -47,29 +60,8 @@ void createMaterialResource(xng::MemoryArchive &archive) {
         vec.emplace_back(c);
     }
 
-    Uri uri(SPHERE_MATERIAL_PATH);
+    Uri uri(MATERIALS_PATH);
 
-    archive.addData(uri.toString(false), vec);
-
-    // Cube
-    material = {};
-    material.shadingModel = xng::SHADE_PHONG;
-    material.diffuse = ColorRGBA::white(0.7);
-
-    bundle = {};
-    bundle.add("material", std::make_unique<xng::Material>(material));
-
-    msg = xng::JsonParser::createBundle(bundle);
-
-    stream = {};
-    xng::JsonProtocol().serialize(stream, msg);
-
-    vec.clear();
-    for (auto &c: stream.str()) {
-        vec.emplace_back(c);
-    }
-
-    uri = Uri(CUBE_MATERIAL_PATH);
     archive.addData(uri.toString(false), vec);
 
 }
@@ -129,20 +121,26 @@ int main(int argc, char *argv[]) {
     light.transform.setPosition({0, 0, -10});
 
     xng::Scene::Object sphere;
-    sphere.transform.setPosition({1.5, 0, -10});
+    sphere.transform.setPosition({0, 0, -10});
     sphere.mesh = xng::ResourceHandle<xng::Mesh>(xng::Uri("meshes/sphere.obj/Sphere"));
-    sphere.material = xng::ResourceHandle<xng::Material>(xng::Uri(SPHERE_MATERIAL_PATH));
+    sphere.material = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/sphere")));
 
     xng::Scene::Object cube;
-    cube.transform.setPosition({-1.5, 0, -10});
-    cube.mesh = xng::ResourceHandle<xng::Mesh>(xng::Uri("meshes/cube.obj/Cube"));
-    cube.material = xng::ResourceHandle<xng::Material>(xng::Uri(CUBE_MATERIAL_PATH));
+    cube.transform.setPosition({-2.5, 0, -10});
+    cube.mesh = xng::ResourceHandle<xng::Mesh>(xng::Uri("meshes/cube_faceuv.obj"));
+    cube.material = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/cube")));
+
+    xng::Scene::Object cubeWall;
+    cubeWall.transform.setPosition({2.5, 0, -10});
+    cubeWall.mesh = xng::ResourceHandle<xng::Mesh>(xng::Uri("meshes/cube.obj"));
+    cubeWall.material = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/cubeWall")));
 
     xng::Scene scene;
     scene.camera.type = xng::PERSPECTIVE;
 
     scene.objects.emplace_back(sphere);
     scene.objects.emplace_back(cube);
+    scene.objects.emplace_back(cubeWall);
 
     scene.lights.emplace_back(light);
 
