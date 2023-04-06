@@ -390,12 +390,12 @@ namespace xng {
             auto &object = tmp.at(id);
             if (object.mesh.assigned()) {
                 if (object.material.assigned()) {
-                    usedMeshes.insert(object.mesh.getUri());
-
                     auto &mat = object.material.get();
                     if (mat.transparent
                         || mat.shader.assigned())
                         continue;
+
+                    usedMeshes.insert(object.mesh.getUri());
 
                     prepareMeshAllocation(object.mesh);
 
