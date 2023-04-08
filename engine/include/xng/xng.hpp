@@ -236,7 +236,6 @@
 #include "xng/render/graph/passes/shadowmappingpass.hpp"
 #include "xng/render/graph/passes/phongdeferredpass.hpp"
 #include "xng/render/graph/passes/gbufferpass.hpp"
-#include "xng/render/graph/passes/phongresolvepass.hpp"
 #include "xng/render/graph/allocators/framegraphpoolallocator.hpp"
 #include "xng/asset/skybox.hpp"
 #include "xng/asset/audio.hpp"
