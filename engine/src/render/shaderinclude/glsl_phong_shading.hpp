@@ -22,46 +22,28 @@
 
 static const char *GLSL_PHONG_SHADING = R"###(
 struct DirectionalLight {
-    vec3 direction;
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
+    vec4 ambient;
+    vec4 diffuse;
+    vec4 specular;
+    vec4 direction;
 };
-
-uniform DirectionalLight DIRECTIONAL_LIGHTS[MAX_LIGHTS];
-
-uniform int DIRECTIONAL_LIGHTS_COUNT;
 
 struct PointLight {
-    vec3 position;
-    float constantValue;
-    float linearValue;
-    float quadraticValue;
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
+    vec4 ambient;
+    vec4 diffuse;
+    vec4 specular;
+    vec4 position;
+    vec4 constant_linear_quadratic;
 };
-
-uniform PointLight POINT_LIGHTS[MAX_LIGHTS];
-
-uniform int POINT_LIGHTS_COUNT;
 
 struct SpotLight {
-    vec3 position;
-    vec3 direction;
-    float cutOff;
-    float outerCutOff;
-    float constantValue;
-    float linearValue;
-    float quadraticValue;
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
+    vec4 ambient;
+    vec4 diffuse;
+    vec4 specular;
+    vec4 position;
+    vec4 direction_quadratic;
+    vec4 cutOff_outerCutOff_constant_linear;
 };
-
-uniform SpotLight SPOT_LIGHTS[MAX_LIGHTS];
-
-uniform int SPOT_LIGHTS_COUNT;
 
 struct LightComponents
 {
@@ -70,119 +52,118 @@ struct LightComponents
     vec3 specular;
 };
 
-LightComponents mana_calculate_light_directional(vec3 fPos, vec3 fNorm, vec4 diffuseColor, vec4 specularColor, float roughness, vec3 viewPosition, mat3 lightTransformation)
+LightComponents phong_directional(vec3 fPos,
+                                    vec3 fNorm,
+                                    vec4 diffuseColor,
+                                    vec4 specularColor,
+                                    float roughness,
+                                    vec3 viewPosition,
+                                    mat3 lightTransformation,
+                                    DirectionalLight light)
 {
     LightComponents ret;
 
-    for (int i = 0; i < DIRECTIONAL_LIGHTS_COUNT; i++)
-    {
-        vec3 ambient = DIRECTIONAL_LIGHTS[i].ambient * vec3(diffuseColor.xyz);
+    vec3 ambient = light.ambient.xyz * vec3(diffuseColor.xyz);
 
-        vec3 norm = normalize(fNorm);
-        vec3 lightDir = normalize(-DIRECTIONAL_LIGHTS[i].direction);
+    vec3 norm = normalize(fNorm);
+    vec3 lightDir = normalize(-light.direction.xyz);
 
-        float diff = max(dot(norm, lightDir), 0.0);
-        vec3 diffuse =  DIRECTIONAL_LIGHTS[i].diffuse * vec3((diff * diffuseColor).xyz);
+    float diff = max(dot(norm, lightDir), 0.0);
+    vec3 diffuse =  light.diffuse.xyz * vec3((diff * diffuseColor).xyz);
 
-        vec3 viewDir = normalize(viewPosition - fPos);
-        vec3 reflectDir = reflect(-lightDir, norm);
-        float spec = pow(max(dot(viewDir, reflectDir), 0.0), roughness);
-        vec3 specular = DIRECTIONAL_LIGHTS[i].specular * vec3((spec * specularColor).xyz);
+    vec3 viewDir = normalize(viewPosition - fPos);
+    vec3 reflectDir = reflect(-lightDir, norm);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), roughness);
+    vec3 specular = light.specular.xyz * vec3((spec * specularColor).xyz);
 
-        ret.ambient += ambient;
-        ret.diffuse += diffuse;
-        ret.specular += specular;
-    }
+    ret.ambient = ambient;
+    ret.diffuse = diffuse;
+    ret.specular = specular;
 
     return ret;
 }
 
-LightComponents mana_calculate_light_point(vec3 fPos, vec3 fNorm, vec4 diffuseColor, vec4 specularColor, float shininess, vec3 viewPosition, mat3 lightTransformation)
+LightComponents phong_point(vec3 fPos,
+                                vec3 fNorm,
+                                vec4 diffuseColor,
+                                vec4 specularColor,
+                                float shininess,
+                                vec3 viewPosition,
+                                mat3 lightTransformation,
+                                PointLight light)
 {
     LightComponents ret;
 
-    for (int i = 0; i < POINT_LIGHTS_COUNT; i++)
-    {
-        vec3 position = lightTransformation * POINT_LIGHTS[i].position;
-        float distance    = length(position - fPos);
-        float attenuation = 1.0 / (POINT_LIGHTS[i].constantValue + POINT_LIGHTS[i].linearValue * distance + POINT_LIGHTS[i].quadraticValue * (distance * distance));
+    vec3 position = lightTransformation * light.position.xyz;
+    float distance    = length(position - fPos);
+    float attenuation = 1.0 / (light.constant_linear_quadratic.x + light.constant_linear_quadratic.y * distance + light.constant_linear_quadratic.z * (distance * distance));
 
-        vec3 ambient = POINT_LIGHTS[i].ambient * vec3(diffuseColor.xyz);
+    vec3 ambient = light.ambient.xyz * vec3(diffuseColor.xyz);
 
-        vec3 norm = normalize(fNorm);
-        vec3 lightDir = normalize(position - fPos);
+    vec3 norm = normalize(fNorm);
+    vec3 lightDir = normalize(position - fPos);
 
-        float diff = max(dot(norm, lightDir), 0.0);
-        vec3 diffuse =  POINT_LIGHTS[i].diffuse * vec3((diff * diffuseColor).xyz);
+    float diff = max(dot(norm, lightDir), 0.0);
+    vec3 diffuse =  light.diffuse.xyz * vec3((diff * diffuseColor).xyz);
 
-        vec3 viewDir = normalize(viewPosition - fPos);
-        vec3 reflectDir = reflect(-lightDir, norm);
-        float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
-        vec3 specular = POINT_LIGHTS[i].specular * vec3((spec * specularColor).xyz);
+    vec3 viewDir = normalize(viewPosition - fPos);
+    vec3 reflectDir = reflect(-lightDir, norm);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+    vec3 specular = light.specular.xyz * vec3((spec * specularColor).xyz);
 
-        ambient  *= attenuation;
-        diffuse  *= attenuation;
-        specular *= attenuation;
+    ambient  *= attenuation;
+    diffuse  *= attenuation;
+    specular *= attenuation;
 
-        ret.ambient += ambient;
-        ret.diffuse += diffuse;
-        ret.specular += specular;
-    }
+    ret.ambient = ambient;
+    ret.diffuse = diffuse;
+    ret.specular = specular;
 
     return ret;
 }
 
-LightComponents mana_calculate_light_spot(vec3 fPos, vec3 fNorm, vec4 diffuseColor, vec4 specularColor, float roughness, vec3 viewPosition, mat3 lightTransformation)
+LightComponents phong_spot(vec3 fPos,
+                            vec3 fNorm,
+                            vec4 diffuseColor,
+                            vec4 specularColor,
+                            float roughness,
+                            vec3 viewPosition,
+                            mat3 lightTransformation,
+                            SpotLight light)
 {
     LightComponents ret;
 
-    for (int i = 0; i < SPOT_LIGHTS_COUNT; i++)
-    {
-        vec3 position = lightTransformation * SPOT_LIGHTS[i].position;
-        vec3 lightDir = normalize(position - fPos);
+    vec3 position = lightTransformation * light.position.xyz;
+    vec3 lightDir = normalize(position - fPos);
 
-        vec3 ambient = SPOT_LIGHTS[i].ambient * diffuseColor.rgb;
+    vec3 ambient = light.ambient.xyz * diffuseColor.rgb;
 
-        vec3 norm = normalize(fNorm);
-        float diff = max(dot(norm, lightDir), 0.0);
-        vec3 diffuse = SPOT_LIGHTS[i].diffuse * diff * diffuseColor.rgb;
+    vec3 norm = normalize(fNorm);
+    float diff = max(dot(norm, lightDir), 0.0);
+    vec3 diffuse = light.diffuse.xyz * diff * diffuseColor.rgb;
 
-        vec3 viewDir = normalize(viewPosition - fPos);
-        vec3 reflectDir = reflect(-lightDir, norm);
-        float spec = pow(max(dot(viewDir, reflectDir), 0.0), roughness);
-        vec3 specular = SPOT_LIGHTS[i].specular * spec * specularColor.rgb;
+    vec3 viewDir = normalize(viewPosition - fPos);
+    vec3 reflectDir = reflect(-lightDir, norm);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), roughness);
+    vec3 specular = light.specular.xyz * spec * specularColor.rgb;
 
-        float theta = dot(lightDir, normalize(-SPOT_LIGHTS[i].direction));
-        float epsilon = (SPOT_LIGHTS[i].cutOff - SPOT_LIGHTS[i].outerCutOff);
-        float intensity = clamp((theta - SPOT_LIGHTS[i].outerCutOff) / epsilon, 0.0, 1.0);
+    float theta = dot(lightDir, normalize(-light.direction_quadratic.xyz));
+    float epsilon = (light.cutOff - light.outerCutOff);
+    float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
 
-        diffuse  *= intensity;
-        specular *= intensity;
+    diffuse  *= intensity;
+    specular *= intensity;
 
-        float distance    = length(position - fPos);
-        float attenuation = 1.0 / (SPOT_LIGHTS[i].constantValue + SPOT_LIGHTS[i].linearValue * distance + SPOT_LIGHTS[i].quadraticValue * (distance * distance));
+    float distance    = length(position - fPos);
+    float attenuation = 1.0 / (light.cutOff_outerCutOff_constant_linear.z + light.cutOff_outerCutOff_constant_linear.w * distance + light.direction_quadratic.w * (distance * distance));
 
-        diffuse   *= attenuation;
-        specular *= attenuation;
+    diffuse   *= attenuation;
+    specular *= attenuation;
 
-        ret.ambient += ambient;
-        ret.diffuse += diffuse;
-        ret.specular += specular;
-    }
+    ret.ambient = ambient;
+    ret.diffuse = diffuse;
+    ret.specular = specular;
 
-    return ret;
-}
-
-LightComponents mana_calculate_light(vec3 fPos, vec3 fNorm, vec4 fDiffuse, vec4 fSpecular, float roughness, vec3 viewPosition, mat3 lightTransformation)
-{
-    LightComponents dirLight = mana_calculate_light_directional(fPos, fNorm, fDiffuse, fSpecular, roughness, viewPosition, lightTransformation);
-    LightComponents pointLight = mana_calculate_light_point(fPos, fNorm, fDiffuse, fSpecular, roughness, viewPosition, lightTransformation);
-    LightComponents spotLight = mana_calculate_light_spot(fPos, fNorm, fDiffuse, fSpecular, roughness, viewPosition, lightTransformation);
-
-    LightComponents ret;
-    ret.ambient = dirLight.ambient + pointLight.ambient + spotLight.ambient;
-    ret.diffuse = dirLight.diffuse + pointLight.diffuse + spotLight.diffuse;
-    ret.specular = dirLight.specular + pointLight.specular + spotLight.specular;
     return ret;
 }
 )###";

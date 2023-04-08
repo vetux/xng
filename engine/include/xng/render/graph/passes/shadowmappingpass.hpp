@@ -31,8 +31,8 @@ namespace xng {
      */
     class XENGINE_EXPORT ShadowMappingPass : public FrameGraphPass {
     public:
-        //FrameGraphResource to a Texture R : Contains values between 0 - 1 indicating if a pixel is in shadow or not.
-        SHARED_PROPERTY(ShadowMappingPass, SHADOW_MAP)
+        //std::vector<FrameGraphResource> which contains the shadow maps for every light in the scene.
+        SHARED_PROPERTY(ShadowMappingPass, SHADOW_MAPS)
 
         void setup(FrameGraphBuilder &builder) override;
 

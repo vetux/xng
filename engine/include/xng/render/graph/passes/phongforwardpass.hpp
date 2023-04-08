@@ -26,18 +26,14 @@ namespace xng {
     /**
      * The forward SHADE_PHONG* shading model implementation used for transparent objects.
      *
-     * No dependencies
+     * Creates the forward phong shade compositor layer.
+     *
+     * Depends on ShadowMappingPass
      */
     class XENGINE_EXPORT PhongForwardPass : public FrameGraphPass {
     public:
-        // FrameGraphResource to a Texture RGBA : Contains the ambient color values
-        SHARED_PROPERTY(PhongForwardPass, AMBIENT)
-
-        // FrameGraphResource to a Texture RGBA : Contains the diffuse color values
-        SHARED_PROPERTY(PhongForwardPass, DIFFUSE)
-
-        // FrameGraphResource to a Texture RGBA : Contains the specular color values
-        SHARED_PROPERTY(PhongForwardPass, SPECULAR)
+        // FrameGraphResource to a Texture RGBA : Contains the combined color with shadowing applied
+        SHARED_PROPERTY(PhongForwardPass, COLOR)
 
         // FrameGraphResource to a Texture DEPTH_STENCIL : The depth values
         SHARED_PROPERTY(PhongForwardPass, DEPTH)

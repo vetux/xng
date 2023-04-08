@@ -27,18 +27,17 @@ namespace xng {
     /**
      * The deferred SHADE_PHONG* shading model implementation for non transparent objects.
      *
-     * Depends on GBufferPass
+     * Creates the deferred phong shade compositor layer.
+     *
+     * Depends on GBufferPass and ShadowMappingPass
      */
     class XENGINE_EXPORT PhongDeferredPass : public FrameGraphPass {
     public:
-        // FrameGraphResource to a Texture RGBA : Contains the ambient color values
-        SHARED_PROPERTY(PhongDeferredPass, AMBIENT)
+        // FrameGraphResource to a Texture RGBA : Contains the combined color values with shadowing applied
+        SHARED_PROPERTY(PhongDeferredPass, COLOR)
 
-        // FrameGraphResource to a Texture RGBA : Contains the diffuse color values
-        SHARED_PROPERTY(PhongDeferredPass, DIFFUSE)
-
-        // FrameGraphResource to a Texture RGBA : Contains the specular color values
-        SHARED_PROPERTY(PhongDeferredPass, SPECULAR)
+        // FrameGraphResource to a Texture DEPTH_STENCIL : Contains the depth values for the compositor
+        SHARED_PROPERTY(PhongDeferredPass, DEPTH)
 
         PhongDeferredPass();
 
@@ -51,17 +50,32 @@ namespace xng {
         std::type_index getTypeIndex() const override;
 
     private:
-        FrameGraphResource shader;
-        FrameGraphResource quadMesh;
+        Mesh mesh = Mesh::normalizedQuad();
 
-        FrameGraphResource renderTarget;
-        FrameGraphResource multiSampleRenderTarget;
+        FrameGraphResource pipelineRes;
+        FrameGraphResource passRes;
 
-        FrameGraphResource colorMultisample;
-        FrameGraphResource depthMultisample;
+        FrameGraphResource shaderBufferRes;
 
-        FrameGraphResource outColor;
-        FrameGraphResource outDepth;
+        FrameGraphResource vertexBufferRes;
+        FrameGraphResource vertexArrayObjectRes;
+
+        SPIRVBundle vsb;
+        SPIRVBundle fsb;
+
+        bool quadAllocated = false;
+
+        FrameGraphResource gBufferPosition;
+        FrameGraphResource gBufferNormal;
+        FrameGraphResource gBufferTangent;
+        FrameGraphResource gBufferRoughnessMetallicAO;
+        FrameGraphResource gBufferAlbedo;
+        FrameGraphResource gBufferAmbient;
+        FrameGraphResource gBufferSpecular;
+        FrameGraphResource gBufferModelObject;
+        FrameGraphResource gBufferDepth;
+
+        Camera camera;
     };
 }
 

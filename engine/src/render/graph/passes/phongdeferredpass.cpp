@@ -17,11 +17,94 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#pragma message "Not Implemented"
-
 #include "xng/render/graph/passes/phongdeferredpass.hpp"
 
+static const char *SHADER_VERT_GEOMETRY = R"###(#version 460
+
+layout (location = 0) in vec3 vPosition;
+layout (location = 1) in vec2 vUv;
+
+layout(location = 0) out vec4 fPos;
+layout(location = 1) out vec2 fUv;
+
+layout(binding = 0, std140) uniform ShaderUniformBuffer
+{
+    mat4 mvp;
+    vec4 visualizeDepth_near_far;
+} globs;
+
+layout(binding = 1) uniform sampler2D tex;
+
+void main()
+{
+    fPos = (globs.mvp * vec4(vPosition, 1));
+    fUv = vUv;
+
+    gl_Position = fPos;
+}
+)###";
+
+static const char *SHADER_FRAG_GEOMETRY = R"###(#version 460
+
+layout(location = 0) in vec4 fPos;
+layout(location = 1) in vec2 fUv;
+
+layout(location = 0) out vec4 oColor;
+
+layout(binding = 0, std140) uniform ShaderUniformBuffer
+{
+    mat4 mvp;
+    vec4 visualizeDepth_near_far;
+} globs;
+
+layout(binding = 1) uniform sampler2D tex;
+
+void main() {
+    oColor = texture(tex, fUv);
+    if (globs.visualizeDepth_near_far.x != 0)
+    {
+        float near = globs.visualizeDepth_near_far.y;
+        float far = globs.visualizeDepth_near_far.z;
+        float ndc = oColor.r * 2.0 - 1.0;
+        float linearDepth = 1 - ((2.0 * near * far) / (far + near - ndc * (far - near)) / far);
+        oColor = vec4(linearDepth, linearDepth, linearDepth, 1);
+    }
+}
+)###";
+
 namespace xng {
+static const int MAX_LIGHTS = 10000;
+
+#pragma pack(push, 1)
+    struct DirectionalLight {
+        std::array<float, 4> ambient;
+        std::array<float, 4> diffuse;
+        std::array<float, 4> specular;
+        std::array<float, 4> direction;
+    };
+
+    struct PointLight {
+        std::array<float, 4> ambient;
+        std::array<float, 4> diffuse;
+        std::array<float, 4> specular;
+        std::array<float, 4> position;
+        std::array<float, 4> constant_linear_quadratic;
+    };
+
+    struct SpotLight {
+        std::array<float, 4> ambient;
+        std::array<float, 4> diffuse;
+        std::array<float, 4> specular;
+        std::array<float, 4> position;
+        std::array<float, 4> direction_quadratic;
+        std::array<float, 4> cutOff_outerCutOff_constant_linear;
+    };
+
+    struct ShaderUniformBuffer {
+
+    };
+#pragma pack(pop)
+
     PhongDeferredPass::PhongDeferredPass() {
 
     }
