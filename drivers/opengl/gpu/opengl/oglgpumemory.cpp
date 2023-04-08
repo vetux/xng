@@ -31,8 +31,8 @@ namespace xng::opengl {
         return device->createIndexBuffer(desc);
     }
 
-    std::unique_ptr<ShaderBuffer> opengl::OGLGpuMemory::createShaderBuffer(const ShaderBufferDesc &desc,
-                                                                           size_t offset) {
+    std::unique_ptr<ShaderUniformBuffer> opengl::OGLGpuMemory::createShaderBuffer(const ShaderUniformBufferDesc &desc,
+                                                                                  size_t offset) {
         return device->createShaderBuffer(desc);
     }
 

@@ -17,21 +17,21 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_OGLSHADERBUFFER_HPP
-#define XENGINE_OGLSHADERBUFFER_HPP
+#ifndef XENGINE_OGLSHADERUNIFORMBUFFER_HPP
+#define XENGINE_OGLSHADERUNIFORMBUFFER_HPP
 
 #include "opengl_include.hpp"
 #include "gpu/opengl/oglfence.hpp"
 
 namespace xng::opengl {
-    class OGLShaderBuffer : public ShaderBuffer {
+    class OGLShaderUniformBuffer : public ShaderUniformBuffer {
     public:
         std::function<void(RenderObject * )> destructor;
-        ShaderBufferDesc desc;
+        ShaderUniformBufferDesc desc;
         GLuint ubo = 0;
 
-        explicit OGLShaderBuffer(std::function<void(RenderObject * )> destructor,
-                                 ShaderBufferDesc inputDescription)
+        explicit OGLShaderUniformBuffer(std::function<void(RenderObject * )> destructor,
+                                        ShaderUniformBufferDesc inputDescription)
                 : destructor(std::move(destructor)), desc(inputDescription) {
 
             glGenBuffers(1, &ubo);
@@ -46,13 +46,13 @@ namespace xng::opengl {
             checkGLError();
         }
 
-        ~OGLShaderBuffer() override {
+        ~OGLShaderUniformBuffer() override {
             glDeleteBuffers(1, &ubo);
             checkGLError();
             destructor(this);
         }
 
-        const ShaderBufferDesc &getDescription() override {
+        const ShaderUniformBufferDesc &getDescription() override {
             return desc;
         }
 
@@ -76,7 +76,7 @@ namespace xng::opengl {
                                        size_t readOffset,
                                        size_t writeOffset,
                                        size_t count) override {
-            auto &source = dynamic_cast<OGLShaderBuffer &>(other);
+            auto &source = dynamic_cast<OGLShaderUniformBuffer &>(other);
             if (readOffset >= source.desc.size
                 || readOffset + count >= source.desc.size
                 || writeOffset >= desc.size
@@ -102,4 +102,4 @@ namespace xng::opengl {
     };
 }
 
-#endif //XENGINE_OGLSHADERBUFFER_HPP
+#endif //XENGINE_OGLSHADERUNIFORMBUFFER_HPP

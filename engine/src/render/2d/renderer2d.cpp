@@ -46,7 +46,7 @@ struct PassData {
     highp vec4 atlasScale_texSize;
 };
 
-layout(binding = 0, std140) uniform ShaderUniformBuffer
+layout(binding = 0, std140) uniform ShaderData
 {
     PassData passData;
 } vars;
@@ -77,7 +77,7 @@ struct PassData {
     highp vec4 atlasScale_texSize;
 };
 
-layout(binding = 0, std140) uniform ShaderUniformBuffer
+layout(binding = 0, std140) uniform ShaderData
 {
     PassData passData;
 } vars;
@@ -125,7 +125,7 @@ struct PassData {
     vec4 atlasScale_texSize;
 };
 
-layout(binding = 0, std140) uniform ShaderUniformBuffer
+layout(binding = 0, std140) uniform ShaderData
 {
     PassData passes[MAX_MULTI_DRAW_COUNT];
 } vars;
@@ -161,7 +161,7 @@ struct PassData {
     vec4 atlasScale_texSize;
 };
 
-layout(binding = 0, std140) uniform ShaderUniformBuffer
+layout(binding = 0, std140) uniform ShaderData
 {
     PassData passes[MAX_MULTI_DRAW_COUNT];
 } vars;
@@ -220,23 +220,23 @@ namespace xng {
         float atlasScale_texSize[4];
     };
 
-    struct ShaderUniformBuffer {
+    struct ShaderData {
         PassData passData;
     };
 
-    struct ShaderUniformBufferMultiDraw {
+    struct ShaderDataMultiDraw {
         PassData passes[MAX_MULTI_DRAW_COUNT];
     };
 #pragma pack(pop)
 
     static_assert(sizeof(PassData) % 16 == 0);
-    static_assert(sizeof(ShaderUniformBufferMultiDraw) % 16 == 0);
+    static_assert(sizeof(ShaderDataMultiDraw) % 16 == 0);
 
     struct DrawBatch {
         std::vector<RenderPass::DrawCall> drawCalls;
         std::vector<size_t> baseVertices;
         Primitive primitive = TRIANGLES;
-        std::vector<ShaderUniformBuffer> uniformBuffers; // The uniform buffer data for this batch
+        std::vector<ShaderData> uniformBuffers; // The uniform buffer data for this batch
     };
 
     /**
@@ -254,7 +254,7 @@ namespace xng {
         std::vector<RenderPass::DrawCall> drawCalls;
         std::vector<size_t> baseVertices;
         Primitive primitive = TRIANGLES;
-        ShaderUniformBufferMultiDraw uniformBuffer; // The uniform buffer data for this batch
+        ShaderDataMultiDraw uniformBuffer; // The uniform buffer data for this batch
     };
 
     Renderer2D::Renderer2D(RenderDevice &device, ShaderCompiler &shaderCompiler, ShaderDecompiler &shaderDecompiler)
@@ -560,7 +560,7 @@ namespace xng {
         std::vector<RenderPass::DrawCall> drawCalls;
         std::vector<size_t> baseVertices;
         std::vector<Primitive> primitives;
-        std::vector<ShaderUniformBuffer> shaderBuffers;
+        std::vector<ShaderData> shaderBuffers;
         std::vector<PassData> passData;
 
         for (auto &pass: passes) {
@@ -583,7 +583,7 @@ namespace xng {
                                                                0})
                                  * rotMat;
 
-                    ShaderUniformBuffer buffer;
+                    ShaderData buffer;
 
                     buffer.passData.mvp = viewProjectionMatrix * model;
                     auto color = pass.color.divide();
@@ -615,7 +615,7 @@ namespace xng {
                                                                0})
                                  * rotMat;
 
-                    ShaderUniformBuffer buffer;
+                    ShaderData buffer;
 
                     buffer.passData.mvp = viewProjectionMatrix * model;
                     auto color = pass.color.divide();
@@ -656,7 +656,7 @@ namespace xng {
                                                                0})
                                  * rotMat;
 
-                    ShaderUniformBuffer buffer;
+                    ShaderData buffer;
 
                     buffer.passData.mvp = viewProjectionMatrix * model;
                     auto color = pass.color.divide();
@@ -686,7 +686,7 @@ namespace xng {
                                                                0})
                                  * rotMat;
 
-                    ShaderUniformBuffer buffer;
+                    ShaderData buffer;
 
                     buffer.passData.mvp = viewProjectionMatrix * model;
                     auto color = pass.color.divide();
@@ -805,8 +805,8 @@ namespace xng {
         renderPass->bindVertexArrayObject(*vertexArrayObject);
 
 
-        ShaderBufferDesc shaderBufferDesc;
-        shaderBufferDesc.size = sizeof(ShaderUniformBuffer);
+        ShaderUniformBufferDesc shaderBufferDesc;
+        shaderBufferDesc.size = sizeof(ShaderData);
         auto shaderBuffer = renderDevice.createShaderBuffer(shaderBufferDesc);
 
         renderPass->bindShaderData({
@@ -1115,8 +1115,8 @@ namespace xng {
             renderPass->beginRenderPass(*userTarget, mViewportOffset, mViewportSize);
             renderPass->bindVertexArrayObject(*vertexArrayObject);
 
-            ShaderBufferDesc shaderBufferDesc;
-            shaderBufferDesc.size = sizeof(ShaderUniformBufferMultiDraw);
+            ShaderUniformBufferDesc shaderBufferDesc;
+            shaderBufferDesc.size = sizeof(ShaderDataMultiDraw);
             auto shaderBuffer = renderDevice.createShaderBuffer(shaderBufferDesc);
 
             renderPass->bindShaderData({

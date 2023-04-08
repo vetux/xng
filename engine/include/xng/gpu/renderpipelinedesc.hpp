@@ -28,7 +28,7 @@
 #include "xng/math/vector2.hpp"
 
 #include "xng/gpu/texturebuffer.hpp"
-#include "xng/gpu/shaderbuffer.hpp"
+#include "xng/gpu/shaderuniformbuffer.hpp"
 #include "xng/gpu/renderproperties.hpp"
 #include "xng/gpu/vertexlayout.hpp"
 

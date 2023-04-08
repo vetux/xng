@@ -93,9 +93,9 @@ namespace xng {
         return ret;
     }
 
-    FrameGraphResource FrameGraphBuilder::createShaderBuffer(const ShaderBufferDesc &desc) {
+    FrameGraphResource FrameGraphBuilder::createShaderBuffer(const ShaderUniformBufferDesc &desc) {
         auto ret = createResourceId();
-        graph.allocations[ret] = FrameGraphAllocation{RenderObject::RENDER_OBJECT_SHADER_BUFFER, desc};
+        graph.allocations[ret] = FrameGraphAllocation{RenderObject::RENDER_OBJECT_SHADER_UNIFORM_BUFFER, desc};
         currentPass.allocations.insert(ret);
         return ret;
     }

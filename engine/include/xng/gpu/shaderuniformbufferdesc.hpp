@@ -17,18 +17,18 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SHADERBUFFERDESC_HPP
-#define XENGINE_SHADERBUFFERDESC_HPP
+#ifndef XENGINE_SHADERUNIFORMBUFFERDESC_HPP
+#define XENGINE_SHADERUNIFORMBUFFERDESC_HPP
 
 #include <cstddef>
 #include "renderbuffertype.hpp"
 
 namespace xng {
-    struct ShaderBufferDesc {
+    struct ShaderUniformBufferDesc {
         RenderBufferType bufferType = HOST_VISIBLE;
         size_t size = 0;
 
-        bool operator==(const ShaderBufferDesc &other) const {
+        bool operator==(const ShaderUniformBufferDesc &other) const {
             return size == other.size
                    && bufferType == other.bufferType;
         }
@@ -37,8 +37,8 @@ namespace xng {
 
 namespace std {
     template<>
-    struct hash<xng::ShaderBufferDesc> {
-        std::size_t operator()(const xng::ShaderBufferDesc &k) const {
+    struct hash<xng::ShaderUniformBufferDesc> {
+        std::size_t operator()(const xng::ShaderUniformBufferDesc &k) const {
             size_t ret = 0;
             xng::hash_combine(ret, k.size);
             xng::hash_combine(ret, k.bufferType);
@@ -47,4 +47,4 @@ namespace std {
     };
 }
 
-#endif //XENGINE_SHADERBUFFERDESC_HPP
+#endif //XENGINE_SHADERUNIFORMBUFFERDESC_HPP

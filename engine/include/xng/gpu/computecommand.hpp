@@ -26,12 +26,12 @@
 #include "xng/math/vector3.hpp"
 
 #include "xng/gpu/texturebuffer.hpp"
-#include "xng/gpu/shaderbuffer.hpp"
+#include "xng/gpu/shaderuniformbuffer.hpp"
 
 namespace xng {
     struct ComputeCommand {
         Vector3<unsigned int> num_groups; // The number of work groups in each dimension, cannot be zero.
-        std::vector<std::variant<TextureBuffer, ShaderBuffer>> bindings; // The bindings accessible to the shader with explicit binding
+        std::vector<std::variant<TextureBuffer, ShaderUniformBuffer>> bindings; // The bindings accessible to the shader with explicit binding
     };
 }
 

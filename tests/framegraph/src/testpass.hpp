@@ -77,7 +77,7 @@ void main() {
 }
 )###";
 
-struct ShaderUniformBuffer {
+struct ShaderData {
     Mat4f mvp;
     float visualizeDepth_near_far[4];
 };
@@ -139,7 +139,7 @@ public:
 
         builder.read(passRes);
 
-        shaderBufferRes = builder.createShaderBuffer(ShaderBufferDesc{.size =  sizeof(ShaderUniformBuffer)});
+        shaderBufferRes = builder.createShaderBuffer(ShaderUniformBufferDesc{.size =  sizeof(ShaderData)});
         builder.read(shaderBufferRes);
         builder.write(shaderBufferRes);
 
@@ -202,7 +202,7 @@ public:
         auto &vertexBuffer = resources.get<VertexBuffer>(vertexBufferRes);
         auto &vertexArrayObject = resources.get<VertexArrayObject>(vertexArrayObjectRes);
 
-        auto &shaderBuffer = resources.get<ShaderBuffer>(shaderBufferRes);
+        auto &shaderBuffer = resources.get<ShaderUniformBuffer>(shaderBufferRes);
 
         if (!quadAllocated) {
             quadAllocated = true;
@@ -213,7 +213,7 @@ public:
             vertexArrayObject.bindBuffers(vertexBuffer);
         }
 
-        ShaderUniformBuffer buf;
+        ShaderData buf;
         buf.mvp = MatrixMath::identity();
         buf.visualizeDepth_near_far[0] = tex == 8;
         buf.visualizeDepth_near_far[1] = camera.nearClip;

@@ -30,7 +30,7 @@
 #include "gpu/opengl/oglrendertarget.hpp"
 #include "gpu/opengl/ogltexturebuffer.hpp"
 #include "gpu/opengl/oglvertexbuffer.hpp"
-#include "gpu/opengl/oglshaderbuffer.hpp"
+#include "gpu/opengl/oglshaderuniformbuffer.hpp"
 #include "gpu/opengl/oglindexbuffer.hpp"
 #include "gpu/opengl/oglvertexbuffer.hpp"
 #include "gpu/opengl/oglvertexarrayobject.hpp"
@@ -107,8 +107,8 @@ namespace xng::opengl {
             return std::make_unique<OGLIndexBuffer>(destructor, desc);
         }
 
-        std::unique_ptr<ShaderBuffer> createShaderBuffer(const ShaderBufferDesc &desc) override {
-            return std::make_unique<OGLShaderBuffer>(destructor, desc);
+        std::unique_ptr<ShaderUniformBuffer> createShaderBuffer(const ShaderUniformBufferDesc &desc) override {
+            return std::make_unique<OGLShaderUniformBuffer>(destructor, desc);
         }
 
         std::unique_ptr<TextureBuffer> createTextureBuffer(const TextureBufferDesc &desc) override {

@@ -85,7 +85,7 @@ public:
 
         rot += rotSpeed * delta;
 
-        ren.renderBegin(target, ColorRGBA::grey(0.3, 0));
+        ren.renderBegin(target, ColorRGBA::gray(0.3, 0));
 
         auto targetSize = target.getDescription().size.convert<float>();
 
@@ -159,7 +159,7 @@ public:
 
         rot += rotSpeed * delta;
 
-        ren.renderBegin(target, ColorRGBA::grey(0.3, 0));
+        ren.renderBegin(target, ColorRGBA::gray(0.3, 0));
 
         auto targetSize = target.getDescription().size.convert<float>();
 

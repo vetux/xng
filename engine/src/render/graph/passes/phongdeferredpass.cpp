@@ -100,7 +100,7 @@ static const int MAX_LIGHTS = 10000;
         std::array<float, 4> cutOff_outerCutOff_constant_linear;
     };
 
-    struct ShaderUniformBuffer {
+    struct ShaderData {
 
     };
 #pragma pack(pop)

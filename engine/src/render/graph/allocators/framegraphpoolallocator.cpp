@@ -148,7 +148,7 @@ namespace xng {
         return *textureArrays[desc].at(index);
     }
 
-    ShaderBuffer &FrameGraphPoolAllocator::createShaderBuffer(const ShaderBufferDesc &desc) {
+    ShaderUniformBuffer &FrameGraphPoolAllocator::createShaderBuffer(const ShaderUniformBufferDesc &desc) {
         auto index = usedShaderBuffers[desc]++;
         if (shaderBuffers[desc].size() <= index) {
             shaderBuffers[desc].resize(usedShaderBuffers[desc]);
@@ -251,8 +251,8 @@ namespace xng {
                 textureArrays[buffer.getDescription()].erase(textureArrays[buffer.getDescription()].begin() + index);
                 break;
             }
-            case RenderObject::RENDER_OBJECT_SHADER_BUFFER: {
-                auto &buffer = dynamic_cast<ShaderBuffer &>(obj);
+            case RenderObject::RENDER_OBJECT_SHADER_UNIFORM_BUFFER: {
+                auto &buffer = dynamic_cast<ShaderUniformBuffer &>(obj);
                 usedShaderBuffers[buffer.getDescription()]--;
                 bool found = false;
                 long index = 0;
@@ -391,8 +391,8 @@ namespace xng {
                 textureArrays.at(buffer.getDescription()).erase(textureArrays.at(buffer.getDescription()).begin() + index);
                 return ret;
             }
-            case RenderObject::RENDER_OBJECT_SHADER_BUFFER: {
-                auto &buffer = dynamic_cast<ShaderBuffer &>(obj);
+            case RenderObject::RENDER_OBJECT_SHADER_UNIFORM_BUFFER: {
+                auto &buffer = dynamic_cast<ShaderUniformBuffer &>(obj);
                 usedShaderBuffers[buffer.getDescription()]--;
                 bool found = false;
                 long index = 0;

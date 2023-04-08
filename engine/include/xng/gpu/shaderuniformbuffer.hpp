@@ -17,27 +17,43 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SHADERBUFFER_HPP
-#define XENGINE_SHADERBUFFER_HPP
+#ifndef XENGINE_SHADERUNIFORMBUFFER_HPP
+#define XENGINE_SHADERUNIFORMBUFFER_HPP
 
 #include "renderbuffer.hpp"
 #include "gpufence.hpp"
 
-#include "shaderbufferdesc.hpp"
+#include "shaderuniformbufferdesc.hpp"
 
 namespace xng {
     /**
-     * A bindable shader buffer, eg uniform buffer in opengl
+     * A bindable fixed size shader uniform buffer.
+     *      eg GLSL
+     *
+     *      layout(binding = 0, std140) uniform ShaderUniformBuffer
+     *      {
+     *         ...
+     *      };
+     *
+     *      or HLSL
+     *
+     *      cbuffer ShaderUniformBuffer : register(b0)
+     *      {
+     *          ...
+     *      };
+     *
+     * Should only be used for very small data because it must fit in directx constant buffers (4096 vectors with 32bit components)
+     * as well as opengl uniform buffers (16kb)
      */
-    class XENGINE_EXPORT ShaderBuffer : public RenderBuffer {
+    class XENGINE_EXPORT ShaderUniformBuffer : public RenderBuffer {
     public:
-        ~ShaderBuffer() override = default;
+        ~ShaderUniformBuffer() override = default;
 
         Type getType() override {
-            return RENDER_OBJECT_SHADER_BUFFER;
+            return RENDER_OBJECT_SHADER_UNIFORM_BUFFER;
         }
 
-        virtual const ShaderBufferDesc &getDescription() = 0;
+        virtual const ShaderUniformBufferDesc &getDescription() = 0;
 
         RenderBufferType getBufferType() override {
             return getDescription().bufferType;
@@ -57,4 +73,4 @@ namespace xng {
         }
     };
 }
-#endif //XENGINE_SHADERBUFFER_HPP
+#endif //XENGINE_SHADERUNIFORMBUFFER_HPP

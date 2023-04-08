@@ -34,7 +34,7 @@ namespace xng {
         typedef std::variant<
         std::reference_wrapper<TextureBuffer>,
         std::reference_wrapper<TextureArrayBuffer>,
-        std::reference_wrapper<ShaderBuffer>
+        std::reference_wrapper<ShaderUniformBuffer>
         > ShaderData;
 
         static RenderPipelineBindingType getShaderDataType(const ShaderData &data){

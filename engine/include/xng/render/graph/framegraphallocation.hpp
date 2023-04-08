@@ -25,7 +25,7 @@
 #include "xng/gpu/renderobject.hpp"
 #include "xng/gpu/texturebufferdesc.hpp"
 #include "xng/gpu/renderpipelinedesc.hpp"
-#include "xng/gpu/shaderbufferdesc.hpp"
+#include "xng/gpu/shaderuniformbufferdesc.hpp"
 
 #include "xng/asset/shader.hpp"
 
@@ -46,7 +46,7 @@ namespace xng {
                 VertexArrayObjectDesc,
                 TextureBufferDesc,
                 TextureArrayBufferDesc,
-                ShaderBufferDesc,
+                ShaderUniformBufferDesc,
                 RenderTargetDesc> allocationData;
     };
 }

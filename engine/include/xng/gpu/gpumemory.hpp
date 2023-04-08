@@ -25,7 +25,7 @@
 
 #include "xng/gpu/indexbuffer.hpp"
 #include "xng/gpu/vertexbuffer.hpp"
-#include "xng/gpu/shaderbuffer.hpp"
+#include "xng/gpu/shaderuniformbuffer.hpp"
 #include "xng/gpu/texturebuffer.hpp"
 #include "xng/gpu/texturearraybuffer.hpp"
 
@@ -65,7 +65,7 @@ namespace xng {
          * @param desc
          * @return The required size in bytes of the hardware buffer for the given description
          */
-        virtual size_t getRequiredBufferSize(const ShaderBufferDesc &desc) = 0;
+        virtual size_t getRequiredBufferSize(const ShaderUniformBufferDesc &desc) = 0;
 
         /**
          * @param desc
@@ -94,7 +94,7 @@ namespace xng {
 
         virtual std::unique_ptr<IndexBuffer> createIndexBuffer(const IndexBufferDesc &desc, size_t offset) = 0;
 
-        virtual std::unique_ptr<ShaderBuffer> createShaderBuffer(const ShaderBufferDesc &desc, size_t offset) = 0;
+        virtual std::unique_ptr<ShaderUniformBuffer> createShaderBuffer(const ShaderUniformBufferDesc &desc, size_t offset) = 0;
 
         virtual std::unique_ptr<TextureBuffer> createTextureBuffer(const TextureBufferDesc &desc, size_t offset) = 0;
 

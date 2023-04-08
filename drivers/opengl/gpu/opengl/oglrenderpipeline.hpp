@@ -27,7 +27,7 @@
 #include "opengl_include.hpp"
 
 #include "gpu/opengl/oglrendertarget.hpp"
-#include "gpu/opengl/oglshaderbuffer.hpp"
+#include "gpu/opengl/oglshaderuniformbuffer.hpp"
 #include "gpu/opengl/oglvertexbuffer.hpp"
 #include "gpu/opengl/ogltexturebuffer.hpp"
 #include "gpu/opengl/oglfence.hpp"

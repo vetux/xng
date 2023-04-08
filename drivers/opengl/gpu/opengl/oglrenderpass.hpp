@@ -272,7 +272,7 @@ namespace xng::opengl {
                     }
                         break;
                     case 2: {
-                        auto shaderBuffer = dynamic_cast<OGLShaderBuffer *>(&std::get<std::reference_wrapper<ShaderBuffer>>(
+                        auto shaderBuffer = dynamic_cast<OGLShaderUniformBuffer *>(&std::get<std::reference_wrapper<ShaderUniformBuffer>>(
                                 b).get());
                         glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, shaderBuffer->ubo);
                     }

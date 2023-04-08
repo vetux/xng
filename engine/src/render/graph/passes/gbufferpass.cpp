@@ -361,7 +361,7 @@ namespace xng {
         });
         builder.read(renderPassRes);
 
-        shaderBufferRes = builder.createShaderBuffer(ShaderBufferDesc{
+        shaderBufferRes = builder.createShaderBuffer(ShaderUniformBufferDesc{
                 .bufferType = RenderBufferType::HOST_VISIBLE,
                 .size = sizeof(ShaderBufferData)
         });
@@ -530,7 +530,7 @@ namespace xng {
         auto &pipeline = resources.get<RenderPipeline>(renderPipelineRes);
         auto &pass = resources.get<RenderPass>(renderPassRes);
 
-        auto &shaderBuffer = resources.get<ShaderBuffer>(shaderBufferRes);
+        auto &shaderBuffer = resources.get<ShaderUniformBuffer>(shaderBufferRes);
         auto &vertexArrayObject = resources.get<VertexArrayObject>(vertexArrayObjectRes);
         auto &vertexBuffer = resources.get<VertexBuffer>(vertexBufferRes);
         auto &indexBuffer = resources.get<IndexBuffer>(indexBufferRes);

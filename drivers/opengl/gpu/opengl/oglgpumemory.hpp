@@ -47,7 +47,7 @@ namespace xng::opengl {
             return 1;
         }
 
-        size_t getRequiredBufferSize(const ShaderBufferDesc &desc) override {
+        size_t getRequiredBufferSize(const ShaderUniformBufferDesc &desc) override {
             return 1;
         }
 
@@ -63,7 +63,7 @@ namespace xng::opengl {
 
         std::unique_ptr<IndexBuffer> createIndexBuffer(const IndexBufferDesc &desc, size_t offset) override;
 
-        std::unique_ptr<ShaderBuffer> createShaderBuffer(const ShaderBufferDesc &desc, size_t offset) override;
+        std::unique_ptr<ShaderUniformBuffer> createShaderBuffer(const ShaderUniformBufferDesc &desc, size_t offset) override;
 
         std::unique_ptr<TextureBuffer> createTextureBuffer(const TextureBufferDesc &desc, size_t offset) override;
 

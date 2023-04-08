@@ -60,7 +60,7 @@ namespace xng {
 
         FrameGraphResource createVertexArrayObject(const VertexArrayObjectDesc &desc);
 
-        FrameGraphResource createShaderBuffer(const ShaderBufferDesc &desc);
+        FrameGraphResource createShaderBuffer(const ShaderUniformBufferDesc &desc);
 
         /**
          * Declare that the pass will write to the specified resource handle.
