@@ -120,7 +120,7 @@ namespace xng::opengl {
             destructor(this);
         }
 
-        std::unique_ptr<GpuFence> copy(RenderBuffer &source) override {
+        std::unique_ptr<GpuFence> copy(TextureArrayBuffer &source) override {
             auto &buf = dynamic_cast<OGLTextureArrayBuffer &>(source);
             if (buf.desc.textureDesc != desc.textureDesc) {
                 throw std::runtime_error("Cannot copy texture array buffer");
@@ -147,10 +147,6 @@ namespace xng::opengl {
             checkGLError();
 
             return std::make_unique<OGLFence>();
-        }
-
-        size_t getSize() override {
-            return 0;
         }
 
         const TextureArrayBufferDesc &getDescription() override {

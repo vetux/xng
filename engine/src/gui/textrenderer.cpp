@@ -32,8 +32,8 @@ namespace xng {
                 : character(character), texture(std::move(texture)) {}
 
         Vec2f getPosition(const Vec2f &origin) const {
-            return {position.x + (origin.x + numeric_cast<float>(character.get().bearing.x)),
-                    (position.y + (origin.y - numeric_cast<float>(character.get().bearing.y)))};
+            return {position.x + (origin.x + static_cast<float>(character.get().bearing.x)),
+                    (position.y + (origin.y - static_cast<float>(character.get().bearing.y)))};
         }
     };
 
@@ -138,14 +138,14 @@ namespace xng {
 
             RenderChar renderChar(character, textures.at(c));
 
-            float posy = (numeric_cast<float>(lineIndex) * numeric_cast<float>(layout.lineSpacing))
-                         + (numeric_cast<float>(lineIndex) * numeric_cast<float>(layout.lineHeight));
+            float posy = (static_cast<float>(lineIndex) * static_cast<float>(layout.lineSpacing))
+                         + (static_cast<float>(lineIndex) * static_cast<float>(layout.lineHeight));
 
             renderChar.position.x = posx;
             renderChar.position.y = posy;
 
             // Add horizontal advance
-            posx += numeric_cast<float>(character.advance);
+            posx += static_cast<float>(character.advance);
 
             if (lines.size() == 1 && largestCharacterOfFirstLine.image.getHeight() < character.image.getHeight())
                 largestCharacterOfFirstLine = character;
@@ -178,7 +178,7 @@ namespace xng {
             }
         }
 
-        auto origin = Vec2f(0, numeric_cast<float>(layout.lineHeight));
+        auto origin = Vec2f(0, static_cast<float>(layout.lineHeight));
 
         auto target = ren2d->getDevice().createRenderTarget({.size = size.convert<int>()});
 

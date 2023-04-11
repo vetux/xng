@@ -152,7 +152,7 @@ namespace xng {
         auto index = usedShaderBuffers[desc]++;
         if (shaderBuffers[desc].size() <= index) {
             shaderBuffers[desc].resize(usedShaderBuffers[desc]);
-            shaderBuffers[desc].at(index) = device->createShaderBuffer(desc);
+            shaderBuffers[desc].at(index) = device->createShaderUniformBuffer(desc);
         }
         return *shaderBuffers[desc].at(index);
     }

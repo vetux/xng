@@ -41,6 +41,9 @@ namespace xng {
         size_t availableDeviceMemory = 0;
 
         std::set<RenderDeviceCapability> capabilities;
+
+        size_t uniformBufferMaxSize;
+        size_t storageBufferMaxSize;
     };
 }
 

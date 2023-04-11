@@ -4,7 +4,6 @@
 #include <cmath>
 #include <array>
 
-#include "xng/util/numeric_cast.hpp"
 #include "xng/util/hashcombine.hpp"
 
 #include "xng/io/messageable.hpp"
@@ -91,7 +90,7 @@ namespace xng {
 
         template<typename R>
         Vector2<R> convert() const {
-            return Vector2<R>(numeric_cast<R>(x), numeric_cast<R>(y));
+            return Vector2<R>(static_cast<R>(x), static_cast<R>(y));
         }
 
         friend Vector2<T> operator+(const Vector2<T> &lhs, const Vector2<T> &rhs) {

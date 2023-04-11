@@ -22,7 +22,7 @@
 #include "oalaudiobuffer.hpp"
 #include "oalcheckerror.hpp"
 
-#include "xng/util/numeric_cast.hpp"
+
 
 namespace xng {
     int convertFormat(AudioFormat format) {
@@ -54,8 +54,8 @@ namespace xng {
         alBufferData(handle,
                      convertFormat(format),
                      buffer.data(),
-                     numeric_cast<ALsizei>(buffer.size()),
-                     numeric_cast<ALsizei>(frequency));
+                     static_cast<ALsizei>(buffer.size()),
+                     static_cast<ALsizei>(frequency));
         checkOALError();
     }
 }

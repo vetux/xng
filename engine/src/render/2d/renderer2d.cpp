@@ -305,7 +305,7 @@ namespace xng {
                 {ShaderStage::FRAGMENT, fsTexSource.getShader()}
         };
         desc.bindings = {
-                RenderPipelineBindingType::BIND_SHADER_BUFFER,
+                RenderPipelineBindingType::BIND_SHADER_UNIFORM_BUFFER,
                 RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
                 RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
                 RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
@@ -807,7 +807,7 @@ namespace xng {
 
         ShaderUniformBufferDesc shaderBufferDesc;
         shaderBufferDesc.size = sizeof(ShaderData);
-        auto shaderBuffer = renderDevice.createShaderBuffer(shaderBufferDesc);
+        auto shaderBuffer = renderDevice.createShaderUniformBuffer(shaderBufferDesc);
 
         renderPass->bindShaderData({
                                            *shaderBuffer,
@@ -1117,7 +1117,7 @@ namespace xng {
 
             ShaderUniformBufferDesc shaderBufferDesc;
             shaderBufferDesc.size = sizeof(ShaderDataMultiDraw);
-            auto shaderBuffer = renderDevice.createShaderBuffer(shaderBufferDesc);
+            auto shaderBuffer = renderDevice.createShaderUniformBuffer(shaderBufferDesc);
 
             renderPass->bindShaderData({
                                                *shaderBuffer,

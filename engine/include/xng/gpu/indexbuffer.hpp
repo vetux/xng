@@ -48,10 +48,6 @@ namespace xng {
         }
 
         virtual const IndexBufferDesc &getDescription() = 0;
-
-        virtual std::unique_ptr<GpuFence> upload(size_t offset,
-                                                 const uint8_t *data,
-                                                 size_t dataSize) = 0;
     };
 }
 #endif //XENGINE_INDEXBUFFER_HPP

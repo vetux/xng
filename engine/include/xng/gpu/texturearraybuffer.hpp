@@ -31,29 +31,17 @@ namespace xng {
     /**
      * Represents a bindable texture array containing textures of the same type eg sampler2DArray in glsl.
      */
-    class TextureArrayBuffer : public RenderBuffer {
+    class TextureArrayBuffer : public RenderObject {
     public:
         ~TextureArrayBuffer() override = default;
 
         virtual const TextureArrayBufferDesc &getDescription() = 0;
 
-        RenderBufferType getBufferType() override {
-            return getDescription().textureDesc.bufferType;
-        }
-
         Type getType() override {
             return RENDER_OBJECT_TEXTURE_ARRAY_BUFFER;
         }
 
-        std::unique_ptr<GpuFence> copy(RenderBuffer &source) override = 0;
-
-        std::unique_ptr<GpuFence> copy(RenderBuffer &source,
-                                       size_t readOffset,
-                                       size_t writeOffset,
-                                       size_t count) override {
-            static_assert(true, "Sub copy operations are not available for texture array buffers because the memory is managed by the driver.");
-            throw std::runtime_error("Cannot sub texture array buffer");
-        }
+        virtual std::unique_ptr<GpuFence> copy(TextureArrayBuffer &source) = 0;
 
         /**
          * Upload the image buffer.

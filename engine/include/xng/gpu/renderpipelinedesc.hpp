@@ -43,7 +43,8 @@ namespace xng {
     enum RenderPipelineBindingType : int {
         BIND_TEXTURE_BUFFER,
         BIND_TEXTURE_ARRAY_BUFFER,
-        BIND_SHADER_BUFFER
+        BIND_SHADER_UNIFORM_BUFFER,
+        BIND_SHADER_STORAGE_BUFFER
     };
 
     struct RenderPipelineDesc {

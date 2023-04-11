@@ -119,7 +119,7 @@ public:
                             {VERTEX,   vsb.getShader()},
                             {FRAGMENT, fsb.getShader()}
                     },
-                    .bindings = {BIND_SHADER_BUFFER,
+                    .bindings = {BIND_SHADER_UNIFORM_BUFFER,
                                  BIND_TEXTURE_BUFFER},
                     .primitive = TRIANGLES,
                     .vertexLayout = mesh.vertexLayout,

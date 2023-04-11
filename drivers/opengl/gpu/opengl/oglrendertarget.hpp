@@ -268,7 +268,7 @@ namespace xng::opengl {
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-            attachedColor = numeric_cast<int>(textures.size());
+            attachedColor = static_cast<int>(textures.size());
 
             checkGLError();
 
@@ -334,7 +334,7 @@ namespace xng::opengl {
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-            attachedColor = numeric_cast<int>(textures.size());
+            attachedColor = static_cast<int>(textures.size());
 
             checkGLError();
             return std::make_unique<OGLFence>();

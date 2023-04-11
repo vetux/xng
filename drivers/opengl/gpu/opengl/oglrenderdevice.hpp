@@ -31,6 +31,7 @@
 #include "gpu/opengl/ogltexturebuffer.hpp"
 #include "gpu/opengl/oglvertexbuffer.hpp"
 #include "gpu/opengl/oglshaderuniformbuffer.hpp"
+#include "gpu/opengl/oglshaderstoragebuffer.hpp"
 #include "gpu/opengl/oglindexbuffer.hpp"
 #include "gpu/opengl/oglvertexbuffer.hpp"
 #include "gpu/opengl/oglvertexarrayobject.hpp"
@@ -53,6 +54,11 @@ namespace xng::opengl {
             info.capabilities.insert(CAPABILITY_BASE_VERTEX);
             info.capabilities.insert(CAPABILITY_INSTANCING);
             info.capabilities.insert(CAPABILITY_MULTI_DRAW);
+            GLint tmp;
+            glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &tmp);
+            info.uniformBufferMaxSize = tmp;
+            glGetIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &tmp);
+            info.storageBufferMaxSize = tmp;
         }
 
         ~OGLRenderDevice() override {
@@ -107,8 +113,12 @@ namespace xng::opengl {
             return std::make_unique<OGLIndexBuffer>(destructor, desc);
         }
 
-        std::unique_ptr<ShaderUniformBuffer> createShaderBuffer(const ShaderUniformBufferDesc &desc) override {
+        std::unique_ptr<ShaderUniformBuffer> createShaderUniformBuffer(const ShaderUniformBufferDesc &desc) override {
             return std::make_unique<OGLShaderUniformBuffer>(destructor, desc);
+        }
+
+        std::unique_ptr<ShaderStorageBuffer> createShaderStorageBuffer(const ShaderStorageBufferDesc &desc) override {
+            return std::make_unique<OGLShaderStorageBuffer>(destructor, desc);
         }
 
         std::unique_ptr<TextureBuffer> createTextureBuffer(const TextureBufferDesc &desc) override {

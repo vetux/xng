@@ -31,7 +31,7 @@ namespace xng {
               animationDuration(animationDuration),
               clampDelta(clampDelta),
               loop(loop) {
-        frameTime = animationDuration / numeric_cast<float>(keyframes.size());
+        frameTime = animationDuration / static_cast<float>(keyframes.size());
         initFrames();
     }
 
@@ -45,8 +45,8 @@ namespace xng {
         int totalFrames = 0;
         for (auto &v: keyframes)
             totalFrames += v.duration;
-        animationDuration = (1.0f / numeric_cast<float>(animationFps)) * numeric_cast<float>(totalFrames);
-        frameTime = animationDuration / numeric_cast<float>(keyframes.size());
+        animationDuration = (1.0f / static_cast<float>(animationFps)) * static_cast<float>(totalFrames);
+        frameTime = animationDuration / static_cast<float>(keyframes.size());
         initFrames();
     }
 
@@ -73,7 +73,7 @@ namespace xng {
             }
         }
 
-        auto frame = numeric_cast<size_t>(time / frameTime);
+        auto frame = static_cast<size_t>(time / frameTime);
         if (frame >= frames.size())
             frame = frames.size() - 1;
         return keyframes.at(frames.at(frame)).sprite;
@@ -93,7 +93,7 @@ namespace xng {
             int totalFrames = 0;
             for (auto &v: keyframes)
                 totalFrames += v.duration;
-            animationDuration = (1.0f / numeric_cast<float>(fps)) * numeric_cast<float>(totalFrames);
+            animationDuration = (1.0f / static_cast<float>(fps)) * static_cast<float>(totalFrames);
         } else {
             message.value("animationDuration", animationDuration);
         }
@@ -102,7 +102,7 @@ namespace xng {
 
         initFrames();
 
-        frameTime = animationDuration / numeric_cast<float>(frames.size());
+        frameTime = animationDuration / static_cast<float>(frames.size());
         time = 0;
 
         return *this;

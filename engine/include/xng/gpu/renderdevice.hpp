@@ -33,6 +33,7 @@
 #include "xng/gpu/texturebuffer.hpp"
 #include "xng/gpu/vertexbuffer.hpp"
 #include "xng/gpu/shaderuniformbuffer.hpp"
+#include "xng/gpu/shaderstoragebuffer.hpp"
 #include "xng/gpu/renderpass.hpp"
 
 #include "xng/gpu/renderpipelinedesc.hpp"
@@ -108,7 +109,9 @@ namespace xng {
 
         virtual std::unique_ptr<IndexBuffer> createIndexBuffer(const IndexBufferDesc &desc) = 0;
 
-        virtual std::unique_ptr<ShaderUniformBuffer> createShaderBuffer(const ShaderUniformBufferDesc &desc) = 0;
+        virtual std::unique_ptr<ShaderUniformBuffer> createShaderUniformBuffer(const ShaderUniformBufferDesc &desc) = 0;
+
+        virtual std::unique_ptr<ShaderStorageBuffer> createShaderStorageBuffer(const ShaderStorageBufferDesc &desc) = 0;
 
         virtual std::unique_ptr<TextureBuffer> createTextureBuffer(const TextureBufferDesc &desc) = 0;
 

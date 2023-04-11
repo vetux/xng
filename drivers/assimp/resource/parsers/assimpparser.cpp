@@ -175,19 +175,19 @@ namespace xng {
                     }
                     switch (boneId) {
                         case 0:
-                            boneIds.x = numeric_cast<int>(pair.second);
+                            boneIds.x = static_cast<int>(pair.second);
                             boneWeights.x = pair.first;
                             break;
                         case 1:
-                            boneIds.y = numeric_cast<int>(pair.second);
+                            boneIds.y = static_cast<int>(pair.second);
                             boneWeights.y = pair.first;
                             break;
                         case 2:
-                            boneIds.z = numeric_cast<int>(pair.second);
+                            boneIds.z = static_cast<int>(pair.second);
                             boneWeights.z = pair.first;
                             break;
                         case 3:
-                            boneIds.w = numeric_cast<int>(pair.second);
+                            boneIds.w = static_cast<int>(pair.second);
                             boneWeights.w = pair.first;
                             break;
                         default:

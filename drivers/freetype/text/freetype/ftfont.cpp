@@ -94,7 +94,7 @@ namespace xng {
             buffer = ImageRGBA();
         }
 
-        int advanceX = numeric_cast<int>(face->glyph->advance.x) >> 6;
+        int advanceX = static_cast<int>(face->glyph->advance.x) >> 6;
 
         return std::move(Character(c, std::move(buffer), bearing, advanceX));
     }
@@ -102,7 +102,7 @@ namespace xng {
     std::map<char, Character> FTFont::renderAscii() {
         std::map<char, Character> ret;
         for (int i = 0; i <= 127; i++) {
-            ret[numeric_cast<char>(i)] = std::move(renderAscii(numeric_cast<char>(i)));
+            ret[static_cast<char>(i)] = std::move(renderAscii(static_cast<char>(i)));
         }
         return ret;
     }

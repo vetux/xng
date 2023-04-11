@@ -277,6 +277,11 @@ namespace xng::opengl {
                         glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, shaderBuffer->ubo);
                     }
                         break;
+                    case 3: {
+                        auto buf = dynamic_cast<OGLShaderStorageBuffer *>(
+                                &std::get<std::reference_wrapper<ShaderStorageBuffer>>(b).get());
+                        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingPoint, buf->ssbo);
+                    }
                 }
             }
             checkGLError();
@@ -297,8 +302,11 @@ namespace xng::opengl {
                             glActiveTexture(getTextureSlot(bindingPoint));
                             glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
                             break;
-                        case BIND_SHADER_BUFFER:
+                        case BIND_SHADER_UNIFORM_BUFFER:
                             glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, 0);
+                            break;
+                        case BIND_SHADER_STORAGE_BUFFER:
+                            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingPoint, 0);
                             break;
                     }
                 }
@@ -330,7 +338,11 @@ namespace xng::opengl {
                             throw std::runtime_error("Invalid bound shader data type at index " + std::to_string(i));
                         break;
                     case 2:
-                        if (mPipeline->desc.bindings.at(i) != BIND_SHADER_BUFFER)
+                        if (mPipeline->desc.bindings.at(i) != BIND_SHADER_UNIFORM_BUFFER)
+                            throw std::runtime_error("Invalid bound shader data type at index " + std::to_string(i));
+                        break;
+                    case 3:
+                        if (mPipeline->desc.bindings.at(i) != BIND_SHADER_STORAGE_BUFFER)
                             throw std::runtime_error("Invalid bound shader data type at index " + std::to_string(i));
                         break;
                 }

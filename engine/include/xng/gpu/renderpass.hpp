@@ -32,19 +32,22 @@ namespace xng {
     class RenderPass : public RenderObject {
     public:
         typedef std::variant<
-        std::reference_wrapper<TextureBuffer>,
-        std::reference_wrapper<TextureArrayBuffer>,
-        std::reference_wrapper<ShaderUniformBuffer>
+                std::reference_wrapper<TextureBuffer>,
+                std::reference_wrapper<TextureArrayBuffer>,
+                std::reference_wrapper<ShaderUniformBuffer>,
+                std::reference_wrapper<ShaderStorageBuffer>
         > ShaderData;
 
-        static RenderPipelineBindingType getShaderDataType(const ShaderData &data){
-            switch(data.index()){
+        static RenderPipelineBindingType getShaderDataType(const ShaderData &data) {
+            switch (data.index()) {
                 case 0:
                     return BIND_TEXTURE_BUFFER;
                 case 1:
                     return BIND_TEXTURE_ARRAY_BUFFER;
                 case 2:
-                    return BIND_SHADER_BUFFER;
+                    return BIND_SHADER_UNIFORM_BUFFER;
+                case 3:
+                    return BIND_SHADER_STORAGE_BUFFER;
                 default:
                     throw std::runtime_error("Invalid data index");
             }
@@ -73,8 +76,8 @@ namespace xng {
          * @param viewportSize
          */
         virtual void beginRenderPass(RenderTarget &target,
-                                 Vec2i viewportOffset,
-                                 Vec2i viewportSize) = 0;
+                                     Vec2i viewportOffset,
+                                     Vec2i viewportSize) = 0;
 
         /**
          * Run the recorded drawing operations.

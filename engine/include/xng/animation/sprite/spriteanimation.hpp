@@ -73,7 +73,7 @@ namespace xng {
 
         void setDuration(float duration) {
             animationDuration = duration;
-            frameTime = animationDuration / numeric_cast<float>(keyframes.size());
+            frameTime = animationDuration / static_cast<float>(keyframes.size());
         }
 
         bool isClampingDelta() const { return clampDelta; }

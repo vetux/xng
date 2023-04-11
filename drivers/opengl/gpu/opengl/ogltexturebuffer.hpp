@@ -103,7 +103,7 @@ namespace xng::opengl {
                 for (unsigned int i = 0; i < 6; i++) {
                     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                                  0,
-                                 numeric_cast<GLint>(convert(desc.format)),
+                                 static_cast<GLint>(convert(desc.format)),
                                  desc.size.x,
                                  desc.size.y,
                                  0,
@@ -242,7 +242,7 @@ namespace xng::opengl {
             return ret;
         }
 
-        std::unique_ptr<GpuFence> copy(RenderBuffer &other) override {
+        std::unique_ptr<GpuFence> copy(TextureBuffer &other) override {
             auto &src = dynamic_cast<OGLTextureBuffer &>(other);
             glCopyImageSubData(src.handle,
                                GL_TEXTURE_2D,
@@ -261,10 +261,6 @@ namespace xng::opengl {
                                1);
             checkGLError();
             return std::make_unique<OGLFence>();
-        }
-
-        size_t getSize() override {
-            return desc.size.x * desc.size.y * getTextureFormatUnitSize();
         }
 
     protected:

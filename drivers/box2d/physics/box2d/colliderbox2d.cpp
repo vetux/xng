@@ -42,7 +42,7 @@ namespace xng {
             }
         }
         b2PolygonShape polyShape = b2PolygonShape();
-        polyShape.Set(points.data(), numeric_cast<int>(points.size()));
+        polyShape.Set(points.data(), static_cast<int>(points.size()));
         return polyShape;
     }
 

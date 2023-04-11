@@ -27,7 +27,6 @@
 #include "xng/audio/audioformat.hpp"
 #include "xng/asset/audio.hpp"
 
-#include "xng/util/numeric_cast.hpp"
 
 #include <sndfile.h>
 

@@ -24,7 +24,6 @@
 
 #include "xng/math/vector4.hpp"
 
-#include "xng/util/numeric_cast.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT ColorRGB {
@@ -87,144 +86,144 @@ namespace xng {
 
         static ColorRGBA black(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    numeric_cast<uint8_t>(0 * intensity),
-                    numeric_cast<uint8_t>(0 * intensity),
-                    numeric_cast<uint8_t>(0 * intensity),
+                    static_cast<uint8_t>(0 * intensity),
+                    static_cast<uint8_t>(0 * intensity),
+                    static_cast<uint8_t>(0 * intensity),
                     alpha
             };
         }
 
         static ColorRGBA silver(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    numeric_cast<uint8_t>(192 * intensity),
-                    numeric_cast<uint8_t>(192 * intensity),
-                    numeric_cast<uint8_t>(192 * intensity),
+                    static_cast<uint8_t>(192 * intensity),
+                    static_cast<uint8_t>(192 * intensity),
+                    static_cast<uint8_t>(192 * intensity),
                     alpha
             };
         }
 
         static ColorRGBA gray(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    numeric_cast<uint8_t>(128 * intensity),
-                    numeric_cast<uint8_t>(128 * intensity),
-                    numeric_cast<uint8_t>(128 * intensity),
+                    static_cast<uint8_t>(128 * intensity),
+                    static_cast<uint8_t>(128 * intensity),
+                    static_cast<uint8_t>(128 * intensity),
                     alpha
             };
         }
 
         static ColorRGBA white(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    numeric_cast<uint8_t>(255 * intensity),
-                    numeric_cast<uint8_t>(255 * intensity),
-                    numeric_cast<uint8_t>(255 * intensity),
+                    static_cast<uint8_t>(255 * intensity),
+                    static_cast<uint8_t>(255 * intensity),
+                    static_cast<uint8_t>(255 * intensity),
                     alpha
             };
         }
 
         static ColorRGBA maroon(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    numeric_cast<uint8_t>(128 * intensity),
-                    numeric_cast<uint8_t>(0 * intensity),
-                    numeric_cast<uint8_t>(0 * intensity),
+                    static_cast<uint8_t>(128 * intensity),
+                    static_cast<uint8_t>(0 * intensity),
+                    static_cast<uint8_t>(0 * intensity),
                     alpha
             };
         }
 
         static ColorRGBA red(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    numeric_cast<uint8_t>(255 * intensity),
-                    numeric_cast<uint8_t>(0 * intensity),
-                    numeric_cast<uint8_t>(0 * intensity),
+                    static_cast<uint8_t>(255 * intensity),
+                    static_cast<uint8_t>(0 * intensity),
+                    static_cast<uint8_t>(0 * intensity),
                     alpha
             };
         }
 
         static ColorRGBA purple(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    numeric_cast<uint8_t>(128 * intensity),
-                    numeric_cast<uint8_t>(0 * intensity),
-                    numeric_cast<uint8_t>(128 * intensity),
+                    static_cast<uint8_t>(128 * intensity),
+                    static_cast<uint8_t>(0 * intensity),
+                    static_cast<uint8_t>(128 * intensity),
                     alpha
             };
         }
 
         static ColorRGBA fuchsia(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    numeric_cast<uint8_t>(255 * intensity),
-                    numeric_cast<uint8_t>(0 * intensity),
-                    numeric_cast<uint8_t>(255 * intensity),
+                    static_cast<uint8_t>(255 * intensity),
+                    static_cast<uint8_t>(0 * intensity),
+                    static_cast<uint8_t>(255 * intensity),
                     alpha
             };
         }
 
         static ColorRGBA green(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    numeric_cast<uint8_t>(0 * intensity),
-                    numeric_cast<uint8_t>(128 * intensity),
-                    numeric_cast<uint8_t>(0 * intensity),
+                    static_cast<uint8_t>(0 * intensity),
+                    static_cast<uint8_t>(128 * intensity),
+                    static_cast<uint8_t>(0 * intensity),
                     alpha
             };
         }
 
         static ColorRGBA lime(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    numeric_cast<uint8_t>(0 * intensity),
-                    numeric_cast<uint8_t>(255 * intensity),
-                    numeric_cast<uint8_t>(0 * intensity),
+                    static_cast<uint8_t>(0 * intensity),
+                    static_cast<uint8_t>(255 * intensity),
+                    static_cast<uint8_t>(0 * intensity),
                     alpha
             };
         }
 
         static ColorRGBA olive(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    numeric_cast<uint8_t>(128 * intensity),
-                    numeric_cast<uint8_t>(128 * intensity),
-                    numeric_cast<uint8_t>(0 * intensity),
+                    static_cast<uint8_t>(128 * intensity),
+                    static_cast<uint8_t>(128 * intensity),
+                    static_cast<uint8_t>(0 * intensity),
                     alpha
             };
         }
 
         static ColorRGBA yellow(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    numeric_cast<uint8_t>(255 * intensity),
-                    numeric_cast<uint8_t>(255 * intensity),
-                    numeric_cast<uint8_t>(0 * intensity),
+                    static_cast<uint8_t>(255 * intensity),
+                    static_cast<uint8_t>(255 * intensity),
+                    static_cast<uint8_t>(0 * intensity),
                     alpha
             };
         }
 
         static ColorRGBA navy(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    numeric_cast<uint8_t>(0 * intensity),
-                    numeric_cast<uint8_t>(0 * intensity),
-                    numeric_cast<uint8_t>(128 * intensity),
+                    static_cast<uint8_t>(0 * intensity),
+                    static_cast<uint8_t>(0 * intensity),
+                    static_cast<uint8_t>(128 * intensity),
                     alpha
             };
         }
 
         static ColorRGBA blue(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    numeric_cast<uint8_t>(0 * intensity),
-                    numeric_cast<uint8_t>(0 * intensity),
-                    numeric_cast<uint8_t>(255 * intensity),
+                    static_cast<uint8_t>(0 * intensity),
+                    static_cast<uint8_t>(0 * intensity),
+                    static_cast<uint8_t>(255 * intensity),
                     alpha
             };
         }
 
         static ColorRGBA teal(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    numeric_cast<uint8_t>(0 * intensity),
-                    numeric_cast<uint8_t>(128 * intensity),
-                    numeric_cast<uint8_t>(128 * intensity),
+                    static_cast<uint8_t>(0 * intensity),
+                    static_cast<uint8_t>(128 * intensity),
+                    static_cast<uint8_t>(128 * intensity),
                     alpha
             };
         }
 
         static ColorRGBA aqua(float intensity = 1, uint8_t alpha = 255) {
             return {
-                    numeric_cast<uint8_t>(0 * intensity),
-                    numeric_cast<uint8_t>(255 * intensity),
-                    numeric_cast<uint8_t>(255 * intensity),
+                    static_cast<uint8_t>(0 * intensity),
+                    static_cast<uint8_t>(255 * intensity),
+                    static_cast<uint8_t>(255 * intensity),
                     alpha
             };
         }

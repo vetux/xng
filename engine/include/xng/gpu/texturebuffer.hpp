@@ -33,26 +33,17 @@ namespace xng {
     /**
      * A bindable texture buffer eg sampler2D in glsl
      */
-    class XENGINE_EXPORT TextureBuffer : public RenderBuffer {
+    class XENGINE_EXPORT TextureBuffer : public RenderObject {
     public:
         ~TextureBuffer() override = default;
 
         virtual const TextureBufferDesc &getDescription() = 0;
 
-        RenderBufferType getBufferType() override {
-            return getDescription().bufferType;
-        }
-
         Type getType() override {
             return RENDER_OBJECT_TEXTURE_BUFFER;
         }
 
-        std::unique_ptr<GpuFence>
-        copy(RenderBuffer &source, size_t readOffset, size_t writeOffset, size_t count) override {
-            static_assert(true,
-                          "Sub copy operations are not available for texture buffers because the memory is managed by the driver.");
-            throw std::runtime_error("Cannot sub copy texture buffer");
-        }
+        virtual std::unique_ptr<GpuFence> copy(TextureBuffer &source) = 0;
 
         /**
          * Upload the image buffer.

@@ -23,7 +23,6 @@
 #include <utility>
 
 #include "xng/font/font.hpp"
-#include "xng/util/numeric_cast.hpp"
 
 #include "xng/gpu/renderdevice.hpp"
 

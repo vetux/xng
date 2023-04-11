@@ -52,6 +52,16 @@ namespace xng {
                                                size_t count) = 0;
 
         /**
+         * Upload the given data to the buffer at the given offset.
+         *
+         * @param offset
+         * @param data
+         * @param dataSize
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> upload(size_t offset, const uint8_t *data, size_t dataSize) = 0;
+
+        /**
          * @return The size of the buffer in bytes
          */
         virtual size_t getSize() = 0;
