@@ -19,7 +19,18 @@
 
 #include "xng/render/graph/passes/phongdeferredpass.hpp"
 
+#include "xng/render/graph/framegraphbuilder.hpp"
+
+#include "xng/render/graph/passes/gbufferpass.hpp"
+#include "xng/render/graph/framegraphproperties.hpp"
+
+#include "xng/render/shaderinclude.hpp"
+
+#include "xng/geometry/vertexstream.hpp"
+
 static const char *SHADER_VERT_GEOMETRY = R"###(#version 460
+
+#include "phong.glsl"
 
 layout (location = 0) in vec3 vPosition;
 layout (location = 1) in vec2 vUv;
@@ -27,54 +38,151 @@ layout (location = 1) in vec2 vUv;
 layout(location = 0) out vec4 fPos;
 layout(location = 1) out vec2 fUv;
 
-layout(binding = 0, std140) uniform ShaderUniformBuffer
-{
-    mat4 mvp;
-    vec4 visualizeDepth_near_far;
+layout(binding = 0, std140) uniform ShaderUniformBuffer {
+    vec4 viewPosition;
 } globs;
 
-layout(binding = 1) uniform sampler2D tex;
+layout(binding = 1, std140) buffer PointLightsData
+{
+    PointLight lights[];
+} pLights;
+
+layout(binding = 2, std140) buffer SpotLightsData
+{
+    SpotLight lights[];
+} sLights;
+
+layout(binding = 3, std140) buffer DirectionalLightsData
+{
+    DirectionalLight lights[];
+} dLights;
+
+layout(binding = 4) uniform sampler2D gBufferPos;
+layout(binding = 5) uniform sampler2D gBufferNormal;
+layout(binding = 6) uniform sampler2D gBufferRoughnessMetallicAO;
+layout(binding = 7) uniform sampler2D gBufferAlbedo;
+layout(binding = 8) uniform sampler2D gBufferAmbient;
+layout(binding = 9) uniform sampler2D gBufferSpecular;
+layout(binding = 10) uniform isampler2D gBufferModelObject;
+layout(binding = 11) uniform sampler2D gBufferDepth;
 
 void main()
 {
-    fPos = (globs.mvp * vec4(vPosition, 1));
+    fPos = vec4(vPosition, 1);
     fUv = vUv;
-
     gl_Position = fPos;
 }
 )###";
 
 static const char *SHADER_FRAG_GEOMETRY = R"###(#version 460
 
+#include "phong.glsl"
+
 layout(location = 0) in vec4 fPos;
 layout(location = 1) in vec2 fUv;
 
 layout(location = 0) out vec4 oColor;
+layout(depth_any) out float gl_FragDepth;
 
-layout(binding = 0, std140) uniform ShaderUniformBuffer
-{
-    mat4 mvp;
-    vec4 visualizeDepth_near_far;
+layout(binding = 0, std140) uniform ShaderUniformBuffer {
+    vec4 viewPosition;
 } globs;
 
-layout(binding = 1) uniform sampler2D tex;
+layout(binding = 1, std140) buffer PointLightsData
+{
+    PointLight lights[];
+} pLights;
+
+layout(binding = 2, std140) buffer SpotLightsData
+{
+    SpotLight lights[];
+} sLights;
+
+layout(binding = 3, std140) buffer DirectionalLightsData
+{
+    DirectionalLight lights[];
+} dLights;
+
+layout(binding = 4) uniform sampler2D gBufferPos;
+layout(binding = 5) uniform sampler2D gBufferNormal;
+layout(binding = 6) uniform sampler2D gBufferRoughnessMetallicAO;
+layout(binding = 7) uniform sampler2D gBufferAlbedo;
+layout(binding = 8) uniform sampler2D gBufferAmbient;
+layout(binding = 9) uniform sampler2D gBufferSpecular;
+layout(binding = 10) uniform isampler2D gBufferModelObject;
+layout(binding = 11) uniform sampler2D gBufferDepth;
 
 void main() {
-    oColor = texture(tex, fUv);
-    if (globs.visualizeDepth_near_far.x != 0)
+    int model = texture(gBufferModelObject, fUv).x;
+    if (model == 1)
     {
-        float near = globs.visualizeDepth_near_far.y;
-        float far = globs.visualizeDepth_near_far.z;
-        float ndc = oColor.r * 2.0 - 1.0;
-        float linearDepth = 1 - ((2.0 * near * far) / (far + near - ndc * (far - near)) / far);
-        oColor = vec4(linearDepth, linearDepth, linearDepth, 1);
+        vec3 fPos = texture(gBufferPos, fUv).xyz;
+        vec3 fNorm = texture(gBufferNormal, fUv).xyz;
+        vec4 diffuseColor = texture(gBufferAlbedo, fUv);
+        vec4 specularColor = texture(gBufferSpecular, fUv);
+        float shininess = texture(gBufferRoughnessMetallicAO, fUv).x;
+
+        LightComponents comp;
+
+        for (int i = 0; i < pLights.lights.length(); i++)
+        {
+            PointLight light = pLights.lights[i];
+            LightComponents c = phong_point(fPos,
+                                            fNorm,
+                                            diffuseColor,
+                                            specularColor,
+                                            shininess,
+                                            globs.viewPosition.xyz,
+                                            mat3(1),
+                                            light);
+            comp.ambient += c.ambient;
+            comp.diffuse += c.diffuse;
+            comp.specular += c.specular;
+        }
+
+        for (int i = 0; i < sLights.lights.length(); i++)
+        {
+            SpotLight light = sLights.lights[i];
+            LightComponents c = phong_spot(fPos,
+                                            fNorm,
+                                            diffuseColor,
+                                            specularColor,
+                                            shininess,
+                                            globs.viewPosition.xyz,
+                                            mat3(1),
+                                            light);
+            comp.ambient += c.ambient;
+            comp.diffuse += c.diffuse;
+            comp.specular += c.specular;
+        }
+
+        for (int i = 0; i < dLights.lights.length(); i++)
+        {
+            DirectionalLight light = dLights.lights[i];
+            LightComponents c = phong_directional(fPos,
+                                                    fNorm,
+                                                    diffuseColor,
+                                                    specularColor,
+                                                    shininess,
+                                                    globs.viewPosition.xyz,
+                                                    mat3(1),
+                                                    light);
+            comp.ambient += c.ambient;
+            comp.diffuse += c.diffuse;
+            comp.specular += c.specular;
+        }
+
+        vec3 color = comp.ambient + comp.diffuse + comp.specular;
+        oColor = vec4(color, 1);
+        gl_FragDepth = texture(gBufferDepth, fUv).r;
+    } else {
+        oColor = vec4(0, 0, 0, 1);
+        gl_FragDepth = 1;
     }
 }
 )###";
 
 namespace xng {
-static const int MAX_LIGHTS = 10000;
-
 #pragma pack(push, 1)
     struct DirectionalLight {
         std::array<float, 4> ambient;
@@ -100,319 +208,323 @@ static const int MAX_LIGHTS = 10000;
         std::array<float, 4> cutOff_outerCutOff_constant_linear;
     };
 
-    struct ShaderData {
-
+    struct UniformBuffer {
+        std::array<float, 4> viewPosition{};
     };
 #pragma pack(pop)
 
-    PhongDeferredPass::PhongDeferredPass() {
-
+    std::vector<DirectionalLight> getDirLights(const std::vector<Light> &lights) {
+        std::vector<DirectionalLight> ret;
+        for (auto &l: lights) {
+            auto tmp = DirectionalLight{
+                    .ambient = Vec4f(l.ambient.x, l.ambient.y, l.ambient.z, 1).getMemory(),
+                    .diffuse = Vec4f(l.diffuse.x, l.diffuse.y, l.diffuse.z, 1).getMemory(),
+                    .specular = Vec4f(l.specular.x, l.specular.y, l.specular.z, 1).getMemory(),
+            };
+            auto euler = (Quaternion(l.direction) * l.transform.getRotation()).getEulerAngles();
+            tmp.direction = Vec4f(euler.x, euler.y, euler.z, 0).getMemory();
+            ret.emplace_back();
+        }
+        return ret;
     }
 
-    void PhongDeferredPass::setup(FrameGraphBuilder &builder) {
+    std::vector<PointLight> getPointLights(const std::vector<Light> &lights) {
+        std::vector<PointLight> ret;
+        for (auto &l: lights) {
+            auto tmp = PointLight{
+                    .ambient = Vec4f(l.ambient.x, l.ambient.y, l.ambient.z, 1).getMemory(),
+                    .diffuse = Vec4f(l.diffuse.x, l.diffuse.y, l.diffuse.z, 1).getMemory(),
+                    .specular = Vec4f(l.specular.x, l.specular.y, l.specular.z, 1).getMemory(),
+            };
+            tmp.position = Vec4f(l.transform.getPosition().x,
+                                 l.transform.getPosition().y,
+                                 l.transform.getPosition().z,
+                                 0).getMemory();
+            tmp.constant_linear_quadratic[0] = l.constant;
+            tmp.constant_linear_quadratic[1] = l.linear;
+            tmp.constant_linear_quadratic[2] = l.quadratic;
+            ret.emplace_back(tmp);
+        }
+        return ret;
+    }
 
+    std::vector<SpotLight> getSpotLights(const std::vector<Light> &lights) {
+        std::vector<SpotLight> ret;
+        for (auto &l: lights) {
+            auto tmp = SpotLight{
+                    .ambient = Vec4f(l.ambient.x, l.ambient.y, l.ambient.z, 1).getMemory(),
+                    .diffuse = Vec4f(l.diffuse.x, l.diffuse.y, l.diffuse.z, 1).getMemory(),
+                    .specular = Vec4f(l.specular.x, l.specular.y, l.specular.z, 1).getMemory(),
+            };
+            tmp.position = Vec4f(l.transform.getPosition().x,
+                                 l.transform.getPosition().y,
+                                 l.transform.getPosition().z,
+                                 0).getMemory();
+
+            auto euler = (Quaternion(l.direction) * l.transform.getRotation()).getEulerAngles();
+
+            tmp.direction_quadratic[0] = euler.x;
+            tmp.direction_quadratic[1] = euler.y;
+            tmp.direction_quadratic[2] = euler.z;
+            tmp.direction_quadratic[3] = l.quadratic;
+
+            tmp.cutOff_outerCutOff_constant_linear[0] = l.cutOff;
+            tmp.cutOff_outerCutOff_constant_linear[1] = l.outerCutOff;
+            tmp.cutOff_outerCutOff_constant_linear[2] = l.constant;
+            tmp.cutOff_outerCutOff_constant_linear[3] = l.linear;
+
+            ret.emplace_back(tmp);
+        }
+        return ret;
+    }
+
+    PhongDeferredPass::PhongDeferredPass() = default;
+
+    void PhongDeferredPass::setup(FrameGraphBuilder &builder) {
+        if (!vertexBufferRes.assigned) {
+            VertexBufferDesc desc;
+            desc.size = mesh.vertices.size() * mesh.vertexLayout.getSize();
+            vertexBufferRes = builder.createVertexBuffer(desc);
+
+            VertexArrayObjectDesc oDesc;
+            oDesc.vertexLayout = mesh.vertexLayout;
+            vertexArrayObjectRes = builder.createVertexArrayObject(oDesc);
+
+            builder.write(vertexBufferRes);
+        }
+
+        builder.persist(vertexBufferRes);
+        builder.persist(vertexArrayObjectRes);
+        builder.read(vertexBufferRes);
+        builder.read(vertexArrayObjectRes);
+
+        if (!pipelineRes.assigned) {
+            auto vs = ShaderSource(SHADER_VERT_GEOMETRY, "main", xng::VERTEX, xng::GLSL_460, false);
+            auto fs = ShaderSource(SHADER_FRAG_GEOMETRY, "main", xng::FRAGMENT, xng::GLSL_460, false);
+
+            vs = vs.preprocess(builder.getShaderCompiler(),
+                               ShaderInclude::getShaderIncludeCallback(),
+                               ShaderInclude::getShaderMacros(GLSL_460));
+            fs = fs.preprocess(builder.getShaderCompiler(),
+                               ShaderInclude::getShaderIncludeCallback(),
+                               ShaderInclude::getShaderMacros(GLSL_460));
+
+            vsb = vs.compile(builder.getShaderCompiler());
+            fsb = fs.compile(builder.getShaderCompiler());
+
+            pipelineRes = builder.createPipeline(RenderPipelineDesc{
+                    .shaders = {
+                            {VERTEX,   vsb.getShader()},
+                            {FRAGMENT, fsb.getShader()}
+                    },
+                    .bindings = {BIND_SHADER_UNIFORM_BUFFER,
+                                 BIND_SHADER_STORAGE_BUFFER,
+                                 BIND_SHADER_STORAGE_BUFFER,
+                                 BIND_SHADER_STORAGE_BUFFER,
+                                 BIND_TEXTURE_BUFFER,
+                                 BIND_TEXTURE_BUFFER,
+                                 BIND_TEXTURE_BUFFER,
+                                 BIND_TEXTURE_BUFFER,
+                                 BIND_TEXTURE_BUFFER,
+                                 BIND_TEXTURE_BUFFER,
+                                 BIND_TEXTURE_BUFFER,
+                                 BIND_TEXTURE_BUFFER},
+                    .primitive = TRIANGLES,
+                    .vertexLayout = mesh.vertexLayout,
+                    .clearColorValue = ColorRGBA(0, 0, 0, 0),
+                    .clearColor = true,
+                    .clearDepth = true,
+                    .enableDepthTest = true,
+                    .depthTestWrite = true,
+            });
+        }
+
+        builder.persist(pipelineRes);
+        builder.read(pipelineRes);
+
+        renderSize = builder.getBackBufferDescription().size
+                     * builder.getProperties().get<float>(FrameGraphProperties::RENDER_SCALE, 1);
+
+        targetRes = builder.createRenderTarget(RenderTargetDesc{
+                .size = renderSize,
+                .numberOfColorAttachments = 1,
+                .hasDepthStencilAttachment = true
+        });
+        builder.read(targetRes);
+
+        TextureBufferDesc desc;
+        desc.size = renderSize;
+        colorTextureRes = builder.createTextureBuffer(desc);
+        builder.write(colorTextureRes);
+
+        desc.format = DEPTH_STENCIL;
+        depthTextureRes = builder.createTextureBuffer(desc);
+        builder.write(depthTextureRes);
+
+        passRes = builder.createRenderPass(RenderPassDesc{
+                .numberOfColorAttachments = 1,
+                .hasDepthStencilAttachment = true});
+
+        builder.read(passRes);
+
+        uniformBufferRes = builder.createShaderUniformBuffer(ShaderUniformBufferDesc{.size =  sizeof(UniformBuffer)});
+        builder.read(uniformBufferRes);
+        builder.write(uniformBufferRes);
+
+        pointLights.clear();
+        spotLights.clear();
+        directionalLights.clear();
+        for (auto &l: builder.getScene().lights) {
+            switch (l.type) {
+                case LIGHT_POINT:
+                    pointLights.emplace_back(l);
+                    break;
+                case LIGHT_SPOT:
+                    spotLights.emplace_back(l);
+                    break;
+                case LIGHT_DIRECTIONAL:
+                    directionalLights.emplace_back(l);
+                    break;
+            }
+        }
+
+        pointLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+                .size = sizeof(PointLight) * pointLights.size()
+        });
+        builder.read(pointLightsBufferRes);
+        builder.write(pointLightsBufferRes);
+
+        spotLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+                .size = sizeof(SpotLight) * spotLights.size()
+        });
+        builder.read(spotLightsBufferRes);
+        builder.write(spotLightsBufferRes);
+
+        directionalLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+                .size = sizeof(DirectionalLight) * directionalLights.size()
+        });
+        builder.read(directionalLightsBufferRes);
+        builder.write(directionalLightsBufferRes);
+
+        gBufferPosition = builder.getSharedData().get<FrameGraphResource>(
+                GBufferPass::GEOMETRY_BUFFER_POSITION);
+        builder.read(gBufferPosition);
+
+        gBufferNormal = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_NORMAL);
+        builder.read(gBufferNormal);
+
+        gBufferTangent = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_TANGENT);
+        builder.read(gBufferTangent);
+
+        gBufferRoughnessMetallicAO = builder.getSharedData().get<FrameGraphResource>(
+                GBufferPass::GEOMETRY_BUFFER_ROUGHNESS_METALLIC_AO);
+        builder.read(gBufferRoughnessMetallicAO);
+
+        gBufferAlbedo = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_ALBEDO);
+        builder.read(gBufferAlbedo);
+
+        gBufferAmbient = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_AMBIENT);
+        builder.read(gBufferAmbient);
+
+        gBufferSpecular = builder.getSharedData().get<FrameGraphResource>(
+                GBufferPass::GEOMETRY_BUFFER_SPECULAR);
+        builder.read(gBufferSpecular);
+
+        gBufferModelObject = builder.getSharedData().get<FrameGraphResource>(
+                GBufferPass::GEOMETRY_BUFFER_MODEL_OBJECT);
+        builder.read(gBufferModelObject);
+
+        gBufferDepth = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_DEPTH);
+        builder.read(gBufferDepth);
+
+        cameraTransform = builder.getScene().cameraTransform;
+
+        builder.getSharedData().set(COLOR, colorTextureRes);
+        builder.getSharedData().set(DEPTH, depthTextureRes);
     }
 
     void PhongDeferredPass::execute(FrameGraphPassResources &resources) {
+        auto &target = resources.get<RenderTarget>(targetRes);
 
+        auto &pipeline = resources.get<RenderPipeline>(pipelineRes);
+        auto &pass = resources.get<RenderPass>(passRes);
+
+        auto &vertexBuffer = resources.get<VertexBuffer>(vertexBufferRes);
+        auto &vertexArrayObject = resources.get<VertexArrayObject>(vertexArrayObjectRes);
+
+        auto &uniformBuffer = resources.get<ShaderUniformBuffer>(uniformBufferRes);
+
+        auto &pointLightBuffer = resources.get<ShaderStorageBuffer>(pointLightsBufferRes);
+        auto &spotLightBuffer = resources.get<ShaderStorageBuffer>(spotLightsBufferRes);
+        auto &dirLightBuffer = resources.get<ShaderStorageBuffer>(directionalLightsBufferRes);
+
+        auto &colorTex = resources.get<TextureBuffer>(colorTextureRes);
+        auto &depthTex = resources.get<TextureBuffer>(depthTextureRes);
+
+        auto plights = getPointLights(pointLights);
+        auto slights = getSpotLights(spotLights);
+        auto dlights = getDirLights(directionalLights);
+
+        pointLightBuffer.upload(reinterpret_cast<const uint8_t *>(plights.data()), plights.size() * sizeof(PointLight));
+        spotLightBuffer.upload(reinterpret_cast<const uint8_t *>(slights.data()), slights.size() * sizeof(SpotLight));
+        dirLightBuffer.upload(reinterpret_cast<const uint8_t *>(dlights.data()),
+                              dlights.size() * sizeof(DirectionalLight));
+
+        if (!quadAllocated) {
+            quadAllocated = true;
+            auto verts = VertexStream().addVertices(mesh.vertices).getVertexBuffer();
+            vertexBuffer.upload(0,
+                                verts.data(),
+                                verts.size());
+            vertexArrayObject.bindBuffers(vertexBuffer);
+        }
+
+        UniformBuffer buf;
+        buf.viewPosition = Vec4f(cameraTransform.getPosition().x,
+                                 cameraTransform.getPosition().y,
+                                 cameraTransform.getPosition().z,
+                                 0).getMemory();
+        uniformBuffer.upload(buf);
+
+        auto &gBufPos = resources.get<TextureBuffer>(gBufferPosition);
+        auto &gBufNorm = resources.get<TextureBuffer>(gBufferNormal);
+        auto &gBufTan = resources.get<TextureBuffer>(gBufferTangent);
+        auto &gBufRoughnessMetallicAO = resources.get<TextureBuffer>(gBufferRoughnessMetallicAO);
+        auto &gBufAlbedo = resources.get<TextureBuffer>(gBufferAlbedo);
+        auto &gBufAmbient = resources.get<TextureBuffer>(gBufferAmbient);
+        auto &gBufSpecular = resources.get<TextureBuffer>(gBufferSpecular);
+        auto &gBufModelObject = resources.get<TextureBuffer>(gBufferModelObject);
+        auto &gBufDepth = resources.get<TextureBuffer>(gBufferDepth);
+
+        target.setColorAttachments({colorTex});
+        target.setDepthStencilAttachment(&depthTex);
+
+        pass.beginRenderPass(target, {}, target.getDescription().size);
+
+        pass.bindPipeline(pipeline);
+        pass.bindVertexArrayObject(vertexArrayObject);
+        pass.bindShaderData({
+                                    uniformBuffer,
+                                    pointLightBuffer,
+                                    spotLightBuffer,
+                                    dirLightBuffer,
+                                    gBufPos,
+                                    gBufNorm,
+                                    gBufRoughnessMetallicAO,
+                                    gBufAlbedo,
+                                    gBufAmbient,
+                                    gBufSpecular,
+                                    gBufModelObject,
+                                    gBufDepth
+                            });
+        pass.drawArray(RenderPass::DrawCall{.offset = 0, .count = mesh.vertices.size()});
+        pass.endRenderPass();
+
+        target.setColorAttachments({});
+        target.setDepthStencilAttachment(nullptr);
     }
 
     std::type_index PhongDeferredPass::getTypeIndex() const {
         return typeid(PhongDeferredPass);
     }
 }
-
-/*
-#include "xng/render/graph/passes/phongpass.hpp"
-
-#include "xng/render/shader/shaderinclude.hpp"
-
-#include "xng/math/rotation.hpp"
-
-#include "xng/render/graph/passes/compositepass.hpp"
-
-// TODO: Fix phong pass outputting artifacts when resizing the window with the mouse or changing gbuffer resolution.
-
-const char *SHADER_VERT_LIGHTING = R"###(#version 410 core
-
-layout (location = 0) in vec3 position;
-layout (location = 1) in vec3 normal;
-layout (location = 2) in vec2 uv;
-layout (location = 3) in vec3 tangent;
-layout (location = 4) in vec3 bitangent;
-layout (location = 5) in vec4 instanceRow0;
-layout (location = 6) in vec4 instanceRow1;
-layout (location = 7) in vec4 instanceRow2;
-layout (location = 8) in vec4 instanceRow3;
-
-layout (location = 0) out vec3 fPos;
-layout (location = 1) out vec3 fNorm;
-layout (location = 2) out vec2 fUv;
-layout (location = 3) out vec4 vPos;
-
-void main()
-{
-    fPos = position;
-    fNorm = normal;
-    fUv = uv;
-    vPos = vec4(position, 1);
-    gl_Position = vPos;
-}
-)###";
-
-const char *SHADER_FRAG_LIGHTING = R"###(#version 410 core
-
-#include "phong.glsl"
-
-layout (location = 0) in vec3 fPos;
-layout (location = 1) in vec3 fNorm;
-layout (location = 2) in vec2 fUv;
-
-layout (location = 0) out vec4 color;
-
-uniform sampler2DMS position;
-uniform sampler2DMS normal;
-uniform sampler2DMS tangent;
-uniform sampler2DMS texNormal;
-uniform sampler2DMS diffuse;
-uniform sampler2DMS ambient;
-uniform sampler2DMS specular;
-uniform sampler2DMS shininess;
-uniform sampler2DMS depth;
-
-uniform vec3 VIEW_POS;
-uniform int NUM_SAMPLES;
-
-LightComponents getSampleLightComponents(ivec2 coord, int sampleIndex)
-{
-    vec3 fragPosition = texelFetch(position, coord, sampleIndex).xyz;
-    vec3 fragNormal = texelFetch(normal, coord, sampleIndex).xyz;
-    vec3 fragTangent = texelFetch(tangent, coord, sampleIndex).xyz;
-    vec4 fragDiffuse = texelFetch(diffuse, coord, sampleIndex);
-    vec4 fragSpecular = texelFetch(specular, coord, sampleIndex);
-    float fragShininess = texelFetch(shininess, coord, sampleIndex).x;
-    vec3 fragTexNormal = texelFetch(texNormal, coord, sampleIndex).xyz;
-
-    if (length(fragTexNormal) > 0)
-    {
-        // Calculate lighting in tangent space, does not output correct value
-        mat3 TBN = transpose(mat3(cross(fragNormal, normalize(fragTangent - dot(fragTangent, fragNormal) * fragNormal)), fragTangent, fragNormal));
-
-        return mana_calculate_light(TBN * fragPosition,
-                                    fragTexNormal,
-                                    fragDiffuse,
-                                    fragSpecular,
-                                    fragShininess,
-                                    TBN * VIEW_POS,
-                                    TBN);
-    }
-    else
-    {
-        // Calculate lighting in world space
-        return mana_calculate_light(fragPosition,
-                                fragNormal,
-                                fragDiffuse,
-                                fragSpecular,
-                                fragShininess,
-                                VIEW_POS,
-                                mat3(1));
-    }
-}
-
-void main() {
-    ivec2 size = textureSize(position);
-    int samples = NUM_SAMPLES;
-    vec2 coordFloat = fUv * vec2(size.x, size.y);
-    ivec2 coord = ivec2(coordFloat.x, coordFloat.y);
-
-    float fDepth = texelFetch(depth, coord, gl_SampleID).x;
-
-    gl_FragDepth = fDepth;
-
-    if (fDepth < 1) {
-        LightComponents comp = getSampleLightComponents(coord, gl_SampleID);
-        vec3 comb = comp.ambient + comp.diffuse + comp.specular;
-        color = vec4(comb.r, comb.g, comb.b, 1);
-    } else {
-        color = vec4(0, 0, 0, 0); //Even though the texture should be cleared with an alpha value of 0 it apparently isnt.
-    }
-}
-)###";
-
-//TODO: Fix phong pass rendering black texture depending on camera orientation
-namespace xng {
-    using namespace ShaderCompiler;
-
-    const int MAX_LIGHTS = 1000;
-
-    PhongPass::PhongPass(RenderDevice &device) {
-        Shader shaderSrc;
-        shaderSrc.vertexShader = ShaderSource(SHADER_VERT_LIGHTING,
-                                              "main",
-                                              VERTEX,
-                                              GLSL_410);
-        shaderSrc.fragmentShader = ShaderSource(SHADER_FRAG_LIGHTING,
-                                                "main",
-                                                FRAGMENT,
-                                                GLSL_410);
-
-        shaderSrc.vertexShader.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                                          ShaderInclude::getShaderMacros(GLSL_410));
-        shaderSrc.fragmentShader.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                                            ShaderInclude::getShaderMacros(GLSL_410));
-
-        shader = device.getAllocator().createShaderProgram(shaderSrc.vertexShader, shaderSrc.fragmentShader);
-        quadMesh = device.getAllocator().createMeshBuffer(Mesh::normalizedQuad());
-    }
-
-    void PhongPass::setup(FrameGraphBuilder &builder) {
-        scene = builder.getScene();
-
-        auto format = builder.getRenderFormat();
-
-        renderTarget = builder.createRenderTarget(format.first, 1);
-        multiSampleRenderTarget = builder.createRenderTarget(format.first, format.second);
-
-        colorMultisample = builder.createTextureBuffer(TextureBuffer::Attributes{.size = format.first,
-                .samples = format.second,
-                .textureType = TextureBuffer::TEXTURE_2D_MULTISAMPLE});
-        depthMultisample = builder.createTextureBuffer(TextureBuffer::Attributes{.size = format.first,
-                .samples = format.second,
-                .textureType = TextureBuffer::TEXTURE_2D_MULTISAMPLE,
-                .format = TextureBuffer::DEPTH_STENCIL});
-
-        outColor = builder.createTextureBuffer(TextureBuffer::Attributes{.size = format.first});
-        outDepth = builder.createTextureBuffer(TextureBuffer::Attributes{
-                .size = format.first,
-                .format = TextureBuffer::DEPTH_STENCIL});
-    }
-
-    void PhongPass::execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) {
-        auto &gBuffer = board.get<GBuffer>();
-        auto &target = resources.getRenderTarget(renderTarget);
-        auto &multiSampleTarget = resources.getRenderTarget(multiSampleRenderTarget);
-        auto &color = resources.getTextureBuffer(outColor);
-        auto &depth = resources.getTextureBuffer(outDepth);
-        auto &colorMs = resources.getTextureBuffer(colorMultisample);
-        auto &depthMs = resources.getTextureBuffer(depthMultisample);
-
-        int dirCount = 0;
-        int pointCount = 0;
-        int spotCount = 0;
-
-        shader->activate();
-
-        for (auto &light: scene.lights) {
-            if (dirCount + pointCount + spotCount > MAX_LIGHTS)
-                break;
-
-            std::string name;
-            switch (light.type) {
-                case LIGHT_DIRECTIONAL:
-                    name = "DIRECTIONAL_LIGHTS[" + std::to_string(dirCount++) + "].";
-                    shader->setVec3(name + "direction", light.direction);
-                    shader->setVec3(name + "ambient", light.ambient);
-                    shader->setVec3(name + "diffuse", light.diffuse);
-                    shader->setVec3(name + "specular", light.specular);
-                    break;
-                case LIGHT_POINT:
-                    name = "POINT_LIGHTS[" + std::to_string(pointCount++) + "].";
-                    shader->setVec3(name + "position", light.transform.getPosition());
-                    shader->setFloat(name + "constantValue", light.constant);
-                    shader->setFloat(name + "linearValue", light.linear);
-                    shader->setFloat(name + "quadraticValue", light.quadratic);
-                    shader->setVec3(name + "ambient", light.ambient);
-                    shader->setVec3(name + "diffuse", light.diffuse);
-                    shader->setVec3(name + "specular", light.specular);
-                    break;
-                case LIGHT_SPOT:
-                    name = "SPOT_LIGHTS[" + std::to_string(spotCount++) + "].";
-                    shader->setVec3(name + "position", light.transform.getPosition());
-                    shader->setVec3(name + "direction", light.direction);
-                    shader->setFloat(name + "cutOff", cosf(degreesToRadians(light.cutOff)));
-                    shader->setFloat(name + "outerCutOff", cosf(degreesToRadians(light.outerCutOff)));
-                    shader->setFloat(name + "constantValue", light.constant);
-                    shader->setFloat(name + "linearValue", light.linear);
-                    shader->setFloat(name + "quadraticValue", light.quadratic);
-                    shader->setVec3(name + "ambient", light.ambient);
-                    shader->setVec3(name + "diffuse", light.diffuse);
-                    shader->setVec3(name + "specular", light.specular);
-                    break;
-            }
-        }
-
-        shader->setInt("DIRECTIONAL_LIGHTS_COUNT", dirCount);
-        shader->setInt("POINT_LIGHTS_COUNT", pointCount);
-        shader->setInt("SPOT_LIGHTS_COUNT", spotCount);
-
-        shader->setTexture("position", 0);
-        shader->setTexture("normal", 1);
-        shader->setTexture("tangent", 2);
-        shader->setTexture("texNormal", 3);
-        shader->setTexture("diffuse", 4);
-        shader->setTexture("ambient", 5);
-        shader->setTexture("specular", 6);
-        shader->setTexture("shininess", 7);
-        shader->setTexture("depth", 8);
-
-        shader->setVec3("VIEW_POS", scene.camera.transform.getPosition());
-        shader->setInt("NUM_SAMPLES", gBuffer.getSamples());
-
-        RenderCommand command(*shader, *quadMesh);
-
-        command.textures.emplace_back(gBuffer.getTexture(GBuffer::POSITION));
-        command.textures.emplace_back(gBuffer.getTexture(GBuffer::NORMAL));
-        command.textures.emplace_back(gBuffer.getTexture(GBuffer::TANGENT));
-        command.textures.emplace_back(gBuffer.getTexture(GBuffer::TEXTURE_NORMAL));
-        command.textures.emplace_back(gBuffer.getTexture(GBuffer::DIFFUSE));
-        command.textures.emplace_back(gBuffer.getTexture(GBuffer::AMBIENT));
-        command.textures.emplace_back(gBuffer.getTexture(GBuffer::SPECULAR));
-        command.textures.emplace_back(gBuffer.getTexture(GBuffer::ID_SHININESS));
-        command.textures.emplace_back(gBuffer.getTexture(GBuffer::DEPTH));
-
-        command.properties.enableDepthTest = false;
-        command.properties.enableStencilTest = false;
-        command.properties.enableFaceCulling = false;
-        command.properties.enableBlending = false;
-
-        multiSampleTarget.setNumberOfColorAttachments(1);
-        multiSampleTarget.attachColor(0, colorMs);
-        multiSampleTarget.attachDepthStencil(depthMs);
-
-        ren.renderBegin(multiSampleTarget, RenderOptions({}, multiSampleTarget.getSize(), true));
-        ren.addCommand(command);
-        ren.renderFinish();
-
-        target.setNumberOfColorAttachments(1);
-        target.attachColor(0, color);
-        target.attachDepthStencil(depth);
-
-        ren.renderClear(target, ColorRGBA(0), 1);
-
-        target.blitColor(multiSampleTarget,
-                         {},
-                         {},
-                         multiSampleTarget.getSize(),
-                         target.getSize(),
-                         TextureBuffer::LINEAR,
-                         0,
-                         0);
-        target.blitDepth(multiSampleTarget,
-                         {},
-                         {},
-                         multiSampleTarget.getSize(),
-                         target.getSize());
-
-        target.detachColor(0);
-        target.detachDepthStencil();
-
-        multiSampleTarget.detachColor(0);
-        multiSampleTarget.detachDepthStencil();
-
-        auto layers = board.get<std::vector<CompositePass::Layer>>();
-
-        layers.emplace_back(CompositePass::Layer(&color, &depth));
-
-        board.set(layers);
-    }
-}*/

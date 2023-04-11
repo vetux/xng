@@ -34,7 +34,6 @@ layout(location = 1) out vec2 fUv;
 
 layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
-    mat4 mvp;
     vec4 visualizeDepth_near_far;
 } globs;
 
@@ -42,9 +41,8 @@ layout(binding = 1) uniform sampler2D tex;
 
 void main()
 {
-    fPos = (globs.mvp * vec4(vPosition, 1));
+    fPos = vec4(vPosition, 1);
     fUv = vUv;
-
     gl_Position = fPos;
 }
 )###";
@@ -58,7 +56,6 @@ layout(location = 0) out vec4 oColor;
 
 layout(binding = 0, std140) uniform ShaderUniformBuffer
 {
-    mat4 mvp;
     vec4 visualizeDepth_near_far;
 } globs;
 
@@ -78,7 +75,6 @@ void main() {
 )###";
 
 struct ShaderData {
-    Mat4f mvp;
     float visualizeDepth_near_far[4];
 };
 
@@ -145,47 +141,44 @@ public:
 
         switch (tex) {
             default:
-                gBufferPosition = builder.getSharedData().get<FrameGraphResource>(
+                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(
                         GBufferPass::GEOMETRY_BUFFER_POSITION);
-                builder.read(gBufferPosition);
                 break;
             case 1:
-                gBufferNormal = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_NORMAL);
-                builder.read(gBufferNormal);
+                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_NORMAL);
                 break;
             case 2:
-                gBufferTangent = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_TANGENT);
-                builder.read(gBufferTangent);
+                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_TANGENT);
                 break;
             case 3:
-                gBufferRoughnessMetallicAO = builder.getSharedData().get<FrameGraphResource>(
+                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(
                         GBufferPass::GEOMETRY_BUFFER_ROUGHNESS_METALLIC_AO);
-                builder.read(gBufferRoughnessMetallicAO);
                 break;
             case 4:
-                gBufferAlbedo = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_ALBEDO);
-                builder.read(gBufferAlbedo);
+                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_ALBEDO);
                 break;
             case 5:
-                gBufferAmbient = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_AMBIENT);
-                builder.read(gBufferAmbient);
+                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_AMBIENT);
                 break;
             case 6:
-                gBufferSpecular = builder.getSharedData().get<FrameGraphResource>(
+                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(
                         GBufferPass::GEOMETRY_BUFFER_SPECULAR);
-                builder.read(gBufferSpecular);
                 break;
             case 7:
-                gBufferModelObject = builder.getSharedData().get<FrameGraphResource>(
+                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(
                         GBufferPass::GEOMETRY_BUFFER_MODEL_OBJECT);
-                builder.read(gBufferModelObject);
                 break;
             case 8:
-                gBufferDepth = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_DEPTH);
-                builder.read(gBufferDepth);
+                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_DEPTH);
                 break;
-
+            case 9:
+                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(PhongDeferredPass::COLOR);
+                break;
+            case 10:
+                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(PhongDeferredPass::DEPTH);
+                break;
         }
+        builder.read(displayTextureRes);
 
         screenRes = builder.getBackBuffer();
         builder.write(screenRes);
@@ -214,53 +207,24 @@ public:
         }
 
         ShaderData buf;
-        buf.mvp = MatrixMath::identity();
-        buf.visualizeDepth_near_far[0] = tex == 8;
+        buf.visualizeDepth_near_far[0] = tex == 8 || tex == 10;
         buf.visualizeDepth_near_far[1] = camera.nearClip;
         buf.visualizeDepth_near_far[2] = camera.farClip;
 
         shaderBuffer.upload(buf);
 
-        TextureBuffer *texture;
-        switch (tex) {
-            default:
-                texture = &resources.get<TextureBuffer>(gBufferPosition);
-                break;
-            case 1:
-                texture = &resources.get<TextureBuffer>(gBufferNormal);
-                break;
-            case 2:
-                texture = &resources.get<TextureBuffer>(gBufferTangent);
-                break;
-            case 3:
-                texture = &resources.get<TextureBuffer>(gBufferRoughnessMetallicAO);
-                break;
-            case 4:
-                texture = &resources.get<TextureBuffer>(gBufferAlbedo);
-                break;
-            case 5:
-                texture = &resources.get<TextureBuffer>(gBufferAmbient);
-                break;
-            case 6:
-                texture = &resources.get<TextureBuffer>(gBufferSpecular);
-                break;
-            case 7:
-                texture = &resources.get<TextureBuffer>(gBufferModelObject);
-                break;
-            case 8:
-                texture = &resources.get<TextureBuffer>(gBufferDepth);
-                break;
-        }
+        auto &texture = resources.get<TextureBuffer>(displayTextureRes);
+
+        pass.beginRenderPass(target, {}, target.getDescription().size);
 
         pass.bindPipeline(pipeline);
         pass.bindVertexArrayObject(vertexArrayObject);
         pass.bindShaderData({
                                     shaderBuffer,
-                                    *texture
+                                    texture
                             });
-
-        pass.beginRenderPass(target, {}, target.getDescription().size);
         pass.drawArray(RenderPass::DrawCall{.offset = 0, .count = mesh.vertices.size()});
+
         pass.endRenderPass();
     }
 
@@ -277,14 +241,14 @@ public:
     }
 
     void incrementTex() {
-        if (++tex > 8) {
+        if (++tex > 10) {
             tex = 0;
         }
     }
 
     void decrementTex() {
         if (--tex < 0) {
-            tex = 8;
+            tex = 10;
         }
     }
 
@@ -308,15 +272,7 @@ private:
 
     bool quadAllocated = false;
 
-    FrameGraphResource gBufferPosition;
-    FrameGraphResource gBufferNormal;
-    FrameGraphResource gBufferTangent;
-    FrameGraphResource gBufferRoughnessMetallicAO;
-    FrameGraphResource gBufferAlbedo;
-    FrameGraphResource gBufferAmbient;
-    FrameGraphResource gBufferSpecular;
-    FrameGraphResource gBufferModelObject;
-    FrameGraphResource gBufferDepth;
+    FrameGraphResource displayTextureRes;
 
     Camera camera;
 };

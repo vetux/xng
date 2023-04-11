@@ -148,8 +148,8 @@ LightComponents phong_spot(vec3 fPos,
     vec3 specular = light.specular.xyz * spec * specularColor.rgb;
 
     float theta = dot(lightDir, normalize(-light.direction_quadratic.xyz));
-    float epsilon = (light.cutOff - light.outerCutOff);
-    float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
+    float epsilon = (light.cutOff_outerCutOff_constant_linear.x - light.cutOff_outerCutOff_constant_linear.y);
+    float intensity = clamp((theta - light.cutOff_outerCutOff_constant_linear.y) / epsilon, 0.0, 1.0);
 
     diffuse  *= intensity;
     specular *= intensity;

@@ -116,12 +116,13 @@ int main(int argc, char *argv[]) {
     auto testPass = std::make_shared<TestPass>();
     renderer.setPasses({
                                std::make_shared<GBufferPass>(),
+                               std::make_shared<PhongDeferredPass>(),
                                testPass,
                        });
 
     xng::Light light;
     light.type = xng::LIGHT_POINT;
-    light.transform.setPosition({0, 0, -10});
+    light.transform.setPosition({0, 0, -5});
 
     xng::Scene::Object sphere;
     sphere.transform.setPosition({0, 0, -10});
@@ -162,18 +163,28 @@ int main(int argc, char *argv[]) {
         scene.camera.aspectRatio = static_cast<float>(window->getWindowSize().x)
                                    / static_cast<float>(window->getWindowSize().y);
 
-        auto lightPos = lightRef.transform.getPosition();
-
         if (lightDirection) {
-            if (lightPos.y > 10)
+            lightRef.transform.setPosition(
+                    {lightRef.transform.getPosition().x,
+                     lightRef.transform.getPosition().y + lightSpeed * deltaTime,
+                     lightRef.transform.getPosition().z});
+            if (lightRef.transform.getPosition().y > 10) {
                 lightDirection = !lightDirection;
-            else
-                lightRef.transform.setPosition({0, lightPos.y + lightSpeed * deltaTime, -10});
+                lightRef.transform.setPosition({lightRef.transform.getPosition().x,
+                                                10,
+                                                lightRef.transform.getPosition().z});
+            }
         } else {
-            if (lightPos.y < -10)
+            lightRef.transform.setPosition(
+                    {lightRef.transform.getPosition().x,
+                     lightRef.transform.getPosition().y - lightSpeed * deltaTime,
+                     lightRef.transform.getPosition().z});
+            if (lightRef.transform.getPosition().y < -10) {
                 lightDirection = !lightDirection;
-            else
-                lightRef.transform.setPosition({0, lightPos.y - lightSpeed * deltaTime, -10});
+                lightRef.transform.setPosition({lightRef.transform.getPosition().x,
+                                                -10,
+                                                lightRef.transform.getPosition().z});
+            }
         }
 
         if (window->getInput().getKeyboard().getKeyDown(xng::KEY_LEFT)) {
@@ -212,6 +223,12 @@ int main(int argc, char *argv[]) {
                 break;
             case 8:
                 txt = "DEPTH";
+                break;
+            case 9:
+                txt = "PHONG_COLOR";
+                break;
+            case 10:
+                txt = "PHONG_DEPTH";
                 break;
         }
 

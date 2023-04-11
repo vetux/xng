@@ -52,10 +52,19 @@ namespace xng {
     private:
         Mesh mesh = Mesh::normalizedQuad();
 
+        FrameGraphResource targetRes;
+
+        FrameGraphResource colorTextureRes;
+        FrameGraphResource depthTextureRes;
+
         FrameGraphResource pipelineRes;
         FrameGraphResource passRes;
 
-        FrameGraphResource shaderBufferRes;
+        FrameGraphResource uniformBufferRes;
+
+        FrameGraphResource pointLightsBufferRes;
+        FrameGraphResource spotLightsBufferRes;
+        FrameGraphResource directionalLightsBufferRes;
 
         FrameGraphResource vertexBufferRes;
         FrameGraphResource vertexArrayObjectRes;
@@ -75,7 +84,14 @@ namespace xng {
         FrameGraphResource gBufferModelObject;
         FrameGraphResource gBufferDepth;
 
+        Transform cameraTransform;
         Camera camera;
+
+        Vec2i renderSize;
+
+        std::vector<Light> pointLights;
+        std::vector<Light> spotLights;
+        std::vector<Light> directionalLights;
     };
 }
 

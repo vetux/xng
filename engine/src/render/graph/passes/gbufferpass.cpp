@@ -129,7 +129,7 @@ layout(location = 3) out vec4 oRoughnessMetallicAO;
 layout(location = 4) out vec4 oAlbedo;
 layout(location = 5) out vec4 oAmbient;
 layout(location = 6) out vec4 oSpecular;
-layout(location = 7) out vec4 oModelObject;
+layout(location = 7) out ivec4 oModelObject;
 
 struct ShaderAtlasTexture {
     ivec4 level_index_filtering_assigned;
