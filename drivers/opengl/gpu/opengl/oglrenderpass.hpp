@@ -35,6 +35,8 @@ namespace xng::opengl {
         OGLVertexArrayObject *mVertexObject = nullptr;
         std::vector<ShaderData> mShaderBindings;
 
+        bool runningPass = false;
+
         OGLRenderPass(std::function<void(RenderObject * )> destructor,
                       RenderPassDesc passDesc)
                 : destructor(std::move(destructor)),
@@ -46,7 +48,15 @@ namespace xng::opengl {
             return passDesc;
         }
 
+        void ensureRunningPass() {
+            if (!runningPass)
+                throw std::runtime_error("Pass is not running.");
+        }
+
         void beginRenderPass(RenderTarget &target, Vec2i viewportOffset, Vec2i viewportSize) override {
+            if (runningPass){
+                throw std::runtime_error("Pass is already running (Nested calls to beginRenderPass ?)");
+            }
             auto &fb = dynamic_cast<OGLRenderTarget &>(target);
 
             if (fb.getDescription().hasDepthStencilAttachment != passDesc.hasDepthStencilAttachment
@@ -67,17 +77,22 @@ namespace xng::opengl {
             }
 
             checkGLError();
+
+            runningPass = true;
         }
 
         std::unique_ptr<GpuFence> endRenderPass() override {
+            ensureRunningPass();
             unbindVertexArrayObject();
             unbindShaderData();
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             checkGLError();
+            runningPass = false;
             return std::make_unique<OGLFence>();
         }
 
         void clearColorAttachments(ColorRGBA val) override {
+            ensureRunningPass();
             auto clearColor = val.divide();
             glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
             glClear(GL_COLOR_BUFFER_BIT);
@@ -85,6 +100,7 @@ namespace xng::opengl {
         }
 
         void clearDepthAttachments(float clearDepthValue) override {
+            ensureRunningPass();
             glDepthMask(GL_TRUE);
             glClearDepth(clearDepthValue);
             glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -96,6 +112,7 @@ namespace xng::opengl {
         }
 
         void setViewport(Vec2i viewportOffset, Vec2i viewportSize) override {
+            ensureRunningPass();
             glViewport(viewportOffset.x,
                        viewportOffset.y,
                        viewportSize.x,
@@ -103,6 +120,7 @@ namespace xng::opengl {
         }
 
         void bindPipeline(RenderPipeline &pipeline) override {
+            ensureRunningPass();
             if (!mShaderBindings.empty()) {
                 if (mShaderBindings.size() != pipeline.getDescription().bindings.size()) {
                     throw std::runtime_error("Invalid bindings");
@@ -203,12 +221,14 @@ namespace xng::opengl {
             glClearDepth(desc.clearDepthValue);
 
             GLbitfield clearMask = 0;
-            if (desc.clearColor && !desc.clearDepth && !desc.clearStencil) {
-                clearMask = GL_COLOR_BUFFER_BIT;
-            } else if (desc.clearColor && desc.clearDepth && !desc.clearStencil) {
-                clearMask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
-            } else if (desc.clearColor && desc.clearDepth && desc.clearStencil) {
-                clearMask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
+            if (desc.clearColor) {
+                clearMask |= GL_COLOR_BUFFER_BIT;
+            }
+            if (desc.clearDepth) {
+                clearMask |= GL_DEPTH_BUFFER_BIT;
+            }
+            if (desc.clearStencil) {
+                clearMask |= GL_STENCIL_BUFFER_BIT;
             }
 
             glClear(clearMask);
@@ -224,6 +244,7 @@ namespace xng::opengl {
         }
 
         void bindVertexArrayObject(VertexArrayObject &vertexArrayObject) override {
+            ensureRunningPass();
             mVertexObject = dynamic_cast<OGLVertexArrayObject *>(&vertexArrayObject);
             auto &obj = dynamic_cast<OGLVertexArrayObject &>(vertexArrayObject);
             glBindVertexArray(obj.VAO);
@@ -231,12 +252,14 @@ namespace xng::opengl {
         }
 
         void unbindVertexArrayObject() override {
+            ensureRunningPass();
             mVertexObject = nullptr;
             glBindVertexArray(0);
             checkGLError();
         }
 
         void bindShaderData(const std::vector<ShaderData> &bindings) override {
+            ensureRunningPass();
             if (mPipeline) {
                 if (bindings.size() != mPipeline->getDescription().bindings.size()) {
                     throw std::runtime_error("Invalid bindings");
@@ -288,6 +311,7 @@ namespace xng::opengl {
         }
 
         void unbindShaderData() override {
+            ensureRunningPass();
             if (!mShaderBindings.empty()) {
                 //Unbind textures and uniform buffers
                 for (int bindingPoint = 0; bindingPoint < mShaderBindings.size(); bindingPoint++) {
@@ -350,6 +374,7 @@ namespace xng::opengl {
         }
 
         void drawArray(const DrawCall &drawCall) override {
+            ensureRunningPass();
             checkBindings(false);
             if (!mPipeline) {
                 throw std::runtime_error("No pipeline bound");
@@ -361,6 +386,7 @@ namespace xng::opengl {
         }
 
         void drawIndexed(const DrawCall &drawCall) override {
+            ensureRunningPass();
             checkBindings(true);
             if (!mPipeline) {
                 throw std::runtime_error("No pipeline bound");
@@ -373,6 +399,7 @@ namespace xng::opengl {
         }
 
         void instancedDrawArray(const DrawCall &drawCall, size_t numberOfInstances) override {
+            ensureRunningPass();
             checkBindings(false);
             if (!mPipeline) {
                 throw std::runtime_error("No pipeline bound");
@@ -385,6 +412,7 @@ namespace xng::opengl {
         }
 
         void instancedDrawIndexed(const DrawCall &drawCall, size_t numberOfInstances) override {
+            ensureRunningPass();
             checkBindings(true);
             if (!mPipeline) {
                 throw std::runtime_error("No pipeline bound");
@@ -398,6 +426,7 @@ namespace xng::opengl {
         }
 
         void multiDrawArray(const std::vector<DrawCall> &drawCalls) override {
+            ensureRunningPass();
             checkBindings(false);
             if (!mPipeline) {
                 throw std::runtime_error("No pipeline bound");
@@ -421,6 +450,7 @@ namespace xng::opengl {
         }
 
         void multiDrawIndexed(const std::vector<DrawCall> &drawCalls) override {
+            ensureRunningPass();
             checkBindings(true);
             if (!mPipeline) {
                 throw std::runtime_error("No pipeline bound");
@@ -445,6 +475,7 @@ namespace xng::opengl {
         }
 
         void drawIndexed(const DrawCall &drawCall, size_t baseVertex) override {
+            ensureRunningPass();
             checkBindings(true);
             if (!mPipeline) {
                 throw std::runtime_error("No pipeline bound");
@@ -458,6 +489,7 @@ namespace xng::opengl {
         }
 
         void instancedDrawIndexed(const DrawCall &drawCall, size_t numberOfInstances, size_t baseVertex) override {
+            ensureRunningPass();
             checkBindings(true);
             if (!mPipeline) {
                 throw std::runtime_error("No pipeline bound");
@@ -472,6 +504,7 @@ namespace xng::opengl {
         }
 
         void multiDrawIndexed(const std::vector<DrawCall> &drawCalls, std::vector<size_t> baseVertices) override {
+            ensureRunningPass();
             checkBindings(true);
             if (!mPipeline) {
                 throw std::runtime_error("No pipeline bound");

@@ -277,6 +277,7 @@ namespace xng::opengl {
 
         std::unique_ptr<GpuFence> setDepthStencilAttachment(TextureBuffer *texture) override {
             if (texture == nullptr) {
+                attachedDepthStencil = false;
                 glBindFramebuffer(GL_FRAMEBUFFER, FBO);
                 if (desc.multisample)
                     glFramebufferTexture2D(GL_FRAMEBUFFER,
@@ -288,6 +289,7 @@ namespace xng::opengl {
                     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
             } else {
+                attachedDepthStencil = true;
                 auto &tex = dynamic_cast< OGLTextureBuffer &>(*texture);
                 glBindFramebuffer(GL_FRAMEBUFFER, FBO);
                 glFramebufferTexture2D(GL_FRAMEBUFFER,
