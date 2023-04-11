@@ -20,10 +20,9 @@
 #ifndef XENGINE_SHADERUNIFORMBUFFER_HPP
 #define XENGINE_SHADERUNIFORMBUFFER_HPP
 
-#include "renderbuffer.hpp"
-#include "gpufence.hpp"
+#include "xng/gpu/gpufence.hpp"
 
-#include "shaderuniformbufferdesc.hpp"
+#include "xng/gpu/shaderuniformbufferdesc.hpp"
 
 namespace xng {
     /**
@@ -45,7 +44,7 @@ namespace xng {
      * Should only be used for very small data because it must fit in directx constant buffers (4096 vectors with 32bit components)
      * as well as opengl uniform buffers (16kb)
      */
-    class XENGINE_EXPORT ShaderUniformBuffer : public RenderBuffer {
+    class XENGINE_EXPORT ShaderUniformBuffer : public RenderObject {
     public:
         ~ShaderUniformBuffer() override = default;
 
@@ -53,11 +52,36 @@ namespace xng {
             return RENDER_OBJECT_SHADER_UNIFORM_BUFFER;
         }
 
-        virtual const ShaderUniformBufferDesc &getDescription() = 0;
+        /**
+         * Copy the data in source buffer to this buffer.
+         *
+         * @param source The concrete type of other must be compatible and have the same properties as this buffer.
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> copy(ShaderUniformBuffer &source) = 0;
 
-        RenderBufferType getBufferType() override {
-            return getDescription().bufferType;
-        }
+        /**
+         * Copy the data in source buffer to this buffer.
+         *
+         * @param source The concrete type of other must be compatible and have the same properties as this buffer.
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> copy(ShaderUniformBuffer &source,
+                                               size_t readOffset,
+                                               size_t writeOffset,
+                                               size_t count) = 0;
+
+        /**
+         * Upload the given data to the buffer at the given offset.
+         *
+         * @param offset
+         * @param data
+         * @param dataSize
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> upload(size_t offset, const uint8_t *data, size_t dataSize) = 0;
+
+        virtual const ShaderUniformBufferDesc &getDescription() = 0;
 
         /**
          * Upload the given data to the shader buffer,

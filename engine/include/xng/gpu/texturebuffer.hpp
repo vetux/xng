@@ -22,10 +22,10 @@
 
 #include <memory>
 
-#include "renderbuffer.hpp"
-#include "textureproperties.hpp"
-#include "texturebufferdesc.hpp"
-#include "gpufence.hpp"
+#include "xng/gpu/renderobject.hpp"
+#include "xng/gpu/textureproperties.hpp"
+#include "xng/gpu/texturebufferdesc.hpp"
+#include "xng/gpu/gpufence.hpp"
 
 #include "xng/asset/image.hpp"
 

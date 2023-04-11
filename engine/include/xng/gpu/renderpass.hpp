@@ -53,13 +53,17 @@ namespace xng {
             }
         }
 
+        enum IndexType {
+            UNSIGNED_INT
+        };
+
         /**
          * A DrawCall specifies which portion of the bound index or vertex buffer to draw.
          */
         struct DrawCall {
             size_t offset = 0; // The offset into the index or vertex buffer at which to begin reading indices or vertices in BYTES
             size_t count = 0; // The number of indices or vertices to draw.
-            IndexBuffer::IndexType indexType = IndexBuffer::UNSIGNED_INT; // The type of the indices, ignored when not indexing
+            IndexType indexType = UNSIGNED_INT; // The type of the indices, ignored when not indexing
         };
 
         Type getType() override {

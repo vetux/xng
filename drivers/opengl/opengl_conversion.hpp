@@ -40,9 +40,9 @@ namespace xng::opengl {
         throw std::runtime_error("Unsupported culling mode");
     }
 
-    static GLenum convert(IndexBuffer::IndexType type){
+    static GLenum convert(RenderPass::IndexType type){
         switch(type){
-            case IndexBuffer::UNSIGNED_INT:
+            case RenderPass::UNSIGNED_INT:
                 return GL_UNSIGNED_INT;
         }
         throw std::runtime_error("Unsupported index type");

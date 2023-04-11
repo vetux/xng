@@ -60,11 +60,11 @@ namespace xng::opengl {
             destructor(this);
         }
 
-        std::unique_ptr<GpuFence> copy(RenderBuffer &source) override {
-            return copy(source, 0, 0, source.getSize());
+        std::unique_ptr<GpuFence> copy(IndexBuffer &source) override {
+            return copy(source, 0, 0, source.getDescription().size);
         }
 
-        std::unique_ptr<GpuFence> copy(RenderBuffer &source,
+        std::unique_ptr<GpuFence> copy(IndexBuffer &source,
                                        size_t readOffset,
                                        size_t writeOffset,
                                        size_t count) override {

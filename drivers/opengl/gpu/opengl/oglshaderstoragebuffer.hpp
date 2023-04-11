@@ -88,11 +88,11 @@ namespace xng::opengl {
             return std::make_unique<OGLFence>();
         }
 
-        std::unique_ptr<GpuFence> copy(RenderBuffer &source) override {
-            return copy(source, 0, 0, source.getSize());
+        std::unique_ptr<GpuFence> copy(ShaderStorageBuffer &source) override {
+            return copy(source, 0, 0, source.getDescription().size);
         }
 
-        std::unique_ptr<GpuFence> copy(RenderBuffer &other,
+        std::unique_ptr<GpuFence> copy(ShaderStorageBuffer &other,
                                        size_t readOffset,
                                        size_t writeOffset,
                                        size_t count) override {
@@ -114,10 +114,6 @@ namespace xng::opengl {
             glBindBuffer(GL_COPY_READ_BUFFER, 0);
             checkGLError();
             return std::make_unique<OGLFence>();
-        }
-
-        size_t getSize() override {
-            return desc.size;
         }
     };
 }

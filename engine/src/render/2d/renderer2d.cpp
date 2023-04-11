@@ -37,24 +37,20 @@ layout (location = 1) in highp vec2 uv;
 layout (location = 0) out highp vec4 fPosition;
 layout (location = 1) out highp vec2 fUv;
 
-struct PassData {
+layout(binding = 0, std140) uniform ShaderData
+{
     highp vec4 color;
     highp vec4 colorMixFactor_alphaMixFactor_colorFactor;
     ivec4 texAtlasLevel_texAtlasIndex_texFilter;
     highp mat4 mvp;
     highp vec4 uvOffset_uvScale;
     highp vec4 atlasScale_texSize;
-};
-
-layout(binding = 0, std140) uniform ShaderData
-{
-    PassData passData;
 } vars;
 
 layout(binding = 1) uniform highp sampler2DArray atlasTextures[12];
 
 void main() {
-    fPosition = (vars.passData.mvp) * vec4(position, 0, 1);
+    fPosition = (vars.mvp) * vec4(position, 0, 1);
     fUv = uv;
     gl_Position = fPosition;
 }
@@ -68,46 +64,40 @@ layout (location = 1) in highp vec2 fUv;
 
 layout (location = 0) out highp vec4 color;
 
-struct PassData {
+layout(binding = 0, std140) uniform ShaderData
+{
     highp vec4 color;
     highp vec4 colorMixFactor_alphaMixFactor_colorFactor;
     ivec4 texAtlasLevel_texAtlasIndex_texFilter;
     highp mat4 mvp;
     highp vec4 uvOffset_uvScale;
     highp vec4 atlasScale_texSize;
-};
-
-layout(binding = 0, std140) uniform ShaderData
-{
-    PassData passData;
 } vars;
 
 layout(binding = 1) uniform highp sampler2DArray atlasTextures[12];
 
 void main() {
-    if (vars.passData.texAtlasLevel_texAtlasIndex_texFilter.y >= 0) {
+    if (vars.texAtlasLevel_texAtlasIndex_texFilter.y >= 0) {
         highp vec2 uv = fUv;
-        uv = uv * vars.passData.uvOffset_uvScale.zw;
-        uv = uv + vars.passData.uvOffset_uvScale.xy;
-        uv = uv * vars.passData.atlasScale_texSize.xy;
+        uv = uv * vars.uvOffset_uvScale.zw;
+        uv = uv + vars.uvOffset_uvScale.xy;
+        uv = uv * vars.atlasScale_texSize.xy;
         highp vec4 texColor;
-        texColor = texture(atlasTextures[vars.passData.texAtlasLevel_texAtlasIndex_texFilter.x],
-                                        vec3(uv.x, uv.y, vars.passData.texAtlasLevel_texAtlasIndex_texFilter.y));
-        if (vars.passData.colorMixFactor_alphaMixFactor_colorFactor.z != 0.f) {
-            color = vars.passData.color * texColor;
+        texColor = texture(atlasTextures[vars.texAtlasLevel_texAtlasIndex_texFilter.x],
+                                        vec3(uv.x, uv.y, vars.texAtlasLevel_texAtlasIndex_texFilter.y));
+        if (vars.colorMixFactor_alphaMixFactor_colorFactor.z != 0.f) {
+            color = vars.color * texColor;
         } else {
-            color.rgb = mix(texColor.rgb, vars.passData.color.rgb, vars.passData.colorMixFactor_alphaMixFactor_colorFactor.x);
-            color.a = mix(texColor.a, vars.passData.color.a, vars.passData.colorMixFactor_alphaMixFactor_colorFactor.y);
+            color.rgb = mix(texColor.rgb, vars.color.rgb, vars.colorMixFactor_alphaMixFactor_colorFactor.x);
+            color.a = mix(texColor.a, vars.color.a, vars.colorMixFactor_alphaMixFactor_colorFactor.y);
         }
     } else {
-        color = vars.passData.color;
+        color = vars.color;
     }
 }
 )###";
 
 static const char *SHADER_VERT_TEXTURE_MULTIDRAW = R"###(#version 460
-
-#define MAX_MULTI_DRAW_COUNT 1000 // Maximum amount of draws per multi draw
 
 layout (location = 0) in vec2 position;
 layout (location = 1) in vec2 uv;
@@ -125,9 +115,9 @@ struct PassData {
     vec4 atlasScale_texSize;
 };
 
-layout(binding = 0, std140) uniform ShaderData
+layout(binding = 0, std140) buffer ShaderData
 {
-    PassData passes[MAX_MULTI_DRAW_COUNT];
+    PassData passes[];
 } vars;
 
 layout(binding = 1) uniform sampler2DArray atlasTextures[12];
@@ -144,8 +134,6 @@ static const char *SHADER_FRAG_TEXTURE_MULTIDRAW = R"###(#version 460
 
 #include "texfilter.glsl"
 
-#define MAX_MULTI_DRAW_COUNT 1000 // Maximum amount of draws per multi draw
-
 layout (location = 0) in vec4 fPosition;
 layout (location = 1) in vec2 fUv;
 layout (location = 2) flat in uint drawID;
@@ -161,9 +149,9 @@ struct PassData {
     vec4 atlasScale_texSize;
 };
 
-layout(binding = 0, std140) uniform ShaderData
+layout(binding = 0, std140) buffer ShaderData
 {
-    PassData passes[MAX_MULTI_DRAW_COUNT];
+    PassData passes[];
 } vars;
 
 layout(binding = 1) uniform sampler2DArray atlasTextures[12];
@@ -207,8 +195,6 @@ static float distance(float val1, float val2) {
 }
 
 namespace xng {
-    static const int MAX_MULTI_DRAW_COUNT = 1000;
-
 #pragma pack(push, 1)
     // If anything other than 4 component vectors are used in uniform buffer data the memory layout becomes unpredictable.
     struct PassData {
@@ -219,42 +205,24 @@ namespace xng {
         float uvOffset_uvScale[4];
         float atlasScale_texSize[4];
     };
-
-    struct ShaderData {
-        PassData passData;
-    };
-
-    struct ShaderDataMultiDraw {
-        PassData passes[MAX_MULTI_DRAW_COUNT];
-    };
 #pragma pack(pop)
 
     static_assert(sizeof(PassData) % 16 == 0);
-    static_assert(sizeof(ShaderDataMultiDraw) % 16 == 0);
-
-    struct DrawBatch {
-        std::vector<RenderPass::DrawCall> drawCalls;
-        std::vector<size_t> baseVertices;
-        Primitive primitive = TRIANGLES;
-        std::vector<ShaderData> uniformBuffers; // The uniform buffer data for this batch
-    };
 
     /**
      * A draw cycle consists of one or more draw batches.
      *
-     * Each draw batch contains draw calls which are dispatched using multiDraw.
-     *
-     * There is only MAX_MULTI_DRAW_COUNT draw calls per draw cycle.
+     * Each draw batch contains draw calls which are dispatched using multiDraw or plain draw.
      *
      * To ensure correct blending consequent draw calls of the same primitive are drawn in the same batch
      * together but each change in primitive causes a new draw batch to be created which incurs the overhead of
      * updating the shader uniform buffer.
      */
-    struct DrawBatchMultiDraw {
+    struct DrawBatch {
         std::vector<RenderPass::DrawCall> drawCalls;
         std::vector<size_t> baseVertices;
         Primitive primitive = TRIANGLES;
-        ShaderDataMultiDraw uniformBuffer; // The uniform buffer data for this batch
+        std::vector<PassData> uniformBuffers; // The uniform buffer data for this batch
     };
 
     Renderer2D::Renderer2D(RenderDevice &device, ShaderCompiler &shaderCompiler, ShaderDecompiler &shaderDecompiler)
@@ -335,6 +303,21 @@ namespace xng {
         desc.shaders = {
                 {ShaderStage::VERTEX,   vsTexSourceMultiDraw.getShader()},
                 {ShaderStage::FRAGMENT, fsTexSourceMultiDraw.getShader()}
+        };
+        desc.bindings = {
+                RenderPipelineBindingType::BIND_SHADER_STORAGE_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
+                RenderPipelineBindingType::BIND_TEXTURE_ARRAY_BUFFER,
         };
 
         desc.primitive = TRIANGLES;
@@ -560,7 +543,6 @@ namespace xng {
         std::vector<RenderPass::DrawCall> drawCalls;
         std::vector<size_t> baseVertices;
         std::vector<Primitive> primitives;
-        std::vector<ShaderData> shaderBuffers;
         std::vector<PassData> passData;
 
         for (auto &pass: passes) {
@@ -583,16 +565,17 @@ namespace xng {
                                                                0})
                                  * rotMat;
 
-                    ShaderData buffer;
+                    PassData buffer;
 
-                    buffer.passData.mvp = viewProjectionMatrix * model;
+                    buffer.mvp = viewProjectionMatrix * model;
+
                     auto color = pass.color.divide();
-                    buffer.passData.color[0] = color.x;
-                    buffer.passData.color[1] = color.y;
-                    buffer.passData.color[2] = color.z;
-                    buffer.passData.color[3] = color.w;
+                    buffer.color[0] = color.x;
+                    buffer.color[1] = color.y;
+                    buffer.color[2] = color.z;
+                    buffer.color[3] = color.w;
 
-                    shaderBuffers.emplace_back(buffer);
+                    passData.emplace_back(buffer);
 
                     break;
                 }
@@ -615,16 +598,16 @@ namespace xng {
                                                                0})
                                  * rotMat;
 
-                    ShaderData buffer;
+                    PassData buffer;
 
-                    buffer.passData.mvp = viewProjectionMatrix * model;
+                    buffer.mvp = viewProjectionMatrix * model;
                     auto color = pass.color.divide();
-                    buffer.passData.color[0] = color.x;
-                    buffer.passData.color[1] = color.y;
-                    buffer.passData.color[2] = color.z;
-                    buffer.passData.color[3] = color.w;
+                    buffer.color[0] = color.x;
+                    buffer.color[1] = color.y;
+                    buffer.color[2] = color.z;
+                    buffer.color[3] = color.w;
 
-                    shaderBuffers.emplace_back(buffer);
+                    passData.emplace_back(buffer);
                     break;
                 }
                 case Pass::COLOR_PLANE: {
@@ -656,16 +639,16 @@ namespace xng {
                                                                0})
                                  * rotMat;
 
-                    ShaderData buffer;
+                    PassData buffer;
 
-                    buffer.passData.mvp = viewProjectionMatrix * model;
+                    buffer.mvp = viewProjectionMatrix * model;
                     auto color = pass.color.divide();
-                    buffer.passData.color[0] = color.x;
-                    buffer.passData.color[1] = color.y;
-                    buffer.passData.color[2] = color.z;
-                    buffer.passData.color[3] = color.w;
+                    buffer.color[0] = color.x;
+                    buffer.color[1] = color.y;
+                    buffer.color[2] = color.z;
+                    buffer.color[3] = color.w;
 
-                    shaderBuffers.emplace_back(buffer);
+                    passData.emplace_back(buffer);
                     break;
                 }
                 case Pass::TEXTURE: {
@@ -686,37 +669,38 @@ namespace xng {
                                                                0})
                                  * rotMat;
 
-                    ShaderData buffer;
+                    PassData buffer;
 
-                    buffer.passData.mvp = viewProjectionMatrix * model;
+                    buffer.mvp = viewProjectionMatrix * model;
+
                     auto color = pass.color.divide();
-                    buffer.passData.color[0] = color.x;
-                    buffer.passData.color[1] = color.y;
-                    buffer.passData.color[2] = color.z;
-                    buffer.passData.color[3] = color.w;
+                    buffer.color[0] = color.x;
+                    buffer.color[1] = color.y;
+                    buffer.color[2] = color.z;
+                    buffer.color[3] = color.w;
 
-                    buffer.passData.colorMixFactor_alphaMixFactor_colorFactor[0] = pass.mix;
-                    buffer.passData.colorMixFactor_alphaMixFactor_colorFactor[1] = pass.alphaMix;
-                    buffer.passData.colorMixFactor_alphaMixFactor_colorFactor[2] = pass.colorFactor;
-                    buffer.passData.texAtlasLevel_texAtlasIndex_texFilter[0] = pass.texture.level;
-                    buffer.passData.texAtlasLevel_texAtlasIndex_texFilter[1] = (int) pass.texture.index;
-                    buffer.passData.texAtlasLevel_texAtlasIndex_texFilter[2] = pass.filter == LINEAR ? 1 : 0;
+                    buffer.colorMixFactor_alphaMixFactor_colorFactor[0] = pass.mix;
+                    buffer.colorMixFactor_alphaMixFactor_colorFactor[1] = pass.alphaMix;
+                    buffer.colorMixFactor_alphaMixFactor_colorFactor[2] = pass.colorFactor;
+                    buffer.texAtlasLevel_texAtlasIndex_texFilter[0] = pass.texture.level;
+                    buffer.texAtlasLevel_texAtlasIndex_texFilter[1] = (int) pass.texture.index;
+                    buffer.texAtlasLevel_texAtlasIndex_texFilter[2] = pass.filter == LINEAR ? 1 : 0;
                     auto uvOffset = pass.srcRect.position / pass.texture.size.convert<float>();
-                    buffer.passData.uvOffset_uvScale[0] = uvOffset.x;
-                    buffer.passData.uvOffset_uvScale[1] = uvOffset.y;
+                    buffer.uvOffset_uvScale[0] = uvOffset.x;
+                    buffer.uvOffset_uvScale[1] = uvOffset.y;
                     auto uvScale = (pass.srcRect.dimensions /
                                     pass.texture.size.convert<float>());
-                    buffer.passData.uvOffset_uvScale[2] = uvScale.x;
-                    buffer.passData.uvOffset_uvScale[3] = uvScale.y;
+                    buffer.uvOffset_uvScale[2] = uvScale.x;
+                    buffer.uvOffset_uvScale[3] = uvScale.y;
                     auto atlasScale = (pass.texture.size.convert<float>() /
                                        TextureAtlas::getResolutionLevelSize(
                                                pass.texture.level).convert<float>());
-                    buffer.passData.atlasScale_texSize[0] = atlasScale.x;
-                    buffer.passData.atlasScale_texSize[1] = atlasScale.y;
-                    buffer.passData.atlasScale_texSize[2] = static_cast<float>(pass.texture.size.x);
-                    buffer.passData.atlasScale_texSize[3] = static_cast<float>(pass.texture.size.y);
+                    buffer.atlasScale_texSize[0] = atlasScale.x;
+                    buffer.atlasScale_texSize[1] = atlasScale.y;
+                    buffer.atlasScale_texSize[2] = static_cast<float>(pass.texture.size.x);
+                    buffer.atlasScale_texSize[3] = static_cast<float>(pass.texture.size.y);
 
-                    shaderBuffers.emplace_back(buffer);
+                    passData.emplace_back(buffer);
 
                     break;
                 }
@@ -796,7 +780,7 @@ namespace xng {
             }
             currentBatch.drawCalls.emplace_back(drawCalls.at(y));
             currentBatch.baseVertices.emplace_back(baseVertices.at(y));
-            currentBatch.uniformBuffers.emplace_back(shaderBuffers[y]);
+            currentBatch.uniformBuffers.emplace_back(passData.at(y));
         }
         if (!currentBatch.drawCalls.empty())
             batches.emplace_back(currentBatch);
@@ -804,9 +788,8 @@ namespace xng {
         renderPass->beginRenderPass(*userTarget, mViewportOffset, mViewportSize);
         renderPass->bindVertexArrayObject(*vertexArrayObject);
 
-
         ShaderUniformBufferDesc shaderBufferDesc;
-        shaderBufferDesc.size = sizeof(ShaderData);
+        shaderBufferDesc.size = sizeof(PassData);
         auto shaderBuffer = renderDevice.createShaderUniformBuffer(shaderBufferDesc);
 
         renderPass->bindShaderData({
@@ -863,15 +846,21 @@ namespace xng {
     }
 
     void Renderer2D::presentMultiDraw() {
-        int drawCycles = 0;
-        if (passes.size() > MAX_MULTI_DRAW_COUNT) {
-            drawCycles = passes.size() / MAX_MULTI_DRAW_COUNT;
-            if (drawCycles * MAX_MULTI_DRAW_COUNT < passes.size()) {
+        size_t totalBufferSize = passes.size() * sizeof(PassData);
+        size_t maxBufferSize = renderDevice.getInfo().storageBufferMaxSize;
+
+        size_t drawCycles = 0;
+        if (totalBufferSize > maxBufferSize) {
+            drawCycles = totalBufferSize / maxBufferSize;
+            auto remainder = totalBufferSize % maxBufferSize;
+            if (remainder > 0) {
                 drawCycles += 1;
             }
         } else if (!passes.empty()) {
             drawCycles = 1;
         }
+
+        size_t numberOfPassesPerCycle = maxBufferSize / sizeof(PassData);
 
         for (int i = 0; i < drawCycles; i++) {
             usedPlanes.clear();
@@ -883,13 +872,14 @@ namespace xng {
             std::vector<RenderPass::DrawCall> drawCalls;
             std::vector<size_t> baseVertices;
             std::vector<Primitive> primitives;
-            std::vector<PassData> passData(MAX_MULTI_DRAW_COUNT);
+            std::vector<PassData> passData;
 
-            auto currentPassBase = i * MAX_MULTI_DRAW_COUNT;
+            auto currentPassBase = i * numberOfPassesPerCycle;
             for (auto passIndex = 0;
-                 passIndex < MAX_MULTI_DRAW_COUNT && passIndex + currentPassBase < passes.size();
+                 passIndex < numberOfPassesPerCycle && passIndex + currentPassBase < passes.size();
                  passIndex++) {
                 auto &pass = passes.at(passIndex + currentPassBase);
+                PassData data;
                 switch (pass.type) {
                     case Pass::COLOR_POINT: {
                         usedPoints.insert(pass.dstRect.position);
@@ -909,12 +899,12 @@ namespace xng {
                                                                    0})
                                      * rotMat;
 
-                        passData[passIndex].mvp = viewProjectionMatrix * model;
+                        data.mvp = viewProjectionMatrix * model;
                         auto color = pass.color.divide();
-                        passData[passIndex].color[0] = color.x;
-                        passData[passIndex].color[1] = color.y;
-                        passData[passIndex].color[2] = color.z;
-                        passData[passIndex].color[3] = color.w;
+                        data.color[0] = color.x;
+                        data.color[1] = color.y;
+                        data.color[2] = color.z;
+                        data.color[3] = color.w;
                         break;
                     }
                     case Pass::COLOR_LINE: {
@@ -936,12 +926,12 @@ namespace xng {
                                                                    0})
                                      * rotMat;
 
-                        passData[passIndex].mvp = viewProjectionMatrix * model;
+                        data.mvp = viewProjectionMatrix * model;
                         auto color = pass.color.divide();
-                        passData[passIndex].color[0] = color.x;
-                        passData[passIndex].color[1] = color.y;
-                        passData[passIndex].color[2] = color.z;
-                        passData[passIndex].color[3] = color.w;
+                        data.color[0] = color.x;
+                        data.color[1] = color.y;
+                        data.color[2] = color.z;
+                        data.color[3] = color.w;
                         break;
                     }
                     case Pass::COLOR_PLANE: {
@@ -973,12 +963,12 @@ namespace xng {
                                                                    0})
                                      * rotMat;
 
-                        passData[passIndex].mvp = viewProjectionMatrix * model;
+                        data.mvp = viewProjectionMatrix * model;
                         auto color = pass.color.divide();
-                        passData[passIndex].color[0] = color.x;
-                        passData[passIndex].color[1] = color.y;
-                        passData[passIndex].color[2] = color.z;
-                        passData[passIndex].color[3] = color.w;
+                        data.color[0] = color.x;
+                        data.color[1] = color.y;
+                        data.color[2] = color.z;
+                        data.color[3] = color.w;
                         break;
                     }
                     case Pass::TEXTURE: {
@@ -999,36 +989,37 @@ namespace xng {
                                                                    0})
                                      * rotMat;
 
-                        passData[passIndex].mvp = viewProjectionMatrix * model;
+                        data.mvp = viewProjectionMatrix * model;
 
                         auto color = pass.color.divide();
-                        passData[passIndex].color[0] = color.x;
-                        passData[passIndex].color[1] = color.y;
-                        passData[passIndex].color[2] = color.z;
-                        passData[passIndex].color[3] = color.w;
-                        passData[passIndex].colorMixFactor_alphaMixFactor_colorFactor[0] = pass.mix;
-                        passData[passIndex].colorMixFactor_alphaMixFactor_colorFactor[1] = pass.alphaMix;
-                        passData[passIndex].colorMixFactor_alphaMixFactor_colorFactor[2] = pass.colorFactor;
-                        passData[passIndex].texAtlasLevel_texAtlasIndex_texFilter[0] = pass.texture.level;
-                        passData[passIndex].texAtlasLevel_texAtlasIndex_texFilter[1] = (int) pass.texture.index;
-                        passData[passIndex].texAtlasLevel_texAtlasIndex_texFilter[2] = pass.filter == LINEAR ? 1 : 0;
+                        data.color[0] = color.x;
+                        data.color[1] = color.y;
+                        data.color[2] = color.z;
+                        data.color[3] = color.w;
+                        data.colorMixFactor_alphaMixFactor_colorFactor[0] = pass.mix;
+                        data.colorMixFactor_alphaMixFactor_colorFactor[1] = pass.alphaMix;
+                        data.colorMixFactor_alphaMixFactor_colorFactor[2] = pass.colorFactor;
+                        data.texAtlasLevel_texAtlasIndex_texFilter[0] = pass.texture.level;
+                        data.texAtlasLevel_texAtlasIndex_texFilter[1] = (int) pass.texture.index;
+                        data.texAtlasLevel_texAtlasIndex_texFilter[2] = pass.filter == LINEAR ? 1 : 0;
                         auto uvOffset = pass.srcRect.position / pass.texture.size.convert<float>();
-                        passData[passIndex].uvOffset_uvScale[0] = uvOffset.x;
-                        passData[passIndex].uvOffset_uvScale[1] = uvOffset.y;
+                        data.uvOffset_uvScale[0] = uvOffset.x;
+                        data.uvOffset_uvScale[1] = uvOffset.y;
                         auto uvScale = (pass.srcRect.dimensions /
                                         pass.texture.size.convert<float>());
-                        passData[passIndex].uvOffset_uvScale[2] = uvScale.x;
-                        passData[passIndex].uvOffset_uvScale[3] = uvScale.y;
+                        data.uvOffset_uvScale[2] = uvScale.x;
+                        data.uvOffset_uvScale[3] = uvScale.y;
                         auto atlasScale = (pass.texture.size.convert<float>() /
                                            TextureAtlas::getResolutionLevelSize(
                                                    pass.texture.level).convert<float>());
-                        passData[passIndex].atlasScale_texSize[0] = atlasScale.x;
-                        passData[passIndex].atlasScale_texSize[1] = atlasScale.y;
-                        passData[passIndex].atlasScale_texSize[2] = static_cast<float>(pass.texture.size.x);
-                        passData[passIndex].atlasScale_texSize[3] = static_cast<float>(pass.texture.size.y);
+                        data.atlasScale_texSize[0] = atlasScale.x;
+                        data.atlasScale_texSize[1] = atlasScale.y;
+                        data.atlasScale_texSize[2] = static_cast<float>(pass.texture.size.x);
+                        data.atlasScale_texSize[3] = static_cast<float>(pass.texture.size.y);
                         break;
                     }
                 }
+                passData.emplace_back(data);
             }
 
             std::unordered_set<Vec2f> unusedPlanes;
@@ -1092,8 +1083,9 @@ namespace xng {
 
             updateVertexArrayObject();
 
-            std::vector<DrawBatchMultiDraw> batches;
-            DrawBatchMultiDraw currentBatch;
+            std::vector<DrawBatch> batches;
+            DrawBatch currentBatch;
+
             size_t currentBatchIndex = 0;
             for (auto y = 0; y < drawCalls.size(); y++) {
                 auto prim = primitives.at(y);
@@ -1106,7 +1098,7 @@ namespace xng {
                 }
                 currentBatch.drawCalls.emplace_back(drawCalls.at(y));
                 currentBatch.baseVertices.emplace_back(baseVertices.at(y));
-                currentBatch.uniformBuffer.passes[currentBatchIndex++] = passData[y];
+                currentBatch.uniformBuffers.emplace_back(passData.at(y));
             }
 
             if (!currentBatch.drawCalls.empty())
@@ -1115,9 +1107,13 @@ namespace xng {
             renderPass->beginRenderPass(*userTarget, mViewportOffset, mViewportSize);
             renderPass->bindVertexArrayObject(*vertexArrayObject);
 
-            ShaderUniformBufferDesc shaderBufferDesc;
-            shaderBufferDesc.size = sizeof(ShaderDataMultiDraw);
-            auto shaderBuffer = renderDevice.createShaderUniformBuffer(shaderBufferDesc);
+            auto bufSize = sizeof(PassData) * numberOfPassesPerCycle;
+            if (bufSize > totalBufferSize)
+                bufSize = totalBufferSize;
+
+            ShaderStorageBufferDesc shaderBufferDesc;
+            shaderBufferDesc.size = bufSize;
+            auto shaderBuffer = renderDevice.createShaderStorageBuffer(shaderBufferDesc);
 
             renderPass->bindShaderData({
                                                *shaderBuffer,
@@ -1139,7 +1135,7 @@ namespace xng {
             Primitive currentPrimitive = TRIANGLES;
 
             for (auto &batch: batches) {
-                shaderBuffer->upload(batch.uniformBuffer);
+                shaderBuffer->upload(0, reinterpret_cast<const uint8_t *>(batch.uniformBuffers.data()), batch.uniformBuffers.size() * sizeof(PassData));
 
                 switch (batch.primitive) {
                     case POINTS:

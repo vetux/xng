@@ -24,8 +24,9 @@
 
 #include "xng/asset/image.hpp"
 
-#include "xng/gpu/renderbuffer.hpp"
+#include "xng/gpu/renderobject.hpp"
 #include "xng/gpu/texturearraybufferdesc.hpp"
+#include "xng/gpu/gpufence.hpp"
 
 namespace xng {
     /**

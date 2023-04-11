@@ -20,8 +20,10 @@
 #ifndef XENGINE_INDEXBUFFER_HPP
 #define XENGINE_INDEXBUFFER_HPP
 
-#include "xng/gpu/renderbuffer.hpp"
+#include <memory>
+
 #include "xng/gpu/indexbufferdesc.hpp"
+#include "xng/gpu/gpufence.hpp"
 
 namespace xng {
     /**
@@ -29,23 +31,40 @@ namespace xng {
      *
      * On OpenGL this woule be a GL_ELEMENT_ARRAY_BUFFER
      */
-    class IndexBuffer : public RenderBuffer {
+    class IndexBuffer : public RenderObject {
     public:
-        enum IndexType {
-            UNSIGNED_INT
-        };
-
-        size_t getSize() override {
-            return getDescription().size;
-        }
-
-        RenderBufferType getBufferType() override {
-            return getDescription().type;
-        }
-
         Type getType() override {
             return RENDER_OBJECT_INDEX_BUFFER;
         }
+
+        /**
+         * Copy the data in source buffer to this buffer.
+         *
+         * @param source The concrete type of other must be compatible and have the same properties as this buffer.
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> copy(IndexBuffer &source) = 0;
+
+        /**
+         * Copy the data in source buffer to this buffer.
+         *
+         * @param source The concrete type of other must be compatible and have the same properties as this buffer.
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> copy(IndexBuffer &source,
+                                               size_t readOffset,
+                                               size_t writeOffset,
+                                               size_t count) = 0;
+
+        /**
+         * Upload the given data to the buffer at the given offset.
+         *
+         * @param offset
+         * @param data
+         * @param dataSize
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> upload(size_t offset, const uint8_t *data, size_t dataSize) = 0;
 
         virtual const IndexBufferDesc &getDescription() = 0;
     };

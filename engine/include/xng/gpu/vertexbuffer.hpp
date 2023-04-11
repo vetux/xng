@@ -20,9 +20,8 @@
 #ifndef XENGINE_VERTEXBUFFER_HPP
 #define XENGINE_VERTEXBUFFER_HPP
 
-#include "renderbuffer.hpp"
-#include "vertexbufferdesc.hpp"
-#include "gpufence.hpp"
+#include "xng/gpu/vertexbufferdesc.hpp"
+#include "xng/gpu/gpufence.hpp"
 
 #include "xng/asset/mesh.hpp"
 
@@ -34,27 +33,44 @@ namespace xng {
      *
      * On OpenGL this would be a GL_ARRAY_BUFFER
      */
-    class XENGINE_EXPORT VertexBuffer : public RenderBuffer {
+    class XENGINE_EXPORT VertexBuffer : public RenderObject {
     public:
         ~VertexBuffer() override = default;
-
-        size_t getSize() override {
-            return getDescription().size;
-        }
-
-        RenderBufferType getBufferType() override {
-            return getDescription().bufferType;
-        }
 
         Type getType() override {
             return Type::RENDER_OBJECT_VERTEX_BUFFER;
         }
 
-        virtual const VertexBufferDesc &getDescription() = 0;
+        /**
+         * Copy the data in source buffer to this buffer.
+         *
+         * @param source The concrete type of other must be compatible and have the same properties as this buffer.
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> copy(VertexBuffer &source) = 0;
 
-        virtual std::unique_ptr<GpuFence> upload(size_t offset,
-                                                 const uint8_t *data,
-                                                 size_t dataSize) = 0;
+        /**
+         * Copy the data in source buffer to this buffer.
+         *
+         * @param source The concrete type of other must be compatible and have the same properties as this buffer.
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> copy(VertexBuffer &source,
+                                               size_t readOffset,
+                                               size_t writeOffset,
+                                               size_t count) = 0;
+
+        /**
+         * Upload the given data to the buffer at the given offset.
+         *
+         * @param offset
+         * @param data
+         * @param dataSize
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> upload(size_t offset, const uint8_t *data, size_t dataSize) = 0;
+
+        virtual const VertexBufferDesc &getDescription() = 0;
     };
 }
 

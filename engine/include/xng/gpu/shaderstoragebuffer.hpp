@@ -20,7 +20,7 @@
 #ifndef XENGINE_SHADERSTORAGEBUFFER_HPP
 #define XENGINE_SHADERSTORAGEBUFFER_HPP
 
-#include "xng/gpu/renderbuffer.hpp"
+#include "xng/gpu/renderobject.hpp"
 #include "xng/gpu/gpufence.hpp"
 #include "xng/gpu/shaderstoragebufferdesc.hpp"
 
@@ -40,7 +40,7 @@ namespace xng {
      *
      *  Can be used for large data up to RenderDeviceInfo.storageBufferMaxSize
      */
-    class XENGINE_EXPORT ShaderStorageBuffer : public RenderBuffer {
+    class XENGINE_EXPORT ShaderStorageBuffer : public RenderObject {
     public:
         ~ShaderStorageBuffer() override = default;
 
@@ -48,11 +48,36 @@ namespace xng {
             return RENDER_OBJECT_SHADER_STORAGE_BUFFER;
         }
 
-        virtual const ShaderStorageBufferDesc &getDescription() = 0;
+        /**
+         * Copy the data in source buffer to this buffer.
+         *
+         * @param source The concrete type of other must be compatible and have the same properties as this buffer.
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> copy(ShaderStorageBuffer &source) = 0;
 
-        RenderBufferType getBufferType() override {
-            return getDescription().bufferType;
-        }
+        /**
+         * Copy the data in source buffer to this buffer.
+         *
+         * @param source The concrete type of other must be compatible and have the same properties as this buffer.
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> copy(ShaderStorageBuffer &source,
+                                               size_t readOffset,
+                                               size_t writeOffset,
+                                               size_t count) = 0;
+
+        /**
+         * Upload the given data to the buffer at the given offset.
+         *
+         * @param offset
+         * @param data
+         * @param dataSize
+         * @return
+         */
+        virtual std::unique_ptr<GpuFence> upload(size_t offset, const uint8_t *data, size_t dataSize) = 0;
+
+        virtual const ShaderStorageBufferDesc &getDescription() = 0;
 
         /**
          * Upload the given data to the shader buffer,

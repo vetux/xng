@@ -58,7 +58,7 @@ namespace xng::opengl {
                 vert = decompiler.decompile(desc.shaders.at(VERTEX).getBlob(),
                                             it->second.getEntryPoint(),
                                             VERTEX,
-                                            GLSL_420);
+                                            GLSL_460);
                 vertexSource = vert.data();
 
                 it = desc.shaders.find(FRAGMENT);
@@ -68,7 +68,7 @@ namespace xng::opengl {
                 frag = decompiler.decompile(desc.shaders.at(FRAGMENT).getBlob(),
                                             it->second.getEntryPoint(),
                                             FRAGMENT,
-                                            GLSL_420);
+                                            GLSL_460);
                 fragmentSource = frag.data();
 
                 it = desc.shaders.find(GEOMETRY);
@@ -76,7 +76,7 @@ namespace xng::opengl {
                     geo = decompiler.decompile(desc.shaders.at(GEOMETRY).getBlob(),
                                                it->second.getEntryPoint(),
                                                GEOMETRY,
-                                               GLSL_420);
+                                               GLSL_460);
                     geometrySource = geo.data();
                 }
 

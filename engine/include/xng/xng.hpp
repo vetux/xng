@@ -113,7 +113,6 @@
 #include "xng/gpu/gpumemory.hpp"
 #include "xng/gpu/rendertarget.hpp"
 #include "xng/gpu/gpudriverbackend.hpp"
-#include "xng/gpu/renderbuffer.hpp"
 #include "xng/gpu/vertexbufferdesc.hpp"
 #include "xng/gpu/gpudriver.hpp"
 #include "xng/gpu/rendertargetdesc.hpp"
