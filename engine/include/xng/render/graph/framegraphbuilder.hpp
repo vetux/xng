@@ -29,6 +29,7 @@ namespace xng {
     class XENGINE_EXPORT FrameGraphBuilder {
     public:
         FrameGraphBuilder(RenderTarget &backBuffer,
+                          RenderDeviceInfo deviceInfo,
                           const Scene &scene,
                           const GenericMapString &properties,
                           std::set<FrameGraphResource> persistentResources,
@@ -60,7 +61,9 @@ namespace xng {
 
         FrameGraphResource createVertexArrayObject(const VertexArrayObjectDesc &desc);
 
-        FrameGraphResource createShaderBuffer(const ShaderUniformBufferDesc &desc);
+        FrameGraphResource createShaderUniformBuffer(const ShaderUniformBufferDesc &desc);
+
+        FrameGraphResource createShaderStorageBuffer(const ShaderStorageBufferDesc &desc);
 
         /**
          * Declare that the pass will write to the specified resource handle.
@@ -134,6 +137,8 @@ namespace xng {
 
         ShaderDecompiler &getShaderDecompiler();
 
+        const RenderDeviceInfo &getDeviceInfo();
+
     private:
         FrameGraphResource createResourceId();
 
@@ -162,6 +167,8 @@ namespace xng {
 
         ShaderCompiler &shaderCompiler;
         ShaderDecompiler &shaderDecompiler;
+
+        RenderDeviceInfo deviceInfo;
     };
 }
 #endif //XENGINE_FRAMEGRAPHBUILDER_HPP

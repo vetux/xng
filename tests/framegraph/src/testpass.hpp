@@ -139,7 +139,7 @@ public:
 
         builder.read(passRes);
 
-        shaderBufferRes = builder.createShaderBuffer(ShaderUniformBufferDesc{.size =  sizeof(ShaderData)});
+        shaderBufferRes = builder.createShaderUniformBuffer(ShaderUniformBufferDesc{.size =  sizeof(ShaderData)});
         builder.read(shaderBufferRes);
         builder.write(shaderBufferRes);
 

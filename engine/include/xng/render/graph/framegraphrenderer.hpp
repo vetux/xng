@@ -34,7 +34,11 @@
 namespace xng {
     class XENGINE_EXPORT FrameGraphRenderer : public SceneRenderer {
     public:
-        explicit FrameGraphRenderer(RenderTarget &target, std::unique_ptr<FrameGraphAllocator> allocator, ShaderCompiler &shaderCompiler, ShaderDecompiler &shaderDecompiler);
+        explicit FrameGraphRenderer(RenderTarget &target,
+                                    RenderDevice &device,
+                                    std::unique_ptr<FrameGraphAllocator> allocator,
+                                    ShaderCompiler &shaderCompiler,
+                                    ShaderDecompiler &shaderDecompiler);
 
         void render(const Scene &scene) override;
 
@@ -56,6 +60,7 @@ namespace xng {
 
     private:
         RenderTarget &target;
+        RenderDevice &device;
         std::unique_ptr<FrameGraphAllocator> allocator;
 
         std::vector<std::shared_ptr<FrameGraphPass>> passes;

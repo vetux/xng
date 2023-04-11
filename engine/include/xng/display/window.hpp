@@ -44,9 +44,11 @@ namespace xng {
          *
          * When rendering to the returned target the results are displayed in the window.
          *
+         * @param device The device for which to create a target, on vulkan the device contains the vulkan instance required for instantiating the surface.
+         *
          * @return
          */
-        virtual RenderTarget &getRenderTarget() = 0;
+        virtual std::unique_ptr<RenderTarget> getRenderTarget(RenderDevice &device) = 0;
 
         virtual Input &getInput() = 0;
 

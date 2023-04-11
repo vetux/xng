@@ -167,6 +167,8 @@ namespace xng {
         std::set<Uri> usedMeshes;
 
         bool bindVao = true;
+
+        size_t drawCycles;
     };
 }
 #endif //XENGINE_GBUFFERPASS_HPP

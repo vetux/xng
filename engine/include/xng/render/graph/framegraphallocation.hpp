@@ -47,6 +47,7 @@ namespace xng {
                 TextureBufferDesc,
                 TextureArrayBufferDesc,
                 ShaderUniformBufferDesc,
+                ShaderStorageBufferDesc,
                 RenderTargetDesc> allocationData;
     };
 }

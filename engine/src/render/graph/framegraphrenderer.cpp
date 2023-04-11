@@ -21,12 +21,22 @@
 #include "xng/render/graph/framegraphbuilder.hpp"
 
 namespace xng {
-    FrameGraphRenderer::FrameGraphRenderer(RenderTarget &target, std::unique_ptr<FrameGraphAllocator> allocator, ShaderCompiler &shaderCompiler, ShaderDecompiler &shaderDecompiler)
-            : target(target), allocator(std::move(allocator)), shaderCompiler(shaderCompiler), shaderDecompiler(shaderDecompiler) {}
+    FrameGraphRenderer::FrameGraphRenderer(RenderTarget &target,
+                                           RenderDevice &device,
+                                           std::unique_ptr<FrameGraphAllocator> allocator,
+                                           ShaderCompiler &shaderCompiler,
+                                           ShaderDecompiler &shaderDecompiler)
+            : target(target), device(device), allocator(std::move(allocator)), shaderCompiler(shaderCompiler),
+              shaderDecompiler(shaderDecompiler) {}
 
     void FrameGraphRenderer::render(const Scene &scene) {
         /// Setup
-        frame = FrameGraphBuilder(target, scene, properties, frame.getPersistentResources(), shaderCompiler, shaderDecompiler).build(passes);
+        frame = FrameGraphBuilder(target,
+                                  device.getInfo(),
+                                  scene, properties,
+                                  frame.getPersistentResources(),
+                                  shaderCompiler,
+                                  shaderDecompiler).build(passes);
 
         blackboard.clear();
 

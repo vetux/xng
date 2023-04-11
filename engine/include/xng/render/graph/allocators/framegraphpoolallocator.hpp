@@ -155,7 +155,13 @@ namespace xng {
                 }
                 case RenderObject::RENDER_OBJECT_SHADER_UNIFORM_BUFFER: {
                     auto desc = std::get<ShaderUniformBufferDesc>(allocation.allocationData);
-                    auto &buf = createShaderBuffer(desc);
+                    auto &buf = createShaderUniformBuffer(desc);
+                    objects[res] = &buf;
+                    return buf;
+                }
+                case RenderObject::RENDER_OBJECT_SHADER_STORAGE_BUFFER: {
+                    auto desc = std::get<ShaderStorageBufferDesc>(allocation.allocationData);
+                    auto &buf = createShaderStorageBuffer(desc);
                     objects[res] = &buf;
                     return buf;
                 }
@@ -210,7 +216,9 @@ namespace xng {
 
         TextureArrayBuffer &createTextureArrayBuffer(const TextureArrayBufferDesc &desc);
 
-        ShaderUniformBuffer &createShaderBuffer(const ShaderUniformBufferDesc &desc);
+        ShaderUniformBuffer &createShaderUniformBuffer(const ShaderUniformBufferDesc &desc);
+
+        ShaderStorageBuffer &createShaderStorageBuffer(const ShaderStorageBufferDesc &desc);
 
         RenderTarget &createRenderTarget(const RenderTargetDesc &desc);
 
@@ -231,6 +239,7 @@ namespace xng {
         std::unordered_map<TextureBufferDesc, std::vector<std::unique_ptr<TextureBuffer>>> textures;
         std::unordered_map<TextureArrayBufferDesc, std::vector<std::unique_ptr<TextureArrayBuffer>>> textureArrays;
         std::unordered_map<ShaderUniformBufferDesc, std::vector<std::unique_ptr<ShaderUniformBuffer>>> shaderBuffers;
+        std::unordered_map<ShaderStorageBufferDesc, std::vector<std::unique_ptr<ShaderStorageBuffer>>> shaderStorageBuffers;
         std::unordered_map<RenderTargetDesc, std::vector<std::unique_ptr<RenderTarget>>> targets;
 
         std::unordered_map<RenderPipelineDesc, int> usedPipelines;
@@ -241,6 +250,7 @@ namespace xng {
         std::unordered_map<TextureBufferDesc, int> usedTextures;
         std::unordered_map<TextureArrayBufferDesc, int> usedTextureArrays;
         std::unordered_map<ShaderUniformBufferDesc, int> usedShaderBuffers;
+        std::unordered_map<ShaderStorageBufferDesc, int> usedShaderStorageBuffers;
         std::unordered_map<RenderTargetDesc, int> usedTargets;
 
         FrameGraph frame;

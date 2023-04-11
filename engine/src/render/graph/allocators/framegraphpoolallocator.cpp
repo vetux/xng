@@ -82,6 +82,11 @@ namespace xng {
                 pair.second.resize(usedShaderBuffers.at(pair.first) + poolCacheSize);
             }
         }
+        for (auto &pair: shaderStorageBuffers) {
+            if (pair.second.size() - usedShaderStorageBuffers.at(pair.first) > poolCacheSize) {
+                pair.second.resize(usedShaderStorageBuffers.at(pair.first) + poolCacheSize);
+            }
+        }
         for (auto &pair: targets) {
             if (pair.second.size() - usedTargets.at(pair.first) > poolCacheSize) {
                 pair.second.resize(usedTargets.at(pair.first) + poolCacheSize);
@@ -148,13 +153,22 @@ namespace xng {
         return *textureArrays[desc].at(index);
     }
 
-    ShaderUniformBuffer &FrameGraphPoolAllocator::createShaderBuffer(const ShaderUniformBufferDesc &desc) {
+    ShaderUniformBuffer &FrameGraphPoolAllocator::createShaderUniformBuffer(const ShaderUniformBufferDesc &desc) {
         auto index = usedShaderBuffers[desc]++;
         if (shaderBuffers[desc].size() <= index) {
             shaderBuffers[desc].resize(usedShaderBuffers[desc]);
             shaderBuffers[desc].at(index) = device->createShaderUniformBuffer(desc);
         }
         return *shaderBuffers[desc].at(index);
+    }
+
+    ShaderStorageBuffer &FrameGraphPoolAllocator::createShaderStorageBuffer(const ShaderStorageBufferDesc &desc) {
+        auto index = usedShaderStorageBuffers[desc]++;
+        if (shaderStorageBuffers[desc].size() <= index) {
+            shaderStorageBuffers[desc].resize(usedShaderStorageBuffers[desc]);
+            shaderStorageBuffers[desc].at(index) = device->createShaderStorageBuffer(desc);
+        }
+        return *shaderStorageBuffers[desc].at(index);
     }
 
     RenderTarget &FrameGraphPoolAllocator::createRenderTarget(const RenderTargetDesc &desc) {
@@ -265,6 +279,22 @@ namespace xng {
                 }
                 assert(found);
                 shaderBuffers[buffer.getDescription()].erase(shaderBuffers[buffer.getDescription()].begin() + index);
+                break;
+            }
+            case RenderObject::RENDER_OBJECT_SHADER_STORAGE_BUFFER: {
+                auto &buffer = dynamic_cast<ShaderStorageBuffer &>(obj);
+                usedShaderStorageBuffers[buffer.getDescription()]--;
+                bool found = false;
+                long index = 0;
+                for (auto i = 0; i < shaderStorageBuffers[buffer.getDescription()].size(); i++) {
+                    if (shaderStorageBuffers[buffer.getDescription()][i].get() == &buffer) {
+                        index = i;
+                        found = true;
+                        break;
+                    }
+                }
+                assert(found);
+                shaderStorageBuffers[buffer.getDescription()].erase(shaderStorageBuffers[buffer.getDescription()].begin() + index);
                 break;
             }
             case RenderObject::RENDER_OBJECT_RENDER_TARGET: {
@@ -406,6 +436,23 @@ namespace xng {
                 assert(found);
                 auto ret = std::unique_ptr<RenderObject>(shaderBuffers.at(buffer.getDescription()).at(index).release());
                 shaderBuffers.at(buffer.getDescription()).erase(shaderBuffers.at(buffer.getDescription()).begin() + index);
+                return ret;
+            }
+            case RenderObject::RENDER_OBJECT_SHADER_STORAGE_BUFFER: {
+                auto &buffer = dynamic_cast<ShaderStorageBuffer &>(obj);
+                usedShaderStorageBuffers[buffer.getDescription()]--;
+                bool found = false;
+                long index = 0;
+                for (auto i = 0; i < shaderStorageBuffers[buffer.getDescription()].size(); i++) {
+                    if (shaderStorageBuffers[buffer.getDescription()][i].get() == &buffer) {
+                        index = i;
+                        found = true;
+                        break;
+                    }
+                }
+                assert(found);
+                auto ret = std::unique_ptr<RenderObject>(shaderStorageBuffers.at(buffer.getDescription()).at(index).release());
+                shaderStorageBuffers.at(buffer.getDescription()).erase(shaderStorageBuffers.at(buffer.getDescription()).begin() + index);
                 return ret;
             }
             case RenderObject::RENDER_OBJECT_RENDER_TARGET: {

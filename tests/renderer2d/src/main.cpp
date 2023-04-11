@@ -35,6 +35,7 @@ ImageRGBA loadImage(const std::filesystem::path &filePath) {
 
 class TestApplication {
 public:
+    RenderDevice &device;
     Window &window;
     Renderer2D &ren;
 
@@ -51,10 +52,12 @@ public:
 
     TextRenderer textRenderer;
 
-    TestApplication(Window &window,
+    TestApplication(RenderDevice &device,
+                    Window &window,
                     Renderer2D &ren,
                     Font &font)
-            : window(window),
+            : device(device),
+            window(window),
               ren(ren),
               textRenderer(font, ren, Vec2i(0, fpsFontPixelSize)) {
         imageB = loadImage("assets/images/awesomeface.png");
@@ -81,13 +84,13 @@ public:
         auto &textImg = text.getImage();
         auto textHandle = ren.createTexture(textImg);
 
-        auto &target = window.getRenderTarget();
+        auto target = window.getRenderTarget(device);
 
         rot += rotSpeed * delta;
 
-        ren.renderBegin(target, ColorRGBA::gray(0.3, 0));
+        ren.renderBegin(*target, ColorRGBA::gray(0.3, 0));
 
-        auto targetSize = target.getDescription().size.convert<float>();
+        auto targetSize = target->getDescription().size.convert<float>();
 
         ren.draw(Vec2f(0, 0), targetSize, ColorRGBA::green());
 
@@ -155,13 +158,13 @@ public:
             }
         }
 
-        auto &target = window.getRenderTarget();
+        auto target = window.getRenderTarget(device);
 
         rot += rotSpeed * delta;
 
-        ren.renderBegin(target, ColorRGBA::gray(0.3, 0));
+        ren.renderBegin(*target, ColorRGBA::gray(0.3, 0));
 
-        auto targetSize = target.getDescription().size.convert<float>();
+        auto targetSize = target->getDescription().size.convert<float>();
 
         auto performanceGrid = Vec2f(performanceGridBase * (targetSize.x / targetSize.y), performanceGridBase);
 
@@ -234,20 +237,21 @@ int main(int argc, char *argv[]) {
     auto fontDriver = freetype::FtFontDriver();
 
     auto window = displayDriver.createWindow(OPENGL_4_6, "Renderer 2D Test", {640, 480}, {.swapInterval = 1});
+
+    auto renderDevice = gpuDriver.createRenderDevice();
+
     auto &input = window->getInput();
-    auto &target = window->getRenderTarget();
+    auto target = window->getRenderTarget(*renderDevice);
     auto fs = std::ifstream("assets/fonts/Sono/static/Sono/Sono-Bold.ttf");
     auto font = fontDriver.createFont(fs);
 
     font->setPixelSize({0, fpsFontPixelSize});
 
-    auto renderDevice = gpuDriver.createRenderDevice();
-
     Renderer2D ren(*renderDevice, shaderCompiler, shaderDecompiler);
 
     auto frameLimiter = FrameLimiter();
 
-    TestApplication app(*window, ren, *font);
+    TestApplication app(*renderDevice, *window, ren, *font);
 
     size_t currentPage = 0;
     while (!window->shouldClose()) {

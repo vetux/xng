@@ -189,8 +189,6 @@ namespace xng::glfw {
 
         glfwSwapInterval(attributes.swapInterval);
 
-        renderTargetGl = std::make_unique<GLFWRenderTargetGL>(*wndH);
-
         input = std::make_unique<GLFWInput>(*wndH);
 
         std::lock_guard<std::mutex> guard(windowMappingMutex);
@@ -231,8 +229,6 @@ namespace xng::glfw {
             throw std::runtime_error("Failed to initialize glad");
         }
 
-        renderTargetGl = std::make_unique<GLFWRenderTargetGL>(*wndH);
-
         input = std::make_unique<GLFWInput>(*wndH);
 
         std::lock_guard<std::mutex> guard(windowMappingMutex);
@@ -260,7 +256,6 @@ namespace xng::glfw {
     }
 
     void WindowGLFWGL::glfwWindowSizeCallback(int width, int height) {
-        renderTargetGl->desc.size = {width, height};
         for (auto listener: listeners) {
             listener->onWindowResize(Vec2i(width, height));
         }
@@ -302,8 +297,8 @@ namespace xng::glfw {
         }
     }
 
-    RenderTarget &WindowGLFWGL::getRenderTarget() {
-        return *renderTargetGl;
+    std::unique_ptr<RenderTarget> WindowGLFWGL::getRenderTarget(RenderDevice &device) {
+        return std::make_unique<GLFWRenderTargetGL>(*wndH);
     }
 
     Input &WindowGLFWGL::getInput() {

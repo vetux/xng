@@ -102,11 +102,14 @@ int main(int argc, char *argv[]) {
 
     auto textRenderer = TextRenderer(*font, ren2d, {0, 70});
 
-    xng::FrameGraphRenderer renderer(window->getRenderTarget(),
+    auto target = window->getRenderTarget(*device);
+
+    xng::FrameGraphRenderer renderer(*target,
+                                     *device,
                                      std::make_unique<xng::FrameGraphPoolAllocator>(*device,
                                                                                     shaderCompiler,
                                                                                     shaderDecompiler,
-                                                                                    window->getRenderTarget()),
+                                                                                    *target),
                                      shaderCompiler,
                                      shaderDecompiler);
 
@@ -216,11 +219,11 @@ int main(int argc, char *argv[]) {
 
         auto tex = ren2d.createTexture(text.getImage());
 
-        ren2d.renderBegin(window->getRenderTarget(),
+        ren2d.renderBegin(*target,
                           false,
                           {},
                           {},
-                          window->getRenderTarget().getDescription().size,
+                          target->getDescription().size,
                           {});
         ren2d.draw(Rectf({}, text.getImage().getSize().convert<float>()),
                    Rectf({}, text.getImage().getSize().convert<float>()),

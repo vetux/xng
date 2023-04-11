@@ -31,8 +31,6 @@
 
 static const char *SHADER_VERT_GEOMETRY = R"###(#version 460
 
-#define MAX_MULTI_DRAW 1000
-
 layout (location = 0) in vec3 vPosition;
 layout (location = 1) in vec3 vNormal;
 layout (location = 2) in vec2 vUv;
@@ -81,9 +79,9 @@ struct ShaderDrawData {
     ShaderAtlasTexture shininess;
 };
 
-layout(binding = 0, std140) uniform ShaderUniformBuffer
+layout(binding = 0, std140) buffer ShaderUniformBuffer
 {
-    ShaderDrawData data[MAX_MULTI_DRAW];
+    ShaderDrawData data[];
 } globs;
 
 layout(binding = 1) uniform sampler2DArray atlasTextures[12];
@@ -113,8 +111,6 @@ void main()
 static const char *SHADER_FRAG_GEOMETRY = R"###(#version 460
 
 #include "texfilter.glsl"
-
-#define MAX_MULTI_DRAW 1000
 
 layout(location = 0) in vec3 fPos;
 layout(location = 1) in vec3 fNorm;
@@ -165,9 +161,9 @@ struct ShaderDrawData {
     ShaderAtlasTexture shininess;
 };
 
-layout(binding = 0, std140) uniform ShaderUniformBuffer
+layout(binding = 0, std140) buffer ShaderUniformBuffer
 {
-    ShaderDrawData data[MAX_MULTI_DRAW];
+    ShaderDrawData data[];
 } globs;
 
 layout(binding = 1) uniform sampler2DArray atlasTextures[12];
@@ -248,8 +244,6 @@ static const xng::Shader shader = xng::Shader(xng::ShaderSource(SHADER_VERT_GEOM
                                               xng::ShaderSource());
 
 namespace xng {
-    static const size_t MAX_MULTI_DRAW = 1000;
-
 #pragma pack(push, 1)
     struct ShaderAtlasTexture {
         int level_index_filtering_assigned[4]{0, 0, 0, 0};
@@ -279,10 +273,6 @@ namespace xng {
         ShaderAtlasTexture ambient;
         ShaderAtlasTexture specular;
         ShaderAtlasTexture shininess;
-    };
-
-    struct ShaderBufferData {
-        ShaderDrawData data[MAX_MULTI_DRAW];
     };
 #pragma pack(pop)
 
@@ -315,7 +305,7 @@ namespace xng {
                     .shaders = {{VERTEX,   vsb.getShader()},
                                 {FRAGMENT, fsb.getShader()}},
                     .bindings = {
-                            BIND_SHADER_UNIFORM_BUFFER,
+                            BIND_SHADER_STORAGE_BUFFER,
                             BIND_TEXTURE_ARRAY_BUFFER,
                             BIND_TEXTURE_ARRAY_BUFFER,
                             BIND_TEXTURE_ARRAY_BUFFER,
@@ -345,7 +335,7 @@ namespace xng {
         builder.persist(renderPipelineRes);
         builder.read(renderPipelineRes);
 
-        if (!vertexArrayObjectRes.assigned){
+        if (!vertexArrayObjectRes.assigned) {
             vertexArrayObjectRes = builder.createVertexArrayObject(VertexArrayObjectDesc{
                     .vertexLayout = Mesh::getDefaultVertexLayout()
             });
@@ -360,12 +350,6 @@ namespace xng {
                 .hasDepthStencilAttachment = true
         });
         builder.read(renderPassRes);
-
-        shaderBufferRes = builder.createShaderBuffer(ShaderUniformBufferDesc{
-                .bufferType = RenderBufferType::HOST_VISIBLE,
-                .size = sizeof(ShaderBufferData)
-        });
-        builder.write(shaderBufferRes);
 
         auto desc = TextureBufferDesc();
         desc.size = renderSize;
@@ -397,6 +381,8 @@ namespace xng {
         builder.write(gBufferDepth);
 
         objects.clear();
+
+        size_t totalShaderBufferSize = 0;
 
         usedTextures.clear();
         usedMeshes.clear();
@@ -464,10 +450,37 @@ namespace xng {
                                 mat.shininessTexture.get().getImage().get());
                     }
 
+                    totalShaderBufferSize += sizeof(ShaderDrawData);
+
                     objects.emplace_back(object);
                 }
             }
         }
+
+        size_t maxBufferSize = builder.getDeviceInfo().storageBufferMaxSize;
+
+        drawCycles = 0;
+        if (totalShaderBufferSize > maxBufferSize) {
+            drawCycles = totalShaderBufferSize / maxBufferSize;
+            auto remainder = totalShaderBufferSize % maxBufferSize;
+            if (remainder > 0) {
+                drawCycles += 1;
+            }
+        } else if (totalShaderBufferSize > 0) {
+            drawCycles = 1;
+        }
+
+        size_t numberOfPassesPerCycle = maxBufferSize / sizeof(ShaderDrawData);
+
+        auto bufSize = sizeof(ShaderDrawData) * numberOfPassesPerCycle;
+        if (bufSize > totalShaderBufferSize)
+            bufSize = totalShaderBufferSize;
+
+        shaderBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+                .bufferType = RenderBufferType::HOST_VISIBLE,
+                .size = bufSize
+        });
+        builder.write(shaderBufferRes);
 
         atlas.setup(builder);
 
@@ -530,7 +543,7 @@ namespace xng {
         auto &pipeline = resources.get<RenderPipeline>(renderPipelineRes);
         auto &pass = resources.get<RenderPass>(renderPassRes);
 
-        auto &shaderBuffer = resources.get<ShaderUniformBuffer>(shaderBufferRes);
+        auto &shaderBuffer = resources.get<ShaderStorageBuffer>(shaderBufferRes);
         auto &vertexArrayObject = resources.get<VertexArrayObject>(vertexArrayObjectRes);
         auto &vertexBuffer = resources.get<VertexBuffer>(vertexBufferRes);
         auto &indexBuffer = resources.get<IndexBuffer>(indexBufferRes);
@@ -605,18 +618,18 @@ namespace xng {
         auto projection = camera.projection();
         auto view = Camera::view(cameraTransform);
 
-        auto iterations = objects.size() > MAX_MULTI_DRAW ? objects.size() / MAX_MULTI_DRAW : 1;
-
         pass.beginRenderPass(target, {}, target.getDescription().size);
         pass.bindPipeline(pipeline);
         pass.bindVertexArrayObject(vertexArrayObject);
 
-        for (auto i = 0; i < iterations; i++) {
+        auto passesPerDrawCycle = objects.size() / drawCycles;
+
+        for (auto i = 0; i < drawCycles; i++) {
             std::vector<RenderPass::DrawCall> drawCalls;
             std::vector<size_t> baseVertices;
-            ShaderBufferData shaderData;
-            for (auto oi = i * MAX_MULTI_DRAW; oi < MAX_MULTI_DRAW && oi < objects.size(); oi++) {
-                auto &object = objects.at(oi);
+            std::vector<ShaderDrawData> shaderData;
+            for (auto oi = 0; oi < passesPerDrawCycle && oi < objects.size(); oi++) {
+                auto &object = objects.at(oi + (i * passesPerDrawCycle));
                 auto model = object.transform.model();
                 auto &material = object.material.get();
 
@@ -809,14 +822,16 @@ namespace xng {
                     data.normal.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
                 }
 
-                shaderData.data[oi - (i * MAX_MULTI_DRAW)] = data;
+                shaderData.emplace_back(data);
 
                 auto mesh = getMesh(object.mesh);
 
                 drawCalls.emplace_back(mesh.drawCall);
                 baseVertices.emplace_back(mesh.baseVertex);
             }
-            shaderBuffer.upload(shaderData);
+            shaderBuffer.upload(0,
+                                reinterpret_cast<const uint8_t *>(shaderData.data()),
+                                shaderData.size() * sizeof(ShaderDrawData));
             pass.bindShaderData({shaderBuffer,
                                  atlasBuffers.at(TEXTURE_ATLAS_8x8),
                                  atlasBuffers.at(TEXTURE_ATLAS_16x16),
@@ -871,7 +886,7 @@ namespace xng {
             data.drawCall.count = mesh.get().indices.size();
             data.drawCall.offset = allocateIndexData(mesh.get().indices.size() * sizeof(unsigned int));
             data.baseVertex = allocateVertexData(mesh.get().vertices.size() * mesh.get().vertexLayout.getSize())
-                    / mesh.get().vertexLayout.getSize();
+                              / mesh.get().vertexLayout.getSize();
             pendingMeshAllocations[mesh.getUri()] = data;
             pendingMeshHandles[mesh.getUri()] = mesh;
         }

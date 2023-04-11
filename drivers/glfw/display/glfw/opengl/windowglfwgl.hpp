@@ -45,7 +45,7 @@ namespace xng::glfw {
 
         ~WindowGLFWGL() override;
 
-        RenderTarget &getRenderTarget() override;
+        std::unique_ptr<RenderTarget> getRenderTarget(RenderDevice &device) override;
 
         Input &getInput() override;
 
@@ -144,7 +144,6 @@ namespace xng::glfw {
     private:
         GLFWwindow *wndH;
         std::unique_ptr<GLFWInput> input;
-        std::unique_ptr<GLFWRenderTargetGL> renderTargetGl;
         std::set<WindowListener *> listeners;
     };
 }

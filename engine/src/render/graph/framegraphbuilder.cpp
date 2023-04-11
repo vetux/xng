@@ -25,12 +25,14 @@
 
 namespace xng {
     FrameGraphBuilder::FrameGraphBuilder(RenderTarget &backBuffer,
+                                         RenderDeviceInfo deviceInfo,
                                          const Scene &scene,
                                          const GenericMapString &properties,
                                          std::set<FrameGraphResource> persistentResources,
                                          ShaderCompiler &shaderCompiler,
                                          ShaderDecompiler &shaderDecompiler)
             : backBuffer(backBuffer),
+              deviceInfo(std::move(deviceInfo)),
               scene(scene),
               properties(properties),
               persistentResources(std::move(persistentResources)),
@@ -93,9 +95,16 @@ namespace xng {
         return ret;
     }
 
-    FrameGraphResource FrameGraphBuilder::createShaderBuffer(const ShaderUniformBufferDesc &desc) {
+    FrameGraphResource FrameGraphBuilder::createShaderUniformBuffer(const ShaderUniformBufferDesc &desc) {
         auto ret = createResourceId();
         graph.allocations[ret] = FrameGraphAllocation{RenderObject::RENDER_OBJECT_SHADER_UNIFORM_BUFFER, desc};
+        currentPass.allocations.insert(ret);
+        return ret;
+    }
+
+    FrameGraphResource FrameGraphBuilder::createShaderStorageBuffer(const ShaderStorageBufferDesc &desc) {
+        auto ret = createResourceId();
+        graph.allocations[ret] = FrameGraphAllocation{RenderObject::RENDER_OBJECT_SHADER_STORAGE_BUFFER, desc};
         currentPass.allocations.insert(ret);
         return ret;
     }
@@ -141,6 +150,10 @@ namespace xng {
 
     ShaderDecompiler &FrameGraphBuilder::getShaderDecompiler() {
         return shaderDecompiler;
+    }
+
+    const RenderDeviceInfo &FrameGraphBuilder::getDeviceInfo() {
+        return deviceInfo;
     }
 
     FrameGraphResource FrameGraphBuilder::createResourceId() {

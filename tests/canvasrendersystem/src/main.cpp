@@ -148,10 +148,11 @@ int main(int argc, char *argv[]) {
     auto window = displayDriver.createWindow(OPENGL_4_6, "Renderer 2D Test", {640, 480}, {
         .swapInterval = 1
     });
-    auto &input = window->getInput();
-    auto &target = window->getRenderTarget();
 
     auto renderDevice = gpuDriver.createRenderDevice();
+
+    auto &input = window->getInput();
+    auto target = window->getRenderTarget(*renderDevice);
 
     ResourceRegistry::getDefaultRegistry().addArchive("file", std::make_shared<DirectoryArchive>("assets/"));
     std::vector<std::unique_ptr<ResourceParser>> parsers;
@@ -166,7 +167,7 @@ int main(int argc, char *argv[]) {
     SystemPipeline pipeline(xng::SystemPipeline::TICK_FRAME,
                             {
                                     std::make_shared<CanvasRenderSystem>(ren,
-                                                                         target,
+                                                                         *target,
                                                                          fontDriver,
                                                                          false)
                             });
