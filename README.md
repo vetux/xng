@@ -32,7 +32,7 @@ workflow
  
 ## Drivers
 
-Drivers are implementations of interfaces (For example through 3rd party libraries) that can be optionally compiled into the engine library. If a driver interface implementation type is instantiated in an application the corresponding driver must be defined by the linked engine library by enabling the corresponding cmake option/s when compiling the engine library.
+Drivers are implementations of interfaces (For example through 3rd party libraries) that can be optionally compiled into the engine library. If a driver interface implementation type is instantiated in an application the corresponding driver must be defined by the linked engine library by enabling the corresponding cmake option/s in [drivers.cmake](cmake/drivers.cmake) when compiling the engine library.
 
 - Display Manager
     - GLFW
