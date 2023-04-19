@@ -22,57 +22,10 @@
 
 #include "xng/xng.hpp"
 
+#include "testpass/fs.hpp"
+#include "testpass/vs.hpp"
+
 using namespace xng;
-
-static const char *SHADER_VERT_GEOMETRY = R"###(#version 460
-
-layout (location = 0) in vec3 vPosition;
-layout (location = 1) in vec2 vUv;
-
-layout(location = 0) out vec4 fPos;
-layout(location = 1) out vec2 fUv;
-
-layout(binding = 0, std140) uniform ShaderUniformBuffer
-{
-    vec4 visualizeDepth_near_far;
-} globs;
-
-layout(binding = 1) uniform sampler2D tex;
-
-void main()
-{
-    fPos = vec4(vPosition, 1);
-    fUv = vUv;
-    gl_Position = fPos;
-}
-)###";
-
-static const char *SHADER_FRAG_GEOMETRY = R"###(#version 460
-
-layout(location = 0) in vec4 fPos;
-layout(location = 1) in vec2 fUv;
-
-layout(location = 0) out vec4 oColor;
-
-layout(binding = 0, std140) uniform ShaderUniformBuffer
-{
-    vec4 visualizeDepth_near_far;
-} globs;
-
-layout(binding = 1) uniform sampler2D tex;
-
-void main() {
-    oColor = texture(tex, fUv);
-    if (globs.visualizeDepth_near_far.x != 0)
-    {
-        float near = globs.visualizeDepth_near_far.y;
-        float far = globs.visualizeDepth_near_far.z;
-        float ndc = oColor.r * 2.0 - 1.0;
-        float linearDepth = 1 - ((2.0 * near * far) / (far + near - ndc * (far - near)) / far);
-        oColor = vec4(linearDepth, linearDepth, linearDepth, 1);
-    }
-}
-)###";
 
 struct ShaderData {
     float visualizeDepth_near_far[4];
@@ -101,19 +54,10 @@ public:
         builder.read(vertexArrayObjectRes);
 
         if (!pipelineRes.assigned) {
-            auto vs = ShaderSource(SHADER_VERT_GEOMETRY, "main", xng::VERTEX, xng::GLSL_460, false);
-            auto fs = ShaderSource(SHADER_FRAG_GEOMETRY, "main", xng::FRAGMENT, xng::GLSL_460, false);
-
-            vs = vs.preprocess(builder.getShaderCompiler());
-            fs = fs.preprocess(builder.getShaderCompiler());
-
-            vsb = vs.compile(builder.getShaderCompiler());
-            fsb = fs.compile(builder.getShaderCompiler());
-
             pipelineRes = builder.createPipeline(RenderPipelineDesc{
                     .shaders = {
-                            {VERTEX,   vsb.getShader()},
-                            {FRAGMENT, fsb.getShader()}
+                            {VERTEX,   vs.getShader()},
+                            {FRAGMENT, fs.getShader()}
                     },
                     .bindings = {BIND_SHADER_UNIFORM_BUFFER,
                                  BIND_TEXTURE_BUFFER},
@@ -266,9 +210,6 @@ private:
 
     FrameGraphResource vertexBufferRes;
     FrameGraphResource vertexArrayObjectRes;
-
-    SPIRVBundle vsb;
-    SPIRVBundle fsb;
 
     bool quadAllocated = false;
 
