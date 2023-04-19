@@ -191,8 +191,9 @@ void printUsage() {
 
 xng::SPIRVBlob blob = {1, 2, 3,};
 
-std::string generateHeader(const std::string &filename, const xng::SPIRVShader &shader) {
-    std::string ret = R"###(#include "xng/shader/spirvbundle.hpp"
+std::string generateHeader(const std::string &filePath, const std::string &filename, const xng::SPIRVShader &shader) {
+    std::string ret = "#ifndef " + filePath + "\n#define " + filePath + R"###(
+#include "xng/shader/spirvbundle.hpp"
 using namespace xng;
 const SPIRVBundle )###";
 
@@ -210,7 +211,8 @@ const SPIRVBundle )###";
     for (auto &v: shader.getBlob()) {
         ret += std::to_string(v) + ",";
     }
-    ret += "} });";
+    ret += R"###(} });
+#endif)###";
 
     return ret;
 }
@@ -281,7 +283,12 @@ int main(int argc, char *argv[]) {
                                             .entryPoint = args.entryPoint,
                                             .blobIndex = 0}},
                                     {bin});
-            ofs << generateHeader(args.outputPath.stem(), bundle.getShader());
+            auto guard = args.outputPath.relative_path().string();
+            guard = std::string(guard.begin(),
+                                guard.begin() + static_cast<std::string::difference_type>(guard.size() -
+                                                                                          args.outputPath.relative_path().extension().string().size()));
+            std::replace(guard.begin(), guard.end(), '/', '_');
+            ofs << generateHeader(guard, args.outputPath.stem(), bundle.getShader());
             break;
     }
     ofs.flush();
