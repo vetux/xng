@@ -69,9 +69,6 @@ namespace xng {
         FrameGraphResource vertexBufferRes;
         FrameGraphResource vertexArrayObjectRes;
 
-        SPIRVBundle vsb;
-        SPIRVBundle fsb;
-
         bool quadAllocated = false;
 
         FrameGraphResource gBufferPosition;

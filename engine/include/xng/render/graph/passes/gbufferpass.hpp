@@ -160,9 +160,6 @@ namespace xng {
 
         Vec2i renderSize;
 
-        SPIRVBundle vsb;
-        SPIRVBundle fsb;
-
         std::set<Uri> usedTextures;
         std::set<Uri> usedMeshes;
 

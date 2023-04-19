@@ -5,10 +5,10 @@ file(GLOB_RECURSE Engine.File.SRC ${Engine.Dir.SRC}*.cpp ${Engine.Dir.SRC}*.c)
 
 # xengine
 
-add_library(xengine SHARED ${Engine.File.SRC} ${DRIVERS_SRC})
+add_library(xengine SHARED ${Engine.File.SRC} ${DRIVERS_SRC} ${SHADER_HEADERS})
 
 target_include_directories(xengine PUBLIC ${Engine.Dir.INCLUDE})
-target_include_directories(xengine PRIVATE ${Engine.Dir.SRC} ${DRIVERS_INCLUDE})
+target_include_directories(xengine PRIVATE ${Engine.Dir.SRC} ${DRIVERS_INCLUDE} ${BASE_SOURCE_DIR}/shaders/generated)
 
 target_link_libraries(xengine Threads::Threads ${DRIVERS_LINK})
 

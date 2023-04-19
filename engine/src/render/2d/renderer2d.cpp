@@ -27,164 +27,10 @@
 
 #include "xng/geometry/vertexstream.hpp"
 
-#include "xng/render/shaderinclude.hpp"
-
-static const char *SHADER_VERT_TEXTURE = R"###(#version 320 es
-
-layout (location = 0) in highp vec2 position;
-layout (location = 1) in highp vec2 uv;
-
-layout (location = 0) out highp vec4 fPosition;
-layout (location = 1) out highp vec2 fUv;
-
-layout(binding = 0, std140) uniform ShaderData
-{
-    highp vec4 color;
-    highp vec4 colorMixFactor_alphaMixFactor_colorFactor;
-    ivec4 texAtlasLevel_texAtlasIndex_texFilter;
-    highp mat4 mvp;
-    highp vec4 uvOffset_uvScale;
-    highp vec4 atlasScale_texSize;
-} vars;
-
-layout(binding = 1) uniform highp sampler2DArray atlasTextures[12];
-
-void main() {
-    fPosition = (vars.mvp) * vec4(position, 0, 1);
-    fUv = uv;
-    gl_Position = fPosition;
-}
-)###";
-
-//TODO: Add linear filtering support for GLSL ES render path
-static const char *SHADER_FRAG_TEXTURE = R"###(#version 320 es
-
-layout (location = 0) in highp vec4 fPosition;
-layout (location = 1) in highp vec2 fUv;
-
-layout (location = 0) out highp vec4 color;
-
-layout(binding = 0, std140) uniform ShaderData
-{
-    highp vec4 color;
-    highp vec4 colorMixFactor_alphaMixFactor_colorFactor;
-    ivec4 texAtlasLevel_texAtlasIndex_texFilter;
-    highp mat4 mvp;
-    highp vec4 uvOffset_uvScale;
-    highp vec4 atlasScale_texSize;
-} vars;
-
-layout(binding = 1) uniform highp sampler2DArray atlasTextures[12];
-
-void main() {
-    if (vars.texAtlasLevel_texAtlasIndex_texFilter.y >= 0) {
-        highp vec2 uv = fUv;
-        uv = uv * vars.uvOffset_uvScale.zw;
-        uv = uv + vars.uvOffset_uvScale.xy;
-        uv = uv * vars.atlasScale_texSize.xy;
-        highp vec4 texColor;
-        texColor = texture(atlasTextures[vars.texAtlasLevel_texAtlasIndex_texFilter.x],
-                                        vec3(uv.x, uv.y, vars.texAtlasLevel_texAtlasIndex_texFilter.y));
-        if (vars.colorMixFactor_alphaMixFactor_colorFactor.z != 0.f) {
-            color = vars.color * texColor;
-        } else {
-            color.rgb = mix(texColor.rgb, vars.color.rgb, vars.colorMixFactor_alphaMixFactor_colorFactor.x);
-            color.a = mix(texColor.a, vars.color.a, vars.colorMixFactor_alphaMixFactor_colorFactor.y);
-        }
-    } else {
-        color = vars.color;
-    }
-}
-)###";
-
-static const char *SHADER_VERT_TEXTURE_MULTIDRAW = R"###(#version 460
-
-layout (location = 0) in vec2 position;
-layout (location = 1) in vec2 uv;
-
-layout (location = 0) out vec4 fPosition;
-layout (location = 1) out vec2 fUv;
-layout (location = 2) flat out uint drawID;
-
-struct PassData {
-    vec4 color;
-    vec4 colorMixFactor_alphaMixFactor_colorFactor;
-    ivec4 texAtlasLevel_texAtlasIndex_texFilter;
-    mat4 mvp;
-    vec4 uvOffset_uvScale;
-    vec4 atlasScale_texSize;
-};
-
-layout(binding = 0, std140) buffer ShaderData
-{
-    PassData passes[];
-} vars;
-
-layout(binding = 1) uniform sampler2DArray atlasTextures[12];
-
-void main() {
-    fPosition = (vars.passes[gl_DrawID].mvp) * vec4(position, 0, 1);
-    fUv = uv;
-    drawID = gl_DrawID;
-    gl_Position = fPosition;
-}
-)###";
-
-static const char *SHADER_FRAG_TEXTURE_MULTIDRAW = R"###(#version 460
-
-#include "texfilter.glsl"
-
-layout (location = 0) in vec4 fPosition;
-layout (location = 1) in vec2 fUv;
-layout (location = 2) flat in uint drawID;
-
-layout (location = 0) out vec4 color;
-
-struct PassData {
-    vec4 color;
-    vec4 colorMixFactor_alphaMixFactor_colorFactor;
-    ivec4 texAtlasLevel_texAtlasIndex_texFilter;
-    mat4 mvp;
-    vec4 uvOffset_uvScale;
-    vec4 atlasScale_texSize;
-};
-
-layout(binding = 0, std140) buffer ShaderData
-{
-    PassData passes[];
-} vars;
-
-layout(binding = 1) uniform sampler2DArray atlasTextures[12];
-
-void main() {
-    if (vars.passes[drawID].texAtlasLevel_texAtlasIndex_texFilter.y >= 0) {
-        vec2 uv = fUv;
-        uv = uv * vars.passes[drawID].uvOffset_uvScale.zw;
-        uv = uv + vars.passes[drawID].uvOffset_uvScale.xy;
-        uv = uv * vars.passes[drawID].atlasScale_texSize.xy;
-        vec4 texColor;
-        if (vars.passes[drawID].texAtlasLevel_texAtlasIndex_texFilter.z == 1)
-        {
-            texColor = textureBicubic(atlasTextures[vars.passes[drawID].texAtlasLevel_texAtlasIndex_texFilter.x],
-                            vec3(uv.x, uv.y, vars.passes[drawID].texAtlasLevel_texAtlasIndex_texFilter.y),
-                            vars.passes[drawID].atlasScale_texSize.zw);
-        }
-        else
-        {
-            texColor = texture(atlasTextures[vars.passes[drawID].texAtlasLevel_texAtlasIndex_texFilter.x],
-                            vec3(uv.x, uv.y, vars.passes[drawID].texAtlasLevel_texAtlasIndex_texFilter.y));
-        }
-        if (vars.passes[drawID].colorMixFactor_alphaMixFactor_colorFactor.z != 0) {
-            color = vars.passes[drawID].color * texColor;
-        } else {
-            color.rgb = mix(texColor.rgb, vars.passes[drawID].color.rgb, vars.passes[drawID].colorMixFactor_alphaMixFactor_colorFactor.x);
-            color.a = mix(texColor.a, vars.passes[drawID].color.a, vars.passes[drawID].colorMixFactor_alphaMixFactor_colorFactor.y);
-        }
-    } else {
-        color = vars.passes[drawID].color;
-    }
-}
-)###";
+#include "ren2d/vs.hpp" // Generated by cmake
+#include "ren2d/fs.hpp" // Generated by cmake
+#include "ren2d/vs_compat.hpp" // Generated by cmake
+#include "ren2d/fs_compat.hpp" // Generated by cmake
 
 static float distance(float val1, float val2) {
     float abs = val1 - val2;
@@ -244,33 +90,11 @@ namespace xng {
         vertexArrayObjectDesc.vertexLayout = VertexLayout(vertexLayout);
         vertexArrayObject = renderDevice.createVertexArrayObject(vertexArrayObjectDesc);
 
-        vsTexture = ShaderSource(SHADER_VERT_TEXTURE, "main", VERTEX, GLSL_ES_320, false);
-        fsTexture = ShaderSource(SHADER_FRAG_TEXTURE, "main", FRAGMENT, GLSL_ES_320, false);
-
-        vsTexture = vsTexture.preprocess(shaderCompiler);
-        fsTexture = fsTexture.preprocess(shaderCompiler);
-
-        auto vsTexSource = vsTexture.compile(shaderCompiler);
-        auto fsTexSource = fsTexture.compile(shaderCompiler);
-
-        vsTextureMultiDraw = ShaderSource(SHADER_VERT_TEXTURE_MULTIDRAW, "main", VERTEX, GLSL_460, false);
-        fsTextureMultiDraw = ShaderSource(SHADER_FRAG_TEXTURE_MULTIDRAW, "main", FRAGMENT, GLSL_460, false);
-
-        vsTextureMultiDraw = vsTextureMultiDraw.preprocess(shaderCompiler,
-                                                           ShaderInclude::getShaderIncludeCallback(),
-                                                           ShaderInclude::getShaderMacros(GLSL_460));
-        fsTextureMultiDraw = fsTextureMultiDraw.preprocess(shaderCompiler,
-                                                           ShaderInclude::getShaderIncludeCallback(),
-                                                           ShaderInclude::getShaderMacros(GLSL_460));
-
-        auto vsTexSourceMultiDraw = vsTextureMultiDraw.compile(shaderCompiler);
-        auto fsTexSourceMultiDraw = fsTextureMultiDraw.compile(shaderCompiler);
-
         RenderPipelineDesc desc;
 
         desc.shaders = {
-                {ShaderStage::VERTEX,   vsTexSource.getShader()},
-                {ShaderStage::FRAGMENT, fsTexSource.getShader()}
+                {ShaderStage::VERTEX,   vs_compat.getShader()},
+                {ShaderStage::FRAGMENT, fs_compat.getShader()}
         };
         desc.bindings = {
                 RenderPipelineBindingType::BIND_SHADER_UNIFORM_BUFFER,
@@ -301,8 +125,8 @@ namespace xng {
         pointPipeline = device.createRenderPipeline(desc, shaderDecompiler);
 
         desc.shaders = {
-                {ShaderStage::VERTEX,   vsTexSourceMultiDraw.getShader()},
-                {ShaderStage::FRAGMENT, fsTexSourceMultiDraw.getShader()}
+                {ShaderStage::VERTEX,   vs.getShader()},
+                {ShaderStage::FRAGMENT, fs.getShader()}
         };
         desc.bindings = {
                 RenderPipelineBindingType::BIND_SHADER_STORAGE_BUFFER,

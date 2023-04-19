@@ -50,9 +50,9 @@ namespace xng {
             }
         }
 
-        const std::vector<SPIRVShader> &getShaders() { return modules; }
+        const std::vector<SPIRVShader> &getShaders() const { return modules; }
 
-        const SPIRVShader &getShader() {
+        const SPIRVShader &getShader() const {
             if (modules.empty())
                 throw std::runtime_error("No modules");
             return modules.at(0);

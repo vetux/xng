@@ -33,7 +33,8 @@ namespace xng {
         /// Setup
         frame = FrameGraphBuilder(target,
                                   device.getInfo(),
-                                  scene, properties,
+                                  scene,
+                                  properties,
                                   frame.getPersistentResources(),
                                   shaderCompiler,
                                   shaderDecompiler).build(passes);

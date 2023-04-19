@@ -7,6 +7,10 @@ include(user-config-project.cmake OPTIONAL)
 set(BASE_SOURCE_DIR ${CMAKE_SOURCE_DIR})
 
 include(${BASE_SOURCE_DIR}/cmake/setup.cmake)
+
+include(${BASE_SOURCE_DIR}/cmake/shadercompiler.cmake)
+include(${BASE_SOURCE_DIR}/cmake/compileshaders.cmake)
+
 include(${BASE_SOURCE_DIR}/cmake/drivers.cmake)
 include(${BASE_SOURCE_DIR}/cmake/engine.cmake)
 include(${BASE_SOURCE_DIR}/cmake/tests.cmake)
