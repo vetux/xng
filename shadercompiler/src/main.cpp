@@ -266,6 +266,12 @@ int main(int argc, char *argv[]) {
 
     auto bin = compiler.compile(shader, args.entryPoint, args.stage, args.language, args.optimization);
 
+    if (args.outputPath.has_relative_path()
+        && !std::filesystem::is_directory(args.outputPath.parent_path())) {
+        std::filesystem::remove(args.outputPath.parent_path());
+        std::filesystem::create_directories(args.outputPath.parent_path());
+    }
+
     std::ofstream ofs(args.outputPath);
     switch (args.mode) {
         default:

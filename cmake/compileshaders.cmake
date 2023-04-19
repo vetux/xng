@@ -30,7 +30,7 @@ CompileShaderGLSLES320(ren2d/fs_compat FRAGMENT main)
 
 list(LENGTH SHADER_HEADERS LEN_SHADER_HEADERS)
 
-message("${LEN_SHADER_HEADERS} Shaders Generated")
+message("${LEN_SHADER_HEADERS} Precompiled Shaders")
 foreach (val IN LISTS SHADER_HEADERS)
     message("   ${val}")
 endforeach ()
