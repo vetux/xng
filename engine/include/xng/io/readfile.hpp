@@ -29,20 +29,53 @@ namespace xng {
      * @param path
      * @return
      */
-    inline std::vector<char> readFile(const std::string &path) {
+    inline std::vector<char> readFile(const std::string &path, const size_t bufferStepSize = 100) {
         FILE *fp;
         fp = fopen(path.c_str(), "r");
 
-        const size_t step = 100;
-        std::vector<char> fbuf(step);
+        std::vector<char> fbuf(bufferStepSize);
 
         auto r = fread(fbuf.data(), 1, fbuf.size(), fp);
 
         std::vector<char> ret;
-        ret.insert(ret.end(), fbuf.begin(), fbuf.begin() + static_cast<long>(r));
-        while (r == step) {
+        ret.insert(ret.end(),
+                   fbuf.begin(),
+                   fbuf.begin() + static_cast<std::iterator<char *, std::vector<char>>::difference_type>(r));
+        while (r == bufferStepSize) {
             r = fread(fbuf.data(), 1, fbuf.size(), fp);
-            ret.insert(ret.end(), fbuf.begin(), fbuf.begin() + r);
+            ret.insert(ret.end(),
+                       fbuf.begin(),
+                       fbuf.begin() + static_cast<std::iterator<char *, std::vector<char>>::difference_type>(r));
+        }
+
+        fclose(fp);
+
+        return ret;
+    }
+
+    /**
+     * Fast reading of a whole file into memory using cstdio
+     *
+     * @param path
+     * @return
+     */
+    inline std::string readFileString(const std::string &path, const size_t bufferStepSize = 100) {
+        FILE *fp;
+        fp = fopen(path.c_str(), "r");
+
+        std::vector<char> fbuf(bufferStepSize);
+
+        auto r = fread(fbuf.data(), 1, fbuf.size(), fp);
+
+        std::string ret;
+        ret.insert(ret.end(),
+                   fbuf.begin(),
+                   fbuf.begin() + static_cast<std::iterator<char *, std::vector<char>>::difference_type>(r));
+        while (r == bufferStepSize) {
+            r = fread(fbuf.data(), 1, fbuf.size(), fp);
+            ret.insert(ret.end(),
+                       fbuf.begin(),
+                       fbuf.begin() + static_cast<std::iterator<char *, std::vector<char>>::difference_type>(r));
         }
 
         fclose(fp);
