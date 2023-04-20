@@ -131,7 +131,7 @@ namespace xng {
         /**
          * The alpha value used in all shading models.
          */
-        float alpha{};
+        float alpha = 1;
         ResourceHandle<Texture> alphaTexture;
 
         /**
