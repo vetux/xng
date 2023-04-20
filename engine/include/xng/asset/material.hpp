@@ -52,7 +52,9 @@ namespace xng {
             message.value("model", (int &) shadingModel, (int) ShadingModel::SHADE_PBR);
             message.value("shader", shader);
             message.value("normal", normal);
-            message.value("transparent", transparent, false);
+
+            message.value("alpha", alpha, 1.0f);
+            message.value("alphaTexture", alphaTexture);
 
             message.value("diffuse", diffuse);
             message.value("ambient", ambient);
@@ -83,7 +85,9 @@ namespace xng {
             shadingModel >> message["model"];
             shader >> message["shader"];
             normal >> message["normal"];
-            transparent >> message["transparent"];
+
+            alpha >> message["alpha"];
+            alphaTexture >> message["alphaTexture"];
 
             diffuse >> message["diffuse"];
             ambient >> message["ambient"];
@@ -125,9 +129,10 @@ namespace xng {
         ResourceHandle<Texture> normal;
 
         /**
-         * Whether or not the material contains transparency. If this is set to true the object which this material belongs to is drawn using forward rendering.
+         * The alpha value used in all shading models.
          */
-        bool transparent{};
+        float alpha{};
+        ResourceHandle<Texture> alphaTexture;
 
         /**
          * PBR Shading Data
