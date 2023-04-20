@@ -20,8 +20,11 @@
 #ifndef XENGINE_RENDERTARGET_HPP
 #define XENGINE_RENDERTARGET_HPP
 
+#include <variant>
+
 #include "xng/gpu/textureproperties.hpp"
 #include "xng/gpu/texturebuffer.hpp"
+#include "xng/gpu/texturearraybuffer.hpp"
 #include "xng/gpu/rendertargetdesc.hpp"
 #include "xng/gpu/renderobject.hpp"
 #include "xng/gpu/gpufence.hpp"
@@ -31,6 +34,16 @@
 namespace xng {
     class XENGINE_EXPORT RenderTarget : public RenderObject {
     public:
+        enum AttachmentType {
+            ATTACHMENT_TEXTURE = 0,
+            ATTACHMENT_CUBEMAP = 1,
+            ATTACHMENT_TEXTUREARRAY = 2
+        };
+
+        typedef std::variant<std::reference_wrapper<TextureBuffer>,
+                std::pair<CubeMapFace, std::reference_wrapper<TextureBuffer>>,
+                std::pair<size_t, std::reference_wrapper<TextureArrayBuffer>>> Attachment;
+
         ~RenderTarget() override = default;
 
         Type getType() override {
@@ -60,15 +73,11 @@ namespace xng {
                                                       Vec2i sourceRect,
                                                       Vec2i targetRect) = 0;
 
-        virtual std::unique_ptr<GpuFence> setColorAttachments(
-                const std::vector<std::reference_wrapper<TextureBuffer>> &textures) = 0;
+        virtual std::unique_ptr<GpuFence> setColorAttachments(const std::vector<Attachment> &attachments) = 0;
 
-        virtual std::unique_ptr<GpuFence> setDepthStencilAttachment(TextureBuffer *texture) = 0;
+        virtual std::unique_ptr<GpuFence> setDepthStencilAttachment(Attachment attachment) = 0;
 
-        virtual std::unique_ptr<GpuFence> setCubeMapColorAttachments(const std::vector<std::pair<CubeMapFace,
-                std::reference_wrapper<TextureBuffer>>> &textures) = 0;
-
-        virtual std::unique_ptr<GpuFence> setCubeMapDepthStencilAttachment(CubeMapFace face, TextureBuffer *texture) = 0;
+        virtual std::unique_ptr<GpuFence> clearDepthStencilAttachment() = 0;
 
         virtual bool isComplete() = 0;
     };

@@ -331,7 +331,7 @@ namespace xng {
         auto &gBufDepth = resources.get<TextureBuffer>(gBufferDepth);
 
         target.setColorAttachments({colorTex});
-        target.setDepthStencilAttachment(&depthTex);
+        target.setDepthStencilAttachment(depthTex);
 
         pass.beginRenderPass(target, {}, target.getDescription().size);
 
@@ -355,7 +355,7 @@ namespace xng {
         pass.endRenderPass();
 
         target.setColorAttachments({});
-        target.setDepthStencilAttachment(nullptr);
+        target.clearDepthStencilAttachment();
     }
 
     std::type_index PhongDeferredPass::getTypeIndex() const {

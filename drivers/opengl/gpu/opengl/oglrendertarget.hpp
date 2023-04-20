@@ -27,6 +27,7 @@
 #include "opengl_include.hpp"
 #include "gpu/opengl/ogltexturebuffer.hpp"
 #include "gpu/opengl/oglfence.hpp"
+#include "gpu/opengl/ogltexturearraybuffer.hpp"
 
 namespace xng::opengl {
     class OGLRenderTarget : public RenderTarget {
@@ -235,135 +236,116 @@ namespace xng::opengl {
             return std::make_unique<OGLFence>();
         }
 
-        std::unique_ptr<GpuFence>
-        setColorAttachments(const std::vector<std::reference_wrapper<TextureBuffer>> &textures) override {
+        std::unique_ptr<GpuFence> setColorAttachments(const std::vector<Attachment> &attachments) override {
             glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
-            if (textures.empty()) {
+            if (attachments.empty()) {
                 for (int i = 0; i < attachedColor; i++) {
-                    if (desc.multisample)
-                        glFramebufferTexture2D(GL_FRAMEBUFFER,
-                                               GL_COLOR_ATTACHMENT0 + i,
-                                               GL_TEXTURE_2D_MULTISAMPLE,
-                                               0,
-                                               0);
-                    else
-                        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, 0, 0);
+                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, 0, 0);
                 }
             } else {
-                if (textures.size() != desc.numberOfColorAttachments)
+                if (attachments.size() != desc.numberOfColorAttachments)
                     throw std::runtime_error("Invalid number of color attachments");
 
-                int index = 0;
-                for (auto &texture: textures) {
-                    auto &tex = dynamic_cast<OGLTextureBuffer &>(texture.get());
+                for (auto i = 0; i < attachments.size(); i++) {
+                    auto &att = attachments.at(i);
+                    switch (att.index()) {
+                        case ATTACHMENT_TEXTURE: {
+                            auto &tex = dynamic_cast<OGLTextureBuffer &>(
+                                    std::get<std::reference_wrapper<TextureBuffer>>(att).get());
+                            glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                                   GL_COLOR_ATTACHMENT0 + i,
+                                                   convert(tex.getDescription().textureType),
+                                                   tex.handle,
+                                                   0);
+                            break;
+                        }
+                        case ATTACHMENT_CUBEMAP: {
+                            auto &pair = std::get<std::pair<CubeMapFace, std::reference_wrapper<TextureBuffer>>>(
+                                    att);
+                            auto &tex = dynamic_cast<OGLTextureBuffer &>(pair.second.get());
+                            glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                                   GL_COLOR_ATTACHMENT0 + i,
+                                                   convert(pair.first),
+                                                   tex.handle,
+                                                   0);
+                            break;
+                        }
+                        case ATTACHMENT_TEXTUREARRAY: {
+                            auto &pair = std::get<std::pair<size_t, std::reference_wrapper<TextureArrayBuffer>>>(att);
+                            auto &tex = dynamic_cast<OGLTextureArrayBuffer &>(pair.second.get());
+                            glFramebufferTexture3D(GL_FRAMEBUFFER,
+                                                   GL_COLOR_ATTACHMENT0 + i,
+                                                   convert(tex.getDescription().textureDesc.textureType),
+                                                   tex.handle,
+                                                   0,
+                                                   static_cast<GLint>(pair.first));
+                            break;
+                        }
+                    }
+                }
+            }
+
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+            attachedColor = static_cast<int>(attachments.size());
+
+            checkGLError();
+
+            return std::make_unique<OGLFence>();
+        }
+
+        std::unique_ptr<GpuFence> setDepthStencilAttachment(Attachment attachment) override {
+            glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+
+            switch (attachment.index()) {
+                case ATTACHMENT_TEXTURE: {
+                    auto &tex = dynamic_cast< OGLTextureBuffer &>(std::get<std::reference_wrapper<TextureBuffer>>(
+                            attachment).get());
                     glFramebufferTexture2D(GL_FRAMEBUFFER,
-                                           GL_COLOR_ATTACHMENT0 + index,
+                                           GL_DEPTH_STENCIL_ATTACHMENT,
                                            convert(tex.getDescription().textureType),
                                            tex.handle,
                                            0);
-                    index++;
+                    break;
                 }
-            }
-
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-            attachedColor = static_cast<int>(textures.size());
-
-            checkGLError();
-
-            return std::make_unique<OGLFence>();
-        }
-
-        std::unique_ptr<GpuFence> setDepthStencilAttachment(TextureBuffer *texture) override {
-            if (texture == nullptr) {
-                attachedDepthStencil = false;
-                glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-                if (desc.multisample)
-                    glFramebufferTexture2D(GL_FRAMEBUFFER,
-                                           GL_DEPTH_STENCIL_ATTACHMENT,
-                                           GL_TEXTURE_2D_MULTISAMPLE,
-                                           0,
-                                           0);
-                else
-                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
-                glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            } else {
-                attachedDepthStencil = true;
-                auto &tex = dynamic_cast< OGLTextureBuffer &>(*texture);
-                glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-                glFramebufferTexture2D(GL_FRAMEBUFFER,
-                                       GL_DEPTH_STENCIL_ATTACHMENT,
-                                       convert(texture->getDescription().textureType),
-                                       tex.handle,
-                                       0);
-                glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            }
-            checkGLError();
-            return std::make_unique<OGLFence>();
-        }
-
-        std::unique_ptr<GpuFence> setCubeMapColorAttachments(
-                const std::vector<std::pair<CubeMapFace, std::reference_wrapper<TextureBuffer>>> &textures) override {
-            glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-
-            if (textures.empty()) {
-                for (int i = 0; i < attachedColor; i++) {
-                    if (desc.multisample)
-                        glFramebufferTexture2D(GL_FRAMEBUFFER,
-                                               GL_COLOR_ATTACHMENT0 + i,
-                                               GL_TEXTURE_2D_MULTISAMPLE,
-                                               0,
-                                               0);
-                    else
-                        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, 0, 0);
-                }
-            } else {
-                if (textures.size() != desc.numberOfColorAttachments)
-                    throw std::runtime_error("Invalid number of color attachments");
-
-                int index = 0;
-                for (auto &pair: textures) {
+                case ATTACHMENT_CUBEMAP: {
+                    auto &pair = std::get<std::pair<CubeMapFace, std::reference_wrapper<TextureBuffer>>>(attachment);
                     auto &tex = dynamic_cast<OGLTextureBuffer &>(pair.second.get());
                     glFramebufferTexture2D(GL_FRAMEBUFFER,
-                                           GL_COLOR_ATTACHMENT0 + index,
+                                           GL_DEPTH_STENCIL_ATTACHMENT,
                                            convert(pair.first),
                                            tex.handle,
                                            0);
-                    index++;
+                    break;
+                }
+                case ATTACHMENT_TEXTUREARRAY: {
+                    auto &pair = std::get<std::pair<size_t, std::reference_wrapper<TextureArrayBuffer>>>(attachment);
+                    auto &tex = dynamic_cast<OGLTextureArrayBuffer &>(pair.second.get());
+                    glFramebufferTexture3D(GL_FRAMEBUFFER,
+                                           GL_DEPTH_STENCIL_ATTACHMENT,
+                                           convert(tex.getDescription().textureDesc.textureType),
+                                           tex.handle,
+                                           0,
+                                           static_cast<GLint>(pair.first));
+                    break;
                 }
             }
 
+            attachedDepthStencil = true;
+
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-            attachedColor = static_cast<int>(textures.size());
-
             checkGLError();
+
             return std::make_unique<OGLFence>();
         }
 
-        std::unique_ptr<GpuFence>
-        setCubeMapDepthStencilAttachment(CubeMapFace face, TextureBuffer *texture) override {
-            if (texture == nullptr) {
-                glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, 0,
-                                       0);
-                glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            } else {
-                auto &tex = dynamic_cast< OGLTextureBuffer &>(*texture);
-                glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-                glFramebufferTexture2D(GL_FRAMEBUFFER,
-                                       GL_DEPTH_STENCIL_ATTACHMENT,
-                                       convert(face),
-                                       0, 0);
-                glFramebufferTexture2D(GL_FRAMEBUFFER,
-                                       GL_DEPTH_STENCIL_ATTACHMENT,
-                                       convert(face),
-                                       tex.handle,
-                                       0);
-                glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            }
+        std::unique_ptr<GpuFence> clearDepthStencilAttachment() override {
+            attachedDepthStencil = false;
+            glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
             checkGLError();
             return std::make_unique<OGLFence>();
         }

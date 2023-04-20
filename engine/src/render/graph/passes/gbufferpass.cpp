@@ -172,7 +172,7 @@ namespace xng {
             if (object.mesh.assigned()) {
                 if (object.material.assigned()) {
                     auto &mat = object.material.get();
-                    if (mat.transparent
+                    if (mat.alphaTexture.assigned() || mat.alpha != 1
                         || mat.shader.assigned())
                         continue;
 
@@ -279,7 +279,7 @@ namespace xng {
             builder.persist(indexBufferRes);
         }
 
-        if (currentVertexBufferSize < requestedVertexBufferSize) {
+        if (!vertexBufferRes.assigned || currentVertexBufferSize < requestedVertexBufferSize) {
             staleVertexBuffer = vertexBufferRes;
             auto d = VertexBufferDesc();
             d.size = requestedVertexBufferSize;
@@ -290,7 +290,7 @@ namespace xng {
             builder.persist(vertexBufferRes);
         }
 
-        if (currentIndexBufferSize < requestedIndexBufferSize) {
+        if (!indexBufferRes.assigned || currentIndexBufferSize < requestedIndexBufferSize) {
             staleIndexBuffer = indexBufferRes;
             auto d = IndexBufferDesc();
             d.size = requestedIndexBufferSize;
@@ -393,7 +393,7 @@ namespace xng {
                                            modelObjectTex
                                    });
 
-        target.setDepthStencilAttachment(&depthTex);
+        target.setDepthStencilAttachment(depthTex);
 
         auto projection = camera.projection();
         auto view = Camera::view(cameraTransform);
@@ -402,236 +402,238 @@ namespace xng {
         pass.bindPipeline(pipeline);
         pass.bindVertexArrayObject(vertexArrayObject);
 
-        auto passesPerDrawCycle = objects.size() / drawCycles;
+        if (!objects.empty()) {
+            auto passesPerDrawCycle = objects.size() / drawCycles;
 
-        for (auto i = 0; i < drawCycles; i++) {
-            std::vector<RenderPass::DrawCall> drawCalls;
-            std::vector<size_t> baseVertices;
-            std::vector<ShaderDrawData> shaderData;
-            for (auto oi = 0; oi < passesPerDrawCycle && oi < objects.size(); oi++) {
-                auto &object = objects.at(oi + (i * passesPerDrawCycle));
-                auto model = object.transform.model();
-                auto &material = object.material.get();
+            for (auto i = 0; i < drawCycles; i++) {
+                std::vector<RenderPass::DrawCall> drawCalls;
+                std::vector<size_t> baseVertices;
+                std::vector<ShaderDrawData> shaderData;
+                for (auto oi = 0; oi < passesPerDrawCycle && oi < objects.size(); oi++) {
+                    auto &object = objects.at(oi + (i * passesPerDrawCycle));
+                    auto model = object.transform.model();
+                    auto &material = object.material.get();
 
-                auto data = ShaderDrawData();
+                    auto data = ShaderDrawData();
 
-                data.model = model;
-                data.mvp = projection * view * model;
-                data.shadeModel_objectID[0] = material.shadingModel;
-                data.shadeModel_objectID[1] = static_cast<int>(oi);
+                    data.model = model;
+                    data.mvp = projection * view * model;
+                    data.shadeModel_objectID[0] = material.shadingModel;
+                    data.shadeModel_objectID[1] = static_cast<int>(oi);
 
-                auto col = material.albedo.divide().getMemory();
-                data.albedoColor[0] = col[0];
-                data.albedoColor[1] = col[1];
-                data.albedoColor[2] = col[2];
-                data.albedoColor[3] = col[3];
+                    auto col = material.albedo.divide().getMemory();
+                    data.albedoColor[0] = col[0];
+                    data.albedoColor[1] = col[1];
+                    data.albedoColor[2] = col[2];
+                    data.albedoColor[3] = col[3];
 
-                data.metallic_roughness_ambientOcclusion_shininess[0] = material.metallic;
-                data.metallic_roughness_ambientOcclusion_shininess[1] = material.roughness;
-                data.metallic_roughness_ambientOcclusion_shininess[2] = material.ambientOcclusion;
-                data.metallic_roughness_ambientOcclusion_shininess[3] = material.shininess;
+                    data.metallic_roughness_ambientOcclusion_shininess[0] = material.metallic;
+                    data.metallic_roughness_ambientOcclusion_shininess[1] = material.roughness;
+                    data.metallic_roughness_ambientOcclusion_shininess[2] = material.ambientOcclusion;
+                    data.metallic_roughness_ambientOcclusion_shininess[3] = material.shininess;
 
-                col = material.diffuse.divide().getMemory();
-                data.diffuseColor[0] = col[0];
-                data.diffuseColor[1] = col[1];
-                data.diffuseColor[2] = col[2];
-                data.diffuseColor[3] = col[3];
+                    col = material.diffuse.divide().getMemory();
+                    data.diffuseColor[0] = col[0];
+                    data.diffuseColor[1] = col[1];
+                    data.diffuseColor[2] = col[2];
+                    data.diffuseColor[3] = col[3];
 
-                col = material.ambient.divide().getMemory();
-                data.ambientColor[0] = col[0];
-                data.ambientColor[1] = col[1];
-                data.ambientColor[2] = col[2];
-                data.ambientColor[3] = col[3];
+                    col = material.ambient.divide().getMemory();
+                    data.ambientColor[0] = col[0];
+                    data.ambientColor[1] = col[1];
+                    data.ambientColor[2] = col[2];
+                    data.ambientColor[3] = col[3];
 
-                col = material.specular.divide().getMemory();
-                data.specularColor[0] = col[0];
-                data.specularColor[1] = col[1];
-                data.specularColor[2] = col[2];
-                data.specularColor[3] = col[3];
+                    col = material.specular.divide().getMemory();
+                    data.specularColor[0] = col[0];
+                    data.specularColor[1] = col[1];
+                    data.specularColor[2] = col[2];
+                    data.specularColor[3] = col[3];
 
-                if (material.albedoTexture.assigned()) {
-                    auto tex = getTexture(material.albedoTexture, atlasBuffers);
+                    if (material.albedoTexture.assigned()) {
+                        auto tex = getTexture(material.albedoTexture, atlasBuffers);
 
-                    data.albedo.level_index_filtering_assigned[0] = tex.level;
-                    data.albedo.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.albedo.level_index_filtering_assigned[2] = material.albedoTexture.get().description.filterMag;
-                    data.albedo.level_index_filtering_assigned[3] = 1;
+                        data.albedo.level_index_filtering_assigned[0] = tex.level;
+                        data.albedo.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
+                        data.albedo.level_index_filtering_assigned[2] = material.albedoTexture.get().description.filterMag;
+                        data.albedo.level_index_filtering_assigned[3] = 1;
 
-                    auto atlasScale = tex.size.convert<float>()
-                                      / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
+                        auto atlasScale = tex.size.convert<float>()
+                                          / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
 
-                    data.albedo.atlasScale_texSize[0] = atlasScale.x;
-                    data.albedo.atlasScale_texSize[1] = atlasScale.y;
-                    data.albedo.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                    data.albedo.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
+                        data.albedo.atlasScale_texSize[0] = atlasScale.x;
+                        data.albedo.atlasScale_texSize[1] = atlasScale.y;
+                        data.albedo.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
+                        data.albedo.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
+                    }
+
+                    if (material.metallicTexture.assigned()) {
+                        auto tex = getTexture(material.metallicTexture, atlasBuffers);
+
+                        data.metallic.level_index_filtering_assigned[0] = tex.level;
+                        data.metallic.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
+                        data.metallic.level_index_filtering_assigned[2] = material.metallicTexture.get().description.filterMag;
+                        data.metallic.level_index_filtering_assigned[3] = 1;
+
+                        auto atlasScale = tex.size.convert<float>()
+                                          / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
+
+                        data.metallic.atlasScale_texSize[0] = atlasScale.x;
+                        data.metallic.atlasScale_texSize[1] = atlasScale.y;
+                        data.metallic.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
+                        data.metallic.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
+                    }
+
+                    if (material.roughnessTexture.assigned()) {
+                        auto tex = getTexture(material.roughnessTexture, atlasBuffers);
+
+                        data.roughness.level_index_filtering_assigned[0] = tex.level;
+                        data.roughness.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
+                        data.roughness.level_index_filtering_assigned[2] = material.roughnessTexture.get().description.filterMag;
+                        data.roughness.level_index_filtering_assigned[3] = 1;
+
+                        auto atlasScale = tex.size.convert<float>()
+                                          / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
+
+                        data.roughness.atlasScale_texSize[0] = atlasScale.x;
+                        data.roughness.atlasScale_texSize[1] = atlasScale.y;
+                        data.roughness.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
+                        data.roughness.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
+                    }
+
+                    if (material.ambientOcclusionTexture.assigned()) {
+                        auto tex = getTexture(material.ambientOcclusionTexture, atlasBuffers);
+
+                        data.ambientOcclusion.level_index_filtering_assigned[0] = tex.level;
+                        data.ambientOcclusion.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
+                        data.ambientOcclusion.level_index_filtering_assigned[2] = material.ambientOcclusionTexture.get().description.filterMag;
+                        data.ambientOcclusion.level_index_filtering_assigned[3] = 1;
+
+                        auto atlasScale = tex.size.convert<float>()
+                                          / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
+
+                        data.ambientOcclusion.atlasScale_texSize[0] = atlasScale.x;
+                        data.ambientOcclusion.atlasScale_texSize[1] = atlasScale.y;
+                        data.ambientOcclusion.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
+                        data.ambientOcclusion.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
+                    }
+
+                    if (material.diffuseTexture.assigned()) {
+                        auto tex = getTexture(material.diffuseTexture, atlasBuffers);
+
+                        data.diffuse.level_index_filtering_assigned[0] = tex.level;
+                        data.diffuse.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
+                        data.diffuse.level_index_filtering_assigned[2] = material.diffuseTexture.get().description.filterMag;
+                        data.diffuse.level_index_filtering_assigned[3] = 1;
+
+                        auto atlasScale = tex.size.convert<float>()
+                                          / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
+
+                        data.diffuse.atlasScale_texSize[0] = atlasScale.x;
+                        data.diffuse.atlasScale_texSize[1] = atlasScale.y;
+                        data.diffuse.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
+                        data.diffuse.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
+                    }
+
+                    if (material.ambientTexture.assigned()) {
+                        auto tex = getTexture(material.ambientTexture, atlasBuffers);
+
+                        data.ambient.level_index_filtering_assigned[0] = tex.level;
+                        data.ambient.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
+                        data.ambient.level_index_filtering_assigned[2] = material.ambientTexture.get().description.filterMag;
+                        data.ambient.level_index_filtering_assigned[3] = 1;
+
+                        auto atlasScale = tex.size.convert<float>()
+                                          / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
+
+                        data.ambient.atlasScale_texSize[0] = atlasScale.x;
+                        data.ambient.atlasScale_texSize[1] = atlasScale.y;
+                        data.ambient.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
+                        data.ambient.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
+                    }
+
+                    if (material.specularTexture.assigned()) {
+                        auto tex = getTexture(material.specularTexture, atlasBuffers);
+
+                        data.specular.level_index_filtering_assigned[0] = tex.level;
+                        data.specular.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
+                        data.specular.level_index_filtering_assigned[2] = material.specularTexture.get().description.filterMag;
+                        data.specular.level_index_filtering_assigned[3] = 1;
+
+                        auto atlasScale = tex.size.convert<float>()
+                                          / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
+
+                        data.specular.atlasScale_texSize[0] = atlasScale.x;
+                        data.specular.atlasScale_texSize[1] = atlasScale.y;
+                        data.specular.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
+                        data.specular.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
+                    }
+
+                    if (material.shininessTexture.assigned()) {
+                        auto tex = getTexture(material.shininessTexture, atlasBuffers);
+
+                        data.shininess.level_index_filtering_assigned[0] = tex.level;
+                        data.shininess.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
+                        data.shininess.level_index_filtering_assigned[2] = material.shininessTexture.get().description.filterMag;
+                        data.shininess.level_index_filtering_assigned[3] = 1;
+
+                        auto atlasScale = tex.size.convert<float>()
+                                          / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
+
+                        data.shininess.atlasScale_texSize[0] = atlasScale.x;
+                        data.shininess.atlasScale_texSize[1] = atlasScale.y;
+                        data.shininess.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
+                        data.shininess.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
+                    }
+
+                    if (material.normal.assigned()) {
+                        auto tex = getTexture(material.normal, atlasBuffers);
+
+                        data.normal.level_index_filtering_assigned[0] = tex.level;
+                        data.normal.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
+                        data.normal.level_index_filtering_assigned[2] = material.normal.get().description.filterMag;
+                        data.normal.level_index_filtering_assigned[3] = 1;
+
+                        auto atlasScale = tex.size.convert<float>()
+                                          / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
+
+                        data.normal.atlasScale_texSize[0] = atlasScale.x;
+                        data.normal.atlasScale_texSize[1] = atlasScale.y;
+                        data.normal.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
+                        data.normal.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
+                    }
+
+                    shaderData.emplace_back(data);
+
+                    auto mesh = getMesh(object.mesh);
+
+                    drawCalls.emplace_back(mesh.drawCall);
+                    baseVertices.emplace_back(mesh.baseVertex);
                 }
-
-                if (material.metallicTexture.assigned()) {
-                    auto tex = getTexture(material.metallicTexture, atlasBuffers);
-
-                    data.metallic.level_index_filtering_assigned[0] = tex.level;
-                    data.metallic.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.metallic.level_index_filtering_assigned[2] = material.metallicTexture.get().description.filterMag;
-                    data.metallic.level_index_filtering_assigned[3] = 1;
-
-                    auto atlasScale = tex.size.convert<float>()
-                                      / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
-
-                    data.metallic.atlasScale_texSize[0] = atlasScale.x;
-                    data.metallic.atlasScale_texSize[1] = atlasScale.y;
-                    data.metallic.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                    data.metallic.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                }
-
-                if (material.roughnessTexture.assigned()) {
-                    auto tex = getTexture(material.roughnessTexture, atlasBuffers);
-
-                    data.roughness.level_index_filtering_assigned[0] = tex.level;
-                    data.roughness.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.roughness.level_index_filtering_assigned[2] = material.roughnessTexture.get().description.filterMag;
-                    data.roughness.level_index_filtering_assigned[3] = 1;
-
-                    auto atlasScale = tex.size.convert<float>()
-                                      / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
-
-                    data.roughness.atlasScale_texSize[0] = atlasScale.x;
-                    data.roughness.atlasScale_texSize[1] = atlasScale.y;
-                    data.roughness.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                    data.roughness.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                }
-
-                if (material.ambientOcclusionTexture.assigned()) {
-                    auto tex = getTexture(material.ambientOcclusionTexture, atlasBuffers);
-
-                    data.ambientOcclusion.level_index_filtering_assigned[0] = tex.level;
-                    data.ambientOcclusion.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.ambientOcclusion.level_index_filtering_assigned[2] = material.ambientOcclusionTexture.get().description.filterMag;
-                    data.ambientOcclusion.level_index_filtering_assigned[3] = 1;
-
-                    auto atlasScale = tex.size.convert<float>()
-                                      / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
-
-                    data.ambientOcclusion.atlasScale_texSize[0] = atlasScale.x;
-                    data.ambientOcclusion.atlasScale_texSize[1] = atlasScale.y;
-                    data.ambientOcclusion.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                    data.ambientOcclusion.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                }
-
-                if (material.diffuseTexture.assigned()) {
-                    auto tex = getTexture(material.diffuseTexture, atlasBuffers);
-
-                    data.diffuse.level_index_filtering_assigned[0] = tex.level;
-                    data.diffuse.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.diffuse.level_index_filtering_assigned[2] = material.diffuseTexture.get().description.filterMag;
-                    data.diffuse.level_index_filtering_assigned[3] = 1;
-
-                    auto atlasScale = tex.size.convert<float>()
-                                      / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
-
-                    data.diffuse.atlasScale_texSize[0] = atlasScale.x;
-                    data.diffuse.atlasScale_texSize[1] = atlasScale.y;
-                    data.diffuse.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                    data.diffuse.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                }
-
-                if (material.ambientTexture.assigned()) {
-                    auto tex = getTexture(material.ambientTexture, atlasBuffers);
-
-                    data.ambient.level_index_filtering_assigned[0] = tex.level;
-                    data.ambient.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.ambient.level_index_filtering_assigned[2] = material.ambientTexture.get().description.filterMag;
-                    data.ambient.level_index_filtering_assigned[3] = 1;
-
-                    auto atlasScale = tex.size.convert<float>()
-                                      / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
-
-                    data.ambient.atlasScale_texSize[0] = atlasScale.x;
-                    data.ambient.atlasScale_texSize[1] = atlasScale.y;
-                    data.ambient.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                    data.ambient.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                }
-
-                if (material.specularTexture.assigned()) {
-                    auto tex = getTexture(material.specularTexture, atlasBuffers);
-
-                    data.specular.level_index_filtering_assigned[0] = tex.level;
-                    data.specular.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.specular.level_index_filtering_assigned[2] = material.specularTexture.get().description.filterMag;
-                    data.specular.level_index_filtering_assigned[3] = 1;
-
-                    auto atlasScale = tex.size.convert<float>()
-                                      / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
-
-                    data.specular.atlasScale_texSize[0] = atlasScale.x;
-                    data.specular.atlasScale_texSize[1] = atlasScale.y;
-                    data.specular.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                    data.specular.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                }
-
-                if (material.shininessTexture.assigned()) {
-                    auto tex = getTexture(material.shininessTexture, atlasBuffers);
-
-                    data.shininess.level_index_filtering_assigned[0] = tex.level;
-                    data.shininess.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.shininess.level_index_filtering_assigned[2] = material.shininessTexture.get().description.filterMag;
-                    data.shininess.level_index_filtering_assigned[3] = 1;
-
-                    auto atlasScale = tex.size.convert<float>()
-                                      / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
-
-                    data.shininess.atlasScale_texSize[0] = atlasScale.x;
-                    data.shininess.atlasScale_texSize[1] = atlasScale.y;
-                    data.shininess.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                    data.shininess.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                }
-
-                if (material.normal.assigned()) {
-                    auto tex = getTexture(material.normal, atlasBuffers);
-
-                    data.normal.level_index_filtering_assigned[0] = tex.level;
-                    data.normal.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.normal.level_index_filtering_assigned[2] = material.normal.get().description.filterMag;
-                    data.normal.level_index_filtering_assigned[3] = 1;
-
-                    auto atlasScale = tex.size.convert<float>()
-                                      / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
-
-                    data.normal.atlasScale_texSize[0] = atlasScale.x;
-                    data.normal.atlasScale_texSize[1] = atlasScale.y;
-                    data.normal.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                    data.normal.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                }
-
-                shaderData.emplace_back(data);
-
-                auto mesh = getMesh(object.mesh);
-
-                drawCalls.emplace_back(mesh.drawCall);
-                baseVertices.emplace_back(mesh.baseVertex);
+                shaderBuffer.upload(0,
+                                    reinterpret_cast<const uint8_t *>(shaderData.data()),
+                                    shaderData.size() * sizeof(ShaderDrawData));
+                pass.bindShaderData({shaderBuffer,
+                                     atlasBuffers.at(TEXTURE_ATLAS_8x8),
+                                     atlasBuffers.at(TEXTURE_ATLAS_16x16),
+                                     atlasBuffers.at(TEXTURE_ATLAS_32x32),
+                                     atlasBuffers.at(TEXTURE_ATLAS_64x64),
+                                     atlasBuffers.at(TEXTURE_ATLAS_128x128),
+                                     atlasBuffers.at(TEXTURE_ATLAS_256x256),
+                                     atlasBuffers.at(TEXTURE_ATLAS_512x512),
+                                     atlasBuffers.at(TEXTURE_ATLAS_1024x1024),
+                                     atlasBuffers.at(TEXTURE_ATLAS_2048x2048),
+                                     atlasBuffers.at(TEXTURE_ATLAS_4096x4096),
+                                     atlasBuffers.at(TEXTURE_ATLAS_8192x8192),
+                                     atlasBuffers.at(TEXTURE_ATLAS_16384x16384)});
+                pass.multiDrawIndexed(drawCalls, baseVertices);
             }
-            shaderBuffer.upload(0,
-                                reinterpret_cast<const uint8_t *>(shaderData.data()),
-                                shaderData.size() * sizeof(ShaderDrawData));
-            pass.bindShaderData({shaderBuffer,
-                                 atlasBuffers.at(TEXTURE_ATLAS_8x8),
-                                 atlasBuffers.at(TEXTURE_ATLAS_16x16),
-                                 atlasBuffers.at(TEXTURE_ATLAS_32x32),
-                                 atlasBuffers.at(TEXTURE_ATLAS_64x64),
-                                 atlasBuffers.at(TEXTURE_ATLAS_128x128),
-                                 atlasBuffers.at(TEXTURE_ATLAS_256x256),
-                                 atlasBuffers.at(TEXTURE_ATLAS_512x512),
-                                 atlasBuffers.at(TEXTURE_ATLAS_1024x1024),
-                                 atlasBuffers.at(TEXTURE_ATLAS_2048x2048),
-                                 atlasBuffers.at(TEXTURE_ATLAS_4096x4096),
-                                 atlasBuffers.at(TEXTURE_ATLAS_8192x8192),
-                                 atlasBuffers.at(TEXTURE_ATLAS_16384x16384)});
-            pass.multiDrawIndexed(drawCalls, baseVertices);
         }
 
         pass.endRenderPass();
 
         target.setColorAttachments({});
-        target.setDepthStencilAttachment(nullptr);
+        target.clearDepthStencilAttachment();
     }
 
     std::type_index GBufferPass::getTypeIndex() const {
