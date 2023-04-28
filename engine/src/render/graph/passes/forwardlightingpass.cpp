@@ -217,7 +217,7 @@ namespace xng {
                     .depthTestMode = DEPTH_TEST_LESS,
                     .enableFaceCulling = true,
                     .enableBlending = true,
-                    .alphaBlendEquation = BLEND_MAX
+                    .alphaBlendEquation = BLEND_ADD // TODO: Fix Blending , With additive alpha blending when a partially transparent fragment overlaps an opaque fragment the opaque fragment becomes transparent, max blending fixes the transparency issue but appears darker than additive blending.
             });
         }
 
