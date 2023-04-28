@@ -73,7 +73,11 @@ namespace xng {
             pdesc.enableBlending = true;
             pdesc.enableDepthTest = true;
             pdesc.depthTestWrite = true;
-            pdesc.blendSourceMode = ONE;
+            //https://stackoverflow.com/a/16938711
+            pdesc.colorBlendSourceMode = SRC_ALPHA;
+            pdesc.colorBlendDestinationMode = ONE_MINUS_SRC_ALPHA;
+            pdesc.alphaBlendSourceMode = ONE;
+            pdesc.alphaBlendDestinationMode = ONE_MINUS_SRC_ALPHA;
             pipeline = builder.createPipeline(pdesc);
         }
 

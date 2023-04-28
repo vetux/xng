@@ -84,8 +84,10 @@ namespace xng {
         bool faceCullClockwiseWinding = false;
 
         bool enableBlending = false;
-        BlendMode blendSourceMode = BlendMode::SRC_ALPHA;
-        BlendMode blendDestinationMode = BlendMode::ONE_MINUS_SRC_ALPHA;
+        BlendMode colorBlendSourceMode = BlendMode::SRC_ALPHA;
+        BlendMode colorBlendDestinationMode = BlendMode::ONE_MINUS_SRC_ALPHA;
+        BlendMode alphaBlendSourceMode = BlendMode::SRC_ALPHA;
+        BlendMode alphaBlendDestinationMode = BlendMode::ONE_MINUS_SRC_ALPHA;
         BlendEquation colorBlendEquation = BlendEquation::BLEND_ADD;
         BlendEquation alphaBlendEquation = BlendEquation::BLEND_ADD;
 
@@ -114,8 +116,10 @@ namespace xng {
                    && faceCullMode == other.faceCullMode
                    && faceCullClockwiseWinding == other.faceCullClockwiseWinding
                    && enableBlending == other.enableBlending
-                   && blendSourceMode == other.blendSourceMode
-                   && blendDestinationMode == other.blendDestinationMode
+                   && colorBlendSourceMode == other.colorBlendSourceMode
+                   && colorBlendDestinationMode == other.colorBlendDestinationMode
+                   && alphaBlendSourceMode == other.alphaBlendSourceMode
+                   && alphaBlendDestinationMode == other.alphaBlendDestinationMode
                    && colorBlendEquation == other.colorBlendEquation
                    && alphaBlendEquation == other.alphaBlendEquation;
         }
@@ -127,10 +131,10 @@ namespace std {
     struct hash<xng::RenderPipelineDesc> {
         std::size_t operator()(const xng::RenderPipelineDesc &k) const {
             size_t ret = 0;
-            for (auto &b : k.bindings){
+            for (auto &b: k.bindings) {
                 xng::hash_combine(ret, b);
             }
-            for (auto &pair : k.shaders){
+            for (auto &pair: k.shaders) {
                 xng::hash_combine(ret, pair.first);
                 xng::hash_combine(ret, pair.second.getStage());
                 xng::hash_combine(ret, pair.second.getEntryPoint());
@@ -163,8 +167,8 @@ namespace std {
             xng::hash_combine(ret, k.faceCullMode);
             xng::hash_combine(ret, k.faceCullClockwiseWinding);
             xng::hash_combine(ret, k.enableBlending);
-            xng::hash_combine(ret, k.blendSourceMode);
-            xng::hash_combine(ret, k.blendDestinationMode);
+            xng::hash_combine(ret, k.colorBlendSourceMode);
+            xng::hash_combine(ret, k.colorBlendDestinationMode);
             xng::hash_combine(ret, k.colorBlendEquation);
             xng::hash_combine(ret, k.alphaBlendEquation);
             return ret;

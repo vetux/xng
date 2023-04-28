@@ -54,7 +54,7 @@ namespace xng::opengl {
         }
 
         void beginRenderPass(RenderTarget &target, Vec2i viewportOffset, Vec2i viewportSize) override {
-            if (runningPass){
+            if (runningPass) {
                 throw std::runtime_error("Pass is already running (Nested calls to beginRenderPass ?)");
             }
             auto &fb = dynamic_cast<OGLRenderTarget &>(target);
@@ -203,8 +203,10 @@ namespace xng::opengl {
                 glDisable(GL_CULL_FACE);
             }
 
-            glBlendFunc(convert(desc.blendSourceMode),
-                        convert(desc.blendDestinationMode));
+            glBlendFuncSeparate(convert(desc.colorBlendSourceMode),
+                                convert(desc.colorBlendDestinationMode),
+                                convert(desc.alphaBlendSourceMode),
+                                convert(desc.alphaBlendDestinationMode));
             glBlendEquationSeparate(convert(desc.colorBlendEquation),
                                     convert(desc.alphaBlendEquation));
 
