@@ -118,8 +118,8 @@ int main(int argc, char *argv[]) {
     FrameGraphPipeline pipeline = FrameGraphPipeline().addPass(std::make_shared<ConstructionPass>())
             .addPass(std::make_shared<DeferredLightingPass>())
             .addPass(std::make_shared<CompositePass>())
-            .addPass(testPass)
-            .addPass(std::make_shared<PresentationPass>());
+            .addPass(std::make_shared<PresentationPass>())
+            .addPass(testPass);
 
     renderer.setPipeline(pipeline);
 
@@ -240,6 +240,12 @@ int main(int argc, char *argv[]) {
                 break;
             case 12:
                 txt = "FORWARD DEPTH";
+                break;
+            case 13:
+                txt = "SCREEN COLOR";
+                break;
+            case 14:
+                txt = "SCREEN DEPTH";
                 break;
         }
 

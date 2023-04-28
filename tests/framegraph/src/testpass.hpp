@@ -121,28 +121,23 @@ public:
             case 12:
                 displayTextureRes = builder.getSlot(xng::SLOT_FORWARD_DEPTH);
                 break;
+            case 13:
+                displayTextureRes = builder.getSlot(xng::SLOT_SCREEN_COLOR);
+                break;
+            case 14:
+                displayTextureRes = builder.getSlot(xng::SLOT_SCREEN_DEPTH);
+                break;
         }
         builder.read(displayTextureRes);
 
-        RenderTargetDesc targetDesc;
-        targetDesc.size = builder.getRenderSize();
-        targetDesc.numberOfColorAttachments = 1;
-        targetDesc.hasDepthStencilAttachment = false;
-        target = builder.createRenderTarget(targetDesc);
-
-        builder.read(target);
-
-        screenColor = builder.getSlot(SLOT_SCREEN_COLOR);
-
-        builder.write(screenColor);
+        backBuffer = builder.getBackBuffer();
+        builder.write(backBuffer);
 
         camera = builder.getScene().camera;
     }
 
     void execute(FrameGraphPassResources &resources) override {
-        auto &sColor = resources.get<TextureBuffer>(screenColor);
-
-        auto &t = resources.get<RenderTarget>(target);
+        auto &target = resources.get<RenderTarget>(backBuffer);
 
         auto &pipeline = resources.get<RenderPipeline>(pipelineRes);
         auto &pass = resources.get<RenderPass>(passRes);
@@ -170,9 +165,7 @@ public:
 
         auto &texture = resources.get<TextureBuffer>(displayTextureRes);
 
-        t.setColorAttachments({sColor});
-
-        pass.beginRenderPass(t, {}, t.getDescription().size);
+        pass.beginRenderPass(target, {}, target.getDescription().size);
 
         pass.bindPipeline(pipeline);
         pass.bindVertexArrayObject(vertexArrayObject);
@@ -198,14 +191,14 @@ public:
     }
 
     void incrementTex() {
-        if (++tex > 12) {
+        if (++tex > 14) {
             tex = 0;
         }
     }
 
     void decrementTex() {
         if (--tex < 0) {
-            tex = 12;
+            tex = 14;
         }
     }
 
@@ -214,9 +207,7 @@ private:
 
     int tex = 0;
 
-    FrameGraphResource screenColor;
-
-    FrameGraphResource target;
+    FrameGraphResource backBuffer;
 
     FrameGraphResource pipelineRes;
     FrameGraphResource passRes;
