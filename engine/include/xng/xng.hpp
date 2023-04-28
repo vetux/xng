@@ -219,8 +219,6 @@
 #include "xng/render/textureatlasresolution.hpp"
 #include "xng/render/scene.hpp"
 #include "xng/render/2d/renderer2d.hpp"
-#include "xng/render/forward/forwardrenderer.hpp"
-#include "xng/render/forward/forwardrenderproperties.hpp"
 #include "xng/render/graph/framegraphbuilder.hpp"
 #include "xng/render/graph/framegraphpassresources.hpp"
 #include "xng/render/graph/framegraphtextureatlas.hpp"
