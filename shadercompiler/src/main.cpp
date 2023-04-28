@@ -17,10 +17,15 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/xng.hpp"
+#include "xng/shader/shadercompiler.hpp"
+#include "xng/shader/spirvbundle.hpp"
+#include "xng/shader/shaderdirectoryinclude.hpp"
+#include "xng/shader/shaderc/shaderccompiler.hpp"
+#include "xng/io/readfile.hpp"
 
 #include <fstream>
 #include <filesystem>
+#include <iostream>
 
 enum OutputMode {
     INCLUDE, // Output a c++ header which contains the shader data as a SPIRVBundle
