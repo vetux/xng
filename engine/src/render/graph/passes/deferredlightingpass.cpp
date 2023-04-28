@@ -17,11 +17,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/render/graph/passes/phongdeferredpass.hpp"
+#include "xng/render/graph/passes/deferredlightingpass.hpp"
 
 #include "xng/render/graph/framegraphbuilder.hpp"
 
-#include "xng/render/graph/passes/gbufferpass.hpp"
+#include "xng/render/graph/passes/constructionpass.hpp"
 #include "xng/render/graph/framegraphproperties.hpp"
 
 #include "xng/geometry/vertexstream.hpp"
@@ -31,14 +31,14 @@
 
 namespace xng {
 #pragma pack(push, 1)
-    struct DirectionalLight {
+    struct DirectionalLightData {
         std::array<float, 4> ambient;
         std::array<float, 4> diffuse;
         std::array<float, 4> specular;
         std::array<float, 4> direction;
     };
 
-    struct PointLight {
+    struct PointLightData {
         std::array<float, 4> ambient;
         std::array<float, 4> diffuse;
         std::array<float, 4> specular;
@@ -46,7 +46,7 @@ namespace xng {
         std::array<float, 4> constant_linear_quadratic;
     };
 
-    struct SpotLight {
+    struct SpotLightData {
         std::array<float, 4> ambient;
         std::array<float, 4> diffuse;
         std::array<float, 4> specular;
@@ -60,10 +60,10 @@ namespace xng {
     };
 #pragma pack(pop)
 
-    std::vector<DirectionalLight> getDirLights(const std::vector<Light> &lights) {
-        std::vector<DirectionalLight> ret;
+    std::vector<DirectionalLightData> getDirLights(const std::vector<DirectionalLight> &lights) {
+        std::vector<DirectionalLightData> ret;
         for (auto &l: lights) {
-            auto tmp = DirectionalLight{
+            auto tmp = DirectionalLightData{
                     .ambient = Vec4f(l.ambient.x, l.ambient.y, l.ambient.z, 1).getMemory(),
                     .diffuse = Vec4f(l.diffuse.x, l.diffuse.y, l.diffuse.z, 1).getMemory(),
                     .specular = Vec4f(l.specular.x, l.specular.y, l.specular.z, 1).getMemory(),
@@ -75,10 +75,10 @@ namespace xng {
         return ret;
     }
 
-    std::vector<PointLight> getPointLights(const std::vector<Light> &lights) {
-        std::vector<PointLight> ret;
+    std::vector<PointLightData> getPointLights(const std::vector<PointLight> &lights) {
+        std::vector<PointLightData> ret;
         for (auto &l: lights) {
-            auto tmp = PointLight{
+            auto tmp = PointLightData{
                     .ambient = Vec4f(l.ambient.x, l.ambient.y, l.ambient.z, 1).getMemory(),
                     .diffuse = Vec4f(l.diffuse.x, l.diffuse.y, l.diffuse.z, 1).getMemory(),
                     .specular = Vec4f(l.specular.x, l.specular.y, l.specular.z, 1).getMemory(),
@@ -95,10 +95,10 @@ namespace xng {
         return ret;
     }
 
-    std::vector<SpotLight> getSpotLights(const std::vector<Light> &lights) {
-        std::vector<SpotLight> ret;
+    std::vector<SpotLightData> getSpotLights(const std::vector<SpotLight> &lights) {
+        std::vector<SpotLightData> ret;
         for (auto &l: lights) {
-            auto tmp = SpotLight{
+            auto tmp = SpotLightData{
                     .ambient = Vec4f(l.ambient.x, l.ambient.y, l.ambient.z, 1).getMemory(),
                     .diffuse = Vec4f(l.diffuse.x, l.diffuse.y, l.diffuse.z, 1).getMemory(),
                     .specular = Vec4f(l.specular.x, l.specular.y, l.specular.z, 1).getMemory(),
@@ -125,9 +125,9 @@ namespace xng {
         return ret;
     }
 
-    PhongDeferredPass::PhongDeferredPass() = default;
+    DeferredLightingPass::DeferredLightingPass() = default;
 
-    void PhongDeferredPass::setup(FrameGraphBuilder &builder) {
+    void DeferredLightingPass::setup(FrameGraphBuilder &builder) {
         if (!vertexBufferRes.assigned) {
             VertexBufferDesc desc;
             desc.size = mesh.vertices.size() * mesh.vertexLayout.getSize();
@@ -165,9 +165,6 @@ namespace xng {
                                  BIND_TEXTURE_BUFFER},
                     .primitive = TRIANGLES,
                     .vertexLayout = mesh.vertexLayout,
-                    .clearColorValue = ColorRGBA(0, 0, 0, 0),
-                    .clearColor = true,
-                    .clearDepth = true,
                     .enableDepthTest = true,
                     .depthTestWrite = true,
             });
@@ -186,13 +183,10 @@ namespace xng {
         });
         builder.read(targetRes);
 
-        TextureBufferDesc desc;
-        desc.size = renderSize;
-        colorTextureRes = builder.createTextureBuffer(desc);
+        colorTextureRes = builder.getSlot(SLOT_DEFERRED_COLOR);
         builder.write(colorTextureRes);
 
-        desc.format = DEPTH_STENCIL;
-        depthTextureRes = builder.createTextureBuffer(desc);
+        depthTextureRes = builder.getSlot(SLOT_DEFERRED_DEPTH);
         builder.write(depthTextureRes);
 
         passRes = builder.createRenderPass(RenderPassDesc{
@@ -205,79 +199,59 @@ namespace xng {
         builder.read(uniformBufferRes);
         builder.write(uniformBufferRes);
 
-        pointLights.clear();
-        spotLights.clear();
-        directionalLights.clear();
-        for (auto &l: builder.getScene().lights) {
-            switch (l.type) {
-                case LIGHT_POINT:
-                    pointLights.emplace_back(l);
-                    break;
-                case LIGHT_SPOT:
-                    spotLights.emplace_back(l);
-                    break;
-                case LIGHT_DIRECTIONAL:
-                    directionalLights.emplace_back(l);
-                    break;
-            }
-        }
+        pointLights = builder.getScene().pointLights;
+        spotLights = builder.getScene().spotLights;
+        directionalLights = builder.getScene().directionalLights;
 
         pointLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(PointLight) * pointLights.size()
+                .size = sizeof(PointLightData) * pointLights.size()
         });
         builder.read(pointLightsBufferRes);
         builder.write(pointLightsBufferRes);
 
         spotLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(SpotLight) * spotLights.size()
+                .size = sizeof(SpotLightData) * spotLights.size()
         });
         builder.read(spotLightsBufferRes);
         builder.write(spotLightsBufferRes);
 
         directionalLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(DirectionalLight) * directionalLights.size()
+                .size = sizeof(DirectionalLightData) * directionalLights.size()
         });
         builder.read(directionalLightsBufferRes);
         builder.write(directionalLightsBufferRes);
 
-        gBufferPosition = builder.getSharedData().get<FrameGraphResource>(
-                GBufferPass::GEOMETRY_BUFFER_POSITION);
+        gBufferPosition = builder.getSlot(SLOT_GBUFFER_POSITION);
         builder.read(gBufferPosition);
 
-        gBufferNormal = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_NORMAL);
+        gBufferNormal = builder.getSlot(SLOT_GBUFFER_NORMAL);
         builder.read(gBufferNormal);
 
-        gBufferTangent = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_TANGENT);
+        gBufferTangent = builder.getSlot(SLOT_GBUFFER_TANGENT);
         builder.read(gBufferTangent);
 
-        gBufferRoughnessMetallicAO = builder.getSharedData().get<FrameGraphResource>(
-                GBufferPass::GEOMETRY_BUFFER_ROUGHNESS_METALLIC_AO);
+        gBufferRoughnessMetallicAO = builder.getSlot(SLOT_GBUFFER_ROUGHNESS_METALLIC_AO);
         builder.read(gBufferRoughnessMetallicAO);
 
-        gBufferAlbedo = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_ALBEDO);
+        gBufferAlbedo = builder.getSlot(SLOT_GBUFFER_ALBEDO);
         builder.read(gBufferAlbedo);
 
-        gBufferAmbient = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_AMBIENT);
+        gBufferAmbient = builder.getSlot(SLOT_GBUFFER_AMBIENT);
         builder.read(gBufferAmbient);
 
-        gBufferSpecular = builder.getSharedData().get<FrameGraphResource>(
-                GBufferPass::GEOMETRY_BUFFER_SPECULAR);
+        gBufferSpecular = builder.getSlot(SLOT_GBUFFER_SPECULAR);
         builder.read(gBufferSpecular);
 
-        gBufferModelObject = builder.getSharedData().get<FrameGraphResource>(
-                GBufferPass::GEOMETRY_BUFFER_MODEL_OBJECT);
+        gBufferModelObject = builder.getSlot(SLOT_GBUFFER_MODEL_OBJECT);
         builder.read(gBufferModelObject);
 
-        gBufferDepth = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_DEPTH);
+        gBufferDepth = builder.getSlot(SLOT_GBUFFER_DEPTH);
         builder.read(gBufferDepth);
 
         cameraTransform = builder.getScene().cameraTransform;
-
-        builder.getSharedData().set(COLOR, colorTextureRes);
-        builder.getSharedData().set(DEPTH, depthTextureRes);
     }
 
-    void PhongDeferredPass::execute(FrameGraphPassResources &resources) {
+    void DeferredLightingPass::execute(FrameGraphPassResources &resources) {
         auto &target = resources.get<RenderTarget>(targetRes);
 
         auto &pipeline = resources.get<RenderPipeline>(pipelineRes);
@@ -299,10 +273,12 @@ namespace xng {
         auto slights = getSpotLights(spotLights);
         auto dlights = getDirLights(directionalLights);
 
-        pointLightBuffer.upload(reinterpret_cast<const uint8_t *>(plights.data()), plights.size() * sizeof(PointLight));
-        spotLightBuffer.upload(reinterpret_cast<const uint8_t *>(slights.data()), slights.size() * sizeof(SpotLight));
+        pointLightBuffer.upload(reinterpret_cast<const uint8_t *>(plights.data()),
+                                plights.size() * sizeof(PointLightData));
+        spotLightBuffer.upload(reinterpret_cast<const uint8_t *>(slights.data()),
+                               slights.size() * sizeof(SpotLightData));
         dirLightBuffer.upload(reinterpret_cast<const uint8_t *>(dlights.data()),
-                              dlights.size() * sizeof(DirectionalLight));
+                              dlights.size() * sizeof(DirectionalLightData));
 
         if (!quadAllocated) {
             quadAllocated = true;
@@ -351,14 +327,14 @@ namespace xng {
                                     gBufModelObject,
                                     gBufDepth
                             });
-        pass.drawArray(RenderPass::DrawCall{.offset = 0, .count = mesh.vertices.size()});
+        pass.drawArray(RenderPass::DrawCall(0, mesh.vertices.size()));
         pass.endRenderPass();
 
         target.setColorAttachments({});
         target.clearDepthStencilAttachment();
     }
 
-    std::type_index PhongDeferredPass::getTypeIndex() const {
-        return typeid(PhongDeferredPass);
+    std::type_index DeferredLightingPass::getTypeIndex() const {
+        return typeid(DeferredLightingPass);
     }
 }

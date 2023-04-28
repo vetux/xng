@@ -23,11 +23,15 @@
 #include <utility>
 
 #include "xng/asset/camera.hpp"
-#include "xng/asset/light.hpp"
+#include "xng/asset/directionallight.hpp"
+#include "xng/asset/pointlight.hpp"
+#include "xng/asset/spotlight.hpp"
 #include "xng/asset/material.hpp"
 #include "xng/asset/skybox.hpp"
 #include "xng/asset/shader.hpp"
 #include "xng/asset/mesh.hpp"
+
+#include "xng/types/genericmap.hpp"
 
 #include "xng/resource/resourcehandle.hpp"
 
@@ -44,17 +48,17 @@ namespace xng {
 
             bool castShadows = false;
             bool receiveShadows = false;
-
-            bool outline = false; // If true the object is redrawn with object.scale * outlineScale scale and all fragments not belonging to the unscaled object are colored with the specified color, and faded alpha values towards the edges beginning at borderWidth * fadeStart.
-            ColorRGBA outlineColor;
-            float outlineScale = 1.1f;
-            float outlineFadeStart = 0.5f;
         };
 
         Transform cameraTransform;
         Camera camera;
+
         Skybox skybox;
-        std::vector<Light> lights;
+
+        std::vector<DirectionalLight> directionalLights;
+        std::vector<PointLight> pointLights;
+        std::vector<SpotLight> spotLights;
+
         std::vector<Object> objects;
     };
 }

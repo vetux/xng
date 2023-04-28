@@ -20,9 +20,9 @@
 #ifndef XENGINE_FRAMEGRAPH_HPP
 #define XENGINE_FRAMEGRAPH_HPP
 
-#include "framegraphresource.hpp"
-#include "framegraphpass.hpp"
-#include "framegraphallocation.hpp"
+#include "xng/render/graph/framegraphresource.hpp"
+#include "xng/render/graph/framegraphpass.hpp"
+#include "xng/render/graph/framegraphallocation.hpp"
 
 namespace xng {
     struct FrameGraph {

@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/render/graph/passes/gbufferpass.hpp"
+#include "xng/render/graph/passes/constructionpass.hpp"
 #include "xng/render/graph/framegraphbuilder.hpp"
 #include "xng/render/graph/framegraphproperties.hpp"
 #include "xng/render/textureatlas.hpp"
@@ -64,14 +64,13 @@ namespace xng {
     };
 #pragma pack(pop)
 
-    GBufferPass::GBufferPass() {}
+    ConstructionPass::ConstructionPass() {}
 
-    void GBufferPass::setup(FrameGraphBuilder &builder) {
+    void ConstructionPass::setup(FrameGraphBuilder &builder) {
         requestedVertexBufferSize = currentVertexBufferSize;
         requestedIndexBufferSize = currentIndexBufferSize;
 
-        renderSize = builder.getBackBufferDescription().size
-                     * builder.getProperties().get<float>(FrameGraphProperties::RENDER_SCALE, 1);
+        renderSize = builder.getRenderSize();
         renderTargetRes = builder.createRenderTarget(RenderTargetDesc{
                 .size = renderSize,
                 .multisample = false,
@@ -79,7 +78,15 @@ namespace xng {
                 .numberOfColorAttachments = 8,
                 .hasDepthStencilAttachment = true,
         });
+        RenderTargetDesc targetDesc;
+        targetDesc.size = renderSize;
+        targetDesc.numberOfColorAttachments = 3;
+        targetDesc.hasDepthStencilAttachment = true;
+        clearTargetRes = builder.createRenderTarget(targetDesc);
+
         builder.read(renderTargetRes);
+        builder.read(clearTargetRes);
+
         if (!renderPipelineRes.assigned) {
             renderPipelineRes = builder.createPipeline(RenderPipelineDesc{
                     .shaders = {{VERTEX,   gbufferpass_vs.getShader()},
@@ -101,9 +108,9 @@ namespace xng {
                     },
                     .vertexLayout = Mesh::getDefaultVertexLayout(),
                     .clearColorValue = ColorRGBA(0, 0, 0, 0),
-                    .clearColor = true,
-                    .clearDepth = true,
-                    .clearStencil = true,
+                    .clearColor = false,
+                    .clearDepth = false,
+                    .clearStencil = false,
                     .enableDepthTest = true,
                     .depthTestWrite = true,
                     .depthTestMode = DEPTH_TEST_LESS,
@@ -130,6 +137,12 @@ namespace xng {
                 .hasDepthStencilAttachment = true
         });
         builder.read(renderPassRes);
+
+        RenderPassDesc passDesc;
+        passDesc.numberOfColorAttachments = 3;
+        passDesc.hasDepthStencilAttachment = true;
+        clearPassRes = builder.createRenderPass(passDesc);
+        builder.read(clearPassRes);
 
         auto desc = TextureBufferDesc();
         desc.size = renderSize;
@@ -304,19 +317,48 @@ namespace xng {
         camera = builder.getScene().camera;
         cameraTransform = builder.getScene().cameraTransform;
 
-        auto &blackBoard = builder.getSharedData();
-        blackBoard.set(GEOMETRY_BUFFER_POSITION, gBufferPosition);
-        blackBoard.set(GEOMETRY_BUFFER_NORMAL, gBufferNormal);
-        blackBoard.set(GEOMETRY_BUFFER_TANGENT, gBufferTangent);
-        blackBoard.set(GEOMETRY_BUFFER_ROUGHNESS_METALLIC_AO, gBufferRoughnessMetallicAmbientOcclusion);
-        blackBoard.set(GEOMETRY_BUFFER_ALBEDO, gBufferAlbedo);
-        blackBoard.set(GEOMETRY_BUFFER_AMBIENT, gBufferAmbient);
-        blackBoard.set(GEOMETRY_BUFFER_SPECULAR, gBufferSpecular);
-        blackBoard.set(GEOMETRY_BUFFER_MODEL_OBJECT, gBufferModelObject);
-        blackBoard.set(GEOMETRY_BUFFER_DEPTH, gBufferDepth);
+        desc.format = RGBA;
+
+        screenColor = builder.createTextureBuffer(desc);
+        deferredColor = builder.createTextureBuffer(desc);
+        forwardColor = builder.createTextureBuffer(desc);
+
+        desc.format = DEPTH_STENCIL;
+
+        screenDepth = builder.createTextureBuffer(desc);
+        deferredDepth = builder.createTextureBuffer(desc);
+        forwardDepth = builder.createTextureBuffer(desc);
+
+        builder.write(screenColor);
+        builder.write(screenDepth);
+
+        builder.write(deferredColor);
+        builder.write(deferredDepth);
+
+        builder.write(forwardColor);
+        builder.write(forwardDepth);
+
+        builder.assignSlot(SLOT_SCREEN_COLOR, screenColor);
+        builder.assignSlot(SLOT_SCREEN_DEPTH, screenDepth);
+
+        builder.assignSlot(SLOT_DEFERRED_COLOR, deferredColor);
+        builder.assignSlot(SLOT_DEFERRED_DEPTH, deferredDepth);
+
+        builder.assignSlot(SLOT_FORWARD_COLOR, forwardColor);
+        builder.assignSlot(SLOT_FORWARD_DEPTH, forwardDepth);
+
+        builder.assignSlot(SLOT_GBUFFER_POSITION, gBufferPosition);
+        builder.assignSlot(SLOT_GBUFFER_NORMAL, gBufferNormal);
+        builder.assignSlot(SLOT_GBUFFER_TANGENT, gBufferTangent);
+        builder.assignSlot(SLOT_GBUFFER_ROUGHNESS_METALLIC_AO, gBufferRoughnessMetallicAmbientOcclusion);
+        builder.assignSlot(SLOT_GBUFFER_ALBEDO, gBufferAlbedo);
+        builder.assignSlot(SLOT_GBUFFER_AMBIENT, gBufferAmbient);
+        builder.assignSlot(SLOT_GBUFFER_SPECULAR, gBufferSpecular);
+        builder.assignSlot(SLOT_GBUFFER_MODEL_OBJECT, gBufferModelObject);
+        builder.assignSlot(SLOT_GBUFFER_DEPTH, gBufferDepth);
     }
 
-    void GBufferPass::execute(FrameGraphPassResources &resources) {
+    void ConstructionPass::execute(FrameGraphPassResources &resources) {
         auto atlasBuffers = atlas.getAtlasBuffers(resources);
 
         auto &target = resources.get<RenderTarget>(renderTargetRes);
@@ -337,6 +379,39 @@ namespace xng {
         auto &specularTex = resources.get<TextureBuffer>(gBufferSpecular);
         auto &modelObjectTex = resources.get<TextureBuffer>(gBufferModelObject);
         auto &depthTex = resources.get<TextureBuffer>(gBufferDepth);
+
+        auto &screenColorTex = resources.get<TextureBuffer>(screenColor);
+        auto &screenDepthTex = resources.get<TextureBuffer>(screenDepth);
+
+        auto &deferredColorTex = resources.get<TextureBuffer>(deferredColor);
+        auto &deferredDepthTex = resources.get<TextureBuffer>(deferredDepth);
+
+        auto &forwardColorTex = resources.get<TextureBuffer>(forwardColor);
+        auto &forwardDepthTex = resources.get<TextureBuffer>(forwardDepth);
+
+        auto &clearTarget = resources.get<RenderTarget>(clearTargetRes);
+        auto &clearPass = resources.get<RenderPass>(clearPassRes);
+
+        // Clear textures
+        clearTarget.setColorAttachments({screenColorTex, deferredColorTex, forwardColorTex});
+        clearTarget.setDepthStencilAttachment(screenDepthTex);
+
+        clearPass.beginRenderPass(clearTarget, {}, {});
+        clearPass.clearColorAttachments(ColorRGBA(0));
+        clearPass.clearDepthAttachment(1);
+        clearPass.endRenderPass();
+
+        clearTarget.setDepthStencilAttachment(deferredDepthTex);
+
+        clearPass.beginRenderPass(clearTarget, {}, {});
+        clearPass.clearDepthAttachment(1);
+        clearPass.endRenderPass();
+
+        clearTarget.setDepthStencilAttachment(forwardDepthTex);
+
+        clearPass.beginRenderPass(clearTarget, {}, {});
+        clearPass.clearDepthAttachment(1);
+        clearPass.endRenderPass();
 
         bool updateVao = false;
         if (staleVertexBuffer.assigned) {
@@ -382,6 +457,7 @@ namespace xng {
             deallocateTexture(ResourceHandle<Texture>(uri));
         }
 
+        // Draw geometry buffer
         target.setColorAttachments({
                                            posTex,
                                            normalTex,
@@ -401,6 +477,9 @@ namespace xng {
         pass.beginRenderPass(target, {}, target.getDescription().size);
         pass.bindPipeline(pipeline);
         pass.bindVertexArrayObject(vertexArrayObject);
+
+        pass.clearColorAttachments(ColorRGBA(0));
+        pass.clearDepthAttachment(1);
 
         if (!objects.empty()) {
             auto passesPerDrawCycle = objects.size() / drawCycles;
@@ -636,12 +715,12 @@ namespace xng {
         target.clearDepthStencilAttachment();
     }
 
-    std::type_index GBufferPass::getTypeIndex() const {
-        return typeid(GBufferPass);
+    std::type_index ConstructionPass::getTypeIndex() const {
+        return typeid(ConstructionPass);
     }
 
-    TextureAtlasHandle GBufferPass::getTexture(const ResourceHandle<Texture> &texture,
-                                               std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> &atlasBuffers) {
+    TextureAtlasHandle ConstructionPass::getTexture(const ResourceHandle<Texture> &texture,
+                                                    std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> &atlasBuffers) {
         if (textures.find(texture.getUri()) == textures.end()) {
             auto handle = atlas.add(texture.get().getImage().get());
             textures[texture.getUri()] = handle;
@@ -649,11 +728,11 @@ namespace xng {
         return textures.at(texture.getUri());
     }
 
-    GBufferPass::MeshDrawData GBufferPass::getMesh(const ResourceHandle<Mesh> &mesh) {
+    ConstructionPass::MeshDrawData ConstructionPass::getMesh(const ResourceHandle<Mesh> &mesh) {
         return meshAllocations.at(mesh.getUri());
     }
 
-    void GBufferPass::prepareMeshAllocation(const ResourceHandle<Mesh> &mesh) {
+    void ConstructionPass::prepareMeshAllocation(const ResourceHandle<Mesh> &mesh) {
         if (mesh.get().primitive != TRIANGLES) {
             throw std::runtime_error("Unsupported mesh primitive");
         } else if (mesh.get().vertexLayout != Mesh::getDefaultVertexLayout()) {
@@ -674,7 +753,7 @@ namespace xng {
         }
     }
 
-    void GBufferPass::allocateMeshes(VertexBuffer &vertexBuffer, IndexBuffer &indexBuffer) {
+    void ConstructionPass::allocateMeshes(VertexBuffer &vertexBuffer, IndexBuffer &indexBuffer) {
         for (auto &pair: pendingMeshAllocations) {
             auto mesh = pendingMeshHandles.at(pair.first);
             auto buf = VertexStream().addVertices(mesh.get().vertices).getVertexBuffer();
@@ -690,19 +769,19 @@ namespace xng {
         pendingMeshHandles.clear();
     }
 
-    void GBufferPass::deallocateMesh(const ResourceHandle<Mesh> &mesh) {
+    void ConstructionPass::deallocateMesh(const ResourceHandle<Mesh> &mesh) {
         auto alloc = meshAllocations.at(mesh.getUri());
         meshAllocations.erase(mesh.getUri());
         deallocateVertexData(alloc.baseVertex * mesh.get().vertexLayout.getSize());
         deallocateIndexData(alloc.drawCall.offset);
     }
 
-    void GBufferPass::deallocateTexture(const ResourceHandle<Texture> &texture) {
+    void ConstructionPass::deallocateTexture(const ResourceHandle<Texture> &texture) {
         atlas.remove(textures.at(texture.getUri()));
         textures.erase(texture.getUri());
     }
 
-    size_t GBufferPass::allocateVertexData(size_t size) {
+    size_t ConstructionPass::allocateVertexData(size_t size) {
         assert(size % Mesh::getDefaultVertexLayout().getSize() == 0);
 
         bool foundFreeRange = false;
@@ -730,13 +809,13 @@ namespace xng {
         return ret;
     }
 
-    void GBufferPass::deallocateVertexData(size_t offset) {
+    void ConstructionPass::deallocateVertexData(size_t offset) {
         auto size = allocatedVertexRanges.at(offset);
         allocatedVertexRanges.erase(offset);
         freeVertexBufferRanges[offset] = size;
     }
 
-    size_t GBufferPass::allocateIndexData(size_t size) {
+    size_t ConstructionPass::allocateIndexData(size_t size) {
         assert(size % sizeof(unsigned int) == 0);
 
         bool foundFreeRange = false;
@@ -763,13 +842,13 @@ namespace xng {
         return ret;
     }
 
-    void GBufferPass::deallocateIndexData(size_t offset) {
+    void ConstructionPass::deallocateIndexData(size_t offset) {
         auto size = allocatedIndexRanges.at(offset);
         allocatedIndexRanges.erase(offset);
         freeIndexBufferRanges[offset] = size;
     }
 
-    void GBufferPass::mergeFreeVertexBufferRanges() {
+    void ConstructionPass::mergeFreeVertexBufferRanges() {
         bool merged = true;
         while (merged) {
             merged = false;
@@ -792,7 +871,7 @@ namespace xng {
         }
     }
 
-    void GBufferPass::mergeFreeIndexBufferRanges() {
+    void ConstructionPass::mergeFreeIndexBufferRanges() {
         bool merged = true;
         while (merged) {
             merged = false;

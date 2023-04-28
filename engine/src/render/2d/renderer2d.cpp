@@ -257,7 +257,7 @@ namespace xng {
         if (clear) {
             renderPass->beginRenderPass(target, viewportOffset, viewportSize);
             renderPass->clearColorAttachments(clearColor);
-            renderPass->clearDepthAttachments(1);
+            renderPass->clearDepthAttachment(1);
             renderPass->endRenderPass();
         }
 
@@ -341,10 +341,10 @@ namespace xng {
     }
 
     void Renderer2D::rebindTextureAtlas() {
-        atlasRef.insert_or_assign(TEXTURE_ATLAS_8x8,*atlasTextures.at(TEXTURE_ATLAS_8x8).get());
-        atlasRef.insert_or_assign(TEXTURE_ATLAS_16x16,*atlasTextures.at(TEXTURE_ATLAS_16x16).get());
-        atlasRef.insert_or_assign(TEXTURE_ATLAS_32x32,*atlasTextures.at(TEXTURE_ATLAS_32x32).get());
-        atlasRef.insert_or_assign(TEXTURE_ATLAS_64x64,*atlasTextures.at(TEXTURE_ATLAS_64x64).get());
+        atlasRef.insert_or_assign(TEXTURE_ATLAS_8x8, *atlasTextures.at(TEXTURE_ATLAS_8x8).get());
+        atlasRef.insert_or_assign(TEXTURE_ATLAS_16x16, *atlasTextures.at(TEXTURE_ATLAS_16x16).get());
+        atlasRef.insert_or_assign(TEXTURE_ATLAS_32x32, *atlasTextures.at(TEXTURE_ATLAS_32x32).get());
+        atlasRef.insert_or_assign(TEXTURE_ATLAS_64x64, *atlasTextures.at(TEXTURE_ATLAS_64x64).get());
         atlasRef.insert_or_assign(TEXTURE_ATLAS_128x128, *atlasTextures.at(TEXTURE_ATLAS_128x128).get());
         atlasRef.insert_or_assign(TEXTURE_ATLAS_256x256, *atlasTextures.at(TEXTURE_ATLAS_256x256).get());
         atlasRef.insert_or_assign(TEXTURE_ATLAS_512x512, *atlasTextures.at(TEXTURE_ATLAS_512x512).get());
@@ -959,7 +959,8 @@ namespace xng {
             Primitive currentPrimitive = TRIANGLES;
 
             for (auto &batch: batches) {
-                shaderBuffer->upload(0, reinterpret_cast<const uint8_t *>(batch.uniformBuffers.data()), batch.uniformBuffers.size() * sizeof(PassData));
+                shaderBuffer->upload(0, reinterpret_cast<const uint8_t *>(batch.uniformBuffers.data()),
+                                     batch.uniformBuffers.size() * sizeof(PassData));
 
                 switch (batch.primitive) {
                     case POINTS:
@@ -1033,9 +1034,7 @@ namespace xng {
 
             auto indexBufferOffset = allocateIndexData(indices.size() * sizeof(unsigned int));
 
-            auto drawCall = RenderPass::DrawCall{
-                    .offset = indexBufferOffset,
-                    .count = indices.size()};
+            auto drawCall = RenderPass::DrawCall(indexBufferOffset, indices.size());
 
             indexBuffer->upload(indexBufferOffset,
                                 reinterpret_cast<const uint8_t *>(indices.data()),
@@ -1095,9 +1094,7 @@ namespace xng {
 
             auto indexBufferOffset = allocateIndexData(indices.size() * sizeof(unsigned int));
 
-            auto drawCall = RenderPass::DrawCall{
-                    .offset = indexBufferOffset,
-                    .count = indices.size()};
+            auto drawCall = RenderPass::DrawCall(indexBufferOffset, indices.size());
 
             indexBuffer->upload(indexBufferOffset,
                                 reinterpret_cast<const uint8_t *>(indices.data()),
@@ -1141,9 +1138,7 @@ namespace xng {
 
             auto indexBufferOffset = allocateIndexData(indices.size() * sizeof(unsigned int));
 
-            auto drawCall = RenderPass::DrawCall{
-                    .offset = indexBufferOffset,
-                    .count = indices.size()};
+            auto drawCall = RenderPass::DrawCall(indexBufferOffset, indices.size());
 
             indexBuffer->upload(indexBufferOffset,
                                 reinterpret_cast<const uint8_t *>(indices.data()),
@@ -1180,9 +1175,7 @@ namespace xng {
 
             auto indexBufferOffset = allocateIndexData(indices.size() * sizeof(unsigned int));
 
-            auto drawCall = RenderPass::DrawCall{
-                    .offset = indexBufferOffset,
-                    .count = indices.size()};
+            auto drawCall = RenderPass::DrawCall(indexBufferOffset, indices.size());
 
             indexBuffer->upload(indexBufferOffset,
                                 reinterpret_cast<const uint8_t *>(indices.data()),

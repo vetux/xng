@@ -22,6 +22,7 @@
 
 #include "xng/render/graph/framegraphresource.hpp"
 #include "xng/render/graph/framegraph.hpp"
+#include "xng/render/graph/framegraphslot.hpp"
 
 #include "xng/render/scene.hpp"
 
@@ -99,6 +100,24 @@ namespace xng {
         void persist(FrameGraphResource resource);
 
         /**
+         * Declare a resource to be bound to the corresponding output slot for this frame.
+         * If the slot is already occupied an exception is thrown.
+         *
+         * @param slot
+         * @param resource
+         */
+        void assignSlot(FrameGraphSlot slot, FrameGraphResource resource);
+
+        /**
+         * Declare access on a slot.
+         * If the slot has not been assigned an exception is thrown.
+         *
+         * @param slot
+         * @return
+         */
+        FrameGraphResource getSlot(FrameGraphSlot slot);
+
+        /**
          * @return The resource handle of the back buffer to render into.
          */
         FrameGraphResource getBackBuffer();
@@ -107,6 +126,11 @@ namespace xng {
          * @return The description object of the back buffer target.
          */
         RenderTargetDesc getBackBufferDescription();
+
+        /**
+         * @return The resolution to render at
+         */
+        Vec2i getRenderSize();
 
         /**
          * @return The scene containing the user specified data.
@@ -119,19 +143,6 @@ namespace xng {
          * @return
          */
         const GenericMapString &getProperties() const;
-
-        /**
-         * Return the shared data generic map.
-         * Data added to this map is accessible to subsequent passes in the setup phase.
-         *
-         * FrameGraphResource's can be exported to subsequent passes by adding the handles to the shared data map.
-         * Subsequent Passes can then declare a read or write usage in the FrameGraphBuilder
-         * to the FrameGraphResource handles in the shared data
-         * which causes the resource to persist to the last read / write usage.
-         *
-         * @return
-         */
-        GenericMapString &getSharedData();
 
         ShaderCompiler &getShaderCompiler();
 
@@ -161,9 +172,9 @@ namespace xng {
 
         std::set<FrameGraphResource> persistentResources;
 
-        size_t resourceCounter = 1;
+        std::map<FrameGraphSlot, FrameGraphResource> slots;
 
-        GenericMapString sharedData;
+        size_t resourceCounter = 1;
 
         ShaderCompiler &shaderCompiler;
         ShaderDecompiler &shaderDecompiler;

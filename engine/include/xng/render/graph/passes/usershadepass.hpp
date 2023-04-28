@@ -23,19 +23,14 @@
 #include "xng/render/graph/framegraphpass.hpp"
 
 namespace xng {
+    // TODO: Design user shading interface
     /**
-     * Handles drawing of objects with materials that contain a user specified shader and creates the user shade compositor layer.
+     * Handles drawing of objects with materials that contain a user specified shader.
      *
      * No Dependencies
      */
     class XENGINE_EXPORT UserShadePass : public FrameGraphPass {
     public:
-        // Texture RGBA : The output color of the user shaders
-        SHARED_PROPERTY(UserShadePass, COLOR)
-
-        // Texture DEPTH_STENCIL : The output depth of the user shaders
-        SHARED_PROPERTY(UserShadePass, DEPTH)
-
         void setup(FrameGraphBuilder &builder) override;
 
         void execute(FrameGraphPassResources &resources) override;

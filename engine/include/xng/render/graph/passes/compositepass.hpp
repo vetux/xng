@@ -24,28 +24,10 @@
 
 namespace xng {
     /**
-     * The composite pass combines the texture layers produced by previous passes
-     * and outputs the final composited image to the backbuffer.
-     *
-     * No Dependencies
+     * The composite pass blits the SLOT_DEFERRED_COLOR texture and blends the SLOT_FORWARD_COLOR texture ontop and stores the result in the SLOT_SCREEN_COLOR and SLOT_SCREEN_DEPTH slots.
      */
     class XENGINE_EXPORT CompositePass : public FrameGraphPass {
     public:
-        // std::vector<CompositePass::Layer> : The composite layers that are appended to by preceding passes and read by the composite pass in the setup phase.
-        SHARED_PROPERTY(CompositePass, LAYERS)
-
-        struct XENGINE_EXPORT Layer {
-            explicit Layer(FrameGraphResource color, FrameGraphResource *depth = nullptr)
-                    : color(color), depth(depth) {}
-
-            FrameGraphResource color;
-            FrameGraphResource *depth;
-            bool enableBlending = true;
-            BlendMode colorBlendModeSource = BlendMode::SRC_ALPHA;
-            BlendMode colorBlendModeDest = BlendMode::ONE_MINUS_SRC_ALPHA;
-            DepthTestMode depthTestMode = DepthTestMode::DEPTH_TEST_LESS;
-        };
-
         CompositePass();
 
         ~CompositePass() override = default;
@@ -57,10 +39,27 @@ namespace xng {
         std::type_index getTypeIndex() const override;
 
     private:
-        FrameGraphResource shader;
-        FrameGraphResource quadMesh;
-        FrameGraphResource backBuffer;
-        std::vector<Layer> layers;
+        Mesh mesh = Mesh::normalizedQuad();
+
+        bool quadAllocated = false;
+
+        FrameGraphResource target;
+        FrameGraphResource blitTarget;
+
+        FrameGraphResource pipeline;
+        FrameGraphResource pass;
+
+        FrameGraphResource vertexBuffer;
+        FrameGraphResource vertexArrayObject;
+
+        FrameGraphResource screenColor;
+        FrameGraphResource screenDepth;
+
+        FrameGraphResource deferredColor;
+        FrameGraphResource deferredDepth;
+
+        FrameGraphResource forwardColor;
+        FrameGraphResource forwardDepth;
     };
 }
 

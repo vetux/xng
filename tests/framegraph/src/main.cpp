@@ -114,14 +114,16 @@ int main(int argc, char *argv[]) {
                                      shaderDecompiler);
 
     auto testPass = std::make_shared<TestPass>();
-    renderer.setPasses({
-                               std::make_shared<GBufferPass>(),
-                               std::make_shared<PhongDeferredPass>(),
-                               testPass,
-                       });
 
-    xng::Light light;
-    light.type = xng::LIGHT_POINT;
+    FrameGraphPipeline pipeline = FrameGraphPipeline().addPass(std::make_shared<ConstructionPass>())
+            .addPass(std::make_shared<DeferredLightingPass>())
+            .addPass(std::make_shared<CompositePass>())
+            .addPass(testPass)
+            .addPass(std::make_shared<PresentationPass>());
+
+    renderer.setPipeline(pipeline);
+
+    xng::PointLight light;
     light.transform.setPosition({0, 0, -5});
 
     xng::Scene::Object sphere;
@@ -146,12 +148,15 @@ int main(int argc, char *argv[]) {
     scene.objects.emplace_back(cube);
     scene.objects.emplace_back(cubeWall);
 
-    scene.lights.emplace_back(light);
+    scene.pointLights.emplace_back(light);
 
-    auto &lightRef = scene.lights.at(0);
+    auto &lightRef = scene.pointLights.at(0);
 
     bool lightDirection = false;
     auto lightSpeed = 10.0f;
+
+    auto text = textRenderer.render("GBUFFER POSITION", TextLayout{.lineHeight = 70});
+    auto tex = ren2d.createTexture(text.getImage());
 
     xng::FrameLimiter limiter(60);
     limiter.reset();
@@ -198,43 +203,53 @@ int main(int argc, char *argv[]) {
         std::string txt;
         switch (testPass->getTex()) {
             case 0:
-                txt = "POSITION";
+                txt = "GBUFFER POSITION";
                 break;
             case 1:
-                txt = "NORMAL";
+                txt = "GBUFFER NORMAL";
                 break;
             case 2:
-                txt = "TANGENT";
+                txt = "GBUFFER TANGENT";
                 break;
             case 3:
-                txt = "ROUGHNESS_METALLIC_AO";
+                txt = "GBUFFER ROUGHNESS_METALLIC_AO";
                 break;
             case 4:
-                txt = "ALBEDO";
+                txt = "GBUFFER ALBEDO";
                 break;
             case 5:
-                txt = "AMBIENT";
+                txt = "GBUFFER AMBIENT";
                 break;
             case 6:
-                txt = "SPECULAR";
+                txt = "GBUFFER SPECULAR";
                 break;
             case 7:
-                txt = "MODEL_OBJECT";
+                txt = "GBUFFER MODEL_OBJECT";
                 break;
             case 8:
-                txt = "DEPTH";
+                txt = "GBUFFER DEPTH";
                 break;
             case 9:
-                txt = "PHONG_COLOR";
+                txt = "DEFERRED COLOR";
                 break;
             case 10:
-                txt = "PHONG_DEPTH";
+                txt = "DEFERRED DEPTH";
+                break;
+            case 11:
+                txt = "FORWARD COLOR";
+                break;
+            case 12:
+                txt = "FORWARD DEPTH";
                 break;
         }
 
-        auto text = textRenderer.render(txt, TextLayout{.lineHeight = 70});
+        if (text.getText() != txt) {
+            text = textRenderer.render(txt, TextLayout{.lineHeight = 70});
+            tex = ren2d.createTexture(text.getImage());
+        }
 
-        auto tex = ren2d.createTexture(text.getImage());
+        auto fpsText = textRenderer.render(std::to_string(1000 * deltaTime) + "ms", TextLayout{.lineHeight = 70});
+        auto fpsTex = ren2d.createTexture(fpsText.getImage());
 
         ren2d.renderBegin(*target,
                           false,
@@ -242,8 +257,16 @@ int main(int argc, char *argv[]) {
                           {},
                           target->getDescription().size,
                           {});
+        ren2d.draw(Rectf({}, fpsText.getImage().getSize().convert<float>()),
+                   Rectf({}, fpsText.getImage().getSize().convert<float>()),
+                   fpsTex,
+                   {},
+                   0,
+                   NEAREST,
+                   ColorRGBA::white());
         ren2d.draw(Rectf({}, text.getImage().getSize().convert<float>()),
-                   Rectf({}, text.getImage().getSize().convert<float>()),
+                   Rectf({static_cast<float>(target->getDescription().size.x - text.getImage().getSize().x), 0},
+                         text.getImage().getSize().convert<float>()),
                    tex,
                    {},
                    0,
@@ -251,7 +274,7 @@ int main(int argc, char *argv[]) {
                    ColorRGBA::white());
         ren2d.renderPresent();
 
-        ren2d.destroyTexture(tex);
+        ren2d.destroyTexture(fpsTex);
 
         window->swapBuffers();
     }

@@ -26,15 +26,12 @@
 
 namespace xng {
     /**
-     * Draws a cubemap texture around the camera and creates the skybox compositor layer.
+     * Draws the skybox texture on a normalized cube without transformation.
      *
-     * No Dependencies
+     * Writes SLOT_DEFERRED_COLOR
      */
     class XENGINE_EXPORT SkyboxPass : public FrameGraphPass {
     public:
-        // Texture RGBA : The output color of the projected cubemap texture
-        SHARED_PROPERTY(UserShadePass, COLOR)
-
         SkyboxPass();
 
         ~SkyboxPass() override = default;

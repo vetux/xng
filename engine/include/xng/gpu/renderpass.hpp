@@ -61,6 +61,12 @@ namespace xng {
          * A DrawCall specifies which portion of the bound index or vertex buffer to draw.
          */
         struct DrawCall {
+            explicit DrawCall(size_t offset = 0, size_t count = 0, IndexType indexType = UNSIGNED_INT)
+                    : offset(offset),
+                      count(count),
+                      indexType(
+                              indexType) {}
+
             size_t offset = 0; // The offset into the index or vertex buffer at which to begin reading indices or vertices in BYTES
             size_t count = 0; // The number of indices or vertices to draw.
             IndexType indexType = UNSIGNED_INT; // The type of the indices, ignored when not indexing
@@ -94,7 +100,7 @@ namespace xng {
 
         virtual void clearColorAttachments(ColorRGBA clearColor) = 0;
 
-        virtual void clearDepthAttachments(float clearDepthValue) = 0;
+        virtual void clearDepthAttachment(float clearDepthValue) = 0;
 
         /**
          * Previously bound VAO or shader data is rebound when binding a different pipeline.

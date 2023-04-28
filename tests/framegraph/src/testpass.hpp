@@ -33,8 +33,6 @@ struct ShaderData {
 
 class TestPass : public FrameGraphPass {
 public:
-    SHARED_PROPERTY(TestPass, COLOR)
-
     void setup(FrameGraphBuilder &builder) override {
         if (!vertexBufferRes.assigned) {
             VertexBufferDesc desc;
@@ -85,53 +83,66 @@ public:
 
         switch (tex) {
             default:
-                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(
-                        GBufferPass::GEOMETRY_BUFFER_POSITION);
+                displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_POSITION);
                 break;
             case 1:
-                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_NORMAL);
+                displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_NORMAL);
                 break;
             case 2:
-                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_TANGENT);
+                displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_TANGENT);
                 break;
             case 3:
-                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(
-                        GBufferPass::GEOMETRY_BUFFER_ROUGHNESS_METALLIC_AO);
+                displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_ROUGHNESS_METALLIC_AO);
                 break;
             case 4:
-                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_ALBEDO);
+                displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_ALBEDO);
                 break;
             case 5:
-                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_AMBIENT);
+                displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_AMBIENT);
                 break;
             case 6:
-                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(
-                        GBufferPass::GEOMETRY_BUFFER_SPECULAR);
+                displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_SPECULAR);
                 break;
             case 7:
-                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(
-                        GBufferPass::GEOMETRY_BUFFER_MODEL_OBJECT);
+                displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_MODEL_OBJECT);
                 break;
             case 8:
-                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(GBufferPass::GEOMETRY_BUFFER_DEPTH);
+                displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_DEPTH);
                 break;
             case 9:
-                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(PhongDeferredPass::COLOR);
+                displayTextureRes = builder.getSlot(xng::SLOT_DEFERRED_COLOR);
                 break;
             case 10:
-                displayTextureRes = builder.getSharedData().get<FrameGraphResource>(PhongDeferredPass::DEPTH);
+                displayTextureRes = builder.getSlot(xng::SLOT_DEFERRED_DEPTH);
+                break;
+            case 11:
+                displayTextureRes = builder.getSlot(xng::SLOT_FORWARD_COLOR);
+                break;
+            case 12:
+                displayTextureRes = builder.getSlot(xng::SLOT_FORWARD_DEPTH);
                 break;
         }
         builder.read(displayTextureRes);
 
-        screenRes = builder.getBackBuffer();
-        builder.write(screenRes);
+        RenderTargetDesc targetDesc;
+        targetDesc.size = builder.getRenderSize();
+        targetDesc.numberOfColorAttachments = 1;
+        targetDesc.hasDepthStencilAttachment = false;
+        target = builder.createRenderTarget(targetDesc);
+
+        builder.read(target);
+
+        screenColor = builder.getSlot(SLOT_SCREEN_COLOR);
+
+        builder.write(screenColor);
 
         camera = builder.getScene().camera;
     }
 
     void execute(FrameGraphPassResources &resources) override {
-        auto &target = resources.get<RenderTarget>(screenRes);
+        auto &sColor = resources.get<TextureBuffer>(screenColor);
+
+        auto &t = resources.get<RenderTarget>(target);
 
         auto &pipeline = resources.get<RenderPipeline>(pipelineRes);
         auto &pass = resources.get<RenderPass>(passRes);
@@ -150,8 +161,8 @@ public:
             vertexArrayObject.bindBuffers(vertexBuffer);
         }
 
-        ShaderData buf;
-        buf.visualizeDepth_near_far[0] = tex == 8 || tex == 10;
+        ShaderData buf{};
+        buf.visualizeDepth_near_far[0] = tex == 8 || tex == 10 || tex == 12 || tex == 14;
         buf.visualizeDepth_near_far[1] = camera.nearClip;
         buf.visualizeDepth_near_far[2] = camera.farClip;
 
@@ -159,7 +170,9 @@ public:
 
         auto &texture = resources.get<TextureBuffer>(displayTextureRes);
 
-        pass.beginRenderPass(target, {}, target.getDescription().size);
+        t.setColorAttachments({sColor});
+
+        pass.beginRenderPass(t, {}, t.getDescription().size);
 
         pass.bindPipeline(pipeline);
         pass.bindVertexArrayObject(vertexArrayObject);
@@ -167,7 +180,7 @@ public:
                                     shaderBuffer,
                                     texture
                             });
-        pass.drawArray(RenderPass::DrawCall{.offset = 0, .count = mesh.vertices.size()});
+        pass.drawArray(RenderPass::DrawCall(0, mesh.vertices.size()));
 
         pass.endRenderPass();
     }
@@ -185,14 +198,14 @@ public:
     }
 
     void incrementTex() {
-        if (++tex > 10) {
+        if (++tex > 12) {
             tex = 0;
         }
     }
 
     void decrementTex() {
         if (--tex < 0) {
-            tex = 10;
+            tex = 12;
         }
     }
 
@@ -201,7 +214,9 @@ private:
 
     int tex = 0;
 
-    FrameGraphResource screenRes;
+    FrameGraphResource screenColor;
+
+    FrameGraphResource target;
 
     FrameGraphResource pipelineRes;
     FrameGraphResource passRes;

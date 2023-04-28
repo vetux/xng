@@ -23,6 +23,8 @@
 
 #include "xng/render/graph/framegraphpass.hpp"
 
+#include "xng/render/graph/framegraphproperties.hpp"
+
 namespace xng {
     FrameGraphBuilder::FrameGraphBuilder(RenderTarget &backBuffer,
                                          RenderDeviceInfo deviceInfo,
@@ -124,6 +126,17 @@ namespace xng {
         currentPass.persists.insert(resource);
     }
 
+    void FrameGraphBuilder::assignSlot(FrameGraphSlot slot, FrameGraphResource resource) {
+        if (slots.find(slot) != slots.end()) {
+            throw std::runtime_error("Slot " + std::to_string(slot) + " already assigned.");
+        }
+        slots[slot] = resource;
+    }
+
+    FrameGraphResource FrameGraphBuilder::getSlot(FrameGraphSlot slot) {
+        return slots.at(slot);
+    }
+
     FrameGraphResource FrameGraphBuilder::getBackBuffer() {
         return FrameGraphResource(0);
     }
@@ -132,16 +145,16 @@ namespace xng {
         return backBuffer.getDescription();
     }
 
+    Vec2i FrameGraphBuilder::getRenderSize() {
+        return getBackBufferDescription().size * properties.get<float>(FrameGraphProperties::RENDER_SCALE, 1);
+    }
+
     const Scene &FrameGraphBuilder::getScene() const {
         return scene;
     }
 
     const GenericMapString &FrameGraphBuilder::getProperties() const {
         return properties;
-    }
-
-    GenericMapString &FrameGraphBuilder::getSharedData() {
-        return sharedData;
     }
 
     ShaderCompiler &FrameGraphBuilder::getShaderCompiler() {
@@ -181,7 +194,7 @@ namespace xng {
     }
 
     FrameGraph FrameGraphBuilder::build(const std::vector<std::shared_ptr<FrameGraphPass>> &passes) {
-        sharedData.clear();
+        slots.clear();
         graph = {};
         resourceCounter = 1;
 

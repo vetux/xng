@@ -17,31 +17,25 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_PHONGDEFERREDPASS_HPP
-#define XENGINE_PHONGDEFERREDPASS_HPP
+#ifndef XENGINE_DEFERREDLIGHTINGPASS_HPP
+#define XENGINE_DEFERREDLIGHTINGPASS_HPP
 
 #include "xng/render/scene.hpp"
 #include "xng/render/graph/framegraphpass.hpp"
 
 namespace xng {
     /**
-     * The deferred SHADE_PHONG* shading model implementation for non transparent objects.
+     * The deferred shading model implementation for non transparent objects.
      *
-     * Creates the deferred phong shade compositor layer.
+     * Writes SLOT_DEFERRED_COLOR and SLOT_DEFERRED_DEPTH.
      *
-     * Depends on GBufferPass and ShadowMappingPass
+     * Reads SLOT_SHADOW_MAP_* and SLOT_GBUFFER_*.
      */
-    class XENGINE_EXPORT PhongDeferredPass : public FrameGraphPass {
+    class XENGINE_EXPORT DeferredLightingPass : public FrameGraphPass {
     public:
-        // FrameGraphResource to a Texture RGBA : Contains the combined color values with shadowing applied
-        SHARED_PROPERTY(PhongDeferredPass, COLOR)
+        DeferredLightingPass();
 
-        // FrameGraphResource to a Texture DEPTH_STENCIL : Contains the depth values for the compositor
-        SHARED_PROPERTY(PhongDeferredPass, DEPTH)
-
-        PhongDeferredPass();
-
-        ~PhongDeferredPass() override = default;
+        ~DeferredLightingPass() override = default;
 
         void setup(FrameGraphBuilder &builder) override;
 
@@ -86,10 +80,10 @@ namespace xng {
 
         Vec2i renderSize;
 
-        std::vector<Light> pointLights;
-        std::vector<Light> spotLights;
-        std::vector<Light> directionalLights;
+        std::vector<PointLight> pointLights;
+        std::vector<SpotLight> spotLights;
+        std::vector<DirectionalLight> directionalLights;
     };
 }
 
-#endif //XENGINE_PHONGDEFERREDPASS_HPP
+#endif //XENGINE_DEFERREDLIGHTINGPASS_HPP

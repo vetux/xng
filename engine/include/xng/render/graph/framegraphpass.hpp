@@ -25,8 +25,6 @@
 
 #include "xng/gpu/renderdevice.hpp"
 
-#define SHARED_PROPERTY(pass, name) constexpr static const char *const name = #pass "::" #name;
-
 namespace xng {
     class FrameGraphBuilder;
 

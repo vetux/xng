@@ -24,16 +24,12 @@
 
 namespace xng {
     /**
-     * The shadow mapping pass creates a shadow map which contains shadowing data for a rendered frame.
-     * The lighting model resolve pass applies the shadow map to the shaded image.
+     * The shadow mapping pass creates the shadow mapping textures.
      *
-     * No Dependencies
+     * Writes SLOT_SHADOW_MAP_DIRECTIONAL and SLOT_SHADOW_MAP_POINT
      */
     class XENGINE_EXPORT ShadowMappingPass : public FrameGraphPass {
     public:
-        //std::vector<FrameGraphResource> which contains the shadow maps for every light in the scene.
-        SHARED_PROPERTY(ShadowMappingPass, SHADOW_MAPS)
-
         void setup(FrameGraphBuilder &builder) override;
 
         void execute(FrameGraphPassResources &resources) override;

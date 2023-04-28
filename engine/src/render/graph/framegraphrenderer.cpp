@@ -37,7 +37,7 @@ namespace xng {
                                   properties,
                                   frame.getPersistentResources(),
                                   shaderCompiler,
-                                  shaderDecompiler).build(passes);
+                                  shaderDecompiler).build(pipeline.getPasses());
 
         blackboard.clear();
 
@@ -45,7 +45,7 @@ namespace xng {
         allocator->beginFrame(frame);
 
         /// Execute
-        for (auto &p: passes) {
+        for (auto &p: pipeline.getPasses()) {
             auto res = allocator->allocateNextPass();
             p->execute(res);
         }

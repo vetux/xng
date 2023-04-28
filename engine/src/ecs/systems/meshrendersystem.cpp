@@ -39,10 +39,10 @@ namespace xng {
 
         polyCount = 0;
 
-        // TODO: Culling
-
-        // Create draw nodes
+        // Get objects
         for (auto &pair: entScene.getPool<MeshRenderComponent>()) {
+            // TODO: Culling
+
             auto &transform = entScene.getComponent<TransformComponent>(pair.first);
             if (!transform.enabled)
                 continue;
@@ -62,20 +62,20 @@ namespace xng {
             scene.objects.emplace_back(node);
         }
 
-        // Update skybox texture
+        // Get skybox texture
         for (auto &pair: entScene.getPool<SkyboxComponent>()) {
             auto &comp = pair.second;
             scene.skybox.texture = comp.skybox.texture;
         }
 
-        // Update Camera
+        // Get Camera
         for (auto &pair: entScene.getPool<CameraComponent>()) {
             auto &tcomp = entScene.getComponent<TransformComponent>(pair.first);
 
             if (!tcomp.enabled)
                 continue;
 
-            auto& comp = pair.second;
+            auto &comp = pair.second;
 
             scene.camera = comp.camera;
             scene.cameraTransform = TransformComponent::walkHierarchy(tcomp, entScene);
@@ -83,7 +83,7 @@ namespace xng {
             break;
         }
 
-        // Update lights
+        // Get lights
         for (auto &pair: entScene.getPool<LightComponent>()) {
             auto lightComponent = pair.second;
             auto &tcomp = entScene.getPool<TransformComponent>().lookup(pair.first);
@@ -94,11 +94,26 @@ namespace xng {
             if (!tcomp.enabled)
                 continue;
 
-            lightComponent.light.transform = tcomp.transform;
-
-            entScene.updateComponent(pair.first, lightComponent);
-
-            scene.lights.emplace_back(lightComponent.light);
+            switch (lightComponent.type) {
+                case LightComponent::LIGHT_DIRECTIONAL: {
+                    auto tmp = std::get<DirectionalLight>(lightComponent.light);
+                    tmp.transform = tcomp.transform;
+                    scene.directionalLights.emplace_back(tmp);
+                    break;
+                }
+                case LightComponent::LIGHT_POINT: {
+                    auto tmp = std::get<PointLight>(lightComponent.light);
+                    tmp.transform = tcomp.transform;
+                    scene.pointLights.emplace_back(tmp);
+                    break;
+                }
+                case LightComponent::LIGHT_SPOT: {
+                    auto tmp = std::get<SpotLight>(lightComponent.light);
+                    tmp.transform = tcomp.transform;
+                    scene.spotLights.emplace_back(tmp);
+                    break;
+                }
+            }
         }
 
         // Render

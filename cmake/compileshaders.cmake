@@ -22,6 +22,9 @@ CompileShaderGLSL460(graph/gbufferpass_fs FRAGMENT main)
 CompileShaderGLSL460(graph/phongdeferredpass_vs VERTEX main)
 CompileShaderGLSL460(graph/phongdeferredpass_fs FRAGMENT main)
 
+CompileShaderGLSL460(graph/compositepass_vs VERTEX main)
+CompileShaderGLSL460(graph/compositepass_fs FRAGMENT main)
+
 CompileShaderGLSL460(ren2d/vs VERTEX main)
 CompileShaderGLSL460(ren2d/fs FRAGMENT main)
 

@@ -19,16 +19,18 @@
 
 #pragma message "Not Implemented"
 
-#include "xng/render/graph/passes/phongforwardpass.hpp"
+#include "xng/render/graph/passes/forwardlightingpass.hpp"
 
-void xng::PhongForwardPass::setup(xng::FrameGraphBuilder &builder) {
+namespace xng {
+    void ForwardLightingPass::setup(FrameGraphBuilder &builder) {
 
-}
+    }
 
-void xng::PhongForwardPass::execute(xng::FrameGraphPassResources &resources) {
+    void ForwardLightingPass::execute(FrameGraphPassResources &resources) {
 
-}
+    }
 
-std::type_index xng::PhongForwardPass::getTypeIndex() const {
-    return typeid(PhongForwardPass);
+    std::type_index ForwardLightingPass::getTypeIndex() const {
+        return typeid(ForwardLightingPass);
+    }
 }

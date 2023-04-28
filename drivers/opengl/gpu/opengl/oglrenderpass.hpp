@@ -99,7 +99,7 @@ namespace xng::opengl {
             checkGLError();
         }
 
-        void clearDepthAttachments(float clearDepthValue) override {
+        void clearDepthAttachment(float clearDepthValue) override {
             ensureRunningPass();
             glDepthMask(GL_TRUE);
             glClearDepth(clearDepthValue);
