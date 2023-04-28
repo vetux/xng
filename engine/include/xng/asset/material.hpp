@@ -53,8 +53,7 @@ namespace xng {
             message.value("shader", shader);
             message.value("normal", normal);
 
-            message.value("alpha", alpha, 1.0f);
-            message.value("alphaTexture", alphaTexture);
+            message.value("transparent", transparent, false);
 
             message.value("diffuse", diffuse);
             message.value("ambient", ambient);
@@ -86,8 +85,7 @@ namespace xng {
             shader >> message["shader"];
             normal >> message["normal"];
 
-            alpha >> message["alpha"];
-            alphaTexture >> message["alphaTexture"];
+            transparent >> message["transparent"];
 
             diffuse >> message["diffuse"];
             ambient >> message["ambient"];
@@ -129,10 +127,9 @@ namespace xng {
         ResourceHandle<Texture> normal;
 
         /**
-         * The alpha value used in all shading models.
+         * If true the alpha value of the diffuse color / texture is used as the output alpha value.
          */
-        float alpha = 1;
-        ResourceHandle<Texture> alphaTexture;
+        bool transparent = false;
 
         /**
          * PBR Shading Data

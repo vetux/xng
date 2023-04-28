@@ -16,11 +16,14 @@ function(CompileShaderGLSLES320 PATH STAGE ENTRYPOINT)
     set(SHADER_HEADERS ${SHADER_HEADERS} ${BASE_SOURCE_DIR}/shaders/generated/${PATH}.hpp PARENT_SCOPE)
 endfunction()
 
-CompileShaderGLSL460(graph/gbufferpass_vs VERTEX main)
-CompileShaderGLSL460(graph/gbufferpass_fs FRAGMENT main)
+CompileShaderGLSL460(graph/constructionpass_vs VERTEX main)
+CompileShaderGLSL460(graph/constructionpass_fs FRAGMENT main)
 
-CompileShaderGLSL460(graph/phongdeferredpass_vs VERTEX main)
-CompileShaderGLSL460(graph/phongdeferredpass_fs FRAGMENT main)
+CompileShaderGLSL460(graph/deferredlightingpass_vs VERTEX main)
+CompileShaderGLSL460(graph/deferredlightingpass_fs FRAGMENT main)
+
+CompileShaderGLSL460(graph/forwardlightingpass_vs VERTEX main)
+CompileShaderGLSL460(graph/forwardlightingpass_fs FRAGMENT main)
 
 CompileShaderGLSL460(graph/compositepass_vs VERTEX main)
 CompileShaderGLSL460(graph/compositepass_fs FRAGMENT main)

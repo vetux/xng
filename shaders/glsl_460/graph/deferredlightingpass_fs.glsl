@@ -37,9 +37,20 @@ layout(binding = 10) uniform isampler2D gBufferModelObject;
 layout(binding = 11) uniform sampler2D gBufferDepth;
 
 void main() {
+    float gDepth = texture(gBufferDepth, fUv).r;
+    if (gDepth == 1) {
+        discard;
+        return;
+    }
+
     int model = texture(gBufferModelObject, fUv).x;
-    if (model == 1)
+    if (model == 0)
     {
+        // PBR
+        oColor = vec4(1, 0, 1, 1);
+        gl_FragDepth = 0;
+    } else if (model == 1) {
+        // Phong
         vec3 fPos = texture(gBufferPos, fUv).xyz;
         vec3 fNorm = texture(gBufferNormal, fUv).xyz;
         vec4 diffuseColor = texture(gBufferAlbedo, fUv);
@@ -98,9 +109,9 @@ void main() {
 
         vec3 color = comp.ambient + comp.diffuse + comp.specular;
         oColor = vec4(color, 1);
-        gl_FragDepth = texture(gBufferDepth, fUv).r;
+        gl_FragDepth = gDepth;
     } else {
-        oColor = vec4(0, 0, 0, 1);
-        gl_FragDepth = 1;
+        oColor = vec4(1, 0, 1, 1);
+        gl_FragDepth = 0;
     }
 }

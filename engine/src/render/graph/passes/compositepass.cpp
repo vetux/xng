@@ -73,6 +73,7 @@ namespace xng {
             pdesc.enableBlending = true;
             pdesc.enableDepthTest = true;
             pdesc.depthTestWrite = true;
+            pdesc.blendSourceMode = ONE;
             pipeline = builder.createPipeline(pdesc);
         }
 

@@ -28,7 +28,7 @@ namespace xng {
                 : x(x), y(y), z(z) {
         }
 
-        std::array<float, 3> getMemory() {
+        std::array<float, 3> getMemory() const {
             static_assert(sizeof(std::array<T, 3>) == sizeof(T[3]));
             return std::array<float, 3>{x, y, z};
         }

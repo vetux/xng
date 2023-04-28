@@ -21,14 +21,17 @@
 #define XENGINE_FORWARDLIGHTINGPASS_HPP
 
 #include "xng/render/graph/framegraphpass.hpp"
+#include "xng/render/graph/framegraphtextureatlas.hpp"
+
+#include "xng/render/textureatlas.hpp"
 
 namespace xng {
     /**
      * The forward shading model implementation used for transparent objects.
      *
-     * Writes SLOT_DEFERRED_COLOR and SLOT_DEFERRED_DEPTH.
+     * Writes SLOT_FORWARD_COLOR and SLOT_FORWARD_DEPTH.
      *
-     * Reads SLOT_SHADOW_MAP_* and SLOT_GBUFFER_*.
+     * Reads SLOT_DEFERRED_DEPTH
      */
     class XENGINE_EXPORT ForwardLightingPass : public FrameGraphPass {
     public:
@@ -37,6 +40,104 @@ namespace xng {
         void execute(FrameGraphPassResources &resources) override;
 
         std::type_index getTypeIndex() const override;
+
+    private:
+        struct MeshDrawData {
+            Primitive primitive = TRIANGLES;
+            RenderPass::DrawCall drawCall{};
+            size_t baseVertex = 0;
+        };
+
+        TextureAtlasHandle getTexture(const ResourceHandle <Texture> &texture,
+                                      std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> &atlasBuffers);
+
+        MeshDrawData getMesh(const ResourceHandle<Mesh> &mesh);
+
+        void prepareMeshAllocation(const ResourceHandle<Mesh> &mesh);
+
+        void allocateMeshes(VertexBuffer &vertexBuffer, IndexBuffer &indexBuffer);
+
+        void deallocateMesh(const ResourceHandle<Mesh> &mesh);
+
+        void deallocateTexture(const ResourceHandle<Texture> &texture);
+
+        /**
+         * @param size number of bytes to allocate
+         * @return The offset in bytes into the index buffer
+         */
+        size_t allocateVertexData(size_t size);
+
+        void deallocateVertexData(size_t offset);
+
+        /**
+         * @param size number of bytes to allocate
+         * @return The offset in bytes into the index buffer
+         */
+        size_t allocateIndexData(size_t size);
+
+        void deallocateIndexData(size_t offset);
+
+        void mergeFreeVertexBufferRanges();
+
+        void mergeFreeIndexBufferRanges();
+
+        FrameGraphResource forwardColorRes;
+        FrameGraphResource forwardDepthRes;
+
+        FrameGraphResource deferredDepthRes;
+
+        FrameGraphResource targetRes;
+        FrameGraphResource pipelineRes;
+        FrameGraphResource passRes;
+        FrameGraphResource shaderBufferRes;
+
+        FrameGraphResource pointLightsBufferRes;
+        FrameGraphResource spotLightsBufferRes;
+        FrameGraphResource directionalLightsBufferRes;
+
+        FrameGraphResource vertexBufferRes;
+        FrameGraphResource indexBufferRes;
+        FrameGraphResource vertexArrayObjectRes;
+
+        FrameGraphResource staleVertexBuffer;
+        FrameGraphResource staleIndexBuffer;
+
+        FrameGraphTextureAtlas atlas;
+
+        Camera camera;
+        Transform cameraTransform;
+
+        Vec2i renderSize;
+
+        std::vector<Scene::Object> objects;
+
+        std::vector<PointLight> pointLights;
+        std::vector<SpotLight> spotLights;
+        std::vector<DirectionalLight> directionalLights;
+
+        std::map<Uri, MeshDrawData> meshAllocations;
+        std::map<Uri, MeshDrawData> pendingMeshAllocations;
+        std::map<Uri, ResourceHandle<Mesh>> pendingMeshHandles;
+
+        size_t currentVertexBufferSize{};
+        size_t currentIndexBufferSize{};
+        size_t requestedVertexBufferSize{};
+        size_t requestedIndexBufferSize{};
+
+        std::map<size_t, size_t> freeVertexBufferRanges; // start and size of free ranges of vertices with layout vertexLayout in the vertex buffer
+        std::map<size_t, size_t> freeIndexBufferRanges; // start and size of free ranges of bytes in the index buffer
+
+        std::map<size_t, size_t> allocatedVertexRanges;
+        std::map<size_t, size_t> allocatedIndexRanges;
+
+        std::map<Uri, TextureAtlasHandle> textures;
+
+        std::set<Uri> usedTextures;
+        std::set<Uri> usedMeshes;
+
+        bool bindVao = true;
+
+        size_t drawCycles;
     };
 }
 #endif //XENGINE_FORWARDLIGHTINGPASS_HPP

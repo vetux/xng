@@ -40,8 +40,25 @@ void createMaterialResource(xng::MemoryArchive &archive) {
     material = {};
     material.shadingModel = xng::SHADE_PHONG;
     material.diffuseTexture = ResourceHandle<Texture>(Uri("textures/awesomeface.json"));
+    material.transparent = true;
 
     bundle.add("cube", std::make_unique<xng::Material>(material));
+
+    // Cube Transparent
+    material = {};
+    material.shadingModel = xng::SHADE_PHONG;
+    material.diffuse = ColorRGBA(0, 0, 255, 120);
+    material.transparent = true;
+
+    bundle.add("cubeAlpha", std::make_unique<xng::Material>(material));
+
+    // Cube Transparent Red
+    material = {};
+    material.shadingModel = xng::SHADE_PHONG;
+    material.diffuse = ColorRGBA::red(1, 230);
+    material.transparent = true;
+
+    bundle.add("cubeAlphaRed", std::make_unique<xng::Material>(material));
 
     // Cube Wall
     material = {};
@@ -117,6 +134,7 @@ int main(int argc, char *argv[]) {
 
     FrameGraphPipeline pipeline = FrameGraphPipeline().addPass(std::make_shared<ConstructionPass>())
             .addPass(std::make_shared<DeferredLightingPass>())
+            .addPass(std::make_shared<ForwardLightingPass>())
             .addPass(std::make_shared<CompositePass>())
             .addPass(std::make_shared<PresentationPass>())
             .addPass(testPass);
@@ -132,9 +150,7 @@ int main(int argc, char *argv[]) {
     sphere.material = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/sphere")));
 
     xng::Scene::Object cube;
-    cube.transform.setPosition({-2.5, 0, -10});
     cube.mesh = xng::ResourceHandle<xng::Mesh>(xng::Uri("meshes/cube_faceuv.obj"));
-    cube.material = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/cube")));
 
     xng::Scene::Object cubeWall;
     cubeWall.transform.setPosition({2.5, 0, -10});
@@ -144,19 +160,30 @@ int main(int argc, char *argv[]) {
     xng::Scene scene;
     scene.camera.type = xng::PERSPECTIVE;
 
+    cube.material = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/cubeAlphaRed")));
+    cube.transform.setPosition({0, 0, -15});
+    cube.transform.setScale(Vec3f(10, 10, 1));
+    scene.objects.emplace_back(cube);
+
     scene.objects.emplace_back(sphere);
+
+    cube.transform.setScale(Vec3f(1, 1, 1));
+    cube.transform.setPosition({-2.5, 0, -10});
+    cube.material = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/cube")));
+
     scene.objects.emplace_back(cube);
     scene.objects.emplace_back(cubeWall);
 
+    cube.material = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/cubeAlpha")));
+    cube.transform.setPosition({0, 0, -5});
+    scene.objects.emplace_back(cube);
+
     scene.pointLights.emplace_back(light);
-
-    auto &lightRef = scene.pointLights.at(0);
-
-    bool lightDirection = false;
-    auto lightSpeed = 10.0f;
 
     auto text = textRenderer.render("GBUFFER POSITION", TextLayout{.lineHeight = 70});
     auto tex = ren2d.createTexture(text.getImage());
+
+    testPass->setTex(13);
 
     xng::FrameLimiter limiter(60);
     limiter.reset();
@@ -167,30 +194,6 @@ int main(int argc, char *argv[]) {
 
         scene.camera.aspectRatio = static_cast<float>(window->getWindowSize().x)
                                    / static_cast<float>(window->getWindowSize().y);
-
-        if (lightDirection) {
-            lightRef.transform.setPosition(
-                    {lightRef.transform.getPosition().x,
-                     lightRef.transform.getPosition().y + lightSpeed * deltaTime,
-                     lightRef.transform.getPosition().z});
-            if (lightRef.transform.getPosition().y > 10) {
-                lightDirection = !lightDirection;
-                lightRef.transform.setPosition({lightRef.transform.getPosition().x,
-                                                10,
-                                                lightRef.transform.getPosition().z});
-            }
-        } else {
-            lightRef.transform.setPosition(
-                    {lightRef.transform.getPosition().x,
-                     lightRef.transform.getPosition().y - lightSpeed * deltaTime,
-                     lightRef.transform.getPosition().z});
-            if (lightRef.transform.getPosition().y < -10) {
-                lightDirection = !lightDirection;
-                lightRef.transform.setPosition({lightRef.transform.getPosition().x,
-                                                -10,
-                                                lightRef.transform.getPosition().z});
-            }
-        }
 
         if (window->getInput().getKeyboard().getKeyDown(xng::KEY_LEFT)) {
             testPass->decrementTex();
