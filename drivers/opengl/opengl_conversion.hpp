@@ -117,6 +117,21 @@ namespace xng::opengl {
         throw std::runtime_error("Unsupported blending mode");
     }
 
+    static GLenum convert(BlendEquation eq){
+        switch(eq){
+            case BLEND_ADD:
+                return GL_FUNC_ADD;
+            case BLEND_SUBTRACT:
+                return GL_FUNC_SUBTRACT;
+            case BLEND_REVERSE_SUBTRACT:
+                return GL_FUNC_REVERSE_SUBTRACT;
+            case BLEND_MIN:
+                return GL_MIN;
+            case BLEND_MAX:
+                return GL_MAX;
+        }
+    }
+
     static GLenum convert(StencilMode mode) {
         switch (mode) {
             case STENCIL_NEVER:

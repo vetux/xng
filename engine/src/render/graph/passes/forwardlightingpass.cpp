@@ -216,7 +216,8 @@ namespace xng {
                     .depthTestWrite = true,
                     .depthTestMode = DEPTH_TEST_LESS,
                     .enableFaceCulling = true,
-                    .enableBlending = true
+                    .enableBlending = true,
+                    .alphaBlendEquation = BLEND_MAX
             });
         }
 

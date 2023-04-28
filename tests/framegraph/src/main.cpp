@@ -55,7 +55,7 @@ void createMaterialResource(xng::MemoryArchive &archive) {
     // Cube Transparent Red
     material = {};
     material.shadingModel = xng::SHADE_PHONG;
-    material.diffuse = ColorRGBA::red(1, 230);
+    material.diffuse = ColorRGBA::red(1, 200);
     material.transparent = true;
 
     bundle.add("cubeAlphaRed", std::make_unique<xng::Material>(material));
@@ -145,7 +145,7 @@ int main(int argc, char *argv[]) {
     light.transform.setPosition({0, 0, -5});
 
     xng::Scene::Object sphere;
-    sphere.transform.setPosition({0, 0, -10});
+    sphere.transform.setPosition({0, 5, -16});
     sphere.mesh = xng::ResourceHandle<xng::Mesh>(xng::Uri("meshes/sphere.obj/Sphere"));
     sphere.material = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/sphere")));
 
@@ -160,11 +160,17 @@ int main(int argc, char *argv[]) {
     xng::Scene scene;
     scene.camera.type = xng::PERSPECTIVE;
 
+    scene.objects.emplace_back(sphere);
+
     cube.material = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/cubeAlphaRed")));
     cube.transform.setPosition({0, 0, -15});
     cube.transform.setScale(Vec3f(10, 10, 1));
     scene.objects.emplace_back(cube);
 
+    sphere.transform.setPosition({-2.5, 0, -10});
+    scene.objects.emplace_back(sphere);
+
+    sphere.transform.setPosition({0, 0, -10});
     scene.objects.emplace_back(sphere);
 
     cube.transform.setScale(Vec3f(1, 1, 1));
@@ -175,6 +181,7 @@ int main(int argc, char *argv[]) {
     scene.objects.emplace_back(cubeWall);
 
     cube.material = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/cubeAlpha")));
+    cube.transform.setScale(Vec3f(1, 1.2, 1));
     cube.transform.setPosition({0, 0, -5});
     scene.objects.emplace_back(cube);
 

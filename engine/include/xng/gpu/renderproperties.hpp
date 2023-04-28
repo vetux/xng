@@ -75,6 +75,14 @@ namespace xng {
         CONSTANT_ALPHA,
         ONE_MINUS_CONSTANT_ALPHA
     };
+
+    enum BlendEquation  {
+        BLEND_ADD,
+        BLEND_SUBTRACT,
+        BLEND_REVERSE_SUBTRACT,
+        BLEND_MIN,
+        BLEND_MAX
+    };
 }
 
 #endif //XENGINE_RENDERPROPERTIES_HPP

@@ -205,6 +205,8 @@ namespace xng::opengl {
 
             glBlendFunc(convert(desc.blendSourceMode),
                         convert(desc.blendDestinationMode));
+            glBlendEquationSeparate(convert(desc.colorBlendEquation),
+                                    convert(desc.alphaBlendEquation));
 
             if (desc.enableBlending) {
                 glEnable(GL_BLEND);

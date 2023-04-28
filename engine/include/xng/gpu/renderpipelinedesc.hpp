@@ -86,6 +86,8 @@ namespace xng {
         bool enableBlending = false;
         BlendMode blendSourceMode = BlendMode::SRC_ALPHA;
         BlendMode blendDestinationMode = BlendMode::ONE_MINUS_SRC_ALPHA;
+        BlendEquation colorBlendEquation = BlendEquation::BLEND_ADD;
+        BlendEquation alphaBlendEquation = BlendEquation::BLEND_ADD;
 
         bool operator==(const RenderPipelineDesc &other) const {
             return bindings == other.bindings
@@ -113,7 +115,9 @@ namespace xng {
                    && faceCullClockwiseWinding == other.faceCullClockwiseWinding
                    && enableBlending == other.enableBlending
                    && blendSourceMode == other.blendSourceMode
-                   && blendDestinationMode == other.blendDestinationMode;
+                   && blendDestinationMode == other.blendDestinationMode
+                   && colorBlendEquation == other.colorBlendEquation
+                   && alphaBlendEquation == other.alphaBlendEquation;
         }
     };
 }
@@ -161,6 +165,8 @@ namespace std {
             xng::hash_combine(ret, k.enableBlending);
             xng::hash_combine(ret, k.blendSourceMode);
             xng::hash_combine(ret, k.blendDestinationMode);
+            xng::hash_combine(ret, k.colorBlendEquation);
+            xng::hash_combine(ret, k.alphaBlendEquation);
             return ret;
         }
     };
