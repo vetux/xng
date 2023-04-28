@@ -40,15 +40,15 @@ namespace xng::opengl {
         throw std::runtime_error("Unsupported culling mode");
     }
 
-    static GLenum convert(RenderPass::IndexType type){
-        switch(type){
+    static GLenum convert(RenderPass::IndexType type) {
+        switch (type) {
             case RenderPass::UNSIGNED_INT:
                 return GL_UNSIGNED_INT;
         }
         throw std::runtime_error("Unsupported index type");
     }
 
-    static GLenum convert(Primitive prim){
+    static GLenum convert(Primitive prim) {
         switch (prim) {
             case POINTS:
                 return GL_POINTS;
@@ -117,8 +117,8 @@ namespace xng::opengl {
         throw std::runtime_error("Unsupported blending mode");
     }
 
-    static GLenum convert(BlendEquation eq){
-        switch(eq){
+    static GLenum convert(BlendEquation eq) {
+        switch (eq) {
             case BLEND_ADD:
                 return GL_FUNC_ADD;
             case BLEND_SUBTRACT:
@@ -130,6 +130,7 @@ namespace xng::opengl {
             case BLEND_MAX:
                 return GL_MAX;
         }
+        throw std::runtime_error("Unsupported blend equation");
     }
 
     static GLenum convert(StencilMode mode) {
