@@ -17,7 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/gpu/opengl/oglgpudriver.hpp"
+#include "xng/driver/opengl/oglgpudriver.hpp"
+
 #include "gpu/opengl/oglrenderdevice.hpp"
 
 namespace xng::opengl {

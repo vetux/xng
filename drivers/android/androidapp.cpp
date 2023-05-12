@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/display/android/androidapp.hpp"
+#include "xng/driver/android/androidapp.hpp"
 
 android_app *xng::android::AndroidApp::app = nullptr;
 

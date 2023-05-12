@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/audio/openal-soft/oalaudiodriver.hpp"
+#include "xng/driver/openal-soft/oalaudiodriver.hpp"
 
 #include <stdexcept>
 

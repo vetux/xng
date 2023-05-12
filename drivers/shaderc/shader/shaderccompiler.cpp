@@ -19,7 +19,7 @@
 
 #include <stdexcept>
 
-#include "xng/shader/shaderc/shaderccompiler.hpp"
+#include "xng/driver/shaderc/shaderccompiler.hpp"
 
 #include <shaderc/shaderc.hpp>
 

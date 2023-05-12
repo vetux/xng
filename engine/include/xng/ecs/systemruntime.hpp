@@ -75,7 +75,7 @@ namespace xng {
             } else {
                 eventBus = std::make_shared<EventBus>();
             }
-            if (reset){
+            if (reset) {
                 start();
             }
         }

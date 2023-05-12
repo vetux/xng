@@ -35,8 +35,8 @@ namespace xng {
 
             }
 
-            RenderTarget &getRenderTarget() override {
-                return target;
+            std::unique_ptr<RenderTarget> getRenderTarget(RenderDevice &device) override {
+                return std::make_unique<AndroidRenderTargetGLES>();
             }
 
             Input &getInput() override {
@@ -189,7 +189,6 @@ namespace xng {
 
             android_app *app;
 
-            AndroidRenderTargetGLES target;
             AndroidInput input;
         };
     }

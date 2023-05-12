@@ -17,7 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/font/freetype/ftfontdriver.hpp"
+#include "xng/driver/freetype/ftfontdriver.hpp"
+
 #include "text/freetype/ftfont.hpp"
 
 namespace xng::freetype {

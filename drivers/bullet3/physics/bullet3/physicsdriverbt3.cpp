@@ -17,16 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "physics/bullet3/physicsdriverbt3.hpp"
+#include "xng/driver/bullet3/physicsdriverbt3.hpp"
+
 #include "physics/bullet3/worldbt3.hpp"
 
 #pragma message "Not Implemented"
 
 namespace xng {
-    std::type_index PhysicsDriverBt3::getType() {
-        return typeid(PhysicsDriverBt3);
-    }
-
     std::unique_ptr<World> PhysicsDriverBt3::createWorld() {
         return std::make_unique<WorldBt3>();
     }

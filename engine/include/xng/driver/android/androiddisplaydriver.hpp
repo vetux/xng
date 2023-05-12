@@ -22,7 +22,7 @@
 
 #include "xng/display/displaydriver.hpp"
 
-#include "xng/display/android/androidapp.hpp"
+#include "androidapp.hpp"
 
 namespace xng::android {
     class XENGINE_EXPORT AndroidDisplayDriver : public DisplayDriver {

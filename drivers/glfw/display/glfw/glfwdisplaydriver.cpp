@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/display/glfw/glfwdisplaydriver.hpp"
+#include "xng/driver/glfw/glfwdisplaydriver.hpp"
 
 #ifdef DRIVER_GLFW_OPENGL
 

@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/crypto/cryptopp/cryptoppdriver.hpp"
+#include "xng/driver/cryptopp/cryptoppdriver.hpp"
 
 #include "crypto/cryptoppaes.hpp"
 #include "crypto/cryptoppgzip.hpp"

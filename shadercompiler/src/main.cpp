@@ -20,7 +20,9 @@
 #include "xng/shader/shadercompiler.hpp"
 #include "xng/shader/spirvbundle.hpp"
 #include "xng/shader/shaderdirectoryinclude.hpp"
-#include "xng/shader/shaderc/shaderccompiler.hpp"
+
+#include "xng/driver/shaderc/shaderccompiler.hpp"
+
 #include "xng/io/readfile.hpp"
 
 #include <fstream>

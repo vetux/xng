@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/shader/spirv-cross/spirvcrossdecompiler.hpp"
+#include "xng/driver/spirv-cross/spirvcrossdecompiler.hpp"
 
 #include <spirv_glsl.hpp>
 #include <spirv_hlsl.hpp>

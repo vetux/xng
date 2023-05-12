@@ -17,7 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/physics/box2d/physicsdriverbox2d.hpp"
+#include "xng/driver/box2d/physicsdriverbox2d.hpp"
+
 #include "physics/box2d/worldbox2d.hpp"
 
 namespace xng {

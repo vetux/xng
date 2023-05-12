@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/display/android/androiddisplaydriver.hpp"
+#include "xng/driver/android/androiddisplaydriver.hpp"
 
 #include <EGL/egl.h>
 
