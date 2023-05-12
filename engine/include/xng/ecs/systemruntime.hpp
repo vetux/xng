@@ -35,7 +35,9 @@
 namespace xng {
     class XENGINE_EXPORT SystemRuntime {
     public:
-        explicit SystemRuntime(std::vector<SystemPipeline> pipelines = {}, std::shared_ptr<EntityScene> scene = {});
+        explicit SystemRuntime(std::vector<SystemPipeline> pipelines = {},
+                               std::shared_ptr<EntityScene> scene = std::make_shared<EntityScene>(),
+                               std::shared_ptr<EventBus> eventBus = std::make_shared<EventBus>());
 
         ~SystemRuntime();
 

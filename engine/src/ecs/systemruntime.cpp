@@ -23,8 +23,12 @@
 #include <algorithm>
 
 namespace xng {
-    SystemRuntime::SystemRuntime(std::vector<SystemPipeline> systems, std::shared_ptr<EntityScene> scene)
-            : pipelines(std::move(systems)), scene(std::move(scene)) {}
+    SystemRuntime::SystemRuntime(std::vector<SystemPipeline> systems,
+                                 std::shared_ptr<EntityScene> scene,
+                                 std::shared_ptr<EventBus> eventBus)
+            : pipelines(std::move(systems)),
+              scene(std::move(scene)),
+              eventBus(std::move(eventBus)) {}
 
     SystemRuntime::~SystemRuntime() = default;
 
