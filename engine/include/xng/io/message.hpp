@@ -67,8 +67,6 @@ namespace xng {
 
         explicit Message(DataType type = NUL) : type(type) {}
 
-        Message(bool value) : type(SIGNED_INTEGER) { ival = value; }
-
         Message(int value) : type(SIGNED_INTEGER) { ival = value; }
 
         Message(long value) : type(SIGNED_INTEGER) { ival = value; }
@@ -195,14 +193,23 @@ namespace xng {
         }
 
         int asInt() const {
+            if (type == UNSIGNED_INTEGER) {
+                return static_cast<int>(as<unsigned int>());
+            }
             return as<int>();
         }
 
         long asLong() const {
+            if (type == UNSIGNED_INTEGER) {
+                return static_cast<long>(as<unsigned long>());
+            }
             return as<long>();
         }
 
         long long asLongLong() const {
+            if (type == UNSIGNED_INTEGER) {
+                return static_cast<long long>(as<unsigned long long>());
+            }
             return as<long long>();
         }
 
