@@ -35,7 +35,7 @@ namespace xng {
      * The resources can then be retrieved in the execution stage in the passed resources object.
      *
      * Passes can depend on other pass data.
-     * Resource handles and other data can be shared between passes through the sharedData map passed in the setup stage.
+     * Resource handles and other data can be shared between passes by assigning FrameGraphSlots on the builder in the setup stage.
      */
     class XENGINE_EXPORT FrameGraphPass {
     public:
