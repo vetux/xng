@@ -127,14 +127,14 @@ namespace xng {
     }
 
     void FrameGraphBuilder::assignSlot(FrameGraphSlot slot, FrameGraphResource resource) {
-        if (slots.find(slot) != slots.end()) {
+        if (graphSlots.find(slot) != graphSlots.end()) {
             throw std::runtime_error("Slot " + std::to_string(slot) + " already assigned.");
         }
-        slots[slot] = resource;
+        graphSlots[slot] = resource;
     }
 
     FrameGraphResource FrameGraphBuilder::getSlot(FrameGraphSlot slot) {
-        return slots.at(slot);
+        return graphSlots.at(slot);
     }
 
     FrameGraphResource FrameGraphBuilder::getBackBuffer() {
@@ -194,7 +194,7 @@ namespace xng {
     }
 
     FrameGraph FrameGraphBuilder::build(const std::vector<std::shared_ptr<FrameGraphPass>> &passes) {
-        slots.clear();
+        graphSlots.clear();
         graph = {};
         resourceCounter = 1;
 

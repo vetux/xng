@@ -172,7 +172,7 @@ namespace xng {
 
         std::set<FrameGraphResource> persistentResources;
 
-        std::map<FrameGraphSlot, FrameGraphResource> slots;
+        std::map<FrameGraphSlot, FrameGraphResource> graphSlots;
 
         size_t resourceCounter = 1;
 
