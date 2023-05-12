@@ -27,19 +27,21 @@
 #include "xng/physics/collider.hpp"
 
 namespace xng {
-    class RigidBodyBox2D;
+    namespace box2d {
+        class RigidBodyBox2D;
 
-    class ColliderBox2D : public Collider {
-    public:
-        RigidBodyBox2D &body;
-        b2Fixture *fixture;
+        class ColliderBox2D : public Collider {
+        public:
+            RigidBodyBox2D &body;
+            b2Fixture *fixture;
 
-        ColliderBox2D(RigidBodyBox2D &body, const ColliderDesc &desc);
+            ColliderBox2D(RigidBodyBox2D &body, const ColliderDesc &desc);
 
-        ~ColliderBox2D() override;
+            ~ColliderBox2D() override;
 
-        RigidBody &getBody() override;
-    };
+            RigidBody &getBody() override;
+        };
+    }
 }
 
 #endif //XENGINE_COLLIDERBOX2D_HPP

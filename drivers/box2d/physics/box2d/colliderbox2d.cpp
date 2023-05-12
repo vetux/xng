@@ -25,56 +25,59 @@
 #include "physics/box2d/worldbox2d.hpp"
 
 namespace xng {
-    b2PolygonShape convertShape(const ColliderShape &shape) {
-        if (shape.type != COLLIDER_2D){
-            throw std::runtime_error("Collider must be COLLIDER_2D for box2d physics driver.");
-        }
-
-        std::vector<b2Vec2> points;
-        if (shape.indices.empty()) {
-            for (auto &vert: shape.vertices) {
-                points.emplace_back(convert(vert));
+    namespace box2d {
+        b2PolygonShape convertShape(const ColliderShape &shape) {
+            if (shape.type != COLLIDER_2D) {
+                throw std::runtime_error("Collider must be COLLIDER_2D for box2d physics driver.");
             }
-        } else {
-            for (auto &index: shape.indices) {
-                const auto &vert = shape.vertices.at(index);
-                points.emplace_back(convert(vert));
+
+            std::vector<b2Vec2> points;
+            if (shape.indices.empty()) {
+                for (auto &vert: shape.vertices) {
+                    points.emplace_back(convert(vert));
+                }
+            } else {
+                for (auto &index: shape.indices) {
+                    const auto &vert = shape.vertices.at(index);
+                    points.emplace_back(convert(vert));
+                }
             }
-        }
-        b2PolygonShape polyShape = b2PolygonShape();
-        polyShape.Set(points.data(), static_cast<int>(points.size()));
-        return polyShape;
-    }
-
-    ColliderBox2D::ColliderBox2D(RigidBodyBox2D &body, const ColliderDesc &desc) : body(body) {
-        b2PolygonShape polygonShape = convertShape(desc.shape);
-        b2FixtureDef fixtureDef;
-        fixtureDef.shape = &polygonShape;
-        fixtureDef.friction = desc.friction;
-        fixtureDef.restitution = desc.restitution;
-        fixtureDef.density = desc.density;
-        fixtureDef.isSensor = desc.isSensor;
-
-        fixture = body.body->CreateFixture(&fixtureDef);
-
-        b2MassData mass;
-        fixture->GetMassData(&mass);
-
-        auto v = 1.0f / mass.mass;
-        if (std::isnan(v) || std::isinf(v)) {
-            throw std::runtime_error("Computed mass for fixture is invalid. Check your collider density / shape configuration.");
+            b2PolygonShape polyShape = b2PolygonShape();
+            polyShape.Set(points.data(), static_cast<int>(points.size()));
+            return polyShape;
         }
 
-        body.world.fixtureColliderMapping[fixture] = this;
-    }
+        ColliderBox2D::ColliderBox2D(RigidBodyBox2D &body, const ColliderDesc &desc) : body(body) {
+            b2PolygonShape polygonShape = convertShape(desc.shape);
+            b2FixtureDef fixtureDef;
+            fixtureDef.shape = &polygonShape;
+            fixtureDef.friction = desc.friction;
+            fixtureDef.restitution = desc.restitution;
+            fixtureDef.density = desc.density;
+            fixtureDef.isSensor = desc.isSensor;
 
-    ColliderBox2D::~ColliderBox2D() {
-        b2Fixture *fix = fixture;
-        fixture->GetBody()->DestroyFixture(fixture);
-        body.world.fixtureColliderMapping.erase(fix);
-    }
+            fixture = body.body->CreateFixture(&fixtureDef);
 
-    RigidBody &ColliderBox2D::getBody() {
-        return body;
+            b2MassData mass;
+            fixture->GetMassData(&mass);
+
+            auto v = 1.0f / mass.mass;
+            if (std::isnan(v) || std::isinf(v)) {
+                throw std::runtime_error(
+                        "Computed mass for fixture is invalid. Check your collider density / shape configuration.");
+            }
+
+            body.world.fixtureColliderMapping[fixture] = this;
+        }
+
+        ColliderBox2D::~ColliderBox2D() {
+            b2Fixture *fix = fixture;
+            fixture->GetBody()->DestroyFixture(fixture);
+            body.world.fixtureColliderMapping.erase(fix);
+        }
+
+        RigidBody &ColliderBox2D::getBody() {
+            return body;
+        }
     }
 }

@@ -20,45 +20,47 @@
 #include "physics/box2d/commonbox2d.hpp"
 
 namespace xng {
-    Vec3f convert(const b2Vec2 &vec) {
-        return {vec.x, vec.y, 0};
-    }
-
-    b2Vec2 convert(const Vec3f &vec) {
-        return {vec.x, vec.y};
-    }
-
-    RigidBody::RigidBodyType convert(b2BodyType type) {
-        switch (type) {
-            case b2_staticBody:
-                return RigidBody::STATIC;
-            case b2_kinematicBody:
-                return RigidBody::KINEMATIC;
-            case b2_dynamicBody:
-                return RigidBody::DYNAMIC;
+    namespace box2d {
+        Vec3f convert(const b2Vec2 &vec) {
+            return {vec.x, vec.y, 0};
         }
-        throw std::runtime_error("Invalid body type");
-    }
 
-    b2BodyType convert(RigidBody::RigidBodyType type) {
-        switch (type) {
-            case RigidBody::STATIC:
-                return b2_staticBody;
-            case RigidBody::KINEMATIC:
-                return b2_kinematicBody;
-            case RigidBody::DYNAMIC:
-                return b2_dynamicBody;
+        b2Vec2 convert(const Vec3f &vec) {
+            return {vec.x, vec.y};
         }
-        throw std::runtime_error("Invalid body type");
-    }
 
-    b2PolygonShape convert(const std::vector<Vec3f> &points) {
-        std::vector<b2Vec2> bPoints(points.size());
-        for (int i = 0; i < points.size(); i++)
-            bPoints[i] = convert(points.at(i));
+        RigidBody::RigidBodyType convert(b2BodyType type) {
+            switch (type) {
+                case b2_staticBody:
+                    return RigidBody::STATIC;
+                case b2_kinematicBody:
+                    return RigidBody::KINEMATIC;
+                case b2_dynamicBody:
+                    return RigidBody::DYNAMIC;
+            }
+            throw std::runtime_error("Invalid body type");
+        }
 
-        b2PolygonShape ret;
-        ret.Set(bPoints.data(), (int)points.size());
-        return ret;
+        b2BodyType convert(RigidBody::RigidBodyType type) {
+            switch (type) {
+                case RigidBody::STATIC:
+                    return b2_staticBody;
+                case RigidBody::KINEMATIC:
+                    return b2_kinematicBody;
+                case RigidBody::DYNAMIC:
+                    return b2_dynamicBody;
+            }
+            throw std::runtime_error("Invalid body type");
+        }
+
+        b2PolygonShape convert(const std::vector<Vec3f> &points) {
+            std::vector<b2Vec2> bPoints(points.size());
+            for (int i = 0; i < points.size(); i++)
+                bPoints[i] = convert(points.at(i));
+
+            b2PolygonShape ret;
+            ret.Set(bPoints.data(), (int) points.size());
+            return ret;
+        }
     }
 }

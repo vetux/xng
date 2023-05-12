@@ -23,11 +23,13 @@
 #include "xng/physics/physicsdriver.hpp"
 
 namespace xng {
-    //TODO: Fix box2d returning nan values for positions after stepping the world.
-    class XENGINE_EXPORT PhysicsDriverBox2D : public PhysicsDriver {
-    public:
-        std::unique_ptr<World> createWorld() override;
-    };
+    namespace box2d {
+        //TODO: Fix box2d returning nan values for positions after stepping the world.
+        class XENGINE_EXPORT PhysicsDriverBox2D : public PhysicsDriver {
+        public:
+            std::unique_ptr<World> createWorld() override;
+        };
+    }
 }
 
 #endif //XENGINE_PHYSICSDRIVERBOX2D_HPP

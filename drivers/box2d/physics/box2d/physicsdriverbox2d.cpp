@@ -17,15 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "physics/box2d/physicsdriverbox2d.hpp"
+#include "xng/physics/box2d/physicsdriverbox2d.hpp"
 #include "physics/box2d/worldbox2d.hpp"
 
 namespace xng {
-    std::type_index xng::PhysicsDriverBox2D::getType() {
-        return {typeid(PhysicsDriverBox2D)};
-    }
-
-    std::unique_ptr<World> xng::PhysicsDriverBox2D::createWorld() {
-        return std::make_unique<WorldBox2D>();
+    namespace box2d {
+        std::unique_ptr<World> PhysicsDriverBox2D::createWorld() {
+            return std::make_unique<WorldBox2D>();
+        }
     }
 }

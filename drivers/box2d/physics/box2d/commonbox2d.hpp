@@ -27,15 +27,17 @@
 #include "xng/physics/rigidbody.hpp"
 
 namespace xng {
-    Vec3f convert(const b2Vec2 &vec);
+    namespace box2d {
+        Vec3f convert(const b2Vec2 &vec);
 
-    b2Vec2 convert(const Vec3f &vec);
+        b2Vec2 convert(const Vec3f &vec);
 
-    RigidBody::RigidBodyType convert(b2BodyType type);
+        RigidBody::RigidBodyType convert(b2BodyType type);
 
-    b2BodyType convert(RigidBody::RigidBodyType type);
+        b2BodyType convert(RigidBody::RigidBodyType type);
 
-    b2PolygonShape convert(const std::vector<Vec3f> &points);
+        b2PolygonShape convert(const std::vector<Vec3f> &points);
+    }
 }
 
 #endif //XENGINE_COMMONBOX2D_HPP

@@ -25,12 +25,14 @@
 #include "xng/physics/joint.hpp"
 
 namespace xng {
-    class JointBox2D : public Joint {
-    public:
-        b2Joint *joint;
+    namespace box2d {
+        class JointBox2D : public Joint {
+        public:
+            b2Joint *joint;
 
-        ~JointBox2D() override = default;
-    };
+            ~JointBox2D() override = default;
+        };
+    }
 }
 
 #endif //XENGINE_JOINTBOX2D_HPP

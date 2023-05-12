@@ -22,52 +22,54 @@
 #include "commonbox2d.hpp"
 
 namespace xng {
-    WorldBox2D::WorldBox2D()
-            : world(b2Vec2(0.0f, -1.0f)) {
-        world.SetContactListener(this);
-    }
-
-    WorldBox2D::~WorldBox2D() {
-        world.SetContactListener(nullptr);
-    }
-
-    std::unique_ptr<RigidBody> WorldBox2D::createBody() {
-        return std::make_unique<RigidBodyBox2D>(*this);
-    }
-
-    std::unique_ptr<Joint> WorldBox2D::createJoint() {
-        throw std::runtime_error("Not Implemented");
-    }
-
-    void WorldBox2D::addContactListener(World::ContactListener &listener) {
-        contactListeners.insert(&listener);
-    }
-
-    void WorldBox2D::removeContactListener(World::ContactListener &listener) {
-        contactListeners.erase(&listener);
-    }
-
-    void WorldBox2D::setGravity(const Vec3f &gravity) {
-        world.SetGravity(convert(gravity));
-    }
-
-    void WorldBox2D::step(float deltaTime) {
-        world.Step(deltaTime, 10, 10);
-    }
-
-    void WorldBox2D::BeginContact(b2Contact *c) {
-        Contact contact = Contact{.colliderA = *fixtureColliderMapping.at(c->GetFixtureA()),
-                .colliderB = *fixtureColliderMapping.at(c->GetFixtureB())};
-        for (auto &listener: contactListeners) {
-            listener->beginContact(contact);
+    namespace box2d {
+        WorldBox2D::WorldBox2D()
+                : world(b2Vec2(0.0f, -1.0f)) {
+            world.SetContactListener(this);
         }
-    }
 
-    void WorldBox2D::EndContact(b2Contact *c) {
-        Contact contact = Contact{.colliderA = *fixtureColliderMapping.at(c->GetFixtureA()),
-                .colliderB = *fixtureColliderMapping.at(c->GetFixtureB())};
-        for (auto &listener: contactListeners) {
-            listener->endContact(contact);
+        WorldBox2D::~WorldBox2D() {
+            world.SetContactListener(nullptr);
+        }
+
+        std::unique_ptr<RigidBody> WorldBox2D::createBody() {
+            return std::make_unique<RigidBodyBox2D>(*this);
+        }
+
+        std::unique_ptr<Joint> WorldBox2D::createJoint() {
+            throw std::runtime_error("Not Implemented");
+        }
+
+        void WorldBox2D::addContactListener(World::ContactListener &listener) {
+            contactListeners.insert(&listener);
+        }
+
+        void WorldBox2D::removeContactListener(World::ContactListener &listener) {
+            contactListeners.erase(&listener);
+        }
+
+        void WorldBox2D::setGravity(const Vec3f &gravity) {
+            world.SetGravity(convert(gravity));
+        }
+
+        void WorldBox2D::step(float deltaTime) {
+            world.Step(deltaTime, 10, 10);
+        }
+
+        void WorldBox2D::BeginContact(b2Contact *c) {
+            Contact contact = Contact{.colliderA = *fixtureColliderMapping.at(c->GetFixtureA()),
+                    .colliderB = *fixtureColliderMapping.at(c->GetFixtureB())};
+            for (auto &listener: contactListeners) {
+                listener->beginContact(contact);
+            }
+        }
+
+        void WorldBox2D::EndContact(b2Contact *c) {
+            Contact contact = Contact{.colliderA = *fixtureColliderMapping.at(c->GetFixtureA()),
+                    .colliderB = *fixtureColliderMapping.at(c->GetFixtureB())};
+            for (auto &listener: contactListeners) {
+                listener->endContact(contact);
+            }
         }
     }
 }

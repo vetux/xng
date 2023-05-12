@@ -24,57 +24,59 @@
 #include "physics/box2d/colliderbox2d.hpp"
 
 namespace xng {
-    class WorldBox2D;
+    namespace box2d {
+        class WorldBox2D;
 
-    class RigidBodyBox2D : public RigidBody {
-    public:
-        WorldBox2D &world;
-        b2Body *body{};
+        class RigidBodyBox2D : public RigidBody {
+        public:
+            WorldBox2D &world;
+            b2Body *body{};
 
-        RigidBodyBox2D() = default;
+            RigidBodyBox2D() = default;
 
-        explicit RigidBodyBox2D(WorldBox2D &world);
+            explicit RigidBodyBox2D(WorldBox2D &world);
 
-        ~RigidBodyBox2D() override;
+            ~RigidBodyBox2D() override;
 
-        void setRigidBodyType(RigidBodyType type) override;
+            void setRigidBodyType(RigidBodyType type) override;
 
-        RigidBodyType getRigidBodyType() override;
+            RigidBodyType getRigidBodyType() override;
 
-        void setPosition(const Vec3f &position) override;
+            void setPosition(const Vec3f &position) override;
 
-        Vec3f getPosition() override;
+            Vec3f getPosition() override;
 
-        void setVelocity(const Vec3f &velocity) override;
+            void setVelocity(const Vec3f &velocity) override;
 
-        Vec3f getVelocity() override;
+            Vec3f getVelocity() override;
 
-        void setRotation(const Vec3f &rotation) override;
+            void setRotation(const Vec3f &rotation) override;
 
-        Vec3f getRotation() override;
+            Vec3f getRotation() override;
 
-        void setAngularVelocity(const Vec3f &angularVelocity) override;
+            void setAngularVelocity(const Vec3f &angularVelocity) override;
 
-        Vec3f getAngularVelocity() override;
+            Vec3f getAngularVelocity() override;
 
-        void applyForce(const Vec3f &force, const Vec3f &point) override;
+            void applyForce(const Vec3f &force, const Vec3f &point) override;
 
-        void applyTorque(const Vec3f &torque) override;
+            void applyTorque(const Vec3f &torque) override;
 
-        void applyLinearImpulse(const Vec3f &impulse, const Vec3f &point) override;
+            void applyLinearImpulse(const Vec3f &impulse, const Vec3f &point) override;
 
-        void applyAngularImpulse(const Vec3f &impulse) override;
+            void applyAngularImpulse(const Vec3f &impulse) override;
 
-        void setLockedRotationAxes(const Vec3b &ax) override;
+            void setLockedRotationAxes(const Vec3b &ax) override;
 
-        std::unique_ptr<Collider> createCollider(const ColliderDesc &desc) override;
+            std::unique_ptr<Collider> createCollider(const ColliderDesc &desc) override;
 
-        void setMass(float mass, const Vec3f &center, const Vec3f &rotationalInertia) override;
+            void setMass(float mass, const Vec3f &center, const Vec3f &rotationalInertia) override;
 
-        float getMass() override;
+            float getMass() override;
 
-        void setGravityScale(float scale) override;
-    };
+            void setGravityScale(float scale) override;
+        };
+    }
 }
 
 #endif //XENGINE_RIGIDBODYBOX2D_HPP
