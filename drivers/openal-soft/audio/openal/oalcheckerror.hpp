@@ -24,7 +24,9 @@
 #include <stdexcept>
 
 namespace xng {
-    void checkOALError(const std::string &caller = "None");
+    namespace openal {
+        void checkOALError(const std::string &caller = "None");
+    }
 }
 
 #endif //XENGINE_OALCHECKERROR_HPP

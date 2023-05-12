@@ -25,16 +25,18 @@
 #include "xng/audio/audiobuffer.hpp"
 
 namespace xng {
-    class OALAudioBuffer : public AudioBuffer {
-    public:
-        const ALuint handle;
-        
-        explicit OALAudioBuffer(ALuint handle);
+    namespace openal {
+        class OALAudioBuffer : public AudioBuffer {
+        public:
+            const ALuint handle;
 
-        ~OALAudioBuffer() override;
+            explicit OALAudioBuffer(ALuint handle);
 
-        void upload(const std::vector<uint8_t> &buffer, AudioFormat format, unsigned int frequency) override;
-    };
+            ~OALAudioBuffer() override;
+
+            void upload(const std::vector<uint8_t> &buffer, AudioFormat format, unsigned int frequency) override;
+        };
+    }
 }
 
 #endif //XENGINE_OALAUDIOBUFFER_HPP

@@ -27,26 +27,28 @@
 #include "oalaudiolistener.hpp"
 
 namespace xng {
-    class OALAudioContext : public AudioContext {
-    public:
-        explicit OALAudioContext(ALCcontext *context);
+    namespace openal {
+        class OALAudioContext : public AudioContext {
+        public:
+            explicit OALAudioContext(ALCcontext *context);
 
-        ~OALAudioContext() override;
+            ~OALAudioContext() override;
 
-        void makeCurrent() override;
+            void makeCurrent() override;
 
-        AudioListener &getListener() override;
+            AudioListener &getListener() override;
 
-        std::unique_ptr<AudioBuffer> createBuffer() override;
+            std::unique_ptr<AudioBuffer> createBuffer() override;
 
-        std::unique_ptr<AudioSource> createSource() override;
+            std::unique_ptr<AudioSource> createSource() override;
 
-        const ALCcontext *getContext();
+            const ALCcontext *getContext();
 
-    private:
-        ALCcontext *context;
-        OALAudioListener listener;
-    };
+        private:
+            ALCcontext *context;
+            OALAudioListener listener;
+        };
+    }
 }
 
 #endif //XENGINE_OALAUDIOCONTEXT_HPP

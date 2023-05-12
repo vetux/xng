@@ -25,21 +25,23 @@
 #include "xng/audio/audiodevice.hpp"
 
 namespace xng {
-    class OALAudioDevice : public AudioDevice {
-    public:
-        static std::vector<std::string> getDeviceNames();
+    namespace openal {
+        class OALAudioDevice : public AudioDevice {
+        public:
+            static std::vector<std::string> getDeviceNames();
 
-        OALAudioDevice();
+            OALAudioDevice();
 
-        explicit OALAudioDevice(const std::string &name);
+            explicit OALAudioDevice(const std::string &name);
 
-        ~OALAudioDevice() override;
+            ~OALAudioDevice() override;
 
-        std::unique_ptr<AudioContext> createContext() override;
+            std::unique_ptr<AudioContext> createContext() override;
 
-    private:
-        ALCdevice *device;
-    };
+        private:
+            ALCdevice *device;
+        };
+    }
 }
 
 #endif //XENGINE_OALAUDIODEVICE_HPP

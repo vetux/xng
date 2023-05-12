@@ -24,28 +24,30 @@
 #include "xng/audio/audiocontext.hpp"
 
 namespace xng {
-    class OALAudioListener : public AudioListener {
-    public:
-        OALAudioListener();
+    namespace openal {
+        class OALAudioListener : public AudioListener {
+        public:
+            OALAudioListener();
 
-        ~OALAudioListener() override;
+            ~OALAudioListener() override;
 
-        void setGain(float gain) override;
+            void setGain(float gain) override;
 
-        float getGain() override;
+            float getGain() override;
 
-        void setPosition(Vec3f position) override;
+            void setPosition(Vec3f position) override;
 
-        Vec3f getPosition() override;
+            Vec3f getPosition() override;
 
-        void setVelocity(Vec3f velocity) override;
+            void setVelocity(Vec3f velocity) override;
 
-        Vec3f getVelocity() override;
+            Vec3f getVelocity() override;
 
-        void setOrientation(Vec3f at, Vec3f up) override;
+            void setOrientation(Vec3f at, Vec3f up) override;
 
-        void getOrientation(Vec3f &at, Vec3f &up) override;
-    };
+            void getOrientation(Vec3f &at, Vec3f &up) override;
+        };
+    }
 }
 
 #endif //XENGINE_OALAUDIOLISTENER_HPP

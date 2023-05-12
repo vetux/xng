@@ -26,32 +26,34 @@
 #include "audio/openal/oalaudiodevice.hpp"
 
 namespace xng {
-    std::vector<std::string> OALAudioDriver::getDeviceNames() {
-        const char *dev = alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
-        std::vector<std::string> ret;
-        std::string tmp;
-        bool gotZero = false;
-        for (int i = 0; i < ((std::string) dev).size(); i++) {
-            char c = dev[i];
-            if (c == 0) {
-                if (gotZero)
-                    break;
-                gotZero = true;
-                ret.emplace_back(tmp);
-                tmp.clear();
-            } else {
-                gotZero = false;
-                tmp += c;
+    namespace openal {
+        std::vector<std::string> OALAudioDriver::getDeviceNames() {
+            const char *dev = alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
+            std::vector<std::string> ret;
+            std::string tmp;
+            bool gotZero = false;
+            for (int i = 0; i < ((std::string) dev).size(); i++) {
+                char c = dev[i];
+                if (c == 0) {
+                    if (gotZero)
+                        break;
+                    gotZero = true;
+                    ret.emplace_back(tmp);
+                    tmp.clear();
+                } else {
+                    gotZero = false;
+                    tmp += c;
+                }
             }
+            return ret;
         }
-        return ret;
-    }
 
-    std::unique_ptr<AudioDevice> OALAudioDriver::createDevice() {
-        return std::make_unique<OALAudioDevice>();
-    }
+        std::unique_ptr<AudioDevice> OALAudioDriver::createDevice() {
+            return std::make_unique<OALAudioDevice>();
+        }
 
-    std::unique_ptr<AudioDevice> OALAudioDriver::createDevice(const std::string &deviceName) {
-        return std::make_unique<OALAudioDevice>(deviceName);
+        std::unique_ptr<AudioDevice> OALAudioDriver::createDevice(const std::string &deviceName) {
+            return std::make_unique<OALAudioDevice>(deviceName);
+        }
     }
 }

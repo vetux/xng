@@ -23,39 +23,40 @@
 #include "oalcheckerror.hpp"
 
 
-
 namespace xng {
-    int convertFormat(AudioFormat format) {
-        switch (format) {
-            case MONO8:
-                return AL_FORMAT_MONO8;
-            case MONO16:
-                return AL_FORMAT_MONO16;
-            case STEREO8:
-                return AL_FORMAT_STEREO8;
-            case STEREO16:
-                return AL_FORMAT_STEREO16;
-            case BFORMAT2D_16:
-                return AL_FORMAT_BFORMAT2D_16;
-            case BFORMAT3D_16:
-                return AL_FORMAT_BFORMAT3D_16;
+    namespace openal {
+        int convertFormat(AudioFormat format) {
+            switch (format) {
+                case MONO8:
+                    return AL_FORMAT_MONO8;
+                case MONO16:
+                    return AL_FORMAT_MONO16;
+                case STEREO8:
+                    return AL_FORMAT_STEREO8;
+                case STEREO16:
+                    return AL_FORMAT_STEREO16;
+                case BFORMAT2D_16:
+                    return AL_FORMAT_BFORMAT2D_16;
+                case BFORMAT3D_16:
+                    return AL_FORMAT_BFORMAT3D_16;
+            }
+            throw std::runtime_error("Unrecognized format");
         }
-        throw std::runtime_error("Unrecognized format");
-    }
 
-    OALAudioBuffer::OALAudioBuffer(ALuint handle) : handle(handle) {}
+        OALAudioBuffer::OALAudioBuffer(ALuint handle) : handle(handle) {}
 
-    OALAudioBuffer::~OALAudioBuffer() {
-        alDeleteBuffers(1, &handle);
-        checkOALError();
-    }
+        OALAudioBuffer::~OALAudioBuffer() {
+            alDeleteBuffers(1, &handle);
+            checkOALError();
+        }
 
-    void OALAudioBuffer::upload(const std::vector<uint8_t> &buffer, AudioFormat format, unsigned int frequency) {
-        alBufferData(handle,
-                     convertFormat(format),
-                     buffer.data(),
-                     static_cast<ALsizei>(buffer.size()),
-                     static_cast<ALsizei>(frequency));
-        checkOALError();
+        void OALAudioBuffer::upload(const std::vector<uint8_t> &buffer, AudioFormat format, unsigned int frequency) {
+            alBufferData(handle,
+                         convertFormat(format),
+                         buffer.data(),
+                         static_cast<ALsizei>(buffer.size()),
+                         static_cast<ALsizei>(frequency));
+            checkOALError();
+        }
     }
 }

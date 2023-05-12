@@ -25,46 +25,48 @@
 #include "oalaudiodevice.hpp"
 
 namespace xng {
-    std::vector<std::string> OALAudioDevice::getDeviceNames() {
-        const char *dev = alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
-        std::vector<std::string> ret;
-        std::string tmp;
-        bool gotZero = false;
-        for (int i = 0; i < ((std::string) dev).size(); i++) {
-            char c = dev[i];
-            if (c == 0) {
-                if (gotZero)
-                    break;
-                gotZero = true;
-                ret.emplace_back(tmp);
-                tmp.clear();
-            } else {
-                gotZero = false;
-                tmp += c;
+    namespace openal {
+        std::vector<std::string> OALAudioDevice::getDeviceNames() {
+            const char *dev = alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
+            std::vector<std::string> ret;
+            std::string tmp;
+            bool gotZero = false;
+            for (int i = 0; i < ((std::string) dev).size(); i++) {
+                char c = dev[i];
+                if (c == 0) {
+                    if (gotZero)
+                        break;
+                    gotZero = true;
+                    ret.emplace_back(tmp);
+                    tmp.clear();
+                } else {
+                    gotZero = false;
+                    tmp += c;
+                }
+            }
+            return ret;
+        }
+
+        OALAudioDevice::OALAudioDevice() {
+            device = alcOpenDevice(nullptr);
+            if (!device) {
+                throw std::runtime_error("Failed to open default device");
             }
         }
-        return ret;
-    }
 
-    OALAudioDevice::OALAudioDevice() {
-        device = alcOpenDevice(nullptr);
-        if (!device) {
-            throw std::runtime_error("Failed to open default device");
+        OALAudioDevice::OALAudioDevice(const std::string &name) {
+            device = alcOpenDevice(name.c_str());
+            if (!device) {
+                throw std::runtime_error("Failed to open device " + name);
+            }
         }
-    }
 
-    OALAudioDevice::OALAudioDevice(const std::string &name) {
-        device = alcOpenDevice(name.c_str());
-        if (!device) {
-            throw std::runtime_error("Failed to open device " + name);
+        OALAudioDevice::~OALAudioDevice() {
+            alcCloseDevice(device);
         }
-    }
 
-    OALAudioDevice::~OALAudioDevice() {
-        alcCloseDevice(device);
-    }
-
-    std::unique_ptr<AudioContext> OALAudioDevice::createContext() {
-        return std::make_unique<OALAudioContext>(alcCreateContext(device, nullptr));
+        std::unique_ptr<AudioContext> OALAudioDevice::createContext() {
+            return std::make_unique<OALAudioContext>(alcCreateContext(device, nullptr));
+        }
     }
 }

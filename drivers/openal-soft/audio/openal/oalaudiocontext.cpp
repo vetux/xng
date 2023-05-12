@@ -24,38 +24,41 @@
 #include "oalcheckerror.hpp"
 
 namespace xng {
-    OALAudioContext::OALAudioContext(ALCcontext *context) : context(context), listener() {}
+    namespace openal {
+        OALAudioContext::OALAudioContext(ALCcontext *context) : context(context), listener() {}
 
-    xng::OALAudioContext::~OALAudioContext() {
-        if (alcGetCurrentContext() == context)
-            alcMakeContextCurrent(nullptr);
-        alcDestroyContext(context); //TODO:Fix: Destroying a openal context seems to always set invalid operation error
-    }
+        OALAudioContext::~OALAudioContext() {
+            if (alcGetCurrentContext() == context)
+                alcMakeContextCurrent(nullptr);
+            alcDestroyContext(
+                    context); //TODO:Fix: Destroying a openal context seems to always set invalid operation error
+        }
 
-    void xng::OALAudioContext::makeCurrent() {
-        alcMakeContextCurrent(context);
-        checkOALError();
-    }
+        void OALAudioContext::makeCurrent() {
+            alcMakeContextCurrent(context);
+            checkOALError();
+        }
 
-    AudioListener &xng::OALAudioContext::getListener() {
-        return listener;
-    }
+        AudioListener &OALAudioContext::getListener() {
+            return listener;
+        }
 
-    std::unique_ptr<AudioBuffer> xng::OALAudioContext::createBuffer() {
-        ALuint n;
-        alGenBuffers(1, &n);
-        checkOALError();
-        return std::make_unique<OALAudioBuffer>(n);
-    }
+        std::unique_ptr<AudioBuffer> OALAudioContext::createBuffer() {
+            ALuint n;
+            alGenBuffers(1, &n);
+            checkOALError();
+            return std::make_unique<OALAudioBuffer>(n);
+        }
 
-    std::unique_ptr<AudioSource> xng::OALAudioContext::createSource() {
-        ALuint n;
-        alGenSources(1, &n);
-        checkOALError();
-        return std::make_unique<OALAudioSource>(n);
-    }
+        std::unique_ptr<AudioSource> OALAudioContext::createSource() {
+            ALuint n;
+            alGenSources(1, &n);
+            checkOALError();
+            return std::make_unique<OALAudioSource>(n);
+        }
 
-    const ALCcontext *OALAudioContext::getContext() {
-        return context;
+        const ALCcontext *OALAudioContext::getContext() {
+            return context;
+        }
     }
 }

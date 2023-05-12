@@ -22,10 +22,12 @@
 #include "openal.hpp"
 
 namespace xng {
-    void checkOALError(const std::string &caller) {
-        auto error = alGetError();
-        if (error != AL_NO_ERROR) {
-            throw std::runtime_error("OpenAL Error: " + std::to_string(error));
+    namespace openal {
+        void checkOALError(const std::string &caller) {
+            auto error = alGetError();
+            if (error != AL_NO_ERROR) {
+                throw std::runtime_error("OpenAL Error: " + std::to_string(error));
+            }
         }
     }
 }
