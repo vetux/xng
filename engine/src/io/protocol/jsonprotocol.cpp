@@ -25,8 +25,11 @@ namespace xng {
     nlohmann::json convertMessage(const Message &message) {
         nlohmann::json ret;
         switch (message.getType()) {
-            case Message::INT:
-                ret = message.as<long>();
+            case Message::SIGNED_INTEGER:
+                ret = message.as<long long>();
+                break;
+            case Message::UNSIGNED_INTEGER:
+                ret = message.as<unsigned long long>();
                 break;
             case Message::FLOAT:
                 ret = message.as<double>();
@@ -35,12 +38,12 @@ namespace xng {
                 ret = message.as<std::string>();
                 break;
             case Message::DICTIONARY:
-                for (auto &m : message.as<std::map<std::string, Message>>()) {
+                for (auto &m: message.as<std::map<std::string, Message>>()) {
                     ret[m.first] = convertMessage(m.second);
                 }
                 break;
             case Message::LIST:
-                for (auto &m : message.as<std::vector<Message>>()) {
+                for (auto &m: message.as<std::vector<Message>>()) {
                     ret.emplace_back(convertMessage(m));
                 }
                 break;
@@ -51,23 +54,25 @@ namespace xng {
     }
 
     Message convertMessage(const nlohmann::json &j) {
-        if (j.is_number_integer()) {
-            return j.get<long>();
+        if (j.is_number_unsigned()) {
+            return j.get<unsigned long long>();
+        } else if (j.is_number_integer()) {
+            return j.get<long long>();
         } else if (j.is_number_float()) {
             return j.get<double>();
-        } else if (j.is_boolean()){
+        } else if (j.is_boolean()) {
             return j.get<bool>();
         } else if (j.is_string()) {
             return j.get<std::string>();
         } else if (j.is_array()) {
             std::vector<Message> msgs;
-            for (auto &n : j) {
+            for (auto &n: j) {
                 msgs.emplace_back(convertMessage(n));
             }
             return msgs;
-        } else if (j.is_object()){
+        } else if (j.is_object()) {
             std::map<std::string, Message> msgs;
-            for (auto &it : j.get<nlohmann::json::object_t>()) {
+            for (auto &it: j.get<nlohmann::json::object_t>()) {
                 msgs[it.first] = convertMessage(it.second);
             }
             return msgs;

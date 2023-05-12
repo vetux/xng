@@ -36,7 +36,8 @@ namespace xng {
     public:
         enum DataType {
             NUL,
-            INT,
+            SIGNED_INTEGER,
+            UNSIGNED_INTEGER,
             FLOAT,
             STRING,
             DICTIONARY,
@@ -47,8 +48,10 @@ namespace xng {
             switch (type) {
                 case NUL:
                     return "NUL";
-                case INT:
+                case SIGNED_INTEGER:
                     return "INT";
+                case UNSIGNED_INTEGER:
+                    return "UINT";
                 case FLOAT:
                     return "FLOAT";
                 case STRING:
@@ -64,17 +67,19 @@ namespace xng {
 
         explicit Message(DataType type = NUL) : type(type) {}
 
-        Message(int value) : type(INT) { ival = value; }
+        Message(bool value) : type(SIGNED_INTEGER) { ival = value; }
 
-        Message(long value) : type(INT) { ival = value; }
+        Message(int value) : type(SIGNED_INTEGER) { ival = value; }
 
-        Message(long long value) : type(INT) { ival = static_cast<int>(value); }
+        Message(long value) : type(SIGNED_INTEGER) { ival = value; }
 
-        Message(unsigned int value) : type(INT) { ival = static_cast<int>(value); }
+        Message(long long value) : type(SIGNED_INTEGER) { ival = value; }
 
-        Message(unsigned long value) : type(INT) { ival = static_cast<int>(value); }
+        Message(unsigned int value) : type(UNSIGNED_INTEGER) { uival = value; }
 
-        Message(unsigned long long value) : type(INT) { ival = static_cast<int>(value); }
+        Message(unsigned long value) : type(UNSIGNED_INTEGER) { uival = value; }
+
+        Message(unsigned long long value) : type(UNSIGNED_INTEGER) { uival = value; }
 
         Message(float value) : type(FLOAT) { fval = value; }
 
@@ -135,7 +140,7 @@ namespace xng {
         }
 
         explicit operator int() const {
-            return ival;
+            return static_cast<int>(ival);
         }
 
         explicit operator long() const {
@@ -147,15 +152,15 @@ namespace xng {
         }
 
         explicit  operator unsigned int() const {
-            return ival;
+            return uival;
         }
 
         explicit  operator unsigned long() const {
-            return ival;
+            return uival;
         }
 
         explicit operator unsigned long long() const {
-            return ival;
+            return uival;
         }
 
         explicit operator bool() const {
@@ -163,14 +168,10 @@ namespace xng {
         }
 
         explicit operator float() const {
-            if (type == INT)
-                return ival;
-            return fval;
+            return static_cast<float>(fval);
         }
 
         explicit operator double() const {
-            if (type == INT)
-                return ival;
             return fval;
         }
 
@@ -199,6 +200,22 @@ namespace xng {
 
         long asLong() const {
             return as<long>();
+        }
+
+        long long asLongLong() const {
+            return as<long long>();
+        }
+
+        unsigned int asUInt() const {
+            return as<unsigned int>();
+        }
+
+        unsigned long asULong() const {
+            return as<unsigned long>();
+        }
+
+        unsigned long long asULongLong() const {
+            return as<unsigned long long>();
         }
 
         bool asBool() const {
@@ -266,7 +283,8 @@ namespace xng {
     private:
         DataType type;
 
-        long ival = 0;
+        long long ival = 0;
+        unsigned long long uival = 0;
         double fval = 0;
         std::string sval = {};
         std::map<std::string, Message> mval = {};
