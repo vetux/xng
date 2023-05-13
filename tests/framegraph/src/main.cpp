@@ -83,6 +83,7 @@ void createMaterialResource(xng::MemoryArchive &archive) {
     archive.addData(uri.toString(false), vec);
 }
 
+//TODO: Fix jittering (Does not appear to be related to framerate)
 int main(int argc, char *argv[]) {
     std::vector<std::unique_ptr<ResourceParser>> parsers;
     parsers.emplace_back(std::make_unique<StbiParser>());
@@ -197,8 +198,6 @@ int main(int argc, char *argv[]) {
     xng::FrameLimiter limiter(60);
     limiter.reset();
     while (!window->shouldClose()) {
-        window->update();
-
         auto deltaTime = limiter.newFrame();
 
         scene.camera.aspectRatio = static_cast<float>(window->getWindowSize().x)
@@ -297,6 +296,7 @@ int main(int argc, char *argv[]) {
         ren2d.destroyTexture(fpsTex);
 
         window->swapBuffers();
+        window->update();
     }
 
     return 0;

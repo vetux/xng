@@ -40,10 +40,23 @@ public:
             lockCursor = false;
             input.setMouseCursorMode(xng::Input::CURSOR_NORMAL);
         }
+
+        Vec2f rotation;
+
         if (lockCursor) {
-            transform.applyRotation(Quaternion(Vec3f(-input.getMouse().positionDelta.y * rotationSpeed * delta, 0, 0)),
+            rotation = Vec2f(-input.getMouse().positionDelta.y, -input.getMouse().positionDelta.x);
+        }
+
+        if (input.getKeyboard().getKey(KEY_Q)){
+            rotation.y += -5;
+        } else if (input.getKeyboard().getKey(xng::KEY_E)){
+            rotation.y += 5;
+        }
+
+        if (rotation.magnitude() > 0){
+            transform.applyRotation(Quaternion(Vec3f(rotation.x * rotationSpeed * delta, 0, 0)),
                                     false);
-            transform.applyRotation(Quaternion(Vec3f(0, -input.getMouse().positionDelta.x * rotationSpeed * delta, 0)),
+            transform.applyRotation(Quaternion(Vec3f(0, rotation.y * rotationSpeed * delta, 0)),
                                     true);
         }
 
@@ -67,11 +80,10 @@ public:
         }
 
         if (movement.magnitude() > 0) {
-            transform.setPosition(
-                    transform.getPosition() + (transform.forward() * movement.y * movementSpeed * delta));
-            transform.setPosition(
-                    transform.getPosition() + (transform.left() * movement.x * movementSpeed * delta));
-            transform.setPosition(transform.getPosition() + Vec3f(0, movement.z * movementSpeed * delta, 0));
+            Vec3f pos = transform.getPosition() + (transform.forward() * movement.y * movementSpeed * delta);
+            pos += transform.left() * movement.x * movementSpeed * delta;
+            pos += Vec3f(0, movement.z * movementSpeed * delta, 0);
+            transform.setPosition(pos);
         }
     }
 
