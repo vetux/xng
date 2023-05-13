@@ -137,13 +137,8 @@ namespace xng {
             transforms[comp.first.id].position.x += t.transform.getPosition().x / pixelToMeter;
             transforms[comp.first.id].position.y += t.transform.getPosition().y / pixelToMeter;
             transforms[comp.first.id].rotation += t.transform.getRotation().getEulerAngles().z;
-
-            auto tmpSize = transforms[comp.first.id].size;
-            tmpSize.x *= t.transform.getScale().x;
-            tmpSize.y *= t.transform.getScale().y;
-
-            transforms[comp.first.id].position += transforms[comp.first.id].size - tmpSize;
-            transforms[comp.first.id].size = tmpSize;
+            transforms[comp.first.id].size.x *= t.transform.getScale().x;
+            transforms[comp.first.id].size.y *= t.transform.getScale().y;
         }
 
         for (auto &pair: canvases) {

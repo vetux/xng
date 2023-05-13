@@ -42,8 +42,8 @@ namespace xng {
             RECT_ALIGN_END = RECT_ALIGN_RIGHT_BOTTOM
         } alignment = RECT_ALIGN_LEFT_TOP;
 
-        Vec2f position{};
-        Vec2f size{};
+        Vec2f position{}; // The position of the rectangle center
+        Vec2f size{}; // The size of the rectangle
         Vec2f center{};
         float rotation{};
 

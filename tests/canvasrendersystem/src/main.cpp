@@ -49,6 +49,7 @@ static std::shared_ptr<EntityScene> createScene() {
 
     transform = {};
     transform.parent = "canvas";
+    transform.transform.setScale(Vec3f(0.5, 0.5, 1));
     ent.createComponent(transform);
 
     rect = {};
