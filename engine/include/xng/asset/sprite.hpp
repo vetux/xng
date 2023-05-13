@@ -41,7 +41,7 @@ namespace xng {
         Sprite(ResourceHandle<ImageRGBA> image,
                Recti offset)
                 : image(std::move(image)),
-                  offset(offset) {}
+                  offset(std::move(offset)) {}
 
         ~Sprite() override = default;
 
