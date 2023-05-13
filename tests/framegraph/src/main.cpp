@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
     auto fs = std::ifstream("assets/fonts/Sono/static/Sono/Sono-Regular.ttf");
     auto font = fontDriver.createFont(fs);
 
-    auto window = displayDriver.createWindow(OPENGL_4_6);
+    auto window = displayDriver.createWindow(OPENGL_4_6, "XNG FrameGraph Test", {800, 600}, WindowAttributes{.swapInterval = 1});
     auto &input = window->getInput();
 
     window->bindGraphics();
@@ -195,7 +195,7 @@ int main(int argc, char *argv[]) {
 
     CameraController cameraController(scene.cameraTransform, input);
 
-    xng::FrameLimiter limiter(60);
+    xng::FrameLimiter limiter;
     limiter.reset();
     while (!window->shouldClose()) {
         auto deltaTime = limiter.newFrame();
