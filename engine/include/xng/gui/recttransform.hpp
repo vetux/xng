@@ -29,7 +29,7 @@
 namespace xng {
     struct RectTransform : public Messageable {
         enum Alignment : int {
-            RECT_ALIGN_LEFT_TOP,
+            RECT_ALIGN_LEFT_TOP = 0,
             RECT_ALIGN_CENTER_TOP,
             RECT_ALIGN_RIGHT_TOP,
             RECT_ALIGN_LEFT_CENTER,
@@ -37,7 +37,9 @@ namespace xng {
             RECT_ALIGN_RIGHT_CENTER,
             RECT_ALIGN_LEFT_BOTTOM,
             RECT_ALIGN_CENTER_BOTTOM,
-            RECT_ALIGN_RIGHT_BOTTOM
+            RECT_ALIGN_RIGHT_BOTTOM,
+            RECT_ALIGN_BEGIN = RECT_ALIGN_LEFT_TOP,
+            RECT_ALIGN_END = RECT_ALIGN_RIGHT_BOTTOM
         } alignment = RECT_ALIGN_LEFT_TOP;
 
         Vec2f position{};
