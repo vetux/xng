@@ -55,7 +55,7 @@ namespace xng {
 
         void clearMouseCursorImage() override;
 
-        void setMouseCursorHidden(bool cursorHidden) override;
+        void setMouseCursorMode(CursorMode mode) override;
 
         void setEventBus(const EventBus &bus) override;
 

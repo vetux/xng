@@ -24,14 +24,14 @@
 
 namespace xng {
     enum MouseButton {
-        LEFT,
-        MIDDLE,
-        RIGHT,
-        OPTIONAL_1,
-        OPTIONAL_2,
-        OPTIONAL_3,
-        OPTIONAL_4,
-        OPTIONAL_5,
+        MOUSE_BUTTON_LEFT,
+        MOUSE_BUTTON_MIDDLE,
+        MOUSE_BUTTON_RIGHT,
+        MOUSE_BUTTON_OPTIONAL_1,
+        MOUSE_BUTTON_OPTIONAL_2,
+        MOUSE_BUTTON_OPTIONAL_3,
+        MOUSE_BUTTON_OPTIONAL_4,
+        MOUSE_BUTTON_OPTIONAL_5,
         MOUSE_BUTTON_UNDEFINED
     };
 

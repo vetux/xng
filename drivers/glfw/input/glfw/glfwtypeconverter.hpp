@@ -33,21 +33,21 @@ namespace xng {
     public:
         static int convertMouseKey(MouseButton key) {
             switch (key) {
-                case LEFT:
+                case MOUSE_BUTTON_LEFT:
                     return GLFW_MOUSE_BUTTON_LEFT;
-                case MIDDLE:
+                case MOUSE_BUTTON_MIDDLE:
                     return GLFW_MOUSE_BUTTON_MIDDLE;
-                case RIGHT:
+                case MOUSE_BUTTON_RIGHT:
                     return GLFW_MOUSE_BUTTON_RIGHT;
-                case OPTIONAL_1:
+                case MOUSE_BUTTON_OPTIONAL_1:
                     return GLFW_MOUSE_BUTTON_1;
-                case OPTIONAL_2:
+                case MOUSE_BUTTON_OPTIONAL_2:
                     return GLFW_MOUSE_BUTTON_2;
-                case OPTIONAL_3:
+                case MOUSE_BUTTON_OPTIONAL_3:
                     return GLFW_MOUSE_BUTTON_3;
-                case OPTIONAL_4:
+                case MOUSE_BUTTON_OPTIONAL_4:
                     return GLFW_MOUSE_BUTTON_4;
-                case OPTIONAL_5:
+                case MOUSE_BUTTON_OPTIONAL_5:
                     return GLFW_MOUSE_BUTTON_5;
                 default:
                     throw std::runtime_error("Cannot convert key code " + std::to_string(key));
@@ -57,21 +57,21 @@ namespace xng {
         static MouseButton convertMouseKey(int key) {
             switch (key) {
                 case GLFW_MOUSE_BUTTON_LEFT:
-                    return LEFT;
+                    return MOUSE_BUTTON_LEFT;
                 case GLFW_MOUSE_BUTTON_MIDDLE:
-                    return MIDDLE;
+                    return MOUSE_BUTTON_MIDDLE;
                 case GLFW_MOUSE_BUTTON_RIGHT:
-                    return RIGHT;
+                    return MOUSE_BUTTON_RIGHT;
                 case GLFW_MOUSE_BUTTON_4:
-                    return OPTIONAL_1;
+                    return MOUSE_BUTTON_OPTIONAL_1;
                 case GLFW_MOUSE_BUTTON_5:
-                    return OPTIONAL_2;
+                    return MOUSE_BUTTON_OPTIONAL_2;
                 case GLFW_MOUSE_BUTTON_6:
-                    return OPTIONAL_3;
+                    return MOUSE_BUTTON_OPTIONAL_3;
                 case GLFW_MOUSE_BUTTON_7:
-                    return OPTIONAL_4;
+                    return MOUSE_BUTTON_OPTIONAL_4;
                 case GLFW_MOUSE_BUTTON_8:
-                    return OPTIONAL_5;
+                    return MOUSE_BUTTON_OPTIONAL_5;
                 default:
                     return MOUSE_BUTTON_UNDEFINED;
             }

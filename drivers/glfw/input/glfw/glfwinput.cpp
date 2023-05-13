@@ -158,13 +158,13 @@ namespace xng {
         MouseButton btn;
         switch (button) {
             case GLFW_MOUSE_BUTTON_LEFT:
-                btn = LEFT;
+                btn = MOUSE_BUTTON_LEFT;
                 break;
             case GLFW_MOUSE_BUTTON_MIDDLE:
-                btn = MIDDLE;
+                btn = MOUSE_BUTTON_MIDDLE;
                 break;
             case GLFW_MOUSE_BUTTON_RIGHT:
-                btn = RIGHT;
+                btn = MOUSE_BUTTON_RIGHT;
                 break;
             default:
                 break;
@@ -242,8 +242,18 @@ namespace xng {
         throw std::runtime_error("Not implemented");
     }
 
-    void GLFWInput::setMouseCursorHidden(bool cursorHidden) {
-        glfwSetInputMode(&wndH, GLFW_CURSOR, cursorHidden ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL);
+    void GLFWInput::setMouseCursorMode(CursorMode mode) {
+        switch (mode) {
+            case Input::CURSOR_NORMAL:
+                glfwSetInputMode(&wndH, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                break;
+            case Input::CURSOR_HIDDEN:
+                glfwSetInputMode(&wndH, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+                break;
+            case Input::CURSOR_DISABLED:
+                glfwSetInputMode(&wndH, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                break;
+        }
     }
 
     void GLFWInput::update() {

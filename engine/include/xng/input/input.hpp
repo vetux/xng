@@ -35,6 +35,12 @@
 namespace xng {
     class XENGINE_EXPORT Input {
     public:
+        enum CursorMode {
+            CURSOR_NORMAL,
+            CURSOR_HIDDEN,
+            CURSOR_DISABLED
+        };
+
         virtual ~Input() = default;
 
         virtual void setClipboardText(std::string text) = 0;
@@ -45,7 +51,7 @@ namespace xng {
 
         virtual void clearMouseCursorImage() = 0;
 
-        virtual void setMouseCursorHidden(bool cursorHidden) = 0;
+        virtual void setMouseCursorMode(CursorMode mode) = 0;
 
         /**
          * Set the event bus on which input events of devices are dispatched.
