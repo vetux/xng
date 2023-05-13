@@ -159,7 +159,7 @@ public:
         ShaderData buf{};
         buf.visualizeDepth_near_far[0] = tex == 8 || tex == 10 || tex == 12 || tex == 14;
         buf.visualizeDepth_near_far[1] = camera.nearClip;
-        buf.visualizeDepth_near_far[2] = camera.farClip;
+        buf.visualizeDepth_near_far[2] = 100;
 
         shaderBuffer.upload(buf);
 
