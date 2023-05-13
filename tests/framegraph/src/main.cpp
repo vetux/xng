@@ -23,6 +23,7 @@
 #include "xng/xng.hpp"
 
 #include "testpass.hpp"
+#include "cameracontroller.hpp"
 
 static const char *MATERIALS_PATH = "memory://tests/graph/materials.json";
 
@@ -80,7 +81,6 @@ void createMaterialResource(xng::MemoryArchive &archive) {
     Uri uri(MATERIALS_PATH);
 
     archive.addData(uri.toString(false), vec);
-
 }
 
 int main(int argc, char *argv[]) {
@@ -192,6 +192,8 @@ int main(int argc, char *argv[]) {
 
     testPass->setTex(13);
 
+    CameraController cameraController(scene.cameraTransform, input);
+
     xng::FrameLimiter limiter(60);
     limiter.reset();
     while (!window->shouldClose()) {
@@ -201,6 +203,8 @@ int main(int argc, char *argv[]) {
 
         scene.camera.aspectRatio = static_cast<float>(window->getWindowSize().x)
                                    / static_cast<float>(window->getWindowSize().y);
+
+        cameraController.update(deltaTime);
 
         if (window->getInput().getKeyboard().getKeyDown(xng::KEY_LEFT)) {
             testPass->decrementTex();
