@@ -33,6 +33,9 @@ static std::shared_ptr<EntityScene> createScene() {
     canvas.referenceFitWidth = 0.5;
     ent.createComponent(canvas);
 
+    TransformComponent transform;
+    ent.createComponent(transform);
+
     RectTransformComponent rect;
     rect.rectTransform.size = Vec2f(0);
     ent.createComponent(rect);
@@ -44,16 +47,22 @@ static std::shared_ptr<EntityScene> createScene() {
     sprite.filter = xng::LINEAR;
     ent.createComponent(sprite);
 
+    transform = {};
+    transform.parent = "canvas";
+    ent.createComponent(transform);
+
     rect = {};
-    rect.parent = "canvas";
     rect.rectTransform.alignment = xng::RectTransform::RECT_ALIGN_CENTER_CENTER;
     rect.rectTransform.size = sprite.sprite.get().image.get().getSize().convert<float>();
     ent.createComponent(rect);
 
     ent = scene->createEntity();
 
+    transform = {};
+    transform.parent = "canvas";
+    ent.createComponent(transform);
+
     rect = {};
-    rect.parent = "canvas";
     rect.rectTransform.alignment = xng::RectTransform::RECT_ALIGN_LEFT_TOP;
     rect.rectTransform.size = Vec2f(250, 50);
     ent.createComponent(rect);
@@ -67,8 +76,11 @@ static std::shared_ptr<EntityScene> createScene() {
 
     ent = scene->createEntity();
 
+    transform = {};
+    transform.parent = "canvas";
+    ent.createComponent(transform);
+
     rect = {};
-    rect.parent = "canvas";
     rect.rectTransform.alignment = xng::RectTransform::RECT_ALIGN_RIGHT_TOP;
     rect.rectTransform.size = Vec2f(250, 50);
     ent.createComponent(rect);
@@ -82,8 +94,11 @@ static std::shared_ptr<EntityScene> createScene() {
 
     ent = scene->createEntity();
 
+    transform = {};
+    transform.parent = "canvas";
+    ent.createComponent(transform);
+
     rect = {};
-    rect.parent = "canvas";
     rect.rectTransform.alignment = xng::RectTransform::RECT_ALIGN_LEFT_BOTTOM;
     rect.rectTransform.size = Vec2f(250, 50);
     ent.createComponent(rect);
@@ -97,8 +112,11 @@ static std::shared_ptr<EntityScene> createScene() {
 
     ent = scene->createEntity();
 
+    transform = {};
+    transform.parent = "canvas";
+    ent.createComponent(transform);
+
     rect = {};
-    rect.parent = "canvas";
     rect.rectTransform.alignment = xng::RectTransform::RECT_ALIGN_RIGHT_BOTTOM;
     rect.rectTransform.size = Vec2f(250, 50);
     ent.createComponent(rect);
@@ -112,16 +130,22 @@ static std::shared_ptr<EntityScene> createScene() {
 
     ent = scene->createEntity();
 
+    transform = {};
+    transform.parent = "canvas";
+    ent.createComponent(transform);
+
     rect = {};
-    rect.parent = "canvas";
     rect.rectTransform.alignment = xng::RectTransform::RECT_ALIGN_CENTER_CENTER;
     rect.rectTransform.size = Vec2f(480, 320);
     ent.createComponent(rect);
 
     ent = scene->createEntity();
 
+    transform = {};
+    transform.parent = "canvas";
+    ent.createComponent(transform);
+
     rect = {};
-    rect.parent = "canvas";
     rect.rectTransform.alignment = xng::RectTransform::RECT_ALIGN_CENTER_CENTER;
     rect.rectTransform.position = {};
     rect.rectTransform.size = Vec2f(800, 60);

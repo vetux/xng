@@ -107,20 +107,43 @@ namespace xng {
         std::map<EntityHandle, std::set<int>> parentsChildrenMapping;
 
         for (auto &comp: scene.getPool<RectTransformComponent>()) {
+            if (!scene.checkComponent<TransformComponent>(comp.first)) {
+                continue;
+            }
+
+            auto &t = scene.getComponent<TransformComponent>(comp.first);
+
             if (scene.checkComponent<CanvasComponent>(comp.first)) {
                 auto &canvas = scene.getComponent<CanvasComponent>(comp.first);
                 transforms[comp.first.id] = comp.second.rectTransform;
                 transforms[comp.first.id].size = target.getDescription().size.convert<float>();
-            } else if (!comp.second.parent.empty()
-                       && scene.entityNameExists(comp.second.parent)) {
+            } else {
+                if (t.parent.empty()
+                    || !scene.entityNameExists(t.parent)
+                    || !scene.checkComponent<TransformComponent>(scene.getEntityByName(t.parent))
+                    || !scene.checkComponent<RectTransformComponent>(scene.getEntityByName(t.parent))) {
+                    continue;
+                }
+
                 transforms[comp.first.id] = comp.second.rectTransform;
 
-                auto parentEnt = scene.getEntityByName(comp.second.parent);
+                auto parentEnt = scene.getEntityByName(t.parent);
 
                 transformParents[comp.first.id] = parentEnt.id;
 
                 parentsChildrenMapping[parentEnt].insert(comp.first.id);
             }
+
+            transforms[comp.first.id].position.x += t.transform.getPosition().x / pixelToMeter;
+            transforms[comp.first.id].position.y += t.transform.getPosition().y / pixelToMeter;
+            transforms[comp.first.id].rotation += t.transform.getRotation().getEulerAngles().z;
+
+            auto tmpSize = transforms[comp.first.id].size;
+            tmpSize.x *= t.transform.getScale().x;
+            tmpSize.y *= t.transform.getScale().y;
+
+            transforms[comp.first.id].position += transforms[comp.first.id].size - tmpSize;
+            transforms[comp.first.id].size = tmpSize;
         }
 
         for (auto &pair: canvases) {
@@ -167,13 +190,6 @@ namespace xng {
 
                     for (auto &handle: order) {
                         auto transform = absoluteTransforms.at(handle.id);
-
-                        if (scene.checkComponent<TransformComponent>(handle)) {
-                            auto &tcomp = scene.getComponent<TransformComponent>(handle);
-                            transform.position.x += tcomp.transform.getPosition().x / pixelToMeter;
-                            transform.position.y += tcomp.transform.getPosition().y / pixelToMeter;
-                            transform.rotation += tcomp.transform.getRotation().getEulerAngles().z;
-                        }
 
                         if (scene.checkComponent<SpriteComponent>(handle)) {
                             auto &comp = scene.getComponent<SpriteComponent>(handle);

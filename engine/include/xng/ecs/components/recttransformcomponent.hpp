@@ -27,26 +27,26 @@
 namespace xng {
     /**
      * Describe a rectangular area on a canvas.
+     *
+     * The entity must contain a TransformComponent.
+     * The parent of the TransformComponent must be the name of an entity which contains a RectTransformComponent.
      * Alignments and positions are relative to the specified parent.
-     * The parent must be the name of an entity which contains a RectTransformComponent.
      * The top level parent of RectTransformComponents must contain a CanvasComponent.
      * If the entity contains a TransformComponent the x/y position divided by CanvasRenderSystem.pixelToMeter and z rotation of the transform are added
-     * to the rect transform values when rendering which allows a RectTransformComponent to be animated by RigidbodyComponents.
+     * to the rect transform values and the TransformComponent x/y scale is used to scale the rect size when rendering
+     * which allows a RectTransformComponent to be animated by RigidbodyComponents.
      */
     struct XENGINE_EXPORT RectTransformComponent : public Component {
         RectTransform rectTransform;
-        std::string parent;
 
         Messageable &operator<<(const Message &message) override {
             message.value("rectTransform", rectTransform);
-            message.value("parent", parent);
             return *this;
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             rectTransform >> message["rectTransform"];
-            parent >> message["parent"];
             return message;
         }
 
