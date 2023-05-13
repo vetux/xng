@@ -138,51 +138,120 @@ namespace xng {
         }
 
         explicit operator int() const {
-            return static_cast<int>(ival);
+            if (type == UNSIGNED_INTEGER) {
+                return static_cast<int>(uival);
+            } else if (type == SIGNED_INTEGER) {
+                return static_cast<int>(ival);
+            } else {
+                throw std::runtime_error("Attempted to cast message of type " + getDataTypeName(type) + " to int");
+            }
         }
 
         explicit operator long() const {
-            return ival;
+            if (type == UNSIGNED_INTEGER) {
+                return static_cast<long>(uival);
+            } else if (type == SIGNED_INTEGER) {
+                return static_cast<long>(ival);
+            } else {
+                throw std::runtime_error("Attempted to cast message of type " + getDataTypeName(type) + " to long");
+            }
         }
 
         explicit operator long long() const {
-            return ival;
+            if (type == UNSIGNED_INTEGER) {
+                return static_cast<long long>(uival);
+            } else if (type == SIGNED_INTEGER) {
+                return static_cast<long long>(ival);
+            } else {
+                throw std::runtime_error(
+                        "Attempted to cast message of type " + getDataTypeName(type) + " to long long");
+            }
         }
 
         explicit  operator unsigned int() const {
-            return uival;
+            if (type == UNSIGNED_INTEGER) {
+                return static_cast<unsigned int>(uival);
+            } else {
+                throw std::runtime_error(
+                        "Attempted to cast message of type " + getDataTypeName(type) + " to unsigned int");
+            }
         }
 
         explicit  operator unsigned long() const {
-            return uival;
+            if (type == UNSIGNED_INTEGER) {
+                return static_cast<unsigned long>(uival);
+            } else {
+                throw std::runtime_error(
+                        "Attempted to cast message of type " + getDataTypeName(type) + " to unsigned long");
+            }
         }
 
         explicit operator unsigned long long() const {
-            return uival;
+            if (type == UNSIGNED_INTEGER) {
+                return static_cast<unsigned long long>(uival);
+            } else {
+                throw std::runtime_error(
+                        "Attempted to cast message of type " + getDataTypeName(type) + " to unsigned long long");
+            }
         }
 
         explicit operator bool() const {
-            return ival;
+            if (type == UNSIGNED_INTEGER) {
+                return static_cast<bool>(uival);
+            } else if (type == SIGNED_INTEGER) {
+                return static_cast<bool>(ival);
+            } else {
+                throw std::runtime_error("Attempted to cast message of type " + getDataTypeName(type) + " to bool");
+            }
         }
 
         explicit operator float() const {
-            return static_cast<float>(fval);
+            if (type == UNSIGNED_INTEGER) {
+                return static_cast<float>(uival);
+            } else if (type == SIGNED_INTEGER) {
+                return static_cast<float>(ival);
+            } else if (type == FLOAT) {
+                return static_cast<float>(fval);
+            } else {
+                throw std::runtime_error("Attempted to cast message of type " + getDataTypeName(type) + " to float");
+            }
         }
 
         explicit operator double() const {
-            return fval;
+            if (type == UNSIGNED_INTEGER) {
+                return static_cast<double>(uival);
+            } else if (type == SIGNED_INTEGER) {
+                return static_cast<double>(ival);
+            } else if (type == FLOAT) {
+                return static_cast<double>(fval);
+            } else {
+                throw std::runtime_error("Attempted to cast message of type " + getDataTypeName(type) + " to double");
+            }
         }
 
         explicit operator std::string() const {
-            return sval;
+            if (type == STRING) {
+                return sval;
+            } else {
+                throw std::runtime_error("Attempted to cast message of type " + getDataTypeName(type) + " to string");
+            }
         }
 
         explicit operator std::map<std::string, Message>() const {
-            return mval;
+            if (type == DICTIONARY) {
+                return mval;
+            } else {
+                throw std::runtime_error(
+                        "Attempted to cast message of type " + getDataTypeName(type) + " to dictionary");
+            }
         }
 
         explicit  operator std::vector<Message>() const {
-            return vval;
+            if (type == LIST) {
+                return vval;
+            } else {
+                throw std::runtime_error("Attempted to cast message of type " + getDataTypeName(type) + " to list");
+            }
         }
 
         DataType getType() const { return type; }
@@ -193,23 +262,14 @@ namespace xng {
         }
 
         int asInt() const {
-            if (type == UNSIGNED_INTEGER) {
-                return static_cast<int>(as<unsigned int>());
-            }
             return as<int>();
         }
 
         long asLong() const {
-            if (type == UNSIGNED_INTEGER) {
-                return static_cast<long>(as<unsigned long>());
-            }
             return as<long>();
         }
 
         long long asLongLong() const {
-            if (type == UNSIGNED_INTEGER) {
-                return static_cast<long long>(as<unsigned long long>());
-            }
             return as<long long>();
         }
 
@@ -319,14 +379,6 @@ namespace xng {
         return message;
     }
 
-    /**
-     * These operators invoke the streaming operators on a vector or map.
-     *
-     * @tparam T
-     * @param vec
-     * @param message
-     * @return
-     */
     template<typename T>
     std::vector<T> &operator<<(std::vector<T> &vec, const Message &message) {
         vec.clear();
