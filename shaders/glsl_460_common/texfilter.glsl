@@ -12,6 +12,8 @@ vec4 textureMS(sampler2DMS color, vec2 uv, int samples) {
     return ret;
 }
 
+// TODO: Fix bicubic filtering shader producing line artifacts.
+
 //https://stackoverflow.com/a/42179924
 // from http://www.java-gaming.org/index.php?topic=35123.0
 vec4 cubic(float v) {
