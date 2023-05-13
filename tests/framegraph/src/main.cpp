@@ -83,7 +83,6 @@ void createMaterialResource(xng::MemoryArchive &archive) {
     archive.addData(uri.toString(false), vec);
 }
 
-//TODO: Fix jittering (Does not appear to be related to framerate)
 int main(int argc, char *argv[]) {
     std::vector<std::unique_ptr<ResourceParser>> parsers;
     parsers.emplace_back(std::make_unique<StbiParser>());
