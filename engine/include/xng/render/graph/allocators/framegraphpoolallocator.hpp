@@ -34,12 +34,16 @@ namespace xng {
                                 ShaderCompiler &shaderCompiler,
                                 ShaderDecompiler &shaderDecompiler,
                                 RenderTarget &backBuffer,
-                                size_t poolCacheSize = 5)
+                                size_t poolCacheSize = 0)
                 : device(&device),
                   shaderCompiler(&shaderCompiler),
                   shaderDecompiler(&shaderDecompiler),
                   poolCacheSize(poolCacheSize),
                   backBuffer(&backBuffer) {}
+
+        FrameGraphPoolAllocator(const FrameGraphPoolAllocator &) = delete;
+
+        FrameGraphAllocator & operator=(const FrameGraphPoolAllocator &) = delete;
 
         void beginFrame(const FrameGraph &value) override {
             frame = value;

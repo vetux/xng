@@ -21,6 +21,7 @@
 #define XENGINE_READFILE_HPP
 
 #include <cstdio>
+#include <fstream>
 
 namespace xng {
     /**
@@ -30,27 +31,8 @@ namespace xng {
      * @return
      */
     inline std::vector<char> readFile(const std::string &path, const size_t bufferStepSize = 100) {
-        FILE *fp;
-        fp = fopen(path.c_str(), "r");
-
-        std::vector<char> fbuf(bufferStepSize);
-
-        auto r = fread(fbuf.data(), 1, fbuf.size(), fp);
-
-        std::vector<char> ret;
-        ret.insert(ret.end(),
-                   fbuf.begin(),
-                   fbuf.begin() + static_cast<std::iterator<char *, std::vector<char>>::difference_type>(r));
-        while (r == bufferStepSize) {
-            r = fread(fbuf.data(), 1, fbuf.size(), fp);
-            ret.insert(ret.end(),
-                       fbuf.begin(),
-                       fbuf.begin() + static_cast<std::iterator<char *, std::vector<char>>::difference_type>(r));
-        }
-
-        fclose(fp);
-
-        return ret;
+        std::ifstream ifs(path, std::ios_base::in | std::ios::binary);
+        return std::vector<char>((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
     }
 
     /**

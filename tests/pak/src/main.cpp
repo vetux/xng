@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
     ofstream.write(pakDataE.at(0).data(), static_cast<std::streamsize>(pakDataE.at(0).size()));
     ofstream.close();
 
-    std::ifstream stream("assets.pak");
+    std::ifstream stream("assets.pak", std::ios_base::in | std::ios::binary);
     xng::Pak pak(stream, *zip, *sha, *aes, "test");
     for (auto &pair: pak.getEntries()) {
         auto data = pak.get(pair.first, true);
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
         fs.close();
     }
 
-    stream = std::ifstream("assets_encrypted.pak");
+    stream = std::ifstream("assets_encrypted.pak", std::ios_base::in | std::ios::binary);
     pak = xng::Pak(stream, *zip, *sha, *aes, "test");
     for (auto &pair: pak.getEntries()) {
         auto data = pak.get(pair.first, true);

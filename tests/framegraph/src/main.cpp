@@ -83,6 +83,7 @@ void createMaterialResource(xng::MemoryArchive &archive) {
     archive.addData(uri.toString(false), vec);
 }
 
+// TODO: Fix OUT_OF_MEMORY thrown after running the framegraph test for some time on windows (The task manager is not showing any kind of memory leak.)
 int main(int argc, char *argv[]) {
     std::vector<std::unique_ptr<ResourceParser>> parsers;
     parsers.emplace_back(std::make_unique<StbiParser>());
@@ -105,7 +106,7 @@ int main(int argc, char *argv[]) {
     auto shaderDecompiler = spirv_cross::SpirvCrossDecompiler();
     auto fontDriver = freetype::FtFontDriver();
 
-    auto fs = std::ifstream("assets/fonts/Sono/static/Sono/Sono-Regular.ttf");
+    auto fs = std::ifstream("assets/fonts/Sono/static/Sono/Sono-Regular.ttf", std::ios_base::in | std::ios::binary);
     auto font = fontDriver.createFont(fs);
 
     auto window = displayDriver.createWindow(OPENGL_4_6, "XNG FrameGraph Test", {800, 600}, WindowAttributes{.swapInterval = 1});

@@ -21,12 +21,17 @@ if (UNIX)
     target_link_libraries(xengine dl) # For engine/src/io/dl/librarylinux.hpp
 endif ()
 
+if (MSVC)
+# Disable the C4251 warnings because the STL is heavily integrated with the engine by design and the users/editor must ensure that the user application is built with the same msvc compiler version.
+	target_compile_options(xengine PUBLIC -wd4251)
+endif ()
+
 # xengine-static
 
-add_library(xengine-static STATIC ${Engine.File.SRC} ${DRIVERS_SRC})
+add_library(xengine-static STATIC ${Engine.File.SRC} ${DRIVERS_SRC} ${SHADER_HEADERS})
 
 target_include_directories(xengine-static PUBLIC ${Engine.Dir.INCLUDE})
-target_include_directories(xengine-static PRIVATE ${Engine.Dir.SRC} ${DRIVERS_INCLUDE})
+target_include_directories(xengine-static PRIVATE ${Engine.Dir.SRC} ${DRIVERS_INCLUDE} ${BASE_SOURCE_DIR}/shaders/generated)
 
 target_link_libraries(xengine-static Threads::Threads ${DRIVERS_LINK})
 
@@ -37,4 +42,9 @@ endif ()
 
 if (UNIX)
     target_link_libraries(xengine-static dl)
+endif ()
+
+if (MSVC)
+# Disable the C4251 warnings because the STL is heavily integrated with the engine by design and the users/editor must ensure that the user application is built with the same msvc compiler version.
+	target_compile_options(xengine-static PUBLIC -wd4251)
 endif ()

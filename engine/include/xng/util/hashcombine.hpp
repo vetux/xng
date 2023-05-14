@@ -24,7 +24,7 @@
 
 namespace xng {
     //https://stackoverflow.com/a/2595226
-    void hash_combine(std::size_t &seed, std::size_t v);
+    XENGINE_EXPORT void hash_combine(std::size_t &seed, std::size_t v);
 
     template<typename T>
     void hash_combine(std::size_t &seed, const T &v) {

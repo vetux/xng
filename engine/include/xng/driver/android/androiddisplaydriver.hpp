@@ -20,6 +20,9 @@
 #ifndef CMAKELISTS_TXT_ANDROIDDISPLAYDRIVER_HPP
 #define CMAKELISTS_TXT_ANDROIDDISPLAYDRIVER_HPP
 
+// MSVC for some reason references the getWindow method when this header is included even if the AndroidDisplayDriver type is not used by user code.
+#ifndef WIN32
+
 #include "xng/display/displaydriver.hpp"
 
 #include "androidapp.hpp"
@@ -28,6 +31,8 @@ namespace xng::android {
     class XENGINE_EXPORT AndroidDisplayDriver : public DisplayDriver {
     public:
         AndroidDisplayDriver();
+
+        AndroidDisplayDriver(AndroidDisplayDriver &other) = delete;
 
         std::unique_ptr<Monitor> getPrimaryMonitor() override {
             throw std::runtime_error("No monitors support on android");
@@ -63,5 +68,7 @@ namespace xng::android {
         std::unique_ptr<Window> getWindow(GpuDriverBackend gpuDriverBackend, WindowAttributes attributes);
     };
 }
+
+#endif
 
 #endif //CMAKELISTS_TXT_ANDROIDDISPLAYDRIVER_HPP

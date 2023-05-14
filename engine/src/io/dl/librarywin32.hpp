@@ -22,6 +22,7 @@
 
 #include "xng/io/library.hpp"
 
+#include <stdexcept>
 #include <string>
 #include <windows.h>
 

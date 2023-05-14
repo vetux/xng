@@ -30,7 +30,7 @@ static const ColorRGBA fpsFontColor = ColorRGBA::fuchsia();
 ImageRGBA loadImage(const std::filesystem::path &filePath) {
     auto imageParser = StbiParser();
     auto data = readFile(filePath.string());
-    return imageParser.read(data, filePath.extension(), nullptr).get<ImageRGBA>();
+    return imageParser.read(data, filePath.extension().string(), nullptr).get<ImageRGBA>();
 }
 
 class TestApplication {
@@ -229,6 +229,7 @@ public:
     }
 };
 
+//TODO: Fix textures beeing drawn as black color on windows.
 int main(int argc, char *argv[]) {
     auto displayDriver = glfw::GLFWDisplayDriver();
     auto gpuDriver = opengl::OGLGpuDriver();
@@ -242,7 +243,7 @@ int main(int argc, char *argv[]) {
 
     auto &input = window->getInput();
     auto target = window->getRenderTarget(*renderDevice);
-    auto fs = std::ifstream("assets/fonts/Sono/static/Sono/Sono-Bold.ttf");
+    auto fs = std::ifstream("assets/fonts/Sono/static/Sono/Sono-Bold.ttf", std::ios_base::in | std::ios::binary);
     auto font = fontDriver.createFont(fs);
 
     font->setPixelSize({0, fpsFontPixelSize});

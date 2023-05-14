@@ -36,7 +36,7 @@ namespace xng {
          * @param dir
          * @return
          */
-        std::function<std::string(const char *)> getShaderIncludeCallback(const std::filesystem::path &dir);
+        XENGINE_EXPORT std::function<std::string(const char *)> getShaderIncludeCallback(const std::filesystem::path &dir);
     }
 }
 

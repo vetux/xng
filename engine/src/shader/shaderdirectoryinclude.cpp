@@ -27,7 +27,7 @@ namespace xng {
         return [dir](const char *arg) {
             auto path = dir;
             path.append(arg);
-            return readFileString(path);
+            return readFileString(path.string());
         };
     }
 }

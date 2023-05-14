@@ -17,6 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <algorithm>
 #include "xng/gui/canvasscaler.hpp"
 
 namespace xng {
@@ -24,7 +25,7 @@ namespace xng {
                                                          const Vec2f &referenceResolution,
                                                          const Vec2f &screenSize,
                                                          float fitWidth) {
-        std::clamp(fitWidth, 0.0f, 1.0f);
+        fitWidth = std::clamp(fitWidth, 0.0f, 1.0f);
 
         RectTransform ret = absRect;
 

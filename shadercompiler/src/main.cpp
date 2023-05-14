@@ -256,7 +256,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    auto shader = xng::readFileString(args.sourcePath);
+    auto shader = xng::readFileString(args.sourcePath.string());
 
     auto compiler = xng::shaderc::ShaderCCompiler();
 
@@ -295,7 +295,7 @@ int main(int argc, char *argv[]) {
                                 guard.begin() + static_cast<std::string::difference_type>(guard.size() -
                                                                                           args.outputPath.relative_path().extension().string().size()));
             std::replace(guard.begin(), guard.end(), '/', '_');
-            ofs << generateHeader(guard, args.outputPath.stem(), bundle.getShader());
+            ofs << generateHeader(guard, args.outputPath.stem().string(), bundle.getShader());
             break;
     }
     ofs.flush();

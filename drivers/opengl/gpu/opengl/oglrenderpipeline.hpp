@@ -217,11 +217,11 @@ namespace xng::opengl {
                 : destructor(std::move(destructor)),
                   desc(std::move(descArg)) {
             if (!desc.shaders.empty()) {
-                if (!GLAD_GL_ARB_gl_spirv) {
+               // if (!GLAD_GL_ARB_gl_spirv) {
                     buildGLSL(decompiler);
-                } else {
-                    buildSPIRV();
-                }
+              /* } else {
+                    buildSPIRV(); // The OpenGL implementation for windows (AMD) appears to not support spirv shaders despite using 4.6.
+                }*/
                 checkLinkSuccess();
             }
 
