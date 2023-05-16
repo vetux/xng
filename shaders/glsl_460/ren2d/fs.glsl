@@ -24,6 +24,13 @@ layout(binding = 0, std140) buffer ShaderData
 
 layout(binding = 1) uniform sampler2DArray atlasTextures[12];
 
+// Windows findings:
+// drawID is always zero??
+// Accesses into the vars.passes array return (correct) different values even though drawID is always zero.
+// Accesses into the atlasTextures arrays returns black color.
+// In Conclusion it appears that the windows opengl driver (AMD) appears to have a very butched multidraw implementation
+// and no real support for 2d array textures (SPIRV support also does not exist but theres no glErrors).
+
 void main() {
     if (vars.passes[drawID].texAtlasLevel_texAtlasIndex_texFilter.y >= 0) {
         vec2 uv = fUv;
