@@ -30,75 +30,120 @@
 namespace xng::opengl {
     class OGLTextureBuffer : public TextureBuffer {
     public:
-        std::function<void(RenderObject*)> destructor;
+        std::function<void(RenderObject *)> destructor;
         TextureBufferDesc desc;
         GLuint handle = 0;
 
         GLenum textureType;
 
-        OGLTextureBuffer(std::function<void(RenderObject*)> destructor, TextureBufferDesc descArg)
+        OGLTextureBuffer(std::function<void(RenderObject *)> destructor, TextureBufferDesc descArg)
                 : destructor(std::move(destructor)), desc(std::move(descArg)) {
             textureType = convert(desc.textureType);
 
             glGenTextures(1, &handle);
             glBindTexture(textureType, handle);
 
-            if (textureType != GL_TEXTURE_2D_MULTISAMPLE) {
-                glTexParameteri(textureType, GL_TEXTURE_WRAP_S, convert(desc.wrapping));
-                glTexParameteri(textureType, GL_TEXTURE_WRAP_T, convert(desc.wrapping));
-                glTexParameteri(textureType,
-                                GL_TEXTURE_MIN_FILTER,
-                                convert(desc.filterMin));
-                glTexParameteri(textureType,
-                                GL_TEXTURE_MAG_FILTER,
-                                convert(desc.filterMag));
-            }
             checkGLError();
 
             if (desc.textureType == TEXTURE_2D) {
                 GLint texInternalFormat = convert(desc.format);
-                GLuint texFormat = GL_RGBA;
 
-                if (desc.format >= R8I) {
-                    texFormat = GL_RGBA_INTEGER; //Integer formats require _INTEGER format
+                switch (desc.format) {
+                    case DEPTH:
+                        texInternalFormat = GL_DEPTH_COMPONENT32F;
+                        break;
+                    case DEPTH_STENCIL:
+                        texInternalFormat = GL_DEPTH24_STENCIL8;
+                        break;
+                    case R:
+                        texInternalFormat = GL_R8;
+                        break;
+                    case RG:
+                        texInternalFormat = GL_RG8;
+                        break;
+                    case RGB:
+                        texInternalFormat = GL_RGB8;
+                        break;
+                    case RGBA:
+                        texInternalFormat = GL_RGBA8;
+                        break;
+                    default:
+                        break;
                 }
 
-                GLuint texType = GL_UNSIGNED_BYTE;
+                glTexStorage2D(textureType,
+                               desc.generateMipmap
+                               ? static_cast<GLsizei>( std::log2(std::max(desc.size.x, desc.size.y))) + 1
+                               : 1,
+                               texInternalFormat,
+                               desc.size.x,
+                               desc.size.y);
 
-                if (desc.format == ColorFormat::DEPTH) {
-                    texInternalFormat = GL_DEPTH;
-                    texFormat = GL_DEPTH_COMPONENT;
-                    texType = GL_FLOAT;
-                } else if (desc.format == ColorFormat::DEPTH_STENCIL) {
-                    texInternalFormat = GL_DEPTH24_STENCIL8;
-                    texFormat = GL_DEPTH_STENCIL;
-                    texType = GL_UNSIGNED_INT_24_8;
+                try {
+                    checkGLError();
+                } catch (const std::runtime_error &e) {
+                    // Catch GL_INVALID_OPERATION because the mipmap layers count maximum depends on log2 which uses floating point.
+                    if (e.what() == getGLErrorString(GL_INVALID_OPERATION)) {
+                        glTexStorage2D(textureType,
+                                       1,
+                                       texInternalFormat,
+                                       desc.size.x,
+                                       desc.size.y);
+                    } else {
+                        throw e;
+                    }
                 }
-
-                glTexImage2D(textureType,
-                             0,
-                             texInternalFormat,
-                             desc.size.x,
-                             desc.size.y,
-                             0,
-                             texFormat,
-                             texType,
-                             nullptr);
             } else if (desc.textureType == TEXTURE_2D_MULTISAMPLE) {
                 GLuint texInternalFormat = convert(desc.format);
 
-                if (desc.format == ColorFormat::DEPTH) {
-                    texInternalFormat = GL_DEPTH;
-                } else if (desc.format == ColorFormat::DEPTH_STENCIL) {
-                    texInternalFormat = GL_DEPTH24_STENCIL8;
+                switch (desc.format) {
+                    case DEPTH:
+                        texInternalFormat = GL_DEPTH_COMPONENT32F;
+                        break;
+                    case DEPTH_STENCIL:
+                        texInternalFormat = GL_DEPTH24_STENCIL8;
+                        break;
+                    case R:
+                        texInternalFormat = GL_R8;
+                        break;
+                    case RG:
+                        texInternalFormat = GL_RG8;
+                        break;
+                    case RGB:
+                        texInternalFormat = GL_RGB8;
+                        break;
+                    case RGBA:
+                        texInternalFormat = GL_RGBA8;
+                        break;
+                    default:
+                        break;
                 }
 
-                glTexImage2DMultisample(textureType,
-                                        desc.samples,
-                                        texInternalFormat,
-                                        desc.size.x,
-                                        desc.size.y,
-                                        desc.fixedSampleLocations ? GL_TRUE : GL_FALSE);
+                glTexStorage2DMultisample(textureType,
+                                          desc.generateMipmap
+                                          ? static_cast<GLsizei>( std::log2(std::max(desc.size.x, desc.size.y))) + 1
+                                          : 1,
+                                          texInternalFormat,
+                                          desc.size.x,
+                                          desc.size.y,
+                                          desc.fixedSampleLocations ? GL_TRUE : GL_FALSE);
+
+                try {
+                    checkGLError();
+                } catch (const std::runtime_error &e) {
+                    // Catch GL_INVALID_OPERATION because the mipmap layers count maximum depends on log2 which uses floating point
+                    // and create only one layer when this happens.
+                    if (e.what() == getGLErrorString(GL_INVALID_OPERATION)) {
+                        glTexStorage2DMultisample(textureType,
+                                                  1,
+                                                  texInternalFormat,
+                                                  desc.size.x,
+                                                  desc.size.y,
+                                                  desc.fixedSampleLocations ? GL_TRUE : GL_FALSE);
+                    } else {
+                        throw e;
+                    }
+                }
             } else {
                 for (unsigned int i = 0; i < 6; i++) {
                     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
@@ -112,9 +157,13 @@ namespace xng::opengl {
                                  nullptr);
                 }
             }
+
             checkGLError();
 
-            if (textureType != GL_TEXTURE_2D_MULTISAMPLE && desc.generateMipmap) {
+            glTexParameteri(textureType, GL_TEXTURE_WRAP_S, convert(desc.wrapping));
+            glTexParameteri(textureType, GL_TEXTURE_WRAP_T, convert(desc.wrapping));
+
+            if (desc.generateMipmap) {
                 glTexParameteri(textureType,
                                 GL_TEXTURE_MIN_FILTER,
                                 convert(desc.mipmapFilter));
@@ -122,6 +171,13 @@ namespace xng::opengl {
                                 GL_TEXTURE_MAG_FILTER,
                                 convert(desc.filterMag));
                 glGenerateMipmap(textureType);
+            } else {
+                glTexParameteri(textureType,
+                                GL_TEXTURE_MIN_FILTER,
+                                convert(desc.filterMin));
+                glTexParameteri(textureType,
+                                GL_TEXTURE_MAG_FILTER,
+                                convert(desc.filterMag));
             }
 
             auto col = desc.borderColor.divide();
@@ -149,6 +205,7 @@ namespace xng::opengl {
             }
 
             glBindTexture(GL_TEXTURE_2D, handle);
+
             glTexImage2D(GL_TEXTURE_2D,
                          0,
                          convert(desc.format),
@@ -159,7 +216,10 @@ namespace xng::opengl {
                          GL_UNSIGNED_BYTE,
                          buffer);
 
-            if (textureType != GL_TEXTURE_2D_MULTISAMPLE && desc.generateMipmap) {
+            glTexParameteri(textureType, GL_TEXTURE_WRAP_S, convert(desc.wrapping));
+            glTexParameteri(textureType, GL_TEXTURE_WRAP_T, convert(desc.wrapping));
+
+            if (desc.generateMipmap) {
                 glTexParameteri(textureType,
                                 GL_TEXTURE_MIN_FILTER,
                                 convert(desc.mipmapFilter));
@@ -167,7 +227,18 @@ namespace xng::opengl {
                                 GL_TEXTURE_MAG_FILTER,
                                 convert(desc.filterMag));
                 glGenerateMipmap(textureType);
+            } else {
+                glTexParameteri(textureType,
+                                GL_TEXTURE_MIN_FILTER,
+                                convert(desc.filterMin));
+                glTexParameteri(textureType,
+                                GL_TEXTURE_MAG_FILTER,
+                                convert(desc.filterMag));
             }
+
+            auto col = desc.borderColor.divide();
+            float borderColor[] = {col.x, col.y, col.z, col.w};
+            glTexParameterfv(textureType, GL_TEXTURE_BORDER_COLOR, borderColor);
 
             glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -189,6 +260,7 @@ namespace xng::opengl {
             }
 
             glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
+
             glTexImage2D(convert(face),
                          0,
                          convert(desc.format),
@@ -199,7 +271,10 @@ namespace xng::opengl {
                          GL_UNSIGNED_BYTE,
                          buffer);
 
-            if (desc.textureType != TEXTURE_2D_MULTISAMPLE && desc.generateMipmap) {
+            glTexParameteri(textureType, GL_TEXTURE_WRAP_S, convert(desc.wrapping));
+            glTexParameteri(textureType, GL_TEXTURE_WRAP_T, convert(desc.wrapping));
+
+            if (desc.generateMipmap) {
                 glTexParameteri(textureType,
                                 GL_TEXTURE_MIN_FILTER,
                                 convert(desc.mipmapFilter));
@@ -207,7 +282,18 @@ namespace xng::opengl {
                                 GL_TEXTURE_MAG_FILTER,
                                 convert(desc.filterMag));
                 glGenerateMipmap(textureType);
+            } else {
+                glTexParameteri(textureType,
+                                GL_TEXTURE_MIN_FILTER,
+                                convert(desc.filterMin));
+                glTexParameteri(textureType,
+                                GL_TEXTURE_MAG_FILTER,
+                                convert(desc.filterMag));
             }
+
+            auto col = desc.borderColor.divide();
+            float borderColor[] = {col.x, col.y, col.z, col.w};
+            glTexParameterfv(textureType, GL_TEXTURE_BORDER_COLOR, borderColor);
 
             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
@@ -259,122 +345,38 @@ namespace xng::opengl {
                                src.desc.size.x,
                                src.desc.size.y,
                                1);
-            checkGLError();
-            return std::make_unique<OGLFence>();
-        }
 
-    protected:
-        size_t getTextureFormatUnitSize() const {
-            // Estimate
-            switch (desc.format) {
-                default:
-                    throw std::runtime_error("Invalid texture format");
-                case DEPTH:
-                case DEPTH_STENCIL:
-                    return 2;
-                case R:
-                    return 4;
-                case RG:
-                    return 8;
-                case RGB:
-                    return 12;
-                case RGBA:
-                    return 16;
-                case R_COMPRESSED:
-                    return 4;
-                case RG_COMPRESSED:
-                    return 8;
-                case RGB_COMPRESSED:
-                    return 12;
-                case RGBA_COMPRESSED:
-                    return 16;
-                case R8:
-                    return 1;
-                case RG8:
-                    return 2;
-                case RGB8:
-                    return 3;
-                case RGBA8:
-                    return 4;
-                case R16:
-                    return 2;
-                case RG16:
-                    return 4;
-                case RGB16:
-                    return 8;
-                case RGBA16:
-                    return 10;
-                case RGB12:
-                    return 5;
-                case RGBA12:
-                    return 6;
-                case RGB10:
-                    return 4;
-                case R16F:
-                    return 2;
-                case RG16F:
-                    return 4;
-                case RGB16F:
-                    return 6;
-                case RGBA16F:
-                    return 8;
-                case R32F:
-                    return 4;
-                case RG32F:
-                    return 8;
-                case RGB32F:
-                    return 12;
-                case RGBA32F:
-                    return 16;
-                case R8I:
-                    return 1;
-                case RG8I:
-                    return 2;
-                case RGB8I:
-                    return 3;
-                case RGBA8I:
-                    return 4;
-                case R16I:
-                    return 2;
-                case RG16I:
-                    return 4;
-                case RGB16I:
-                    return 6;
-                case RGBA16I:
-                    return 8;
-                case R32I:
-                    return 4;
-                case RG32I:
-                    return 8;
-                case RGB32I:
-                    return 12;
-                case RGBA32I:
-                    return 16;
-                case R8UI:
-                    return 1;
-                case RG8UI:
-                    return 2;
-                case RGB8UI:
-                    return 3;
-                case RGBA8UI:
-                    return 4;
-                case R16UI:
-                    return 2;
-                case RG16UI:
-                    return 4;
-                case RGB16UI:
-                    return 6;
-                case RGBA16UI:
-                    return 8;
-                case R32UI:
-                    return 4;
-                case RG32UI:
-                    return 8;
-                case RGB32UI:
-                    return 12;
-                case RGBA32UI:
-                    return 16;
+            glBindTexture(textureType, handle);
+
+            glTexParameteri(textureType, GL_TEXTURE_WRAP_S, convert(desc.wrapping));
+            glTexParameteri(textureType, GL_TEXTURE_WRAP_T, convert(desc.wrapping));
+
+            if (desc.generateMipmap) {
+                glTexParameteri(textureType,
+                                GL_TEXTURE_MIN_FILTER,
+                                convert(desc.mipmapFilter));
+                glTexParameteri(textureType,
+                                GL_TEXTURE_MAG_FILTER,
+                                convert(desc.filterMag));
+                glGenerateMipmap(textureType);
+            } else {
+                glTexParameteri(textureType,
+                                GL_TEXTURE_MIN_FILTER,
+                                convert(desc.filterMin));
+                glTexParameteri(textureType,
+                                GL_TEXTURE_MAG_FILTER,
+                                convert(desc.filterMag));
             }
+
+            auto col = desc.borderColor.divide();
+            float borderColor[] = {col.x, col.y, col.z, col.w};
+            glTexParameterfv(textureType, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+            glBindTexture(textureType, 0);
+
+            checkGLError();
+
+            return std::make_unique<OGLFence>();
         }
     };
 }

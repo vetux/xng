@@ -50,8 +50,15 @@ namespace xng::opengl {
             glBindTexture(GL_TEXTURE_2D_ARRAY, handle);
 
             if (desc.textureCount > 0) {
-                GLenum format;
+                GLint format = convert(desc.textureDesc.format);
+
                 switch (desc.textureDesc.format) {
+                    case DEPTH:
+                        format = GL_DEPTH_COMPONENT32F;
+                        break;
+                    case DEPTH_STENCIL:
+                        format = GL_DEPTH24_STENCIL8;
+                        break;
                     case R:
                         format = GL_R8;
                         break;
@@ -65,14 +72,35 @@ namespace xng::opengl {
                         format = GL_RGBA8;
                         break;
                     default:
-                        throw std::runtime_error("Unsupported format");
+                        break;
                 }
+
                 glTexStorage3D(GL_TEXTURE_2D_ARRAY,
-                               1,
+                               desc.textureDesc.generateMipmap
+                               ? static_cast<GLsizei>( std::log2(
+                                       std::max(desc.textureDesc.size.x, desc.textureDesc.size.y))) + 1
+                               : 1,
                                format,
                                desc.textureDesc.size.x,
                                desc.textureDesc.size.y,
                                static_cast<GLsizei>(desc.textureCount));
+
+                try {
+                    checkGLError();
+                } catch (const std::runtime_error &e) {
+                    // Catch GL_INVALID_OPERATION because the mipmap layers count maximum depends on log2 which uses floating point.
+                    if (e.what() == getGLErrorString(GL_INVALID_OPERATION)) {
+                        glTexStorage3D(GL_TEXTURE_2D_ARRAY,
+                                       1,
+                                       format,
+                                       desc.textureDesc.size.x,
+                                       desc.textureDesc.size.y,
+                                       static_cast<GLsizei>(desc.textureCount));
+                    } else {
+                        throw e;
+                    }
+                }
+
                 checkGLError();
 
                 auto texWrap = convert(desc.textureDesc.wrapping);
@@ -84,13 +112,6 @@ namespace xng::opengl {
                                 GL_TEXTURE_WRAP_T,
                                 texWrap);
 
-                glTexParameteri(GL_TEXTURE_2D_ARRAY,
-                                GL_TEXTURE_MIN_FILTER,
-                                convert(desc.textureDesc.filterMin));
-                glTexParameteri(GL_TEXTURE_2D_ARRAY,
-                                GL_TEXTURE_MAG_FILTER,
-                                convert(desc.textureDesc.filterMag));
-
                 if (desc.textureDesc.generateMipmap) {
                     glTexParameteri(GL_TEXTURE_2D_ARRAY,
                                     GL_TEXTURE_MIN_FILTER,
@@ -99,6 +120,13 @@ namespace xng::opengl {
                                     GL_TEXTURE_MAG_FILTER,
                                     convert(desc.textureDesc.filterMag));
                     glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+                } else {
+                    glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                                    GL_TEXTURE_MIN_FILTER,
+                                    convert(desc.textureDesc.filterMin));
+                    glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                                    GL_TEXTURE_MAG_FILTER,
+                                    convert(desc.textureDesc.filterMag));
                 }
 
                 auto col = desc.textureDesc.borderColor.divide();
@@ -106,7 +134,6 @@ namespace xng::opengl {
                 glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, borderColor);
 
                 checkGLError();
-
             }
 
             glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
@@ -128,7 +155,7 @@ namespace xng::opengl {
 
             auto count = buf.desc.textureCount > desc.textureCount ? desc.textureCount : buf.desc.textureCount;
 
-            if (count > 0)
+            if (count > 0) {
                 glCopyImageSubData(buf.handle,
                                    GL_TEXTURE_2D_ARRAY,
                                    0,
@@ -144,6 +171,42 @@ namespace xng::opengl {
                                    buf.desc.textureDesc.size.x,
                                    buf.desc.textureDesc.size.y,
                                    static_cast<GLsizei>(count));
+            }
+
+            glBindTexture(GL_TEXTURE_2D_ARRAY, handle);
+
+            auto texWrap = convert(desc.textureDesc.wrapping);
+
+            glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                            GL_TEXTURE_WRAP_S,
+                            texWrap);
+            glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                            GL_TEXTURE_WRAP_T,
+                            texWrap);
+
+            if (desc.textureDesc.generateMipmap) {
+                glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                                GL_TEXTURE_MIN_FILTER,
+                                convert(desc.textureDesc.mipmapFilter));
+                glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                                GL_TEXTURE_MAG_FILTER,
+                                convert(desc.textureDesc.filterMag));
+                glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+            } else {
+                glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                                GL_TEXTURE_MIN_FILTER,
+                                convert(desc.textureDesc.filterMin));
+                glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                                GL_TEXTURE_MAG_FILTER,
+                                convert(desc.textureDesc.filterMag));
+            }
+
+            auto col = desc.textureDesc.borderColor.divide();
+            float borderColor[] = {col.x, col.y, col.z, col.w};
+            glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+            glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+
             checkGLError();
 
             return std::make_unique<OGLFence>();
@@ -158,6 +221,7 @@ namespace xng::opengl {
                                          const uint8_t *buffer,
                                          size_t bufferSize) override {
             glBindTexture(GL_TEXTURE_2D_ARRAY, handle);
+
             glTexSubImage3D(GL_TEXTURE_2D_ARRAY,
                             0,
                             0,
@@ -169,8 +233,41 @@ namespace xng::opengl {
                             convert(format),
                             GL_UNSIGNED_BYTE,
                             buffer);
+
+            auto texWrap = convert(desc.textureDesc.wrapping);
+
+            glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                            GL_TEXTURE_WRAP_S,
+                            texWrap);
+            glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                            GL_TEXTURE_WRAP_T,
+                            texWrap);
+
+            if (desc.textureDesc.generateMipmap) {
+                glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                                GL_TEXTURE_MIN_FILTER,
+                                convert(desc.textureDesc.mipmapFilter));
+                glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                                GL_TEXTURE_MAG_FILTER,
+                                convert(desc.textureDesc.filterMag));
+                glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+            } else {
+                glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                                GL_TEXTURE_MIN_FILTER,
+                                convert(desc.textureDesc.filterMin));
+                glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                                GL_TEXTURE_MAG_FILTER,
+                                convert(desc.textureDesc.filterMag));
+            }
+
+            auto col = desc.textureDesc.borderColor.divide();
+            float borderColor[] = {col.x, col.y, col.z, col.w};
+            glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, borderColor);
+
             glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+
             checkGLError();
+
             return std::make_unique<OGLFence>();
         }
 
