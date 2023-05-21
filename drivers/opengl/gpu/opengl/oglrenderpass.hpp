@@ -121,6 +121,7 @@ namespace xng::opengl {
 
         void bindPipeline(RenderPipeline &pipeline) override {
             ensureRunningPass();
+
             if (!mShaderBindings.empty()) {
                 if (mShaderBindings.size() != pipeline.getDescription().bindings.size()) {
                     throw std::runtime_error("Invalid bindings");
@@ -283,31 +284,32 @@ namespace xng::opengl {
             // Bind textures and uniform buffers
             for (int bindingPoint = 0; bindingPoint < bindings.size(); bindingPoint++) {
                 auto &b = bindings.at(bindingPoint);
-                switch (b.index()) {
-                    case 0: {
+                switch (getShaderDataType(b)) {
+                    case BIND_TEXTURE_BUFFER: {
                         auto texture = dynamic_cast<OGLTextureBuffer *>(&std::get<std::reference_wrapper<TextureBuffer>>(
                                 b).get());
                         glActiveTexture(getTextureSlot(bindingPoint));
                         glBindTexture(convert(texture->getDescription().textureType), texture->handle);
-                    }
                         break;
-                    case 1: {
+                    }
+                    case BIND_TEXTURE_ARRAY_BUFFER: {
                         auto textureArray = dynamic_cast<OGLTextureArrayBuffer *>(&std::get<std::reference_wrapper<TextureArrayBuffer>>(
                                 b).get());
                         glActiveTexture(getTextureSlot(bindingPoint));
                         glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray->handle);
-                    }
                         break;
-                    case 2: {
+                    }
+                    case BIND_SHADER_UNIFORM_BUFFER: {
                         auto shaderBuffer = dynamic_cast<OGLShaderUniformBuffer *>(&std::get<std::reference_wrapper<ShaderUniformBuffer>>(
                                 b).get());
                         glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, shaderBuffer->ubo);
-                    }
                         break;
-                    case 3: {
+                    }
+                    case BIND_SHADER_STORAGE_BUFFER: {
                         auto buf = dynamic_cast<OGLShaderStorageBuffer *>(
                                 &std::get<std::reference_wrapper<ShaderStorageBuffer>>(b).get());
                         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingPoint, buf->ssbo);
+                        break;
                     }
                 }
             }
@@ -320,7 +322,7 @@ namespace xng::opengl {
                 //Unbind textures and uniform buffers
                 for (int bindingPoint = 0; bindingPoint < mShaderBindings.size(); bindingPoint++) {
                     auto &b = mShaderBindings.at(bindingPoint);
-                    switch (b.index()) {
+                    switch (getShaderDataType(b)) {
                         case BIND_TEXTURE_BUFFER:
                             glActiveTexture(getTextureSlot(bindingPoint));
                             glBindTexture(GL_TEXTURE_2D, 0);
@@ -340,6 +342,7 @@ namespace xng::opengl {
                 }
             }
             mShaderBindings.clear();
+            checkGLError();
         }
 
         void checkBindings(bool indexed) {
@@ -356,23 +359,10 @@ namespace xng::opengl {
                 if (i >= mShaderBindings.size()) {
                     throw std::runtime_error("Invalid bound shader data size.");
                 }
-                switch (mShaderBindings.at(i).index()) {
-                    case 0:
-                        if (mPipeline->desc.bindings.at(i) != BIND_TEXTURE_BUFFER)
-                            throw std::runtime_error("Invalid bound shader data type at index " + std::to_string(i));
-                        break;
-                    case 1:
-                        if (mPipeline->desc.bindings.at(i) != BIND_TEXTURE_ARRAY_BUFFER)
-                            throw std::runtime_error("Invalid bound shader data type at index " + std::to_string(i));
-                        break;
-                    case 2:
-                        if (mPipeline->desc.bindings.at(i) != BIND_SHADER_UNIFORM_BUFFER)
-                            throw std::runtime_error("Invalid bound shader data type at index " + std::to_string(i));
-                        break;
-                    case 3:
-                        if (mPipeline->desc.bindings.at(i) != BIND_SHADER_STORAGE_BUFFER)
-                            throw std::runtime_error("Invalid bound shader data type at index " + std::to_string(i));
-                        break;
+                auto bindingType = getShaderDataType(mShaderBindings.at(i));
+                auto reqBindingType = mPipeline->desc.bindings.at(i);
+                if (bindingType != reqBindingType){
+                    throw std::runtime_error("Invalid bound shader data type at index " + std::to_string(i));
                 }
             }
         }
