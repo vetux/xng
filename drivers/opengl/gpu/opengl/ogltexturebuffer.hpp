@@ -35,6 +35,7 @@ namespace xng::opengl {
         GLuint handle = 0;
 
         GLenum textureType;
+        GLint texInternalFormat;
 
         OGLTextureBuffer(std::function<void(RenderObject *)> destructor, TextureBufferDesc descArg)
                 : destructor(std::move(destructor)), desc(std::move(descArg)) {
@@ -46,7 +47,7 @@ namespace xng::opengl {
             checkGLError();
 
             if (desc.textureType == TEXTURE_2D) {
-                GLint texInternalFormat = convert(desc.format);
+                texInternalFormat = convert(desc.format);
 
                 switch (desc.format) {
                     case DEPTH:
@@ -94,7 +95,7 @@ namespace xng::opengl {
                     }
                 }
             } else if (desc.textureType == TEXTURE_2D_MULTISAMPLE) {
-                GLuint texInternalFormat = convert(desc.format);
+                texInternalFormat = convert(desc.format);
 
                 switch (desc.format) {
                     case DEPTH:
@@ -206,15 +207,15 @@ namespace xng::opengl {
 
             glBindTexture(GL_TEXTURE_2D, handle);
 
-            glTexImage2D(GL_TEXTURE_2D,
-                         0,
-                         convert(desc.format),
-                         desc.size.x,
-                         desc.size.y,
-                         0,
-                         convert(format),
-                         GL_UNSIGNED_BYTE,
-                         buffer);
+            glTexSubImage2D(GL_TEXTURE_2D,
+                            0,
+                            0,
+                            0,
+                            desc.size.x,
+                            desc.size.y,
+                            convert(format),
+                            GL_UNSIGNED_BYTE,
+                            buffer);
 
             glTexParameteri(textureType, GL_TEXTURE_WRAP_S, convert(desc.wrapping));
             glTexParameteri(textureType, GL_TEXTURE_WRAP_T, convert(desc.wrapping));
@@ -235,6 +236,7 @@ namespace xng::opengl {
                                 GL_TEXTURE_MAG_FILTER,
                                 convert(desc.filterMag));
             }
+            checkGLError();
 
             auto col = desc.borderColor.divide();
             float borderColor[] = {col.x, col.y, col.z, col.w};
