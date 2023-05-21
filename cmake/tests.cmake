@@ -16,6 +16,11 @@ target_link_libraries(test-pak Threads::Threads xengine)
 
 file(COPY ${BASE_SOURCE_DIR}/tests/assets DESTINATION ${CMAKE_CURRENT_BINARY_DIR}) # Copy assets
 
+add_executable(test-shaders ${BASE_SOURCE_DIR}/tests/shadertest/src/main.cpp)
+target_include_directories(test-shaders PRIVATE ${CMAKE_SOURCE_DIR}/tests/shadertest/src/)
+target_link_libraries(test-shaders Threads::Threads xengine)
+
+file(COPY ${BASE_SOURCE_DIR}/tests/assets DESTINATION ${CMAKE_CURRENT_BINARY_DIR}) # Copy assets
 
 if (MSVC)
 	target_compile_options(test-canvasrendersystem PUBLIC /bigobj)
