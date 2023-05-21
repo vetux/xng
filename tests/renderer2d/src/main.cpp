@@ -57,7 +57,7 @@ public:
                     Renderer2D &ren,
                     Font &font)
             : device(device),
-            window(window),
+              window(window),
               ren(ren),
               textRenderer(font, ren, Vec2i(0, fpsFontPixelSize)) {
         imageB = loadImage("assets/images/awesomeface.png");
@@ -237,9 +237,19 @@ int main(int argc, char *argv[]) {
     auto shaderDecompiler = spirv_cross::SpirvCrossDecompiler();
     auto fontDriver = freetype::FtFontDriver();
 
-    auto window = displayDriver.createWindow(OPENGL_4_6, "Renderer 2D Test", {640, 480}, {.swapInterval = 1});
+    auto window = displayDriver.createWindow(OPENGL_4_6,
+                                             "Renderer 2D Test",
+                                             {640, 480},
+                                             {
+                                                     .swapInterval = 1,
+                                                     .debug = false
+                                             });
 
     auto renderDevice = gpuDriver.createRenderDevice();
+
+    renderDevice->setDebugCallback([](const std::string &msg) {
+        std::cout << msg << "\n";
+    });
 
     auto &input = window->getInput();
     auto target = window->getRenderTarget(*renderDevice);

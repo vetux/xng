@@ -106,15 +106,25 @@ int main(int argc, char *argv[]) {
     auto shaderDecompiler = spirv_cross::SpirvCrossDecompiler();
     auto fontDriver = freetype::FtFontDriver();
 
-    auto fs = std::ifstream("assets/fonts/Sono/static/Sono/Sono-Regular.ttf", std::ios_base::in | std::ios::binary);
-    auto font = fontDriver.createFont(fs);
+    auto fontFs = std::ifstream("assets/fonts/Sono/static/Sono/Sono-Regular.ttf", std::ios_base::in | std::ios::binary);
+    auto font = fontDriver.createFont(fontFs);
 
-    auto window = displayDriver.createWindow(OPENGL_4_6, "XNG FrameGraph Test", {800, 600}, WindowAttributes{.swapInterval = 1});
+    auto window = displayDriver.createWindow(OPENGL_4_6,
+                                             "XNG FrameGraph Test",
+                                             {800, 600},
+                                             WindowAttributes{
+                                                     .swapInterval = 1,
+                                                     .debug = false
+                                             });
     auto &input = window->getInput();
 
     window->bindGraphics();
 
     auto device = gpuDriver.createRenderDevice();
+
+    device->setDebugCallback([](const std::string &msg) {
+        std::cout << msg << "\n";
+    });
 
     auto ren2d = Renderer2D(*device, shaderCompiler, shaderDecompiler);
 

@@ -23,6 +23,8 @@
 #include "xng/gpu/renderdevice.hpp"
 
 #include <utility>
+#include <mutex>
+#include <unordered_set>
 
 #include "opengl_include.hpp"
 
@@ -38,6 +40,89 @@
 #include "gpu/opengl/ogltexturearraybuffer.hpp"
 #include "gpu/opengl/oglgpumemory.hpp"
 #include "gpu/opengl/oglrenderpass.hpp"
+
+static std::function<void(const std::string &)> callback;
+
+static std::string getDebugSource(GLenum source) {
+    switch (source) {
+        case GL_DEBUG_SOURCE_API:
+            return "GL_DEBUG_SOURCE_API";
+        case GL_DEBUG_SOURCE_APPLICATION:
+            return "GL_DEBUG_SOURCE_APPLICATION";
+        case GL_DEBUG_SOURCE_SHADER_COMPILER:
+            return "GL_DEBUG_SOURCE_SHADER_COMPILER";
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+            return "GL_DEBUG_SOURCE_WINDOW_SYSTEM";
+        case GL_DEBUG_SOURCE_OTHER:
+            return "GL_DEBUG_SOURCE_OTHER";
+        case GL_DEBUG_SOURCE_THIRD_PARTY:
+            return "GL_DEBUG_SOURCE_THIRD_PARTY";
+        default:
+            return "UNKNOWN SOURCE";
+    }
+}
+
+static std::string getDebugType(GLenum type) {
+    switch (type) {
+        case GL_DEBUG_TYPE_ERROR:
+            return "GL_DEBUG_TYPE_ERROR";
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+            return "GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR";
+        case GL_DEBUG_TYPE_MARKER:
+            return "GL_DEBUG_TYPE_MARKER";
+        case GL_DEBUG_TYPE_OTHER:
+            return "GL_DEBUG_TYPE_OTHER";
+        case GL_DEBUG_TYPE_PERFORMANCE:
+            return "GL_DEBUG_TYPE_PERFORMANCE";
+        case GL_DEBUG_TYPE_POP_GROUP:
+            return "GL_DEBUG_TYPE_POP_GROUP";
+        case GL_DEBUG_TYPE_PORTABILITY:
+            return "GL_DEBUG_TYPE_PORTABILITY";
+        case GL_DEBUG_TYPE_PUSH_GROUP:
+            return "GL_DEBUG_TYPE_PUSH_GROUP";
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+            return "GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR";
+        default:
+            return "UNKNOWN TYPE";
+    }
+}
+
+static std::string getDebugSeverity(GLenum severity) {
+    switch (severity) {
+        case GL_DEBUG_SEVERITY_LOW:
+            return "GL_DEBUG_SEVERITY_LOW";
+        case GL_DEBUG_SEVERITY_MEDIUM:
+            return "GL_DEBUG_SEVERITY_MEDIUM";
+        case GL_DEBUG_SEVERITY_HIGH:
+            return "GL_DEBUG_SEVERITY_HIGH";
+        case GL_DEBUG_SEVERITY_NOTIFICATION:
+            return "GL_DEBUG_SEVERITY_NOTIFICATION";
+        default:
+            return "UNKNOWN SEVERITY";
+    }
+}
+
+static void oglDebugHandler(GLenum source,
+                            GLenum type,
+                            GLuint id,
+                            GLenum severity,
+                            GLsizei length,
+                            const GLchar *message,
+                            const void *userParam) {
+    std::string msg = getDebugSource(source)
+                      + "/"
+                      + getDebugType(type)
+                      + "/"
+                      + getDebugSeverity(severity)
+                      + " "
+                      + std::to_string(id)
+                      + " "
+                      + std::string(message, length);
+    if (callback) {
+        callback(msg);
+    }
+}
+
 
 namespace xng::opengl {
     class OGLRenderDevice : public RenderDevice {
@@ -59,6 +144,10 @@ namespace xng::opengl {
             info.uniformBufferMaxSize = tmp;
             glGetIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &tmp);
             info.storageBufferMaxSize = tmp;
+
+            if (GLAD_GL_KHR_debug) {
+                glDebugMessageCallback(oglDebugHandler, nullptr);
+            }
         }
 
         ~OGLRenderDevice() override {
@@ -131,6 +220,10 @@ namespace xng::opengl {
 
         std::unique_ptr<GpuMemory> createMemory(const GpuMemoryDesc &desc) override {
             return std::make_unique<OGLGpuMemory>(*this, desc);
+        }
+
+        void setDebugCallback(const std::function<void(const std::string &)> &c) override {
+            callback = c;
         }
     };
 }

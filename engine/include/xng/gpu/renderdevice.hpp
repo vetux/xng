@@ -124,6 +124,8 @@ namespace xng {
          * @return
          */
         virtual std::unique_ptr<GpuMemory> createMemory(const GpuMemoryDesc &desc) = 0;
+
+        virtual void setDebugCallback(const std::function<void(const std::string&)> &callback) = 0;
     };
 }
 

@@ -54,6 +54,8 @@ namespace xng {
         bool doubleBuffer = true;
 
         int swapInterval = 0;
+
+        bool debug = false; // Only affects OpenGL display driver backend, If true the window will contain a debug context.
     };
 }
 
