@@ -35,12 +35,12 @@ struct ShaderUniformData {
     mat4 mvp;
 };
 
-layout(binding = 1, std140) buffer ShaderUniformBuffer
+layout(binding = 0, std140) buffer ShaderUniformBuffer
 {
     ShaderUniformData data[];
 } globs;
 
-layout(binding = 0) uniform sampler2D texture2D;
+layout(binding = 1) uniform sampler2D texture2D;
 layout(binding = 2) uniform sampler2DArray texture2DArray;
 
 void main() {
@@ -66,18 +66,19 @@ struct ShaderUniformData {
     mat4 mvp;
 };
 
-layout(binding = 1, std140) buffer ShaderUniformBuffer
+layout(binding = 0, std140) buffer ShaderUniformBuffer
 {
     ShaderUniformData data[];
 } globs;
 
-layout(binding = 0) uniform sampler2D texture2D;
+layout(binding = 1) uniform sampler2D texture2D;
 layout(binding = 2) uniform sampler2DArray texture2DArray;
 
 void main() {
-// On Windows only textures bound to 0 are sampling correctly.
-    vec4 texColor = texture(texture2D, fUv); // Samples correct color on windows
-    vec4 texArrayColor = texture(texture2DArray, vec3(fUv.x, fUv.y, 0)); // Samples black on windows
+// AMD Driver 21.30.23.04 does not bind anything other than GL_TEXTURE0
+// 23.4.3.230420 works.
+    vec4 texColor = texture(texture2D, fUv);
+    vec4 texArrayColor = texture(texture2DArray, vec3(fUv.x, fUv.y, 0));
     color = texArrayColor;
 }
 
@@ -141,8 +142,8 @@ int main(int argc, char *argv[]) {
                                                                  {FRAGMENT, fsB.getShader()}
                                                          },
                                                          .bindings = {
-                                                                 BIND_TEXTURE_BUFFER,
                                                                  BIND_SHADER_STORAGE_BUFFER,
+                                                                 BIND_TEXTURE_BUFFER,
                                                                  BIND_TEXTURE_ARRAY_BUFFER
                                                          },
                                                          .vertexLayout = mesh.vertexLayout,
@@ -200,8 +201,8 @@ int main(int argc, char *argv[]) {
         pass->beginRenderPass(*target, {}, target->getDescription().size);
         pass->bindVertexArrayObject(*vertexArray);
         pass->bindShaderData({
-                                     *textureBuffer,
                                      *shaderBuffer,
+                                     *textureBuffer,
                                      *textureArrayBuffer
                              });
         pass->bindPipeline(*pipeline);
