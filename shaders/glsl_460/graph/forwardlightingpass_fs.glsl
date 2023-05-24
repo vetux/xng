@@ -135,6 +135,9 @@ void main() {
         float shininess = textureAtlas(data.shininess, fUv).r + data.metallic_roughness_ambientOcclusion_shininess.w;
 
         LightComponents comp;
+        comp.ambient = vec3(0, 0, 0);
+        comp.diffuse = vec3(0, 0, 0);
+        comp.specular = vec3(0, 0, 0);
 
         for (int i = 0; i < pLights.lights.length(); i++)
         {

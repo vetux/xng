@@ -58,6 +58,9 @@ void main() {
         float shininess = texture(gBufferRoughnessMetallicAO, fUv).x;
 
         LightComponents comp;
+        comp.ambient = vec3(0, 0, 0);
+        comp.diffuse = vec3(0, 0, 0);
+        comp.specular = vec3(0, 0, 0);
 
         for (int i = 0; i < pLights.lights.length(); i++)
         {
