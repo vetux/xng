@@ -34,6 +34,10 @@ namespace xng {
      */
     class CommandQueue : public RenderObject {
     public:
+        Type getType() override {
+            return RENDER_OBJECT_COMMAND_QUEUE;
+        }
+
         ~CommandQueue() override = default;
 
         /**

@@ -27,6 +27,10 @@
 namespace xng {
     class CommandBuffer : public RenderObject {
     public:
+        Type getType() override {
+            return RENDER_OBJECT_COMMAND_BUFFER;
+        }
+
         /**
          * Begin recording a new set of commands into the command buffer
          */
