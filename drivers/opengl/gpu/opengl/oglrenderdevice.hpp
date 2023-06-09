@@ -141,6 +141,7 @@ namespace xng::opengl {
             destructor = [this](RenderObject *obj) {
                 objects.erase(obj);
             };
+            queue = OGLCommandQueue(destructor);
 
             if (GLAD_GL_KHR_debug) {
                 glDebugMessageCallback(oglDebugHandler, nullptr);

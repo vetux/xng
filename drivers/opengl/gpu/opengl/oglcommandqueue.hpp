@@ -669,6 +669,11 @@ namespace xng {
                     }
                     case Command::BIND_SHADER_RESOURCES: {
                         ensureRunningPass();
+
+                        if (mPipeline == nullptr){
+                            throw std::runtime_error("Pipeline must be bound in order to bind shader resources");
+                        }
+
                         auto bindings = std::get<ShaderResourceBind>(c.data);
 
                         unbindShaderData();
