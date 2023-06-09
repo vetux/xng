@@ -1,5 +1,5 @@
 /**
- *  This file is part of xEngine, a C++ game engine library.
+ *  xEngine - C++ Game Engine Library
  *  Copyright (C) 2023  Julian Zampiccoli
  *
  *  This program is free software; you can redistribute it and/or modify
