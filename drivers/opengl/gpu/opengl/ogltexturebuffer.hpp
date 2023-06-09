@@ -199,7 +199,7 @@ namespace xng::opengl {
             return desc;
         }
 
-        std::unique_ptr<GpuFence> upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize) override {
+        void upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize) override {
             if (desc.textureType == TEXTURE_CUBE_MAP) {
                 throw std::runtime_error(
                         "Attempted to upload texture on cube map texture without specifying a target face.");
@@ -245,14 +245,12 @@ namespace xng::opengl {
             glBindTexture(GL_TEXTURE_2D, 0);
 
             checkGLError();
-
-            return std::make_unique<OGLFence>();
         }
 
-        std::unique_ptr<GpuFence> upload(CubeMapFace face,
-                                         ColorFormat format,
-                                         const uint8_t *buffer,
-                                         size_t bufferSize) override {
+        void upload(CubeMapFace face,
+                                      ColorFormat format,
+                                      const uint8_t *buffer,
+                                      size_t bufferSize) override {
             if (desc.bufferType != HOST_VISIBLE) {
                 throw std::runtime_error("Upload called on non host visible buffer.");
             }
@@ -300,7 +298,6 @@ namespace xng::opengl {
             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
             checkGLError();
-            return std::make_unique<OGLFence>();
         }
 
         Image<ColorRGBA> download() override {
@@ -328,57 +325,6 @@ namespace xng::opengl {
             checkGLError();
             ret = ret.swapColumns();
             return ret;
-        }
-
-        std::unique_ptr<GpuFence> copy(TextureBuffer &other) override {
-            auto &src = dynamic_cast<OGLTextureBuffer &>(other);
-            glCopyImageSubData(src.handle,
-                               GL_TEXTURE_2D,
-                               0,
-                               0,
-                               0,
-                               0,
-                               handle,
-                               GL_TEXTURE_2D,
-                               0,
-                               0,
-                               0,
-                               0,
-                               src.desc.size.x,
-                               src.desc.size.y,
-                               1);
-
-            glBindTexture(textureType, handle);
-
-            glTexParameteri(textureType, GL_TEXTURE_WRAP_S, convert(desc.wrapping));
-            glTexParameteri(textureType, GL_TEXTURE_WRAP_T, convert(desc.wrapping));
-
-            if (desc.generateMipmap) {
-                glTexParameteri(textureType,
-                                GL_TEXTURE_MIN_FILTER,
-                                convert(desc.mipmapFilter));
-                glTexParameteri(textureType,
-                                GL_TEXTURE_MAG_FILTER,
-                                convert(desc.filterMag));
-                glGenerateMipmap(textureType);
-            } else {
-                glTexParameteri(textureType,
-                                GL_TEXTURE_MIN_FILTER,
-                                convert(desc.filterMin));
-                glTexParameteri(textureType,
-                                GL_TEXTURE_MAG_FILTER,
-                                convert(desc.filterMag));
-            }
-
-            auto col = desc.borderColor.divide();
-            float borderColor[] = {col.x, col.y, col.z, col.w};
-            glTexParameterfv(textureType, GL_TEXTURE_BORDER_COLOR, borderColor);
-
-            glBindTexture(textureType, 0);
-
-            checkGLError();
-
-            return std::make_unique<OGLFence>();
         }
     };
 }

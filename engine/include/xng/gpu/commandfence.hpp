@@ -17,38 +17,40 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_GPUFENCE_HPP
-#define XENGINE_GPUFENCE_HPP
+#ifndef XENGINE_COMMANDFENCE_HPP
+#define XENGINE_COMMANDFENCE_HPP
 
 #include <stdexcept>
 
+#include "xng/gpu/renderobject.hpp"
+
 namespace xng {
-    /**
-     * A fence represents a task which is executed on the gpu device and can be awaited from the cpu.
-     * The gpu driver implementation can batch together tasks for optimal performance.
-     */
-    class XENGINE_EXPORT GpuFence {
+    class XENGINE_EXPORT CommandFence : public RenderObject {
     public:
-        /**
-         * The destructor waits for the gpu task to finish before destroying the fence object.
-         */
-        virtual ~GpuFence() = default;
+        Type getType() override {
+            return RENDER_OBJECT_FENCE;
+        }
 
         /**
-         * Wait for the gpu task to finish or return an exception ptr if the task threw an exception.
+         * The destructor waits for the commands to finish before destroying the fence object.
+         */
+        ~CommandFence() override = default;
+
+        /**
+         * Wait for the commands to finish or return an exception ptr if the task threw an exception.
          * @return
          */
         virtual std::exception_ptr wait() = 0;
 
         /**
-         * @return true if the task has completed
+         * @return true if the commands have completed
          */
         virtual bool isComplete() = 0;
 
         /**
-         * @return nullptr or the exception object if an exception was thrown in the gpu task
+         * @return nullptr or the exception object if an exception was thrown while executing the commands
          */
         virtual std::exception_ptr getException() = 0;
     };
 }
-#endif //XENGINE_GPUFENCE_HPP
+#endif //XENGINE_COMMANDFENCE_HPP

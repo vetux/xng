@@ -20,7 +20,7 @@
 #ifndef XENGINE_SHADERUNIFORMBUFFER_HPP
 #define XENGINE_SHADERUNIFORMBUFFER_HPP
 
-#include "xng/gpu/gpufence.hpp"
+#include "xng/gpu/command.hpp"
 
 #include "xng/gpu/shaderuniformbufferdesc.hpp"
 
@@ -52,13 +52,7 @@ namespace xng {
             return RENDER_OBJECT_SHADER_UNIFORM_BUFFER;
         }
 
-        /**
-         * Copy the data in source buffer to this buffer.
-         *
-         * @param source The concrete type of other must be compatible and have the same properties as this buffer.
-         * @return
-         */
-        virtual std::unique_ptr<GpuFence> copy(ShaderUniformBuffer &source) = 0;
+        virtual const ShaderUniformBufferDesc &getDescription() = 0;
 
         /**
          * Copy the data in source buffer to this buffer.
@@ -66,10 +60,23 @@ namespace xng {
          * @param source The concrete type of other must be compatible and have the same properties as this buffer.
          * @return
          */
-        virtual std::unique_ptr<GpuFence> copy(ShaderUniformBuffer &source,
-                                               size_t readOffset,
-                                               size_t writeOffset,
-                                               size_t count) = 0;
+        Command copy(ShaderUniformBuffer &source) {
+            return copy(source, 0, 0, source.getDescription().size);
+        }
+
+        /**
+         * Copy the data in source buffer to this buffer.
+         *
+         * @param source The concrete type of other must be compatible and have the same properties as this buffer.
+         * @return
+         */
+        Command copy(ShaderUniformBuffer &source,
+                     size_t readOffset,
+                     size_t writeOffset,
+                     size_t count) {
+            return {Command::COPY_SHADER_UNIFORM_BUFFER,
+                    ShaderUniformBufferCopy(&source, this, readOffset, writeOffset, count)};
+        }
 
         /**
          * Upload the given data to the buffer at the given offset.
@@ -79,9 +86,7 @@ namespace xng {
          * @param dataSize
          * @return
          */
-        virtual std::unique_ptr<GpuFence> upload(size_t offset, const uint8_t *data, size_t dataSize) = 0;
-
-        virtual const ShaderUniformBufferDesc &getDescription() = 0;
+        virtual void upload(size_t offset, const uint8_t *data, size_t dataSize) = 0;
 
         /**
          * Upload the given data to the shader buffer,
@@ -89,10 +94,10 @@ namespace xng {
          * @param data
          * @param size must match the size specified at creation of the shader buffer
          */
-        virtual std::unique_ptr<GpuFence> upload(const uint8_t *data, size_t size) = 0;
+        virtual void upload(const uint8_t *data, size_t size) = 0;
 
         template<typename T>
-        std::unique_ptr<GpuFence> upload(const T &data) {
+        void upload(const T &data) {
             return upload(reinterpret_cast<const uint8_t *>(&data), sizeof(T));
         }
     };

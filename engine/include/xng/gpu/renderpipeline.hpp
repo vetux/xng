@@ -22,12 +22,24 @@
 
 #include "xng/gpu/renderobject.hpp"
 #include "xng/gpu/renderpipelinedesc.hpp"
+#include "xng/gpu/texturearraybuffer.hpp"
+#include "xng/gpu/shaderstoragebuffer.hpp"
+
+#include "xng/gpu/command.hpp"
 
 namespace xng {
     class XENGINE_EXPORT RenderPipeline : public RenderObject {
     public:
         Type getType() override {
             return RENDER_OBJECT_RENDER_PIPELINE;
+        }
+
+        Command bind() {
+            return {Command::BIND_PIPELINE, RenderPipelineBind(this)};
+        }
+
+        Command bindShaderData(std::vector<ShaderResource> resources) {
+            return {Command::BIND_SHADER_RESOURCES, ShaderResourceBind(std::move(resources))};
         }
 
         virtual std::vector<uint8_t> cache() = 0;

@@ -58,7 +58,7 @@ namespace xng::opengl {
             return desc;
         }
 
-        std::unique_ptr<GpuFence> upload(const uint8_t *data, size_t size) override {
+        void upload(const uint8_t *data, size_t size) override {
             if (size != desc.size)
                 throw std::runtime_error("Upload size does not match buffer size");
             if (desc.bufferType != HOST_VISIBLE)
@@ -70,50 +70,35 @@ namespace xng::opengl {
                             data);
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
             checkGLError();
-            return std::make_unique<OGLFence>();
         }
 
-        std::unique_ptr<GpuFence> upload(size_t offset, const uint8_t *data, size_t dataSize) override {
-            if (dataSize + offset > desc.size)
+        void upload(size_t offset, const uint8_t *data, size_t size) override {
+            if (size + offset > desc.size)
                 throw std::runtime_error("Upload size overflow");
             if (desc.bufferType != HOST_VISIBLE)
                 throw std::runtime_error("Upload called on non host visible buffer.");
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
             glBufferSubData(GL_SHADER_STORAGE_BUFFER,
                             static_cast<GLsizeiptr>(offset),
-                            static_cast<GLsizeiptr>(dataSize),
+                            static_cast<GLsizeiptr>(size),
                             data);
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
             checkGLError();
-            return std::make_unique<OGLFence>();
         }
 
-        std::unique_ptr<GpuFence> copy(ShaderStorageBuffer &source) override {
-            return copy(source, 0, 0, source.getDescription().size);
-        }
-
-        std::unique_ptr<GpuFence> copy(ShaderStorageBuffer &other,
-                                       size_t readOffset,
-                                       size_t writeOffset,
-                                       size_t count) override {
-            auto &source = dynamic_cast<OGLShaderUniformBuffer &>(other);
-            if (readOffset >= source.desc.size
-                || readOffset + count >= source.desc.size
-                || writeOffset >= desc.size
-                || writeOffset + count >= desc.size) {
-                throw std::runtime_error("Invalid copy range");
-            }
-            glBindBuffer(GL_COPY_WRITE_BUFFER, ssbo);
-            glBindBuffer(GL_COPY_READ_BUFFER, source.ubo);
-            glCopyBufferSubData(GL_COPY_READ_BUFFER,
-                                GL_COPY_WRITE_BUFFER,
-                                static_cast<GLintptr>(readOffset),
-                                static_cast<GLintptr>(writeOffset),
-                                static_cast<GLsizeiptr>(count));
-            glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
-            glBindBuffer(GL_COPY_READ_BUFFER, 0);
-            checkGLError();
-            return std::make_unique<OGLFence>();
+        std::vector<uint8_t> download(size_t offset, size_t size) override {
+            if (size + offset > desc.size)
+                throw std::runtime_error("Download size overflow");
+            if (desc.bufferType != HOST_VISIBLE)
+                throw std::runtime_error("Download called on non host visible buffer.");
+            std::vector<uint8_t> ret(size);
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+            glGetBufferSubData(GL_SHADER_STORAGE_BUFFER,
+                               static_cast<GLintptr>(offset),
+                               static_cast<GLsizeiptr>(size),
+                               ret.data());
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+            return ret;
         }
     };
 }

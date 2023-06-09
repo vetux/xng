@@ -20,141 +20,64 @@
 #ifndef XENGINE_RENDERPASS_HPP
 #define XENGINE_RENDERPASS_HPP
 
+#include <utility>
+
 #include "xng/gpu/renderobject.hpp"
 #include "xng/gpu/renderpassdesc.hpp"
 #include "xng/gpu/vertexbuffer.hpp"
 #include "xng/gpu/rendertarget.hpp"
-#include "xng/gpu/gpufence.hpp"
+#include "xng/gpu/commandfence.hpp"
 #include "xng/gpu/vertexarrayobject.hpp"
 #include "xng/gpu/texturearraybuffer.hpp"
+#include "xng/gpu/drawcall.hpp"
 
 namespace xng {
     class RenderPass : public RenderObject {
     public:
-        typedef std::variant<
-                std::reference_wrapper<TextureBuffer>,
-                std::reference_wrapper<TextureArrayBuffer>,
-                std::reference_wrapper<ShaderUniformBuffer>,
-                std::reference_wrapper<ShaderStorageBuffer>
-        > ShaderData;
-
-        static RenderPipelineBindingType getShaderDataType(const ShaderData &data) {
-            switch (data.index()) {
-                case 0:
-                    return BIND_TEXTURE_BUFFER;
-                case 1:
-                    return BIND_TEXTURE_ARRAY_BUFFER;
-                case 2:
-                    return BIND_SHADER_UNIFORM_BUFFER;
-                case 3:
-                    return BIND_SHADER_STORAGE_BUFFER;
-                default:
-                    throw std::runtime_error("Invalid data index");
-            }
-        }
-
-        enum IndexType {
-            UNSIGNED_INT
-        };
-
-        /**
-         * A DrawCall specifies which portion of the bound index or vertex buffer to draw.
-         */
-        struct DrawCall {
-            explicit DrawCall(size_t offset = 0, size_t count = 0, IndexType indexType = UNSIGNED_INT)
-                    : offset(offset),
-                      count(count),
-                      indexType(
-                              indexType) {}
-
-            size_t offset = 0; // The offset into the index or vertex buffer at which to begin reading indices or vertices in BYTES
-            size_t count = 0; // The number of indices or vertices to draw.
-            IndexType indexType = UNSIGNED_INT; // The type of the indices, ignored when not indexing
-        };
-
         Type getType() override {
             return RENDER_OBJECT_RENDER_PASS;
         }
 
         virtual const RenderPassDesc &getDescription() = 0;
 
-        /**
-         * Must be called before using any of the methods.
-         *
-         * @param target
-         * @param viewportOffset
-         * @param viewportSize
-         */
-        virtual void beginRenderPass(RenderTarget &target,
-                                     Vec2i viewportOffset,
-                                     Vec2i viewportSize) = 0;
+        Command begin(RenderTarget &target) {
+            return {Command::BEGIN_PASS, RenderPassBegin(this, &target)};
+        }
 
-        /**
-         * Run the recorded drawing operations.
-         *
-         * @return The fence indicating when the render operation has finished.
-         */
-        virtual std::unique_ptr<GpuFence> endRenderPass() = 0;
+        Command end() {
+            return {Command::END_PASS, {}};
+        }
 
-        virtual void setViewport(Vec2i viewportOffset, Vec2i viewportSize) = 0;
+        Command setViewport(Vec2i viewportOffset, Vec2i viewportSize) {
+            return {Command::SET_VIEWPORT,
+                    RenderPassViewport(std::move(viewportOffset), std::move(viewportSize))};
+        }
 
-        virtual void clearColorAttachments(ColorRGBA clearColor) = 0;
+        Command clearColorAttachments(ColorRGBA clearColor) {
+            return {Command::CLEAR_COLOR, RenderPassClear(clearColor, {})};
+        }
 
-        virtual void clearDepthAttachment(float clearDepthValue) = 0;
-
-        /**
-         * Previously bound VAO or shader data is rebound when binding a different pipeline.
-         *
-         * @param pipeline
-         */
-        virtual void bindPipeline(RenderPipeline &pipeline) = 0;
-
-        /**
-         * The bound vertex array object is used in subsequent draw calls.
-         *
-         * In one render operation multiple vertex array objects can be bound and used similar to opengl the currently
-         * bound object will be used for drawing.
-         *
-         * Unlike opengl the drawing operations are deferred until the fence
-         * returned by renderPresent returns and all data required for a render operation is supplied between renderBegin/Present
-         * calls which allows vulkan implementations to use more efficient ways to handle the draw operations.
-         *
-         * Must be called before using any draw calls.
-         *
-         * @param vertexArrayObject
-         */
-        virtual void bindVertexArrayObject(VertexArrayObject &vertexArrayObject) = 0;
-
-        /**
-         * Must be called before binding a pipeline with a different vertex layout
-         */
-        virtual void unbindVertexArrayObject() = 0;
-
-        /**
-         * The bound shader data is made available to shaders in subsequent draw calls.
-         *
-         * @param bindings
-         */
-        virtual void bindShaderData(const std::vector<ShaderData> &bindings) = 0;
-
-        /**
-         * Must be called before binding a pipeline with a different shader binding layout
-         */
-        virtual void unbindShaderData() = 0;
+        Command clearDepthAttachment(float clearDepthValue) {
+            return {Command::CLEAR_DEPTH, RenderPassClear({}, clearDepthValue)};
+        }
 
         /**
          * Draw without indexing.
          *
          * @param drawCall
          */
-        virtual void drawArray(const DrawCall &drawCall) = 0;
+        Command drawArray(const DrawCall &drawCall) {
+            return {Command::DRAW_ARRAY, RenderPassDraw({drawCall}, {}, {})};
+        }
 
         /**
          * Draw with indexing.
          *
          * @param drawCall
          */
-        virtual void drawIndexed(const DrawCall &drawCall) = 0;
+        Command drawIndexed(const DrawCall &drawCall) {
+            return {Command::DRAW_INDEXED, RenderPassDraw({drawCall}, {}, {})};
+        }
 
         /**
          * Draw using instancing.
@@ -166,7 +89,9 @@ namespace xng {
          * @param drawCall
          * @param numberOfInstances
          */
-        virtual void instancedDrawArray(const DrawCall &drawCall, size_t numberOfInstances) = 0;
+        Command instancedDrawArray(const DrawCall &drawCall, size_t numberOfInstances) {
+            return {Command::DRAW_ARRAY_INSTANCED, RenderPassDraw({drawCall}, numberOfInstances, {})};
+        }
 
         /**
          * Draw using instancing.
@@ -178,7 +103,9 @@ namespace xng {
          * @param drawCall
          * @param numberOfInstances
          */
-        virtual void instancedDrawIndexed(const DrawCall &drawCall, size_t numberOfInstances) = 0;
+        Command instancedDrawIndexed(const DrawCall &drawCall, size_t numberOfInstances) {
+            return {Command::DRAW_INDEXED_INSTANCED, RenderPassDraw({drawCall}, numberOfInstances, {})};
+        }
 
         /**
          * Draw multiple commands with one draw call.
@@ -189,7 +116,9 @@ namespace xng {
          *
          * @param drawCalls
          */
-        virtual void multiDrawArray(const std::vector<DrawCall> &drawCalls) = 0;
+        Command multiDrawArray(const std::vector<DrawCall> &drawCalls) {
+            return {Command::DRAW_ARRAY_MULTI, RenderPassDraw(drawCalls, {}, {})};
+        }
 
         /**
          * Draw multiple commands with one draw call.
@@ -200,7 +129,9 @@ namespace xng {
          *
          * @param drawCalls
          */
-        virtual void multiDrawIndexed(const std::vector<DrawCall> &drawCalls) = 0;
+        Command multiDrawIndexed(const std::vector<DrawCall> &drawCalls) {
+            return {Command::DRAW_INDEXED_MULTI, RenderPassDraw(drawCalls, {}, {})};
+        }
 
         /**
          * Draw with indexing and optional offset to apply when indexing into the vertex buffer.
@@ -212,7 +143,9 @@ namespace xng {
          * @param drawCall
          * @param baseVertex
          */
-        virtual void drawIndexed(const DrawCall &drawCall, size_t baseVertex) = 0;
+        Command drawIndexed(const DrawCall &drawCall, size_t baseVertex) {
+            return {Command::DRAW_INDEXED_BASE_VERTEX, RenderPassDraw({drawCall}, {}, {baseVertex})};
+        }
 
         /**
          * Draw using instancing and optional offset to apply when indexing into the vertex buffer.
@@ -227,7 +160,10 @@ namespace xng {
          * @param numberOfInstances
          * @param baseVertex
          */
-        virtual void instancedDrawIndexed(const DrawCall &drawCall, size_t numberOfInstances, size_t baseVertex) = 0;
+        Command instancedDrawIndexed(const DrawCall &drawCall, size_t numberOfInstances, size_t baseVertex) {
+            return {Command::DRAW_INDEXED_INSTANCED_BASE_VERTEX,
+                    RenderPassDraw({drawCall}, numberOfInstances, {baseVertex})};
+        }
 
         /**
          * Draw multiple commands with one draw call and optional offset to apply when indexing into the vertex buffer.
@@ -241,7 +177,10 @@ namespace xng {
          * @param drawCalls
          * @param baseVertices
          */
-        virtual void multiDrawIndexed(const std::vector<DrawCall> &drawCalls, std::vector<size_t> baseVertices) = 0;
+        Command multiDrawIndexed(const std::vector<DrawCall> &drawCalls, std::vector<size_t> baseVertices) {
+            return {Command::DRAW_INDEXED_MULTI_BASE_VERTEX,
+                    RenderPassDraw(drawCalls, {}, std::move(baseVertices))};
+        }
     };
 }
 

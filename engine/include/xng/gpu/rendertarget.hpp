@@ -20,30 +20,23 @@
 #ifndef XENGINE_RENDERTARGET_HPP
 #define XENGINE_RENDERTARGET_HPP
 
+#include <utility>
 #include <variant>
+
+#include "xng/gpu/rendertargetattachment.hpp"
 
 #include "xng/gpu/textureproperties.hpp"
 #include "xng/gpu/texturebuffer.hpp"
 #include "xng/gpu/texturearraybuffer.hpp"
 #include "xng/gpu/rendertargetdesc.hpp"
 #include "xng/gpu/renderobject.hpp"
-#include "xng/gpu/gpufence.hpp"
+#include "xng/gpu/command.hpp"
 
 #include "xng/math/vector2.hpp"
 
 namespace xng {
     class XENGINE_EXPORT RenderTarget : public RenderObject {
     public:
-        enum AttachmentType {
-            ATTACHMENT_TEXTURE = 0,
-            ATTACHMENT_CUBEMAP = 1,
-            ATTACHMENT_TEXTUREARRAY = 2
-        };
-
-        typedef std::variant<std::reference_wrapper<TextureBuffer>,
-                std::pair<CubeMapFace, std::reference_wrapper<TextureBuffer>>,
-                std::pair<size_t, std::reference_wrapper<TextureArrayBuffer>>> Attachment;
-
         ~RenderTarget() override = default;
 
         Type getType() override {
@@ -52,32 +45,66 @@ namespace xng {
 
         virtual const RenderTargetDesc &getDescription() = 0;
 
-        virtual std::unique_ptr<GpuFence> blitColor(RenderTarget &source,
-                                                    Vec2i sourceOffset,
-                                                    Vec2i targetOffset,
-                                                    Vec2i sourceRect,
-                                                    Vec2i targetRect,
-                                                    TextureFiltering filter,
-                                                    int sourceIndex,
-                                                    int targetIndex) = 0;
+        Command blitColor(RenderTarget &source,
+                          Vec2i sourceOffset,
+                          Vec2i targetOffset,
+                          Vec2i sourceRect,
+                          Vec2i targetRect,
+                          TextureFiltering filter,
+                          int sourceIndex,
+                          int targetIndex) {
+            return {Command::BLIT_COLOR,
+                    RenderTargetBlit(&source,
+                                              this,
+                                              std::move(sourceOffset),
+                                              std::move(targetOffset),
+                                              std::move(sourceRect),
+                                              std::move(targetRect),
+                                              filter,
+                                              sourceIndex,
+                                              targetIndex)};
+        }
 
-        virtual std::unique_ptr<GpuFence> blitDepth(RenderTarget &source,
-                                                    Vec2i sourceOffset,
-                                                    Vec2i targetOffset,
-                                                    Vec2i sourceRect,
-                                                    Vec2i targetRect) = 0;
+        Command blitDepth(RenderTarget &source,
+                          Vec2i sourceOffset,
+                          Vec2i targetOffset,
+                          Vec2i sourceRect,
+                          Vec2i targetRect) {
+            return {Command::BLIT_DEPTH,
+                    RenderTargetBlit(&source,
+                                              this,
+                                              std::move(sourceOffset),
+                                              std::move(targetOffset),
+                                              std::move(sourceRect),
+                                              std::move(targetRect),
+                                              {},
+                                              {},
+                                              {})};
+        }
 
-        virtual std::unique_ptr<GpuFence> blitStencil(RenderTarget &source,
-                                                      Vec2i sourceOffset,
-                                                      Vec2i targetOffset,
-                                                      Vec2i sourceRect,
-                                                      Vec2i targetRect) = 0;
+        Command blitStencil(RenderTarget &source,
+                            Vec2i sourceOffset,
+                            Vec2i targetOffset,
+                            Vec2i sourceRect,
+                            Vec2i targetRect) {
+            return {Command::BLIT_STENCIL,
+                    RenderTargetBlit(&source,
+                                              this,
+                                              std::move(sourceOffset),
+                                              std::move(targetOffset),
+                                              std::move(sourceRect),
+                                              std::move(targetRect),
+                                              {},
+                                              {},
+                                              {})};
+        }
 
-        virtual std::unique_ptr<GpuFence> setColorAttachments(const std::vector<Attachment> &attachments) = 0;
+        virtual void setAttachments(const std::vector<RenderTargetAttachment> &colorAttachments) = 0;
 
-        virtual std::unique_ptr<GpuFence> setDepthStencilAttachment(Attachment attachment) = 0;
+        virtual void setAttachments(const std::vector<RenderTargetAttachment> &colorAttachments,
+                                    RenderTargetAttachment depthStencilAttachment) = 0;
 
-        virtual std::unique_ptr<GpuFence> clearDepthStencilAttachment() = 0;
+        virtual void clearDepthStencilAttachment() = 0;
 
         virtual bool isComplete() = 0;
     };

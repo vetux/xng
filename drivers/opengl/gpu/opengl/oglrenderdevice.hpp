@@ -40,6 +40,9 @@
 #include "gpu/opengl/ogltexturearraybuffer.hpp"
 #include "gpu/opengl/oglgpumemory.hpp"
 #include "gpu/opengl/oglrenderpass.hpp"
+#include "gpu/opengl/oglcommandbuffer.hpp"
+#include "gpu/opengl/oglcommandqueue.hpp"
+#include "gpu/opengl/oglsemaphore.hpp"
 
 static std::function<void(const std::string &)> callback;
 
@@ -132,6 +135,8 @@ namespace xng::opengl {
 
         std::function<void(RenderObject *)> destructor;
 
+        OGLCommandQueue queue;
+
         explicit OGLRenderDevice(RenderDeviceInfo infoArg) : info(std::move(infoArg)) {
             destructor = [this](RenderObject *obj) {
                 objects.erase(obj);
@@ -165,6 +170,26 @@ namespace xng::opengl {
             return objects;
         }
 
+        std::vector<std::reference_wrapper<CommandQueue>> getRenderCommandQueues() override {
+            return {queue};
+        }
+
+        std::vector<std::reference_wrapper<CommandQueue>> getComputeCommandQueues() override {
+            return {};
+        }
+
+        std::vector<std::reference_wrapper<CommandQueue>> getTransferCommandQueues() override {
+            return {};
+        }
+
+        std::unique_ptr<CommandBuffer> createCommandBuffer() override {
+            return std::make_unique<OGLCommandBuffer>(destructor);
+        }
+
+        std::shared_ptr<CommandSemaphore> createSemaphore() override {
+            return std::make_shared<OGLSemaphore>(destructor);
+        }
+
         std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDesc &desc,
                                                              ShaderDecompiler &decompiler) override {
             return std::make_unique<OGLRenderPipeline>(destructor, desc, decompiler);
@@ -175,6 +200,7 @@ namespace xng::opengl {
         }
 
         std::unique_ptr<ComputePipeline> createComputePipeline(const ComputePipelineDesc &desc) override {
+            // TODO: Implement opengl compute support
             throw std::runtime_error("Not Implemented");
         }
 

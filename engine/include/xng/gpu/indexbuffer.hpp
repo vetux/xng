@@ -23,7 +23,8 @@
 #include <memory>
 
 #include "xng/gpu/indexbufferdesc.hpp"
-#include "xng/gpu/gpufence.hpp"
+#include "xng/gpu/commandfence.hpp"
+#include "xng/gpu/command.hpp"
 
 namespace xng {
     /**
@@ -43,7 +44,10 @@ namespace xng {
          * @param source The concrete type of other must be compatible and have the same properties as this buffer.
          * @return
          */
-        virtual std::unique_ptr<GpuFence> copy(IndexBuffer &source) = 0;
+        Command copy(IndexBuffer &source) {
+            return {Command::COPY_INDEX_BUFFER,
+                    IndexBufferCopy(&source, this, 0, 0, source.getDescription().size)};
+        }
 
         /**
          * Copy the data in source buffer to this buffer.
@@ -51,10 +55,13 @@ namespace xng {
          * @param source The concrete type of other must be compatible and have the same properties as this buffer.
          * @return
          */
-        virtual std::unique_ptr<GpuFence> copy(IndexBuffer &source,
-                                               size_t readOffset,
-                                               size_t writeOffset,
-                                               size_t count) = 0;
+        Command copy(IndexBuffer &source,
+                     size_t readOffset,
+                     size_t writeOffset,
+                     size_t count) {
+            return {Command::COPY_INDEX_BUFFER,
+                    IndexBufferCopy(&source, this, readOffset, writeOffset, count)};
+        }
 
         /**
          * Upload the given data to the buffer at the given offset.
@@ -64,7 +71,7 @@ namespace xng {
          * @param dataSize
          * @return
          */
-        virtual std::unique_ptr<GpuFence> upload(size_t offset, const uint8_t *data, size_t dataSize) = 0;
+        virtual void upload(size_t offset, const uint8_t *data, size_t dataSize) = 0;
 
         virtual const IndexBufferDesc &getDescription() = 0;
     };

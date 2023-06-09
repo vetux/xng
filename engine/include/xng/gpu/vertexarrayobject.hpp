@@ -65,10 +65,10 @@ namespace xng {
          */
         virtual VertexBuffer *getInstanceBuffer() = 0;
 
-        virtual void bindBuffers(VertexBuffer &vertexBuffer) = 0;
+        virtual void setBuffers(VertexBuffer &vertexBuffer) = 0;
 
-        virtual void bindBuffers(VertexBuffer &vertexBuffer,
-                                 IndexBuffer &indexBuffer) = 0;
+        virtual void setBuffers(VertexBuffer &vertexBuffer,
+                                IndexBuffer &indexBuffer) = 0;
 
         /**
          * Set the buffers to bind when this array object is bound to a pipeline.
@@ -78,9 +78,13 @@ namespace xng {
          * @param instanceBuffer
          * @return
          */
-        virtual void bindBuffers(VertexBuffer &vertexBuffer,
-                                 IndexBuffer &indexBuffer,
-                                 VertexBuffer &instanceBuffer) = 0;
+        virtual void setBuffers(VertexBuffer &vertexBuffer,
+                                IndexBuffer &indexBuffer,
+                                VertexBuffer &instanceBuffer) = 0;
+
+        Command bind() {
+            return {Command::BIND_VERTEX_ARRAY_OBJECT, VertexArrayObjectBind(this)};
+        }
     };
 }
 

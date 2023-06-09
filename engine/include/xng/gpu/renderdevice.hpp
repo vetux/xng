@@ -24,9 +24,7 @@
 #include <functional>
 
 #include "computepipeline.hpp"
-#include "computecommand.hpp"
 #include "raytracepipeline.hpp"
-#include "raytracecommand.hpp"
 
 #include "xng/gpu/renderpipeline.hpp"
 #include "xng/gpu/rendertarget.hpp"
@@ -35,6 +33,9 @@
 #include "xng/gpu/shaderuniformbuffer.hpp"
 #include "xng/gpu/shaderstoragebuffer.hpp"
 #include "xng/gpu/renderpass.hpp"
+
+#include "xng/gpu/commandbuffer.hpp"
+#include "xng/gpu/commandqueue.hpp"
 
 #include "xng/gpu/renderpipelinedesc.hpp"
 #include "xng/gpu/shaderuniformbufferdesc.hpp"
@@ -75,6 +76,16 @@ namespace xng {
           * @return The list of currently allocated render objects
           */
         virtual std::set<RenderObject *> getAllocatedObjects() = 0;
+
+        virtual std::vector<std::reference_wrapper<CommandQueue>> getRenderCommandQueues() = 0;
+
+        virtual std::vector<std::reference_wrapper<CommandQueue>> getComputeCommandQueues() = 0;
+
+        virtual std::vector<std::reference_wrapper<CommandQueue>> getTransferCommandQueues() = 0;
+
+        virtual std::unique_ptr<CommandBuffer> createCommandBuffer() = 0;
+
+        virtual std::shared_ptr<CommandSemaphore> createSemaphore() = 0;
 
         /**
          *
@@ -125,7 +136,7 @@ namespace xng {
          */
         virtual std::unique_ptr<GpuMemory> createMemory(const GpuMemoryDesc &desc) = 0;
 
-        virtual void setDebugCallback(const std::function<void(const std::string&)> &callback) = 0;
+        virtual void setDebugCallback(const std::function<void(const std::string &)> &callback) = 0;
     };
 }
 

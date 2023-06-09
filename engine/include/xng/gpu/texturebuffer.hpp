@@ -25,7 +25,7 @@
 #include "xng/gpu/renderobject.hpp"
 #include "xng/gpu/textureproperties.hpp"
 #include "xng/gpu/texturebufferdesc.hpp"
-#include "xng/gpu/gpufence.hpp"
+#include "xng/gpu/command.hpp"
 
 #include "xng/asset/image.hpp"
 
@@ -37,13 +37,15 @@ namespace xng {
     public:
         ~TextureBuffer() override = default;
 
-        virtual const TextureBufferDesc &getDescription() = 0;
-
         Type getType() override {
             return RENDER_OBJECT_TEXTURE_BUFFER;
         }
 
-        virtual std::unique_ptr<GpuFence> copy(TextureBuffer &source) = 0;
+        virtual const TextureBufferDesc &getDescription() = 0;
+
+        Command copy(TextureBuffer &source) {
+            return {Command::COPY_TEXTURE, TextureBufferCopy(&source, this)};
+        }
 
         /**
          * Upload the image buffer.
@@ -55,22 +57,22 @@ namespace xng {
          * @param bufferSize
          * @return
          */
-        virtual std::unique_ptr<GpuFence> upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize) = 0;
+        virtual void upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize) = 0;
 
-        virtual Image<ColorRGBA> download() = 0;
+        virtual void upload(CubeMapFace face,
+                            ColorFormat format,
+                            const uint8_t *buffer,
+                            size_t bufferSize) = 0;
 
-        virtual std::unique_ptr<GpuFence> upload(CubeMapFace face,
-                                                 ColorFormat format,
-                                                 const uint8_t *buffer,
-                                                 size_t bufferSize) = 0;
-
-        virtual Image<ColorRGBA> download(CubeMapFace face) = 0;
-
-        std::unique_ptr<GpuFence> upload(const Image<ColorRGBA> &image) {
+        void upload(const Image<ColorRGBA> &image) {
             return upload(RGBA,
                           reinterpret_cast<const uint8_t *>(image.getData()),
                           image.getDataSize() * sizeof(ColorRGBA));
         }
+
+        virtual Image<ColorRGBA> download() = 0;
+
+        virtual Image<ColorRGBA> download(CubeMapFace face) = 0;
     };
 }
 

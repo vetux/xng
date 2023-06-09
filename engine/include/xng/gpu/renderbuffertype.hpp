@@ -24,7 +24,6 @@ namespace xng {
     enum RenderBufferType {
         DEVICE_LOCAL, // Upload/Download methods on buffers cannot be called by the user. To access the data the user must copy to a host visible buffer.
         HOST_VISIBLE, // Buffer interfaces can be used normally
-        LAZILY_ALLOCATED // Same as DEVICE_LOCAL but the implementation may allocate the buffer data lazily
     };
 }
 

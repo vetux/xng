@@ -36,6 +36,7 @@ namespace xng::opengl {
         TextureArrayBufferDesc desc;
 
         GLuint handle{};
+        GLint internalFormat{};
 
         OGLTextureArrayBuffer(std::function<void(RenderObject * )> destructor,
                               TextureArrayBufferDesc descArg)
@@ -50,26 +51,26 @@ namespace xng::opengl {
             glBindTexture(GL_TEXTURE_2D_ARRAY, handle);
 
             if (desc.textureCount > 0) {
-                GLint format = convert(desc.textureDesc.format);
+                internalFormat = convert(desc.textureDesc.format);
 
                 switch (desc.textureDesc.format) {
                     case DEPTH:
-                        format = GL_DEPTH_COMPONENT32F;
+                        internalFormat = GL_DEPTH_COMPONENT32F;
                         break;
                     case DEPTH_STENCIL:
-                        format = GL_DEPTH24_STENCIL8;
+                        internalFormat = GL_DEPTH24_STENCIL8;
                         break;
                     case R:
-                        format = GL_R8;
+                        internalFormat = GL_R8;
                         break;
                     case RG:
-                        format = GL_RG8;
+                        internalFormat = GL_RG8;
                         break;
                     case RGB:
-                        format = GL_RGB8;
+                        internalFormat = GL_RGB8;
                         break;
                     case RGBA:
-                        format = GL_RGBA8;
+                        internalFormat = GL_RGBA8;
                         break;
                     default:
                         break;
@@ -80,7 +81,7 @@ namespace xng::opengl {
                                ? static_cast<GLsizei>( std::log2(
                                        std::max(desc.textureDesc.size.x, desc.textureDesc.size.y))) + 1
                                : 1,
-                               format,
+                               internalFormat,
                                desc.textureDesc.size.x,
                                desc.textureDesc.size.y,
                                static_cast<GLsizei>(desc.textureCount));
@@ -92,7 +93,7 @@ namespace xng::opengl {
                     if (e.what() == getGLErrorString(GL_INVALID_OPERATION)) {
                         glTexStorage3D(GL_TEXTURE_2D_ARRAY,
                                        1,
-                                       format,
+                                       internalFormat,
                                        desc.textureDesc.size.x,
                                        desc.textureDesc.size.y,
                                        static_cast<GLsizei>(desc.textureCount));
@@ -147,79 +148,14 @@ namespace xng::opengl {
             destructor(this);
         }
 
-        std::unique_ptr<GpuFence> copy(TextureArrayBuffer &source) override {
-            auto &buf = dynamic_cast<OGLTextureArrayBuffer &>(source);
-            if (buf.desc.textureDesc != desc.textureDesc) {
-                throw std::runtime_error("Cannot copy texture array buffer");
-            }
-
-            auto count = buf.desc.textureCount > desc.textureCount ? desc.textureCount : buf.desc.textureCount;
-
-            if (count > 0) {
-                glCopyImageSubData(buf.handle,
-                                   GL_TEXTURE_2D_ARRAY,
-                                   0,
-                                   0,
-                                   0,
-                                   0,
-                                   handle,
-                                   GL_TEXTURE_2D_ARRAY,
-                                   0,
-                                   0,
-                                   0,
-                                   0,
-                                   buf.desc.textureDesc.size.x,
-                                   buf.desc.textureDesc.size.y,
-                                   static_cast<GLsizei>(count));
-            }
-
-            glBindTexture(GL_TEXTURE_2D_ARRAY, handle);
-
-            auto texWrap = convert(desc.textureDesc.wrapping);
-
-            glTexParameteri(GL_TEXTURE_2D_ARRAY,
-                            GL_TEXTURE_WRAP_S,
-                            texWrap);
-            glTexParameteri(GL_TEXTURE_2D_ARRAY,
-                            GL_TEXTURE_WRAP_T,
-                            texWrap);
-
-            if (desc.textureDesc.generateMipmap) {
-                glTexParameteri(GL_TEXTURE_2D_ARRAY,
-                                GL_TEXTURE_MIN_FILTER,
-                                convert(desc.textureDesc.mipmapFilter));
-                glTexParameteri(GL_TEXTURE_2D_ARRAY,
-                                GL_TEXTURE_MAG_FILTER,
-                                convert(desc.textureDesc.filterMag));
-                glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
-            } else {
-                glTexParameteri(GL_TEXTURE_2D_ARRAY,
-                                GL_TEXTURE_MIN_FILTER,
-                                convert(desc.textureDesc.filterMin));
-                glTexParameteri(GL_TEXTURE_2D_ARRAY,
-                                GL_TEXTURE_MAG_FILTER,
-                                convert(desc.textureDesc.filterMag));
-            }
-
-            auto col = desc.textureDesc.borderColor.divide();
-            float borderColor[] = {col.x, col.y, col.z, col.w};
-            glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, borderColor);
-
-            glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
-
-            checkGLError();
-
-            return std::make_unique<OGLFence>();
-        }
-
         const TextureArrayBufferDesc &getDescription() override {
             return desc;
         }
 
-        std::unique_ptr<GpuFence> upload(size_t index,
-                                         ColorFormat format,
-                                         const uint8_t *buffer,
-                                         size_t bufferSize) override {
+        void upload(size_t index,
+                    ColorFormat format,
+                    const uint8_t *buffer,
+                    size_t bufferSize) override {
             glBindTexture(GL_TEXTURE_2D_ARRAY, handle);
 
             glTexSubImage3D(GL_TEXTURE_2D_ARRAY,
@@ -267,8 +203,6 @@ namespace xng::opengl {
             glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 
             checkGLError();
-
-            return std::make_unique<OGLFence>();
         }
 
         Image <ColorRGBA> download(size_t index) override {

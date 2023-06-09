@@ -20,7 +20,6 @@
 #ifndef XENGINE_RAYTRACEPIPELINE_HPP
 #define XENGINE_RAYTRACEPIPELINE_HPP
 
-#include "raytracecommand.hpp"
 #include "raytracepipelinedesc.hpp"
 
 namespace xng {
@@ -30,8 +29,6 @@ namespace xng {
         Type getType() override {
             return RENDER_OBJECT_RAYTRACE_PIPELINE;
         }
-
-        virtual void execute(const std::vector<RaytraceCommand> &commands) = 0;
 
         virtual const RaytracePipelineDesc &getDescription() = 0;
     };

@@ -60,39 +60,11 @@ namespace xng::opengl {
             destructor(this);
         }
 
-        std::unique_ptr<GpuFence> copy(IndexBuffer &source) override {
-            return copy(source, 0, 0, source.getDescription().size);
-        }
-
-        std::unique_ptr<GpuFence> copy(IndexBuffer &source,
-                                       size_t readOffset,
-                                       size_t writeOffset,
-                                       size_t count) override {
-            auto buf = dynamic_cast<OGLIndexBuffer &>(source);
-            if (readOffset >= buf.desc.size
-                || readOffset + count > buf.desc.size
-                || writeOffset >= desc.size
-                || writeOffset + count > desc.size) {
-                throw std::runtime_error("Invalid copy range");
-            }
-            glBindBuffer(GL_COPY_READ_BUFFER, buf.EBO);
-            glBindBuffer(GL_COPY_WRITE_BUFFER, EBO);
-            glCopyBufferSubData(GL_COPY_READ_BUFFER,
-                                GL_COPY_WRITE_BUFFER,
-                                static_cast<GLintptr>(readOffset),
-                                static_cast<GLintptr>(writeOffset),
-                                static_cast<GLsizeiptr>(count));
-            glBindBuffer(GL_COPY_READ_BUFFER, 0);
-            glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
-            checkGLError();
-            return std::make_unique<OGLFence>();
-        }
-
         const IndexBufferDesc &getDescription() override {
             return desc;
         }
 
-        std::unique_ptr<GpuFence> upload(size_t offset, const uint8_t *data, size_t dataSize) override {
+        void upload(size_t offset, const uint8_t *data, size_t dataSize) override {
             if (offset >= desc.size
                 || offset + dataSize > desc.size) {
                 throw std::runtime_error("Invalid upload range");
@@ -104,7 +76,6 @@ namespace xng::opengl {
                             data);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             checkGLError();
-            return std::make_unique<OGLFence>();
         }
     };
 }

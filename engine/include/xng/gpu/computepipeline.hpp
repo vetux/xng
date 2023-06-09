@@ -20,9 +20,16 @@
 #ifndef XENGINE_COMPUTEPIPELINE_HPP
 #define XENGINE_COMPUTEPIPELINE_HPP
 
+#include <utility>
+#include <variant>
+
 #include "xng/gpu/renderobject.hpp"
-#include "computecommand.hpp"
-#include "computepipelinedesc.hpp"
+#include "xng/gpu/computepipelinedesc.hpp"
+#include "xng/gpu/command.hpp"
+#include "xng/gpu/texturebuffer.hpp"
+#include "xng/gpu/shaderuniformbuffer.hpp"
+
+#include "xng/math/vector3.hpp"
 
 namespace xng {
     class XENGINE_EXPORT ComputePipeline : public RenderObject {
@@ -31,7 +38,27 @@ namespace xng {
             return RENDER_OBJECT_COMPUTE_PIPELINE;
         }
 
-        virtual void execute(const std::vector<ComputeCommand> &commands) = 0;
+        Command bind() {
+            return {Command::COMPUTE_BIND_PIPELINE, ComputePipelineBind(this)};
+        }
+
+        /**
+         * Set the resources accessible to subsequent execute calls.
+         *
+         * @param resources
+         * @return
+         */
+        Command setBindings(std::vector<ShaderResource> resources) {
+            return {Command::COMPUTE_BIND_DATA, ComputePipelineBindData(std::move(resources))};
+        }
+
+        /**
+         * @param num_groups The number of work groups in each dimension, cannot be zero.
+         * @return
+         */
+        Command execute(const Vector3<unsigned int> &num_groups) {
+            return {Command::COMPUTE_EXECUTE, ComputePipelineExecute(num_groups)};
+        }
 
         virtual const ComputePipelineDesc &getDescription() = 0;
     };

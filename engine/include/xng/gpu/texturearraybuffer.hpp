@@ -26,7 +26,7 @@
 
 #include "xng/gpu/renderobject.hpp"
 #include "xng/gpu/texturearraybufferdesc.hpp"
-#include "xng/gpu/gpufence.hpp"
+#include "xng/gpu/command.hpp"
 
 namespace xng {
     /**
@@ -42,7 +42,9 @@ namespace xng {
             return RENDER_OBJECT_TEXTURE_ARRAY_BUFFER;
         }
 
-        virtual std::unique_ptr<GpuFence> copy(TextureArrayBuffer &source) = 0;
+        Command copy(TextureArrayBuffer &source) {
+            return {Command::COPY_TEXTURE_ARRAY, TextureArrayBufferCopy(&source, this)};
+        }
 
         /**
          * Upload the image buffer.
@@ -55,20 +57,20 @@ namespace xng {
          * @param bufferSize
          * @return
          */
-        virtual std::unique_ptr<GpuFence> upload(size_t index,
-                                                 ColorFormat format,
-                                                 const uint8_t *buffer,
-                                                 size_t bufferSize) = 0;
+        virtual void upload(size_t index,
+                            ColorFormat format,
+                            const uint8_t *buffer,
+                            size_t bufferSize) = 0;
 
-        virtual Image<ColorRGBA> download(size_t index) = 0;
-
-        std::unique_ptr<GpuFence> upload(size_t index,
-                                         const Image<ColorRGBA> &image) {
+        void upload(size_t index,
+                    const Image<ColorRGBA> &image) {
             return upload(index,
                           RGBA,
                           reinterpret_cast<const uint8_t *>(image.getData()),
                           image.getDataSize() * sizeof(ColorRGBA));
         }
+
+        virtual Image<ColorRGBA> download(size_t index) = 0;
     };
 }
 #endif //XENGINE_TEXTUREARRAYBUFFER_HPP

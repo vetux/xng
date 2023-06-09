@@ -75,180 +75,19 @@ namespace xng::opengl {
             return desc;
         }
 
-        std::unique_ptr<GpuFence> blitColor(RenderTarget &source,
-                                            Vec2i sourceOffset,
-                                            Vec2i targetOffset,
-                                            Vec2i sourceRect,
-                                            Vec2i targetRect,
-                                            TextureFiltering filter,
-                                            int sourceIndex,
-                                            int targetIndex) override {
-            if (sourceRect.x < 0 || sourceRect.y < 0) {
-                throw std::runtime_error("Rect cannot be negative");
-            }
-            if (sourceOffset.x < 0 || sourceOffset.y < 0) {
-                throw std::runtime_error("Offset cannot be negative");
-            }
-            if (targetRect.x < 0 || targetRect.y < 0) {
-                throw std::runtime_error("Rect cannot be negative");
-            }
-            if (targetOffset.x < 0 || targetOffset.y < 0) {
-                throw std::runtime_error("Offset cannot be negative");
-            }
-
-            auto &fbS = dynamic_cast<OGLRenderTarget &>(source);
-
-            Vec2i sourceSize = fbS.getDescription().size;
-            if (sourceSize.x < sourceRect.x + sourceOffset.x || sourceSize.y < sourceRect.y + sourceOffset.y)
-                throw std::runtime_error("Blit rect out of bounds for source framebuffer");
-
-            Vec2i targetSize = desc.size;
-            if (targetSize.x < targetRect.x + targetOffset.x || targetSize.y < targetRect.y + targetOffset.y)
-                throw std::runtime_error("Blit rect out of bounds for target framebuffer.");
-
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, fbS.getFBO());
-
-            // The default framebuffer always reads/writes from/to default color buffer.
-            if (fbS.getFBO() != 0) {
-                glReadBuffer(getColorAttachment(sourceIndex));
-            }
-
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, getFBO());
-
-            // The default framebuffer always reads/writes from/to default color buffer.
-            if (getFBO() != 0) {
-                glDrawBuffer(getColorAttachment(targetIndex));
-            }
-
-            glBlitFramebuffer(sourceOffset.x,
-                              sourceOffset.y,
-                              sourceRect.x,
-                              sourceRect.y,
-                              targetOffset.x,
-                              targetOffset.y,
-                              targetRect.x,
-                              targetRect.y,
-                              GL_COLOR_BUFFER_BIT,
-                              convert(filter));
-
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-            checkGLError();
-
-            return std::make_unique<OGLFence>();
-        }
-
-        std::unique_ptr<GpuFence> blitDepth(RenderTarget &source,
-                                            Vec2i sourceOffset,
-                                            Vec2i targetOffset,
-                                            Vec2i sourceRect,
-                                            Vec2i targetRect) override {
-            if (sourceRect.x < 0 || sourceRect.y < 0) {
-                throw std::runtime_error("Rect cannot be negative");
-            }
-            if (sourceOffset.x < 0 || sourceOffset.y < 0) {
-                throw std::runtime_error("Offset cannot be negative");
-            }
-            if (targetRect.x < 0 || targetRect.y < 0) {
-                throw std::runtime_error("Rect cannot be negative");
-            }
-            if (targetOffset.x < 0 || targetOffset.y < 0) {
-                throw std::runtime_error("Offset cannot be negative");
-            }
-
-            auto &fbS = dynamic_cast< OGLRenderTarget &>(source);
-
-            Vec2i sourceSize = fbS.getDescription().size;
-            if (sourceSize.x < sourceRect.x + sourceOffset.x || sourceSize.y < sourceRect.y + sourceOffset.y)
-                throw std::runtime_error("Blit rect out of bounds for source framebuffer");
-
-            Vec2i targetSize = desc.size;
-            if (targetSize.x < targetRect.x + targetOffset.x || targetSize.y < targetRect.y + targetOffset.y)
-                throw std::runtime_error("Blit rect out of bounds for target framebuffer.");
-
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, fbS.getFBO());
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, getFBO());
-
-            glBlitFramebuffer(sourceOffset.x,
-                              sourceOffset.y,
-                              sourceRect.x,
-                              sourceRect.y,
-                              targetOffset.x,
-                              targetOffset.y,
-                              targetRect.x,
-                              targetRect.y,
-                              GL_DEPTH_BUFFER_BIT,
-                              GL_NEAREST);
-
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-
-            checkGLError();
-
-            return std::make_unique<OGLFence>();
-        }
-
-        std::unique_ptr<GpuFence> blitStencil(RenderTarget &source,
-                                              Vec2i sourceOffset,
-                                              Vec2i targetOffset,
-                                              Vec2i sourceRect,
-                                              Vec2i targetRect) override {
-            if (sourceRect.x < 0 || sourceRect.y < 0) {
-                throw std::runtime_error("Rect cannot be negative");
-            }
-            if (sourceOffset.x < 0 || sourceOffset.y < 0) {
-                throw std::runtime_error("Offset cannot be negative");
-            }
-            if (targetRect.x < 0 || targetRect.y < 0) {
-                throw std::runtime_error("Rect cannot be negative");
-            }
-            if (targetOffset.x < 0 || targetOffset.y < 0) {
-                throw std::runtime_error("Offset cannot be negative");
-            }
-
-            auto &fbS = dynamic_cast< OGLRenderTarget &>(source);
-
-            Vec2i sourceSize = fbS.getDescription().size;
-            if (sourceSize.x < sourceRect.x + sourceOffset.x || sourceSize.y < sourceRect.y + sourceOffset.y)
-                throw std::runtime_error("Blit rect out of bounds for source framebuffer");
-
-            Vec2i targetSize = desc.size;
-            if (targetSize.x < targetRect.x + targetOffset.x || targetSize.y < targetRect.y + targetOffset.y)
-                throw std::runtime_error("Blit rect out of bounds for target framebuffer.");
-
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, fbS.getFBO());
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, getFBO());
-            glBlitFramebuffer(sourceOffset.x,
-                              sourceOffset.y,
-                              sourceRect.x,
-                              sourceRect.y,
-                              targetOffset.x,
-                              targetOffset.y,
-                              targetRect.x,
-                              targetRect.y,
-                              GL_STENCIL_BUFFER_BIT,
-                              GL_NEAREST);
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-
-            checkGLError();
-
-            return std::make_unique<OGLFence>();
-        }
-
-        std::unique_ptr<GpuFence> setColorAttachments(const std::vector<Attachment> &attachments) override {
+        void setAttachments(const std::vector<RenderTargetAttachment> &colorAttachments) override {
             glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
-            if (attachments.empty()) {
+            if (colorAttachments.empty()) {
                 for (int i = 0; i < attachedColor; i++) {
                     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, 0, 0);
                 }
             } else {
-                if (attachments.size() != desc.numberOfColorAttachments)
+                if (colorAttachments.size() != desc.numberOfColorAttachments)
                     throw std::runtime_error("Invalid number of color attachments");
 
-                for (auto i = 0; i < attachments.size(); i++) {
-                    auto &att = attachments.at(i);
+                for (auto i = 0; i < colorAttachments.size(); i++) {
+                    auto &att = colorAttachments.at(i);
                     switch (att.index()) {
                         case ATTACHMENT_TEXTURE: {
                             auto &tex = dynamic_cast<OGLTextureBuffer &>(
@@ -288,20 +127,66 @@ namespace xng::opengl {
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-            attachedColor = static_cast<int>(attachments.size());
+            attachedColor = static_cast<int>(colorAttachments.size());
 
             checkGLError();
-
-            return std::make_unique<OGLFence>();
         }
 
-        std::unique_ptr<GpuFence> setDepthStencilAttachment(Attachment attachment) override {
+        void setAttachments(const std::vector<RenderTargetAttachment> &colorAttachments,
+                            RenderTargetAttachment depthStencilAttachment) override {
             glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
-            switch (attachment.index()) {
+            if (colorAttachments.empty()) {
+                for (int i = 0; i < attachedColor; i++) {
+                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, 0, 0);
+                }
+            } else {
+                if (colorAttachments.size() != desc.numberOfColorAttachments)
+                    throw std::runtime_error("Invalid number of color attachments");
+
+                for (auto i = 0; i < colorAttachments.size(); i++) {
+                    auto &att = colorAttachments.at(i);
+                    switch (att.index()) {
+                        case ATTACHMENT_TEXTURE: {
+                            auto &tex = dynamic_cast<OGLTextureBuffer &>(
+                                    std::get<std::reference_wrapper<TextureBuffer>>(att).get());
+                            glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                                   GL_COLOR_ATTACHMENT0 + i,
+                                                   convert(tex.getDescription().textureType),
+                                                   tex.handle,
+                                                   0);
+                            break;
+                        }
+                        case ATTACHMENT_CUBEMAP: {
+                            auto &pair = std::get<std::pair<CubeMapFace, std::reference_wrapper<TextureBuffer>>>(
+                                    att);
+                            auto &tex = dynamic_cast<OGLTextureBuffer &>(pair.second.get());
+                            glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                                   GL_COLOR_ATTACHMENT0 + i,
+                                                   convert(pair.first),
+                                                   tex.handle,
+                                                   0);
+                            break;
+                        }
+                        case ATTACHMENT_TEXTUREARRAY: {
+                            auto &pair = std::get<std::pair<size_t, std::reference_wrapper<TextureArrayBuffer>>>(att);
+                            auto &tex = dynamic_cast<OGLTextureArrayBuffer &>(pair.second.get());
+                            glFramebufferTexture3D(GL_FRAMEBUFFER,
+                                                   GL_COLOR_ATTACHMENT0 + i,
+                                                   convert(tex.getDescription().textureDesc.textureType),
+                                                   tex.handle,
+                                                   0,
+                                                   static_cast<GLint>(pair.first));
+                            break;
+                        }
+                    }
+                }
+            }
+
+            switch (depthStencilAttachment.index()) {
                 case ATTACHMENT_TEXTURE: {
                     auto &tex = dynamic_cast< OGLTextureBuffer &>(std::get<std::reference_wrapper<TextureBuffer>>(
-                            attachment).get());
+                            depthStencilAttachment).get());
                     glFramebufferTexture2D(GL_FRAMEBUFFER,
                                            GL_DEPTH_STENCIL_ATTACHMENT,
                                            convert(tex.getDescription().textureType),
@@ -310,7 +195,7 @@ namespace xng::opengl {
                     break;
                 }
                 case ATTACHMENT_CUBEMAP: {
-                    auto &pair = std::get<std::pair<CubeMapFace, std::reference_wrapper<TextureBuffer>>>(attachment);
+                    auto &pair = std::get<std::pair<CubeMapFace, std::reference_wrapper<TextureBuffer>>>(depthStencilAttachment);
                     auto &tex = dynamic_cast<OGLTextureBuffer &>(pair.second.get());
                     glFramebufferTexture2D(GL_FRAMEBUFFER,
                                            GL_DEPTH_STENCIL_ATTACHMENT,
@@ -320,7 +205,7 @@ namespace xng::opengl {
                     break;
                 }
                 case ATTACHMENT_TEXTUREARRAY: {
-                    auto &pair = std::get<std::pair<size_t, std::reference_wrapper<TextureArrayBuffer>>>(attachment);
+                    auto &pair = std::get<std::pair<size_t, std::reference_wrapper<TextureArrayBuffer>>>(depthStencilAttachment);
                     auto &tex = dynamic_cast<OGLTextureArrayBuffer &>(pair.second.get());
                     glFramebufferTexture3D(GL_FRAMEBUFFER,
                                            GL_DEPTH_STENCIL_ATTACHMENT,
@@ -336,18 +221,17 @@ namespace xng::opengl {
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-            checkGLError();
+            attachedColor = static_cast<int>(colorAttachments.size());
 
-            return std::make_unique<OGLFence>();
+            checkGLError();
         }
 
-        std::unique_ptr<GpuFence> clearDepthStencilAttachment() override {
+        void clearDepthStencilAttachment() override {
             attachedDepthStencil = false;
             glBindFramebuffer(GL_FRAMEBUFFER, FBO);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             checkGLError();
-            return std::make_unique<OGLFence>();
         }
 
         bool isComplete() override {

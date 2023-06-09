@@ -88,7 +88,7 @@ namespace xng::opengl {
             }
         }
 
-        void bindBuffers(VertexBuffer &vertexBuffer) override {
+        void setBuffers(VertexBuffer &vertexBuffer) override {
             mVertexBuffer = dynamic_cast<OGLVertexBuffer *>(&vertexBuffer);
             mIndexBuffer = nullptr;
             mInstanceBuffer = nullptr;
@@ -120,7 +120,7 @@ namespace xng::opengl {
             checkGLError();
         }
 
-        void bindBuffers(VertexBuffer &vertexBuffer, IndexBuffer &indexBuffer) override {
+        void setBuffers(VertexBuffer &vertexBuffer, IndexBuffer &indexBuffer) override {
             mVertexBuffer = dynamic_cast<OGLVertexBuffer *>(&vertexBuffer);
             mIndexBuffer = dynamic_cast<OGLIndexBuffer *>(&indexBuffer);
             mInstanceBuffer = nullptr;
@@ -163,7 +163,7 @@ namespace xng::opengl {
             checkGLError();
         }
 
-        void bindBuffers(VertexBuffer &vertexBuffer, IndexBuffer &indexBuffer, VertexBuffer &instanceBuffer) override {
+        void setBuffers(VertexBuffer &vertexBuffer, IndexBuffer &indexBuffer, VertexBuffer &instanceBuffer) override {
             mVertexBuffer = dynamic_cast<OGLVertexBuffer *>(&vertexBuffer);
             mIndexBuffer = dynamic_cast<OGLIndexBuffer *>(&indexBuffer);
             mInstanceBuffer = dynamic_cast<OGLVertexBuffer *>(&instanceBuffer);

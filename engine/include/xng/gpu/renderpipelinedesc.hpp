@@ -41,10 +41,12 @@
 
 namespace xng {
     enum RenderPipelineBindingType : int {
-        BIND_TEXTURE_BUFFER,
+        BIND_TEXTURE_BUFFER, // eg glsl sampler2D or hlsl Texture2D
         BIND_TEXTURE_ARRAY_BUFFER,
+        BIND_IMAGE_BUFFER, // eg glsl image2D or hlsl RWTexture2D
+        BIND_IMAGE_ARRAY_BUFFER,
         BIND_SHADER_UNIFORM_BUFFER,
-        BIND_SHADER_STORAGE_BUFFER
+        BIND_SHADER_STORAGE_BUFFER,
     };
 
     struct RenderPipelineDesc {
@@ -58,13 +60,6 @@ namespace xng {
         bool multiSample = false;
         bool multiSampleEnableFrequency = false;
         float multiSampleFrequency = 1;
-
-        ColorRGBA clearColorValue = ColorRGBA::black();
-        float clearDepthValue = 1;
-
-        bool clearColor = false;
-        bool clearDepth = false;
-        bool clearStencil = false;
 
         bool enableDepthTest = false;
         bool depthTestWrite = false;
@@ -96,11 +91,6 @@ namespace xng {
                    && shaders == other.shaders
                    && multiSample == other.multiSample
                    && multiSampleEnableFrequency == other.multiSampleEnableFrequency
-                   && clearColorValue == other.clearColorValue
-                   && clearDepthValue == other.clearDepthValue
-                   && clearColor == other.clearColor
-                   && clearDepth == other.clearDepth
-                   && clearStencil == other.clearStencil
                    && enableDepthTest == other.enableDepthTest
                    && depthTestWrite == other.depthTestWrite
                    && depthTestMode == other.depthTestMode
@@ -144,14 +134,6 @@ namespace std {
             xng::hash_combine(ret, k.multiSample);
             xng::hash_combine(ret, k.multiSampleEnableFrequency);
             xng::hash_combine(ret, k.multiSampleFrequency);
-            xng::hash_combine(ret, k.clearColorValue.r());
-            xng::hash_combine(ret, k.clearColorValue.g());
-            xng::hash_combine(ret, k.clearColorValue.b());
-            xng::hash_combine(ret, k.clearColorValue.a());
-            xng::hash_combine(ret, k.clearDepthValue);
-            xng::hash_combine(ret, k.clearColor);
-            xng::hash_combine(ret, k.clearDepth);
-            xng::hash_combine(ret, k.clearStencil);
             xng::hash_combine(ret, k.enableDepthTest);
             xng::hash_combine(ret, k.depthTestWrite);
             xng::hash_combine(ret, k.depthTestMode);
