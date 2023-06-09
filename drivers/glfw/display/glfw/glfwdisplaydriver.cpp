@@ -17,6 +17,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#define GLFW_INCLUDE_NONE
+
+#include "display/glfw/monitorglfw.hpp"
+
 #include "xng/driver/glfw/glfwdisplaydriver.hpp"
 
 #ifdef DRIVER_GLFW_OPENGL
@@ -24,8 +28,6 @@
 #include "display/glfw/opengl/windowglfwgl.hpp"
 
 #endif
-
-#include "display/glfw/monitorglfw.hpp" //Has to come after windowglfw because of glad include collision with glfw (Including glfw and then glad afterwards gives compiler error, the reverse is legal)
 
 #include "xng/gpu/gpudriver.hpp"
 
