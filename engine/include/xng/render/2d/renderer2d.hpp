@@ -333,7 +333,7 @@ namespace xng {
 
         struct MeshDrawData {
             Primitive primitive;
-            RenderPass::DrawCall drawCall;
+            DrawCall drawCall;
             size_t baseVertex;
         };
 
@@ -426,6 +426,8 @@ namespace xng {
 
         std::unique_ptr<RenderPass> renderPass;
 
+        std::unique_ptr<CommandBuffer> commandBuffer;
+
         std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> atlasRef;
         std::map<TextureAtlasResolution, std::unique_ptr<TextureArrayBuffer>> atlasTextures;
         TextureAtlas atlas;
@@ -455,7 +457,7 @@ namespace xng {
 
         std::vector<Pass> passes;
 
-        RenderTarget *userTarget = nullptr;
+        RenderTarget *mTarget = nullptr;
 
         Camera camera;
         Transform cameraTransform;
@@ -468,6 +470,10 @@ namespace xng {
 
         Vec2i mViewportOffset = {};
         Vec2i mViewportSize = Vec2i(1);
+
+        bool mClear = false;
+
+        ColorRGBA mClearColor;
 
         VertexLayout vertexLayout;
     };

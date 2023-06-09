@@ -65,7 +65,7 @@ namespace xng {
      * updating the shader uniform buffer.
      */
     struct DrawBatch {
-        std::vector<RenderPass::DrawCall> drawCalls;
+        std::vector<DrawCall> drawCalls;
         std::vector<size_t> baseVertices;
         Primitive primitive = TRIANGLES;
         std::vector<PassData> uniformBuffers; // The uniform buffer data for this batch
@@ -114,6 +114,7 @@ namespace xng {
 
         desc.vertexLayout = VertexLayout(vertexLayout);
         desc.enableBlending = true;
+        desc.depthTestWrite = true;
 
         desc.primitive = TRIANGLES;
         trianglePipeline = device.createRenderPipeline(desc, shaderDecompiler);
@@ -166,6 +167,8 @@ namespace xng {
         passDesc.hasDepthStencilAttachment = false;
         renderPass = device.createRenderPass(passDesc);
 
+        commandBuffer = device.createCommandBuffer();
+
         rebindTextureAtlas();
     }
 
@@ -179,7 +182,10 @@ namespace xng {
             desc.textureCount += 1;
             auto buf = std::move(atlasTextures.at(res));
             atlasTextures.at(res) = renderDevice.createTextureArrayBuffer(desc);
-            atlasTextures.at(res)->copy(*buf);
+            commandBuffer->begin();
+            commandBuffer->add({atlasTextures.at(res)->copy(*buf)});
+            commandBuffer->end();
+            renderDevice.getRenderCommandQueues().at(0).get().submit({*commandBuffer}, {}, {});
             auto occupations = atlas.getBufferOccupations();
             occupations[res].resize(desc.textureCount, false);
             atlas = TextureAtlas(occupations);
@@ -237,6 +243,8 @@ namespace xng {
         isRendering = true;
         mViewportOffset = viewportOffset;
         mViewportSize = viewportSize;
+        mClear = clear;
+        mClearColor = clearColor;
 
         auto prevCam = camera;
 
@@ -246,7 +254,6 @@ namespace xng {
         camera.top = projection.position.y;
         camera.bottom = projection.dimensions.y;
 
-        auto prevTransform = cameraTransform;
         cameraTransform.setPosition({cameraPosition.x, cameraPosition.y, 1});
 
         if (camera != prevCam ||
@@ -254,14 +261,7 @@ namespace xng {
             viewProjectionMatrix = camera.projection() * Camera::view(cameraTransform);
         }
 
-        if (clear) {
-            renderPass->beginRenderPass(target, viewportOffset, viewportSize);
-            renderPass->clearColorAttachments(clearColor);
-            renderPass->clearDepthAttachment(1);
-            renderPass->endRenderPass();
-        }
-
-        userTarget = &target;
+        mTarget = &target;
 
         polyCounter = 0;
     }
@@ -274,12 +274,13 @@ namespace xng {
 
         auto caps = renderDevice.getInfo().capabilities;
 
+        if (caps.find(CAPABILITY_BASE_VERTEX) == caps.end()) {
+            throw std::runtime_error("CAPABILITY_BASE_VERTEX is required");
+        }
+
         if (caps.find(CAPABILITY_MULTI_DRAW) != caps.end()) {
             presentMultiDraw();
         } else {
-            if (caps.find(CAPABILITY_BASE_VERTEX) == caps.end()) {
-                throw std::runtime_error("CAPABILITY_BASE_VERTEX is required");
-            }
             presentCompat();
         }
 
@@ -364,7 +365,7 @@ namespace xng {
         usedPoints.clear();
         usedRotationMatrices.clear();
 
-        std::vector<RenderPass::DrawCall> drawCalls;
+        std::vector<DrawCall> drawCalls;
         std::vector<size_t> baseVertices;
         std::vector<Primitive> primitives;
         std::vector<PassData> passData;
@@ -592,6 +593,9 @@ namespace xng {
 
         updateVertexArrayObject();
 
+        std::vector<std::unique_ptr<ShaderUniformBuffer>> shaderBuffers;
+        shaderBuffers.reserve(drawCalls.size());
+
         std::vector<DrawBatch> batches;
         DrawBatch currentBatch;
         for (auto y = 0; y < drawCalls.size(); y++) {
@@ -605,68 +609,76 @@ namespace xng {
             currentBatch.drawCalls.emplace_back(drawCalls.at(y));
             currentBatch.baseVertices.emplace_back(baseVertices.at(y));
             currentBatch.uniformBuffers.emplace_back(passData.at(y));
+
+            ShaderUniformBufferDesc shaderBufferDesc;
+            shaderBufferDesc.size = sizeof(PassData);
+            shaderBuffers.emplace_back(renderDevice.createShaderUniformBuffer(shaderBufferDesc));
+            shaderBuffers.at(shaderBuffers.size() - 1)->upload(passData.at(y));
         }
         if (!currentBatch.drawCalls.empty())
             batches.emplace_back(currentBatch);
 
-        renderPass->beginRenderPass(*userTarget, mViewportOffset, mViewportSize);
-        renderPass->bindVertexArrayObject(*vertexArrayObject);
+        auto cleared = false;
 
-        ShaderUniformBufferDesc shaderBufferDesc;
-        shaderBufferDesc.size = sizeof(PassData);
-        auto shaderBuffer = renderDevice.createShaderUniformBuffer(shaderBufferDesc);
-
-        renderPass->bindShaderData({
-                                           *shaderBuffer,
-                                           *atlasTextures.at(TEXTURE_ATLAS_8x8),
-                                           *atlasTextures.at(TEXTURE_ATLAS_16x16),
-                                           *atlasTextures.at(TEXTURE_ATLAS_32x32),
-                                           *atlasTextures.at(TEXTURE_ATLAS_64x64),
-                                           *atlasTextures.at(TEXTURE_ATLAS_128x128),
-                                           *atlasTextures.at(TEXTURE_ATLAS_256x256),
-                                           *atlasTextures.at(TEXTURE_ATLAS_512x512),
-                                           *atlasTextures.at(TEXTURE_ATLAS_1024x1024),
-                                           *atlasTextures.at(TEXTURE_ATLAS_2048x2048),
-                                           *atlasTextures.at(TEXTURE_ATLAS_4096x4096),
-                                           *atlasTextures.at(TEXTURE_ATLAS_8192x8192),
-                                           *atlasTextures.at(TEXTURE_ATLAS_16384x16384),
-                                   });
-
-        renderPass->bindPipeline(*trianglePipeline);
-
-        Primitive currentPrimitive = TRIANGLES;
-
+        auto drawCallIndex = 0;
         for (auto &batch: batches) {
+            std::vector<Command> commands;
+
+            commands.emplace_back(renderPass->begin(*mTarget));
+            commands.emplace_back(renderPass->setViewport(mViewportOffset, mViewportSize));
+
+            if (mClear && !cleared) {
+                cleared = true;
+                commands.emplace_back(renderPass->clearColorAttachments(mClearColor));
+                commands.emplace_back(renderPass->clearDepthAttachment(1));
+            }
+
             switch (batch.primitive) {
                 case POINTS:
-                    if (currentPrimitive != batch.primitive) {
-                        currentPrimitive = batch.primitive;
-                        renderPass->bindPipeline(*pointPipeline);
-                    }
+                    commands.emplace_back(pointPipeline->bind());
                     break;
                 case LINES:
-                    if (currentPrimitive != batch.primitive) {
-                        currentPrimitive = batch.primitive;
-                        renderPass->bindPipeline(*linePipeline);
-                    }
+                    commands.emplace_back(linePipeline->bind());
                     break;
                 case TRIANGLES:
-                    if (currentPrimitive != batch.primitive) {
-                        currentPrimitive = batch.primitive;
-                        renderPass->bindPipeline(*trianglePipeline);
-                    }
+                    commands.emplace_back(trianglePipeline->bind());
                     break;
                 default:
                     throw std::runtime_error("Unsupported primitive");
             }
 
-            for (auto y = 0; y < batch.drawCalls.size(); y++) {
-                shaderBuffer->upload(batch.uniformBuffers.at(y));
-                renderPass->drawIndexed(batch.drawCalls.at(y), batch.baseVertices.at(y));
-            }
-        }
+            commands.emplace_back(vertexArrayObject->bind());
 
-        renderPass->endRenderPass();
+            for (auto y = 0; y < batch.drawCalls.size(); y++) {
+                auto resources = std::vector<ShaderResource>{
+                        {*shaderBuffers.at(
+                                drawCallIndex++),                      {{VERTEX, ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
+                        {*atlasTextures.at(TEXTURE_ATLAS_8x8),         {{{FRAGMENT, ShaderResource::READ}}}},
+                        {*atlasTextures.at(TEXTURE_ATLAS_16x16),       {{{FRAGMENT, ShaderResource::READ}}}},
+                        {*atlasTextures.at(TEXTURE_ATLAS_32x32),       {{{FRAGMENT, ShaderResource::READ}}}},
+                        {*atlasTextures.at(TEXTURE_ATLAS_64x64),       {{{FRAGMENT, ShaderResource::READ}}}},
+                        {*atlasTextures.at(TEXTURE_ATLAS_128x128),     {{{FRAGMENT, ShaderResource::READ}}}},
+                        {*atlasTextures.at(TEXTURE_ATLAS_256x256),     {{{FRAGMENT, ShaderResource::READ}}}},
+                        {*atlasTextures.at(TEXTURE_ATLAS_512x512),     {{{FRAGMENT, ShaderResource::READ}}}},
+                        {*atlasTextures.at(TEXTURE_ATLAS_1024x1024),   {{{FRAGMENT, ShaderResource::READ}}}},
+                        {*atlasTextures.at(TEXTURE_ATLAS_2048x2048),   {{{FRAGMENT, ShaderResource::READ}}}},
+                        {*atlasTextures.at(TEXTURE_ATLAS_4096x4096),   {{{FRAGMENT, ShaderResource::READ}}}},
+                        {*atlasTextures.at(TEXTURE_ATLAS_8192x8192),   {{{FRAGMENT, ShaderResource::READ}}}},
+                        {*atlasTextures.at(TEXTURE_ATLAS_16384x16384), {{{FRAGMENT, ShaderResource::READ}}}},
+                };
+
+                commands.emplace_back(RenderPipeline::bindShaderResources(resources));
+                commands.emplace_back(renderPass->drawIndexed(batch.drawCalls.at(y), batch.baseVertices.at(y)));
+            }
+
+            commands.emplace_back(renderPass->end());
+
+            commandBuffer->begin();
+            commandBuffer->add(commands);
+            commandBuffer->end();
+
+            renderDevice.getRenderCommandQueues().at(0).get().submit({*commandBuffer}, {}, {});
+        }
     }
 
     void Renderer2D::presentMultiDraw() {
@@ -693,7 +705,7 @@ namespace xng {
             usedPoints.clear();
             usedRotationMatrices.clear();
 
-            std::vector<RenderPass::DrawCall> drawCalls;
+            std::vector<DrawCall> drawCalls;
             std::vector<size_t> baseVertices;
             std::vector<Primitive> primitives;
             std::vector<PassData> passData;
@@ -910,7 +922,6 @@ namespace xng {
             std::vector<DrawBatch> batches;
             DrawBatch currentBatch;
 
-            size_t currentBatchIndex = 0;
             for (auto y = 0; y < drawCalls.size(); y++) {
                 auto prim = primitives.at(y);
                 if (prim != currentBatch.primitive) {
@@ -918,7 +929,6 @@ namespace xng {
                         batches.emplace_back(currentBatch);
                     currentBatch = {};
                     currentBatch.primitive = prim;
-                    currentBatchIndex = 0;
                 }
                 currentBatch.drawCalls.emplace_back(drawCalls.at(y));
                 currentBatch.baseVertices.emplace_back(baseVertices.at(y));
@@ -928,9 +938,6 @@ namespace xng {
             if (!currentBatch.drawCalls.empty())
                 batches.emplace_back(currentBatch);
 
-            renderPass->beginRenderPass(*userTarget, mViewportOffset, mViewportSize);
-            renderPass->bindVertexArrayObject(*vertexArrayObject);
-
             auto bufSize = sizeof(PassData) * numberOfPassesPerCycle;
             if (bufSize > totalBufferSize)
                 bufSize = totalBufferSize;
@@ -939,56 +946,63 @@ namespace xng {
             shaderBufferDesc.size = bufSize;
             auto shaderBuffer = renderDevice.createShaderStorageBuffer(shaderBufferDesc);
 
-            renderPass->bindShaderData({
-                                               *shaderBuffer,
-                                               *atlasTextures.at(TEXTURE_ATLAS_8x8),
-                                               *atlasTextures.at(TEXTURE_ATLAS_16x16),
-                                               *atlasTextures.at(TEXTURE_ATLAS_32x32),
-                                               *atlasTextures.at(TEXTURE_ATLAS_64x64),
-                                               *atlasTextures.at(TEXTURE_ATLAS_128x128),
-                                               *atlasTextures.at(TEXTURE_ATLAS_256x256),
-                                               *atlasTextures.at(TEXTURE_ATLAS_512x512),
-                                               *atlasTextures.at(TEXTURE_ATLAS_1024x1024),
-                                               *atlasTextures.at(TEXTURE_ATLAS_2048x2048),
-                                               *atlasTextures.at(TEXTURE_ATLAS_4096x4096),
-                                               *atlasTextures.at(TEXTURE_ATLAS_8192x8192),
-                                               *atlasTextures.at(TEXTURE_ATLAS_16384x16384),
-                                       });
+            auto resources = std::vector<ShaderResource>{
+                    {*shaderBuffer,                                {{VERTEX, ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
+                    {*atlasTextures.at(TEXTURE_ATLAS_8x8),         {{{FRAGMENT, ShaderResource::READ}}}},
+                    {*atlasTextures.at(TEXTURE_ATLAS_16x16),       {{{FRAGMENT, ShaderResource::READ}}}},
+                    {*atlasTextures.at(TEXTURE_ATLAS_32x32),       {{{FRAGMENT, ShaderResource::READ}}}},
+                    {*atlasTextures.at(TEXTURE_ATLAS_64x64),       {{{FRAGMENT, ShaderResource::READ}}}},
+                    {*atlasTextures.at(TEXTURE_ATLAS_128x128),     {{{FRAGMENT, ShaderResource::READ}}}},
+                    {*atlasTextures.at(TEXTURE_ATLAS_256x256),     {{{FRAGMENT, ShaderResource::READ}}}},
+                    {*atlasTextures.at(TEXTURE_ATLAS_512x512),     {{{FRAGMENT, ShaderResource::READ}}}},
+                    {*atlasTextures.at(TEXTURE_ATLAS_1024x1024),   {{{FRAGMENT, ShaderResource::READ}}}},
+                    {*atlasTextures.at(TEXTURE_ATLAS_2048x2048),   {{{FRAGMENT, ShaderResource::READ}}}},
+                    {*atlasTextures.at(TEXTURE_ATLAS_4096x4096),   {{{FRAGMENT, ShaderResource::READ}}}},
+                    {*atlasTextures.at(TEXTURE_ATLAS_8192x8192),   {{{FRAGMENT, ShaderResource::READ}}}},
+                    {*atlasTextures.at(TEXTURE_ATLAS_16384x16384), {{{FRAGMENT, ShaderResource::READ}}}},
+            };
 
-            renderPass->bindPipeline(*trianglePipelineMultiDraw);
-            Primitive currentPrimitive = TRIANGLES;
+            auto cleared = false;
 
             for (auto &batch: batches) {
                 shaderBuffer->upload(0, reinterpret_cast<const uint8_t *>(batch.uniformBuffers.data()),
                                      batch.uniformBuffers.size() * sizeof(PassData));
 
+                std::vector<Command> commands;
+
+                commands.emplace_back(renderPass->begin(*mTarget));
+                commands.emplace_back(renderPass->setViewport(mViewportOffset, mViewportSize));
+
+                if (mClear && !cleared) {
+                    cleared = true;
+                    commands.emplace_back(renderPass->clearColorAttachments(mClearColor));
+                    commands.emplace_back(renderPass->clearDepthAttachment(1));
+                }
+
+                commands.emplace_back(vertexArrayObject->bind());
+
                 switch (batch.primitive) {
                     case POINTS:
-                        if (currentPrimitive != batch.primitive) {
-                            currentPrimitive = batch.primitive;
-                            renderPass->bindPipeline(*pointPipelineMultiDraw);
-                        }
+                        commands.emplace_back(pointPipelineMultiDraw->bind());
                         break;
                     case LINES:
-                        if (currentPrimitive != batch.primitive) {
-                            currentPrimitive = batch.primitive;
-                            renderPass->bindPipeline(*linePipelineMultiDraw);
-                        }
+                        commands.emplace_back(linePipelineMultiDraw->bind());
                         break;
                     case TRIANGLES:
-                        if (currentPrimitive != batch.primitive) {
-                            currentPrimitive = batch.primitive;
-                            renderPass->bindPipeline(*trianglePipelineMultiDraw);
-                        }
+                        commands.emplace_back(trianglePipelineMultiDraw->bind());
                         break;
                     default:
                         throw std::runtime_error("Unsupported primitive");
                 }
 
-                renderPass->multiDrawIndexed(batch.drawCalls, batch.baseVertices);
+                commands.emplace_back(RenderPipeline::bindShaderResources(resources));
+                commands.emplace_back(renderPass->multiDrawIndexed(batch.drawCalls, batch.baseVertices));
+                commands.emplace_back(renderPass->end());
+                commandBuffer->begin();
+                commandBuffer->add(commands);
+                commandBuffer->end();
+                renderDevice.getRenderCommandQueues().at(0).get().submit({*commandBuffer}, {}, {});
             }
-
-            renderPass->endRenderPass();
         }
     }
 
@@ -1034,7 +1048,7 @@ namespace xng {
 
             auto indexBufferOffset = allocateIndexData(indices.size() * sizeof(unsigned int));
 
-            auto drawCall = RenderPass::DrawCall(indexBufferOffset, indices.size());
+            auto drawCall = DrawCall(indexBufferOffset, indices.size());
 
             indexBuffer->upload(indexBufferOffset,
                                 reinterpret_cast<const uint8_t *>(indices.data()),
@@ -1094,7 +1108,7 @@ namespace xng {
 
             auto indexBufferOffset = allocateIndexData(indices.size() * sizeof(unsigned int));
 
-            auto drawCall = RenderPass::DrawCall(indexBufferOffset, indices.size());
+            auto drawCall = DrawCall(indexBufferOffset, indices.size());
 
             indexBuffer->upload(indexBufferOffset,
                                 reinterpret_cast<const uint8_t *>(indices.data()),
@@ -1138,7 +1152,7 @@ namespace xng {
 
             auto indexBufferOffset = allocateIndexData(indices.size() * sizeof(unsigned int));
 
-            auto drawCall = RenderPass::DrawCall(indexBufferOffset, indices.size());
+            auto drawCall = DrawCall(indexBufferOffset, indices.size());
 
             indexBuffer->upload(indexBufferOffset,
                                 reinterpret_cast<const uint8_t *>(indices.data()),
@@ -1175,7 +1189,7 @@ namespace xng {
 
             auto indexBufferOffset = allocateIndexData(indices.size() * sizeof(unsigned int));
 
-            auto drawCall = RenderPass::DrawCall(indexBufferOffset, indices.size());
+            auto drawCall = DrawCall(indexBufferOffset, indices.size());
 
             indexBuffer->upload(indexBufferOffset,
                                 reinterpret_cast<const uint8_t *>(indices.data()),
@@ -1352,7 +1366,7 @@ namespace xng {
     void Renderer2D::updateVertexArrayObject() {
         if (vaoChange) {
             vaoChange = false;
-            vertexArrayObject->bindBuffers(*vertexBuffer, *indexBuffer);
+            vertexArrayObject->setBuffers(*vertexBuffer, *indexBuffer);
         }
     }
 
