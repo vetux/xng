@@ -187,7 +187,7 @@ namespace xng {
 
         auto tex = ren2d->getDevice().createTextureBuffer(desc);
 
-        target->setColorAttachments({*tex});
+        target->setAttachments({*tex});
         ren2d->renderBegin(*target);
         for (auto &c: renderText) {
             auto texSize = c.texture.size.convert<float>();
@@ -204,7 +204,7 @@ namespace xng {
         }
         ren2d->renderPresent();
 
-        target->setColorAttachments({});
+        target->setAttachments({});
 
         return {text, origin, layout.lineWidth, std::move(tex->download())};
     }
