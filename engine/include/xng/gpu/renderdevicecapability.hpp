@@ -30,7 +30,7 @@ namespace xng {
         CAPABILITY_INSTANCING, // Support for instancedDraw* methods of the RenderPass interface eg glDraw*Instanced on OpenGL
         CAPABILITY_BASE_VERTEX, // Support for *DrawIndexedBaseVertex methods of the RenderPass interface eg glDrawElements*BaseVertex on OpenGL
 
-        CAPABILITY_THREAD_SAFE, // Support for invoking the interface from threads other than the main thread.
+        CAPABILITY_THREAD_AGNOSTIC, // Support for invoking the interface from threads other than the main thread.
     };
 }
 
