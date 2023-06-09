@@ -33,7 +33,7 @@ namespace xng::opengl {
 
     private:
         std::vector<RenderDeviceInfo> deviceInfos = {{.name = "default"}};
-        bool retrievedMaxSamples = false;
+        bool retrievedInfos = false;
     };
 }
 

@@ -141,14 +141,6 @@ namespace xng::opengl {
             destructor = [this](RenderObject *obj) {
                 objects.erase(obj);
             };
-            info.capabilities.insert(CAPABILITY_BASE_VERTEX);
-            info.capabilities.insert(CAPABILITY_INSTANCING);
-            info.capabilities.insert(CAPABILITY_MULTI_DRAW);
-            GLint tmp;
-            glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &tmp);
-            info.uniformBufferMaxSize = tmp;
-            glGetIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &tmp);
-            info.storageBufferMaxSize = tmp;
 
             if (GLAD_GL_KHR_debug) {
                 glDebugMessageCallback(oglDebugHandler, nullptr);

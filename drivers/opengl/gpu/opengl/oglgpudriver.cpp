@@ -23,9 +23,23 @@
 
 namespace xng::opengl {
     const std::vector<RenderDeviceInfo> &OGLGpuDriver::getAvailableRenderDevices() {
-        if (!retrievedMaxSamples) {
-            retrievedMaxSamples = true;
+        if (!retrievedInfos) {
+            retrievedInfos = true;
             glGetIntegerv(GL_MAX_SAMPLES, &deviceInfos.at(0).maxSampleCount);
+            const GLubyte *vendor = glGetString(GL_VENDOR);
+            const GLubyte *renderer = glGetString(GL_RENDERER);
+            const GLubyte *version = glGetString(GL_VERSION);
+            deviceInfos.at(0).renderer = std::string(reinterpret_cast<const char *>(renderer));
+            deviceInfos.at(0).vendor = std::string(reinterpret_cast<const char *>(vendor));
+            deviceInfos.at(0).version = std::string(reinterpret_cast<const char *>(version));
+            deviceInfos.at(0).capabilities.insert(CAPABILITY_BASE_VERTEX);
+            deviceInfos.at(0).capabilities.insert(CAPABILITY_INSTANCING);
+            deviceInfos.at(0).capabilities.insert(CAPABILITY_MULTI_DRAW);
+            GLint tmp;
+            glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &tmp);
+            deviceInfos.at(0).uniformBufferMaxSize = tmp;
+            glGetIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &tmp);
+            deviceInfos.at(0).storageBufferMaxSize = tmp;
         }
         return deviceInfos;
     }

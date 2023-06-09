@@ -32,6 +32,10 @@ namespace xng {
     struct RenderDeviceInfo {
         std::string name; // The unique identifier of this physical render device
 
+        std::string renderer; // The name of the physical device
+        std::string vendor; // The manufacturer of the physical device
+        std::string version; // The version of the underlying graphics api used to interface with this physical device
+
         int maxSampleCount = 0; // The maximum supported amount of msaa samples per texture or render target. 0 if msaa is not supported.
 
         // The total amount of video memory available on the device in bytes
