@@ -53,44 +53,52 @@ namespace xng {
 
         // Resize object pools
         for (auto &pair: vertexBuffers) {
-            if (pair.second.size() - usedVertexBuffers.at(pair.first) > poolCacheSize) {
-                pair.second.resize(usedVertexBuffers.at(pair.first) + poolCacheSize);
+            if (pair.second.size() > usedVertexBuffers.at(pair.first)) {
+                pair.second.resize(usedVertexBuffers.at(pair.first));
             }
         }
         for (auto &pair: indexBuffers) {
-            if (pair.second.size() - usedIndexBuffers.at(pair.first) > poolCacheSize) {
-                pair.second.resize(usedIndexBuffers.at(pair.first) + poolCacheSize);
+            if (pair.second.size() > usedIndexBuffers.at(pair.first)) {
+                pair.second.resize(usedIndexBuffers.at(pair.first));
             }
         }
         for (auto &pair: vertexArrayObjects) {
-            if (pair.second.size() - usedVertexArrayObjects.at(pair.first) > poolCacheSize) {
-                pair.second.resize(usedVertexArrayObjects.at(pair.first) + poolCacheSize);
+            if (pair.second.size() > usedVertexArrayObjects.at(pair.first)) {
+                pair.second.resize(usedVertexArrayObjects.at(pair.first));
             }
         }
         for (auto &pair: textures) {
-            if (pair.second.size() - usedTextures.at(pair.first) > poolCacheSize) {
-                pair.second.resize(usedTextures.at(pair.first) + poolCacheSize);
+            if (pair.second.size() > usedTextures.at(pair.first)) {
+                pair.second.resize(usedTextures.at(pair.first));
             }
         }
         for (auto &pair: textureArrays) {
-            if (pair.second.size() - usedTextureArrays.at(pair.first) > poolCacheSize) {
-                pair.second.resize(usedTextureArrays.at(pair.first) + poolCacheSize);
+            if (pair.second.size() > usedTextureArrays.at(pair.first)) {
+                pair.second.resize(usedTextureArrays.at(pair.first));
             }
         }
         for (auto &pair: shaderBuffers) {
-            if (pair.second.size() - usedShaderBuffers.at(pair.first) > poolCacheSize) {
-                pair.second.resize(usedShaderBuffers.at(pair.first) + poolCacheSize);
+            if (pair.second.size() > usedShaderBuffers.at(pair.first)) {
+                pair.second.resize(usedShaderBuffers.at(pair.first));
             }
         }
         for (auto &pair: shaderStorageBuffers) {
-            if (pair.second.size() - usedShaderStorageBuffers.at(pair.first) > poolCacheSize) {
-                pair.second.resize(usedShaderStorageBuffers.at(pair.first) + poolCacheSize);
+            if (pair.second.size() > usedShaderStorageBuffers.at(pair.first)) {
+                pair.second.resize(usedShaderStorageBuffers.at(pair.first));
             }
         }
         for (auto &pair: targets) {
-            if (pair.second.size() - usedTargets.at(pair.first) > poolCacheSize) {
-                pair.second.resize(usedTargets.at(pair.first) + poolCacheSize);
+            if (pair.second.size() > usedTargets.at(pair.first)) {
+                pair.second.resize(usedTargets.at(pair.first));
             }
+        }
+        for (auto &pair: targets) {
+            if (pair.second.size() > usedTargets.at(pair.first)) {
+                pair.second.resize(usedTargets.at(pair.first));
+            }
+        }
+        if (commandBuffers.size() > usedCommandBuffers) {
+            commandBuffers.resize(usedCommandBuffers);
         }
     }
 
@@ -178,6 +186,15 @@ namespace xng {
             targets[desc].at(index) = device->createRenderTarget(desc);
         }
         return *targets[desc].at(index);
+    }
+
+    CommandBuffer &FrameGraphPoolAllocator::createCommandBuffer() {
+        auto index = usedCommandBuffers++;
+        if (commandBuffers.size() <= index) {
+            commandBuffers.resize(usedCommandBuffers);
+            commandBuffers.at(index) = device->createCommandBuffer();
+        }
+        return *commandBuffers.at(index);
     }
 
     void FrameGraphPoolAllocator::destroy(RenderObject &obj) {
@@ -294,7 +311,8 @@ namespace xng {
                     }
                 }
                 assert(found);
-                shaderStorageBuffers[buffer.getDescription()].erase(shaderStorageBuffers[buffer.getDescription()].begin() + index);
+                shaderStorageBuffers[buffer.getDescription()].erase(
+                        shaderStorageBuffers[buffer.getDescription()].begin() + index);
                 break;
             }
             case RenderObject::RENDER_OBJECT_RENDER_TARGET: {
@@ -329,6 +347,11 @@ namespace xng {
                 }
                 break;
             }
+            case RenderObject::RENDER_OBJECT_COMMAND_BUFFER: {
+                auto &buf = dynamic_cast<CommandBuffer&>(obj);
+                --usedCommandBuffers;
+                break;
+            }
         }
     }
 
@@ -350,7 +373,8 @@ namespace xng {
                 }
                 assert(found);
                 auto ret = std::unique_ptr<RenderObject>(vertexBuffers.at(buffer.getDescription()).at(index).release());
-                vertexBuffers.at(buffer.getDescription()).erase(vertexBuffers.at(buffer.getDescription()).begin() + index);
+                vertexBuffers.at(buffer.getDescription()).erase(
+                        vertexBuffers.at(buffer.getDescription()).begin() + index);
                 return ret;
             }
             case RenderObject::RENDER_OBJECT_INDEX_BUFFER: {
@@ -367,7 +391,8 @@ namespace xng {
                 }
                 assert(found);
                 auto ret = std::unique_ptr<RenderObject>(indexBuffers.at(buffer.getDescription()).at(index).release());
-                indexBuffers.at(buffer.getDescription()).erase(indexBuffers.at(buffer.getDescription()).begin() + index);
+                indexBuffers.at(buffer.getDescription()).erase(
+                        indexBuffers.at(buffer.getDescription()).begin() + index);
                 return ret;
             }
             case RenderObject::RENDER_OBJECT_VERTEX_ARRAY_OBJECT: {
@@ -383,8 +408,10 @@ namespace xng {
                     }
                 }
                 assert(found);
-                auto ret = std::unique_ptr<RenderObject>(vertexArrayObjects.at(buffer.getDescription()).at(index).release());
-                vertexArrayObjects.at(buffer.getDescription()).erase(vertexArrayObjects.at(buffer.getDescription()).begin() + index);
+                auto ret = std::unique_ptr<RenderObject>(
+                        vertexArrayObjects.at(buffer.getDescription()).at(index).release());
+                vertexArrayObjects.at(buffer.getDescription()).erase(
+                        vertexArrayObjects.at(buffer.getDescription()).begin() + index);
                 return ret;
             }
             case RenderObject::RENDER_OBJECT_TEXTURE_BUFFER: {
@@ -418,7 +445,8 @@ namespace xng {
                 }
                 assert(found);
                 auto ret = std::unique_ptr<RenderObject>(textureArrays.at(buffer.getDescription()).at(index).release());
-                textureArrays.at(buffer.getDescription()).erase(textureArrays.at(buffer.getDescription()).begin() + index);
+                textureArrays.at(buffer.getDescription()).erase(
+                        textureArrays.at(buffer.getDescription()).begin() + index);
                 return ret;
             }
             case RenderObject::RENDER_OBJECT_SHADER_UNIFORM_BUFFER: {
@@ -435,7 +463,8 @@ namespace xng {
                 }
                 assert(found);
                 auto ret = std::unique_ptr<RenderObject>(shaderBuffers.at(buffer.getDescription()).at(index).release());
-                shaderBuffers.at(buffer.getDescription()).erase(shaderBuffers.at(buffer.getDescription()).begin() + index);
+                shaderBuffers.at(buffer.getDescription()).erase(
+                        shaderBuffers.at(buffer.getDescription()).begin() + index);
                 return ret;
             }
             case RenderObject::RENDER_OBJECT_SHADER_STORAGE_BUFFER: {
@@ -451,8 +480,10 @@ namespace xng {
                     }
                 }
                 assert(found);
-                auto ret = std::unique_ptr<RenderObject>(shaderStorageBuffers.at(buffer.getDescription()).at(index).release());
-                shaderStorageBuffers.at(buffer.getDescription()).erase(shaderStorageBuffers.at(buffer.getDescription()).begin() + index);
+                auto ret = std::unique_ptr<RenderObject>(
+                        shaderStorageBuffers.at(buffer.getDescription()).at(index).release());
+                shaderStorageBuffers.at(buffer.getDescription()).erase(
+                        shaderStorageBuffers.at(buffer.getDescription()).begin() + index);
                 return ret;
             }
             case RenderObject::RENDER_OBJECT_RENDER_TARGET: {
@@ -468,7 +499,7 @@ namespace xng {
                 }
                 assert(found);
                 auto ret = device->createRenderTarget(target.getDescription());
-                if (--usedTargets[target.getDescription()] == 0){
+                if (--usedTargets[target.getDescription()] == 0) {
                     usedTargets.erase(target.getDescription());
                     targets.at(target.getDescription()).erase(targets.at(target.getDescription()).begin() + index);
                 }

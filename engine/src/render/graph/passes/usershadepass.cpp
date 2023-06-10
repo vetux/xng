@@ -25,7 +25,10 @@ void xng::UserShadePass::setup(xng::FrameGraphBuilder &builder) {
 
 }
 
-void xng::UserShadePass::execute(xng::FrameGraphPassResources &resources) {
+void xng::UserShadePass::execute(FrameGraphPassResources &resources,
+                                 const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
+                                 const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
+                                 const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) {
 
 }
 

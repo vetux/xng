@@ -208,10 +208,10 @@ namespace xng {
                             BIND_SHADER_STORAGE_BUFFER,
                     },
                     .vertexLayout = Mesh::getDefaultVertexLayout(),
-                    .clearColorValue = ColorRGBA(0, 0, 0, 0),
+              /*      .clearColorValue = ColorRGBA(0, 0, 0, 0),
                     .clearColor = false,
                     .clearDepth = false,
-                    .clearStencil = false,
+                    .clearStencil = false,*/
                     .enableDepthTest = true,
                     .depthTestWrite = true,
                     .depthTestMode = DEPTH_TEST_LESS,
@@ -394,11 +394,16 @@ namespace xng {
         builder.write(forwardColorRes);
         builder.write(forwardDepthRes);
         builder.read(deferredDepthRes);
+
+        commandBuffer = builder.createCommandBuffer();
+
+        builder.write(commandBuffer);
     }
 
-    void ForwardLightingPass::execute(FrameGraphPassResources &resources) {
-        auto atlasBuffers = atlas.getAtlasBuffers(resources);
-
+    void ForwardLightingPass::execute(FrameGraphPassResources &resources,
+                                      const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
+                                      const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
+                                      const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) {
         auto &target = resources.get<RenderTarget>(targetRes);
         auto &pipeline = resources.get<RenderPipeline>(pipelineRes);
         auto &pass = resources.get<RenderPass>(passRes);
@@ -416,6 +421,10 @@ namespace xng {
         auto &spotLightBuffer = resources.get<ShaderStorageBuffer>(spotLightsBufferRes);
         auto &dirLightBuffer = resources.get<ShaderStorageBuffer>(directionalLightsBufferRes);
 
+        auto &cBuffer = resources.get<CommandBuffer>(commandBuffer);
+
+        auto atlasBuffers = atlas.getAtlasBuffers(resources, cBuffer, renderQueues.at(0));
+
         auto plights = getPointLights(pointLights);
         auto slights = getSpotLights(spotLights);
         auto dlights = getDirLights(directionalLights);
@@ -427,24 +436,26 @@ namespace xng {
         dirLightBuffer.upload(reinterpret_cast<const uint8_t *>(dlights.data()),
                               dlights.size() * sizeof(DirectionalLightData));
 
+        std::vector<Command> commands;
+
         bool updateVao = false;
         if (staleVertexBuffer.assigned) {
             auto &staleBuffer = resources.get<VertexBuffer>(staleVertexBuffer);
-            vertexBuffer.copy(staleBuffer);
+            commands.emplace_back(vertexBuffer.copy(staleBuffer));
             staleVertexBuffer = {};
             updateVao = true;
         }
 
         if (staleIndexBuffer.assigned) {
             auto &staleBuffer = resources.get<IndexBuffer>(staleIndexBuffer);
-            indexBuffer.copy(staleBuffer);
+            commands.emplace_back(indexBuffer.copy(staleBuffer));
             staleIndexBuffer = {};
             updateVao = true;
         }
 
         if (updateVao || bindVao) {
             bindVao = false;
-            vertexArrayObject.bindBuffers(vertexBuffer, indexBuffer);
+            vertexArrayObject.setBuffers(vertexBuffer, indexBuffer);
         }
 
         allocateMeshes(vertexBuffer, indexBuffer);
@@ -472,25 +483,16 @@ namespace xng {
         }
 
         // Draw objects
-        target.setColorAttachments({forwardColor});
-
-        target.setDepthStencilAttachment(forwardDepth);
+        target.setAttachments({forwardColor}, forwardDepth);
 
         auto projection = camera.projection();
         auto view = Camera::view(cameraTransform);
-
-        pass.beginRenderPass(target, {}, target.getDescription().size);
-        pass.bindPipeline(pipeline);
-        pass.bindVertexArrayObject(vertexArrayObject);
-
-        pass.clearColorAttachments(ColorRGBA(0));
-        pass.clearDepthAttachment(1);
 
         if (!objects.empty()) {
             auto passesPerDrawCycle = objects.size() / drawCycles;
 
             for (auto i = 0; i < drawCycles; i++) {
-                std::vector<RenderPass::DrawCall> drawCalls;
+                std::vector<DrawCall> drawCalls;
                 std::vector<size_t> baseVertices;
                 std::vector<ShaderDrawData> shaderData;
                 for (auto oi = 0; oi < passesPerDrawCycle && oi < objects.size(); oi++) {
@@ -702,31 +704,48 @@ namespace xng {
                 shaderBuffer.upload(sizeof(float[8]),
                                     reinterpret_cast<const uint8_t *>(shaderData.data()),
                                     shaderData.size() * sizeof(ShaderDrawData));
-                pass.bindShaderData({shaderBuffer,
-                                     atlasBuffers.at(TEXTURE_ATLAS_8x8),
-                                     atlasBuffers.at(TEXTURE_ATLAS_16x16),
-                                     atlasBuffers.at(TEXTURE_ATLAS_32x32),
-                                     atlasBuffers.at(TEXTURE_ATLAS_64x64),
-                                     atlasBuffers.at(TEXTURE_ATLAS_128x128),
-                                     atlasBuffers.at(TEXTURE_ATLAS_256x256),
-                                     atlasBuffers.at(TEXTURE_ATLAS_512x512),
-                                     atlasBuffers.at(TEXTURE_ATLAS_1024x1024),
-                                     atlasBuffers.at(TEXTURE_ATLAS_2048x2048),
-                                     atlasBuffers.at(TEXTURE_ATLAS_4096x4096),
-                                     atlasBuffers.at(TEXTURE_ATLAS_8192x8192),
-                                     atlasBuffers.at(TEXTURE_ATLAS_16384x16384),
-                                     deferredDepth,
-                                     pointLightBuffer,
-                                     spotLightBuffer,
-                                     dirLightBuffer});
-                pass.multiDrawIndexed(drawCalls, baseVertices);
+
+                commands.emplace_back(pass.begin(target));
+                commands.emplace_back(pass.setViewport({}, target.getDescription().size));
+                commands.emplace_back(pipeline.bind());
+                commands.emplace_back(vertexArrayObject.bind());
+
+                commands.emplace_back(pass.clearColorAttachments(ColorRGBA(0)));
+                commands.emplace_back(pass.clearDepthAttachment(1));
+
+                auto shaderRes = std::vector<ShaderResource>{
+                        {shaderBuffer,                      {{VERTEX, ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_8x8),         {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_16x16),       {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_32x32),       {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_64x64),       {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_128x128),     {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_256x256),     {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_512x512),     {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_1024x1024),   {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_2048x2048),   {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_4096x4096),   {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_8192x8192),   {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_16384x16384), {{{FRAGMENT, ShaderResource::READ}}}},
+                        {deferredDepth, {{{FRAGMENT, ShaderResource::READ}}}},
+                        {pointLightBuffer, {{{FRAGMENT, ShaderResource::READ}}}},
+                        {spotLightBuffer, {{{FRAGMENT, ShaderResource::READ}}}},
+                        {dirLightBuffer, {{{FRAGMENT, ShaderResource::READ}}}},
+                };
+                commands.emplace_back(RenderPipeline::bindShaderResources(shaderRes));
+                commands.emplace_back(pass.multiDrawIndexed(drawCalls, baseVertices));
+
+                commands.emplace_back(pass.end());
+
+                cBuffer.begin();
+                cBuffer.add(commands);
+                cBuffer.end();
+
+                renderQueues.at(0).get().submit(cBuffer);
             }
         }
 
-        pass.endRenderPass();
-
-        target.setColorAttachments({});
-        target.clearDepthStencilAttachment();
+        target.setAttachments({});
     }
 
     std::type_index ForwardLightingPass::getTypeIndex() const {

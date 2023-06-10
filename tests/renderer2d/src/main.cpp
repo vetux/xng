@@ -242,7 +242,7 @@ int main(int argc, char *argv[]) {
                                              {640, 480},
                                              {
                                                      .swapInterval = 1,
-                                                     .debug = false
+                                                     .debug = true
                                              });
 
     auto renderDevice = gpuDriver.createRenderDevice();

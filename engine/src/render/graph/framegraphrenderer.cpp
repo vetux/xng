@@ -47,7 +47,10 @@ namespace xng {
         /// Execute
         for (auto &p: pipeline.getPasses()) {
             auto res = allocator->allocateNextPass();
-            p->execute(res);
+            p->execute(res,
+                       device.getRenderCommandQueues(),
+                       device.getComputeCommandQueues(),
+                       device.getTransferCommandQueues());
         }
     }
 }

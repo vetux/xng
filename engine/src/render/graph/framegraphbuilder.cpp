@@ -111,6 +111,13 @@ namespace xng {
         return ret;
     }
 
+    FrameGraphResource FrameGraphBuilder::createCommandBuffer() {
+        auto ret = createResourceId();
+        graph.allocations[ret] = FrameGraphAllocation{RenderObject::RENDER_OBJECT_COMMAND_BUFFER, {}};
+        currentPass.allocations.insert(ret);
+        return ret;
+    }
+
     void FrameGraphBuilder::write(FrameGraphResource target) {
         checkResourceHandle(target);
         currentPass.writes.insert(target);

@@ -37,14 +37,17 @@ namespace xng {
     public:
         void setup(FrameGraphBuilder &builder) override;
 
-        void execute(FrameGraphPassResources &resources) override;
+        void execute(FrameGraphPassResources &resources,
+                     const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
+                     const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
+                     const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) override;
 
         std::type_index getTypeIndex() const override;
 
     private:
         struct MeshDrawData {
             Primitive primitive = TRIANGLES;
-            RenderPass::DrawCall drawCall{};
+            DrawCall drawCall{};
             size_t baseVertex = 0;
         };
 
@@ -101,6 +104,8 @@ namespace xng {
 
         FrameGraphResource staleVertexBuffer;
         FrameGraphResource staleIndexBuffer;
+
+        FrameGraphResource commandBuffer;
 
         FrameGraphTextureAtlas atlas;
 

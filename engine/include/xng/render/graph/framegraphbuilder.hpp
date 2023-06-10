@@ -66,6 +66,8 @@ namespace xng {
 
         FrameGraphResource createShaderStorageBuffer(const ShaderStorageBufferDesc &desc);
 
+        FrameGraphResource createCommandBuffer();
+
         /**
          * Declare that the pass will write to the specified resource handle.
          * Resources which have not been declared with write / read or have been created can not be accessed by the pass.
@@ -173,6 +175,10 @@ namespace xng {
         std::set<FrameGraphResource> persistentResources;
 
         std::map<FrameGraphSlot, FrameGraphResource> graphSlots;
+
+        std::vector<FrameGraphResource> renderQueues;
+        std::vector<FrameGraphResource> computeQueues;
+        std::vector<FrameGraphResource> transferQueues;
 
         size_t resourceCounter = 1;
 

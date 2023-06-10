@@ -265,68 +265,75 @@ namespace xng {
         }
 
         std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>
-        getAtlasBuffers(FrameGraphPassResources &resources) {
+        getAtlasBuffers(FrameGraphPassResources &resources,
+                        CommandBuffer &commandBuffer,
+                        CommandQueue &renderQueue) {
+            commandBuffer.begin();
             if (currentHandles.tex8x8 != previousHandles.tex8x8 && previousHandles.tex8x8.assigned) {
                 auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex8x8);
                 auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex8x8);
-                bufA.copy(bufB);
+                commandBuffer.add(bufA.copy(bufB));
             }
             if (currentHandles.tex16x16 != previousHandles.tex16x16 && previousHandles.tex16x16.assigned) {
                 auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex16x16);
                 auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex16x16);
-                bufA.copy(bufB);
+                commandBuffer.add(bufA.copy(bufB));
             }
             if (currentHandles.tex32x32 != previousHandles.tex32x32 && previousHandles.tex32x32.assigned) {
                 auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex32x32);
                 auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex32x32);
-                bufA.copy(bufB);
+                commandBuffer.add(bufA.copy(bufB));
             }
             if (currentHandles.tex64x64 != previousHandles.tex64x64 && previousHandles.tex64x64.assigned) {
                 auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex64x64);
                 auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex64x64);
-                bufA.copy(bufB);
+                commandBuffer.add(bufA.copy(bufB));
             }
             if (currentHandles.tex128x128 != previousHandles.tex128x128 && previousHandles.tex128x128.assigned) {
                 auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex128x128);
                 auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex128x128);
-                bufA.copy(bufB);
+                commandBuffer.add(bufA.copy(bufB));
             }
             if (currentHandles.tex256x256 != previousHandles.tex256x256 && previousHandles.tex256x256.assigned) {
                 auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex256x256);
                 auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex256x256);
-                bufA.copy(bufB);
+                commandBuffer.add(bufA.copy(bufB));
             }
             if (currentHandles.tex512x512 != previousHandles.tex512x512 && previousHandles.tex512x512.assigned) {
                 auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex512x512);
                 auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex512x512);
-                bufA.copy(bufB);
+                commandBuffer.add(bufA.copy(bufB));
             }
             if (currentHandles.tex1024x1024 != previousHandles.tex1024x1024 && previousHandles.tex1024x1024.assigned) {
                 auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex1024x1024);
                 auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex1024x1024);
-                bufA.copy(bufB);
+                commandBuffer.add(bufA.copy(bufB));
             }
             if (currentHandles.tex2048x2048 != previousHandles.tex2048x2048 && previousHandles.tex2048x2048.assigned) {
                 auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex2048x2048);
                 auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex2048x2048);
-                bufA.copy(bufB);
+                commandBuffer.add(bufA.copy(bufB));
             }
             if (currentHandles.tex4096x4096 != previousHandles.tex4096x4096 && previousHandles.tex4096x4096.assigned) {
                 auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex4096x4096);
                 auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex4096x4096);
-                bufA.copy(bufB);
+                commandBuffer.add(bufA.copy(bufB));
             }
             if (currentHandles.tex8192x8192 != previousHandles.tex8192x8192 && previousHandles.tex8192x8192.assigned) {
                 auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex8192x8192);
                 auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex8192x8192);
-                bufA.copy(bufB);
+                commandBuffer.add(bufA.copy(bufB));
             }
             if (currentHandles.tex16384x16384 != previousHandles.tex16384x16384 &&
                 previousHandles.tex16384x16384.assigned) {
                 auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex16384x16384);
                 auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex16384x16384);
-                bufA.copy(bufB);
+                commandBuffer.add(bufA.copy(bufB));
             }
+
+            commandBuffer.end();
+
+            renderQueue.submit(commandBuffer);
 
             auto ret = std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>{
                     {TEXTURE_ATLAS_8x8,         resources.get<TextureArrayBuffer>(

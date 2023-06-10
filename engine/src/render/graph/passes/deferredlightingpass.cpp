@@ -249,9 +249,15 @@ namespace xng {
         builder.read(gBufferDepth);
 
         cameraTransform = builder.getScene().cameraTransform;
+
+        commandBuffer = builder.createCommandBuffer();
+        builder.write(commandBuffer);
     }
 
-    void DeferredLightingPass::execute(FrameGraphPassResources &resources) {
+    void DeferredLightingPass::execute(FrameGraphPassResources &resources,
+                                       const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
+                                       const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
+                                       const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) {
         auto &target = resources.get<RenderTarget>(targetRes);
 
         auto &pipeline = resources.get<RenderPipeline>(pipelineRes);
@@ -268,6 +274,8 @@ namespace xng {
 
         auto &colorTex = resources.get<TextureBuffer>(colorTextureRes);
         auto &depthTex = resources.get<TextureBuffer>(depthTextureRes);
+
+        auto &cBuffer = resources.get<CommandBuffer>(commandBuffer);
 
         auto plights = getPointLights(pointLights);
         auto slights = getSpotLights(spotLights);
@@ -286,7 +294,7 @@ namespace xng {
             vertexBuffer.upload(0,
                                 verts.data(),
                                 verts.size());
-            vertexArrayObject.bindBuffers(vertexBuffer);
+            vertexArrayObject.setBuffers(vertexBuffer);
         }
 
         UniformBuffer buf;
@@ -306,32 +314,39 @@ namespace xng {
         auto &gBufModelObject = resources.get<TextureBuffer>(gBufferModelObject);
         auto &gBufDepth = resources.get<TextureBuffer>(gBufferDepth);
 
-        target.setColorAttachments({colorTex});
-        target.setDepthStencilAttachment(depthTex);
+        target.setAttachments({colorTex}, depthTex);
 
-        pass.beginRenderPass(target, {}, target.getDescription().size);
+        std::vector<Command> commands;
 
-        pass.bindPipeline(pipeline);
-        pass.bindVertexArrayObject(vertexArrayObject);
-        pass.bindShaderData({
-                                    uniformBuffer,
-                                    pointLightBuffer,
-                                    spotLightBuffer,
-                                    dirLightBuffer,
-                                    gBufPos,
-                                    gBufNorm,
-                                    gBufRoughnessMetallicAO,
-                                    gBufAlbedo,
-                                    gBufAmbient,
-                                    gBufSpecular,
-                                    gBufModelObject,
-                                    gBufDepth
-                            });
-        pass.drawArray(RenderPass::DrawCall(0, mesh.vertices.size()));
-        pass.endRenderPass();
+        commands.emplace_back(pass.begin(target));
+        commands.emplace_back(pass.setViewport({}, target.getDescription().size));
 
-        target.setColorAttachments({});
-        target.clearDepthStencilAttachment();
+        commands.emplace_back(pipeline.bind());
+        commands.emplace_back(vertexArrayObject.bind());
+        commands.emplace_back(RenderPipeline::bindShaderResources({
+                                                                          {uniformBuffer,           {{FRAGMENT, ShaderResource::READ}}},
+                                                                          {pointLightBuffer,        {{FRAGMENT, ShaderResource::READ}}},
+                                                                          {spotLightBuffer,         {{FRAGMENT, ShaderResource::READ}}},
+                                                                          {dirLightBuffer,          {{FRAGMENT, ShaderResource::READ}}},
+                                                                          {gBufPos,                 {{FRAGMENT, ShaderResource::READ}}},
+                                                                          {gBufNorm,                {{FRAGMENT, ShaderResource::READ}}},
+                                                                          {gBufRoughnessMetallicAO, {{FRAGMENT, ShaderResource::READ}}},
+                                                                          {gBufAlbedo,              {{FRAGMENT, ShaderResource::READ}}},
+                                                                          {gBufAmbient,             {{FRAGMENT, ShaderResource::READ}}},
+                                                                          {gBufSpecular,            {{FRAGMENT, ShaderResource::READ}}},
+                                                                          {gBufModelObject,         {{FRAGMENT, ShaderResource::READ}}},
+                                                                          {gBufDepth,               {{FRAGMENT, ShaderResource::READ}}}
+                                                                  }));
+        commands.emplace_back(pass.drawArray(DrawCall(0, mesh.vertices.size())));
+        commands.emplace_back(pass.end());
+
+        cBuffer.begin();
+        cBuffer.add(commands);
+        cBuffer.end();
+
+        renderQueues.at(0).get().submit(cBuffer);
+
+        target.setAttachments({});
     }
 
     std::type_index DeferredLightingPass::getTypeIndex() const {

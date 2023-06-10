@@ -55,7 +55,10 @@ namespace xng {
          *
          * @param resources
          */
-        virtual void execute(FrameGraphPassResources &resources) = 0;
+        virtual void execute(FrameGraphPassResources &resources,
+                             const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
+                             const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
+                             const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) = 0;
 
         /**
          * The returned type name is used for defining dependencies between passes.

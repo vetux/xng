@@ -31,7 +31,10 @@ namespace xng {
 
     }
 
-    void xng::SkyboxPass::execute(FrameGraphPassResources &resources) {
+    void xng::SkyboxPass::execute(FrameGraphPassResources &resources,
+                                  const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
+                                  const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
+                                  const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) {
 
     }
 

@@ -147,7 +147,6 @@ int main(int argc, char *argv[]) {
                                                                  BIND_TEXTURE_ARRAY_BUFFER
                                                          },
                                                          .vertexLayout = mesh.vertexLayout,
-                                                         .clearColor = true,
                                                  },
                                                  shaderDecompiler);
 
@@ -164,7 +163,7 @@ int main(int argc, char *argv[]) {
             .vertexLayout = mesh.vertexLayout
     });
 
-    vertexArray->bindBuffers(*vertexBuffer);
+    vertexArray->setBuffers(*vertexBuffer);
 
     auto pass = device->createRenderPass(RenderPassDesc{
             .numberOfColorAttachments = 1,
@@ -198,18 +197,30 @@ int main(int argc, char *argv[]) {
     shaderBuffer->upload(ShaderDrawData{.mvp = MatrixMath::identity()});
 
     while (!window->shouldClose()) {
-        pass->beginRenderPass(*target, {}, target->getDescription().size);
-        pass->bindVertexArrayObject(*vertexArray);
-        pass->bindShaderData({
-                                     *shaderBuffer,
-                                     *textureBuffer,
-                                     *textureArrayBuffer
-                             });
-        pass->bindPipeline(*pipeline);
-        RenderPass::DrawCall drawCall;
+        auto cbuf = device->createCommandBuffer();
+        cbuf->begin();
+        cbuf->add(pass->begin(*target));
+        cbuf->add(pass->setViewport( {}, target->getDescription().size));
+
+        cbuf->add(pipeline->bind());
+        cbuf->add(vertexArray->bind());
+
+        cbuf->add(RenderPipeline::bindShaderResources({
+                                                              {*shaderBuffer, {{{VERTEX, ShaderResource::READ},
+                                                                               {FRAGMENT, ShaderResource::READ}}}},
+                                                              {*textureBuffer, {{FRAGMENT, ShaderResource::READ}}},
+                                                              {*textureArrayBuffer, {{FRAGMENT, ShaderResource::READ}}}
+                                                      }));
+
+        DrawCall drawCall;
         drawCall.count = mesh.vertices.size();
-        pass->multiDrawArray({drawCall});
-        pass->endRenderPass();
+        cbuf->add(pass->multiDrawArray({drawCall}));
+        cbuf->add(pass->end());
+
+        cbuf->end();
+
+        device->getRenderCommandQueues().at(0).get().submit(*cbuf);
+
         window->update();
         window->swapBuffers();
     }

@@ -33,12 +33,10 @@ namespace xng {
         FrameGraphPoolAllocator(RenderDevice &device,
                                 ShaderCompiler &shaderCompiler,
                                 ShaderDecompiler &shaderDecompiler,
-                                RenderTarget &backBuffer,
-                                size_t poolCacheSize = 0)
+                                RenderTarget &backBuffer)
                 : device(&device),
                   shaderCompiler(&shaderCompiler),
                   shaderDecompiler(&shaderDecompiler),
-                  poolCacheSize(poolCacheSize),
                   backBuffer(&backBuffer) {}
 
         FrameGraphPoolAllocator(const FrameGraphPoolAllocator &) = delete;
@@ -187,6 +185,11 @@ namespace xng {
                     objects[res] = &tex;
                     return tex;
                 }
+                case RenderObject::RENDER_OBJECT_COMMAND_BUFFER: {
+                    auto &buf = createCommandBuffer();
+                    objects[res] = &buf;
+                    return buf;
+                }
                 default:
                     throw std::runtime_error("Invalid render object type");
             }
@@ -226,6 +229,8 @@ namespace xng {
 
         RenderTarget &createRenderTarget(const RenderTargetDesc &desc);
 
+        CommandBuffer &createCommandBuffer();
+
         void destroy(RenderObject &obj);
 
         std::unique_ptr<RenderObject> persist(RenderObject &obj);
@@ -245,6 +250,7 @@ namespace xng {
         std::unordered_map<ShaderUniformBufferDesc, std::vector<std::unique_ptr<ShaderUniformBuffer>>> shaderBuffers;
         std::unordered_map<ShaderStorageBufferDesc, std::vector<std::unique_ptr<ShaderStorageBuffer>>> shaderStorageBuffers;
         std::unordered_map<RenderTargetDesc, std::vector<std::unique_ptr<RenderTarget>>> targets;
+        std::vector<std::unique_ptr<CommandBuffer>> commandBuffers;
 
         std::unordered_map<RenderPipelineDesc, int> usedPipelines;
         std::unordered_map<RenderPassDesc, int> usedPasses;
@@ -256,14 +262,13 @@ namespace xng {
         std::unordered_map<ShaderUniformBufferDesc, int> usedShaderBuffers;
         std::unordered_map<ShaderStorageBufferDesc, int> usedShaderStorageBuffers;
         std::unordered_map<RenderTargetDesc, int> usedTargets;
+        size_t usedCommandBuffers;
 
         FrameGraph frame;
 
         std::map<FrameGraphResource, RenderObject *> objects;
         std::map<FrameGraphResource, std::unique_ptr<RenderObject>> persistentObjects;
         size_t currentStage = 0;
-
-        size_t poolCacheSize{};
     };
 }
 

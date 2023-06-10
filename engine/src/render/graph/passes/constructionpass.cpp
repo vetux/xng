@@ -107,10 +107,10 @@ namespace xng {
                             BIND_TEXTURE_ARRAY_BUFFER
                     },
                     .vertexLayout = Mesh::getDefaultVertexLayout(),
-                    .clearColorValue = ColorRGBA(0, 0, 0, 0),
+             /*       .clearColorValue = ColorRGBA(0, 0, 0, 0),
                     .clearColor = false,
                     .clearDepth = false,
-                    .clearStencil = false,
+                    .clearStencil = false,*/
                     .enableDepthTest = true,
                     .depthTestWrite = true,
                     .depthTestMode = DEPTH_TEST_LESS,
@@ -355,11 +355,15 @@ namespace xng {
         builder.assignSlot(SLOT_GBUFFER_SPECULAR, gBufferSpecular);
         builder.assignSlot(SLOT_GBUFFER_MODEL_OBJECT, gBufferModelObject);
         builder.assignSlot(SLOT_GBUFFER_DEPTH, gBufferDepth);
+
+        commandBuffer = builder.createCommandBuffer();
+        builder.write(commandBuffer);
     }
 
-    void ConstructionPass::execute(FrameGraphPassResources &resources) {
-        auto atlasBuffers = atlas.getAtlasBuffers(resources);
-
+    void ConstructionPass::execute(FrameGraphPassResources &resources,
+                                   const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
+                                   const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
+                                   const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) {
         auto &target = resources.get<RenderTarget>(renderTargetRes);
         auto &pipeline = resources.get<RenderPipeline>(renderPipelineRes);
         auto &pass = resources.get<RenderPass>(renderPassRes);
@@ -391,45 +395,74 @@ namespace xng {
         auto &clearTarget = resources.get<RenderTarget>(clearTargetRes);
         auto &clearPass = resources.get<RenderPass>(clearPassRes);
 
+        auto &cBuffer = resources.get<CommandBuffer>(commandBuffer);
+
+        auto atlasBuffers = atlas.getAtlasBuffers(resources, cBuffer, renderQueues.at(0));
+
         // Clear textures
-        clearTarget.setColorAttachments({screenColorTex, deferredColorTex, forwardColorTex});
-        clearTarget.setDepthStencilAttachment(screenDepthTex);
+        clearTarget.setAttachments({screenColorTex, deferredColorTex, forwardColorTex}, screenDepthTex);
 
-        clearPass.beginRenderPass(clearTarget, {}, {});
-        clearPass.clearColorAttachments(ColorRGBA(0));
-        clearPass.clearDepthAttachment(1);
-        clearPass.endRenderPass();
+        std::vector<Command> commands;
 
-        clearTarget.setDepthStencilAttachment(deferredDepthTex);
+        commands.emplace_back(clearPass.begin(clearTarget));
+        commands.emplace_back(clearPass.clearColorAttachments(ColorRGBA(0)));
+        commands.emplace_back(clearPass.clearDepthAttachment(1));
+        commands.emplace_back(clearPass.end());
 
-        clearPass.beginRenderPass(clearTarget, {}, {});
-        clearPass.clearDepthAttachment(1);
-        clearPass.endRenderPass();
+        cBuffer.begin();
+        cBuffer.add(commands);
+        cBuffer.end();
 
-        clearTarget.setDepthStencilAttachment(forwardDepthTex);
+        commands.clear();
 
-        clearPass.beginRenderPass(clearTarget, {}, {});
-        clearPass.clearDepthAttachment(1);
-        clearPass.endRenderPass();
+        renderQueues.at(0).get().submit({cBuffer}, {}, {});
+
+        clearTarget.setAttachments({}, deferredDepthTex);
+
+        commands.emplace_back(clearPass.begin(clearTarget));
+        commands.emplace_back(clearPass.clearDepthAttachment(1));
+        commands.emplace_back(clearPass.end());
+
+        cBuffer.begin();
+        cBuffer.add(commands);
+        cBuffer.end();
+
+        commands.clear();
+
+        renderQueues.at(0).get().submit({cBuffer}, {}, {});
+
+        clearTarget.setAttachments({}, forwardDepthTex);
+
+        commands.emplace_back(clearPass.begin(clearTarget));
+        commands.emplace_back(clearPass.clearDepthAttachment(1));
+        commands.emplace_back(clearPass.end());
+
+        cBuffer.begin();
+        cBuffer.add(commands);
+        cBuffer.end();
+
+        commands.clear();
+
+        renderQueues.at(0).get().submit({cBuffer}, {}, {});
 
         bool updateVao = false;
         if (staleVertexBuffer.assigned) {
             auto &staleBuffer = resources.get<VertexBuffer>(staleVertexBuffer);
-            vertexBuffer.copy(staleBuffer);
+            commands.emplace_back(vertexBuffer.copy(staleBuffer));
             staleVertexBuffer = {};
             updateVao = true;
         }
 
         if (staleIndexBuffer.assigned) {
             auto &staleBuffer = resources.get<IndexBuffer>(staleIndexBuffer);
-            indexBuffer.copy(staleBuffer);
+            commands.emplace_back(indexBuffer.copy(staleBuffer));
             staleIndexBuffer = {};
             updateVao = true;
         }
 
         if (updateVao || bindVao) {
             bindVao = false;
-            vertexArrayObject.bindBuffers(vertexBuffer, indexBuffer);
+            vertexArrayObject.setBuffers(vertexBuffer, indexBuffer);
         }
 
         allocateMeshes(vertexBuffer, indexBuffer);
@@ -457,7 +490,7 @@ namespace xng {
         }
 
         // Draw geometry buffer
-        target.setColorAttachments({
+        target.setAttachments({
                                            posTex,
                                            normalTex,
                                            tanTex,
@@ -466,25 +499,17 @@ namespace xng {
                                            ambientTex,
                                            specularTex,
                                            modelObjectTex
-                                   });
-
-        target.setDepthStencilAttachment(depthTex);
+                                   },
+                              depthTex);
 
         auto projection = camera.projection();
         auto view = Camera::view(cameraTransform);
-
-        pass.beginRenderPass(target, {}, target.getDescription().size);
-        pass.bindPipeline(pipeline);
-        pass.bindVertexArrayObject(vertexArrayObject);
-
-        pass.clearColorAttachments(ColorRGBA(0));
-        pass.clearDepthAttachment(1);
 
         if (!objects.empty()) {
             auto passesPerDrawCycle = objects.size() / drawCycles;
 
             for (auto i = 0; i < drawCycles; i++) {
-                std::vector<RenderPass::DrawCall> drawCalls;
+                std::vector<DrawCall> drawCalls;
                 std::vector<size_t> baseVertices;
                 std::vector<ShaderDrawData> shaderData;
                 for (auto oi = 0; oi < passesPerDrawCycle && oi < objects.size(); oi++) {
@@ -688,30 +713,48 @@ namespace xng {
                     drawCalls.emplace_back(mesh.drawCall);
                     baseVertices.emplace_back(mesh.baseVertex);
                 }
+
+                commands.emplace_back(pass.begin(target));
+                commands.emplace_back(pass.setViewport( {}, target.getDescription().size));
+                commands.emplace_back(pipeline.bind());
+                commands.emplace_back(vertexArrayObject.bind());
+
+                commands.emplace_back(pass.clearColorAttachments(ColorRGBA(0)));
+                commands.emplace_back(pass.clearDepthAttachment(1));
+                
                 shaderBuffer.upload(0,
                                     reinterpret_cast<const uint8_t *>(shaderData.data()),
                                     shaderData.size() * sizeof(ShaderDrawData));
-                pass.bindShaderData({shaderBuffer,
-                                     atlasBuffers.at(TEXTURE_ATLAS_8x8),
-                                     atlasBuffers.at(TEXTURE_ATLAS_16x16),
-                                     atlasBuffers.at(TEXTURE_ATLAS_32x32),
-                                     atlasBuffers.at(TEXTURE_ATLAS_64x64),
-                                     atlasBuffers.at(TEXTURE_ATLAS_128x128),
-                                     atlasBuffers.at(TEXTURE_ATLAS_256x256),
-                                     atlasBuffers.at(TEXTURE_ATLAS_512x512),
-                                     atlasBuffers.at(TEXTURE_ATLAS_1024x1024),
-                                     atlasBuffers.at(TEXTURE_ATLAS_2048x2048),
-                                     atlasBuffers.at(TEXTURE_ATLAS_4096x4096),
-                                     atlasBuffers.at(TEXTURE_ATLAS_8192x8192),
-                                     atlasBuffers.at(TEXTURE_ATLAS_16384x16384)});
-                pass.multiDrawIndexed(drawCalls, baseVertices);
+
+                auto shaderRes = std::vector<ShaderResource>{
+                        {shaderBuffer,                      {{VERTEX, ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_8x8),         {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_16x16),       {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_32x32),       {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_64x64),       {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_128x128),     {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_256x256),     {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_512x512),     {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_1024x1024),   {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_2048x2048),   {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_4096x4096),   {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_8192x8192),   {{{FRAGMENT, ShaderResource::READ}}}},
+                        {atlasBuffers.at(TEXTURE_ATLAS_16384x16384), {{{FRAGMENT, ShaderResource::READ}}}},
+                };
+                
+                commands.emplace_back(RenderPipeline::bindShaderResources(shaderRes));
+                commands.emplace_back(pass.multiDrawIndexed(drawCalls, baseVertices));
+                commands.emplace_back(pass.end());
+
+                cBuffer.begin();
+                cBuffer.add(commands);
+                cBuffer.end();
+
+                renderQueues.at(0).get().submit(cBuffer);
             }
         }
 
-        pass.endRenderPass();
-
-        target.setColorAttachments({});
-        target.clearDepthStencilAttachment();
+        target.setAttachments({});
     }
 
     std::type_index ConstructionPass::getTypeIndex() const {

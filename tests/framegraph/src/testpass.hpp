@@ -61,9 +61,6 @@ public:
                                  BIND_TEXTURE_BUFFER},
                     .primitive = TRIANGLES,
                     .vertexLayout = mesh.vertexLayout,
-                    .clearColorValue = ColorRGBA::gray(1),
-                    .clearColor = true,
-                    .clearDepth = true,
                     .enableBlending = false
             });
         }
@@ -77,7 +74,7 @@ public:
 
         builder.read(passRes);
 
-        shaderBufferRes = builder.createShaderUniformBuffer(ShaderUniformBufferDesc{.size =  sizeof(ShaderData)});
+        shaderBufferRes = builder.createShaderUniformBuffer(ShaderUniformBufferDesc{.size =  sizeof(::ShaderData)});
         builder.read(shaderBufferRes);
         builder.write(shaderBufferRes);
 
@@ -134,9 +131,15 @@ public:
         builder.write(backBuffer);
 
         camera = builder.getScene().camera;
+
+        commandBuffer = builder.createCommandBuffer();
+        builder.write(commandBuffer);
     }
 
-    void execute(FrameGraphPassResources &resources) override {
+    void
+    execute(FrameGraphPassResources &resources, const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
+            const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
+            const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) override {
         auto &target = resources.get<RenderTarget>(backBuffer);
 
         auto &pipeline = resources.get<RenderPipeline>(pipelineRes);
@@ -147,16 +150,18 @@ public:
 
         auto &shaderBuffer = resources.get<ShaderUniformBuffer>(shaderBufferRes);
 
+        auto &cBuffer = resources.get<CommandBuffer>(commandBuffer);
+
         if (!quadAllocated) {
             quadAllocated = true;
             auto verts = VertexStream().addVertices(mesh.vertices).getVertexBuffer();
             vertexBuffer.upload(0,
                                 verts.data(),
                                 verts.size());
-            vertexArrayObject.bindBuffers(vertexBuffer);
+            vertexArrayObject.setBuffers(vertexBuffer);
         }
 
-        ShaderData buf{};
+        ::ShaderData buf{};
         buf.visualizeDepth_near_far[0] = tex == 8 || tex == 10 || tex == 12 || tex == 14;
         buf.visualizeDepth_near_far[1] = camera.nearClip;
         buf.visualizeDepth_near_far[2] = 100;
@@ -165,17 +170,21 @@ public:
 
         auto &texture = resources.get<TextureBuffer>(displayTextureRes);
 
-        pass.beginRenderPass(target, {}, target.getDescription().size);
-
-        pass.bindPipeline(pipeline);
-        pass.bindVertexArrayObject(vertexArrayObject);
-        pass.bindShaderData({
-                                    shaderBuffer,
-                                    texture
-                            });
-        pass.drawArray(RenderPass::DrawCall(0, mesh.vertices.size()));
-
-        pass.endRenderPass();
+        cBuffer.begin();
+        cBuffer.add(pass.begin(target));
+        cBuffer.add(pass.setViewport({}, target.getDescription().size));
+        cBuffer.add(pass.clearColorAttachments(ColorRGBA(0)));
+        cBuffer.add(pass.clearDepthAttachment(1));
+        cBuffer.add(pipeline.bind());
+        cBuffer.add(vertexArrayObject.bind());
+        cBuffer.add(RenderPipeline::bindShaderResources({
+                                                                ShaderResource{shaderBuffer,
+                                                                               {{FRAGMENT, ShaderResource::READ}}},
+                                                                {texture, {{FRAGMENT, ShaderResource::READ}}}
+                                                        }));
+        cBuffer.add(pass.drawArray(DrawCall(0, mesh.vertices.size())));
+        cBuffer.add(pass.end());
+        renderQueues.at(0).get().submit(cBuffer);
     }
 
     std::type_index getTypeIndex() const override {
@@ -220,6 +229,8 @@ private:
     bool quadAllocated = false;
 
     FrameGraphResource displayTextureRes;
+
+    FrameGraphResource commandBuffer;
 
     Camera camera;
 };

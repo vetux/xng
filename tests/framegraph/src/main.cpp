@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
                                              {800, 600},
                                              WindowAttributes{
                                                      .swapInterval = 1,
-                                                     .debug = false
+                                                     .debug = true
                                              });
     auto &input = window->getInput();
 

@@ -106,9 +106,15 @@ namespace xng {
         builder.read(deferredDepth);
         builder.read(forwardColor);
         builder.read(forwardDepth);
+
+        commandBuffer = builder.createCommandBuffer();
+        builder.write(commandBuffer);
     }
 
-    void CompositePass::execute(FrameGraphPassResources &resources) {
+    void CompositePass::execute(FrameGraphPassResources &resources,
+                                const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
+                                const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
+                                const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) {
         auto &t = resources.get<RenderTarget>(target);
         auto &bt = resources.get<RenderTarget>(blitTarget);
 
@@ -127,38 +133,51 @@ namespace xng {
         auto &fColor = resources.get<TextureBuffer>(forwardColor);
         auto &fDepth = resources.get<TextureBuffer>(forwardDepth);
 
+        auto &cBuffer = resources.get<CommandBuffer>(commandBuffer);
+
         if (!quadAllocated) {
             quadAllocated = true;
             auto verts = VertexStream().addVertices(mesh.vertices).getVertexBuffer();
             vb.upload(0,
                       verts.data(),
                       verts.size());
-            vao.bindBuffers(vb);
+            vao.setBuffers(vb);
         }
 
-        t.setColorAttachments({sColor});
-        t.setDepthStencilAttachment(sDepth);
+        t.setAttachments({sColor}, sDepth);
+        bt.setAttachments({dColor}, dDepth);
 
-        bt.setColorAttachments({dColor});
-        bt.setDepthStencilAttachment(dDepth);
+        assert(t.isComplete());
+        assert(bt.isComplete());
 
-        t.blitColor(bt, {}, {}, bt.getDescription().size, t.getDescription().size, NEAREST, 0, 0);
-        t.blitDepth(bt, {}, {}, bt.getDescription().size, t.getDescription().size);
+        std::vector<Command> commands;
 
-        bt.setColorAttachments({});
-        bt.clearDepthStencilAttachment();
+        commands.emplace_back(t.blitColor(bt, {}, {}, bt.getDescription().size, t.getDescription().size,
+                                          NEAREST, 0, 0));
+        commands.emplace_back(t.blitDepth(bt, {}, {}, bt.getDescription().size, t.getDescription().size));
 
-        p.beginRenderPass(t, {}, t.getDescription().size);
-        p.bindPipeline(pip);
-        p.bindVertexArrayObject(vao);
-        p.bindShaderData({fColor, fDepth});
+        commands.emplace_back(p.begin(t));
+        commands.emplace_back(pip.bind());
+        commands.emplace_back(vao.bind());
+        commands.emplace_back(RenderPipeline::bindShaderResources({
+                                                                          {fColor, {
+                                                                                           {FRAGMENT, ShaderResource::READ}
+                                                                                   }},
+                                                                          {fDepth, {
+                                                                                           {FRAGMENT, ShaderResource::READ}
+                                                                                   }},
+                                                                  }));
+        commands.emplace_back(p.drawArray(DrawCall(0, mesh.vertices.size())));
+        commands.emplace_back(p.end());
 
-        p.drawArray(RenderPass::DrawCall(0, mesh.vertices.size()));
+        cBuffer.begin();
+        cBuffer.add(commands);
+        cBuffer.end();
 
-        p.endRenderPass();
+        renderQueues.at(0).get().submit({cBuffer}, {}, {});
 
-        t.setColorAttachments({});
-        t.clearDepthStencilAttachment();
+        bt.setAttachments({});
+        t.setAttachments({});
     }
 
     std::type_index CompositePass::getTypeIndex() const {

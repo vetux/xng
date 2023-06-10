@@ -34,22 +34,34 @@ namespace xng {
         builder.write(backBuffer);
         builder.read(screenColor);
         builder.read(screenDepth);
+
+        commandBuffer = builder.createCommandBuffer();
+        builder.write(commandBuffer);
     }
 
-    void PresentationPass::execute(FrameGraphPassResources &resources) {
+    void PresentationPass::execute(FrameGraphPassResources &resources,
+                                   const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
+                                   const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
+                                   const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) {
         auto &t = resources.get<RenderTarget>(target);
         auto &b = resources.get<RenderTarget>(backBuffer);
 
         auto &color = resources.get<TextureBuffer>(screenColor);
         auto &depth = resources.get<TextureBuffer>(screenDepth);
 
-        t.setColorAttachments({color});
-        t.setDepthStencilAttachment(depth);
+        auto &cBuffer = resources.get<CommandBuffer>(commandBuffer);
 
-        b.blitColor(t, {}, {}, t.getDescription().size, b.getDescription().size, TextureFiltering::NEAREST, 0, 0);
-        b.blitDepth(t, {}, {}, t.getDescription().size, b.getDescription().size);
+        t.setAttachments({color}, depth);
 
-        t.setColorAttachments({});
-        t.clearDepthStencilAttachment();
+        cBuffer.begin();
+        cBuffer.add(
+                b.blitColor(t, {}, {}, t.getDescription().size, b.getDescription().size, TextureFiltering::NEAREST, 0,
+                            0));
+        cBuffer.add(b.blitDepth(t, {}, {}, t.getDescription().size, b.getDescription().size));
+        cBuffer.end();
+
+        renderQueues.at(0).get().submit(cBuffer);
+
+        t.setAttachments({});
     }
 }

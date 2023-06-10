@@ -25,7 +25,10 @@ void xng::ShadowMappingPass::setup(xng::FrameGraphBuilder &builder) {
 
 }
 
-void xng::ShadowMappingPass::execute(xng::FrameGraphPassResources &resources) {
+void xng::ShadowMappingPass::execute(FrameGraphPassResources &resources,
+                                     const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
+                                     const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
+                                     const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) {
 
 }
 
