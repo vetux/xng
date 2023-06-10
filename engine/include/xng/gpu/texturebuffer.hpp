@@ -31,7 +31,7 @@
 
 namespace xng {
     /**
-     * A bindable texture buffer eg sampler2D in glsl
+     * A bindable texture buffer
      */
     class XENGINE_EXPORT TextureBuffer : public RenderObject {
     public:

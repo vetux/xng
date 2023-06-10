@@ -51,7 +51,7 @@ namespace xng {
 
     struct RenderPipelineDesc {
         std::map<ShaderStage, SPIRVShader> shaders; // The shaders to use for this pipeline
-        std::vector<RenderPipelineBindingType> bindings; // The set of binding types in order
+        std::vector<RenderPipelineBindingType> bindings; // The set of binding types defining how shader resources are bound
 
         Primitive primitive = TRIANGLES;
         VertexLayout vertexLayout{}; // The layout of one vertex

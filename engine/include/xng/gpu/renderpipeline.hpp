@@ -38,6 +38,10 @@ namespace xng {
             return {Command::BIND_PIPELINE, RenderPipelineBind(this)};
         }
 
+        /**
+         * @param resources
+         * @return The command binds the given resources to a previously bound pipeline
+         */
         static Command bindShaderResources(std::vector<ShaderResource> resources) {
             return {Command::BIND_SHADER_RESOURCES, ShaderResourceBind(std::move(resources))};
         }

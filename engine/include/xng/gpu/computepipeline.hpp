@@ -48,7 +48,7 @@ namespace xng {
          * @param resources
          * @return
          */
-        Command setBindings(std::vector<ShaderResource> resources) {
+        static Command bindShaderResources(std::vector<ShaderResource> resources) {
             return {Command::COMPUTE_BIND_DATA, ComputePipelineBindData(std::move(resources))};
         }
 
@@ -56,7 +56,7 @@ namespace xng {
          * @param num_groups The number of work groups in each dimension, cannot be zero.
          * @return
          */
-        Command execute(const Vector3<unsigned int> &num_groups) {
+        static Command execute(const Vector3<unsigned int> &num_groups) {
             return {Command::COMPUTE_EXECUTE, ComputePipelineExecute(num_groups)};
         }
 
