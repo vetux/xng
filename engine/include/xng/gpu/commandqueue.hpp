@@ -50,6 +50,12 @@ namespace xng {
         virtual std::unique_ptr<CommandFence> submit(const std::vector<std::reference_wrapper<CommandBuffer>> &buffers,
                                                      const std::vector<std::shared_ptr<CommandSemaphore>> &waitSemaphores,
                                                      const std::vector<std::shared_ptr<CommandSemaphore>> &signalSemaphores) = 0;
+
+        std::unique_ptr<CommandFence> submit(CommandBuffer &buffer,
+                                             const std::vector<std::shared_ptr<CommandSemaphore>> &waitSemaphores = {},
+                                             const std::vector<std::shared_ptr<CommandSemaphore>> &signalSemaphores = {}) {
+            return submit(std::vector<std::reference_wrapper<CommandBuffer>>{buffer}, waitSemaphores, signalSemaphores);
+        }
     };
 }
 

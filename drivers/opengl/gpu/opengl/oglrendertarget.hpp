@@ -82,6 +82,13 @@ namespace xng::opengl {
                 for (int i = 0; i < attachedColor; i++) {
                     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, 0, 0);
                 }
+                if (attachedDepthStencil) {
+                    glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                           GL_DEPTH_STENCIL_ATTACHMENT,
+                                           GL_TEXTURE_2D,
+                                           0,
+                                           0);
+                }
             } else {
                 if (colorAttachments.size() != desc.numberOfColorAttachments)
                     throw std::runtime_error("Invalid number of color attachments");
@@ -195,7 +202,8 @@ namespace xng::opengl {
                     break;
                 }
                 case ATTACHMENT_CUBEMAP: {
-                    auto &pair = std::get<std::pair<CubeMapFace, std::reference_wrapper<TextureBuffer>>>(depthStencilAttachment);
+                    auto &pair = std::get<std::pair<CubeMapFace, std::reference_wrapper<TextureBuffer>>>(
+                            depthStencilAttachment);
                     auto &tex = dynamic_cast<OGLTextureBuffer &>(pair.second.get());
                     glFramebufferTexture2D(GL_FRAMEBUFFER,
                                            GL_DEPTH_STENCIL_ATTACHMENT,
@@ -205,7 +213,8 @@ namespace xng::opengl {
                     break;
                 }
                 case ATTACHMENT_TEXTUREARRAY: {
-                    auto &pair = std::get<std::pair<size_t, std::reference_wrapper<TextureArrayBuffer>>>(depthStencilAttachment);
+                    auto &pair = std::get<std::pair<size_t, std::reference_wrapper<TextureArrayBuffer>>>(
+                            depthStencilAttachment);
                     auto &tex = dynamic_cast<OGLTextureArrayBuffer &>(pair.second.get());
                     glFramebufferTexture3D(GL_FRAMEBUFFER,
                                            GL_DEPTH_STENCIL_ATTACHMENT,
@@ -223,14 +232,6 @@ namespace xng::opengl {
 
             attachedColor = static_cast<int>(colorAttachments.size());
 
-            checkGLError();
-        }
-
-        void clearDepthStencilAttachment() override {
-            attachedDepthStencil = false;
-            glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
             checkGLError();
         }
 

@@ -128,35 +128,41 @@ namespace xng {
                     }
                     auto bindingType = static_cast<ShaderDataType>(mShaderBindings.at(i).data.index());
                     auto reqBindingType = mPipeline->desc.bindings.at(i);
-                    switch(reqBindingType){
+                    switch (reqBindingType) {
                         case BIND_TEXTURE_BUFFER:
                             if (bindingType != SHADER_TEXTURE_BUFFER) {
-                                throw std::runtime_error("Invalid bound shader data type at index " + std::to_string(i));
+                                throw std::runtime_error(
+                                        "Invalid bound shader data type at index " + std::to_string(i));
                             }
                             break;
                         case BIND_TEXTURE_ARRAY_BUFFER:
                             if (bindingType != SHADER_TEXTURE_ARRAY_BUFFER) {
-                                throw std::runtime_error("Invalid bound shader data type at index " + std::to_string(i));
+                                throw std::runtime_error(
+                                        "Invalid bound shader data type at index " + std::to_string(i));
                             }
                             break;
                         case BIND_IMAGE_BUFFER:
                             if (bindingType != SHADER_TEXTURE_BUFFER) {
-                                throw std::runtime_error("Invalid bound shader data type at index " + std::to_string(i));
+                                throw std::runtime_error(
+                                        "Invalid bound shader data type at index " + std::to_string(i));
                             }
                             break;
                         case BIND_IMAGE_ARRAY_BUFFER:
                             if (bindingType != SHADER_TEXTURE_ARRAY_BUFFER) {
-                                throw std::runtime_error("Invalid bound shader data type at index " + std::to_string(i));
+                                throw std::runtime_error(
+                                        "Invalid bound shader data type at index " + std::to_string(i));
                             }
                             break;
                         case BIND_SHADER_UNIFORM_BUFFER:
                             if (bindingType != SHADER_UNIFORM_BUFFER) {
-                                throw std::runtime_error("Invalid bound shader data type at index " + std::to_string(i));
+                                throw std::runtime_error(
+                                        "Invalid bound shader data type at index " + std::to_string(i));
                             }
                             break;
                         case BIND_SHADER_STORAGE_BUFFER:
                             if (bindingType != SHADER_STORAGE_BUFFER) {
-                                throw std::runtime_error("Invalid bound shader data type at index " + std::to_string(i));
+                                throw std::runtime_error(
+                                        "Invalid bound shader data type at index " + std::to_string(i));
                             }
                             break;
                     }
@@ -169,8 +175,8 @@ namespace xng {
                         break;
                     case Command::COPY_INDEX_BUFFER: {
                         auto data = std::get<IndexBufferCopy>(c.data);
-                        auto buf = dynamic_cast<OGLIndexBuffer &>(*data.source);
-                        auto target = dynamic_cast<OGLIndexBuffer &>(*data.target);
+                        auto &buf = dynamic_cast<OGLIndexBuffer &>(*data.source);
+                        auto &target = dynamic_cast<OGLIndexBuffer &>(*data.target);
                         if (data.readOffset >= buf.desc.size
                             || data.readOffset + data.count > buf.desc.size
                             || data.writeOffset >= target.desc.size
@@ -191,8 +197,8 @@ namespace xng {
                     }
                     case Command::BLIT_COLOR: {
                         auto data = std::get<RenderTargetBlit>(c.data);
-                        auto src = dynamic_cast<OGLRenderTarget &>(*data.source);
-                        auto target = dynamic_cast<OGLRenderTarget &>(*data.target);
+                        auto &src = dynamic_cast<OGLRenderTarget &>(*data.source);
+                        auto &target = dynamic_cast<OGLRenderTarget &>(*data.target);
 
                         if (data.sourceRect.x < 0 || data.sourceRect.y < 0) {
                             throw std::runtime_error("Rect cannot be negative");
@@ -251,8 +257,8 @@ namespace xng {
                     }
                     case Command::BLIT_DEPTH: {
                         auto data = std::get<RenderTargetBlit>(c.data);
-                        auto src = dynamic_cast<OGLRenderTarget &>(*data.source);
-                        auto target = dynamic_cast<OGLRenderTarget &>(*data.target);
+                        auto &src = dynamic_cast<OGLRenderTarget &>(*data.source);
+                        auto &target = dynamic_cast<OGLRenderTarget &>(*data.target);
 
                         if (data.sourceRect.x < 0 || data.sourceRect.y < 0) {
                             throw std::runtime_error("Rect cannot be negative");
@@ -267,9 +273,7 @@ namespace xng {
                             throw std::runtime_error("Offset cannot be negative");
                         }
 
-                        auto &fbS = dynamic_cast< OGLRenderTarget &>(*data.source);
-
-                        Vec2i sourceSize = fbS.getDescription().size;
+                        Vec2i sourceSize = src.getDescription().size;
                         if (sourceSize.x < data.sourceRect.x + data.sourceOffset.x ||
                             sourceSize.y < data.sourceRect.y + data.sourceOffset.y)
                             throw std::runtime_error("Blit rect out of bounds for source framebuffer");
@@ -279,8 +283,13 @@ namespace xng {
                             targetSize.y < data.targetRect.y + data.targetOffset.y)
                             throw std::runtime_error("Blit rect out of bounds for target framebuffer.");
 
-                        glBindFramebuffer(GL_READ_FRAMEBUFFER, fbS.getFBO());
+                        checkGLError();
+
+                        glBindFramebuffer(GL_READ_FRAMEBUFFER, src.getFBO());
+                        checkGLError();
+
                         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target.getFBO());
+                        checkGLError();
 
                         glBlitFramebuffer(data.sourceOffset.x,
                                           data.sourceOffset.y,
@@ -292,6 +301,7 @@ namespace xng {
                                           data.targetRect.y,
                                           GL_DEPTH_BUFFER_BIT,
                                           GL_NEAREST);
+                        checkGLError();
 
                         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
                         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
@@ -301,8 +311,8 @@ namespace xng {
                     }
                     case Command::BLIT_STENCIL: {
                         auto data = std::get<RenderTargetBlit>(c.data);
-                        auto src = dynamic_cast<OGLRenderTarget &>(*data.source);
-                        auto target = dynamic_cast<OGLRenderTarget &>(*data.target);
+                        auto &src = dynamic_cast<OGLRenderTarget &>(*data.source);
+                        auto &target = dynamic_cast<OGLRenderTarget &>(*data.target);
 
                         if (data.sourceRect.x < 0 || data.sourceRect.y < 0) {
                             throw std::runtime_error("Rect cannot be negative");
@@ -670,7 +680,7 @@ namespace xng {
                     case Command::BIND_SHADER_RESOURCES: {
                         ensureRunningPass();
 
-                        if (mPipeline == nullptr){
+                        if (mPipeline == nullptr) {
                             throw std::runtime_error("Pipeline must be bound in order to bind shader resources");
                         }
 
@@ -915,8 +925,8 @@ namespace xng {
                     case Command::COPY_VERTEX_BUFFER: {
                         auto data = std::get<VertexBufferCopy>(c.data);
 
-                        auto target = dynamic_cast<OGLVertexBuffer &>(*data.target);
-                        auto buf = dynamic_cast<OGLVertexBuffer &>(*data.source);
+                        auto &target = dynamic_cast<OGLVertexBuffer &>(*data.target);
+                        auto &buf = dynamic_cast<OGLVertexBuffer &>(*data.source);
                         if (data.readOffset >= buf.desc.size
                             || data.readOffset + data.count > buf.desc.size
                             || data.writeOffset >= target.desc.size

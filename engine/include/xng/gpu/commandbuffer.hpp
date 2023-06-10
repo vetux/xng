@@ -42,6 +42,10 @@ namespace xng {
          */
         virtual CommandBuffer &add(const std::vector<Command> &commands) = 0;
 
+        CommandBuffer &add(const Command &command) {
+            return add(std::vector<Command>{command});
+        }
+
         virtual void end() = 0;
     };
 }

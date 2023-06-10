@@ -104,8 +104,6 @@ namespace xng {
         virtual void setAttachments(const std::vector<RenderTargetAttachment> &colorAttachments,
                                     RenderTargetAttachment depthStencilAttachment) = 0;
 
-        virtual void clearDepthStencilAttachment() = 0;
-
         virtual bool isComplete() = 0;
     };
 }
