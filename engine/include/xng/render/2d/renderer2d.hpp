@@ -225,8 +225,15 @@ namespace xng {
 
         size_t getPolyDrawCount() { return polyCounter; }
 
+        size_t getDrawCallCount() { return drawCallCounter; }
+
+        void resetCounters() {
+            polyCounter = 0;
+            drawCallCounter = 0;
+        }
+
     private:
-        void rebindTextureAtlas();
+        void updateAtlasRef();
 
         struct Pass {
             enum Type {
@@ -407,6 +414,7 @@ namespace xng {
         };
 
         size_t polyCounter = 0;
+        size_t drawCallCounter = 0;
 
         RenderDevice &renderDevice;
 

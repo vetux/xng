@@ -169,7 +169,7 @@ namespace xng {
 
         commandBuffer = device.createCommandBuffer();
 
-        rebindTextureAtlas();
+        updateAtlasRef();
     }
 
     Renderer2D::~Renderer2D() = default;
@@ -189,7 +189,7 @@ namespace xng {
             auto occupations = atlas.getBufferOccupations();
             occupations[res].resize(desc.textureCount, false);
             atlas = TextureAtlas(occupations);
-            rebindTextureAtlas();
+            updateAtlasRef();
         }
         auto ret = atlas.add(texture);
         TextureAtlas::upload(ret, atlasRef, texture);
@@ -208,12 +208,17 @@ namespace xng {
                 auto desc = atlasTextures.at(pair.first)->getDescription();
                 desc.textureCount += pair.second - free;
                 auto buffer = renderDevice.createTextureArrayBuffer(desc);
-                buffer->copy(*atlasTextures.at(pair.first));
+
+                commandBuffer->begin();
+                commandBuffer->add(buffer->copy(*atlasTextures.at(pair.first)));
+                commandBuffer->end();
+                renderDevice.getRenderCommandQueues().at(0).get().submit({*commandBuffer}, {}, {});
+
                 atlasTextures.at(pair.first) = std::move(buffer);
                 auto occupations = atlas.getBufferOccupations();
                 occupations[pair.first].resize(desc.textureCount, false);
                 atlas = TextureAtlas(occupations);
-                rebindTextureAtlas();
+                updateAtlasRef();
             }
         }
         std::vector<TextureAtlasHandle> ret;
@@ -262,8 +267,6 @@ namespace xng {
         }
 
         mTarget = &target;
-
-        polyCounter = 0;
     }
 
     void Renderer2D::renderPresent() {
@@ -276,6 +279,16 @@ namespace xng {
 
         if (caps.find(CAPABILITY_BASE_VERTEX) == caps.end()) {
             throw std::runtime_error("CAPABILITY_BASE_VERTEX is required");
+        }
+
+        if (mClear) {
+            commandBuffer->begin();
+            commandBuffer->add(renderPass->begin(*mTarget));
+            commandBuffer->add(renderPass->clearColorAttachments(mClearColor));
+            commandBuffer->add(renderPass->clearDepthAttachment(1));
+            commandBuffer->add(renderPass->end());
+            commandBuffer->end();
+            renderDevice.getRenderCommandQueues().at(0).get().submit(*commandBuffer);
         }
 
         if (caps.find(CAPABILITY_MULTI_DRAW) != caps.end()) {
@@ -341,7 +354,7 @@ namespace xng {
         passes.emplace_back(Pass(point, color, position, center, rotation));
     }
 
-    void Renderer2D::rebindTextureAtlas() {
+    void Renderer2D::updateAtlasRef() {
         atlasRef.insert_or_assign(TEXTURE_ATLAS_8x8, *atlasTextures.at(TEXTURE_ATLAS_8x8).get());
         atlasRef.insert_or_assign(TEXTURE_ATLAS_16x16, *atlasTextures.at(TEXTURE_ATLAS_16x16).get());
         atlasRef.insert_or_assign(TEXTURE_ATLAS_32x32, *atlasTextures.at(TEXTURE_ATLAS_32x32).get());
@@ -371,6 +384,7 @@ namespace xng {
         std::vector<PassData> passData;
 
         for (auto &pass: passes) {
+            drawCallCounter++;
             switch (pass.type) {
                 case Pass::COLOR_POINT: {
                     usedPoints.insert(pass.dstRect.position);
@@ -618,20 +632,12 @@ namespace xng {
         if (!currentBatch.drawCalls.empty())
             batches.emplace_back(currentBatch);
 
-        auto cleared = false;
-
         auto drawCallIndex = 0;
         for (auto &batch: batches) {
             std::vector<Command> commands;
 
             commands.emplace_back(renderPass->begin(*mTarget));
             commands.emplace_back(renderPass->setViewport(mViewportOffset, mViewportSize));
-
-            if (mClear && !cleared) {
-                cleared = true;
-                commands.emplace_back(renderPass->clearColorAttachments(mClearColor));
-                commands.emplace_back(renderPass->clearDepthAttachment(1));
-            }
 
             switch (batch.primitive) {
                 case POINTS:
@@ -715,6 +721,7 @@ namespace xng {
                  passIndex < numberOfPassesPerCycle && passIndex + currentPassBase < passes.size();
                  passIndex++) {
                 auto &pass = passes.at(passIndex + currentPassBase);
+                drawCallCounter++;
                 PassData data;
                 switch (pass.type) {
                     case Pass::COLOR_POINT: {
@@ -962,8 +969,6 @@ namespace xng {
                     {*atlasTextures.at(TEXTURE_ATLAS_16384x16384), {{{FRAGMENT, ShaderResource::READ}}}},
             };
 
-            auto cleared = false;
-
             for (auto &batch: batches) {
                 shaderBuffer->upload(0, reinterpret_cast<const uint8_t *>(batch.uniformBuffers.data()),
                                      batch.uniformBuffers.size() * sizeof(PassData));
@@ -972,12 +977,6 @@ namespace xng {
 
                 commands.emplace_back(renderPass->begin(*mTarget));
                 commands.emplace_back(renderPass->setViewport(mViewportOffset, mViewportSize));
-
-                if (mClear && !cleared) {
-                    cleared = true;
-                    commands.emplace_back(renderPass->clearColorAttachments(mClearColor));
-                    commands.emplace_back(renderPass->clearDepthAttachment(1));
-                }
 
                 commands.emplace_back(vertexArrayObject->bind());
 
@@ -1258,7 +1257,10 @@ namespace xng {
             desc.size = vertexBuffer->getDescription().size + size;
             auto nBuffer = renderDevice.createVertexBuffer(desc);
             if (vertexBuffer->getDescription().size > 0) {
-                nBuffer->copy(*vertexBuffer);
+                commandBuffer->begin();
+                commandBuffer->add(nBuffer->copy(*vertexBuffer));
+                commandBuffer->end();
+                renderDevice.getRenderCommandQueues().at(0).get().submit(*commandBuffer);
             }
             vertexBuffer = std::move(nBuffer);
             vaoChange = true;
@@ -1300,7 +1302,10 @@ namespace xng {
             desc.size = indexBuffer->getDescription().size + size;
             auto nBuffer = renderDevice.createIndexBuffer(desc);
             if (indexBuffer->getDescription().size > 0) {
-                nBuffer->copy(*indexBuffer);
+                commandBuffer->begin();
+                commandBuffer->add(nBuffer->copy(*indexBuffer));
+                commandBuffer->end();
+                renderDevice.getRenderCommandQueues().at(0).get().submit(*commandBuffer);
             }
             indexBuffer = std::move(nBuffer);
             vaoChange = true;
