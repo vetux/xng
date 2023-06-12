@@ -81,7 +81,7 @@ namespace xng {
         }
     };
 
-    struct XENGINE_EXPORT ColorRGBA {
+    struct ColorRGBA {
         uint8_t data[4];
 
         static ColorRGBA black(float intensity = 1, uint8_t alpha = 255) {
@@ -244,7 +244,7 @@ namespace xng {
 
         const uint8_t &a() const { return data[3]; }
 
-        ColorRGBA() : data() {}
+        ColorRGBA() = default;
 
         ColorRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
                 : data() {

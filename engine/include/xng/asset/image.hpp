@@ -56,12 +56,11 @@ namespace xng {
 
         Image() : size(), buffer() {}
 
-        Image(int width, int height, const std::vector<T> &buffer) : size(width, height),
-                                                                     buffer(buffer) {}
+        Image(int width, int height, const std::vector<T> &buffer) : size(width, height), buffer(buffer) {}
 
         Image(int width, int height) : size(width, height), buffer(width * height) {}
 
-        explicit Image(Vec2i size) : size(size), buffer(size.x * size.y) {}
+        explicit Image(const Vec2i &size) : size(size), buffer(size.x * size.y) {}
 
         Image(const Image &copy) : size(copy.size), buffer(copy.buffer) {}
 
@@ -130,16 +129,16 @@ namespace xng {
                       buffer.begin() + dstOffset);
         }
 
-        void copyRows(const Image<T> &source, int srcRow, int dstRow, size_t count){
+        void copyRows(const Image<T> &source, int srcRow, int dstRow, size_t count) {
             if (size != source.size
-            || source.size.y <= srcRow
-            || source.size.y < srcRow + count
-            || size.y <= dstRow
-            || size.y < dstRow + count){
+                || source.size.y <= srcRow
+                || source.size.y < srcRow + count
+                || size.y <= dstRow
+                || size.y < dstRow + count) {
                 throw std::runtime_error("Invalid copy row / column index or count");
             }
 
-            auto srcOffset = srcRow * source.size.x ;
+            auto srcOffset = srcRow * source.size.x;
             auto dstOffset = dstRow * size.x;
 
             auto begin = source.buffer.begin() + srcOffset;
@@ -149,20 +148,19 @@ namespace xng {
         }
 
         void blit(const Image<T> &source) {
-            if (source.size.x != size.x || source.height != size.y) {
+            if (source.size.x != size.x || source.size.y != size.y) {
                 throw std::runtime_error("Invalid blit source size");
             }
             copyRows(source, 0, 0, size.y);
         }
 
         void blit(const Vec2i &targetPosition, const Image<T> &source) {
-            if ( targetPosition.x < 0
-            || targetPosition.y < 0
-            || targetPosition.x + source.getWidth() > size.x
-            || targetPosition.y + source.getHeight() > size.y) {
+            if (targetPosition.x < 0
+                || targetPosition.y < 0
+                || targetPosition.x + source.getWidth() > size.x
+                || targetPosition.y + source.getHeight() > size.y) {
                 throw std::runtime_error("Invalid blit rect");
             }
-
             // Copy rows
             for (int y = 0; y < source.getHeight(); y++) {
                 copyRow(source, y, 0, y + targetPosition.y, targetPosition.x, source.getWidth());
@@ -191,10 +189,8 @@ namespace xng {
 
         Image<T> swapColumns() {
             Image<T> ret = Image<T>(size.x, size.y);
-            for (int x = 0; x < size.x; x++) {
-                for (int y = 0; y < size.y; y++) {
-                    ret.setPixel(x, size.y - 1 - y, getPixel(x, y));
-                }
+            for (auto y = 0; y < size.y; y++) {
+                ret.copyRow(*this, y, 0, size.y - y - 1, 0, size.x);
             }
             return std::move(ret);
         }
