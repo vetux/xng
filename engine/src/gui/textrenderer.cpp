@@ -44,8 +44,7 @@ namespace xng {
         font.setPixelSize(pixelSize);
         ascii = font.renderAscii();
         for (auto &c: ascii) {
-            auto &character = c.second;
-            textures[c.first] = ren2d->createTexture(character.image);
+            textures[c.first] = ren2d->createTexture(c.second.image);
         }
     }
 
@@ -61,7 +60,7 @@ namespace xng {
         }
     }
 
-    Vec2f TextRenderer::getSize(const std::string &str, const TextLayout &layout) {
+    Vec2i TextRenderer::getSize(const std::string &str, const TextLayout &layout) {
         Vec2i size(0); //The total size of the text
 
         Vec2i lineSize(0); // The size of the line and column of the current character
@@ -91,7 +90,7 @@ namespace xng {
             }
         }
 
-        return size.convert<float>();
+        return size;
     }
 
 
@@ -155,11 +154,11 @@ namespace xng {
 
         // Apply alignment offset
         std::vector<RenderChar> renderText;
-        for (auto line: lines) {
+        for (const auto &line: lines) {
             auto width = getWidth(line);
-            auto diff = largestWidth - width;
+            float diff = static_cast<float>(largestWidth) - static_cast<float>(width);
 
-            int offset = 0;
+            float offset = 0;
             switch (layout.alignment) {
                 default:
                 case TEXT_ALIGN_LEFT:
@@ -206,6 +205,6 @@ namespace xng {
 
         target->setAttachments({});
 
-        return {text, origin, layout.lineWidth, std::move(tex->download())};
+        return {text, origin, layout, std::move(tex->download())};
     }
 }

@@ -26,14 +26,16 @@
 
 #include "xng/gpu/renderdevice.hpp"
 
+#include "xng/gui/textlayout.hpp"
+
 namespace xng {
     struct XENGINE_EXPORT Text {
         Text() = default;
 
-        Text(std::string text, Vec2f origin, int lineWidth, ImageRGBA buffer)
+        Text(std::string text, Vec2f origin, TextLayout layout, ImageRGBA buffer)
                 : text(std::move(text)),
                   origin(std::move(origin)),
-                  lineWidth(lineWidth),
+                  layout(std::move(layout)),
                   image(std::move(buffer)) {}
 
         ~Text() = default;
@@ -56,7 +58,7 @@ namespace xng {
         /**
          * @return
          */
-        int getLineWidth() const { return lineWidth; }
+        TextLayout getLayout() const { return layout; }
 
         /**
          * Get the image containing the rendered text with the grayscale in the r,g,b,a components.
@@ -68,7 +70,7 @@ namespace xng {
     private:
         std::string text;
         Vec2f origin;
-        int lineWidth{};
+        TextLayout layout{};
         ImageRGBA image;
     };
 }
