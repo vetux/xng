@@ -384,7 +384,6 @@ namespace xng {
         std::vector<PassData> passData;
 
         for (auto &pass: passes) {
-            drawCallCounter++;
             switch (pass.type) {
                 case Pass::COLOR_POINT: {
                     usedPoints.insert(pass.dstRect.position);
@@ -393,8 +392,6 @@ namespace xng {
                     primitives.emplace_back(point.primitive);
                     baseVertices.emplace_back(point.baseVertex);
                     drawCalls.emplace_back(point.drawCall);
-
-                    polyCounter += 1;
 
                     auto rotMat = getRotationMatrix(pass.rotation, pass.center);
 
@@ -427,8 +424,6 @@ namespace xng {
                     baseVertices.emplace_back(line.baseVertex);
                     drawCalls.emplace_back(line.drawCall);
 
-                    polyCounter += 1;
-
                     auto rotMat = getRotationMatrix(pass.rotation, pass.center);
 
                     auto model = MatrixMath::translate({
@@ -457,8 +452,6 @@ namespace xng {
                         primitives.emplace_back(plane.primitive);
                         baseVertices.emplace_back(plane.baseVertex);
                         drawCalls.emplace_back(plane.drawCall);
-
-                        polyCounter += 2;
                     } else {
                         usedSquares.insert(pass.dstRect.dimensions);
                         auto square = getSquare(pass.dstRect.dimensions);
@@ -466,8 +459,6 @@ namespace xng {
                         primitives.emplace_back(square.primitive);
                         baseVertices.emplace_back(square.baseVertex);
                         drawCalls.emplace_back(square.drawCall);
-
-                        polyCounter += 4;
                     }
 
                     auto rotMat = getRotationMatrix(pass.rotation, pass.center);
@@ -497,8 +488,6 @@ namespace xng {
                     primitives.emplace_back(plane.primitive);
                     baseVertices.emplace_back(plane.baseVertex);
                     drawCalls.emplace_back(plane.drawCall);
-
-                    polyCounter += 2;
 
                     auto rotMat = getRotationMatrix(pass.rotation, pass.center);
 
@@ -721,7 +710,6 @@ namespace xng {
                  passIndex < numberOfPassesPerCycle && passIndex + currentPassBase < passes.size();
                  passIndex++) {
                 auto &pass = passes.at(passIndex + currentPassBase);
-                drawCallCounter++;
                 PassData data;
                 switch (pass.type) {
                     case Pass::COLOR_POINT: {
@@ -732,7 +720,6 @@ namespace xng {
                         baseVertices.emplace_back(point.baseVertex);
                         drawCalls.emplace_back(point.drawCall);
 
-                        polyCounter += 1;
 
                         auto rotMat = getRotationMatrix(pass.rotation, pass.center);
 
@@ -759,7 +746,6 @@ namespace xng {
                         baseVertices.emplace_back(line.baseVertex);
                         drawCalls.emplace_back(line.drawCall);
 
-                        polyCounter += 1;
 
                         auto rotMat = getRotationMatrix(pass.rotation, pass.center);
 
@@ -785,8 +771,6 @@ namespace xng {
                             primitives.emplace_back(plane.primitive);
                             baseVertices.emplace_back(plane.baseVertex);
                             drawCalls.emplace_back(plane.drawCall);
-
-                            polyCounter += 2;
                         } else {
                             usedSquares.insert(pass.dstRect.dimensions);
                             auto square = getSquare(pass.dstRect.dimensions);
@@ -794,8 +778,6 @@ namespace xng {
                             primitives.emplace_back(square.primitive);
                             baseVertices.emplace_back(square.baseVertex);
                             drawCalls.emplace_back(square.drawCall);
-
-                            polyCounter += 4;
                         }
 
                         auto rotMat = getRotationMatrix(pass.rotation, pass.center);
@@ -821,8 +803,6 @@ namespace xng {
                         primitives.emplace_back(plane.primitive);
                         baseVertices.emplace_back(plane.baseVertex);
                         drawCalls.emplace_back(plane.drawCall);
-
-                        polyCounter += 2;
 
                         auto rotMat = getRotationMatrix(pass.rotation, pass.center);
 

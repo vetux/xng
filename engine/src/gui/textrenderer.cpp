@@ -55,9 +55,29 @@ namespace xng {
     }
 
     TextRenderer::TextRenderer(const TextRenderer &other) {
-        if (other.ren2d) {
-            *this = TextRenderer(*other.font, *other.ren2d, other.pixelSize);
+        pixelSize = other.pixelSize;
+        font = other.font;
+        ren2d = other.ren2d;
+        font->setPixelSize(pixelSize);
+        ascii = font->renderAscii();
+        for (auto &c: ascii) {
+            textures[c.first] = ren2d->createTexture(c.second.image);
         }
+    }
+
+    TextRenderer &TextRenderer::operator=(const TextRenderer &other) {
+        if (this == &other) {
+            return *this;
+        }
+        pixelSize = other.pixelSize;
+        font = other.font;
+        ren2d = other.ren2d;
+        font->setPixelSize(pixelSize);
+        ascii = font->renderAscii();
+        for (auto &c: ascii) {
+            textures[c.first] = ren2d->createTexture(c.second.image);
+        }
+        return *this;
     }
 
     Vec2i TextRenderer::getSize(const std::string &str, const TextLayout &layout) {

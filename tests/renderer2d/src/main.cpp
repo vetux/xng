@@ -21,11 +21,9 @@
 
 #include <fstream>
 
-using namespace xng;
+#include "debugoverlay.hpp"
 
-static const int fpsFontPixelSize = 30;
-static const int fpsFontPixelLineHeight = 25;
-static const ColorRGBA fpsFontColor = ColorRGBA::fuchsia();
+using namespace xng;
 
 ImageRGBA loadImage(const std::filesystem::path &filePath) {
     auto imageParser = StbiParser();
@@ -50,16 +48,13 @@ public:
 
     float performanceGridBase = 2;
 
-    TextRenderer textRenderer;
-
     TestApplication(RenderDevice &device,
                     Window &window,
                     Renderer2D &ren,
                     Font &font)
             : device(device),
               window(window),
-              ren(ren),
-              textRenderer(font, ren, Vec2i(0, fpsFontPixelSize)) {
+              ren(ren) {
         imageB = loadImage("assets/images/awesomeface.png");
         imageA = loadImage("assets/images/tux.png");
 
@@ -73,17 +68,6 @@ public:
     }
 
     void drawHomePage(DeltaTime delta) {
-        auto textLayout = TextLayout();
-        textLayout.lineHeight = fpsFontPixelLineHeight;
-
-        std::ostringstream out;
-        out.precision(0);
-        out << std::fixed << 1 / delta;
-
-        auto text = textRenderer.render(out.str(), textLayout);
-        auto &textImg = text.getImage();
-        auto textHandle = ren.createTexture(textImg);
-
         auto target = window.getRenderTarget(device);
 
         rot += rotSpeed * delta;
@@ -124,30 +108,13 @@ public:
                  ColorRGBA::yellow(),
                  false);
 
-        ren.draw(Rectf({}, textImg.getSize().convert<float>()),
-                 Rectf({}, textImg.getSize().convert<float>()),
-                 textHandle,
-                 {},
-                 0,
-                 xng::NEAREST,
-                 fpsFontColor);
-
         ren.renderPresent();
-
-        ren.destroyTexture(textHandle);
     }
 
     size_t drawPerformanceTest(DeltaTime delta) {
-        auto textLayout = TextLayout();
-        textLayout.lineHeight = fpsFontPixelLineHeight;
-
         std::ostringstream out;
         out.precision(0);
         out << std::fixed << 1 / delta;
-
-        auto text = textRenderer.render(out.str(), textLayout);
-        auto &textImg = text.getImage();
-        auto textHandle = ren.createTexture(textImg);
 
         if (window.getInput().getDevice<Keyboard>().getKey(KEY_UP)) {
             performanceGridBase++;
@@ -213,23 +180,12 @@ public:
             }
         }
 
-        ren.draw(Rectf({}, textImg.getSize().convert<float>()),
-                 Rectf({}, textImg.getSize().convert<float>()),
-                 textHandle,
-                 {},
-                 0,
-                 xng::NEAREST,
-                 fpsFontColor);
-
         ren.renderPresent();
-
-        ren.destroyTexture(textHandle);
 
         return ret;
     }
 };
 
-//TODO: Fix textures beeing drawn as black color on windows.
 int main(int argc, char *argv[]) {
     auto displayDriver = glfw::GLFWDisplayDriver();
     auto gpuDriver = opengl::OGLGpuDriver();
@@ -242,7 +198,7 @@ int main(int argc, char *argv[]) {
                                              {640, 480},
                                              {
                                                      .swapInterval = 1,
-                                                     .debug = true
+                                                     .debug = false
                                              });
 
     auto renderDevice = gpuDriver.createRenderDevice();
@@ -256,13 +212,13 @@ int main(int argc, char *argv[]) {
     auto fs = std::ifstream("assets/fonts/Sono/static/Sono/Sono-Bold.ttf", std::ios_base::in | std::ios::binary);
     auto font = fontDriver.createFont(fs);
 
-    font->setPixelSize({0, fpsFontPixelSize});
-
     Renderer2D ren(*renderDevice, shaderCompiler, shaderDecompiler);
 
     auto frameLimiter = FrameLimiter();
 
     TestApplication app(*renderDevice, *window, ren, *font);
+
+    DebugOverlay overlay(*font, ren);
 
     size_t currentPage = 0;
     while (!window->shouldClose()) {
@@ -277,20 +233,18 @@ int main(int argc, char *argv[]) {
         switch (currentPage) {
             default: {
                 app.drawHomePage(delta);
-                auto msg = "Drawing Home Page " + std::to_string(ren.getPolyDrawCount()) + " Polys, " +
-                           std::to_string(1.0f / delta) + " fps.";
                 break;
             }
             case 1: {
-                auto c = app.drawPerformanceTest(delta);
-                auto msg = "Drawing Performance Test " + std::to_string(ren.getPolyDrawCount()) + " Polys " +
-                           std::to_string(c) + " Sprites, " + std::to_string(1.0f / delta) + " fps.";
+                app.drawPerformanceTest(delta);
                 break;
             }
         }
 
-        window->update();
+        overlay.draw(delta, *target);
+
         window->swapBuffers();
+        window->update();
     }
 
     return 0;

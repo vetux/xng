@@ -69,8 +69,11 @@ public:
 
         dynTxt += strm.str() + "\n";
 
-        dynTxt += "Draws:" + std::to_string(ren2D.getDrawCallCount()) + "\n";
-        dynTxt += "Polys:" + std::to_string(ren2D.getPolyDrawCount()) + "\n";
+        auto stats = ren2D.getDevice().getRenderCommandQueues().at(0).get().debugNewFrame();
+
+        dynTxt += "Draws:" + std::to_string(stats.drawCalls) + "\n";
+        dynTxt += "Polys:" + std::to_string(stats.polys) + "\n";
+        dynTxt += "Binds:" + std::to_string(stats.binds) + "\n";
 
         TextLayout layout;
         layout.lineHeight = pixelSize.y;
@@ -78,8 +81,6 @@ public:
         dynText = textRenderer.render(dynTxt, layout);
 
         dynHandle = ren2D.createTexture(dynText.getImage());
-
-        ren2D.resetCounters();
 
         ren2D.renderBegin(screen, false, {}, {}, screen.getDescription().size, {});
         ren2D.draw(Rectf({}, dynText.getImage().getSize().convert<float>()),

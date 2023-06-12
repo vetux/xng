@@ -368,7 +368,7 @@ namespace xng {
                 auto rIt = textRenderers.find(pointSize);
                 if (rIt == textRenderers.end()) {
                     textRenderers.insert(std::move(
-                            std::make_pair(pointSize, TextRenderer(*fonts[comp.font.getUri()], ren2d, pointSize))));
+                            std::make_pair(pointSize, std::move(TextRenderer(*fonts[comp.font.getUri()], ren2d, pointSize)))));
                 }
 
                 auto text = textRenderers.at(pointSize).render(comp.text, TextLayout{

@@ -19,6 +19,8 @@
 
 #include "xng/xng.hpp"
 
+#include "debugoverlay.hpp"
+
 using namespace xng;
 
 static std::shared_ptr<EntityScene> createScene() {
@@ -199,6 +201,11 @@ int main(int argc, char *argv[]) {
 
     SystemRuntime runtime({pipeline}, scene);
 
+    auto fs = std::ifstream("assets/fonts/Sono/static/Sono/Sono-Bold.ttf", std::ios_base::in | std::ios::binary);
+    auto font = fontDriver.createFont(fs);
+
+    DebugOverlay overlay(*font, ren);
+
     runtime.start();
 
     FrameLimiter limiter;
@@ -216,6 +223,9 @@ int main(int argc, char *argv[]) {
         }
 
         runtime.update(delta);
+
+        overlay.draw(delta, *target);
+
         window->update();
         window->swapBuffers();
     }

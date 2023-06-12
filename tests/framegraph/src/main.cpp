@@ -24,6 +24,7 @@
 
 #include "testpass.hpp"
 #include "cameracontroller.hpp"
+#include "debugoverlay.hpp"
 
 static const char *MATERIALS_PATH = "memory://tests/graph/materials.json";
 
@@ -83,6 +84,8 @@ void createMaterialResource(xng::MemoryArchive &archive) {
     archive.addData(uri.toString(false), vec);
 }
 
+
+
 // TODO: Fix OUT_OF_MEMORY thrown after running the framegraph test for some time on windows (The task manager is not showing any kind of memory leak.)
 int main(int argc, char *argv[]) {
     std::vector<std::unique_ptr<ResourceParser>> parsers;
@@ -118,8 +121,6 @@ int main(int argc, char *argv[]) {
                                              });
     auto &input = window->getInput();
 
-    window->bindGraphics();
-
     auto device = gpuDriver.createRenderDevice();
 
     device->setDebugCallback([](const std::string &msg) {
@@ -127,6 +128,8 @@ int main(int argc, char *argv[]) {
     });
 
     auto ren2d = Renderer2D(*device, shaderCompiler, shaderDecompiler);
+
+    DebugOverlay overlay(*font, ren2d);
 
     auto textRenderer = TextRenderer(*font, ren2d, {0, 70});
 
@@ -277,24 +280,14 @@ int main(int argc, char *argv[]) {
             tex = ren2d.createTexture(text.getImage());
         }
 
-        auto fpsText = textRenderer.render(std::to_string(1000 * deltaTime) + "ms", TextLayout{.lineHeight = 70});
-        auto fpsTex = ren2d.createTexture(fpsText.getImage());
-
         ren2d.renderBegin(*target,
                           false,
                           {},
                           {},
                           target->getDescription().size,
                           {});
-        ren2d.draw(Rectf({}, fpsText.getImage().getSize().convert<float>()),
-                   Rectf({}, fpsText.getImage().getSize().convert<float>()),
-                   fpsTex,
-                   {},
-                   0,
-                   NEAREST,
-                   ColorRGBA::white());
         ren2d.draw(Rectf({}, text.getImage().getSize().convert<float>()),
-                   Rectf({static_cast<float>(target->getDescription().size.x - text.getImage().getSize().x), 0},
+                   Rectf({static_cast<float>(target->getDescription().size.x) / 2 - static_cast<float>(text.getImage().getSize().x) / 2, 0},
                          text.getImage().getSize().convert<float>()),
                    tex,
                    {},
@@ -303,7 +296,7 @@ int main(int argc, char *argv[]) {
                    ColorRGBA::white());
         ren2d.renderPresent();
 
-        ren2d.destroyTexture(fpsTex);
+        overlay.draw(deltaTime, *target);
 
         window->swapBuffers();
         window->update();

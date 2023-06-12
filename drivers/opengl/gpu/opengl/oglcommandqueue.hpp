@@ -40,6 +40,8 @@ namespace xng {
             OGLVertexArrayObject *mVertexObject = nullptr;
             std::vector<ShaderResource> mShaderBindings;
 
+            RenderStatistics stats;
+
             bool runningPass = false;
 
             OGLCommandQueue() = default;
@@ -434,6 +436,8 @@ namespace xng {
                         glDrawArrays(convert(mPipeline->getDescription().primitive),
                                      static_cast<GLint>(data.drawCalls.at(0).offset),
                                      static_cast<GLsizei>(data.drawCalls.at(0).count));
+                        stats.drawCalls++;
+                        stats.polys += data.drawCalls.at(0).count / mPipeline->getDescription().primitive;
                         checkGLError();
                         break;
                     }
@@ -448,6 +452,8 @@ namespace xng {
                                        static_cast<GLsizei>(data.drawCalls.at(0).count),
                                        convert(data.drawCalls.at(0).indexType),
                                        reinterpret_cast<void *>(data.drawCalls.at(0).offset));
+                        stats.drawCalls++;
+                        stats.polys += data.drawCalls.at(0).count / mPipeline->getDescription().primitive;
                         checkGLError();
                         break;
                     }
@@ -462,6 +468,8 @@ namespace xng {
                                               static_cast<GLint>(data.drawCalls.at(0).offset),
                                               static_cast<GLsizei>(data.drawCalls.at(0).count),
                                               static_cast<GLsizei>(data.numberOfInstances));
+                        stats.drawCalls++;
+                        stats.polys += data.drawCalls.at(0).count / mPipeline->getDescription().primitive;
                         checkGLError();
                         break;
                     }
@@ -477,6 +485,8 @@ namespace xng {
                                                 convert(data.drawCalls.at(0).indexType),
                                                 reinterpret_cast<void *>(data.drawCalls.at(0).offset),
                                                 static_cast<GLsizei>(data.numberOfInstances));
+                        stats.drawCalls++;
+                        stats.polys += data.drawCalls.at(0).count / mPipeline->getDescription().primitive;
                         checkGLError();
                         break;
                     }
@@ -502,6 +512,10 @@ namespace xng {
                                           first.data(),
                                           count.data(),
                                           static_cast<GLsizei>(data.drawCalls.size()));
+                        stats.drawCalls++;
+                        for (auto &call : data.drawCalls){
+                            stats.polys += call.count / mPipeline->getDescription().primitive;
+                        }
                         checkGLError();
                         break;
                     }
@@ -528,6 +542,10 @@ namespace xng {
                                             GL_UNSIGNED_INT,
                                             reinterpret_cast<const void *const *>(indices.data()),
                                             static_cast<GLsizei>(data.drawCalls.size()));
+                        stats.drawCalls++;
+                        for (auto &call : data.drawCalls){
+                            stats.polys += call.count / mPipeline->getDescription().primitive;
+                        }
                         checkGLError();
                         break;
                     }
@@ -543,6 +561,8 @@ namespace xng {
                                                  convert(data.drawCalls.at(0).indexType),
                                                  reinterpret_cast<void *>(data.drawCalls.at(0).offset),
                                                  static_cast<GLint>(data.baseVertices.at(0)));
+                        stats.drawCalls++;
+                        stats.polys += data.drawCalls.at(0).count / mPipeline->getDescription().primitive;
                         checkGLError();
                         break;
                     }
@@ -559,6 +579,8 @@ namespace xng {
                                                           reinterpret_cast<void *>(data.drawCalls.at(0).offset),
                                                           static_cast<GLsizei>(data.numberOfInstances),
                                                           static_cast<GLint>(data.baseVertices.at(0)));
+                        stats.drawCalls++;
+                        stats.polys += data.drawCalls.at(0).count / mPipeline->getDescription().primitive;
                         checkGLError();
                         break;
                     }
@@ -590,6 +612,10 @@ namespace xng {
                                                       indices.data(),
                                                       static_cast<GLsizei>(data.drawCalls.size()),
                                                       vertices.data());
+                        stats.drawCalls++;
+                        for (auto &call : data.drawCalls){
+                            stats.polys += call.count / mPipeline->getDescription().primitive;
+                        }
                         checkGLError();
                         break;
                     }
@@ -675,6 +701,8 @@ namespace xng {
                         }
 
                         checkGLError();
+
+                        stats.binds++;
 
                         break;
                     }
@@ -792,6 +820,7 @@ namespace xng {
                             }
                         }
                         checkGLError();
+                        stats.binds++;
                         break;
                     }
                     case Command::COPY_TEXTURE_ARRAY: {
@@ -920,6 +949,7 @@ namespace xng {
                         auto data = std::get<VertexArrayObjectBind>(c.data);
                         mVertexObject = dynamic_cast<OGLVertexArrayObject *>(data.target);
                         glBindVertexArray(mVertexObject->VAO);
+                        stats.binds++;
                         checkGLError();
                         break;
                     }
@@ -994,10 +1024,17 @@ namespace xng {
                     case Command::COMPUTE_BIND_DATA:
                     case Command::COMPUTE_EXECUTE:
                         throw std::runtime_error("Compute not implemented");
-                        break;
                 }
             }
+
+            RenderStatistics debugNewFrame() override {
+                auto ret = stats;
+                stats = {};
+                return ret;
+            }
         };
+
+
     }
 }
 #endif //XENGINE_OGLCOMMANDQUEUE_HPP

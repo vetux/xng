@@ -42,7 +42,7 @@ namespace xng {
 
         TextRenderer(const TextRenderer &other);
 
-        TextRenderer &operator=(const TextRenderer &other) = default;
+        TextRenderer &operator=(const TextRenderer &other);
 
         Vec2i getSize(const std::string &text, const TextLayout &layout);
 

@@ -21,6 +21,7 @@
 #define XENGINE_COMMANDQUEUE_HPP
 
 #include "xng/gpu/commandbuffer.hpp"
+#include "xng/gpu/renderstatistics.hpp"
 
 namespace xng {
     /**
@@ -56,6 +57,13 @@ namespace xng {
                                              const std::vector<std::shared_ptr<CommandSemaphore>> &signalSemaphores = {}) {
             return submit(std::vector<std::reference_wrapper<CommandBuffer>>{buffer}, waitSemaphores, signalSemaphores);
         }
+
+        /**
+         * Return the statistics for the time since the last call to debugNewFrame and reset the internal render statistics object
+         *
+         * @return
+         */
+        virtual RenderStatistics debugNewFrame() = 0;
     };
 }
 
