@@ -24,7 +24,7 @@ namespace xng {
         auto size = getResolutionLevelSize(res);
         ImageRGBA image(size);
         image.blit(Vec2i(0, 0), texture);
-        return image;
+        return std::move(image);
     }
 
     void TextureAtlas::upload(const TextureAtlasHandle &handle,
@@ -52,6 +52,9 @@ namespace xng {
     }
 
     void TextureAtlas::remove(const TextureAtlasHandle &handle) {
-        bufferOccupations.at(handle.level).at(handle.index) = !bufferOccupations.at(handle.level).at(handle.index);
+        if (!bufferOccupations.at(handle.level).at(handle.index)){
+            throw std::runtime_error("Texture already removed");
+        }
+        bufferOccupations.at(handle.level).at(handle.index) = false;
     }
 }
