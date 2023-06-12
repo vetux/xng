@@ -307,14 +307,6 @@ namespace xng::glfw {
         return dynamic_cast<Input &>(*input);
     }
 
-    void WindowGLFWGL::bindGraphics() {
-        glfwMakeContextCurrent(wndH);
-    }
-
-    void WindowGLFWGL::unbindGraphics() {
-        glfwMakeContextCurrent(nullptr);
-    }
-
     void WindowGLFWGL::swapBuffers() {
         glfwSwapBuffers(wndH);
     }
@@ -459,7 +451,6 @@ namespace xng::glfw {
     }
 
     void WindowGLFWGL::setSwapInterval(int interval) {
-        bindGraphics();
         glfwSwapInterval(interval);
     }
 

@@ -52,21 +52,6 @@ namespace xng {
 
         virtual Input &getInput() = 0;
 
-        /**
-         * A window cannot be bound in multiple threads at the same time.
-         *
-         * These methods are needed when using the graphics driver on a different thread than the one which created the window,
-         * because of opengl tight coupling to windowing system.
-         *
-         * Bind the graphics "context" to the calling thread.
-         */
-        virtual void bindGraphics() = 0;
-
-        /**
-         * Unbind the graphics "context" from the calling thread.
-         */
-        virtual void unbindGraphics() = 0;
-
         virtual void swapBuffers() = 0;
 
         virtual void update() = 0;

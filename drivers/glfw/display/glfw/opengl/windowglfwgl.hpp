@@ -49,10 +49,6 @@ namespace xng::glfw {
 
         Input &getInput() override;
 
-        void bindGraphics() override;
-
-        void unbindGraphics() override;
-
         void swapBuffers() override;
 
         void update() override;

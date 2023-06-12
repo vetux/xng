@@ -76,6 +76,8 @@ namespace xng {
 
         Command(Type type, CommandData data)
                 : type(type), data(std::move(data)) {}
+
+        ~Command() = default;
     };
 }
 #endif //XENGINE_COMMAND_HPP
