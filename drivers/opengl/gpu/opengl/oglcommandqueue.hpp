@@ -393,6 +393,7 @@ namespace xng {
                         ensureRunningPass();
                         unbindVertexArrayObject();
                         unbindShaderData();
+                        mPipeline = nullptr;
                         glBindFramebuffer(GL_FRAMEBUFFER, 0);
                         checkGLError();
                         runningPass = false;

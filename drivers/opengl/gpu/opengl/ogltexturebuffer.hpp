@@ -310,8 +310,7 @@ namespace xng::opengl {
             glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void *) ret.getData());
             glBindTexture(GL_TEXTURE_2D, 0);
             checkGLError();
-            ret = ret.swapColumns();
-            return ret;
+            return std::move(ret.swapColumns());
         }
 
         Image<ColorRGBA> download(CubeMapFace face) override {
@@ -323,8 +322,7 @@ namespace xng::opengl {
             glGetTexImage(convert(face), 0, GL_RGBA, GL_UNSIGNED_BYTE, (void *) ret.getData());
             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
             checkGLError();
-            ret = ret.swapColumns();
-            return ret;
+            return std::move(ret.swapColumns());
         }
     };
 }
