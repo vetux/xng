@@ -202,7 +202,6 @@
 #include "xng/crypto/sha.hpp"
 #include "xng/crypto/random.hpp"
 #include "xng/crypto/cryptodriver.hpp"
-#include "xng/app/application.hpp"
 #include "xng/types/genericmap.hpp"
 #include "xng/types/deltatime.hpp"
 #include "xng/input/buttonstate.hpp"
