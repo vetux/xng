@@ -21,6 +21,10 @@ add_executable(test-shaders ${BASE_SOURCE_DIR}/tests/shadertest/src/main.cpp)
 target_include_directories(test-shaders PRIVATE ${CMAKE_SOURCE_DIR}/tests/shadertest/src/ ${TESTS_COMMON_DIR})
 target_link_libraries(test-shaders Threads::Threads xengine)
 
+add_executable(test-mandelbrot ${BASE_SOURCE_DIR}/tests/mandelbrot/src/main.cpp)
+target_include_directories(test-mandelbrot PRIVATE ${CMAKE_SOURCE_DIR}/tests/mandelbrot/src/ ${BASE_SOURCE_DIR}/shaders/generated/ ${TESTS_COMMON_DIR})
+target_link_libraries(test-mandelbrot Threads::Threads xengine)
+
 if (MSVC)
 	target_compile_options(test-canvasrendersystem PUBLIC /bigobj)
 endif ()

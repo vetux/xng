@@ -41,7 +41,8 @@ public:
                                                        textRenderer(font, renderer2D, pixelSize) {}
 
     void draw(DeltaTime deltaTime,
-              RenderTarget &screen) {
+              RenderTarget &screen,
+              const std::string& appendText = {}) {
         if (!staticAlloc) {
             staticAlloc = true;
             std::string staticTxt;
@@ -74,6 +75,7 @@ public:
         dynTxt += "Draws:" + std::to_string(stats.drawCalls) + "\n";
         dynTxt += "Polys:" + std::to_string(stats.polys) + "\n";
         dynTxt += "Binds:" + std::to_string(stats.binds) + "\n";
+        dynTxt += appendText;
 
         TextLayout layout;
         layout.lineHeight = pixelSize.y;
@@ -92,7 +94,7 @@ public:
                    ColorRGBA::yellow());
 
         ren2D.draw(Rectf({}, staticText.getImage().getSize().convert<float>()),
-                   Rectf({static_cast<float>(screen.getDescription().size.x - staticText.getImage().getSize().x), 0}, staticText.getImage().getSize().convert<float>()),
+                   Rectf({0, static_cast<float>(screen.getDescription().size.y - staticText.getImage().getSize().y)}, staticText.getImage().getSize().convert<float>()),
                    staticHandle,
                    {},
                    0,

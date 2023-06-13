@@ -37,6 +37,8 @@ CompileShaderGLSLES320(ren2d/fs_compat FRAGMENT main)
 CompileShaderGLSL460(testpass/vs VERTEX main)
 CompileShaderGLSL460(testpass/fs FRAGMENT main)
 
+CompileShaderGLSL460(mandelbrot/mandelbrot COMPUTE main)
+
 list(LENGTH SHADER_HEADERS LEN_SHADER_HEADERS)
 
 message("${LEN_SHADER_HEADERS} Precompiled Shaders")
