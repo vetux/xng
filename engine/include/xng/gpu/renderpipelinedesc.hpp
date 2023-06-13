@@ -40,15 +40,6 @@
 #include "xng/geometry/primitive.hpp"
 
 namespace xng {
-    enum RenderPipelineBindingType : int {
-        BIND_TEXTURE_BUFFER, // eg glsl sampler2D or hlsl Texture2D
-        BIND_TEXTURE_ARRAY_BUFFER,
-        BIND_IMAGE_BUFFER, // eg glsl image2D or hlsl RWTexture2D
-        BIND_IMAGE_ARRAY_BUFFER,
-        BIND_SHADER_UNIFORM_BUFFER,
-        BIND_SHADER_STORAGE_BUFFER,
-    };
-
     struct RenderPipelineDesc {
         std::map<ShaderStage, SPIRVShader> shaders; // The shaders to use for this pipeline
         std::vector<RenderPipelineBindingType> bindings; // The set of binding types defining how shader resources are bound

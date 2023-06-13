@@ -20,8 +20,16 @@
 #ifndef XENGINE_COMPUTEPIPELINEDESC_HPP
 #define XENGINE_COMPUTEPIPELINEDESC_HPP
 
+#include "xng/shader/shaderstage.hpp"
+#include "xng/shader/spirvshader.hpp"
+
+#include "xng/gpu/shaderresource.hpp"
+
 namespace xng {
     struct ComputePipelineDesc {
+        std::map<ShaderStage, SPIRVShader> shaders; // The shaders to use for this pipeline
+        std::vector<RenderPipelineBindingType> bindings; // The set of binding types defining how shader resources are bound
+
         bool operator==(const ComputePipelineDesc &other) const {
             return true;
         }

@@ -43,6 +43,7 @@
 #include "gpu/opengl/oglcommandbuffer.hpp"
 #include "gpu/opengl/oglcommandqueue.hpp"
 #include "gpu/opengl/oglsemaphore.hpp"
+#include "gpu/opengl/oglcomputepipeline.hpp"
 
 static std::function<void(const std::string &)> callback;
 
@@ -168,7 +169,7 @@ namespace xng::opengl {
         }
 
         std::vector<std::reference_wrapper<CommandQueue>> getComputeCommandQueues() override {
-            return {};
+            return {queue};
         }
 
         std::vector<std::reference_wrapper<CommandQueue>> getTransferCommandQueues() override {
@@ -192,9 +193,9 @@ namespace xng::opengl {
             throw std::runtime_error("Not Implemented");
         }
 
-        std::unique_ptr<ComputePipeline> createComputePipeline(const ComputePipelineDesc &desc) override {
-            // TODO: Implement opengl compute support
-            throw std::runtime_error("Not Implemented");
+        std::unique_ptr<ComputePipeline> createComputePipeline(const ComputePipelineDesc &desc,
+                                                               ShaderDecompiler &decompiler) override {
+            return std::make_unique<OGLComputePipeline>(destructor, desc, decompiler);
         }
 
         std::unique_ptr<RaytracePipeline> createRaytracePipeline(const RaytracePipelineDesc &desc) override {

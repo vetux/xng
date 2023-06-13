@@ -24,6 +24,8 @@
 
 #include "gpu/opengl/oglfence.hpp"
 
+#include "gpu/opengl/oglcomputepipeline.hpp"
+
 namespace xng {
     namespace opengl {
         class OGLCommandQueue : public CommandQueue {
@@ -36,9 +38,11 @@ namespace xng {
 
             RenderPassDesc passDesc;
 
-            OGLRenderPipeline *mPipeline = nullptr;
+            OGLRenderPipeline *mRenderPipeline = nullptr;
             OGLVertexArrayObject *mVertexObject = nullptr;
             std::vector<ShaderResource> mShaderBindings;
+
+            OGLComputePipeline *mComputePipeline = nullptr;
 
             RenderStatistics stats;
 
@@ -82,12 +86,12 @@ namespace xng {
             }
 
             void unbindShaderData() {
-                ensureRunningPass();
                 if (!mShaderBindings.empty()) {
                     //Unbind textures and uniform buffers
                     for (int bindingPoint = 0; bindingPoint < mShaderBindings.size(); bindingPoint++) {
                         auto &b = mShaderBindings.at(bindingPoint);
-                        switch (mPipeline->desc.bindings.at(bindingPoint)) {
+                        auto bind = mRenderPipeline ? mRenderPipeline->desc.bindings.at(bindingPoint) : mComputePipeline->desc.bindings.at(bindingPoint);
+                        switch (bind) {
                             case BIND_TEXTURE_BUFFER:
                                 glActiveTexture(getTextureSlot(bindingPoint));
                                 glBindTexture(GL_TEXTURE_2D, 0);
@@ -115,7 +119,7 @@ namespace xng {
             }
 
             void checkBindings(bool indexed) {
-                if (mPipeline == nullptr)
+                if (mRenderPipeline == nullptr)
                     throw std::runtime_error("No pipeline bound");
                 if (mVertexObject == nullptr)
                     throw std::runtime_error("No vertex array object bound");
@@ -124,12 +128,12 @@ namespace xng {
                 else if (mVertexObject->mIndexBuffer == nullptr && indexed)
                     throw std::runtime_error("No index buffer bound in vertex array object");
 
-                for (auto i = 0; i < mPipeline->desc.bindings.size(); i++) {
+                for (auto i = 0; i < mRenderPipeline->desc.bindings.size(); i++) {
                     if (i >= mShaderBindings.size()) {
                         break;
                     }
                     auto bindingType = static_cast<ShaderDataType>(mShaderBindings.at(i).data.index());
-                    auto reqBindingType = mPipeline->desc.bindings.at(i);
+                    auto reqBindingType = mRenderPipeline->desc.bindings.at(i);
                     switch (reqBindingType) {
                         case BIND_TEXTURE_BUFFER:
                             if (bindingType != SHADER_TEXTURE_BUFFER) {
@@ -395,7 +399,7 @@ namespace xng {
                         ensureRunningPass();
                         unbindVertexArrayObject();
                         unbindShaderData();
-                        mPipeline = nullptr;
+                        mRenderPipeline = nullptr;
                         glBindFramebuffer(GL_FRAMEBUFFER, 0);
                         checkGLError();
                         runningPass = false;
@@ -430,14 +434,14 @@ namespace xng {
                         ensureRunningPass();
                         auto data = std::get<RenderPassDraw>(c.data);
                         checkBindings(false);
-                        if (!mPipeline) {
+                        if (!mRenderPipeline) {
                             throw std::runtime_error("No pipeline bound");
                         }
-                        glDrawArrays(convert(mPipeline->getDescription().primitive),
+                        glDrawArrays(convert(mRenderPipeline->getDescription().primitive),
                                      static_cast<GLint>(data.drawCalls.at(0).offset),
                                      static_cast<GLsizei>(data.drawCalls.at(0).count));
                         stats.drawCalls++;
-                        stats.polys += data.drawCalls.at(0).count / mPipeline->getDescription().primitive;
+                        stats.polys += data.drawCalls.at(0).count / mRenderPipeline->getDescription().primitive;
                         checkGLError();
                         break;
                     }
@@ -445,15 +449,15 @@ namespace xng {
                         ensureRunningPass();
                         auto data = std::get<RenderPassDraw>(c.data);
                         checkBindings(true);
-                        if (!mPipeline) {
+                        if (!mRenderPipeline) {
                             throw std::runtime_error("No pipeline bound");
                         }
-                        glDrawElements(convert(mPipeline->getDescription().primitive),
+                        glDrawElements(convert(mRenderPipeline->getDescription().primitive),
                                        static_cast<GLsizei>(data.drawCalls.at(0).count),
                                        convert(data.drawCalls.at(0).indexType),
                                        reinterpret_cast<void *>(data.drawCalls.at(0).offset));
                         stats.drawCalls++;
-                        stats.polys += data.drawCalls.at(0).count / mPipeline->getDescription().primitive;
+                        stats.polys += data.drawCalls.at(0).count / mRenderPipeline->getDescription().primitive;
                         checkGLError();
                         break;
                     }
@@ -461,15 +465,15 @@ namespace xng {
                         ensureRunningPass();
                         auto data = std::get<RenderPassDraw>(c.data);
                         checkBindings(false);
-                        if (!mPipeline) {
+                        if (!mRenderPipeline) {
                             throw std::runtime_error("No pipeline bound");
                         }
-                        glDrawArraysInstanced(convert(mPipeline->getDescription().primitive),
+                        glDrawArraysInstanced(convert(mRenderPipeline->getDescription().primitive),
                                               static_cast<GLint>(data.drawCalls.at(0).offset),
                                               static_cast<GLsizei>(data.drawCalls.at(0).count),
                                               static_cast<GLsizei>(data.numberOfInstances));
                         stats.drawCalls++;
-                        stats.polys += data.drawCalls.at(0).count / mPipeline->getDescription().primitive;
+                        stats.polys += data.drawCalls.at(0).count / mRenderPipeline->getDescription().primitive;
                         checkGLError();
                         break;
                     }
@@ -477,16 +481,16 @@ namespace xng {
                         ensureRunningPass();
                         auto data = std::get<RenderPassDraw>(c.data);
                         checkBindings(true);
-                        if (!mPipeline) {
+                        if (!mRenderPipeline) {
                             throw std::runtime_error("No pipeline bound");
                         }
-                        glDrawElementsInstanced(convert(mPipeline->getDescription().primitive),
+                        glDrawElementsInstanced(convert(mRenderPipeline->getDescription().primitive),
                                                 static_cast<GLsizei>(data.drawCalls.at(0).count),
                                                 convert(data.drawCalls.at(0).indexType),
                                                 reinterpret_cast<void *>(data.drawCalls.at(0).offset),
                                                 static_cast<GLsizei>(data.numberOfInstances));
                         stats.drawCalls++;
-                        stats.polys += data.drawCalls.at(0).count / mPipeline->getDescription().primitive;
+                        stats.polys += data.drawCalls.at(0).count / mRenderPipeline->getDescription().primitive;
                         checkGLError();
                         break;
                     }
@@ -494,7 +498,7 @@ namespace xng {
                         ensureRunningPass();
                         auto data = std::get<RenderPassDraw>(c.data);
                         checkBindings(false);
-                        if (!mPipeline) {
+                        if (!mRenderPipeline) {
                             throw std::runtime_error("No pipeline bound");
                         }
                         std::vector<GLint> first;
@@ -508,13 +512,13 @@ namespace xng {
                             count.emplace_back(call.count);
                         }
 
-                        glMultiDrawArrays(convert(mPipeline->getDescription().primitive),
+                        glMultiDrawArrays(convert(mRenderPipeline->getDescription().primitive),
                                           first.data(),
                                           count.data(),
                                           static_cast<GLsizei>(data.drawCalls.size()));
                         stats.drawCalls++;
                         for (auto &call : data.drawCalls){
-                            stats.polys += call.count / mPipeline->getDescription().primitive;
+                            stats.polys += call.count / mRenderPipeline->getDescription().primitive;
                         }
                         checkGLError();
                         break;
@@ -523,7 +527,7 @@ namespace xng {
                         ensureRunningPass();
                         auto data = std::get<RenderPassDraw>(c.data);
                         checkBindings(true);
-                        if (!mPipeline) {
+                        if (!mRenderPipeline) {
                             throw std::runtime_error("No pipeline bound");
                         }
                         std::vector<GLsizei> count;
@@ -537,14 +541,14 @@ namespace xng {
                             indices.emplace_back(call.offset);
                         }
 
-                        glMultiDrawElements(convert(mPipeline->getDescription().primitive),
+                        glMultiDrawElements(convert(mRenderPipeline->getDescription().primitive),
                                             count.data(),
                                             GL_UNSIGNED_INT,
                                             reinterpret_cast<const void *const *>(indices.data()),
                                             static_cast<GLsizei>(data.drawCalls.size()));
                         stats.drawCalls++;
                         for (auto &call : data.drawCalls){
-                            stats.polys += call.count / mPipeline->getDescription().primitive;
+                            stats.polys += call.count / mRenderPipeline->getDescription().primitive;
                         }
                         checkGLError();
                         break;
@@ -553,16 +557,16 @@ namespace xng {
                         ensureRunningPass();
                         auto data = std::get<RenderPassDraw>(c.data);
                         checkBindings(true);
-                        if (!mPipeline) {
+                        if (!mRenderPipeline) {
                             throw std::runtime_error("No pipeline bound");
                         }
-                        glDrawElementsBaseVertex(convert(mPipeline->getDescription().primitive),
+                        glDrawElementsBaseVertex(convert(mRenderPipeline->getDescription().primitive),
                                                  static_cast<GLsizei>(data.drawCalls.at(0).count),
                                                  convert(data.drawCalls.at(0).indexType),
                                                  reinterpret_cast<void *>(data.drawCalls.at(0).offset),
                                                  static_cast<GLint>(data.baseVertices.at(0)));
                         stats.drawCalls++;
-                        stats.polys += data.drawCalls.at(0).count / mPipeline->getDescription().primitive;
+                        stats.polys += data.drawCalls.at(0).count / mRenderPipeline->getDescription().primitive;
                         checkGLError();
                         break;
                     }
@@ -570,17 +574,17 @@ namespace xng {
                         ensureRunningPass();
                         auto data = std::get<RenderPassDraw>(c.data);
                         checkBindings(true);
-                        if (!mPipeline) {
+                        if (!mRenderPipeline) {
                             throw std::runtime_error("No pipeline bound");
                         }
-                        glDrawElementsInstancedBaseVertex(convert(mPipeline->getDescription().primitive),
+                        glDrawElementsInstancedBaseVertex(convert(mRenderPipeline->getDescription().primitive),
                                                           static_cast<GLsizei>(data.drawCalls.at(0).count),
                                                           convert(data.drawCalls.at(0).indexType),
                                                           reinterpret_cast<void *>(data.drawCalls.at(0).offset),
                                                           static_cast<GLsizei>(data.numberOfInstances),
                                                           static_cast<GLint>(data.baseVertices.at(0)));
                         stats.drawCalls++;
-                        stats.polys += data.drawCalls.at(0).count / mPipeline->getDescription().primitive;
+                        stats.polys += data.drawCalls.at(0).count / mRenderPipeline->getDescription().primitive;
                         checkGLError();
                         break;
                     }
@@ -588,7 +592,7 @@ namespace xng {
                         ensureRunningPass();
                         auto data = std::get<RenderPassDraw>(c.data);
                         checkBindings(true);
-                        if (!mPipeline) {
+                        if (!mRenderPipeline) {
                             throw std::runtime_error("No pipeline bound");
                         }
                         std::vector<GLsizei> count;
@@ -606,7 +610,7 @@ namespace xng {
                         for (auto &v: data.baseVertices)
                             vertices.emplace_back(static_cast<GLint>(v));
 
-                        glMultiDrawElementsBaseVertex(convert(mPipeline->getDescription().primitive),
+                        glMultiDrawElementsBaseVertex(convert(mRenderPipeline->getDescription().primitive),
                                                       count.data(),
                                                       GL_UNSIGNED_INT,
                                                       indices.data(),
@@ -614,7 +618,7 @@ namespace xng {
                                                       vertices.data());
                         stats.drawCalls++;
                         for (auto &call : data.drawCalls){
-                            stats.polys += call.count / mPipeline->getDescription().primitive;
+                            stats.polys += call.count / mRenderPipeline->getDescription().primitive;
                         }
                         checkGLError();
                         break;
@@ -625,7 +629,7 @@ namespace xng {
 
                         auto &pip = dynamic_cast<OGLRenderPipeline &>(*data.pipeline);
 
-                        mPipeline = &pip;
+                        mRenderPipeline = &pip;
 
                         auto &desc = data.pipeline->getDescription();
 
@@ -707,9 +711,7 @@ namespace xng {
                         break;
                     }
                     case Command::BIND_SHADER_RESOURCES: {
-                        ensureRunningPass();
-
-                        if (mPipeline == nullptr) {
+                        if (mRenderPipeline == nullptr && mComputePipeline == nullptr) {
                             throw std::runtime_error("Pipeline must be bound in order to bind shader resources");
                         }
 
@@ -722,7 +724,8 @@ namespace xng {
                         // Bind textures and uniform buffers
                         for (int bindingPoint = 0; bindingPoint < bindings.resources.size(); bindingPoint++) {
                             auto &b = bindings.resources.at(bindingPoint);
-                            switch (mPipeline->getDescription().bindings.at(bindingPoint)) {
+                            auto bind = mRenderPipeline ? mRenderPipeline->getDescription().bindings.at(bindingPoint) : mComputePipeline->getDescription().bindings.at(bindingPoint);
+                            switch (bind) {
                                 case BIND_TEXTURE_BUFFER: {
                                     auto texture = dynamic_cast<OGLTextureBuffer *>(&std::get<std::reference_wrapper<TextureBuffer>>(
                                             b.data).get());
@@ -818,9 +821,9 @@ namespace xng {
                                     break;
                                 }
                             }
+                            stats.binds++;
                         }
                         checkGLError();
-                        stats.binds++;
                         break;
                     }
                     case Command::COPY_TEXTURE_ARRAY: {
@@ -1020,11 +1023,29 @@ namespace xng {
                         checkGLError();
                         break;
                     }
-                    case Command::COMPUTE_BIND_PIPELINE:
-                    case Command::COMPUTE_BIND_DATA:
-                    case Command::COMPUTE_EXECUTE:
-                        throw std::runtime_error("Compute not implemented");
+                    case Command::COMPUTE_BIND_PIPELINE: {
+                        auto data = std::get<ComputePipelineBind>(c.data);
+                        auto &pip = dynamic_cast<OGLComputePipeline &>(*data.pipeline);
+                        mComputePipeline = &pip;
+
+                        auto &desc = data.pipeline->getDescription();
+
+                        // Bind shader program
+                        if (pip.programHandle) {
+                            glUseProgram(pip.programHandle);
+                        }
+
+                        checkGLError();
+                        break;
+                    }
+                    case Command::COMPUTE_EXECUTE: {
+                        auto data = std::get<ComputePipelineExecute>(c.data);
+                        glDispatchCompute(data.num_groups.x, data.num_groups.y, data.num_groups.z);
+                        checkGLError();
+                        break;
+                    }
                 }
+                glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT | GL_BUFFER_UPDATE_BARRIER_BIT);
             }
 
             RenderStatistics debugNewFrame() override {

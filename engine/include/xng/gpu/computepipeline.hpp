@@ -49,7 +49,7 @@ namespace xng {
          * @return
          */
         static Command bindShaderResources(std::vector<ShaderResource> resources) {
-            return {Command::COMPUTE_BIND_DATA, ComputePipelineBindData(std::move(resources))};
+            return {Command::BIND_SHADER_RESOURCES, ShaderResourceBind(std::move(resources))};
         }
 
         /**

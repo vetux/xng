@@ -228,15 +228,6 @@ namespace xng {
 
     };
 
-    struct ComputePipelineBindData {
-        std::vector<ShaderResource> resources;
-
-        ComputePipelineBindData() = default;
-
-        explicit ComputePipelineBindData(std::vector<ShaderResource> resources)
-                : resources(std::move(resources)) {}
-    };
-
     struct ComputePipelineExecute {
         Vector3<unsigned int> num_groups;
 
@@ -260,7 +251,6 @@ namespace xng {
             ShaderStorageBufferCopy,
             ShaderUniformBufferCopy,
             ComputePipelineBind,
-            ComputePipelineBindData,
             ComputePipelineExecute> CommandData;
 }
 

@@ -99,7 +99,8 @@ namespace xng {
 
         virtual std::unique_ptr<RenderPipeline> createRenderPipeline(const uint8_t *cacheData, size_t size) = 0;
 
-        virtual std::unique_ptr<ComputePipeline> createComputePipeline(const ComputePipelineDesc &desc) = 0;
+        virtual std::unique_ptr<ComputePipeline> createComputePipeline(const ComputePipelineDesc &desc,
+                                                                       ShaderDecompiler &decompiler) = 0;
 
         virtual std::unique_ptr<RaytracePipeline> createRaytracePipeline(const RaytracePipelineDesc &desc) = 0;
 

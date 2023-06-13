@@ -66,7 +66,6 @@ namespace xng {
             COPY_SHADER_STORAGE_BUFFER,
             COPY_SHADER_UNIFORM_BUFFER,
             COMPUTE_BIND_PIPELINE,
-            COMPUTE_BIND_DATA,
             COMPUTE_EXECUTE,
         } type{};
 
