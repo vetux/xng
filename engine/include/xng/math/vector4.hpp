@@ -167,6 +167,9 @@ namespace xng {
 
     typedef Vector4<bool> Vec4b;
     typedef Vector4<int> Vec4i;
+    typedef Vector4<unsigned int> Vec4u;
+    typedef Vector4<long> Vec4l;
+    typedef Vector4<unsigned long> Vec4ul;
     typedef Vector4<float> Vec4f;
     typedef Vector4<double> Vec4d;
 }

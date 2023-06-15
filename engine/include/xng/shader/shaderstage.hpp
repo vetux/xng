@@ -20,9 +20,11 @@
 #ifndef XENGINE_SHADERSTAGE_HPP
 #define XENGINE_SHADERSTAGE_HPP
 
+#include "xng/io/message.hpp"
+
 namespace xng {
-    enum ShaderStage {
-        VERTEX,
+    enum ShaderStage : int {
+        VERTEX = 0,
         TESSELLATION_CONTROL,
         TESSELLATION_EVALUATION,
         GEOMETRY,
@@ -34,6 +36,16 @@ namespace xng {
         RAY_MISS,
         RAY_INTERSECT
     };
+
+    inline ShaderStage &operator<<(ShaderStage &stage, const Message &message) {
+        stage = (ShaderStage)message.asInt();
+        return stage;
+    }
+
+    inline Message &operator>>(const ShaderStage &stage, Message &message) {
+        message = (int)stage;
+        return message;
+    }
 }
 
 #endif //XENGINE_SHADERSTAGE_HPP

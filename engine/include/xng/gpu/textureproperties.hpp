@@ -20,6 +20,8 @@
 #ifndef XENGINE_TEXTUREPROPERTIES_HPP
 #define XENGINE_TEXTUREPROPERTIES_HPP
 
+#include "xng/io/message.hpp"
+
 namespace xng {
     enum TextureType : int {
         TEXTURE_2D,
@@ -128,6 +130,66 @@ namespace xng {
         NEAREST_MIPMAP_LINEAR,
         LINEAR_MIPMAP_LINEAR
     };
+
+    inline TextureType &operator<<(TextureType &value, const Message &message) {
+        value = (TextureType)message.asInt();
+        return value;
+    }
+
+    inline Message &operator>>(const TextureType &value, Message &message) {
+        message = (int)value;
+        return message;
+    }
+
+    inline CubeMapFace &operator<<(CubeMapFace &value, const Message &message) {
+        value = (CubeMapFace)message.asInt();
+        return value;
+    }
+
+    inline Message &operator>>(const CubeMapFace &value, Message &message) {
+        message = (int)value;
+        return message;
+    }
+
+    inline ColorFormat &operator<<(ColorFormat &value, const Message &message) {
+        value = (ColorFormat)message.asInt();
+        return value;
+    }
+
+    inline Message &operator>>(const ColorFormat &value, Message &message) {
+        message = (int)value;
+        return message;
+    }
+
+    inline TextureWrapping &operator<<(TextureWrapping &value, const Message &message) {
+        value = (TextureWrapping)message.asInt();
+        return value;
+    }
+
+    inline Message &operator>>(const TextureWrapping &value, Message &message) {
+        message = (int)value;
+        return message;
+    }
+
+    inline TextureFiltering &operator<<(TextureFiltering &value, const Message &message) {
+        value = (TextureFiltering)message.asInt();
+        return value;
+    }
+
+    inline Message &operator>>(const TextureFiltering &value, Message &message) {
+        message = (int)value;
+        return message;
+    }
+
+    inline MipMapFiltering &operator<<(MipMapFiltering &value, const Message &message) {
+        value = (MipMapFiltering)message.asInt();
+        return value;
+    }
+
+    inline Message &operator>>(const MipMapFiltering &value, Message &message) {
+        message = (int)value;
+        return message;
+    }
 }
 
 #endif //XENGINE_TEXTUREPROPERTIES_HPP

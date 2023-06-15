@@ -147,6 +147,9 @@ namespace xng {
 
     typedef Vector2<bool> Vec2b;
     typedef Vector2<int> Vec2i;
+    typedef Vector2<unsigned int> Vec2u;
+    typedef Vector2<long> Vec2l;
+    typedef Vector2<unsigned long> Vec2ul;
     typedef Vector2<float> Vec2f;
     typedef Vector2<double> Vec2d;
 }

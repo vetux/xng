@@ -158,6 +158,9 @@ namespace xng {
 
     typedef Vector3<bool> Vec3b;
     typedef Vector3<int> Vec3i;
+    typedef Vector3<unsigned int> Vec3u;
+    typedef Vector3<long> Vec3l;
+    typedef Vector3<unsigned long> Vec3ul;
     typedef Vector3<float> Vec3f;
     typedef Vector3<double> Vec3d;
 }

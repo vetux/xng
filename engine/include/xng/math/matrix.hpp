@@ -7,8 +7,6 @@
 #include "vector3.hpp"
 #include "vector4.hpp"
 
-#include "xng/io/messageable.hpp"
-
 namespace xng {
     /**
      * Data is stored in COLUMN MAJOR layout.
@@ -121,11 +119,11 @@ namespace xng {
             return ret;
         }
 
-        Messageable &operator<<(const Message &message) {
+        Matrix<T, W, H> &operator<<(const Message &message) {
             if (message.getType() == Message::LIST) {
                 auto v = message.asList();
                 for (int i = 0; i < Matrix<T, W, H>::size() && i < v.size(); i++) {
-                    data[i] = v.at(i);
+                    data[i] = v.at(i).as<T>();
                 }
             } else {
                 std::fill_n(data, size(), 0);
@@ -155,44 +153,29 @@ namespace xng {
     // Multiply matrix by another matrix
     XENGINE_EXPORT Matrix<float, 4, 4> operator*(const Matrix<float, 4, 4> &lhs, const Matrix<float, 4, 4> &rhs);
 
-    typedef Matrix<float, 2, 2> Mat2x2f;
-    typedef Matrix<float, 2, 2> Mat2f;
-    typedef Matrix<float, 2, 3> Mat2x3f;
-    typedef Matrix<float, 2, 4> Mat2x4f;
-    typedef Matrix<float, 3, 2> Mat3x2f;
-    typedef Matrix<float, 3, 3> Mat3x3f;
-    typedef Matrix<float, 3, 3> Mat3f;
-    typedef Matrix<float, 3, 4> Mat3x4f;
-    typedef Matrix<float, 4, 2> Mat4x2f;
-    typedef Matrix<float, 4, 3> Mat4x3f;
-    typedef Matrix<float, 4, 4> Mat4x4f;
-    typedef Matrix<float, 4, 4> Mat4f;
-
-    typedef Matrix<double, 2, 2> Mat2x2d;
-    typedef Matrix<double, 2, 2> Mat2d;
-    typedef Matrix<double, 2, 3> Mat2x3d;
-    typedef Matrix<double, 2, 4> Mat2x4d;
-    typedef Matrix<double, 3, 2> Mat3x2d;
-    typedef Matrix<double, 3, 3> Mat3x3d;
-    typedef Matrix<double, 3, 3> Mat3d;
-    typedef Matrix<double, 3, 4> Mat3x4d;
-    typedef Matrix<double, 4, 2> Mat4x2d;
-    typedef Matrix<double, 4, 3> Mat4x3d;
-    typedef Matrix<double, 4, 4> Mat4x4d;
-    typedef Matrix<double, 4, 4> Mat4d;
-
-    typedef Matrix<int, 2, 2> Mat2x2i;
+    typedef Matrix<bool, 2, 2> Mat2b;
     typedef Matrix<int, 2, 2> Mat2i;
-    typedef Matrix<int, 2, 3> Mat2x3i;
-    typedef Matrix<int, 2, 4> Mat2x4i;
-    typedef Matrix<int, 3, 2> Mat3x2i;
-    typedef Matrix<int, 3, 3> Mat3x3i;
+    typedef Matrix<unsigned int, 2, 2> Mat2u;
+    typedef Matrix<long, 2, 2> Mat2l;
+    typedef Matrix<unsigned long, 2, 2> Mat2ul;
+    typedef Matrix<float, 2, 2> Mat2f;
+    typedef Matrix<double, 2, 2> Mat2d;
+
+    typedef Matrix<bool, 3, 3> Mat3b;
     typedef Matrix<int, 3, 3> Mat3i;
-    typedef Matrix<int, 3, 4> Mat3x4i;
-    typedef Matrix<int, 4, 2> Mat4x2i;
-    typedef Matrix<int, 4, 3> Mat4x3i;
-    typedef Matrix<int, 4, 4> Mat4x4i;
+    typedef Matrix<unsigned int, 3, 3> Mat3u;
+    typedef Matrix<long, 3, 3> Mat3l;
+    typedef Matrix<unsigned long, 3, 3> Mat3ul;
+    typedef Matrix<float, 3, 3> Mat3f;
+    typedef Matrix<double, 3, 3> Mat3d;
+
+    typedef Matrix<bool, 4, 4> Mat4b;
     typedef Matrix<int, 4, 4> Mat4i;
+    typedef Matrix<unsigned int, 4, 4> Mat4u;
+    typedef Matrix<long, 4, 4> Mat4l;
+    typedef Matrix<unsigned long, 4, 4> Mat4ul;
+    typedef Matrix<float, 4, 4> Mat4f;
+    typedef Matrix<double, 4, 4> Mat4d;
 }
 
 #endif // MATRIX_HPP
