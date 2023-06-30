@@ -28,3 +28,5 @@ elseif (WIN32)
 else ()
     add_compile_definitions(XENGINE_EXPORT=)
 endif ()
+
+message("Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
