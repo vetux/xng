@@ -177,6 +177,7 @@
 #include "xng/io/substreambuf.hpp"
 #include "xng/io/message.hpp"
 #include "xng/io/readfile.hpp"
+#include "xng/io/writefile.hpp"
 #include "xng/io/archive.hpp"
 #include "xng/io/pakbuilder.hpp"
 #include "xng/io/library.hpp"

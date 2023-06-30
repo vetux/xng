@@ -25,44 +25,23 @@
 
 namespace xng {
     /**
-     * Fast reading of a whole file into memory using cstdio
-     *
      * @param path
      * @return
      */
-    inline std::vector<char> readFile(const std::string &path, const size_t bufferStepSize = 100) {
+    inline std::vector<char> readFile(const std::filesystem::path &path) {
         std::ifstream ifs(path, std::ios_base::in | std::ios::binary);
-        return std::vector<char>((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+        return {(std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>()};
     }
 
     /**
-     * Fast reading of a whole file into memory using cstdio
-     *
      * @param path
      * @return
      */
-    inline std::string readFileString(const std::string &path, const size_t bufferStepSize = 100) {
-        FILE *fp;
-        fp = fopen(path.c_str(), "r");
-
-        std::vector<char> fbuf(bufferStepSize);
-
-        auto r = fread(fbuf.data(), 1, fbuf.size(), fp);
-
-        std::string ret;
-        ret.insert(ret.end(),
-                   fbuf.begin(),
-                   fbuf.begin() + static_cast<std::iterator<char *, std::vector<char>>::difference_type>(r));
-        while (r == bufferStepSize) {
-            r = fread(fbuf.data(), 1, fbuf.size(), fp);
-            ret.insert(ret.end(),
-                       fbuf.begin(),
-                       fbuf.begin() + static_cast<std::iterator<char *, std::vector<char>>::difference_type>(r));
-        }
-
-        fclose(fp);
-
-        return ret;
+    inline std::string readFileString(const std::filesystem::path &path) {
+        std::ifstream t(path);
+        std::stringstream buffer;
+        buffer << t.rdbuf();
+        return buffer.str();
     }
 
 }
