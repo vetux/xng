@@ -24,13 +24,15 @@
 #include "xng/driver/shaderc/shaderccompiler.hpp"
 
 #include "xng/io/readfile.hpp"
+#include "xng/io/writefile.hpp"
 
 #include <fstream>
 #include <filesystem>
 #include <iostream>
 
 enum OutputMode {
-    INCLUDE, // Output a c++ header which contains the shader data as a SPIRVBundle
+    OUTPUT_BINARY, // Output the shader data as binary
+    OUTPUT_HEADER, // Output a c++ header which contains the shader data as a SPIRVBundle
 };
 
 struct Arguments {
@@ -133,18 +135,19 @@ xng::ShaderCompiler::OptimizationLevel getOptimizationLevel(const std::string &l
 }
 
 Arguments parseArgs(int argc, char *argv[]) {
+    if (argc < 2) {
+        throw std::runtime_error("No arguments specified");
+    }
+
     Arguments ret;
     for (auto i = 1; i < argc; i++) {
         std::string arg(argv[i]);
         if (arg.starts_with('-')) {
             if (arg == "-i") {
-                ret.mode = INCLUDE;
-            } else if (arg == "-I") {
                 if (i + 1 >= argc) {
                     throw std::runtime_error("-I option must be followed by a valid path");
                 } else {
-                    ret.includeDir = argv[i + 1];
-                    i++;
+                    ret.includeDir = argv[++i];
                 }
             } else if (arg == "-p") {
                 ret.preprocess = true;
@@ -152,32 +155,41 @@ Arguments parseArgs(int argc, char *argv[]) {
                 if (i + 1 >= argc) {
                     throw std::runtime_error("-l option must be followed by a valid shader language name");
                 } else {
-                    ret.language = getLanguage(std::string(argv[i + 1]));
-                    i++;
+                    ret.language = getLanguage(std::string(argv[++i]));
                 }
             } else if (arg == "-s") {
                 if (i + 1 >= argc) {
                     throw std::runtime_error("-s option must be followed by a valid shader stage name");
                 } else {
-                    ret.stage = getStage(std::string(argv[i + 1]));
-                    i++;
+                    ret.stage = getStage(std::string(argv[++i]));
                 }
             } else if (arg == "-o") {
                 if (i + 1 >= argc) {
                     throw std::runtime_error("-o option must be followed by a valid optimization level name");
                 } else {
-                    ret.optimization = getOptimizationLevel(std::string(argv[i + 1]));
-                    i++;
+                    ret.optimization = getOptimizationLevel(std::string(argv[++i]));
                 }
             } else if (arg == "-e") {
                 if (i + 1 >= argc) {
                     throw std::runtime_error("-e option must be followed by a valid entry point name");
                 } else {
-                    ret.entryPoint = std::string(argv[i + 1]);
-                    i++;
+                    ret.entryPoint = std::string(argv[++i]);
                 }
             } else if (arg == "-f") {
                 ret.forceOverwrite = true;
+            } else if (arg == "-m") {
+                if (i + 1 >= argc) {
+                    throw std::runtime_error("-m option must be followed by a valid mode name");
+                } else {
+                    auto str = std::string(argv[++i]);
+                    if (str == "binary") {
+                        ret.mode = OUTPUT_BINARY;
+                    } else if (str == "header") {
+                        ret.mode = OUTPUT_HEADER;
+                    } else {
+                        throw std::runtime_error("Unrecognized mode name: " + str);
+                    }
+                }
             } else {
                 throw std::runtime_error("Unrecognized option: " + arg);
             }
@@ -193,7 +205,7 @@ Arguments parseArgs(int argc, char *argv[]) {
 }
 
 void printUsage() {
-    std::cout << "Usage: shadercompiler [OPTION]... SOURCE DEST";
+    std::cout << "Usage: shadercompiler [OPTION]... SOURCE DEST\n";
 }
 
 xng::SPIRVBlob blob = {1, 2, 3,};
@@ -276,15 +288,32 @@ int main(int argc, char *argv[]) {
     auto bin = compiler.compile(shader, args.entryPoint, args.stage, args.language, args.optimization);
 
     if (args.outputPath.has_relative_path()
+        && args.outputPath.has_parent_path()
         && !std::filesystem::is_directory(args.outputPath.parent_path())) {
-        std::filesystem::remove(args.outputPath.parent_path());
-        std::filesystem::create_directories(args.outputPath.parent_path());
+        try {
+            std::filesystem::remove(args.outputPath.parent_path());
+            std::filesystem::create_directories(args.outputPath.parent_path());
+        } catch (const std::exception &e) {
+            std::cout << "Failed to create directory at " + args.outputPath.string() + "\n";
+            std::cout << e.what();
+            std::cout << "\n";
+            return 1;
+        }
     }
 
-    std::ofstream ofs(args.outputPath);
     switch (args.mode) {
         default:
-        case INCLUDE:
+        case OUTPUT_BINARY:
+            try {
+                xng::writeFile(args.outputPath, bin);
+            } catch (const std::exception &e) {
+                std::cout << "Failed to write file at: " + args.outputPath.string() + "\n";
+                std::cout << e.what();
+                std::cout << "\n";
+                return 1;
+            }
+            break;
+        case OUTPUT_HEADER:
             xng::SPIRVBundle bundle(std::vector<xng::SPIRVBundle::Entry>{xng::SPIRVBundle::Entry{
                                             .stage = args.stage,
                                             .entryPoint = args.entryPoint,
@@ -295,11 +324,18 @@ int main(int argc, char *argv[]) {
                                 guard.begin() + static_cast<std::string::difference_type>(guard.size() -
                                                                                           args.outputPath.relative_path().extension().string().size()));
             std::replace(guard.begin(), guard.end(), '/', '_');
-            ofs << generateHeader(guard, args.outputPath.stem().string(), bundle.getShader());
+
+            try {
+                xng::writeFile(args.outputPath,
+                               generateHeader(guard, args.outputPath.stem().string(), bundle.getShader()));
+            } catch (const std::exception &e) {
+                std::cout << "Failed to write file at: " + args.outputPath.string() + "\n";
+                std::cout << e.what();
+                std::cout << "\n";
+                return 1;
+            }
             break;
     }
-    ofs.flush();
-    ofs.close();
 
     return 0;
 }
