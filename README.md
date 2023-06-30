@@ -63,6 +63,7 @@ Drivers are implementations of interfaces (For example through 3rd party librari
 
 - Linux
     - Tested Compiler: GCC 10.2.1 64bit
+      - GCC 12 is currently not supported because SPIRV-Cross does not appear to be compatible with GCC 12. (See [BUILDING.md](BUILDING.md)) 
 - Windows
     - Tested Compiler: MSVC 2022 64bit
         - Build warnings are emitted due to the fact that xng uses STL types in dllexport types.
