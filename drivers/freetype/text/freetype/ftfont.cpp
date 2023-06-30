@@ -22,20 +22,14 @@
 #include <string>
 
 namespace xng {
-    FTFont::FTFont(std::istream &stream) {
+    FTFont::FTFont(std::istream &stream, FT_Library library) : library(library) {
         bytes = std::vector<char>((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
 
-        auto r = FT_Init_FreeType(&library);
-
-        if (r != 0) {
-            throw std::runtime_error("Failed to initalize freetype: " + std::to_string(r));
-        }
-
-        r = FT_New_Memory_Face(library,
-                               (const FT_Byte *) (bytes.data()),
-                               bytes.size(),
-                               0,
-                               &face);
+        auto r = FT_New_Memory_Face(library,
+                                    (const FT_Byte *) (bytes.data()),
+                                    static_cast<FT_Long>(bytes.size()),
+                                    0,
+                                    &face);
 
         if (r != 0) {
             throw std::runtime_error("Failed to create face from memory " + std::to_string(r));
@@ -58,7 +52,7 @@ namespace xng {
             throw std::runtime_error("Failed to rasterize character " + std::to_string(c) + " " + std::to_string(r));
         }
 
-        Vec2i size(face->glyph->bitmap.width, face->glyph->bitmap.rows);
+        Vec2i size(static_cast<int>(face->glyph->bitmap.width), static_cast<int>(face->glyph->bitmap.rows));
         Vec2i bearing(face->glyph->bitmap_left, face->glyph->bitmap_top);
 
         auto bitmap = face->glyph->bitmap;

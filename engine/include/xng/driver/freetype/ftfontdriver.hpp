@@ -22,10 +22,21 @@
 
 #include "xng/font/fontdriver.hpp"
 
+struct FT_LibraryRec_;
+
+typedef struct FT_LibraryRec_ * FT_Library;
+
 namespace xng::freetype {
     class XENGINE_EXPORT FtFontDriver : public FontDriver {
     public:
+        FtFontDriver();
+
+        ~FtFontDriver();
+
         std::unique_ptr<Font> createFont(std::istream &data) override;
+
+    private:
+        FT_Library library;
     };
 }
 

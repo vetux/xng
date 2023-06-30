@@ -22,7 +22,19 @@
 #include "text/freetype/ftfont.hpp"
 
 namespace xng::freetype {
+    FtFontDriver::FtFontDriver() : library() {
+        auto r = FT_Init_FreeType(&library);
+
+        if (r != 0) {
+            throw std::runtime_error("Failed to initalize freetype: " + std::to_string(r));
+        }
+    }
+
+    FtFontDriver::~FtFontDriver() {
+        FT_Done_FreeType(library);
+    }
+
     std::unique_ptr<Font> FtFontDriver::createFont(std::istream &data) {
-        return std::make_unique<FTFont>(data);
+        return std::make_unique<FTFont>(data, library);
     }
 }
