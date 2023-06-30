@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.0.0)
 
 if (UNIX)
-    # When the linked spirv-cross binaries are built using gcc-11 it results in a segfault when compiling spirv for now the linux build will use gcc-10 by default
+    # When the linked spirv-cross binaries are built using gcc-12 it results in a segfault when compiling spirv for now the linux build will use gcc-10 by default
     # and the linked SPIRV-Cross binaries must be built using gcc-10.
     # Users can override the compiler version in the user-config.cmake file
-    message(WARNING "SPIRV-Cross is not compatible with gcc-11. Using gcc-10")
+    message(WARNING "SPIRV-Cross is not compatible with gcc-12. Using gcc-10")
     set(CMAKE_C_COMPILER "gcc-10")
     set(CMAKE_CXX_COMPILER "g++-10")
 endif()
