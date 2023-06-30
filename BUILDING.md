@@ -22,6 +22,13 @@
 
 # Notes
 
+## Debian 12 / GCC 12
+When SPIRV-Cross is compiled using GCC 12 and linked into an executable / library built using GCC 12 then there is a segfault when compiling shaders. Therefore it is currently required to build the engine and SPIRV-Cross using GCC 10.
+
+In a unix build [CMakeLists.txt](CMakeLists.txt) automatically overrides the compiler used by cmake to gcc-10/g++-10.
+
+The used compiler can be overriden in the <code>user-config.cmake</code> file.
+
 ## Box2D
 
 The box2d physics driver requires version 2.4.1 of box2d. Make sure to not have conflicting versions of the library on
