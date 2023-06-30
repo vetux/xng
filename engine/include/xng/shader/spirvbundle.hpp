@@ -50,6 +50,8 @@ namespace xng {
             }
         }
 
+        ~SPIRVBundle() = default;
+
         const std::vector<SPIRVShader> &getShaders() const { return modules; }
 
         const SPIRVShader &getShader() const {
