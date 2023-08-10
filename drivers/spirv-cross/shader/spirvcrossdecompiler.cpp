@@ -74,8 +74,7 @@ namespace xng::spirv_cross {
 
                 return sCompiler.compile();
             }
-            case GLSL_460_VK:
-            case GLSL_460:{
+            case GLSL_460: {
                 ::spirv_cross::CompilerGLSL sCompiler(source);
                 sCompiler.set_entry_point(entryPoint, convertShaderStage(stage));
 
@@ -91,7 +90,6 @@ namespace xng::spirv_cross {
 
                 return sCompiler.compile();
             }
-            case GLSL_420_VK:
             case GLSL_420: {
                 ::spirv_cross::CompilerGLSL sCompiler(source);
                 sCompiler.set_entry_point(entryPoint, convertShaderStage(stage));

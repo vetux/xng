@@ -7,7 +7,7 @@ option(DRIVER_OPENAL "Build the OpenAL audio driver")
 option(DRIVER_FREETYPE "Build the FreeType font rendering driver")
 option(DRIVER_ASSIMP "Build the AssImp resource parser driver (For 3D asset file formats)")
 option(DRIVER_SNDFILE "Build the SndFile resource parser driver (For Audio file formats)")
-option(DRIVER_SHADERC "Build the ShaderC shader compiler driver")
+option(DRIVER_GLSLANG "Build the GLSLang shader compiler driver")
 option(DRIVER_SPIRVCROSS "Build the SPIRV-Cross shader decompiler driver")
 option(DRIVER_CRYPTOPP "Build the CryptoPP driver")
 option(DRIVER_ANDROID "Build the android display driver")
@@ -24,20 +24,18 @@ set(DRIVERS_NAMES) # The driver names
 # @COMPILE_DEFS = Compile definitions
 # @DIR = The directory in drivers/ which contains the driver source
 # @CLASS = The class name that this driver defines
-# @INCLUDE = The include path of the driver class
 # @DRIVER_LINK = The library name/s which the driver links to. There can be multiple DRIVER_LINK arguments.
-function(CompileDriver COMPILE_DEFS DIR CLASS INCLUDE)
+function(CompileDriver COMPILE_DEFS DIR CLASS)
     set(Drivers.GLOBEXPR ${Drivers.GLOBEXPR} ${BASE_SOURCE_DIR}/drivers/${DIR}/*.cpp ${BASE_SOURCE_DIR}/drivers/${DIR}/*.c PARENT_SCOPE)
     add_compile_definitions(${COMPILE_DEFS})
     set(DRIVERS_INCLUDE ${DRIVERS_INCLUDE} ${BASE_SOURCE_DIR}/drivers/${DIR}/ PARENT_SCOPE)
     set(DRIVERS_CLASSES "${DRIVERS_CLASSES}${CLASS};" PARENT_SCOPE)
-    set(DRIVERS_INCLUDES "${DRIVERS_INCLUDES}${INCLUDE};" PARENT_SCOPE)
     set(DRIVERS_NAMES "${DRIVERS_NAMES}${DIR};" PARENT_SCOPE)
-    if (${ARGC} GREATER 4)
+    if (${ARGC} GREATER 3)
         # Each additional argument is treated as a library name
         set(MAXINDEX ${ARGC})
         MATH(EXPR MAXINDEX "${MAXINDEX}-1")
-        foreach (index RANGE 4 ${MAXINDEX})
+        foreach (index RANGE 3 ${MAXINDEX})
             list(GET ARGV ${index} LIBNAME)
             set(DRIVER_LINK ${DRIVER_LINK} ${LIBNAME})
         endforeach ()
@@ -51,7 +49,6 @@ if (DRIVER_GLFW)
     CompileDriver(DRIVER_GLFW
             glfw
             glfw::GLFWDisplayDriver
-            display/glfw/glfwdisplaydriver.hpp
             glfw)
 endif ()
 
@@ -63,7 +60,6 @@ if (DRIVER_ANDROID)
     CompileDriver(DRIVER_ANDROID
             android
             android::AndroidDisplayDriver
-            display/android/androiddisplaydriver.hpp
             android
             EGL)
 endif ()
@@ -83,7 +79,6 @@ if (DRIVER_OPENGL)
     CompileDriver(DRIVER_OPENGL
             opengl
             opengl::OGLGpuDriver
-            gpu/opengl/oglgpudriver.hpp
             ${GL_LIBNAME})
 endif ()
 
@@ -91,15 +86,13 @@ if (DRIVER_BOX2D)
     CompileDriver(DRIVER_BOX2D
             box2d
             PhysicsDriverBox2D
-            physics/box2d/physicsdriverbox2d.hpp
             box2d)
 endif ()
 
 if (DRIVER_BULLET3)
     CompileDriver(DRIVER_BULLET3
             bullet3
-            PhysicsDriverBt3
-            physics/bullet3/physicsdriverbt3.hpp)
+            PhysicsDriverBt3)
 endif ()
 
 if (DRIVER_OPENAL)
@@ -111,7 +104,6 @@ if (DRIVER_OPENAL)
     CompileDriver(DRIVER_OPENAL
             openal-soft
             OALAudioDriver
-            audio/openal/oalaudiodriver.hpp
             ${AL_LIBNAME})
 endif ()
 
@@ -119,7 +111,6 @@ if (DRIVER_FREETYPE)
     CompileDriver(DRIVER_FREETYPE
             freetype
             FtFontDriver
-            text/freetype/ftfontdriver.hpp
             freetype)
 endif ()
 
@@ -127,7 +118,6 @@ if (DRIVER_ASSIMP)
     CompileDriver(DRIVER_ASSIMP
             assimp
             AssImpParser
-            resource/parsers/assimpparser.hpp
             assimp)
 endif ()
 
@@ -135,23 +125,20 @@ if (DRIVER_SNDFILE)
     CompileDriver(DRIVER_SNDFILE
             sndfile
             SndFileParser
-            resource/parsers/sndfileparser.hpp
             sndfile)
 endif ()
 
-if (DRIVER_SHADERC)
-    CompileDriver(DRIVER_SHADERC
-            shaderc
-            ShaderCCompiler
-            shader/shaderccompiler.hpp
-            shaderc_combined)
+if (DRIVER_GLSLANG)
+    CompileDriver(DRIVER_GLSLANG
+            glslang
+            GlslangCompiler
+            glslang SPIRV glslang-default-resource-limits MachineIndependent OSDependent GenericCodeGen OGLCompiler)
 endif ()
 
 if (DRIVER_SPIRVCROSS)
     CompileDriver(DRIVER_SPIRVCROSS
             spirv-cross
             SpirvCrossDecompiler
-            shader/spirvcrossdecompiler.hpp
             spirv-cross-core spirv-cross-glsl spirv-cross-hlsl)
 endif ()
 
@@ -159,7 +146,6 @@ if (DRIVER_CRYPTOPP)
     CompileDriver(DRIVER_CRYPTOPP
             cryptopp
             CryptoPPDriver
-            crypto/cryptoppdriver.hpp
             cryptopp)
 endif ()
 

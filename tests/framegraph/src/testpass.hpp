@@ -54,8 +54,8 @@ public:
         if (!pipelineRes.assigned) {
             pipelineRes = builder.createPipeline(RenderPipelineDesc{
                     .shaders = {
-                            {VERTEX,   vs.getShader()},
-                            {FRAGMENT, fs.getShader()}
+                            {VERTEX,   vs},
+                            {FRAGMENT, fs}
                     },
                     .bindings = {BIND_SHADER_UNIFORM_BUFFER,
                                  BIND_TEXTURE_BUFFER},

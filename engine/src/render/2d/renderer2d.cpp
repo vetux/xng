@@ -95,8 +95,8 @@ namespace xng {
         RenderPipelineDesc desc;
 
         desc.shaders = {
-                {ShaderStage::VERTEX,   vs_compat.getShader()},
-                {ShaderStage::FRAGMENT, fs_compat.getShader()}
+                {ShaderStage::VERTEX,   vs_compat},
+                {ShaderStage::FRAGMENT, fs_compat}
         };
         desc.bindings = {
                 RenderPipelineBindingType::BIND_SHADER_UNIFORM_BUFFER,
@@ -128,8 +128,8 @@ namespace xng {
         pointPipeline = device.createRenderPipeline(desc, shaderDecompiler);
 
         desc.shaders = {
-                {ShaderStage::VERTEX,   vs.getShader()},
-                {ShaderStage::FRAGMENT, fs.getShader()}
+                {ShaderStage::VERTEX,   vs},
+                {ShaderStage::FRAGMENT, fs}
         };
         desc.bindings = {
                 RenderPipelineBindingType::BIND_SHADER_STORAGE_BUFFER,

@@ -20,7 +20,7 @@
 #ifndef XENGINE_SHADERSOURCE_HPP
 #define XENGINE_SHADERSOURCE_HPP
 
-#include "xng/shader/spirvbundle.hpp"
+#include "xng/shader/spirvshader.hpp"
 #include "xng/shader/shaderlanguage.hpp"
 #include "xng/shader/shadercompiler.hpp"
 #include "xng/shader/shaderdecompiler.hpp"
@@ -44,11 +44,12 @@ namespace xng {
         ShaderSource preprocess(const ShaderCompiler &compiler,
                                 const std::function<std::string(const char *)> &include = {},
                                 const std::map<std::string, std::string> &macros = {},
-                                ShaderCompiler::OptimizationLevel optimizationLevel = ShaderCompiler::OPTIMIZATION_NONE) const {
+                                ShaderCompiler::OptimizationLevel optimizationLevel = ShaderCompiler::OPTIMIZATION_NONE,
+                                ShaderEnvironment environment = ENVIRONMENT_OPENGL) const {
             if (preprocessed)
                 throw std::runtime_error("Source already preprocessed");
             ShaderSource ret(*this);
-            ret.src = compiler.preprocess(src, stage, language, include, macros, optimizationLevel);
+            ret.src = compiler.preprocess(src, stage, language, include, macros, optimizationLevel, environment);
             ret.preprocessed = true;
             return ret;
         }
@@ -56,25 +57,35 @@ namespace xng {
         ShaderSource crossCompile(const ShaderCompiler &compiler,
                                   const ShaderDecompiler &decompiler,
                                   ShaderLanguage targetLanguage,
-                                  ShaderCompiler::OptimizationLevel optimizationLevel) const {
+                                  ShaderCompiler::OptimizationLevel optimizationLevel,
+                                  ShaderEnvironment environment) const {
             ShaderSource ret(*this);
             if (!ret.preprocessed)
                 ret = ret.preprocess(compiler);
-            ret.src = decompiler.decompile(compiler.compile(src, entryPoint, stage, language, optimizationLevel),
-                                           entryPoint, stage, targetLanguage);
+            ret.src = decompiler.decompile(
+                    compiler.compile(src, entryPoint, stage, language, optimizationLevel, environment),
+                    entryPoint,
+                    stage,
+                    targetLanguage);
             ret.language = targetLanguage;
             return ret;
         }
 
-        SPIRVBundle compile(const ShaderCompiler &compiler,
-                            ShaderCompiler::OptimizationLevel optimizationLevel = ShaderCompiler::OPTIMIZATION_NONE) const {
+        SPIRVShader compile(const ShaderCompiler &compiler,
+                            ShaderCompiler::OptimizationLevel optimizationLevel = ShaderCompiler::OPTIMIZATION_NONE,
+                            ShaderEnvironment environment = ENVIRONMENT_OPENGL) const {
             ShaderSource shader = *this;
             if (!shader.preprocessed)
                 shader = preprocess(compiler, {}, {}, optimizationLevel);
-            return SPIRVBundle({{.stage = shader.stage,
-                                        .entryPoint = shader.entryPoint,
-                                        .blobIndex = 0}},
-                               {compiler.compile(src, entryPoint, stage, language, optimizationLevel)});
+            return {environment,
+                    shader.stage,
+                    shader.entryPoint,
+                    compiler.compile(shader.src,
+                                     shader.entryPoint,
+                                     shader.stage,
+                                     shader.language,
+                                     optimizationLevel,
+                                     environment)};
         }
 
         const std::string &getSrc() const { return src; }

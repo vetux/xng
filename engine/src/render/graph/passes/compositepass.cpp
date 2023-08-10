@@ -61,8 +61,8 @@ namespace xng {
         if (!pipeline.assigned) {
             RenderPipelineDesc pdesc{};
             pdesc.shaders = {
-                    {VERTEX,   compositepass_vs.getShader()},
-                    {FRAGMENT, compositepass_fs.getShader()}
+                    {VERTEX,   compositepass_vs},
+                    {FRAGMENT, compositepass_fs}
             };
             pdesc.bindings = {
                     BIND_TEXTURE_BUFFER,

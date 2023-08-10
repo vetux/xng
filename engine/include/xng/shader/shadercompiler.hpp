@@ -26,8 +26,9 @@
 #include <map>
 #include <functional>
 
-#include "shaderlanguage.hpp"
-#include "shaderstage.hpp"
+#include "xng/shader/shaderlanguage.hpp"
+#include "xng/shader/shaderstage.hpp"
+#include "xng/shader/shaderenvironment.hpp"
 
 namespace xng {
     /**
@@ -58,7 +59,8 @@ namespace xng {
                                               const std::string &entryPoint,
                                               ShaderStage stage,
                                               ShaderLanguage language,
-                                              OptimizationLevel optimizationLevel) const = 0;
+                                              OptimizationLevel optimizationLevel,
+                                              ShaderEnvironment environment) const = 0;
 
         /**
          * Preprocess the given source
@@ -76,7 +78,8 @@ namespace xng {
                                        ShaderLanguage language,
                                        const std::function<std::string(const char *)> &include,
                                        const std::map<std::string, std::string> &macros,
-                                       OptimizationLevel optimizationLevel) const = 0;
+                                       OptimizationLevel optimizationLevel,
+                                       ShaderEnvironment environment) const = 0;
     };
 }
 

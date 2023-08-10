@@ -23,11 +23,9 @@
 namespace xng {
     enum ShaderLanguage : int {
         HLSL_SHADER_MODEL_4,
-        GLSL_460, //GLSL 4.6 with OpenGL semantics
-        GLSL_460_VK, //GLSL 4.6 with Vulkan semantics
-        GLSL_420, //GLSL 4.2 with OpenGL semantics
-        GLSL_420_VK, //GLSL 4.2 with Vulkan semantics
-        GLSL_ES_320 //GLSL 3.2 ES with OpenGL semantics
+        GLSL_ES_320,
+        GLSL_420,
+        GLSL_460,
     };
 }
 

@@ -148,8 +148,8 @@ namespace xng {
         if (!pipelineRes.assigned) {
             pipelineRes = builder.createPipeline(RenderPipelineDesc{
                     .shaders = {
-                            {VERTEX,   deferredlightingpass_vs.getShader()},
-                            {FRAGMENT, deferredlightingpass_fs.getShader()}
+                            {VERTEX,   deferredlightingpass_vs},
+                            {FRAGMENT, deferredlightingpass_fs}
                     },
                     .bindings = {BIND_SHADER_UNIFORM_BUFFER,
                                  BIND_SHADER_STORAGE_BUFFER,

@@ -85,4 +85,8 @@ int main(int argc, char *argv[]) {
         fs.write(data.data(), static_cast<std::streamsize>(data.size()));
         fs.close();
     }
+
+    std::cout << "Successfully created pak files.\n";
+
+    return 0;
 }

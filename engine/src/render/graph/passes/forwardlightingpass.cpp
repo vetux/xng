@@ -186,8 +186,8 @@ namespace xng {
 
         if (!pipelineRes.assigned) {
             pipelineRes = builder.createPipeline(RenderPipelineDesc{
-                    .shaders = {{VERTEX,   forwardlightingpass_vs.getShader()},
-                                {FRAGMENT, forwardlightingpass_fs.getShader()}},
+                    .shaders = {{VERTEX,   forwardlightingpass_vs},
+                                {FRAGMENT, forwardlightingpass_fs}},
                     .bindings = {
                             BIND_SHADER_STORAGE_BUFFER,
                             BIND_TEXTURE_ARRAY_BUFFER,

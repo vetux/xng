@@ -3,9 +3,9 @@
 add_executable(shadercompiler
         ${BASE_SOURCE_DIR}/shadercompiler/src/main.cpp
         ${BASE_SOURCE_DIR}/engine/src/shader/shaderdirectoryinclude.cpp
-        ${BASE_SOURCE_DIR}/drivers/shaderc/shader/shaderccompiler.cpp)
+        ${BASE_SOURCE_DIR}/drivers/glslang/glslangcompiler.cpp)
 target_include_directories(shadercompiler
-                            PRIVATE
-                            ${CMAKE_CURRENT_SOURCE_DIR}/shadercompiler/src/
-                            ${BASE_SOURCE_DIR}/engine/include/)
-target_link_libraries(shadercompiler Threads::Threads shaderc_combined)
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/shadercompiler/src/
+        ${BASE_SOURCE_DIR}/engine/include/)
+target_link_libraries(shadercompiler Threads::Threads glslang SPIRV glslang-default-resource-limits MachineIndependent OSDependent GenericCodeGen OGLCompiler)

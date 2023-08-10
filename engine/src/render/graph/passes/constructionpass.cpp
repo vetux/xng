@@ -89,8 +89,8 @@ namespace xng {
 
         if (!renderPipelineRes.assigned) {
             renderPipelineRes = builder.createPipeline(RenderPipelineDesc{
-                    .shaders = {{VERTEX,   constructionpass_vs.getShader()},
-                                {FRAGMENT, constructionpass_fs.getShader()}},
+                    .shaders = {{VERTEX,   constructionpass_vs},
+                                {FRAGMENT, constructionpass_fs}},
                     .bindings = {
                             BIND_SHADER_STORAGE_BUFFER,
                             BIND_TEXTURE_ARRAY_BUFFER,

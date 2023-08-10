@@ -168,7 +168,7 @@ static std::shared_ptr<EntityScene> createScene() {
 int main(int argc, char *argv[]) {
     auto displayDriver = glfw::GLFWDisplayDriver();
     auto gpuDriver = opengl::OGLGpuDriver();
-    auto shaderCompiler = shaderc::ShaderCCompiler();
+    auto shaderCompiler = glslang::GLSLangCompiler();
     auto shaderDecompiler = spirv_cross::SpirvCrossDecompiler();
     auto fontDriver = freetype::FtFontDriver();
 

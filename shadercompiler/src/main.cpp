@@ -18,10 +18,10 @@
  */
 
 #include "xng/shader/shadercompiler.hpp"
-#include "xng/shader/spirvbundle.hpp"
+#include "xng/shader/spirvshader.hpp"
 #include "xng/shader/shaderdirectoryinclude.hpp"
 
-#include "xng/driver/shaderc/shaderccompiler.hpp"
+#include "xng/driver/glslang/glslangcompiler.hpp"
 
 #include "xng/io/readfile.hpp"
 #include "xng/io/writefile.hpp"
@@ -53,12 +53,8 @@ xng::ShaderLanguage getLanguage(const std::string &lang) {
         return xng::HLSL_SHADER_MODEL_4;
     } else if (lang == "GLSL_460") {
         return xng::GLSL_460;
-    } else if (lang == "GLSL_460_VK") {
-        return xng::GLSL_460_VK;
     } else if (lang == "GLSL_420") {
         return xng::GLSL_420;
-    } else if (lang == "GLSL_420_VK") {
-        return xng::GLSL_420_VK;
     } else if (lang == "GLSL_ES_320") {
         return xng::GLSL_ES_320;
     } else {
@@ -212,25 +208,25 @@ xng::SPIRVBlob blob = {1, 2, 3,};
 
 std::string generateHeader(const std::string &filePath, const std::string &filename, const xng::SPIRVShader &shader) {
     std::string ret = "#ifndef " + filePath + "\n#define " + filePath + R"###(
-#include "xng/shader/spirvbundle.hpp"
+#include "xng/shader/spirvshader.hpp"
 using namespace xng;
-const SPIRVBundle )###";
+const SPIRVShader )###";
 
     ret += filename;
 
-    ret += " = SPIRVBundle(std::vector<SPIRVBundle::Entry>{SPIRVBundle::Entry{.stage = ";
+    ret += " = SPIRVShader(xng::ENVIRONMENT_OPENGL,";
 
     ret += getStage(shader.getStage());
 
-    ret += ", .entryPoint = \"";
+    ret += ", \"";
 
     ret += shader.getEntryPoint();
 
-    ret += "\", .blobIndex = 0}}, { SPIRVBlob{";
+    ret += "\", {";
     for (auto &v: shader.getBlob()) {
         ret += std::to_string(v) + ",";
     }
-    ret += R"###(} });
+    ret += R"###(});
 #endif)###";
 
     return ret;
@@ -270,22 +266,23 @@ int main(int argc, char *argv[]) {
 
     auto shader = xng::readFileString(args.sourcePath.string());
 
-    auto compiler = xng::shaderc::ShaderCCompiler();
+    auto compiler = xng::glslang::GLSLangCompiler();
 
     if (args.preprocess) {
         if (args.includeDir.empty()) {
-            shader = compiler.preprocess(shader, args.stage, args.language, {}, {}, args.optimization);
+            shader = compiler.preprocess(shader, args.stage, args.language, {}, {}, args.optimization, xng::ENVIRONMENT_OPENGL);
         } else {
             shader = compiler.preprocess(shader,
                                          args.stage,
                                          args.language,
                                          xng::ShaderDirectoryInclude::getShaderIncludeCallback(args.includeDir),
                                          {},
-                                         args.optimization);
+                                         args.optimization,
+                                         xng::ENVIRONMENT_OPENGL);
         }
     }
 
-    auto bin = compiler.compile(shader, args.entryPoint, args.stage, args.language, args.optimization);
+    auto bin = compiler.compile(shader, args.entryPoint, args.stage, args.language, args.optimization, xng::ENVIRONMENT_OPENGL);
 
     if (args.outputPath.has_relative_path()
         && args.outputPath.has_parent_path()
@@ -314,10 +311,9 @@ int main(int argc, char *argv[]) {
             }
             break;
         case OUTPUT_HEADER:
-            xng::SPIRVBundle bundle(std::vector<xng::SPIRVBundle::Entry>{xng::SPIRVBundle::Entry{
-                                            .stage = args.stage,
-                                            .entryPoint = args.entryPoint,
-                                            .blobIndex = 0}},
+            xng::SPIRVShader bundle(xng::ENVIRONMENT_OPENGL,
+                                    args.stage,
+                                    args.entryPoint,
                                     {bin});
             auto guard = args.outputPath.relative_path().string();
             guard = std::string(guard.begin(),
@@ -327,7 +323,7 @@ int main(int argc, char *argv[]) {
 
             try {
                 xng::writeFile(args.outputPath,
-                               generateHeader(guard, args.outputPath.stem().string(), bundle.getShader()));
+                               generateHeader(guard, args.outputPath.stem().string(), bundle));
             } catch (const std::exception &e) {
                 std::cout << "Failed to write file at: " + args.outputPath.string() + "\n";
                 std::cout << e.what();

@@ -51,7 +51,7 @@ public:
                 BIND_SHADER_UNIFORM_BUFFER,
                 BIND_IMAGE_BUFFER
         };
-        desc.shaders = {{COMPUTE, mandelbrot.getShader()}};
+        desc.shaders = {{COMPUTE, mandelbrot}};
         pipeline = device.createComputePipeline(desc, decompiler);
     }
 
@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
     opengl::OGLGpuDriver gpuDriver;
     glfw::GLFWDisplayDriver displayDriver;
     freetype::FtFontDriver fontDriver;
-    shaderc::ShaderCCompiler shaderCompiler;
+    glslang::GLSLangCompiler shaderCompiler;
     spirv_cross::SpirvCrossDecompiler shaderDecompiler;
 
     std::unique_ptr<Window> window = displayDriver.createWindow(xng::OPENGL_4_6, "Mandelbrot",

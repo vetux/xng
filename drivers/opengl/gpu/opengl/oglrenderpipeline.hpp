@@ -50,7 +50,7 @@ namespace xng::opengl {
             if (it == desc.shaders.end())
                 throw std::runtime_error("No vertex shader");
 
-            vert = decompiler.decompile(desc.shaders.at(VERTEX).getBlob(),
+            vert = decompiler.decompile(it->second.getBlob(),
                                         it->second.getEntryPoint(),
                                         VERTEX,
                                         GLSL_460);
@@ -60,7 +60,7 @@ namespace xng::opengl {
             if (it == desc.shaders.end())
                 throw std::runtime_error("No fragment shader");
 
-            frag = decompiler.decompile(desc.shaders.at(FRAGMENT).getBlob(),
+            frag = decompiler.decompile(it->second.getBlob(),
                                         it->second.getEntryPoint(),
                                         FRAGMENT,
                                         GLSL_460);
@@ -217,11 +217,15 @@ namespace xng::opengl {
                 : destructor(std::move(destructor)),
                   desc(std::move(descArg)) {
             if (!desc.shaders.empty()) {
-               // if (!GLAD_GL_ARB_gl_spirv) {
-                    buildGLSL(decompiler);
-              /* } else {
-                    buildSPIRV(); // The OpenGL implementation for windows (AMD) appears to not support spirv shaders despite using 4.6.
-                }*/
+                buildGLSL(decompiler);
+
+                // The OpenGL implementation for windows (AMD) appears to not support SPIRV shaders despite using 4.6.
+                /*if (!GLAD_GL_ARB_gl_spirv) {
+                     buildGLSL(decompiler);
+                 } else {
+                     buildSPIRV();
+                 }*/
+
                 checkLinkSuccess();
             }
 
