@@ -41,7 +41,7 @@ Drivers are implementations of interfaces (For example through 3rd party librari
 - GPU (Render, Compute, Raytracing)
     - OpenGL
 - Shader Compiler
-    - ShaderC
+    - GLSLang
 - Shader Decompiler
     - SPIRV-Cross  
 - Font Rendering
@@ -62,16 +62,16 @@ Drivers are implementations of interfaces (For example through 3rd party librari
 ### Supported Platforms
 
 - Linux
-    - Tested Compiler: GCC 10.2.1 64bit
-      - GCC 12 is currently not supported because SPIRV-Cross does not appear to be compatible with GCC 12. (See [BUILDING.md](BUILDING.md)) 
+    - Tested Compiler: GCC 12.2.0 64bit
 - Windows
-    - Tested Compiler: MSVC 2022 64bit
-        - Build warnings are emitted due to the fact that xng uses STL types in dllexport types.
-        - Users must ensure that their application is built with the same compiler version as the linked library because
-          windows uses multiple STL dll files and allows loading of multiple STL version dlls into the same process. If
-          the user links to a different STL version than the one used for building the engine dll there can be problems
-          when passing types through the dll interface.
-    - Tested Compiler: MinGW v8.0.0
+    - Tested Compilers:
+      - MSVC 2022 64bit
+          - Build warnings are emitted due to the fact that xng uses STL types in dllexport types.
+          - Users must ensure that their application is built with the same compiler version as the linked library because
+            windows uses multiple STL dll files and allows loading of multiple STL version dlls into the same process. If
+            the user links to a different STL version than the one used for building the engine dll there can be problems
+            when passing types through the dll interface.
+      - MinGW v8.0.0
 - Android
     - Tested Compiler: Android NDK r25c
 
