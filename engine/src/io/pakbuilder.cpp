@@ -81,7 +81,8 @@ namespace xng {
 
         nlohmann::json outHeaderJson;
         if (encryptData) {
-            outHeaderJson["edata"] = std::string(iv.begin(), iv.end()) + headerStr;
+            outHeaderJson["iv"] = std::string(iv.begin(), iv.end());
+            outHeaderJson["edata"] = headerStr;
         } else {
             outHeaderJson = headerJson;
         }

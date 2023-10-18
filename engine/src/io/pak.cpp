@@ -154,7 +154,7 @@ namespace xng {
             s.read(&c, 1);
 
             if (s.eof()) {
-                if (streams.size() < streamIndex + 1){
+                if (streams.size() < streamIndex + 1) {
                     throw std::runtime_error("Failed to load header (End of file)");
                 }
 
@@ -195,11 +195,13 @@ namespace xng {
         auto headerJson = nlohmann::json::from_bson(headerStr);
         if (headerJson.contains("edata")) {
             encrypted = true;
+
             auto decodedHeader = static_cast<std::string>(headerJson["edata"]);
-            auto ivStr = std::string(decodedHeader.begin(), decodedHeader.begin() + 128);
-            for (auto i = 0; i < 128; i++)
-                iv.at(i) = ivStr.at(i);
-            decodedHeader.erase(decodedHeader.begin(), decodedHeader.begin() + 128);
+
+            auto ivStr = headerJson["iv"].get<std::string>();
+            for (auto i = 0; i < ivStr.size() && i < iv.size(); i++) {
+                iv[i] = ivStr[i];
+            }
 
             if (aes == nullptr) {
                 throw std::runtime_error("Pak data is encrypted but no aes implementation was specified.");
