@@ -61,7 +61,7 @@ namespace xng {
 
         float magnitude() const;
 
-        void normalize();
+        Quaternion& normalize();
 
         static Quaternion normalize(const Quaternion &q);
 

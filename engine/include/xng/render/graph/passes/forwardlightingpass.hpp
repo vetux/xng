@@ -22,6 +22,7 @@
 
 #include "xng/render/graph/framegraphpass.hpp"
 #include "xng/render/graph/framegraphtextureatlas.hpp"
+#include "xng/render/meshallocator.hpp"
 
 #include "xng/render/textureatlas.hpp"
 
@@ -45,44 +46,10 @@ namespace xng {
         std::type_index getTypeIndex() const override;
 
     private:
-        struct MeshDrawData {
-            Primitive primitive = TRIANGLES;
-            DrawCall drawCall{};
-            size_t baseVertex = 0;
-        };
-
         TextureAtlasHandle getTexture(const ResourceHandle <Texture> &texture,
                                       std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> &atlasBuffers);
 
-        MeshDrawData getMesh(const ResourceHandle<Mesh> &mesh);
-
-        void prepareMeshAllocation(const ResourceHandle<Mesh> &mesh);
-
-        void allocateMeshes(VertexBuffer &vertexBuffer, IndexBuffer &indexBuffer);
-
-        void deallocateMesh(const ResourceHandle<Mesh> &mesh);
-
         void deallocateTexture(const ResourceHandle<Texture> &texture);
-
-        /**
-         * @param size number of bytes to allocate
-         * @return The offset in bytes into the index buffer
-         */
-        size_t allocateVertexData(size_t size);
-
-        void deallocateVertexData(size_t offset);
-
-        /**
-         * @param size number of bytes to allocate
-         * @return The offset in bytes into the index buffer
-         */
-        size_t allocateIndexData(size_t size);
-
-        void deallocateIndexData(size_t offset);
-
-        void mergeFreeVertexBufferRanges();
-
-        void mergeFreeIndexBufferRanges();
 
         FrameGraphResource forwardColorRes;
         FrameGraphResource forwardDepthRes;
@@ -114,26 +81,16 @@ namespace xng {
 
         Vec2i renderSize;
 
-        std::vector<Scene::Object> objects;
+        std::vector<Scene::Node> nodes;
 
         std::vector<PointLight> pointLights;
         std::vector<SpotLight> spotLights;
         std::vector<DirectionalLight> directionalLights;
 
-        std::map<Uri, MeshDrawData> meshAllocations;
-        std::map<Uri, MeshDrawData> pendingMeshAllocations;
-        std::map<Uri, ResourceHandle<Mesh>> pendingMeshHandles;
-
         size_t currentVertexBufferSize{};
         size_t currentIndexBufferSize{};
-        size_t requestedVertexBufferSize{};
-        size_t requestedIndexBufferSize{};
 
-        std::map<size_t, size_t> freeVertexBufferRanges; // start and size of free ranges of vertices with layout vertexLayout in the vertex buffer
-        std::map<size_t, size_t> freeIndexBufferRanges; // start and size of free ranges of bytes in the index buffer
-
-        std::map<size_t, size_t> allocatedVertexRanges;
-        std::map<size_t, size_t> allocatedIndexRanges;
+        MeshAllocator meshAllocator;
 
         std::map<Uri, TextureAtlasHandle> textures;
 

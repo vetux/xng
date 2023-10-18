@@ -23,6 +23,7 @@
 #include "xng/ecs/components/audiosourcecomponent.hpp"
 
 #include "xng/resource/resourcehandle.hpp"
+#include "xng/types/time.hpp"
 
 #define AUDIO_POS_SCALE 1
 
@@ -35,20 +36,6 @@ namespace xng {
 
     void AudioSystem::start(EntityScene &scene, EventBus &eventBus) {
         scene.addListener(*this);
-
-        for (auto &pair: scene.getPool<AudioSourceComponent>()) {
-            if (buffers.find(pair.first) == buffers.end()) {
-                auto &buffer = pair.second.audio.get();
-                buffers[pair.first] = context->createBuffer();
-                buffers[pair.first]->upload(buffer.buffer,
-                                            buffer.format,
-                                            buffer.frequency);
-
-                sources[pair.first] = context->createSource();
-                sources[pair.first]->setBuffer(*buffers[pair.first]);
-                playingSources.erase(pair.first);
-            }
-        }
     }
 
     void AudioSystem::stop(EntityScene &scene, EventBus &eventBus) {
@@ -71,6 +58,22 @@ namespace xng {
             auto comp = pair.second;
             auto &transform = scene.getComponent<TransformComponent>(pair.first);
             auto &source = sources.at(pair.first);
+
+            if (!pair.second.audio.isLoaded()){
+                continue;
+            }
+
+            if (buffers.find(pair.first) == buffers.end()) {
+                auto &buffer = pair.second.audio.get();
+                buffers[pair.first] = context->createBuffer();
+                buffers[pair.first]->upload(buffer.buffer,
+                                            buffer.format,
+                                            buffer.frequency);
+
+                sources[pair.first] = context->createSource();
+                sources[pair.first]->setBuffer(*buffers[pair.first]);
+                playingSources.erase(pair.first);
+            }
 
             source->setPosition(transform.transform.getPosition() * AUDIO_POS_SCALE);
             source->setLooping(comp.loop);
@@ -97,19 +100,6 @@ namespace xng {
     }
 
     void AudioSystem::onComponentCreate(const EntityHandle &entity, const Component &value) {
-        if (value.getType() == typeid(AudioSourceComponent)) {
-            const auto &component = dynamic_cast<const AudioSourceComponent &>(value);
-            if (component.audio.assigned()) {
-                auto &buffer = component.audio.get();
-                buffers[entity] = context->createBuffer();
-                buffers[entity]->upload(buffer.buffer,
-                                        buffer.format,
-                                        buffer.frequency);
-
-                sources[entity] = context->createSource();
-                sources[entity]->setBuffer(*buffers[entity]);
-            }
-        }
     }
 
     void AudioSystem::onComponentDestroy(const EntityHandle &entity, const Component &component) {
@@ -128,13 +118,9 @@ namespace xng {
             const auto &newValue = dynamic_cast<const AudioSourceComponent &>(newComponent);
             if (oldValue != newValue) {
                 if (oldValue.audio != newValue.audio) {
-                    auto &buffer = newValue.audio.get();
                     sources[entity]->stop();
                     // Unbind buffer before uploading
                     sources.at(entity)->clearBuffer();
-                    buffers.at(entity)->upload(buffer.buffer, buffer.format, buffer.frequency);
-                    sources.at(entity)->setBuffer(*buffers.at(entity));
-                    playingSources.erase(entity);
                 }
             }
         }

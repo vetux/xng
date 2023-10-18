@@ -42,12 +42,14 @@ namespace xng {
     }
 
     ResourceRegistry::~ResourceRegistry() {
-        for (auto &pair: loadTasks) {
+        auto tasks = loadTasks;
+        for (auto &pair: tasks) {
             auto ex = pair.second->join();
             if (ex) {
                 std::rethrow_exception(ex);
             }
         }
+        bundles.clear(); // Deallocate resource bundles which might contain a reference to this registry before destroying the registry object.
     }
 
     void ResourceRegistry::addArchive(const std::string &scheme, std::shared_ptr<Archive> archive) {
@@ -71,10 +73,6 @@ namespace xng {
         return *archives.at(scheme);
     }
 
-    const Resource &ResourceRegistry::get(const Uri &uri) {
-        return getData(uri);
-    }
-
     void ResourceRegistry::incRef(const Uri &uri) {
         if (bundleRefCounter.inc(uri.getFile())) {
             load(uri);
@@ -87,36 +85,57 @@ namespace xng {
         }
     }
 
-    void ResourceRegistry::reloadAllResources() {
-        std::vector<std::pair<Uri, std::shared_ptr<Task>>> tasks;
+    void ResourceRegistry::reload(const Uri &uri) {
+        std::shared_ptr<Task> task;
         {
             std::lock_guard<std::mutex> g(mutex);
-            for (auto &task: loadTasks)
-                tasks.emplace_back(task);
+            auto it = loadTasks.find(uri.getFile());
+            if (it != loadTasks.end()) {
+                task = it->second;
+            }
         }
-        for (auto &task: tasks)
-            task.second->join();
-        loadTasks.clear();
-        bundles.clear();
-        for (auto &task: tasks) {
-            load(task.first);
+
+        if (task != nullptr) {
+            task->join();
+        }
+
+        bundles.erase(uri.getFile());
+        uris.erase(uri);
+
+        load(uri);
+    }
+
+    void ResourceRegistry::await(const Uri &uri) {
+        std::shared_ptr<Task> task;
+        {
+            std::lock_guard<std::mutex> g(mutex);
+            auto it = loadTasks.find(uri.getFile());
+            if (it != loadTasks.end()) {
+                task = it->second;
+            }
+        }
+
+        if (task != nullptr) {
+            task->join();
         }
     }
 
-    void ResourceRegistry::awaitImports() {
-        mutex.lock();
-        auto tasks = loadTasks;
-        mutex.unlock();
-        for (auto &task: tasks) {
-            task.second->join();
-        }
+    const std::set<Uri> &ResourceRegistry::getUris() const {
+        return uris;
+    }
+
+    const std::set<Uri> &ResourceRegistry::getLoadingUris() const {
+        return loadingUris;
     }
 
     void ResourceRegistry::load(const Uri &uri) {
         std::lock_guard<std::mutex> g(mutex);
 
+        uris.insert(uri);
+
         auto it = loadTasks.find(uri.getFile());
-        if (it == loadTasks.end()) {
+        if (it == loadTasks.end() && bundles.find(uri.getFile()) == bundles.end()) {
+            loadingUris.insert(uri);
             loadTasks[uri.getFile()] = ThreadPool::getPool().addTask([this, uri]() {
                 try {
                     std::shared_lock l(importerMutex);
@@ -124,12 +143,22 @@ namespace xng {
                     auto &archive = resolveUri(uri);
                     std::filesystem::path path(uri.getFile());
                     auto stream = archive.open(path.string());
-                    auto bundle = importer.import(*stream, path.extension().string());
+                    auto bundle = importer.import(*stream, path.extension().string(), path.string());
 
                     std::lock_guard<std::mutex> g(mutex);
-                    bundles[path.string()] = std::move(bundle);
+
+                    if (killBundles.find(uri.getFile()) == killBundles.end()) {
+                        bundles[uri.getFile()] = std::move(bundle);
+                    } else {
+                        killBundles.erase(uri.getFile());
+                        uris.erase(uri);
+                    }
+
+                    loadTasks.erase(uri.getFile());
+                    loadingUris.erase(uri);
                 } catch (const std::runtime_error &e) {
                     Log::instance().log(ERROR, e.what());
+
                     throw e;
                 }
             });
@@ -137,43 +166,14 @@ namespace xng {
     }
 
     void ResourceRegistry::unload(const Uri &uri) {
-        std::shared_ptr<Task> task;
-        {
-            std::lock_guard<std::mutex> g(mutex);
-
-            auto it = loadTasks.find(uri.getFile());
-            if (it == loadTasks.end()) {
-                return;
-            } else {
-                task = it->second;
-            }
-        }
-
-        auto ex = task->join();
-        if (ex) {
-            std::rethrow_exception(ex);
-        }
-
         std::lock_guard<std::mutex> g(mutex);
-        loadTasks.erase(uri.getFile());
-    }
 
-    const Resource &ResourceRegistry::getData(const Uri &uri) {
-        mutex.lock();
         auto it = loadTasks.find(uri.getFile());
-        if (it == loadTasks.end()) {
-            throw std::runtime_error("IncRef not called for bundle pointed at by uri " + uri.toString());
+        if (it != loadTasks.end()) {
+            killBundles.insert(uri.getFile());
+        } else {
+            uris.erase(uri);
         }
-        auto task = loadTasks.at(uri.getFile());
-        mutex.unlock();
-        auto ex = task->join();
-        if (ex) {
-            std::rethrow_exception(ex);
-        }
-        mutex.lock();
-        auto &ret = bundles[uri.getFile()].get(uri.getAsset());
-        mutex.unlock();
-        return ret;
     }
 
     Archive &ResourceRegistry::resolveUri(const Uri &uri) {

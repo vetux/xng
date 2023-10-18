@@ -5,8 +5,6 @@ layout (location = 1) in vec3 vNormal;
 layout (location = 2) in vec2 vUv;
 layout (location = 3) in vec3 vTangent;
 layout (location = 4) in vec3 vBitangent;
-layout (location = 5) in ivec4 boneIds;
-layout (location = 6) in vec4 boneWeights;
 
 layout(location = 0) out vec3 fPos;
 layout(location = 1) out vec3 fNorm;
@@ -27,17 +25,17 @@ struct ShaderDrawData {
     mat4 model;
     mat4 mvp;
 
-    ivec4 shadeModel_objectID;
-    vec4 albedoColor;
+    ivec4 shadeModel_objectID_boneOffset;
     vec4 metallic_roughness_ambientOcclusion_shininess;
 
     vec4 diffuseColor;
     vec4 ambientColor;
     vec4 specularColor;
 
+    vec4 normalIntensity;
+
     ShaderAtlasTexture normal;
 
-    ShaderAtlasTexture albedo;
     ShaderAtlasTexture metallic;
     ShaderAtlasTexture roughness;
     ShaderAtlasTexture ambientOcclusion;
@@ -67,9 +65,9 @@ void main()
     fTan = normalize(vTangent);
 
     //https://www.gamedeveloper.com/programming/three-normal-mapping-techniques-explained-for-the-mathematically-uninclined
-    fN = normalize( ( data.model * vec4( vNormal, 0.0 ) ).xyz );
-    fT = normalize( ( data.model * vec4( vTangent, 0.0 ) ).xyz );
-    fB = normalize( ( data.model * vec4( cross(vNormal, vTangent.xyz) * 1, 0.0 ) ).xyz );
+    fN = normalize((data.model * vec4(vNormal, 0.0)).xyz);
+    fT = normalize((data.model * vec4(vTangent, 0.0)).xyz);
+    fB = normalize((data.model * vec4(cross(vNormal, vTangent.xyz) * 1, 0.0)).xyz);
 
     gl_Position = vPos;
 

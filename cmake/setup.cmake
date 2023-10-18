@@ -29,4 +29,11 @@ else ()
     add_compile_definitions(XENGINE_EXPORT=)
 endif ()
 
+get_property(includeDirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+get_property(linkDirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY LINK_DIRECTORIES)
+get_property(sysIncludeDirs DIRECTORY "" PROPERTY INCLUDE_DIRECTORIES)
+set(includeDirs ${sysIncludeDirs})
+
 message("Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
+message("Include Dirs: ${includeDirs}")
+message("Link Dirs: ${linkDirs}")

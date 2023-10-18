@@ -5,6 +5,10 @@ add_executable(test-framegraph ${BASE_SOURCE_DIR}/tests/framegraph/src/main.cpp)
 target_include_directories(test-framegraph PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/framegraph/src/ ${BASE_SOURCE_DIR}/shaders/generated/ ${TESTS_COMMON_DIR})
 target_link_libraries(test-framegraph Threads::Threads xengine)
 
+add_executable(test-skeletalanimation ${BASE_SOURCE_DIR}/tests/skeletalanimation/src/main.cpp)
+target_include_directories(test-skeletalanimation PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/skeletalanimation/src/ ${TESTS_COMMON_DIR})
+target_link_libraries(test-skeletalanimation Threads::Threads xengine)
+
 add_executable(test-renderer2d ${BASE_SOURCE_DIR}/tests/renderer2d/src/main.cpp)
 target_include_directories(test-renderer2d PRIVATE ${CMAKE_SOURCE_DIR}/tests/renderer2d/src/ ${TESTS_COMMON_DIR})
 target_link_libraries(test-renderer2d Threads::Threads xengine)

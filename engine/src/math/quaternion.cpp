@@ -99,12 +99,13 @@ namespace xng {
         return sqrtf(powf(w, 2) + powf(x, 2) + powf(y, 2) + powf(z, 2));
     }
 
-    void Quaternion::normalize() {
+    Quaternion& Quaternion::normalize() {
         float m = magnitude();
         w /= m;
         x /= m;
         y /= m;
         z /= m;
+        return *this;
     }
 
     Quaternion Quaternion::normalize(const Quaternion &q) {

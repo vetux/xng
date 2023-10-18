@@ -32,7 +32,7 @@ namespace xng {
             REGISTER_COMPONENT(CameraComponent)
             REGISTER_COMPONENT(CanvasComponent)
             REGISTER_COMPONENT(LightComponent)
-            REGISTER_COMPONENT(MeshRenderComponent)
+            REGISTER_COMPONENT(MeshComponent)
             REGISTER_COMPONENT(ParticleComponent)
             REGISTER_COMPONENT(RigidBodyComponent)
             REGISTER_COMPONENT(SkyboxComponent)

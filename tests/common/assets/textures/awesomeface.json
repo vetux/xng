@@ -1,11 +1,9 @@
 {
   "textures": [
     {
-      "images": [
-        {
-          "uri": "images/awesomeface.png"
-        }
-      ],
+      "image": {
+        "uri": "images/awesomeface.png"
+      },
       "description": {
         "filterMag": 1
       }

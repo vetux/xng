@@ -138,6 +138,14 @@ namespace xng {
             }
             return message;
         }
+
+        bool operator==(const Matrix<T, W, H> &other) const{
+            for (auto i = 0; i < W * H; i++){
+                if (data[i] != other.data[i])
+                    return false;
+            }
+            return true;
+        };
     };
 
     // Multiply matrix by column vector

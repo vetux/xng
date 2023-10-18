@@ -20,9 +20,9 @@
 #ifndef XENGINE_LIGHTCOMPONENT_HPP
 #define XENGINE_LIGHTCOMPONENT_HPP
 
-#include "xng/asset/directionallight.hpp"
-#include "xng/asset/spotlight.hpp"
-#include "xng/asset/pointlight.hpp"
+#include "xng/render/directionallight.hpp"
+#include "xng/render/spotlight.hpp"
+#include "xng/render/pointlight.hpp"
 #include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
 

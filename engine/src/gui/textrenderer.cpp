@@ -89,10 +89,15 @@ namespace xng {
         for (auto c: str) {
             //Add horizontal advance
             auto character = ascii.at(c);
+            if (c == '\n' || (layout.lineWidth > 0 && lineSize.x + character.advance > layout.lineWidth)) {
+                line++;
+                lineSize.x = 0;
+            }
+
             lineSize.x += character.advance;
 
-            lineSize.y = (line * layout.lineSpacing) + (line * layout.lineHeight) +
-                         (layout.lineHeight + character.image.getHeight() - character.bearing.y);
+            lineSize.y = ((line + 1) * layout.lineSpacing)
+                    + ((line+ 1) * layout.lineHeight);
 
             //Assign current horizontal size of the line if it is larger than the current size
             if (lineSize.x > size.x) {
@@ -102,11 +107,6 @@ namespace xng {
             // Assign current vertical size of the column if it is larger than the current size
             if (lineSize.y > size.y) {
                 size.y = lineSize.y;
-            }
-
-            if (c == '\n' || (layout.lineWidth > 0 && lineSize.x > layout.lineWidth)) {
-                line++;
-                lineSize.x = 0;
             }
         }
 
@@ -134,7 +134,7 @@ namespace xng {
 
         int largestWidth = 0;
         std::vector<std::vector<RenderChar>> lines = std::vector<std::vector<RenderChar>>();
-        lines.emplace_back(std::vector<RenderChar>());
+        lines.emplace_back();
 
         for (auto &c: text) {
             auto lineIndex = lines.size() - 1;
@@ -143,7 +143,7 @@ namespace xng {
 
             if (c == '\n'
                 || (layout.lineWidth > 0 && lineWidth + character.advance > layout.lineWidth)) {
-                lines.emplace_back(std::vector<RenderChar>());
+                lines.emplace_back();
                 posx = 0;
                 lineIndex = lines.size() - 1;
                 lineWidth = 0;

@@ -30,7 +30,7 @@
 #include "xng/asset/shadersource.hpp"
 #include "xng/shader/shadercompiler.hpp"
 
-#include "xng/asset/camera.hpp"
+#include "xng/render/camera.hpp"
 
 #include "xng/util/hashcombine.hpp"
 
@@ -175,7 +175,7 @@ namespace xng {
                   const Vec2f &center,
                   float rotation,
                   TextureFiltering filter,
-                  ColorRGBA colorFactor);
+                  ColorRGBA colorFactor = ColorRGBA::white());
 
         /**
          * Draw rectangle

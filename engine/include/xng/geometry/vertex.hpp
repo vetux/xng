@@ -24,10 +24,8 @@
 #include "xng/math/vector4.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT Vertex {
-        std::vector<float> buffer; // TODO: Store vertex data as uint8_t to allow SINGLE Vertex attribute types
-
-        Vertex() = default;
+    struct Vertex {
+        std::vector<uint8_t> buffer;
     };
 }
 

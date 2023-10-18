@@ -69,6 +69,10 @@ namespace xng {
 
         Recti offset{}; // The part of the image which contains the sprite
         ResourceHandle<ImageRGBA> image{}; // The image which contains the sprite
+
+        bool isLoaded() const override {
+            return image.isLoaded();
+        }
     };
 }
 

@@ -27,16 +27,16 @@ struct ShaderDrawData {
     mat4 mvp;
 
     ivec4 shadeModel_objectID;
-    vec4 albedoColor;
     vec4 metallic_roughness_ambientOcclusion_shininess;
 
     vec4 diffuseColor;
     vec4 ambientColor;
     vec4 specularColor;
 
+    vec4 normalIntensity;
+
     ShaderAtlasTexture normal;
 
-    ShaderAtlasTexture albedo;
     ShaderAtlasTexture metallic;
     ShaderAtlasTexture roughness;
     ShaderAtlasTexture ambientOcclusion;
@@ -82,8 +82,8 @@ vec4 textureAtlas(ShaderAtlasTexture tex, vec2 inUv)
         if (tex.level_index_filtering_assigned.z == 1)
         {
             return textureBicubic(atlasTextures[tex.level_index_filtering_assigned.x],
-                                    vec3(uv.x, uv.y, tex.level_index_filtering_assigned.y),
-                                    tex.atlasScale_texSize.zw);
+            vec3(uv.x, uv.y, tex.level_index_filtering_assigned.y),
+            tex.atlasScale_texSize.zw);
         }
         else
         {
@@ -108,8 +108,8 @@ void main() {
 
     if (data.normal.level_index_filtering_assigned.w != 0)
     {
-        mat3x3 tbn = mat3( fT, fB, fN );
-        vec3 texNormal = textureAtlas(data.normal, fUv).xyz;
+        mat3x3 tbn = mat3(fT, fB, fN);
+        vec3 texNormal = textureAtlas(data.normal, fUv).xyz * vec3(data.normalIntensity.x, data.normalIntensity.x, 1);
         texNormal = tbn * normalize(texNormal * 2.0 - 1.0);
         normal = texNormal;
     }
@@ -117,7 +117,7 @@ void main() {
     if (data.shadeModel_objectID.x == 0)
     {
         // PBR
-        vec4 oAlbedo = textureAtlas(data.albedo, fUv) + data.albedoColor;
+        vec4 oAlbedo = textureAtlas(data.diffuse, fUv) + data.diffuseColor;
         vec4 oRoughnessMetallicAO;
         oRoughnessMetallicAO.r = textureAtlas(data.roughness, fUv).r + data.metallic_roughness_ambientOcclusion_shininess.y;
         oRoughnessMetallicAO.g = textureAtlas(data.metallic, fUv).r + data.metallic_roughness_ambientOcclusion_shininess.x;
@@ -143,13 +143,13 @@ void main() {
         {
             PointLight light = pLights.lights[i];
             LightComponents c = phong_point(fPos,
-                                            normal,
-                                            diffuse,
-                                            specular,
-                                            shininess,
-                                            globs.viewPosition.xyz,
-                                            mat3(1),
-                                            light);
+            normal,
+            diffuse,
+            specular,
+            shininess,
+            globs.viewPosition.xyz,
+            mat3(1),
+            light);
             comp.ambient += c.ambient;
             comp.diffuse += c.diffuse;
             comp.specular += c.specular;
@@ -159,13 +159,13 @@ void main() {
         {
             SpotLight light = sLights.lights[i];
             LightComponents c = phong_spot(fPos,
-                                            normal,
-                                            diffuse,
-                                            specular,
-                                            shininess,
-                                            globs.viewPosition.xyz,
-                                            mat3(1),
-                                            light);
+            normal,
+            diffuse,
+            specular,
+            shininess,
+            globs.viewPosition.xyz,
+            mat3(1),
+            light);
             comp.ambient += c.ambient;
             comp.diffuse += c.diffuse;
             comp.specular += c.specular;
@@ -175,13 +175,13 @@ void main() {
         {
             DirectionalLight light = dLights.lights[i];
             LightComponents c = phong_directional(fPos,
-                                                    normal,
-                                                    diffuse,
-                                                    specular,
-                                                    shininess,
-                                                    globs.viewPosition.xyz,
-                                                    mat3(1),
-                                                    light);
+            normal,
+            diffuse,
+            specular,
+            shininess,
+            globs.viewPosition.xyz,
+            mat3(1),
+            light);
             comp.ambient += c.ambient;
             comp.diffuse += c.diffuse;
             comp.specular += c.specular;

@@ -53,6 +53,11 @@ public:
             rotation.y += 5;
         }
 
+        float speed = 1;
+        if (input.getKeyboard().getKey(KEY_LSHIFT)){
+            speed = 10;
+        }
+
         if (rotation.magnitude() > 0){
             transform.applyRotation(Quaternion(Vec3f(rotation.x * rotationSpeed * delta, 0, 0)),
                                     false);
@@ -62,21 +67,21 @@ public:
 
         Vec3f movement;
         if (input.getKeyboard().getKey(KEY_W)) {
-            movement.y = -1;
+            movement.y = -speed;
         } else if (input.getKeyboard().getKey(xng::KEY_S)) {
-            movement.y = 1;
+            movement.y = speed;
         }
 
         if (input.getKeyboard().getKey(KEY_A)) {
-            movement.x = 1;
+            movement.x = speed;
         } else if (input.getKeyboard().getKey(xng::KEY_D)) {
-            movement.x = -1;
+            movement.x = -speed;
         }
 
         if (input.getKeyboard().getKey(xng::KEY_SPACE)) {
-            movement.z = 1;
+            movement.z = speed;
         } else if (input.getKeyboard().getKey(xng::KEY_LCTRL)) {
-            movement.z = -1;
+            movement.z = -speed;
         }
 
         if (movement.magnitude() > 0) {

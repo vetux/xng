@@ -1,11 +1,9 @@
 {
   "textures": [
     {
-      "images": [
-        {
-          "uri": "images/wall.png"
-        }
-      ],
+      "image": {
+        "uri": "images/wall.png"
+      },
       "description": {
         "filterMag": 1
       }

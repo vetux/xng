@@ -24,9 +24,10 @@
 
 #include "xng/resource/uri.hpp"
 #include "xng/resource/resourcehandle.hpp"
-#include "texture.hpp"
 
-#include "color.hpp"
+#include "xng/asset/cubemap.hpp"
+#include "xng/asset/color.hpp"
+
 #include "xng/io/messageable.hpp"
 
 namespace xng {
@@ -56,7 +57,11 @@ namespace xng {
         }
 
         ColorRGBA color = {12, 123, 123, 255}; // If texture is unassigned skybox color is drawn
-        ResourceHandle<Texture> texture; // The cube map texture
+        ResourceHandle<CubeMap> texture; // The cube map texture
+
+        bool isLoaded() const override {
+            return texture.isLoaded() && texture.get().isLoaded();
+        }
     };
 }
 

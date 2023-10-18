@@ -1,11 +1,9 @@
 {
   "textures": [
     {
-      "images": [
-        {
-          "uri": "images/sphere_normals.png"
-        }
-      ]
+      "image": {
+        "uri": "images/sphere_normals.png"
+      }
     }
   ]
 }

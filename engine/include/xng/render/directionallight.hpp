@@ -46,11 +46,11 @@ namespace xng {
 
         Transform transform;
 
-        Vec3f ambient = Vec3f(0.1f);
-        Vec3f diffuse = Vec3f(1.0f);
-        Vec3f specular = Vec3f(1.0f);
+        Vec3f ambient = Vec3f(0.2);
+        Vec3f diffuse = Vec3f(0.4);
+        Vec3f specular = Vec3f(0.1);
 
-        Vec3f direction = Vec3f(0);
+        Vec3f direction = Vec3f(0.0f, 0.0f, -1.0f);
     };
 }
 

@@ -22,14 +22,15 @@
 
 #include <utility>
 
-#include "xng/asset/camera.hpp"
-#include "xng/asset/directionallight.hpp"
-#include "xng/asset/pointlight.hpp"
-#include "xng/asset/spotlight.hpp"
+#include "camera.hpp"
+#include "directionallight.hpp"
+#include "pointlight.hpp"
+#include "spotlight.hpp"
 #include "xng/asset/material.hpp"
 #include "xng/asset/skybox.hpp"
 #include "xng/asset/shader.hpp"
 #include "xng/asset/mesh.hpp"
+#include "xng/asset/skinnedmesh.hpp"
 
 #include "xng/types/genericmap.hpp"
 
@@ -40,26 +41,128 @@ namespace xng {
      * The runtime scene render data.
      */
     struct XENGINE_EXPORT Scene {
-        struct XENGINE_EXPORT Object {
-            Transform transform;
+        struct XENGINE_EXPORT Property {
+            virtual std::type_index getType() = 0;
 
-            ResourceHandle<Mesh> mesh;
-            ResourceHandle<Material> material;
+            template<typename T>
+            T &get() {
+                return dynamic_cast<T &>(*this);
+            }
+
+            template<typename T>
+            const T &get() const {
+                return dynamic_cast<T &>(*this);
+            }
+        };
+
+        struct Node;
+
+        struct XENGINE_EXPORT Node {
+            template<typename T>
+            T &getProperty() {
+                return dynamic_cast< T &>(*properties.at(typeid(T)));
+            }
+
+            template<typename T>
+            const T &getProperty() const {
+                return dynamic_cast<const T &>(*properties.at(typeid(T)));
+            }
+
+            template<typename T>
+            void addProperty(const T &property) {
+                properties[typeid(T)] = std::make_shared<T>(property);
+            }
+
+            std::vector<Node> findAll(std::vector<std::type_index> propertyTypes) const {
+                std::vector<Node> ret;
+                for (auto &c: childNodes) {
+                    auto nodes = c.findAll(propertyTypes);
+                    ret.insert(ret.end(), nodes.begin(), nodes.end());
+                }
+                for (auto &prop: propertyTypes) {
+                    if (properties.find(prop) != properties.end()) {
+                        ret.emplace_back(*this);
+                        break;
+                    }
+                }
+                return ret;
+            }
+
+            std::vector<Node> childNodes;
+            std::map<std::type_index, std::shared_ptr<Property>> properties;
+        };
+
+        struct ShadowProperty : public Property {
+            std::type_index getType() override {
+                return typeid(ShadowProperty);
+            }
 
             bool castShadows = false;
             bool receiveShadows = false;
         };
 
-        Transform cameraTransform;
-        Camera camera;
+        struct MeshProperty : public Property {
+            std::type_index getType() override {
+                return typeid(MeshProperty);
+            }
 
-        Skybox skybox;
+            Transform transform;
+            ResourceHandle<Mesh> mesh;
+        };
 
-        std::vector<DirectionalLight> directionalLights;
-        std::vector<PointLight> pointLights;
-        std::vector<SpotLight> spotLights;
+        struct SkinnedMeshProperty : public Property {
+            std::type_index getType() override {
+                return typeid(SkinnedMeshProperty);
+            }
 
-        std::vector<Object> objects;
+            Transform transform;
+            ResourceHandle<SkinnedMesh> mesh;
+        };
+
+        struct MaterialProperty : public Property {
+            std::type_index getType() override {
+                return typeid(MaterialProperty);
+            }
+
+            std::map<size_t, ResourceHandle<Material>> materials;
+        };
+
+        struct BoneTransformsProperty : public Property {
+            std::type_index getType() override {
+                return typeid(BoneTransformsProperty);
+            }
+
+            std::map<std::string, Mat4f> boneTransforms; // Optional dynamic bone transform values which override the values in SkinnedMesh.rig
+        };
+
+        struct LightingProperty : public Property {
+            std::type_index getType() override {
+                return typeid(LightingProperty);
+            }
+
+            std::vector<DirectionalLight> directionalLights;
+            std::vector<PointLight> pointLights;
+            std::vector<SpotLight> spotLights;
+        };
+
+        struct SkyboxProperty : public Property {
+            std::type_index getType() override {
+                return typeid(SkyboxProperty);
+            }
+
+            Skybox skybox;
+        };
+
+        struct CameraProperty : public Property {
+            std::type_index getType() override {
+                return typeid(CameraProperty);
+            }
+
+            Transform cameraTransform;
+            Camera camera;
+        };
+
+        Node rootNode;
     };
 }
 

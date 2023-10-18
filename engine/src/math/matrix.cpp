@@ -19,6 +19,9 @@
 
 #include "xng/math/matrix.hpp"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 namespace xng {
     Vector4<float> operator*(const Matrix<float, 4, 4> &lhs, const Vector4<float> &rhs) {
         //TODO Fix matrix multiplication operators
@@ -111,6 +114,8 @@ namespace xng {
         return ret;
     }
 
+
+
     Vector3<float> operator*(const Matrix<float, 4, 4> &lhs, const Vector3<float> &rhs) {
         Vec4f vec4(rhs.x, rhs.y, rhs.z, 0);
         auto result = lhs * vec4;
@@ -123,8 +128,19 @@ namespace xng {
         return {result.x, result.y, result.z};
     }
 
+    static glm::mat4 convert(const Mat4f &mat) {
+        static_assert(sizeof(glm::mat4) == sizeof(Mat4f));
+        return reinterpret_cast<const glm::mat4&>(mat);
+    }
+
+    static Mat4f convert(const glm::mat4 &mat) {
+        static_assert(sizeof(glm::mat4) == sizeof(Mat4f));
+        return reinterpret_cast<const Mat4f&>(mat);
+    }
+
     Matrix<float, 4, 4> operator*(const Matrix<float, 4, 4> &lhs, const Matrix<float, 4, 4> &rhs) {
-        Mat4f ret;
+        return convert(convert(lhs) * convert(rhs));
+      /*  Mat4f ret;
         for (int row = 0; row < lhs.height(); row++) {
             for (int column = 0; column < lhs.width(); column++) {
                 Vec4f ro;
@@ -142,6 +158,6 @@ namespace xng {
                 ret.set(column, row, (ro.x * co.x) + (ro.y * co.y) + (ro.z * co.z) + (ro.w * co.w));
             }
         }
-        return ret;
+        return ret;*/
     }
 }

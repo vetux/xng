@@ -24,12 +24,12 @@
 
 //TODO: Remove glm dependency from matrixmath.cpp
 namespace xng {
-    glm::mat4 convert(const Mat4f &mat) {
+    static glm::mat4 convert(const Mat4f &mat) {
         static_assert(sizeof(glm::mat4) == sizeof(Mat4f));
         return reinterpret_cast<const glm::mat4&>(mat);
     }
 
-    Mat4f convert(const glm::mat4 &mat) {
+    static Mat4f convert(const glm::mat4 &mat) {
         static_assert(sizeof(glm::mat4) == sizeof(Mat4f));
         return reinterpret_cast<const Mat4f&>(mat);
     }

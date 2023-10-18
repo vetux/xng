@@ -27,6 +27,7 @@
 #include "xng/ecs/system.hpp"
 #include "xng/ecs/profiling/ecsprofiler.hpp"
 #include "xng/async/threadpool.hpp"
+#include "xng/types/time.hpp"
 
 namespace xng {
     /**
@@ -54,7 +55,7 @@ namespace xng {
          */
         explicit SystemPipeline(TickMode tickMode,
                                 std::vector<std::shared_ptr<System>> systems = {},
-                                DeltaTime fixedStepDuration = 0,
+                                Duration fixedStepDuration = Duration(),
                                 int fixedStepMaxSteps = 0,
                                 bool runAsync = false,
                                 std::string name = "Unnamed Pipeline")
@@ -143,7 +144,7 @@ namespace xng {
         std::vector<std::shared_ptr<System>> systems;
         std::string name;
 
-        DeltaTime fixedStepAccumulator = 0;
+        Duration fixedStepAccumulator = Duration();
 
         void invokeUpdate(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus, ECSProfiler &profiler,
                           bool enableProfiling) {

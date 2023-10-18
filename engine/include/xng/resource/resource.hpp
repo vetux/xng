@@ -32,7 +32,13 @@ namespace xng {
 
         virtual std::unique_ptr<Resource> clone() = 0;
 
-        virtual std::type_index getTypeIndex() const  = 0;
+        virtual std::type_index getTypeIndex() const = 0;
+
+        /**
+         *
+         * @return Wheter or not the dependencies of this resource are loaded.
+         */
+        virtual bool isLoaded() const { return true; };
     };
 }
 

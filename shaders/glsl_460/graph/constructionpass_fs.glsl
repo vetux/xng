@@ -30,17 +30,17 @@ struct ShaderDrawData {
     mat4 model;
     mat4 mvp;
 
-    ivec4 shadeModel_objectID;
-    vec4 albedoColor;
+    ivec4 shadeModel_objectID_boneOffset;
     vec4 metallic_roughness_ambientOcclusion_shininess;
 
     vec4 diffuseColor;
     vec4 ambientColor;
     vec4 specularColor;
 
+    vec4 normalIntensity;
+
     ShaderAtlasTexture normal;
 
-    ShaderAtlasTexture albedo;
     ShaderAtlasTexture metallic;
     ShaderAtlasTexture roughness;
     ShaderAtlasTexture ambientOcclusion;
@@ -68,8 +68,8 @@ vec4 textureAtlas(ShaderAtlasTexture tex, vec2 inUv)
         if (tex.level_index_filtering_assigned.z == 1)
         {
             return textureBicubic(atlasTextures[tex.level_index_filtering_assigned.x],
-                                    vec3(uv.x, uv.y, tex.level_index_filtering_assigned.y),
-                                    tex.atlasScale_texSize.zw);
+            vec3(uv.x, uv.y, tex.level_index_filtering_assigned.y),
+            tex.atlasScale_texSize.zw);
         }
         else
         {
@@ -83,9 +83,14 @@ void main() {
 
     oPosition = vec4(fPos, 1);
 
-    if (data.shadeModel_objectID.x == 0)
+    if (data.diffuse.level_index_filtering_assigned.w == 0) {
+        oAlbedo = data.diffuseColor;
+    } else {
+        oAlbedo = textureAtlas(data.diffuse, fUv);
+    }
+
+    if (data.shadeModel_objectID_boneOffset.x == 0)
     {
-        oAlbedo = textureAtlas(data.albedo, fUv) + data.albedoColor;
         oRoughnessMetallicAO.r = textureAtlas(data.roughness, fUv).r + data.metallic_roughness_ambientOcclusion_shininess.y;
         oRoughnessMetallicAO.g = textureAtlas(data.metallic, fUv).r + data.metallic_roughness_ambientOcclusion_shininess.x;
         oRoughnessMetallicAO.b = textureAtlas(data.ambientOcclusion, fUv).r + data.metallic_roughness_ambientOcclusion_shininess.z;
@@ -93,29 +98,40 @@ void main() {
     }
     else
     {
-        oAlbedo = textureAtlas(data.diffuse, fUv) + data.diffuseColor;
-        oAmbient = textureAtlas(data.ambient, fUv) + data.ambientColor;
-        oSpecular = textureAtlas(data.specular, fUv) + data.specularColor;
-        oRoughnessMetallicAO.r = textureAtlas(data.shininess, fUv).r + data.metallic_roughness_ambientOcclusion_shininess.w;
+        if (data.ambient.level_index_filtering_assigned.w == 0){
+            oAmbient =  data.ambientColor;
+        } else {
+            oAmbient = textureAtlas(data.ambient, fUv) ;
+        }
+        if (data.specular.level_index_filtering_assigned.w == 0){
+            oSpecular = data.specularColor;
+        } else {
+            oSpecular = textureAtlas(data.specular, fUv);
+        }
+        if (data.shininess.level_index_filtering_assigned.w == 0){
+            oRoughnessMetallicAO.r = data.metallic_roughness_ambientOcclusion_shininess.w;
+        } else {
+            oRoughnessMetallicAO.r = textureAtlas(data.shininess, fUv).r;
+        }
         oRoughnessMetallicAO.g = 0;
         oRoughnessMetallicAO.b = 0;
         oRoughnessMetallicAO.a = 1;
     }
 
-    mat3 normalMatrix = transpose(inverse(mat3(data.model)));
+    mat3 normalMatrix = mat3(transpose(inverse(data.model)));
     oNormal = vec4(normalize(normalMatrix * fNorm), 1);
     oTangent = vec4(normalize(normalMatrix * fTan), 1);
 
     if (data.normal.level_index_filtering_assigned.w != 0)
     {
-        mat3x3 tbn = mat3( fT, fB, fN );
-        vec3 texNormal = textureAtlas(data.normal, fUv).xyz;
+        mat3x3 tbn = mat3(fT, fB, fN);
+        vec3 texNormal = textureAtlas(data.normal, fUv).xyz * vec3(data.normalIntensity.x, data.normalIntensity.x, 1);
         texNormal = tbn * normalize(texNormal * 2.0 - 1.0);
-        oNormal = vec4(texNormal, 1);
+        oNormal = vec4(normalize(texNormal), 1);
     }
 
-    oModelObject.r = data.shadeModel_objectID.x;
-    oModelObject.g = data.shadeModel_objectID.y;
+    oModelObject.r = data.shadeModel_objectID_boneOffset.x;
+    oModelObject.g = data.shadeModel_objectID_boneOffset.y;
     oModelObject.b = 0;
     oModelObject.a = 1;
 }

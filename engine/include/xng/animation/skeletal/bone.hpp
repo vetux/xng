@@ -23,14 +23,46 @@
 #include "xng/math/matrix.hpp"
 
 namespace xng {
-    struct VertexWeight {
-        size_t vertex; // The index of the vertex in Mesh::vertices
-        float weight;
+    struct VertexWeight : public Messageable{
+        size_t vertex{}; // The index of the vertex in Mesh::vertices
+        float weight{};
+
+        Messageable &operator<<(const Message &message) override {
+            message.value("vertex", vertex);
+            message.value("weight", weight);
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            vertex >> message["vertex"];
+            weight >> message["weight"];
+            return message;
+        }
     };
-    struct XENGINE_EXPORT Bone {
+
+    struct Bone : public Messageable {
         std::string name; // The name of the bone
-        Mat4f offset; // The offset of the bone
+        Mat4f transform;
+        Mat4f offset;
         std::vector<VertexWeight> weights;
+
+        Messageable &operator<<(const Message &message) override {
+            message.value("name", name);
+            message.value("transform", transform);
+            message.value("offset", offset);
+            message.value("weights", weights);
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            name >> message["name"];
+            transform >> message["transform"];
+            offset >> message["offset"];
+            weights >> message["weights"];
+            return message;
+        }
     };
 }
 

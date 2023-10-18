@@ -28,15 +28,14 @@
 #include "bone.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT Rig {
-    public:
+    struct XENGINE_EXPORT Rig : public Messageable {
         Rig() = default;
 
-        explicit Rig(std::vector<Bone> bones)
-                : bones(std::move(bones)) {
+        explicit Rig(std::vector<Bone> bones, std::map<std::string, std::string> boneParentMapping)
+                :  bones(std::move(bones)), boneParentMapping(std::move(boneParentMapping)) {
             for (auto i = 0; i < this->bones.size(); i++) {
                 auto &bone = this->bones.at(i);
-                boneNameMapping[bone.name] = this->bones.begin() + i;
+                boneNameMapping[bone.name] = i;
             }
         }
 
@@ -44,15 +43,67 @@ namespace xng {
 
         Bone &getBone(size_t index) { return bones.at(index); }
 
-        Bone &getBone(const std::string &name) { return *boneNameMapping.at(name); }
+        Bone &getBone(const std::string &name) { return bones.at(boneNameMapping.at(name)); }
+
+        bool hasBone(const std::string &name) { return boneNameMapping.find(name) != boneNameMapping.end(); }
+
+        Bone &getParentBone(const std::string &name) {
+            return bones.at(boneNameMapping.at(boneParentMapping.at(name)));
+        }
+
+        bool hasParentBone(const std::string &name) { return boneParentMapping.find(name) != boneParentMapping.end(); }
+
+        std::vector<std::reference_wrapper<Bone>> getChildBones(const std::string &name) {
+            std::vector<std::reference_wrapper<Bone>> ret;
+            for (auto &pair: boneParentMapping) {
+                if (pair.second == name) {
+                    ret.emplace_back(bones.at(boneNameMapping.at(pair.first)));
+                }
+            }
+            return ret;
+        }
+
+        std::vector<std::reference_wrapper<Bone>> getRootBones() {
+            std::vector<std::reference_wrapper<Bone>> ret;
+            for (auto &bone: bones) {
+                if (boneParentMapping.find(bone.name) == boneParentMapping.end()) {
+                    ret.emplace_back(bone);
+                }
+            }
+            return ret;
+        }
 
         operator bool() const {
             return !bones.empty();
         }
 
+        Messageable &operator<<(const Message &message) override {
+            message.value("bones", bones);
+            boneNameMapping.clear();
+            for (auto i = 0; i < this->bones.size(); i++) {
+                auto &bone = this->bones.at(i);
+                boneNameMapping[bone.name] = i;
+            }
+            for (auto &pair: message["boneParents"].asDictionary()) {
+                boneParentMapping[pair.first] = pair.second.asString();
+            }
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            bones >> message["bones"];
+            message["boneParents"] = Message(Message::DICTIONARY);
+            for (auto &pair: boneParentMapping) {
+                pair.second >> message["boneParents"].asDictionary()[pair.first];
+            }
+            return message;
+        }
+
     private:
         std::vector<Bone> bones;
-        std::map<std::string, std::vector<Bone>::iterator> boneNameMapping;
+        std::map<std::string, size_t> boneNameMapping;
+        std::map<std::string, std::string> boneParentMapping;
     };
 }
 

@@ -56,7 +56,7 @@ static std::shared_ptr<EntityScene> createScene() {
 
     rect = {};
     rect.rectTransform.alignment = xng::RectTransform::RECT_ALIGN_CENTER_CENTER;
-    rect.rectTransform.size = sprite.sprite.get().image.get().getSize().convert<float>();
+    rect.rectTransform.size = {265,314};
     ent.createComponent(rect);
 
     ent = scene->createEntity();

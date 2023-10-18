@@ -39,7 +39,8 @@ layout(binding = 11) uniform sampler2D gBufferDepth;
 void main() {
     float gDepth = texture(gBufferDepth, fUv).r;
     if (gDepth == 1) {
-        discard;
+        oColor = vec4(0, 0, 0, 0);
+        gl_FragDepth = 1;
         return;
     }
 

@@ -17,6 +17,7 @@ function(CompileShaderGLSLES320 PATH STAGE ENTRYPOINT)
 endfunction()
 
 CompileShaderGLSL460(graph/constructionpass_vs VERTEX main)
+CompileShaderGLSL460(graph/constructionpass_vs_skinned VERTEX main)
 CompileShaderGLSL460(graph/constructionpass_fs FRAGMENT main)
 
 CompileShaderGLSL460(graph/deferredlightingpass_vs VERTEX main)

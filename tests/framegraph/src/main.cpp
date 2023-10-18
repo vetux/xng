@@ -85,7 +85,6 @@ void createMaterialResource(xng::MemoryArchive &archive) {
 }
 
 
-
 // TODO: Fix OUT_OF_MEMORY thrown after running the framegraph test for some time on windows (The task manager is not showing any kind of memory leak.)
 int main(int argc, char *argv[]) {
     std::vector<std::unique_ptr<ResourceParser>> parsers;
@@ -112,7 +111,7 @@ int main(int argc, char *argv[]) {
     auto fontFs = std::ifstream("assets/fonts/Sono/static/Sono/Sono-Regular.ttf", std::ios_base::in | std::ios::binary);
     auto font = fontDriver.createFont(fontFs);
 
-    auto window = displayDriver.createWindow(OPENGL_4_6,
+    auto window = displayDriver.createWindow(gpuDriver.getBackend(),
                                              "XNG FrameGraph Test",
                                              {800, 600},
                                              WindowAttributes{
@@ -155,65 +154,115 @@ int main(int argc, char *argv[]) {
 
     renderer.setPipeline(pipeline);
 
+    xng::Scene scene;
+    Scene::CameraProperty cameraProperty;
+    cameraProperty.camera.type = xng::PERSPECTIVE;
+    scene.rootNode.addProperty(cameraProperty);
+
+    xng::Scene::Node sphere;
+
+    auto meshProp = Scene::SkinnedMeshProperty();
+    meshProp.transform.setPosition({0, 5, -16});
+    meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/sphere.obj/Sphere"));
+    sphere.addProperty(meshProp);
+
+    auto materialProp = Scene::MaterialProperty();
+    materialProp.materials[0] = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/sphere")));
+    sphere.addProperty(materialProp);
+
+    scene.rootNode.childNodes.emplace_back(sphere);
+
+    xng::Scene::Node cubeWall;
+
+    meshProp = {};
+    meshProp.transform.setPosition({2.5, 0, -10});
+    meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/cube_faceuv.obj"));
+    cubeWall.addProperty(meshProp);
+
+    materialProp = {};
+    materialProp.materials[0] = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/cubeWall")));
+    cubeWall.addProperty(materialProp);
+
+    scene.rootNode.childNodes.emplace_back(cubeWall);
+
+    xng::Scene::Node cube;
+
+    meshProp = {};
+    meshProp.transform.setPosition({0, 0, -15});
+    meshProp.transform.setScale(Vec3f(10, 10, 1));
+    meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/cube.obj"));
+    cube.addProperty(meshProp);
+
+    materialProp = {};
+    materialProp.materials[0] = xng::ResourceHandle<xng::Material>(
+            xng::Uri(MATERIALS_PATH + std::string("/cubeAlphaRed")));
+    cube.addProperty(materialProp);
+
+    scene.rootNode.childNodes.emplace_back(cube);
+
+    meshProp = {};
+    meshProp.transform.setPosition({-2.5, 0, -10});
+    meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/sphere.obj/Sphere"));
+    sphere.addProperty(meshProp);
+
+    scene.rootNode.childNodes.emplace_back(sphere);
+
+    meshProp = {};
+    meshProp.transform.setPosition({0, 0, -10});
+    meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/sphere.obj/Sphere"));
+    sphere.addProperty(meshProp);
+
+    scene.rootNode.childNodes.emplace_back(sphere);
+
+    meshProp = {};
+    meshProp.transform.setPosition({-2.5, 0, -10});
+    meshProp.transform.setScale(Vec3f(1, 1, 1));
+    meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/cube_faceuv.obj"));
+    cube.addProperty(meshProp);
+
+    materialProp = {};
+    materialProp.materials[0] = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/cube")));
+    cube.addProperty(materialProp);
+
+    scene.rootNode.childNodes.emplace_back(cube);
+
+    meshProp = {};
+    meshProp.transform.setPosition({0, 0, -5});
+    meshProp.transform.setScale(Vec3f(1, 1.2, 1));
+    meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/cube.obj"));
+    cube.addProperty(meshProp);
+
+    materialProp = {};
+    materialProp.materials[0] = xng::ResourceHandle<xng::Material>(
+            xng::Uri(MATERIALS_PATH + std::string("/cubeAlpha")));
+    cube.addProperty(materialProp);
+
+    scene.rootNode.childNodes.emplace_back(cube);
+
+    Scene::LightingProperty lightingProperty;
+
     xng::PointLight light;
     light.transform.setPosition({0, 0, -5});
 
-    xng::Scene::Object sphere;
-    sphere.transform.setPosition({0, 5, -16});
-    sphere.mesh = xng::ResourceHandle<xng::Mesh>(xng::Uri("meshes/sphere.obj/Sphere"));
-    sphere.material = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/sphere")));
+    lightingProperty.pointLights.emplace_back(light);
 
-    xng::Scene::Object cube;
-    cube.mesh = xng::ResourceHandle<xng::Mesh>(xng::Uri("meshes/cube_faceuv.obj"));
-
-    xng::Scene::Object cubeWall;
-    cubeWall.transform.setPosition({2.5, 0, -10});
-    cubeWall.mesh = xng::ResourceHandle<xng::Mesh>(xng::Uri("meshes/cube.obj"));
-    cubeWall.material = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/cubeWall")));
-
-    xng::Scene scene;
-    scene.camera.type = xng::PERSPECTIVE;
-
-    scene.objects.emplace_back(sphere);
-
-    cube.material = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/cubeAlphaRed")));
-    cube.transform.setPosition({0, 0, -15});
-    cube.transform.setScale(Vec3f(10, 10, 1));
-    scene.objects.emplace_back(cube);
-
-    sphere.transform.setPosition({-2.5, 0, -10});
-    scene.objects.emplace_back(sphere);
-
-    sphere.transform.setPosition({0, 0, -10});
-    scene.objects.emplace_back(sphere);
-
-    cube.transform.setScale(Vec3f(1, 1, 1));
-    cube.transform.setPosition({-2.5, 0, -10});
-    cube.material = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/cube")));
-
-    scene.objects.emplace_back(cube);
-    scene.objects.emplace_back(cubeWall);
-
-    cube.material = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/cubeAlpha")));
-    cube.transform.setScale(Vec3f(1, 1.2, 1));
-    cube.transform.setPosition({0, 0, -5});
-    scene.objects.emplace_back(cube);
-
-    scene.pointLights.emplace_back(light);
+    scene.rootNode.addProperty(lightingProperty);
 
     auto text = textRenderer.render("GBUFFER POSITION", TextLayout{.lineHeight = 70});
     auto tex = ren2d.createTexture(text.getImage());
 
     testPass->setTex(13);
 
-    CameraController cameraController(scene.cameraTransform, input);
+    auto &cameraRef = scene.rootNode.getProperty<Scene::CameraProperty>();
+
+    CameraController cameraController(cameraRef.cameraTransform, input);
 
     xng::FrameLimiter limiter;
     limiter.reset();
     while (!window->shouldClose()) {
         auto deltaTime = limiter.newFrame();
 
-        scene.camera.aspectRatio = static_cast<float>(window->getWindowSize().x)
+        cameraRef.camera.aspectRatio = static_cast<float>(window->getWindowSize().x)
                                    / static_cast<float>(window->getWindowSize().y);
 
         cameraController.update(deltaTime);
@@ -287,7 +336,8 @@ int main(int argc, char *argv[]) {
                           target->getDescription().size,
                           {});
         ren2d.draw(Rectf({}, text.getImage().getSize().convert<float>()),
-                   Rectf({static_cast<float>(target->getDescription().size.x) / 2 - static_cast<float>(text.getImage().getSize().x) / 2, 0},
+                   Rectf({static_cast<float>(target->getDescription().size.x) / 2 -
+                          static_cast<float>(text.getImage().getSize().x) / 2, 0},
                          text.getImage().getSize().convert<float>()),
                    tex,
                    {},

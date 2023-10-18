@@ -23,6 +23,7 @@
 #include "xng/ecs/system.hpp"
 #include "xng/event/eventbus.hpp"
 #include "xng/display/window.hpp"
+#include "xng/types/time.hpp"
 
 namespace xng {
     class XENGINE_EXPORT GuiEventSystem : public System {

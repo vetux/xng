@@ -20,13 +20,14 @@
 #ifndef XENGINE_COMPONENTS_HPP
 #define XENGINE_COMPONENTS_HPP
 
+#include "xng/ecs/components/riganimationcomponent.hpp"
 #include "xng/ecs/components/audiolistenercomponent.hpp"
 #include "xng/ecs/components/audiosourcecomponent.hpp"
 #include "xng/ecs/components/buttoncomponent.hpp"
 #include "xng/ecs/components/cameracomponent.hpp"
 #include "xng/ecs/components/canvascomponent.hpp"
 #include "xng/ecs/components/lightcomponent.hpp"
-#include "xng/ecs/components/meshrendercomponent.hpp"
+#include "xng/ecs/components/meshcomponent.hpp"
 #include "xng/ecs/components/particlecomponent.hpp"
 #include "xng/ecs/components/rigidbodycomponent.hpp"
 #include "xng/ecs/components/skyboxcomponent.hpp"
@@ -36,5 +37,9 @@
 #include "xng/ecs/components/transformcomponent.hpp"
 #include "xng/ecs/components/genericcomponent.hpp"
 #include "xng/ecs/components/recttransformcomponent.hpp"
+
+#include "xng/ecs/components/materialcomponent.hpp"
+#include "xng/ecs/components/skinnedmeshcomponent.hpp"
+
 
 #endif //XENGINE_COMPONENTS_HPP

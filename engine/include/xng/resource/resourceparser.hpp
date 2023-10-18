@@ -45,7 +45,10 @@ namespace xng {
          * @param archive The archive instance to use for resolving referenced asset paths.
          * @return
          */
-        virtual ResourceBundle read(const std::vector<char> &buffer, const std::string &hint, Archive *archive) const = 0;
+        virtual ResourceBundle read(const std::vector<char> &buffer,
+                                    const std::string &hint,
+                                    const std::string &path,
+                                    Archive *archive) const = 0;
 
         /**
          * @return The set of supported file extensions with each containing the preceding dot

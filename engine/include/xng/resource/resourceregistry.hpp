@@ -94,22 +94,56 @@ namespace xng {
          * @param uri
          * @return
          */
-        const Resource &get(const Uri &uri);
+        const Resource &get(const Uri &uri, std::type_index typeIndex){
+            mutex.lock();
+            auto it = loadTasks.find(uri.getFile());
+            if (it != loadTasks.end()) {
+                auto task = it->second;
+                mutex.unlock();
+                auto ex = task->join();
+                if (ex) {
+                    std::rethrow_exception(ex);
+                }
+                mutex.lock();
+            }
+            auto &ret = bundles.at(uri.getFile()).get(uri.getAsset(), typeIndex);
+            mutex.unlock();
+            return ret;
+        }
 
         void incRef(const Uri &uri);
 
         void decRef(const Uri &uri);
 
-        void reloadAllResources();
+        void reload(const Uri &uri);
 
-        void awaitImports();
+        void reloadAll() {
+            for (auto &uri: getUris()) {
+                reload(uri);
+            }
+        }
+
+        void await(const Uri &uri);
+
+        void awaitAll() {
+            for (auto &uri: getLoadingUris()) {
+                await(uri);
+            }
+        }
+
+        const std::set<Uri> &getUris() const;
+
+        const std::set<Uri> &getLoadingUris() const;
+
+        bool isLoaded(const Uri &uri) const {
+            return loadTasks.find(uri.getFile()) == loadTasks.end()
+                   && bundles.find(uri.getFile()) != bundles.end();
+        }
 
     private:
         void load(const Uri &uri);
 
         void unload(const Uri &uri);
-
-        const Resource &getData(const Uri &uri);
 
         Archive &resolveUri(const Uri &uri);
 
@@ -128,6 +162,11 @@ namespace xng {
 
         std::shared_mutex importerMutex;
         ResourceImporter importer;
+
+        std::set<Uri> uris;
+        std::set<Uri> loadingUris;
+
+        std::set<std::string> killBundles;
     };
 }
 #endif //XENGINE_RESOURCEREGISTRY_HPP

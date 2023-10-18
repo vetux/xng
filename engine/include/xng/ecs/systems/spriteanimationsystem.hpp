@@ -23,6 +23,7 @@
 #include "xng/ecs/system.hpp"
 
 #include "xng/ecs/components/spriteanimationcomponent.hpp"
+#include "xng/types/time.hpp"
 
 namespace xng {
     class XENGINE_EXPORT SpriteAnimationSystem : public System, public EntityScene::Listener {

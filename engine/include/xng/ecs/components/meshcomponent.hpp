@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_MESHRENDERCOMPONENT_HPP
-#define XENGINE_MESHRENDERCOMPONENT_HPP
+#ifndef XENGINE_MESHCOMPONENT_HPP
+#define XENGINE_MESHCOMPONENT_HPP
 
 #include "xng/asset/material.hpp"
 #include "xng/asset/mesh.hpp"
@@ -27,27 +27,24 @@
 #include "xng/ecs/component.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT MeshRenderComponent : public Component {
+    struct XENGINE_EXPORT MeshComponent : public Component {
         bool castShadows{};
         bool receiveShadows{};
 
         ResourceHandle<Mesh> mesh;
-        ResourceHandle<Material> material{};
 
-        bool operator==(const MeshRenderComponent &other) const {
+        bool operator==(const MeshComponent &other) const {
             return enabled == other.enabled
                    && castShadows == other.castShadows
                    && receiveShadows == other.receiveShadows
-                   && mesh == other.mesh
-                   && material == other.material;
+                   && mesh == other.mesh;
         }
 
         Messageable &operator<<(const Message &message) override {
             message.value("castShadows", castShadows);
             message.value("receiveShadows", receiveShadows);
             message.value("mesh", mesh);
-            message.value("material", material);
-            return Component::operator<<(message);
+            return *this;
         }
 
         Message &operator>>(Message &message) const override {
@@ -55,14 +52,13 @@ namespace xng {
             castShadows >> message["castShadows"];
             receiveShadows >> message["receiveShadows"];
             mesh >> message["mesh"];
-            material >> message["material"];
-            return Component::operator>>(message);
+            return message;
         }
 
         std::type_index getType() const override {
-            return typeid(MeshRenderComponent);
+            return typeid(MeshComponent);
         }
     };
 }
 
-#endif //XENGINE_MESHRENDERCOMPONENT_HPP
+#endif //XENGINE_MESHCOMPONENT_HPP

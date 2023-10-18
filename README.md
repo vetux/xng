@@ -78,3 +78,14 @@ Drivers are implementations of interfaces (For example through 3rd party librari
 ### Build Instructions
 
 Check [BUILDING.md](BUILDING.md) for detailed building instructions.
+
+### Notes
+## Assimp Importer and Blender FBX Export
+When exporting rigged meshes from blender to be imported with the assimp importer driver make sure to:
+- Set the "Apply Scalings" to fbx unit scale.
+- Rotate the mesh and the rig -90 degrees in the X axis and apply the rotation.
+- Set the forward and up axis in the fbx exporter settings to Y forward and Z up to match blenders coordinate system.
+- Uncheck "Key All Bones" and "Force Start/End Keyframes"
+  - "Key All Bones" appears to do nothing at all
+  - "Force Start/End Keyframes" creates invalid keyframes inside an animation for bones which are not keyframed in the animation.
+- Run "Limit Total" in weight paint mode to ensure that there is no more than 4 bones per vertex.

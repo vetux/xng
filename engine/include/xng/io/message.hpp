@@ -358,6 +358,7 @@ namespace xng {
         std::vector<Message> vval = {};
     };
 
+    // Default Operators
     /**
      * These operators are invoked for any type which does not have an explicitly defined stream operator (Messageable or statically defined)
      * and is convertable from/to Message.
@@ -379,6 +380,7 @@ namespace xng {
         return message;
     }
 
+    // Vector Operators
     template<typename T>
     std::vector<T> &operator<<(std::vector<T> &vec, const Message &message) {
         vec.clear();
@@ -404,6 +406,7 @@ namespace xng {
         return message;
     }
 
+    // String Map operators
     template<typename T>
     std::map<std::string, T> &operator<<(std::map<std::string, T> &map, const Message &message) {
         map.clear();
@@ -429,7 +432,33 @@ namespace xng {
         return message;
     }
 
+    // size_t Map operators
+    template<typename T>
+    std::map<size_t, T> &operator<<(std::map<size_t, T> &map, const Message &message) {
+        map.clear();
+        if (message.getType() == Message::DICTIONARY) {
+            for (auto &pair: message.asDictionary()) {
+                T val;
+                val << pair.second;
+                map[std::stoul(pair.first)] = val;
+            }
+        }
+        return map;
+    }
 
+    template<typename T>
+    Message &operator>>(const std::map<size_t, T> &map, Message &message) {
+        std::map<std::string, Message> msgs;
+        for (auto &pair: map) {
+            Message msg;
+            pair.second >> msg;
+            msgs[std::to_string(pair.first)] = msg;
+        }
+        message = Message(msgs);
+        return message;
+    }
+
+    // Set Operators
     template<typename T>
     std::set<T> &operator<<(std::set<T> &set, const Message &message) {
         set.clear();

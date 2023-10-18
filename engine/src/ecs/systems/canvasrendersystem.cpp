@@ -28,6 +28,7 @@
 
 #include "xng/gui/canvasscaler.hpp"
 #include "xng/gui/layoutengine.hpp"
+#include "xng/types/time.hpp"
 
 namespace xng {
     CanvasRenderSystem::CanvasRenderSystem(Renderer2D &renderer2D,
@@ -43,13 +44,6 @@ namespace xng {
 
     void CanvasRenderSystem::start(EntityScene &scene, EventBus &eventBus) {
         scene.addListener(*this);
-        for (auto &pair: scene.getPool<SpriteComponent>()) {
-            if (!pair.second.sprite.assigned())
-                continue;
-            if (spriteTextureHandles.find(pair.first) == spriteTextureHandles.end()) {
-                createTexture(pair.first, pair.second);
-            }
-        }
     }
 
     void CanvasRenderSystem::stop(EntityScene &scene, EventBus &eventBus) {
@@ -94,6 +88,16 @@ namespace xng {
     }
 
     void CanvasRenderSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {
+        for (auto &pair: scene.getPool<SpriteComponent>()) {
+            if (!pair.second.sprite.assigned()
+                || !pair.second.sprite.isLoaded()
+                || !pair.second.sprite.get().image.isLoaded())
+                continue;
+            if (spriteTextureHandles.find(pair.first) == spriteTextureHandles.end()) {
+                createTexture(pair.first, pair.second);
+            }
+        }
+
         std::map<int, std::set<EntityHandle>> canvases;
 
         for (auto &p: scene.getPool<CanvasComponent>()) {
@@ -188,28 +192,31 @@ namespace xng {
 
                         if (scene.checkComponent<SpriteComponent>(handle)) {
                             auto &comp = scene.getComponent<SpriteComponent>(handle);
-                            if (comp.enabled
-                                && comp.sprite.assigned()) {
+                            auto texIt = spriteTextureHandles.find(handle);
+                            if (texIt != spriteTextureHandles.end()) {
                                 ren2d.draw(Rectf(comp.sprite.get().offset),
                                            Rectf(transform.position, transform.size),
-                                           spriteTextureHandles.at(handle),
+                                           texIt->second,
                                            transform.center,
                                            transform.rotation,
                                            comp.filter,
                                            comp.mix,
                                            comp.mixAlpha,
                                            comp.mixColor);
-                                if (drawDebugGeometry) {
-                                    ren2d.draw(Rectf(transform.position, transform.size),
-                                               ColorRGBA::yellow(),
-                                               false,
-                                               transform.center,
-                                               transform.rotation);
-                                }
+                            }
+                            if (drawDebugGeometry) {
+                                ren2d.draw(Rectf(transform.position, transform.size),
+                                           ColorRGBA::yellow(),
+                                           false,
+                                           transform.center,
+                                           transform.rotation);
                             }
                         } else if (scene.checkComponent<TextComponent>(handle)) {
                             auto debugTransform = transform;
                             auto &comp = scene.getComponent<TextComponent>(handle);
+
+                            if (renderedTexts.find(handle) == renderedTexts.end())
+                                continue;
 
                             auto &text = renderedTexts.at(handle);
 
@@ -271,8 +278,6 @@ namespace xng {
 
     void CanvasRenderSystem::onComponentCreate(const EntityHandle &entity, const Component &component) {
         if (component.getType() == typeid(SpriteComponent)) {
-            const auto &t = dynamic_cast<const SpriteComponent &>(component);
-            createTexture(entity, t);
         } else if (component.getType() == typeid(TextComponent)) {
         }
     }
@@ -308,7 +313,6 @@ namespace xng {
                     ren2d.destroyTexture(spriteTextureHandles.at(entity));
                     spriteTextureHandles.erase(entity);
                 }
-                createTexture(entity, ns);
             }
         } else if (oldComponent.getType() == typeid(TextComponent)) {
             auto &os = dynamic_cast<const TextComponent &>(oldComponent);
@@ -345,7 +349,8 @@ namespace xng {
 
     void CanvasRenderSystem::updateText(const EntityHandle &ent, const TextComponent &comp, const Vec2f &sizeScale) {
         if (!comp.text.empty()
-            && comp.font.assigned()) {
+            && comp.font.assigned()
+            && comp.font.isLoaded()) {
             auto pointSize = (comp.pixelSize.convert<float>() * sizeScale).convert<int>();
 
             auto it = textPixelSizes.find(ent);
@@ -360,7 +365,8 @@ namespace xng {
 
                 auto eIt = fonts.find(comp.font.getUri());
                 if (eIt == fonts.end()) {
-                    std::string str = std::string(comp.font.get().bytes.begin(), comp.font.get().bytes.end());
+                    std::string str = std::string(comp.font.get().bytes.begin(),
+                                                  comp.font.get().bytes.end());
                     auto stream = std::stringstream(str);
                     fonts[comp.font.getUri()] = fontDriver.createFont(stream);
                 }
@@ -368,7 +374,8 @@ namespace xng {
                 auto rIt = textRenderers.find(pointSize);
                 if (rIt == textRenderers.end()) {
                     textRenderers.insert(std::move(
-                            std::make_pair(pointSize, std::move(TextRenderer(*fonts[comp.font.getUri()], ren2d, pointSize)))));
+                            std::make_pair(pointSize,
+                                           std::move(TextRenderer(*fonts[comp.font.getUri()], ren2d, pointSize)))));
                 }
 
                 auto text = textRenderers.at(pointSize).render(comp.text, TextLayout{

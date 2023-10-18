@@ -36,15 +36,19 @@ namespace xng {
      *
      * The scheme and asset specification is optional.
      *
-     * To specify an asset the file must have an extension.
+     * Asset names cannot contain dots.
+     *
+     * When specifying an asset name the file name must have an extension.
      *
      * SCHEME :// FILE / ASSET
      *
      * For example:
+     * https://www.domain.com/assets/cube.fbx/cube
      * memory://shaders/shader.spirv
      * file://mesh/cube.obj
      * /mydir/myfile.fbx/myAssetDir/cube
      * /mydir/myimage.png
+     * /mydir/myfilewithoutextension
      */
     class XENGINE_EXPORT Uri : public Messageable {
     public:
@@ -60,10 +64,10 @@ namespace xng {
             }
 
             auto path = std::filesystem::path(pathStr);
-            if (path.has_parent_path()){
+            if (!path.has_extension() && path.has_parent_path()){
                 auto parent = path;
                 bool foundExtension = false;
-                while(parent.has_parent_path() && parent.has_relative_path()){
+                while(parent.has_parent_path() && parent.has_relative_path()) {
                     parent = parent.parent_path();
                     if (parent.has_extension()){
                         asset = pathStr.substr(parent.string().size() + 1);

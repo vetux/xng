@@ -22,7 +22,8 @@
 
 namespace xng {
     enum GpuDriverBackend {
-        OPENGL_4_6
+        OPENGL_4_6,
+        UNSPECIFIED
     };
 }
 

@@ -22,6 +22,8 @@
 
 #include "xng/xng.hpp"
 
+#include <list>
+
 using namespace xng;
 
 class DebugOverlay {
@@ -37,12 +39,39 @@ public:
     TextureAtlasHandle staticHandle;
     bool staticAlloc = false;
 
+    float fpsAverageDuration = 0.5;
+    std::list<float> fpsAverage;
+
+    float getAverageFps(float currentFps) {
+        fpsAverage.emplace_back(currentFps);
+
+        int fpsCount = 0;
+        float totalTime = 0;
+        for (auto &val: fpsAverage) {
+            if (val > 0){
+                fpsCount++;
+            }
+            totalTime += 1 / val;
+        }
+
+        while (totalTime > fpsAverageDuration && !fpsAverage.empty()) {
+            fpsAverage.erase(fpsAverage.begin());
+            fpsCount--;
+            totalTime = 0;
+            for (auto &val: fpsAverage) {
+                totalTime += 1 / val;
+            }
+        }
+
+        return static_cast<float>(fpsCount) / totalTime;
+    }
+
     DebugOverlay(Font &font, Renderer2D &renderer2D) : ren2D(renderer2D),
                                                        textRenderer(font, renderer2D, pixelSize) {}
 
     void draw(DeltaTime deltaTime,
               RenderTarget &screen,
-              const std::string& appendText = {}) {
+              const std::string &appendText = {}) {
         if (!staticAlloc) {
             staticAlloc = true;
             std::string staticTxt;
@@ -57,7 +86,8 @@ public:
         }
 
         auto deltaMs = std::to_string(deltaTime * 1000);
-        auto fps = std::to_string(1 / deltaTime);
+        auto fps = 1 / deltaTime;
+        auto averageFps = getAverageFps(fps);
 
         std::stringstream strm;
         strm << std::fixed << std::setprecision(3) << deltaMs;
@@ -66,7 +96,7 @@ public:
         dynTxt += strm.str() + " / ";
         strm = {};
 
-        strm << std::fixed << std::setprecision(0) << fps;
+        strm << std::fixed << std::setprecision(0) << averageFps;
 
         dynTxt += strm.str() + "\n";
 
@@ -94,7 +124,8 @@ public:
                    ColorRGBA::yellow());
 
         ren2D.draw(Rectf({}, staticText.getImage().getSize().convert<float>()),
-                   Rectf({0, static_cast<float>(screen.getDescription().size.y - staticText.getImage().getSize().y)}, staticText.getImage().getSize().convert<float>()),
+                   Rectf({0, static_cast<float>(screen.getDescription().size.y - staticText.getImage().getSize().y)},
+                         staticText.getImage().getSize().convert<float>()),
                    staticHandle,
                    {},
                    0,

@@ -24,10 +24,11 @@
 #include <string>
 
 #include "xng/ecs/system.hpp"
-#include "xng/ecs/components/meshrendercomponent.hpp"
+#include "xng/ecs/components/meshcomponent.hpp"
 #include "xng/ecs/components/skyboxcomponent.hpp"
 
 #include "xng/render/scenerenderer.hpp"
+#include "xng/types/time.hpp"
 
 namespace xng {
     class XENGINE_EXPORT MeshRenderSystem : public System {

@@ -130,7 +130,7 @@ public:
         backBuffer = builder.getBackBuffer();
         builder.write(backBuffer);
 
-        camera = builder.getScene().camera;
+        camera = builder.getScene().rootNode.getProperty<Scene::CameraProperty>().camera;
 
         commandBuffer = builder.createCommandBuffer();
         builder.write(commandBuffer);

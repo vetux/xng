@@ -21,6 +21,7 @@
 
 #include "xng/ecs/systems/physicssystem.hpp"
 #include "xng/ecs/components.hpp"
+#include "xng/types/time.hpp"
 
 namespace xng {
     static ColliderDesc applyScale(const ColliderDesc &desc, float scale) {
@@ -166,7 +167,8 @@ namespace xng {
                 colliders.erase(entity);
 
                 for (auto i = 0; i < nComp.colliders.size(); i++) {
-                    auto collider = rigidbodies.at(entity)->createCollider(applyScale(nComp.colliders.at(i).get(), scale));
+                    auto collider = rigidbodies.at(entity)->createCollider(applyScale(
+                            nComp.colliders.at(i).get(), scale));
                     colliderIndices[collider.get()] = i;
                     colliders[entity].emplace_back(std::move(collider));
                 }

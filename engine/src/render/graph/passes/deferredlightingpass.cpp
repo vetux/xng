@@ -70,7 +70,7 @@ namespace xng {
             };
             auto euler = (Quaternion(l.direction) * l.transform.getRotation()).getEulerAngles();
             tmp.direction = Vec4f(euler.x, euler.y, euler.z, 0).getMemory();
-            ret.emplace_back();
+            ret.emplace_back(tmp);
         }
         return ret;
     }
@@ -199,9 +199,10 @@ namespace xng {
         builder.read(uniformBufferRes);
         builder.write(uniformBufferRes);
 
-        pointLights = builder.getScene().pointLights;
-        spotLights = builder.getScene().spotLights;
-        directionalLights = builder.getScene().directionalLights;
+        auto &lp = builder.getScene().rootNode.getProperty<Scene::LightingProperty>();
+        pointLights = lp.pointLights;
+        spotLights = lp.spotLights;
+        directionalLights = lp.directionalLights;
 
         pointLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(PointLightData) * pointLights.size()
@@ -248,7 +249,7 @@ namespace xng {
         gBufferDepth = builder.getSlot(SLOT_GBUFFER_DEPTH);
         builder.read(gBufferDepth);
 
-        cameraTransform = builder.getScene().cameraTransform;
+        cameraTransform = builder.getScene().rootNode.getProperty<Scene::CameraProperty>().cameraTransform;
 
         commandBuffer = builder.createCommandBuffer();
         builder.write(commandBuffer);
@@ -280,6 +281,16 @@ namespace xng {
         auto plights = getPointLights(pointLights);
         auto slights = getSpotLights(spotLights);
         auto dlights = getDirLights(directionalLights);
+
+        std::vector<Command> commands;
+
+        // Clear textures
+        target.setAttachments({colorTex}, depthTex);
+
+        commands.emplace_back(pass.begin(target));
+        commands.emplace_back(pass.clearColorAttachments(ColorRGBA(0)));
+        commands.emplace_back(pass.clearDepthAttachment(1));
+        commands.emplace_back(pass.end());
 
         pointLightBuffer.upload(reinterpret_cast<const uint8_t *>(plights.data()),
                                 plights.size() * sizeof(PointLightData));
@@ -315,8 +326,6 @@ namespace xng {
         auto &gBufDepth = resources.get<TextureBuffer>(gBufferDepth);
 
         target.setAttachments({colorTex}, depthTex);
-
-        std::vector<Command> commands;
 
         commands.emplace_back(pass.begin(target));
         commands.emplace_back(pass.setViewport({}, target.getDescription().size));

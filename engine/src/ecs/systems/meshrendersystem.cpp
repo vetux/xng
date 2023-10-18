@@ -22,6 +22,7 @@
 
 #include "xng/ecs/systems/meshrendersystem.hpp"
 #include "xng/ecs/components.hpp"
+#include "xng/types/time.hpp"
 
 namespace xng {
     MeshRenderSystem::MeshRenderSystem(SceneRenderer &pipeline)
@@ -40,32 +41,70 @@ namespace xng {
         polyCount = 0;
 
         // Get objects
-        for (auto &pair: entScene.getPool<MeshRenderComponent>()) {
+        for (auto &pair: entScene.getPool<SkinnedMeshComponent>()) {
             // TODO: Culling
+            // TODO: Z Sort transparent meshes based on distance of transform to camera
+            //TODO: Change transform walking / scene creation to allow model matrix caching
 
             auto &transform = entScene.getComponent<TransformComponent>(pair.first);
             if (!transform.enabled)
                 continue;
 
-            auto &render = pair.second;
-            if (!render.enabled)
+            auto &meshComponent = pair.second;
+            if (!meshComponent.enabled
+                || !meshComponent.mesh.isLoaded()
+                || !meshComponent.mesh.get().isLoaded())
                 continue;
 
-            polyCount += render.mesh.get().polyCount();
+            Scene::Node node;
 
-            Scene::Object node;
-            node.transform = TransformComponent::walkHierarchy(transform, entScene);
-            node.mesh = render.mesh;
-            node.material = render.material;
+            Scene::SkinnedMeshProperty meshProperty;
+            meshProperty.mesh = pair.second.mesh;
+            meshProperty.transform = TransformComponent::walkHierarchy(transform, entScene);
+            node.addProperty(meshProperty);
 
-            //TODO: Change transform walking / scene creation to allow model matrix caching
-            scene.objects.emplace_back(node);
+            Scene::ShadowProperty shadowProperty;
+            shadowProperty.castShadows = pair.second.castShadows;
+            shadowProperty.receiveShadows = pair.second.receiveShadows;
+            node.addProperty(shadowProperty);
+
+            if (entScene.checkComponent<MaterialComponent>(pair.first)) {
+                auto &comp = entScene.getComponent<MaterialComponent>(pair.first);
+                bool skip = false;
+                for (auto &mPair: comp.materials) {
+                    if (!mPair.second.isLoaded() || !mPair.second.get().isLoaded()) {
+                        skip = true;
+                        break;
+                    }
+                }
+                if (skip) {
+                    continue;
+                }
+                Scene::MaterialProperty materialProperty;
+                materialProperty.materials = comp.materials;
+                node.addProperty(materialProperty);
+            }
+
+            if (entScene.checkComponent<RigAnimationComponent>(pair.first)) {
+                Scene::BoneTransformsProperty boneTransformsProperty;
+                boneTransformsProperty.boneTransforms = entScene.getComponent<RigAnimationComponent>(pair.first).boneTransforms;
+                node.addProperty(boneTransformsProperty);
+            }
+
+            polyCount += meshComponent.mesh.get().polyCount();
+            for (auto &mesh: meshComponent.mesh.get().subMeshes) {
+                polyCount += mesh.polyCount();
+            }
+
+            scene.rootNode.childNodes.emplace_back(node);
         }
 
-        // Get skybox texture
+        // Get skybox
         for (auto &pair: entScene.getPool<SkyboxComponent>()) {
             auto &comp = pair.second;
-            scene.skybox.texture = comp.skybox.texture;
+            auto boxProp = Scene::SkyboxProperty();
+            boxProp.skybox = comp.skybox;
+            scene.rootNode.addProperty(boxProp);
         }
 
         // Get Camera
@@ -77,13 +116,20 @@ namespace xng {
 
             auto &comp = pair.second;
 
-            scene.camera = comp.camera;
-            scene.cameraTransform = TransformComponent::walkHierarchy(tcomp, entScene);
+            auto camProp = Scene::CameraProperty();
+
+            camProp.camera = comp.camera;
+            camProp.cameraTransform = TransformComponent::walkHierarchy(tcomp, entScene);
+
+            scene.rootNode.addProperty(camProp);
 
             break;
         }
 
         // Get lights
+
+        Scene::LightingProperty lightProp;
+
         for (auto &pair: entScene.getPool<LightComponent>()) {
             auto lightComponent = pair.second;
             auto &tcomp = entScene.getPool<TransformComponent>().lookup(pair.first);
@@ -94,27 +140,30 @@ namespace xng {
             if (!tcomp.enabled)
                 continue;
 
+
             switch (lightComponent.type) {
                 case LightComponent::LIGHT_DIRECTIONAL: {
                     auto tmp = std::get<DirectionalLight>(lightComponent.light);
                     tmp.transform = tcomp.transform;
-                    scene.directionalLights.emplace_back(tmp);
+                    lightProp.directionalLights.emplace_back(tmp);
                     break;
                 }
                 case LightComponent::LIGHT_POINT: {
                     auto tmp = std::get<PointLight>(lightComponent.light);
                     tmp.transform = tcomp.transform;
-                    scene.pointLights.emplace_back(tmp);
+                    lightProp.pointLights.emplace_back(tmp);
                     break;
                 }
                 case LightComponent::LIGHT_SPOT: {
                     auto tmp = std::get<SpotLight>(lightComponent.light);
                     tmp.transform = tcomp.transform;
-                    scene.spotLights.emplace_back(tmp);
+                    lightProp.spotLights.emplace_back(tmp);
                     break;
                 }
             }
         }
+
+        scene.rootNode.addProperty(lightProp);
 
         // Render
         pipeline.render(scene);

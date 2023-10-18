@@ -40,18 +40,17 @@ LightComponents phong_directional(vec3 fPos,
 {
     LightComponents ret;
 
-    vec3 ambient = light.ambient.xyz * vec3(diffuseColor.xyz);
+    vec3 ambient = light.ambient.xyz * diffuseColor.xyz;
 
     vec3 norm = normalize(fNorm);
     vec3 lightDir = normalize(-light.direction.xyz);
-
     float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse =  light.diffuse.xyz * vec3((diff * diffuseColor).xyz);
+    vec3 diffuse = light.diffuse.xyz * diff * diffuseColor.xyz;
 
     vec3 viewDir = normalize(viewPosition - fPos);
     vec3 reflectDir = reflect(-lightDir, norm);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), roughness);
-    vec3 specular = light.specular.xyz * vec3((spec * specularColor).xyz);
+    vec3 specular = light.specular.xyz * spec * specularColor.xyz;
 
     ret.ambient = ambient;
     ret.diffuse = diffuse;

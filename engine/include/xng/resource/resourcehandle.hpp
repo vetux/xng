@@ -37,9 +37,8 @@ namespace xng {
         ResourceHandle() = default;
 
         explicit ResourceHandle(Uri u,
-                                ResourceRegistry *r = nullptr,
-                                Resource *res = nullptr)
-                : uri(std::move(u)), registry(r), resource(res) {
+                                ResourceRegistry *r = nullptr)
+                : uri(std::move(u)), registry(r) {
             if (!uri.empty()) {
                 getRegistry().incRef(uri);
             }
@@ -54,7 +53,6 @@ namespace xng {
         ResourceHandle(const ResourceHandle<T> &other) {
             uri = other.uri;
             registry = other.registry;
-            resource = other.resource;
             if (!uri.empty()) {
                 getRegistry().incRef(uri);
             }
@@ -66,7 +64,6 @@ namespace xng {
 
             uri = other.uri;
             registry = other.registry;
-            resource = other.resource;
             if (!uri.empty()) {
                 getRegistry().incRef(uri);
             }
@@ -80,7 +77,6 @@ namespace xng {
 
         bool operator==(const ResourceHandle<T> &other) const {
             return uri == other.uri
-                   && resource == other.resource
                    && registry == other.registry;
         }
 
@@ -89,26 +85,27 @@ namespace xng {
         }
 
         bool assigned() const {
-            return !uri.empty() || resource;
+            return !uri.empty();
         }
 
         const Uri &getUri() const {
             return uri;
         }
 
-        const T &get() const {
-            try {
-                return dynamic_cast<const T &>(getResource());
-            } catch(const std::bad_cast &e){
-                throw std::runtime_error("Invalid Resource Cast, Uri: " + uri.toString() + " Type: " + getResource().getTypeIndex().name() + " Requested: " + typeid(T).name());
-            }
+        bool isLoaded() const {
+            if (!assigned())
+                return true;
+            else
+                return getRegistry().isLoaded(uri);
         }
 
-        const Resource &getResource() const {
-            if (resource != nullptr) {
-                return *resource;
-            } else {
-                return getRegistry().get(uri);
+        const T &get() const {
+            try {
+                return dynamic_cast<const T&>(getRegistry().get(uri, typeid(T)));
+            } catch (const std::bad_cast &e) {
+                throw std::runtime_error("Invalid Resource Cast, Uri: " + uri.toString() + " Type: " +
+                                         getRegistry().get(uri, typeid(T)).getTypeIndex().name() + " Requested: " +
+                                         typeid(T).name());
             }
         }
 
@@ -138,7 +135,6 @@ namespace xng {
     private:
         Uri uri;
         ResourceRegistry *registry = nullptr;
-        Resource *resource = nullptr; //Optional pointer to a resource object
     };
 }
 

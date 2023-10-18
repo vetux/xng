@@ -22,7 +22,7 @@
 
 #include "spritekeyframe.hpp"
 
-#include "xng/types/deltatime.hpp"
+#include "xng/types/time.hpp"
 
 namespace xng {
     /**
@@ -62,7 +62,7 @@ namespace xng {
          * @param deltaTime The passed time in seconds. If 0 no change of frame is made.
          * @return The texture corresponding to the current animation frame.
          */
-        const ResourceHandle<Sprite> &getFrame(DeltaTime deltaTime = 0);
+        const ResourceHandle<Sprite> &getFrame(DeltaTime deltaTime = {});
 
         const std::vector<SpriteKeyframe> &getKeyframes() { return keyframes; }
 

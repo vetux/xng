@@ -26,33 +26,20 @@ namespace xng {
     class VertexStream {
     public:
         VertexStream &addVertex(const Vertex &vertex) {
-            size_t bytes = vertex.buffer.size() * sizeof(float);
-            std::vector<uint8_t> vertexBytes;
-            vertexBytes.resize(bytes);
-            for (auto i = 0; i < vertex.buffer.size(); i++) {
-                reinterpret_cast<float &>(vertexBytes.at(i * sizeof(float))) = vertex.buffer.at(i);
-            }
-            auto start = vertexBuffer.size();
-            vertexBuffer.resize(start + bytes);
-            std::copy(vertexBytes.begin(), vertexBytes.end(), vertexBuffer.begin() + static_cast<long>(start));
-
-            vertices.emplace_back(vertex);
+            vertexBuffer.insert(vertexBuffer.end(), vertex.buffer.begin(), vertex.buffer.end());
             return *this;
         }
 
-        VertexStream &addVertices(const std::vector<Vertex> &vertices) {
-            for (auto &v: vertices) {
+        VertexStream &addVertices(const std::vector<Vertex> &value) {
+            for (auto &v: value) {
                 addVertex(v);
             }
             return *this;
         }
 
-        const std::vector<Vertex> &getVertices() const { return vertices; }
-
         const std::vector<uint8_t> &getVertexBuffer() const { return vertexBuffer; }
 
     private:
-        std::vector<Vertex> vertices;
         std::vector<uint8_t> vertexBuffer;
     };
 }

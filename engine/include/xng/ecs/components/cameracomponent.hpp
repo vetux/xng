@@ -20,7 +20,7 @@
 #ifndef XENGINE_CAMERACOMPONENT_HPP
 #define XENGINE_CAMERACOMPONENT_HPP
 
-#include "xng/asset/camera.hpp"
+#include "xng/render/camera.hpp"
 #include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
 

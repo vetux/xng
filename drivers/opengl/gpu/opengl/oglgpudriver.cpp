@@ -21,6 +21,8 @@
 
 #include "gpu/opengl/oglrenderdevice.hpp"
 
+#include "glad/glad.h"
+
 namespace xng::opengl {
     const std::vector<RenderDeviceInfo> &OGLGpuDriver::getAvailableRenderDevices() {
         if (!retrievedInfos) {
@@ -50,5 +52,9 @@ namespace xng::opengl {
 
     std::unique_ptr<RenderDevice> OGLGpuDriver::createRenderDevice(const std::string &deviceName) {
         return std::make_unique<opengl::OGLRenderDevice>(getAvailableRenderDevices().at(0));
+    }
+
+    GpuDriverBackend OGLGpuDriver::getBackend() {
+        return OPENGL_4_6;
     }
 }

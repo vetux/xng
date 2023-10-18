@@ -30,7 +30,7 @@
 
 #include "xng/event/eventbus.hpp"
 
-#include "xng/types/deltatime.hpp"
+#include "xng/types/time.hpp"
 
 namespace xng {
     class XENGINE_EXPORT SystemRuntime {

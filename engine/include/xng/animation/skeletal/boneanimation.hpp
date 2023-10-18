@@ -26,9 +26,9 @@ namespace xng {
     /**
      * The set of keyframes of an animation for a bone.
      *
-     * Keyframe data is relative to the origin so the resulting transformation replaces the default offset of the bone.
+     * Keyframe data is relative to the parent bone.
      */
-    struct XENGINE_EXPORT BoneAnimation {
+    struct BoneAnimation {
         enum Behaviour {
             DEFAULT, // The value from the default bone transformation is taken
             CONSTANT, //The nearest key value is used without interpolation.
@@ -46,6 +46,49 @@ namespace xng {
         std::map<double, Vec3f> positionFrames;
         std::map<double, Quaternion> rotationFrames;
         std::map<double, Vec3f> scaleFrames;
+
+        double getNearestPositionKey(double ticks) const {
+            if (positionFrames.empty()){
+                throw std::runtime_error("Empty Position Frames");
+            }
+            double ret = positionFrames.begin()->first;
+            for (auto &pair : positionFrames) {
+                if (pair.first > ticks){
+                    break;
+                } else {
+                    ret = pair.first;
+                }
+            }
+            return ret;
+        }
+        double getNearestRotationKey(double ticks) const {
+            if (rotationFrames.empty()){
+                throw std::runtime_error("Empty Rotation Frames");
+            }
+            double ret = rotationFrames.begin()->first;
+            for (auto &pair : rotationFrames) {
+                if (pair.first > ticks){
+                    break;
+                } else {
+                    ret = pair.first;
+                }
+            }
+            return ret;
+        }
+        double getNearestScaleKey(double ticks) const {
+            if (scaleFrames.empty()){
+                throw std::runtime_error("Empty Scale Frames");
+            }
+            double ret = scaleFrames.begin()->first;
+            for (auto &pair : scaleFrames) {
+                if (pair.first > ticks){
+                    break;
+                } else {
+                    ret = pair.first;
+                }
+            }
+            return ret;
+        }
     };
 }
 #endif //XENGINE_BONEANIMATION_HPP

@@ -22,6 +22,7 @@
 
 #include "xng/gpu/renderdevice.hpp"
 #include "xng/gpu/renderdeviceinfo.hpp"
+#include "xng/gpu/gpudriverbackend.hpp"
 
 namespace xng {
     class XENGINE_EXPORT GpuDriver {
@@ -34,6 +35,8 @@ namespace xng {
         virtual std::unique_ptr<RenderDevice> createRenderDevice() = 0;
 
         virtual std::unique_ptr<RenderDevice> createRenderDevice(const std::string &deviceName) = 0;
+
+        virtual GpuDriverBackend getBackend() = 0;
     };
 }
 #endif //XENGINE_GPUDRIVER_HPP

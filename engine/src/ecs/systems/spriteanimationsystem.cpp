@@ -20,6 +20,7 @@
 #include "xng/ecs/systems/spriteanimationsystem.hpp"
 
 #include "xng/ecs/components/spritecomponent.hpp"
+#include "xng/types/time.hpp"
 
 namespace xng {
     void SpriteAnimationSystem::start(EntityScene &scene, EventBus &eventBus) {

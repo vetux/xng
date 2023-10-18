@@ -147,7 +147,8 @@ namespace xng {
         return ret;
     }
 
-    ResourceBundle JsonParser::read(const std::vector<char> &buffer, const std::string &hint, Archive *archive) const {
+    ResourceBundle JsonParser::read(const std::vector<char> &buffer, const std::string &hint, const std::string &path,
+                                    Archive *archive) const {
         return readJsonBundle(buffer);
     }
 

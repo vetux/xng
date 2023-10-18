@@ -53,6 +53,8 @@ namespace xng {
             message.value("shader", shader);
             message.value("normal", normal);
 
+            message.value("normalIntensity", normalIntensity);
+
             message.value("transparent", transparent, false);
 
             message.value("diffuse", diffuse);
@@ -65,12 +67,10 @@ namespace xng {
             message.value("specularTexture", specularTexture);
             message.value("shininessTexture", shininessTexture);
 
-            message.value("albedo", albedo);
             message.value("metallic", metallic);
             message.value("roughness", roughness, 1.0f);
             message.value("ambientOcclusion", ambientOcclusion, 1.0f);
 
-            message.value("albedoTexture", albedoTexture);
             message.value("metallicTexture", metallicTexture);
             message.value("roughnessTexture", roughnessTexture);
             message.value("ambientOcclusionTexture", ambientOcclusionTexture);
@@ -85,6 +85,8 @@ namespace xng {
             shader >> message["shader"];
             normal >> message["normal"];
 
+            normalIntensity >> message["normalIntensity"];
+
             transparent >> message["transparent"];
 
             diffuse >> message["diffuse"];
@@ -97,12 +99,10 @@ namespace xng {
             specularTexture >> message["specularTexture"];
             shininessTexture >> message["shininessTexture"];
 
-            albedo >> message["albedo"];
             metallic >> message["metallic"];
             roughness >> message["roughness"];
             ambientOcclusion >> message["ambientOcclusion"];
 
-            albedoTexture >> message["albedoTexture"];
             metallicTexture >> message["metallicTexture"];
             roughnessTexture >> message["roughnessTexture"];
             ambientOcclusionTexture >> message["ambientOcclusionTexture"];
@@ -110,7 +110,7 @@ namespace xng {
             return message;
         }
 
-        ShadingModel shadingModel;
+        ShadingModel shadingModel = SHADE_PHONG;
 
         /**
          * Optional user specified shader.
@@ -127,19 +127,28 @@ namespace xng {
         ResourceHandle<Texture> normal;
 
         /**
+         *
+         */
+        float normalIntensity = 1;
+
+        /**
          * If true the alpha value of the diffuse color / texture is used as the output alpha value.
          */
         bool transparent = false;
 
         /**
+         * PBR albedo / Phong diffuse color
+         */
+        ColorRGBA diffuse{};
+        ResourceHandle<Texture> diffuseTexture;
+
+        /**
          * PBR Shading Data
          */
-        ColorRGBA albedo{};
         float metallic{};
-        float roughness{};
+        float roughness = 0.5;
         float ambientOcclusion{};
 
-        ResourceHandle<Texture> albedoTexture;
         ResourceHandle<Texture> metallicTexture;
         ResourceHandle<Texture> roughnessTexture;
         ResourceHandle<Texture> ambientOcclusionTexture;
@@ -147,15 +156,33 @@ namespace xng {
         /**
          * Phong Shading Data
          */
-        ColorRGBA diffuse{};
         ColorRGBA ambient{};
         ColorRGBA specular{};
-        float shininess{};
+        float shininess = 0.1;
 
-        ResourceHandle<Texture> diffuseTexture;
         ResourceHandle<Texture> ambientTexture;
         ResourceHandle<Texture> specularTexture;
         ResourceHandle<Texture> shininessTexture;
+
+        bool isLoaded() const override {
+            return shader.isLoaded()
+                   && normal.isLoaded()
+                   && metallicTexture.isLoaded()
+                   && roughnessTexture.isLoaded()
+                   && ambientOcclusionTexture.isLoaded()
+                   && diffuseTexture.isLoaded()
+                   && ambientTexture.isLoaded()
+                   && specularTexture.isLoaded()
+                   && shininessTexture.isLoaded()
+                   && ((!normal.assigned()) || normal.get().isLoaded())
+                   && (!metallicTexture.assigned() || metallicTexture.get().isLoaded())
+                   && (!roughnessTexture.assigned() || roughnessTexture.get().isLoaded())
+                   && (!ambientOcclusionTexture.assigned() || ambientOcclusionTexture.get().isLoaded())
+                   && (!diffuseTexture.assigned() || diffuseTexture.get().isLoaded())
+                   && (!ambientTexture.assigned() || ambientTexture.get().isLoaded())
+                   && (!specularTexture.assigned() || specularTexture.get().isLoaded())
+                   && (!shininessTexture.assigned() || shininessTexture.get().isLoaded());
+        }
     };
 }
 

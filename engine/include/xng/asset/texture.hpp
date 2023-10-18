@@ -37,38 +37,24 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            images.clear();
-            auto vec = message.getMessage("images");
-            if (vec.getType() == Message::LIST) {
-                for (auto &img: vec.asList()) {
-                    ResourceHandle<ImageRGBA> handle;
-                    handle << img;
-                    images.emplace_back(handle);
-                }
-            }
-            description << message.getMessage("description");
+            message.value("image", image);
+            message.value("description", description);
             return *this;
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            auto vec = std::vector<Message>();
-            for (auto &img: images) {
-                Message msg;
-                img >> msg;
-                vec.emplace_back(msg);
-            }
-            message["images"] = vec;
+            image >> message["image"];
             description >> message["description"];
             return message;
         }
 
-        ResourceHandle <ImageRGBA> getImage(size_t index = 0) const {
-            return images.at(index);
-        }
-
-        std::vector<ResourceHandle < ImageRGBA>> images;
+        ResourceHandle<ImageRGBA> image;
         TextureBufferDesc description;
+
+        bool isLoaded() const override {
+            return image.isLoaded();
+        }
     };
 }
 

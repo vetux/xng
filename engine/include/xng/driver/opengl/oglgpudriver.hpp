@@ -31,6 +31,8 @@ namespace xng::opengl {
 
         std::unique_ptr<RenderDevice> createRenderDevice(const std::string &deviceName) override;
 
+        GpuDriverBackend getBackend() override;
+
     private:
         std::vector<RenderDeviceInfo> deviceInfos = {{.name = "default"}};
         bool retrievedInfos = false;

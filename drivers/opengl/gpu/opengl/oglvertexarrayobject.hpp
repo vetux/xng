@@ -30,7 +30,7 @@
 namespace xng::opengl {
     class OGLVertexArrayObject : public VertexArrayObject {
     public:
-        std::function<void(RenderObject * )> destructor;
+        std::function<void(RenderObject *)> destructor;
         VertexArrayObjectDesc desc;
 
         OGLVertexBuffer *mVertexBuffer = nullptr;
@@ -39,7 +39,7 @@ namespace xng::opengl {
 
         GLuint VAO = 0;
 
-        OGLVertexArrayObject(std::function<void(RenderObject * )> destructor,
+        OGLVertexArrayObject(std::function<void(RenderObject *)> destructor,
                              VertexArrayObjectDesc desc)
                 : destructor(std::move(destructor)),
                   desc(std::move(desc)) {
@@ -94,25 +94,12 @@ namespace xng::opengl {
             mInstanceBuffer = nullptr;
 
             glBindVertexArray(VAO);
+
+            //Vertex Buffer
             glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer->VBO);
+            checkGLError();
 
-            GLsizei vertexStride = 0;
-            for (auto &layout: desc.vertexLayout.attributes) {
-                vertexStride += layout.stride();
-            }
-
-            size_t currentOffset = 0;
-            for (int i = 0; i < desc.vertexLayout.attributes.size(); i++) {
-                auto &binding = desc.vertexLayout.attributes.at(i);
-                glEnableVertexAttribArray(i);
-                glVertexAttribPointer(i,
-                                      VertexAttribute::getCount(binding.type),
-                                      getType(binding.component),
-                                      GL_FALSE,
-                                      vertexStride,
-                                      (void *) (currentOffset));
-                currentOffset += binding.stride();
-            }
+            setupVertexAttributes();
 
             glBindVertexArray(0);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -135,25 +122,7 @@ namespace xng::opengl {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer->EBO);
             checkGLError();
 
-            // Vertex Attributes
-            GLsizei vertexStride = 0;
-            for (auto &layout: desc.vertexLayout.attributes) {
-                vertexStride += layout.stride();
-            }
-
-            size_t currentOffset = 0;
-            for (int i = 0; i < desc.vertexLayout.attributes.size(); i++) {
-                auto &attribute = desc.vertexLayout.attributes.at(i);
-                glEnableVertexAttribArray(i);
-                glVertexAttribPointer(i,
-                                      VertexAttribute::getCount(attribute.type),
-                                      getType(attribute.component),
-                                      GL_FALSE,
-                                      vertexStride,
-                                      (void *) (currentOffset));
-                currentOffset += attribute.stride();
-            }
-            checkGLError();
+            setupVertexAttributes();
 
             glBindVertexArray(0);
 
@@ -172,31 +141,17 @@ namespace xng::opengl {
 
             // Vertex Buffer
             glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer->VBO);
+            checkGLError();
 
             // Index Buffer
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer->EBO);
+            checkGLError();
 
-            // Vertex Attributes
-            GLsizei vertexStride;
-            for (auto &layout: desc.vertexLayout.attributes) {
-                vertexStride += layout.stride();
-            }
-
-            size_t currentOffset = 0;
-            for (int i = 0; i < desc.vertexLayout.attributes.size(); i++) {
-                auto &binding = desc.vertexLayout.attributes.at(i);
-                glEnableVertexAttribArray(i);
-                glVertexAttribPointer(i,
-                                      VertexAttribute::getCount(binding.type),
-                                      getType(binding.component),
-                                      GL_FALSE,
-                                      vertexStride,
-                                      (void *) (currentOffset));
-                currentOffset += binding.stride();
-            }
+            setupVertexAttributes();
 
             // Instance Buffer
             glBindBuffer(GL_ARRAY_BUFFER, mInstanceBuffer->VBO);
+            checkGLError();
 
             // Instance Attributes
             GLsizei instanceStride;
@@ -204,7 +159,7 @@ namespace xng::opengl {
                 instanceStride += layout.stride();
             }
 
-            currentOffset = 0;
+            size_t currentOffset = 0;
             for (int i = 0; i < desc.instanceArrayLayout.attributes.size(); i++) {
                 auto &binding = desc.instanceArrayLayout.attributes.at(i);
                 auto index = desc.vertexLayout.attributes.size() + i;
@@ -227,6 +182,35 @@ namespace xng::opengl {
             glBindBuffer(GL_ARRAY_BUFFER, 0);
 
             checkGLError();
+        }
+
+    private:
+        void setupVertexAttributes(){
+            GLsizei vertexStride = 0;
+            for (auto &layout: desc.vertexLayout.attributes) {
+                vertexStride += layout.stride();
+            }
+
+            size_t currentOffset = 0;
+            for (int i = 0; i < desc.vertexLayout.attributes.size(); i++) {
+                auto &binding = desc.vertexLayout.attributes.at(i);
+                glEnableVertexAttribArray(i);
+                if (binding.component > VertexAttribute::SIGNED_INT) {
+                    glVertexAttribPointer(i,
+                                          VertexAttribute::getCount(binding.type),
+                                          getType(binding.component),
+                                          GL_FALSE,
+                                          vertexStride,
+                                          (void *) (currentOffset));
+                } else {
+                    glVertexAttribIPointer(i,
+                                           VertexAttribute::getCount(binding.type),
+                                           getType(binding.component),
+                                           vertexStride,
+                                           (void *) (currentOffset));
+                }
+                currentOffset += binding.stride();
+            }
         }
     };
 }

@@ -21,11 +21,12 @@
 
 #include "extern/stb_image.h"
 #include "xng/asset/image.hpp"
+#include "xng/asset/texture.hpp"
 
 #include <cstring>
 
 namespace xng {
-    static ImageRGBA readImage(const std::vector<char>&buffer) {
+    static ImageRGBA readImage(const std::vector<char> &buffer) {
         int width, height, nrChannels;
         stbi_uc *data = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(buffer.data()),
                                               buffer.size(),
@@ -45,18 +46,24 @@ namespace xng {
         }
     }
 
-    ResourceBundle StbiParser::read(const std::vector<char> &buffer, const std::string &hint, Archive *archive) const {
+    ResourceBundle StbiParser::read(const std::vector<char> &buffer, const std::string &hint, const std::string &path,
+                                    Archive *archive) const {
         //Try to read source as image
         int x, y, n;
-        auto r = stbi_info_from_memory((const stbi_uc*)(buffer.data()),
-            buffer.size(),
-            &x,
-            &y,
-            &n);
+        auto r = stbi_info_from_memory((const stbi_uc *) (buffer.data()),
+                                       buffer.size(),
+                                       &x,
+                                       &y,
+                                       &n);
         if (r == 1) {
             //Source is image
             ResourceBundle ret;
-            ret.add("", std::make_unique<ImageRGBA>(readImage(buffer)));
+            auto img = readImage(buffer);
+            ret.add("image", std::make_unique<ImageRGBA>(img));
+            Texture tex;
+            tex.image = ResourceHandle<ImageRGBA>(Uri(path));
+            tex.description.size = img.getSize();
+            ret.add("imageTexture", std::make_unique<Texture>(tex));
             return ret;
         } else {
             throw std::runtime_error("Failed to read image info: " + std::string(stbi_failure_reason()));
@@ -64,7 +71,7 @@ namespace xng {
     }
 
     const std::set<std::string> &StbiParser::getSupportedFormats() const {
-        static const std::set<std::string> formats = {".png", ".jpeg", ".gif"};
+        static const std::set<std::string> formats = {".png", ".jpeg", ".jpg", ".bmp", ".tga", ".gif"};
         return formats;
     }
 }

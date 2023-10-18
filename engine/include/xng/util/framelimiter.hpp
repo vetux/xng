@@ -22,7 +22,7 @@
 
 #include <chrono>
 
-#include "xng/types/deltatime.hpp"
+#include "xng/types/time.hpp"
 
 namespace xng {
     class FrameLimiter {
@@ -64,7 +64,7 @@ namespace xng {
             deltaTime = now - start;
             start = now;
             auto v = std::chrono::steady_clock::duration::period::den;
-            return static_cast<DeltaTime>(deltaTime.count()) / static_cast<DeltaTime>(v);
+            return DeltaTime(static_cast<DeltaTime>(deltaTime.count()) / static_cast<DeltaTime>(v));
         }
 
         const std::chrono::steady_clock::duration &getDeltaTime() const {

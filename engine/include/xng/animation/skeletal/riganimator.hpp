@@ -25,71 +25,69 @@
 #include "rig.hpp"
 #include "riganimation.hpp"
 
-#include "xng/types/deltatime.hpp"
+#include "xng/types/time.hpp"
+
+#include "xng/animation/skeletal/rigchannel.hpp"
 
 namespace xng {
     /**
-     * A rig animator applies animations to a rig.
+     * A rig animator applies animations to a rig using weighted animations.
+     *
+     * Each channel handles the blending between running animations
+     * and represents an animation layer for combining multiple animations for example "walk" and "shoot".
+     *
+     * Channel:
+     *
+     * (keyframeA.animation.value * keyframeA.weight) + (keyframeB.animation.value * keyframeB.weight) + ...
+     *
+     * Final Result:
+     *
+     * channelA + channelB + ...
+     *
      */
     class XENGINE_EXPORT RigAnimator {
     public:
-        enum BlendOp {
-            SWITCH, // Show the first keyframe of the next animation without interpolation
-            CROSS_FADE, // Fade the last frame of the current animation with the frames of the next animation
-        };
-
         RigAnimator() = default;
 
-        RigAnimator(Rig rig, bool loop);
+        RigAnimator(Rig rig);
 
         /**
-         * Advance the animation by deltaTime
+         * Advance the animation channels by deltaTime and update the animated rig.
          *
          * @param deltaTime
          */
         void update(DeltaTime deltaTime);
 
         /**
-         * Start the specified animation and if an animation is running use the blendOp for blending between
-         * the currently running animation and the passed animation.
          *
-         * @param index
-         * @param blendOp
+         * @param animation
+         * @param blendDur
+         * @param loop
+         * @param channel
          */
-        void start(std::shared_ptr<RigAnimation> animation, BlendOp blendOp);
+        void start(const RigAnimation &animation, Duration blendDur = {}, bool loop = true, size_t channel = 0);
 
         /**
-         * Set the animated rig to the default rig and remove the reference to the animation object.
+         *
+         * @param channel
          */
-        void stop();
+        void stop(size_t channel = 0);
 
         /**
-         * Reset the time value to 0 and beginFrame the animated rig.
+         *
+         * @param speed
+         * @param channel
          */
-        void reset();
+        void setAnimationSpeed(float speed, size_t channel = 0);
 
-        /**
-         * @return The rig object with the bone offsets containing the animated values.
-         */
-        const Rig &getRig() const;
-
-        void setLooping(bool looping);
-
-        bool isLooping() const;
-
-        float getDuration() const;
-
-        float getTime() const;
+        const std::map<std::string, Mat4f> &getBoneTransforms() { return boneTransforms; }
 
     private:
-        Rig defRig;
-        Rig animRig;
-        bool loop = true;
+        Rig rig;
 
-        std::shared_ptr<RigAnimation> animation;
-        float duration; // The duration of the animation in seconds.
-        float time; // The accumulated time in seconds, never larger than duration.
-        BlendOp blend;
+        std::map<std::string, Mat4f> boneTransforms;
+
+        std::map<size_t, RigChannel> channels;
     };
 }
 

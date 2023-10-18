@@ -18,7 +18,6 @@
  */
 
 #include "xng/resource/resourceimporter.hpp"
-
 #include "xng/resource/rawresource.hpp"
 
 namespace xng {
@@ -29,7 +28,7 @@ namespace xng {
     ResourceImporter::ResourceImporter(std::vector<std::unique_ptr<ResourceParser>> parsers)
             : parsers(std::move(parsers)) {}
 
-    ResourceBundle ResourceImporter::import(std::istream &stream, const std::string &hint, Archive *archive) const {
+    ResourceBundle ResourceImporter::import(std::istream &stream, const std::string &hint, const std::string &path, Archive *archive) const {
         std::vector<char> buffer;
 
         char c;
@@ -44,7 +43,7 @@ namespace xng {
         for (auto &parser: parsers) {
             auto formats = parser->getSupportedFormats();
             if (formats.find(hint) != formats.end()) {
-                return parser->read(buffer, hint, archive);
+                return parser->read(buffer, hint, path, archive);
             }
         }
 

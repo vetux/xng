@@ -28,7 +28,8 @@
 #include "xng/resource/resource.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT RigAnimation : public Resource {
+    class XENGINE_EXPORT RigAnimation : public Resource {
+    public:
         std::string name; // The name of this animation
         double duration; // Total duration in ticks
         double ticksPerSecond; // The number of ticks to show per second

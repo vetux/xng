@@ -22,13 +22,14 @@
 #include <fstream>
 
 #include "debugoverlay.hpp"
+#include "xng/types/time.hpp"
 
 using namespace xng;
 
 ImageRGBA loadImage(const std::filesystem::path &filePath) {
     auto imageParser = StbiParser();
     auto data = readFile(filePath.string());
-    return imageParser.read(data, filePath.extension().string(), nullptr).get<ImageRGBA>();
+    return imageParser.read(data, filePath.extension().string(), filePath, nullptr).get<ImageRGBA>();
 }
 
 class TestApplication {
@@ -192,6 +193,16 @@ int main(int argc, char *argv[]) {
     auto shaderCompiler = glslang::GLSLangCompiler();
     auto shaderDecompiler = spirv_cross::SpirvCrossDecompiler();
     auto fontDriver = freetype::FtFontDriver();
+
+    std::vector<std::unique_ptr<ResourceParser>> parsers;
+    parsers.emplace_back(std::make_unique<StbiParser>());
+    parsers.emplace_back(std::make_unique<AssImpParser>());
+    parsers.emplace_back(std::make_unique<JsonParser>());
+
+    xng::ResourceRegistry::getDefaultRegistry().setImporter(
+            ResourceImporter(std::move(parsers)));
+
+    xng::ResourceRegistry::getDefaultRegistry().addArchive("file", std::make_shared<DirectoryArchive>("assets/"));
 
     auto window = displayDriver.createWindow(OPENGL_4_6,
                                              "Renderer 2D Test",

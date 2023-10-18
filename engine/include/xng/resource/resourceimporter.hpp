@@ -23,8 +23,9 @@
 #include <string>
 #include <vector>
 
-#include "resourcebundle.hpp"
-#include "resourceparser.hpp"
+#include "xng/resource/resourcebundle.hpp"
+#include "xng/resource/resourceparser.hpp"
+#include "xng/resource/uri.hpp"
 
 #include "xng/io/archive.hpp"
 
@@ -63,7 +64,7 @@ namespace xng {
          * @param archive The archive instance to use when resolving paths in the stream data.
          * @return
          */
-        ResourceBundle import(std::istream &stream, const std::string &hint = "", Archive *archive = nullptr) const;
+        ResourceBundle import(std::istream &stream, const std::string &hint = "", const std::string &path = {}, Archive *archive = nullptr) const;
 
     private:
         std::vector<std::unique_ptr<ResourceParser>> parsers;

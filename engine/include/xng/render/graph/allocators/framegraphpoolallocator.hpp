@@ -262,7 +262,7 @@ namespace xng {
         std::unordered_map<ShaderUniformBufferDesc, int> usedShaderBuffers;
         std::unordered_map<ShaderStorageBufferDesc, int> usedShaderStorageBuffers;
         std::unordered_map<RenderTargetDesc, int> usedTargets;
-        size_t usedCommandBuffers;
+        size_t usedCommandBuffers = 0;
 
         FrameGraph frame;
 

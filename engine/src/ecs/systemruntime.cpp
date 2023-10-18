@@ -18,6 +18,7 @@
  */
 
 #include "xng/ecs/systemruntime.hpp"
+#include "xng/types/time.hpp"
 
 #include <utility>
 #include <algorithm>

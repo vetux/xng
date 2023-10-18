@@ -20,6 +20,10 @@
 #ifndef XENGINE_VERTEXATTRIBUTE_HPP
 #define XENGINE_VERTEXATTRIBUTE_HPP
 
+#include <cstddef>
+
+#include <stdexcept>
+
 namespace xng {
     struct VertexAttribute {
         enum Type {
@@ -33,7 +37,7 @@ namespace xng {
         };
 
         enum Component {
-            UNSIGNED_BYTE, // 1 Byte unsigned
+            UNSIGNED_BYTE = 0, // 1 Byte unsigned
             SIGNED_BYTE, // 1 Byte signed
             UNSIGNED_INT, // 4 Byte unsigned
             SIGNED_INT, // 4 Byte signed

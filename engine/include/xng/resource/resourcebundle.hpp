@@ -55,10 +55,28 @@ namespace xng {
 
         template<typename T>
         const T &get(const std::string &name = "") const {
-            return dynamic_cast<const T &>(get(name));
+            if (assets.empty())
+                throw std::runtime_error("Empty bundle map");
+
+            if (name.empty()) {
+                return *getAll<T>().at(0);
+            } else {
+                return dynamic_cast<const T &>(get(name));
+            }
         }
 
-        const Resource &get(const std::string &name = "") const {
+        const Resource &get(const std::string &name, std::type_index typeIndex) const {
+            if (assets.empty())
+                throw std::runtime_error("Empty bundle map");
+
+            if (name.empty()) {
+                return *getAll(typeIndex).at(0);
+            } else {
+                return get(name);
+            }
+        }
+
+        const Resource &get(const std::string &name) const {
             if (assets.empty())
                 throw std::runtime_error("Empty bundle map");
 
@@ -67,6 +85,27 @@ namespace xng {
             } else {
                 return *assets.at(name);
             }
+        }
+
+        template<typename T>
+        std::vector<const T *> getAll() const {
+            std::vector<const T *> ret;
+            for (auto &pair: assets) {
+                try {
+                    ret.emplace_back(dynamic_cast<const T *>(pair.second.get()));
+                } catch (const std::bad_cast &e) {}
+            }
+            return ret;
+        }
+
+        std::vector<const Resource *> getAll(std::type_index typeIndex) const{
+            std::vector<const Resource *> ret;
+            for (auto &pair: assets) {
+                if (pair.second->getTypeIndex() == typeIndex){
+                    ret.emplace_back(pair.second.get());
+                }
+            }
+            return ret;
         }
 
         void add(const std::string &name, std::unique_ptr<Resource> ptr) {
