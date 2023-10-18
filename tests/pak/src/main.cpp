@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
         fs.close();
     }
 
-    std::cout << "Successfully created pak files.\n";
+    std::cout << "Successfully created and extracted pak files.\n";
 
     return 0;
 }
