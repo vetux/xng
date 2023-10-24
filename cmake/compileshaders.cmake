@@ -4,7 +4,7 @@ function(CompileShaderGLSL460 PATH STAGE ENTRYPOINT)
     add_custom_command(
             OUTPUT ${BASE_SOURCE_DIR}/shaders/generated/${PATH}.hpp
             DEPENDS shadercompiler ${BASE_SOURCE_DIR}/shaders/glsl_460/${PATH}.glsl
-            COMMAND shadercompiler -m header -f -i ${BASE_SOURCE_DIR}/shaders/glsl_460_common/ -p -l GLSL_460 -s ${STAGE} -e main ${BASE_SOURCE_DIR}/shaders/glsl_460/${PATH}.glsl ${BASE_SOURCE_DIR}/shaders/generated/${PATH}.hpp)
+            COMMAND shadercompiler -m header -f -i ${BASE_SOURCE_DIR}/shaders/glsl_460/lib/ -p -l GLSL_460 -s ${STAGE} -e main ${BASE_SOURCE_DIR}/shaders/glsl_460/${PATH}.glsl ${BASE_SOURCE_DIR}/shaders/generated/${PATH}.hpp)
     set(SHADER_HEADERS ${SHADER_HEADERS} ${BASE_SOURCE_DIR}/shaders/generated/${PATH}.hpp PARENT_SCOPE)
 endfunction()
 
@@ -12,7 +12,7 @@ function(CompileShaderGLSLES320 PATH STAGE ENTRYPOINT)
     add_custom_command(
             OUTPUT ${BASE_SOURCE_DIR}/shaders/generated/${PATH}.hpp
             DEPENDS shadercompiler ${BASE_SOURCE_DIR}/shaders/glsl_320_es/${PATH}.glsl
-            COMMAND shadercompiler -m header -f -i ${BASE_SOURCE_DIR}/shaders/glsl_320_es_common/ -p -l GLSL_ES_320 -s ${STAGE} -e main ${BASE_SOURCE_DIR}/shaders/glsl_320_es/${PATH}.glsl ${BASE_SOURCE_DIR}/shaders/generated/${PATH}.hpp)
+            COMMAND shadercompiler -m header -f -i ${BASE_SOURCE_DIR}/shaders/glsl_320_es/lib/ -p -l GLSL_ES_320 -s ${STAGE} -e main ${BASE_SOURCE_DIR}/shaders/glsl_320_es/${PATH}.glsl ${BASE_SOURCE_DIR}/shaders/generated/${PATH}.hpp)
     set(SHADER_HEADERS ${SHADER_HEADERS} ${BASE_SOURCE_DIR}/shaders/generated/${PATH}.hpp PARENT_SCOPE)
 endfunction()
 
