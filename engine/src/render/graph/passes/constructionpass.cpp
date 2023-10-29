@@ -587,7 +587,7 @@ namespace xng {
                 auto drawData = meshAllocator.getAllocatedMesh(meshProp.mesh);
 
                 for (auto i = 0; i < meshProp.mesh.get().subMeshes.size() + 1; i++) {
-                    auto model = object.getProperty<Scene::SkinnedMeshProperty>().transform.model();
+                    auto model = object.getProperty<Scene::TransformProperty>().transform.model();
 
                     auto &mesh = i == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
 

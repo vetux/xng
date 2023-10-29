@@ -1,6 +1,7 @@
 #version 460
 
 #include "phong.glsl"
+#include "pbr.glsl"
 
 layout(location = 0) in vec4 fPos;
 layout(location = 1) in vec2 fUv;
@@ -45,11 +46,30 @@ void main() {
     }
 
     int model = texture(gBufferModelObject, fUv).x;
-    if (model == 0)
-    {
+    if (model == 0) {
         // PBR
-        oColor = vec4(1, 0, 1, 1);
-        gl_FragDepth = 0;
+        vec3 fPos = texture(gBufferPos, fUv).xyz;
+        vec3 fNorm = texture(gBufferNormal, fUv).xyz;
+        vec3 roughnessMetallicAO = texture(gBufferRoughnessMetallicAO, fUv).xyz;
+        vec3 albedo = texture(gBufferAlbedo, fUv).xyz;
+
+        PbrPass pass = pbr_begin(fPos,
+                                    fNorm,
+                                    albedo,
+                                    roughnessMetallicAO.y,
+                                    roughnessMetallicAO.x,
+                                    roughnessMetallicAO.z,
+                                    globs.viewPosition.xyz);
+
+        vec3 reflectance = vec3(0);
+
+        for (int i = 0; i < pLights.lights.length(); i++) {
+            PointLight light = pLights.lights[i];
+            reflectance = pbr_point(pass, reflectance, light.position.xyz, light.diffuse.xyz);
+        }
+
+        oColor = vec4(pbr_finish(pass, reflectance), 1);
+        gl_FragDepth = gDepth;
     } else if (model == 1) {
         // Phong
         vec3 fPos = texture(gBufferPos, fUv).xyz;
@@ -63,8 +83,7 @@ void main() {
         comp.diffuse = vec3(0, 0, 0);
         comp.specular = vec3(0, 0, 0);
 
-        for (int i = 0; i < pLights.lights.length(); i++)
-        {
+        for (int i = 0; i < pLights.lights.length(); i++) {
             PointLight light = pLights.lights[i];
             LightComponents c = phong_point(fPos,
                                             fNorm,
@@ -79,8 +98,7 @@ void main() {
             comp.specular += c.specular;
         }
 
-        for (int i = 0; i < sLights.lights.length(); i++)
-        {
+        for (int i = 0; i < sLights.lights.length(); i++) {
             SpotLight light = sLights.lights[i];
             LightComponents c = phong_spot(fPos,
                                             fNorm,
@@ -95,8 +113,7 @@ void main() {
             comp.specular += c.specular;
         }
 
-        for (int i = 0; i < dLights.lights.length(); i++)
-        {
+        for (int i = 0; i < dLights.lights.length(); i++) {
             DirectionalLight light = dLights.lights[i];
             LightComponents c = phong_directional(fPos,
                                                     fNorm,

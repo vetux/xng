@@ -85,9 +85,7 @@ namespace xng {
 
         Vec2i renderSize;
 
-        std::vector<PointLight> pointLights;
-        std::vector<SpotLight> spotLights;
-        std::vector<DirectionalLight> directionalLights;
+        Scene scene;
     };
 }
 

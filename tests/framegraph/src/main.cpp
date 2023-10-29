@@ -30,19 +30,24 @@ static const char *MATERIALS_PATH = "memory://tests/graph/materials.json";
 
 void createMaterialResource(xng::MemoryArchive &archive) {
     // Sphere
-    xng::Material material;
-    material.shadingModel = xng::SHADE_PHONG;
+    xng::Material material = {};
+    material.shadingModel = xng::SHADE_PBR;
+    material.transparent = false;
     material.diffuseTexture = ResourceHandle<Texture>(Uri("textures/wall.json"));
     material.normal = ResourceHandle<Texture>(Uri("textures/sphere_normals.json"));
+    material.roughness = 1;
+    material.metallic = 0;
 
     xng::ResourceBundle bundle;
     bundle.add("sphere", std::make_unique<xng::Material>(material));
 
     // Cube Smiley
     material = {};
-    material.shadingModel = xng::SHADE_PHONG;
+    material.shadingModel = xng::SHADE_PBR;
     material.diffuseTexture = ResourceHandle<Texture>(Uri("textures/awesomeface.json"));
     material.transparent = true;
+    material.roughness = 1;
+    material.metallic = 0;
 
     bundle.add("cube", std::make_unique<xng::Material>(material));
 
@@ -64,10 +69,27 @@ void createMaterialResource(xng::MemoryArchive &archive) {
 
     // Cube Wall
     material = {};
-    material.shadingModel = xng::SHADE_PHONG;
+    material.shadingModel = xng::SHADE_PBR;
+    material.roughness = 1;
+    material.metallic = 0;
     material.diffuseTexture = ResourceHandle<Texture>(Uri("textures/wall.json"));
 
     bundle.add("cubeWall", std::make_unique<xng::Material>(material));
+
+    // Pbr Spheres
+    for (int x = 0; x < 10; x++) {
+        for (int y = 0; y < 10; y++) {
+            material = {};
+            material.shadingModel = xng::SHADE_PBR;
+            material.diffuse = ColorRGBA::red();
+            material.metallic = (((float) x) / 10.0f);
+            material.roughness = (((float) y) / 10.0f);
+            material.normal = ResourceHandle<Texture>(Uri("textures/sphere_normals.json"));
+            bundle.add("PbrSphere-" + std::to_string(x) + "-" + std::to_string(y),
+                       std::make_unique<xng::Material>(material));
+        }
+    }
+
 
     auto msg = xng::JsonParser::createBundle(bundle);
 
@@ -161,21 +183,50 @@ int main(int argc, char *argv[]) {
 
     xng::Scene::Node sphere;
 
+    auto transformProp = Scene::TransformProperty();
+    transformProp.transform.setPosition({0, 5, -25});
+    sphere.addProperty(transformProp);
+
     auto meshProp = Scene::SkinnedMeshProperty();
-    meshProp.transform.setPosition({0, 5, -16});
     meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/sphere.obj/Sphere"));
     sphere.addProperty(meshProp);
 
     auto materialProp = Scene::MaterialProperty();
     materialProp.materials[0] = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/sphere")));
+    auto mat = materialProp.materials[0].get();
     sphere.addProperty(materialProp);
 
     scene.rootNode.childNodes.emplace_back(sphere);
 
+    for (int x = 0; x < 10; x++) {
+        for (int y = 0; y < 10; y++) {
+            xng::Scene::Node pbrSphere;
+
+            transformProp = {};
+            transformProp.transform.setPosition({(float) (x - 5) * 2, (float) (y - 5) * 2, -15});
+            pbrSphere.addProperty(transformProp);
+
+            meshProp = {};
+            meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/sphere.obj/Sphere"));
+            pbrSphere.addProperty(meshProp);
+
+            materialProp = {};
+            materialProp.materials[0] = xng::ResourceHandle<xng::Material>(
+                    xng::Uri(
+                            MATERIALS_PATH + std::string("/PbrSphere-" + std::to_string(x) + "-" + std::to_string(y))));
+            pbrSphere.addProperty(materialProp);
+
+            scene.rootNode.childNodes.emplace_back(pbrSphere);
+        }
+    }
+
     xng::Scene::Node cubeWall;
 
+    transformProp = {};
+    transformProp.transform.setPosition({2.5, 0, -10});
+    cubeWall.addProperty(transformProp);
+
     meshProp = {};
-    meshProp.transform.setPosition({2.5, 0, -10});
     meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/cube_faceuv.obj"));
     cubeWall.addProperty(meshProp);
 
@@ -187,9 +238,12 @@ int main(int argc, char *argv[]) {
 
     xng::Scene::Node cube;
 
+    transformProp = {};
+    transformProp.transform.setPosition({0, 0, -20});
+    transformProp.transform.setScale(Vec3f(10, 10, 1));
+    cube.addProperty(transformProp);
+
     meshProp = {};
-    meshProp.transform.setPosition({0, 0, -15});
-    meshProp.transform.setScale(Vec3f(10, 10, 1));
     meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/cube.obj"));
     cube.addProperty(meshProp);
 
@@ -200,23 +254,32 @@ int main(int argc, char *argv[]) {
 
     scene.rootNode.childNodes.emplace_back(cube);
 
+    transformProp = {};
+    transformProp.transform.setPosition({-2.5, 0, -10});
+    sphere.addProperty(transformProp);
+
     meshProp = {};
-    meshProp.transform.setPosition({-2.5, 0, -10});
     meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/sphere.obj/Sphere"));
     sphere.addProperty(meshProp);
 
     scene.rootNode.childNodes.emplace_back(sphere);
 
+    transformProp = {};
+    transformProp.transform.setPosition({0, 0, -10});
+    sphere.addProperty(transformProp);
+
     meshProp = {};
-    meshProp.transform.setPosition({0, 0, -10});
     meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/sphere.obj/Sphere"));
     sphere.addProperty(meshProp);
 
     scene.rootNode.childNodes.emplace_back(sphere);
 
+    transformProp = {};
+    transformProp.transform.setPosition({-2.5, 0, -10});
+    transformProp.transform.setScale(Vec3f(1, 1, 1));
+    cube.addProperty(transformProp);
+
     meshProp = {};
-    meshProp.transform.setPosition({-2.5, 0, -10});
-    meshProp.transform.setScale(Vec3f(1, 1, 1));
     meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/cube_faceuv.obj"));
     cube.addProperty(meshProp);
 
@@ -226,9 +289,12 @@ int main(int argc, char *argv[]) {
 
     scene.rootNode.childNodes.emplace_back(cube);
 
+    transformProp = {};
+    transformProp.transform.setPosition({0, 0, -5});
+    transformProp.transform.setScale(Vec3f(1, 1.2, 1));
+    cube.addProperty(transformProp);
+
     meshProp = {};
-    meshProp.transform.setPosition({0, 0, -5});
-    meshProp.transform.setScale(Vec3f(1, 1.2, 1));
     meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/cube.obj"));
     cube.addProperty(meshProp);
 
@@ -239,14 +305,37 @@ int main(int argc, char *argv[]) {
 
     scene.rootNode.childNodes.emplace_back(cube);
 
-    Scene::LightingProperty lightingProperty;
+    transformProp = {};
+    transformProp.transform.setPosition({2.5, 2.5, 0});
 
-    xng::PointLight light;
-    light.transform.setPosition({0, 0, -5});
+    Scene::Node lightNode;
+    lightNode.addProperty(transformProp);
+    lightNode.addProperty(Scene::PointLightProperty());
+    scene.rootNode.childNodes.emplace_back(lightNode);
 
-    lightingProperty.pointLights.emplace_back(light);
+    transformProp = {};
+    transformProp.transform.setPosition({-2.5, 2.5, 0});
 
-    scene.rootNode.addProperty(lightingProperty);
+    lightNode = {};
+    lightNode.addProperty(transformProp);
+    lightNode.addProperty(Scene::PointLightProperty());
+    scene.rootNode.childNodes.emplace_back(lightNode);
+
+    transformProp = {};
+    transformProp.transform.setPosition({2.5, -2.5, 0});
+
+    lightNode = {};
+    lightNode.addProperty(transformProp);
+    lightNode.addProperty(Scene::PointLightProperty());
+    scene.rootNode.childNodes.emplace_back(lightNode);
+
+    transformProp = {};
+    transformProp.transform.setPosition({-2.5, -2.5, 0});
+
+    lightNode = {};
+    lightNode.addProperty(transformProp);
+    lightNode.addProperty(Scene::PointLightProperty());
+    scene.rootNode.childNodes.emplace_back(lightNode);
 
     auto text = textRenderer.render("GBUFFER POSITION", TextLayout{.lineHeight = 70});
     auto tex = ren2d.createTexture(text.getImage());
@@ -263,7 +352,7 @@ int main(int argc, char *argv[]) {
         auto deltaTime = limiter.newFrame();
 
         cameraRef.camera.aspectRatio = static_cast<float>(window->getWindowSize().x)
-                                   / static_cast<float>(window->getWindowSize().y);
+                                       / static_cast<float>(window->getWindowSize().y);
 
         cameraController.update(deltaTime);
 

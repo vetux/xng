@@ -92,6 +92,14 @@ namespace xng {
             std::map<std::type_index, std::shared_ptr<Property>> properties;
         };
 
+        struct TransformProperty : public Property {
+            std::type_index getType() override {
+                return typeid(ShadowProperty);
+            }
+
+            Transform transform;
+        };
+
         struct ShadowProperty : public Property {
             std::type_index getType() override {
                 return typeid(ShadowProperty);
@@ -106,7 +114,6 @@ namespace xng {
                 return typeid(MeshProperty);
             }
 
-            Transform transform;
             ResourceHandle<Mesh> mesh;
         };
 
@@ -115,7 +122,6 @@ namespace xng {
                 return typeid(SkinnedMeshProperty);
             }
 
-            Transform transform;
             ResourceHandle<SkinnedMesh> mesh;
         };
 
@@ -135,14 +141,28 @@ namespace xng {
             std::map<std::string, Mat4f> boneTransforms; // Optional dynamic bone transform values which override the values in SkinnedMesh.rig
         };
 
-        struct LightingProperty : public Property {
+        struct DirectionalLightProperty : public Property {
             std::type_index getType() override {
-                return typeid(LightingProperty);
+                return typeid(DirectionalLightProperty);
             }
 
-            std::vector<DirectionalLight> directionalLights;
-            std::vector<PointLight> pointLights;
-            std::vector<SpotLight> spotLights;
+            DirectionalLight light;
+        };
+
+        struct PointLightProperty : public Property {
+            std::type_index getType() override {
+                return typeid(PointLightProperty);
+            }
+
+            PointLight light;
+        };
+
+        struct SpotLightProperty : public Property {
+            std::type_index getType() override {
+                return typeid(SpotLightProperty);
+            }
+
+            SpotLight light;
         };
 
         struct SkyboxProperty : public Property {

@@ -58,9 +58,12 @@ namespace xng {
 
             Scene::Node node;
 
+            Scene::TransformProperty transformProperty;
+            transformProperty.transform = TransformComponent::walkHierarchy(transform, entScene);
+            node.addProperty(transformProperty);
+
             Scene::SkinnedMeshProperty meshProperty;
             meshProperty.mesh = pair.second.mesh;
-            meshProperty.transform = TransformComponent::walkHierarchy(transform, entScene);
             node.addProperty(meshProperty);
 
             Scene::ShadowProperty shadowProperty;
@@ -87,7 +90,8 @@ namespace xng {
 
             if (entScene.checkComponent<RigAnimationComponent>(pair.first)) {
                 Scene::BoneTransformsProperty boneTransformsProperty;
-                boneTransformsProperty.boneTransforms = entScene.getComponent<RigAnimationComponent>(pair.first).boneTransforms;
+                boneTransformsProperty.boneTransforms = entScene.getComponent<RigAnimationComponent>(
+                        pair.first).boneTransforms;
                 node.addProperty(boneTransformsProperty);
             }
 
@@ -128,8 +132,6 @@ namespace xng {
 
         // Get lights
 
-        Scene::LightingProperty lightProp;
-
         for (auto &pair: entScene.getPool<LightComponent>()) {
             auto lightComponent = pair.second;
             auto &tcomp = entScene.getPool<TransformComponent>().lookup(pair.first);
@@ -141,29 +143,37 @@ namespace xng {
                 continue;
 
 
+            Scene::Node node;
+
+            Scene::TransformProperty transformProperty;
+            transformProperty.transform = tcomp.transform;
+            node.addProperty(transformProperty);
+
             switch (lightComponent.type) {
                 case LightComponent::LIGHT_DIRECTIONAL: {
                     auto tmp = std::get<DirectionalLight>(lightComponent.light);
-                    tmp.transform = tcomp.transform;
-                    lightProp.directionalLights.emplace_back(tmp);
+                    Scene::DirectionalLightProperty prop;
+                    prop.light = tmp;
+                    node.addProperty(prop);
                     break;
                 }
                 case LightComponent::LIGHT_POINT: {
                     auto tmp = std::get<PointLight>(lightComponent.light);
-                    tmp.transform = tcomp.transform;
-                    lightProp.pointLights.emplace_back(tmp);
+                    Scene::PointLightProperty prop;
+                    prop.light = tmp;
+                    node.addProperty(prop);
                     break;
                 }
                 case LightComponent::LIGHT_SPOT: {
                     auto tmp = std::get<SpotLight>(lightComponent.light);
-                    tmp.transform = tcomp.transform;
-                    lightProp.spotLights.emplace_back(tmp);
+                    Scene::SpotLightProperty prop;
+                    prop.light = tmp;
+                    node.addProperty(prop);
                     break;
                 }
             }
+            scene.rootNode.childNodes.emplace_back(node);
         }
-
-        scene.rootNode.addProperty(lightProp);
 
         // Render
         pipeline.render(scene);

@@ -89,7 +89,7 @@ void main()
     //https://www.gamedeveloper.com/programming/three-normal-mapping-techniques-explained-for-the-mathematically-uninclined
     fN = normalize((data.model * vec4(vNormal, 0.0)).xyz);
     fT = normalize((data.model * vec4(vTangent, 0.0)).xyz);
-    fB = normalize((data.model * vec4(vBitangent, 0.0)).xyz);
+    fB = normalize((data.model * vec4(cross(vNormal, vTangent.xyz) * 1, 0.0)).xyz);
 
     gl_Position = vPos;
 

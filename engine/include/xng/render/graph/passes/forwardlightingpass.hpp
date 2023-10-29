@@ -81,11 +81,9 @@ namespace xng {
 
         Vec2i renderSize;
 
-        std::vector<Scene::Node> nodes;
+        Scene scene;
 
-        std::vector<PointLight> pointLights;
-        std::vector<SpotLight> spotLights;
-        std::vector<DirectionalLight> directionalLights;
+        std::vector<Scene::Node> nodes;
 
         size_t currentVertexBufferSize{};
         size_t currentIndexBufferSize{};

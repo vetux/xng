@@ -31,10 +31,10 @@
 
 namespace xng {
     enum ShadingModel : int {
-        SHADE_PBR, // PBR Shading
-        SHADE_PHONG, // Per fragment phong shading
-        SHADE_PHONG_GOURAUD, // Per vertex phong shading
-        SHADE_PHONG_FLAT // Per polygon phong shading
+        SHADE_PBR = 0, // PBR Shading
+        SHADE_PHONG = 1, // Per fragment phong shading
+        SHADE_PHONG_GOURAUD = 2, // Per vertex phong shading
+        SHADE_PHONG_FLAT = 3 // Per polygon phong shading
     };
 
     struct XENGINE_EXPORT Material : public Resource, public Messageable {

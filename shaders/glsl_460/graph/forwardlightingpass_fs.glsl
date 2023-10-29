@@ -2,6 +2,7 @@
 
 #include "texfilter.glsl"
 #include "phong.glsl"
+#include "pbr.glsl"
 
 layout(location = 0) in vec3 fPos;
 layout(location = 1) in vec3 fNorm;
@@ -111,28 +112,83 @@ void main() {
         mat3x3 tbn = mat3(fT, fB, fN);
         vec3 texNormal = textureAtlas(data.normal, fUv).xyz * vec3(data.normalIntensity.x, data.normalIntensity.x, 1);
         texNormal = tbn * normalize(texNormal * 2.0 - 1.0);
-        normal = texNormal;
+        normal = normalize(texNormal);
     }
 
     if (data.shadeModel_objectID.x == 0)
     {
         // PBR
-        vec4 oAlbedo = textureAtlas(data.diffuse, fUv) + data.diffuseColor;
-        vec4 oRoughnessMetallicAO;
-        oRoughnessMetallicAO.r = textureAtlas(data.roughness, fUv).r + data.metallic_roughness_ambientOcclusion_shininess.y;
-        oRoughnessMetallicAO.g = textureAtlas(data.metallic, fUv).r + data.metallic_roughness_ambientOcclusion_shininess.x;
-        oRoughnessMetallicAO.b = textureAtlas(data.ambientOcclusion, fUv).r + data.metallic_roughness_ambientOcclusion_shininess.z;
-        oRoughnessMetallicAO.a = 1;
+        vec4 albedo;
+        float roughness;
+        float metallic;
+        float ao;
 
-        oColor = vec4(1, 0, 1, 1);
-    }
-    else
-    {
+        if (data.diffuse.level_index_filtering_assigned.w  != 0){
+            albedo = textureAtlas(data.diffuse, fUv);
+        } else {
+            albedo = data.diffuseColor;
+        }
+
+        if (data.roughness.level_index_filtering_assigned.w != 0){
+            roughness = textureAtlas(data.roughness, fUv).x;
+        } else {
+            roughness = data.metallic_roughness_ambientOcclusion_shininess.y;
+        }
+
+        if (data.metallic.level_index_filtering_assigned.w != 0){
+            metallic = textureAtlas(data.metallic, fUv).x;
+        } else {
+            metallic = data.metallic_roughness_ambientOcclusion_shininess.x;
+        }
+
+        if (data.ambientOcclusion.level_index_filtering_assigned.w != 0){
+            ao = textureAtlas(data.ambientOcclusion, fUv).x;
+        } else {
+            ao = data.metallic_roughness_ambientOcclusion_shininess.z;
+        }
+
+        PbrPass pass = pbr_begin(fPos,
+        normal,
+        albedo.xyz,
+        metallic,
+        roughness,
+        ao,
+        globs.viewPosition.xyz);
+
+        vec3 reflectance = vec3(0);
+
+        for (int i = 0; i < pLights.lights.length(); i++) {
+            PointLight light = pLights.lights[i];
+            reflectance = pbr_point(pass, reflectance, light.position.xyz, light.diffuse.xyz);
+        }
+
+        oColor = vec4(pbr_finish(pass, reflectance), albedo.w);
+    } else if (data.shadeModel_objectID.x == 1) {
         // Phong
-        vec4 diffuse = textureAtlas(data.diffuse, fUv) + data.diffuseColor;
-        vec4 ambient = textureAtlas(data.ambient, fUv) + data.ambientColor;
-        vec4 specular = textureAtlas(data.specular, fUv) + data.specularColor;
-        float shininess = textureAtlas(data.shininess, fUv).r + data.metallic_roughness_ambientOcclusion_shininess.w;
+        vec4 diffuse;
+        if (data.diffuse.level_index_filtering_assigned.w != 0){
+            diffuse = textureAtlas(data.diffuse, fUv);
+        } else {
+            diffuse = data.diffuseColor;
+        }
+        vec4 ambient;
+        if (data.ambient.level_index_filtering_assigned.w != 0){
+            ambient = textureAtlas(data.ambient, fUv);
+        } else {
+            ambient = data.ambientColor;
+        }
+        vec4 specular;
+        if (data.specular.level_index_filtering_assigned.w != 0){
+            specular = textureAtlas(data.specular, fUv);
+        } else {
+            specular = data.specularColor;
+        }
+        float shininess;
+        if (data.shininess.level_index_filtering_assigned.w != 0){
+            shininess = textureAtlas(data.shininess, fUv).x;
+        } else {
+            shininess = data.metallic_roughness_ambientOcclusion_shininess.w;
+        }
 
         LightComponents comp;
         comp.ambient = vec3(0, 0, 0);
@@ -189,5 +245,7 @@ void main() {
 
         vec3 color = comp.ambient + comp.diffuse + comp.specular;
         oColor = vec4(color, diffuse.a);
+    } else {
+        oColor = vec4(1, 0, 1, 1);
     }
 }

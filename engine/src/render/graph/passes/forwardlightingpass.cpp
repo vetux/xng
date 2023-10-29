@@ -83,32 +83,36 @@ namespace xng {
     };
 #pragma pack(pop)
 
-    static std::vector<DirectionalLightData> getDirLights(const std::vector<DirectionalLight> &lights) {
+    static std::vector<DirectionalLightData> getDirLights(const Scene &scene) {
         std::vector<DirectionalLightData> ret;
-        for (auto &l: lights) {
+        for (auto &node: scene.rootNode.findAll({typeid(Scene::DirectionalLightProperty)})) {
+            auto l = node.getProperty<Scene::DirectionalLightProperty>().light;
+            auto t = node.getProperty<Scene::TransformProperty>().transform;
             auto tmp = DirectionalLightData{
                     .ambient = Vec4f(l.ambient.x, l.ambient.y, l.ambient.z, 1).getMemory(),
                     .diffuse = Vec4f(l.diffuse.x, l.diffuse.y, l.diffuse.z, 1).getMemory(),
                     .specular = Vec4f(l.specular.x, l.specular.y, l.specular.z, 1).getMemory(),
             };
-            auto euler = (Quaternion(l.direction) * l.transform.getRotation()).getEulerAngles();
+            auto euler = (Quaternion(l.direction) * t.getRotation()).getEulerAngles();
             tmp.direction = Vec4f(euler.x, euler.y, euler.z, 0).getMemory();
             ret.emplace_back(tmp);
         }
         return ret;
     }
 
-    static std::vector<PointLightData> getPointLights(const std::vector<PointLight> &lights) {
+    static std::vector<PointLightData> getPointLights(const Scene &scene) {
         std::vector<PointLightData> ret;
-        for (auto &l: lights) {
+        for (auto &node: scene.rootNode.findAll({typeid(Scene::PointLightProperty)})) {
+            auto l = node.getProperty<Scene::PointLightProperty>().light;
+            auto t = node.getProperty<Scene::TransformProperty>().transform;
             auto tmp = PointLightData{
                     .ambient = Vec4f(l.ambient.x, l.ambient.y, l.ambient.z, 1).getMemory(),
                     .diffuse = Vec4f(l.diffuse.x, l.diffuse.y, l.diffuse.z, 1).getMemory(),
                     .specular = Vec4f(l.specular.x, l.specular.y, l.specular.z, 1).getMemory(),
             };
-            tmp.position = Vec4f(l.transform.getPosition().x,
-                                 l.transform.getPosition().y,
-                                 l.transform.getPosition().z,
+            tmp.position = Vec4f(t.getPosition().x,
+                                 t.getPosition().y,
+                                 t.getPosition().z,
                                  0).getMemory();
             tmp.constant_linear_quadratic[0] = l.constant;
             tmp.constant_linear_quadratic[1] = l.linear;
@@ -118,20 +122,22 @@ namespace xng {
         return ret;
     }
 
-    static std::vector<SpotLightData> getSpotLights(const std::vector<SpotLight> &lights) {
+    static std::vector<SpotLightData> getSpotLights(const Scene &scene) {
         std::vector<SpotLightData> ret;
-        for (auto &l: lights) {
+        for (auto &node: scene.rootNode.findAll({typeid(Scene::SpotLightProperty)})) {
+            auto l = node.getProperty<Scene::SpotLightProperty>().light;
+            auto t = node.getProperty<Scene::TransformProperty>().transform;
             auto tmp = SpotLightData{
                     .ambient = Vec4f(l.ambient.x, l.ambient.y, l.ambient.z, 1).getMemory(),
                     .diffuse = Vec4f(l.diffuse.x, l.diffuse.y, l.diffuse.z, 1).getMemory(),
                     .specular = Vec4f(l.specular.x, l.specular.y, l.specular.z, 1).getMemory(),
             };
-            tmp.position = Vec4f(l.transform.getPosition().x,
-                                 l.transform.getPosition().y,
-                                 l.transform.getPosition().z,
+            tmp.position = Vec4f(t.getPosition().x,
+                                 t.getPosition().y,
+                                 t.getPosition().z,
                                  0).getMemory();
 
-            auto euler = (Quaternion(l.direction) * l.transform.getRotation()).getEulerAngles();
+            auto euler = (Quaternion(l.direction) * t.getRotation()).getEulerAngles();
 
             tmp.direction_quadratic[0] = euler.x;
             tmp.direction_quadratic[1] = euler.y;
@@ -150,28 +156,26 @@ namespace xng {
 
     void ForwardLightingPass::setup(FrameGraphBuilder &builder) {
         renderSize = builder.getRenderSize();
+        scene = builder.getScene();
 
-        auto &scene = builder.getScene();
-
-        auto &lp = scene.rootNode.getProperty<Scene::LightingProperty>();
-        pointLights = lp.pointLights;
-        spotLights = lp.spotLights;
-        directionalLights = lp.directionalLights;
+        size_t pointLights = scene.rootNode.findAll({typeid(Scene::PointLightProperty)}).size();
+        size_t spotLights = scene.rootNode.findAll({typeid(Scene::SpotLightProperty)}).size();
+        size_t directionalLights = scene.rootNode.findAll({typeid(Scene::DirectionalLightProperty)}).size();
 
         pointLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(PointLightData) * pointLights.size()
+                .size = sizeof(PointLightData) * pointLights
         });
         builder.read(pointLightsBufferRes);
         builder.write(pointLightsBufferRes);
 
         spotLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(SpotLightData) * spotLights.size()
+                .size = sizeof(SpotLightData) * spotLights
         });
         builder.read(spotLightsBufferRes);
         builder.write(spotLightsBufferRes);
 
         directionalLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(DirectionalLightData) * directionalLights.size()
+                .size = sizeof(DirectionalLightData) * directionalLights
         });
         builder.read(directionalLightsBufferRes);
         builder.write(directionalLightsBufferRes);
@@ -439,9 +443,9 @@ namespace xng {
 
         auto atlasBuffers = atlas.getAtlasBuffers(resources, cBuffer, renderQueues.at(0));
 
-        auto plights = getPointLights(pointLights);
-        auto slights = getSpotLights(spotLights);
-        auto dlights = getDirLights(directionalLights);
+        auto plights = getPointLights(scene);
+        auto slights = getSpotLights(scene);
+        auto dlights = getDirLights(scene);
 
         pointLightBuffer.upload(reinterpret_cast<const uint8_t *>(plights.data()),
                                 plights.size() * sizeof(PointLightData));
@@ -525,6 +529,7 @@ namespace xng {
                 std::vector<ShaderDrawData> shaderData;
                 for (auto oi = 0; oi < passesPerDrawCycle && oi < nodes.size(); oi++) {
                     auto &node = nodes.at(oi + (drawCycle * passesPerDrawCycle));
+                    auto &transformProp = node.getProperty<Scene::TransformProperty>();
                     auto &meshProp = node.getProperty<Scene::SkinnedMeshProperty>();
 
                     auto it = node.properties.find(typeid(Scene::MaterialProperty));
@@ -545,7 +550,7 @@ namespace xng {
                         if (!material.transparent || material.shader.assigned())
                             continue;
 
-                        auto model = meshProp.transform.model();
+                        auto model = transformProp.transform.model();
 
                         auto data = ShaderDrawData();
 

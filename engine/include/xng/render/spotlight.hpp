@@ -26,7 +26,6 @@
 namespace xng {
     struct XENGINE_EXPORT SpotLight : public Messageable {
         Messageable &operator<<(const Message &message) override {
-            transform << message.getMessage("transform");
             ambient << message.getMessage("ambient");
             diffuse << message.getMessage("diffuse");
             specular << message.getMessage("specular");
@@ -41,7 +40,6 @@ namespace xng {
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            transform >> message["transform"];
             ambient >> message["ambient"];
             diffuse >> message["diffuse"];
             specular >> message["specular"];
@@ -53,8 +51,6 @@ namespace xng {
             message["outerCutOff"] = outerCutOff;
             return message;
         }
-
-        Transform transform;
 
         Vec3f ambient = Vec3f(0.1f);
         Vec3f diffuse = Vec3f(1.0f);
