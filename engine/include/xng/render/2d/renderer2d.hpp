@@ -340,7 +340,7 @@ namespace xng {
             size_t size;
         };
 
-        void presentCompat();
+        void present();
 
         void presentMultiDraw();
 
