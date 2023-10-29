@@ -87,15 +87,17 @@ int main(int argc, char *argv[]) {
 
     xng::Scene scene;
 
-    xng::Scene::Node trex;
+    xng::Scene::Node node;
+
+    node.addProperty(Scene::TransformProperty());
 
     Scene::SkinnedMeshProperty meshProperty;
     meshProperty.mesh = ResourceHandle<SkinnedMesh>(Uri("meshes/animtest.fbx"));
-    trex.addProperty(meshProperty);
+    node.addProperty(meshProperty);
 
-    trex.addProperty(Scene::BoneTransformsProperty());
+    node.addProperty(Scene::BoneTransformsProperty());
 
-    scene.rootNode.childNodes.emplace_back(trex);
+    scene.rootNode.childNodes.emplace_back(node);
 
     auto &boneTransformsProperty = scene.rootNode.childNodes.at(0).getProperty<Scene::BoneTransformsProperty>();
 
@@ -113,16 +115,15 @@ int main(int argc, char *argv[]) {
 
     scene.rootNode.addProperty(cam);
 
-    Scene::LightingProperty lighting;
-    xng::DirectionalLight light;
-    lighting.directionalLights.emplace_back(light);
-
-    scene.rootNode.addProperty(lighting);
+    Scene::Node lightNode;
+    lightNode.addProperty(Scene::TransformProperty());
+    lightNode.addProperty(Scene::DirectionalLightProperty());
+    scene.rootNode.childNodes.emplace_back(lightNode);
 
     CameraController cameraController(scene.rootNode.getProperty<Scene::CameraProperty>().cameraTransform, input);
 
     auto &prop = scene.rootNode.findAll({typeid(Scene::SkinnedMeshProperty)}).at(
-            0).getProperty<Scene::SkinnedMeshProperty>();
+            0).getProperty<Scene::TransformProperty>();
     xng::FrameLimiter limiter;
     limiter.reset();
     while (!window->shouldClose()) {
