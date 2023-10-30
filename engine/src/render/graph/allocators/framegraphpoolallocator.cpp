@@ -19,8 +19,8 @@
 
 #include "xng/render/graph/allocators/framegraphpoolallocator.hpp"
 
-#include "xng/asset/texture.hpp"
-#include "xng/asset/shader.hpp"
+#include "xng/render/texture.hpp"
+#include "xng/shader/shader.hpp"
 
 namespace xng {
     void FrameGraphPoolAllocator::collectGarbage() {

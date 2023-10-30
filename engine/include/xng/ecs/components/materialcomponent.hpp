@@ -20,7 +20,7 @@
 #ifndef XENGINE_MATERIALCOMPONENT_HPP
 #define XENGINE_MATERIALCOMPONENT_HPP
 
-#include "xng/asset/material.hpp"
+#include "xng/render/material.hpp"
 #include "xng/resource/resourcehandle.hpp"
 #include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"

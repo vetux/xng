@@ -25,7 +25,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include "xng/asset/image.hpp"
+#include "xng/render/image.hpp"
 #include "xng/input/input.hpp"
 
 namespace xng {

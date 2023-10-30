@@ -36,7 +36,7 @@ Drivers are implementations of interfaces (For example through 3rd party librari
 
 - Display Manager
     - GLFW
-- 3D Audio
+- 3D AudioData
     - OpenAL-Soft
 - GPU (Render, Compute, Raytracing)
     - OpenGL

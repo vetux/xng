@@ -23,7 +23,7 @@
 #include "xng/gpu/vertexbufferdesc.hpp"
 #include "xng/gpu/commandfence.hpp"
 
-#include "xng/asset/mesh.hpp"
+#include "xng/render/mesh.hpp"
 
 #include "xng/math/transform.hpp"
 

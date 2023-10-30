@@ -20,7 +20,7 @@
 #include "xng/render/graph/passes/constructionpass.hpp"
 #include "xng/render/graph/framegraphbuilder.hpp"
 #include "xng/render/graph/framegraphproperties.hpp"
-#include "xng/render/textureatlas.hpp"
+#include "xng/render/atlas/textureatlas.hpp"
 
 #include "xng/io/protocol/jsonprotocol.hpp"
 

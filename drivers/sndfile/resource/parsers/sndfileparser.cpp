@@ -25,7 +25,7 @@
 #include "xng/driver/sndfile/sndfileparser.hpp"
 
 #include "xng/audio/audioformat.hpp"
-#include "xng/asset/audio.hpp"
+#include "xng/audio/audiodata.hpp"
 
 
 #include <sndfile.h>
@@ -78,7 +78,7 @@ namespace xng {
         return buffer->pos;
     }
 
-    static Audio readAudio(const std::vector<char> &buf) {
+    static AudioData readAudio(const std::vector<char> &buf) {
         SF_VIRTUAL_IO virtio;
         virtio.get_filelen = &sf_vio_get_filelen;
         virtio.seek = &sf_vio_seek;
@@ -99,7 +99,7 @@ namespace xng {
             throw std::runtime_error("Bad sample count in audio buffer");
         }
 
-        Audio ret;
+        AudioData ret;
 
         if (sfinfo.channels == 1) {
             ret.format = MONO16;
@@ -149,7 +149,7 @@ namespace xng {
     SndFileParser::read(const std::vector<char> &buffer, const std::string &hint, const std::string &path,
                         Archive *archive) const {
         ResourceBundle ret;
-        ret.add("", std::make_unique<Audio>(readAudio(buffer)));
+        ret.add("", std::make_unique<AudioData>(readAudio(buffer)));
         return ret;
     }
 

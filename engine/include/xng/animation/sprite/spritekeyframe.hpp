@@ -22,7 +22,7 @@
 
 #include "xng/resource/resourcehandle.hpp"
 
-#include "xng/asset/sprite.hpp"
+#include "xng/render/sprite.hpp"
 
 namespace xng {
     struct SpriteKeyframe : public Messageable {

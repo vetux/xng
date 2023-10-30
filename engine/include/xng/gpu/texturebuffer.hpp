@@ -27,7 +27,7 @@
 #include "xng/gpu/texturebufferdesc.hpp"
 #include "xng/gpu/command.hpp"
 
-#include "xng/asset/image.hpp"
+#include "xng/render/image.hpp"
 
 namespace xng {
     /**

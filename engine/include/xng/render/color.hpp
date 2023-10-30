@@ -24,7 +24,6 @@
 
 #include "xng/math/vector4.hpp"
 
-
 namespace xng {
     struct XENGINE_EXPORT ColorRGB {
         uint8_t data[3];

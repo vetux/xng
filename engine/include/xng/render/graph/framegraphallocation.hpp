@@ -27,11 +27,11 @@
 #include "xng/gpu/renderpipelinedesc.hpp"
 #include "xng/gpu/shaderuniformbufferdesc.hpp"
 
-#include "xng/asset/shader.hpp"
+#include "xng/shader/shader.hpp"
 
 #include "xng/resource/uri.hpp"
 #include "xng/resource/resourcehandle.hpp"
-#include "xng/asset/texture.hpp"
+#include "xng/render/texture.hpp"
 
 namespace xng {
     /**

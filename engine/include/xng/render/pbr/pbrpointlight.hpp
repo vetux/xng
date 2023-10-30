@@ -22,7 +22,7 @@
 
 #include "xng/math/transform.hpp"
 #include "xng/io/messageable.hpp"
-#include "xng/asset/color.hpp"
+#include "xng/render/color.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT PBRPointLight : public Messageable {

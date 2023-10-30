@@ -22,7 +22,7 @@
 
 #include <utility>
 
-#include "xng/asset/mesh.hpp"
+#include "xng/render/mesh.hpp"
 
 namespace xng {
     class SkinnedMesh : public Mesh {

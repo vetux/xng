@@ -17,30 +17,39 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_AUDIO_HPP
-#define XENGINE_AUDIO_HPP
+#ifndef XENGINE_SHADER_HPP
+#define XENGINE_SHADER_HPP
 
-#include "xng/audio/audioformat.hpp"
+#include <utility>
+
+#include "xng/shader/shadersource.hpp"
 
 #include "xng/resource/resource.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT Audio : public Resource {
-    public:
-        ~Audio() override = default;
+    struct XENGINE_EXPORT Shader : public Resource {
+        Shader() = default;
+
+        Shader(ShaderSource vertexShader,
+               ShaderSource fragmentShader,
+               ShaderSource geometryShader)
+                : vertexShader(std::move(vertexShader)),
+                geometryShader(std::move(geometryShader)),
+                fragmentShader(std::move(fragmentShader)) {}
+
+        ~Shader() override = default;
 
         std::unique_ptr<Resource> clone() override {
-            return std::make_unique<Audio>(*this);
+            return std::make_unique<Shader>(*this);
         }
 
         std::type_index getTypeIndex() const override {
-            return typeid(Audio);
+            return typeid(Shader);
         }
 
-        std::vector<uint8_t> buffer;
-        AudioFormat format;
-        unsigned int frequency;
+        ShaderSource vertexShader;
+        ShaderSource geometryShader;
+        ShaderSource fragmentShader;
     };
 }
-
-#endif //XENGINE_AUDIO_HPP
+#endif //XENGINE_SHADER_HPP

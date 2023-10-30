@@ -17,21 +17,29 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RESOURCEEXPORTER_HPP
-#define XENGINE_RESOURCEEXPORTER_HPP
-
-#include "xng/render/image.hpp"
-#include "xng/render/color.hpp"
-
-#include <ostream>
+#ifndef XENGINE_TEXTUREATLASRESOLUTION_HPP
+#define XENGINE_TEXTUREATLASRESOLUTION_HPP
 
 namespace xng {
-    class XENGINE_EXPORT ResourceExporter {
-    public:
-        ResourceExporter() = default;
-
-        void exportImage(std::ostream &stream, const Image<ColorRGBA> &image);
+    /**
+     * The set of resolution levels supported by the atlas.
+     * User textures should ideally be of one of these sizes to not waste any memory.
+     */
+    enum TextureAtlasResolution : int {
+        TEXTURE_ATLAS_8x8 = 0,
+        TEXTURE_ATLAS_16x16,
+        TEXTURE_ATLAS_32x32,
+        TEXTURE_ATLAS_64x64,
+        TEXTURE_ATLAS_128x128,
+        TEXTURE_ATLAS_256x256,
+        TEXTURE_ATLAS_512x512,
+        TEXTURE_ATLAS_1024x1024,
+        TEXTURE_ATLAS_2048x2048,
+        TEXTURE_ATLAS_4096x4096,
+        TEXTURE_ATLAS_8192x8192,
+        TEXTURE_ATLAS_16384x16384,
+        TEXTURE_ATLAS_END,
+        TEXTURE_ATLAS_BEGIN = TEXTURE_ATLAS_8x8
     };
 }
-
-#endif //XENGINE_RESOURCEEXPORTER_HPP
+#endif //XENGINE_TEXTUREATLASRESOLUTION_HPP

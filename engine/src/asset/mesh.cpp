@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/asset/mesh.hpp"
+#include "xng/render/mesh.hpp"
 
 #include <string>
 #include <sstream>

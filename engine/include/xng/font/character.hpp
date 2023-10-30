@@ -25,7 +25,7 @@
 
 #include "xng/gpu/texturebuffer.hpp"
 
-#include "xng/asset/image.hpp"
+#include "xng/render/image.hpp"
 
 namespace xng {
     class XENGINE_EXPORT Character {

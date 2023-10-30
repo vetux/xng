@@ -22,7 +22,7 @@
 
 #include <utility>
 
-#include "camera.hpp"
+#include "xng/render/camera.hpp"
 
 #include "xng/render/phong/phongdirectionallight.hpp"
 #include "xng/render/phong/phongpointlight.hpp"
@@ -30,11 +30,11 @@
 
 #include "xng/render/pbr/pbrpointlight.hpp"
 
-#include "xng/asset/material.hpp"
-#include "xng/asset/skybox.hpp"
-#include "xng/asset/shader.hpp"
-#include "xng/asset/mesh.hpp"
-#include "xng/asset/skinnedmesh.hpp"
+#include "xng/render/material.hpp"
+#include "xng/render/skybox.hpp"
+#include "xng/shader/shader.hpp"
+#include "xng/render/mesh.hpp"
+#include "xng/render/skinnedmesh.hpp"
 
 #include "xng/types/genericmap.hpp"
 

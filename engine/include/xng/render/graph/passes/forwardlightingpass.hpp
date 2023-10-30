@@ -24,7 +24,7 @@
 #include "xng/render/graph/framegraphtextureatlas.hpp"
 #include "xng/render/meshallocator.hpp"
 
-#include "xng/render/textureatlas.hpp"
+#include "xng/render/atlas/textureatlas.hpp"
 
 namespace xng {
     /**

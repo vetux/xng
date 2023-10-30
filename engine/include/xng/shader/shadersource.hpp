@@ -20,6 +20,8 @@
 #ifndef XENGINE_SHADERSOURCE_HPP
 #define XENGINE_SHADERSOURCE_HPP
 
+#include "xng/io/messageable.hpp"
+
 #include "xng/shader/spirvshader.hpp"
 #include "xng/shader/shaderlanguage.hpp"
 #include "xng/shader/shadercompiler.hpp"

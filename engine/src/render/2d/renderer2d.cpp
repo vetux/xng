@@ -23,7 +23,7 @@
 #include <utility>
 
 #include "xng/math/matrixmath.hpp"
-#include "xng/asset/shadersource.hpp"
+#include "xng/shader/shadersource.hpp"
 
 #include "xng/geometry/vertexstream.hpp"
 

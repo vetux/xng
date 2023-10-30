@@ -25,8 +25,8 @@
 #include "xng/resource/uri.hpp"
 #include "xng/resource/resourcehandle.hpp"
 
-#include "xng/asset/cubemap.hpp"
-#include "xng/asset/color.hpp"
+#include "xng/render/cubemap.hpp"
+#include "xng/render/color.hpp"
 
 #include "xng/io/messageable.hpp"
 

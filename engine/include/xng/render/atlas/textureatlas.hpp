@@ -23,9 +23,8 @@
 #include "xng/gpu/texturearraybuffer.hpp"
 #include "xng/gpu/renderdevice.hpp"
 
-#include "xng/render/textureatlashandle.hpp"
-
-#include "xng/asset/texture.hpp"
+#include "xng/render/atlas/textureatlashandle.hpp"
+#include "xng/render/texture.hpp"
 
 namespace xng {
     /**

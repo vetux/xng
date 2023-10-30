@@ -20,11 +20,10 @@
 #ifndef XENGINE_MESHALLOCATOR_HPP
 #define XENGINE_MESHALLOCATOR_HPP
 
-
 #include "xng/gpu/vertexbuffer.hpp"
 #include "xng/gpu/indexbuffer.hpp"
 
-#include "xng/asset/skinnedmesh.hpp"
+#include "xng/render/skinnedmesh.hpp"
 
 namespace xng {
     class MeshAllocator {

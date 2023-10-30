@@ -20,10 +20,30 @@
 #ifndef XENGINE_TERRAIN_HPP
 #define XENGINE_TERRAIN_HPP
 
-namespace xng {
-    struct Terrain : public Resource {
-        ResourceHandle<Texture> heightMap;
+#include "xng/render/texture.hpp"
 
+namespace xng {
+    struct Terrain : public Resource, public Messageable {
+        std::unique_ptr<Resource> clone() override {
+            return std::make_unique<Terrain>(*this);
+        }
+
+        std::type_index getTypeIndex() const override {
+            return typeid(Terrain);
+        }
+
+        Messageable &operator<<(const Message &message) override {
+            heightMap << message.getMessage("heightMap");
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            heightMap >> message["heightMap"];
+            return message;
+        }
+
+        ResourceHandle<Texture> heightMap;
     };
 }
 #endif //XENGINE_TERRAIN_HPP

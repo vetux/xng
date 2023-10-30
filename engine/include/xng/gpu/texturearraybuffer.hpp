@@ -22,7 +22,7 @@
 
 #include <memory>
 
-#include "xng/asset/image.hpp"
+#include "xng/render/image.hpp"
 
 #include "xng/gpu/renderobject.hpp"
 #include "xng/gpu/texturearraybufferdesc.hpp"

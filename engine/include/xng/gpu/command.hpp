@@ -22,7 +22,7 @@
 
 #include <utility>
 
-#include "xng/asset/color.hpp"
+#include "xng/render/color.hpp"
 
 #include "xng/math/vector2.hpp"
 #include "xng/math/vector3.hpp"

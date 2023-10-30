@@ -21,7 +21,7 @@
 #define XENGINE_BUTTONCOMPONENT_HPP
 
 #include "xng/ecs/component.hpp"
-#include "xng/asset/sprite.hpp"
+#include "xng/render/sprite.hpp"
 #include "xng/io/messageable.hpp"
 
 namespace xng {

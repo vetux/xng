@@ -23,9 +23,9 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "xng/asset/mesh.hpp"
-#include "xng/asset/skinnedmesh.hpp"
-#include "xng/asset/material.hpp"
+#include "xng/render/mesh.hpp"
+#include "xng/render/skinnedmesh.hpp"
+#include "xng/render/material.hpp"
 
 #include "xng/geometry/vertexbuilder.hpp"
 

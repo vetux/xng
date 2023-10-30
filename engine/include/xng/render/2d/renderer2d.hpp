@@ -27,14 +27,14 @@
 
 #include "xng/gpu/renderdevice.hpp"
 
-#include "xng/asset/shadersource.hpp"
+#include "xng/shader/shadersource.hpp"
 #include "xng/shader/shadercompiler.hpp"
 
 #include "xng/render/camera.hpp"
 
 #include "xng/util/hashcombine.hpp"
 
-#include "xng/render/textureatlas.hpp"
+#include "xng/render/atlas/textureatlas.hpp"
 
 #include "xng/geometry/vertexstream.hpp"
 

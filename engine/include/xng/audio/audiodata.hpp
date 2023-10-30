@@ -17,25 +17,32 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_TEXTUREATLASRESOLUTION_HPP
-#define XENGINE_TEXTUREATLASRESOLUTION_HPP
+#ifndef XENGINE_AUDIODATA_HPP
+#define XENGINE_AUDIODATA_HPP
+
+#include <vector>
+
+#include "xng/audio/audioformat.hpp"
+
+#include "xng/resource/resource.hpp"
 
 namespace xng {
-    enum TextureAtlasResolution : int {
-        TEXTURE_ATLAS_8x8 = 0,
-        TEXTURE_ATLAS_16x16,
-        TEXTURE_ATLAS_32x32,
-        TEXTURE_ATLAS_64x64,
-        TEXTURE_ATLAS_128x128,
-        TEXTURE_ATLAS_256x256,
-        TEXTURE_ATLAS_512x512,
-        TEXTURE_ATLAS_1024x1024,
-        TEXTURE_ATLAS_2048x2048,
-        TEXTURE_ATLAS_4096x4096,
-        TEXTURE_ATLAS_8192x8192,
-        TEXTURE_ATLAS_16384x16384,
-        TEXTURE_ATLAS_END,
-        TEXTURE_ATLAS_BEGIN = TEXTURE_ATLAS_8x8
+    class XENGINE_EXPORT AudioData : public Resource {
+    public:
+        ~AudioData() override = default;
+
+        std::unique_ptr<Resource> clone() override {
+            return std::make_unique<AudioData>(*this);
+        }
+
+        std::type_index getTypeIndex() const override {
+            return typeid(AudioData);
+        }
+
+        std::vector<uint8_t> buffer;
+        AudioFormat format;
+        unsigned int frequency;
     };
 }
-#endif //XENGINE_TEXTUREATLASRESOLUTION_HPP
+
+#endif //XENGINE_AUDIODATA_HPP

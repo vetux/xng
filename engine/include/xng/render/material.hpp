@@ -22,8 +22,8 @@
 
 #include <variant>
 
-#include "xng/asset/texture.hpp"
-#include "xng/asset/shader.hpp"
+#include "xng/render/texture.hpp"
+#include "xng/shader/shader.hpp"
 
 #include "xng/resource/resourcehandle.hpp"
 

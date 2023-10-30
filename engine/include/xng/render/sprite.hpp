@@ -27,7 +27,7 @@
 
 #include "xng/gpu/renderdevice.hpp"
 
-#include "xng/asset/texture.hpp"
+#include "xng/render/texture.hpp"
 
 #include "xng/io/messageable.hpp"
 

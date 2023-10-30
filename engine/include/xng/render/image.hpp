@@ -24,7 +24,7 @@
 #include <stdexcept>
 #include <typeindex>
 
-#include "color.hpp"
+#include "xng/render/color.hpp"
 #include "xng/resource/resource.hpp"
 
 #include "xng/math/rectangle.hpp"

@@ -22,7 +22,7 @@
 
 #include <string>
 
-#include "xng/asset/skybox.hpp"
+#include "xng/render/skybox.hpp"
 #include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
 

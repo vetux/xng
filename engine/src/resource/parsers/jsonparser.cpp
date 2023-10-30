@@ -23,8 +23,8 @@
 
 #include "xng/async/threadpool.hpp"
 
-#include "xng/asset/texture.hpp"
-#include "xng/asset/material.hpp"
+#include "xng/render/texture.hpp"
+#include "xng/render/material.hpp"
 #include "xng/animation/sprite/spriteanimation.hpp"
 #include "xng/ecs/entityscene.hpp"
 

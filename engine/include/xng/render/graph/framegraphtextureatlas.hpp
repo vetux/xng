@@ -20,7 +20,7 @@
 #ifndef XENGINE_FRAMEGRAPHTEXTUREATLAS_HPP
 #define XENGINE_FRAMEGRAPHTEXTUREATLAS_HPP
 
-#include "xng/render/textureatlas.hpp"
+#include "xng/render/atlas/textureatlas.hpp"
 
 #include "xng/render/graph/framegraphbuilder.hpp"
 
