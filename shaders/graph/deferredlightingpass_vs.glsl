@@ -1,6 +1,7 @@
 #version 460
 
 #include "phong.glsl"
+#include "pbr.glsl"
 
 layout (location = 0) in vec3 vPosition;
 layout (location = 1) in vec2 vUv;
@@ -27,14 +28,19 @@ layout(binding = 3, std140) buffer DirectionalLightsData
     DirectionalLight lights[];
 } dLights;
 
-layout(binding = 4) uniform sampler2D gBufferPos;
-layout(binding = 5) uniform sampler2D gBufferNormal;
-layout(binding = 6) uniform sampler2D gBufferRoughnessMetallicAO;
-layout(binding = 7) uniform sampler2D gBufferAlbedo;
-layout(binding = 8) uniform sampler2D gBufferAmbient;
-layout(binding = 9) uniform sampler2D gBufferSpecular;
-layout(binding = 10) uniform isampler2D gBufferModelObject;
-layout(binding = 11) uniform sampler2D gBufferDepth;
+layout(binding = 4, std140) buffer PBRPointLightsData
+{
+    PBRPointLight lights[];
+} pbrPointLights;
+
+layout(binding = 5) uniform sampler2D gBufferPos;
+layout(binding = 6) uniform sampler2D gBufferNormal;
+layout(binding = 7) uniform sampler2D gBufferRoughnessMetallicAO;
+layout(binding = 8) uniform sampler2D gBufferAlbedo;
+layout(binding = 9) uniform sampler2D gBufferAmbient;
+layout(binding = 10) uniform sampler2D gBufferSpecular;
+layout(binding = 11) uniform isampler2D gBufferModelObject;
+layout(binding = 12) uniform sampler2D gBufferDepth;
 
 void main()
 {

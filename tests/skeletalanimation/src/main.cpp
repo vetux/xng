@@ -117,7 +117,7 @@ int main(int argc, char *argv[]) {
 
     Scene::Node lightNode;
     lightNode.addProperty(Scene::TransformProperty());
-    lightNode.addProperty(Scene::DirectionalLightProperty());
+    lightNode.addProperty(Scene::PhongDirectionalLightProperty());
     scene.rootNode.childNodes.emplace_back(lightNode);
 
     CameraController cameraController(scene.rootNode.getProperty<Scene::CameraProperty>().cameraTransform, input);

@@ -62,6 +62,7 @@ namespace xng {
         FrameGraphResource pointLightsBufferRes;
         FrameGraphResource spotLightsBufferRes;
         FrameGraphResource directionalLightsBufferRes;
+        FrameGraphResource pbrPointLightsBufferRes;
 
         FrameGraphResource vertexBufferRes;
         FrameGraphResource vertexArrayObjectRes;

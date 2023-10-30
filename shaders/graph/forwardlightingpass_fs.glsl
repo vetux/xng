@@ -73,6 +73,11 @@ layout(binding = 16, std140) buffer DirectionalLightsData
     DirectionalLight lights[];
 } dLights;
 
+layout(binding = 17, std140) buffer PBRPointLightsData
+{
+    PBRPointLight lights[];
+} pbrPointLights;
+
 vec4 textureAtlas(ShaderAtlasTexture tex, vec2 inUv)
 {
     if (tex.level_index_filtering_assigned.w == 0)
@@ -157,12 +162,12 @@ void main() {
 
         vec3 reflectance = vec3(0);
 
-        for (int i = 0; i < pLights.lights.length(); i++) {
-            PointLight light = pLights.lights[i];
-            reflectance = pbr_point(pass, reflectance, light.position.xyz, light.diffuse.xyz);
+        for (int i = 0; i < pbrPointLights.lights.length(); i++) {
+            PBRPointLight light = pbrPointLights.lights[i];
+            reflectance = pbr_point(pass, reflectance, light);
         }
 
-        oColor = vec4(pbr_finish(pass, reflectance), albedo.w);
+        oColor = vec4(pbr_finish(pass, reflectance), albedo.a);
     } else if (data.shadeModel_objectID.x == 1) {
         // Phong
         vec4 diffuse;

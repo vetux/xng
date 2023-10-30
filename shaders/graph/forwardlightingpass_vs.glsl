@@ -1,6 +1,7 @@
 #version 460
 
 #include "phong.glsl"
+#include "pbr.glsl"
 
 layout (location = 0) in vec3 vPosition;
 layout (location = 1) in vec3 vNormal;
@@ -74,6 +75,11 @@ layout(binding = 16, std140) buffer DirectionalLightsData
 {
     DirectionalLight lights[];
 } dLights;
+
+layout(binding = 17, std140) buffer PBRPointLightsData
+{
+    PBRPointLight lights[];
+} pbrPointLights;
 
 void main()
 {

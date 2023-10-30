@@ -52,6 +52,11 @@ namespace xng {
         std::array<float, 4> cutOff_outerCutOff_constant_linear;
     };
 
+    struct PBRPointLightData {
+        std::array<float, 4> position;
+        std::array<float, 4> color;
+    };
+
     struct ShaderAtlasTexture {
         int level_index_filtering_assigned[4]{0, 0, 0, 0};
         float atlasScale_texSize[4]{0, 0, 0, 0};
@@ -85,8 +90,8 @@ namespace xng {
 
     static std::vector<DirectionalLightData> getDirLights(const Scene &scene) {
         std::vector<DirectionalLightData> ret;
-        for (auto &node: scene.rootNode.findAll({typeid(Scene::DirectionalLightProperty)})) {
-            auto l = node.getProperty<Scene::DirectionalLightProperty>().light;
+        for (auto &node: scene.rootNode.findAll({typeid(Scene::PhongDirectionalLightProperty)})) {
+            auto l = node.getProperty<Scene::PhongDirectionalLightProperty>().light;
             auto t = node.getProperty<Scene::TransformProperty>().transform;
             auto tmp = DirectionalLightData{
                     .ambient = Vec4f(l.ambient.x, l.ambient.y, l.ambient.z, 1).getMemory(),
@@ -102,8 +107,8 @@ namespace xng {
 
     static std::vector<PointLightData> getPointLights(const Scene &scene) {
         std::vector<PointLightData> ret;
-        for (auto &node: scene.rootNode.findAll({typeid(Scene::PointLightProperty)})) {
-            auto l = node.getProperty<Scene::PointLightProperty>().light;
+        for (auto &node: scene.rootNode.findAll({typeid(Scene::PhongPointLightProperty)})) {
+            auto l = node.getProperty<Scene::PhongPointLightProperty>().light;
             auto t = node.getProperty<Scene::TransformProperty>().transform;
             auto tmp = PointLightData{
                     .ambient = Vec4f(l.ambient.x, l.ambient.y, l.ambient.z, 1).getMemory(),
@@ -124,8 +129,8 @@ namespace xng {
 
     static std::vector<SpotLightData> getSpotLights(const Scene &scene) {
         std::vector<SpotLightData> ret;
-        for (auto &node: scene.rootNode.findAll({typeid(Scene::SpotLightProperty)})) {
-            auto l = node.getProperty<Scene::SpotLightProperty>().light;
+        for (auto &node: scene.rootNode.findAll({typeid(Scene::PhongSpotLightProperty)})) {
+            auto l = node.getProperty<Scene::PhongSpotLightProperty>().light;
             auto t = node.getProperty<Scene::TransformProperty>().transform;
             auto tmp = SpotLightData{
                     .ambient = Vec4f(l.ambient.x, l.ambient.y, l.ambient.z, 1).getMemory(),
@@ -154,13 +159,32 @@ namespace xng {
         return ret;
     }
 
+    static std::vector<PBRPointLightData> getPBRPointLights(const Scene &scene) {
+        std::vector<PBRPointLightData> ret;
+        for (auto &node: scene.rootNode.findAll({typeid(Scene::PBRPointLightProperty)})) {
+            auto l = node.getProperty<Scene::PBRPointLightProperty>().light;
+            auto t = node.getProperty<Scene::TransformProperty>().transform;
+            auto v = l.color.divide();
+            auto tmp = PBRPointLightData{
+                    .position =  Vec4f(t.getPosition().x,
+                                       t.getPosition().y,
+                                       t.getPosition().z,
+                                       0).getMemory(),
+                    .color = Vec4f(v.x * l.energy, v.y * l.energy, v.z * l.energy, 1).getMemory(),
+            };
+            ret.emplace_back(tmp);
+        }
+        return ret;
+    }
+
     void ForwardLightingPass::setup(FrameGraphBuilder &builder) {
         renderSize = builder.getRenderSize();
         scene = builder.getScene();
 
-        size_t pointLights = scene.rootNode.findAll({typeid(Scene::PointLightProperty)}).size();
-        size_t spotLights = scene.rootNode.findAll({typeid(Scene::SpotLightProperty)}).size();
-        size_t directionalLights = scene.rootNode.findAll({typeid(Scene::DirectionalLightProperty)}).size();
+        size_t pointLights = scene.rootNode.findAll({typeid(Scene::PhongPointLightProperty)}).size();
+        size_t spotLights = scene.rootNode.findAll({typeid(Scene::PhongSpotLightProperty)}).size();
+        size_t directionalLights = scene.rootNode.findAll({typeid(Scene::PhongDirectionalLightProperty)}).size();
+        size_t pbrPointLights = scene.rootNode.findAll({typeid(Scene::PBRPointLightProperty)}).size();
 
         pointLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(PointLightData) * pointLights
@@ -179,6 +203,12 @@ namespace xng {
         });
         builder.read(directionalLightsBufferRes);
         builder.write(directionalLightsBufferRes);
+
+        pbrPointLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+                .size = sizeof(PBRPointLightData) * pbrPointLights
+        });
+        builder.read(pbrPointLightsBufferRes);
+        builder.write(pbrPointLightsBufferRes);
 
         RenderTargetDesc targetDesc;
         targetDesc.size = builder.getRenderSize();
@@ -207,6 +237,7 @@ namespace xng {
                             BIND_TEXTURE_ARRAY_BUFFER,
                             BIND_TEXTURE_ARRAY_BUFFER,
                             BIND_TEXTURE_BUFFER,
+                            BIND_SHADER_STORAGE_BUFFER,
                             BIND_SHADER_STORAGE_BUFFER,
                             BIND_SHADER_STORAGE_BUFFER,
                             BIND_SHADER_STORAGE_BUFFER,
@@ -438,6 +469,7 @@ namespace xng {
         auto &pointLightBuffer = resources.get<ShaderStorageBuffer>(pointLightsBufferRes);
         auto &spotLightBuffer = resources.get<ShaderStorageBuffer>(spotLightsBufferRes);
         auto &dirLightBuffer = resources.get<ShaderStorageBuffer>(directionalLightsBufferRes);
+        auto &pbrLightBuffer = resources.get<ShaderStorageBuffer>(pbrPointLightsBufferRes);
 
         auto &cBuffer = resources.get<CommandBuffer>(commandBuffer);
 
@@ -446,6 +478,7 @@ namespace xng {
         auto plights = getPointLights(scene);
         auto slights = getSpotLights(scene);
         auto dlights = getDirLights(scene);
+        auto pbrlights = getPBRPointLights(scene);
 
         pointLightBuffer.upload(reinterpret_cast<const uint8_t *>(plights.data()),
                                 plights.size() * sizeof(PointLightData));
@@ -453,6 +486,8 @@ namespace xng {
                                slights.size() * sizeof(SpotLightData));
         dirLightBuffer.upload(reinterpret_cast<const uint8_t *>(dlights.data()),
                               dlights.size() * sizeof(DirectionalLightData));
+        pbrLightBuffer.upload(reinterpret_cast<const uint8_t *>(pbrlights.data()),
+                              pbrlights.size() * sizeof(PBRPointLightData));
 
         std::vector<Command> commands;
 
@@ -765,6 +800,7 @@ namespace xng {
                         {pointLightBuffer,                           {{{FRAGMENT, ShaderResource::READ}}}},
                         {spotLightBuffer,                            {{{FRAGMENT, ShaderResource::READ}}}},
                         {dirLightBuffer,                             {{{FRAGMENT, ShaderResource::READ}}}},
+                        {pbrLightBuffer,                             {{{FRAGMENT, ShaderResource::READ}}}},
                 };
                 commands.emplace_back(RenderPipeline::bindShaderResources(shaderRes));
                 commands.emplace_back(pass.multiDrawIndexed(drawCalls, baseVertices));

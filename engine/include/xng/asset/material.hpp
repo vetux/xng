@@ -147,7 +147,7 @@ namespace xng {
          */
         float metallic{};
         float roughness = 0.5;
-        float ambientOcclusion{};
+        float ambientOcclusion = 1;
 
         ResourceHandle<Texture> metallicTexture;
         ResourceHandle<Texture> roughnessTexture;

@@ -20,42 +20,46 @@
 #ifndef XENGINE_LIGHTCOMPONENT_HPP
 #define XENGINE_LIGHTCOMPONENT_HPP
 
-#include "xng/render/directionallight.hpp"
-#include "xng/render/spotlight.hpp"
-#include "xng/render/pointlight.hpp"
+#include "xng/render/phong/phongdirectionallight.hpp"
+#include "xng/render/phong/phongspotlight.hpp"
+#include "xng/render/phong/phongpointlight.hpp"
+#include "xng/render/pbr/pbrpointlight.hpp"
 #include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT LightComponent : public Component {
-        enum LightType : int {
-            LIGHT_DIRECTIONAL = 0,
-            LIGHT_POINT,
-            LIGHT_SPOT
-        } type;
-
-        std::variant<DirectionalLight, PointLight, SpotLight> light;
+        std::variant<PhongDirectionalLight,
+                     PhongPointLight,
+                     PhongSpotLight,
+                     PBRPointLight> light;
 
         Messageable &operator<<(const Message &message) override {
-            message.value("type", reinterpret_cast<int&>(type), static_cast<int>(LIGHT_DIRECTIONAL));
+            int type;
+            message.value("type", type, 0);
             switch (type) {
-                case LIGHT_DIRECTIONAL: {
-                    DirectionalLight tmp;
+                case 0: {
+                    PhongDirectionalLight tmp;
                     message.value("light", tmp);
                     light = tmp;
                     break;
                 }
-                case LIGHT_POINT: {
-                    PointLight tmp;
+                case 1: {
+                    PhongPointLight tmp;
                     message.value("light", tmp);
                     light = tmp;
                     break;
                 }
-                case LIGHT_SPOT: {
-                    SpotLight tmp;
+                case 2: {
+                    PhongSpotLight tmp;
                     message.value("light", tmp);
                     light = tmp;
                     break;
+                }
+                case 3: {
+                    PBRPointLight tmp;
+                    message.value("light", tmp);
+                    light = tmp;
                 }
             }
             return Component::operator<<(message);
@@ -63,18 +67,22 @@ namespace xng {
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            type >> message["type"];
-            switch (type) {
-                case LIGHT_DIRECTIONAL: {
-                    std::get<DirectionalLight>(light) >> message["light"];
+            light.index() >> message["type"];
+            switch (light.index()) {
+                case 0: {
+                    std::get<PhongDirectionalLight>(light) >> message["light"];
                     break;
                 }
-                case LIGHT_POINT: {
-                    std::get<PointLight>(light) >> message["light"];
+                case 1: {
+                    std::get<PhongPointLight>(light) >> message["light"];
                     break;
                 }
-                case LIGHT_SPOT: {
-                    std::get<SpotLight>(light) >> message["light"];
+                case 2: {
+                    std::get<PhongSpotLight>(light) >> message["light"];
+                    break;
+                }
+                case 3: {
+                    std::get<PBRPointLight>(light) >> message["light"];
                     break;
                 }
             }

@@ -69,9 +69,7 @@ void createMaterialResource(xng::MemoryArchive &archive) {
 
     // Cube Wall
     material = {};
-    material.shadingModel = xng::SHADE_PBR;
-    material.roughness = 1;
-    material.metallic = 0;
+    material.shadingModel = xng::SHADE_PHONG;
     material.diffuseTexture = ResourceHandle<Texture>(Uri("textures/wall.json"));
 
     bundle.add("cubeWall", std::make_unique<xng::Material>(material));
@@ -203,7 +201,7 @@ int main(int argc, char *argv[]) {
             xng::Scene::Node pbrSphere;
 
             transformProp = {};
-            transformProp.transform.setPosition({(float) (x - 5) * 2, (float) (y - 5) * 2, -15});
+            transformProp.transform.setPosition({(float) (x - 4.5) * 2, (float) (y - 4.5) * 2, -15});
             pbrSphere.addProperty(transformProp);
 
             meshProp = {};
@@ -310,7 +308,18 @@ int main(int argc, char *argv[]) {
 
     Scene::Node lightNode;
     lightNode.addProperty(transformProp);
-    lightNode.addProperty(Scene::PointLightProperty());
+    lightNode.addProperty(Scene::PhongPointLightProperty());
+    scene.rootNode.childNodes.emplace_back(lightNode);
+
+    transformProp = {};
+    transformProp.transform.setPosition({2.5, 2.5, 0});
+
+    Scene::PBRPointLightProperty lightProp;
+    lightProp.light.energy = 10;
+    lightProp.light.color = ColorRGBA::white();
+
+    lightNode.addProperty(transformProp);
+    lightNode.addProperty(lightProp);
     scene.rootNode.childNodes.emplace_back(lightNode);
 
     transformProp = {};
@@ -318,7 +327,7 @@ int main(int argc, char *argv[]) {
 
     lightNode = {};
     lightNode.addProperty(transformProp);
-    lightNode.addProperty(Scene::PointLightProperty());
+    lightNode.addProperty(lightProp);
     scene.rootNode.childNodes.emplace_back(lightNode);
 
     transformProp = {};
@@ -326,7 +335,7 @@ int main(int argc, char *argv[]) {
 
     lightNode = {};
     lightNode.addProperty(transformProp);
-    lightNode.addProperty(Scene::PointLightProperty());
+    lightNode.addProperty(lightProp);
     scene.rootNode.childNodes.emplace_back(lightNode);
 
     transformProp = {};
@@ -334,7 +343,7 @@ int main(int argc, char *argv[]) {
 
     lightNode = {};
     lightNode.addProperty(transformProp);
-    lightNode.addProperty(Scene::PointLightProperty());
+    lightNode.addProperty(lightProp);
     scene.rootNode.childNodes.emplace_back(lightNode);
 
     auto text = textRenderer.render("GBUFFER POSITION", TextLayout{.lineHeight = 70});
@@ -343,6 +352,8 @@ int main(int argc, char *argv[]) {
     testPass->setTex(13);
 
     auto &cameraRef = scene.rootNode.getProperty<Scene::CameraProperty>();
+
+    auto lights = scene.rootNode.findAll({typeid(Scene::SkinnedMeshProperty)});
 
     CameraController cameraController(cameraRef.cameraTransform, input);
 
@@ -360,6 +371,18 @@ int main(int argc, char *argv[]) {
             testPass->decrementTex();
         } else if (window->getInput().getKeyboard().getKeyDown(xng::KEY_RIGHT)) {
             testPass->incrementTex();
+        }
+
+        if (window->getInput().getKeyboard().getKey(KEY_R)){
+            for (auto &node : lights){
+                auto &transform  = node.getProperty<Scene::TransformProperty>().transform;
+                transform.setPosition(transform.getPosition() + Vec3f(0, 0, 1.0f * deltaTime));
+            }
+        } else if (window->getInput().getKeyboard().getKey(KEY_F)){
+            for (auto &node : lights){
+                auto &transform  = node.getProperty<Scene::TransformProperty>().transform;
+                transform.setPosition(transform.getPosition() - Vec3f(0, 0, 1.0f * deltaTime));
+            }
         }
 
         renderer.render(scene);

@@ -17,14 +17,14 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_POINTLIGHT_HPP
-#define XENGINE_POINTLIGHT_HPP
+#ifndef XENGINE_PHONGPOINTLIGHT_HPP
+#define XENGINE_PHONGPOINTLIGHT_HPP
 
 #include "xng/math/transform.hpp"
 #include "xng/io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT PointLight : public Messageable {
+    struct XENGINE_EXPORT PhongPointLight : public Messageable {
         Messageable &operator<<(const Message &message) override {
             ambient << message.getMessage("ambient");
             diffuse << message.getMessage("diffuse");
@@ -56,4 +56,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_POINTLIGHT_HPP
+#endif //XENGINE_PHONGPOINTLIGHT_HPP

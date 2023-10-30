@@ -149,24 +149,31 @@ namespace xng {
             transformProperty.transform = tcomp.transform;
             node.addProperty(transformProperty);
 
-            switch (lightComponent.type) {
-                case LightComponent::LIGHT_DIRECTIONAL: {
-                    auto tmp = std::get<DirectionalLight>(lightComponent.light);
-                    Scene::DirectionalLightProperty prop;
+            switch (lightComponent.light.index()) {
+                case 0: {
+                    auto tmp = std::get<PhongDirectionalLight>(lightComponent.light);
+                    Scene::PhongDirectionalLightProperty prop;
                     prop.light = tmp;
                     node.addProperty(prop);
                     break;
                 }
-                case LightComponent::LIGHT_POINT: {
-                    auto tmp = std::get<PointLight>(lightComponent.light);
-                    Scene::PointLightProperty prop;
+                case 1: {
+                    auto tmp = std::get<PhongPointLight>(lightComponent.light);
+                    Scene::PhongPointLightProperty prop;
                     prop.light = tmp;
                     node.addProperty(prop);
                     break;
                 }
-                case LightComponent::LIGHT_SPOT: {
-                    auto tmp = std::get<SpotLight>(lightComponent.light);
-                    Scene::SpotLightProperty prop;
+                case 2: {
+                    auto tmp = std::get<PhongSpotLight>(lightComponent.light);
+                    Scene::PhongSpotLightProperty prop;
+                    prop.light = tmp;
+                    node.addProperty(prop);
+                    break;
+                }
+                case 3: {
+                    auto tmp = std::get<PBRPointLight>(lightComponent.light);
+                    Scene::PBRPointLightProperty prop;
                     prop.light = tmp;
                     node.addProperty(prop);
                     break;

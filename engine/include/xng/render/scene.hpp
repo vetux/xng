@@ -23,9 +23,13 @@
 #include <utility>
 
 #include "camera.hpp"
-#include "directionallight.hpp"
-#include "pointlight.hpp"
-#include "spotlight.hpp"
+
+#include "xng/render/phong/phongdirectionallight.hpp"
+#include "xng/render/phong/phongpointlight.hpp"
+#include "xng/render/phong/phongspotlight.hpp"
+
+#include "xng/render/pbr/pbrpointlight.hpp"
+
 #include "xng/asset/material.hpp"
 #include "xng/asset/skybox.hpp"
 #include "xng/asset/shader.hpp"
@@ -141,28 +145,36 @@ namespace xng {
             std::map<std::string, Mat4f> boneTransforms; // Optional dynamic bone transform values which override the values in SkinnedMesh.rig
         };
 
-        struct DirectionalLightProperty : public Property {
+        struct PBRPointLightProperty : public Property {
             std::type_index getType() override {
-                return typeid(DirectionalLightProperty);
+                return typeid(PBRPointLightProperty);
             }
 
-            DirectionalLight light;
+            PBRPointLight light;
         };
 
-        struct PointLightProperty : public Property {
+        struct PhongDirectionalLightProperty : public Property {
             std::type_index getType() override {
-                return typeid(PointLightProperty);
+                return typeid(PhongDirectionalLightProperty);
             }
 
-            PointLight light;
+            PhongDirectionalLight light;
         };
 
-        struct SpotLightProperty : public Property {
+        struct PhongPointLightProperty : public Property {
             std::type_index getType() override {
-                return typeid(SpotLightProperty);
+                return typeid(PhongPointLightProperty);
             }
 
-            SpotLight light;
+            PhongPointLight light;
+        };
+
+        struct PhongSpotLightProperty : public Property {
+            std::type_index getType() override {
+                return typeid(PhongSpotLightProperty);
+            }
+
+            PhongSpotLight light;
         };
 
         struct SkyboxProperty : public Property {

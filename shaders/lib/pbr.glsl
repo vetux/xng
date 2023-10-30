@@ -4,6 +4,11 @@
 
 #include "pi.glsl"
 
+struct PBRPointLight {
+    vec4 position;
+    vec4 color;
+};
+
 // ----------------------------------------------------------------------------
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
@@ -96,7 +101,10 @@ PbrPass pbr_begin(vec3 WorldPos,
 }
 
 // Calculate a pbr point light using the pass returned by pbr_begin() and the accumulated reflectance, the returned reflectance is the passed reflectance with the point light influence added
-vec3 pbr_point(PbrPass pass, vec3 Lo, vec3 lightPosition, vec3 lightColor) {
+vec3 pbr_point(PbrPass pass, vec3 Lo, PBRPointLight light) {
+    vec3 lightPosition = light.position.xyz;
+    vec3 lightColor = light.color.xyz;
+
     vec3 N = pass.N;
     vec3 V = pass.V;
     vec3 F0 = pass.F0;
@@ -153,9 +161,9 @@ vec3 pbr_finish(PbrPass pass, vec3 Lo)
     vec3 color = ambient + Lo;
 
     // HDR tonemapping
-    color = color / (color + vec3(1.0));
+  //  color = color / (color + vec3(1.0));
     // gamma correct
-    color = pow(color, vec3(1.0/2.2));
+  //  color = pow(color, vec3(1.0/2.2));
 
     return color;
 }
