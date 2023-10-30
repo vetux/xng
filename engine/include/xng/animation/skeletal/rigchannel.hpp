@@ -22,7 +22,7 @@
 
 #include "xng/animation/skeletal/rigkeyframe.hpp"
 
-#include "xng/types/time.hpp"
+#include "xng/util/time.hpp"
 
 namespace xng {
     class RigChannel {

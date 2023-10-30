@@ -30,7 +30,7 @@
 #include "xng/gui/canvasscalingmode.hpp"
 
 #include "xng/render/2d/renderer2d.hpp"
-#include "xng/types/time.hpp"
+#include "xng/util/time.hpp"
 
 namespace xng {
     class XENGINE_EXPORT CanvasRenderSystem : public System, public EntityScene::Listener {

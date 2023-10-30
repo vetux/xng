@@ -28,8 +28,8 @@
 #include "xng/math/vector3.hpp"
 #include "xng/math/vector2.hpp"
 
-#include "xng/geometry/vertex.hpp"
-#include "xng/geometry/primitive.hpp"
+#include "xng/render/geometry/vertex.hpp"
+#include "xng/render/geometry/primitive.hpp"
 
 #include "xng/resource/resource.hpp"
 

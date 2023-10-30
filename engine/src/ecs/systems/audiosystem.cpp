@@ -23,7 +23,7 @@
 #include "xng/ecs/components/audiosourcecomponent.hpp"
 
 #include "xng/resource/resourcehandle.hpp"
-#include "xng/types/time.hpp"
+#include "xng/util/time.hpp"
 
 #define AUDIO_POS_SCALE 1
 

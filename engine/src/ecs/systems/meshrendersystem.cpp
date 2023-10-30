@@ -22,7 +22,7 @@
 
 #include "xng/ecs/systems/meshrendersystem.hpp"
 #include "xng/ecs/components.hpp"
-#include "xng/types/time.hpp"
+#include "xng/util/time.hpp"
 
 namespace xng {
     MeshRenderSystem::MeshRenderSystem(SceneRenderer &pipeline)

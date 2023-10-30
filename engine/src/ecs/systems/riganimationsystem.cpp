@@ -20,7 +20,7 @@
 #include "xng/ecs/systems/riganimationsystem.hpp"
 #include "xng/ecs/components/riganimationcomponent.hpp"
 #include "xng/ecs/components/skinnedmeshcomponent.hpp"
-#include "xng/types/time.hpp"
+#include "xng/util/time.hpp"
 
 namespace xng {
     void RigAnimationSystem::start(EntityScene &scene, EventBus &eventBus) {

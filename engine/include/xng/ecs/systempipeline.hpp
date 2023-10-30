@@ -27,7 +27,7 @@
 #include "xng/ecs/system.hpp"
 #include "xng/ecs/profiling/ecsprofiler.hpp"
 #include "xng/async/threadpool.hpp"
-#include "xng/types/time.hpp"
+#include "xng/util/time.hpp"
 
 namespace xng {
     /**

@@ -22,7 +22,7 @@
 
 #include "xng/animation/skeletal/riganimation.hpp"
 
-#include "xng/types/time.hpp"
+#include "xng/util/time.hpp"
 
 namespace xng {
     struct RigKeyframe {

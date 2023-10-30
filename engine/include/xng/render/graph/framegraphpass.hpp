@@ -20,8 +20,8 @@
 #ifndef XENGINE_FRAMEGRAPHPASS_HPP
 #define XENGINE_FRAMEGRAPHPASS_HPP
 
-#include "framegraphpassresources.hpp"
-#include "xng/types/genericmap.hpp"
+#include "xng/render/graph/framegraphpassresources.hpp"
+#include "xng/util/genericmap.hpp"
 
 #include "xng/gpu/renderdevice.hpp"
 

@@ -18,7 +18,7 @@
  */
 
 #include "xng/animation/sprite/spriteanimation.hpp"
-#include "xng/types/time.hpp"
+#include "xng/util/time.hpp"
 
 #include <cmath>
 #include <cassert>

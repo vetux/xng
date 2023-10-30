@@ -20,11 +20,11 @@
 #ifndef XENGINE_SYSTEM_HPP
 #define XENGINE_SYSTEM_HPP
 
-#include "xng/types/time.hpp"
+#include "xng/util/time.hpp"
 #include "entityscene.hpp"
 
 #include "xng/event/eventbus.hpp"
-#include "xng/types/time.hpp"
+#include "xng/util/time.hpp"
 
 namespace xng {
     class XENGINE_EXPORT System {

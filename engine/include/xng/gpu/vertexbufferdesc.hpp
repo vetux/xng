@@ -28,7 +28,7 @@
 #include "xng/util/hashcombine.hpp"
 #include "xng/util/crc.hpp"
 
-#include "xng/geometry/primitive.hpp"
+#include "xng/render/geometry/primitive.hpp"
 
 namespace xng {
     struct VertexBufferDesc {

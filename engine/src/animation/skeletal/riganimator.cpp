@@ -21,7 +21,7 @@
 #include <cmath>
 
 #include "xng/animation/skeletal/riganimator.hpp"
-#include "xng/types/time.hpp"
+#include "xng/util/time.hpp"
 
 #include "xng/math/matrixmath.hpp"
 #include "xng/math/interpolation.hpp"

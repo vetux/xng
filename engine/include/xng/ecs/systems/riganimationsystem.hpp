@@ -24,7 +24,7 @@
 
 #include "xng/ecs/components/riganimationcomponent.hpp"
 #include "xng/animation/skeletal/riganimator.hpp"
-#include "xng/types/time.hpp"
+#include "xng/util/time.hpp"
 
 namespace xng {
     class XENGINE_EXPORT RigAnimationSystem : public System, public EntityScene::Listener {

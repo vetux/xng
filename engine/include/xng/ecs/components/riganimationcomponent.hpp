@@ -26,7 +26,7 @@
 #include "xng/animation/skeletal/rig.hpp"
 #include "xng/resource/resourcehandle.hpp"
 
-#include "xng/types/time.hpp"
+#include "xng/util/time.hpp"
 
 namespace xng {
     struct RigAnimationComponent : public Component {

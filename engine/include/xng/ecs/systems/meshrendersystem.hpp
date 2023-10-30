@@ -28,7 +28,7 @@
 #include "xng/ecs/components/skyboxcomponent.hpp"
 
 #include "xng/render/scenerenderer.hpp"
-#include "xng/types/time.hpp"
+#include "xng/util/time.hpp"
 
 namespace xng {
     class XENGINE_EXPORT MeshRenderSystem : public System {

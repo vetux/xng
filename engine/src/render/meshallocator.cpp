@@ -19,7 +19,7 @@
 
 #include "xng/render/meshallocator.hpp"
 
-#include "xng/geometry/vertexstream.hpp"
+#include "xng/render/geometry/vertexstream.hpp"
 
 namespace xng {
     MeshAllocator::MeshAllocation MeshAllocator::getAllocatedMesh(const ResourceHandle<SkinnedMesh> &mesh) {

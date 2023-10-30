@@ -20,7 +20,7 @@
 #ifndef XENGINE_VERTEXBUILDER_HPP
 #define XENGINE_VERTEXBUILDER_HPP
 
-#include "xng/geometry/vertex.hpp"
+#include "xng/render/geometry/vertex.hpp"
 
 #include "xng/math/vector2.hpp"
 #include "xng/math/vector3.hpp"

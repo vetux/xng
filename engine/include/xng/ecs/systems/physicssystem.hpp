@@ -24,7 +24,7 @@
 #include "xng/ecs/system.hpp"
 
 #include "xng/physics/world.hpp"
-#include "xng/types/time.hpp"
+#include "xng/util/time.hpp"
 
 namespace xng {
     class XENGINE_EXPORT PhysicsSystem : public System, public EntityScene::Listener, public World::ContactListener {

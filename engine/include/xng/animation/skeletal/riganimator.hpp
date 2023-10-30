@@ -25,7 +25,7 @@
 #include "rig.hpp"
 #include "riganimation.hpp"
 
-#include "xng/types/time.hpp"
+#include "xng/util/time.hpp"
 
 #include "xng/animation/skeletal/rigchannel.hpp"
 

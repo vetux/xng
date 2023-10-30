@@ -24,7 +24,7 @@
 #include "xng/ecs/components/spritecomponent.hpp"
 #include "xng/event/events/guievent.hpp"
 #include "xng/input/device/mouse.hpp"
-#include "xng/types/time.hpp"
+#include "xng/util/time.hpp"
 
 namespace xng {
     GuiEventSystem::GuiEventSystem(Window &window)

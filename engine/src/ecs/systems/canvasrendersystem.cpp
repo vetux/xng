@@ -28,7 +28,7 @@
 
 #include "xng/gui/canvasscaler.hpp"
 #include "xng/gui/layoutengine.hpp"
-#include "xng/types/time.hpp"
+#include "xng/util/time.hpp"
 
 namespace xng {
     CanvasRenderSystem::CanvasRenderSystem(Renderer2D &renderer2D,

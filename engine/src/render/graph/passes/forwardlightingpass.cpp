@@ -24,7 +24,7 @@
 #include "graph/forwardlightingpass_vs.hpp"
 #include "graph/forwardlightingpass_fs.hpp"
 
-#include "xng/geometry/vertexstream.hpp"
+#include "xng/render/geometry/vertexstream.hpp"
 
 namespace xng {
 #pragma pack(push, 1)

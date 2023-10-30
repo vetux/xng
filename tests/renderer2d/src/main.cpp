@@ -22,7 +22,7 @@
 #include <fstream>
 
 #include "debugoverlay.hpp"
-#include "xng/types/time.hpp"
+#include "xng/util/time.hpp"
 
 using namespace xng;
 

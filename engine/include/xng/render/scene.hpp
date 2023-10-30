@@ -36,7 +36,7 @@
 #include "xng/render/mesh.hpp"
 #include "xng/render/skinnedmesh.hpp"
 
-#include "xng/types/genericmap.hpp"
+#include "xng/util/genericmap.hpp"
 
 #include "xng/resource/resourcehandle.hpp"
 

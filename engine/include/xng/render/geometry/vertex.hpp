@@ -17,31 +17,16 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_VERTEXSTREAM_HPP
-#define XENGINE_VERTEXSTREAM_HPP
+#ifndef XENGINE_VERTEX_HPP
+#define XENGINE_VERTEX_HPP
 
-#include "xng/geometry/vertexbuilder.hpp"
+#include <vector>
+#include <cstdint>
 
 namespace xng {
-    class VertexStream {
-    public:
-        VertexStream &addVertex(const Vertex &vertex) {
-            vertexBuffer.insert(vertexBuffer.end(), vertex.buffer.begin(), vertex.buffer.end());
-            return *this;
-        }
-
-        VertexStream &addVertices(const std::vector<Vertex> &value) {
-            for (auto &v: value) {
-                addVertex(v);
-            }
-            return *this;
-        }
-
-        const std::vector<uint8_t> &getVertexBuffer() const { return vertexBuffer; }
-
-    private:
-        std::vector<uint8_t> vertexBuffer;
+    struct Vertex {
+        std::vector<uint8_t> buffer;
     };
 }
 
-#endif //XENGINE_VERTEXSTREAM_HPP
+#endif //XENGINE_VERTEX_HPP

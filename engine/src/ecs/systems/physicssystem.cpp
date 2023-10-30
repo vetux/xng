@@ -21,7 +21,7 @@
 
 #include "xng/ecs/systems/physicssystem.hpp"
 #include "xng/ecs/components.hpp"
-#include "xng/types/time.hpp"
+#include "xng/util/time.hpp"
 
 namespace xng {
     static ColliderDesc applyScale(const ColliderDesc &desc, float scale) {

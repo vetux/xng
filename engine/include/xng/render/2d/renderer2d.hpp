@@ -36,7 +36,7 @@
 
 #include "xng/render/atlas/textureatlas.hpp"
 
-#include "xng/geometry/vertexstream.hpp"
+#include "xng/render/geometry/vertexstream.hpp"
 
 namespace xng {
     /**

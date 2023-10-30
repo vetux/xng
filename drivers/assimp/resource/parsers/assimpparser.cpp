@@ -27,7 +27,7 @@
 #include "xng/render/skinnedmesh.hpp"
 #include "xng/render/material.hpp"
 
-#include "xng/geometry/vertexbuilder.hpp"
+#include "xng/render/geometry/vertexbuilder.hpp"
 
 #include "xng/math/matrixmath.hpp"
 

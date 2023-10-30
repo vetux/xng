@@ -29,7 +29,7 @@
 
 #include "xng/audio/audiodevice.hpp"
 #include "xng/resource/resourceregistry.hpp"
-#include "xng/types/time.hpp"
+#include "xng/util/time.hpp"
 
 namespace xng {
     class XENGINE_EXPORT AudioSystem : public System, public EntityScene::Listener {
