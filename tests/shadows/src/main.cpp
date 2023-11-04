@@ -195,7 +195,7 @@ int main(int argc, char *argv[]) {
     transformProp.transform.setPosition({5.5, 5.5, 0});
 
     Scene::PBRPointLightProperty lightProp;
-    lightProp.light.energy = 50;
+    lightProp.light.power = 50;
     lightProp.light.color = ColorRGBA::white();
 
     lightNode.addProperty(transformProp);

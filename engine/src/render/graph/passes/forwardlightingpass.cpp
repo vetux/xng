@@ -172,7 +172,7 @@ namespace xng {
                                        t.getPosition().y,
                                        t.getPosition().z,
                                        0).getMemory(),
-                    .color = Vec4f(v.x * l.energy, v.y * l.energy, v.z * l.energy, 1).getMemory(),
+                    .color = Vec4f(v.x * l.power, v.y * l.power, v.z * l.power, 1).getMemory(),
             };
             if (l.castShadows)
                 shadowLights.emplace_back(tmp);

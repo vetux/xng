@@ -28,7 +28,7 @@ namespace xng {
     struct XENGINE_EXPORT PBRPointLight : public Messageable {
         Messageable &operator<<(const Message &message) override {
             color << message.getMessage("color");
-            message.value("energy", energy);
+            message.value("power", power);
             message.value("castShadows", castShadows);
             return *this;
         }
@@ -36,13 +36,13 @@ namespace xng {
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             color >> message["color"];
-            message["energy"] = energy;
+            message["power"] = power;
             message["castShadows"] = castShadows;
             return message;
         }
 
         ColorRGBA color = ColorRGBA::white(); // The color of the light
-        float energy = 1; // The strength of the light
+        float power = 1; // The strength of the light
 
         bool castShadows = true;
     };
