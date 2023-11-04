@@ -240,8 +240,7 @@ namespace xng {
                         mat = mi->second.get();
                     }
 
-                    if (mat.transparent
-                        || mat.shader.assigned()) {
+                    if (mat.transparent) {
                         continue;
                     }
 
@@ -610,8 +609,7 @@ namespace xng {
                         material = mIt->second.get();
                     }
 
-                    if (material.transparent
-                        || material.shader.assigned()) {
+                    if (material.transparent) {
                         continue;
                     }
 

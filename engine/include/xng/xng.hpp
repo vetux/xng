@@ -265,7 +265,6 @@
 #include "xng/render/graph/framegraphallocator.hpp"
 #include "xng/render/graph/framegraphpipeline.hpp"
 #include "xng/render/graph/passes/skyboxpass.hpp"
-#include "xng/render/graph/passes/usershadepass.hpp"
 #include "xng/render/graph/passes/compositepass.hpp"
 #include "xng/render/graph/passes/shadowmappingpass.hpp"
 #include "xng/render/graph/passes/deferredlightingpass.hpp"

@@ -338,7 +338,7 @@ namespace xng {
                     mat = mi->second.get();
                 }
 
-                if (!mat.transparent || mat.shader.assigned())
+                if (!mat.transparent)
                     continue;
 
                 usedTextures.insert(mat.normal.getUri());
@@ -622,7 +622,7 @@ namespace xng {
                             material = mi->second.get();
                         }
 
-                        if (!material.transparent || material.shader.assigned())
+                        if (!material.transparent)
                             continue;
 
                         auto model = transformProp.transform.model();

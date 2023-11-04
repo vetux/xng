@@ -34,9 +34,14 @@ namespace xng {
         SHADE_PBR = 0, // PBR Shading
         SHADE_PHONG = 1, // Per fragment phong shading
         SHADE_PHONG_GOURAUD = 2, // Per vertex phong shading
-        SHADE_PHONG_FLAT = 3 // Per polygon phong shading
+        SHADE_PHONG_FLAT = 3, // Per polygon phong shading
     };
 
+    /**
+     * A material for the provided passes for rendering phong or pbr lighting.
+     *
+     * Users can create custom lighting passes if needed and write to the SLOT_DEFERRED/FORWARD_COLOR and SLOT_DEFERRED/FORWARD_DEPTH.
+     */
     struct XENGINE_EXPORT Material : public Resource, public Messageable {
         ~Material() override = default;
 
@@ -50,7 +55,6 @@ namespace xng {
 
         Messageable &operator<<(const Message &message) override {
             message.value("model", (int &) shadingModel, (int) ShadingModel::SHADE_PBR);
-            message.value("shader", shader);
             message.value("normal", normal);
 
             message.value("normalIntensity", normalIntensity);
@@ -82,7 +86,6 @@ namespace xng {
             message = Message(Message::DICTIONARY);
 
             shadingModel >> message["model"];
-            shader >> message["shader"];
             normal >> message["normal"];
 
             normalIntensity >> message["normalIntensity"];
@@ -111,15 +114,6 @@ namespace xng {
         }
 
         ShadingModel shadingModel = SHADE_PHONG;
-
-        /**
-         * Optional user specified shader.
-         *
-         * Currently only glsl user shaders are supported.
-         *
-         * User shaders are always drawn using forward shading.
-         */
-        ResourceHandle<Shader> shader;
 
         /**
          * If assigned the contained normals are sampled otherwise vertex normals are used.
@@ -165,8 +159,7 @@ namespace xng {
         ResourceHandle<Texture> shininessTexture;
 
         bool isLoaded() const override {
-            return shader.isLoaded()
-                   && normal.isLoaded()
+            return normal.isLoaded()
                    && metallicTexture.isLoaded()
                    && roughnessTexture.isLoaded()
                    && ambientOcclusionTexture.isLoaded()
