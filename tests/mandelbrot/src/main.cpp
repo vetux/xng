@@ -171,7 +171,7 @@ int main(int argc, char *argv[]) {
             blitTarget = device->createRenderTarget(screen->getDescription());
         }
 
-        blitTarget->setAttachments({*mandelbrotRenderer.texture});
+        blitTarget->setAttachments({RenderTargetAttachment::texture(*mandelbrotRenderer.texture)});
 
         commandBuffer->begin();
         commandBuffer->add(
