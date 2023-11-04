@@ -73,6 +73,11 @@ namespace xng {
             }
 
             template<typename T>
+            bool hasProperty() const {
+                return properties.find(typeid(T)) != properties.end();
+            }
+
+            template<typename T>
             void addProperty(const T &property) {
                 properties[typeid(T)] = std::make_shared<T>(property);
             }

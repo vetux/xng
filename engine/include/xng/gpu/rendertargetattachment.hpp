@@ -29,15 +29,127 @@ namespace xng {
 
     class TextureArrayBuffer;
 
-    enum AttachmentType {
-        ATTACHMENT_TEXTURE = 0,
-        ATTACHMENT_CUBEMAP = 1,
-        ATTACHMENT_TEXTUREARRAY = 2
-    };
+    struct RenderTargetAttachment {
+        enum AttachmentType : int {
+            ATTACHMENT_TEXTURE = 0,
+            ATTACHMENT_CUBEMAP,
+            ATTACHMENT_CUBEMAP_LAYERED,
+            ATTACHMENT_TEXTUREARRAY,
+            ATTACHMENT_TEXTUREARRAY_CUBEMAP,
+            ATTACHMENT_TEXTUREARRAY_LAYERED,
+        };
 
-    typedef std::variant<std::reference_wrapper<TextureBuffer>,
-            std::pair<CubeMapFace, std::reference_wrapper<TextureBuffer>>,
-            std::pair<size_t, std::reference_wrapper<TextureArrayBuffer>>> RenderTargetAttachment;
+        RenderTargetAttachment() = default;
+
+        RenderTargetAttachment(AttachmentType type,
+                               TextureBuffer &textureBuffer,
+                               size_t mipMapLevel)
+                : type(type),
+                  textureBuffer(&textureBuffer),
+                  mipMapLevel(mipMapLevel) {}
+
+        RenderTargetAttachment(AttachmentType type,
+                               TextureBuffer &textureBuffer,
+                               CubeMapFace face,
+                               size_t mipMapLevel)
+                : type(type),
+                  textureBuffer(&textureBuffer),
+                  face(face),
+                  mipMapLevel(mipMapLevel)  {}
+
+        RenderTargetAttachment(AttachmentType type,
+                               TextureArrayBuffer &textureArrayBuffer,
+                               size_t mipMapLevel)
+                : type(type),
+                  textureArrayBuffer(&textureArrayBuffer),
+                  mipMapLevel(mipMapLevel)  {}
+
+        RenderTargetAttachment(AttachmentType type,
+                               TextureArrayBuffer &textureArrayBuffer,
+                               size_t index,
+                               size_t mipMapLevel)
+                : type(type),
+                  textureArrayBuffer(&textureArrayBuffer),
+                  index(index),
+                  mipMapLevel(mipMapLevel)  {}
+
+        RenderTargetAttachment(AttachmentType type,
+                               TextureArrayBuffer &textureArrayBuffer,
+                               size_t index,
+                               CubeMapFace face,
+                               size_t mipMapLevel)
+                : type(type),
+                  textureArrayBuffer(&textureArrayBuffer),
+                  index(index),
+                  face(face),
+                  mipMapLevel(mipMapLevel)  {}
+
+        static RenderTargetAttachment texture(TextureBuffer &textureBuffer, size_t mipMapLevel = 0) {
+            return {ATTACHMENT_TEXTURE, textureBuffer, mipMapLevel};
+        }
+
+        static RenderTargetAttachment cubemap(TextureBuffer &textureBuffer, CubeMapFace face, size_t mipMapLevel = 0) {
+            return {ATTACHMENT_CUBEMAP, textureBuffer, face, mipMapLevel};
+        }
+
+        /**
+         * Create a layered cube map texture attachment where shaders select which face of the cube map to write to by using eg gl_Layer in glsl
+         *
+         * @param textureBuffer
+         * @return
+         */
+        static RenderTargetAttachment cubemapLayered(TextureBuffer &textureBuffer, size_t mipMapLevel = 0) {
+            return {ATTACHMENT_CUBEMAP_LAYERED, textureBuffer, mipMapLevel};
+        }
+
+        /**
+         * Attach the texture 2d at the specified index in the textureArrayBuffer to the target.
+         *
+         * @param textureArrayBuffer
+         * @param index
+         * @param mipMapLevel
+         * @return
+         */
+        static RenderTargetAttachment textureArray(TextureArrayBuffer &textureArrayBuffer,
+                                                   size_t index,
+                                                   size_t mipMapLevel = 0) {
+            return {ATTACHMENT_TEXTUREARRAY, textureArrayBuffer, index, mipMapLevel};
+        }
+
+        /**
+         * Attach the face of the cube map at the specified index in the textureArrayBuffer to the target.
+         *
+         * @param textureArrayBuffer
+         * @param index
+         * @param face
+         * @param mipMapLevel
+         * @return
+         */
+        static RenderTargetAttachment textureArrayCubeMap(TextureArrayBuffer &textureArrayBuffer,
+                                                          size_t index,
+                                                          CubeMapFace face,
+                                                          size_t mipMapLevel = 0) {
+            return {ATTACHMENT_TEXTUREARRAY_CUBEMAP, textureArrayBuffer, index, face, mipMapLevel};
+        }
+
+        /**
+         * Create a 2d or cube map texture attachment where shaders select which texture in the array to write to by using eg gl_Layer in glsl.
+         * If the texture is a cube map array texture the shader can select the index and face to write to by setting gl_Layer to (index * 6) + face
+         *
+         * @param textureArrayBuffer
+         */
+        static RenderTargetAttachment textureArrayLayered(TextureArrayBuffer &textureArrayBuffer,
+                                                          size_t mipMapLevel = 0) {
+            return {ATTACHMENT_TEXTUREARRAY_LAYERED, textureArrayBuffer, mipMapLevel};
+        }
+
+        AttachmentType type{};
+        TextureBuffer *textureBuffer{};
+        TextureArrayBuffer *textureArrayBuffer{};
+        size_t index{};
+        CubeMapFace face{};
+        size_t mipMapLevel{};
+    };
 }
 
 #endif //XENGINE_RENDERTARGETATTACHMENT_HPP

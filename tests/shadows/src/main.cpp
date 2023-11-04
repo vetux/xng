@@ -29,54 +29,19 @@
 static const char *MATERIALS_PATH = "memory://tests/graph/materials.json";
 
 void createMaterialResource(xng::MemoryArchive &archive) {
-    // Sphere
-    xng::Material material = {};
-    material.shadingModel = xng::SHADE_PBR;
-    material.transparent = false;
-    material.diffuseTexture = ResourceHandle<Texture>(Uri("textures/wall.json"));
-    material.normal = ResourceHandle<Texture>(Uri("textures/sphere_normals.json"));
-    material.roughness = 1;
-    material.metallic = 0;
-
     xng::ResourceBundle bundle;
-    bundle.add("sphere", std::make_unique<xng::Material>(material));
-
-    // Cube Smiley
-    material = {};
-    material.shadingModel = xng::SHADE_PBR;
-    material.diffuseTexture = ResourceHandle<Texture>(Uri("textures/awesomeface.json"));
-    material.transparent = true;
-    material.roughness = 1;
-    material.metallic = 0;
-
-    bundle.add("cube", std::make_unique<xng::Material>(material));
-
-    // Cube Transparent
-    material = {};
-    material.shadingModel = xng::SHADE_PHONG;
-    material.diffuse = ColorRGBA(0, 0, 255, 120);
-    material.transparent = true;
-
-    bundle.add("cubeAlpha", std::make_unique<xng::Material>(material));
-
-    // Cube Transparent Red
-    material = {};
-    material.shadingModel = xng::SHADE_PHONG;
-    material.diffuse = ColorRGBA::red(1, 200);
-    material.transparent = true;
-
-    bundle.add("cubeAlphaRed", std::make_unique<xng::Material>(material));
 
     // Cube Wall
-    material = {};
-    material.shadingModel = xng::SHADE_PHONG;
+    xng::Material material = {};
+    material.transparent = true;
+    material.shadingModel = xng::SHADE_PBR;
     material.diffuseTexture = ResourceHandle<Texture>(Uri("textures/wall.json"));
 
     bundle.add("cubeWall", std::make_unique<xng::Material>(material));
 
     // Pbr Spheres
-    for (int x = 0; x < 10; x++) {
-        for (int y = 0; y < 10; y++) {
+    for (int x = 0; x < 4; x++) {
+        for (int y = 0; y < 4; y++) {
             material = {};
             material.shadingModel = xng::SHADE_PBR;
             material.diffuse = ColorRGBA::red();
@@ -87,7 +52,6 @@ void createMaterialResource(xng::MemoryArchive &archive) {
                        std::make_unique<xng::Material>(material));
         }
     }
-
 
     auto msg = xng::JsonParser::createBundle(bundle);
 
@@ -104,8 +68,6 @@ void createMaterialResource(xng::MemoryArchive &archive) {
     archive.addData(uri.toString(false), vec);
 }
 
-
-// TODO: Fix OUT_OF_MEMORY thrown after running the framegraph test for some time on windows (The task manager is not showing any kind of memory leak.)
 int main(int argc, char *argv[]) {
     std::vector<std::unique_ptr<ResourceParser>> parsers;
     parsers.emplace_back(std::make_unique<StbiParser>());
@@ -166,6 +128,7 @@ int main(int argc, char *argv[]) {
     auto testPass = std::make_shared<TestPass>();
 
     FrameGraphPipeline pipeline = FrameGraphPipeline().addPass(std::make_shared<ConstructionPass>())
+            .addPass(std::make_shared<ShadowMappingPass>())
             .addPass(std::make_shared<DeferredLightingPass>())
             .addPass(std::make_shared<ForwardLightingPass>())
             .addPass(std::make_shared<CompositePass>())
@@ -179,36 +142,27 @@ int main(int argc, char *argv[]) {
     cameraProperty.camera.type = xng::PERSPECTIVE;
     scene.rootNode.addProperty(cameraProperty);
 
-    xng::Scene::Node sphere;
+    Scene::ShadowProperty shadowProp;
+    shadowProp.castShadows = false;
+    shadowProp.receiveShadows = false;
 
-    auto transformProp = Scene::TransformProperty();
-    transformProp.transform.setPosition({0, 5, -25});
-    sphere.addProperty(transformProp);
-
-    auto meshProp = Scene::SkinnedMeshProperty();
-    meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/sphere.obj/Sphere"));
-    sphere.addProperty(meshProp);
-
-    auto materialProp = Scene::MaterialProperty();
-    materialProp.materials[0] = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/sphere")));
-    auto mat = materialProp.materials[0].get();
-    sphere.addProperty(materialProp);
-
-    scene.rootNode.childNodes.emplace_back(sphere);
-
-    for (int x = 0; x < 10; x++) {
-        for (int y = 0; y < 10; y++) {
+    for (int x = 0; x < 4; x++) {
+        for (int y = 0; y < 4; y++) {
             xng::Scene::Node pbrSphere;
 
-            transformProp = {};
-            transformProp.transform.setPosition({(float) (x - 4.5) * 2, (float) (y - 4.5) * 2, -15});
+            if (y == 1){
+                pbrSphere.addProperty(shadowProp);
+            }
+
+            Scene::TransformProperty transformProp = {};
+            transformProp.transform.setPosition({(float) (x - 1.5) * 2, (float) (y - 1.5) * 2, -15});
             pbrSphere.addProperty(transformProp);
 
-            meshProp = {};
+            Scene::SkinnedMeshProperty meshProp = {};
             meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/sphere.obj/Sphere"));
             pbrSphere.addProperty(meshProp);
 
-            materialProp = {};
+            Scene::MaterialProperty materialProp = {};
             materialProp.materials[0] = xng::ResourceHandle<xng::Material>(
                     xng::Uri(
                             MATERIALS_PATH + std::string("/PbrSphere-" + std::to_string(x) + "-" + std::to_string(y))));
@@ -220,110 +174,38 @@ int main(int argc, char *argv[]) {
 
     xng::Scene::Node cubeWall;
 
-    transformProp = {};
-    transformProp.transform.setPosition({2.5, 0, -10});
+    Scene::TransformProperty transformProp = {};
+    transformProp.transform.setPosition({0, 0, -20});
+    transformProp.transform.setScale({10, 10, 1});
     cubeWall.addProperty(transformProp);
 
-    meshProp = {};
+    Scene::SkinnedMeshProperty meshProp = {};
     meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/cube_faceuv.obj"));
     cubeWall.addProperty(meshProp);
 
-    materialProp = {};
+    Scene::MaterialProperty materialProp = {};
     materialProp.materials[0] = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/cubeWall")));
     cubeWall.addProperty(materialProp);
 
     scene.rootNode.childNodes.emplace_back(cubeWall);
 
-    xng::Scene::Node cube;
-
-    transformProp = {};
-    transformProp.transform.setPosition({0, 0, -20});
-    transformProp.transform.setScale(Vec3f(10, 10, 1));
-    cube.addProperty(transformProp);
-
-    meshProp = {};
-    meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/cube.obj"));
-    cube.addProperty(meshProp);
-
-    materialProp = {};
-    materialProp.materials[0] = xng::ResourceHandle<xng::Material>(
-            xng::Uri(MATERIALS_PATH + std::string("/cubeAlphaRed")));
-    cube.addProperty(materialProp);
-
-    scene.rootNode.childNodes.emplace_back(cube);
-
-    transformProp = {};
-    transformProp.transform.setPosition({-2.5, 0, -10});
-    sphere.addProperty(transformProp);
-
-    meshProp = {};
-    meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/sphere.obj/Sphere"));
-    sphere.addProperty(meshProp);
-
-    scene.rootNode.childNodes.emplace_back(sphere);
-
-    transformProp = {};
-    transformProp.transform.setPosition({0, 0, -10});
-    sphere.addProperty(transformProp);
-
-    meshProp = {};
-    meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/sphere.obj/Sphere"));
-    sphere.addProperty(meshProp);
-
-    scene.rootNode.childNodes.emplace_back(sphere);
-
-    transformProp = {};
-    transformProp.transform.setPosition({-2.5, 0, -10});
-    transformProp.transform.setScale(Vec3f(1, 1, 1));
-    cube.addProperty(transformProp);
-
-    meshProp = {};
-    meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/cube_faceuv.obj"));
-    cube.addProperty(meshProp);
-
-    materialProp = {};
-    materialProp.materials[0] = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/cube")));
-    cube.addProperty(materialProp);
-
-    scene.rootNode.childNodes.emplace_back(cube);
-
-    transformProp = {};
-    transformProp.transform.setPosition({0, 0, -5});
-    transformProp.transform.setScale(Vec3f(1, 1.2, 1));
-    cube.addProperty(transformProp);
-
-    meshProp = {};
-    meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/cube.obj"));
-    cube.addProperty(meshProp);
-
-    materialProp = {};
-    materialProp.materials[0] = xng::ResourceHandle<xng::Material>(
-            xng::Uri(MATERIALS_PATH + std::string("/cubeAlpha")));
-    cube.addProperty(materialProp);
-
-    scene.rootNode.childNodes.emplace_back(cube);
-
-    transformProp = {};
-    transformProp.transform.setPosition({2.5, 2.5, 0});
-
     Scene::Node lightNode;
-    lightNode.addProperty(transformProp);
-    lightNode.addProperty(Scene::PhongPointLightProperty());
-    scene.rootNode.childNodes.emplace_back(lightNode);
 
     transformProp = {};
-    transformProp.transform.setPosition({2.5, 2.5, 0});
+    transformProp.transform.setPosition({5.5, 5.5, 0});
 
     Scene::PBRPointLightProperty lightProp;
-    lightProp.light.energy = 10;
+    lightProp.light.energy = 50;
     lightProp.light.color = ColorRGBA::white();
 
     lightNode.addProperty(transformProp);
     lightNode.addProperty(lightProp);
     scene.rootNode.childNodes.emplace_back(lightNode);
 
+    lightProp.light.castShadows = false;
+
     transformProp = {};
-    transformProp.transform.setPosition({-2.5, 2.5, 0});
+    transformProp.transform.setPosition({-5.5, 5.5, 0});
 
     lightNode = {};
     lightNode.addProperty(transformProp);
@@ -331,15 +213,15 @@ int main(int argc, char *argv[]) {
     scene.rootNode.childNodes.emplace_back(lightNode);
 
     transformProp = {};
-    transformProp.transform.setPosition({2.5, -2.5, 0});
+    transformProp.transform.setPosition({5.5, -5.5, 0});
 
     lightNode = {};
     lightNode.addProperty(transformProp);
     lightNode.addProperty(lightProp);
-    scene.rootNode.childNodes.emplace_back(lightNode);
+   scene.rootNode.childNodes.emplace_back(lightNode);
 
     transformProp = {};
-    transformProp.transform.setPosition({-2.5, -2.5, 0});
+    transformProp.transform.setPosition({-5.5, -5.5, 0});
 
     lightNode = {};
     lightNode.addProperty(transformProp);
@@ -411,7 +293,7 @@ int main(int argc, char *argv[]) {
                 txt = "GBUFFER SPECULAR";
                 break;
             case 7:
-                txt = "GBUFFER MODEL_OBJECT_SHADOWS";
+                txt = "GBUFFER MODEL_OBJECT";
                 break;
             case 8:
                 txt = "GBUFFER DEPTH";

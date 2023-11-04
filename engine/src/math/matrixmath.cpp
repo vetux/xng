@@ -34,6 +34,14 @@ namespace xng {
         return reinterpret_cast<const Mat4f&>(mat);
     }
 
+    static glm::vec3 convert(const Vec3f &vec){
+        return {vec.x, vec.y, vec.z};
+    }
+
+    static Vec3f convert(const glm::vec3 &vec){
+        return {vec.x, vec.y, vec.z};
+    }
+
     Mat4f MatrixMath::identity() {
         Mat4f ret;
         ret.set(0, 0, 1);
@@ -97,5 +105,9 @@ namespace xng {
         rot = glm::rotate(rot, glm::radians(rotationValue.y), glm::vec3(0, 1, 0));
         rot = glm::rotate(rot, glm::radians(rotationValue.z), glm::vec3(0, 0, 1));
         return convert(rot);
+    }
+
+    Mat4f MatrixMath::lookAt(const Vec3f &eye, const Vec3f &center, const Vec3f &up) {
+        return convert(glm::lookAt(convert(eye), convert(center), convert(up)));
     }
 }

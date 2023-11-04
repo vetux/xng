@@ -2,6 +2,7 @@
 
 #include "phong.glsl"
 #include "pbr.glsl"
+#include "shadow.glsl"
 
 layout(location = 0) in vec4 fPos;
 layout(location = 1) in vec2 fUv;
@@ -9,8 +10,10 @@ layout(location = 1) in vec2 fUv;
 layout(location = 0) out vec4 oColor;
 layout(depth_any) out float gl_FragDepth;
 
-layout(binding = 0, std140) uniform ShaderUniformBuffer {
+layout(binding = 0, std140) buffer ShaderData {
     vec4 viewPosition;
+    vec4 farPlane;
+    ivec4 enableShadows;
 } globs;
 
 layout(binding = 1, std140) buffer PointLightsData
@@ -39,8 +42,15 @@ layout(binding = 7) uniform sampler2D gBufferRoughnessMetallicAO;
 layout(binding = 8) uniform sampler2D gBufferAlbedo;
 layout(binding = 9) uniform sampler2D gBufferAmbient;
 layout(binding = 10) uniform sampler2D gBufferSpecular;
-layout(binding = 11) uniform isampler2D gBufferModelObject;
+layout(binding = 11) uniform isampler2D gBufferModelObjectShadows;
 layout(binding = 12) uniform sampler2D gBufferDepth;
+
+layout(binding = 13) uniform samplerCubeArray pbrPointLightShadowMaps;
+
+layout(binding = 14, std140) buffer PBRPointLightsDataShadow
+{
+    PBRPointLight lights[];
+} pbrPointLightsShadow;
 
 void main() {
     float gDepth = texture(gBufferDepth, fUv).r;
@@ -50,7 +60,8 @@ void main() {
         return;
     }
 
-    int model = texture(gBufferModelObject, fUv).x;
+    int model = texture(gBufferModelObjectShadows, fUv).x;
+    int receiveShadows = texture(gBufferModelObjectShadows, fUv).z;
     if (model == 0) {
         // PBR
         vec3 fPos = texture(gBufferPos, fUv).xyz;
@@ -59,18 +70,31 @@ void main() {
         vec3 albedo = texture(gBufferAlbedo, fUv).xyz;
 
         PbrPass pass = pbr_begin(fPos,
-                                    fNorm,
-                                    albedo,
-                                    roughnessMetallicAO.y,
-                                    roughnessMetallicAO.x,
-                                    roughnessMetallicAO.z,
-                                    globs.viewPosition.xyz);
+        fNorm,
+        albedo,
+        roughnessMetallicAO.y,
+        roughnessMetallicAO.x,
+        roughnessMetallicAO.z,
+        globs.viewPosition.xyz);
 
         vec3 reflectance = vec3(0);
 
         for (int i = 0; i < pbrPointLights.lights.length(); i++) {
             PBRPointLight light = pbrPointLights.lights[i];
             reflectance = pbr_point(pass, reflectance, light);
+        }
+
+        if (receiveShadows == 0 || globs.enableShadows.x == 0){
+            for (int i = 0; i < pbrPointLightsShadow.lights.length(); i++) {
+                PBRPointLight light = pbrPointLightsShadow.lights[i];
+                reflectance = pbr_point(pass, reflectance, light);
+            }
+        } else {
+            for (int i = 0; i < pbrPointLightsShadow.lights.length(); i++) {
+                PBRPointLight light = pbrPointLightsShadow.lights[i];
+                float shadow = sampleShadow(fPos, light.position.xyz, globs.viewPosition.xyz, pbrPointLightShadowMaps, i, globs.farPlane.x);
+                reflectance = pbr_point(pass, reflectance, light) * shadow;
+            }
         }
 
         oColor = vec4(pbr_finish(pass, reflectance), 1);
@@ -91,13 +115,13 @@ void main() {
         for (int i = 0; i < pLights.lights.length(); i++) {
             PointLight light = pLights.lights[i];
             LightComponents c = phong_point(fPos,
-                                            fNorm,
-                                            diffuseColor,
-                                            specularColor,
-                                            shininess,
-                                            globs.viewPosition.xyz,
-                                            mat3(1),
-                                            light);
+            fNorm,
+            diffuseColor,
+            specularColor,
+            shininess,
+            globs.viewPosition.xyz,
+            mat3(1),
+            light);
             comp.ambient += c.ambient;
             comp.diffuse += c.diffuse;
             comp.specular += c.specular;
@@ -106,13 +130,13 @@ void main() {
         for (int i = 0; i < sLights.lights.length(); i++) {
             SpotLight light = sLights.lights[i];
             LightComponents c = phong_spot(fPos,
-                                            fNorm,
-                                            diffuseColor,
-                                            specularColor,
-                                            shininess,
-                                            globs.viewPosition.xyz,
-                                            mat3(1),
-                                            light);
+            fNorm,
+            diffuseColor,
+            specularColor,
+            shininess,
+            globs.viewPosition.xyz,
+            mat3(1),
+            light);
             comp.ambient += c.ambient;
             comp.diffuse += c.diffuse;
             comp.specular += c.specular;
@@ -121,13 +145,13 @@ void main() {
         for (int i = 0; i < dLights.lights.length(); i++) {
             DirectionalLight light = dLights.lights[i];
             LightComponents c = phong_directional(fPos,
-                                                    fNorm,
-                                                    diffuseColor,
-                                                    specularColor,
-                                                    shininess,
-                                                    globs.viewPosition.xyz,
-                                                    mat3(1),
-                                                    light);
+            fNorm,
+            diffuseColor,
+            specularColor,
+            shininess,
+            globs.viewPosition.xyz,
+            mat3(1),
+            light);
             comp.ambient += c.ambient;
             comp.diffuse += c.diffuse;
             comp.specular += c.specular;

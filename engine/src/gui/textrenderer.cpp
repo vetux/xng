@@ -206,7 +206,8 @@ namespace xng {
 
         auto tex = ren2d->getDevice().createTextureBuffer(desc);
 
-        target->setAttachments({*tex});
+        target->setAttachments({RenderTargetAttachment::texture(*tex)});
+
         ren2d->renderBegin(*target);
         for (auto &c: renderText) {
             auto texSize = c.texture.size.convert<float>();
@@ -223,7 +224,7 @@ namespace xng {
         }
         ren2d->renderPresent();
 
-        target->setAttachments({});
+        target->clearAttachments();
 
         return {text, origin, layout, std::move(tex->download())};
     }

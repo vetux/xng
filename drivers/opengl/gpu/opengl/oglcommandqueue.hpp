@@ -737,7 +737,8 @@ namespace xng {
                                     auto textureArray = dynamic_cast<OGLTextureArrayBuffer *>(&std::get<std::reference_wrapper<TextureArrayBuffer>>(
                                             b.data).get());
                                     glActiveTexture(getTextureSlot(bindingPoint));
-                                    glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray->handle);
+                                    auto target = textureArray->desc.textureDesc.textureType == TEXTURE_CUBE_MAP ? GL_TEXTURE_CUBE_MAP_ARRAY : GL_TEXTURE_2D_ARRAY;
+                                    glBindTexture(target, textureArray->handle);
                                     break;
                                 }
                                 case BIND_SHADER_UNIFORM_BUFFER: {

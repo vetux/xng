@@ -51,7 +51,7 @@ namespace xng {
 
         auto &cBuffer = resources.get<CommandBuffer>(commandBuffer);
 
-        t.setAttachments({color}, depth);
+        t.setAttachments({RenderTargetAttachment::texture(color)}, RenderTargetAttachment::texture(depth));
 
         cBuffer.begin();
         cBuffer.add(
@@ -62,6 +62,6 @@ namespace xng {
 
         renderQueues.at(0).get().submit(cBuffer);
 
-        t.setAttachments({});
+        t.clearAttachments();
     }
 }

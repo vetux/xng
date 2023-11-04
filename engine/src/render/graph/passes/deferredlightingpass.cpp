@@ -22,7 +22,7 @@
 #include "xng/render/graph/framegraphbuilder.hpp"
 
 #include "xng/render/graph/passes/constructionpass.hpp"
-#include "xng/render/graph/framegraphproperties.hpp"
+#include "xng/render/graph/framegraphsettings.hpp"
 
 #include "xng/render/geometry/vertexstream.hpp"
 
@@ -60,8 +60,10 @@ namespace xng {
         std::array<float, 4> color;
     };
 
-    struct UniformBuffer {
+    struct ShaderStorageData {
         std::array<float, 4> viewPosition{};
+        std::array<float, 4> farPlane{};
+        std::array<int, 4> enableShadows{};
     };
 #pragma pack(pop)
 
@@ -136,8 +138,10 @@ namespace xng {
         return ret;
     }
 
-    static std::vector<PBRPointLightData> getPBRPointLights(const Scene &scene) {
-        std::vector<PBRPointLightData> ret;
+    static std::pair<std::vector<PBRPointLightData>, std::vector<PBRPointLightData>>
+    getPBRPointLights(const Scene &scene) {
+        std::vector<PBRPointLightData> pointLights;
+        std::vector<PBRPointLightData> shadowLights;
         for (auto &node: scene.rootNode.findAll({typeid(Scene::PBRPointLightProperty)})) {
             auto l = node.getProperty<Scene::PBRPointLightProperty>().light;
             auto t = node.getProperty<Scene::TransformProperty>().transform;
@@ -149,9 +153,12 @@ namespace xng {
                                        0).getMemory(),
                     .color = Vec4f(v.x * l.energy, v.y * l.energy, v.z * l.energy, 1).getMemory(),
             };
-            ret.emplace_back(tmp);
+            if (l.castShadows)
+                shadowLights.emplace_back(tmp);
+            else
+                pointLights.emplace_back(tmp);
         }
-        return ret;
+        return {pointLights, shadowLights};
     }
 
     DeferredLightingPass::DeferredLightingPass() = default;
@@ -182,7 +189,7 @@ namespace xng {
                             {VERTEX,   deferredlightingpass_vs},
                             {FRAGMENT, deferredlightingpass_fs}
                     },
-                    .bindings = {BIND_SHADER_UNIFORM_BUFFER,
+                    .bindings = {BIND_SHADER_STORAGE_BUFFER,
                                  BIND_SHADER_STORAGE_BUFFER,
                                  BIND_SHADER_STORAGE_BUFFER,
                                  BIND_SHADER_STORAGE_BUFFER,
@@ -194,7 +201,10 @@ namespace xng {
                                  BIND_TEXTURE_BUFFER,
                                  BIND_TEXTURE_BUFFER,
                                  BIND_TEXTURE_BUFFER,
-                                 BIND_TEXTURE_BUFFER},
+                                 BIND_TEXTURE_BUFFER,
+                                 BIND_TEXTURE_ARRAY_BUFFER,
+                                 BIND_SHADER_STORAGE_BUFFER,
+                    },
                     .primitive = TRIANGLES,
                     .vertexLayout = mesh.vertexLayout,
                     .enableDepthTest = true,
@@ -206,7 +216,7 @@ namespace xng {
         builder.read(pipelineRes);
 
         renderSize = builder.getBackBufferDescription().size
-                     * builder.getProperties().get<float>(FrameGraphProperties::RENDER_SCALE, 1);
+                     * builder.getProperties().get<float>(FrameGraphSettings::RENDER_SCALE, 1);
 
         targetRes = builder.createRenderTarget(RenderTargetDesc{
                 .size = renderSize,
@@ -227,14 +237,25 @@ namespace xng {
 
         builder.read(passRes);
 
-        uniformBufferRes = builder.createShaderUniformBuffer(ShaderUniformBufferDesc{.size =  sizeof(UniformBuffer)});
-        builder.read(uniformBufferRes);
-        builder.write(uniformBufferRes);
+        auto pointLights = scene.rootNode.findAll({typeid(Scene::PhongPointLightProperty)}).size();
+        auto spotLights = scene.rootNode.findAll({typeid(Scene::PhongSpotLightProperty)}).size();
+        auto directionalLights = scene.rootNode.findAll({typeid(Scene::PhongDirectionalLightProperty)}).size();
+        auto pbrPointLights = scene.rootNode.findAll({typeid(Scene::PBRPointLightProperty)});
 
-        size_t pointLights = scene.rootNode.findAll({typeid(Scene::PhongPointLightProperty)}).size();
-        size_t spotLights = scene.rootNode.findAll({typeid(Scene::PhongSpotLightProperty)}).size();
-        size_t directionalLights = scene.rootNode.findAll({typeid(Scene::PhongDirectionalLightProperty)}).size();
-        size_t pbrPointLights = scene.rootNode.findAll({typeid(Scene::PBRPointLightProperty)}).size();
+        size_t pbrPointLightsCount = 0;
+        size_t pbrShadowLightsCount = 0;
+
+        for (auto l : pbrPointLights){
+            if (l.getProperty<Scene::PBRPointLightProperty>().light.castShadows)
+                pbrShadowLightsCount++;
+            else
+                pbrPointLightsCount++;
+        }
+
+        shaderDataBufferRes = builder.createShaderStorageBuffer(
+                ShaderStorageBufferDesc{.size =  sizeof(ShaderStorageData)});
+        builder.read(shaderDataBufferRes);
+        builder.write(shaderDataBufferRes);
 
         pointLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(PointLightData) * pointLights
@@ -255,10 +276,16 @@ namespace xng {
         builder.write(directionalLightsBufferRes);
 
         pbrPointLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(PBRPointLightData) * pbrPointLights
+                .size = sizeof(PBRPointLightData) * pbrPointLightsCount
         });
         builder.read(pbrPointLightsBufferRes);
         builder.write(pbrPointLightsBufferRes);
+
+        pbrPointShadowLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+                .size = sizeof(PBRPointLightData) * pbrShadowLightsCount
+        });
+        builder.read(pbrPointShadowLightsBufferRes);
+        builder.write(pbrPointShadowLightsBufferRes);
 
         gBufferPosition = builder.getSlot(SLOT_GBUFFER_POSITION);
         builder.read(gBufferPosition);
@@ -281,7 +308,7 @@ namespace xng {
         gBufferSpecular = builder.getSlot(SLOT_GBUFFER_SPECULAR);
         builder.read(gBufferSpecular);
 
-        gBufferModelObject = builder.getSlot(SLOT_GBUFFER_MODEL_OBJECT);
+        gBufferModelObject = builder.getSlot(SLOT_GBUFFER_MODEL_OBJECT_SHADOWS);
         builder.read(gBufferModelObject);
 
         gBufferDepth = builder.getSlot(SLOT_GBUFFER_DEPTH);
@@ -292,7 +319,17 @@ namespace xng {
         commandBuffer = builder.createCommandBuffer();
         builder.write(commandBuffer);
 
-        this->scene = scene;
+        this->scene = builder.getScene();
+
+        if (builder.checkSlot(SLOT_SHADOW_MAP_PBR_POINT)){
+            pbrPointLightShadowMap = builder.getSlot(FrameGraphSlot::SLOT_SHADOW_MAP_PBR_POINT);
+            builder.read(pbrPointLightShadowMap);
+        } else {
+            pbrPointLightShadowMap = {};
+        }
+
+        defaultPbrShadowMap = builder.createTextureArrayBuffer({});
+        builder.read(defaultPbrShadowMap);
     }
 
     void DeferredLightingPass::execute(FrameGraphPassResources &resources,
@@ -307,17 +344,20 @@ namespace xng {
         auto &vertexBuffer = resources.get<VertexBuffer>(vertexBufferRes);
         auto &vertexArrayObject = resources.get<VertexArrayObject>(vertexArrayObjectRes);
 
-        auto &uniformBuffer = resources.get<ShaderUniformBuffer>(uniformBufferRes);
+        auto &uniformBuffer = resources.get<ShaderStorageBuffer>(shaderDataBufferRes);
 
         auto &pointLightBuffer = resources.get<ShaderStorageBuffer>(pointLightsBufferRes);
         auto &spotLightBuffer = resources.get<ShaderStorageBuffer>(spotLightsBufferRes);
         auto &dirLightBuffer = resources.get<ShaderStorageBuffer>(directionalLightsBufferRes);
         auto &pbrPointLightBuffer = resources.get<ShaderStorageBuffer>(pbrPointLightsBufferRes);
+        auto &pbrPointShadowLightBuffer = resources.get<ShaderStorageBuffer>(pbrPointShadowLightsBufferRes);
 
         auto &colorTex = resources.get<TextureBuffer>(colorTextureRes);
         auto &depthTex = resources.get<TextureBuffer>(depthTextureRes);
 
         auto &cBuffer = resources.get<CommandBuffer>(commandBuffer);
+
+        auto &pbrPointShadowMap = pbrPointLightShadowMap.assigned ? resources.get<TextureArrayBuffer>(pbrPointLightShadowMap) : resources.get<TextureArrayBuffer>(defaultPbrShadowMap);
 
         auto plights = getPointLights(scene);
         auto slights = getSpotLights(scene);
@@ -327,7 +367,7 @@ namespace xng {
         std::vector<Command> commands;
 
         // Clear textures
-        target.setAttachments({colorTex}, depthTex);
+        target.setAttachments({RenderTargetAttachment::texture(colorTex)}, RenderTargetAttachment::texture(depthTex));
 
         commands.emplace_back(pass.begin(target));
         commands.emplace_back(pass.clearColorAttachments(ColorRGBA(0)));
@@ -340,8 +380,10 @@ namespace xng {
                                slights.size() * sizeof(SpotLightData));
         dirLightBuffer.upload(reinterpret_cast<const uint8_t *>(dlights.data()),
                               dlights.size() * sizeof(DirectionalLightData));
-        pbrPointLightBuffer.upload(reinterpret_cast<const uint8_t *>(pbrlights.data()),
-                                   pbrlights.size() * sizeof(PBRPointLightData));
+        pbrPointLightBuffer.upload(reinterpret_cast<const uint8_t *>(pbrlights.first.data()),
+                                   pbrlights.first.size() * sizeof(PBRPointLightData));
+        pbrPointShadowLightBuffer.upload(reinterpret_cast<const uint8_t *>(pbrlights.second.data()),
+                                   pbrlights.second.size() * sizeof(PBRPointLightData));
 
         if (!quadAllocated) {
             quadAllocated = true;
@@ -352,12 +394,15 @@ namespace xng {
             vertexArrayObject.setBuffers(vertexBuffer);
         }
 
-        UniformBuffer buf;
+        ShaderStorageData buf;
         buf.viewPosition = Vec4f(cameraTransform.getPosition().x,
                                  cameraTransform.getPosition().y,
                                  cameraTransform.getPosition().z,
                                  0).getMemory();
-        uniformBuffer.upload(buf);
+        buf.farPlane.at(0) = 1000;
+        buf.enableShadows.at(0) = pbrPointLightShadowMap.assigned;
+        uniformBuffer.upload(reinterpret_cast<const uint8_t *>(&buf),
+                             sizeof(ShaderStorageData));
 
         auto &gBufPos = resources.get<TextureBuffer>(gBufferPosition);
         auto &gBufNorm = resources.get<TextureBuffer>(gBufferNormal);
@@ -369,7 +414,7 @@ namespace xng {
         auto &gBufModelObject = resources.get<TextureBuffer>(gBufferModelObject);
         auto &gBufDepth = resources.get<TextureBuffer>(gBufferDepth);
 
-        target.setAttachments({colorTex}, depthTex);
+        target.setAttachments({RenderTargetAttachment::texture(colorTex)}, RenderTargetAttachment::texture(depthTex));
 
         commands.emplace_back(pass.begin(target));
         commands.emplace_back(pass.setViewport({}, target.getDescription().size));
@@ -381,7 +426,7 @@ namespace xng {
                                                                           {pointLightBuffer,        {{FRAGMENT, ShaderResource::READ}}},
                                                                           {spotLightBuffer,         {{FRAGMENT, ShaderResource::READ}}},
                                                                           {dirLightBuffer,          {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {pbrPointLightBuffer,          {{FRAGMENT, ShaderResource::READ}}},
+                                                                          {pbrPointLightBuffer,     {{FRAGMENT, ShaderResource::READ}}},
                                                                           {gBufPos,                 {{FRAGMENT, ShaderResource::READ}}},
                                                                           {gBufNorm,                {{FRAGMENT, ShaderResource::READ}}},
                                                                           {gBufRoughnessMetallicAO, {{FRAGMENT, ShaderResource::READ}}},
@@ -389,7 +434,9 @@ namespace xng {
                                                                           {gBufAmbient,             {{FRAGMENT, ShaderResource::READ}}},
                                                                           {gBufSpecular,            {{FRAGMENT, ShaderResource::READ}}},
                                                                           {gBufModelObject,         {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {gBufDepth,               {{FRAGMENT, ShaderResource::READ}}}
+                                                                          {gBufDepth,               {{FRAGMENT, ShaderResource::READ}}},
+                                                                          {pbrPointShadowMap,        {{FRAGMENT, ShaderResource::READ}}},
+                                                                          {pbrPointShadowLightBuffer,        {{FRAGMENT, ShaderResource::READ}}},
                                                                   }));
         commands.emplace_back(pass.drawArray(DrawCall(0, mesh.vertices.size())));
         commands.emplace_back(pass.end());
@@ -400,7 +447,7 @@ namespace xng {
 
         renderQueues.at(0).get().submit(cBuffer);
 
-        target.setAttachments({});
+        target.clearAttachments();
     }
 
     std::type_index DeferredLightingPass::getTypeIndex() const {

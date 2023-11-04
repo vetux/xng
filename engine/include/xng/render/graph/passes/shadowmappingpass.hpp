@@ -21,12 +21,18 @@
 #define XENGINE_SHADOWMAPPINGPASS_HPP
 
 #include "xng/render/graph/framegraphpass.hpp"
+#include "xng/render/phong/phongdirectionallight.hpp"
+#include "xng/render/phong/phongpointlight.hpp"
+#include "xng/render/phong/phongspotlight.hpp"
+#include "xng/render/pbr/pbrpointlight.hpp"
+#include "xng/render/meshallocator.hpp"
+#include "xng/render/scene.hpp"
 
 namespace xng {
     /**
      * The shadow mapping pass creates the shadow mapping textures.
      *
-     * Writes SLOT_SHADOW_MAP_DIRECTIONAL and SLOT_SHADOW_MAP_POINT
+     * Writes SLOT_SHADOW_MAP_PHONG_DIRECTIONAL, SLOT_SHADOW_MAP_PHONG_POINT, SLOT_SHADOW_MAP_PHONG_SPOT and SLOT_SHADOW_MAP_PBR_POINT
      */
     class XENGINE_EXPORT ShadowMappingPass : public FrameGraphPass {
     public:
@@ -38,6 +44,66 @@ namespace xng {
                      const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) override;
 
         std::type_index getTypeIndex() const override;
+
+        void setShadowResolution(const Vec2i &value){
+            resolution = value;
+        }
+
+        const Vec2i &getShadowResolution() const {
+            return resolution;
+        }
+
+        float getNearPlane() const;
+
+        void setNearPlane(float nearPlane);
+
+        float getFarPlane() const;
+
+        void setFarPlane(float farPlane);
+
+    private:
+        Vec2i resolution = Vec2i(2048, 2048);
+        float nearPlane = 0.1;
+        float farPlane = 1000;
+
+        std::vector<Scene::Node> directionalLights;
+        std::vector<Scene::Node> pointLights;
+        std::vector<Scene::Node> spotLights;
+        std::vector<Scene::Node> pbrPointLights;
+
+        size_t currentVertexBufferSize{};
+        size_t currentIndexBufferSize{};
+
+        std::vector<Scene::Node> objects;
+
+        MeshAllocator meshAllocator;
+
+        FrameGraphResource targetRes;
+        FrameGraphResource renderPassRes;
+        FrameGraphResource shaderBufferRes;
+        FrameGraphResource lightBufferRes;
+        FrameGraphResource boneBufferRes;
+        FrameGraphResource commandBufferRes;
+
+        FrameGraphResource renderPipelineRes;
+
+        FrameGraphResource vertexBufferRes;
+        FrameGraphResource indexBufferRes;
+        FrameGraphResource vertexArrayObjectRes;
+
+        FrameGraphResource staleVertexBuffer;
+        FrameGraphResource staleIndexBuffer;
+
+        FrameGraphResource phongDirectionalMap;
+        FrameGraphResource phongSpotMap;
+        FrameGraphResource phongPointMap;
+        FrameGraphResource pbrPointMap;
+
+        FrameGraphResource textureRes;
+
+        std::set<Uri> usedMeshes;
+
+        bool bindVao = true;
     };
 }
 #endif //XENGINE_SHADOWMAPPINGPASS_HPP

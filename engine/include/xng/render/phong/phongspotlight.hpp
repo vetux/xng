@@ -35,6 +35,7 @@ namespace xng {
             message.value("quadratic", quadratic);
             message.value("cutOff", cutOff);
             message.value("outerCutOff", outerCutOff);
+            castShadows << message.getMessage("castShadows");
             return *this;
         }
 
@@ -49,6 +50,7 @@ namespace xng {
             message["quadratic"] = quadratic;
             message["cutOff"] = cutOff;
             message["outerCutOff"] = outerCutOff;
+            castShadows >> message["castShadows"];
             return message;
         }
 
@@ -64,6 +66,8 @@ namespace xng {
 
         float cutOff = 10;
         float outerCutOff = 14;
+
+        bool castShadows = true;
     };
 }
 

@@ -19,7 +19,7 @@
 
 #include "xng/render/graph/passes/constructionpass.hpp"
 #include "xng/render/graph/framegraphbuilder.hpp"
-#include "xng/render/graph/framegraphproperties.hpp"
+#include "xng/render/graph/framegraphsettings.hpp"
 #include "xng/render/atlas/textureatlas.hpp"
 
 #include "xng/io/protocol/jsonprotocol.hpp"
@@ -43,7 +43,7 @@ namespace xng {
         Mat4f model;
         Mat4f mvp;
 
-        int shadeModel_objectID_boneOffset[4]{0, 0, 0, 0};
+        int shadeModel_objectID_boneOffset_shadows[4]{0, 0, 0, 0};
         float metallic_roughness_ambientOcclusion_shininess[4]{0, 0, 0, 0};
 
         float diffuseColor[4]{0, 0, 0, 0};
@@ -392,7 +392,7 @@ namespace xng {
         builder.assignSlot(SLOT_GBUFFER_ALBEDO, gBufferAlbedo);
         builder.assignSlot(SLOT_GBUFFER_AMBIENT, gBufferAmbient);
         builder.assignSlot(SLOT_GBUFFER_SPECULAR, gBufferSpecular);
-        builder.assignSlot(SLOT_GBUFFER_MODEL_OBJECT, gBufferModelObject);
+        builder.assignSlot(SLOT_GBUFFER_MODEL_OBJECT_SHADOWS, gBufferModelObject);
         builder.assignSlot(SLOT_GBUFFER_DEPTH, gBufferDepth);
 
         commandBuffer = builder.createCommandBuffer();
@@ -441,7 +441,10 @@ namespace xng {
         auto atlasBuffers = atlas.getAtlasBuffers(resources, cBuffer, renderQueues.at(0));
 
         // Clear textures
-        clearTarget.setAttachments({screenColorTex, deferredColorTex, forwardColorTex}, screenDepthTex);
+        clearTarget.setAttachments({RenderTargetAttachment::texture(screenColorTex),
+                                    RenderTargetAttachment::texture(deferredColorTex),
+                                    RenderTargetAttachment::texture(forwardColorTex)},
+                                   RenderTargetAttachment::texture(screenDepthTex));
 
         std::vector<Command> commands;
 
@@ -458,7 +461,10 @@ namespace xng {
 
         renderQueues.at(0).get().submit({cBuffer}, {}, {});
 
-        clearTarget.setAttachments({}, deferredDepthTex);
+        clearTarget.setAttachments({RenderTargetAttachment::texture(screenColorTex),
+                                    RenderTargetAttachment::texture(deferredColorTex),
+                                    RenderTargetAttachment::texture(forwardColorTex)},
+                                   RenderTargetAttachment::texture(deferredDepthTex));
 
         commands.emplace_back(clearPass.begin(clearTarget));
         commands.emplace_back(clearPass.clearDepthAttachment(1));
@@ -472,7 +478,10 @@ namespace xng {
 
         renderQueues.at(0).get().submit({cBuffer}, {}, {});
 
-        clearTarget.setAttachments({}, forwardDepthTex);
+        clearTarget.setAttachments({RenderTargetAttachment::texture(screenColorTex),
+                                    RenderTargetAttachment::texture(deferredColorTex),
+                                    RenderTargetAttachment::texture(forwardColorTex)},
+                                   RenderTargetAttachment::texture(forwardDepthTex));
 
         commands.emplace_back(clearPass.begin(clearTarget));
         commands.emplace_back(clearPass.clearDepthAttachment(1));
@@ -486,7 +495,10 @@ namespace xng {
 
         renderQueues.at(0).get().submit({cBuffer}, {}, {});
 
-        clearTarget.setAttachments({}, depthTex);
+        clearTarget.setAttachments({RenderTargetAttachment::texture(screenColorTex),
+                                    RenderTargetAttachment::texture(deferredColorTex),
+                                    RenderTargetAttachment::texture(forwardColorTex)},
+                                   RenderTargetAttachment::texture(depthTex));
 
         commands.emplace_back(clearPass.begin(clearTarget));
         commands.emplace_back(clearPass.clearDepthAttachment(1));
@@ -546,16 +558,16 @@ namespace xng {
 
         // Draw geometry buffer
         target.setAttachments({
-                                      posTex,
-                                      normalTex,
-                                      tanTex,
-                                      roughMetallicAOTex,
-                                      albedoTex,
-                                      ambientTex,
-                                      specularTex,
-                                      modelObjectTex
+                                      RenderTargetAttachment::texture(posTex),
+                                      RenderTargetAttachment::texture(normalTex),
+                                      RenderTargetAttachment::texture(tanTex),
+                                      RenderTargetAttachment::texture(roughMetallicAOTex),
+                                      RenderTargetAttachment::texture(albedoTex),
+                                      RenderTargetAttachment::texture(ambientTex),
+                                      RenderTargetAttachment::texture(specularTex),
+                                      RenderTargetAttachment::texture(modelObjectTex)
                               },
-                              depthTex);
+                              RenderTargetAttachment::texture(depthTex));
 
         auto projection = camera.projection();
         auto view = Camera::view(cameraTransform);
@@ -567,27 +579,27 @@ namespace xng {
             std::vector<Mat4f> boneMatrices;
 
             for (auto oi = 0; oi < objects.size(); oi++) {
-                auto &object = objects.at(oi);
-                auto &meshProp = object.getProperty<Scene::SkinnedMeshProperty>();
+                auto &node = objects.at(oi);
+                auto &meshProp = node.getProperty<Scene::SkinnedMeshProperty>();
 
                 auto rig = meshProp.mesh.get().rig;
 
                 std::map<std::string, Mat4f> boneTransforms;
-                auto it = object.properties.find(typeid(Scene::BoneTransformsProperty));
-                if (it != object.properties.end()) {
+                auto it = node.properties.find(typeid(Scene::BoneTransformsProperty));
+                if (it != node.properties.end()) {
                     boneTransforms = it->second->get<Scene::BoneTransformsProperty>().boneTransforms;
                 }
 
                 std::map<size_t, ResourceHandle<Material>> mats;
-                it = object.properties.find(typeid(Scene::MaterialProperty));
-                if (it != object.properties.end()) {
+                it = node.properties.find(typeid(Scene::MaterialProperty));
+                if (it != node.properties.end()) {
                     mats = it->second->get<Scene::MaterialProperty>().materials;
                 }
 
                 auto drawData = meshAllocator.getAllocatedMesh(meshProp.mesh);
 
                 for (auto i = 0; i < meshProp.mesh.get().subMeshes.size() + 1; i++) {
-                    auto model = object.getProperty<Scene::TransformProperty>().transform.model();
+                    auto model = node.getProperty<Scene::TransformProperty>().transform.model();
 
                     auto &mesh = i == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
 
@@ -604,7 +616,7 @@ namespace xng {
                     }
 
                     auto boneOffset = boneMatrices.size();
-                    if (mesh.bones.empty()){
+                    if (mesh.bones.empty()) {
                         boneOffset = -1;
                     } else {
                         for (auto &bone: mesh.bones) {
@@ -618,13 +630,19 @@ namespace xng {
                         }
                     }
 
+                    bool receiveShadows = true;
+                    if (node.hasProperty<Scene::ShadowProperty>()) {
+                        receiveShadows = node.getProperty<Scene::ShadowProperty>().receiveShadows;
+                    }
+
                     auto data = ShaderDrawData();
 
                     data.model = model;
                     data.mvp = projection * view * model;
-                    data.shadeModel_objectID_boneOffset[0] = material.shadingModel;
-                    data.shadeModel_objectID_boneOffset[1] = static_cast<int>(oi);
-                    data.shadeModel_objectID_boneOffset[2] = static_cast<int>(boneOffset);
+                    data.shadeModel_objectID_boneOffset_shadows[0] = material.shadingModel;
+                    data.shadeModel_objectID_boneOffset_shadows[1] = static_cast<int>(oi);
+                    data.shadeModel_objectID_boneOffset_shadows[2] = static_cast<int>(boneOffset);
+                    data.shadeModel_objectID_boneOffset_shadows[3] = receiveShadows;
 
                     data.metallic_roughness_ambientOcclusion_shininess[0] = material.metallic;
                     data.metallic_roughness_ambientOcclusion_shininess[1] = material.roughness;
@@ -838,7 +856,7 @@ namespace xng {
             renderQueues.at(0).get().submit(cBuffer);
         }
 
-        target.setAttachments({});
+        target.clearAttachments();
     }
 
     std::type_index ConstructionPass::getTypeIndex() const {

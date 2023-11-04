@@ -66,7 +66,7 @@ namespace xng {
         Mat4f model;
         Mat4f mvp;
 
-        int shadeModel_objectID[4]{0, 0, 0, 0};
+        int shadeModel_objectID_shadows[4]{0, 0, 0, 0};
         float metallic_roughness_ambientOcclusion_shininess[4]{0, 0, 0, 0};
 
         float diffuseColor[4]{0, 0, 0, 0};
@@ -159,8 +159,10 @@ namespace xng {
         return ret;
     }
 
-    static std::vector<PBRPointLightData> getPBRPointLights(const Scene &scene) {
-        std::vector<PBRPointLightData> ret;
+    static std::pair<std::vector<PBRPointLightData>, std::vector<PBRPointLightData>>
+    getPBRPointLights(const Scene &scene) {
+        std::vector<PBRPointLightData> pointLights;
+        std::vector<PBRPointLightData> shadowLights;
         for (auto &node: scene.rootNode.findAll({typeid(Scene::PBRPointLightProperty)})) {
             auto l = node.getProperty<Scene::PBRPointLightProperty>().light;
             auto t = node.getProperty<Scene::TransformProperty>().transform;
@@ -172,9 +174,12 @@ namespace xng {
                                        0).getMemory(),
                     .color = Vec4f(v.x * l.energy, v.y * l.energy, v.z * l.energy, 1).getMemory(),
             };
-            ret.emplace_back(tmp);
+            if (l.castShadows)
+                shadowLights.emplace_back(tmp);
+            else
+                pointLights.emplace_back(tmp);
         }
-        return ret;
+        return {pointLights, shadowLights};
     }
 
     void ForwardLightingPass::setup(FrameGraphBuilder &builder) {
@@ -184,7 +189,17 @@ namespace xng {
         size_t pointLights = scene.rootNode.findAll({typeid(Scene::PhongPointLightProperty)}).size();
         size_t spotLights = scene.rootNode.findAll({typeid(Scene::PhongSpotLightProperty)}).size();
         size_t directionalLights = scene.rootNode.findAll({typeid(Scene::PhongDirectionalLightProperty)}).size();
-        size_t pbrPointLights = scene.rootNode.findAll({typeid(Scene::PBRPointLightProperty)}).size();
+        auto pbrPointLights = scene.rootNode.findAll({typeid(Scene::PBRPointLightProperty)});
+
+        size_t pbrPointLightsCount = 0;
+        size_t pbrShadowLightsCount = 0;
+
+        for (auto l: pbrPointLights) {
+            if (l.getProperty<Scene::PBRPointLightProperty>().light.castShadows)
+                pbrShadowLightsCount++;
+            else
+                pbrPointLightsCount++;
+        }
 
         pointLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(PointLightData) * pointLights
@@ -205,10 +220,16 @@ namespace xng {
         builder.write(directionalLightsBufferRes);
 
         pbrPointLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(PBRPointLightData) * pbrPointLights
+                .size = sizeof(PBRPointLightData) * pbrPointLightsCount
         });
         builder.read(pbrPointLightsBufferRes);
         builder.write(pbrPointLightsBufferRes);
+
+        pbrPointShadowLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+                .size = sizeof(PBRPointLightData) * pbrShadowLightsCount
+        });
+        builder.read(pbrPointShadowLightsBufferRes);
+        builder.write(pbrPointShadowLightsBufferRes);
 
         RenderTargetDesc targetDesc;
         targetDesc.size = builder.getRenderSize();
@@ -241,6 +262,8 @@ namespace xng {
                             BIND_SHADER_STORAGE_BUFFER,
                             BIND_SHADER_STORAGE_BUFFER,
                             BIND_SHADER_STORAGE_BUFFER,
+                            BIND_SHADER_STORAGE_BUFFER,
+                            BIND_TEXTURE_ARRAY_BUFFER
                     },
                     .vertexLayout = SkinnedMesh::getDefaultVertexLayout(),
                     /*      .clearColorValue = ColorRGBA(0, 0, 0, 0),
@@ -281,7 +304,7 @@ namespace xng {
 
         nodes.clear();
 
-        size_t totalShaderBufferSize = sizeof(float[8]);
+        size_t totalShaderBufferSize = sizeof(float[12]);
 
         usedTextures.clear();
         usedMeshes.clear();
@@ -447,6 +470,16 @@ namespace xng {
         commandBuffer = builder.createCommandBuffer();
 
         builder.write(commandBuffer);
+
+        if (builder.checkSlot(SLOT_SHADOW_MAP_PBR_POINT)) {
+            defPointShadowMap = {};
+            pbrPointLightShadowMap = builder.getSlot(FrameGraphSlot::SLOT_SHADOW_MAP_PBR_POINT);
+            builder.read(pbrPointLightShadowMap);
+        } else {
+            pbrPointLightShadowMap = {};
+            defPointShadowMap = builder.createTextureArrayBuffer({});
+            builder.read(defPointShadowMap);
+        }
     }
 
     void ForwardLightingPass::execute(FrameGraphPassResources &resources,
@@ -470,6 +503,10 @@ namespace xng {
         auto &spotLightBuffer = resources.get<ShaderStorageBuffer>(spotLightsBufferRes);
         auto &dirLightBuffer = resources.get<ShaderStorageBuffer>(directionalLightsBufferRes);
         auto &pbrLightBuffer = resources.get<ShaderStorageBuffer>(pbrPointLightsBufferRes);
+        auto &pbrPointShadowLightBuffer = resources.get<ShaderStorageBuffer>(pbrPointShadowLightsBufferRes);
+
+        auto &pbrPointShadowMap = pbrPointLightShadowMap.assigned ? resources.get<TextureArrayBuffer>(
+                pbrPointLightShadowMap) : resources.get<TextureArrayBuffer>(defPointShadowMap);
 
         auto &cBuffer = resources.get<CommandBuffer>(commandBuffer);
 
@@ -486,8 +523,10 @@ namespace xng {
                                slights.size() * sizeof(SpotLightData));
         dirLightBuffer.upload(reinterpret_cast<const uint8_t *>(dlights.data()),
                               dlights.size() * sizeof(DirectionalLightData));
-        pbrLightBuffer.upload(reinterpret_cast<const uint8_t *>(pbrlights.data()),
-                              pbrlights.size() * sizeof(PBRPointLightData));
+        pbrLightBuffer.upload(reinterpret_cast<const uint8_t *>(pbrlights.first.data()),
+                              pbrlights.first.size() * sizeof(PBRPointLightData));
+        pbrPointShadowLightBuffer.upload(reinterpret_cast<const uint8_t *>(pbrlights.second.data()),
+                                         pbrlights.second.size() * sizeof(PBRPointLightData));
 
         std::vector<Command> commands;
 
@@ -507,7 +546,8 @@ namespace xng {
         }
 
         // Clear textures
-        target.setAttachments({forwardColor}, forwardDepth);
+        target.setAttachments({RenderTargetAttachment::texture(forwardColor)},
+                              RenderTargetAttachment::texture(forwardDepth));
 
         commands.emplace_back(pass.begin(target));
         commands.emplace_back(pass.clearColorAttachments(ColorRGBA(0)));
@@ -587,12 +627,21 @@ namespace xng {
 
                         auto model = transformProp.transform.model();
 
+                        bool shadows = true;
+
+                        if (!pbrPointLightShadowMap.assigned) {
+                            shadows = false;
+                        } else if (node.hasProperty<Scene::ShadowProperty>()) {
+                            shadows = node.getProperty<Scene::ShadowProperty>().receiveShadows;
+                        }
+
                         auto data = ShaderDrawData();
 
                         data.model = model;
                         data.mvp = projection * view * model;
-                        data.shadeModel_objectID[0] = material.shadingModel;
-                        data.shadeModel_objectID[1] = static_cast<int>(oi);
+                        data.shadeModel_objectID_shadows[0] = material.shadingModel;
+                        data.shadeModel_objectID_shadows[1] = static_cast<int>(oi);
+                        data.shadeModel_objectID_shadows[2] = shadows;
 
                         data.metallic_roughness_ambientOcclusion_shininess[0] = material.metallic;
                         data.metallic_roughness_ambientOcclusion_shininess[1] = material.roughness;
@@ -768,9 +817,11 @@ namespace xng {
                 auto viewPos = cameraTransform.getPosition();
                 float viewArr[4] = {viewPos.x, viewPos.y, viewPos.z, 1};
                 float viewSize[4] = {static_cast<float>(renderSize.x), static_cast<float>(renderSize.y), 0, 0};
+                float farPlane[4] = {1000, 0, 0, 1};
                 shaderBuffer.upload(0, reinterpret_cast<const uint8_t *>(viewArr), sizeof(float[4]));
                 shaderBuffer.upload(sizeof(float[4]), reinterpret_cast<const uint8_t *>(viewSize), sizeof(float[4]));
-                shaderBuffer.upload(sizeof(float[8]),
+                shaderBuffer.upload(sizeof(float[8]), reinterpret_cast<const uint8_t *>(farPlane), sizeof(float[4]));
+                shaderBuffer.upload(sizeof(float[12]),
                                     reinterpret_cast<const uint8_t *>(shaderData.data()),
                                     shaderData.size() * sizeof(ShaderDrawData));
 
@@ -801,6 +852,8 @@ namespace xng {
                         {spotLightBuffer,                            {{{FRAGMENT, ShaderResource::READ}}}},
                         {dirLightBuffer,                             {{{FRAGMENT, ShaderResource::READ}}}},
                         {pbrLightBuffer,                             {{{FRAGMENT, ShaderResource::READ}}}},
+                        {pbrPointShadowLightBuffer,                  {{{FRAGMENT, ShaderResource::READ}}}},
+                        {pbrPointShadowMap,                          {{{FRAGMENT, ShaderResource::READ}}}},
                 };
                 commands.emplace_back(RenderPipeline::bindShaderResources(shaderRes));
                 commands.emplace_back(pass.multiDrawIndexed(drawCalls, baseVertices));
@@ -817,7 +870,7 @@ namespace xng {
             }
         }
 
-        target.setAttachments({});
+        target.clearAttachments();
     }
 
     std::type_index ForwardLightingPass::getTypeIndex() const {

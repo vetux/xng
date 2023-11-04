@@ -27,7 +27,7 @@ struct ShaderDrawData {
     mat4 model;
     mat4 mvp;
 
-    ivec4 shadeModel_objectID_boneOffset;
+    ivec4 shadeModel_objectID_boneOffset_shadows;
     vec4 metallic_roughness_ambientOcclusion_shininess;
 
     vec4 diffuseColor;
@@ -115,7 +115,7 @@ void main()
 {
     ShaderDrawData data = globs.data[gl_DrawID];
 
-    vec4 pos = getSkinnedVertexPosition(data.shadeModel_objectID_boneOffset.z);
+    vec4 pos = getSkinnedVertexPosition(data.shadeModel_objectID_boneOffset_shadows.z);
 
     vPos = data.mvp * pos;
     fPos = (data.model * pos).xyz;

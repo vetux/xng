@@ -9,8 +9,10 @@ layout (location = 1) in vec2 vUv;
 layout(location = 0) out vec4 fPos;
 layout(location = 1) out vec2 fUv;
 
-layout(binding = 0, std140) uniform ShaderUniformBuffer {
+layout(binding = 0, std140) buffer ShaderData {
     vec4 viewPosition;
+    vec4 farPlane;
+    ivec4 enableShadows;
 } globs;
 
 layout(binding = 1, std140) buffer PointLightsData
@@ -39,8 +41,15 @@ layout(binding = 7) uniform sampler2D gBufferRoughnessMetallicAO;
 layout(binding = 8) uniform sampler2D gBufferAlbedo;
 layout(binding = 9) uniform sampler2D gBufferAmbient;
 layout(binding = 10) uniform sampler2D gBufferSpecular;
-layout(binding = 11) uniform isampler2D gBufferModelObject;
+layout(binding = 11) uniform isampler2D gBufferModelObjectShadows;
 layout(binding = 12) uniform sampler2D gBufferDepth;
+
+layout(binding = 13) uniform samplerCubeArray pbrPointLightShadowMaps;
+
+layout(binding = 14, std140) buffer PBRPointLightsDataShadow
+{
+    PBRPointLight lights[];
+} pbrPointLightsShadow;
 
 void main()
 {

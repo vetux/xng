@@ -30,6 +30,7 @@ namespace xng {
             diffuse << message.getMessage("diffuse");
             specular << message.getMessage("specular");
             direction << message.getMessage("direction");
+            castShadows << message.getMessage("castShadows");
             return *this;
         }
 
@@ -39,6 +40,7 @@ namespace xng {
             diffuse >> message["diffuse"];
             specular >> message["specular"];
             direction >> message["direction"];
+            castShadows >> message["castShadows"];
             return message;
         }
 
@@ -47,6 +49,8 @@ namespace xng {
         Vec3f specular = Vec3f(0.1);
 
         Vec3f direction = Vec3f(0.0f, 0.0f, -1.0f);
+
+        bool castShadows = true;
     };
 }
 

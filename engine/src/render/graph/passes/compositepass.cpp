@@ -20,7 +20,7 @@
 #include "xng/render/graph/passes/compositepass.hpp"
 
 #include "xng/render/graph/framegraphbuilder.hpp"
-#include "xng/render/graph/framegraphproperties.hpp"
+#include "xng/render/graph/framegraphsettings.hpp"
 
 #include "xng/render/geometry/vertexstream.hpp"
 
@@ -144,8 +144,8 @@ namespace xng {
             vao.setBuffers(vb);
         }
 
-        t.setAttachments({sColor}, sDepth);
-        bt.setAttachments({dColor}, dDepth);
+        t.setAttachments({RenderTargetAttachment::texture(sColor)}, RenderTargetAttachment::texture(sDepth));
+        bt.setAttachments({RenderTargetAttachment::texture(dColor)}, RenderTargetAttachment::texture(dDepth));
 
         assert(t.isComplete());
         assert(bt.isComplete());
@@ -176,8 +176,8 @@ namespace xng {
 
         renderQueues.at(0).get().submit({cBuffer}, {}, {});
 
-        bt.setAttachments({});
-        t.setAttachments({});
+        bt.clearAttachments();
+        t.clearAttachments();
     }
 
     std::type_index CompositePass::getTypeIndex() const {

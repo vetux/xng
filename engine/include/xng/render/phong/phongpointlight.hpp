@@ -32,6 +32,7 @@ namespace xng {
             message.value("constant", constant);
             message.value("linear", linear);
             message.value("quadratic", quadratic);
+            castShadows << message.getMessage("castShadows");
             return *this;
         }
 
@@ -43,6 +44,7 @@ namespace xng {
             message["constant"] = constant;
             message["linear"] = linear;
             message["quadratic"] = quadratic;
+            castShadows >> message["castShadows"];
             return message;
         }
 
@@ -53,6 +55,8 @@ namespace xng {
         float constant = 1;
         float linear = 0.09;
         float quadratic = 0.032;
+
+        bool castShadows = true;
     };
 }
 

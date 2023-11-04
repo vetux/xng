@@ -89,6 +89,8 @@ namespace xng::MatrixMath {
      * @return
      */
     XENGINE_EXPORT Mat4f rotate(const Vec3f &rotationValue);
+
+    XENGINE_EXPORT Mat4f lookAt(const Vec3f &eye, const Vec3f &center , const Vec3f &up);
 }
 
 #endif //XENGINE_GRAPHICSMATH_HPP

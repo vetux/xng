@@ -120,6 +120,14 @@ namespace xng {
         FrameGraphResource getSlot(FrameGraphSlot slot);
 
         /**
+         * Check wheter a slot has been assigned
+         *
+         * @param slot
+         * @return
+         */
+        bool checkSlot(FrameGraphSlot slot);
+
+        /**
          * @return The resource handle of the back buffer to render into.
          */
         FrameGraphResource getBackBuffer();

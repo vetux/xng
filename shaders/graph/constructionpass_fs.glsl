@@ -19,7 +19,7 @@ layout(location = 3) out vec4 oRoughnessMetallicAO;
 layout(location = 4) out vec4 oAlbedo;
 layout(location = 5) out vec4 oAmbient;
 layout(location = 6) out vec4 oSpecular;
-layout(location = 7) out ivec4 oModelObject;
+layout(location = 7) out ivec4 oModelObjectShadows;
 
 struct ShaderAtlasTexture {
     ivec4 level_index_filtering_assigned;
@@ -30,7 +30,7 @@ struct ShaderDrawData {
     mat4 model;
     mat4 mvp;
 
-    ivec4 shadeModel_objectID_boneOffset;
+    ivec4 shadeModel_objectID_boneOffset_shadows;
     vec4 metallic_roughness_ambientOcclusion_shininess;
 
     vec4 diffuseColor;
@@ -89,7 +89,7 @@ void main() {
         oAlbedo = textureAtlas(data.diffuse, fUv);
     }
 
-    if (data.shadeModel_objectID_boneOffset.x == 0)
+    if (data.shadeModel_objectID_boneOffset_shadows.x == 0)
     {
         oRoughnessMetallicAO.r = textureAtlas(data.roughness, fUv).r + data.metallic_roughness_ambientOcclusion_shininess.y;
         oRoughnessMetallicAO.g = textureAtlas(data.metallic, fUv).r + data.metallic_roughness_ambientOcclusion_shininess.x;
@@ -130,8 +130,8 @@ void main() {
         oNormal = vec4(normalize(texNormal), 1);
     }
 
-    oModelObject.r = data.shadeModel_objectID_boneOffset.x;
-    oModelObject.g = data.shadeModel_objectID_boneOffset.y;
-    oModelObject.b = 0;
-    oModelObject.a = 1;
+    oModelObjectShadows.r = data.shadeModel_objectID_boneOffset_shadows.x;
+    oModelObjectShadows.g = data.shadeModel_objectID_boneOffset_shadows.y;
+    oModelObjectShadows.b = data.shadeModel_objectID_boneOffset_shadows.w;
+    oModelObjectShadows.a = 1;
 }

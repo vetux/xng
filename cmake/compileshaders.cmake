@@ -21,6 +21,10 @@ CompileShader(graph/forwardlightingpass_fs FRAGMENT main)
 CompileShader(graph/compositepass_vs VERTEX main)
 CompileShader(graph/compositepass_fs FRAGMENT main)
 
+CompileShader(graph/shadowmappingpass_vs VERTEX main)
+CompileShader(graph/shadowmappingpass_fs FRAGMENT main)
+CompileShader(graph/shadowmappingpass_gs GEOMETRY main)
+
 CompileShader(ren2d/vs_multi VERTEX main)
 CompileShader(ren2d/fs_multi FRAGMENT main)
 

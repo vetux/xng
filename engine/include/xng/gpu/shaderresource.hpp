@@ -49,7 +49,7 @@ namespace xng {
 
     enum RenderPipelineBindingType : int {
         BIND_TEXTURE_BUFFER, // eg glsl sampler2D or hlsl Texture2D
-        BIND_TEXTURE_ARRAY_BUFFER,
+        BIND_TEXTURE_ARRAY_BUFFER, // eg glsl sampler2DArray or samplerCubeArray
         BIND_IMAGE_BUFFER, // eg glsl image2D or hlsl RWTexture2D
         BIND_IMAGE_ARRAY_BUFFER,
         BIND_SHADER_UNIFORM_BUFFER,

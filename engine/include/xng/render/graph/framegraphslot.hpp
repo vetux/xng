@@ -40,12 +40,14 @@ namespace xng {
         SLOT_GBUFFER_ALBEDO,                // Texture RGBA : The pbr albedo or phong diffuse color value
         SLOT_GBUFFER_AMBIENT,               // Texture RGBA : The phong ambient color value
         SLOT_GBUFFER_SPECULAR,              // Texture RGBA : The phong specular color value
-        SLOT_GBUFFER_MODEL_OBJECT,          // Texture RGBA32I : .x = Shading Model ID, .y = Object ID
+        SLOT_GBUFFER_MODEL_OBJECT_SHADOWS,          // Texture RGBA32I : .x = Shading Model ID, .y = Object ID, .z = Receive Shadows
         SLOT_GBUFFER_DEPTH,                 // Texture DEPTH_STENCIL : The depth value in the x component
 
-        SLOT_SHADOW_MAP_DIRECTIONAL, // A Texture Array with 2d textures containing directional light maps.
-        SLOT_SHADOW_MAP_SPOT, // A Texture Array with 2d textures containing spot light maps.
-        SLOT_SHADOW_MAP_POINT, // A Texture Array with 3d cubemap textures containing point light maps.
+        SLOT_SHADOW_MAP_PHONG_DIRECTIONAL, // A Texture Array with 2d textures containing directional light depth maps of phong light sources.
+        SLOT_SHADOW_MAP_PHONG_SPOT, // A Texture Array with 2d textures containing spot light depth maps of phong light sources.
+        SLOT_SHADOW_MAP_PHONG_POINT, // A Texture Array with 3d cubemap textures containing point light depth maps of phong light sources.
+
+        SLOT_SHADOW_MAP_PBR_POINT, // A Texture Array with 3d cubemap textures containing point light depth maps of pbr light sources.
 
         // User slots are not used by the default passes included with xng and can be used to share data between user created passes.
         SLOT_USER_1,

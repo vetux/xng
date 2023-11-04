@@ -32,23 +32,34 @@
 namespace xng::opengl {
     class OGLTextureArrayBuffer : public TextureArrayBuffer {
     public:
-        std::function<void(RenderObject * )> destructor;
+        std::function<void(RenderObject *)> destructor;
         TextureArrayBufferDesc desc;
 
         GLuint handle{};
         GLint internalFormat{};
 
-        OGLTextureArrayBuffer(std::function<void(RenderObject * )> destructor,
+        OGLTextureArrayBuffer(std::function<void(RenderObject *)> destructor,
                               TextureArrayBufferDesc descArg)
                 : destructor(std::move(destructor)),
                   desc(std::move(descArg)) {
-            if (desc.textureDesc.textureType != TEXTURE_2D) {
+            if (desc.textureDesc.textureType != TEXTURE_2D && desc.textureDesc.textureType != TEXTURE_CUBE_MAP) {
                 throw std::runtime_error("Invalid texture type for array texture");
             }
 
             glGenTextures(1, &handle);
 
-            glBindTexture(GL_TEXTURE_2D_ARRAY, handle);
+            GLenum target;
+            GLsizei layers;
+            if (desc.textureDesc.textureType == TEXTURE_CUBE_MAP) {
+                target = GL_TEXTURE_CUBE_MAP_ARRAY;
+                layers = static_cast<GLsizei>(desc.textureCount) * 6;
+            } else {
+                target = GL_TEXTURE_2D_ARRAY;
+                layers = static_cast<GLsizei>(desc.textureCount);
+            }
+
+            glBindTexture(target, handle);
+            checkGLError();
 
             if (desc.textureCount > 0) {
                 internalFormat = convert(desc.textureDesc.format);
@@ -76,7 +87,7 @@ namespace xng::opengl {
                         break;
                 }
 
-                glTexStorage3D(GL_TEXTURE_2D_ARRAY,
+                glTexStorage3D(target,
                                desc.textureDesc.generateMipmap
                                ? static_cast<GLsizei>( std::log2(
                                        std::max(desc.textureDesc.size.x, desc.textureDesc.size.y))) + 1
@@ -84,19 +95,19 @@ namespace xng::opengl {
                                internalFormat,
                                desc.textureDesc.size.x,
                                desc.textureDesc.size.y,
-                               static_cast<GLsizei>(desc.textureCount));
+                               layers);
 
                 try {
                     checkGLError();
                 } catch (const std::runtime_error &e) {
                     // Catch GL_INVALID_OPERATION because the mipmap layers count maximum depends on log2 which uses floating point.
                     if (e.what() == getGLErrorString(GL_INVALID_OPERATION)) {
-                        glTexStorage3D(GL_TEXTURE_2D_ARRAY,
+                        glTexStorage3D(target,
                                        1,
                                        internalFormat,
                                        desc.textureDesc.size.x,
                                        desc.textureDesc.size.y,
-                                       static_cast<GLsizei>(desc.textureCount));
+                                       layers);
                     } else {
                         throw e;
                     }
@@ -106,38 +117,38 @@ namespace xng::opengl {
 
                 auto texWrap = convert(desc.textureDesc.wrapping);
 
-                glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                glTexParameteri(target,
                                 GL_TEXTURE_WRAP_S,
                                 texWrap);
-                glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                glTexParameteri(target,
                                 GL_TEXTURE_WRAP_T,
                                 texWrap);
 
                 if (desc.textureDesc.generateMipmap) {
-                    glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                    glTexParameteri(target,
                                     GL_TEXTURE_MIN_FILTER,
                                     convert(desc.textureDesc.mipmapFilter));
-                    glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                    glTexParameteri(target,
                                     GL_TEXTURE_MAG_FILTER,
                                     convert(desc.textureDesc.filterMag));
-                    glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+                    glGenerateMipmap(target);
                 } else {
-                    glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                    glTexParameteri(target,
                                     GL_TEXTURE_MIN_FILTER,
                                     convert(desc.textureDesc.filterMin));
-                    glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                    glTexParameteri(target,
                                     GL_TEXTURE_MAG_FILTER,
                                     convert(desc.textureDesc.filterMag));
                 }
 
                 auto col = desc.textureDesc.borderColor.divide();
                 float borderColor[] = {col.x, col.y, col.z, col.w};
-                glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, borderColor);
+                glTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, borderColor);
 
                 checkGLError();
             }
 
-            glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+            glBindTexture(target, 0);
 
             checkGLError();
         }
@@ -156,9 +167,13 @@ namespace xng::opengl {
                     ColorFormat format,
                     const uint8_t *buffer,
                     size_t bufferSize) override {
-            glBindTexture(GL_TEXTURE_2D_ARRAY, handle);
 
-            glTexSubImage3D(GL_TEXTURE_2D_ARRAY,
+            auto target =
+                    desc.textureDesc.textureType == TEXTURE_CUBE_MAP ? GL_TEXTURE_CUBE_MAP_ARRAY : GL_TEXTURE_2D_ARRAY;
+
+            glBindTexture(target, handle);
+
+            glTexSubImage3D(target,
                             0,
                             0,
                             0,
@@ -172,40 +187,40 @@ namespace xng::opengl {
 
             auto texWrap = convert(desc.textureDesc.wrapping);
 
-            glTexParameteri(GL_TEXTURE_2D_ARRAY,
+            glTexParameteri(target,
                             GL_TEXTURE_WRAP_S,
                             texWrap);
-            glTexParameteri(GL_TEXTURE_2D_ARRAY,
+            glTexParameteri(target,
                             GL_TEXTURE_WRAP_T,
                             texWrap);
 
             if (desc.textureDesc.generateMipmap) {
-                glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                glTexParameteri(target,
                                 GL_TEXTURE_MIN_FILTER,
                                 convert(desc.textureDesc.mipmapFilter));
-                glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                glTexParameteri(target,
                                 GL_TEXTURE_MAG_FILTER,
                                 convert(desc.textureDesc.filterMag));
-                glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+                glGenerateMipmap(target);
             } else {
-                glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                glTexParameteri(target,
                                 GL_TEXTURE_MIN_FILTER,
                                 convert(desc.textureDesc.filterMin));
-                glTexParameteri(GL_TEXTURE_2D_ARRAY,
+                glTexParameteri(target,
                                 GL_TEXTURE_MAG_FILTER,
                                 convert(desc.textureDesc.filterMag));
             }
 
             auto col = desc.textureDesc.borderColor.divide();
             float borderColor[] = {col.x, col.y, col.z, col.w};
-            glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, borderColor);
+            glTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, borderColor);
 
-            glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+            glBindTexture(target, 0);
 
             checkGLError();
         }
 
-        Image <ColorRGBA> download(size_t index) override {
+        Image<ColorRGBA> download(size_t index) override {
             // Requires https://registry.khronos.org/OpenGL-Refpages/gl4/html/glGetTextureSubImage.xhtml
             throw std::runtime_error("Download not supported for texture array buffers");
         }

@@ -256,7 +256,7 @@
 #include "xng/render/graph/framegraphpassresources.hpp"
 #include "xng/render/graph/framegraphtextureatlas.hpp"
 #include "xng/render/graph/framegraphrenderer.hpp"
-#include "xng/render/graph/framegraphproperties.hpp"
+#include "xng/render/graph/framegraphsettings.hpp"
 #include "xng/render/graph/framegraphresource.hpp"
 #include "xng/render/graph/framegraphslot.hpp"
 #include "xng/render/graph/framegraphpass.hpp"

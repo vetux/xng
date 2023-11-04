@@ -24,13 +24,13 @@
 
 namespace xng {
     enum TextureType : int {
-        TEXTURE_2D,
+        TEXTURE_2D = 0,
         TEXTURE_2D_MULTISAMPLE,
         TEXTURE_CUBE_MAP
     };
 
     enum CubeMapFace : int {
-        POSITIVE_X,
+        POSITIVE_X = 0,
         NEGATIVE_X,
         POSITIVE_Y,
         NEGATIVE_Y,
@@ -40,7 +40,7 @@ namespace xng {
 
     enum ColorFormat : int {
         //Base Formats
-        DEPTH,
+        DEPTH = 0,
         DEPTH_STENCIL,
         R,
         RG,
@@ -113,19 +113,19 @@ namespace xng {
     };
 
     enum TextureWrapping : int {
-        REPEAT,
+        REPEAT = 0,
         MIRRORED_REPEAT,
         CLAMP_TO_EDGE,
         CLAMP_TO_BORDER
     };
 
     enum TextureFiltering : int {
-        NEAREST,
+        NEAREST = 0,
         LINEAR
     };
 
     enum MipMapFiltering : int {
-        NEAREST_MIPMAP_NEAREST,
+        NEAREST_MIPMAP_NEAREST = 0,
         LINEAR_MIPMAP_NEAREST,
         NEAREST_MIPMAP_LINEAR,
         LINEAR_MIPMAP_LINEAR

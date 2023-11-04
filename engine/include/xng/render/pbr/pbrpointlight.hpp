@@ -29,6 +29,7 @@ namespace xng {
         Messageable &operator<<(const Message &message) override {
             color << message.getMessage("color");
             message.value("energy", energy);
+            message.value("castShadows", castShadows);
             return *this;
         }
 
@@ -36,11 +37,14 @@ namespace xng {
             message = Message(Message::DICTIONARY);
             color >> message["color"];
             message["energy"] = energy;
+            message["castShadows"] = castShadows;
             return message;
         }
 
         ColorRGBA color = ColorRGBA::white(); // The color of the light
         float energy = 1; // The strength of the light
+
+        bool castShadows = true;
     };
 }
 

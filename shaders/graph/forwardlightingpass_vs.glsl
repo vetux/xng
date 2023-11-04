@@ -30,7 +30,7 @@ struct ShaderDrawData {
     mat4 model;
     mat4 mvp;
 
-    ivec4 shadeModel_objectID;
+    ivec4 shadeModel_objectID_shadows;
     vec4 metallic_roughness_ambientOcclusion_shininess;
 
     vec4 diffuseColor;
@@ -55,6 +55,7 @@ layout(binding = 0, std140) buffer ShaderUniformBuffer
 {
     vec4 viewPosition;
     vec4 viewportSize;
+    vec4 farPlane;
     ShaderDrawData data[];
 } globs;
 
@@ -80,6 +81,13 @@ layout(binding = 17, std140) buffer PBRPointLightsData
 {
     PBRPointLight lights[];
 } pbrPointLights;
+
+layout(binding = 18, std140) buffer PBRPointLightsDataShadow
+{
+    PBRPointLight lights[];
+} pbrPointLightsShadow;
+
+layout(binding = 19) uniform samplerCubeArray pbrPointLightShadowMaps;
 
 void main()
 {

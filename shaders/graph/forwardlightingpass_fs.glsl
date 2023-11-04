@@ -3,6 +3,7 @@
 #include "texfilter.glsl"
 #include "phong.glsl"
 #include "pbr.glsl"
+#include "shadow.glsl"
 
 layout(location = 0) in vec3 fPos;
 layout(location = 1) in vec3 fNorm;
@@ -27,7 +28,7 @@ struct ShaderDrawData {
     mat4 model;
     mat4 mvp;
 
-    ivec4 shadeModel_objectID;
+    ivec4 shadeModel_objectID_shadows;
     vec4 metallic_roughness_ambientOcclusion_shininess;
 
     vec4 diffuseColor;
@@ -52,6 +53,7 @@ layout(binding = 0, std140) buffer ShaderUniformBuffer
 {
     vec4 viewPosition;
     vec4 viewportSize;
+    vec4 farPlane;
     ShaderDrawData data[];
 } globs;
 
@@ -77,6 +79,13 @@ layout(binding = 17, std140) buffer PBRPointLightsData
 {
     PBRPointLight lights[];
 } pbrPointLights;
+
+layout(binding = 18, std140) buffer PBRPointLightsDataShadow
+{
+    PBRPointLight lights[];
+} pbrPointLightsShadow;
+
+layout(binding = 19) uniform samplerCubeArray pbrPointLightShadowMaps;
 
 vec4 textureAtlas(ShaderAtlasTexture tex, vec2 inUv)
 {
@@ -120,7 +129,7 @@ void main() {
         normal = normalize(texNormal);
     }
 
-    if (data.shadeModel_objectID.x == 0)
+    if (data.shadeModel_objectID_shadows.x == 0)
     {
         // PBR
         vec4 albedo;
@@ -152,6 +161,8 @@ void main() {
             ao = data.metallic_roughness_ambientOcclusion_shininess.z;
         }
 
+        int shadows = data.shadeModel_objectID_shadows.z;
+
         PbrPass pass = pbr_begin(fPos,
         normal,
         albedo.xyz,
@@ -167,8 +178,21 @@ void main() {
             reflectance = pbr_point(pass, reflectance, light);
         }
 
-        oColor = vec4(pbr_finish(pass, reflectance), albedo.a);
-    } else if (data.shadeModel_objectID.x == 1) {
+        if (shadows == 0){
+            for (int i = 0; i < pbrPointLightsShadow.lights.length(); i++) {
+                PBRPointLight light = pbrPointLightsShadow.lights[i];
+                reflectance = pbr_point(pass, reflectance, light);
+            }
+        } else {
+            for (int i = 0; i < pbrPointLightsShadow.lights.length(); i++) {
+                PBRPointLight light = pbrPointLightsShadow.lights[i];
+                float shadow = sampleShadow(fPos, light.position.xyz, globs.viewPosition.xyz, pbrPointLightShadowMaps, i, globs.farPlane.x);
+                reflectance = pbr_point(pass, reflectance, light) * shadow;
+            }
+        }
+
+        oColor = vec4(pbr_finish(pass, reflectance), 1);
+    } else if (data.shadeModel_objectID_shadows.x == 1) {
         // Phong
         vec4 diffuse;
         if (data.diffuse.level_index_filtering_assigned.w != 0){

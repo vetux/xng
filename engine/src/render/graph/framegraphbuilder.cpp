@@ -23,7 +23,7 @@
 
 #include "xng/render/graph/framegraphpass.hpp"
 
-#include "xng/render/graph/framegraphproperties.hpp"
+#include "xng/render/graph/framegraphsettings.hpp"
 
 namespace xng {
     FrameGraphBuilder::FrameGraphBuilder(RenderTarget &backBuffer,
@@ -144,6 +144,10 @@ namespace xng {
         return graphSlots.at(slot);
     }
 
+    bool FrameGraphBuilder::checkSlot(FrameGraphSlot slot) {
+        return graphSlots.find(slot) != graphSlots.end();
+    }
+
     FrameGraphResource FrameGraphBuilder::getBackBuffer() {
         return FrameGraphResource(0);
     }
@@ -153,7 +157,7 @@ namespace xng {
     }
 
     Vec2i FrameGraphBuilder::getRenderSize() {
-        return getBackBufferDescription().size * properties.get<float>(FrameGraphProperties::RENDER_SCALE, 1);
+        return getBackBufferDescription().size * properties.get<float>(FrameGraphSettings::RENDER_SCALE, 1);
     }
 
     const Scene &FrameGraphBuilder::getScene() const {
