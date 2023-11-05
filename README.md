@@ -14,21 +14,23 @@ workflow
 
 ## Features
 
+- Resource system
+  - Automatic Resource Lifetime handling using RAII and reference counting
+- Sprite Animation
+- Skeletal Animation
 - ECS with data oriented architecture
-- 2D Renderer with multi draw acceleration
+- FrameGraph Renderer 
+  - PBR Lighting
+  - Shadow Mapping
+- 2D Renderer with object-oriented SDL like interface
 - Canvas layout engine with reference scaling support
 - Text Rendering
-- Sprite Animation
-- PAK file format
-- Resource system
+- PAK file format with chunking and encryption support
 
 ## Planned Features
 
 - Vulkan GPU driver
 - Bullet3 physics driver
-- Frame Graph Renderer
-    - PBR Material support
-- Skeletal animation
  
 ## Drivers
 
