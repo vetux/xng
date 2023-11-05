@@ -19,13 +19,16 @@
 
 #include "xng/render/graph/passes/clearpass.hpp"
 
+#include "xng/render/graph/framegraphsettings.hpp"
+
 namespace xng {
     ClearPass::ClearPass() {
 
     }
 
     void ClearPass::setup(FrameGraphBuilder &builder) {
-        renderSize = builder.getRenderSize();
+        renderSize = builder.getBackBufferDescription().size
+                     * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
         RenderTargetDesc targetDesc;
         targetDesc.size = renderSize;
         targetDesc.numberOfColorAttachments = 4;

@@ -29,14 +29,14 @@ namespace xng {
     FrameGraphBuilder::FrameGraphBuilder(RenderTarget &backBuffer,
                                          RenderDeviceInfo deviceInfo,
                                          const Scene &scene,
-                                         const GenericMapString &properties,
+                                         const SceneRendererSettings &settings,
                                          std::set<FrameGraphResource> persistentResources,
                                          ShaderCompiler &shaderCompiler,
                                          ShaderDecompiler &shaderDecompiler)
             : backBuffer(backBuffer),
               deviceInfo(std::move(deviceInfo)),
               scene(scene),
-              properties(properties),
+              settings(settings),
               persistentResources(std::move(persistentResources)),
               shaderCompiler(shaderCompiler),
               shaderDecompiler(shaderDecompiler) {}
@@ -156,16 +156,12 @@ namespace xng {
         return backBuffer.getDescription();
     }
 
-    Vec2i FrameGraphBuilder::getRenderSize() {
-        return getBackBufferDescription().size * properties.get<float>(FrameGraphSettings::RENDER_SCALE, 1);
-    }
-
     const Scene &FrameGraphBuilder::getScene() const {
         return scene;
     }
 
-    const GenericMapString &FrameGraphBuilder::getProperties() const {
-        return properties;
+    const SceneRendererSettings &FrameGraphBuilder::getSettings() const {
+        return settings;
     }
 
     ShaderCompiler &FrameGraphBuilder::getShaderCompiler() {

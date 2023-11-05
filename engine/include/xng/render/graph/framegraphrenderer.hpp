@@ -47,16 +47,16 @@ namespace xng {
             pipeline = v;
         }
 
-        void setProperties(const GenericMapString &value) override {
-            properties = value;
+        void setSettings(const SceneRendererSettings &value) override {
+            settings = value;
         }
 
-        GenericMapString &getProperties() override {
-            return properties;
+        SceneRendererSettings &getSettings() override {
+            return settings;
         }
 
-        const GenericMapString &getProperties() const override {
-            return properties;
+        const SceneRendererSettings &getSettings() const override {
+            return settings;
         }
 
     private:
@@ -67,7 +67,7 @@ namespace xng {
 
         FrameGraphPipeline pipeline;
 
-        GenericMapString properties;
+        SceneRendererSettings settings;
         GenericMapString blackboard;
 
         FrameGraph frame;

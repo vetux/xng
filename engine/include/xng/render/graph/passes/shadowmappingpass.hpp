@@ -42,26 +42,8 @@ namespace xng {
 
         std::type_index getTypeIndex() const override;
 
-        void setShadowResolution(const Vec2i &value){
-            resolution = value;
-        }
-
-        const Vec2i &getShadowResolution() const {
-            return resolution;
-        }
-
-        float getNearPlane() const;
-
-        void setNearPlane(float nearPlane);
-
-        float getFarPlane() const;
-
-        void setFarPlane(float farPlane);
-
     private:
         Vec2i resolution = Vec2i(2048, 2048);
-        float nearPlane = 0.1;
-        float farPlane = 1000;
 
         std::vector<Scene::Node> pointLightNodes;
 

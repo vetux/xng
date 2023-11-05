@@ -11,7 +11,6 @@ layout(location = 1) out vec2 fUv;
 
 layout(binding = 0, std140) buffer ShaderData {
     vec4 viewPosition;
-    vec4 farPlane;
     ivec4 enableShadows;
 } globs;
 

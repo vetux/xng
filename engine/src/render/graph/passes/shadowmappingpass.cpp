@@ -40,9 +40,7 @@ struct LightData {
 };
 
 void xng::ShadowMappingPass::setup(xng::FrameGraphBuilder &builder) {
-    if (builder.getProperties().has(FrameGraphSettings::SHADOW_MAPPING_RESOLUTION)) {
-        resolution = builder.getProperties().get<Vec2i>(FrameGraphSettings::SHADOW_MAPPING_RESOLUTION);
-    }
+    resolution = builder.getSettings().get<Vec2i>(FrameGraphSettings::SETTING_SHADOW_MAPPING_POINT_RESOLUTION);
 
     meshNodes.clear();
     pointLightNodes.clear();
@@ -285,8 +283,8 @@ void xng::ShadowMappingPass::execute(FrameGraphPassResources &resources,
         auto &light = lightNode.getProperty<Scene::PointLightProperty>().light;
         auto &transform = lightNode.getProperty<Scene::TransformProperty>().transform;
         float aspect = (float) resolution.x / (float) resolution.y;
-        float near = nearPlane;
-        float far = farPlane;
+        float near = light.shadowNearPlane;
+        float far = light.shadowFarPlane;
 
         Mat4f shadowProj = MatrixMath::perspective(90.0f, aspect, near, far);
 
@@ -313,7 +311,7 @@ void xng::ShadowMappingPass::execute(FrameGraphPassResources &resources,
                                        MatrixMath::lookAt(lightPos, lightPos + Vec3f(0.0, 0.0, -1.0),
                                                           Vec3f(0.0, -1.0, 0.0)));
 
-        lightData.lightPosFarPlane = Vec4f(lightPos.x, lightPos.y, lightPos.z, farPlane).getMemory();
+        lightData.lightPosFarPlane = Vec4f(lightPos.x, lightPos.y, lightPos.z, far).getMemory();
 
         lightData.layer[0] = static_cast<int>(li);
 
@@ -424,20 +422,4 @@ void xng::ShadowMappingPass::execute(FrameGraphPassResources &resources,
 
 std::type_index xng::ShadowMappingPass::getTypeIndex() const {
     return typeid(ShadowMappingPass);
-}
-
-float xng::ShadowMappingPass::getNearPlane() const {
-    return nearPlane;
-}
-
-void xng::ShadowMappingPass::setNearPlane(float nearPlane) {
-    ShadowMappingPass::nearPlane = nearPlane;
-}
-
-float xng::ShadowMappingPass::getFarPlane() const {
-    return farPlane;
-}
-
-void xng::ShadowMappingPass::setFarPlane(float farPlane) {
-    ShadowMappingPass::farPlane = farPlane;
 }

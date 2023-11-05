@@ -25,12 +25,14 @@
 #include "graph/forwardlightingpass_fs.hpp"
 
 #include "xng/render/geometry/vertexstream.hpp"
+#include "xng/render/graph/framegraphsettings.hpp"
 
 namespace xng {
 #pragma pack(push, 1)
     struct PointLightData {
         std::array<float, 4> position;
         std::array<float, 4> color;
+        std::array<float, 4> farPlane;
     };
 
     struct ShaderAtlasTexture {
@@ -72,6 +74,7 @@ namespace xng {
                                        t.getPosition().z,
                                        0).getMemory(),
                     .color = Vec4f(v.x * l.power, v.y * l.power, v.z * l.power, 1).getMemory(),
+                    .farPlane = Vec4f(l.shadowFarPlane, 0, 0, 0).getMemory(),
             };
             if (l.castShadows)
                 shadowLights.emplace_back(tmp);
@@ -82,7 +85,8 @@ namespace xng {
     }
 
     void ForwardLightingPass::setup(FrameGraphBuilder &builder) {
-        renderSize = builder.getRenderSize();
+        renderSize = builder.getBackBufferDescription().size
+                     * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
         scene = builder.getScene();
 
         auto pointLightNodes = scene.rootNode.findAll({typeid(Scene::PointLightProperty)});
@@ -110,7 +114,7 @@ namespace xng {
         builder.write(shadowPointLightBufferRes);
 
         RenderTargetDesc targetDesc;
-        targetDesc.size = builder.getRenderSize();
+        targetDesc.size = renderSize;
         targetDesc.numberOfColorAttachments = 1;
         targetDesc.hasDepthStencilAttachment = true;
         targetRes = builder.createRenderTarget(targetDesc);
@@ -597,11 +601,10 @@ namespace xng {
                 auto viewPos = cameraTransform.getPosition();
                 float viewArr[4] = {viewPos.x, viewPos.y, viewPos.z, 1};
                 float viewSize[4] = {static_cast<float>(renderSize.x), static_cast<float>(renderSize.y), 0, 0};
-                float farPlane[4] = {1000, 0, 0, 1};
+
                 shaderBuffer.upload(0, reinterpret_cast<const uint8_t *>(viewArr), sizeof(float[4]));
                 shaderBuffer.upload(sizeof(float[4]), reinterpret_cast<const uint8_t *>(viewSize), sizeof(float[4]));
-                shaderBuffer.upload(sizeof(float[8]), reinterpret_cast<const uint8_t *>(farPlane), sizeof(float[4]));
-                shaderBuffer.upload(sizeof(float[12]),
+                shaderBuffer.upload(sizeof(float[8]),
                                     reinterpret_cast<const uint8_t *>(shaderData.data()),
                                     shaderData.size() * sizeof(ShaderDrawData));
 

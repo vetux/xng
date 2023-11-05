@@ -32,7 +32,8 @@ namespace xng {
 
     void CompositePass::setup(FrameGraphBuilder &builder) {
         RenderTargetDesc rdesc;
-        rdesc.size = builder.getRenderSize();
+        rdesc.size = builder.getBackBufferDescription().size
+                     * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
         rdesc.hasDepthStencilAttachment = true;
         rdesc.numberOfColorAttachments = 1;
         target = builder.createRenderTarget(rdesc);

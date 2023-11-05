@@ -48,7 +48,6 @@ layout(binding = 0, std140) buffer ShaderUniformBuffer
 {
     vec4 viewPosition;
     vec4 viewportSize;
-    vec4 farPlane;
     ShaderDrawData data[];
 } globs;
 
@@ -164,7 +163,7 @@ void main() {
     } else {
         for (int i = 0; i < pointLightsShadow.lights.length(); i++) {
             PBRPointLight light = pointLightsShadow.lights[i];
-            float shadow = sampleShadow(fPos, light.position.xyz, globs.viewPosition.xyz, pointLightShadowMaps, i, globs.farPlane.x);
+            float shadow = sampleShadow(fPos, light.position.xyz, globs.viewPosition.xyz, pointLightShadowMaps, i, light.farPlane.x);
             reflectance = pbr_point(pass, reflectance, light) * shadow;
         }
     }

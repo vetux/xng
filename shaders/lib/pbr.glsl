@@ -7,6 +7,7 @@
 struct PBRPointLight {
     vec4 position;
     vec4 color;
+    vec4 farPlane;
 };
 
 // ----------------------------------------------------------------------------

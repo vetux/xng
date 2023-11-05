@@ -34,11 +34,11 @@ namespace xng {
     struct PointLightData {
         std::array<float, 4> position;
         std::array<float, 4> color;
+        std::array<float, 4> farPlane;
     };
 
     struct ShaderStorageData {
         std::array<float, 4> viewPosition{};
-        std::array<float, 4> farPlane{};
         std::array<int, 4> enableShadows{};
     };
 #pragma pack(pop)
@@ -56,6 +56,7 @@ namespace xng {
                                        t.getPosition().z,
                                        0).getMemory(),
                     .color = Vec4f(v.x * l.power, v.y * l.power, v.z * l.power, 1).getMemory(),
+                    .farPlane = Vec4f(l.shadowFarPlane, 0, 0, 0).getMemory()
             };
             if (l.castShadows)
                 shadowLights.emplace_back(tmp);
@@ -115,7 +116,7 @@ namespace xng {
         builder.read(pipelineRes);
 
         renderSize = builder.getBackBufferDescription().size
-                     * builder.getProperties().get<float>(FrameGraphSettings::RENDER_SCALE, 1);
+                     * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
 
         targetRes = builder.createRenderTarget(RenderTargetDesc{
                 .size = renderSize,
@@ -250,7 +251,6 @@ namespace xng {
                                  cameraTransform.getPosition().y,
                                  cameraTransform.getPosition().z,
                                  0).getMemory();
-        buf.farPlane.at(0) = 1000;
         buf.enableShadows.at(0) = pointLightShadowMapRes.assigned;
         uniformBuffer.upload(reinterpret_cast<const uint8_t *>(&buf),
                              sizeof(ShaderStorageData));

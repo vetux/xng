@@ -34,7 +34,7 @@ namespace xng {
         frame = FrameGraphBuilder(target,
                                   device.getInfo(),
                                   scene,
-                                  properties,
+                                  settings,
                                   frame.getPersistentResources(),
                                   shaderCompiler,
                                   shaderDecompiler).build(pipeline.getPasses());

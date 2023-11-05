@@ -21,20 +21,23 @@
 #define XENGINE_FRAMEGRAPHSETTINGS_HPP
 
 #include <string>
+#include <utility>
 
-#define USER_PROPERTY(name) static const char *name = #name;
+#include "xng/render/scenerenderersettings.hpp"
 
-namespace xng {
-    namespace FrameGraphSettings {
-        // float, Range(0, inf) Render resolution is backbuffer size * scale, if not defined the full backbuffer resolution is used, the rendered images are projected to fit the backbuffer resolution.
-        USER_PROPERTY(RENDER_SCALE)
+#define FRAMEGRAPH_SETTING(name, defaultValue) namespace xng { namespace FrameGraphSettings { static const SceneRendererSetting name = SceneRendererSetting(#name, typeid(defaultValue), defaultValue); } }
 
-        // int, the number of sub samples per pixel (MSAA) to use when forward rendering, if not defined the back buffer sample count is used.
-        USER_PROPERTY(RENDER_SAMPLES)
+/**
+ * User settings should be declared using the FRAMEGRAPH_SETTING macro in the top level namespace
+ */
 
-        // Vec2i, The resolution of the shadow maps
-        USER_PROPERTY(SHADOW_MAPPING_RESOLUTION)
-    }
-}
+// float, Range(0, inf) Render resolution is backbuffer size * scale, if not defined the full backbuffer resolution is used, the rendered images are projected to fit the backbuffer resolution.
+FRAMEGRAPH_SETTING(SETTING_RENDER_SCALE, static_cast<float>(1.0))
+
+// int, the number of sub samples per pixel (MSAA) to use when forward rendering, if not defined the back buffer sample count is used.
+FRAMEGRAPH_SETTING(SETTING_RENDER_SAMPLES, 1)
+
+// Vec2i, The resolution of the point shadow maps
+FRAMEGRAPH_SETTING(SETTING_SHADOW_MAPPING_POINT_RESOLUTION, Vec2i(2048, 2048))
 
 #endif //XENGINE_FRAMEGRAPHSETTINGS_HPP

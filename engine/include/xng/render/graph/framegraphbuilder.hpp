@@ -23,6 +23,7 @@
 #include "xng/render/graph/framegraphresource.hpp"
 #include "xng/render/graph/framegraph.hpp"
 #include "xng/render/graph/framegraphslot.hpp"
+#include "xng/render/scenerenderersettings.hpp"
 
 #include "xng/render/scene.hpp"
 
@@ -32,7 +33,7 @@ namespace xng {
         FrameGraphBuilder(RenderTarget &backBuffer,
                           RenderDeviceInfo deviceInfo,
                           const Scene &scene,
-                          const GenericMapString &properties,
+                          const SceneRendererSettings &settings,
                           std::set<FrameGraphResource> persistentResources,
                           ShaderCompiler &shaderCompiler,
                           ShaderDecompiler &shaderDecompiler);
@@ -138,21 +139,16 @@ namespace xng {
         RenderTargetDesc getBackBufferDescription();
 
         /**
-         * @return The resolution to render at
-         */
-        Vec2i getRenderSize();
-
-        /**
          * @return The scene containing the user specified data.
          */
         const Scene &getScene() const;
 
         /**
-         * The properties map contains static configuration data.
+         * The settings contain static configuration data.
          *
          * @return
          */
-        const GenericMapString &getProperties() const;
+        const SceneRendererSettings &getSettings() const;
 
         ShaderCompiler &getShaderCompiler();
 
@@ -174,7 +170,7 @@ namespace xng {
 
         RenderTarget &backBuffer;
         const Scene &scene;
-        const GenericMapString &properties;
+        const SceneRendererSettings &settings;
 
         FrameGraph graph;
 

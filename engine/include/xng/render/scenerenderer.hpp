@@ -21,6 +21,7 @@
 #define XENGINE_SCENERENDERER_HPP
 
 #include "xng/render/scene.hpp"
+#include "xng/render/scenerenderersettings.hpp"
 
 #include "xng/util/genericmap.hpp"
 
@@ -30,7 +31,7 @@ namespace xng {
     /**
      * A scene renderer produces an image from a given scene using the set properties.
      *
-     * Properties are renderer specific.
+     * Settings are renderer specific.
      *
      * To integrate 3rd party renderers or create a renderer which doesnt use the gpu / display abstraction
      * the user can either subclass scene renderer and pass the instance to the mesh render system
@@ -40,11 +41,11 @@ namespace xng {
     public:
         virtual void render(const Scene &scene) = 0;
 
-        virtual void setProperties(const GenericMapString &value) = 0;
+        virtual void setSettings(const SceneRendererSettings &value) = 0;
 
-        virtual GenericMapString &getProperties() = 0;
+        virtual SceneRendererSettings &getSettings() = 0;
 
-        virtual const GenericMapString &getProperties() const = 0;
+        virtual const SceneRendererSettings &getSettings() const = 0;
     };
 }
 #endif //XENGINE_SCENERENDERER_HPP

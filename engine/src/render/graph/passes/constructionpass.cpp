@@ -62,7 +62,8 @@ namespace xng {
     ConstructionPass::ConstructionPass() {}
 
     void ConstructionPass::setup(FrameGraphBuilder &builder) {
-        renderSize = builder.getRenderSize();
+        renderSize = builder.getBackBufferDescription().size
+                     * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
         renderTargetRes = builder.createRenderTarget(RenderTargetDesc{
                 .size = renderSize,
                 .multisample = false,

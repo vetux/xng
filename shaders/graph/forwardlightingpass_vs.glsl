@@ -51,10 +51,8 @@ layout(binding = 0, std140) buffer ShaderUniformBuffer
 {
     vec4 viewPosition;
     vec4 viewportSize;
-    vec4 farPlane;
     ShaderDrawData data[];
 } globs;
-
 layout(binding = 1) uniform sampler2DArray atlasTextures[12];
 
 layout(binding = 13) uniform sampler2D deferredDepth;

@@ -30,6 +30,8 @@ namespace xng {
             color << message.getMessage("color");
             message.value("power", power);
             message.value("castShadows", castShadows);
+            message.value("shadowNearPlane", shadowNearPlane);
+            message.value("shadowFarPlane", shadowFarPlane);
             return *this;
         }
 
@@ -38,6 +40,8 @@ namespace xng {
             color >> message["color"];
             message["power"] = power;
             message["castShadows"] = castShadows;
+            message["shadowNearPlane"] = shadowNearPlane;
+            message["shadowFarPlane"] = shadowFarPlane;
             return message;
         }
 
@@ -45,6 +49,9 @@ namespace xng {
         float power = 1; // The strength of the light
 
         bool castShadows = true;
+
+        float shadowNearPlane = 0.1f;
+        float shadowFarPlane = 10000;
     };
 }
 
