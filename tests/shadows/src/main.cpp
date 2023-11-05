@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
     auto font = fontDriver.createFont(fontFs);
 
     auto window = displayDriver.createWindow(gpuDriver.getBackend(),
-                                             "XNG FrameGraph Test",
+                                             "XNG Shadows Test",
                                              {800, 600},
                                              WindowAttributes{
                                                      .swapInterval = 1,

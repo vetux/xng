@@ -48,11 +48,11 @@ void main() {
     vec3 fPos = texture(gBufferPos, fUv).xyz;
     vec3 fNorm = texture(gBufferNormal, fUv).xyz;
     vec3 roughnessMetallicAO = texture(gBufferRoughnessMetallicAO, fUv).xyz;
-    vec4 albedo = texture(gBufferAlbedo, fUv);
+    vec3 albedo = texture(gBufferAlbedo, fUv).xyz;
 
     PbrPass pass = pbr_begin(fPos,
                                 fNorm,
-                                albedo.rgb,
+                                albedo,
                                 roughnessMetallicAO.y,
                                 roughnessMetallicAO.x,
                                 roughnessMetallicAO.z,
@@ -78,6 +78,6 @@ void main() {
         }
     }
 
-    oColor = vec4(pbr_finish(pass, reflectance), albedo.a);
+    oColor = vec4(pbr_finish(pass, reflectance), 1);
     gl_FragDepth = gDepth;
 }
