@@ -84,7 +84,7 @@ namespace xng {
         Camera camera;
         Transform cameraTransform;
 
-        std::vector<Scene::Node> objects;
+        std::vector<Node> objects;
 
         size_t currentVertexBufferSize{};
         size_t currentIndexBufferSize{};

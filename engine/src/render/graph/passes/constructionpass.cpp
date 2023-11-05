@@ -207,15 +207,15 @@ namespace xng {
 
         size_t boneCount = 0;
 
-        auto tmp = builder.getScene().rootNode.findAll({typeid(Scene::SkinnedMeshProperty)});
+        auto tmp = builder.getScene().rootNode.findAll({typeid(SkinnedMeshProperty)});
         for (auto id = 0; id < tmp.size(); id++) {
             auto &object = tmp.at(id);
-            auto &meshProp = object.getProperty<Scene::SkinnedMeshProperty>();
+            auto &meshProp = object.getProperty<SkinnedMeshProperty>();
             if (meshProp.mesh.assigned()) {
-                auto it = object.properties.find(typeid(Scene::MaterialProperty));
-                Scene::MaterialProperty matProp;
+                auto it = object.properties.find(typeid(MaterialProperty));
+                MaterialProperty matProp;
                 if (it != object.properties.end()) {
-                    matProp = it->second->get<Scene::MaterialProperty>();
+                    matProp = it->second->get<MaterialProperty>();
                 }
 
                 meshAllocator.prepareMeshAllocation(meshProp.mesh);
@@ -323,9 +323,9 @@ namespace xng {
             builder.persist(indexBufferRes);
         }
 
-        auto cameraNode = builder.getScene().rootNode.find<Scene::CameraProperty>();
-        camera = cameraNode.getProperty<Scene::CameraProperty>().camera;
-        cameraTransform = cameraNode.getProperty<Scene::TransformProperty>().transform;
+        auto cameraNode = builder.getScene().rootNode.find<CameraProperty>();
+        camera = cameraNode.getProperty<CameraProperty>().camera;
+        cameraTransform = cameraNode.getProperty<TransformProperty>().transform;
 
         builder.assignSlot(SLOT_GBUFFER_POSITION, gBufferPosition);
         builder.assignSlot(SLOT_GBUFFER_NORMAL, gBufferNormal);
@@ -453,26 +453,26 @@ namespace xng {
 
             for (auto oi = 0; oi < objects.size(); oi++) {
                 auto &node = objects.at(oi);
-                auto &meshProp = node.getProperty<Scene::SkinnedMeshProperty>();
+                auto &meshProp = node.getProperty<SkinnedMeshProperty>();
 
                 auto rig = meshProp.mesh.get().rig;
 
                 std::map<std::string, Mat4f> boneTransforms;
-                auto it = node.properties.find(typeid(Scene::BoneTransformsProperty));
+                auto it = node.properties.find(typeid(BoneTransformsProperty));
                 if (it != node.properties.end()) {
-                    boneTransforms = it->second->get<Scene::BoneTransformsProperty>().boneTransforms;
+                    boneTransforms = it->second->get<BoneTransformsProperty>().boneTransforms;
                 }
 
                 std::map<size_t, ResourceHandle<Material>> mats;
-                it = node.properties.find(typeid(Scene::MaterialProperty));
+                it = node.properties.find(typeid(MaterialProperty));
                 if (it != node.properties.end()) {
-                    mats = it->second->get<Scene::MaterialProperty>().materials;
+                    mats = it->second->get<MaterialProperty>().materials;
                 }
 
                 auto drawData = meshAllocator.getAllocatedMesh(meshProp.mesh);
 
                 for (auto i = 0; i < meshProp.mesh.get().subMeshes.size() + 1; i++) {
-                    auto model = node.getProperty<Scene::TransformProperty>().transform.model();
+                    auto model = node.getProperty<TransformProperty>().transform.model();
 
                     auto &mesh = i == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
 
@@ -503,8 +503,8 @@ namespace xng {
                     }
 
                     bool receiveShadows = true;
-                    if (node.hasProperty<Scene::ShadowProperty>()) {
-                        receiveShadows = node.getProperty<Scene::ShadowProperty>().receiveShadows;
+                    if (node.hasProperty<ShadowProperty>()) {
+                        receiveShadows = node.getProperty<ShadowProperty>().receiveShadows;
                     }
 
                     auto data = ShaderDrawData();

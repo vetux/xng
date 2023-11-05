@@ -45,8 +45,8 @@ void xng::ShadowMappingPass::setup(xng::FrameGraphBuilder &builder) {
     meshNodes.clear();
     pointLightNodes.clear();
 
-    for (auto &lightNode: builder.getScene().rootNode.findAll({typeid(Scene::PointLightProperty)})) {
-        auto &light = lightNode.getProperty<Scene::PointLightProperty>();
+    for (auto &lightNode: builder.getScene().rootNode.findAll({typeid(PointLightProperty)})) {
+        auto &light = lightNode.getProperty<PointLightProperty>();
         if (light.light.castShadows) {
             pointLightNodes.emplace_back(lightNode);
         }
@@ -118,8 +118,8 @@ void xng::ShadowMappingPass::setup(xng::FrameGraphBuilder &builder) {
 
     size_t totalShaderBufferSize = 0;
     size_t boneCount = 0;
-    for (auto &node: builder.getScene().rootNode.findAll({typeid(Scene::SkinnedMeshProperty)})) {
-        auto &meshProp = node.getProperty<Scene::SkinnedMeshProperty>();
+    for (auto &node: builder.getScene().rootNode.findAll({typeid(SkinnedMeshProperty)})) {
+        auto &meshProp = node.getProperty<SkinnedMeshProperty>();
         if (meshProp.mesh.assigned()) {
             meshAllocator.prepareMeshAllocation(meshProp.mesh);
             usedMeshes.insert(meshProp.mesh.getUri());
@@ -127,8 +127,8 @@ void xng::ShadowMappingPass::setup(xng::FrameGraphBuilder &builder) {
             for (auto i = 0; i < meshProp.mesh.get().subMeshes.size() + 1; i++) {
                 auto &mesh = i == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
 
-                if (node.hasProperty<Scene::ShadowProperty>()) {
-                    if (!node.getProperty<Scene::ShadowProperty>().castShadows)
+                if (node.hasProperty<ShadowProperty>()) {
+                    if (!node.getProperty<ShadowProperty>().castShadows)
                         continue;
                 }
 
@@ -280,8 +280,8 @@ void xng::ShadowMappingPass::execute(FrameGraphPassResources &resources,
 
     for (auto li = 0; li < pointLightNodes.size(); li++) {
         auto &lightNode = pointLightNodes.at(li);
-        auto &light = lightNode.getProperty<Scene::PointLightProperty>().light;
-        auto &transform = lightNode.getProperty<Scene::TransformProperty>().transform;
+        auto &light = lightNode.getProperty<PointLightProperty>().light;
+        auto &transform = lightNode.getProperty<TransformProperty>().transform;
         float aspect = (float) resolution.x / (float) resolution.y;
         float near = light.shadowNearPlane;
         float far = light.shadowFarPlane;
@@ -326,26 +326,26 @@ void xng::ShadowMappingPass::execute(FrameGraphPassResources &resources,
             std::vector<Mat4f> boneMatrices;
 
             for (auto &node: meshNodes) {
-                auto &meshProp = node.getProperty<Scene::SkinnedMeshProperty>();
+                auto &meshProp = node.getProperty<SkinnedMeshProperty>();
 
                 auto rig = meshProp.mesh.get().rig;
 
                 std::map<std::string, Mat4f> boneTransforms;
-                auto it = node.properties.find(typeid(Scene::BoneTransformsProperty));
+                auto it = node.properties.find(typeid(BoneTransformsProperty));
                 if (it != node.properties.end()) {
-                    boneTransforms = it->second->get<Scene::BoneTransformsProperty>().boneTransforms;
+                    boneTransforms = it->second->get<BoneTransformsProperty>().boneTransforms;
                 }
 
                 std::map<size_t, ResourceHandle<Material>> mats;
-                it = node.properties.find(typeid(Scene::MaterialProperty));
+                it = node.properties.find(typeid(MaterialProperty));
                 if (it != node.properties.end()) {
-                    mats = it->second->get<Scene::MaterialProperty>().materials;
+                    mats = it->second->get<MaterialProperty>().materials;
                 }
 
                 auto drawData = meshAllocator.getAllocatedMesh(meshProp.mesh);
 
                 for (auto mi = 0; mi < meshProp.mesh.get().subMeshes.size() + 1; mi++) {
-                    auto model = node.getProperty<Scene::TransformProperty>().transform.model();
+                    auto model = node.getProperty<TransformProperty>().transform.model();
 
                     auto &mesh = mi == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(mi - 1);
 
@@ -356,8 +356,8 @@ void xng::ShadowMappingPass::execute(FrameGraphPassResources &resources,
                         material = mIt->second.get();
                     }
 
-                    if (node.hasProperty<Scene::ShadowProperty>()) {
-                        if (!node.getProperty<Scene::ShadowProperty>().castShadows)
+                    if (node.hasProperty<ShadowProperty>()) {
+                        if (!node.getProperty<ShadowProperty>().castShadows)
                             continue;
                     }
 

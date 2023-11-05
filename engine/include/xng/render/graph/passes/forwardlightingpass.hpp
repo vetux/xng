@@ -85,7 +85,7 @@ namespace xng {
 
         Scene scene;
 
-        std::vector<Scene::Node> nodes;
+        std::vector<Node> nodes;
 
         size_t currentVertexBufferSize{};
         size_t currentIndexBufferSize{};

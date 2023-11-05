@@ -89,19 +89,19 @@ int main(int argc, char *argv[]) {
 
     xng::Scene scene;
 
-    xng::Scene::Node node;
+    xng::Node node;
 
-    node.addProperty(Scene::TransformProperty());
+    node.addProperty(TransformProperty());
 
-    Scene::SkinnedMeshProperty meshProperty;
+    SkinnedMeshProperty meshProperty;
     meshProperty.mesh = ResourceHandle<SkinnedMesh>(Uri("meshes/animtest.fbx"));
     node.addProperty(meshProperty);
 
-    node.addProperty(Scene::BoneTransformsProperty());
+    node.addProperty(BoneTransformsProperty());
 
     scene.rootNode.childNodes.emplace_back(node);
 
-    auto &boneTransformsProperty = scene.rootNode.childNodes.at(0).getProperty<Scene::BoneTransformsProperty>();
+    auto &boneTransformsProperty = scene.rootNode.childNodes.at(0).getProperty<BoneTransformsProperty>();
 
     auto meshHandle = ResourceHandle<SkinnedMesh>(Uri("meshes/animtest.fbx"));
     RigAnimator rigAnimator(meshHandle.get().rig);
@@ -112,29 +112,29 @@ int main(int argc, char *argv[]) {
     rigAnimator.start(animB.get(), {}, true, 1);
 
     node = {};
-    Scene::CameraProperty cameraProperty;
+    CameraProperty cameraProperty;
     cameraProperty.camera.type = xng::PERSPECTIVE;
     node.addProperty(cameraProperty);
 
-    auto transformProp = Scene::TransformProperty();
+    auto transformProp = TransformProperty();
     transformProp.transform.setPosition({0, 0, 10});
     node.addProperty(transformProp);
 
     scene.rootNode.childNodes.emplace_back(node);
 
-    Scene::Node lightNode;
-    Scene::TransformProperty lightTransform;
+    Node lightNode;
+    TransformProperty lightTransform;
     lightTransform.transform.setPosition({0, 5, 5});
     lightNode.addProperty(lightTransform);
-    Scene::PointLightProperty light;
+    PointLightProperty light;
     light.light.power = 100;
     lightNode.addProperty(light);
     scene.rootNode.childNodes.emplace_back(lightNode);
 
-    CameraController cameraController(scene.rootNode.find<Scene::CameraProperty>().getProperty<Scene::TransformProperty>().transform, input);
+    CameraController cameraController(scene.rootNode.find<CameraProperty>().getProperty<TransformProperty>().transform, input);
 
-    auto &prop = scene.rootNode.findAll({typeid(Scene::SkinnedMeshProperty)}).at(
-            0).getProperty<Scene::TransformProperty>();
+    auto &prop = scene.rootNode.findAll({typeid(SkinnedMeshProperty)}).at(
+            0).getProperty<TransformProperty>();
     xng::FrameLimiter limiter;
     limiter.reset();
     while (!window->shouldClose()) {
@@ -143,7 +143,7 @@ int main(int argc, char *argv[]) {
         rigAnimator.update(deltaTime);
         boneTransformsProperty.boneTransforms = rigAnimator.getBoneTransforms();
 
-        scene.rootNode.find<Scene::CameraProperty>().getProperty<Scene::CameraProperty>().camera.aspectRatio =
+        scene.rootNode.find<CameraProperty>().getProperty<CameraProperty>().camera.aspectRatio =
                 static_cast<float>(window->getWindowSize().x)
                 / static_cast<float>(window->getWindowSize().y);
 

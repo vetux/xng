@@ -46,9 +46,9 @@ namespace xng {
     static std::pair<std::vector<PointLightData>, std::vector<PointLightData>> getPointLights(const Scene &scene) {
         std::vector<PointLightData> pointLights;
         std::vector<PointLightData> shadowLights;
-        for (auto &node: scene.rootNode.findAll({typeid(Scene::PointLightProperty)})) {
-            auto l = node.getProperty<Scene::PointLightProperty>().light;
-            auto t = node.getProperty<Scene::TransformProperty>().transform;
+        for (auto &node: scene.rootNode.findAll({typeid(PointLightProperty)})) {
+            auto l = node.getProperty<PointLightProperty>().light;
+            auto t = node.getProperty<TransformProperty>().transform;
             auto v = l.color.divide();
             auto tmp = PointLightData{
                     .position =  Vec4f(t.getPosition().x,
@@ -137,13 +137,13 @@ namespace xng {
 
         builder.read(passRes);
 
-        auto pointLightNodes = scene.rootNode.findAll({typeid(Scene::PointLightProperty)});
+        auto pointLightNodes = scene.rootNode.findAll({typeid(PointLightProperty)});
 
         size_t pointLights = 0;
         size_t shadowPointLights = 0;
 
         for (auto l: pointLightNodes) {
-            if (l.getProperty<Scene::PointLightProperty>().light.castShadows)
+            if (l.getProperty<PointLightProperty>().light.castShadows)
                 shadowPointLights++;
             else
                 pointLights++;
@@ -187,8 +187,8 @@ namespace xng {
         gBufferDepth = builder.getSlot(SLOT_GBUFFER_DEPTH);
         builder.read(gBufferDepth);
 
-        cameraTransform = builder.getScene().rootNode.find<Scene::CameraProperty>()
-                .getProperty<Scene::TransformProperty>().transform;
+        cameraTransform = builder.getScene().rootNode.find<CameraProperty>()
+                .getProperty<TransformProperty>().transform;
 
         commandBuffer = builder.createCommandBuffer();
         builder.write(commandBuffer);

@@ -45,12 +45,12 @@ namespace xng {
     private:
         Vec2i resolution = Vec2i(2048, 2048);
 
-        std::vector<Scene::Node> pointLightNodes;
+        std::vector<Node> pointLightNodes;
 
         size_t currentVertexBufferSize{};
         size_t currentIndexBufferSize{};
 
-        std::vector<Scene::Node> meshNodes;
+        std::vector<Node> meshNodes;
 
         MeshAllocator meshAllocator;
 

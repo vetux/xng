@@ -172,22 +172,22 @@ int main(int argc, char *argv[]) {
 
     xng::Scene scene;
 
-    xng::Scene::Node node;
+    xng::Node node;
 
-    Scene::CameraProperty cameraProperty;
+    CameraProperty cameraProperty;
     cameraProperty.camera.type = xng::PERSPECTIVE;
     node.addProperty(cameraProperty);
 
-    auto transformProp = Scene::TransformProperty();
+    auto transformProp = TransformProperty();
     node.addProperty(transformProp);
 
     scene.rootNode.childNodes.emplace_back(node);
 
-    auto meshProp = Scene::SkinnedMeshProperty();
+    auto meshProp = SkinnedMeshProperty();
     meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/sphere.obj/Sphere"));
     node.addProperty(meshProp);
 
-    auto materialProp = Scene::MaterialProperty();
+    auto materialProp = MaterialProperty();
     materialProp.materials[0] = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/sphere")));
     auto mat = materialProp.materials[0].get();
     node.addProperty(materialProp);
@@ -196,7 +196,7 @@ int main(int argc, char *argv[]) {
 
     for (int x = 0; x < 10; x++) {
         for (int y = 0; y < 10; y++) {
-            xng::Scene::Node pbrSphere;
+            xng::Node pbrSphere;
 
             transformProp = {};
             transformProp.transform.setPosition({(float) (x - 4.5) * 2, (float) (y - 4.5) * 2, -15});
@@ -306,7 +306,7 @@ int main(int argc, char *argv[]) {
     transformProp = {};
     transformProp.transform.setPosition({2.5, 2.5, 0});
 
-    Scene::PointLightProperty lightProp;
+    PointLightProperty lightProp;
     lightProp.light.power = 10;
     lightProp.light.color = ColorRGBA::white();
 
@@ -343,10 +343,10 @@ int main(int argc, char *argv[]) {
     auto text = textRenderer.render("GBUFFER POSITION", TextLayout{.lineHeight = 70});
     auto tex = ren2d.createTexture(text.getImage());
 
-    auto &cameraRef = scene.rootNode.find<Scene::CameraProperty>().getProperty<Scene::CameraProperty>();
-    auto &cameraTransformRef = scene.rootNode.find<Scene::CameraProperty>().getProperty<Scene::TransformProperty>();
+    auto &cameraRef = scene.rootNode.find<CameraProperty>().getProperty<CameraProperty>();
+    auto &cameraTransformRef = scene.rootNode.find<CameraProperty>().getProperty<TransformProperty>();
 
-    auto lights = scene.rootNode.findAll({typeid(Scene::SkinnedMeshProperty)});
+    auto lights = scene.rootNode.findAll({typeid(SkinnedMeshProperty)});
 
     CameraController cameraController(cameraTransformRef.transform, input);
 
@@ -368,12 +368,12 @@ int main(int argc, char *argv[]) {
 
         if (window->getInput().getKeyboard().getKey(KEY_R)) {
             for (auto &ln: lights) {
-                auto &transform = ln.getProperty<Scene::TransformProperty>().transform;
+                auto &transform = ln.getProperty<TransformProperty>().transform;
                 transform.setPosition(transform.getPosition() + Vec3f(0, 0, 1.0f * deltaTime));
             }
         } else if (window->getInput().getKeyboard().getKey(KEY_F)) {
             for (auto &ln: lights) {
-                auto &transform = ln.getProperty<Scene::TransformProperty>().transform;
+                auto &transform = ln.getProperty<TransformProperty>().transform;
                 transform.setPosition(transform.getPosition() - Vec3f(0, 0, 1.0f * deltaTime));
             }
         }

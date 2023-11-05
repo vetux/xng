@@ -56,17 +56,17 @@ namespace xng {
                 || !meshComponent.mesh.get().isLoaded())
                 continue;
 
-            Scene::Node node;
+            Node node;
 
-            Scene::TransformProperty transformProperty;
+            TransformProperty transformProperty;
             transformProperty.transform = TransformComponent::walkHierarchy(transform, entScene);
             node.addProperty(transformProperty);
 
-            Scene::SkinnedMeshProperty meshProperty;
+            SkinnedMeshProperty meshProperty;
             meshProperty.mesh = pair.second.mesh;
             node.addProperty(meshProperty);
 
-            Scene::ShadowProperty shadowProperty;
+            ShadowProperty shadowProperty;
             shadowProperty.castShadows = pair.second.castShadows;
             shadowProperty.receiveShadows = pair.second.receiveShadows;
             node.addProperty(shadowProperty);
@@ -83,13 +83,13 @@ namespace xng {
                 if (skip) {
                     continue;
                 }
-                Scene::MaterialProperty materialProperty;
+                MaterialProperty materialProperty;
                 materialProperty.materials = comp.materials;
                 node.addProperty(materialProperty);
             }
 
             if (entScene.checkComponent<RigAnimationComponent>(pair.first)) {
-                Scene::BoneTransformsProperty boneTransformsProperty;
+                BoneTransformsProperty boneTransformsProperty;
                 boneTransformsProperty.boneTransforms = entScene.getComponent<RigAnimationComponent>(
                         pair.first).boneTransforms;
                 node.addProperty(boneTransformsProperty);
@@ -106,7 +106,7 @@ namespace xng {
         // Get skybox
         for (auto &pair: entScene.getPool<SkyboxComponent>()) {
             auto &comp = pair.second;
-            auto boxProp = Scene::SkyboxProperty();
+            auto boxProp = SkyboxProperty();
             boxProp.skybox = comp.skybox;
             scene.rootNode.addProperty(boxProp);
         }
@@ -120,13 +120,13 @@ namespace xng {
 
             auto &comp = pair.second;
 
-            Scene::Node cameraNode;
+            Node cameraNode;
 
-            auto camProp = Scene::CameraProperty();
+            auto camProp = CameraProperty();
             camProp.camera = comp.camera;
             cameraNode.addProperty(camProp);
 
-            auto tProp = Scene::TransformProperty();
+            auto tProp = TransformProperty();
             tProp.transform = TransformComponent::walkHierarchy(tcomp, entScene);
             cameraNode.addProperty(tProp);
 
@@ -148,16 +148,16 @@ namespace xng {
                 continue;
 
 
-            Scene::Node node;
+            Node node;
 
-            Scene::TransformProperty transformProperty;
+            TransformProperty transformProperty;
             transformProperty.transform = tcomp.transform;
             node.addProperty(transformProperty);
 
             switch (lightComponent.light.index()) {
                 case 0: {
                     auto tmp = std::get<PointLight>(lightComponent.light);
-                    Scene::PointLightProperty prop;
+                    PointLightProperty prop;
                     prop.light = tmp;
                     node.addProperty(prop);
                     break;

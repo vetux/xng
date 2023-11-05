@@ -64,9 +64,9 @@ namespace xng {
     getPointLights(const Scene &scene) {
         std::vector<PointLightData> pointLights;
         std::vector<PointLightData> shadowLights;
-        for (auto &node: scene.rootNode.findAll({typeid(Scene::PointLightProperty)})) {
-            auto l = node.getProperty<Scene::PointLightProperty>().light;
-            auto t = node.getProperty<Scene::TransformProperty>().transform;
+        for (auto &node: scene.rootNode.findAll({typeid(PointLightProperty)})) {
+            auto l = node.getProperty<PointLightProperty>().light;
+            auto t = node.getProperty<TransformProperty>().transform;
             auto v = l.color.divide();
             auto tmp = PointLightData{
                     .position =  Vec4f(t.getPosition().x,
@@ -89,13 +89,13 @@ namespace xng {
                      * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
         scene = builder.getScene();
 
-        auto pointLightNodes = scene.rootNode.findAll({typeid(Scene::PointLightProperty)});
+        auto pointLightNodes = scene.rootNode.findAll({typeid(PointLightProperty)});
 
         size_t pointLights = 0;
         size_t shadowPointLights = 0;
 
         for (auto l: pointLightNodes) {
-            if (l.getProperty<Scene::PointLightProperty>().light.castShadows)
+            if (l.getProperty<PointLightProperty>().light.castShadows)
                 shadowPointLights++;
             else
                 pointLights++;
@@ -187,8 +187,8 @@ namespace xng {
 
         usedTextures.clear();
         usedMeshes.clear();
-        for (auto &node: scene.rootNode.findAll({typeid(Scene::SkinnedMeshProperty)})) {
-            auto &meshProp = node.getProperty<Scene::SkinnedMeshProperty>();
+        for (auto &node: scene.rootNode.findAll({typeid(SkinnedMeshProperty)})) {
+            auto &meshProp = node.getProperty<SkinnedMeshProperty>();
             if (!meshProp.mesh.assigned()) {
                 continue;
             }
@@ -198,10 +198,10 @@ namespace xng {
 
             auto &mesh = meshProp.mesh.get();
 
-            auto it = node.properties.find(typeid(Scene::MaterialProperty));
-            Scene::MaterialProperty matProp;
+            auto it = node.properties.find(typeid(MaterialProperty));
+            MaterialProperty matProp;
             if (it != node.properties.end()) {
-                matProp = it->second->get<Scene::MaterialProperty>();
+                matProp = it->second->get<MaterialProperty>();
             }
 
             for (auto i = 0; i < mesh.subMeshes.size() + 1; i++) {
@@ -317,8 +317,8 @@ namespace xng {
             builder.persist(indexBufferRes);
         }
 
-        camera = builder.getScene().rootNode.find<Scene::CameraProperty>().getProperty<Scene::CameraProperty>().camera;
-        cameraTransform = builder.getScene().rootNode.find<Scene::CameraProperty>().getProperty<Scene::TransformProperty>().transform;
+        camera = builder.getScene().rootNode.find<CameraProperty>().getProperty<CameraProperty>().camera;
+        cameraTransform = builder.getScene().rootNode.find<CameraProperty>().getProperty<TransformProperty>().transform;
 
         forwardColorRes = builder.getSlot(SLOT_FORWARD_COLOR);
         forwardDepthRes = builder.getSlot(SLOT_FORWARD_DEPTH);
@@ -453,13 +453,13 @@ namespace xng {
                 std::vector<ShaderDrawData> shaderData;
                 for (auto oi = 0; oi < passesPerDrawCycle && oi < nodes.size(); oi++) {
                     auto &node = nodes.at(oi + (drawCycle * passesPerDrawCycle));
-                    auto &transformProp = node.getProperty<Scene::TransformProperty>();
-                    auto &meshProp = node.getProperty<Scene::SkinnedMeshProperty>();
+                    auto &transformProp = node.getProperty<TransformProperty>();
+                    auto &meshProp = node.getProperty<SkinnedMeshProperty>();
 
-                    auto it = node.properties.find(typeid(Scene::MaterialProperty));
-                    Scene::MaterialProperty matProp;
+                    auto it = node.properties.find(typeid(MaterialProperty));
+                    MaterialProperty matProp;
                     if (it != node.properties.end()) {
-                        matProp = it->second->get<Scene::MaterialProperty>();
+                        matProp = it->second->get<MaterialProperty>();
                     }
 
                     for (auto i = 0; i < meshProp.mesh.get().subMeshes.size() + 1; i++) {
@@ -480,8 +480,8 @@ namespace xng {
 
                         if (!pointLightShadowMapRes.assigned) {
                             shadows = false;
-                        } else if (node.hasProperty<Scene::ShadowProperty>()) {
-                            shadows = node.getProperty<Scene::ShadowProperty>().receiveShadows;
+                        } else if (node.hasProperty<ShadowProperty>()) {
+                            shadows = node.getProperty<ShadowProperty>().receiveShadows;
                         }
 
                         auto data = ShaderDrawData();
