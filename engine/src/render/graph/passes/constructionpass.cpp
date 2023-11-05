@@ -323,9 +323,9 @@ namespace xng {
             builder.persist(indexBufferRes);
         }
 
-        auto &cam = builder.getScene().rootNode.getProperty<Scene::CameraProperty>();
-        camera = cam.camera;
-        cameraTransform = cam.cameraTransform;
+        auto cameraNode = builder.getScene().rootNode.find<Scene::CameraProperty>();
+        camera = cameraNode.getProperty<Scene::CameraProperty>().camera;
+        cameraTransform = cameraNode.getProperty<Scene::TransformProperty>().transform;
 
         builder.assignSlot(SLOT_GBUFFER_POSITION, gBufferPosition);
         builder.assignSlot(SLOT_GBUFFER_NORMAL, gBufferNormal);

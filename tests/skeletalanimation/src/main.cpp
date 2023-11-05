@@ -77,7 +77,9 @@ int main(int argc, char *argv[]) {
                                      shaderCompiler,
                                      shaderDecompiler);
 
-    FrameGraphPipeline pipeline = FrameGraphPipeline().addPass(std::make_shared<ConstructionPass>())
+    FrameGraphPipeline pipeline = FrameGraphPipeline()
+            .addPass(std::make_shared<ClearPass>())
+            .addPass(std::make_shared<ConstructionPass>())
             .addPass(std::make_shared<DeferredLightingPass>())
             .addPass(std::make_shared<ForwardLightingPass>())
             .addPass(std::make_shared<CompositePass>())
@@ -109,18 +111,27 @@ int main(int argc, char *argv[]) {
     rigAnimator.start(animA.get());
     rigAnimator.start(animB.get(), {}, true, 1);
 
-    Scene::CameraProperty cam;
-    cam.camera.type = xng::PERSPECTIVE;
-    cam.cameraTransform.setPosition({0, 0, 10});
+    node = {};
+    Scene::CameraProperty cameraProperty;
+    cameraProperty.camera.type = xng::PERSPECTIVE;
+    node.addProperty(cameraProperty);
 
-    scene.rootNode.addProperty(cam);
+    auto transformProp = Scene::TransformProperty();
+    transformProp.transform.setPosition({0, 0, 10});
+    node.addProperty(transformProp);
+
+    scene.rootNode.childNodes.emplace_back(node);
 
     Scene::Node lightNode;
-    lightNode.addProperty(Scene::TransformProperty());
-    lightNode.addProperty(Scene::PhongDirectionalLightProperty());
+    Scene::TransformProperty lightTransform;
+    lightTransform.transform.setPosition({0, 5, 5});
+    lightNode.addProperty(lightTransform);
+    Scene::PointLightProperty light;
+    light.light.power = 100;
+    lightNode.addProperty(light);
     scene.rootNode.childNodes.emplace_back(lightNode);
 
-    CameraController cameraController(scene.rootNode.getProperty<Scene::CameraProperty>().cameraTransform, input);
+    CameraController cameraController(scene.rootNode.find<Scene::CameraProperty>().getProperty<Scene::TransformProperty>().transform, input);
 
     auto &prop = scene.rootNode.findAll({typeid(Scene::SkinnedMeshProperty)}).at(
             0).getProperty<Scene::TransformProperty>();
@@ -132,7 +143,7 @@ int main(int argc, char *argv[]) {
         rigAnimator.update(deltaTime);
         boneTransformsProperty.boneTransforms = rigAnimator.getBoneTransforms();
 
-        scene.rootNode.getProperty<Scene::CameraProperty>().camera.aspectRatio =
+        scene.rootNode.find<Scene::CameraProperty>().getProperty<Scene::CameraProperty>().camera.aspectRatio =
                 static_cast<float>(window->getWindowSize().x)
                 / static_cast<float>(window->getWindowSize().y);
 

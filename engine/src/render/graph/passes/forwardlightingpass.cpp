@@ -317,8 +317,8 @@ namespace xng {
             builder.persist(indexBufferRes);
         }
 
-        camera = scene.rootNode.getProperty<Scene::CameraProperty>().camera;
-        cameraTransform = scene.rootNode.getProperty<Scene::CameraProperty>().cameraTransform;
+        camera = builder.getScene().rootNode.find<Scene::CameraProperty>().getProperty<Scene::CameraProperty>().camera;
+        cameraTransform = builder.getScene().rootNode.find<Scene::CameraProperty>().getProperty<Scene::TransformProperty>().transform;
 
         forwardColorRes = builder.getSlot(SLOT_FORWARD_COLOR);
         forwardDepthRes = builder.getSlot(SLOT_FORWARD_DEPTH);

@@ -138,9 +138,16 @@ int main(int argc, char *argv[]) {
     renderer.setPipeline(pipeline);
 
     xng::Scene scene;
+
+    Scene::Node node;
     Scene::CameraProperty cameraProperty;
     cameraProperty.camera.type = xng::PERSPECTIVE;
-    scene.rootNode.addProperty(cameraProperty);
+    node.addProperty(cameraProperty);
+
+    auto transformProp = Scene::TransformProperty();
+    node.addProperty(transformProp);
+
+    scene.rootNode.childNodes.emplace_back(node);
 
     Scene::ShadowProperty shadowProp;
     shadowProp.castShadows = false;
@@ -174,7 +181,7 @@ int main(int argc, char *argv[]) {
 
     xng::Scene::Node cubeWall;
 
-    Scene::TransformProperty transformProp = {};
+    transformProp = {};
     transformProp.transform.setPosition({0, 0, -20});
     transformProp.transform.setScale({10, 10, 1});
     cubeWall.addProperty(transformProp);
@@ -231,11 +238,12 @@ int main(int argc, char *argv[]) {
     auto text = textRenderer.render("GBUFFER POSITION", TextLayout{.lineHeight = 70});
     auto tex = ren2d.createTexture(text.getImage());
 
-    auto &cameraRef = scene.rootNode.getProperty<Scene::CameraProperty>();
+    auto &cameraRef = scene.rootNode.find<Scene::CameraProperty>().getProperty<Scene::CameraProperty>();
+    auto &cameraTransformRef = scene.rootNode.find<Scene::CameraProperty>().getProperty<Scene::TransformProperty>();
 
     auto lights = scene.rootNode.findAll({typeid(Scene::SkinnedMeshProperty)});
 
-    CameraController cameraController(cameraRef.cameraTransform, input);
+    CameraController cameraController(cameraTransformRef.transform, input);
 
     xng::FrameLimiter limiter;
     limiter.reset();
@@ -254,13 +262,13 @@ int main(int argc, char *argv[]) {
         }
 
         if (window->getInput().getKeyboard().getKey(KEY_R)) {
-            for (auto &node: lights) {
-                auto &transform = node.getProperty<Scene::TransformProperty>().transform;
+            for (auto &ln: lights) {
+                auto &transform = ln.getProperty<Scene::TransformProperty>().transform;
                 transform.setPosition(transform.getPosition() + Vec3f(0, 0, 1.0f * deltaTime));
             }
         } else if (window->getInput().getKeyboard().getKey(KEY_F)) {
-            for (auto &node: lights) {
-                auto &transform = node.getProperty<Scene::TransformProperty>().transform;
+            for (auto &ln: lights) {
+                auto &transform = ln.getProperty<Scene::TransformProperty>().transform;
                 transform.setPosition(transform.getPosition() - Vec3f(0, 0, 1.0f * deltaTime));
             }
         }

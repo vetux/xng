@@ -171,26 +171,28 @@ int main(int argc, char *argv[]) {
     renderer.setPipeline(pipeline);
 
     xng::Scene scene;
+
+    xng::Scene::Node node;
+
     Scene::CameraProperty cameraProperty;
     cameraProperty.camera.type = xng::PERSPECTIVE;
-    scene.rootNode.addProperty(cameraProperty);
-
-    xng::Scene::Node sphere;
+    node.addProperty(cameraProperty);
 
     auto transformProp = Scene::TransformProperty();
-    transformProp.transform.setPosition({0, 5, -25});
-    sphere.addProperty(transformProp);
+    node.addProperty(transformProp);
+
+    scene.rootNode.childNodes.emplace_back(node);
 
     auto meshProp = Scene::SkinnedMeshProperty();
     meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/sphere.obj/Sphere"));
-    sphere.addProperty(meshProp);
+    node.addProperty(meshProp);
 
     auto materialProp = Scene::MaterialProperty();
     materialProp.materials[0] = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/sphere")));
     auto mat = materialProp.materials[0].get();
-    sphere.addProperty(materialProp);
+    node.addProperty(materialProp);
 
-    scene.rootNode.childNodes.emplace_back(sphere);
+    scene.rootNode.childNodes.emplace_back(node);
 
     for (int x = 0; x < 10; x++) {
         for (int y = 0; y < 10; y++) {
@@ -214,89 +216,89 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    xng::Scene::Node cubeWall;
+    node = {};
 
     transformProp = {};
     transformProp.transform.setPosition({2.5, 0, -10});
-    cubeWall.addProperty(transformProp);
+    node.addProperty(transformProp);
 
     meshProp = {};
     meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/cube_faceuv.obj"));
-    cubeWall.addProperty(meshProp);
+    node.addProperty(meshProp);
 
     materialProp = {};
     materialProp.materials[0] = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/cubeWall")));
-    cubeWall.addProperty(materialProp);
+    node.addProperty(materialProp);
 
-    scene.rootNode.childNodes.emplace_back(cubeWall);
+    scene.rootNode.childNodes.emplace_back(node);
 
-    xng::Scene::Node cube;
+    node = {};
 
     transformProp = {};
     transformProp.transform.setPosition({0, 0, -20});
     transformProp.transform.setScale(Vec3f(10, 10, 1));
-    cube.addProperty(transformProp);
+    node.addProperty(transformProp);
 
     meshProp = {};
     meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/cube.obj"));
-    cube.addProperty(meshProp);
+    node.addProperty(meshProp);
 
     materialProp = {};
     materialProp.materials[0] = xng::ResourceHandle<xng::Material>(
             xng::Uri(MATERIALS_PATH + std::string("/cubeAlphaRed")));
-    cube.addProperty(materialProp);
+    node.addProperty(materialProp);
 
-    scene.rootNode.childNodes.emplace_back(cube);
+    scene.rootNode.childNodes.emplace_back(node);
 
     transformProp = {};
     transformProp.transform.setPosition({-2.5, 0, -10});
-    sphere.addProperty(transformProp);
+    node.addProperty(transformProp);
 
     meshProp = {};
     meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/sphere.obj/Sphere"));
-    sphere.addProperty(meshProp);
+    node.addProperty(meshProp);
 
-    scene.rootNode.childNodes.emplace_back(sphere);
+    scene.rootNode.childNodes.emplace_back(node);
 
     transformProp = {};
     transformProp.transform.setPosition({0, 0, -10});
-    sphere.addProperty(transformProp);
+    node.addProperty(transformProp);
 
     meshProp = {};
     meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/sphere.obj/Sphere"));
-    sphere.addProperty(meshProp);
+    node.addProperty(meshProp);
 
-    scene.rootNode.childNodes.emplace_back(sphere);
+    scene.rootNode.childNodes.emplace_back(node);
 
     transformProp = {};
     transformProp.transform.setPosition({-2.5, 0, -10});
     transformProp.transform.setScale(Vec3f(1, 1, 1));
-    cube.addProperty(transformProp);
+    node.addProperty(transformProp);
 
     meshProp = {};
     meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/cube_faceuv.obj"));
-    cube.addProperty(meshProp);
+    node.addProperty(meshProp);
 
     materialProp = {};
     materialProp.materials[0] = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/cube")));
-    cube.addProperty(materialProp);
+    node.addProperty(materialProp);
 
-    scene.rootNode.childNodes.emplace_back(cube);
+    scene.rootNode.childNodes.emplace_back(node);
 
     transformProp = {};
     transformProp.transform.setPosition({0, 0, -5});
-    cube.addProperty(transformProp);
+    node.addProperty(transformProp);
 
     meshProp = {};
     meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/cube.obj"));
-    cube.addProperty(meshProp);
+    node.addProperty(meshProp);
 
     materialProp = {};
     materialProp.materials[0] = xng::ResourceHandle<xng::Material>(
             xng::Uri(MATERIALS_PATH + std::string("/cubeAlpha")));
-    cube.addProperty(materialProp);
+    node.addProperty(materialProp);
 
-    scene.rootNode.childNodes.emplace_back(cube);
+    scene.rootNode.childNodes.emplace_back(node);
 
     transformProp = {};
     transformProp.transform.setPosition({2.5, 2.5, 0});
@@ -308,43 +310,45 @@ int main(int argc, char *argv[]) {
     lightProp.light.power = 10;
     lightProp.light.color = ColorRGBA::white();
 
-    Scene::Node lightNode;
-    lightNode.addProperty(transformProp);
-    lightNode.addProperty(lightProp);
-    scene.rootNode.childNodes.emplace_back(lightNode);
+    node = {};
+
+    node.addProperty(transformProp);
+    node.addProperty(lightProp);
+    scene.rootNode.childNodes.emplace_back(node);
 
     transformProp = {};
     transformProp.transform.setPosition({-2.5, 2.5, 0});
 
-    lightNode = {};
-    lightNode.addProperty(transformProp);
-    lightNode.addProperty(lightProp);
-    scene.rootNode.childNodes.emplace_back(lightNode);
+    node = {};
+    node.addProperty(transformProp);
+    node.addProperty(lightProp);
+    scene.rootNode.childNodes.emplace_back(node);
 
     transformProp = {};
     transformProp.transform.setPosition({2.5, -2.5, 0});
 
-    lightNode = {};
-    lightNode.addProperty(transformProp);
-    lightNode.addProperty(lightProp);
-    scene.rootNode.childNodes.emplace_back(lightNode);
+    node = {};
+    node.addProperty(transformProp);
+    node.addProperty(lightProp);
+    scene.rootNode.childNodes.emplace_back(node);
 
     transformProp = {};
     transformProp.transform.setPosition({-2.5, -2.5, 0});
 
-    lightNode = {};
-    lightNode.addProperty(transformProp);
-    lightNode.addProperty(lightProp);
-    scene.rootNode.childNodes.emplace_back(lightNode);
+    node = {};
+    node.addProperty(transformProp);
+    node.addProperty(lightProp);
+    scene.rootNode.childNodes.emplace_back(node);
 
     auto text = textRenderer.render("GBUFFER POSITION", TextLayout{.lineHeight = 70});
     auto tex = ren2d.createTexture(text.getImage());
 
-    auto &cameraRef = scene.rootNode.getProperty<Scene::CameraProperty>();
+    auto &cameraRef = scene.rootNode.find<Scene::CameraProperty>().getProperty<Scene::CameraProperty>();
+    auto &cameraTransformRef = scene.rootNode.find<Scene::CameraProperty>().getProperty<Scene::TransformProperty>();
 
     auto lights = scene.rootNode.findAll({typeid(Scene::SkinnedMeshProperty)});
 
-    CameraController cameraController(cameraRef.cameraTransform, input);
+    CameraController cameraController(cameraTransformRef.transform, input);
 
     xng::FrameLimiter limiter;
     limiter.reset();
@@ -363,13 +367,13 @@ int main(int argc, char *argv[]) {
         }
 
         if (window->getInput().getKeyboard().getKey(KEY_R)) {
-            for (auto &node: lights) {
-                auto &transform = node.getProperty<Scene::TransformProperty>().transform;
+            for (auto &ln: lights) {
+                auto &transform = ln.getProperty<Scene::TransformProperty>().transform;
                 transform.setPosition(transform.getPosition() + Vec3f(0, 0, 1.0f * deltaTime));
             }
         } else if (window->getInput().getKeyboard().getKey(KEY_F)) {
-            for (auto &node: lights) {
-                auto &transform = node.getProperty<Scene::TransformProperty>().transform;
+            for (auto &ln: lights) {
+                auto &transform = ln.getProperty<Scene::TransformProperty>().transform;
                 transform.setPosition(transform.getPosition() - Vec3f(0, 0, 1.0f * deltaTime));
             }
         }

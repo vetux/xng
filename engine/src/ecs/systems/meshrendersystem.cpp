@@ -120,12 +120,17 @@ namespace xng {
 
             auto &comp = pair.second;
 
+            Scene::Node cameraNode;
+
             auto camProp = Scene::CameraProperty();
-
             camProp.camera = comp.camera;
-            camProp.cameraTransform = TransformComponent::walkHierarchy(tcomp, entScene);
+            cameraNode.addProperty(camProp);
 
-            scene.rootNode.addProperty(camProp);
+            auto tProp = Scene::TransformProperty();
+            tProp.transform = TransformComponent::walkHierarchy(tcomp, entScene);
+            cameraNode.addProperty(tProp);
+
+            scene.rootNode.childNodes.emplace_back(cameraNode);
 
             break;
         }

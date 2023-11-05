@@ -78,6 +78,11 @@ namespace xng {
                 properties[typeid(T)] = std::make_shared<T>(property);
             }
 
+            template<typename T>
+            Node find() const {
+                return findAll({typeid(T)}).at(0);
+            }
+
             std::vector<Node> findAll(std::vector<std::type_index> propertyTypes) const {
                 std::vector<Node> ret;
                 for (auto &c: childNodes) {
@@ -167,7 +172,6 @@ namespace xng {
                 return typeid(CameraProperty);
             }
 
-            Transform cameraTransform;
             Camera camera;
         };
 

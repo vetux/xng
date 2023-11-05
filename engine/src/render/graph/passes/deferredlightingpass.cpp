@@ -187,7 +187,8 @@ namespace xng {
         gBufferDepth = builder.getSlot(SLOT_GBUFFER_DEPTH);
         builder.read(gBufferDepth);
 
-        cameraTransform = builder.getScene().rootNode.getProperty<Scene::CameraProperty>().cameraTransform;
+        cameraTransform = builder.getScene().rootNode.find<Scene::CameraProperty>()
+                .getProperty<Scene::TransformProperty>().transform;
 
         commandBuffer = builder.createCommandBuffer();
         builder.write(commandBuffer);
