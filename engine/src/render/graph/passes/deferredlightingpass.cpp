@@ -31,31 +31,7 @@
 
 namespace xng {
 #pragma pack(push, 1)
-    struct DirectionalLightData {
-        std::array<float, 4> ambient;
-        std::array<float, 4> diffuse;
-        std::array<float, 4> specular;
-        std::array<float, 4> direction;
-    };
-
     struct PointLightData {
-        std::array<float, 4> ambient;
-        std::array<float, 4> diffuse;
-        std::array<float, 4> specular;
-        std::array<float, 4> position;
-        std::array<float, 4> constant_linear_quadratic;
-    };
-
-    struct SpotLightData {
-        std::array<float, 4> ambient;
-        std::array<float, 4> diffuse;
-        std::array<float, 4> specular;
-        std::array<float, 4> position;
-        std::array<float, 4> direction_quadratic;
-        std::array<float, 4> cutOff_outerCutOff_constant_linear;
-    };
-
-    struct PBRPointLightData {
         std::array<float, 4> position;
         std::array<float, 4> color;
     };
@@ -67,86 +43,14 @@ namespace xng {
     };
 #pragma pack(pop)
 
-    static std::vector<DirectionalLightData> getDirLights(const Scene &scene) {
-        std::vector<DirectionalLightData> ret;
-        for (auto &node: scene.rootNode.findAll({typeid(Scene::PhongDirectionalLightProperty)})) {
-            auto l = node.getProperty<Scene::PhongDirectionalLightProperty>().light;
-            auto t = node.getProperty<Scene::TransformProperty>().transform;
-            auto tmp = DirectionalLightData{
-                    .ambient = Vec4f(l.ambient.x, l.ambient.y, l.ambient.z, 1).getMemory(),
-                    .diffuse = Vec4f(l.diffuse.x, l.diffuse.y, l.diffuse.z, 1).getMemory(),
-                    .specular = Vec4f(l.specular.x, l.specular.y, l.specular.z, 1).getMemory(),
-            };
-            auto euler = (Quaternion(l.direction) * t.getRotation()).getEulerAngles();
-            tmp.direction = Vec4f(euler.x, euler.y, euler.z, 0).getMemory();
-            ret.emplace_back(tmp);
-        }
-        return ret;
-    }
-
-    static std::vector<PointLightData> getPointLights(const Scene &scene) {
-        std::vector<PointLightData> ret;
-        for (auto &node: scene.rootNode.findAll({typeid(Scene::PhongPointLightProperty)})) {
-            auto l = node.getProperty<Scene::PhongPointLightProperty>().light;
-            auto t = node.getProperty<Scene::TransformProperty>().transform;
-            auto tmp = PointLightData{
-                    .ambient = Vec4f(l.ambient.x, l.ambient.y, l.ambient.z, 1).getMemory(),
-                    .diffuse = Vec4f(l.diffuse.x, l.diffuse.y, l.diffuse.z, 1).getMemory(),
-                    .specular = Vec4f(l.specular.x, l.specular.y, l.specular.z, 1).getMemory(),
-            };
-            tmp.position = Vec4f(t.getPosition().x,
-                                 t.getPosition().y,
-                                 t.getPosition().z,
-                                 0).getMemory();
-            tmp.constant_linear_quadratic[0] = l.constant;
-            tmp.constant_linear_quadratic[1] = l.linear;
-            tmp.constant_linear_quadratic[2] = l.quadratic;
-            ret.emplace_back(tmp);
-        }
-        return ret;
-    }
-
-    static std::vector<SpotLightData> getSpotLights(const Scene &scene) {
-        std::vector<SpotLightData> ret;
-        for (auto &node: scene.rootNode.findAll({typeid(Scene::PhongSpotLightProperty)})) {
-            auto l = node.getProperty<Scene::PhongSpotLightProperty>().light;
-            auto t = node.getProperty<Scene::TransformProperty>().transform;
-            auto tmp = SpotLightData{
-                    .ambient = Vec4f(l.ambient.x, l.ambient.y, l.ambient.z, 1).getMemory(),
-                    .diffuse = Vec4f(l.diffuse.x, l.diffuse.y, l.diffuse.z, 1).getMemory(),
-                    .specular = Vec4f(l.specular.x, l.specular.y, l.specular.z, 1).getMemory(),
-            };
-            tmp.position = Vec4f(t.getPosition().x,
-                                 t.getPosition().y,
-                                 t.getPosition().z,
-                                 0).getMemory();
-
-            auto euler = (Quaternion(l.direction) * t.getRotation()).getEulerAngles();
-
-            tmp.direction_quadratic[0] = euler.x;
-            tmp.direction_quadratic[1] = euler.y;
-            tmp.direction_quadratic[2] = euler.z;
-            tmp.direction_quadratic[3] = l.quadratic;
-
-            tmp.cutOff_outerCutOff_constant_linear[0] = l.cutOff;
-            tmp.cutOff_outerCutOff_constant_linear[1] = l.outerCutOff;
-            tmp.cutOff_outerCutOff_constant_linear[2] = l.constant;
-            tmp.cutOff_outerCutOff_constant_linear[3] = l.linear;
-
-            ret.emplace_back(tmp);
-        }
-        return ret;
-    }
-
-    static std::pair<std::vector<PBRPointLightData>, std::vector<PBRPointLightData>>
-    getPBRPointLights(const Scene &scene) {
-        std::vector<PBRPointLightData> pointLights;
-        std::vector<PBRPointLightData> shadowLights;
-        for (auto &node: scene.rootNode.findAll({typeid(Scene::PBRPointLightProperty)})) {
-            auto l = node.getProperty<Scene::PBRPointLightProperty>().light;
+    static std::pair<std::vector<PointLightData>, std::vector<PointLightData>> getPointLights(const Scene &scene) {
+        std::vector<PointLightData> pointLights;
+        std::vector<PointLightData> shadowLights;
+        for (auto &node: scene.rootNode.findAll({typeid(Scene::PointLightProperty)})) {
+            auto l = node.getProperty<Scene::PointLightProperty>().light;
             auto t = node.getProperty<Scene::TransformProperty>().transform;
             auto v = l.color.divide();
-            auto tmp = PBRPointLightData{
+            auto tmp = PointLightData{
                     .position =  Vec4f(t.getPosition().x,
                                        t.getPosition().y,
                                        t.getPosition().z,
@@ -190,12 +94,6 @@ namespace xng {
                             {FRAGMENT, deferredlightingpass_fs}
                     },
                     .bindings = {BIND_SHADER_STORAGE_BUFFER,
-                                 BIND_SHADER_STORAGE_BUFFER,
-                                 BIND_SHADER_STORAGE_BUFFER,
-                                 BIND_SHADER_STORAGE_BUFFER,
-                                 BIND_SHADER_STORAGE_BUFFER,
-                                 BIND_TEXTURE_BUFFER,
-                                 BIND_TEXTURE_BUFFER,
                                  BIND_TEXTURE_BUFFER,
                                  BIND_TEXTURE_BUFFER,
                                  BIND_TEXTURE_BUFFER,
@@ -203,6 +101,7 @@ namespace xng {
                                  BIND_TEXTURE_BUFFER,
                                  BIND_TEXTURE_BUFFER,
                                  BIND_TEXTURE_ARRAY_BUFFER,
+                                 BIND_SHADER_STORAGE_BUFFER,
                                  BIND_SHADER_STORAGE_BUFFER,
                     },
                     .primitive = TRIANGLES,
@@ -237,19 +136,16 @@ namespace xng {
 
         builder.read(passRes);
 
-        auto pointLights = scene.rootNode.findAll({typeid(Scene::PhongPointLightProperty)}).size();
-        auto spotLights = scene.rootNode.findAll({typeid(Scene::PhongSpotLightProperty)}).size();
-        auto directionalLights = scene.rootNode.findAll({typeid(Scene::PhongDirectionalLightProperty)}).size();
-        auto pbrPointLights = scene.rootNode.findAll({typeid(Scene::PBRPointLightProperty)});
+        auto pointLightNodes = scene.rootNode.findAll({typeid(Scene::PointLightProperty)});
 
-        size_t pbrPointLightsCount = 0;
-        size_t pbrShadowLightsCount = 0;
+        size_t pointLights = 0;
+        size_t shadowPointLights = 0;
 
-        for (auto l : pbrPointLights){
-            if (l.getProperty<Scene::PBRPointLightProperty>().light.castShadows)
-                pbrShadowLightsCount++;
+        for (auto l: pointLightNodes) {
+            if (l.getProperty<Scene::PointLightProperty>().light.castShadows)
+                shadowPointLights++;
             else
-                pbrPointLightsCount++;
+                pointLights++;
         }
 
         shaderDataBufferRes = builder.createShaderStorageBuffer(
@@ -257,35 +153,17 @@ namespace xng {
         builder.read(shaderDataBufferRes);
         builder.write(shaderDataBufferRes);
 
-        pointLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        pointLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(PointLightData) * pointLights
         });
-        builder.read(pointLightsBufferRes);
-        builder.write(pointLightsBufferRes);
+        builder.read(pointLightBufferRes);
+        builder.write(pointLightBufferRes);
 
-        spotLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(SpotLightData) * spotLights
+        shadowPointLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+                .size = sizeof(PointLightData) * shadowPointLights
         });
-        builder.read(spotLightsBufferRes);
-        builder.write(spotLightsBufferRes);
-
-        directionalLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(DirectionalLightData) * directionalLights
-        });
-        builder.read(directionalLightsBufferRes);
-        builder.write(directionalLightsBufferRes);
-
-        pbrPointLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(PBRPointLightData) * pbrPointLightsCount
-        });
-        builder.read(pbrPointLightsBufferRes);
-        builder.write(pbrPointLightsBufferRes);
-
-        pbrPointShadowLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(PBRPointLightData) * pbrShadowLightsCount
-        });
-        builder.read(pbrPointShadowLightsBufferRes);
-        builder.write(pbrPointShadowLightsBufferRes);
+        builder.read(shadowPointLightBufferRes);
+        builder.write(shadowPointLightBufferRes);
 
         gBufferPosition = builder.getSlot(SLOT_GBUFFER_POSITION);
         builder.read(gBufferPosition);
@@ -302,13 +180,7 @@ namespace xng {
         gBufferAlbedo = builder.getSlot(SLOT_GBUFFER_ALBEDO);
         builder.read(gBufferAlbedo);
 
-        gBufferAmbient = builder.getSlot(SLOT_GBUFFER_AMBIENT);
-        builder.read(gBufferAmbient);
-
-        gBufferSpecular = builder.getSlot(SLOT_GBUFFER_SPECULAR);
-        builder.read(gBufferSpecular);
-
-        gBufferModelObject = builder.getSlot(SLOT_GBUFFER_MODEL_OBJECT_SHADOWS);
+        gBufferModelObject = builder.getSlot(SLOT_GBUFFER_OBJECT_SHADOWS);
         builder.read(gBufferModelObject);
 
         gBufferDepth = builder.getSlot(SLOT_GBUFFER_DEPTH);
@@ -321,15 +193,15 @@ namespace xng {
 
         this->scene = builder.getScene();
 
-        if (builder.checkSlot(SLOT_SHADOW_MAP_PBR_POINT)){
-            pbrPointLightShadowMap = builder.getSlot(FrameGraphSlot::SLOT_SHADOW_MAP_PBR_POINT);
-            builder.read(pbrPointLightShadowMap);
+        if (builder.checkSlot(SLOT_SHADOW_MAP_POINT)) {
+            pointLightShadowMapRes = builder.getSlot(FrameGraphSlot::SLOT_SHADOW_MAP_POINT);
+            builder.read(pointLightShadowMapRes);
         } else {
-            pbrPointLightShadowMap = {};
+            pointLightShadowMapRes = {};
         }
 
-        defaultPbrShadowMap = builder.createTextureArrayBuffer({});
-        builder.read(defaultPbrShadowMap);
+        pointLightShadowMapDefaultRes = builder.createTextureArrayBuffer({});
+        builder.read(pointLightShadowMapDefaultRes);
     }
 
     void DeferredLightingPass::execute(FrameGraphPassResources &resources,
@@ -346,23 +218,18 @@ namespace xng {
 
         auto &uniformBuffer = resources.get<ShaderStorageBuffer>(shaderDataBufferRes);
 
-        auto &pointLightBuffer = resources.get<ShaderStorageBuffer>(pointLightsBufferRes);
-        auto &spotLightBuffer = resources.get<ShaderStorageBuffer>(spotLightsBufferRes);
-        auto &dirLightBuffer = resources.get<ShaderStorageBuffer>(directionalLightsBufferRes);
-        auto &pbrPointLightBuffer = resources.get<ShaderStorageBuffer>(pbrPointLightsBufferRes);
-        auto &pbrPointShadowLightBuffer = resources.get<ShaderStorageBuffer>(pbrPointShadowLightsBufferRes);
+        auto &pointLightBuffer = resources.get<ShaderStorageBuffer>(pointLightBufferRes);
+        auto &shadowPointLightBuffer = resources.get<ShaderStorageBuffer>(shadowPointLightBufferRes);
 
         auto &colorTex = resources.get<TextureBuffer>(colorTextureRes);
         auto &depthTex = resources.get<TextureBuffer>(depthTextureRes);
 
         auto &cBuffer = resources.get<CommandBuffer>(commandBuffer);
 
-        auto &pbrPointShadowMap = pbrPointLightShadowMap.assigned ? resources.get<TextureArrayBuffer>(pbrPointLightShadowMap) : resources.get<TextureArrayBuffer>(defaultPbrShadowMap);
+        auto &pointLightShadowMap = pointLightShadowMapRes.assigned ? resources.get<TextureArrayBuffer>(
+                pointLightShadowMapRes) : resources.get<TextureArrayBuffer>(pointLightShadowMapDefaultRes);
 
-        auto plights = getPointLights(scene);
-        auto slights = getSpotLights(scene);
-        auto dlights = getDirLights(scene);
-        auto pbrlights = getPBRPointLights(scene);
+        auto pointLights = getPointLights(scene);
 
         std::vector<Command> commands;
 
@@ -374,16 +241,10 @@ namespace xng {
         commands.emplace_back(pass.clearDepthAttachment(1));
         commands.emplace_back(pass.end());
 
-        pointLightBuffer.upload(reinterpret_cast<const uint8_t *>(plights.data()),
-                                plights.size() * sizeof(PointLightData));
-        spotLightBuffer.upload(reinterpret_cast<const uint8_t *>(slights.data()),
-                               slights.size() * sizeof(SpotLightData));
-        dirLightBuffer.upload(reinterpret_cast<const uint8_t *>(dlights.data()),
-                              dlights.size() * sizeof(DirectionalLightData));
-        pbrPointLightBuffer.upload(reinterpret_cast<const uint8_t *>(pbrlights.first.data()),
-                                   pbrlights.first.size() * sizeof(PBRPointLightData));
-        pbrPointShadowLightBuffer.upload(reinterpret_cast<const uint8_t *>(pbrlights.second.data()),
-                                   pbrlights.second.size() * sizeof(PBRPointLightData));
+        pointLightBuffer.upload(reinterpret_cast<const uint8_t *>(pointLights.first.data()),
+                                pointLights.first.size() * sizeof(PointLightData));
+        shadowPointLightBuffer.upload(reinterpret_cast<const uint8_t *>(pointLights.second.data()),
+                                      pointLights.second.size() * sizeof(PointLightData));
 
         if (!quadAllocated) {
             quadAllocated = true;
@@ -400,7 +261,7 @@ namespace xng {
                                  cameraTransform.getPosition().z,
                                  0).getMemory();
         buf.farPlane.at(0) = 1000;
-        buf.enableShadows.at(0) = pbrPointLightShadowMap.assigned;
+        buf.enableShadows.at(0) = pointLightShadowMapRes.assigned;
         uniformBuffer.upload(reinterpret_cast<const uint8_t *>(&buf),
                              sizeof(ShaderStorageData));
 
@@ -409,8 +270,6 @@ namespace xng {
         auto &gBufTan = resources.get<TextureBuffer>(gBufferTangent);
         auto &gBufRoughnessMetallicAO = resources.get<TextureBuffer>(gBufferRoughnessMetallicAO);
         auto &gBufAlbedo = resources.get<TextureBuffer>(gBufferAlbedo);
-        auto &gBufAmbient = resources.get<TextureBuffer>(gBufferAmbient);
-        auto &gBufSpecular = resources.get<TextureBuffer>(gBufferSpecular);
         auto &gBufModelObject = resources.get<TextureBuffer>(gBufferModelObject);
         auto &gBufDepth = resources.get<TextureBuffer>(gBufferDepth);
 
@@ -423,20 +282,15 @@ namespace xng {
         commands.emplace_back(vertexArrayObject.bind());
         commands.emplace_back(RenderPipeline::bindShaderResources({
                                                                           {uniformBuffer,           {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {pointLightBuffer,        {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {spotLightBuffer,         {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {dirLightBuffer,          {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {pbrPointLightBuffer,     {{FRAGMENT, ShaderResource::READ}}},
                                                                           {gBufPos,                 {{FRAGMENT, ShaderResource::READ}}},
                                                                           {gBufNorm,                {{FRAGMENT, ShaderResource::READ}}},
                                                                           {gBufRoughnessMetallicAO, {{FRAGMENT, ShaderResource::READ}}},
                                                                           {gBufAlbedo,              {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {gBufAmbient,             {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {gBufSpecular,            {{FRAGMENT, ShaderResource::READ}}},
                                                                           {gBufModelObject,         {{FRAGMENT, ShaderResource::READ}}},
                                                                           {gBufDepth,               {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {pbrPointShadowMap,        {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {pbrPointShadowLightBuffer,        {{FRAGMENT, ShaderResource::READ}}},
+                                                                          {pointLightShadowMap,     {{FRAGMENT, ShaderResource::READ}}},
+                                                                          {pointLightBuffer,        {{FRAGMENT, ShaderResource::READ}}},
+                                                                          {shadowPointLightBuffer,  {{FRAGMENT, ShaderResource::READ}}},
                                                                   }));
         commands.emplace_back(pass.drawArray(DrawCall(0, mesh.vertices.size())));
         commands.emplace_back(pass.end());

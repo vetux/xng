@@ -28,31 +28,7 @@
 
 namespace xng {
 #pragma pack(push, 1)
-    struct DirectionalLightData {
-        std::array<float, 4> ambient;
-        std::array<float, 4> diffuse;
-        std::array<float, 4> specular;
-        std::array<float, 4> direction;
-    };
-
     struct PointLightData {
-        std::array<float, 4> ambient;
-        std::array<float, 4> diffuse;
-        std::array<float, 4> specular;
-        std::array<float, 4> position;
-        std::array<float, 4> constant_linear_quadratic;
-    };
-
-    struct SpotLightData {
-        std::array<float, 4> ambient;
-        std::array<float, 4> diffuse;
-        std::array<float, 4> specular;
-        std::array<float, 4> position;
-        std::array<float, 4> direction_quadratic;
-        std::array<float, 4> cutOff_outerCutOff_constant_linear;
-    };
-
-    struct PBRPointLightData {
         std::array<float, 4> position;
         std::array<float, 4> color;
     };
@@ -66,12 +42,10 @@ namespace xng {
         Mat4f model;
         Mat4f mvp;
 
-        int shadeModel_objectID_shadows[4]{0, 0, 0, 0};
-        float metallic_roughness_ambientOcclusion_shininess[4]{0, 0, 0, 0};
+        int objectID_shadows[4]{0, 0, 0, 0};
 
-        float diffuseColor[4]{0, 0, 0, 0};
-        float ambientColor[4]{0, 0, 0, 0};
-        float specularColor[4]{0, 0, 0, 0};
+        float metallic_roughness_ambientOcclusion[4]{0, 0, 0, 0};
+        float albedoColor[4]{0, 0, 0, 0};
 
         float normalIntensity[4]{0, 0, 0, 0};
 
@@ -80,94 +54,19 @@ namespace xng {
         ShaderAtlasTexture metallic;
         ShaderAtlasTexture roughness;
         ShaderAtlasTexture ambientOcclusion;
-
-        ShaderAtlasTexture diffuse;
-        ShaderAtlasTexture ambient;
-        ShaderAtlasTexture specular;
-        ShaderAtlasTexture shininess;
+        ShaderAtlasTexture albedo;
     };
 #pragma pack(pop)
 
-    static std::vector<DirectionalLightData> getDirLights(const Scene &scene) {
-        std::vector<DirectionalLightData> ret;
-        for (auto &node: scene.rootNode.findAll({typeid(Scene::PhongDirectionalLightProperty)})) {
-            auto l = node.getProperty<Scene::PhongDirectionalLightProperty>().light;
-            auto t = node.getProperty<Scene::TransformProperty>().transform;
-            auto tmp = DirectionalLightData{
-                    .ambient = Vec4f(l.ambient.x, l.ambient.y, l.ambient.z, 1).getMemory(),
-                    .diffuse = Vec4f(l.diffuse.x, l.diffuse.y, l.diffuse.z, 1).getMemory(),
-                    .specular = Vec4f(l.specular.x, l.specular.y, l.specular.z, 1).getMemory(),
-            };
-            auto euler = (Quaternion(l.direction) * t.getRotation()).getEulerAngles();
-            tmp.direction = Vec4f(euler.x, euler.y, euler.z, 0).getMemory();
-            ret.emplace_back(tmp);
-        }
-        return ret;
-    }
-
-    static std::vector<PointLightData> getPointLights(const Scene &scene) {
-        std::vector<PointLightData> ret;
-        for (auto &node: scene.rootNode.findAll({typeid(Scene::PhongPointLightProperty)})) {
-            auto l = node.getProperty<Scene::PhongPointLightProperty>().light;
-            auto t = node.getProperty<Scene::TransformProperty>().transform;
-            auto tmp = PointLightData{
-                    .ambient = Vec4f(l.ambient.x, l.ambient.y, l.ambient.z, 1).getMemory(),
-                    .diffuse = Vec4f(l.diffuse.x, l.diffuse.y, l.diffuse.z, 1).getMemory(),
-                    .specular = Vec4f(l.specular.x, l.specular.y, l.specular.z, 1).getMemory(),
-            };
-            tmp.position = Vec4f(t.getPosition().x,
-                                 t.getPosition().y,
-                                 t.getPosition().z,
-                                 0).getMemory();
-            tmp.constant_linear_quadratic[0] = l.constant;
-            tmp.constant_linear_quadratic[1] = l.linear;
-            tmp.constant_linear_quadratic[2] = l.quadratic;
-            ret.emplace_back(tmp);
-        }
-        return ret;
-    }
-
-    static std::vector<SpotLightData> getSpotLights(const Scene &scene) {
-        std::vector<SpotLightData> ret;
-        for (auto &node: scene.rootNode.findAll({typeid(Scene::PhongSpotLightProperty)})) {
-            auto l = node.getProperty<Scene::PhongSpotLightProperty>().light;
-            auto t = node.getProperty<Scene::TransformProperty>().transform;
-            auto tmp = SpotLightData{
-                    .ambient = Vec4f(l.ambient.x, l.ambient.y, l.ambient.z, 1).getMemory(),
-                    .diffuse = Vec4f(l.diffuse.x, l.diffuse.y, l.diffuse.z, 1).getMemory(),
-                    .specular = Vec4f(l.specular.x, l.specular.y, l.specular.z, 1).getMemory(),
-            };
-            tmp.position = Vec4f(t.getPosition().x,
-                                 t.getPosition().y,
-                                 t.getPosition().z,
-                                 0).getMemory();
-
-            auto euler = (Quaternion(l.direction) * t.getRotation()).getEulerAngles();
-
-            tmp.direction_quadratic[0] = euler.x;
-            tmp.direction_quadratic[1] = euler.y;
-            tmp.direction_quadratic[2] = euler.z;
-            tmp.direction_quadratic[3] = l.quadratic;
-
-            tmp.cutOff_outerCutOff_constant_linear[0] = l.cutOff;
-            tmp.cutOff_outerCutOff_constant_linear[1] = l.outerCutOff;
-            tmp.cutOff_outerCutOff_constant_linear[2] = l.constant;
-            tmp.cutOff_outerCutOff_constant_linear[3] = l.linear;
-
-            ret.emplace_back(tmp);
-        }
-        return ret;
-    }
-
-    static std::pair<std::vector<PBRPointLightData>, std::vector<PBRPointLightData>>
-    getPBRPointLights(const Scene &scene) {
-        std::vector<PBRPointLightData> pointLights;
-        std::vector<PBRPointLightData> shadowLights;
-        for (auto &node: scene.rootNode.findAll({typeid(Scene::PBRPointLightProperty)})) {
-            auto l = node.getProperty<Scene::PBRPointLightProperty>().light;
+    static std::pair<std::vector<PointLightData>, std::vector<PointLightData>>
+    getPointLights(const Scene &scene) {
+        std::vector<PointLightData> pointLights;
+        std::vector<PointLightData> shadowLights;
+        for (auto &node: scene.rootNode.findAll({typeid(Scene::PointLightProperty)})) {
+            auto l = node.getProperty<Scene::PointLightProperty>().light;
             auto t = node.getProperty<Scene::TransformProperty>().transform;
             auto v = l.color.divide();
-            auto tmp = PBRPointLightData{
+            auto tmp = PointLightData{
                     .position =  Vec4f(t.getPosition().x,
                                        t.getPosition().y,
                                        t.getPosition().z,
@@ -186,50 +85,29 @@ namespace xng {
         renderSize = builder.getRenderSize();
         scene = builder.getScene();
 
-        size_t pointLights = scene.rootNode.findAll({typeid(Scene::PhongPointLightProperty)}).size();
-        size_t spotLights = scene.rootNode.findAll({typeid(Scene::PhongSpotLightProperty)}).size();
-        size_t directionalLights = scene.rootNode.findAll({typeid(Scene::PhongDirectionalLightProperty)}).size();
-        auto pbrPointLights = scene.rootNode.findAll({typeid(Scene::PBRPointLightProperty)});
+        auto pointLightNodes = scene.rootNode.findAll({typeid(Scene::PointLightProperty)});
 
-        size_t pbrPointLightsCount = 0;
-        size_t pbrShadowLightsCount = 0;
+        size_t pointLights = 0;
+        size_t shadowPointLights = 0;
 
-        for (auto l: pbrPointLights) {
-            if (l.getProperty<Scene::PBRPointLightProperty>().light.castShadows)
-                pbrShadowLightsCount++;
+        for (auto l: pointLightNodes) {
+            if (l.getProperty<Scene::PointLightProperty>().light.castShadows)
+                shadowPointLights++;
             else
-                pbrPointLightsCount++;
+                pointLights++;
         }
 
-        pointLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        pointLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(PointLightData) * pointLights
         });
-        builder.read(pointLightsBufferRes);
-        builder.write(pointLightsBufferRes);
+        builder.read(pointLightBufferRes);
+        builder.write(pointLightBufferRes);
 
-        spotLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(SpotLightData) * spotLights
+        shadowPointLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+                .size = sizeof(PointLightData) * shadowPointLights
         });
-        builder.read(spotLightsBufferRes);
-        builder.write(spotLightsBufferRes);
-
-        directionalLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(DirectionalLightData) * directionalLights
-        });
-        builder.read(directionalLightsBufferRes);
-        builder.write(directionalLightsBufferRes);
-
-        pbrPointLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(PBRPointLightData) * pbrPointLightsCount
-        });
-        builder.read(pbrPointLightsBufferRes);
-        builder.write(pbrPointLightsBufferRes);
-
-        pbrPointShadowLightsBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(PBRPointLightData) * pbrShadowLightsCount
-        });
-        builder.read(pbrPointShadowLightsBufferRes);
-        builder.write(pbrPointShadowLightsBufferRes);
+        builder.read(shadowPointLightBufferRes);
+        builder.write(shadowPointLightBufferRes);
 
         RenderTargetDesc targetDesc;
         targetDesc.size = builder.getRenderSize();
@@ -258,9 +136,6 @@ namespace xng {
                             BIND_TEXTURE_ARRAY_BUFFER,
                             BIND_TEXTURE_ARRAY_BUFFER,
                             BIND_TEXTURE_BUFFER,
-                            BIND_SHADER_STORAGE_BUFFER,
-                            BIND_SHADER_STORAGE_BUFFER,
-                            BIND_SHADER_STORAGE_BUFFER,
                             BIND_SHADER_STORAGE_BUFFER,
                             BIND_SHADER_STORAGE_BUFFER,
                             BIND_TEXTURE_ARRAY_BUFFER
@@ -345,10 +220,7 @@ namespace xng {
                 usedTextures.insert(mat.metallicTexture.getUri());
                 usedTextures.insert(mat.roughnessTexture.getUri());
                 usedTextures.insert(mat.ambientOcclusionTexture.getUri());
-                usedTextures.insert(mat.diffuseTexture.getUri());
-                usedTextures.insert(mat.ambientTexture.getUri());
-                usedTextures.insert(mat.specularTexture.getUri());
-                usedTextures.insert(mat.shininessTexture.getUri());
+                usedTextures.insert(mat.albedoTexture.getUri());
 
                 if (mat.normal.assigned()
                     && textures.find(mat.normal.getUri()) == textures.end()) {
@@ -369,25 +241,10 @@ namespace xng {
                     textures[mat.ambientOcclusionTexture.getUri()] = atlas.add(
                             mat.ambientOcclusionTexture.get().image.get());
                 }
-                if (mat.diffuseTexture.assigned()
-                    && textures.find(mat.diffuseTexture.getUri()) == textures.end()) {
-                    textures[mat.diffuseTexture.getUri()] = atlas.add(
-                            mat.diffuseTexture.get().image.get());
-                }
-                if (mat.ambientTexture.assigned()
-                    && textures.find(mat.ambientTexture.getUri()) == textures.end()) {
-                    textures[mat.ambientTexture.getUri()] = atlas.add(
-                            mat.ambientTexture.get().image.get());
-                }
-                if (mat.specularTexture.assigned()
-                    && textures.find(mat.specularTexture.getUri()) == textures.end()) {
-                    textures[mat.specularTexture.getUri()] = atlas.add(
-                            mat.specularTexture.get().image.get());
-                }
-                if (mat.shininessTexture.assigned()
-                    && textures.find(mat.shininessTexture.getUri()) == textures.end()) {
-                    textures[mat.shininessTexture.getUri()] = atlas.add(
-                            mat.shininessTexture.get().image.get());
+                if (mat.albedoTexture.assigned()
+                    && textures.find(mat.albedoTexture.getUri()) == textures.end()) {
+                    textures[mat.albedoTexture.getUri()] = atlas.add(
+                            mat.albedoTexture.get().image.get());
                 }
 
                 totalShaderBufferSize += sizeof(ShaderDrawData);
@@ -471,12 +328,12 @@ namespace xng {
 
         builder.write(commandBuffer);
 
-        if (builder.checkSlot(SLOT_SHADOW_MAP_PBR_POINT)) {
+        if (builder.checkSlot(SLOT_SHADOW_MAP_POINT)) {
             defPointShadowMap = {};
-            pbrPointLightShadowMap = builder.getSlot(FrameGraphSlot::SLOT_SHADOW_MAP_PBR_POINT);
-            builder.read(pbrPointLightShadowMap);
+            pointLightShadowMapRes = builder.getSlot(FrameGraphSlot::SLOT_SHADOW_MAP_POINT);
+            builder.read(pointLightShadowMapRes);
         } else {
-            pbrPointLightShadowMap = {};
+            pointLightShadowMapRes = {};
             defPointShadowMap = builder.createTextureArrayBuffer({});
             builder.read(defPointShadowMap);
         }
@@ -499,34 +356,22 @@ namespace xng {
         auto &forwardDepth = resources.get<TextureBuffer>(forwardDepthRes);
         auto &deferredDepth = resources.get<TextureBuffer>(deferredDepthRes);
 
-        auto &pointLightBuffer = resources.get<ShaderStorageBuffer>(pointLightsBufferRes);
-        auto &spotLightBuffer = resources.get<ShaderStorageBuffer>(spotLightsBufferRes);
-        auto &dirLightBuffer = resources.get<ShaderStorageBuffer>(directionalLightsBufferRes);
-        auto &pbrLightBuffer = resources.get<ShaderStorageBuffer>(pbrPointLightsBufferRes);
-        auto &pbrPointShadowLightBuffer = resources.get<ShaderStorageBuffer>(pbrPointShadowLightsBufferRes);
+        auto &pointLightBuffer = resources.get<ShaderStorageBuffer>(pointLightBufferRes);
+        auto &shadowPointLightBuffer = resources.get<ShaderStorageBuffer>(shadowPointLightBufferRes);
 
-        auto &pbrPointShadowMap = pbrPointLightShadowMap.assigned ? resources.get<TextureArrayBuffer>(
-                pbrPointLightShadowMap) : resources.get<TextureArrayBuffer>(defPointShadowMap);
+        auto &pointLightShadowMap = pointLightShadowMapRes.assigned ? resources.get<TextureArrayBuffer>(
+                pointLightShadowMapRes) : resources.get<TextureArrayBuffer>(defPointShadowMap);
 
         auto &cBuffer = resources.get<CommandBuffer>(commandBuffer);
 
         auto atlasBuffers = atlas.getAtlasBuffers(resources, cBuffer, renderQueues.at(0));
 
-        auto plights = getPointLights(scene);
-        auto slights = getSpotLights(scene);
-        auto dlights = getDirLights(scene);
-        auto pbrlights = getPBRPointLights(scene);
+        auto pointLights = getPointLights(scene);
 
-        pointLightBuffer.upload(reinterpret_cast<const uint8_t *>(plights.data()),
-                                plights.size() * sizeof(PointLightData));
-        spotLightBuffer.upload(reinterpret_cast<const uint8_t *>(slights.data()),
-                               slights.size() * sizeof(SpotLightData));
-        dirLightBuffer.upload(reinterpret_cast<const uint8_t *>(dlights.data()),
-                              dlights.size() * sizeof(DirectionalLightData));
-        pbrLightBuffer.upload(reinterpret_cast<const uint8_t *>(pbrlights.first.data()),
-                              pbrlights.first.size() * sizeof(PBRPointLightData));
-        pbrPointShadowLightBuffer.upload(reinterpret_cast<const uint8_t *>(pbrlights.second.data()),
-                                         pbrlights.second.size() * sizeof(PBRPointLightData));
+        pointLightBuffer.upload(reinterpret_cast<const uint8_t *>(pointLights.first.data()),
+                                pointLights.first.size() * sizeof(PointLightData));
+        shadowPointLightBuffer.upload(reinterpret_cast<const uint8_t *>(pointLights.second.data()),
+                                      pointLights.second.size() * sizeof(PointLightData));
 
         std::vector<Command> commands;
 
@@ -629,7 +474,7 @@ namespace xng {
 
                         bool shadows = true;
 
-                        if (!pbrPointLightShadowMap.assigned) {
+                        if (!pointLightShadowMapRes.assigned) {
                             shadows = false;
                         } else if (node.hasProperty<Scene::ShadowProperty>()) {
                             shadows = node.getProperty<Scene::ShadowProperty>().receiveShadows;
@@ -639,32 +484,18 @@ namespace xng {
 
                         data.model = model;
                         data.mvp = projection * view * model;
-                        data.shadeModel_objectID_shadows[0] = material.shadingModel;
-                        data.shadeModel_objectID_shadows[1] = static_cast<int>(oi);
-                        data.shadeModel_objectID_shadows[2] = shadows;
+                        data.objectID_shadows[0] = static_cast<int>(oi);
+                        data.objectID_shadows[1] = shadows;
 
-                        data.metallic_roughness_ambientOcclusion_shininess[0] = material.metallic;
-                        data.metallic_roughness_ambientOcclusion_shininess[1] = material.roughness;
-                        data.metallic_roughness_ambientOcclusion_shininess[2] = material.ambientOcclusion;
-                        data.metallic_roughness_ambientOcclusion_shininess[3] = material.shininess;
+                        data.metallic_roughness_ambientOcclusion[0] = material.metallic;
+                        data.metallic_roughness_ambientOcclusion[1] = material.roughness;
+                        data.metallic_roughness_ambientOcclusion[2] = material.ambientOcclusion;
 
-                        auto col = material.diffuse.divide().getMemory();
-                        data.diffuseColor[0] = col[0];
-                        data.diffuseColor[1] = col[1];
-                        data.diffuseColor[2] = col[2];
-                        data.diffuseColor[3] = col[3];
-
-                        col = material.ambient.divide().getMemory();
-                        data.ambientColor[0] = col[0];
-                        data.ambientColor[1] = col[1];
-                        data.ambientColor[2] = col[2];
-                        data.ambientColor[3] = col[3];
-
-                        col = material.specular.divide().getMemory();
-                        data.specularColor[0] = col[0];
-                        data.specularColor[1] = col[1];
-                        data.specularColor[2] = col[2];
-                        data.specularColor[3] = col[3];
+                        auto col = material.albedo.divide().getMemory();
+                        data.albedoColor[0] = col[0];
+                        data.albedoColor[1] = col[1];
+                        data.albedoColor[2] = col[2];
+                        data.albedoColor[3] = col[3];
 
                         data.normalIntensity[0] = material.normalIntensity;
 
@@ -719,72 +550,21 @@ namespace xng {
                             data.ambientOcclusion.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
                         }
 
-                        if (material.diffuseTexture.assigned()) {
-                            auto tex = getTexture(material.diffuseTexture, atlasBuffers);
+                        if (material.albedoTexture.assigned()) {
+                            auto tex = getTexture(material.albedoTexture, atlasBuffers);
 
-                            data.diffuse.level_index_filtering_assigned[0] = tex.level;
-                            data.diffuse.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                            data.diffuse.level_index_filtering_assigned[2] = material.diffuseTexture.get().description.filterMag;
-                            data.diffuse.level_index_filtering_assigned[3] = 1;
-
-                            auto atlasScale = tex.size.convert<float>()
-                                              / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
-
-                            data.diffuse.atlasScale_texSize[0] = atlasScale.x;
-                            data.diffuse.atlasScale_texSize[1] = atlasScale.y;
-                            data.diffuse.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                            data.diffuse.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                        }
-
-                        if (material.ambientTexture.assigned()) {
-                            auto tex = getTexture(material.ambientTexture, atlasBuffers);
-
-                            data.ambient.level_index_filtering_assigned[0] = tex.level;
-                            data.ambient.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                            data.ambient.level_index_filtering_assigned[2] = material.ambientTexture.get().description.filterMag;
-                            data.ambient.level_index_filtering_assigned[3] = 1;
+                            data.albedo.level_index_filtering_assigned[0] = tex.level;
+                            data.albedo.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
+                            data.albedo.level_index_filtering_assigned[2] = material.albedoTexture.get().description.filterMag;
+                            data.albedo.level_index_filtering_assigned[3] = 1;
 
                             auto atlasScale = tex.size.convert<float>()
                                               / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
 
-                            data.ambient.atlasScale_texSize[0] = atlasScale.x;
-                            data.ambient.atlasScale_texSize[1] = atlasScale.y;
-                            data.ambient.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                            data.ambient.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                        }
-
-                        if (material.specularTexture.assigned()) {
-                            auto tex = getTexture(material.specularTexture, atlasBuffers);
-
-                            data.specular.level_index_filtering_assigned[0] = tex.level;
-                            data.specular.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                            data.specular.level_index_filtering_assigned[2] = material.specularTexture.get().description.filterMag;
-                            data.specular.level_index_filtering_assigned[3] = 1;
-
-                            auto atlasScale = tex.size.convert<float>()
-                                              / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
-
-                            data.specular.atlasScale_texSize[0] = atlasScale.x;
-                            data.specular.atlasScale_texSize[1] = atlasScale.y;
-                            data.specular.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                            data.specular.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                        }
-
-                        if (material.shininessTexture.assigned()) {
-                            auto tex = getTexture(material.shininessTexture, atlasBuffers);
-
-                            data.shininess.level_index_filtering_assigned[0] = tex.level;
-                            data.shininess.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                            data.shininess.level_index_filtering_assigned[2] = material.shininessTexture.get().description.filterMag;
-                            data.shininess.level_index_filtering_assigned[3] = 1;
-
-                            auto atlasScale = tex.size.convert<float>()
-                                              / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
-
-                            data.shininess.atlasScale_texSize[0] = atlasScale.x;
-                            data.shininess.atlasScale_texSize[1] = atlasScale.y;
-                            data.shininess.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                            data.shininess.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
+                            data.albedo.atlasScale_texSize[0] = atlasScale.x;
+                            data.albedo.atlasScale_texSize[1] = atlasScale.y;
+                            data.albedo.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
+                            data.albedo.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
                         }
 
                         if (material.normal.assigned()) {
@@ -849,11 +629,8 @@ namespace xng {
                         {atlasBuffers.at(TEXTURE_ATLAS_16384x16384), {{{FRAGMENT, ShaderResource::READ}}}},
                         {deferredDepth,                              {{{FRAGMENT, ShaderResource::READ}}}},
                         {pointLightBuffer,                           {{{FRAGMENT, ShaderResource::READ}}}},
-                        {spotLightBuffer,                            {{{FRAGMENT, ShaderResource::READ}}}},
-                        {dirLightBuffer,                             {{{FRAGMENT, ShaderResource::READ}}}},
-                        {pbrLightBuffer,                             {{{FRAGMENT, ShaderResource::READ}}}},
-                        {pbrPointShadowLightBuffer,                  {{{FRAGMENT, ShaderResource::READ}}}},
-                        {pbrPointShadowMap,                          {{{FRAGMENT, ShaderResource::READ}}}},
+                        {shadowPointLightBuffer,                     {{{FRAGMENT, ShaderResource::READ}}}},
+                        {pointLightShadowMap,                        {{{FRAGMENT, ShaderResource::READ}}}},
                 };
                 commands.emplace_back(RenderPipeline::bindShaderResources(shaderRes));
                 commands.emplace_back(pass.multiDrawIndexed(drawCalls, baseVertices));

@@ -31,9 +31,8 @@ static const char *MATERIALS_PATH = "memory://tests/graph/materials.json";
 void createMaterialResource(xng::MemoryArchive &archive) {
     // Sphere
     xng::Material material = {};
-    material.shadingModel = xng::SHADE_PBR;
     material.transparent = false;
-    material.diffuseTexture = ResourceHandle<Texture>(Uri("textures/wall.json"));
+    material.albedoTexture = ResourceHandle<Texture>(Uri("textures/wall.json"));
     material.normal = ResourceHandle<Texture>(Uri("textures/sphere_normals.json"));
     material.roughness = 1;
     material.metallic = 0;
@@ -43,8 +42,7 @@ void createMaterialResource(xng::MemoryArchive &archive) {
 
     // Cube Smiley
     material = {};
-    material.shadingModel = xng::SHADE_PBR;
-    material.diffuseTexture = ResourceHandle<Texture>(Uri("textures/awesomeface.json"));
+    material.albedoTexture = ResourceHandle<Texture>(Uri("textures/awesomeface.json"));
     material.transparent = true;
     material.roughness = 1;
     material.metallic = 0;
@@ -53,24 +51,21 @@ void createMaterialResource(xng::MemoryArchive &archive) {
 
     // Cube Transparent
     material = {};
-    material.shadingModel = xng::SHADE_PHONG;
-    material.diffuse = ColorRGBA(0, 0, 255, 120);
+    material.albedo = ColorRGBA(0, 0, 255, 120);
     material.transparent = true;
 
     bundle.add("cubeAlpha", std::make_unique<xng::Material>(material));
 
     // Cube Transparent Red
     material = {};
-    material.shadingModel = xng::SHADE_PHONG;
-    material.diffuse = ColorRGBA::red(1, 200);
+    material.albedo = ColorRGBA::red(1, 200);
     material.transparent = true;
 
     bundle.add("cubeAlphaRed", std::make_unique<xng::Material>(material));
 
     // Cube Wall
     material = {};
-    material.shadingModel = xng::SHADE_PHONG;
-    material.diffuseTexture = ResourceHandle<Texture>(Uri("textures/wall.json"));
+    material.albedoTexture = ResourceHandle<Texture>(Uri("textures/wall.json"));
 
     bundle.add("cubeWall", std::make_unique<xng::Material>(material));
 
@@ -78,8 +73,7 @@ void createMaterialResource(xng::MemoryArchive &archive) {
     for (int x = 0; x < 10; x++) {
         for (int y = 0; y < 10; y++) {
             material = {};
-            material.shadingModel = xng::SHADE_PBR;
-            material.diffuse = ColorRGBA::red();
+            material.albedo = ColorRGBA::red();
             material.metallic = (((float) x) / 10.0f);
             material.roughness = (((float) y) / 10.0f);
             material.normal = ResourceHandle<Texture>(Uri("textures/sphere_normals.json"));
@@ -289,7 +283,6 @@ int main(int argc, char *argv[]) {
 
     transformProp = {};
     transformProp.transform.setPosition({0, 0, -5});
-    transformProp.transform.setScale(Vec3f(1, 1.2, 1));
     cube.addProperty(transformProp);
 
     meshProp = {};
@@ -306,18 +299,14 @@ int main(int argc, char *argv[]) {
     transformProp = {};
     transformProp.transform.setPosition({2.5, 2.5, 0});
 
-    Scene::Node lightNode;
-    lightNode.addProperty(transformProp);
-    lightNode.addProperty(Scene::PhongPointLightProperty());
-    scene.rootNode.childNodes.emplace_back(lightNode);
-
     transformProp = {};
     transformProp.transform.setPosition({2.5, 2.5, 0});
 
-    Scene::PBRPointLightProperty lightProp;
+    Scene::PointLightProperty lightProp;
     lightProp.light.power = 10;
     lightProp.light.color = ColorRGBA::white();
 
+    Scene::Node lightNode;
     lightNode.addProperty(transformProp);
     lightNode.addProperty(lightProp);
     scene.rootNode.childNodes.emplace_back(lightNode);
@@ -348,8 +337,6 @@ int main(int argc, char *argv[]) {
 
     auto text = textRenderer.render("GBUFFER POSITION", TextLayout{.lineHeight = 70});
     auto tex = ren2d.createTexture(text.getImage());
-
-    testPass->setTex(13);
 
     auto &cameraRef = scene.rootNode.getProperty<Scene::CameraProperty>();
 
@@ -387,55 +374,7 @@ int main(int argc, char *argv[]) {
 
         renderer.render(scene);
 
-        std::string txt;
-        switch (testPass->getTex()) {
-            case 0:
-                txt = "GBUFFER POSITION";
-                break;
-            case 1:
-                txt = "GBUFFER NORMAL";
-                break;
-            case 2:
-                txt = "GBUFFER TANGENT";
-                break;
-            case 3:
-                txt = "GBUFFER ROUGHNESS_METALLIC_AO";
-                break;
-            case 4:
-                txt = "GBUFFER ALBEDO";
-                break;
-            case 5:
-                txt = "GBUFFER AMBIENT";
-                break;
-            case 6:
-                txt = "GBUFFER SPECULAR";
-                break;
-            case 7:
-                txt = "GBUFFER MODEL_OBJECT_SHADOWS";
-                break;
-            case 8:
-                txt = "GBUFFER DEPTH";
-                break;
-            case 9:
-                txt = "DEFERRED COLOR";
-                break;
-            case 10:
-                txt = "DEFERRED DEPTH";
-                break;
-            case 11:
-                txt = "FORWARD COLOR";
-                break;
-            case 12:
-                txt = "FORWARD DEPTH";
-                break;
-            case 13:
-                txt = "SCREEN COLOR";
-                break;
-            case 14:
-                txt = "SCREEN DEPTH";
-                break;
-        }
-
+        auto txt = testPass->getTexName();
         if (text.getText() != txt) {
             text = textRenderer.render(txt, TextLayout{.lineHeight = 70});
             tex = ren2d.createTexture(text.getImage());

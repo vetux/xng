@@ -30,12 +30,11 @@ struct ShaderDrawData {
     mat4 model;
     mat4 mvp;
 
-    ivec4 shadeModel_objectID_shadows;
-    vec4 metallic_roughness_ambientOcclusion_shininess;
+    ivec4 objectID_shadows;
 
-    vec4 diffuseColor;
-    vec4 ambientColor;
-    vec4 specularColor;
+    vec4 metallic_roughness_ambientOcclusion;
+
+    vec4 albedoColor;
 
     vec4 normalIntensity;
 
@@ -45,10 +44,7 @@ struct ShaderDrawData {
     ShaderAtlasTexture roughness;
     ShaderAtlasTexture ambientOcclusion;
 
-    ShaderAtlasTexture diffuse;
-    ShaderAtlasTexture ambient;
-    ShaderAtlasTexture specular;
-    ShaderAtlasTexture shininess;
+    ShaderAtlasTexture albedo;
 };
 
 layout(binding = 0, std140) buffer ShaderUniformBuffer
@@ -60,34 +56,20 @@ layout(binding = 0, std140) buffer ShaderUniformBuffer
 } globs;
 
 layout(binding = 1) uniform sampler2DArray atlasTextures[12];
+
 layout(binding = 13) uniform sampler2D deferredDepth;
 
 layout(binding = 14, std140) buffer PointLightsData
 {
-    PointLight lights[];
-} pLights;
+    PBRPointLight lights[];
+} pointLights;
 
-layout(binding = 15, std140) buffer SpotLightsData
-{
-    SpotLight lights[];
-} sLights;
-
-layout(binding = 16, std140) buffer DirectionalLightsData
-{
-    DirectionalLight lights[];
-} dLights;
-
-layout(binding = 17, std140) buffer PBRPointLightsData
+layout(binding = 15, std140) buffer PointLightsDataShadow
 {
     PBRPointLight lights[];
-} pbrPointLights;
+} pointLightsShadow;
 
-layout(binding = 18, std140) buffer PBRPointLightsDataShadow
-{
-    PBRPointLight lights[];
-} pbrPointLightsShadow;
-
-layout(binding = 19) uniform samplerCubeArray pbrPointLightShadowMaps;
+layout(binding = 16) uniform samplerCubeArray pointLightShadowMaps;
 
 void main()
 {

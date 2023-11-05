@@ -20,44 +20,20 @@
 #ifndef XENGINE_LIGHTCOMPONENT_HPP
 #define XENGINE_LIGHTCOMPONENT_HPP
 
-#include "xng/render/phong/phongdirectionallight.hpp"
-#include "xng/render/phong/phongspotlight.hpp"
-#include "xng/render/phong/phongpointlight.hpp"
-#include "xng/render/pbr/pbrpointlight.hpp"
+#include "xng/render/pointlight.hpp"
 #include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT LightComponent : public Component {
-        std::variant<PhongDirectionalLight,
-                     PhongPointLight,
-                     PhongSpotLight,
-                     PBRPointLight> light;
+        std::variant<PointLight> light;
 
         Messageable &operator<<(const Message &message) override {
             int type;
             message.value("type", type, 0);
             switch (type) {
                 case 0: {
-                    PhongDirectionalLight tmp;
-                    message.value("light", tmp);
-                    light = tmp;
-                    break;
-                }
-                case 1: {
-                    PhongPointLight tmp;
-                    message.value("light", tmp);
-                    light = tmp;
-                    break;
-                }
-                case 2: {
-                    PhongSpotLight tmp;
-                    message.value("light", tmp);
-                    light = tmp;
-                    break;
-                }
-                case 3: {
-                    PBRPointLight tmp;
+                    PointLight tmp;
                     message.value("light", tmp);
                     light = tmp;
                 }
@@ -70,19 +46,7 @@ namespace xng {
             light.index() >> message["type"];
             switch (light.index()) {
                 case 0: {
-                    std::get<PhongDirectionalLight>(light) >> message["light"];
-                    break;
-                }
-                case 1: {
-                    std::get<PhongPointLight>(light) >> message["light"];
-                    break;
-                }
-                case 2: {
-                    std::get<PhongSpotLight>(light) >> message["light"];
-                    break;
-                }
-                case 3: {
-                    std::get<PBRPointLight>(light) >> message["light"];
+                    std::get<PointLight>(light) >> message["light"];
                     break;
                 }
             }

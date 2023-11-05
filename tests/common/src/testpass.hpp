@@ -95,33 +95,27 @@ public:
                 displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_ALBEDO);
                 break;
             case 5:
-                displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_AMBIENT);
+                displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_OBJECT_SHADOWS);
                 break;
             case 6:
-                displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_SPECULAR);
-                break;
-            case 7:
-                displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_MODEL_OBJECT_SHADOWS);
-                break;
-            case 8:
                 displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_DEPTH);
                 break;
-            case 9:
+            case 7:
                 displayTextureRes = builder.getSlot(xng::SLOT_DEFERRED_COLOR);
                 break;
-            case 10:
+            case 8:
                 displayTextureRes = builder.getSlot(xng::SLOT_DEFERRED_DEPTH);
                 break;
-            case 11:
+            case 9:
                 displayTextureRes = builder.getSlot(xng::SLOT_FORWARD_COLOR);
                 break;
-            case 12:
+            case 10:
                 displayTextureRes = builder.getSlot(xng::SLOT_FORWARD_DEPTH);
                 break;
-            case 13:
+            case 11:
                 displayTextureRes = builder.getSlot(xng::SLOT_SCREEN_COLOR);
                 break;
-            case 14:
+            case 12:
                 displayTextureRes = builder.getSlot(xng::SLOT_SCREEN_DEPTH);
                 break;
         }
@@ -162,7 +156,7 @@ public:
         }
 
         ::ShaderData buf{};
-        buf.visualizeDepth_near_far[0] = tex == 8 || tex == 10 || tex == 12 || tex == 14;
+        buf.visualizeDepth_near_far[0] = tex == 6 || tex == 8 || tex == 10 || tex == 12;
         buf.visualizeDepth_near_far[1] = camera.nearClip;
         buf.visualizeDepth_near_far[2] = 100;
 
@@ -199,22 +193,56 @@ public:
         return tex;
     }
 
+    std::string getTexName() {
+        std::string txt;
+        switch (tex) {
+            default:
+                return "INVALID";
+            case 0:
+                return  "GBUFFER POSITION";
+            case 1:
+                return "GBUFFER NORMAL";
+            case 2:
+                return "GBUFFER TANGENT";
+            case 3:
+                return "GBUFFER ROUGHNESS_METALLIC_AO";
+            case 4:
+                return "GBUFFER ALBEDO";
+            case 5:
+                return "GBUFFER OBJECT_SHADOWS";
+            case 6:
+                return "GBUFFER DEPTH";
+            case 7:
+                return "DEFERRED COLOR";
+            case 8:
+                return "DEFERRED DEPTH";
+            case 9:
+                return "FORWARD COLOR";
+            case 10:
+                return "FORWARD DEPTH";
+            case 11:
+                return "SCREEN COLOR";
+            case 12:
+                return "SCREEN DEPTH";
+        }
+    }
+
     void incrementTex() {
-        if (++tex > 14) {
+        if (++tex > 12) {
             tex = 0;
         }
     }
 
     void decrementTex() {
         if (--tex < 0) {
-            tex = 14;
+            tex = 12;
         }
     }
 
 private:
     Mesh mesh = Mesh::normalizedQuad();
 
-    int tex = 0;
+    int tex = 11;
 
     FrameGraphResource backBuffer;
 

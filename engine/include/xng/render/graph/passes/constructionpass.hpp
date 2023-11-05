@@ -76,9 +76,7 @@ namespace xng {
         FrameGraphResource gBufferTangent;
         FrameGraphResource gBufferRoughnessMetallicAmbientOcclusion;
         FrameGraphResource gBufferAlbedo;
-        FrameGraphResource gBufferAmbient;
-        FrameGraphResource gBufferSpecular;
-        FrameGraphResource gBufferModelObject;
+        FrameGraphResource gBufferObjectShadows;
         FrameGraphResource gBufferDepth;
 
         FrameGraphResource screenColor;

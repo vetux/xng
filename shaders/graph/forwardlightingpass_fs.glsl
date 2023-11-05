@@ -1,7 +1,6 @@
 #version 460
 
 #include "texfilter.glsl"
-#include "phong.glsl"
 #include "pbr.glsl"
 #include "shadow.glsl"
 
@@ -28,12 +27,11 @@ struct ShaderDrawData {
     mat4 model;
     mat4 mvp;
 
-    ivec4 shadeModel_objectID_shadows;
-    vec4 metallic_roughness_ambientOcclusion_shininess;
+    ivec4 objectID_shadows;
 
-    vec4 diffuseColor;
-    vec4 ambientColor;
-    vec4 specularColor;
+    vec4 metallic_roughness_ambientOcclusion;
+
+    vec4 albedoColor;
 
     vec4 normalIntensity;
 
@@ -43,10 +41,7 @@ struct ShaderDrawData {
     ShaderAtlasTexture roughness;
     ShaderAtlasTexture ambientOcclusion;
 
-    ShaderAtlasTexture diffuse;
-    ShaderAtlasTexture ambient;
-    ShaderAtlasTexture specular;
-    ShaderAtlasTexture shininess;
+    ShaderAtlasTexture albedo;
 };
 
 layout(binding = 0, std140) buffer ShaderUniformBuffer
@@ -58,34 +53,20 @@ layout(binding = 0, std140) buffer ShaderUniformBuffer
 } globs;
 
 layout(binding = 1) uniform sampler2DArray atlasTextures[12];
+
 layout(binding = 13) uniform sampler2D deferredDepth;
 
 layout(binding = 14, std140) buffer PointLightsData
 {
-    PointLight lights[];
-} pLights;
+    PBRPointLight lights[];
+} pointLights;
 
-layout(binding = 15, std140) buffer SpotLightsData
-{
-    SpotLight lights[];
-} sLights;
-
-layout(binding = 16, std140) buffer DirectionalLightsData
-{
-    DirectionalLight lights[];
-} dLights;
-
-layout(binding = 17, std140) buffer PBRPointLightsData
+layout(binding = 15, std140) buffer PointLightsDataShadow
 {
     PBRPointLight lights[];
-} pbrPointLights;
+} pointLightsShadow;
 
-layout(binding = 18, std140) buffer PBRPointLightsDataShadow
-{
-    PBRPointLight lights[];
-} pbrPointLightsShadow;
-
-layout(binding = 19) uniform samplerCubeArray pbrPointLightShadowMaps;
+layout(binding = 16) uniform samplerCubeArray pointLightShadowMaps;
 
 vec4 textureAtlas(ShaderAtlasTexture tex, vec2 inUv)
 {
@@ -129,152 +110,64 @@ void main() {
         normal = normalize(texNormal);
     }
 
-    if (data.shadeModel_objectID_shadows.x == 0)
-    {
-        // PBR
-        vec4 albedo;
-        float roughness;
-        float metallic;
-        float ao;
+    vec4 albedo;
+    float roughness;
+    float metallic;
+    float ao;
 
-        if (data.diffuse.level_index_filtering_assigned.w  != 0){
-            albedo = textureAtlas(data.diffuse, fUv);
-        } else {
-            albedo = data.diffuseColor;
-        }
+    if (data.albedo.level_index_filtering_assigned.w  != 0){
+        albedo = textureAtlas(data.albedo, fUv);
+    } else {
+        albedo = data.albedoColor;
+    }
 
-        if (data.roughness.level_index_filtering_assigned.w != 0){
-            roughness = textureAtlas(data.roughness, fUv).x;
-        } else {
-            roughness = data.metallic_roughness_ambientOcclusion_shininess.y;
-        }
+    if (data.roughness.level_index_filtering_assigned.w != 0){
+        roughness = textureAtlas(data.roughness, fUv).x;
+    } else {
+        roughness = data.metallic_roughness_ambientOcclusion.y;
+    }
 
-        if (data.metallic.level_index_filtering_assigned.w != 0){
-            metallic = textureAtlas(data.metallic, fUv).x;
-        } else {
-            metallic = data.metallic_roughness_ambientOcclusion_shininess.x;
-        }
+    if (data.metallic.level_index_filtering_assigned.w != 0){
+        metallic = textureAtlas(data.metallic, fUv).x;
+    } else {
+        metallic = data.metallic_roughness_ambientOcclusion.x;
+    }
 
-        if (data.ambientOcclusion.level_index_filtering_assigned.w != 0){
-            ao = textureAtlas(data.ambientOcclusion, fUv).x;
-        } else {
-            ao = data.metallic_roughness_ambientOcclusion_shininess.z;
-        }
+    if (data.ambientOcclusion.level_index_filtering_assigned.w != 0){
+        ao = textureAtlas(data.ambientOcclusion, fUv).x;
+    } else {
+        ao = data.metallic_roughness_ambientOcclusion.z;
+    }
 
-        int shadows = data.shadeModel_objectID_shadows.z;
+    int shadows = data.objectID_shadows.y;
 
-        PbrPass pass = pbr_begin(fPos,
-        normal,
-        albedo.xyz,
-        metallic,
-        roughness,
-        ao,
-        globs.viewPosition.xyz);
+    PbrPass pass = pbr_begin(fPos,
+                                normal,
+                                albedo.rgb,
+                                metallic,
+                                roughness,
+                                ao,
+                                globs.viewPosition.xyz);
 
-        vec3 reflectance = vec3(0);
+    vec3 reflectance = vec3(0);
 
-        for (int i = 0; i < pbrPointLights.lights.length(); i++) {
-            PBRPointLight light = pbrPointLights.lights[i];
+    for (int i = 0; i < pointLights.lights.length(); i++) {
+        PBRPointLight light = pointLights.lights[i];
+        reflectance = pbr_point(pass, reflectance, light);
+    }
+
+    if (shadows == 0){
+        for (int i = 0; i < pointLightsShadow.lights.length(); i++) {
+            PBRPointLight light = pointLightsShadow.lights[i];
             reflectance = pbr_point(pass, reflectance, light);
         }
-
-        if (shadows == 0){
-            for (int i = 0; i < pbrPointLightsShadow.lights.length(); i++) {
-                PBRPointLight light = pbrPointLightsShadow.lights[i];
-                reflectance = pbr_point(pass, reflectance, light);
-            }
-        } else {
-            for (int i = 0; i < pbrPointLightsShadow.lights.length(); i++) {
-                PBRPointLight light = pbrPointLightsShadow.lights[i];
-                float shadow = sampleShadow(fPos, light.position.xyz, globs.viewPosition.xyz, pbrPointLightShadowMaps, i, globs.farPlane.x);
-                reflectance = pbr_point(pass, reflectance, light) * shadow;
-            }
-        }
-
-        oColor = vec4(pbr_finish(pass, reflectance), 1);
-    } else if (data.shadeModel_objectID_shadows.x == 1) {
-        // Phong
-        vec4 diffuse;
-        if (data.diffuse.level_index_filtering_assigned.w != 0){
-            diffuse = textureAtlas(data.diffuse, fUv);
-        } else {
-            diffuse = data.diffuseColor;
-        }
-        vec4 ambient;
-        if (data.ambient.level_index_filtering_assigned.w != 0){
-            ambient = textureAtlas(data.ambient, fUv);
-        } else {
-            ambient = data.ambientColor;
-        }
-        vec4 specular;
-        if (data.specular.level_index_filtering_assigned.w != 0){
-            specular = textureAtlas(data.specular, fUv);
-        } else {
-            specular = data.specularColor;
-        }
-        float shininess;
-        if (data.shininess.level_index_filtering_assigned.w != 0){
-            shininess = textureAtlas(data.shininess, fUv).x;
-        } else {
-            shininess = data.metallic_roughness_ambientOcclusion_shininess.w;
-        }
-
-        LightComponents comp;
-        comp.ambient = vec3(0, 0, 0);
-        comp.diffuse = vec3(0, 0, 0);
-        comp.specular = vec3(0, 0, 0);
-
-        for (int i = 0; i < pLights.lights.length(); i++)
-        {
-            PointLight light = pLights.lights[i];
-            LightComponents c = phong_point(fPos,
-            normal,
-            diffuse,
-            specular,
-            shininess,
-            globs.viewPosition.xyz,
-            mat3(1),
-            light);
-            comp.ambient += c.ambient;
-            comp.diffuse += c.diffuse;
-            comp.specular += c.specular;
-        }
-
-        for (int i = 0; i < sLights.lights.length(); i++)
-        {
-            SpotLight light = sLights.lights[i];
-            LightComponents c = phong_spot(fPos,
-            normal,
-            diffuse,
-            specular,
-            shininess,
-            globs.viewPosition.xyz,
-            mat3(1),
-            light);
-            comp.ambient += c.ambient;
-            comp.diffuse += c.diffuse;
-            comp.specular += c.specular;
-        }
-
-        for (int i = 0; i < dLights.lights.length(); i++)
-        {
-            DirectionalLight light = dLights.lights[i];
-            LightComponents c = phong_directional(fPos,
-            normal,
-            diffuse,
-            specular,
-            shininess,
-            globs.viewPosition.xyz,
-            mat3(1),
-            light);
-            comp.ambient += c.ambient;
-            comp.diffuse += c.diffuse;
-            comp.specular += c.specular;
-        }
-
-        vec3 color = comp.ambient + comp.diffuse + comp.specular;
-        oColor = vec4(color, diffuse.a);
     } else {
-        oColor = vec4(1, 0, 1, 1);
+        for (int i = 0; i < pointLightsShadow.lights.length(); i++) {
+            PBRPointLight light = pointLightsShadow.lights[i];
+            float shadow = sampleShadow(fPos, light.position.xyz, globs.viewPosition.xyz, pointLightShadowMaps, i, globs.farPlane.x);
+            reflectance = pbr_point(pass, reflectance, light) * shadow;
+        }
     }
+
+    oColor = vec4(pbr_finish(pass, reflectance), albedo.a);
 }

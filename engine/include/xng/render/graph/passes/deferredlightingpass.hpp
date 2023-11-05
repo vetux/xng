@@ -59,11 +59,8 @@ namespace xng {
 
         FrameGraphResource shaderDataBufferRes;
 
-        FrameGraphResource pointLightsBufferRes;
-        FrameGraphResource spotLightsBufferRes;
-        FrameGraphResource directionalLightsBufferRes;
-        FrameGraphResource pbrPointLightsBufferRes;
-        FrameGraphResource pbrPointShadowLightsBufferRes;
+        FrameGraphResource pointLightBufferRes;
+        FrameGraphResource shadowPointLightBufferRes;
 
         FrameGraphResource vertexBufferRes;
         FrameGraphResource vertexArrayObjectRes;
@@ -75,15 +72,13 @@ namespace xng {
         FrameGraphResource gBufferTangent;
         FrameGraphResource gBufferRoughnessMetallicAO;
         FrameGraphResource gBufferAlbedo;
-        FrameGraphResource gBufferAmbient;
-        FrameGraphResource gBufferSpecular;
         FrameGraphResource gBufferModelObject;
         FrameGraphResource gBufferDepth;
 
         FrameGraphResource commandBuffer;
 
-        FrameGraphResource pbrPointLightShadowMap;
-        FrameGraphResource defaultPbrShadowMap;
+        FrameGraphResource pointLightShadowMapRes;
+        FrameGraphResource pointLightShadowMapDefaultRes;
 
         Transform cameraTransform;
         Camera camera;

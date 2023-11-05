@@ -30,15 +30,8 @@
 #include "xng/io/messageable.hpp"
 
 namespace xng {
-    enum ShadingModel : int {
-        SHADE_PBR = 0, // PBR Shading
-        SHADE_PHONG = 1, // Per fragment phong shading
-        SHADE_PHONG_GOURAUD = 2, // Per vertex phong shading
-        SHADE_PHONG_FLAT = 3, // Per polygon phong shading
-    };
-
     /**
-     * A material for the provided passes for rendering phong or pbr lighting.
+     * A PBR material for the provided lighting passes.
      *
      * Users can create custom lighting passes if needed and write to the SLOT_DEFERRED/FORWARD_COLOR and SLOT_DEFERRED/FORWARD_DEPTH.
      */
@@ -54,22 +47,15 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            message.value("model", (int &) shadingModel, (int) ShadingModel::SHADE_PBR);
             message.value("normal", normal);
 
             message.value("normalIntensity", normalIntensity);
 
             message.value("transparent", transparent, false);
 
-            message.value("diffuse", diffuse);
-            message.value("ambient", ambient);
-            message.value("specular", specular);
-            message.value("shininess", shininess);
+            message.value("albedo", albedo);;
 
-            message.value("diffuseTexture", diffuseTexture);
-            message.value("ambientTexture", ambientTexture);
-            message.value("specularTexture", specularTexture);
-            message.value("shininessTexture", shininessTexture);
+            message.value("albedoTexture", albedoTexture);
 
             message.value("metallic", metallic);
             message.value("roughness", roughness, 1.0f);
@@ -85,22 +71,15 @@ namespace xng {
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
 
-            shadingModel >> message["model"];
             normal >> message["normal"];
 
             normalIntensity >> message["normalIntensity"];
 
             transparent >> message["transparent"];
 
-            diffuse >> message["diffuse"];
-            ambient >> message["ambient"];
-            specular >> message["specular"];
-            shininess >> message["shininess"];
+            albedo >> message["albedo"];
 
-            diffuseTexture >> message["diffuseTexture"];
-            ambientTexture >> message["ambientTexture"];
-            specularTexture >> message["specularTexture"];
-            shininessTexture >> message["shininessTexture"];
+            albedoTexture >> message["albedoTexture"];
 
             metallic >> message["metallic"];
             roughness >> message["roughness"];
@@ -113,7 +92,11 @@ namespace xng {
             return message;
         }
 
-        ShadingModel shadingModel = SHADE_PHONG;
+        /**
+         * If true the alpha value of the diffuse color / texture is used as the output alpha value.
+         * This is implemented using forward rendering instead of the default deferred rendering path used for non transparent objects.
+         */
+        bool transparent = false;
 
         /**
          * If assigned the contained normals are sampled otherwise vertex normals are used.
@@ -121,60 +104,33 @@ namespace xng {
         ResourceHandle<Texture> normal;
 
         /**
-         *
+         * The sampled normals are scaled by the specified value
          */
         float normalIntensity = 1;
 
-        /**
-         * If true the alpha value of the diffuse color / texture is used as the output alpha value.
-         */
-        bool transparent = false;
+        ColorRGBA albedo{};
+        ResourceHandle<Texture> albedoTexture;
 
-        /**
-         * PBR albedo / Phong diffuse color
-         */
-        ColorRGBA diffuse{};
-        ResourceHandle<Texture> diffuseTexture;
-
-        /**
-         * PBR Shading Data
-         */
         float metallic{};
-        float roughness = 0.5;
-        float ambientOcclusion = 1;
-
         ResourceHandle<Texture> metallicTexture;
+
+        float roughness = 0.5;
         ResourceHandle<Texture> roughnessTexture;
+
+        float ambientOcclusion = 1;
         ResourceHandle<Texture> ambientOcclusionTexture;
-
-        /**
-         * Phong Shading Data
-         */
-        ColorRGBA ambient{};
-        ColorRGBA specular{};
-        float shininess = 0.1;
-
-        ResourceHandle<Texture> ambientTexture;
-        ResourceHandle<Texture> specularTexture;
-        ResourceHandle<Texture> shininessTexture;
 
         bool isLoaded() const override {
             return normal.isLoaded()
                    && metallicTexture.isLoaded()
                    && roughnessTexture.isLoaded()
                    && ambientOcclusionTexture.isLoaded()
-                   && diffuseTexture.isLoaded()
-                   && ambientTexture.isLoaded()
-                   && specularTexture.isLoaded()
-                   && shininessTexture.isLoaded()
+                   && albedoTexture.isLoaded()
                    && ((!normal.assigned()) || normal.get().isLoaded())
                    && (!metallicTexture.assigned() || metallicTexture.get().isLoaded())
                    && (!roughnessTexture.assigned() || roughnessTexture.get().isLoaded())
                    && (!ambientOcclusionTexture.assigned() || ambientOcclusionTexture.get().isLoaded())
-                   && (!diffuseTexture.assigned() || diffuseTexture.get().isLoaded())
-                   && (!ambientTexture.assigned() || ambientTexture.get().isLoaded())
-                   && (!specularTexture.assigned() || specularTexture.get().isLoaded())
-                   && (!shininessTexture.assigned() || shininessTexture.get().isLoaded());
+                   && (!albedoTexture.assigned() || albedoTexture.get().isLoaded());
         }
     };
 }

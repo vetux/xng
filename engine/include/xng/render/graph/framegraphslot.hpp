@@ -36,18 +36,12 @@ namespace xng {
         SLOT_GBUFFER_POSITION,          // Texture RGBA32F : World Space Position xyz, w = X
         SLOT_GBUFFER_NORMAL,                // Texture RGBA32F : Vertex or Texture Normal xyz, w = X
         SLOT_GBUFFER_TANGENT,               // Texture RGBA32F : Vertex Tangent xyz, w = X
-        SLOT_GBUFFER_ROUGHNESS_METALLIC_AO, // Texture RGBA32F : .x = pbr roughness or phong shininess, .y = pbr metallic, .z = pbr ambient occlusion
-        SLOT_GBUFFER_ALBEDO,                // Texture RGBA : The pbr albedo or phong diffuse color value
-        SLOT_GBUFFER_AMBIENT,               // Texture RGBA : The phong ambient color value
-        SLOT_GBUFFER_SPECULAR,              // Texture RGBA : The phong specular color value
-        SLOT_GBUFFER_MODEL_OBJECT_SHADOWS,          // Texture RGBA32I : .x = Shading Model ID, .y = Object ID, .z = Receive Shadows
+        SLOT_GBUFFER_ROUGHNESS_METALLIC_AO, // Texture RGBA32F : .x = roughness, .y = metallic, .z = ambient occlusion
+        SLOT_GBUFFER_ALBEDO,                // Texture RGBA : xyzw = Albedo
+        SLOT_GBUFFER_OBJECT_SHADOWS,          // Texture RGBA32I : .x = Object ID, .y = Receive Shadows
         SLOT_GBUFFER_DEPTH,                 // Texture DEPTH_STENCIL : The depth value in the x component
 
-        SLOT_SHADOW_MAP_PHONG_DIRECTIONAL, // A Texture Array with 2d textures containing directional light depth maps of phong light sources.
-        SLOT_SHADOW_MAP_PHONG_SPOT, // A Texture Array with 2d textures containing spot light depth maps of phong light sources.
-        SLOT_SHADOW_MAP_PHONG_POINT, // A Texture Array with 3d cubemap textures containing point light depth maps of phong light sources.
-
-        SLOT_SHADOW_MAP_PBR_POINT, // A Texture Array with 3d cubemap textures containing point light depth maps of pbr light sources.
+        SLOT_SHADOW_MAP_POINT, // A Texture Array with 3d cubemap textures containing point light depth maps of light sources.
 
         // User slots are not used by the default passes included with xng and can be used to share data between user created passes.
         SLOT_USER_1,

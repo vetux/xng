@@ -27,12 +27,10 @@ struct ShaderDrawData {
     mat4 model;
     mat4 mvp;
 
-    ivec4 shadeModel_objectID_boneOffset_shadows;
-    vec4 metallic_roughness_ambientOcclusion_shininess;
+    ivec4 objectID_boneOffset_shadows;
 
-    vec4 diffuseColor;
-    vec4 ambientColor;
-    vec4 specularColor;
+    vec4 metallic_roughness_ambientOcclusion;
+    vec4 albedoColor;
 
     vec4 normalIntensity;
 
@@ -41,11 +39,7 @@ struct ShaderDrawData {
     ShaderAtlasTexture metallic;
     ShaderAtlasTexture roughness;
     ShaderAtlasTexture ambientOcclusion;
-
-    ShaderAtlasTexture diffuse;
-    ShaderAtlasTexture ambient;
-    ShaderAtlasTexture specular;
-    ShaderAtlasTexture shininess;
+    ShaderAtlasTexture albedo;
 };
 
 layout(binding = 0, std140) buffer ShaderUniformBuffer
@@ -115,7 +109,7 @@ void main()
 {
     ShaderDrawData data = globs.data[gl_DrawID];
 
-    vec4 pos = getSkinnedVertexPosition(data.shadeModel_objectID_boneOffset_shadows.z);
+    vec4 pos = getSkinnedVertexPosition(data.objectID_boneOffset_shadows.y);
 
     vPos = data.mvp * pos;
     fPos = (data.model * pos).xyz;

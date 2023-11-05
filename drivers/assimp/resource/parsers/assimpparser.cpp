@@ -228,19 +228,19 @@ namespace xng {
 
         aiColor3D c;
         assMaterial.Get(AI_MATKEY_COLOR_DIFFUSE, c);
-        ret.diffuse = {static_cast<uint8_t>(255 * c.r),
-                       static_cast<uint8_t>(255 * c.g),
-                       static_cast<uint8_t>(255 * c.b),
-                       0};
+        ret.albedo = {static_cast<uint8_t>(255 * c.r),
+                      static_cast<uint8_t>(255 * c.g),
+                      static_cast<uint8_t>(255 * c.b),
+                      0};
 
         float alpha = 0;
         assMaterial.Get(AI_MATKEY_TRANSPARENCYFACTOR, alpha);
 
         alpha = 1 - alpha;
 
-        ret.diffuse.a() = static_cast<uint8_t>(255 * alpha);
+        ret.albedo.a() = static_cast<uint8_t>(255 * alpha);
 
-        ret.transparent = ret.diffuse.a() != 255;
+        ret.transparent = ret.albedo.a() != 255;
 
         assMaterial.Get(AI_MATKEY_METALLIC_FACTOR, ret.metallic);
         assMaterial.Get(AI_MATKEY_ROUGHNESS_FACTOR, ret.roughness);
@@ -251,7 +251,7 @@ namespace xng {
                                           texPath.get());
 
         if (tex == aiReturn::aiReturn_SUCCESS) {
-            ret.diffuseTexture = ResourceHandle<Texture>(Uri(path + std::string(texPath->C_Str())));
+            ret.albedoTexture = ResourceHandle<Texture>(Uri(path + std::string(texPath->C_Str())));
         }
 
         tex = assMaterial.GetTexture(aiTextureType_METALNESS,
@@ -271,46 +271,6 @@ namespace xng {
                     Uri(path + std::string(texPath->C_Str())));
         }
 
-        assMaterial.Get(AI_MATKEY_COLOR_AMBIENT, c);
-        ret.ambient = {static_cast<uint8_t>(255 * c.r),
-                       static_cast<uint8_t>(255 * c.g),
-                       static_cast<uint8_t>(255 * c.b),
-                       255};
-
-        ret.ambient = ColorRGBA(255, 255, 255, 255);
-
-        assMaterial.Get(AI_MATKEY_COLOR_SPECULAR, c);
-        ret.specular = {static_cast<uint8_t>(255 * c.r),
-                        static_cast<uint8_t>(255 * c.g),
-                        static_cast<uint8_t>(255 * c.b),
-                        255};
-
-        assMaterial.Get(AI_MATKEY_SHININESS, ret.shininess);
-
-        tex = assMaterial.GetTexture(aiTextureType_AMBIENT,
-                                     0,
-                                     texPath.get());
-
-        if (tex == aiReturn::aiReturn_SUCCESS) {
-            ret.ambientTexture = ResourceHandle<Texture>(Uri(path + std::string(texPath->C_Str())));
-        }
-
-        tex = assMaterial.GetTexture(aiTextureType_SPECULAR,
-                                     0,
-                                     texPath.get());
-
-        if (tex == aiReturn::aiReturn_SUCCESS) {
-            ret.specularTexture = ResourceHandle<Texture>(Uri(path + std::string(texPath->C_Str())));
-        }
-
-        tex = assMaterial.GetTexture(aiTextureType_SHININESS,
-                                     0,
-                                     texPath.get());
-
-        if (tex == aiReturn::aiReturn_SUCCESS) {
-            ret.shininessTexture = ResourceHandle<Texture>(Uri(path + std::string(texPath->C_Str())));
-        }
-
         tex = assMaterial.GetTexture(aiTextureType_NORMALS,
                                      0,
                                      texPath.get());
@@ -318,7 +278,6 @@ namespace xng {
         if (tex == aiReturn::aiReturn_SUCCESS) {
             ret.normal = ResourceHandle<Texture>(Uri(path + std::string(texPath->C_Str())));
         }
-        ret.shadingModel = SHADE_PHONG;
 
         return ret;
     }

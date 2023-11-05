@@ -17,41 +17,35 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_PHONGDIRECTIONALLIGHT_HPP
-#define XENGINE_PHONGDIRECTIONALLIGHT_HPP
+#ifndef XENGINE_POINTLIGHT_HPP
+#define XENGINE_POINTLIGHT_HPP
 
 #include "xng/math/transform.hpp"
 #include "xng/io/messageable.hpp"
+#include "xng/render/color.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT PhongDirectionalLight : public Messageable {
+    struct XENGINE_EXPORT PointLight : public Messageable {
         Messageable &operator<<(const Message &message) override {
-            ambient << message.getMessage("ambient");
-            diffuse << message.getMessage("diffuse");
-            specular << message.getMessage("specular");
-            direction << message.getMessage("direction");
-            castShadows << message.getMessage("castShadows");
+            color << message.getMessage("color");
+            message.value("power", power);
+            message.value("castShadows", castShadows);
             return *this;
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            ambient >> message["ambient"];
-            diffuse >> message["diffuse"];
-            specular >> message["specular"];
-            direction >> message["direction"];
-            castShadows >> message["castShadows"];
+            color >> message["color"];
+            message["power"] = power;
+            message["castShadows"] = castShadows;
             return message;
         }
 
-        Vec3f ambient = Vec3f(0.2);
-        Vec3f diffuse = Vec3f(0.4);
-        Vec3f specular = Vec3f(0.1);
-
-        Vec3f direction = Vec3f(0.0f, 0.0f, -1.0f);
+        ColorRGBA color = ColorRGBA::white(); // The color of the light
+        float power = 1; // The strength of the light
 
         bool castShadows = true;
     };
 }
 
-#endif //XENGINE_PHONGDIRECTIONALLIGHT_HPP
+#endif //XENGINE_POINTLIGHT_HPP

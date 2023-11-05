@@ -21,10 +21,7 @@
 #define XENGINE_SHADOWMAPPINGPASS_HPP
 
 #include "xng/render/graph/framegraphpass.hpp"
-#include "xng/render/phong/phongdirectionallight.hpp"
-#include "xng/render/phong/phongpointlight.hpp"
-#include "xng/render/phong/phongspotlight.hpp"
-#include "xng/render/pbr/pbrpointlight.hpp"
+#include "xng/render/pointlight.hpp"
 #include "xng/render/meshallocator.hpp"
 #include "xng/render/scene.hpp"
 
@@ -32,7 +29,7 @@ namespace xng {
     /**
      * The shadow mapping pass creates the shadow mapping textures.
      *
-     * Writes SLOT_SHADOW_MAP_PHONG_DIRECTIONAL, SLOT_SHADOW_MAP_PHONG_POINT, SLOT_SHADOW_MAP_PHONG_SPOT and SLOT_SHADOW_MAP_PBR_POINT
+     * Writes SLOT_SHADOW_MAP_POINT
      */
     class XENGINE_EXPORT ShadowMappingPass : public FrameGraphPass {
     public:
@@ -66,15 +63,12 @@ namespace xng {
         float nearPlane = 0.1;
         float farPlane = 1000;
 
-        std::vector<Scene::Node> directionalLights;
-        std::vector<Scene::Node> pointLights;
-        std::vector<Scene::Node> spotLights;
-        std::vector<Scene::Node> pbrPointLights;
+        std::vector<Scene::Node> pointLightNodes;
 
         size_t currentVertexBufferSize{};
         size_t currentIndexBufferSize{};
 
-        std::vector<Scene::Node> objects;
+        std::vector<Scene::Node> meshNodes;
 
         MeshAllocator meshAllocator;
 
@@ -94,10 +88,7 @@ namespace xng {
         FrameGraphResource staleVertexBuffer;
         FrameGraphResource staleIndexBuffer;
 
-        FrameGraphResource phongDirectionalMap;
-        FrameGraphResource phongSpotMap;
-        FrameGraphResource phongPointMap;
-        FrameGraphResource pbrPointMap;
+        FrameGraphResource pointLightShadowMapRes;
 
         FrameGraphResource textureRes;
 

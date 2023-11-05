@@ -34,8 +34,7 @@ void createMaterialResource(xng::MemoryArchive &archive) {
     // Cube Wall
     xng::Material material = {};
     material.transparent = true;
-    material.shadingModel = xng::SHADE_PBR;
-    material.diffuseTexture = ResourceHandle<Texture>(Uri("textures/wall.json"));
+    material.albedoTexture = ResourceHandle<Texture>(Uri("textures/wall.json"));
 
     bundle.add("cubeWall", std::make_unique<xng::Material>(material));
 
@@ -43,8 +42,7 @@ void createMaterialResource(xng::MemoryArchive &archive) {
     for (int x = 0; x < 4; x++) {
         for (int y = 0; y < 4; y++) {
             material = {};
-            material.shadingModel = xng::SHADE_PBR;
-            material.diffuse = ColorRGBA::red();
+            material.albedo = ColorRGBA::red();
             material.metallic = (((float) x) / 10.0f);
             material.roughness = (((float) y) / 10.0f);
             material.normal = ResourceHandle<Texture>(Uri("textures/sphere_normals.json"));
@@ -194,7 +192,7 @@ int main(int argc, char *argv[]) {
     transformProp = {};
     transformProp.transform.setPosition({5.5, 5.5, 0});
 
-    Scene::PBRPointLightProperty lightProp;
+    Scene::PointLightProperty lightProp;
     lightProp.light.power = 50;
     lightProp.light.color = ColorRGBA::white();
 
@@ -230,8 +228,6 @@ int main(int argc, char *argv[]) {
 
     auto text = textRenderer.render("GBUFFER POSITION", TextLayout{.lineHeight = 70});
     auto tex = ren2d.createTexture(text.getImage());
-
-    testPass->setTex(13);
 
     auto &cameraRef = scene.rootNode.getProperty<Scene::CameraProperty>();
 
@@ -269,54 +265,7 @@ int main(int argc, char *argv[]) {
 
         renderer.render(scene);
 
-        std::string txt;
-        switch (testPass->getTex()) {
-            case 0:
-                txt = "GBUFFER POSITION";
-                break;
-            case 1:
-                txt = "GBUFFER NORMAL";
-                break;
-            case 2:
-                txt = "GBUFFER TANGENT";
-                break;
-            case 3:
-                txt = "GBUFFER ROUGHNESS_METALLIC_AO";
-                break;
-            case 4:
-                txt = "GBUFFER ALBEDO";
-                break;
-            case 5:
-                txt = "GBUFFER AMBIENT";
-                break;
-            case 6:
-                txt = "GBUFFER SPECULAR";
-                break;
-            case 7:
-                txt = "GBUFFER MODEL_OBJECT";
-                break;
-            case 8:
-                txt = "GBUFFER DEPTH";
-                break;
-            case 9:
-                txt = "DEFERRED COLOR";
-                break;
-            case 10:
-                txt = "DEFERRED DEPTH";
-                break;
-            case 11:
-                txt = "FORWARD COLOR";
-                break;
-            case 12:
-                txt = "FORWARD DEPTH";
-                break;
-            case 13:
-                txt = "SCREEN COLOR";
-                break;
-            case 14:
-                txt = "SCREEN DEPTH";
-                break;
-        }
+        auto txt = testPass->getTexName();
 
         if (text.getText() != txt) {
             text = textRenderer.render(txt, TextLayout{.lineHeight = 70});

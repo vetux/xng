@@ -15,41 +15,24 @@ layout(binding = 0, std140) buffer ShaderData {
     ivec4 enableShadows;
 } globs;
 
-layout(binding = 1, std140) buffer PointLightsData
-{
-    PointLight lights[];
-} pLights;
+layout(binding = 1) uniform sampler2D gBufferPos;
+layout(binding = 2) uniform sampler2D gBufferNormal;
+layout(binding = 3) uniform sampler2D gBufferRoughnessMetallicAO;
+layout(binding = 4) uniform sampler2D gBufferAlbedo;
+layout(binding = 5) uniform isampler2D gBufferObjectShadows;
+layout(binding = 6) uniform sampler2D gBufferDepth;
 
-layout(binding = 2, std140) buffer SpotLightsData
-{
-    SpotLight lights[];
-} sLights;
+layout(binding = 7) uniform samplerCubeArray pointLightShadowMaps;
 
-layout(binding = 3, std140) buffer DirectionalLightsData
-{
-    DirectionalLight lights[];
-} dLights;
-
-layout(binding = 4, std140) buffer PBRPointLightsData
+layout(binding = 8, std140) buffer PointLightsData
 {
     PBRPointLight lights[];
-} pbrPointLights;
+} pointLights;
 
-layout(binding = 5) uniform sampler2D gBufferPos;
-layout(binding = 6) uniform sampler2D gBufferNormal;
-layout(binding = 7) uniform sampler2D gBufferRoughnessMetallicAO;
-layout(binding = 8) uniform sampler2D gBufferAlbedo;
-layout(binding = 9) uniform sampler2D gBufferAmbient;
-layout(binding = 10) uniform sampler2D gBufferSpecular;
-layout(binding = 11) uniform isampler2D gBufferModelObjectShadows;
-layout(binding = 12) uniform sampler2D gBufferDepth;
-
-layout(binding = 13) uniform samplerCubeArray pbrPointLightShadowMaps;
-
-layout(binding = 14, std140) buffer PBRPointLightsDataShadow
+layout(binding = 9, std140) buffer ShadowPointLightsData
 {
     PBRPointLight lights[];
-} pbrPointLightsShadow;
+} pointLightsShadow;
 
 void main()
 {

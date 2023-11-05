@@ -44,68 +44,27 @@ void xng::ShadowMappingPass::setup(xng::FrameGraphBuilder &builder) {
         resolution = builder.getProperties().get<Vec2i>(FrameGraphSettings::SHADOW_MAPPING_RESOLUTION);
     }
 
-    objects.clear();
-    directionalLights.clear();
-    pointLights.clear();
-    spotLights.clear();
-    pbrPointLights.clear();
+    meshNodes.clear();
+    pointLightNodes.clear();
 
-    for (auto &lightNode: builder.getScene().rootNode.findAll({typeid(Scene::PhongDirectionalLightProperty)})) {
-        auto &light = lightNode.getProperty<Scene::PhongDirectionalLightProperty>();
+    for (auto &lightNode: builder.getScene().rootNode.findAll({typeid(Scene::PointLightProperty)})) {
+        auto &light = lightNode.getProperty<Scene::PointLightProperty>();
         if (light.light.castShadows) {
-            directionalLights.emplace_back(lightNode);
-        }
-    }
-    for (auto &lightNode: builder.getScene().rootNode.findAll({typeid(Scene::PhongPointLightProperty)})) {
-        auto &light = lightNode.getProperty<Scene::PhongPointLightProperty>();
-        if (light.light.castShadows) {
-            pointLights.emplace_back(lightNode);
-        }
-    }
-    for (auto &lightNode: builder.getScene().rootNode.findAll({typeid(Scene::PhongSpotLightProperty)})) {
-        auto &light = lightNode.getProperty<Scene::PhongSpotLightProperty>();
-        if (light.light.castShadows) {
-            spotLights.emplace_back(lightNode);
-        }
-    }
-
-    for (auto &lightNode: builder.getScene().rootNode.findAll({typeid(Scene::PBRPointLightProperty)})) {
-        auto &light = lightNode.getProperty<Scene::PBRPointLightProperty>();
-        if (light.light.castShadows) {
-            pbrPointLights.emplace_back(lightNode);
+            pointLightNodes.emplace_back(lightNode);
         }
     }
 
     TextureArrayBufferDesc desc;
-    desc.textureCount = directionalLights.size();
     desc.textureDesc.size = resolution;
-    desc.textureDesc.textureType = TEXTURE_2D;
-    desc.textureDesc.format = DEPTH_STENCIL;
-
-    phongDirectionalMap = builder.createTextureArrayBuffer(desc);
-
-    desc.textureCount = spotLights.size();
-
-    phongSpotMap = builder.createTextureArrayBuffer(desc);
-
-    desc.textureCount = pointLights.size();
     desc.textureDesc.textureType = TEXTURE_CUBE_MAP;
+    desc.textureDesc.format = DEPTH_STENCIL;
+    desc.textureCount = pointLightNodes.size();
 
-    phongPointMap = builder.createTextureArrayBuffer(desc);
+    pointLightShadowMapRes = builder.createTextureArrayBuffer(desc);
 
-    desc.textureCount = pbrPointLights.size();
+    builder.write(pointLightShadowMapRes);
 
-    pbrPointMap = builder.createTextureArrayBuffer(desc);
-
-    builder.write(phongDirectionalMap);
-    builder.write(phongSpotMap);
-    builder.write(phongPointMap);
-    builder.write(pbrPointMap);
-
-    builder.assignSlot(SLOT_SHADOW_MAP_PHONG_DIRECTIONAL, phongDirectionalMap);
-    builder.assignSlot(SLOT_SHADOW_MAP_PHONG_SPOT, phongSpotMap);
-    builder.assignSlot(SLOT_SHADOW_MAP_PHONG_POINT, phongPointMap);
-    builder.assignSlot(SLOT_SHADOW_MAP_PBR_POINT, pbrPointMap);
+    builder.assignSlot(SLOT_SHADOW_MAP_POINT, pointLightShadowMapRes);
 
     targetRes = builder.createRenderTarget(RenderTargetDesc{
             .size = resolution,
@@ -160,34 +119,17 @@ void xng::ShadowMappingPass::setup(xng::FrameGraphBuilder &builder) {
     builder.read(renderPassRes);
 
     size_t totalShaderBufferSize = 0;
-
     size_t boneCount = 0;
-
-    auto tmp = builder.getScene().rootNode.findAll({typeid(Scene::SkinnedMeshProperty)});
-    for (auto id = 0; id < tmp.size(); id++) {
-        auto &node = tmp.at(id);
+    for (auto &node: builder.getScene().rootNode.findAll({typeid(Scene::SkinnedMeshProperty)})) {
         auto &meshProp = node.getProperty<Scene::SkinnedMeshProperty>();
         if (meshProp.mesh.assigned()) {
-            auto it = node.properties.find(typeid(Scene::MaterialProperty));
-            Scene::MaterialProperty matProp;
-            if (it != node.properties.end()) {
-                matProp = it->second->get<Scene::MaterialProperty>();
-            }
-
             meshAllocator.prepareMeshAllocation(meshProp.mesh);
             usedMeshes.insert(meshProp.mesh.getUri());
 
             for (auto i = 0; i < meshProp.mesh.get().subMeshes.size() + 1; i++) {
                 auto &mesh = i == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
 
-                Material mat = mesh.material.get();
-
-                auto mi = matProp.materials.find(i);
-                if (mi != matProp.materials.end()) {
-                    mat = mi->second.get();
-                }
-
-                if (node.hasProperty<Scene::ShadowProperty>()){
+                if (node.hasProperty<Scene::ShadowProperty>()) {
                     if (!node.getProperty<Scene::ShadowProperty>().castShadows)
                         continue;
                 }
@@ -196,7 +138,7 @@ void xng::ShadowMappingPass::setup(xng::FrameGraphBuilder &builder) {
 
                 totalShaderBufferSize += sizeof(ShaderDrawData);
             }
-            objects.emplace_back(node);
+            meshNodes.emplace_back(node);
         }
     }
 
@@ -282,7 +224,7 @@ void xng::ShadowMappingPass::execute(FrameGraphPassResources &resources,
 
     auto &cBuffer = resources.get<CommandBuffer>(commandBufferRes);
 
-    auto &pbrShadowMap = resources.get<TextureArrayBuffer>(pbrPointMap);
+    auto &pointLightShadowMap = resources.get<TextureArrayBuffer>(pointLightShadowMapRes);
 
     auto &tex = resources.get<TextureArrayBuffer>(textureRes);
 
@@ -324,7 +266,7 @@ void xng::ShadowMappingPass::execute(FrameGraphPassResources &resources,
 
     // Draw Point Light Shadow Map
     target.setAttachments({RenderTargetAttachment::textureArrayLayered(tex)},
-                          RenderTargetAttachment::textureArrayLayered(pbrShadowMap));
+                          RenderTargetAttachment::textureArrayLayered(pointLightShadowMap));
 
     commands.emplace_back(pass.begin(target));
     commands.emplace_back(pass.clearDepthAttachment(1));
@@ -338,9 +280,9 @@ void xng::ShadowMappingPass::execute(FrameGraphPassResources &resources,
 
     commands.clear();
 
-    for (auto li = 0; li < pbrPointLights.size(); li++) {
-        auto &lightNode = pbrPointLights.at(li);
-        auto &light = lightNode.getProperty<Scene::PBRPointLightProperty>().light;
+    for (auto li = 0; li < pointLightNodes.size(); li++) {
+        auto &lightNode = pointLightNodes.at(li);
+        auto &light = lightNode.getProperty<Scene::PointLightProperty>().light;
         auto &transform = lightNode.getProperty<Scene::TransformProperty>().transform;
         float aspect = (float) resolution.x / (float) resolution.y;
         float near = nearPlane;
@@ -379,13 +321,13 @@ void xng::ShadowMappingPass::execute(FrameGraphPassResources &resources,
                            reinterpret_cast<const uint8_t *>(&lightData),
                            sizeof(LightData));
 
-        if (!objects.empty()) {
+        if (!meshNodes.empty()) {
             std::vector<DrawCall> drawCalls;
             std::vector<size_t> baseVertices;
             std::vector<ShaderDrawData> shaderData;
             std::vector<Mat4f> boneMatrices;
 
-            for (auto &node: objects) {
+            for (auto &node: meshNodes) {
                 auto &meshProp = node.getProperty<Scene::SkinnedMeshProperty>();
 
                 auto rig = meshProp.mesh.get().rig;
@@ -416,7 +358,7 @@ void xng::ShadowMappingPass::execute(FrameGraphPassResources &resources,
                         material = mIt->second.get();
                     }
 
-                    if (node.hasProperty<Scene::ShadowProperty>()){
+                    if (node.hasProperty<Scene::ShadowProperty>()) {
                         if (!node.getProperty<Scene::ShadowProperty>().castShadows)
                             continue;
                     }

@@ -24,11 +24,7 @@
 
 #include "xng/render/camera.hpp"
 
-#include "xng/render/phong/phongdirectionallight.hpp"
-#include "xng/render/phong/phongpointlight.hpp"
-#include "xng/render/phong/phongspotlight.hpp"
-
-#include "xng/render/pbr/pbrpointlight.hpp"
+#include "xng/render/pointlight.hpp"
 
 #include "xng/render/material.hpp"
 #include "xng/render/skybox.hpp"
@@ -150,36 +146,12 @@ namespace xng {
             std::map<std::string, Mat4f> boneTransforms; // Optional dynamic bone transform values which override the values in SkinnedMesh.rig
         };
 
-        struct PBRPointLightProperty : public Property {
+        struct PointLightProperty : public Property {
             std::type_index getType() override {
-                return typeid(PBRPointLightProperty);
+                return typeid(PointLightProperty);
             }
 
-            PBRPointLight light;
-        };
-
-        struct PhongDirectionalLightProperty : public Property {
-            std::type_index getType() override {
-                return typeid(PhongDirectionalLightProperty);
-            }
-
-            PhongDirectionalLight light;
-        };
-
-        struct PhongPointLightProperty : public Property {
-            std::type_index getType() override {
-                return typeid(PhongPointLightProperty);
-            }
-
-            PhongPointLight light;
-        };
-
-        struct PhongSpotLightProperty : public Property {
-            std::type_index getType() override {
-                return typeid(PhongSpotLightProperty);
-            }
-
-            PhongSpotLight light;
+            PointLight light;
         };
 
         struct SkyboxProperty : public Property {

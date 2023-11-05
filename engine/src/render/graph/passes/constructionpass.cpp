@@ -43,12 +43,10 @@ namespace xng {
         Mat4f model;
         Mat4f mvp;
 
-        int shadeModel_objectID_boneOffset_shadows[4]{0, 0, 0, 0};
-        float metallic_roughness_ambientOcclusion_shininess[4]{0, 0, 0, 0};
+        int objectID_boneOffset_shadows[4]{0, 0, 0, 0};
 
-        float diffuseColor[4]{0, 0, 0, 0};
-        float ambientColor[4]{0, 0, 0, 0};
-        float specularColor[4]{0, 0, 0, 0};
+        float metallic_roughness_ambientOcclusion[4]{0, 0, 0, 0};
+        float albedoColor[4]{0, 0, 0, 0};
 
         float normalIntensity[4]{0, 0, 0, 0};
 
@@ -57,11 +55,7 @@ namespace xng {
         ShaderAtlasTexture metallic;
         ShaderAtlasTexture roughness;
         ShaderAtlasTexture ambientOcclusion;
-
-        ShaderAtlasTexture diffuse;
-        ShaderAtlasTexture ambient;
-        ShaderAtlasTexture specular;
-        ShaderAtlasTexture shininess;
+        ShaderAtlasTexture albedo;
     };
 #pragma pack(pop)
 
@@ -73,7 +67,7 @@ namespace xng {
                 .size = renderSize,
                 .multisample = false,
                 .samples = 0,
-                .numberOfColorAttachments = 8,
+                .numberOfColorAttachments = 6,
                 .hasDepthStencilAttachment = true,
         });
         RenderTargetDesc targetDesc;
@@ -167,7 +161,7 @@ namespace xng {
         builder.persist(vertexArrayObjectRes);
 
         renderPassRes = builder.createRenderPass(RenderPassDesc{
-                .numberOfColorAttachments = 8,
+                .numberOfColorAttachments = 6,
                 .hasDepthStencilAttachment = true
         });
         builder.read(renderPassRes);
@@ -194,14 +188,10 @@ namespace xng {
         desc.format = RGBA;
         gBufferAlbedo = builder.createTextureBuffer(desc);
         builder.write(gBufferAlbedo);
-        gBufferAmbient = builder.createTextureBuffer(desc);
-        builder.write(gBufferAmbient);
-        gBufferSpecular = builder.createTextureBuffer(desc);
-        builder.write(gBufferSpecular);
 
         desc.format = RGBA32I;
-        gBufferModelObject = builder.createTextureBuffer(desc);
-        builder.write(gBufferModelObject);
+        gBufferObjectShadows = builder.createTextureBuffer(desc);
+        builder.write(gBufferObjectShadows);
 
         desc.format = DEPTH_STENCIL;
         gBufferDepth = builder.createTextureBuffer(desc);
@@ -271,29 +261,11 @@ namespace xng {
                         }
                         usedTextures.insert(mat.ambientOcclusionTexture.getUri());
                     }
-                    if (mat.diffuseTexture.assigned()) {
-                        if (textures.find(mat.diffuseTexture.getUri()) == textures.end()) {
-                            textures[mat.diffuseTexture.getUri()] = atlas.add(mat.diffuseTexture.get().image.get());
+                    if (mat.albedoTexture.assigned()) {
+                        if (textures.find(mat.albedoTexture.getUri()) == textures.end()) {
+                            textures[mat.albedoTexture.getUri()] = atlas.add(mat.albedoTexture.get().image.get());
                         }
-                        usedTextures.insert(mat.diffuseTexture.getUri());
-                    }
-                    if (mat.ambientTexture.assigned()) {
-                        if (textures.find(mat.ambientTexture.getUri()) == textures.end()) {
-                            textures[mat.ambientTexture.getUri()] = atlas.add(mat.ambientTexture.get().image.get());
-                        }
-                        usedTextures.insert(mat.ambientTexture.getUri());
-                    }
-                    if (mat.specularTexture.assigned()) {
-                        if (textures.find(mat.specularTexture.getUri()) == textures.end()) {
-                            textures[mat.specularTexture.getUri()] = atlas.add(mat.specularTexture.get().image.get());
-                        }
-                        usedTextures.insert(mat.specularTexture.getUri());
-                    }
-                    if (mat.shininessTexture.assigned()) {
-                        if (textures.find(mat.shininessTexture.getUri()) == textures.end()) {
-                            textures[mat.shininessTexture.getUri()] = atlas.add(mat.shininessTexture.get().image.get());
-                        }
-                        usedTextures.insert(mat.shininessTexture.getUri());
+                        usedTextures.insert(mat.albedoTexture.getUri());
                     }
 
                     totalShaderBufferSize += sizeof(ShaderDrawData);
@@ -389,9 +361,7 @@ namespace xng {
         builder.assignSlot(SLOT_GBUFFER_TANGENT, gBufferTangent);
         builder.assignSlot(SLOT_GBUFFER_ROUGHNESS_METALLIC_AO, gBufferRoughnessMetallicAmbientOcclusion);
         builder.assignSlot(SLOT_GBUFFER_ALBEDO, gBufferAlbedo);
-        builder.assignSlot(SLOT_GBUFFER_AMBIENT, gBufferAmbient);
-        builder.assignSlot(SLOT_GBUFFER_SPECULAR, gBufferSpecular);
-        builder.assignSlot(SLOT_GBUFFER_MODEL_OBJECT_SHADOWS, gBufferModelObject);
+        builder.assignSlot(SLOT_GBUFFER_OBJECT_SHADOWS, gBufferObjectShadows);
         builder.assignSlot(SLOT_GBUFFER_DEPTH, gBufferDepth);
 
         commandBuffer = builder.createCommandBuffer();
@@ -418,9 +388,7 @@ namespace xng {
         auto &tanTex = resources.get<TextureBuffer>(gBufferTangent);
         auto &roughMetallicAOTex = resources.get<TextureBuffer>(gBufferRoughnessMetallicAmbientOcclusion);
         auto &albedoTex = resources.get<TextureBuffer>(gBufferAlbedo);
-        auto &ambientTex = resources.get<TextureBuffer>(gBufferAmbient);
-        auto &specularTex = resources.get<TextureBuffer>(gBufferSpecular);
-        auto &modelObjectTex = resources.get<TextureBuffer>(gBufferModelObject);
+        auto &objectShadowsTex = resources.get<TextureBuffer>(gBufferObjectShadows);
         auto &depthTex = resources.get<TextureBuffer>(gBufferDepth);
 
         auto &screenColorTex = resources.get<TextureBuffer>(screenColor);
@@ -562,9 +530,7 @@ namespace xng {
                                       RenderTargetAttachment::texture(tanTex),
                                       RenderTargetAttachment::texture(roughMetallicAOTex),
                                       RenderTargetAttachment::texture(albedoTex),
-                                      RenderTargetAttachment::texture(ambientTex),
-                                      RenderTargetAttachment::texture(specularTex),
-                                      RenderTargetAttachment::texture(modelObjectTex)
+                                      RenderTargetAttachment::texture(objectShadowsTex)
                               },
                               RenderTargetAttachment::texture(depthTex));
 
@@ -637,33 +603,19 @@ namespace xng {
 
                     data.model = model;
                     data.mvp = projection * view * model;
-                    data.shadeModel_objectID_boneOffset_shadows[0] = material.shadingModel;
-                    data.shadeModel_objectID_boneOffset_shadows[1] = static_cast<int>(oi);
-                    data.shadeModel_objectID_boneOffset_shadows[2] = static_cast<int>(boneOffset);
-                    data.shadeModel_objectID_boneOffset_shadows[3] = receiveShadows;
+                    data.objectID_boneOffset_shadows[0] = static_cast<int>(oi);
+                    data.objectID_boneOffset_shadows[1] = static_cast<int>(boneOffset);
+                    data.objectID_boneOffset_shadows[2] = receiveShadows;
 
-                    data.metallic_roughness_ambientOcclusion_shininess[0] = material.metallic;
-                    data.metallic_roughness_ambientOcclusion_shininess[1] = material.roughness;
-                    data.metallic_roughness_ambientOcclusion_shininess[2] = material.ambientOcclusion;
-                    data.metallic_roughness_ambientOcclusion_shininess[3] = material.shininess;
+                    data.metallic_roughness_ambientOcclusion[0] = material.metallic;
+                    data.metallic_roughness_ambientOcclusion[1] = material.roughness;
+                    data.metallic_roughness_ambientOcclusion[2] = material.ambientOcclusion;
 
-                    auto col = material.diffuse.divide().getMemory();
-                    data.diffuseColor[0] = col[0];
-                    data.diffuseColor[1] = col[1];
-                    data.diffuseColor[2] = col[2];
-                    data.diffuseColor[3] = col[3];
-
-                    col = material.ambient.divide().getMemory();
-                    data.ambientColor[0] = col[0];
-                    data.ambientColor[1] = col[1];
-                    data.ambientColor[2] = col[2];
-                    data.ambientColor[3] = col[3];
-
-                    col = material.specular.divide().getMemory();
-                    data.specularColor[0] = col[0];
-                    data.specularColor[1] = col[1];
-                    data.specularColor[2] = col[2];
-                    data.specularColor[3] = col[3];
+                    auto col = material.albedo.divide().getMemory();
+                    data.albedoColor[0] = col[0];
+                    data.albedoColor[1] = col[1];
+                    data.albedoColor[2] = col[2];
+                    data.albedoColor[3] = col[3];
 
                     data.normalIntensity[0] = material.normalIntensity;
 
@@ -718,72 +670,21 @@ namespace xng {
                         data.ambientOcclusion.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
                     }
 
-                    if (material.diffuseTexture.assigned()) {
-                        auto tex = getTexture(material.diffuseTexture, atlasBuffers);
+                    if (material.albedoTexture.assigned()) {
+                        auto tex = getTexture(material.albedoTexture, atlasBuffers);
 
-                        data.diffuse.level_index_filtering_assigned[0] = tex.level;
-                        data.diffuse.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                        data.diffuse.level_index_filtering_assigned[2] = material.diffuseTexture.get().description.filterMag;
-                        data.diffuse.level_index_filtering_assigned[3] = 1;
-
-                        auto atlasScale = tex.size.convert<float>()
-                                          / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
-
-                        data.diffuse.atlasScale_texSize[0] = atlasScale.x;
-                        data.diffuse.atlasScale_texSize[1] = atlasScale.y;
-                        data.diffuse.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                        data.diffuse.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                    }
-
-                    if (material.ambientTexture.assigned()) {
-                        auto tex = getTexture(material.ambientTexture, atlasBuffers);
-
-                        data.ambient.level_index_filtering_assigned[0] = tex.level;
-                        data.ambient.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                        data.ambient.level_index_filtering_assigned[2] = material.ambientTexture.get().description.filterMag;
-                        data.ambient.level_index_filtering_assigned[3] = 1;
+                        data.albedo.level_index_filtering_assigned[0] = tex.level;
+                        data.albedo.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
+                        data.albedo.level_index_filtering_assigned[2] = material.albedoTexture.get().description.filterMag;
+                        data.albedo.level_index_filtering_assigned[3] = 1;
 
                         auto atlasScale = tex.size.convert<float>()
                                           / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
 
-                        data.ambient.atlasScale_texSize[0] = atlasScale.x;
-                        data.ambient.atlasScale_texSize[1] = atlasScale.y;
-                        data.ambient.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                        data.ambient.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                    }
-
-                    if (material.specularTexture.assigned()) {
-                        auto tex = getTexture(material.specularTexture, atlasBuffers);
-
-                        data.specular.level_index_filtering_assigned[0] = tex.level;
-                        data.specular.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                        data.specular.level_index_filtering_assigned[2] = material.specularTexture.get().description.filterMag;
-                        data.specular.level_index_filtering_assigned[3] = 1;
-
-                        auto atlasScale = tex.size.convert<float>()
-                                          / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
-
-                        data.specular.atlasScale_texSize[0] = atlasScale.x;
-                        data.specular.atlasScale_texSize[1] = atlasScale.y;
-                        data.specular.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                        data.specular.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
-                    }
-
-                    if (material.shininessTexture.assigned()) {
-                        auto tex = getTexture(material.shininessTexture, atlasBuffers);
-
-                        data.shininess.level_index_filtering_assigned[0] = tex.level;
-                        data.shininess.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                        data.shininess.level_index_filtering_assigned[2] = material.shininessTexture.get().description.filterMag;
-                        data.shininess.level_index_filtering_assigned[3] = 1;
-
-                        auto atlasScale = tex.size.convert<float>()
-                                          / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
-
-                        data.shininess.atlasScale_texSize[0] = atlasScale.x;
-                        data.shininess.atlasScale_texSize[1] = atlasScale.y;
-                        data.shininess.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                        data.shininess.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
+                        data.albedo.atlasScale_texSize[0] = atlasScale.x;
+                        data.albedo.atlasScale_texSize[1] = atlasScale.y;
+                        data.albedo.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
+                        data.albedo.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
                     }
 
                     if (material.normal.assigned()) {

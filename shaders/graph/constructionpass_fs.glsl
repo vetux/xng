@@ -17,9 +17,7 @@ layout(location = 1) out vec4 oNormal;
 layout(location = 2) out vec4 oTangent;
 layout(location = 3) out vec4 oRoughnessMetallicAO;
 layout(location = 4) out vec4 oAlbedo;
-layout(location = 5) out vec4 oAmbient;
-layout(location = 6) out vec4 oSpecular;
-layout(location = 7) out ivec4 oModelObjectShadows;
+layout(location = 5) out ivec4 oObjectShadows;
 
 struct ShaderAtlasTexture {
     ivec4 level_index_filtering_assigned;
@@ -30,12 +28,10 @@ struct ShaderDrawData {
     mat4 model;
     mat4 mvp;
 
-    ivec4 shadeModel_objectID_boneOffset_shadows;
-    vec4 metallic_roughness_ambientOcclusion_shininess;
+    ivec4 objectID_boneOffset_shadows;
 
-    vec4 diffuseColor;
-    vec4 ambientColor;
-    vec4 specularColor;
+    vec4 metallic_roughness_ambientOcclusion;
+    vec4 albedoColor;
 
     vec4 normalIntensity;
 
@@ -44,11 +40,7 @@ struct ShaderDrawData {
     ShaderAtlasTexture metallic;
     ShaderAtlasTexture roughness;
     ShaderAtlasTexture ambientOcclusion;
-
-    ShaderAtlasTexture diffuse;
-    ShaderAtlasTexture ambient;
-    ShaderAtlasTexture specular;
-    ShaderAtlasTexture shininess;
+    ShaderAtlasTexture albedo;
 };
 
 layout(binding = 0, std140) buffer ShaderUniformBuffer
@@ -83,40 +75,16 @@ void main() {
 
     oPosition = vec4(fPos, 1);
 
-    if (data.diffuse.level_index_filtering_assigned.w == 0) {
-        oAlbedo = data.diffuseColor;
+    if (data.albedo.level_index_filtering_assigned.w == 0) {
+        oAlbedo = data.albedoColor;
     } else {
-        oAlbedo = textureAtlas(data.diffuse, fUv);
+        oAlbedo = textureAtlas(data.albedo, fUv);
     }
 
-    if (data.shadeModel_objectID_boneOffset_shadows.x == 0)
-    {
-        oRoughnessMetallicAO.r = textureAtlas(data.roughness, fUv).r + data.metallic_roughness_ambientOcclusion_shininess.y;
-        oRoughnessMetallicAO.g = textureAtlas(data.metallic, fUv).r + data.metallic_roughness_ambientOcclusion_shininess.x;
-        oRoughnessMetallicAO.b = textureAtlas(data.ambientOcclusion, fUv).r + data.metallic_roughness_ambientOcclusion_shininess.z;
-        oRoughnessMetallicAO.a = 1;
-    }
-    else
-    {
-        if (data.ambient.level_index_filtering_assigned.w == 0){
-            oAmbient =  data.ambientColor;
-        } else {
-            oAmbient = textureAtlas(data.ambient, fUv) ;
-        }
-        if (data.specular.level_index_filtering_assigned.w == 0){
-            oSpecular = data.specularColor;
-        } else {
-            oSpecular = textureAtlas(data.specular, fUv);
-        }
-        if (data.shininess.level_index_filtering_assigned.w == 0){
-            oRoughnessMetallicAO.r = data.metallic_roughness_ambientOcclusion_shininess.w;
-        } else {
-            oRoughnessMetallicAO.r = textureAtlas(data.shininess, fUv).r;
-        }
-        oRoughnessMetallicAO.g = 0;
-        oRoughnessMetallicAO.b = 0;
-        oRoughnessMetallicAO.a = 1;
-    }
+    oRoughnessMetallicAO.r = textureAtlas(data.roughness, fUv).r + data.metallic_roughness_ambientOcclusion.y;
+    oRoughnessMetallicAO.g = textureAtlas(data.metallic, fUv).r + data.metallic_roughness_ambientOcclusion.x;
+    oRoughnessMetallicAO.b = textureAtlas(data.ambientOcclusion, fUv).r + data.metallic_roughness_ambientOcclusion.z;
+    oRoughnessMetallicAO.a = 1;
 
     mat3 normalMatrix = mat3(transpose(inverse(data.model)));
     oNormal = vec4(normalize(normalMatrix * fNorm), 1);
@@ -130,8 +98,8 @@ void main() {
         oNormal = vec4(normalize(texNormal), 1);
     }
 
-    oModelObjectShadows.r = data.shadeModel_objectID_boneOffset_shadows.x;
-    oModelObjectShadows.g = data.shadeModel_objectID_boneOffset_shadows.y;
-    oModelObjectShadows.b = data.shadeModel_objectID_boneOffset_shadows.w;
-    oModelObjectShadows.a = 1;
+    oObjectShadows.r = data.objectID_boneOffset_shadows.x;
+    oObjectShadows.g = data.objectID_boneOffset_shadows.z;
+    oObjectShadows.b = 0;
+    oObjectShadows.a = 1;
 }
