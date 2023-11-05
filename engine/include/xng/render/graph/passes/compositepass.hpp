@@ -24,7 +24,7 @@
 
 namespace xng {
     /**
-     * The composite pass blits the SLOT_DEFERRED_COLOR texture and blends the SLOT_FORWARD_COLOR texture ontop and stores the result in the SLOT_SCREEN_COLOR and SLOT_SCREEN_DEPTH slots.
+     * The composite pass blends the SLOT_DEFERRED_COLOR texture ontop of SLOT_BACKGROUND_COLOR and blends the SLOT_FORWARD_COLOR texture ontop and stores the result in the SLOT_SCREEN_COLOR and SLOT_SCREEN_DEPTH slots.
      */
     class XENGINE_EXPORT CompositePass : public FrameGraphPass {
     public:
@@ -50,6 +50,7 @@ namespace xng {
         FrameGraphResource blitTarget;
 
         FrameGraphResource pipeline;
+        FrameGraphResource blendPipeline;
         FrameGraphResource pass;
 
         FrameGraphResource vertexBuffer;
@@ -63,6 +64,8 @@ namespace xng {
 
         FrameGraphResource forwardColor;
         FrameGraphResource forwardDepth;
+
+        FrameGraphResource backgroundColor;
 
         FrameGraphResource commandBuffer;
     };

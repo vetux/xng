@@ -72,7 +72,7 @@ namespace xng {
         });
         RenderTargetDesc targetDesc;
         targetDesc.size = renderSize;
-        targetDesc.numberOfColorAttachments = 3;
+        targetDesc.numberOfColorAttachments = 1;
         targetDesc.hasDepthStencilAttachment = true;
         clearTargetRes = builder.createRenderTarget(targetDesc);
 
@@ -143,7 +143,7 @@ namespace xng {
                     .depthTestWrite = true,
                     .depthTestMode = DEPTH_TEST_LESS,
                     .enableFaceCulling = true,
-                    .enableBlending = false
+                    .enableBlending = false,
             });
         }
 
@@ -167,7 +167,7 @@ namespace xng {
         builder.read(renderPassRes);
 
         RenderPassDesc passDesc;
-        passDesc.numberOfColorAttachments = 3;
+        passDesc.numberOfColorAttachments = 1;
         passDesc.hasDepthStencilAttachment = true;
         clearPassRes = builder.createRenderPass(passDesc);
         builder.read(clearPassRes);
@@ -326,36 +326,6 @@ namespace xng {
         camera = cam.camera;
         cameraTransform = cam.cameraTransform;
 
-        desc.format = RGBA;
-
-        screenColor = builder.createTextureBuffer(desc);
-        deferredColor = builder.createTextureBuffer(desc);
-        forwardColor = builder.createTextureBuffer(desc);
-
-        desc.format = DEPTH_STENCIL;
-
-        screenDepth = builder.createTextureBuffer(desc);
-        deferredDepth = builder.createTextureBuffer(desc);
-        forwardDepth = builder.createTextureBuffer(desc);
-
-        builder.write(screenColor);
-        builder.write(screenDepth);
-
-        builder.write(deferredColor);
-        builder.write(deferredDepth);
-
-        builder.write(forwardColor);
-        builder.write(forwardDepth);
-
-        builder.assignSlot(SLOT_SCREEN_COLOR, screenColor);
-        builder.assignSlot(SLOT_SCREEN_DEPTH, screenDepth);
-
-        builder.assignSlot(SLOT_DEFERRED_COLOR, deferredColor);
-        builder.assignSlot(SLOT_DEFERRED_DEPTH, deferredDepth);
-
-        builder.assignSlot(SLOT_FORWARD_COLOR, forwardColor);
-        builder.assignSlot(SLOT_FORWARD_DEPTH, forwardDepth);
-
         builder.assignSlot(SLOT_GBUFFER_POSITION, gBufferPosition);
         builder.assignSlot(SLOT_GBUFFER_NORMAL, gBufferNormal);
         builder.assignSlot(SLOT_GBUFFER_TANGENT, gBufferTangent);
@@ -391,15 +361,6 @@ namespace xng {
         auto &objectShadowsTex = resources.get<TextureBuffer>(gBufferObjectShadows);
         auto &depthTex = resources.get<TextureBuffer>(gBufferDepth);
 
-        auto &screenColorTex = resources.get<TextureBuffer>(screenColor);
-        auto &screenDepthTex = resources.get<TextureBuffer>(screenDepth);
-
-        auto &deferredColorTex = resources.get<TextureBuffer>(deferredColor);
-        auto &deferredDepthTex = resources.get<TextureBuffer>(deferredDepth);
-
-        auto &forwardColorTex = resources.get<TextureBuffer>(forwardColor);
-        auto &forwardDepthTex = resources.get<TextureBuffer>(forwardDepth);
-
         auto &clearTarget = resources.get<RenderTarget>(clearTargetRes);
         auto &clearPass = resources.get<RenderPass>(clearPassRes);
 
@@ -407,64 +368,10 @@ namespace xng {
 
         auto atlasBuffers = atlas.getAtlasBuffers(resources, cBuffer, renderQueues.at(0));
 
-        // Clear textures
-        clearTarget.setAttachments({RenderTargetAttachment::texture(screenColorTex),
-                                    RenderTargetAttachment::texture(deferredColorTex),
-                                    RenderTargetAttachment::texture(forwardColorTex)},
-                                   RenderTargetAttachment::texture(screenDepthTex));
-
+        // Clear depth texture
         std::vector<Command> commands;
 
-        commands.emplace_back(clearPass.begin(clearTarget));
-        commands.emplace_back(clearPass.clearColorAttachments(ColorRGBA(0)));
-        commands.emplace_back(clearPass.clearDepthAttachment(1));
-        commands.emplace_back(clearPass.end());
-
-        cBuffer.begin();
-        cBuffer.add(commands);
-        cBuffer.end();
-
-        commands.clear();
-
-        renderQueues.at(0).get().submit({cBuffer}, {}, {});
-
-        clearTarget.setAttachments({RenderTargetAttachment::texture(screenColorTex),
-                                    RenderTargetAttachment::texture(deferredColorTex),
-                                    RenderTargetAttachment::texture(forwardColorTex)},
-                                   RenderTargetAttachment::texture(deferredDepthTex));
-
-        commands.emplace_back(clearPass.begin(clearTarget));
-        commands.emplace_back(clearPass.clearDepthAttachment(1));
-        commands.emplace_back(clearPass.end());
-
-        cBuffer.begin();
-        cBuffer.add(commands);
-        cBuffer.end();
-
-        commands.clear();
-
-        renderQueues.at(0).get().submit({cBuffer}, {}, {});
-
-        clearTarget.setAttachments({RenderTargetAttachment::texture(screenColorTex),
-                                    RenderTargetAttachment::texture(deferredColorTex),
-                                    RenderTargetAttachment::texture(forwardColorTex)},
-                                   RenderTargetAttachment::texture(forwardDepthTex));
-
-        commands.emplace_back(clearPass.begin(clearTarget));
-        commands.emplace_back(clearPass.clearDepthAttachment(1));
-        commands.emplace_back(clearPass.end());
-
-        cBuffer.begin();
-        cBuffer.add(commands);
-        cBuffer.end();
-
-        commands.clear();
-
-        renderQueues.at(0).get().submit({cBuffer}, {}, {});
-
-        clearTarget.setAttachments({RenderTargetAttachment::texture(screenColorTex),
-                                    RenderTargetAttachment::texture(deferredColorTex),
-                                    RenderTargetAttachment::texture(forwardColorTex)},
+        clearTarget.setAttachments({RenderTargetAttachment::texture(albedoTex)},
                                    RenderTargetAttachment::texture(depthTex));
 
         commands.emplace_back(clearPass.begin(clearTarget));

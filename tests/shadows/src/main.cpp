@@ -125,7 +125,9 @@ int main(int argc, char *argv[]) {
 
     auto testPass = std::make_shared<TestPass>();
 
-    FrameGraphPipeline pipeline = FrameGraphPipeline().addPass(std::make_shared<ConstructionPass>())
+    FrameGraphPipeline pipeline = FrameGraphPipeline()
+            .addPass(std::make_shared<ClearPass>())
+            .addPass(std::make_shared<ConstructionPass>())
             .addPass(std::make_shared<ShadowMappingPass>())
             .addPass(std::make_shared<DeferredLightingPass>())
             .addPass(std::make_shared<ForwardLightingPass>())
@@ -148,7 +150,7 @@ int main(int argc, char *argv[]) {
         for (int y = 0; y < 4; y++) {
             xng::Scene::Node pbrSphere;
 
-            if (y == 1){
+            if (y == 1) {
                 pbrSphere.addProperty(shadowProp);
             }
 
@@ -216,7 +218,7 @@ int main(int argc, char *argv[]) {
     lightNode = {};
     lightNode.addProperty(transformProp);
     lightNode.addProperty(lightProp);
-   scene.rootNode.childNodes.emplace_back(lightNode);
+    scene.rootNode.childNodes.emplace_back(lightNode);
 
     transformProp = {};
     transformProp.transform.setPosition({-5.5, -5.5, 0});
@@ -251,14 +253,14 @@ int main(int argc, char *argv[]) {
             testPass->incrementTex();
         }
 
-        if (window->getInput().getKeyboard().getKey(KEY_R)){
-            for (auto &node : lights){
-                auto &transform  = node.getProperty<Scene::TransformProperty>().transform;
+        if (window->getInput().getKeyboard().getKey(KEY_R)) {
+            for (auto &node: lights) {
+                auto &transform = node.getProperty<Scene::TransformProperty>().transform;
                 transform.setPosition(transform.getPosition() + Vec3f(0, 0, 1.0f * deltaTime));
             }
-        } else if (window->getInput().getKeyboard().getKey(KEY_F)){
-            for (auto &node : lights){
-                auto &transform  = node.getProperty<Scene::TransformProperty>().transform;
+        } else if (window->getInput().getKeyboard().getKey(KEY_F)) {
+            for (auto &node: lights) {
+                auto &transform = node.getProperty<Scene::TransformProperty>().transform;
                 transform.setPosition(transform.getPosition() - Vec3f(0, 0, 1.0f * deltaTime));
             }
         }

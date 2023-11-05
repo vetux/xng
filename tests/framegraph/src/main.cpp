@@ -159,7 +159,9 @@ int main(int argc, char *argv[]) {
 
     auto testPass = std::make_shared<TestPass>();
 
-    FrameGraphPipeline pipeline = FrameGraphPipeline().addPass(std::make_shared<ConstructionPass>())
+    FrameGraphPipeline pipeline = FrameGraphPipeline()
+            .addPass(std::make_shared<ClearPass>())
+            .addPass(std::make_shared<ConstructionPass>())
             .addPass(std::make_shared<DeferredLightingPass>())
             .addPass(std::make_shared<ForwardLightingPass>())
             .addPass(std::make_shared<CompositePass>())
@@ -360,14 +362,14 @@ int main(int argc, char *argv[]) {
             testPass->incrementTex();
         }
 
-        if (window->getInput().getKeyboard().getKey(KEY_R)){
-            for (auto &node : lights){
-                auto &transform  = node.getProperty<Scene::TransformProperty>().transform;
+        if (window->getInput().getKeyboard().getKey(KEY_R)) {
+            for (auto &node: lights) {
+                auto &transform = node.getProperty<Scene::TransformProperty>().transform;
                 transform.setPosition(transform.getPosition() + Vec3f(0, 0, 1.0f * deltaTime));
             }
-        } else if (window->getInput().getKeyboard().getKey(KEY_F)){
-            for (auto &node : lights){
-                auto &transform  = node.getProperty<Scene::TransformProperty>().transform;
+        } else if (window->getInput().getKeyboard().getKey(KEY_F)) {
+            for (auto &node: lights) {
+                auto &transform = node.getProperty<Scene::TransformProperty>().transform;
                 transform.setPosition(transform.getPosition() - Vec3f(0, 0, 1.0f * deltaTime));
             }
         }

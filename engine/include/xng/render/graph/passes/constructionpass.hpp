@@ -79,15 +79,6 @@ namespace xng {
         FrameGraphResource gBufferObjectShadows;
         FrameGraphResource gBufferDepth;
 
-        FrameGraphResource screenColor;
-        FrameGraphResource screenDepth;
-
-        FrameGraphResource deferredColor;
-        FrameGraphResource deferredDepth;
-
-        FrameGraphResource forwardColor;
-        FrameGraphResource forwardDepth;
-
         FrameGraphResource commandBuffer;
 
         Camera camera;

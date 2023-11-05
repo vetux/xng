@@ -58,7 +58,7 @@ namespace xng {
         builder.read(vertexBuffer);
         builder.read(vertexArrayObject);
 
-        if (!pipeline.assigned) {
+        if (!blendPipeline.assigned) {
             RenderPipelineDesc pdesc{};
             pdesc.shaders = {
                     {VERTEX,   compositepass_vs},
@@ -78,11 +78,11 @@ namespace xng {
             pdesc.colorBlendDestinationMode = ONE_MINUS_SRC_ALPHA;
             pdesc.alphaBlendSourceMode = ONE;
             pdesc.alphaBlendDestinationMode = ONE_MINUS_SRC_ALPHA;
-            pipeline = builder.createPipeline(pdesc);
+            blendPipeline = builder.createPipeline(pdesc);
         }
 
-        builder.persist(pipeline);
-        builder.read(pipeline);
+        builder.persist(blendPipeline);
+        builder.read(blendPipeline);
 
         RenderPassDesc passDesc;
         passDesc.numberOfColorAttachments = 1;
@@ -100,12 +100,15 @@ namespace xng {
         forwardColor = builder.getSlot(SLOT_FORWARD_COLOR);
         forwardDepth = builder.getSlot(SLOT_FORWARD_DEPTH);
 
+        backgroundColor = builder.getSlot(SLOT_BACKGROUND_COLOR);
+
         builder.write(screenColor);
         builder.write(screenDepth);
         builder.read(deferredColor);
         builder.read(deferredDepth);
         builder.read(forwardColor);
         builder.read(forwardDepth);
+        builder.read(backgroundColor);
 
         commandBuffer = builder.createCommandBuffer();
         builder.write(commandBuffer);
@@ -118,7 +121,7 @@ namespace xng {
         auto &t = resources.get<RenderTarget>(target);
         auto &bt = resources.get<RenderTarget>(blitTarget);
 
-        auto &pip = resources.get<RenderPipeline>(pipeline);
+        auto &pip = resources.get<RenderPipeline>(blendPipeline);
         auto &p = resources.get<RenderPass>(pass);
 
         auto &vb = resources.get<VertexBuffer>(vertexBuffer);
@@ -133,6 +136,8 @@ namespace xng {
         auto &fColor = resources.get<TextureBuffer>(forwardColor);
         auto &fDepth = resources.get<TextureBuffer>(forwardDepth);
 
+        auto &bColor = resources.get<TextureBuffer>(backgroundColor);
+
         auto &cBuffer = resources.get<CommandBuffer>(commandBuffer);
 
         if (!quadAllocated) {
@@ -145,20 +150,37 @@ namespace xng {
         }
 
         t.setAttachments({RenderTargetAttachment::texture(sColor)}, RenderTargetAttachment::texture(sDepth));
-        bt.setAttachments({RenderTargetAttachment::texture(dColor)}, RenderTargetAttachment::texture(dDepth));
+        bt.setAttachments({RenderTargetAttachment::texture(bColor)}, RenderTargetAttachment::texture(dDepth));
 
         assert(t.isComplete());
         assert(bt.isComplete());
 
         std::vector<Command> commands;
 
-        commands.emplace_back(t.blitColor(bt, {}, {}, bt.getDescription().size, t.getDescription().size,
-                                          NEAREST, 0, 0));
-        commands.emplace_back(t.blitDepth(bt, {}, {}, bt.getDescription().size, t.getDescription().size));
+        commands.emplace_back(t.blitColor(bt,
+                                          {},
+                                          {},
+                                          bt.getDescription().size,
+                                          t.getDescription().size,
+                                          NEAREST,
+                                          0,
+                                          0));
 
         commands.emplace_back(p.begin(t));
+
         commands.emplace_back(pip.bind());
         commands.emplace_back(vao.bind());
+
+        commands.emplace_back(RenderPipeline::bindShaderResources({
+                                                                          {dColor, {
+                                                                                           {FRAGMENT, ShaderResource::READ}
+                                                                                   }},
+                                                                          {dDepth, {
+                                                                                           {FRAGMENT, ShaderResource::READ}
+                                                                                   }},
+                                                                  }));
+        commands.emplace_back(p.drawArray(DrawCall(0, mesh.vertices.size())));
+
         commands.emplace_back(RenderPipeline::bindShaderResources({
                                                                           {fColor, {
                                                                                            {FRAGMENT, ShaderResource::READ}

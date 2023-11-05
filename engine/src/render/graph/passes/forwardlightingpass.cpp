@@ -610,9 +610,6 @@ namespace xng {
                 commands.emplace_back(pipeline.bind());
                 commands.emplace_back(vertexArrayObject.bind());
 
-                commands.emplace_back(pass.clearColorAttachments(ColorRGBA(0)));
-                commands.emplace_back(pass.clearDepthAttachment(1));
-
                 auto shaderRes = std::vector<ShaderResource>{
                         {shaderBuffer,                               {{VERTEX, ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
                         {atlasBuffers.at(TEXTURE_ATLAS_8x8),         {{{FRAGMENT, ShaderResource::READ}}}},

@@ -268,6 +268,7 @@
 #include "xng/render/graph/passes/forwardlightingpass.hpp"
 #include "xng/render/graph/passes/constructionpass.hpp"
 #include "xng/render/graph/passes/presentationpass.hpp"
+#include "xng/render/graph/passes/clearpass.hpp"
 #include "xng/render/graph/allocators/framegraphpoolallocator.hpp"
 #include "xng/event/eventbus.hpp"
 #include "xng/event/event.hpp"

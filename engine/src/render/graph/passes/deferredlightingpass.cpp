@@ -231,16 +231,6 @@ namespace xng {
 
         auto pointLights = getPointLights(scene);
 
-        std::vector<Command> commands;
-
-        // Clear textures
-        target.setAttachments({RenderTargetAttachment::texture(colorTex)}, RenderTargetAttachment::texture(depthTex));
-
-        commands.emplace_back(pass.begin(target));
-        commands.emplace_back(pass.clearColorAttachments(ColorRGBA(0)));
-        commands.emplace_back(pass.clearDepthAttachment(1));
-        commands.emplace_back(pass.end());
-
         pointLightBuffer.upload(reinterpret_cast<const uint8_t *>(pointLights.first.data()),
                                 pointLights.first.size() * sizeof(PointLightData));
         shadowPointLightBuffer.upload(reinterpret_cast<const uint8_t *>(pointLights.second.data()),
@@ -274,6 +264,8 @@ namespace xng {
         auto &gBufDepth = resources.get<TextureBuffer>(gBufferDepth);
 
         target.setAttachments({RenderTargetAttachment::texture(colorTex)}, RenderTargetAttachment::texture(depthTex));
+
+        std::vector<Command> commands;
 
         commands.emplace_back(pass.begin(target));
         commands.emplace_back(pass.setViewport({}, target.getDescription().size));
