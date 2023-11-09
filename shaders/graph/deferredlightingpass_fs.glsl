@@ -34,6 +34,26 @@ layout(binding = 9, std140) buffer ShadowPointLightsData
     PBRPointLight lights[];
 } pointLightsShadow;
 
+layout(binding = 10, std140) buffer DirectionalLightsData
+{
+    PBRDirectionalLight lights[];
+} directionalLights;
+
+layout(binding = 11, std140) buffer ShadowDirectionalLightsData
+{
+    PBRDirectionalLight lights[];
+} directionalLightsShadow;
+
+layout(binding = 12, std140) buffer SpotLightsData
+{
+    PBRSpotLight lights[];
+} spotLights;
+
+layout(binding = 13, std140) buffer ShadowSpotLightsData
+{
+    PBRSpotLight lights[];
+} spotLightsShadow;
+
 void main() {
     float gDepth = texture(gBufferDepth, fUv).r;
     if (gDepth == 1) {
@@ -64,16 +84,42 @@ void main() {
         reflectance = pbr_point(pass, reflectance, light);
     }
 
+    for (int i = 0; i < directionalLights.lights.length(); i++) {
+        PBRDirectionalLight light = directionalLights.lights[i];
+        reflectance = pbr_directional(pass, reflectance, light);
+    }
+
+    for (int i = 0; i < spotLights.lights.length(); i++) {
+        PBRSpotLight light = spotLights.lights[i];
+        reflectance = pbr_spot(pass, reflectance, light);
+    }
+
     if (receiveShadows == 0 || globs.enableShadows.x == 0){
         for (int i = 0; i < pointLightsShadow.lights.length(); i++) {
             PBRPointLight light = pointLightsShadow.lights[i];
             reflectance = pbr_point(pass, reflectance, light);
+        }
+        for (int i = 0; i < directionalLightsShadow.lights.length(); i++) {
+            PBRDirectionalLight light = directionalLightsShadow.lights[i];
+            reflectance = pbr_directional(pass, reflectance, light);
+        }
+        for (int i = 0; i < spotLightsShadow.lights.length(); i++) {
+            PBRSpotLight light = spotLightsShadow.lights[i];
+            reflectance = pbr_spot(pass, reflectance, light);
         }
     } else {
         for (int i = 0; i < pointLightsShadow.lights.length(); i++) {
             PBRPointLight light = pointLightsShadow.lights[i];
             float shadow = sampleShadow(fPos, light.position.xyz, globs.viewPosition.xyz, pointLightShadowMaps, i, light.farPlane.x);
             reflectance = pbr_point(pass, reflectance, light) * shadow;
+        }
+        for (int i = 0; i < directionalLightsShadow.lights.length(); i++) {
+            PBRDirectionalLight light = directionalLightsShadow.lights[i];
+            reflectance = pbr_directional(pass, reflectance, light);
+        }
+        for (int i = 0; i < spotLightsShadow.lights.length(); i++) {
+            PBRSpotLight light = spotLightsShadow.lights[i];
+            reflectance = pbr_spot(pass, reflectance, light);
         }
     }
 

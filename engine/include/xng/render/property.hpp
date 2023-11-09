@@ -22,6 +22,10 @@
 
 #include <typeindex>
 
+#include "xng/render/pointlight.hpp"
+#include "xng/render/directionallight.hpp"
+#include "xng/render/spotlight.hpp"
+
 namespace xng {
     struct XENGINE_EXPORT Property {
         virtual std::type_index getType() = 0;
@@ -92,6 +96,22 @@ namespace xng {
         }
 
         PointLight light;
+    };
+
+    struct DirectionalLightProperty : public Property {
+        std::type_index getType() override {
+            return typeid(DirectionalLightProperty);
+        }
+
+        DirectionalLight light;
+    };
+
+    struct SpotLightProperty : public Property {
+        std::type_index getType() override {
+            return typeid(SpotLightProperty);
+        }
+
+        SpotLight light;
     };
 
     struct SkyboxProperty : public Property {

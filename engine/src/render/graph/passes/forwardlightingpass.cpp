@@ -35,6 +35,20 @@ namespace xng {
         std::array<float, 4> farPlane;
     };
 
+    struct DirectionalLightData {
+        std::array<float, 4> direction;
+        std::array<float, 4> color;
+        std::array<float, 4> farPlane;
+    };
+
+    struct SpotLightData {
+        std::array<float, 4> position;
+        std::array<float, 4> direction_quadratic;
+        std::array<float, 4> color;
+        std::array<float, 4> farPlane;
+        std::array<float, 4> cutOff_outerCutOff_constant_linear;
+    };
+
     struct ShaderAtlasTexture {
         int level_index_filtering_assigned[4]{0, 0, 0, 0};
         float atlasScale_texSize[4]{0, 0, 0, 0};
@@ -84,6 +98,60 @@ namespace xng {
         return {pointLights, shadowLights};
     }
 
+    static std::pair<std::vector<DirectionalLightData>, std::vector<DirectionalLightData>>
+    getDirLights(const Scene &scene) {
+        std::vector<DirectionalLightData> lights;
+        std::vector<DirectionalLightData> shadowLights;
+        for (auto &node: scene.rootNode.findAll({typeid(DirectionalLightProperty)})) {
+            auto l = node.getProperty<DirectionalLightProperty>().light;
+            auto v = l.color.divide();
+            auto tmp = DirectionalLightData{
+                    .direction =  Vec4f(l.direction.x,
+                                        l.direction.y,
+                                        l.direction.z,
+                                        0).getMemory(),
+                    .color = Vec4f(v.x * l.power, v.y * l.power, v.z * l.power, 1).getMemory(),
+                    .farPlane = Vec4f(l.shadowFarPlane, 0, 0, 0).getMemory()
+            };
+            if (l.castShadows)
+                shadowLights.emplace_back(tmp);
+            else
+                lights.emplace_back(tmp);
+        }
+        return {lights, shadowLights};
+    }
+
+    static std::pair<std::vector<SpotLightData>, std::vector<SpotLightData>> getSpotLights(const Scene &scene) {
+        std::vector<SpotLightData> lights;
+        std::vector<SpotLightData> shadowLights;
+        for (auto &node: scene.rootNode.findAll({typeid(SpotLightProperty)})) {
+            auto l = node.getProperty<SpotLightProperty>().light;
+            auto t = node.getProperty<TransformProperty>().transform;
+            auto v = l.color.divide();
+            auto tmp = SpotLightData{
+                    .position =  Vec4f(t.getPosition().x,
+                                       t.getPosition().y,
+                                       t.getPosition().z,
+                                       0).getMemory(),
+                    .direction_quadratic =  Vec4f(l.direction.x,
+                                                  l.direction.y,
+                                                  l.direction.z,
+                                                  l.quadratic).getMemory(),
+                    .color = Vec4f(v.x * l.power, v.y * l.power, v.z * l.power, 1).getMemory(),
+                    .farPlane = Vec4f(l.shadowFarPlane, 0, 0, 0).getMemory(),
+                    .cutOff_outerCutOff_constant_linear = Vec4f(l.cutOff,
+                                                                l.outerCutOff,
+                                                                l.constant,
+                                                                l.linear).getMemory()
+            };
+            if (l.castShadows)
+                shadowLights.emplace_back(tmp);
+            else
+                lights.emplace_back(tmp);
+        }
+        return {lights, shadowLights};
+    }
+
     void ForwardLightingPass::setup(FrameGraphBuilder &builder) {
         renderSize = builder.getBackBufferDescription().size
                      * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
@@ -101,6 +169,30 @@ namespace xng {
                 pointLights++;
         }
 
+        auto dirLightNodes = scene.rootNode.findAll({typeid(DirectionalLightProperty)});
+
+        size_t dirLights = 0;
+        size_t shadowDirLights = 0;
+
+        for (auto l: dirLightNodes) {
+            if (l.getProperty<DirectionalLightProperty>().light.castShadows)
+                shadowDirLights++;
+            else
+                dirLights++;
+        }
+
+        auto spotLightNodes = scene.rootNode.findAll({typeid(SpotLightProperty)});
+
+        size_t spotLights = 0;
+        size_t shadowSpotLights = 0;
+
+        for (auto l: spotLightNodes) {
+            if (l.getProperty<SpotLightProperty>().light.castShadows)
+                shadowSpotLights++;
+            else
+                spotLights++;
+        }
+
         pointLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(PointLightData) * pointLights
         });
@@ -112,6 +204,30 @@ namespace xng {
         });
         builder.read(shadowPointLightBufferRes);
         builder.write(shadowPointLightBufferRes);
+
+        dirLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+                .size = sizeof(DirectionalLightData) * dirLights
+        });
+        builder.read(dirLightBufferRes);
+        builder.write(dirLightBufferRes);
+
+        shadowDirLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+                .size = sizeof(DirectionalLightData) * shadowDirLights
+        });
+        builder.read(shadowDirLightBufferRes);
+        builder.write(shadowDirLightBufferRes);
+
+        spotLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+                .size = sizeof(SpotLightData) * spotLights
+        });
+        builder.read(spotLightBufferRes);
+        builder.write(spotLightBufferRes);
+
+        shadowSpotLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+                .size = sizeof(SpotLightData) * shadowSpotLights
+        });
+        builder.read(shadowSpotLightBufferRes);
+        builder.write(shadowSpotLightBufferRes);
 
         RenderTargetDesc targetDesc;
         targetDesc.size = renderSize;
@@ -142,7 +258,11 @@ namespace xng {
                             BIND_TEXTURE_BUFFER,
                             BIND_SHADER_STORAGE_BUFFER,
                             BIND_SHADER_STORAGE_BUFFER,
-                            BIND_TEXTURE_ARRAY_BUFFER
+                            BIND_TEXTURE_ARRAY_BUFFER,
+                            BIND_SHADER_STORAGE_BUFFER,
+                            BIND_SHADER_STORAGE_BUFFER,
+                            BIND_SHADER_STORAGE_BUFFER,
+                            BIND_SHADER_STORAGE_BUFFER,
                     },
                     .vertexLayout = SkinnedMesh::getDefaultVertexLayout(),
                     /*      .clearColorValue = ColorRGBA(0, 0, 0, 0),
@@ -363,6 +483,12 @@ namespace xng {
         auto &pointLightBuffer = resources.get<ShaderStorageBuffer>(pointLightBufferRes);
         auto &shadowPointLightBuffer = resources.get<ShaderStorageBuffer>(shadowPointLightBufferRes);
 
+        auto &dirLightBuffer = resources.get<ShaderStorageBuffer>(dirLightBufferRes);
+        auto &shadowDirLightBuffer = resources.get<ShaderStorageBuffer>(shadowDirLightBufferRes);
+
+        auto &spotLightBuffer = resources.get<ShaderStorageBuffer>(spotLightBufferRes);
+        auto &shadowSpotLightBuffer = resources.get<ShaderStorageBuffer>(shadowSpotLightBufferRes);
+
         auto &pointLightShadowMap = pointLightShadowMapRes.assigned ? resources.get<TextureArrayBuffer>(
                 pointLightShadowMapRes) : resources.get<TextureArrayBuffer>(defPointShadowMap);
 
@@ -371,11 +497,23 @@ namespace xng {
         auto atlasBuffers = atlas.getAtlasBuffers(resources, cBuffer, renderQueues.at(0));
 
         auto pointLights = getPointLights(scene);
+        auto dirLights = getDirLights(scene);
+        auto spotLights = getSpotLights(scene);
 
         pointLightBuffer.upload(reinterpret_cast<const uint8_t *>(pointLights.first.data()),
                                 pointLights.first.size() * sizeof(PointLightData));
         shadowPointLightBuffer.upload(reinterpret_cast<const uint8_t *>(pointLights.second.data()),
                                       pointLights.second.size() * sizeof(PointLightData));
+
+        dirLightBuffer.upload(reinterpret_cast<const uint8_t *>(dirLights.first.data()),
+                              dirLights.first.size() * sizeof(DirectionalLightData));
+        shadowDirLightBuffer.upload(reinterpret_cast<const uint8_t *>(dirLights.second.data()),
+                                    dirLights.second.size() * sizeof(DirectionalLightData));
+
+        spotLightBuffer.upload(reinterpret_cast<const uint8_t *>(spotLights.first.data()),
+                               spotLights.first.size() * sizeof(SpotLightData));
+        shadowSpotLightBuffer.upload(reinterpret_cast<const uint8_t *>(spotLights.second.data()),
+                                     spotLights.second.size() * sizeof(SpotLightData));
 
         std::vector<Command> commands;
 
@@ -631,6 +769,10 @@ namespace xng {
                         {pointLightBuffer,                           {{{FRAGMENT, ShaderResource::READ}}}},
                         {shadowPointLightBuffer,                     {{{FRAGMENT, ShaderResource::READ}}}},
                         {pointLightShadowMap,                        {{{FRAGMENT, ShaderResource::READ}}}},
+                        {dirLightBuffer,  {{FRAGMENT, ShaderResource::READ}}},
+                        {shadowDirLightBuffer,  {{FRAGMENT, ShaderResource::READ}}},
+                        {spotLightBuffer,  {{FRAGMENT, ShaderResource::READ}}},
+                        {shadowSpotLightBuffer,  {{FRAGMENT, ShaderResource::READ}}},
                 };
                 commands.emplace_back(RenderPipeline::bindShaderResources(shaderRes));
                 commands.emplace_back(pass.multiDrawIndexed(drawCalls, baseVertices));

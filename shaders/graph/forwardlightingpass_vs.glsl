@@ -69,6 +69,26 @@ layout(binding = 15, std140) buffer PointLightsDataShadow
 
 layout(binding = 16) uniform samplerCubeArray pointLightShadowMaps;
 
+layout(binding = 17, std140) buffer DirectionalLightsData
+{
+    PBRDirectionalLight lights[];
+} directionalLights;
+
+layout(binding = 18, std140) buffer ShadowDirectionalLightsData
+{
+    PBRDirectionalLight lights[];
+} directionalLightsShadow;
+
+layout(binding = 19, std140) buffer SpotLightsData
+{
+    PBRSpotLight lights[];
+} spotLights;
+
+layout(binding = 20, std140) buffer ShadowSpotLightsData
+{
+    PBRSpotLight lights[];
+} spotLightsShadow;
+
 void main()
 {
     ShaderDrawData data = globs.data[gl_DrawID];

@@ -196,15 +196,21 @@ int main(int argc, char *argv[]) {
 
     scene.rootNode.childNodes.emplace_back(cubeWall);
 
-    Node lightNode;
-
     transformProp = {};
     transformProp.transform.setPosition({5.5, 5.5, 0});
 
+    DirectionalLightProperty dirLight;
+    dirLight.light.power = 0.1;
+
+    Node lightNode;
+    lightNode.addProperty(dirLight);
+    scene.rootNode.childNodes.emplace_back(lightNode);
+
     PointLightProperty lightProp;
-    lightProp.light.power = 50;
+    lightProp.light.power = 10;
     lightProp.light.color = ColorRGBA::white();
 
+    lightNode = {};
     lightNode.addProperty(transformProp);
     lightNode.addProperty(lightProp);
     scene.rootNode.childNodes.emplace_back(lightNode);
@@ -222,9 +228,10 @@ int main(int argc, char *argv[]) {
     transformProp = {};
     transformProp.transform.setPosition({5.5, -5.5, 0});
 
+    SpotLightProperty spotProp;
     lightNode = {};
     lightNode.addProperty(transformProp);
-    lightNode.addProperty(lightProp);
+    lightNode.addProperty(spotProp);
     scene.rootNode.childNodes.emplace_back(lightNode);
 
     transformProp = {};
@@ -232,7 +239,7 @@ int main(int argc, char *argv[]) {
 
     lightNode = {};
     lightNode.addProperty(transformProp);
-    lightNode.addProperty(lightProp);
+    lightNode.addProperty(spotProp);
     scene.rootNode.childNodes.emplace_back(lightNode);
 
     auto text = textRenderer.render("GBUFFER POSITION", TextLayout{.lineHeight = 70});
