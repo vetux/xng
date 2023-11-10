@@ -35,7 +35,6 @@ namespace xng::opengl {
         explicit OGLShaderStorageBuffer(std::function<void(RenderObject * )> destructor,
                                         ShaderStorageBufferDesc inputDescription)
                 : destructor(std::move(destructor)), desc(inputDescription) {
-
             glGenBuffers(1, &ssbo);
 
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);

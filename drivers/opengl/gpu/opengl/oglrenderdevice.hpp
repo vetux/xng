@@ -223,10 +223,24 @@ namespace xng::opengl {
         }
 
         std::unique_ptr<ShaderUniformBuffer> createShaderUniformBuffer(const ShaderUniformBufferDesc &desc) override {
+            if (desc.size > info.uniformBufferMaxSize) {
+                throw std::runtime_error(
+                        "ShaderUniformBuffer size too large, size: "
+                        + std::to_string(desc.size)
+                        + " max: "
+                        + std::to_string(info.uniformBufferMaxSize));
+            }
             return std::make_unique<OGLShaderUniformBuffer>(destructor, desc);
         }
 
         std::unique_ptr<ShaderStorageBuffer> createShaderStorageBuffer(const ShaderStorageBufferDesc &desc) override {
+            if (desc.size > info.storageBufferMaxSize) {
+                throw std::runtime_error(
+                        "ShaderStorageBuffer size too large, size: "
+                        + std::to_string(desc.size)
+                        + " max: "
+                        + std::to_string(info.storageBufferMaxSize));
+            }
             return std::make_unique<OGLShaderStorageBuffer>(destructor, desc);
         }
 
