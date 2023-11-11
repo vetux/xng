@@ -207,7 +207,14 @@ void printUsage() {
 xng::SPIRVBlob blob = {1, 2, 3,};
 
 std::string generateHeader(const std::string &filePath, const std::string &filename, const xng::SPIRVShader &shader) {
-    std::string ret = "#ifndef " + filePath + "\n#define " + filePath + R"###(
+    std::filesystem::path path(filePath);
+    auto guard = path.filename().string();
+    guard = std::string(guard.begin(),
+                        guard.begin() + static_cast<std::string::difference_type>(guard.size() -
+                                path.extension().string().size()));
+    transform(guard.begin(), guard.end(), guard.begin(), ::toupper);
+    guard = "SHADER_GUARD_" + guard;
+    std::string ret = "#ifndef " + guard + "\n#define " + guard + R"###(
 #include "xng/shader/spirvshader.hpp"
 using namespace xng;
 const SPIRVShader )###";
@@ -315,15 +322,10 @@ int main(int argc, char *argv[]) {
                                     args.stage,
                                     args.entryPoint,
                                     {bin});
-            auto guard = args.outputPath.relative_path().string();
-            guard = std::string(guard.begin(),
-                                guard.begin() + static_cast<std::string::difference_type>(guard.size() -
-                                                                                          args.outputPath.relative_path().extension().string().size()));
-            std::replace(guard.begin(), guard.end(), '/', '_');
 
             try {
                 xng::writeFile(args.outputPath,
-                               generateHeader(guard, args.outputPath.stem().string(), bundle));
+                               generateHeader(args.outputPath.relative_path().string(), args.outputPath.stem().string(), bundle));
             } catch (const std::exception &e) {
                 std::cout << "Failed to write file at: " + args.outputPath.string() + "\n";
                 std::cout << e.what();

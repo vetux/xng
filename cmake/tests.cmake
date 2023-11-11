@@ -2,7 +2,7 @@ set(TESTS_COMMON_DIR ${BASE_SOURCE_DIR}/tests/common/src/)
 set(TESTS_ASSET_DIR ${BASE_SOURCE_DIR}/tests/common/assets)
 
 add_executable(test-framegraph ${BASE_SOURCE_DIR}/tests/framegraph/src/main.cpp)
-target_include_directories(test-framegraph PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/framegraph/src/ ${BASE_SOURCE_DIR}/shaders/generated/ ${TESTS_COMMON_DIR})
+target_include_directories(test-framegraph PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/framegraph/src/ ${SHADER_COMPILED_DIR} ${TESTS_COMMON_DIR})
 target_link_libraries(test-framegraph Threads::Threads xengine)
 
 add_executable(test-skeletalanimation ${BASE_SOURCE_DIR}/tests/skeletalanimation/src/main.cpp)
@@ -22,11 +22,11 @@ target_include_directories(test-pak PRIVATE ${CMAKE_SOURCE_DIR}/tests/pak/src/ $
 target_link_libraries(test-pak Threads::Threads xengine)
 
 add_executable(test-mandelbrot ${BASE_SOURCE_DIR}/tests/mandelbrot/src/main.cpp)
-target_include_directories(test-mandelbrot PRIVATE ${CMAKE_SOURCE_DIR}/tests/mandelbrot/src/ ${BASE_SOURCE_DIR}/shaders/generated/ ${TESTS_COMMON_DIR})
+target_include_directories(test-mandelbrot PRIVATE ${CMAKE_SOURCE_DIR}/tests/mandelbrot/src/ ${SHADER_COMPILED_DIR} ${TESTS_COMMON_DIR})
 target_link_libraries(test-mandelbrot Threads::Threads xengine)
 
 add_executable(test-shadows ${BASE_SOURCE_DIR}/tests/shadows/src/main.cpp)
-target_include_directories(test-shadows PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/shadows/src/ ${BASE_SOURCE_DIR}/shaders/generated/ ${TESTS_COMMON_DIR})
+target_include_directories(test-shadows PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/shadows/src/ ${SHADER_COMPILED_DIR} ${TESTS_COMMON_DIR})
 target_link_libraries(test-shadows Threads::Threads xengine)
 
 

@@ -1,11 +1,13 @@
 set(SHADER_HEADERS)
 
+set(SHADER_COMPILED_DIR ${CMAKE_CURRENT_BINARY_DIR}/shaders_compiled/)
+
 function(CompileShader PATH STAGE ENTRYPOINT)
     add_custom_command(
-            OUTPUT ${BASE_SOURCE_DIR}/shaders/generated/${PATH}.hpp
+            OUTPUT ${SHADER_COMPILED_DIR}${PATH}.hpp
             DEPENDS shadercompiler ${BASE_SOURCE_DIR}/shaders/${PATH}.glsl
-            COMMAND shadercompiler -m header -f -i ${BASE_SOURCE_DIR}/shaders/lib/ -p -l GLSL_460 -s ${STAGE} -e main ${BASE_SOURCE_DIR}/shaders/${PATH}.glsl ${BASE_SOURCE_DIR}/shaders/generated/${PATH}.hpp)
-    set(SHADER_HEADERS ${SHADER_HEADERS} ${BASE_SOURCE_DIR}/shaders/generated/${PATH}.hpp PARENT_SCOPE)
+            COMMAND shadercompiler -m header -f -i ${BASE_SOURCE_DIR}/shaders/lib/ -p -l GLSL_460 -s ${STAGE} -e main ${BASE_SOURCE_DIR}/shaders/${PATH}.glsl ${SHADER_COMPILED_DIR}${PATH}.hpp)
+    set(SHADER_HEADERS ${SHADER_HEADERS} ${SHADER_COMPILED_DIR}${PATH}.hpp PARENT_SCOPE)
 endfunction()
 
 CompileShader(graph/constructionpass_vs VERTEX main)
