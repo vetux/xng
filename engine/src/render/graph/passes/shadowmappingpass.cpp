@@ -28,6 +28,8 @@
 
 #include "xng/render/graph/framegraphsettings.hpp"
 
+//TODO: Implement Directional and Spot light shadow mapping
+
 struct ShaderDrawData {
     std::array<int, 4> boneOffset{};
     Mat4f model;
