@@ -27,10 +27,6 @@
 
 namespace xng {
     struct XENGINE_EXPORT SpotLight : public Messageable {
-        static float getCutOff(float angleDegrees){
-            return std::cos(degreesToRadians(angleDegrees));
-        }
-
         Messageable &operator<<(const Message &message) override {
             color << message.getMessage("color");
             message.value("power", power);
@@ -74,8 +70,8 @@ namespace xng {
 
         float quadratic = 0.032f;
 
-        float cutOff = getCutOff(12.5);
-        float outerCutOff = getCutOff(17.5);
+        float cutOff = 12.5;
+        float outerCutOff = 17.5;
 
         float constant = 1;
         float linear = 0.09;

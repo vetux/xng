@@ -121,6 +121,10 @@ namespace xng {
         return {lights, shadowLights};
     }
 
+    static float getCutOff(float angleDegrees){
+        return std::cos(degreesToRadians(angleDegrees));
+    }
+
     static std::pair<std::vector<SpotLightData>, std::vector<SpotLightData>> getSpotLights(const Scene &scene) {
         std::vector<SpotLightData> lights;
         std::vector<SpotLightData> shadowLights;
@@ -139,8 +143,8 @@ namespace xng {
                                                   l.quadratic).getMemory(),
                     .color = Vec4f(v.x * l.power, v.y * l.power, v.z * l.power, 1).getMemory(),
                     .farPlane = Vec4f(l.shadowFarPlane, 0, 0, 0).getMemory(),
-                    .cutOff_outerCutOff_constant_linear = Vec4f(l.cutOff,
-                                                                l.outerCutOff,
+                    .cutOff_outerCutOff_constant_linear = Vec4f(getCutOff(l.cutOff),
+                                                                getCutOff(l.outerCutOff),
                                                                 l.constant,
                                                                 l.linear).getMemory()
             };
