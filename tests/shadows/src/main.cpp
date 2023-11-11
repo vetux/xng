@@ -22,7 +22,7 @@
 
 #include "xng/xng.hpp"
 
-#include "testpass.hpp"
+#include "debugpass.hpp"
 #include "cameracontroller.hpp"
 #include "debugoverlay.hpp"
 
@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
                                      shaderCompiler,
                                      shaderDecompiler);
 
-    auto testPass = std::make_shared<TestPass>();
+    auto testPass = std::make_shared<DebugPass>();
 
     FrameGraphPipeline pipeline = FrameGraphPipeline()
             .addPass(std::make_shared<ClearPass>())
@@ -263,9 +263,9 @@ int main(int argc, char *argv[]) {
         cameraController.update(deltaTime);
 
         if (window->getInput().getKeyboard().getKeyDown(xng::KEY_LEFT)) {
-            testPass->decrementTex();
+            testPass->decrementSlot();
         } else if (window->getInput().getKeyboard().getKeyDown(xng::KEY_RIGHT)) {
-            testPass->incrementTex();
+            testPass->incrementSlot();
         }
 
         if (window->getInput().getKeyboard().getKey(KEY_R)) {
@@ -282,7 +282,7 @@ int main(int argc, char *argv[]) {
 
         renderer.render(scene);
 
-        auto txt = testPass->getTexName();
+        auto txt = testPass->getSlotName();
 
         if (text.getText() != txt) {
             text = textRenderer.render(txt, TextLayout{.lineHeight = 70});

@@ -17,13 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_TESTPASS_HPP
-#define XENGINE_TESTPASS_HPP
+#ifndef XENGINE_DEBUGPASS_HPP
+#define XENGINE_DEBUGPASS_HPP
 
 #include "xng/xng.hpp"
 
-#include "testpass/fs.hpp"
-#include "testpass/vs.hpp"
+#include "tests/debugpass_fs.hpp"
+#include "tests/debugpass_vs.hpp"
 
 using namespace xng;
 
@@ -31,7 +31,10 @@ struct ShaderData {
     float visualizeDepth_near_far[4];
 };
 
-class TestPass : public FrameGraphPass {
+/**
+ * Display the selected slot texture in the back buffer.
+ */
+class DebugPass : public FrameGraphPass {
 public:
     void setup(FrameGraphBuilder &builder) override {
         if (!vertexBufferRes.assigned) {
@@ -54,8 +57,8 @@ public:
         if (!pipelineRes.assigned) {
             pipelineRes = builder.createRenderPipeline(RenderPipelineDesc{
                     .shaders = {
-                            {VERTEX,   vs},
-                            {FRAGMENT, fs}
+                            {VERTEX,   debugpass_vs},
+                            {FRAGMENT, debugpass_fs}
                     },
                     .bindings = {BIND_SHADER_UNIFORM_BUFFER,
                                  BIND_TEXTURE_BUFFER},
@@ -78,47 +81,8 @@ public:
         builder.read(shaderBufferRes);
         builder.write(shaderBufferRes);
 
-        switch (tex) {
-            default:
-                displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_POSITION);
-                break;
-            case 1:
-                displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_NORMAL);
-                break;
-            case 2:
-                displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_TANGENT);
-                break;
-            case 3:
-                displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_ROUGHNESS_METALLIC_AO);
-                break;
-            case 4:
-                displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_ALBEDO);
-                break;
-            case 5:
-                displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_OBJECT_SHADOWS);
-                break;
-            case 6:
-                displayTextureRes = builder.getSlot(xng::SLOT_GBUFFER_DEPTH);
-                break;
-            case 7:
-                displayTextureRes = builder.getSlot(xng::SLOT_DEFERRED_COLOR);
-                break;
-            case 8:
-                displayTextureRes = builder.getSlot(xng::SLOT_DEFERRED_DEPTH);
-                break;
-            case 9:
-                displayTextureRes = builder.getSlot(xng::SLOT_FORWARD_COLOR);
-                break;
-            case 10:
-                displayTextureRes = builder.getSlot(xng::SLOT_FORWARD_DEPTH);
-                break;
-            case 11:
-                displayTextureRes = builder.getSlot(xng::SLOT_SCREEN_COLOR);
-                break;
-            case 12:
-                displayTextureRes = builder.getSlot(xng::SLOT_SCREEN_DEPTH);
-                break;
-        }
+        displayTextureRes = builder.getSlot(tex);
+
         builder.read(displayTextureRes);
 
         backBuffer = builder.getBackBuffer();
@@ -156,7 +120,10 @@ public:
         }
 
         ::ShaderData buf{};
-        buf.visualizeDepth_near_far[0] = tex == 6 || tex == 8 || tex == 10 || tex == 12;
+        buf.visualizeDepth_near_far[0] = tex == SLOT_DEFERRED_DEPTH
+                                         || tex == SLOT_FORWARD_DEPTH
+                                         || tex == SLOT_GBUFFER_DEPTH
+                                         || tex == SLOT_SCREEN_DEPTH;
         buf.visualizeDepth_near_far[1] = camera.nearClip;
         buf.visualizeDepth_near_far[2] = 100;
 
@@ -182,67 +149,73 @@ public:
     }
 
     std::type_index getTypeIndex() const override {
-        return typeid(TestPass);
+        return typeid(DebugPass);
     }
 
-    void setTex(int t) {
+    void setSlot(FrameGraphSlot t) {
         tex = t;
     }
 
-    int getTex() {
+    FrameGraphSlot getSlot() {
         return tex;
     }
 
-    std::string getTexName() {
+    std::string getSlotName() {
         std::string txt;
         switch (tex) {
             default:
                 return "INVALID";
-            case 0:
-                return  "GBUFFER POSITION";
-            case 1:
+            case SLOT_GBUFFER_POSITION:
+                return "GBUFFER POSITION";
+            case SLOT_GBUFFER_NORMAL:
                 return "GBUFFER NORMAL";
-            case 2:
+            case SLOT_GBUFFER_TANGENT:
                 return "GBUFFER TANGENT";
-            case 3:
+            case SLOT_GBUFFER_ROUGHNESS_METALLIC_AO:
                 return "GBUFFER ROUGHNESS_METALLIC_AO";
-            case 4:
+            case SLOT_GBUFFER_ALBEDO:
                 return "GBUFFER ALBEDO";
-            case 5:
+            case SLOT_GBUFFER_OBJECT_SHADOWS:
                 return "GBUFFER OBJECT_SHADOWS";
-            case 6:
+            case SLOT_GBUFFER_DEPTH:
                 return "GBUFFER DEPTH";
-            case 7:
+            case SLOT_DEFERRED_COLOR:
                 return "DEFERRED COLOR";
-            case 8:
+            case SLOT_DEFERRED_DEPTH:
                 return "DEFERRED DEPTH";
-            case 9:
+            case SLOT_FORWARD_COLOR:
                 return "FORWARD COLOR";
-            case 10:
+            case SLOT_FORWARD_DEPTH:
                 return "FORWARD DEPTH";
-            case 11:
+            case SLOT_BACKGROUND_COLOR:
+                return "BACKGROUND COLOR";
+            case SLOT_SCREEN_COLOR:
                 return "SCREEN COLOR";
-            case 12:
+            case SLOT_SCREEN_DEPTH:
                 return "SCREEN DEPTH";
         }
     }
 
-    void incrementTex() {
-        if (++tex > 12) {
-            tex = 0;
+    void incrementSlot() {
+        if (tex == SLOT_GBUFFER_DEPTH) {
+            tex = SLOT_SCREEN_COLOR;
+        } else {
+            tex = static_cast<FrameGraphSlot>(tex + 1);
         }
     }
 
-    void decrementTex() {
-        if (--tex < 0) {
-            tex = 12;
+    void decrementSlot() {
+        if (tex == SLOT_SCREEN_COLOR) {
+            tex = SLOT_GBUFFER_DEPTH;
+        } else {
+            tex = static_cast<FrameGraphSlot>(tex - 1);
         }
     }
 
 private:
     Mesh mesh = Mesh::normalizedQuad();
 
-    int tex = 11;
+    FrameGraphSlot tex = SLOT_SCREEN_COLOR;
 
     FrameGraphResource backBuffer;
 
@@ -263,4 +236,4 @@ private:
     Camera camera;
 };
 
-#endif //XENGINE_TESTPASS_HPP
+#endif //XENGINE_DEBUGPASS_HPP

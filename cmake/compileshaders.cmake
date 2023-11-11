@@ -36,10 +36,10 @@ CompileShader(ren2d/fs_multi FRAGMENT main)
 CompileShader(ren2d/vs VERTEX main)
 CompileShader(ren2d/fs FRAGMENT main)
 
-CompileShader(testpass/vs VERTEX main)
-CompileShader(testpass/fs FRAGMENT main)
+CompileShader(tests/debugpass_vs VERTEX main)
+CompileShader(tests/debugpass_fs FRAGMENT main)
 
-CompileShader(mandelbrot/mandelbrot COMPUTE main)
+CompileShader(tests/mandelbrot COMPUTE main)
 
 list(LENGTH SHADER_HEADERS LEN_SHADER_HEADERS)
 

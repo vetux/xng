@@ -20,7 +20,7 @@
 #include "xng/xng.hpp"
 
 #include "debugoverlay.hpp"
-#include "mandelbrot/mandelbrot.hpp"
+#include "tests/mandelbrot.hpp"
 
 using namespace xng;
 
