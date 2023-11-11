@@ -26,13 +26,14 @@
 namespace xng::opengl {
     class OGLShaderUniformBuffer : public ShaderUniformBuffer {
     public:
-        std::function<void(RenderObject * )> destructor;
         ShaderUniformBufferDesc desc;
         GLuint ubo = 0;
 
-        explicit OGLShaderUniformBuffer(std::function<void(RenderObject * )> destructor,
-                                        ShaderUniformBufferDesc inputDescription)
-                : destructor(std::move(destructor)), desc(inputDescription) {
+        RenderStatistics &stats;
+
+        explicit OGLShaderUniformBuffer(ShaderUniformBufferDesc inputDescription,
+                                        RenderStatistics &stats)
+                :  desc(inputDescription), stats(stats) {
 
             glGenBuffers(1, &ubo);
 
@@ -49,7 +50,7 @@ namespace xng::opengl {
         ~OGLShaderUniformBuffer() override {
             glDeleteBuffers(1, &ubo);
             checkGLError();
-            destructor(this);
+
         }
 
         const ShaderUniformBufferDesc &getDescription() override {
@@ -65,6 +66,7 @@ namespace xng::opengl {
             glBufferSubData(GL_UNIFORM_BUFFER, 0, static_cast<GLsizeiptr>(size), data);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
             checkGLError();
+            stats.uploadShaderUniform += size;
         }
 
         void upload(size_t offset, const uint8_t *data, size_t dataSize) override {
@@ -79,6 +81,7 @@ namespace xng::opengl {
                             data);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
             checkGLError();
+            stats.uploadShaderUniform += dataSize;
         }
     };
 }

@@ -32,16 +32,17 @@
 namespace xng::opengl {
     class OGLTextureArrayBuffer : public TextureArrayBuffer {
     public:
-        std::function<void(RenderObject *)> destructor;
         TextureArrayBufferDesc desc;
 
         GLuint handle{};
         GLint internalFormat{};
 
-        OGLTextureArrayBuffer(std::function<void(RenderObject *)> destructor,
-                              TextureArrayBufferDesc descArg)
-                : destructor(std::move(destructor)),
-                  desc(std::move(descArg)) {
+        RenderStatistics &stats;
+
+        OGLTextureArrayBuffer(TextureArrayBufferDesc descArg,
+                              RenderStatistics &stats)
+                : desc(std::move(descArg)),
+                  stats(stats) {
             if (desc.textureDesc.textureType != TEXTURE_2D && desc.textureDesc.textureType != TEXTURE_CUBE_MAP) {
                 throw std::runtime_error("Invalid texture type for array texture");
             }
@@ -156,7 +157,7 @@ namespace xng::opengl {
         ~OGLTextureArrayBuffer() override {
             glDeleteTextures(1, &handle);
             checkGLError();
-            destructor(this);
+
         }
 
         const TextureArrayBufferDesc &getDescription() override {
@@ -218,6 +219,8 @@ namespace xng::opengl {
             glBindTexture(target, 0);
 
             checkGLError();
+
+            stats.uploadTexture += bufferSize;
         }
 
         Image<ColorRGBA> download(size_t index) override {

@@ -28,13 +28,14 @@
 namespace xng::opengl {
     class OGLShaderStorageBuffer : public ShaderStorageBuffer {
     public:
-        std::function<void(RenderObject * )> destructor;
         ShaderStorageBufferDesc desc;
         GLuint ssbo = 0;
 
-        explicit OGLShaderStorageBuffer(std::function<void(RenderObject * )> destructor,
-                                        ShaderStorageBufferDesc inputDescription)
-                : destructor(std::move(destructor)), desc(inputDescription) {
+        RenderStatistics &stats;
+
+        explicit OGLShaderStorageBuffer(ShaderStorageBufferDesc inputDescription,
+                                        RenderStatistics &stats)
+                :  desc(inputDescription), stats(stats) {
             glGenBuffers(1, &ssbo);
 
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
@@ -50,7 +51,7 @@ namespace xng::opengl {
         ~OGLShaderStorageBuffer() override {
             glDeleteBuffers(1, &ssbo);
             checkGLError();
-            destructor(this);
+
         }
 
         const ShaderStorageBufferDesc &getDescription() override {
@@ -69,6 +70,7 @@ namespace xng::opengl {
                             data);
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
             checkGLError();
+            stats.uploadShaderStorage += size;
         }
 
         void upload(size_t offset, const uint8_t *data, size_t size) override {
@@ -83,6 +85,7 @@ namespace xng::opengl {
                             data);
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
             checkGLError();
+            stats.uploadShaderStorage += size;
         }
 
         std::vector<uint8_t> download(size_t offset, size_t size) override {
@@ -97,6 +100,7 @@ namespace xng::opengl {
                                static_cast<GLsizeiptr>(size),
                                ret.data());
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+            stats.downloadShaderStorage += size;
             return ret;
         }
     };

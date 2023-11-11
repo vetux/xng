@@ -34,8 +34,6 @@ namespace xng {
                 return GL_TEXTURE0 + slot;
             }
 
-            std::function<void(RenderObject * )> destructor;
-
             RenderPassDesc passDesc;
 
             OGLRenderPipeline *mRenderPipeline = nullptr;
@@ -44,17 +42,13 @@ namespace xng {
 
             OGLComputePipeline *mComputePipeline = nullptr;
 
-            RenderStatistics stats;
+            RenderStatistics &stats;
 
             bool runningPass = false;
 
-            OGLCommandQueue() = default;
-
-            explicit OGLCommandQueue(std::function<void(RenderObject * )> destructor) : destructor(
-                    std::move(destructor)) {}
+            explicit OGLCommandQueue( RenderStatistics &stats) : stats(stats){}
 
             ~OGLCommandQueue() override {
-                destructor(this);
             }
 
             Type getType() override {
@@ -607,8 +601,11 @@ namespace xng {
                         }
 
                         std::vector<GLint> vertices;
-                        for (auto &v: data.baseVertices)
-                            vertices.emplace_back(static_cast<GLint>(v));
+                        for (auto &v: data.baseVertices){
+                            auto d = static_cast<GLint>(v);
+                            assert(d >= 0);
+                            vertices.emplace_back(d);
+                        }
 
                         glMultiDrawElementsBaseVertex(convert(mRenderPipeline->getDescription().primitive),
                                                       count.data(),
@@ -1047,12 +1044,6 @@ namespace xng {
                     }
                 }
                 glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT | GL_BUFFER_UPDATE_BARRIER_BIT);
-            }
-
-            RenderStatistics debugNewFrame() override {
-                auto ret = stats;
-                stats = {};
-                return ret;
             }
         };
 

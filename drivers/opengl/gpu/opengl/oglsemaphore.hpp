@@ -26,12 +26,10 @@ namespace xng {
     namespace opengl {
         class OGLSemaphore : public CommandSemaphore {
         public:
-            std::function<void(RenderObject * )> destructor;
-
-            explicit OGLSemaphore(std::function<void(RenderObject * )> destructor) : destructor(std::move(destructor)) {}
+            explicit OGLSemaphore()  {}
 
             ~OGLSemaphore() override {
-                destructor(this);
+
             };
         };
     }

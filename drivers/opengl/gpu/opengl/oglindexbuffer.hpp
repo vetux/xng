@@ -32,16 +32,17 @@
 namespace xng::opengl {
     class OGLIndexBuffer : public IndexBuffer {
     public:
-        std::function<void(RenderObject * )> destructor;
-
         GLuint EBO = 0;
 
         IndexBufferDesc desc;
 
-        explicit OGLIndexBuffer(std::function<void(RenderObject * )> destructor,
-                                IndexBufferDesc desc)
-                : destructor(std::move(destructor)),
-                  desc(desc) {
+        RenderStatistics &stats;
+
+        explicit OGLIndexBuffer(
+                                IndexBufferDesc desc,
+                                RenderStatistics &stats)
+                :desc(desc),
+                  stats(stats){
             glGenBuffers(1, &EBO);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER,
@@ -56,8 +57,6 @@ namespace xng::opengl {
         ~OGLIndexBuffer() override {
             glDeleteBuffers(1, &EBO);
             checkGLError();
-
-            destructor(this);
         }
 
         const IndexBufferDesc &getDescription() override {
@@ -76,6 +75,7 @@ namespace xng::opengl {
                             data);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             checkGLError();
+            stats.uploadIndex += dataSize;
         }
     };
 }

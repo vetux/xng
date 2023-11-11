@@ -28,16 +28,12 @@ namespace xng {
     namespace opengl {
         class OGLCommandBuffer : public CommandBuffer {
         public:
-            std::function<void(RenderObject * )> destructor;
 
             std::vector<Command> commands;
 
-            explicit OGLCommandBuffer(std::function<void(RenderObject * )> destructor) : destructor(
-                    std::move(destructor)) {}
+            explicit OGLCommandBuffer() {}
 
-            ~OGLCommandBuffer() {
-                destructor(this);
-            }
+            ~OGLCommandBuffer() {}
 
             Type getType() override {
                 return RENDER_OBJECT_COMMAND_BUFFER;

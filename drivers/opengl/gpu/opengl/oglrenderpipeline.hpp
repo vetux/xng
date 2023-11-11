@@ -37,7 +37,6 @@
 namespace xng::opengl {
     class OGLRenderPipeline : public RenderPipeline {
     public:
-        std::function<void(RenderObject *)> destructor;
         RenderPipelineDesc desc;
 
         GLuint programHandle = 0;
@@ -211,11 +210,9 @@ namespace xng::opengl {
             }
         }
 
-        explicit OGLRenderPipeline(std::function<void(RenderObject *)> destructor,
-                                   RenderPipelineDesc descArg,
+        explicit OGLRenderPipeline(RenderPipelineDesc descArg,
                                    ShaderDecompiler &decompiler)
-                : destructor(std::move(destructor)),
-                  desc(std::move(descArg)) {
+                : desc(std::move(descArg)) {
             if (!desc.shaders.empty()) {
                 buildGLSL(decompiler);
 
@@ -234,7 +231,7 @@ namespace xng::opengl {
 
         ~OGLRenderPipeline() override {
             glDeleteProgram(programHandle);
-            destructor(this);
+
         }
 
         void checkLinkSuccess() const {

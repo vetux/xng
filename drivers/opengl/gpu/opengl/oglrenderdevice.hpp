@@ -134,34 +134,21 @@ namespace xng::opengl {
         RenderDeviceInfo info;
         std::set<RenderObject *> objects;
 
-        std::function<void(RenderObject *)> destructor;
-
         OGLCommandQueue queue;
 
-        explicit OGLRenderDevice(RenderDeviceInfo infoArg) : info(std::move(infoArg)) {
-            destructor = [this](RenderObject *obj) {
-                objects.erase(obj);
-            };
-            queue = OGLCommandQueue(destructor);
+        RenderStatistics statistics;
 
+        explicit OGLRenderDevice(RenderDeviceInfo infoArg) : info(std::move(infoArg)),
+                                                             queue(OGLCommandQueue(statistics)) {
             if (GLAD_GL_KHR_debug) {
                 glDebugMessageCallback(oglDebugHandler, nullptr);
             }
         }
 
-        ~OGLRenderDevice() override {
-            std::set<RenderObject *> o = objects;
-            for (auto *ptr: o) {
-                delete ptr;
-            }
-        }
+        ~OGLRenderDevice() override = default;
 
         const RenderDeviceInfo &getInfo() override {
             return info;
-        }
-
-        std::set<RenderObject *> getAllocatedObjects() override {
-            return objects;
         }
 
         std::vector<std::reference_wrapper<CommandQueue>> getRenderCommandQueues() override {
@@ -177,16 +164,16 @@ namespace xng::opengl {
         }
 
         std::unique_ptr<CommandBuffer> createCommandBuffer() override {
-            return std::make_unique<OGLCommandBuffer>(destructor);
+            return std::make_unique<OGLCommandBuffer>();
         }
 
         std::shared_ptr<CommandSemaphore> createSemaphore() override {
-            return std::make_shared<OGLSemaphore>(destructor);
+            return std::make_shared<OGLSemaphore>();
         }
 
         std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDesc &desc,
                                                              ShaderDecompiler &decompiler) override {
-            return std::make_unique<OGLRenderPipeline>(destructor, desc, decompiler);
+            return std::make_unique<OGLRenderPipeline>( desc, decompiler);
         }
 
         std::unique_ptr<RenderPipeline> createRenderPipeline(const uint8_t *cacheData, size_t size) override {
@@ -195,7 +182,7 @@ namespace xng::opengl {
 
         std::unique_ptr<ComputePipeline> createComputePipeline(const ComputePipelineDesc &desc,
                                                                ShaderDecompiler &decompiler) override {
-            return std::make_unique<OGLComputePipeline>(destructor, desc, decompiler);
+            return std::make_unique<OGLComputePipeline>( desc, decompiler);
         }
 
         std::unique_ptr<RaytracePipeline> createRaytracePipeline(const RaytracePipelineDesc &desc) override {
@@ -203,23 +190,23 @@ namespace xng::opengl {
         }
 
         std::unique_ptr<RenderTarget> createRenderTarget(const RenderTargetDesc &desc) override {
-            return std::make_unique<OGLRenderTarget>(destructor, desc);
+            return std::make_unique<OGLRenderTarget>( desc);
         }
 
         std::unique_ptr<VertexArrayObject> createVertexArrayObject(const VertexArrayObjectDesc &desc) override {
-            return std::make_unique<OGLVertexArrayObject>(destructor, desc);
+            return std::make_unique<OGLVertexArrayObject>( desc);
         }
 
         std::unique_ptr<RenderPass> createRenderPass(const RenderPassDesc &desc) override {
-            return std::make_unique<OGLRenderPass>(destructor, desc);
+            return std::make_unique<OGLRenderPass>( desc);
         }
 
         std::unique_ptr<VertexBuffer> createVertexBuffer(const VertexBufferDesc &desc) override {
-            return std::make_unique<OGLVertexBuffer>(destructor, desc);
+            return std::make_unique<OGLVertexBuffer>( desc, statistics);
         }
 
         std::unique_ptr<IndexBuffer> createIndexBuffer(const IndexBufferDesc &desc) override {
-            return std::make_unique<OGLIndexBuffer>(destructor, desc);
+            return std::make_unique<OGLIndexBuffer>( desc, statistics);
         }
 
         std::unique_ptr<ShaderUniformBuffer> createShaderUniformBuffer(const ShaderUniformBufferDesc &desc) override {
@@ -230,7 +217,7 @@ namespace xng::opengl {
                         + " max: "
                         + std::to_string(info.uniformBufferMaxSize));
             }
-            return std::make_unique<OGLShaderUniformBuffer>(destructor, desc);
+            return std::make_unique<OGLShaderUniformBuffer>( desc, statistics);
         }
 
         std::unique_ptr<ShaderStorageBuffer> createShaderStorageBuffer(const ShaderStorageBufferDesc &desc) override {
@@ -241,15 +228,15 @@ namespace xng::opengl {
                         + " max: "
                         + std::to_string(info.storageBufferMaxSize));
             }
-            return std::make_unique<OGLShaderStorageBuffer>(destructor, desc);
+            return std::make_unique<OGLShaderStorageBuffer>( desc, statistics);
         }
 
         std::unique_ptr<TextureBuffer> createTextureBuffer(const TextureBufferDesc &desc) override {
-            return std::make_unique<OGLTextureBuffer>(destructor, desc);
+            return std::make_unique<OGLTextureBuffer>(desc, statistics);
         }
 
         std::unique_ptr<TextureArrayBuffer> createTextureArrayBuffer(const TextureArrayBufferDesc &desc) override {
-            return std::make_unique<OGLTextureArrayBuffer>(destructor, desc);
+            return std::make_unique<OGLTextureArrayBuffer>(desc, statistics);
         }
 
         std::unique_ptr<GpuMemory> createMemory(const GpuMemoryDesc &desc) override {
@@ -258,6 +245,12 @@ namespace xng::opengl {
 
         void setDebugCallback(const std::function<void(const std::string &)> &c) override {
             callback = c;
+        }
+
+        RenderStatistics getFrameStats() override {
+            auto ret = statistics;
+            statistics = {};
+            return ret;
         }
     };
 }

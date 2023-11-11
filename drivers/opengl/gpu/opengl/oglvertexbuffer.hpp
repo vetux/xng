@@ -34,16 +34,16 @@
 namespace xng::opengl {
     class OGLVertexBuffer : public VertexBuffer {
     public:
-        std::function<void(RenderObject * )> destructor;
-
         VertexBufferDesc desc;
 
         GLuint VBO = 0;
 
-        explicit OGLVertexBuffer(std::function<void(RenderObject * )> destructor,
-                                 VertexBufferDesc desc)
-                : destructor(std::move(destructor)),
-                  desc(desc) {
+        RenderStatistics &stats;
+
+        explicit OGLVertexBuffer(VertexBufferDesc desc,
+                                 RenderStatistics &stats)
+                : desc(desc),
+                  stats(stats) {
             glGenBuffers(1, &VBO);
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
             glBufferData(GL_ARRAY_BUFFER,
@@ -57,7 +57,6 @@ namespace xng::opengl {
 
         ~OGLVertexBuffer() override {
             glDeleteBuffers(1, &VBO);
-            destructor(this);
         }
 
         const VertexBufferDesc &getDescription() override {
@@ -75,6 +74,8 @@ namespace xng::opengl {
                             static_cast<GLsizeiptr>(dataSize),
                             data);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
+            checkGLError();
+            stats.uploadVertex += dataSize;
         }
     };
 }

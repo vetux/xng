@@ -27,7 +27,6 @@
 namespace xng::opengl {
     class OGLComputePipeline : public ComputePipeline {
     public:
-        std::function<void(RenderObject * )> destructor;
         ComputePipelineDesc desc;
 
         GLuint programHandle;
@@ -98,9 +97,8 @@ namespace xng::opengl {
             glDeleteShader(vsH);
         }
 
-        OGLComputePipeline(std::function<void(RenderObject * )> destructor,
-                           const ComputePipelineDesc& desc,
-                           ShaderDecompiler &decompiler) : destructor(std::move(destructor)),
+        OGLComputePipeline(const ComputePipelineDesc& desc,
+                           ShaderDecompiler &decompiler) :
                                                        desc(desc) {
             if (!desc.shaders.empty()) {
                 // if (!GLAD_GL_ARB_gl_spirv) {

@@ -30,15 +30,16 @@
 namespace xng::opengl {
     class OGLTextureBuffer : public TextureBuffer {
     public:
-        std::function<void(RenderObject *)> destructor;
         TextureBufferDesc desc;
         GLuint handle = 0;
 
         GLenum textureType;
         GLint texInternalFormat;
 
-        OGLTextureBuffer(std::function<void(RenderObject *)> destructor, TextureBufferDesc descArg)
-                : destructor(std::move(destructor)), desc(std::move(descArg)) {
+        RenderStatistics &stats;
+
+        OGLTextureBuffer(TextureBufferDesc descArg, RenderStatistics &stats)
+                : desc(std::move(descArg)), stats(stats) {
             textureType = convert(desc.textureType);
 
             glGenTextures(1, &handle);
@@ -192,7 +193,7 @@ namespace xng::opengl {
 
         ~OGLTextureBuffer() override {
             glDeleteTextures(1, &handle);
-            destructor(this);
+
         }
 
         const TextureBufferDesc &getDescription() override {
@@ -245,12 +246,14 @@ namespace xng::opengl {
             glBindTexture(GL_TEXTURE_2D, 0);
 
             checkGLError();
+
+            stats.uploadTexture += bufferSize;
         }
 
         void upload(CubeMapFace face,
-                                      ColorFormat format,
-                                      const uint8_t *buffer,
-                                      size_t bufferSize) override {
+                    ColorFormat format,
+                    const uint8_t *buffer,
+                    size_t bufferSize) override {
             if (desc.bufferType != HOST_VISIBLE) {
                 throw std::runtime_error("Upload called on non host visible buffer.");
             }
@@ -298,6 +301,8 @@ namespace xng::opengl {
             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
             checkGLError();
+
+            stats.uploadTexture += bufferSize;
         }
 
         Image<ColorRGBA> download() override {
@@ -310,6 +315,9 @@ namespace xng::opengl {
             glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void *) ret.getData());
             glBindTexture(GL_TEXTURE_2D, 0);
             checkGLError();
+
+            stats.downloadTexture += desc.size.x * desc.size.y * sizeof(ColorRGBA);
+
             return std::move(ret.swapColumns());
         }
 
@@ -322,6 +330,7 @@ namespace xng::opengl {
             glGetTexImage(convert(face), 0, GL_RGBA, GL_UNSIGNED_BYTE, (void *) ret.getData());
             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
             checkGLError();
+            stats.downloadTexture += desc.size.x * desc.size.y * sizeof(ColorRGBA);
             return std::move(ret.swapColumns());
         }
     };

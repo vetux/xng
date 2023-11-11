@@ -30,7 +30,6 @@
 namespace xng::opengl {
     class OGLVertexArrayObject : public VertexArrayObject {
     public:
-        std::function<void(RenderObject *)> destructor;
         VertexArrayObjectDesc desc;
 
         OGLVertexBuffer *mVertexBuffer = nullptr;
@@ -39,17 +38,13 @@ namespace xng::opengl {
 
         GLuint VAO = 0;
 
-        OGLVertexArrayObject(std::function<void(RenderObject *)> destructor,
-                             VertexArrayObjectDesc desc)
-                : destructor(std::move(destructor)),
-                  desc(std::move(desc)) {
+        OGLVertexArrayObject(VertexArrayObjectDesc desc) : desc(std::move(desc)) {
             glGenVertexArrays(1, &VAO);
             checkGLError();
         }
 
         ~OGLVertexArrayObject() override {
             glDeleteVertexArrays(1, &VAO);
-            destructor(this);
             checkGLError();
         }
 
@@ -185,7 +180,7 @@ namespace xng::opengl {
         }
 
     private:
-        void setupVertexAttributes(){
+        void setupVertexAttributes() {
             GLsizei vertexStride = 0;
             for (auto &layout: desc.vertexLayout.attributes) {
                 vertexStride += layout.stride();

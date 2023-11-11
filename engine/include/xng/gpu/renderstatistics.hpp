@@ -22,9 +22,26 @@
 
 namespace xng {
     struct RenderStatistics {
-        size_t binds{};
-        size_t drawCalls{};
-        size_t polys{};
+        size_t binds{}; // The number of binding operations
+        size_t drawCalls{}; // The number of draw calls
+        size_t polys{}; // The number of polygons
+
+        // I/O Stats
+        size_t uploadVertex{};
+        size_t uploadIndex{};
+        size_t uploadTexture{};
+        size_t downloadTexture{};
+        size_t uploadShaderStorage{};
+        size_t downloadShaderStorage{};
+        size_t uploadShaderUniform{};
+
+        size_t getTotalUpload() const {
+            return uploadVertex + uploadIndex + uploadTexture + uploadShaderStorage + uploadShaderUniform;
+        }
+
+        size_t getTotalDownload()const {
+            return downloadTexture + downloadShaderStorage;
+        }
     };
 }
 #endif //XENGINE_RENDERSTATISTICS_HPP

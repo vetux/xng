@@ -72,11 +72,6 @@ namespace xng {
          */
         virtual const RenderDeviceInfo &getInfo() = 0;
 
-        /**
-          * @return The list of currently allocated render objects
-          */
-        virtual std::set<RenderObject *> getAllocatedObjects() = 0;
-
         virtual std::vector<std::reference_wrapper<CommandQueue>> getRenderCommandQueues() = 0;
 
         virtual std::vector<std::reference_wrapper<CommandQueue>> getComputeCommandQueues() = 0;
@@ -138,6 +133,13 @@ namespace xng {
         virtual std::unique_ptr<GpuMemory> createMemory(const GpuMemoryDesc &desc) = 0;
 
         virtual void setDebugCallback(const std::function<void(const std::string &)> &callback) = 0;
+
+        /**
+         * Return the statistics for the time since the last call to getFrameStats and reset the internal render statistics object
+         *
+         * @return
+         */
+        virtual RenderStatistics getFrameStats() = 0;
     };
 }
 

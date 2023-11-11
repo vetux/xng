@@ -32,7 +32,6 @@
 namespace xng::opengl {
     class OGLRenderTarget : public RenderTarget {
     public:
-        std::function<void(RenderObject *)> destructor;
         RenderTargetDesc desc;
 
         GLuint FBO = 0;
@@ -42,8 +41,8 @@ namespace xng::opengl {
 
         OGLRenderTarget() = default;
 
-        explicit OGLRenderTarget(std::function<void(RenderObject *)> destructor, RenderTargetDesc inputDescription)
-                : destructor(std::move(destructor)), desc(std::move(inputDescription)) {
+        explicit OGLRenderTarget( RenderTargetDesc inputDescription)
+                :  desc(std::move(inputDescription)) {
             glGenFramebuffers(1, &FBO);
 
             if (desc.numberOfColorAttachments > 0) {
@@ -64,9 +63,6 @@ namespace xng::opengl {
             if (FBO != 0) {
                 glDeleteFramebuffers(1, &FBO);
                 checkGLError();
-            }
-            if (destructor) {
-                destructor(this);
             }
         }
 

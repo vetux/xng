@@ -27,17 +27,14 @@
 namespace xng::opengl {
     class OGLRenderPass : public RenderPass {
     public:
-        std::function<void(RenderObject * )> destructor;
-
         RenderPassDesc passDesc;
 
-        OGLRenderPass(std::function<void(RenderObject * )> destructor,
+        OGLRenderPass(
                       RenderPassDesc passDesc)
-                : destructor(std::move(destructor)),
-                  passDesc(passDesc) {}
+                : passDesc(passDesc) {}
 
         ~OGLRenderPass() override {
-            destructor(this);
+
         };
 
         const RenderPassDesc &getDescription() override {

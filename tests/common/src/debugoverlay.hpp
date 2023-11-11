@@ -28,7 +28,7 @@ using namespace xng;
 
 class DebugOverlay {
 public:
-    Vec2i pixelSize = {0, 25};
+    Vec2i fontSize = {0, 20};
     Renderer2D &ren2D;
     TextRenderer textRenderer;
 
@@ -48,7 +48,7 @@ public:
         int fpsCount = 0;
         float totalTime = 0;
         for (auto &val: fpsAverage) {
-            if (val > 0){
+            if (val > 0) {
                 fpsCount++;
             }
             totalTime += 1 / val;
@@ -67,7 +67,19 @@ public:
     }
 
     DebugOverlay(Font &font, Renderer2D &renderer2D) : ren2D(renderer2D),
-                                                       textRenderer(font, renderer2D, pixelSize) {}
+                                                       textRenderer(font, renderer2D, fontSize) {}
+
+    std::string formatBytes(size_t bytes) {
+        if (bytes > 1000000000) {
+            return std::to_string(bytes / 1000000000) + "GB";
+        } else if (bytes > 1000000){
+            return std::to_string(bytes / 1000000) + "MB";
+        } else if (bytes > 1000){
+            return std::to_string(bytes / 1000) + "KB";
+        } else {
+            return std::to_string(bytes) + "B";
+        }
+    }
 
     void draw(DeltaTime deltaTime,
               RenderTarget &screen,
@@ -79,7 +91,7 @@ public:
             staticTxt += ren2D.getDevice().getInfo().version;
 
             TextLayout layout;
-            layout.lineHeight = pixelSize.y;
+            layout.lineHeight = fontSize.y;
 
             staticText = textRenderer.render(staticTxt, layout);
             staticHandle = ren2D.createTexture(staticText.getImage());
@@ -100,15 +112,17 @@ public:
 
         dynTxt += strm.str() + "\n";
 
-        auto stats = ren2D.getDevice().getRenderCommandQueues().at(0).get().debugNewFrame();
+        auto stats = ren2D.getDevice().getFrameStats();
 
         dynTxt += "Draws:" + std::to_string(stats.drawCalls) + "\n";
         dynTxt += "Polys:" + std::to_string(stats.polys) + "\n";
         dynTxt += "Binds:" + std::to_string(stats.binds) + "\n";
+        dynTxt += "VRam Upload:" + formatBytes(stats.getTotalUpload()) + "\n";
+        dynTxt += "VRam Download:" + formatBytes(stats.getTotalDownload()) + "\n";
         dynTxt += appendText;
 
         TextLayout layout;
-        layout.lineHeight = pixelSize.y;
+        layout.lineHeight = fontSize.y;
 
         dynText = textRenderer.render(dynTxt, layout);
 
