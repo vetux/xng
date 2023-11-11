@@ -97,20 +97,29 @@ public:
             staticHandle = ren2D.createTexture(staticText.getImage());
         }
 
-        auto deltaMs = std::to_string(deltaTime * 1000);
+        auto deltaMs = deltaTime * 1000;
         auto fps = 1 / deltaTime;
-        auto averageFps = getAverageFps(fps);
+        auto averageFps = getAverageFps(static_cast<float>(fps));
 
         std::stringstream strm;
         strm << std::fixed << std::setprecision(3) << deltaMs;
 
-        std::string dynTxt;
-        dynTxt += strm.str() + " / ";
+        auto msStr = strm.str();
+
         strm = {};
 
         strm << std::fixed << std::setprecision(0) << averageFps;
 
-        dynTxt += strm.str() + "\n";
+        auto fpsStr = strm.str();
+
+        if (fpsStr.size() < 3){
+            for (auto i = fpsStr.size(); i < 3; i++)
+                fpsStr += ' ';
+        }
+
+        std::string dynTxt;
+        dynTxt += fpsStr + " ";
+        dynTxt += msStr + "\n";
 
         auto stats = ren2D.getDevice().getFrameStats();
 
