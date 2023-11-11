@@ -43,7 +43,7 @@ namespace xng {
                 ResourceHandle<ImageRGBA> image;
                 image << pair.second;
                 CubeMapFace key;
-                key << pair.first;
+                key = static_cast<CubeMapFace>(std::stoi(pair.first));
                 images[key] = image;
             }
             message.value("description", description);
@@ -56,7 +56,7 @@ namespace xng {
             for (auto &pair: images) {
                 Message value;
                 pair.second >> value;
-                dict[pair.first] = value;
+                dict[std::to_string(pair.first)] = value;
             }
             message["images"] = dict;
             description >> message["description"];

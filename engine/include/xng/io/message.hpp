@@ -103,6 +103,20 @@ namespace xng {
             return mval.at(name);
         }
 
+        Message &operator[](const std::string &name) {
+            if (type != DICTIONARY)
+                throw std::runtime_error(
+                        "Attempted to call array operator on message of type " + getDataTypeName(type));
+            return mval[name];
+        }
+
+        const Message &operator[](const std::string &name) const {
+            if (type != DICTIONARY)
+                throw std::runtime_error(
+                        "Attempted to call array operator on message of type " + getDataTypeName(type));
+            return mval.at(name);
+        }
+
         Message &operator[](int index) {
             if (type != LIST)
                 throw std::runtime_error("Type error");

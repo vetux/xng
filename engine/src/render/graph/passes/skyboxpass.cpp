@@ -17,9 +17,16 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#pragma message "Not Implemented"
-
 #include "xng/render/graph/passes/skyboxpass.hpp"
+
+#include "xng/render/graph/framegraphbuilder.hpp"
+
+#include "graph/skyboxpass_vs.hpp"
+#include "graph/skyboxpass_fs.hpp"
+
+#include "xng/render/graph/framegraphsettings.hpp"
+
+#include "xng/render/geometry/vertexstream.hpp"
 
 namespace xng {
     SkyboxPass::SkyboxPass() {
@@ -27,171 +34,196 @@ namespace xng {
     }
 
     void xng::SkyboxPass::setup(FrameGraphBuilder &builder) {
+        if (!pipeline.assigned) {
+            pipeline = builder.createRenderPipeline(RenderPipelineDesc{
+                    .shaders = {{VERTEX,   skyboxpass_vs},
+                                {FRAGMENT, skyboxpass_fs}},
+                    .bindings = {
+                            BIND_SHADER_STORAGE_BUFFER,
+                            BIND_TEXTURE_BUFFER,
+                    },
+                    .vertexLayout = cube.vertexLayout,
+                    .enableDepthTest = false,
+                    .enableFaceCulling = true,
+                    .faceCullMode = CULL_FRONT,
+                    .enableBlending = false
+            });
+        }
+        builder.read(pipeline);
+        builder.persist(pipeline);
 
+        pass = builder.createRenderPass(RenderPassDesc{
+                .numberOfColorAttachments = 1,
+                .hasDepthStencilAttachment = true
+        });
+        builder.read(pass);
+
+        auto renderSize = builder.getBackBufferDescription().size *
+                          builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
+
+        target = builder.createRenderTarget(RenderTargetDesc{
+                .size = renderSize,
+                .numberOfColorAttachments = 1,
+                .hasDepthStencilAttachment = true,
+        });
+        builder.read(target);
+
+        if (!vbAlloc) {
+            vertexBuffer = builder.createVertexBuffer(VertexBufferDesc{
+                    .size = cube.vertices.size() * cube.vertexLayout.getSize(),
+            });
+
+            indexBuffer = builder.createIndexBuffer(IndexBufferDesc{
+                    .size = cube.indices.size() * sizeof(unsigned int),
+            });
+
+            vertexArrayObject = builder.createVertexArrayObject(VertexArrayObjectDesc{
+                    .vertexLayout = cube.vertexLayout
+            });
+        }
+
+        builder.write(vertexBuffer);
+        builder.read(vertexBuffer);
+        builder.persist(vertexBuffer);
+
+        builder.write(indexBuffer);
+        builder.read(indexBuffer);
+        builder.persist(indexBuffer);
+
+        builder.read(vertexArrayObject);
+        builder.persist(vertexArrayObject);
+
+        backgroundColor = builder.getSlot(SLOT_BACKGROUND_COLOR);
+        builder.write(backgroundColor);
+
+        uploadTexture = false;
+
+        TextureBufferDesc desc;
+        desc.textureType = TEXTURE_CUBE_MAP;
+
+        auto nodes = builder.getScene().rootNode.findAll({typeid(SkyboxProperty)});
+        if (!nodes.empty()) {
+            auto nskybox = nodes.at(0).getProperty<SkyboxProperty>().skybox;
+            if (nskybox.texture.assigned()) {
+                if (skybox.texture != nskybox.texture){
+                    desc.size = nskybox.texture.get().images.at(CubeMapFace::NEGATIVE_X).get().getSize();
+                    skyboxTexture = builder.createTextureBuffer(desc);
+                    uploadTexture = true;
+                }
+                builder.persist(skyboxTexture);
+            } else {
+                skyboxTexture = builder.createTextureBuffer(desc);
+            }
+            skybox = nskybox;
+        } else {
+            skybox = {};
+            skyboxTexture = builder.createTextureBuffer(desc);
+        }
+
+        builder.read(skyboxTexture);
+
+        cameraTransform = {};
+
+        nodes = builder.getScene().rootNode.findAll({typeid(CameraProperty)});
+        if (!nodes.empty()) {
+            camera = nodes.at(0).getProperty<CameraProperty>().camera;
+            if (nodes.at(0).hasProperty<TransformProperty>()){
+                cameraTransform.setRotation(nodes.at(0).getProperty<TransformProperty>().transform.getRotation());
+            }
+        } else {
+            camera = {};
+        }
+
+        commandBuffer = builder.createCommandBuffer();
+        builder.write(commandBuffer);
+
+        desc.textureType = TEXTURE_2D;
+        desc.size = renderSize;
+        desc.format = DEPTH_STENCIL;
+        depthTex = builder.createTextureBuffer(desc);
+        builder.write(depthTex);
+
+        shaderBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+                .size = sizeof(Mat4f)
+        });
+        builder.write(shaderBuffer);
     }
 
     void xng::SkyboxPass::execute(FrameGraphPassResources &resources,
                                   const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
                                   const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
                                   const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) {
+        auto &com = resources.get<CommandBuffer>(commandBuffer);
 
+        auto &pip = resources.get<RenderPipeline>(pipeline);
+        auto &p = resources.get<RenderPass>(pass);
+        auto &t = resources.get<RenderTarget>(target);
+
+        auto &sb = resources.get<ShaderStorageBuffer>(shaderBuffer);
+
+        auto &vb = resources.get<VertexBuffer>(vertexBuffer);
+        auto &ib = resources.get<IndexBuffer>(indexBuffer);
+        auto &vao = resources.get<VertexArrayObject>(vertexArrayObject);
+
+        auto &bg = resources.get<TextureBuffer>(backgroundColor);
+        auto &d = resources.get<TextureBuffer>(depthTex);
+
+        auto &skyTex = resources.get<TextureBuffer>(skyboxTexture);
+
+        if (uploadTexture){
+            for (auto i = 0; i <= CubeMapFace::NEGATIVE_Z; i++){
+                auto img = skybox.texture.get().images.at(static_cast<CubeMapFace>(i));
+                skyTex.upload(static_cast<CubeMapFace>(i),
+                              RGBA,
+                              reinterpret_cast<const uint8_t *>(img.get().getData()),
+                              img.get().getDataSize() * sizeof(ColorRGBA));
+            }
+        }
+
+        if (!vbAlloc) {
+            vbAlloc = true;
+            VertexStream stream;
+            stream.addVertices(cube.vertices);
+            vb.upload(0,
+                      reinterpret_cast<const uint8_t *>(stream.getVertexBuffer().data()),
+                      stream.getVertexBuffer().size());
+            ib.upload(0,
+                      reinterpret_cast<const uint8_t *>(cube.indices.data()),
+                      cube.indices.size() * sizeof(unsigned int));
+            vao.setBuffers(vb, ib);
+        }
+
+        t.setAttachments({RenderTargetAttachment::texture(bg)}, RenderTargetAttachment::texture(d));
+
+        sb.upload(camera.projection() * Camera::view(cameraTransform));
+
+        std::vector<Command> commands;
+        commands.emplace_back(p.begin(t));
+        commands.emplace_back(p.clearColorAttachments(skybox.color));
+        commands.emplace_back(pip.bind());
+        commands.emplace_back(RenderPipeline::bindShaderResources({{
+                                                                           sb, {{VERTEX, ShaderResource::READ},
+                                                                                    {FRAGMENT, ShaderResource::READ}}
+        },
+                                                                   {
+                                                                           skyTex, {{VERTEX, ShaderResource::READ},
+                                                                                           {FRAGMENT, ShaderResource::READ}}
+                                                                   }
+        }));
+        commands.emplace_back(vao.bind());
+        commands.emplace_back(p.drawIndexed(DrawCall(0, cube.indices.size())));
+        commands.emplace_back(p.end());
+
+        com.begin();
+        com.add(commands);
+        com.end();
+
+        renderQueues.at(0).get().submit(com);
+
+        t.clearAttachments();
     }
 
     std::type_index xng::SkyboxPass::getTypeIndex() const {
         return typeid(xng::SkyboxPass);
     }
-
-/*
-
-#include "xng/render/graph/passes/skyboxpass.hpp"
-
-#include "xng/render/shader/shaderinclude.hpp"
-
-#include "xng/render/graph/passes/compositepass.hpp"
-
-static const char *SHADER_VERT = R"###(#version 410 core
-
-layout (location = 0) in vec3 position;
-layout (location = 1) in vec3 normal;
-layout (location = 2) in vec2 uv;
-layout (location = 3) in vec3 tangent;
-layout (location = 4) in vec3 bitangent;
-layout (location = 5) in vec4 instanceRow0;
-layout (location = 6) in vec4 instanceRow1;
-layout (location = 7) in vec4 instanceRow2;
-layout (location = 8) in vec4 instanceRow3;
-
-layout (location = 0) out vec3 worldPos;
-
-uniform mat4 MANA_VIEW_TRANSLATION;
-uniform mat4 MANA_M;
-uniform mat4 MANA_V;
-uniform mat4 MANA_P;
-
-void main()
-{
-    mat4 t = MANA_P * MANA_V * MANA_VIEW_TRANSLATION;
-    worldPos = position;
-    gl_Position = t * vec4(position, 1);
-}
-)###";
-
-static const char *SHADER_FRAG = R"###(#version 410 core
-
-layout (location = 0) in vec3 worldPos;
-
-layout (location = 0) out vec4 color;
-
-uniform mat4 MANA_VIEW_TRANSLATION;
-uniform mat4 MANA_M;
-uniform mat4 MANA_V;
-uniform mat4 MANA_P;
-
-uniform samplerCube diffuse;
-
-void main() {
-    color = texture(diffuse, worldPos);
-}
-)###";
-
-namespace xng {
-    SkyboxPass::SkyboxPass(RenderDevice &device) {
-        Shader shaderSrc;
-        shaderSrc.vertexShader = ShaderSource(SHADER_VERT, "main", VERTEX, GLSL_410);
-        shaderSrc.fragmentShader = ShaderSource(SHADER_FRAG, "main", FRAGMENT, GLSL_410);
-
-        shaderSrc.vertexShader.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                                          ShaderInclude::getShaderMacros(GLSL_410));
-        shaderSrc.fragmentShader.preprocess(ShaderInclude::getShaderIncludeCallback(),
-                                            ShaderInclude::getShaderMacros(GLSL_410));
-
-        shader = device.getAllocator().createShaderProgram(shaderSrc.vertexShader, shaderSrc.fragmentShader);
-
-        TextureBuffer::Attributes attributes;
-        attributes.size = Vec2i(1, 1);
-        attributes.format = TextureBuffer::RGBA;
-        attributes.textureType = TextureBuffer::TEXTURE_CUBE_MAP;
-        attributes.generateMipmap = false;
-        attributes.wrapping = TextureBuffer::REPEAT;
-
-        defaultTexture = device.getAllocator().createTextureBuffer(attributes);
-
-        skyboxCube = device.getAllocator().createMeshBuffer(Mesh::normalizedCube());
-    }
-
-    void SkyboxPass::setup(FrameGraphBuilder &builder) {
-        scene = builder.getScene();
-
-        auto format = builder.getRenderFormat();
-        renderTarget = builder.createRenderTarget(format.first, format.second);
-
-        outColor = builder.createTextureBuffer(TextureBuffer::Attributes{.size = format.first, });
-
-        if (scene.skybox.texture) {
-            skyboxTexture = builder.createTextureBuffer(scene.skybox.texture);
-        } else {
-            skyboxTexture = {};
-        }
-
-        outDepth = builder.createTextureBuffer(
-                TextureBuffer::Attributes{.size = format.first, .format = TextureBuffer::DEPTH_STENCIL});
-    }
-
-    void SkyboxPass::execute(RenderPassResources &resources, Renderer &ren, FrameGraphBlackboard &board) {
-        auto &target = resources.getRenderTarget(renderTarget);
-        auto &color = resources.getTextureBuffer(outColor);
-        auto &depth = resources.getTextureBuffer(outDepth);
-        auto &gBuffer = board.get<GBuffer>();
-
-        shader->activate();
-        shader->setTexture("diffuse", 0);
-
-        Mat4f model, view, projection, cameraTranslation;
-        view = scene.camera.view();
-        projection = scene.camera.projection();
-        cameraTranslation = MatrixMath::translate(scene.camera.transform.getPosition());
-
-        //Draw skybox
-        target.setNumberOfColorAttachments(1);
-        target.attachColor(0, color);
-        target.attachDepthStencil(depth);
-
-        ren.renderBegin(target, RenderOptions({}, target.getSize(), false));
-
-        shader->setMat4("MANA_M", model);
-        shader->setMat4("MANA_V", view);
-        shader->setMat4("MANA_P", projection);
-        shader->setMat4("MANA_MVP", projection * view * model);
-        shader->setMat4("MANA_M_INVERT", MatrixMath::inverse(model));
-        shader->setMat4("MANA_VIEW_TRANSLATION", cameraTranslation);
-
-        RenderCommand skyboxCommand(*shader, *skyboxCube);
-
-        if (skyboxTexture.assigned) {
-            skyboxCommand.textures.emplace_back(resources.getTextureBuffer(skyboxTexture));
-        } else {
-            for (int i = TextureBuffer::CubeMapFace::POSITIVE_X; i <= TextureBuffer::CubeMapFace::NEGATIVE_Z; i++) {
-                defaultTexture->upload(static_cast<TextureBuffer::CubeMapFace>(i),
-                                       ImageRGBA(1, 1, {scene.skybox.color}));
-            }
-            skyboxCommand.textures.emplace_back(*defaultTexture);
-        }
-
-        skyboxCommand.properties.enableDepthTest = false;
-        skyboxCommand.properties.enableFaceCulling = false;
-
-        ren.addCommand(skyboxCommand);
-
-        ren.renderFinish();
-
-        target.detachColor(0);
-
-        auto layers = board.get<std::vector<CompositePass::Layer>>();
-
-        layers.emplace_back(CompositePass::Layer(&color));
-
-        board.set(layers);
-    }
-}
- */
 }

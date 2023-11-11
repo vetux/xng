@@ -27,6 +27,9 @@ CompileShader(graph/shadowmappingpass_vs VERTEX main)
 CompileShader(graph/shadowmappingpass_fs FRAGMENT main)
 CompileShader(graph/shadowmappingpass_gs GEOMETRY main)
 
+CompileShader(graph/skyboxpass_vs VERTEX main)
+CompileShader(graph/skyboxpass_fs FRAGMENT main)
+
 CompileShader(ren2d/vs_multi VERTEX main)
 CompileShader(ren2d/fs_multi FRAGMENT main)
 

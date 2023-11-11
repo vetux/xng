@@ -75,6 +75,8 @@ namespace xng {
 
         void setImporter(ResourceImporter importer);
 
+        ResourceImporter &getImporter();
+
         Archive &getArchive(const std::string &scheme);
 
         template<typename T>

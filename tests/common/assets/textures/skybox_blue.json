@@ -1,0 +1,27 @@
+{
+  "cubeMaps": [
+    {
+      "images": {
+        "0": {
+          "uri": "images/skybox_blue/bkg1_right.png"
+        },
+        "1": {
+          "uri": "images/skybox_blue/bkg1_left.png"
+        },
+        "2": {
+          "uri": "images/skybox_blue/bkg1_top.png"
+        },
+        "3": {
+          "uri": "images/skybox_blue/bkg1_bot.png"
+        },
+        "4": {
+          "uri": "images/skybox_blue/bkg1_front.png"
+        },
+        "5": {
+          "uri": "images/skybox_blue/bkg1_back.png"
+        }
+      },
+      "description": {}
+    }
+  ]
+}

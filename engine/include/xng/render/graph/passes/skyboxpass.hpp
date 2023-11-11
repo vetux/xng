@@ -26,9 +26,9 @@
 
 namespace xng {
     /**
-     * Draws the skybox texture on a normalized cube without transformation.
+     * Clears the background texture with the skybox color and then draws the optional skybox texture on a normalized cube without transformation.
      *
-     * Writes SLOT_DEFERRED_COLOR
+     * Writes SLOT_BACKGROUND_COLOR
      */
     class XENGINE_EXPORT SkyboxPass : public FrameGraphPass {
     public:
@@ -46,15 +46,32 @@ namespace xng {
         std::type_index getTypeIndex() const override;
 
     private:
-        FrameGraphResource shader;
-        FrameGraphResource skyboxCube;
-        FrameGraphResource defaultTexture;
+        Mesh cube = Mesh::normalizedCube();
 
-        FrameGraphResource renderTarget;
-        FrameGraphResource outColor;
-        FrameGraphResource outDepth;
+        Skybox skybox;
+
+        Transform cameraTransform;
+        Camera camera;
+
+        FrameGraphResource commandBuffer;
+        FrameGraphResource pipeline;
+        FrameGraphResource pass;
+        FrameGraphResource target;
+
+        FrameGraphResource shaderBuffer;
+        FrameGraphResource vertexBuffer;
+        FrameGraphResource indexBuffer;
+        FrameGraphResource vertexArrayObject;
+
+        FrameGraphResource backgroundColor;
 
         FrameGraphResource skyboxTexture;
+
+        FrameGraphResource depthTex;
+
+        bool uploadTexture = false;
+
+        bool vbAlloc = false;
     };
 }
 #endif //XENGINE_SKYBOXPASS_HPP

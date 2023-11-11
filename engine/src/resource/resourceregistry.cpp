@@ -69,6 +69,10 @@ namespace xng {
         importer = std::move(value);
     }
 
+    ResourceImporter &ResourceRegistry::getImporter() {
+        return importer;
+    }
+
     Archive &ResourceRegistry::getArchive(const std::string &scheme) {
         return *archives.at(scheme);
     }

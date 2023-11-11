@@ -164,6 +164,7 @@ int main(int argc, char *argv[]) {
             .addPass(std::make_shared<ConstructionPass>())
             .addPass(std::make_shared<DeferredLightingPass>())
             .addPass(std::make_shared<ForwardLightingPass>())
+            .addPass(std::make_shared<SkyboxPass>())
             .addPass(std::make_shared<CompositePass>())
             .addPass(std::make_shared<PresentationPass>())
             .addPass(testPass);
@@ -183,6 +184,18 @@ int main(int argc, char *argv[]) {
 
     scene.rootNode.childNodes.emplace_back(node);
 
+    node = {};
+
+    SkyboxProperty skybox;
+    skybox.skybox.texture = ResourceHandle<CubeMap>(Uri("textures/skybox_blue.json"));
+    node.addProperty(skybox);
+
+    scene.rootNode.childNodes.emplace_back(node);
+
+    node = {};
+
+    node.addProperty(transformProp);
+
     auto meshProp = SkinnedMeshProperty();
     meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/sphere.obj/Sphere"));
     node.addProperty(meshProp);
@@ -192,7 +205,7 @@ int main(int argc, char *argv[]) {
     auto mat = materialProp.materials[0].get();
     node.addProperty(materialProp);
 
-    scene.rootNode.childNodes.emplace_back(node);
+   // scene.rootNode.childNodes.emplace_back(node);
 
     for (int x = 0; x < 10; x++) {
         for (int y = 0; y < 10; y++) {
