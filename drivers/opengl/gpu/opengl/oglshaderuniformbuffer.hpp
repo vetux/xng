@@ -40,7 +40,7 @@ namespace xng::opengl {
             glBufferData(GL_UNIFORM_BUFFER,
                          static_cast<GLsizeiptr>(desc.size),
                          nullptr,
-                         GL_STATIC_DRAW);
+                         GL_DYNAMIC_DRAW);
 
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
             checkGLError();

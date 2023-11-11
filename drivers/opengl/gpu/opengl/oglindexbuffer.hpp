@@ -47,7 +47,7 @@ namespace xng::opengl {
             glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                          static_cast<long>(desc.size),
                          nullptr,
-                         GL_STATIC_COPY);
+                         GL_DYNAMIC_COPY);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
             checkGLError();

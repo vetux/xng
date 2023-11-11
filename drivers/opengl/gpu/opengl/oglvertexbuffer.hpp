@@ -49,7 +49,7 @@ namespace xng::opengl {
             glBufferData(GL_ARRAY_BUFFER,
                          (long) desc.size,
                          nullptr,
-                         GL_STATIC_COPY);
+                         GL_DYNAMIC_COPY);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
 
             checkGLError();

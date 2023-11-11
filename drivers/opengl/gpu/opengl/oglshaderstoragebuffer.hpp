@@ -41,7 +41,7 @@ namespace xng::opengl {
             glBufferData(GL_SHADER_STORAGE_BUFFER,
                          static_cast<GLsizeiptr>(desc.size),
                          nullptr,
-                         GL_STATIC_DRAW);
+                         GL_DYNAMIC_DRAW);
 
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
             checkGLError();
