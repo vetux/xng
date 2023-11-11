@@ -76,7 +76,7 @@ void xng::ShadowMappingPass::setup(xng::FrameGraphBuilder &builder) {
     builder.read(targetRes);
 
     if (!renderPipelineRes.assigned) {
-        renderPipelineRes = builder.createPipeline(RenderPipelineDesc{
+        renderPipelineRes = builder.createRenderPipeline(RenderPipelineDesc{
                 .shaders = {{VERTEX,   shadowmappingpass_vs},
                             {FRAGMENT, shadowmappingpass_fs},
                             {GEOMETRY, shadowmappingpass_gs}},

@@ -81,7 +81,7 @@ namespace xng {
         builder.read(clearTargetRes);
 
         if (!renderPipelineRes.assigned) {
-            renderPipelineRes = builder.createPipeline(RenderPipelineDesc{
+            renderPipelineRes = builder.createRenderPipeline(RenderPipelineDesc{
                     .shaders = {{VERTEX,   constructionpass_vs},
                                 {FRAGMENT, constructionpass_fs}},
                     .bindings = {
@@ -116,7 +116,7 @@ namespace xng {
         builder.read(renderPipelineRes);
 
         if (!renderPipelineSkinnedRes.assigned) {
-            renderPipelineSkinnedRes = builder.createPipeline(RenderPipelineDesc{
+            renderPipelineSkinnedRes = builder.createRenderPipeline(RenderPipelineDesc{
                     .shaders = {{VERTEX,   constructionpass_vs_skinned},
                                 {FRAGMENT, constructionpass_fs}},
                     .bindings = {

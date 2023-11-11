@@ -52,7 +52,7 @@ public:
         builder.read(vertexArrayObjectRes);
 
         if (!pipelineRes.assigned) {
-            pipelineRes = builder.createPipeline(RenderPipelineDesc{
+            pipelineRes = builder.createRenderPipeline(RenderPipelineDesc{
                     .shaders = {
                             {VERTEX,   vs},
                             {FRAGMENT, fs}

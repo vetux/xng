@@ -41,7 +41,7 @@ namespace xng {
               shaderCompiler(shaderCompiler),
               shaderDecompiler(shaderDecompiler) {}
 
-    FrameGraphResource FrameGraphBuilder::createPipeline(const RenderPipelineDesc &desc) {
+    FrameGraphResource FrameGraphBuilder::createRenderPipeline(const RenderPipelineDesc &desc) {
         auto ret = createResourceId();
         graph.allocations[ret] = FrameGraphAllocation{RenderObject::RENDER_OBJECT_RENDER_PIPELINE, desc};
         currentPass.allocations.insert(ret);

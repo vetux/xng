@@ -242,7 +242,7 @@ namespace xng {
         builder.read(targetRes);
 
         if (!pipelineRes.assigned) {
-            pipelineRes = builder.createPipeline(RenderPipelineDesc{
+            pipelineRes = builder.createRenderPipeline(RenderPipelineDesc{
                     .shaders = {{VERTEX,   forwardlightingpass_vs},
                                 {FRAGMENT, forwardlightingpass_fs}},
                     .bindings = {

@@ -49,7 +49,7 @@ namespace xng {
 
         FrameGraphResource createRenderTarget(const RenderTargetDesc &desc);
 
-        FrameGraphResource createPipeline(const RenderPipelineDesc &desc);
+        FrameGraphResource createRenderPipeline(const RenderPipelineDesc &desc);
 
         FrameGraphResource createRenderPass(const RenderPassDesc &desc);
 

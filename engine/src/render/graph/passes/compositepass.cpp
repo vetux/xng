@@ -79,7 +79,7 @@ namespace xng {
             pdesc.colorBlendDestinationMode = ONE_MINUS_SRC_ALPHA;
             pdesc.alphaBlendSourceMode = ONE;
             pdesc.alphaBlendDestinationMode = ONE_MINUS_SRC_ALPHA;
-            blendPipeline = builder.createPipeline(pdesc);
+            blendPipeline = builder.createRenderPipeline(pdesc);
         }
 
         builder.persist(blendPipeline);

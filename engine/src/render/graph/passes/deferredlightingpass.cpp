@@ -161,7 +161,7 @@ namespace xng {
         builder.read(vertexArrayObjectRes);
 
         if (!pipelineRes.assigned) {
-            pipelineRes = builder.createPipeline(RenderPipelineDesc{
+            pipelineRes = builder.createRenderPipeline(RenderPipelineDesc{
                     .shaders = {
                             {VERTEX,   deferredlightingpass_vs},
                             {FRAGMENT, deferredlightingpass_fs}
