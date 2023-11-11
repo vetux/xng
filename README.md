@@ -25,7 +25,7 @@ workflow
 - 2D Renderer with object-oriented SDL like interface
 - Canvas layout engine with reference scaling support
 - Text Rendering
-- PAK file format with chunking and encryption support
+- PAK file format with compression, chunking and encryption support
 
 ## Planned Features
 

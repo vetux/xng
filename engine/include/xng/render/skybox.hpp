@@ -57,7 +57,7 @@ namespace xng {
         }
 
         ColorRGBA color = {12, 123, 123, 255}; // If texture is unassigned skybox color is drawn
-        ResourceHandle<CubeMap> texture; // The cube map texture
+        ResourceHandle<CubeMap> texture; // The cube map texture of a static skybox, for more advanced animated skyboxes the user should create custom passes to achieve the desired effect.
 
         bool isLoaded() const override {
             return texture.isLoaded() && texture.get().isLoaded();

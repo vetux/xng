@@ -25,6 +25,7 @@
 
 #include "xng/render/texture.hpp"
 #include "xng/render/material.hpp"
+#include "xng/render/cubemap.hpp"
 #include "xng/animation/sprite/spriteanimation.hpp"
 #include "xng/ecs/entityscene.hpp"
 
@@ -38,6 +39,7 @@ namespace xng {
     Message JsonParser::createBundle(const ResourceBundle &bundle) {
         auto materials = std::vector<Message>();
         auto textures = std::vector<Message>();
+        auto cubeMaps = std::vector<Message>();
         auto sprites = std::vector<Message>();
         auto colliders = std::vector<Message>();
         auto animations = std::vector<Message>();
@@ -71,6 +73,11 @@ namespace xng {
                 res >> msg;
                 msg["name"] = pair.first;
                 animations.emplace_back(msg);
+            } else if (type == typeid(CubeMap)){
+                auto &res = dynamic_cast<CubeMap &>(*pair.second);
+                res >> msg;
+                msg["name"] = pair.first;
+                cubeMaps.emplace_back(msg);
             } else {
                 throw std::runtime_error("Unsupported resource type: " + std::string(type.name()));
             }
@@ -79,6 +86,7 @@ namespace xng {
         Message ret = Message(Message::DICTIONARY);
         ret["materials"] = Message(materials);
         ret["textures"] = Message(textures);
+        ret["cubeMaps"] = Message(cubeMaps);
         ret["sprites"] = Message(sprites);
         ret["colliders"] = Message(colliders);
         ret["sprite-animations"] = Message(animations);
@@ -114,6 +122,15 @@ namespace xng {
                     Texture tex;
                     tex << element;
                     ret.add(name, std::make_unique<Texture>(tex));
+                }
+            }
+
+            if (m.has("cubeMaps") && m.at("cubeMaps").getType() == Message::LIST) {
+                for (auto &element: m.at("cubeMaps").asList()) {
+                    auto name = element.getMessage("name", std::string()).asString();
+                    CubeMap tex;
+                    tex << element;
+                    ret.add(name, std::make_unique<CubeMap>(tex));
                 }
             }
 

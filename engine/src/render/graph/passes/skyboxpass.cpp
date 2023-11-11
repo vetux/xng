@@ -22,7 +22,6 @@
 #include "xng/render/graph/passes/skyboxpass.hpp"
 
 namespace xng {
-
     SkyboxPass::SkyboxPass() {
 
     }
