@@ -106,6 +106,11 @@ public:
 
         auto msStr = strm.str();
 
+        if (msStr.size() < 7){
+            for (auto i = msStr.size(); i < 7; i++)
+                msStr = ' ' + msStr;
+        }
+
         strm = {};
 
         strm << std::fixed << std::setprecision(0) << averageFps;
