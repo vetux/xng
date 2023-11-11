@@ -197,15 +197,7 @@ int main(int argc, char *argv[]) {
     node.addProperty(transformProp);
 
     auto meshProp = SkinnedMeshProperty();
-    meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/sphere.obj/Sphere"));
-    node.addProperty(meshProp);
-
     auto materialProp = MaterialProperty();
-    materialProp.materials[0] = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/sphere")));
-    auto mat = materialProp.materials[0].get();
-    node.addProperty(materialProp);
-
-   // scene.rootNode.childNodes.emplace_back(node);
 
     for (int x = 0; x < 10; x++) {
         for (int y = 0; y < 10; y++) {
@@ -271,6 +263,10 @@ int main(int argc, char *argv[]) {
     meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/sphere.obj/Sphere"));
     node.addProperty(meshProp);
 
+    materialProp = MaterialProperty();
+    materialProp.materials[0] = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/sphere")));
+    node.addProperty(materialProp);
+
     scene.rootNode.childNodes.emplace_back(node);
 
     transformProp = {};
@@ -280,6 +276,10 @@ int main(int argc, char *argv[]) {
     meshProp = {};
     meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/sphere.obj/Sphere"));
     node.addProperty(meshProp);
+
+    materialProp = MaterialProperty();
+    materialProp.materials[0] = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/sphere")));
+    node.addProperty(materialProp);
 
     scene.rootNode.childNodes.emplace_back(node);
 
