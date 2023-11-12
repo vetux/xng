@@ -73,17 +73,18 @@ Drivers are implementations of interfaces (For example through 3rd party librari
             windows uses multiple STL dll files and allows loading of multiple STL version dlls into the same process. If
             the user links to a different STL version than the one used for building the engine dll there can be problems
             when passing types through the dll interface.
-      - MinGW v8.0.0
+      - ~~MinGW v8.0.0~~ *
 - Android
-    - Tested Compiler: Android NDK r25c
+    - ~~Tested Compiler: Android NDK r25c~~ *
+
+*= Cross Compiling is currently not supported because of the shader precompilation stage (Will be solved in the future)
 
 ### Build Instructions
 
 Check [BUILDING.md](BUILDING.md) for detailed building instructions.
 
-### Notes
-## Assimp Importer and Blender FBX Export
-When exporting rigged meshes from blender to be imported with the assimp importer driver make sure to:
+## Assimp Parser and Blender FBX Export
+When exporting rigged meshes from blender to be imported with the assimp parser driver make sure to:
 - Set the "Apply Scalings" to fbx unit scale.
 - Rotate the mesh and the rig -90 degrees in the X axis and apply the rotation.
 - Set the forward and up axis in the fbx exporter settings to Y forward and Z up to match blenders coordinate system.
