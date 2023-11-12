@@ -14,17 +14,19 @@ workflow
 
 ## Features
 
+- 3D Frame Graph Renderer
+    - PBR Lighting
+    - Shadow Mapping
+- 2D Renderer with object-oriented SDL like interface
 - Resource system
-  - Automatic Resource Lifetime handling using RAII and reference counting
+  - Uri Resource addressing
+  - Multithreaded resource streaming
+  - Automatic Resource Lifetime handling
+- ECS using data oriented architecture
+- Text Rendering
 - Sprite Animation
 - Skeletal Animation
-- ECS with data oriented architecture
-- FrameGraph Renderer 
-  - PBR Lighting
-  - Shadow Mapping
-- 2D Renderer with object-oriented SDL like interface
-- Canvas layout engine with reference scaling support
-- Text Rendering
+- Canvas layout engine
 - PAK file format with compression, chunking and encryption support
 
 ## Planned Features
@@ -53,11 +55,6 @@ Drivers are implementations of interfaces (For example through 3rd party librari
 - Resource Parsers
     - AssImp
     - libSndFile
-
-## Programs
-
-- [xng-editor](https://github.com/vetux/xng-editor) - The editor and tools for creating games with xng
-- [Foxtrot](https://github.com/vetux/foxtrot) - A 2D Platformer Game
 
 ## Building
 
