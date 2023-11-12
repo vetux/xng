@@ -45,14 +45,14 @@ namespace xng {
      * This is a SDL inspired 2d renderer.
      * It uses a similar interface to SDL in a object oriented manner.
      *
-     * The 2d renderer uses the following coordinate system:
+     * The following coordinate system is used:
      *      -Y
      *       |
      * -X - -|- - +X
      *       |
      *      +Y
      *
-     * with default boundary of 0,0 at the top left ond targetsize.x,targetsize.y at the bottom right.
+     * with boundary of 0,0 at the top left ond targetsize.x,targetsize.y at the bottom right.
      *
      * The Renderer2D ignores depth information stored in the render target.
      * The order in which methods are invoked controls which elements are drawn below / above.
@@ -85,6 +85,7 @@ namespace xng {
         }
 
         /**
+         * Must be called before calling draw methods.
          *
          * @param target
          * @param clear
@@ -117,13 +118,6 @@ namespace xng {
                         Rectf({}, target.getDescription().size.convert<float>()));
         }
 
-        /**
-         * Must be called before calling draw methods.
-         *
-         * @param target
-         * @param clear
-         * @param clearColor
-         */
         void renderBegin(RenderTarget &target, ColorRGBA clearColor = ColorRGBA::black(1, 0)) {
             renderBegin(target, true, clearColor, {}, target.getDescription().size, {});
         }
