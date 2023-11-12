@@ -33,10 +33,10 @@ public:
     TextRenderer textRenderer;
 
     Text dynText;
-    TextureAtlasHandle dynHandle;
+    Texture2D dynTexture;
 
     Text staticText;
-    TextureAtlasHandle staticHandle;
+    Texture2D staticTexture;
     bool staticAlloc = false;
 
     float fpsAverageDuration = 0.5;
@@ -94,7 +94,7 @@ public:
             layout.lineHeight = fontSize.y;
 
             staticText = textRenderer.render(staticTxt, layout);
-            staticHandle = ren2D.createTexture(staticText.getImage());
+            staticTexture = ren2D.createTexture(staticText.getImage());
         }
 
         auto deltaMs = deltaTime * 1000;
@@ -140,12 +140,12 @@ public:
 
         dynText = textRenderer.render(dynTxt, layout);
 
-        dynHandle = ren2D.createTexture(dynText.getImage());
+        dynTexture = ren2D.createTexture(dynText.getImage());
 
         ren2D.renderBegin(screen, false, {}, {}, screen.getDescription().size, {});
         ren2D.draw(Rectf({}, dynText.getImage().getSize().convert<float>()),
                    Rectf({}, dynText.getImage().getSize().convert<float>()),
-                   dynHandle,
+                   dynTexture,
                    {},
                    0,
                    xng::NEAREST,
@@ -154,14 +154,14 @@ public:
         ren2D.draw(Rectf({}, staticText.getImage().getSize().convert<float>()),
                    Rectf({0, static_cast<float>(screen.getDescription().size.y - staticText.getImage().getSize().y)},
                          staticText.getImage().getSize().convert<float>()),
-                   staticHandle,
+                   staticTexture,
                    {},
                    0,
                    xng::NEAREST,
                    ColorRGBA::yellow());
         ren2D.renderPresent();
 
-        ren2D.destroyTexture(dynHandle);
+        dynTexture = {};
     }
 };
 

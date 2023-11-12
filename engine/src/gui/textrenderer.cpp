@@ -24,11 +24,11 @@
 namespace xng {
     struct RenderChar {
         std::reference_wrapper<Character> character;
-        TextureAtlasHandle texture; // The character texture
+        Texture2D texture; // The character texture
 
         Vec2f position; // The position of the origin of the character x = Sum of all horizontal advance values before it, y = Sum of all line heights and spacings above it
 
-        RenderChar(Character &character, TextureAtlasHandle texture)
+        RenderChar(Character &character, Texture2D texture)
                 : character(character), texture(std::move(texture)) {}
 
         Vec2f getPosition(const Vec2f &origin) const {
@@ -49,9 +49,7 @@ namespace xng {
     }
 
     TextRenderer::~TextRenderer() {
-        for (auto &pair: textures) {
-            ren2d->destroyTexture(pair.second);
-        }
+        textures.clear();
     }
 
     TextRenderer::TextRenderer(const TextRenderer &other) {
@@ -210,7 +208,7 @@ namespace xng {
 
         ren2d->renderBegin(*target);
         for (auto &c: renderText) {
-            auto texSize = c.texture.size.convert<float>();
+            auto texSize = c.texture.getSize().convert<float>();
             auto pos = c.getPosition(origin);
             ren2d->draw(Rectf({}, texSize),
                         Rectf(pos, texSize),

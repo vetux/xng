@@ -51,7 +51,7 @@ namespace xng {
     private:
         Vec2i pixelSize{0, 50};
         std::map<char, Character> ascii;
-        std::map<char, TextureAtlasHandle> textures;
+        std::map<char, Texture2D> textures;
 
         Font *font = nullptr;
         Renderer2D *ren2d = nullptr;

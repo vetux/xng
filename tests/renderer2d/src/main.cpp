@@ -41,8 +41,8 @@ public:
     ImageRGBA imageA;
     ImageRGBA imageB;
 
-    TextureAtlasHandle texA;
-    TextureAtlasHandle texB;
+    Texture2D texA;
+    Texture2D texB;
 
     float rotSpeed = 55;
     float rot{};
@@ -61,11 +61,6 @@ public:
 
         texA = ren.createTexture(imageA);
         texB = ren.createTexture(imageB);
-    }
-
-    ~TestApplication() {
-        ren.destroyTexture(texA);
-        ren.destroyTexture(texB);
     }
 
     void drawHomePage(DeltaTime delta) {

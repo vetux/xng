@@ -38,6 +38,8 @@
 
 #include "xng/render/geometry/vertexstream.hpp"
 
+#include "xng/render/2d/texture2d.hpp"
+
 namespace xng {
     /**
      * This is a SDL inspired 2d renderer.
@@ -66,11 +68,9 @@ namespace xng {
 
         ~Renderer2D();
 
-        TextureAtlasHandle createTexture(const ImageRGBA &texture);
+        Texture2D createTexture(const ImageRGBA &texture);
 
-        std::vector<TextureAtlasHandle> createTextures(const std::vector<ImageRGBA> &textures);
-
-        void destroyTexture(const TextureAtlasHandle &handle);
+        std::vector<Texture2D> createTextures(const std::vector<ImageRGBA> &textures);
 
         void renderClear(RenderTarget &target,
                          const ColorRGBA &clearColor,
@@ -138,7 +138,7 @@ namespace xng {
          *
          * @param srcRect The part of the of texture to sample
          * @param dstRect The part of the screen to display the sampled part into
-         * @param sprite
+         * @param texture
          * @param center
          * @param rotation
          * @param filter
@@ -148,20 +148,20 @@ namespace xng {
          */
         void draw(const Rectf &srcRect,
                   const Rectf &dstRect,
-                  TextureAtlasHandle &sprite,
+                  const Texture2D &texture,
                   const Vec2f &center,
                   float rotation,
                   TextureFiltering filter,
                   float mix,
                   float mixAlpha,
-                  ColorRGBA mixColor);
+                  const ColorRGBA &mixColor);
 
         /**
          * Draw texture where each fragment color = textureColor * colorFactor
          *
          * @param srcRect The part of the of texture to sample
          * @param dstRect The part of the screen to display the sampled part into
-         * @param sprite
+         * @param texture
          * @param center
          * @param rotation
          * @param filter
@@ -171,7 +171,7 @@ namespace xng {
          */
         void draw(const Rectf &srcRect,
                   const Rectf &dstRect,
-                  TextureAtlasHandle &sprite,
+                  const Texture2D &texture,
                   const Vec2f &center,
                   float rotation,
                   TextureFiltering filter,
@@ -187,7 +187,7 @@ namespace xng {
          * @param rotation
          */
         void draw(const Rectf &rectangle,
-                  ColorRGBA color,
+                  const ColorRGBA &color,
                   bool fill = true,
                   const Vec2f &center = {},
                   float rotation = 0);
@@ -204,7 +204,7 @@ namespace xng {
          */
         void draw(const Vec2f &start,
                   const Vec2f &end,
-                  ColorRGBA color,
+                  const ColorRGBA &color,
                   const Vec2f &position = {},
                   const Vec2f &center = {},
                   float rotation = 0);
@@ -216,7 +216,7 @@ namespace xng {
          * @param color
          */
         void draw(const Vec2f &point,
-                  ColorRGBA color = {},
+                  const ColorRGBA &color = {},
                   const Vec2f &position = {},
                   const Vec2f &center = {},
                   float rotation = 0);
@@ -293,7 +293,7 @@ namespace xng {
 
             Pass(Rectf srcRect,
                  Rectf dstRect,
-                 TextureAtlasHandle &texture,
+                 TextureAtlasHandle texture,
                  Vec2f center,
                  float rotation,
                  TextureFiltering filter,
@@ -313,7 +313,7 @@ namespace xng {
 
             Pass(Rectf srcRect,
                  Rectf dstRect,
-                 TextureAtlasHandle &texture,
+                 TextureAtlasHandle texture,
                  Vec2f center,
                  float rotation,
                  TextureFiltering filter,

@@ -176,7 +176,7 @@ namespace xng {
 
     Renderer2D::~Renderer2D() = default;
 
-    TextureAtlasHandle Renderer2D::createTexture(const ImageRGBA &texture) {
+    Texture2D Renderer2D::createTexture(const ImageRGBA &texture) {
         auto res = TextureAtlas::getClosestMatchingResolutionLevel(texture.getSize());
         auto free = atlas.getFreeSlotCount(res);
         if (free < 1) {
@@ -195,10 +195,11 @@ namespace xng {
         }
         auto ret = atlas.add(texture);
         TextureAtlas::upload(ret, atlasRef, texture);
-        return ret;
+
+        return {std::make_shared<Texture2D::Deallocator>([this, ret]() { atlas.remove(ret); }), ret};
     }
 
-    std::vector<TextureAtlasHandle> Renderer2D::createTextures(const std::vector<ImageRGBA> &textures) {
+    std::vector<Texture2D> Renderer2D::createTextures(const std::vector<ImageRGBA> &textures) {
         std::map<TextureAtlasResolution, size_t> resolutionCounts;
         for (auto &img: textures) {
             auto res = TextureAtlas::getClosestMatchingResolutionLevel(img.getSize());
@@ -223,18 +224,14 @@ namespace xng {
                 updateAtlasRef();
             }
         }
-        std::vector<TextureAtlasHandle> ret;
+        std::vector<Texture2D> ret;
         ret.reserve(textures.size());
         for (auto &img: textures) {
             auto r = atlas.add(img);
             TextureAtlas::upload(r, atlasRef, img);
-            ret.emplace_back(r);
+            ret.emplace_back(std::make_shared<Texture2D::Deallocator>([this, r]() { atlas.remove(r); }), r);
         }
         return ret;
-    }
-
-    void Renderer2D::destroyTexture(const TextureAtlasHandle &handle) {
-        atlas.remove(handle);
     }
 
     void Renderer2D::renderBegin(RenderTarget &target,
@@ -304,56 +301,59 @@ namespace xng {
 
     void Renderer2D::draw(const Rectf &srcRect,
                           const Rectf &dstRect,
-                          TextureAtlasHandle &sprite,
+                          const Texture2D &texture,
                           const Vec2f &center,
                           float rotation,
                           TextureFiltering filter,
                           float mix,
                           float mixAlpha,
-                          ColorRGBA mixColor) {
-        passes.emplace_back(Pass(srcRect,
+                          const ColorRGBA &mixColor) {
+        passes.emplace_back(srcRect,
                                  dstRect,
-                                 sprite,
+                                 texture.getHandle(),
                                  center,
                                  rotation,
                                  filter,
                                  mix,
                                  mixAlpha,
-                                 mixColor));
+                                 mixColor);
     }
 
     void Renderer2D::draw(const Rectf &srcRect,
                           const Rectf &dstRect,
-                          TextureAtlasHandle &sprite,
+                          const Texture2D &texture,
                           const Vec2f &center,
                           float rotation,
                           TextureFiltering filter,
                           ColorRGBA colorFactor) {
-        passes.emplace_back(Pass(srcRect,
+        passes.emplace_back(srcRect,
                                  dstRect,
-                                 sprite,
+                                 texture.getHandle(),
                                  center,
                                  rotation,
                                  filter,
-                                 colorFactor));
+                                 colorFactor);
     }
 
-    void Renderer2D::draw(const Rectf &rectangle, ColorRGBA color, bool fill, const Vec2f &center, float rotation) {
-        passes.emplace_back(Pass(rectangle, color, fill, center, rotation));
+    void Renderer2D::draw(const Rectf &rectangle, const ColorRGBA &color, bool fill, const Vec2f &center, float rotation) {
+        passes.emplace_back(rectangle, color, fill, center, rotation);
     }
 
-    void
-    Renderer2D::draw(const Vec2f &start, const Vec2f &end, ColorRGBA color, const Vec2f &position, const Vec2f &center,
-                     float rotation) {
-        passes.emplace_back(Pass(start, end, color, position, center, rotation));
-    }
-
-    void Renderer2D::draw(const Vec2f &point,
-                          ColorRGBA color,
+    void Renderer2D::draw(const Vec2f &start,
+                          const Vec2f &end,
+                          const ColorRGBA &color,
                           const Vec2f &position,
                           const Vec2f &center,
                           float rotation) {
-        passes.emplace_back(Pass(point, color, position, center, rotation));
+        passes.emplace_back(start, end, color, position, center, rotation);
+    }
+
+    void Renderer2D::draw(const Vec2f &point,
+                          const ColorRGBA &color,
+                          const Vec2f &position,
+                          const Vec2f &center,
+                          float rotation) {
+        passes.emplace_back(point, color, position, center, rotation);
     }
 
     void Renderer2D::updateAtlasRef() {

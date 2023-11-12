@@ -48,10 +48,7 @@ namespace xng {
 
     void CanvasRenderSystem::stop(EntityScene &scene, EventBus &eventBus) {
         scene.removeListener(*this);
-        for (auto &pair: spriteTextureHandles) {
-            ren2d.destroyTexture(pair.second);
-        }
-        spriteTextureHandles.clear();
+        spriteTextures.clear();
         textPixelSizes.clear();
         textRenderers.clear();
         renderedTexts.clear();
@@ -93,7 +90,7 @@ namespace xng {
                 || !pair.second.sprite.isLoaded()
                 || !pair.second.sprite.get().image.isLoaded())
                 continue;
-            if (spriteTextureHandles.find(pair.first) == spriteTextureHandles.end()) {
+            if (spriteTextures.find(pair.first) == spriteTextures.end()) {
                 createTexture(pair.first, pair.second);
             }
         }
@@ -192,8 +189,8 @@ namespace xng {
 
                         if (scene.checkComponent<SpriteComponent>(handle)) {
                             auto &comp = scene.getComponent<SpriteComponent>(handle);
-                            auto texIt = spriteTextureHandles.find(handle);
-                            if (texIt != spriteTextureHandles.end()) {
+                            auto texIt = spriteTextures.find(handle);
+                            if (texIt != spriteTextures.end()) {
                                 ren2d.draw(Rectf(comp.sprite.get().offset),
                                            Rectf(transform.position, transform.size),
                                            texIt->second,
@@ -242,7 +239,7 @@ namespace xng {
 
                             ren2d.draw(srcRect,
                                        Rectf(transform.position, transform.size),
-                                       textTextureHandles.at(handle),
+                                       textTextures.at(handle),
                                        transform.center,
                                        transform.rotation,
                                        comp.filter,
@@ -284,15 +281,13 @@ namespace xng {
 
     void CanvasRenderSystem::onComponentDestroy(const EntityHandle &entity, const Component &component) {
         if (component.getType() == typeid(SpriteComponent)) {
-            if (spriteTextureHandles.find(entity) != spriteTextureHandles.end()) {
-                ren2d.destroyTexture(spriteTextureHandles.at(entity));
-                spriteTextureHandles.erase(entity);
+            if (spriteTextures.find(entity) != spriteTextures.end()) {
+                spriteTextures.erase(entity);
             }
         } else if (component.getType() == typeid(TextComponent)) {
             renderedTexts.erase(entity);
-            if (textTextureHandles.find(entity) != textTextureHandles.end()) {
-                ren2d.destroyTexture(textTextureHandles.at(entity));
-                textTextureHandles.erase(entity);
+            if (textTextures.find(entity) != textTextures.end()) {
+                textTextures.erase(entity);
             }
             if (textPixelSizes.find(entity) != textPixelSizes.end()) {
                 auto v = textPixelSizes.at(entity);
@@ -309,9 +304,8 @@ namespace xng {
             auto &os = dynamic_cast<const SpriteComponent &>(oldComponent);
             auto &ns = dynamic_cast<const SpriteComponent &>(newComponent);
             if (os.sprite != ns.sprite) {
-                if (spriteTextureHandles.find(entity) != spriteTextureHandles.end()) {
-                    ren2d.destroyTexture(spriteTextureHandles.at(entity));
-                    spriteTextureHandles.erase(entity);
+                if (spriteTextures.find(entity) != spriteTextures.end()) {
+                    spriteTextures.erase(entity);
                 }
             }
         } else if (oldComponent.getType() == typeid(TextComponent)) {
@@ -319,9 +313,8 @@ namespace xng {
             auto &ns = dynamic_cast<const TextComponent &>(newComponent);
             if (os != ns) {
                 renderedTexts.erase(entity);
-                if (textTextureHandles.find(entity) != textTextureHandles.end()) {
-                    ren2d.destroyTexture(textTextureHandles.at(entity));
-                    textTextureHandles.erase(entity);
+                if (textTextures.find(entity) != textTextures.end()) {
+                    textTextures.erase(entity);
                 }
             }
         }
@@ -339,10 +332,10 @@ namespace xng {
             if (img.getSize() != dimensions) {
                 // Upload a slice of an image
                 auto slice = img.slice(t.sprite.get().offset);
-                spriteTextureHandles[ent] = ren2d.createTexture(slice);
+                spriteTextures[ent] = ren2d.createTexture(slice);
             } else {
                 // Upload the whole image
-                spriteTextureHandles[ent] = ren2d.createTexture(img);
+                spriteTextures[ent] = ren2d.createTexture(img);
             }
         }
     }
@@ -385,7 +378,7 @@ namespace xng {
                         static_cast<int>(static_cast<float>(comp.lineSpacing)),
                         comp.alignment});
                 renderedTexts[ent] = text;
-                textTextureHandles[ent] = ren2d.createTexture(text.getImage());
+                textTextures[ent] = ren2d.createTexture(text.getImage());
             }
         }
     }

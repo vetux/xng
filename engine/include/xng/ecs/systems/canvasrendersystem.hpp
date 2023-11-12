@@ -80,15 +80,15 @@ namespace xng {
 
         float pixelToMeter;
 
-        std::map<EntityHandle, TextureAtlasHandle> spriteTextureHandles;
-
         std::map<Uri, std::unique_ptr<Font>> fonts;
 
         std::map<EntityHandle, Vec2i> textPixelSizes;
         std::unordered_map<Vec2i, TextRenderer> textRenderers;
 
         std::map<EntityHandle, Text> renderedTexts;
-        std::map<EntityHandle, TextureAtlasHandle> textTextureHandles;
+        std::map<EntityHandle, Texture2D> textTextures;
+
+        std::map<EntityHandle, Texture2D> spriteTextures;
     };
 }
 
