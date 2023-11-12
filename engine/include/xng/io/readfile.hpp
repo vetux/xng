@@ -22,6 +22,8 @@
 
 #include <cstdio>
 #include <fstream>
+#include <sstream>
+#include <vector>
 
 namespace xng {
     /**
