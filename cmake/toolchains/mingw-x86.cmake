@@ -8,10 +8,8 @@
 #    *) cmake -DCMAKE_TOOLCHAIN_FILE=~/mingw-w64-x86_64.cmake ..
 # This is free and unencumbered software released into the public domain.
 
-include(${CMAKE_CURRENT_LIST_DIR}/../user-config-toolchain.cmake OPTIONAL)
-
 set(CMAKE_SYSTEM_NAME Windows)
-set(TOOLCHAIN_PREFIX x86_64-w64-mingw32)
+set(TOOLCHAIN_PREFIX i686-w64-mingw32)
 
 # cross compilers to use for C, C++ and Fortran
 set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}-gcc-posix)
@@ -31,5 +29,5 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
-add_compile_options(-m64 -static -static-libgcc -static-libstdc++)
-add_link_options(-m64 -static -static-libgcc -static-libstdc++)
+add_compile_options(-m32 -static -static-libgcc -static-libstdc++)
+add_link_options(-m32 -static -static-libgcc -static-libstdc++)

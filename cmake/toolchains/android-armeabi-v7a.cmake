@@ -1,8 +1,6 @@
 set(CMAKE_SYSTEM_NAME Android)
 set(CMAKE_ANDROID_ARCH_ABI armeabi-v7a)
 
-include(${CMAKE_CURRENT_LIST_DIR}/../user-config-toolchain.cmake OPTIONAL)
-
 if(USER_CONF_ANDROID_SYSTEM_VERSION)
     set(CMAKE_SYSTEM_VERSION ${USER_CONF_ANDROID_SYSTEM_VERSION})
 endif()

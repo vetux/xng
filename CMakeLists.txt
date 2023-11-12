@@ -17,6 +17,3 @@ include(${BASE_SOURCE_DIR}/cmake/drivers_dependencies.cmake)
 include(${BASE_SOURCE_DIR}/cmake/drivers.cmake)
 include(${BASE_SOURCE_DIR}/cmake/engine.cmake)
 include(${BASE_SOURCE_DIR}/cmake/tests.cmake)
-
-include(platforms/android/android.cmake)
-include(platforms/mingw/mingw.cmake)

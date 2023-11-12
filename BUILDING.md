@@ -13,16 +13,7 @@ If you wish to provide your own build of the dependencies you can set the SUBMOD
 
 # Android Cross Compile
 
-- Create and configure the android <code>user-config-toolchain.cmake</code> file in the [platforms/android/](platforms/android) directory.
-- Enable / Disable the desired [drivers](cmake/drivers.cmake) in the platforms/android/\*/user-config-project.cmake files. (Eg. <code> cmake_policy(SET CMP0077 NEW)</code> <code>set(DRIVER_* ON/OFF)</code> to override the options)
-- Create and configure the <code>user-config-project.cmake</code> files inside the folder for each ABI inside the [platforms/android/](platforms/android) directory to point to your driver dependency include and link directories for the ABI.
-- Build the build-android-* cmake target/s
-
 # Windows Cross Compile - MinGW
-
-- Enable / Disable the desired [drivers](cmake/drivers.cmake) in the platforms/mingw/x86*/user-config-project.cmake files. (Eg. <code> cmake_policy(SET CMP0077 NEW)</code> <code>set(DRIVER_* ON/OFF)</code> to override the options)
-- Create and configure the <code>user-config-project.cmake</code> files inside the folder for each ABI inside the [platforms/mingw/](platforms/mingw) directory to point to your driver dependency include and link directories for the ABI, and optionally configure a base path for the mingw installation.
-- Build the build-mingw-* cmake target/s
 
 # Notes
 
