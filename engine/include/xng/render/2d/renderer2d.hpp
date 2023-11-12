@@ -134,7 +134,10 @@ namespace xng {
         void renderPresent();
 
         /**
-         * Draw texture
+         * Draw texture where each fragment color = textureColor * colorFactor.
+         *
+         * The colorFactor usually is white so the texture color is unaffected,
+         * for rendering text where the image is a grayscale image the color factor can be used to tint the text.
          *
          * @param srcRect The part of the of texture to sample
          * @param dstRect The part of the screen to display the sampled part into
@@ -142,32 +145,7 @@ namespace xng {
          * @param center
          * @param rotation
          * @param filter
-         * @param mix
-         * @param mixAlpha
-         * @param mixColor
-         */
-        void draw(const Rectf &srcRect,
-                  const Rectf &dstRect,
-                  const Texture2D &texture,
-                  const Vec2f &center,
-                  float rotation,
-                  TextureFiltering filter,
-                  float mix,
-                  float mixAlpha,
-                  const ColorRGBA &mixColor);
-
-        /**
-         * Draw texture where each fragment color = textureColor * colorFactor
-         *
-         * @param srcRect The part of the of texture to sample
-         * @param dstRect The part of the screen to display the sampled part into
-         * @param texture
-         * @param center
-         * @param rotation
-         * @param filter
-         * @param mix
-         * @param mixAlpha
-         * @param mixColor
+         * @param colorFactor
          */
         void draw(const Rectf &srcRect,
                   const Rectf &dstRect,
@@ -176,6 +154,29 @@ namespace xng {
                   float rotation,
                   TextureFiltering filter,
                   ColorRGBA colorFactor = ColorRGBA::white());
+
+        /**
+         * Draw texture with a color mixed in.
+         *
+         * @param srcRect The part of the of texture to sample
+         * @param dstRect The part of the screen to display the sampled part into
+         * @param texture
+         * @param center
+         * @param rotation
+         * @param filter
+         * @param mixRGB
+         * @param mixAlpha How much of mixColor.rgb to mix in with the texture color (0 - 1)
+         * @param mixColor How much of mixColor.a to mix in with the texture alpha (0 - 1)
+         */
+        void draw(const Rectf &srcRect,
+                  const Rectf &dstRect,
+                  const Texture2D &texture,
+                  const Vec2f &center,
+                  float rotation,
+                  TextureFiltering filter,
+                  float mixRGB,
+                  float mixAlpha,
+                  const ColorRGBA &mixColor);
 
         /**
          * Draw rectangle
@@ -197,10 +198,10 @@ namespace xng {
          *
          * @param start
          * @param end
+         * @param color
          * @param position
          * @param center
          * @param rotation
-         * @param color
          */
         void draw(const Vec2f &start,
                   const Vec2f &end,
@@ -214,6 +215,9 @@ namespace xng {
          *
          * @param point
          * @param color
+         * @param position
+         * @param center
+         * @param rotation
          */
         void draw(const Vec2f &point,
                   const ColorRGBA &color = {},
@@ -234,21 +238,21 @@ namespace xng {
                 TEXTURE,
             } type{};
 
-            Rectf srcRect;
-            Rectf dstRect; // If line dstRect.position contains the start and dstRect.dimensions the end of the line.
+            Rectf srcRect{};
+            Rectf dstRect{}; // If line dstRect.position contains the start and dstRect.dimensions the end of the line.
 
-            Vec2f center;
+            Vec2f center{};
             float rotation = 0;
 
             bool fill = false;
 
-            TextureAtlasHandle texture;
+            TextureAtlasHandle texture{};
 
-            TextureFiltering filter;
+            TextureFiltering filter{};
 
             float mix = 0;
             float alphaMix = 0;
-            ColorRGBA color;
+            ColorRGBA color{};
 
             bool colorFactor = false;
 
@@ -330,14 +334,9 @@ namespace xng {
         };
 
         struct MeshDrawData {
-            Primitive primitive;
-            DrawCall drawCall;
-            size_t baseVertex;
-        };
-
-        struct BufferRange {
-            size_t start;
-            size_t size;
+            Primitive primitive{};
+            DrawCall drawCall{};
+            size_t baseVertex{};
         };
 
         void present();

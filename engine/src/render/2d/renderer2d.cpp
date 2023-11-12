@@ -305,18 +305,18 @@ namespace xng {
                           const Vec2f &center,
                           float rotation,
                           TextureFiltering filter,
-                          float mix,
+                          float mixRGB,
                           float mixAlpha,
                           const ColorRGBA &mixColor) {
         passes.emplace_back(srcRect,
-                                 dstRect,
-                                 texture.getHandle(),
-                                 center,
-                                 rotation,
-                                 filter,
-                                 mix,
-                                 mixAlpha,
-                                 mixColor);
+                            dstRect,
+                            texture.getHandle(),
+                            center,
+                            rotation,
+                            filter,
+                            mixRGB,
+                            mixAlpha,
+                            mixColor);
     }
 
     void Renderer2D::draw(const Rectf &srcRect,
