@@ -1,5 +1,9 @@
-<img src="https://img.shields.io/github/last-commit/vetux/xng">
-<img src="https://img.shields.io/github/license/vetux/xng"> 
+<div>
+  <img alt="CODE_LINES" src="https://img.shields.io/github/last-commit/vetux/xng" align="left">
+  <img alt="LICENSE" src="https://img.shields.io/github/license/vetux/xng" align="left">
+</div>
+
+<br>
 
 # xEngine
 
