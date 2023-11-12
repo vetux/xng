@@ -15,12 +15,12 @@ workflow
 ## Features
 
 - 3D Frame Graph Renderer
-    - PBR Lighting
+    - Physically Based Lighting
     - Shadow Mapping
 - 2D Renderer with object-oriented SDL like interface
 - Resource system
   - Uri Resource addressing
-  - Multithreaded resource streaming
+  - Multithreaded Resource streaming
   - Automatic Resource Lifetime handling
 - ECS using data oriented architecture
 - Text Rendering
