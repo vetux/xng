@@ -1,0 +1,30 @@
+[submodule "submodules/glfw"]
+	path = submodules/glfw
+	url = https://github.com/glfw/glfw
+[submodule "submodules/assimp"]
+	path = submodules/assimp
+	url = https://github.com/assimp/assimp
+[submodule "submodules/box2d"]
+	path = submodules/box2d
+	url = https://github.com/erincatto/box2d
+[submodule "submodules/cryptopp"]
+	path = submodules/cryptopp
+	url = https://github.com/abdes/cryptopp-cmake
+[submodule "submodules/freetype"]
+	path = submodules/freetype
+	url = https://github.com/freetype/freetype
+[submodule "submodules/glslang"]
+	path = submodules/glslang
+	url = https://github.com/KhronosGroup/glslang
+[submodule "submodules/openal-soft"]
+	path = submodules/openal-soft
+	url = https://github.com/kcat/openal-soft
+[submodule "submodules/libsndfile"]
+	path = submodules/libsndfile
+	url = https://github.com/libsndfile/libsndfile
+[submodule "submodules/SPIRV-Cross"]
+	path = submodules/SPIRV-Cross
+	url = https://github.com/KhronosGroup/SPIRV-Cross
+[submodule "submodules/glm"]
+	path = submodules/glm
+	url = https://github.com/g-truc/glm

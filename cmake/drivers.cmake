@@ -96,15 +96,10 @@ if (DRIVER_BULLET3)
 endif ()
 
 if (DRIVER_OPENAL)
-    if (WIN32)
-        set(AL_LIBNAME OpenAL32)
-    else ()
-        set(AL_LIBNAME openal)
-    endif ()
     CompileDriver(DRIVER_OPENAL
             openal-soft
             OALAudioDriver
-            ${AL_LIBNAME})
+            OpenAL)
 endif ()
 
 if (DRIVER_FREETYPE)

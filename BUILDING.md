@@ -1,3 +1,7 @@
+# Dependencies
+There are git submodules for all driver dependencies provided for your convenience, which are by default built with the drivers using cmake. 
+If you wish to provide your own build of the dependencies you can set the SUBMODULE_DEPENDENCIES cmake option to OFF in your user-config-project.cmake file.
+
 # Windows / Linux Host build
 
 - Create a file called <code>user-config-project.cmake</code> in the [project](/) directory and
