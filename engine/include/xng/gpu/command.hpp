@@ -79,4 +79,5 @@ namespace xng {
         ~Command() = default;
     };
 }
+
 #endif //XENGINE_COMMAND_HPP

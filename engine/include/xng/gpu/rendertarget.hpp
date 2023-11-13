@@ -55,14 +55,14 @@ namespace xng {
                           int targetIndex) {
             return {Command::BLIT_COLOR,
                     RenderTargetBlit(&source,
-                                              this,
-                                              std::move(sourceOffset),
-                                              std::move(targetOffset),
-                                              std::move(sourceRect),
-                                              std::move(targetRect),
-                                              filter,
-                                              sourceIndex,
-                                              targetIndex)};
+                                     this,
+                                     std::move(sourceOffset),
+                                     std::move(targetOffset),
+                                     std::move(sourceRect),
+                                     std::move(targetRect),
+                                     filter,
+                                     sourceIndex,
+                                     targetIndex)};
         }
 
         Command blitDepth(RenderTarget &source,
@@ -72,14 +72,14 @@ namespace xng {
                           Vec2i targetRect) {
             return {Command::BLIT_DEPTH,
                     RenderTargetBlit(&source,
-                                              this,
-                                              std::move(sourceOffset),
-                                              std::move(targetOffset),
-                                              std::move(sourceRect),
-                                              std::move(targetRect),
-                                              {},
-                                              {},
-                                              {})};
+                                     this,
+                                     std::move(sourceOffset),
+                                     std::move(targetOffset),
+                                     std::move(sourceRect),
+                                     std::move(targetRect),
+                                     {},
+                                     {},
+                                     {})};
         }
 
         Command blitStencil(RenderTarget &source,
@@ -89,14 +89,14 @@ namespace xng {
                             Vec2i targetRect) {
             return {Command::BLIT_STENCIL,
                     RenderTargetBlit(&source,
-                                              this,
-                                              std::move(sourceOffset),
-                                              std::move(targetOffset),
-                                              std::move(sourceRect),
-                                              std::move(targetRect),
-                                              {},
-                                              {},
-                                              {})};
+                                     this,
+                                     std::move(sourceOffset),
+                                     std::move(targetOffset),
+                                     std::move(sourceRect),
+                                     std::move(targetRect),
+                                     {},
+                                     {},
+                                     {})};
         }
 
         virtual void setAttachments(const std::vector<RenderTargetAttachment> &colorAttachments) = 0;
