@@ -9,11 +9,16 @@ layout (location = 1) out vec2 fUv;
 layout(binding = 0, std140) uniform ShaderData
 {
     vec4 color;
-    vec4 colorMixFactor_alphaMixFactor_colorFactor;
-    ivec4 texAtlasLevel_texAtlasIndex_texFilter;
+    float colorMixFactor;
+    float alphaMixFactor;
+    float colorFactor;
+    int texAtlasLevel;
+    int texAtlasIndex;
+    int texFilter;
     mat4 mvp;
     vec4 uvOffset_uvScale;
     vec4 atlasScale_texSize;
+    float _padding;
 } vars;
 
 layout(binding = 1) uniform sampler2DArray atlasTextures[12];

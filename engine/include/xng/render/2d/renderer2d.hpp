@@ -462,7 +462,7 @@ namespace xng {
 
         bool mClear = false;
 
-        ColorRGBA mClearColor;
+        ColorRGBA mClearColor = ColorRGBA::black();
 
         VertexLayout vertexLayout;
     };

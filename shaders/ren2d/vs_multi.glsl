@@ -9,11 +9,16 @@ layout (location = 2) flat out uint drawID;
 
 struct PassData {
     vec4 color;
-    vec4 colorMixFactor_alphaMixFactor_colorFactor;
-    ivec4 texAtlasLevel_texAtlasIndex_texFilter;
+    float colorMixFactor;
+    float alphaMixFactor;
+    float colorFactor;
+    int texAtlasLevel;
+    int texAtlasIndex;
+    int texFilter;
     mat4 mvp;
     vec4 uvOffset_uvScale;
     vec4 atlasScale_texSize;
+    float _padding;
 };
 
 layout(binding = 0, std140) buffer ShaderData

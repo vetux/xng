@@ -43,17 +43,22 @@ static float distance(float val1, float val2) {
 }
 
 namespace xng {
-#pragma pack(push, 1)
-    // If anything other than 4 component vectors are used in uniform buffer data the memory layout becomes unpredictable.
+    static_assert(sizeof(float) == 4);
+    static_assert(sizeof(int) == 4);
+
     struct PassData {
-        float color[4];
-        float colorMixFactor_alphaMixFactor_colorFactor[4];
-        int texAtlasLevel_texAtlasIndex_texFilter[4]{-1, -1, 0, 0};
-        Mat4f mvp;
-        float uvOffset_uvScale[4];
-        float atlasScale_texSize[4];
+        alignas(16) float color[4]{};
+        alignas(4) float colorMixFactor{};
+        alignas(4) float alphaMixFactor{};
+        alignas(4) float colorFactor{};
+        alignas(4) int texAtlasLevel = -1;
+        alignas(4) int texAtlasIndex = -1;
+        alignas(4) int texFilter{};
+        alignas(16) Mat4f mvp{};
+        alignas(16) float uvOffset_uvScale[4]{};
+        alignas(16) float atlasScale_texSize[4]{};
+        alignas(4) float _padding{}; // Array stride in the ssbo must be 16 for std140 therefore we add this padding float
     };
-#pragma pack(pop)
 
     static_assert(sizeof(PassData) % 16 == 0);
 
@@ -75,8 +80,8 @@ namespace xng {
 
     Renderer2D::Renderer2D(RenderDevice &device, ShaderCompiler &shaderCompiler, ShaderDecompiler &shaderDecompiler)
             : renderDevice(device) {
-        vertexLayout.attributes.emplace_back(VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT));
-        vertexLayout.attributes.emplace_back(VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT));
+        vertexLayout.attributes.emplace_back(VertexAttribute::VECTOR2, VertexAttribute::FLOAT);
+        vertexLayout.attributes.emplace_back(VertexAttribute::VECTOR2, VertexAttribute::FLOAT);
 
         VertexBufferDesc vertexBufferDesc;
         vertexBufferDesc.size = 0;
@@ -509,12 +514,12 @@ namespace xng {
                     buffer.color[2] = color.z;
                     buffer.color[3] = color.w;
 
-                    buffer.colorMixFactor_alphaMixFactor_colorFactor[0] = pass.mix;
-                    buffer.colorMixFactor_alphaMixFactor_colorFactor[1] = pass.alphaMix;
-                    buffer.colorMixFactor_alphaMixFactor_colorFactor[2] = pass.colorFactor;
-                    buffer.texAtlasLevel_texAtlasIndex_texFilter[0] = pass.texture.level;
-                    buffer.texAtlasLevel_texAtlasIndex_texFilter[1] = (int) pass.texture.index;
-                    buffer.texAtlasLevel_texAtlasIndex_texFilter[2] = pass.filter == LINEAR ? 1 : 0;
+                    buffer.colorMixFactor = pass.mix;
+                    buffer.alphaMixFactor = pass.alphaMix;
+                    buffer.colorFactor = pass.colorFactor;
+                    buffer.texAtlasLevel = pass.texture.level;
+                    buffer.texAtlasIndex = (int) pass.texture.index;
+                    buffer.texFilter = pass.filter == LINEAR ? 1 : 0;
                     auto uvOffset = pass.srcRect.position / pass.texture.size.convert<float>();
                     buffer.uvOffset_uvScale[0] = uvOffset.x;
                     buffer.uvOffset_uvScale[1] = uvOffset.y;
@@ -823,12 +828,12 @@ namespace xng {
                         data.color[1] = color.y;
                         data.color[2] = color.z;
                         data.color[3] = color.w;
-                        data.colorMixFactor_alphaMixFactor_colorFactor[0] = pass.mix;
-                        data.colorMixFactor_alphaMixFactor_colorFactor[1] = pass.alphaMix;
-                        data.colorMixFactor_alphaMixFactor_colorFactor[2] = pass.colorFactor;
-                        data.texAtlasLevel_texAtlasIndex_texFilter[0] = pass.texture.level;
-                        data.texAtlasLevel_texAtlasIndex_texFilter[1] = (int) pass.texture.index;
-                        data.texAtlasLevel_texAtlasIndex_texFilter[2] = pass.filter == LINEAR ? 1 : 0;
+                        data.colorMixFactor = pass.mix;
+                        data.alphaMixFactor = pass.alphaMix;
+                        data.colorFactor = pass.colorFactor;
+                        data.texAtlasLevel = pass.texture.level;
+                        data.texAtlasIndex = (int) pass.texture.index;
+                        data.texFilter = pass.filter == LINEAR ? 1 : 0;
                         auto uvOffset = pass.srcRect.position / pass.texture.size.convert<float>();
                         data.uvOffset_uvScale[0] = uvOffset.x;
                         data.uvOffset_uvScale[1] = uvOffset.y;
