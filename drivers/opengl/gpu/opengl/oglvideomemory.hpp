@@ -17,45 +17,45 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_OGLGPUMEMORY_HPP
-#define XENGINE_OGLGPUMEMORY_HPP
+#ifndef XENGINE_OGLVIDEOMEMORY_HPP
+#define XENGINE_OGLVIDEOMEMORY_HPP
 
-#include "xng/gpu/gpumemory.hpp"
+#include "xng/gpu/videomemory.hpp"
 
 namespace xng::opengl {
     class OGLRenderDevice;
 
-    class OGLGpuMemory : public GpuMemory {
+    class OGLVideoMemory : public VideoMemory {
     public:
         OGLRenderDevice *device;
-        GpuMemoryDesc desc;
+        VideoMemoryDesc desc;
 
-        OGLGpuMemory(OGLRenderDevice &device,
-                     GpuMemoryDesc desc)
+        OGLVideoMemory(OGLRenderDevice &device,
+                       VideoMemoryDesc desc)
                 : device(&device),
                   desc(desc) {}
 
-        GpuMemoryDesc getDescription() override {
+        VideoMemoryDesc getDescription() override {
             return desc;
         }
 
-        size_t getRequiredBufferSize(const VertexBufferDesc &desc) override {
+        size_t getBufferSize(const VertexBufferDesc &desc) override {
             return 1;
         }
 
-        size_t getRequiredBufferSize(const IndexBufferDesc &desc) override {
+        size_t getBufferSize(const IndexBufferDesc &desc) override {
             return 1;
         }
 
-        size_t getRequiredBufferSize(const ShaderUniformBufferDesc &desc) override {
+        size_t getBufferSize(const ShaderUniformBufferDesc &desc) override {
             return 1;
         }
 
-        size_t getRequiredBufferSize(const TextureBufferDesc &desc) override {
+        size_t getBufferSize(const TextureBufferDesc &desc) override {
             return 1;
         }
 
-        size_t getRequiredBufferSize(const TextureArrayBufferDesc &desc) override {
+        size_t getBufferSize(const TextureArrayBufferDesc &desc) override {
             return 1;
         }
 
@@ -72,4 +72,4 @@ namespace xng::opengl {
     };
 }
 
-#endif //XENGINE_OGLGPUMEMORY_HPP
+#endif //XENGINE_OGLVIDEOMEMORY_HPP

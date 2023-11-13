@@ -17,19 +17,19 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_GPUMEMORYDESC_HPP
-#define XENGINE_GPUMEMORYDESC_HPP
+#ifndef XENGINE_VIDEOMEMORYDESC_HPP
+#define XENGINE_VIDEOMEMORYDESC_HPP
 
 #include <set>
 
 #include "xng/util/hashcombine.hpp"
 
 namespace xng {
-    struct GpuMemoryDesc {
+    struct VideoMemoryDesc {
         size_t size; // The size of this memory object
         std::set<RenderObject::Type> bufferTypes; // The list of buffer types which can be created in this memory object
 
-        bool operator==(const GpuMemoryDesc &other) const {
+        bool operator==(const VideoMemoryDesc &other) const {
             return size == other.size
                    && bufferTypes == other.bufferTypes;
         }
@@ -38,8 +38,8 @@ namespace xng {
 
 namespace std {
     template<>
-    struct hash<xng::GpuMemoryDesc> {
-        std::size_t operator()(const xng::GpuMemoryDesc &k) const {
+    struct hash<xng::VideoMemoryDesc> {
+        std::size_t operator()(const xng::VideoMemoryDesc &k) const {
             size_t ret = 0;
             xng::hash_combine(ret, k.size);
             for (auto &v : k.bufferTypes)
@@ -49,4 +49,4 @@ namespace std {
     };
 }
 
-#endif //XENGINE_GPUMEMORYDESC_HPP
+#endif //XENGINE_VIDEOMEMORYDESC_HPP

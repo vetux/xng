@@ -17,11 +17,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_GPUMEMORY_HPP
-#define XENGINE_GPUMEMORY_HPP
+#ifndef XENGINE_VIDEOMEMORY_HPP
+#define XENGINE_VIDEOMEMORY_HPP
 
 #include "xng/gpu/renderobject.hpp"
-#include "xng/gpu/gpumemorydesc.hpp"
+#include "xng/gpu/videomemorydesc.hpp"
 
 #include "xng/gpu/indexbuffer.hpp"
 #include "xng/gpu/vertexbuffer.hpp"
@@ -31,53 +31,54 @@
 
 namespace xng {
     /**
-     * A GpuMemory object represents some region of memory on a gpu device which can be used as backing memory of RenderBuffer objects.
+     * A VideoMemory object represents some region of memory on a gpu device which can be used as backing memory
+     * of RenderBuffer objects.
      *
      * The interface offers control over where the backing memory of RenderBuffer objects is located,
      * however if RenderDeviceCapability::RENDER_GPU_MEMORY is not supported the interface behaves as if there
      * is control over the memory locations but does not actually use the values specified by the user.
      *
-     * Multiple objects can be allocated inside a single GpuMemory object to implement custom memory management of RenderBuffer objects.
+     * Multiple objects can be allocated inside a single VideoMemory object to implement custom memory management of RenderBuffer objects.
      * This custom memory management scheme would only have an effect if the RENDER_GPU_MEMORY capability is supported
      * and otherwise only incurs additional overhead.
      */
-    class GpuMemory : public RenderObject {
+    class VideoMemory : public RenderObject {
     public:
         Type getType() override {
             return RENDER_OBJECT_MEMORY;
         }
 
-        virtual GpuMemoryDesc getDescription() = 0;
+        virtual VideoMemoryDesc getDescription() = 0;
 
         /**
          * @param desc
          * @return The required size in bytes of the hardware buffer for the given description
          */
-        virtual size_t getRequiredBufferSize(const VertexBufferDesc &desc) = 0;
+        virtual size_t getBufferSize(const VertexBufferDesc &desc) = 0;
 
         /**
          * @param desc
          * @return The required size in bytes of the hardware buffer for the given description
          */
-        virtual size_t getRequiredBufferSize(const IndexBufferDesc &desc) = 0;
+        virtual size_t getBufferSize(const IndexBufferDesc &desc) = 0;
 
         /**
          * @param desc
          * @return The required size in bytes of the hardware buffer for the given description
          */
-        virtual size_t getRequiredBufferSize(const ShaderUniformBufferDesc &desc) = 0;
+        virtual size_t getBufferSize(const ShaderUniformBufferDesc &desc) = 0;
 
         /**
          * @param desc
          * @return The required size in bytes of the hardware buffer for the given description
          */
-        virtual size_t getRequiredBufferSize(const TextureBufferDesc &desc) = 0;
+        virtual size_t getBufferSize(const TextureBufferDesc &desc) = 0;
 
         /**
          * @param desc
          * @return The required size in bytes of the hardware buffer for the given description
          */
-        virtual size_t getRequiredBufferSize(const TextureArrayBufferDesc &desc) = 0;
+        virtual size_t getBufferSize(const TextureArrayBufferDesc &desc) = 0;
 
         /**
          * Allocate the buffer in the specified memory object at the specified offset.
@@ -90,17 +91,21 @@ namespace xng {
          * @param offset
          * @return
          */
-        virtual std::unique_ptr<VertexBuffer> createVertexBuffer(const VertexBufferDesc &desc, size_t offset) = 0;
+        virtual std::unique_ptr<VertexBuffer> createVertexBuffer(const VertexBufferDesc &desc,
+                                                                 size_t offset) = 0;
 
-        virtual std::unique_ptr<IndexBuffer> createIndexBuffer(const IndexBufferDesc &desc, size_t offset) = 0;
+        virtual std::unique_ptr<IndexBuffer> createIndexBuffer(const IndexBufferDesc &desc,
+                                                               size_t offset) = 0;
 
-        virtual std::unique_ptr<ShaderUniformBuffer> createShaderBuffer(const ShaderUniformBufferDesc &desc, size_t offset) = 0;
+        virtual std::unique_ptr<ShaderUniformBuffer> createShaderBuffer(const ShaderUniformBufferDesc &desc,
+                                                                        size_t offset) = 0;
 
-        virtual std::unique_ptr<TextureBuffer> createTextureBuffer(const TextureBufferDesc &desc, size_t offset) = 0;
+        virtual std::unique_ptr<TextureBuffer> createTextureBuffer(const TextureBufferDesc &desc,
+                                                                   size_t offset) = 0;
 
         virtual std::unique_ptr<TextureArrayBuffer> createTextureArrayBuffer(const TextureArrayBufferDesc &desc,
                                                                              size_t offset) = 0;
     };
 }
 
-#endif //XENGINE_GPUMEMORY_HPP
+#endif //XENGINE_VIDEOMEMORY_HPP

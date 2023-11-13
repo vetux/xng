@@ -45,7 +45,7 @@
 
 #include "xng/gpu/vertexarrayobject.hpp"
 
-#include "xng/gpu/gpumemory.hpp"
+#include "xng/gpu/videomemory.hpp"
 
 #include "xng/shader/shaderdecompiler.hpp"
 
@@ -106,7 +106,7 @@ namespace xng {
         virtual std::unique_ptr<RenderPass> createRenderPass(const RenderPassDesc &desc) = 0;
 
         /**
-         * Create buffer without specifying a backing GpuMemory.
+         * Create buffer without specifying a backing VideoMemory.
          * The buffer storage is managed by the allocator.
          *
          * @param desc
@@ -130,7 +130,7 @@ namespace xng {
          * @param desc
          * @return
          */
-        virtual std::unique_ptr<GpuMemory> createMemory(const GpuMemoryDesc &desc) = 0;
+        virtual std::unique_ptr<VideoMemory> createMemory(const VideoMemoryDesc &desc) = 0;
 
         virtual void setDebugCallback(const std::function<void(const std::string &)> &callback) = 0;
 

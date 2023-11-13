@@ -24,7 +24,7 @@ namespace xng {
     enum RenderDeviceCapability {
         CAPABILITY_COMPUTE, // Support for compute pipelines
         CAPABILITY_RAYTRACING, // Support for ray tracing pipelines
-        CAPABILITY_GPU_MEMORY, // Support for GpuMemory interface implementation
+        CAPABILITY_VIDEO_MEMORY, // Support for VideoMemory interface
 
         CAPABILITY_MULTI_DRAW, // Support for multiDraw* methods of the RenderPass interface eg glMultiDraw on OpenGL
         CAPABILITY_INSTANCING, // Support for instancedDraw* methods of the RenderPass interface eg glDraw*Instanced on OpenGL

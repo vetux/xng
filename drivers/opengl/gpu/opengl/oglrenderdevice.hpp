@@ -38,7 +38,7 @@
 #include "gpu/opengl/oglvertexbuffer.hpp"
 #include "gpu/opengl/oglvertexarrayobject.hpp"
 #include "gpu/opengl/ogltexturearraybuffer.hpp"
-#include "gpu/opengl/oglgpumemory.hpp"
+#include "gpu/opengl/oglvideomemory.hpp"
 #include "gpu/opengl/oglrenderpass.hpp"
 #include "gpu/opengl/oglcommandbuffer.hpp"
 #include "gpu/opengl/oglcommandqueue.hpp"
@@ -239,8 +239,8 @@ namespace xng::opengl {
             return std::make_unique<OGLTextureArrayBuffer>(desc, statistics);
         }
 
-        std::unique_ptr<GpuMemory> createMemory(const GpuMemoryDesc &desc) override {
-            return std::make_unique<OGLGpuMemory>(*this, desc);
+        std::unique_ptr<VideoMemory> createMemory(const VideoMemoryDesc &desc) override {
+            return std::make_unique<OGLVideoMemory>(*this, desc);
         }
 
         void setDebugCallback(const std::function<void(const std::string &)> &c) override {
