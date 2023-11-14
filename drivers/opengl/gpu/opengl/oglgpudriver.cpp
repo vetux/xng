@@ -24,7 +24,7 @@
 #include "glad/glad.h"
 
 namespace xng::opengl {
-    const std::vector<RenderDeviceInfo> &OGLGpuDriver::getAvailableRenderDevices() {
+    std::vector<RenderDeviceInfo> OGLGpuDriver::getAvailableRenderDevices() {
         if (!retrievedInfos) {
             retrievedInfos = true;
             glGetIntegerv(GL_MAX_SAMPLES, &deviceInfos.at(0).maxSampleCount);

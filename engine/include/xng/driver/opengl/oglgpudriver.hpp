@@ -25,7 +25,7 @@
 namespace xng::opengl {
     class XENGINE_EXPORT OGLGpuDriver : public GpuDriver {
     public:
-        const std::vector<RenderDeviceInfo> &getAvailableRenderDevices() override;
+        std::vector<RenderDeviceInfo> getAvailableRenderDevices() override;
 
         std::unique_ptr<RenderDevice> createRenderDevice() override;
 

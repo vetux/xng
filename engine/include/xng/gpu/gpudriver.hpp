@@ -30,7 +30,7 @@ namespace xng {
         /**
          * @return Return the information objects of the available render devices.
          */
-        virtual const std::vector<RenderDeviceInfo> &getAvailableRenderDevices() = 0;
+        virtual std::vector<RenderDeviceInfo> getAvailableRenderDevices() = 0;
 
         virtual std::unique_ptr<RenderDevice> createRenderDevice() = 0;
 
