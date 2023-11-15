@@ -25,6 +25,13 @@ namespace xng {
         UNSIGNED_INT
     };
 
+    inline size_t getIndexTypeSize(IndexType type) {
+        switch (type) {
+            default:
+                return sizeof(unsigned int);
+        }
+    }
+
     /**
      * A DrawCall specifies which portion of the bound index or vertex buffer to draw.
      */

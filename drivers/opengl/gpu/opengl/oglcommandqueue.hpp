@@ -27,6 +27,21 @@
 #include "gpu/opengl/oglcomputepipeline.hpp"
 
 namespace xng::opengl {
+    typedef struct {
+        unsigned int count;
+        unsigned int instanceCount;
+        unsigned int firstIndex;
+        int baseVertex;
+        unsigned int baseInstance;
+    } DrawElementsIndirectCommand;
+
+    typedef  struct {
+        unsigned int  count;
+        unsigned int  instanceCount;
+        unsigned int  first;
+        unsigned int  baseInstance;
+    } DrawArraysIndirectCommand;
+
     class OGLCommandQueue : public CommandQueue {
     public:
         static GLuint getTextureSlot(int slot) {
@@ -43,9 +58,15 @@ namespace xng::opengl {
 
         bool runningPass = false;
 
-        explicit OGLCommandQueue(RenderStatistics &stats) : stats(stats) {}
+        GLuint indirectBuffer;
+
+        explicit OGLCommandQueue(RenderStatistics &stats) : stats(stats) {
+            glGenBuffers(1, &indirectBuffer);
+            checkGLError();
+        }
 
         ~OGLCommandQueue() override {
+            glDeleteBuffers(1, &indirectBuffer);
         }
 
         Type getType() override {
@@ -487,21 +508,28 @@ namespace xng::opengl {
                     if (!mRenderPipeline) {
                         throw std::runtime_error("No pipeline bound");
                     }
-                    std::vector<GLint> first;
-                    std::vector<GLsizei> count;
 
-                    first.reserve(data.drawCalls.size());
-                    count.reserve(data.drawCalls.size());
-
-                    for (auto &call: data.drawCalls) {
-                        first.emplace_back(call.offset);
-                        count.emplace_back(call.count);
+                    std::vector<DrawArraysIndirectCommand> cmds;
+                    for (auto & drawCall : data.drawCalls) {
+                        DrawArraysIndirectCommand cmd;
+                        cmd.count = drawCall.count;
+                        cmd.first = drawCall.offset;
+                        cmd.instanceCount = 1;
+                        cmd.baseInstance = 0;
+                        cmds.emplace_back(cmd);
                     }
 
-                    glMultiDrawArrays(convert(mRenderPipeline->getDescription().primitive),
-                                      first.data(),
-                                      count.data(),
-                                      static_cast<GLsizei>(data.drawCalls.size()));
+                    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuffer);
+                    glBufferData(GL_DRAW_INDIRECT_BUFFER,
+                                 static_cast<GLsizeiptr >(cmds.size() * sizeof(DrawElementsIndirectCommand)),
+                                 reinterpret_cast<void *>(cmds.data()),
+                                 GL_DYNAMIC_DRAW);
+                    glMultiDrawArraysIndirect(convert(mRenderPipeline->getDescription().primitive),
+                                                nullptr,
+                                                static_cast<GLsizei>(cmds.size()),
+                                                0);
+                    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+
                     stats.drawCalls++;
                     for (auto &call: data.drawCalls) {
                         stats.polys += call.count / mRenderPipeline->getDescription().primitive;
@@ -516,22 +544,29 @@ namespace xng::opengl {
                     if (!mRenderPipeline) {
                         throw std::runtime_error("No pipeline bound");
                     }
-                    std::vector<GLsizei> count;
-                    std::vector<unsigned int> indices;
-
-                    count.reserve(data.drawCalls.size());
-                    indices.reserve(data.drawCalls.size());
-
-                    for (auto &call: data.drawCalls) {
-                        count.emplace_back(call.count);
-                        indices.emplace_back(call.offset);
+                    std::vector<DrawElementsIndirectCommand> cmds;
+                    for (auto i = 0; i < data.drawCalls.size(); i++) {
+                        DrawElementsIndirectCommand cmd;
+                        cmd.count = data.drawCalls.at(i).count;
+                        cmd.instanceCount = 1;
+                        cmd.firstIndex = data.drawCalls.at(i).offset / getIndexTypeSize(data.drawCalls.at(i).indexType);
+                        cmd.baseVertex = 0;
+                        cmd.baseInstance = 0;
+                        cmds.emplace_back(cmd);
                     }
 
-                    glMultiDrawElements(convert(mRenderPipeline->getDescription().primitive),
-                                        count.data(),
-                                        GL_UNSIGNED_INT,
-                                        reinterpret_cast<const void *const *>(indices.data()),
-                                        static_cast<GLsizei>(data.drawCalls.size()));
+                    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuffer);
+                    glBufferData(GL_DRAW_INDIRECT_BUFFER,
+                                 static_cast<GLsizeiptr >(cmds.size() * sizeof(DrawElementsIndirectCommand)),
+                                 reinterpret_cast<void *>(cmds.data()),
+                                 GL_DYNAMIC_DRAW);
+                    glMultiDrawElementsIndirect(convert(mRenderPipeline->getDescription().primitive),
+                                                GL_UNSIGNED_INT,
+                                                nullptr,
+                                                static_cast<GLsizei>(cmds.size()),
+                                                0);
+                    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+
                     stats.drawCalls++;
                     for (auto &call: data.drawCalls) {
                         stats.polys += call.count / mRenderPipeline->getDescription().primitive;
@@ -581,30 +616,32 @@ namespace xng::opengl {
                     if (!mRenderPipeline) {
                         throw std::runtime_error("No pipeline bound");
                     }
-                    std::vector<GLsizei> count;
-                    std::vector<void *> indices;
 
-                    count.reserve(data.drawCalls.size());
-                    indices.reserve(data.drawCalls.size());
-
-                    for (auto &call: data.drawCalls) {
-                        count.emplace_back(call.count);
-                        indices.emplace_back(reinterpret_cast<void *>(call.offset));
+                    std::vector<DrawElementsIndirectCommand> cmds;
+                    for (auto i = 0; i < data.drawCalls.size(); i++) {
+                        DrawElementsIndirectCommand cmd;
+                        cmd.count = data.drawCalls.at(i).count;
+                        cmd.instanceCount = 1;
+                        cmd.firstIndex = data.drawCalls.at(i).offset / getIndexTypeSize(data.drawCalls.at(i).indexType);
+                        cmd.baseVertex = static_cast<int>(data.baseVertices.at(i));
+                        cmd.baseInstance = 0;
+                        cmds.emplace_back(cmd);
                     }
 
-                    std::vector<GLint> vertices;
-                    for (auto &v: data.baseVertices) {
-                        auto d = static_cast<GLint>(v);
-                        assert(d >= 0);
-                        vertices.emplace_back(d);
-                    }
+                    // Because on Mesa glMultiDrawElementsBaseVertex does not draw the meshes after exceeding a certain
+                    // draw count we use glMultiDrawElementsIndirect which might incur a small overhead but appears to work correctly on mesa.
+                    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuffer);
+                    glBufferData(GL_DRAW_INDIRECT_BUFFER,
+                                 static_cast<GLsizeiptr >(cmds.size() * sizeof(DrawElementsIndirectCommand)),
+                                 reinterpret_cast<void *>(cmds.data()),
+                                 GL_DYNAMIC_DRAW);
+                    glMultiDrawElementsIndirect(convert(mRenderPipeline->getDescription().primitive),
+                                                GL_UNSIGNED_INT,
+                                                nullptr,
+                                                static_cast<GLsizei>(cmds.size()),
+                                                0);
+                    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
 
-                    glMultiDrawElementsBaseVertex(convert(mRenderPipeline->getDescription().primitive),
-                                                  count.data(),
-                                                  GL_UNSIGNED_INT,
-                                                  indices.data(),
-                                                  static_cast<GLsizei>(data.drawCalls.size()),
-                                                  vertices.data());
                     stats.drawCalls++;
                     for (auto &call: data.drawCalls) {
                         stats.polys += call.count / mRenderPipeline->getDescription().primitive;
