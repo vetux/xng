@@ -120,17 +120,28 @@ namespace xng::vulkan {
 #ifdef NDEBUG
         createInfo.enabledLayerCount = 0;
 #else
-        // Layers returned by vkEnumerateInstanceLayerProperties which are supposed to be available are not available on debian 12. (VK_ERROR_LAYER_NOT_PRESENT)
-        // Therefore there is no way to debug vulkan on linux by design.
+        // Make sure to install the vulkan-validationlayers-dev package if using debian 12
         uint32_t layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
         std::vector<VkLayerProperties> availableLayers(layerCount);
         vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-        std::vector<const char *> validationLayers(layerCount);
-        for (auto &l: availableLayers) {
-            validationLayers.emplace_back(l.layerName);
+        std::vector<const char *> validationLayers{
+                "VK_LAYER_KHRONOS_validation"
+        };
+
+        for (auto &layer: validationLayers) {
+            bool found = false;
+            for (auto &l: availableLayers) {
+                if (strcmp(l.layerName, layer) == 0) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                throw std::runtime_error("Failed to find validation layer: " + std::string(layer));
+            }
         }
 
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
