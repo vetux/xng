@@ -114,7 +114,7 @@ namespace xng {
 
         virtual void setWindowFocusOnShow(bool focusOnShow) = 0;
 
-        virtual void setSwapInterval(int interval) = 0;
+        virtual void setEnableVsync(bool sync) = 0;
     };
 }
 

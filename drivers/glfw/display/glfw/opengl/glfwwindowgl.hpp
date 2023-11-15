@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_WINDOWGLFWGL_HPP
-#define XENGINE_WINDOWGLFWGL_HPP
+#ifndef XENGINE_GLFWWINDOWGL_HPP
+#define XENGINE_GLFWWINDOWGL_HPP
 
 #include <set>
 
@@ -33,17 +33,17 @@
 #include "input/glfw/glfwinput.hpp"
 
 namespace xng::glfw {
-    class WindowGLFWGL : public Window {
+    class GLFWWindowGL : public Window {
     public:
-        WindowGLFWGL(const std::string &title, Vec2i size, WindowAttributes attributes);
+        GLFWWindowGL(const std::string &title, Vec2i size, WindowAttributes attributes);
 
-        WindowGLFWGL(const std::string &title,
+        GLFWWindowGL(const std::string &title,
                      Vec2i size,
                      WindowAttributes attributes,
                      MonitorGLFW &monitor,
                      VideoMode videoMode);
 
-        ~WindowGLFWGL() override;
+        ~GLFWWindowGL() override;
 
         std::unique_ptr<RenderTarget> getRenderTarget(RenderDevice &device) override;
 
@@ -111,7 +111,7 @@ namespace xng::glfw {
 
         void setWindowFocusOnShow(bool focusOnShow) override;
 
-        void setSwapInterval(int interval) override;
+        void setEnableVsync(bool sync) override;
 
         void glfwWindowCloseCallback();
 
@@ -144,4 +144,4 @@ namespace xng::glfw {
     };
 }
 
-#endif //XENGINE_WINDOWGLFWGL_HPP
+#endif //XENGINE_GLFWWINDOWGL_HPP

@@ -25,7 +25,7 @@
 
 #ifdef DRIVER_GLFW_OPENGL
 
-#include "display/glfw/opengl/windowglfwgl.hpp"
+#include "display/glfw/opengl/glfwwindowgl.hpp"
 
 #endif
 
@@ -42,13 +42,13 @@ namespace xng::glfw {
 #ifdef DRIVER_GLFW_OPENGL
         else if (gpuBackend == OPENGL_4_6) {
             if (monitor) {
-                return std::make_unique<WindowGLFWGL>(title,
+                return std::make_unique<GLFWWindowGL>(title,
                                                       size,
                                                       attributes,
                                                       dynamic_cast<MonitorGLFW &>(*monitor),
                                                       mode);
             } else {
-                return std::make_unique<WindowGLFWGL>(title,
+                return std::make_unique<GLFWWindowGL>(title,
                                                       size,
                                                       attributes);
             }
