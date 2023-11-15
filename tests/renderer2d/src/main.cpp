@@ -18,11 +18,15 @@
  */
 
 #include "xng/xng.hpp"
+#include "xng/driver/glfw/glfwdisplaydriver.hpp"
+#include "xng/driver/opengl/oglgpudriver.hpp"
+#include "xng/driver/glslang/glslangcompiler.hpp"
+#include "xng/driver/spirv-cross/spirvcrossdecompiler.hpp"
+#include "xng/driver/freetype/ftfontdriver.hpp"
 
 #include <fstream>
 
 #include "debugoverlay.hpp"
-#include "xng/util/time.hpp"
 
 using namespace xng;
 
@@ -191,7 +195,6 @@ int main(int argc, char *argv[]) {
 
     std::vector<std::unique_ptr<ResourceParser>> parsers;
     parsers.emplace_back(std::make_unique<StbiParser>());
-    parsers.emplace_back(std::make_unique<AssImpParser>());
     parsers.emplace_back(std::make_unique<JsonParser>());
 
     xng::ResourceRegistry::getDefaultRegistry().setImporter(

@@ -18,6 +18,11 @@
  */
 
 #include "xng/xng.hpp"
+#include "xng/driver/glfw/glfwdisplaydriver.hpp"
+#include "xng/driver/opengl/oglgpudriver.hpp"
+#include "xng/driver/glslang/glslangcompiler.hpp"
+#include "xng/driver/spirv-cross/spirvcrossdecompiler.hpp"
+#include "xng/driver/freetype/ftfontdriver.hpp"
 
 #include "debugoverlay.hpp"
 
