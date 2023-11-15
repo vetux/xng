@@ -22,6 +22,7 @@
 
 #include "xng/gpu/renderproperties.hpp"
 #include "xng/gpu/textureproperties.hpp"
+#include "xng/render/geometry/primitive.hpp"
 
 namespace xng::opengl {
     static GLenum getColorAttachment(int index) {

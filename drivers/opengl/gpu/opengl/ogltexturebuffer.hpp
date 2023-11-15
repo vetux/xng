@@ -21,6 +21,7 @@
 #define XENGINE_OGLTEXTUREBUFFER_HPP
 
 #include "xng/gpu/texturebuffer.hpp"
+#include "xng/gpu/renderstatistics.hpp"
 
 #include <utility>
 

@@ -25,6 +25,10 @@
 namespace xng::glfw {
     class XENGINE_EXPORT GLFWDisplayDriver : public DisplayDriver {
     public:
+        GLFWDisplayDriver();
+
+        ~GLFWDisplayDriver();
+
         std::unique_ptr<Monitor> getPrimaryMonitor() override;
 
         std::set<std::unique_ptr<Monitor>> getMonitors() override;

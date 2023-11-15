@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
                                              "XNG Shadows Test",
                                              {800, 600},
                                              WindowAttributes{
-                                                     .swapInterval = 1,
+                                                     .vsync = true,
                                                      .debug = false
                                              });
     auto &input = window->getInput();

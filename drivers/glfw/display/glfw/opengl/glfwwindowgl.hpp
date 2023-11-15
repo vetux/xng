@@ -22,18 +22,10 @@
 
 #include <set>
 
-#include "glad/glad.h"
-
-#include "xng/display/window.hpp"
-#include "xng/display/windowattributes.hpp"
-
-#include "display/glfw/monitorglfw.hpp"
-#include "display/glfw/opengl/glfwrendertargetgl.hpp"
-
-#include "input/glfw/glfwinput.hpp"
+#include "display/glfw/glfwwindow.hpp"
 
 namespace xng::glfw {
-    class GLFWWindowGL : public Window {
+    class GLFWWindowGL : public GLFWWindow {
     public:
         GLFWWindowGL(const std::string &title, Vec2i size, WindowAttributes attributes);
 
@@ -43,104 +35,13 @@ namespace xng::glfw {
                      MonitorGLFW &monitor,
                      VideoMode videoMode);
 
-        ~GLFWWindowGL() override;
+        ~GLFWWindowGL() override = default;
 
         std::unique_ptr<RenderTarget> getRenderTarget(RenderDevice &device) override;
 
-        Input &getInput() override;
-
         void swapBuffers() override;
 
-        void update() override;
-
-        bool shouldClose() override;
-
-        void maximize() override;
-
-        void minimize() override;
-
-        void restore() override;
-
-        void show() override;
-
-        void hide() override;
-
-        void focus() override;
-
-        void requestAttention() override;
-
-        void setTitle(std::string title) override;
-
-        void setIcon(ImageRGBA &buffer) override;
-
-        void setWindowPosition(Vec2i position) override;
-
-        Vec2i getWindowPosition() override;
-
-        void setWindowSize(Vec2i size) override;
-
-        Vec2i getWindowSize() override;
-
-        void setWindowSizeLimit(Vec2i sizeMin, Vec2i sizeMax) override;
-
-        void setWindowAspectRatio(Vec2i ratio) override;
-
-        Vec2i getFramebufferSize() override;
-
-        Vec4i getFrameSize() override;
-
-        Vec2f getWindowContentScale() override;
-
-        float getWindowOpacity() override;
-
-        void setWindowOpacity(float opacity) override;
-
-        std::unique_ptr<Monitor> getMonitor() override;
-
-        void setMonitor(Monitor &monitor, Recti rect, int refreshRate) override;
-
-        void setWindowed() override;
-
-        void setWindowDecorated(bool decorated) override;
-
-        void setWindowResizable(bool resizable) override;
-
-        void setWindowAlwaysOnTop(bool alwaysOnTop) override;
-
-        void setWindowAutoMinimize(bool autoMinimize) override;
-
-        void setWindowFocusOnShow(bool focusOnShow) override;
-
         void setEnableVsync(bool sync) override;
-
-        void glfwWindowCloseCallback();
-
-        void glfwWindowMoveCallback(Vec2i pos);
-
-        void glfwWindowSizeCallback(int width, int height);
-
-        void glfwWindowRefreshCallback();
-
-        void glfwWindowFocusCallback(bool focused);
-
-        void glfwWindowMinimizeCallback();
-
-        void glfwWindowMaximizeCallback();
-
-        void glfwWindowContentScaleCallback(Vec2f scale);
-
-        void glfwFrameBufferSizeCallback(Vec2i size);
-
-        UnregisterCallback addListener(WindowListener &listener) override;
-
-        void removeListener(WindowListener &listener) override;
-
-        GLFWwindow *windowHandle() { return wndH; }
-
-    private:
-        GLFWwindow *wndH;
-        std::unique_ptr<GLFWInput> input;
-        std::set<WindowListener *> listeners;
     };
 }
 

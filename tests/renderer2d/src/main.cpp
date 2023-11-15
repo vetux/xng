@@ -203,7 +203,7 @@ int main(int argc, char *argv[]) {
                                              "Renderer 2D Test",
                                              {640, 480},
                                              {
-                                                     .swapInterval = 1,
+                                                     .vsync = true,
                                                      .debug = false
                                              });
 

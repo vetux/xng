@@ -59,6 +59,14 @@ namespace xng::glfw {
         }
     }
 
+    GLFWDisplayDriver::GLFWDisplayDriver() {
+        glfwInit();
+    }
+
+    GLFWDisplayDriver::~GLFWDisplayDriver() {
+        glfwTerminate();
+    }
+
     std::unique_ptr<Monitor> GLFWDisplayDriver::getPrimaryMonitor() {
         return std::make_unique<MonitorGLFW>(glfwGetPrimaryMonitor());
     }
