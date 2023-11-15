@@ -109,8 +109,6 @@ namespace xng::glfw {
 
         void setWindowFocusOnShow(bool focusOnShow) override;
 
-        void setEnableVsync(bool sync) override = 0;
-
         void glfwWindowCloseCallback();
 
         void glfwWindowMoveCallback(Vec2i pos);
@@ -136,7 +134,7 @@ namespace xng::glfw {
         GLFWwindow *windowHandle() { return wndH; }
 
     protected:
-        GLFWwindow *wndH;
+        GLFWwindow *wndH{};
         std::unique_ptr<GLFWInput> input;
         std::set<WindowListener *> listeners;
     };

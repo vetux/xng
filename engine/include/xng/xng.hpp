@@ -106,6 +106,7 @@
 #include "xng/audio/audiodata.hpp"
 #include "xng/audio/audiocontext.hpp"
 #include "xng/audio/audiodevice.hpp"
+#include "xng/driver/vulkan/vkgpudriver.hpp"
 #include "xng/driver/sndfile/sndfileparser.hpp"
 #include "xng/driver/openal-soft/oalaudiodriver.hpp"
 #include "xng/driver/freetype/ftfontdriver.hpp"

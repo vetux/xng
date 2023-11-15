@@ -23,7 +23,7 @@
 #include <set>
 #include <map>
 
-#include <GLFW/glfw3.h>
+#include "display/glfw/glfwinclude.hpp"
 
 #include "xng/render/image.hpp"
 #include "xng/input/input.hpp"

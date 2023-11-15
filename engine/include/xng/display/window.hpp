@@ -113,8 +113,6 @@ namespace xng {
         virtual void setWindowAutoMinimize(bool autoMinimize) = 0;
 
         virtual void setWindowFocusOnShow(bool focusOnShow) = 0;
-
-        virtual void setEnableVsync(bool sync) = 0;
     };
 }
 

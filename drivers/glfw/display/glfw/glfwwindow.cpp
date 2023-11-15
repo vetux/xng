@@ -392,10 +392,6 @@ namespace xng::glfw {
         glfwSetWindowAttrib(wndH, GLFW_FOCUS_ON_SHOW, focusOnShow);
     }
 
-    void GLFWWindow::setEnableVsync(bool sync) {
-        glfwSwapInterval(sync);
-    }
-
     Listenable<WindowListener>::UnregisterCallback GLFWWindow::addListener(WindowListener &listener) {
         if (listeners.find(&listener) != listeners.end())
             throw std::runtime_error("Listener already registered");

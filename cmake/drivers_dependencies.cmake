@@ -1,4 +1,4 @@
-option(SUBMODULE_DEPENDENCIES "Use the submodules to satisfy driver dependencies" true)
+option(SUBMODULE_DEPENDENCIES "Use the submodules to satisfy driver dependencies" ON)
 
 if (SUBMODULE_DEPENDENCIES)
     if (DRIVER_GLFW)

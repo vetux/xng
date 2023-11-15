@@ -1,17 +1,19 @@
-option(DRIVER_GLFW "Build the glfw display driver")
-option(DRIVER_GLFW_OPENGL "Build the opengl support of the glfw display driver") # Depends on DRIVER_OPENGL
-option(DRIVER_OPENGL "Build the OpenGL gpu driver")
-option(DRIVER_BOX2D "Build the box2d physics driver")
-option(DRIVER_BULLET3 "Build the bullet3 physics driver")
-option(DRIVER_OPENAL "Build the OpenAL audio driver")
-option(DRIVER_FREETYPE "Build the FreeType font rendering driver")
-option(DRIVER_ASSIMP "Build the AssImp resource parser driver (For 3D asset file formats)")
-option(DRIVER_SNDFILE "Build the SndFile resource parser driver (For Audio file formats)")
-option(DRIVER_GLSLANG "Build the GLSLang shader compiler driver")
-option(DRIVER_SPIRVCROSS "Build the SPIRV-Cross shader decompiler driver")
-option(DRIVER_CRYPTOPP "Build the CryptoPP driver")
-option(DRIVER_ANDROID "Build the android display driver")
-option(DRIVER_ANDROID_OPENGL "Build the opengl support of the android display driver") # Depends on DRIVER_OPENGL
+option(DRIVER_GLFW "Build the glfw display driver" ON)
+option(DRIVER_GLFW_OPENGL "Build the opengl support of the glfw display driver" ON) # Depends on DRIVER_OPENGL
+option(DRIVER_GLFW_VULKAN "Build the vulkan support of the glfw display driver" ON) # Depends on DRIVER_VULKAN
+option(DRIVER_OPENGL "Build the OpenGL gpu driver" ON)
+option(DRIVER_VULKAN "Build the Vulkan gpu driver" ON)
+option(DRIVER_BOX2D "Build the box2d physics driver" ON)
+option(DRIVER_BULLET3 "Build the bullet3 physics driver"  ON)
+option(DRIVER_OPENAL "Build the OpenAL audio driver"  ON)
+option(DRIVER_FREETYPE "Build the FreeType font rendering driver"  ON)
+option(DRIVER_ASSIMP "Build the AssImp resource parser driver (For 3D asset file formats)"  ON)
+option(DRIVER_SNDFILE "Build the SndFile resource parser driver (For Audio file formats)"  ON)
+option(DRIVER_GLSLANG "Build the GLSLang shader compiler driver"  ON)
+option(DRIVER_SPIRVCROSS "Build the SPIRV-Cross shader decompiler driver"  ON)
+option(DRIVER_CRYPTOPP "Build the CryptoPP driver"  ON)
+option(DRIVER_ANDROID "Build the android display driver" OFF)
+option(DRIVER_ANDROID_OPENGL "Build the opengl support of the android display driver" OFF) # Depends on DRIVER_OPENGL
 
 set(DRIVERS_INCLUDE) # The drivers include directories in a list
 set(DRIVERS_SRC) # The drivers source files in a list
@@ -56,6 +58,10 @@ if (DRIVER_GLFW_OPENGL)
     add_compile_definitions(DRIVER_GLFW_OPENGL)
 endif ()
 
+if (DRIVER_GLFW_VULKAN)
+    add_compile_definitions(DRIVER_GLFW_VULKAN)
+endif ()
+
 if (DRIVER_ANDROID)
     CompileDriver(DRIVER_ANDROID
             android
@@ -80,6 +86,15 @@ if (DRIVER_OPENGL)
             opengl
             opengl::OGLGpuDriver
             ${GL_LIBNAME})
+endif ()
+
+if (DRIVER_VULKAN)
+    find_package(Vulkan REQUIRED)
+    include_directories(${Vulkan_INCLUDE_DIRS})
+    CompileDriver(DRIVER_VULKAN
+            vulkan
+            vulkan::VkGpuDriver
+            ${Vulkan_LIBRARIES})
 endif ()
 
 if (DRIVER_BOX2D)

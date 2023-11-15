@@ -22,7 +22,7 @@
 
 #include <stdexcept>
 
-#include <GLFW/glfw3.h>
+#include "display/glfw/glfwinclude.hpp"
 
 #include "xng/input/device/gamepad.hpp"
 #include "xng/input/device/keyboard.hpp"

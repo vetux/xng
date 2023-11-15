@@ -44,6 +44,14 @@ namespace xng {
                                                      WindowAttributes attributes,
                                                      Monitor &monitor,
                                                      VideoMode mode) = 0;
+
+        /**
+         * Because on vulkan the display driver requires extensions for creating surfaces this
+         * method will be called in the VkGpuDriver constructor to retrieve the required extensions.
+         *
+         * @return
+         */
+        virtual std::vector<const char *> getRequiredVulkanExtensions() = 0;
     };
 }
 

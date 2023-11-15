@@ -20,7 +20,7 @@
 #ifndef XENGINE_MONITORGLFW_HPP
 #define XENGINE_MONITORGLFW_HPP
 
-#include <GLFW/glfw3.h>
+#include "display/glfw/glfwinclude.hpp"
 
 #include "xng/display/monitor.hpp"
 

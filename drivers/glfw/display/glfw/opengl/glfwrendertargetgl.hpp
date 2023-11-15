@@ -22,7 +22,7 @@
 
 #include "gpu/opengl/oglrendertarget.hpp"
 
-#include <GLFW/glfw3.h>
+#include "display/glfw/glfwinclude.hpp"
 
 namespace xng::glfw {
     class GLFWRenderTargetGL : public opengl::OGLRenderTarget {

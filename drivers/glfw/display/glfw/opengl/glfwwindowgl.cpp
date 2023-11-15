@@ -79,10 +79,6 @@ namespace xng::glfw {
     void GLFWWindowGL::swapBuffers() {
         glfwSwapBuffers(wndH);
     }
-
-    void GLFWWindowGL::setEnableVsync(bool sync) {
-        glfwSwapInterval(sync);
-    }
 }
 
 #endif

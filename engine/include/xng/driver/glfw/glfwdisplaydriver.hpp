@@ -46,6 +46,8 @@ namespace xng::glfw {
                                              WindowAttributes attributes,
                                              Monitor &monitor,
                                              VideoMode mode) override;
+
+        std::vector<const char *> getRequiredVulkanExtensions() override;
     };
 }
 

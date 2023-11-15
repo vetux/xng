@@ -17,8 +17,6 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#define GLFW_INCLUDE_NONE
-
 #include "display/glfw/monitorglfw.hpp"
 
 #include "xng/driver/glfw/glfwdisplaydriver.hpp"
@@ -26,6 +24,12 @@
 #ifdef DRIVER_GLFW_OPENGL
 
 #include "display/glfw/opengl/glfwwindowgl.hpp"
+
+#endif
+
+#ifdef DRIVER_GLFW_VULKAN
+
+#include "display/glfw/vulkan/glfwwindowvk.hpp"
 
 #endif
 
@@ -49,6 +53,21 @@ namespace xng::glfw {
                                                       mode);
             } else {
                 return std::make_unique<GLFWWindowGL>(title,
+                                                      size,
+                                                      attributes);
+            }
+        }
+#endif
+#ifdef DRIVER_GLFW_VULKAN
+        else if (gpuBackend == VULKAN_1_1) {
+            if (monitor) {
+                return std::make_unique<GLFWWindowVk>(title,
+                                                      size,
+                                                      attributes,
+                                                      dynamic_cast<MonitorGLFW &>(*monitor),
+                                                      mode);
+            } else {
+                return std::make_unique<GLFWWindowVk>(title,
                                                       size,
                                                       attributes);
             }
@@ -101,5 +120,16 @@ namespace xng::glfw {
                                                             Monitor &monitor,
                                                             VideoMode mode) {
         return makeWindow(gpuBackend, title, size, attributes, &monitor, mode);
+    }
+
+    std::vector<const char *> GLFWDisplayDriver::getRequiredVulkanExtensions() {
+#ifdef DRIVER_GLFW_VULKAN
+        uint32_t glfwExtensionCount = 0;
+        const char **glfwExtensions;
+        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+        return {glfwExtensions, glfwExtensions + glfwExtensionCount};
+#else
+        return {};
+#endif
     }
 }

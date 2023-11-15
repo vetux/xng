@@ -40,8 +40,6 @@ namespace xng::glfw {
         std::unique_ptr<RenderTarget> getRenderTarget(RenderDevice &device) override;
 
         void swapBuffers() override;
-
-        void setEnableVsync(bool sync) override;
     };
 }
 
