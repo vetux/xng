@@ -33,7 +33,7 @@ using namespace xng;
 ImageRGBA loadImage(const std::filesystem::path &filePath) {
     auto imageParser = StbiParser();
     auto data = readFile(filePath.string());
-    return imageParser.read(data, filePath.extension().string(), filePath, nullptr).get<ImageRGBA>();
+    return imageParser.read(data, filePath.extension().string(), filePath.string(), nullptr).get<ImageRGBA>();
 }
 
 class TestApplication {
