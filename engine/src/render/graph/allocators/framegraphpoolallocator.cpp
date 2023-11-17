@@ -43,63 +43,130 @@ namespace xng {
             persistentObjects.erase(obj);
         }
 
-        // Deallocate temporary objects
-        auto tmpObj = objects;
-        for (auto &pair: tmpObj) {
-            deallocate(pair.first);
-        }
-
-        assert(objects.empty());
+        objects.clear();
 
         // Resize object pools
+        std::unordered_set<RenderPipelineDesc> pipelineDel;
+        for (auto &pair: pipelines) {
+            if (usedPipelines.find(pair.first) == usedPipelines.end()) {
+                pipelineDel.insert(pair.first);
+            }
+        }
+        for (auto &val : pipelineDel)
+            pipelines.erase(val);
+
+        std::unordered_set<RenderPassDesc> passDel;
+        for (auto &pair: passes) {
+            if (usedPasses.find(pair.first) == usedPasses.end()) {
+                passDel.insert(pair.first);
+            }
+        }
+        for (auto &val : passDel)
+            passes.erase(val);
+
+        std::unordered_set<VertexBufferDesc> vbDel;
         for (auto &pair: vertexBuffers) {
-            if (pair.second.size() > usedVertexBuffers.at(pair.first)) {
+            if (usedVertexBuffers.find(pair.first) == usedVertexBuffers.end()) {
+                vbDel.insert(pair.first);
+            } else if (pair.second.size() > usedVertexBuffers.at(pair.first)) {
                 pair.second.resize(usedVertexBuffers.at(pair.first));
             }
         }
+        for (auto &val : vbDel)
+            vertexBuffers.erase(val);
+
+        std::unordered_set<IndexBufferDesc> ibDel;
         for (auto &pair: indexBuffers) {
-            if (pair.second.size() > usedIndexBuffers.at(pair.first)) {
+            if (usedIndexBuffers.find(pair.first) == usedIndexBuffers.end()) {
+                ibDel.insert(pair.first);
+            } else if (pair.second.size() > usedIndexBuffers.at(pair.first)) {
                 pair.second.resize(usedIndexBuffers.at(pair.first));
             }
         }
+        for (auto &val : ibDel)
+            indexBuffers.erase(val);
+
+        std::unordered_set<VertexArrayObjectDesc> vaoDel;
         for (auto &pair: vertexArrayObjects) {
-            if (pair.second.size() > usedVertexArrayObjects.at(pair.first)) {
+            if (usedVertexArrayObjects.find(pair.first) == usedVertexArrayObjects.end()) {
+                vaoDel.insert(pair.first);
+            } else if (pair.second.size() > usedVertexArrayObjects.at(pair.first)) {
                 pair.second.resize(usedVertexArrayObjects.at(pair.first));
             }
         }
+        for (auto &val : vaoDel)
+            vertexArrayObjects.erase(val);
+
+        std::unordered_set<TextureBufferDesc> texDel;
         for (auto &pair: textures) {
-            if (pair.second.size() > usedTextures.at(pair.first)) {
+            if (usedTextures.find(pair.first) == usedTextures.end()) {
+                texDel.insert(pair.first);
+            } else if (pair.second.size() > usedTextures.at(pair.first)) {
                 pair.second.resize(usedTextures.at(pair.first));
             }
         }
+        for (auto &val : texDel)
+            textures.erase(val);
+
+        std::unordered_set<TextureArrayBufferDesc> texArrayDel;
         for (auto &pair: textureArrays) {
-            if (pair.second.size() > usedTextureArrays.at(pair.first)) {
+           if (usedTextureArrays.find(pair.first) == usedTextureArrays.end()) {
+               texArrayDel.insert(pair.first);
+            } else if (pair.second.size() > usedTextureArrays.at(pair.first)) {
                 pair.second.resize(usedTextureArrays.at(pair.first));
             }
         }
+        for (auto &val : texArrayDel)
+            textureArrays.erase(val);
+
+        std::unordered_set<ShaderUniformBufferDesc> sbDel;
         for (auto &pair: shaderBuffers) {
-            if (pair.second.size() > usedShaderBuffers.at(pair.first)) {
+            if (usedShaderBuffers.find(pair.first) == usedShaderBuffers.end()) {
+                sbDel.insert(pair.first);
+            } else if (pair.second.size() > usedShaderBuffers.at(pair.first)) {
                 pair.second.resize(usedShaderBuffers.at(pair.first));
             }
         }
+        for (auto &val : sbDel)
+            shaderBuffers.erase(val);
+
+        std::unordered_set<ShaderStorageBufferDesc> ssboDel;
         for (auto &pair: shaderStorageBuffers) {
-            if (pair.second.size() > usedShaderStorageBuffers.at(pair.first)) {
+            if (usedShaderStorageBuffers.find(pair.first) == usedShaderStorageBuffers.end()) {
+                ssboDel.insert(pair.first);
+            } else if (pair.second.size() > usedShaderStorageBuffers.at(pair.first)) {
                 pair.second.resize(usedShaderStorageBuffers.at(pair.first));
             }
         }
+        for (auto &val : ssboDel)
+            shaderStorageBuffers.erase(val);
+
+        std::unordered_set<RenderTargetDesc> targetDel;
         for (auto &pair: targets) {
-            if (pair.second.size() > usedTargets.at(pair.first)) {
+           if (usedTargets.find(pair.first) == usedTargets.end()) {
+               targetDel.insert(pair.first);
+            } else  if (pair.second.size() > usedTargets.at(pair.first)) {
                 pair.second.resize(usedTargets.at(pair.first));
             }
         }
-        for (auto &pair: targets) {
-            if (pair.second.size() > usedTargets.at(pair.first)) {
-                pair.second.resize(usedTargets.at(pair.first));
-            }
-        }
+        for (auto &val : targetDel)
+            targets.erase(val);
+
         if (commandBuffers.size() > usedCommandBuffers) {
             commandBuffers.resize(usedCommandBuffers);
         }
+
+        usedPipelines.clear();
+        usedPasses.clear();
+        usedVertexBuffers.clear();
+        usedIndexBuffers.clear();
+        usedVertexArrayObjects.clear();
+        usedTextures.clear();
+        usedTextureArrays.clear();
+        usedShaderBuffers.clear();
+        usedShaderStorageBuffers.clear();
+        usedTargets.clear();
+        usedCommandBuffers = 0;
     }
 
     RenderPipeline &FrameGraphPoolAllocator::getPipeline(const RenderPipelineDesc &desc) {
@@ -195,164 +262,6 @@ namespace xng {
             commandBuffers.at(index) = device->createCommandBuffer();
         }
         return *commandBuffers.at(index);
-    }
-
-    void FrameGraphPoolAllocator::destroy(RenderObject &obj) {
-        switch (obj.getType()) {
-            default:
-                throw std::runtime_error("Invalid object type");
-            case RenderObject::RENDER_OBJECT_VERTEX_BUFFER: {
-                auto &buffer = dynamic_cast<VertexBuffer &>(obj);
-                usedVertexBuffers[buffer.getDescription()]--;
-                bool found = false;
-                long index = 0;
-                for (auto i = 0; i < vertexBuffers[buffer.getDescription()].size(); i++) {
-                    if (vertexBuffers[buffer.getDescription()][i].get() == &buffer) {
-                        index = i;
-                        found = true;
-                        break;
-                    }
-                }
-                assert(found);
-                vertexBuffers[buffer.getDescription()].erase(vertexBuffers[buffer.getDescription()].begin() + index);
-                break;
-            }
-            case RenderObject::RENDER_OBJECT_INDEX_BUFFER: {
-                auto &buffer = dynamic_cast<IndexBuffer &>(obj);
-                usedIndexBuffers[buffer.getDescription()]--;
-                bool found = false;
-                long index = 0;
-                for (auto i = 0; i < indexBuffers[buffer.getDescription()].size(); i++) {
-                    if (indexBuffers[buffer.getDescription()][i].get() == &buffer) {
-                        index = i;
-                        found = true;
-                        break;
-                    }
-                }
-                assert(found);
-                indexBuffers[buffer.getDescription()].erase(indexBuffers[buffer.getDescription()].begin() + index);
-                break;
-            }
-            case RenderObject::RENDER_OBJECT_VERTEX_ARRAY_OBJECT: {
-                auto &buffer = dynamic_cast<VertexArrayObject &>(obj);
-                usedVertexArrayObjects[buffer.getDescription()]--;
-                bool found = false;
-                long index = 0;
-                for (auto i = 0; i < vertexArrayObjects[buffer.getDescription()].size(); i++) {
-                    if (vertexArrayObjects[buffer.getDescription()][i].get() == &buffer) {
-                        index = i;
-                        found = true;
-                        break;
-                    }
-                }
-                assert(found);
-                vertexArrayObjects[buffer.getDescription()].erase(
-                        vertexArrayObjects[buffer.getDescription()].begin() + index);
-                break;
-            }
-            case RenderObject::RENDER_OBJECT_TEXTURE_BUFFER: {
-                auto &buffer = dynamic_cast<TextureBuffer &>(obj);
-                usedTextures[buffer.getDescription()]--;
-                bool found = false;
-                long index = 0;
-                for (auto i = 0; i < textures[buffer.getDescription()].size(); i++) {
-                    if (textures[buffer.getDescription()][i].get() == &buffer) {
-                        index = i;
-                        found = true;
-                        break;
-                    }
-                }
-                assert(found);
-                textures[buffer.getDescription()].erase(textures[buffer.getDescription()].begin() + index);
-                break;
-            }
-            case RenderObject::RENDER_OBJECT_TEXTURE_ARRAY_BUFFER: {
-                auto &buffer = dynamic_cast<TextureArrayBuffer &>(obj);
-                usedTextureArrays[buffer.getDescription()]--;
-                bool found = false;
-                long index = 0;
-                for (auto i = 0; i < textureArrays[buffer.getDescription()].size(); i++) {
-                    if (textureArrays[buffer.getDescription()][i].get() == &buffer) {
-                        index = i;
-                        found = true;
-                        break;
-                    }
-                }
-                assert(found);
-                textureArrays[buffer.getDescription()].erase(textureArrays[buffer.getDescription()].begin() + index);
-                break;
-            }
-            case RenderObject::RENDER_OBJECT_SHADER_UNIFORM_BUFFER: {
-                auto &buffer = dynamic_cast<ShaderUniformBuffer &>(obj);
-                usedShaderBuffers[buffer.getDescription()]--;
-                bool found = false;
-                long index = 0;
-                for (auto i = 0; i < shaderBuffers[buffer.getDescription()].size(); i++) {
-                    if (shaderBuffers[buffer.getDescription()][i].get() == &buffer) {
-                        index = i;
-                        found = true;
-                        break;
-                    }
-                }
-                assert(found);
-                shaderBuffers[buffer.getDescription()].erase(shaderBuffers[buffer.getDescription()].begin() + index);
-                break;
-            }
-            case RenderObject::RENDER_OBJECT_SHADER_STORAGE_BUFFER: {
-                auto &buffer = dynamic_cast<ShaderStorageBuffer &>(obj);
-                usedShaderStorageBuffers[buffer.getDescription()]--;
-                bool found = false;
-                long index = 0;
-                for (auto i = 0; i < shaderStorageBuffers[buffer.getDescription()].size(); i++) {
-                    if (shaderStorageBuffers[buffer.getDescription()][i].get() == &buffer) {
-                        index = i;
-                        found = true;
-                        break;
-                    }
-                }
-                assert(found);
-                shaderStorageBuffers[buffer.getDescription()].erase(
-                        shaderStorageBuffers[buffer.getDescription()].begin() + index);
-                break;
-            }
-            case RenderObject::RENDER_OBJECT_RENDER_TARGET: {
-                auto &target = dynamic_cast<RenderTarget &>(obj);
-                usedTargets[target.getDescription()]--;
-                bool found = false;
-                long index = 0;
-                for (auto i = 0; i < targets[target.getDescription()].size(); i++) {
-                    if (targets[target.getDescription()][i].get() == &target) {
-                        index = i;
-                        found = true;
-                        break;
-                    }
-                }
-                assert(found);
-                targets[target.getDescription()].erase(targets[target.getDescription()].begin() + index);
-                break;
-            }
-            case RenderObject::RENDER_OBJECT_RENDER_PIPELINE: {
-                auto &target = dynamic_cast<RenderPipeline &>(obj);
-                if (--usedPipelines[target.getDescription()] == 0) {
-                    usedPipelines.erase(target.getDescription());
-                    pipelines.erase(target.getDescription());
-                }
-                break;
-            }
-            case RenderObject::RENDER_OBJECT_RENDER_PASS: {
-                auto &target = dynamic_cast<RenderPass &>(obj);
-                if (--usedPasses[target.getDescription()] == 0) {
-                    usedPasses.erase(target.getDescription());
-                    passes.erase(target.getDescription());
-                }
-                break;
-            }
-            case RenderObject::RENDER_OBJECT_COMMAND_BUFFER: {
-                auto &buf = dynamic_cast<CommandBuffer&>(obj);
-                --usedCommandBuffers;
-                break;
-            }
-        }
     }
 
     std::unique_ptr<RenderObject> FrameGraphPoolAllocator::persist(RenderObject &obj) {

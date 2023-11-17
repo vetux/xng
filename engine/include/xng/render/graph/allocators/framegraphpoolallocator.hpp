@@ -50,28 +50,6 @@ namespace xng {
         }
 
         FrameGraphPassResources allocateNextPass() override {
-            // Deallocate resources which are not used in any subsequent pass read / write declaration
-            if (currentStage != 0) {
-                std::set<FrameGraphResource> delObjects;
-                for (auto &pair: objects) {
-                    bool deallocate = true;
-                    for (auto i = currentStage; i < frame.stages.size(); i++) {
-                        auto &stage = frame.stages.at(i);
-                        if (stage.reads.find(pair.first) != stage.reads.end()
-                            || stage.writes.find(pair.first) != stage.writes.end()) {
-                            deallocate = false;
-                            break;
-                        }
-                    }
-                    if (deallocate) {
-                        delObjects.insert(pair.first);
-                    }
-                }
-                for (auto &obj: delObjects) {
-                    deallocate(obj);
-                }
-            }
-
             auto &stage = frame.stages.at(currentStage);
 
             std::map<FrameGraphResource, RenderObject *> res;
@@ -196,7 +174,6 @@ namespace xng {
         }
 
         void deallocate(const FrameGraphResource &resource) {
-            destroy(*objects.at(resource));
             objects.erase(resource);
         }
 
@@ -230,8 +207,6 @@ namespace xng {
         RenderTarget &createRenderTarget(const RenderTargetDesc &desc);
 
         CommandBuffer &createCommandBuffer();
-
-        void destroy(RenderObject &obj);
 
         std::unique_ptr<RenderObject> persist(RenderObject &obj);
 
