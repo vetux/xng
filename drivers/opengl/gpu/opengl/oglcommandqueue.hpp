@@ -519,6 +519,8 @@ namespace xng::opengl {
                         cmds.emplace_back(cmd);
                     }
 
+                    auto cmdSize = static_cast<GLsizeiptr >(cmds.size() * sizeof(DrawElementsIndirectCommand));
+
                     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuffer);
                     glBufferData(GL_DRAW_INDIRECT_BUFFER,
                                  static_cast<GLsizeiptr >(cmds.size() * sizeof(DrawElementsIndirectCommand)),
@@ -529,6 +531,8 @@ namespace xng::opengl {
                                                 static_cast<GLsizei>(cmds.size()),
                                                 0);
                     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+
+                    stats.uploadCommand += cmdSize;
 
                     stats.drawCalls++;
                     for (auto &call: data.drawCalls) {
@@ -555,9 +559,11 @@ namespace xng::opengl {
                         cmds.emplace_back(cmd);
                     }
 
+                    auto cmdSize = static_cast<GLsizeiptr >(cmds.size() * sizeof(DrawElementsIndirectCommand));
+
                     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuffer);
                     glBufferData(GL_DRAW_INDIRECT_BUFFER,
-                                 static_cast<GLsizeiptr >(cmds.size() * sizeof(DrawElementsIndirectCommand)),
+                                 cmdSize,
                                  reinterpret_cast<void *>(cmds.data()),
                                  GL_DYNAMIC_DRAW);
                     glMultiDrawElementsIndirect(convert(mRenderPipeline->getDescription().primitive),
@@ -566,6 +572,8 @@ namespace xng::opengl {
                                                 static_cast<GLsizei>(cmds.size()),
                                                 0);
                     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+
+                    stats.uploadCommand += cmdSize;
 
                     stats.drawCalls++;
                     for (auto &call: data.drawCalls) {
@@ -630,9 +638,10 @@ namespace xng::opengl {
 
                     // Because on Mesa glMultiDrawElementsBaseVertex does not draw the meshes after exceeding a certain
                     // draw count we use glMultiDrawElementsIndirect which might incur a small overhead but appears to work correctly on mesa.
+                    auto cmdSize = static_cast<GLsizeiptr >(cmds.size() * sizeof(DrawElementsIndirectCommand));
                     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuffer);
                     glBufferData(GL_DRAW_INDIRECT_BUFFER,
-                                 static_cast<GLsizeiptr >(cmds.size() * sizeof(DrawElementsIndirectCommand)),
+                                 cmdSize,
                                  reinterpret_cast<void *>(cmds.data()),
                                  GL_DYNAMIC_DRAW);
                     glMultiDrawElementsIndirect(convert(mRenderPipeline->getDescription().primitive),
@@ -641,6 +650,8 @@ namespace xng::opengl {
                                                 static_cast<GLsizei>(cmds.size()),
                                                 0);
                     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+
+                    stats.uploadCommand += cmdSize;
 
                     stats.drawCalls++;
                     for (auto &call: data.drawCalls) {

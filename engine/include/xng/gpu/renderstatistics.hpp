@@ -34,9 +34,10 @@ namespace xng {
         size_t uploadShaderStorage{};
         size_t downloadShaderStorage{};
         size_t uploadShaderUniform{};
+        size_t uploadCommand{};
 
         size_t getTotalUpload() const {
-            return uploadVertex + uploadIndex + uploadTexture + uploadShaderStorage + uploadShaderUniform;
+            return uploadVertex + uploadIndex + uploadTexture + uploadShaderStorage + uploadShaderUniform + uploadCommand;
         }
 
         size_t getTotalDownload()const {
