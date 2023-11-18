@@ -1,5 +1,5 @@
 set(TESTS_COMMON_DIR ${BASE_SOURCE_DIR}/tests/common/src/)
-set(TESTS_ASSET_DIR ${BASE_SOURCE_DIR}/assets)
+set(TESTS_ASSET_DIR ${BASE_SOURCE_DIR}/tests/assets)
 
 add_executable(test-framegraph ${BASE_SOURCE_DIR}/tests/framegraph/src/main.cpp)
 target_include_directories(test-framegraph PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/framegraph/src/ ${SHADER_COMPILED_DIR} ${TESTS_COMMON_DIR})
