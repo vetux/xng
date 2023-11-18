@@ -31,7 +31,13 @@ target_link_libraries(test-shadows Threads::Threads xengine)
 
 
 if (MSVC)
+	target_compile_options(test-framegraph PUBLIC /bigobj)
+	target_compile_options(test-skeletalanimation PUBLIC /bigobj)
+	target_compile_options(test-renderer2d PUBLIC /bigobj)
 	target_compile_options(test-canvasrendersystem PUBLIC /bigobj)
+	target_compile_options(test-pak PUBLIC /bigobj)
+	target_compile_options(test-mandelbrot PUBLIC /bigobj)
+	target_compile_options(test-shadows PUBLIC /bigobj)
 endif ()
 
 file(COPY ${TESTS_ASSET_DIR} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}) # Copy assets
