@@ -30,13 +30,19 @@ target_include_directories(test-shadows PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/test
 target_link_libraries(test-shadows Threads::Threads xengine)
 
 if (MSVC)
-	target_compile_options(test-framegraph PUBLIC /bigobj)
-	target_compile_options(test-skeletalanimation PUBLIC /bigobj)
-	target_compile_options(test-renderer2d PUBLIC /bigobj)
-	target_compile_options(test-canvasrendersystem PUBLIC /bigobj)
-	target_compile_options(test-pak PUBLIC /bigobj)
-	target_compile_options(test-mandelbrot PUBLIC /bigobj)
-	target_compile_options(test-shadows PUBLIC /bigobj)
+    target_compile_options(test-framegraph PUBLIC /bigobj)
+    target_compile_options(test-skeletalanimation PUBLIC /bigobj)
+    target_compile_options(test-renderer2d PUBLIC /bigobj)
+    target_compile_options(test-canvasrendersystem PUBLIC /bigobj)
+    target_compile_options(test-pak PUBLIC /bigobj)
+    target_compile_options(test-mandelbrot PUBLIC /bigobj)
+    target_compile_options(test-shadows PUBLIC /bigobj)
 endif ()
 
-file(COPY ${TESTS_ASSET_DIR} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}) # Copy assets
+file(GLOB RESULT ${TESTS_ASSET_DIR}/*)
+list(LENGTH RESULT RES_LEN)
+if (RES_LEN GREATER 0)
+    file(COPY ${TESTS_ASSET_DIR} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}) # Copy assets
+else ()
+    message(WARNING "Test assets submodule not found, please download the assets submodule if you intend to run the tests.")
+endif ()

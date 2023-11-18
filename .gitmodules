@@ -1,33 +1,33 @@
-[submodule "submodules/glfw"]
-	path = submodules/glfw
-	url = https://github.com/glfw/glfw
-[submodule "submodules/assimp"]
-	path = submodules/assimp
-	url = https://github.com/assimp/assimp
-[submodule "submodules/box2d"]
-	path = submodules/box2d
-	url = https://github.com/erincatto/box2d
-[submodule "submodules/cryptopp"]
-	path = submodules/cryptopp
-	url = https://github.com/abdes/cryptopp-cmake
-[submodule "submodules/freetype"]
-	path = submodules/freetype
-	url = https://github.com/freetype/freetype
-[submodule "submodules/glslang"]
-	path = submodules/glslang
-	url = https://github.com/KhronosGroup/glslang
-[submodule "submodules/openal-soft"]
-	path = submodules/openal-soft
-	url = https://github.com/kcat/openal-soft
-[submodule "submodules/libsndfile"]
-	path = submodules/libsndfile
-	url = https://github.com/libsndfile/libsndfile
-[submodule "submodules/SPIRV-Cross"]
-	path = submodules/SPIRV-Cross
-	url = https://github.com/KhronosGroup/SPIRV-Cross
-[submodule "submodules/glm"]
-	path = submodules/glm
-	url = https://github.com/g-truc/glm
 [submodule "assets"]
 	path = assets
 	url = https://github.com/vetux/xng-assets
+[submodule "thirdparty/glfw"]
+	path = thirdparty/glfw
+	url = https://github.com/glfw/glfw
+[submodule "thirdparty/assimp"]
+	path = thirdparty/assimp
+	url = https://github.com/assimp/assimp
+[submodule "thirdparty/box2d"]
+	path = thirdparty/box2d
+	url = https://github.com/erincatto/box2d
+[submodule "thirdparty/cryptopp"]
+	path = thirdparty/cryptopp
+	url = https://github.com/abdes/cryptopp-cmake
+[submodule "thirdparty/freetype"]
+	path = thirdparty/freetype
+	url = https://github.com/freetype/freetype
+[submodule "thirdparty/glslang"]
+	path = thirdparty/glslang
+	url = https://github.com/KhronosGroup/glslang
+[submodule "thirdparty/openal-soft"]
+	path = thirdparty/openal-soft
+	url = https://github.com/kcat/openal-soft
+[submodule "thirdparty/libsndfile"]
+	path = thirdparty/libsndfile
+	url = https://github.com/libsndfile/libsndfile
+[submodule "thirdparty/SPIRV-Cross"]
+	path = thirdparty/SPIRV-Cross
+	url = https://github.com/KhronosGroup/SPIRV-Cross
+[submodule "thirdparty/glm"]
+	path = thirdparty/glm
+	url = https://github.com/g-truc/glm
