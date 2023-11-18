@@ -389,11 +389,13 @@ namespace xng::opengl {
 
                     glBindFramebuffer(GL_FRAMEBUFFER, fb.getFBO());
 
+#ifndef NDEBUG
                     auto ret = glCheckFramebufferStatus(GL_FRAMEBUFFER);
                     if (ret != GL_FRAMEBUFFER_COMPLETE) {
                         throw std::runtime_error(
                                 "Render Target framebuffer is not complete: " + std::to_string(ret));
                     }
+#endif
 
                     checkGLError();
 
@@ -1083,7 +1085,6 @@ namespace xng::opengl {
                     break;
                 }
             }
-            glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT | GL_BUFFER_UPDATE_BARRIER_BIT);
         }
     };
 
