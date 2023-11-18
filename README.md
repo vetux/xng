@@ -70,7 +70,7 @@ Drivers are implementations of interfaces (For example through 3rd party librari
             windows uses multiple STL dll files and allows loading of multiple STL version dlls into the same process. If
             the user links to a different STL version than the one used for building the engine dll there can be problems
             when passing types through the dll interface.
-      - ~~MinGW v8.0.0~~ *
+      - MinGW-w64 11
 - Android
     - ~~Tested Compiler: Android NDK r25c~~ *
 
