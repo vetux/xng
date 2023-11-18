@@ -1,5 +1,5 @@
 set(TESTS_COMMON_DIR ${BASE_SOURCE_DIR}/tests/common/src/)
-set(TESTS_ASSET_DIR ${BASE_SOURCE_DIR}/tests/common/assets)
+set(TESTS_ASSET_DIR ${BASE_SOURCE_DIR}/assets)
 
 add_executable(test-framegraph ${BASE_SOURCE_DIR}/tests/framegraph/src/main.cpp)
 target_include_directories(test-framegraph PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/framegraph/src/ ${SHADER_COMPILED_DIR} ${TESTS_COMMON_DIR})
@@ -28,7 +28,6 @@ target_link_libraries(test-mandelbrot Threads::Threads xengine)
 add_executable(test-shadows ${BASE_SOURCE_DIR}/tests/shadows/src/main.cpp)
 target_include_directories(test-shadows PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/shadows/src/ ${SHADER_COMPILED_DIR} ${TESTS_COMMON_DIR})
 target_link_libraries(test-shadows Threads::Threads xengine)
-
 
 if (MSVC)
 	target_compile_options(test-framegraph PUBLIC /bigobj)
