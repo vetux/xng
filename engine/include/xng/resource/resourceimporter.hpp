@@ -24,7 +24,6 @@
 #include <vector>
 
 #include "xng/resource/resourcebundle.hpp"
-#include "xng/resource/resourceparser.hpp"
 #include "xng/resource/uri.hpp"
 
 #include "xng/io/archive.hpp"
@@ -32,26 +31,10 @@
 namespace xng {
     /**
      * The resource importer handles importing of resources from streams pointing to resource data.
-     * The set resource parsers define the formats that the resource importer can import.
-     *
-     * It handles a set of parsers and decides which parsers to invoke for given inputs.
      */
     class XENGINE_EXPORT ResourceImporter {
     public:
-        ResourceImporter();
-
-        /**
-         * @param parsers The set of parsers to use when importing data.
-         */
-        explicit ResourceImporter(std::vector<std::unique_ptr<ResourceParser>> parsers);
-
-        ResourceImporter(const ResourceImporter&other) = delete;
-
-        ResourceImporter &operator=(const ResourceImporter&other) = delete;
-
-        ResourceImporter(ResourceImporter&&other) = default;
-
-        ResourceImporter &operator=(ResourceImporter &&other) = default;
+        virtual ~ResourceImporter() = default;
 
         /**
          * Import the bundle from the stream.
@@ -64,10 +47,12 @@ namespace xng {
          * @param archive The archive instance to use when resolving paths in the stream data.
          * @return
          */
-        ResourceBundle import(std::istream &stream, const std::string &hint = "", const std::string &path = {}, Archive *archive = nullptr) const;
+        virtual ResourceBundle read(std::istream &stream, const std::string &hint, const std::string &path, Archive *archive) = 0;
 
-    private:
-        std::vector<std::unique_ptr<ResourceParser>> parsers;
+        /**
+         * @return The set of supported file extensions with each containing the preceding dot
+         */
+        virtual const std::set<std::string> &getSupportedFormats() const = 0;
     };
 }
 

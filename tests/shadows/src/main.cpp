@@ -26,7 +26,7 @@
 #include "xng/driver/glslang/glslangcompiler.hpp"
 #include "xng/driver/spirv-cross/spirvcrossdecompiler.hpp"
 #include "xng/driver/freetype/ftfontdriver.hpp"
-#include "xng/driver/assimp/assimpparser.hpp"
+#include "xng/driver/assimp/assimpimporter.hpp"
 
 #include "debugpass.hpp"
 #include "cameracontroller.hpp"
@@ -57,7 +57,7 @@ void createMaterialResource(xng::MemoryArchive &archive) {
         }
     }
 
-    auto msg = xng::JsonParser::createBundle(bundle);
+    auto msg = xng::JsonImporter::createBundle(bundle);
 
     std::stringstream stream;
     xng::JsonProtocol().serialize(stream, msg);
@@ -73,13 +73,12 @@ void createMaterialResource(xng::MemoryArchive &archive) {
 }
 
 int main(int argc, char *argv[]) {
-    std::vector<std::unique_ptr<ResourceParser>> parsers;
-    parsers.emplace_back(std::make_unique<StbiParser>());
-    parsers.emplace_back(std::make_unique<AssImpParser>());
-    parsers.emplace_back(std::make_unique<JsonParser>());
-
-    xng::ResourceRegistry::getDefaultRegistry().setImporter(
-            ResourceImporter(std::move(parsers)));
+    std::vector<std::unique_ptr<ResourceImporter>> importers;
+    importers.emplace_back(std::make_unique<StbiImporter>());
+    importers.emplace_back(std::make_unique<JsonImporter>());
+    importers.emplace_back(std::make_unique<FontImporter>());
+    importers.emplace_back(std::make_unique<AssImpImporter>());
+    xng::ResourceRegistry::getDefaultRegistry().setImporters(std::move(importers));
 
     xng::ResourceRegistry::getDefaultRegistry().addArchive("file", std::make_shared<DirectoryArchive>("assets/"));
 
@@ -95,7 +94,7 @@ int main(int argc, char *argv[]) {
     auto fontDriver = freetype::FtFontDriver();
 
     auto fontFs = std::ifstream("assets/fonts/Sono/static/Sono/Sono-Regular.ttf", std::ios_base::in | std::ios::binary);
-    auto font = fontDriver.createFont(fontFs);
+    auto font = fontDriver.createFontRenderer(fontFs);
 
     auto window = displayDriver.createWindow(gpuDriver.getBackend(),
                                              "XNG Shadows Test",

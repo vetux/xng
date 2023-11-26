@@ -33,7 +33,9 @@ namespace xng::freetype {
 
         ~FtFontDriver();
 
-        std::unique_ptr<Font> createFont(std::istream &data) override;
+        std::unique_ptr<FontRenderer> createFontRenderer(std::istream &stream) override;
+
+        std::unique_ptr<FontRenderer> createFontRenderer(const Font &data) override;
 
     private:
         FT_Library library;

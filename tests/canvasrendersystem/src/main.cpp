@@ -77,7 +77,7 @@ static std::shared_ptr<EntityScene> createScene() {
 
     TextComponent text2;
     text2.text = "LEFT_TOP";
-    text2.font = ResourceHandle<RawResource>(Uri("fonts/Sono/static/Sono/Sono-Bold.ttf"));
+    text2.font = ResourceHandle<Font>(Uri("fonts/Sono/static/Sono/Sono-Bold.ttf"));
     text2.pixelSize.y = 30;
     text2.textColor = ColorRGBA::blue(1);
     ent.createComponent(text2);
@@ -95,7 +95,7 @@ static std::shared_ptr<EntityScene> createScene() {
 
     TextComponent text3;
     text3.text = "RIGHT_TOP";
-    text3.font = ResourceHandle<RawResource>(Uri("fonts/Sono/static/Sono/Sono-Bold.ttf"));
+    text3.font = ResourceHandle<Font>(Uri("fonts/Sono/static/Sono/Sono-Bold.ttf"));
     text3.pixelSize.y = 30;
     text3.textColor = ColorRGBA::blue(1);
     ent.createComponent(text3);
@@ -113,7 +113,7 @@ static std::shared_ptr<EntityScene> createScene() {
 
     TextComponent text4;
     text4.text = "LEFT_BOTTOM";
-    text4.font = ResourceHandle<RawResource>(Uri("fonts/Sono/static/Sono/Sono-Bold.ttf"));
+    text4.font = ResourceHandle<Font>(Uri("fonts/Sono/static/Sono/Sono-Bold.ttf"));
     text4.pixelSize.y = 30;
     text4.textColor = ColorRGBA::blue(1);
     ent.createComponent(text4);
@@ -131,7 +131,7 @@ static std::shared_ptr<EntityScene> createScene() {
 
     TextComponent text5;
     text5.text = "RIGHT_BOTTOM";
-    text5.font = ResourceHandle<RawResource>(Uri("fonts/Sono/static/Sono/Sono-Bold.ttf"));
+    text5.font = ResourceHandle<Font>(Uri("fonts/Sono/static/Sono/Sono-Bold.ttf"));
     text5.pixelSize.y = 30;
     text5.textColor = ColorRGBA::blue(1);
     ent.createComponent(text5);
@@ -161,7 +161,7 @@ static std::shared_ptr<EntityScene> createScene() {
 
     TextComponent text6;
     text6.text = "Press Space Bar to change alignment...";
-    text6.font = ResourceHandle<RawResource>(Uri("fonts/Sono/static/Sono/Sono-Bold.ttf"));
+    text6.font = ResourceHandle<Font>(Uri("fonts/Sono/static/Sono/Sono-Bold.ttf"));
     text6.lineHeight = 50;
     text6.pixelSize.y = 30;
     text6.textColor = ColorRGBA::blue(1, 200);
@@ -187,10 +187,12 @@ int main(int argc, char *argv[]) {
     auto target = window->getRenderTarget(*renderDevice);
 
     ResourceRegistry::getDefaultRegistry().addArchive("file", std::make_shared<DirectoryArchive>("assets/"));
-    std::vector<std::unique_ptr<ResourceParser>> parsers;
-    parsers.emplace_back(std::make_unique<StbiParser>());
-    parsers.emplace_back(std::make_unique<JsonParser>());
-    ResourceRegistry::getDefaultRegistry().setImporter(ResourceImporter(std::move(parsers)));
+
+    std::vector<std::unique_ptr<ResourceImporter>> importers;
+    importers.emplace_back(std::make_unique<StbiImporter>());
+    importers.emplace_back(std::make_unique<JsonImporter>());
+    importers.emplace_back(std::make_unique<FontImporter>());
+    xng::ResourceRegistry::getDefaultRegistry().setImporters(std::move(importers));
 
     auto scene = createScene();
 
@@ -207,7 +209,7 @@ int main(int argc, char *argv[]) {
     SystemRuntime runtime({pipeline}, scene);
 
     auto fs = std::ifstream("assets/fonts/Sono/static/Sono/Sono-Bold.ttf", std::ios_base::in | std::ios::binary);
-    auto font = fontDriver.createFont(fs);
+    auto font = fontDriver.createFontRenderer(fs);
 
     DebugOverlay overlay(*font, ren);
 

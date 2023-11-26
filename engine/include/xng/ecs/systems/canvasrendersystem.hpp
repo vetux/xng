@@ -80,7 +80,7 @@ namespace xng {
 
         float pixelToMeter;
 
-        std::map<Uri, std::unique_ptr<Font>> fonts;
+        std::map<Uri, std::unique_ptr<FontRenderer>> fontRenderers;
 
         std::map<EntityHandle, Vec2i> textPixelSizes;
         std::unordered_map<Vec2i, TextRenderer> textRenderers;

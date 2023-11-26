@@ -19,7 +19,7 @@
 
 #include <sstream>
 
-#include "xng/resource/parsers/jsonparser.hpp"
+#include "xng/resource/importers/jsonimporter.hpp"
 
 #include "xng/async/threadpool.hpp"
 
@@ -36,7 +36,7 @@
 #include "xng/resource/resourceimporter.hpp"
 
 namespace xng {
-    Message JsonParser::createBundle(const ResourceBundle &bundle) {
+    Message JsonImporter::createBundle(const ResourceBundle &bundle) {
         auto materials = std::vector<Message>();
         auto textures = std::vector<Message>();
         auto cubeMaps = std::vector<Message>();
@@ -73,7 +73,7 @@ namespace xng {
                 res >> msg;
                 msg["name"] = pair.first;
                 animations.emplace_back(msg);
-            } else if (type == typeid(CubeMap)){
+            } else if (type == typeid(CubeMap)) {
                 auto &res = dynamic_cast<CubeMap &>(*pair.second);
                 res >> msg;
                 msg["name"] = pair.first;
@@ -99,7 +99,7 @@ namespace xng {
 
         ResourceBundle ret;
 
-        if (m.has("name") || m.has("entities")){
+        if (m.has("name") || m.has("entities")) {
             // Parse as xscene
             auto name = m.getMessage("name", std::string()).asString();
             EntityScene scene;
@@ -164,12 +164,24 @@ namespace xng {
         return ret;
     }
 
-    ResourceBundle JsonParser::read(const std::vector<char> &buffer, const std::string &hint, const std::string &path,
-                                    Archive *archive) const {
+    ResourceBundle JsonImporter::read(std::istream &stream,
+                                      const std::string &hint,
+                                      const std::string &path,
+                                      Archive *archive) {
+        std::vector<char> buffer;
+
+        char c;
+        while (!stream.eof()) {
+            stream.read(&c, 1);
+            if (stream.gcount() == 1) {
+                buffer.emplace_back(c);
+            }
+        }
+
         return readJsonBundle(buffer);
     }
 
-    const std::set<std::string> &JsonParser::getSupportedFormats() const {
+    const std::set<std::string> &JsonImporter::getSupportedFormats() const {
         static const std::set<std::string> formats = {".json"};
         return formats;
     }

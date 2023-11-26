@@ -17,21 +17,21 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_ASSIMPPARSER_HPP
-#define XENGINE_ASSIMPPARSER_HPP
+#ifndef XENGINE_SNDFILEIMPORTER_HPP
+#define XENGINE_SNDFILEIMPORTER_HPP
 
-#include "xng/resource/resourceparser.hpp"
+#include "xng/resource/resourceimporter.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT AssImpParser : public ResourceParser {
+    class XENGINE_EXPORT SndFileImporter : public ResourceImporter {
     public:
-        ResourceBundle read(const std::vector<char> &buffer,
+        ResourceBundle read(std::istream &stream,
                             const std::string &hint,
                             const std::string &path,
-                            Archive *archive) const override;
+                            Archive *archive) override;
 
         const std::set<std::string> &getSupportedFormats() const override;
     };
 }
 
-#endif //XENGINE_ASSIMPPARSER_HPP
+#endif //XENGINE_SNDFILEIMPORTER_HPP

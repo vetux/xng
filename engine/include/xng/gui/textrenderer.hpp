@@ -36,7 +36,7 @@ namespace xng {
     public:
         TextRenderer() = default;
 
-        TextRenderer(Font &font, Renderer2D &renderer2D, const Vec2i &pixelSize);
+        TextRenderer(FontRenderer &font, Renderer2D &renderer2D, const Vec2i &pixelSize);
 
         ~TextRenderer();
 
@@ -53,7 +53,7 @@ namespace xng {
         std::map<char, Character> ascii;
         std::map<char, Texture2D> textures;
 
-        Font *font = nullptr;
+        FontRenderer *font = nullptr;
         Renderer2D *ren2d = nullptr;
     };
 }

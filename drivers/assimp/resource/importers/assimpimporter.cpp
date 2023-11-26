@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/driver/assimp/assimpparser.hpp"
+#include "xng/driver/assimp/assimpimporter.hpp"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -403,14 +403,24 @@ namespace xng {
         return ret;
     }
 
-    ResourceBundle AssImpParser::read(const std::vector<char> &buffer,
-                                      const std::string &hint,
-                                      const std::string &path,
-                                      Archive *archive) const {
+    ResourceBundle AssImpImporter::read(std::istream &stream,
+                                        const std::string &hint,
+                                        const std::string &path,
+                                        Archive *archive) {
+        std::vector<char> buffer;
+
+        char c;
+        while (!stream.eof()) {
+            stream.read(&c, 1);
+            if (stream.gcount() == 1) {
+                    buffer.emplace_back(c);
+            }
+        }
+
         return readAsset(buffer, hint, Uri(path), archive);
     }
 
-    const std::set<std::string> &AssImpParser::getSupportedFormats() const {
+    const std::set<std::string> &AssImpImporter::getSupportedFormats() const {
         static const std::set<std::string> formats = {".fbx", ".dae", ".gltf", ".glb", ".blend", ".3ds", ".ase", ".obj",
                                                       ".ifc", ".xgl", ".zgl", ".ply", ".dxf", ".lwo", ".lws", ".lxo",
                                                       ".stl", ".x", ".ac", ".ms3d", ".cob", ".scn"};

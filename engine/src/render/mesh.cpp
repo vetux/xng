@@ -96,7 +96,7 @@ namespace xng {
         if (!nCubeC) {
             nCubeC = true;
             std::stringstream stream(NORM_CUBE_OBJ);
-            nCube = *ResourceRegistry::getDefaultRegistry().getImporter().import(stream, ".obj").getAll<Mesh>().at(0);
+            nCube = *ResourceRegistry::getDefaultRegistry().getImporter(".obj").read(stream, ".obj", "", nullptr).getAll<Mesh>().at(0);
         }
         return nCube;
     }

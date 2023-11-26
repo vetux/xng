@@ -66,8 +66,8 @@ public:
         return static_cast<float>(fpsCount) / totalTime;
     }
 
-    DebugOverlay(Font &font, Renderer2D &renderer2D) : ren2D(renderer2D),
-                                                       textRenderer(font, renderer2D, fontSize) {}
+    DebugOverlay(FontRenderer &font, Renderer2D &renderer2D) : ren2D(renderer2D),
+                                                               textRenderer(font, renderer2D, fontSize) {}
 
     std::string formatBytes(size_t bytes) {
         if (bytes > 1000000000) {

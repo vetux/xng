@@ -17,21 +17,34 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_STBIPARSER_HPP
-#define XENGINE_STBIPARSER_HPP
+#ifndef XENGINE_FTFONTRENDERER_HPP
+#define XENGINE_FTFONTRENDERER_HPP
 
-#include "xng/resource/resourceparser.hpp"
+#include <ft2build.h>
+
+#include "freetype/freetype.h"
+
+#include "xng/font/fontrenderer.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT StbiParser : public ResourceParser {
+    class FTFontRenderer : public FontRenderer {
     public:
-        ResourceBundle read(const std::vector<char> &buffer,
-                            const std::string &hint,
-                            const std::string &path,
-                            Archive *archive) const override;
+        FT_Library library{};
+        FT_Face face{};
+        std::vector<char> bytes; //Freetype requires the data to stay in memory when loading with FT_New_Memory_Face
 
-        const std::set<std::string> &getSupportedFormats() const override;
+        explicit FTFontRenderer(const Font &font, FT_Library library);
+
+        ~FTFontRenderer() override;
+
+        void setPixelSize(Vec2i size) override;
+
+        Character renderAscii(char c) override;
+
+        std::map<char, Character> renderAscii() override;
+
+        Character renderUnicode(wchar_t c) override;
     };
 }
 
-#endif //XENGINE_STBIPARSER_HPP
+#endif //XENGINE_FTFONTRENDERER_HPP

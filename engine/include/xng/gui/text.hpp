@@ -22,7 +22,7 @@
 
 #include <utility>
 
-#include "xng/font/font.hpp"
+#include "xng/font/fontrenderer.hpp"
 
 #include "xng/gpu/renderdevice.hpp"
 

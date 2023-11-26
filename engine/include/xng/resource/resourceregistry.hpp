@@ -73,9 +73,11 @@ namespace xng {
 
         void removeArchive(const std::string &scheme);
 
-        void setImporter(ResourceImporter importer);
+        void setImporters(std::vector<std::unique_ptr<ResourceImporter>> importers);
 
-        ResourceImporter &getImporter();
+        const std::vector<std::unique_ptr<ResourceImporter>> &getImporters();
+
+        ResourceImporter &getImporter(const std::string &fileExtension);
 
         Archive &getArchive(const std::string &scheme);
 
@@ -166,7 +168,7 @@ namespace xng {
         std::string defaultScheme;
 
         std::shared_mutex importerMutex;
-        ResourceImporter importer;
+        std::vector<std::unique_ptr<ResourceImporter>> importers;
 
         std::set<Uri> uris;
         std::set<Uri> loadingUris;

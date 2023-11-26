@@ -19,7 +19,7 @@
 
 #include "xng/driver/freetype/ftfontdriver.hpp"
 
-#include "text/freetype/ftfont.hpp"
+#include "text/freetype/ftfontrenderer.hpp"
 
 namespace xng::freetype {
     FtFontDriver::FtFontDriver() : library() {
@@ -34,7 +34,11 @@ namespace xng::freetype {
         FT_Done_FreeType(library);
     }
 
-    std::unique_ptr<Font> FtFontDriver::createFont(std::istream &data) {
-        return std::make_unique<FTFont>(data, library);
+    std::unique_ptr<FontRenderer> FtFontDriver::createFontRenderer(const Font &data) {
+        return std::make_unique<FTFontRenderer>(data, library);
+    }
+
+    std::unique_ptr<FontRenderer> FtFontDriver::createFontRenderer(std::istream &stream) {
+        return FontDriver::createFontRenderer(stream);
     }
 }

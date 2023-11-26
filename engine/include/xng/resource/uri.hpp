@@ -64,18 +64,18 @@ namespace xng {
             }
 
             auto path = std::filesystem::path(pathStr);
-            if (!path.has_extension() && path.has_parent_path()){
+            if (!path.has_extension() && path.has_parent_path()) {
                 auto parent = path;
                 bool foundExtension = false;
-                while(parent.has_parent_path() && parent.has_relative_path()) {
+                while (parent.has_parent_path() && parent.has_relative_path()) {
                     parent = parent.parent_path();
-                    if (parent.has_extension()){
+                    if (parent.has_extension()) {
                         asset = pathStr.substr(parent.string().size() + 1);
                         foundExtension = true;
                         break;
                     }
                 }
-                if (foundExtension){
+                if (foundExtension) {
                     file = parent.string();
                 } else {
                     file = pathStr;
@@ -119,8 +119,10 @@ namespace xng {
 
         const std::string &getAsset() const { return asset; }
 
+        std::string getExtension() const { return std::filesystem::path(getFile()).extension().string(); }
+
         std::string toString(bool includeScheme = true) const {
-            return (scheme.empty() || !includeScheme ? "" : scheme + "://") + file +  (asset.empty() ? "" : "$" + asset);
+            return (scheme.empty() || !includeScheme ? "" : scheme + "://") + file + (asset.empty() ? "" : "$" + asset);
         }
 
         bool empty() const {

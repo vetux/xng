@@ -17,13 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ftfont.hpp"
+#include "ftfontrenderer.hpp"
 
 #include <string>
 
 namespace xng {
-    FTFont::FTFont(std::istream &stream, FT_Library library) : library(library) {
-        bytes = std::vector<char>((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
+    FTFontRenderer::FTFontRenderer(const Font &font, FT_Library library) : library(library) {
+        bytes = font.data;
 
         auto r = FT_New_Memory_Face(library,
                                     (const FT_Byte *) (bytes.data()),
@@ -38,15 +38,15 @@ namespace xng {
         FT_Set_Pixel_Sizes(face, 0, 25);
     }
 
-    FTFont::~FTFont() {
+    FTFontRenderer::~FTFontRenderer() {
         FT_Done_Face(face);
     }
 
-    void FTFont::setPixelSize(Vec2i size) {
+    void FTFontRenderer::setPixelSize(Vec2i size) {
         FT_Set_Pixel_Sizes(face, size.x, size.y);
     }
 
-    Character FTFont::renderAscii(char c) {
+    Character FTFontRenderer::renderAscii(char c) {
         auto r = FT_Load_Char(face, c, FT_LOAD_RENDER);
         if (r != 0) {
             throw std::runtime_error("Failed to rasterize character " + std::to_string(c) + " " + std::to_string(r));
@@ -93,7 +93,7 @@ namespace xng {
         return std::move(Character(c, std::move(buffer), bearing, advanceX));
     }
 
-    std::map<char, Character> FTFont::renderAscii() {
+    std::map<char, Character> FTFontRenderer::renderAscii() {
         std::map<char, Character> ret;
         for (int i = 0; i <= 127; i++) {
             ret[static_cast<char>(i)] = std::move(renderAscii(static_cast<char>(i)));
@@ -101,7 +101,7 @@ namespace xng {
         return ret;
     }
 
-    Character FTFont::renderUnicode(wchar_t c) {
+    Character FTFontRenderer::renderUnicode(wchar_t c) {
         throw std::runtime_error("FreeType unicode rendering not implemented yet.");
     }
 }

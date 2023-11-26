@@ -128,14 +128,14 @@ endif ()
 if (DRIVER_ASSIMP)
     CompileDriver(DRIVER_ASSIMP
             assimp
-            AssImpParser
+            AssImpImporter
             assimp)
 endif ()
 
 if (DRIVER_SNDFILE)
     CompileDriver(DRIVER_SNDFILE
             sndfile
-            SndFileParser
+            SndFileImporter
             sndfile)
 endif ()
 

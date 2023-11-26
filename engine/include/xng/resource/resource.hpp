@@ -35,10 +35,11 @@ namespace xng {
         virtual std::type_index getTypeIndex() const = 0;
 
         /**
-         *
          * @return Wheter or not the dependencies of this resource are loaded.
          */
-        virtual bool isLoaded() const { return true; };
+        virtual bool isLoaded() const { return true; }
+
+        virtual bool isLoading() const { return false; }
     };
 }
 

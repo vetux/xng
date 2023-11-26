@@ -20,7 +20,7 @@
 #ifndef XENGINE_JSONPARSER_HPP
 #define XENGINE_JSONPARSER_HPP
 
-#include "xng/resource/resourceparser.hpp"
+#include "xng/resource/resourceimporter.hpp"
 
 #include "xng/io/message.hpp"
 
@@ -42,14 +42,14 @@ namespace xng {
      *      "entities"...
      * }
      */
-    class XENGINE_EXPORT JsonParser : public ResourceParser {
+    class XENGINE_EXPORT JsonImporter : public ResourceImporter {
     public:
         static Message createBundle(const ResourceBundle &bundle);
 
-        ResourceBundle read(const std::vector<char> &buffer,
-                            const std::string &hint,
-                            const std::string &path,
-                            Archive *archive) const override;
+         ResourceBundle read(std::istream &stream,
+                             const std::string &hint,
+                             const std::string &path,
+                             Archive *archive) override;
 
         const std::set<std::string> &getSupportedFormats() const override;
     };

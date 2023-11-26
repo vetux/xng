@@ -17,18 +17,17 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/resource/resourceimporter.hpp"
-#include "xng/resource/rawresource.hpp"
+#include <sstream>
+
+#include "xng/resource/importers/fontimporter.hpp"
+
+#include "xng/font/font.hpp"
 
 namespace xng {
-
-    ResourceImporter::ResourceImporter()
-            : parsers() {}
-
-    ResourceImporter::ResourceImporter(std::vector<std::unique_ptr<ResourceParser>> parsers)
-            : parsers(std::move(parsers)) {}
-
-    ResourceBundle ResourceImporter::import(std::istream &stream, const std::string &hint, const std::string &path, Archive *archive) const {
+    ResourceBundle FontImporter::read(std::istream &stream,
+                                      const std::string &hint,
+                                      const std::string &path,
+                                      Archive *archive) {
         std::vector<char> buffer;
 
         char c;
@@ -39,19 +38,13 @@ namespace xng {
             }
         }
 
-        // Use parser which supports hint if it exists.
-        for (auto &parser: parsers) {
-            auto formats = parser->getSupportedFormats();
-            if (formats.find(hint) != formats.end()) {
-                return parser->read(buffer, hint, path, archive);
-            }
-        }
-
-        // Import as raw
         ResourceBundle ret;
-        RawResource asset;
-        asset.bytes = std::vector<uint8_t>(buffer.begin(), buffer.end());
-        ret.add("0", std::make_unique<RawResource>(asset));
+        ret.add("", std::make_unique<Font>(Font(buffer)));
         return ret;
+    }
+
+    const std::set<std::string> &FontImporter::getSupportedFormats() const {
+        static const std::set<std::string> formats = {".ttf"};
+        return formats;
     }
 }

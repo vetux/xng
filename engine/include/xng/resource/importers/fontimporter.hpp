@@ -17,30 +17,26 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FONTDATA_HPP
-#define XENGINE_FONTDATA_HPP
+#ifndef XENGINE_FONTIMPORTER_HPP
+#define XENGINE_FONTIMPORTER_HPP
 
-#include <utility>
-#include <vector>
+#include "xng/resource/resourceimporter.hpp"
 
-#include "xng/resource/resource.hpp"
+#include "xng/io/message.hpp"
 
 namespace xng {
-    class Font : public Resource {
+    /**
+     * Imports font format files as Font resource objects.
+     */
+    class XENGINE_EXPORT FontImporter : public ResourceImporter {
     public:
-        std::vector<char> data;
+        ResourceBundle read(std::istream &stream,
+                            const std::string &hint,
+                            const std::string &path,
+                            Archive *archive) override;
 
-        Font() = default;
-
-        explicit Font(std::vector<char> data) : data(std::move(data)) {}
-
-        std::unique_ptr<Resource> clone() override {
-            return std::make_unique<Font>(*this);
-        }
-
-        std::type_index getTypeIndex() const override {
-            return typeid(Font);
-        }
+        const std::set<std::string> &getSupportedFormats() const override;
     };
 }
-#endif //XENGINE_FONTDATA_HPP
+
+#endif //XENGINE_FONTIMPORTER_HPP

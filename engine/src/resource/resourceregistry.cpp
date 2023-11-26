@@ -64,13 +64,22 @@ namespace xng {
         archives.erase(scheme);
     }
 
-    void ResourceRegistry::setImporter(ResourceImporter value) {
+    void ResourceRegistry::setImporters(std::vector<std::unique_ptr<ResourceImporter>> value) {
         std::unique_lock l(importerMutex);
-        importer = std::move(value);
+        importers = std::move(value);
     }
 
-    ResourceImporter &ResourceRegistry::getImporter() {
-        return importer;
+    const std::vector<std::unique_ptr<ResourceImporter>> &ResourceRegistry::getImporters() {
+        return importers;
+    }
+
+    ResourceImporter &ResourceRegistry::getImporter(const std::string &fileExtension) {
+        for (auto &imp: importers) {
+            if (imp->getSupportedFormats().contains(fileExtension)) {
+                return *imp;
+            }
+        }
+        throw std::runtime_error("No importer for extension: " + fileExtension);
     }
 
     Archive &ResourceRegistry::getArchive(const std::string &scheme) {
@@ -147,7 +156,8 @@ namespace xng {
                     auto &archive = resolveUri(uri);
                     std::filesystem::path path(uri.getFile());
                     auto stream = archive.open(path.string());
-                    auto bundle = importer.import(*stream, path.extension().string(), path.string());
+                    auto bundle = getImporter(path.extension().string())
+                            .read(*stream, path.extension().string(), path.string(), &archive);
 
                     std::lock_guard<std::mutex> g(mutex);
 

@@ -21,9 +21,9 @@
 #define XENGINE_TEXTCOMPONENT_HPP
 
 #include "xng/io/messageable.hpp"
-#include "xng/resource/rawresource.hpp"
 #include "xng/gui/textalignment.hpp"
 #include "xng/ecs/component.hpp"
+#include "xng/font/font.hpp"
 
 namespace xng {
     /**
@@ -40,7 +40,7 @@ namespace xng {
         int lineSpacing{};
         TextAlignment alignment{};
 
-        ResourceHandle<RawResource> font{};
+        ResourceHandle<Font> font{};
 
         Vec2f textScroll{};
 

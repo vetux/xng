@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/resource/parsers/stbiparser.hpp"
+#include "xng/resource/importers/stbiimporter.hpp"
 
 #include "extern/stb_image.h"
 #include "xng/render/image.hpp"
@@ -46,8 +46,19 @@ namespace xng {
         }
     }
 
-    ResourceBundle StbiParser::read(const std::vector<char> &buffer, const std::string &hint, const std::string &path,
-                                    Archive *archive) const {
+    ResourceBundle StbiImporter::read(std::istream &stream,
+                                      const std::string &hint,
+                                      const std::string &path,
+                                      Archive *archive) {
+        std::vector<char> buffer;
+
+        char c;
+        while (!stream.eof()) {
+            stream.read(&c, 1);
+            if (stream.gcount() == 1) {
+                buffer.emplace_back(c);
+            }
+        }
         //Try to read source as image
         int x, y, n;
         auto r = stbi_info_from_memory((const stbi_uc *) (buffer.data()),
@@ -70,7 +81,7 @@ namespace xng {
         }
     }
 
-    const std::set<std::string> &StbiParser::getSupportedFormats() const {
+    const std::set<std::string> &StbiImporter::getSupportedFormats() const {
         static const std::set<std::string> formats = {".png", ".jpeg", ".jpg", ".bmp", ".tga", ".gif"};
         return formats;
     }

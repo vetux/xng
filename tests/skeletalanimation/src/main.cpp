@@ -26,7 +26,7 @@
 #include "xng/driver/glslang/glslangcompiler.hpp"
 #include "xng/driver/spirv-cross/spirvcrossdecompiler.hpp"
 #include "xng/driver/freetype/ftfontdriver.hpp"
-#include "xng/driver/assimp/assimpparser.hpp"
+#include "xng/driver/assimp/assimpimporter.hpp"
 
 #include "debugoverlay.hpp"
 #include "cameracontroller.hpp"

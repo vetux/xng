@@ -17,26 +17,21 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RAWRESOURCE_HPP
-#define XENGINE_RAWRESOURCE_HPP
+#ifndef XENGINE_ASSIMPIMPORTER_HPP
+#define XENGINE_ASSIMPIMPORTER_HPP
 
-#include "xng/resource/resource.hpp"
+#include "xng/resource/resourceimporter.hpp"
 
 namespace xng {
-    /**
-     * A raw resource makes the byte data of the resource available for custom parsing.
-     */
-    struct RawResource : public Resource {
-        std::vector<uint8_t> bytes;
+    class XENGINE_EXPORT AssImpImporter : public ResourceImporter {
+    public:
+        ResourceBundle read(std::istream &stream,
+                            const std::string &hint,
+                            const std::string &path,
+                            Archive *archive) override;
 
-        std::unique_ptr<Resource> clone() override {
-            return std::make_unique<RawResource>(*this);
-        }
-
-        std::type_index getTypeIndex() const override {
-            return typeid(RawResource);
-        }
+        const std::set<std::string> &getSupportedFormats() const override;
     };
 }
 
-#endif //XENGINE_RAWRESOURCE_HPP
+#endif //XENGINE_ASSIMPIMPORTER_HPP

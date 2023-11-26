@@ -31,9 +31,10 @@
 using namespace xng;
 
 ImageRGBA loadImage(const std::filesystem::path &filePath) {
-    auto imageParser = StbiParser();
+    auto imageParser = StbiImporter();
     auto data = readFile(filePath.string());
-    return imageParser.read(data, filePath.extension().string(), filePath.string(), nullptr).get<ImageRGBA>();
+    auto fs = std::ifstream(filePath.string());
+    return imageParser.read(fs, filePath.extension().string(), filePath.string(), nullptr).get<ImageRGBA>();
 }
 
 class TestApplication {
@@ -56,7 +57,7 @@ public:
     TestApplication(RenderDevice &device,
                     Window &window,
                     Renderer2D &ren,
-                    Font &font)
+                    FontRenderer &font)
             : device(device),
               window(window),
               ren(ren) {
@@ -193,12 +194,11 @@ int main(int argc, char *argv[]) {
     auto shaderDecompiler = spirv_cross::SpirvCrossDecompiler();
     auto fontDriver = freetype::FtFontDriver();
 
-    std::vector<std::unique_ptr<ResourceParser>> parsers;
-    parsers.emplace_back(std::make_unique<StbiParser>());
-    parsers.emplace_back(std::make_unique<JsonParser>());
-
-    xng::ResourceRegistry::getDefaultRegistry().setImporter(
-            ResourceImporter(std::move(parsers)));
+    std::vector<std::unique_ptr<ResourceImporter>> importers;
+    importers.emplace_back(std::make_unique<StbiImporter>());
+    importers.emplace_back(std::make_unique<JsonImporter>());
+    importers.emplace_back(std::make_unique<FontImporter>());
+    xng::ResourceRegistry::getDefaultRegistry().setImporters(std::move(importers));
 
     xng::ResourceRegistry::getDefaultRegistry().addArchive("file", std::make_shared<DirectoryArchive>("assets/"));
 

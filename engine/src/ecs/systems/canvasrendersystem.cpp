@@ -52,7 +52,7 @@ namespace xng {
         textPixelSizes.clear();
         textRenderers.clear();
         renderedTexts.clear();
-        fonts.clear();
+        fontRenderers.clear();
     }
 
     static std::vector<EntityHandle> getDrawingOrderRecursive(EntityHandle rectComp,
@@ -356,19 +356,16 @@ namespace xng {
                 }
                 textPixelSizes[ent] = pointSize;
 
-                auto eIt = fonts.find(comp.font.getUri());
-                if (eIt == fonts.end()) {
-                    std::string str = std::string(comp.font.get().bytes.begin(),
-                                                  comp.font.get().bytes.end());
-                    auto stream = std::stringstream(str);
-                    fonts[comp.font.getUri()] = fontDriver.createFont(stream);
+                auto eIt = fontRenderers.find(comp.font.getUri());
+                if (eIt == fontRenderers.end()) {
+                    fontRenderers[comp.font.getUri()] = fontDriver.createFontRenderer(comp.font.get());
                 }
 
                 auto rIt = textRenderers.find(pointSize);
                 if (rIt == textRenderers.end()) {
                     textRenderers.insert(std::move(
                             std::make_pair(pointSize,
-                                           std::move(TextRenderer(*fonts[comp.font.getUri()], ren2d, pointSize)))));
+                                           std::move(TextRenderer(*fontRenderers[comp.font.getUri()], ren2d, pointSize)))));
                 }
 
                 auto text = textRenderers.at(pointSize).render(comp.text, TextLayout{

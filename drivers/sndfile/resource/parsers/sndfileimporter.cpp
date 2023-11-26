@@ -22,7 +22,7 @@
 #include <cstring>
 #include <string>
 
-#include "xng/driver/sndfile/sndfileparser.hpp"
+#include "xng/driver/sndfile/sndfileimporter.hpp"
 
 #include "xng/audio/audioformat.hpp"
 #include "xng/audio/audiodata.hpp"
@@ -137,7 +137,7 @@ namespace xng {
         ret.buffer.resize(buff.size() * sizeof(short));
 
         for (auto i = 0; i < ret.buffer.size(); i++) {
-            ret.buffer[i] = ((uint8_t *)buff.data())[i];
+            ret.buffer[i] = ((uint8_t *) buff.data())[i];
         }
 
         sf_close(sndfile);
@@ -145,15 +145,26 @@ namespace xng {
         return ret;
     }
 
-    ResourceBundle
-    SndFileParser::read(const std::vector<char> &buffer, const std::string &hint, const std::string &path,
-                        Archive *archive) const {
+    ResourceBundle SndFileImporter::read(std::istream &stream,
+                                         const std::string &hint,
+                                         const std::string &path,
+                                         Archive *archive) {
+        std::vector<char> buffer;
+
+        char c;
+        while (!stream.eof()) {
+            stream.read(&c, 1);
+            if (stream.gcount() == 1) {
+                buffer.emplace_back(c);
+            }
+        }
+
         ResourceBundle ret;
         ret.add("", std::make_unique<AudioData>(readAudio(buffer)));
         return ret;
     }
 
-    const std::set<std::string> &SndFileParser::getSupportedFormats() const {
+    const std::set<std::string> &SndFileImporter::getSupportedFormats() const {
         static const std::set<std::string> formats = {".wav"};
         return formats;
     }

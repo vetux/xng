@@ -20,12 +20,27 @@
 #ifndef XENGINE_FONTDRIVER_HPP
 #define XENGINE_FONTDRIVER_HPP
 
+#include "xng/font/fontrenderer.hpp"
 #include "xng/font/font.hpp"
 
 namespace xng {
     class XENGINE_EXPORT FontDriver {
     public:
-        virtual std::unique_ptr<Font> createFont(std::istream &data) = 0;
+        virtual std::unique_ptr<FontRenderer> createFontRenderer(std::istream &stream) {
+            std::vector<char> buffer;
+
+            char c;
+            while (!stream.eof()) {
+                stream.read(&c, 1);
+                if (stream.gcount() == 1) {
+                    buffer.emplace_back(c);
+                }
+            }
+
+            return createFontRenderer(Font(buffer));
+        }
+
+        virtual std::unique_ptr<FontRenderer> createFontRenderer(const Font &font) = 0;
     };
 }
 

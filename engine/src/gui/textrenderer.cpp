@@ -37,7 +37,7 @@ namespace xng {
         }
     };
 
-    TextRenderer::TextRenderer(Font &font,
+    TextRenderer::TextRenderer(FontRenderer &font,
                                Renderer2D &ren2D,
                                const Vec2i &pixelSize)
             : font(&font), ren2d(&ren2D), pixelSize(pixelSize) {
