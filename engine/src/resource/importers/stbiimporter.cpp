@@ -19,7 +19,7 @@
 
 #include "xng/resource/importers/stbiimporter.hpp"
 
-#include "extern/stb_image.h"
+#include "thirdparty/stb_image.h"
 #include "xng/render/image.hpp"
 #include "xng/render/texture.hpp"
 

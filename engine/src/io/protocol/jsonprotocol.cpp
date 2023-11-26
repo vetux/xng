@@ -19,7 +19,7 @@
 
 #include "xng/io/protocol/jsonprotocol.hpp"
 
-#include "extern/json.hpp"
+#include "thirdparty/json.hpp"
 
 namespace xng {
     nlohmann::json convertMessage(const Message &message) {

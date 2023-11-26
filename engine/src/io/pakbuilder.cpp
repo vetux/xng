@@ -19,8 +19,8 @@
 
 #include "xng/io/pakbuilder.hpp"
 
-#include "extern/json.hpp"
-#include "extern/base64.hpp"
+#include "thirdparty/json.hpp"
+#include "thirdparty/base64.hpp"
 #include "xng/crypto/gzip.hpp"
 #include "xng/crypto/sha.hpp"
 

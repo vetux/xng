@@ -19,7 +19,7 @@
 
 #include "xng/resource/resourceexporter.hpp"
 
-#include "extern/stb_image_write.h"
+#include "thirdparty/stb_image_write.h"
 
 void streamWriteFunc(void *context, void *data, int size) {
     auto &stream = *static_cast<std::ostream *>(context);
