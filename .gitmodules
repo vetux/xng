@@ -31,3 +31,6 @@
 [submodule "tests/assets"]
 	path = tests/assets
 	url = https://github.com/vetux/xng-assets
+[submodule "thirdparty/bullet3"]
+	path = thirdparty/bullet3
+	url = https://github.com/bulletphysics/bullet3

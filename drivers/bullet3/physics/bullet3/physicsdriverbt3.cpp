@@ -21,8 +21,6 @@
 
 #include "physics/bullet3/worldbt3.hpp"
 
-#pragma message "Not Implemented"
-
 namespace xng {
     std::unique_ptr<World> PhysicsDriverBt3::createWorld() {
         return std::make_unique<WorldBt3>();

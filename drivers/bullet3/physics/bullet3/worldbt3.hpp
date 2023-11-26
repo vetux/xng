@@ -20,8 +20,9 @@
 #ifndef XENGINE_WORLDBT3_HPP
 #define XENGINE_WORLDBT3_HPP
 
-
 #include "xng/physics/world.hpp"
+
+#include "btBulletDynamicsCommon.h"
 
 namespace xng {
     class WorldBt3 : public World {
@@ -37,6 +38,9 @@ namespace xng {
         void setGravity(const Vec3f &gravity) override;
 
         void step(float deltaTime) override;
+
+    private:
+        btDiscreteDynamicsWorld *world;
     };
 }
 

@@ -31,7 +31,8 @@ if (DRIVER_BOX2D)
 endif ()
 
 if (DRIVER_BULLET3)
-    #  add_thirdparty_subdir(${THIRD_PARTY_BASE}/bullet3/)
+    add_thirdparty_subdir(${THIRD_PARTY_BASE}/bullet3/)
+    add_thirdparty_include(${THIRD_PARTY_BASE}/bullet3/src/)
 endif ()
 
 if (DRIVER_OPENAL)

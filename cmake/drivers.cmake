@@ -107,7 +107,8 @@ endif ()
 if (DRIVER_BULLET3)
     CompileDriver(DRIVER_BULLET3
             bullet3
-            PhysicsDriverBt3)
+            PhysicsDriverBt3
+            BulletDynamics BulletCollision LinearMath)
 endif ()
 
 if (DRIVER_OPENAL)
