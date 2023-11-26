@@ -138,8 +138,11 @@ namespace xng {
         const std::set<Uri> &getLoadingUris() const;
 
         bool isLoaded(const Uri &uri) const {
-            return loadTasks.find(uri.getFile()) == loadTasks.end()
-                   && bundles.find(uri.getFile()) != bundles.end();
+            return bundles.find(uri.getFile()) != bundles.end();
+        }
+
+        bool isLoading(const Uri &uri) const {
+            return loadTasks.find(uri.getFile()) == loadTasks.end();
         }
 
     private:

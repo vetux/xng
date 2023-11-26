@@ -71,9 +71,9 @@ namespace xng {
             return *this;
         }
 
-        ResourceHandle(ResourceHandle<T> &&other) = default;
+        ResourceHandle(ResourceHandle<T> &&other)  noexcept = default;
 
-        ResourceHandle<T> &operator=(ResourceHandle<T> &&other) = default;
+        ResourceHandle<T> &operator=(ResourceHandle<T> &&other)  noexcept = default;
 
         bool operator==(const ResourceHandle<T> &other) const {
             return uri == other.uri
@@ -93,15 +93,16 @@ namespace xng {
         }
 
         bool isLoaded() const {
-            if (!assigned())
-                return true;
-            else
-                return getRegistry().isLoaded(uri);
+            return getRegistry().isLoaded(uri);
+        }
+
+        bool isLoading() const {
+            return getRegistry().isLoading(uri);
         }
 
         const T &get() const {
             try {
-                return dynamic_cast<const T&>(getRegistry().get(uri, typeid(T)));
+                return dynamic_cast<const T &>(getRegistry().get(uri, typeid(T)));
             } catch (const std::bad_cast &e) {
                 throw std::runtime_error("Invalid Resource Cast, Uri: " + uri.toString() + " Type: " +
                                          getRegistry().get(uri, typeid(T)).getTypeIndex().name() + " Requested: " +
