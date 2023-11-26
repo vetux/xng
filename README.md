@@ -52,7 +52,7 @@ Drivers are implementations of interfaces (For example through 3rd party librari
     - FreeType
 - Physics Simulation
     - Box2D
-- Resource Parsers
+- Resource Importers
     - AssImp
     - libSndFile
 
@@ -80,8 +80,8 @@ Drivers are implementations of interfaces (For example through 3rd party librari
 
 Check [BUILDING.md](BUILDING.md) for detailed building instructions.
 
-## Assimp Parser and Blender FBX Export
-When exporting rigged meshes from blender to be imported with the assimp parser driver make sure to:
+## Assimp Importer and Blender FBX Export
+When exporting rigged meshes from blender to be imported with the assimp importer driver make sure to:
 - Set the "Apply Scalings" to fbx unit scale.
 - Rotate the mesh and the rig -90 degrees in the X axis and apply the rotation.
 - Set the forward and up axis in the fbx exporter settings to Y forward and Z up to match blenders coordinate system.
