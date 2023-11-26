@@ -128,7 +128,7 @@ int main(int argc, char *argv[]) {
     auto fontDriver = freetype::FtFontDriver();
 
     auto fontFs = std::ifstream("assets/fonts/Sono/static/Sono/Sono-Regular.ttf", std::ios_base::in | std::ios::binary);
-    auto font = fontDriver.createFont(fontFs);
+    auto font = fontDriver.createFontRenderer(fontFs);
 
     auto window = displayDriver.createWindow(gpuDriver.getBackend(),
                                              "XNG FrameGraph Test",

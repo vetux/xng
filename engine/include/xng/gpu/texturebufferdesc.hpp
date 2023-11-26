@@ -68,7 +68,7 @@ namespace xng {
             format = (ColorFormat) message.getMessage("format", Message((int) RGBA)).asInt();
             wrapping = (TextureWrapping) message.getMessage("wrapping", Message((int) CLAMP_TO_BORDER)).asInt();
             filterMin = (TextureFiltering) message.getMessage("filterMin", Message((int) NEAREST)).asInt();
-            filterMag = (TextureFiltering) message.getMessage("filterMax", Message((int) NEAREST)).asInt();
+            filterMag = (TextureFiltering) message.getMessage("filterMag", Message((int) NEAREST)).asInt();
             message.value("generateMipmap", generateMipmap);
             mipmapFilter = (MipMapFiltering) message.getMessage("mipmapFilter",
                                                                 Message((int) NEAREST_MIPMAP_NEAREST)).asInt();

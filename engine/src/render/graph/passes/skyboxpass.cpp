@@ -98,25 +98,25 @@ namespace xng {
 
         uploadTexture = false;
 
-        TextureBufferDesc desc;
-        desc.textureType = TEXTURE_CUBE_MAP;
-
         auto nodes = builder.getScene().rootNode.findAll({typeid(SkyboxProperty)});
         if (!nodes.empty()) {
             auto nskybox = nodes.at(0).getProperty<SkyboxProperty>().skybox;
             if (nskybox.texture.assigned()) {
                 if (skybox.texture != nskybox.texture){
-                    desc.size = nskybox.texture.get().images.at(CubeMapFace::NEGATIVE_X).get().getSize();
-                    skyboxTexture = builder.createTextureBuffer(desc);
+                    skyboxTexture = builder.createTextureBuffer(nskybox.texture.get().description);
                     uploadTexture = true;
                 }
                 builder.persist(skyboxTexture);
             } else {
+                TextureBufferDesc desc;
+                desc.textureType = TEXTURE_CUBE_MAP;
                 skyboxTexture = builder.createTextureBuffer(desc);
             }
             skybox = nskybox;
         } else {
             skybox = {};
+            TextureBufferDesc desc;
+            desc.textureType = TEXTURE_CUBE_MAP;
             skyboxTexture = builder.createTextureBuffer(desc);
         }
 
@@ -137,6 +137,7 @@ namespace xng {
         commandBuffer = builder.createCommandBuffer();
         builder.write(commandBuffer);
 
+        TextureBufferDesc desc;
         desc.textureType = TEXTURE_2D;
         desc.size = renderSize;
         desc.format = DEPTH_STENCIL;
