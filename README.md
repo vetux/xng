@@ -32,7 +32,6 @@ workflow
 ## Planned Features
 
 - Vulkan GPU driver
-- Bullet3 physics driver
  
 ## Drivers
 
@@ -52,6 +51,7 @@ Drivers are implementations of interfaces (For example through 3rd party librari
     - FreeType
 - Physics Simulation
     - Box2D
+    - Bullet3
 - Resource Importers
     - AssImp
     - libSndFile
