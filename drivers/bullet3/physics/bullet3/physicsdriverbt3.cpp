@@ -20,9 +20,10 @@
 #include "xng/driver/bullet3/physicsdriverbt3.hpp"
 
 #include "physics/bullet3/worldbt3.hpp"
+#include "BulletCollision/CollisionShapes/btTriangleShape.h"
 
 namespace xng {
-    std::unique_ptr<World> PhysicsDriverBt3::createWorld() {
+    std::unique_ptr<World> bullet3::Bt3PhysicsDriver::createWorld() {
         return std::make_unique<WorldBt3>();
     }
 }

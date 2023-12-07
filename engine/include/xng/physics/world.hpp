@@ -20,9 +20,10 @@
 #ifndef XENGINE_WORLD3D_HPP
 #define XENGINE_WORLD3D_HPP
 
-#include "rigidbody.hpp"
-#include "joint.hpp"
-#include "collidershape.hpp"
+#include "xng/physics/rigidbody.hpp"
+#include "xng/physics/joint.hpp"
+#include "xng/physics/colliderdesc.hpp"
+#include "xng/physics/rigidbody.hpp"
 
 namespace xng {
     class XENGINE_EXPORT World {
@@ -30,20 +31,47 @@ namespace xng {
         struct XENGINE_EXPORT Contact {
             std::reference_wrapper<Collider> colliderA;
             std::reference_wrapper<Collider> colliderB;
+
+            Vec3f positionWorldA;
+            Vec3f positionWorldB;
+
+            Vec3f normalOnB;
+
+            bool operator==(const Contact &other) const {
+                return &colliderA.get() == &other.colliderA.get()
+                       && &colliderB.get() == &other.colliderB.get()
+                       && positionWorldA == other.positionWorldA
+                       && positionWorldB == other.positionWorldB
+                       && normalOnB == other.normalOnB;
+            }
         };
 
         class XENGINE_EXPORT ContactListener {
         public:
             virtual ~ContactListener() = default;
 
-            virtual void beginContact(Contact &contact) {}
+            virtual void beginContact(const Contact &contact) {}
 
-            virtual void endContact(Contact &contact) {}
+            virtual void endContact(const Contact &contact) {}
         };
 
         virtual ~World() = default;
 
+        /**
+         * Create a rigidbody with no colliders.
+         *
+         * @return
+         */
         virtual std::unique_ptr<RigidBody> createBody() = 0;
+
+        /**
+         * Create a rigidbody with a collider attached.
+         * Certain physics apis (bullet3) do not support attaching colliders at runtime through Rigidbody::createCollider.
+         *
+         * @param colliderDesc
+         * @return
+         */
+        virtual std::unique_ptr<RigidBody> createBody(const ColliderDesc &colliderDesc, RigidBody::RigidBodyType type) = 0;
 
         virtual std::unique_ptr<Joint> createJoint() = 0;
 
@@ -54,7 +82,25 @@ namespace xng {
         virtual void setGravity(const Vec3f &gravity) = 0;
 
         virtual void step(float deltaTime) = 0;
+
+        virtual void step(float deltaTime, int maxSteps) = 0;
     };
 }
+
+namespace std {
+    template<>
+    struct hash<xng::World::Contact> {
+        std::size_t operator()(const xng::World::Contact &k) const {
+            size_t ret = 0;
+            xng::hash_combine(ret, &k.colliderA.get());
+            xng::hash_combine(ret, &k.colliderB.get());
+            xng::hash_combine(ret, k.positionWorldA);
+            xng::hash_combine(ret, k.positionWorldB);
+            xng::hash_combine(ret, k.normalOnB);
+            return ret;
+        }
+    };
+}
+
 
 #endif //XENGINE_WORLD3D_HPP

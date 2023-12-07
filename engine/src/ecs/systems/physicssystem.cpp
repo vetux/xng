@@ -27,7 +27,6 @@ namespace xng {
     static ColliderDesc applyScale(const ColliderDesc &desc, float scale) {
         ColliderDesc ret = desc;
         ret.shape = {};
-        ret.shape.primitive = desc.shape.primitive;
         if (desc.shape.indices.empty()) {
             for (auto &vert: desc.shape.vertices) {
                 ret.shape.vertices.emplace_back(vert / scale);
@@ -41,8 +40,32 @@ namespace xng {
         return ret;
     }
 
+    static ColliderShape getShape(const Mesh &mesh, const ColliderShape &s) {
+        if (mesh.vertexLayout != Mesh::getDefaultVertexLayout()) {
+            throw std::runtime_error("Invalid mesh vertex layout");
+        }
+        ColliderShape shape = s;
+        for (const auto &v: mesh.vertices) {
+            assert(v.buffer.size() >= sizeof(float) * 2);
+            float posx = *reinterpret_cast<const float *>(v.buffer.data());
+            float posy = *reinterpret_cast<const float *>(v.buffer.data() + sizeof(float));
+            float posz = *reinterpret_cast<const float *>(v.buffer.data() + sizeof(float) * 2);
+            shape.vertices.emplace_back(posx,
+                                        posy,
+                                        posz);
+        }
+        for (auto &i: mesh.indices) {
+            shape.indices.emplace_back(i);
+        }
+        return shape;
+    }
+
     PhysicsSystem::PhysicsSystem(World &world, float scale, float timeStep)
             : world(world), scale(scale), timeStep(timeStep) {}
+
+    PhysicsSystem::PhysicsSystem(World &world, float scale, int maxSteps)
+            : world(world), scale(scale), maxSteps(maxSteps) {}
+
 
     void PhysicsSystem::start(EntityScene &scene, EventBus &eventBus) {
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
@@ -62,34 +85,96 @@ namespace xng {
     }
 
     void PhysicsSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {
-        deltaAccumulator += deltaTime;
-        int steps = static_cast<int>(deltaAccumulator / timeStep);
-        deltaAccumulator -= timeStep * static_cast<float>(steps);
-
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
+            if (rigidbodies.find(pair.first) == rigidbodies.end()) {
+                if (scene.checkComponent<Collider3DComponent>(pair.first)) {
+                    auto comp = scene.getComponent<Collider3DComponent>(pair.first);
+                    ColliderDesc desc{};
+                    desc.properties = comp.properties;
+                    if (comp.mesh.assigned()) {
+                        desc.shape = getShape(comp.mesh.get(), comp.shape);
+                    } else {
+                        desc.shape = comp.shape;
+                    }
+                    auto body = world.createBody(desc, pair.second.type);
+                    body->setAngularFactor(pair.second.angularFactor);
+                    body->setGravityScale(pair.second.gravityScale);
+
+                    rigidbodiesReverse[body.get()] = pair.first;
+                    rigidbodies[pair.first] = std::move(body);
+                } else if (scene.checkComponent<Collider2DComponent>(pair.first)) {
+                    auto comp = scene.getComponent<Collider2DComponent>(pair.first);
+
+                    auto body = world.createBody();
+                    body->setRigidBodyType(pair.second.type);
+                    body->setAngularFactor(pair.second.angularFactor);
+                    body->setGravityScale(pair.second.gravityScale);
+
+                    rigidbodiesReverse[body.get()] = pair.first;
+                    rigidbodies[pair.first] = std::move(body);
+
+                    for (auto i = 0; i < comp.colliders.size(); i++) {
+                        auto collider = rigidbodies.at(pair.first)->createCollider(applyScale(
+                                comp.colliders.at(i), scale));
+                        colliderIndices[collider.get()] = i;
+                        colliders[pair.first].emplace_back(std::move(collider));
+                    }
+
+                } else {
+                    auto body = world.createBody();
+                    body->setRigidBodyType(pair.second.type);
+                    body->setAngularFactor(pair.second.angularFactor);
+                    body->setGravityScale(pair.second.gravityScale);
+
+                    rigidbodiesReverse[body.get()] = pair.first;
+                    rigidbodies[pair.first] = std::move(body);
+                }
+            }
+
             auto &rb = *rigidbodies.at(pair.first).get();
             auto tcomp = scene.getComponent<TransformComponent>(pair.first);
-            rb.setPosition(tcomp.transform.getPosition() / scale);
-            rb.setRotation(tcomp.transform.getRotation().getEulerAngles());
+
+            if (pair.second.rotationalInertia.x < 0
+                || pair.second.rotationalInertia.y < 0
+                || pair.second.rotationalInertia.z < 0)
+                rb.setMass(pair.second.type == RigidBody::STATIC ? 0 : pair.second.mass,
+                           pair.second.massCenter);
+            else
+                rb.setMass(pair.second.type == RigidBody::STATIC ? 0 : pair.second.mass,
+                           pair.second.massCenter,
+                           pair.second.rotationalInertia);
+
             rb.setVelocity(pair.second.velocity);
             rb.setAngularVelocity(pair.second.angularVelocity);
-            if (pair.second.mass > 0) {
-                rb.setMass(pair.second.mass, pair.second.massCenter, pair.second.rotationalInertia);
-            }
+
+            rb.setPosition(tcomp.transform.getPosition() / scale);
+            rb.setRotation(tcomp.transform.getRotation().getEulerAngles());
+
+            rb.applyForce(pair.second.force, pair.second.forcePoint / scale);
+            rb.applyTorque(pair.second.torque);
+            rb.applyLinearImpulse(pair.second.impulse, pair.second.impulsePoint);
+            rb.applyAngularImpulse(pair.second.angularImpulse);
         }
 
-        for (int i = 0; i < steps; i++) {
-            for (auto &pair: scene.getPool<RigidBodyComponent>()) {
-                auto &rb = *rigidbodies.at(pair.first).get();
-                rb.applyForce(pair.second.force, pair.second.forcePoint / scale);
-                rb.applyTorque(pair.second.torque);
-                rb.applyLinearImpulse(pair.second.impulse, pair.second.impulsePoint);
-                rb.applyAngularImpulse(pair.second.angularImpulse);
+        if (timeStep == 0) {
+            world.step(static_cast<float>(deltaTime), maxSteps);
+        } else {
+            deltaAccumulator += static_cast<float>(deltaTime);
+            int steps = static_cast<int>(deltaAccumulator / timeStep);
+            deltaAccumulator -= timeStep * static_cast<float>(steps);
+
+            for (int i = 0; i < steps && i < maxSteps; i++) {
+                for (auto &pair: scene.getPool<RigidBodyComponent>()) {
+                    auto &rb = *rigidbodies.at(pair.first).get();
+                    rb.applyForce(pair.second.force, pair.second.forcePoint / scale);
+                    rb.applyTorque(pair.second.torque);
+                    rb.applyLinearImpulse(pair.second.impulse, pair.second.impulsePoint);
+                    rb.applyAngularImpulse(pair.second.angularImpulse);
+                }
+
+                world.step(timeStep);
             }
-
-            world.step(timeStep);
         }
-
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
             auto &rb = *rigidbodies.at(pair.first).get();
             auto tcomp = scene.getComponent<TransformComponent>(pair.first);
@@ -106,50 +191,26 @@ namespace xng {
             comp.angularVelocity = rb.getAngularVelocity();
             comp.mass = rb.getMass();
 
-            comp.touchingColliders.clear();
-            for (int i = 0; i < comp.colliders.size(); i++) {
-                auto it = touchingColliders.find(std::pair(pair.first, i));
-                if (it != touchingColliders.end()) {
-                    for (auto &entIndexPair: it->second) {
-                        comp.touchingColliders[entIndexPair.first].insert(entIndexPair.second);
-                    }
-                }
-            }
-
             scene.updateComponent(pair.first, comp);
             scene.updateComponent(pair.first, tcomp);
         }
     }
 
     void PhysicsSystem::onComponentCreate(const EntityHandle &entity, const Component &component) {
-        if (component.getType() == typeid(RigidBodyComponent)) {
-            auto &comp = dynamic_cast<const RigidBodyComponent &>(component);
-            auto body = world.createBody();
-
-            body->setRigidBodyType(comp.type);
-            body->setLockedRotationAxes(comp.lockedAxes);
-            body->setGravityScale(comp.gravityScale);
-
-            for (auto i = 0; i < comp.colliders.size(); i++) {
-                auto collider = body->createCollider(applyScale(comp.colliders.at(i).get(), scale));
-                colliderIndices[collider.get()] = i;
-                colliders[entity].emplace_back(std::move(collider));
-            }
-
-            rigidbodiesReverse[body.get()] = entity;
-            rigidbodies[entity] = std::move(body);
-        }
     }
 
     void PhysicsSystem::onComponentDestroy(const EntityHandle &entity, const Component &component) {
         if (component.getType() == typeid(RigidBodyComponent)) {
-            auto &comp = dynamic_cast<const RigidBodyComponent &>(component);
-            for (auto &col: colliders.at(entity)) {
-                colliderIndices.erase(col.get());
+            if (colliders.find(entity) != colliders.end()) {
+                for (auto &col: colliders.at(entity)) {
+                    colliderIndices.erase(col.get());
+                }
+                colliders.erase(entity);
             }
-            colliders.erase(entity);
-            rigidbodiesReverse.erase(rigidbodies.at(entity).get());
-            rigidbodies.erase(entity);
+            if (rigidbodies.find(entity) != rigidbodies.end()) {
+                rigidbodiesReverse.erase(rigidbodies.at(entity).get());
+                rigidbodies.erase(entity);
+            }
         }
     }
 
@@ -160,7 +221,17 @@ namespace xng {
             auto &oComp = dynamic_cast<const RigidBodyComponent &>(oldComponent);
             auto &nComp = dynamic_cast<const RigidBodyComponent &>(newComponent);
 
-            if (oComp.colliders != nComp.colliders) {
+            if (rigidbodies.find(entity) != rigidbodies.end()) {
+                rigidbodies.at(entity)->setRigidBodyType(nComp.type);
+                rigidbodies.at(entity)->setAngularFactor(nComp.angularFactor);
+                rigidbodies.at(entity)->setGravityScale(nComp.gravityScale);
+            }
+        } else if (oldComponent.getType() == typeid(Collider2DComponent)) {
+            auto &oComp = dynamic_cast<const Collider2DComponent &>(oldComponent);
+            auto &nComp = dynamic_cast<const Collider2DComponent &>(newComponent);
+
+            if (oComp.colliders != nComp.colliders
+                && colliders.find(entity) != colliders.end()) {
                 for (auto &col: colliders.at(entity)) {
                     colliderIndices.erase(col.get());
                 }
@@ -168,26 +239,25 @@ namespace xng {
 
                 for (auto i = 0; i < nComp.colliders.size(); i++) {
                     auto collider = rigidbodies.at(entity)->createCollider(applyScale(
-                            nComp.colliders.at(i).get(), scale));
+                            nComp.colliders.at(i), scale));
                     colliderIndices[collider.get()] = i;
                     colliders[entity].emplace_back(std::move(collider));
                 }
             }
-
-            rigidbodies.at(entity)->setRigidBodyType(nComp.type);
-            rigidbodies.at(entity)->setLockedRotationAxes(nComp.lockedAxes);
-            rigidbodies.at(entity)->setGravityScale(nComp.gravityScale);
+        } else if (oldComponent.getType() == typeid(Collider3DComponent)) {
+            // Recreate rigidbody
+            if (rigidbodies.find(entity) != rigidbodies.end()) {
+                rigidbodiesReverse.erase(rigidbodies.at(entity).get());
+                rigidbodies.erase(entity);
+            }
         }
     }
 
-    void PhysicsSystem::beginContact(World::Contact &contact) {
+    void PhysicsSystem::beginContact(const World::Contact &contact) {
         auto entA = rigidbodiesReverse.at(&contact.colliderA.get().getBody());
         auto entB = rigidbodiesReverse.at(&contact.colliderB.get().getBody());
         auto indexA = colliderIndices.at(&contact.colliderA.get());
         auto indexB = colliderIndices.at(&contact.colliderB.get());
-
-        touchingColliders[std::pair(entA, indexA)].insert(std::pair(entB, indexB));
-        touchingColliders[std::pair(entB, indexB)].insert(std::pair(entA, indexA));
 
         if (bus != nullptr)
             bus->invoke(ContactEvent(ContactEvent::BEGIN_CONTACT,
@@ -197,14 +267,11 @@ namespace xng {
                                      indexB));
     }
 
-    void PhysicsSystem::endContact(World::Contact &contact) {
+    void PhysicsSystem::endContact(const World::Contact &contact) {
         auto entA = rigidbodiesReverse.at(&contact.colliderA.get().getBody());
         auto entB = rigidbodiesReverse.at(&contact.colliderB.get().getBody());
         auto indexA = colliderIndices.at(&contact.colliderA.get());
         auto indexB = colliderIndices.at(&contact.colliderB.get());
-
-        touchingColliders[std::pair(entA, indexA)].erase(std::pair(entB, indexB));
-        touchingColliders[std::pair(entB, indexB)].erase(std::pair(entA, indexA));
 
         if (bus != nullptr)
             bus->invoke(ContactEvent(ContactEvent::END_CONTACT,

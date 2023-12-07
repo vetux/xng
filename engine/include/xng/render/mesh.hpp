@@ -111,6 +111,8 @@ namespace xng {
 
         static const Mesh &normalizedCube();
 
+        static Mesh sphere(float radius, int latitudes, int longitudes);
+
         ~Mesh() override = default;
 
         std::unique_ptr<Resource> clone() override {

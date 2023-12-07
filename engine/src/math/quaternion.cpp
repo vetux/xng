@@ -47,7 +47,9 @@ namespace xng {
     static Vec3f quaternionToEuler(const Quaternion &q) {
         glm::quat gQuat(q.w, q.x, q.y, q.z);
         auto gVec = glm::eulerAngles(gQuat);
-        return convertToDegrees(Vec3f(gVec.x, gVec.y, gVec.z));
+        return convertToDegrees(Vec3f(isnanf(gVec.x) ? 0 : gVec.x,
+                                      isnanf(gVec.y) ? 0 : gVec.y,
+                                      isnanf(gVec.z) ? 0 : gVec.z));
     }
 
     Quaternion::Quaternion()

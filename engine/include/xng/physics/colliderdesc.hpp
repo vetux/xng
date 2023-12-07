@@ -21,52 +21,25 @@
 #define XENGINE_COLLIDERDEF_HPP
 
 #include "xng/resource/resource.hpp"
+
 #include "collidershape.hpp"
+#include "xng/physics/colliderproperties.hpp"
 
 namespace xng {
-    struct ColliderDesc : public Resource, public Messageable {
+    struct ColliderDesc : public Messageable {
+        ColliderProperties properties;
         ColliderShape shape;
-        float friction{};
-        float restitution{};
-        float restitution_threshold{};
-        float density{};
-        bool isSensor{};
-
-        std::unique_ptr<Resource> clone() override {
-            return std::make_unique<ColliderDesc>(*this);
-        }
-
-        std::type_index getTypeIndex() const override {
-            return typeid(ColliderDesc);
-        }
-
-        bool operator==(const ColliderDesc &other) const {
-            return shape == other.shape
-                   && friction == other.friction
-                   && restitution == other.restitution
-                   && restitution_threshold == other.restitution_threshold
-                   && density == other.density
-                   && isSensor == other.isSensor;
-        }
 
         Messageable &operator<<(const Message &message) override {
+            properties << message.getMessage("properties");
             shape << message.getMessage("shape");
-            message.value("friction", friction, 1.0f);
-            message.value("restitution", restitution, 0.0f);
-            message.value("restitution_threshold", restitution_threshold, 0.0f);
-            message.value("density", density, 1.0f);
-            message.value("isSensor", isSensor, false);
             return *this;
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
+            properties >> message["properties"];
             shape >> message["shape"];
-            message["friction"] = friction;
-            message["restitution"] = restitution;
-            message["restitution_threshold"] = restitution_threshold;
-            message["density"] = density;
-            message["isSensor"] = isSensor;
             return message;
         }
     };

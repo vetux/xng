@@ -26,7 +26,7 @@
 
 namespace xng {
     MeshRenderSystem::MeshRenderSystem(SceneRenderer &pipeline)
-            : pipeline(pipeline) {
+            : renderer(pipeline) {
     }
 
     MeshRenderSystem::~MeshRenderSystem() = default;
@@ -38,22 +38,18 @@ namespace xng {
     void MeshRenderSystem::update(DeltaTime deltaTime, EntityScene &entScene, EventBus &eventBus) {
         Scene scene = {};
 
-        polyCount = 0;
-
         // Get objects
         for (auto &pair: entScene.getPool<SkinnedMeshComponent>()) {
             // TODO: Culling
             // TODO: Z Sort transparent meshes based on distance of transform to camera
-            //TODO: Change transform walking / scene creation to allow model matrix caching
+            // TODO: Change transform walking / scene creation to allow model matrix caching
 
             auto &transform = entScene.getComponent<TransformComponent>(pair.first);
             if (!transform.enabled)
                 continue;
 
             auto &meshComponent = pair.second;
-            if (!meshComponent.enabled
-                || !meshComponent.mesh.isLoaded()
-                || !meshComponent.mesh.get().isLoaded())
+            if (!meshComponent.enabled)
                 continue;
 
             Node node;
@@ -73,16 +69,6 @@ namespace xng {
 
             if (entScene.checkComponent<MaterialComponent>(pair.first)) {
                 auto &comp = entScene.getComponent<MaterialComponent>(pair.first);
-                bool skip = false;
-                for (auto &mPair: comp.materials) {
-                    if (!mPair.second.isLoaded() || !mPair.second.get().isLoaded()) {
-                        skip = true;
-                        break;
-                    }
-                }
-                if (skip) {
-                    continue;
-                }
                 MaterialProperty materialProperty;
                 materialProperty.materials = comp.materials;
                 node.addProperty(materialProperty);
@@ -93,11 +79,6 @@ namespace xng {
                 boneTransformsProperty.boneTransforms = entScene.getComponent<RigAnimationComponent>(
                         pair.first).boneTransforms;
                 node.addProperty(boneTransformsProperty);
-            }
-
-            polyCount += meshComponent.mesh.get().polyCount();
-            for (auto &mesh: meshComponent.mesh.get().subMeshes) {
-                polyCount += mesh.polyCount();
             }
 
             scene.rootNode.childNodes.emplace_back(node);
@@ -162,15 +143,29 @@ namespace xng {
                     node.addProperty(prop);
                     break;
                 }
+                case 1: {
+                    auto tmp = std::get<DirectionalLight>(lightComponent.light);
+                    DirectionalLightProperty prop;
+                    prop.light = tmp;
+                    node.addProperty(prop);
+                    break;
+                }
+                case 2: {
+                    auto tmp = std::get<SpotLight>(lightComponent.light);
+                    SpotLightProperty prop;
+                    prop.light = tmp;
+                    node.addProperty(prop);
+                    break;
+                }
             }
             scene.rootNode.childNodes.emplace_back(node);
         }
 
         // Render
-        pipeline.render(scene);
+        renderer.render(scene);
     }
 
     SceneRenderer &MeshRenderSystem::getPipeline() {
-        return pipeline;
+        return renderer;
     }
 }

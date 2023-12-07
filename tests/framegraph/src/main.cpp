@@ -104,8 +104,6 @@ void createMaterialResource(xng::MemoryArchive &archive) {
     archive.addData(uri.toString(false), vec);
 }
 
-
-// TODO: Fix OUT_OF_MEMORY thrown after running the framegraph test for some time on windows (The task manager is not showing any kind of memory leak.)
 int main(int argc, char *argv[]) {
     std::vector<std::unique_ptr<ResourceImporter>> importers;
     importers.emplace_back(std::make_unique<StbiImporter>());

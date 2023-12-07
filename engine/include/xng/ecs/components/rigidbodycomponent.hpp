@@ -26,12 +26,12 @@
 
 namespace xng {
     struct XENGINE_EXPORT RigidBodyComponent : public Component {
-        RigidBody::RigidBodyType type;
+        RigidBody::RigidBodyType type = RigidBody::DYNAMIC;
 
-        Vec3b lockedAxes;
+        Vec3f angularFactor = Vec3f(1);
 
-        Vec3f velocity;
-        Vec3f angularVelocity;
+        Vec3f velocity = Vec3f();
+        Vec3f angularVelocity = Vec3f();
 
         Vec3f force = Vec3f();
         Vec3f forcePoint = Vec3f();
@@ -41,19 +41,15 @@ namespace xng {
         Vec3f impulsePoint = Vec3f();
         Vec3f angularImpulse = Vec3f();
 
-        float mass = -1;
+        float mass = 15;
         Vec3f massCenter = Vec3f();
-        Vec3f rotationalInertia = Vec3f();
+        Vec3f rotationalInertia = Vec3f(-1);
 
         float gravityScale = 1;
 
-        std::vector<ResourceHandle<ColliderDesc>> colliders;
-
-        std::map<EntityHandle, std::set<int>> touchingColliders; // Updated at runtime by the physics system, for every touching entity the indices of the touching collider
-
         Messageable &operator<<(const Message &message) override {
-            message.value("type", (int&)type, (int)RigidBody::STATIC);
-            message.value("lockedAxes", lockedAxes);
+            message.value("type", (int &) type, (int) RigidBody::DYNAMIC);
+            message.value("angularFactor", angularFactor);
             message.value("velocity", velocity);
             message.value("angularVelocity", angularVelocity);
 
@@ -61,20 +57,17 @@ namespace xng {
             message.value("massCenter", massCenter);
             message.value("rotationalInertia", rotationalInertia);
 
-            message.value("colliders", colliders);
-
             return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
             type >> message["type"];
-            lockedAxes >> message["lockedAxes"];
+            angularFactor >> message["angularFactor"];
             velocity >> message["velocity"];
             angularVelocity >> message["angularVelocity"];
             mass >> message["mass"];
             massCenter >> message["massCenter"];
             rotationalInertia >> message["rotationalInertia"];
-            colliders >> message["colliders"];
             return Component::operator>>(message);
         }
 

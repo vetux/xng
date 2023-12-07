@@ -56,6 +56,15 @@ namespace xng {
             world.Step(deltaTime, 10, 10);
         }
 
+        void WorldBox2D::step(float deltaTime, int maxSteps) {
+            deltaAccumulator += static_cast<float>(deltaTime);
+            int steps = static_cast<int>(deltaAccumulator / timeStep);
+            deltaAccumulator -= timeStep * static_cast<float>(steps);
+            for (int i = 0; i < steps && i < maxSteps; i++) {
+                world.Step(deltaTime, 10, 10);
+            }
+        }
+
         void WorldBox2D::BeginContact(b2Contact *c) {
             Contact contact = Contact{.colliderA = *fixtureColliderMapping.at(c->GetFixtureA()),
                     .colliderB = *fixtureColliderMapping.at(c->GetFixtureB())};
@@ -70,6 +79,10 @@ namespace xng {
             for (auto &listener: contactListeners) {
                 listener->endContact(contact);
             }
+        }
+
+        std::unique_ptr<RigidBody> WorldBox2D::createBody(const ColliderDesc &colliderDesc, RigidBody::RigidBodyType type) {
+            return std::make_unique<RigidBodyBox2D>(*this, colliderDesc);
         }
     }
 }

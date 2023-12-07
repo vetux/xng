@@ -41,7 +41,6 @@ namespace xng {
         auto textures = std::vector<Message>();
         auto cubeMaps = std::vector<Message>();
         auto sprites = std::vector<Message>();
-        auto colliders = std::vector<Message>();
         auto animations = std::vector<Message>();
         auto scenes = std::vector<Message>();
 
@@ -63,11 +62,6 @@ namespace xng {
                 res >> msg;
                 msg["name"] = pair.first;
                 sprites.emplace_back(msg);
-            } else if (type == typeid(ColliderDesc)) {
-                auto &res = dynamic_cast<ColliderDesc &>(*pair.second);
-                res >> msg;
-                msg["name"] = pair.first;
-                colliders.emplace_back(msg);
             } else if (type == typeid(SpriteAnimation)) {
                 auto &res = dynamic_cast<SpriteAnimation &>(*pair.second);
                 res >> msg;
@@ -88,7 +82,6 @@ namespace xng {
         ret["textures"] = Message(textures);
         ret["cubeMaps"] = Message(cubeMaps);
         ret["sprites"] = Message(sprites);
-        ret["colliders"] = Message(colliders);
         ret["sprite-animations"] = Message(animations);
         return ret;
     }
@@ -100,13 +93,13 @@ namespace xng {
         ResourceBundle ret;
 
         if (m.has("name") || m.has("entities")) {
-            // Parse as xscene
+            // Parse as EntityScene
             auto name = m.getMessage("name", std::string()).asString();
             EntityScene scene;
             scene << m;
             ret.add(name, std::make_unique<EntityScene>(scene));
         } else {
-            // Parse as xbundle
+            // Parse as ResourceBundle
             if (m.has("materials") && m.at("materials").getType() == Message::LIST) {
                 for (auto &element: m.at("materials").asList()) {
                     auto name = element.getMessage("name", std::string()).asString();
@@ -140,15 +133,6 @@ namespace xng {
                     Sprite sprite;
                     sprite << element;
                     ret.add(name, std::make_unique<Sprite>(sprite));
-                }
-            }
-
-            if (m.has("colliders") && m.at("colliders").getType() == Message::LIST) {
-                for (auto &element: m.at("colliders").asList()) {
-                    auto name = element.getMessage("name", std::string()).asString();
-                    ColliderDesc desc;
-                    desc << element;
-                    ret.add(name, std::make_unique<ColliderDesc>(desc));
                 }
             }
 

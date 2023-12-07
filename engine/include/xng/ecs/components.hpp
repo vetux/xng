@@ -41,5 +41,7 @@
 #include "xng/ecs/components/materialcomponent.hpp"
 #include "xng/ecs/components/skinnedmeshcomponent.hpp"
 
+#include "xng/ecs/components/collider2dcomponent.hpp"
+#include "xng/ecs/components/collider3dcomponent.hpp"
 
 #endif //XENGINE_COMPONENTS_HPP

@@ -47,11 +47,8 @@ namespace xng {
 
         SceneRenderer &getPipeline();
 
-        size_t getPolyCount() const { return polyCount; }
-
     private:
-        SceneRenderer &pipeline;
-        size_t polyCount{};
+        SceneRenderer &renderer;
     };
 }
 

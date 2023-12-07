@@ -23,9 +23,8 @@
 #include <set>
 #include <memory>
 
-#include "collider.hpp"
-#include "collidershape.hpp"
-#include "colliderdesc.hpp"
+#include "xng/physics/collider.hpp"
+#include "xng/physics/colliderdesc.hpp"
 
 namespace xng {
     class World;
@@ -68,15 +67,25 @@ namespace xng {
 
         virtual void applyAngularImpulse(const Vec3f &impulse) = 0;
 
-        virtual void setLockedRotationAxes(const Vec3b &axes) = 0;
+        virtual void setAngularFactor(const Vec3f &axes) = 0;
 
-        virtual std::unique_ptr<Collider> createCollider(const ColliderDesc &desc) = 0;
+        virtual void setMass(float mass, const Vec3f &center, const Vec3f &localInertia) = 0;
 
-        virtual void setMass(float mass, const Vec3f &center, const Vec3f &rotationalInertia) = 0;
+        virtual void setMass(float mass, const Vec3f &center) = 0;
 
         virtual float getMass() = 0;
 
         virtual void setGravityScale(float scale) = 0;
+
+        /**
+         * Create a collider attached to this rigidbody.
+         * May not be supported by certain driver implementations (bullet3),
+         * in this case only one collider can be created per rigidbody through World::createBody(ColliderDesc desc).
+         *
+         * @param desc
+         * @return
+         */
+        virtual std::unique_ptr<Collider> createCollider(const ColliderDesc &desc) = 0;
     };
 }
 #endif //XENGINE_RIGIDBODY_HPP

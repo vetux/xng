@@ -116,6 +116,10 @@ namespace xng {
             assets.erase(name);
         }
 
+        bool has(const std::string &name){
+            return assets.find(name) != assets.end();
+        }
+
         std::map<std::string, std::unique_ptr<Resource>> assets;
     };
 }

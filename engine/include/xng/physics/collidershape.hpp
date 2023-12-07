@@ -25,57 +25,47 @@
 
 namespace xng {
     enum ColliderShapeType {
-        COLLIDER_2D, // The vertices / indices are treated as 2D points describing a polygon facing in the z axis.
-        COLLIDER_3D // The vertices / indices are treated as 3D points which form faces according to the set primitive.
+        COLLIDER_2D, // The vertices are treated as 2D points describing a polygon facing in the z axis.
+        COLLIDER_SPHERE, // A sphere collider of the specified radius
+        COLLIDER_BOX, // A box collider with half extent
+        COLLIDER_CYLINDER, // A cylinder collider with radius and height
+        COLLIDER_CAPSULE, // A capsule collider with radius and height
+        COLLIDER_CONE, // A cone collider with radius and height
+        COLLIDER_CONVEX_HULL, // The vertices / indices are treated as 3d points describing a convex hull
+        COLLIDER_TRIANGLES, // The vertices / indices are treated as 3d triangles, only supported for static bodies
     };
 
-    struct XENGINE_EXPORT ColliderShape : public Messageable {
+    /**
+     * A description of a shape for a physics simulation
+     */
+    struct XENGINE_EXPORT ColliderShape :  public Messageable {
         ColliderShapeType type = COLLIDER_2D;
-        Primitive primitive = TRIANGLES;
-        std::vector<Vec3f> vertices;
-        std::vector<size_t> indices; // If not empty the indices into vertices in order.
 
-        bool operator==(const ColliderShape &other) const {
-            return type == other.type
-                   && primitive == other.primitive
-                   && vertices == other.vertices
-                   && indices == other.indices;
-        }
+        std::vector<Vec3f> vertices;
+        std::vector<unsigned int> indices;
+
+        Vec3f halfExtent;
+        float radius;
+        float height;
 
         Messageable &operator<<(const Message &message) override {
-            type = (ColliderShapeType) message.getMessage("type", Message((int) COLLIDER_2D)).asInt();
-            primitive = (Primitive) message.getMessage("primitive", Message((int) TRIANGLES)).asInt();
-            if (message.has("vertices") && message.getMessage("vertices").getType() == Message::LIST) {
-                for (auto &vert: message.getMessage("vertices").asList()) {
-                    Vec3f vertex;
-                    vertex << vert;
-                    vertices.emplace_back(vertex);
-                }
-            }
-            if (message.has("indices") && message.getMessage("indices").getType() == Message::LIST) {
-                for (auto &index: message.getMessage("indices").asList()) {
-                    indices.emplace_back(index.asLong());
-                }
-            }
+            message.value("type", reinterpret_cast<int&>(type));
+            message.value("vertices", vertices);
+            message.value("indices", indices);
+            message.value("halfExtent", halfExtent);
+            message.value("radius", radius);
+            message.value("height", height);
             return *this;
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            message["type"] = (int) type;
-            message["primitive"] = (int) primitive;
-            auto vec = std::vector<Message>();
-            for (auto &vert: vertices) {
-                Message msg;
-                vert >> msg;
-                vec.emplace_back(msg);
-            }
-            message["vertices"] = vec;
-            vec.clear();
-            for (const int &index: indices) {
-                vec.emplace_back(Message(index));
-            }
-            message["indices"] = vec;
+            type >> message["type"];
+            vertices >> message["vertices"];
+            indices >> message["indices"];
+            halfExtent >> message["halfExtent"];
+            radius >> message["radius"];
+            height >> message["height"];
             return message;
         }
     };

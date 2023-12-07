@@ -22,44 +22,252 @@
 
 #include "xng/physics/rigidbody.hpp"
 
+#include "physics/bullet3/colliderbt3.hpp"
+#include "physics/bullet3/bt3convert.hpp"
+#include "btBulletDynamicsCommon.h"
+
 namespace xng {
     class RigidBodyBt3 : public RigidBody {
     public:
-        void setRigidBodyType(RigidBodyType type) override;
+        btRigidBody *body = nullptr;
+        btDynamicsWorld *world = nullptr;
 
-        RigidBodyType getRigidBodyType() override;
+        RigidBodyType type{};
 
-        void setPosition(const Vec3f &position) override;
+        static btCollisionShape *createShape(const ColliderShape &shape) {
+            switch (shape.type) {
+                default:
+                    throw std::runtime_error("Unsupported collider shape type");
+                case COLLIDER_SPHERE:
+                    return new btSphereShape(shape.radius);
+                case COLLIDER_BOX:
+                    return new btBoxShape(convert(shape.halfExtent));
+                case COLLIDER_CYLINDER:
+                    return new btCylinderShape(convert(shape.halfExtent));
+                case COLLIDER_CAPSULE:
+                    return new btCapsuleShape(shape.radius, shape.height);
+                case COLLIDER_CONE:
+                    return new btConeShape(shape.radius, shape.height);
+                case COLLIDER_CONVEX_HULL: {
+                    std::vector<btScalar> data;
+                    if (shape.indices.empty()) {
+                        for (auto i = 0; i < shape.vertices.size(); i += 3) {
+                            data.emplace_back(shape.vertices.at(i).x);
+                            data.emplace_back(shape.vertices.at(i).y);
+                            data.emplace_back(shape.vertices.at(i).z);
+                            data.emplace_back(shape.vertices.at(i + 1).x);
+                            data.emplace_back(shape.vertices.at(i + 1).y);
+                            data.emplace_back(shape.vertices.at(i + 1).z);
+                            data.emplace_back(shape.vertices.at(i + 2).x);
+                            data.emplace_back(shape.vertices.at(i + 2).y);
+                            data.emplace_back(shape.vertices.at(i + 2).z);
+                        }
+                    } else {
+                        for (auto i = 0; i < shape.indices.size(); i += 3) {
+                            data.emplace_back(shape.vertices.at(shape.indices.at(i)).x);
+                            data.emplace_back(shape.vertices.at(shape.indices.at(i)).y);
+                            data.emplace_back(shape.vertices.at(shape.indices.at(i)).z);
+                            data.emplace_back(shape.vertices.at(shape.indices.at(i + 1)).x);
+                            data.emplace_back(shape.vertices.at(shape.indices.at(i + 1)).y);
+                            data.emplace_back(shape.vertices.at(shape.indices.at(i + 1)).z);
+                            data.emplace_back(shape.vertices.at(shape.indices.at(i + 2)).x);
+                            data.emplace_back(shape.vertices.at(shape.indices.at(i + 2)).y);
+                            data.emplace_back(shape.vertices.at(shape.indices.at(i + 2)).z);
+                        }
+                    }
+                    return new btConvexHullShape(data.data(),
+                                                 static_cast<int>(data.size()) / 3,
+                                                 sizeof(btScalar) * 3);
+                }
+                case COLLIDER_TRIANGLES: {
+                    auto *mesh = new btTriangleMesh();
+                    if (shape.indices.empty()) {
+                        for (auto i = 0; i < shape.vertices.size(); i += 3) {
+                            mesh->addTriangle(convert(shape.vertices.at(i)),
+                                              convert(shape.vertices.at(i + 1)),
+                                              convert(shape.vertices.at(i + 2)));
+                        }
+                    } else {
+                        for (auto i = 0; i < shape.indices.size(); i += 3) {
+                            mesh->addTriangle(convert(shape.vertices.at(shape.indices.at(i))),
+                                              convert(shape.vertices.at(shape.indices.at(i + 1))),
+                                              convert(shape.vertices.at(shape.indices.at(i + 2))));
+                        }
+                    }
+                    return new btBvhTriangleMeshShape(mesh, false);
+                }
+            }
+        }
 
-        Vec3f getPosition() override;
+        explicit RigidBodyBt3(btDynamicsWorld *world) : world(world) {
+            btScalar mass(0);
+            btVector3 localInertia(1, 1, 1);
 
-        void setVelocity(const Vec3f &velocity) override;
+            btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, nullptr, nullptr, localInertia);
+            body = new btRigidBody(rbInfo);
 
-        Vec3f getVelocity() override;
+            world->addRigidBody(body);
+        }
 
-        void setRotation(const Vec3f &rotation) override;
+        RigidBodyBt3(btDynamicsWorld *world, const ColliderDesc &desc, RigidBodyType type) : world(world) {
+            btCollisionShape *shape = createShape(desc.shape);
 
-        Vec3f getRotation() override;
+            btScalar mass(type == RigidBodyType::STATIC ? 0 : 1);
+            btVector3 localInertia(1, 1, 1);
 
-        void setAngularVelocity(const Vec3f &angularVelocity) override;
+            shape->calculateLocalInertia(mass, localInertia);
 
-        Vec3f getAngularVelocity() override;
+            btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, nullptr, shape, localInertia);
+            body = new btRigidBody(rbInfo);
 
-        void applyForce(const Vec3f &force, const Vec3f &point) override;
+            world->addRigidBody(body);
 
-        void applyTorque(const Vec3f &torque) override;
+            body->setFriction(desc.properties.friction);
+            body->setRestitution(desc.properties.restitution);
 
-        void setLockedRotationAxes(const Vec3b &ax) override;
+            switch (type) {
+                case STATIC:
+                    if (desc.properties.isSensor)
+                        body->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT
+                                                | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+                    else
+                        body->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
+                    break;
+                case KINEMATIC:
+                    if (desc.properties.isSensor)
+                        body->setCollisionFlags(btCollisionObject::CF_KINEMATIC_OBJECT
+                                                | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+                    else
+                        body->setCollisionFlags(btCollisionObject::CF_KINEMATIC_OBJECT);
+                    break;
+                case DYNAMIC:
+                    if (desc.properties.isSensor)
+                        body->setCollisionFlags(btCollisionObject::CF_DYNAMIC_OBJECT
+                                                | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+                    else
+                        body->setCollisionFlags(btCollisionObject::CF_DYNAMIC_OBJECT);
+                    break;
+            }
+        }
 
-        std::unique_ptr<Collider> createCollider(const ColliderDesc &desc) override;
+        ~RigidBodyBt3() override {
+            world->removeRigidBody(body);
+        }
 
-        void applyLinearImpulse(const Vec3f &impulse, const Vec3f &point) override;
+        void setRigidBodyType(RigidBodyType val) override {
+            throw std::runtime_error("Set rigidbody type not supported on bullet3");
+        }
 
-        void applyAngularImpulse(const Vec3f &impulse) override;
+        RigidBodyType getRigidBodyType() override {
+            return type;
+        }
 
-        float getMass() override;
+        void setPosition(const Vec3f &position) override {
+            auto v = convert(position);
+            body->getWorldTransform().setOrigin(v);
+        }
 
-        void setGravityScale(float scale) override;
+        Vec3f getPosition() override {
+            return convert(body->getWorldTransform().getOrigin());
+        }
+
+        void setVelocity(const Vec3f &velocity) override {
+            auto v = convert(velocity);
+            body->setLinearVelocity(v);
+        }
+
+        Vec3f getVelocity() override {
+            return convert(body->getLinearVelocity());
+        }
+
+        void setRotation(const Vec3f &rotation) override {
+            auto v = convert(Quaternion(rotation));
+            body->getWorldTransform().setRotation(v);
+        }
+
+        Vec3f getRotation() override {
+            return convert(body->getWorldTransform().getRotation()).getEulerAngles();
+        }
+
+        void setAngularVelocity(const Vec3f &angularVelocity) override {
+            auto v = convert(angularVelocity);
+            body->setAngularVelocity(v);
+        }
+
+        Vec3f getAngularVelocity() override {
+            return convert(body->getAngularVelocity());
+        }
+
+        void applyForce(const Vec3f &force, const Vec3f &point) override {
+            auto fv = convert(force);
+            auto pv = convert(point);
+            body->applyForce(fv, pv);
+            body->activate();
+        }
+
+        void applyTorque(const Vec3f &torque) override {
+            auto v = convert(torque);
+            body->applyTorque(v);
+            body->activate();
+        }
+
+        void setAngularFactor(const Vec3f &ax) override {
+            body->setAngularFactor({ax.x,
+                                    ax.y,
+                                    ax.z});
+        }
+
+        std::unique_ptr<Collider> createCollider(const ColliderDesc &desc) override {
+            throw std::runtime_error("createCollider not suppoert in bullet3, please use world->createRigidbody");
+        }
+
+        void applyLinearImpulse(const Vec3f &impulse, const Vec3f &point) override {
+            auto iv = convert(impulse);
+            auto pv = convert(point);
+            body->applyImpulse(iv, pv);
+            body->activate();
+        }
+
+        void applyAngularImpulse(const Vec3f &impulse) override {
+            auto v = convert(impulse);
+            body->applyTorqueImpulse(v);
+            body->activate();
+        }
+
+        void setMass(float mass, const Vec3f &center, const Vec3f &localInertia) override {
+            auto cv = convert(center);
+            auto lv = convert(localInertia);
+
+            btTransform t = btTransform();
+            t.setIdentity();
+            t.setOrigin(cv);
+            body->setCenterOfMassTransform(t);
+
+            body->setMassProps(mass, lv);
+        }
+
+        void setMass(float mass, const Vec3f &center) override {
+            auto v = convert(center);
+
+            btVector3 localInertia{1, 1, 1};
+            body->getCollisionShape()->calculateLocalInertia(mass, localInertia);
+
+            btTransform t = btTransform();
+            t.setIdentity();
+            t.setOrigin(v);
+            body->setCenterOfMassTransform(t);
+
+            body->setMassProps(mass, localInertia);
+        }
+
+        float getMass() override {
+            return body->getMass();
+        }
+
+        void setGravityScale(float scale) override {
+            if (scale != 1)
+                body->setGravity({0, 0, 0});
+        }
     };
 }
 

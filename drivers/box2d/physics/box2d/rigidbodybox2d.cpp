@@ -30,6 +30,13 @@ namespace xng {
             body = world.world.CreateBody(&def);
         }
 
+        RigidBodyBox2D::RigidBodyBox2D(WorldBox2D &world, const ColliderDesc& colliderDesc)
+                : world(world) {
+            b2BodyDef def = b2BodyDef();
+            body = world.world.CreateBody(&def);
+            collider = std::make_unique<ColliderBox2D>(*this, colliderDesc);
+        }
+
         RigidBodyBox2D::~RigidBodyBox2D() {
             body->GetWorld()->DestroyBody(body);
         }
@@ -185,10 +192,10 @@ namespace xng {
         }
 
         std::unique_ptr<Collider> RigidBodyBox2D::createCollider(const ColliderDesc &desc) {
-            if (std::isnan(desc.density)
-                || std::isnan(desc.friction)
-                || std::isnan(desc.restitution)
-                || std::isnan(desc.restitution_threshold)) {
+            if (std::isnan(desc.properties.density)
+                || std::isnan(desc.properties.friction)
+                || std::isnan(desc.properties.restitution)
+                || std::isnan(desc.properties.restitution_threshold)) {
                 throw std::runtime_error("Attempted to set NaN value.");
             }
 
@@ -203,8 +210,8 @@ namespace xng {
             return std::make_unique<ColliderBox2D>(*this, desc);
         }
 
-        void RigidBodyBox2D::setLockedRotationAxes(const Vec3b &ax) {
-            body->SetFixedRotation(ax.z);
+        void RigidBodyBox2D::setAngularFactor(const Vec3f &ax) {
+            body->SetFixedRotation(static_cast<bool>(ax.z));
         }
 
         float RigidBodyBox2D::getMass() {
@@ -218,19 +225,33 @@ namespace xng {
             body->SetGravityScale(scale);
         }
 
-        void RigidBodyBox2D::setMass(float mass, const Vec3f &center, const Vec3f &rotationalInertia) {
+        void RigidBodyBox2D::setMass(float mass, const Vec3f &center, const Vec3f &localInertia) {
             if (std::isnan(mass)
                 || std::isnan(center.x)
                 || std::isnan(center.y)
                 || std::isnan(center.z)
-                || std::isnan(rotationalInertia.x)
-                || std::isnan(rotationalInertia.y)
-                || std::isnan(rotationalInertia.z))
+                || std::isnan(localInertia.x)
+                || std::isnan(localInertia.y)
+                || std::isnan(localInertia.z))
                 throw std::runtime_error("Attempted to set NaN value.");
-            b2MassData data;
+            b2MassData data{};
             data.mass = mass;
             data.center = convert(center);
-            data.I = rotationalInertia.z;
+            data.I = localInertia.z;
+            body->SetMassData(&data);
+        }
+
+        void RigidBodyBox2D::setMass(float mass, const Vec3f &center) {
+            if (std::isnan(mass)
+                || std::isnan(center.x)
+                || std::isnan(center.y)
+                || std::isnan(center.z))
+                throw std::runtime_error("Attempted to set NaN value.");
+
+            b2MassData data{};
+            data.mass = mass;
+            data.center = convert(center);
+            data.I = 0;
             body->SetMassData(&data);
         }
     }

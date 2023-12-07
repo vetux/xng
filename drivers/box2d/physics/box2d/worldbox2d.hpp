@@ -23,6 +23,7 @@
 #include "box2d.hpp"
 
 #include "xng/physics/world.hpp"
+#include "xng/physics/rigidbody.hpp"
 
 #include "physics/box2d/rigidbodybox2d.hpp"
 #include "physics/box2d/jointbox2d.hpp"
@@ -37,11 +38,17 @@ namespace xng {
 
             std::map<b2Fixture *, ColliderBox2D *> fixtureColliderMapping;
 
+            float timeStep = 1.0f / 30; // The duration of one physics world step
+            float deltaAccumulator = 0;
+
             WorldBox2D();
 
             ~WorldBox2D() override;
 
             std::unique_ptr<RigidBody> createBody() override;
+
+            std::unique_ptr<RigidBody>
+            createBody(const ColliderDesc &colliderDesc, RigidBody::RigidBodyType type) override;
 
             std::unique_ptr<Joint> createJoint() override;
 
@@ -52,6 +59,9 @@ namespace xng {
             void setGravity(const Vec3f &gravity) override;
 
             void step(float deltaTime) override;
+
+            void step(float deltaTime, int maxSteps) override;
+
 
             void BeginContact(b2Contact *contact) override;
 

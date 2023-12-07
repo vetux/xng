@@ -29,6 +29,10 @@ add_executable(test-shadows ${BASE_SOURCE_DIR}/tests/shadows/src/main.cpp)
 target_include_directories(test-shadows PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/shadows/src/ ${SHADER_COMPILED_DIR} ${TESTS_COMMON_DIR})
 target_link_libraries(test-shadows Threads::Threads xengine)
 
+add_executable(test-physics3d ${BASE_SOURCE_DIR}/tests/physics3d/src/main.cpp)
+target_include_directories(test-physics3d PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/physics3d/src/ ${SHADER_COMPILED_DIR} ${TESTS_COMMON_DIR})
+target_link_libraries(test-physics3d Threads::Threads xengine)
+
 if (MSVC)
     target_compile_options(test-framegraph PUBLIC /bigobj)
     target_compile_options(test-skeletalanimation PUBLIC /bigobj)
@@ -37,6 +41,7 @@ if (MSVC)
     target_compile_options(test-pak PUBLIC /bigobj)
     target_compile_options(test-mandelbrot PUBLIC /bigobj)
     target_compile_options(test-shadows PUBLIC /bigobj)
+    target_compile_options(test-physics3d PUBLIC /bigobj)
 endif ()
 
 file(GLOB RESULT ${TESTS_ASSET_DIR}/*)

@@ -21,12 +21,17 @@
 #define XENGINE_LIGHTCOMPONENT_HPP
 
 #include "xng/render/pointlight.hpp"
+#include "xng/render/directionallight.hpp"
+#include "xng/render/spotlight.hpp"
+
 #include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT LightComponent : public Component {
-        std::variant<PointLight> light;
+        std::variant<PointLight,
+                DirectionalLight,
+                SpotLight> light;
 
         Messageable &operator<<(const Message &message) override {
             int type;
@@ -34,6 +39,16 @@ namespace xng {
             switch (type) {
                 case 0: {
                     PointLight tmp;
+                    message.value("light", tmp);
+                    light = tmp;
+                }
+                case 1:{
+                    DirectionalLight tmp;
+                    message.value("light", tmp);
+                    light = tmp;
+                }
+                case 2:{
+                    SpotLight tmp;
                     message.value("light", tmp);
                     light = tmp;
                 }
@@ -47,6 +62,14 @@ namespace xng {
             switch (light.index()) {
                 case 0: {
                     std::get<PointLight>(light) >> message["light"];
+                    break;
+                }
+                case 1: {
+                    std::get<DirectionalLight>(light) >> message["light"];
+                    break;
+                }
+                case 2: {
+                    std::get<SpotLight>(light) >> message["light"];
                     break;
                 }
             }

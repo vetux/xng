@@ -331,13 +331,13 @@ namespace xng {
         Assimp::Importer importer;
 
         const auto *scenePointer = importer.ReadFileFromMemory(assetBuffer.data(),
-                                                         assetBuffer.size(),
-                                                         aiPostProcessSteps::aiProcess_Triangulate
-                                                         | aiProcess_CalcTangentSpace
-                                                         | aiProcess_FlipUVs
-                                                         | aiProcess_JoinIdenticalVertices
-                                                         | aiProcess_PopulateArmatureData,
-                                                         hint.c_str());
+                                                               assetBuffer.size(),
+                                                               aiPostProcessSteps::aiProcess_Triangulate
+                                                               | aiProcess_CalcTangentSpace
+                                                               | aiProcess_FlipUVs
+                                                               | aiProcess_JoinIdenticalVertices
+                                                               | aiProcess_PopulateArmatureData,
+                                                               hint.c_str());
 
         if (scenePointer == nullptr)
             throw std::runtime_error("Failed to read mesh data from memory");
@@ -393,6 +393,19 @@ namespace xng {
             }
 
             ret.add(pair.first, std::make_unique<SkinnedMesh>(mesh));
+
+            mesh.vertexLayout = Mesh::getDefaultVertexLayout();
+            for(auto &v : mesh.vertices){
+                v.buffer.resize(mesh.vertexLayout.getSize());
+            }
+
+            for (size_t i = 0; i < std::numeric_limits<size_t>::max(); i++) {
+                auto name = pair.first + "_mesh_" + std::to_string(i);
+                if (!ret.has(name)) {
+                    ret.add(name, std::make_unique<Mesh>(mesh));
+                    break;
+                }
+            }
         }
 
         for (auto i = 0; i < scene.mNumAnimations; i++) {
@@ -413,7 +426,7 @@ namespace xng {
         while (!stream.eof()) {
             stream.read(&c, 1);
             if (stream.gcount() == 1) {
-                    buffer.emplace_back(c);
+                buffer.emplace_back(c);
             }
         }
 

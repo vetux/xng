@@ -51,10 +51,10 @@ namespace xng {
             b2PolygonShape polygonShape = convertShape(desc.shape);
             b2FixtureDef fixtureDef;
             fixtureDef.shape = &polygonShape;
-            fixtureDef.friction = desc.friction;
-            fixtureDef.restitution = desc.restitution;
-            fixtureDef.density = desc.density;
-            fixtureDef.isSensor = desc.isSensor;
+            fixtureDef.friction = desc.properties.friction;
+            fixtureDef.restitution = desc.properties.restitution;
+            fixtureDef.density = desc.properties.density;
+            fixtureDef.isSensor = desc.properties.isSensor;
 
             fixture = body.body->CreateFixture(&fixtureDef);
 

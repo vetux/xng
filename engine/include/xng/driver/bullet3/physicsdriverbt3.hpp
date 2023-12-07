@@ -23,10 +23,12 @@
 #include "xng/physics/physicsdriver.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT PhysicsDriverBt3 : public PhysicsDriver {
-    public:
-        std::unique_ptr<World> createWorld() override;
-    };
+    namespace bullet3 {
+        class XENGINE_EXPORT Bt3PhysicsDriver : public PhysicsDriver {
+        public:
+            std::unique_ptr<World> createWorld() override;
+        };
+    }
 }
 
 #endif //XENGINE_PHYSICSDRIVERBT3_HPP

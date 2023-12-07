@@ -31,6 +31,8 @@ namespace xng {
     public:
         PhysicsSystem(World &world, float scale, float timeStep);
 
+        PhysicsSystem(World &world, float scale, int maxSteps);
+
         ~PhysicsSystem() override = default;
 
         PhysicsSystem(const PhysicsSystem &other) = delete;
@@ -55,9 +57,9 @@ namespace xng {
 
         void onEntityDestroy(const EntityHandle &entity) override;
 
-        void beginContact(World::Contact &contact) override;
+        void beginContact(const World::Contact &contact) override;
 
-        void endContact(World::Contact &contact) override;
+        void endContact(const World::Contact &contact) override;
 
     private:
         World &world;
@@ -68,11 +70,11 @@ namespace xng {
         std::map<EntityHandle, std::vector<std::unique_ptr<Collider>>> colliders;
         std::map<Collider *, size_t> colliderIndices;
 
-        std::map<std::pair<EntityHandle, int>, std::set<std::pair<EntityHandle, int>>> touchingColliders;
-
         float scale = 20; // The number of units which correspond to a metre in the physics world.
-        float timeStep = 1.0f / 30; // The duration of one physics world step
+        float timeStep = 0; // The duration of one physics world step
         float deltaAccumulator = 0;
+
+        int maxSteps = 10;
     };
 }
 

@@ -23,8 +23,17 @@
 #include "xng/physics/collider.hpp"
 
 namespace xng {
-    class ColliderBt3 : Collider {
+    class ColliderBt3 : public Collider {
     public:
+        RigidBody *rigidBody{};
+
+        ColliderBt3() = default;
+
+        explicit ColliderBt3(RigidBody &rigidBody) : rigidBody(&rigidBody) {}
+
+        RigidBody &getBody() override {
+            return *rigidBody;
+        }
     };
 }
 
