@@ -17,7 +17,7 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "xng/render/meshallocator.hpp"
+#include "xng/render/graph/meshallocator.hpp"
 
 #include "xng/render/geometry/vertexstream.hpp"
 
@@ -64,20 +64,23 @@ namespace xng {
         }
     }
 
-    void MeshAllocator::uploadMeshes(VertexBuffer &vertexBuffer, IndexBuffer &indexBuffer) {
+    void MeshAllocator::uploadMeshes(FrameGraphBuilder &builder, FrameGraphResource vertexBuffer, FrameGraphResource indexBuffer) {
         for (auto &pair: pendingMeshAllocations) {
             auto meshHandle = pendingMeshHandles.at(pair.first);
             for (auto i = 0; i < meshHandle.get().subMeshes.size() + 1; i++) {
-                assert(pair.second.data.size() > i);
                 auto &data = pair.second.data.at(i);
-                auto &curMesh = i == 0 ? meshHandle.get() : meshHandle.get().subMeshes.at(i - 1);
-                auto vBuf = VertexStream().addVertices(curMesh.vertices).getVertexBuffer();
-                indexBuffer.upload(data.drawCall.offset,
-                                   reinterpret_cast<const uint8_t *>(curMesh.indices.data()),
-                                   curMesh.indices.size() * sizeof(unsigned int));
-                vertexBuffer.upload(data.baseVertex * curMesh.vertexLayout.getSize(),
-                                    vBuf.data(),
-                                    vBuf.size());
+                builder.upload(indexBuffer, 0, data.drawCall.offset, [pair, i, meshHandle](){
+                    assert(pair.second.data.size() > i);
+                    auto &curMesh = i == 0 ? meshHandle.get() : meshHandle.get().subMeshes.at(i - 1);
+                    auto vBuf = VertexStream().addVertices(curMesh.vertices).getVertexBuffer();
+                    return FrameGraphCommand::UploadBuffer(curMesh.indices.size() * sizeof(unsigned int), reinterpret_cast<const uint8_t *>(curMesh.indices.data()));
+                });
+                builder.upload(vertexBuffer, 0, data.drawCall.offset, [pair, i, meshHandle](){
+                    assert(pair.second.data.size() > i);
+                    auto &curMesh = i == 0 ? meshHandle.get() : meshHandle.get().subMeshes.at(i - 1);
+                    auto vBuf = VertexStream().addVertices(curMesh.vertices).getVertexBuffer();
+                    return FrameGraphCommand::UploadBuffer(vBuf.size(), reinterpret_cast<const uint8_t *>(vBuf.data()));
+                });
             }
             meshAllocations[pair.first] = pair.second;
         }

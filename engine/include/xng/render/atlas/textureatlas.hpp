@@ -26,6 +26,8 @@
 #include "xng/render/atlas/textureatlashandle.hpp"
 #include "xng/render/texture.hpp"
 
+#include "xng/render/graph/framegraphbuilder.hpp"
+
 namespace xng {
     /**
      * The texture atlas contains texture array buffers for TextureAtlasResolutions.
@@ -84,6 +86,11 @@ namespace xng {
 
         static void upload(const TextureAtlasHandle &handle,
                            const std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> &atlasBuffers,
+                           const ImageRGBA &texture);
+
+        static void upload(FrameGraphBuilder &builder,
+                           const TextureAtlasHandle &handle,
+                           const std::map<TextureAtlasResolution, FrameGraphResource> &atlasBuffers,
                            const ImageRGBA &texture);
 
         TextureAtlas() = default;

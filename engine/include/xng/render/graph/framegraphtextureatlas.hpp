@@ -87,32 +87,6 @@ namespace xng {
                 desc.textureDesc.size = {16384, 16384};
                 currentHandles.tex16384x16384 = builder.createTextureArrayBuffer(desc);
 
-                builder.read(currentHandles.tex8x8);
-                builder.read(currentHandles.tex16x16);
-                builder.read(currentHandles.tex32x32);
-                builder.read(currentHandles.tex64x64);
-                builder.read(currentHandles.tex128x128);
-                builder.read(currentHandles.tex256x256);
-                builder.read(currentHandles.tex512x512);
-                builder.read(currentHandles.tex1024x1024);
-                builder.read(currentHandles.tex2048x2048);
-                builder.read(currentHandles.tex4096x4096);
-                builder.read(currentHandles.tex8192x8192);
-                builder.read(currentHandles.tex16384x16384);
-
-                builder.write(currentHandles.tex8x8);
-                builder.write(currentHandles.tex16x16);
-                builder.write(currentHandles.tex32x32);
-                builder.write(currentHandles.tex64x64);
-                builder.write(currentHandles.tex128x128);
-                builder.write(currentHandles.tex256x256);
-                builder.write(currentHandles.tex512x512);
-                builder.write(currentHandles.tex1024x1024);
-                builder.write(currentHandles.tex2048x2048);
-                builder.write(currentHandles.tex4096x4096);
-                builder.write(currentHandles.tex8192x8192);
-                builder.write(currentHandles.tex16384x16384);
-
                 builder.persist(currentHandles.tex8x8);
                 builder.persist(currentHandles.tex16x16);
                 builder.persist(currentHandles.tex32x32);
@@ -126,32 +100,6 @@ namespace xng {
                 builder.persist(currentHandles.tex8192x8192);
                 builder.persist(currentHandles.tex16384x16384);
             } else {
-                builder.read(currentHandles.tex8x8);
-                builder.read(currentHandles.tex16x16);
-                builder.read(currentHandles.tex32x32);
-                builder.read(currentHandles.tex64x64);
-                builder.read(currentHandles.tex128x128);
-                builder.read(currentHandles.tex256x256);
-                builder.read(currentHandles.tex512x512);
-                builder.read(currentHandles.tex1024x1024);
-                builder.read(currentHandles.tex2048x2048);
-                builder.read(currentHandles.tex4096x4096);
-                builder.read(currentHandles.tex8192x8192);
-                builder.read(currentHandles.tex16384x16384);
-
-                builder.write(currentHandles.tex8x8);
-                builder.write(currentHandles.tex16x16);
-                builder.write(currentHandles.tex32x32);
-                builder.write(currentHandles.tex64x64);
-                builder.write(currentHandles.tex128x128);
-                builder.write(currentHandles.tex256x256);
-                builder.write(currentHandles.tex512x512);
-                builder.write(currentHandles.tex1024x1024);
-                builder.write(currentHandles.tex2048x2048);
-                builder.write(currentHandles.tex4096x4096);
-                builder.write(currentHandles.tex8192x8192);
-                builder.write(currentHandles.tex16384x16384);
-
                 builder.persist(currentHandles.tex8x8);
                 builder.persist(currentHandles.tex16x16);
                 builder.persist(currentHandles.tex32x32);
@@ -176,85 +124,61 @@ namespace xng {
                                 desc.textureDesc.size = {8, 8};
                                 currentHandles.tex8x8 = builder.createTextureArrayBuffer(desc);
                                 builder.persist(currentHandles.tex8x8);
-                                builder.read(currentHandles.tex8x8);
-                                builder.write(currentHandles.tex8x8);
                                 break;
                             case TEXTURE_ATLAS_16x16:
                                 desc.textureDesc.size = {16, 16};
                                 currentHandles.tex16x16 = builder.createTextureArrayBuffer(desc);
                                 builder.persist(currentHandles.tex16x16);
-                                builder.read(currentHandles.tex16x16);
-                                builder.write(currentHandles.tex16x16);
                                 break;
                             case TEXTURE_ATLAS_32x32:
                                 desc.textureDesc.size = {32, 32};
                                 currentHandles.tex32x32 = builder.createTextureArrayBuffer(desc);
                                 builder.persist(currentHandles.tex32x32);
-                                builder.read(currentHandles.tex32x32);
-                                builder.write(currentHandles.tex32x32);
                                 break;
                             case TEXTURE_ATLAS_64x64:
                                 desc.textureDesc.size = {64, 64};
                                 currentHandles.tex64x64 = builder.createTextureArrayBuffer(desc);
                                 builder.persist(currentHandles.tex64x64);
-                                builder.read(currentHandles.tex64x64);
-                                builder.write(currentHandles.tex64x64);
                                 break;
                             case TEXTURE_ATLAS_128x128:
                                 desc.textureDesc.size = {128, 128};
                                 currentHandles.tex128x128 = builder.createTextureArrayBuffer(desc);
                                 builder.persist(currentHandles.tex128x128);
-                                builder.read(currentHandles.tex128x128);
-                                builder.write(currentHandles.tex128x128);
                                 break;
                             case TEXTURE_ATLAS_256x256:
                                 desc.textureDesc.size = {256, 256};
                                 currentHandles.tex256x256 = builder.createTextureArrayBuffer(desc);
                                 builder.persist(currentHandles.tex256x256);
-                                builder.read(currentHandles.tex256x256);
-                                builder.write(currentHandles.tex256x256);
                                 break;
                             case TEXTURE_ATLAS_512x512:
                                 desc.textureDesc.size = {512, 512};
                                 currentHandles.tex512x512 = builder.createTextureArrayBuffer(desc);
                                 builder.persist(currentHandles.tex512x512);
-                                builder.read(currentHandles.tex512x512);
-                                builder.write(currentHandles.tex512x512);
                                 break;
                             case TEXTURE_ATLAS_1024x1024:
                                 desc.textureDesc.size = {1024, 1024};
                                 currentHandles.tex1024x1024 = builder.createTextureArrayBuffer(desc);
                                 builder.persist(currentHandles.tex1024x1024);
-                                builder.read(currentHandles.tex1024x1024);
-                                builder.write(currentHandles.tex1024x1024);
                                 break;
                             case TEXTURE_ATLAS_2048x2048:
                                 desc.textureDesc.size = {2048, 2048};
                                 currentHandles.tex2048x2048 = builder.createTextureArrayBuffer(desc);
                                 builder.persist(currentHandles.tex2048x2048);
-                                builder.read(currentHandles.tex2048x2048);
-                                builder.write(currentHandles.tex2048x2048);
                                 break;
                             case TEXTURE_ATLAS_4096x4096:
                                 desc.textureDesc.size = {4096, 4096};
                                 currentHandles.tex4096x4096 = builder.createTextureArrayBuffer(desc);
                                 builder.persist(currentHandles.tex4096x4096);
-                                builder.read(currentHandles.tex4096x4096);
-                                builder.write(currentHandles.tex4096x4096);
                                 break;
                             case TEXTURE_ATLAS_8192x8192:
                                 desc.textureDesc.size = {8192, 8192};
                                 currentHandles.tex8192x8192 = builder.createTextureArrayBuffer(desc);
                                 builder.persist(currentHandles.tex8192x8192);
-                                builder.read(currentHandles.tex8192x8192);
-                                builder.write(currentHandles.tex8192x8192);
                                 break;
                             case TEXTURE_ATLAS_16384x16384:
                                 desc.textureDesc.size = {16384, 16384};
                                 currentHandles.tex16384x16384 = builder.createTextureArrayBuffer(desc);
                                 builder.persist(currentHandles.tex16384x16384);
-                                builder.read(currentHandles.tex16384x16384);
-                                builder.write(currentHandles.tex16384x16384);
                                 break;
                             default:
                                 break;
@@ -264,106 +188,62 @@ namespace xng {
             }
         }
 
-        std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>
-        getAtlasBuffers(FrameGraphPassResources &resources,
-                        CommandBuffer &commandBuffer,
-                        CommandQueue &renderQueue) {
-            commandBuffer.begin();
+        std::map<TextureAtlasResolution, FrameGraphResource> getAtlasBuffers(FrameGraphBuilder &builder) {
             if (currentHandles.tex8x8 != previousHandles.tex8x8 && previousHandles.tex8x8.assigned) {
-                auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex8x8);
-                auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex8x8);
-                commandBuffer.add(bufA.copy(bufB));
+                builder.copy(previousHandles.tex8x8, currentHandles.tex8x8);
             }
             if (currentHandles.tex16x16 != previousHandles.tex16x16 && previousHandles.tex16x16.assigned) {
-                auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex16x16);
-                auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex16x16);
-                commandBuffer.add(bufA.copy(bufB));
+                builder.copy(previousHandles.tex16x16, currentHandles.tex16x16);
             }
             if (currentHandles.tex32x32 != previousHandles.tex32x32 && previousHandles.tex32x32.assigned) {
-                auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex32x32);
-                auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex32x32);
-                commandBuffer.add(bufA.copy(bufB));
+                builder.copy(previousHandles.tex32x32, currentHandles.tex32x32);
             }
             if (currentHandles.tex64x64 != previousHandles.tex64x64 && previousHandles.tex64x64.assigned) {
-                auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex64x64);
-                auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex64x64);
-                commandBuffer.add(bufA.copy(bufB));
+                builder.copy(previousHandles.tex64x64, currentHandles.tex64x64);
             }
             if (currentHandles.tex128x128 != previousHandles.tex128x128 && previousHandles.tex128x128.assigned) {
-                auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex128x128);
-                auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex128x128);
-                commandBuffer.add(bufA.copy(bufB));
+                builder.copy(previousHandles.tex128x128, currentHandles.tex128x128);
             }
             if (currentHandles.tex256x256 != previousHandles.tex256x256 && previousHandles.tex256x256.assigned) {
-                auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex256x256);
-                auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex256x256);
-                commandBuffer.add(bufA.copy(bufB));
+                builder.copy(previousHandles.tex256x256, currentHandles.tex256x256);
             }
             if (currentHandles.tex512x512 != previousHandles.tex512x512 && previousHandles.tex512x512.assigned) {
-                auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex512x512);
-                auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex512x512);
-                commandBuffer.add(bufA.copy(bufB));
+                builder.copy(previousHandles.tex512x512, currentHandles.tex512x512);
             }
             if (currentHandles.tex1024x1024 != previousHandles.tex1024x1024 && previousHandles.tex1024x1024.assigned) {
-                auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex1024x1024);
-                auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex1024x1024);
-                commandBuffer.add(bufA.copy(bufB));
+                builder.copy(previousHandles.tex1024x1024, currentHandles.tex1024x1024);
             }
             if (currentHandles.tex2048x2048 != previousHandles.tex2048x2048 && previousHandles.tex2048x2048.assigned) {
-                auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex2048x2048);
-                auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex2048x2048);
-                commandBuffer.add(bufA.copy(bufB));
+                builder.copy(previousHandles.tex2048x2048, currentHandles.tex2048x2048);
             }
             if (currentHandles.tex4096x4096 != previousHandles.tex4096x4096 && previousHandles.tex4096x4096.assigned) {
-                auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex4096x4096);
-                auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex4096x4096);
-                commandBuffer.add(bufA.copy(bufB));
+                builder.copy(previousHandles.tex4096x4096, currentHandles.tex4096x4096);
             }
             if (currentHandles.tex8192x8192 != previousHandles.tex8192x8192 && previousHandles.tex8192x8192.assigned) {
-                auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex8192x8192);
-                auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex8192x8192);
-                commandBuffer.add(bufA.copy(bufB));
+                builder.copy(previousHandles.tex8192x8192, currentHandles.tex8192x8192);
             }
             if (currentHandles.tex16384x16384 != previousHandles.tex16384x16384 &&
                 previousHandles.tex16384x16384.assigned) {
-                auto &bufA = resources.get<TextureArrayBuffer>(currentHandles.tex16384x16384);
-                auto &bufB = resources.get<TextureArrayBuffer>(previousHandles.tex16384x16384);
-                commandBuffer.add(bufA.copy(bufB));
+                builder.copy(previousHandles.tex16384x16384, currentHandles.tex16384x16384);
             }
 
-            commandBuffer.end();
-
-            renderQueue.submit(commandBuffer);
-
-            auto ret = std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>>{
-                    {TEXTURE_ATLAS_8x8,         resources.get<TextureArrayBuffer>(
-                            currentHandles.tex8x8)},
-                    {TEXTURE_ATLAS_16x16,       resources.get<TextureArrayBuffer>(
-                            currentHandles.tex16x16)},
-                    {TEXTURE_ATLAS_32x32,       resources.get<TextureArrayBuffer>(
-                            currentHandles.tex32x32)},
-                    {TEXTURE_ATLAS_64x64,       resources.get<TextureArrayBuffer>(
-                            currentHandles.tex64x64)},
-                    {TEXTURE_ATLAS_128x128,     resources.get<TextureArrayBuffer>(
-                            currentHandles.tex128x128)},
-                    {TEXTURE_ATLAS_256x256,     resources.get<TextureArrayBuffer>(
-                            currentHandles.tex256x256)},
-                    {TEXTURE_ATLAS_512x512,     resources.get<TextureArrayBuffer>(
-                            currentHandles.tex512x512)},
-                    {TEXTURE_ATLAS_1024x1024,   resources.get<TextureArrayBuffer>(
-                            currentHandles.tex1024x1024)},
-                    {TEXTURE_ATLAS_2048x2048,   resources.get<TextureArrayBuffer>(
-                            currentHandles.tex2048x2048)},
-                    {TEXTURE_ATLAS_4096x4096,   resources.get<TextureArrayBuffer>(
-                            currentHandles.tex4096x4096)},
-                    {TEXTURE_ATLAS_8192x8192,   resources.get<TextureArrayBuffer>(
-                            currentHandles.tex8192x8192)},
-                    {TEXTURE_ATLAS_16384x16384, resources.get<TextureArrayBuffer>(
-                            currentHandles.tex16384x16384)},
+            auto ret = std::map<TextureAtlasResolution, FrameGraphResource>{
+                    {TEXTURE_ATLAS_8x8,         currentHandles.tex8x8},
+                    {TEXTURE_ATLAS_16x16,       currentHandles.tex16x16},
+                    {TEXTURE_ATLAS_32x32,       currentHandles.tex32x32},
+                    {TEXTURE_ATLAS_64x64,       currentHandles.tex64x64},
+                    {TEXTURE_ATLAS_128x128,     currentHandles.tex128x128},
+                    {TEXTURE_ATLAS_256x256,     currentHandles.tex256x256},
+                    {TEXTURE_ATLAS_512x512,     currentHandles.tex512x512},
+                    {TEXTURE_ATLAS_1024x1024,   currentHandles.tex1024x1024},
+                    {TEXTURE_ATLAS_2048x2048,   currentHandles.tex2048x2048},
+                    {TEXTURE_ATLAS_4096x4096,   currentHandles.tex4096x4096},
+                    {TEXTURE_ATLAS_8192x8192,   currentHandles.tex8192x8192},
+                    {TEXTURE_ATLAS_16384x16384, currentHandles.tex16384x16384},
             };
 
-            for (auto &tex : pendingTextures){
-                TextureAtlas::upload(tex.first, ret, tex.second);
+            for (auto &tex: pendingTextures) {
+                TextureAtlas::upload(builder, tex.first, ret, tex.second);
             }
             pendingTextures.clear();
 

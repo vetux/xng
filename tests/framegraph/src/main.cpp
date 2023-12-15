@@ -151,14 +151,10 @@ int main(int argc, char *argv[]) {
 
     auto target = window->getRenderTarget(*device);
 
-    xng::FrameGraphRenderer renderer(*target,
-                                     *device,
-                                     std::make_unique<xng::FrameGraphPoolAllocator>(*device,
+    xng::FrameGraphRenderer renderer(std::make_unique<xng::FrameGraphRuntimeSimple>(*target,
+                                                                                    *device,
                                                                                     shaderCompiler,
-                                                                                    shaderDecompiler,
-                                                                                    *target),
-                                     shaderCompiler,
-                                     shaderDecompiler);
+                                                                                    shaderDecompiler));
 
     auto testPass = std::make_shared<DebugPass>();
 

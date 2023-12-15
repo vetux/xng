@@ -20,10 +20,10 @@
 #ifndef XENGINE_MESHALLOCATOR_HPP
 #define XENGINE_MESHALLOCATOR_HPP
 
-#include "xng/gpu/vertexbuffer.hpp"
-#include "xng/gpu/indexbuffer.hpp"
+#include "xng/render/graph/framegraphbuilder.hpp"
 
 #include "xng/render/skinnedmesh.hpp"
+
 
 namespace xng {
     class MeshAllocator {
@@ -43,7 +43,7 @@ namespace xng {
 
         void deallocateMesh(const ResourceHandle<SkinnedMesh> &mesh);
 
-        void uploadMeshes(VertexBuffer &vertexBuffer, IndexBuffer &indexBuffer);
+        void uploadMeshes(FrameGraphBuilder &builder, FrameGraphResource vertexBuffer, FrameGraphResource indexBuffer);
 
         size_t getRequestedVertexBufferSize() const {
             return requestedVertexBufferSize;

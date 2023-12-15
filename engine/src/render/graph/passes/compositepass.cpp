@@ -31,16 +31,8 @@ namespace xng {
     CompositePass::CompositePass() = default;
 
     void CompositePass::setup(FrameGraphBuilder &builder) {
-        RenderTargetDesc rdesc;
-        rdesc.size = builder.getBackBufferDescription().size
-                     * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
-        rdesc.hasDepthStencilAttachment = true;
-        rdesc.numberOfColorAttachments = 1;
-        target = builder.createRenderTarget(rdesc);
-        blitTarget = builder.createRenderTarget(rdesc);
-
-        builder.read(target);
-        builder.read(blitTarget);
+        auto resolution = builder.getBackBufferDescription().size
+                          * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
 
         if (!vertexBuffer.assigned) {
             VertexBufferDesc desc;
@@ -50,14 +42,9 @@ namespace xng {
             VertexArrayObjectDesc oDesc;
             oDesc.vertexLayout = mesh.vertexLayout;
             vertexArrayObject = builder.createVertexArrayObject(oDesc);
-
-            builder.write(vertexBuffer);
         }
         builder.persist(vertexBuffer);
         builder.persist(vertexArrayObject);
-
-        builder.read(vertexBuffer);
-        builder.read(vertexArrayObject);
 
         if (!blendPipeline.assigned) {
             RenderPipelineDesc pdesc{};
@@ -83,124 +70,49 @@ namespace xng {
         }
 
         builder.persist(blendPipeline);
-        builder.read(blendPipeline);
 
-        RenderPassDesc passDesc;
-        passDesc.numberOfColorAttachments = 1;
-        passDesc.hasDepthStencilAttachment = true;
-        pass = builder.createRenderPass(passDesc);
+        auto screenColor = builder.getSlot(SLOT_SCREEN_COLOR);
+        auto screenDepth = builder.getSlot(SLOT_SCREEN_DEPTH);
 
-        builder.read(pass);
+        auto deferredColor = builder.getSlot(SLOT_DEFERRED_COLOR);
+        auto deferredDepth = builder.getSlot(SLOT_DEFERRED_DEPTH);
 
-        screenColor = builder.getSlot(SLOT_SCREEN_COLOR);
-        screenDepth = builder.getSlot(SLOT_SCREEN_DEPTH);
+        auto forwardColor = builder.getSlot(SLOT_FORWARD_COLOR);
+        auto forwardDepth = builder.getSlot(SLOT_FORWARD_DEPTH);
 
-        deferredColor = builder.getSlot(SLOT_DEFERRED_COLOR);
-        deferredDepth = builder.getSlot(SLOT_DEFERRED_DEPTH);
-
-        forwardColor = builder.getSlot(SLOT_FORWARD_COLOR);
-        forwardDepth = builder.getSlot(SLOT_FORWARD_DEPTH);
-
-        backgroundColor = builder.getSlot(SLOT_BACKGROUND_COLOR);
-
-        builder.write(screenColor);
-        builder.write(screenDepth);
-        builder.read(deferredColor);
-        builder.read(deferredDepth);
-        builder.read(forwardColor);
-        builder.read(forwardDepth);
-        builder.read(backgroundColor);
-
-        commandBuffer = builder.createCommandBuffer();
-        builder.write(commandBuffer);
-    }
-
-    void CompositePass::execute(FrameGraphPassResources &resources,
-                                const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
-                                const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
-                                const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) {
-        auto &t = resources.get<RenderTarget>(target);
-        auto &bt = resources.get<RenderTarget>(blitTarget);
-
-        auto &pip = resources.get<RenderPipeline>(blendPipeline);
-        auto &p = resources.get<RenderPass>(pass);
-
-        auto &vb = resources.get<VertexBuffer>(vertexBuffer);
-        auto &vao = resources.get<VertexArrayObject>(vertexArrayObject);
-
-        auto &sColor = resources.get<TextureBuffer>(screenColor);
-        auto &sDepth = resources.get<TextureBuffer>(screenDepth);
-
-        auto &dColor = resources.get<TextureBuffer>(deferredColor);
-        auto &dDepth = resources.get<TextureBuffer>(deferredDepth);
-
-        auto &fColor = resources.get<TextureBuffer>(forwardColor);
-        auto &fDepth = resources.get<TextureBuffer>(forwardDepth);
-
-        auto &bColor = resources.get<TextureBuffer>(backgroundColor);
-
-        auto &cBuffer = resources.get<CommandBuffer>(commandBuffer);
+        auto backgroundColor = builder.getSlot(SLOT_BACKGROUND_COLOR);
 
         if (!quadAllocated) {
             quadAllocated = true;
-            auto verts = VertexStream().addVertices(mesh.vertices).getVertexBuffer();
-            vb.upload(0,
-                      verts.data(),
-                      verts.size());
-            vao.setBuffers(vb);
+            builder.upload(vertexBuffer,
+                           [this]() {
+                               auto verts = VertexStream().addVertices(mesh.vertices).getVertexBuffer();
+                               return FrameGraphCommand::UploadBuffer(verts.size(), verts.data());
+                           });
+            builder.setVertexArrayObjectBuffers(vertexArrayObject, vertexBuffer, {}, {});
         }
 
-        t.setAttachments({RenderTargetAttachment::texture(sColor)}, RenderTargetAttachment::texture(sDepth));
-        bt.setAttachments({RenderTargetAttachment::texture(bColor)}, RenderTargetAttachment::texture(dDepth));
+        builder.blitColor(backgroundColor, screenColor, {}, {}, resolution, resolution, NEAREST, 0, 0);
+        builder.blitDepth(deferredDepth, screenDepth, {}, {}, resolution, resolution);
 
-        assert(t.isComplete());
-        assert(bt.isComplete());
+        builder.beginPass({FrameGraphCommand::Attachment::texture(screenColor)},
+                          FrameGraphCommand::Attachment::texture(screenDepth));
+        builder.bindPipeline(pipeline);
+        builder.bindVertexArrayObject(vertexArrayObject);
 
-        std::vector<Command> commands;
+        builder.bindShaderResources(std::vector<FrameGraphCommand::ShaderData>{
+                FrameGraphCommand::ShaderData{deferredColor, {{FRAGMENT, ShaderResource::READ}}},
+                FrameGraphCommand::ShaderData{deferredDepth, {{FRAGMENT, ShaderResource::READ}}}
+        });
+        builder.drawArray(DrawCall(0, mesh.vertices.size()));
 
-        commands.emplace_back(t.blitColor(bt,
-                                          {},
-                                          {},
-                                          bt.getDescription().size,
-                                          t.getDescription().size,
-                                          NEAREST,
-                                          0,
-                                          0));
+        builder.bindShaderResources(std::vector<FrameGraphCommand::ShaderData>{
+                FrameGraphCommand::ShaderData{forwardColor, {{FRAGMENT, ShaderResource::READ}}},
+                FrameGraphCommand::ShaderData{forwardDepth, {{FRAGMENT, ShaderResource::READ}}}
+        });
+        builder.drawArray(DrawCall(0, mesh.vertices.size()));
 
-        commands.emplace_back(p.begin(t));
-
-        commands.emplace_back(pip.bind());
-        commands.emplace_back(vao.bind());
-
-        commands.emplace_back(RenderPipeline::bindShaderResources({
-                                                                          {dColor, {
-                                                                                           {FRAGMENT, ShaderResource::READ}
-                                                                                   }},
-                                                                          {dDepth, {
-                                                                                           {FRAGMENT, ShaderResource::READ}
-                                                                                   }},
-                                                                  }));
-        commands.emplace_back(p.drawArray(DrawCall(0, mesh.vertices.size())));
-
-        commands.emplace_back(RenderPipeline::bindShaderResources({
-                                                                          {fColor, {
-                                                                                           {FRAGMENT, ShaderResource::READ}
-                                                                                   }},
-                                                                          {fDepth, {
-                                                                                           {FRAGMENT, ShaderResource::READ}
-                                                                                   }},
-                                                                  }));
-        commands.emplace_back(p.drawArray(DrawCall(0, mesh.vertices.size())));
-        commands.emplace_back(p.end());
-
-        cBuffer.begin();
-        cBuffer.add(commands);
-        cBuffer.end();
-
-        renderQueues.at(0).get().submit({cBuffer}, {}, {});
-
-        bt.clearAttachments();
-        t.clearAttachments();
+        builder.finishPass();
     }
 
     std::type_index CompositePass::getTypeIndex() const {

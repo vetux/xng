@@ -20,7 +20,6 @@
 #ifndef XENGINE_FRAMEGRAPHPASS_HPP
 #define XENGINE_FRAMEGRAPHPASS_HPP
 
-#include "xng/render/graph/framegraphpassresources.hpp"
 #include "xng/util/genericmap.hpp"
 
 #include "xng/gpu/renderdevice.hpp"
@@ -29,13 +28,9 @@ namespace xng {
     class FrameGraphBuilder;
 
     /**
-     * A frame graph pass executes rendering logic.
+     * A frame graph pass defines the rendering logic to be executed later by the runtime.
      *
-     * A framework for creating resources is provided through the builder interface passed in the setup stage.
-     * The resources can then be retrieved in the execution stage in the passed resources object.
-     *
-     * Passes can depend on other pass data.
-     * Resource handles and other data can be shared between passes by assigning FrameGraphSlots on the builder in the setup stage.
+     * Passes can depend on other pass data through FrameGraphSlots.
      */
     class XENGINE_EXPORT FrameGraphPass {
     public:
@@ -48,17 +43,6 @@ namespace xng {
          * @param builder
          */
         virtual void setup(FrameGraphBuilder &builder) = 0;
-
-        /**
-         * Run the pass.
-         * Resources created or declared as read / write previously in the setup() call can be accessed in the resources object.
-         *
-         * @param resources
-         */
-        virtual void execute(FrameGraphPassResources &resources,
-                             const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
-                             const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
-                             const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) = 0;
 
         /**
          * The returned type name is used for defining dependencies between passes.

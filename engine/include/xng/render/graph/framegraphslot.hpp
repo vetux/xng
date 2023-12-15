@@ -21,6 +21,9 @@
 #define XENGINE_FRAMEGRAPHSLOT_HPP
 
 namespace xng {
+    /**
+     * A slot represents an output resource from some pass to be shared with subsequent passes.
+     */
     enum FrameGraphSlot : int {
         // Color and Depth Textures, Created and cleared by the clear pass
         SLOT_SCREEN_COLOR = 0, // The combined deferred and forward colors from the compositing pass, can be written to by post processing or overlay (eg. gui) passes.
@@ -46,27 +49,8 @@ namespace xng {
         // Shadow Maps
         SLOT_SHADOW_MAP_POINT, // A Texture Array with 3d cubemap textures containing point light depth maps of light sources.
 
-        // User slots are not used by the default passes included with xng and can be used to share data between user created passes.
-        SLOT_USER_1 = 255,
-        SLOT_USER_2,
-        SLOT_USER_3,
-        SLOT_USER_4,
-        SLOT_USER_5,
-        SLOT_USER_6,
-        SLOT_USER_7,
-        SLOT_USER_8,
-        SLOT_USER_9,
-        SLOT_USER_10,
-        SLOT_USER_11,
-        SLOT_USER_12,
-        SLOT_USER_13,
-        SLOT_USER_14,
-        SLOT_USER_15,
-        SLOT_USER_16,
-        SLOT_USER_17,
-        SLOT_USER_18,
-        SLOT_USER_19,
-        SLOT_USER_20,
+        // Users can creat custom slots for sharing data between custom passes by using a value >= SLOT_USER for the slot.
+        SLOT_USER = 255,
     };
 }
 

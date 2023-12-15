@@ -21,6 +21,7 @@
 #define XENGINE_COMPOSITEPASS_HPP
 
 #include "xng/render/graph/framegraphpass.hpp"
+#include "xng/render/graph/framegraphresource.hpp"
 
 namespace xng {
     /**
@@ -34,11 +35,6 @@ namespace xng {
 
         void setup(FrameGraphBuilder &builder) override;
 
-        void execute(FrameGraphPassResources &resources,
-                     const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
-                     const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
-                     const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) override;
-
         std::type_index getTypeIndex() const override;
 
     private:
@@ -46,28 +42,12 @@ namespace xng {
 
         bool quadAllocated = false;
 
-        FrameGraphResource target;
-        FrameGraphResource blitTarget;
-
         FrameGraphResource pipeline;
         FrameGraphResource blendPipeline;
         FrameGraphResource pass;
 
         FrameGraphResource vertexBuffer;
         FrameGraphResource vertexArrayObject;
-
-        FrameGraphResource screenColor;
-        FrameGraphResource screenDepth;
-
-        FrameGraphResource deferredColor;
-        FrameGraphResource deferredDepth;
-
-        FrameGraphResource forwardColor;
-        FrameGraphResource forwardDepth;
-
-        FrameGraphResource backgroundColor;
-
-        FrameGraphResource commandBuffer;
     };
 }
 

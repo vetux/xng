@@ -21,36 +21,20 @@
 #include "xng/render/graph/framegraphbuilder.hpp"
 
 namespace xng {
-    FrameGraphRenderer::FrameGraphRenderer(RenderTarget &target,
-                                           RenderDevice &device,
-                                           std::unique_ptr<FrameGraphAllocator> allocator,
-                                           ShaderCompiler &shaderCompiler,
-                                           ShaderDecompiler &shaderDecompiler)
-            : target(target), device(device), allocator(std::move(allocator)), shaderCompiler(shaderCompiler),
-              shaderDecompiler(shaderDecompiler) {}
+    FrameGraphRenderer::FrameGraphRenderer(std::unique_ptr<FrameGraphRuntime> runtime)
+            : runtime(std::move(runtime)) {}
 
     void FrameGraphRenderer::render(const Scene &scene) {
         /// Setup
-        frame = FrameGraphBuilder(target,
-                                  device.getInfo(),
-                                  scene,
-                                  settings,
-                                  frame.getPersistentResources(),
-                                  shaderCompiler,
-                                  shaderDecompiler).build(pipeline.getPasses());
+        auto graph = FrameGraphBuilder(runtime->getBackBufferDesc(),
+                                    runtime->getRenderDeviceInfo(),
+                                    scene,
+                                    settings,
+                                    persistentResources).build(pipeline.getPasses());
 
-        blackboard.clear();
+        persistentResources = graph.getPersistentResources();
 
-        /// Compile
-        allocator->beginFrame(frame);
-
-        /// Execute
-        for (auto &p: pipeline.getPasses()) {
-            auto res = allocator->allocateNextPass();
-            p->execute(res,
-                       device.getRenderCommandQueues(),
-                       device.getComputeCommandQueues(),
-                       device.getTransferCommandQueues());
-        }
+        /// Compile / Execute
+        runtime->execute(graph);
     }
 }

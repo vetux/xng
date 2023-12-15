@@ -103,7 +103,7 @@ namespace xng {
         return {lights, shadowLights};
     }
 
-    static float getCutOff(float angleDegrees){
+    static float getCutOff(float angleDegrees) {
         return std::cos(degreesToRadians(angleDegrees));
     }
 
@@ -141,7 +141,7 @@ namespace xng {
     DeferredLightingPass::DeferredLightingPass() = default;
 
     void DeferredLightingPass::setup(FrameGraphBuilder &builder) {
-        scene = builder.getScene();
+        auto scene = builder.getScene();
 
         if (!vertexBufferRes.assigned) {
             VertexBufferDesc desc;
@@ -152,13 +152,10 @@ namespace xng {
             oDesc.vertexLayout = mesh.vertexLayout;
             vertexArrayObjectRes = builder.createVertexArrayObject(oDesc);
 
-            builder.write(vertexBufferRes);
         }
 
         builder.persist(vertexBufferRes);
         builder.persist(vertexArrayObjectRes);
-        builder.read(vertexBufferRes);
-        builder.read(vertexArrayObjectRes);
 
         if (!pipelineRes.assigned) {
             pipelineRes = builder.createRenderPipeline(RenderPipelineDesc{
@@ -189,29 +186,12 @@ namespace xng {
         }
 
         builder.persist(pipelineRes);
-        builder.read(pipelineRes);
 
-        renderSize = builder.getBackBufferDescription().size
-                     * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
+        auto renderSize = builder.getBackBufferDescription().size
+                          * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
 
-        targetRes = builder.createRenderTarget(RenderTargetDesc{
-                .size = renderSize,
-                .numberOfColorAttachments = 1,
-                .hasDepthStencilAttachment = true
-        });
-        builder.read(targetRes);
-
-        colorTextureRes = builder.getSlot(SLOT_DEFERRED_COLOR);
-        builder.write(colorTextureRes);
-
-        depthTextureRes = builder.getSlot(SLOT_DEFERRED_DEPTH);
-        builder.write(depthTextureRes);
-
-        passRes = builder.createRenderPass(RenderPassDesc{
-                .numberOfColorAttachments = 1,
-                .hasDepthStencilAttachment = true});
-
-        builder.read(passRes);
+        auto colorTextureRes = builder.getSlot(SLOT_DEFERRED_COLOR);
+        auto depthTextureRes = builder.getSlot(SLOT_DEFERRED_DEPTH);
 
         auto pointLightNodes = scene.rootNode.findAll({typeid(PointLightProperty)});
 
@@ -249,144 +229,97 @@ namespace xng {
                 spotLights++;
         }
 
-        shaderDataBufferRes = builder.createShaderStorageBuffer(
+      auto  shaderDataBufferRes = builder.createShaderStorageBuffer(
                 ShaderStorageBufferDesc{.size =  sizeof(ShaderStorageData)});
-        builder.read(shaderDataBufferRes);
-        builder.write(shaderDataBufferRes);
 
-        pointLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto pointLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(PointLightData) * pointLights
         });
-        builder.read(pointLightBufferRes);
-        builder.write(pointLightBufferRes);
 
-        shadowPointLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto shadowPointLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(PointLightData) * shadowPointLights
         });
-        builder.read(shadowPointLightBufferRes);
-        builder.write(shadowPointLightBufferRes);
 
-        dirLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto dirLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(DirectionalLightData) * dirLights
         });
-        builder.read(dirLightBufferRes);
-        builder.write(dirLightBufferRes);
 
-        shadowDirLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto shadowDirLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(DirectionalLightData) * shadowDirLights
         });
-        builder.read(shadowDirLightBufferRes);
-        builder.write(shadowDirLightBufferRes);
 
-        spotLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto spotLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(SpotLightData) * spotLights
         });
-        builder.read(spotLightBufferRes);
-        builder.write(spotLightBufferRes);
 
-        shadowSpotLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto shadowSpotLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(SpotLightData) * shadowSpotLights
         });
-        builder.read(shadowSpotLightBufferRes);
-        builder.write(shadowSpotLightBufferRes);
 
-        gBufferPosition = builder.getSlot(SLOT_GBUFFER_POSITION);
-        builder.read(gBufferPosition);
+        auto gBufferPosition = builder.getSlot(SLOT_GBUFFER_POSITION);
+        auto gBufferNormal = builder.getSlot(SLOT_GBUFFER_NORMAL);
+        auto gBufferTangent = builder.getSlot(SLOT_GBUFFER_TANGENT);
+        auto gBufferRoughnessMetallicAO = builder.getSlot(SLOT_GBUFFER_ROUGHNESS_METALLIC_AO);
+        auto gBufferAlbedo = builder.getSlot(SLOT_GBUFFER_ALBEDO);
+        auto gBufferModelObject = builder.getSlot(SLOT_GBUFFER_OBJECT_SHADOWS);
+        auto gBufferDepth = builder.getSlot(SLOT_GBUFFER_DEPTH);
 
-        gBufferNormal = builder.getSlot(SLOT_GBUFFER_NORMAL);
-        builder.read(gBufferNormal);
-
-        gBufferTangent = builder.getSlot(SLOT_GBUFFER_TANGENT);
-        builder.read(gBufferTangent);
-
-        gBufferRoughnessMetallicAO = builder.getSlot(SLOT_GBUFFER_ROUGHNESS_METALLIC_AO);
-        builder.read(gBufferRoughnessMetallicAO);
-
-        gBufferAlbedo = builder.getSlot(SLOT_GBUFFER_ALBEDO);
-        builder.read(gBufferAlbedo);
-
-        gBufferModelObject = builder.getSlot(SLOT_GBUFFER_OBJECT_SHADOWS);
-        builder.read(gBufferModelObject);
-
-        gBufferDepth = builder.getSlot(SLOT_GBUFFER_DEPTH);
-        builder.read(gBufferDepth);
-
-        cameraTransform = builder.getScene().rootNode.find<CameraProperty>()
+        auto cameraTransform = builder.getScene().rootNode.find<CameraProperty>()
                 .getProperty<TransformProperty>().transform;
 
-        commandBuffer = builder.createCommandBuffer();
-        builder.write(commandBuffer);
-
-        this->scene = builder.getScene();
-
+        FrameGraphResource pointLightShadowMapRes{};
         if (builder.checkSlot(SLOT_SHADOW_MAP_POINT)) {
             pointLightShadowMapRes = builder.getSlot(FrameGraphSlot::SLOT_SHADOW_MAP_POINT);
-            builder.read(pointLightShadowMapRes);
         } else {
-            pointLightShadowMapRes = {};
+            pointLightShadowMapRes = builder.createTextureArrayBuffer({});
         }
 
-        pointLightShadowMapDefaultRes = builder.createTextureArrayBuffer({});
-        builder.read(pointLightShadowMapDefaultRes);
-    }
+        builder.upload(pointLightBufferRes,
+                       [scene]() {
+                           auto lights = getPointLights(scene);
+                           return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(PointLightData),
+                                                                  reinterpret_cast<const uint8_t *>(lights.first.data()));
+                       });
+        builder.upload(shadowPointLightBufferRes,
+                       [scene]() {
+                           auto lights = getPointLights(scene);
+                           return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(PointLightData),
+                                                                  reinterpret_cast<const uint8_t *>(lights.first.data()));
+                       });
 
-    void DeferredLightingPass::execute(FrameGraphPassResources &resources,
-                                       const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
-                                       const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
-                                       const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) {
-        auto &target = resources.get<RenderTarget>(targetRes);
+        builder.upload(dirLightBufferRes,
+                       [scene]() {
+                           auto lights = getDirLights(scene);
+                           return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(DirectionalLightData),
+                                                                  reinterpret_cast<const uint8_t *>(lights.first.data()));
+                       });
+        builder.upload(shadowDirLightBufferRes,
+                       [scene]() {
+                           auto lights = getDirLights(scene);
+                           return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(DirectionalLightData),
+                                                                  reinterpret_cast<const uint8_t *>(lights.first.data()));
+                       });
 
-        auto &pipeline = resources.get<RenderPipeline>(pipelineRes);
-        auto &pass = resources.get<RenderPass>(passRes);
-
-        auto &vertexBuffer = resources.get<VertexBuffer>(vertexBufferRes);
-        auto &vertexArrayObject = resources.get<VertexArrayObject>(vertexArrayObjectRes);
-
-        auto &uniformBuffer = resources.get<ShaderStorageBuffer>(shaderDataBufferRes);
-
-        auto &pointLightBuffer = resources.get<ShaderStorageBuffer>(pointLightBufferRes);
-        auto &shadowPointLightBuffer = resources.get<ShaderStorageBuffer>(shadowPointLightBufferRes);
-
-        auto &dirLightBuffer = resources.get<ShaderStorageBuffer>(dirLightBufferRes);
-        auto &shadowDirLightBuffer = resources.get<ShaderStorageBuffer>(shadowDirLightBufferRes);
-
-        auto &spotLightBuffer = resources.get<ShaderStorageBuffer>(spotLightBufferRes);
-        auto &shadowSpotLightBuffer = resources.get<ShaderStorageBuffer>(shadowSpotLightBufferRes);
-
-        auto &colorTex = resources.get<TextureBuffer>(colorTextureRes);
-        auto &depthTex = resources.get<TextureBuffer>(depthTextureRes);
-
-        auto &cBuffer = resources.get<CommandBuffer>(commandBuffer);
-
-        auto &pointLightShadowMap = pointLightShadowMapRes.assigned ? resources.get<TextureArrayBuffer>(
-                pointLightShadowMapRes) : resources.get<TextureArrayBuffer>(pointLightShadowMapDefaultRes);
-
-        auto pointLights = getPointLights(scene);
-        auto dirLights = getDirLights(scene);
-        auto spotLights = getSpotLights(scene);
-
-        pointLightBuffer.upload(reinterpret_cast<const uint8_t *>(pointLights.first.data()),
-                                pointLights.first.size() * sizeof(PointLightData));
-        shadowPointLightBuffer.upload(reinterpret_cast<const uint8_t *>(pointLights.second.data()),
-                                      pointLights.second.size() * sizeof(PointLightData));
-
-        dirLightBuffer.upload(reinterpret_cast<const uint8_t *>(dirLights.first.data()),
-                              dirLights.first.size() * sizeof(DirectionalLightData));
-        shadowDirLightBuffer.upload(reinterpret_cast<const uint8_t *>(dirLights.second.data()),
-                                      dirLights.second.size() * sizeof(DirectionalLightData));
-
-        spotLightBuffer.upload(reinterpret_cast<const uint8_t *>(spotLights.first.data()),
-                               spotLights.first.size() * sizeof(SpotLightData));
-        shadowSpotLightBuffer.upload(reinterpret_cast<const uint8_t *>(spotLights.second.data()),
-                                      spotLights.second.size() * sizeof(SpotLightData));
+        builder.upload(spotLightBufferRes,
+                       [scene]() {
+                           auto lights = getSpotLights(scene);
+                           return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(SpotLightData),
+                                                                  reinterpret_cast<const uint8_t *>(lights.first.data()));
+                       });
+        builder.upload(shadowSpotLightBufferRes,
+                       [scene]() {
+                           auto lights = getSpotLights(scene);
+                           return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(SpotLightData),
+                                                                  reinterpret_cast<const uint8_t *>(lights.first.data()));
+                       });
 
         if (!quadAllocated) {
             quadAllocated = true;
-            auto verts = VertexStream().addVertices(mesh.vertices).getVertexBuffer();
-            vertexBuffer.upload(0,
-                                verts.data(),
-                                verts.size());
-            vertexArrayObject.setBuffers(vertexBuffer);
+            builder.upload(vertexBufferRes, [this]() {
+                auto verts = VertexStream().addVertices(mesh.vertices).getVertexBuffer();
+                return FrameGraphCommand::UploadBuffer(verts.size(), verts.data());
+            });
+            builder.setVertexArrayObjectBuffers(vertexArrayObjectRes, vertexBufferRes, {}, {});
         }
 
         ShaderStorageData buf;
@@ -395,52 +328,36 @@ namespace xng {
                                  cameraTransform.getPosition().z,
                                  0).getMemory();
         buf.enableShadows.at(0) = pointLightShadowMapRes.assigned;
-        uniformBuffer.upload(reinterpret_cast<const uint8_t *>(&buf),
-                             sizeof(ShaderStorageData));
 
-        auto &gBufPos = resources.get<TextureBuffer>(gBufferPosition);
-        auto &gBufNorm = resources.get<TextureBuffer>(gBufferNormal);
-        auto &gBufTan = resources.get<TextureBuffer>(gBufferTangent);
-        auto &gBufRoughnessMetallicAO = resources.get<TextureBuffer>(gBufferRoughnessMetallicAO);
-        auto &gBufAlbedo = resources.get<TextureBuffer>(gBufferAlbedo);
-        auto &gBufModelObject = resources.get<TextureBuffer>(gBufferModelObject);
-        auto &gBufDepth = resources.get<TextureBuffer>(gBufferDepth);
+        builder.upload(shaderDataBufferRes,
+                       [buf]() {
+                           return FrameGraphCommand::UploadBuffer(sizeof(ShaderStorageData), reinterpret_cast<const uint8_t *>(&buf));
+                       });
 
-        target.setAttachments({RenderTargetAttachment::texture(colorTex)}, RenderTargetAttachment::texture(depthTex));
+        builder.beginPass({FrameGraphCommand::Attachment::texture(colorTextureRes)},
+                          FrameGraphCommand::Attachment::texture(depthTextureRes));
+        builder.setViewport({}, renderSize);
+        builder.bindPipeline(pipelineRes);
+        builder.bindVertexArrayObject(vertexArrayObjectRes);
 
-        std::vector<Command> commands;
-
-        commands.emplace_back(pass.begin(target));
-        commands.emplace_back(pass.setViewport({}, target.getDescription().size));
-
-        commands.emplace_back(pipeline.bind());
-        commands.emplace_back(vertexArrayObject.bind());
-        commands.emplace_back(RenderPipeline::bindShaderResources({
-                                                                          {uniformBuffer,           {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {gBufPos,                 {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {gBufNorm,                {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {gBufRoughnessMetallicAO, {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {gBufAlbedo,              {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {gBufModelObject,         {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {gBufDepth,               {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {pointLightShadowMap,     {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {pointLightBuffer,        {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {shadowPointLightBuffer,  {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {dirLightBuffer,  {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {shadowDirLightBuffer,  {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {spotLightBuffer,  {{FRAGMENT, ShaderResource::READ}}},
-                                                                          {shadowSpotLightBuffer,  {{FRAGMENT, ShaderResource::READ}}},
-                                                                  }));
-        commands.emplace_back(pass.drawArray(DrawCall(0, mesh.vertices.size())));
-        commands.emplace_back(pass.end());
-
-        cBuffer.begin();
-        cBuffer.add(commands);
-        cBuffer.end();
-
-        renderQueues.at(0).get().submit(cBuffer);
-
-        target.clearAttachments();
+        builder.bindShaderResources({
+                                            {shaderDataBufferRes,        {{FRAGMENT, ShaderResource::READ}}},
+                                            {gBufferPosition,            {{FRAGMENT, ShaderResource::READ}}},
+                                            {gBufferNormal,              {{FRAGMENT, ShaderResource::READ}}},
+                                            {gBufferRoughnessMetallicAO, {{FRAGMENT, ShaderResource::READ}}},
+                                            {gBufferAlbedo,              {{FRAGMENT, ShaderResource::READ}}},
+                                            {gBufferModelObject,         {{FRAGMENT, ShaderResource::READ}}},
+                                            {gBufferDepth,               {{FRAGMENT, ShaderResource::READ}}},
+                                            {pointLightShadowMapRes,     {{FRAGMENT, ShaderResource::READ}}},
+                                            {pointLightBufferRes,        {{FRAGMENT, ShaderResource::READ}}},
+                                            {shadowPointLightBufferRes,  {{FRAGMENT, ShaderResource::READ}}},
+                                            {dirLightBufferRes,          {{FRAGMENT, ShaderResource::READ}}},
+                                            {shadowDirLightBufferRes,    {{FRAGMENT, ShaderResource::READ}}},
+                                            {spotLightBufferRes,         {{FRAGMENT, ShaderResource::READ}}},
+                                            {shadowSpotLightBufferRes,   {{FRAGMENT, ShaderResource::READ}}},
+                                    });
+        builder.drawArray(DrawCall(0, mesh.vertices.size()));
+        builder.finishPass();
     }
 
     std::type_index DeferredLightingPass::getTypeIndex() const {

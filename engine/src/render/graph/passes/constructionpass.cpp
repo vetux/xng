@@ -58,23 +58,8 @@ namespace xng {
     ConstructionPass::ConstructionPass() {}
 
     void ConstructionPass::setup(FrameGraphBuilder &builder) {
-        renderSize = builder.getBackBufferDescription().size
-                     * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
-        renderTargetRes = builder.createRenderTarget(RenderTargetDesc{
-                .size = renderSize,
-                .multisample = false,
-                .samples = 0,
-                .numberOfColorAttachments = 6,
-                .hasDepthStencilAttachment = true,
-        });
-        RenderTargetDesc targetDesc;
-        targetDesc.size = renderSize;
-        targetDesc.numberOfColorAttachments = 1;
-        targetDesc.hasDepthStencilAttachment = true;
-        clearTargetRes = builder.createRenderTarget(targetDesc);
-
-        builder.read(renderTargetRes);
-        builder.read(clearTargetRes);
+        auto renderSize = builder.getBackBufferDescription().size
+                          * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
 
         if (!renderPipelineRes.assigned) {
             renderPipelineRes = builder.createRenderPipeline(RenderPipelineDesc{
@@ -109,7 +94,6 @@ namespace xng {
         }
 
         builder.persist(renderPipelineRes);
-        builder.read(renderPipelineRes);
 
         if (!renderPipelineSkinnedRes.assigned) {
             renderPipelineSkinnedRes = builder.createRenderPipeline(RenderPipelineDesc{
@@ -145,7 +129,6 @@ namespace xng {
         }
 
         builder.persist(renderPipelineSkinnedRes);
-        builder.read(renderPipelineSkinnedRes);
 
         if (!vertexArrayObjectRes.assigned) {
             vertexArrayObjectRes = builder.createVertexArrayObject(VertexArrayObjectDesc{
@@ -153,53 +136,33 @@ namespace xng {
             });
         }
 
-        builder.read(vertexArrayObjectRes);
-        builder.write(vertexArrayObjectRes);
         builder.persist(vertexArrayObjectRes);
-
-        renderPassRes = builder.createRenderPass(RenderPassDesc{
-                .numberOfColorAttachments = 6,
-                .hasDepthStencilAttachment = true
-        });
-        builder.read(renderPassRes);
-
-        RenderPassDesc passDesc;
-        passDesc.numberOfColorAttachments = 1;
-        passDesc.hasDepthStencilAttachment = true;
-        clearPassRes = builder.createRenderPass(passDesc);
-        builder.read(clearPassRes);
 
         auto desc = TextureBufferDesc();
         desc.size = renderSize;
-
         desc.format = RGBA32F;
-        gBufferPosition = builder.createTextureBuffer(desc);
-        builder.write(gBufferPosition);
-        gBufferNormal = builder.createTextureBuffer(desc);
-        builder.write(gBufferNormal);
-        gBufferTangent = builder.createTextureBuffer(desc);
-        builder.write(gBufferTangent);
-        gBufferRoughnessMetallicAmbientOcclusion = builder.createTextureBuffer(desc);
-        builder.write(gBufferRoughnessMetallicAmbientOcclusion);
+
+        auto gBufferPosition = builder.createTextureBuffer(desc);
+        auto gBufferNormal = builder.createTextureBuffer(desc);
+        auto gBufferTangent = builder.createTextureBuffer(desc);
+        auto gBufferRoughnessMetallicAmbientOcclusion = builder.createTextureBuffer(desc);
 
         desc.format = RGBA;
-        gBufferAlbedo = builder.createTextureBuffer(desc);
-        builder.write(gBufferAlbedo);
+
+        auto gBufferAlbedo = builder.createTextureBuffer(desc);
 
         desc.format = RGBA32I;
-        gBufferObjectShadows = builder.createTextureBuffer(desc);
-        builder.write(gBufferObjectShadows);
+
+        auto gBufferObjectShadows = builder.createTextureBuffer(desc);
 
         desc.format = DEPTH_STENCIL;
-        gBufferDepth = builder.createTextureBuffer(desc);
-        builder.write(gBufferDepth);
+        auto gBufferDepth = builder.createTextureBuffer(desc);
 
-        objects.clear();
-
+        std::vector<Node> objects;
         size_t totalShaderBufferSize = 0;
 
-        usedTextures.clear();
-        usedMeshes.clear();
+        std::set<Uri> usedTextures;
+        std::set<Uri> usedMeshes;
 
         size_t boneCount = 0;
 
@@ -271,29 +234,23 @@ namespace xng {
             }
         }
 
-        shaderBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto shaderBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .bufferType = RenderBufferType::HOST_VISIBLE,
                 .size = totalShaderBufferSize
         });
-        builder.write(shaderBufferRes);
 
-        boneBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto boneBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .bufferType = RenderBufferType::HOST_VISIBLE,
                 .size = sizeof(Mat4f) * boneCount
         });
-        builder.write(boneBufferRes);
 
         atlas.setup(builder);
 
         if (vertexBufferRes.assigned) {
-            builder.read(vertexBufferRes);
-            builder.write(vertexBufferRes);
             builder.persist(vertexBufferRes);
         }
 
         if (indexBufferRes.assigned) {
-            builder.read(indexBufferRes);
-            builder.write(indexBufferRes);
             builder.persist(indexBufferRes);
         }
 
@@ -303,8 +260,6 @@ namespace xng {
             d.size = meshAllocator.getRequestedVertexBufferSize();
             vertexBufferRes = builder.createVertexBuffer(d);
             currentVertexBufferSize = d.size;
-            builder.read(vertexBufferRes);
-            builder.write(vertexBufferRes);
             builder.persist(vertexBufferRes);
         }
 
@@ -314,14 +269,12 @@ namespace xng {
             d.size = meshAllocator.getRequestedIndexBufferSize();
             indexBufferRes = builder.createIndexBuffer(d);
             currentIndexBufferSize = d.size;
-            builder.read(indexBufferRes);
-            builder.write(indexBufferRes);
             builder.persist(indexBufferRes);
         }
 
         auto cameraNode = builder.getScene().rootNode.find<CameraProperty>();
-        camera = cameraNode.getProperty<CameraProperty>().camera;
-        cameraTransform = cameraNode.getProperty<TransformProperty>().transform;
+        auto camera = cameraNode.getProperty<CameraProperty>().camera;
+        auto cameraTransform = cameraNode.getProperty<TransformProperty>().transform;
 
         builder.assignSlot(SLOT_GBUFFER_POSITION, gBufferPosition);
         builder.assignSlot(SLOT_GBUFFER_NORMAL, gBufferNormal);
@@ -331,79 +284,27 @@ namespace xng {
         builder.assignSlot(SLOT_GBUFFER_OBJECT_SHADOWS, gBufferObjectShadows);
         builder.assignSlot(SLOT_GBUFFER_DEPTH, gBufferDepth);
 
-        commandBuffer = builder.createCommandBuffer();
-        builder.write(commandBuffer);
-    }
-
-    void ConstructionPass::execute(FrameGraphPassResources &resources,
-                                   const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
-                                   const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
-                                   const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) {
-        auto &target = resources.get<RenderTarget>(renderTargetRes);
-        auto &pipeline = resources.get<RenderPipeline>(renderPipelineRes);
-        auto &skinnedPipeline = resources.get<RenderPipeline>(renderPipelineSkinnedRes);
-        auto &pass = resources.get<RenderPass>(renderPassRes);
-
-        auto &shaderBuffer = resources.get<ShaderStorageBuffer>(shaderBufferRes);
-        auto &boneBuffer = resources.get<ShaderStorageBuffer>(boneBufferRes);
-        auto &vertexArrayObject = resources.get<VertexArrayObject>(vertexArrayObjectRes);
-        auto &vertexBuffer = resources.get<VertexBuffer>(vertexBufferRes);
-        auto &indexBuffer = resources.get<IndexBuffer>(indexBufferRes);
-
-        auto &posTex = resources.get<TextureBuffer>(gBufferPosition);
-        auto &normalTex = resources.get<TextureBuffer>(gBufferNormal);
-        auto &tanTex = resources.get<TextureBuffer>(gBufferTangent);
-        auto &roughMetallicAOTex = resources.get<TextureBuffer>(gBufferRoughnessMetallicAmbientOcclusion);
-        auto &albedoTex = resources.get<TextureBuffer>(gBufferAlbedo);
-        auto &objectShadowsTex = resources.get<TextureBuffer>(gBufferObjectShadows);
-        auto &depthTex = resources.get<TextureBuffer>(gBufferDepth);
-
-        auto &clearTarget = resources.get<RenderTarget>(clearTargetRes);
-        auto &clearPass = resources.get<RenderPass>(clearPassRes);
-
-        auto &cBuffer = resources.get<CommandBuffer>(commandBuffer);
-
-        auto atlasBuffers = atlas.getAtlasBuffers(resources, cBuffer, renderQueues.at(0));
-
-        // Clear depth texture
-        std::vector<Command> commands;
-
-        clearTarget.setAttachments({RenderTargetAttachment::texture(albedoTex)},
-                                   RenderTargetAttachment::texture(depthTex));
-
-        commands.emplace_back(clearPass.begin(clearTarget));
-        commands.emplace_back(clearPass.clearDepthAttachment(1));
-        commands.emplace_back(clearPass.end());
-
-        cBuffer.begin();
-        cBuffer.add(commands);
-        cBuffer.end();
-
-        commands.clear();
-
-        renderQueues.at(0).get().submit({cBuffer}, {}, {});
+        auto atlasBuffers = atlas.getAtlasBuffers(builder);
 
         bool updateVao = false;
         if (staleVertexBuffer.assigned) {
-            auto &staleBuffer = resources.get<VertexBuffer>(staleVertexBuffer);
-            commands.emplace_back(vertexBuffer.copy(staleBuffer));
+            builder.copy(staleVertexBuffer, vertexBufferRes);
             staleVertexBuffer = {};
             updateVao = true;
         }
 
         if (staleIndexBuffer.assigned) {
-            auto &staleBuffer = resources.get<IndexBuffer>(staleIndexBuffer);
-            commands.emplace_back(indexBuffer.copy(staleBuffer));
+            builder.copy(staleIndexBuffer, indexBufferRes);
             staleIndexBuffer = {};
             updateVao = true;
         }
 
         if (updateVao || bindVao) {
             bindVao = false;
-            vertexArrayObject.setBuffers(vertexBuffer, indexBuffer);
+            builder.setVertexArrayObjectBuffers(vertexArrayObjectRes, vertexBufferRes, indexBufferRes, {});
         }
 
-        meshAllocator.uploadMeshes(vertexBuffer, indexBuffer);
+        meshAllocator.uploadMeshes(builder, vertexBufferRes, indexBufferRes);
 
         // Deallocate unused meshes
         std::set<Uri> dealloc;
@@ -427,17 +328,8 @@ namespace xng {
             deallocateTexture(ResourceHandle<Texture>(uri));
         }
 
-        // Draw geometry buffer
-        target.setAttachments({
-                                      RenderTargetAttachment::texture(posTex),
-                                      RenderTargetAttachment::texture(normalTex),
-                                      RenderTargetAttachment::texture(tanTex),
-                                      RenderTargetAttachment::texture(roughMetallicAOTex),
-                                      RenderTargetAttachment::texture(albedoTex),
-                                      RenderTargetAttachment::texture(objectShadowsTex)
-                              },
-                              RenderTargetAttachment::texture(depthTex));
 
+        // Draw geometry buffer
         auto projection = camera.projection();
         auto view = Camera::view(cameraTransform);
 
@@ -616,23 +508,34 @@ namespace xng {
                 }
             }
 
-            commands.emplace_back(pass.begin(target));
-            commands.emplace_back(pass.setViewport({}, target.getDescription().size));
-            commands.emplace_back(skinnedPipeline.bind());
-            commands.emplace_back(vertexArrayObject.bind());
+            builder.upload(shaderBufferRes,
+                           [shaderData]() {
+                               return FrameGraphCommand::UploadBuffer{shaderData.size() * sizeof(Mat4f),
+                                                                      reinterpret_cast<const uint8_t *>(shaderData.data())};
+                           });
 
-            commands.emplace_back(pass.clearColorAttachments(ColorRGBA(0)));
-            commands.emplace_back(pass.clearDepthAttachment(1));
+            builder.upload(boneBufferRes,
+                           [boneMatrices]() {
+                               return FrameGraphCommand::UploadBuffer{boneMatrices.size() * sizeof(Mat4f),
+                                                                      reinterpret_cast<const uint8_t *>(boneMatrices.data())};
+                           });
 
-            shaderBuffer.upload(0,
-                                reinterpret_cast<const uint8_t *>(shaderData.data()),
-                                shaderData.size() * sizeof(ShaderDrawData));
-            boneBuffer.upload(0,
-                              reinterpret_cast<const uint8_t *>(boneMatrices.data()),
-                              boneMatrices.size() * sizeof(Mat4f));
+            builder.beginPass({
+                                      FrameGraphCommand::Attachment::texture(gBufferPosition),
+                                      FrameGraphCommand::Attachment::texture(gBufferNormal),
+                                      FrameGraphCommand::Attachment::texture(gBufferTangent),
+                                      FrameGraphCommand::Attachment::texture(gBufferRoughnessMetallicAmbientOcclusion),
+                                      FrameGraphCommand::Attachment::texture(gBufferAlbedo),
+                                      FrameGraphCommand::Attachment::texture(gBufferObjectShadows)
+                              },
+                              FrameGraphCommand::Attachment::texture(gBufferDepth));
 
-            auto shaderRes = std::vector<ShaderResource>{
-                    {shaderBuffer,                               {{VERTEX, ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
+            builder.setViewport({}, renderSize);
+
+            builder.bindPipeline(renderPipelineSkinnedRes);
+            builder.bindVertexArrayObject(vertexArrayObjectRes);
+            builder.bindShaderResources(std::vector<FrameGraphCommand::ShaderData>{
+                    {shaderBufferRes,                            {{VERTEX, ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
                     {atlasBuffers.at(TEXTURE_ATLAS_8x8),         {{{FRAGMENT, ShaderResource::READ}}}},
                     {atlasBuffers.at(TEXTURE_ATLAS_16x16),       {{{FRAGMENT, ShaderResource::READ}}}},
                     {atlasBuffers.at(TEXTURE_ATLAS_32x32),       {{{FRAGMENT, ShaderResource::READ}}}},
@@ -645,21 +548,13 @@ namespace xng {
                     {atlasBuffers.at(TEXTURE_ATLAS_4096x4096),   {{{FRAGMENT, ShaderResource::READ}}}},
                     {atlasBuffers.at(TEXTURE_ATLAS_8192x8192),   {{{FRAGMENT, ShaderResource::READ}}}},
                     {atlasBuffers.at(TEXTURE_ATLAS_16384x16384), {{{FRAGMENT, ShaderResource::READ}}}},
-                    {boneBuffer,                                 {{VERTEX, ShaderResource::READ}}},
-            };
+                    {boneBufferRes,                              {{VERTEX, ShaderResource::READ}}},
+            });
 
-            commands.emplace_back(RenderPipeline::bindShaderResources(shaderRes));
-            commands.emplace_back(pass.multiDrawIndexed(drawCalls, baseVertices));
-            commands.emplace_back(pass.end());
+            builder.multiDrawIndexed(drawCalls, baseVertices);
 
-            cBuffer.begin();
-            cBuffer.add(commands);
-            cBuffer.end();
-
-            renderQueues.at(0).get().submit(cBuffer);
+            builder.finishPass();
         }
-
-        target.clearAttachments();
     }
 
     std::type_index ConstructionPass::getTypeIndex() const {
@@ -667,7 +562,7 @@ namespace xng {
     }
 
     TextureAtlasHandle ConstructionPass::getTexture(const ResourceHandle<Texture> &texture,
-                                                    std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> &atlasBuffers) {
+                                                    std::map<TextureAtlasResolution, FrameGraphResource> &atlasBuffers) {
         if (textures.find(texture.getUri()) == textures.end()) {
             auto handle = atlas.add(texture.get().image.get());
             textures[texture.getUri()] = handle;

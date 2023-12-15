@@ -22,29 +22,37 @@
 
 #include "xng/render/graph/framegraphresource.hpp"
 #include "xng/render/graph/framegraphpass.hpp"
-#include "xng/render/graph/framegraphallocation.hpp"
+#include "xng/render/graph/framegraphcommand.hpp"
+#include "xng/render/graph/framegraphslot.hpp"
+#include "xng/render/graph/framegraphcontext.hpp"
 
 namespace xng {
     struct FrameGraph {
-        struct Stage {
-            std::type_index pass = typeid(FrameGraphPass); // The pass to call execute() on
-            std::set<FrameGraphResource> allocations; // The set of resources created by the pass
-            std::set<FrameGraphResource> writes; // The set of resources that are written to by the pass
-            std::set<FrameGraphResource> reads; // The set of resources that are read by the pass
-            std::set<FrameGraphResource> persists; // The set of resources that are declared to be persistent
+        std::vector<FrameGraphContext> contexts;
 
-            Stage() = default;
-        };
-
-        std::vector<Stage> stages; // The set of pass stages to be run in order
-        std::map<FrameGraphResource, FrameGraphAllocation> allocations; // The map of render objects that were allocated for this frame identified by their resource id
+        std::map<FrameGraphSlot, FrameGraphResource> slots;
 
         std::set<FrameGraphResource> getPersistentResources() const {
             std::set<FrameGraphResource> ret;
-            for(auto &stage : stages){
+            for (auto &stage: contexts) {
                 ret.insert(stage.persists.begin(), stage.persists.end());
             }
             return ret;
+        }
+
+        bool checkResource(FrameGraphResource resource) {
+            for (auto &stage: contexts) {
+                if (stage.persists.contains(resource)) {
+                    return true;
+                } else {
+                    for (auto &c: stage.commands) {
+                        if (std::find(c.resources.begin(), c.resources.end(), resource) != c.resources.end()) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
     };
 }

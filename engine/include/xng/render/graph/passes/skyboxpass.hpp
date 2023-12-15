@@ -21,6 +21,7 @@
 #define XENGINE_SKYBOXPASS_HPP
 
 #include "xng/render/graph/framegraphpass.hpp"
+#include "xng/render/graph/framegraphresource.hpp"
 
 #include "xng/render/scene.hpp"
 
@@ -38,39 +39,21 @@ namespace xng {
 
         void setup(FrameGraphBuilder &builder) override;
 
-        void execute(FrameGraphPassResources &resources,
-                     const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
-                     const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
-                     const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) override;
-
         std::type_index getTypeIndex() const override;
 
     private:
         Mesh cube = Mesh::normalizedCube();
 
-        Skybox skybox;
-
-        Transform cameraTransform;
-        Camera camera;
-
-        FrameGraphResource commandBuffer;
         FrameGraphResource pipeline;
-        FrameGraphResource pass;
-        FrameGraphResource target;
 
-        FrameGraphResource shaderBuffer;
         FrameGraphResource vertexBuffer;
         FrameGraphResource indexBuffer;
         FrameGraphResource vertexArrayObject;
 
-        FrameGraphResource backgroundColor;
-
+        Skybox skybox;
         FrameGraphResource skyboxTexture;
 
-        FrameGraphResource depthTex;
-
         bool uploadTexture = false;
-
         bool vbAlloc = false;
     };
 }

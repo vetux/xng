@@ -22,6 +22,7 @@
 
 #include <map>
 #include <any>
+#include <string>
 
 namespace xng {
     template<typename KeyType>

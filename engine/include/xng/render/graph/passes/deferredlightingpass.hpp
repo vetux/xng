@@ -22,6 +22,7 @@
 
 #include "xng/render/scene.hpp"
 #include "xng/render/graph/framegraphpass.hpp"
+#include "xng/render/graph/framegraphresource.hpp"
 
 namespace xng {
     /**
@@ -39,59 +40,17 @@ namespace xng {
 
         void setup(FrameGraphBuilder &builder) override;
 
-        void execute(FrameGraphPassResources &resources,
-                     const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
-                     const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
-                     const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) override;
-
         std::type_index getTypeIndex() const override;
 
     private:
         Mesh mesh = Mesh::normalizedQuad();
 
-        FrameGraphResource targetRes;
-
-        FrameGraphResource colorTextureRes;
-        FrameGraphResource depthTextureRes;
-
         FrameGraphResource pipelineRes;
-        FrameGraphResource passRes;
-
-        FrameGraphResource shaderDataBufferRes;
-
-        FrameGraphResource pointLightBufferRes;
-        FrameGraphResource shadowPointLightBufferRes;
-
-        FrameGraphResource dirLightBufferRes;
-        FrameGraphResource shadowDirLightBufferRes;
-
-        FrameGraphResource spotLightBufferRes;
-        FrameGraphResource shadowSpotLightBufferRes;
 
         FrameGraphResource vertexBufferRes;
         FrameGraphResource vertexArrayObjectRes;
 
         bool quadAllocated = false;
-
-        FrameGraphResource gBufferPosition;
-        FrameGraphResource gBufferNormal;
-        FrameGraphResource gBufferTangent;
-        FrameGraphResource gBufferRoughnessMetallicAO;
-        FrameGraphResource gBufferAlbedo;
-        FrameGraphResource gBufferModelObject;
-        FrameGraphResource gBufferDepth;
-
-        FrameGraphResource commandBuffer;
-
-        FrameGraphResource pointLightShadowMapRes;
-        FrameGraphResource pointLightShadowMapDefaultRes;
-
-        Transform cameraTransform;
-        Camera camera;
-
-        Vec2i renderSize;
-
-        Scene scene;
     };
 }
 

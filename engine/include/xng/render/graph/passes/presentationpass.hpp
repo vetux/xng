@@ -26,9 +26,10 @@
 
 namespace xng {
     /**
-     * The presentation pass blits the SLOT_SCREEN_* textures to the backbuffer.
+     * The presentation pass presents the screen color texture (In render resolution) to the screen
+     * and performs upscaling / downscaling when necessary.
      *
-     * Reads SLOT_SCREEN_COLOR and SLOT_SCREEN_DEPTH
+     * Reads SLOT_SCREEN_COLOR and writes to the backbuffer
      */
     class XENGINE_EXPORT PresentationPass : public FrameGraphPass {
     public:
@@ -38,22 +39,7 @@ namespace xng {
 
         void setup(FrameGraphBuilder &builder) override;
 
-        void execute(FrameGraphPassResources &resources,
-                     const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
-                     const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
-                     const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) override;
-
         std::type_index getTypeIndex() const override { return typeid(PresentationPass); };
-
-    private:
-        FrameGraphResource target;
-
-        FrameGraphResource backBuffer;
-
-        FrameGraphResource screenColor;
-        FrameGraphResource screenDepth;
-
-        FrameGraphResource commandBuffer;
     };
 }
 #endif //XENGINE_PRESENTATIONPASS_HPP

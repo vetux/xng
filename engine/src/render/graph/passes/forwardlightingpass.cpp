@@ -121,7 +121,7 @@ namespace xng {
         return {lights, shadowLights};
     }
 
-    static float getCutOff(float angleDegrees){
+    static float getCutOff(float angleDegrees) {
         return std::cos(degreesToRadians(angleDegrees));
     }
 
@@ -157,9 +157,9 @@ namespace xng {
     }
 
     void ForwardLightingPass::setup(FrameGraphBuilder &builder) {
-        renderSize = builder.getBackBufferDescription().size
-                     * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
-        scene = builder.getScene();
+        auto renderSize = builder.getBackBufferDescription().size
+                          * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
+        auto scene = builder.getScene();
 
         auto pointLightNodes = scene.rootNode.findAll({typeid(PointLightProperty)});
 
@@ -197,49 +197,29 @@ namespace xng {
                 spotLights++;
         }
 
-        pointLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto  pointLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(PointLightData) * pointLights
         });
-        builder.read(pointLightBufferRes);
-        builder.write(pointLightBufferRes);
 
-        shadowPointLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto shadowPointLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(PointLightData) * shadowPointLights
         });
-        builder.read(shadowPointLightBufferRes);
-        builder.write(shadowPointLightBufferRes);
 
-        dirLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto dirLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(DirectionalLightData) * dirLights
         });
-        builder.read(dirLightBufferRes);
-        builder.write(dirLightBufferRes);
 
-        shadowDirLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto shadowDirLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(DirectionalLightData) * shadowDirLights
         });
-        builder.read(shadowDirLightBufferRes);
-        builder.write(shadowDirLightBufferRes);
 
-        spotLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto spotLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(SpotLightData) * spotLights
         });
-        builder.read(spotLightBufferRes);
-        builder.write(spotLightBufferRes);
 
-        shadowSpotLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto shadowSpotLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(SpotLightData) * shadowSpotLights
         });
-        builder.read(shadowSpotLightBufferRes);
-        builder.write(shadowSpotLightBufferRes);
-
-        RenderTargetDesc targetDesc;
-        targetDesc.size = renderSize;
-        targetDesc.numberOfColorAttachments = 1;
-        targetDesc.hasDepthStencilAttachment = true;
-        targetRes = builder.createRenderTarget(targetDesc);
-
-        builder.read(targetRes);
 
         if (!pipelineRes.assigned) {
             pipelineRes = builder.createRenderPipeline(RenderPipelineDesc{
@@ -287,7 +267,6 @@ namespace xng {
         }
 
         builder.persist(pipelineRes);
-        builder.read(pipelineRes);
 
         if (!vertexArrayObjectRes.assigned) {
             vertexArrayObjectRes = builder.createVertexArrayObject(VertexArrayObjectDesc{
@@ -295,22 +274,13 @@ namespace xng {
             });
         }
 
-        builder.read(vertexArrayObjectRes);
-        builder.write(vertexArrayObjectRes);
         builder.persist(vertexArrayObjectRes);
-
-        RenderPassDesc passDesc;
-        passDesc.numberOfColorAttachments = 1;
-        passDesc.hasDepthStencilAttachment = true;
-        passRes = builder.createRenderPass(passDesc);
-        builder.read(passRes);
-
-        nodes.clear();
 
         size_t totalShaderBufferSize = sizeof(float[12]);
 
-        usedTextures.clear();
-        usedMeshes.clear();
+        std::vector<Node> nodes;
+        std::set<Uri> usedTextures;
+        std::set<Uri> usedMeshes;
         for (auto &node: scene.rootNode.findAll({typeid(SkinnedMeshProperty)})) {
             auto &meshProp = node.getProperty<SkinnedMeshProperty>();
             if (!meshProp.mesh.assigned()) {
@@ -382,7 +352,7 @@ namespace xng {
 
         size_t maxBufferSize = builder.getDeviceInfo().storageBufferMaxSize;
 
-        drawCycles = 0;
+        size_t drawCycles = 0;
         if (totalShaderBufferSize > maxBufferSize) {
             drawCycles = totalShaderBufferSize / maxBufferSize;
             auto remainder = totalShaderBufferSize % maxBufferSize;
@@ -399,166 +369,110 @@ namespace xng {
         if (bufSize > totalShaderBufferSize)
             bufSize = totalShaderBufferSize;
 
-        shaderBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto shaderBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .bufferType = RenderBufferType::HOST_VISIBLE,
                 .size = bufSize
         });
-        builder.write(shaderBufferRes);
 
         atlas.setup(builder);
 
         if (vertexBufferRes.assigned) {
-            builder.read(vertexBufferRes);
-            builder.write(vertexBufferRes);
             builder.persist(vertexBufferRes);
         }
 
         if (indexBufferRes.assigned) {
-            builder.read(indexBufferRes);
-            builder.write(indexBufferRes);
             builder.persist(indexBufferRes);
         }
 
+        bool updateVao = false;
+
         if (!vertexBufferRes.assigned || currentVertexBufferSize < meshAllocator.getRequestedVertexBufferSize()) {
-            staleVertexBuffer = vertexBufferRes;
+            auto staleVertexBuffer = vertexBufferRes;
             auto d = VertexBufferDesc();
             d.size = meshAllocator.getRequestedVertexBufferSize();
             vertexBufferRes = builder.createVertexBuffer(d);
             currentVertexBufferSize = d.size;
-            builder.read(vertexBufferRes);
-            builder.write(vertexBufferRes);
             builder.persist(vertexBufferRes);
+            builder.copy(staleVertexBuffer, vertexBufferRes);
+            updateVao = true;
         }
 
         if (!indexBufferRes.assigned || currentIndexBufferSize < meshAllocator.getRequestedIndexBufferSize()) {
-            staleIndexBuffer = indexBufferRes;
+            auto staleIndexBuffer = indexBufferRes;
             auto d = IndexBufferDesc();
             d.size = meshAllocator.getRequestedIndexBufferSize();
             indexBufferRes = builder.createIndexBuffer(d);
             currentIndexBufferSize = d.size;
-            builder.read(indexBufferRes);
-            builder.write(indexBufferRes);
             builder.persist(indexBufferRes);
+            builder.copy(staleIndexBuffer, indexBufferRes);
+            updateVao = true;
         }
 
-        camera = builder.getScene().rootNode.find<CameraProperty>().getProperty<CameraProperty>().camera;
-        cameraTransform = builder.getScene().rootNode.find<CameraProperty>().getProperty<TransformProperty>().transform;
+        auto camera = builder.getScene().rootNode.find<CameraProperty>().getProperty<CameraProperty>().camera;
+        auto cameraTransform = builder.getScene().rootNode.find<CameraProperty>().getProperty<TransformProperty>().transform;
 
-        forwardColorRes = builder.getSlot(SLOT_FORWARD_COLOR);
-        forwardDepthRes = builder.getSlot(SLOT_FORWARD_DEPTH);
-        deferredDepthRes = builder.getSlot(SLOT_DEFERRED_DEPTH);
+        auto forwardColorRes = builder.getSlot(SLOT_FORWARD_COLOR);
+        auto forwardDepthRes = builder.getSlot(SLOT_FORWARD_DEPTH);
+        auto deferredDepthRes = builder.getSlot(SLOT_DEFERRED_DEPTH);
 
-        builder.write(forwardColorRes);
-        builder.write(forwardDepthRes);
-        builder.read(deferredDepthRes);
-
-        commandBuffer = builder.createCommandBuffer();
-
-        builder.write(commandBuffer);
-
+        FrameGraphResource pointLightShadowMapRes;
         if (builder.checkSlot(SLOT_SHADOW_MAP_POINT)) {
-            defPointShadowMap = {};
             pointLightShadowMapRes = builder.getSlot(FrameGraphSlot::SLOT_SHADOW_MAP_POINT);
-            builder.read(pointLightShadowMapRes);
         } else {
-            pointLightShadowMapRes = {};
-            defPointShadowMap = builder.createTextureArrayBuffer({});
-            builder.read(defPointShadowMap);
-        }
-    }
-
-    void ForwardLightingPass::execute(FrameGraphPassResources &resources,
-                                      const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
-                                      const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
-                                      const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) {
-        auto &target = resources.get<RenderTarget>(targetRes);
-        auto &pipeline = resources.get<RenderPipeline>(pipelineRes);
-        auto &pass = resources.get<RenderPass>(passRes);
-
-        auto &shaderBuffer = resources.get<ShaderStorageBuffer>(shaderBufferRes);
-        auto &vertexArrayObject = resources.get<VertexArrayObject>(vertexArrayObjectRes);
-        auto &vertexBuffer = resources.get<VertexBuffer>(vertexBufferRes);
-        auto &indexBuffer = resources.get<IndexBuffer>(indexBufferRes);
-
-        auto &forwardColor = resources.get<TextureBuffer>(forwardColorRes);
-        auto &forwardDepth = resources.get<TextureBuffer>(forwardDepthRes);
-        auto &deferredDepth = resources.get<TextureBuffer>(deferredDepthRes);
-
-        auto &pointLightBuffer = resources.get<ShaderStorageBuffer>(pointLightBufferRes);
-        auto &shadowPointLightBuffer = resources.get<ShaderStorageBuffer>(shadowPointLightBufferRes);
-
-        auto &dirLightBuffer = resources.get<ShaderStorageBuffer>(dirLightBufferRes);
-        auto &shadowDirLightBuffer = resources.get<ShaderStorageBuffer>(shadowDirLightBufferRes);
-
-        auto &spotLightBuffer = resources.get<ShaderStorageBuffer>(spotLightBufferRes);
-        auto &shadowSpotLightBuffer = resources.get<ShaderStorageBuffer>(shadowSpotLightBufferRes);
-
-        auto &pointLightShadowMap = pointLightShadowMapRes.assigned ? resources.get<TextureArrayBuffer>(
-                pointLightShadowMapRes) : resources.get<TextureArrayBuffer>(defPointShadowMap);
-
-        auto &cBuffer = resources.get<CommandBuffer>(commandBuffer);
-
-        auto atlasBuffers = atlas.getAtlasBuffers(resources, cBuffer, renderQueues.at(0));
-
-        auto pointLights = getPointLights(scene);
-        auto dirLights = getDirLights(scene);
-        auto spotLights = getSpotLights(scene);
-
-        pointLightBuffer.upload(reinterpret_cast<const uint8_t *>(pointLights.first.data()),
-                                pointLights.first.size() * sizeof(PointLightData));
-        shadowPointLightBuffer.upload(reinterpret_cast<const uint8_t *>(pointLights.second.data()),
-                                      pointLights.second.size() * sizeof(PointLightData));
-
-        dirLightBuffer.upload(reinterpret_cast<const uint8_t *>(dirLights.first.data()),
-                              dirLights.first.size() * sizeof(DirectionalLightData));
-        shadowDirLightBuffer.upload(reinterpret_cast<const uint8_t *>(dirLights.second.data()),
-                                    dirLights.second.size() * sizeof(DirectionalLightData));
-
-        spotLightBuffer.upload(reinterpret_cast<const uint8_t *>(spotLights.first.data()),
-                               spotLights.first.size() * sizeof(SpotLightData));
-        shadowSpotLightBuffer.upload(reinterpret_cast<const uint8_t *>(spotLights.second.data()),
-                                     spotLights.second.size() * sizeof(SpotLightData));
-
-        std::vector<Command> commands;
-
-        bool updateVao = false;
-        if (staleVertexBuffer.assigned) {
-            auto &staleBuffer = resources.get<VertexBuffer>(staleVertexBuffer);
-            commands.emplace_back(vertexBuffer.copy(staleBuffer));
-            staleVertexBuffer = {};
-            updateVao = true;
+            pointLightShadowMapRes = builder.createTextureArrayBuffer({});
         }
 
-        if (staleIndexBuffer.assigned) {
-            auto &staleBuffer = resources.get<IndexBuffer>(staleIndexBuffer);
-            commands.emplace_back(indexBuffer.copy(staleBuffer));
-            staleIndexBuffer = {};
-            updateVao = true;
-        }
+        auto atlasBuffers = atlas.getAtlasBuffers(builder);
+
+        builder.upload(pointLightBufferRes,
+                       [scene]() {
+                           auto lights = getPointLights(scene);
+                           return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(PointLightData),
+                                                                  reinterpret_cast<const uint8_t *>(lights.first.data()));
+                       });
+        builder.upload(shadowPointLightBufferRes,
+                       [scene]() {
+                           auto lights = getPointLights(scene);
+                           return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(PointLightData),
+                                                                  reinterpret_cast<const uint8_t *>(lights.first.data()));
+                       });
+
+        builder.upload(dirLightBufferRes,
+                       [scene]() {
+                           auto lights = getDirLights(scene);
+                           return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(DirectionalLightData),
+                                                                  reinterpret_cast<const uint8_t *>(lights.first.data()));
+                       });
+        builder.upload(shadowDirLightBufferRes,
+                       [scene]() {
+                           auto lights = getDirLights(scene);
+                           return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(DirectionalLightData),
+                                                                  reinterpret_cast<const uint8_t *>(lights.first.data()));
+                       });
+
+        builder.upload(spotLightBufferRes,
+                       [scene]() {
+                           auto lights = getSpotLights(scene);
+                           return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(SpotLightData),
+                                                                  reinterpret_cast<const uint8_t *>(lights.first.data()));
+                       });
+        builder.upload(shadowSpotLightBufferRes,
+                       [scene]() {
+                           auto lights = getSpotLights(scene);
+                           return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(SpotLightData),
+                                                                  reinterpret_cast<const uint8_t *>(lights.first.data()));
+                       });
 
         // Clear textures
-        target.setAttachments({RenderTargetAttachment::texture(forwardColor)},
-                              RenderTargetAttachment::texture(forwardDepth));
-
-        commands.emplace_back(pass.begin(target));
-        commands.emplace_back(pass.clearColorAttachments(ColorRGBA(0)));
-        commands.emplace_back(pass.clearDepthAttachment(1));
-        commands.emplace_back(pass.end());
-
-        cBuffer.begin();
-        cBuffer.add(commands);
-        cBuffer.end();
-
-        commands.clear();
-
-        renderQueues.at(0).get().submit({cBuffer}, {}, {});
+        builder.clearTextureColor({forwardColorRes}, ColorRGBA::black());
+        builder.clearTextureFloat({forwardDepthRes}, 1);
 
         if (updateVao || bindVao) {
             bindVao = false;
-            vertexArrayObject.setBuffers(vertexBuffer, indexBuffer);
+            builder.setVertexArrayObjectBuffers(vertexArrayObjectRes, vertexBufferRes, indexBufferRes, {});
         }
 
-        meshAllocator.uploadMeshes(vertexBuffer, indexBuffer);
+        meshAllocator.uploadMeshes(builder, vertexBufferRes, indexBufferRes);
 
         // Deallocate unused meshes
         std::set<Uri> dealloc;
@@ -567,6 +481,7 @@ namespace xng {
                 dealloc.insert(pair.first);
             }
         }
+
         for (auto &uri: dealloc) {
             meshAllocator.deallocateMesh(ResourceHandle<SkinnedMesh>(uri));
         }
@@ -740,60 +655,75 @@ namespace xng {
                     }
                 }
 
-                auto viewPos = cameraTransform.getPosition();
-                float viewArr[4] = {viewPos.x, viewPos.y, viewPos.z, 1};
                 float viewSize[4] = {static_cast<float>(renderSize.x), static_cast<float>(renderSize.y), 0, 0};
 
-                shaderBuffer.upload(0, reinterpret_cast<const uint8_t *>(viewArr), sizeof(float[4]));
-                shaderBuffer.upload(sizeof(float[4]), reinterpret_cast<const uint8_t *>(viewSize), sizeof(float[4]));
-                shaderBuffer.upload(sizeof(float[8]),
-                                    reinterpret_cast<const uint8_t *>(shaderData.data()),
-                                    shaderData.size() * sizeof(ShaderDrawData));
+                builder.upload(shaderBufferRes,
+                               [cameraTransform, shaderData, renderSize]() {
+                                   auto viewPos = cameraTransform.getPosition();
+                                   float viewArr[4] = {viewPos.x, viewPos.y, viewPos.z, 1};
+                                   float viewSize[4] = {static_cast<float>(renderSize.x),
+                                                        static_cast<float>(renderSize.y), 0, 0};
 
-                commands.emplace_back(pass.begin(target));
-                commands.emplace_back(pass.setViewport({}, target.getDescription().size));
-                commands.emplace_back(pipeline.bind());
-                commands.emplace_back(vertexArrayObject.bind());
+                                   std::vector<uint8_t> ret((sizeof(float) * 8)
+                                                            + (shaderData.size()) * sizeof(ShaderDrawData));
 
-                auto shaderRes = std::vector<ShaderResource>{
-                        {shaderBuffer,                               {{VERTEX, ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
-                        {atlasBuffers.at(TEXTURE_ATLAS_8x8),         {{{FRAGMENT, ShaderResource::READ}}}},
-                        {atlasBuffers.at(TEXTURE_ATLAS_16x16),       {{{FRAGMENT, ShaderResource::READ}}}},
-                        {atlasBuffers.at(TEXTURE_ATLAS_32x32),       {{{FRAGMENT, ShaderResource::READ}}}},
-                        {atlasBuffers.at(TEXTURE_ATLAS_64x64),       {{{FRAGMENT, ShaderResource::READ}}}},
-                        {atlasBuffers.at(TEXTURE_ATLAS_128x128),     {{{FRAGMENT, ShaderResource::READ}}}},
-                        {atlasBuffers.at(TEXTURE_ATLAS_256x256),     {{{FRAGMENT, ShaderResource::READ}}}},
-                        {atlasBuffers.at(TEXTURE_ATLAS_512x512),     {{{FRAGMENT, ShaderResource::READ}}}},
-                        {atlasBuffers.at(TEXTURE_ATLAS_1024x1024),   {{{FRAGMENT, ShaderResource::READ}}}},
-                        {atlasBuffers.at(TEXTURE_ATLAS_2048x2048),   {{{FRAGMENT, ShaderResource::READ}}}},
-                        {atlasBuffers.at(TEXTURE_ATLAS_4096x4096),   {{{FRAGMENT, ShaderResource::READ}}}},
-                        {atlasBuffers.at(TEXTURE_ATLAS_8192x8192),   {{{FRAGMENT, ShaderResource::READ}}}},
-                        {atlasBuffers.at(TEXTURE_ATLAS_16384x16384), {{{FRAGMENT, ShaderResource::READ}}}},
-                        {deferredDepth,                              {{{FRAGMENT, ShaderResource::READ}}}},
-                        {pointLightBuffer,                           {{{FRAGMENT, ShaderResource::READ}}}},
-                        {shadowPointLightBuffer,                     {{{FRAGMENT, ShaderResource::READ}}}},
-                        {pointLightShadowMap,                        {{{FRAGMENT, ShaderResource::READ}}}},
-                        {dirLightBuffer,  {{FRAGMENT, ShaderResource::READ}}},
-                        {shadowDirLightBuffer,  {{FRAGMENT, ShaderResource::READ}}},
-                        {spotLightBuffer,  {{FRAGMENT, ShaderResource::READ}}},
-                        {shadowSpotLightBuffer,  {{FRAGMENT, ShaderResource::READ}}},
-                };
-                commands.emplace_back(RenderPipeline::bindShaderResources(shaderRes));
-                commands.emplace_back(pass.multiDrawIndexed(drawCalls, baseVertices));
+                                   for (auto i = 0; i < sizeof(viewArr); i++) {
+                                       for (auto y = 0; y < sizeof(float); y++)
+                                           ret[i + y] = reinterpret_cast<const uint8_t *>(&viewArr[i])[i + y];
+                                   }
 
-                commands.emplace_back(pass.end());
+                                   for (auto i = sizeof(viewArr); i < sizeof(viewArr) + sizeof(viewSize); i++) {
+                                       for (auto y = 0; y < sizeof(float); y++)
+                                           ret[i + y] = reinterpret_cast<const uint8_t *>(&viewSize[i])[i + y];
+                                   }
 
-                cBuffer.begin();
-                cBuffer.add(commands);
-                cBuffer.end();
+                                   return FrameGraphCommand::UploadBuffer(ret.size(), ret.data());
+                               });
 
-                renderQueues.at(0).get().submit(cBuffer);
-
-                commands.clear();
+                builder.beginPass({FrameGraphCommand::Attachment::texture(forwardColorRes)},
+                                  FrameGraphCommand::Attachment::texture(forwardDepthRes));
+                builder.setViewport({}, renderSize);
+                builder.bindPipeline(pipelineRes);
+                builder.bindVertexArrayObject(vertexArrayObjectRes);
+                builder.bindShaderResources({
+                                                    {shaderBufferRes,                   {{VERTEX,   ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
+                                                    {atlasBuffers.at(
+                                                            TEXTURE_ATLAS_8x8),         {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {atlasBuffers.at(
+                                                            TEXTURE_ATLAS_16x16),       {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {atlasBuffers.at(
+                                                            TEXTURE_ATLAS_32x32),       {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {atlasBuffers.at(
+                                                            TEXTURE_ATLAS_64x64),       {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {atlasBuffers.at(
+                                                            TEXTURE_ATLAS_128x128),     {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {atlasBuffers.at(
+                                                            TEXTURE_ATLAS_256x256),     {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {atlasBuffers.at(
+                                                            TEXTURE_ATLAS_512x512),     {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {atlasBuffers.at(
+                                                            TEXTURE_ATLAS_1024x1024),   {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {atlasBuffers.at(
+                                                            TEXTURE_ATLAS_2048x2048),   {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {atlasBuffers.at(
+                                                            TEXTURE_ATLAS_4096x4096),   {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {atlasBuffers.at(
+                                                            TEXTURE_ATLAS_8192x8192),   {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {atlasBuffers.at(
+                                                            TEXTURE_ATLAS_16384x16384), {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {deferredDepthRes,                  {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {pointLightBufferRes,               {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {shadowPointLightBufferRes,         {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {pointLightShadowMapRes,            {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {dirLightBufferRes,                 {{FRAGMENT, ShaderResource::READ}}},
+                                                    {shadowDirLightBufferRes,           {{FRAGMENT, ShaderResource::READ}}},
+                                                    {spotLightBufferRes,                {{FRAGMENT, ShaderResource::READ}}},
+                                                    {shadowSpotLightBufferRes,          {{FRAGMENT, ShaderResource::READ}}},
+                                            });
+                builder.multiDrawIndexed(drawCalls, baseVertices);
+                builder.finishPass();
             }
         }
-
-        target.clearAttachments();
     }
 
     std::type_index ForwardLightingPass::getTypeIndex() const {
@@ -801,7 +731,7 @@ namespace xng {
     }
 
     TextureAtlasHandle ForwardLightingPass::getTexture(const ResourceHandle<Texture> &texture,
-                                                       std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> &atlasBuffers) {
+                                                       std::map<TextureAtlasResolution, FrameGraphResource> &atlasBuffers) {
         if (textures.find(texture.getUri()) == textures.end()) {
             auto handle = atlas.add(texture.get().image.get());
             textures[texture.getUri()] = handle;

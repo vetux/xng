@@ -23,9 +23,8 @@
 #include "xng/render/scenerenderer.hpp"
 
 #include "xng/render/graph/framegraphpass.hpp"
-#include "xng/render/graph/framegraphallocator.hpp"
 #include "xng/render/graph/framegraphpipeline.hpp"
-#include "xng/render/graph/allocators/framegraphpoolallocator.hpp"
+#include "xng/render/graph/framegraphruntime.hpp"
 
 #include "xng/shader/shadercompiler.hpp"
 #include "xng/shader/shaderdecompiler.hpp"
@@ -35,11 +34,7 @@
 namespace xng {
     class XENGINE_EXPORT FrameGraphRenderer : public SceneRenderer {
     public:
-        explicit FrameGraphRenderer(RenderTarget &target,
-                                    RenderDevice &device,
-                                    std::unique_ptr<FrameGraphAllocator> allocator,
-                                    ShaderCompiler &shaderCompiler,
-                                    ShaderDecompiler &shaderDecompiler);
+        explicit FrameGraphRenderer(std::unique_ptr<FrameGraphRuntime> runtime);
 
         void render(const Scene &scene) override;
 
@@ -60,20 +55,10 @@ namespace xng {
         }
 
     private:
-        RenderTarget &target;
-        RenderDevice &device;
-
-        std::unique_ptr<FrameGraphAllocator> allocator;
-
         FrameGraphPipeline pipeline;
-
         SceneRendererSettings settings;
-        GenericMapString blackboard;
-
-        FrameGraph frame;
-
-        ShaderCompiler &shaderCompiler;
-        ShaderDecompiler &shaderDecompiler;
+        std::unique_ptr<FrameGraphRuntime> runtime;
+        std::set<FrameGraphResource> persistentResources;
     };
 }
 #endif //XENGINE_FRAMEGRAPHRENDERER_HPP

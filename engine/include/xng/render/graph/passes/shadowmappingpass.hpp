@@ -22,7 +22,7 @@
 
 #include "xng/render/graph/framegraphpass.hpp"
 #include "xng/render/pointlight.hpp"
-#include "xng/render/meshallocator.hpp"
+#include "xng/render/graph/meshallocator.hpp"
 #include "xng/render/scene.hpp"
 
 namespace xng {
@@ -35,31 +35,15 @@ namespace xng {
     public:
         void setup(FrameGraphBuilder &builder) override;
 
-        void execute(FrameGraphPassResources &resources,
-                     const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
-                     const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
-                     const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) override;
-
         std::type_index getTypeIndex() const override;
 
     private:
         Vec2i resolution = Vec2i(2048, 2048);
 
-        std::vector<Node> pointLightNodes;
-
         size_t currentVertexBufferSize{};
         size_t currentIndexBufferSize{};
 
-        std::vector<Node> meshNodes;
-
         MeshAllocator meshAllocator;
-
-        FrameGraphResource targetRes;
-        FrameGraphResource renderPassRes;
-        FrameGraphResource shaderBufferRes;
-        FrameGraphResource lightBufferRes;
-        FrameGraphResource boneBufferRes;
-        FrameGraphResource commandBufferRes;
 
         FrameGraphResource renderPipelineRes;
 
@@ -69,12 +53,6 @@ namespace xng {
 
         FrameGraphResource staleVertexBuffer;
         FrameGraphResource staleIndexBuffer;
-
-        FrameGraphResource pointLightShadowMapRes;
-
-        FrameGraphResource textureRes;
-
-        std::set<Uri> usedMeshes;
 
         bool bindVao = true;
     };

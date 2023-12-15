@@ -27,7 +27,7 @@
 #include "xng/render/graph/framegraphpass.hpp"
 #include "xng/render/graph/framegraphtextureatlas.hpp"
 #include "xng/render/scene.hpp"
-#include "xng/render/meshallocator.hpp"
+#include "xng/render/graph/meshallocator.hpp"
 
 namespace xng {
     /**
@@ -39,28 +39,16 @@ namespace xng {
 
         void setup(FrameGraphBuilder &builder) override;
 
-        void execute(FrameGraphPassResources &resources,
-                     const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
-                     const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
-                     const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) override;
-
         std::type_index getTypeIndex() const override;
 
     private:
         TextureAtlasHandle getTexture(const ResourceHandle<Texture> &texture,
-                                      std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> &atlasBuffers);
+                                      std::map<TextureAtlasResolution, FrameGraphResource> &atlasBuffers);
 
         void deallocateTexture(const ResourceHandle<Texture> &texture);
 
-        FrameGraphResource renderTargetRes;
         FrameGraphResource renderPipelineRes;
         FrameGraphResource renderPipelineSkinnedRes;
-        FrameGraphResource renderPassRes;
-        FrameGraphResource shaderBufferRes;
-        FrameGraphResource boneBufferRes;
-
-        FrameGraphResource clearTargetRes;
-        FrameGraphResource clearPassRes;
 
         FrameGraphResource vertexBufferRes;
         FrameGraphResource indexBufferRes;
@@ -71,32 +59,12 @@ namespace xng {
 
         FrameGraphTextureAtlas atlas;
 
-        FrameGraphResource gBufferPosition;
-        FrameGraphResource gBufferNormal;
-        FrameGraphResource gBufferTangent;
-        FrameGraphResource gBufferRoughnessMetallicAmbientOcclusion;
-        FrameGraphResource gBufferAlbedo;
-        FrameGraphResource gBufferObjectShadows;
-        FrameGraphResource gBufferDepth;
-
-        FrameGraphResource commandBuffer;
-
-        Camera camera;
-        Transform cameraTransform;
-
-        std::vector<Node> objects;
-
         size_t currentVertexBufferSize{};
         size_t currentIndexBufferSize{};
 
         MeshAllocator meshAllocator;
 
         std::map<Uri, TextureAtlasHandle> textures;
-
-        Vec2i renderSize;
-
-        std::set<Uri> usedTextures;
-        std::set<Uri> usedMeshes;
 
         bool bindVao = true;
     };

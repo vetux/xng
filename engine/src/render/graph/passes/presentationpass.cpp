@@ -20,48 +20,27 @@
 #include "xng/render/graph/passes/presentationpass.hpp"
 
 #include "xng/render/graph/framegraphbuilder.hpp"
+#include "xng/render/graph/framegraphsettings.hpp"
 
 namespace xng {
     PresentationPass::PresentationPass() = default;
 
     void PresentationPass::setup(FrameGraphBuilder &builder) {
-        target = builder.createRenderTarget(builder.getBackBufferDescription());
-        backBuffer = builder.getBackBuffer();
-        screenColor = builder.getSlot(SLOT_SCREEN_COLOR);
-        screenDepth = builder.getSlot(SLOT_SCREEN_DEPTH);
+        auto renderSize = builder.getBackBufferDescription().size
+                          * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
 
-        builder.read(target);
-        builder.write(backBuffer);
-        builder.read(screenColor);
-        builder.read(screenDepth);
+        auto backBufferDesc = builder.getBackBufferDescription();
+        auto backBuffer = builder.getBackBuffer();
+        auto screenColor = builder.getSlot(SLOT_SCREEN_COLOR);
 
-        commandBuffer = builder.createCommandBuffer();
-        builder.write(commandBuffer);
-    }
-
-    void PresentationPass::execute(FrameGraphPassResources &resources,
-                                   const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
-                                   const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
-                                   const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) {
-        auto &t = resources.get<RenderTarget>(target);
-        auto &b = resources.get<RenderTarget>(backBuffer);
-
-        auto &color = resources.get<TextureBuffer>(screenColor);
-        auto &depth = resources.get<TextureBuffer>(screenDepth);
-
-        auto &cBuffer = resources.get<CommandBuffer>(commandBuffer);
-
-        t.setAttachments({RenderTargetAttachment::texture(color)}, RenderTargetAttachment::texture(depth));
-
-        cBuffer.begin();
-        cBuffer.add(
-                b.blitColor(t, {}, {}, t.getDescription().size, b.getDescription().size, TextureFiltering::NEAREST, 0,
-                            0));
-        cBuffer.add(b.blitDepth(t, {}, {}, t.getDescription().size, b.getDescription().size));
-        cBuffer.end();
-
-        renderQueues.at(0).get().submit(cBuffer);
-
-        t.clearAttachments();
+        builder.blitColor(screenColor,
+                          backBuffer,
+                          {},
+                          {},
+                          renderSize,
+                          backBufferDesc.size,
+                          TextureFiltering::LINEAR,
+                          0,
+                          0);
     }
 }

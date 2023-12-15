@@ -20,23 +20,25 @@
 #ifndef XENGINE_FRAMEGRAPHBUILDER_HPP
 #define XENGINE_FRAMEGRAPHBUILDER_HPP
 
+#include <utility>
+#include <cstring>
+
 #include "xng/render/graph/framegraphresource.hpp"
 #include "xng/render/graph/framegraph.hpp"
 #include "xng/render/graph/framegraphslot.hpp"
 #include "xng/render/scenerenderersettings.hpp"
 
 #include "xng/render/scene.hpp"
+#include "xng/render/graph/framegraphcommand.hpp"
 
 namespace xng {
     class XENGINE_EXPORT FrameGraphBuilder {
     public:
-        FrameGraphBuilder(RenderTarget &backBuffer,
+        FrameGraphBuilder(RenderTargetDesc backBufferDesc,
                           RenderDeviceInfo deviceInfo,
                           const Scene &scene,
                           const SceneRendererSettings &settings,
-                          std::set<FrameGraphResource> persistentResources,
-                          ShaderCompiler &shaderCompiler,
-                          ShaderDecompiler &shaderDecompiler);
+                          std::set<FrameGraphResource> persistentResources);
 
         /**
          * Setup and compile a frame graph using the supplied passes.
@@ -47,11 +49,7 @@ namespace xng {
          */
         FrameGraph build(const std::vector<std::shared_ptr<FrameGraphPass>> &passes);
 
-        FrameGraphResource createRenderTarget(const RenderTargetDesc &desc);
-
         FrameGraphResource createRenderPipeline(const RenderPipelineDesc &desc);
-
-        FrameGraphResource createRenderPass(const RenderPassDesc &desc);
 
         FrameGraphResource createTextureBuffer(const TextureBufferDesc &desc);
 
@@ -67,23 +65,104 @@ namespace xng {
 
         FrameGraphResource createShaderStorageBuffer(const ShaderStorageBufferDesc &desc);
 
-        FrameGraphResource createCommandBuffer();
+        void upload(FrameGraphResource buffer, std::function<FrameGraphCommand::UploadBuffer()> dataSource) {
+            upload(buffer, 0, 0, std::move(dataSource));
+        }
+
+        void upload(FrameGraphResource buffer,
+                    size_t offset,
+                    std::function<FrameGraphCommand::UploadBuffer()> dataSource) {
+            upload(buffer, 0, offset, std::move(dataSource));
+        }
+
+        void upload(FrameGraphResource buffer,
+                    size_t index,
+                    size_t offset,
+                    std::function<FrameGraphCommand::UploadBuffer()> dataSource);
+
+        void copy(FrameGraphResource source, FrameGraphResource dest);
 
         /**
-         * Declare that the pass will write to the specified resource handle.
-         * Resources which have not been declared with write / read or have been created can not be accessed by the pass.
          *
-         * @param target
+         * @param source Either RenderTarget (Backbuffer) or TextureBuffer
+         * @param target Either RenderTarget (Backbuffer) or TextureBuffer
+         * @param sourceOffset
+         * @param targetOffset
+         * @param sourceRect
+         * @param targetRect
+         * @param filter
+         * @param sourceIndex
+         * @param targetIndex
          */
-        void write(FrameGraphResource target);
+        void blitColor(FrameGraphResource source,
+                       FrameGraphResource target,
+                       Vec2i sourceOffset,
+                       Vec2i targetOffset,
+                       Vec2i sourceRect,
+                       Vec2i targetRect,
+                       TextureFiltering filter,
+                       int sourceIndex,
+                       int targetIndex);
 
-        /**
-         * Declare that the pass will read from the specified resource handle.
-         * Resources which have not been declared with write / read or have been created can not be accessed by the pass.
-         *
-         * @param source
-         */
-        void read(FrameGraphResource source);
+        void blitDepth(FrameGraphResource source,
+                       FrameGraphResource target,
+                       Vec2i sourceOffset,
+                       Vec2i targetOffset,
+                       Vec2i sourceRect,
+                       Vec2i targetRect);
+
+        void blitStencil(FrameGraphResource source,
+                         FrameGraphResource target,
+                         Vec2i sourceOffset,
+                         Vec2i targetOffset,
+                         Vec2i sourceRect,
+                         Vec2i targetRect);
+
+        void clearTextureColor(const std::set<FrameGraphResource> &textures,
+                               ColorRGBA color = ColorRGBA::black());
+
+        void clearTextureFloat(const std::set<FrameGraphResource> &textures,
+                               float value = 1);
+
+        void beginPass(const std::vector<FrameGraphCommand::Attachment> &colorAttachments,
+                       FrameGraphCommand::Attachment depthAttachment);
+
+        void beginPass(FrameGraphResource target);
+
+        void finishPass();
+
+        void renderClear(ColorRGBA color, float depth = 1);
+
+        void setViewport(Vec2i viewportOffset, Vec2i viewportSize);
+
+        void bindPipeline(FrameGraphResource pipeline);
+
+        void bindVertexArrayObject(FrameGraphResource vertexArrayObject);
+
+        void setVertexArrayObjectBuffers(FrameGraphResource vertexArrayObject,
+                                         FrameGraphResource vertexBuffer,
+                                         FrameGraphResource indexBuffer,
+                                         FrameGraphResource instanceBuffer);
+
+        void bindShaderResources(const std::vector<FrameGraphCommand::ShaderData> &resources);
+
+        void drawArray(const DrawCall &drawCall);
+
+        void drawIndexed(const DrawCall &drawCall);
+
+        void instancedDrawArray(const DrawCall &drawCall, size_t numberOfInstances);
+
+        void instancedDrawIndexed(const DrawCall &drawCall, size_t numberOfInstances);
+
+        void multiDrawArray(const std::vector<DrawCall> &drawCalls);
+
+        void multiDrawIndexed(const std::vector<DrawCall> &drawCalls);
+
+        void drawIndexed(const DrawCall &drawCall, size_t baseVertex);
+
+        void instancedDrawIndexed(const DrawCall &drawCall, size_t numberOfInstances, size_t baseVertex);
+
+        void multiDrawIndexed(const std::vector<DrawCall> &drawCalls, const std::vector<size_t> &baseVertices);
 
         /**
          * Request the passed resource handle to be persisted to the next frame.
@@ -150,10 +229,6 @@ namespace xng {
          */
         const SceneRendererSettings &getSettings() const;
 
-        ShaderCompiler &getShaderCompiler();
-
-        ShaderDecompiler &getShaderDecompiler();
-
         const RenderDeviceInfo &getDeviceInfo();
 
     private:
@@ -161,33 +236,19 @@ namespace xng {
 
         void checkResourceHandle(FrameGraphResource res);
 
-        struct PassSetup {
-            std::set<FrameGraphResource> allocations;
-            std::set<FrameGraphResource> writes;
-            std::set<FrameGraphResource> reads;
-            std::set<FrameGraphResource> persists;
-        };
+        RenderTargetDesc backBufferDesc;
 
-        RenderTarget &backBuffer;
         const Scene &scene;
         const SceneRendererSettings &settings;
 
         FrameGraph graph;
 
-        PassSetup currentPass;
+        std::vector<FrameGraphCommand> commands;
+        std::set<FrameGraphResource> persists;
 
         std::set<FrameGraphResource> persistentResources;
 
-        std::map<FrameGraphSlot, FrameGraphResource> graphSlots;
-
-        std::vector<FrameGraphResource> renderQueues;
-        std::vector<FrameGraphResource> computeQueues;
-        std::vector<FrameGraphResource> transferQueues;
-
         size_t resourceCounter = 1;
-
-        ShaderCompiler &shaderCompiler;
-        ShaderDecompiler &shaderDecompiler;
 
         RenderDeviceInfo deviceInfo;
     };

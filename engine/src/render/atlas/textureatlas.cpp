@@ -33,6 +33,21 @@ namespace xng {
         atlasBuffers.at(handle.level).get().upload(handle.index, getAlignedImage(texture, handle.level));
     }
 
+    void TextureAtlas::upload(FrameGraphBuilder &builder,
+                              const TextureAtlasHandle &handle,
+                              const std::map<TextureAtlasResolution, FrameGraphResource> &atlasBuffers,
+                              const ImageRGBA &texture) {
+        auto img = getAlignedImage(texture, handle.level);
+        builder.upload(atlasBuffers.at(handle.level),
+                       handle.index,
+                       0,
+                       [texture, handle]() {
+                           auto img = getAlignedImage(texture, handle.level);
+                           return FrameGraphCommand::UploadBuffer(img.getDataSize(),
+                                                                  reinterpret_cast<const uint8_t *>(img.getData()));
+                       });
+    }
+
     TextureAtlas::TextureAtlas(std::map<TextureAtlasResolution, std::vector<bool>> bufferOccupations)
             : bufferOccupations(std::move(bufferOccupations)) {}
 
@@ -52,7 +67,7 @@ namespace xng {
     }
 
     void TextureAtlas::remove(const TextureAtlasHandle &handle) {
-        if (!bufferOccupations.at(handle.level).at(handle.index)){
+        if (!bufferOccupations.at(handle.level).at(handle.index)) {
             throw std::runtime_error("Texture already removed");
         }
         bufferOccupations.at(handle.level).at(handle.index) = false;

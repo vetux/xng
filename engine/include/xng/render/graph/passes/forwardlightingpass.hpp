@@ -22,7 +22,7 @@
 
 #include "xng/render/graph/framegraphpass.hpp"
 #include "xng/render/graph/framegraphtextureatlas.hpp"
-#include "xng/render/meshallocator.hpp"
+#include "xng/render/graph/meshallocator.hpp"
 
 #include "xng/render/atlas/textureatlas.hpp"
 
@@ -38,60 +38,21 @@ namespace xng {
     public:
         void setup(FrameGraphBuilder &builder) override;
 
-        void execute(FrameGraphPassResources &resources,
-                     const std::vector<std::reference_wrapper<CommandQueue>> &renderQueues,
-                     const std::vector<std::reference_wrapper<CommandQueue>> &computeQueues,
-                     const std::vector<std::reference_wrapper<CommandQueue>> &transferQueues) override;
-
         std::type_index getTypeIndex() const override;
 
     private:
         TextureAtlasHandle getTexture(const ResourceHandle <Texture> &texture,
-                                      std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> &atlasBuffers);
+                                      std::map<TextureAtlasResolution, FrameGraphResource> &atlasBuffers);
 
         void deallocateTexture(const ResourceHandle<Texture> &texture);
 
-        FrameGraphResource forwardColorRes;
-        FrameGraphResource forwardDepthRes;
-
-        FrameGraphResource deferredDepthRes;
-
-        FrameGraphResource targetRes;
         FrameGraphResource pipelineRes;
-        FrameGraphResource passRes;
-        FrameGraphResource shaderBufferRes;
-
-        FrameGraphResource pointLightBufferRes;
-        FrameGraphResource shadowPointLightBufferRes;
-
-        FrameGraphResource dirLightBufferRes;
-        FrameGraphResource shadowDirLightBufferRes;
-
-        FrameGraphResource spotLightBufferRes;
-        FrameGraphResource shadowSpotLightBufferRes;
 
         FrameGraphResource vertexBufferRes;
         FrameGraphResource indexBufferRes;
         FrameGraphResource vertexArrayObjectRes;
 
-        FrameGraphResource staleVertexBuffer;
-        FrameGraphResource staleIndexBuffer;
-
-        FrameGraphResource commandBuffer;
-
-        FrameGraphResource pointLightShadowMapRes;
-        FrameGraphResource defPointShadowMap;
-
         FrameGraphTextureAtlas atlas;
-
-        Camera camera;
-        Transform cameraTransform;
-
-        Vec2i renderSize;
-
-        Scene scene;
-
-        std::vector<Node> nodes;
 
         size_t currentVertexBufferSize{};
         size_t currentIndexBufferSize{};
@@ -100,12 +61,7 @@ namespace xng {
 
         std::map<Uri, TextureAtlasHandle> textures;
 
-        std::set<Uri> usedTextures;
-        std::set<Uri> usedMeshes;
-
         bool bindVao = true;
-
-        size_t drawCycles;
     };
 }
 #endif //XENGINE_FORWARDLIGHTINGPASS_HPP

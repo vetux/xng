@@ -17,27 +17,21 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_CLEARPASS_HPP
-#define XENGINE_CLEARPASS_HPP
+#ifndef XENGINE_FRAMEGRAPHCONTEXT_HPP
+#define XENGINE_FRAMEGRAPHCONTEXT_HPP
 
-#include "xng/resource/uri.hpp"
+#include <vector>
+#include <set>
 
-#include "xng/render/graph/framegraphpass.hpp"
-#include "xng/render/graph/framegraphtextureatlas.hpp"
-#include "xng/render/scene.hpp"
-#include "xng/render/graph/meshallocator.hpp"
+#include "xng/render/graph/framegraphcommand.hpp"
+#include "xng/render/graph/framegraphresource.hpp"
 
 namespace xng {
-    /**
-     * The ClearPass creates and clears the SLOT_SCREEN_COLOR-SLOT_BACKGROUND_COLOR slot textures.
-     */
-    class XENGINE_EXPORT ClearPass : public FrameGraphPass {
-    public:
-        ClearPass();
+    struct FrameGraphContext {
+        std::vector<FrameGraphCommand> commands;
+        std::set<FrameGraphResource> persists; // The set of resources that are declared to be persistent
 
-        void setup(FrameGraphBuilder &builder) override;
-
-        std::type_index getTypeIndex() const override;
+        FrameGraphContext() = default;
     };
 }
-#endif //XENGINE_CLEARPASS_HPP
+#endif //XENGINE_FRAMEGRAPHCONTEXT_HPP

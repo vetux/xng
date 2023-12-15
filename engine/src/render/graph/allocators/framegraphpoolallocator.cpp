@@ -17,8 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/render/graph/allocators/framegraphpoolallocator.hpp"
-
+/*
 #include "xng/render/texture.hpp"
 #include "xng/shader/shader.hpp"
 
@@ -434,4 +433,4 @@ namespace xng {
             }
         }
     }
-}
+}*/
