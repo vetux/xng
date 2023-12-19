@@ -47,51 +47,56 @@ struct ShaderDrawData {
     ShaderAtlasTexture albedo;
 };
 
-layout(binding = 0, std140) buffer ShaderUniformBuffer
+layout(binding = 0, std140) buffer ShaderViewBuffer
 {
     vec4 viewPosition;
     vec4 viewportSize;
-    ShaderDrawData data[];
 } globs;
-layout(binding = 1) uniform sampler2DArray atlasTextures[12];
 
-layout(binding = 13) uniform sampler2D deferredDepth;
+layout(binding = 1, std140) buffer ShaderUniformBuffer
+{
+    ShaderDrawData data[];
+} shaderData;
 
-layout(binding = 14, std140) buffer PointLightsData
+layout(binding = 2) uniform sampler2D deferredDepth;
+
+layout(binding = 3, std140) buffer PointLightsData
 {
     PBRPointLight lights[];
 } pointLights;
 
-layout(binding = 15, std140) buffer PointLightsDataShadow
+layout(binding = 4, std140) buffer PointLightsDataShadow
 {
     PBRPointLight lights[];
 } pointLightsShadow;
 
-layout(binding = 16) uniform samplerCubeArray pointLightShadowMaps;
+layout(binding = 5) uniform samplerCubeArray pointLightShadowMaps;
 
-layout(binding = 17, std140) buffer DirectionalLightsData
+layout(binding = 6, std140) buffer DirectionalLightsData
 {
     PBRDirectionalLight lights[];
 } directionalLights;
 
-layout(binding = 18, std140) buffer ShadowDirectionalLightsData
+layout(binding = 7, std140) buffer ShadowDirectionalLightsData
 {
     PBRDirectionalLight lights[];
 } directionalLightsShadow;
 
-layout(binding = 19, std140) buffer SpotLightsData
+layout(binding = 8, std140) buffer SpotLightsData
 {
     PBRSpotLight lights[];
 } spotLights;
 
-layout(binding = 20, std140) buffer ShadowSpotLightsData
+layout(binding = 9, std140) buffer ShadowSpotLightsData
 {
     PBRSpotLight lights[];
 } spotLightsShadow;
 
+layout(binding = 10) uniform sampler2DArray atlasTextures[12];
+
 void main()
 {
-    ShaderDrawData data = globs.data[gl_DrawID];
+    ShaderDrawData data = shaderData.data[gl_DrawID];
 
     vPos = data.mvp * vec4(vPosition, 1);
     fPos = (data.model * vec4(vPosition, 1)).xyz;

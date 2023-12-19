@@ -44,48 +44,52 @@ struct ShaderDrawData {
     ShaderAtlasTexture albedo;
 };
 
-layout(binding = 0, std140) buffer ShaderUniformBuffer
+layout(binding = 0, std140) buffer ShaderViewBuffer
 {
     vec4 viewPosition;
     vec4 viewportSize;
-    ShaderDrawData data[];
 } globs;
 
-layout(binding = 1) uniform sampler2DArray atlasTextures[12];
+layout(binding = 1, std140) buffer ShaderUniformBuffer
+{
+    ShaderDrawData data[];
+} shaderData;
 
-layout(binding = 13) uniform sampler2D deferredDepth;
+layout(binding = 2) uniform sampler2D deferredDepth;
 
-layout(binding = 14, std140) buffer PointLightsData
+layout(binding = 3, std140) buffer PointLightsData
 {
     PBRPointLight lights[];
 } pointLights;
 
-layout(binding = 15, std140) buffer PointLightsDataShadow
+layout(binding = 4, std140) buffer PointLightsDataShadow
 {
     PBRPointLight lights[];
 } pointLightsShadow;
 
-layout(binding = 16) uniform samplerCubeArray pointLightShadowMaps;
+layout(binding = 5) uniform samplerCubeArray pointLightShadowMaps;
 
-layout(binding = 17, std140) buffer DirectionalLightsData
+layout(binding = 6, std140) buffer DirectionalLightsData
 {
     PBRDirectionalLight lights[];
 } directionalLights;
 
-layout(binding = 18, std140) buffer ShadowDirectionalLightsData
+layout(binding = 7, std140) buffer ShadowDirectionalLightsData
 {
     PBRDirectionalLight lights[];
 } directionalLightsShadow;
 
-layout(binding = 19, std140) buffer SpotLightsData
+layout(binding = 8, std140) buffer SpotLightsData
 {
     PBRSpotLight lights[];
 } spotLights;
 
-layout(binding = 20, std140) buffer ShadowSpotLightsData
+layout(binding = 9, std140) buffer ShadowSpotLightsData
 {
     PBRSpotLight lights[];
 } spotLightsShadow;
+
+layout(binding = 10) uniform sampler2DArray atlasTextures[12];
 
 vec4 textureAtlas(ShaderAtlasTexture tex, vec2 inUv)
 {
@@ -109,13 +113,12 @@ vec4 textureAtlas(ShaderAtlasTexture tex, vec2 inUv)
 
 void main() {
     float defDepth = texture(deferredDepth, gl_FragCoord.xy / globs.viewportSize.xy).r;
-    if (gl_FragCoord.z > defDepth)
-    {
-        oColor = vec4(0, 0, 0, 0);
-        return;
+    if (gl_FragCoord.z > defDepth) {
+        oColor = vec4(0);
+        return; // Cannot use discard because we want the depth values in the forward depth texture.
     }
 
-    ShaderDrawData data = globs.data[drawID];
+    ShaderDrawData data = shaderData.data[drawID];
 
     mat3 normalMatrix = transpose(inverse(mat3(data.model)));
     vec3 normal = normalize(normalMatrix * fNorm);
@@ -161,12 +164,12 @@ void main() {
     int shadows = data.objectID_shadows.y;
 
     PbrPass pass = pbr_begin(fPos,
-                                normal,
-                                albedo.rgb,
-                                metallic,
-                                roughness,
-                                ao,
-                                globs.viewPosition.xyz);
+    normal,
+    albedo.rgb,
+    metallic,
+    roughness,
+    ao,
+    globs.viewPosition.xyz);
 
     vec3 reflectance = vec3(0);
 

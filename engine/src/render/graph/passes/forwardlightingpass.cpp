@@ -54,6 +54,11 @@ namespace xng {
         float atlasScale_texSize[4]{0, 0, 0, 0};
     };
 
+    struct ShaderViewData {
+        std::array<float, 4> viewPosition;
+        std::array<float, 4> viewSize;
+    };
+
     struct ShaderDrawData {
         Mat4f model;
         Mat4f mvp;
@@ -227,18 +232,7 @@ namespace xng {
                                 {FRAGMENT, forwardlightingpass_fs}},
                     .bindings = {
                             BIND_SHADER_STORAGE_BUFFER,
-                            BIND_TEXTURE_ARRAY_BUFFER,
-                            BIND_TEXTURE_ARRAY_BUFFER,
-                            BIND_TEXTURE_ARRAY_BUFFER,
-                            BIND_TEXTURE_ARRAY_BUFFER,
-                            BIND_TEXTURE_ARRAY_BUFFER,
-                            BIND_TEXTURE_ARRAY_BUFFER,
-                            BIND_TEXTURE_ARRAY_BUFFER,
-                            BIND_TEXTURE_ARRAY_BUFFER,
-                            BIND_TEXTURE_ARRAY_BUFFER,
-                            BIND_TEXTURE_ARRAY_BUFFER,
-                            BIND_TEXTURE_ARRAY_BUFFER,
-                            BIND_TEXTURE_ARRAY_BUFFER,
+                            BIND_SHADER_STORAGE_BUFFER,
                             BIND_TEXTURE_BUFFER,
                             BIND_SHADER_STORAGE_BUFFER,
                             BIND_SHADER_STORAGE_BUFFER,
@@ -247,12 +241,20 @@ namespace xng {
                             BIND_SHADER_STORAGE_BUFFER,
                             BIND_SHADER_STORAGE_BUFFER,
                             BIND_SHADER_STORAGE_BUFFER,
+                            BIND_TEXTURE_ARRAY_BUFFER,
+                            BIND_TEXTURE_ARRAY_BUFFER,
+                            BIND_TEXTURE_ARRAY_BUFFER,
+                            BIND_TEXTURE_ARRAY_BUFFER,
+                            BIND_TEXTURE_ARRAY_BUFFER,
+                            BIND_TEXTURE_ARRAY_BUFFER,
+                            BIND_TEXTURE_ARRAY_BUFFER,
+                            BIND_TEXTURE_ARRAY_BUFFER,
+                            BIND_TEXTURE_ARRAY_BUFFER,
+                            BIND_TEXTURE_ARRAY_BUFFER,
+                            BIND_TEXTURE_ARRAY_BUFFER,
+                            BIND_TEXTURE_ARRAY_BUFFER,
                     },
                     .vertexLayout = SkinnedMesh::getDefaultVertexLayout(),
-                    /*      .clearColorValue = ColorRGBA(0, 0, 0, 0),
-                          .clearColor = false,
-                          .clearDepth = false,
-                          .clearStencil = false,*/
                     .enableDepthTest = true,
                     .depthTestWrite = true,
                     .depthTestMode = DEPTH_TEST_LESS,
@@ -268,7 +270,7 @@ namespace xng {
 
         builder.persist(pipeline);
 
-        size_t totalShaderBufferSize = sizeof(float[12]);
+        size_t totalShaderBufferSize = 0;
 
         std::vector<Node> nodes;
         std::set<Uri> usedTextures;
@@ -290,6 +292,7 @@ namespace xng {
                 matProp = it->second->get<MaterialProperty>();
             }
 
+            bool gotMesh = false;
             for (auto i = 0; i < mesh.subMeshes.size() + 1; i++) {
                 auto &cMesh = i <= 0 ? mesh : mesh.subMeshes.at(i - 1);
 
@@ -305,6 +308,8 @@ namespace xng {
 
                 if (!mat.transparent)
                     continue;
+
+                gotMesh = true;
 
                 usedTextures.insert(mat.normal.getUri());
                 usedTextures.insert(mat.metallicTexture.getUri());
@@ -339,7 +344,9 @@ namespace xng {
 
                 totalShaderBufferSize += sizeof(ShaderDrawData);
             }
-            nodes.emplace_back(node);
+
+            if (gotMesh)
+                nodes.emplace_back(node);
         }
 
         size_t maxBufferSize = builder.getDeviceInfo().storageBufferMaxSize;
@@ -361,9 +368,14 @@ namespace xng {
         if (bufSize > totalShaderBufferSize)
             bufSize = totalShaderBufferSize;
 
-        auto shaderBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto shaderBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .bufferType = RenderBufferType::HOST_VISIBLE,
                 .size = bufSize
+        });
+
+        auto shaderViewBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+                .bufferType = HOST_VISIBLE,
+                .size = sizeof(float[12])
         });
 
         atlas.setup(builder);
@@ -405,14 +417,14 @@ namespace xng {
 
         auto forwardColor = builder.getSlot(SLOT_FORWARD_COLOR);
         auto forwardDepth = builder.getSlot(SLOT_FORWARD_DEPTH);
-        auto deferredDepthRes = builder.getSlot(SLOT_DEFERRED_DEPTH);
+        auto deferredDepth = builder.getSlot(SLOT_DEFERRED_DEPTH);
 
-        FrameGraphResource pointLightShadowMapRes;
+        FrameGraphResource pointLightShadowMap{};
         if (builder.checkSlot(SLOT_SHADOW_MAP_POINT)) {
-            pointLightShadowMapRes = builder.getSlot(FrameGraphSlot::SLOT_SHADOW_MAP_POINT);
-        } else {
-            pointLightShadowMapRes = builder.createTextureArrayBuffer({});
+            pointLightShadowMap = builder.getSlot(FrameGraphSlot::SLOT_SHADOW_MAP_POINT);
         }
+
+        auto defaultPointLightShadowMap = builder.createTextureArrayBuffer({});
 
         auto atlasBuffers = atlas.getAtlasBuffers(builder);
 
@@ -425,8 +437,8 @@ namespace xng {
         builder.upload(shadowPointLightBuffer,
                        [scene]() {
                            auto lights = getPointLights(scene);
-                           return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(PointLightData),
-                                                                  reinterpret_cast<const uint8_t *>(lights.first.data()));
+                           return FrameGraphCommand::UploadBuffer(lights.second.size() * sizeof(PointLightData),
+                                                                  reinterpret_cast<const uint8_t *>(lights.second.data()));
                        });
 
         builder.upload(dirLightBuffer,
@@ -438,8 +450,8 @@ namespace xng {
         builder.upload(shadowDirLightBuffer,
                        [scene]() {
                            auto lights = getDirLights(scene);
-                           return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(DirectionalLightData),
-                                                                  reinterpret_cast<const uint8_t *>(lights.first.data()));
+                           return FrameGraphCommand::UploadBuffer(lights.second.size() * sizeof(DirectionalLightData),
+                                                                  reinterpret_cast<const uint8_t *>(lights.second.data()));
                        });
 
         builder.upload(spotLightBuffer,
@@ -451,15 +463,9 @@ namespace xng {
         builder.upload(shadowSpotLightBuffer,
                        [scene]() {
                            auto lights = getSpotLights(scene);
-                           return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(SpotLightData),
-                                                                  reinterpret_cast<const uint8_t *>(lights.first.data()));
+                           return FrameGraphCommand::UploadBuffer(lights.second.size() * sizeof(SpotLightData),
+                                                                  reinterpret_cast<const uint8_t *>(lights.second.data()));
                        });
-
-        // Clear textures
-        builder.beginPass({FrameGraphAttachment::texture(forwardColor)}, FrameGraphAttachment::texture(forwardDepth));
-        builder.clearColor(ColorRGBA::black());
-        builder.clearDepth(1);
-        builder.finishPass();
 
         meshAllocator.uploadMeshes(builder, vertexBuffer, indexBuffer);
 
@@ -524,7 +530,7 @@ namespace xng {
 
                         bool shadows = true;
 
-                        if (!pointLightShadowMapRes.assigned) {
+                        if (!pointLightShadowMap.assigned) {
                             shadows = false;
                         } else if (node.hasProperty<ShadowProperty>()) {
                             shadows = node.getProperty<ShadowProperty>().receiveShadows;
@@ -644,28 +650,24 @@ namespace xng {
                     }
                 }
 
-                builder.upload(shaderBufferRes,
-                               [cameraTransform, shaderData, renderSize]() {
-                                   auto viewPos = cameraTransform.getPosition();
-                                   float viewArr[4] = {viewPos.x, viewPos.y, viewPos.z, 1};
-                                   float viewSize[4] = {static_cast<float>(renderSize.x),
-                                                        static_cast<float>(renderSize.y), 0, 0};
-
-                                   std::vector<uint8_t> ret((sizeof(float) * 8)
-                                                            + (shaderData.size()) * sizeof(ShaderDrawData));
-
-                                   for (auto i = 0; i < sizeof(viewArr); i++) {
-                                       for (auto y = 0; y < sizeof(float); y++)
-                                           ret[i + y] = reinterpret_cast<const uint8_t *>(&viewArr[i])[i + y];
-                                   }
-
-                                   for (auto i = sizeof(viewArr); i < sizeof(viewArr) + sizeof(viewSize); i++) {
-                                       for (auto y = 0; y < sizeof(float); y++)
-                                           ret[i + y] = reinterpret_cast<const uint8_t *>(&viewSize[i])[i + y];
-                                   }
-
-                                   return FrameGraphCommand::UploadBuffer(ret.size(), ret.data());
+                builder.upload(shaderBuffer,
+                               [shaderData]() {
+                                   return FrameGraphCommand::UploadBuffer(shaderData.size() * sizeof(ShaderDrawData),
+                                                                          reinterpret_cast<const uint8_t *>(shaderData.data()));
                                });
+                builder.upload(shaderViewBuffer,
+                               [cameraTransform, renderSize]() {
+                                   auto viewPos = cameraTransform.getPosition();
+                                   ShaderViewData data{};
+                                   data.viewPosition = {viewPos.x, viewPos.y, viewPos.z, 1};
+                                   data.viewSize = {static_cast<float>(renderSize.x),
+                                                    static_cast<float>(renderSize.y), 0, 0};
+                                   return FrameGraphCommand::UploadBuffer(sizeof(ShaderViewData),
+                                                                          reinterpret_cast<const uint8_t *>(&data));
+
+                               });
+
+                auto pointMap = pointLightShadowMap.assigned ? pointLightShadowMap : defaultPointLightShadowMap;
 
                 builder.beginPass({FrameGraphAttachment::texture(forwardColor)},
                                   FrameGraphAttachment::texture(forwardDepth));
@@ -673,7 +675,16 @@ namespace xng {
                 builder.bindPipeline(pipeline);
                 builder.bindVertexBuffers(vertexBuffer, indexBuffer, {}, SkinnedMesh::getDefaultVertexLayout(), {});
                 builder.bindShaderResources({
-                                                    {shaderBufferRes,                   {{VERTEX,   ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
+                                                    {shaderViewBuffer,                  {{VERTEX,   ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
+                                                    {shaderBuffer,                      {{VERTEX,   ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
+                                                    {deferredDepth,                     {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {pointLightBuffer,                  {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {shadowPointLightBuffer,            {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {pointMap,                          {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {dirLightBuffer,                    {{FRAGMENT, ShaderResource::READ}}},
+                                                    {shadowDirLightBuffer,              {{FRAGMENT, ShaderResource::READ}}},
+                                                    {spotLightBuffer,                   {{FRAGMENT, ShaderResource::READ}}},
+                                                    {shadowSpotLightBuffer,             {{FRAGMENT, ShaderResource::READ}}},
                                                     {atlasBuffers.at(
                                                             TEXTURE_ATLAS_8x8),         {{{FRAGMENT, ShaderResource::READ}}}},
                                                     {atlasBuffers.at(
@@ -698,14 +709,6 @@ namespace xng {
                                                             TEXTURE_ATLAS_8192x8192),   {{{FRAGMENT, ShaderResource::READ}}}},
                                                     {atlasBuffers.at(
                                                             TEXTURE_ATLAS_16384x16384), {{{FRAGMENT, ShaderResource::READ}}}},
-                                                    {deferredDepthRes,                  {{{FRAGMENT, ShaderResource::READ}}}},
-                                                    {pointLightBuffer,                  {{{FRAGMENT, ShaderResource::READ}}}},
-                                                    {shadowPointLightBuffer,            {{{FRAGMENT, ShaderResource::READ}}}},
-                                                    {pointLightShadowMapRes,            {{{FRAGMENT, ShaderResource::READ}}}},
-                                                    {dirLightBuffer,                    {{FRAGMENT, ShaderResource::READ}}},
-                                                    {shadowDirLightBuffer,              {{FRAGMENT, ShaderResource::READ}}},
-                                                    {spotLightBuffer,                   {{FRAGMENT, ShaderResource::READ}}},
-                                                    {shadowSpotLightBuffer,             {{FRAGMENT, ShaderResource::READ}}},
                                             });
                 builder.multiDrawIndexed(drawCalls, baseVertices);
                 builder.finishPass();

@@ -61,7 +61,7 @@ namespace xng {
                            FrameGraphAttachment::texture(forwardColor),
                            FrameGraphAttachment::texture(backgroundColor)},
                           FrameGraphAttachment::texture(screenDepth));
-        builder.clearColor(ColorRGBA::black());
+        builder.clearColor(ColorRGBA::black(1, 0));
         builder.clearDepth(1);
         builder.finishPass();
 

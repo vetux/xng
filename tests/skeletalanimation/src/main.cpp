@@ -32,13 +32,12 @@
 #include "cameracontroller.hpp"
 
 int main(int argc, char *argv[]) {
-    std::vector<std::unique_ptr<ResourceParser>> parsers;
-    parsers.emplace_back(std::make_unique<StbiParser>());
-    parsers.emplace_back(std::make_unique<AssImpParser>());
-    parsers.emplace_back(std::make_unique<JsonParser>());
+    std::vector<std::unique_ptr<ResourceImporter>> importers;
+    importers.emplace_back(std::make_unique<StbiImporter>());
+    importers.emplace_back(std::make_unique<AssImpImporter>());
+    importers.emplace_back(std::make_unique<JsonImporter>());
 
-    xng::ResourceRegistry::getDefaultRegistry().setImporter(
-            ResourceImporter(std::move(parsers)));
+    xng::ResourceRegistry::getDefaultRegistry().setImporters(std::move(importers));
 
     xng::ResourceRegistry::getDefaultRegistry().addArchive("file", std::make_shared<DirectoryArchive>("assets/"));
 
@@ -49,7 +48,7 @@ int main(int argc, char *argv[]) {
     auto fontDriver = freetype::FtFontDriver();
 
     auto fontFs = std::ifstream("assets/fonts/Sono/static/Sono/Sono-Regular.ttf", std::ios_base::in | std::ios::binary);
-    auto font = fontDriver.createFont(fontFs);
+    auto font = fontDriver.createFontRenderer(fontFs);
 
     auto window = displayDriver.createWindow(OPENGL_4_6,
                                              "XNG FrameGraph Test",
@@ -74,14 +73,10 @@ int main(int argc, char *argv[]) {
 
     auto target = window->getRenderTarget(*device);
 
-    xng::FrameGraphRenderer renderer(*target,
-                                     *device,
-                                     std::make_unique<xng::FrameGraphPoolAllocator>(*device,
+    xng::FrameGraphRenderer renderer(std::make_unique<xng::FrameGraphRuntimeSimple>(*target,
+                                                                                    *device,
                                                                                     shaderCompiler,
-                                                                                    shaderDecompiler,
-                                                                                    *target),
-                                     shaderCompiler,
-                                     shaderDecompiler);
+                                                                                    shaderDecompiler));
 
     FrameGraphPipeline pipeline = FrameGraphPipeline()
             .addPass(std::make_shared<ClearPass>())

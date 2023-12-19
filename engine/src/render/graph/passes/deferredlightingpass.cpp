@@ -263,13 +263,6 @@ namespace xng {
         auto cameraTransform = builder.getScene().rootNode.find<CameraProperty>()
                 .getProperty<TransformProperty>().transform;
 
-        FrameGraphResource pointLightShadowMap{};
-        if (builder.checkSlot(SLOT_SHADOW_MAP_POINT)) {
-            pointLightShadowMap = builder.getSlot(FrameGraphSlot::SLOT_SHADOW_MAP_POINT);
-        }
-
-        auto defaultPointLightShadowMap = builder.createTextureArrayBuffer({});
-
         builder.upload(pointLightBuffer,
                        [scene]() {
                            auto lights = getPointLights(scene);
@@ -279,8 +272,8 @@ namespace xng {
         builder.upload(shadowPointLightBuffer,
                        [scene]() {
                            auto lights = getPointLights(scene);
-                           return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(PointLightData),
-                                                                  reinterpret_cast<const uint8_t *>(lights.first.data()));
+                           return FrameGraphCommand::UploadBuffer(lights.second.size() * sizeof(PointLightData),
+                                                                  reinterpret_cast<const uint8_t *>(lights.second.data()));
                        });
 
         builder.upload(dirLightBuffer,
@@ -292,8 +285,8 @@ namespace xng {
         builder.upload(shadowDirLightBuffer,
                        [scene]() {
                            auto lights = getDirLights(scene);
-                           return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(DirectionalLightData),
-                                                                  reinterpret_cast<const uint8_t *>(lights.first.data()));
+                           return FrameGraphCommand::UploadBuffer(lights.second.size() * sizeof(DirectionalLightData),
+                                                                  reinterpret_cast<const uint8_t *>(lights.second.data()));
                        });
 
         builder.upload(spotLightBuffer,
@@ -305,8 +298,8 @@ namespace xng {
         builder.upload(shadowSpotLightBuffer,
                        [scene]() {
                            auto lights = getSpotLights(scene);
-                           return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(SpotLightData),
-                                                                  reinterpret_cast<const uint8_t *>(lights.first.data()));
+                           return FrameGraphCommand::UploadBuffer(lights.second.size() * sizeof(SpotLightData),
+                                                                  reinterpret_cast<const uint8_t *>(lights.second.data()));
                        });
 
         if (!quadAllocated) {
@@ -316,6 +309,13 @@ namespace xng {
                 return FrameGraphCommand::UploadBuffer(verts.size(), verts.data());
             });
         }
+
+        FrameGraphResource pointLightShadowMap{};
+        if (builder.checkSlot(SLOT_SHADOW_MAP_POINT)) {
+            pointLightShadowMap = builder.getSlot(FrameGraphSlot::SLOT_SHADOW_MAP_POINT);
+        }
+
+        auto defaultPointLightShadowMap = builder.createTextureArrayBuffer({});
 
         builder.upload(shaderDataBuffer,
                        [cameraTransform, pointLightShadowMap]() {

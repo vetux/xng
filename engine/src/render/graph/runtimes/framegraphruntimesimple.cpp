@@ -521,6 +521,7 @@ namespace xng {
             }
 
             Vec2i size{};
+            bool textureArray = false;
 
             std::vector<RenderTargetAttachment> colorAttachments;
 
@@ -535,6 +536,7 @@ namespace xng {
                             size = colorAttachment.textureBuffer->getDescription().size;
                             break;
                         case RenderObject::RENDER_OBJECT_TEXTURE_ARRAY_BUFFER:
+                            textureArray = true;
                             colorAttachment.textureArrayBuffer = dynamic_cast<TextureArrayBuffer *>(obj);
                             size = colorAttachment.textureArrayBuffer->getDescription().textureDesc.size;
                             break;
@@ -560,6 +562,7 @@ namespace xng {
                         size = depthAttachment.textureBuffer->getDescription().size;
                         break;
                     case RenderObject::RENDER_OBJECT_TEXTURE_ARRAY_BUFFER:
+                        textureArray = true;
                         depthAttachment.textureArrayBuffer = dynamic_cast<TextureArrayBuffer *>(obj);
                         size = depthAttachment.textureArrayBuffer->getDescription().textureDesc.size;
                         break;
@@ -572,19 +575,37 @@ namespace xng {
                 depthAttachment.face = data.depthAttachment.face;
                 depthAttachment.mipMapLevel = data.depthAttachment.mipMapLevel;
             } else {
-                TextureBufferDesc desc;
-                desc.size = size;
-                desc.format = DEPTH_STENCIL;
-                auto &tex = createTextureBuffer(desc);
-                depthAttachment = RenderTargetAttachment::texture(tex);
+                if (textureArray) {
+                    TextureArrayBufferDesc desc;
+                    desc.textureCount = 1;
+                    desc.textureDesc.size = size;
+                    desc.textureDesc.format = DEPTH_STENCIL;
+                    auto &tex = createTextureArrayBuffer(desc);
+                    depthAttachment = RenderTargetAttachment::textureArrayLayered(tex);
+                } else {
+                    TextureBufferDesc desc;
+                    desc.size = size;
+                    desc.format = DEPTH_STENCIL;
+                    auto &tex = createTextureBuffer(desc);
+                    depthAttachment = RenderTargetAttachment::texture(tex);
+                }
             }
 
             if (data.colorAttachments.empty()) {
-                TextureBufferDesc desc;
-                desc.size = size;
-                desc.format = RGBA;
-                auto &tex = createTextureBuffer(desc);
-                colorAttachments.emplace_back(RenderTargetAttachment::texture(tex));
+                if (textureArray) {
+                    TextureArrayBufferDesc desc;
+                    desc.textureCount = 1;
+                    desc.textureDesc.size = size;
+                    desc.textureDesc.format = RGBA;
+                    auto &tex = createTextureArrayBuffer(desc);
+                    colorAttachments.emplace_back(RenderTargetAttachment::textureArrayLayered(tex));
+                } else {
+                    TextureBufferDesc desc;
+                    desc.size = size;
+                    desc.format = RGBA;
+                    auto &tex = createTextureBuffer(desc);
+                    colorAttachments.emplace_back(RenderTargetAttachment::texture(tex));
+                }
             }
 
             RenderTargetDesc desc;
