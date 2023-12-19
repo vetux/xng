@@ -43,11 +43,9 @@ namespace xng {
         bool quadAllocated = false;
 
         FrameGraphResource pipeline;
-        FrameGraphResource blendPipeline;
         FrameGraphResource pass;
 
         FrameGraphResource vertexBuffer;
-        FrameGraphResource vertexArrayObject;
     };
 }
 

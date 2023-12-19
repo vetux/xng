@@ -41,9 +41,11 @@ namespace xng {
         builder.upload(atlasBuffers.at(handle.level),
                        handle.index,
                        0,
+                       RGBA,
+                       {},
                        [texture, handle]() {
                            auto img = getAlignedImage(texture, handle.level);
-                           return FrameGraphCommand::UploadBuffer(img.getDataSize(),
+                           return FrameGraphCommand::UploadBuffer(img.getDataSize() * sizeof(ColorRGBA),
                                                                   reinterpret_cast<const uint8_t *>(img.getData()));
                        });
     }

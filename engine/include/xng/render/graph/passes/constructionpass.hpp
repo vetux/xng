@@ -47,15 +47,11 @@ namespace xng {
 
         void deallocateTexture(const ResourceHandle<Texture> &texture);
 
-        FrameGraphResource renderPipelineRes;
-        FrameGraphResource renderPipelineSkinnedRes;
+        FrameGraphResource renderPipeline;
+        FrameGraphResource renderPipelineSkinned;
 
-        FrameGraphResource vertexBufferRes;
-        FrameGraphResource indexBufferRes;
-        FrameGraphResource vertexArrayObjectRes;
-
-        FrameGraphResource staleVertexBuffer;
-        FrameGraphResource staleIndexBuffer;
+        FrameGraphResource vertexBuffer;
+        FrameGraphResource indexBuffer;
 
         FrameGraphTextureAtlas atlas;
 

@@ -48,7 +48,6 @@ namespace xng {
 
         FrameGraphResource vertexBuffer;
         FrameGraphResource indexBuffer;
-        FrameGraphResource vertexArrayObject;
 
         Skybox skybox;
         FrameGraphResource skyboxTexture;

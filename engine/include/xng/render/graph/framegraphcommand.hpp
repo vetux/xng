@@ -25,18 +25,18 @@
 #include <cstring>
 
 #include "xng/render/graph/framegraphresource.hpp"
+#include "xng/render/graph/framegraphattachment.hpp"
 
 #include "xng/gpu/drawcall.hpp"
 
 namespace xng {
     struct FrameGraphCommand {
-        enum Type {
-            CREATE_RENDER_PIPELINE,
+        enum Type : int {
+            CREATE_RENDER_PIPELINE = 0,
             CREATE_TEXTURE,
             CREATE_TEXTURE_ARRAY,
             CREATE_VERTEX_BUFFER,
             CREATE_INDEX_BUFFER,
-            CREATE_VERTEX_ARRAY_OBJECT,
             CREATE_SHADER_UNIFORM_BUFFER,
             CREATE_SHADER_STORAGE_BUFFER,
             UPLOAD,
@@ -44,14 +44,12 @@ namespace xng {
             BLIT_COLOR,
             BLIT_DEPTH,
             BLIT_STENCIL,
-            CLEAR_TEXTURE_COLOR,
-            CLEAR_TEXTURE_FLOAT,
             BEGIN_PASS,
             FINISH_PASS,
-            RENDER_CLEAR,
+            CLEAR_COLOR,
+            CLEAR_DEPTH,
             BIND_PIPELINE,
-            BIND_VERTEX_ARRAY_OBJECT,
-            BIND_VERTEX_ARRAY_OBJECT_BUFFERS,
+            BIND_VERTEX_BUFFERS,
             BIND_SHADER_RESOURCES,
             SET_VIEWPORT,
             DRAW_ARRAY,
@@ -72,7 +70,7 @@ namespace xng {
             UploadBuffer() = default;
 
             UploadBuffer(size_t size, const uint8_t *v) : size(size),
-                                                        data(new uint8_t[size]) {
+                                                          data(new uint8_t[size]) {
                 std::memcpy(data, v, size);
             }
 
@@ -84,7 +82,15 @@ namespace xng {
         struct UploadData {
             size_t index;
             size_t offset;
+            ColorFormat colorFormat;
+            CubeMapFace face;
             std::function<UploadBuffer()> dataSource;
+        };
+
+        struct CopyData {
+            size_t readOffset;
+            size_t writeOffset;
+            size_t count;
         };
 
         struct DrawCallData {
@@ -95,7 +101,7 @@ namespace xng {
 
         struct ClearData {
             ColorRGBA color;
-            float value;
+            float depth;
         };
 
         struct ViewportData {
@@ -113,97 +119,35 @@ namespace xng {
             int targetIndex;
         };
 
+        struct BindVertexData {
+            VertexLayout vertexLayout{};
+            VertexLayout instanceArrayLayout{};
+        };
+
         struct ShaderData {
             FrameGraphResource resource;
             std::map<ShaderStage, ShaderResource::AccessMode> accessModes;
         };
 
-        struct Attachment {
-            FrameGraphResource resource;
-            RenderTargetAttachment::AttachmentType type{};
-            size_t index{};
-            CubeMapFace face{};
-            size_t mipMapLevel{};
-
-            static Attachment texture(FrameGraphResource textureBuffer, size_t mipMapLevel = 0) {
-                return {textureBuffer, RenderTargetAttachment::ATTACHMENT_TEXTURE, {}, {}, mipMapLevel};
-            }
-
-            static Attachment cubemap(FrameGraphResource textureBuffer, CubeMapFace face, size_t mipMapLevel = 0) {
-                return {textureBuffer, RenderTargetAttachment::ATTACHMENT_CUBEMAP, {}, face, mipMapLevel};
-            }
-
-            /**
-             * Create a layered cube map texture attachment where shaders select which face of the cube map to write to by using eg gl_Layer in glsl
-             *
-             * @param textureBuffer
-             * @return
-             */
-            static Attachment cubemapLayered(FrameGraphResource textureBuffer, size_t mipMapLevel = 0) {
-                return {textureBuffer, RenderTargetAttachment::ATTACHMENT_CUBEMAP_LAYERED, {}, {}, mipMapLevel};
-            }
-
-            /**
-             * Attach the texture 2d at the specified index in the textureArrayBuffer to the target.
-             *
-             * @param textureArrayBuffer
-             * @param index
-             * @param mipMapLevel
-             * @return
-             */
-            static Attachment textureArray(FrameGraphResource textureArrayBuffer,
-                                                       size_t index,
-                                                       size_t mipMapLevel = 0) {
-                return {textureArrayBuffer, RenderTargetAttachment::ATTACHMENT_TEXTUREARRAY, index, {}, mipMapLevel};
-            }
-
-            /**
-             * Attach the face of the cube map at the specified index in the textureArrayBuffer to the target.
-             *
-             * @param textureArrayBuffer
-             * @param index
-             * @param face
-             * @param mipMapLevel
-             * @return
-             */
-            static Attachment textureArrayCubeMap(FrameGraphResource textureArrayBuffer,
-                                                              size_t index,
-                                                              CubeMapFace face,
-                                                              size_t mipMapLevel = 0) {
-                return {textureArrayBuffer, RenderTargetAttachment::ATTACHMENT_TEXTUREARRAY_CUBEMAP, index, face, mipMapLevel};
-            }
-
-            /**
-             * Create a 2d or cube map texture attachment where shaders select which texture in the array to write to by using eg gl_Layer in glsl.
-             * If the texture is a cube map array texture the shader can select the index and face to write to by setting gl_Layer to (index * 6) + face
-             *
-             * @param textureArrayBuffer
-             */
-            static Attachment textureArrayLayered(FrameGraphResource textureArrayBuffer,
-                                                              size_t mipMapLevel = 0) {
-                return {textureArrayBuffer, RenderTargetAttachment::ATTACHMENT_TEXTUREARRAY_LAYERED, {}, {}, mipMapLevel};
-            }
-        };
-
         struct BeginPassData {
-            std::vector<Attachment> colorAttachments;
-            Attachment depthAttachment;
+            std::vector<FrameGraphAttachment> colorAttachments;
+            FrameGraphAttachment depthAttachment;
         };
 
         std::variant<UploadData,
+                CopyData,
                 DrawCallData,
                 ClearData,
                 ViewportData,
                 BlitData,
+                BindVertexData,
                 std::vector<ShaderData>,
                 BeginPassData,
-                RenderTargetDesc,
                 RenderPipelineDesc,
                 TextureBufferDesc,
                 TextureArrayBufferDesc,
                 VertexBufferDesc,
                 IndexBufferDesc,
-                VertexArrayObjectDesc,
                 ShaderUniformBufferDesc,
                 ShaderStorageBufferDesc> data;
 

@@ -62,15 +62,10 @@ namespace xng {
             indexBuffer = builder.createIndexBuffer(IndexBufferDesc{
                     .size = cube.indices.size() * sizeof(unsigned int),
             });
-
-            vertexArrayObject = builder.createVertexArrayObject(VertexArrayObjectDesc{
-                    .vertexLayout = cube.vertexLayout
-            });
         }
 
         builder.persist(vertexBuffer);
         builder.persist(indexBuffer);
-        builder.persist(vertexArrayObject);
 
         auto backgroundColor = builder.getSlot(SLOT_BACKGROUND_COLOR);
 
@@ -124,7 +119,12 @@ namespace xng {
         if (uploadTexture) {
             for (auto i = 0; i <= CubeMapFace::NEGATIVE_Z; i++) {
                 auto img = skybox.texture.get().images.at(static_cast<CubeMapFace>(i));
-                builder.upload(skyboxTexture, i, 0, [img]() {
+                builder.upload(skyboxTexture,
+                               0,
+                               0,
+                               RGBA,
+                               static_cast<CubeMapFace>(i),
+                               [img]() {
                     return FrameGraphCommand::UploadBuffer(img.get().getDataSize() * sizeof(ColorRGBA),
                                                            reinterpret_cast<const uint8_t *>(img.get().getData()));
                 });
@@ -145,8 +145,6 @@ namespace xng {
                                return FrameGraphCommand::UploadBuffer(cube.indices.size() * sizeof(unsigned int),
                                                                       reinterpret_cast<const uint8_t *>(cube.indices.data()));
                            });
-
-            builder.setVertexArrayObjectBuffers(vertexArrayObject, vertexBuffer, indexBuffer, {});
         }
 
         builder.upload(shaderBuffer,
@@ -156,21 +154,20 @@ namespace xng {
                                                                   reinterpret_cast<const uint8_t *>(mat.data));
                        });
 
-        builder.clearTextureColor({backgroundColor}, skybox.color);
-
-        builder.beginPass({FrameGraphCommand::Attachment::texture(backgroundColor)},
-                          FrameGraphCommand::Attachment::texture(depthTex));
+        builder.beginPass({FrameGraphAttachment::texture(backgroundColor)},
+                          FrameGraphAttachment::texture(depthTex));
+        builder.clearColor(skybox.color);
         builder.bindPipeline(pipeline);
         builder.bindShaderResources({{
-                                             shaderBuffer,     {{VERTEX, ShaderResource::READ},
-                                                             {FRAGMENT, ShaderResource::READ}}
+                                             shaderBuffer,  {{VERTEX, ShaderResource::READ},
+                                                                    {FRAGMENT, ShaderResource::READ}}
                                      },
                                      {
                                              skyboxTexture, {{VERTEX, ShaderResource::READ},
-                                                             {FRAGMENT, ShaderResource::READ}}
+                                                                    {FRAGMENT, ShaderResource::READ}}
                                      }
                                     });
-        builder.bindVertexArrayObject(vertexArrayObject);
+        builder.bindVertexBuffers(vertexBuffer, indexBuffer, {}, cube.vertexLayout, {});
         builder.drawIndexed(DrawCall(0, cube.indices.size()));
         builder.finishPass();
     }

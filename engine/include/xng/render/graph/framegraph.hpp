@@ -32,6 +32,8 @@ namespace xng {
 
         std::map<FrameGraphSlot, FrameGraphResource> slots;
 
+        FrameGraphResource backBuffer;
+
         std::set<FrameGraphResource> getPersistentResources() const {
             std::set<FrameGraphResource> ret;
             for (auto &stage: contexts) {

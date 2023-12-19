@@ -56,17 +56,22 @@ namespace xng {
 
         builder.assignSlot(SLOT_BACKGROUND_COLOR, backgroundColor);
 
-        builder.clearTextureColor({screenColor,
-                                   deferredColor,
-                                   forwardColor,
-                                   backgroundColor},
-                                  ColorRGBA::black());
+        builder.beginPass({FrameGraphAttachment::texture(screenColor),
+                           FrameGraphAttachment::texture(deferredColor),
+                           FrameGraphAttachment::texture(forwardColor),
+                           FrameGraphAttachment::texture(backgroundColor)},
+                          FrameGraphAttachment::texture(screenDepth));
+        builder.clearColor(ColorRGBA::black());
+        builder.clearDepth(1);
+        builder.finishPass();
 
-        builder.clearTextureFloat({
-                                          screenDepth,
-                                          deferredDepth,
-                                          forwardDepth
-                                  });
+        builder.beginPass({}, FrameGraphAttachment::texture(deferredDepth));
+        builder.clearDepth(1);
+        builder.finishPass();
+
+        builder.beginPass({}, FrameGraphAttachment::texture(forwardDepth));
+        builder.clearDepth(1);
+        builder.finishPass();
     }
 
     std::type_index ClearPass::getTypeIndex() const {

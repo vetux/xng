@@ -87,16 +87,6 @@ namespace xng {
         return ret;
     }
 
-    FrameGraphResource FrameGraphBuilder::createVertexArrayObject(const VertexArrayObjectDesc &desc) {
-        auto ret = createResourceId();
-        auto cmd = FrameGraphCommand();
-        cmd.type = FrameGraphCommand::CREATE_VERTEX_ARRAY_OBJECT;
-        cmd.data = desc;
-        cmd.resources.emplace_back(ret);
-        commands.emplace_back(cmd);
-        return ret;
-    }
-
     FrameGraphResource FrameGraphBuilder::createShaderUniformBuffer(const ShaderUniformBufferDesc &desc) {
         auto ret = createResourceId();
         auto cmd = FrameGraphCommand();
@@ -120,19 +110,32 @@ namespace xng {
     void FrameGraphBuilder::upload(FrameGraphResource buffer,
                                    size_t index,
                                    size_t offset,
+                                   ColorFormat colorFormat,
+                                   CubeMapFace cubeMapFace,
                                    std::function<FrameGraphCommand::UploadBuffer()> dataSource) {
+        if (!buffer.assigned)
+            throw std::runtime_error("Unassigned resource");
         auto cmd = FrameGraphCommand();
         cmd.type = FrameGraphCommand::UPLOAD;
         cmd.resources.emplace_back(buffer);
-        cmd.data = FrameGraphCommand::UploadData{index, offset, std::move(dataSource)};
+        cmd.data = FrameGraphCommand::UploadData{index, offset, colorFormat, cubeMapFace, std::move(dataSource)};
         commands.emplace_back(cmd);
     }
 
-    void FrameGraphBuilder::copy(FrameGraphResource source, FrameGraphResource dest) {
+    void FrameGraphBuilder::copy(FrameGraphResource source,
+                                 FrameGraphResource dest,
+                                 size_t readOffset,
+                                 size_t writeOffset,
+                                 size_t count) {
+        if (!source.assigned)
+            throw std::runtime_error("Unassigned resource");
+        if (!dest.assigned)
+            throw std::runtime_error("Unassigned resource");
         auto cmd = FrameGraphCommand();
         cmd.type = FrameGraphCommand::COPY;
         cmd.resources.emplace_back(source);
         cmd.resources.emplace_back(dest);
+        cmd.data = FrameGraphCommand::CopyData{readOffset, writeOffset, count};
         commands.emplace_back(cmd);
     }
 
@@ -145,6 +148,10 @@ namespace xng {
                                       TextureFiltering filter,
                                       int sourceIndex,
                                       int targetIndex) {
+        if (!source.assigned)
+            throw std::runtime_error("Unassigned resource");
+        if (!target.assigned)
+            throw std::runtime_error("Unassigned resource");
         auto cmd = FrameGraphCommand();
         cmd.type = FrameGraphCommand::BLIT_COLOR;
         cmd.resources.emplace_back(source);
@@ -159,8 +166,17 @@ namespace xng {
         commands.emplace_back(cmd);
     }
 
-    void FrameGraphBuilder::blitDepth(FrameGraphResource source, FrameGraphResource target, Vec2i sourceOffset,
-                                      Vec2i targetOffset, Vec2i sourceRect, Vec2i targetRect) {
+    void FrameGraphBuilder::blitDepth(FrameGraphResource source,
+                                      FrameGraphResource target,
+                                      Vec2i sourceOffset,
+                                      Vec2i targetOffset,
+                                      Vec2i sourceRect,
+                                      Vec2i targetRect) {
+        if (!source.assigned)
+            throw std::runtime_error("Unassigned resource");
+        if (!target.assigned)
+            throw std::runtime_error("Unassigned resource");
+
         auto cmd = FrameGraphCommand();
         cmd.type = FrameGraphCommand::BLIT_DEPTH;
         cmd.resources.emplace_back(source);
@@ -181,6 +197,11 @@ namespace xng {
                                         Vec2i targetOffset,
                                         Vec2i sourceRect,
                                         Vec2i targetRect) {
+        if (!source.assigned)
+            throw std::runtime_error("Unassigned resource");
+        if (!target.assigned)
+            throw std::runtime_error("Unassigned resource");
+
         auto cmd = FrameGraphCommand();
         cmd.type = FrameGraphCommand::BLIT_STENCIL;
         cmd.resources.emplace_back(source);
@@ -195,26 +216,13 @@ namespace xng {
         commands.emplace_back(cmd);
     }
 
-    void FrameGraphBuilder::clearTextureColor(const std::set<FrameGraphResource> &textures, ColorRGBA color) {
-        auto cmd = FrameGraphCommand();
-        cmd.type = FrameGraphCommand::CLEAR_TEXTURE_COLOR;
-        for (auto &t: textures)
-            cmd.resources.emplace_back(t);
-        cmd.data = FrameGraphCommand::ClearData{color, 0};
-        commands.emplace_back(cmd);
-    }
+    void FrameGraphBuilder::beginPass(const std::vector<FrameGraphAttachment> &colorAttachments,
+                                      FrameGraphAttachment depthAttachment) {
+        for (auto &r: colorAttachments) {
+            if (!r.resource.assigned)
+                throw std::runtime_error("Unassigned resource");
+        }
 
-    void FrameGraphBuilder::clearTextureFloat(const std::set<FrameGraphResource> &textures, float value) {
-        auto cmd = FrameGraphCommand();
-        cmd.type = FrameGraphCommand::CLEAR_TEXTURE_FLOAT;
-        for (auto &t: textures)
-            cmd.resources.emplace_back(t);
-        cmd.data = FrameGraphCommand::ClearData{{}, value};
-        commands.emplace_back(cmd);
-    }
-
-    void FrameGraphBuilder::beginPass(const std::vector<FrameGraphCommand::Attachment> &colorAttachments,
-                                      FrameGraphCommand::Attachment depthAttachment) {
         auto cmd = FrameGraphCommand();
         cmd.type = FrameGraphCommand::BEGIN_PASS;
         cmd.data = FrameGraphCommand::BeginPassData{colorAttachments, depthAttachment};
@@ -222,6 +230,8 @@ namespace xng {
     }
 
     void FrameGraphBuilder::beginPass(FrameGraphResource target) {
+        if (target != FrameGraphResource(0))
+            throw std::runtime_error("Invalid render target resource (Must be backbuffer)");
         auto cmd = FrameGraphCommand();
         cmd.type = FrameGraphCommand::BEGIN_PASS;
         cmd.resources.emplace_back(target);
@@ -234,48 +244,58 @@ namespace xng {
         commands.emplace_back(cmd);
     }
 
-    void FrameGraphBuilder::renderClear(ColorRGBA color, float depth) {
+    void FrameGraphBuilder::clearColor(ColorRGBA color) {
         auto cmd = FrameGraphCommand();
-        cmd.type = FrameGraphCommand::RENDER_CLEAR;
-        cmd.data = FrameGraphCommand::ClearData{color, depth};
+        cmd.type = FrameGraphCommand::CLEAR_COLOR;
+        cmd.data = FrameGraphCommand::ClearData{color, {}};
+        commands.emplace_back(cmd);
+    }
+
+    void FrameGraphBuilder::clearDepth(float depth) {
+        auto cmd = FrameGraphCommand();
+        cmd.type = FrameGraphCommand::CLEAR_DEPTH;
+        cmd.data = FrameGraphCommand::ClearData{{}, depth};
         commands.emplace_back(cmd);
     }
 
     void FrameGraphBuilder::setViewport(Vec2i viewportOffset, Vec2i viewportSize) {
         auto cmd = FrameGraphCommand();
         cmd.type = FrameGraphCommand::SET_VIEWPORT;
-        cmd.data = FrameGraphCommand::ViewportData{viewportOffset, viewportSize};
+        cmd.data = FrameGraphCommand::ViewportData{std::move(viewportOffset), std::move(viewportSize)};
         commands.emplace_back(cmd);
     }
 
     void FrameGraphBuilder::bindPipeline(FrameGraphResource pipeline) {
+        if (!pipeline.assigned)
+            throw std::runtime_error("Unassigned resource");
+
         auto cmd = FrameGraphCommand();
         cmd.type = FrameGraphCommand::BIND_PIPELINE;
         cmd.resources.emplace_back(pipeline);
         commands.emplace_back(cmd);
     }
 
-    void FrameGraphBuilder::bindVertexArrayObject(FrameGraphResource vertexArrayObject) {
+    void FrameGraphBuilder::bindVertexBuffers(FrameGraphResource vertexBuffer,
+                                              FrameGraphResource indexBuffer,
+                                              FrameGraphResource instanceBuffer,
+                                              VertexLayout vertexLayout,
+                                              VertexLayout instanceArrayLayout) {
+        if (!vertexBuffer.assigned)
+            throw std::runtime_error("Unassigned resource");
         auto cmd = FrameGraphCommand();
-        cmd.type = FrameGraphCommand::BIND_VERTEX_ARRAY_OBJECT;
-        cmd.resources.emplace_back(vertexArrayObject);
-        commands.emplace_back(cmd);
-    }
-
-    void FrameGraphBuilder::setVertexArrayObjectBuffers(FrameGraphResource vertexArrayObject,
-                                                        FrameGraphResource vertexBuffer,
-                                                        FrameGraphResource indexBuffer,
-                                                        FrameGraphResource instanceBuffer) {
-        auto cmd = FrameGraphCommand();
-        cmd.type = FrameGraphCommand::BIND_VERTEX_ARRAY_OBJECT_BUFFERS;
-        cmd.resources.emplace_back(vertexArrayObject);
+        cmd.type = FrameGraphCommand::BIND_VERTEX_BUFFERS;
         cmd.resources.emplace_back(vertexBuffer);
         cmd.resources.emplace_back(indexBuffer);
         cmd.resources.emplace_back(instanceBuffer);
+        cmd.data = FrameGraphCommand::BindVertexData{std::move(vertexLayout), std::move(instanceArrayLayout)};
         commands.emplace_back(cmd);
     }
 
     void FrameGraphBuilder::bindShaderResources(const std::vector<FrameGraphCommand::ShaderData> &resources) {
+        for (auto &r: resources) {
+            if (!r.resource.assigned)
+                throw std::runtime_error("Unassigned resource");
+        }
         auto cmd = FrameGraphCommand();
         cmd.type = FrameGraphCommand::BIND_SHADER_RESOURCES;
         cmd.data = resources;
@@ -456,6 +476,8 @@ namespace xng {
 
     FrameGraph FrameGraphBuilder::build(const std::vector<std::shared_ptr<FrameGraphPass>> &passes) {
         graph = {};
+        graph.backBuffer = FrameGraphResource(0);
+
         resourceCounter = 1;
 
         for (auto &pass: passes) {

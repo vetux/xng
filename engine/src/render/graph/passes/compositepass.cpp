@@ -34,19 +34,7 @@ namespace xng {
         auto resolution = builder.getBackBufferDescription().size
                           * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
 
-        if (!vertexBuffer.assigned) {
-            VertexBufferDesc desc;
-            desc.size = mesh.vertices.size() * mesh.vertexLayout.getSize();
-            vertexBuffer = builder.createVertexBuffer(desc);
-
-            VertexArrayObjectDesc oDesc;
-            oDesc.vertexLayout = mesh.vertexLayout;
-            vertexArrayObject = builder.createVertexArrayObject(oDesc);
-        }
-        builder.persist(vertexBuffer);
-        builder.persist(vertexArrayObject);
-
-        if (!blendPipeline.assigned) {
+        if (!pipeline.assigned) {
             RenderPipelineDesc pdesc{};
             pdesc.shaders = {
                     {VERTEX,   compositepass_vs},
@@ -66,10 +54,10 @@ namespace xng {
             pdesc.colorBlendDestinationMode = ONE_MINUS_SRC_ALPHA;
             pdesc.alphaBlendSourceMode = ONE;
             pdesc.alphaBlendDestinationMode = ONE_MINUS_SRC_ALPHA;
-            blendPipeline = builder.createRenderPipeline(pdesc);
+            pipeline = builder.createRenderPipeline(pdesc);
         }
 
-        builder.persist(blendPipeline);
+        builder.persist(pipeline);
 
         auto screenColor = builder.getSlot(SLOT_SCREEN_COLOR);
         auto screenDepth = builder.getSlot(SLOT_SCREEN_DEPTH);
@@ -84,21 +72,25 @@ namespace xng {
 
         if (!quadAllocated) {
             quadAllocated = true;
+            VertexBufferDesc desc;
+            desc.size = mesh.vertices.size() * mesh.vertexLayout.getSize();
+            vertexBuffer = builder.createVertexBuffer(desc);
             builder.upload(vertexBuffer,
                            [this]() {
                                auto verts = VertexStream().addVertices(mesh.vertices).getVertexBuffer();
                                return FrameGraphCommand::UploadBuffer(verts.size(), verts.data());
                            });
-            builder.setVertexArrayObjectBuffers(vertexArrayObject, vertexBuffer, {}, {});
         }
 
-        builder.blitColor(backgroundColor, screenColor, {}, {}, resolution, resolution, NEAREST, 0, 0);
-        builder.blitDepth(deferredDepth, screenDepth, {}, {}, resolution, resolution);
+        builder.persist(vertexBuffer);
 
-        builder.beginPass({FrameGraphCommand::Attachment::texture(screenColor)},
-                          FrameGraphCommand::Attachment::texture(screenDepth));
+        builder.blitColor(backgroundColor, screenColor, {}, {}, resolution, resolution, NEAREST, 0, 0);
+
+        builder.beginPass({FrameGraphAttachment::texture(screenColor)},
+                          FrameGraphAttachment::texture(screenDepth));
+
         builder.bindPipeline(pipeline);
-        builder.bindVertexArrayObject(vertexArrayObject);
+        builder.bindVertexBuffers(vertexBuffer, {}, {}, mesh.vertexLayout, {});
 
         builder.bindShaderResources(std::vector<FrameGraphCommand::ShaderData>{
                 FrameGraphCommand::ShaderData{deferredColor, {{FRAGMENT, ShaderResource::READ}}},

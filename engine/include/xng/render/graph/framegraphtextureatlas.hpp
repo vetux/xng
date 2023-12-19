@@ -190,41 +190,41 @@ namespace xng {
 
         std::map<TextureAtlasResolution, FrameGraphResource> getAtlasBuffers(FrameGraphBuilder &builder) {
             if (currentHandles.tex8x8 != previousHandles.tex8x8 && previousHandles.tex8x8.assigned) {
-                builder.copy(previousHandles.tex8x8, currentHandles.tex8x8);
+                builder.copy(previousHandles.tex8x8, currentHandles.tex8x8, 0, 0, 0);
             }
             if (currentHandles.tex16x16 != previousHandles.tex16x16 && previousHandles.tex16x16.assigned) {
-                builder.copy(previousHandles.tex16x16, currentHandles.tex16x16);
+                builder.copy(previousHandles.tex16x16, currentHandles.tex16x16, 0, 0, 0);
             }
             if (currentHandles.tex32x32 != previousHandles.tex32x32 && previousHandles.tex32x32.assigned) {
-                builder.copy(previousHandles.tex32x32, currentHandles.tex32x32);
+                builder.copy(previousHandles.tex32x32, currentHandles.tex32x32, 0, 0, 0);
             }
             if (currentHandles.tex64x64 != previousHandles.tex64x64 && previousHandles.tex64x64.assigned) {
-                builder.copy(previousHandles.tex64x64, currentHandles.tex64x64);
+                builder.copy(previousHandles.tex64x64, currentHandles.tex64x64, 0, 0, 0);
             }
             if (currentHandles.tex128x128 != previousHandles.tex128x128 && previousHandles.tex128x128.assigned) {
-                builder.copy(previousHandles.tex128x128, currentHandles.tex128x128);
+                builder.copy(previousHandles.tex128x128, currentHandles.tex128x128, 0, 0, 0);
             }
             if (currentHandles.tex256x256 != previousHandles.tex256x256 && previousHandles.tex256x256.assigned) {
-                builder.copy(previousHandles.tex256x256, currentHandles.tex256x256);
+                builder.copy(previousHandles.tex256x256, currentHandles.tex256x256, 0, 0, 0);
             }
             if (currentHandles.tex512x512 != previousHandles.tex512x512 && previousHandles.tex512x512.assigned) {
-                builder.copy(previousHandles.tex512x512, currentHandles.tex512x512);
+                builder.copy(previousHandles.tex512x512, currentHandles.tex512x512, 0, 0, 0);
             }
             if (currentHandles.tex1024x1024 != previousHandles.tex1024x1024 && previousHandles.tex1024x1024.assigned) {
-                builder.copy(previousHandles.tex1024x1024, currentHandles.tex1024x1024);
+                builder.copy(previousHandles.tex1024x1024, currentHandles.tex1024x1024, 0, 0, 0);
             }
             if (currentHandles.tex2048x2048 != previousHandles.tex2048x2048 && previousHandles.tex2048x2048.assigned) {
-                builder.copy(previousHandles.tex2048x2048, currentHandles.tex2048x2048);
+                builder.copy(previousHandles.tex2048x2048, currentHandles.tex2048x2048, 0, 0, 0);
             }
             if (currentHandles.tex4096x4096 != previousHandles.tex4096x4096 && previousHandles.tex4096x4096.assigned) {
-                builder.copy(previousHandles.tex4096x4096, currentHandles.tex4096x4096);
+                builder.copy(previousHandles.tex4096x4096, currentHandles.tex4096x4096, 0, 0, 0);
             }
             if (currentHandles.tex8192x8192 != previousHandles.tex8192x8192 && previousHandles.tex8192x8192.assigned) {
-                builder.copy(previousHandles.tex8192x8192, currentHandles.tex8192x8192);
+                builder.copy(previousHandles.tex8192x8192, currentHandles.tex8192x8192, 0, 0, 0);
             }
             if (currentHandles.tex16384x16384 != previousHandles.tex16384x16384 &&
                 previousHandles.tex16384x16384.assigned) {
-                builder.copy(previousHandles.tex16384x16384, currentHandles.tex16384x16384);
+                builder.copy(previousHandles.tex16384x16384, currentHandles.tex16384x16384, 0, 0, 0);
             }
 
             auto ret = std::map<TextureAtlasResolution, FrameGraphResource>{

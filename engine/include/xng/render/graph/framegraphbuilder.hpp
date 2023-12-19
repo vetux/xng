@@ -26,10 +26,10 @@
 #include "xng/render/graph/framegraphresource.hpp"
 #include "xng/render/graph/framegraph.hpp"
 #include "xng/render/graph/framegraphslot.hpp"
-#include "xng/render/scenerenderersettings.hpp"
-
-#include "xng/render/scene.hpp"
 #include "xng/render/graph/framegraphcommand.hpp"
+
+#include "xng/render/scenerenderersettings.hpp"
+#include "xng/render/scene.hpp"
 
 namespace xng {
     class XENGINE_EXPORT FrameGraphBuilder {
@@ -59,28 +59,32 @@ namespace xng {
 
         FrameGraphResource createIndexBuffer(const IndexBufferDesc &desc);
 
-        FrameGraphResource createVertexArrayObject(const VertexArrayObjectDesc &desc);
-
         FrameGraphResource createShaderUniformBuffer(const ShaderUniformBufferDesc &desc);
 
         FrameGraphResource createShaderStorageBuffer(const ShaderStorageBufferDesc &desc);
 
         void upload(FrameGraphResource buffer, std::function<FrameGraphCommand::UploadBuffer()> dataSource) {
-            upload(buffer, 0, 0, std::move(dataSource));
+            upload(buffer, 0, 0, {}, {}, std::move(dataSource));
         }
 
         void upload(FrameGraphResource buffer,
                     size_t offset,
                     std::function<FrameGraphCommand::UploadBuffer()> dataSource) {
-            upload(buffer, 0, offset, std::move(dataSource));
+            upload(buffer, 0, offset, {}, {}, std::move(dataSource));
         }
 
         void upload(FrameGraphResource buffer,
                     size_t index,
                     size_t offset,
+                    ColorFormat colorFormat,
+                    CubeMapFace cubeMapFace,
                     std::function<FrameGraphCommand::UploadBuffer()> dataSource);
 
-        void copy(FrameGraphResource source, FrameGraphResource dest);
+        void copy(FrameGraphResource source,
+                  FrameGraphResource dest,
+                  size_t readOffset,
+                  size_t writeOffset,
+                  size_t count);
 
         /**
          *
@@ -118,31 +122,26 @@ namespace xng {
                          Vec2i sourceRect,
                          Vec2i targetRect);
 
-        void clearTextureColor(const std::set<FrameGraphResource> &textures,
-                               ColorRGBA color = ColorRGBA::black());
-
-        void clearTextureFloat(const std::set<FrameGraphResource> &textures,
-                               float value = 1);
-
-        void beginPass(const std::vector<FrameGraphCommand::Attachment> &colorAttachments,
-                       FrameGraphCommand::Attachment depthAttachment);
+        void beginPass(const std::vector<FrameGraphAttachment> &colorAttachments,
+                       FrameGraphAttachment depthAttachment);
 
         void beginPass(FrameGraphResource target);
 
         void finishPass();
 
-        void renderClear(ColorRGBA color, float depth = 1);
+        void clearColor(ColorRGBA color);
+
+        void clearDepth(float depth);
 
         void setViewport(Vec2i viewportOffset, Vec2i viewportSize);
 
         void bindPipeline(FrameGraphResource pipeline);
 
-        void bindVertexArrayObject(FrameGraphResource vertexArrayObject);
-
-        void setVertexArrayObjectBuffers(FrameGraphResource vertexArrayObject,
-                                         FrameGraphResource vertexBuffer,
-                                         FrameGraphResource indexBuffer,
-                                         FrameGraphResource instanceBuffer);
+        void bindVertexBuffers(FrameGraphResource vertexBuffer,
+                               FrameGraphResource indexBuffer,
+                               FrameGraphResource instanceBuffer,
+                               VertexLayout vertexLayout,
+                               VertexLayout instanceArrayLayout);
 
         void bindShaderResources(const std::vector<FrameGraphCommand::ShaderData> &resources);
 

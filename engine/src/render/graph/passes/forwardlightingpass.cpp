@@ -197,32 +197,32 @@ namespace xng {
                 spotLights++;
         }
 
-        auto  pointLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto pointLightBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(PointLightData) * pointLights
         });
 
-        auto shadowPointLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto shadowPointLightBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(PointLightData) * shadowPointLights
         });
 
-        auto dirLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto dirLightBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(DirectionalLightData) * dirLights
         });
 
-        auto shadowDirLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto shadowDirLightBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(DirectionalLightData) * shadowDirLights
         });
 
-        auto spotLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto spotLightBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(SpotLightData) * spotLights
         });
 
-        auto shadowSpotLightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto shadowSpotLightBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(SpotLightData) * shadowSpotLights
         });
 
-        if (!pipelineRes.assigned) {
-            pipelineRes = builder.createRenderPipeline(RenderPipelineDesc{
+        if (!pipeline.assigned) {
+            pipeline = builder.createRenderPipeline(RenderPipelineDesc{
                     .shaders = {{VERTEX,   forwardlightingpass_vs},
                                 {FRAGMENT, forwardlightingpass_fs}},
                     .bindings = {
@@ -266,15 +266,7 @@ namespace xng {
             });
         }
 
-        builder.persist(pipelineRes);
-
-        if (!vertexArrayObjectRes.assigned) {
-            vertexArrayObjectRes = builder.createVertexArrayObject(VertexArrayObjectDesc{
-                    .vertexLayout = SkinnedMesh::getDefaultVertexLayout()
-            });
-        }
-
-        builder.persist(vertexArrayObjectRes);
+        builder.persist(pipeline);
 
         size_t totalShaderBufferSize = sizeof(float[12]);
 
@@ -376,43 +368,43 @@ namespace xng {
 
         atlas.setup(builder);
 
-        if (vertexBufferRes.assigned) {
-            builder.persist(vertexBufferRes);
+        if (vertexBuffer.assigned) {
+            builder.persist(vertexBuffer);
         }
 
-        if (indexBufferRes.assigned) {
-            builder.persist(indexBufferRes);
+        if (indexBuffer.assigned) {
+            builder.persist(indexBuffer);
         }
 
-        bool updateVao = false;
-
-        if (!vertexBufferRes.assigned || currentVertexBufferSize < meshAllocator.getRequestedVertexBufferSize()) {
-            auto staleVertexBuffer = vertexBufferRes;
+        if (!vertexBuffer.assigned || currentVertexBufferSize < meshAllocator.getRequestedVertexBufferSize()) {
+            auto staleVertexBuffer = vertexBuffer;
             auto d = VertexBufferDesc();
             d.size = meshAllocator.getRequestedVertexBufferSize();
-            vertexBufferRes = builder.createVertexBuffer(d);
+            vertexBuffer = builder.createVertexBuffer(d);
+            builder.persist(vertexBuffer);
+            if (staleVertexBuffer.assigned)
+                builder.copy(staleVertexBuffer, vertexBuffer, 0, 0, currentVertexBufferSize);
             currentVertexBufferSize = d.size;
-            builder.persist(vertexBufferRes);
-            builder.copy(staleVertexBuffer, vertexBufferRes);
-            updateVao = true;
         }
 
-        if (!indexBufferRes.assigned || currentIndexBufferSize < meshAllocator.getRequestedIndexBufferSize()) {
-            auto staleIndexBuffer = indexBufferRes;
+        auto indexCopyCount = currentIndexBufferSize;
+
+        if (!indexBuffer.assigned || currentIndexBufferSize < meshAllocator.getRequestedIndexBufferSize()) {
+            auto staleIndexBuffer = indexBuffer;
             auto d = IndexBufferDesc();
             d.size = meshAllocator.getRequestedIndexBufferSize();
-            indexBufferRes = builder.createIndexBuffer(d);
+            indexBuffer = builder.createIndexBuffer(d);
+            builder.persist(indexBuffer);
+            if (staleIndexBuffer.assigned)
+                builder.copy(staleIndexBuffer, indexBuffer, 0, 0, currentIndexBufferSize);
             currentIndexBufferSize = d.size;
-            builder.persist(indexBufferRes);
-            builder.copy(staleIndexBuffer, indexBufferRes);
-            updateVao = true;
         }
 
         auto camera = builder.getScene().rootNode.find<CameraProperty>().getProperty<CameraProperty>().camera;
         auto cameraTransform = builder.getScene().rootNode.find<CameraProperty>().getProperty<TransformProperty>().transform;
 
-        auto forwardColorRes = builder.getSlot(SLOT_FORWARD_COLOR);
-        auto forwardDepthRes = builder.getSlot(SLOT_FORWARD_DEPTH);
+        auto forwardColor = builder.getSlot(SLOT_FORWARD_COLOR);
+        auto forwardDepth = builder.getSlot(SLOT_FORWARD_DEPTH);
         auto deferredDepthRes = builder.getSlot(SLOT_DEFERRED_DEPTH);
 
         FrameGraphResource pointLightShadowMapRes;
@@ -424,39 +416,39 @@ namespace xng {
 
         auto atlasBuffers = atlas.getAtlasBuffers(builder);
 
-        builder.upload(pointLightBufferRes,
+        builder.upload(pointLightBuffer,
                        [scene]() {
                            auto lights = getPointLights(scene);
                            return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(PointLightData),
                                                                   reinterpret_cast<const uint8_t *>(lights.first.data()));
                        });
-        builder.upload(shadowPointLightBufferRes,
+        builder.upload(shadowPointLightBuffer,
                        [scene]() {
                            auto lights = getPointLights(scene);
                            return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(PointLightData),
                                                                   reinterpret_cast<const uint8_t *>(lights.first.data()));
                        });
 
-        builder.upload(dirLightBufferRes,
+        builder.upload(dirLightBuffer,
                        [scene]() {
                            auto lights = getDirLights(scene);
                            return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(DirectionalLightData),
                                                                   reinterpret_cast<const uint8_t *>(lights.first.data()));
                        });
-        builder.upload(shadowDirLightBufferRes,
+        builder.upload(shadowDirLightBuffer,
                        [scene]() {
                            auto lights = getDirLights(scene);
                            return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(DirectionalLightData),
                                                                   reinterpret_cast<const uint8_t *>(lights.first.data()));
                        });
 
-        builder.upload(spotLightBufferRes,
+        builder.upload(spotLightBuffer,
                        [scene]() {
                            auto lights = getSpotLights(scene);
                            return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(SpotLightData),
                                                                   reinterpret_cast<const uint8_t *>(lights.first.data()));
                        });
-        builder.upload(shadowSpotLightBufferRes,
+        builder.upload(shadowSpotLightBuffer,
                        [scene]() {
                            auto lights = getSpotLights(scene);
                            return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(SpotLightData),
@@ -464,15 +456,12 @@ namespace xng {
                        });
 
         // Clear textures
-        builder.clearTextureColor({forwardColorRes}, ColorRGBA::black());
-        builder.clearTextureFloat({forwardDepthRes}, 1);
+        builder.beginPass({FrameGraphAttachment::texture(forwardColor)}, FrameGraphAttachment::texture(forwardDepth));
+        builder.clearColor(ColorRGBA::black());
+        builder.clearDepth(1);
+        builder.finishPass();
 
-        if (updateVao || bindVao) {
-            bindVao = false;
-            builder.setVertexArrayObjectBuffers(vertexArrayObjectRes, vertexBufferRes, indexBufferRes, {});
-        }
-
-        meshAllocator.uploadMeshes(builder, vertexBufferRes, indexBufferRes);
+        meshAllocator.uploadMeshes(builder, vertexBuffer, indexBuffer);
 
         // Deallocate unused meshes
         std::set<Uri> dealloc;
@@ -655,8 +644,6 @@ namespace xng {
                     }
                 }
 
-                float viewSize[4] = {static_cast<float>(renderSize.x), static_cast<float>(renderSize.y), 0, 0};
-
                 builder.upload(shaderBufferRes,
                                [cameraTransform, shaderData, renderSize]() {
                                    auto viewPos = cameraTransform.getPosition();
@@ -680,11 +667,11 @@ namespace xng {
                                    return FrameGraphCommand::UploadBuffer(ret.size(), ret.data());
                                });
 
-                builder.beginPass({FrameGraphCommand::Attachment::texture(forwardColorRes)},
-                                  FrameGraphCommand::Attachment::texture(forwardDepthRes));
+                builder.beginPass({FrameGraphAttachment::texture(forwardColor)},
+                                  FrameGraphAttachment::texture(forwardDepth));
                 builder.setViewport({}, renderSize);
-                builder.bindPipeline(pipelineRes);
-                builder.bindVertexArrayObject(vertexArrayObjectRes);
+                builder.bindPipeline(pipeline);
+                builder.bindVertexBuffers(vertexBuffer, indexBuffer, {}, SkinnedMesh::getDefaultVertexLayout(), {});
                 builder.bindShaderResources({
                                                     {shaderBufferRes,                   {{VERTEX,   ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
                                                     {atlasBuffers.at(
@@ -712,13 +699,13 @@ namespace xng {
                                                     {atlasBuffers.at(
                                                             TEXTURE_ATLAS_16384x16384), {{{FRAGMENT, ShaderResource::READ}}}},
                                                     {deferredDepthRes,                  {{{FRAGMENT, ShaderResource::READ}}}},
-                                                    {pointLightBufferRes,               {{{FRAGMENT, ShaderResource::READ}}}},
-                                                    {shadowPointLightBufferRes,         {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {pointLightBuffer,                  {{{FRAGMENT, ShaderResource::READ}}}},
+                                                    {shadowPointLightBuffer,            {{{FRAGMENT, ShaderResource::READ}}}},
                                                     {pointLightShadowMapRes,            {{{FRAGMENT, ShaderResource::READ}}}},
-                                                    {dirLightBufferRes,                 {{FRAGMENT, ShaderResource::READ}}},
-                                                    {shadowDirLightBufferRes,           {{FRAGMENT, ShaderResource::READ}}},
-                                                    {spotLightBufferRes,                {{FRAGMENT, ShaderResource::READ}}},
-                                                    {shadowSpotLightBufferRes,          {{FRAGMENT, ShaderResource::READ}}},
+                                                    {dirLightBuffer,                    {{FRAGMENT, ShaderResource::READ}}},
+                                                    {shadowDirLightBuffer,              {{FRAGMENT, ShaderResource::READ}}},
+                                                    {spotLightBuffer,                   {{FRAGMENT, ShaderResource::READ}}},
+                                                    {shadowSpotLightBuffer,             {{FRAGMENT, ShaderResource::READ}}},
                                             });
                 builder.multiDrawIndexed(drawCalls, baseVertices);
                 builder.finishPass();

@@ -64,23 +64,30 @@ namespace xng {
         }
     }
 
-    void MeshAllocator::uploadMeshes(FrameGraphBuilder &builder, FrameGraphResource vertexBuffer, FrameGraphResource indexBuffer) {
+    void MeshAllocator::uploadMeshes(FrameGraphBuilder &builder,
+                                     FrameGraphResource vertexBuffer,
+                                     FrameGraphResource indexBuffer) {
         for (auto &pair: pendingMeshAllocations) {
             auto meshHandle = pendingMeshHandles.at(pair.first);
             for (auto i = 0; i < meshHandle.get().subMeshes.size() + 1; i++) {
                 auto &data = pair.second.data.at(i);
-                builder.upload(indexBuffer, 0, data.drawCall.offset, [pair, i, meshHandle](){
-                    assert(pair.second.data.size() > i);
-                    auto &curMesh = i == 0 ? meshHandle.get() : meshHandle.get().subMeshes.at(i - 1);
-                    auto vBuf = VertexStream().addVertices(curMesh.vertices).getVertexBuffer();
-                    return FrameGraphCommand::UploadBuffer(curMesh.indices.size() * sizeof(unsigned int), reinterpret_cast<const uint8_t *>(curMesh.indices.data()));
-                });
-                builder.upload(vertexBuffer, 0, data.drawCall.offset, [pair, i, meshHandle](){
-                    assert(pair.second.data.size() > i);
-                    auto &curMesh = i == 0 ? meshHandle.get() : meshHandle.get().subMeshes.at(i - 1);
-                    auto vBuf = VertexStream().addVertices(curMesh.vertices).getVertexBuffer();
-                    return FrameGraphCommand::UploadBuffer(vBuf.size(), reinterpret_cast<const uint8_t *>(vBuf.data()));
-                });
+                auto &curMesh = i == 0 ? meshHandle.get() : meshHandle.get().subMeshes.at(i - 1);
+
+                builder.upload(vertexBuffer,
+                               data.baseVertex * curMesh.vertexLayout.getSize(),
+                               [curMesh, i, pair]() {
+                                   assert(pair.second.data.size() > i);
+                                   auto vBuf = VertexStream().addVertices(curMesh.vertices).getVertexBuffer();
+                                   return FrameGraphCommand::UploadBuffer(vBuf.size(),
+                                                                          reinterpret_cast<const uint8_t *>(vBuf.data()));
+                               });
+                builder.upload(indexBuffer,
+                               data.drawCall.offset,
+                               [curMesh, i, pair]() {
+                                   assert(pair.second.data.size() > i);
+                                   return FrameGraphCommand::UploadBuffer(curMesh.indices.size() * sizeof(unsigned int),
+                                                                          reinterpret_cast<const uint8_t *>(curMesh.indices.data()));
+                               });
             }
             meshAllocations[pair.first] = pair.second;
         }

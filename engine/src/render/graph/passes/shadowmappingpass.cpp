@@ -61,12 +61,12 @@ namespace xng {
         desc.textureDesc.format = DEPTH_STENCIL;
         desc.textureCount = pointLightNodes.size();
 
-        auto pointLightShadowMapRes = builder.createTextureArrayBuffer(desc);
+        auto pointLightShadowMap = builder.createTextureArrayBuffer(desc);
 
-        builder.assignSlot(SLOT_SHADOW_MAP_POINT, pointLightShadowMapRes);
+        builder.assignSlot(SLOT_SHADOW_MAP_POINT, pointLightShadowMap);
 
-        if (!renderPipelineRes.assigned) {
-            renderPipelineRes = builder.createRenderPipeline(RenderPipelineDesc{
+        if (!renderPipeline.assigned) {
+            renderPipeline = builder.createRenderPipeline(RenderPipelineDesc{
                     .shaders = {{VERTEX,   shadowmappingpass_vs},
                                 {FRAGMENT, shadowmappingpass_fs},
                                 {GEOMETRY, shadowmappingpass_gs}},
@@ -89,15 +89,7 @@ namespace xng {
             });
         }
 
-        builder.persist(renderPipelineRes);
-
-        if (!vertexArrayObjectRes.assigned) {
-            vertexArrayObjectRes = builder.createVertexArrayObject(VertexArrayObjectDesc{
-                    .vertexLayout = SkinnedMesh::getDefaultVertexLayout()
-            });
-        }
-
-        builder.persist(vertexArrayObjectRes);
+        builder.persist(renderPipeline);
 
         std::set<Uri> usedMeshes;
 
@@ -125,45 +117,49 @@ namespace xng {
             }
         }
 
-        auto shaderBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto shaderBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .bufferType = RenderBufferType::HOST_VISIBLE,
                 .size = totalShaderBufferSize
         });
 
-        auto lightBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto lightBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .bufferType = HOST_VISIBLE,
                 .size = sizeof(LightData)
         });
 
-        auto boneBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto boneBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .bufferType = RenderBufferType::HOST_VISIBLE,
                 .size = sizeof(Mat4f) * boneCount
         });
 
-        if (vertexBufferRes.assigned) {
-            builder.persist(vertexBufferRes);
+        if (vertexBuffer.assigned) {
+            builder.persist(vertexBuffer);
         }
 
-        if (indexBufferRes.assigned) {
-            builder.persist(indexBufferRes);
+        if (indexBuffer.assigned) {
+            builder.persist(indexBuffer);
         }
 
-        if (!vertexBufferRes.assigned || currentVertexBufferSize < meshAllocator.getRequestedVertexBufferSize()) {
-            staleVertexBuffer = vertexBufferRes;
+        auto copyVertexSize = currentVertexBufferSize;
+
+        if (!vertexBuffer.assigned || currentVertexBufferSize < meshAllocator.getRequestedVertexBufferSize()) {
+            staleVertexBuffer = vertexBuffer;
             auto d = VertexBufferDesc();
             d.size = meshAllocator.getRequestedVertexBufferSize();
-            vertexBufferRes = builder.createVertexBuffer(d);
+            vertexBuffer = builder.createVertexBuffer(d);
             currentVertexBufferSize = d.size;
-            builder.persist(vertexBufferRes);
+            builder.persist(vertexBuffer);
         }
 
-        if (!indexBufferRes.assigned || currentIndexBufferSize < meshAllocator.getRequestedIndexBufferSize()) {
-            staleIndexBuffer = indexBufferRes;
+        auto copyIndexSize = currentVertexBufferSize;
+
+        if (!indexBuffer.assigned || currentIndexBufferSize < meshAllocator.getRequestedIndexBufferSize()) {
+            staleIndexBuffer = indexBuffer;
             auto d = IndexBufferDesc();
             d.size = meshAllocator.getRequestedIndexBufferSize();
-            indexBufferRes = builder.createIndexBuffer(d);
+            indexBuffer = builder.createIndexBuffer(d);
             currentIndexBufferSize = d.size;
-            builder.persist(indexBufferRes);
+            builder.persist(indexBuffer);
         }
 
         TextureArrayBufferDesc texDesc;
@@ -171,25 +167,17 @@ namespace xng {
         texDesc.textureCount = 1;
         auto textureRes = builder.createTextureArrayBuffer(texDesc);
 
-        bool updateVao = false;
         if (staleVertexBuffer.assigned) {
-            builder.copy(staleVertexBuffer, vertexBufferRes);
+            builder.copy(staleVertexBuffer, vertexBuffer, 0, 0, copyVertexSize);
             staleVertexBuffer = {};
-            updateVao = true;
         }
 
         if (staleIndexBuffer.assigned) {
-            builder.copy(staleIndexBuffer, indexBufferRes);
+            builder.copy(staleIndexBuffer, indexBuffer, 0, 0, copyIndexSize);
             staleIndexBuffer = {};
-            updateVao = true;
         }
 
-        if (updateVao || bindVao) {
-            bindVao = false;
-            builder.setVertexArrayObjectBuffers(vertexArrayObjectRes, vertexBufferRes, indexBufferRes, {});
-        }
-
-        meshAllocator.uploadMeshes(builder, vertexBufferRes, indexBufferRes);
+        meshAllocator.uploadMeshes(builder, vertexBuffer, indexBuffer);
 
         // Deallocate unused meshes
         std::set<Uri> dealloc;
@@ -202,7 +190,9 @@ namespace xng {
             meshAllocator.deallocateMesh(ResourceHandle<SkinnedMesh>(uri));
         }
 
-        builder.clearTextureFloat({pointLightShadowMapRes});
+        builder.beginPass({}, FrameGraphAttachment::textureArrayLayered(pointLightShadowMap));
+        builder.clearDepth(1);
+        builder.finishPass();
 
         for (auto li = 0; li < pointLightNodes.size(); li++) {
             auto &lightNode = pointLightNodes.at(li);
@@ -241,7 +231,7 @@ namespace xng {
 
             lightData.layer[0] = static_cast<int>(li);
 
-            builder.upload(lightBufferRes,
+            builder.upload(lightBuffer,
                            [lightData]() {
                                return FrameGraphCommand::UploadBuffer(sizeof(LightData),
                                                                       reinterpret_cast<const uint8_t *>(&lightData));
@@ -316,26 +306,26 @@ namespace xng {
                     }
                 }
 
-                builder.beginPass({FrameGraphCommand::Attachment::textureArrayLayered(textureRes)},
-                                  FrameGraphCommand::Attachment::textureArrayLayered(pointLightShadowMapRes));
+                builder.beginPass({FrameGraphAttachment::textureArrayLayered(textureRes)},
+                                  FrameGraphAttachment::textureArrayLayered(pointLightShadowMap));
                 builder.setViewport({}, resolution);
-                builder.bindPipeline(renderPipelineRes);
-                builder.bindVertexArrayObject(vertexArrayObjectRes);
+                builder.bindPipeline(renderPipeline);
+                builder.bindVertexBuffers(vertexBuffer, indexBuffer, {}, SkinnedMesh::getDefaultVertexLayout(), {});
 
-                builder.upload(shaderBufferRes,
+                builder.upload(shaderBuffer,
                                [shaderData]() {
                                    return FrameGraphCommand::UploadBuffer(shaderData.size() * sizeof(ShaderDrawData),
                                                                           reinterpret_cast<const uint8_t *>(shaderData.data()));
                                });
-                builder.upload(boneBufferRes,
+                builder.upload(boneBuffer,
                                [boneMatrices]() {
                                    return FrameGraphCommand::UploadBuffer(boneMatrices.size() * sizeof(ShaderDrawData),
                                                                           reinterpret_cast<const uint8_t *>(boneMatrices.data()));
                                });
                 builder.bindShaderResources({
-                                                    {shaderBufferRes, {{VERTEX, ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
-                                                    {boneBufferRes,   {{VERTEX, ShaderResource::READ}}},
-                                                    {lightBufferRes,  {{VERTEX, ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
+                                                    {shaderBuffer, {{VERTEX, ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
+                                                    {boneBuffer,   {{VERTEX, ShaderResource::READ}}},
+                                                    {lightBuffer,  {{VERTEX, ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
                                             });
 
                 builder.multiDrawIndexed(drawCalls, baseVertices);

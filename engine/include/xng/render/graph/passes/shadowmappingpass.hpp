@@ -45,11 +45,10 @@ namespace xng {
 
         MeshAllocator meshAllocator;
 
-        FrameGraphResource renderPipelineRes;
+        FrameGraphResource renderPipeline;
 
-        FrameGraphResource vertexBufferRes;
-        FrameGraphResource indexBufferRes;
-        FrameGraphResource vertexArrayObjectRes;
+        FrameGraphResource vertexBuffer;
+        FrameGraphResource indexBuffer;
 
         FrameGraphResource staleVertexBuffer;
         FrameGraphResource staleIndexBuffer;

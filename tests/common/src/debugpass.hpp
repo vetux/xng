@@ -37,21 +37,16 @@ struct ShaderData {
 class DebugPass : public FrameGraphPass {
 public:
     void setup(FrameGraphBuilder &builder) override {
-        if (!vertexBufferRes.assigned) {
+        if (!vertexBuffer.assigned) {
             VertexBufferDesc desc;
             desc.size = mesh.vertices.size() * mesh.vertexLayout.getSize();
-            vertexBufferRes = builder.createVertexBuffer(desc);
-
-            VertexArrayObjectDesc oDesc;
-            oDesc.vertexLayout = mesh.vertexLayout;
-            vertexArrayObjectRes = builder.createVertexArrayObject(oDesc);
+            vertexBuffer = builder.createVertexBuffer(desc);
         }
 
-        builder.persist(vertexBufferRes);
-        builder.persist(vertexArrayObjectRes);
+        builder.persist(vertexBuffer);
 
-        if (!pipelineRes.assigned) {
-            pipelineRes = builder.createRenderPipeline(RenderPipelineDesc{
+        if (!pipeline.assigned) {
+            pipeline = builder.createRenderPipeline(RenderPipelineDesc{
                     .shaders = {
                             {VERTEX,   debugpass_vs},
                             {FRAGMENT, debugpass_fs}
@@ -64,12 +59,12 @@ public:
             });
         }
 
-        builder.persist(pipelineRes);
+        builder.persist(pipeline);
 
-        auto shaderBufferRes = builder.createShaderUniformBuffer(
+        auto shaderBuffer = builder.createShaderUniformBuffer(
                 ShaderUniformBufferDesc{.size =  sizeof(::ShaderData)});
 
-        auto displayTextureRes = builder.getSlot(tex);
+        auto displayTexture = builder.getSlot(tex);
 
         auto backBuffer = builder.getBackBuffer();
 
@@ -77,10 +72,9 @@ public:
         if (!quadAllocated) {
             quadAllocated = true;
             auto verts = VertexStream().addVertices(mesh.vertices).getVertexBuffer();
-            builder.upload(vertexBufferRes, [verts]() {
+            builder.upload(vertexBuffer, [verts]() {
                 return FrameGraphCommand::UploadBuffer(verts.size(), verts.data());
             });
-            builder.setVertexArrayObjectBuffers(vertexArrayObjectRes, vertexBufferRes, {}, {});
         }
 
         ::ShaderData buf{};
@@ -91,21 +85,21 @@ public:
         buf.visualizeDepth_near_far[1] = camera.nearClip;
         buf.visualizeDepth_near_far[2] = 100;
 
-        builder.upload(shaderBufferRes, [buf]() {
+        builder.upload(shaderBuffer, [buf]() {
             return FrameGraphCommand::UploadBuffer(sizeof(buf), reinterpret_cast<const uint8_t *>(&buf));
         });
 
         builder.beginPass(backBuffer);
         builder.setViewport({}, builder.getBackBufferDescription().size);
 
-        builder.renderClear(ColorRGBA(0), 1);
+        builder.clearColor(ColorRGBA(0));
+        builder.clearDepth(1);
 
-        builder.bindPipeline(pipelineRes);
-        builder.bindVertexArrayObject(vertexArrayObjectRes);
+        builder.bindPipeline(pipeline);
+        builder.bindVertexBuffers(vertexBuffer, {}, {}, mesh.vertexLayout, {});
         builder.bindShaderResources({
-                                            {shaderBufferRes,
-                                                                {{FRAGMENT, ShaderResource::READ}}},
-                                            {displayTextureRes, {{FRAGMENT, ShaderResource::READ}}}
+                                            {shaderBuffer,      {{FRAGMENT, ShaderResource::READ}}},
+                                            {displayTexture, {{FRAGMENT, ShaderResource::READ}}}
 
                                     });
         builder.drawArray(DrawCall(0, mesh.vertices.size()));
@@ -181,10 +175,8 @@ private:
 
     FrameGraphSlot tex = SLOT_SCREEN_COLOR;
 
-    FrameGraphResource pipelineRes;
-
-    FrameGraphResource vertexBufferRes;
-    FrameGraphResource vertexArrayObjectRes;
+    FrameGraphResource pipeline;
+    FrameGraphResource vertexBuffer;
 
     bool quadAllocated = false;
 };

@@ -61,8 +61,8 @@ namespace xng {
         auto renderSize = builder.getBackBufferDescription().size
                           * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
 
-        if (!renderPipelineRes.assigned) {
-            renderPipelineRes = builder.createRenderPipeline(RenderPipelineDesc{
+        if (!renderPipeline.assigned) {
+            renderPipeline = builder.createRenderPipeline(RenderPipelineDesc{
                     .shaders = {{VERTEX,   constructionpass_vs},
                                 {FRAGMENT, constructionpass_fs}},
                     .bindings = {
@@ -93,10 +93,10 @@ namespace xng {
             });
         }
 
-        builder.persist(renderPipelineRes);
+        builder.persist(renderPipeline);
 
-        if (!renderPipelineSkinnedRes.assigned) {
-            renderPipelineSkinnedRes = builder.createRenderPipeline(RenderPipelineDesc{
+        if (!renderPipelineSkinned.assigned) {
+            renderPipelineSkinned = builder.createRenderPipeline(RenderPipelineDesc{
                     .shaders = {{VERTEX,   constructionpass_vs_skinned},
                                 {FRAGMENT, constructionpass_fs}},
                     .bindings = {
@@ -128,15 +128,7 @@ namespace xng {
             });
         }
 
-        builder.persist(renderPipelineSkinnedRes);
-
-        if (!vertexArrayObjectRes.assigned) {
-            vertexArrayObjectRes = builder.createVertexArrayObject(VertexArrayObjectDesc{
-                    .vertexLayout = SkinnedMesh::getDefaultVertexLayout()
-            });
-        }
-
-        builder.persist(vertexArrayObjectRes);
+        builder.persist(renderPipelineSkinned);
 
         auto desc = TextureBufferDesc();
         desc.size = renderSize;
@@ -156,6 +148,7 @@ namespace xng {
         auto gBufferObjectShadows = builder.createTextureBuffer(desc);
 
         desc.format = DEPTH_STENCIL;
+
         auto gBufferDepth = builder.createTextureBuffer(desc);
 
         std::vector<Node> objects;
@@ -246,31 +239,37 @@ namespace xng {
 
         atlas.setup(builder);
 
-        if (vertexBufferRes.assigned) {
-            builder.persist(vertexBufferRes);
+        if (vertexBuffer.assigned) {
+            builder.persist(vertexBuffer);
         }
 
-        if (indexBufferRes.assigned) {
-            builder.persist(indexBufferRes);
+        if (indexBuffer.assigned) {
+            builder.persist(indexBuffer);
         }
 
-        if (!vertexBufferRes.assigned || currentVertexBufferSize < meshAllocator.getRequestedVertexBufferSize()) {
-            staleVertexBuffer = vertexBufferRes;
+        if (!vertexBuffer.assigned || currentVertexBufferSize < meshAllocator.getRequestedVertexBufferSize()) {
+            auto staleVertexBuffer = vertexBuffer;
             auto d = VertexBufferDesc();
             d.size = meshAllocator.getRequestedVertexBufferSize();
-            vertexBufferRes = builder.createVertexBuffer(d);
+            vertexBuffer = builder.createVertexBuffer(d);
+            builder.persist(vertexBuffer);
+            if (staleVertexBuffer.assigned)
+                builder.copy(staleVertexBuffer, vertexBuffer, 0, 0, currentVertexBufferSize);
             currentVertexBufferSize = d.size;
-            builder.persist(vertexBufferRes);
         }
 
-        if (!indexBufferRes.assigned || currentIndexBufferSize < meshAllocator.getRequestedIndexBufferSize()) {
-            staleIndexBuffer = indexBufferRes;
+        if (!indexBuffer.assigned || currentIndexBufferSize < meshAllocator.getRequestedIndexBufferSize()) {
+            auto staleIndexBuffer = indexBuffer;
             auto d = IndexBufferDesc();
             d.size = meshAllocator.getRequestedIndexBufferSize();
-            indexBufferRes = builder.createIndexBuffer(d);
+            indexBuffer = builder.createIndexBuffer(d);
+            builder.persist(indexBuffer);
+            if (staleIndexBuffer.assigned)
+                builder.copy(staleIndexBuffer, indexBuffer, 0, 0, currentIndexBufferSize);
             currentIndexBufferSize = d.size;
-            builder.persist(indexBufferRes);
         }
+
+        meshAllocator.uploadMeshes(builder, vertexBuffer, indexBuffer);
 
         auto cameraNode = builder.getScene().rootNode.find<CameraProperty>();
         auto camera = cameraNode.getProperty<CameraProperty>().camera;
@@ -285,26 +284,6 @@ namespace xng {
         builder.assignSlot(SLOT_GBUFFER_DEPTH, gBufferDepth);
 
         auto atlasBuffers = atlas.getAtlasBuffers(builder);
-
-        bool updateVao = false;
-        if (staleVertexBuffer.assigned) {
-            builder.copy(staleVertexBuffer, vertexBufferRes);
-            staleVertexBuffer = {};
-            updateVao = true;
-        }
-
-        if (staleIndexBuffer.assigned) {
-            builder.copy(staleIndexBuffer, indexBufferRes);
-            staleIndexBuffer = {};
-            updateVao = true;
-        }
-
-        if (updateVao || bindVao) {
-            bindVao = false;
-            builder.setVertexArrayObjectBuffers(vertexArrayObjectRes, vertexBufferRes, indexBufferRes, {});
-        }
-
-        meshAllocator.uploadMeshes(builder, vertexBufferRes, indexBufferRes);
 
         // Deallocate unused meshes
         std::set<Uri> dealloc;
@@ -510,7 +489,7 @@ namespace xng {
 
             builder.upload(shaderBufferRes,
                            [shaderData]() {
-                               return FrameGraphCommand::UploadBuffer{shaderData.size() * sizeof(Mat4f),
+                               return FrameGraphCommand::UploadBuffer{shaderData.size() * sizeof(ShaderDrawData),
                                                                       reinterpret_cast<const uint8_t *>(shaderData.data())};
                            });
 
@@ -521,19 +500,19 @@ namespace xng {
                            });
 
             builder.beginPass({
-                                      FrameGraphCommand::Attachment::texture(gBufferPosition),
-                                      FrameGraphCommand::Attachment::texture(gBufferNormal),
-                                      FrameGraphCommand::Attachment::texture(gBufferTangent),
-                                      FrameGraphCommand::Attachment::texture(gBufferRoughnessMetallicAmbientOcclusion),
-                                      FrameGraphCommand::Attachment::texture(gBufferAlbedo),
-                                      FrameGraphCommand::Attachment::texture(gBufferObjectShadows)
+                                      FrameGraphAttachment::texture(gBufferPosition),
+                                      FrameGraphAttachment::texture(gBufferNormal),
+                                      FrameGraphAttachment::texture(gBufferTangent),
+                                      FrameGraphAttachment::texture(gBufferRoughnessMetallicAmbientOcclusion),
+                                      FrameGraphAttachment::texture(gBufferAlbedo),
+                                      FrameGraphAttachment::texture(gBufferObjectShadows)
                               },
-                              FrameGraphCommand::Attachment::texture(gBufferDepth));
+                              FrameGraphAttachment::texture(gBufferDepth));
 
             builder.setViewport({}, renderSize);
 
-            builder.bindPipeline(renderPipelineSkinnedRes);
-            builder.bindVertexArrayObject(vertexArrayObjectRes);
+            builder.bindPipeline(renderPipelineSkinned);
+            builder.bindVertexBuffers(vertexBuffer, indexBuffer, {}, SkinnedMesh::getDefaultVertexLayout(), {});
             builder.bindShaderResources(std::vector<FrameGraphCommand::ShaderData>{
                     {shaderBufferRes,                            {{VERTEX, ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
                     {atlasBuffers.at(TEXTURE_ATLAS_8x8),         {{{FRAGMENT, ShaderResource::READ}}}},
@@ -550,6 +529,9 @@ namespace xng {
                     {atlasBuffers.at(TEXTURE_ATLAS_16384x16384), {{{FRAGMENT, ShaderResource::READ}}}},
                     {boneBufferRes,                              {{VERTEX, ShaderResource::READ}}},
             });
+
+            builder.clearColor(ColorRGBA::black());
+            builder.clearDepth(1);
 
             builder.multiDrawIndexed(drawCalls, baseVertices);
 

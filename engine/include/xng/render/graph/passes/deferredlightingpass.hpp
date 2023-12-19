@@ -45,10 +45,8 @@ namespace xng {
     private:
         Mesh mesh = Mesh::normalizedQuad();
 
-        FrameGraphResource pipelineRes;
-
-        FrameGraphResource vertexBufferRes;
-        FrameGraphResource vertexArrayObjectRes;
+        FrameGraphResource pipeline;
+        FrameGraphResource vertexBuffer;
 
         bool quadAllocated = false;
     };
