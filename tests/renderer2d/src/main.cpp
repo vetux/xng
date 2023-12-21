@@ -219,7 +219,7 @@ int main(int argc, char *argv[]) {
     auto &input = window->getInput();
     auto target = window->getRenderTarget(*renderDevice);
     auto fs = std::ifstream("assets/fonts/Sono/static/Sono/Sono-Bold.ttf", std::ios_base::in | std::ios::binary);
-    auto font = fontDriver.createFont(fs);
+    auto font = fontDriver.createFontRenderer(fs);
 
     Renderer2D ren(*renderDevice, shaderCompiler, shaderDecompiler);
 
