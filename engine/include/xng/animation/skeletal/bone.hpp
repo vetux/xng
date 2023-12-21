@@ -23,7 +23,7 @@
 #include "xng/math/matrix.hpp"
 
 namespace xng {
-    struct VertexWeight : public Messageable{
+    struct VertexWeight : public Messageable {
         size_t vertex{}; // The index of the vertex in Mesh::vertices
         float weight{};
 

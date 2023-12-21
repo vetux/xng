@@ -179,35 +179,35 @@ namespace xng {
         switch (obj->getType()) {
             case RenderObject::RENDER_OBJECT_VERTEX_BUFFER: {
                 auto &vb = dynamic_cast<VertexBuffer &>(*obj);
-                vb.upload(data.offset, buffer.data, buffer.size);
+                vb.upload(data.offset, buffer.data.data(), buffer.data.size());
                 break;
             }
             case RenderObject::RENDER_OBJECT_TEXTURE_BUFFER: {
                 auto &tb = dynamic_cast<TextureBuffer &>(*obj);
                 if (tb.getDescription().textureType == TEXTURE_CUBE_MAP)
-                    tb.upload(data.face, data.colorFormat, buffer.data, buffer.size);
+                    tb.upload(data.face, data.colorFormat, buffer.data.data(), buffer.data.size());
                 else
-                    tb.upload(data.colorFormat, buffer.data, buffer.size);
+                    tb.upload(data.colorFormat, buffer.data.data(), buffer.data.size());
                 break;
             }
             case RenderObject::RENDER_OBJECT_TEXTURE_ARRAY_BUFFER: {
                 auto &tb = dynamic_cast<TextureArrayBuffer &>(*obj);
-                tb.upload(data.index, data.colorFormat, buffer.data, buffer.size);
+                tb.upload(data.index, data.colorFormat, buffer.data.data(), buffer.data.size());
                 break;
             }
             case RenderObject::RENDER_OBJECT_SHADER_UNIFORM_BUFFER: {
                 auto &sb = dynamic_cast<ShaderUniformBuffer &>(*obj);
-                sb.upload(data.offset, buffer.data, buffer.size);
+                sb.upload(data.offset, buffer.data.data(), buffer.data.size());
                 break;
             }
             case RenderObject::RENDER_OBJECT_SHADER_STORAGE_BUFFER: {
                 auto &sb = dynamic_cast<ShaderStorageBuffer &>(*obj);
-                sb.upload(data.offset, buffer.data, buffer.size);
+                sb.upload(data.offset, buffer.data.data(), buffer.data.size());
                 break;
             }
             case RenderObject::RENDER_OBJECT_INDEX_BUFFER: {
                 auto &ib = dynamic_cast<IndexBuffer &>(*obj);
-                ib.upload(data.offset, buffer.data, buffer.size);
+                ib.upload(data.offset, buffer.data.data(), buffer.data.size());
                 break;
             }
             default:

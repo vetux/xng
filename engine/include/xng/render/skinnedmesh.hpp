@@ -98,7 +98,7 @@ namespace xng {
 
         SkinnedMesh() = default;
 
-        SkinnedMesh(const Mesh &mesh)
+        explicit SkinnedMesh(const Mesh &mesh)
                 : Mesh(mesh), rig() {}
 
         SkinnedMesh(Primitive primitive, std::vector<Vertex> vertices)
@@ -109,6 +109,16 @@ namespace xng {
 
         SkinnedMesh(Primitive primitive, std::vector<Vertex> vertices, std::vector<unsigned int> indices, Rig rig)
                 : Mesh(primitive, std::move(vertices), std::move(indices)), rig(std::move(rig)) {}
+
+        SkinnedMesh(const SkinnedMesh &other) = default;
+
+        SkinnedMesh(SkinnedMesh &&other) = default;
+
+        ~SkinnedMesh() override = default;
+
+        SkinnedMesh &operator=(const SkinnedMesh &other) = default;
+
+        SkinnedMesh &operator=(SkinnedMesh &&other) = default;
 
         std::unique_ptr<Resource> clone() override {
             return std::make_unique<SkinnedMesh>(*this);

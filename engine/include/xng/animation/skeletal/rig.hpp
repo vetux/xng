@@ -32,12 +32,22 @@ namespace xng {
         Rig() = default;
 
         explicit Rig(std::vector<Bone> bones, std::map<std::string, std::string> boneParentMapping)
-                :  bones(std::move(bones)), boneParentMapping(std::move(boneParentMapping)) {
+                : bones(std::move(bones)), boneParentMapping(std::move(boneParentMapping)) {
             for (auto i = 0; i < this->bones.size(); i++) {
                 auto &bone = this->bones.at(i);
                 boneNameMapping[bone.name] = i;
             }
         }
+
+        Rig(const Rig &other) = default;
+
+        Rig(Rig &&other) = default;
+
+        ~Rig() = default;
+
+        Rig &operator=(const Rig &other) = default;
+
+        Rig &operator=(Rig &&other) = default;
 
         const std::vector<Bone> &getBones() const { return bones; }
 
@@ -73,7 +83,7 @@ namespace xng {
             return ret;
         }
 
-        operator bool() const {
+        bool hasBones() {
             return !bones.empty();
         }
 

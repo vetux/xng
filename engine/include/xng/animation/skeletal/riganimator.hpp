@@ -49,7 +49,7 @@ namespace xng {
     public:
         RigAnimator() = default;
 
-        RigAnimator(Rig rig);
+        explicit RigAnimator(Rig rig);
 
         /**
          * Advance the animation channels by deltaTime and update the animated rig.

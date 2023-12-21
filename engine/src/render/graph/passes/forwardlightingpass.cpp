@@ -282,7 +282,7 @@ namespace xng {
             usedMeshes.insert(meshProp.mesh.getUri());
             meshAllocator.prepareMeshAllocation(meshProp.mesh);
 
-            auto &mesh = meshProp.mesh.get();
+            Mesh mesh = meshProp.mesh.get();
 
             auto it = node.properties.find(typeid(MaterialProperty));
             MaterialProperty matProp;
@@ -509,7 +509,7 @@ namespace xng {
                     }
 
                     for (auto i = 0; i < meshProp.mesh.get().subMeshes.size() + 1; i++) {
-                        auto &mesh = i <= 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
+                        Mesh mesh = i <= 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
 
                         auto material = mesh.material.get();
                         auto mi = matProp.materials.find(i);

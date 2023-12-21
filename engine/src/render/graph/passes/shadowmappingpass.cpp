@@ -99,7 +99,7 @@ namespace xng {
                 usedMeshes.insert(meshProp.mesh.getUri());
 
                 for (auto i = 0; i < meshProp.mesh.get().subMeshes.size() + 1; i++) {
-                    auto &mesh = i == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
+                    Mesh mesh = i == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
 
                     if (node.hasProperty<ShadowProperty>()) {
                         if (!node.getProperty<ShadowProperty>().castShadows)
@@ -256,7 +256,7 @@ namespace xng {
                     for (auto mi = 0; mi < meshProp.mesh.get().subMeshes.size() + 1; mi++) {
                         auto model = node.getProperty<TransformProperty>().transform.model();
 
-                        auto &mesh = mi == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(mi - 1);
+                        Mesh mesh = mi == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(mi - 1);
 
                         if (node.hasProperty<ShadowProperty>()) {
                             if (!node.getProperty<ShadowProperty>().castShadows)

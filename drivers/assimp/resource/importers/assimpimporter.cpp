@@ -380,7 +380,7 @@ namespace xng {
                 std::string name = assMesh->mName.C_Str();
                 Uri meshUri(path.getScheme(), path.getFile(), name);
                 if (mesh.vertexLayout.getSize() == 0) {
-                    mesh = convertMesh(*assMesh, materialResourceHandles);
+                    mesh = SkinnedMesh(convertMesh(*assMesh, materialResourceHandles));
                     meshPtr = assMesh;
                 } else {
                     mesh.subMeshes.emplace_back(convertMesh(*assMesh, materialResourceHandles));

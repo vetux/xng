@@ -64,19 +64,11 @@ namespace xng {
         } type;
 
         struct UploadBuffer {
-            size_t size;
-            uint8_t *data;
+            std::vector<uint8_t> data;
 
             UploadBuffer() = default;
 
-            UploadBuffer(size_t size, const uint8_t *v) : size(size),
-                                                          data(new uint8_t[size]) {
-                std::memcpy(data, v, size);
-            }
-
-            ~UploadBuffer() {
-                delete[] data;
-            }
+            UploadBuffer(size_t size, const uint8_t *v) : data(v, v + size) {}
         };
 
         struct UploadData {

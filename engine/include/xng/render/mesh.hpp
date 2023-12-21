@@ -113,14 +113,6 @@ namespace xng {
 
         static Mesh sphere(float radius, int latitudes, int longitudes);
 
-        ~Mesh() override = default;
-
-        std::unique_ptr<Resource> clone() override {
-            return std::make_unique<Mesh>(*this);
-        }
-
-        std::type_index getTypeIndex() const override;
-
         Primitive primitive = POINTS;
         std::vector<Vertex> vertices;
         std::vector<unsigned int> indices;
@@ -160,6 +152,22 @@ namespace xng {
                   material(std::move(material)),
                   subMeshes(std::move(subMeshes)) {}
 
+        Mesh(const Mesh &other) = default;
+
+        Mesh(Mesh &&other) = default;
+
+        ~Mesh() override = default;
+
+        Mesh &operator=(const Mesh &other) = default;
+
+        Mesh &operator=(Mesh &&other) = default;
+
+        std::unique_ptr<Resource> clone() override {
+            return std::make_unique<Mesh>(*this);
+        }
+
+        std::type_index getTypeIndex() const override;
+
         size_t polyCount() const {
             if (indices.empty())
                 return vertices.size() / primitive;
@@ -168,11 +176,11 @@ namespace xng {
         }
 
         bool isLoaded() const override {
-            if (!material.isLoaded() || !material.get().isLoaded()){
+            if (!material.isLoaded() || !material.get().isLoaded()) {
                 return false;
             } else {
-                for (auto &mesh : subMeshes){
-                    if (!mesh.isLoaded()){
+                for (auto &mesh: subMeshes) {
+                    if (!mesh.isLoaded()) {
                         return false;
                     }
                 }

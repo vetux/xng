@@ -161,7 +161,7 @@ namespace xng {
                 usedMeshes.insert(meshProp.mesh.getUri());
 
                 for (auto i = 0; i < meshProp.mesh.get().subMeshes.size() + 1; i++) {
-                    auto mesh = i == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
+                    Mesh mesh = i == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
 
                     Material mat = mesh.material.get();
 
@@ -214,12 +214,12 @@ namespace xng {
             }
         }
 
-        auto shaderBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto shaderBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .bufferType = RenderBufferType::HOST_VISIBLE,
                 .size = totalShaderBufferSize
         });
 
-        auto boneBufferRes = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+        auto boneBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .bufferType = RenderBufferType::HOST_VISIBLE,
                 .size = sizeof(Mat4f) * boneCount
         });
@@ -326,7 +326,7 @@ namespace xng {
             for (auto i = 0; i < meshProp.mesh.get().subMeshes.size() + 1; i++) {
                 auto model = node.getProperty<TransformProperty>().transform.model();
 
-                auto &mesh = i == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
+                Mesh mesh = i == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
 
                 auto material = mesh.material.get();
 
@@ -344,7 +344,6 @@ namespace xng {
                     boneOffset = -1;
                 } else {
                     for (auto &bone: mesh.bones) {
-                        Mat4f mat;
                         auto bt = boneTransforms.find(bone);
                         if (bt != boneTransforms.end()) {
                             boneMatrices.emplace_back(bt->second);
@@ -473,13 +472,13 @@ namespace xng {
         }
 
         if (!shaderData.empty()) {
-            builder.upload(shaderBufferRes,
+            builder.upload(shaderBuffer,
                            [shaderData]() {
                                return FrameGraphCommand::UploadBuffer{shaderData.size() * sizeof(ShaderDrawData),
                                                                       reinterpret_cast<const uint8_t *>(shaderData.data())};
                            });
 
-            builder.upload(boneBufferRes,
+            builder.upload(boneBuffer,
                            [boneMatrices]() {
                                return FrameGraphCommand::UploadBuffer{boneMatrices.size() * sizeof(Mat4f),
                                                                       reinterpret_cast<const uint8_t *>(boneMatrices.data())};
@@ -500,9 +499,9 @@ namespace xng {
             builder.bindPipeline(renderPipelineSkinned);
             builder.bindVertexBuffers(vertexBuffer, indexBuffer, {}, SkinnedMesh::getDefaultVertexLayout(), {});
             builder.bindShaderResources(std::vector<FrameGraphCommand::ShaderData>{
-                    {shaderBufferRes,                            {{VERTEX, ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
-                    {atlasBuffers.at(TEXTURE_ATLAS_8x8),         {{{FRAGMENT, ShaderResource::READ}}}},
-                    {atlasBuffers.at(TEXTURE_ATLAS_16x16),       {{{FRAGMENT, ShaderResource::READ}}}},
+                    {shaderBuffer,                             {{VERTEX, ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
+                    {atlasBuffers.at(TEXTURE_ATLAS_8x8),       {{{FRAGMENT, ShaderResource::READ}}}},
+                    {atlasBuffers.at(TEXTURE_ATLAS_16x16),     {{{FRAGMENT, ShaderResource::READ}}}},
                     {atlasBuffers.at(TEXTURE_ATLAS_32x32),       {{{FRAGMENT, ShaderResource::READ}}}},
                     {atlasBuffers.at(TEXTURE_ATLAS_64x64),       {{{FRAGMENT, ShaderResource::READ}}}},
                     {atlasBuffers.at(TEXTURE_ATLAS_128x128),     {{{FRAGMENT, ShaderResource::READ}}}},
@@ -513,7 +512,7 @@ namespace xng {
                     {atlasBuffers.at(TEXTURE_ATLAS_4096x4096),   {{{FRAGMENT, ShaderResource::READ}}}},
                     {atlasBuffers.at(TEXTURE_ATLAS_8192x8192),   {{{FRAGMENT, ShaderResource::READ}}}},
                     {atlasBuffers.at(TEXTURE_ATLAS_16384x16384), {{{FRAGMENT, ShaderResource::READ}}}},
-                    {boneBufferRes,                              {{VERTEX, ShaderResource::READ}}},
+                    {boneBuffer,                                 {{VERTEX, ShaderResource::READ}}},
             });
 
             builder.clearColor(ColorRGBA::black());
