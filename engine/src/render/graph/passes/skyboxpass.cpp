@@ -81,7 +81,7 @@ namespace xng {
                 if (skybox.texture != currentSkybox.texture) {
                     skyboxTexture = builder.createTextureBuffer(currentSkybox.texture.get().description);
                     for (auto i = 0; i <= CubeMapFace::NEGATIVE_Z; i++) {
-                        auto img = skybox.texture.get().images.at(static_cast<CubeMapFace>(i));
+                        auto img = currentSkybox.texture.get().images.at(static_cast<CubeMapFace>(i));
                         builder.upload(skyboxTexture,
                                        0,
                                        0,
