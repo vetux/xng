@@ -129,6 +129,14 @@ namespace xng {
 
         Camera camera;
     };
+
+    struct WireframeProperty : public Property {
+        std::type_index getType() override {
+            return typeid(CameraProperty);
+        }
+
+        ColorRGBA wireColor;
+    };
 }
 
 #endif //XENGINE_PROPERTY_HPP

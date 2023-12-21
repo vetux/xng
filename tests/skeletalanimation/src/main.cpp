@@ -80,10 +80,7 @@ int main(int argc, char *argv[]) {
 
     FrameGraphPipeline pipeline = FrameGraphPipeline()
             .addPass(std::make_shared<ClearPass>())
-            .addPass(std::make_shared<ConstructionPass>())
-            .addPass(std::make_shared<DeferredLightingPass>())
-            .addPass(std::make_shared<ForwardLightingPass>())
-            .addPass(std::make_shared<CompositePass>())
+            .addPass(std::make_shared<WireframePass>())
             .addPass(std::make_shared<PresentationPass>());
 
     renderer.setPipeline(pipeline);
