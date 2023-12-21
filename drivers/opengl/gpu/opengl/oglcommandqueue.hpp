@@ -397,6 +397,8 @@ namespace xng::opengl {
                     }
 #endif
 
+                    glEnable(GL_LINE_SMOOTH); // Enable smooth lines by default
+
                     checkGLError();
 
                     runningPass = true;
