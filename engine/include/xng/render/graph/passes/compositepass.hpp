@@ -29,6 +29,8 @@ namespace xng {
      */
     class XENGINE_EXPORT CompositePass : public FrameGraphPass {
     public:
+        ~CompositePass() override = default;
+
         void setup(FrameGraphBuilder &builder) override;
 
         std::type_index getTypeIndex() const override;

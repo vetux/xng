@@ -33,6 +33,8 @@ namespace xng {
      */
     class XENGINE_EXPORT PresentationPass : public FrameGraphPass {
     public:
+        ~PresentationPass() override = default;
+
         void setup(FrameGraphBuilder &builder) override;
 
         std::type_index getTypeIndex() const override { return typeid(PresentationPass); };

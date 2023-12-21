@@ -33,6 +33,8 @@ namespace xng {
      */
     class XENGINE_EXPORT SkyboxPass : public FrameGraphPass {
     public:
+        ~SkyboxPass() override = default;
+
         void setup(FrameGraphBuilder &builder) override;
 
         std::type_index getTypeIndex() const override;

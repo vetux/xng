@@ -37,6 +37,8 @@ namespace xng {
      */
     class XENGINE_EXPORT WireframePass : public FrameGraphPass {
     public:
+        ~WireframePass() override = default;
+
         void setup(FrameGraphBuilder &builder) override;
 
         std::type_index getTypeIndex() const override;

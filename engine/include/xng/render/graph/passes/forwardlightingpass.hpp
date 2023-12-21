@@ -36,6 +36,8 @@ namespace xng {
      */
     class XENGINE_EXPORT ForwardLightingPass : public FrameGraphPass {
     public:
+        ~ForwardLightingPass() override = default;
+
         void setup(FrameGraphBuilder &builder) override;
 
         std::type_index getTypeIndex() const override;
