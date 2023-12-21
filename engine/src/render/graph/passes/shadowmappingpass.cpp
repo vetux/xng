@@ -230,8 +230,7 @@ namespace xng {
 
             builder.upload(lightBuffer,
                            [lightData]() {
-                               return FrameGraphCommand::UploadBuffer(sizeof(LightData),
-                                                                      reinterpret_cast<const uint8_t *>(&lightData));
+                               return FrameGraphUploadBuffer::createValue(lightData);
                            });
 
             if (!meshNodes.empty()) {
@@ -298,14 +297,13 @@ namespace xng {
 
                 builder.upload(shaderBuffer,
                                [shaderData]() {
-                                   return FrameGraphCommand::UploadBuffer(shaderData.size() * sizeof(ShaderDrawData),
-                                                                          reinterpret_cast<const uint8_t *>(shaderData.data()));
+                                   return FrameGraphUploadBuffer::createArray(shaderData);
                                });
                 builder.upload(boneBuffer,
                                [boneMatrices]() {
-                                   return FrameGraphCommand::UploadBuffer(boneMatrices.size() * sizeof(ShaderDrawData),
-                                                                          reinterpret_cast<const uint8_t *>(boneMatrices.data()));
+                                   return FrameGraphUploadBuffer::createArray(boneMatrices);
                                });
+
                 builder.bindShaderResources({
                                                     {shaderBuffer, {{VERTEX, ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
                                                     {boneBuffer,   {{VERTEX, ShaderResource::READ}}},

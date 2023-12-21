@@ -143,17 +143,17 @@ public:
         dynTexture = ren2D.createTexture(dynText.getImage());
 
         ren2D.renderBegin(screen, false, {}, {}, screen.getDescription().size, {});
-        ren2D.draw(Rectf({}, dynText.getImage().getSize().convert<float>()),
-                   Rectf({}, dynText.getImage().getSize().convert<float>()),
+        ren2D.draw(Rectf({}, dynText.getImage().getResolution().convert<float>()),
+                   Rectf({}, dynText.getImage().getResolution().convert<float>()),
                    dynTexture,
                    {},
                    0,
                    xng::NEAREST,
                    ColorRGBA::yellow());
 
-        ren2D.draw(Rectf({}, staticText.getImage().getSize().convert<float>()),
-                   Rectf({0, static_cast<float>(screen.getDescription().size.y - staticText.getImage().getSize().y)},
-                         staticText.getImage().getSize().convert<float>()),
+        ren2D.draw(Rectf({}, staticText.getImage().getResolution().convert<float>()),
+                   Rectf({0, static_cast<float>(screen.getDescription().size.y - staticText.getImage().getResolution().y)},
+                         staticText.getImage().getResolution().convert<float>()),
                    staticTexture,
                    {},
                    0,

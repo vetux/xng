@@ -44,9 +44,7 @@ namespace xng {
                        RGBA,
                        {},
                        [texture, handle]() {
-                           auto img = getAlignedImage(texture, handle.level);
-                           return FrameGraphCommand::UploadBuffer(img.getDataSize() * sizeof(ColorRGBA),
-                                                                  reinterpret_cast<const uint8_t *>(img.getData()));
+                           return FrameGraphUploadBuffer::createArray(getAlignedImage(texture, handle.level).getBuffer());
                        });
     }
 
@@ -54,14 +52,14 @@ namespace xng {
             : bufferOccupations(std::move(bufferOccupations)) {}
 
     TextureAtlasHandle TextureAtlas::add(const ImageRGBA &texture) {
-        auto res = getClosestMatchingResolutionLevel(texture.getSize());
+        auto res = getClosestMatchingResolutionLevel(texture.getResolution());
         for (size_t i = 0; i < bufferOccupations[res].size(); i++) {
             if (!bufferOccupations.at(res).at(i)) {
                 bufferOccupations.at(res).at(i) = !bufferOccupations.at(res).at(i);
                 TextureAtlasHandle ret;
                 ret.index = i;
                 ret.level = res;
-                ret.size = texture.getSize();
+                ret.size = texture.getResolution();
                 return ret;
             }
         }

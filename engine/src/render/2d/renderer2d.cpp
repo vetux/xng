@@ -180,7 +180,7 @@ namespace xng {
     Renderer2D::~Renderer2D() = default;
 
     Texture2D Renderer2D::createTexture(const ImageRGBA &texture) {
-        auto res = TextureAtlas::getClosestMatchingResolutionLevel(texture.getSize());
+        auto res = TextureAtlas::getClosestMatchingResolutionLevel(texture.getResolution());
         auto free = atlas.getFreeSlotCount(res);
         if (free < 1) {
             auto desc = atlasTextures.at(res)->getDescription();
@@ -205,7 +205,7 @@ namespace xng {
     std::vector<Texture2D> Renderer2D::createTextures(const std::vector<ImageRGBA> &textures) {
         std::map<TextureAtlasResolution, size_t> resolutionCounts;
         for (auto &img: textures) {
-            auto res = TextureAtlas::getClosestMatchingResolutionLevel(img.getSize());
+            auto res = TextureAtlas::getClosestMatchingResolutionLevel(img.getResolution());
             resolutionCounts[res]++;
         }
         for (auto &pair: resolutionCounts) {

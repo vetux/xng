@@ -64,10 +64,11 @@ namespace xng {
 
         void upload(size_t index,
                     const Image<ColorRGBA> &image) {
+            auto buffer = image.getBuffer();
             return upload(index,
                           RGBA,
-                          reinterpret_cast<const uint8_t *>(image.getData()),
-                          image.getDataSize() * sizeof(ColorRGBA));
+                          reinterpret_cast<const uint8_t *>(buffer.data()),
+                          buffer.size() * sizeof(ColorRGBA));
         }
 
         virtual Image<ColorRGBA> download(size_t index) = 0;

@@ -430,35 +430,29 @@ namespace xng {
 
         builder.upload(pointLightBuffer,
                        [pointLights]() {
-                           return FrameGraphCommand::UploadBuffer(pointLights.first.size() * sizeof(PointLightData),
-                                                                  reinterpret_cast<const uint8_t *>(pointLights.first.data()));
+                           return FrameGraphUploadBuffer::createArray(pointLights.first);
                        });
         builder.upload(shadowPointLightBuffer,
                        [pointLights]() {
-                           return FrameGraphCommand::UploadBuffer(pointLights.second.size() * sizeof(PointLightData),
-                                                                  reinterpret_cast<const uint8_t *>(pointLights.second.data()));
+                           return FrameGraphUploadBuffer::createArray(pointLights.second);
                        });
 
         builder.upload(dirLightBuffer,
                        [dirLights]() {
-                           return FrameGraphCommand::UploadBuffer(dirLights.first.size() * sizeof(DirectionalLightData),
-                                                                  reinterpret_cast<const uint8_t *>(dirLights.first.data()));
+                           return FrameGraphUploadBuffer::createArray(dirLights.first);
                        });
         builder.upload(shadowDirLightBuffer,
                        [dirLights]() {
-                           return FrameGraphCommand::UploadBuffer(dirLights.second.size() * sizeof(DirectionalLightData),
-                                                                  reinterpret_cast<const uint8_t *>(dirLights.second.data()));
+                           return FrameGraphUploadBuffer::createArray(dirLights.second);
                        });
 
         builder.upload(spotLightBuffer,
                        [spotLights]() {
-                           return FrameGraphCommand::UploadBuffer(spotLights.first.size() * sizeof(SpotLightData),
-                                                                  reinterpret_cast<const uint8_t *>(spotLights.first.data()));
+                           return FrameGraphUploadBuffer::createArray(spotLights.first);
                        });
         builder.upload(shadowSpotLightBuffer,
                        [spotLights]() {
-                           return FrameGraphCommand::UploadBuffer(spotLights.second.size() * sizeof(SpotLightData),
-                                                                  reinterpret_cast<const uint8_t *>(spotLights.second.data()));
+                           return FrameGraphUploadBuffer::createArray(spotLights.second);
                        });
 
         meshAllocator.uploadMeshes(builder, vertexBuffer, indexBuffer);
@@ -646,8 +640,7 @@ namespace xng {
 
                 builder.upload(shaderBuffer,
                                [shaderData]() {
-                                   return FrameGraphCommand::UploadBuffer(shaderData.size() * sizeof(ShaderDrawData),
-                                                                          reinterpret_cast<const uint8_t *>(shaderData.data()));
+                                   return FrameGraphUploadBuffer::createArray(shaderData);
                                });
                 builder.upload(shaderViewBuffer,
                                [cameraTransform, resolution]() {
@@ -656,9 +649,7 @@ namespace xng {
                                    data.viewPosition = {viewPos.x, viewPos.y, viewPos.z, 1};
                                    data.viewSize = {static_cast<float>(resolution.x),
                                                     static_cast<float>(resolution.y), 0, 0};
-                                   return FrameGraphCommand::UploadBuffer(sizeof(ShaderViewData),
-                                                                          reinterpret_cast<const uint8_t *>(&data));
-
+                                   return FrameGraphUploadBuffer::createValue(data);
                                });
 
                 auto pointMap = pointLightShadowMap.assigned ? pointLightShadowMap : defaultPointLightShadowMap;

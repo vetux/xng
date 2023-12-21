@@ -77,16 +77,15 @@ namespace xng {
                                data.baseVertex * curMesh.vertexLayout.getSize(),
                                [curMesh, i, pair]() {
                                    assert(pair.second.data.size() > i);
-                                   auto vBuf = VertexStream().addVertices(curMesh.vertices).getVertexBuffer();
-                                   return FrameGraphCommand::UploadBuffer(vBuf.size(),
-                                                                          reinterpret_cast<const uint8_t *>(vBuf.data()));
+                                   return FrameGraphUploadBuffer::createArray(VertexStream()
+                                                                                      .addVertices(curMesh.vertices)
+                                                                                      .getVertexBuffer());
                                });
                 builder.upload(indexBuffer,
                                data.drawCall.offset,
                                [curMesh, i, pair]() {
                                    assert(pair.second.data.size() > i);
-                                   return FrameGraphCommand::UploadBuffer(curMesh.indices.size() * sizeof(unsigned int),
-                                                                          reinterpret_cast<const uint8_t *>(curMesh.indices.data()));
+                                   return FrameGraphUploadBuffer::createArray(curMesh.indices);
                                });
             }
             meshAllocations[pair.first] = pair.second;

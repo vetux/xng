@@ -404,10 +404,10 @@ int main(int argc, char *argv[]) {
                           {},
                           target->getDescription().size,
                           {});
-        ren2d.draw(Rectf({}, text.getImage().getSize().convert<float>()),
+        ren2d.draw(Rectf({}, text.getImage().getResolution().convert<float>()),
                    Rectf({static_cast<float>(target->getDescription().size.x) / 2 -
-                          static_cast<float>(text.getImage().getSize().x) / 2, 0},
-                         text.getImage().getSize().convert<float>()),
+                          static_cast<float>(text.getImage().getResolution().x) / 2, 0},
+                         text.getImage().getResolution().convert<float>()),
                    tex,
                    {},
                    0,

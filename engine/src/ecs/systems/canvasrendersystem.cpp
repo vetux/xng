@@ -219,7 +219,7 @@ namespace xng {
 
                             transform.position += transform.size / 2;
 
-                            auto imgSize = text.getImage().getSize().convert<float>();
+                            auto imgSize = text.getImage().getResolution().convert<float>();
 
                             Rectf srcRect({}, imgSize);
 
@@ -324,12 +324,12 @@ namespace xng {
         if (t.sprite.assigned()) {
             Vec2i dimensions = t.sprite.get().offset.dimensions;
             if (dimensions.x * dimensions.y == 0) {
-                dimensions = t.sprite.get().image.get().getSize();
+                dimensions = t.sprite.get().image.get().getResolution();
             }
             TextureBufferDesc desc;
             desc.size = dimensions;
             auto &img = t.sprite.get().image.get();
-            if (img.getSize() != dimensions) {
+            if (img.getResolution() != dimensions) {
                 // Upload a slice of an image
                 auto slice = img.slice(t.sprite.get().offset);
                 spriteTextures[ent] = ren2d.createTexture(slice);

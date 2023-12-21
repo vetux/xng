@@ -36,7 +36,9 @@ namespace xng {
                                               4);
         if (data) {
             auto ret = ImageRGBA(width, height);
-            std::memcpy(reinterpret_cast<stbi_uc *>(ret.getData()), data, ret.getDataSize() * sizeof(ColorRGBA));
+            std::memcpy(reinterpret_cast<stbi_uc *>(ret.getBuffer().data()),
+                        data,
+                        ret.getBuffer().size() * sizeof(ColorRGBA));
             stbi_image_free(data);
             return ret;
         } else {
@@ -73,7 +75,7 @@ namespace xng {
             ret.add("image", std::make_unique<ImageRGBA>(img));
             Texture tex;
             tex.image = ResourceHandle<ImageRGBA>(Uri(path));
-            tex.description.size = img.getSize();
+            tex.description.size = img.getResolution();
             ret.add("imageTexture", std::make_unique<Texture>(tex));
             return ret;
         } else {

@@ -81,22 +81,22 @@ public:
 
         ren.draw(Vec2f(0, targetSize.y), Vec2f(targetSize.x, 0), ColorRGBA::green());
 
-        ren.draw(Rectf({}, imageA.getSize().convert<float>()),
-                 Rectf(targetSize / 2 - imageA.getSize().convert<float>() / 2, imageA.getSize().convert<float>()),
+        ren.draw(Rectf({}, imageA.getResolution().convert<float>()),
+                 Rectf(targetSize / 2 - imageA.getResolution().convert<float>() / 2, imageA.getResolution().convert<float>()),
                  texA,
-                 {imageA.getSize().convert<float>() / 2},
+                 {imageA.getResolution().convert<float>() / 2},
                  0,
                  xng::LINEAR,
                  ColorRGBA(255));
 
-        ren.draw(Rectf(targetSize / 2 - imageA.getSize().convert<float>() / 2, imageA.getSize().convert<float>()),
+        ren.draw(Rectf(targetSize / 2 - imageA.getResolution().convert<float>() / 2, imageA.getResolution().convert<float>()),
                  ColorRGBA::yellow(),
                  false,
-                 {imageA.getSize().convert<float>() / 2},
+                 {imageA.getResolution().convert<float>() / 2},
                  0);
 
-        ren.draw(Rectf({}, imageB.getSize().convert<float>()),
-                 Rectf({25, 25}, imageB.getSize().convert<float>()),
+        ren.draw(Rectf({}, imageB.getResolution().convert<float>()),
+                 Rectf({25, 25}, imageB.getResolution().convert<float>()),
                  texB,
                  {},
                  0,
@@ -105,7 +105,7 @@ public:
                  0,
                  {});
 
-        ren.draw(Rectf({25, 25}, imageB.getSize().convert<float>()),
+        ren.draw(Rectf({25, 25}, imageB.getResolution().convert<float>()),
                  ColorRGBA::yellow(),
                  false);
 
@@ -167,7 +167,7 @@ public:
                             + (Vec2f(static_cast<float>(x), static_cast<float>(y)) * texSize)
                             + Vec2f(widthDiff / 2, heightDiff / 2);
                 Vec2f scale = Vec2i(x, y).convert<float>() / performanceGrid.convert<float>();
-                ren.draw(Rectf({}, imageA.getSize().convert<float>()),
+                ren.draw(Rectf({}, imageA.getResolution().convert<float>()),
                          Rectf(pos, imgSize),
                          texA,
                          imgSize / 2,

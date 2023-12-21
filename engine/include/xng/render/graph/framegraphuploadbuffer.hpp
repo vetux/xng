@@ -17,22 +17,32 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FRAMEGRAPHCONTEXT_HPP
-#define XENGINE_FRAMEGRAPHCONTEXT_HPP
+#ifndef XENGINE_FRAMEGRAPHUPLOADBUFFER_HPP
+#define XENGINE_FRAMEGRAPHUPLOADBUFFER_HPP
 
+#include <cstddef>
+#include <cstdint>
 #include <vector>
-#include <set>
-
-#include "xng/render/graph/framegraphcommand.hpp"
-#include "xng/render/graph/framegraphresource.hpp"
 
 namespace xng {
-    struct FrameGraphContext {
-        std::type_index pass = typeid(FrameGraphPass);
-        std::vector<FrameGraphCommand> commands;
-        std::set<FrameGraphResource> persists; // The set of resources that are declared to be persistent
+    struct FrameGraphUploadBuffer {
+        std::vector<uint8_t> data;
 
-        FrameGraphContext() = default;
+        FrameGraphUploadBuffer() = default;
+
+        FrameGraphUploadBuffer(size_t size, const uint8_t *v) : data(v, v + size) {}
+
+        template<typename T>
+        static FrameGraphUploadBuffer createValue(const T &value) {
+            return {sizeof(T), reinterpret_cast<const uint8_t *>(&value)};
+        }
+
+        template<typename T>
+        static FrameGraphUploadBuffer createArray(const std::vector<T> &value) {
+            return {sizeof(T) * value.size(),
+                    reinterpret_cast<const uint8_t *>(value.data())};
+        }
     };
 }
-#endif //XENGINE_FRAMEGRAPHCONTEXT_HPP
+
+#endif //XENGINE_FRAMEGRAPHUPLOADBUFFER_HPP

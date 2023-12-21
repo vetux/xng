@@ -58,15 +58,13 @@ namespace xng {
 
             builder.upload(vertexBuffer,
                            [this]() {
-                               VertexStream stream;
-                               stream.addVertices(cube.vertices);
-                               return FrameGraphCommand::UploadBuffer(stream.getVertexBuffer().size(),
-                                                                      reinterpret_cast<const uint8_t *>(stream.getVertexBuffer().data()));
+                               return FrameGraphUploadBuffer::createArray(VertexStream()
+                                                                                  .addVertices(cube.vertices)
+                                                                                  .getVertexBuffer());
                            });
             builder.upload(indexBuffer,
                            [this]() {
-                               return FrameGraphCommand::UploadBuffer(cube.indices.size() * sizeof(unsigned int),
-                                                                      reinterpret_cast<const uint8_t *>(cube.indices.data()));
+                               return FrameGraphUploadBuffer::createArray(cube.indices);
                            });
         }
         builder.persist(vertexBuffer);
@@ -88,8 +86,7 @@ namespace xng {
                                        RGBA,
                                        static_cast<CubeMapFace>(i),
                                        [img]() {
-                                           return FrameGraphCommand::UploadBuffer(img.get().getDataSize() * sizeof(ColorRGBA),
-                                                                                  reinterpret_cast<const uint8_t *>(img.get().getData()));
+                                           return FrameGraphUploadBuffer::createArray(img.get().getBuffer());
                                        });
                     }
                 }
@@ -132,9 +129,8 @@ namespace xng {
 
         builder.upload(shaderBuffer,
                        [camera, cameraTransform]() {
-                           auto mat = camera.projection() * Camera::view(cameraTransform);
-                           return FrameGraphCommand::UploadBuffer(sizeof(Mat4f),
-                                                                  reinterpret_cast<const uint8_t *>(mat.data));
+                           return FrameGraphUploadBuffer::createValue(camera.projection()
+                                                                      * Camera::view(cameraTransform));
                        });
 
         builder.beginPass({FrameGraphAttachment::texture(backgroundColor)},

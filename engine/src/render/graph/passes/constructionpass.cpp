@@ -474,14 +474,12 @@ namespace xng {
         if (!shaderData.empty()) {
             builder.upload(shaderBuffer,
                            [shaderData]() {
-                               return FrameGraphCommand::UploadBuffer{shaderData.size() * sizeof(ShaderDrawData),
-                                                                      reinterpret_cast<const uint8_t *>(shaderData.data())};
+                               return FrameGraphUploadBuffer::createArray(shaderData);
                            });
 
             builder.upload(boneBuffer,
                            [boneMatrices]() {
-                               return FrameGraphCommand::UploadBuffer{boneMatrices.size() * sizeof(Mat4f),
-                                                                      reinterpret_cast<const uint8_t *>(boneMatrices.data())};
+                               return FrameGraphUploadBuffer::createArray(boneMatrices);
                            });
 
             builder.beginPass({
@@ -499,9 +497,9 @@ namespace xng {
             builder.bindPipeline(renderPipelineSkinned);
             builder.bindVertexBuffers(vertexBuffer, indexBuffer, {}, SkinnedMesh::getDefaultVertexLayout(), {});
             builder.bindShaderResources(std::vector<FrameGraphCommand::ShaderData>{
-                    {shaderBuffer,                             {{VERTEX, ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
-                    {atlasBuffers.at(TEXTURE_ATLAS_8x8),       {{{FRAGMENT, ShaderResource::READ}}}},
-                    {atlasBuffers.at(TEXTURE_ATLAS_16x16),     {{{FRAGMENT, ShaderResource::READ}}}},
+                    {shaderBuffer,                               {{VERTEX, ShaderResource::READ}, {FRAGMENT, ShaderResource::READ}}},
+                    {atlasBuffers.at(TEXTURE_ATLAS_8x8),         {{{FRAGMENT, ShaderResource::READ}}}},
+                    {atlasBuffers.at(TEXTURE_ATLAS_16x16),       {{{FRAGMENT, ShaderResource::READ}}}},
                     {atlasBuffers.at(TEXTURE_ATLAS_32x32),       {{{FRAGMENT, ShaderResource::READ}}}},
                     {atlasBuffers.at(TEXTURE_ATLAS_64x64),       {{{FRAGMENT, ShaderResource::READ}}}},
                     {atlasBuffers.at(TEXTURE_ATLAS_128x128),     {{{FRAGMENT, ShaderResource::READ}}}},

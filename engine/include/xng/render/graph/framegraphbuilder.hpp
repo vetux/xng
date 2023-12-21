@@ -63,13 +63,13 @@ namespace xng {
 
         FrameGraphResource createShaderStorageBuffer(const ShaderStorageBufferDesc &desc);
 
-        void upload(FrameGraphResource buffer, std::function<FrameGraphCommand::UploadBuffer()> dataSource) {
+        void upload(FrameGraphResource buffer, std::function<FrameGraphUploadBuffer()> dataSource) {
             upload(buffer, 0, 0, {}, {}, std::move(dataSource));
         }
 
         void upload(FrameGraphResource buffer,
                     size_t offset,
-                    std::function<FrameGraphCommand::UploadBuffer()> dataSource) {
+                    std::function<FrameGraphUploadBuffer()> dataSource) {
             upload(buffer, 0, offset, {}, {}, std::move(dataSource));
         }
 
@@ -78,7 +78,7 @@ namespace xng {
                     size_t offset,
                     ColorFormat colorFormat,
                     CubeMapFace cubeMapFace,
-                    std::function<FrameGraphCommand::UploadBuffer()> dataSource);
+                    std::function<FrameGraphUploadBuffer()> dataSource);
 
         void copy(FrameGraphResource source,
                   FrameGraphResource dest,

@@ -33,7 +33,7 @@ namespace xng {
                                        image.getWidth(),
                                        image.getHeight(),
                                        4,
-                                       image.getData(),
+                                       image.getBuffer().data(),
                                        image.getWidth() * 4);
         if (r != 1) {
             throw std::runtime_error("Failed to write image");

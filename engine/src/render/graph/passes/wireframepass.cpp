@@ -215,7 +215,7 @@ namespace xng {
                 data.wireColor[2] = col[2];
                 data.wireColor[3] = col[3];
 
-                shaderData.emplace_back(data);
+                shaderData.emplace_back(data); // This emplace inserts many ShaderDrawData instead of the specified one into shaderData probably due to memory corruption.
 
                 auto &draw = drawData.data.at(i);
                 drawCalls.emplace_back(draw.drawCall);
@@ -223,17 +223,18 @@ namespace xng {
             }
         }
 
+        auto c = shaderData.size();
+        auto s = sizeof(ShaderDrawData);
+
         if (!shaderData.empty()) {
             builder.upload(shaderBuffer,
                            [shaderData]() {
-                               return FrameGraphCommand::UploadBuffer{shaderData.size() * sizeof(ShaderDrawData),
-                                                                      reinterpret_cast<const uint8_t *>(shaderData.data())};
+                               return FrameGraphUploadBuffer::createArray(shaderData);
                            });
 
             builder.upload(boneBuffer,
                            [boneMatrices]() {
-                               return FrameGraphCommand::UploadBuffer{boneMatrices.size() * sizeof(Mat4f),
-                                                                      reinterpret_cast<const uint8_t *>(boneMatrices.data())};
+                               return FrameGraphUploadBuffer::createArray(boneMatrices);
                            });
 
             builder.beginPass({

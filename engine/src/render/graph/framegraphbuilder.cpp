@@ -112,7 +112,7 @@ namespace xng {
                                    size_t offset,
                                    ColorFormat colorFormat,
                                    CubeMapFace cubeMapFace,
-                                   std::function<FrameGraphCommand::UploadBuffer()> dataSource) {
+                                   std::function<FrameGraphUploadBuffer()> dataSource) {
         if (!buffer.assigned)
             throw std::runtime_error("Unassigned resource");
         auto cmd = FrameGraphCommand();
@@ -491,6 +491,7 @@ namespace xng {
             FrameGraphContext context;
             context.commands = commands;
             context.persists = persists;
+            context.pass = pass->getTypeIndex();
             graph.contexts.emplace_back(context);
         }
 

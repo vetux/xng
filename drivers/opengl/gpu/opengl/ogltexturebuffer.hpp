@@ -313,7 +313,7 @@ namespace xng::opengl {
 
             auto ret = ImageRGBA(desc.size);
             glBindTexture(GL_TEXTURE_2D, handle);
-            glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void *) ret.getData());
+            glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void *) ret.getBuffer().data());
             glBindTexture(GL_TEXTURE_2D, 0);
             checkGLError();
 
@@ -328,7 +328,7 @@ namespace xng::opengl {
 
             auto ret = ImageRGBA(desc.size);
             glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
-            glGetTexImage(convert(face), 0, GL_RGBA, GL_UNSIGNED_BYTE, (void *) ret.getData());
+            glGetTexImage(convert(face), 0, GL_RGBA, GL_UNSIGNED_BYTE, (void *) ret.getBuffer().data());
             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
             checkGLError();
             stats.downloadTexture += desc.size.x * desc.size.y * sizeof(ColorRGBA);

@@ -79,6 +79,7 @@ namespace xng {
         graph = v;
 
         for (auto &c: graph.contexts) {
+            auto name = c.pass.name();
             for (auto &cmd: c.commands) {
                 commandJumpTable.at(cmd.type)(cmd);
             }

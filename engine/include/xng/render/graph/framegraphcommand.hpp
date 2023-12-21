@@ -26,6 +26,7 @@
 
 #include "xng/render/graph/framegraphresource.hpp"
 #include "xng/render/graph/framegraphattachment.hpp"
+#include "xng/render/graph/framegraphuploadbuffer.hpp"
 
 #include "xng/gpu/drawcall.hpp"
 
@@ -63,20 +64,12 @@ namespace xng {
             DRAW_MULTI_INDEXED_BASE_VERTEX,
         } type;
 
-        struct UploadBuffer {
-            std::vector<uint8_t> data;
-
-            UploadBuffer() = default;
-
-            UploadBuffer(size_t size, const uint8_t *v) : data(v, v + size) {}
-        };
-
         struct UploadData {
             size_t index;
             size_t offset;
             ColorFormat colorFormat;
             CubeMapFace face;
-            std::function<UploadBuffer()> dataSource;
+            std::function<FrameGraphUploadBuffer()> dataSource;
         };
 
         struct CopyData {

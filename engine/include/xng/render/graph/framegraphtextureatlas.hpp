@@ -30,7 +30,7 @@ namespace xng {
         FrameGraphTextureAtlas() = default;
 
         TextureAtlasHandle add(const ImageRGBA &texture) {
-            auto level = TextureAtlas::getClosestMatchingResolutionLevel(texture.getSize());
+            auto level = TextureAtlas::getClosestMatchingResolutionLevel(texture.getResolution());
             if (atlas.getFreeSlotCount(level) == 0) {
                 auto &buf = atlas.getBufferOccupations()[level];
                 buf.resize(buf.size() + 1);

@@ -144,8 +144,7 @@ namespace xng {
             vertexBuffer = builder.createVertexBuffer(desc);
 
             builder.upload(vertexBuffer, [this]() {
-                auto verts = VertexStream().addVertices(mesh.vertices).getVertexBuffer();
-                return FrameGraphCommand::UploadBuffer(verts.size(), verts.data());
+                return FrameGraphUploadBuffer::createArray(VertexStream().addVertices(mesh.vertices).getVertexBuffer());
             });
         }
 
@@ -255,35 +254,29 @@ namespace xng {
 
         builder.upload(pointLightBuffer,
                        [pointLights]() {
-                           return FrameGraphCommand::UploadBuffer(pointLights.first.size() * sizeof(PointLightData),
-                                                                  reinterpret_cast<const uint8_t *>(pointLights.first.data()));
+                           return FrameGraphUploadBuffer::createArray(pointLights.first);
                        });
         builder.upload(shadowPointLightBuffer,
                        [pointLights]() {
-                           return FrameGraphCommand::UploadBuffer(pointLights.second.size() * sizeof(PointLightData),
-                                                                  reinterpret_cast<const uint8_t *>(pointLights.second.data()));
+                           return FrameGraphUploadBuffer::createArray(pointLights.second);
                        });
 
         builder.upload(dirLightBuffer,
                        [dirLights]() {
-                           return FrameGraphCommand::UploadBuffer(dirLights.first.size() * sizeof(DirectionalLightData),
-                                                                  reinterpret_cast<const uint8_t *>(dirLights.first.data()));
+                           return FrameGraphUploadBuffer::createArray(dirLights.first);
                        });
         builder.upload(shadowDirLightBuffer,
                        [dirLights]() {
-                           return FrameGraphCommand::UploadBuffer(dirLights.second.size() * sizeof(DirectionalLightData),
-                                                                  reinterpret_cast<const uint8_t *>(dirLights.second.data()));
+                           return FrameGraphUploadBuffer::createArray(dirLights.second);
                        });
 
         builder.upload(spotLightBuffer,
                        [spotLights]() {
-                           return FrameGraphCommand::UploadBuffer(spotLights.first.size() * sizeof(SpotLightData),
-                                                                  reinterpret_cast<const uint8_t *>(spotLights.first.data()));
+                           return FrameGraphUploadBuffer::createArray(spotLights.first);
                        });
         builder.upload(shadowSpotLightBuffer,
                        [spotLights]() {
-                           return FrameGraphCommand::UploadBuffer(spotLights.second.size() * sizeof(SpotLightData),
-                                                                  reinterpret_cast<const uint8_t *>(spotLights.second.data()));
+                           return FrameGraphUploadBuffer::createArray(spotLights.second);
                        });
 
         auto gBufferPosition = builder.getSlot(SLOT_GBUFFER_POSITION);
@@ -311,8 +304,7 @@ namespace xng {
                                                     cameraTransform.getPosition().z,
                                                     0).getMemory();
                            buf.enableShadows.at(0) = pointLightShadowMap.assigned;
-                           return FrameGraphCommand::UploadBuffer(sizeof(ShaderStorageData),
-                                                                  reinterpret_cast<const uint8_t *>(&buf));
+                           return FrameGraphUploadBuffer::createValue(buf);
                        });
 
         auto pointMap = pointLightShadowMap.assigned ? pointLightShadowMap : defaultPointLightShadowMap;

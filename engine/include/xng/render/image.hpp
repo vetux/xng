@@ -54,28 +54,28 @@ namespace xng {
             return typeid(Image<T>);
         }
 
-        Image() : size(), buffer() {}
+        Image() : resolution(), buffer() {}
 
-        Image(int width, int height, const std::vector<T> &buffer) : size(width, height), buffer(buffer) {}
+        Image(int width, int height, const std::vector<T> &buffer) : resolution(width, height), buffer(buffer) {}
 
-        Image(int width, int height) : size(width, height), buffer(width * height) {}
+        Image(int width, int height) : resolution(width, height), buffer(width * height) {}
 
-        explicit Image(const Vec2i &size) : size(size), buffer(size.x * size.y) {}
+        explicit Image(const Vec2i &resolution) : resolution(resolution), buffer(resolution.x * resolution.y) {}
 
-        Image(const Image &copy) : size(copy.size), buffer(copy.buffer) {}
+        Image(const Image &copy) : resolution(copy.resolution), buffer(copy.buffer) {}
 
-        Image(Image &&other) noexcept: size(std::move(other.size)), buffer(std::move(other.buffer)) {}
+        Image(Image &&other) noexcept: resolution(std::move(other.resolution)), buffer(std::move(other.buffer)) {}
 
         ~Image() override = default;
 
         Image &operator=(const Image &copy) {
-            this->size = copy.size;
+            this->resolution = copy.resolution;
             this->buffer = std::vector<T>(copy.buffer);
             return *this;
         }
 
         Image &operator=(Image &&other) noexcept {
-            this->size = std::move(other.size);
+            this->resolution = std::move(other.resolution);
             this->buffer = std::move(other.buffer);
             return *this;
         }
@@ -84,17 +84,15 @@ namespace xng {
             return !empty();
         }
 
-        Vec2i getSize() const { return size; }
+        Vec2i getResolution() const { return resolution; }
 
-        size_t getDataSize() const { return buffer.size(); }
+        const std::vector<T> &getBuffer() const { return buffer; }
 
-        const T *getData() const { return buffer.data(); }
+        std::vector<T> &getBuffer() { return buffer; }
 
-        T *getData() { return buffer.data(); }
+        int getWidth() const { return resolution.x; }
 
-        int getWidth() const { return size.x; }
-
-        int getHeight() const { return size.y; }
+        int getHeight() const { return resolution.y; }
 
         bool empty() const { return buffer.empty(); }
 
@@ -107,21 +105,21 @@ namespace xng {
         }
 
         int scanLine(int y) const {
-            return y * size.x;
+            return y * resolution.x;
         }
 
         void copyRow(const Image<T> &source, int srcRow, int srcColumn, int dstRow, int dstColumn, size_t count) {
-            if (source.size.y <= srcRow
-                || source.size.x <= srcColumn
-                || source.size.x < srcColumn + count
-                || size.y <= dstRow
-                || size.x <= dstColumn
-                || size.x < dstColumn + count) {
+            if (source.resolution.y <= srcRow
+                || source.resolution.x <= srcColumn
+                || source.resolution.x < srcColumn + count
+                || resolution.y <= dstRow
+                || resolution.x <= dstColumn
+                || resolution.x < dstColumn + count) {
                 throw std::runtime_error("Invalid copy row / column index or count");
             }
 
-            auto srcOffset = srcRow * source.size.x + srcColumn;
-            auto dstOffset = dstRow * size.x + dstColumn;
+            auto srcOffset = srcRow * source.resolution.x + srcColumn;
+            auto dstOffset = dstRow * resolution.x + dstColumn;
 
             auto begin = source.buffer.begin() + srcOffset;
             std::copy(begin,
@@ -130,35 +128,35 @@ namespace xng {
         }
 
         void copyRows(const Image<T> &source, int srcRow, int dstRow, size_t count) {
-            if (size != source.size
-                || source.size.y <= srcRow
-                || source.size.y < srcRow + count
-                || size.y <= dstRow
-                || size.y < dstRow + count) {
+            if (resolution != source.resolution
+                || source.resolution.y <= srcRow
+                || source.resolution.y < srcRow + count
+                || resolution.y <= dstRow
+                || resolution.y < dstRow + count) {
                 throw std::runtime_error("Invalid copy row / column index or count");
             }
 
-            auto srcOffset = srcRow * source.size.x;
-            auto dstOffset = dstRow * size.x;
+            auto srcOffset = srcRow * source.resolution.x;
+            auto dstOffset = dstRow * resolution.x;
 
             auto begin = source.buffer.begin() + srcOffset;
             std::copy(begin,
-                      begin + count * size.x,
+                      begin + count * resolution.x,
                       buffer.begin() + dstOffset);
         }
 
         void blit(const Image<T> &source) {
-            if (source.size.x != size.x || source.size.y != size.y) {
-                throw std::runtime_error("Invalid blit source size");
+            if (source.resolution.x != resolution.x || source.resolution.y != resolution.y) {
+                throw std::runtime_error("Invalid blit source resolution");
             }
-            copyRows(source, 0, 0, size.y);
+            copyRows(source, 0, 0, resolution.y);
         }
 
         void blit(const Vec2i &targetPosition, const Image<T> &source) {
             if (targetPosition.x < 0
                 || targetPosition.y < 0
-                || targetPosition.x + source.getWidth() > size.x
-                || targetPosition.y + source.getHeight() > size.y) {
+                || targetPosition.x + source.getWidth() > resolution.x
+                || targetPosition.y + source.getHeight() > resolution.y) {
                 throw std::runtime_error("Invalid blit rect");
             }
             // Copy rows
@@ -178,25 +176,25 @@ namespace xng {
         }
 
         Image<T> swapRows() {
-            Image<T> ret = Image<T>(size.x, size.y);
-            for (int y = 0; y < size.y; y++) {
-                for (int x = 0; x < size.x; x++) {
-                    ret.setPixel(size.x - 1 - x, y, getPixel(x, y));
+            Image<T> ret = Image<T>(resolution.x, resolution.y);
+            for (int y = 0; y < resolution.y; y++) {
+                for (int x = 0; x < resolution.x; x++) {
+                    ret.setPixel(resolution.x - 1 - x, y, getPixel(x, y));
                 }
             }
             return std::move(ret);
         }
 
         Image<T> swapColumns() {
-            Image<T> ret = Image<T>(size.x, size.y);
-            for (auto y = 0; y < size.y; y++) {
-                ret.copyRow(*this, y, 0, size.y - y - 1, 0, size.x);
+            Image<T> ret = Image<T>(resolution.x, resolution.y);
+            for (auto y = 0; y < resolution.y; y++) {
+                ret.copyRow(*this, y, 0, resolution.y - y - 1, 0, resolution.x);
             }
             return std::move(ret);
         }
 
     protected:
-        Vec2i size;
+        Vec2i resolution;
         std::vector<T> buffer;
     };
 

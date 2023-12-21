@@ -73,8 +73,9 @@ namespace xng {
 
             builder.upload(vertexBuffer,
                            [this]() {
-                               auto verts = VertexStream().addVertices(mesh.vertices).getVertexBuffer();
-                               return FrameGraphCommand::UploadBuffer(verts.size(), verts.data());
+                               return FrameGraphUploadBuffer::createArray(VertexStream()
+                                                                                  .addVertices(mesh.vertices)
+                                                                                  .getVertexBuffer());
                            });
         }
 
