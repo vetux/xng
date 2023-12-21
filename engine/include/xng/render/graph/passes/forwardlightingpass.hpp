@@ -58,8 +58,6 @@ namespace xng {
         MeshAllocator meshAllocator;
 
         std::map<Uri, TextureAtlasHandle> textures;
-
-        bool bindVao = true;
     };
 }
 #endif //XENGINE_FORWARDLIGHTINGPASS_HPP

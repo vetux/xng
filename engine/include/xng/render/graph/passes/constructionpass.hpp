@@ -35,8 +35,6 @@ namespace xng {
      */
     class XENGINE_EXPORT ConstructionPass : public FrameGraphPass {
     public:
-        ConstructionPass();
-
         void setup(FrameGraphBuilder &builder) override;
 
         std::type_index getTypeIndex() const override;
@@ -61,8 +59,6 @@ namespace xng {
         MeshAllocator meshAllocator;
 
         std::map<Uri, TextureAtlasHandle> textures;
-
-        bool bindVao = true;
     };
 }
 

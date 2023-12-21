@@ -33,8 +33,6 @@ namespace xng {
      */
     class XENGINE_EXPORT ClearPass : public FrameGraphPass {
     public:
-        ClearPass();
-
         void setup(FrameGraphBuilder &builder) override;
 
         std::type_index getTypeIndex() const override;

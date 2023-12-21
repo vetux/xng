@@ -21,19 +21,15 @@
 
 #include "xng/render/graph/framegraphbuilder.hpp"
 
+#include "xng/render/geometry/vertexstream.hpp"
+
 #include "graph/skyboxpass_vs.hpp"
 #include "graph/skyboxpass_fs.hpp"
 
-#include "xng/render/graph/framegraphsettings.hpp"
-
-#include "xng/render/geometry/vertexstream.hpp"
-
 namespace xng {
-    SkyboxPass::SkyboxPass() {
+    void SkyboxPass::setup(FrameGraphBuilder &builder) {
+        auto resolution = builder.getRenderResolution();
 
-    }
-
-    void xng::SkyboxPass::setup(FrameGraphBuilder &builder) {
         if (!pipeline.assigned) {
             pipeline = builder.createRenderPipeline(RenderPipelineDesc{
                     .shaders = {{VERTEX,   skyboxpass_vs},
@@ -51,10 +47,7 @@ namespace xng {
         }
         builder.persist(pipeline);
 
-        auto renderSize = builder.getBackBufferDescription().size *
-                          builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
-
-        if (!vbAlloc) {
+        if (!vertexBuffer.assigned) {
             vertexBuffer = builder.createVertexBuffer(VertexBufferDesc{
                     .size = cube.vertices.size() * cube.vertexLayout.getSize(),
             });
@@ -62,22 +55,43 @@ namespace xng {
             indexBuffer = builder.createIndexBuffer(IndexBufferDesc{
                     .size = cube.indices.size() * sizeof(unsigned int),
             });
-        }
 
+            builder.upload(vertexBuffer,
+                           [this]() {
+                               VertexStream stream;
+                               stream.addVertices(cube.vertices);
+                               return FrameGraphCommand::UploadBuffer(stream.getVertexBuffer().size(),
+                                                                      reinterpret_cast<const uint8_t *>(stream.getVertexBuffer().data()));
+                           });
+            builder.upload(indexBuffer,
+                           [this]() {
+                               return FrameGraphCommand::UploadBuffer(cube.indices.size() * sizeof(unsigned int),
+                                                                      reinterpret_cast<const uint8_t *>(cube.indices.data()));
+                           });
+        }
         builder.persist(vertexBuffer);
         builder.persist(indexBuffer);
 
         auto backgroundColor = builder.getSlot(SLOT_BACKGROUND_COLOR);
 
-        uploadTexture = false;
-
         auto nodes = builder.getScene().rootNode.findAll({typeid(SkyboxProperty)});
         if (!nodes.empty()) {
-            auto nskybox = nodes.at(0).getProperty<SkyboxProperty>().skybox;
-            if (nskybox.texture.assigned()) {
-                if (skybox.texture != nskybox.texture) {
-                    skyboxTexture = builder.createTextureBuffer(nskybox.texture.get().description);
-                    uploadTexture = true;
+            auto currentSkybox = nodes.at(0).getProperty<SkyboxProperty>().skybox;
+            if (currentSkybox.texture.assigned()) {
+                if (skybox.texture != currentSkybox.texture) {
+                    skyboxTexture = builder.createTextureBuffer(currentSkybox.texture.get().description);
+                    for (auto i = 0; i <= CubeMapFace::NEGATIVE_Z; i++) {
+                        auto img = skybox.texture.get().images.at(static_cast<CubeMapFace>(i));
+                        builder.upload(skyboxTexture,
+                                       0,
+                                       0,
+                                       RGBA,
+                                       static_cast<CubeMapFace>(i),
+                                       [img]() {
+                                           return FrameGraphCommand::UploadBuffer(img.get().getDataSize() * sizeof(ColorRGBA),
+                                                                                  reinterpret_cast<const uint8_t *>(img.get().getData()));
+                                       });
+                    }
                 }
                 builder.persist(skyboxTexture);
             } else {
@@ -85,7 +99,7 @@ namespace xng {
                 desc.textureType = TEXTURE_CUBE_MAP;
                 skyboxTexture = builder.createTextureBuffer(desc);
             }
-            skybox = nskybox;
+            skybox = currentSkybox;
         } else {
             skybox = {};
             TextureBufferDesc desc;
@@ -108,44 +122,13 @@ namespace xng {
 
         TextureBufferDesc desc;
         desc.textureType = TEXTURE_2D;
-        desc.size = renderSize;
+        desc.size = resolution;
         desc.format = DEPTH_STENCIL;
         auto depthTex = builder.createTextureBuffer(desc);
 
         auto shaderBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(Mat4f)
         });
-
-        if (uploadTexture) {
-            for (auto i = 0; i <= CubeMapFace::NEGATIVE_Z; i++) {
-                auto img = skybox.texture.get().images.at(static_cast<CubeMapFace>(i));
-                builder.upload(skyboxTexture,
-                               0,
-                               0,
-                               RGBA,
-                               static_cast<CubeMapFace>(i),
-                               [img]() {
-                    return FrameGraphCommand::UploadBuffer(img.get().getDataSize() * sizeof(ColorRGBA),
-                                                           reinterpret_cast<const uint8_t *>(img.get().getData()));
-                });
-            }
-        }
-
-        if (!vbAlloc) {
-            vbAlloc = true;
-            builder.upload(vertexBuffer,
-                           [this]() {
-                               VertexStream stream;
-                               stream.addVertices(cube.vertices);
-                               return FrameGraphCommand::UploadBuffer(stream.getVertexBuffer().size(),
-                                                                      reinterpret_cast<const uint8_t *>(stream.getVertexBuffer().data()));
-                           });
-            builder.upload(indexBuffer,
-                           [this]() {
-                               return FrameGraphCommand::UploadBuffer(cube.indices.size() * sizeof(unsigned int),
-                                                                      reinterpret_cast<const uint8_t *>(cube.indices.data()));
-                           });
-        }
 
         builder.upload(shaderBuffer,
                        [camera, cameraTransform]() {
@@ -172,7 +155,7 @@ namespace xng {
         builder.finishPass();
     }
 
-    std::type_index xng::SkyboxPass::getTypeIndex() const {
-        return typeid(xng::SkyboxPass);
+    std::type_index SkyboxPass::getTypeIndex() const {
+        return typeid(SkyboxPass);
     }
 }

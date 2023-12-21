@@ -33,10 +33,6 @@ namespace xng {
      */
     class XENGINE_EXPORT SkyboxPass : public FrameGraphPass {
     public:
-        SkyboxPass();
-
-        ~SkyboxPass() override = default;
-
         void setup(FrameGraphBuilder &builder) override;
 
         std::type_index getTypeIndex() const override;
@@ -45,15 +41,12 @@ namespace xng {
         Mesh cube = Mesh::normalizedCube();
 
         FrameGraphResource pipeline;
-
         FrameGraphResource vertexBuffer;
         FrameGraphResource indexBuffer;
 
-        Skybox skybox;
         FrameGraphResource skyboxTexture;
 
-        bool uploadTexture = false;
-        bool vbAlloc = false;
+        Skybox skybox;
     };
 }
 

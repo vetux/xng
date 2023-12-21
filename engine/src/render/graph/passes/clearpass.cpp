@@ -19,19 +19,12 @@
 
 #include "xng/render/graph/passes/clearpass.hpp"
 
-#include "xng/render/graph/framegraphsettings.hpp"
-
 namespace xng {
-    ClearPass::ClearPass() {
-
-    }
-
     void ClearPass::setup(FrameGraphBuilder &builder) {
-        auto renderSize = builder.getBackBufferDescription().size
-                     * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
+        auto resolution = builder.getRenderResolution();
 
         auto desc = TextureBufferDesc();
-        desc.size = renderSize;
+        desc.size = resolution;
         desc.format = RGBA;
 
         auto screenColor = builder.createTextureBuffer(desc);

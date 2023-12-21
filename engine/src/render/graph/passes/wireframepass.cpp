@@ -19,11 +19,7 @@
 
 #include "xng/render/graph/passes/wireframepass.hpp"
 
-
-#include "xng/render/graph/passes/constructionpass.hpp"
 #include "xng/render/graph/framegraphbuilder.hpp"
-#include "xng/render/graph/framegraphsettings.hpp"
-#include "xng/render/atlas/textureatlas.hpp"
 
 #include "xng/render/geometry/vertexstream.hpp"
 
@@ -40,11 +36,8 @@ namespace xng {
     };
 #pragma pack(pop)
 
-    WireframePass::WireframePass() {}
-
     void WireframePass::setup(FrameGraphBuilder &builder) {
-        auto renderSize = builder.getBackBufferDescription().size
-                          * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
+        auto resolution = builder.getRenderResolution();
 
         if (!renderPipeline.assigned) {
             renderPipeline = builder.createRenderPipeline(RenderPipelineDesc{
@@ -242,7 +235,7 @@ namespace xng {
                               },
                               FrameGraphAttachment::texture(screenDepth));
 
-            builder.setViewport({}, renderSize);
+            builder.setViewport({}, resolution);
 
             builder.bindPipeline(renderPipeline);
             builder.bindVertexBuffers(vertexBuffer, indexBuffer, {}, SkinnedMesh::getDefaultVertexLayout(), {});

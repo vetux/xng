@@ -20,14 +20,10 @@
 #include "xng/render/graph/passes/presentationpass.hpp"
 
 #include "xng/render/graph/framegraphbuilder.hpp"
-#include "xng/render/graph/framegraphsettings.hpp"
 
 namespace xng {
-    PresentationPass::PresentationPass() = default;
-
     void PresentationPass::setup(FrameGraphBuilder &builder) {
-        auto renderSize = builder.getBackBufferDescription().size
-                          * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
+        auto resolution = builder.getRenderResolution();
 
         auto backBufferDesc = builder.getBackBufferDescription();
         auto backBuffer = builder.getBackBuffer();
@@ -37,7 +33,7 @@ namespace xng {
                           backBuffer,
                           {},
                           {},
-                          renderSize,
+                          resolution,
                           backBufferDesc.size,
                           TextureFiltering::LINEAR,
                           0,

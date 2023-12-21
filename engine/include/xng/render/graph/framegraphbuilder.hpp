@@ -230,6 +230,8 @@ namespace xng {
 
         const RenderDeviceInfo &getDeviceInfo();
 
+        Vec2i getRenderResolution();
+
     private:
         FrameGraphResource createResourceId();
 

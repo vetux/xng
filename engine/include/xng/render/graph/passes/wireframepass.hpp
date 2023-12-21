@@ -37,8 +37,6 @@ namespace xng {
      */
     class XENGINE_EXPORT WireframePass : public FrameGraphPass {
     public:
-        WireframePass();
-
         void setup(FrameGraphBuilder &builder) override;
 
         std::type_index getTypeIndex() const override;
@@ -53,8 +51,6 @@ namespace xng {
         size_t currentIndexBufferSize{};
 
         MeshAllocator meshAllocator;
-
-        bool bindVao = true;
     };
 }
 

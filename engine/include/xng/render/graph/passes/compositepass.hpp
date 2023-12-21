@@ -29,10 +29,6 @@ namespace xng {
      */
     class XENGINE_EXPORT CompositePass : public FrameGraphPass {
     public:
-        CompositePass();
-
-        ~CompositePass() override = default;
-
         void setup(FrameGraphBuilder &builder) override;
 
         std::type_index getTypeIndex() const override;
@@ -40,11 +36,7 @@ namespace xng {
     private:
         Mesh mesh = Mesh::normalizedQuad();
 
-        bool quadAllocated = false;
-
         FrameGraphResource pipeline;
-        FrameGraphResource pass;
-
         FrameGraphResource vertexBuffer;
     };
 }

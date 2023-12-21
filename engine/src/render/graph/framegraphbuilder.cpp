@@ -444,6 +444,10 @@ namespace xng {
         return deviceInfo;
     }
 
+    Vec2i FrameGraphBuilder::getRenderResolution() {
+        return getBackBufferDescription().size * getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
+    }
+
     FrameGraphResource FrameGraphBuilder::createResourceId() {
         if (resourceCounter >= std::numeric_limits<size_t>::max()) {
             throw std::runtime_error("Resource id counter overflow");

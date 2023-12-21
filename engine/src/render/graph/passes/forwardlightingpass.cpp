@@ -21,11 +21,10 @@
 
 #include "xng/render/graph/framegraphbuilder.hpp"
 
+#include "xng/render/geometry/vertexstream.hpp"
+
 #include "graph/forwardlightingpass_vs.hpp"
 #include "graph/forwardlightingpass_fs.hpp"
-
-#include "xng/render/geometry/vertexstream.hpp"
-#include "xng/render/graph/framegraphsettings.hpp"
 
 namespace xng {
 #pragma pack(push, 1)
@@ -162,68 +161,67 @@ namespace xng {
     }
 
     void ForwardLightingPass::setup(FrameGraphBuilder &builder) {
-        auto renderSize = builder.getBackBufferDescription().size
-                          * builder.getSettings().get<float>(FrameGraphSettings::SETTING_RENDER_SCALE);
+        auto resolution = builder.getRenderResolution();
         auto scene = builder.getScene();
 
         auto pointLightNodes = scene.rootNode.findAll({typeid(PointLightProperty)});
 
-        size_t pointLights = 0;
-        size_t shadowPointLights = 0;
+        size_t pointLightCount = 0;
+        size_t shadowPointLightCount = 0;
 
         for (auto l: pointLightNodes) {
             if (l.getProperty<PointLightProperty>().light.castShadows)
-                shadowPointLights++;
+                shadowPointLightCount++;
             else
-                pointLights++;
+                pointLightCount++;
         }
 
         auto dirLightNodes = scene.rootNode.findAll({typeid(DirectionalLightProperty)});
 
-        size_t dirLights = 0;
-        size_t shadowDirLights = 0;
+        size_t dirLightCount = 0;
+        size_t shadowDirLightCount = 0;
 
         for (auto l: dirLightNodes) {
             if (l.getProperty<DirectionalLightProperty>().light.castShadows)
-                shadowDirLights++;
+                shadowDirLightCount++;
             else
-                dirLights++;
+                dirLightCount++;
         }
 
         auto spotLightNodes = scene.rootNode.findAll({typeid(SpotLightProperty)});
 
-        size_t spotLights = 0;
-        size_t shadowSpotLights = 0;
+        size_t spotLightCount = 0;
+        size_t shadowSpotLightCount = 0;
 
         for (auto l: spotLightNodes) {
             if (l.getProperty<SpotLightProperty>().light.castShadows)
-                shadowSpotLights++;
+                shadowSpotLightCount++;
             else
-                spotLights++;
+                spotLightCount++;
         }
 
         auto pointLightBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(PointLightData) * pointLights
+                .size = sizeof(PointLightData) * pointLightCount
         });
 
         auto shadowPointLightBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(PointLightData) * shadowPointLights
+                .size = sizeof(PointLightData) * shadowPointLightCount
         });
 
         auto dirLightBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(DirectionalLightData) * dirLights
+                .size = sizeof(DirectionalLightData) * dirLightCount
         });
 
         auto shadowDirLightBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(DirectionalLightData) * shadowDirLights
+                .size = sizeof(DirectionalLightData) * shadowDirLightCount
         });
 
         auto spotLightBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(SpotLightData) * spotLights
+                .size = sizeof(SpotLightData) * spotLightCount
         });
 
         auto shadowSpotLightBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
-                .size = sizeof(SpotLightData) * shadowSpotLights
+                .size = sizeof(SpotLightData) * shadowSpotLightCount
         });
 
         if (!pipeline.assigned) {
@@ -399,8 +397,6 @@ namespace xng {
             currentVertexBufferSize = d.size;
         }
 
-        auto indexCopyCount = currentIndexBufferSize;
-
         if (!indexBuffer.assigned || currentIndexBufferSize < meshAllocator.getRequestedIndexBufferSize()) {
             auto staleIndexBuffer = indexBuffer;
             auto d = IndexBufferDesc();
@@ -428,43 +424,41 @@ namespace xng {
 
         auto atlasBuffers = atlas.getAtlasBuffers(builder);
 
+        auto pointLights = getPointLights(scene);
+        auto dirLights = getDirLights(scene);
+        auto spotLights = getSpotLights(scene);
+
         builder.upload(pointLightBuffer,
-                       [scene]() {
-                           auto lights = getPointLights(scene);
-                           return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(PointLightData),
-                                                                  reinterpret_cast<const uint8_t *>(lights.first.data()));
+                       [pointLights]() {
+                           return FrameGraphCommand::UploadBuffer(pointLights.first.size() * sizeof(PointLightData),
+                                                                  reinterpret_cast<const uint8_t *>(pointLights.first.data()));
                        });
         builder.upload(shadowPointLightBuffer,
-                       [scene]() {
-                           auto lights = getPointLights(scene);
-                           return FrameGraphCommand::UploadBuffer(lights.second.size() * sizeof(PointLightData),
-                                                                  reinterpret_cast<const uint8_t *>(lights.second.data()));
+                       [pointLights]() {
+                           return FrameGraphCommand::UploadBuffer(pointLights.second.size() * sizeof(PointLightData),
+                                                                  reinterpret_cast<const uint8_t *>(pointLights.second.data()));
                        });
 
         builder.upload(dirLightBuffer,
-                       [scene]() {
-                           auto lights = getDirLights(scene);
-                           return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(DirectionalLightData),
-                                                                  reinterpret_cast<const uint8_t *>(lights.first.data()));
+                       [dirLights]() {
+                           return FrameGraphCommand::UploadBuffer(dirLights.first.size() * sizeof(DirectionalLightData),
+                                                                  reinterpret_cast<const uint8_t *>(dirLights.first.data()));
                        });
         builder.upload(shadowDirLightBuffer,
-                       [scene]() {
-                           auto lights = getDirLights(scene);
-                           return FrameGraphCommand::UploadBuffer(lights.second.size() * sizeof(DirectionalLightData),
-                                                                  reinterpret_cast<const uint8_t *>(lights.second.data()));
+                       [dirLights]() {
+                           return FrameGraphCommand::UploadBuffer(dirLights.second.size() * sizeof(DirectionalLightData),
+                                                                  reinterpret_cast<const uint8_t *>(dirLights.second.data()));
                        });
 
         builder.upload(spotLightBuffer,
-                       [scene]() {
-                           auto lights = getSpotLights(scene);
-                           return FrameGraphCommand::UploadBuffer(lights.first.size() * sizeof(SpotLightData),
-                                                                  reinterpret_cast<const uint8_t *>(lights.first.data()));
+                       [spotLights]() {
+                           return FrameGraphCommand::UploadBuffer(spotLights.first.size() * sizeof(SpotLightData),
+                                                                  reinterpret_cast<const uint8_t *>(spotLights.first.data()));
                        });
         builder.upload(shadowSpotLightBuffer,
-                       [scene]() {
-                           auto lights = getSpotLights(scene);
-                           return FrameGraphCommand::UploadBuffer(lights.second.size() * sizeof(SpotLightData),
-                                                                  reinterpret_cast<const uint8_t *>(lights.second.data()));
+                       [spotLights]() {
+                           return FrameGraphCommand::UploadBuffer(spotLights.second.size() * sizeof(SpotLightData),
+                                                                  reinterpret_cast<const uint8_t *>(spotLights.second.data()));
                        });
 
         meshAllocator.uploadMeshes(builder, vertexBuffer, indexBuffer);
@@ -656,12 +650,12 @@ namespace xng {
                                                                           reinterpret_cast<const uint8_t *>(shaderData.data()));
                                });
                 builder.upload(shaderViewBuffer,
-                               [cameraTransform, renderSize]() {
+                               [cameraTransform, resolution]() {
                                    auto viewPos = cameraTransform.getPosition();
                                    ShaderViewData data{};
                                    data.viewPosition = {viewPos.x, viewPos.y, viewPos.z, 1};
-                                   data.viewSize = {static_cast<float>(renderSize.x),
-                                                    static_cast<float>(renderSize.y), 0, 0};
+                                   data.viewSize = {static_cast<float>(resolution.x),
+                                                    static_cast<float>(resolution.y), 0, 0};
                                    return FrameGraphCommand::UploadBuffer(sizeof(ShaderViewData),
                                                                           reinterpret_cast<const uint8_t *>(&data));
 
@@ -671,7 +665,7 @@ namespace xng {
 
                 builder.beginPass({FrameGraphAttachment::texture(forwardColor)},
                                   FrameGraphAttachment::texture(forwardDepth));
-                builder.setViewport({}, renderSize);
+                builder.setViewport({}, resolution);
                 builder.bindPipeline(pipeline);
                 builder.bindVertexBuffers(vertexBuffer, indexBuffer, {}, SkinnedMesh::getDefaultVertexLayout(), {});
                 builder.bindShaderResources({

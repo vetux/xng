@@ -18,15 +18,16 @@
  */
 
 #include "xng/render/graph/passes/shadowmappingpass.hpp"
+
 #include "xng/render/graph/framegraphbuilder.hpp"
+
+#include "xng/render/graph/framegraphsettings.hpp"
 
 #include "graph/shadowmappingpass_fs.hpp"
 #include "graph/shadowmappingpass_vs.hpp"
 #include "graph/shadowmappingpass_gs.hpp"
 
 #include "xng/math/rotation.hpp"
-
-#include "xng/render/graph/framegraphsettings.hpp"
 
 //TODO: Implement Directional and Spot light shadow mapping
 
@@ -43,7 +44,7 @@ struct LightData {
 
 namespace xng {
     void ShadowMappingPass::setup(FrameGraphBuilder &builder) {
-        resolution = builder.getSettings().get<Vec2i>(FrameGraphSettings::SETTING_SHADOW_MAPPING_POINT_RESOLUTION);
+        auto pointShadowResolution = builder.getSettings().get<Vec2i>(FrameGraphSettings::SETTING_SHADOW_MAPPING_POINT_RESOLUTION);
 
         std::vector<Node> meshNodes;
         std::vector<Node> pointLightNodes;
@@ -56,7 +57,7 @@ namespace xng {
         }
 
         TextureArrayBufferDesc desc;
-        desc.textureDesc.size = resolution;
+        desc.textureDesc.size = pointShadowResolution;
         desc.textureDesc.textureType = TEXTURE_CUBE_MAP;
         desc.textureDesc.format = DEPTH_STENCIL;
         desc.textureCount = pointLightNodes.size();
@@ -77,10 +78,6 @@ namespace xng {
                             BIND_SHADER_STORAGE_BUFFER,
                     },
                     .vertexLayout = SkinnedMesh::getDefaultVertexLayout(),
-                    /*       .clearColorValue = ColorRGBA(0, 0, 0, 0),
-                           .clearColor = false,
-                           .clearDepth = false,
-                           .clearStencil = false,*/
                     .enableDepthTest = true,
                     .depthTestWrite = true,
                     .depthTestMode = DEPTH_TEST_LESS,
@@ -163,7 +160,7 @@ namespace xng {
         }
 
         TextureArrayBufferDesc texDesc;
-        texDesc.textureDesc.size = resolution;
+        texDesc.textureDesc.size = pointShadowResolution;
         texDesc.textureCount = 1;
         auto textureRes = builder.createTextureArrayBuffer(texDesc);
 
@@ -198,7 +195,7 @@ namespace xng {
             auto &lightNode = pointLightNodes.at(li);
             auto &light = lightNode.getProperty<PointLightProperty>().light;
             auto &transform = lightNode.getProperty<TransformProperty>().transform;
-            float aspect = (float) resolution.x / (float) resolution.y;
+            float aspect = (float) pointShadowResolution.x / (float) pointShadowResolution.y;
             float near = light.shadowNearPlane;
             float far = light.shadowFarPlane;
 
@@ -254,25 +251,12 @@ namespace xng {
                         boneTransforms = it->second->get<BoneTransformsProperty>().boneTransforms;
                     }
 
-                    std::map<size_t, ResourceHandle<Material>> mats;
-                    it = node.properties.find(typeid(MaterialProperty));
-                    if (it != node.properties.end()) {
-                        mats = it->second->get<MaterialProperty>().materials;
-                    }
-
                     auto drawData = meshAllocator.getAllocatedMesh(meshProp.mesh);
 
                     for (auto mi = 0; mi < meshProp.mesh.get().subMeshes.size() + 1; mi++) {
                         auto model = node.getProperty<TransformProperty>().transform.model();
 
                         auto &mesh = mi == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(mi - 1);
-
-                        auto material = mesh.material.get();
-
-                        auto mIt = mats.find(mi);
-                        if (mIt != mats.end()) {
-                            material = mIt->second.get();
-                        }
 
                         if (node.hasProperty<ShadowProperty>()) {
                             if (!node.getProperty<ShadowProperty>().castShadows)
@@ -308,7 +292,7 @@ namespace xng {
 
                 builder.beginPass({FrameGraphAttachment::textureArrayLayered(textureRes)},
                                   FrameGraphAttachment::textureArrayLayered(pointLightShadowMap));
-                builder.setViewport({}, resolution);
+                builder.setViewport({}, pointShadowResolution);
                 builder.bindPipeline(renderPipeline);
                 builder.bindVertexBuffers(vertexBuffer, indexBuffer, {}, SkinnedMesh::getDefaultVertexLayout(), {});
 

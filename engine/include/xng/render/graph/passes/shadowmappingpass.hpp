@@ -38,8 +38,6 @@ namespace xng {
         std::type_index getTypeIndex() const override;
 
     private:
-        Vec2i resolution = Vec2i(2048, 2048);
-
         size_t currentVertexBufferSize{};
         size_t currentIndexBufferSize{};
 
@@ -52,8 +50,6 @@ namespace xng {
 
         FrameGraphResource staleVertexBuffer;
         FrameGraphResource staleIndexBuffer;
-
-        bool bindVao = true;
     };
 }
 #endif //XENGINE_SHADOWMAPPINGPASS_HPP
