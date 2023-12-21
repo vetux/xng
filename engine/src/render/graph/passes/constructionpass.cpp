@@ -161,7 +161,7 @@ namespace xng {
                 usedMeshes.insert(meshProp.mesh.getUri());
 
                 for (auto i = 0; i < meshProp.mesh.get().subMeshes.size() + 1; i++) {
-                    Mesh mesh = i == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
+                    const Mesh& mesh = i == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
 
                     Material mat = mesh.material.get();
 
@@ -326,7 +326,7 @@ namespace xng {
             for (auto i = 0; i < meshProp.mesh.get().subMeshes.size() + 1; i++) {
                 auto model = node.getProperty<TransformProperty>().transform.model();
 
-                Mesh mesh = i == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
+                const Mesh& mesh = i == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
 
                 auto material = mesh.material.get();
 
