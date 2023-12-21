@@ -56,4 +56,5 @@ namespace xng {
         bool vbAlloc = false;
     };
 }
+
 #endif //XENGINE_SKYBOXPASS_HPP

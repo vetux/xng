@@ -65,4 +65,5 @@ namespace xng {
         bool bindVao = true;
     };
 }
+
 #endif //XENGINE_CONSTRUCTIONPASS_HPP

@@ -184,6 +184,8 @@ namespace xng {
                 }
             }
         }
+
+        throw std::runtime_error("Not Implemented");
     }
 
     std::type_index Mesh::getTypeIndex() const {
