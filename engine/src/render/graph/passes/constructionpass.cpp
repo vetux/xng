@@ -174,7 +174,7 @@ namespace xng {
                 usedMeshes.insert(meshProp.mesh.getUri());
 
                 for (auto i = 0; i < meshProp.mesh.get().subMeshes.size() + 1; i++) {
-                    auto &mesh = i == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
+                    auto mesh = i == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
 
                     Material mat = mesh.material.get();
 
