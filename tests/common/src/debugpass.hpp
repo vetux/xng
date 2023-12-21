@@ -27,7 +27,7 @@
 
 using namespace xng;
 
-struct ShaderData {
+struct DebugShaderData {
     float visualizeDepth_near_far[4];
 };
 
@@ -41,6 +41,10 @@ public:
             VertexBufferDesc desc;
             desc.size = mesh.vertices.size() * mesh.vertexLayout.getSize();
             vertexBuffer = builder.createVertexBuffer(desc);
+
+            builder.upload(vertexBuffer, [this]() {
+                return FrameGraphUploadBuffer::createArray(VertexStream().addVertices(mesh.vertices).getVertexBuffer());
+            });
         }
 
         builder.persist(vertexBuffer);
@@ -69,15 +73,8 @@ public:
         auto backBuffer = builder.getBackBuffer();
 
         auto camera = builder.getScene().rootNode.find<CameraProperty>().getProperty<CameraProperty>().camera;
-        if (!quadAllocated) {
-            quadAllocated = true;
-            auto verts = VertexStream().addVertices(mesh.vertices).getVertexBuffer();
-            builder.upload(vertexBuffer, [verts]() {
-                return FrameGraphCommand::UploadBuffer(verts.size(), verts.data());
-            });
-        }
 
-        ::ShaderData buf{};
+        DebugShaderData buf{};
         buf.visualizeDepth_near_far[0] = tex == SLOT_DEFERRED_DEPTH
                                          || tex == SLOT_FORWARD_DEPTH
                                          || tex == SLOT_GBUFFER_DEPTH
@@ -86,7 +83,7 @@ public:
         buf.visualizeDepth_near_far[2] = 100;
 
         builder.upload(shaderBuffer, [buf]() {
-            return FrameGraphCommand::UploadBuffer(sizeof(buf), reinterpret_cast<const uint8_t *>(&buf));
+            return FrameGraphUploadBuffer::createValue(buf);
         });
 
         builder.beginPass(backBuffer);
