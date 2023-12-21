@@ -30,7 +30,7 @@ namespace xng {
     struct FrameGraph {
         std::vector<FrameGraphContext> contexts;
 
-        std::map<FrameGraphSlot, FrameGraphResource> slots;
+        std::map<FrameGraphSlot, FrameGraphResource> slotAssignments;
 
         FrameGraphResource backBuffer;
 
