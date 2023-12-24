@@ -27,7 +27,7 @@
 
 namespace xng {
     /**
-     * Cryptographically secure random number generator.
+     * Cryptographically secure (Hardware) random number generator.
      */
     class XENGINE_EXPORT Random {
     public:

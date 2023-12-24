@@ -25,9 +25,6 @@
 namespace xng {
     /**
      * A pipeline consist of a vector of passes which are setup in the defined order.
-     *
-     * The side effects (Slots) of the passes determine which operations of the passes
-     * the renderer can multi thread / spread over multiple queues etc.
      */
     class FrameGraphPipeline {
     public:

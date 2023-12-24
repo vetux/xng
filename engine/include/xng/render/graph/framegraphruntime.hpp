@@ -30,6 +30,9 @@
 namespace xng {
     /**
      * A frame graph runtime executes frame graphs.
+     *
+     * The side effects (Slots) of the passes determine which operations of the passes
+     * the runtime can multi thread / spread over multiple queues etc.
      */
     class FrameGraphRuntime {
     public:

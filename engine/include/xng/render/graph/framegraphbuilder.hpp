@@ -199,7 +199,7 @@ namespace xng {
         FrameGraphResource getSlot(FrameGraphSlot slot);
 
         /**
-         * Check wheter a slot has been assigned
+         * Check if a slot has been assigned
          *
          * @param slot
          * @return

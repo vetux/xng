@@ -24,6 +24,9 @@
 #include <stdexcept>
 
 namespace xng {
+    /**
+     * Represents a gpu resource
+     */
     struct XENGINE_EXPORT FrameGraphResource {
         FrameGraphResource() = default;
 
