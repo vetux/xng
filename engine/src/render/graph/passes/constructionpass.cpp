@@ -471,6 +471,21 @@ namespace xng {
             }
         }
 
+        builder.beginPass({
+                                  FrameGraphAttachment::texture(gBufferPosition),
+                                  FrameGraphAttachment::texture(gBufferNormal),
+                                  FrameGraphAttachment::texture(gBufferTangent),
+                                  FrameGraphAttachment::texture(gBufferRoughnessMetallicAmbientOcclusion),
+                                  FrameGraphAttachment::texture(gBufferAlbedo),
+                                  FrameGraphAttachment::texture(gBufferObjectShadows)
+                          },
+                          FrameGraphAttachment::texture(gBufferDepth));
+
+        builder.setViewport({}, resolution);
+
+        builder.clearColor(ColorRGBA::black());
+        builder.clearDepth(1);
+
         if (!shaderData.empty()) {
             builder.upload(shaderBuffer,
                            [shaderData]() {
@@ -481,18 +496,6 @@ namespace xng {
                            [boneMatrices]() {
                                return FrameGraphUploadBuffer::createArray(boneMatrices);
                            });
-
-            builder.beginPass({
-                                      FrameGraphAttachment::texture(gBufferPosition),
-                                      FrameGraphAttachment::texture(gBufferNormal),
-                                      FrameGraphAttachment::texture(gBufferTangent),
-                                      FrameGraphAttachment::texture(gBufferRoughnessMetallicAmbientOcclusion),
-                                      FrameGraphAttachment::texture(gBufferAlbedo),
-                                      FrameGraphAttachment::texture(gBufferObjectShadows)
-                              },
-                              FrameGraphAttachment::texture(gBufferDepth));
-
-            builder.setViewport({}, resolution);
 
             builder.bindPipeline(renderPipelineSkinned);
             builder.bindVertexBuffers(vertexBuffer, indexBuffer, {}, SkinnedMesh::getDefaultVertexLayout(), {});
@@ -513,13 +516,10 @@ namespace xng {
                     {boneBuffer,                                 {{VERTEX, ShaderResource::READ}}},
             });
 
-            builder.clearColor(ColorRGBA::black());
-            builder.clearDepth(1);
-
             builder.multiDrawIndexed(drawCalls, baseVertices);
-
-            builder.finishPass();
         }
+
+        builder.finishPass();
     }
 
     std::type_index ConstructionPass::getTypeIndex() const {
