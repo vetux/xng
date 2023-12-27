@@ -17,7 +17,7 @@ layout(binding = 1, std140) buffer BoneBuffer
     mat4 matrices[];
 } bones;
 
-layout(binding = 2, std140) buffer LightDataBuffer
+layout(binding = 2, std140) buffer PointLightDataBuffer
 {
     vec4 lightPosFarPlane;
     ivec4 layer;

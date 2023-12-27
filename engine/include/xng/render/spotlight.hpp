@@ -70,8 +70,8 @@ namespace xng {
 
         float quadratic = 0.032f;
 
-        float cutOff = 12.5;
-        float outerCutOff = 17.5;
+        float cutOff = 12.5; // The inner cut off angle in degrees
+        float outerCutOff = 17.5; // The outer cut off angle in degrees, The shadow is faded out between cutOff / outerCutOff
 
         float constant = 1;
         float linear = 0.09;

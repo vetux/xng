@@ -3,14 +3,14 @@
 // array of offset direction for sampling
 vec3 gridSamplingDisk[20] = vec3[]
 (
-vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1),
-vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
-vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
-vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
-vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+vec3(1, 1, 1), vec3(1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1),
+vec3(1, 1, -1), vec3(1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+vec3(1, 1, 0), vec3(1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0),
+vec3(1, 0, 1), vec3(-1, 0, 1), vec3(1, 0, -1), vec3(-1, 0, -1),
+vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1)
 );
 
-float sampleShadow(vec3 fragPos, vec3 lightPos, vec3 viewPos, samplerCubeArray depthMap, int depthMapIndex,  float far_plane) {
+float sampleShadow(vec3 fragPos, vec3 lightPos, vec3 viewPos, samplerCubeArray depthMap, int depthMapIndex, float far_plane) {
     // get vector between fragment position and light position
     vec3 fragToLight = fragPos - lightPos;
     // use the fragment to light vector to sample from the depth map
@@ -46,11 +46,11 @@ float sampleShadow(vec3 fragPos, vec3 lightPos, vec3 viewPos, samplerCubeArray d
     int samples = 20;
     float viewDistance = length(viewPos - fragPos);
     float diskRadius = (1.0 + (viewDistance / far_plane)) / 25.0;
-    for(int i = 0; i < samples; ++i)
+    for (int i = 0; i < samples; ++i)
     {
         float closestDepth = texture(depthMap, vec4(fragToLight + gridSamplingDisk[i] * diskRadius, depthMapIndex)).r;
-        closestDepth *= far_plane;   // undo mapping [0;1]
-        if(currentDepth - bias > closestDepth)
+        closestDepth *= far_plane;// undo mapping [0;1]
+        if (currentDepth - bias > closestDepth)
         shadow += 1.0;
     }
     shadow /= float(samples);
@@ -61,7 +61,12 @@ float sampleShadow(vec3 fragPos, vec3 lightPos, vec3 viewPos, samplerCubeArray d
     return 1 - shadow;
 }
 
-float sampleShadowDirectional(vec4 fragPosLightSpace, sampler2DArray shadowMap, int shadowMapIndex) {
+float sampleShadowDirectional(vec4 fragPosLightSpace,
+                                sampler2DArray shadowMap,
+                                int shadowMapIndex,
+                                vec3 Normal,
+                                vec3 lightPos,
+                                vec3 fragPos) {
     // perform perspective divide
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     // transform to [0,1] range
@@ -70,6 +75,29 @@ float sampleShadowDirectional(vec4 fragPosLightSpace, sampler2DArray shadowMap, 
     float closestDepth = texture(shadowMap, vec3(projCoords.xy, shadowMapIndex)).r;
     // get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
+
+    // calculate bias (based on depth map resolution and slope)
+    vec3 normal = normalize(Normal);
+    vec3 lightDir = normalize(lightPos - fragPos);
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
     // check whether current frag pos is in shadow
-    return currentDepth > closestDepth ? 0 : 1;
+    // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
+    // PCF
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0).xy;
+    for (int x = -1; x <= 1; ++x)
+    {
+        for (int y = -1; y <= 1; ++y)
+        {
+            float pcfDepth = texture(shadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, shadowMapIndex)).r;
+            shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;
+        }
+    }
+    shadow /= 9.0;
+
+    // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
+    if (projCoords.z > 1.0)
+    shadow = 0.0;
+
+    return 1 - shadow;
 }

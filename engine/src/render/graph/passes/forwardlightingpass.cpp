@@ -178,27 +178,62 @@ namespace xng {
 
         auto dirLightNodes = scene.rootNode.findAll({typeid(DirectionalLightProperty)});
 
+        std::vector<Mat4f> dirLightTransforms;
+
         size_t dirLightCount = 0;
         size_t shadowDirLightCount = 0;
 
         for (auto l: dirLightNodes) {
-            if (l.getProperty<DirectionalLightProperty>().light.castShadows)
+            if (l.getProperty<DirectionalLightProperty>().light.castShadows) {
                 shadowDirLightCount++;
-            else
+
+                auto &transform = l.getProperty<TransformProperty>().transform;
+                auto &light = l.getProperty<DirectionalLightProperty>().light;
+                dirLightTransforms.emplace_back(MatrixMath::ortho(-10.0f,
+                                                                  10.0f,
+                                                                  -10.0f,
+                                                                  10.0f,
+                                                                  light.shadowNearPlane,
+                                                                  light.shadowFarPlane)
+                                                * MatrixMath::lookAt(light.direction * (20),
+                                                                     {},
+                                                                     Vec3f(0, 1, 0)));
+            } else
                 dirLightCount++;
         }
 
         auto spotLightNodes = scene.rootNode.findAll({typeid(SpotLightProperty)});
 
+        std::vector<Mat4f> spotLightTransforms;
+
         size_t spotLightCount = 0;
         size_t shadowSpotLightCount = 0;
 
         for (auto l: spotLightNodes) {
-            if (l.getProperty<SpotLightProperty>().light.castShadows)
+            if (l.getProperty<SpotLightProperty>().light.castShadows) {
                 shadowSpotLightCount++;
-            else
+                auto &transform = l.getProperty<TransformProperty>().transform;
+                auto &light = l.getProperty<SpotLightProperty>().light;
+                spotLightTransforms.emplace_back(MatrixMath::ortho(-10.0f,
+                                                                   10.0f,
+                                                                   -10.0f,
+                                                                   10.0f,
+                                                                   light.shadowNearPlane,
+                                                                   light.shadowFarPlane)
+                                                 * MatrixMath::lookAt(light.direction * (20),
+                                                                      {},
+                                                                      Vec3f(0, 1, 0)));
+            } else
                 spotLightCount++;
         }
+
+        auto dirTransformBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+                .size = sizeof(Mat4f) * shadowDirLightCount
+        });
+
+        auto spotTransformBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
+                .size = sizeof(Mat4f) * shadowSpotLightCount
+        });
 
         auto pointLightBuffer = builder.createShaderStorageBuffer(ShaderStorageBufferDesc{
                 .size = sizeof(PointLightData) * pointLightCount
@@ -239,6 +274,10 @@ namespace xng {
                             BIND_SHADER_STORAGE_BUFFER,
                             BIND_SHADER_STORAGE_BUFFER,
                             BIND_SHADER_STORAGE_BUFFER,
+                            BIND_SHADER_STORAGE_BUFFER,
+                            BIND_SHADER_STORAGE_BUFFER,
+                            BIND_TEXTURE_ARRAY_BUFFER,
+                            BIND_TEXTURE_ARRAY_BUFFER,
                             BIND_TEXTURE_ARRAY_BUFFER,
                             BIND_TEXTURE_ARRAY_BUFFER,
                             BIND_TEXTURE_ARRAY_BUFFER,
@@ -282,7 +321,7 @@ namespace xng {
             usedMeshes.insert(meshProp.mesh.getUri());
             meshAllocator.prepareMeshAllocation(meshProp.mesh);
 
-            const Mesh& mesh = meshProp.mesh.get();
+            const Mesh &mesh = meshProp.mesh.get();
 
             auto it = node.properties.find(typeid(MaterialProperty));
             MaterialProperty matProp;
@@ -420,7 +459,17 @@ namespace xng {
             pointLightShadowMap = builder.getSlot(FrameGraphSlot::SLOT_SHADOW_MAP_POINT);
         }
 
-        auto defaultPointLightShadowMap = builder.createTextureArrayBuffer({});
+        FrameGraphResource dirLightShadowMap{};
+        if (builder.checkSlot(SLOT_SHADOW_MAP_DIRECTIONAL)) {
+            dirLightShadowMap = builder.getSlot(FrameGraphSlot::SLOT_SHADOW_MAP_DIRECTIONAL);
+        }
+
+        FrameGraphResource spotLightShadowMap{};
+        if (builder.checkSlot(SLOT_SHADOW_MAP_SPOT)) {
+            spotLightShadowMap = builder.getSlot(FrameGraphSlot::SLOT_SHADOW_MAP_SPOT);
+        }
+
+        auto defaultShadowMap = builder.createTextureArrayBuffer({});
 
         auto atlasBuffers = atlas.getAtlasBuffers(builder);
 
@@ -455,6 +504,14 @@ namespace xng {
                            return FrameGraphUploadBuffer::createArray(spotLights.second);
                        });
 
+        builder.upload(dirTransformBuffer,
+                       [dirLightTransforms]() {
+                           return FrameGraphUploadBuffer::createArray(dirLightTransforms);
+                       });
+        builder.upload(spotTransformBuffer,
+                       [spotLightTransforms]() {
+                           return FrameGraphUploadBuffer::createArray(spotLightTransforms);
+                       });
         meshAllocator.uploadMeshes(builder, vertexBuffer, indexBuffer);
 
         // Deallocate unused meshes
@@ -503,7 +560,7 @@ namespace xng {
                     }
 
                     for (auto i = 0; i < meshProp.mesh.get().subMeshes.size() + 1; i++) {
-                        const Mesh& mesh = i <= 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
+                        const Mesh &mesh = i <= 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
 
                         auto material = mesh.material.get();
                         auto mi = matProp.materials.find(i);
@@ -652,7 +709,9 @@ namespace xng {
                                    return FrameGraphUploadBuffer::createValue(data);
                                });
 
-                auto pointMap = pointLightShadowMap.assigned ? pointLightShadowMap : defaultPointLightShadowMap;
+                auto pointMap = pointLightShadowMap.assigned ? pointLightShadowMap : defaultShadowMap;
+                auto dirMap = dirLightShadowMap.assigned ? dirLightShadowMap : defaultShadowMap;
+                auto spotMap = spotLightShadowMap.assigned ? spotLightShadowMap : defaultShadowMap;
 
                 builder.beginPass({FrameGraphAttachment::texture(forwardColor)},
                                   FrameGraphAttachment::texture(forwardDepth));
@@ -670,6 +729,10 @@ namespace xng {
                                                     {shadowDirLightBuffer,              {{FRAGMENT, ShaderResource::READ}}},
                                                     {spotLightBuffer,                   {{FRAGMENT, ShaderResource::READ}}},
                                                     {shadowSpotLightBuffer,             {{FRAGMENT, ShaderResource::READ}}},
+                                                    {dirTransformBuffer,                {{FRAGMENT, ShaderResource::READ}}},
+                                                    {spotTransformBuffer,               {{FRAGMENT, ShaderResource::READ}}},
+                                                    {dirMap,                            {{FRAGMENT, ShaderResource::READ}}},
+                                                    {spotMap,                           {{FRAGMENT, ShaderResource::READ}}},
                                                     {atlasBuffers.at(
                                                             TEXTURE_ATLAS_8x8),         {{{FRAGMENT, ShaderResource::READ}}}},
                                                     {atlasBuffers.at(

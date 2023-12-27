@@ -48,6 +48,8 @@ namespace xng {
 
         // Shadow Maps
         SLOT_SHADOW_MAP_POINT, // A Texture Array with 3d cubemap textures containing point light depth maps of light sources.
+        SLOT_SHADOW_MAP_DIRECTIONAL, // A Texture Array with 2D textures containing directional light depth maps of light sources.
+        SLOT_SHADOW_MAP_SPOT, // A Texture Array with 2D textures containing spot light depth maps of light sources.
 
         // Users can creat custom slots for sharing data between custom passes by using a value >= SLOT_USER for the slot.
         SLOT_USER = 255,

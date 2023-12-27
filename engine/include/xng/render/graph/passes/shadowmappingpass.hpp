@@ -29,7 +29,7 @@ namespace xng {
     /**
      * The shadow mapping pass creates the shadow mapping textures.
      *
-     * Writes SLOT_SHADOW_MAP_POINT
+     * Writes SLOT_SHADOW_MAP_*
      */
     class XENGINE_EXPORT ShadowMappingPass : public FrameGraphPass {
     public:
@@ -45,7 +45,8 @@ namespace xng {
 
         MeshAllocator meshAllocator;
 
-        FrameGraphResource renderPipeline;
+        FrameGraphResource pointPipeline;
+        FrameGraphResource dirPipeline;
 
         FrameGraphResource vertexBuffer;
         FrameGraphResource indexBuffer;

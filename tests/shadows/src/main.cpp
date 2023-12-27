@@ -39,23 +39,18 @@ void createMaterialResource(xng::MemoryArchive &archive) {
 
     // Cube Wall
     xng::Material material = {};
-    material.transparent = true;
+    material.transparent = false;
     material.albedoTexture = ResourceHandle<Texture>(Uri("textures/wall.json"));
 
     bundle.add("cubeWall", std::make_unique<xng::Material>(material));
 
-    // Pbr Spheres
-    for (int x = 0; x < 4; x++) {
-        for (int y = 0; y < 4; y++) {
-            material = {};
-            material.albedo = ColorRGBA::red();
-            material.metallic = (((float) x) / 10.0f);
-            material.roughness = (((float) y) / 10.0f);
-            material.normal = ResourceHandle<Texture>(Uri("textures/sphere_normals.json"));
-            bundle.add("PbrSphere-" + std::to_string(x) + "-" + std::to_string(y),
-                       std::make_unique<xng::Material>(material));
-        }
-    }
+    material = {};
+    material.transparent = false;
+    material.albedo = ColorRGBA::red();
+    material.metallic = 0.7;
+    material.roughness = 0.5;
+    material.normal = ResourceHandle<Texture>(Uri("textures/sphere_normals.json"));
+    bundle.add("sphere", std::make_unique<xng::Material>(material));
 
     auto msg = xng::JsonImporter::createBundle(bundle);
 
@@ -151,39 +146,13 @@ int main(int argc, char *argv[]) {
     scene.rootNode.childNodes.emplace_back(node);
 
     ShadowProperty shadowProp;
-    shadowProp.castShadows = false;
-    shadowProp.receiveShadows = false;
-
-    for (int x = 0; x < 4; x++) {
-        for (int y = 0; y < 4; y++) {
-            xng::Node pbrSphere;
-
-            if (y == 1) {
-                pbrSphere.addProperty(shadowProp);
-            }
-
-            TransformProperty transformProp = {};
-            transformProp.transform.setPosition({(float) (x - 1.5) * 2, (float) (y - 1.5) * 2, -15});
-            pbrSphere.addProperty(transformProp);
-
-            SkinnedMeshProperty meshProp = {};
-            meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/sphere.obj/Sphere"));
-            pbrSphere.addProperty(meshProp);
-
-            MaterialProperty materialProp = {};
-            materialProp.materials[0] = xng::ResourceHandle<xng::Material>(
-                    xng::Uri(
-                            MATERIALS_PATH + std::string("/PbrSphere-" + std::to_string(x) + "-" + std::to_string(y))));
-            pbrSphere.addProperty(materialProp);
-
-            scene.rootNode.childNodes.emplace_back(pbrSphere);
-        }
-    }
+    shadowProp.castShadows = true;
+    shadowProp.receiveShadows = true;
 
     xng::Node cubeWall;
 
     transformProp = {};
-    transformProp.transform.setPosition({0, 0, -20});
+    transformProp.transform.setPosition({0, 0, -10});
     transformProp.transform.setScale({10, 10, 1});
     cubeWall.addProperty(transformProp);
 
@@ -197,51 +166,52 @@ int main(int argc, char *argv[]) {
 
     scene.rootNode.childNodes.emplace_back(cubeWall);
 
+    Node sphere;
+
     transformProp = {};
-    transformProp.transform.setPosition({5.5, 5.5, 0});
+    transformProp.transform.setPosition({0, 0, -5});
+    sphere.addProperty(transformProp);
+
+    meshProp = {};
+    meshProp.mesh = xng::ResourceHandle<xng::SkinnedMesh>(xng::Uri("meshes/sphere.obj"));
+    sphere.addProperty(meshProp);
+
+    materialProp = {};
+    materialProp.materials[0] = xng::ResourceHandle<xng::Material>(xng::Uri(MATERIALS_PATH + std::string("/sphere")));
+    sphere.addProperty(materialProp);
+
+    scene.rootNode.childNodes.emplace_back(sphere);
+
+    transformProp = {};
+    transformProp.transform.setPosition({0, 0, 0});
+
+    /*  PointLightProperty dirLight;
+      dirLight.light.power = 45;*/
 
     DirectionalLightProperty dirLight;
-    dirLight.light.power = 0.1;
+    dirLight.light.power = 1;
+    dirLight.light.castShadows = false;
 
-    Node lightNode;
-    lightNode.addProperty(dirLight);
-    scene.rootNode.childNodes.emplace_back(lightNode);
+    Node light;
 
-    PointLightProperty lightProp;
-    lightProp.light.power = 10;
-    lightProp.light.color = ColorRGBA::white();
-
-    lightNode = {};
-    lightNode.addProperty(transformProp);
-    lightNode.addProperty(lightProp);
-    scene.rootNode.childNodes.emplace_back(lightNode);
-
-    lightProp.light.castShadows = false;
+    light.addProperty(dirLight);
 
     transformProp = {};
-    transformProp.transform.setPosition({-5.5, 5.5, 0});
+    light.addProperty(transformProp);
 
-    lightNode = {};
-    lightNode.addProperty(transformProp);
-    lightNode.addProperty(lightProp);
-    scene.rootNode.childNodes.emplace_back(lightNode);
+    scene.rootNode.childNodes.emplace_back(light);
 
-    transformProp = {};
-    transformProp.transform.setPosition({5.5, -5.5, 0});
+    light = {};
 
-    SpotLightProperty spotProp;
-    lightNode = {};
-    lightNode.addProperty(transformProp);
-    lightNode.addProperty(spotProp);
-    scene.rootNode.childNodes.emplace_back(lightNode);
+    dirLight = {};
+    dirLight.light.power = 1;
+    dirLight.light.direction = Vec3f(0, 0, -1);
+    light.addProperty(dirLight);
 
     transformProp = {};
-    transformProp.transform.setPosition({-5.5, -5.5, 0});
+    light.addProperty(transformProp);
 
-    lightNode = {};
-    lightNode.addProperty(transformProp);
-    lightNode.addProperty(spotProp);
-    scene.rootNode.childNodes.emplace_back(lightNode);
+    scene.rootNode.childNodes.emplace_back(light);
 
     auto text = textRenderer.render("GBUFFER POSITION", TextLayout{.lineHeight = 70});
     auto tex = ren2d.createTexture(text.getImage());
@@ -253,6 +223,9 @@ int main(int argc, char *argv[]) {
 
     CameraController cameraController(cameraTransformRef.transform, input);
 
+    auto &lightTransform = light.getProperty<TransformProperty>().transform;
+    auto &dLight = light.getProperty<DirectionalLightProperty>().light;
+
     xng::FrameLimiter limiter;
     limiter.reset();
     while (!window->shouldClose()) {
@@ -263,22 +236,46 @@ int main(int argc, char *argv[]) {
 
         cameraController.update(deltaTime);
 
-        if (window->getInput().getKeyboard().getKeyDown(xng::KEY_LEFT)) {
+        if (input.getKeyboard().getKeyDown(xng::KEY_LEFT)) {
             testPass->decrementSlot();
-        } else if (window->getInput().getKeyboard().getKeyDown(xng::KEY_RIGHT)) {
+        } else if (input.getKeyboard().getKeyDown(xng::KEY_RIGHT)) {
             testPass->incrementSlot();
         }
 
-        if (window->getInput().getKeyboard().getKey(KEY_R)) {
+        if (input.getKeyboard().getKey(KEY_R)) {
             for (auto &ln: lights) {
                 auto &transform = ln.getProperty<TransformProperty>().transform;
                 transform.setPosition(transform.getPosition() + Vec3f(0, 0, 1.0f * deltaTime));
             }
-        } else if (window->getInput().getKeyboard().getKey(KEY_F)) {
+        } else if (input.getKeyboard().getKey(KEY_F)) {
             for (auto &ln: lights) {
                 auto &transform = ln.getProperty<TransformProperty>().transform;
                 transform.setPosition(transform.getPosition() - Vec3f(0, 0, 1.0f * deltaTime));
             }
+        }
+
+        if (input.getKeyboard().getKey(KEY_KP_8)) {
+            auto v = MatrixMath::rotate(Vec3f{20, 0, 0} * deltaTime)
+                     * Vec4f(dLight.direction.x, dLight.direction.y, dLight.direction.z, 1);
+            dLight.direction = Vec3f(v.x, v.y, v.z);
+            // lightTransform.setPosition(lightTransform.getPosition() + Vec3f(0, 0, 1) * deltaTime);
+        } else if (input.getKeyboard().getKey(KEY_KP_2)) {
+            auto v = MatrixMath::rotate(Vec3f{-20, 0, 0} * deltaTime)
+                     * Vec4f(dLight.direction.x, dLight.direction.y, dLight.direction.z, 1);
+            dLight.direction = Vec3f(v.x, v.y, v.z);
+            // lightTransform.setPosition(lightTransform.getPosition() + Vec3f(0, 0, -1) * deltaTime);
+        }
+
+        if (input.getKeyboard().getKey(KEY_KP_4)) {
+            auto v = MatrixMath::rotate(Vec3f{0, 20, 0} * deltaTime)
+                     * Vec4f(dLight.direction.x, dLight.direction.y, dLight.direction.z, 1);
+            dLight.direction = Vec3f(v.x, v.y, v.z);
+            //lightTransform.setPosition(lightTransform.getPosition() + Vec3f(1, 0, 0) * deltaTime);
+        } else if (input.getKeyboard().getKey(KEY_KP_6)) {
+            auto v = MatrixMath::rotate(Vec3f{0, -20, 0} * deltaTime)
+                     * Vec4f(dLight.direction.x, dLight.direction.y, dLight.direction.z, 1);
+            dLight.direction = Vec3f(v.x, v.y, v.z);
+            //   lightTransform.setPosition(lightTransform.getPosition() + Vec3f(-1, 0, 0) * deltaTime);
         }
 
         renderer.render(scene);

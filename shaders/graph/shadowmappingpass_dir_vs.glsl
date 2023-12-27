@@ -23,11 +23,10 @@ layout(binding = 1, std140) buffer BoneBuffer
     mat4 matrices[];
 } bones;
 
-layout(binding = 2, std140) buffer PointLightDataBuffer
+layout(binding = 2, std140) buffer DirLightDataBuffer
 {
-    vec4 lightPosFarPlane;
     ivec4 layer;
-    mat4 shadowMatrices[6];
+    mat4 shadowMatrix;
 } lightData;
 
 vec4 getSkinnedVertexPosition(int offset) {
@@ -83,5 +82,5 @@ vec4 getSkinnedVertexPosition(int offset) {
 
 void main()
 {
-    gl_Position = drawData.data[gl_DrawID].model * getSkinnedVertexPosition(drawData.data[gl_DrawID].boneOffset.x);
+    gl_Position = lightData.shadowMatrix * drawData.data[gl_DrawID].model * getSkinnedVertexPosition(drawData.data[gl_DrawID].boneOffset.x);
 }

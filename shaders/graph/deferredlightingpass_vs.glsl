@@ -22,16 +22,48 @@ layout(binding = 5) uniform isampler2D gBufferObjectShadows;
 layout(binding = 6) uniform sampler2D gBufferDepth;
 
 layout(binding = 7) uniform samplerCubeArray pointLightShadowMaps;
+layout(binding = 8) uniform sampler2DArray dirLightShadowMaps;
+layout(binding = 9) uniform sampler2DArray spotLightShadowMaps;
 
-layout(binding = 8, std140) buffer PointLightsData
+layout(binding = 10, std140) buffer PointLightsData
 {
     PBRPointLight lights[];
 } pointLights;
 
-layout(binding = 9, std140) buffer ShadowPointLightsData
+layout(binding = 11, std140) buffer ShadowPointLightsData
 {
     PBRPointLight lights[];
 } pointLightsShadow;
+
+layout(binding = 12, std140) buffer DirectionalLightsData
+{
+    PBRDirectionalLight lights[];
+} directionalLights;
+
+layout(binding = 13, std140) buffer ShadowDirectionalLightsData
+{
+    PBRDirectionalLight lights[];
+} directionalLightsShadow;
+
+layout(binding = 14, std140) buffer SpotLightsData
+{
+    PBRSpotLight lights[];
+} spotLights;
+
+layout(binding = 15, std140) buffer ShadowSpotLightsData
+{
+    PBRSpotLight lights[];
+} spotLightsShadow;
+
+layout(binding = 16, std140) buffer DirectionalLightTransforms
+{
+    mat4 transforms[];
+} dirLightTransforms;
+
+layout(binding = 17, std140) buffer SpotLightTransforms
+{
+    mat4 transforms[];
+} spotLightTransforms;
 
 void main()
 {

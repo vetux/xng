@@ -116,7 +116,7 @@ vec3 camPos) {
 }
 
 // Calculate the reflectance of a point light using the pass returned by pbr_begin() and the accumulated reflectance, the returned reflectance is the passed reflectance with the light influence added
-vec3 pbr_point(PbrPass pass, vec3 Lo, PBRPointLight light) {
+vec3 pbr_point(PbrPass pass, vec3 Lo, PBRPointLight light, float shadow) {
     vec3 lightPosition = light.position.xyz;
     vec3 lightColor = light.color.xyz;
 
@@ -162,13 +162,13 @@ vec3 pbr_point(PbrPass pass, vec3 Lo, PBRPointLight light) {
     float NdotL = max(dot(N, L), 0.0);
 
     // add to outgoing radiance Lo
-    Lo += (kD * albedo / PI + specular) * radiance * NdotL;// note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+    Lo += (kD * albedo / PI + specular) * radiance * NdotL * shadow;// note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 
     return Lo;
 }
 
 // Calculate the reflectance of a directional light using the pass returned by pbr_begin() and the accumulated reflectance, the returned reflectance is the passed reflectance with the light influence added
-vec3 pbr_directional(PbrPass pass, vec3 Lo, PBRDirectionalLight light) {
+vec3 pbr_directional(PbrPass pass, vec3 Lo, PBRDirectionalLight light, float shadow) {
     vec3 lightColor = light.color.xyz;
     vec3 lightDirection = -light.direction.xyz;
 
@@ -216,13 +216,13 @@ vec3 pbr_directional(PbrPass pass, vec3 Lo, PBRDirectionalLight light) {
     float NdotL = max(dot(N, L), 0.0);
 
     // add to outgoing radiance Lo
-    Lo += (kD * albedo / PI + specular) * radiance * NdotL;// note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+    Lo += (kD * albedo / PI + specular) * radiance * NdotL * shadow;// note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 
     return Lo;
 }
 
 // Calculate the reflectance of a directional light using the pass returned by pbr_begin() and the accumulated reflectance, the returned reflectance is the passed reflectance with the light influence added
-vec3 pbr_spot(PbrPass pass, vec3 Lo, PBRSpotLight light) {
+vec3 pbr_spot(PbrPass pass, vec3 Lo, PBRSpotLight light, float shadow) {
     vec3 lightPosition = light.position.xyz;
     vec3 lightColor = light.color.xyz;
     vec3 lightDirection = light.direction_quadratic.xyz;
@@ -275,7 +275,7 @@ vec3 pbr_spot(PbrPass pass, vec3 Lo, PBRSpotLight light) {
     float NdotL = max(dot(N, L), 0.0);
 
     // add to outgoing radiance Lo
-    Lo += (kD * albedo / PI + specular) * radiance * NdotL;// note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+    Lo += (kD * albedo / PI + specular) * radiance * NdotL * shadow;// note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 
     return Lo;
 }

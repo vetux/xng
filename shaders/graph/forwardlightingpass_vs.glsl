@@ -92,8 +92,6 @@ layout(binding = 9, std140) buffer ShadowSpotLightsData
     PBRSpotLight lights[];
 } spotLightsShadow;
 
-layout(binding = 10) uniform sampler2DArray atlasTextures[12];
-
 void main()
 {
     ShaderDrawData data = shaderData.data[gl_DrawID];

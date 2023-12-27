@@ -1,6 +1,6 @@
 set(SHADER_HEADERS)
 
-set(SHADER_COMPILED_DIR ${CMAKE_CURRENT_BINARY_DIR}/shaders_compiled/)
+set(SHADER_COMPILED_DIR ${CMAKE_CURRENT_BINARY_DIR}/compiled_shaders/)
 
 function(CompileShader PATH STAGE ENTRYPOINT)
     add_custom_command(
@@ -26,6 +26,9 @@ CompileShader(graph/compositepass_fs FRAGMENT main)
 CompileShader(graph/shadowmappingpass_vs VERTEX main)
 CompileShader(graph/shadowmappingpass_fs FRAGMENT main)
 CompileShader(graph/shadowmappingpass_gs GEOMETRY main)
+CompileShader(graph/shadowmappingpass_dir_vs VERTEX main)
+CompileShader(graph/shadowmappingpass_dir_fs FRAGMENT main)
+CompileShader(graph/shadowmappingpass_dir_gs GEOMETRY main)
 
 CompileShader(graph/skyboxpass_vs VERTEX main)
 CompileShader(graph/skyboxpass_fs FRAGMENT main)

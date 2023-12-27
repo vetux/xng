@@ -52,8 +52,10 @@ namespace xng {
 
         bool castShadows = true;
 
-        float shadowNearPlane = 0.1f;
-        float shadowFarPlane = 10000;
+        float shadowNearPlane = 0.001f;
+        float shadowFarPlane = 100;
+
+        float shadowProjectionExtent = 20; // The extent of the orthographic projection used for generating shadow maps, larger values means larger shadow distance at the cost of reduced resolution.
 
         Vec3f direction = Vec3f(0.5, -1, -1);
     };

@@ -14,6 +14,8 @@ layout(location = 6) in vec3 fB;
 layout(location = 7) in vec3 fN;
 layout(location = 8) flat in uint drawID;
 
+layout(location = 9) in vec3 fPosLightSpace;
+
 //layout(origin_upper_left, pixel_center_integer) in vec4 gl_FragCoord;
 
 layout(location = 0) out vec4 oColor;
@@ -89,7 +91,20 @@ layout(binding = 9, std140) buffer ShadowSpotLightsData
     PBRSpotLight lights[];
 } spotLightsShadow;
 
-layout(binding = 10) uniform sampler2DArray atlasTextures[12];
+layout(binding = 10, std140) buffer DirectionalLightTransforms
+{
+    mat4 transforms[];
+} dirLightTransforms;
+
+layout(binding = 11, std140) buffer SpotLightTransforms
+{
+    mat4 transforms[];
+} spotLightTransforms;
+
+layout(binding = 12) uniform sampler2DArray dirLightShadowMaps;
+layout(binding = 13) uniform sampler2DArray spotLightShadowMaps;
+
+layout(binding = 14) uniform sampler2DArray atlasTextures[12];
 
 vec4 textureAtlas(ShaderAtlasTexture tex, vec2 inUv)
 {
@@ -175,45 +190,60 @@ void main() {
 
     for (int i = 0; i < pointLights.lights.length(); i++) {
         PBRPointLight light = pointLights.lights[i];
-        reflectance = pbr_point(pass, reflectance, light);
+        reflectance = pbr_point(pass, reflectance, light, 1);
     }
 
     for (int i = 0; i < directionalLights.lights.length(); i++) {
         PBRDirectionalLight light = directionalLights.lights[i];
-        reflectance = pbr_directional(pass, reflectance, light);
+        reflectance = pbr_directional(pass, reflectance, light, 1);
     }
 
     for (int i = 0; i < spotLights.lights.length(); i++) {
         PBRSpotLight light = spotLights.lights[i];
-        reflectance = pbr_spot(pass, reflectance, light);
+        reflectance = pbr_spot(pass, reflectance, light, 1);
     }
 
-    if (shadows == 0) {
+    if (shadows == 0){
         for (int i = 0; i < pointLightsShadow.lights.length(); i++) {
             PBRPointLight light = pointLightsShadow.lights[i];
-            reflectance = pbr_point(pass, reflectance, light);
+            reflectance = pbr_point(pass, reflectance, light, 1);
         }
         for (int i = 0; i < directionalLightsShadow.lights.length(); i++) {
             PBRDirectionalLight light = directionalLightsShadow.lights[i];
-            reflectance = pbr_directional(pass, reflectance, light);
+            reflectance = pbr_directional(pass, reflectance, light, 1);
         }
         for (int i = 0; i < spotLightsShadow.lights.length(); i++) {
             PBRSpotLight light = spotLightsShadow.lights[i];
-            reflectance = pbr_spot(pass, reflectance, light);
+            reflectance = pbr_spot(pass, reflectance, light, 1);
         }
     } else {
         for (int i = 0; i < pointLightsShadow.lights.length(); i++) {
             PBRPointLight light = pointLightsShadow.lights[i];
             float shadow = sampleShadow(fPos, light.position.xyz, globs.viewPosition.xyz, pointLightShadowMaps, i, light.farPlane.x);
-            reflectance = pbr_point(pass, reflectance, light) * shadow;
+            reflectance = pbr_point(pass, reflectance, light, shadow);
         }
+
         for (int i = 0; i < directionalLightsShadow.lights.length(); i++) {
             PBRDirectionalLight light = directionalLightsShadow.lights[i];
-            reflectance = pbr_directional(pass, reflectance, light);
+            vec4 fragPosLightSpace = dirLightTransforms.transforms[i] * vec4(fPos, 1);
+            float shadow = sampleShadowDirectional(fragPosLightSpace,
+            dirLightShadowMaps,
+            i,
+            fNorm,
+            vec3(0),
+            fPos);
+            reflectance = pbr_directional(pass, reflectance, light, shadow);
         }
         for (int i = 0; i < spotLightsShadow.lights.length(); i++) {
             PBRSpotLight light = spotLightsShadow.lights[i];
-            reflectance = pbr_spot(pass, reflectance, light);
+            vec4 fragPosLightSpace = spotLightTransforms.transforms[i] * vec4(fPos, 1);
+            float shadow = sampleShadowDirectional(fragPosLightSpace,
+            spotLightShadowMaps,
+            i,
+            fNorm,
+            light.position.xyz,
+            fPos);
+            reflectance = pbr_spot(pass, reflectance, light, shadow);
         }
     }
 
