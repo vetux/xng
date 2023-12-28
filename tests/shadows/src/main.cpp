@@ -190,7 +190,7 @@ int main(int argc, char *argv[]) {
 
     DirectionalLightProperty dirLight;
     dirLight.light.power = 1;
-    dirLight.light.castShadows = false;
+    dirLight.light.castShadows = true;
 
     Node light;
 
@@ -203,12 +203,13 @@ int main(int argc, char *argv[]) {
 
     light = {};
 
-    dirLight = {};
-    dirLight.light.power = 1;
-    dirLight.light.direction = Vec3f(0, 0, -1);
-    light.addProperty(dirLight);
+    SpotLightProperty spotLight = {};
+    spotLight.light.power = 20;
+    spotLight.light.direction = Vec3f(0, 0, -1);
+    light.addProperty(spotLight);
 
     transformProp = {};
+    transformProp.transform.setPosition({0, 0, 5});
     light.addProperty(transformProp);
 
     scene.rootNode.childNodes.emplace_back(light);
@@ -224,7 +225,7 @@ int main(int argc, char *argv[]) {
     CameraController cameraController(cameraTransformRef.transform, input);
 
     auto &lightTransform = light.getProperty<TransformProperty>().transform;
-    auto &dLight = light.getProperty<DirectionalLightProperty>().light;
+    auto &dLight = light.getProperty<SpotLightProperty>().light;
 
     xng::FrameLimiter limiter;
     limiter.reset();

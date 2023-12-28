@@ -240,7 +240,7 @@ namespace xng {
                 auto &transform = l.getProperty<TransformProperty>().transform;
                 auto &light = l.getProperty<SpotLightProperty>().light;
                 float aspect = (float) spotShadowResolution.x / (float) spotShadowResolution.y;
-                spotShadowMatrices.emplace_back(MatrixMath::perspective(45,
+                spotShadowMatrices.emplace_back(MatrixMath::perspective(30,
                                                                         aspect,
                                                                         light.shadowNearPlane,
                                                                         light.shadowFarPlane)

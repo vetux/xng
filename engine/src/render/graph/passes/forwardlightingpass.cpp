@@ -25,6 +25,7 @@
 
 #include "graph/forwardlightingpass_vs.hpp"
 #include "graph/forwardlightingpass_fs.hpp"
+#include "xng/render/graph/framegraphsettings.hpp"
 
 namespace xng {
 #pragma pack(push, 1)
@@ -189,15 +190,15 @@ namespace xng {
 
                 auto &transform = l.getProperty<TransformProperty>().transform;
                 auto &light = l.getProperty<DirectionalLightProperty>().light;
-                dirLightTransforms.emplace_back(MatrixMath::ortho(-10.0f,
-                                                                  10.0f,
-                                                                  -10.0f,
-                                                                  10.0f,
-                                                                  light.shadowNearPlane,
-                                                                  light.shadowFarPlane)
-                                                * MatrixMath::lookAt(light.direction * (20),
-                                                                     {},
-                                                                     Vec3f(0, 1, 0)));
+                dirLightTransforms.emplace_back(MatrixMath::ortho(-light.shadowProjectionExtent,
+                                                                 light.shadowProjectionExtent,
+                                                                 -light.shadowProjectionExtent,
+                                                                 light.shadowProjectionExtent,
+                                                                 light.shadowNearPlane,
+                                                                 light.shadowFarPlane)
+                                               * MatrixMath::lookAt({},
+                                                                    light.direction,
+                                                                    Vec3f(0, 1, 0)));
             } else
                 dirLightCount++;
         }
@@ -209,20 +210,22 @@ namespace xng {
         size_t spotLightCount = 0;
         size_t shadowSpotLightCount = 0;
 
+        auto spotShadowResolution = builder.getSettings().get<Vec2i>(
+                FrameGraphSettings::SETTING_SHADOW_MAPPING_SPOT_RESOLUTION);
+
         for (auto l: spotLightNodes) {
             if (l.getProperty<SpotLightProperty>().light.castShadows) {
                 shadowSpotLightCount++;
                 auto &transform = l.getProperty<TransformProperty>().transform;
                 auto &light = l.getProperty<SpotLightProperty>().light;
-                spotLightTransforms.emplace_back(MatrixMath::ortho(-10.0f,
-                                                                   10.0f,
-                                                                   -10.0f,
-                                                                   10.0f,
-                                                                   light.shadowNearPlane,
-                                                                   light.shadowFarPlane)
-                                                 * MatrixMath::lookAt(light.direction * (20),
-                                                                      {},
-                                                                      Vec3f(0, 1, 0)));
+                float aspect = (float) spotShadowResolution.x / (float) spotShadowResolution.y;
+                spotLightTransforms.emplace_back(MatrixMath::perspective(30,
+                                                                        aspect,
+                                                                        light.shadowNearPlane,
+                                                                        light.shadowFarPlane)
+                                                * MatrixMath::lookAt(transform.getPosition(),
+                                                                     light.direction,
+                                                                     Vec3f(0, 1, 0)));
             } else
                 spotLightCount++;
         }

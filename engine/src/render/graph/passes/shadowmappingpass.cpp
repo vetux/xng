@@ -455,7 +455,7 @@ namespace xng {
             auto &transform = lightNode.getProperty<TransformProperty>().transform;
             float aspect = (float) spotShadowResolution.x / (float) spotShadowResolution.y;
 
-            Mat4f shadowProj = MatrixMath::perspective(30.0f,
+            Mat4f shadowProj = MatrixMath::perspective(30,
                                                        aspect,
                                                        light.shadowNearPlane,
                                                        light.shadowFarPlane)

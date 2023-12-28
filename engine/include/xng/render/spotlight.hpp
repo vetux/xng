@@ -60,21 +60,18 @@ namespace xng {
 
         ColorRGBA color = ColorRGBA::white(); // The color of the light
         float power = 10; // The strength of the light
-
-        bool castShadows = true;
-
-        float shadowNearPlane = 0.1f;
-        float shadowFarPlane = 10000;
-
         Vec3f direction = Vec3f(0, 0, -1);
 
-        float quadratic = 0.032f;
-
         float cutOff = 12.5; // The inner cut off angle in degrees
-        float outerCutOff = 17.5; // The outer cut off angle in degrees, The shadow is faded out between cutOff / outerCutOff
+        float outerCutOff = 17.5; // The outer cut off angle in degrees, The light is faded out between cutOff / outerCutOff
 
+        float quadratic = 0.032f;
         float constant = 1;
         float linear = 0.09;
+
+        bool castShadows = true;
+        float shadowNearPlane = 1;
+        float shadowFarPlane = 50;
     };
 }
 
