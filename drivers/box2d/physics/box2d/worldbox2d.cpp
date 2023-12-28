@@ -81,7 +81,56 @@ namespace xng {
             }
         }
 
-        std::unique_ptr<RigidBody> WorldBox2D::createBody(const ColliderDesc &colliderDesc, RigidBody::RigidBodyType type) {
+        std::vector<RayHit> WorldBox2D::rayTestAll(const Vec3f &from, const Vec3f &to) {
+            b2RayCastInput input;
+            input.p1 = convert(from);
+            input.p2 = convert(to);
+            input.maxFraction = 1;
+
+            std::vector<RayHit> ret;
+            for (b2Body *b = world.GetBodyList(); b; b = b->GetNext()) {
+                for (b2Fixture *f = b->GetFixtureList(); f; f = f->GetNext()) {
+                    b2RayCastOutput output;
+                    if (!f->RayCast(&output, input, 0))
+                        continue;
+                    ret.emplace_back(RayHit{output.fraction,
+                                            from + convert(output.fraction * convert(to - from)),
+                                            convert(output.normal),
+                                            fixtureColliderMapping.at(f)});
+                }
+            }
+            return ret;
+        }
+
+        RayHit WorldBox2D::rayTestClosest(const Vec3f &from, const Vec3f &to) {
+            b2RayCastInput input;
+            input.p1 = convert(from);
+            input.p2 = convert(to);
+            input.maxFraction = 1;
+
+            float closestFraction = 1;
+            b2Vec2 intersectionNormal(0, 0);
+            b2Fixture *closestFixture;
+            for (b2Body *b = world.GetBodyList(); b; b = b->GetNext()) {
+                for (b2Fixture *f = b->GetFixtureList(); f; f = f->GetNext()) {
+                    b2RayCastOutput output;
+                    if (!f->RayCast(&output, input, 0))
+                        continue;
+                    if (output.fraction < closestFraction) {
+                        closestFraction = output.fraction;
+                        intersectionNormal = output.normal;
+                        closestFixture = f;
+                    }
+                }
+            }
+            return RayHit{closestFraction,
+                          from + convert(closestFraction * convert(to - from)),
+                          convert(intersectionNormal),
+                          fixtureColliderMapping.at(closestFixture)};
+        }
+
+        std::unique_ptr<RigidBody>
+        WorldBox2D::createBody(const ColliderDesc &colliderDesc, RigidBody::RigidBodyType type) {
             return std::make_unique<RigidBodyBox2D>(*this, colliderDesc);
         }
     }

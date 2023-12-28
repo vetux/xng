@@ -62,6 +62,10 @@ namespace xng {
 
             void step(float deltaTime, int maxSteps) override;
 
+            std::vector<RayHit> rayTestAll(const Vec3f &from, const Vec3f &to) override;
+
+            RayHit rayTestClosest(const Vec3f &from, const Vec3f &to) override;
+
 
             void BeginContact(b2Contact *contact) override;
 

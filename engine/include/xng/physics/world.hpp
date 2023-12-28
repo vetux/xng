@@ -24,6 +24,7 @@
 #include "xng/physics/joint.hpp"
 #include "xng/physics/colliderdesc.hpp"
 #include "xng/physics/rigidbody.hpp"
+#include "xng/physics/rayhit.hpp"
 
 namespace xng {
     class XENGINE_EXPORT World {
@@ -84,6 +85,10 @@ namespace xng {
         virtual void step(float deltaTime) = 0;
 
         virtual void step(float deltaTime, int maxSteps) = 0;
+
+        virtual std::vector<RayHit> rayTestAll(const Vec3f &from, const Vec3f &to) = 0;
+
+        virtual RayHit rayTestClosest(const Vec3f &from, const Vec3f &to) = 0;
     };
 }
 

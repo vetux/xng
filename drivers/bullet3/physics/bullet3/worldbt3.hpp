@@ -29,6 +29,8 @@
 #include "physics/bullet3/jointbt3.hpp"
 
 #include "btBulletDynamicsCommon.h"
+#include "btBulletCollisionCommon.h"
+#include "BulletCollision/NarrowPhaseCollision/btRaycastCallback.h"
 
 namespace xng {
     class WorldBt3 : public World {
@@ -54,7 +56,8 @@ namespace xng {
             return std::make_unique<RigidBodyBt3>(dynamicsWorld);
         }
 
-        std::unique_ptr<RigidBody> createBody(const ColliderDesc &colliderDesc, RigidBody::RigidBodyType type) override {
+        std::unique_ptr<RigidBody>
+        createBody(const ColliderDesc &colliderDesc, RigidBody::RigidBodyType type) override {
             auto ret = std::make_unique<RigidBodyBt3>(dynamicsWorld, colliderDesc, type);
             colliders[ret.get()->body] = ColliderBt3(*ret);
             return ret;
@@ -104,8 +107,8 @@ namespace xng {
                                   convert(ptB),
                                   convert(normalOnB));
                         contacts.insert(c);
-                        if (!existingContacts.contains(c)){
-                            for(auto &l : listeners){
+                        if (!existingContacts.contains(c)) {
+                            for (auto &l: listeners) {
                                 l->beginContact(c);
                             }
                         }
@@ -116,22 +119,22 @@ namespace xng {
 
             std::unordered_set<Contact> delContacts;
 
-            for (auto & c: existingContacts){
-                if (contacts.find(c) == contacts.end()){
-                    for(auto &l : listeners){
+            for (auto &c: existingContacts) {
+                if (contacts.find(c) == contacts.end()) {
+                    for (auto &l: listeners) {
                         l->endContact(c);
                     }
                     delContacts.insert(c);
                 }
             }
 
-            for(auto &d : delContacts){
+            for (auto &d: delContacts) {
                 existingContacts.erase(d);
             }
         }
 
-        void step(float d, int maxSteps) override {
-            dynamicsWorld->stepSimulation(d, maxSteps);
+        void step(float deltaTime, int maxSteps) override {
+            dynamicsWorld->stepSimulation(deltaTime, maxSteps);
 
             std::unordered_set<Contact> contacts;
 
@@ -158,8 +161,8 @@ namespace xng {
                                   convert(ptB),
                                   convert(normalOnB));
                         contacts.insert(c);
-                        if (!existingContacts.contains(c)){
-                            for(auto &l : listeners){
+                        if (!existingContacts.contains(c)) {
+                            for (auto &l: listeners) {
                                 l->beginContact(c);
                             }
                         }
@@ -170,18 +173,50 @@ namespace xng {
 
             std::unordered_set<Contact> delContacts;
 
-            for (auto & c: existingContacts){
-                if (contacts.find(c) == contacts.end()){
-                    for(auto &l : listeners){
+            for (auto &c: existingContacts) {
+                if (contacts.find(c) == contacts.end()) {
+                    for (auto &l: listeners) {
                         l->endContact(c);
                     }
                     delContacts.insert(c);
                 }
             }
 
-            for(auto &d : delContacts){
+            for (auto &d: delContacts) {
                 existingContacts.erase(d);
             }
+        }
+
+        std::vector<RayHit> rayTestAll(const Vec3f &from, const Vec3f &to) override {
+            btCollisionWorld::AllHitsRayResultCallback allResults(convert(from), convert(to));
+            allResults.m_flags |= btTriangleRaycastCallback::kF_KeepUnflippedNormal;
+
+            dynamicsWorld->rayTest(convert(from), convert(to), allResults);
+
+            std::vector<RayHit> ret;
+            for (int i = 0; i < allResults.m_hitFractions.size(); i++) {
+                auto position = convert(lerp(convert(from), convert(to), allResults.m_hitFractions[i]));
+                auto normal = position + convert(allResults.m_hitNormalWorld[i]);
+                ret.emplace_back(RayHit{allResults.m_hitFractions[i],
+                                        position,
+                                        normal,
+                                        &colliders.at(allResults.m_collisionObjects[i])});
+            }
+            return ret;
+        }
+
+        RayHit rayTestClosest(const Vec3f &from, const Vec3f &to) override {
+            btCollisionWorld::ClosestRayResultCallback results(convert(from), convert(to));
+            results.m_flags |= btTriangleRaycastCallback::kF_KeepUnflippedNormal;
+
+            dynamicsWorld->rayTest(convert(from), convert(to), results);
+
+            auto position = convert(lerp(convert(from), convert(to), results.m_closestHitFraction));
+            auto normal = position + convert(results.m_hitNormalWorld);
+            return RayHit{results.m_closestHitFraction,
+                          position,
+                          normal,
+                          &colliders.at(results.m_collisionObject)};
         }
 
     private:
@@ -191,7 +226,7 @@ namespace xng {
 
         std::unordered_set<Contact> existingContacts;
 
-        std::map<const btCollisionObject*, ColliderBt3> colliders;
+        std::map<const btCollisionObject *, ColliderBt3> colliders;
 
     };
 }
