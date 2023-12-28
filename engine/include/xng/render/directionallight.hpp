@@ -49,15 +49,15 @@ namespace xng {
 
         ColorRGBA color = ColorRGBA::white(); // The color of the light
         float power = 1; // The strength of the light, for directional lights should be in the range 0 - 1
+        Vec3f direction = Vec3f(0.5, -1, -1);
 
         bool castShadows = true;
 
-        float shadowNearPlane = 0.001f;
+        float shadowNearPlane = -10;
         float shadowFarPlane = 100;
 
-        float shadowProjectionExtent = 20; // The extent of the orthographic projection used for generating shadow maps, larger values means larger shadow distance at the cost of reduced resolution.
-
-        Vec3f direction = Vec3f(0.5, -1, -1);
+        float shadowProjectionExtent = 50; // The extent of the orthographic projection used for generating shadow maps,
+                                            // larger values means larger shadow area around the origin at the cost of reduced resolution.
     };
 }
 
