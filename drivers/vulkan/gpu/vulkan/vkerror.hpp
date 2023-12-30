@@ -119,8 +119,10 @@ namespace xng::vulkan {
                 return "VK_OPERATION_DEFERRED_KHR";
             case VK_OPERATION_NOT_DEFERRED_KHR:
                 return "VK_OPERATION_NOT_DEFERRED_KHR";
+#ifdef VK_ERROR_COMPRESSION_EXHAUSTED_EXT // Not supported on android
             case VK_ERROR_COMPRESSION_EXHAUSTED_EXT:
                 return "VK_ERROR_COMPRESSION_EXHAUSTED_EXT";
+#endif
             case VK_RESULT_MAX_ENUM:
                 return "VK_RESULT_MAX_ENUM";
             default:

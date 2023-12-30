@@ -72,9 +72,7 @@ Drivers are implementations of interfaces (For example through 3rd party librari
             when passing types through the dll interface.
       - MinGW-w64 11
 - Android
-    - ~~Tested Compiler: Android NDK r25c~~ *
-
-*= Cross Compiling is currently not supported because of the shader precompilation stage (Will be solved in the future)
+    - Tested Compiler: Android NDK r25c
 
 ### Build Instructions
 

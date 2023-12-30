@@ -21,8 +21,12 @@ message("Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
 message("Include Dirs: ${includeDirs}")
 message("Link Dirs: ${linkDirs}")
 
-include(${BASE_SOURCE_DIR}/cmake/shadercompiler.cmake)
-include(${BASE_SOURCE_DIR}/cmake/compileshaders.cmake)
+set(SHADER_COMPILED_DIR ${BASE_SOURCE_DIR}/compiled_shaders/)
+
+if (NOT DEFINED CROSS_COMPILING)
+    include(${BASE_SOURCE_DIR}/cmake/shadercompiler.cmake)
+    include(${BASE_SOURCE_DIR}/cmake/compileshaders.cmake)
+endif ()
 
 include(${BASE_SOURCE_DIR}/cmake/drivers.cmake)
 include(${BASE_SOURCE_DIR}/cmake/engine.cmake)

@@ -83,7 +83,7 @@ namespace xng::vulkan {
 
         auto extensions = displayDriver.getRequiredVulkanExtensions();
 
-        extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+       // extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME); // Not supported on android
 
 #ifndef NDEBUG
         extensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -115,7 +115,7 @@ namespace xng::vulkan {
 
         createInfo.enabledLayerCount = 0;
 
-        createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+       // createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR; // Not supported on android
 
 #ifdef NDEBUG
         createInfo.enabledLayerCount = 0;

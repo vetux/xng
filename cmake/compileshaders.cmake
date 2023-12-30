@@ -1,7 +1,5 @@
 set(SHADER_HEADERS)
 
-set(SHADER_COMPILED_DIR ${CMAKE_CURRENT_BINARY_DIR}/compiled_shaders/)
-
 function(CompileShader PATH STAGE ENTRYPOINT)
     add_custom_command(
             OUTPUT ${SHADER_COMPILED_DIR}${PATH}.hpp

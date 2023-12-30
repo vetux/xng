@@ -101,11 +101,11 @@ namespace xng {
                         const btVector3 &ptB = pt.getPositionWorldOnB();
                         const btVector3 &normalOnB = pt.m_normalWorldOnB;
 
-                        Contact c(colliders.at(obA),
+                        Contact c{colliders.at(obA),
                                   colliders.at(obB),
                                   convert(ptA),
                                   convert(ptB),
-                                  convert(normalOnB));
+                                  convert(normalOnB)};
                         contacts.insert(c);
                         if (!existingContacts.contains(c)) {
                             for (auto &l: listeners) {
@@ -155,11 +155,11 @@ namespace xng {
                         const btVector3 &ptB = pt.getPositionWorldOnB();
                         const btVector3 &normalOnB = pt.m_normalWorldOnB;
 
-                        Contact c(colliders.at(obA),
+                        Contact c{colliders.at(obA),
                                   colliders.at(obB),
                                   convert(ptA),
                                   convert(ptB),
-                                  convert(normalOnB));
+                                  convert(normalOnB)};
                         contacts.insert(c);
                         if (!existingContacts.contains(c)) {
                             for (auto &l: listeners) {
