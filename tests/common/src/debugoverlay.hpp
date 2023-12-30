@@ -111,7 +111,7 @@ public:
                 msStr = ' ' + msStr;
         }
 
-        strm.clear();
+        strm = std::stringstream();
 
         strm << std::fixed << std::setprecision(0) << averageFps;
 
