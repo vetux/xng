@@ -196,8 +196,8 @@ namespace xng {
                                                                   light.shadowProjectionExtent,
                                                                   light.shadowNearPlane,
                                                                   light.shadowFarPlane)
-                                                * MatrixMath::lookAt({},
-                                                                     light.direction,
+                                                * MatrixMath::lookAt(Vec3f(light.shadowPosition.x, 0, light.shadowPosition.y),
+                                                                     Vec3f(light.shadowPosition.x, 0, light.shadowPosition.y) + light.direction,
                                                                      Vec3f(0, 1, 0)));
             } else
                 dirLightCount++;

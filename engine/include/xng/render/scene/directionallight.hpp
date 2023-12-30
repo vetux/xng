@@ -32,6 +32,7 @@ namespace xng {
             message.value("castShadows", castShadows);
             message.value("shadowNearPlane", shadowNearPlane);
             message.value("shadowFarPlane", shadowFarPlane);
+            message.value("shadowPosition", shadowPosition);
             message.value("direction", direction);
             return *this;
         }
@@ -43,6 +44,7 @@ namespace xng {
             castShadows >> message["castShadows"];
             shadowNearPlane >> message["shadowNearPlane"];
             shadowFarPlane >> message["shadowFarPlane"];
+            shadowPosition >> message["shadowPosition"];
             direction >> message["direction"];
             return message;
         }
@@ -56,8 +58,9 @@ namespace xng {
         float shadowNearPlane = -10;
         float shadowFarPlane = 100;
 
+        Vec2f shadowPosition{}; // The x and z coordinates used for generating the shadow map for this light
         float shadowProjectionExtent = 50; // The extent of the orthographic projection used for generating shadow maps,
-                                            // larger values means larger shadow area around the origin at the cost of reduced resolution.
+                                            // larger values means larger shadow area around the shadowPosition at the cost of reduced resolution.
     };
 }
 
