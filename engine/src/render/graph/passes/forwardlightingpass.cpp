@@ -191,14 +191,14 @@ namespace xng {
                 auto &transform = l.getProperty<TransformProperty>().transform;
                 auto &light = l.getProperty<DirectionalLightProperty>().light;
                 dirLightTransforms.emplace_back(MatrixMath::ortho(-light.shadowProjectionExtent,
-                                                                 light.shadowProjectionExtent,
-                                                                 -light.shadowProjectionExtent,
-                                                                 light.shadowProjectionExtent,
-                                                                 light.shadowNearPlane,
-                                                                 light.shadowFarPlane)
-                                               * MatrixMath::lookAt({},
-                                                                    light.direction,
-                                                                    Vec3f(0, 1, 0)));
+                                                                  light.shadowProjectionExtent,
+                                                                  -light.shadowProjectionExtent,
+                                                                  light.shadowProjectionExtent,
+                                                                  light.shadowNearPlane,
+                                                                  light.shadowFarPlane)
+                                                * MatrixMath::lookAt({},
+                                                                     light.direction,
+                                                                     Vec3f(0, 1, 0)));
             } else
                 dirLightCount++;
         }
@@ -219,13 +219,13 @@ namespace xng {
                 auto &transform = l.getProperty<TransformProperty>().transform;
                 auto &light = l.getProperty<SpotLightProperty>().light;
                 float aspect = (float) spotShadowResolution.x / (float) spotShadowResolution.y;
-                spotLightTransforms.emplace_back(MatrixMath::perspective(30,
-                                                                        aspect,
-                                                                        light.shadowNearPlane,
-                                                                        light.shadowFarPlane)
-                                                * MatrixMath::lookAt(transform.getPosition(),
-                                                                     light.direction,
-                                                                     Vec3f(0, 1, 0)));
+                spotLightTransforms.emplace_back(MatrixMath::perspective(45,
+                                                                         aspect,
+                                                                         light.shadowNearPlane,
+                                                                         light.shadowFarPlane)
+                                                 * MatrixMath::lookAt(transform.getPosition(),
+                                                                      transform.getPosition() + light.direction,
+                                                                      Vec3f(0, 1, 0)));
             } else
                 spotLightCount++;
         }

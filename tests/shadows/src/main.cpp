@@ -259,24 +259,32 @@ int main(int argc, char *argv[]) {
             auto v = MatrixMath::rotate(Vec3f{20, 0, 0} * deltaTime)
                      * Vec4f(dLight.direction.x, dLight.direction.y, dLight.direction.z, 1);
             dLight.direction = Vec3f(v.x, v.y, v.z);
-            // lightTransform.setPosition(lightTransform.getPosition() + Vec3f(0, 0, 1) * deltaTime);
         } else if (input.getKeyboard().getKey(KEY_KP_2)) {
             auto v = MatrixMath::rotate(Vec3f{-20, 0, 0} * deltaTime)
                      * Vec4f(dLight.direction.x, dLight.direction.y, dLight.direction.z, 1);
             dLight.direction = Vec3f(v.x, v.y, v.z);
-            // lightTransform.setPosition(lightTransform.getPosition() + Vec3f(0, 0, -1) * deltaTime);
         }
 
         if (input.getKeyboard().getKey(KEY_KP_4)) {
             auto v = MatrixMath::rotate(Vec3f{0, 20, 0} * deltaTime)
                      * Vec4f(dLight.direction.x, dLight.direction.y, dLight.direction.z, 1);
             dLight.direction = Vec3f(v.x, v.y, v.z);
-            //lightTransform.setPosition(lightTransform.getPosition() + Vec3f(1, 0, 0) * deltaTime);
         } else if (input.getKeyboard().getKey(KEY_KP_6)) {
             auto v = MatrixMath::rotate(Vec3f{0, -20, 0} * deltaTime)
                      * Vec4f(dLight.direction.x, dLight.direction.y, dLight.direction.z, 1);
             dLight.direction = Vec3f(v.x, v.y, v.z);
-            //   lightTransform.setPosition(lightTransform.getPosition() + Vec3f(-1, 0, 0) * deltaTime);
+        }
+
+        if (input.getKeyboard().getKey(KEY_KP_7)) {
+            lightTransform.setPosition(lightTransform.getPosition() + Vec3f(1, 0, 0) * deltaTime);
+        } else if (input.getKeyboard().getKey(KEY_KP_9)) {
+            lightTransform.setPosition(lightTransform.getPosition() + Vec3f(-1, 0, 0) * deltaTime);
+        }
+
+        if (input.getKeyboard().getKey(KEY_KP_1)) {
+            lightTransform.setPosition(lightTransform.getPosition() + Vec3f(0, 1, 0) * deltaTime);
+        } else if (input.getKeyboard().getKey(KEY_KP_3)) {
+            lightTransform.setPosition(lightTransform.getPosition() + Vec3f(0, -1, 0) * deltaTime);
         }
 
         renderer.render(scene);

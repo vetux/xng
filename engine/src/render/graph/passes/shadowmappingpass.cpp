@@ -32,8 +32,6 @@
 
 #include "xng/math/rotation.hpp"
 
-//TODO: Fix Spot Light shadow projection matrix
-
 struct ShadowShaderDrawData {
     std::array<int, 4> boneOffset{};
     Mat4f model;
@@ -455,12 +453,12 @@ namespace xng {
             auto &transform = lightNode.getProperty<TransformProperty>().transform;
             float aspect = (float) spotShadowResolution.x / (float) spotShadowResolution.y;
 
-            Mat4f shadowProj = MatrixMath::perspective(30,
+            Mat4f shadowProj = MatrixMath::perspective(45,
                                                        aspect,
                                                        light.shadowNearPlane,
                                                        light.shadowFarPlane)
                                * MatrixMath::lookAt(transform.getPosition(),
-                                                    light.direction,
+                                                    transform.getPosition() + light.direction,
                                                     Vec3f(0, 1, 0));
 
             ShadowDirLightData lightData;
