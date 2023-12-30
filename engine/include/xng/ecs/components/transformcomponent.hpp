@@ -28,8 +28,6 @@
 #include "xng/io/messageable.hpp"
 
 namespace xng {
-    struct AssetScene;
-
     struct XENGINE_EXPORT TransformComponent : public Component {
         static Transform walkHierarchy(const TransformComponent &component, EntityScene &entityManager);
 

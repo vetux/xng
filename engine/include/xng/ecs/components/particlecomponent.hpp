@@ -24,6 +24,7 @@
 #include "xng/ecs/component.hpp"
 
 namespace xng {
+    // TODO: Design particle rendering interface
     struct XENGINE_EXPORT ParticleComponent : public Component {
         Messageable &operator<<(const Message &message) override {
             return Component::operator<<(message);
