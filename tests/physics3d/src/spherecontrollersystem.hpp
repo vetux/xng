@@ -46,19 +46,19 @@ public:
 
     void update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) override {
         Vec3f in;
-        if (input.getKeyboard().getKey(KEY_KP_4)){
+        if (input.getKey(KEY_KP_4)){
             in.x = -1;
-        } else if (input.getKeyboard().getKey(KEY_KP_6))  {
+        } else if (input.getKey(KEY_KP_6))  {
             in.x = 1;
         }
 
-        if (input.getKeyboard().getKey(KEY_KP_8)){
+        if (input.getKey(KEY_KP_8)){
             in.z = -1;
-        } else if (input.getKeyboard().getKey(KEY_KP_2))  {
+        } else if (input.getKey(KEY_KP_2))  {
             in.z = 1;
         }
 
-        if (input.getKeyboard().getKey(KEY_KP_PLUS)){
+        if (input.getKey(KEY_KP_PLUS)){
             in.y = 1;
         }
 

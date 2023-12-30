@@ -47,14 +47,14 @@ public:
             rotation = Vec2f(-input.getMouse().positionDelta.y, -input.getMouse().positionDelta.x);
         }
 
-        if (input.getKeyboard().getKey(KEY_Q)){
+        if (input.getKey(KEY_Q)){
             rotation.y += -5;
-        } else if (input.getKeyboard().getKey(xng::KEY_E)){
+        } else if (input.getKey(xng::KEY_E)){
             rotation.y += 5;
         }
 
         float speed = 1;
-        if (input.getKeyboard().getKey(KEY_LSHIFT)){
+        if (input.getKey(KEY_LSHIFT)){
             speed = 10;
         }
 
@@ -66,21 +66,21 @@ public:
         }
 
         Vec3f movement;
-        if (input.getKeyboard().getKey(KEY_W)) {
+        if (input.getKey(KEY_W)) {
             movement.y = -speed;
-        } else if (input.getKeyboard().getKey(xng::KEY_S)) {
+        } else if (input.getKey(xng::KEY_S)) {
             movement.y = speed;
         }
 
-        if (input.getKeyboard().getKey(KEY_A)) {
+        if (input.getKey(KEY_A)) {
             movement.x = speed;
-        } else if (input.getKeyboard().getKey(xng::KEY_D)) {
+        } else if (input.getKey(xng::KEY_D)) {
             movement.x = -speed;
         }
 
-        if (input.getKeyboard().getKey(xng::KEY_SPACE)) {
+        if (input.getKey(xng::KEY_SPACE)) {
             movement.z = speed;
-        } else if (input.getKeyboard().getKey(xng::KEY_LCTRL)) {
+        } else if (input.getKey(xng::KEY_LCTRL)) {
             movement.z = -speed;
         }
 

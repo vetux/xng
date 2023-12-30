@@ -33,6 +33,10 @@ add_executable(test-physics3d ${BASE_SOURCE_DIR}/tests/physics3d/src/main.cpp)
 target_include_directories(test-physics3d PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/physics3d/src/ ${SHADER_COMPILED_DIR} ${TESTS_COMMON_DIR})
 target_link_libraries(test-physics3d Threads::Threads xengine)
 
+add_executable(test-physics2d ${BASE_SOURCE_DIR}/tests/physics2d/src/main.cpp)
+target_include_directories(test-physics2d PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/physics2d/src/ ${SHADER_COMPILED_DIR} ${TESTS_COMMON_DIR})
+target_link_libraries(test-physics2d Threads::Threads xengine)
+
 if (MSVC)
     target_compile_options(test-framegraph PUBLIC /bigobj)
     target_compile_options(test-skeletalanimation PUBLIC /bigobj)

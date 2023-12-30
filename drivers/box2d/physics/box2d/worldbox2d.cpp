@@ -52,11 +52,11 @@ namespace xng {
             world.SetGravity(convert(gravity));
         }
 
-        void WorldBox2D::step(float deltaTime) {
+        void WorldBox2D::step(DeltaTime deltaTime) {
             world.Step(deltaTime, 10, 10);
         }
 
-        void WorldBox2D::step(float deltaTime, int maxSteps) {
+        void WorldBox2D::step(DeltaTime deltaTime, int maxSteps) {
             deltaAccumulator += static_cast<float>(deltaTime);
             int steps = static_cast<int>(deltaAccumulator / timeStep);
             deltaAccumulator -= timeStep * static_cast<float>(steps);

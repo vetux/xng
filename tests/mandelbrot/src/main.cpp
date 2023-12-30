@@ -128,28 +128,28 @@ int main(int argc, char *argv[]) {
         auto delta = limiter.newFrame();
 
         Vec2i move;
-        if (window->getInput().getKeyboard().getKey(KEY_W)) {
+        if (window->getInput().getKey(KEY_W)) {
             move.y = 1;
-        } else if (window->getInput().getKeyboard().getKey(KEY_S)) {
+        } else if (window->getInput().getKey(KEY_S)) {
             move.y = -1;
         }
-        if (window->getInput().getKeyboard().getKey(KEY_A)) {
+        if (window->getInput().getKey(KEY_A)) {
             move.x = -1;
-        } else if (window->getInput().getKeyboard().getKey(xng::KEY_D)) {
+        } else if (window->getInput().getKey(xng::KEY_D)) {
             move.x = 1;
         }
 
         float scale = 0;
-        if (window->getInput().getKeyboard().getKey(KEY_UP)) {
+        if (window->getInput().getKey(KEY_UP)) {
             scale = 1;
-        } else if (window->getInput().getKeyboard().getKey(KEY_DOWN)) {
+        } else if (window->getInput().getKey(KEY_DOWN)) {
             scale = -1;
         }
 
         float iteration = 0;
-        if (window->getInput().getKeyboard().getKey(KEY_LEFT)) {
+        if (window->getInput().getKey(KEY_LEFT)) {
             iteration = 1;
-        } else if (window->getInput().getKeyboard().getKey(xng::KEY_RIGHT)) {
+        } else if (window->getInput().getKey(xng::KEY_RIGHT)) {
             iteration = -1;
         }
 

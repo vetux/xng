@@ -378,12 +378,12 @@ int main(int argc, char *argv[]) {
             testPass->incrementSlot();
         }
 
-        if (window->getInput().getKeyboard().getKey(KEY_R)) {
+        if (window->getInput().getKey(KEY_R)) {
             for (auto &ln: lights) {
                 auto &transform = ln.getProperty<TransformProperty>().transform;
                 transform.setPosition(transform.getPosition() + Vec3f(0, 0, 1.0f * deltaTime));
             }
-        } else if (window->getInput().getKeyboard().getKey(KEY_F)) {
+        } else if (window->getInput().getKey(KEY_F)) {
             for (auto &ln: lights) {
                 auto &transform = ln.getProperty<TransformProperty>().transform;
                 transform.setPosition(transform.getPosition() - Vec3f(0, 0, 1.0f * deltaTime));

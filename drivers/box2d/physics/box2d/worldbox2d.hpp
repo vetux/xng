@@ -27,6 +27,7 @@
 
 #include "physics/box2d/rigidbodybox2d.hpp"
 #include "physics/box2d/jointbox2d.hpp"
+#include "xng/util/time.hpp"
 
 namespace xng {
     namespace box2d {
@@ -58,9 +59,9 @@ namespace xng {
 
             void setGravity(const Vec3f &gravity) override;
 
-            void step(float deltaTime) override;
+            void step(DeltaTime deltaTime) override;
 
-            void step(float deltaTime, int maxSteps) override;
+            void step(DeltaTime deltaTime, int maxSteps) override;
 
             std::vector<RayHit> rayTestAll(const Vec3f &from, const Vec3f &to) override;
 

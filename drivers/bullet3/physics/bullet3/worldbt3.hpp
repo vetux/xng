@@ -31,6 +31,7 @@
 #include "btBulletDynamicsCommon.h"
 #include "btBulletCollisionCommon.h"
 #include "BulletCollision/NarrowPhaseCollision/btRaycastCallback.h"
+#include "xng/util/time.hpp"
 
 namespace xng {
     class WorldBt3 : public World {
@@ -79,7 +80,7 @@ namespace xng {
             dynamicsWorld->setGravity(convert(gravity));
         }
 
-        void step(float deltaTime) override {
+        void step(DeltaTime deltaTime) override {
             dynamicsWorld->stepSimulation(deltaTime, -1);
 
             std::unordered_set<Contact> contacts;
@@ -133,7 +134,7 @@ namespace xng {
             }
         }
 
-        void step(float deltaTime, int maxSteps) override {
+        void step(DeltaTime deltaTime, int maxSteps) override {
             dynamicsWorld->stepSimulation(deltaTime, maxSteps);
 
             std::unordered_set<Contact> contacts;

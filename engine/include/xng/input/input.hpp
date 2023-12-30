@@ -85,6 +85,14 @@ namespace xng {
             }
             return ret;
         }
+
+        bool getKey(KeyboardKey key){
+            return getKeyboard().getKey(key);
+        }
+
+        bool getKeyDown(KeyboardKey key){
+            return getKeyboard().getKeyDown(key);
+        }
     };
 }
 

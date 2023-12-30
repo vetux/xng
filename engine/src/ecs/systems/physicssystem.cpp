@@ -157,7 +157,7 @@ namespace xng {
         }
 
         if (timeStep == 0) {
-            world.step(static_cast<float>(deltaTime), maxSteps);
+            world.step(deltaTime, maxSteps);
         } else {
             deltaAccumulator += static_cast<float>(deltaTime);
             int steps = static_cast<int>(deltaAccumulator / timeStep);
@@ -172,7 +172,7 @@ namespace xng {
                     rb.applyAngularImpulse(pair.second.angularImpulse);
                 }
 
-                world.step(timeStep);
+                world.step(DeltaTime(timeStep));
             }
         }
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {

@@ -151,9 +151,9 @@ int main(int argc, char *argv[]) {
 
         overlay.draw(deltaTime, *target);
 
-        if (input.getKeyboard().getKey(KEY_V)) {
+        if (input.getKey(KEY_V)) {
             prop.transform.setRotation(prop.transform.getRotation() * Quaternion(Vec3f(0, 20 * deltaTime, 0)));
-        } else if (input.getKeyboard().getKey(KEY_C)) {
+        } else if (input.getKey(KEY_C)) {
             prop.transform.setRotation(prop.transform.getRotation() * Quaternion(Vec3f(0, -20 * deltaTime, 0)));
         }
 

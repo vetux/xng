@@ -243,47 +243,47 @@ int main(int argc, char *argv[]) {
             testPass->incrementSlot();
         }
 
-        if (input.getKeyboard().getKey(KEY_R)) {
+        if (input.getKey(KEY_R)) {
             for (auto &ln: lights) {
                 auto &transform = ln.getProperty<TransformProperty>().transform;
                 transform.setPosition(transform.getPosition() + Vec3f(0, 0, 1.0f * deltaTime));
             }
-        } else if (input.getKeyboard().getKey(KEY_F)) {
+        } else if (input.getKey(KEY_F)) {
             for (auto &ln: lights) {
                 auto &transform = ln.getProperty<TransformProperty>().transform;
                 transform.setPosition(transform.getPosition() - Vec3f(0, 0, 1.0f * deltaTime));
             }
         }
 
-        if (input.getKeyboard().getKey(KEY_KP_8)) {
+        if (input.getKey(KEY_KP_8)) {
             auto v = MatrixMath::rotate(Vec3f{20, 0, 0} * deltaTime)
                      * Vec4f(dLight.direction.x, dLight.direction.y, dLight.direction.z, 1);
             dLight.direction = Vec3f(v.x, v.y, v.z);
-        } else if (input.getKeyboard().getKey(KEY_KP_2)) {
+        } else if (input.getKey(KEY_KP_2)) {
             auto v = MatrixMath::rotate(Vec3f{-20, 0, 0} * deltaTime)
                      * Vec4f(dLight.direction.x, dLight.direction.y, dLight.direction.z, 1);
             dLight.direction = Vec3f(v.x, v.y, v.z);
         }
 
-        if (input.getKeyboard().getKey(KEY_KP_4)) {
+        if (input.getKey(KEY_KP_4)) {
             auto v = MatrixMath::rotate(Vec3f{0, 20, 0} * deltaTime)
                      * Vec4f(dLight.direction.x, dLight.direction.y, dLight.direction.z, 1);
             dLight.direction = Vec3f(v.x, v.y, v.z);
-        } else if (input.getKeyboard().getKey(KEY_KP_6)) {
+        } else if (input.getKey(KEY_KP_6)) {
             auto v = MatrixMath::rotate(Vec3f{0, -20, 0} * deltaTime)
                      * Vec4f(dLight.direction.x, dLight.direction.y, dLight.direction.z, 1);
             dLight.direction = Vec3f(v.x, v.y, v.z);
         }
 
-        if (input.getKeyboard().getKey(KEY_KP_7)) {
+        if (input.getKey(KEY_KP_7)) {
             lightTransform.setPosition(lightTransform.getPosition() + Vec3f(1, 0, 0) * deltaTime);
-        } else if (input.getKeyboard().getKey(KEY_KP_9)) {
+        } else if (input.getKey(KEY_KP_9)) {
             lightTransform.setPosition(lightTransform.getPosition() + Vec3f(-1, 0, 0) * deltaTime);
         }
 
-        if (input.getKeyboard().getKey(KEY_KP_1)) {
+        if (input.getKey(KEY_KP_1)) {
             lightTransform.setPosition(lightTransform.getPosition() + Vec3f(0, 1, 0) * deltaTime);
-        } else if (input.getKeyboard().getKey(KEY_KP_3)) {
+        } else if (input.getKey(KEY_KP_3)) {
             lightTransform.setPosition(lightTransform.getPosition() + Vec3f(0, -1, 0) * deltaTime);
         }
 

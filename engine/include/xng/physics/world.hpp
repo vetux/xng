@@ -26,6 +26,8 @@
 #include "xng/physics/rigidbody.hpp"
 #include "xng/physics/rayhit.hpp"
 
+#include "xng/util/time.hpp"
+
 namespace xng {
     class XENGINE_EXPORT World {
     public:
@@ -82,9 +84,9 @@ namespace xng {
 
         virtual void setGravity(const Vec3f &gravity) = 0;
 
-        virtual void step(float deltaTime) = 0;
+        virtual void step(DeltaTime deltaTime) = 0;
 
-        virtual void step(float deltaTime, int maxSteps) = 0;
+        virtual void step(DeltaTime deltaTime, int maxSteps) = 0;
 
         virtual std::vector<RayHit> rayTestAll(const Vec3f &from, const Vec3f &to) = 0;
 
