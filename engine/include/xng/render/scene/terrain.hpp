@@ -22,6 +22,7 @@
 
 #include "xng/render/scene/texture.hpp"
 
+// TODO: Implement terrain rendering pass
 namespace xng {
     struct Terrain : public Resource, public Messageable {
         std::unique_ptr<Resource> clone() override {
