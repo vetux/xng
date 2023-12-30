@@ -20,7 +20,7 @@
 #ifndef XENGINE_DEFERREDLIGHTINGPASS_HPP
 #define XENGINE_DEFERREDLIGHTINGPASS_HPP
 
-#include "xng/render/scene.hpp"
+#include "xng/render/scene/scene.hpp"
 #include "xng/render/graph/framegraphpass.hpp"
 #include "xng/render/graph/framegraphresource.hpp"
 

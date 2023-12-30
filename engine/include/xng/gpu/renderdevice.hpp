@@ -49,7 +49,7 @@
 
 #include "xng/shader/shaderdecompiler.hpp"
 
-#include "xng/render/mesh.hpp"
+#include "xng/render/scene/mesh.hpp"
 #include "xng/gpu/renderdeviceinfo.hpp"
 
 namespace xng {

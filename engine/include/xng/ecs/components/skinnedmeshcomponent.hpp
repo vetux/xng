@@ -20,8 +20,8 @@
 #ifndef XENGINE_SKINNEDMESHCOMPONENT_HPP
 #define XENGINE_SKINNEDMESHCOMPONENT_HPP
 
-#include "xng/render/material.hpp"
-#include "xng/render/skinnedmesh.hpp"
+#include "xng/render/scene/material.hpp"
+#include "xng/render/scene/skinnedmesh.hpp"
 #include "xng/resource/resourcehandle.hpp"
 #include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"

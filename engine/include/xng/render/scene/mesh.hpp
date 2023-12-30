@@ -38,7 +38,7 @@
 
 #include "xng/gpu/vertexarrayobjectdesc.hpp"
 
-#include "xng/render/material.hpp"
+#include "material.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT Mesh : public Resource {

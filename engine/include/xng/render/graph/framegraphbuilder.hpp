@@ -29,7 +29,7 @@
 #include "xng/render/graph/framegraphcommand.hpp"
 
 #include "xng/render/scenerenderersettings.hpp"
-#include "xng/render/scene.hpp"
+#include "xng/render/scene/scene.hpp"
 
 namespace xng {
     class XENGINE_EXPORT FrameGraphBuilder {

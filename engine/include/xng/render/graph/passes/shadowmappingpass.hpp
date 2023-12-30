@@ -21,9 +21,9 @@
 #define XENGINE_SHADOWMAPPINGPASS_HPP
 
 #include "xng/render/graph/framegraphpass.hpp"
-#include "xng/render/pointlight.hpp"
+#include "xng/render/scene/pointlight.hpp"
 #include "xng/render/graph/meshallocator.hpp"
-#include "xng/render/scene.hpp"
+#include "xng/render/scene/scene.hpp"
 
 namespace xng {
     /**

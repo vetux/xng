@@ -22,16 +22,16 @@
 
 #include <utility>
 
-#include "xng/render/camera.hpp"
+#include "xng/render/scene/camera.hpp"
 
-#include "xng/render/pointlight.hpp"
+#include "xng/render/scene/pointlight.hpp"
 
-#include "xng/render/material.hpp"
-#include "xng/render/skybox.hpp"
+#include "xng/render/scene/material.hpp"
+#include "xng/render/scene/skybox.hpp"
 #include "xng/shader/shader.hpp"
-#include "xng/render/mesh.hpp"
-#include "xng/render/skinnedmesh.hpp"
-#include "xng/render/node.hpp"
+#include "xng/render/scene/mesh.hpp"
+#include "xng/render/scene/skinnedmesh.hpp"
+#include "xng/render/scene/node.hpp"
 
 #include "xng/util/genericmap.hpp"
 

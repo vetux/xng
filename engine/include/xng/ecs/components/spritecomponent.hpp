@@ -20,7 +20,7 @@
 #ifndef XENGINE_SPRITECOMPONENT_HPP
 #define XENGINE_SPRITECOMPONENT_HPP
 
-#include "xng/render/sprite.hpp"
+#include "xng/render/scene/sprite.hpp"
 #include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
 

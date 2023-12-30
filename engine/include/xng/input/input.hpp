@@ -22,7 +22,7 @@
 
 #include <set>
 
-#include "xng/render/image.hpp"
+#include "xng/render/scene/image.hpp"
 
 #include "xng/input/inputdevice.hpp"
 

@@ -24,7 +24,7 @@
 #include "xng/gpu/renderdevice.hpp"
 
 #include "xng/render/atlas/textureatlashandle.hpp"
-#include "xng/render/texture.hpp"
+#include "xng/render/scene/texture.hpp"
 
 #include "xng/render/graph/framegraphbuilder.hpp"
 

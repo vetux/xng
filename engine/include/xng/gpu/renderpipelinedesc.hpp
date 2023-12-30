@@ -23,7 +23,7 @@
 #include <functional>
 #include <variant>
 
-#include "xng/render/color.hpp"
+#include "xng/render/scene/color.hpp"
 
 #include "xng/math/vector2.hpp"
 

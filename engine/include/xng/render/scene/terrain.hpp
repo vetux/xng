@@ -20,7 +20,7 @@
 #ifndef XENGINE_TERRAIN_HPP
 #define XENGINE_TERRAIN_HPP
 
-#include "xng/render/texture.hpp"
+#include "xng/render/scene/texture.hpp"
 
 namespace xng {
     struct Terrain : public Resource, public Messageable {

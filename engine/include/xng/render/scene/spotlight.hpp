@@ -23,7 +23,7 @@
 #include "xng/math/transform.hpp"
 #include "xng/math/rotation.hpp"
 #include "xng/io/messageable.hpp"
-#include "xng/render/color.hpp"
+#include "xng/render/scene/color.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT SpotLight : public Messageable {

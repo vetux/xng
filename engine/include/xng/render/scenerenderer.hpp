@@ -20,7 +20,7 @@
 #ifndef XENGINE_SCENERENDERER_HPP
 #define XENGINE_SCENERENDERER_HPP
 
-#include "xng/render/scene.hpp"
+#include "xng/render/scene/scene.hpp"
 #include "xng/render/scenerenderersettings.hpp"
 
 #include "xng/util/genericmap.hpp"

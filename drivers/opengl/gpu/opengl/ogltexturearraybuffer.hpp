@@ -27,7 +27,7 @@
 #include "opengl_include.hpp"
 #include "opengl_checkerror.hpp"
 
-#include "xng/render/color.hpp"
+#include "xng/render/scene/color.hpp"
 
 namespace xng::opengl {
     class OGLTextureArrayBuffer : public TextureArrayBuffer {

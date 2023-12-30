@@ -20,8 +20,8 @@
 #include "xng/resource/importers/stbiimporter.hpp"
 
 #include "thirdparty/stb_image.h"
-#include "xng/render/image.hpp"
-#include "xng/render/texture.hpp"
+#include "xng/render/scene/image.hpp"
+#include "xng/render/scene/texture.hpp"
 
 #include <cstring>
 

@@ -24,7 +24,7 @@
 #include <map>
 #include <memory>
 
-#include "xng/render/property.hpp"
+#include "property.hpp"
 
 namespace xng {
     struct Node;

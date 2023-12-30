@@ -17,40 +17,58 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_TEXTURE_HPP
-#define XENGINE_TEXTURE_HPP
+#ifndef XENGINE_SPRITE_HPP
+#define XENGINE_SPRITE_HPP
 
-#include "xng/gpu/texturebuffer.hpp"
+#include "xng/resource/resource.hpp"
 #include "xng/resource/resourcehandle.hpp"
-#include "xng/render/image.hpp"
+
+#include "xng/math/rectangle.hpp"
+
+#include "xng/gpu/renderdevice.hpp"
+
+#include "xng/render/scene/texture.hpp"
+
+#include "xng/io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT Texture : public Resource, public Messageable {
-        ~Texture() override = default;
+    /**
+     * A sprite is a texture displayed on a planar quad mesh perpendicular to the camera.
+     */
+    struct XENGINE_EXPORT Sprite : public Resource, public Messageable {
+        Sprite() = default;
+
+        Sprite(ResourceHandle<ImageRGBA> image,
+               Recti offset)
+                : image(std::move(image)),
+                  offset(std::move(offset)) {}
+
+        ~Sprite() override = default;
 
         std::unique_ptr<Resource> clone() override {
-            return std::make_unique<Texture>(*this);
+            return std::make_unique<Sprite>(*this);
         }
 
         std::type_index getTypeIndex() const override {
-            return typeid(Texture);
+            return typeid(Sprite);
         }
 
         Messageable &operator<<(const Message &message) override {
-            message.value("image", image);
-            message.value("description", description);
+            offset << message.getMessage("offset");
+            image << message.getMessage("image");
             return *this;
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            image >> message["image"];
-            description >> message["description"];
+            offset >> message["offset"];
+            if (image.assigned())
+                image >> message["image"];
             return message;
         }
 
-        ResourceHandle<ImageRGBA> image;
-        TextureBufferDesc description;
+        Recti offset{}; // The part of the image which contains the sprite
+        ResourceHandle<ImageRGBA> image{}; // The image which contains the sprite
 
         bool isLoaded() const override {
             return image.isLoaded();
@@ -58,4 +76,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_TEXTURE_HPP
+#endif //XENGINE_SPRITE_HPP

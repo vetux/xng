@@ -22,9 +22,9 @@
 
 #include <typeindex>
 
-#include "xng/render/pointlight.hpp"
-#include "xng/render/directionallight.hpp"
-#include "xng/render/spotlight.hpp"
+#include "xng/render/scene/pointlight.hpp"
+#include "xng/render/scene/directionallight.hpp"
+#include "xng/render/scene/spotlight.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT Property {

@@ -30,7 +30,7 @@
 #include "xng/shader/shadersource.hpp"
 #include "xng/shader/shadercompiler.hpp"
 
-#include "xng/render/camera.hpp"
+#include "xng/render/scene/camera.hpp"
 
 #include "xng/util/hashcombine.hpp"
 

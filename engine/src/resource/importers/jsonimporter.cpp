@@ -23,9 +23,9 @@
 
 #include "xng/async/threadpool.hpp"
 
-#include "xng/render/texture.hpp"
-#include "xng/render/material.hpp"
-#include "xng/render/cubemap.hpp"
+#include "xng/render/scene/texture.hpp"
+#include "xng/render/scene/material.hpp"
+#include "xng/render/scene/cubemap.hpp"
 #include "xng/animation/sprite/spriteanimation.hpp"
 #include "xng/ecs/entityscene.hpp"
 

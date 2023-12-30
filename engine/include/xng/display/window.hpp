@@ -23,7 +23,7 @@
 #include "xng/gpu/renderdevice.hpp"
 #include "xng/gpu/rendertarget.hpp"
 
-#include "xng/render/image.hpp"
+#include "xng/render/scene/image.hpp"
 
 #include "windowlistener.hpp"
 #include "windowattributes.hpp"

@@ -22,7 +22,7 @@
 
 #include "xng/render/graph/framegraphbuilder.hpp"
 
-#include "xng/render/skinnedmesh.hpp"
+#include "xng/render/scene/skinnedmesh.hpp"
 
 
 namespace xng {

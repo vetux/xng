@@ -29,7 +29,7 @@
 
 #include "xng/io/messageable.hpp"
 
-#include "xng/render/color.hpp"
+#include "xng/render/scene/color.hpp"
 
 namespace xng {
     struct TextureBufferDesc : public Messageable {

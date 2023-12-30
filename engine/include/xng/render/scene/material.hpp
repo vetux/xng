@@ -22,7 +22,7 @@
 
 #include <variant>
 
-#include "xng/render/texture.hpp"
+#include "xng/render/scene/texture.hpp"
 #include "xng/shader/shader.hpp"
 
 #include "xng/resource/resourcehandle.hpp"
