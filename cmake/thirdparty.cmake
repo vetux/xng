@@ -18,7 +18,7 @@ function(add_thirdparty_include PATH)
     endif ()
 endfunction()
 
-set(THIRD_PARTY_BASE ${CMAKE_SOURCE_DIR}/thirdparty)
+set(THIRD_PARTY_BASE ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
 
 if (DRIVER_GLFW)
     add_thirdparty_subdir(${THIRD_PARTY_BASE}/glfw/)

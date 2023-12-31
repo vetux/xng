@@ -10,19 +10,19 @@ target_include_directories(test-skeletalanimation PRIVATE ${CMAKE_CURRENT_SOURCE
 target_link_libraries(test-skeletalanimation Threads::Threads xengine)
 
 add_executable(test-renderer2d ${BASE_SOURCE_DIR}/tests/renderer2d/src/main.cpp)
-target_include_directories(test-renderer2d PRIVATE ${CMAKE_SOURCE_DIR}/tests/renderer2d/src/ ${TESTS_COMMON_DIR})
+target_include_directories(test-renderer2d PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/renderer2d/src/ ${TESTS_COMMON_DIR})
 target_link_libraries(test-renderer2d Threads::Threads xengine)
 
 add_executable(test-canvasrendersystem ${BASE_SOURCE_DIR}/tests/canvasrendersystem/src/main.cpp)
-target_include_directories(test-canvasrendersystem PRIVATE ${CMAKE_SOURCE_DIR}/tests/canvasrendersystem/src/ ${TESTS_COMMON_DIR})
+target_include_directories(test-canvasrendersystem PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/canvasrendersystem/src/ ${TESTS_COMMON_DIR})
 target_link_libraries(test-canvasrendersystem Threads::Threads xengine)
 
 add_executable(test-pak ${BASE_SOURCE_DIR}/tests/pak/src/main.cpp)
-target_include_directories(test-pak PRIVATE ${CMAKE_SOURCE_DIR}/tests/pak/src/ ${TESTS_COMMON_DIR})
+target_include_directories(test-pak PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/pak/src/ ${TESTS_COMMON_DIR})
 target_link_libraries(test-pak Threads::Threads xengine)
 
 add_executable(test-mandelbrot ${BASE_SOURCE_DIR}/tests/mandelbrot/src/main.cpp)
-target_include_directories(test-mandelbrot PRIVATE ${CMAKE_SOURCE_DIR}/tests/mandelbrot/src/ ${SHADER_COMPILED_DIR} ${TESTS_COMMON_DIR})
+target_include_directories(test-mandelbrot PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/mandelbrot/src/ ${SHADER_COMPILED_DIR} ${TESTS_COMMON_DIR})
 target_link_libraries(test-mandelbrot Threads::Threads xengine)
 
 add_executable(test-shadows ${BASE_SOURCE_DIR}/tests/shadows/src/main.cpp)
