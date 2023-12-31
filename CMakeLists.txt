@@ -6,7 +6,7 @@ project(xEngine)
 
 include(user-config-project.cmake OPTIONAL)
 
-set(BASE_SOURCE_DIR ${CMAKE_SOURCE_DIR})
+set(BASE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 include(${BASE_SOURCE_DIR}/cmake/setup.cmake)
 
