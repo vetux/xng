@@ -20,6 +20,10 @@
 #ifndef XENGINE_ENGINE_HPP
 #define XENGINE_ENGINE_HPP
 
+#ifndef XENGINE_EXPORT
+#define XENGINE_EXPORT
+#endif
+
 #include "xng/script/script.hpp"
 #include "xng/script/scriptruntime.hpp"
 #include "xng/script/scriptdriver.hpp"
