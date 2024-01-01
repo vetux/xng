@@ -58,6 +58,8 @@ namespace xng {
 
         void cmdCopy(const FrameGraphCommand &cmd);
 
+        void cmdGenerateMipMap(const FrameGraphCommand &cmd);
+
         void cmdBlit(const FrameGraphCommand &cmd);
 
         void cmdBeginPass(const FrameGraphCommand &cmd);

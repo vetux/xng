@@ -398,7 +398,7 @@ namespace xng::opengl {
 #endif
 
                     glEnable(GL_LINE_SMOOTH); // Enable smooth lines by default
-
+                    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS); // Enable seamless cube maps by default
                     checkGLError();
 
                     runningPass = true;
@@ -898,40 +898,6 @@ namespace xng::opengl {
                                            static_cast<GLsizei>(count));
                     }
 
-                    glBindTexture(GL_TEXTURE_2D_ARRAY, target.handle);
-
-                    auto texWrap = convert(target.desc.textureDesc.wrapping);
-
-                    glTexParameteri(GL_TEXTURE_2D_ARRAY,
-                                    GL_TEXTURE_WRAP_S,
-                                    texWrap);
-                    glTexParameteri(GL_TEXTURE_2D_ARRAY,
-                                    GL_TEXTURE_WRAP_T,
-                                    texWrap);
-
-                    if (target.desc.textureDesc.generateMipmap) {
-                        glTexParameteri(GL_TEXTURE_2D_ARRAY,
-                                        GL_TEXTURE_MIN_FILTER,
-                                        convert(target.desc.textureDesc.mipmapFilter));
-                        glTexParameteri(GL_TEXTURE_2D_ARRAY,
-                                        GL_TEXTURE_MAG_FILTER,
-                                        convert(target.desc.textureDesc.filterMag));
-                        glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
-                    } else {
-                        glTexParameteri(GL_TEXTURE_2D_ARRAY,
-                                        GL_TEXTURE_MIN_FILTER,
-                                        convert(target.desc.textureDesc.filterMin));
-                        glTexParameteri(GL_TEXTURE_2D_ARRAY,
-                                        GL_TEXTURE_MAG_FILTER,
-                                        convert(target.desc.textureDesc.filterMag));
-                    }
-
-                    auto col = target.desc.textureDesc.borderColor.divide();
-                    float borderColor[] = {col.x, col.y, col.z, col.w};
-                    glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, borderColor);
-
-                    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
-
                     checkGLError();
 
                     break;
@@ -956,34 +922,6 @@ namespace xng::opengl {
                                        src.desc.size.x,
                                        src.desc.size.y,
                                        1);
-
-                    glBindTexture(target.textureType, target.handle);
-
-                    glTexParameteri(target.textureType, GL_TEXTURE_WRAP_S, convert(target.desc.wrapping));
-                    glTexParameteri(target.textureType, GL_TEXTURE_WRAP_T, convert(target.desc.wrapping));
-
-                    if (target.desc.generateMipmap) {
-                        glTexParameteri(target.textureType,
-                                        GL_TEXTURE_MIN_FILTER,
-                                        convert(target.desc.mipmapFilter));
-                        glTexParameteri(target.textureType,
-                                        GL_TEXTURE_MAG_FILTER,
-                                        convert(target.desc.filterMag));
-                        glGenerateMipmap(target.textureType);
-                    } else {
-                        glTexParameteri(target.textureType,
-                                        GL_TEXTURE_MIN_FILTER,
-                                        convert(target.desc.filterMin));
-                        glTexParameteri(target.textureType,
-                                        GL_TEXTURE_MAG_FILTER,
-                                        convert(target.desc.filterMag));
-                    }
-
-                    auto col = target.desc.borderColor.divide();
-                    float borderColor[] = {col.x, col.y, col.z, col.w};
-                    glTexParameterfv(target.textureType, GL_TEXTURE_BORDER_COLOR, borderColor);
-
-                    glBindTexture(target.textureType, 0);
 
                     checkGLError();
 

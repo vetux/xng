@@ -137,6 +137,14 @@ namespace xng {
 
         ColorRGBA wireColor;
     };
+
+    struct IBLLightingProperty : public Property {
+        std::type_index getType() override {
+            return typeid(CameraProperty);
+        }
+
+        ResourceHandle<ImageRGBA> hdrImage;
+    };
 }
 
 #endif //XENGINE_PROPERTY_HPP

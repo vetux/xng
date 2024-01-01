@@ -352,6 +352,10 @@ int main(int argc, char *argv[]) {
     node.addProperty(lightProp);
     scene.rootNode.childNodes.emplace_back(node);
 
+    IBLLightingProperty prop;
+    prop.hdrImage = ResourceHandle<ImageRGBA>(Uri("hdri/evening_road_01_puresky_2k.hdr"));
+    scene.rootNode.addProperty(prop);
+
     auto text = textRenderer.render("GBUFFER POSITION", TextLayout{.lineHeight = 70});
     auto tex = ren2d.createTexture(text.getImage());
 

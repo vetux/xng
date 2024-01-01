@@ -64,6 +64,11 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 {
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
+// ----------------------------------------------------------------------------
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
 
 struct PbrPass {
     vec3 N;
@@ -280,18 +285,34 @@ vec3 pbr_spot(PbrPass pass, vec3 Lo, PBRSpotLight light, float shadow) {
     return Lo;
 }
 
-vec3 pbr_finish(PbrPass pass, vec3 Lo)
+vec3 pbr_finish(PbrPass pass, vec3 Lo, samplerCube irradianceMap, samplerCube prefilterMap, sampler2D brdfLUT)
 {
-    // ambient lighting (note that the next IBL tutorial will replace
-    // this ambient lighting with environment lighting).
-    vec3 ambient = vec3(0.03) * pass.albedo * pass.ao;
+    // ambient lighting (we now use IBL as the ambient term)
+    vec3 F = fresnelSchlickRoughness(max(dot(pass.N, pass.V), 0.0), pass.F0, pass.roughness);
+
+    vec3 kS = F;
+    vec3 kD = 1.0 - kS;
+    kD *= 1.0 - pass.metallic;
+
+    vec3 irradiance = texture(irradianceMap, pass.N).rgb;
+    vec3 diffuse      = irradiance * pass.albedo;
+
+    vec3 R = reflect(-pass.V, pass.N);
+
+    // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
+    const float MAX_REFLECTION_LOD = 4.0;
+    vec3 prefilteredColor = textureLod(prefilterMap, R,  pass.roughness * MAX_REFLECTION_LOD).rgb;
+    vec2 brdf  = texture(brdfLUT, vec2(max(dot(pass.N, pass.V), 0.0), pass.roughness)).rg;
+    vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+
+    vec3 ambient = (kD * diffuse + specular) * pass.ao;
 
     vec3 color = ambient + Lo;
 
     // HDR tonemapping
-    //  color = color / (color + vec3(1.0));
+    // color = color / (color + vec3(1.0));
     // gamma correct
-    //  color = pow(color, vec3(1.0/2.2));
+    // color = pow(color, vec3(1.0/2.2));
 
     return color;
 }

@@ -163,7 +163,6 @@ namespace xng {
             auto res = (TextureAtlasResolution) i;
             TextureArrayBufferDesc atlasDesc;
             atlasDesc.textureDesc.size = TextureAtlas::getResolutionLevelSize(res);
-            atlasDesc.textureDesc.generateMipmap = true;
             atlasTextures[res] = std::move(device.createTextureArrayBuffer(atlasDesc));
         }
 

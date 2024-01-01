@@ -60,7 +60,6 @@ namespace xng::opengl {
             }
 
             glBindTexture(target, handle);
-            checkGLError();
 
             if (desc.textureCount > 0) {
                 internalFormat = convert(desc.textureDesc.format);
@@ -89,10 +88,7 @@ namespace xng::opengl {
                 }
 
                 glTexStorage3D(target,
-                               desc.textureDesc.generateMipmap
-                               ? static_cast<GLsizei>( std::log2(
-                                       std::max(desc.textureDesc.size.x, desc.textureDesc.size.y))) + 1
-                               : 1,
+                               desc.textureDesc.mipMapLevels,
                                internalFormat,
                                desc.textureDesc.size.x,
                                desc.textureDesc.size.y,
@@ -114,8 +110,6 @@ namespace xng::opengl {
                     }
                 }
 
-                checkGLError();
-
                 auto texWrap = convert(desc.textureDesc.wrapping);
 
                 glTexParameteri(target,
@@ -125,28 +119,23 @@ namespace xng::opengl {
                                 GL_TEXTURE_WRAP_T,
                                 texWrap);
 
-                if (desc.textureDesc.generateMipmap) {
+                if (desc.textureDesc.mipMapLevels > 1) {
                     glTexParameteri(target,
                                     GL_TEXTURE_MIN_FILTER,
-                                    convert(desc.textureDesc.mipmapFilter));
-                    glTexParameteri(target,
-                                    GL_TEXTURE_MAG_FILTER,
-                                    convert(desc.textureDesc.filterMag));
-                    glGenerateMipmap(target);
+                                    convert(desc.textureDesc.mipMapFilter));
                 } else {
                     glTexParameteri(target,
                                     GL_TEXTURE_MIN_FILTER,
                                     convert(desc.textureDesc.filterMin));
-                    glTexParameteri(target,
-                                    GL_TEXTURE_MAG_FILTER,
-                                    convert(desc.textureDesc.filterMag));
                 }
+
+                glTexParameteri(target,
+                                GL_TEXTURE_MAG_FILTER,
+                                convert(desc.textureDesc.filterMag));
 
                 auto col = desc.textureDesc.borderColor.divide();
                 float borderColor[] = {col.x, col.y, col.z, col.w};
                 glTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, borderColor);
-
-                checkGLError();
             }
 
             glBindTexture(target, 0);
@@ -157,7 +146,6 @@ namespace xng::opengl {
         ~OGLTextureArrayBuffer() override {
             glDeleteTextures(1, &handle);
             checkGLError();
-
         }
 
         const TextureArrayBufferDesc &getDescription() override {
@@ -167,15 +155,16 @@ namespace xng::opengl {
         void upload(size_t index,
                     ColorFormat format,
                     const uint8_t *buffer,
-                    size_t bufferSize) override {
+                    size_t bufferSize,
+                    int mipMapLevel) override {
 
-            auto target =
-                    desc.textureDesc.textureType == TEXTURE_CUBE_MAP ? GL_TEXTURE_CUBE_MAP_ARRAY : GL_TEXTURE_2D_ARRAY;
+            auto target = desc.textureDesc.textureType == TEXTURE_CUBE_MAP
+                          ? GL_TEXTURE_CUBE_MAP_ARRAY : GL_TEXTURE_2D_ARRAY;
 
             glBindTexture(target, handle);
 
             glTexSubImage3D(target,
-                            0,
+                            mipMapLevel,
                             0,
                             0,
                             static_cast<GLint>(index),
@@ -185,36 +174,6 @@ namespace xng::opengl {
                             convert(format),
                             GL_UNSIGNED_BYTE,
                             buffer);
-
-            auto texWrap = convert(desc.textureDesc.wrapping);
-
-            glTexParameteri(target,
-                            GL_TEXTURE_WRAP_S,
-                            texWrap);
-            glTexParameteri(target,
-                            GL_TEXTURE_WRAP_T,
-                            texWrap);
-
-            if (desc.textureDesc.generateMipmap) {
-                glTexParameteri(target,
-                                GL_TEXTURE_MIN_FILTER,
-                                convert(desc.textureDesc.mipmapFilter));
-                glTexParameteri(target,
-                                GL_TEXTURE_MAG_FILTER,
-                                convert(desc.textureDesc.filterMag));
-                glGenerateMipmap(target);
-            } else {
-                glTexParameteri(target,
-                                GL_TEXTURE_MIN_FILTER,
-                                convert(desc.textureDesc.filterMin));
-                glTexParameteri(target,
-                                GL_TEXTURE_MAG_FILTER,
-                                convert(desc.textureDesc.filterMag));
-            }
-
-            auto col = desc.textureDesc.borderColor.divide();
-            float borderColor[] = {col.x, col.y, col.z, col.w};
-            glTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, borderColor);
 
             glBindTexture(target, 0);
 
@@ -226,6 +185,19 @@ namespace xng::opengl {
         Image<ColorRGBA> download(size_t index) override {
             // Requires https://registry.khronos.org/OpenGL-Refpages/gl4/html/glGetTextureSubImage.xhtml
             throw std::runtime_error("Download not supported for texture array buffers");
+        }
+
+        void generateMipMaps() override {
+            auto target = desc.textureDesc.textureType == TEXTURE_CUBE_MAP
+                          ? GL_TEXTURE_CUBE_MAP_ARRAY : GL_TEXTURE_2D_ARRAY;
+
+            glBindTexture(target, handle);
+
+            glGenerateMipmap(target);
+
+            glBindTexture(target, 0);
+
+            checkGLError();
         }
     };
 }

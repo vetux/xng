@@ -87,7 +87,7 @@ namespace xng {
                                        static_cast<CubeMapFace>(i),
                                        [img]() {
                                            return FrameGraphUploadBuffer::createArray(img.get().getBuffer());
-                                       });
+                                       }, 0);
                     }
                 }
                 builder.persist(skyboxTexture);

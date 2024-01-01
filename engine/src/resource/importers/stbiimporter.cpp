@@ -84,7 +84,7 @@ namespace xng {
     }
 
     const std::set<std::string> &StbiImporter::getSupportedFormats() const {
-        static const std::set<std::string> formats = {".png", ".jpeg", ".jpg", ".bmp", ".tga", ".gif"};
+        static const std::set<std::string> formats = {".png", ".jpeg", ".jpg", ".bmp", ".tga", ".gif", ".hdr"};
         return formats;
     }
 }

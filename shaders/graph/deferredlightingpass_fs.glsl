@@ -66,6 +66,10 @@ layout(binding = 17, std140) buffer SpotLightTransforms
     mat4 transforms[];
 } spotLightTransforms;
 
+layout(binding = 18) uniform samplerCube irradianceMap;
+layout(binding = 19) uniform samplerCube prefilterMap;
+layout(binding = 20) uniform sampler2D brdfLUT;
+
 void main() {
     float gDepth = texture(gBufferDepth, fUv).r;
     if (gDepth == 1) {
@@ -150,6 +154,6 @@ void main() {
         }
     }
 
-    oColor = vec4(pbr_finish(pass, reflectance), 1);
+    oColor = vec4(pbr_finish(pass, reflectance, irradianceMap, prefilterMap, brdfLUT), 1);
     gl_FragDepth = gDepth;
 }

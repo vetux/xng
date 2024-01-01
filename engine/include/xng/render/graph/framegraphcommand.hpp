@@ -42,6 +42,7 @@ namespace xng {
             CREATE_SHADER_STORAGE_BUFFER,
             UPLOAD,
             COPY,
+            GENERATE_MIPMAPS,
             BLIT_COLOR,
             BLIT_DEPTH,
             BLIT_STENCIL,
@@ -67,6 +68,7 @@ namespace xng {
         struct UploadData {
             size_t index;
             size_t offset;
+            int mipMapLevel;
             ColorFormat colorFormat;
             CubeMapFace face;
             std::function<FrameGraphUploadBuffer()> dataSource;

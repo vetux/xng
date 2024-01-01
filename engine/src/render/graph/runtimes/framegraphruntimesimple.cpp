@@ -39,6 +39,9 @@ namespace xng {
         commandJumpTable[FrameGraphCommand::UPLOAD] = [this](const FrameGraphCommand &cmd) { cmdUpload(cmd); };
         commandJumpTable[FrameGraphCommand::COPY] = [this](const FrameGraphCommand &cmd) { cmdCopy(cmd); };
 
+        commandJumpTable[FrameGraphCommand::GENERATE_MIPMAPS] = [this](
+                const FrameGraphCommand &cmd) { cmdGenerateMipMap(cmd); };
+
         commandJumpTable[FrameGraphCommand::BLIT_COLOR] = [this](const FrameGraphCommand &cmd) { cmdBlit(cmd); };
         commandJumpTable[FrameGraphCommand::BLIT_DEPTH] = [this](const FrameGraphCommand &cmd) { cmdBlit(cmd); };
         commandJumpTable[FrameGraphCommand::BLIT_STENCIL] = [this](const FrameGraphCommand &cmd) { cmdBlit(cmd); };
@@ -186,14 +189,14 @@ namespace xng {
             case RenderObject::RENDER_OBJECT_TEXTURE_BUFFER: {
                 auto &tb = dynamic_cast<TextureBuffer &>(*obj);
                 if (tb.getDescription().textureType == TEXTURE_CUBE_MAP)
-                    tb.upload(data.face, data.colorFormat, buffer.data.data(), buffer.data.size());
+                    tb.upload(data.face, data.colorFormat, buffer.data.data(), buffer.data.size(), data.mipMapLevel);
                 else
-                    tb.upload(data.colorFormat, buffer.data.data(), buffer.data.size());
+                    tb.upload(data.colorFormat, buffer.data.data(), buffer.data.size(), data.mipMapLevel);
                 break;
             }
             case RenderObject::RENDER_OBJECT_TEXTURE_ARRAY_BUFFER: {
                 auto &tb = dynamic_cast<TextureArrayBuffer &>(*obj);
-                tb.upload(data.index, data.colorFormat, buffer.data.data(), buffer.data.size());
+                tb.upload(data.index, data.colorFormat, buffer.data.data(), buffer.data.size(), data.mipMapLevel);
                 break;
             }
             case RenderObject::RENDER_OBJECT_SHADER_UNIFORM_BUFFER: {
@@ -269,6 +272,25 @@ namespace xng {
 
         dirtyBuffers.insert(cmd.resources.at(0));
         dirtyBuffers.insert(cmd.resources.at(1));
+    }
+
+    void FrameGraphRuntimeSimple::cmdGenerateMipMap(const FrameGraphCommand &cmd) {
+        auto &obj = getObject(cmd.resources.at(0));
+        switch (obj.getType()) {
+            case RenderObject::RENDER_OBJECT_TEXTURE_BUFFER: {
+                auto &tex = dynamic_cast<TextureBuffer &>(obj);
+                tex.generateMipMaps();
+                break;
+            }
+            case RenderObject::RENDER_OBJECT_TEXTURE_ARRAY_BUFFER: {
+                auto &tex = dynamic_cast<TextureArrayBuffer &>(obj);
+                tex.generateMipMaps();
+                break;
+            }
+            default:
+                throw std::runtime_error("Invalid resource type");
+                break;
+        }
     }
 
     void FrameGraphRuntimeSimple::cmdBlit(const FrameGraphCommand &cmd) {

@@ -60,7 +60,8 @@ namespace xng {
         virtual void upload(size_t index,
                             ColorFormat format,
                             const uint8_t *buffer,
-                            size_t bufferSize) = 0;
+                            size_t bufferSize,
+                            int mipMapLevel) = 0;
 
         void upload(size_t index,
                     const Image<ColorRGBA> &image) {
@@ -68,10 +69,13 @@ namespace xng {
             return upload(index,
                           RGBA,
                           reinterpret_cast<const uint8_t *>(buffer.data()),
-                          buffer.size() * sizeof(ColorRGBA));
+                          buffer.size() * sizeof(ColorRGBA),
+                          0);
         }
 
         virtual Image<ColorRGBA> download(size_t index) = 0;
+
+        virtual void generateMipMaps() = 0;
     };
 }
 #endif //XENGINE_TEXTUREARRAYBUFFER_HPP

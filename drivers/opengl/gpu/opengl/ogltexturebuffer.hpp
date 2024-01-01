@@ -46,8 +46,6 @@ namespace xng::opengl {
             glGenTextures(1, &handle);
             glBindTexture(textureType, handle);
 
-            checkGLError();
-
             if (desc.textureType == TEXTURE_2D) {
                 texInternalFormat = convert(desc.format);
 
@@ -75,9 +73,7 @@ namespace xng::opengl {
                 }
 
                 glTexStorage2D(textureType,
-                               desc.generateMipmap
-                               ? static_cast<GLsizei>( std::log2(std::max(desc.size.x, desc.size.y))) + 1
-                               : 1,
+                               desc.mipMapLevels,
                                texInternalFormat,
                                desc.size.x,
                                desc.size.y);
@@ -88,7 +84,7 @@ namespace xng::opengl {
                     // Catch GL_INVALID_OPERATION because the mipmap layers count maximum depends on log2 which uses floating point.
                     if (e.what() == getGLErrorString(GL_INVALID_OPERATION)) {
                         glTexStorage2D(textureType,
-                                       1,
+                                       desc.mipMapLevels,
                                        texInternalFormat,
                                        desc.size.x,
                                        desc.size.y);
@@ -123,9 +119,7 @@ namespace xng::opengl {
                 }
 
                 glTexStorage2DMultisample(textureType,
-                                          desc.generateMipmap
-                                          ? static_cast<GLsizei>( std::log2(std::max(desc.size.x, desc.size.y))) + 1
-                                          : 1,
+                                          desc.mipMapLevels,
                                           texInternalFormat,
                                           desc.size.x,
                                           desc.size.y,
@@ -138,7 +132,7 @@ namespace xng::opengl {
                     // and create only one layer when this happens.
                     if (e.what() == getGLErrorString(GL_INVALID_OPERATION)) {
                         glTexStorage2DMultisample(textureType,
-                                                  1,
+                                                  desc.mipMapLevels,
                                                   texInternalFormat,
                                                   desc.size.x,
                                                   desc.size.y,
@@ -161,27 +155,22 @@ namespace xng::opengl {
                 }
             }
 
-            checkGLError();
-
             glTexParameteri(textureType, GL_TEXTURE_WRAP_S, convert(desc.wrapping));
             glTexParameteri(textureType, GL_TEXTURE_WRAP_T, convert(desc.wrapping));
 
-            if (desc.generateMipmap) {
+            if (desc.mipMapLevels > 1) {
                 glTexParameteri(textureType,
                                 GL_TEXTURE_MIN_FILTER,
-                                convert(desc.mipmapFilter));
-                glTexParameteri(textureType,
-                                GL_TEXTURE_MAG_FILTER,
-                                convert(desc.filterMag));
-                glGenerateMipmap(textureType);
+                                convert(desc.mipMapFilter));
             } else {
                 glTexParameteri(textureType,
                                 GL_TEXTURE_MIN_FILTER,
                                 convert(desc.filterMin));
-                glTexParameteri(textureType,
-                                GL_TEXTURE_MAG_FILTER,
-                                convert(desc.filterMag));
             }
+
+            glTexParameteri(textureType,
+                            GL_TEXTURE_MAG_FILTER,
+                            convert(desc.filterMag));
 
             auto col = desc.borderColor.divide();
             float borderColor[] = {col.x, col.y, col.z, col.w};
@@ -201,7 +190,7 @@ namespace xng::opengl {
             return desc;
         }
 
-        void upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize) override {
+        void upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize, int mipMapLevel) override {
             if (desc.textureType == TEXTURE_CUBE_MAP) {
                 throw std::runtime_error(
                         "Attempted to upload texture on cube map texture without specifying a target face.");
@@ -210,7 +199,7 @@ namespace xng::opengl {
             glBindTexture(GL_TEXTURE_2D, handle);
 
             glTexSubImage2D(GL_TEXTURE_2D,
-                            0,
+                            mipMapLevel,
                             0,
                             0,
                             desc.size.x,
@@ -218,31 +207,6 @@ namespace xng::opengl {
                             convert(format),
                             GL_UNSIGNED_BYTE,
                             buffer);
-
-            glTexParameteri(textureType, GL_TEXTURE_WRAP_S, convert(desc.wrapping));
-            glTexParameteri(textureType, GL_TEXTURE_WRAP_T, convert(desc.wrapping));
-
-            if (desc.generateMipmap) {
-                glTexParameteri(textureType,
-                                GL_TEXTURE_MIN_FILTER,
-                                convert(desc.mipmapFilter));
-                glTexParameteri(textureType,
-                                GL_TEXTURE_MAG_FILTER,
-                                convert(desc.filterMag));
-                glGenerateMipmap(textureType);
-            } else {
-                glTexParameteri(textureType,
-                                GL_TEXTURE_MIN_FILTER,
-                                convert(desc.filterMin));
-                glTexParameteri(textureType,
-                                GL_TEXTURE_MAG_FILTER,
-                                convert(desc.filterMag));
-            }
-            checkGLError();
-
-            auto col = desc.borderColor.divide();
-            float borderColor[] = {col.x, col.y, col.z, col.w};
-            glTexParameterfv(textureType, GL_TEXTURE_BORDER_COLOR, borderColor);
 
             glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -254,7 +218,8 @@ namespace xng::opengl {
         void upload(CubeMapFace face,
                     ColorFormat format,
                     const uint8_t *buffer,
-                    size_t bufferSize) override {
+                    size_t bufferSize,
+                    int mipMapLevel) override {
             if (desc.bufferType != HOST_VISIBLE) {
                 throw std::runtime_error("Upload called on non host visible buffer.");
             }
@@ -265,39 +230,15 @@ namespace xng::opengl {
 
             glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
 
-            glTexImage2D(convert(face),
-                         0,
-                         convert(desc.format),
-                         desc.size.x,
-                         desc.size.y,
-                         0,
-                         convert(format),
-                         GL_UNSIGNED_BYTE,
-                         buffer);
-
-            glTexParameteri(textureType, GL_TEXTURE_WRAP_S, convert(desc.wrapping));
-            glTexParameteri(textureType, GL_TEXTURE_WRAP_T, convert(desc.wrapping));
-
-            if (desc.generateMipmap) {
-                glTexParameteri(textureType,
-                                GL_TEXTURE_MIN_FILTER,
-                                convert(desc.mipmapFilter));
-                glTexParameteri(textureType,
-                                GL_TEXTURE_MAG_FILTER,
-                                convert(desc.filterMag));
-                glGenerateMipmap(textureType);
-            } else {
-                glTexParameteri(textureType,
-                                GL_TEXTURE_MIN_FILTER,
-                                convert(desc.filterMin));
-                glTexParameteri(textureType,
-                                GL_TEXTURE_MAG_FILTER,
-                                convert(desc.filterMag));
-            }
-
-            auto col = desc.borderColor.divide();
-            float borderColor[] = {col.x, col.y, col.z, col.w};
-            glTexParameterfv(textureType, GL_TEXTURE_BORDER_COLOR, borderColor);
+            glTexSubImage2D(convert(face),
+                            mipMapLevel,
+                            0,
+                            0,
+                            desc.size.x,
+                            desc.size.y,
+                            convert(format),
+                            GL_UNSIGNED_BYTE,
+                            buffer);
 
             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
@@ -333,6 +274,16 @@ namespace xng::opengl {
             checkGLError();
             stats.downloadTexture += desc.size.x * desc.size.y * sizeof(ColorRGBA);
             return std::move(ret.swapColumns());
+        }
+
+        void generateMipMaps() override {
+            glBindTexture(textureType, handle);
+
+            glGenerateMipmap(textureType);
+
+            glBindTexture(textureType, 0);
+
+            checkGLError();
         }
     };
 }

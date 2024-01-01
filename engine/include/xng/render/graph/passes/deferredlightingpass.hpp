@@ -41,10 +41,26 @@ namespace xng {
         std::type_index getTypeIndex() const override;
 
     private:
-        Mesh mesh = Mesh::normalizedQuad();
+        void generateEnvironmentMaps(FrameGraphBuilder &builder, const ResourceHandle <ImageRGBA>& hdrImage);
+
+        Mesh quadMesh = Mesh::normalizedQuad();
+        Mesh cubeMesh = Mesh::normalizedCube();
+
+        FrameGraphResource quadVertexBuffer;
+        FrameGraphResource cubeVertexBuffer;
 
         FrameGraphResource pipeline;
-        FrameGraphResource vertexBuffer;
+        FrameGraphResource convertMapPipeline;
+        FrameGraphResource prefilterPipeline;
+        FrameGraphResource irradiancePipeline;
+        FrameGraphResource brdfPipeline;
+
+        FrameGraphResource environmentMap;
+        FrameGraphResource prefilterMap;
+        FrameGraphResource irradianceMap;
+        FrameGraphResource brdfMap;
+
+        Uri currentEnvironmentTexture;
     };
 }
 

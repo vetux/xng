@@ -57,23 +57,27 @@ namespace xng {
          * @param bufferSize
          * @return
          */
-        virtual void upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize) = 0;
+        virtual void upload(ColorFormat format, const uint8_t *buffer, size_t bufferSize, int mipMapLevel) = 0;
 
         virtual void upload(CubeMapFace face,
                             ColorFormat format,
                             const uint8_t *buffer,
-                            size_t bufferSize) = 0;
+                            size_t bufferSize,
+                            int mipMapLevel) = 0;
 
         void upload(const Image<ColorRGBA> &image) {
             auto buffer = image.getBuffer();
             return upload(RGBA,
                           reinterpret_cast<const uint8_t *>(buffer.data()),
-                          buffer.size() * sizeof(ColorRGBA));
+                          buffer.size() * sizeof(ColorRGBA),
+                          0);
         }
 
         virtual Image<ColorRGBA> download() = 0;
 
         virtual Image<ColorRGBA> download(CubeMapFace face) = 0;
+
+        virtual void generateMipMaps() = 0;
     };
 }
 

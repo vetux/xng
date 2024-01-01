@@ -14,6 +14,12 @@ CompileShader(graph/constructionpass_fs FRAGMENT main)
 
 CompileShader(graph/deferredlightingpass_vs VERTEX main)
 CompileShader(graph/deferredlightingpass_fs FRAGMENT main)
+CompileShader(graph/deferredlightingpass_cubemap_vs VERTEX main)
+CompileShader(graph/deferredlightingpass_convertmap_fs FRAGMENT main)
+CompileShader(graph/deferredlightingpass_prefilter_fs FRAGMENT main)
+CompileShader(graph/deferredlightingpass_irradiance_fs FRAGMENT main)
+CompileShader(graph/deferredlightingpass_brdf_vs VERTEX main)
+CompileShader(graph/deferredlightingpass_brdf_fs FRAGMENT main)
 
 CompileShader(graph/forwardlightingpass_vs VERTEX main)
 CompileShader(graph/forwardlightingpass_fs FRAGMENT main)
