@@ -1,6 +1,6 @@
 /**
  *  xEngine - C++ Game Engine Library
- *  Copyright (C) 2023  Julian Zampiccoli
+ *  Copyright (C) 2024  Julian Zampiccoli
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
