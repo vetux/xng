@@ -45,9 +45,11 @@ namespace xng {
 
         Mesh quadMesh = Mesh::normalizedQuad();
         Mesh cubeMesh = Mesh::normalizedCube();
+        Mesh magicCubeMesh;
 
         FrameGraphResource quadVertexBuffer;
         FrameGraphResource cubeVertexBuffer;
+        FrameGraphResource magicCubeVertexBuffer;
 
         FrameGraphResource pipeline;
         FrameGraphResource convertMapPipeline;
