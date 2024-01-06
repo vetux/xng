@@ -24,8 +24,8 @@
 
 #include <utility>
 
-#include "opengl_include.hpp"
-#include "opengl_checkerror.hpp"
+#include "oglinclude.hpp"
+#include "ogldebug.hpp"
 
 #include "xng/render/scene/color.hpp"
 
@@ -46,6 +46,8 @@ namespace xng::opengl {
             if (desc.textureDesc.textureType != TEXTURE_2D && desc.textureDesc.textureType != TEXTURE_CUBE_MAP) {
                 throw std::runtime_error("Invalid texture type for array texture");
             }
+
+            oglDebugStartGroup("Texture Array Buffer Constructor");
 
             glGenTextures(1, &handle);
 
@@ -95,7 +97,7 @@ namespace xng::opengl {
                                layers);
 
                 try {
-                    checkGLError();
+                    oglCheckError();
                 } catch (const std::runtime_error &e) {
                     // Catch GL_INVALID_OPERATION because the mipmap layers count maximum depends on log2 which uses floating point.
                     if (e.what() == getGLErrorString(GL_INVALID_OPERATION)) {
@@ -140,12 +142,14 @@ namespace xng::opengl {
 
             glBindTexture(target, 0);
 
-            checkGLError();
+            oglDebugEndGroup();
+
+            oglCheckError();
         }
 
         ~OGLTextureArrayBuffer() override {
             glDeleteTextures(1, &handle);
-            checkGLError();
+            oglCheckError();
         }
 
         const TextureArrayBufferDesc &getDescription() override {
@@ -157,9 +161,10 @@ namespace xng::opengl {
                     const uint8_t *buffer,
                     size_t bufferSize,
                     int mipMapLevel) override {
-
             auto target = desc.textureDesc.textureType == TEXTURE_CUBE_MAP
                           ? GL_TEXTURE_CUBE_MAP_ARRAY : GL_TEXTURE_2D_ARRAY;
+
+            oglDebugStartGroup("Texture Array Buffer Upload");
 
             glBindTexture(target, handle);
 
@@ -177,7 +182,9 @@ namespace xng::opengl {
 
             glBindTexture(target, 0);
 
-            checkGLError();
+            oglDebugEndGroup();
+
+            oglCheckError();
 
             stats.uploadTexture += bufferSize;
         }
@@ -191,13 +198,17 @@ namespace xng::opengl {
             auto target = desc.textureDesc.textureType == TEXTURE_CUBE_MAP
                           ? GL_TEXTURE_CUBE_MAP_ARRAY : GL_TEXTURE_2D_ARRAY;
 
+            oglDebugStartGroup("Texture Array Buffer Generate Mip Maps");
+
             glBindTexture(target, handle);
 
             glGenerateMipmap(target);
 
             glBindTexture(target, 0);
 
-            checkGLError();
+            oglDebugEndGroup();
+
+            oglCheckError();
         }
     };
 }

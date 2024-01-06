@@ -20,7 +20,7 @@
 #ifndef XENGINE_OGLSHADERSTORAGEBUFFER_HPP
 #define XENGINE_OGLSHADERSTORAGEBUFFER_HPP
 
-#include "opengl_include.hpp"
+#include "oglinclude.hpp"
 
 #include "xng/gpu/shaderstoragebuffer.hpp"
 #include "gpu/opengl/oglfence.hpp"
@@ -36,6 +36,8 @@ namespace xng::opengl {
         explicit OGLShaderStorageBuffer(ShaderStorageBufferDesc inputDescription,
                                         RenderStatistics &stats)
                 :  desc(inputDescription), stats(stats) {
+            oglDebugStartGroup("Shader Storage Buffer Constructor");
+
             glGenBuffers(1, &ssbo);
 
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
@@ -45,12 +47,15 @@ namespace xng::opengl {
                          GL_DYNAMIC_DRAW);
 
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-            checkGLError();
+
+            oglDebugEndGroup();
+
+            oglCheckError();
         }
 
         ~OGLShaderStorageBuffer() override {
             glDeleteBuffers(1, &ssbo);
-            checkGLError();
+            oglCheckError();
 
         }
 
@@ -63,13 +68,19 @@ namespace xng::opengl {
                 throw std::runtime_error("Upload size does not match buffer size");
             if (desc.bufferType != HOST_VISIBLE)
                 throw std::runtime_error("Upload called on non host visible buffer.");
+            oglDebugStartGroup("Shader Storage Buffer Upload");
+
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
             glBufferSubData(GL_SHADER_STORAGE_BUFFER,
                             0,
                             static_cast<GLsizeiptr>(size),
                             data);
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-            checkGLError();
+
+            oglDebugEndGroup();
+
+            oglCheckError();
+
             stats.uploadShaderStorage += size;
         }
 
@@ -78,13 +89,18 @@ namespace xng::opengl {
                 throw std::runtime_error("Upload size overflow");
             if (desc.bufferType != HOST_VISIBLE)
                 throw std::runtime_error("Upload called on non host visible buffer.");
+            oglDebugStartGroup("Shader Storage Buffer Upload");
+
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
             glBufferSubData(GL_SHADER_STORAGE_BUFFER,
                             static_cast<GLsizeiptr>(offset),
                             static_cast<GLsizeiptr>(size),
                             data);
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-            checkGLError();
+
+            oglDebugEndGroup();
+
+            oglCheckError();
             stats.uploadShaderStorage += size;
         }
 
@@ -94,13 +110,20 @@ namespace xng::opengl {
             if (desc.bufferType != HOST_VISIBLE)
                 throw std::runtime_error("Download called on non host visible buffer.");
             std::vector<uint8_t> ret(size);
+
+            oglDebugStartGroup("Shader Storage Buffer Download");
+
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
             glGetBufferSubData(GL_SHADER_STORAGE_BUFFER,
                                static_cast<GLintptr>(offset),
                                static_cast<GLsizeiptr>(size),
                                ret.data());
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+            oglDebugEndGroup();
+
             stats.downloadShaderStorage += size;
+
             return ret;
         }
     };

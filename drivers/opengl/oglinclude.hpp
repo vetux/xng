@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_OPENGL_INCLUDE_HPP
-#define XENGINE_OPENGL_INCLUDE_HPP
+#ifndef XENGINE_OGLINCLUDE_HPP
+#define XENGINE_OGLINCLUDE_HPP
 
 // Disable pedantic warnings
 #ifdef unix
@@ -30,7 +30,7 @@
 
 #pragma GCC diagnostic pop
 
-#include "opengl_checkerror.hpp"
-#include "opengl_conversion.hpp"
+#include "ogldebug.hpp"
+#include "oglconversion.hpp"
 
-#endif //XENGINE_OPENGL_INCLUDE_HPP
+#endif //XENGINE_OGLINCLUDE_HPP

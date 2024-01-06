@@ -26,7 +26,7 @@
 #include <mutex>
 #include <unordered_set>
 
-#include "opengl_include.hpp"
+#include "oglinclude.hpp"
 
 #include "gpu/opengl/oglrenderpipeline.hpp"
 #include "gpu/opengl/oglrendertarget.hpp"

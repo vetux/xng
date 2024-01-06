@@ -26,6 +26,8 @@
 
 #include "gpu/opengl/oglcomputepipeline.hpp"
 
+#include "ogldebug.hpp"
+
 namespace xng::opengl {
     typedef struct {
         unsigned int count;
@@ -35,11 +37,11 @@ namespace xng::opengl {
         unsigned int baseInstance;
     } DrawElementsIndirectCommand;
 
-    typedef  struct {
-        unsigned int  count;
-        unsigned int  instanceCount;
-        unsigned int  first;
-        unsigned int  baseInstance;
+    typedef struct {
+        unsigned int count;
+        unsigned int instanceCount;
+        unsigned int first;
+        unsigned int baseInstance;
     } DrawArraysIndirectCommand;
 
     class OGLCommandQueue : public CommandQueue {
@@ -62,7 +64,7 @@ namespace xng::opengl {
 
         explicit OGLCommandQueue(RenderStatistics &stats) : stats(stats) {
             glGenBuffers(1, &indirectBuffer);
-            checkGLError();
+            oglCheckError();
         }
 
         ~OGLCommandQueue() override {
@@ -90,14 +92,16 @@ namespace xng::opengl {
                 throw std::runtime_error("Pass is not running.");
         }
 
-        void unbindVertexArrayObject() {
+        void clearVertexArrayObjectBinding() {
             ensureRunningPass();
             mVertexObject = nullptr;
             glBindVertexArray(0);
-            checkGLError();
+            oglCheckError();
         }
 
-        void unbindShaderData() {
+        void clearShaderResourceBindings() {
+            oglDebugStartGroup("Clear Shader Resource Bindings");
+
             if (!mShaderBindings.empty()) {
                 //Unbind textures and uniform buffers
                 for (int bindingPoint = 0; bindingPoint < mShaderBindings.size(); bindingPoint++) {
@@ -128,7 +132,10 @@ namespace xng::opengl {
                 }
             }
             mShaderBindings.clear();
-            checkGLError();
+
+            oglDebugEndGroup();
+
+            oglCheckError();
         }
 
         void checkBindings(bool indexed) {
@@ -202,6 +209,9 @@ namespace xng::opengl {
                         || data.writeOffset + data.count > target.desc.size) {
                         throw std::runtime_error("Invalid copy range");
                     }
+
+                    oglDebugStartGroup("Copy Index Buffer");
+
                     glBindBuffer(GL_COPY_READ_BUFFER, buf.EBO);
                     glBindBuffer(GL_COPY_WRITE_BUFFER, target.EBO);
                     glCopyBufferSubData(GL_COPY_READ_BUFFER,
@@ -211,7 +221,10 @@ namespace xng::opengl {
                                         static_cast<GLsizeiptr>(data.count));
                     glBindBuffer(GL_COPY_READ_BUFFER, 0);
                     glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
-                    checkGLError();
+
+                    oglDebugEndGroup();
+
+                    oglCheckError();
                     break;
                 }
                 case Command::BLIT_COLOR: {
@@ -232,9 +245,7 @@ namespace xng::opengl {
                         throw std::runtime_error("Offset cannot be negative");
                     }
 
-                    auto &fbS = dynamic_cast<OGLRenderTarget &>(*data.source);
-
-                    Vec2i sourceSize = fbS.getDescription().size;
+                    Vec2i sourceSize = src.getDescription().size;
                     if (sourceSize.x < data.sourceRect.x + data.sourceOffset.x ||
                         sourceSize.y < data.sourceRect.y + data.sourceOffset.y)
                         throw std::runtime_error("Blit rect out of bounds for source framebuffer");
@@ -244,10 +255,12 @@ namespace xng::opengl {
                         targetSize.y < data.targetRect.y + data.targetOffset.y)
                         throw std::runtime_error("Blit rect out of bounds for target framebuffer.");
 
-                    glBindFramebuffer(GL_READ_FRAMEBUFFER, fbS.getFBO());
+                    oglDebugStartGroup("Blit Color");
+
+                    glBindFramebuffer(GL_READ_FRAMEBUFFER, src.getFBO());
 
                     // The default framebuffer always reads/writes from/to default color buffer.
-                    if (fbS.getFBO() != 0) {
+                    if (src.getFBO() != 0) {
                         glReadBuffer(getColorAttachment(data.sourceIndex));
                     }
 
@@ -271,7 +284,9 @@ namespace xng::opengl {
 
                     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-                    checkGLError();
+                    oglDebugEndGroup();
+
+                    oglCheckError();
                     break;
                 }
                 case Command::BLIT_DEPTH: {
@@ -302,6 +317,8 @@ namespace xng::opengl {
                         targetSize.y < data.targetRect.y + data.targetOffset.y)
                         throw std::runtime_error("Blit rect out of bounds for target framebuffer.");
 
+                    oglDebugStartGroup("Blit Depth");
+
                     glBindFramebuffer(GL_READ_FRAMEBUFFER, src.getFBO());
                     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target.getFBO());
 
@@ -319,7 +336,10 @@ namespace xng::opengl {
                     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
                     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
-                    checkGLError();
+                    oglDebugEndGroup();
+
+                    oglCheckError();
+
                     break;
                 }
                 case Command::BLIT_STENCIL: {
@@ -351,6 +371,8 @@ namespace xng::opengl {
                         targetSize.y < data.targetRect.y + data.targetOffset.y)
                         throw std::runtime_error("Blit rect out of bounds for target framebuffer.");
 
+                    oglDebugStartGroup("Blit Stencil");
+
                     glBindFramebuffer(GL_READ_FRAMEBUFFER, fbS.getFBO());
                     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target.getFBO());
 
@@ -368,10 +390,15 @@ namespace xng::opengl {
                     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
                     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
-                    checkGLError();
+                    oglDebugEndGroup();
+
+                    oglCheckError();
+
                     break;
                 }
                 case Command::BEGIN_PASS: {
+                    oglDebugStartGroup("Begin Pass");
+
                     if (runningPass) {
                         throw std::runtime_error("Pass is already running (Nested calls to begin ?)");
                     }
@@ -399,7 +426,8 @@ namespace xng::opengl {
 
                     glEnable(GL_LINE_SMOOTH); // Enable smooth lines by default
                     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS); // Enable seamless cube maps by default
-                    checkGLError();
+
+                    oglCheckError();
 
                     runningPass = true;
 
@@ -407,11 +435,12 @@ namespace xng::opengl {
                 }
                 case Command::END_PASS:
                     ensureRunningPass();
-                    unbindVertexArrayObject();
-                    unbindShaderData();
+                    clearVertexArrayObjectBinding();
+                    clearShaderResourceBindings();
                     mRenderPipeline = nullptr;
                     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-                    checkGLError();
+                    oglDebugEndGroup();
+                    oglCheckError();
                     runningPass = false;
                     break;
                 case Command::CLEAR_COLOR: {
@@ -420,7 +449,7 @@ namespace xng::opengl {
                     auto clearColor = data.color.divide();
                     glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
                     glClear(GL_COLOR_BUFFER_BIT);
-                    checkGLError();
+                    oglCheckError();
                     break;
                 }
                 case Command::CLEAR_DEPTH: {
@@ -428,7 +457,7 @@ namespace xng::opengl {
                     auto data = std::get<RenderPassClear>(c.data);
                     glClearDepth(data.depth);
                     glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-                    checkGLError();
+                    oglCheckError();
                     break;
                 }
                 case Command::SET_VIEWPORT: {
@@ -438,7 +467,7 @@ namespace xng::opengl {
                                data.viewportOffset.y,
                                data.viewportSize.x,
                                data.viewportSize.y);
-                    checkGLError();
+                    oglCheckError();
                     break;
                 }
                 case Command::DRAW_ARRAY: {
@@ -453,7 +482,7 @@ namespace xng::opengl {
                                  static_cast<GLsizei>(data.drawCalls.at(0).count));
                     stats.drawCalls++;
                     stats.polys += data.drawCalls.at(0).count / mRenderPipeline->getDescription().primitive;
-                    checkGLError();
+                    oglCheckError();
                     break;
                 }
                 case Command::DRAW_INDEXED: {
@@ -469,7 +498,7 @@ namespace xng::opengl {
                                    reinterpret_cast<void *>(data.drawCalls.at(0).offset));
                     stats.drawCalls++;
                     stats.polys += data.drawCalls.at(0).count / mRenderPipeline->getDescription().primitive;
-                    checkGLError();
+                    oglCheckError();
                     break;
                 }
                 case Command::DRAW_ARRAY_INSTANCED: {
@@ -485,7 +514,7 @@ namespace xng::opengl {
                                           static_cast<GLsizei>(data.numberOfInstances));
                     stats.drawCalls++;
                     stats.polys += data.drawCalls.at(0).count / mRenderPipeline->getDescription().primitive;
-                    checkGLError();
+                    oglCheckError();
                     break;
                 }
                 case Command::DRAW_INDEXED_INSTANCED: {
@@ -502,7 +531,7 @@ namespace xng::opengl {
                                             static_cast<GLsizei>(data.numberOfInstances));
                     stats.drawCalls++;
                     stats.polys += data.drawCalls.at(0).count / mRenderPipeline->getDescription().primitive;
-                    checkGLError();
+                    oglCheckError();
                     break;
                 }
                 case Command::DRAW_ARRAY_MULTI: {
@@ -514,7 +543,7 @@ namespace xng::opengl {
                     }
 
                     std::vector<DrawArraysIndirectCommand> cmds;
-                    for (auto & drawCall : data.drawCalls) {
+                    for (auto &drawCall: data.drawCalls) {
                         DrawArraysIndirectCommand cmd;
                         cmd.count = drawCall.count;
                         cmd.first = drawCall.offset;
@@ -531,9 +560,9 @@ namespace xng::opengl {
                                  reinterpret_cast<void *>(cmds.data()),
                                  GL_DYNAMIC_DRAW);
                     glMultiDrawArraysIndirect(convert(mRenderPipeline->getDescription().primitive),
-                                                nullptr,
-                                                static_cast<GLsizei>(cmds.size()),
-                                                0);
+                                              nullptr,
+                                              static_cast<GLsizei>(cmds.size()),
+                                              0);
                     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
 
                     stats.uploadCommand += cmdSize;
@@ -542,7 +571,7 @@ namespace xng::opengl {
                     for (auto &call: data.drawCalls) {
                         stats.polys += call.count / mRenderPipeline->getDescription().primitive;
                     }
-                    checkGLError();
+                    oglCheckError();
                     break;
                 }
                 case Command::DRAW_INDEXED_MULTI: {
@@ -583,7 +612,7 @@ namespace xng::opengl {
                     for (auto &call: data.drawCalls) {
                         stats.polys += call.count / mRenderPipeline->getDescription().primitive;
                     }
-                    checkGLError();
+                    oglCheckError();
                     break;
                 }
                 case Command::DRAW_INDEXED_BASE_VERTEX: {
@@ -600,7 +629,7 @@ namespace xng::opengl {
                                              static_cast<GLint>(data.baseVertices.at(0)));
                     stats.drawCalls++;
                     stats.polys += data.drawCalls.at(0).count / mRenderPipeline->getDescription().primitive;
-                    checkGLError();
+                    oglCheckError();
                     break;
                 }
                 case Command::DRAW_INDEXED_INSTANCED_BASE_VERTEX: {
@@ -618,7 +647,7 @@ namespace xng::opengl {
                                                       static_cast<GLint>(data.baseVertices.at(0)));
                     stats.drawCalls++;
                     stats.polys += data.drawCalls.at(0).count / mRenderPipeline->getDescription().primitive;
-                    checkGLError();
+                    oglCheckError();
                     break;
                 }
                 case Command::DRAW_INDEXED_MULTI_BASE_VERTEX: {
@@ -661,7 +690,7 @@ namespace xng::opengl {
                     for (auto &call: data.drawCalls) {
                         stats.polys += call.count / mRenderPipeline->getDescription().primitive;
                     }
-                    checkGLError();
+                    oglCheckError();
                     break;
                 }
                 case Command::BIND_PIPELINE: {
@@ -673,6 +702,8 @@ namespace xng::opengl {
                     mRenderPipeline = &pip;
 
                     auto &desc = data.pipeline->getDescription();
+
+                    oglDebugStartGroup("Bind Pipeline");
 
                     if (desc.multiSample)
                         glEnable(GL_MULTISAMPLE);
@@ -743,7 +774,9 @@ namespace xng::opengl {
                         glDisable(GL_BLEND);
                     }
 
-                    checkGLError();
+                    oglDebugEndGroup();
+
+                    oglCheckError();
 
                     stats.binds++;
 
@@ -754,9 +787,11 @@ namespace xng::opengl {
                         throw std::runtime_error("Pipeline must be bound in order to bind shader resources");
                     }
 
+                    oglDebugStartGroup("Bind Shader Resources");
+
                     auto bindings = std::get<ShaderResourceBind>(c.data);
 
-                    unbindShaderData();
+                    clearShaderResourceBindings();
 
                     mShaderBindings = bindings.resources;
 
@@ -865,7 +900,11 @@ namespace xng::opengl {
                         }
                         stats.binds++;
                     }
-                    checkGLError();
+
+                    oglDebugEndGroup();
+
+                    oglCheckError();
+
                     break;
                 }
                 case Command::COPY_TEXTURE_ARRAY: {
@@ -879,6 +918,8 @@ namespace xng::opengl {
 
                     auto count = src.desc.textureCount > target.desc.textureCount ? target.desc.textureCount
                                                                                   : src.desc.textureCount;
+
+                    oglDebugStartGroup("Copy Texture Array");
 
                     if (count > 0) {
                         glCopyImageSubData(src.handle,
@@ -898,7 +939,9 @@ namespace xng::opengl {
                                            static_cast<GLsizei>(count));
                     }
 
-                    checkGLError();
+                    oglDebugEndGroup();
+
+                    oglCheckError();
 
                     break;
                 }
@@ -907,6 +950,9 @@ namespace xng::opengl {
 
                     auto &target = dynamic_cast<OGLTextureBuffer &>(*data.target);
                     auto &src = dynamic_cast<OGLTextureBuffer &>(*data.source);
+
+                    oglDebugStartGroup("Copy Texture");
+
                     glCopyImageSubData(src.handle,
                                        GL_TEXTURE_2D,
                                        0,
@@ -923,7 +969,9 @@ namespace xng::opengl {
                                        src.desc.size.y,
                                        1);
 
-                    checkGLError();
+                    oglDebugEndGroup();
+
+                    oglCheckError();
 
                     break;
                 }
@@ -933,7 +981,7 @@ namespace xng::opengl {
                     mVertexObject = dynamic_cast<OGLVertexArrayObject *>(data.target);
                     glBindVertexArray(mVertexObject->VAO);
                     stats.binds++;
-                    checkGLError();
+                    oglCheckError();
                     break;
                 }
                 case Command::COPY_VERTEX_BUFFER: {
@@ -947,6 +995,9 @@ namespace xng::opengl {
                         || data.writeOffset + data.count > target.desc.size) {
                         throw std::runtime_error("Invalid copy range");
                     }
+
+                    oglDebugStartGroup("Copy Vertex Buffer");
+
                     glBindBuffer(GL_COPY_READ_BUFFER, buf.VBO);
                     glBindBuffer(GL_COPY_WRITE_BUFFER, target.VBO);
                     glCopyBufferSubData(GL_COPY_READ_BUFFER,
@@ -956,7 +1007,10 @@ namespace xng::opengl {
                                         static_cast<GLsizeiptr>(data.count));
                     glBindBuffer(GL_COPY_READ_BUFFER, 0);
                     glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
-                    checkGLError();
+
+                    oglDebugEndGroup();
+
+                    oglCheckError();
                     break;
                 }
                 case Command::COPY_SHADER_STORAGE_BUFFER: {
@@ -969,6 +1023,7 @@ namespace xng::opengl {
                         || data.writeOffset + data.count >= target.desc.size) {
                         throw std::runtime_error("Invalid copy range");
                     }
+                    oglDebugStartGroup("Copy Shader Storage Buffer");
                     glBindBuffer(GL_COPY_WRITE_BUFFER, target.ssbo);
                     glBindBuffer(GL_COPY_READ_BUFFER, source.ssbo);
                     glCopyBufferSubData(GL_COPY_READ_BUFFER,
@@ -978,7 +1033,8 @@ namespace xng::opengl {
                                         static_cast<GLsizeiptr>(data.count));
                     glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
                     glBindBuffer(GL_COPY_READ_BUFFER, 0);
-                    checkGLError();
+                    oglDebugEndGroup();
+                    oglCheckError();
                     break;
                 }
                 case Command::COPY_SHADER_UNIFORM_BUFFER: {
@@ -991,6 +1047,7 @@ namespace xng::opengl {
                         || data.writeOffset + data.count >= target.desc.size) {
                         throw std::runtime_error("Invalid copy range");
                     }
+                    oglDebugStartGroup("Copy Shader Uniform Buffer");
                     glBindBuffer(GL_COPY_WRITE_BUFFER, target.ubo);
                     glBindBuffer(GL_COPY_READ_BUFFER, source.ubo);
                     glCopyBufferSubData(GL_COPY_READ_BUFFER,
@@ -1000,7 +1057,8 @@ namespace xng::opengl {
                                         static_cast<GLsizeiptr>(data.count));
                     glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
                     glBindBuffer(GL_COPY_READ_BUFFER, 0);
-                    checkGLError();
+                    oglDebugEndGroup();
+                    oglCheckError();
                     break;
                 }
                 case Command::COMPUTE_BIND_PIPELINE: {
@@ -1015,13 +1073,24 @@ namespace xng::opengl {
                         glUseProgram(pip.programHandle);
                     }
 
-                    checkGLError();
+                    oglCheckError();
                     break;
                 }
                 case Command::COMPUTE_EXECUTE: {
                     auto data = std::get<ComputePipelineExecute>(c.data);
                     glDispatchCompute(data.num_groups.x, data.num_groups.y, data.num_groups.z);
-                    checkGLError();
+                    oglCheckError();
+                    break;
+                }
+                case Command::DEBUG_BEGIN_GROUP: {
+                    auto data = std::get<DebugGroup>(c.data);
+                    oglDebugStartGroup(data.name);
+                    oglCheckError();
+                    break;
+                }
+                case Command::DEBUG_END_GROUP: {
+                    oglDebugEndGroup();
+                    oglCheckError();
                     break;
                 }
             }

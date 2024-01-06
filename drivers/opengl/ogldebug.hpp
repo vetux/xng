@@ -17,11 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_OPENGL_CHECKERROR_HPP
-#define XENGINE_OPENGL_CHECKERROR_HPP
+#ifndef XENGINE_OGLDEBUG_HPP
+#define XENGINE_OGLDEBUG_HPP
 
-static std::string getGLErrorString(GLenum error){
-    switch(error){
+#include "oglinclude.hpp"
+
+static std::string getGLErrorString(GLenum error) {
+    switch (error) {
         case GL_INVALID_ENUM:
             return "GL_INVALID_ENUM";
         case GL_INVALID_VALUE:
@@ -35,11 +37,23 @@ static std::string getGLErrorString(GLenum error){
     }
 }
 
-static void checkGLError() {
+static void oglCheckError() {
     GLenum er = glGetError();
     if (er != GL_NO_ERROR) {
         throw std::runtime_error(getGLErrorString(er));
     }
 }
 
-#endif //XENGINE_OPENGL_CHECKERROR_HPP
+static void oglDebugStartGroup(const std::string &name) {
+#ifndef NDEBUG
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, name.c_str());
+#endif
+}
+
+static void oglDebugEndGroup() {
+#ifndef NDEBUG
+    glPopDebugGroup();
+#endif
+}
+
+#endif //XENGINE_OGLDEBUG_HPP

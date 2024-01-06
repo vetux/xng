@@ -24,7 +24,7 @@
 
 #include <utility>
 
-#include "opengl_include.hpp"
+#include "oglinclude.hpp"
 
 #include "gpu/opengl/oglrendertarget.hpp"
 #include "gpu/opengl/oglshaderuniformbuffer.hpp"
@@ -213,6 +213,8 @@ namespace xng::opengl {
         explicit OGLRenderPipeline(RenderPipelineDesc descArg,
                                    ShaderDecompiler &decompiler)
                 : desc(std::move(descArg)) {
+            oglDebugStartGroup("Render Pipeline Constructor");
+
             if (!desc.shaders.empty()) {
                 buildGLSL(decompiler);
 
@@ -226,7 +228,9 @@ namespace xng::opengl {
                 checkLinkSuccess();
             }
 
-            checkGLError();
+            oglDebugEndGroup();
+
+            oglCheckError();
         }
 
         ~OGLRenderPipeline() override {

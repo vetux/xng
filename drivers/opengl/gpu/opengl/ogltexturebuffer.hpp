@@ -25,7 +25,7 @@
 
 #include <utility>
 
-#include "opengl_include.hpp"
+#include "oglinclude.hpp"
 #include "gpu/opengl/oglfence.hpp"
 
 namespace xng::opengl {
@@ -42,6 +42,8 @@ namespace xng::opengl {
         OGLTextureBuffer(TextureBufferDesc descArg, RenderStatistics &stats)
                 : desc(std::move(descArg)), stats(stats) {
             textureType = convert(desc.textureType);
+
+            oglDebugStartGroup("Texture Buffer Constructor");
 
             glGenTextures(1, &handle);
             glBindTexture(textureType, handle);
@@ -79,7 +81,7 @@ namespace xng::opengl {
                                desc.size.y);
 
                 try {
-                    checkGLError();
+                    oglCheckError();
                 } catch (const std::runtime_error &e) {
                     // Catch GL_INVALID_OPERATION because the mipmap layers count maximum depends on log2 which uses floating point.
                     if (e.what() == getGLErrorString(GL_INVALID_OPERATION)) {
@@ -126,7 +128,7 @@ namespace xng::opengl {
                                           desc.fixedSampleLocations ? GL_TRUE : GL_FALSE);
 
                 try {
-                    checkGLError();
+                    oglCheckError();
                 } catch (const std::runtime_error &e) {
                     // Catch GL_INVALID_OPERATION because the mipmap layers count maximum depends on log2 which uses floating point
                     // and create only one layer when this happens.
@@ -178,7 +180,9 @@ namespace xng::opengl {
 
             glBindTexture(textureType, 0);
 
-            checkGLError();
+            oglDebugEndGroup();
+
+            oglCheckError();
         }
 
         ~OGLTextureBuffer() override {
@@ -196,6 +200,8 @@ namespace xng::opengl {
                         "Attempted to upload texture on cube map texture without specifying a target face.");
             }
 
+            oglDebugStartGroup("Texture Buffer Upload");
+
             glBindTexture(GL_TEXTURE_2D, handle);
 
             glTexSubImage2D(GL_TEXTURE_2D,
@@ -210,7 +216,9 @@ namespace xng::opengl {
 
             glBindTexture(GL_TEXTURE_2D, 0);
 
-            checkGLError();
+            oglDebugEndGroup();
+
+            oglCheckError();
 
             stats.uploadTexture += bufferSize;
         }
@@ -228,6 +236,8 @@ namespace xng::opengl {
                 throw std::runtime_error("Attempted to upload a cube map face on a non cube map texture");
             }
 
+            oglDebugStartGroup("Texture Buffer Upload");
+
             glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
 
             glTexSubImage2D(convert(face),
@@ -242,7 +252,9 @@ namespace xng::opengl {
 
             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
-            checkGLError();
+            oglDebugEndGroup();
+
+            oglCheckError();
 
             stats.uploadTexture += bufferSize;
         }
@@ -253,10 +265,16 @@ namespace xng::opengl {
                         "Attempted to download a cube map texture without specifying the target face.");
 
             auto ret = ImageRGBA(desc.size);
+
+            oglDebugStartGroup("Texture Buffer Download");
+
             glBindTexture(GL_TEXTURE_2D, handle);
             glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void *) ret.getBuffer().data());
             glBindTexture(GL_TEXTURE_2D, 0);
-            checkGLError();
+
+            oglDebugEndGroup();
+
+            oglCheckError();
 
             stats.downloadTexture += desc.size.x * desc.size.y * sizeof(ColorRGBA);
 
@@ -268,22 +286,33 @@ namespace xng::opengl {
                 throw std::runtime_error("Attempted to download face of a non cube map texture.");
 
             auto ret = ImageRGBA(desc.size);
+
+            oglDebugStartGroup("Texture Buffer Download");
+
             glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
             glGetTexImage(convert(face), 0, GL_RGBA, GL_UNSIGNED_BYTE, (void *) ret.getBuffer().data());
             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-            checkGLError();
+
+            oglDebugEndGroup();
+
+            oglCheckError();
+
             stats.downloadTexture += desc.size.x * desc.size.y * sizeof(ColorRGBA);
             return std::move(ret.swapColumns());
         }
 
         void generateMipMaps() override {
+            oglDebugStartGroup("Texture Buffer Generate Mip Maps");
+
             glBindTexture(textureType, handle);
 
             glGenerateMipmap(textureType);
 
             glBindTexture(textureType, 0);
 
-            checkGLError();
+            oglDebugEndGroup();
+
+            oglCheckError();
         }
     };
 }

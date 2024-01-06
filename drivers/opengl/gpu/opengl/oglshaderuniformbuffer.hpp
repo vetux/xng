@@ -20,7 +20,7 @@
 #ifndef XENGINE_OGLSHADERUNIFORMBUFFER_HPP
 #define XENGINE_OGLSHADERUNIFORMBUFFER_HPP
 
-#include "opengl_include.hpp"
+#include "oglinclude.hpp"
 #include "gpu/opengl/oglfence.hpp"
 
 namespace xng::opengl {
@@ -34,6 +34,7 @@ namespace xng::opengl {
         explicit OGLShaderUniformBuffer(ShaderUniformBufferDesc inputDescription,
                                         RenderStatistics &stats)
                 :  desc(inputDescription), stats(stats) {
+            oglDebugStartGroup("Shader Uniform Buffer Constructor");
 
             glGenBuffers(1, &ubo);
 
@@ -44,12 +45,15 @@ namespace xng::opengl {
                          GL_DYNAMIC_DRAW);
 
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
-            checkGLError();
+
+            oglDebugEndGroup();
+
+            oglCheckError();
         }
 
         ~OGLShaderUniformBuffer() override {
             glDeleteBuffers(1, &ubo);
-            checkGLError();
+            oglCheckError();
 
         }
 
@@ -62,10 +66,15 @@ namespace xng::opengl {
                 throw std::runtime_error("Upload size does not match buffer size");
             if (desc.bufferType != HOST_VISIBLE)
                 throw std::runtime_error("Upload called on non host visible buffer.");
+            oglDebugStartGroup("Shader Uniform Buffer Upload");
+
             glBindBuffer(GL_UNIFORM_BUFFER, ubo);
             glBufferSubData(GL_UNIFORM_BUFFER, 0, static_cast<GLsizeiptr>(size), data);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
-            checkGLError();
+
+            oglDebugEndGroup();
+
+            oglCheckError();
             stats.uploadShaderUniform += size;
         }
 
@@ -74,13 +83,19 @@ namespace xng::opengl {
                 throw std::runtime_error("Upload size overflow");
             if (desc.bufferType != HOST_VISIBLE)
                 throw std::runtime_error("Upload called on non host visible buffer.");
+
+            oglDebugStartGroup("Shader Uniform Buffer Upload");
+
             glBindBuffer(GL_UNIFORM_BUFFER, ubo);
             glBufferSubData(GL_UNIFORM_BUFFER,
                             static_cast<GLsizeiptr>(offset),
                             static_cast<GLsizeiptr>(dataSize),
                             data);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
-            checkGLError();
+
+            oglDebugEndGroup();
+
+            oglCheckError();
             stats.uploadShaderUniform += dataSize;
         }
     };

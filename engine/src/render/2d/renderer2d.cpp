@@ -282,6 +282,11 @@ namespace xng {
             throw std::runtime_error("CAPABILITY_BASE_VERTEX is required");
         }
 
+        commandBuffer->begin();
+        commandBuffer->add(RenderPass::debugBeginGroup("Renderer 2D Present"));
+        commandBuffer->end();
+        renderDevice.getRenderCommandQueues().at(0).get().submit(*commandBuffer);
+
         if (mClear) {
             commandBuffer->begin();
             commandBuffer->add(renderPass->begin(*mTarget));
@@ -297,6 +302,11 @@ namespace xng {
         } else {
             present();
         }
+
+        commandBuffer->begin();
+        commandBuffer->add(RenderPass::debugEndGroup());
+        commandBuffer->end();
+        renderDevice.getRenderCommandQueues().at(0).get().submit(*commandBuffer);
 
         passes.clear();
     }

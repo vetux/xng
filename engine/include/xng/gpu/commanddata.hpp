@@ -1,3 +1,5 @@
+#include <utility>
+
 /**
  *  xEngine - C++ Game Engine Library
  *  Copyright (C) 2024  Julian Zampiccoli
@@ -236,6 +238,14 @@ namespace xng {
         explicit ComputePipelineExecute(const Vector3<unsigned int> &numGroups) : num_groups(numGroups) {}
     };
 
+    struct DebugGroup {
+        std::string name;
+
+        DebugGroup() = default;
+
+        explicit DebugGroup(std::string name) : name(std::move(name)) {}
+    };
+
     typedef std::variant<IndexBufferCopy,
             RenderTargetBlit,
             RenderPassBegin,
@@ -251,7 +261,8 @@ namespace xng {
             ShaderStorageBufferCopy,
             ShaderUniformBufferCopy,
             ComputePipelineBind,
-            ComputePipelineExecute> CommandData;
+            ComputePipelineExecute,
+            DebugGroup> CommandData;
 }
 
 #endif //XENGINE_COMMANDDATA_HPP

@@ -83,12 +83,22 @@ namespace xng {
 
         for (auto &c: graph.contexts) {
             auto name = c.pass.name();
+            commandBuffer->begin();
+            commandBuffer->add(RenderPass::debugBeginGroup(c.pass.name()));
+            commandBuffer->end();
+            device.getRenderCommandQueues().at(0).get().submit(*commandBuffer);
+
             for (auto &cmd: c.commands) {
                 commandJumpTable.at(cmd.type)(cmd);
             }
             for (auto &r: c.persists) {
                 persist(r);
             }
+
+            commandBuffer->begin();
+            commandBuffer->add(RenderPass::debugEndGroup());
+            commandBuffer->end();
+            device.getRenderCommandQueues().at(0).get().submit(*commandBuffer);
         }
 
         collectGarbage();

@@ -181,6 +181,14 @@ namespace xng {
             return {Command::DRAW_INDEXED_MULTI_BASE_VERTEX,
                     RenderPassDraw(drawCalls, {}, std::move(baseVertices))};
         }
+
+        static Command debugBeginGroup(const std::string &name) {
+            return {Command::DEBUG_BEGIN_GROUP, DebugGroup(name)};
+        }
+
+        static Command debugEndGroup() {
+            return {Command::DEBUG_END_GROUP, {}};
+        }
     };
 }
 
