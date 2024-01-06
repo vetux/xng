@@ -78,7 +78,8 @@ Drivers are implementations of interfaces (For example through 3rd party librari
 
 Check [BUILDING.md](BUILDING.md) for detailed building instructions.
 
-## Assimp Importer and Blender FBX Export
+## Notes
+### Assimp Importer and Blender FBX Export
 When exporting rigged meshes from blender to be imported with the assimp importer driver make sure to:
 - Set the "Apply Scalings" to fbx unit scale.
 - Rotate the mesh and the rig -90 degrees in the X axis and apply the rotation.
@@ -87,3 +88,8 @@ When exporting rigged meshes from blender to be imported with the assimp importe
   - "Key All Bones" appears to do nothing at all
   - "Force Start/End Keyframes" creates invalid keyframes inside an animation for bones which are not keyframed in the animation.
 - Run "Limit Total" in weight paint mode to ensure that there is no more than 4 bones per vertex.
+
+### HDR Colors
+This engine will not follow the HDR FAD that for some reason certain graphics programmers accept without using logical reasoning. 
+Colors are represented using a maximum of 8 bit per channel by default in the rendering code 
+because display and camera light sensor technology currently and probably for the forseeable future can barely reach 8 bit depth in the real world already so having higher bit depth colours just adds bandwidth overhead for no reason.
