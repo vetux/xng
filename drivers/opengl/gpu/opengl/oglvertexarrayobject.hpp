@@ -40,12 +40,12 @@ namespace xng::opengl {
 
         OGLVertexArrayObject(VertexArrayObjectDesc desc) : desc(std::move(desc)) {
             glGenVertexArrays(1, &VAO);
-            checkGLError();
+            oglCheckError();
         }
 
         ~OGLVertexArrayObject() override {
             glDeleteVertexArrays(1, &VAO);
-            checkGLError();
+            oglCheckError();
         }
 
         VertexArrayObjectDesc &getDescription() override {
@@ -88,18 +88,23 @@ namespace xng::opengl {
             mIndexBuffer = nullptr;
             mInstanceBuffer = nullptr;
 
+            oglDebugStartGroup("Set Vertex Array Object Buffers");
+
             glBindVertexArray(VAO);
 
             //Vertex Buffer
             glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer->VBO);
-            checkGLError();
+            oglCheckError();
 
             setupVertexAttributes();
 
             glBindVertexArray(0);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-            checkGLError();
+
+            oglDebugEndGroup();
+
+            oglCheckError();
         }
 
         void setBuffers(VertexBuffer &vertexBuffer, IndexBuffer &indexBuffer) override {
@@ -107,15 +112,17 @@ namespace xng::opengl {
             mIndexBuffer = dynamic_cast<OGLIndexBuffer *>(&indexBuffer);
             mInstanceBuffer = nullptr;
 
+            oglDebugStartGroup("Set Vertex Array Object Buffers");
+
             glBindVertexArray(VAO);
 
             // Vertex Buffer
             glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer->VBO);
-            checkGLError();
+            oglCheckError();
 
             // Index Buffer
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer->EBO);
-            checkGLError();
+            oglCheckError();
 
             setupVertexAttributes();
 
@@ -124,7 +131,9 @@ namespace xng::opengl {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-            checkGLError();
+            oglDebugEndGroup();
+
+            oglCheckError();
         }
 
         void setBuffers(VertexBuffer &vertexBuffer, IndexBuffer &indexBuffer, VertexBuffer &instanceBuffer) override {
@@ -132,21 +141,23 @@ namespace xng::opengl {
             mIndexBuffer = dynamic_cast<OGLIndexBuffer *>(&indexBuffer);
             mInstanceBuffer = dynamic_cast<OGLVertexBuffer *>(&instanceBuffer);
 
+            oglDebugStartGroup("Set Vertex Array Object Buffers");
+
             glBindVertexArray(VAO);
 
             // Vertex Buffer
             glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer->VBO);
-            checkGLError();
+            oglCheckError();
 
             // Index Buffer
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer->EBO);
-            checkGLError();
+            oglCheckError();
 
             setupVertexAttributes();
 
             // Instance Buffer
             glBindBuffer(GL_ARRAY_BUFFER, mInstanceBuffer->VBO);
-            checkGLError();
+            oglCheckError();
 
             // Instance Attributes
             GLsizei instanceStride;
@@ -176,7 +187,9 @@ namespace xng::opengl {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-            checkGLError();
+            oglDebugEndGroup();
+
+            oglCheckError();
         }
 
     private:

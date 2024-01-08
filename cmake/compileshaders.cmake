@@ -1,9 +1,11 @@
 set(SHADER_HEADERS)
 
+file(GLOB LIB_SHADERS "${BASE_SOURCE_DIR}/shaders/lib/*.glsl")
+
 function(CompileShader PATH STAGE ENTRYPOINT)
     add_custom_command(
             OUTPUT ${SHADER_COMPILED_DIR}${PATH}.hpp
-            DEPENDS shadercompiler ${BASE_SOURCE_DIR}/shaders/${PATH}.glsl
+            DEPENDS shadercompiler ${BASE_SOURCE_DIR}/shaders/${PATH}.glsl ${LIB_SHADERS}
             COMMAND shadercompiler -m header -f -i ${BASE_SOURCE_DIR}/shaders/lib/ -p -l GLSL_460 -s ${STAGE} -e main ${BASE_SOURCE_DIR}/shaders/${PATH}.glsl ${SHADER_COMPILED_DIR}${PATH}.hpp)
     set(SHADER_HEADERS ${SHADER_HEADERS} ${SHADER_COMPILED_DIR}${PATH}.hpp PARENT_SCOPE)
 endfunction()

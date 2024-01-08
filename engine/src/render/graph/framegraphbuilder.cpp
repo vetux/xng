@@ -112,13 +112,19 @@ namespace xng {
                                    size_t offset,
                                    ColorFormat colorFormat,
                                    CubeMapFace cubeMapFace,
-                                   std::function<FrameGraphUploadBuffer()> dataSource) {
+                                   std::function<FrameGraphUploadBuffer()> dataSource,
+                                   int mipMapLevel) {
         if (!buffer.assigned)
             throw std::runtime_error("Unassigned resource");
         auto cmd = FrameGraphCommand();
         cmd.type = FrameGraphCommand::UPLOAD;
         cmd.resources.emplace_back(buffer);
-        cmd.data = FrameGraphCommand::UploadData{index, offset, colorFormat, cubeMapFace, std::move(dataSource)};
+        cmd.data = FrameGraphCommand::UploadData{index,
+                                                 offset,
+                                                 mipMapLevel,
+                                                 colorFormat,
+                                                 cubeMapFace,
+                                                 std::move(dataSource)};
         commands.emplace_back(cmd);
     }
 
@@ -136,6 +142,15 @@ namespace xng {
         cmd.resources.emplace_back(source);
         cmd.resources.emplace_back(dest);
         cmd.data = FrameGraphCommand::CopyData{readOffset, writeOffset, count};
+        commands.emplace_back(cmd);
+    }
+
+    void FrameGraphBuilder::generateMipMaps(FrameGraphResource buffer) {
+        if (!buffer.assigned)
+            throw std::runtime_error("Unassigned resource");
+        auto cmd = FrameGraphCommand();
+        cmd.type = FrameGraphCommand::GENERATE_MIPMAPS;
+        cmd.resources.emplace_back(buffer);
         commands.emplace_back(cmd);
     }
 
@@ -401,6 +416,19 @@ namespace xng {
                 baseVertices,
                 0
         };
+        commands.emplace_back(cmd);
+    }
+
+    void FrameGraphBuilder::debugBeginGroup(const std::string &name) {
+        FrameGraphCommand cmd;
+        cmd.type = FrameGraphCommand::DEBUG_BEGIN_GROUP;
+        cmd.data = DebugGroup(name);
+        commands.emplace_back(cmd);
+    }
+
+    void FrameGraphBuilder::debugEndGroup() {
+        FrameGraphCommand cmd;
+        cmd.type = FrameGraphCommand::DEBUG_END_GROUP;
         commands.emplace_back(cmd);
     }
 

@@ -64,13 +64,13 @@ namespace xng {
         FrameGraphResource createShaderStorageBuffer(const ShaderStorageBufferDesc &desc);
 
         void upload(FrameGraphResource buffer, std::function<FrameGraphUploadBuffer()> dataSource) {
-            upload(buffer, 0, 0, {}, {}, std::move(dataSource));
+            upload(buffer, 0, 0, {}, {}, std::move(dataSource), 0);
         }
 
         void upload(FrameGraphResource buffer,
                     size_t offset,
                     std::function<FrameGraphUploadBuffer()> dataSource) {
-            upload(buffer, 0, offset, {}, {}, std::move(dataSource));
+            upload(buffer, 0, offset, {}, {}, std::move(dataSource), 0);
         }
 
         void upload(FrameGraphResource buffer,
@@ -78,13 +78,16 @@ namespace xng {
                     size_t offset,
                     ColorFormat colorFormat,
                     CubeMapFace cubeMapFace,
-                    std::function<FrameGraphUploadBuffer()> dataSource);
+                    std::function<FrameGraphUploadBuffer()> dataSource,
+                    int mipMapLevel);
 
         void copy(FrameGraphResource source,
                   FrameGraphResource dest,
                   size_t readOffset,
                   size_t writeOffset,
                   size_t count);
+
+        void generateMipMaps(FrameGraphResource buffer);
 
         /**
          *
@@ -162,6 +165,10 @@ namespace xng {
         void instancedDrawIndexed(const DrawCall &drawCall, size_t numberOfInstances, size_t baseVertex);
 
         void multiDrawIndexed(const std::vector<DrawCall> &drawCalls, const std::vector<size_t> &baseVertices);
+
+        void debugBeginGroup(const std::string &name);
+
+        void debugEndGroup();
 
         /**
          * Request the passed resource handle to be persisted to the next frame.

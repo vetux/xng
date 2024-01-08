@@ -33,6 +33,10 @@
 
 namespace xng {
     struct TextureBufferDesc : public Messageable {
+        static int getMipMapLevelCount(const Vec2i &size) {
+            return static_cast<int>( std::log2(std::max(size.x, size.y))) + 1;
+        }
+
         Vec2i size = {1, 1};
         int samples = 1; //Ignored if texture is not TEXTURE_2D_MULTISAMPLE
         TextureType textureType = TEXTURE_2D;
@@ -40,8 +44,8 @@ namespace xng {
         TextureWrapping wrapping = CLAMP_TO_BORDER;
         TextureFiltering filterMin = NEAREST;
         TextureFiltering filterMag = NEAREST;
-        bool generateMipmap = false;
-        MipMapFiltering mipmapFilter = NEAREST_MIPMAP_LINEAR;
+        int mipMapLevels = 1;
+        MipMapFiltering mipMapFilter = NEAREST_MIPMAP_LINEAR;
         bool fixedSampleLocations = false;
         RenderBufferType bufferType = HOST_VISIBLE;
         ColorRGBA borderColor = ColorRGBA(0);
@@ -54,8 +58,8 @@ namespace xng {
                    && wrapping == other.wrapping
                    && filterMin == other.filterMin
                    && filterMag == other.filterMag
-                   && generateMipmap == other.generateMipmap
-                   && mipmapFilter == other.mipmapFilter
+                   && mipMapLevels == other.mipMapLevels
+                   && mipMapFilter == other.mipMapFilter
                    && fixedSampleLocations == other.fixedSampleLocations
                    && bufferType == other.bufferType
                    && borderColor == other.borderColor;
@@ -69,8 +73,8 @@ namespace xng {
             wrapping = (TextureWrapping) message.getMessage("wrapping", Message((int) CLAMP_TO_BORDER)).asInt();
             filterMin = (TextureFiltering) message.getMessage("filterMin", Message((int) NEAREST)).asInt();
             filterMag = (TextureFiltering) message.getMessage("filterMag", Message((int) NEAREST)).asInt();
-            message.value("generateMipmap", generateMipmap);
-            mipmapFilter = (MipMapFiltering) message.getMessage("mipmapFilter",
+            message.value("mipMapLayers", mipMapLevels);
+            mipMapFilter = (MipMapFiltering) message.getMessage("mipmapFilter",
                                                                 Message((int) NEAREST_MIPMAP_NEAREST)).asInt();
             message.value("fixedSampleLocations", fixedSampleLocations);
             bufferType = (RenderBufferType) message.getMessage("bufferType", Message((int) HOST_VISIBLE)).asInt();
@@ -87,8 +91,8 @@ namespace xng {
             message["wrapping"] = (int) wrapping;
             message["filterMin"] = (int) filterMin;
             message["filterMag"] = (int) filterMag;
-            message["generateMipmap"] = (int) generateMipmap;
-            message["mipmapFilter"] = (int) mipmapFilter;
+            message["mipMapLayers"] = (int) mipMapLevels;
+            message["mipmapFilter"] = (int) mipMapFilter;
             message["fixedSampleLocations"] = fixedSampleLocations;
             message["bufferType"] = (int) bufferType;
             borderColor >> message["borderColor"];
@@ -110,8 +114,8 @@ namespace std {
             xng::hash_combine(ret, k.wrapping);
             xng::hash_combine(ret, k.filterMin);
             xng::hash_combine(ret, k.filterMag);
-            xng::hash_combine(ret, k.generateMipmap);
-            xng::hash_combine(ret, k.mipmapFilter);
+            xng::hash_combine(ret, k.mipMapLevels);
+            xng::hash_combine(ret, k.mipMapFilter);
             xng::hash_combine(ret, k.fixedSampleLocations);
             xng::hash_combine(ret, k.bufferType);
             xng::hash_combine(ret, k.borderColor.r());

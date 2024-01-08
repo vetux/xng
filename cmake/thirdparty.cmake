@@ -31,6 +31,7 @@ if (DRIVER_BOX2D)
 endif ()
 
 if (DRIVER_BULLET3)
+    set(BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
     add_thirdparty_subdir(${THIRD_PARTY_BASE}/bullet3/)
     add_thirdparty_include(${THIRD_PARTY_BASE}/bullet3/src/)
 endif ()

@@ -44,8 +44,9 @@ namespace xng {
                        RGBA,
                        {},
                        [texture, handle]() {
-                           return FrameGraphUploadBuffer::createArray(getAlignedImage(texture, handle.level).getBuffer());
-                       });
+                           return FrameGraphUploadBuffer::createArray(
+                                   getAlignedImage(texture, handle.level).getBuffer());
+                       }, 0);
     }
 
     TextureAtlas::TextureAtlas(std::map<TextureAtlasResolution, std::vector<bool>> bufferOccupations)

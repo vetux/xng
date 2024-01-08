@@ -17,12 +17,13 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_OPENGL_CONVERSION_HPP
-#define XENGINE_OPENGL_CONVERSION_HPP
+#ifndef XENGINE_OGLCONVERSION_HPP
+#define XENGINE_OGLCONVERSION_HPP
 
 #include "xng/gpu/renderproperties.hpp"
 #include "xng/gpu/textureproperties.hpp"
 #include "xng/render/geometry/primitive.hpp"
+#include "xng/gpu/drawcall.hpp"
 
 namespace xng::opengl {
     static GLenum getColorAttachment(int index) {
@@ -362,4 +363,4 @@ namespace xng::opengl {
     }
 }
 
-#endif //XENGINE_OPENGL_CONVERSION_HPP
+#endif //XENGINE_OGLCONVERSION_HPP

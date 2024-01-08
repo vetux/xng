@@ -47,8 +47,8 @@ namespace xng {
                    && textureDesc.wrapping == other.textureDesc.wrapping
                    && textureDesc.filterMin == other.textureDesc.filterMin
                    && textureDesc.filterMag == other.textureDesc.filterMag
-                   && textureDesc.generateMipmap == other.textureDesc.generateMipmap
-                   && textureDesc.mipmapFilter == other.textureDesc.mipmapFilter
+                   && textureDesc.mipMapLevels == other.textureDesc.mipMapLevels
+                   && textureDesc.mipMapFilter == other.textureDesc.mipMapFilter
                    && textureDesc.fixedSampleLocations == other.textureDesc.fixedSampleLocations
                    && textureDesc.bufferType == other.textureDesc.bufferType;
         }

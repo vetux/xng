@@ -24,7 +24,7 @@
 
 #include <utility>
 
-#include "opengl_include.hpp"
+#include "oglinclude.hpp"
 #include "gpu/opengl/oglfence.hpp"
 
 #include "xng/render/scene/mesh.hpp"
@@ -44,6 +44,8 @@ namespace xng::opengl {
                                  RenderStatistics &stats)
                 : desc(desc),
                   stats(stats) {
+            oglDebugStartGroup("Vertex Buffer Constructor");
+
             glGenBuffers(1, &VBO);
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
             glBufferData(GL_ARRAY_BUFFER,
@@ -52,7 +54,9 @@ namespace xng::opengl {
                          GL_DYNAMIC_COPY);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-            checkGLError();
+            oglDebugEndGroup();
+
+            oglCheckError();
         }
 
         ~OGLVertexBuffer() override {
@@ -68,13 +72,20 @@ namespace xng::opengl {
                 || offset + dataSize > desc.size) {
                 throw std::runtime_error("Invalid upload range");
             }
+
+            oglDebugStartGroup("Vertex Buffer Upload");
+
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
             glBufferSubData(GL_ARRAY_BUFFER,
                             static_cast<GLintptr>(offset),
                             static_cast<GLsizeiptr>(dataSize),
                             data);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
-            checkGLError();
+
+            oglDebugEndGroup();
+
+            oglCheckError();
+
             stats.uploadVertex += dataSize;
         }
     };

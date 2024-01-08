@@ -24,10 +24,11 @@
 
 #include <utility>
 
-#include "opengl_include.hpp"
+#include "oglinclude.hpp"
 #include "gpu/opengl/ogltexturebuffer.hpp"
 #include "gpu/opengl/oglfence.hpp"
 #include "gpu/opengl/ogltexturearraybuffer.hpp"
+#include "ogldebug.hpp"
 
 namespace xng::opengl {
     class OGLRenderTarget : public RenderTarget {
@@ -43,6 +44,8 @@ namespace xng::opengl {
 
         explicit OGLRenderTarget( RenderTargetDesc inputDescription)
                 :  desc(std::move(inputDescription)) {
+            oglDebugStartGroup("Render Target Constructor");
+
             glGenFramebuffers(1, &FBO);
 
             if (desc.numberOfColorAttachments > 0) {
@@ -55,14 +58,16 @@ namespace xng::opengl {
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
             }
 
-            checkGLError();
+            oglDebugEndGroup();
+
+            oglCheckError();
         }
 
         ~OGLRenderTarget() override {
             //Check if FBO is 0 which is the default framebuffer managed by the display manager.
             if (FBO != 0) {
                 glDeleteFramebuffers(1, &FBO);
-                checkGLError();
+                oglCheckError();
             }
         }
 
@@ -136,6 +141,8 @@ namespace xng::opengl {
         }
 
         void setAttachments(const std::vector<RenderTargetAttachment> &colorAttachments) override {
+            oglDebugStartGroup("Set Attachments");
+
             glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
             if (colorAttachments.size() != desc.numberOfColorAttachments)
@@ -149,13 +156,17 @@ namespace xng::opengl {
 
             attachedColor = static_cast<int>(colorAttachments.size());
 
-            checkGLError();
+            oglDebugEndGroup();
+
+            oglCheckError();
         }
 
         void setAttachments(const std::vector<RenderTargetAttachment> &colorAttachments,
                             RenderTargetAttachment depthStencilAttachment) override {
             if (colorAttachments.size() != desc.numberOfColorAttachments)
                 throw std::runtime_error("Invalid number of color attachments");
+
+            oglDebugStartGroup("Set Attachments");
 
             glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
@@ -170,10 +181,14 @@ namespace xng::opengl {
             attachedColor = static_cast<int>(colorAttachments.size());
             attachedDepthStencil = true;
 
-            checkGLError();
+            oglDebugEndGroup();
+
+            oglCheckError();
         }
 
         void clearAttachments() override {
+            oglDebugStartGroup("Clear Attachments");
+
             glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
             for (int i = 0; i < attachedColor; i++) {
@@ -188,15 +203,22 @@ namespace xng::opengl {
             }
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            checkGLError();
+
+            oglDebugEndGroup();
+
+            oglCheckError();
         }
 
         bool isComplete() override {
+            oglDebugStartGroup("Is Complete Check");
+
             glBindFramebuffer(GL_FRAMEBUFFER, FBO);
             auto ret = glCheckFramebufferStatus(GL_FRAMEBUFFER);
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-            checkGLError();
+            oglDebugEndGroup();
+
+            oglCheckError();
 
             return ret == GL_FRAMEBUFFER_COMPLETE;
         }

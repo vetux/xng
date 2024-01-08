@@ -67,6 +67,8 @@ namespace xng {
             COPY_SHADER_UNIFORM_BUFFER,
             COMPUTE_BIND_PIPELINE,
             COMPUTE_EXECUTE,
+            DEBUG_BEGIN_GROUP,
+            DEBUG_END_GROUP
         } type{};
 
         CommandData data;

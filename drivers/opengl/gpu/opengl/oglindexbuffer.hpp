@@ -24,8 +24,8 @@
 
 #include <utility>
 
-#include "opengl_include.hpp"
-#include "opengl_checkerror.hpp"
+#include "oglinclude.hpp"
+#include "ogldebug.hpp"
 
 #include "gpu/opengl/oglfence.hpp"
 
@@ -43,6 +43,8 @@ namespace xng::opengl {
                                 RenderStatistics &stats)
                 :desc(desc),
                   stats(stats){
+            oglDebugStartGroup("Index Buffer Constructor");
+
             glGenBuffers(1, &EBO);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER,
@@ -51,12 +53,14 @@ namespace xng::opengl {
                          GL_DYNAMIC_COPY);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-            checkGLError();
+            oglDebugEndGroup();
+
+            oglCheckError();
         }
 
         ~OGLIndexBuffer() override {
             glDeleteBuffers(1, &EBO);
-            checkGLError();
+            oglCheckError();
         }
 
         const IndexBufferDesc &getDescription() override {
@@ -68,13 +72,20 @@ namespace xng::opengl {
                 || offset + dataSize > desc.size) {
                 throw std::runtime_error("Invalid upload range");
             }
+
+            oglDebugStartGroup("Index Buffer Upload");
+
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
             glBufferSubData(GL_ELEMENT_ARRAY_BUFFER,
                             static_cast<GLintptr>(offset),
                             static_cast<GLsizeiptr>(dataSize),
                             data);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-            checkGLError();
+
+            oglDebugEndGroup();
+
+            oglCheckError();
+
             stats.uploadIndex += dataSize;
         }
     };

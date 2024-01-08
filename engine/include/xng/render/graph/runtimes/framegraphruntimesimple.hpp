@@ -58,6 +58,8 @@ namespace xng {
 
         void cmdCopy(const FrameGraphCommand &cmd);
 
+        void cmdGenerateMipMap(const FrameGraphCommand &cmd);
+
         void cmdBlit(const FrameGraphCommand &cmd);
 
         void cmdBeginPass(const FrameGraphCommand &cmd);
@@ -75,6 +77,10 @@ namespace xng {
         void cmdSetViewport(const FrameGraphCommand &cmd);
 
         void cmdDraw(const FrameGraphCommand &cmd);
+
+        void cmdDebugBeginGroup(const FrameGraphCommand &cmd);
+
+        void cmdDebugEndGroup(const FrameGraphCommand &cmd);
 
         RenderObject &allocate(const FrameGraphResource &res,
                                RenderObject::Type type,

@@ -41,10 +41,13 @@ namespace xng {
         std::type_index getTypeIndex() const override;
 
     private:
-        Mesh mesh = Mesh::normalizedQuad();
+        Mesh quadMesh = Mesh::normalizedQuad();
+        Mesh cubeMesh = Mesh::normalizedCube();
+
+        FrameGraphResource quadVertexBuffer;
+        FrameGraphResource cubeVertexBuffer;
 
         FrameGraphResource pipeline;
-        FrameGraphResource vertexBuffer;
     };
 }
 

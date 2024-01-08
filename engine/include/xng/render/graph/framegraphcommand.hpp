@@ -42,6 +42,7 @@ namespace xng {
             CREATE_SHADER_STORAGE_BUFFER,
             UPLOAD,
             COPY,
+            GENERATE_MIPMAPS,
             BLIT_COLOR,
             BLIT_DEPTH,
             BLIT_STENCIL,
@@ -62,11 +63,14 @@ namespace xng {
             DRAW_INDEXED_BASE_VERTEX,
             DRAW_INSTANCED_INDEXED_BASE_VERTEX,
             DRAW_MULTI_INDEXED_BASE_VERTEX,
+            DEBUG_BEGIN_GROUP,
+            DEBUG_END_GROUP
         } type;
 
         struct UploadData {
             size_t index;
             size_t offset;
+            int mipMapLevel;
             ColorFormat colorFormat;
             CubeMapFace face;
             std::function<FrameGraphUploadBuffer()> dataSource;
@@ -134,7 +138,8 @@ namespace xng {
                 VertexBufferDesc,
                 IndexBufferDesc,
                 ShaderUniformBufferDesc,
-                ShaderStorageBufferDesc> data;
+                ShaderStorageBufferDesc,
+                DebugGroup> data;
 
         std::vector<FrameGraphResource> resources;
     };
