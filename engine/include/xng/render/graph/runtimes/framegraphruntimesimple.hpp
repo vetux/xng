@@ -78,6 +78,10 @@ namespace xng {
 
         void cmdDraw(const FrameGraphCommand &cmd);
 
+        void cmdDebugBeginGroup(const FrameGraphCommand &cmd);
+
+        void cmdDebugEndGroup(const FrameGraphCommand &cmd);
+
         RenderObject &allocate(const FrameGraphResource &res,
                                RenderObject::Type type,
                                std::variant<RenderTargetDesc,

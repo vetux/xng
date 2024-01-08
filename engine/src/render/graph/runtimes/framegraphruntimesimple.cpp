@@ -75,6 +75,10 @@ namespace xng {
             commandJumpTable[type] = [this](const FrameGraphCommand &cmd) { cmdDraw(cmd); };
         }
 
+        commandJumpTable[FrameGraphCommand::DEBUG_BEGIN_GROUP] = [this](const FrameGraphCommand &cmd) { cmdDebugBeginGroup(cmd); };
+
+        commandJumpTable[FrameGraphCommand::DEBUG_END_GROUP] = [this](const FrameGraphCommand &cmd) { cmdDebugEndGroup(cmd); };
+
         commandBuffer = device.createCommandBuffer();
     }
 
@@ -789,6 +793,21 @@ namespace xng {
                 assert(false);
                 break;
         }
+    }
+
+    void FrameGraphRuntimeSimple::cmdDebugBeginGroup(const FrameGraphCommand &cmd) {
+        auto &data = std::get<DebugGroup>(cmd.data);
+        commandBuffer->begin();
+        commandBuffer->add(RenderPass::debugBeginGroup(data.name));
+        commandBuffer->end();
+        device.getRenderCommandQueues().at(0).get().submit(*commandBuffer);
+    }
+
+    void FrameGraphRuntimeSimple::cmdDebugEndGroup(const FrameGraphCommand &cmd) {
+        commandBuffer->begin();
+        commandBuffer->add(RenderPass::debugEndGroup());
+        commandBuffer->end();
+        device.getRenderCommandQueues().at(0).get().submit(*commandBuffer);
     }
 
     RenderObject &FrameGraphRuntimeSimple::allocate(const FrameGraphResource &res,

@@ -166,6 +166,10 @@ namespace xng {
 
         void multiDrawIndexed(const std::vector<DrawCall> &drawCalls, const std::vector<size_t> &baseVertices);
 
+        void debugBeginGroup(const std::string &name);
+
+        void debugEndGroup();
+
         /**
          * Request the passed resource handle to be persisted to the next frame.
          *

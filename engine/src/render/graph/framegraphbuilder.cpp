@@ -419,6 +419,19 @@ namespace xng {
         commands.emplace_back(cmd);
     }
 
+    void FrameGraphBuilder::debugBeginGroup(const std::string &name) {
+        FrameGraphCommand cmd;
+        cmd.type = FrameGraphCommand::DEBUG_BEGIN_GROUP;
+        cmd.data = DebugGroup(name);
+        commands.emplace_back(cmd);
+    }
+
+    void FrameGraphBuilder::debugEndGroup() {
+        FrameGraphCommand cmd;
+        cmd.type = FrameGraphCommand::DEBUG_END_GROUP;
+        commands.emplace_back(cmd);
+    }
+
     void FrameGraphBuilder::persist(FrameGraphResource resource) {
         checkResourceHandle(resource);
         persists.insert(resource);

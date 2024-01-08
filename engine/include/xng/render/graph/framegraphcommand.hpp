@@ -63,6 +63,8 @@ namespace xng {
             DRAW_INDEXED_BASE_VERTEX,
             DRAW_INSTANCED_INDEXED_BASE_VERTEX,
             DRAW_MULTI_INDEXED_BASE_VERTEX,
+            DEBUG_BEGIN_GROUP,
+            DEBUG_END_GROUP
         } type;
 
         struct UploadData {
@@ -136,7 +138,8 @@ namespace xng {
                 VertexBufferDesc,
                 IndexBufferDesc,
                 ShaderUniformBufferDesc,
-                ShaderStorageBufferDesc> data;
+                ShaderStorageBufferDesc,
+                DebugGroup> data;
 
         std::vector<FrameGraphResource> resources;
     };
