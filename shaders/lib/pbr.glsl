@@ -316,3 +316,19 @@ vec3 pbr_finish(PbrPass pass, vec3 Lo, samplerCube irradianceMap, samplerCube pr
 
     return color;
 }
+
+vec3 pbr_finish(PbrPass pass, vec3 Lo)
+{
+    // ambient lighting (note that the next IBL tutorial will replace
+    // this ambient lighting with environment lighting).
+    vec3 ambient = vec3(0.03) * pass.albedo * pass.ao;
+
+    vec3 color = ambient + Lo;
+
+    // HDR tonemapping
+    //  color = color / (color + vec3(1.0));
+    // gamma correct
+    //  color = pow(color, vec3(1.0/2.2));
+
+    return color;
+}
