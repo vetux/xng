@@ -658,32 +658,32 @@ namespace xng {
             passDesc.numberOfColorAttachments = desc.numberOfColorAttachments;
             passDesc.hasDepthStencilAttachment = desc.hasDepthStencilAttachment;
 
-            pass = &getRenderPass(passDesc);
+            auto &pass = getRenderPass(passDesc);
 
-            pendingRenderCommands.emplace_back(pass->begin(target));
+            pendingRenderCommands.emplace_back(pass.begin(target));
         } else {
             assert(cmd.resources.at(0) == graph.backBuffer);
 
             RenderPassDesc desc;
             desc.numberOfColorAttachments = backBuffer.getDescription().numberOfColorAttachments;
             desc.hasDepthStencilAttachment = backBuffer.getDescription().hasDepthStencilAttachment;
-            pass = &getRenderPass(desc);
+            auto &pass = getRenderPass(desc);
 
-            pendingRenderCommands.emplace_back(pass->begin(backBuffer));
+            pendingRenderCommands.emplace_back(pass.begin(backBuffer));
         }
     }
 
     void FrameGraphRuntimeSimple::cmdFinishPass(const FrameGraphCommand &cmd) {
-        pendingRenderCommands.emplace_back(pass->end());
+        pendingRenderCommands.emplace_back(RenderPass::end());
         flushRenderCommands();
     }
 
     void FrameGraphRuntimeSimple::cmdClear(const FrameGraphCommand &cmd) {
         auto &data = std::get<FrameGraphCommand::ClearData>(cmd.data);
         if (cmd.type == FrameGraphCommand::CLEAR_COLOR)
-            pendingRenderCommands.emplace_back(pass->clearColorAttachments(data.color));
+            pendingRenderCommands.emplace_back(RenderPass::clearColorAttachments(data.color));
         else
-            pendingRenderCommands.emplace_back(pass->clearDepthAttachment(data.depth));
+            pendingRenderCommands.emplace_back(RenderPass::clearDepthAttachment(data.depth));
     }
 
     void FrameGraphRuntimeSimple::cmdBindPipeline(const FrameGraphCommand &cmd) {
@@ -752,42 +752,42 @@ namespace xng {
 
     void FrameGraphRuntimeSimple::cmdSetViewport(const FrameGraphCommand &cmd) {
         auto &data = std::get<FrameGraphCommand::ViewportData>(cmd.data);
-        pendingRenderCommands.emplace_back(pass->setViewport(data.viewportOffset, data.viewportSize));
+        pendingRenderCommands.emplace_back(RenderPass::setViewport(data.viewportOffset, data.viewportSize));
     }
 
     void FrameGraphRuntimeSimple::cmdDraw(const FrameGraphCommand &cmd) {
         auto &data = std::get<FrameGraphCommand::DrawCallData>(cmd.data);
         switch (cmd.type) {
             case FrameGraphCommand::DRAW_ARRAY:
-                pendingRenderCommands.emplace_back(pass->drawArray(data.drawCalls.at(0)));
+                pendingRenderCommands.emplace_back(RenderPass::drawArray(data.drawCalls.at(0)));
                 break;
             case FrameGraphCommand::DRAW_INDEXED:
-                pendingRenderCommands.emplace_back(pass->drawIndexed(data.drawCalls.at(0)));
+                pendingRenderCommands.emplace_back(RenderPass::drawIndexed(data.drawCalls.at(0)));
                 break;
             case FrameGraphCommand::DRAW_INSTANCED_ARRAY:
-                pendingRenderCommands.emplace_back(pass->instancedDrawArray(data.drawCalls.at(0),
+                pendingRenderCommands.emplace_back(RenderPass::instancedDrawArray(data.drawCalls.at(0),
                                                                             data.numberOfInstances));
                 break;
             case FrameGraphCommand::DRAW_INSTANCED_INDEXED:
-                pendingRenderCommands.emplace_back(pass->instancedDrawIndexed(data.drawCalls.at(0),
+                pendingRenderCommands.emplace_back(RenderPass::instancedDrawIndexed(data.drawCalls.at(0),
                                                                               data.numberOfInstances));
                 break;
             case FrameGraphCommand::DRAW_MULTI_ARRAY:
-                pendingRenderCommands.emplace_back(pass->multiDrawArray(data.drawCalls));
+                pendingRenderCommands.emplace_back(RenderPass::multiDrawArray(data.drawCalls));
                 break;
             case FrameGraphCommand::DRAW_MULTI_INDEXED:
-                pendingRenderCommands.emplace_back(pass->multiDrawIndexed(data.drawCalls));
+                pendingRenderCommands.emplace_back(RenderPass::multiDrawIndexed(data.drawCalls));
                 break;
             case FrameGraphCommand::DRAW_INDEXED_BASE_VERTEX:
-                pendingRenderCommands.emplace_back(pass->drawIndexed(data.drawCalls.at(0), data.baseVertices.at(0)));
+                pendingRenderCommands.emplace_back(RenderPass::drawIndexed(data.drawCalls.at(0), data.baseVertices.at(0)));
                 break;
             case FrameGraphCommand::DRAW_INSTANCED_INDEXED_BASE_VERTEX:
-                pendingRenderCommands.emplace_back(pass->instancedDrawIndexed(data.drawCalls.at(0),
+                pendingRenderCommands.emplace_back(RenderPass::instancedDrawIndexed(data.drawCalls.at(0),
                                                                               data.numberOfInstances,
                                                                               data.baseVertices.at(0)));
                 break;
             case FrameGraphCommand::DRAW_MULTI_INDEXED_BASE_VERTEX:
-                pendingRenderCommands.emplace_back(pass->multiDrawIndexed(data.drawCalls, data.baseVertices));
+                pendingRenderCommands.emplace_back(RenderPass::multiDrawIndexed(data.drawCalls, data.baseVertices));
                 break;
             default:
                 assert(false);

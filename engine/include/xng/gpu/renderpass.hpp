@@ -44,20 +44,20 @@ namespace xng {
             return {Command::BEGIN_PASS, RenderPassBegin(this, &target)};
         }
 
-        Command end() {
+        static Command end() {
             return {Command::END_PASS, {}};
         }
 
-        Command setViewport(Vec2i viewportOffset, Vec2i viewportSize) {
+        static Command setViewport(Vec2i viewportOffset, Vec2i viewportSize) {
             return {Command::SET_VIEWPORT,
                     RenderPassViewport(std::move(viewportOffset), std::move(viewportSize))};
         }
 
-        Command clearColorAttachments(ColorRGBA clearColor) {
+        static Command clearColorAttachments(ColorRGBA clearColor) {
             return {Command::CLEAR_COLOR, RenderPassClear(clearColor, {})};
         }
 
-        Command clearDepthAttachment(float clearDepthValue) {
+        static Command clearDepthAttachment(float clearDepthValue) {
             return {Command::CLEAR_DEPTH, RenderPassClear({}, clearDepthValue)};
         }
 
@@ -66,7 +66,7 @@ namespace xng {
          *
          * @param drawCall
          */
-        Command drawArray(const DrawCall &drawCall) {
+        static Command drawArray(const DrawCall &drawCall) {
             return {Command::DRAW_ARRAY, RenderPassDraw({drawCall}, {}, {})};
         }
 
@@ -75,7 +75,7 @@ namespace xng {
          *
          * @param drawCall
          */
-        Command drawIndexed(const DrawCall &drawCall) {
+        static Command drawIndexed(const DrawCall &drawCall) {
             return {Command::DRAW_INDEXED, RenderPassDraw({drawCall}, {}, {})};
         }
 
@@ -89,7 +89,7 @@ namespace xng {
          * @param drawCall
          * @param numberOfInstances
          */
-        Command instancedDrawArray(const DrawCall &drawCall, size_t numberOfInstances) {
+        static Command instancedDrawArray(const DrawCall &drawCall, size_t numberOfInstances) {
             return {Command::DRAW_ARRAY_INSTANCED, RenderPassDraw({drawCall}, numberOfInstances, {})};
         }
 
@@ -103,7 +103,7 @@ namespace xng {
          * @param drawCall
          * @param numberOfInstances
          */
-        Command instancedDrawIndexed(const DrawCall &drawCall, size_t numberOfInstances) {
+        static Command instancedDrawIndexed(const DrawCall &drawCall, size_t numberOfInstances) {
             return {Command::DRAW_INDEXED_INSTANCED, RenderPassDraw({drawCall}, numberOfInstances, {})};
         }
 
@@ -116,7 +116,7 @@ namespace xng {
          *
          * @param drawCalls
          */
-        Command multiDrawArray(const std::vector<DrawCall> &drawCalls) {
+        static Command multiDrawArray(const std::vector<DrawCall> &drawCalls) {
             return {Command::DRAW_ARRAY_MULTI, RenderPassDraw(drawCalls, {}, {})};
         }
 
@@ -129,7 +129,7 @@ namespace xng {
          *
          * @param drawCalls
          */
-        Command multiDrawIndexed(const std::vector<DrawCall> &drawCalls) {
+        static Command multiDrawIndexed(const std::vector<DrawCall> &drawCalls) {
             return {Command::DRAW_INDEXED_MULTI, RenderPassDraw(drawCalls, {}, {})};
         }
 
@@ -143,7 +143,7 @@ namespace xng {
          * @param drawCall
          * @param baseVertex
          */
-        Command drawIndexed(const DrawCall &drawCall, size_t baseVertex) {
+        static Command drawIndexed(const DrawCall &drawCall, size_t baseVertex) {
             return {Command::DRAW_INDEXED_BASE_VERTEX, RenderPassDraw({drawCall}, {}, {baseVertex})};
         }
 
@@ -160,7 +160,7 @@ namespace xng {
          * @param numberOfInstances
          * @param baseVertex
          */
-        Command instancedDrawIndexed(const DrawCall &drawCall, size_t numberOfInstances, size_t baseVertex) {
+        static Command instancedDrawIndexed(const DrawCall &drawCall, size_t numberOfInstances, size_t baseVertex) {
             return {Command::DRAW_INDEXED_INSTANCED_BASE_VERTEX,
                     RenderPassDraw({drawCall}, numberOfInstances, {baseVertex})};
         }
@@ -177,7 +177,7 @@ namespace xng {
          * @param drawCalls
          * @param baseVertices
          */
-        Command multiDrawIndexed(const std::vector<DrawCall> &drawCalls, std::vector<size_t> baseVertices) {
+        static Command multiDrawIndexed(const std::vector<DrawCall> &drawCalls, std::vector<size_t> baseVertices) {
             return {Command::DRAW_INDEXED_MULTI_BASE_VERTEX,
                     RenderPassDraw(drawCalls, {}, std::move(baseVertices))};
         }

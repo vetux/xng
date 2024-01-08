@@ -290,9 +290,9 @@ namespace xng {
         if (mClear) {
             commandBuffer->begin();
             commandBuffer->add(renderPass->begin(*mTarget));
-            commandBuffer->add(renderPass->clearColorAttachments(mClearColor));
-            commandBuffer->add(renderPass->clearDepthAttachment(1));
-            commandBuffer->add(renderPass->end());
+            commandBuffer->add(RenderPass::clearColorAttachments(mClearColor));
+            commandBuffer->add(RenderPass::clearDepthAttachment(1));
+            commandBuffer->add(RenderPass::end());
             commandBuffer->end();
             renderDevice.getRenderCommandQueues().at(0).get().submit(*commandBuffer);
         }
@@ -640,7 +640,7 @@ namespace xng {
             std::vector<Command> commands;
 
             commands.emplace_back(renderPass->begin(*mTarget));
-            commands.emplace_back(renderPass->setViewport(mViewportOffset, mViewportSize));
+            commands.emplace_back(RenderPass::setViewport(mViewportOffset, mViewportSize));
 
             switch (batch.primitive) {
                 case POINTS:
@@ -677,10 +677,10 @@ namespace xng {
                 };
 
                 commands.emplace_back(RenderPipeline::bindShaderResources(resources));
-                commands.emplace_back(renderPass->drawIndexed(batch.drawCalls.at(y), batch.baseVertices.at(y)));
+                commands.emplace_back(RenderPass::drawIndexed(batch.drawCalls.at(y), batch.baseVertices.at(y)));
             }
 
-            commands.emplace_back(renderPass->end());
+            commands.emplace_back(RenderPass::end());
 
             commandBuffer->begin();
             commandBuffer->add(commands);
@@ -972,7 +972,7 @@ namespace xng {
                 std::vector<Command> commands;
 
                 commands.emplace_back(renderPass->begin(*mTarget));
-                commands.emplace_back(renderPass->setViewport(mViewportOffset, mViewportSize));
+                commands.emplace_back(RenderPass::setViewport(mViewportOffset, mViewportSize));
 
                 commands.emplace_back(vertexArrayObject->bind());
 
@@ -991,8 +991,8 @@ namespace xng {
                 }
 
                 commands.emplace_back(RenderPipeline::bindShaderResources(resources));
-                commands.emplace_back(renderPass->multiDrawIndexed(batch.drawCalls, batch.baseVertices));
-                commands.emplace_back(renderPass->end());
+                commands.emplace_back(RenderPass::multiDrawIndexed(batch.drawCalls, batch.baseVertices));
+                commands.emplace_back(RenderPass::end());
                 commandBuffer->begin();
                 commandBuffer->add(commands);
                 commandBuffer->end();

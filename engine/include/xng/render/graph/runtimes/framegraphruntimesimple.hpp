@@ -172,7 +172,6 @@ namespace xng {
 
         std::unique_ptr<CommandBuffer> commandBuffer;
 
-        RenderPass *pass = nullptr;
         RenderPipeline *pipeline = nullptr;
     };
 }
