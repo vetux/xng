@@ -586,6 +586,8 @@ namespace xng {
 
     void DeferredLightingPass::generateEnvironmentMaps(FrameGraphBuilder &builder,
                                                        const ResourceHandle<ImageRGBA> &hdrImage) {
+        builder.debugBeginGroup("Create Environment Cube Map");
+
         Mat4f captureProjection = MatrixMath::perspective(90.0f, 1.0f, 0.1f, 10.0f);
         Mat4f captureViews[] =
                 {
@@ -682,6 +684,10 @@ namespace xng {
 
         builder.generateMipMaps(environmentMap);
 
+        builder.debugEndGroup();
+
+        builder.debugBeginGroup("Create Irradiance Cube Map");
+
         // Create an irradiance cubemap, and re-scale capture FBO to irradiance scale
 
         desc.wrapping = CLAMP_TO_EDGE;
@@ -718,6 +724,10 @@ namespace xng {
 
             builder.finishPass();
         }
+
+        builder.debugEndGroup();
+
+        builder.debugBeginGroup("Create Pre Filter Cube Map");
 
         // Create a pre-filter cubemap, and re-scale capture FBO to pre-filter scale
 
@@ -772,6 +782,10 @@ namespace xng {
             }
         }
 
+        builder.debugEndGroup();
+
+        builder.debugBeginGroup("Create BRDF LUT");
+
         // Generate a 2D LUT from the BRDF equations used
         if (!brdfMap.assigned) {
             desc = {};
@@ -797,5 +811,7 @@ namespace xng {
 
             builder.finishPass();
         }
+
+        builder.debugEndGroup();
     }
 }
