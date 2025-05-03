@@ -7,7 +7,9 @@
 
 # xEngine
 
-xEngine is a cross-platform c++ game engine library.
+xEngine is a cross-platform c++ game engine library. 
+
+The engine is designed as a standalone modular toolkit in which different modules can be used independently. 
 
 [xng-editor](https://github.com/vetux/xng-editor) - Editor application to simplify and accelerate the game creation
 workflow
@@ -28,14 +30,19 @@ workflow
 - Skeletal Animation
 - Canvas layout engine
 - PAK file format with compression, chunking and encryption support
+- Cross Plattform (Linux, Windows and Android)
 
 ## Planned Features
 - Vulkan GPU driver
-- Image Based Environment Lighting for the PBR Model (Need a math wizard person)
+- Frame Graph Renderer rewrite to utilize hardware features of Vulkan
+- Image Based Environment Lighting for the PBR Model
  
+## Screenshots
+![](https://raw.githubusercontent.com/vetux/xng-assets/refs/heads/master/screenshots/ScreenshotFramegraph.jpg)
+
 ## Drivers
 
-Drivers are implementations of interfaces (For example through 3rd party libraries) that can be optionally compiled into the engine library. If a driver interface implementation type is instantiated in an application the corresponding driver must be defined by the linked engine library by enabling the corresponding cmake option/s in [drivers.cmake](cmake/drivers.cmake) when compiling the engine library.
+Drivers are implementations of interfaces in the xEngine API (For example through 3rd party libraries) that can be optionally compiled into the engine library. If a driver interface implementation type is instantiated in an application the corresponding driver must be defined by the linked engine library by enabling the corresponding cmake option/s in [drivers.cmake](cmake/drivers.cmake) when compiling the engine library.
 
 - Display Manager
     - GLFW
