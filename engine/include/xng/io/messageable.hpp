@@ -29,7 +29,9 @@ namespace xng {
 
         virtual Message &operator>>(Message &message) const = 0;
 
-        bool operator==(const Messageable &other) const = default;
+        virtual bool operator==(const Messageable &other) const {
+            return false;
+        }
     };
 }
 #endif //XENGINE_SERIALIZABLE_HPP

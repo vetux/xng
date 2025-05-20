@@ -108,7 +108,7 @@ namespace xng {
                                   convert(ptB),
                                   convert(normalOnB)};
                         contacts.insert(c);
-                        if (!existingContacts.contains(c)) {
+                        if (existingContacts.find(c) == existingContacts.end()) {
                             for (auto &l: listeners) {
                                 l->beginContact(c);
                             }
@@ -162,7 +162,7 @@ namespace xng {
                                   convert(ptB),
                                   convert(normalOnB)};
                         contacts.insert(c);
-                        if (!existingContacts.contains(c)) {
+                        if (existingContacts.find(c) == existingContacts.end()) {
                             for (auto &l: listeners) {
                                 l->beginContact(c);
                             }

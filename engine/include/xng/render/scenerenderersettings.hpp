@@ -38,7 +38,7 @@ namespace xng {
     public:
         template<typename T>
         T get(const SceneRendererSetting &setting) const {
-            if (typeid(T) != setting.type) {
+            if (std::type_index(typeid(T)) != setting.type) {
                 throw std::runtime_error("Requested setting type is invalid");
             }
             if (map.has(setting.name))
@@ -49,7 +49,7 @@ namespace xng {
 
         template<typename T>
         void set(const SceneRendererSetting &setting, const T &value) {
-            if (typeid(T) != setting.type) {
+            if (std::type_index(typeid(T)) != setting.type) {
                 throw std::runtime_error("Requested setting type is invalid");
             }
             map.set(setting.name, value);

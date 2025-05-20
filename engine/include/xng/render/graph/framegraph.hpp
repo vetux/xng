@@ -44,7 +44,7 @@ namespace xng {
 
         bool checkResource(FrameGraphResource resource) {
             for (auto &stage: contexts) {
-                if (stage.persists.contains(resource)) {
+                if (stage.persists.find(resource) != stage.persists.end()) {
                     return true;
                 } else {
                     for (auto &c: stage.commands) {

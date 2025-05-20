@@ -25,6 +25,8 @@
 #include <string.h>
 #include <glad/glad.h>
 
+#pragma GCC diagnostic ignored "-Wpedantic"
+
 static void* get_proc(const char *namez);
 
 #if defined(_WIN32) || defined(__CYGWIN__)

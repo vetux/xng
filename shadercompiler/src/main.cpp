@@ -138,7 +138,7 @@ Arguments parseArgs(int argc, char *argv[]) {
     Arguments ret;
     for (auto i = 1; i < argc; i++) {
         std::string arg(argv[i]);
-        if (arg.starts_with('-')) {
+        if (arg.rfind('-', 0) == 0) {
             if (arg == "-i") {
                 if (i + 1 >= argc) {
                     throw std::runtime_error("-I option must be followed by a valid path");

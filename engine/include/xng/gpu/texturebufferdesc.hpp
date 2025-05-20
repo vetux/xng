@@ -65,6 +65,10 @@ namespace xng {
                    && borderColor == other.borderColor;
         }
 
+        bool operator !=(const TextureBufferDesc &other) const {
+            return !(*this == other);
+        }
+
         Messageable &operator<<(const Message &message) override {
             size << message.getMessage("size");
             message.value("samples", samples);

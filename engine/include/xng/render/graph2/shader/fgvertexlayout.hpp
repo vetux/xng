@@ -32,7 +32,9 @@ namespace xng {
 
         explicit FGVertexLayout(std::vector<FGVertexElement> elements) : elements(std::move(elements)) {}
 
-        bool operator==(const FGVertexLayout &other) const = default;
+        bool operator==(const FGVertexLayout &other) const{
+            return elements == other.elements;
+        }
 
         size_t getSize() const {
             size_t ret = 0;

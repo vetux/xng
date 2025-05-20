@@ -48,9 +48,22 @@ namespace xng {
 
         TextureFiltering filter = NEAREST;
 
-        bool operator==(const TextComponent &other) const = default;
+        bool operator==(const TextComponent &other) const {
+            return text == other.text
+                   && pixelSize == other.pixelSize
+                   && lineHeight == other.lineHeight
+                   && lineWidth == other.lineWidth
+                   && lineSpacing == other.lineSpacing
+                   && alignment == other.alignment
+                   && font == other.font
+                   && textScroll == other.textScroll
+                   && textColor == other.textColor
+                   && filter == other.filter;
+        }
 
-        bool operator!=(const TextComponent &other) const = default;
+        bool operator!=(const TextComponent &other) const {
+            return !(*this == other);
+        }
 
         Messageable &operator<<(const Message &message) override {
             message.value("pixelSize", pixelSize);
@@ -62,7 +75,7 @@ namespace xng {
             message.value("textScroll", textScroll);
             message.value("text", text);
             message.value("textColor", textColor);
-            message.value("filter", (int &)filter, (int) NEAREST);
+            message.value("filter", (int &) filter, (int) NEAREST);
             return Component::operator<<(message);
         }
 

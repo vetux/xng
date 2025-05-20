@@ -34,7 +34,9 @@ namespace xng {
         TextureAtlasResolution level{};
         Vec2i size; // The original texture size
 
-        bool operator==(const TextureAtlasHandle &other) const = default;
+        bool operator==(const TextureAtlasHandle &other) const{
+            return index == other.index && level == other.level && size == other.size;
+        }
     };
 }
 

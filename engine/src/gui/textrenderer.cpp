@@ -197,7 +197,7 @@ namespace xng {
 
         auto origin = Vec2f(0, static_cast<float>(layout.lineHeight));
 
-        auto target = ren2d->getDevice().createRenderTarget({.size = size.convert<int>()});
+        auto target = ren2d->getDevice().createRenderTarget(RenderTargetDesc(size.convert<int>()));
 
         TextureBufferDesc desc;
         desc.size = size.convert<int>();

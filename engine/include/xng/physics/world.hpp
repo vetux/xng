@@ -23,6 +23,8 @@
 #include "xng/physics/rigidbody.hpp"
 #include "xng/physics/joint.hpp"
 #include "xng/physics/colliderdesc.hpp"
+#include <utility>
+
 #include "xng/physics/rigidbody.hpp"
 #include "xng/physics/rayhit.hpp"
 
@@ -39,6 +41,17 @@ namespace xng {
             Vec3f positionWorldB;
 
             Vec3f normalOnB;
+
+            Contact(std::reference_wrapper<Collider> colliderA,
+                    std::reference_wrapper<Collider> colliderB,
+                    Vec3f positionWorldA = Vec3f(),
+                    Vec3f positionWorldB = Vec3f(),
+                    Vec3f normalOnB = Vec3f())
+                    : colliderA(colliderA),
+                      colliderB(colliderB),
+                      positionWorldA(std::move(positionWorldA)),
+                      positionWorldB(std::move(positionWorldB)),
+                      normalOnB(std::move(normalOnB)) {}
 
             bool operator==(const Contact &other) const {
                 return &colliderA.get() == &other.colliderA.get()
@@ -74,7 +87,8 @@ namespace xng {
          * @param colliderDesc
          * @return
          */
-        virtual std::unique_ptr<RigidBody> createBody(const ColliderDesc &colliderDesc, RigidBody::RigidBodyType type) = 0;
+        virtual std::unique_ptr<RigidBody>
+        createBody(const ColliderDesc &colliderDesc, RigidBody::RigidBodyType type) = 0;
 
         virtual std::unique_ptr<Joint> createJoint() = 0;
 

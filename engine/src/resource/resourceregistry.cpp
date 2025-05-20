@@ -75,7 +75,7 @@ namespace xng {
 
     ResourceImporter &ResourceRegistry::getImporter(const std::string &fileExtension) {
         for (auto &imp: importers) {
-            if (imp->getSupportedFormats().contains(fileExtension)) {
+            if (imp->getSupportedFormats().find(fileExtension) != imp->getSupportedFormats().end()) {
                 return *imp;
             }
         }

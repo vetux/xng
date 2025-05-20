@@ -34,7 +34,7 @@ namespace xng::opengl {
         GpuDriverBackend getBackend() override;
 
     private:
-        std::vector<RenderDeviceInfo> deviceInfos = {{.name = "default"}};
+        std::vector<RenderDeviceInfo> deviceInfos = {RenderDeviceInfo("default")};
         bool retrievedInfos = false;
     };
 }

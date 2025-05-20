@@ -32,6 +32,10 @@ namespace xng {
         int numberOfColorAttachments = 1;
         bool hasDepthStencilAttachment = false;
 
+        RenderTargetDesc() = default;
+
+        explicit RenderTargetDesc(Vec2i size) : size(std::move(size)) {}
+
         bool operator==(const RenderTargetDesc &other) const {
             return size == other.size
                    && multisample == other.multisample

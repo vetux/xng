@@ -102,7 +102,9 @@ namespace xng {
             && bottom == other.bottom;
         };
 
-        bool operator!=(const Camera &other) const = default;
+        bool operator!=(const Camera &other) const{
+            return !(*this == other);
+        }
 
         CameraType type = PERSPECTIVE;
 

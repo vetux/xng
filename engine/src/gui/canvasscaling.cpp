@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <algorithm>
+#include "xng/math/interpolation.hpp"
 #include "xng/gui/canvasscaler.hpp"
 
 namespace xng {
@@ -33,7 +33,7 @@ namespace xng {
 
         auto posScale = Vec2f(screenSize.x / referenceResolution.x, screenSize.y / referenceResolution.y);
 
-        auto sizeScale = Vec2f(std::lerp(posScale.y, posScale.x, fitWidth));
+        auto sizeScale = Vec2f(lerp(posScale.y, posScale.x, fitWidth));
 
         auto scaledSize = ret.size * sizeScale;
 

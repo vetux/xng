@@ -546,11 +546,11 @@ namespace xng {
         if (cmd.resources.empty()) {
             auto &data = std::get<FrameGraphCommand::BeginPassData>(cmd.data);
 
-            if (dirtyBuffers.contains(data.depthAttachment.resource)) {
+            if (dirtyBuffers.find(data.depthAttachment.resource) != dirtyBuffers.end()) {
                 flushBufferCommands();
             } else {
                 for (auto &att: data.colorAttachments) {
-                    if (dirtyBuffers.contains(att.resource)) {
+                    if (dirtyBuffers.find(att.resource) != dirtyBuffers.end()) {
                         flushBufferCommands();
                         break;
                     }
@@ -698,9 +698,9 @@ namespace xng {
         FrameGraphResource indexBuffer = cmd.resources.at(1);
         FrameGraphResource instanceBuffer = cmd.resources.at(2);
 
-        if (dirtyBuffers.contains(vertexBuffer)
-            || (indexBuffer.assigned && dirtyBuffers.contains(indexBuffer))
-            || (instanceBuffer.assigned && dirtyBuffers.contains(instanceBuffer)))
+        if (dirtyBuffers.find(vertexBuffer) != dirtyBuffers.end()
+            || (indexBuffer.assigned && dirtyBuffers.find(indexBuffer) != dirtyBuffers.end())
+            || (instanceBuffer.assigned && dirtyBuffers.find(instanceBuffer) != dirtyBuffers.end()))
             flushBufferCommands();
 
         VertexArrayObjectDesc desc;
@@ -726,7 +726,7 @@ namespace xng {
         auto &data = std::get<std::vector<FrameGraphCommand::ShaderData>>(cmd.data);
         std::vector<ShaderResource> resources;
         for (auto &r: data) {
-            if (dirtyBuffers.contains(r.resource))
+            if (dirtyBuffers.find(r.resource) != dirtyBuffers.end())
                 flushBufferCommands();
             auto obj = &getObject(r.resource);
             switch (obj->getType()) {

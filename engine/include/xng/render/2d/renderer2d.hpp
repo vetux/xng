@@ -331,6 +331,12 @@ namespace xng {
             Primitive primitive{};
             DrawCall drawCall{};
             size_t baseVertex{};
+
+            MeshDrawData() = default;
+
+            MeshDrawData(Primitive primitive, DrawCall drawCall, size_t baseVertex) : primitive(primitive),
+                                                                                      drawCall(std::move(drawCall)),
+                                                                                      baseVertex(baseVertex) {}
         };
 
         void present();

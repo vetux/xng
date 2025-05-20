@@ -30,11 +30,17 @@ namespace xng {
 
         explicit VertexLayout(std::vector<VertexAttribute> attributes) : attributes(std::move(attributes)) {}
 
-        bool operator==(const VertexLayout &other) const = default;
+        bool operator==(const VertexLayout &other) const {
+            return attributes == other.attributes;
+        }
+
+        bool operator!=(const VertexLayout &other) const {
+            return !(*this == other);
+        }
 
         size_t getSize() const {
             size_t ret = 0;
-            for (auto &attr : attributes)
+            for (auto &attr: attributes)
                 ret += attr.stride();
             return ret;
         }

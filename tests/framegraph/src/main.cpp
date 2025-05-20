@@ -128,13 +128,15 @@ int main(int argc, char *argv[]) {
     auto fontFs = std::ifstream("assets/fonts/Sono/static/Sono/Sono-Regular.ttf", std::ios_base::in | std::ios::binary);
     auto font = fontDriver.createFontRenderer(fontFs);
 
+    auto windowAttr = WindowAttributes();
+    windowAttr.vsync = true;
+    windowAttr.debug = false;
+
     auto window = displayDriver.createWindow(gpuDriver.getBackend(),
                                              "XNG FrameGraph Test",
                                              {800, 600},
-                                             WindowAttributes{
-                                                     .vsync = true,
-                                                     .debug = false
-                                             });
+                                             windowAttr);
+
     auto &input = window->getInput();
 
     auto device = gpuDriver.createRenderDevice();
@@ -352,7 +354,10 @@ int main(int argc, char *argv[]) {
     node.addProperty(lightProp);
     scene.rootNode.childNodes.emplace_back(node);
 
-    auto text = textRenderer.render("GBUFFER POSITION", TextLayout{.lineHeight = 70});
+    auto textLayout = TextLayout();
+    textLayout.lineHeight = 70;
+
+    auto text = textRenderer.render("GBUFFER POSITION", textLayout);
     auto tex = ren2d.createTexture(text.getImage());
 
     auto &cameraRef = scene.rootNode.find<CameraProperty>().getProperty<CameraProperty>();
@@ -394,7 +399,7 @@ int main(int argc, char *argv[]) {
 
         auto txt = testPass->getSlotName();
         if (text.getText() != txt) {
-            text = textRenderer.render(txt, TextLayout{.lineHeight = 70});
+            text = textRenderer.render(txt, textLayout);
             tex = ren2d.createTexture(text.getImage());
         }
 

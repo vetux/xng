@@ -66,16 +66,16 @@ namespace xng {
         }
 
         void WorldBox2D::BeginContact(b2Contact *c) {
-            Contact contact = Contact{.colliderA = *fixtureColliderMapping.at(c->GetFixtureA()),
-                    .colliderB = *fixtureColliderMapping.at(c->GetFixtureB())};
+            Contact contact = Contact(*fixtureColliderMapping.at(c->GetFixtureA()),
+                                      *fixtureColliderMapping.at(c->GetFixtureB()));
             for (auto &listener: contactListeners) {
                 listener->beginContact(contact);
             }
         }
 
         void WorldBox2D::EndContact(b2Contact *c) {
-            Contact contact = Contact{.colliderA = *fixtureColliderMapping.at(c->GetFixtureA()),
-                    .colliderB = *fixtureColliderMapping.at(c->GetFixtureB())};
+            Contact contact = Contact(*fixtureColliderMapping.at(c->GetFixtureA()),
+                                      *fixtureColliderMapping.at(c->GetFixtureB()));
             for (auto &listener: contactListeners) {
                 listener->endContact(contact);
             }

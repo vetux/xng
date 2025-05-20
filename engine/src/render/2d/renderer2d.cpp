@@ -1049,9 +1049,9 @@ namespace xng {
                                 reinterpret_cast<const uint8_t *>(indices.data()),
                                 indices.size() * sizeof(unsigned int));
 
-            planeMeshes[size] = MeshDrawData{.primitive = TRIANGLES,
-                    .drawCall = drawCall,
-                    .baseVertex = vertexBufferOffset / vertexLayout.getSize()};
+            planeMeshes[size] = MeshDrawData(TRIANGLES,
+                    drawCall,
+                    vertexBufferOffset / vertexLayout.getSize());
 
             return planeMeshes.at(size);
         }
@@ -1109,9 +1109,9 @@ namespace xng {
                                 reinterpret_cast<const uint8_t *>(indices.data()),
                                 indices.size() * sizeof(unsigned int));
 
-            squareMeshes[size] = MeshDrawData{.primitive = LINES,
-                    .drawCall = drawCall,
-                    .baseVertex = vertexBufferOffset / vertexLayout.getSize()};
+            squareMeshes[size] = MeshDrawData(LINES,
+                    drawCall,
+                    vertexBufferOffset / vertexLayout.getSize());
 
             return squareMeshes.at(size);
         }
@@ -1153,9 +1153,9 @@ namespace xng {
                                 reinterpret_cast<const uint8_t *>(indices.data()),
                                 indices.size() * sizeof(unsigned int));
 
-            lineMeshes[pair] = MeshDrawData{.primitive = LINES,
-                    .drawCall = drawCall,
-                    .baseVertex = vertexBufferOffset / vertexLayout.getSize()};
+            lineMeshes[pair] = MeshDrawData(LINES,
+                    drawCall,
+                    vertexBufferOffset / vertexLayout.getSize());
 
             return lineMeshes.at(pair);
         }
@@ -1190,9 +1190,9 @@ namespace xng {
                                 reinterpret_cast<const uint8_t *>(indices.data()),
                                 indices.size() * sizeof(unsigned int));
 
-            pointMeshes[point] = MeshDrawData{.primitive = POINTS,
-                    .drawCall = drawCall,
-                    .baseVertex = vertexBufferOffset / vertexLayout.getSize()};
+            pointMeshes[point] = MeshDrawData(POINTS,
+                    drawCall,
+                    vertexBufferOffset / vertexLayout.getSize());
 
             return pointMeshes.at(point);
         }
