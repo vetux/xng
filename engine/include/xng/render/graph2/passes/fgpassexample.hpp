@@ -26,13 +26,41 @@
 namespace xng {
     class FGPassExample {
     public:
-        void setup(FGBuilder &builder){
-            auto vb = builder.createVertexBuffer();
-            auto ib = builder.createIndexBuffer();
-            auto vs = builder.createShader(FGShaderBuilder().build(FGShader::VERTEX, {}, {}));
-            auto fs = builder.createShader(FGShaderBuilder().build(FGShader::FRAGMENT, {}, {}));
+        std::string vbName;
+        std::string ibName;
+        std::string vsName;
+        std::string fsName;
 
-            builder.addPass("Example Pass", [vb, ib, vs, fs](FGContext &ctx){
+        void setup(FGBuilder &builder) {
+            FGResource vb;
+            FGResource ib;
+            if (vbName.empty()) {
+                vb = builder.createVertexBuffer(1);
+                ib = builder.createIndexBuffer(1);
+                vbName = "vb";
+                ibName = "ib";
+                builder.exportResource(vbName, vb);
+                builder.exportResource(ibName, ib);
+            } else {
+                vb = builder.importResource(vbName);
+                ib = builder.importResource(ibName);
+            }
+
+            FGResource vs;
+            FGResource fs;
+            if (vsName.empty()) {
+                vs = builder.createShader(FGShaderBuilder().build(FGShaderSource::VERTEX, {}, {}));
+                fs = builder.createShader(FGShaderBuilder().build(FGShaderSource::FRAGMENT, {}, {}));
+                vsName = "vs";
+                fsName = "fs";
+                builder.exportResource(vsName, vs);
+                builder.exportResource(fsName, fs);
+            } else {
+                vs = builder.importResource(vsName);
+                fs = builder.importResource(fsName);
+            }
+
+            builder.addPass("Example Pass", [vb, ib, vs, fs](FGContext &ctx) {
                 // ctx.upload(vb, ....
 
                 ctx.bindVertexBuffer(vb);

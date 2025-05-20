@@ -23,25 +23,28 @@
 #include <vector>
 #include <functional>
 
-#include "xng/render/graph2/buffer/fgvertexbuffer.hpp"
-#include "xng/render/graph2/buffer/fgindexbuffer.hpp"
-#include "xng/render/graph2/buffer/fgtexturebuffer.hpp"
-
-#include "xng/render/graph2/shader/fgshader.hpp"
+#include "xng/render/graph2/fgresource.hpp"
 
 #include "xng/render/graph2/fgpass.hpp"
+
+#include "xng/render/graph2/texture/fgtextureproperties.hpp"
+#include "xng/render/graph2/shader/fgshadersource.hpp"
 
 namespace xng  {
     class FGContext;
 
-    struct FGGraph{
+    struct FGGraph {
         std::vector<FGPass> passes;
 
-        std::vector<FGVertexBuffer> vertexBuffers;
-        std::vector<FGIndexBuffer> indexBuffers;
-        std::vector<FGTextureBuffer> textureBuffers;
+        std::unordered_map<FGResource, size_t> vertexBufferAllocation;
+        std::unordered_map<FGResource, size_t> indexBufferAllocation;
 
-        std::vector<FGShader> shaders;
+        std::unordered_map<FGResource, graph::FGTextureProperties> textureAllocation;
+
+        std::unordered_map<FGResource, FGShaderSource> shaderAllocation;
+
+        std::unordered_map<FGResource, std::string> imports;
+        std::unordered_map<FGResource, std::string> exports;
     };
 }
 

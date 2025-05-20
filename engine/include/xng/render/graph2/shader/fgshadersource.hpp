@@ -17,16 +17,33 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGTEXTUREBUFFER_HPP
-#define XENGINE_FGTEXTUREBUFFER_HPP
+#ifndef XENGINE_FGSHADERSOURCE_HPP
+#define XENGINE_FGSHADERSOURCE_HPP
 
-#include "xng/render/graph2/buffer/fgbuffer.hpp"
+#include "xng/render/graph2/shader/fgshaderoperation.hpp"
+#include "xng/render/graph2/shader/fgvertexlayout.hpp"
 
 namespace xng {
-    class FGTextureBuffer : public FGBuffer {
+    /**
+     * FGShaderSource represents a standalone set of instructions to run on the gpu.
+     *
+     * The Runtime generates shader source code from the data in FGShaderSource.
+     */
+    class FGShaderSource {
     public:
-        // Texture Wrapping, filtering etc.
+        enum ShaderStage {
+            VERTEX,
+            GEOMETRY,
+            TESSELATION_CONTROL,
+            TESSELATION_EVALUATION,
+            FRAGMENT,
+            COMPUTE,
+        } stage;
+
+        FGVertexLayout inputLayout;
+        FGVertexLayout outputLayout;
+
+        std::vector<FGShaderOperation> operations;
     };
 }
-
-#endif //XENGINE_FGTEXTUREBUFFER_HPP
+#endif //XENGINE_FGSHADERSOURCE_HPP

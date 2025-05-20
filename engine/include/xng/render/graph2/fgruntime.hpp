@@ -22,15 +22,50 @@
 
 #include "xng/render/graph2/fggraph.hpp"
 
+#include "xng/display/window.hpp"
+
 namespace xng {
     /**
      * The runtime / context represents the platform dependent implementation of the renderer.
      */
     class FGRuntime {
     public:
-        virtual void compile(const FGGraph &graph) = 0;
+        typedef int GraphHandle;
 
-        virtual void execute(const FGGraph &graph) = 0;
+        /**
+         * Set the window to render to.
+         *
+         * @param window
+         */
+        virtual void setWindow(const Window &window) = 0;
+
+        virtual GraphHandle compile(const FGGraph &graph) = 0;
+
+        /**
+         * Execute the graph.
+         *
+         * Performs cleanup of unused exported resources.
+         *
+         * @param graph
+         */
+        virtual void execute(GraphHandle graph) = 0;
+
+        /**
+         * Execute multiple graphs.
+         *
+         * The order in which the graphs execute is determined by the defined dependencies between the graphs.
+         *
+         * The graphs could be executed in parallel if the platform supports it.
+         *
+         * Performs cleanup of unused exported resources.
+         *
+         * @param graphs
+         */
+        virtual void execute(std::vector<GraphHandle> graphs) = 0;
+
+        virtual void saveCache(GraphHandle graph, std::ostream &stream) = 0;
+
+        virtual void loadCache(GraphHandle graph, std::istream &stream) = 0;
     };
 }
 

@@ -17,15 +17,31 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGINDEXBUFFER_HPP
-#define XENGINE_FGINDEXBUFFER_HPP
+#include "xng/driver/opengl/fgruntimeogl.hpp"
 
-#include "xng/render/graph2/buffer/fgbuffer.hpp"
+void xng::FGRuntimeOGL::setWindow(const xng::Window &window) {
 
-namespace xng {
-    class FGIndexBuffer : public FGBuffer {
-    public:
-    };
 }
 
-#endif //XENGINE_FGINDEXBUFFER_HPP
+/**
+ * Generate shader source code
+ * Allocate vertex / index buffer and upload data
+ *
+ * @param graph
+ * @return
+ */
+xng::FGRuntime::GraphHandle xng::FGRuntimeOGL::compile(const xng::FGGraph &graph) {
+    return 0;
+}
+
+void xng::FGRuntimeOGL::execute(xng::FGRuntime::GraphHandle graph) {
+
+}
+
+void xng::FGRuntimeOGL::saveCache(xng::FGRuntime::GraphHandle graph, std::ostream &stream) {
+
+}
+
+void xng::FGRuntimeOGL::loadCache(xng::FGRuntime::GraphHandle graph, std::istream &stream) {
+
+}

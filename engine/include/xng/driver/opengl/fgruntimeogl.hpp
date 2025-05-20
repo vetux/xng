@@ -17,35 +17,24 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGSHADER_HPP
-#define XENGINE_FGSHADER_HPP
+#ifndef XENGINE_FGRUNTIMEOGL_HPP
+#define XENGINE_FGRUNTIMEOGL_HPP
 
-#include "xng/render/graph2/shader/fgshaderoperation.hpp"
-#include "xng/render/graph2/buffer/fgbufferlayout.hpp"
+#include "xng/render/graph2/fgruntime.hpp"
 
 namespace xng {
-    typedef int FGShaderHandle;
-
-    /**
-     * FGShader represents a standalone set of instructions to run on the gpu.
-     *
-     * The Runtime generates shader source code from the data in FGShader.
-     */
-    class FGShader {
+    class FGRuntimeOGL : public FGRuntime {
     public:
-        enum ShaderStage {
-            VERTEX,
-            GEOMETRY,
-            TESSELATION_CONTROL,
-            TESSELATION_EVALUATION,
-            FRAGMENT,
-            COMPUTE,
-        } stage;
+        void setWindow(const Window &window) override;
 
-        FGBufferLayout inputLayout;
-        FGBufferLayout outputLayout;
+        GraphHandle compile(const FGGraph &graph) override;
 
-        std::vector<FGShaderOperation> operations;
+        void execute(GraphHandle graph) override;
+
+        void saveCache(GraphHandle graph, std::ostream &stream) override;
+
+        void loadCache(GraphHandle graph, std::istream &stream) override;
     };
 }
-#endif //XENGINE_FGSHADER_HPP
+
+#endif //XENGINE_FGRUNTIMEOGL_HPP

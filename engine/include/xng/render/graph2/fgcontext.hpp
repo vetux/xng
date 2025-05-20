@@ -22,42 +22,42 @@
 
 #include <cstdint>
 
-#include "xng/render/graph2/buffer/fgvertexbuffer.hpp"
-#include "xng/render/graph2/buffer/fgindexbuffer.hpp"
-#include "xng/render/graph2/buffer/fgtexturebuffer.hpp"
-#include "xng/render/graph2/buffer/fgbufferlayout.hpp"
-
 #include "xng/render/graph2/shader/fgshadervalue.hpp"
-#include "xng/render/graph2/shader/fgshader.hpp"
 
 #include "xng/render/graph2/fgdrawcall.hpp"
+
+#include "xng/render/graph2/fgresource.hpp"
+
+#include "xng/render/graph2/texture/fgtextureproperties.hpp"
 
 namespace xng {
     class FGContext {
     public:
-        // Import buffer from a previous pass
-        virtual const FGBuffer &importBuffer(const std::string &name) = 0;
-
         // Data upload
-        virtual void upload(const FGBuffer &buffer, const uint8_t *ptr, size_t size) = 0;
+        virtual void uploadBuffer(FGResource buffer, const uint8_t *ptr, size_t size) = 0;
+
+        virtual void uploadTexture(FGResource texture,
+                                   const uint8_t *ptr,
+                                   size_t size,
+                                   graph::FGCubeMapFace face/*,...*/) = 0;
 
         // Bindings
-        virtual void bindVertexBuffer(const FGVertexBuffer &buffer) = 0;
-        virtual void bindIndexBuffer(const FGIndexBuffer &buffer) = 0;
+        virtual void bindVertexBuffer(FGResource buffer) = 0;
+        virtual void bindIndexBuffer(FGResource buffer) = 0;
 
-        virtual void bindInputTexture(std::string binding, const FGTextureBuffer &texture) = 0;
-        virtual void bindOutputTexture(std::string binding, const FGTextureBuffer &texture) = 0;
+        virtual void bindInputTexture(std::string binding, FGResource texture) = 0;
+        virtual void bindOutputTexture(std::string binding, FGResource texture) = 0;
 
         // Shader values (Shader Buffer, Push Constants, etc.)
         virtual void writeShaderValue(const std::string &name, int value) = 0;
-        virtual void readShaderValue(const std::string &name) = 0;
+        virtual int readShaderValue(const std::string &name) = 0;
 
         /**
          * Bind the given shader.
          *
          * @param shader
          */
-        virtual void bindShader(const FGShaderHandle &shader) = 0;
+        virtual void bindShader(FGResource shader) = 0;
 
         /**
          * Execute the draw call with the bound shaders and geometry data.

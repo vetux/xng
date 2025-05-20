@@ -22,9 +22,8 @@
 
 #include <cstdint>
 
-#include "xng/render/graph2/shader/fgshader.hpp"
-
-#include "xng/render/graph2/buffer/fgbufferlayout.hpp"
+#include "xng/render/graph2/shader/fgshadersource.hpp"
+#include "xng/render/graph2/shader/fgvertexlayout.hpp"
 
 namespace xng {
     class FGShaderBuilder {
@@ -115,9 +114,9 @@ namespace xng {
         void loop_body();
         void loop_end();
 
-        FGShader build(FGShader::ShaderStage stage,
-                       const FGBufferLayout &inputLayout,
-                       const FGBufferLayout &outputLayout);
+        FGShaderSource build(FGShaderSource::ShaderStage stage,
+                       const FGVertexLayout &inputLayout,
+                       const FGVertexLayout &outputLayout);
     };
 }
 

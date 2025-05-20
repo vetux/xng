@@ -17,23 +17,30 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGBUFFER_HPP
-#define XENGINE_FGBUFFER_HPP
+#ifndef XENGINE_FGVERTEXLAYOUT_HPP
+#define XENGINE_FGVERTEXLAYOUT_HPP
 
-#include <string>
+#include <vector>
 
-namespace xng  {
-    class FGBuffer {
-    public:
-        enum BufferType {
-            BUFFER_VERTEX,
-            BUFFER_INDEX,
-            BUFFER_TEXTURE,
-        } type;
+#include "xng/render/graph2/shader/fgvertexelement.hpp"
 
-        unsigned int handle;
-        size_t size;
+namespace xng {
+    struct FGVertexLayout {
+        std::vector<FGVertexElement> elements;
+
+        FGVertexLayout() = default;
+
+        explicit FGVertexLayout(std::vector<FGVertexElement> elements) : elements(std::move(elements)) {}
+
+        bool operator==(const FGVertexLayout &other) const = default;
+
+        size_t getSize() const {
+            size_t ret = 0;
+            for (auto &attr : elements)
+                ret += attr.stride();
+            return ret;
+        }
     };
 }
 
-#endif //XENGINE_FGBUFFER_HPP
+#endif //XENGINE_FGVERTEXLAYOUT_HPP

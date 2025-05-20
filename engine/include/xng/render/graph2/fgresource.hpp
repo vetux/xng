@@ -17,30 +17,11 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGBUFFERLAYOUT_HPP
-#define XENGINE_FGBUFFERLAYOUT_HPP
-
-#include <vector>
-
-#include "xng/render/graph2/buffer/fgbufferelement.hpp"
+#ifndef XENGINE_FGHANDLE_HPP
+#define XENGINE_FGHANDLE_HPP
 
 namespace xng {
-    struct FGBufferLayout {
-        std::vector<FGBufferElement> elements;
-
-        FGBufferLayout() = default;
-
-        explicit FGBufferLayout(std::vector<FGBufferElement> elements) : elements(std::move(elements)) {}
-
-        bool operator==(const FGBufferLayout &other) const = default;
-
-        size_t getSize() const {
-            size_t ret = 0;
-            for (auto &attr : elements)
-                ret += attr.stride();
-            return ret;
-        }
-    };
+    typedef int FGResource;
 }
 
-#endif //XENGINE_FGBUFFERLAYOUT_HPP
+#endif //XENGINE_FGHANDLE_HPP

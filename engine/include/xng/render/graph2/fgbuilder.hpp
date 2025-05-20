@@ -25,32 +25,35 @@
 
 #include "xng/render/graph2/fggraph.hpp"
 #include "xng/render/graph2/fgcontext.hpp"
-#include "xng/render/graph2/shader/fgshader.hpp"
+#include "xng/render/graph2/fgresource.hpp"
 
-#include "xng/render/graph2/buffer/fgindexbuffer.hpp"
-#include "xng/render/graph2/buffer/fgvertexbuffer.hpp"
-#include "xng/render/graph2/buffer/fgtexturebuffer.hpp"
+#include "xng/render/graph2/shader/fgshadersource.hpp"
+#include "xng/render/graph2/texture/fgtextureproperties.hpp"
 
 namespace xng {
     class FGBuilder {
     public:
         typedef int PassHandle;
 
-        FGTextureBuffer createTextureBuffer();
-        FGVertexBuffer createVertexBuffer();
-        FGIndexBuffer createIndexBuffer();
+        FGResource createTexture(const graph::FGTextureProperties &properties);
+        FGResource createVertexBuffer(size_t size);
+        FGResource createIndexBuffer(size_t size);
+        FGResource createShader(const FGShaderSource &shader);
 
-        FGShaderHandle createShader(const FGShader &shader);
+        /**
+         * Cross-Pass or Cross-Graph resource sharing.
+         *
+         * @param name
+         * @return
+         */
+        FGResource importResource(const std::string &name);
+        void exportResource(const std::string &name, FGResource resource);
 
         PassHandle addPass(const std::string &name, std::function<void(FGContext &)> pass);
 
-        void read(PassHandle pass, const FGBuffer& resource);
-        void write(PassHandle pass, const FGBuffer& resource);
-        void readWrite(PassHandle pass, const FGBuffer& resource);
-
-        // Cross-Pass Dependencies
-        void declareInput(PassHandle pass, const std::string &name);
-        void declareOutput(PassHandle pass, const std::string &name, const FGBuffer &resource);
+        void read(PassHandle pass, FGResource resource);
+        void write(PassHandle pass, FGResource resource);
+        void readWrite(PassHandle pass, FGResource resource);
 
         FGGraph build();
     };

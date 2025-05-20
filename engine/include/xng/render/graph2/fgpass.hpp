@@ -22,17 +22,16 @@
 
 #include <functional>
 
-#include "xng/render/graph2/buffer/fgbuffer.hpp"
+#include "xng/render/graph2/fgresource.hpp"
 
 namespace xng  {
     class FGContext;
 
     struct FGPass {
         std::function<void(FGContext &)> pass;
-        std::vector<FGBuffer> read;
-        std::vector<FGBuffer> write;
-        std::vector<std::string> imports;
-        std::vector<std::pair<std::string, FGBuffer>> exports;
+
+        std::vector<FGResource> read;
+        std::vector<FGResource> write;
     };
 }
 
