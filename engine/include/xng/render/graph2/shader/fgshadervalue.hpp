@@ -17,10 +17,9 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGVALUE_HPP
-#define XENGINE_FGVALUE_HPP
+#ifndef XENGINE_FGSHADERVALUE_HPP
+#define XENGINE_FGSHADERVALUE_HPP
 
-#include <cstddef>
 #include <variant>
 
 #include "xng/math/vector2.hpp"
@@ -29,97 +28,47 @@
 #include "xng/math/matrix.hpp"
 
 namespace xng {
-    class FGShaderBuilder;
+    typedef std::variant<unsigned char,
+            char,
+            unsigned int,
+            int,
+            float,
+            double,
 
-    class FGShaderValue {
-    public:
-        enum Type {
-            LITERAL = 0,
-            SAMPLER,
-            ARRAY,
-            SINGLE,
-            VECTOR2,
-            VECTOR3,
-            VECTOR4,
-            MAT2,
-            MAT3,
-            MAT4,
-        } type;
+            Vector2<unsigned char>,
+            Vector2<char>,
+            Vector2<unsigned int>,
+            Vector2<int>,
+            Vector2<float>,
+            Vector2<double>,
 
-        enum Component {
-            UNSIGNED_BYTE = 0,
-            SIGNED_BYTE,
-            UNSIGNED_INT,
-            SIGNED_INT,
-            FLOAT,
-            DOUBLE
-        } component;
+            Vector3<unsigned char>,
+            Vector3<char>,
+            Vector3<unsigned int>,
+            Vector3<int>,
+            Vector3<float>,
+            Vector3<double>,
 
-        FGShaderValue operator+(const FGShaderValue &other);
-        FGShaderValue operator-(const FGShaderValue &other);
-        FGShaderValue operator*(const FGShaderValue &other);
-        FGShaderValue operator/(const FGShaderValue &other);
+            Matrix<unsigned char, 2, 2>,
+            Matrix<char, 2, 2>,
+            Matrix<unsigned int, 2, 2>,
+            Matrix<int, 2, 2>,
+            Matrix<float, 2, 2>,
+            Matrix<double, 2, 2>,
 
-        FGShaderValue x();
+            Matrix<unsigned char, 3, 3>,
+            Matrix<char, 3, 3>,
+            Matrix<unsigned int, 3, 3>,
+            Matrix<int, 3, 3>,
+            Matrix<float, 3, 3>,
+            Matrix<double, 3, 3>,
 
-        FGShaderValue y();
-
-        FGShaderValue z();
-
-        FGShaderValue w();
-
-        FGShaderValue row(size_t index);
-
-        FGShaderValue column(size_t index);
-
-        FGShaderValue element(size_t column, size_t row);
-
-        FGShaderBuilder &builder;
-        unsigned int handle;
-        std::string identifier;
-
-        std::variant<unsigned char,
-                char,
-                unsigned int,
-                int,
-                float,
-                double,
-
-                Vector2<unsigned char>,
-                Vector2<char>,
-                Vector2<unsigned int>,
-                Vector2<int>,
-                Vector2<float>,
-                Vector2<double>,
-
-                Vector3<unsigned char>,
-                Vector3<char>,
-                Vector3<unsigned int>,
-                Vector3<int>,
-                Vector3<float>,
-                Vector3<double>,
-
-                Matrix<unsigned char, 2, 2>,
-                Matrix<char, 2, 2>,
-                Matrix<unsigned int, 2, 2>,
-                Matrix<int, 2, 2>,
-                Matrix<float, 2, 2>,
-                Matrix<double, 2, 2>,
-
-                Matrix<unsigned char, 3, 3>,
-                Matrix<char, 3, 3>,
-                Matrix<unsigned int, 3, 3>,
-                Matrix<int, 3, 3>,
-                Matrix<float, 3, 3>,
-                Matrix<double, 3, 3>,
-
-                Matrix<unsigned char, 4, 4>,
-                Matrix<char, 4, 4>,
-                Matrix<unsigned int, 4, 4>,
-                Matrix<int, 4, 4>,
-                Matrix<float, 4, 4>,
-                Matrix<double, 4, 4>> literalValue;
-    };
+            Matrix<unsigned char, 4, 4>,
+            Matrix<char, 4, 4>,
+            Matrix<unsigned int, 4, 4>,
+            Matrix<int, 4, 4>,
+            Matrix<float, 4, 4>,
+            Matrix<double, 4, 4>> FGShaderValue;
 }
 
-#endif //XENGINE_FGVALUE_HPP
+#endif //XENGINE_FGSHADERVALUE_HPP

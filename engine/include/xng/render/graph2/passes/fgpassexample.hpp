@@ -65,11 +65,42 @@ namespace xng {
 
                 ctx.bindVertexBuffer(vb);
                 ctx.bindIndexBuffer(ib);
-                ctx.bindShader(vs);
-                ctx.bindShader(fs);
+                ctx.bindShaders({vs, fs});
 
                 ctx.draw(FGDrawCall());
             });
+        }
+
+        FGShaderSource createVertexShader() {
+            // Shader can be dynamically changed at runtime
+            auto builder = FGShaderBuilder();
+
+            // Example arithmetic
+            auto varA = builder.literal(10);
+            auto varB = builder.literal(5);
+
+            auto varC = builder.literal(Vec3f(0, 0, 0));
+            varC.x().assign(varA + varB);
+
+            auto varArr = builder.array(10);
+            for (auto i = 0; i < 10; i = i + 1) {
+                varArr[builder.literal(i)].assign(varA + varB);
+            }
+
+            varA.assign(varArr[varB]);
+
+            // Example vertex transformation
+            auto vertexPosition = builder.readVertex(0);
+            auto mvp = builder.readParameter("mvp");
+
+            builder.writeVertex(0, vertexPosition * mvp);
+
+            return builder.build(FGShaderSource::VERTEX, {}, {});
+        }
+
+        FGShaderSource createFragmentShader() {
+            auto builder = FGShaderBuilder();
+            return builder.build(FGShaderSource::FRAGMENT, {}, {});
         }
     };
 }

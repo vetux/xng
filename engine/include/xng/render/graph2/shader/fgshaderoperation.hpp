@@ -25,7 +25,7 @@
 #include <variant>
 #include <memory>
 
-#include "xng/render/graph2/shader/fgshadervalue.hpp"
+#include "xng/render/graph2/shader/fgshadervariable.hpp"
 
 #include "xng/math/vector2.hpp"
 #include "xng/math/vector3.hpp"
@@ -35,14 +35,16 @@
 namespace xng {
     struct FGShaderOperation {
         enum Op {
-            READ,
-            WRITE,
+            VERTEX_READ,
+            VERTEX_WRITE,
 
             BUFFER_READ,
             BUFFER_WRITE,
 
             TEXTURE_READ,
             TEXTURE_WRITE,
+
+            ASSIGN,
 
             ADD,
             SUBTRACT,
@@ -70,8 +72,8 @@ namespace xng {
             LOOP,
         } operation;
 
-        FGShaderValue result;
-        std::vector<FGShaderValue> values;
+        FGShaderVariable result;
+        std::vector<FGShaderVariable> inputs;
 
         std::vector<FGShaderOperation> predicate;
 
@@ -82,8 +84,9 @@ namespace xng {
         std::vector<FGShaderOperation> loopIterator;
         std::vector<FGShaderOperation> loopBody;
 
-        std::string name;
-        uint32_t binding;
+        std::string targetName;
+        uint32_t targetBinding;
+
         size_t index;
     };
 }

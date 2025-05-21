@@ -34,7 +34,7 @@ namespace xng {
          * @param binding
          * @return
          */
-        FGShaderValue read(uint32_t binding);
+        FGShaderVariable readVertex(uint32_t binding);
 
         /**
          * Write a value to a binding that will be read by a subsequent shader stage or the pipeline (e.g. in a fragment shader).
@@ -42,81 +42,107 @@ namespace xng {
          * @param binding
          * @param value
          */
-        void write(uint32_t binding, const FGShaderValue &value);
+        void writeVertex(uint32_t binding, const FGShaderVariable &value);
 
-        // Retrieve or Write to a bound value (Shader Buffer, Push Constants, etc.)
-        FGShaderValue readShaderValue(const std::string &name);
-        void writeShaderValue(const std::string &name, const FGShaderValue &value);
+        /**
+         * Read from a bound parameter (Implemented as Shader Storage Buffer, Push Constants, etc.)
+         *
+         * @param name
+         * @return
+         */
+        FGShaderVariable readParameter(const std::string &name);
 
-        FGShaderValue literal(unsigned char value);
+        void writeParameter(const std::string &name, const FGShaderVariable &value);
+
+        FGShaderVariable literal(const FGShaderValue &value);
+
+        FGShaderVariable array(size_t size);
+
+        void assign(const FGShaderVariable &target, const FGShaderVariable &source);
 
         // Math
-        FGShaderValue add(const FGShaderValue &valA, const FGShaderValue &valB);
-        FGShaderValue subtract(const FGShaderValue &valA, const FGShaderValue &valB);
-        FGShaderValue multiply(const FGShaderValue &valA, const FGShaderValue &valB);
-        FGShaderValue divide(const FGShaderValue &valA, const FGShaderValue &valB);
+        FGShaderVariable add(const FGShaderVariable &valA, const FGShaderVariable &valB);
+
+        FGShaderVariable subtract(const FGShaderVariable &valA, const FGShaderVariable &valB);
+
+        FGShaderVariable multiply(const FGShaderVariable &valA, const FGShaderVariable &valB);
+
+        FGShaderVariable divide(const FGShaderVariable &valA, const FGShaderVariable &valB);
 
         // Comparison
-        FGShaderValue equal(const FGShaderValue &valA, const FGShaderValue &valB);
-        FGShaderValue larger(const FGShaderValue &valA, const FGShaderValue &valB);
-        FGShaderValue smaller(const FGShaderValue &valA, const FGShaderValue &valB);
-        FGShaderValue largerOrEqual(const FGShaderValue &valA, const FGShaderValue &valB);
-        FGShaderValue smallerOrEqual(const FGShaderValue &valA, const FGShaderValue &valB);
+        FGShaderVariable equal(const FGShaderVariable &valA, const FGShaderVariable &valB);
+
+        FGShaderVariable larger(const FGShaderVariable &valA, const FGShaderVariable &valB);
+
+        FGShaderVariable smaller(const FGShaderVariable &valA, const FGShaderVariable &valB);
+
+        FGShaderVariable largerOrEqual(const FGShaderVariable &valA, const FGShaderVariable &valB);
+
+        FGShaderVariable smallerOrEqual(const FGShaderVariable &valA, const FGShaderVariable &valB);
 
         // Logical
-        FGShaderValue logicalAnd(const FGShaderValue &valA, const FGShaderValue &valB);
-        FGShaderValue logicalOr(const FGShaderValue &valA, const FGShaderValue &valB);
+        FGShaderVariable logicalAnd(const FGShaderVariable &valA, const FGShaderVariable &valB);
+
+        FGShaderVariable logicalOr(const FGShaderVariable &valA, const FGShaderVariable &valB);
 
         // Built-In Functions
-        FGShaderValue normalize(const FGShaderValue &value);
-        FGShaderValue transpose(const FGShaderValue &value);
-        FGShaderValue inverse(const FGShaderValue &value);
+        FGShaderVariable normalize(const FGShaderVariable &value);
+
+        FGShaderVariable transpose(const FGShaderVariable &value);
+
+        FGShaderVariable inverse(const FGShaderVariable &value);
 
         // Texture Sampling
-        FGShaderValue sample(const FGShaderValue &texture,
-                             const FGShaderValue &x,
-                             const FGShaderValue &y,
-                             const FGShaderValue &z,
-                             const FGShaderValue &bias);
+        FGShaderVariable sample(const FGShaderVariable &texture,
+                                const FGShaderVariable &x,
+                                const FGShaderVariable &y,
+                                const FGShaderVariable &z,
+                                const FGShaderVariable &bias);
 
         // Subscripting
-        FGShaderValue getX(const FGShaderValue &val) {
+        FGShaderVariable getX(const FGShaderVariable &val) {
             return subscript(val, 0);
         }
 
-        FGShaderValue getY(const FGShaderValue &val) {
+        FGShaderVariable getY(const FGShaderVariable &val) {
             return subscript(val, 1);
         }
 
-        FGShaderValue getZ(const FGShaderValue &val) {
+        FGShaderVariable getZ(const FGShaderVariable &val) {
             return subscript(val, 2);
         }
 
-        FGShaderValue getW(const FGShaderValue &val) {
+        FGShaderVariable getW(const FGShaderVariable &val) {
             return subscript(val, 3);
         }
 
         // Array Or Vector
-        FGShaderValue subscript(const FGShaderValue &val, uint32_t index);
+        FGShaderVariable subscript(const FGShaderVariable &val, uint32_t index);
 
         // Matrix
-        FGShaderValue subscript(const FGShaderValue &val, uint32_t row, uint32_t column);
+        FGShaderVariable subscript(const FGShaderVariable &val, uint32_t row, uint32_t column);
 
         // Conditional
-        void conditional_begin(const FGShaderValue &predicate);
+        void conditional_begin(const FGShaderVariable &predicate);
+
         void conditional_else();
+
         void conditional_end();
 
         // Loop
         void loop_begin();
+
         void loop_predicate();
+
         void loop_iterator();
+
         void loop_body();
+
         void loop_end();
 
         FGShaderSource build(FGShaderSource::ShaderStage stage,
-                       const FGVertexLayout &inputLayout,
-                       const FGVertexLayout &outputLayout);
+                             const FGVertexLayout &inputLayout,
+                             const FGVertexLayout &outputLayout);
     };
 }
 

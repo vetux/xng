@@ -22,13 +22,15 @@
 
 #include <cstdint>
 
-#include "xng/render/graph2/shader/fgshadervalue.hpp"
+#include "xng/render/graph2/shader/fgshadervariable.hpp"
 
 #include "xng/render/graph2/fgdrawcall.hpp"
 
 #include "xng/render/graph2/fgresource.hpp"
 
 #include "xng/render/graph2/texture/fgtextureproperties.hpp"
+
+#include "xng/render/scene/image.hpp"
 
 namespace xng {
     class FGContext {
@@ -39,25 +41,44 @@ namespace xng {
         virtual void uploadTexture(FGResource texture,
                                    const uint8_t *ptr,
                                    size_t size,
-                                   graph::FGCubeMapFace face/*,...*/) = 0;
+                                   graph::FGColorFormat format,
+                                   size_t index = 0,
+                                   size_t mipMapLevel = 0,
+                                   graph::FGCubeMapFace face = graph::POSITIVE_X) = 0;
 
         // Bindings
         virtual void bindVertexBuffer(FGResource buffer) = 0;
+
         virtual void bindIndexBuffer(FGResource buffer) = 0;
 
         virtual void bindInputTexture(std::string binding, FGResource texture) = 0;
-        virtual void bindOutputTexture(std::string binding, FGResource texture) = 0;
-
-        // Shader values (Shader Buffer, Push Constants, etc.)
-        virtual void writeShaderValue(const std::string &name, int value) = 0;
-        virtual int readShaderValue(const std::string &name) = 0;
 
         /**
-         * Bind the given shader.
+         * Fragment shader output texture.
+         * The texture binding "backbuffer" represents the window backbuffer and can be written to without binding.
+         *
+         * @param binding
+         * @param texture
+         * @param index
+         * @param mipMapLevel
+         * @param face
+         */
+        virtual void bindOutputTexture(std::string binding,
+                                       FGResource texture,
+                                       size_t index = 0,
+                                       size_t mipMapLevel = 0,
+                                       graph::FGCubeMapFace face = graph::POSITIVE_X) = 0;
+
+        virtual void bindShaderParameters(const std::unordered_map<std::string, FGShaderValue> &parameters) = 0;
+
+        /**
+         * Bind the given shaders.
+         *
+         * The shaders must form a complete pipeline eg. (1 Vertex Shader and 1 Fragment Shader) or 1 compute shader
          *
          * @param shader
          */
-        virtual void bindShader(FGResource shader) = 0;
+        virtual void bindShaders(const std::vector<FGResource> &shaders) = 0;
 
         /**
          * Execute the draw call with the bound shaders and geometry data.
@@ -65,6 +86,14 @@ namespace xng {
          * @param call
          */
         virtual void draw(const FGDrawCall &call) = 0;
+
+        // Data download
+        virtual FGShaderValue downloadShaderParameter(const std::string &name) = 0;
+
+        virtual Image<ColorRGBA> downloadTexture(FGResource texture,
+                                                 size_t index = 0,
+                                                 size_t mipMapLevel = 0,
+                                                 graph::FGCubeMapFace face = graph::POSITIVE_X) = 0;
     };
 }
 
