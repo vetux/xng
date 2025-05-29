@@ -33,7 +33,7 @@
 namespace xng {
     CanvasRenderSystem::CanvasRenderSystem(Renderer2D &renderer2D,
                                            RenderTarget &target,
-                                           FontDriver &fontDriver,
+                                           FontEngine &fontDriver,
                                            bool drawDebugGeometry,
                                            int pixelsPerMeter)
             : ren2d(renderer2D),

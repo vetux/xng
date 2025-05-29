@@ -18,11 +18,11 @@
  */
 
 #include "xng/xng.hpp"
-#include "xng/driver/glfw/glfwdisplaydriver.hpp"
-#include "xng/driver/opengl/oglgpudriver.hpp"
-#include "xng/driver/glslang/glslangcompiler.hpp"
-#include "xng/driver/spirv-cross/spirvcrossdecompiler.hpp"
-#include "xng/driver/freetype/ftfontdriver.hpp"
+#include "xng/platform/glfw/glfw.hpp"
+#include "xng/platform/opengl/opengl.hpp"
+#include "xng/platform/glslang/glslang.hpp"
+#include "xng/platform/spirv-cross/spirvcross.hpp"
+#include "xng/platform/freetype/freetype.hpp"
 
 #include "debugoverlay.hpp"
 #include "tests/mandelbrot.hpp"
@@ -87,11 +87,11 @@ public:
 };
 
 int main(int argc, char *argv[]) {
-    opengl::OGLGpuDriver gpuDriver;
-    glfw::GLFWDisplayDriver displayDriver;
-    freetype::FtFontDriver fontDriver;
-    glslang::GLSLangCompiler shaderCompiler;
-    spirv_cross::SpirvCrossDecompiler shaderDecompiler;
+    opengl::OpenGL gpuDriver;
+    glfw::GLFW displayDriver;
+    freetype::FreeType fontDriver;
+    glslang::GLSLang shaderCompiler;
+    spirv_cross::SpirvCross shaderDecompiler;
 
     std::unique_ptr<Window> window = displayDriver.createWindow(xng::OPENGL_4_6, "Mandelbrot",
                                                                 {640, 480},

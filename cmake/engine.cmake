@@ -5,12 +5,12 @@ file(GLOB_RECURSE Engine.File.SRC ${Engine.Dir.SRC}*.cpp ${Engine.Dir.SRC}*.c)
 
 # xengine
 
-add_library(xengine SHARED ${Engine.File.SRC} ${DRIVERS_SRC} ${SHADER_HEADERS})
+add_library(xengine SHARED ${Engine.File.SRC} ${PLATFORM_SRC} ${SHADER_HEADERS})
 
 target_include_directories(xengine PUBLIC ${Engine.Dir.INCLUDE})
-target_include_directories(xengine PRIVATE ${Engine.Dir.SRC} ${DRIVERS_INCLUDE} ${SHADER_COMPILED_DIR})
+target_include_directories(xengine PRIVATE ${Engine.Dir.SRC} ${PLATFORM_INCLUDE} ${SHADER_COMPILED_DIR})
 
-target_link_libraries(xengine Threads::Threads ${DRIVERS_LINK})
+target_link_libraries(xengine Threads::Threads ${PLATFORM_LINK})
 
 if (UNIX AND CMAKE_COMPILER_IS_GNUCXX)
     # Hide symbols by default on GCC to emulate msvc linking behaviour and enable Pedantic warnings to emulate msvc syntax checking.
@@ -28,12 +28,12 @@ endif ()
 
 # xengine-static
 
-add_library(xengine-static STATIC ${Engine.File.SRC} ${DRIVERS_SRC} ${SHADER_HEADERS})
+add_library(xengine-static STATIC ${Engine.File.SRC} ${PLATFORM_SRC} ${SHADER_HEADERS})
 
 target_include_directories(xengine-static PUBLIC ${Engine.Dir.INCLUDE})
-target_include_directories(xengine-static PRIVATE ${Engine.Dir.SRC} ${DRIVERS_INCLUDE} ${SHADER_COMPILED_DIR})
+target_include_directories(xengine-static PRIVATE ${Engine.Dir.SRC} ${PLATFORM_INCLUDE} ${SHADER_COMPILED_DIR})
 
-target_link_libraries(xengine-static Threads::Threads ${DRIVERS_LINK})
+target_link_libraries(xengine-static Threads::Threads ${PLATFORM_LINK})
 
 if (UNIX AND CMAKE_COMPILER_IS_GNUCXX)
     # Hide symbols by default on GCC to emulate msvc linking behaviour and enable Pedantic warnings to emulate msvc syntax checking.

@@ -33,18 +33,18 @@ workflow
 - Cross Plattform (Linux, Windows and Android)
 
 ## Planned Features
-- Vulkan GPU driver
 - Frame Graph Renderer rewrite to utilize hardware features of Vulkan
 - Image Based Environment Lighting for the PBR Model
+- GPU Platform abstraction will be removed
  
 ## Screenshots
 ![](https://raw.githubusercontent.com/vetux/xng-assets/refs/heads/master/screenshots/ScreenshotFramegraph.jpg)
 
-## Drivers
+## Platforms
 
-Drivers are implementations of interfaces in the xEngine API (For example through 3rd party libraries) that can be optionally compiled into the engine library. If a driver interface implementation type is instantiated in an application the corresponding driver must be defined by the linked engine library by enabling the corresponding cmake option/s in [drivers.cmake](cmake/drivers.cmake) when compiling the engine library.
+Platforms are implementations of interfaces in the xEngine API (For example through 3rd party libraries) that can be optionally compiled into the engine library. If a platform interface implementation type is instantiated in an application the corresponding platform must be defined by the linked engine library by enabling the corresponding cmake option/s in [platform.cmake](cmake/platform.cmake) when compiling the engine library.
 
-- Display Manager
+- DisplayEnvironment Manager
     - GLFW
 - 3D AudioData
     - OpenAL-Soft
@@ -87,7 +87,7 @@ Check [BUILDING.md](BUILDING.md) for detailed building instructions.
 
 ## Notes
 ### Assimp Importer and Blender FBX Export
-When exporting rigged meshes from blender to be imported with the assimp importer driver make sure to:
+When exporting rigged meshes from blender to be imported with the assimp importer platform make sure to:
 - Set the "Apply Scalings" to fbx unit scale.
 - Rotate the mesh and the rig -90 degrees in the X axis and apply the rotation.
 - Set the forward and up axis in the fbx exporter settings to Y forward and Z up to match blenders coordinate system.

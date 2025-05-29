@@ -18,11 +18,11 @@
  */
 
 #include "xng/xng.hpp"
-#include "xng/driver/glfw/glfwdisplaydriver.hpp"
-#include "xng/driver/opengl/oglgpudriver.hpp"
-#include "xng/driver/glslang/glslangcompiler.hpp"
-#include "xng/driver/spirv-cross/spirvcrossdecompiler.hpp"
-#include "xng/driver/freetype/ftfontdriver.hpp"
+#include "xng/platform/glfw/glfw.hpp"
+#include "xng/platform/opengl/opengl.hpp"
+#include "xng/platform/glslang/glslang.hpp"
+#include "xng/platform/spirv-cross/spirvcross.hpp"
+#include "xng/platform/freetype/freetype.hpp"
 
 #include "debugoverlay.hpp"
 
@@ -171,11 +171,11 @@ static std::shared_ptr<EntityScene> createScene() {
 }
 
 int main(int argc, char *argv[]) {
-    auto displayDriver = glfw::GLFWDisplayDriver();
-    auto gpuDriver = opengl::OGLGpuDriver();
-    auto shaderCompiler = glslang::GLSLangCompiler();
-    auto shaderDecompiler = spirv_cross::SpirvCrossDecompiler();
-    auto fontDriver = freetype::FtFontDriver();
+    auto displayDriver = glfw::GLFW();
+    auto gpuDriver = opengl::OpenGL();
+    auto shaderCompiler = glslang::GLSLang();
+    auto shaderDecompiler = spirv_cross::SpirvCross();
+    auto fontDriver = freetype::FreeType();
 
     auto window = displayDriver.createWindow(OPENGL_4_6, "Renderer 2D Test", {640, 480}, {
         .vsync = true

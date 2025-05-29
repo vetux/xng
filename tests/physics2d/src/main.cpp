@@ -21,13 +21,13 @@
 #include <fstream>
 
 #include "xng/xng.hpp"
-#include "xng/driver/glfw/glfwdisplaydriver.hpp"
-#include "xng/driver/opengl/oglgpudriver.hpp"
-#include "xng/driver/glslang/glslangcompiler.hpp"
-#include "xng/driver/spirv-cross/spirvcrossdecompiler.hpp"
-#include "xng/driver/freetype/ftfontdriver.hpp"
-#include "xng/driver/assimp/assimpimporter.hpp"
-#include "xng/driver/box2d/physicsdriverbox2d.hpp"
+#include "xng/platform/glfw/glfw.hpp"
+#include "xng/platform/opengl/opengl.hpp"
+#include "xng/platform/glslang/glslang.hpp"
+#include "xng/platform/spirv-cross/spirvcross.hpp"
+#include "xng/platform/freetype/freetype.hpp"
+#include "xng/platform/assimp/assimp.hpp"
+#include "xng/platform/box2d/box2d.hpp"
 
 #include "debugpass.hpp"
 #include "cameracontroller.hpp"
@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
     importers.emplace_back(std::make_unique<StbiImporter>());
     importers.emplace_back(std::make_unique<JsonImporter>());
     importers.emplace_back(std::make_unique<FontImporter>());
-    importers.emplace_back(std::make_unique<AssImpImporter>());
+    importers.emplace_back(std::make_unique<AssImp>());
     xng::ResourceRegistry::getDefaultRegistry().setImporters(std::move(importers));
 
     xng::ResourceRegistry::getDefaultRegistry().addArchive("file", std::make_shared<DirectoryArchive>("assets/"));
@@ -86,12 +86,12 @@ int main(int argc, char *argv[]) {
 
     createMaterialResource(archive);
 
-    auto displayDriver = glfw::GLFWDisplayDriver();
-    auto gpuDriver = opengl::OGLGpuDriver();
-    auto shaderCompiler = glslang::GLSLangCompiler();
-    auto shaderDecompiler = spirv_cross::SpirvCrossDecompiler();
-    auto fontDriver = freetype::FtFontDriver();
-    auto physicsDriver = box2d::PhysicsDriverBox2D();
+    auto displayDriver = glfw::GLFW();
+    auto gpuDriver = opengl::OpenGL();
+    auto shaderCompiler = glslang::GLSLang();
+    auto shaderDecompiler = spirv_cross::SpirvCross();
+    auto fontDriver = freetype::FreeType();
+    auto physicsDriver = box2d::Box2D();
 
     auto world = physicsDriver.createWorld();
 
