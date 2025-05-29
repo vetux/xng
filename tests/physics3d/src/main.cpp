@@ -21,13 +21,13 @@
 #include <fstream>
 
 #include "xng/xng.hpp"
-#include "xng/driver/glfw/glfwdisplaydriver.hpp"
-#include "xng/driver/opengl/oglgpudriver.hpp"
-#include "xng/driver/glslang/glslangcompiler.hpp"
-#include "xng/driver/spirv-cross/spirvcrossdecompiler.hpp"
-#include "xng/driver/freetype/ftfontdriver.hpp"
-#include "xng/driver/assimp/assimpimporter.hpp"
-#include "xng/driver/bullet3/physicsdriverbt3.hpp"
+#include "xng/platform/glfw/glfw.hpp"
+#include "xng/platform/opengl/opengl.hpp"
+#include "xng/platform/glslang/glslang.hpp"
+#include "xng/platform/spirv-cross/spirvcross.hpp"
+#include "xng/platform/freetype/freetype.hpp"
+#include "xng/platform/assimp/assimp.hpp"
+#include "xng/platform/bullet3/bullet3.hpp"
 
 #include "debugpass.hpp"
 #include "cameracontroller.hpp"
@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
     importers.emplace_back(std::make_unique<StbiImporter>());
     importers.emplace_back(std::make_unique<JsonImporter>());
     importers.emplace_back(std::make_unique<FontImporter>());
-    importers.emplace_back(std::make_unique<AssImpImporter>());
+    importers.emplace_back(std::make_unique<AssImp>());
     xng::ResourceRegistry::getDefaultRegistry().setImporters(std::move(importers));
 
     xng::ResourceRegistry::getDefaultRegistry().addArchive("file", std::make_shared<DirectoryArchive>("assets/"));
@@ -87,12 +87,12 @@ int main(int argc, char *argv[]) {
 
     createMaterialResource(archive);
 
-    auto displayDriver = glfw::GLFWDisplayDriver();
-    auto gpuDriver = opengl::OGLGpuDriver();
-    auto shaderCompiler = glslang::GLSLangCompiler();
-    auto shaderDecompiler = spirv_cross::SpirvCrossDecompiler();
-    auto fontDriver = freetype::FtFontDriver();
-    auto physicsDriver = bullet3::Bt3PhysicsDriver();
+    auto displayDriver = glfw::GLFW();
+    auto gpuDriver = opengl::OpenGL();
+    auto shaderCompiler = glslang::GLSLang();
+    auto shaderDecompiler = spirv_cross::SpirvCross();
+    auto fontDriver = freetype::FreeType();
+    auto physicsDriver = bullet3::Bullet3();
 
     auto world = physicsDriver.createWorld();
 

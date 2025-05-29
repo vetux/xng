@@ -21,7 +21,7 @@
 #include "xng/shader/spirvshader.hpp"
 #include "xng/shader/shaderdirectoryinclude.hpp"
 
-#include "xng/driver/glslang/glslangcompiler.hpp"
+#include "xng/platform/glslang/glslang.hpp"
 
 #include "xng/io/readfile.hpp"
 #include "xng/io/writefile.hpp"
@@ -273,7 +273,7 @@ int main(int argc, char *argv[]) {
 
     auto shader = xng::readFileString(args.sourcePath.string());
 
-    auto compiler = xng::glslang::GLSLangCompiler();
+    auto compiler = xng::glslang::GLSLang();
 
     if (args.preprocess) {
         if (args.includeDir.empty()) {

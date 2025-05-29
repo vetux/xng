@@ -18,11 +18,11 @@
  */
 
 #include "xng/xng.hpp"
-#include "xng/driver/glfw/glfwdisplaydriver.hpp"
-#include "xng/driver/opengl/oglgpudriver.hpp"
-#include "xng/driver/glslang/glslangcompiler.hpp"
-#include "xng/driver/spirv-cross/spirvcrossdecompiler.hpp"
-#include "xng/driver/freetype/ftfontdriver.hpp"
+#include "xng/platform/glfw/glfw.hpp"
+#include "xng/platform/opengl/opengl.hpp"
+#include "xng/platform/glslang/glslang.hpp"
+#include "xng/platform/spirv-cross/spirvcross.hpp"
+#include "xng/platform/freetype/freetype.hpp"
 
 #include <fstream>
 
@@ -188,11 +188,11 @@ public:
 };
 
 int main(int argc, char *argv[]) {
-    auto displayDriver = glfw::GLFWDisplayDriver();
-    auto gpuDriver = opengl::OGLGpuDriver();
-    auto shaderCompiler = glslang::GLSLangCompiler();
-    auto shaderDecompiler = spirv_cross::SpirvCrossDecompiler();
-    auto fontDriver = freetype::FtFontDriver();
+    auto displayDriver = glfw::GLFW();
+    auto gpuDriver = opengl::OpenGL();
+    auto shaderCompiler = glslang::GLSLang();
+    auto shaderDecompiler = spirv_cross::SpirvCross();
+    auto fontDriver = freetype::FreeType();
 
     std::vector<std::unique_ptr<ResourceImporter>> importers;
     importers.emplace_back(std::make_unique<StbiImporter>());

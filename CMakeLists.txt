@@ -28,6 +28,6 @@ if (NOT DEFINED CROSS_COMPILING)
     include(${BASE_SOURCE_DIR}/cmake/compileshaders.cmake)
 endif ()
 
-include(${BASE_SOURCE_DIR}/cmake/drivers.cmake)
+include(${BASE_SOURCE_DIR}/cmake/platform.cmake)
 include(${BASE_SOURCE_DIR}/cmake/engine.cmake)
 include(${BASE_SOURCE_DIR}/cmake/tests.cmake)

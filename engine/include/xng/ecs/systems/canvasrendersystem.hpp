@@ -24,7 +24,7 @@
 #include "xng/ecs/components/spritecomponent.hpp"
 #include "xng/ecs/components/textcomponent.hpp"
 
-#include "xng/font/fontdriver.hpp"
+#include "xng/font/fontengine.hpp"
 
 #include "xng/gui/textrenderer.hpp"
 #include "xng/gui/canvasscalingmode.hpp"
@@ -37,7 +37,7 @@ namespace xng {
     public:
         CanvasRenderSystem(Renderer2D &renderer2D,
                            RenderTarget &target,
-                           FontDriver &fontDriver,
+                           FontEngine &fontEngine,
                            bool drawDebugGeometry = false,
                            int pixelsPerMeter = 50);
 
@@ -74,7 +74,7 @@ namespace xng {
 
         Renderer2D &ren2d;
         RenderTarget &target;
-        FontDriver &fontDriver;
+        FontEngine &fontEngine;
 
         bool drawDebugGeometry = false;
 

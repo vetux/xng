@@ -55,7 +55,7 @@ namespace xng {
 
         bool vsync = false;
 
-        bool debug = false; // Only affects OpenGL display driver backend, If true the window will contain a debug context.
+        bool debug = false; // Only affects OpenGL, If true the window will contain a debug context.
     };
 }
 

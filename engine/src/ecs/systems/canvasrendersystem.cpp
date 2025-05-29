@@ -33,12 +33,12 @@
 namespace xng {
     CanvasRenderSystem::CanvasRenderSystem(Renderer2D &renderer2D,
                                            RenderTarget &target,
-                                           FontDriver &fontDriver,
+                                           FontEngine &fontEngine,
                                            bool drawDebugGeometry,
                                            int pixelsPerMeter)
             : ren2d(renderer2D),
               target(target),
-              fontDriver(fontDriver),
+              fontEngine(fontEngine),
               drawDebugGeometry(drawDebugGeometry),
               pixelToMeter(1.0f / static_cast<float>(pixelsPerMeter)) {}
 
@@ -358,7 +358,7 @@ namespace xng {
 
                 auto eIt = fontRenderers.find(comp.font.getUri());
                 if (eIt == fontRenderers.end()) {
-                    fontRenderers[comp.font.getUri()] = fontDriver.createFontRenderer(comp.font.get());
+                    fontRenderers[comp.font.getUri()] = fontEngine.createFontRenderer(comp.font.get());
                 }
 
                 auto rIt = textRenderers.find(pointSize);
