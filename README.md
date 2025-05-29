@@ -32,7 +32,7 @@ workflow
 - PAK file format with compression, chunking and encryption support
 - Cross Plattform (Linux, Windows and Android)
 
-## Planned Features
+## Work In Progress
 - Frame Graph Renderer rewrite to utilize hardware features of Vulkan
 - Image Based Environment Lighting for the PBR Model
 - GPU Platform abstraction will be removed
