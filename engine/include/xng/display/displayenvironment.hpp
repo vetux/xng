@@ -46,8 +46,8 @@ namespace xng {
                                                      VideoMode mode) = 0;
 
         /**
-         * Because on vulkan the display driver requires extensions for creating surfaces this
-         * method will be called in the VkGpuDriver constructor to retrieve the required extensions.
+         * Because on vulkan the display environment requires extensions for creating surfaces for the window this
+         * method will be called in the Vulkan gpu engine constructor to retrieve the required extensions.
          *
          * @return
          */

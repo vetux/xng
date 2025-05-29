@@ -79,7 +79,7 @@ namespace xng {
 
         /**
          * Create a collider attached to this rigidbody.
-         * May not be supported by certain driver implementations (bullet3),
+         * May not be supported by certain implementations (bullet3),
          * in this case only one collider can be created per rigidbody through World::createBody(ColliderDesc desc).
          *
          * @param desc

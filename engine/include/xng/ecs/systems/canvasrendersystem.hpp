@@ -37,7 +37,7 @@ namespace xng {
     public:
         CanvasRenderSystem(Renderer2D &renderer2D,
                            RenderTarget &target,
-                           FontEngine &fontDriver,
+                           FontEngine &fontEngine,
                            bool drawDebugGeometry = false,
                            int pixelsPerMeter = 50);
 
@@ -74,7 +74,7 @@ namespace xng {
 
         Renderer2D &ren2d;
         RenderTarget &target;
-        FontEngine &fontDriver;
+        FontEngine &fontEngine;
 
         bool drawDebugGeometry = false;
 

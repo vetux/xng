@@ -20,7 +20,7 @@
 #ifndef XENGINE_ANDROID_HPP
 #define XENGINE_ANDROID_HPP
 
-// MSVC for some reason references the getWindow method when this header is included even if the Android type is not used by user code.
+// MSVC, for some reason, references the getWindow method when this header is included even if the Android type is not used by user code.
 #ifndef WIN32
 
 #include "xng/display/displayenvironment.hpp"
@@ -42,18 +42,18 @@ namespace xng::android {
             throw std::runtime_error("No monitors support on android");
         }
 
-        std::unique_ptr<Window> createWindow(GpuDriverBackend gpuBackend) override {
+        std::unique_ptr<Window> createWindow(GpuEngineBackend gpuBackend) override {
             return getWindow(gpuBackend, {});
         }
 
-        std::unique_ptr<Window> createWindow(GpuDriverBackend gpuBackend,
+        std::unique_ptr<Window> createWindow(GpuEngineBackend gpuBackend,
                                              const std::string &title,
                                              Vec2i size,
                                              WindowAttributes attributes) override {
             return getWindow(gpuBackend, attributes);
         }
 
-        std::unique_ptr<Window> createWindow(GpuDriverBackend gpuBackend,
+        std::unique_ptr<Window> createWindow(GpuEngineBackend gpuBackend,
                                              const std::string &title,
                                              Vec2i size,
                                              WindowAttributes attributes,
@@ -65,7 +65,7 @@ namespace xng::android {
         android_app *app;
 
     private:
-        std::unique_ptr<Window> getWindow(GpuDriverBackend gpuDriverBackend, WindowAttributes attributes);
+        std::unique_ptr<Window> getWindow(GpuEngineBackend gpuDriverBackend, WindowAttributes attributes);
     };
 }
 
