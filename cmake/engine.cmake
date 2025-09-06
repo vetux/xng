@@ -10,7 +10,7 @@ add_library(xengine SHARED ${Engine.File.SRC} ${PLATFORM_SRC} ${SHADER_HEADERS})
 target_include_directories(xengine PUBLIC ${Engine.Dir.INCLUDE})
 target_include_directories(xengine PRIVATE ${Engine.Dir.SRC} ${PLATFORM_INCLUDE} ${SHADER_COMPILED_DIR})
 
-target_link_libraries(xengine Threads::Threads ${PLATFORM_LINK})
+target_link_libraries(xengine PRIVATE Threads::Threads ${PLATFORM_LINK})
 
 if (UNIX AND CMAKE_COMPILER_IS_GNUCXX)
     # Hide symbols by default on GCC to emulate msvc linking behaviour and enable Pedantic warnings to emulate msvc syntax checking.
@@ -18,12 +18,12 @@ if (UNIX AND CMAKE_COMPILER_IS_GNUCXX)
 endif ()
 
 if (UNIX)
-    target_link_libraries(xengine dl) # For engine/src/io/dl/librarylinux.hpp
+    target_link_libraries(xengine PRIVATE dl) # For engine/src/io/dl/librarylinux.hpp
 endif ()
 
 if (MSVC)
-# Disable the C4251 warnings because the STL is heavily integrated with the engine by design and the users/editor must ensure that the user application is built with the same msvc compiler version.
-	target_compile_options(xengine PUBLIC -wd4251)
+    # Disable the C4251 warnings because the STL is heavily integrated with the engine by design and the users/editor must ensure that the user application is built with the same msvc compiler version.
+    target_compile_options(xengine PUBLIC -wd4251)
 endif ()
 
 # xengine-static
@@ -33,7 +33,7 @@ add_library(xengine-static STATIC ${Engine.File.SRC} ${PLATFORM_SRC} ${SHADER_HE
 target_include_directories(xengine-static PUBLIC ${Engine.Dir.INCLUDE})
 target_include_directories(xengine-static PRIVATE ${Engine.Dir.SRC} ${PLATFORM_INCLUDE} ${SHADER_COMPILED_DIR})
 
-target_link_libraries(xengine-static Threads::Threads ${PLATFORM_LINK})
+target_link_libraries(xengine-static PRIVATE Threads::Threads ${PLATFORM_LINK})
 
 if (UNIX AND CMAKE_COMPILER_IS_GNUCXX)
     # Hide symbols by default on GCC to emulate msvc linking behaviour and enable Pedantic warnings to emulate msvc syntax checking.
@@ -41,10 +41,10 @@ if (UNIX AND CMAKE_COMPILER_IS_GNUCXX)
 endif ()
 
 if (UNIX)
-    target_link_libraries(xengine-static dl)
+    target_link_libraries(xengine-static PRIVATE dl)
 endif ()
 
 if (MSVC)
-# Disable the C4251 warnings because the STL is heavily integrated with the engine by design and the users/editor must ensure that the user application is built with the same msvc compiler version.
-	target_compile_options(xengine-static PUBLIC -wd4251)
+    # Disable the C4251 warnings because the STL is heavily integrated with the engine by design and the users/editor must ensure that the user application is built with the same msvc compiler version.
+    target_compile_options(xengine-static PUBLIC -wd4251)
 endif ()
