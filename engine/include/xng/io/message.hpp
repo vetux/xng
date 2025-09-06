@@ -65,7 +65,8 @@ namespace xng {
             }
         }
 
-        explicit Message(DataType type = NUL) : type(type) {}
+        explicit Message(DataType type = NUL) : type(type) {
+        }
 
         Message(int value) : type(SIGNED_INTEGER) { ival = value; }
 
@@ -92,28 +93,28 @@ namespace xng {
         Message &operator[](const char *name) {
             if (type != DICTIONARY)
                 throw std::runtime_error(
-                        "Attempted to call array operator on message of type " + getDataTypeName(type));
+                    "Attempted to call array operator on message of type " + getDataTypeName(type));
             return mval[name];
         }
 
         const Message &operator[](const char *name) const {
             if (type != DICTIONARY)
                 throw std::runtime_error(
-                        "Attempted to call array operator on message of type " + getDataTypeName(type));
+                    "Attempted to call array operator on message of type " + getDataTypeName(type));
             return mval.at(name);
         }
 
         Message &operator[](const std::string &name) {
             if (type != DICTIONARY)
                 throw std::runtime_error(
-                        "Attempted to call array operator on message of type " + getDataTypeName(type));
+                    "Attempted to call array operator on message of type " + getDataTypeName(type));
             return mval[name];
         }
 
         const Message &operator[](const std::string &name) const {
             if (type != DICTIONARY)
                 throw std::runtime_error(
-                        "Attempted to call array operator on message of type " + getDataTypeName(type));
+                    "Attempted to call array operator on message of type " + getDataTypeName(type));
             return mval.at(name);
         }
 
@@ -122,14 +123,14 @@ namespace xng {
                 throw std::runtime_error("Type error");
             if (vval.size() >= index)
                 throw std::runtime_error(
-                        "Attempted to call array operator on message of type " + getDataTypeName(type));
+                    "Attempted to call array operator on message of type " + getDataTypeName(type));
             return vval.at(index);
         }
 
         const Message &operator[](int index) const {
             if (type != LIST)
                 throw std::runtime_error(
-                        "Attempted to call array operator on message of type " + getDataTypeName(type));
+                    "Attempted to call array operator on message of type " + getDataTypeName(type));
             return vval.at(index);
         }
 
@@ -149,6 +150,27 @@ namespace xng {
             if (type != DICTIONARY)
                 throw std::runtime_error("Attempted to call at on message of type " + getDataTypeName(type));
             return mval.at(name);
+        }
+
+        explicit operator char() const {
+            if (type == UNSIGNED_INTEGER) {
+                return static_cast<char>(uival);
+            } else if (type == SIGNED_INTEGER) {
+                return static_cast<char>(ival);
+            } else {
+                throw std::runtime_error("Attempted to cast message of type " + getDataTypeName(type) + " to char");
+            }
+        }
+
+        explicit operator unsigned char() const {
+            if (type == UNSIGNED_INTEGER) {
+                return static_cast<unsigned char>(uival);
+            } else if (type == SIGNED_INTEGER) {
+                return static_cast<unsigned char>(ival);
+            } else {
+                throw std::runtime_error(
+                    "Attempted to cast message of type " + getDataTypeName(type) + " to unsigned char");
+            }
         }
 
         explicit operator int() const {
@@ -178,25 +200,25 @@ namespace xng {
                 return static_cast<long long>(ival);
             } else {
                 throw std::runtime_error(
-                        "Attempted to cast message of type " + getDataTypeName(type) + " to long long");
+                    "Attempted to cast message of type " + getDataTypeName(type) + " to long long");
             }
         }
 
-        explicit  operator unsigned int() const {
+        explicit operator unsigned int() const {
             if (type == UNSIGNED_INTEGER) {
                 return static_cast<unsigned int>(uival);
             } else {
                 throw std::runtime_error(
-                        "Attempted to cast message of type " + getDataTypeName(type) + " to unsigned int");
+                    "Attempted to cast message of type " + getDataTypeName(type) + " to unsigned int");
             }
         }
 
-        explicit  operator unsigned long() const {
+        explicit operator unsigned long() const {
             if (type == UNSIGNED_INTEGER) {
                 return static_cast<unsigned long>(uival);
             } else {
                 throw std::runtime_error(
-                        "Attempted to cast message of type " + getDataTypeName(type) + " to unsigned long");
+                    "Attempted to cast message of type " + getDataTypeName(type) + " to unsigned long");
             }
         }
 
@@ -205,7 +227,7 @@ namespace xng {
                 return static_cast<unsigned long long>(uival);
             } else {
                 throw std::runtime_error(
-                        "Attempted to cast message of type " + getDataTypeName(type) + " to unsigned long long");
+                    "Attempted to cast message of type " + getDataTypeName(type) + " to unsigned long long");
             }
         }
 
@@ -256,11 +278,11 @@ namespace xng {
                 return mval;
             } else {
                 throw std::runtime_error(
-                        "Attempted to cast message of type " + getDataTypeName(type) + " to dictionary");
+                    "Attempted to cast message of type " + getDataTypeName(type) + " to dictionary");
             }
         }
 
-        explicit  operator std::vector<Message>() const {
+        explicit operator std::vector<Message>() const {
             if (type == LIST) {
                 return vval;
             } else {
@@ -316,11 +338,11 @@ namespace xng {
         }
 
         std::map<std::string, Message> asDictionary() const {
-            return as<std::map<std::string, Message>>();
+            return as<std::map<std::string, Message> >();
         }
 
         std::vector<Message> asList() const {
-            return as<std::vector<Message>>();
+            return as<std::vector<Message> >();
         }
 
         template<typename T>
