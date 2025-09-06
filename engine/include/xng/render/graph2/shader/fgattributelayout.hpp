@@ -17,22 +17,22 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGVERTEXLAYOUT_HPP
-#define XENGINE_FGVERTEXLAYOUT_HPP
+#ifndef XENGINE_FGATTRIBUTELAYOUT_HPP
+#define XENGINE_FGATTRIBUTELAYOUT_HPP
 
 #include <vector>
 
-#include "xng/render/graph2/shader/fgvertexelement.hpp"
+#include "xng/render/graph2/shader/fgattributeelement.hpp"
 
 namespace xng {
-    struct FGVertexLayout {
-        std::vector<FGVertexElement> elements;
+    struct FGAttributeLayout {
+        std::vector<FGAttributeElement> elements;
 
-        FGVertexLayout() = default;
+        FGAttributeLayout() = default;
 
-        explicit FGVertexLayout(std::vector<FGVertexElement> elements) : elements(std::move(elements)) {}
+        explicit FGAttributeLayout(std::vector<FGAttributeElement> elements) : elements(std::move(elements)) {}
 
-        bool operator==(const FGVertexLayout &other) const{
+        bool operator==(const FGAttributeLayout &other) const{
             return elements == other.elements;
         }
 
@@ -45,4 +45,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_FGVERTEXLAYOUT_HPP
+#endif //XENGINE_FGATTRIBUTELAYOUT_HPP

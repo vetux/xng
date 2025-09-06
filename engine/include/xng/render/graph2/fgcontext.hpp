@@ -55,7 +55,8 @@ namespace xng {
 
         /**
          * Fragment shader output texture.
-         * The texture binding "backbuffer" represents the window backbuffer and can be written to without binding.
+         *
+         * The texture binding "" represents the window back-buffer and cannot be bound to.
          *
          * @param binding
          * @param texture
@@ -69,14 +70,14 @@ namespace xng {
                                        size_t mipMapLevel = 0,
                                        graph::FGCubeMapFace face = graph::POSITIVE_X) = 0;
 
-        virtual void bindShaderParameters(const std::unordered_map<std::string, FGShaderValue> &parameters) = 0;
+        virtual void bindShaderParameters(const std::unordered_map<std::string, FGShaderLiteral> &parameters) = 0;
 
         /**
          * Bind the given shaders.
          *
          * The shaders must form a complete pipeline eg. (1 Vertex Shader and 1 Fragment Shader) or 1 compute shader
          *
-         * @param shader
+         * @param shaders
          */
         virtual void bindShaders(const std::vector<FGResource> &shaders) = 0;
 
@@ -88,7 +89,7 @@ namespace xng {
         virtual void draw(const FGDrawCall &call) = 0;
 
         // Data download
-        virtual FGShaderValue downloadShaderParameter(const std::string &name) = 0;
+        virtual FGShaderLiteral downloadShaderParameter(const std::string &name) = 0;
 
         virtual Image<ColorRGBA> downloadTexture(FGResource texture,
                                                  size_t index = 0,

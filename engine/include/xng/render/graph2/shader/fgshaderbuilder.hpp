@@ -23,26 +23,27 @@
 #include <cstdint>
 
 #include "xng/render/graph2/shader/fgshadersource.hpp"
-#include "xng/render/graph2/shader/fgvertexlayout.hpp"
+#include "xng/render/graph2/shader/fgattributelayout.hpp"
+#include "xng/render/graph2/shader/fgshadervalue.hpp"
 
 namespace xng {
     class FGShaderBuilder {
     public:
         /**
-         * Read a value from a binding that was written to by a previous shader stage or the pipeline (e.g. in a vertex shader).
+         * Read a value from an attribute that was written to by a previous shader stage or the pipeline (e.g. in a vertex shader).
          *
          * @param binding
          * @return
          */
-        FGShaderVariable readVertex(uint32_t binding);
+        void readAttribute(uint32_t binding, const FGShaderVariable &output);
 
         /**
-         * Write a value to a binding that will be read by a subsequent shader stage or the pipeline (e.g. in a fragment shader).
+         * Write a value to an attribute that will be read by a subsequent shader stage or the pipeline (e.g. in a fragment shader).
          *
          * @param binding
          * @param value
          */
-        void writeVertex(uint32_t binding, const FGShaderVariable &value);
+        void writeAttribute(uint32_t binding, const FGShaderValue &value);
 
         /**
          * Read from a bound parameter (Implemented as Shader Storage Buffer, Push Constants, etc.)
@@ -50,77 +51,89 @@ namespace xng {
          * @param name
          * @return
          */
-        FGShaderVariable readParameter(const std::string &name);
+        void readParameter(const std::string &name, const FGShaderVariable &output);
 
-        void writeParameter(const std::string &name, const FGShaderVariable &value);
+        void writeParameter(const std::string &name, const FGShaderValue &value);
 
-        FGShaderVariable literal(const FGShaderValue &value);
+        void readTexture(const std::string &name,
+                         const FGShaderValue &x,
+                         const FGShaderValue &y,
+                         const FGShaderValue &z,
+                         const FGShaderValue &bias,
+                         const FGShaderVariable &output);
+
+        void writeTexture(const std::string &name,
+                          const FGShaderValue &x,
+                          const FGShaderValue &y,
+                          const FGShaderValue &z,
+                          const FGShaderValue &bias,
+                          const FGShaderValue &color);
+
+        FGShaderVariable variable(const std::string &name,
+                                  FGShaderVariable::Type type,
+                                  FGShaderVariable::Component component,
+                                  const FGShaderLiteral &value = {});
 
         FGShaderVariable array(size_t size);
 
-        void assign(const FGShaderVariable &target, const FGShaderVariable &source);
+        void assign(const FGShaderVariable &target, const FGShaderValue &source);
 
         // Math
-        FGShaderVariable add(const FGShaderVariable &valA, const FGShaderVariable &valB);
+        void add(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
 
-        FGShaderVariable subtract(const FGShaderVariable &valA, const FGShaderVariable &valB);
+        void subtract(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
 
-        FGShaderVariable multiply(const FGShaderVariable &valA, const FGShaderVariable &valB);
+        void multiply(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
 
-        FGShaderVariable divide(const FGShaderVariable &valA, const FGShaderVariable &valB);
+        void divide(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
 
         // Comparison
-        FGShaderVariable equal(const FGShaderVariable &valA, const FGShaderVariable &valB);
+        void equal(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
 
-        FGShaderVariable larger(const FGShaderVariable &valA, const FGShaderVariable &valB);
+        void larger(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
 
-        FGShaderVariable smaller(const FGShaderVariable &valA, const FGShaderVariable &valB);
+        void smaller(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
 
-        FGShaderVariable largerOrEqual(const FGShaderVariable &valA, const FGShaderVariable &valB);
+        void largerOrEqual(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
 
-        FGShaderVariable smallerOrEqual(const FGShaderVariable &valA, const FGShaderVariable &valB);
+        void smallerOrEqual(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
 
         // Logical
-        FGShaderVariable logicalAnd(const FGShaderVariable &valA, const FGShaderVariable &valB);
+        void logicalAnd(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
 
-        FGShaderVariable logicalOr(const FGShaderVariable &valA, const FGShaderVariable &valB);
+        void logicalOr(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
 
-        // Built-In Functions
-        FGShaderVariable normalize(const FGShaderVariable &value);
+        // Function call
+        void callFunction(const std::string &functionName,
+                          const std::vector<FGShaderValue> &arguments,
+                          const FGShaderVariable &output);
 
-        FGShaderVariable transpose(const FGShaderVariable &value);
-
-        FGShaderVariable inverse(const FGShaderVariable &value);
-
-        // Texture Sampling
-        FGShaderVariable sample(const FGShaderVariable &texture,
-                                const FGShaderVariable &x,
-                                const FGShaderVariable &y,
-                                const FGShaderVariable &z,
-                                const FGShaderVariable &bias);
+        void returnFunction(const FGShaderValue &output);
 
         // Subscripting
-        FGShaderVariable getX(const FGShaderVariable &val) {
+        FGShaderVariable getX(const FGShaderValue &val) {
             return subscript(val, 0);
         }
 
-        FGShaderVariable getY(const FGShaderVariable &val) {
+        FGShaderVariable getY(const FGShaderValue &val) {
             return subscript(val, 1);
         }
 
-        FGShaderVariable getZ(const FGShaderVariable &val) {
+        FGShaderVariable getZ(const FGShaderValue &val) {
             return subscript(val, 2);
         }
 
-        FGShaderVariable getW(const FGShaderVariable &val) {
+        FGShaderVariable getW(const FGShaderValue &val) {
             return subscript(val, 3);
         }
 
         // Array Or Vector
-        FGShaderVariable subscript(const FGShaderVariable &val, uint32_t index);
+        FGShaderVariable subscript(const FGShaderValue &val, const FGShaderValue &index);
 
         // Matrix
-        FGShaderVariable subscript(const FGShaderVariable &val, uint32_t row, uint32_t column);
+        FGShaderVariable subscript(const FGShaderValue &val,
+                                   const FGShaderVariable &row,
+                                   const FGShaderValue &column);
 
         // Conditional
         void conditional_begin(const FGShaderVariable &predicate);
@@ -141,8 +154,14 @@ namespace xng {
         void loop_end();
 
         FGShaderSource build(FGShaderSource::ShaderStage stage,
-                             const FGVertexLayout &inputLayout,
-                             const FGVertexLayout &outputLayout);
+                             const FGAttributeLayout &inputLayout,
+                             const FGAttributeLayout &outputLayout);
+
+    private:
+        size_t variableIndex = 0;
+
+        std::vector<FGShaderOperation> operations;
+        std::map<std::string, std::vector<FGShaderOperation>> functions;
     };
 }
 

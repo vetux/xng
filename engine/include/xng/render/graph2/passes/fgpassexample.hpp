@@ -49,8 +49,8 @@ namespace xng {
             FGResource vs;
             FGResource fs;
             if (vsName.empty()) {
-                vs = builder.createShader(FGShaderBuilder().build(FGShaderSource::VERTEX, {}, {}));
-                fs = builder.createShader(FGShaderBuilder().build(FGShaderSource::FRAGMENT, {}, {}));
+                vs = builder.createShader(createVertexShader());
+                fs = builder.createShader(createFragmentShader());
                 vsName = "vs";
                 fsName = "fs";
                 builder.exportResource(vsName, vs);
@@ -76,24 +76,55 @@ namespace xng {
             auto builder = FGShaderBuilder();
 
             // Example arithmetic
-            auto varA = builder.literal(10);
-            auto varB = builder.literal(5);
+            auto varA = builder.variable("varA",
+                                         FGShaderVariable::SINGLE,
+                                         FGShaderVariable::FLOAT,
+                                         10);
+            auto varB = builder.variable("varB",
+                                         FGShaderVariable::SINGLE,
+                                         FGShaderVariable::FLOAT,
+                                         5);
 
-            auto varC = builder.literal(Vec3f(0, 0, 0));
-            varC.x().assign(varA + varB);
+            auto varC = builder.variable("varC",
+                             FGShaderVariable::VECTOR3,
+                             FGShaderVariable::FLOAT,
+                             Vec3f(0, 0, 0));
+
+            builder.add(varA, varB, builder.getX(varC));
 
             auto varArr = builder.array(10);
             for (auto i = 0; i < 10; i = i + 1) {
-                varArr[builder.literal(i)].assign(varA + varB);
+                auto element = builder.subscript(varArr, i);
+                builder.add(varA, varB, element);
             }
 
-            varA.assign(varArr[varB]);
+            builder.assign(varA, builder.subscript(varArr, varB));
 
             // Example vertex transformation
-            auto vertexPosition = builder.readVertex(0);
-            auto mvp = builder.readParameter("mvp");
+            auto vPos = builder.variable("vPos",
+                                         FGShaderVariable::VECTOR3,
+                                         FGShaderVariable::FLOAT);
+            builder.readAttribute(0, vPos);
 
-            builder.writeVertex(0, vertexPosition * mvp);
+            auto mvp = builder.variable("mvp",
+                                        FGShaderVariable::MAT4,
+                                        FGShaderVariable::FLOAT);
+            builder.readParameter("mvp", mvp);
+
+            auto fPos = builder.variable("fPos",
+                                         FGShaderVariable::VECTOR4,
+                                         FGShaderVariable::FLOAT);
+
+            builder.assign(builder.getX(fPos), builder.getX(vPos));
+            builder.assign(builder.getY(fPos), builder.getY(vPos));
+            builder.assign(builder.getZ(fPos), builder.getZ(vPos));
+            builder.assign(builder.getW(fPos), 1);
+
+            // Apply transformation and store result in fPos
+            builder.multiply(mvp, fPos, fPos);
+
+            // Write out the attribute for the fragment shader
+            builder.writeAttribute(0, fPos);
 
             return builder.build(FGShaderSource::VERTEX, {}, {});
         }

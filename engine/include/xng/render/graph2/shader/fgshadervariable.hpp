@@ -21,26 +21,22 @@
 #define XENGINE_FGVALUE_HPP
 
 #include <cstddef>
-
-#include "xng/render/graph2/shader/fgshadervalue.hpp"
+#include <utility>
 
 namespace xng {
-    class FGShaderBuilder;
-
+    // An assignable shader variable
     class FGShaderVariable {
     public:
         enum Type {
-            LITERAL = 0,
-            SAMPLER,
+            SINGLE = 0,
             ARRAY,
-            SINGLE,
             VECTOR2,
             VECTOR3,
             VECTOR4,
             MAT2,
             MAT3,
             MAT4,
-        } type;
+        } type = SINGLE;
 
         enum Component {
             UNSIGNED_BYTE = 0,
@@ -49,38 +45,12 @@ namespace xng {
             SIGNED_INT,
             FLOAT,
             DOUBLE
-        } component;
+        } component = UNSIGNED_BYTE;
 
-        FGShaderVariable operator+(const FGShaderVariable &other);
-        FGShaderVariable operator-(const FGShaderVariable &other);
-        FGShaderVariable operator*(const FGShaderVariable &other);
-        FGShaderVariable operator/(const FGShaderVariable &other);
+        size_t id; // Unique id for this variable
+        std::string name; // Optional user specified name for this variable
 
-        FGShaderVariable operator[](const FGShaderVariable &index);
-
-        void assign(const FGShaderVariable &var);
-
-        FGShaderVariable x();
-
-        FGShaderVariable y();
-
-        FGShaderVariable z();
-
-        FGShaderVariable w();
-
-        FGShaderVariable row(size_t index);
-
-        FGShaderVariable column(size_t index);
-
-        FGShaderVariable element(size_t column, size_t row);
-
-        FGShaderBuilder &builder;
-        unsigned int handle;
-        std::string identifier;
-
-        size_t arraySize;
-
-        FGShaderValue literalValue;
+        size_t arraySize{}; // If this variable is of type ARRAY the number of elements in this array
     };
 }
 

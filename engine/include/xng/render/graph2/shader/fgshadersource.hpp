@@ -21,7 +21,7 @@
 #define XENGINE_FGSHADERSOURCE_HPP
 
 #include "xng/render/graph2/shader/fgshaderoperation.hpp"
-#include "xng/render/graph2/shader/fgvertexlayout.hpp"
+#include "xng/render/graph2/shader/fgattributelayout.hpp"
 
 namespace xng {
     /**
@@ -40,10 +40,11 @@ namespace xng {
             COMPUTE,
         } stage;
 
-        FGVertexLayout inputLayout;
-        FGVertexLayout outputLayout;
+        FGAttributeLayout inputLayout;
+        FGAttributeLayout outputLayout;
 
         std::vector<FGShaderOperation> operations;
+        std::map<std::string, std::vector<FGShaderOperation>> functions;
     };
 }
 #endif //XENGINE_FGSHADERSOURCE_HPP

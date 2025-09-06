@@ -17,15 +17,15 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGVERTEXELEMENT_HPP
-#define XENGINE_FGVERTEXELEMENT_HPP
+#ifndef XENGINE_FGATTRIBUTEELEMENT_HPP
+#define XENGINE_FGATTRIBUTEELEMENT_HPP
 
 #include <cstddef>
 
 #include <stdexcept>
 
 namespace xng {
-    struct FGVertexElement {
+    struct FGAttributeElement {
         enum Type {
             SINGLE,
             VECTOR2,
@@ -85,13 +85,13 @@ namespace xng {
             return getBytes(component) * getCount(type);
         }
 
-        FGVertexElement() = default;
+        FGAttributeElement() = default;
 
-        FGVertexElement(Type type, Component component, size_t offset = 0) : type(type),
+        FGAttributeElement(Type type, Component component, size_t offset = 0) : type(type),
                                                                              component(component),
                                                                              offset(offset) {}
 
-        bool operator==(const FGVertexElement &other) const {
+        bool operator==(const FGAttributeElement &other) const {
             return type == other.type && component == other.component && offset == other.offset;
         }
 
@@ -101,4 +101,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_FGVERTEXELEMENT_HPP
+#endif //XENGINE_FGATTRIBUTEELEMENT_HPP
