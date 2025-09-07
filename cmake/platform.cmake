@@ -1,19 +1,19 @@
-option(BUILD_GLFW "AddPlatform the glfw display platform" ON)
-option(BUILD_GLFW_OPENGL "AddPlatform the opengl support of the glfw display platform" ON) # Depends on BUILD_OPENGL
-option(BUILD_GLFW_VULKAN "AddPlatform the vulkan support of the glfw display platform" ON) # Depends on BUILD_VULKAN
-option(BUILD_OPENGL "AddPlatform the OpenGL gpu platform" ON)
-option(BUILD_VULKAN "AddPlatform the Vulkan gpu platform" ON)
-option(BUILD_BOX2D "AddPlatform the box2d physics platform" ON)
-option(BUILD_BULLET3 "AddPlatform the bullet3 physics platform"  ON)
-option(BUILD_OPENAL "AddPlatform the OpenAL audio platform"  ON)
-option(BUILD_FREETYPE "AddPlatform the FreeType font rendering platform"  ON)
-option(BUILD_ASSIMP "AddPlatform the AssImp resource parser platform (For 3D asset file formats)"  ON)
-option(BUILD_SNDFILE "AddPlatform the SndFile resource parser platform (For Audio file formats)"  ON)
-option(BUILD_GLSLANG "AddPlatform the GLSLang shader compiler platform"  ON)
-option(BUILD_SPIRVCROSS "AddPlatform the SPIRV-Cross shader decompiler platform"  ON)
-option(BUILD_CRYPTOPP "AddPlatform the CryptoPP platform"  ON)
-option(BUILD_ANDROID "AddPlatform the android display platform" OFF)
-option(BUILD_ANDROID_OPENGL "AddPlatform the opengl support of the android display platform" OFF) # Depends on BUILD_OPENGL
+option(BUILD_GLFW "Build the glfw display platform" ON)
+option(BUILD_GLFW_OPENGL "Build the opengl support of the glfw display platform" ON) # Depends on BUILD_OPENGL
+option(BUILD_GLFW_VULKAN "Build the vulkan support of the glfw display platform" ON) # Depends on BUILD_VULKAN
+option(BUILD_OPENGL "Build the OpenGL gpu platform" ON)
+option(BUILD_VULKAN "Build the Vulkan gpu platform" ON)
+option(BUILD_BOX2D "Build the box2d physics platform" ON)
+option(BUILD_BULLET3 "Build the bullet3 physics platform"  ON)
+option(BUILD_OPENAL "Build the OpenAL audio platform"  ON)
+option(BUILD_FREETYPE "Build the FreeType font rendering platform"  ON)
+option(BUILD_ASSIMP "Build the AssImp resource parser platform (For 3D asset file formats)"  ON)
+option(BUILD_SNDFILE "Build the SndFile resource parser platform (For Audio file formats)"  ON)
+option(BUILD_GLSLANG "Build the GLSLang shader compiler platform"  ON)
+option(BUILD_SPIRVCROSS "Build the SPIRV-Cross shader decompiler platform"  ON)
+option(BUILD_CRYPTOPP "Build the CryptoPP platform"  ON)
+option(BUILD_ANDROID "Build the android display platform" OFF)
+option(BUILD_ANDROID_OPENGL "Build the opengl support of the android display platform" OFF) # Depends on BUILD_OPENGL
 
 set(PLATFORM_INCLUDE) # The platform include directories in a list
 set(PLATFORM_SRC) # The platform source files in a list
