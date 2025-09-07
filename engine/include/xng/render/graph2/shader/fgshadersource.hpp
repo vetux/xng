@@ -44,6 +44,8 @@ namespace xng {
 
         std::vector<std::shared_ptr<FGShaderNode> > nodes;
 
+        //TODO: Add support for different parameter upload methods (Push Constants, Uniform buffers etc.)
+
         //TODO: Parameters / textures output format from the shader compiler must be defined somehow so the runtime knows how to upload the data.
         /**
          * The available shader parameters and their corresponding format

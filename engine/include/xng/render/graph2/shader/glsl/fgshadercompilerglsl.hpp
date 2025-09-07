@@ -20,7 +20,7 @@
 #ifndef XENGINE_FGSHADERCOMPILERGLSL_HPP
 #define XENGINE_FGSHADERCOMPILERGLSL_HPP
 
-#include "../fgshadercompiler.hpp"
+#include "xng/render/graph2/shader/fgshadercompiler.hpp"
 
 namespace xng {
     class FGShaderCompilerGLSL : public FGShaderCompiler {
