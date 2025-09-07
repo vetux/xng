@@ -17,8 +17,23 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "xng/render/graph2/shader/fgshaderbuilder.hpp"
+#ifndef XENGINE_FGSHADERCOMPILER_HPP
+#define XENGINE_FGSHADERCOMPILER_HPP
+
+#include <vector>
+
+#include "xng/render/graph2/shader/fgshadersource.hpp"
 
 namespace xng {
+    /**
+     * The shader compiler creates source code in some language from the given internal representation.
+     */
+    class FGShaderCompiler {
+    public:
+        virtual ~FGShaderCompiler() = default;
 
+        virtual std::string compile(const FGShaderSource &source) = 0;
+    };
 }
+
+#endif //XENGINE_FGSHADERCOMPILER_HPP

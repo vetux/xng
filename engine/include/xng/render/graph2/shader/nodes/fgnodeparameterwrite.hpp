@@ -17,41 +17,32 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGVALUE_HPP
-#define XENGINE_FGVALUE_HPP
+#ifndef XENGINE_FGNODEPARAMETERWRITE_HPP
+#define XENGINE_FGNODEPARAMETERWRITE_HPP
 
-#include <cstddef>
-#include <utility>
+#include "xng/render/graph2/shader/fgshadernode.hpp"
 
 namespace xng {
-    // An assignable shader variable
-    class FGShaderVariable {
-    public:
-        enum Type {
-            SINGLE = 0,
-            ARRAY,
-            VECTOR2,
-            VECTOR3,
-            VECTOR4,
-            MAT2,
-            MAT3,
-            MAT4,
-        } type = SINGLE;
+    struct FGNodeParameterWrite final : FGShaderNode {
+        std::string parameterName;
 
-        enum Component {
-            UNSIGNED_BYTE = 0,
-            SIGNED_BYTE,
-            UNSIGNED_INT,
-            SIGNED_INT,
-            FLOAT,
-            DOUBLE
-        } component = UNSIGNED_BYTE;
+        FGShaderNodeOutput output = FGShaderNodeOutput("output");
 
-        size_t id; // Unique id for this variable
-        std::string name; // Optional user specified name for this variable
+        explicit FGNodeParameterWrite(std::string parameter_name)
+            : parameterName(std::move(parameter_name)) {
+        }
 
-        size_t arraySize{}; // If this variable is of type ARRAY the number of elements in this array
+        NodeType getType() override {
+            return PARAMETER_WRITE;
+        }
+
+        const std::vector<FGShaderNodeInput> &getInputs() override {
+            return {};
+        }
+
+        const std::vector<FGShaderNodeOutput> &getOutputs() override {
+            return {output};
+        }
     };
 }
-
-#endif //XENGINE_FGVALUE_HPP
+#endif //XENGINE_FGNODEPARAMETERWRITE_HPP

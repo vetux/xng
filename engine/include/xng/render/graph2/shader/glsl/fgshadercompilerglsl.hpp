@@ -17,8 +17,18 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "xng/render/graph2/shader/fgshaderbuilder.hpp"
+#ifndef XENGINE_FGSHADERCOMPILERGLSL_HPP
+#define XENGINE_FGSHADERCOMPILERGLSL_HPP
+
+#include "../fgshadercompiler.hpp"
 
 namespace xng {
+    class FGShaderCompilerGLSL : public FGShaderCompiler {
+    public:
+        FGShaderCompilerGLSL() = default;
 
+        std::string compile(const FGShaderSource &source) override;
+    };
 }
+
+#endif //XENGINE_FGSHADERCOMPILERGLSL_HPP

@@ -17,8 +17,26 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "xng/render/graph2/shader/fgshaderbuilder.hpp"
+#ifndef XENGINE_FGSHADERDECOMPILER_HPP
+#define XENGINE_FGSHADERDECOMPILER_HPP
+
+#include <vector>
+
+#include "xng/render/graph2/shader/fgshadersource.hpp"
 
 namespace xng {
+    /**
+     * The shader decompiler builds a shader graph from the given shader source in some language.
+     *
+     * This is pretty complex to implement, so this would be something for when I have a custom shading language
+     * for the engine.
+     */
+    class FGShaderDecompiler {
+    public:
+        virtual ~FGShaderDecompiler() = default;
 
+        virtual FGShaderSource decompile(const std::string &shader) = 0;
+    };
 }
+
+#endif //XENGINE_FGSHADERDECOMPILER_HPP

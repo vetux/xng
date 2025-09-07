@@ -20,14 +20,13 @@
 #ifndef XENGINE_FGSHADERSOURCE_HPP
 #define XENGINE_FGSHADERSOURCE_HPP
 
-#include "xng/render/graph2/shader/fgshaderoperation.hpp"
 #include "xng/render/graph2/shader/fgattributelayout.hpp"
+#include "xng/render/graph2/texture/fgtextureproperties.hpp"
+#include "xng/render/graph2/shader/fgshadernode.hpp"
 
 namespace xng {
     /**
-     * FGShaderSource represents a standalone set of instructions to run on the gpu.
-     *
-     * The Runtime generates shader source code from the data in FGShaderSource.
+     * The shader compiler generates shader source code from the data in FGShaderSource.
      */
     class FGShaderSource {
     public:
@@ -43,8 +42,18 @@ namespace xng {
         FGAttributeLayout inputLayout;
         FGAttributeLayout outputLayout;
 
-        std::vector<FGShaderOperation> operations;
-        std::map<std::string, std::vector<FGShaderOperation>> functions;
+        std::vector<std::shared_ptr<FGShaderNode> > nodes;
+
+        //TODO: Parameters / textures output format from the shader compiler must be defined somehow so the runtime knows how to upload the data.
+        /**
+         * The available shader parameters and their corresponding format
+         */
+        std::map<std::string, FGAttributeElement> parameters;
+
+        /**
+         * The available textures and their corresponding format
+         */
+        std::map<std::string, graph::FGTextureProperties> textures;
     };
 }
 #endif //XENGINE_FGSHADERSOURCE_HPP

@@ -75,56 +75,17 @@ namespace xng {
             // Shader can be dynamically changed at runtime
             auto builder = FGShaderBuilder();
 
-            // Example arithmetic
-            auto varA = builder.variable("varA",
-                                         FGShaderVariable::SINGLE,
-                                         FGShaderVariable::FLOAT,
-                                         10);
-            auto varB = builder.variable("varB",
-                                         FGShaderVariable::SINGLE,
-                                         FGShaderVariable::FLOAT,
-                                         5);
+            auto vPos = builder.attributeRead(0);
+            auto mvp = builder.parameterRead("mvp");
 
-            auto varC = builder.variable("varC",
-                             FGShaderVariable::VECTOR3,
-                             FGShaderVariable::FLOAT,
-                             Vec3f(0, 0, 0));
+            auto fPos = builder.vector(builder.getX(vPos),
+                builder.getY(vPos),
+                builder.getZ(vPos),
+                builder.literal(1));
 
-            builder.add(varA, varB, builder.getX(varC));
+            fPos = builder.multiply(mvp, fPos);
 
-            auto varArr = builder.array(10);
-            for (auto i = 0; i < 10; i = i + 1) {
-                auto element = builder.subscript(varArr, i);
-                builder.add(varA, varB, element);
-            }
-
-            builder.assign(varA, builder.subscript(varArr, varB));
-
-            // Example vertex transformation
-            auto vPos = builder.variable("vPos",
-                                         FGShaderVariable::VECTOR3,
-                                         FGShaderVariable::FLOAT);
-            builder.readAttribute(0, vPos);
-
-            auto mvp = builder.variable("mvp",
-                                        FGShaderVariable::MAT4,
-                                        FGShaderVariable::FLOAT);
-            builder.readParameter("mvp", mvp);
-
-            auto fPos = builder.variable("fPos",
-                                         FGShaderVariable::VECTOR4,
-                                         FGShaderVariable::FLOAT);
-
-            builder.assign(builder.getX(fPos), builder.getX(vPos));
-            builder.assign(builder.getY(fPos), builder.getY(vPos));
-            builder.assign(builder.getZ(fPos), builder.getZ(vPos));
-            builder.assign(builder.getW(fPos), 1);
-
-            // Apply transformation and store result in fPos
-            builder.multiply(mvp, fPos, fPos);
-
-            // Write out the attribute for the fragment shader
-            builder.writeAttribute(0, fPos);
+            builder.attributeWrite(0, fPos);
 
             return builder.build(FGShaderSource::VERTEX, {}, {});
         }

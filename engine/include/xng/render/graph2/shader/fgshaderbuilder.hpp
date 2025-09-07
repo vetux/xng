@@ -20,148 +20,102 @@
 #ifndef XENGINE_FGSHADERBUILDER_HPP
 #define XENGINE_FGSHADERBUILDER_HPP
 
-#include <cstdint>
+#include <utility>
 
+#include "xng/render/graph2/shader/fgshaderliteral.hpp"
+#include "xng/render/graph2/shader/fgshadernode.hpp"
 #include "xng/render/graph2/shader/fgshadersource.hpp"
-#include "xng/render/graph2/shader/fgattributelayout.hpp"
-#include "xng/render/graph2/shader/fgshadervalue.hpp"
 
 namespace xng {
     class FGShaderBuilder {
     public:
-        /**
-         * Read a value from an attribute that was written to by a previous shader stage or the pipeline (e.g. in a vertex shader).
-         *
-         * @param binding
-         * @return
-         */
-        void readAttribute(uint32_t binding, const FGShaderVariable &output);
+        std::shared_ptr<FGShaderNode> literal(FGShaderLiteral value);
 
-        /**
-         * Write a value to an attribute that will be read by a subsequent shader stage or the pipeline (e.g. in a fragment shader).
-         *
-         * @param binding
-         * @param value
-         */
-        void writeAttribute(uint32_t binding, const FGShaderValue &value);
+        std::shared_ptr<FGShaderNode> vector(std::shared_ptr<FGShaderNode> x,
+                                             std::shared_ptr<FGShaderNode> y,
+                                             std::shared_ptr<FGShaderNode> z,
+                                             std::shared_ptr<FGShaderNode> w);
 
-        /**
-         * Read from a bound parameter (Implemented as Shader Storage Buffer, Push Constants, etc.)
-         *
-         * @param name
-         * @return
-         */
-        void readParameter(const std::string &name, const FGShaderVariable &output);
+        std::shared_ptr<FGShaderNode> attributeRead(int32_t attributeIndex);
 
-        void writeParameter(const std::string &name, const FGShaderValue &value);
+        std::shared_ptr<FGShaderNode> attributeWrite(int32_t attributeIndex, std::shared_ptr<FGShaderNode> value);
 
-        void readTexture(const std::string &name,
-                         const FGShaderValue &x,
-                         const FGShaderValue &y,
-                         const FGShaderValue &z,
-                         const FGShaderValue &bias,
-                         const FGShaderVariable &output);
+        std::shared_ptr<FGShaderNode> parameterRead(std::string parameter_name);
 
-        void writeTexture(const std::string &name,
-                          const FGShaderValue &x,
-                          const FGShaderValue &y,
-                          const FGShaderValue &z,
-                          const FGShaderValue &bias,
-                          const FGShaderValue &color);
+        std::shared_ptr<FGShaderNode> parameterWrite(std::string parameter_name, std::shared_ptr<FGShaderNode> value);
 
-        FGShaderVariable variable(const std::string &name,
-                                  FGShaderVariable::Type type,
-                                  FGShaderVariable::Component component,
-                                  const FGShaderLiteral &value = {});
+        std::shared_ptr<FGShaderNode> textureSample(std::string textureName,
+                                                    std::shared_ptr<FGShaderNode> coordinate,
+                                                    std::shared_ptr<FGShaderNode> bias);
 
-        FGShaderVariable array(size_t size);
+        std::shared_ptr<FGShaderNode> add(std::shared_ptr<FGShaderNode> left, std::shared_ptr<FGShaderNode> right);
 
-        void assign(const FGShaderVariable &target, const FGShaderValue &source);
+        std::shared_ptr<FGShaderNode> subtract(std::shared_ptr<FGShaderNode> left, std::shared_ptr<FGShaderNode> right);
 
-        // Math
-        void add(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
+        std::shared_ptr<FGShaderNode> multiply(std::shared_ptr<FGShaderNode> left, std::shared_ptr<FGShaderNode> right);
 
-        void subtract(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
+        std::shared_ptr<FGShaderNode> divide(std::shared_ptr<FGShaderNode> left, std::shared_ptr<FGShaderNode> right);
 
-        void multiply(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
+        std::shared_ptr<FGShaderNode> compareEqual(std::shared_ptr<FGShaderNode> left,
+                                                   std::shared_ptr<FGShaderNode> right);
 
-        void divide(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
+        std::shared_ptr<FGShaderNode> compareNotEqual(std::shared_ptr<FGShaderNode> left,
+                                                      std::shared_ptr<FGShaderNode> right);
 
-        // Comparison
-        void equal(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
+        std::shared_ptr<FGShaderNode> compareGreater(std::shared_ptr<FGShaderNode> left,
+                                                     std::shared_ptr<FGShaderNode> right);
 
-        void larger(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
+        std::shared_ptr<FGShaderNode> compareLess(std::shared_ptr<FGShaderNode> left,
+                                                  std::shared_ptr<FGShaderNode> right);
 
-        void smaller(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
+        std::shared_ptr<FGShaderNode> compareGreaterEqual(std::shared_ptr<FGShaderNode> left,
+                                                          std::shared_ptr<FGShaderNode> right);
 
-        void largerOrEqual(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
+        std::shared_ptr<FGShaderNode> compareLessEqual(std::shared_ptr<FGShaderNode> left,
+                                                       std::shared_ptr<FGShaderNode> right);
 
-        void smallerOrEqual(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
+        std::shared_ptr<FGShaderNode> logicalAnd(std::shared_ptr<FGShaderNode> left,
+                                                 std::shared_ptr<FGShaderNode> right);
 
-        // Logical
-        void logicalAnd(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
+        std::shared_ptr<FGShaderNode> logicalOr(std::shared_ptr<FGShaderNode> left,
+                                                std::shared_ptr<FGShaderNode> right);
 
-        void logicalOr(const FGShaderValue &valA, const FGShaderValue &valB, const FGShaderVariable &output);
+        std::shared_ptr<FGShaderNode> normalize(std::shared_ptr<FGShaderNode> value);
 
-        // Function call
-        void callFunction(const std::string &functionName,
-                          const std::vector<FGShaderValue> &arguments,
-                          const FGShaderVariable &output);
+        std::shared_ptr<FGShaderNode> subscript(std::shared_ptr<FGShaderNode> value,
+                                                std::shared_ptr<FGShaderNode> row,
+                                                std::shared_ptr<FGShaderNode> column = nullptr);
 
-        void returnFunction(const FGShaderValue &output);
+        std::shared_ptr<FGShaderNode> branch(std::shared_ptr<FGShaderNode> condition,
+                                             std::shared_ptr<FGShaderNode> trueBranch,
+                                             std::shared_ptr<FGShaderNode> falseBranch);
 
-        // Subscripting
-        FGShaderVariable getX(const FGShaderValue &val) {
-            return subscript(val, 0);
+        std::shared_ptr<FGShaderNode> loop(std::shared_ptr<FGShaderNode> iterationStart,
+                                           std::shared_ptr<FGShaderNode> iterationEnd,
+                                           std::shared_ptr<FGShaderNode> iterationStep);
+
+        std::shared_ptr<FGShaderNode> getX(std::shared_ptr<FGShaderNode> value) {
+            return subscript(std::move(value), literal(0));
         }
 
-        FGShaderVariable getY(const FGShaderValue &val) {
-            return subscript(val, 1);
+        std::shared_ptr<FGShaderNode> getY(std::shared_ptr<FGShaderNode> value) {
+            return subscript(std::move(value), literal(1));
         }
 
-        FGShaderVariable getZ(const FGShaderValue &val) {
-            return subscript(val, 2);
+        std::shared_ptr<FGShaderNode> getZ(std::shared_ptr<FGShaderNode> value) {
+            return subscript(std::move(value), literal(2));
         }
 
-        FGShaderVariable getW(const FGShaderValue &val) {
-            return subscript(val, 3);
+        std::shared_ptr<FGShaderNode> getW(std::shared_ptr<FGShaderNode> value) {
+            return subscript(std::move(value), literal(3));
         }
-
-        // Array Or Vector
-        FGShaderVariable subscript(const FGShaderValue &val, const FGShaderValue &index);
-
-        // Matrix
-        FGShaderVariable subscript(const FGShaderValue &val,
-                                   const FGShaderVariable &row,
-                                   const FGShaderValue &column);
-
-        // Conditional
-        void conditional_begin(const FGShaderVariable &predicate);
-
-        void conditional_else();
-
-        void conditional_end();
-
-        // Loop
-        void loop_begin();
-
-        void loop_predicate();
-
-        void loop_iterator();
-
-        void loop_body();
-
-        void loop_end();
 
         FGShaderSource build(FGShaderSource::ShaderStage stage,
-                             const FGAttributeLayout &inputLayout,
-                             const FGAttributeLayout &outputLayout);
+                             FGAttributeLayout inputLayout,
+                             FGAttributeLayout outputLayout);
 
     private:
-        size_t variableIndex = 0;
-
-        std::vector<FGShaderOperation> operations;
-        std::map<std::string, std::vector<FGShaderOperation>> functions;
+        std::vector<std::shared_ptr<FGShaderNode> > nodes;
     };
 }
 

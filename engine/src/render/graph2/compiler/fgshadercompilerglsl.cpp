@@ -1,73 +1,23 @@
-#include "xng/render/graph2/shader/compiler/fgshadercompilerglsl.hpp"
+/**
+*  xEngine - C++ Game Engine Library
+ *  Copyright (C) 2023  Julian Zampiccoli
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 3 of the License, or (at your option) any later version.
+
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software Foundation,
+ *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+
+#include "xng/render/graph2/shader/glsl/fgshadercompilerglsl.hpp"
 
 namespace xng {
-    std::string FGShaderCompilerGLSL::compile(const FGShaderSource &source) {
-        std::string ret;
-        for (const auto& func : source.functions) {
-            ret += generateFunction(func.first, func.second);
-        }
-        ret += generateFunction("main", source.operations);
-        return ret;
-    }
-
-    std::string FGShaderCompilerGLSL::generateFunction(const std::string &functionName,
-        const std::vector<FGShaderOperation> &operations) {
-        std::string ret = "void " + functionName + "() {";
-         for (size_t i = 0; i < operations.size(); i = i + 1) {
-            auto op = operations[i];
-            switch (op.operation) {
-                case FGShaderOperation::ATTRIBUTE_READ:
-                    break;
-                case FGShaderOperation::ATTRIBUTE_WRITE:
-                    break;
-                case FGShaderOperation::PARAMETER_READ:
-                    break;
-                case FGShaderOperation::PARAMETER_WRITE:
-                    break;
-                case FGShaderOperation::TEXTURE_READ:
-                    break;
-                case FGShaderOperation::TEXTURE_WRITE:
-                    break;
-                case FGShaderOperation::ASSIGN:
-                    break;
-                case FGShaderOperation::ADD:
-                    break;
-                case FGShaderOperation::SUBTRACT:
-                    break;
-                case FGShaderOperation::MULTIPLY:
-                    break;
-                case FGShaderOperation::DIVIDE:
-                    break;
-                case FGShaderOperation::COMPARE_EQUAL:
-                    break;
-                case FGShaderOperation::COMPARE_NEQUAL:
-                    break;
-                case FGShaderOperation::COMPARE_MORE:
-                    break;
-                case FGShaderOperation::COMPARE_LESS:
-                    break;
-                case FGShaderOperation::COMPARE_MORE_EQUAL:
-                    break;
-                case FGShaderOperation::COMPARE_LESS_EQUAL:
-                    break;
-                case FGShaderOperation::LOGICAL_AND:
-                    break;
-                case FGShaderOperation::LOGICAL_OR:
-                    break;
-                case FGShaderOperation::CALL:
-                    break;
-                case FGShaderOperation::RETURN:
-                    break;
-                case FGShaderOperation::SUBSCRIPT:
-                    break;
-                case FGShaderOperation::CONDITIONAL:
-                    break;
-                case FGShaderOperation::LOOP:
-                    break;
-                default:
-                    throw std::runtime_error("unsupported shader operation");
-            }
-        }
-        return ret + "}";
-    }
 }

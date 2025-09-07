@@ -1,5 +1,5 @@
 /**
-*  xEngine - C++ Game Engine Library
+ *  xEngine - C++ Game Engine Library
  *  Copyright (C) 2023  Julian Zampiccoli
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,8 +17,30 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "xng/render/graph2/shader/fgshaderbuilder.hpp"
+#ifndef XENGINE_FGNODEADD_HPP
+#define XENGINE_FGNODEADD_HPP
+
+#include "xng/render/graph2/shader/fgshadernode.hpp"
 
 namespace xng {
+    struct FGNodeAdd final : FGShaderNode {
+        FGShaderNodeInput left = FGShaderNodeInput("left");
+        FGShaderNodeInput right = FGShaderNodeInput("right");
 
+        FGShaderNodeOutput result = FGShaderNodeOutput("result");
+
+        NodeType getType() override {
+            return ADD;
+        }
+
+        const std::vector<FGShaderNodeInput> &getInputs() override {
+            return {left, right};
+        }
+
+        const std::vector<FGShaderNodeOutput> &getOutputs() override {
+            return {result};
+        }
+    };
 }
+
+#endif //XENGINE_FGNODEADD_HPP

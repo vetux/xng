@@ -1,5 +1,5 @@
 /**
-*  xEngine - C++ Game Engine Library
+ *  xEngine - C++ Game Engine Library
  *  Copyright (C) 2023  Julian Zampiccoli
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,8 +17,30 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "xng/render/graph2/shader/fgshaderbuilder.hpp"
+#ifndef XENGINE_FGNODETEXTURESIZE_HPP
+#define XENGINE_FGNODETEXTURESIZE_HPP
+
+#include "xng/render/graph2/shader/fgshadernode.hpp"
 
 namespace xng {
+    struct FGNodeTextureSize final : FGShaderNode {
+        std::string textureName;
 
+        // Vector3 x and y components contain texture size (Face size for cube-maps)
+        // while z contains the number of layers for array textures.
+        FGShaderNodeOutput size = FGShaderNodeOutput("size");
+
+        NodeType getType() override {
+            return TEXTURE_SIZE;
+        }
+
+        const std::vector<FGShaderNodeInput> &getInputs() override {
+            return {};
+        }
+
+        const std::vector<FGShaderNodeOutput> &getOutputs() override {
+            return {size};
+        }
+    };
 }
+#endif //XENGINE_FGNODETEXTURESIZE_HPP
