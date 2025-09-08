@@ -1,5 +1,5 @@
 /**
-*  xEngine - C++ Game Engine Library
+ *  xEngine - C++ Game Engine Library
  *  Copyright (C) 2023  Julian Zampiccoli
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,18 +17,24 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGSHADERCOMPILERGLSL_HPP
-#define XENGINE_FGSHADERCOMPILERGLSL_HPP
+#ifndef XENGINE_FGSHADERBUFFER_HPP
+#define XENGINE_FGSHADERBUFFER_HPP
 
-#include "xng/render/graph2/shader/fgshadercompiler.hpp"
+#include <vector>
+
+#include "fgshadervalue.hpp"
 
 namespace xng {
-    class FGShaderCompilerGLSL : public FGShaderCompiler {
-    public:
-        FGShaderCompilerGLSL() = default;
+    struct FGShaderBuffer {
+        struct Element {
+            std::string name; // The name of this element. must be unique inside the buffer.
+            FGShaderValue value;
+            size_t count = 1; // If larger than 1, this element is a fixed size array, if 0, the element is a dynamic array and must be the only element in this buffer.
+        };
 
-        CompiledShader compile(const FGShaderSource &source) override;
+        bool readOnly = true; // Whether shaders are allowed to write to the buffer
+        std::vector<Element> elements;
     };
 }
 
-#endif //XENGINE_FGSHADERCOMPILERGLSL_HPP
+#endif //XENGINE_FGSHADERBUFFER_HPP

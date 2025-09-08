@@ -37,10 +37,12 @@ namespace xng {
             ATTRIBUTE_WRITE,
 
             PARAMETER_READ,
-            PARAMETER_WRITE,
 
             TEXTURE_SAMPLE,
             TEXTURE_SIZE,
+
+            BUFFER_READ,
+            BUFFER_WRITE,
 
             ADD,
             SUBTRACT,
@@ -59,6 +61,8 @@ namespace xng {
 
             NORMALIZE,
             //TODO: Add builtin function nodes
+
+            ARRAY_LENGTH,
 
             SUBSCRIPT, //Array, Vector or matrix indexing
 

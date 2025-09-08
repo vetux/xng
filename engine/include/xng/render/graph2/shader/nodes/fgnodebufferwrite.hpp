@@ -17,37 +17,30 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGSHADERSOURCE_HPP
-#define XENGINE_FGSHADERSOURCE_HPP
+#ifndef XENGINE_FGNODEBUFFERWRITE_HPP
+#define XENGINE_FGNODEBUFFERWRITE_HPP
 
-#include "xng/render/graph2/shader/fgattributelayout.hpp"
 #include "xng/render/graph2/shader/fgshadernode.hpp"
-#include "xng/render/graph2/texture/fgtexture.hpp"
 
 namespace xng {
-    struct FGShaderBuffer;
-    /**
-     * The shader compiler generates shader source code from the data in FGShaderSource.
-     */
-    class FGShaderSource {
-    public:
-        enum ShaderStage {
-            VERTEX,
-            GEOMETRY,
-            TESSELATION_CONTROL,
-            TESSELATION_EVALUATION,
-            FRAGMENT,
-            COMPUTE,
-        } stage;
+    struct FGNodeBufferWrite final : FGShaderNode {
+        std::string bufferName;
+        std::string elementName;
 
-        FGAttributeLayout inputLayout;
-        FGAttributeLayout outputLayout;
+        FGShaderNodeInput value = FGShaderNodeInput("value");
 
-        std::unordered_map<std::string, FGShaderValue> parameters;
-        std::unordered_map<std::string, FGShaderBuffer> buffers;
-        std::unordered_map<std::string, FGTexture> textures;
+        NodeType getType() override {
+            return BUFFER_WRITE;
+        }
 
-        std::vector<std::shared_ptr<FGShaderNode> > nodes;
+        const std::vector<FGShaderNodeInput> &getInputs() override {
+            return {value};
+        }
+
+        const std::vector<FGShaderNodeOutput> &getOutputs() override {
+            return {};
+        }
     };
 }
-#endif //XENGINE_FGSHADERSOURCE_HPP
+
+#endif //XENGINE_FGNODEBUFFERWRITE_HPP

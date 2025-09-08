@@ -28,16 +28,18 @@
 #include "xng/render/graph2/fgresource.hpp"
 
 #include "xng/render/graph2/shader/fgshadersource.hpp"
-#include "xng/render/graph2/texture/fgtextureproperties.hpp"
+#include "xng/render/graph2/texture/fgtexture.hpp"
 
 namespace xng {
     class FGBuilder {
     public:
         typedef int PassHandle;
 
-        FGResource createTexture(const graph::FGTextureProperties &properties);
+        FGResource createTexture(const FGTexture &texture);
         FGResource createVertexBuffer(size_t size);
         FGResource createIndexBuffer(size_t size);
+        FGResource createShaderBuffer(size_t size);
+
         FGResource createShader(const FGShaderSource &shader);
 
         /**

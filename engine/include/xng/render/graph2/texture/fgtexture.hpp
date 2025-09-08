@@ -17,32 +17,32 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGATTRIBUTELAYOUT_HPP
-#define XENGINE_FGATTRIBUTELAYOUT_HPP
+#ifndef XENGINE_FGTEXTURE_HPP
+#define XENGINE_FGTEXTURE_HPP
 
-#include <vector>
+#include "xng/render/graph2/texture/fgtextureproperties.hpp"
 
-#include "xng/render/graph2/shader/fgshadervalue.hpp"
+#include "xng/render/scene/color.hpp"
 
 namespace xng {
-    struct FGAttributeLayout {
-        std::vector<FGShaderValue> elements;
+    struct FGTexture {
+        Vec2i size = {1, 1};
+        FGTextureType textureType = TEXTURE_2D;
+        FGColorFormat format = RGBA;
 
-        FGAttributeLayout() = default;
+        FGTextureWrapping wrapping = CLAMP_TO_BORDER;
+        FGTextureFiltering filterMin = NEAREST;
+        FGTextureFiltering filterMag = NEAREST;
 
-        explicit FGAttributeLayout(std::vector<FGShaderValue> elements) : elements(std::move(elements)) {}
+        int samples = 1; //Ignored if texture is not TEXTURE_2D_MULTISAMPLE
+        int mipMapLevels = 1;
+        FGMipMapFiltering mipMapFilter = NEAREST_MIPMAP_LINEAR;
+        bool fixedSampleLocations = false;
 
-        bool operator==(const FGAttributeLayout &other) const{
-            return elements == other.elements;
-        }
+        ColorRGBA borderColor = ColorRGBA(0);
 
-        size_t getSize() const {
-            size_t ret = 0;
-            for (auto &attr : elements)
-                ret += attr.stride();
-            return ret;
-        }
+        size_t arrayLayers = 1; // If > 1 this texture becomes an array texture
     };
 }
 
-#endif //XENGINE_FGATTRIBUTELAYOUT_HPP
+#endif //XENGINE_FGTEXTURE_HPP

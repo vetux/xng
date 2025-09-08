@@ -20,11 +20,9 @@
 #ifndef XENGINE_FGTEXTUREPROPERTIES_HPP
 #define XENGINE_FGTEXTUREPROPERTIES_HPP
 
-#include "xng/render/scene/color.hpp"
-
 #include "xng/math/vector2.hpp"
 
-namespace xng::graph {
+namespace xng {
     enum FGTextureType : int {
         TEXTURE_2D = 0,
         TEXTURE_2D_MULTISAMPLE,
@@ -192,25 +190,6 @@ namespace xng::graph {
         message = (int) value;
         return message;
     }
-
-    struct FGTextureProperties {
-        Vec2i size = {1, 1};
-        FGTextureType textureType = TEXTURE_2D;
-        FGColorFormat format = RGBA;
-
-        FGTextureWrapping wrapping = CLAMP_TO_BORDER;
-        FGTextureFiltering filterMin = NEAREST;
-        FGTextureFiltering filterMag = NEAREST;
-
-        int samples = 1; //Ignored if texture is not TEXTURE_2D_MULTISAMPLE
-        int mipMapLevels = 1;
-        FGMipMapFiltering mipMapFilter = NEAREST_MIPMAP_LINEAR;
-        bool fixedSampleLocations = false;
-
-        ColorRGBA borderColor = ColorRGBA(0);
-
-        size_t arrayLayers = 1; // If > 1 this texture becomes an array texture
-    };
 }
 
 #endif //XENGINE_FGTEXTUREPROPERTIES_HPP

@@ -42,11 +42,17 @@ namespace xng {
 
         std::shared_ptr<FGShaderNode> parameterRead(std::string parameter_name);
 
-        std::shared_ptr<FGShaderNode> parameterWrite(std::string parameter_name, std::shared_ptr<FGShaderNode> value);
-
         std::shared_ptr<FGShaderNode> textureSample(std::string textureName,
                                                     std::shared_ptr<FGShaderNode> coordinate,
                                                     std::shared_ptr<FGShaderNode> bias);
+
+        std::shared_ptr<FGShaderNode> textureSize(std::string textureName);
+
+        std::shared_ptr<FGShaderNode> bufferRead(std::string bufferName, std::string elementName);
+
+        std::shared_ptr<FGShaderNode> bufferWrite(std::string bufferName,
+                                                  std::string elementName,
+                                                  std::shared_ptr<FGShaderNode> value);
 
         std::shared_ptr<FGShaderNode> add(std::shared_ptr<FGShaderNode> left, std::shared_ptr<FGShaderNode> right);
 
@@ -112,7 +118,10 @@ namespace xng {
 
         FGShaderSource build(FGShaderSource::ShaderStage stage,
                              FGAttributeLayout inputLayout,
-                             FGAttributeLayout outputLayout);
+                             FGAttributeLayout outputLayout,
+                             std::unordered_map<std::string, FGShaderValue> parameters,
+                             std::unordered_map<std::string, FGShaderBuffer> buffers,
+                             std::unordered_map<std::string, FGTexture> textures);
 
     private:
         std::vector<std::shared_ptr<FGShaderNode> > nodes;

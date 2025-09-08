@@ -30,9 +30,15 @@ namespace xng {
      */
     class FGShaderCompiler {
     public:
+        struct CompiledShader {
+            std::string source;
+            std::vector<std::string> bufferBindings;
+            std::vector<std::string> textureBindings;
+        };
+
         virtual ~FGShaderCompiler() = default;
 
-        virtual std::string compile(const FGShaderSource &source) = 0;
+        virtual CompiledShader compile(const FGShaderSource &source) = 0;
     };
 }
 

@@ -22,14 +22,9 @@
 
 #include <cstdint>
 
-#include "xng/render/graph2/shader/fgshadervariable.hpp"
-
+#include "xng/render/graph2/shader/fgshaderliteral.hpp"
 #include "xng/render/graph2/fgdrawcall.hpp"
-
 #include "xng/render/graph2/fgresource.hpp"
-
-#include "xng/render/graph2/texture/fgtextureproperties.hpp"
-
 #include "xng/render/scene/image.hpp"
 
 namespace xng {
@@ -41,22 +36,18 @@ namespace xng {
         virtual void uploadTexture(FGResource texture,
                                    const uint8_t *ptr,
                                    size_t size,
-                                   graph::FGColorFormat format,
+                                   FGColorFormat format,
                                    size_t index = 0,
                                    size_t mipMapLevel = 0,
-                                   graph::FGCubeMapFace face = graph::POSITIVE_X) = 0;
+                                   FGCubeMapFace face = POSITIVE_X) = 0;
 
         // Bindings
         virtual void bindVertexBuffer(FGResource buffer) = 0;
 
         virtual void bindIndexBuffer(FGResource buffer) = 0;
 
-        virtual void bindInputTexture(std::string binding, FGResource texture) = 0;
-
         /**
          * Fragment shader output texture.
-         *
-         * The texture binding "" represents the window back-buffer and cannot be bound to.
          *
          * @param binding
          * @param texture
@@ -64,13 +55,26 @@ namespace xng {
          * @param mipMapLevel
          * @param face
          */
-        virtual void bindOutputTexture(std::string binding,
+        virtual void bindOutputTexture(size_t binding,
                                        FGResource texture,
                                        size_t index = 0,
                                        size_t mipMapLevel = 0,
-                                       graph::FGCubeMapFace face = graph::POSITIVE_X) = 0;
+                                       FGCubeMapFace face = POSITIVE_X) = 0;
 
-        virtual void bindShaderParameters(const std::unordered_map<std::string, FGShaderLiteral> &parameters) = 0;
+        virtual void bindTextures(const std::unordered_map<std::string, FGResource> &textures);
+
+        virtual void bindShaderBuffers(const std::unordered_map<std::string, FGResource> &buffers);
+
+        /**
+         * Set the shader parameters for the next draw call. (Implemented as Push Constants)
+         *
+         * Shader parameters are values that change frequently (Per Draw) and have a size limit.
+         *
+         * Shader Parameters are set per draw call and must be set again for later draw calls.
+         *
+         * @param parameters
+         */
+        virtual void setShaderParameters(const std::unordered_map<std::string, FGShaderLiteral> &parameters);
 
         /**
          * Bind the given shaders.
@@ -82,11 +86,11 @@ namespace xng {
         virtual void bindShaders(const std::vector<FGResource> &shaders) = 0;
 
         /**
-         * Execute the draw call with the bound shaders and geometry data.
+         * Execute the draw call/s with the bound shaders and geometry data.
          *
-         * @param call
+         * @param calls
          */
-        virtual void draw(const FGDrawCall &call) = 0;
+        virtual void draw(const std::vector<FGDrawCall> &calls) = 0;
 
         // Data download
         virtual FGShaderLiteral downloadShaderParameter(const std::string &name) = 0;
@@ -94,7 +98,7 @@ namespace xng {
         virtual Image<ColorRGBA> downloadTexture(FGResource texture,
                                                  size_t index = 0,
                                                  size_t mipMapLevel = 0,
-                                                 graph::FGCubeMapFace face = graph::POSITIVE_X) = 0;
+                                                 FGCubeMapFace face = POSITIVE_X) = 0;
     };
 }
 

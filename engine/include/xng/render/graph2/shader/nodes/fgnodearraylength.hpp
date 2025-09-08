@@ -17,32 +17,28 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGNODEPARAMETERWRITE_HPP
-#define XENGINE_FGNODEPARAMETERWRITE_HPP
+#ifndef XENGINE_FGNODEARRAYLENGTH_HPP
+#define XENGINE_FGNODEARRAYLENGTH_HPP
 
 #include "xng/render/graph2/shader/fgshadernode.hpp"
 
 namespace xng {
-    struct FGNodeParameterWrite final : FGShaderNode {
-        std::string parameterName;
-
-        FGShaderNodeOutput output = FGShaderNodeOutput("output");
-
-        explicit FGNodeParameterWrite(std::string parameter_name)
-            : parameterName(std::move(parameter_name)) {
-        }
+    struct FGNodeArrayLength final : FGShaderNode {
+        FGShaderNodeInput array = FGShaderNodeInput("array");
+        FGShaderNodeOutput length = FGShaderNodeOutput("length");
 
         NodeType getType() override {
-            return PARAMETER_WRITE;
+            return ARRAY_LENGTH;
         }
 
         const std::vector<FGShaderNodeInput> &getInputs() override {
-            return {};
+            return {array};
         }
 
         const std::vector<FGShaderNodeOutput> &getOutputs() override {
-            return {output};
+            return {length};
         }
     };
 }
-#endif //XENGINE_FGNODEPARAMETERWRITE_HPP
+
+#endif //XENGINE_FGNODEARRAYLENGTH_HPP

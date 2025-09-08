@@ -20,12 +20,10 @@
 #ifndef XENGINE_FGATTRIBUTEELEMENT_HPP
 #define XENGINE_FGATTRIBUTEELEMENT_HPP
 
-#include <cstddef>
-
 #include <stdexcept>
 
 namespace xng {
-    struct FGAttributeElement {
+    struct FGShaderValue {
         enum Type {
             SINGLE,
             VECTOR2,
@@ -85,19 +83,18 @@ namespace xng {
             return getBytes(component) * getCount(type);
         }
 
-        FGAttributeElement() = default;
+        FGShaderValue() = default;
 
-        FGAttributeElement(Type type, Component component, size_t offset = 0) : type(type),
-                                                                             component(component),
-                                                                             offset(offset) {}
+        FGShaderValue(const Type type, const Component component) : type(type),
+                                                                           component(component) {
+        }
 
-        bool operator==(const FGAttributeElement &other) const {
-            return type == other.type && component == other.component && offset == other.offset;
+        bool operator==(const FGShaderValue &other) const {
+            return type == other.type && component == other.component;
         }
 
         Type type;
         Component component;
-        size_t offset; // The offset that is applied to the element pointer.
     };
 }
 
