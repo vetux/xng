@@ -50,6 +50,24 @@ namespace xng {
         std::unordered_map<std::string, FGTexture> textures;
 
         std::vector<std::shared_ptr<FGShaderNode> > nodes;
+
+        FGShaderSource() = default;
+
+        FGShaderSource(const ShaderStage stage,
+                       const FGAttributeLayout &input_layout,
+                       const FGAttributeLayout &output_layout,
+                       const std::unordered_map<std::string, FGShaderValue> &parameters,
+                       const std::unordered_map<std::string, FGShaderBuffer> &buffers,
+                       const std::unordered_map<std::string, FGTexture> &textures,
+                       const std::vector<std::shared_ptr<FGShaderNode> > &nodes)
+            : stage(stage),
+              inputLayout(input_layout),
+              outputLayout(output_layout),
+              parameters(parameters),
+              buffers(buffers),
+              textures(textures),
+              nodes(nodes) {
+        }
     };
 }
 #endif //XENGINE_FGSHADERSOURCE_HPP

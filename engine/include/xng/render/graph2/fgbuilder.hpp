@@ -31,7 +31,7 @@
 #include "xng/render/graph2/texture/fgtexture.hpp"
 
 namespace xng {
-    class FGBuilder {
+    class XENGINE_EXPORT FGBuilder {
     public:
         typedef size_t PassHandle;
 

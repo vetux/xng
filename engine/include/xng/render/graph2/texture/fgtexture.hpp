@@ -24,6 +24,8 @@
 
 #include "xng/render/scene/color.hpp"
 
+using namespace xng::graph;
+
 namespace xng {
     struct FGTexture {
         Vec2i size = {1, 1};

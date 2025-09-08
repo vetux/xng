@@ -33,11 +33,11 @@ namespace xng {
             return LESS;
         }
 
-        const std::vector<FGShaderNodeInput> &getInputs() override {
+        std::vector<std::reference_wrapper<FGShaderNodeInput>> getInputs() override {
             return {left, right};
         }
 
-        const std::vector<FGShaderNodeOutput> &getOutputs() override {
+        std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
             return {result};
         }
     };

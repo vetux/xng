@@ -22,7 +22,7 @@
 
 #include "xng/math/vector2.hpp"
 
-namespace xng {
+namespace xng::graph {
     enum FGTextureType : int {
         TEXTURE_2D = 0,
         TEXTURE_2D_MULTISAMPLE,

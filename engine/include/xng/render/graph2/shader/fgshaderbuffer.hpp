@@ -20,6 +20,7 @@
 #ifndef XENGINE_FGSHADERBUFFER_HPP
 #define XENGINE_FGSHADERBUFFER_HPP
 
+#include <utility>
 #include <vector>
 
 #include "fgshadervalue.hpp"
@@ -29,7 +30,15 @@ namespace xng {
         struct Element {
             std::string name; // The name of this element. must be unique inside the buffer.
             FGShaderValue value;
-            size_t count = 1; // If larger than 1, this element is a fixed size array, if 0, the element is a dynamic array and must be the only element in this buffer.
+
+            // If larger than 1, this element is a fixed size array, if 0, the element is a dynamic array and must be the only element in this buffer.
+            size_t count = 1;
+
+            Element(std::string name, const FGShaderValue &value, const size_t count = 1)
+                : name(std::move(name)),
+                  value(value),
+                  count(count) {
+            }
         };
 
         bool readOnly = true; // Whether shaders are allowed to write to the buffer

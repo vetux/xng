@@ -20,6 +20,7 @@
 #ifndef XENGINE_FGPASS_HPP
 #define XENGINE_FGPASS_HPP
 
+#include <string>
 #include <functional>
 #include <unordered_set>
 

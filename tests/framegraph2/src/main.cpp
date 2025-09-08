@@ -17,6 +17,28 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#include "shadertestpass.hpp"
+
+#include "xng/platform/glfw/glfw.hpp"
+#include "xng/platform/opengl2/opengl2.hpp"
+
 int main(int argc, char *argv[]) {
+    auto glfw = glfw::GLFW();
+    auto runtime = opengl2::OpenGL2();
+
+    const auto window = glfw.createWindow(OPENGL_4_6);
+
+    runtime.setWindow(*window);
+
+    FGBuilder builder;
+
+    ShaderTestPass pass;
+    pass.setup(builder);
+
+    const auto graph = builder.build();
+    const auto gh = runtime.compile(graph);
+
+    runtime.execute(gh);
+
     return 0;
 }

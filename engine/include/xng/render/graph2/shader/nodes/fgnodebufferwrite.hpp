@@ -20,6 +20,8 @@
 #ifndef XENGINE_FGNODEBUFFERWRITE_HPP
 #define XENGINE_FGNODEBUFFERWRITE_HPP
 
+#include <utility>
+
 #include "xng/render/graph2/shader/fgshadernode.hpp"
 
 namespace xng {
@@ -29,15 +31,20 @@ namespace xng {
 
         FGShaderNodeInput value = FGShaderNodeInput("value");
 
+        FGNodeBufferWrite(std::string buffer_name, std::string element_name)
+            : bufferName(std::move(buffer_name)),
+              elementName(std::move(element_name)) {
+        }
+
         NodeType getType() override {
             return BUFFER_WRITE;
         }
 
-        const std::vector<FGShaderNodeInput> &getInputs() override {
+        std::vector<std::reference_wrapper<FGShaderNodeInput>> getInputs() override {
             return {value};
         }
 
-        const std::vector<FGShaderNodeOutput> &getOutputs() override {
+        std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
             return {};
         }
     };

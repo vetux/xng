@@ -22,7 +22,7 @@
 
 #include "xng/render/graph2/fgruntime.hpp"
 
-namespace xng {
+namespace xng::opengl2 {
     class XENGINE_EXPORT OpenGL2 final : public FGRuntime {
     public:
         OpenGL2();

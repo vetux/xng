@@ -44,11 +44,11 @@ namespace xng {
             return TEXTURE_SAMPLE;
         }
 
-        const std::vector<FGShaderNodeInput> &getInputs() override {
+        std::vector<std::reference_wrapper<FGShaderNodeInput>> getInputs() override {
             return {coordinate, bias};
         }
 
-        const std::vector<FGShaderNodeOutput> &getOutputs() override {
+        std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
             return {color};
         }
     };

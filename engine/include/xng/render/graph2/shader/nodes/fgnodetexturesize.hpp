@@ -20,6 +20,8 @@
 #ifndef XENGINE_FGNODETEXTURESIZE_HPP
 #define XENGINE_FGNODETEXTURESIZE_HPP
 
+#include <utility>
+
 #include "xng/render/graph2/shader/fgshadernode.hpp"
 
 namespace xng {
@@ -30,15 +32,19 @@ namespace xng {
         // while z contains the number of layers for array textures.
         FGShaderNodeOutput size = FGShaderNodeOutput("size");
 
+        explicit FGNodeTextureSize(std::string texture_name)
+            : textureName(std::move(texture_name)) {
+        }
+
         NodeType getType() override {
             return TEXTURE_SIZE;
         }
 
-        const std::vector<FGShaderNodeInput> &getInputs() override {
+        std::vector<std::reference_wrapper<FGShaderNodeInput>> getInputs() override {
             return {};
         }
 
-        const std::vector<FGShaderNodeOutput> &getOutputs() override {
+        std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
             return {size};
         }
     };

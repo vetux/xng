@@ -22,15 +22,15 @@
 
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <utility>
-#include <vector>
 
 namespace xng {
     struct FGShaderNode;
 
     struct FGShaderNodeOutput {
         std::string name;
-        std::vector<std::shared_ptr<FGShaderNode> > consumers{};
+        std::unordered_set<std::shared_ptr<FGShaderNode> > consumers{};
 
         FGShaderNodeOutput() = default;
 

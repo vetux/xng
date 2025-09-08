@@ -16,3 +16,32 @@
  *  along with this program; if not, write to the Free Software Foundation,
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+
+#include "xng/platform/opengl2/opengl2.hpp"
+
+namespace xng::opengl2 {
+    OpenGL2::OpenGL2() {
+    }
+
+    OpenGL2::~OpenGL2() {
+    }
+
+    void OpenGL2::setWindow(const Window &window) {
+    }
+
+    FGRuntime::GraphHandle OpenGL2::compile(const FGGraph &graph) {
+        return {};
+    }
+
+    void OpenGL2::execute(GraphHandle graph) {
+    }
+
+    void OpenGL2::execute(std::vector<GraphHandle> graphs) {
+    }
+
+    void OpenGL2::saveCache(GraphHandle graph, std::ostream &stream) {
+    }
+
+    void OpenGL2::loadCache(GraphHandle graph, std::istream &stream) {
+    }
+}

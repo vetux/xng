@@ -72,9 +72,18 @@ namespace xng {
 
         virtual NodeType getType() = 0;
 
-        virtual const std::vector<FGShaderNodeInput> &getInputs() = 0;
+        virtual std::vector<std::reference_wrapper<FGShaderNodeInput>> getInputs() = 0;
 
-        virtual const std::vector<FGShaderNodeOutput> &getOutputs() = 0;
+        virtual std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() = 0;
+
+        /**
+         * For now nodes will always have only one output.
+         *
+         * @return
+         */
+        FGShaderNodeOutput &getOutput() {
+            return getOutputs().at(0);
+        }
 
         virtual ~FGShaderNode() = default;
     };
