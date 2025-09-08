@@ -18,7 +18,6 @@ option(BUILD_ANDROID_OPENGL "Build the opengl support of the android display ada
 set(ADAPTER_INCLUDE) # The adapter include directories in a list
 set(ADAPTER_SRC) # The adapter source files in a list
 set(ADAPTER_LINK) # The adapter linked library names in a list
-set(ADAPTER_CLASSES) # The adapter class names
 set(ADAPTER_INCLUDES) # The adapter include paths
 set(ADAPTER_NAMES) # The adapter names
 
@@ -26,19 +25,17 @@ set(Adapter.GLOBEXPR) # The globexpr used to generate ADAPTER_SRC
 
 # @COMPILE_DEFS = Compile definitions
 # @DIR = The directory in adapters/ which contains the adapter source
-# @CLASS = The class name that this adapter defines
 # @BUILD_LINK = The library name/s which the adapter links to. There can be multiple BUILD_LINK arguments.
-function(AddAdapter COMPILE_DEFS DIR CLASS)
+function(AddAdapter COMPILE_DEFS DIR)
     set(Adapter.GLOBEXPR ${Adapter.GLOBEXPR} ${BASE_SOURCE_DIR}/adapters/${DIR}/*.cpp ${BASE_SOURCE_DIR}/adapters/${DIR}/*.c PARENT_SCOPE)
     add_compile_definitions(${COMPILE_DEFS})
     set(ADAPTER_INCLUDE ${ADAPTER_INCLUDE} ${BASE_SOURCE_DIR}/adapters/${DIR}/ PARENT_SCOPE)
-    set(ADAPTER_CLASSES "${ADAPTER_CLASSES}${CLASS};" PARENT_SCOPE)
     set(ADAPTER_NAMES "${ADAPTER_NAMES}${DIR};" PARENT_SCOPE)
-    if (${ARGC} GREATER 3)
+    if (${ARGC} GREATER 2)
         # Each additional argument is treated as a library name
         set(MAXINDEX ${ARGC})
         MATH(EXPR MAXINDEX "${MAXINDEX}-1")
-        foreach (index RANGE 3 ${MAXINDEX})
+        foreach (index RANGE 2 ${MAXINDEX})
             list(GET ARGV ${index} LIBNAME)
             set(BUILD_LINK ${BUILD_LINK} ${LIBNAME})
         endforeach ()
@@ -51,7 +48,6 @@ endfunction()
 if (BUILD_GLFW)
     AddAdapter(BUILD_GLFW
             glfw
-            glfw::GLFWDisplayDriver
             glfw)
 endif ()
 
@@ -66,7 +62,6 @@ endif ()
 if (BUILD_ANDROID)
     AddAdapter(BUILD_ANDROID
             android
-            android::AndroidDisplayDriver
             android
             EGL)
 endif ()
@@ -85,7 +80,6 @@ if (BUILD_OPENGL)
     endif ()
     AddAdapter(BUILD_OPENGL
             opengl
-            opengl::OGLGpuDriver
             ${GL_LIBNAME})
 endif ()
 
@@ -94,70 +88,60 @@ if (BUILD_VULKAN)
     include_directories(${Vulkan_INCLUDE_DIRS})
     AddAdapter(BUILD_VULKAN
             vulkan
-            vulkan::VkGpuDriver
             ${Vulkan_LIBRARIES})
 endif ()
 
 if (BUILD_BOX2D)
     AddAdapter(BUILD_BOX2D
             box2d
-            PhysicsDriverBox2D
             box2d)
 endif ()
 
 if (BUILD_BULLET3)
     AddAdapter(BUILD_BULLET3
             bullet3
-            PhysicsDriverBt3
             BulletDynamics BulletCollision LinearMath)
 endif ()
 
 if (BUILD_OPENAL)
     AddAdapter(BUILD_OPENAL
             openal-soft
-            OALAudioDriver
             OpenAL)
 endif ()
 
 if (BUILD_FREETYPE)
     AddAdapter(BUILD_FREETYPE
             freetype
-            FtFontDriver
             freetype)
 endif ()
 
 if (BUILD_ASSIMP)
     AddAdapter(BUILD_ASSIMP
             assimp
-            AssImpImporter
             assimp)
 endif ()
 
 if (BUILD_SNDFILE)
     AddAdapter(BUILD_SNDFILE
             sndfile
-            SndFileImporter
             sndfile)
 endif ()
 
 if (BUILD_GLSLANG)
     AddAdapter(BUILD_GLSLANG
             glslang
-            GlslangCompiler
             glslang SPIRV glslang-default-resource-limits MachineIndependent OSDependent GenericCodeGen OGLCompiler)
 endif ()
 
 if (BUILD_SPIRVCROSS)
     AddAdapter(BUILD_SPIRVCROSS
             spirv-cross
-            SpirvCrossDecompiler
             spirv-cross-core spirv-cross-glsl spirv-cross-hlsl)
 endif ()
 
 if (BUILD_CRYPTOPP)
     AddAdapter(BUILD_CRYPTOPP
             cryptopp
-            CryptoPPDriver
             cryptopp)
 endif ()
 
