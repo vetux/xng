@@ -15,6 +15,8 @@ option(BUILD_CRYPTOPP "Build the CryptoPP platform"  ON)
 option(BUILD_ANDROID "Build the android display platform" OFF)
 option(BUILD_ANDROID_OPENGL "Build the opengl support of the android display platform" OFF) # Depends on BUILD_OPENGL
 
+option(BUILD_OPENGL2 "Build the OpenGL2 gpu platform" ON)
+
 set(PLATFORM_INCLUDE) # The platform include directories in a list
 set(PLATFORM_SRC) # The platform source files in a list
 set(PLATFORM_LINK) # The platform linked library names in a list
@@ -86,6 +88,20 @@ if (BUILD_OPENGL)
     AddPlatform(BUILD_OPENGL
             opengl
             opengl::OGLGpuDriver
+            ${GL_LIBNAME})
+endif ()
+
+if (BUILD_OPENGL2)
+    if (ANDROID)
+        set(GL_LIBNAME GLESv3)
+    elseif (WIN32)
+        set(GL_LIBNAME OpenGL32)
+    else ()
+        set(GL_LIBNAME GL)
+    endif ()
+    AddPlatform(BUILD_OPENGL2
+            opengl2
+            OpenGL2
             ${GL_LIBNAME})
 endif ()
 

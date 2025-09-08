@@ -99,6 +99,16 @@ namespace xng {
                                                  size_t index = 0,
                                                  size_t mipMapLevel = 0,
                                                  FGCubeMapFace face = POSITIVE_X) = 0;
+
+        /**
+         * Return the internal compiled source code of the supplied shader.
+         *
+         * For debugging purposes only.
+         *
+         * @param shader
+         * @return
+         */
+        virtual std::string getShaderSource(FGResource shader) = 0;
     };
 }
 

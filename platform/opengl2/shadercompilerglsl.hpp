@@ -1,5 +1,5 @@
 /**
-*  xEngine - C++ Game Engine Library
+ *  xEngine - C++ Game Engine Library
  *  Copyright (C) 2023  Julian Zampiccoli
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,18 +17,18 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGSHADERCOMPILERGLSL_HPP
-#define XENGINE_FGSHADERCOMPILERGLSL_HPP
+#ifndef XENGINE_SHADERCOMPILERGLSL_HPP
+#define XENGINE_SHADERCOMPILERGLSL_HPP
 
-#include "xng/render/graph2/shader/fgshadercompiler.hpp"
+#include "xng/render/graph2/shader/fgshadersource.hpp"
 
 namespace xng {
-    class FGShaderCompilerGLSL : public FGShaderCompiler {
+    class ShaderCompilerGLSL {
     public:
-        FGShaderCompilerGLSL() = default;
+        ShaderCompilerGLSL() = default;
 
-        CompiledShader compile(const FGShaderSource &source) override;
+        std::string compile(const FGShaderSource &source);
     };
 }
 
-#endif //XENGINE_FGSHADERCOMPILERGLSL_HPP
+#endif //XENGINE_SHADERCOMPILERGLSL_HPP

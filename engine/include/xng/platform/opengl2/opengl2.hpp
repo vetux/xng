@@ -1,5 +1,5 @@
 /**
-*  xEngine - C++ Game Engine Library
+ *  xEngine - C++ Game Engine Library
  *  Copyright (C) 2023  Julian Zampiccoli
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,29 +17,29 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGSHADERCOMPILER_HPP
-#define XENGINE_FGSHADERCOMPILER_HPP
+#ifndef XENGINE_OPENGL2_HPP
+#define XENGINE_OPENGL2_HPP
 
-#include <vector>
-
-#include "xng/render/graph2/shader/fgshadersource.hpp"
+#include "xng/render/graph2/fgruntime.hpp"
 
 namespace xng {
-    /**
-     * The shader compiler creates source code in some language from the given internal representation.
-     */
-    class FGShaderCompiler {
+    class XENGINE_EXPORT OpenGL2 final : public FGRuntime {
     public:
-        struct CompiledShader {
-            std::string source;
-            std::vector<std::string> bufferBindings;
-            std::vector<std::string> textureBindings;
-        };
+        OpenGL2();
 
-        virtual ~FGShaderCompiler() = default;
+        ~OpenGL2() override;
 
-        virtual CompiledShader compile(const FGShaderSource &source) = 0;
+        void setWindow(const Window &window) override;
+
+        GraphHandle compile(const FGGraph &graph) override;
+
+        void execute(GraphHandle graph) override;
+
+        void execute(std::vector<GraphHandle> graphs) override;
+
+        void saveCache(GraphHandle graph, std::ostream &stream) override;
+
+        void loadCache(GraphHandle graph, std::istream &stream) override;
     };
 }
-
-#endif //XENGINE_FGSHADERCOMPILER_HPP
+#endif //XENGINE_OPENGL2_HPP

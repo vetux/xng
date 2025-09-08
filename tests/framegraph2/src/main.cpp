@@ -1,5 +1,5 @@
 /**
-*  xEngine - C++ Game Engine Library
+ *  xEngine - C++ Game Engine Library
  *  Copyright (C) 2023  Julian Zampiccoli
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "xng/render/graph2/shader/glsl/fgshadercompilerglsl.hpp"
-
-namespace xng {
+int main(int argc, char *argv[]) {
+    return 0;
 }

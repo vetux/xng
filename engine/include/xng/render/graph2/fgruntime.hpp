@@ -30,6 +30,8 @@ namespace xng {
      */
     class FGRuntime {
     public:
+        virtual ~FGRuntime() = default;
+
         typedef int GraphHandle;
 
         /**
