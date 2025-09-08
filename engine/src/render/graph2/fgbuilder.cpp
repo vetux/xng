@@ -22,6 +22,11 @@
 #include "xng/render/graph2/fgbuilder.hpp"
 
 namespace xng {
+    FGBuilder::FGBuilder() {
+        resourceCounter = 0;
+        screenTexture = createResource();
+    }
+
     FGResource FGBuilder::createVertexBuffer(const size_t size) {
         const auto resource = createResource();
         vertexBufferAllocation[resource] = size;
@@ -52,14 +57,8 @@ namespace xng {
         return resource;
     }
 
-    FGResource FGBuilder::importResource(const std::string &name) {
-        const auto resource = createResource();
-        imports[resource] = name;
-        return resource;
-    }
-
-    void FGBuilder::exportResource(const std::string &name, FGResource resource) {
-        exports[resource] = name;
+    FGResource FGBuilder::getScreenTexture() const {
+        return screenTexture;
     }
 
     FGBuilder::PassHandle FGBuilder::addPass(const std::string &name, std::function<void(FGContext &)> pass) {
@@ -91,8 +90,7 @@ namespace xng {
             shaderBufferAllocation,
             textureAllocation,
             shaderAllocation,
-            imports,
-            exports
+            screenTexture
         };
     }
 

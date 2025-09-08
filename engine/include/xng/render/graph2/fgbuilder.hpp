@@ -35,22 +35,27 @@ namespace xng {
     public:
         typedef size_t PassHandle;
 
+        FGBuilder();
+        ~FGBuilder() = default;
+
         FGResource createVertexBuffer(size_t size);
         FGResource createIndexBuffer(size_t size);
         FGResource createShaderBuffer(size_t size);
-
         FGResource createTexture(const FGTexture &texture);
-
         FGResource createShader(const FGShaderSource &shader);
 
         /**
-         * Cross-Pass or Cross-Graph resource sharing.
+         * The screen texture is an offscreen texture managed by the runtime.
+         * It can be read from and written to by render passes to access the resulting screen contents.
          *
-         * @param name
-         * @return
+         * The texture format is as follows:
+         *  .size = Window / Full-screen size (Determined by the display environment)
+         *  .textureType = TEXTURE2D
+         *  .format = RGBA
+         *
+         * @return The offscreen texture representing the screen.
          */
-        FGResource importResource(const std::string &name);
-        void exportResource(const std::string &name, FGResource resource);
+        FGResource getScreenTexture() const;
 
         PassHandle addPass(const std::string &name, std::function<void(FGContext &)> pass);
 
@@ -63,7 +68,7 @@ namespace xng {
     private:
         FGResource createResource();
 
-        FGResource resourceCounter = 0;
+        FGResource resourceCounter;
 
         std::vector<FGPass> passes;
 
@@ -75,8 +80,7 @@ namespace xng {
 
         std::unordered_map<FGResource, FGShaderSource> shaderAllocation;
 
-        std::unordered_map<FGResource, std::string> imports;
-        std::unordered_map<FGResource, std::string> exports;
+        FGResource screenTexture{};
     };
 }
 

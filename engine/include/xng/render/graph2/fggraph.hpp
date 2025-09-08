@@ -33,6 +33,11 @@
 namespace xng {
     class FGContext;
 
+    /**
+     * A graph represents an encapsulated rendering operation.
+     *
+     * The only resource shareable between graphs is the screen texture.
+     */
     struct FGGraph {
         std::vector<FGPass> passes;
 
@@ -44,8 +49,7 @@ namespace xng {
 
         std::unordered_map<FGResource, FGShaderSource> shaderAllocation;
 
-        std::unordered_map<FGResource, std::string> imports;
-        std::unordered_map<FGResource, std::string> exports;
+        FGResource screenTexture{};
 
         FGGraph() = default;
 
@@ -55,16 +59,14 @@ namespace xng {
                 const std::unordered_map<FGResource, size_t> &shader_buffer_allocation,
                 const std::unordered_map<FGResource, FGTexture> &texture_allocation,
                 const std::unordered_map<FGResource, FGShaderSource> &shader_allocation,
-                const std::unordered_map<FGResource, std::string> &imports,
-                const std::unordered_map<FGResource, std::string> &exports)
+                const FGResource screen_texture)
             : passes(passes),
               vertexBufferAllocation(vertex_buffer_allocation),
               indexBufferAllocation(index_buffer_allocation),
               shaderBufferAllocation(shader_buffer_allocation),
               textureAllocation(texture_allocation),
               shaderAllocation(shader_allocation),
-              imports(imports),
-              exports(exports) {
+              screenTexture(screen_texture) {
         }
     };
 }

@@ -43,8 +43,11 @@ public:
 
     void bindIndexBuffer(FGResource buffer) override;
 
-    void bindOutputTexture(size_t binding, FGResource texture, size_t index, size_t mipMapLevel,
-                           FGCubeMapFace face) override;
+    void bindRenderTarget(size_t binding,
+                          FGResource texture,
+                          size_t index,
+                          size_t mipMapLevel,
+                          FGCubeMapFace face) override;
 
     void bindTextures(const std::unordered_map<std::string, FGResource> &textures) override;
 
@@ -56,7 +59,7 @@ public:
 
     void draw(const std::vector<FGDrawCall> &calls) override;
 
-    FGShaderLiteral downloadShaderParameter(const std::string &name) override;
+    std::vector<uint8_t> downloadShaderBuffer(FGResource buffer) override;
 
     Image<ColorRGBA> downloadTexture(FGResource texture, size_t index, size_t mipMapLevel, FGCubeMapFace face) override;
 

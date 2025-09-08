@@ -27,6 +27,13 @@
 namespace xng {
     /**
      * The runtime / context represents the platform-dependent implementation of the renderer.
+     *
+     * The runtime manages an offscreen texture representing the window contents for any given execute() invocation
+     * and presents this texture to the window / swap chain before returning from an execute() call.
+     *
+     * At the start of an execute() call, the contents of this offscreen texture are undefined. (May or may not contain previous frame data)
+     *
+     * This enables cross-graph read access to the screen contents.
      */
     class FGRuntime {
     public:
@@ -41,13 +48,39 @@ namespace xng {
          */
         virtual void setWindow(const Window &window) = 0;
 
+        /**
+         * Compile a graph.
+         *
+         * @param graph The graph to compile
+         * @return The handle identifying the compiled graph
+         */
         virtual GraphHandle compile(const FGGraph &graph) = 0;
 
         /**
-         * Execute the graph.
+         * Recompile a graph.
          *
-         * Performs cleanup of unused exported resources.
+         * Resources allocated in a previous compile() or recompile() can be re-referenced by the passed graph object.
          *
+         * These resources and their state are preserved in the recompiled graph.
+         *
+         * @param handle The handle of a previously compiled graph
+         * @param graph The updated graph
+         */
+        virtual void recompile(GraphHandle handle, const FGGraph &graph) = 0;
+
+        /**
+         * Execute a single graph.
+         *
+         * Passes run in parallel where possible.
+         * Resource Read/Write is synchronized according to the specified order of the passes.
+         *
+         *  For Example,
+         *        pass[0] writes resource0
+         *        pass[1] reads/writes resource0
+         *        pass[2] reads resource0
+         *
+         *        pass[1] will receive the changes from pass[0]
+         *        pass[2] will receive the changes from pass[1]
          * @param graph
          */
         virtual void execute(GraphHandle graph) = 0;
@@ -55,12 +88,18 @@ namespace xng {
         /**
          * Execute multiple graphs.
          *
-         * The order in which the graphs execute is determined by the defined dependencies between the graphs.
+         * The graphs run in parallel where possible.
+         * Read/Write to the screen texture is synchronized in the specified order.
          *
-         * The graphs could be executed in parallel if the platform supports it.
+         *  For Example,
+         *      graphs[0] write to screen texture
+         *      graphs[1] read and write the screen texture
+         *      graphs[2] read the screen texture
+         *      graphs[3] read and write the screen texture
          *
-         * Performs cleanup of unused exported resources.
-         *
+         *      graphs[1] will receive the changes to the screen texture from graph[0]
+         *      graphs[2] will receive the changes to the screen texture from graph[1]
+         *      graphs[3] will receive the changes to the screen texture from graph[1] and the read operation might run in parallel with graphs[2]
          * @param graphs
          */
         virtual void execute(std::vector<GraphHandle> graphs) = 0;

@@ -36,6 +36,9 @@ namespace xng::opengl2 {
         return compileGraph(graph);
     }
 
+    void OpenGL2::recompile(GraphHandle handle, const FGGraph &graph) {
+    }
+
     void OpenGL2::execute(GraphHandle graph) {
         ContextGL context(shaders.at(graph));
         for (auto pass : graphs.at(graph).passes) {

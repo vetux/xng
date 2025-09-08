@@ -23,7 +23,7 @@ void ContextGL::uploadBuffer(FGResource buffer, const uint8_t *ptr, size_t size)
 }
 
 void ContextGL::uploadTexture(FGResource texture, const uint8_t *ptr, size_t size, FGColorFormat format, size_t index,
-    size_t mipMapLevel, FGCubeMapFace face) {
+                              size_t mipMapLevel, FGCubeMapFace face) {
 }
 
 void ContextGL::bindVertexBuffer(FGResource buffer) {
@@ -32,8 +32,11 @@ void ContextGL::bindVertexBuffer(FGResource buffer) {
 void ContextGL::bindIndexBuffer(FGResource buffer) {
 }
 
-void ContextGL::bindOutputTexture(size_t binding, FGResource texture, size_t index, size_t mipMapLevel,
-    FGCubeMapFace face) {
+void ContextGL::bindRenderTarget(size_t binding,
+                                 FGResource texture,
+                                 size_t index,
+                                 size_t mipMapLevel,
+                                 FGCubeMapFace face) {
 }
 
 void ContextGL::bindTextures(const std::unordered_map<std::string, FGResource> &textures) {
@@ -51,7 +54,7 @@ void ContextGL::bindShaders(const std::vector<FGResource> &shaders) {
 void ContextGL::draw(const std::vector<FGDrawCall> &calls) {
 }
 
-FGShaderLiteral ContextGL::downloadShaderParameter(const std::string &name) {
+std::vector<uint8_t> ContextGL::downloadShaderBuffer(FGResource buffer) {
 }
 
 Image<ColorRGBA> ContextGL::downloadTexture(FGResource texture, size_t index, size_t mipMapLevel, FGCubeMapFace face) {

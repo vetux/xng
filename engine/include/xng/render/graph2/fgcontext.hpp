@@ -35,9 +35,30 @@ namespace xng {
     public:
         virtual ~FGContext() = default;
 
-        // Data upload
+        /**
+         * Upload data to a buffer.
+         * Subsequent draw() invocations that use the specified buffer are guaranteed to receive the uploaded data.
+         * The upload might be performed asynchronously.
+         *
+         * @param buffer
+         * @param ptr
+         * @param size
+         */
         virtual void uploadBuffer(FGResource buffer, const uint8_t *ptr, size_t size) = 0;
 
+        /**
+         * Upload data to a texture.
+         * Subsequent draw() invocations that use the specified texture are guaranteed to receive the uploaded data.
+         * The upload might be performed asynchronously.
+         *
+         * @param texture
+         * @param ptr
+         * @param size
+         * @param format
+         * @param index
+         * @param mipMapLevel
+         * @param face
+         */
         virtual void uploadTexture(FGResource texture,
                                    const uint8_t *ptr,
                                    size_t size,
@@ -46,13 +67,14 @@ namespace xng {
                                    size_t mipMapLevel = 0,
                                    FGCubeMapFace face = graph::POSITIVE_X) = 0;
 
-        // Bindings
         virtual void bindVertexBuffer(FGResource buffer) = 0;
 
         virtual void bindIndexBuffer(FGResource buffer) = 0;
 
         /**
-         * Fragment shader output texture.
+         * Bind a texture which can be written to by Fragment shaders.
+         *
+         * To render to the screen, the texture returned by FGBuilder.getScreenTexture must be explicitly bound.
          *
          * @param binding
          * @param texture
@@ -60,11 +82,11 @@ namespace xng {
          * @param mipMapLevel
          * @param face
          */
-        virtual void bindOutputTexture(size_t binding,
-                                       FGResource texture,
-                                       size_t index = 0,
-                                       size_t mipMapLevel = 0,
-                                       FGCubeMapFace face = graph::POSITIVE_X) = 0;
+        virtual void bindRenderTarget(size_t binding,
+                                      FGResource texture,
+                                      size_t index = 0,
+                                      size_t mipMapLevel = 0,
+                                      FGCubeMapFace face = graph::POSITIVE_X) = 0;
 
         virtual void bindTextures(const std::unordered_map<std::string, FGResource> &textures) = 0;
 
@@ -75,7 +97,7 @@ namespace xng {
          *
          * Shader parameters are values that change frequently (Per Draw) and have a size limit.
          *
-         * Shader Parameters are set per draw call and must be set again for later draw calls.
+         * Shader Parameters are set per draw call and must be set again for subsequent draw calls.
          *
          * @param parameters
          */
@@ -84,7 +106,7 @@ namespace xng {
         /**
          * Bind the given shaders.
          *
-         * The shaders must form a complete pipeline eg. (1 Vertex Shader and 1 Fragment Shader) or 1 compute shader
+         * The shaders must form a complete pipeline eg. (1 Vertex Shader and 1 Fragment Shader) or 1 compute shader.
          *
          * @param shaders
          */
@@ -97,9 +119,27 @@ namespace xng {
          */
         virtual void draw(const std::vector<FGDrawCall> &calls) = 0;
 
-        // Data download
-        virtual FGShaderLiteral downloadShaderParameter(const std::string &name) = 0;
+        /**
+         * Download the data from the gpu side shader buffer.
+         *
+         * Should be avoided as it forces the runtime to execute all previously recorded operations that affect the specified buffer.
+         *
+         * @param buffer
+         * @return
+         */
+        virtual std::vector<uint8_t> downloadShaderBuffer(FGResource buffer) = 0;
 
+        /**
+         * Download the data from the gpu side texture.
+         *
+         * Should be avoided as it forces the runtime to execute all previously recorded operations that affect the specified texture.
+         *
+         * @param texture
+         * @param index
+         * @param mipMapLevel
+         * @param face
+         * @return
+         */
         virtual Image<ColorRGBA> downloadTexture(FGResource texture,
                                                  size_t index = 0,
                                                  size_t mipMapLevel = 0,

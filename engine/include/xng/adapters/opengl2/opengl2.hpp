@@ -33,6 +33,8 @@ namespace xng::opengl2 {
 
         GraphHandle compile(const FGGraph &graph) override;
 
+        void recompile(GraphHandle handle, const FGGraph &graph) override;
+
         void execute(GraphHandle graph) override;
 
         void execute(std::vector<GraphHandle> graphs) override;
