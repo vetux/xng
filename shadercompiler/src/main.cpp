@@ -21,7 +21,7 @@
 #include "xng/shader/spirvshader.hpp"
 #include "xng/shader/shaderdirectoryinclude.hpp"
 
-#include "xng/platform/glslang/glslang.hpp"
+#include "xng/adapters/glslang/glslang.hpp"
 
 #include "xng/io/readfile.hpp"
 #include "xng/io/writefile.hpp"

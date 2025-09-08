@@ -40,9 +40,9 @@ workflow
 ## Screenshots
 ![](https://raw.githubusercontent.com/vetux/xng-assets/refs/heads/master/screenshots/ScreenshotFramegraph.jpg)
 
-## Platforms
+## Adapters
 
-Platforms are implementations of interfaces in the xEngine API (For example through 3rd party libraries) that can be optionally compiled into the engine library. If a platform interface implementation type is instantiated in an application the corresponding platform must be defined by the linked engine library by enabling the corresponding cmake option/s in [platform.cmake](cmake/platform.cmake) when compiling the engine library.
+Adapters are implementations of interfaces in the xEngine API (For example through 3rd party libraries) that can be optionally compiled into the engine library. If an adapter type is instantiated in an application, the corresponding adapter must be defined by the linked engine library by enabling the corresponding cmake option/s in [adapters.cmake](cmake/adapters.cmake) when compiling the engine library.
 
 - Display Environment
     - GLFW

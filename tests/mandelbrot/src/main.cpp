@@ -18,11 +18,11 @@
  */
 
 #include "xng/xng.hpp"
-#include "xng/platform/glfw/glfw.hpp"
-#include "xng/platform/opengl/opengl.hpp"
-#include "xng/platform/glslang/glslang.hpp"
-#include "xng/platform/spirv-cross/spirvcross.hpp"
-#include "xng/platform/freetype/freetype.hpp"
+#include "xng/adapters/glfw/glfw.hpp"
+#include "xng/adapters/opengl/opengl.hpp"
+#include "xng/adapters/glslang/glslang.hpp"
+#include "xng/adapters/spirv-cross/spirvcross.hpp"
+#include "xng/adapters/freetype/freetype.hpp"
 
 #include "debugoverlay.hpp"
 #include "tests/mandelbrot.hpp"
