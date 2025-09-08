@@ -21,6 +21,7 @@
 #define XENGINE_FGPASS_HPP
 
 #include <functional>
+#include <unordered_set>
 
 #include "xng/render/graph2/fgresource.hpp"
 
@@ -28,10 +29,12 @@ namespace xng  {
     class FGContext;
 
     struct FGPass {
+        std::string name;
+
         std::function<void(FGContext &)> pass;
 
-        std::vector<FGResource> read;
-        std::vector<FGResource> write;
+        std::unordered_set<FGResource> read;
+        std::unordered_set<FGResource> write;
     };
 }
 

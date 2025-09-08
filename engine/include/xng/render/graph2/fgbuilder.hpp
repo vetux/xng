@@ -33,12 +33,13 @@
 namespace xng {
     class FGBuilder {
     public:
-        typedef int PassHandle;
+        typedef size_t PassHandle;
 
-        FGResource createTexture(const FGTexture &texture);
         FGResource createVertexBuffer(size_t size);
         FGResource createIndexBuffer(size_t size);
         FGResource createShaderBuffer(size_t size);
+
+        FGResource createTexture(const FGTexture &texture);
 
         FGResource createShader(const FGShaderSource &shader);
 
@@ -58,6 +59,24 @@ namespace xng {
         void readWrite(PassHandle pass, FGResource resource);
 
         FGGraph build();
+
+    private:
+        FGResource createResource();
+
+        FGResource resourceCounter = 0;
+
+        std::vector<FGPass> passes;
+
+        std::unordered_map<FGResource, size_t> vertexBufferAllocation;
+        std::unordered_map<FGResource, size_t> indexBufferAllocation;
+        std::unordered_map<FGResource, size_t> shaderBufferAllocation;
+
+        std::unordered_map<FGResource, FGTexture> textureAllocation;
+
+        std::unordered_map<FGResource, FGShaderSource> shaderAllocation;
+
+        std::unordered_map<FGResource, std::string> imports;
+        std::unordered_map<FGResource, std::string> exports;
     };
 }
 

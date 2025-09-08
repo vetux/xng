@@ -26,7 +26,7 @@
 
 namespace xng {
     /**
-     * The runtime / context represents the platform dependent implementation of the renderer.
+     * The runtime / context represents the platform-dependent implementation of the renderer.
      */
     class FGRuntime {
     public:

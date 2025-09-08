@@ -27,10 +27,10 @@
 
 #include "xng/render/graph2/fgpass.hpp"
 
-#include "xng/render/graph2/texture/fgtextureproperties.hpp"
+#include "xng/render/graph2/texture/fgtexture.hpp"
 #include "xng/render/graph2/shader/fgshadersource.hpp"
 
-namespace xng  {
+namespace xng {
     class FGContext;
 
     struct FGGraph {
@@ -38,13 +38,32 @@ namespace xng  {
 
         std::unordered_map<FGResource, size_t> vertexBufferAllocation;
         std::unordered_map<FGResource, size_t> indexBufferAllocation;
+        std::unordered_map<FGResource, size_t> shaderBufferAllocation;
 
-        std::unordered_map<FGResource, graph::FGTextureProperties> textureAllocation;
+        std::unordered_map<FGResource, FGTexture> textureAllocation;
 
         std::unordered_map<FGResource, FGShaderSource> shaderAllocation;
 
         std::unordered_map<FGResource, std::string> imports;
         std::unordered_map<FGResource, std::string> exports;
+
+        FGGraph(const std::vector<FGPass> &passes,
+                const std::unordered_map<FGResource, size_t> &vertex_buffer_allocation,
+                const std::unordered_map<FGResource, size_t> &index_buffer_allocation,
+                const std::unordered_map<FGResource, size_t> &shader_buffer_allocation,
+                const std::unordered_map<FGResource, FGTexture> &texture_allocation,
+                const std::unordered_map<FGResource, FGShaderSource> &shader_allocation,
+                const std::unordered_map<FGResource, std::string> &imports,
+                const std::unordered_map<FGResource, std::string> &exports)
+            : passes(passes),
+              vertexBufferAllocation(vertex_buffer_allocation),
+              indexBufferAllocation(index_buffer_allocation),
+              shaderBufferAllocation(shader_buffer_allocation),
+              textureAllocation(texture_allocation),
+              shaderAllocation(shader_allocation),
+              imports(imports),
+              exports(exports) {
+        }
     };
 }
 

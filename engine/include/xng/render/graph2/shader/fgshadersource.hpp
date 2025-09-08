@@ -23,6 +23,8 @@
 #include "xng/render/graph2/shader/fgattributelayout.hpp"
 #include "xng/render/graph2/shader/fgshadernode.hpp"
 #include "xng/render/graph2/texture/fgtexture.hpp"
+#include "xng/render/graph2/shader/fgshadervalue.hpp"
+#include "xng/render/graph2/shader/fgshaderbuffer.hpp"
 
 namespace xng {
     struct FGShaderBuffer;
