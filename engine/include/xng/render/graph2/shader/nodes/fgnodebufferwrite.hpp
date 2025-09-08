@@ -47,6 +47,10 @@ namespace xng {
         std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
             return {};
         }
+
+        FGShaderValue getOutputType(const FGShaderSource &source) override {
+            throw std::runtime_error("Attribute write node has no output type");
+        }
     };
 }
 

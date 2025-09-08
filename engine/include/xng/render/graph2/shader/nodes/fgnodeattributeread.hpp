@@ -37,12 +37,16 @@ namespace xng {
             return ATTRIBUTE_READ;
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeInput>> getInputs() override {
+        std::vector<std::reference_wrapper<FGShaderNodeInput> > getInputs() override {
             return {};
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
+        std::vector<std::reference_wrapper<FGShaderNodeOutput> > getOutputs() override {
             return {output};
+        }
+
+        FGShaderValue getOutputType(const FGShaderSource &source) override {
+            return source.inputLayout.elements.at(attributeIndex);
         }
     };
 }

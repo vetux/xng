@@ -20,6 +20,8 @@
 #ifndef XENGINE_FGSHADERSOURCE_HPP
 #define XENGINE_FGSHADERSOURCE_HPP
 
+#include <unordered_map>
+
 #include "xng/render/graph2/shader/fgattributelayout.hpp"
 #include "xng/render/graph2/shader/fgshadernode.hpp"
 #include "xng/render/graph2/texture/fgtexture.hpp"
@@ -28,6 +30,7 @@
 
 namespace xng {
     struct FGShaderBuffer;
+
     /**
      * The shader compiler generates shader source code from the data in FGShaderSource.
      */

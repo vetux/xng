@@ -44,6 +44,10 @@ namespace xng {
         std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
             return {output};
         }
+
+        FGShaderValue getOutputType(const FGShaderSource &source) override {
+            return source.buffers.at(bufferName).getElement(elementName).value;
+        }
     };
 }
 

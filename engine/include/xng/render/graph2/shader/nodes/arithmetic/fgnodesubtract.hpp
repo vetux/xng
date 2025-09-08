@@ -40,6 +40,21 @@ namespace xng {
         std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
             return {result};
         }
+
+        FGShaderValue getOutputType(const FGShaderSource &source) override {
+            auto leftType = left.source->getOutputType(source);
+            auto rightType = right.source->getOutputType(source);
+            if (leftType.type == rightType.type) {
+                return leftType;
+            } else {
+                // Mixed Arithmetic eg vec3 * float
+                if (leftType.type == FGShaderValue::SCALAR) {
+                    return rightType;
+                } else {
+                    return leftType; //REDUNDNAT
+                }
+            }
+        }
     };
 }
 

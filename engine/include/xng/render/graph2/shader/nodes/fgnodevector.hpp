@@ -41,12 +41,23 @@ namespace xng {
             return VECTOR;
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeInput>> getInputs() override {
+        std::vector<std::reference_wrapper<FGShaderNodeInput> > getInputs() override {
             return {x, y, z, w};
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
+        std::vector<std::reference_wrapper<FGShaderNodeOutput> > getOutputs() override {
             return {vector};
+        }
+
+        FGShaderValue getOutputType(const FGShaderSource &source) override {
+            auto baseType = x.source->getOutputType(source);
+            if (w.source != nullptr) {
+                return {FGShaderValue::VECTOR4, baseType.component, 1};
+            } else if (z.source != nullptr) {
+                return {FGShaderValue::VECTOR3, baseType.component, 1};
+            } else {
+                return {FGShaderValue::VECTOR2, baseType.component, 1};
+            }
         }
     };
 }

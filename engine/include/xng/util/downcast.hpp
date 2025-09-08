@@ -17,23 +17,23 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_SHADERCOMPILERGLSL_HPP
-#define XENGINE_SHADERCOMPILERGLSL_HPP
-
-#include "xng/render/graph2/shader/fgshadersource.hpp"
-
-#include "xng/render/graph2/shader/nodes.hpp"
+#ifndef XENGINE_DOWNCAST_HPP
+#define XENGINE_DOWNCAST_HPP
 
 namespace xng {
-    class ShaderCompilerGLSL {
-    public:
-        ShaderCompilerGLSL() = default;
-
-        std::string compile(const FGShaderSource &source);
-
-    private:
-        std::string compile(const FGShaderSource &source, FGShaderNode &base, size_t& varCount);
-    };
+    /**
+     * In the future I want to support builds without using RTTI.
+     * To avoid using RTTI for downcasting, this will be performed with static_cast instead.
+     *
+     * @tparam T
+     * @tparam BASE
+     * @param base
+     * @return
+     */
+    template <typename T, typename BASE>
+    T down_cast(BASE &base) {
+        return dynamic_cast<T>(base);
+    }
 }
 
-#endif //XENGINE_SHADERCOMPILERGLSL_HPP
+#endif //XENGINE_DOWNCAST_HPP

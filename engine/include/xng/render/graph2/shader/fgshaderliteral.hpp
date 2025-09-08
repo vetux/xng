@@ -29,54 +29,42 @@
 
 namespace xng {
     // A user specified literal value for use in a shader
-    typedef std::variant<unsigned char,
-        char,
+    typedef std::variant<bool,
         unsigned int,
         int,
         float,
         double,
 
-        Vector2<unsigned char>,
-        Vector2<char>,
+        Vector2<bool>,
         Vector2<unsigned int>,
         Vector2<int>,
         Vector2<float>,
         Vector2<double>,
 
-        Vector3<unsigned char>,
-        Vector3<char>,
+        Vector3<bool>,
         Vector3<unsigned int>,
         Vector3<int>,
         Vector3<float>,
         Vector3<double>,
 
-        Vector4<unsigned char>,
-        Vector4<char>,
+        Vector4<bool>,
         Vector4<unsigned int>,
         Vector4<int>,
         Vector4<float>,
         Vector4<double>,
 
-        Matrix<unsigned char, 2, 2>,
-        Matrix<char, 2, 2>,
-        Matrix<unsigned int, 2, 2>,
-        Matrix<int, 2, 2>,
         Matrix<float, 2, 2>,
         Matrix<double, 2, 2>,
 
-        Matrix<unsigned char, 3, 3>,
-        Matrix<char, 3, 3>,
-        Matrix<unsigned int, 3, 3>,
-        Matrix<int, 3, 3>,
         Matrix<float, 3, 3>,
         Matrix<double, 3, 3>,
 
-        Matrix<unsigned char, 4, 4>,
-        Matrix<char, 4, 4>,
-        Matrix<unsigned int, 4, 4>,
-        Matrix<int, 4, 4>,
         Matrix<float, 4, 4>,
         Matrix<double, 4, 4> > FGShaderLiteral;
+
+    struct FGShaderValue;
+
+    XENGINE_EXPORT FGShaderValue getLiteralType(const FGShaderLiteral &literal);
 }
 
 #endif //XENGINE_FGSHADERVALUE_HPP

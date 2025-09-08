@@ -47,6 +47,10 @@ namespace xng {
         std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
             return {size};
         }
+
+        FGShaderValue getOutputType(const FGShaderSource &source) override {
+            return {FGShaderValue::VECTOR3, FGShaderValue::SIGNED_INT, 1};
+        }
     };
 }
 #endif //XENGINE_FGNODETEXTURESIZE_HPP

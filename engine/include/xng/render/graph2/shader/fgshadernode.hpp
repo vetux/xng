@@ -28,6 +28,8 @@
 #include "xng/render/graph2/shader/fgshadernodeoutput.hpp"
 
 namespace xng {
+    struct FGShaderSource;
+
     struct FGShaderNode {
         enum NodeType {
             LITERAL,
@@ -84,6 +86,16 @@ namespace xng {
         FGShaderNodeOutput &getOutput() {
             return getOutputs().at(0);
         }
+
+        /**
+         * Determine the type of the node output in this node graph.
+         *
+         * For Attribute Reads / Buffer Reads this depends on the configured attributes / buffers in the source.
+         *
+         * @param source
+         * @return
+         */
+        virtual FGShaderValue getOutputType(const FGShaderSource &source) = 0;
 
         virtual ~FGShaderNode() = default;
     };

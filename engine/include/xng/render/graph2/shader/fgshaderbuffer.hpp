@@ -31,18 +31,22 @@ namespace xng {
             std::string name; // The name of this element. must be unique inside the buffer.
             FGShaderValue value;
 
-            // If larger than 1, this element is a fixed size array, if 0, the element is a dynamic array and must be the only element in this buffer.
-            size_t count = 1;
-
-            Element(std::string name, const FGShaderValue &value, const size_t count = 1)
+            Element(std::string name, const FGShaderValue &value)
                 : name(std::move(name)),
-                  value(value),
-                  count(count) {
+                  value(value) {
             }
         };
 
         bool readOnly = true; // Whether shaders are allowed to write to the buffer
         std::vector<Element> elements;
+
+        const Element &getElement(const std::string &name) const {
+            for (auto &element: elements) {
+                if (element.name == name)
+                    return element;
+            }
+            throw std::runtime_error("Element not found");
+        }
     };
 }
 

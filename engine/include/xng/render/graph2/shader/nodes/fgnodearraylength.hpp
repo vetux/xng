@@ -31,12 +31,16 @@ namespace xng {
             return ARRAY_LENGTH;
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeInput>> getInputs() override {
+        std::vector<std::reference_wrapper<FGShaderNodeInput> > getInputs() override {
             return {array};
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
+        std::vector<std::reference_wrapper<FGShaderNodeOutput> > getOutputs() override {
             return {length};
+        }
+
+        FGShaderValue getOutputType(const FGShaderSource &source) override {
+            return {FGShaderValue::SCALAR, FGShaderValue::SIGNED_INT, 1};
         }
     };
 }

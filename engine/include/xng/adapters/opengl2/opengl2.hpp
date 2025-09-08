@@ -50,4 +50,5 @@ namespace xng::opengl2 {
         std::unordered_map<GraphHandle, std::unordered_map<FGResource, std::string>> shaders;
     };
 }
+
 #endif //XENGINE_OPENGL2_HPP

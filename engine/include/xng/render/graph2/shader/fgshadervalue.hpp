@@ -25,7 +25,7 @@
 namespace xng {
     struct FGShaderValue {
         enum Type {
-            SINGLE,
+            SCALAR,
             VECTOR2,
             VECTOR3,
             VECTOR4,
@@ -35,18 +35,16 @@ namespace xng {
         };
 
         enum Component {
-            UNSIGNED_BYTE = 0, // 1 Byte unsigned
-            SIGNED_BYTE, // 1 Byte signed
+            BOOLEAN = 0, // 1 Byte boolean
             UNSIGNED_INT, // 4 Byte unsigned
             SIGNED_INT, // 4 Byte signed
             FLOAT, // 4 Byte float
-            DOUBLE // 8 Byte double
+            DOUBLE, // 8 Byte double
         };
 
         static int getBytes(Component type) {
             switch (type) {
-                case UNSIGNED_BYTE:
-                case SIGNED_BYTE:
+                case BOOLEAN:
                     return 1;
                 case UNSIGNED_INT:
                 case SIGNED_INT:
@@ -61,7 +59,7 @@ namespace xng {
 
         static int getCount(Type count) {
             switch (count) {
-                case SINGLE:
+                case SCALAR:
                     return 1;
                 case VECTOR2:
                     return 2;
@@ -79,22 +77,26 @@ namespace xng {
             }
         }
 
-        int stride() const {
-            return getBytes(component) * getCount(type);
+        size_t stride() const {
+            return (getBytes(component) * getCount(type)) * count;
         }
 
         FGShaderValue() = default;
 
-        FGShaderValue(const Type type, const Component component) : type(type),
-                                                                           component(component) {
+        FGShaderValue(const Type type, const Component component, const size_t count = 1)
+            : type(type),
+              component(component),
+              count(count) {
         }
 
         bool operator==(const FGShaderValue &other) const {
-            return type == other.type && component == other.component;
+            return type == other.type && component == other.component && count == other.count;
         }
 
-        Type type;
-        Component component;
+        Type type{};
+        Component component{};
+        size_t count = 1;
+        // If larger than 1, this element is a fixed size array, if 0, the element is a dynamic array inside a shader buffer.
     };
 }
 
