@@ -15,6 +15,8 @@ option(BUILD_CRYPTOPP "Build the CryptoPP adapter"  ON)
 option(BUILD_ANDROID "Build the android display adapter" OFF)
 option(BUILD_ANDROID_OPENGL "Build the opengl support of the android display adapter" OFF) # Depends on BUILD_OPENGL
 
+option(BUILD_OPENGL2 "Build the OpenGL2 render graph adapter" ON)
+
 set(ADAPTER_INCLUDE) # The adapter include directories in a list
 set(ADAPTER_SRC) # The adapter source files in a list
 set(ADAPTER_LINK) # The adapter linked library names in a list
@@ -80,6 +82,19 @@ if (BUILD_OPENGL)
     endif ()
     AddAdapter(BUILD_OPENGL
             opengl
+            ${GL_LIBNAME})
+endif ()
+
+if (BUILD_OPENGL2)
+    if (ANDROID)
+        set(GL_LIBNAME GLESv3)
+    elseif (WIN32)
+        set(GL_LIBNAME OpenGL32)
+    else ()
+        set(GL_LIBNAME GL)
+    endif ()
+    AddAdapter(BUILD_OPENGL2
+            opengl2
             ${GL_LIBNAME})
 endif ()
 

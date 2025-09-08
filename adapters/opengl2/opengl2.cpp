@@ -17,7 +17,7 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "xng/platform/opengl2/opengl2.hpp"
+#include "xng/adapters/opengl2/opengl2.hpp"
 
 #include "shadercompilerglsl.hpp"
 #include "contextgl.hpp"

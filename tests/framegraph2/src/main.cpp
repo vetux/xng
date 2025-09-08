@@ -19,8 +19,8 @@
 
 #include "shadertestpass.hpp"
 
-#include "xng/platform/glfw/glfw.hpp"
-#include "xng/platform/opengl2/opengl2.hpp"
+#include "xng/adapters/glfw/glfw.hpp"
+#include "xng/adapters/opengl2/opengl2.hpp"
 
 int main(int argc, char *argv[]) {
     auto glfw = glfw::GLFW();
