@@ -38,6 +38,17 @@ namespace xng {
         FGBuilder();
         ~FGBuilder() = default;
 
+        /**
+         * Declare a previously allocated resource to be inherited by this graph.
+         *
+         * The specified resource must have been allocated or inherited in the
+         * preceding FGRuntime.compile() or FGRuntime.recompile() call.
+         *
+         * @param resource The resource to inherit
+         * @return The new resource handle representing the inherited resource
+         */
+        FGResource inheritResource(FGResource resource);
+
         FGResource createVertexBuffer(size_t size);
         FGResource createIndexBuffer(size_t size);
         FGResource createShaderBuffer(size_t size);
@@ -79,6 +90,8 @@ namespace xng {
         std::unordered_map<FGResource, FGTexture> textureAllocation;
 
         std::unordered_map<FGResource, FGShaderSource> shaderAllocation;
+
+        std::unordered_map<FGResource, FGResource> inheritedResources;
 
         FGResource screenTexture{};
     };

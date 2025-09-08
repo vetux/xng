@@ -59,9 +59,9 @@ namespace xng {
         /**
          * Recompile a graph.
          *
-         * Resources allocated in a previous compile() or recompile() can be re-referenced by the passed graph object.
+         * Resources allocated in a previous compile() or recompile() can be inherited by the passed graph object.
          *
-         * These resources and their state are preserved in the recompiled graph.
+         * Inherited resources and their state are preserved in the recompiled graph.
          *
          * @param handle The handle of a previously compiled graph
          * @param graph The updated graph

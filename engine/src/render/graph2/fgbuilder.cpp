@@ -27,6 +27,12 @@ namespace xng {
         screenTexture = createResource();
     }
 
+    FGResource FGBuilder::inheritResource(const FGResource resource) {
+        const auto ret = createResource();
+        inheritedResources[ret] = resource;
+        return ret;
+    }
+
     FGResource FGBuilder::createVertexBuffer(const size_t size) {
         const auto resource = createResource();
         vertexBufferAllocation[resource] = size;
@@ -90,6 +96,7 @@ namespace xng {
             shaderBufferAllocation,
             textureAllocation,
             shaderAllocation,
+            inheritedResources,
             screenTexture
         };
     }

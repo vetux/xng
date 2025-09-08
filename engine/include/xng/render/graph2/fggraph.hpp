@@ -49,6 +49,8 @@ namespace xng {
 
         std::unordered_map<FGResource, FGShaderSource> shaderAllocation;
 
+        std::unordered_map<FGResource, FGResource> inheritedResources;
+
         FGResource screenTexture{};
 
         FGGraph() = default;
@@ -59,6 +61,7 @@ namespace xng {
                 const std::unordered_map<FGResource, size_t> &shader_buffer_allocation,
                 const std::unordered_map<FGResource, FGTexture> &texture_allocation,
                 const std::unordered_map<FGResource, FGShaderSource> &shader_allocation,
+                const std::unordered_map<FGResource, FGResource> &inherited_resources,
                 const FGResource screen_texture)
             : passes(passes),
               vertexBufferAllocation(vertex_buffer_allocation),
@@ -66,6 +69,7 @@ namespace xng {
               shaderBufferAllocation(shader_buffer_allocation),
               textureAllocation(texture_allocation),
               shaderAllocation(shader_allocation),
+              inheritedResources(inherited_resources),
               screenTexture(screen_texture) {
         }
     };
