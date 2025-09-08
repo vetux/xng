@@ -40,7 +40,7 @@ namespace xng {
 
         // The total amount of video memory available on the device in bytes
         // (E.g. in Vulkan The sum of the device memory pool sizes excluding System (CPU) pools),
-        // or 0 if the platform does not support querying for it.
+        // or 0 if the adapter does not support querying for it.
         // All RenderDevice instances for this name share the memory.
         size_t availableDeviceMemory = 0;
 

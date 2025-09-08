@@ -3,7 +3,7 @@
 add_executable(shadercompiler
         ${BASE_SOURCE_DIR}/shadercompiler/src/main.cpp
         ${BASE_SOURCE_DIR}/engine/src/shader/shaderdirectoryinclude.cpp
-        ${BASE_SOURCE_DIR}/platform/glslang/glslang.cpp)
+        ${BASE_SOURCE_DIR}/adapters/glslang/glslang.cpp)
 target_include_directories(shadercompiler
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/shadercompiler/src/
