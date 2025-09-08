@@ -19,6 +19,9 @@
 
 #include "xng/platform/opengl2/opengl2.hpp"
 
+#include "shadercompilerglsl.hpp"
+#include "contextgl.hpp"
+
 namespace xng::opengl2 {
     OpenGL2::OpenGL2() {
     }
@@ -30,18 +33,36 @@ namespace xng::opengl2 {
     }
 
     FGRuntime::GraphHandle OpenGL2::compile(const FGGraph &graph) {
-        return {};
+        return compileGraph(graph);
     }
 
     void OpenGL2::execute(GraphHandle graph) {
+        ContextGL context(shaders.at(graph));
+        for (auto pass : graphs.at(graph).passes) {
+            pass.pass(context);
+        }
     }
 
     void OpenGL2::execute(std::vector<GraphHandle> graphs) {
+        for (auto graph : graphs) {
+            execute(graph);
+        }
     }
 
     void OpenGL2::saveCache(GraphHandle graph, std::ostream &stream) {
     }
 
     void OpenGL2::loadCache(GraphHandle graph, std::istream &stream) {
+    }
+
+    FGRuntime::GraphHandle OpenGL2::compileGraph(const FGGraph &graph) {
+        const auto handle = graphCounter++;
+        graphs[handle] = graph;
+
+        ShaderCompilerGLSL compiler;
+        for (auto pair : graph.shaderAllocation) {
+            shaders[handle][pair.first] = compiler.compile(pair.second);
+        }
+        return handle;
     }
 }

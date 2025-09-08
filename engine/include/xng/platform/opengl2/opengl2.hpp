@@ -40,6 +40,14 @@ namespace xng::opengl2 {
         void saveCache(GraphHandle graph, std::ostream &stream) override;
 
         void loadCache(GraphHandle graph, std::istream &stream) override;
+
+    private:
+        GraphHandle compileGraph(const FGGraph &graph);
+
+        GraphHandle graphCounter = 0;
+
+        std::unordered_map<GraphHandle, FGGraph> graphs;
+        std::unordered_map<GraphHandle, std::unordered_map<FGResource, std::string>> shaders;
     };
 }
 #endif //XENGINE_OPENGL2_HPP

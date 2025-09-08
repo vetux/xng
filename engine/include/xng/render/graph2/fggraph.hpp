@@ -47,6 +47,8 @@ namespace xng {
         std::unordered_map<FGResource, std::string> imports;
         std::unordered_map<FGResource, std::string> exports;
 
+        FGGraph() = default;
+
         FGGraph(const std::vector<FGPass> &passes,
                 const std::unordered_map<FGResource, size_t> &vertex_buffer_allocation,
                 const std::unordered_map<FGResource, size_t> &index_buffer_allocation,

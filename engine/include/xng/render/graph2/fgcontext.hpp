@@ -26,10 +26,15 @@
 #include "xng/render/graph2/fgdrawcall.hpp"
 #include "xng/render/graph2/fgresource.hpp"
 #include "xng/render/scene/image.hpp"
+#include "xng/render/graph2/texture/fgtextureproperties.hpp"
+
+using namespace xng::graph;
 
 namespace xng {
     class FGContext {
     public:
+        virtual ~FGContext() = default;
+
         // Data upload
         virtual void uploadBuffer(FGResource buffer, const uint8_t *ptr, size_t size) = 0;
 
@@ -39,7 +44,7 @@ namespace xng {
                                    FGColorFormat format,
                                    size_t index = 0,
                                    size_t mipMapLevel = 0,
-                                   FGCubeMapFace face = POSITIVE_X) = 0;
+                                   FGCubeMapFace face = graph::POSITIVE_X) = 0;
 
         // Bindings
         virtual void bindVertexBuffer(FGResource buffer) = 0;
@@ -59,11 +64,11 @@ namespace xng {
                                        FGResource texture,
                                        size_t index = 0,
                                        size_t mipMapLevel = 0,
-                                       FGCubeMapFace face = POSITIVE_X) = 0;
+                                       FGCubeMapFace face = graph::POSITIVE_X) = 0;
 
-        virtual void bindTextures(const std::unordered_map<std::string, FGResource> &textures);
+        virtual void bindTextures(const std::unordered_map<std::string, FGResource> &textures) = 0;
 
-        virtual void bindShaderBuffers(const std::unordered_map<std::string, FGResource> &buffers);
+        virtual void bindShaderBuffers(const std::unordered_map<std::string, FGResource> &buffers) = 0;
 
         /**
          * Set the shader parameters for the next draw call. (Implemented as Push Constants)
@@ -74,7 +79,7 @@ namespace xng {
          *
          * @param parameters
          */
-        virtual void setShaderParameters(const std::unordered_map<std::string, FGShaderLiteral> &parameters);
+        virtual void setShaderParameters(const std::unordered_map<std::string, FGShaderLiteral> &parameters) = 0;
 
         /**
          * Bind the given shaders.
@@ -98,7 +103,7 @@ namespace xng {
         virtual Image<ColorRGBA> downloadTexture(FGResource texture,
                                                  size_t index = 0,
                                                  size_t mipMapLevel = 0,
-                                                 FGCubeMapFace face = POSITIVE_X) = 0;
+                                                 FGCubeMapFace face = graph::POSITIVE_X) = 0;
 
         /**
          * Return the internal compiled source code of the supplied shader.
