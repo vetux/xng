@@ -47,11 +47,11 @@ namespace xng {
             if (leftType.type == rightType.type) {
                 return leftType;
             } else {
-                // Mixed Arithmetic eg vec3 * float
+                // Mixed Arithmetic eg vec3 / float
                 if (leftType.type == FGShaderValue::SCALAR) {
                     return rightType;
                 } else {
-                    return leftType; //REDUNDNAT
+                    return leftType;
                 }
             }
         }
