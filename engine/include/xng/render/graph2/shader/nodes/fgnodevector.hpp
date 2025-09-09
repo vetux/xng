@@ -49,7 +49,7 @@ namespace xng {
             return {vector};
         }
 
-        FGShaderValue getOutputType(const FGShaderSource &source) override {
+        FGShaderValue getOutputType(const FGShaderSource &source) const override {
             auto baseType = x.source->getOutputType(source);
             if (w.source != nullptr) {
                 return {FGShaderValue::VECTOR4, baseType.component, 1};

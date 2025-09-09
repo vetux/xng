@@ -48,7 +48,7 @@ namespace xng {
             return {size};
         }
 
-        FGShaderValue getOutputType(const FGShaderSource &source) override {
+        FGShaderValue getOutputType(const FGShaderSource &source) const override {
             return {FGShaderValue::VECTOR3, FGShaderValue::SIGNED_INT, 1};
         }
     };

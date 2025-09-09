@@ -21,6 +21,7 @@
 #define XENGINE_FGNODEBUFFERREAD_HPP
 
 #include "xng/render/graph2/shader/fgshadernode.hpp"
+#include "xng/render/graph2/shader/fgshadersource.hpp"
 
 namespace xng {
     struct FGNodeBufferRead final : FGShaderNode {
@@ -45,7 +46,7 @@ namespace xng {
             return {output};
         }
 
-        FGShaderValue getOutputType(const FGShaderSource &source) override {
+        FGShaderValue getOutputType(const FGShaderSource &source) const override {
             return source.buffers.at(bufferName).getElement(elementName).value;
         }
     };

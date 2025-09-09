@@ -42,7 +42,7 @@ namespace xng {
             return {result};
         }
 
-        FGShaderValue getOutputType(const FGShaderSource &source) override {
+        FGShaderValue getOutputType(const FGShaderSource &source) const override {
             return trueBranch.source->getOutputType(source);
         }
     };

@@ -19,7 +19,7 @@
 
 #include "xng/adapters/opengl2/opengl2.hpp"
 
-#include "shadercompilerglsl.hpp"
+#include "glsl/shadercompilerglsl.hpp"
 #include "contextgl.hpp"
 
 namespace xng::opengl2 {

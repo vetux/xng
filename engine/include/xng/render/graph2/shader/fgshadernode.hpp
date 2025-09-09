@@ -26,6 +26,7 @@
 
 #include "xng/render/graph2/shader/fgshadernodeinput.hpp"
 #include "xng/render/graph2/shader/fgshadernodeoutput.hpp"
+#include "xng/render/graph2/shader/fgshadervalue.hpp"
 
 namespace xng {
     struct FGShaderSource;
@@ -95,7 +96,7 @@ namespace xng {
          * @param source
          * @return
          */
-        virtual FGShaderValue getOutputType(const FGShaderSource &source) = 0;
+        virtual FGShaderValue getOutputType(const FGShaderSource &source) const = 0;
 
         virtual ~FGShaderNode() = default;
     };

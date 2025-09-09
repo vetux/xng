@@ -52,7 +52,7 @@ namespace xng {
             return {color};
         }
 
-        FGShaderValue getOutputType(const FGShaderSource &source) override {
+        FGShaderValue getOutputType(const FGShaderSource &source) const override {
             return {FGShaderValue::VECTOR4, FGShaderValue::FLOAT, 1};
         }
     };

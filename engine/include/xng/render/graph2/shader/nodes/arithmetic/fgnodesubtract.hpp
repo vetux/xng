@@ -41,7 +41,7 @@ namespace xng {
             return {result};
         }
 
-        FGShaderValue getOutputType(const FGShaderSource &source) override {
+        FGShaderValue getOutputType(const FGShaderSource &source) const override {
             auto leftType = left.source->getOutputType(source);
             auto rightType = right.source->getOutputType(source);
             if (leftType.type == rightType.type) {

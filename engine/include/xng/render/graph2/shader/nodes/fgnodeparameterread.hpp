@@ -46,7 +46,7 @@ namespace xng {
             return {output};
         }
 
-        FGShaderValue getOutputType(const FGShaderSource &source) override {
+        FGShaderValue getOutputType(const FGShaderSource &source) const override {
             return source.parameters.at(parameterName);
         }
     };
