@@ -92,6 +92,39 @@ std::string compileTree(const CompiledTree &tree, const FGShaderSource &source, 
     return ret;
 }
 
+std::string getSampler(const FGTexture &texture) {
+    std::string prefix;
+    if (texture.format >= R8I && texture.format <= RGBA32I) {
+        prefix = "i";
+    } else if (texture.format >= R8UI && texture.format <= RGBA32UI) {
+        prefix = "u";
+    }
+
+    if (texture.arrayLayers > 1) {
+        switch (texture.textureType) {
+            case TEXTURE_2D:
+                return prefix + "sampler2DArray";
+            case TEXTURE_2D_MULTISAMPLE:
+                return prefix + "sampler2DMSArray";
+            case TEXTURE_CUBE_MAP:
+                return prefix + "samplerCubeArray";
+            default:
+                throw std::runtime_error("Unrecognized texture type");
+        }
+    } else {
+        switch (texture.textureType) {
+            case TEXTURE_2D:
+                return prefix + "sampler2D";
+            case TEXTURE_2D_MULTISAMPLE:
+                return prefix + "sampler2DMS";
+            case TEXTURE_CUBE_MAP:
+                return prefix + "samplerCube";
+            default:
+                throw std::runtime_error("Unrecognized texture type");
+        }
+    }
+}
+
 std::string generateElement(const std::string &name, const FGShaderValue &value, std::string prefix = "\t") {
     auto ret = prefix
                + getTypeName(value)
@@ -136,6 +169,22 @@ std::string generateHeader(const FGShaderSource &source, CompiledPipeline &pipel
         ret += bufferLayout;
         ret += "\n";
         ret += bufferCode;
+        ret += "\n";
+    }
+
+    for (const auto &pair: source.textures) {
+        const auto location = pipeline.getTextureBinding(pair.first);
+        ret += "layout(binding = "
+                + std::to_string(location)
+                + ") uniform "
+                + getSampler(pair.second)
+                + " "
+                + texturePrefix
+                + pair.first
+                + ";\n";
+    }
+
+    if (source.textures.size() > 0) {
         ret += "\n";
     }
 
