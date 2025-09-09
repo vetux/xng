@@ -54,8 +54,8 @@ public:
 
         builder.addPass("Example Pass", [pip](FGContext &ctx) {
             const auto src = ctx.getShaderSource(pip);
-            std::cout << "Vertex Shader:" << std::endl << src.at(FGShaderSource::VERTEX) << std::endl;
-            std::cout << "Fragment Shader:" << std::endl << src.at(FGShaderSource::FRAGMENT) << std::endl;
+            std::cout << "----------Vertex Shader----------" << std::endl << src.at(FGShaderSource::VERTEX) << std::endl;
+            std::cout << "----------Fragment Shader----------" << std::endl << src.at(FGShaderSource::FRAGMENT) << std::endl;
         });
     }
 

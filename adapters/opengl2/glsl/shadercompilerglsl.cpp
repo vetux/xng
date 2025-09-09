@@ -94,9 +94,9 @@ std::string compileTree(const CompiledTree &tree, const FGShaderSource &source, 
 
 std::string generateElement(const std::string &name, const FGShaderValue &value, std::string prefix = "\t") {
     auto ret = prefix
-           + getTypeName(value)
-           + " "
-           + name;
+               + getTypeName(value)
+               + " "
+               + name;
 
     if (value.count > 1) {
         ret += "[";
@@ -107,31 +107,31 @@ std::string generateElement(const std::string &name, const FGShaderValue &value,
     return ret + ";\n";
 }
 
-std::string generateHeader(const FGShaderSource &source, CompiledPipeline& pipeline) {
+std::string generateHeader(const FGShaderSource &source, CompiledPipeline &pipeline) {
     std::string ret;
 
-    for (const auto& pair: source.buffers) {
+    for (const auto &pair: source.buffers) {
         auto binding = pipeline.getBufferBinding(pair.first);
 
         std::string bufferLayout = "struct ShaderBufferData" + std::to_string(binding) + " {\n";
-        for (const auto& element: pair.second.elements) {
+        for (const auto &element: pair.second.elements) {
             bufferLayout += generateElement(element.name, element.value);
         }
         bufferLayout += "};\n";
 
         std::string bufferCode = "layout(binding = "
-        + std::to_string(binding)
-        + ", std140) buffer ShaderBuffer"
-        + std::to_string(binding)
-        + " {\n"
-        + "\tShaderBufferData"
-        + std::to_string(binding)
-        + " "
-        + bufferArrayName
-        + "[];\n} "
-        + bufferPrefix
-        + pair.first
-        + ";\n";
+                                 + std::to_string(binding)
+                                 + ", std140) buffer ShaderBuffer"
+                                 + std::to_string(binding)
+                                 + " {\n"
+                                 + "\tShaderBufferData"
+                                 + std::to_string(binding)
+                                 + " "
+                                 + bufferArrayName
+                                 + "[];\n} "
+                                 + bufferPrefix
+                                 + pair.first
+                                 + ";\n";
 
         ret += bufferLayout;
         ret += "\n";
@@ -139,8 +139,30 @@ std::string generateHeader(const FGShaderSource &source, CompiledPipeline& pipel
         ret += "\n";
     }
 
+    std::string inputAttributes;
+    size_t attributeCount = 0;
     for (auto element: source.inputLayout.elements) {
+        auto location = attributeCount++;
+        inputAttributes += "layout(location = "
+                + std::to_string(location)
+                + ") in "
+                + generateElement(inputAttributePrefix + std::to_string(location), element, "");
     }
+    ret += inputAttributes;
+    ret += "\n";
+
+    std::string outputAttributes;
+    attributeCount = 0;
+    for (auto element: source.outputLayout.elements) {
+        auto location = attributeCount++;
+        outputAttributes += "layout(location = "
+                + std::to_string(location)
+                + ") out "
+                + generateElement(outputAttributePrefix + std::to_string(attributeCount++), element, "");
+    }
+    ret += outputAttributes;
+    ret += "\n";
+
     return ret;
 }
 
@@ -156,7 +178,7 @@ std::string compileShader(const FGShaderSource &source, CompiledPipeline &pipeli
 
 CompiledPipeline ShaderCompilerGLSL::compile(const std::vector<FGShaderSource> &sources) {
     CompiledPipeline ret;
-    for (auto &shader : sources) {
+    for (auto &shader: sources) {
         ret.sourceCode[shader.stage] = compileShader(shader, ret);
     }
     return ret;
