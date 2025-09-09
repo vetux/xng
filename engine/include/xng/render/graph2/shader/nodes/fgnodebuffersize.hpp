@@ -17,26 +17,34 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGNODEARRAYLENGTH_HPP
-#define XENGINE_FGNODEARRAYLENGTH_HPP
+#ifndef XENGINE_FGNODEBUFFERSIZE_HPP
+#define XENGINE_FGNODEBUFFERSIZE_HPP
 
 #include "xng/render/graph2/shader/fgshadernode.hpp"
 
 namespace xng {
-    struct FGNodeArrayLength final : FGShaderNode {
-        FGShaderNodeInput array = FGShaderNodeInput("array");
-        FGShaderNodeOutput length = FGShaderNodeOutput("length");
+    /**
+     * Retrieve the number of element collections in a dynamic buffer
+     */
+    struct FGNodeBufferSize final : FGShaderNode {
+        std::string bufferName;
+
+        FGShaderNodeOutput size = FGShaderNodeOutput("size");
+
+        explicit FGNodeBufferSize(std::string buffer_name)
+            : bufferName(std::move(buffer_name)) {
+        }
 
         NodeType getType() override {
-            return ARRAY_LENGTH;
+            return BUFFER_SIZE;
         }
 
         std::vector<std::reference_wrapper<FGShaderNodeInput> > getInputs() override {
-            return {array};
+            return {};
         }
 
         std::vector<std::reference_wrapper<FGShaderNodeOutput> > getOutputs() override {
-            return {length};
+            return {size};
         }
 
         FGShaderValue getOutputType(const FGShaderSource &source) const override {
@@ -44,5 +52,4 @@ namespace xng {
         }
     };
 }
-
-#endif //XENGINE_FGNODEARRAYLENGTH_HPP
+#endif //XENGINE_FGNODEBUFFERSIZE_HPP

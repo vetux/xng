@@ -49,7 +49,7 @@ CompiledNode createCompiledNode(const FGNodeAttributeRead &node, const std::shar
 
 CompiledNode createCompiledNode(const FGNodeAttributeWrite &node, const std::shared_ptr<FGShaderNode> &nodePtr);
 
-CompiledNode createCompiledNode(const FGNodeBufferRead &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+CompiledNode createCompiledNode(const FGNodeBufferRead &node, const std::shared_ptr<FGShaderNode> &nodePtr, const FGShaderSource &source);
 
 CompiledNode createCompiledNode(const FGNodeSubscript &node,
                                 const std::shared_ptr<FGShaderNode> &nodePtr,

@@ -55,6 +55,8 @@ namespace xng {
                                                   const std::string &elementName,
                                                   const std::shared_ptr<FGShaderNode> &value);
 
+        std::shared_ptr<FGShaderNode> bufferSize(const std::string &bufferName);
+
         std::shared_ptr<FGShaderNode> add(const std::shared_ptr<FGShaderNode> &left,
                                           const std::shared_ptr<FGShaderNode> &right);
 

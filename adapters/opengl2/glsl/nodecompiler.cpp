@@ -41,8 +41,10 @@ CompiledNode createCompiledNode(std::shared_ptr<FGShaderNode> node, const FGShad
         case FGShaderNode::TEXTURE_SIZE:
             break;
         case FGShaderNode::BUFFER_READ:
-            return createCompiledNode(down_cast<FGNodeBufferRead &>(*node), node);
+            return createCompiledNode(down_cast<FGNodeBufferRead &>(*node), node, source);
         case FGShaderNode::BUFFER_WRITE:
+            break;
+        case FGShaderNode::BUFFER_SIZE:
             break;
         case FGShaderNode::ADD:
             break;
@@ -69,8 +71,6 @@ CompiledNode createCompiledNode(std::shared_ptr<FGShaderNode> node, const FGShad
         case FGShaderNode::OR:
             break;
         case FGShaderNode::NORMALIZE:
-            break;
-        case FGShaderNode::ARRAY_LENGTH:
             break;
         case FGShaderNode::SUBSCRIPT:
             return createCompiledNode(down_cast<FGNodeSubscript &>(*node), node, source);
@@ -138,9 +138,29 @@ CompiledNode createCompiledNode(const FGNodeAttributeWrite &node, const std::sha
     return ret;
 }
 
-CompiledNode createCompiledNode(const FGNodeBufferRead &node, const std::shared_ptr<FGShaderNode> &nodePtr) {
+CompiledNode createCompiledNode(const FGNodeBufferRead &node,
+                                const std::shared_ptr<FGShaderNode> &nodePtr,
+                                const FGShaderSource &source) {
     CompiledNode ret(nodePtr);
-    ret.content.emplace_back(bufferPrefix + node.bufferName + "." + bufferArrayPrefix + "[gl_DrawID]." + node.elementName);
+    if (source.buffers.at(node.bufferName).dynamic) {
+        ret.content.emplace_back(bufferPrefix
+                                 + node.bufferName
+                                 + "."
+                                 + bufferArrayPrefix
+                                 + "[");
+        if (node.index.source == nullptr) {
+            throw std::runtime_error("Dynamic buffer read with no index");
+        }
+        ret.content.emplace_back(node.index.source);
+        ret.content.emplace_back("]." + node.elementName);
+    } else {
+        ret.content.emplace_back(bufferPrefix
+                                 + node.bufferName
+                                 + "."
+                                 + bufferArrayPrefix
+                                 + "[gl_DrawID]."
+                                 + node.elementName);
+    }
     return ret;
 }
 

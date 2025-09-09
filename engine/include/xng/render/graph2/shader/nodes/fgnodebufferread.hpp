@@ -28,6 +28,12 @@ namespace xng {
         std::string bufferName;
         std::string elementName;
 
+        /**
+         * Specify the index of the elements if this buffer is defined as dynamic.
+         * Unused for static buffers.
+         */
+        FGShaderNodeInput index = FGShaderNodeInput("index");
+
         FGShaderNodeOutput output = FGShaderNodeOutput("output");
 
         explicit FGNodeBufferRead(std::string buffer_name, std::string element_name)

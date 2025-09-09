@@ -95,8 +95,7 @@ namespace xng {
 
         Type type{};
         Component component{};
-        size_t count = 1;
-        // If larger than 1, this element is a fixed size array, if 0, the element is a dynamic array inside a shader buffer.
+        size_t count = 1; // If larger than 1, this element is a fixed size array
     };
 }
 

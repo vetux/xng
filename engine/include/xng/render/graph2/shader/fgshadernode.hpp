@@ -46,6 +46,7 @@ namespace xng {
 
             BUFFER_READ,
             BUFFER_WRITE,
+            BUFFER_SIZE,
 
             ADD,
             SUBTRACT,
@@ -64,8 +65,6 @@ namespace xng {
 
             NORMALIZE,
             //TODO: Add builtin function nodes
-
-            ARRAY_LENGTH,
 
             SUBSCRIPT, //Array, Vector or matrix indexing
 

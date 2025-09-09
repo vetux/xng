@@ -26,6 +26,12 @@
 #include "fgshadervalue.hpp"
 
 namespace xng {
+    /**
+     * A shader buffer can either be dynamic or static.
+     *
+     * Shaders can access dynamic buffers without knowing the exact count of the elements this is useful
+     * for dynamic data such as lights.
+     */
     struct FGShaderBuffer {
         struct Element {
             std::string name; // The name of this element. must be unique inside the buffer.
@@ -38,7 +44,8 @@ namespace xng {
         };
 
         bool readOnly = true; // Whether shaders are allowed to write to the buffer
-        std::vector<Element> elements;
+        bool dynamic = false; // If true, this buffer is a dynamic buffer and elements can be accessed by specifying FGNodeBufferRead.index
+        std::vector<Element> elements; // The elements of the buffer. For dynamic buffers this is the elements of each entry in the dynamic array.
 
         const Element &getElement(const std::string &name) const {
             for (auto &element: elements) {

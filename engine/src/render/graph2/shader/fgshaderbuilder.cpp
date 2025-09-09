@@ -95,6 +95,12 @@ namespace xng {
         return node;
     }
 
+    std::shared_ptr<FGShaderNode> FGShaderBuilder::bufferSize(const std::string &bufferName) {
+        auto node = std::make_shared<FGNodeBufferSize>(bufferName);
+        nodes.emplace_back(node);
+        return node;
+    }
+
     std::shared_ptr<FGShaderNode> FGShaderBuilder::add(const std::shared_ptr<FGShaderNode> &left,
                                                        const std::shared_ptr<FGShaderNode> &right) {
         auto node = std::make_shared<FGNodeAdd>();
