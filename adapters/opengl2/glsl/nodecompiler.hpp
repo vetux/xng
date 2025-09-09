@@ -30,7 +30,7 @@ static const char *inputAttributePrefix = "in_";
 static const char *outputAttributePrefix = "out_";
 static const char *parameterPrefix = "param_";
 static const char *bufferPrefix = "buffer_";
-static const char *bufferArrayPrefix = "data";
+static const char *bufferArrayName = "data";
 static const char *texturePrefix = "texture_";
 
 CompiledNode createCompiledNode(std::shared_ptr<FGShaderNode> node, const FGShaderSource &source);

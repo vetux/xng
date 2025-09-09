@@ -63,6 +63,12 @@ namespace xng {
         return resource;
     }
 
+    FGResource FGBuilder::createPipeline(const std::unordered_set<FGResource> &shaders) {
+        const auto resource = createResource();
+        pipelineAllocation[resource] = shaders;
+        return resource;
+    }
+
     FGResource FGBuilder::getScreenTexture() const {
         return screenTexture;
     }
@@ -96,6 +102,7 @@ namespace xng {
             shaderBufferAllocation,
             textureAllocation,
             shaderAllocation,
+            pipelineAllocation,
             inheritedResources,
             screenTexture
         };

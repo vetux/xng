@@ -30,10 +30,10 @@ using namespace xng;
 
 class ShaderTestPass {
 public:
-    std::string vsName;
-    std::string fsName;
-
     FGShaderBuffer dataBuffer;
+    FGShaderBuffer colorBuffer;
+
+    FGTexture texture;
 
     FGAttributeLayout vertexLayout;
     FGAttributeLayout fragmentLayout;
@@ -41,6 +41,7 @@ public:
 
     ShaderTestPass() {
         dataBuffer.elements.emplace_back("mvp", FGShaderValue(FGShaderValue::MAT4, FGShaderValue::FLOAT));
+        colorBuffer.elements.emplace_back("color", FGShaderValue(FGShaderValue::VECTOR4, FGShaderValue::FLOAT));
         vertexLayout.elements.emplace_back(FGShaderValue::VECTOR3, FGShaderValue::FLOAT);
         fragmentLayout.elements.emplace_back(FGShaderValue::VECTOR4, FGShaderValue::FLOAT);
         colorLayout.elements.emplace_back(FGShaderValue::VECTOR4, FGShaderValue::FLOAT);
@@ -49,15 +50,12 @@ public:
     void setup(FGBuilder &builder) {
         auto vs = builder.createShader(createVertexShader());
         auto fs = builder.createShader(createFragmentShader());
-        vsName = "vs";
-        fsName = "fs";
+        auto pip = builder.createPipeline({vs, fs});
 
-        builder.addPass("Example Pass", [vs, fs](FGContext &ctx) {
-            const auto vsStr = ctx.getShaderSource(vs);
-            const auto fsStr = ctx.getShaderSource(fs);
-
-            std::cout << "Vertex Shader:" << std::endl << vsStr << std::endl;
-            std::cout << "Fragment Shader:" << std::endl << fsStr << std::endl;
+        builder.addPass("Example Pass", [pip](FGContext &ctx) {
+            const auto src = ctx.getShaderSource(pip);
+            std::cout << "Vertex Shader:" << std::endl << src.at(FGShaderSource::VERTEX) << std::endl;
+            std::cout << "Fragment Shader:" << std::endl << src.at(FGShaderSource::FRAGMENT) << std::endl;
         });
     }
 
@@ -77,11 +75,11 @@ public:
         builder.attributeWrite(0, fPos);
 
         return builder.build(FGShaderSource::VERTEX,
-            vertexLayout,
-            fragmentLayout,
-            {},
-            {{"data", dataBuffer}},
-            {});
+                             vertexLayout,
+                             fragmentLayout,
+                             {},
+                             {{"color", colorBuffer}, {"data", dataBuffer}},
+                             {{"texture", texture}});
     }
 
     FGShaderSource createFragmentShader() {
@@ -90,7 +88,12 @@ public:
         const auto fPos = builder.attributeRead(0);
         builder.attributeWrite(0, fPos);
 
-        return builder.build(FGShaderSource::FRAGMENT, fragmentLayout, colorLayout, {}, {}, {});
+        return builder.build(FGShaderSource::FRAGMENT,
+                             fragmentLayout,
+                             colorLayout,
+                             {},
+                             {{"data", dataBuffer}, {"color", colorBuffer}},
+                             {{"texture", texture}});
     }
 };
 #endif //XENGINE_SHADERTESTPASS_HPP

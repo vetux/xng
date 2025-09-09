@@ -55,11 +55,13 @@ void ContextGL::draw(const std::vector<FGDrawCall> &calls) {
 }
 
 std::vector<uint8_t> ContextGL::downloadShaderBuffer(FGResource buffer) {
+    throw std::runtime_error("Not implemented");
 }
 
 Image<ColorRGBA> ContextGL::downloadTexture(FGResource texture, size_t index, size_t mipMapLevel, FGCubeMapFace face) {
+    throw std::runtime_error("Not implemented");
 }
 
-std::string ContextGL::getShaderSource(FGResource shader) {
-    return shaders.at(shader);
+std::unordered_map<FGShaderSource::ShaderStage, std::string> ContextGL::getShaderSource(FGResource shader) {
+    return pipelines.at(shader).sourceCode;
 }

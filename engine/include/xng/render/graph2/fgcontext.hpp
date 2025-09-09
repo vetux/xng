@@ -27,6 +27,7 @@
 #include "xng/render/graph2/fgresource.hpp"
 #include "xng/render/scene/image.hpp"
 #include "xng/render/graph2/texture/fgtextureproperties.hpp"
+#include "xng/render/graph2/shader/fgshadersource.hpp"
 
 using namespace xng::graph;
 
@@ -146,14 +147,14 @@ namespace xng {
                                                  FGCubeMapFace face = graph::POSITIVE_X) = 0;
 
         /**
-         * Return the internal compiled source code of the supplied shader.
+         * Return the internal compiled source code of the supplied pipeline.
          *
          * For debugging purposes only.
          *
-         * @param shader
+         * @param pipeline
          * @return
          */
-        virtual std::string getShaderSource(FGResource shader) = 0;
+        virtual std::unordered_map<FGShaderSource::ShaderStage, std::string> getShaderSource(FGResource pipeline) = 0;
     };
 }
 

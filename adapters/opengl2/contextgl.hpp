@@ -22,6 +22,8 @@
 
 #include "xng/render/graph2/fgcontext.hpp"
 
+#include "compiledpipeline.hpp"
+
 using namespace xng;
 
 class ContextGL : public FGContext {
@@ -30,8 +32,8 @@ public:
 
     ~ContextGL() override = default;
 
-    explicit ContextGL(const std::unordered_map<FGResource, std::string> &shaders)
-        : shaders(shaders) {
+    explicit ContextGL(const std::unordered_map<FGResource, CompiledPipeline> &pipelines)
+        : pipelines(pipelines) {
     }
 
     void uploadBuffer(FGResource buffer, const uint8_t *ptr, size_t size) override;
@@ -63,10 +65,10 @@ public:
 
     Image<ColorRGBA> downloadTexture(FGResource texture, size_t index, size_t mipMapLevel, FGCubeMapFace face) override;
 
-    std::string getShaderSource(FGResource shader) override;
+    std::unordered_map<FGShaderSource::ShaderStage, std::string> getShaderSource(FGResource shader) override;
 
 private:
-    std::unordered_map<FGResource, std::string> shaders;
+    std::unordered_map<FGResource, CompiledPipeline> pipelines;
 };
 
 #endif //XENGINE_CONTEXTGL_HPP

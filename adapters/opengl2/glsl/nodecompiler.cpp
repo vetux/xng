@@ -146,7 +146,7 @@ CompiledNode createCompiledNode(const FGNodeBufferRead &node,
         ret.content.emplace_back(bufferPrefix
                                  + node.bufferName
                                  + "."
-                                 + bufferArrayPrefix
+                                 + bufferArrayName
                                  + "[");
         if (node.index.source == nullptr) {
             throw std::runtime_error("Dynamic buffer read with no index");
@@ -157,7 +157,7 @@ CompiledNode createCompiledNode(const FGNodeBufferRead &node,
         ret.content.emplace_back(bufferPrefix
                                  + node.bufferName
                                  + "."
-                                 + bufferArrayPrefix
+                                 + bufferArrayName
                                  + "[gl_DrawID]."
                                  + node.elementName);
     }

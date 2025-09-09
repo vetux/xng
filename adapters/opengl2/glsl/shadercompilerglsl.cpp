@@ -92,22 +92,72 @@ std::string compileTree(const CompiledTree &tree, const FGShaderSource &source, 
     return ret;
 }
 
-std::string generateHeader(const FGShaderSource &source) {
-    for (auto element : source.inputLayout.elements) {
+std::string generateElement(const std::string &name, const FGShaderValue &value, std::string prefix = "\t") {
+    auto ret = prefix
+           + getTypeName(value)
+           + " "
+           + name;
 
+    if (value.count > 1) {
+        ret += "[";
+        ret += std::to_string(value.count);
+        ret += "]";
     }
 
-    for (auto pair : source.buffers) {
-    }
-    return "";
+    return ret + ";\n";
 }
 
-std::string ShaderCompilerGLSL::compile(const FGShaderSource &source) {
+std::string generateHeader(const FGShaderSource &source, CompiledPipeline& pipeline) {
+    std::string ret;
+
+    for (const auto& pair: source.buffers) {
+        auto binding = pipeline.getBufferBinding(pair.first);
+
+        std::string bufferLayout = "struct ShaderBufferData" + std::to_string(binding) + " {\n";
+        for (const auto& element: pair.second.elements) {
+            bufferLayout += generateElement(element.name, element.value);
+        }
+        bufferLayout += "};\n";
+
+        std::string bufferCode = "layout(binding = "
+        + std::to_string(binding)
+        + ", std140) buffer ShaderBuffer"
+        + std::to_string(binding)
+        + " {\n"
+        + "\tShaderBufferData"
+        + std::to_string(binding)
+        + " "
+        + bufferArrayName
+        + "[];\n} "
+        + bufferPrefix
+        + pair.first
+        + ";\n";
+
+        ret += bufferLayout;
+        ret += "\n";
+        ret += bufferCode;
+        ret += "\n";
+    }
+
+    for (auto element: source.inputLayout.elements) {
+    }
+    return ret;
+}
+
+std::string compileShader(const FGShaderSource &source, CompiledPipeline &pipeline) {
     auto tree = createCompiledTree(source);
     auto mainBody = compileTree(tree, source);
-    return "#version 330\n"
-           + generateHeader(source)
+    return "#version 460\n\n"
+           + generateHeader(source, pipeline)
            + "void main() {\n"
            + mainBody
            + "}";
+}
+
+CompiledPipeline ShaderCompilerGLSL::compile(const std::vector<FGShaderSource> &sources) {
+    CompiledPipeline ret;
+    for (auto &shader : sources) {
+        ret.sourceCode[shader.stage] = compileShader(shader, ret);
+    }
+    return ret;
 }

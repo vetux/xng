@@ -23,6 +23,8 @@
 #include "xng/render/graph2/fgruntime.hpp"
 
 namespace xng::opengl2 {
+    struct State;
+
     class XENGINE_EXPORT OpenGL2 final : public FGRuntime {
     public:
         OpenGL2();
@@ -49,7 +51,9 @@ namespace xng::opengl2 {
         GraphHandle graphCounter = 0;
 
         std::unordered_map<GraphHandle, FGGraph> graphs;
-        std::unordered_map<GraphHandle, std::unordered_map<FGResource, std::string>> shaders;
+        std::unordered_map<GraphHandle, std::unordered_map<FGResource, FGShaderSource>> shaders;
+
+        std::unique_ptr<State> state;
     };
 }
 

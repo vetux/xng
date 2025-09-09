@@ -23,7 +23,12 @@
 #include "contextgl.hpp"
 
 namespace xng::opengl2 {
+    struct State {
+        std::unordered_map<FGRuntime::GraphHandle, std::unordered_map<FGResource, CompiledPipeline> > pipelines;
+    };
+
     OpenGL2::OpenGL2() {
+        state = std::make_unique<State>();
     }
 
     OpenGL2::~OpenGL2() {
@@ -40,14 +45,14 @@ namespace xng::opengl2 {
     }
 
     void OpenGL2::execute(GraphHandle graph) {
-        ContextGL context(shaders.at(graph));
-        for (auto pass : graphs.at(graph).passes) {
+        ContextGL context(state->pipelines.at(graph));
+        for (auto pass: graphs.at(graph).passes) {
             pass.pass(context);
         }
     }
 
     void OpenGL2::execute(std::vector<GraphHandle> graphs) {
-        for (auto graph : graphs) {
+        for (auto graph: graphs) {
             execute(graph);
         }
     }
@@ -62,9 +67,17 @@ namespace xng::opengl2 {
         const auto handle = graphCounter++;
         graphs[handle] = graph;
 
+        for (auto pair: graph.shaderAllocation) {
+            shaders[handle][pair.first] = pair.second;
+        }
+
         ShaderCompilerGLSL compiler;
-        for (auto pair : graph.shaderAllocation) {
-            shaders[handle][pair.first] = compiler.compile(pair.second);
+        for (auto pair: graph.pipelineAllocation) {
+            std::vector<FGShaderSource> sources;
+            for (auto shader: pair.second) {
+                sources.emplace_back(shaders[handle][shader]);
+            }
+            state->pipelines[handle][pair.first] = compiler.compile(sources);
         }
         return handle;
     }

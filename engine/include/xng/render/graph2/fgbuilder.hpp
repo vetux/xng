@@ -36,6 +36,7 @@ namespace xng {
         typedef size_t PassHandle;
 
         FGBuilder();
+
         ~FGBuilder() = default;
 
         /**
@@ -50,10 +51,25 @@ namespace xng {
         FGResource inheritResource(FGResource resource);
 
         FGResource createVertexBuffer(size_t size);
+
         FGResource createIndexBuffer(size_t size);
+
         FGResource createShaderBuffer(size_t size);
+
         FGResource createTexture(const FGTexture &texture);
+
         FGResource createShader(const FGShaderSource &shader);
+
+        /**
+         * Create a render pipeline from the given shader resources.
+         *
+         * All shaders in a pipeline are required to have identical buffer / texture / parameter layouts and compatible
+         * input / output attribute layouts.
+         *
+         * @param shaders
+         * @return
+         */
+        FGResource createPipeline(const std::unordered_set<FGResource> &shaders);
 
         /**
          * The screen texture is an offscreen texture managed by the runtime.
@@ -71,7 +87,9 @@ namespace xng {
         PassHandle addPass(const std::string &name, std::function<void(FGContext &)> pass);
 
         void read(PassHandle pass, FGResource resource);
+
         void write(PassHandle pass, FGResource resource);
+
         void readWrite(PassHandle pass, FGResource resource);
 
         FGGraph build();
@@ -90,6 +108,7 @@ namespace xng {
         std::unordered_map<FGResource, FGTexture> textureAllocation;
 
         std::unordered_map<FGResource, FGShaderSource> shaderAllocation;
+        std::unordered_map<FGResource, std::unordered_set<FGResource> > pipelineAllocation;
 
         std::unordered_map<FGResource, FGResource> inheritedResources;
 
