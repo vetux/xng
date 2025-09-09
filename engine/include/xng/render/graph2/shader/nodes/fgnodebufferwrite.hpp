@@ -31,6 +31,8 @@ namespace xng {
 
         FGShaderNodeInput value = FGShaderNodeInput("value");
 
+        FGShaderNodeInput index = FGShaderNodeInput("index");
+
         FGNodeBufferWrite(std::string buffer_name, std::string element_name)
             : bufferName(std::move(buffer_name)),
               elementName(std::move(element_name)) {
@@ -41,7 +43,7 @@ namespace xng {
         }
 
         std::vector<std::reference_wrapper<FGShaderNodeInput>> getInputs() override {
-            return {value};
+            return {value, index};
         }
 
         std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {

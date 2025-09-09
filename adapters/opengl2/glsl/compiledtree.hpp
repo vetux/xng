@@ -41,32 +41,11 @@ struct CompiledNode {
     explicit CompiledNode(const std::shared_ptr<FGShaderNode> &node)
         : node(node) {
     }
-
-    std::string getValueCode(const CompiledTree &tree) const;
 };
 
 struct CompiledTree {
     std::unordered_map<std::shared_ptr<FGShaderNode>, std::string> variables;
     std::unordered_map<std::shared_ptr<FGShaderNode>, CompiledNode> nodes;
 };
-
-inline std::string CompiledNode::getValueCode(const CompiledTree &tree) const {
-    std::string ret;
-    for (auto var: content) {
-        if (var.index() == 0) {
-            ret += std::get<std::string>(var);
-        } else {
-            auto sourceNode = std::get<std::shared_ptr<FGShaderNode> >(var);
-            if (tree.variables.find(sourceNode) == tree.variables.end()) {
-                // Inline
-                ret += tree.nodes.at(sourceNode).getValueCode(tree);
-            } else {
-                // Use Variable
-                ret += tree.variables.at(sourceNode);
-            }
-        }
-    }
-    return ret;
-}
 
 #endif //XENGINE_COMPILEDTREE_HPP

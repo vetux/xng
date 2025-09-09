@@ -54,8 +54,10 @@ public:
 
         builder.addPass("Example Pass", [pip](FGContext &ctx) {
             const auto src = ctx.getShaderSource(pip);
-            std::cout << "----------Vertex Shader----------" << std::endl << src.at(FGShaderSource::VERTEX) << std::endl;
-            std::cout << "----------Fragment Shader----------" << std::endl << src.at(FGShaderSource::FRAGMENT) << std::endl;
+            std::cout << "----------Vertex Shader----------" << std::endl << src.at(FGShaderSource::VERTEX) <<
+                    std::endl;
+            std::cout << "----------Fragment Shader----------" << std::endl << src.at(FGShaderSource::FRAGMENT) <<
+                    std::endl;
         });
     }
 
@@ -65,14 +67,29 @@ public:
         const auto vPos = builder.attributeRead(0);
         const auto mvp = builder.bufferRead("data", "mvp");
 
-        auto fPos = builder.vector(builder.getX(vPos),
+        auto vecA = builder.vector(builder.getX(vPos),
                                    builder.getY(vPos),
                                    builder.getZ(vPos),
-                                   builder.literal(1));
+                                   builder.literal(1.0f));
 
-        fPos = builder.multiply(mvp, fPos);
+        vecA = builder.multiply(mvp, vecA);
 
-        builder.attributeWrite(0, fPos);
+        auto vecB = builder.vector(builder.literal(5.0f),
+                                   builder.literal(5.0f),
+                                   builder.literal(5.0f),
+                                   builder.literal(1.0f));
+
+        vecB = builder.multiply(mvp, vecB);
+
+        auto nestedBranch = builder.branch(builder.compareEqual(builder.getX(vecA), builder.getX(vecB)),
+                                           vecA,
+                                           vecB);
+
+        auto branch = builder.branch(builder.compareLess(builder.getZ(vecA), builder.getZ(vecB)),
+                                     vecA,
+                                     nestedBranch);
+
+        builder.attributeWrite(0, branch);
 
         return builder.build(FGShaderSource::VERTEX,
                              vertexLayout,

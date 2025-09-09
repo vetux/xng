@@ -28,8 +28,10 @@ namespace xng {
     struct FGNodeTextureSample final : FGShaderNode {
         std::string textureName;
 
-        // Vector 4 specifying the x / y / z coordinates for 2d textures or direction for cube-maps
-        // while the w component is the layer for array textures
+        // Vector 2 specifying the x / y coordinates for 2d textures
+        // Vector 3 specifying a direction for cube-maps
+        // Vector 3 specifying x / y coordinates and the array layer in z for 2d array textures
+        // Vector 4 specifying x / y / z direction and the array layer in w for cube map array textures
         FGShaderNodeInput coordinate = FGShaderNodeInput("coordinate");
         FGShaderNodeInput bias = FGShaderNodeInput("bias");
 

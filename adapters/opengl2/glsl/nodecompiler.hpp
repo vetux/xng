@@ -35,24 +35,63 @@ static const char *texturePrefix = "texture_";
 
 CompiledNode createCompiledNode(std::shared_ptr<FGShaderNode> node, const FGShaderSource &source);
 
+CompiledNode createCompiledNode(const FGNodeLiteral &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+
 CompiledNode createCompiledNode(const FGNodeVector &node,
                                 const std::shared_ptr<FGShaderNode> &nodePtr,
                                 const FGShaderSource &source);
-
-CompiledNode createCompiledNode(const FGNodeLiteral &node, const std::shared_ptr<FGShaderNode> &nodePtr);
-
-CompiledNode createCompiledNode(const FGNodeAdd &node, const std::shared_ptr<FGShaderNode> &nodePtr);
-
-CompiledNode createCompiledNode(const FGNodeMultiply &node, const std::shared_ptr<FGShaderNode> &nodePtr);
 
 CompiledNode createCompiledNode(const FGNodeAttributeRead &node, const std::shared_ptr<FGShaderNode> &nodePtr);
 
 CompiledNode createCompiledNode(const FGNodeAttributeWrite &node, const std::shared_ptr<FGShaderNode> &nodePtr);
 
-CompiledNode createCompiledNode(const FGNodeBufferRead &node, const std::shared_ptr<FGShaderNode> &nodePtr, const FGShaderSource &source);
+CompiledNode createCompiledNode(const FGNodeParameterRead &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+
+CompiledNode createCompiledNode(const FGNodeTextureSample &node, const std::shared_ptr<FGShaderNode> &nodePtr, const FGShaderSource &source);
+
+CompiledNode createCompiledNode(const FGNodeTextureSize &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+
+CompiledNode createCompiledNode(const FGNodeBufferRead &node, const std::shared_ptr<FGShaderNode> &nodePtr,
+                                const FGShaderSource &source);
+
+CompiledNode createCompiledNode(const FGNodeBufferWrite &node, const std::shared_ptr<FGShaderNode> &nodePtr,
+                                const FGShaderSource &source);
+
+CompiledNode createCompiledNode(const FGNodeBufferSize &node, const std::shared_ptr<FGShaderNode> &nodePtr,
+                                const FGShaderSource &source);
+
+CompiledNode createCompiledNode(const FGNodeAdd &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+
+CompiledNode createCompiledNode(const FGNodeSubtract &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+
+CompiledNode createCompiledNode(const FGNodeMultiply &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+
+CompiledNode createCompiledNode(const FGNodeDivide &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+
+CompiledNode createCompiledNode(const FGNodeEqual &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+
+CompiledNode createCompiledNode(const FGNodeNotEqual &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+
+CompiledNode createCompiledNode(const FGNodeGreater &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+
+CompiledNode createCompiledNode(const FGNodeLess &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+
+CompiledNode createCompiledNode(const FGNodeGreaterEqual &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+
+CompiledNode createCompiledNode(const FGNodeLessEqual &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+
+CompiledNode createCompiledNode(const FGNodeAnd &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+
+CompiledNode createCompiledNode(const FGNodeOr &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+
+CompiledNode createCompiledNode(const FGNodeNormalize &node, const std::shared_ptr<FGShaderNode> &nodePtr);
 
 CompiledNode createCompiledNode(const FGNodeSubscript &node,
                                 const std::shared_ptr<FGShaderNode> &nodePtr,
                                 const FGShaderSource &source);
+
+CompiledNode createCompiledNode(const FGNodeBranch &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+
+CompiledNode createCompiledNode(const FGNodeLoop &node, const std::shared_ptr<FGShaderNode> &nodePtr);
 
 #endif //XENGINE_NODECOMPILER_HPP

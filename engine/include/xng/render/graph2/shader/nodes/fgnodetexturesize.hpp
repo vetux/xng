@@ -40,16 +40,21 @@ namespace xng {
             return TEXTURE_SIZE;
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeInput>> getInputs() override {
+        std::vector<std::reference_wrapper<FGShaderNodeInput> > getInputs() override {
             return {};
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
+        std::vector<std::reference_wrapper<FGShaderNodeOutput> > getOutputs() override {
             return {size};
         }
 
         FGShaderValue getOutputType(const FGShaderSource &source) const override {
-            return {FGShaderValue::VECTOR3, FGShaderValue::SIGNED_INT, 1};
+            auto texture = source.textures.at(textureName);
+            if (texture.arrayLayers > 1) {
+                return {FGShaderValue::VECTOR3, FGShaderValue::SIGNED_INT, 1};
+            } else {
+                return {FGShaderValue::VECTOR2, FGShaderValue::SIGNED_INT, 1};
+            }
         }
     };
 }
