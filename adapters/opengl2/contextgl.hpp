@@ -41,6 +41,8 @@ public:
     void uploadTexture(FGResource texture, const uint8_t *ptr, size_t size, FGColorFormat format, size_t index,
                        size_t mipMapLevel, FGCubeMapFace face) override;
 
+    void bindPipeline(FGResource pipeline) override;
+
     void bindVertexBuffer(FGResource buffer) override;
 
     void bindIndexBuffer(FGResource buffer) override;
@@ -56,8 +58,6 @@ public:
     void bindShaderBuffers(const std::unordered_map<std::string, FGResource> &buffers) override;
 
     void setShaderParameters(const std::unordered_map<std::string, FGShaderLiteral> &parameters) override;
-
-    void bindShaders(const std::vector<FGResource> &shaders) override;
 
     void draw(const std::vector<FGDrawCall> &calls) override;
 

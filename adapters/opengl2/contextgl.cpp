@@ -26,6 +26,9 @@ void ContextGL::uploadTexture(FGResource texture, const uint8_t *ptr, size_t siz
                               size_t mipMapLevel, FGCubeMapFace face) {
 }
 
+void ContextGL::bindPipeline(FGResource pipeline) {
+}
+
 void ContextGL::bindVertexBuffer(FGResource buffer) {
 }
 
@@ -46,9 +49,6 @@ void ContextGL::bindShaderBuffers(const std::unordered_map<std::string, FGResour
 }
 
 void ContextGL::setShaderParameters(const std::unordered_map<std::string, FGShaderLiteral> &parameters) {
-}
-
-void ContextGL::bindShaders(const std::vector<FGResource> &shaders) {
 }
 
 void ContextGL::draw(const std::vector<FGDrawCall> &calls) {

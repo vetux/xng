@@ -68,6 +68,15 @@ namespace xng {
                                    size_t mipMapLevel = 0,
                                    FGCubeMapFace face = graph::POSITIVE_X) = 0;
 
+        /**
+         * Bind the given pipeline.
+         *
+         * Resets previous binding state, so this should be called before binding the desired buffers.
+         *
+         * @param pipeline
+         */
+        virtual void bindPipeline(FGResource pipeline) = 0;
+
         virtual void bindVertexBuffer(FGResource buffer) = 0;
 
         virtual void bindIndexBuffer(FGResource buffer) = 0;
@@ -103,15 +112,6 @@ namespace xng {
          * @param parameters
          */
         virtual void setShaderParameters(const std::unordered_map<std::string, FGShaderLiteral> &parameters) = 0;
-
-        /**
-         * Bind the given shaders.
-         *
-         * The shaders must form a complete pipeline eg. (1 Vertex Shader and 1 Fragment Shader) or 1 compute shader.
-         *
-         * @param shaders
-         */
-        virtual void bindShaders(const std::vector<FGResource> &shaders) = 0;
 
         /**
          * Execute the draw call/s with the bound shaders and geometry data.
