@@ -39,32 +39,6 @@ namespace xng {
         std::unique_ptr<FGShaderNode> copy() const override {
             return std::make_unique<FGNodeMultiply>(left->copy(), right->copy());
         }
-
-        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
-            auto leftType = left->getOutputType(source, functionName);
-            auto rightType = right->getOutputType(source, functionName);
-            if (leftType.type == rightType.type) {
-                return leftType;
-            } else {
-                // Mixed Arithmetic
-
-                // Matrix * Vector or Vector * Matrix
-                if (leftType.type == FGShaderValue::MAT4 || rightType.type == FGShaderValue::MAT4) {
-                    return {FGShaderValue::VECTOR4, leftType.component, 1};
-                } else if (leftType.type == FGShaderValue::MAT3 || rightType.type == FGShaderValue::MAT3) {
-                    return {FGShaderValue::VECTOR3, leftType.component, 1};
-                } else if (leftType.type == FGShaderValue::MAT2 || rightType.type == FGShaderValue::MAT2) {
-                    return {FGShaderValue::VECTOR2, leftType.component, 1};
-                }
-
-                // Scalar * Vector
-                if (leftType.type == FGShaderValue::SCALAR) {
-                    return rightType;
-                } else {
-                    return leftType;
-                }
-            }
-        }
     };
 }
 

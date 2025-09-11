@@ -71,25 +71,15 @@ namespace xng {
             NORMALIZE,
             //TODO: Add builtin function nodes
 
-            SUBSCRIPT, //Array, Vector or matrix indexing
+            SUBSCRIPT_ARRAY,
+            SUBSCRIPT_VECTOR,
+            SUBSCRIPT_MATRIX,
 
             BRANCH,
             LOOP,
         };
 
         virtual NodeType getType() const = 0;
-
-        /**
-         * Determine the type of the node output in this node graph.
-         *
-         * For Attribute Reads / Buffer Reads this depends on the configured attributes / buffers in the source.
-         *
-         * @param source
-         * @param functionName
-         * @return
-         */
-        virtual FGShaderValue getOutputType(const FGShaderSource &source,
-                                            const std::string &functionName = "") const = 0;
 
         virtual std::unique_ptr<FGShaderNode> copy() const = 0;
 

@@ -17,30 +17,28 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGNODELITERAL_HPP
-#define XENGINE_FGNODELITERAL_HPP
+#ifndef XENGINE_FGNODESUBSCRIPTARRAY_HPP
+#define XENGINE_FGNODESUBSCRIPTARRAY_HPP
 
-#include <utility>
-
-#include "xng/render/graph2/shader/fgshaderliteral.hpp"
 #include "xng/render/graph2/shader/fgshadernode.hpp"
 
 namespace xng {
-    struct FGNodeLiteral final : FGShaderNode {
-        FGShaderLiteral value;
+    struct FGNodeSubscriptArray final : FGShaderNode {
+        std::unique_ptr<FGShaderNode> array;
+        std::unique_ptr<FGShaderNode> index;
 
-        explicit FGNodeLiteral(FGShaderLiteral value)
-            : value(std::move(value)) {
+        FGNodeSubscriptArray(std::unique_ptr<FGShaderNode> array, std::unique_ptr<FGShaderNode> index)
+            : array(std::move(array)),
+              index(std::move(index)) {
         }
 
         NodeType getType() const override {
-            return LITERAL;
+            return SUBSCRIPT_ARRAY;
         }
 
         std::unique_ptr<FGShaderNode> copy() const override {
-            return std::make_unique<FGNodeLiteral>(value);
+            return std::make_unique<FGNodeSubscriptArray>(array->copy(), index->copy());
         }
     };
 }
-
-#endif //XENGINE_FGNODELITERAL_HPP
+#endif //XENGINE_FGNODESUBSCRIPTARRAY_HPP

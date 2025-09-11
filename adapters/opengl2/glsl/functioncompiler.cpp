@@ -45,8 +45,13 @@ std::string compileFunction(const std::string &functionName,
     }
 
     ret += ") {\n";
+
+    auto nodeFuncName = functionName;
+    if (functionName == "main") {
+        nodeFuncName = "";
+    }
     for (const auto &node: body) {
-        ret += compileNode(*node, source, functionName, "\t");
+        ret += compileNode(*node, source, nodeFuncName, "\t");
         ret += ";\n";
     }
     ret += "}";

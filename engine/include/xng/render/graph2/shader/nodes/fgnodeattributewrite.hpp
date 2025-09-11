@@ -43,10 +43,6 @@ namespace xng {
         std::unique_ptr<FGShaderNode> copy() const override {
             return std::make_unique<FGNodeAttributeWrite>(attributeIndex, value->copy());
         }
-
-        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
-            throw std::runtime_error("Attribute write node has no output");
-        }
     };
 }
 

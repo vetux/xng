@@ -39,21 +39,6 @@ namespace xng {
         std::unique_ptr<FGShaderNode> copy() const override {
             return std::make_unique<FGNodeSubtract>(left->copy(), right->copy());
         }
-
-        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
-            auto leftType = left->getOutputType(source, functionName);
-            auto rightType = right->getOutputType(source, functionName);
-            if (leftType.type == rightType.type) {
-                return leftType;
-            } else {
-                // Mixed Arithmetic eg vec3 - float
-                if (leftType.type == FGShaderValue::SCALAR) {
-                    return rightType;
-                } else {
-                    return leftType;
-                }
-            }
-        }
     };
 }
 

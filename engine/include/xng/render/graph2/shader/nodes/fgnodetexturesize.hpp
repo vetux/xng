@@ -39,15 +39,6 @@ namespace xng {
         std::unique_ptr<FGShaderNode> copy() const override {
             return std::make_unique<FGNodeTextureSize>(textureName);
         }
-
-        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
-            auto texture = source.textures.at(textureName);
-            if (texture.arrayLayers > 1) {
-                return {FGShaderValue::VECTOR3, FGShaderValue::SIGNED_INT, 1};
-            } else {
-                return {FGShaderValue::VECTOR2, FGShaderValue::SIGNED_INT, 1};
-            }
-        }
     };
 }
 #endif //XENGINE_FGNODETEXTURESIZE_HPP

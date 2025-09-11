@@ -17,45 +17,33 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGNODESUBSCRIPT_HPP
-#define XENGINE_FGNODESUBSCRIPT_HPP
+#ifndef XENGINE_FGNODESUBSCRIPTMATRIX_HPP
+#define XENGINE_FGNODESUBSCRIPTMATRIX_HPP
 
 #include "xng/render/graph2/shader/fgshadernode.hpp"
 
 namespace xng {
-    /**
-     * When subscripting vectors, the row must contain a literal specifying the index of the element eg (.x = 0)
-     */
-    struct FGNodeSubscript final : FGShaderNode {
-        std::unique_ptr<FGShaderNode> value;
+    struct FGNodeSubscriptMatrix final : FGShaderNode {
+        std::unique_ptr<FGShaderNode> matrix;
         std::unique_ptr<FGShaderNode> row;
         std::unique_ptr<FGShaderNode> column;
 
-        FGNodeSubscript(std::unique_ptr<FGShaderNode> value,
-                        std::unique_ptr<FGShaderNode> row,
-                        std::unique_ptr<FGShaderNode> column)
-            : value(std::move(value)),
+        FGNodeSubscriptMatrix(std::unique_ptr<FGShaderNode> matrix,
+                              std::unique_ptr<FGShaderNode> row,
+                              std::unique_ptr<FGShaderNode> column)
+            : matrix(std::move(matrix)),
               row(std::move(row)),
               column(std::move(column)) {
         }
 
         NodeType getType() const override {
-            return SUBSCRIPT;
+            return SUBSCRIPT_MATRIX;
         }
 
         std::unique_ptr<FGShaderNode> copy() const override {
-            return std::make_unique<FGNodeSubscript>(value->copy(), row->copy(), column ? column->copy() : nullptr);
-        }
-
-        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
-            auto valueType = value->getOutputType(source, functionName);
-            if (valueType.count > 1) {
-                return {valueType.type, valueType.component, 1};
-            } else {
-                return {FGShaderValue::SCALAR, value->getOutputType(source, functionName).component, 1};
-            }
+            return std::make_unique<FGNodeSubscriptMatrix>(matrix->copy(), row->copy(), column->copy());
         }
     };
 }
 
-#endif //XENGINE_FGNODESUBSCRIPT_HPP
+#endif //XENGINE_FGNODESUBSCRIPTMATRIX_HPP

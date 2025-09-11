@@ -40,10 +40,6 @@ namespace xng {
         std::unique_ptr<FGShaderNode> copy() const override {
             return std::make_unique<FGNodeBufferSize>(bufferName);
         }
-
-        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
-            return {FGShaderValue::SCALAR, FGShaderValue::SIGNED_INT, 1};
-        }
     };
 }
 #endif //XENGINE_FGNODEBUFFERSIZE_HPP

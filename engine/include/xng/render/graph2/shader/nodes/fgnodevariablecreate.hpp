@@ -44,10 +44,6 @@ namespace xng {
         std::unique_ptr<FGShaderNode> copy() const override {
             return std::make_unique<FGNodeVariableCreate>(variableName, type, value ? value->copy() : nullptr);
         }
-
-        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
-            return type;
-        }
     };
 }
 

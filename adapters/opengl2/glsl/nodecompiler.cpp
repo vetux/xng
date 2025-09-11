@@ -87,8 +87,12 @@ std::string compileNode(const FGShaderNode &node,
             return compileLeafNode(down_cast<const FGNodeReturn &>(node), source, functionName);
         case FGShaderNode::NORMALIZE:
             return compileLeafNode(down_cast<const FGNodeNormalize &>(node), source, functionName);
-        case FGShaderNode::SUBSCRIPT:
-            return compileLeafNode(down_cast<const FGNodeSubscript &>(node), source, functionName);
+        case FGShaderNode::SUBSCRIPT_ARRAY:
+            return compileLeafNode(down_cast<const FGNodeSubscriptArray &>(node), source, functionName);
+        case FGShaderNode::SUBSCRIPT_VECTOR:
+            return compileLeafNode(down_cast<const FGNodeSubscriptVector &>(node), source, functionName);
+        case FGShaderNode::SUBSCRIPT_MATRIX:
+            return compileLeafNode(down_cast<const FGNodeSubscriptMatrix &>(node), source, functionName);
         case FGShaderNode::BRANCH:
             return compileLeafNode(down_cast<const FGNodeBranch &>(node), source, functionName, prefix);
         case FGShaderNode::LOOP:
@@ -131,7 +135,7 @@ std::string compileLeafNode(const FGNodeVector &node,
                             const FGShaderSource &source,
                             const std::string &functionName) {
     std::string ret;
-    ret += getTypeName(node.getOutputType(source, functionName));
+    ret += getTypeName(node.type);
     ret += "(";
     ret += compileNode(*node.x, source, functionName, "");
     ret += ", ";
@@ -366,43 +370,41 @@ std::string compileLeafNode(const FGNodeNormalize &node,
     return "normalize(" + compileNode(*node.value, source, functionName) + ")";
 }
 
-std::string compileLeafNode(const FGNodeSubscript &node,
+std::string compileLeafNode(const FGNodeSubscriptArray &node,
                             const FGShaderSource &source,
                             const std::string &functionName) {
-    auto valueType = node.value->getOutputType(source, functionName);
-    if (valueType.count > 1) {
-        return compileNode(*node.value, source, functionName)
-               + "["
-               + compileNode(*node.row, source, functionName)
-               + "]";
-    } else if (valueType.type == FGShaderValue::MAT2
-               || valueType.type == FGShaderValue::MAT3
-               || valueType.type == FGShaderValue::MAT4) {
-        return compileNode(*node.value, source, functionName)
-               + "["
-               + compileNode(*node.column, source, functionName)
-               + "]["
-               + compileNode(*node.row, source, functionName)
-               + "]";
-    } else {
-        auto &indexSource = *node.row;
-        if (indexSource.getType() != FGShaderNode::LITERAL) {
-            throw std::runtime_error("Subscripting vectors with non-literal index is not supported");
-        }
-        auto index = std::get<int>(down_cast<FGNodeLiteral &>(indexSource).value);
-        switch (index) {
-            case 0:
-                return compileNode(*node.value, source, functionName) + ".x";
-            case 1:
-                return compileNode(*node.value, source, functionName) + ".y";
-            case 2:
-                return compileNode(*node.value, source, functionName) + ".z";
-            case 3:
-                return compileNode(*node.value, source, functionName) + ".w";
-            default:
-                throw std::runtime_error("Invalid vector subscript index");
-        }
+    return compileNode(*node.array, source, functionName)
+           + "["
+           + compileNode(*node.index, source, functionName)
+           + "]";
+}
+
+std::string compileLeafNode(const FGNodeSubscriptVector &node,
+                            const FGShaderSource &source,
+                            const std::string &functionName) {
+    switch (node.index) {
+        case 0:
+            return compileNode(*node.vector, source, functionName) + ".x";
+        case 1:
+            return compileNode(*node.vector, source, functionName) + ".y";
+        case 2:
+            return compileNode(*node.vector, source, functionName) + ".z";
+        case 3:
+            return compileNode(*node.vector, source, functionName) + ".w";
+        default:
+            throw std::runtime_error("Invalid vector subscript index");
     }
+}
+
+std::string compileLeafNode(const FGNodeSubscriptMatrix &node,
+                            const FGShaderSource &source,
+                            const std::string &functionName) {
+    return compileNode(*node.matrix, source, functionName)
+           + "["
+           + compileNode(*node.column, source, functionName)
+           + "]["
+           + compileNode(*node.row, source, functionName)
+           + "]";
 }
 
 std::string compileLeafNode(const FGNodeBranch &node,
@@ -432,5 +434,24 @@ std::string compileLeafNode(const FGNodeBranch &node,
 std::string compileLeafNode(const FGNodeLoop &node,
                             const FGShaderSource &source,
                             const std::string &functionName, const std::string &prefix) {
-    throw std::runtime_error("Loop not implemented");
+    std::string ret;
+    ret += prefix + "for (";
+    if (node.initializer != nullptr) {
+        ret += compileNode(*node.initializer, source, functionName);
+    }
+    ret += "; ";
+    if (node.predicate != nullptr) {
+        ret += compileNode(*node.predicate, source, functionName);
+    }
+    ret += "; ";
+    if (node.iterator != nullptr) {
+        ret += compileNode(*node.iterator, source, functionName);
+    }
+    ret += ") {\n";
+    for (auto &branchNode: node.body) {
+        ret += compileNode(*branchNode, source, functionName, prefix + "\t");
+        ret += ";\n";
+    }
+    ret += prefix + "}";
+    return ret;
 }

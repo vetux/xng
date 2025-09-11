@@ -54,10 +54,6 @@ namespace xng {
                                                 iterator->copy(),
                                                 std::move(bodyCopy));
         }
-
-        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
-            throw std::runtime_error("Loop node has no output");
-        }
     };
 }
 

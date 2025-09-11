@@ -96,6 +96,114 @@ namespace xng {
         Type type{};
         Component component{};
         size_t count = 1; // If larger than 1, this element is a fixed size array
+
+        static FGShaderValue boolean() {
+            return {SCALAR, BOOLEAN};
+        }
+
+        static FGShaderValue integer() {
+            return {SCALAR, SIGNED_INT};
+        }
+
+        static FGShaderValue unsignedInteger() {
+            return {SCALAR, UNSIGNED_INT};
+        }
+
+        static FGShaderValue float32() {
+            return {SCALAR, FLOAT};
+        }
+
+        static FGShaderValue float64() {
+            return {SCALAR, DOUBLE};
+        }
+
+        static FGShaderValue bvec2() {
+            return {VECTOR2, BOOLEAN};
+        }
+
+        static FGShaderValue bvec3() {
+            return {VECTOR3, BOOLEAN};
+        }
+
+        static FGShaderValue bvec4() {
+            return {VECTOR4, BOOLEAN};
+        }
+
+        static FGShaderValue ivec2() {
+            return {VECTOR2, SIGNED_INT};
+        }
+
+        static FGShaderValue ivec3() {
+            return {VECTOR3, SIGNED_INT};
+        }
+
+        static FGShaderValue ivec4() {
+            return {VECTOR4, SIGNED_INT};
+        }
+
+        static FGShaderValue uvec2() {
+            return {VECTOR2, UNSIGNED_INT};
+        }
+
+        static FGShaderValue uvec3() {
+            return {VECTOR3, UNSIGNED_INT};
+        }
+
+        static FGShaderValue uvec4() {
+            return {VECTOR4, UNSIGNED_INT};
+        }
+
+        static FGShaderValue vec2() {
+            return {VECTOR2, FLOAT};
+        }
+
+        static FGShaderValue vec3() {
+            return {VECTOR3, FLOAT};
+        }
+
+        static FGShaderValue vec4() {
+            return {VECTOR4, FLOAT};
+        }
+
+        static FGShaderValue mat2() {
+            return {MAT2, FLOAT};
+        }
+
+        static FGShaderValue mat3() {
+            return {MAT3, FLOAT};
+        }
+
+        static FGShaderValue mat4() {
+            return {MAT4, FLOAT};
+        }
+
+        static FGShaderValue dvec2() {
+            return {VECTOR2, DOUBLE};
+        }
+
+        static FGShaderValue dvec3() {
+            return {VECTOR3, DOUBLE};
+        }
+
+        static FGShaderValue dvec4() {
+            return {VECTOR4, DOUBLE};
+        }
+
+        static FGShaderValue dmat2() {
+            return {MAT2, DOUBLE};
+        }
+
+        static FGShaderValue dmat3() {
+            return {MAT3, DOUBLE};
+        }
+
+        static FGShaderValue dmat4() {
+            return {MAT4, DOUBLE};
+        }
+
+        static FGShaderValue array(const FGShaderValue &type, const size_t count) {
+            return {type.type, type.component, count};
+        }
     };
 }
 

@@ -41,10 +41,6 @@ namespace xng {
         std::unique_ptr<FGShaderNode> copy() const override {
             return std::make_unique<FGNodeVariableWrite>(variableName, value->copy());
         }
-
-        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
-            throw std::runtime_error("Variable write node has no output");
-        }
     };
 }
 

@@ -47,7 +47,8 @@ namespace xng {
 
         std::unique_ptr<FGShaderNode> argument(const std::string &name);
 
-        std::unique_ptr<FGShaderNode> vector(const std::unique_ptr<FGShaderNode> &x,
+        std::unique_ptr<FGShaderNode> vector(FGShaderValue type,
+                                             const std::unique_ptr<FGShaderNode> &x,
                                              const std::unique_ptr<FGShaderNode> &y,
                                              const std::unique_ptr<FGShaderNode> &z = nullptr,
                                              const std::unique_ptr<FGShaderNode> &w = nullptr);
@@ -119,33 +120,38 @@ namespace xng {
 
         std::unique_ptr<FGShaderNode> normalize(const std::unique_ptr<FGShaderNode> &value);
 
-        std::unique_ptr<FGShaderNode> subscript(const std::unique_ptr<FGShaderNode> &value,
-                                                const std::unique_ptr<FGShaderNode> &row,
-                                                const std::unique_ptr<FGShaderNode> &column = nullptr);
+        std::unique_ptr<FGShaderNode> subscriptArray(const std::unique_ptr<FGShaderNode> &array,
+                                                     const std::unique_ptr<FGShaderNode> &index);
+
+        std::unique_ptr<FGShaderNode> subscriptVector(const std::unique_ptr<FGShaderNode> &value, int index);
+
+        std::unique_ptr<FGShaderNode> subscriptMatrix(const std::unique_ptr<FGShaderNode> &matrix,
+                                                      const std::unique_ptr<FGShaderNode> &row,
+                                                      const std::unique_ptr<FGShaderNode> &column = nullptr);
 
         std::unique_ptr<FGShaderNode> branch(const std::unique_ptr<FGShaderNode> &condition,
                                              const std::vector<std::unique_ptr<FGShaderNode> > &trueBranch,
                                              const std::vector<std::unique_ptr<FGShaderNode> > &falseBranch);
 
-        std::unique_ptr<FGShaderNode> loop(const std::unique_ptr<FGShaderNode> &predicate,
-                                           const std::unique_ptr<FGShaderNode> &initializer,
+        std::unique_ptr<FGShaderNode> loop(const std::unique_ptr<FGShaderNode> &initializer,
+                                           const std::unique_ptr<FGShaderNode> &predicate,
                                            const std::unique_ptr<FGShaderNode> &iterator,
                                            const std::vector<std::unique_ptr<FGShaderNode> > &body);
 
         std::unique_ptr<FGShaderNode> getX(const std::unique_ptr<FGShaderNode> &value) {
-            return subscript(std::move(value), literal(0));
+            return subscriptVector(std::move(value), 0);
         }
 
         std::unique_ptr<FGShaderNode> getY(const std::unique_ptr<FGShaderNode> &value) {
-            return subscript(std::move(value), literal(1));
+            return subscriptVector(std::move(value), 1);
         }
 
         std::unique_ptr<FGShaderNode> getZ(const std::unique_ptr<FGShaderNode> &value) {
-            return subscript(std::move(value), literal(2));
+            return subscriptVector(std::move(value), 2);
         }
 
         std::unique_ptr<FGShaderNode> getW(const std::unique_ptr<FGShaderNode> &value) {
-            return subscript(std::move(value), literal(3));
+            return subscriptVector(std::move(value), 3);
         }
 
         void defineFunction(const std::string &name,

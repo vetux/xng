@@ -52,11 +52,16 @@ namespace xng {
         return std::make_unique<FGNodeArgument>(name);
     }
 
-    std::unique_ptr<FGShaderNode> FGShaderBuilder::vector(const std::unique_ptr<FGShaderNode> &x,
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::vector(const FGShaderValue type,
+                                                          const std::unique_ptr<FGShaderNode> &x,
                                                           const std::unique_ptr<FGShaderNode> &y,
                                                           const std::unique_ptr<FGShaderNode> &z,
                                                           const std::unique_ptr<FGShaderNode> &w) {
-        return std::make_unique<FGNodeVector>(x->copy(), y->copy(), z->copy(), w->copy());
+        return std::make_unique<FGNodeVector>(type,
+                                              x->copy(),
+                                              y->copy(),
+                                              z ? z->copy() : nullptr,
+                                              w ? w->copy() : nullptr);
     }
 
     std::unique_ptr<FGShaderNode> FGShaderBuilder::attributeRead(int32_t attributeIndex) {
@@ -180,10 +185,20 @@ namespace xng {
         return std::make_unique<FGNodeNormalize>(value->copy());
     }
 
-    std::unique_ptr<FGShaderNode> FGShaderBuilder::subscript(const std::unique_ptr<FGShaderNode> &value,
-                                                             const std::unique_ptr<FGShaderNode> &row,
-                                                             const std::unique_ptr<FGShaderNode> &column) {
-        return std::make_unique<FGNodeSubscript>(value->copy(), row->copy(), column ? column->copy() : nullptr);
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::subscriptArray(const std::unique_ptr<FGShaderNode> &array,
+                                                                  const std::unique_ptr<FGShaderNode> &index) {
+        return std::make_unique<FGNodeSubscriptArray>(array->copy(), index->copy());
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::subscriptVector(const std::unique_ptr<FGShaderNode> &value,
+                                                                   int index) {
+        return std::make_unique<FGNodeSubscriptVector>(value->copy(), index);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::subscriptMatrix(const std::unique_ptr<FGShaderNode> &matrix,
+                                                                   const std::unique_ptr<FGShaderNode> &row,
+                                                                   const std::unique_ptr<FGShaderNode> &column) {
+        return std::make_unique<FGNodeSubscriptMatrix>(matrix->copy(), row->copy(), column->copy());
     }
 
     std::unique_ptr<FGShaderNode> FGShaderBuilder::branch(const std::unique_ptr<FGShaderNode> &condition,
@@ -205,8 +220,8 @@ namespace xng {
                                               std::move(falseBranchCopy));
     }
 
-    std::unique_ptr<FGShaderNode> FGShaderBuilder::loop(const std::unique_ptr<FGShaderNode> &predicate,
-                                                        const std::unique_ptr<FGShaderNode> &initializer,
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::loop(const std::unique_ptr<FGShaderNode> &initializer,
+                                                        const std::unique_ptr<FGShaderNode> &predicate,
                                                         const std::unique_ptr<FGShaderNode> &iterator,
                                                         const std::vector<std::unique_ptr<FGShaderNode> > &body) {
         std::vector<std::unique_ptr<FGShaderNode> > bodyCopy;
@@ -214,8 +229,8 @@ namespace xng {
         for (auto &node: body) {
             bodyCopy.push_back(node->copy());
         }
-        return std::make_unique<FGNodeLoop>(predicate->copy(),
-                                            initializer->copy(),
+        return std::make_unique<FGNodeLoop>(initializer->copy(),
+                                            predicate->copy(),
                                             iterator->copy(),
                                             std::move(bodyCopy));
     }

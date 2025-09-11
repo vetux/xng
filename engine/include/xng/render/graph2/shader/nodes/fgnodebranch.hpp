@@ -55,10 +55,6 @@ namespace xng {
                                                   std::move(trueBranchCopy),
                                                   std::move(falseBranchCopy));
         }
-
-        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
-            throw std::runtime_error("Branch node has no output");
-        }
     };
 }
 

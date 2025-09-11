@@ -20,8 +20,12 @@
 #ifndef XENGINE_FGNODEVARIABLEREAD_HPP
 #define XENGINE_FGNODEVARIABLEREAD_HPP
 
+#include <optional>
+
 #include "xng/render/graph2/shader/fgshadernode.hpp"
 #include "xng/render/graph2/shader/nodes/fgnodevariablecreate.hpp"
+#include "xng/render/graph2/shader/nodes/fgnodeloop.hpp"
+#include "xng/render/graph2/shader/nodes/fgnodebranch.hpp"
 
 #include "xng/util/downcast.hpp"
 
@@ -39,29 +43,6 @@ namespace xng {
 
         std::unique_ptr<FGShaderNode> copy() const override {
             return std::make_unique<FGNodeVariableRead>(variableName);
-        }
-
-        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
-            if (functionName.empty()) {
-                for (auto &node: source.mainFunction) {
-                    if (node->getType() == VARIABLE_CREATE) {
-                        auto &varNode = down_cast<FGNodeVariableCreate &>(*node);
-                        if (varNode.variableName == variableName) {
-                            return varNode.type;
-                        }
-                    }
-                }
-            } else {
-                for (auto &node: source.functions.at(functionName).body) {
-                    if (node->getType() == VARIABLE_CREATE) {
-                        auto &varNode = down_cast<FGNodeVariableCreate &>(*node);
-                        if (varNode.variableName == variableName) {
-                            return varNode.type;
-                        }
-                    }
-                }
-            }
-            throw std::runtime_error("Variable not found");
         }
     };
 }

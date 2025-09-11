@@ -46,10 +46,6 @@ namespace xng {
             }
             return std::make_unique<FGNodeCall>(functionName, std::move(argumentsCopy));
         }
-
-        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &currentFunctionName) const override {
-            return source.functions.at(currentFunctionName).returnType;
-        }
     };
 }
 

@@ -25,6 +25,7 @@
 
 #include "xng/render/graph2/fgbuilder.hpp"
 #include "xng/render/graph2/shader/fgbranchbuilder.hpp"
+#include "xng/render/graph2/shader/fgloopbuilder.hpp"
 #include "xng/render/graph2/shader/fgshaderbuilder.hpp"
 
 using namespace xng;
@@ -72,7 +73,8 @@ public:
 
         body.emplace_back(builder.createVariable("fPos",
                                                  FGShaderValue(FGShaderValue::VECTOR4, FGShaderValue::FLOAT),
-                                                 builder.vector(builder.getX(vPos),
+                                                 builder.vector(FGShaderValue::vec4(),
+                                                                builder.getX(vPos),
                                                                 builder.getY(vPos),
                                                                 builder.getZ(vPos),
                                                                 builder.literal(1.0f))));
@@ -86,15 +88,31 @@ public:
 
         FGBranchBuilder nestedBranch;
         nestedBranch.If(builder.compareGreater(builder.getX(vPos), builder.literal(1.0f)));
-        nestedBranch.add(builder.assignVariable("fPos", builder.vector(builder.getX(vPos),
+        nestedBranch.add(builder.assignVariable("fPos", builder.vector(FGShaderValue::vec4(),
+                                                                       builder.getX(vPos),
                                                                        builder.getY(vPos),
                                                                        builder.literal(1.0f),
                                                                        builder.literal(1.0f))));
         nestedBranch.Else();
-        nestedBranch.add(builder.assignVariable("fPos", builder.vector(builder.getX(vPos),
+        nestedBranch.add(builder.assignVariable("fPos", builder.vector(FGShaderValue::vec4(),
+                                                                       builder.getX(vPos),
                                                                        builder.getY(vPos),
                                                                        builder.literal(5.0f),
                                                                        builder.literal(5.0f))));
+
+        FGLoopBuilder loop;
+        loop.loopFor("i", builder.literal(0), builder.literal(10));
+
+        loop.add(builder.assignVariable("fPos", builder.add(builder.variable("fPos"),
+                                                            builder.vector(FGShaderValue::vec4(),
+                                                                           builder.variable("i"),
+                                                                           builder.variable("i"),
+                                                                           builder.variable("i"),
+                                                                           builder.variable("i")))));
+
+        loop.endLoop();
+
+        nestedBranch.add(loop.build(builder));
 
         nestedBranch.EndIf();
 

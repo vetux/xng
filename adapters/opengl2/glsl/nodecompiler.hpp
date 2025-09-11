@@ -124,7 +124,11 @@ std::string compileLeafNode(const FGNodeReturn &node,
 
 std::string compileLeafNode(const FGNodeNormalize &node, const FGShaderSource &source, const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeSubscript &node, const FGShaderSource &source, const std::string &functionName);
+std::string compileLeafNode(const FGNodeSubscriptArray &node, const FGShaderSource &source, const std::string &functionName);
+
+std::string compileLeafNode(const FGNodeSubscriptVector &node, const FGShaderSource &source, const std::string &functionName);
+
+std::string compileLeafNode(const FGNodeSubscriptMatrix &node, const FGShaderSource &source, const std::string &functionName);
 
 std::string compileLeafNode(const FGNodeBranch &node, const FGShaderSource &source, const std::string &functionName,
                             const std::string &prefix);

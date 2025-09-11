@@ -17,30 +17,28 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGNODELITERAL_HPP
-#define XENGINE_FGNODELITERAL_HPP
+#ifndef XENGINE_FGNODESUBSCRIPTVECTOR_HPP
+#define XENGINE_FGNODESUBSCRIPTVECTOR_HPP
 
-#include <utility>
-
-#include "xng/render/graph2/shader/fgshaderliteral.hpp"
 #include "xng/render/graph2/shader/fgshadernode.hpp"
 
 namespace xng {
-    struct FGNodeLiteral final : FGShaderNode {
-        FGShaderLiteral value;
+    struct FGNodeSubscriptVector final : FGShaderNode {
+        std::unique_ptr<FGShaderNode> vector;
+        int index;
 
-        explicit FGNodeLiteral(FGShaderLiteral value)
-            : value(std::move(value)) {
+        FGNodeSubscriptVector(std::unique_ptr<FGShaderNode> vector, const int index)
+            : vector(std::move(vector)),
+              index(index) {
         }
 
         NodeType getType() const override {
-            return LITERAL;
+            return SUBSCRIPT_VECTOR;
         }
 
         std::unique_ptr<FGShaderNode> copy() const override {
-            return std::make_unique<FGNodeLiteral>(value);
+            return std::make_unique<FGNodeSubscriptVector>(vector->copy(), index);
         }
     };
 }
-
-#endif //XENGINE_FGNODELITERAL_HPP
+#endif //XENGINE_FGNODESUBSCRIPTVECTOR_HPP

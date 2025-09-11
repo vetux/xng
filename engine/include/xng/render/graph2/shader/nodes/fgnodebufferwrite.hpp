@@ -52,10 +52,6 @@ namespace xng {
                                                        value->copy(),
                                                        index ? index->copy() : nullptr);
         }
-
-        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
-            throw std::runtime_error("Buffer write node has no output");
-        }
     };
 }
 

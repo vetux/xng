@@ -50,6 +50,12 @@ namespace xng {
             }
         }
 
+        void add(const std::vector<std::unique_ptr<FGShaderNode> > &nodes) {
+            for (auto &node: nodes) {
+                add(node);
+            }
+        }
+
         void EndIf() {
             stage = STAGE_None;
         }
