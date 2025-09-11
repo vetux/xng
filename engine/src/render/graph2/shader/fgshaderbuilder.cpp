@@ -181,8 +181,147 @@ namespace xng {
         return std::make_unique<FGNodeReturn>(value->copy());
     }
 
-    std::unique_ptr<FGShaderNode> FGShaderBuilder::normalize(const std::unique_ptr<FGShaderNode> &value) {
-        return std::make_unique<FGNodeNormalize>(value->copy());
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::abs(const std::unique_ptr<FGShaderNode> &value) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::ABS, value->copy(), nullptr, nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::sin(const std::unique_ptr<FGShaderNode> &value) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::SIN, value->copy(), nullptr, nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::cos(const std::unique_ptr<FGShaderNode> &value) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::COS, value->copy(), nullptr, nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::tan(const std::unique_ptr<FGShaderNode> &value) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::TAN, value->copy(), nullptr, nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::asin(const std::unique_ptr<FGShaderNode> &value) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::ASIN, value->copy(), nullptr, nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::acos(const std::unique_ptr<FGShaderNode> &value) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::ACOS, value->copy(), nullptr, nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::atan(const std::unique_ptr<FGShaderNode> &value) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::ATAN, value->copy(), nullptr, nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::pow(const std::unique_ptr<FGShaderNode> &base,
+                                                       const std::unique_ptr<FGShaderNode> &exponent) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::POW, base->copy(), exponent->copy(), nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::exp(const std::unique_ptr<FGShaderNode> &value) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::EXP, value->copy(), nullptr, nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::log(const std::unique_ptr<FGShaderNode> &value) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::LOG, value->copy(), nullptr, nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::sqrt(const std::unique_ptr<FGShaderNode> &value) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::SQRT, value->copy(), nullptr, nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::inverseSqrt(const std::unique_ptr<FGShaderNode> &value) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::INVERSESQRT, value->copy(), nullptr, nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::floor(const std::unique_ptr<FGShaderNode> &value) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::FLOOR, value->copy(), nullptr, nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::ceil(const std::unique_ptr<FGShaderNode> &value) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::CEIL, value->copy(), nullptr, nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::round(const std::unique_ptr<FGShaderNode> &value) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::ROUND, value->copy(), nullptr, nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::fract(const std::unique_ptr<FGShaderNode> &value) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::FRACT, value->copy(), nullptr, nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::mod(const std::unique_ptr<FGShaderNode> &x,
+                                                       const std::unique_ptr<FGShaderNode> &y) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::MOD, x->copy(), y->copy(), nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::min(const std::unique_ptr<FGShaderNode> &x,
+                                                       const std::unique_ptr<FGShaderNode> &y) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::MIN, x->copy(), y->copy(), nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::max(const std::unique_ptr<FGShaderNode> &x,
+                                                       std::unique_ptr<FGShaderNode> &y) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::MAX, x->copy(), y->copy(), nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::clamp(const std::unique_ptr<FGShaderNode> &x,
+                                                         const std::unique_ptr<FGShaderNode> &min,
+                                                         const std::unique_ptr<FGShaderNode> &max) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::CLAMP, x->copy(), min->copy(), max->copy());
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::mix(const std::unique_ptr<FGShaderNode> &x,
+                                                       const std::unique_ptr<FGShaderNode> &y,
+                                                       const std::unique_ptr<FGShaderNode> &a) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::MIX, x->copy(), y->copy(), a->copy());
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::step(const std::unique_ptr<FGShaderNode> &edge,
+                                                        const std::unique_ptr<FGShaderNode> &x) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::STEP, edge->copy(), x->copy(), nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::smoothstep(const std::unique_ptr<FGShaderNode> &edge0,
+                                                              const std::unique_ptr<FGShaderNode> &edge1,
+                                                              const std::unique_ptr<FGShaderNode> &x) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::SMOOTHSTEP, edge0->copy(), edge1->copy(), x->copy());
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::dot(const std::unique_ptr<FGShaderNode> &x,
+                                                       const std::unique_ptr<FGShaderNode> &y) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::DOT, x->copy(), y->copy(), nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::cross(const std::unique_ptr<FGShaderNode> &x,
+                                                         const std::unique_ptr<FGShaderNode> &y) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::CROSS, x->copy(), y->copy(), nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::normalize(const std::unique_ptr<FGShaderNode> &x) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::NORMALIZE, x->copy(), nullptr, nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::length(const std::unique_ptr<FGShaderNode> &x) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::LENGTH, x->copy(), nullptr, nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::distance(const std::unique_ptr<FGShaderNode> &x,
+                                                            const std::unique_ptr<FGShaderNode> &y) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::DISTANCE, x->copy(), y->copy(), nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::reflect(const std::unique_ptr<FGShaderNode> &i,
+                                                           const std::unique_ptr<FGShaderNode> &n) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::REFLECT, i->copy(), n->copy(), nullptr);
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::refract(const std::unique_ptr<FGShaderNode> &i,
+                                                           const std::unique_ptr<FGShaderNode> &n,
+                                                           const std::unique_ptr<FGShaderNode> &eta) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::REFRACT, i->copy(), n->copy(), eta->copy());
+    }
+
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::faceforward(const std::unique_ptr<FGShaderNode> &n,
+                                                               const std::unique_ptr<FGShaderNode> &i,
+                                                               const std::unique_ptr<FGShaderNode> &nref) {
+        return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::FACEFORWARD, n->copy(), i->copy(), nref->copy());
     }
 
     std::unique_ptr<FGShaderNode> FGShaderBuilder::subscriptArray(const std::unique_ptr<FGShaderNode> &array,

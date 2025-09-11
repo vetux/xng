@@ -68,8 +68,7 @@ namespace xng {
             CALL,
             RETURN,
 
-            NORMALIZE,
-            //TODO: Add builtin function nodes
+            BUILTIN,
 
             SUBSCRIPT_ARRAY,
             SUBSCRIPT_VECTOR,

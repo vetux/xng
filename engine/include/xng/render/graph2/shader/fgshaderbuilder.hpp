@@ -118,7 +118,86 @@ namespace xng {
 
         std::unique_ptr<FGShaderNode> ret(const std::unique_ptr<FGShaderNode> &value);
 
-        std::unique_ptr<FGShaderNode> normalize(const std::unique_ptr<FGShaderNode> &value);
+        std::unique_ptr<FGShaderNode> abs(const std::unique_ptr<FGShaderNode> &value);
+
+        std::unique_ptr<FGShaderNode> sin(const std::unique_ptr<FGShaderNode> &value);
+
+        std::unique_ptr<FGShaderNode> cos(const std::unique_ptr<FGShaderNode> &value);
+
+        std::unique_ptr<FGShaderNode> tan(const std::unique_ptr<FGShaderNode> &value);
+
+        std::unique_ptr<FGShaderNode> asin(const std::unique_ptr<FGShaderNode> &value);
+
+        std::unique_ptr<FGShaderNode> acos(const std::unique_ptr<FGShaderNode> &value);
+
+        std::unique_ptr<FGShaderNode> atan(const std::unique_ptr<FGShaderNode> &value);
+
+        std::unique_ptr<FGShaderNode> pow(const std::unique_ptr<FGShaderNode> &base,
+                                          const std::unique_ptr<FGShaderNode> &exponent);
+
+        std::unique_ptr<FGShaderNode> exp(const std::unique_ptr<FGShaderNode> &value);
+
+        std::unique_ptr<FGShaderNode> log(const std::unique_ptr<FGShaderNode> &value);
+
+        std::unique_ptr<FGShaderNode> sqrt(const std::unique_ptr<FGShaderNode> &value);
+
+        std::unique_ptr<FGShaderNode> inverseSqrt(const std::unique_ptr<FGShaderNode> &value);
+
+        std::unique_ptr<FGShaderNode> floor(const std::unique_ptr<FGShaderNode> &value);
+
+        std::unique_ptr<FGShaderNode> ceil(const std::unique_ptr<FGShaderNode> &value);
+
+        std::unique_ptr<FGShaderNode> round(const std::unique_ptr<FGShaderNode> &value);
+
+        std::unique_ptr<FGShaderNode> fract(const std::unique_ptr<FGShaderNode> &value);
+
+        std::unique_ptr<FGShaderNode> mod(const std::unique_ptr<FGShaderNode> &x,
+                                          const std::unique_ptr<FGShaderNode> &y);
+
+        std::unique_ptr<FGShaderNode> min(const std::unique_ptr<FGShaderNode> &x,
+                                          const std::unique_ptr<FGShaderNode> &y);
+
+        std::unique_ptr<FGShaderNode> max(const std::unique_ptr<FGShaderNode> &x,
+                                          std::unique_ptr<FGShaderNode> &y);
+
+        std::unique_ptr<FGShaderNode> clamp(const std::unique_ptr<FGShaderNode> &x,
+                                            const std::unique_ptr<FGShaderNode> &min,
+                                            const std::unique_ptr<FGShaderNode> &max);
+
+        std::unique_ptr<FGShaderNode> mix(const std::unique_ptr<FGShaderNode> &x,
+                                          const std::unique_ptr<FGShaderNode> &y,
+                                          const std::unique_ptr<FGShaderNode> &a);
+
+        std::unique_ptr<FGShaderNode> step(const std::unique_ptr<FGShaderNode> &edge,
+                                           const std::unique_ptr<FGShaderNode> &x);
+
+        std::unique_ptr<FGShaderNode> smoothstep(const std::unique_ptr<FGShaderNode> &edge0,
+                                                 const std::unique_ptr<FGShaderNode> &edge1,
+                                                 const std::unique_ptr<FGShaderNode> &x);
+
+        std::unique_ptr<FGShaderNode> dot(const std::unique_ptr<FGShaderNode> &x,
+                                          const std::unique_ptr<FGShaderNode> &y);
+
+        std::unique_ptr<FGShaderNode> cross(const std::unique_ptr<FGShaderNode> &x,
+                                            const std::unique_ptr<FGShaderNode> &y);
+
+        std::unique_ptr<FGShaderNode> normalize(const std::unique_ptr<FGShaderNode> &x);
+
+        std::unique_ptr<FGShaderNode> length(const std::unique_ptr<FGShaderNode> &x);
+
+        std::unique_ptr<FGShaderNode> distance(const std::unique_ptr<FGShaderNode> &x,
+                                               const std::unique_ptr<FGShaderNode> &y);
+
+        std::unique_ptr<FGShaderNode> reflect(const std::unique_ptr<FGShaderNode> &i,
+                                              const std::unique_ptr<FGShaderNode> &n);
+
+        std::unique_ptr<FGShaderNode> refract(const std::unique_ptr<FGShaderNode> &i,
+                                              const std::unique_ptr<FGShaderNode> &n,
+                                              const std::unique_ptr<FGShaderNode> &eta);
+
+        std::unique_ptr<FGShaderNode> faceforward(const std::unique_ptr<FGShaderNode> &n,
+                                                  const std::unique_ptr<FGShaderNode> &i,
+                                                  const std::unique_ptr<FGShaderNode> &nref);
 
         std::unique_ptr<FGShaderNode> subscriptArray(const std::unique_ptr<FGShaderNode> &array,
                                                      const std::unique_ptr<FGShaderNode> &index);

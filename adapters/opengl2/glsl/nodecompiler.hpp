@@ -122,7 +122,7 @@ std::string compileLeafNode(const FGNodeReturn &node,
                             const FGShaderSource &source,
                             const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeNormalize &node, const FGShaderSource &source, const std::string &functionName);
+std::string compileLeafNode(const FGNodeBuiltin &node, const FGShaderSource &source, const std::string &functionName);
 
 std::string compileLeafNode(const FGNodeSubscriptArray &node, const FGShaderSource &source, const std::string &functionName);
 

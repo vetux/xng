@@ -85,8 +85,8 @@ std::string compileNode(const FGShaderNode &node,
             return compileLeafNode(down_cast<const FGNodeCall &>(node), source, functionName);
         case FGShaderNode::RETURN:
             return compileLeafNode(down_cast<const FGNodeReturn &>(node), source, functionName);
-        case FGShaderNode::NORMALIZE:
-            return compileLeafNode(down_cast<const FGNodeNormalize &>(node), source, functionName);
+        case FGShaderNode::BUILTIN:
+            return compileLeafNode(down_cast<const FGNodeBuiltin &>(node), source, functionName);
         case FGShaderNode::SUBSCRIPT_ARRAY:
             return compileLeafNode(down_cast<const FGNodeSubscriptArray &>(node), source, functionName);
         case FGShaderNode::SUBSCRIPT_VECTOR:
@@ -364,10 +364,104 @@ std::string compileLeafNode(const FGNodeReturn &node, const FGShaderSource &sour
     return "return " + compileNode(*node.value, source, functionName);
 }
 
-std::string compileLeafNode(const FGNodeNormalize &node,
+std::string compileLeafNode(const FGNodeBuiltin &node,
                             const FGShaderSource &source,
                             const std::string &functionName) {
-    return "normalize(" + compileNode(*node.value, source, functionName) + ")";
+    switch (node.type) {
+        case FGNodeBuiltin::ABS:
+            return "abs(" + compileNode(*node.valA, source, functionName) + ")";
+        case FGNodeBuiltin::SIN:
+            return "sin(" + compileNode(*node.valA, source, functionName) + ")";
+        case FGNodeBuiltin::COS:
+            return "cos(" + compileNode(*node.valA, source, functionName) + ")";
+        case FGNodeBuiltin::TAN:
+            return "tan(" + compileNode(*node.valA, source, functionName) + ")";
+        case FGNodeBuiltin::ASIN:
+            return "asin(" + compileNode(*node.valA, source, functionName) + ")";
+        case FGNodeBuiltin::ACOS:
+            return "acos(" + compileNode(*node.valA, source, functionName) + ")";
+        case FGNodeBuiltin::ATAN:
+            return "atan(" + compileNode(*node.valA, source, functionName) + ")";
+        case FGNodeBuiltin::POW:
+            return "pow(" + compileNode(*node.valA, source, functionName) + ", " + compileNode(
+                       *node.valB, source, functionName) + ")";
+        case FGNodeBuiltin::EXP:
+            return "exp(" + compileNode(*node.valA, source, functionName) + ")";
+        case FGNodeBuiltin::LOG:
+            return "log(" + compileNode(*node.valA, source, functionName) + ")";
+        case FGNodeBuiltin::SQRT:
+            return "sqrt(" + compileNode(*node.valA, source, functionName) + ")";
+        case FGNodeBuiltin::INVERSESQRT:
+            return "inversesqrt(" + compileNode(*node.valA, source, functionName) + ")";
+        case FGNodeBuiltin::FLOOR:
+            return "floor(" + compileNode(*node.valA, source, functionName) + ")";
+        case FGNodeBuiltin::CEIL:
+            return "ceil(" + compileNode(*node.valA, source, functionName) + ")";
+        case FGNodeBuiltin::ROUND:
+            return "round(" + compileNode(*node.valA, source, functionName) + ")";
+        case FGNodeBuiltin::FRACT:
+            return "fract(" + compileNode(*node.valA, source, functionName) + ")";
+        case FGNodeBuiltin::MOD:
+            return "mod(" + compileNode(*node.valA, source, functionName) + ", " + compileNode(
+                       *node.valB, source, functionName) + ")";
+        case FGNodeBuiltin::MIN:
+            return "min(" + compileNode(*node.valA, source, functionName) + ", " + compileNode(
+                       *node.valB, source, functionName) + ")";
+        case FGNodeBuiltin::MAX:
+            return "max(" + compileNode(*node.valA, source, functionName) + ", " + compileNode(
+                       *node.valB, source, functionName) + ")";
+        case FGNodeBuiltin::CLAMP:
+            return "clamp(" + compileNode(*node.valA, source, functionName)
+                   + ", " + compileNode(*node.valB, source, functionName)
+                   + ", " + compileNode(*node.valC, source, functionName)
+                   + ")";
+        case FGNodeBuiltin::MIX:
+            return "mix(" + compileNode(*node.valA, source, functionName)
+                   + ", " + compileNode(*node.valB, source, functionName)
+                   + ", " + compileNode(*node.valC, source, functionName)
+                   + ")";
+        case FGNodeBuiltin::STEP:
+            return "step(" + compileNode(*node.valA, source, functionName)
+                   + ", " + compileNode(*node.valB, source, functionName)
+                   + ")";
+        case FGNodeBuiltin::SMOOTHSTEP:
+            return "smoothstep(" + compileNode(*node.valA, source, functionName)
+                   + ", " + compileNode(*node.valB, source, functionName)
+                   + ", " + compileNode(*node.valC, source, functionName)
+                   + ")";
+        case FGNodeBuiltin::DOT:
+            return "dot(" + compileNode(*node.valA, source, functionName)
+                   + ", " + compileNode(*node.valB, source, functionName)
+                   + ")";
+        case FGNodeBuiltin::CROSS:
+            return "cross(" + compileNode(*node.valA, source, functionName)
+                   + ", " + compileNode(*node.valB, source, functionName)
+                   + ")";
+        case FGNodeBuiltin::NORMALIZE:
+            return "normalize(" + compileNode(*node.valA, source, functionName) + ")";
+        case FGNodeBuiltin::LENGTH:
+            return "length(" + compileNode(*node.valA, source, functionName) + ")";
+        case FGNodeBuiltin::DISTANCE:
+            return "distance(" + compileNode(*node.valA, source, functionName)
+                   + ", " + compileNode(*node.valB, source, functionName)
+                   + ")";
+        case FGNodeBuiltin::REFLECT:
+            return "reflect(" + compileNode(*node.valA, source, functionName)
+                   + ", " + compileNode(*node.valB, source, functionName)
+                   + ")";
+        case FGNodeBuiltin::REFRACT:
+            return "refract(" + compileNode(*node.valA, source, functionName)
+                   + ", " + compileNode(*node.valB, source, functionName)
+                   + ", " + compileNode(*node.valC, source, functionName)
+                   + ")";
+        case FGNodeBuiltin::FACEFORWARD:
+            return "faceforward(" + compileNode(*node.valA, source, functionName)
+                   + ", " + compileNode(*node.valB, source, functionName)
+                   + ", " + compileNode(*node.valC, source, functionName)
+                   + ")";
+        default:
+            throw std::runtime_error("Invalid builtin type");
+    }
 }
 
 std::string compileLeafNode(const FGNodeSubscriptArray &node,
