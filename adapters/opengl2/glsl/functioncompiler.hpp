@@ -17,25 +17,19 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGSHADERNODEINPUT_HPP
-#define XENGINE_FGSHADERNODEINPUT_HPP
+#ifndef XENGINE_FUNCTIONCOMPILER_HPP
+#define XENGINE_FUNCTIONCOMPILER_HPP
 
-#include <memory>
-#include <string>
+#include <optional>
 
-namespace xng {
-    struct FGShaderNode;
+#include "xng/render/graph2/shader/fgshadersource.hpp"
 
-    struct FGShaderNodeInput {
-        std::string name;
-        std::shared_ptr<FGShaderNode> source{};
+using namespace xng;
 
-        FGShaderNodeInput() = default;
+std::string compileFunction(const std::string &functionName,
+                            const std::unordered_map<std::string, FGShaderValue> &parameters,
+                            const std::vector<std::unique_ptr<FGShaderNode> > &body,
+                            const std::optional<FGShaderValue> &returnType,
+                            const FGShaderSource &source);
 
-        explicit FGShaderNodeInput(std::string name)
-            : name(std::move(name)) {
-        }
-    };
-}
-
-#endif //XENGINE_FGSHADERNODEINPUT_HPP
+#endif //XENGINE_FUNCTIONCOMPILER_HPP

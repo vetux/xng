@@ -17,41 +17,35 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGNODEBUFFERREAD_HPP
-#define XENGINE_FGNODEBUFFERREAD_HPP
+#ifndef XENGINE_FGNODEVARIABLEWRITE_HPP
+#define XENGINE_FGNODEVARIABLEWRITE_HPP
 
 #include "xng/render/graph2/shader/fgshadernode.hpp"
-#include "xng/render/graph2/shader/fgshadersource.hpp"
 
 namespace xng {
-    struct FGNodeBufferRead final : FGShaderNode {
-        std::string bufferName;
-        std::string elementName;
+    struct FGNodeVariableWrite final : FGShaderNode {
+        std::string variableName;
 
-        /**
-         * Specify the index of the elements if this buffer is defined as dynamic.
-         * Unused for static buffers.
-         */
-        std::unique_ptr<FGShaderNode> index;
+        std::unique_ptr<FGShaderNode> value;
 
-        explicit FGNodeBufferRead(std::string buffer_name,
-                                  std::string element_name,
-                                  std::unique_ptr<FGShaderNode> index)
-            : bufferName(std::move(buffer_name)), elementName(std::move(element_name)), index(std::move(index)) {
+        FGNodeVariableWrite(const std::string &variable_name,
+                            std::unique_ptr<FGShaderNode> value)
+            : variableName(variable_name),
+              value(std::move(value)) {
         }
 
         NodeType getType() const override {
-            return BUFFER_READ;
+            return VARIABLE_WRITE;
         }
 
         std::unique_ptr<FGShaderNode> copy() const override {
-            return std::make_unique<FGNodeBufferRead>(bufferName, elementName, index ? index->copy() : nullptr);
+            return std::make_unique<FGNodeVariableWrite>(variableName, value->copy());
         }
 
         FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
-            return source.buffers.at(bufferName).getElement(elementName).value;
+            throw std::runtime_error("Variable write node has no output");
         }
     };
 }
 
-#endif //XENGINE_FGNODEBUFFERREAD_HPP
+#endif //XENGINE_FGNODEVARIABLEWRITE_HPP

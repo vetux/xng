@@ -24,26 +24,40 @@
 
 namespace xng {
     struct FGNodeBranch final : FGShaderNode {
-        FGShaderNodeInput condition = FGShaderNodeInput("condition");
-        FGShaderNodeInput trueBranch = FGShaderNodeInput("trueBranch");
-        FGShaderNodeInput falseBranch = FGShaderNodeInput("falseBranch");
+        std::unique_ptr<FGShaderNode> condition;
+        std::vector<std::unique_ptr<FGShaderNode> > trueBranch;
+        std::vector<std::unique_ptr<FGShaderNode> > falseBranch;
 
-        FGShaderNodeOutput result = FGShaderNodeOutput("result");
+        FGNodeBranch(std::unique_ptr<FGShaderNode> condition,
+                     std::vector<std::unique_ptr<FGShaderNode> > true_branch,
+                     std::vector<std::unique_ptr<FGShaderNode> > false_branch)
+            : condition(std::move(condition)),
+              trueBranch(std::move(true_branch)),
+              falseBranch(std::move(false_branch)) {
+        }
 
-        NodeType getType() override {
+        NodeType getType() const override {
             return BRANCH;
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeInput>> getInputs() override {
-            return {condition, trueBranch, falseBranch};
+        std::unique_ptr<FGShaderNode> copy() const override {
+            std::vector<std::unique_ptr<FGShaderNode> > trueBranchCopy;
+            trueBranchCopy.reserve(trueBranch.size());
+            for (auto &node: trueBranch) {
+                trueBranchCopy.push_back(node->copy());
+            }
+            std::vector<std::unique_ptr<FGShaderNode> > falseBranchCopy;
+            falseBranchCopy.reserve(falseBranch.size());
+            for (auto &node: falseBranch) {
+                falseBranchCopy.push_back(node->copy());
+            }
+            return std::make_unique<FGNodeBranch>(condition->copy(),
+                                                  std::move(trueBranchCopy),
+                                                  std::move(falseBranchCopy));
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
-            return {result};
-        }
-
-        FGShaderValue getOutputType(const FGShaderSource &source) const override {
-            return trueBranch.source->getOutputType(source);
+        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
+            throw std::runtime_error("Branch node has no output");
         }
     };
 }

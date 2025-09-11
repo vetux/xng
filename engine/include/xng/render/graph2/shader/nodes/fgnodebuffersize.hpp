@@ -29,25 +29,19 @@ namespace xng {
     struct FGNodeBufferSize final : FGShaderNode {
         std::string bufferName;
 
-        FGShaderNodeOutput size = FGShaderNodeOutput("size");
-
         explicit FGNodeBufferSize(std::string buffer_name)
             : bufferName(std::move(buffer_name)) {
         }
 
-        NodeType getType() override {
+        NodeType getType() const override {
             return BUFFER_SIZE;
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeInput> > getInputs() override {
-            return {};
+        std::unique_ptr<FGShaderNode> copy() const override {
+            return std::make_unique<FGNodeBufferSize>(bufferName);
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeOutput> > getOutputs() override {
-            return {size};
-        }
-
-        FGShaderValue getOutputType(const FGShaderSource &source) const override {
+        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
             return {FGShaderValue::SCALAR, FGShaderValue::SIGNED_INT, 1};
         }
     };

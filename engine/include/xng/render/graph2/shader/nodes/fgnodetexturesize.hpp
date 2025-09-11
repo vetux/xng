@@ -28,27 +28,19 @@ namespace xng {
     struct FGNodeTextureSize final : FGShaderNode {
         std::string textureName;
 
-        // Vector3 x and y components contain texture size (Face size for cube-maps)
-        // while z contains the number of layers for array textures.
-        FGShaderNodeOutput size = FGShaderNodeOutput("size");
-
         explicit FGNodeTextureSize(std::string texture_name)
             : textureName(std::move(texture_name)) {
         }
 
-        NodeType getType() override {
+        NodeType getType() const override {
             return TEXTURE_SIZE;
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeInput> > getInputs() override {
-            return {};
+        std::unique_ptr<FGShaderNode> copy() const override {
+            return std::make_unique<FGNodeTextureSize>(textureName);
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeOutput> > getOutputs() override {
-            return {size};
-        }
-
-        FGShaderValue getOutputType(const FGShaderSource &source) const override {
+        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
             auto texture = source.textures.at(textureName);
             if (texture.arrayLayers > 1) {
                 return {FGShaderValue::VECTOR3, FGShaderValue::SIGNED_INT, 1};

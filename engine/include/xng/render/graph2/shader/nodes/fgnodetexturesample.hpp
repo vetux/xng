@@ -28,33 +28,24 @@ namespace xng {
     struct FGNodeTextureSample final : FGShaderNode {
         std::string textureName;
 
-        // Vector 2 specifying the x / y coordinates for 2d textures
-        // Vector 3 specifying a direction for cube-maps
-        // Vector 3 specifying x / y coordinates and the array layer in z for 2d array textures
-        // Vector 4 specifying x / y / z direction and the array layer in w for cube map array textures
-        FGShaderNodeInput coordinate = FGShaderNodeInput("coordinate");
-        FGShaderNodeInput bias = FGShaderNodeInput("bias");
+        std::unique_ptr<FGShaderNode> coordinate;
+        std::unique_ptr<FGShaderNode> bias;
 
-        // Vector 4 specifying r/g/b/a
-        FGShaderNodeOutput color = FGShaderNodeOutput("color");
-
-        explicit FGNodeTextureSample(std::string texture_name)
-            : textureName(std::move(texture_name)) {
+        explicit FGNodeTextureSample(std::string texture_name,
+                                     std::unique_ptr<FGShaderNode> coordinate,
+                                     std::unique_ptr<FGShaderNode> bias)
+            : textureName(std::move(texture_name)), coordinate(std::move(coordinate)), bias(std::move(bias)) {
         }
 
-        NodeType getType() override {
+        NodeType getType() const override {
             return TEXTURE_SAMPLE;
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeInput>> getInputs() override {
-            return {coordinate, bias};
+        std::unique_ptr<FGShaderNode> copy() const override {
+            return std::make_unique<FGNodeTextureSample>(textureName, coordinate->copy(), bias->copy());
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
-            return {color};
-        }
-
-        FGShaderValue getOutputType(const FGShaderSource &source) const override {
+        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
             return {FGShaderValue::VECTOR4, FGShaderValue::FLOAT, 1};
         }
     };

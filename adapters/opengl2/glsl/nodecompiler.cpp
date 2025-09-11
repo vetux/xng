@@ -24,353 +24,407 @@
 #include "literals.hpp"
 #include "types.hpp"
 
-CompiledNode createCompiledNode(std::shared_ptr<FGShaderNode> node, const FGShaderSource &source) {
-    switch (node->getType()) {
+std::string compileNode(const FGShaderNode &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName,
+                        const std::string &prefix) {
+    switch (node.getType()) {
+        case FGShaderNode::VARIABLE_CREATE:
+            return compileLeafNode(down_cast<const FGNodeVariableCreate &>(node), source, functionName, prefix);
+        case FGShaderNode::VARIABLE_WRITE:
+            return compileLeafNode(down_cast<const FGNodeVariableWrite &>(node), source, functionName, prefix);
+        case FGShaderNode::VARIABLE_READ:
+            return compileLeafNode(down_cast<const FGNodeVariableRead &>(node));
         case FGShaderNode::LITERAL:
-            return createCompiledNode(down_cast<FGNodeLiteral &>(*node), node);
+            return compileLeafNode(down_cast<const FGNodeLiteral &>(node));
+        case FGShaderNode::ARGUMENT:
+            return compileLeafNode(down_cast<const FGNodeArgument &>(node));
         case FGShaderNode::VECTOR:
-            return createCompiledNode(down_cast<FGNodeVector &>(*node), node, source);
+            return compileLeafNode(down_cast<const FGNodeVector &>(node), source, functionName);
         case FGShaderNode::ATTRIBUTE_READ:
-            return createCompiledNode(down_cast<FGNodeAttributeRead &>(*node), node);
+            return compileLeafNode(down_cast<const FGNodeAttributeRead &>(node));
         case FGShaderNode::ATTRIBUTE_WRITE:
-            return createCompiledNode(down_cast<FGNodeAttributeWrite &>(*node), node);
+            return compileLeafNode(down_cast<const FGNodeAttributeWrite &>(node), source, functionName, prefix);
         case FGShaderNode::PARAMETER_READ:
-            return createCompiledNode(down_cast<FGNodeParameterRead &>(*node), node);
+            return compileLeafNode(down_cast<const FGNodeParameterRead &>(node));
         case FGShaderNode::TEXTURE_SAMPLE:
-            return createCompiledNode(down_cast<FGNodeTextureSample &>(*node), node, source);
+            return compileLeafNode(down_cast<const FGNodeTextureSample &>(node), source, functionName);
         case FGShaderNode::TEXTURE_SIZE:
-            return createCompiledNode(down_cast<FGNodeTextureSize &>(*node), node);
+            return compileLeafNode(down_cast<const FGNodeTextureSize &>(node));
         case FGShaderNode::BUFFER_READ:
-            return createCompiledNode(down_cast<FGNodeBufferRead &>(*node), node, source);
+            return compileLeafNode(down_cast<const FGNodeBufferRead &>(node), source, functionName);
         case FGShaderNode::BUFFER_WRITE:
-            return createCompiledNode(down_cast<FGNodeBufferWrite &>(*node), node, source);
+            return compileLeafNode(down_cast<const FGNodeBufferWrite &>(node), source, functionName, prefix);
         case FGShaderNode::BUFFER_SIZE:
-            return createCompiledNode(down_cast<FGNodeBufferSize &>(*node), node, source);
+            return compileLeafNode(down_cast<const FGNodeBufferSize &>(node), source);
         case FGShaderNode::ADD:
-            return createCompiledNode(down_cast<FGNodeAdd &>(*node), node);
+            return compileLeafNode(down_cast<const FGNodeAdd &>(node), source, functionName);
         case FGShaderNode::SUBTRACT:
-            return createCompiledNode(down_cast<FGNodeSubtract &>(*node), node);
+            return compileLeafNode(down_cast<const FGNodeSubtract &>(node), source, functionName);
         case FGShaderNode::MULTIPLY:
-            return createCompiledNode(down_cast<FGNodeMultiply &>(*node), node);
+            return compileLeafNode(down_cast<const FGNodeMultiply &>(node), source, functionName);
         case FGShaderNode::DIVIDE:
-            return createCompiledNode(down_cast<FGNodeDivide &>(*node), node);
+            return compileLeafNode(down_cast<const FGNodeDivide &>(node), source, functionName);
         case FGShaderNode::EQUAL:
-            return createCompiledNode(down_cast<FGNodeEqual &>(*node), node);
+            return compileLeafNode(down_cast<const FGNodeEqual &>(node), source, functionName);
         case FGShaderNode::NEQUAL:
-            return createCompiledNode(down_cast<FGNodeNotEqual &>(*node), node);
+            return compileLeafNode(down_cast<const FGNodeNotEqual &>(node), source, functionName);
         case FGShaderNode::GREATER:
-            return createCompiledNode(down_cast<FGNodeGreater &>(*node), node);
+            return compileLeafNode(down_cast<const FGNodeGreater &>(node), source, functionName);
         case FGShaderNode::LESS:
-            return createCompiledNode(down_cast<FGNodeLess &>(*node), node);
+            return compileLeafNode(down_cast<const FGNodeLess &>(node), source, functionName);
         case FGShaderNode::GREATER_EQUAL:
-            return createCompiledNode(down_cast<FGNodeGreaterEqual &>(*node), node);
+            return compileLeafNode(down_cast<const FGNodeGreaterEqual &>(node), source, functionName);
         case FGShaderNode::LESS_EQUAL:
-            return createCompiledNode(down_cast<FGNodeLessEqual &>(*node), node);
+            return compileLeafNode(down_cast<const FGNodeLessEqual &>(node), source, functionName);
         case FGShaderNode::AND:
-            return createCompiledNode(down_cast<FGNodeAnd &>(*node), node);
+            return compileLeafNode(down_cast<const FGNodeAnd &>(node), source, functionName);
         case FGShaderNode::OR:
-            return createCompiledNode(down_cast<FGNodeOr &>(*node), node);
+            return compileLeafNode(down_cast<const FGNodeOr &>(node), source, functionName);
+        case FGShaderNode::CALL:
+            return compileLeafNode(down_cast<const FGNodeCall &>(node), source, functionName);
         case FGShaderNode::NORMALIZE:
-            return createCompiledNode(down_cast<FGNodeNormalize &>(*node), node);
+            return compileLeafNode(down_cast<const FGNodeNormalize &>(node), source, functionName);
         case FGShaderNode::SUBSCRIPT:
-            return createCompiledNode(down_cast<FGNodeSubscript &>(*node), node, source);
+            return compileLeafNode(down_cast<const FGNodeSubscript &>(node), source, functionName);
         case FGShaderNode::BRANCH:
-            return createCompiledNode(down_cast<FGNodeBranch &>(*node), node);
+            return compileLeafNode(down_cast<const FGNodeBranch &>(node), source, functionName, prefix);
         case FGShaderNode::LOOP:
-            return createCompiledNode(down_cast<FGNodeLoop &>(*node), node);
+            return compileLeafNode(down_cast<const FGNodeLoop &>(node), source, functionName, prefix);
     }
     throw std::runtime_error("Node Type not implemented");
 }
 
-CompiledNode createCompiledNode(const FGNodeLiteral &node, const std::shared_ptr<FGShaderNode> &nodePtr) {
-    CompiledNode ret(nodePtr);
-    ret.content.emplace_back(literalToString(node.value));
-    return ret;
+std::string compileLeafNode(const FGNodeVariableCreate &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName,
+                        const std::string &prefix) {
+    auto ret = getTypeName(node.type) + " " + node.variableName;
+    if (node.value != nullptr) {
+        ret += " = " + compileNode(*node.value, source, functionName);
+    }
+    return prefix + ret;
 }
 
-CompiledNode createCompiledNode(const FGNodeVector &node,
-                                const std::shared_ptr<FGShaderNode> &nodePtr,
-                                const FGShaderSource &source) {
-    CompiledNode ret(nodePtr);
-    ret.content.emplace_back(getTypeName(node.getOutputType(source)));
-    ret.content.emplace_back("(");
-    ret.content.emplace_back(node.x.source);
-    ret.content.emplace_back(", ");
-    ret.content.emplace_back(node.y.source);
-    if (node.z.source != nullptr) {
-        ret.content.emplace_back(", ");
-        ret.content.emplace_back(node.z.source);
-        if (node.w.source != nullptr) {
-            ret.content.emplace_back(", ");
-            ret.content.emplace_back(node.w.source);
+std::string compileLeafNode(const FGNodeVariableWrite &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName,
+                        const std::string &prefix) {
+    return prefix + node.variableName + " = " + compileNode(*node.value, source,functionName);
+}
+
+std::string compileLeafNode(const FGNodeVariableRead &node) {
+    return node.variableName;
+}
+
+std::string compileLeafNode(const FGNodeLiteral &node) {
+    return literalToString(node.value);
+}
+
+std::string compileLeafNode(const FGNodeArgument &node) {
+    return node.argumentName;
+}
+
+std::string compileLeafNode(const FGNodeVector &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName) {
+    std::string ret;
+    ret += getTypeName(node.getOutputType(source, functionName));
+    ret += "(";
+    ret += compileNode(*node.x, source, functionName, "");
+    ret += ", ";
+    ret += compileNode(*node.y, source, functionName, "");
+    if (node.z != nullptr) {
+        ret += ", ";
+        ret += compileNode(*node.z, source, functionName, "");
+        if (node.w != nullptr) {
+            ret += ", ";
+            ret += compileNode(*node.w, source, functionName, "");
         }
     }
-    ret.content.emplace_back(")");
+    ret += ")";
     return ret;
 }
 
-CompiledNode createCompiledNode(const FGNodeAttributeRead &node, const std::shared_ptr<FGShaderNode> &nodePtr) {
-    CompiledNode ret(nodePtr);
-    ret.content.emplace_back(inputAttributePrefix + std::to_string(node.attributeIndex));
-    return ret;
+std::string compileLeafNode(const FGNodeAttributeRead &node) {
+    return inputAttributePrefix + std::to_string(node.attributeIndex);
 }
 
-CompiledNode createCompiledNode(const FGNodeAttributeWrite &node, const std::shared_ptr<FGShaderNode> &nodePtr) {
-    CompiledNode ret(nodePtr);
-    ret.content.emplace_back(outputAttributePrefix + std::to_string(node.attributeIndex) + " = ");
-    ret.content.emplace_back(node.value.source);
-    return ret;
+std::string compileLeafNode(const FGNodeAttributeWrite &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName,
+                        const std::string &prefix) {
+    return prefix
+           + outputAttributePrefix
+           + std::to_string(node.attributeIndex)
+           + " = "
+           + compileNode(*node.value, source, functionName);
 }
 
-CompiledNode createCompiledNode(const FGNodeParameterRead &node, const std::shared_ptr<FGShaderNode> &nodePtr) {
+std::string compileLeafNode(const FGNodeParameterRead &node) {
     throw std::runtime_error("Parameter read not implemented");
 }
 
-CompiledNode createCompiledNode(const FGNodeTextureSample &node,
-                                const std::shared_ptr<FGShaderNode> &nodePtr,
-                                const FGShaderSource &source) {
-    CompiledNode ret(nodePtr);
-    ret.content.emplace_back("texture(");
-    ret.content.emplace_back(texturePrefix + node.textureName);
-    ret.content.emplace_back(", ");
-    ret.content.emplace_back(node.coordinate.source);
-    if (node.bias.source != nullptr) {
-        ret.content.emplace_back(", ");
-        ret.content.emplace_back(node.bias.source);
+std::string compileLeafNode(const FGNodeTextureSample &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName) {
+    auto ret = "texture("
+               + std::string(texturePrefix)
+               + node.textureName
+               + ", "
+               + compileNode(*node.coordinate, source, functionName, "");
+    if (node.bias != nullptr) {
+        ret += ", " + compileNode(*node.bias, source, functionName, "");
     }
-    ret.content.emplace_back(")");
+    ret += ")";
     return ret;
 }
 
-CompiledNode createCompiledNode(const FGNodeTextureSize &node, const std::shared_ptr<FGShaderNode> &nodePtr) {
-    CompiledNode ret(nodePtr);
-    ret.content.emplace_back("textureSize(");
-    ret.content.emplace_back(texturePrefix + node.textureName);
-    ret.content.emplace_back(")");
-    return ret;
+std::string compileLeafNode(const FGNodeTextureSize &node) {
+    return "textureSize(" + std::string(texturePrefix) + node.textureName + ")";
 }
 
-CompiledNode createCompiledNode(const FGNodeBufferRead &node,
-                                const std::shared_ptr<FGShaderNode> &nodePtr,
-                                const FGShaderSource &source) {
-    CompiledNode ret(nodePtr);
+std::string compileLeafNode(const FGNodeBufferRead &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName) {
     if (source.buffers.at(node.bufferName).dynamic) {
-        ret.content.emplace_back(bufferPrefix
-                                 + node.bufferName
-                                 + "."
-                                 + bufferArrayName
-                                 + "[");
-        if (node.index.source == nullptr) {
-            throw std::runtime_error("Dynamic buffer read with no index");
+        auto ret = bufferPrefix + node.bufferName + "." + bufferArrayName + "[";
+        ret += compileNode(*node.index, source, functionName, "");
+        ret += "]." + node.elementName;
+        return ret;
+    } else {
+        return bufferPrefix
+               + node.bufferName
+               + "."
+               + bufferArrayName
+               + "[gl_DrawID]."
+               + node.elementName;
+    }
+}
+
+std::string compileLeafNode(const FGNodeBufferWrite &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName,
+                        const std::string &prefix) {
+    if (source.buffers.at(node.bufferName).dynamic) {
+        if (node.index == nullptr) {
+            throw std::runtime_error("Buffer write on dynamic buffer with no index");
         }
-        ret.content.emplace_back(node.index.source);
-        ret.content.emplace_back("]." + node.elementName);
+        return prefix
+               + bufferPrefix
+               + node.bufferName
+               + "."
+               + bufferArrayName
+               + "["
+               + compileNode(*node.index, source, functionName)
+               + "]."
+               + node.elementName
+               + " = "
+               + compileNode(*node.value, source, functionName);
     } else {
-        ret.content.emplace_back(bufferPrefix
-                                 + node.bufferName
-                                 + "."
-                                 + bufferArrayName
-                                 + "[gl_DrawID]."
-                                 + node.elementName);
+        return prefix
+               + bufferPrefix
+               + node.bufferName
+               + "."
+               + bufferArrayName
+               + "[gl_DrawID]."
+               + node.elementName
+               + " = "
+               + compileNode(*node.value, source, functionName);
     }
-    return ret;
 }
 
-CompiledNode createCompiledNode(const FGNodeBufferWrite &node,
-                                const std::shared_ptr<FGShaderNode> &nodePtr,
-                                const FGShaderSource &source) {
-    CompiledNode ret(nodePtr);
-
-    if (auto buffer = source.buffers.at(node.bufferName); buffer.dynamic) {
-        ret.content.emplace_back(bufferPrefix + node.bufferName + "." + bufferArrayName + "[");
-        ret.content.emplace_back(node.index.source);
-        ret.content.emplace_back("]." + node.elementName + " = ");
-        ret.content.emplace_back(node.value.source);
-    } else {
-        ret.content.emplace_back(bufferPrefix
-                                 + node.bufferName
-                                 + "."
-                                 + bufferArrayName
-                                 + "[gl_DrawID]."
-                                 + node.elementName
-                                 + " = ");
-        ret.content.emplace_back(node.value.source);
-    }
-
-    return ret;
-}
-
-CompiledNode createCompiledNode(const FGNodeBufferSize &node,
-                                const std::shared_ptr<FGShaderNode> &nodePtr,
-                                const FGShaderSource &source) {
+std::string compileLeafNode(const FGNodeBufferSize &node,
+                        const FGShaderSource &source) {
     if (!source.buffers.at(node.bufferName).dynamic) {
         throw std::runtime_error("Buffer size read on non-dynamic buffer");
     }
-    CompiledNode ret(nodePtr);
-    ret.content.emplace_back(bufferPrefix + node.bufferName + "." + bufferArrayName + ".length()");
+    return bufferPrefix + node.bufferName + "." + bufferArrayName + ".length()";
+}
+
+std::string compileLeafNode(const FGNodeAdd &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName) {
+    return compileNode(*node.left, source, functionName)
+           + " + "
+           + compileNode(*node.right, source, functionName);
+}
+
+std::string compileLeafNode(const FGNodeSubtract &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName) {
+    return compileNode(*node.left, source, functionName)
+           + " - "
+           + compileNode(*node.right, source, functionName);
+}
+
+std::string compileLeafNode(const FGNodeMultiply &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName) {
+    return compileNode(*node.left, source, functionName)
+           + " * "
+           + compileNode(*node.right, source, functionName);
+}
+
+std::string compileLeafNode(const FGNodeDivide &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName) {
+    return compileNode(*node.left, source, functionName)
+           + " / "
+           + compileNode(*node.right, source, functionName);
+}
+
+std::string compileLeafNode(const FGNodeEqual &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName) {
+    return compileNode(*node.left, source, functionName)
+           + " == "
+           + compileNode(*node.right, source, functionName);
+}
+
+std::string compileLeafNode(const FGNodeNotEqual &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName) {
+    return compileNode(*node.left, source, functionName)
+           + " != "
+           + compileNode(*node.right, source, functionName);
+}
+
+std::string compileLeafNode(const FGNodeGreater &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName) {
+    return compileNode(*node.left, source, functionName)
+           + " > "
+           + compileNode(*node.right, source, functionName);
+}
+
+std::string compileLeafNode(const FGNodeLess &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName) {
+    return compileNode(*node.left, source, functionName)
+           + " < "
+           + compileNode(*node.right, source, functionName);
+}
+
+std::string compileLeafNode(const FGNodeGreaterEqual &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName) {
+    return compileNode(*node.left, source, functionName)
+           + " >= "
+           + compileNode(*node.right, source, functionName);
+}
+
+std::string compileLeafNode(const FGNodeLessEqual &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName) {
+    return compileNode(*node.left, source, functionName)
+           + " <= "
+           + compileNode(*node.right, source, functionName);
+}
+
+std::string compileLeafNode(const FGNodeAnd &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName) {
+    return compileNode(*node.left, source, functionName)
+           + " && "
+           + compileNode(*node.right, source, functionName);
+}
+
+std::string compileLeafNode(const FGNodeOr &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName) {
+    return compileNode(*node.left, source, functionName)
+           + " || "
+           + compileNode(*node.right, source, functionName);
+}
+
+std::string compileLeafNode(const FGNodeCall &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName) {
+    auto ret = node.functionName + "(";
+    size_t argCount = 0;
+    for (auto &arg : node.arguments) {
+        if (argCount > 0) {
+            ret += ", ";
+        }
+        ret += compileNode(*arg, source, functionName, "");
+        argCount++;
+    }
+    ret += ")";
     return ret;
 }
 
-CompiledNode createCompiledNode(const FGNodeAdd &node, const std::shared_ptr<FGShaderNode> &nodePtr) {
-    CompiledNode ret(nodePtr);
-    ret.content.emplace_back(node.left.source);
-    ret.content.emplace_back(" + ");
-    ret.content.emplace_back(node.right.source);
-    return ret;
+std::string compileLeafNode(const FGNodeNormalize &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName) {
+    return "normalize(" + compileNode(*node.value, source, functionName) + ")";
 }
 
-CompiledNode createCompiledNode(const FGNodeSubtract &node, const std::shared_ptr<FGShaderNode> &nodePtr) {
-    CompiledNode ret(nodePtr);
-    ret.content.emplace_back(node.left.source);
-    ret.content.emplace_back(" - ");
-    ret.content.emplace_back(node.right.source);
-    return ret;
-}
-
-CompiledNode createCompiledNode(const FGNodeMultiply &node, const std::shared_ptr<FGShaderNode> &nodePtr) {
-    CompiledNode ret(nodePtr);
-    ret.content.emplace_back(node.left.source);
-    ret.content.emplace_back(" * ");
-    ret.content.emplace_back(node.right.source);
-    return ret;
-}
-
-CompiledNode createCompiledNode(const FGNodeDivide &node, const std::shared_ptr<FGShaderNode> &nodePtr) {
-    CompiledNode ret(nodePtr);
-    ret.content.emplace_back(node.left.source);
-    ret.content.emplace_back(" / ");
-    ret.content.emplace_back(node.right.source);
-    return ret;
-}
-
-CompiledNode createCompiledNode(const FGNodeEqual &node, const std::shared_ptr<FGShaderNode> &nodePtr) {
-    CompiledNode ret(nodePtr);
-    ret.content.emplace_back(node.left.source);
-    ret.content.emplace_back(" == ");
-    ret.content.emplace_back(node.right.source);
-    return ret;
-}
-
-CompiledNode createCompiledNode(const FGNodeNotEqual &node, const std::shared_ptr<FGShaderNode> &nodePtr) {
-    CompiledNode ret(nodePtr);
-    ret.content.emplace_back(node.left.source);
-    ret.content.emplace_back(" != ");
-    ret.content.emplace_back(node.right.source);
-    return ret;
-}
-
-CompiledNode createCompiledNode(const FGNodeGreater &node, const std::shared_ptr<FGShaderNode> &nodePtr) {
-    CompiledNode ret(nodePtr);
-    ret.content.emplace_back(node.left.source);
-    ret.content.emplace_back(" > ");
-    ret.content.emplace_back(node.right.source);
-    return ret;
-}
-
-CompiledNode createCompiledNode(const FGNodeLess &node, const std::shared_ptr<FGShaderNode> &nodePtr) {
-    CompiledNode ret(nodePtr);
-    ret.content.emplace_back(node.left.source);
-    ret.content.emplace_back(" < ");
-    ret.content.emplace_back(node.right.source);
-    return ret;
-}
-
-CompiledNode createCompiledNode(const FGNodeGreaterEqual &node, const std::shared_ptr<FGShaderNode> &nodePtr) {
-    CompiledNode ret(nodePtr);
-    ret.content.emplace_back(node.left.source);
-    ret.content.emplace_back(" >= ");
-    ret.content.emplace_back(node.right.source);
-    return ret;
-}
-
-CompiledNode createCompiledNode(const FGNodeLessEqual &node, const std::shared_ptr<FGShaderNode> &nodePtr) {
-    CompiledNode ret(nodePtr);
-    ret.content.emplace_back(node.left.source);
-    ret.content.emplace_back(" <= ");
-    ret.content.emplace_back(node.right.source);
-    return ret;
-}
-
-CompiledNode createCompiledNode(const FGNodeAnd &node, const std::shared_ptr<FGShaderNode> &nodePtr) {
-    CompiledNode ret(nodePtr);
-    ret.content.emplace_back(node.left.source);
-    ret.content.emplace_back(" && ");
-    ret.content.emplace_back(node.right.source);
-    return ret;
-}
-
-CompiledNode createCompiledNode(const FGNodeOr &node, const std::shared_ptr<FGShaderNode> &nodePtr) {
-    CompiledNode ret(nodePtr);
-    ret.content.emplace_back(node.left.source);
-    ret.content.emplace_back(" || ");
-    ret.content.emplace_back(node.right.source);
-    return ret;
-}
-
-CompiledNode createCompiledNode(const FGNodeNormalize &node, const std::shared_ptr<FGShaderNode> &nodePtr) {
-    CompiledNode ret(nodePtr);
-    ret.content.emplace_back("normalize(");
-    ret.content.emplace_back(node.value.source);
-    ret.content.emplace_back(")");
-    return ret;
-}
-
-CompiledNode createCompiledNode(const FGNodeSubscript &node,
-                                const std::shared_ptr<FGShaderNode> &nodePtr,
-                                const FGShaderSource &source) {
-    CompiledNode ret(nodePtr);
-    auto valueType = node.value.source->getOutputType(source);
+std::string compileLeafNode(const FGNodeSubscript &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName) {
+    auto valueType = node.value->getOutputType(source, functionName);
     if (valueType.count > 1) {
-        // Array subscripting
-        ret.content.emplace_back(node.value.source);
-        ret.content.emplace_back("[");
-        ret.content.emplace_back(node.row.source);
-        ret.content.emplace_back("]");
+        return compileNode(*node.value, source, functionName)
+               + "["
+               + compileNode(*node.row, source, functionName)
+               + "]";
     } else if (valueType.type == FGShaderValue::MAT2
                || valueType.type == FGShaderValue::MAT3
                || valueType.type == FGShaderValue::MAT4) {
-        // Matrix subscripting
-        ret.content.emplace_back(node.value.source);
-        ret.content.emplace_back("[");
-        ret.content.emplace_back(node.column.source);
-        ret.content.emplace_back("][");
-        ret.content.emplace_back(node.row.source);
-        ret.content.emplace_back("]");
+        return compileNode(*node.value, source, functionName)
+               + "["
+               + compileNode(*node.column, source, functionName)
+               + "]["
+               + compileNode(*node.row, source, functionName)
+               + "]";
     } else {
-        // Vector subscripting
-        ret.content.emplace_back(node.value.source);
-
-        auto indexSource = node.row.source;
-        if (indexSource->getType() != FGShaderNode::LITERAL) {
+        auto &indexSource = *node.row;
+        if (indexSource.getType() != FGShaderNode::LITERAL) {
             throw std::runtime_error("Subscripting vectors with non-literal index is not supported");
         }
-        auto index = std::get<int>(down_cast<FGNodeLiteral &>(*indexSource).value);
+        auto index = std::get<int>(down_cast<FGNodeLiteral &>(indexSource).value);
         switch (index) {
             case 0:
-                ret.content.emplace_back(".x");
-                break;
+                return compileNode(*node.value, source, functionName) + ".x";
             case 1:
-                ret.content.emplace_back(".y");
-                break;
+                return compileNode(*node.value, source, functionName) + ".y";
             case 2:
-                ret.content.emplace_back(".z");
-                break;
+                return compileNode(*node.value, source, functionName) + ".z";
             case 3:
-                ret.content.emplace_back(".w");
-                break;
+                return compileNode(*node.value, source, functionName) + ".w";
             default:
                 throw std::runtime_error("Invalid vector subscript index");
         }
     }
+}
+
+std::string compileLeafNode(const FGNodeBranch &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName,
+                        const std::string &prefix) {
+    std::string ret;
+    ret += prefix + "if (";
+    ret += compileNode(*node.condition, source, functionName);
+    ret += ") {\n";
+    for (auto &branchNode: node.trueBranch) {
+        ret += compileNode(*branchNode, source, functionName, prefix + "\t");
+        ret += ";\n";
+    }
+    ret += prefix + "}";
+    if (node.falseBranch.size() > 0) {
+        ret += " else {\n";
+        for (auto &branchNode: node.falseBranch) {
+            ret += compileNode(*branchNode, source, functionName, prefix + "\t");
+            ret += ";\n";
+        }
+        ret += prefix + "}";
+    }
     return ret;
 }
 
-CompiledNode createCompiledNode(const FGNodeBranch &node, const std::shared_ptr<FGShaderNode> &nodePtr) {
-    CompiledNode ret(nodePtr);
-    return ret;
-}
-
-CompiledNode createCompiledNode(const FGNodeLoop &node, const std::shared_ptr<FGShaderNode> &nodePtr) {
-    CompiledNode ret(nodePtr);
-    return ret;
+std::string compileLeafNode(const FGNodeLoop &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName, const std::string &prefix) {
+    throw std::runtime_error("Loop not implemented");
 }

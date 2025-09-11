@@ -29,25 +29,19 @@ namespace xng {
     struct FGNodeLiteral final : FGShaderNode {
         FGShaderLiteral value;
 
-        FGShaderNodeOutput output = FGShaderNodeOutput("output");
-
         explicit FGNodeLiteral(FGShaderLiteral value)
             : value(std::move(value)) {
         }
 
-        NodeType getType() override {
+        NodeType getType() const override {
             return LITERAL;
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeInput>> getInputs() override {
-            return {};
+        std::unique_ptr<FGShaderNode> copy() const override {
+            return std::make_unique<FGNodeLiteral>(value);
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
-            return {output};
-        }
-
-        FGShaderValue getOutputType(const FGShaderSource &source) const override {
+        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
             return getLiteralType(value);
         }
     };

@@ -29,29 +29,32 @@ namespace xng {
         std::string bufferName;
         std::string elementName;
 
-        FGShaderNodeInput value = FGShaderNodeInput("value");
+        std::unique_ptr<FGShaderNode> value;
+        std::unique_ptr<FGShaderNode> index;
 
-        FGShaderNodeInput index = FGShaderNodeInput("index");
-
-        FGNodeBufferWrite(std::string buffer_name, std::string element_name)
+        FGNodeBufferWrite(std::string buffer_name,
+                          std::string element_name,
+                          std::unique_ptr<FGShaderNode> value,
+                          std::unique_ptr<FGShaderNode> index)
             : bufferName(std::move(buffer_name)),
-              elementName(std::move(element_name)) {
+              elementName(std::move(element_name)),
+              value(std::move(value)),
+              index(std::move(index)) {
         }
 
-        NodeType getType() override {
+        NodeType getType() const override {
             return BUFFER_WRITE;
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeInput>> getInputs() override {
-            return {value, index};
+        std::unique_ptr<FGShaderNode> copy() const override {
+            return std::make_unique<FGNodeBufferWrite>(bufferName,
+                                                       elementName,
+                                                       value->copy(),
+                                                       index ? index->copy() : nullptr);
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
-            return {};
-        }
-
-        FGShaderValue getOutputType(const FGShaderSource &source) const override {
-            throw std::runtime_error("Attribute write node has no output type");
+        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
+            throw std::runtime_error("Buffer write node has no output");
         }
     };
 }

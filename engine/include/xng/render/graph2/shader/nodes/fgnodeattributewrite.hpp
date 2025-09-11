@@ -30,26 +30,22 @@ namespace xng {
     struct FGNodeAttributeWrite final : FGShaderNode {
         uint32_t attributeIndex = 0;
 
-        FGShaderNodeInput value = FGShaderNodeInput("value");
+        std::unique_ptr<FGShaderNode> value;
 
-        explicit FGNodeAttributeWrite(const uint32_t attribute_index)
-            : attributeIndex(attribute_index) {
+        explicit FGNodeAttributeWrite(const uint32_t attribute_index, std::unique_ptr<FGShaderNode> value)
+            : attributeIndex(attribute_index), value(std::move(value)) {
         }
 
-        NodeType getType() override {
+        NodeType getType() const override {
             return ATTRIBUTE_WRITE;
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeInput>> getInputs() override {
-            return {value};
+        std::unique_ptr<FGShaderNode> copy() const override {
+            return std::make_unique<FGNodeAttributeWrite>(attributeIndex, value->copy());
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
-            return {};
-        }
-
-        FGShaderValue getOutputType(const FGShaderSource &source) const override {
-            throw std::runtime_error("Attribute write node has no output type");
+        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
+            throw std::runtime_error("Attribute write node has no output");
         }
     };
 }

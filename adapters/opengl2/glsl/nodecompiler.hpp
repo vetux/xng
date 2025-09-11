@@ -20,9 +20,10 @@
 #ifndef XENGINE_NODECOMPILER_HPP
 #define XENGINE_NODECOMPILER_HPP
 
-#include "compiledtree.hpp"
-
 #include "xng/render/graph2/shader/nodes.hpp"
+#include "xng/render/graph2/shader/nodes/fgnodevariablecreate.hpp"
+#include "xng/render/graph2/shader/nodes/fgnodevariableread.hpp"
+#include "xng/render/graph2/shader/nodes/fgnodevariablewrite.hpp"
 
 using namespace xng;
 
@@ -33,65 +34,94 @@ static const char *bufferPrefix = "buffer_";
 static const char *bufferArrayName = "data";
 static const char *texturePrefix = "texture_";
 
-CompiledNode createCompiledNode(std::shared_ptr<FGShaderNode> node, const FGShaderSource &source);
+/**
+ * Compile the given node.
+ *
+ * @param node
+ * @param source
+ * @param functionName
+ * @param prefix The prefix for lvalue nodes
+ * @return
+ */
+std::string compileNode(const FGShaderNode &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName,
+                        const std::string &prefix = "");
 
-CompiledNode createCompiledNode(const FGNodeLiteral &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+std::string compileLeafNode(const FGNodeVariableCreate &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName,
+                        const std::string &prefix);
 
-CompiledNode createCompiledNode(const FGNodeVector &node,
-                                const std::shared_ptr<FGShaderNode> &nodePtr,
-                                const FGShaderSource &source);
+std::string compileLeafNode(const FGNodeVariableWrite &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName,
+                        const std::string &prefix);
 
-CompiledNode createCompiledNode(const FGNodeAttributeRead &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+std::string compileLeafNode(const FGNodeVariableRead &node);
 
-CompiledNode createCompiledNode(const FGNodeAttributeWrite &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+std::string compileLeafNode(const FGNodeLiteral &node);
 
-CompiledNode createCompiledNode(const FGNodeParameterRead &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+std::string compileLeafNode(const FGNodeArgument &node);
 
-CompiledNode createCompiledNode(const FGNodeTextureSample &node, const std::shared_ptr<FGShaderNode> &nodePtr, const FGShaderSource &source);
+std::string compileLeafNode(const FGNodeVector &node, const FGShaderSource &source, const std::string &functionName);
 
-CompiledNode createCompiledNode(const FGNodeTextureSize &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+std::string compileLeafNode(const FGNodeAttributeRead &node);
 
-CompiledNode createCompiledNode(const FGNodeBufferRead &node, const std::shared_ptr<FGShaderNode> &nodePtr,
-                                const FGShaderSource &source);
+std::string compileLeafNode(const FGNodeAttributeWrite &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName,
+                        const std::string &prefix);
 
-CompiledNode createCompiledNode(const FGNodeBufferWrite &node, const std::shared_ptr<FGShaderNode> &nodePtr,
-                                const FGShaderSource &source);
+std::string compileLeafNode(const FGNodeParameterRead &node);
 
-CompiledNode createCompiledNode(const FGNodeBufferSize &node, const std::shared_ptr<FGShaderNode> &nodePtr,
-                                const FGShaderSource &source);
+std::string compileLeafNode(const FGNodeTextureSample &node, const FGShaderSource &source, const std::string &functionName);
 
-CompiledNode createCompiledNode(const FGNodeAdd &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+std::string compileLeafNode(const FGNodeTextureSize &node);
 
-CompiledNode createCompiledNode(const FGNodeSubtract &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+std::string compileLeafNode(const FGNodeBufferRead &node, const FGShaderSource &source, const std::string &functionName);
 
-CompiledNode createCompiledNode(const FGNodeMultiply &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+std::string compileLeafNode(const FGNodeBufferWrite &node, const FGShaderSource &source, const std::string &functionName,
+                        const std::string &prefix);
 
-CompiledNode createCompiledNode(const FGNodeDivide &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+std::string compileLeafNode(const FGNodeBufferSize &node, const FGShaderSource &source);
 
-CompiledNode createCompiledNode(const FGNodeEqual &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+std::string compileLeafNode(const FGNodeAdd &node, const FGShaderSource &source, const std::string &functionName);
 
-CompiledNode createCompiledNode(const FGNodeNotEqual &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+std::string compileLeafNode(const FGNodeSubtract &node, const FGShaderSource &source, const std::string &functionName);
 
-CompiledNode createCompiledNode(const FGNodeGreater &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+std::string compileLeafNode(const FGNodeMultiply &node, const FGShaderSource &source, const std::string &functionName);
 
-CompiledNode createCompiledNode(const FGNodeLess &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+std::string compileLeafNode(const FGNodeDivide &node, const FGShaderSource &source, const std::string &functionName);
 
-CompiledNode createCompiledNode(const FGNodeGreaterEqual &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+std::string compileLeafNode(const FGNodeEqual &node, const FGShaderSource &source, const std::string &functionName);
 
-CompiledNode createCompiledNode(const FGNodeLessEqual &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+std::string compileLeafNode(const FGNodeNotEqual &node, const FGShaderSource &source, const std::string &functionName);
 
-CompiledNode createCompiledNode(const FGNodeAnd &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+std::string compileLeafNode(const FGNodeGreater &node, const FGShaderSource &source, const std::string &functionName);
 
-CompiledNode createCompiledNode(const FGNodeOr &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+std::string compileLeafNode(const FGNodeLess &node, const FGShaderSource &source, const std::string &functionName);
 
-CompiledNode createCompiledNode(const FGNodeNormalize &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+std::string compileLeafNode(const FGNodeGreaterEqual &node, const FGShaderSource &source, const std::string &functionName);
 
-CompiledNode createCompiledNode(const FGNodeSubscript &node,
-                                const std::shared_ptr<FGShaderNode> &nodePtr,
-                                const FGShaderSource &source);
+std::string compileLeafNode(const FGNodeLessEqual &node, const FGShaderSource &source, const std::string &functionName);
 
-CompiledNode createCompiledNode(const FGNodeBranch &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+std::string compileLeafNode(const FGNodeAnd &node, const FGShaderSource &source, const std::string &functionName);
 
-CompiledNode createCompiledNode(const FGNodeLoop &node, const std::shared_ptr<FGShaderNode> &nodePtr);
+std::string compileLeafNode(const FGNodeOr &node, const FGShaderSource &source, const std::string &functionName);
+
+std::string compileLeafNode(const FGNodeCall &node,
+                        const FGShaderSource &source,
+                        const std::string &functionName);
+
+std::string compileLeafNode(const FGNodeNormalize &node, const FGShaderSource &source, const std::string &functionName);
+
+std::string compileLeafNode(const FGNodeSubscript &node, const FGShaderSource &source, const std::string &functionName);
+
+std::string compileLeafNode(const FGNodeBranch &node, const FGShaderSource &source, const std::string &functionName,
+                        const std::string &prefix);
+
+std::string compileLeafNode(const FGNodeLoop &node, const FGShaderSource &source, const std::string &functionName,
+                        const std::string &prefix);
 
 #endif //XENGINE_NODECOMPILER_HPP

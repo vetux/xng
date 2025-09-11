@@ -17,27 +17,7 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGSHADERNODEOUTPUT_HPP
-#define XENGINE_FGSHADERNODEOUTPUT_HPP
+#ifndef XENGINE_RENDER2DPASS_HPP
+#define XENGINE_RENDER2DPASS_HPP
 
-#include <memory>
-#include <string>
-#include <unordered_set>
-#include <utility>
-
-namespace xng {
-    struct FGShaderNode;
-
-    struct FGShaderNodeOutput {
-        std::string name;
-        std::unordered_set<std::shared_ptr<FGShaderNode> > consumers{};
-
-        FGShaderNodeOutput() = default;
-
-        explicit FGShaderNodeOutput(std::string name)
-            : name(std::move(name)) {
-        }
-    };
-}
-
-#endif //XENGINE_FGSHADERNODEOUTPUT_HPP
+#endif //XENGINE_RENDER2DPASS_HPP

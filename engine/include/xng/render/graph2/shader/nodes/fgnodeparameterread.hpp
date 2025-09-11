@@ -28,25 +28,19 @@ namespace xng {
     struct FGNodeParameterRead final : FGShaderNode {
         std::string parameterName;
 
-        FGShaderNodeOutput output = FGShaderNodeOutput("output");
-
         explicit FGNodeParameterRead(std::string parameter_name)
             : parameterName(std::move(parameter_name)) {
         }
 
-        NodeType getType() override {
+        NodeType getType() const override {
             return PARAMETER_READ;
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeInput>> getInputs() override {
-            return {};
+        std::unique_ptr<FGShaderNode> copy() const override {
+            return std::make_unique<FGNodeParameterRead>(parameterName);
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
-            return {output};
-        }
-
-        FGShaderValue getOutputType(const FGShaderSource &source) const override {
+        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
             return source.parameters.at(parameterName);
         }
     };

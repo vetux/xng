@@ -24,24 +24,22 @@
 
 namespace xng {
     struct FGNodeNormalize final : FGShaderNode {
-        FGShaderNodeInput value = FGShaderNodeInput("value");
+        std::unique_ptr<FGShaderNode> value;
 
-        FGShaderNodeOutput result = FGShaderNodeOutput("result");
+        explicit FGNodeNormalize(std::unique_ptr<FGShaderNode> value)
+            : value(std::move(value)) {
+        }
 
-        NodeType getType() override {
+        NodeType getType() const override {
             return NORMALIZE;
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeInput>> getInputs() override {
-            return {value};
+        std::unique_ptr<FGShaderNode> copy() const override {
+            return std::make_unique<FGNodeNormalize>(value->copy());
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
-            return {result};
-        }
-
-        FGShaderValue getOutputType(const FGShaderSource &source) const override {
-            return value.source->getOutputType(source);
+        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
+            return value->getOutputType(source, functionName);
         }
     };
 }

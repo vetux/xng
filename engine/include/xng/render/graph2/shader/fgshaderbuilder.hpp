@@ -20,8 +20,13 @@
 #ifndef XENGINE_FGSHADERBUILDER_HPP
 #define XENGINE_FGSHADERBUILDER_HPP
 
+#include <memory>
 #include <utility>
+#include <memory>
+#include <optional>
 
+#include "fgshaderfunction.hpp"
+#include "nodes/fgnodevariablewrite.hpp"
 #include "xng/render/graph2/shader/fgshaderliteral.hpp"
 #include "xng/render/graph2/shader/fgshadernode.hpp"
 #include "xng/render/graph2/shader/fgshadersource.hpp"
@@ -29,113 +34,133 @@
 namespace xng {
     class XENGINE_EXPORT FGShaderBuilder {
     public:
-        std::shared_ptr<FGShaderNode> literal(const FGShaderLiteral &value);
+        std::unique_ptr<FGShaderNode> createVariable(const std::string &name,
+                                                     const FGShaderValue &type,
+                                                     const std::unique_ptr<FGShaderNode> &value = nullptr);
 
-        std::shared_ptr<FGShaderNode> vector(const std::shared_ptr<FGShaderNode> &x,
-                                             const std::shared_ptr<FGShaderNode> &y,
-                                             const std::shared_ptr<FGShaderNode> &z,
-                                             const std::shared_ptr<FGShaderNode> &w);
+        std::unique_ptr<FGShaderNode> assignVariable(const std::string &variableName,
+                                                     const std::unique_ptr<FGShaderNode> &value);
 
-        std::shared_ptr<FGShaderNode> attributeRead(int32_t attributeIndex);
+        std::unique_ptr<FGShaderNode> variable(const std::string &name);
 
-        std::shared_ptr<FGShaderNode> attributeWrite(int32_t attributeIndex,
-                                                     const std::shared_ptr<FGShaderNode> &value);
+        std::unique_ptr<FGShaderNode> literal(const FGShaderLiteral &value);
 
-        std::shared_ptr<FGShaderNode> parameterRead(const std::string &parameter_name);
+        std::unique_ptr<FGShaderNode> argument(const std::string &name);
 
-        std::shared_ptr<FGShaderNode> textureSample(const std::string &textureName,
-                                                    const std::shared_ptr<FGShaderNode> &coordinate,
-                                                    const std::shared_ptr<FGShaderNode> &bias);
+        std::unique_ptr<FGShaderNode> vector(const std::unique_ptr<FGShaderNode> &x,
+                                             const std::unique_ptr<FGShaderNode> &y,
+                                             const std::unique_ptr<FGShaderNode> &z = nullptr,
+                                             const std::unique_ptr<FGShaderNode> &w = nullptr);
 
-        std::shared_ptr<FGShaderNode> textureSize(const std::string &textureName);
+        std::unique_ptr<FGShaderNode> attributeRead(int32_t attributeIndex);
 
-        std::shared_ptr<FGShaderNode> bufferRead(const std::string &bufferName, const std::string &elementName);
+        std::unique_ptr<FGShaderNode> attributeWrite(int32_t attributeIndex,
+                                                     const std::unique_ptr<FGShaderNode> &value);
 
-        std::shared_ptr<FGShaderNode> bufferWrite(const std::string &bufferName,
+        std::unique_ptr<FGShaderNode> parameterRead(std::string parameter_name);
+
+        std::unique_ptr<FGShaderNode> textureSample(const std::string &textureName,
+                                                    const std::unique_ptr<FGShaderNode> &coordinate,
+                                                    const std::unique_ptr<FGShaderNode> &bias);
+
+        std::unique_ptr<FGShaderNode> textureSize(const std::string &textureName);
+
+        std::unique_ptr<FGShaderNode> bufferRead(const std::string &bufferName,
+                                                 const std::string &elementName,
+                                                 const std::unique_ptr<FGShaderNode> &index = nullptr);
+
+        std::unique_ptr<FGShaderNode> bufferWrite(const std::string &bufferName,
                                                   const std::string &elementName,
-                                                  const std::shared_ptr<FGShaderNode> &value);
+                                                  const std::unique_ptr<FGShaderNode> &value,
+                                                  const std::unique_ptr<FGShaderNode> &index = nullptr);
 
-        std::shared_ptr<FGShaderNode> bufferSize(const std::string &bufferName);
+        std::unique_ptr<FGShaderNode> bufferSize(const std::string &bufferName);
 
-        std::shared_ptr<FGShaderNode> add(const std::shared_ptr<FGShaderNode> &left,
-                                          const std::shared_ptr<FGShaderNode> &right);
+        std::unique_ptr<FGShaderNode> add(const std::unique_ptr<FGShaderNode> &left,
+                                          const std::unique_ptr<FGShaderNode> &right);
 
-        std::shared_ptr<FGShaderNode> subtract(const std::shared_ptr<FGShaderNode> &left,
-                                               const std::shared_ptr<FGShaderNode> &right);
+        std::unique_ptr<FGShaderNode> subtract(const std::unique_ptr<FGShaderNode> &left,
+                                               const std::unique_ptr<FGShaderNode> &right);
 
-        std::shared_ptr<FGShaderNode> multiply(const std::shared_ptr<FGShaderNode> &left,
-                                               const std::shared_ptr<FGShaderNode> &right);
+        std::unique_ptr<FGShaderNode> multiply(const std::unique_ptr<FGShaderNode> &left,
+                                               const std::unique_ptr<FGShaderNode> &right);
 
-        std::shared_ptr<FGShaderNode> divide(const std::shared_ptr<FGShaderNode> &left,
-                                             const std::shared_ptr<FGShaderNode> &right);
+        std::unique_ptr<FGShaderNode> divide(const std::unique_ptr<FGShaderNode> &left,
+                                             const std::unique_ptr<FGShaderNode> &right);
 
-        std::shared_ptr<FGShaderNode> compareEqual(const std::shared_ptr<FGShaderNode> &left,
-                                                   const std::shared_ptr<FGShaderNode> &right);
+        std::unique_ptr<FGShaderNode> compareEqual(const std::unique_ptr<FGShaderNode> &left,
+                                                   const std::unique_ptr<FGShaderNode> &right);
 
-        std::shared_ptr<FGShaderNode> compareNotEqual(const std::shared_ptr<FGShaderNode> &left,
-                                                      const std::shared_ptr<FGShaderNode> &right);
+        std::unique_ptr<FGShaderNode> compareNotEqual(const std::unique_ptr<FGShaderNode> &left,
+                                                      const std::unique_ptr<FGShaderNode> &right);
 
-        std::shared_ptr<FGShaderNode> compareGreater(const std::shared_ptr<FGShaderNode> &left,
-                                                     const std::shared_ptr<FGShaderNode> &right);
+        std::unique_ptr<FGShaderNode> compareGreater(const std::unique_ptr<FGShaderNode> &left,
+                                                     const std::unique_ptr<FGShaderNode> &right);
 
-        std::shared_ptr<FGShaderNode> compareLess(const std::shared_ptr<FGShaderNode> &left,
-                                                  const std::shared_ptr<FGShaderNode> &right);
+        std::unique_ptr<FGShaderNode> compareLess(const std::unique_ptr<FGShaderNode> &left,
+                                                  const std::unique_ptr<FGShaderNode> &right);
 
-        std::shared_ptr<FGShaderNode> compareGreaterEqual(const std::shared_ptr<FGShaderNode> &left,
-                                                          const std::shared_ptr<FGShaderNode> &right);
+        std::unique_ptr<FGShaderNode> compareGreaterEqual(const std::unique_ptr<FGShaderNode> &left,
+                                                          const std::unique_ptr<FGShaderNode> &right);
 
-        std::shared_ptr<FGShaderNode> compareLessEqual(const std::shared_ptr<FGShaderNode> &left,
-                                                       const std::shared_ptr<FGShaderNode> &right);
+        std::unique_ptr<FGShaderNode> compareLessEqual(const std::unique_ptr<FGShaderNode> &left,
+                                                       const std::unique_ptr<FGShaderNode> &right);
 
-        std::shared_ptr<FGShaderNode> logicalAnd(const std::shared_ptr<FGShaderNode> &left,
-                                                 const std::shared_ptr<FGShaderNode> &right);
+        std::unique_ptr<FGShaderNode> logicalAnd(const std::unique_ptr<FGShaderNode> &left,
+                                                 const std::unique_ptr<FGShaderNode> &right);
 
-        std::shared_ptr<FGShaderNode> logicalOr(const std::shared_ptr<FGShaderNode> &left,
-                                                const std::shared_ptr<FGShaderNode> &right);
+        std::unique_ptr<FGShaderNode> logicalOr(const std::unique_ptr<FGShaderNode> &left,
+                                                const std::unique_ptr<FGShaderNode> &right);
 
-        std::shared_ptr<FGShaderNode> normalize(const std::shared_ptr<FGShaderNode> &value);
+        std::unique_ptr<FGShaderNode> call(const std::string &functionName,
+                                           const std::vector<std::unique_ptr<FGShaderNode> > &arguments);
 
-        std::shared_ptr<FGShaderNode> subscript(const std::shared_ptr<FGShaderNode> &value,
-                                                const std::shared_ptr<FGShaderNode> &row,
-                                                const std::shared_ptr<FGShaderNode> &column = nullptr);
+        std::unique_ptr<FGShaderNode> normalize(const std::unique_ptr<FGShaderNode> &value);
 
-        std::shared_ptr<FGShaderNode> branch(const std::shared_ptr<FGShaderNode> &condition,
-                                             const std::shared_ptr<FGShaderNode> &trueBranch,
-                                             const std::shared_ptr<FGShaderNode> &falseBranch);
+        std::unique_ptr<FGShaderNode> subscript(const std::unique_ptr<FGShaderNode> &value,
+                                                const std::unique_ptr<FGShaderNode> &row,
+                                                const std::unique_ptr<FGShaderNode> &column = nullptr);
 
-        std::shared_ptr<FGShaderNode> loop(const std::shared_ptr<FGShaderNode> &iterationStart,
-                                           const std::shared_ptr<FGShaderNode> &iterationEnd,
-                                           const std::shared_ptr<FGShaderNode> &iterationStep);
+        std::unique_ptr<FGShaderNode> branch(const std::unique_ptr<FGShaderNode> &condition,
+                                             const std::vector<std::unique_ptr<FGShaderNode> > &trueBranch,
+                                             const std::vector<std::unique_ptr<FGShaderNode> > &falseBranch);
 
-        std::shared_ptr<FGShaderNode> getX(const std::shared_ptr<FGShaderNode> &value) {
-            return subscript(value, literal(0));
+        std::unique_ptr<FGShaderNode> loop(const std::unique_ptr<FGShaderNode> &predicate,
+                                           const std::unique_ptr<FGShaderNode> &initializer,
+                                           const std::unique_ptr<FGShaderNode> &iterator,
+                                           const std::vector<std::unique_ptr<FGShaderNode> > &body);
+
+        std::unique_ptr<FGShaderNode> getX(const std::unique_ptr<FGShaderNode> &value) {
+            return subscript(std::move(value), literal(0));
         }
 
-        std::shared_ptr<FGShaderNode> getY(const std::shared_ptr<FGShaderNode> &value) {
-            return subscript(value, literal(1));
+        std::unique_ptr<FGShaderNode> getY(const std::unique_ptr<FGShaderNode> &value) {
+            return subscript(std::move(value), literal(1));
         }
 
-        std::shared_ptr<FGShaderNode> getZ(const std::shared_ptr<FGShaderNode> &value) {
-            return subscript(value, literal(2));
+        std::unique_ptr<FGShaderNode> getZ(const std::unique_ptr<FGShaderNode> &value) {
+            return subscript(std::move(value), literal(2));
         }
 
-        std::shared_ptr<FGShaderNode> getW(const std::shared_ptr<FGShaderNode> &value) {
-            return subscript(value, literal(3));
+        std::unique_ptr<FGShaderNode> getW(const std::unique_ptr<FGShaderNode> &value) {
+            return subscript(std::move(value), literal(3));
         }
+
+        void defineFunction(const std::string &name,
+                            const std::vector<std::unique_ptr<FGShaderNode> > &body,
+                            const std::unordered_map<std::string, FGShaderValue> &arguments,
+                            FGShaderValue returnType);
 
         FGShaderSource build(FGShaderSource::ShaderStage stage,
                              const FGAttributeLayout &inputLayout,
                              const FGAttributeLayout &outputLayout,
                              const std::unordered_map<std::string, FGShaderValue> &parameters,
                              const std::unordered_map<std::string, FGShaderBuffer> &buffers,
-                             const std::unordered_map<std::string, FGTexture> &textures);
+                             const std::unordered_map<std::string, FGTexture> &textures,
+                             const std::vector<std::unique_ptr<FGShaderNode> > &mainFunction);
 
     private:
-        static void connectNodes(FGShaderNodeInput &targetInput,
-                                 const std::shared_ptr<FGShaderNode> &target,
-                                 const std::shared_ptr<FGShaderNode> &source);
-
-        std::vector<std::shared_ptr<FGShaderNode> > nodes;
+        std::unordered_map<std::string, FGShaderFunction> functions;
     };
 }
 

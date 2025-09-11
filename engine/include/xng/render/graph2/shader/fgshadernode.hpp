@@ -21,11 +21,7 @@
 #define XENGINE_FGSHADERNODE_HPP
 
 #include <memory>
-#include <string>
-#include <vector>
 
-#include "xng/render/graph2/shader/fgshadernodeinput.hpp"
-#include "xng/render/graph2/shader/fgshadernodeoutput.hpp"
 #include "xng/render/graph2/shader/fgshadervalue.hpp"
 
 namespace xng {
@@ -33,7 +29,13 @@ namespace xng {
 
     struct FGShaderNode {
         enum NodeType {
+            VARIABLE_CREATE = 0,
+            VARIABLE_WRITE,
+            VARIABLE_READ,
+
             LITERAL,
+            ARGUMENT,
+
             VECTOR,
 
             ATTRIBUTE_READ,
@@ -63,6 +65,8 @@ namespace xng {
             AND,
             OR,
 
+            CALL,
+
             NORMALIZE,
             //TODO: Add builtin function nodes
 
@@ -72,20 +76,7 @@ namespace xng {
             LOOP,
         };
 
-        virtual NodeType getType() = 0;
-
-        virtual std::vector<std::reference_wrapper<FGShaderNodeInput>> getInputs() = 0;
-
-        virtual std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() = 0;
-
-        /**
-         * For now nodes will always have only one output.
-         *
-         * @return
-         */
-        FGShaderNodeOutput &getOutput() {
-            return getOutputs().at(0);
-        }
+        virtual NodeType getType() const = 0;
 
         /**
          * Determine the type of the node output in this node graph.
@@ -93,9 +84,13 @@ namespace xng {
          * For Attribute Reads / Buffer Reads this depends on the configured attributes / buffers in the source.
          *
          * @param source
+         * @param functionName
          * @return
          */
-        virtual FGShaderValue getOutputType(const FGShaderSource &source) const = 0;
+        virtual FGShaderValue getOutputType(const FGShaderSource &source,
+                                            const std::string &functionName = "") const = 0;
+
+        virtual std::unique_ptr<FGShaderNode> copy() const = 0;
 
         virtual ~FGShaderNode() = default;
     };

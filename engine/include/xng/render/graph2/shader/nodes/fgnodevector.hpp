@@ -30,30 +30,37 @@ namespace xng {
      * for example, if x,y,z is assigned, the resulting vector is a Vector3.
      */
     struct FGNodeVector final : FGShaderNode {
-        FGShaderNodeInput x = FGShaderNodeInput("x");
-        FGShaderNodeInput y = FGShaderNodeInput("y");
-        FGShaderNodeInput z = FGShaderNodeInput("z");
-        FGShaderNodeInput w = FGShaderNodeInput("w");
+        std::unique_ptr<FGShaderNode> x;
+        std::unique_ptr<FGShaderNode> y;
+        std::unique_ptr<FGShaderNode> z;
+        std::unique_ptr<FGShaderNode> w;
 
-        FGShaderNodeOutput vector = FGShaderNodeOutput("vector");
+        FGNodeVector(std::unique_ptr<FGShaderNode> x,
+                     std::unique_ptr<FGShaderNode> y,
+                     std::unique_ptr<FGShaderNode> z,
+                     std::unique_ptr<FGShaderNode> w)
+            : x(std::move(x)),
+              y(std::move(y)),
+              z(std::move(z)),
+              w(std::move(w)) {
+        }
 
-        NodeType getType() override {
+        NodeType getType() const override {
             return VECTOR;
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeInput> > getInputs() override {
-            return {x, y, z, w};
+        std::unique_ptr<FGShaderNode> copy() const override {
+            return std::make_unique<FGNodeVector>(x->copy(),
+                                                  y->copy(),
+                                                  z ? z->copy() : nullptr,
+                                                  w ? w->copy() : nullptr);
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeOutput> > getOutputs() override {
-            return {vector};
-        }
-
-        FGShaderValue getOutputType(const FGShaderSource &source) const override {
-            auto baseType = x.source->getOutputType(source);
-            if (w.source != nullptr) {
+        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
+            auto baseType = x->getOutputType(source, functionName);
+            if (w != nullptr) {
                 return {FGShaderValue::VECTOR4, baseType.component, 1};
-            } else if (z.source != nullptr) {
+            } else if (z != nullptr) {
                 return {FGShaderValue::VECTOR3, baseType.component, 1};
             } else {
                 return {FGShaderValue::VECTOR2, baseType.component, 1};

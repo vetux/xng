@@ -17,32 +17,40 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGNODEATTRIBUTEREAD_HPP
-#define XENGINE_FGNODEATTRIBUTEREAD_HPP
+#ifndef XENGINE_FGNODECALL_HPP
+#define XENGINE_FGNODECALL_HPP
+
+#include <vector>
 
 #include "xng/render/graph2/shader/fgshadernode.hpp"
-#include "xng/render/graph2/shader/fgshadersource.hpp"
 
 namespace xng {
-    struct FGNodeAttributeRead final : FGShaderNode {
-        uint32_t attributeIndex = 0;
+    struct FGNodeCall final : FGShaderNode {
+        std::string functionName;
+        std::vector<std::unique_ptr<FGShaderNode> > arguments;
 
-        explicit FGNodeAttributeRead(const uint32_t attribute_index)
-            : attributeIndex(attribute_index) {
+        FGNodeCall(std::string function_name, std::vector<std::unique_ptr<FGShaderNode> > arguments)
+            : functionName(std::move(function_name)),
+              arguments(std::move(arguments)) {
         }
 
         NodeType getType() const override {
-            return ATTRIBUTE_READ;
+            return CALL;
         }
 
         std::unique_ptr<FGShaderNode> copy() const override {
-            return std::make_unique<FGNodeAttributeRead>(attributeIndex);
+            std::vector<std::unique_ptr<FGShaderNode> > argumentsCopy;
+            argumentsCopy.reserve(arguments.size());
+            for (auto &node: arguments) {
+                argumentsCopy.push_back(node->copy());
+            }
+            return std::make_unique<FGNodeCall>(functionName, std::move(argumentsCopy));
         }
 
-        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
-            return source.inputLayout.elements.at(attributeIndex);
+        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &currentFunctionName) const override {
+            return source.functions.at(currentFunctionName).returnType;
         }
     };
 }
 
-#endif //XENGINE_FGNODEATTRIBUTEREAD_HPP
+#endif //XENGINE_FGNODECALL_HPP

@@ -23,7 +23,7 @@
 #include <unordered_map>
 
 #include "xng/render/graph2/shader/fgattributelayout.hpp"
-#include "xng/render/graph2/shader/fgshadernode.hpp"
+#include "xng/render/graph2/shader/fgshaderfunction.hpp"
 #include "xng/render/graph2/texture/fgtexture.hpp"
 #include "xng/render/graph2/shader/fgshadervalue.hpp"
 #include "xng/render/graph2/shader/fgshaderbuffer.hpp"
@@ -52,7 +52,8 @@ namespace xng {
         std::unordered_map<std::string, FGShaderBuffer> buffers;
         std::unordered_map<std::string, FGTexture> textures;
 
-        std::vector<std::shared_ptr<FGShaderNode> > nodes;
+        std::vector<std::unique_ptr<FGShaderNode> > mainFunction;
+        std::unordered_map<std::string, FGShaderFunction> functions;
 
         FGShaderSource() = default;
 
@@ -62,14 +63,70 @@ namespace xng {
                        const std::unordered_map<std::string, FGShaderValue> &parameters,
                        const std::unordered_map<std::string, FGShaderBuffer> &buffers,
                        const std::unordered_map<std::string, FGTexture> &textures,
-                       const std::vector<std::shared_ptr<FGShaderNode> > &nodes)
+                       std::vector<std::unique_ptr<FGShaderNode> > mainFunction,
+                       std::unordered_map<std::string, FGShaderFunction> functions)
             : stage(stage),
               inputLayout(input_layout),
               outputLayout(output_layout),
               parameters(parameters),
               buffers(buffers),
               textures(textures),
-              nodes(nodes) {
+              mainFunction(std::move(mainFunction)),
+              functions(std::move(functions)) {
+        }
+
+        FGShaderSource(const FGShaderSource &other)
+            : stage(other.stage),
+              inputLayout(other.inputLayout),
+              outputLayout(other.outputLayout),
+              parameters(other.parameters),
+              buffers(other.buffers),
+              textures(other.textures),
+              functions(other.functions) {
+            for (auto &node: other.mainFunction) {
+                mainFunction.push_back(node->copy());
+            }
+        }
+
+        FGShaderSource(FGShaderSource &&other) noexcept
+            : stage(other.stage),
+              inputLayout(std::move(other.inputLayout)),
+              outputLayout(std::move(other.outputLayout)),
+              parameters(std::move(other.parameters)),
+              buffers(std::move(other.buffers)),
+              textures(std::move(other.textures)),
+              mainFunction(std::move(other.mainFunction)),
+              functions(std::move(other.functions)) {
+        }
+
+        FGShaderSource &operator=(const FGShaderSource &other) {
+            if (this == &other)
+                return *this;
+            stage = other.stage;
+            inputLayout = other.inputLayout;
+            outputLayout = other.outputLayout;
+            parameters = other.parameters;
+            buffers = other.buffers;
+            textures = other.textures;
+            functions = other.functions;
+            for (auto &node: other.mainFunction) {
+                mainFunction.push_back(node->copy());
+            }
+            return *this;
+        }
+
+        FGShaderSource &operator=(FGShaderSource &&other) noexcept {
+            if (this == &other)
+                return *this;
+            stage = other.stage;
+            inputLayout = std::move(other.inputLayout);
+            outputLayout = std::move(other.outputLayout);
+            parameters = std::move(other.parameters);
+            buffers = std::move(other.buffers);
+            textures = std::move(other.textures);
+            mainFunction = std::move(other.mainFunction);
+            functions = std::move(other.functions);
+            return *this;
         }
     };
 }

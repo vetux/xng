@@ -17,35 +17,32 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_COMPILEDTREE_HPP
-#define XENGINE_COMPILEDTREE_HPP
-
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <variant>
-#include <vector>
+#ifndef XENGINE_FGNODEARGUMENT_HPP
+#define XENGINE_FGNODEARGUMENT_HPP
 
 #include "xng/render/graph2/shader/fgshadernode.hpp"
+#include "xng/render/graph2/shader/fgshadersource.hpp"
 
-using namespace xng;
+namespace xng {
+    struct FGNodeArgument final : FGShaderNode {
+        std::string argumentName;
 
-struct CompiledTree;
+        explicit FGNodeArgument(const std::string &argument_name)
+            : argumentName(argument_name) {
+        }
 
-struct CompiledNode {
-    std::shared_ptr<FGShaderNode> node;
-    std::vector<std::variant<std::string, std::shared_ptr<FGShaderNode> > > content;
+        NodeType getType() const override {
+            return ARGUMENT;
+        }
 
-    CompiledNode() = default;
+        std::unique_ptr<FGShaderNode> copy() const override {
+            return std::make_unique<FGNodeArgument>(argumentName);
+        }
 
-    explicit CompiledNode(const std::shared_ptr<FGShaderNode> &node)
-        : node(node) {
-    }
-};
+        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
+            return source.functions.at(functionName).arguments.at(argumentName);
+        }
+    };
+}
 
-struct CompiledTree {
-    std::unordered_map<std::shared_ptr<FGShaderNode>, std::string> variables;
-    std::unordered_map<std::shared_ptr<FGShaderNode>, CompiledNode> nodes;
-};
-
-#endif //XENGINE_COMPILEDTREE_HPP
+#endif //XENGINE_FGNODEARGUMENT_HPP

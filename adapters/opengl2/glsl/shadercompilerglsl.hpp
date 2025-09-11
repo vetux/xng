@@ -20,6 +20,8 @@
 #ifndef XENGINE_SHADERCOMPILERGLSL_HPP
 #define XENGINE_SHADERCOMPILERGLSL_HPP
 
+#include <optional>
+
 #include "xng/render/graph2/shader/fgshadersource.hpp"
 
 #include "xng/render/graph2/shader/nodes.hpp"
@@ -32,6 +34,9 @@ namespace xng {
         ShaderCompilerGLSL() = default;
 
         CompiledPipeline compile(const std::vector<FGShaderSource> &sources);
+
+    private:
+        std::string compileShader(const FGShaderSource &source, CompiledPipeline &pipeline);
     };
 }
 

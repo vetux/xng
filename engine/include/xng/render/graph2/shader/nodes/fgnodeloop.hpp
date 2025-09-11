@@ -24,26 +24,39 @@
 
 namespace xng {
     struct FGNodeLoop : FGShaderNode {
-        FGShaderNodeInput iterationStart = FGShaderNodeInput("iterationStart");
-        FGShaderNodeInput iterationEnd = FGShaderNodeInput("iterationEnd");
-        FGShaderNodeInput iterationStep = FGShaderNodeInput("iterationStep");
+        std::unique_ptr<FGShaderNode> initializer;
+        std::unique_ptr<FGShaderNode> predicate;
+        std::unique_ptr<FGShaderNode> iterator;
+        std::vector<std::unique_ptr<FGShaderNode> > body;
 
-        FGShaderNodeOutput iterator = FGShaderNodeOutput("iterator");
+        FGNodeLoop(std::unique_ptr<FGShaderNode> initializer,
+                   std::unique_ptr<FGShaderNode> predicate,
+                   std::unique_ptr<FGShaderNode> iterator,
+                   std::vector<std::unique_ptr<FGShaderNode> > body)
+            : initializer(std::move(initializer)),
+              predicate(std::move(predicate)),
+              iterator(std::move(iterator)),
+              body(std::move(body)) {
+        }
 
-        NodeType getType() override {
+        NodeType getType() const override {
             return LOOP;
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeInput> > getInputs() override {
-            return {iterationStart, iterationEnd, iterationStep};
+        std::unique_ptr<FGShaderNode> copy() const override {
+            std::vector<std::unique_ptr<FGShaderNode> > bodyCopy;
+            bodyCopy.reserve(body.size());
+            for (auto &node: body) {
+                bodyCopy.push_back(node->copy());
+            }
+            return std::make_unique<FGNodeLoop>(initializer->copy(),
+                                                predicate->copy(),
+                                                iterator->copy(),
+                                                std::move(bodyCopy));
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeOutput> > getOutputs() override {
-            return {iterator};
-        }
-
-        FGShaderValue getOutputType(const FGShaderSource &source) const override {
-            return {FGShaderValue::SCALAR, FGShaderValue::SIGNED_INT, 1};
+        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
+            throw std::runtime_error("Loop node has no output");
         }
     };
 }

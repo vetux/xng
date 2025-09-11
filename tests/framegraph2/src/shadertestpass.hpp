@@ -24,6 +24,7 @@
 #include <ostream>
 
 #include "xng/render/graph2/fgbuilder.hpp"
+#include "xng/render/graph2/shader/fgbranchbuilder.hpp"
 #include "xng/render/graph2/shader/fgshaderbuilder.hpp"
 
 using namespace xng;
@@ -67,50 +68,66 @@ public:
         const auto vPos = builder.attributeRead(0);
         const auto mvp = builder.bufferRead("data", "mvp");
 
-        auto vecA = builder.vector(builder.getX(vPos),
-                                   builder.getY(vPos),
-                                   builder.getZ(vPos),
-                                   builder.literal(1.0f));
+        std::vector<std::unique_ptr<FGShaderNode> > body;
 
-        vecA = builder.multiply(mvp, vecA);
+        body.emplace_back(builder.createVariable("fPos",
+                                                 FGShaderValue(FGShaderValue::VECTOR4, FGShaderValue::FLOAT),
+                                                 builder.vector(builder.getX(vPos),
+                                                                builder.getY(vPos),
+                                                                builder.getZ(vPos),
+                                                                builder.literal(1.0f))));
+        body.emplace_back(builder.assignVariable("fPos", builder.multiply(mvp, builder.variable("fPos"))));
 
-        auto vecB = builder.vector(builder.literal(5.0f),
-                                   builder.literal(5.0f),
-                                   builder.literal(5.0f),
-                                   builder.literal(1.0f));
+        FGBranchBuilder branch;
+        branch.If(builder.compareEqual(builder.getX(vPos), builder.literal(1.0f)));
+        branch.add(builder.assignVariable("fPos", builder.multiply(builder.variable("fPos"),
+                                                                   builder.literal(2.0f))));
+        branch.Else();
 
-        vecB = builder.multiply(mvp, vecB);
+        FGBranchBuilder nestedBranch;
+        nestedBranch.If(builder.compareGreater(builder.getX(vPos), builder.literal(1.0f)));
+        nestedBranch.add(builder.assignVariable("fPos", builder.vector(builder.getX(vPos),
+                                                                       builder.getY(vPos),
+                                                                       builder.literal(1.0f),
+                                                                       builder.literal(1.0f))));
+        nestedBranch.Else();
+        nestedBranch.add(builder.assignVariable("fPos", builder.vector(builder.getX(vPos),
+                                                                       builder.getY(vPos),
+                                                                       builder.literal(5.0f),
+                                                                       builder.literal(5.0f))));
 
-        auto nestedBranch = builder.branch(builder.compareEqual(builder.getX(vecA), builder.getX(vecB)),
-                                           vecA,
-                                           vecB);
+        nestedBranch.EndIf();
 
-        auto branch = builder.branch(builder.compareLess(builder.getZ(vecA), builder.getZ(vecB)),
-                                     vecA,
-                                     nestedBranch);
+        branch.add(nestedBranch.build(builder));
 
-        builder.attributeWrite(0, branch);
+        branch.EndIf();
+
+        body.emplace_back(branch.build(builder));
+
+        body.emplace_back(builder.attributeWrite(0, builder.variable("fPos")));
 
         return builder.build(FGShaderSource::VERTEX,
                              vertexLayout,
                              fragmentLayout,
                              {},
                              {{"color", colorBuffer}, {"data", dataBuffer}},
-                             {{"texture", texture}});
+                             {{"texture", texture}},
+                             body);
     }
 
     FGShaderSource createFragmentShader() {
         auto builder = FGShaderBuilder();
 
-        const auto fPos = builder.attributeRead(0);
-        builder.attributeWrite(0, fPos);
+        std::vector<std::unique_ptr<FGShaderNode> > body;
+        body.emplace_back(builder.attributeWrite(0, builder.attributeRead(0)));
 
         return builder.build(FGShaderSource::FRAGMENT,
                              fragmentLayout,
                              colorLayout,
                              {},
                              {{"data", dataBuffer}, {"color", colorBuffer}},
-                             {{"texture", texture}});
+                             {{"texture", texture}},
+                             body);
     }
 };
 #endif //XENGINE_SHADERTESTPASS_HPP

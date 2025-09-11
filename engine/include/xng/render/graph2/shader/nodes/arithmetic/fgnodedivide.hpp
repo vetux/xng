@@ -24,26 +24,25 @@
 
 namespace xng {
     struct FGNodeDivide final : FGShaderNode {
-        FGShaderNodeInput left = FGShaderNodeInput("left");
-        FGShaderNodeInput right = FGShaderNodeInput("right");
+        std::unique_ptr<FGShaderNode> left;
+        std::unique_ptr<FGShaderNode> right;
 
-        FGShaderNodeOutput result = FGShaderNodeOutput("result");
+        FGNodeDivide(std::unique_ptr<FGShaderNode> left, std::unique_ptr<FGShaderNode> right)
+            : left(std::move(left)),
+              right(std::move(right)) {
+        }
 
-        NodeType getType() override {
+        NodeType getType() const override {
             return DIVIDE;
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeInput>> getInputs() override {
-            return {left, right};
+        std::unique_ptr<FGShaderNode> copy() const override {
+            return std::make_unique<FGNodeDivide>(left->copy(), right->copy());
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
-            return {result};
-        }
-
-        FGShaderValue getOutputType(const FGShaderSource &source) const override {
-            auto leftType = left.source->getOutputType(source);
-            auto rightType = right.source->getOutputType(source);
+        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
+            auto leftType = left->getOutputType(source, functionName);
+            auto rightType = right->getOutputType(source, functionName);
             if (leftType.type == rightType.type) {
                 return leftType;
             } else {

@@ -23,31 +23,36 @@
 #include "xng/render/graph2/shader/fgshadernode.hpp"
 
 namespace xng {
+    /**
+     * When subscripting vectors, the row must contain a literal specifying the index of the element eg (.x = 0)
+     */
     struct FGNodeSubscript final : FGShaderNode {
-        FGShaderNodeInput value = FGShaderNodeInput("value");
-        FGShaderNodeInput row = FGShaderNodeInput("row");
-        FGShaderNodeInput column = FGShaderNodeInput("column");
+        std::unique_ptr<FGShaderNode> value;
+        std::unique_ptr<FGShaderNode> row;
+        std::unique_ptr<FGShaderNode> column;
 
-        FGShaderNodeOutput output = FGShaderNodeOutput("output");
+        FGNodeSubscript(std::unique_ptr<FGShaderNode> value,
+                        std::unique_ptr<FGShaderNode> row,
+                        std::unique_ptr<FGShaderNode> column)
+            : value(std::move(value)),
+              row(std::move(row)),
+              column(std::move(column)) {
+        }
 
-        NodeType getType() override {
+        NodeType getType() const override {
             return SUBSCRIPT;
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeInput>> getInputs() override {
-            return {value, row, column};
+        std::unique_ptr<FGShaderNode> copy() const override {
+            return std::make_unique<FGNodeSubscript>(value->copy(), row->copy(), column ? column->copy() : nullptr);
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
-            return {output};
-        }
-
-        FGShaderValue getOutputType(const FGShaderSource &source) const override {
-            auto valueType = value.source->getOutputType(source);
+        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
+            auto valueType = value->getOutputType(source, functionName);
             if (valueType.count > 1) {
                 return {valueType.type, valueType.component, 1};
             } else {
-                return {FGShaderValue::SCALAR, value.source->getOutputType(source).component, 1};
+                return {FGShaderValue::SCALAR, value->getOutputType(source, functionName).component, 1};
             }
         }
     };

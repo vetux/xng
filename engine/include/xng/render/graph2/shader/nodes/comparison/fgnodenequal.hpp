@@ -24,25 +24,24 @@
 
 namespace xng {
     struct FGNodeNotEqual final : FGShaderNode {
-        FGShaderNodeInput left = FGShaderNodeInput("left");
-        FGShaderNodeInput right = FGShaderNodeInput("right");
+        std::unique_ptr<FGShaderNode> left;
+        std::unique_ptr<FGShaderNode> right;
 
-        FGShaderNodeOutput result = FGShaderNodeOutput("result");
+        FGNodeNotEqual(std::unique_ptr<FGShaderNode> left, std::unique_ptr<FGShaderNode> right)
+            : left(std::move(left)),
+              right(std::move(right)) {
+        }
 
-        NodeType getType() override {
+        NodeType getType() const override {
             return NEQUAL;
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeInput>> getInputs() override {
-            return {left, right};
+        std::unique_ptr<FGShaderNode> copy() const override {
+            return std::make_unique<FGNodeNotEqual>(left->copy(), right->copy());
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeOutput>> getOutputs() override {
-            return {result};
-        }
-
-        FGShaderValue getOutputType(const FGShaderSource &source) const override {
-            return left.source->getOutputType(source);
+        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
+            return {FGShaderValue::SCALAR, FGShaderValue::BOOLEAN, 1};
         }
     };
 }

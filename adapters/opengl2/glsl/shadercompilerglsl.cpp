@@ -21,130 +21,11 @@
 
 #include "xng/render/graph2/shader/fgshadernode.hpp"
 
-#include "literals.hpp"
-#include "types.hpp"
 #include "nodecompiler.hpp"
-#include "xng/util/downcast.hpp"
+#include "functioncompiler.hpp"
+#include "types.hpp"
 
 using namespace xng;
-
-CompiledTree createCompiledTree(const FGShaderSource &source) {
-    CompiledTree ret;
-    size_t varCount = 0;
-    for (const auto &node: source.nodes) {
-        ret.nodes[node] = createCompiledNode(node, source);
-        if ((node->getOutputs().size() > 0 && node->getOutput().consumers.size() > 1)
-            || node->getType() == FGShaderNode::BRANCH) {
-            ret.variables[node] = "tmp" + std::to_string(varCount++);
-        }
-    }
-    return ret;
-}
-
-std::string getValueCode(const CompiledNode &node, const CompiledTree &tree) {
-    std::string ret;
-    if (node.node->getType() == FGShaderNode::BRANCH) {
-        ret = tree.variables.at(node.node);
-    } else {
-        for (auto var: node.content) {
-            if (var.index() == 0) {
-                ret += std::get<std::string>(var);
-            } else {
-                auto sourceNode = std::get<std::shared_ptr<FGShaderNode> >(var);
-                if (tree.variables.find(sourceNode) == tree.variables.end()) {
-                    // Inline
-                    ret += getValueCode(tree.nodes.at(sourceNode), tree);
-                } else {
-                    // Use Variable
-                    ret += tree.variables.at(sourceNode);
-                }
-            }
-        }
-    }
-    return ret;
-}
-
-std::string compileVariables(const CompiledNode &node,
-                             const CompiledTree &tree,
-                             const FGShaderSource &source,
-                             std::unordered_set<std::shared_ptr<FGShaderNode> > &visited,
-                             std::string prefix) {
-    std::string ret;
-    if (node.node->getInputs().size() > 0) {
-        for (const auto &input: node.node->getInputs()) {
-            if (input.get().source != nullptr) {
-                ret += compileVariables(tree.nodes.at(input.get().source), tree, source, visited, prefix);
-            }
-        }
-    }
-
-    auto var = tree.variables.find(node.node);
-    if (var != tree.variables.end()
-        && visited.find(node.node) == visited.end()) {
-        if (node.node->getType() == FGShaderNode::BRANCH) {
-            auto branchNode = down_cast<FGNodeBranch &>(*node.node);
-
-            auto condition = tree.nodes.at(branchNode.condition.source);
-            auto trueBranch = tree.nodes.at(branchNode.trueBranch.source);
-            auto falseBranch = tree.nodes.at(branchNode.falseBranch.source);
-
-            ret += prefix + getTypeName(node.node->getOutputType(source)) + " " + var->second + ";\n";
-            ret += prefix + "if (" + getValueCode(condition, tree) + ") {\n";
-            if (tree.variables.find(trueBranch.node) == tree.variables.end()) {
-                ret += prefix
-                        + "\t"
-                        + var->second
-                        + " = "
-                        + getValueCode(tree.nodes.at(branchNode.trueBranch.source), tree)
-                        + ";\n";
-            } else {
-                ret += prefix + "\t" + var->second + " = " + tree.variables.at(trueBranch.node) + ";\n";
-            }
-            ret += prefix + "} else {\n";
-            if (tree.variables.find(falseBranch.node) == tree.variables.end()) {
-                ret += prefix + "\t" + var->second + " = " + getValueCode(tree.nodes.at(branchNode.falseBranch.source),
-                                                                          tree) + ";\n";
-            } else {
-                ret += prefix + "\t" + var->second + " = " + tree.variables.at(falseBranch.node) + ";\n";
-            }
-            ret += prefix + "}\n";
-        } else {
-            // This node has multiple consumers, assign it to a variable
-            ret += prefix
-                    + getTypeName(node.node->getOutputType(source))
-                    + " "
-                    + var->second
-                    + " = "
-                    + getValueCode(node, tree)
-                    + ";\n";
-        }
-        visited.insert(node.node);
-    }
-    return ret;
-}
-
-std::string compileTree(const CompiledTree &tree, const FGShaderSource &source, std::string prefix = "\t") {
-    std::vector<CompiledNode> baseNodes;
-    for (const auto &node: tree.nodes) {
-        if (node.first->getOutputs().empty()) {
-            baseNodes.emplace_back(node.second);
-        }
-    }
-
-    // Generate variables
-    std::unordered_set<std::shared_ptr<FGShaderNode> > visited;
-    std::string ret;
-    for (auto &node: baseNodes) {
-        ret += compileVariables(node, tree, source, visited, prefix);
-    }
-
-    // Generate output
-    for (const auto &node: baseNodes) {
-        ret += prefix + getValueCode(node, tree) + ";\n";
-    }
-
-    return ret;
-}
 
 std::string getSampler(const FGTexture &texture) {
     std::string prefix;
@@ -269,14 +150,14 @@ std::string generateHeader(const FGShaderSource &source, CompiledPipeline &pipel
     return ret;
 }
 
-std::string compileShader(const FGShaderSource &source, CompiledPipeline &pipeline) {
-    auto tree = createCompiledTree(source);
-    auto mainBody = compileTree(tree, source);
-    return "#version 460\n\n"
-           + generateHeader(source, pipeline)
-           + "void main() {\n"
-           + mainBody
-           + "}";
+std::string generateBody(const FGShaderSource &source) {
+    std::string body;
+    for (const auto &pair: source.functions) {
+        body += compileFunction(pair.first, pair.second.arguments, pair.second.body, pair.second.returnType, source);
+        body += "\n\n";
+    }
+    body += compileFunction("main", {}, source.mainFunction, {}, source);
+    return body;
 }
 
 CompiledPipeline ShaderCompilerGLSL::compile(const std::vector<FGShaderSource> &sources) {
@@ -285,4 +166,10 @@ CompiledPipeline ShaderCompilerGLSL::compile(const std::vector<FGShaderSource> &
         ret.sourceCode[shader.stage] = compileShader(shader, ret);
     }
     return ret;
+}
+
+std::string ShaderCompilerGLSL::compileShader(const FGShaderSource &source, CompiledPipeline &pipeline) {
+    return "#version 460\n\n"
+           + generateHeader(source, pipeline)
+           + generateBody(source);
 }

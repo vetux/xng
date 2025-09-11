@@ -24,24 +24,23 @@
 
 namespace xng {
     struct FGNodeOr final : FGShaderNode {
-        FGShaderNodeInput left = FGShaderNodeInput("left");
-        FGShaderNodeInput right = FGShaderNodeInput("right");
+        std::unique_ptr<FGShaderNode> left;
+        std::unique_ptr<FGShaderNode> right;
 
-        FGShaderNodeOutput result = FGShaderNodeOutput("result");
+        FGNodeOr(std::unique_ptr<FGShaderNode> left, std::unique_ptr<FGShaderNode> right)
+            : left(std::move(left)),
+              right(std::move(right)) {
+        }
 
-        NodeType getType() override {
+        NodeType getType() const override {
             return OR;
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeInput> > getInputs() override {
-            return {left, right};
+        std::unique_ptr<FGShaderNode> copy() const override {
+            return std::make_unique<FGNodeOr>(left->copy(), right->copy());
         }
 
-        std::vector<std::reference_wrapper<FGShaderNodeOutput> > getOutputs() override {
-            return {result};
-        }
-
-        FGShaderValue getOutputType(const FGShaderSource &source) const override {
+        FGShaderValue getOutputType(const FGShaderSource &source, const std::string &functionName) const override {
             return {FGShaderValue::SCALAR, FGShaderValue::BOOLEAN, 1};
         }
     };
