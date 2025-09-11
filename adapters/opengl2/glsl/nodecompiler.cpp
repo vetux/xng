@@ -168,7 +168,7 @@ std::string compileLeafNode(const FGNodeAttributeWrite &node,
 }
 
 std::string compileLeafNode(const FGNodeParameterRead &node) {
-    throw std::runtime_error("Parameter read not implemented");
+    return parameterPrefix + node.parameterName;
 }
 
 std::string compileLeafNode(const FGNodeTextureSample &node,

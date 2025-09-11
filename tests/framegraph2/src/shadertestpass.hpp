@@ -127,8 +127,8 @@ public:
         return builder.build(FGShaderSource::VERTEX,
                              vertexLayout,
                              fragmentLayout,
-                             {},
-                             {{"color", colorBuffer}, {"data", dataBuffer}},
+                             {{"color", FGShaderValue::vec4()}},
+                             {{"colorBuffer", colorBuffer}, {"data", dataBuffer}},
                              {{"texture", texture}},
                              body);
     }
@@ -137,13 +137,18 @@ public:
         auto builder = FGShaderBuilder();
 
         std::vector<std::unique_ptr<FGShaderNode> > body;
-        body.emplace_back(builder.attributeWrite(0, builder.attributeRead(0)));
+        body.emplace_back(builder.createVariable("color", FGShaderValue::vec4(),
+                                                 builder.bufferRead("colorBuffer", "color")));
+        body.emplace_back(builder.assignVariable("color",
+                                                 builder.multiply(builder.variable("color"),
+                                                                  builder.parameterRead("color"))));
+        body.emplace_back(builder.attributeWrite(0, builder.variable("color")));
 
         return builder.build(FGShaderSource::FRAGMENT,
                              fragmentLayout,
                              colorLayout,
-                             {},
-                             {{"data", dataBuffer}, {"color", colorBuffer}},
+                             {{"color", FGShaderValue::vec4()}},
+                             {{"data", dataBuffer}, {"colorBuffer", colorBuffer}},
                              {{"texture", texture}},
                              body);
     }

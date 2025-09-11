@@ -147,6 +147,19 @@ std::string generateHeader(const FGShaderSource &source, CompiledPipeline &pipel
     ret += outputAttributes;
     ret += "\n";
 
+    for (const auto &param: source.parameters) {
+        ret += "uniform "
+                + getTypeName(param.second)
+                + " "
+                + parameterPrefix
+                + param.first
+                + ";\n";
+    }
+
+    if (source.parameters.size() > 0) {
+        ret += "\n";
+    }
+
     return ret;
 }
 
