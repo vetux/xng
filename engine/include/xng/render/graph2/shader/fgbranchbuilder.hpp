@@ -19,7 +19,8 @@
 
 #ifndef XENGINE_FGBRANCHBUILDER_HPP
 #define XENGINE_FGBRANCHBUILDER_HPP
-#include "fgshaderbuilder.hpp"
+
+#include "xng/render/graph2/shader/fgshaderfactory.hpp"
 
 namespace xng {
     class FGBranchBuilder {
@@ -60,11 +61,11 @@ namespace xng {
             stage = STAGE_None;
         }
 
-        std::unique_ptr<FGShaderNode> build(FGShaderBuilder &builder) {
+        std::unique_ptr<FGShaderNode> build() {
             if (stage != STAGE_None) {
                 throw std::runtime_error("Invalid branch");
             }
-            return builder.branch(branchCondition, trueBranch, falseBranch);
+            return FGShaderFactory::branch(branchCondition, trueBranch, falseBranch);
         }
 
     private:
@@ -72,7 +73,7 @@ namespace xng {
             STAGE_None,
             STAGE_If,
             STAGE_Else,
-        } stage;
+        } stage = STAGE_None;
 
         std::unique_ptr<FGShaderNode> branchCondition;
         std::vector<std::unique_ptr<FGShaderNode> > trueBranch;

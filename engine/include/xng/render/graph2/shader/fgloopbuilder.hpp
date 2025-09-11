@@ -20,7 +20,7 @@
 #ifndef XENGINE_FGLOOPBUILDER_HPP
 #define XENGINE_FGLOOPBUILDER_HPP
 
-#include "xng/render/graph2/shader/fgshaderbuilder.hpp"
+#include "xng/render/graph2/shader/fgshaderfactory.hpp"
 
 namespace xng {
     class FGLoopBuilder {
@@ -87,19 +87,20 @@ namespace xng {
         void endLoop() {
         }
 
-        std::vector<std::unique_ptr<FGShaderNode> > build(FGShaderBuilder &builder) {
+        std::vector<std::unique_ptr<FGShaderNode> > build() {
             std::vector<std::unique_ptr<FGShaderNode> > result;
             if (loopType == FOR_WITH_VARIABLE) {
-                loopInitializer = (builder.createVariable(iteratorVariable,
-                                                          FGShaderValue(FGShaderValue::SCALAR,
-                                                                        FGShaderValue::SIGNED_INT),
-                                                          iteratorStart));
-                loopPredicate = builder.compareLess(builder.variable(iteratorVariable), iteratorEnd);
-                loopIterator = builder.assignVariable(iteratorVariable,
-                                                      builder.add(builder.variable(iteratorVariable),
-                                                                  builder.literal(iteratorStep)));
+                loopInitializer = (FGShaderFactory::createVariable(iteratorVariable,
+                                                                   FGShaderValue(FGShaderValue::SCALAR,
+                                                                       FGShaderValue::SIGNED_INT),
+                                                                   iteratorStart));
+                loopPredicate = FGShaderFactory::compareLess(FGShaderFactory::variable(iteratorVariable), iteratorEnd);
+                loopIterator = FGShaderFactory::assignVariable(iteratorVariable,
+                                                               FGShaderFactory::add(
+                                                                   FGShaderFactory::variable(iteratorVariable),
+                                                                   FGShaderFactory::literal(iteratorStep)));
             }
-            result.emplace_back(builder.loop(loopInitializer, loopPredicate, loopIterator, body));
+            result.emplace_back(FGShaderFactory::loop(loopInitializer, loopPredicate, loopIterator, body));
             return result;
         }
 

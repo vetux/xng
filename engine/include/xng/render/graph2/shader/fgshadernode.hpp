@@ -22,8 +22,6 @@
 
 #include <memory>
 
-#include "xng/render/graph2/shader/fgshadervalue.hpp"
-
 namespace xng {
     struct FGShaderSource;
 

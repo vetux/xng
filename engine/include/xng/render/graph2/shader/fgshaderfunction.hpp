@@ -27,6 +27,7 @@
 #include <unordered_map>
 
 #include "xng/render/graph2/shader/fgshadernode.hpp"
+#include "xng/render/graph2/shader/fgshadervalue.hpp"
 
 namespace xng {
     struct FGShaderFunction {
