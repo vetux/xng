@@ -66,6 +66,7 @@ namespace xng {
             OR,
 
             CALL,
+            RETURN,
 
             NORMALIZE,
             //TODO: Add builtin function nodes

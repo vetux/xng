@@ -115,6 +115,8 @@ namespace xng {
         std::unique_ptr<FGShaderNode> call(const std::string &functionName,
                                            const std::vector<std::unique_ptr<FGShaderNode> > &arguments);
 
+        std::unique_ptr<FGShaderNode> ret(const std::unique_ptr<FGShaderNode> &value);
+
         std::unique_ptr<FGShaderNode> normalize(const std::unique_ptr<FGShaderNode> &value);
 
         std::unique_ptr<FGShaderNode> subscript(const std::unique_ptr<FGShaderNode> &value,

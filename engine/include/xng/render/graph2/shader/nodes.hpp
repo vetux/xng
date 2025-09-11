@@ -40,6 +40,7 @@
 #include "xng/render/graph2/shader/nodes/fgnodeloop.hpp"
 #include "xng/render/graph2/shader/nodes/fgnodeattributewrite.hpp"
 #include "xng/render/graph2/shader/nodes/fgnodecall.hpp"
+#include "xng/render/graph2/shader/nodes/fgnodereturn.hpp"
 #include "xng/render/graph2/shader/nodes/builtin/fgnodenormalize.hpp"
 #include "xng/render/graph2/shader/nodes/comparison/fgnodelessequal.hpp"
 #include "xng/render/graph2/shader/nodes/comparison/fgnodeless.hpp"

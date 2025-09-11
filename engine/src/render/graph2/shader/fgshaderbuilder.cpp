@@ -172,6 +172,10 @@ namespace xng {
         return std::make_unique<FGNodeCall>(functionName, std::move(argumentsCopy));
     }
 
+    std::unique_ptr<FGShaderNode> FGShaderBuilder::ret(const std::unique_ptr<FGShaderNode> &value) {
+        return std::make_unique<FGNodeReturn>(value->copy());
+    }
+
     std::unique_ptr<FGShaderNode> FGShaderBuilder::normalize(const std::unique_ptr<FGShaderNode> &value) {
         return std::make_unique<FGNodeNormalize>(value->copy());
     }
