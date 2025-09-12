@@ -44,15 +44,15 @@ namespace xng {
          *
          * @return
          */
-        static FGAttributeLayout getDefaultVertexLayout() {
-            return FGAttributeLayout({
-                FGShaderValue::vec3(),
-                FGShaderValue::vec3(),
-                FGShaderValue::vec2(),
-                FGShaderValue::vec3(),
-                FGShaderValue::vec3(),
-                FGShaderValue::vec4(),
-                FGShaderValue::vec4()
+        static ShaderAttributeLayout getDefaultVertexLayout() {
+            return ShaderAttributeLayout({
+                ShaderDataType::vec3(),
+                ShaderDataType::vec3(),
+                ShaderDataType::vec2(),
+                ShaderDataType::vec3(),
+                ShaderDataType::vec3(),
+                ShaderDataType::vec4(),
+                ShaderDataType::vec4()
             });
         }
 
@@ -75,20 +75,20 @@ namespace xng {
          * @param offsets
          * @return
          */
-        static FGAttributeLayout getDefaultInstanceLayout() {
-            return FGAttributeLayout({
-                FGShaderValue::vec3(),
-                FGShaderValue::vec3(),
-                FGShaderValue::vec2(),
-                FGShaderValue::vec3(),
-                FGShaderValue::vec3(),
-                FGShaderValue::vec4(),
-                FGShaderValue::vec4(),
+        static ShaderAttributeLayout getDefaultInstanceLayout() {
+            return ShaderAttributeLayout({
+                ShaderDataType::vec3(),
+                ShaderDataType::vec3(),
+                ShaderDataType::vec2(),
+                ShaderDataType::vec3(),
+                ShaderDataType::vec3(),
+                ShaderDataType::vec4(),
+                ShaderDataType::vec4(),
 
-                FGShaderValue::vec4(),
-                FGShaderValue::vec4(),
-                FGShaderValue::vec4(),
-                FGShaderValue::vec4()
+                ShaderDataType::vec4(),
+                ShaderDataType::vec4(),
+                ShaderDataType::vec4(),
+                ShaderDataType::vec4()
             });
         }
 

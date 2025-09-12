@@ -20,7 +20,7 @@
 #ifndef XENGINE_TERRAIN_HPP
 #define XENGINE_TERRAIN_HPP
 
-#include "xng/render/scene/texture.hpp"
+#include "xng/render/scene/rendergraphtexture.hpp"
 
 // TODO: Implement terrain rendering pass
 namespace xng {

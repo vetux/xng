@@ -24,7 +24,7 @@
 
 namespace xng::opengl {
     struct State {
-        std::unordered_map<FGRuntime::GraphHandle, std::unordered_map<FGResource, CompiledPipeline> > pipelines;
+        std::unordered_map<RenderGraphRuntime::GraphHandle, std::unordered_map<RenderGraphResource, CompiledPipeline> > pipelines;
     };
 
     OpenGL2::OpenGL2() {
@@ -37,11 +37,11 @@ namespace xng::opengl {
     void OpenGL2::setWindow(const Window &window) {
     }
 
-    FGRuntime::GraphHandle OpenGL2::compile(const FGGraph &graph) {
+    RenderGraphRuntime::GraphHandle OpenGL2::compile(const RenderGraph &graph) {
         return compileGraph(graph);
     }
 
-    void OpenGL2::recompile(GraphHandle handle, const FGGraph &graph) {
+    void OpenGL2::recompile(GraphHandle handle, const RenderGraph &graph) {
     }
 
     void OpenGL2::execute(GraphHandle graph) {
@@ -63,7 +63,7 @@ namespace xng::opengl {
     void OpenGL2::loadCache(GraphHandle graph, std::istream &stream) {
     }
 
-    FGRuntime::GraphHandle OpenGL2::compileGraph(const FGGraph &graph) {
+    RenderGraphRuntime::GraphHandle OpenGL2::compileGraph(const RenderGraph &graph) {
         const auto handle = graphCounter++;
         graphs[handle] = graph;
 
@@ -73,7 +73,7 @@ namespace xng::opengl {
 
         ShaderCompilerGLSL compiler;
         for (auto pair: graph.pipelineAllocation) {
-            std::vector<FGShaderSource> sources;
+            std::vector<ShaderStage> sources;
             for (auto shader: pair.second) {
                 sources.emplace_back(shaders[handle][shader]);
             }

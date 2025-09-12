@@ -30,7 +30,7 @@ namespace xng {
     struct SPIRVShader {
         SPIRVShader() = default;
 
-        SPIRVShader(ShaderEnvironment environment, ShaderStage stage, std::string entryPoint, SPIRVBlob blob)
+        SPIRVShader(ShaderEnvironment environment, ShaderStageType stage, std::string entryPoint, SPIRVBlob blob)
                 : environment(environment), stage(stage), entryPoint(std::move(entryPoint)), blob(std::move(blob)) {}
 
         SPIRVShader(SPIRVShader &&other) = default;
@@ -43,7 +43,7 @@ namespace xng {
             return environment;
         }
 
-        ShaderStage getStage() const {
+        ShaderStageType getStage() const {
             return stage;
         }
 
@@ -64,7 +64,7 @@ namespace xng {
 
     private:
         ShaderEnvironment environment{};
-        ShaderStage stage{};
+        ShaderStageType stage{};
         std::string entryPoint{};
         SPIRVBlob blob;
     };

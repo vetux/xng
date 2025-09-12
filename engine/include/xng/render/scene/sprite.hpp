@@ -25,7 +25,7 @@
 
 #include "xng/math/rectangle.hpp"
 
-#include "xng/render/scene/texture.hpp"
+#include "xng/render/scene/rendergraphtexture.hpp"
 
 #include "xng/io/messageable.hpp"
 

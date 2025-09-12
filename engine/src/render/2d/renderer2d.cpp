@@ -44,11 +44,11 @@ namespace xng {
     }
 
     void Renderer2D::draw(const Rectf &srcRect, const Rectf &dstRect, const Texture2D &texture, const Vec2f &center,
-                          float rotation, FGTextureFiltering filter, ColorRGBA colorFactor) {
+                          float rotation, TextureFiltering filter, ColorRGBA colorFactor) {
     }
 
     void Renderer2D::draw(const Rectf &srcRect, const Rectf &dstRect, const Texture2D &texture, const Vec2f &center,
-                          float rotation, FGTextureFiltering filter, float mixRGB, float mixAlpha,
+                          float rotation, TextureFiltering filter, float mixRGB, float mixAlpha,
                           const ColorRGBA &mixColor) {
     }
 

@@ -34,10 +34,10 @@
 #include "xng/render/geometry/primitive.hpp"
 
 #include "xng/render/2d/texture2d.hpp"
-#include "xng/rendergraph/fgdrawcall.hpp"
-#include "xng/rendergraph/fgresource.hpp"
-#include "xng/rendergraph/texture/fgtextureproperties.hpp"
-#include "xng/rendergraph/shader/fgshadersource.hpp"
+#include "xng/rendergraph/drawcall.hpp"
+#include "xng/rendergraph/rendergraphresource.hpp"
+#include "../../rendergraph/rendergraphtextureproperties.hpp"
+#include "xng/rendergraph/shader/shaderstage.hpp"
 
 namespace xng {
     /**
@@ -114,7 +114,7 @@ namespace xng {
                   const Texture2D &texture,
                   const Vec2f &center,
                   float rotation,
-                  FGTextureFiltering filter,
+                  TextureFiltering filter,
                   ColorRGBA colorFactor = ColorRGBA::white());
 
         /**
@@ -135,7 +135,7 @@ namespace xng {
                   const Texture2D &texture,
                   const Vec2f &center,
                   float rotation,
-                  FGTextureFiltering filter,
+                  TextureFiltering filter,
                   float mixRGB,
                   float mixAlpha,
                   const ColorRGBA &mixColor);
@@ -208,7 +208,7 @@ namespace xng {
 
             TextureAtlasHandle texture{};
 
-            FGTextureFiltering filter{};
+            TextureFiltering filter{};
 
             float mix = 0;
             float alphaMix = 0;
@@ -260,7 +260,7 @@ namespace xng {
                  TextureAtlasHandle texture,
                  Vec2f center,
                  float rotation,
-                 FGTextureFiltering filter,
+                 TextureFiltering filter,
                  float mix,
                  float alphaMix,
                  ColorRGBA color)
@@ -280,7 +280,7 @@ namespace xng {
                  TextureAtlasHandle texture,
                  Vec2f center,
                  float rotation,
-                 FGTextureFiltering filter,
+                 TextureFiltering filter,
                  ColorRGBA color)
                     : type(TEXTURE),
                       srcRect(std::move(srcRect)),
@@ -295,12 +295,12 @@ namespace xng {
 
         struct MeshDrawData {
             Primitive primitive{};
-            FGDrawCall drawCall{};
+            DrawCall drawCall{};
             size_t baseVertex{};
 
             MeshDrawData() = default;
 
-            MeshDrawData(Primitive primitive, FGDrawCall drawCall, size_t baseVertex) : primitive(primitive),
+            MeshDrawData(Primitive primitive, DrawCall drawCall, size_t baseVertex) : primitive(primitive),
                                                                                       drawCall(std::move(drawCall)),
                                                                                       baseVertex(baseVertex) {}
         };
@@ -369,14 +369,14 @@ namespace xng {
             }
         };
 
-        FGShaderSource vsTexture;
-        FGShaderSource fsTexture;
+        ShaderStage vsTexture;
+        ShaderStage fsTexture;
 
-        FGShaderSource vsTextureMultiDraw;
-        FGShaderSource fsTextureMultiDraw;
+        ShaderStage vsTextureMultiDraw;
+        ShaderStage fsTextureMultiDraw;
 
-        std::map<TextureAtlasResolution, FGResource> atlasRef;
-        std::map<TextureAtlasResolution, FGResource> atlasTextures;
+        std::map<TextureAtlasResolution, RenderGraphResource> atlasRef;
+        std::map<TextureAtlasResolution, RenderGraphResource> atlasTextures;
         TextureAtlas atlas;
 
         std::unordered_map<Vec2f, MeshDrawData> planeMeshes;
@@ -395,9 +395,9 @@ namespace xng {
         std::unordered_set<std::pair<Vec2f, Vec2f>, LinePairHash> usedLines;
         std::unordered_set<Vec2f> usedPoints;
 
-        std::unique_ptr<FGResource> indexBuffer;
-        std::unique_ptr<FGResource> vertexBuffer;
-        std::unique_ptr<FGResource> vertexArrayObject;
+        std::unique_ptr<RenderGraphResource> indexBuffer;
+        std::unique_ptr<RenderGraphResource> vertexBuffer;
+        std::unique_ptr<RenderGraphResource> vertexArrayObject;
 
         std::unordered_map<std::pair<float, Vec2f>, Mat4f, RotationPairHash> rotationMatrices;
         std::unordered_set<std::pair<float, Vec2f>, RotationPairHash> usedRotationMatrices;
@@ -420,7 +420,7 @@ namespace xng {
 
         ColorRGBA mClearColor = ColorRGBA::black();
 
-        FGAttributeLayout vertexLayout;
+        ShaderAttributeLayout vertexLayout;
     };
 }
 

@@ -31,13 +31,13 @@ namespace xng::glslang {
 
         std::vector<uint32_t> compile(const std::string &source,
                                       const std::string &entryPoint,
-                                      ShaderStage stage,
+                                      ShaderStageType stage,
                                       ShaderLanguage language,
                                       OptimizationLevel optimizationLevel,
                                       ShaderEnvironment environment) const override;
 
         std::string preprocess(const std::string &source,
-                               ShaderStage stage,
+                               ShaderStageType stage,
                                ShaderLanguage language,
                                const std::function<std::string(const char *)> &include,
                                const std::map<std::string, std::string> &macros,

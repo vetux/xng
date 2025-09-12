@@ -23,7 +23,7 @@
 #include <spirv_hlsl.hpp>
 
 namespace xng::spirv_cross {
-    static spv::ExecutionModel convertShaderStage(ShaderStage stage) {
+    static spv::ExecutionModel convertShaderStage(ShaderStageType stage) {
         switch (stage) {
             case VERTEX:
                 return spv::ExecutionModel::ExecutionModelVertex;
@@ -54,7 +54,7 @@ namespace xng::spirv_cross {
 
     std::string SpirvCross::decompile(const std::vector<uint32_t> &source,
                                       const std::string &entryPoint,
-                                      ShaderStage stage,
+                                      ShaderStageType stage,
                                       ShaderLanguage targetLanguage) const {
         switch (targetLanguage) {
             case HLSL_SHADER_MODEL_4: {

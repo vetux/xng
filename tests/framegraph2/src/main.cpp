@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 
     runtime.setWindow(*window);
 
-    FGBuilder builder;
+    RenderGraphBuilder builder;
 
     ShaderTestPass pass;
     pass.setup(builder);

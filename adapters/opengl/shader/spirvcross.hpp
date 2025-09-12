@@ -27,7 +27,7 @@ namespace xng::spirv_cross {
     public:
         std::string decompile(const std::vector<uint32_t> &source,
                               const std::string &entryPoint,
-                              ShaderStage stage,
+                              ShaderStageType stage,
                               ShaderLanguage targetLanguage) const override;
     };
 }

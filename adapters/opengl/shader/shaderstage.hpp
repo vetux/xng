@@ -23,7 +23,7 @@
 #include "xng/io/message.hpp"
 
 namespace xng {
-    enum ShaderStage : int {
+    enum ShaderStageType : int {
         VERTEX = 0,
         TESSELLATION_CONTROL,
         TESSELLATION_EVALUATION,
@@ -37,12 +37,12 @@ namespace xng {
         RAY_INTERSECT
     };
 
-    inline ShaderStage &operator<<(ShaderStage &stage, const Message &message) {
-        stage = (ShaderStage)message.asInt();
+    inline ShaderStageType &operator<<(ShaderStageType &stage, const Message &message) {
+        stage = (ShaderStageType)message.asInt();
         return stage;
     }
 
-    inline Message &operator>>(const ShaderStage &stage, Message &message) {
+    inline Message &operator>>(const ShaderStageType &stage, Message &message) {
         message = (int)stage;
         return message;
     }

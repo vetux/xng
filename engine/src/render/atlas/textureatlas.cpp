@@ -27,8 +27,8 @@ namespace xng {
         return std::move(image);
     }
 
-    void TextureAtlas::upload(FGContext &ctx, const TextureAtlasHandle &handle,
-        const std::map<TextureAtlasResolution, FGResource> &atlasBuffers, const ImageRGBA &texture) {
+    void TextureAtlas::upload(RenderGraphContext &ctx, const TextureAtlasHandle &handle,
+        const std::map<TextureAtlasResolution, RenderGraphResource> &atlasBuffers, const ImageRGBA &texture) {
         // TODO: Reimplement texture atlas upload
     }
 

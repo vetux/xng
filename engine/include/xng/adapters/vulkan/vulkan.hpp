@@ -20,12 +20,12 @@
 #ifndef XENGINE_VULKAN_HPP
 #define XENGINE_VULKAN_HPP
 
-#include "xng/rendergraph/fgruntime.hpp"
+#include "xng/rendergraph/rendergraphruntime.hpp"
 
 #include "xng/display/displayenvironment.hpp"
 
 namespace xng::vulkan {
-    class XENGINE_EXPORT Vulkan final : public FGRuntime {
+    class XENGINE_EXPORT Vulkan final : public RenderGraphRuntime {
     public:
         struct InstanceData {
             virtual ~InstanceData() = default;
@@ -37,9 +37,9 @@ namespace xng::vulkan {
 
         void setWindow(const Window &window) override;
 
-        GraphHandle compile(const FGGraph &graph) override;
+        GraphHandle compile(const RenderGraph &graph) override;
 
-        void recompile(GraphHandle handle, const FGGraph &graph) override;
+        void recompile(GraphHandle handle, const RenderGraph &graph) override;
 
         void execute(GraphHandle graph) override;
 

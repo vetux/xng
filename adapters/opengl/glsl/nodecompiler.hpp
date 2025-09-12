@@ -21,9 +21,9 @@
 #define XENGINE_NODECOMPILER_HPP
 
 #include "xng/rendergraph/shader/nodes.hpp"
-#include "xng/rendergraph/shader/nodes/fgnodevariablecreate.hpp"
-#include "xng/rendergraph/shader/nodes/fgnodevariable.hpp"
-#include "xng/rendergraph/shader/nodes/fgnodeassign.hpp"
+#include "xng/rendergraph/shader/nodes/nodevariablecreate.hpp"
+#include "xng/rendergraph/shader/nodes/nodevariable.hpp"
+#include "xng/rendergraph/shader/nodes/nodeassign.hpp"
 
 using namespace xng;
 
@@ -43,100 +43,100 @@ static const char *texturePrefix = "texture_";
  * @param prefix The prefix for lvalue nodes
  * @return
  */
-std::string compileNode(const FGShaderNode &node,
-                        const FGShaderSource &source,
+std::string compileNode(const ShaderNode &node,
+                        const ShaderStage &source,
                         const std::string &functionName,
                         const std::string &prefix = "");
 
-std::string compileLeafNode(const FGNodeVariableCreate &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeVariableCreate &node,
+                            const ShaderStage &source,
                             const std::string &functionName,
                             const std::string &prefix);
 
-std::string compileLeafNode(const FGNodeAssign &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeAssign &node,
+                            const ShaderStage &source,
                             const std::string &functionName,
                             const std::string &prefix);
 
-std::string compileLeafNode(const FGNodeVariable &node);
+std::string compileLeafNode(const NodeVariable &node);
 
-std::string compileLeafNode(const FGNodeLiteral &node);
+std::string compileLeafNode(const NodeLiteral &node);
 
-std::string compileLeafNode(const FGNodeArgument &node);
+std::string compileLeafNode(const NodeArgument &node);
 
-std::string compileLeafNode(const FGNodeAttributeInput &node);
+std::string compileLeafNode(const NodeAttributeInput &node);
 
-std::string compileLeafNode(const FGNodeAttributeOutput &node);
+std::string compileLeafNode(const NodeAttributeOutput &node);
 
-std::string compileLeafNode(const FGNodeParameter &node);
+std::string compileLeafNode(const NodeParameter &node);
 
-std::string compileLeafNode(const FGNodeVector &node, const FGShaderSource &source, const std::string &functionName);
+std::string compileLeafNode(const NodeVector &node, const ShaderStage &source, const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeArray &node, const FGShaderSource &source, const std::string &functionName);
+std::string compileLeafNode(const NodeArray &node, const ShaderStage &source, const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeTextureSample &node, const FGShaderSource &source,
+std::string compileLeafNode(const NodeTextureSample &node, const ShaderStage &source,
                             const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeTextureSize &node);
+std::string compileLeafNode(const NodeTextureSize &node);
 
-std::string compileLeafNode(const FGNodeBufferRead &node, const FGShaderSource &source,
+std::string compileLeafNode(const NodeBufferRead &node, const ShaderStage &source,
                             const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeBufferWrite &node, const FGShaderSource &source,
+std::string compileLeafNode(const NodeBufferWrite &node, const ShaderStage &source,
                             const std::string &functionName,
                             const std::string &prefix);
 
-std::string compileLeafNode(const FGNodeBufferSize &node, const FGShaderSource &source);
+std::string compileLeafNode(const NodeBufferSize &node, const ShaderStage &source);
 
-std::string compileLeafNode(const FGNodeAdd &node, const FGShaderSource &source, const std::string &functionName);
+std::string compileLeafNode(const NodeAdd &node, const ShaderStage &source, const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeSubtract &node, const FGShaderSource &source, const std::string &functionName);
+std::string compileLeafNode(const NodeSubtract &node, const ShaderStage &source, const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeMultiply &node, const FGShaderSource &source, const std::string &functionName);
+std::string compileLeafNode(const NodeMultiply &node, const ShaderStage &source, const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeDivide &node, const FGShaderSource &source, const std::string &functionName);
+std::string compileLeafNode(const NodeDivide &node, const ShaderStage &source, const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeEqual &node, const FGShaderSource &source, const std::string &functionName);
+std::string compileLeafNode(const NodeEqual &node, const ShaderStage &source, const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeNotEqual &node, const FGShaderSource &source, const std::string &functionName);
+std::string compileLeafNode(const NodeNotEqual &node, const ShaderStage &source, const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeGreater &node, const FGShaderSource &source, const std::string &functionName);
+std::string compileLeafNode(const NodeGreater &node, const ShaderStage &source, const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeLess &node, const FGShaderSource &source, const std::string &functionName);
+std::string compileLeafNode(const NodeLess &node, const ShaderStage &source, const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeGreaterEqual &node, const FGShaderSource &source,
+std::string compileLeafNode(const NodeGreaterEqual &node, const ShaderStage &source,
                             const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeLessEqual &node, const FGShaderSource &source, const std::string &functionName);
+std::string compileLeafNode(const NodeLessEqual &node, const ShaderStage &source, const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeAnd &node, const FGShaderSource &source, const std::string &functionName);
+std::string compileLeafNode(const NodeAnd &node, const ShaderStage &source, const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeOr &node, const FGShaderSource &source, const std::string &functionName);
+std::string compileLeafNode(const NodeOr &node, const ShaderStage &source, const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeCall &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeCall &node,
+                            const ShaderStage &source,
                             const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeReturn &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeReturn &node,
+                            const ShaderStage &source,
                             const std::string &functionName,
                             const std::string &prefix);
 
-std::string compileLeafNode(const FGNodeBuiltin &node, const FGShaderSource &source, const std::string &functionName);
+std::string compileLeafNode(const NodeBuiltin &node, const ShaderStage &source, const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeSubscriptArray &node, const FGShaderSource &source,
+std::string compileLeafNode(const NodeSubscriptArray &node, const ShaderStage &source,
                             const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeSubscriptVector &node, const FGShaderSource &source,
+std::string compileLeafNode(const NodeSubscriptVector &node, const ShaderStage &source,
                             const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeSubscriptMatrix &node, const FGShaderSource &source,
+std::string compileLeafNode(const NodeSubscriptMatrix &node, const ShaderStage &source,
                             const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeBranch &node, const FGShaderSource &source, const std::string &functionName,
+std::string compileLeafNode(const NodeBranch &node, const ShaderStage &source, const std::string &functionName,
                             const std::string &prefix);
 
-std::string compileLeafNode(const FGNodeLoop &node, const FGShaderSource &source, const std::string &functionName,
+std::string compileLeafNode(const NodeLoop &node, const ShaderStage &source, const std::string &functionName,
                             const std::string &prefix);
 
 #endif //XENGINE_NODECOMPILER_HPP

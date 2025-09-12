@@ -20,116 +20,116 @@
 #ifndef XENGINE_LITERALS_HPP
 #define XENGINE_LITERALS_HPP
 
-#include "xng/rendergraph/shader/fgshaderliteral.hpp"
-#include "xng/rendergraph/shader/fgshadervalue.hpp"
+#include "xng/rendergraph/shader/shaderliteral.hpp"
+#include "xng/rendergraph/shader/shaderdatatype.hpp"
 
 using namespace xng;
 
-static std::string literalToString(const FGShaderLiteral &value) {
+static std::string literalToString(const ShaderLiteral &value) {
     auto type = getLiteralType(value);
 
     switch (type.type) {
-        case FGShaderValue::SCALAR:
+        case ShaderDataType::SCALAR:
             switch (type.component) {
-                case FGShaderValue::BOOLEAN:
+                case ShaderDataType::BOOLEAN:
                     return std::to_string(std::get<bool>(value));
-                case FGShaderValue::UNSIGNED_INT:
+                case ShaderDataType::UNSIGNED_INT:
                     return std::to_string(std::get<unsigned int>(value));
-                case FGShaderValue::SIGNED_INT:
+                case ShaderDataType::SIGNED_INT:
                     return std::to_string(std::get<int>(value));
-                case FGShaderValue::FLOAT:
+                case ShaderDataType::FLOAT:
                     return std::to_string(std::get<float>(value));
-                case FGShaderValue::DOUBLE:
+                case ShaderDataType::DOUBLE:
                     return std::to_string(std::get<double>(value));
             }
             break;
-        case FGShaderValue::VECTOR2:
+        case ShaderDataType::VECTOR2:
             switch (type.component) {
-                case FGShaderValue::BOOLEAN: {
+                case ShaderDataType::BOOLEAN: {
                     auto vec = std::get<Vector2<bool> >(value);
                     return "bvec2(" + std::to_string(vec.x) + ", " + std::to_string(vec.y) + ")";
                 }
-                case FGShaderValue::UNSIGNED_INT: {
+                case ShaderDataType::UNSIGNED_INT: {
                     auto vecu = std::get<Vector2<unsigned int> >(value);
                     return "uvec2(" + std::to_string(vecu.x) + ", " + std::to_string(vecu.y) + ")";
                 }
-                case FGShaderValue::SIGNED_INT: {
+                case ShaderDataType::SIGNED_INT: {
                     auto veci = std::get<Vector2<int> >(value);
                     return "ivec2(" + std::to_string(veci.x) + ", " + std::to_string(veci.y) + ")";
                 }
-                case FGShaderValue::FLOAT: {
+                case ShaderDataType::FLOAT: {
                     auto vecf = std::get<Vector2<float> >(value);
                     return "vec2(" + std::to_string(vecf.x) + ", " + std::to_string(vecf.y) + ")";
                 }
-                case FGShaderValue::DOUBLE: {
+                case ShaderDataType::DOUBLE: {
                     auto vecd = std::get<Vector2<double> >(value);
                     return "dvec2(" + std::to_string(vecd.x) + ", " + std::to_string(vecd.y) + ")";
                 }
             }
-        case FGShaderValue::VECTOR3:
+        case ShaderDataType::VECTOR3:
             switch (type.component) {
-                case FGShaderValue::BOOLEAN: {
+                case ShaderDataType::BOOLEAN: {
                     auto vec = std::get<Vector3<bool> >(value);
                     return "bvec3(" + std::to_string(vec.x) + ", " + std::to_string(vec.y) + ", " +
                            std::to_string(vec.z) + ")";
                 }
-                case FGShaderValue::UNSIGNED_INT: {
+                case ShaderDataType::UNSIGNED_INT: {
                     auto vecu = std::get<Vector3<unsigned int> >(value);
                     return "uvec3(" + std::to_string(vecu.x) + ", " + std::to_string(vecu.y) + ", " +
                            std::to_string(vecu.z) + ")";
                 }
-                case FGShaderValue::SIGNED_INT: {
+                case ShaderDataType::SIGNED_INT: {
                     auto veci = std::get<Vector3<int> >(value);
                     return "ivec3(" + std::to_string(veci.x) + ", " + std::to_string(veci.y) + ", " +
                            std::to_string(veci.z) + ")";
                 }
-                case FGShaderValue::FLOAT: {
+                case ShaderDataType::FLOAT: {
                     auto vecf = std::get<Vector3<float> >(value);
                     return "vec3(" + std::to_string(vecf.x) + ", " + std::to_string(vecf.y) + ", " +
                            std::to_string(vecf.z) + ")";
                 }
-                case FGShaderValue::DOUBLE: {
+                case ShaderDataType::DOUBLE: {
                     auto vecd = std::get<Vector3<double> >(value);
                     return "dvec3(" + std::to_string(vecd.x) + ", " + std::to_string(vecd.y) + ", " +
                            std::to_string(vecd.z) + ")";
                 }
             }
-        case FGShaderValue::VECTOR4:
+        case ShaderDataType::VECTOR4:
             switch (type.component) {
-                case FGShaderValue::BOOLEAN: {
+                case ShaderDataType::BOOLEAN: {
                     auto vec = std::get<Vector4<bool> >(value);
                     return "bvec4(" + std::to_string(vec.x) + ", " + std::to_string(vec.y) + ", " +
                            std::to_string(vec.z) + ", " + std::to_string(vec.w) + ")";
                 }
-                case FGShaderValue::UNSIGNED_INT: {
+                case ShaderDataType::UNSIGNED_INT: {
                     auto vecu = std::get<Vector4<unsigned int> >(value);
                     return "uvec4(" + std::to_string(vecu.x) + ", " + std::to_string(vecu.y) + ", " +
                            std::to_string(vecu.z) + ", " + std::to_string(vecu.w) + ")";
                 }
-                case FGShaderValue::SIGNED_INT: {
+                case ShaderDataType::SIGNED_INT: {
                     auto veci = std::get<Vector4<int> >(value);
                     return "ivec4(" + std::to_string(veci.x) + ", " + std::to_string(veci.y) + ", " +
                            std::to_string(veci.z) + ", " + std::to_string(veci.w) + ")";
                 }
-                case FGShaderValue::FLOAT: {
+                case ShaderDataType::FLOAT: {
                     auto vecf = std::get<Vector4<float> >(value);
                     return "vec4(" + std::to_string(vecf.x) + ", " + std::to_string(vecf.y) + ", " +
                            std::to_string(vecf.z) + ", " + std::to_string(vecf.w) + ")";
                 }
-                case FGShaderValue::DOUBLE: {
+                case ShaderDataType::DOUBLE: {
                     auto vecd = std::get<Vector4<double> >(value);
                     return "dvec4(" + std::to_string(vecd.x) + ", " + std::to_string(vecd.y) + ", " +
                            std::to_string(vecd.z) + ", " + std::to_string(vecd.w) + ")";
                 }
             }
-        case FGShaderValue::MAT2:
+        case ShaderDataType::MAT2:
             switch (type.component) {
-                case FGShaderValue::FLOAT: {
+                case ShaderDataType::FLOAT: {
                     auto mat2 = std::get<Matrix<float, 2, 2> >(value);
                     return "mat2(" + std::to_string(mat2.get(0, 0)) + ", " + std::to_string(mat2.get(0, 1)) + ", " +
                            std::to_string(mat2.get(1, 0)) + ", " + std::to_string(mat2.get(1, 1)) + ")";
                 }
-                case FGShaderValue::DOUBLE: {
+                case ShaderDataType::DOUBLE: {
                     auto mat2d = std::get<Matrix<double, 2, 2> >(value);
                     return "dmat2(" + std::to_string(mat2d.get(0, 0)) + ", " + std::to_string(mat2d.get(0, 1)) + ", " +
                            std::to_string(mat2d.get(1, 0)) + ", " + std::to_string(mat2d.get(1, 1)) + ")";
@@ -137,9 +137,9 @@ static std::string literalToString(const FGShaderLiteral &value) {
                 default:
                     throw std::runtime_error("Invalid matrix component type");
             }
-        case FGShaderValue::MAT3:
+        case ShaderDataType::MAT3:
             switch (type.component) {
-                case FGShaderValue::FLOAT: {
+                case ShaderDataType::FLOAT: {
                     auto mat3 = std::get<Matrix<float, 3, 3> >(value);
                     return "mat3(" + std::to_string(mat3.get(0, 0)) + ", " + std::to_string(mat3.get(0, 1)) + ", " +
                            std::to_string(mat3.get(0, 2)) + ", " + std::to_string(mat3.get(1, 0)) + ", " +
@@ -147,7 +147,7 @@ static std::string literalToString(const FGShaderLiteral &value) {
                            std::to_string(mat3.get(2, 0)) + ", " + std::to_string(mat3.get(2, 1)) + ", " +
                            std::to_string(mat3.get(2, 2)) + ")";
                 }
-                case FGShaderValue::DOUBLE: {
+                case ShaderDataType::DOUBLE: {
                     auto mat3d = std::get<Matrix<double, 3, 3> >(value);
                     return "dmat3(" + std::to_string(mat3d.get(0, 0)) + ", " + std::to_string(mat3d.get(0, 1)) + ", " +
                            std::to_string(mat3d.get(0, 2)) + ", " + std::to_string(mat3d.get(1, 0)) + ", " +
@@ -158,9 +158,9 @@ static std::string literalToString(const FGShaderLiteral &value) {
                 default:
                     throw std::runtime_error("Invalid matrix component type");
             }
-        case FGShaderValue::MAT4:
+        case ShaderDataType::MAT4:
             switch (type.component) {
-                case FGShaderValue::FLOAT: {
+                case ShaderDataType::FLOAT: {
                     auto mat4 = std::get<Matrix<float, 4, 4> >(value);
                     return "mat4(" + std::to_string(mat4.get(0, 0)) + ", " + std::to_string(mat4.get(0, 1)) + ", " +
                            std::to_string(mat4.get(0, 2)) + ", " + std::to_string(mat4.get(0, 3)) + ", " +
@@ -171,7 +171,7 @@ static std::string literalToString(const FGShaderLiteral &value) {
                            std::to_string(mat4.get(3, 0)) + ", " + std::to_string(mat4.get(3, 1)) + ", " +
                            std::to_string(mat4.get(3, 2)) + ", " + std::to_string(mat4.get(3, 3)) + ")";
                 }
-                case FGShaderValue::DOUBLE: {
+                case ShaderDataType::DOUBLE: {
                     auto mat4d = std::get<Matrix<double, 4, 4> >(value);
                     return "dmat4(" + std::to_string(mat4d.get(0, 0)) + ", " + std::to_string(mat4d.get(0, 1)) + ", " +
                            std::to_string(mat4d.get(0, 2)) + ", " + std::to_string(mat4d.get(0, 3)) + ", " +

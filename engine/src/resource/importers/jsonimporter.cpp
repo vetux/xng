@@ -23,7 +23,7 @@
 
 #include "xng/async/threadpool.hpp"
 
-#include "xng/render/scene/texture.hpp"
+#include "xng/render/scene/rendergraphtexture.hpp"
 #include "xng/render/scene/material.hpp"
 #include "xng/render/scene/cubemap.hpp"
 #include "xng/animation/sprite/spriteanimation.hpp"

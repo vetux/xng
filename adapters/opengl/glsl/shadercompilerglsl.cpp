@@ -19,7 +19,7 @@
 
 #include "shadercompilerglsl.hpp"
 
-#include "xng/rendergraph/shader/fgshadernode.hpp"
+#include "xng/rendergraph/shader/shadernode.hpp"
 
 #include "nodecompiler.hpp"
 #include "functioncompiler.hpp"
@@ -27,7 +27,7 @@
 
 using namespace xng;
 
-std::string getSampler(const FGTexture &texture) {
+std::string getSampler(const RenderGraphTexture &texture) {
     std::string prefix;
     if (texture.format >= R8I && texture.format <= RGBA32I) {
         prefix = "i";
@@ -60,7 +60,7 @@ std::string getSampler(const FGTexture &texture) {
     }
 }
 
-std::string generateElement(const std::string &name, const FGShaderValue &value, std::string prefix = "\t") {
+std::string generateElement(const std::string &name, const ShaderDataType &value, std::string prefix = "\t") {
     auto ret = prefix
                + getTypeName(value)
                + " "
@@ -75,7 +75,7 @@ std::string generateElement(const std::string &name, const FGShaderValue &value,
     return ret + ";\n";
 }
 
-std::string generateHeader(const FGShaderSource &source, CompiledPipeline &pipeline) {
+std::string generateHeader(const ShaderStage &source, CompiledPipeline &pipeline) {
     std::string ret;
 
     for (const auto &pair: source.buffers) {
@@ -163,7 +163,7 @@ std::string generateHeader(const FGShaderSource &source, CompiledPipeline &pipel
     return ret;
 }
 
-std::string generateBody(const FGShaderSource &source) {
+std::string generateBody(const ShaderStage &source) {
     std::string body;
     for (const auto &pair: source.functions) {
         body += compileFunction(pair.first, pair.second.arguments, pair.second.body, pair.second.returnType, source);
@@ -173,15 +173,15 @@ std::string generateBody(const FGShaderSource &source) {
     return body;
 }
 
-CompiledPipeline ShaderCompilerGLSL::compile(const std::vector<FGShaderSource> &sources) {
+CompiledPipeline ShaderCompilerGLSL::compile(const std::vector<ShaderStage> &sources) {
     CompiledPipeline ret;
     for (auto &shader: sources) {
-        ret.sourceCode[shader.stage] = compileShader(shader, ret);
+        ret.sourceCode[shader.type] = compileShader(shader, ret);
     }
     return ret;
 }
 
-std::string ShaderCompilerGLSL::compileShader(const FGShaderSource &source, CompiledPipeline &pipeline) {
+std::string ShaderCompilerGLSL::compileShader(const ShaderStage &source, CompiledPipeline &pipeline) {
     return "#version 460\n\n"
            + generateHeader(source, pipeline)
            + generateBody(source);

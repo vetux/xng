@@ -23,54 +23,53 @@
 #include <iostream>
 #include <ostream>
 
-#include "xng/rendergraph/fgbuilder.hpp"
-#include "xng/rendergraph/shader/fgshaderbuilder.hpp"
-#include "xng/rendergraph/shader/fgshadernodehelper.hpp"
+#include "xng/rendergraph/rendergraphbuilder.hpp"
+#include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
 #include "xng/render/shaderlib/noise.hpp"
 
 using namespace xng;
-using namespace xng::FGShaderNodeHelper;
+using namespace xng::ShaderScript;
 
 class ShaderTestPass {
 public:
-    FGShaderBuffer dataBuffer;
-    FGShaderBuffer colorBuffer;
+    ShaderBuffer dataBuffer;
+    ShaderBuffer colorBuffer;
 
-    FGTexture textureDef;
+    RenderGraphTexture textureDef;
 
-    FGAttributeLayout vertexLayout;
-    FGAttributeLayout fragmentLayout;
-    FGAttributeLayout colorLayout;
+    ShaderAttributeLayout vertexLayout;
+    ShaderAttributeLayout fragmentLayout;
+    ShaderAttributeLayout colorLayout;
 
     ShaderTestPass() {
-        dataBuffer.elements.emplace_back("mvp", FGShaderValue(FGShaderValue::MAT4, FGShaderValue::FLOAT));
-        colorBuffer.elements.emplace_back("color", FGShaderValue(FGShaderValue::VECTOR4, FGShaderValue::FLOAT));
-        vertexLayout.elements.emplace_back(FGShaderValue::VECTOR3, FGShaderValue::FLOAT);
-        fragmentLayout.elements.emplace_back(FGShaderValue::VECTOR4, FGShaderValue::FLOAT);
-        colorLayout.elements.emplace_back(FGShaderValue::VECTOR4, FGShaderValue::FLOAT);
+        dataBuffer.elements.emplace_back("mvp", ShaderDataType(ShaderDataType::MAT4, ShaderDataType::FLOAT));
+        colorBuffer.elements.emplace_back("color", ShaderDataType(ShaderDataType::VECTOR4, ShaderDataType::FLOAT));
+        vertexLayout.elements.emplace_back(ShaderDataType::VECTOR3, ShaderDataType::FLOAT);
+        fragmentLayout.elements.emplace_back(ShaderDataType::VECTOR4, ShaderDataType::FLOAT);
+        colorLayout.elements.emplace_back(ShaderDataType::VECTOR4, ShaderDataType::FLOAT);
     }
 
-    void setup(FGBuilder &builder) {
+    void setup(RenderGraphBuilder &builder) {
         auto vs = builder.createShader(createVertexShader());
         auto fs = builder.createShader(createFragmentShader());
         auto pip = builder.createPipeline({vs, fs});
 
-        builder.addPass("Example Pass", [pip](FGContext &ctx) {
+        builder.addPass("Example Pass", [pip](RenderGraphContext &ctx) {
             const auto src = ctx.getShaderSource(pip);
-            std::cout << "----------Vertex Shader----------" << std::endl << src.at(FGShaderSource::VERTEX) <<
+            std::cout << "----------Vertex Shader----------" << std::endl << src.at(ShaderStage::VERTEX) <<
                     std::endl;
-            std::cout << "----------Fragment Shader----------" << std::endl << src.at(FGShaderSource::FRAGMENT) <<
+            std::cout << "----------Fragment Shader----------" << std::endl << src.at(ShaderStage::FRAGMENT) <<
                     std::endl;
         });
     }
 
-    FGShaderSource createVertexShader() {
-        std::unordered_map<std::string, FGShaderFunction> funcs;
+    ShaderStage createVertexShader() {
+        std::unordered_map<std::string, ShaderFunction> funcs;
         funcs["simplex2D"] = shaderlib::noise::simplex2D();
 
-        auto &builder = FGShaderBuilder::instance();
-        builder.setup(FGShaderSource::VERTEX,
+        auto &builder = ShaderBuilder::instance();
+        builder.setup(ShaderStage::VERTEX,
                       vertexLayout,
                       vertexLayout,
                       {},
@@ -79,8 +78,8 @@ public:
                       funcs);
 
         builder.Function("test",
-                         {{"a", FGShaderValue::integer()}},
-                         FGShaderValue::integer());
+                         {{"a", ShaderDataType::integer()}},
+                         ShaderDataType::integer());
         Return(5 * (3 + argument("a")));
         builder.EndFunction();
 
@@ -137,9 +136,9 @@ public:
         return builder.build();
     }
 
-    FGShaderSource createFragmentShader() {
-        auto &builder = FGShaderBuilder::instance();
-        builder.setup(FGShaderSource::FRAGMENT,
+    ShaderStage createFragmentShader() {
+        auto &builder = ShaderBuilder::instance();
+        builder.setup(ShaderStage::FRAGMENT,
                       vertexLayout,
                       vertexLayout,
                       {},

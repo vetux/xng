@@ -20,55 +20,55 @@
 #ifndef XENGINE_CONTEXTGL_HPP
 #define XENGINE_CONTEXTGL_HPP
 
-#include "../../engine/include/xng/rendergraph/fgcontext.hpp"
+#include "../../engine/include/xng/rendergraph/rendergraphcontext.hpp"
 
 #include "compiledpipeline.hpp"
 
 using namespace xng;
 
-class ContextGL : public FGContext {
+class ContextGL : public RenderGraphContext {
 public:
     ContextGL() = default;
 
     ~ContextGL() override = default;
 
-    explicit ContextGL(const std::unordered_map<FGResource, CompiledPipeline> &pipelines)
+    explicit ContextGL(const std::unordered_map<RenderGraphResource, CompiledPipeline> &pipelines)
         : pipelines(pipelines) {
     }
 
-    void uploadBuffer(FGResource buffer, const uint8_t *ptr, size_t size) override;
+    void uploadBuffer(RenderGraphResource buffer, const uint8_t *ptr, size_t size) override;
 
-    void uploadTexture(FGResource texture, const uint8_t *ptr, size_t size, FGColorFormat format, size_t index,
-                       size_t mipMapLevel, FGCubeMapFace face) override;
+    void uploadTexture(RenderGraphResource texture, const uint8_t *ptr, size_t size, ColorFormat format, size_t index,
+                       size_t mipMapLevel, CubeMapFace face) override;
 
-    void bindPipeline(FGResource pipeline) override;
+    void bindPipeline(RenderGraphResource pipeline) override;
 
-    void bindVertexBuffer(FGResource buffer) override;
+    void bindVertexBuffer(RenderGraphResource buffer) override;
 
-    void bindIndexBuffer(FGResource buffer) override;
+    void bindIndexBuffer(RenderGraphResource buffer) override;
 
     void bindRenderTarget(size_t binding,
-                          FGResource texture,
+                          RenderGraphResource texture,
                           size_t index,
                           size_t mipMapLevel,
-                          FGCubeMapFace face) override;
+                          CubeMapFace face) override;
 
-    void bindTextures(const std::unordered_map<std::string, FGResource> &textures) override;
+    void bindTextures(const std::unordered_map<std::string, RenderGraphResource> &textures) override;
 
-    void bindShaderBuffers(const std::unordered_map<std::string, FGResource> &buffers) override;
+    void bindShaderBuffers(const std::unordered_map<std::string, RenderGraphResource> &buffers) override;
 
-    void setShaderParameters(const std::unordered_map<std::string, FGShaderLiteral> &parameters) override;
+    void setShaderParameters(const std::unordered_map<std::string, ShaderLiteral> &parameters) override;
 
-    void draw(const std::vector<FGDrawCall> &calls) override;
+    void draw(const std::vector<DrawCall> &calls) override;
 
-    std::vector<uint8_t> downloadShaderBuffer(FGResource buffer) override;
+    std::vector<uint8_t> downloadShaderBuffer(RenderGraphResource buffer) override;
 
-    Image<ColorRGBA> downloadTexture(FGResource texture, size_t index, size_t mipMapLevel, FGCubeMapFace face) override;
+    Image<ColorRGBA> downloadTexture(RenderGraphResource texture, size_t index, size_t mipMapLevel, CubeMapFace face) override;
 
-    std::unordered_map<FGShaderSource::ShaderStage, std::string> getShaderSource(FGResource shader) override;
+    std::unordered_map<ShaderStage::Type, std::string> getShaderSource(RenderGraphResource shader) override;
 
 private:
-    std::unordered_map<FGResource, CompiledPipeline> pipelines;
+    std::unordered_map<RenderGraphResource, CompiledPipeline> pipelines;
 };
 
 #endif //XENGINE_CONTEXTGL_HPP

@@ -22,14 +22,14 @@
 
 #include <optional>
 
-#include "xng/rendergraph/shader/fgshadersource.hpp"
+#include "xng/rendergraph/shader/shaderstage.hpp"
 
 using namespace xng;
 
 std::string compileFunction(const std::string &functionName,
-                            const std::unordered_map<std::string, FGShaderValue> &parameters,
-                            const std::vector<std::unique_ptr<FGShaderNode> > &body,
-                            const std::optional<FGShaderValue> &returnType,
-                            const FGShaderSource &source);
+                            const std::unordered_map<std::string, ShaderDataType> &parameters,
+                            const std::vector<std::unique_ptr<ShaderNode> > &body,
+                            const std::optional<ShaderDataType> &returnType,
+                            const ShaderStage &source);
 
 #endif //XENGINE_FUNCTIONCOMPILER_HPP

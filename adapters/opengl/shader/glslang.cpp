@@ -61,7 +61,7 @@ namespace xng::glslang {
         }
     };
 
-    EShLanguage getLanguage(ShaderStage stage) {
+    EShLanguage getLanguage(ShaderStageType stage) {
         switch (stage) {
             case VERTEX:
                 return EShLangVertex;
@@ -180,7 +180,7 @@ namespace xng::glslang {
 
     std::vector<uint32_t> GLSLang::compile(const std::string &source,
                                            const std::string &entryPoint,
-                                           ShaderStage stage,
+                                           ShaderStageType stage,
                                            ShaderLanguage language,
                                            ShaderCompiler::OptimizationLevel optimizationLevel,
                                            ShaderEnvironment environment) const {
@@ -241,7 +241,7 @@ namespace xng::glslang {
     }
 
     std::string GLSLang::preprocess(const std::string &source,
-                                    ShaderStage stage,
+                                    ShaderStageType stage,
                                     ShaderLanguage language,
                                     const std::function<std::string(const char *)> &include,
                                     const std::map<std::string, std::string> &macros,

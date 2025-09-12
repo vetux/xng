@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SHADERSOURCE_HPP
-#define XENGINE_SHADERSOURCE_HPP
+#ifndef XENGINE_SHADERCOMPILESOURCE_HPP
+#define XENGINE_SHADERCOMPILESOURCE_HPP
 
 #include "xng/io/messageable.hpp"
 
@@ -28,13 +28,13 @@
 #include "shader/shaderdecompiler.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT ShaderSource : public Messageable {
+    class XENGINE_EXPORT ShaderCompileSource : public Messageable {
     public:
-        ShaderSource() = default;
+        ShaderCompileSource() = default;
 
-        ShaderSource(std::string src,
+        ShaderCompileSource(std::string src,
                      std::string entryPoint,
-                     ShaderStage stage,
+                     ShaderStageType stage,
                      ShaderLanguage language,
                      bool preprocessed)
                 : src(std::move(src)),
@@ -43,25 +43,25 @@ namespace xng {
                   language(language),
                   preprocessed(preprocessed) {}
 
-        ShaderSource preprocess(const ShaderCompiler &compiler,
+        ShaderCompileSource preprocess(const ShaderCompiler &compiler,
                                 const std::function<std::string(const char *)> &include = {},
                                 const std::map<std::string, std::string> &macros = {},
                                 ShaderCompiler::OptimizationLevel optimizationLevel = ShaderCompiler::OPTIMIZATION_NONE,
                                 ShaderEnvironment environment = ENVIRONMENT_OPENGL) const {
             if (preprocessed)
                 throw std::runtime_error("Source already preprocessed");
-            ShaderSource ret(*this);
+            ShaderCompileSource ret(*this);
             ret.src = compiler.preprocess(src, stage, language, include, macros, optimizationLevel, environment);
             ret.preprocessed = true;
             return ret;
         }
 
-        ShaderSource crossCompile(const ShaderCompiler &compiler,
+        ShaderCompileSource crossCompile(const ShaderCompiler &compiler,
                                   const ShaderDecompiler &decompiler,
                                   ShaderLanguage targetLanguage,
                                   ShaderCompiler::OptimizationLevel optimizationLevel,
                                   ShaderEnvironment environment) const {
-            ShaderSource ret(*this);
+            ShaderCompileSource ret(*this);
             if (!ret.preprocessed)
                 ret = ret.preprocess(compiler);
             ret.src = decompiler.decompile(
@@ -76,7 +76,7 @@ namespace xng {
         SPIRVShader compile(const ShaderCompiler &compiler,
                             ShaderCompiler::OptimizationLevel optimizationLevel = ShaderCompiler::OPTIMIZATION_NONE,
                             ShaderEnvironment environment = ENVIRONMENT_OPENGL) const {
-            ShaderSource shader = *this;
+            ShaderCompileSource shader = *this;
             if (!shader.preprocessed)
                 shader = preprocess(compiler, {}, {}, optimizationLevel);
             return {environment,
@@ -94,7 +94,7 @@ namespace xng {
 
         const std::string &getEntryPoint() const { return entryPoint; }
 
-        ShaderStage getStage() const { return stage; }
+        ShaderStageType getStage() const { return stage; }
 
         ShaderLanguage getLanguage() const { return language; }
 
@@ -105,7 +105,7 @@ namespace xng {
         Messageable &operator<<(const Message &message) override {
             message.value("src", src);
             message.value("entryPoint", entryPoint);
-            stage = (ShaderStage) message.getMessage("stage", Message((int) VERTEX)).asInt();
+            stage = (ShaderStageType) message.getMessage("stage", Message((int) VERTEX)).asInt();
             language = (ShaderLanguage) message.getMessage("language", Message((int) GLSL_420)).asInt();
             message.value("preprocessed", preprocessed);
             return *this;
@@ -124,10 +124,10 @@ namespace xng {
     private:
         std::string src{};
         std::string entryPoint{};
-        ShaderStage stage{};
+        ShaderStageType stage{};
         ShaderLanguage language{};
         bool preprocessed{};
     };
 }
 
-#endif //XENGINE_SHADERSOURCE_HPP
+#endif //XENGINE_SHADERCOMPILESOURCE_HPP

@@ -20,96 +20,96 @@
 #ifndef XENGINE_TYPES_HPP
 #define XENGINE_TYPES_HPP
 
-#include "xng/rendergraph/shader/fgshadervalue.hpp"
+#include "xng/rendergraph/shader/shaderdatatype.hpp"
 
 using namespace xng;
 
-static std::string getTypeName(const FGShaderValue &value) {
+static std::string getTypeName(const ShaderDataType &value) {
     std::string ret;
     switch (value.type) {
-        case FGShaderValue::SCALAR:
+        case ShaderDataType::SCALAR:
             switch (value.component) {
-                case FGShaderValue::BOOLEAN:
+                case ShaderDataType::BOOLEAN:
                     return "bool";
-                case FGShaderValue::UNSIGNED_INT:
+                case ShaderDataType::UNSIGNED_INT:
                     return "uint";
-                case FGShaderValue::SIGNED_INT:
+                case ShaderDataType::SIGNED_INT:
                     return "int";
-                case FGShaderValue::FLOAT:
+                case ShaderDataType::FLOAT:
                     return "float";
-                case FGShaderValue::DOUBLE:
+                case ShaderDataType::DOUBLE:
                     return "double";
                 default:
                     throw std::runtime_error("Invalid component");
             }
-        case FGShaderValue::VECTOR2:
+        case ShaderDataType::VECTOR2:
             switch (value.component) {
-                case FGShaderValue::BOOLEAN:
+                case ShaderDataType::BOOLEAN:
                     return "bvec2";
-                case FGShaderValue::UNSIGNED_INT:
+                case ShaderDataType::UNSIGNED_INT:
                     return "uvec2";
-                case FGShaderValue::SIGNED_INT:
+                case ShaderDataType::SIGNED_INT:
                     return "ivec2";
-                case FGShaderValue::FLOAT:
+                case ShaderDataType::FLOAT:
                     return "vec2";
-                case FGShaderValue::DOUBLE:
+                case ShaderDataType::DOUBLE:
                     return "dvec2";
                 default:
                     throw std::runtime_error("Invalid component");
             }
-        case FGShaderValue::VECTOR3:
+        case ShaderDataType::VECTOR3:
             switch (value.component) {
-                case FGShaderValue::BOOLEAN:
+                case ShaderDataType::BOOLEAN:
                     return "bvec3";
-                case FGShaderValue::UNSIGNED_INT:
+                case ShaderDataType::UNSIGNED_INT:
                     return "uvec3";
-                case FGShaderValue::SIGNED_INT:
+                case ShaderDataType::SIGNED_INT:
                     return "ivec3";
-                case FGShaderValue::FLOAT:
+                case ShaderDataType::FLOAT:
                     return "vec3";
-                case FGShaderValue::DOUBLE:
+                case ShaderDataType::DOUBLE:
                     return "dvec3";
                 default:
                     throw std::runtime_error("Invalid component");
             }
-        case FGShaderValue::VECTOR4:
+        case ShaderDataType::VECTOR4:
             switch (value.component) {
-                case FGShaderValue::BOOLEAN:
+                case ShaderDataType::BOOLEAN:
                     return "bvec4";
-                case FGShaderValue::UNSIGNED_INT:
+                case ShaderDataType::UNSIGNED_INT:
                     return "uvec4";
-                case FGShaderValue::SIGNED_INT:
+                case ShaderDataType::SIGNED_INT:
                     return "ivec4";
-                case FGShaderValue::FLOAT:
+                case ShaderDataType::FLOAT:
                     return "vec4";
-                case FGShaderValue::DOUBLE:
+                case ShaderDataType::DOUBLE:
                     return "dvec4";
                 default:
                     throw std::runtime_error("Invalid component");
             }
-        case FGShaderValue::MAT2:
+        case ShaderDataType::MAT2:
             switch (value.component) {
-                case FGShaderValue::FLOAT:
+                case ShaderDataType::FLOAT:
                     return "mat2";
-                case FGShaderValue::DOUBLE:
+                case ShaderDataType::DOUBLE:
                     return "dmat2";
                 default:
                     throw std::runtime_error("Invalid component");
             }
-        case FGShaderValue::MAT3:
+        case ShaderDataType::MAT3:
             switch (value.component) {
-                case FGShaderValue::FLOAT:
+                case ShaderDataType::FLOAT:
                     return "mat3";
-                case FGShaderValue::DOUBLE:
+                case ShaderDataType::DOUBLE:
                     return "dmat3";
                 default:
                     throw std::runtime_error("Invalid component");
             }
-        case FGShaderValue::MAT4:
+        case ShaderDataType::MAT4:
             switch (value.component) {
-                case FGShaderValue::FLOAT:
+                case ShaderDataType::FLOAT:
                     return "mat4";
-                case FGShaderValue::DOUBLE:
+                case ShaderDataType::DOUBLE:
                     return "dmat4";
                 default:
                     throw std::runtime_error("Invalid component");

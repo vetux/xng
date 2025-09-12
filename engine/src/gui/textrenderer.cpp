@@ -226,5 +226,6 @@ namespace xng {
 
         return {text, origin, layout, std::move(tex->download())};*/
         //TODO: Reimplement text renderer
+        throw std::runtime_error("Text renderer not implemented");
     }
 }

@@ -20,12 +20,12 @@
 #ifndef XENGINE_COMPILEDPIPELINE_HPP
 #define XENGINE_COMPILEDPIPELINE_HPP
 
-#include "xng/rendergraph/shader/fgshadersource.hpp"
+#include "xng/rendergraph/shader/shaderstage.hpp"
 
 using namespace xng;
 
 struct CompiledPipeline {
-    std::unordered_map<FGShaderSource::ShaderStage, std::string> sourceCode;
+    std::unordered_map<ShaderStage::Type, std::string> sourceCode;
     std::unordered_map<std::string, size_t> bufferBindings;
     std::unordered_map<std::string, size_t> textureBindings;
 

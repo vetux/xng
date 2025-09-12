@@ -1,0 +1,119 @@
+/**
+ *  xEngine - C++ Game Engine Library
+ *  Copyright (C) 2023  Julian Zampiccoli
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 3 of the License, or (at your option) any later version.
+
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software Foundation,
+ *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+
+#ifndef XENGINE_RENDERGRAPHBUILDER_HPP
+#define XENGINE_RENDERGRAPHBUILDER_HPP
+
+#include <string>
+#include <functional>
+
+#include "rendergraph.hpp"
+#include "xng/rendergraph/rendergraphcontext.hpp"
+#include "rendergraphresource.hpp"
+
+#include "xng/rendergraph/shader/shaderstage.hpp"
+#include "rendergraphtexture.hpp"
+
+namespace xng {
+    class XENGINE_EXPORT RenderGraphBuilder {
+    public:
+        typedef size_t PassHandle;
+
+        RenderGraphBuilder();
+
+        ~RenderGraphBuilder() = default;
+
+        /**
+         * Declare a previously allocated resource to be inherited by this graph.
+         *
+         * The specified resource must have been allocated or inherited in the
+         * preceding RenderGraphRuntime.compile() or RenderGraphRuntime.recompile() call.
+         *
+         * @param resource The resource to inherit
+         * @return The new resource handle representing the inherited resource
+         */
+        RenderGraphResource inheritResource(RenderGraphResource resource);
+
+        RenderGraphResource createVertexBuffer(size_t size);
+
+        RenderGraphResource createIndexBuffer(size_t size);
+
+        RenderGraphResource createShaderBuffer(size_t size);
+
+        RenderGraphResource createTexture(const RenderGraphTexture &texture);
+
+        RenderGraphResource createShader(const ShaderStage &shader);
+
+        /**
+         * Create a render pipeline from the given shader resources.
+         *
+         * All shaders in a pipeline are required to have identical buffer / texture / parameter layouts and compatible
+         * input / output attribute layouts.
+         *
+         * @param shaders
+         * @return
+         */
+        RenderGraphResource createPipeline(const std::unordered_set<RenderGraphResource> &shaders);
+
+        /**
+         * The screen texture is an offscreen texture managed by the runtime.
+         * It can be read from and written to by render passes to access the resulting screen contents.
+         *
+         * The texture format is as follows:
+         *  .size = Window / Full-screen size (Determined by the display environment)
+         *  .textureType = TEXTURE2D
+         *  .format = RGBA
+         *
+         * @return The offscreen texture representing the screen.
+         */
+        RenderGraphResource getScreenTexture() const;
+
+        PassHandle addPass(const std::string &name, std::function<void(RenderGraphContext &)> pass);
+
+        void read(PassHandle pass, RenderGraphResource resource);
+
+        void write(PassHandle pass, RenderGraphResource resource);
+
+        void readWrite(PassHandle pass, RenderGraphResource resource);
+
+        RenderGraph build();
+
+    private:
+        RenderGraphResource createResource();
+
+        RenderGraphResource resourceCounter;
+
+        std::vector<RenderGraphPass> passes;
+
+        std::unordered_map<RenderGraphResource, size_t> vertexBufferAllocation;
+        std::unordered_map<RenderGraphResource, size_t> indexBufferAllocation;
+        std::unordered_map<RenderGraphResource, size_t> shaderBufferAllocation;
+
+        std::unordered_map<RenderGraphResource, RenderGraphTexture> textureAllocation;
+
+        std::unordered_map<RenderGraphResource, ShaderStage> shaderAllocation;
+        std::unordered_map<RenderGraphResource, std::unordered_set<RenderGraphResource> > pipelineAllocation;
+
+        std::unordered_map<RenderGraphResource, RenderGraphResource> inheritedResources;
+
+        RenderGraphResource screenTexture{};
+    };
+}
+
+#endif //XENGINE_RENDERGRAPHBUILDER_HPP

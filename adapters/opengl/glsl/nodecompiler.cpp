@@ -24,87 +24,87 @@
 #include "literals.hpp"
 #include "types.hpp"
 
-std::string compileNode(const FGShaderNode &node,
-                        const FGShaderSource &source,
+std::string compileNode(const ShaderNode &node,
+                        const ShaderStage &source,
                         const std::string &functionName,
                         const std::string &prefix) {
     switch (node.getType()) {
-        case FGShaderNode::VARIABLE_CREATE:
-            return compileLeafNode(down_cast<const FGNodeVariableCreate &>(node), source, functionName, prefix);
-        case FGShaderNode::ASSIGN:
-            return compileLeafNode(down_cast<const FGNodeAssign &>(node), source, functionName, prefix);
-        case FGShaderNode::VARIABLE:
-            return compileLeafNode(down_cast<const FGNodeVariable &>(node));
-        case FGShaderNode::LITERAL:
-            return compileLeafNode(down_cast<const FGNodeLiteral &>(node));
-        case FGShaderNode::ARGUMENT:
-            return compileLeafNode(down_cast<const FGNodeArgument &>(node));
-        case FGShaderNode::VECTOR:
-            return compileLeafNode(down_cast<const FGNodeVector &>(node), source, functionName);
-        case FGShaderNode::ARRAY:
-            return compileLeafNode(down_cast<const FGNodeArray &>(node), source, functionName);
-        case FGShaderNode::ATTRIBUTE_IN:
-            return compileLeafNode(down_cast<const FGNodeAttributeInput &>(node));
-        case FGShaderNode::ATTRIBUTE_OUT:
-            return compileLeafNode(down_cast<const FGNodeAttributeOutput &>(node));
-        case FGShaderNode::PARAMETER:
-            return compileLeafNode(down_cast<const FGNodeParameter &>(node));
-        case FGShaderNode::TEXTURE_SAMPLE:
-            return compileLeafNode(down_cast<const FGNodeTextureSample &>(node), source, functionName);
-        case FGShaderNode::TEXTURE_SIZE:
-            return compileLeafNode(down_cast<const FGNodeTextureSize &>(node));
-        case FGShaderNode::BUFFER_READ:
-            return compileLeafNode(down_cast<const FGNodeBufferRead &>(node), source, functionName);
-        case FGShaderNode::BUFFER_WRITE:
-            return compileLeafNode(down_cast<const FGNodeBufferWrite &>(node), source, functionName, prefix);
-        case FGShaderNode::BUFFER_SIZE:
-            return compileLeafNode(down_cast<const FGNodeBufferSize &>(node), source);
-        case FGShaderNode::ADD:
-            return compileLeafNode(down_cast<const FGNodeAdd &>(node), source, functionName);
-        case FGShaderNode::SUBTRACT:
-            return compileLeafNode(down_cast<const FGNodeSubtract &>(node), source, functionName);
-        case FGShaderNode::MULTIPLY:
-            return compileLeafNode(down_cast<const FGNodeMultiply &>(node), source, functionName);
-        case FGShaderNode::DIVIDE:
-            return compileLeafNode(down_cast<const FGNodeDivide &>(node), source, functionName);
-        case FGShaderNode::EQUAL:
-            return compileLeafNode(down_cast<const FGNodeEqual &>(node), source, functionName);
-        case FGShaderNode::NEQUAL:
-            return compileLeafNode(down_cast<const FGNodeNotEqual &>(node), source, functionName);
-        case FGShaderNode::GREATER:
-            return compileLeafNode(down_cast<const FGNodeGreater &>(node), source, functionName);
-        case FGShaderNode::LESS:
-            return compileLeafNode(down_cast<const FGNodeLess &>(node), source, functionName);
-        case FGShaderNode::GREATER_EQUAL:
-            return compileLeafNode(down_cast<const FGNodeGreaterEqual &>(node), source, functionName);
-        case FGShaderNode::LESS_EQUAL:
-            return compileLeafNode(down_cast<const FGNodeLessEqual &>(node), source, functionName);
-        case FGShaderNode::AND:
-            return compileLeafNode(down_cast<const FGNodeAnd &>(node), source, functionName);
-        case FGShaderNode::OR:
-            return compileLeafNode(down_cast<const FGNodeOr &>(node), source, functionName);
-        case FGShaderNode::CALL:
-            return compileLeafNode(down_cast<const FGNodeCall &>(node), source, functionName);
-        case FGShaderNode::RETURN:
-            return compileLeafNode(down_cast<const FGNodeReturn &>(node), source, functionName, prefix);
-        case FGShaderNode::BUILTIN:
-            return compileLeafNode(down_cast<const FGNodeBuiltin &>(node), source, functionName);
-        case FGShaderNode::SUBSCRIPT_ARRAY:
-            return compileLeafNode(down_cast<const FGNodeSubscriptArray &>(node), source, functionName);
-        case FGShaderNode::SUBSCRIPT_VECTOR:
-            return compileLeafNode(down_cast<const FGNodeSubscriptVector &>(node), source, functionName);
-        case FGShaderNode::SUBSCRIPT_MATRIX:
-            return compileLeafNode(down_cast<const FGNodeSubscriptMatrix &>(node), source, functionName);
-        case FGShaderNode::BRANCH:
-            return compileLeafNode(down_cast<const FGNodeBranch &>(node), source, functionName, prefix);
-        case FGShaderNode::LOOP:
-            return compileLeafNode(down_cast<const FGNodeLoop &>(node), source, functionName, prefix);
+        case ShaderNode::VARIABLE_CREATE:
+            return compileLeafNode(down_cast<const NodeVariableCreate &>(node), source, functionName, prefix);
+        case ShaderNode::ASSIGN:
+            return compileLeafNode(down_cast<const NodeAssign &>(node), source, functionName, prefix);
+        case ShaderNode::VARIABLE:
+            return compileLeafNode(down_cast<const NodeVariable &>(node));
+        case ShaderNode::LITERAL:
+            return compileLeafNode(down_cast<const NodeLiteral &>(node));
+        case ShaderNode::ARGUMENT:
+            return compileLeafNode(down_cast<const NodeArgument &>(node));
+        case ShaderNode::VECTOR:
+            return compileLeafNode(down_cast<const NodeVector &>(node), source, functionName);
+        case ShaderNode::ARRAY:
+            return compileLeafNode(down_cast<const NodeArray &>(node), source, functionName);
+        case ShaderNode::ATTRIBUTE_IN:
+            return compileLeafNode(down_cast<const NodeAttributeInput &>(node));
+        case ShaderNode::ATTRIBUTE_OUT:
+            return compileLeafNode(down_cast<const NodeAttributeOutput &>(node));
+        case ShaderNode::PARAMETER:
+            return compileLeafNode(down_cast<const NodeParameter &>(node));
+        case ShaderNode::TEXTURE_SAMPLE:
+            return compileLeafNode(down_cast<const NodeTextureSample &>(node), source, functionName);
+        case ShaderNode::TEXTURE_SIZE:
+            return compileLeafNode(down_cast<const NodeTextureSize &>(node));
+        case ShaderNode::BUFFER_READ:
+            return compileLeafNode(down_cast<const NodeBufferRead &>(node), source, functionName);
+        case ShaderNode::BUFFER_WRITE:
+            return compileLeafNode(down_cast<const NodeBufferWrite &>(node), source, functionName, prefix);
+        case ShaderNode::BUFFER_SIZE:
+            return compileLeafNode(down_cast<const NodeBufferSize &>(node), source);
+        case ShaderNode::ADD:
+            return compileLeafNode(down_cast<const NodeAdd &>(node), source, functionName);
+        case ShaderNode::SUBTRACT:
+            return compileLeafNode(down_cast<const NodeSubtract &>(node), source, functionName);
+        case ShaderNode::MULTIPLY:
+            return compileLeafNode(down_cast<const NodeMultiply &>(node), source, functionName);
+        case ShaderNode::DIVIDE:
+            return compileLeafNode(down_cast<const NodeDivide &>(node), source, functionName);
+        case ShaderNode::EQUAL:
+            return compileLeafNode(down_cast<const NodeEqual &>(node), source, functionName);
+        case ShaderNode::NEQUAL:
+            return compileLeafNode(down_cast<const NodeNotEqual &>(node), source, functionName);
+        case ShaderNode::GREATER:
+            return compileLeafNode(down_cast<const NodeGreater &>(node), source, functionName);
+        case ShaderNode::LESS:
+            return compileLeafNode(down_cast<const NodeLess &>(node), source, functionName);
+        case ShaderNode::GREATER_EQUAL:
+            return compileLeafNode(down_cast<const NodeGreaterEqual &>(node), source, functionName);
+        case ShaderNode::LESS_EQUAL:
+            return compileLeafNode(down_cast<const NodeLessEqual &>(node), source, functionName);
+        case ShaderNode::AND:
+            return compileLeafNode(down_cast<const NodeAnd &>(node), source, functionName);
+        case ShaderNode::OR:
+            return compileLeafNode(down_cast<const NodeOr &>(node), source, functionName);
+        case ShaderNode::CALL:
+            return compileLeafNode(down_cast<const NodeCall &>(node), source, functionName);
+        case ShaderNode::RETURN:
+            return compileLeafNode(down_cast<const NodeReturn &>(node), source, functionName, prefix);
+        case ShaderNode::BUILTIN:
+            return compileLeafNode(down_cast<const NodeBuiltin &>(node), source, functionName);
+        case ShaderNode::SUBSCRIPT_ARRAY:
+            return compileLeafNode(down_cast<const NodeSubscriptArray &>(node), source, functionName);
+        case ShaderNode::SUBSCRIPT_VECTOR:
+            return compileLeafNode(down_cast<const NodeSubscriptVector &>(node), source, functionName);
+        case ShaderNode::SUBSCRIPT_MATRIX:
+            return compileLeafNode(down_cast<const NodeSubscriptMatrix &>(node), source, functionName);
+        case ShaderNode::BRANCH:
+            return compileLeafNode(down_cast<const NodeBranch &>(node), source, functionName, prefix);
+        case ShaderNode::LOOP:
+            return compileLeafNode(down_cast<const NodeLoop &>(node), source, functionName, prefix);
     }
     throw std::runtime_error("Node Type not implemented");
 }
 
-std::string compileLeafNode(const FGNodeVariableCreate &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeVariableCreate &node,
+                            const ShaderStage &source,
                             const std::string &functionName,
                             const std::string &prefix) {
     auto ret = getTypeName(node.type) + " " + node.variableName;
@@ -117,8 +117,8 @@ std::string compileLeafNode(const FGNodeVariableCreate &node,
     return prefix + ret;
 }
 
-std::string compileLeafNode(const FGNodeAssign &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeAssign &node,
+                            const ShaderStage &source,
                             const std::string &functionName,
                             const std::string &prefix) {
     return prefix + compileNode(*node.target, source, functionName)
@@ -126,21 +126,21 @@ std::string compileLeafNode(const FGNodeAssign &node,
            + compileNode(*node.value, source, functionName);
 }
 
-std::string compileLeafNode(const FGNodeVariable &node) {
+std::string compileLeafNode(const NodeVariable &node) {
     return node.variableName;
 }
 
-std::string compileLeafNode(const FGNodeLiteral &node) {
+std::string compileLeafNode(const NodeLiteral &node) {
     return literalToString(node.value);
 }
 
-std::string compileLeafNode(const FGNodeArgument &node) {
+std::string compileLeafNode(const NodeArgument &node) {
     return node.argumentName;
 }
 
 
-std::string compileLeafNode(const FGNodeVector &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeVector &node,
+                            const ShaderStage &source,
                             const std::string &functionName) {
     std::string ret;
     ret += getTypeName(node.type);
@@ -160,7 +160,7 @@ std::string compileLeafNode(const FGNodeVector &node,
     return ret;
 }
 
-std::string compileLeafNode(const FGNodeArray &node, const FGShaderSource &source, const std::string &functionName) {
+std::string compileLeafNode(const NodeArray &node, const ShaderStage &source, const std::string &functionName) {
     std::string ret;
     ret += getTypeName(node.elementType);
     ret += "[](";
@@ -176,20 +176,20 @@ std::string compileLeafNode(const FGNodeArray &node, const FGShaderSource &sourc
     return ret;
 }
 
-std::string compileLeafNode(const FGNodeAttributeInput &node) {
+std::string compileLeafNode(const NodeAttributeInput &node) {
     return inputAttributePrefix + std::to_string(node.attributeIndex);
 }
 
-std::string compileLeafNode(const FGNodeAttributeOutput &node) {
+std::string compileLeafNode(const NodeAttributeOutput &node) {
     return outputAttributePrefix + std::to_string(node.attributeIndex);
 }
 
-std::string compileLeafNode(const FGNodeParameter &node) {
+std::string compileLeafNode(const NodeParameter &node) {
     return parameterPrefix + node.parameterName;
 }
 
-std::string compileLeafNode(const FGNodeTextureSample &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeTextureSample &node,
+                            const ShaderStage &source,
                             const std::string &functionName) {
     auto ret = "texture("
                + std::string(texturePrefix)
@@ -203,12 +203,12 @@ std::string compileLeafNode(const FGNodeTextureSample &node,
     return ret;
 }
 
-std::string compileLeafNode(const FGNodeTextureSize &node) {
+std::string compileLeafNode(const NodeTextureSize &node) {
     return "textureSize(" + std::string(texturePrefix) + node.textureName + ")";
 }
 
-std::string compileLeafNode(const FGNodeBufferRead &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeBufferRead &node,
+                            const ShaderStage &source,
                             const std::string &functionName) {
     if (source.buffers.at(node.bufferName).dynamic) {
         auto ret = bufferPrefix + node.bufferName + "." + bufferArrayName + "[";
@@ -225,8 +225,8 @@ std::string compileLeafNode(const FGNodeBufferRead &node,
     }
 }
 
-std::string compileLeafNode(const FGNodeBufferWrite &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeBufferWrite &node,
+                            const ShaderStage &source,
                             const std::string &functionName,
                             const std::string &prefix) {
     if (source.buffers.at(node.bufferName).dynamic) {
@@ -257,112 +257,112 @@ std::string compileLeafNode(const FGNodeBufferWrite &node,
     }
 }
 
-std::string compileLeafNode(const FGNodeBufferSize &node,
-                            const FGShaderSource &source) {
+std::string compileLeafNode(const NodeBufferSize &node,
+                            const ShaderStage &source) {
     if (!source.buffers.at(node.bufferName).dynamic) {
         throw std::runtime_error("Buffer size read on non-dynamic buffer");
     }
     return bufferPrefix + node.bufferName + "." + bufferArrayName + ".length()";
 }
 
-std::string compileLeafNode(const FGNodeAdd &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeAdd &node,
+                            const ShaderStage &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " + "
            + compileNode(*node.right, source, functionName);
 }
 
-std::string compileLeafNode(const FGNodeSubtract &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeSubtract &node,
+                            const ShaderStage &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " - "
            + compileNode(*node.right, source, functionName);
 }
 
-std::string compileLeafNode(const FGNodeMultiply &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeMultiply &node,
+                            const ShaderStage &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " * "
            + compileNode(*node.right, source, functionName);
 }
 
-std::string compileLeafNode(const FGNodeDivide &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeDivide &node,
+                            const ShaderStage &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " / "
            + compileNode(*node.right, source, functionName);
 }
 
-std::string compileLeafNode(const FGNodeEqual &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeEqual &node,
+                            const ShaderStage &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " == "
            + compileNode(*node.right, source, functionName);
 }
 
-std::string compileLeafNode(const FGNodeNotEqual &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeNotEqual &node,
+                            const ShaderStage &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " != "
            + compileNode(*node.right, source, functionName);
 }
 
-std::string compileLeafNode(const FGNodeGreater &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeGreater &node,
+                            const ShaderStage &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " > "
            + compileNode(*node.right, source, functionName);
 }
 
-std::string compileLeafNode(const FGNodeLess &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeLess &node,
+                            const ShaderStage &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " < "
            + compileNode(*node.right, source, functionName);
 }
 
-std::string compileLeafNode(const FGNodeGreaterEqual &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeGreaterEqual &node,
+                            const ShaderStage &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " >= "
            + compileNode(*node.right, source, functionName);
 }
 
-std::string compileLeafNode(const FGNodeLessEqual &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeLessEqual &node,
+                            const ShaderStage &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " <= "
            + compileNode(*node.right, source, functionName);
 }
 
-std::string compileLeafNode(const FGNodeAnd &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeAnd &node,
+                            const ShaderStage &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " && "
            + compileNode(*node.right, source, functionName);
 }
 
-std::string compileLeafNode(const FGNodeOr &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeOr &node,
+                            const ShaderStage &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " || "
            + compileNode(*node.right, source, functionName);
 }
 
-std::string compileLeafNode(const FGNodeCall &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeCall &node,
+                            const ShaderStage &source,
                             const std::string &functionName) {
     auto ret = node.functionName + "(";
     size_t argCount = 0;
@@ -377,104 +377,104 @@ std::string compileLeafNode(const FGNodeCall &node,
     return ret;
 }
 
-std::string compileLeafNode(const FGNodeReturn &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeReturn &node,
+                            const ShaderStage &source,
                             const std::string &functionName,
                             const std::string &prefix) {
     return prefix + "return " + compileNode(*node.value, source, functionName);
 }
 
-std::string compileLeafNode(const FGNodeBuiltin &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeBuiltin &node,
+                            const ShaderStage &source,
                             const std::string &functionName) {
     switch (node.type) {
-        case FGNodeBuiltin::ABS:
+        case NodeBuiltin::ABS:
             return "abs(" + compileNode(*node.valA, source, functionName) + ")";
-        case FGNodeBuiltin::SIN:
+        case NodeBuiltin::SIN:
             return "sin(" + compileNode(*node.valA, source, functionName) + ")";
-        case FGNodeBuiltin::COS:
+        case NodeBuiltin::COS:
             return "cos(" + compileNode(*node.valA, source, functionName) + ")";
-        case FGNodeBuiltin::TAN:
+        case NodeBuiltin::TAN:
             return "tan(" + compileNode(*node.valA, source, functionName) + ")";
-        case FGNodeBuiltin::ASIN:
+        case NodeBuiltin::ASIN:
             return "asin(" + compileNode(*node.valA, source, functionName) + ")";
-        case FGNodeBuiltin::ACOS:
+        case NodeBuiltin::ACOS:
             return "acos(" + compileNode(*node.valA, source, functionName) + ")";
-        case FGNodeBuiltin::ATAN:
+        case NodeBuiltin::ATAN:
             return "atan(" + compileNode(*node.valA, source, functionName) + ")";
-        case FGNodeBuiltin::POW:
+        case NodeBuiltin::POW:
             return "pow(" + compileNode(*node.valA, source, functionName) + ", " + compileNode(
                        *node.valB, source, functionName) + ")";
-        case FGNodeBuiltin::EXP:
+        case NodeBuiltin::EXP:
             return "exp(" + compileNode(*node.valA, source, functionName) + ")";
-        case FGNodeBuiltin::LOG:
+        case NodeBuiltin::LOG:
             return "log(" + compileNode(*node.valA, source, functionName) + ")";
-        case FGNodeBuiltin::SQRT:
+        case NodeBuiltin::SQRT:
             return "sqrt(" + compileNode(*node.valA, source, functionName) + ")";
-        case FGNodeBuiltin::INVERSESQRT:
+        case NodeBuiltin::INVERSESQRT:
             return "inversesqrt(" + compileNode(*node.valA, source, functionName) + ")";
-        case FGNodeBuiltin::FLOOR:
+        case NodeBuiltin::FLOOR:
             return "floor(" + compileNode(*node.valA, source, functionName) + ")";
-        case FGNodeBuiltin::CEIL:
+        case NodeBuiltin::CEIL:
             return "ceil(" + compileNode(*node.valA, source, functionName) + ")";
-        case FGNodeBuiltin::ROUND:
+        case NodeBuiltin::ROUND:
             return "round(" + compileNode(*node.valA, source, functionName) + ")";
-        case FGNodeBuiltin::FRACT:
+        case NodeBuiltin::FRACT:
             return "fract(" + compileNode(*node.valA, source, functionName) + ")";
-        case FGNodeBuiltin::MOD:
+        case NodeBuiltin::MOD:
             return "mod(" + compileNode(*node.valA, source, functionName) + ", " + compileNode(
                        *node.valB, source, functionName) + ")";
-        case FGNodeBuiltin::MIN:
+        case NodeBuiltin::MIN:
             return "min(" + compileNode(*node.valA, source, functionName) + ", " + compileNode(
                        *node.valB, source, functionName) + ")";
-        case FGNodeBuiltin::MAX:
+        case NodeBuiltin::MAX:
             return "max(" + compileNode(*node.valA, source, functionName) + ", " + compileNode(
                        *node.valB, source, functionName) + ")";
-        case FGNodeBuiltin::CLAMP:
+        case NodeBuiltin::CLAMP:
             return "clamp(" + compileNode(*node.valA, source, functionName)
                    + ", " + compileNode(*node.valB, source, functionName)
                    + ", " + compileNode(*node.valC, source, functionName)
                    + ")";
-        case FGNodeBuiltin::MIX:
+        case NodeBuiltin::MIX:
             return "mix(" + compileNode(*node.valA, source, functionName)
                    + ", " + compileNode(*node.valB, source, functionName)
                    + ", " + compileNode(*node.valC, source, functionName)
                    + ")";
-        case FGNodeBuiltin::STEP:
+        case NodeBuiltin::STEP:
             return "step(" + compileNode(*node.valA, source, functionName)
                    + ", " + compileNode(*node.valB, source, functionName)
                    + ")";
-        case FGNodeBuiltin::SMOOTHSTEP:
+        case NodeBuiltin::SMOOTHSTEP:
             return "smoothstep(" + compileNode(*node.valA, source, functionName)
                    + ", " + compileNode(*node.valB, source, functionName)
                    + ", " + compileNode(*node.valC, source, functionName)
                    + ")";
-        case FGNodeBuiltin::DOT:
+        case NodeBuiltin::DOT:
             return "dot(" + compileNode(*node.valA, source, functionName)
                    + ", " + compileNode(*node.valB, source, functionName)
                    + ")";
-        case FGNodeBuiltin::CROSS:
+        case NodeBuiltin::CROSS:
             return "cross(" + compileNode(*node.valA, source, functionName)
                    + ", " + compileNode(*node.valB, source, functionName)
                    + ")";
-        case FGNodeBuiltin::NORMALIZE:
+        case NodeBuiltin::NORMALIZE:
             return "normalize(" + compileNode(*node.valA, source, functionName) + ")";
-        case FGNodeBuiltin::LENGTH:
+        case NodeBuiltin::LENGTH:
             return "length(" + compileNode(*node.valA, source, functionName) + ")";
-        case FGNodeBuiltin::DISTANCE:
+        case NodeBuiltin::DISTANCE:
             return "distance(" + compileNode(*node.valA, source, functionName)
                    + ", " + compileNode(*node.valB, source, functionName)
                    + ")";
-        case FGNodeBuiltin::REFLECT:
+        case NodeBuiltin::REFLECT:
             return "reflect(" + compileNode(*node.valA, source, functionName)
                    + ", " + compileNode(*node.valB, source, functionName)
                    + ")";
-        case FGNodeBuiltin::REFRACT:
+        case NodeBuiltin::REFRACT:
             return "refract(" + compileNode(*node.valA, source, functionName)
                    + ", " + compileNode(*node.valB, source, functionName)
                    + ", " + compileNode(*node.valC, source, functionName)
                    + ")";
-        case FGNodeBuiltin::FACEFORWARD:
+        case NodeBuiltin::FACEFORWARD:
             return "faceforward(" + compileNode(*node.valA, source, functionName)
                    + ", " + compileNode(*node.valB, source, functionName)
                    + ", " + compileNode(*node.valC, source, functionName)
@@ -484,8 +484,8 @@ std::string compileLeafNode(const FGNodeBuiltin &node,
     }
 }
 
-std::string compileLeafNode(const FGNodeSubscriptArray &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeSubscriptArray &node,
+                            const ShaderStage &source,
                             const std::string &functionName) {
     return compileNode(*node.array, source, functionName)
            + "["
@@ -493,8 +493,8 @@ std::string compileLeafNode(const FGNodeSubscriptArray &node,
            + "]";
 }
 
-std::string compileLeafNode(const FGNodeSubscriptVector &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeSubscriptVector &node,
+                            const ShaderStage &source,
                             const std::string &functionName) {
     switch (node.index) {
         case 0:
@@ -510,8 +510,8 @@ std::string compileLeafNode(const FGNodeSubscriptVector &node,
     }
 }
 
-std::string compileLeafNode(const FGNodeSubscriptMatrix &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeSubscriptMatrix &node,
+                            const ShaderStage &source,
                             const std::string &functionName) {
     return compileNode(*node.matrix, source, functionName)
            + "["
@@ -521,8 +521,8 @@ std::string compileLeafNode(const FGNodeSubscriptMatrix &node,
            + "]";
 }
 
-std::string compileLeafNode(const FGNodeBranch &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeBranch &node,
+                            const ShaderStage &source,
                             const std::string &functionName,
                             const std::string &prefix) {
     std::string ret;
@@ -545,8 +545,8 @@ std::string compileLeafNode(const FGNodeBranch &node,
     return ret;
 }
 
-std::string compileLeafNode(const FGNodeLoop &node,
-                            const FGShaderSource &source,
+std::string compileLeafNode(const NodeLoop &node,
+                            const ShaderStage &source,
                             const std::string &functionName, const std::string &prefix) {
     std::string ret;
     ret += prefix + "for (";

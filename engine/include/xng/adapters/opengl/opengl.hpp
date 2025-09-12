@@ -20,12 +20,12 @@
 #ifndef XENGINE_OPENGL2_HPP
 #define XENGINE_OPENGL2_HPP
 
-#include "xng/rendergraph/fgruntime.hpp"
+#include "xng/rendergraph/rendergraphruntime.hpp"
 
 namespace xng::opengl {
     struct State;
 
-    class XENGINE_EXPORT OpenGL2 final : public FGRuntime {
+    class XENGINE_EXPORT OpenGL2 final : public RenderGraphRuntime {
     public:
         OpenGL2();
 
@@ -33,9 +33,9 @@ namespace xng::opengl {
 
         void setWindow(const Window &window) override;
 
-        GraphHandle compile(const FGGraph &graph) override;
+        GraphHandle compile(const RenderGraph &graph) override;
 
-        void recompile(GraphHandle handle, const FGGraph &graph) override;
+        void recompile(GraphHandle handle, const RenderGraph &graph) override;
 
         void execute(GraphHandle graph) override;
 
@@ -46,12 +46,12 @@ namespace xng::opengl {
         void loadCache(GraphHandle graph, std::istream &stream) override;
 
     private:
-        GraphHandle compileGraph(const FGGraph &graph);
+        GraphHandle compileGraph(const RenderGraph &graph);
 
         GraphHandle graphCounter = 0;
 
-        std::unordered_map<GraphHandle, FGGraph> graphs;
-        std::unordered_map<GraphHandle, std::unordered_map<FGResource, FGShaderSource>> shaders;
+        std::unordered_map<GraphHandle, RenderGraph> graphs;
+        std::unordered_map<GraphHandle, std::unordered_map<RenderGraphResource, ShaderStage>> shaders;
 
         std::unique_ptr<State> state;
     };

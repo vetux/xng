@@ -88,9 +88,9 @@ namespace xng {
                     VertexBuilder().addVec3(Vec3f(-1, -1, 0)).addVec2(Vec2f(0, 0)).build(),
                 }
             };
-            nQuad.vertexLayout = FGAttributeLayout({
-                FGShaderValue::vec3(),
-                FGShaderValue::vec2()
+            nQuad.vertexLayout = ShaderAttributeLayout({
+                ShaderDataType::vec3(),
+                ShaderDataType::vec2()
             });
         }
         return nQuad;

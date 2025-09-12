@@ -19,49 +19,49 @@
 
 #include "contextgl.hpp"
 
-void ContextGL::uploadBuffer(FGResource buffer, const uint8_t *ptr, size_t size) {
+void ContextGL::uploadBuffer(RenderGraphResource buffer, const uint8_t *ptr, size_t size) {
 }
 
-void ContextGL::uploadTexture(FGResource texture, const uint8_t *ptr, size_t size, FGColorFormat format, size_t index,
-                              size_t mipMapLevel, FGCubeMapFace face) {
+void ContextGL::uploadTexture(RenderGraphResource texture, const uint8_t *ptr, size_t size, ColorFormat format, size_t index,
+                              size_t mipMapLevel, CubeMapFace face) {
 }
 
-void ContextGL::bindPipeline(FGResource pipeline) {
+void ContextGL::bindPipeline(RenderGraphResource pipeline) {
 }
 
-void ContextGL::bindVertexBuffer(FGResource buffer) {
+void ContextGL::bindVertexBuffer(RenderGraphResource buffer) {
 }
 
-void ContextGL::bindIndexBuffer(FGResource buffer) {
+void ContextGL::bindIndexBuffer(RenderGraphResource buffer) {
 }
 
 void ContextGL::bindRenderTarget(size_t binding,
-                                 FGResource texture,
+                                 RenderGraphResource texture,
                                  size_t index,
                                  size_t mipMapLevel,
-                                 FGCubeMapFace face) {
+                                 CubeMapFace face) {
 }
 
-void ContextGL::bindTextures(const std::unordered_map<std::string, FGResource> &textures) {
+void ContextGL::bindTextures(const std::unordered_map<std::string, RenderGraphResource> &textures) {
 }
 
-void ContextGL::bindShaderBuffers(const std::unordered_map<std::string, FGResource> &buffers) {
+void ContextGL::bindShaderBuffers(const std::unordered_map<std::string, RenderGraphResource> &buffers) {
 }
 
-void ContextGL::setShaderParameters(const std::unordered_map<std::string, FGShaderLiteral> &parameters) {
+void ContextGL::setShaderParameters(const std::unordered_map<std::string, ShaderLiteral> &parameters) {
 }
 
-void ContextGL::draw(const std::vector<FGDrawCall> &calls) {
+void ContextGL::draw(const std::vector<DrawCall> &calls) {
 }
 
-std::vector<uint8_t> ContextGL::downloadShaderBuffer(FGResource buffer) {
+std::vector<uint8_t> ContextGL::downloadShaderBuffer(RenderGraphResource buffer) {
     throw std::runtime_error("Not implemented");
 }
 
-Image<ColorRGBA> ContextGL::downloadTexture(FGResource texture, size_t index, size_t mipMapLevel, FGCubeMapFace face) {
+Image<ColorRGBA> ContextGL::downloadTexture(RenderGraphResource texture, size_t index, size_t mipMapLevel, CubeMapFace face) {
     throw std::runtime_error("Not implemented");
 }
 
-std::unordered_map<FGShaderSource::ShaderStage, std::string> ContextGL::getShaderSource(FGResource shader) {
+std::unordered_map<ShaderStage::Type, std::string> ContextGL::getShaderSource(RenderGraphResource shader) {
     return pipelines.at(shader).sourceCode;
 }
