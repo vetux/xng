@@ -177,6 +177,10 @@ namespace xng {
 
         functionRoot = nullptr;
 
+        variableCounter = 0;
+
+        currentFunction = {};
+
         this->stage = stage;
         this->inputLayout = inputLayout;
         this->outputLayout = outputLayout;
