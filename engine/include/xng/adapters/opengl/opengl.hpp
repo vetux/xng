@@ -17,19 +17,19 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_OPENGL2_HPP
-#define XENGINE_OPENGL2_HPP
+#ifndef XENGINE_OPENGL_HPP
+#define XENGINE_OPENGL_HPP
 
 #include "xng/rendergraph/rendergraphruntime.hpp"
 
 namespace xng::opengl {
     struct State;
 
-    class XENGINE_EXPORT OpenGL2 final : public RenderGraphRuntime {
+    class XENGINE_EXPORT OpenGL final : public RenderGraphRuntime {
     public:
-        OpenGL2();
+        OpenGL();
 
-        ~OpenGL2() override;
+        ~OpenGL() override;
 
         void setWindow(const Window &window) override;
 
@@ -57,4 +57,4 @@ namespace xng::opengl {
     };
 }
 
-#endif //XENGINE_OPENGL2_HPP
+#endif //XENGINE_OPENGL_HPP

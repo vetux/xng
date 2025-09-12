@@ -27,43 +27,43 @@ namespace xng::opengl {
         std::unordered_map<RenderGraphRuntime::GraphHandle, std::unordered_map<RenderGraphResource, CompiledPipeline> > pipelines;
     };
 
-    OpenGL2::OpenGL2() {
+    OpenGL::OpenGL() {
         state = std::make_unique<State>();
     }
 
-    OpenGL2::~OpenGL2() {
+    OpenGL::~OpenGL() {
     }
 
-    void OpenGL2::setWindow(const Window &window) {
+    void OpenGL::setWindow(const Window &window) {
     }
 
-    RenderGraphRuntime::GraphHandle OpenGL2::compile(const RenderGraph &graph) {
+    RenderGraphRuntime::GraphHandle OpenGL::compile(const RenderGraph &graph) {
         return compileGraph(graph);
     }
 
-    void OpenGL2::recompile(GraphHandle handle, const RenderGraph &graph) {
+    void OpenGL::recompile(GraphHandle handle, const RenderGraph &graph) {
     }
 
-    void OpenGL2::execute(GraphHandle graph) {
+    void OpenGL::execute(GraphHandle graph) {
         ContextGL context(state->pipelines.at(graph));
         for (auto pass: graphs.at(graph).passes) {
             pass.pass(context);
         }
     }
 
-    void OpenGL2::execute(std::vector<GraphHandle> graphs) {
+    void OpenGL::execute(std::vector<GraphHandle> graphs) {
         for (auto graph: graphs) {
             execute(graph);
         }
     }
 
-    void OpenGL2::saveCache(GraphHandle graph, std::ostream &stream) {
+    void OpenGL::saveCache(GraphHandle graph, std::ostream &stream) {
     }
 
-    void OpenGL2::loadCache(GraphHandle graph, std::istream &stream) {
+    void OpenGL::loadCache(GraphHandle graph, std::istream &stream) {
     }
 
-    RenderGraphRuntime::GraphHandle OpenGL2::compileGraph(const RenderGraph &graph) {
+    RenderGraphRuntime::GraphHandle OpenGL::compileGraph(const RenderGraph &graph) {
         const auto handle = graphCounter++;
         graphs[handle] = graph;
 

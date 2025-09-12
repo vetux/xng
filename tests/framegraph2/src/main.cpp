@@ -24,7 +24,7 @@
 
 int main(int argc, char *argv[]) {
     auto glfw = glfw::GLFW();
-    auto runtime = opengl::OpenGL2();
+    auto runtime = opengl::OpenGL();
 
     const auto window = glfw.createWindow(DisplayEnvironment::GraphicsAPI::OPENGL);
 

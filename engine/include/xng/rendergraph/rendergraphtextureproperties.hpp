@@ -20,6 +20,8 @@
 #ifndef XENGINE_RENDERGRAPHTEXTUREPROPERTIES_HPP
 #define XENGINE_RENDERGRAPHTEXTUREPROPERTIES_HPP
 
+#include "xng/io/message.hpp"
+
 namespace xng {
     enum TextureType : int {
         TEXTURE_2D = 0,
