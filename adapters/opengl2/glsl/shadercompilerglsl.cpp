@@ -26,6 +26,7 @@
 #include "types.hpp"
 
 using namespace xng;
+using namespace xng::graph;
 
 std::string getSampler(const FGTexture &texture) {
     std::string prefix;

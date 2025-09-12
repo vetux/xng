@@ -36,6 +36,8 @@ namespace xng {
         std::vector<std::unique_ptr<FGShaderNode> > body;
         FGShaderValue returnType;
 
+        FGShaderFunction() = default;
+
         FGShaderFunction(std::string name,
                          const std::unordered_map<std::string, FGShaderValue> &arguments,
                          std::vector<std::unique_ptr<FGShaderNode> > body,

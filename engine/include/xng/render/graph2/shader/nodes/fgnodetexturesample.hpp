@@ -42,7 +42,9 @@ namespace xng {
         }
 
         std::unique_ptr<FGShaderNode> copy() const override {
-            return std::make_unique<FGNodeTextureSample>(textureName, coordinate->copy(), bias->copy());
+            return std::make_unique<FGNodeTextureSample>(textureName,
+                                                         coordinate->copy(),
+                                                         bias ? bias->copy() : nullptr);
         }
     };
 }

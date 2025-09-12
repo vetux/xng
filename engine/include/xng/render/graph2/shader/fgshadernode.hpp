@@ -22,24 +22,26 @@
 
 #include <memory>
 
+#include <vector>
+
 namespace xng {
     struct FGShaderSource;
 
     struct FGShaderNode {
         enum NodeType {
             VARIABLE_CREATE = 0,
-            VARIABLE_WRITE,
-            VARIABLE_READ,
 
+            ASSIGN,
+
+            VARIABLE,
             LITERAL,
             ARGUMENT,
+            ATTRIBUTE_IN,
+            ATTRIBUTE_OUT,
+            PARAMETER,
 
             VECTOR,
-
-            ATTRIBUTE_READ,
-            ATTRIBUTE_WRITE,
-
-            PARAMETER_READ,
+            ARRAY,
 
             TEXTURE_SAMPLE,
             TEXTURE_SIZE,

@@ -17,33 +17,29 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGNODEATTRIBUTEWRITE_HPP
-#define XENGINE_FGNODEATTRIBUTEWRITE_HPP
+#ifndef XENGINE_FGNODEPARAMETER_HPP
+#define XENGINE_FGNODEPARAMETER_HPP
+
+#include <utility>
 
 #include "xng/render/graph2/shader/fgshadernode.hpp"
 
 namespace xng {
-    /**
-     * Write to the output attribute for this given shader stage.
-     * For fragment shaders the output attributes represent the bound textures in the context.
-     */
-    struct FGNodeAttributeWrite final : FGShaderNode {
-        uint32_t attributeIndex = 0;
+    struct FGNodeParameter final : FGShaderNode {
+        std::string parameterName;
 
-        std::unique_ptr<FGShaderNode> value;
-
-        explicit FGNodeAttributeWrite(const uint32_t attribute_index, std::unique_ptr<FGShaderNode> value)
-            : attributeIndex(attribute_index), value(std::move(value)) {
+        explicit FGNodeParameter(std::string parameter_name)
+            : parameterName(std::move(parameter_name)) {
         }
 
         NodeType getType() const override {
-            return ATTRIBUTE_WRITE;
+            return PARAMETER;
         }
 
         std::unique_ptr<FGShaderNode> copy() const override {
-            return std::make_unique<FGNodeAttributeWrite>(attributeIndex, value->copy());
+            return std::make_unique<FGNodeParameter>(parameterName);
         }
     };
 }
 
-#endif //XENGINE_FGNODEATTRIBUTEWRITE_HPP
+#endif //XENGINE_FGNODEPARAMETER_HPP

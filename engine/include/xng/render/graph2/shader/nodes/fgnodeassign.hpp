@@ -17,34 +17,30 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGNODEVARIABLEREAD_HPP
-#define XENGINE_FGNODEVARIABLEREAD_HPP
-
-#include <optional>
+#ifndef XENGINE_FGNODEASSIGN_HPP
+#define XENGINE_FGNODEASSIGN_HPP
 
 #include "xng/render/graph2/shader/fgshadernode.hpp"
-#include "xng/render/graph2/shader/nodes/fgnodevariablecreate.hpp"
-#include "xng/render/graph2/shader/nodes/fgnodeloop.hpp"
-#include "xng/render/graph2/shader/nodes/fgnodebranch.hpp"
-
-#include "xng/util/downcast.hpp"
 
 namespace xng {
-    struct FGNodeVariableRead final : FGShaderNode {
-        std::string variableName;
+    struct FGNodeAssign final : FGShaderNode {
+        std::unique_ptr<FGShaderNode> target;
+        std::unique_ptr<FGShaderNode> value;
 
-        explicit FGNodeVariableRead(const std::string &variable_name)
-            : variableName(variable_name) {
+        FGNodeAssign(std::unique_ptr<FGShaderNode> target,
+                     std::unique_ptr<FGShaderNode> value)
+            : target(std::move(target)),
+              value(std::move(value)) {
         }
 
         NodeType getType() const override {
-            return VARIABLE_READ;
+            return ASSIGN;
         }
 
         std::unique_ptr<FGShaderNode> copy() const override {
-            return std::make_unique<FGNodeVariableRead>(variableName);
+            return std::make_unique<FGNodeAssign>(target->copy(), value->copy());
         }
     };
 }
 
-#endif //XENGINE_FGNODEVARIABLEREAD_HPP
+#endif //XENGINE_FGNODEASSIGN_HPP

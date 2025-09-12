@@ -24,21 +24,19 @@
 
 #include "xng/render/scene/color.hpp"
 
-using namespace xng::graph;
-
 namespace xng {
     struct FGTexture {
         Vec2i size = {1, 1};
-        FGTextureType textureType = TEXTURE_2D;
-        FGColorFormat format = RGBA;
+        graph::FGTextureType textureType = graph::TEXTURE_2D;
+        graph::FGColorFormat format = graph::RGBA;
 
-        FGTextureWrapping wrapping = CLAMP_TO_BORDER;
-        FGTextureFiltering filterMin = NEAREST;
-        FGTextureFiltering filterMag = NEAREST;
+        graph::FGTextureWrapping wrapping = graph::CLAMP_TO_BORDER;
+        graph::FGTextureFiltering filterMin = graph::NEAREST;
+        graph::FGTextureFiltering filterMag = graph::NEAREST;
 
         int samples = 1; //Ignored if texture is not TEXTURE_2D_MULTISAMPLE
         int mipMapLevels = 1;
-        FGMipMapFiltering mipMapFilter = NEAREST_MIPMAP_LINEAR;
+        graph::FGMipMapFiltering mipMapFilter = graph::NEAREST_MIPMAP_LINEAR;
         bool fixedSampleLocations = false;
 
         ColorRGBA borderColor = ColorRGBA(0);

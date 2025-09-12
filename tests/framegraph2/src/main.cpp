@@ -17,10 +17,10 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "shadertestpass.hpp"
-
 #include "xng/adapters/glfw/glfw.hpp"
 #include "xng/adapters/opengl2/opengl2.hpp"
+
+#include "shadertestpass.hpp"
 
 int main(int argc, char *argv[]) {
     auto glfw = glfw::GLFW();

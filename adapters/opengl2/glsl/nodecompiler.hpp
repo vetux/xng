@@ -22,8 +22,8 @@
 
 #include "xng/render/graph2/shader/nodes.hpp"
 #include "xng/render/graph2/shader/nodes/fgnodevariablecreate.hpp"
-#include "xng/render/graph2/shader/nodes/fgnodevariableread.hpp"
-#include "xng/render/graph2/shader/nodes/fgnodevariablewrite.hpp"
+#include "xng/render/graph2/shader/nodes/fgnodevariable.hpp"
+#include "xng/render/graph2/shader/nodes/fgnodeassign.hpp"
 
 using namespace xng;
 
@@ -53,27 +53,26 @@ std::string compileLeafNode(const FGNodeVariableCreate &node,
                             const std::string &functionName,
                             const std::string &prefix);
 
-std::string compileLeafNode(const FGNodeVariableWrite &node,
+std::string compileLeafNode(const FGNodeAssign &node,
                             const FGShaderSource &source,
                             const std::string &functionName,
                             const std::string &prefix);
 
-std::string compileLeafNode(const FGNodeVariableRead &node);
+std::string compileLeafNode(const FGNodeVariable &node);
 
 std::string compileLeafNode(const FGNodeLiteral &node);
 
 std::string compileLeafNode(const FGNodeArgument &node);
 
+std::string compileLeafNode(const FGNodeAttributeInput &node);
+
+std::string compileLeafNode(const FGNodeAttributeOutput &node);
+
+std::string compileLeafNode(const FGNodeParameter &node);
+
 std::string compileLeafNode(const FGNodeVector &node, const FGShaderSource &source, const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeAttributeRead &node);
-
-std::string compileLeafNode(const FGNodeAttributeWrite &node,
-                            const FGShaderSource &source,
-                            const std::string &functionName,
-                            const std::string &prefix);
-
-std::string compileLeafNode(const FGNodeParameterRead &node);
+std::string compileLeafNode(const FGNodeArray &node, const FGShaderSource &source, const std::string &functionName);
 
 std::string compileLeafNode(const FGNodeTextureSample &node, const FGShaderSource &source,
                             const std::string &functionName);
@@ -120,15 +119,19 @@ std::string compileLeafNode(const FGNodeCall &node,
 
 std::string compileLeafNode(const FGNodeReturn &node,
                             const FGShaderSource &source,
-                            const std::string &functionName);
+                            const std::string &functionName,
+                            const std::string &prefix);
 
 std::string compileLeafNode(const FGNodeBuiltin &node, const FGShaderSource &source, const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeSubscriptArray &node, const FGShaderSource &source, const std::string &functionName);
+std::string compileLeafNode(const FGNodeSubscriptArray &node, const FGShaderSource &source,
+                            const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeSubscriptVector &node, const FGShaderSource &source, const std::string &functionName);
+std::string compileLeafNode(const FGNodeSubscriptVector &node, const FGShaderSource &source,
+                            const std::string &functionName);
 
-std::string compileLeafNode(const FGNodeSubscriptMatrix &node, const FGShaderSource &source, const std::string &functionName);
+std::string compileLeafNode(const FGNodeSubscriptMatrix &node, const FGShaderSource &source,
+                            const std::string &functionName);
 
 std::string compileLeafNode(const FGNodeBranch &node, const FGShaderSource &source, const std::string &functionName,
                             const std::string &prefix);

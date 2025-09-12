@@ -17,37 +17,26 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGNODEVARIABLECREATE_HPP
-#define XENGINE_FGNODEVARIABLECREATE_HPP
+#ifndef XENGINE_FGNODEATTRIBUTEOUTPUT_HPP
+#define XENGINE_FGNODEATTRIBUTEOUTPUT_HPP
 
 #include "xng/render/graph2/shader/fgshadernode.hpp"
 
 namespace xng {
-    struct FGNodeVariableCreate final : FGShaderNode {
-        std::string variableName;
-        FGShaderValue type;
-        size_t count;
+    struct FGNodeAttributeOutput final : FGShaderNode {
+        uint32_t attributeIndex = 0;
 
-        std::unique_ptr<FGShaderNode> value;
-
-        FGNodeVariableCreate(const std::string &variable_name,
-                             const FGShaderValue &type,
-                             const size_t count,
-                             std::unique_ptr<FGShaderNode> value)
-            : variableName(variable_name),
-              type(type),
-              count(count),
-              value(std::move(value)) {
+        explicit FGNodeAttributeOutput(const uint32_t attribute_index)
+            : attributeIndex(attribute_index) {
         }
 
         NodeType getType() const override {
-            return VARIABLE_CREATE;
+            return ATTRIBUTE_OUT;
         }
 
         std::unique_ptr<FGShaderNode> copy() const override {
-            return std::make_unique<FGNodeVariableCreate>(variableName, type, count, value ? value->copy() : nullptr);
+            return std::make_unique<FGNodeAttributeOutput>(attributeIndex);
         }
     };
 }
-
-#endif //XENGINE_FGNODEVARIABLECREATE_HPP
+#endif //XENGINE_FGNODEATTRIBUTEOUTPUT_HPP

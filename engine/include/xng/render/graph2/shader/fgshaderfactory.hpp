@@ -29,10 +29,11 @@ namespace xng {
         XENGINE_EXPORT std::unique_ptr<FGShaderNode> createVariable(const std::string &name,
                                                                     const FGShaderValue &type,
                                                                     const std::unique_ptr<FGShaderNode> &value =
-                                                                            nullptr);
+                                                                            nullptr,
+                                                                    size_t count = 1);
 
-        XENGINE_EXPORT std::unique_ptr<FGShaderNode> assignVariable(const std::string &variableName,
-                                                                    const std::unique_ptr<FGShaderNode> &value);
+        XENGINE_EXPORT std::unique_ptr<FGShaderNode> assign(const std::unique_ptr<FGShaderNode> &target,
+                                                            const std::unique_ptr<FGShaderNode> &value);
 
         XENGINE_EXPORT std::unique_ptr<FGShaderNode> variable(const std::string &name);
 
@@ -40,18 +41,20 @@ namespace xng {
 
         XENGINE_EXPORT std::unique_ptr<FGShaderNode> argument(const std::string &name);
 
+        XENGINE_EXPORT std::unique_ptr<FGShaderNode> attributeInput(uint32_t attributeIndex);
+
+        XENGINE_EXPORT std::unique_ptr<FGShaderNode> attributeOutput(uint32_t attributeIndex);
+
+        XENGINE_EXPORT std::unique_ptr<FGShaderNode> parameter(std::string parameter_name);
+
         XENGINE_EXPORT std::unique_ptr<FGShaderNode> vector(FGShaderValue type,
                                                             const std::unique_ptr<FGShaderNode> &x,
                                                             const std::unique_ptr<FGShaderNode> &y,
                                                             const std::unique_ptr<FGShaderNode> &z = nullptr,
                                                             const std::unique_ptr<FGShaderNode> &w = nullptr);
 
-        XENGINE_EXPORT std::unique_ptr<FGShaderNode> attributeRead(int32_t attributeIndex);
-
-        XENGINE_EXPORT std::unique_ptr<FGShaderNode> attributeWrite(int32_t attributeIndex,
-                                                                    const std::unique_ptr<FGShaderNode> &value);
-
-        XENGINE_EXPORT std::unique_ptr<FGShaderNode> parameterRead(std::string parameter_name);
+        XENGINE_EXPORT std::unique_ptr<FGShaderNode> array(FGShaderValue elementType,
+                                                           const std::vector<std::unique_ptr<FGShaderNode> > &elements);
 
         XENGINE_EXPORT std::unique_ptr<FGShaderNode> textureSample(const std::string &textureName,
                                                                    const std::unique_ptr<FGShaderNode> &
@@ -67,9 +70,8 @@ namespace xng {
 
         XENGINE_EXPORT std::unique_ptr<FGShaderNode> bufferWrite(const std::string &bufferName,
                                                                  const std::string &elementName,
-                                                                 const std::unique_ptr<FGShaderNode> &value,
-                                                                 const std::unique_ptr<FGShaderNode> &index =
-                                                                         nullptr);
+                                                                 const std::unique_ptr<FGShaderNode> &index,
+                                                                 const std::unique_ptr<FGShaderNode> &value);
 
         XENGINE_EXPORT std::unique_ptr<FGShaderNode> bufferSize(const std::string &bufferName);
 
@@ -157,7 +159,7 @@ namespace xng {
                                                          const std::unique_ptr<FGShaderNode> &y);
 
         XENGINE_EXPORT std::unique_ptr<FGShaderNode> max(const std::unique_ptr<FGShaderNode> &x,
-                                                         std::unique_ptr<FGShaderNode> &y);
+                                                         const std::unique_ptr<FGShaderNode> &y);
 
         XENGINE_EXPORT std::unique_ptr<FGShaderNode> clamp(const std::unique_ptr<FGShaderNode> &x,
                                                            const std::unique_ptr<FGShaderNode> &min,

@@ -24,7 +24,7 @@
 
 namespace xng {
     struct FGShaderValue {
-        enum Type {
+        enum Type : int {
             SCALAR,
             VECTOR2,
             VECTOR3,
@@ -34,7 +34,7 @@ namespace xng {
             MAT4
         };
 
-        enum Component {
+        enum Component : int {
             BOOLEAN = 0, // 1 Byte boolean
             UNSIGNED_INT, // 4 Byte unsigned
             SIGNED_INT, // 4 Byte signed

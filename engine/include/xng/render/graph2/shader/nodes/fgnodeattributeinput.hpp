@@ -17,28 +17,27 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGNODEATTRIBUTEREAD_HPP
-#define XENGINE_FGNODEATTRIBUTEREAD_HPP
+#ifndef XENGINE_FGNODEATTRIBUTEINPUT_HPP
+#define XENGINE_FGNODEATTRIBUTEINPUT_HPP
 
 #include "xng/render/graph2/shader/fgshadernode.hpp"
-#include "xng/render/graph2/shader/fgshadersource.hpp"
 
 namespace xng {
-    struct FGNodeAttributeRead final : FGShaderNode {
+    struct FGNodeAttributeInput final : FGShaderNode {
         uint32_t attributeIndex = 0;
 
-        explicit FGNodeAttributeRead(const uint32_t attribute_index)
+        explicit FGNodeAttributeInput(const uint32_t attribute_index)
             : attributeIndex(attribute_index) {
         }
 
         NodeType getType() const override {
-            return ATTRIBUTE_READ;
+            return ATTRIBUTE_IN;
         }
 
         std::unique_ptr<FGShaderNode> copy() const override {
-            return std::make_unique<FGNodeAttributeRead>(attributeIndex);
+            return std::make_unique<FGNodeAttributeInput>(attributeIndex);
         }
     };
 }
 
-#endif //XENGINE_FGNODEATTRIBUTEREAD_HPP
+#endif //XENGINE_FGNODEATTRIBUTEINPUT_HPP

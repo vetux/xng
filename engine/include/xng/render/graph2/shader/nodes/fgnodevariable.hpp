@@ -17,29 +17,34 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGNODEPARAMETERREAD_HPP
-#define XENGINE_FGNODEPARAMETERREAD_HPP
+#ifndef XENGINE_FGNODEVARIABLE_HPP
+#define XENGINE_FGNODEVARIABLE_HPP
 
-#include <utility>
+#include <optional>
 
 #include "xng/render/graph2/shader/fgshadernode.hpp"
+#include "xng/render/graph2/shader/nodes/fgnodevariablecreate.hpp"
+#include "xng/render/graph2/shader/nodes/fgnodeloop.hpp"
+#include "xng/render/graph2/shader/nodes/fgnodebranch.hpp"
+
+#include "xng/util/downcast.hpp"
 
 namespace xng {
-    struct FGNodeParameterRead final : FGShaderNode {
-        std::string parameterName;
+    struct FGNodeVariable final : FGShaderNode {
+        std::string variableName;
 
-        explicit FGNodeParameterRead(std::string parameter_name)
-            : parameterName(std::move(parameter_name)) {
+        explicit FGNodeVariable(const std::string &variable_name)
+            : variableName(variable_name) {
         }
 
         NodeType getType() const override {
-            return PARAMETER_READ;
+            return VARIABLE;
         }
 
         std::unique_ptr<FGShaderNode> copy() const override {
-            return std::make_unique<FGNodeParameterRead>(parameterName);
+            return std::make_unique<FGNodeVariable>(variableName);
         }
     };
 }
 
-#endif //XENGINE_FGNODEPARAMETERREAD_HPP
+#endif //XENGINE_FGNODEVARIABLE_HPP

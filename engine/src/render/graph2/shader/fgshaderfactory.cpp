@@ -20,21 +20,23 @@
 #include "xng/render/graph2/shader/fgshaderfactory.hpp"
 
 #include "xng/render/graph2/shader/nodes.hpp"
+#include "xng/render/graph2/shader/nodes/fgnodeattributeoutput.hpp"
 
 namespace xng::FGShaderFactory {
     std::unique_ptr<FGShaderNode> createVariable(const std::string &name,
                                                  const FGShaderValue &type,
-                                                 const std::unique_ptr<FGShaderNode> &value) {
-        return std::make_unique<FGNodeVariableCreate>(name, type, value ? value->copy() : nullptr);
+                                                 const std::unique_ptr<FGShaderNode> &value,
+                                                 size_t count) {
+        return std::make_unique<FGNodeVariableCreate>(name, type, count, value ? value->copy() : nullptr);
     }
 
-    std::unique_ptr<FGShaderNode> assignVariable(const std::string &variableName,
-                                                 const std::unique_ptr<FGShaderNode> &value) {
-        return std::make_unique<FGNodeVariableWrite>(variableName, value->copy());
+    std::unique_ptr<FGShaderNode> assign(const std::unique_ptr<FGShaderNode> &target,
+                                         const std::unique_ptr<FGShaderNode> &value) {
+        return std::make_unique<FGNodeAssign>(target->copy(), value->copy());
     }
 
     std::unique_ptr<FGShaderNode> variable(const std::string &name) {
-        return std::make_unique<FGNodeVariableRead>(name);
+        return std::make_unique<FGNodeVariable>(name);
     }
 
     std::unique_ptr<FGShaderNode> literal(const FGShaderLiteral &value) {
@@ -43,6 +45,18 @@ namespace xng::FGShaderFactory {
 
     std::unique_ptr<FGShaderNode> argument(const std::string &name) {
         return std::make_unique<FGNodeArgument>(name);
+    }
+
+    std::unique_ptr<FGShaderNode> attributeInput(uint32_t attributeIndex) {
+        return std::make_unique<FGNodeAttributeInput>(attributeIndex);
+    }
+
+    std::unique_ptr<FGShaderNode> attributeOutput(uint32_t attributeIndex) {
+        return std::make_unique<FGNodeAttributeOutput>(attributeIndex);
+    }
+
+    std::unique_ptr<FGShaderNode> parameter(std::string parameter_name) {
+        return std::make_unique<FGNodeParameter>(parameter_name);
     }
 
     std::unique_ptr<FGShaderNode> vector(const FGShaderValue type,
@@ -57,23 +71,20 @@ namespace xng::FGShaderFactory {
                                               w ? w->copy() : nullptr);
     }
 
-    std::unique_ptr<FGShaderNode> attributeRead(int32_t attributeIndex) {
-        return std::make_unique<FGNodeAttributeRead>(attributeIndex);
-    }
-
-    std::unique_ptr<FGShaderNode> attributeWrite(int32_t attributeIndex,
-                                                 const std::unique_ptr<FGShaderNode> &value) {
-        return std::make_unique<FGNodeAttributeWrite>(attributeIndex, value->copy());
-    }
-
-    std::unique_ptr<FGShaderNode> parameterRead(std::string parameter_name) {
-        return std::make_unique<FGNodeParameterRead>(parameter_name);
+    std::unique_ptr<FGShaderNode> array(FGShaderValue elementType,
+                                        const std::vector<std::unique_ptr<FGShaderNode> > &elements) {
+        std::vector<std::unique_ptr<FGShaderNode> > elementsCopy;
+        elementsCopy.reserve(elements.size());
+        for (auto &element: elements) {
+            elementsCopy.push_back(element->copy());
+        }
+        return std::make_unique<FGNodeArray>(elementType, std::move(elementsCopy));
     }
 
     std::unique_ptr<FGShaderNode> textureSample(const std::string &textureName,
                                                 const std::unique_ptr<FGShaderNode> &coordinate,
                                                 const std::unique_ptr<FGShaderNode> &bias) {
-        return std::make_unique<FGNodeTextureSample>(textureName, coordinate->copy(), bias->copy());
+        return std::make_unique<FGNodeTextureSample>(textureName, coordinate->copy(), bias ? bias->copy() : nullptr);
     }
 
     std::unique_ptr<FGShaderNode> textureSize(const std::string &textureName) {
@@ -88,8 +99,8 @@ namespace xng::FGShaderFactory {
 
     std::unique_ptr<FGShaderNode> bufferWrite(const std::string &bufferName,
                                               const std::string &elementName,
-                                              const std::unique_ptr<FGShaderNode> &value,
-                                              const std::unique_ptr<FGShaderNode> &index) {
+                                              const std::unique_ptr<FGShaderNode> &index,
+                                              const std::unique_ptr<FGShaderNode> &value) {
         return std::make_unique<FGNodeBufferWrite>(bufferName,
                                                    elementName,
                                                    value->copy(),
@@ -250,7 +261,7 @@ namespace xng::FGShaderFactory {
     }
 
     std::unique_ptr<FGShaderNode> max(const std::unique_ptr<FGShaderNode> &x,
-                                      std::unique_ptr<FGShaderNode> &y) {
+                                      const std::unique_ptr<FGShaderNode> &y) {
         return std::make_unique<FGNodeBuiltin>(FGNodeBuiltin::MAX, x->copy(), y->copy(), nullptr);
     }
 

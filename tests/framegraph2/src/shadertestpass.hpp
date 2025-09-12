@@ -24,19 +24,19 @@
 #include <ostream>
 
 #include "xng/render/graph2/fgbuilder.hpp"
-#include "xng/render/graph2/shader/fgbranchbuilder.hpp"
-#include "xng/render/graph2/shader/fgloopbuilder.hpp"
 #include "xng/render/graph2/shader/fgshaderbuilder.hpp"
+#include "xng/render/graph2/shader/fgshadernodehelper.hpp"
+#include "xng/render/graph2/shaderlib/noise.hpp"
 
 using namespace xng;
-using namespace xng::FGShaderFactory;
+using namespace xng::FGShaderNodeHelper;
 
 class ShaderTestPass {
 public:
     FGShaderBuffer dataBuffer;
     FGShaderBuffer colorBuffer;
 
-    FGTexture texture;
+    FGTexture textureDef;
 
     FGAttributeLayout vertexLayout;
     FGAttributeLayout fragmentLayout;
@@ -65,96 +65,90 @@ public:
     }
 
     FGShaderSource createVertexShader() {
-        const auto vPos = attributeRead(0);
-        const auto mvp = bufferRead("data", "mvp");
+        std::unordered_map<std::string, FGShaderFunction> funcs;
+        funcs["simplex2D"] = shaderlib::noise::simplex2D();
 
-        std::vector<std::unique_ptr<FGShaderNode> > body;
+        auto &builder = FGShaderBuilder::instance();
+        builder.setup(FGShaderSource::VERTEX,
+                      vertexLayout,
+                      vertexLayout,
+                      {},
+                      {{"data", dataBuffer}},
+                      {{"tex", textureDef}},
+                      funcs);
 
-        body.emplace_back(createVariable("fPos",
-                                         FGShaderValue(FGShaderValue::VECTOR4, FGShaderValue::FLOAT),
-                                         vector(FGShaderValue::vec4(),
-                                                getX(vPos),
-                                                getY(vPos),
-                                                getZ(vPos),
-                                                literal(1.0f))));
-        body.emplace_back(assignVariable("fPos",
-                                         multiply(mvp, variable("fPos"))));
+        builder.Function("test",
+                         {{"a", FGShaderValue::integer()}},
+                         FGShaderValue::integer());
+        Return(5 * (3 + argument("a")));
+        builder.EndFunction();
 
-        FGBranchBuilder branch;
-        branch.If(compareEqual(getX(vPos), literal(1.0f)));
-        branch.add(assignVariable("fPos",
-                                  multiply(
-                                      variable("fPos"),
-                                      literal(2.0f))));
-        branch.Else();
+        // Equivalent to int b[4] = {1, 2, 3, 4}
+        ArrayInt<4> b = ArrayInt<4>{1, 2, 3, 4};
 
-        FGBranchBuilder nestedBranch;
-        nestedBranch.If(compareGreater(getX(vPos), literal(1.0f)));
-        nestedBranch.add(assignVariable("fPos", vector(FGShaderValue::vec4(),
-                                                       getX(vPos),
-                                                       getY(vPos),
-                                                       literal(1.0f),
-                                                       literal(1.0f))));
-        nestedBranch.Else();
-        nestedBranch.add(assignVariable("fPos",
-                                        vector(FGShaderValue::vec4(),
-                                               getX(vPos),
-                                               getY(vPos),
-                                               literal(5.0f),
-                                               literal(5.0f))));
+        Int r = Call("test", {1});
+        Int a = r;
 
-        FGLoopBuilder loop;
-        loop.loopFor("i", literal(0), literal(10));
+        Int v = Call("simplex2D", {vec2(0.5f, 0.5f)});
 
-        loop.add(assignVariable("fPos",
-                                add(variable("fPos"),
-                                    vector(FGShaderValue::vec4(),
-                                           variable("i"),
-                                           variable("i"),
-                                           variable("i"),
-                                           variable("i")))));
+        vec2 f = vec2(5.0f, 1.0f, 1.0f, 1.0f);
+        f = f * a;
 
-        loop.endLoop();
+        vec4 color = texture("tex", vec2(0.5f, 0.5f));
 
-        nestedBranch.add(loop.build());
+        builder.If(a == 5);
 
-        nestedBranch.EndIf();
+        f = f + vec2(1.0f, 1.0f, 1.0f, 1.0f);
 
-        branch.add(nestedBranch.build());
+        builder.Else();
 
-        branch.EndIf();
+        Int i = 0;
+        builder.For(i, 0, i < 10, i + 1);
 
-        body.emplace_back(branch.build());
+        builder.If(i == 1);
 
-        body.emplace_back(attributeWrite(0, variable("fPos")));
+        f = 3 * (f + vec2(i, i, i, i));
 
-        return FGShaderBuilder().build(FGShaderSource::VERTEX,
-                                       vertexLayout,
-                                       fragmentLayout,
-                                       {{"color", FGShaderValue::vec4()}},
-                                       {{"colorBuffer", colorBuffer}, {"data", dataBuffer}},
-                                       {{"texture", texture}},
-                                       body);
+        builder.EndIf();
+
+        builder.EndFor();
+
+        builder.EndIf();
+
+        builder.If(true);
+
+        Float p = f.x();
+        p = 3 * (p + color.y());
+        f.setX(p);
+
+        builder.EndIf();
+
+        mat4 mvp = buffer("data", "mvp");
+        vec3 vPos = attribute(0);
+        vec4 fPos = vec4(vPos.x(), vPos.y(), vPos.z(), Float(1));
+        fPos = mvp * fPos;
+        fPos = fPos * vec4(f.x(), f.y(), 0, 1);
+
+        fPos.setX(fPos.x() + color.x());
+
+        writeAttribute(0, fPos);
+
+        return builder.build();
     }
 
     FGShaderSource createFragmentShader() {
-        std::vector<std::unique_ptr<FGShaderNode> > body;
-        body.emplace_back(createVariable("color",
-                                         FGShaderValue::vec4(),
-                                         bufferRead("colorBuffer", "color")));
-        body.emplace_back(assignVariable("color",
-                                         multiply(
-                                             variable("color"),
-                                             parameterRead("color"))));
-        body.emplace_back(attributeWrite(0, variable("color")));
+        auto &builder = FGShaderBuilder::instance();
+        builder.setup(FGShaderSource::FRAGMENT,
+                      vertexLayout,
+                      vertexLayout,
+                      {},
+                      {{"data", dataBuffer}},
+                      {{"tex", textureDef}},
+                      {});
 
-        return FGShaderBuilder().build(FGShaderSource::FRAGMENT,
-                                       fragmentLayout,
-                                       colorLayout,
-                                       {{"color", FGShaderValue::vec4()}},
-                                       {{"data", dataBuffer}, {"colorBuffer", colorBuffer}},
-                                       {{"texture", texture}},
-                                       body);
+        writeAttribute(0, vec4(1, 0, 0, 1));
+
+        return builder.build();
     }
 };
 #endif //XENGINE_SHADERTESTPASS_HPP

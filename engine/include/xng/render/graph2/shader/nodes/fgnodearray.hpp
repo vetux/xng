@@ -17,31 +17,37 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FGNODEVARIABLEWRITE_HPP
-#define XENGINE_FGNODEVARIABLEWRITE_HPP
+#ifndef XENGINE_FGNODEARRAY_HPP
+#define XENGINE_FGNODEARRAY_HPP
+
+#include <vector>
 
 #include "xng/render/graph2/shader/fgshadernode.hpp"
 
 namespace xng {
-    struct FGNodeVariableWrite final : FGShaderNode {
-        std::string variableName;
+    struct FGNodeArray final : FGShaderNode {
+        FGShaderValue elementType;
+        std::vector<std::unique_ptr<FGShaderNode> > values;
 
-        std::unique_ptr<FGShaderNode> value;
-
-        FGNodeVariableWrite(const std::string &variable_name,
-                            std::unique_ptr<FGShaderNode> value)
-            : variableName(variable_name),
-              value(std::move(value)) {
+        FGNodeArray(const FGShaderValue elementType,
+                    std::vector<std::unique_ptr<FGShaderNode> > values)
+            : elementType(elementType),
+              values(std::move(values)) {
         }
 
         NodeType getType() const override {
-            return VARIABLE_WRITE;
+            return ARRAY;
         }
 
         std::unique_ptr<FGShaderNode> copy() const override {
-            return std::make_unique<FGNodeVariableWrite>(variableName, value->copy());
+            std::vector<std::unique_ptr<FGShaderNode> > initializerCopy;
+            initializerCopy.reserve(values.size());
+            for (auto &node: values) {
+                initializerCopy.push_back(node->copy());
+            }
+            return std::make_unique<FGNodeArray>(elementType, std::move(initializerCopy));
         }
     };
 }
 
-#endif //XENGINE_FGNODEVARIABLEWRITE_HPP
+#endif //XENGINE_FGNODEARRAY_HPP
