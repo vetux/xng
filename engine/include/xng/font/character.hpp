@@ -23,8 +23,6 @@
 #include <map>
 #include <memory>
 
-#include "xng/gpu/texturebuffer.hpp"
-
 #include "xng/render/scene/image.hpp"
 
 namespace xng {

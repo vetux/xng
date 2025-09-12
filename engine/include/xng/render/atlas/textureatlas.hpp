@@ -20,13 +20,10 @@
 #ifndef XENGINE_TEXTUREATLAS_HPP
 #define XENGINE_TEXTUREATLAS_HPP
 
-#include "xng/gpu/texturearraybuffer.hpp"
-#include "xng/gpu/renderdevice.hpp"
-
 #include "xng/render/atlas/textureatlashandle.hpp"
 #include "xng/render/scene/texture.hpp"
 
-#include "xng/render/graph/framegraphbuilder.hpp"
+#include "xng/rendergraph/fgcontext.hpp"
 
 namespace xng {
     /**
@@ -84,13 +81,9 @@ namespace xng {
 
         static ImageRGBA getAlignedImage(const ImageRGBA &texture, TextureAtlasResolution res);
 
-        static void upload(const TextureAtlasHandle &handle,
-                           const std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> &atlasBuffers,
-                           const ImageRGBA &texture);
-
-        static void upload(FrameGraphBuilder &builder,
+        static void upload(FGContext &ctx,
                            const TextureAtlasHandle &handle,
-                           const std::map<TextureAtlasResolution, FrameGraphResource> &atlasBuffers,
+                           const std::map<TextureAtlasResolution, FGResource> &atlasBuffers,
                            const ImageRGBA &texture);
 
         TextureAtlas() = default;

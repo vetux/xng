@@ -21,9 +21,11 @@
 #define XENGINE_CUBEMAP_HPP
 
 
-#include "xng/gpu/texturebuffer.hpp"
 #include "xng/resource/resourcehandle.hpp"
+
 #include "xng/render/scene/image.hpp"
+
+#include "xng/rendergraph/texture/fgtexture.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT CubeMap : public Resource, public Messageable {
@@ -42,8 +44,8 @@ namespace xng {
             for (auto &pair : message.getMessage("images").asDictionary()){
                 ResourceHandle<ImageRGBA> image;
                 image << pair.second;
-                CubeMapFace key;
-                key = static_cast<CubeMapFace>(std::stoi(pair.first));
+                FGCubeMapFace key;
+                key = static_cast<FGCubeMapFace>(std::stoi(pair.first));
                 images[key] = image;
             }
             message.value("description", description);
@@ -63,8 +65,8 @@ namespace xng {
             return message;
         }
 
-        std::map<CubeMapFace, ResourceHandle<ImageRGBA>> images;
-        TextureBufferDesc description;
+        std::map<FGCubeMapFace, ResourceHandle<ImageRGBA>> images;
+        FGTexture description;
 
         bool isLoaded() const override  {
             for (auto &pair: images){

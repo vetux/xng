@@ -25,6 +25,8 @@
 namespace xng {
     class XENGINE_EXPORT Messageable {
     public:
+        virtual ~Messageable() = default;
+
         virtual Messageable &operator<<(const Message &message) = 0;
 
         virtual Message &operator>>(Message &message) const = 0;

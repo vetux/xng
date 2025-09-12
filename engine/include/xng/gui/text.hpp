@@ -24,8 +24,6 @@
 
 #include "xng/font/fontrenderer.hpp"
 
-#include "xng/gpu/renderdevice.hpp"
-
 #include "xng/gui/textlayout.hpp"
 
 namespace xng {

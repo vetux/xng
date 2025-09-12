@@ -36,7 +36,6 @@ namespace xng {
     class XENGINE_EXPORT CanvasRenderSystem : public System, public EntityScene::Listener {
     public:
         CanvasRenderSystem(Renderer2D &renderer2D,
-                           RenderTarget &target,
                            FontEngine &fontEngine,
                            bool drawDebugGeometry = false,
                            int pixelsPerMeter = 50);
@@ -73,7 +72,6 @@ namespace xng {
         void destroyTextRenderer(const Vec2i &size);
 
         Renderer2D &ren2d;
-        RenderTarget &target;
         FontEngine &fontEngine;
 
         bool drawDebugGeometry = false;

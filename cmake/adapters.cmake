@@ -9,8 +9,6 @@ option(BUILD_OPENAL "Build the OpenAL audio adapter"  ON)
 option(BUILD_FREETYPE "Build the FreeType font rendering adapter"  ON)
 option(BUILD_ASSIMP "Build the AssImp resource parser adapter (For 3D asset file formats)"  ON)
 option(BUILD_SNDFILE "Build the SndFile resource parser adapter (For Audio file formats)"  ON)
-option(BUILD_GLSLANG "Build the GLSLang shader compiler adapter"  ON)
-option(BUILD_SPIRVCROSS "Build the SPIRV-Cross shader decompiler adapter"  ON)
 option(BUILD_CRYPTOPP "Build the CryptoPP adapter"  ON)
 option(BUILD_ANDROID "Build the android display adapter" OFF)
 option(BUILD_ANDROID_OPENGL "Build the opengl support of the android display adapter" OFF) # Depends on BUILD_OPENGL
@@ -82,20 +80,9 @@ if (BUILD_OPENGL)
     endif ()
     AddAdapter(BUILD_OPENGL
             opengl
-            ${GL_LIBNAME})
-endif ()
-
-if (BUILD_OPENGL2)
-    if (ANDROID)
-        set(GL_LIBNAME GLESv3)
-    elseif (WIN32)
-        set(GL_LIBNAME OpenGL32)
-    else ()
-        set(GL_LIBNAME GL)
-    endif ()
-    AddAdapter(BUILD_OPENGL2
-            opengl2
-            ${GL_LIBNAME})
+            ${GL_LIBNAME}
+            spirv-cross-core spirv-cross-glsl spirv-cross-hlsl
+            glslang SPIRV glslang-default-resource-limits MachineIndependent OSDependent GenericCodeGen OGLCompiler)
 endif ()
 
 if (BUILD_VULKAN)
@@ -140,18 +127,6 @@ if (BUILD_SNDFILE)
     AddAdapter(BUILD_SNDFILE
             sndfile
             sndfile)
-endif ()
-
-if (BUILD_GLSLANG)
-    AddAdapter(BUILD_GLSLANG
-            glslang
-            glslang SPIRV glslang-default-resource-limits MachineIndependent OSDependent GenericCodeGen OGLCompiler)
-endif ()
-
-if (BUILD_SPIRVCROSS)
-    AddAdapter(BUILD_SPIRVCROSS
-            spirv-cross
-            spirv-cross-core spirv-cross-glsl spirv-cross-hlsl)
 endif ()
 
 if (BUILD_CRYPTOPP)

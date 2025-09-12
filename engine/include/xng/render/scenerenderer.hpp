@@ -25,8 +25,6 @@
 
 #include "xng/util/genericmap.hpp"
 
-#include "xng/gpu/rendertarget.hpp"
-
 namespace xng {
     /**
      * A scene renderer produces an image from a given scene using the set properties.

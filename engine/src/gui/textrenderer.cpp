@@ -195,7 +195,7 @@ namespace xng {
             }
         }
 
-        auto origin = Vec2f(0, static_cast<float>(layout.lineHeight));
+    /*    auto origin = Vec2f(0, static_cast<float>(layout.lineHeight));
 
         auto target = ren2d->getDevice().createRenderTarget(RenderTargetDesc(size.convert<int>()));
 
@@ -224,6 +224,7 @@ namespace xng {
 
         target->clearAttachments();
 
-        return {text, origin, layout, std::move(tex->download())};
+        return {text, origin, layout, std::move(tex->download())};*/
+        //TODO: Reimplement text renderer
     }
 }

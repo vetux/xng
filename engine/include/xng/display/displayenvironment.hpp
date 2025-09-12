@@ -20,38 +20,43 @@
 #ifndef XENGINE_DISPLAYENVIRONMENT_HPP
 #define XENGINE_DISPLAYENVIRONMENT_HPP
 
-#include "xng/gpu/gpuenginebackend.hpp"
-
 #include "xng/display/window.hpp"
 
 namespace xng {
     class XENGINE_EXPORT DisplayEnvironment {
     public:
+        enum class GraphicsAPI : int {
+            VULKAN,
+            OPENGL
+        };
+
         virtual std::unique_ptr<Monitor> getPrimaryMonitor() = 0;
 
         virtual std::set<std::unique_ptr<Monitor>> getMonitors() = 0;
 
-        virtual std::unique_ptr<Window> createWindow(GpuEngineBackend gpuBackend) = 0;
+        virtual std::unique_ptr<Window> createWindow(GraphicsAPI api) = 0;
 
-        virtual std::unique_ptr<Window> createWindow(GpuEngineBackend gpuBackend,
+        virtual std::unique_ptr<Window> createWindow(GraphicsAPI api,
                                                      const std::string &title,
                                                      Vec2i size,
                                                      WindowAttributes attributes) = 0;
 
-        virtual std::unique_ptr<Window> createWindow(GpuEngineBackend gpuBackend,
+        /**
+         *
+         * @param api The graphics api that this window should be compatible with. Must be exposed to the user because a window exists before beeing used in the renderer. (E.G. Input)
+         * @param title
+         * @param size
+         * @param attributes
+         * @param monitor
+         * @param mode
+         * @return
+         */
+        virtual std::unique_ptr<Window> createWindow(GraphicsAPI api,
                                                      const std::string &title,
                                                      Vec2i size,
                                                      WindowAttributes attributes,
                                                      Monitor &monitor,
                                                      VideoMode mode) = 0;
-
-        /**
-         * Because on vulkan the display environment requires extensions for creating surfaces for the window this
-         * method will be called in the Vulkan gpu engine constructor to retrieve the required extensions.
-         *
-         * @return
-         */
-        virtual std::vector<const char *> getRequiredVulkanExtensions() = 0;
     };
 }
 

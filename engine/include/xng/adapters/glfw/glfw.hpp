@@ -33,21 +33,21 @@ namespace xng::glfw {
 
         std::set<std::unique_ptr<Monitor>> getMonitors() override;
 
-        std::unique_ptr<Window> createWindow(GpuEngineBackend gpuBackend) override;
+        std::unique_ptr<Window> createWindow(GraphicsAPI gpuBackend) override;
 
-        std::unique_ptr<Window> createWindow(GpuEngineBackend gpuBackend,
+        std::unique_ptr<Window> createWindow(GraphicsAPI gpuBackend,
                                              const std::string &title,
                                              Vec2i size,
                                              WindowAttributes attributes) override;
 
-        std::unique_ptr<Window> createWindow(GpuEngineBackend gpuBackend,
+        std::unique_ptr<Window> createWindow(GraphicsAPI gpuBackend,
                                              const std::string &title,
                                              Vec2i size,
                                              WindowAttributes attributes,
                                              Monitor &monitor,
                                              VideoMode mode) override;
 
-        std::vector<const char *> getRequiredVulkanExtensions() override;
+        std::vector<const char *> getRequiredVulkanExtensions();
     };
 }
 

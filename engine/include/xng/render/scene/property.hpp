@@ -26,6 +26,11 @@
 #include "xng/render/scene/directionallight.hpp"
 #include "xng/render/scene/spotlight.hpp"
 
+#include "xng/render/scene/mesh.hpp"
+#include "xng/render/scene/skinnedmesh.hpp"
+#include "xng/render/scene/skybox.hpp"
+#include "xng/render/scene/camera.hpp"
+
 namespace xng {
     struct XENGINE_EXPORT Property {
         virtual std::type_index getType() = 0;

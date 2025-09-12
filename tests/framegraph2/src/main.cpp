@@ -18,15 +18,15 @@
  */
 
 #include "xng/adapters/glfw/glfw.hpp"
-#include "xng/adapters/opengl2/opengl2.hpp"
+#include "xng/adapters/opengl/opengl.hpp"
 
 #include "shadertestpass.hpp"
 
 int main(int argc, char *argv[]) {
     auto glfw = glfw::GLFW();
-    auto runtime = opengl2::OpenGL2();
+    auto runtime = opengl::OpenGL2();
 
-    const auto window = glfw.createWindow(OPENGL_4_6);
+    const auto window = glfw.createWindow(DisplayEnvironment::GraphicsAPI::OPENGL);
 
     runtime.setWindow(*window);
 

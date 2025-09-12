@@ -19,9 +19,9 @@
 
 #include "xng/xng.hpp"
 #include "xng/adapters/glfw/glfw.hpp"
-#include "xng/adapters/opengl/opengl.hpp"
-#include "xng/adapters/glslang/glslang.hpp"
-#include "xng/adapters/spirv-cross/spirvcross.hpp"
+#include "../../../adapters/opengl/ogl/oglgpu.hpp"
+#include "../../../adapters/shared/shader/glslang.hpp"
+#include "../../../adapters/shared/shader/spirvcross.hpp"
 #include "xng/adapters/freetype/freetype.hpp"
 
 #include "debugoverlay.hpp"
@@ -87,7 +87,7 @@ public:
 };
 
 int main(int argc, char *argv[]) {
-    opengl::OpenGL gpuDriver;
+    opengl::OGLGpu gpuDriver;
     glfw::GLFW displayDriver;
     freetype::FreeType fontDriver;
     glslang::GLSLang shaderCompiler;

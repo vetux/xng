@@ -36,9 +36,9 @@
 #include "xng/animation/skeletal/rig.hpp"
 #include "xng/animation/skeletal/riganimation.hpp"
 
-#include "xng/gpu/vertexarrayobjectdesc.hpp"
+#include "xng/render/scene/material.hpp"
 
-#include "material.hpp"
+#include "xng/rendergraph/shader/fgattributelayout.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT Mesh : public Resource {
@@ -57,16 +57,14 @@ namespace xng {
          *
          * @return
          */
-        static VertexLayout getDefaultVertexLayout() {
-            const std::vector<VertexAttribute> layout = {
-                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-            };
-
-            return VertexLayout(layout);
+        static FGAttributeLayout getDefaultVertexLayout() {
+            return FGAttributeLayout({
+                FGShaderValue::vec3(),
+                FGShaderValue::vec3(),
+                FGShaderValue::vec2(),
+                FGShaderValue::vec3(),
+                FGShaderValue::vec3()
+            });
         }
 
         /**
@@ -86,21 +84,18 @@ namespace xng {
          * @param offsets
          * @return
          */
-        static VertexLayout getDefaultInstanceLayout() {
-            const std::vector<VertexAttribute> instanceLayout = {
-                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT)
-            };
-
-            return VertexLayout(instanceLayout);
+        static FGAttributeLayout getDefaultInstanceLayout() {
+            return FGAttributeLayout({
+                FGShaderValue::vec3(),
+                FGShaderValue::vec3(),
+                FGShaderValue::vec2(),
+                FGShaderValue::vec3(),
+                FGShaderValue::vec3(),
+                FGShaderValue::vec4(),
+                FGShaderValue::vec4(),
+                FGShaderValue::vec4(),
+                FGShaderValue::vec4()
+            });
         }
 
         /**
@@ -116,7 +111,7 @@ namespace xng {
         Primitive primitive = POINTS;
         std::vector<Vertex> vertices;
         std::vector<unsigned int> indices;
-        VertexLayout vertexLayout;
+        FGAttributeLayout vertexLayout;
 
         ResourceHandle<Material> material;
 
@@ -127,30 +122,34 @@ namespace xng {
         Mesh() = default;
 
         Mesh(Primitive primitive, std::vector<Vertex> vertices)
-                : primitive(primitive), vertices(std::move(vertices)), indices() {}
+            : primitive(primitive), vertices(std::move(vertices)), indices() {
+        }
 
         Mesh(Primitive primitive, std::vector<Vertex> vertices, std::vector<unsigned int> indices)
-                : primitive(primitive), vertices(std::move(vertices)), indices(std::move(indices)) {}
+            : primitive(primitive), vertices(std::move(vertices)), indices(std::move(indices)) {
+        }
 
         Mesh(Primitive primitive,
              std::vector<Vertex> vertices,
              std::vector<unsigned int> indices,
              ResourceHandle<Material> material)
-                : primitive(primitive),
-                  vertices(std::move(vertices)),
-                  indices(std::move(indices)),
-                  material(std::move(material)) {}
+            : primitive(primitive),
+              vertices(std::move(vertices)),
+              indices(std::move(indices)),
+              material(std::move(material)) {
+        }
 
         Mesh(Primitive primitive,
              std::vector<Vertex> vertices,
              std::vector<unsigned int> indices,
              ResourceHandle<Material> material,
              std::vector<Mesh> subMeshes)
-                : primitive(primitive),
-                  vertices(std::move(vertices)),
-                  indices(std::move(indices)),
-                  material(std::move(material)),
-                  subMeshes(std::move(subMeshes)) {}
+            : primitive(primitive),
+              vertices(std::move(vertices)),
+              indices(std::move(indices)),
+              material(std::move(material)),
+              subMeshes(std::move(subMeshes)) {
+        }
 
         Mesh(const Mesh &other) = default;
 

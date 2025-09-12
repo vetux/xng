@@ -32,7 +32,7 @@ namespace xng {
         float mixAlpha = 0;
         ColorRGBA mixColor = {};
 
-        TextureFiltering filter = NEAREST;
+        FGTextureFiltering filter = NEAREST;
 
         Messageable &operator<<(const Message &message) override {
             message.value("sprite", sprite);

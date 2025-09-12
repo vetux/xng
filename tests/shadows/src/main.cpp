@@ -22,9 +22,9 @@
 
 #include "xng/xng.hpp"
 #include "xng/adapters/glfw/glfw.hpp"
-#include "xng/adapters/opengl/opengl.hpp"
-#include "xng/adapters/glslang/glslang.hpp"
-#include "xng/adapters/spirv-cross/spirvcross.hpp"
+#include "../../../adapters/opengl/ogl/oglgpu.hpp"
+#include "../../../adapters/shared/shader/glslang.hpp"
+#include "../../../adapters/shared/shader/spirvcross.hpp"
 #include "xng/adapters/freetype/freetype.hpp"
 #include "xng/adapters/assimp/assimp.hpp"
 
@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
     createMaterialResource(archive);
 
     auto displayDriver = glfw::GLFW();
-    auto gpuDriver = opengl::OpenGL();
+    auto gpuDriver = opengl::OGLGpu();
     auto shaderCompiler = glslang::GLSLang();
     auto shaderDecompiler = spirv_cross::SpirvCross();
     auto fontDriver = freetype::FreeType();

@@ -33,10 +33,8 @@
 
 #endif
 
-#include "xng/gpu/gpuengine.hpp"
-
 namespace xng::glfw {
-    static std::unique_ptr<Window> makeWindow(GpuEngineBackend gpuBackend,
+    static std::unique_ptr<Window> makeWindow(DisplayEnvironment::GraphicsAPI gpuBackend,
                                               const std::string &title,
                                               Vec2i size,
                                               WindowAttributes attributes,
@@ -44,7 +42,7 @@ namespace xng::glfw {
                                               VideoMode mode = {}) {
         if (false) {}
 #ifdef BUILD_GLFW_OPENGL
-        else if (gpuBackend == OPENGL_4_6) {
+        else if (gpuBackend == DisplayEnvironment::GraphicsAPI::OPENGL) {
             if (monitor) {
                 return std::make_unique<GLFWWindowGL>(title,
                                                       size,
@@ -59,7 +57,7 @@ namespace xng::glfw {
         }
 #endif
 #ifdef BUILD_GLFW_VULKAN
-        else if (gpuBackend == VULKAN_1_1) {
+        else if (gpuBackend == DisplayEnvironment::GraphicsAPI::VULKAN) {
             if (monitor) {
                 return std::make_unique<GLFWWindowVk>(title,
                                                       size,
@@ -74,7 +72,7 @@ namespace xng::glfw {
         }
 #endif
         else {
-            throw std::runtime_error("Unsupported gpu backend " + std::to_string(gpuBackend));
+            throw std::runtime_error("Unsupported gpu backend " + std::to_string(static_cast<int>(gpuBackend)));
         }
     }
 
@@ -102,18 +100,18 @@ namespace xng::glfw {
         return ret;
     }
 
-    std::unique_ptr<Window> GLFW::createWindow(GpuEngineBackend gpuBackend) {
+    std::unique_ptr<Window> GLFW::createWindow(GraphicsAPI gpuBackend) {
         return makeWindow(gpuBackend, "Window GLFW", Vec2i(600, 300), WindowAttributes());
     }
 
-    std::unique_ptr<Window> GLFW::createWindow(GpuEngineBackend gpuBackend,
+    std::unique_ptr<Window> GLFW::createWindow(GraphicsAPI gpuBackend,
                                                const std::string &title,
                                                Vec2i size,
                                                WindowAttributes attributes) {
         return makeWindow(gpuBackend, title, size, attributes);
     }
 
-    std::unique_ptr<Window> GLFW::createWindow(GpuEngineBackend gpuBackend,
+    std::unique_ptr<Window> GLFW::createWindow(GraphicsAPI gpuBackend,
                                                const std::string &title,
                                                Vec2i size,
                                                WindowAttributes attributes,

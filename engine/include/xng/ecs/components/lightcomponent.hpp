@@ -20,6 +20,8 @@
 #ifndef XENGINE_LIGHTCOMPONENT_HPP
 #define XENGINE_LIGHTCOMPONENT_HPP
 
+#include <variant>
+
 #include "xng/render/scene/pointlight.hpp"
 #include "xng/render/scene/directionallight.hpp"
 #include "xng/render/scene/spotlight.hpp"

@@ -27,13 +27,12 @@ namespace xng {
         return std::move(image);
     }
 
-    void TextureAtlas::upload(const TextureAtlasHandle &handle,
-                              const std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> &atlasBuffers,
-                              const ImageRGBA &texture) {
-        atlasBuffers.at(handle.level).get().upload(handle.index, getAlignedImage(texture, handle.level));
+    void TextureAtlas::upload(FGContext &ctx, const TextureAtlasHandle &handle,
+        const std::map<TextureAtlasResolution, FGResource> &atlasBuffers, const ImageRGBA &texture) {
+        // TODO: Reimplement texture atlas upload
     }
 
-    void TextureAtlas::upload(FrameGraphBuilder &builder,
+    /*void TextureAtlas::upload(FGContext &builder,
                               const TextureAtlasHandle &handle,
                               const std::map<TextureAtlasResolution, FrameGraphResource> &atlasBuffers,
                               const ImageRGBA &texture) {
@@ -47,7 +46,7 @@ namespace xng {
                            return FrameGraphUploadBuffer::createArray(
                                    getAlignedImage(texture, handle.level).getBuffer());
                        }, 0);
-    }
+    }*/
 
     TextureAtlas::TextureAtlas(std::map<TextureAtlasResolution, std::vector<bool>> bufferOccupations)
             : bufferOccupations(std::move(bufferOccupations)) {}

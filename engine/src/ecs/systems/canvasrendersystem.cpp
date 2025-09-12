@@ -30,14 +30,14 @@
 #include "xng/gui/layoutengine.hpp"
 #include "xng/util/time.hpp"
 
+//TODO: Reimplement CanvasRenderSystem
+
 namespace xng {
     CanvasRenderSystem::CanvasRenderSystem(Renderer2D &renderer2D,
-                                           RenderTarget &target,
                                            FontEngine &fontEngine,
                                            bool drawDebugGeometry,
                                            int pixelsPerMeter)
             : ren2d(renderer2D),
-              target(target),
               fontEngine(fontEngine),
               drawDebugGeometry(drawDebugGeometry),
               pixelToMeter(1.0f / static_cast<float>(pixelsPerMeter)) {}
@@ -117,7 +117,7 @@ namespace xng {
             if (scene.checkComponent<CanvasComponent>(comp.first)) {
                 auto &canvas = scene.getComponent<CanvasComponent>(comp.first);
                 transforms[comp.first.id] = comp.second.rectTransform;
-                transforms[comp.first.id].size = target.getDescription().size.convert<float>();
+                //transforms[comp.first.id].size = target.getDescription().size.convert<float>();
             } else {
                 if (t.parent.empty()
                     || !scene.entityNameExists(t.parent)
@@ -149,11 +149,11 @@ namespace xng {
                 std::map<int, RectTransform> absoluteTransforms;
                 switch (canvasComponent.scaleMode) {
                     case SCALE_REFERENCE_RESOLUTION:
-                        absoluteTransforms = LayoutEngine::getAbsoluteReferenceScaled(transforms,
+                    /*    absoluteTransforms = LayoutEngine::getAbsoluteReferenceScaled(transforms,
                                                                                       transformParents,
                                                                                       canvasComponent.referenceResolution,
                                                                                       target.getDescription().size.convert<float>(),
-                                                                                      canvasComponent.referenceFitWidth);
+                                                                                      canvasComponent.referenceFitWidth);*/
                         break;
                     default:
                         absoluteTransforms = LayoutEngine::getAbsolute(transforms, transformParents);
@@ -174,12 +174,12 @@ namespace xng {
                     }
                 }
 
-                ren2d.renderBegin(target,
+             /*   ren2d.renderBegin(target,
                                   canvasComponent.clear,
                                   canvasComponent.clearColor,
                                   {},
                                   target.getDescription().size,
-                                  canvasComponent.cameraPosition);
+                                  canvasComponent.cameraPosition);*/
 
                 for (auto &id: transformIds) {
                     auto order = getDrawingOrderRecursive(EntityHandle(EntityHandle(id)), parentsChildrenMapping);
@@ -326,7 +326,7 @@ namespace xng {
             if (dimensions.x * dimensions.y == 0) {
                 dimensions = t.sprite.get().image.get().getResolution();
             }
-            TextureBufferDesc desc;
+           /* TextureBufferDesc desc;
             desc.size = dimensions;
             auto &img = t.sprite.get().image.get();
             if (img.getResolution() != dimensions) {
@@ -336,7 +336,7 @@ namespace xng {
             } else {
                 // Upload the whole image
                 spriteTextures[ent] = ren2d.createTexture(img);
-            }
+            }*/
         }
     }
 

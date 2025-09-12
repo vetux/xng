@@ -20,9 +20,6 @@
 #ifdef BUILD_GLFW_VULKAN
 
 #include "display/glfw/vulkan/glfwwindowvk.hpp"
-#include "display/glfw/vulkan/glfwrendertargetvk.hpp"
-
-#include "gpu/vulkan/vkrenderdevice.hpp"
 
 namespace xng::glfw {
     GLFWWindowVk::GLFWWindowVk(const std::string &title, Vec2i size, WindowAttributes attributes) {
@@ -49,11 +46,6 @@ namespace xng::glfw {
         glfwWindowHint(GLFW_REFRESH_RATE, videoMode.refreshRate);
 
         createWindow(title, size, attributes, monitor, videoMode);
-    }
-
-    std::unique_ptr<RenderTarget> GLFWWindowVk::getRenderTarget(RenderDevice &device) {
-        auto dev = dynamic_cast<vulkan::VkRenderDevice&>(device);
-        return std::make_unique<GLFWRenderTargetVk>(*wndH, dev.instance);
     }
 
     void GLFWWindowVk::swapBuffers() {

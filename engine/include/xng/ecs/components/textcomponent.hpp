@@ -46,7 +46,7 @@ namespace xng {
 
         ColorRGBA textColor{};
 
-        TextureFiltering filter = NEAREST;
+        FGTextureFiltering filter = NEAREST;
 
         bool operator==(const TextComponent &other) const {
             return text == other.text

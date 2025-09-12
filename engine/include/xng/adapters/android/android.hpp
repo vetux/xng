@@ -42,18 +42,18 @@ namespace xng::android {
             throw std::runtime_error("No monitors support on android");
         }
 
-        std::unique_ptr<Window> createWindow(GpuEngineBackend gpuBackend) override {
+        std::unique_ptr<Window> createWindow(GraphicsAPI gpuBackend) override {
             return getWindow(gpuBackend, {});
         }
 
-        std::unique_ptr<Window> createWindow(GpuEngineBackend gpuBackend,
+        std::unique_ptr<Window> createWindow(GraphicsAPI gpuBackend,
                                              const std::string &title,
                                              Vec2i size,
                                              WindowAttributes attributes) override {
             return getWindow(gpuBackend, attributes);
         }
 
-        std::unique_ptr<Window> createWindow(GpuEngineBackend gpuBackend,
+        std::unique_ptr<Window> createWindow(GraphicsAPI gpuBackend,
                                              const std::string &title,
                                              Vec2i size,
                                              WindowAttributes attributes,
@@ -65,7 +65,7 @@ namespace xng::android {
         android_app *app;
 
     private:
-        std::unique_ptr<Window> getWindow(GpuEngineBackend gpuDriverBackend, WindowAttributes attributes);
+        std::unique_ptr<Window> getWindow(GraphicsAPI gpuDriverBackend, WindowAttributes attributes);
     };
 }
 

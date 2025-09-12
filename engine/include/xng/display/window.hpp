@@ -20,9 +20,6 @@
 #ifndef XENGINE_WINDOW_HPP
 #define XENGINE_WINDOW_HPP
 
-#include "xng/gpu/renderdevice.hpp"
-#include "xng/gpu/rendertarget.hpp"
-
 #include "xng/render/scene/image.hpp"
 
 #include "windowlistener.hpp"
@@ -38,17 +35,6 @@ namespace xng {
     class XENGINE_EXPORT Window : public Listenable<WindowListener> {
     public:
         virtual ~Window() = default;
-
-        /**
-         * Return the render target associated with the window contents.
-         *
-         * When rendering to the returned target the results are displayed in the window.
-         *
-         * @param device The device for which to create a target, on vulkan the device contains the vulkan instance required for instantiating the surface.
-         *
-         * @return
-         */
-        virtual std::unique_ptr<RenderTarget> getRenderTarget(RenderDevice &device) = 0;
 
         virtual Input &getInput() = 0;
 

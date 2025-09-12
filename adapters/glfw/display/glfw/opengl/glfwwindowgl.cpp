@@ -25,7 +25,6 @@
 #include "glad/glad.h"
 
 #include "display/glfw/opengl/glfwwindowgl.hpp"
-#include "display/glfw/opengl/glfwrendertargetgl.hpp"
 
 namespace xng::glfw {
     GLFWWindowGL::GLFWWindowGL(const std::string &title, Vec2i size, WindowAttributes attributes) {
@@ -70,10 +69,6 @@ namespace xng::glfw {
         if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
             throw std::runtime_error("Failed to initialize glad");
         }
-    }
-
-    std::unique_ptr<RenderTarget> GLFWWindowGL::getRenderTarget(RenderDevice &device) {
-        return std::make_unique<GLFWRenderTargetGL>(*wndH);
     }
 
     void GLFWWindowGL::swapBuffers() {

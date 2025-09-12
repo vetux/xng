@@ -20,32 +20,37 @@
 #ifndef XENGINE_VULKAN_HPP
 #define XENGINE_VULKAN_HPP
 
-#include "xng/gpu/gpuengine.hpp"
+#include "xng/rendergraph/fgruntime.hpp"
 
 #include "xng/display/displayenvironment.hpp"
 
 namespace xng::vulkan {
-    class XENGINE_EXPORT Vulkan : public GpuEngine {
+    class XENGINE_EXPORT Vulkan final : public FGRuntime {
     public:
         struct InstanceData {
             virtual ~InstanceData() = default;
         };
 
-        Vulkan(DisplayEnvironment &displayDriver);
+        explicit Vulkan(DisplayEnvironment &displayDriver);
 
-        ~Vulkan();
+        ~Vulkan() override;
 
-        std::vector<RenderDeviceInfo> getAvailableRenderDevices() override;
+        void setWindow(const Window &window) override;
 
-        std::unique_ptr<RenderDevice> createRenderDevice() override;
+        GraphHandle compile(const FGGraph &graph) override;
 
-        std::unique_ptr<RenderDevice> createRenderDevice(const std::string &deviceName) override;
+        void recompile(GraphHandle handle, const FGGraph &graph) override;
 
-        GpuEngineBackend getBackend() override;
+        void execute(GraphHandle graph) override;
+
+        void execute(std::vector<GraphHandle> graphs) override;
+
+        void saveCache(GraphHandle graph, std::ostream &stream) override;
+
+        void loadCache(GraphHandle graph, std::istream &stream) override;
 
     private:
         std::shared_ptr<InstanceData> instanceData;
-        std::vector<RenderDeviceInfo> deviceInfos;
     };
 }
 

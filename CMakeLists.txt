@@ -4,13 +4,9 @@ include(user-config.cmake OPTIONAL)
 
 project(xEngine)
 
-include(user-config-project.cmake OPTIONAL)
-
 set(BASE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 include(${BASE_SOURCE_DIR}/cmake/setup.cmake)
-
-include(${BASE_SOURCE_DIR}/cmake/thirdparty.cmake)
 
 get_property(includeDirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 get_property(linkDirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY LINK_DIRECTORIES)
@@ -21,13 +17,7 @@ message("Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
 message("Include Dirs: ${includeDirs}")
 message("Link Dirs: ${linkDirs}")
 
-set(SHADER_COMPILED_DIR ${BASE_SOURCE_DIR}/compiled_shaders/)
-
-if (NOT DEFINED CROSS_COMPILING)
-    include(${BASE_SOURCE_DIR}/cmake/shadercompiler.cmake)
-    include(${BASE_SOURCE_DIR}/cmake/compileshaders.cmake)
-endif ()
-
+include(${BASE_SOURCE_DIR}/cmake/thirdparty.cmake)
 include(${BASE_SOURCE_DIR}/cmake/adapters.cmake)
 include(${BASE_SOURCE_DIR}/cmake/engine.cmake)
 include(${BASE_SOURCE_DIR}/cmake/tests.cmake)

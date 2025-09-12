@@ -44,18 +44,16 @@ namespace xng {
          *
          * @return
          */
-        static VertexLayout getDefaultVertexLayout() {
-            const std::vector<VertexAttribute> layout = {
-                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::SIGNED_INT),
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
-            };
-
-            return VertexLayout(layout);
+        static FGAttributeLayout getDefaultVertexLayout() {
+            return FGAttributeLayout({
+                FGShaderValue::vec3(),
+                FGShaderValue::vec3(),
+                FGShaderValue::vec2(),
+                FGShaderValue::vec3(),
+                FGShaderValue::vec3(),
+                FGShaderValue::vec4(),
+                FGShaderValue::vec4()
+            });
         }
 
         /**
@@ -77,38 +75,40 @@ namespace xng {
          * @param offsets
          * @return
          */
-        static VertexLayout getDefaultInstanceLayout() {
-            const std::vector<VertexAttribute> instanceLayout = {
-                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR2, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR3, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::SIGNED_INT),
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
+        static FGAttributeLayout getDefaultInstanceLayout() {
+            return FGAttributeLayout({
+                FGShaderValue::vec3(),
+                FGShaderValue::vec3(),
+                FGShaderValue::vec2(),
+                FGShaderValue::vec3(),
+                FGShaderValue::vec3(),
+                FGShaderValue::vec4(),
+                FGShaderValue::vec4(),
 
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT),
-                    VertexAttribute(VertexAttribute::VECTOR4, VertexAttribute::FLOAT)
-            };
-
-            return VertexLayout(instanceLayout);
+                FGShaderValue::vec4(),
+                FGShaderValue::vec4(),
+                FGShaderValue::vec4(),
+                FGShaderValue::vec4()
+            });
         }
 
         SkinnedMesh() = default;
 
         explicit SkinnedMesh(const Mesh &mesh)
-                : Mesh(mesh), rig() {}
+            : Mesh(mesh), rig() {
+        }
 
         SkinnedMesh(Primitive primitive, std::vector<Vertex> vertices)
-                : Mesh(primitive, std::move(vertices), {}), rig() {}
+            : Mesh(primitive, std::move(vertices), {}), rig() {
+        }
 
         SkinnedMesh(Primitive primitive, std::vector<Vertex> vertices, std::vector<unsigned int> indices)
-                : Mesh(primitive, std::move(vertices), std::move(indices)), rig() {}
+            : Mesh(primitive, std::move(vertices), std::move(indices)), rig() {
+        }
 
         SkinnedMesh(Primitive primitive, std::vector<Vertex> vertices, std::vector<unsigned int> indices, Rig rig)
-                : Mesh(primitive, std::move(vertices), std::move(indices)), rig(std::move(rig)) {}
+            : Mesh(primitive, std::move(vertices), std::move(indices)), rig(std::move(rig)) {
+        }
 
         SkinnedMesh(const SkinnedMesh &other) = default;
 

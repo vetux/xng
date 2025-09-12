@@ -19,20 +19,18 @@
 
 #include "xng/adapters/vulkan/vulkan.hpp"
 
-#include "gpu/vulkan/vkrenderdevice.hpp"
-
 #include <vulkan/vulkan.h>
 
 #include "vkerror.hpp"
 
 #include <cstring>
+#include <iostream>
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-        VkDebugUtilsMessageTypeFlagsEXT messageType,
-        const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-        void *pUserData) {
-
+    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+    VkDebugUtilsMessageTypeFlagsEXT messageType,
+    const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
+    void *pUserData) {
     if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
         std::cerr << "Validation layer: " << pCallbackData->pMessage << std::endl;
     }
@@ -81,12 +79,14 @@ namespace xng::vulkan {
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.apiVersion = VK_API_VERSION_1_1;
 
-        auto extensions = displayDriver.getRequiredVulkanExtensions();
+        // auto extensions = displayDriver.getRequiredVulkanExtensions();
 
-       // extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME); // Not supported on android
+        auto extensions = std::vector<const char *>{};
+
+        // extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME); // Not supported on android
 
 #ifndef NDEBUG
-        extensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        //extensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
 
         uint32_t extensionCount = 0;
@@ -115,7 +115,7 @@ namespace xng::vulkan {
 
         createInfo.enabledLayerCount = 0;
 
-       // createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR; // Not supported on android
+        // createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR; // Not supported on android
 
 #ifdef NDEBUG
         createInfo.enabledLayerCount = 0;
@@ -128,7 +128,7 @@ namespace xng::vulkan {
         vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
         std::vector<const char *> validationLayers{
-                "VK_LAYER_KHRONOS_validation"
+            "VK_LAYER_KHRONOS_validation"
         };
 
         for (auto &layer: validationLayers) {
@@ -185,19 +185,24 @@ namespace xng::vulkan {
         vkDestroyInstance(getData(instanceData.get()).instance, nullptr);
     }
 
-    std::vector<RenderDeviceInfo> Vulkan::getAvailableRenderDevices() {
-        throw std::runtime_error("Not Implemented");
+    void Vulkan::setWindow(const Window &window) {
     }
 
-    std::unique_ptr<RenderDevice> Vulkan::createRenderDevice() {
-        throw std::runtime_error("Not Implemented");
+    Vulkan::GraphHandle Vulkan::compile(const FGGraph &graph) {
     }
 
-    std::unique_ptr<RenderDevice> Vulkan::createRenderDevice(const std::string &deviceName) {
-        throw std::runtime_error("Not Implemented");
+    void Vulkan::recompile(GraphHandle handle, const FGGraph &graph) {
     }
 
-    GpuEngineBackend Vulkan::getBackend() {
-        return VULKAN_1_1;
+    void Vulkan::execute(GraphHandle graph) {
+    }
+
+    void Vulkan::execute(std::vector<GraphHandle> graphs) {
+    }
+
+    void Vulkan::saveCache(Vulkan::GraphHandle graph, std::ostream &stream) {
+    }
+
+    void Vulkan::loadCache(Vulkan::GraphHandle graph, std::istream &stream) {
     }
 }

@@ -43,8 +43,6 @@ namespace xng::glfw {
                           MonitorGLFW &monitor,
                           VideoMode videoMode);
 
-        std::unique_ptr<RenderTarget> getRenderTarget(RenderDevice &device) override = 0;
-
         Input &getInput() override;
 
         void swapBuffers() override = 0;

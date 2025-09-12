@@ -25,20 +25,19 @@
 #include <utility>
 #include <variant>
 
-#include "xng/gpu/renderdevice.hpp"
-
-#include "xng/shader/shadersource.hpp"
-#include "xng/shader/shadercompiler.hpp"
-
 #include "xng/render/scene/camera.hpp"
 
 #include "xng/util/hashcombine.hpp"
 
 #include "xng/render/atlas/textureatlas.hpp"
 
-#include "xng/render/geometry/vertexstream.hpp"
+#include "xng/render/geometry/primitive.hpp"
 
 #include "xng/render/2d/texture2d.hpp"
+#include "xng/rendergraph/fgdrawcall.hpp"
+#include "xng/rendergraph/fgresource.hpp"
+#include "xng/rendergraph/texture/fgtextureproperties.hpp"
+#include "xng/rendergraph/shader/fgshadersource.hpp"
 
 namespace xng {
     /**
@@ -64,30 +63,22 @@ namespace xng {
      */
     class XENGINE_EXPORT Renderer2D {
     public:
-        explicit Renderer2D(RenderDevice &device, ShaderCompiler &shaderCompiler, ShaderDecompiler &shaderDecompiler);
-
         ~Renderer2D();
 
         Texture2D createTexture(const ImageRGBA &texture);
 
         std::vector<Texture2D> createTextures(const std::vector<ImageRGBA> &textures);
 
-        void renderClear(RenderTarget &target,
-                         const ColorRGBA &clearColor,
+        void renderClear(const ColorRGBA &clearColor,
                          const Vec2i &viewportOffset,
                          const Vec2i &viewportSize) {
-            renderBegin(target, true, clearColor, viewportOffset, viewportSize, {});
+            renderBegin(true, clearColor, viewportOffset, viewportSize, {}, {});
             renderPresent();
-        }
-
-        void renderClear(RenderTarget &target, const ColorRGBA &clearColor) {
-            renderClear(target, clearColor, {}, target.getDescription().size);
         }
 
         /**
          * Must be called before calling draw methods.
          *
-         * @param target
          * @param clear
          * @param clearColor
          * @param viewportOffset
@@ -95,36 +86,13 @@ namespace xng {
          * @param projection
          * @param cameraPosition
          */
-        void renderBegin(RenderTarget &target,
-                         bool clear,
+        void renderBegin(bool clear,
                          const ColorRGBA &clearColor,
                          const Vec2i &viewportOffset,
                          const Vec2i &viewportSize,
                          const Vec2f &cameraPosition,
                          const Rectf &projection);
 
-        void renderBegin(RenderTarget &target,
-                         bool clear,
-                         const ColorRGBA &clearColor,
-                         const Vec2i &viewportOffset,
-                         const Vec2i &viewportSize,
-                         const Vec2f &cameraPosition) {
-            renderBegin(target,
-                        clear,
-                        clearColor,
-                        viewportOffset,
-                        viewportSize,
-                        cameraPosition,
-                        Rectf({}, target.getDescription().size.convert<float>()));
-        }
-
-        void renderBegin(RenderTarget &target, ColorRGBA clearColor = ColorRGBA::black(1, 0)) {
-            renderBegin(target, true, clearColor, {}, target.getDescription().size, {});
-        }
-
-        /**
-         * Present the recorded drawing commands to the target specified in renderBegin.
-         */
         void renderPresent();
 
         /**
@@ -146,7 +114,7 @@ namespace xng {
                   const Texture2D &texture,
                   const Vec2f &center,
                   float rotation,
-                  TextureFiltering filter,
+                  FGTextureFiltering filter,
                   ColorRGBA colorFactor = ColorRGBA::white());
 
         /**
@@ -167,7 +135,7 @@ namespace xng {
                   const Texture2D &texture,
                   const Vec2f &center,
                   float rotation,
-                  TextureFiltering filter,
+                  FGTextureFiltering filter,
                   float mixRGB,
                   float mixAlpha,
                   const ColorRGBA &mixColor);
@@ -219,8 +187,6 @@ namespace xng {
                   const Vec2f &center = {},
                   float rotation = 0);
 
-        RenderDevice &getDevice() { return renderDevice; }
-
     private:
         void updateAtlasRef();
 
@@ -242,7 +208,7 @@ namespace xng {
 
             TextureAtlasHandle texture{};
 
-            TextureFiltering filter{};
+            FGTextureFiltering filter{};
 
             float mix = 0;
             float alphaMix = 0;
@@ -294,7 +260,7 @@ namespace xng {
                  TextureAtlasHandle texture,
                  Vec2f center,
                  float rotation,
-                 TextureFiltering filter,
+                 FGTextureFiltering filter,
                  float mix,
                  float alphaMix,
                  ColorRGBA color)
@@ -314,7 +280,7 @@ namespace xng {
                  TextureAtlasHandle texture,
                  Vec2f center,
                  float rotation,
-                 TextureFiltering filter,
+                 FGTextureFiltering filter,
                  ColorRGBA color)
                     : type(TEXTURE),
                       srcRect(std::move(srcRect)),
@@ -329,12 +295,12 @@ namespace xng {
 
         struct MeshDrawData {
             Primitive primitive{};
-            DrawCall drawCall{};
+            FGDrawCall drawCall{};
             size_t baseVertex{};
 
             MeshDrawData() = default;
 
-            MeshDrawData(Primitive primitive, DrawCall drawCall, size_t baseVertex) : primitive(primitive),
+            MeshDrawData(Primitive primitive, FGDrawCall drawCall, size_t baseVertex) : primitive(primitive),
                                                                                       drawCall(std::move(drawCall)),
                                                                                       baseVertex(baseVertex) {}
         };
@@ -403,28 +369,14 @@ namespace xng {
             }
         };
 
-        RenderDevice &renderDevice;
+        FGShaderSource vsTexture;
+        FGShaderSource fsTexture;
 
-        ShaderSource vsTexture;
-        ShaderSource fsTexture;
+        FGShaderSource vsTextureMultiDraw;
+        FGShaderSource fsTextureMultiDraw;
 
-        ShaderSource vsTextureMultiDraw;
-        ShaderSource fsTextureMultiDraw;
-
-        std::unique_ptr<RenderPipeline> trianglePipeline;
-        std::unique_ptr<RenderPipeline> linePipeline;
-        std::unique_ptr<RenderPipeline> pointPipeline;
-
-        std::unique_ptr<RenderPipeline> trianglePipelineMultiDraw;
-        std::unique_ptr<RenderPipeline> linePipelineMultiDraw;
-        std::unique_ptr<RenderPipeline> pointPipelineMultiDraw;
-
-        std::unique_ptr<RenderPass> renderPass;
-
-        std::unique_ptr<CommandBuffer> commandBuffer;
-
-        std::map<TextureAtlasResolution, std::reference_wrapper<TextureArrayBuffer>> atlasRef;
-        std::map<TextureAtlasResolution, std::unique_ptr<TextureArrayBuffer>> atlasTextures;
+        std::map<TextureAtlasResolution, FGResource> atlasRef;
+        std::map<TextureAtlasResolution, FGResource> atlasTextures;
         TextureAtlas atlas;
 
         std::unordered_map<Vec2f, MeshDrawData> planeMeshes;
@@ -443,16 +395,14 @@ namespace xng {
         std::unordered_set<std::pair<Vec2f, Vec2f>, LinePairHash> usedLines;
         std::unordered_set<Vec2f> usedPoints;
 
-        std::unique_ptr<IndexBuffer> indexBuffer;
-        std::unique_ptr<VertexBuffer> vertexBuffer;
-        std::unique_ptr<VertexArrayObject> vertexArrayObject;
+        std::unique_ptr<FGResource> indexBuffer;
+        std::unique_ptr<FGResource> vertexBuffer;
+        std::unique_ptr<FGResource> vertexArrayObject;
 
         std::unordered_map<std::pair<float, Vec2f>, Mat4f, RotationPairHash> rotationMatrices;
         std::unordered_set<std::pair<float, Vec2f>, RotationPairHash> usedRotationMatrices;
 
         std::vector<Pass> passes;
-
-        RenderTarget *mTarget = nullptr;
 
         Camera camera;
         Transform cameraTransform;
@@ -470,7 +420,7 @@ namespace xng {
 
         ColorRGBA mClearColor = ColorRGBA::black();
 
-        VertexLayout vertexLayout;
+        FGAttributeLayout vertexLayout;
     };
 }
 

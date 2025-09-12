@@ -23,10 +23,11 @@
 #include <iostream>
 #include <ostream>
 
-#include "xng/render/graph2/fgbuilder.hpp"
-#include "xng/render/graph2/shader/fgshaderbuilder.hpp"
-#include "xng/render/graph2/shader/fgshadernodehelper.hpp"
-#include "xng/render/graph2/shaderlib/noise.hpp"
+#include "xng/rendergraph/fgbuilder.hpp"
+#include "xng/rendergraph/shader/fgshaderbuilder.hpp"
+#include "xng/rendergraph/shader/fgshadernodehelper.hpp"
+
+#include "xng/render/shaderlib/noise.hpp"
 
 using namespace xng;
 using namespace xng::FGShaderNodeHelper;

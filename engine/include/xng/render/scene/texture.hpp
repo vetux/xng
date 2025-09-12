@@ -20,9 +20,9 @@
 #ifndef XENGINE_TEXTURE_HPP
 #define XENGINE_TEXTURE_HPP
 
-#include "xng/gpu/texturebuffer.hpp"
 #include "xng/resource/resourcehandle.hpp"
 #include "xng/render/scene/image.hpp"
+#include "xng/rendergraph/texture/fgtexture.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT Texture : public Resource, public Messageable {
@@ -50,7 +50,7 @@ namespace xng {
         }
 
         ResourceHandle<ImageRGBA> image;
-        TextureBufferDesc description;
+        FGTexture description;
 
         bool isLoaded() const override {
             return image.isLoaded();
