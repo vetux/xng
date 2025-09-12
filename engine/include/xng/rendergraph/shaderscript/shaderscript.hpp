@@ -23,40 +23,9 @@
 #include "xng/rendergraph/shaderscript/shadernodewrapper.hpp"
 
 /**
- * A Shader DSL implemented in C++
- *
- * WARNING: This namespace and the node wrapper classes define implicit conversion operators for converting literals
- *          to node wrappers, which can cause ambiguous overloads when using the namespace,
- *          so this header should only be included in compilation units that specifically handle shader creation.
- *
- * Defines various types and functions to create an easy-to-use DSL that resembles GLSL pretty closely.
- *
- * Differences to GLSL:
- * - Type Definition
- *  Literal types are uppercase (e.g. "int" in glsl becomes "Int" in c++)
- *  Arrays must be defined as ArrayX<COUNT> b = ArrayX<COUNT>{VALUES...}
- *  Variables must be assigned at creation time e.g. "Int i;" is not valid
- *
- * - Subscripting
- *  Vector subscripting are functions (e.g. "vec.x" in glsl becomes "vec.x()" in c++)
- *  To assign to a subscripted value users must use setX, setElement (e.g. "vec.x = 1" in glsl becomes "vec.setX(1)" in c++
- *  Matrix subscripting has to be done with the elements() method (e.g. "mat[column][row]" in glsl becomes "mat.element(column, row)" in c++)
- *
- * - Input Data
- *  Input attributes are accessed through ShaderScript::attribute
- *  Buffers are accessed through ShaderScript::buffer and ShaderScript::dynamicBuffer
- *  Parameters are accessed through ShaderScript::parameter
- *  User defined function arguments are accessed through ShaderScript::argument
- *
- * - Output Data
- *  Writing attributes is done through ShaderScript::writeAttribute
- *  Writing buffers is done through ShaderScript::writeBuffer / writeDynamicBuffer
- *
- * - Control Flow
- *  Conditionals and Branches are defined through ShaderBuilder::If / Else / EndIf / For / EndFor
- *  Functions can be defined through ShaderBuilder::Function / EndFunction
- *  User defined functions must be called through ShaderScript::Call (e.g. test(1) in glsl becomes Call("test", {1}) in c++)
- *  Functions are returned from through ShaderScript::Return (e.g. "return 5" in glsl becomes "Return(5)" in c++)
+ * WARNING: This namespace defines implicit conversion operators for converting literals
+ *          to node wrappers, which can cause ambiguous overloads when "using" the namespace,
+ *          so this namespace should only be "used" in compilation units that specifically handle shader creation.
  */
 namespace xng::ShaderScript {
     // Operators for lhs literals
