@@ -26,6 +26,10 @@ if (BUILD_GLFW)
     add_thirdparty_subdir(${THIRD_PARTY_BASE}/glfw/)
 endif ()
 
+if (BUILD_OPENGL)
+    add_thirdparty_subdir(${THIRD_PARTY_BASE}/SPIRV-Cross/)
+endif ()
+
 if (BUILD_BOX2D)
     set(BOX2D_BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
     set(BOX2D_BUILD_TESTBED OFF CACHE BOOL "" FORCE)
@@ -53,10 +57,6 @@ endif ()
 
 if (BUILD_SNDFILE)
     add_thirdparty_subdir(${THIRD_PARTY_BASE}/libsndfile/)
-endif ()
-
-if (BUILD_SPIRVCROSS)
-    add_thirdparty_subdir(${THIRD_PARTY_BASE}/SPIRV-Cross/)
 endif ()
 
 if (BUILD_CRYPTOPP)
