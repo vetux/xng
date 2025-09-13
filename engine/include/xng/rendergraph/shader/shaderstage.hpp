@@ -21,12 +21,13 @@
 #define XENGINE_SHADERSTAGE_HPP
 
 #include <unordered_map>
+#include <utility>
 
+#include "xng/rendergraph/shader/shadertexture.hpp"
 #include "xng/rendergraph/shader/shaderattributelayout.hpp"
 #include "xng/rendergraph/shader/shaderfunction.hpp"
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 #include "xng/rendergraph/shader/shaderbuffer.hpp"
-#include "xng/rendergraph/rendergraphtexture.hpp"
 
 namespace xng {
     struct ShaderBuffer;
@@ -36,20 +37,20 @@ namespace xng {
      */
     struct ShaderStage {
         enum Type {
-            VERTEX,
+            VERTEX = 0,
             GEOMETRY,
             TESSELATION_CONTROL,
             TESSELATION_EVALUATION,
             FRAGMENT,
             COMPUTE,
-        } type;
+        } type{};
 
         ShaderAttributeLayout inputLayout;
         ShaderAttributeLayout outputLayout;
 
         std::unordered_map<std::string, ShaderDataType> parameters;
         std::unordered_map<std::string, ShaderBuffer> buffers;
-        std::unordered_map<std::string, RenderGraphTexture> textures;
+        std::vector<ShaderTexture> textures; // The available textures in binding order
 
         std::vector<std::unique_ptr<ShaderNode> > mainFunction;
         std::unordered_map<std::string, ShaderFunction> functions;
@@ -57,16 +58,16 @@ namespace xng {
         ShaderStage() = default;
 
         ShaderStage(const Type stage,
-                       const ShaderAttributeLayout &input_layout,
-                       const ShaderAttributeLayout &output_layout,
-                       const std::unordered_map<std::string, ShaderDataType> &parameters,
-                       const std::unordered_map<std::string, ShaderBuffer> &buffers,
-                       const std::unordered_map<std::string, RenderGraphTexture> &textures,
-                       std::vector<std::unique_ptr<ShaderNode> > mainFunction,
-                       std::unordered_map<std::string, ShaderFunction> functions)
+                    ShaderAttributeLayout input_layout,
+                    ShaderAttributeLayout output_layout,
+                    const std::unordered_map<std::string, ShaderDataType> &parameters,
+                    const std::unordered_map<std::string, ShaderBuffer> &buffers,
+                    const std::vector<ShaderTexture> &textures,
+                    std::vector<std::unique_ptr<ShaderNode> > mainFunction,
+                    std::unordered_map<std::string, ShaderFunction> functions)
             : type(stage),
-              inputLayout(input_layout),
-              outputLayout(output_layout),
+              inputLayout(std::move(input_layout)),
+              outputLayout(std::move(output_layout)),
               parameters(parameters),
               buffers(buffers),
               textures(textures),

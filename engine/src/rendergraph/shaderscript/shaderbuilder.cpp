@@ -78,7 +78,7 @@ namespace xng::ShaderScript {
     }
 
     void ShaderBuilder::Function(const std::string &name,
-                                   const std::unordered_map<std::string, ShaderDataType> &arguments,
+                                   const std::vector<ShaderFunction::Argument> &arguments,
                                    ShaderDataType returnType) {
         // TODO: Redesign shader builder implementation to avoid leaking tree node pointers. (Valgrind reports this leaks so possibly a circular reference)
         std::shared_ptr<TreeNode> functionNode = std::make_shared<TreeNode>();
@@ -168,7 +168,7 @@ namespace xng::ShaderScript {
                                 const ShaderAttributeLayout &outputLayout,
                                 const std::unordered_map<std::string, ShaderDataType> &parameters,
                                 const std::unordered_map<std::string, ShaderBuffer> &buffers,
-                                const std::unordered_map<std::string, RenderGraphTexture> &textures,
+                                const std::vector<ShaderTexture> &textures,
                                 const std::unordered_map<std::string, ShaderFunction> &functions) {
         rootNode = std::make_shared<TreeNode>();
         rootNode->parent = nullptr;

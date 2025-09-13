@@ -23,6 +23,7 @@
 #include <string>
 
 #include "xng/rendergraph/shader/shadernode.hpp"
+#include "xng/rendergraph/shader/shaderdatatype.hpp"
 
 namespace xng {
     struct NodeVariableCreate final : ShaderNode {

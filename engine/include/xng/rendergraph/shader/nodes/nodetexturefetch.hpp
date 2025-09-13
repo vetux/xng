@@ -17,27 +17,36 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_NODETEXTURESIZE_HPP
-#define XENGINE_NODETEXTURESIZE_HPP
+#ifndef XENGINE_NODETEXTUREFETCH_HPP
+#define XENGINE_NODETEXTUREFETCH_HPP
 
 #include "xng/rendergraph/shader/shadernode.hpp"
 
 namespace xng {
-    struct NodeTextureSize final : ShaderNode {
-        std::unique_ptr<ShaderNode> texture;
-        std::unique_ptr<ShaderNode> lod; // lod specification for non-multisampled textures
+    struct NodeTextureFetch final : ShaderNode {
+        // TODO: Redesign texture interaction nodes to be more generic to support directx
 
-        explicit NodeTextureSize(std::unique_ptr<ShaderNode> texture, std::unique_ptr<ShaderNode> lod)
-            : texture(std::move(texture)), lod(std::move(lod)) {
+        std::unique_ptr<ShaderNode> texture;
+        std::unique_ptr<ShaderNode> coordinate;
+        std::unique_ptr<ShaderNode> index; // Either the lod or sample index
+
+        explicit NodeTextureFetch(std::unique_ptr<ShaderNode> texture,
+                                  std::unique_ptr<ShaderNode> coordinate,
+                                  std::unique_ptr<ShaderNode> index)
+            : texture(std::move(texture)),
+              coordinate(std::move(coordinate)),
+              index(std::move(index)) {
         }
 
         NodeType getType() const override {
-            return TEXTURE_SIZE;
+            return TEXTURE_FETCH;
         }
 
         std::unique_ptr<ShaderNode> copy() const override {
-            return std::make_unique<NodeTextureSize>(texture->copy(), lod->copy());
+            return std::make_unique<NodeTextureFetch>(texture->copy(),
+                                                      coordinate->copy(),
+                                                      index->copy());
         }
     };
 }
-#endif //XENGINE_NODETEXTURESIZE_HPP
+#endif //XENGINE_NODETEXTUREFETCH_HPP

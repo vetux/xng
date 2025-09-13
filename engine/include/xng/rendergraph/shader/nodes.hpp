@@ -55,5 +55,8 @@
 #include "xng/rendergraph/shader/nodes/arithmetic/nodemultiply.hpp"
 #include "xng/rendergraph/shader/nodes/arithmetic/nodesubtract.hpp"
 #include "xng/rendergraph/shader/nodes/arithmetic/nodedivide.hpp"
+#include "xng/rendergraph/shader/nodes/nodevertexposition.hpp"
+#include "xng/rendergraph/shader/nodes/nodetexture.hpp"
+#include "xng/rendergraph/shader/nodes/nodetexturefetch.hpp"
 
 #endif //XENGINE_NODES_HPP

@@ -36,11 +36,13 @@ public:
     ShaderBuffer dataBuffer;
     ShaderBuffer colorBuffer;
 
-    RenderGraphTexture textureDef;
+    ShaderTexture textureDef;
 
     ShaderAttributeLayout vertexLayout;
     ShaderAttributeLayout fragmentLayout;
     ShaderAttributeLayout colorLayout;
+
+    static constexpr uint32_t tex = 0;
 
     ShaderTestPass() {
         dataBuffer.elements.emplace_back("mvp", ShaderDataType(ShaderDataType::MAT4, ShaderDataType::FLOAT));
@@ -74,19 +76,19 @@ public:
                       vertexLayout,
                       {},
                       {{"data", dataBuffer}},
-                      {{"tex", textureDef}},
+                      {textureDef},
                       funcs);
 
         builder.Function("test",
-                         {{"a", ShaderDataType::integer()}},
+                         {{"texArg", textureDef}},
                          ShaderDataType::integer());
-        Return(5 * (3 + argument("a")));
+        Return(5 * (3 + texture(argument("texArg"), vec2(0.5f, 0.5f)).x()));
         builder.EndFunction();
 
         // Equivalent to int b[4] = {1, 2, 3, 4}
         ArrayInt<4> b = ArrayInt<4>{1, 2, 3, 4};
 
-        Int r = Call("test", {1});
+        Int r = Call("test", {textureSampler(tex)});
         Int a = r;
 
         Int v = Call("simplex2D", {vec2(0.5f, 0.5f)});
@@ -94,7 +96,7 @@ public:
         vec2 f = vec2(5.0f, 1.0f, 1.0f, 1.0f);
         f = f * a;
 
-        vec4 color = texture("tex", vec2(0.5f, 0.5f));
+        vec4 color = texture(textureSampler(tex), vec2(0.5f, 0.5f));
 
         builder.If(a == 5);
 
@@ -143,7 +145,7 @@ public:
                       vertexLayout,
                       {},
                       {{"data", dataBuffer}},
-                      {{"tex", textureDef}},
+                      {textureDef},
                       {});
 
         writeAttribute(0, vec4(1, 0, 0, 1));

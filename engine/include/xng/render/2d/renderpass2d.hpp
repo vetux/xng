@@ -17,27 +17,24 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_NODETEXTURESIZE_HPP
-#define XENGINE_NODETEXTURESIZE_HPP
+#ifndef XENGINE_RENDER2DPASS_HPP
+#define XENGINE_RENDER2DPASS_HPP
 
-#include "xng/rendergraph/shader/shadernode.hpp"
+#include "xng/rendergraph/rendergraphbuilder.hpp"
+#include "xng/render/2d/renderer2d.hpp"
 
 namespace xng {
-    struct NodeTextureSize final : ShaderNode {
-        std::unique_ptr<ShaderNode> texture;
-        std::unique_ptr<ShaderNode> lod; // lod specification for non-multisampled textures
+    class XENGINE_EXPORT RenderPass2D {
+    public:
+        RenderPass2D() = default;
 
-        explicit NodeTextureSize(std::unique_ptr<ShaderNode> texture, std::unique_ptr<ShaderNode> lod)
-            : texture(std::move(texture)), lod(std::move(lod)) {
-        }
+        bool shouldRebuild();
 
-        NodeType getType() const override {
-            return TEXTURE_SIZE;
-        }
+        void setup(RenderGraphBuilder &builder);
 
-        std::unique_ptr<ShaderNode> copy() const override {
-            return std::make_unique<NodeTextureSize>(texture->copy(), lod->copy());
-        }
+    private:
+        Renderer2D renderer;
     };
 }
-#endif //XENGINE_NODETEXTURESIZE_HPP
+
+#endif //XENGINE_RENDER2DPASS_HPP

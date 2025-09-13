@@ -27,9 +27,10 @@
 using namespace xng;
 
 std::string compileFunction(const std::string &functionName,
-                            const std::unordered_map<std::string, ShaderDataType> &parameters,
+                            const std::vector<ShaderFunction::Argument> &arguments,
                             const std::vector<std::unique_ptr<ShaderNode> > &body,
                             const std::optional<ShaderDataType> &returnType,
-                            const ShaderStage &source);
+                            const ShaderStage &source,
+                            const std::string &appendix = "");
 
 #endif //XENGINE_FUNCTIONCOMPILER_HPP

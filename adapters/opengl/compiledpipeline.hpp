@@ -27,20 +27,12 @@ using namespace xng;
 struct CompiledPipeline {
     std::unordered_map<ShaderStage::Type, std::string> sourceCode;
     std::unordered_map<std::string, size_t> bufferBindings;
-    std::unordered_map<std::string, size_t> textureBindings;
 
     size_t getBufferBinding(const std::string &name) {
         if (bufferBindings.find(name) == bufferBindings.end()) {
             bufferBindings[name] = bufferBindings.size();
         }
         return bufferBindings.at(name);
-    }
-
-    size_t getTextureBinding(const std::string &name) {
-        if (textureBindings.find(name) == textureBindings.end()) {
-            textureBindings[name] = textureBindings.size();
-        }
-        return textureBindings.at(name);
     }
 };
 

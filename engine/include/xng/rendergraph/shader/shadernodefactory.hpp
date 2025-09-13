@@ -27,13 +27,13 @@
 namespace xng {
     namespace ShaderNodeFactory {
         XENGINE_EXPORT std::unique_ptr<ShaderNode> createVariable(const std::string &name,
-                                                                    const ShaderDataType &type,
-                                                                    const std::unique_ptr<ShaderNode> &value =
-                                                                            nullptr,
-                                                                    size_t count = 1);
+                                                                  const ShaderDataType &type,
+                                                                  const std::unique_ptr<ShaderNode> &value =
+                                                                          nullptr,
+                                                                  size_t count = 1);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> assign(const std::unique_ptr<ShaderNode> &target,
-                                                            const std::unique_ptr<ShaderNode> &value);
+                                                          const std::unique_ptr<ShaderNode> &value);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> variable(const std::string &name);
 
@@ -45,77 +45,84 @@ namespace xng {
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> attributeOutput(uint32_t attributeIndex);
 
-        XENGINE_EXPORT std::unique_ptr<ShaderNode> parameter(std::string parameter_name);
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> parameter(const std::string &parameter_name);
+
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> vertexPosition(const std::unique_ptr<ShaderNode> &position);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> vector(ShaderDataType type,
-                                                            const std::unique_ptr<ShaderNode> &x,
-                                                            const std::unique_ptr<ShaderNode> &y,
-                                                            const std::unique_ptr<ShaderNode> &z = nullptr,
-                                                            const std::unique_ptr<ShaderNode> &w = nullptr);
+                                                          const std::unique_ptr<ShaderNode> &x,
+                                                          const std::unique_ptr<ShaderNode> &y,
+                                                          const std::unique_ptr<ShaderNode> &z = nullptr,
+                                                          const std::unique_ptr<ShaderNode> &w = nullptr);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> array(ShaderDataType elementType,
-                                                           const std::vector<std::unique_ptr<ShaderNode> > &elements);
+                                                         const std::vector<std::unique_ptr<ShaderNode> > &elements);
 
-        XENGINE_EXPORT std::unique_ptr<ShaderNode> textureSample(const std::string &textureName,
-                                                                   const std::unique_ptr<ShaderNode> &
-                                                                   coordinate,
-                                                                   const std::unique_ptr<ShaderNode> &bias);
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> texture(uint32_t textureBinding);
 
-        XENGINE_EXPORT std::unique_ptr<ShaderNode> textureSize(const std::string &textureName);
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> textureSample(const std::unique_ptr<ShaderNode> &texture,
+                                                                 const std::unique_ptr<ShaderNode> &coordinate,
+                                                                 const std::unique_ptr<ShaderNode> &lod = nullptr);
+
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> textureSize(const std::unique_ptr<ShaderNode> &texture,
+                                                               const std::unique_ptr<ShaderNode> &lod = nullptr);
+
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> textureFetch(const std::unique_ptr<ShaderNode> &texture,
+                                                                const std::unique_ptr<ShaderNode> &coordinate,
+                                                                const std::unique_ptr<ShaderNode> &index);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> bufferRead(const std::string &bufferName,
-                                                                const std::string &elementName,
-                                                                const std::unique_ptr<ShaderNode> &index =
-                                                                        nullptr);
+                                                              const std::string &elementName,
+                                                              const std::unique_ptr<ShaderNode> &index = nullptr);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> bufferWrite(const std::string &bufferName,
-                                                                 const std::string &elementName,
-                                                                 const std::unique_ptr<ShaderNode> &index,
-                                                                 const std::unique_ptr<ShaderNode> &value);
+                                                               const std::string &elementName,
+                                                               const std::unique_ptr<ShaderNode> &index,
+                                                               const std::unique_ptr<ShaderNode> &value);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> bufferSize(const std::string &bufferName);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> add(const std::unique_ptr<ShaderNode> &left,
-                                                         const std::unique_ptr<ShaderNode> &right);
+                                                       const std::unique_ptr<ShaderNode> &right);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> subtract(const std::unique_ptr<ShaderNode> &left,
-                                                              const std::unique_ptr<ShaderNode> &right);
-
-        XENGINE_EXPORT std::unique_ptr<ShaderNode> multiply(const std::unique_ptr<ShaderNode> &left,
-                                                              const std::unique_ptr<ShaderNode> &right);
-
-        XENGINE_EXPORT std::unique_ptr<ShaderNode> divide(const std::unique_ptr<ShaderNode> &left,
                                                             const std::unique_ptr<ShaderNode> &right);
 
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> multiply(const std::unique_ptr<ShaderNode> &left,
+                                                            const std::unique_ptr<ShaderNode> &right);
+
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> divide(const std::unique_ptr<ShaderNode> &left,
+                                                          const std::unique_ptr<ShaderNode> &right);
+
         XENGINE_EXPORT std::unique_ptr<ShaderNode> compareEqual(const std::unique_ptr<ShaderNode> &left,
-                                                                  const std::unique_ptr<ShaderNode> &right);
+                                                                const std::unique_ptr<ShaderNode> &right);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> compareNotEqual(const std::unique_ptr<ShaderNode> &left,
-                                                                     const std::unique_ptr<ShaderNode> &right);
+                                                                   const std::unique_ptr<ShaderNode> &right);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> compareGreater(const std::unique_ptr<ShaderNode> &left,
-                                                                    const std::unique_ptr<ShaderNode> &right);
+                                                                  const std::unique_ptr<ShaderNode> &right);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> compareLess(const std::unique_ptr<ShaderNode> &left,
-                                                                 const std::unique_ptr<ShaderNode> &right);
+                                                               const std::unique_ptr<ShaderNode> &right);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> compareGreaterEqual(
             const std::unique_ptr<ShaderNode> &left,
             const std::unique_ptr<ShaderNode> &right);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> compareLessEqual(const std::unique_ptr<ShaderNode> &left,
-                                                                      const std::unique_ptr<ShaderNode> &
-                                                                      right);
+                                                                    const std::unique_ptr<ShaderNode> &
+                                                                    right);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> logicalAnd(const std::unique_ptr<ShaderNode> &left,
-                                                                const std::unique_ptr<ShaderNode> &right);
+                                                              const std::unique_ptr<ShaderNode> &right);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> logicalOr(const std::unique_ptr<ShaderNode> &left,
-                                                               const std::unique_ptr<ShaderNode> &right);
+                                                             const std::unique_ptr<ShaderNode> &right);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> call(const std::string &functionName,
-                                                          const std::vector<std::unique_ptr<ShaderNode> > &
-                                                          arguments);
+                                                        const std::vector<std::unique_ptr<ShaderNode> > &
+                                                        arguments);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> ret(const std::unique_ptr<ShaderNode> &value);
 
@@ -134,7 +141,7 @@ namespace xng {
         XENGINE_EXPORT std::unique_ptr<ShaderNode> atan(const std::unique_ptr<ShaderNode> &value);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> pow(const std::unique_ptr<ShaderNode> &base,
-                                                         const std::unique_ptr<ShaderNode> &exponent);
+                                                       const std::unique_ptr<ShaderNode> &exponent);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> exp(const std::unique_ptr<ShaderNode> &value);
 
@@ -153,76 +160,76 @@ namespace xng {
         XENGINE_EXPORT std::unique_ptr<ShaderNode> fract(const std::unique_ptr<ShaderNode> &value);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> mod(const std::unique_ptr<ShaderNode> &x,
-                                                         const std::unique_ptr<ShaderNode> &y);
+                                                       const std::unique_ptr<ShaderNode> &y);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> min(const std::unique_ptr<ShaderNode> &x,
-                                                         const std::unique_ptr<ShaderNode> &y);
+                                                       const std::unique_ptr<ShaderNode> &y);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> max(const std::unique_ptr<ShaderNode> &x,
-                                                         const std::unique_ptr<ShaderNode> &y);
+                                                       const std::unique_ptr<ShaderNode> &y);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> clamp(const std::unique_ptr<ShaderNode> &x,
-                                                           const std::unique_ptr<ShaderNode> &min,
-                                                           const std::unique_ptr<ShaderNode> &max);
+                                                         const std::unique_ptr<ShaderNode> &min,
+                                                         const std::unique_ptr<ShaderNode> &max);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> mix(const std::unique_ptr<ShaderNode> &x,
-                                                         const std::unique_ptr<ShaderNode> &y,
-                                                         const std::unique_ptr<ShaderNode> &a);
+                                                       const std::unique_ptr<ShaderNode> &y,
+                                                       const std::unique_ptr<ShaderNode> &a);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> step(const std::unique_ptr<ShaderNode> &edge,
-                                                          const std::unique_ptr<ShaderNode> &x);
+                                                        const std::unique_ptr<ShaderNode> &x);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> smoothstep(const std::unique_ptr<ShaderNode> &edge0,
-                                                                const std::unique_ptr<ShaderNode> &edge1,
-                                                                const std::unique_ptr<ShaderNode> &x);
+                                                              const std::unique_ptr<ShaderNode> &edge1,
+                                                              const std::unique_ptr<ShaderNode> &x);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> dot(const std::unique_ptr<ShaderNode> &x,
-                                                         const std::unique_ptr<ShaderNode> &y);
+                                                       const std::unique_ptr<ShaderNode> &y);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> cross(const std::unique_ptr<ShaderNode> &x,
-                                                           const std::unique_ptr<ShaderNode> &y);
+                                                         const std::unique_ptr<ShaderNode> &y);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> normalize(const std::unique_ptr<ShaderNode> &x);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> length(const std::unique_ptr<ShaderNode> &x);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> distance(const std::unique_ptr<ShaderNode> &x,
-                                                              const std::unique_ptr<ShaderNode> &y);
+                                                            const std::unique_ptr<ShaderNode> &y);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> reflect(const std::unique_ptr<ShaderNode> &i,
-                                                             const std::unique_ptr<ShaderNode> &n);
+                                                           const std::unique_ptr<ShaderNode> &n);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> refract(const std::unique_ptr<ShaderNode> &i,
-                                                             const std::unique_ptr<ShaderNode> &n,
-                                                             const std::unique_ptr<ShaderNode> &eta);
+                                                           const std::unique_ptr<ShaderNode> &n,
+                                                           const std::unique_ptr<ShaderNode> &eta);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> faceforward(const std::unique_ptr<ShaderNode> &n,
-                                                                 const std::unique_ptr<ShaderNode> &i,
-                                                                 const std::unique_ptr<ShaderNode> &nref);
+                                                               const std::unique_ptr<ShaderNode> &i,
+                                                               const std::unique_ptr<ShaderNode> &nref);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> subscriptArray(const std::unique_ptr<ShaderNode> &array,
-                                                                    const std::unique_ptr<ShaderNode> &index);
+                                                                  const std::unique_ptr<ShaderNode> &index);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> subscriptVector(const std::unique_ptr<ShaderNode> &value,
-                                                                     int index);
+                                                                   int index);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> subscriptMatrix(const std::unique_ptr<ShaderNode> &matrix,
-                                                                     const std::unique_ptr<ShaderNode> &row,
-                                                                     const std::unique_ptr<ShaderNode> &column
-                                                                             =
-                                                                             nullptr);
+                                                                   const std::unique_ptr<ShaderNode> &row,
+                                                                   const std::unique_ptr<ShaderNode> &column
+                                                                           =
+                                                                           nullptr);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> branch(const std::unique_ptr<ShaderNode> &condition,
-                                                            const std::vector<std::unique_ptr<ShaderNode> > &
-                                                            trueBranch,
-                                                            const std::vector<std::unique_ptr<ShaderNode> > &
-                                                            falseBranch);
+                                                          const std::vector<std::unique_ptr<ShaderNode> > &
+                                                          trueBranch,
+                                                          const std::vector<std::unique_ptr<ShaderNode> > &
+                                                          falseBranch);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> loop(const std::unique_ptr<ShaderNode> &initializer,
-                                                          const std::unique_ptr<ShaderNode> &predicate,
-                                                          const std::unique_ptr<ShaderNode> &iterator,
-                                                          const std::vector<std::unique_ptr<ShaderNode> > &
-                                                          body);
+                                                        const std::unique_ptr<ShaderNode> &predicate,
+                                                        const std::unique_ptr<ShaderNode> &iterator,
+                                                        const std::vector<std::unique_ptr<ShaderNode> > &
+                                                        body);
 
         inline std::unique_ptr<ShaderNode> getX(const std::unique_ptr<ShaderNode> &value) {
             return subscriptVector(std::move(value), 0);

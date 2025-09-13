@@ -17,27 +17,31 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_NODETEXTURESIZE_HPP
-#define XENGINE_NODETEXTURESIZE_HPP
+#ifndef XENGINE_TEXFILTER_HPP
+#define XENGINE_TEXFILTER_HPP
 
-#include "xng/rendergraph/shader/shadernode.hpp"
+#include "xng/rendergraph/shader/shaderfunction.hpp"
 
-namespace xng {
-    struct NodeTextureSize final : ShaderNode {
-        std::unique_ptr<ShaderNode> texture;
-        std::unique_ptr<ShaderNode> lod; // lod specification for non-multisampled textures
+namespace xng::shaderlib {
+    /**
+     * vec4 textureBicubic(sampler2D sampler, vec2 texCoords)
+     *
+     * @return
+     */
+    XENGINE_EXPORT ShaderFunction textureBicubic();
 
-        explicit NodeTextureSize(std::unique_ptr<ShaderNode> texture, std::unique_ptr<ShaderNode> lod)
-            : texture(std::move(texture)), lod(std::move(lod)) {
-        }
+    /**
+     * vec4 textureBicubicMS(sampler2DMS sampler, vec2 texCoords, int samples)
+     *
+     * @return
+     */
+    XENGINE_EXPORT ShaderFunction textureBicubicMS();
 
-        NodeType getType() const override {
-            return TEXTURE_SIZE;
-        }
-
-        std::unique_ptr<ShaderNode> copy() const override {
-            return std::make_unique<NodeTextureSize>(texture->copy(), lod->copy());
-        }
-    };
+    /**
+     * vec4 textureBicubicArray(sampler2DArray sampler, vec3 texCoords3, vec2 size)
+     *
+     * @return
+     */
+    XENGINE_EXPORT ShaderFunction textureBicubicArray();
 }
-#endif //XENGINE_NODETEXTURESIZE_HPP
+#endif //XENGINE_TEXFILTER_HPP

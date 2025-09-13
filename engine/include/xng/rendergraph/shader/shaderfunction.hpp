@@ -25,25 +25,47 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include <variant>
 
 #include "xng/rendergraph/shader/shadernode.hpp"
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
+#include "xng/rendergraph/shader/shadertexture.hpp"
 
 namespace xng {
     struct ShaderFunction {
+        struct Argument {
+            std::string name;
+            std::variant<ShaderDataType, ShaderTexture> type;
+
+            Argument() = default;
+
+            Argument(std::string name, std::variant<ShaderDataType, ShaderTexture> type)
+                : name(std::move(name)), type(type) {
+            }
+        };
+
         std::string name;
-        std::unordered_map<std::string, ShaderDataType> arguments;
+        std::vector<Argument> arguments;
         std::vector<std::unique_ptr<ShaderNode> > body;
         ShaderDataType returnType;
+
+        [[nodiscard]] std::variant<ShaderDataType, ShaderTexture> getArgumentType(const std::string &argName) const {
+            for (auto &arg: arguments) {
+                if (arg.name == argName) {
+                    return arg.type;
+                }
+            }
+            throw std::runtime_error("Argument not found");
+        }
 
         ShaderFunction() = default;
 
         ShaderFunction(std::string name,
-                         const std::unordered_map<std::string, ShaderDataType> &arguments,
-                         std::vector<std::unique_ptr<ShaderNode> > body,
-                         const ShaderDataType returnType)
+                       std::vector<Argument> arguments,
+                       std::vector<std::unique_ptr<ShaderNode> > body,
+                       const ShaderDataType returnType)
             : name(std::move(name)),
-              arguments(arguments),
+              arguments(std::move(arguments)),
               body(std::move(body)),
               returnType(returnType) {
         }

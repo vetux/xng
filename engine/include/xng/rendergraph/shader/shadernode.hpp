@@ -43,7 +43,9 @@ namespace xng {
             VECTOR,
             ARRAY,
 
+            TEXTURE,
             TEXTURE_SAMPLE,
+            TEXTURE_FETCH,
             TEXTURE_SIZE,
 
             BUFFER_READ,
@@ -76,6 +78,8 @@ namespace xng {
 
             BRANCH,
             LOOP,
+
+            VERTEX_POSITION,
         };
 
         virtual NodeType getType() const = 0;

@@ -23,10 +23,11 @@
 #include "nodecompiler.hpp"
 
 std::string compileFunction(const std::string &functionName,
-                            const std::unordered_map<std::string, ShaderDataType> &parameters,
+                            const std::vector<ShaderFunction::Argument> &parameters,
                             const std::vector<std::unique_ptr<ShaderNode> > &body,
                             const std::optional<ShaderDataType> &returnType,
-                            const ShaderStage &source) {
+                            const ShaderStage &source,
+                            const std::string &appendix) {
     std::string ret;
     if (returnType.has_value()) {
         ret += getTypeName(returnType.value());
@@ -40,8 +41,14 @@ std::string compileFunction(const std::string &functionName,
         if (paramCount > 0) {
             ret += ", ";
         }
-        ret += getTypeName(param.second) + " " + param.first;
         paramCount++;
+        if (param.type.index() == 0) {
+            auto arg = std::get<ShaderDataType>(param.type);
+            ret += getTypeName(arg) + " " + param.name;
+        } else {
+            auto arg = std::get<ShaderTexture>(param.type);
+            ret += getSampler(arg) + " " + param.name;
+        }
     }
 
     ret += ") {\n";
@@ -53,6 +60,9 @@ std::string compileFunction(const std::string &functionName,
     for (const auto &node: body) {
         ret += compileNode(*node, source, nodeFuncName, "\t");
         ret += ";\n";
+    }
+    if (appendix.size() > 0) {
+        ret += "\t" + appendix + ";\n";
     }
     ret += "}";
     return ret;

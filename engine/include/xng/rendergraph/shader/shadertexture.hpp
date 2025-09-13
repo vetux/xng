@@ -17,27 +17,22 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_NODETEXTURESIZE_HPP
-#define XENGINE_NODETEXTURESIZE_HPP
+#ifndef XENGINE_SHADERTEXTURE_HPP
+#define XENGINE_SHADERTEXTURE_HPP
 
-#include "xng/rendergraph/shader/shadernode.hpp"
+#include "xng/rendergraph/rendergraphtextureproperties.hpp"
 
 namespace xng {
-    struct NodeTextureSize final : ShaderNode {
-        std::unique_ptr<ShaderNode> texture;
-        std::unique_ptr<ShaderNode> lod; // lod specification for non-multisampled textures
+    struct ShaderTexture {
+        TextureType type = TEXTURE_2D;
+        ColorFormat format = RGBA;
+        bool isArray = false;
 
-        explicit NodeTextureSize(std::unique_ptr<ShaderNode> texture, std::unique_ptr<ShaderNode> lod)
-            : texture(std::move(texture)), lod(std::move(lod)) {
-        }
+        ShaderTexture() = default;
 
-        NodeType getType() const override {
-            return TEXTURE_SIZE;
-        }
-
-        std::unique_ptr<ShaderNode> copy() const override {
-            return std::make_unique<NodeTextureSize>(texture->copy(), lod->copy());
+        ShaderTexture(const TextureType type, const ColorFormat format, const bool isArray = false)
+            : type(type), format(format), isArray(isArray) {
         }
     };
 }
-#endif //XENGINE_NODETEXTURESIZE_HPP
+#endif //XENGINE_SHADERTEXTURE_HPP

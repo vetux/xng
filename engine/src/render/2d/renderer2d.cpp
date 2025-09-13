@@ -24,112 +24,104 @@
 
 //TODO: Reimplement 2d renderer
 
-namespace xng {
-    Renderer2D::~Renderer2D() {
-    }
-
-    Texture2D Renderer2D::createTexture(const ImageRGBA &texture) {
-        throw std::runtime_error("Not Implemented");
-    }
-
-    std::vector<Texture2D> Renderer2D::createTextures(const std::vector<ImageRGBA> &textures) {
-        throw std::runtime_error("Not Implemented");
-    }
-
-    void Renderer2D::renderBegin(bool clear, const ColorRGBA &clearColor, const Vec2i &viewportOffset,
-                                 const Vec2i &viewportSize, const Vec2f &cameraPosition, const Rectf &projection) {
-    }
-
-    void Renderer2D::renderPresent() {
-    }
-
-    void Renderer2D::draw(const Rectf &srcRect, const Rectf &dstRect, const Texture2D &texture, const Vec2f &center,
-                          float rotation, TextureFiltering filter, ColorRGBA colorFactor) {
-    }
-
-    void Renderer2D::draw(const Rectf &srcRect, const Rectf &dstRect, const Texture2D &texture, const Vec2f &center,
-                          float rotation, TextureFiltering filter, float mixRGB, float mixAlpha,
-                          const ColorRGBA &mixColor) {
-    }
-
-    void Renderer2D::draw(const Rectf &rectangle, const ColorRGBA &color, bool fill, const Vec2f &center,
-                          float rotation) {
-    }
-
-    void Renderer2D::draw(const Vec2f &start, const Vec2f &end, const ColorRGBA &color, const Vec2f &position,
-                          const Vec2f &center, float rotation) {
-    }
-
-    void Renderer2D::draw(const Vec2f &point, const ColorRGBA &color, const Vec2f &position, const Vec2f &center,
-                          float rotation) {
-    }
-
-    void Renderer2D::updateAtlasRef() {
-    }
-
-    void Renderer2D::present() {
-    }
-
-    void Renderer2D::presentMultiDraw() {
-    }
-
-    Renderer2D::MeshDrawData Renderer2D::getPlane(const Vec2f &size) {
-        throw std::runtime_error("Not Implemented");
-    }
-
-    Renderer2D::MeshDrawData Renderer2D::getSquare(const Vec2f &size) {
-        throw std::runtime_error("Not Implemented");
-    }
-
-    Renderer2D::MeshDrawData Renderer2D::getLine(const Vec2f &start, const Vec2f &end) {
-        throw std::runtime_error("Not Implemented");
-    }
-
-    Renderer2D::MeshDrawData Renderer2D::getPoint(const Vec2f &point) {
-        throw std::runtime_error("Not Implemented");
-    }
-
-    void Renderer2D::destroyPlane(const Vec2f &size) {
-    }
-
-    void Renderer2D::destroySquare(const Vec2f &size) {
-    }
-
-    void Renderer2D::destroyLine(const Vec2f &start, const Vec2f &end) {
-    }
-
-    void Renderer2D::destroyPoint(const Vec2f &point) {
-    }
-
-    size_t Renderer2D::allocateVertexData(size_t size) {
-        throw std::runtime_error("Not Implemented");
-    }
-
-    void Renderer2D::deallocateVertexData(size_t offset) {
-    }
-
-    size_t Renderer2D::allocateIndexData(size_t size) {
-        throw std::runtime_error("Not Implemented");
-    }
-
-    void Renderer2D::deallocateIndexData(size_t offset) {
-    }
-
-    void Renderer2D::mergeFreeVertexBufferRanges() {
-    }
-
-    void Renderer2D::mergeFreeIndexBufferRanges() {
-    }
-
-    void Renderer2D::updateVertexArrayObject() {
-    }
-
-    Mat4f Renderer2D::getRotationMatrix(float rotation, Vec2f center) {
-        throw std::runtime_error("Not Implemented");
-    }
+xng::Renderer2D::Renderer2D() {
 }
 
-/***
+xng::Renderer2D::~Renderer2D() {
+}
+
+xng::Texture2D xng::Renderer2D::createTexture(const ImageRGBA &texture) {
+}
+
+std::vector<xng::Texture2D> xng::Renderer2D::createTextures(const std::vector<ImageRGBA> &textures) {
+}
+
+void xng::Renderer2D::renderBegin(bool clear, const ColorRGBA &clearColor, const Vec2i &viewportOffset,
+    const Vec2i &viewportSize, const Vec2f &cameraPosition, const Rectf &projection) {
+}
+
+void xng::Renderer2D::renderPresent() {
+}
+
+void xng::Renderer2D::draw(const Rectf &srcRect, const Rectf &dstRect, const Texture2D &texture, const Vec2f &center,
+    float rotation, TextureFiltering filter, ColorRGBA colorFactor) {
+}
+
+void xng::Renderer2D::draw(const Rectf &srcRect, const Rectf &dstRect, const Texture2D &texture, const Vec2f &center,
+    float rotation, TextureFiltering filter, float mixRGB, float mixAlpha, const ColorRGBA &mixColor) {
+}
+
+void xng::Renderer2D::draw(const Rectf &rectangle, const ColorRGBA &color, bool fill, const Vec2f &center,
+    float rotation) {
+}
+
+void xng::Renderer2D::draw(const Vec2f &start, const Vec2f &end, const ColorRGBA &color, const Vec2f &position,
+    const Vec2f &center, float rotation) {
+}
+
+void xng::Renderer2D::draw(const Vec2f &point, const ColorRGBA &color, const Vec2f &position, const Vec2f &center,
+    float rotation) {
+}
+
+void xng::Renderer2D::updateAtlasRef() {
+}
+
+void xng::Renderer2D::present() {
+}
+
+void xng::Renderer2D::presentMultiDraw() {
+}
+
+xng::Renderer2D::MeshDrawData xng::Renderer2D::getPlane(const Vec2f &size) {
+}
+
+xng::Renderer2D::MeshDrawData xng::Renderer2D::getSquare(const Vec2f &size) {
+}
+
+xng::Renderer2D::MeshDrawData xng::Renderer2D::getLine(const Vec2f &start, const Vec2f &end) {
+}
+
+xng::Renderer2D::MeshDrawData xng::Renderer2D::getPoint(const Vec2f &point) {
+}
+
+void xng::Renderer2D::destroyPlane(const Vec2f &size) {
+}
+
+void xng::Renderer2D::destroySquare(const Vec2f &size) {
+}
+
+void xng::Renderer2D::destroyLine(const Vec2f &start, const Vec2f &end) {
+}
+
+void xng::Renderer2D::destroyPoint(const Vec2f &point) {
+}
+
+size_t xng::Renderer2D::allocateVertexData(size_t size) {
+}
+
+void xng::Renderer2D::deallocateVertexData(size_t offset) {
+}
+
+size_t xng::Renderer2D::allocateIndexData(size_t size) {
+}
+
+void xng::Renderer2D::deallocateIndexData(size_t offset) {
+}
+
+void xng::Renderer2D::mergeFreeVertexBufferRanges() {
+}
+
+void xng::Renderer2D::mergeFreeIndexBufferRanges() {
+}
+
+void xng::Renderer2D::updateVertexArrayObject() {
+}
+
+xng::Mat4f xng::Renderer2D::getRotationMatrix(float rotation, Vec2f center) {
+}
+
+/*
+
 #include "xng/math/matrixmath.hpp"
 #include "xng/shader/shadersource.hpp"
 
@@ -184,24 +176,13 @@ namespace xng {
     std::vector<PassData> uniformBuffers; // The uniform buffer data for this batch
 };
 
-Renderer2D::Renderer2D(RenderDevice &device, ShaderCompiler &shaderCompiler, ShaderDecompiler &shaderDecompiler)
-        : renderDevice(device) {
-    vertexLayout.attributes.emplace_back(VertexAttribute::VECTOR2, VertexAttribute::FLOAT);
-    vertexLayout.attributes.emplace_back(VertexAttribute::VECTOR2, VertexAttribute::FLOAT);
-
-    VertexBufferDesc vertexBufferDesc;
-    vertexBufferDesc.size = 0;
-    vertexBuffer = renderDevice.createVertexBuffer(vertexBufferDesc);
-
-    IndexBufferDesc indexBufferDesc;
-    indexBufferDesc.size = 0;
-    indexBuffer = renderDevice.createIndexBuffer(indexBufferDesc);
+Renderer2D::Renderer2D() {
+    vertexLayout.elements.emplace_back(ShaderDataType::vec2());
+    vertexLayout.elements.emplace_back(ShaderDataType::vec2());
 
     vaoChange = true;
 
-    VertexArrayObjectDesc vertexArrayObjectDesc;
-    vertexArrayObjectDesc.vertexLayout = VertexLayout(vertexLayout);
-    vertexArrayObject = renderDevice.createVertexArrayObject(vertexArrayObjectDesc);
+    vs
 
     RenderPipelineDesc desc;
 
@@ -1498,4 +1479,5 @@ Mat4f Renderer2D::getRotationMatrix(float rotation, Vec2f center) {
         return rotationMatrices.at(pair);
     }
 }
-}**/
+}
+*/

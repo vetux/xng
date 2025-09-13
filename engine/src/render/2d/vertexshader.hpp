@@ -17,27 +17,13 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_NODETEXTURESIZE_HPP
-#define XENGINE_NODETEXTURESIZE_HPP
+#ifndef XENGINE_VERTEXSHADER_HPP
+#define XENGINE_VERTEXSHADER_HPP
 
-#include "xng/rendergraph/shader/shadernode.hpp"
+#include "xng/rendergraph/shader/shaderstage.hpp"
 
 namespace xng {
-    struct NodeTextureSize final : ShaderNode {
-        std::unique_ptr<ShaderNode> texture;
-        std::unique_ptr<ShaderNode> lod; // lod specification for non-multisampled textures
-
-        explicit NodeTextureSize(std::unique_ptr<ShaderNode> texture, std::unique_ptr<ShaderNode> lod)
-            : texture(std::move(texture)), lod(std::move(lod)) {
-        }
-
-        NodeType getType() const override {
-            return TEXTURE_SIZE;
-        }
-
-        std::unique_ptr<ShaderNode> copy() const override {
-            return std::make_unique<NodeTextureSize>(texture->copy(), lod->copy());
-        }
-    };
+    ShaderStage createVertexShader();
 }
-#endif //XENGINE_NODETEXTURESIZE_HPP
+
+#endif //XENGINE_VERTEXSHADER_HPP

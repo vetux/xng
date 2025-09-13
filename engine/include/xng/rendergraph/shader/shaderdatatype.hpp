@@ -22,6 +22,8 @@
 
 #include <stdexcept>
 
+#include "xng/rendergraph/rendergraphtextureproperties.hpp"
+
 namespace xng {
     struct ShaderDataType {
         enum Type : int {
@@ -203,6 +205,16 @@ namespace xng {
 
         static ShaderDataType array(const ShaderDataType &type, const size_t count) {
             return {type.type, type.component, count};
+        }
+
+        static Component getColorComponent(const ColorFormat format) {
+            if (format >= DEPTH && format <= RGBA32F) {
+                return FLOAT;
+            } else if (format >= R8I && format <= RGBA32I) {
+                return SIGNED_INT;
+            } else {
+                return UNSIGNED_INT;
+            }
         }
     };
 }

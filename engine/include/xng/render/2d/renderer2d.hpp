@@ -63,6 +63,8 @@ namespace xng {
      */
     class XENGINE_EXPORT Renderer2D {
     public:
+        Renderer2D();
+
         ~Renderer2D();
 
         Texture2D createTexture(const ImageRGBA &texture);

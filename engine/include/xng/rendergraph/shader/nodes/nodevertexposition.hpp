@@ -17,7 +17,29 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_RENDER2DPASS_HPP
-#define XENGINE_RENDER2DPASS_HPP
+#ifndef XENGINE_NODEVERTEXPOSITION_HPP
+#define XENGINE_NODEVERTEXPOSITION_HPP
 
-#endif //XENGINE_RENDER2DPASS_HPP
+#include "xng/rendergraph/shader/shadernode.hpp"
+
+namespace xng {
+    struct NodeVertexPosition final : ShaderNode {
+        /**
+         * The vec4 containing the clip space position.
+         */
+        std::unique_ptr<ShaderNode> value;
+
+        explicit NodeVertexPosition(std::unique_ptr<ShaderNode> value)
+            : value(std::move(value)) {
+        }
+
+        [[nodiscard]] NodeType getType() const override {
+            return VERTEX_POSITION;
+        }
+
+        [[nodiscard]] std::unique_ptr<ShaderNode> copy() const override {
+            return std::make_unique<NodeVertexPosition>(value->copy());
+        }
+    };
+}
+#endif //XENGINE_NODEVERTEXPOSITION_HPP

@@ -18,24 +18,22 @@
  */
 
 #ifndef XENGINE_NODETEXTURESAMPLE_HPP
-#define XENGINE_NODETEXTUREREAD_HPP
+#define XENGINE_NODETEXTURESAMPLE_HPP
 
 #include <utility>
-#include <string>
 
 #include "xng/rendergraph/shader/shadernode.hpp"
 
 namespace xng {
     struct NodeTextureSample final : ShaderNode {
-        std::string textureName;
-
+        std::unique_ptr<ShaderNode> texture;
         std::unique_ptr<ShaderNode> coordinate;
         std::unique_ptr<ShaderNode> bias;
 
-        explicit NodeTextureSample(std::string texture_name,
-                                     std::unique_ptr<ShaderNode> coordinate,
-                                     std::unique_ptr<ShaderNode> bias)
-            : textureName(std::move(texture_name)), coordinate(std::move(coordinate)), bias(std::move(bias)) {
+        explicit NodeTextureSample(std::unique_ptr<ShaderNode> texture,
+                                   std::unique_ptr<ShaderNode> coordinate,
+                                   std::unique_ptr<ShaderNode> bias)
+            : texture(std::move(texture)), coordinate(std::move(coordinate)), bias(std::move(bias)) {
         }
 
         NodeType getType() const override {
@@ -43,9 +41,9 @@ namespace xng {
         }
 
         std::unique_ptr<ShaderNode> copy() const override {
-            return std::make_unique<NodeTextureSample>(textureName,
-                                                         coordinate->copy(),
-                                                         bias ? bias->copy() : nullptr);
+            return std::make_unique<NodeTextureSample>(texture->copy(),
+                                                       coordinate->copy(),
+                                                       bias ? bias->copy() : nullptr);
         }
     };
 }

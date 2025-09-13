@@ -20,6 +20,7 @@
 #ifndef XENGINE_SHADERSCRIPT_HPP
 #define XENGINE_SHADERSCRIPT_HPP
 
+#include "xng/rendergraph/shader/nodes/nodetexture.hpp"
 #include "xng/rendergraph/shaderscript/shadernodewrapper.hpp"
 
 /**
@@ -172,10 +173,23 @@ namespace xng::ShaderScript {
                                  ShaderNodeFactory::parameter(name));
     }
 
+    /**
+     * If the argument is a texture it cannot be assigned to a variable.
+     *
+     * @param name
+     * @return
+     */
     inline ShaderNodeWrapper argument(const std::string &name) {
         auto func = ShaderBuilder::instance().getCurrentFunction();
-        return ShaderNodeWrapper(func.arguments.at(name),
-                                 ShaderNodeFactory::argument(name));
+        auto arg = func.getArgumentType(name);
+        if (arg.index() != 0) {
+            return ShaderNodeWrapper(ShaderDataType::unsignedInteger(),
+                                     ShaderNodeFactory::argument(name),
+                                     false);
+        } else {
+            return ShaderNodeWrapper(std::get<ShaderDataType>(arg),
+                                     ShaderNodeFactory::argument(name));
+        }
     }
 
     inline ShaderNodeWrapper buffer(const std::string &name, const std::string &elementName) {
@@ -206,6 +220,14 @@ namespace xng::ShaderScript {
         ShaderBuilder::instance().addNode(ShaderNodeFactory::bufferWrite(name, elementName, index.node, value.node));
     }
 
+    inline ShaderNodeWrapper dynamicBufferLength(const std::string &name) {
+        return ShaderNodeWrapper(ShaderDataType::unsignedInteger(), ShaderNodeFactory::bufferSize(name));
+    }
+
+    inline void setVertexPosition(const ShaderNodeWrapper &value) {
+        ShaderBuilder::instance().addNode(ShaderNodeFactory::vertexPosition(value.node));
+    }
+
     inline ShaderNodeWrapper Call(const std::string &functionName,
                                   const std::vector<ShaderNodeWrapper> &wArgs = {}) {
         std::vector<std::unique_ptr<ShaderNode> > args;
@@ -220,31 +242,87 @@ namespace xng::ShaderScript {
         ShaderBuilder::instance().addNode(ShaderNodeFactory::ret(value.node));
     }
 
-    inline ShaderNodeWrapper textureSize(const std::string &textureName) {
-        if (ShaderBuilder::instance().getTextures().at(textureName).arrayLayers > 1) {
+    inline void If(const ShaderNodeWrapper &condition) {
+        ShaderBuilder::instance().If(condition);
+    }
+
+    inline void Else() {
+        ShaderBuilder::instance().Else();
+    }
+
+    inline void EndIf() {
+        ShaderBuilder::instance().EndIf();
+    }
+
+    inline void For(const ShaderNodeWrapper &loopVariable,
+                    const ShaderNodeWrapper &initializer,
+                    const ShaderNodeWrapper &condition,
+                    const ShaderNodeWrapper &incrementor) {
+        ShaderBuilder::instance().For(loopVariable, initializer, condition, incrementor);
+    }
+
+    inline void EndFor() {
+        ShaderBuilder::instance().EndFor();
+    }
+
+    //TODO: Redesign shader script to  handle textures in an easier way
+    /**
+     * Cannot be assigned to a variable.
+     *
+     * @param textureBinding
+     * @return
+     */
+    inline ShaderNodeWrapper textureSampler(const uint32_t textureBinding) {
+        auto tex = ShaderBuilder::instance().getTextures().at(textureBinding);
+        return ShaderNodeWrapper(ShaderDataType{ShaderDataType::VECTOR4, ShaderDataType::getColorComponent(tex.format)},
+                                 ShaderNodeFactory::texture(textureBinding),
+                                 false);
+    }
+
+    inline ShaderNodeWrapper textureSize(const ShaderNodeWrapper &texture) {
+        if (ShaderBuilder::instance().getTextures().at(down_cast<NodeTexture &>(*texture.node).textureBinding).
+            isArray) {
             return ShaderNodeWrapper(ShaderDataType::ivec3(),
-                                     ShaderNodeFactory::textureSize(textureName));
+                                     ShaderNodeFactory::textureSize(texture.node));
         } else {
             return ShaderNodeWrapper(ShaderDataType::ivec2(),
-                                     ShaderNodeFactory::textureSize(textureName));
+                                     ShaderNodeFactory::textureSize(texture.node));
         }
     }
 
-    inline ShaderNodeWrapper texture(const std::string &texture,
+    inline ShaderNodeWrapper textureSize(const ShaderNodeWrapper &texture, const ShaderNodeWrapper &lod) {
+        if (ShaderBuilder::instance().getTextures().at(down_cast<NodeTexture &>(*texture.node).textureBinding).
+            isArray) {
+            return ShaderNodeWrapper(ShaderDataType::ivec3(),
+                                     ShaderNodeFactory::textureSize(texture.node, lod.node));
+            } else {
+                return ShaderNodeWrapper(ShaderDataType::ivec2(),
+                                         ShaderNodeFactory::textureSize(texture.node, lod.node));
+            }
+    }
+
+    inline ShaderNodeWrapper texture(const ShaderNodeWrapper &texture,
                                      const ShaderNodeWrapper &coords) {
-        return ShaderNodeWrapper(ShaderDataType::vec4(),
-                                 ShaderNodeFactory::textureSample(texture,
+        return ShaderNodeWrapper(texture.type,
+                                 ShaderNodeFactory::textureSample(texture.node,
                                                                   coords.node,
                                                                   nullptr));
     }
 
-    inline ShaderNodeWrapper texture(const std::string &texture,
+    inline ShaderNodeWrapper texture(const ShaderNodeWrapper &texture,
                                      const ShaderNodeWrapper &coords,
                                      const ShaderNodeWrapper &bias) {
-        return ShaderNodeWrapper(ShaderDataType::vec4(),
-                                 ShaderNodeFactory::textureSample(texture,
+        return ShaderNodeWrapper(texture.type,
+                                 ShaderNodeFactory::textureSample(texture.node,
                                                                   coords.node,
                                                                   bias.node));
+    }
+
+    inline ShaderNodeWrapper texelFetch(const ShaderNodeWrapper &texture,
+                                        const ShaderNodeWrapper &coords,
+                                        const ShaderNodeWrapper &index) {
+        return ShaderNodeWrapper(texture.type,
+                                 ShaderNodeFactory::textureFetch(texture.node, coords.node, index.node));
     }
 
     inline ShaderNodeWrapper abs(const ShaderNodeWrapper &value) {

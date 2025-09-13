@@ -119,4 +119,37 @@ static std::string getTypeName(const ShaderDataType &value) {
     }
 }
 
+inline std::string getSampler(const ShaderTexture &texture) {
+    std::string prefix;
+    if (texture.format >= R8I && texture.format <= RGBA32I) {
+        prefix = "i";
+    } else if (texture.format >= R8UI && texture.format <= RGBA32UI) {
+        prefix = "u";
+    }
+
+    if (texture.isArray) {
+        switch (texture.type) {
+            case TEXTURE_2D:
+                return prefix + "sampler2DArray";
+            case TEXTURE_2D_MULTISAMPLE:
+                return prefix + "sampler2DMSArray";
+            case TEXTURE_CUBE_MAP:
+                return prefix + "samplerCubeArray";
+            default:
+                throw std::runtime_error("Unrecognized texture type");
+        }
+    } else {
+        switch (texture.type) {
+            case TEXTURE_2D:
+                return prefix + "sampler2D";
+            case TEXTURE_2D_MULTISAMPLE:
+                return prefix + "sampler2DMS";
+            case TEXTURE_CUBE_MAP:
+                return prefix + "samplerCube";
+            default:
+                throw std::runtime_error("Unrecognized texture type");
+        }
+    }
+}
+
 #endif //XENGINE_TYPES_HPP

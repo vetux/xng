@@ -51,7 +51,7 @@ namespace xng::ShaderScript {
             return buffers;
         }
 
-        [[nodiscard]] const std::unordered_map<std::string, RenderGraphTexture> &getTextures() const {
+        [[nodiscard]] const std::vector<ShaderTexture> &getTextures() const {
             return textures;
         }
 
@@ -105,7 +105,7 @@ namespace xng::ShaderScript {
          * @param returnType
          */
         void Function(const std::string &name,
-                      const std::unordered_map<std::string, ShaderDataType> &arguments,
+                      const std::vector<ShaderFunction::Argument> &arguments,
                       ShaderDataType returnType);
 
         void EndFunction();
@@ -130,7 +130,7 @@ namespace xng::ShaderScript {
                    const ShaderAttributeLayout &outputLayout,
                    const std::unordered_map<std::string, ShaderDataType> &parameters,
                    const std::unordered_map<std::string, ShaderBuffer> &buffers,
-                   const std::unordered_map<std::string, RenderGraphTexture> &textures,
+                   const std::vector<ShaderTexture> &textures,
                    const std::unordered_map<std::string, ShaderFunction> &functions);
 
         /**
@@ -158,7 +158,7 @@ namespace xng::ShaderScript {
             std::unique_ptr<ShaderNode> incrementor;
             std::vector<std::shared_ptr<TreeNode> > defaultBranch;
             std::vector<std::shared_ptr<TreeNode> > falseBranch;
-            std::shared_ptr<TreeNode> parent;
+            std::shared_ptr<TreeNode> parent; // TODO: Leaks ptr because of circular dependency
         };
 
         std::vector<std::unique_ptr<ShaderNode> > createNodes(TreeNode &node);
@@ -168,7 +168,7 @@ namespace xng::ShaderScript {
         ShaderAttributeLayout outputLayout;
         std::unordered_map<std::string, ShaderDataType> parameters;
         std::unordered_map<std::string, ShaderBuffer> buffers;
-        std::unordered_map<std::string, RenderGraphTexture> textures;
+        std::vector<ShaderTexture> textures;
 
         std::shared_ptr<TreeNode> rootNode;
         std::shared_ptr<TreeNode> currentNode;

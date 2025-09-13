@@ -49,10 +49,12 @@ std::string compileNode(const ShaderNode &node,
             return compileLeafNode(down_cast<const NodeAttributeOutput &>(node));
         case ShaderNode::PARAMETER:
             return compileLeafNode(down_cast<const NodeParameter &>(node));
+        case ShaderNode::TEXTURE:
+            return compileLeafNode(down_cast<const NodeTexture &>(node));
         case ShaderNode::TEXTURE_SAMPLE:
             return compileLeafNode(down_cast<const NodeTextureSample &>(node), source, functionName);
         case ShaderNode::TEXTURE_SIZE:
-            return compileLeafNode(down_cast<const NodeTextureSize &>(node));
+            return compileLeafNode(down_cast<const NodeTextureSize &>(node), source, functionName);
         case ShaderNode::BUFFER_READ:
             return compileLeafNode(down_cast<const NodeBufferRead &>(node), source, functionName);
         case ShaderNode::BUFFER_WRITE:
@@ -99,6 +101,8 @@ std::string compileNode(const ShaderNode &node,
             return compileLeafNode(down_cast<const NodeBranch &>(node), source, functionName, prefix);
         case ShaderNode::LOOP:
             return compileLeafNode(down_cast<const NodeLoop &>(node), source, functionName, prefix);
+        case ShaderNode::VERTEX_POSITION:
+            return compileLeafNode(down_cast<const NodeVertexPosition &>(node), source, functionName, prefix);
     }
     throw std::runtime_error("Node Type not implemented");
 }
@@ -137,7 +141,6 @@ std::string compileLeafNode(const NodeLiteral &node) {
 std::string compileLeafNode(const NodeArgument &node) {
     return node.argumentName;
 }
-
 
 std::string compileLeafNode(const NodeVector &node,
                             const ShaderStage &source,
@@ -188,12 +191,15 @@ std::string compileLeafNode(const NodeParameter &node) {
     return parameterPrefix + node.parameterName;
 }
 
+std::string compileLeafNode(const NodeTexture &node) {
+    return texturePrefix + std::to_string(node.textureBinding);
+}
+
 std::string compileLeafNode(const NodeTextureSample &node,
                             const ShaderStage &source,
                             const std::string &functionName) {
     auto ret = "texture("
-               + std::string(texturePrefix)
-               + node.textureName
+               + compileNode(*node.texture, source, functionName)
                + ", "
                + compileNode(*node.coordinate, source, functionName, "");
     if (node.bias != nullptr) {
@@ -203,8 +209,23 @@ std::string compileLeafNode(const NodeTextureSample &node,
     return ret;
 }
 
-std::string compileLeafNode(const NodeTextureSize &node) {
-    return "textureSize(" + std::string(texturePrefix) + node.textureName + ")";
+std::string compileLeafNode(const NodeTextureSize &node,
+                            const ShaderStage &source,
+                            const std::string &functionName) {
+    auto ret = "textureSize(" + compileNode(*node.texture, source, functionName);
+    if (node.lod != nullptr) {
+        ret += ", " + compileNode(*node.lod, source, functionName, "");
+    }
+    return ret + ")";
+}
+
+std::string compileLeafNode(const NodeTextureFetch &node, const ShaderStage &source, const std::string &functionName) {
+    return "texelFetch("
+               + compileNode(*node.texture, source, functionName)
+               + ", "
+               + compileNode(*node.coordinate, source, functionName, "")
+               + ", "
+               + compileNode(*node.index, source, functionName, "");
 }
 
 std::string compileLeafNode(const NodeBufferRead &node,
@@ -220,7 +241,9 @@ std::string compileLeafNode(const NodeBufferRead &node,
                + node.bufferName
                + "."
                + bufferArrayName
-               + "[gl_DrawID]."
+               + "["
+               + drawID
+               + "]."
                + node.elementName;
     }
 }
@@ -568,4 +591,9 @@ std::string compileLeafNode(const NodeLoop &node,
     }
     ret += prefix + "}";
     return ret;
+}
+
+std::string compileLeafNode(const NodeVertexPosition &node, const ShaderStage &source, const std::string &functionName,
+                            const std::string &prefix) {
+    return prefix + "gl_Position = " + compileNode(*node.value, source, functionName);
 }

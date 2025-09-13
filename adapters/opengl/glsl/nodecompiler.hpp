@@ -33,6 +33,7 @@ static const char *parameterPrefix = "param_";
 static const char *bufferPrefix = "buffer_";
 static const char *bufferArrayName = "data";
 static const char *texturePrefix = "texture_";
+static const char *drawID = "DRAW_ID";
 
 /**
  * Compile the given node.
@@ -74,10 +75,19 @@ std::string compileLeafNode(const NodeVector &node, const ShaderStage &source, c
 
 std::string compileLeafNode(const NodeArray &node, const ShaderStage &source, const std::string &functionName);
 
-std::string compileLeafNode(const NodeTextureSample &node, const ShaderStage &source,
+std::string compileLeafNode(const NodeTexture &node);
+
+std::string compileLeafNode(const NodeTextureSample &node,
+                            const ShaderStage &source,
                             const std::string &functionName);
 
-std::string compileLeafNode(const NodeTextureSize &node);
+std::string compileLeafNode(const NodeTextureSize &node,
+                            const ShaderStage &source,
+                            const std::string &functionName);
+
+std::string compileLeafNode(const NodeTextureFetch &node,
+                            const ShaderStage &source,
+                            const std::string &functionName);
 
 std::string compileLeafNode(const NodeBufferRead &node, const ShaderStage &source,
                             const std::string &functionName);
@@ -137,6 +147,9 @@ std::string compileLeafNode(const NodeBranch &node, const ShaderStage &source, c
                             const std::string &prefix);
 
 std::string compileLeafNode(const NodeLoop &node, const ShaderStage &source, const std::string &functionName,
+                            const std::string &prefix);
+
+std::string compileLeafNode(const NodeVertexPosition &node, const ShaderStage &source, const std::string &functionName,
                             const std::string &prefix);
 
 #endif //XENGINE_NODECOMPILER_HPP

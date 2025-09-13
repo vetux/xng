@@ -19,6 +19,8 @@
 
 #include "shadercompilerglsl.hpp"
 
+#include <utility>
+
 #include "xng/rendergraph/shader/shadernode.hpp"
 
 #include "nodecompiler.hpp"
@@ -26,39 +28,6 @@
 #include "types.hpp"
 
 using namespace xng;
-
-std::string getSampler(const RenderGraphTexture &texture) {
-    std::string prefix;
-    if (texture.format >= R8I && texture.format <= RGBA32I) {
-        prefix = "i";
-    } else if (texture.format >= R8UI && texture.format <= RGBA32UI) {
-        prefix = "u";
-    }
-
-    if (texture.arrayLayers > 1) {
-        switch (texture.textureType) {
-            case TEXTURE_2D:
-                return prefix + "sampler2DArray";
-            case TEXTURE_2D_MULTISAMPLE:
-                return prefix + "sampler2DMSArray";
-            case TEXTURE_CUBE_MAP:
-                return prefix + "samplerCubeArray";
-            default:
-                throw std::runtime_error("Unrecognized texture type");
-        }
-    } else {
-        switch (texture.textureType) {
-            case TEXTURE_2D:
-                return prefix + "sampler2D";
-            case TEXTURE_2D_MULTISAMPLE:
-                return prefix + "sampler2DMS";
-            case TEXTURE_CUBE_MAP:
-                return prefix + "samplerCube";
-            default:
-                throw std::runtime_error("Unrecognized texture type");
-        }
-    }
-}
 
 std::string generateElement(const std::string &name, const ShaderDataType &value, std::string prefix = "\t") {
     auto ret = prefix
@@ -77,6 +46,12 @@ std::string generateElement(const std::string &name, const ShaderDataType &value
 
 std::string generateHeader(const ShaderStage &source, CompiledPipeline &pipeline) {
     std::string ret;
+
+    if (source.type == ShaderStage::Type::VERTEX) {
+        ret += "#define " + std::string(drawID) + " gl_DrawID\n";
+    } else {
+        ret += "#define " + std::string(drawID) + " drawID\n";
+    }
 
     for (const auto &pair: source.buffers) {
         auto binding = pipeline.getBufferBinding(pair.first);
@@ -107,15 +82,15 @@ std::string generateHeader(const ShaderStage &source, CompiledPipeline &pipeline
         ret += "\n";
     }
 
-    for (const auto &pair: source.textures) {
-        const auto location = pipeline.getTextureBinding(pair.first);
+    for (auto i = 0; i < source.textures.size(); i++) {
+        auto &tex = source.textures[i];
         ret += "layout(binding = "
-                + std::to_string(location)
+                + std::to_string(i)
                 + ") uniform "
-                + getSampler(pair.second)
+                + getSampler(tex)
                 + " "
                 + texturePrefix
-                + pair.first
+                + std::to_string(i)
                 + ";\n";
     }
 
@@ -132,6 +107,9 @@ std::string generateHeader(const ShaderStage &source, CompiledPipeline &pipeline
                 + ") in "
                 + generateElement(inputAttributePrefix + std::to_string(location), element, "");
     }
+    if (source.type == ShaderStage::Type::FRAGMENT) {
+        inputAttributes += "layout(location = " + std::to_string(attributeCount) + ") flat in uint drawID;\n";
+    }
     ret += inputAttributes;
     ret += "\n";
 
@@ -143,6 +121,9 @@ std::string generateHeader(const ShaderStage &source, CompiledPipeline &pipeline
                 + std::to_string(location)
                 + ") out "
                 + generateElement(outputAttributePrefix + std::to_string(location), element, "");
+    }
+    if (source.type == ShaderStage::Type::VERTEX) {
+        outputAttributes += "layout(location = " + std::to_string(attributeCount) + ") flat out uint drawID;\n";
     }
     ret += outputAttributes;
     ret += "\n";
@@ -169,7 +150,11 @@ std::string generateBody(const ShaderStage &source) {
         body += compileFunction(pair.first, pair.second.arguments, pair.second.body, pair.second.returnType, source);
         body += "\n\n";
     }
-    body += compileFunction("main", {}, source.mainFunction, {}, source);
+    std::string appendix = "";
+    if (source.type == ShaderStage::Type::VERTEX) {
+        appendix = "drawID = gl_DrawID";
+    }
+    body += compileFunction("main", {}, source.mainFunction, {}, source, appendix);
     return body;
 }
 
