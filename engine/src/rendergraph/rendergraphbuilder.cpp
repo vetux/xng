@@ -19,7 +19,7 @@
 
 #include <utility>
 
-#include "../../include/xng/rendergraph/rendergraphbuilder.hpp"
+#include "xng/rendergraph/rendergraphbuilder.hpp"
 
 namespace xng {
     RenderGraphBuilder::RenderGraphBuilder() {

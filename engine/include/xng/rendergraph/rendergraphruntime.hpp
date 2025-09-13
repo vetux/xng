@@ -20,7 +20,7 @@
 #ifndef XENGINE_RENDERGRAPHRUNTIME_HPP
 #define XENGINE_RENDERGRAPHRUNTIME_HPP
 
-#include "rendergraph.hpp"
+#include "xng/rendergraph/rendergraph.hpp"
 
 #include "xng/display/window.hpp"
 #include "xng/display/graphicsapi.hpp"

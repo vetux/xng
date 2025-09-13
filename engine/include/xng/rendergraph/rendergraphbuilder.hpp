@@ -23,12 +23,11 @@
 #include <string>
 #include <functional>
 
-#include "rendergraph.hpp"
+#include "xng/rendergraph/rendergraph.hpp"
 #include "xng/rendergraph/rendergraphcontext.hpp"
-#include "rendergraphresource.hpp"
-
+#include "xng/rendergraph/rendergraphresource.hpp"
+#include "xng/rendergraph/rendergraphtexture.hpp"
 #include "xng/rendergraph/shader/shaderstage.hpp"
-#include "rendergraphtexture.hpp"
 
 namespace xng {
     class XENGINE_EXPORT RenderGraphBuilder {

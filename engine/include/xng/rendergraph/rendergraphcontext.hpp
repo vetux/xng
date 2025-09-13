@@ -22,12 +22,13 @@
 
 #include <cstdint>
 
-#include "xng/rendergraph/shader/shaderliteral.hpp"
-#include "drawcall.hpp"
-#include "rendergraphresource.hpp"
-#include "xng/render/scene/image.hpp"
-#include "rendergraphtextureproperties.hpp"
+#include "xng/rendergraph/drawcall.hpp"
+#include "xng/rendergraph/rendergraphresource.hpp"
+#include "xng/rendergraph/rendergraphtextureproperties.hpp"
 #include "xng/rendergraph/shader/shaderstage.hpp"
+#include "xng/rendergraph/shader/shaderliteral.hpp"
+
+#include "xng/render/scene/image.hpp"
 
 namespace xng {
     class RenderGraphContext {

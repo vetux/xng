@@ -20,10 +20,10 @@
 #ifndef XENGINE_SHADERNODEFACTORY_HPP
 #define XENGINE_SHADERNODEFACTORY_HPP
 
-#include "nodes/nodevectorswizzle.hpp"
 #include "xng/rendergraph/shader/shadernode.hpp"
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 #include "xng/rendergraph/shader/shaderliteral.hpp"
+#include "xng/rendergraph/shader/nodes/nodevectorswizzle.hpp"
 
 namespace xng {
     namespace ShaderNodeFactory {

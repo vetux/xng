@@ -21,13 +21,10 @@
 #define XENGINE_RENDERGRAPH_HPP
 
 #include <vector>
-#include <functional>
 
-#include "rendergraphresource.hpp"
-
+#include "xng/rendergraph/rendergraphresource.hpp"
 #include "xng/rendergraph/rendergraphpass.hpp"
-
-#include "rendergraphtexture.hpp"
+#include "xng/rendergraph/rendergraphtexture.hpp"
 #include "xng/rendergraph/shader/shaderstage.hpp"
 
 namespace xng {
