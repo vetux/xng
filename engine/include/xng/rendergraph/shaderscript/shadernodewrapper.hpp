@@ -27,6 +27,10 @@
 
 #include "xng/rendergraph/shaderscript/shaderbuilder.hpp"
 
+#define _SWIZZLE2(x, y) [[nodiscard]] ShaderNodeWrapper x##y() { return swizzle_vec2(x(), y()); }
+#define _SWIZZLE3(x, y, z) [[nodiscard]] ShaderNodeWrapper x##y##z() { return swizzle_vec3(x(), y(), z()); }
+#define _SWIZZLE4(x, y, z, w) [[nodiscard]] ShaderNodeWrapper x##y##z##w() { return swizzle_vec4(x(), y(), z(), w()); }
+
 namespace xng::ShaderScript {
     class ShaderNodeWrapper {
     public:
@@ -78,71 +82,371 @@ namespace xng::ShaderScript {
 
         [[nodiscard]] ShaderNodeWrapper x() {
             promoteToVariable(node);
-            return {{ShaderDataType::SCALAR, type.component}, ShaderNodeFactory::subscriptVector(node, 0)};
+            return {{ShaderDataType::SCALAR, type.component}, ShaderNodeFactory::getX(node)};
         }
 
         [[nodiscard]] ShaderNodeWrapper y() {
             promoteToVariable(node);
-            return {{ShaderDataType::SCALAR, type.component}, ShaderNodeFactory::subscriptVector(node, 1)};
+            return {{ShaderDataType::SCALAR, type.component}, ShaderNodeFactory::getY(node)};
         }
 
         [[nodiscard]] ShaderNodeWrapper z() {
             promoteToVariable(node);
-            return {{ShaderDataType::SCALAR, type.component}, ShaderNodeFactory::subscriptVector(node, 2)};
+            return {{ShaderDataType::SCALAR, type.component}, ShaderNodeFactory::getZ(node)};
         }
 
         [[nodiscard]] ShaderNodeWrapper w() {
             promoteToVariable(node);
-            return {{ShaderDataType::SCALAR, type.component}, ShaderNodeFactory::subscriptVector(node, 3)};
+            return {{ShaderDataType::SCALAR, type.component}, ShaderNodeFactory::getW(node)};
         }
+
+        // 4^2 = 16 Vector2 Swizzle Combinations (Macro calls generated with ChatGPT)
+        _SWIZZLE2(x, x)
+        _SWIZZLE2(x, y)
+        _SWIZZLE2(x, z)
+        _SWIZZLE2(x, w)
+        _SWIZZLE2(y, x)
+        _SWIZZLE2(y, y)
+        _SWIZZLE2(y, z)
+        _SWIZZLE2(y, w)
+        _SWIZZLE2(z, x)
+        _SWIZZLE2(z, y)
+        _SWIZZLE2(z, z)
+        _SWIZZLE2(z, w)
+        _SWIZZLE2(w, x)
+        _SWIZZLE2(w, y)
+        _SWIZZLE2(w, z)
+        _SWIZZLE2(w, w)
+
+        // 4^3 = 64 Vector3 Swizzle Combinations (Macro calls generated with ChatGPT)
+        _SWIZZLE3(x, x, x)
+        _SWIZZLE3(x, x, y)
+        _SWIZZLE3(x, x, z)
+        _SWIZZLE3(x, x, w)
+        _SWIZZLE3(x, y, x)
+        _SWIZZLE3(x, y, y)
+        _SWIZZLE3(x, y, z)
+        _SWIZZLE3(x, y, w)
+        _SWIZZLE3(x, z, x)
+        _SWIZZLE3(x, z, y)
+        _SWIZZLE3(x, z, z)
+        _SWIZZLE3(x, z, w)
+        _SWIZZLE3(x, w, x)
+        _SWIZZLE3(x, w, y)
+        _SWIZZLE3(x, w, z)
+        _SWIZZLE3(x, w, w)
+        _SWIZZLE3(y, x, x)
+        _SWIZZLE3(y, x, y)
+        _SWIZZLE3(y, x, z)
+        _SWIZZLE3(y, x, w)
+        _SWIZZLE3(y, y, x)
+        _SWIZZLE3(y, y, y)
+        _SWIZZLE3(y, y, z)
+        _SWIZZLE3(y, y, w)
+        _SWIZZLE3(y, z, x)
+        _SWIZZLE3(y, z, y)
+        _SWIZZLE3(y, z, z)
+        _SWIZZLE3(y, z, w)
+        _SWIZZLE3(y, w, x)
+        _SWIZZLE3(y, w, y)
+        _SWIZZLE3(y, w, z)
+        _SWIZZLE3(y, w, w)
+        _SWIZZLE3(z, x, x)
+        _SWIZZLE3(z, x, y)
+        _SWIZZLE3(z, x, z)
+        _SWIZZLE3(z, x, w)
+        _SWIZZLE3(z, y, x)
+        _SWIZZLE3(z, y, y)
+        _SWIZZLE3(z, y, z)
+        _SWIZZLE3(z, y, w)
+        _SWIZZLE3(z, z, x)
+        _SWIZZLE3(z, z, y)
+        _SWIZZLE3(z, z, z)
+        _SWIZZLE3(z, z, w)
+        _SWIZZLE3(z, w, x)
+        _SWIZZLE3(z, w, y)
+        _SWIZZLE3(z, w, z)
+        _SWIZZLE3(z, w, w)
+        _SWIZZLE3(w, x, x)
+        _SWIZZLE3(w, x, y)
+        _SWIZZLE3(w, x, z)
+        _SWIZZLE3(w, x, w)
+        _SWIZZLE3(w, y, x)
+        _SWIZZLE3(w, y, y)
+        _SWIZZLE3(w, y, z)
+        _SWIZZLE3(w, y, w)
+        _SWIZZLE3(w, z, x)
+        _SWIZZLE3(w, z, y)
+        _SWIZZLE3(w, z, z)
+        _SWIZZLE3(w, z, w)
+        _SWIZZLE3(w, w, x)
+        _SWIZZLE3(w, w, y)
+        _SWIZZLE3(w, w, z)
+        _SWIZZLE3(w, w, w)
+
+        // 4^4 = 256 Vector4 Swizzle Combinations (Macro calls generated with ChatGPT)
+        _SWIZZLE4(x, x, x, x)
+        _SWIZZLE4(x, x, x, y)
+        _SWIZZLE4(x, x, x, z)
+        _SWIZZLE4(x, x, x, w)
+        _SWIZZLE4(x, x, y, x)
+        _SWIZZLE4(x, x, y, y)
+        _SWIZZLE4(x, x, y, z)
+        _SWIZZLE4(x, x, y, w)
+        _SWIZZLE4(x, x, z, x)
+        _SWIZZLE4(x, x, z, y)
+        _SWIZZLE4(x, x, z, z)
+        _SWIZZLE4(x, x, z, w)
+        _SWIZZLE4(x, x, w, x)
+        _SWIZZLE4(x, x, w, y)
+        _SWIZZLE4(x, x, w, z)
+        _SWIZZLE4(x, x, w, w)
+        _SWIZZLE4(x, y, x, x)
+        _SWIZZLE4(x, y, x, y)
+        _SWIZZLE4(x, y, x, z)
+        _SWIZZLE4(x, y, x, w)
+        _SWIZZLE4(x, y, y, x)
+        _SWIZZLE4(x, y, y, y)
+        _SWIZZLE4(x, y, y, z)
+        _SWIZZLE4(x, y, y, w)
+        _SWIZZLE4(x, y, z, x)
+        _SWIZZLE4(x, y, z, y)
+        _SWIZZLE4(x, y, z, z)
+        _SWIZZLE4(x, y, z, w)
+        _SWIZZLE4(x, y, w, x)
+        _SWIZZLE4(x, y, w, y)
+        _SWIZZLE4(x, y, w, z)
+        _SWIZZLE4(x, y, w, w)
+        _SWIZZLE4(x, z, x, x)
+        _SWIZZLE4(x, z, x, y)
+        _SWIZZLE4(x, z, x, z)
+        _SWIZZLE4(x, z, x, w)
+        _SWIZZLE4(x, z, y, x)
+        _SWIZZLE4(x, z, y, y)
+        _SWIZZLE4(x, z, y, z)
+        _SWIZZLE4(x, z, y, w)
+        _SWIZZLE4(x, z, z, x)
+        _SWIZZLE4(x, z, z, y)
+        _SWIZZLE4(x, z, z, z)
+        _SWIZZLE4(x, z, z, w)
+        _SWIZZLE4(x, z, w, x)
+        _SWIZZLE4(x, z, w, y)
+        _SWIZZLE4(x, z, w, z)
+        _SWIZZLE4(x, z, w, w)
+        _SWIZZLE4(x, w, x, x)
+        _SWIZZLE4(x, w, x, y)
+        _SWIZZLE4(x, w, x, z)
+        _SWIZZLE4(x, w, x, w)
+        _SWIZZLE4(x, w, y, x)
+        _SWIZZLE4(x, w, y, y)
+        _SWIZZLE4(x, w, y, z)
+        _SWIZZLE4(x, w, y, w)
+        _SWIZZLE4(x, w, z, x)
+        _SWIZZLE4(x, w, z, y)
+        _SWIZZLE4(x, w, z, z)
+        _SWIZZLE4(x, w, z, w)
+        _SWIZZLE4(x, w, w, x)
+        _SWIZZLE4(x, w, w, y)
+        _SWIZZLE4(x, w, w, z)
+        _SWIZZLE4(x, w, w, w)
+        _SWIZZLE4(y, x, x, x)
+        _SWIZZLE4(y, x, x, y)
+        _SWIZZLE4(y, x, x, z)
+        _SWIZZLE4(y, x, x, w)
+        _SWIZZLE4(y, x, y, x)
+        _SWIZZLE4(y, x, y, y)
+        _SWIZZLE4(y, x, y, z)
+        _SWIZZLE4(y, x, y, w)
+        _SWIZZLE4(y, x, z, x)
+        _SWIZZLE4(y, x, z, y)
+        _SWIZZLE4(y, x, z, z)
+        _SWIZZLE4(y, x, z, w)
+        _SWIZZLE4(y, x, w, x)
+        _SWIZZLE4(y, x, w, y)
+        _SWIZZLE4(y, x, w, z)
+        _SWIZZLE4(y, x, w, w)
+        _SWIZZLE4(y, y, x, x)
+        _SWIZZLE4(y, y, x, y)
+        _SWIZZLE4(y, y, x, z)
+        _SWIZZLE4(y, y, x, w)
+        _SWIZZLE4(y, y, y, x)
+        _SWIZZLE4(y, y, y, y)
+        _SWIZZLE4(y, y, y, z)
+        _SWIZZLE4(y, y, y, w)
+        _SWIZZLE4(y, y, z, x)
+        _SWIZZLE4(y, y, z, y)
+        _SWIZZLE4(y, y, z, z)
+        _SWIZZLE4(y, y, z, w)
+        _SWIZZLE4(y, y, w, x)
+        _SWIZZLE4(y, y, w, y)
+        _SWIZZLE4(y, y, w, z)
+        _SWIZZLE4(y, y, w, w)
+        _SWIZZLE4(y, z, x, x)
+        _SWIZZLE4(y, z, x, y)
+        _SWIZZLE4(y, z, x, z)
+        _SWIZZLE4(y, z, x, w)
+        _SWIZZLE4(y, z, y, x)
+        _SWIZZLE4(y, z, y, y)
+        _SWIZZLE4(y, z, y, z)
+        _SWIZZLE4(y, z, y, w)
+        _SWIZZLE4(y, z, z, x)
+        _SWIZZLE4(y, z, z, y)
+        _SWIZZLE4(y, z, z, z)
+        _SWIZZLE4(y, z, z, w)
+        _SWIZZLE4(y, z, w, x)
+        _SWIZZLE4(y, z, w, y)
+        _SWIZZLE4(y, z, w, z)
+        _SWIZZLE4(y, z, w, w)
+        _SWIZZLE4(y, w, x, x)
+        _SWIZZLE4(y, w, x, y)
+        _SWIZZLE4(y, w, x, z)
+        _SWIZZLE4(y, w, x, w)
+        _SWIZZLE4(y, w, y, x)
+        _SWIZZLE4(y, w, y, y)
+        _SWIZZLE4(y, w, y, z)
+        _SWIZZLE4(y, w, y, w)
+        _SWIZZLE4(y, w, z, x)
+        _SWIZZLE4(y, w, z, y)
+        _SWIZZLE4(y, w, z, z)
+        _SWIZZLE4(y, w, z, w)
+        _SWIZZLE4(y, w, w, x)
+        _SWIZZLE4(y, w, w, y)
+        _SWIZZLE4(y, w, w, z)
+        _SWIZZLE4(y, w, w, w)
+        _SWIZZLE4(z, x, x, x)
+        _SWIZZLE4(z, x, x, y)
+        _SWIZZLE4(z, x, x, z)
+        _SWIZZLE4(z, x, x, w)
+        _SWIZZLE4(z, x, y, x)
+        _SWIZZLE4(z, x, y, y)
+        _SWIZZLE4(z, x, y, z)
+        _SWIZZLE4(z, x, y, w)
+        _SWIZZLE4(z, x, z, x)
+        _SWIZZLE4(z, x, z, y)
+        _SWIZZLE4(z, x, z, z)
+        _SWIZZLE4(z, x, z, w)
+        _SWIZZLE4(z, x, w, x)
+        _SWIZZLE4(z, x, w, y)
+        _SWIZZLE4(z, x, w, z)
+        _SWIZZLE4(z, x, w, w)
+        _SWIZZLE4(z, y, x, x)
+        _SWIZZLE4(z, y, x, y)
+        _SWIZZLE4(z, y, x, z)
+        _SWIZZLE4(z, y, x, w)
+        _SWIZZLE4(z, y, y, x)
+        _SWIZZLE4(z, y, y, y)
+        _SWIZZLE4(z, y, y, z)
+        _SWIZZLE4(z, y, y, w)
+        _SWIZZLE4(z, y, z, x)
+        _SWIZZLE4(z, y, z, y)
+        _SWIZZLE4(z, y, z, z)
+        _SWIZZLE4(z, y, z, w)
+        _SWIZZLE4(z, y, w, x)
+        _SWIZZLE4(z, y, w, y)
+        _SWIZZLE4(z, y, w, z)
+        _SWIZZLE4(z, y, w, w)
+        _SWIZZLE4(z, z, x, x)
+        _SWIZZLE4(z, z, x, y)
+        _SWIZZLE4(z, z, x, z)
+        _SWIZZLE4(z, z, x, w)
+        _SWIZZLE4(z, z, y, x)
+        _SWIZZLE4(z, z, y, y)
+        _SWIZZLE4(z, z, y, z)
+        _SWIZZLE4(z, z, y, w)
+        _SWIZZLE4(z, z, z, x)
+        _SWIZZLE4(z, z, z, y)
+        _SWIZZLE4(z, z, z, z)
+        _SWIZZLE4(z, z, z, w)
+        _SWIZZLE4(z, z, w, x)
+        _SWIZZLE4(z, z, w, y)
+        _SWIZZLE4(z, z, w, z)
+        _SWIZZLE4(z, z, w, w)
+        _SWIZZLE4(z, w, x, x)
+        _SWIZZLE4(z, w, x, y)
+        _SWIZZLE4(z, w, x, z)
+        _SWIZZLE4(z, w, x, w)
+        _SWIZZLE4(z, w, y, x)
+        _SWIZZLE4(z, w, y, y)
+        _SWIZZLE4(z, w, y, z)
+        _SWIZZLE4(z, w, y, w)
+        _SWIZZLE4(z, w, z, x)
+        _SWIZZLE4(z, w, z, y)
+        _SWIZZLE4(z, w, z, z)
+        _SWIZZLE4(z, w, z, w)
+        _SWIZZLE4(z, w, w, x)
+        _SWIZZLE4(z, w, w, y)
+        _SWIZZLE4(z, w, w, z)
+        _SWIZZLE4(z, w, w, w)
+        _SWIZZLE4(w, x, x, x)
+        _SWIZZLE4(w, x, x, y)
+        _SWIZZLE4(w, x, x, z)
+        _SWIZZLE4(w, x, x, w)
+        _SWIZZLE4(w, x, y, x)
+        _SWIZZLE4(w, x, y, y)
+        _SWIZZLE4(w, x, y, z)
+        _SWIZZLE4(w, x, y, w)
+        _SWIZZLE4(w, x, z, x)
+        _SWIZZLE4(w, x, z, y)
+        _SWIZZLE4(w, x, z, z)
+        _SWIZZLE4(w, x, z, w)
+        _SWIZZLE4(w, x, w, x)
+        _SWIZZLE4(w, x, w, y)
+        _SWIZZLE4(w, x, w, z)
+        _SWIZZLE4(w, x, w, w)
+        _SWIZZLE4(w, y, x, x)
+        _SWIZZLE4(w, y, x, y)
+        _SWIZZLE4(w, y, x, z)
+        _SWIZZLE4(w, y, x, w)
+        _SWIZZLE4(w, y, y, x)
+        _SWIZZLE4(w, y, y, y)
+        _SWIZZLE4(w, y, y, z)
+        _SWIZZLE4(w, y, y, w)
+        _SWIZZLE4(w, y, z, x)
+        _SWIZZLE4(w, y, z, y)
+        _SWIZZLE4(w, y, z, z)
+        _SWIZZLE4(w, y, z, w)
+        _SWIZZLE4(w, y, w, x)
+        _SWIZZLE4(w, y, w, y)
+        _SWIZZLE4(w, y, w, z)
+        _SWIZZLE4(w, y, w, w)
+        _SWIZZLE4(w, z, x, x)
+        _SWIZZLE4(w, z, x, y)
+        _SWIZZLE4(w, z, x, z)
+        _SWIZZLE4(w, z, x, w)
+        _SWIZZLE4(w, z, y, x)
+        _SWIZZLE4(w, z, y, y)
+        _SWIZZLE4(w, z, y, z)
+        _SWIZZLE4(w, z, y, w)
+        _SWIZZLE4(w, z, z, x)
+        _SWIZZLE4(w, z, z, y)
+        _SWIZZLE4(w, z, z, z)
+        _SWIZZLE4(w, z, z, w)
+        _SWIZZLE4(w, z, w, x)
+        _SWIZZLE4(w, z, w, y)
+        _SWIZZLE4(w, z, w, z)
+        _SWIZZLE4(w, z, w, w)
+        _SWIZZLE4(w, w, x, x)
+        _SWIZZLE4(w, w, x, y)
+        _SWIZZLE4(w, w, x, z)
+        _SWIZZLE4(w, w, x, w)
+        _SWIZZLE4(w, w, y, x)
+        _SWIZZLE4(w, w, y, y)
+        _SWIZZLE4(w, w, y, z)
+        _SWIZZLE4(w, w, y, w)
+        _SWIZZLE4(w, w, z, x)
+        _SWIZZLE4(w, w, z, y)
+        _SWIZZLE4(w, w, z, z)
+        _SWIZZLE4(w, w, z, w)
+        _SWIZZLE4(w, w, w, x)
+        _SWIZZLE4(w, w, w, y)
+        _SWIZZLE4(w, w, w, z)
+        _SWIZZLE4(w, w, w, w)
 
         [[nodiscard]] ShaderNodeWrapper element(const ShaderNodeWrapper &column,
                                                 const ShaderNodeWrapper &row) {
             promoteToVariable(node);
             return ShaderNodeWrapper({ShaderDataType::SCALAR, type.component},
                                      ShaderNodeFactory::subscriptMatrix(node, column.node, row.node));
-        }
-
-        void setX(const ShaderNodeWrapper &value) {
-            promoteToVariable(node);
-            ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(ShaderNodeFactory::subscriptVector(node, 0),
-                                                                        value.node));
-        }
-
-        void setY(const ShaderNodeWrapper &value) {
-            promoteToVariable(node);
-            ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(ShaderNodeFactory::subscriptVector(node, 1),
-                                                                        value.node));
-        }
-
-        void setZ(const ShaderNodeWrapper &value) {
-            promoteToVariable(node);
-            ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(ShaderNodeFactory::subscriptVector(node, 2),
-                                                                        value.node));
-        }
-
-        void setW(const ShaderNodeWrapper &value) {
-            promoteToVariable(node);
-            ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(ShaderNodeFactory::subscriptVector(node, 3),
-                                                                        value.node));
-        }
-
-        void setElement(const ShaderNodeWrapper &column,
-                        const ShaderNodeWrapper &row,
-                        const ShaderNodeWrapper &value) {
-            promoteToVariable(node);
-            ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(
-                ShaderNodeFactory::subscriptMatrix(node,
-                                                   row.node,
-                                                   column.node),
-                value.node));
-        }
-
-        void setElement(const ShaderNodeWrapper &index, const ShaderNodeWrapper &value) {
-            promoteToVariable(node);
-            ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(
-                ShaderNodeFactory::subscriptArray(node, index.node),
-                value.node));
         }
 
         /**
@@ -155,9 +459,12 @@ namespace xng::ShaderScript {
          * @param rhs
          * @return
          */
-        ShaderNodeWrapper &operator=(ShaderNodeWrapper &&rhs) {
+        ShaderNodeWrapper &operator=(ShaderNodeWrapper &&rhs) noexcept {
             // Hook logical assignments to variables
-            if (node->getType() == ShaderNode::VARIABLE) {
+            if (node->getType() == ShaderNode::VARIABLE
+                || node->getType() == ShaderNode::VECTOR_SWIZZLE
+                || node->getType() == ShaderNode::SUBSCRIPT_MATRIX
+                || node->getType() == ShaderNode::SUBSCRIPT_ARRAY) {
                 // Assign value
                 ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(node, rhs.node));
                 return *this;
@@ -182,7 +489,10 @@ namespace xng::ShaderScript {
          */
         ShaderNodeWrapper &operator=(const ShaderNodeWrapper &rhs) {
             // Hook logical assignments
-            if (node->getType() == ShaderNode::VARIABLE) {
+            if (node->getType() == ShaderNode::VARIABLE
+                || node->getType() == ShaderNode::VECTOR_SWIZZLE
+                || node->getType() == ShaderNode::SUBSCRIPT_MATRIX
+                || node->getType() == ShaderNode::SUBSCRIPT_ARRAY) {
                 // Assign value
                 ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(node, rhs.node));
                 return *this;
@@ -280,28 +590,41 @@ namespace xng::ShaderScript {
 
         ShaderNodeWrapper operator+=(const ShaderNodeWrapper &rhs) {
             if (node->getType() != ShaderNode::VARIABLE) {
-                throw std::runtime_error("Assignment to non-variable node wrapper not supported.");
+                if (node->getType() != ShaderNode::VECTOR_SWIZZLE) {
+                    // Assume assignment to previously in place initialized object eg.
+                    // vec2 v = vec2(0, 0)
+                    // v += vec2(1, 1)
+                    promoteToVariable(node);
+                }
             }
-            promoteToVariable(node);
-            ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(node, ShaderNodeFactory::add(node, rhs.node)));
+            ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(node,
+                                                                        ShaderNodeFactory::add(node, rhs.node)));
             return *this;
         }
 
         ShaderNodeWrapper operator-=(const ShaderNodeWrapper &rhs) {
             if (node->getType() != ShaderNode::VARIABLE) {
-                throw std::runtime_error("Assignment to non-variable node wrapper not supported.");
+                if (node->getType() != ShaderNode::VECTOR_SWIZZLE) {
+                    // Assume assignment to previously in place initialized object eg.
+                    // vec2 v = vec2(0, 0)
+                    // v -= vec2(1, 1)
+                    promoteToVariable(node);
+                }
             }
-            promoteToVariable(node);
-            ShaderBuilder::instance().addNode(
-                ShaderNodeFactory::assign(node, ShaderNodeFactory::subtract(node, rhs.node)));
+            ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(node,
+                                                                        ShaderNodeFactory::subtract(node, rhs.node)));
             return *this;
         }
 
         ShaderNodeWrapper operator*=(const ShaderNodeWrapper &rhs) {
             if (node->getType() != ShaderNode::VARIABLE) {
-                throw std::runtime_error("Assignment to non-variable node wrapper not supported.");
+                if (node->getType() != ShaderNode::VECTOR_SWIZZLE) {
+                    // Assume assignment to previously in place initialized object eg.
+                    // vec2 v = vec2(0, 0)
+                    // v *= vec2(1, 1)
+                    promoteToVariable(node);
+                }
             }
-            promoteToVariable(node);
             ShaderBuilder::instance().addNode(
                 ShaderNodeFactory::assign(node, ShaderNodeFactory::multiply(node, rhs.node)));
             return *this;
@@ -309,11 +632,15 @@ namespace xng::ShaderScript {
 
         ShaderNodeWrapper operator/=(const ShaderNodeWrapper &rhs) {
             if (node->getType() != ShaderNode::VARIABLE) {
-                throw std::runtime_error("Assignment to non-variable node wrapper not supported.");
+                if (node->getType() != ShaderNode::VECTOR_SWIZZLE) {
+                    // Assume assignment to previously in place initialized object eg.
+                    // vec2 v = vec2(0, 0)
+                    // v /= vec2(1, 1)
+                    promoteToVariable(node);
+                }
             }
-            promoteToVariable(node);
-            ShaderBuilder::instance().addNode(
-                ShaderNodeFactory::assign(node, ShaderNodeFactory::divide(node, rhs.node)));
+            ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(node,
+                                                                        ShaderNodeFactory::divide(node, rhs.node)));
             return *this;
         }
 
@@ -387,8 +714,9 @@ namespace xng::ShaderScript {
          *
          * Therefore, every object (Except default constructed objects) starts out as a temporary object
          * and is promoted to a variable as soon as it's either
-         * being written to through the assignment operator, a subscripting method on it is invoked or it is the result
-         * of an arithmetic operator (To preserve the order).
+         * - Written to through the assignment operator,
+         * - The subscripting operator or a swizzle method is invoked on the object
+         * - It is the result of an arithmetic operator (To preserve the order of the expression).
          *
          * This results in variables getting inlined if they are not promoted,
          * which can cause expensive operations to run multiple times
@@ -414,6 +742,47 @@ namespace xng::ShaderScript {
                                                       variableInitializer ? variableInitializer->copy() : nullptr));
                 node = ShaderNodeFactory::variable(varName);
             }
+        }
+
+        ShaderNodeWrapper swizzle_vec2(const ShaderNodeWrapper &x, const ShaderNodeWrapper &y) {
+            promoteToVariable(node);
+            return {
+                ShaderDataType{ShaderDataType::VECTOR2, type.component, 1},
+                ShaderNodeFactory::vectorSwizzle(node, {
+                                                       down_cast<NodeVectorSwizzle &>(*x.node).indices.at(0),
+                                                       down_cast<NodeVectorSwizzle &>(*y.node).indices.at(0),
+                                                   })
+            };
+        }
+
+        ShaderNodeWrapper swizzle_vec3(const ShaderNodeWrapper &x,
+                                       const ShaderNodeWrapper &y,
+                                       const ShaderNodeWrapper &z) {
+            promoteToVariable(node);
+            return {
+                ShaderDataType{ShaderDataType::VECTOR3, type.component, 1},
+                ShaderNodeFactory::vectorSwizzle(node, {
+                                                       down_cast<NodeVectorSwizzle &>(*x.node).indices.at(0),
+                                                       down_cast<NodeVectorSwizzle &>(*y.node).indices.at(0),
+                                                       down_cast<NodeVectorSwizzle &>(*z.node).indices.at(0)
+                                                   })
+            };
+        }
+
+        ShaderNodeWrapper swizzle_vec4(const ShaderNodeWrapper &x,
+                                       const ShaderNodeWrapper &y,
+                                       const ShaderNodeWrapper &z,
+                                       const ShaderNodeWrapper &w) {
+            promoteToVariable(node);
+            return {
+                ShaderDataType{ShaderDataType::VECTOR4, type.component, 1},
+                ShaderNodeFactory::vectorSwizzle(node, {
+                                                       down_cast<NodeVectorSwizzle &>(*x.node).indices.at(0),
+                                                       down_cast<NodeVectorSwizzle &>(*y.node).indices.at(0),
+                                                       down_cast<NodeVectorSwizzle &>(*z.node).indices.at(0),
+                                                       down_cast<NodeVectorSwizzle &>(*w.node).indices.at(0)
+                                                   })
+            };
         }
     };
 

@@ -20,6 +20,7 @@
 #ifndef XENGINE_SHADERNODEFACTORY_HPP
 #define XENGINE_SHADERNODEFACTORY_HPP
 
+#include "nodes/nodevectorswizzle.hpp"
 #include "xng/rendergraph/shader/shadernode.hpp"
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 #include "xng/rendergraph/shader/shaderliteral.hpp"
@@ -210,8 +211,9 @@ namespace xng {
         XENGINE_EXPORT std::unique_ptr<ShaderNode> subscriptArray(const std::unique_ptr<ShaderNode> &array,
                                                                   const std::unique_ptr<ShaderNode> &index);
 
-        XENGINE_EXPORT std::unique_ptr<ShaderNode> subscriptVector(const std::unique_ptr<ShaderNode> &value,
-                                                                   int index);
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> vectorSwizzle(const std::unique_ptr<ShaderNode> &value,
+                                                                 const std::vector<NodeVectorSwizzle::ComponentIndex> &
+                                                                 indices);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> subscriptMatrix(const std::unique_ptr<ShaderNode> &matrix,
                                                                    const std::unique_ptr<ShaderNode> &row,
@@ -231,19 +233,19 @@ namespace xng {
                                                         const std::vector<std::unique_ptr<ShaderNode> > &body);
 
         inline std::unique_ptr<ShaderNode> getX(const std::unique_ptr<ShaderNode> &value) {
-            return subscriptVector(std::move(value), 0);
+            return vectorSwizzle(std::move(value), {NodeVectorSwizzle::COMPONENT_X});
         }
 
         inline std::unique_ptr<ShaderNode> getY(const std::unique_ptr<ShaderNode> &value) {
-            return subscriptVector(std::move(value), 1);
+            return vectorSwizzle(std::move(value), {NodeVectorSwizzle::COMPONENT_Y});
         }
 
         inline std::unique_ptr<ShaderNode> getZ(const std::unique_ptr<ShaderNode> &value) {
-            return subscriptVector(std::move(value), 2);
+            return vectorSwizzle(std::move(value), {NodeVectorSwizzle::COMPONENT_Z});
         }
 
         inline std::unique_ptr<ShaderNode> getW(const std::unique_ptr<ShaderNode> &value) {
-            return subscriptVector(std::move(value), 3);
+            return vectorSwizzle(std::move(value), {NodeVectorSwizzle::COMPONENT_W});
         }
     }
 }

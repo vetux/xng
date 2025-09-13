@@ -137,7 +137,7 @@ std::string compileLeafNode(const NodeBuiltin &node, const ShaderStage &source, 
 std::string compileLeafNode(const NodeSubscriptArray &node, const ShaderStage &source,
                             const std::string &functionName);
 
-std::string compileLeafNode(const NodeSubscriptVector &node, const ShaderStage &source,
+std::string compileLeafNode(const NodeVectorSwizzle &node, const ShaderStage &source,
                             const std::string &functionName);
 
 std::string compileLeafNode(const NodeSubscriptMatrix &node, const ShaderStage &source,

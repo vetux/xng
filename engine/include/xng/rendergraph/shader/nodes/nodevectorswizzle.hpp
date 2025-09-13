@@ -17,28 +17,37 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_NODESUBSCRIPTVECTOR_HPP
-#define XENGINE_NODESUBSCRIPTVECTOR_HPP
+#ifndef XENGINE_NODEVECTORSWIZZLE_HPP
+#define XENGINE_NODEVECTORSWIZZLE_HPP
+
+#include <utility>
 
 #include "xng/rendergraph/shader/shadernode.hpp"
 
 namespace xng {
-    struct NodeSubscriptVector final : ShaderNode {
-        std::unique_ptr<ShaderNode> vector;
-        int index;
+    struct NodeVectorSwizzle final : ShaderNode {
+        enum ComponentIndex : int {
+            COMPONENT_X = 0,
+            COMPONENT_Y,
+            COMPONENT_Z,
+            COMPONENT_W
+        };
 
-        NodeSubscriptVector(std::unique_ptr<ShaderNode> vector, const int index)
+        std::unique_ptr<ShaderNode> vector;
+        std::vector<ComponentIndex> indices; // Specify up to 4 indices for swizzling
+
+        NodeVectorSwizzle(std::unique_ptr<ShaderNode> vector, std::vector<ComponentIndex> indices)
             : vector(std::move(vector)),
-              index(index) {
+              indices(std::move(indices)) {
         }
 
         NodeType getType() const override {
-            return SUBSCRIPT_VECTOR;
+            return VECTOR_SWIZZLE;
         }
 
         std::unique_ptr<ShaderNode> copy() const override {
-            return std::make_unique<NodeSubscriptVector>(vector->copy(), index);
+            return std::make_unique<NodeVectorSwizzle>(vector->copy(), indices);
         }
     };
 }
-#endif //XENGINE_NODESUBSCRIPTVECTOR_HPP
+#endif //XENGINE_NODEVECTORSWIZZLE_HPP

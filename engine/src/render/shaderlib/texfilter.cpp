@@ -96,22 +96,17 @@ namespace xng::shaderlib {
             vec4 xcubic = cubic(fxy.x());
             vec4 ycubic = cubic(fxy.y());
 
-            vec4 c = vec4(texCoords.x(), texCoords.x(), texCoords.y(), texCoords.y())
-                     + vec4(-0.5, 1.5, -0.5, 1.5);
+            vec4 c = texCoords.xxyy() + vec2 (-0.5, +1.5).xyxy();
 
-            vec4 s = vec4(xcubic.x() + xcubic.y(),
-                          xcubic.z() + xcubic.w(),
-                          ycubic.x() + ycubic.y(),
-                          ycubic.z() + ycubic.w());
+            vec4 s = vec4(xcubic.xz() + xcubic.yw(), ycubic.xz() + ycubic.yw());
+            vec4 offset = c + vec4 (xcubic.yw(), ycubic.yw()) / s;
 
-            vec4 offset = c + vec4(xcubic.y(), xcubic.w(), ycubic.y(), ycubic.w()) / s;
+            offset *= invTexSize.xxyy();
 
-            offset *= vec4(invTexSize.x(), invTexSize.x(), invTexSize.y(), invTexSize.y());
-
-            vec4 sample0 = texture(argument("sampler"), vec2(offset.x(), offset.z()));
-            vec4 sample1 = texture(argument("sampler"), vec2(offset.y(), offset.z()));
-            vec4 sample2 = texture(argument("sampler"), vec2(offset.x(), offset.w()));
-            vec4 sample3 = texture(argument("sampler"), vec2(offset.y(), offset.w()));
+            vec4 sample0 = texture(argument("sampler"), offset.xz());
+            vec4 sample1 = texture(argument("sampler"), offset.yz());
+            vec4 sample2 = texture(argument("sampler"), offset.xw());
+            vec4 sample3 = texture(argument("sampler"), offset.yw());
 
             Float sx = s.x() / (s.x() + s.y());
             Float sy = s.z() / (s.z() + s.w());

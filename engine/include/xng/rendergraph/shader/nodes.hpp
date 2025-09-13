@@ -28,7 +28,7 @@
 #include "xng/rendergraph/shader/nodes/nodeassign.hpp"
 #include "xng/rendergraph/shader/nodes/nodebuffersize.hpp"
 #include "xng/rendergraph/shader/nodes/nodesubscriptarray.hpp"
-#include "xng/rendergraph/shader/nodes/nodesubscriptvector.hpp"
+#include "xng/rendergraph/shader/nodes/nodevectorswizzle.hpp"
 #include "xng/rendergraph/shader/nodes/nodesubscriptmatrix.hpp"
 #include "xng/rendergraph/shader/nodes/nodeargument.hpp"
 #include "xng/rendergraph/shader/nodes/nodevector.hpp"

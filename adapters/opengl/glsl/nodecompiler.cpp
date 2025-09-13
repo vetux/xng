@@ -93,8 +93,8 @@ std::string compileNode(const ShaderNode &node,
             return compileLeafNode(down_cast<const NodeBuiltin &>(node), source, functionName);
         case ShaderNode::SUBSCRIPT_ARRAY:
             return compileLeafNode(down_cast<const NodeSubscriptArray &>(node), source, functionName);
-        case ShaderNode::SUBSCRIPT_VECTOR:
-            return compileLeafNode(down_cast<const NodeSubscriptVector &>(node), source, functionName);
+        case ShaderNode::VECTOR_SWIZZLE:
+            return compileLeafNode(down_cast<const NodeVectorSwizzle &>(node), source, functionName);
         case ShaderNode::SUBSCRIPT_MATRIX:
             return compileLeafNode(down_cast<const NodeSubscriptMatrix &>(node), source, functionName);
         case ShaderNode::BRANCH:
@@ -516,21 +516,32 @@ std::string compileLeafNode(const NodeSubscriptArray &node,
            + "]";
 }
 
-std::string compileLeafNode(const NodeSubscriptVector &node,
+std::string compileLeafNode(const NodeVectorSwizzle &node,
                             const ShaderStage &source,
                             const std::string &functionName) {
-    switch (node.index) {
-        case 0:
-            return compileNode(*node.vector, source, functionName) + ".x";
-        case 1:
-            return compileNode(*node.vector, source, functionName) + ".y";
-        case 2:
-            return compileNode(*node.vector, source, functionName) + ".z";
-        case 3:
-            return compileNode(*node.vector, source, functionName) + ".w";
-        default:
-            throw std::runtime_error("Invalid vector subscript index");
+    if (node.indices.size() < 1 || node.indices.size() > 4) {
+        throw std::runtime_error("Invalid vector subscript indices size");
     }
+    std::string ret = compileNode(*node.vector, source, functionName) + ".";
+    for (auto &index : node.indices) {
+        switch (index) {
+            case NodeVectorSwizzle::COMPONENT_X:
+                ret += "x";
+                break;
+            case NodeVectorSwizzle::COMPONENT_Y:
+                ret += "y";
+                break;
+            case NodeVectorSwizzle::COMPONENT_Z:
+                ret += "z";
+                break;
+            case NodeVectorSwizzle::COMPONENT_W:
+                ret += "w";
+                break;
+            default:
+                throw std::runtime_error("Invalid vector subscript index");
+        }
+    }
+    return ret;
 }
 
 std::string compileLeafNode(const NodeSubscriptMatrix &node,

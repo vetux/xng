@@ -72,8 +72,9 @@ namespace xng {
 
             BUILTIN,
 
+            VECTOR_SWIZZLE,
+
             SUBSCRIPT_ARRAY,
-            SUBSCRIPT_VECTOR,
             SUBSCRIPT_MATRIX,
 
             BRANCH,

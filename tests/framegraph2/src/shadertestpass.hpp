@@ -78,13 +78,13 @@ public:
 
         shaderlib::noise::simplex();
 
-        builder.Function("test",
+        Function("test",
                          {{"texArg", textureDef}},
                          ShaderDataType::integer());
         {
             Return(5 * (3 + texture(argument("texArg"), vec2(0.5f, 0.5f)).x()));
         }
-        builder.EndFunction();
+        EndFunction();
 
         // Equivalent to int b[4] = {1, 2, 3, 4}
         ArrayInt<4> b = ArrayInt<4>{1, 2, 3, 4};
@@ -100,32 +100,32 @@ public:
         vec4 color;
         color = texture(textureSampler(tex), vec2(0.5f, 0.5f));
 
-        builder.If(a == 5);
+        If(a == 5);
         {
             f = f + vec2(1.0f, 1.0f);
         }
-        builder.Else();
+        Else();
         {
             Int i;
-            builder.For(i, 0,  10,  1);
+            For(i, 0,  10,  1);
             {
-                builder.If(i == 1);
+                If(i == 1);
                 {
                     f = 3 * (f + vec2(i, i));
                 }
-                builder.EndIf();
+                EndIf();
             }
-            builder.EndFor();
+            EndFor();
         }
-        builder.EndIf();
+        EndIf();
 
-        builder.If(true);
+        If(true);
         {
             Float p = f.x();
             p = 3 * (p + color.y());
-            f.setX(p);
+            f.x() = p;
         }
-        builder.EndIf();
+        EndIf();
 
         mat4 mvp = buffer("data", "mvp");
         vec3 vPos = attribute(0);
@@ -133,7 +133,7 @@ public:
         fPos = mvp * fPos;
         fPos = fPos * vec4(f.x(), f.y(), 0, 1);
 
-        fPos.setX(fPos.x() + color.x());
+        fPos.x() = fPos.x() + color.x();
 
         writeAttribute(0, fPos);
 

@@ -353,9 +353,9 @@ namespace xng::ShaderNodeFactory {
         return std::make_unique<NodeSubscriptArray>(array->copy(), index->copy());
     }
 
-    std::unique_ptr<ShaderNode> subscriptVector(const std::unique_ptr<ShaderNode> &value,
-                                                int index) {
-        return std::make_unique<NodeSubscriptVector>(value->copy(), index);
+    std::unique_ptr<ShaderNode> vectorSwizzle(const std::unique_ptr<ShaderNode> &value,
+                                                 const std::vector<NodeVectorSwizzle::ComponentIndex> & indices) {
+        return std::make_unique<NodeVectorSwizzle>(value->copy(), indices);
     }
 
     std::unique_ptr<ShaderNode> subscriptMatrix(const std::unique_ptr<ShaderNode> &matrix,

@@ -154,7 +154,7 @@
 #include "xng/rendergraph/shader/nodes/nodeattributeinput.hpp"
 #include "xng/rendergraph/shader/nodes/nodebranch.hpp"
 #include "xng/rendergraph/shader/nodes/nodeand.hpp"
-#include "xng/rendergraph/shader/nodes/nodesubscriptvector.hpp"
+#include "xng/rendergraph/shader/nodes/nodevectorswizzle.hpp"
 #include "xng/rendergraph/shader/nodes/nodesubscriptmatrix.hpp"
 #include "xng/rendergraph/shader/nodes/nodetexturesize.hpp"
 #include "xng/rendergraph/shader/nodes/nodeloop.hpp"
