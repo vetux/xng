@@ -20,12 +20,10 @@
 #ifndef XENGINE_GLFWWINDOWGL_HPP
 #define XENGINE_GLFWWINDOWGL_HPP
 
-#include <set>
-
 #include "display/glfw/glfwwindow.hpp"
 
 namespace xng::glfw {
-    class GLFWWindowGL : public GLFWWindow {
+    class GLFWWindowGL final : public GLFWWindow {
     public:
         GLFWWindowGL(const std::string &title, Vec2i size, WindowAttributes attributes);
 

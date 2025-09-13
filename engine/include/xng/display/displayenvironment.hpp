@@ -21,14 +21,12 @@
 #define XENGINE_DISPLAYENVIRONMENT_HPP
 
 #include "xng/display/window.hpp"
+#include "xng/display/graphicsapi.hpp"
 
 namespace xng {
     class XENGINE_EXPORT DisplayEnvironment {
     public:
-        enum class GraphicsAPI : int {
-            VULKAN,
-            OPENGL
-        };
+        virtual ~DisplayEnvironment() = default;
 
         virtual std::unique_ptr<Monitor> getPrimaryMonitor() = 0;
 
@@ -43,7 +41,7 @@ namespace xng {
 
         /**
          *
-         * @param api The graphics api that this window should be compatible with. Must be exposed to the user because a window exists before beeing used in the renderer. (E.G. Input)
+         * @param api The graphics api that the returned window should be compatible with.
          * @param title
          * @param size
          * @param attributes
@@ -57,6 +55,13 @@ namespace xng {
                                                      WindowAttributes attributes,
                                                      Monitor &monitor,
                                                      VideoMode mode) = 0;
+
+        /**
+         * Returns the required vulkan extensions for creating surfaces for the window.
+         *
+         * @return
+         */
+        virtual std::vector<const char *> getRequiredVulkanExtensions() = 0;
     };
 }
 

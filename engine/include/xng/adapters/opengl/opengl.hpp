@@ -45,13 +45,15 @@ namespace xng::opengl {
 
         void loadCache(GraphHandle graph, std::istream &stream) override;
 
+        GraphicsAPI getGraphicsAPI() override { return OPENGL_4_6; }
+
     private:
         GraphHandle compileGraph(const RenderGraph &graph);
 
         GraphHandle graphCounter = 0;
 
         std::unordered_map<GraphHandle, RenderGraph> graphs;
-        std::unordered_map<GraphHandle, std::unordered_map<RenderGraphResource, ShaderStage>> shaders;
+        std::unordered_map<GraphHandle, std::unordered_map<RenderGraphResource, ShaderStage> > shaders;
 
         std::unique_ptr<State> state;
     };

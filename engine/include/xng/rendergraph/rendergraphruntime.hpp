@@ -23,6 +23,7 @@
 #include "rendergraph.hpp"
 
 #include "xng/display/window.hpp"
+#include "xng/display/graphicsapi.hpp"
 
 namespace xng {
     /**
@@ -108,6 +109,8 @@ namespace xng {
         virtual void saveCache(GraphHandle graph, std::ostream &stream) = 0;
 
         virtual void loadCache(GraphHandle graph, std::istream &stream) = 0;
+
+        virtual GraphicsAPI getGraphicsAPI() = 0;
     };
 }
 

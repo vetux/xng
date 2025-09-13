@@ -25,54 +25,88 @@
 
 #include "display/glfw/opengl/glfwwindowgl.hpp"
 
+namespace xng::glfw {
+    std::unique_ptr<Window> makeWindowGL(const std::string &title,
+                                         const Vec2i &size,
+                                         WindowAttributes attributes,
+                                         Monitor *monitor = nullptr,
+                                         VideoMode mode = {}) {
+        if (monitor) {
+            return std::make_unique<GLFWWindowGL>(title,
+                                                  size,
+                                                  attributes,
+                                                  dynamic_cast<MonitorGLFW &>(*monitor),
+                                                  mode);
+        } else {
+            return std::make_unique<GLFWWindowGL>(title,
+                                                  size,
+                                                  attributes);
+        }
+    }
+}
+
+#else
+namespace xng::glfw {
+    std::unique_ptr<Window> makeWindowGL(const std::string &title,
+                                         const Vec2i &size,
+                                         WindowAttributes attributes,
+                                         Monitor *monitor = nullptr,
+                                         VideoMode mode = {}) {
+        throw std::runtime_error("GLFW OpenGL backend support not built");
+    }
+}
 #endif
 
 #ifdef BUILD_GLFW_VULKAN
 
 #include "display/glfw/vulkan/glfwwindowvk.hpp"
 
+namespace xng::glfw {
+    std::unique_ptr<Window> makeWindowVK(const std::string &title,
+                                         const Vec2i &size,
+                                         WindowAttributes attributes,
+                                         Monitor *monitor = nullptr,
+                                         VideoMode mode = {}) {
+        if (monitor) {
+            return std::make_unique<GLFWWindowVk>(title,
+                                                  size,
+                                                  attributes,
+                                                  dynamic_cast<MonitorGLFW &>(*monitor),
+                                                  mode);
+        } else {
+            return std::make_unique<GLFWWindowVk>(title,
+                                                  size,
+                                                  attributes);
+        }
+    }
+}
+
+#else
+namespace xng::glfw {
+    std::unique_ptr<Window> makeWindowVK(const std::string &title,
+                                         const Vec2i &size,
+                                         WindowAttributes attributes,
+                                         Monitor *monitor = nullptr,
+                                         VideoMode mode = {}) {
+        throw std::runtime_error("GLFW Vulkan backend support not built");
+    }
+}
 #endif
 
 namespace xng::glfw {
-    static std::unique_ptr<Window> makeWindow(DisplayEnvironment::GraphicsAPI gpuBackend,
+    static std::unique_ptr<Window> makeWindow(GraphicsAPI gpuBackend,
                                               const std::string &title,
                                               Vec2i size,
                                               WindowAttributes attributes,
                                               Monitor *monitor = nullptr,
                                               VideoMode mode = {}) {
-        if (false) {}
-#ifdef BUILD_GLFW_OPENGL
-        else if (gpuBackend == DisplayEnvironment::GraphicsAPI::OPENGL) {
-            if (monitor) {
-                return std::make_unique<GLFWWindowGL>(title,
-                                                      size,
-                                                      attributes,
-                                                      dynamic_cast<MonitorGLFW &>(*monitor),
-                                                      mode);
-            } else {
-                return std::make_unique<GLFWWindowGL>(title,
-                                                      size,
-                                                      attributes);
-            }
-        }
-#endif
-#ifdef BUILD_GLFW_VULKAN
-        else if (gpuBackend == DisplayEnvironment::GraphicsAPI::VULKAN) {
-            if (monitor) {
-                return std::make_unique<GLFWWindowVk>(title,
-                                                      size,
-                                                      attributes,
-                                                      dynamic_cast<MonitorGLFW &>(*monitor),
-                                                      mode);
-            } else {
-                return std::make_unique<GLFWWindowVk>(title,
-                                                      size,
-                                                      attributes);
-            }
-        }
-#endif
-        else {
-            throw std::runtime_error("Unsupported gpu backend " + std::to_string(static_cast<int>(gpuBackend)));
+        switch (gpuBackend) {
+            case OPENGL_4_6:
+                return makeWindowGL(title, size, attributes, monitor, mode);
+            case VULKAN_1_1:
+                return makeWindowVK(title, size, attributes, monitor, mode);
+            default:
+                throw std::runtime_error("Unsupported gpu backend " + std::to_string(static_cast<int>(gpuBackend)));
         }
     }
 
@@ -88,8 +122,8 @@ namespace xng::glfw {
         return std::make_unique<MonitorGLFW>(glfwGetPrimaryMonitor());
     }
 
-    std::set<std::unique_ptr<Monitor>> GLFW::getMonitors() {
-        std::set<std::unique_ptr<Monitor>> ret;
+    std::set<std::unique_ptr<Monitor> > GLFW::getMonitors() {
+        std::set<std::unique_ptr<Monitor> > ret;
 
         int count;
         GLFWmonitor **monitors = glfwGetMonitors(&count);

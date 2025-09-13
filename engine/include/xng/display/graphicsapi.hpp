@@ -17,28 +17,19 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "xng/adapters/glfw/glfw.hpp"
-#include "xng/adapters/opengl/opengl.hpp"
+#ifndef XENGINE_GRAPHICSAPI_HPP
+#define XENGINE_GRAPHICSAPI_HPP
 
-#include "shadertestpass.hpp"
-
-int main(int argc, char *argv[]) {
-    auto glfw = glfw::GLFW();
-    auto runtime = opengl::OpenGL();
-
-    const auto window = glfw.createWindow(runtime.getGraphicsAPI());
-
-    runtime.setWindow(*window);
-
-    RenderGraphBuilder builder;
-
-    ShaderTestPass pass;
-    pass.setup(builder);
-
-    const auto graph = builder.build();
-    const auto gh = runtime.compile(graph);
-
-    runtime.execute(gh);
-
-    return 0;
+namespace xng {
+    enum GraphicsAPI : int {
+        OPENGL_4_6 = 0,
+        VULKAN_1_1,
+        DIRECTX11,
+        DIRECTX12,
+        METAL,
+        NONE,
+        USER = 255,
+    };
 }
+
+#endif //XENGINE_GRAPHICSAPI_HPP

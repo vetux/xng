@@ -23,11 +23,11 @@
 #include "xng/display/displayenvironment.hpp"
 
 namespace xng::glfw {
-    class XENGINE_EXPORT GLFW : public DisplayEnvironment {
+    class XENGINE_EXPORT GLFW final : public DisplayEnvironment {
     public:
         GLFW();
 
-        ~GLFW();
+        ~GLFW() override;
 
         std::unique_ptr<Monitor> getPrimaryMonitor() override;
 
@@ -47,7 +47,7 @@ namespace xng::glfw {
                                              Monitor &monitor,
                                              VideoMode mode) override;
 
-        std::vector<const char *> getRequiredVulkanExtensions();
+        std::vector<const char *> getRequiredVulkanExtensions() override;
     };
 }
 
