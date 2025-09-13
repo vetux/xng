@@ -22,9 +22,10 @@
 
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
-using namespace xng::ShaderScript;
-DEFINE_FUNCTION2(textureBicubic)
-DEFINE_FUNCTION3(textureBicubic)
+namespace xng::ShaderScript {
+    DEFINE_FUNCTION2(textureBicubic)
+    DEFINE_FUNCTION3(textureBicubic)
+}
 
 namespace xng::shaderlib {
     /**
