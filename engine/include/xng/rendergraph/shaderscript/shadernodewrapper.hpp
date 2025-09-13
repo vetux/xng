@@ -381,7 +381,7 @@ namespace xng::ShaderScript {
 
     protected:
         /**
-         * Because C++ might elide the assignment operator invocation by creating the object in place for something like:
+         * Because the c++ compiler might elide the assignment operator invocation by creating the object in place for something like:
          * vec2 v = vec2(1, 1);
          * I cannot rely on the assignment operator to handle variable definition.
          *
