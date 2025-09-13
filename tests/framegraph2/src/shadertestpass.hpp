@@ -36,7 +36,7 @@ public:
     ShaderBuffer dataBuffer;
     ShaderBuffer colorBuffer;
 
-    ShaderTexture textureDef;
+    ShaderTexture textureDef{};
 
     ShaderAttributeLayout vertexLayout;
     ShaderAttributeLayout fragmentLayout;
@@ -67,9 +67,6 @@ public:
     }
 
     ShaderStage createVertexShader() {
-        std::unordered_map<std::string, ShaderFunction> funcs;
-        funcs["simplex2D"] = shaderlib::noise::simplex2D();
-
         auto &builder = ShaderBuilder::instance();
         builder.setup(ShaderStage::VERTEX,
                       vertexLayout,
@@ -77,52 +74,57 @@ public:
                       {},
                       {{"data", dataBuffer}},
                       {textureDef},
-                      funcs);
+                      {});
+
+        shaderlib::noise::simplex();
 
         builder.Function("test",
                          {{"texArg", textureDef}},
                          ShaderDataType::integer());
-        Return(5 * (3 + texture(argument("texArg"), vec2(0.5f, 0.5f)).x()));
+        {
+            Return(5 * (3 + texture(argument("texArg"), vec2(0.5f, 0.5f)).x()));
+        }
         builder.EndFunction();
 
         // Equivalent to int b[4] = {1, 2, 3, 4}
         ArrayInt<4> b = ArrayInt<4>{1, 2, 3, 4};
 
-        Int r = Call("test", {textureSampler(tex)});
+        Int r = Call("test", textureSampler(tex));
         Int a = r;
 
-        Int v = Call("simplex2D", {vec2(0.5f, 0.5f)});
+        Int v = simplex(vec2(0.5f, 0.5f));
 
-        vec2 f = vec2(5.0f, 1.0f, 1.0f, 1.0f);
+        vec2 f = vec2(5.0f, 1.0f);
         f = f * a;
 
-        vec4 color = texture(textureSampler(tex), vec2(0.5f, 0.5f));
+        vec4 color;
+        color = texture(textureSampler(tex), vec2(0.5f, 0.5f));
 
         builder.If(a == 5);
-
-        f = f + vec2(1.0f, 1.0f, 1.0f, 1.0f);
-
+        {
+            f = f + vec2(1.0f, 1.0f);
+        }
         builder.Else();
-
-        Int i = 0;
-        builder.For(i, 0, i < 10, i + 1);
-
-        builder.If(i == 1);
-
-        f = 3 * (f + vec2(i, i, i, i));
-
-        builder.EndIf();
-
-        builder.EndFor();
-
+        {
+            Int i;
+            builder.For(i, 0,  10,  1);
+            {
+                builder.If(i == 1);
+                {
+                    f = 3 * (f + vec2(i, i));
+                }
+                builder.EndIf();
+            }
+            builder.EndFor();
+        }
         builder.EndIf();
 
         builder.If(true);
-
-        Float p = f.x();
-        p = 3 * (p + color.y());
-        f.setX(p);
-
+        {
+            Float p = f.x();
+            p = 3 * (p + color.y());
+            f.setX(p);
+        }
         builder.EndIf();
 
         mat4 mvp = buffer("data", "mvp");

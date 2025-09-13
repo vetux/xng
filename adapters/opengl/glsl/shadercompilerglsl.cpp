@@ -48,9 +48,9 @@ std::string generateHeader(const ShaderStage &source, CompiledPipeline &pipeline
     std::string ret;
 
     if (source.type == ShaderStage::Type::VERTEX) {
-        ret += "#define " + std::string(drawID) + " gl_DrawID\n";
+        ret += "#define " + std::string(drawID) + " gl_DrawID\n\n";
     } else {
-        ret += "#define " + std::string(drawID) + " drawID\n";
+        ret += "#define " + std::string(drawID) + " drawID\n\n";
     }
 
     for (const auto &pair: source.buffers) {

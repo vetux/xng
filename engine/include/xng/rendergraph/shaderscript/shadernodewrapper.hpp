@@ -208,7 +208,9 @@ namespace xng::ShaderScript {
                     outType = type;
                 }
             }
-            return ShaderNodeWrapper(outType, ShaderNodeFactory::add(node, rhs.node));
+            auto ret = ShaderNodeWrapper(outType, ShaderNodeFactory::add(node, rhs.node));
+            ret.promoteToVariable(ret.node);
+            return ret;
         }
 
         ShaderNodeWrapper operator-(const ShaderNodeWrapper &rhs) const {
@@ -224,7 +226,9 @@ namespace xng::ShaderScript {
                     outType = type;
                 }
             }
-            return ShaderNodeWrapper(outType, ShaderNodeFactory::subtract(node, rhs.node));
+            auto ret = ShaderNodeWrapper(outType, ShaderNodeFactory::subtract(node, rhs.node));
+            ret.promoteToVariable(ret.node);
+            return ret;
         }
 
         ShaderNodeWrapper operator*(const ShaderNodeWrapper &rhs) const {
@@ -251,7 +255,9 @@ namespace xng::ShaderScript {
                     }
                 }
             }
-            return ShaderNodeWrapper(outType, ShaderNodeFactory::multiply(node, rhs.node));
+            auto ret = ShaderNodeWrapper(outType, ShaderNodeFactory::multiply(node, rhs.node));
+            ret.promoteToVariable(ret.node);
+            return ret;
         }
 
         ShaderNodeWrapper operator/(const ShaderNodeWrapper &rhs) const {
@@ -267,82 +273,104 @@ namespace xng::ShaderScript {
                     outType = type;
                 }
             }
-            return ShaderNodeWrapper(outType, ShaderNodeFactory::divide(node, rhs.node));
+            auto ret = ShaderNodeWrapper(outType, ShaderNodeFactory::divide(node, rhs.node));
+            ret.promoteToVariable(ret.node);
+            return ret;
         }
 
-        ShaderNodeWrapper operator+=(const ShaderNodeWrapper &rhs) const {
+        ShaderNodeWrapper operator+=(const ShaderNodeWrapper &rhs) {
             if (node->getType() != ShaderNode::VARIABLE) {
                 throw std::runtime_error("Assignment to non-variable node wrapper not supported.");
             }
+            promoteToVariable(node);
             ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(node, ShaderNodeFactory::add(node, rhs.node)));
             return *this;
         }
 
-        ShaderNodeWrapper operator-=(const ShaderNodeWrapper &rhs) const {
+        ShaderNodeWrapper operator-=(const ShaderNodeWrapper &rhs) {
             if (node->getType() != ShaderNode::VARIABLE) {
                 throw std::runtime_error("Assignment to non-variable node wrapper not supported.");
             }
+            promoteToVariable(node);
             ShaderBuilder::instance().addNode(
                 ShaderNodeFactory::assign(node, ShaderNodeFactory::subtract(node, rhs.node)));
             return *this;
         }
 
-        ShaderNodeWrapper operator*=(const ShaderNodeWrapper &rhs) const {
+        ShaderNodeWrapper operator*=(const ShaderNodeWrapper &rhs) {
             if (node->getType() != ShaderNode::VARIABLE) {
                 throw std::runtime_error("Assignment to non-variable node wrapper not supported.");
             }
+            promoteToVariable(node);
             ShaderBuilder::instance().addNode(
                 ShaderNodeFactory::assign(node, ShaderNodeFactory::multiply(node, rhs.node)));
             return *this;
         }
 
-        ShaderNodeWrapper operator/=(const ShaderNodeWrapper &rhs) const {
+        ShaderNodeWrapper operator/=(const ShaderNodeWrapper &rhs) {
             if (node->getType() != ShaderNode::VARIABLE) {
                 throw std::runtime_error("Assignment to non-variable node wrapper not supported.");
             }
+            promoteToVariable(node);
             ShaderBuilder::instance().addNode(
                 ShaderNodeFactory::assign(node, ShaderNodeFactory::divide(node, rhs.node)));
             return *this;
         }
 
         ShaderNodeWrapper operator==(const ShaderNodeWrapper &rhs) const {
-            return ShaderNodeWrapper(ShaderDataType::boolean(),
-                                     ShaderNodeFactory::compareEqual(node, rhs.node));
+            auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
+                                         ShaderNodeFactory::compareEqual(node, rhs.node));
+            ret.promoteToVariable(ret.node);
+            return ret;
         }
 
         ShaderNodeWrapper operator!=(const ShaderNodeWrapper &rhs) const {
-            return ShaderNodeWrapper(ShaderDataType::boolean(),
-                                     ShaderNodeFactory::compareNotEqual(node, rhs.node));
+            auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
+                                         ShaderNodeFactory::compareNotEqual(node, rhs.node));
+            ret.promoteToVariable(ret.node);
+            return ret;
         }
 
         ShaderNodeWrapper operator<(const ShaderNodeWrapper &rhs) const {
-            return ShaderNodeWrapper(ShaderDataType::boolean(),
-                                     ShaderNodeFactory::compareLess(node, rhs.node));
+            auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
+                                         ShaderNodeFactory::compareLess(node, rhs.node));
+            ret.promoteToVariable(ret.node);
+            return ret;
         }
 
         ShaderNodeWrapper operator>(const ShaderNodeWrapper &rhs) const {
-            return ShaderNodeWrapper(ShaderDataType::boolean(),
-                                     ShaderNodeFactory::compareGreater(node, rhs.node));
+            auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
+                                         ShaderNodeFactory::compareGreater(node, rhs.node));
+            ret.promoteToVariable(ret.node);
+            return ret;
         }
 
         ShaderNodeWrapper operator <=(const ShaderNodeWrapper &rhs) const {
-            return ShaderNodeWrapper(ShaderDataType::boolean(),
-                                     ShaderNodeFactory::compareLessEqual(node, rhs.node));
+            auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
+                                         ShaderNodeFactory::compareLessEqual(node, rhs.node));
+            ret.promoteToVariable(ret.node);
+            return ret;
         }
 
         ShaderNodeWrapper operator >=(const ShaderNodeWrapper &rhs) const {
-            return ShaderNodeWrapper(ShaderDataType::boolean(),
-                                     ShaderNodeFactory::compareGreaterEqual(node, rhs.node));
+            auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
+                                         ShaderNodeFactory::compareGreaterEqual(node, rhs.node));
+            ret.promoteToVariable(ret.node);
+            return ret;
         }
 
         ShaderNodeWrapper operator||(const ShaderNodeWrapper &rhs) const {
-            return ShaderNodeWrapper(ShaderDataType::boolean(),
-                                     ShaderNodeFactory::logicalOr(node, rhs.node));
+            auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
+                                         ShaderNodeFactory::logicalOr(node, rhs.node));
+            ret.promoteToVariable(ret.node);
+            return ret;
         }
 
         ShaderNodeWrapper operator&&(const ShaderNodeWrapper &rhs) const {
-            return ShaderNodeWrapper(ShaderDataType::boolean(),
-                                     ShaderNodeFactory::logicalAnd(node, rhs.node));
+            auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
+                                         ShaderNodeFactory::logicalAnd(node, rhs.node));
+            ret.promoteToVariable(ret.node);
+            return ret;
         }
 
         ShaderNodeWrapper operator[](const ShaderNodeWrapper &rhs) {
@@ -357,16 +385,24 @@ namespace xng::ShaderScript {
          * vec2 v = vec2(1, 1);
          * I cannot rely on the assignment operator to handle variable definition.
          *
-         * Therefore, every object (Except default constructed objects) starts out as a temporary object and is promoted to a variable as soon as
-         * it's either being written to through the assignment operator, or a subscripting operation on it is invoked.
+         * Therefore, every object (Except default constructed objects) starts out as a temporary object
+         * and is promoted to a variable as soon as it's either
+         * being written to through the assignment operator, a subscripting method on it is invoked or it is the result
+         * of an arithmetic operator (To preserve the order).
          *
-         * Default constructed objects are variables, so variable definition can be forced by default constructing the variable. (e.g. "vec2 v;")
+         * This results in variables getting inlined if they are not promoted,
+         * which can cause expensive operations to run multiple times
+         * and also makes the resulting shader node tree harder to debug.
          *
-         * This results in variables getting inlined where possible, which is what the graphics driver shader compiler would do anyway,
-         * but it also makes the resulting shader node tree harder to debug.
+         * Default constructed objects are variables,
+         * so variable definition can be forced by default constructing the variable. (e.g. "vec2 v;")
          *
-         * It would be best to let the graphics driver handle this inlining, but I don't see any way to resolve
-         * this without making the script language less concise and readable.
+         * So for optimal performing shader code variables should be
+         * default constructed and then assigned in separate statements. (e.g. "vec2 v; v = vec2(0, 0);)
+         *
+         * TODO: Fix variable assignment in conditional or loop bodies
+         * Currently, there's a problem where if a variable is initialized in place and then assigned in a branch or loop body,
+         * the variable will be defined inside the loop body or branch even if it is used later outside the scope of the branch or loop.
          */
         void promoteToVariable(const std::unique_ptr<ShaderNode> &variableInitializer) {
             if (node == nullptr

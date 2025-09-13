@@ -31,6 +31,9 @@ namespace xng::ShaderScript {
     }
 
     void ShaderBuilder::If(const ShaderNodeWrapper &condition) {
+        if (currentNode == nullptr) {
+            throw std::runtime_error("ShaderBuilder::If called without a setup() call");
+        }
         std::shared_ptr<TreeNode> ifNode = std::make_shared<TreeNode>();
         ifNode->parent = currentNode;
         ifNode->type = TreeNode::IF;
@@ -44,25 +47,38 @@ namespace xng::ShaderScript {
     }
 
     void ShaderBuilder::Else() {
-        assert(currentNode->type == TreeNode::IF);
+        if (currentNode == nullptr) {
+            throw std::runtime_error("ShaderBuilder::Else called without a setup() call");
+        }
+        if (currentNode->type != TreeNode::IF) {
+            throw std::runtime_error("ShaderBuilder::Else called without a If() call");
+        }
         currentNode->processingElse = true;
     }
 
     void ShaderBuilder::EndIf() {
-        assert(currentNode->type == TreeNode::IF);
+        if (currentNode == nullptr) {
+            throw std::runtime_error("ShaderBuilder::EndIf called without a setup() call");
+        }
+        if (currentNode->type != TreeNode::IF) {
+            throw std::runtime_error("ShaderBuilder::EndIf called without a If() call");
+        }
         currentNode = currentNode->parent;
     }
 
     void ShaderBuilder::For(const ShaderNodeWrapper &loopVariable,
-                            const ShaderNodeWrapper &initializer,
-                            const ShaderNodeWrapper &condition,
+                            const ShaderNodeWrapper &loopStart,
+                            const ShaderNodeWrapper &loopEnd,
                             const ShaderNodeWrapper &incrementor) {
+        if (currentNode == nullptr) {
+            throw std::runtime_error("ShaderBuilder::For called without a setup() call");
+        }
         std::shared_ptr<TreeNode> forNode = std::make_shared<TreeNode>();
         forNode->parent = currentNode;
         forNode->type = TreeNode::FOR;
         forNode->loopVariable = loopVariable.node->copy();
-        forNode->condition = condition.node->copy();
-        forNode->initializer = initializer.node->copy();
+        forNode->loopEnd = loopEnd.node->copy();
+        forNode->initializer = loopStart.node->copy();
         forNode->incrementor = incrementor.node->copy();
         if (currentNode->processingElse) {
             currentNode->falseBranch.push_back(forNode);
@@ -73,13 +89,25 @@ namespace xng::ShaderScript {
     }
 
     void ShaderBuilder::EndFor() {
-        assert(currentNode->type == TreeNode::FOR);
+        if (currentNode == nullptr) {
+            throw std::runtime_error("ShaderBuilder::EndFor called without a setup() call");
+        }
+        if (currentNode->type != TreeNode::FOR) {
+            throw std::runtime_error("ShaderBuilder::EndFor called without a For() call");
+        }
         currentNode = currentNode->parent;
     }
 
     void ShaderBuilder::Function(const std::string &name,
                                  const std::vector<ShaderFunction::Argument> &arguments,
                                  ShaderDataType returnType) {
+        if (currentNode == nullptr) {
+            throw std::runtime_error("ShaderBuilder::Function called without a setup() call");
+        }
+        if (functionRoot != nullptr) {
+            throw std::runtime_error(
+                "ShaderBuilder::Function called while a function is in progress (Nested function definition?)");
+        }
         std::shared_ptr<TreeNode> functionNode = std::make_shared<TreeNode>();
         functionNode->parent = nullptr;
         functionNode->type = TreeNode::ROOT;
@@ -91,11 +119,14 @@ namespace xng::ShaderScript {
     }
 
     void ShaderBuilder::EndFunction() {
+        if (functionRoot == nullptr) {
+            throw std::runtime_error("ShaderBuilder::EndFunction called without a Function() call");
+        }
         ShaderFunction function = currentFunction;
         function.body = createNodes(*functionRoot);
         functions.emplace_back(function);
         currentNode = rootNode.get();
-        currentFunction={};
+        currentFunction = {};
         functionRoot = nullptr;
     }
 
@@ -142,16 +173,25 @@ namespace xng::ShaderScript {
             auto initializer = ShaderNodeFactory::assign(node.loopVariable,
                                                          node.initializer);
 
-            auto incrementor = ShaderNodeFactory::assign(node.loopVariable, node.incrementor);
+            auto incrementor = ShaderNodeFactory::assign(node.loopVariable,
+                                                         ShaderNodeFactory::add(node.loopVariable, node.incrementor));
 
-            nodes.push_back(ShaderNodeFactory::loop(initializer,
-                                                    node.condition,
-                                                    incrementor, body));
+            auto condition = ShaderNodeFactory::compareLessEqual(node.loopVariable, node.loopEnd);
+
+            nodes.push_back(initializer->copy());
+            nodes.push_back(ShaderNodeFactory::loop(nullptr,
+                                                    condition,
+                                                    incrementor,
+                                                    body));
         }
         return nodes;
     }
 
     void ShaderBuilder::addNode(const std::unique_ptr<ShaderNode> &node) {
+        if (currentNode == nullptr) {
+            throw std::runtime_error("ShaderBuilder::addNode called without a setup() call");
+        }
+
         const std::shared_ptr<TreeNode> treeNode = std::make_shared<TreeNode>();
         treeNode->parent = currentNode;
         treeNode->type = TreeNode::NODE;
@@ -171,16 +211,13 @@ namespace xng::ShaderScript {
                               const std::unordered_map<std::string, ShaderBuffer> &buffers,
                               const std::vector<ShaderTexture> &textures,
                               const std::vector<ShaderFunction> &functions) {
+        if (currentNode != nullptr) {
+            throw std::runtime_error("ShaderBuilder::setup called while a build is in progress (Nested setup() call?)");
+        }
         rootNode = std::make_shared<TreeNode>();
         rootNode->parent = nullptr;
         rootNode->type = TreeNode::ROOT;
         currentNode = rootNode.get();
-
-        functionRoot = nullptr;
-
-        variableCounter = 0;
-
-        currentFunction = {};
 
         this->stage = stage;
         this->inputLayout = inputLayout;
@@ -192,6 +229,10 @@ namespace xng::ShaderScript {
     }
 
     ShaderStage ShaderBuilder::build() {
+        if (currentNode == nullptr) {
+            throw std::runtime_error("ShaderBuilder::build called without a setup() call");
+        }
+
         ShaderStage ret;
         ret.type = stage;
         ret.inputLayout = inputLayout;
@@ -202,6 +243,22 @@ namespace xng::ShaderScript {
 
         ret.mainFunction = createNodes(*rootNode);
         ret.functions = functions;
+
+        inputLayout = {};
+        outputLayout = {};
+        parameters = {};
+        buffers = {};
+        textures = {};
+
+        currentNode = nullptr;
+        rootNode = {};
+
+        functionRoot = {};
+        functions = {};
+
+        variableCounter = 0;
+
+        currentFunction = {};
 
         return ret;
     }

@@ -23,6 +23,14 @@
 #include "xng/rendergraph/shader/nodes/nodetexture.hpp"
 #include "xng/rendergraph/shaderscript/shadernodewrapper.hpp"
 
+// Helper macros for defining C++ function wrappers for directly calling a function
+#define DEFINE_FUNCTION0(name) inline ShaderNodeWrapper name(){ return Call(#name);}
+#define DEFINE_FUNCTION1(name) inline ShaderNodeWrapper name(const ShaderNodeWrapper &arg){ return Call(#name, arg);}
+#define DEFINE_FUNCTION2(name) inline ShaderNodeWrapper name(const ShaderNodeWrapper &arg, const ShaderNodeWrapper &arg1){ return Call(#name, arg, arg1);}
+#define DEFINE_FUNCTION3(name) inline ShaderNodeWrapper name(const ShaderNodeWrapper &arg, const ShaderNodeWrapper &arg1, const ShaderNodeWrapper &arg2){ return Call(#name, arg, arg1, arg2);}
+#define DEFINE_FUNCTION4(name) inline ShaderNodeWrapper name(const ShaderNodeWrapper &arg, const ShaderNodeWrapper &arg1, const ShaderNodeWrapper &arg2, const ShaderNodeWrapper &arg3){ return Call(#name, arg, arg1, arg2, arg3);}
+#define DEFINE_FUNCTION5(name) inline ShaderNodeWrapper name(const ShaderNodeWrapper &arg, const ShaderNodeWrapper &arg1, const ShaderNodeWrapper &arg2, const ShaderNodeWrapper &arg3, const ShaderNodeWrapper &arg4){ return Call(#name, arg, arg1, arg2, arg3, arg4);}
+
 /**
  * WARNING: This namespace defines implicit conversion operators for converting literals
  *          to node wrappers, which can cause ambiguous overloads when "using" the namespace,
@@ -183,7 +191,10 @@ namespace xng::ShaderScript {
         auto func = ShaderBuilder::instance().getCurrentFunction();
         auto arg = func.getArgumentType(name);
         if (arg.index() != 0) {
-            return ShaderNodeWrapper(ShaderDataType::unsignedInteger(),
+            return ShaderNodeWrapper(ShaderDataType{
+                                         ShaderDataType::VECTOR4,
+                                         ShaderDataType::getColorComponent(std::get<ShaderTexture>(arg).format)
+                                     },
                                      ShaderNodeFactory::argument(name));
         } else {
             return ShaderNodeWrapper(std::get<ShaderDataType>(arg),
@@ -227,8 +238,8 @@ namespace xng::ShaderScript {
         ShaderBuilder::instance().addNode(ShaderNodeFactory::vertexPosition(value.node));
     }
 
-    inline ShaderNodeWrapper Call(const std::string &functionName,
-                                  const std::vector<ShaderNodeWrapper> &wArgs = {}) {
+    inline ShaderNodeWrapper CallA(const std::string &functionName,
+                                   const std::vector<ShaderNodeWrapper> &wArgs = {}) {
         std::vector<std::unique_ptr<ShaderNode> > args;
         for (auto &arg: wArgs) {
             args.push_back(arg.node->copy());
@@ -244,7 +255,7 @@ namespace xng::ShaderScript {
                 for (auto fi = 0; fi < func.arguments.size(); fi++) {
                     auto &farg = func.arguments.at(fi);
                     if (farg.type.index() == 0) {
-                        if (std::get<ShaderDataType>(farg.type) != wArgs.at(funcIndex).type) {
+                        if (std::get<ShaderDataType>(farg.type) != wArgs.at(fi).type) {
                             match = false;
                             break;
                         }
@@ -278,6 +289,32 @@ namespace xng::ShaderScript {
                                  ShaderNodeFactory::call(functionName, args));
     }
 
+    inline ShaderNodeWrapper Call(const std::string &functionName,
+                                  const ShaderNodeWrapper &arg0) {
+        return CallA(functionName, {arg0});
+    }
+
+    inline ShaderNodeWrapper Call(const std::string &functionName,
+                                  const ShaderNodeWrapper &arg0,
+                                  const ShaderNodeWrapper &arg1) {
+        return CallA(functionName, {arg0, arg1});
+    }
+
+    inline ShaderNodeWrapper Call(const std::string &functionName,
+                                  const ShaderNodeWrapper &arg0,
+                                  const ShaderNodeWrapper &arg1,
+                                  const ShaderNodeWrapper &arg2) {
+        return CallA(functionName, {arg0, arg1, arg2});
+    }
+
+    inline ShaderNodeWrapper Call(const std::string &functionName,
+                                  const ShaderNodeWrapper &arg0,
+                                  const ShaderNodeWrapper &arg1,
+                                  const ShaderNodeWrapper &arg2,
+                                  const ShaderNodeWrapper &arg3) {
+        return CallA(functionName, {arg0, arg1, arg2, arg3});
+    }
+
     inline void Function(const std::string &name,
                          const std::vector<ShaderFunction::Argument> &arguments,
                          ShaderDataType returnType) {
@@ -305,10 +342,10 @@ namespace xng::ShaderScript {
     }
 
     inline void For(const ShaderNodeWrapper &loopVariable,
-                    const ShaderNodeWrapper &initializer,
-                    const ShaderNodeWrapper &condition,
+                    const ShaderNodeWrapper &loopStart,
+                    const ShaderNodeWrapper &loopEnd,
                     const ShaderNodeWrapper &incrementor) {
-        ShaderBuilder::instance().For(loopVariable, initializer, condition, incrementor);
+        ShaderBuilder::instance().For(loopVariable, loopStart, loopEnd, incrementor);
     }
 
     inline void EndFor() {
@@ -473,11 +510,11 @@ namespace xng::ShaderScript {
     }
 
     inline ShaderNodeWrapper dot(const ShaderNodeWrapper &x, const ShaderNodeWrapper &y) {
-        return ShaderNodeWrapper(x.type, ShaderNodeFactory::dot(x.node, y.node));
+        return ShaderNodeWrapper(ShaderDataType::float32(), ShaderNodeFactory::dot(x.node, y.node));
     }
 
     inline ShaderNodeWrapper cross(const ShaderNodeWrapper &x, const ShaderNodeWrapper &y) {
-        return ShaderNodeWrapper(x.type, ShaderNodeFactory::cross(x.node, y.node));
+        return ShaderNodeWrapper(ShaderDataType::vec3(), ShaderNodeFactory::cross(x.node, y.node));
     }
 
     inline ShaderNodeWrapper normalize(const ShaderNodeWrapper &x) {
@@ -485,21 +522,21 @@ namespace xng::ShaderScript {
     }
 
     inline ShaderNodeWrapper length(const ShaderNodeWrapper &x) {
-        return ShaderNodeWrapper(x.type, ShaderNodeFactory::length(x.node));
+        return ShaderNodeWrapper(ShaderDataType::float32(), ShaderNodeFactory::length(x.node));
     }
 
     inline ShaderNodeWrapper distance(const ShaderNodeWrapper &x, const ShaderNodeWrapper &y) {
-        return ShaderNodeWrapper(x.type, ShaderNodeFactory::distance(x.node, y.node));
+        return ShaderNodeWrapper(ShaderDataType::float32(), ShaderNodeFactory::distance(x.node, y.node));
     }
 
     inline ShaderNodeWrapper reflect(const ShaderNodeWrapper &I, const ShaderNodeWrapper &N) {
-        return ShaderNodeWrapper(N.type, ShaderNodeFactory::reflect(I.node, N.node));
+        return ShaderNodeWrapper(I.type, ShaderNodeFactory::reflect(I.node, N.node));
     }
 
     inline ShaderNodeWrapper refract(const ShaderNodeWrapper &I,
                                      const ShaderNodeWrapper &N,
                                      const ShaderNodeWrapper &eta) {
-        return ShaderNodeWrapper(N.type, ShaderNodeFactory::refract(I.node, N.node, eta.node));
+        return ShaderNodeWrapper(I.type, ShaderNodeFactory::refract(I.node, N.node, eta.node));
     }
 
     inline ShaderNodeWrapper faceforward(const ShaderNodeWrapper &N,

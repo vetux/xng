@@ -20,28 +20,21 @@
 #ifndef XENGINE_TEXFILTER_HPP
 #define XENGINE_TEXFILTER_HPP
 
-#include "xng/rendergraph/shader/shaderfunction.hpp"
+#include "xng/rendergraph/shaderscript/shaderscript.hpp"
+
+using namespace xng::ShaderScript;
+DEFINE_FUNCTION2(textureBicubic)
+DEFINE_FUNCTION3(textureBicubic)
 
 namespace xng::shaderlib {
     /**
      * vec4 textureBicubic(sampler2D sampler, vec2 texCoords)
+     * vec4 textureBicubic(sampler2DMS sampler, vec2 texCoords, int samples)
+     * vec4 textureBicubic(sampler2DArray sampler, vec3 texCoords3, vec2 size)
      *
      * @return
      */
-    XENGINE_EXPORT ShaderFunction textureBicubic();
-
-    /**
-     * vec4 textureBicubicMS(sampler2DMS sampler, vec2 texCoords, int samples)
-     *
-     * @return
-     */
-    XENGINE_EXPORT ShaderFunction textureBicubicMS();
-
-    /**
-     * vec4 textureBicubicArray(sampler2DArray sampler, vec3 texCoords3, vec2 size)
-     *
-     * @return
-     */
-    XENGINE_EXPORT ShaderFunction textureBicubicArray();
+    XENGINE_EXPORT void textureBicubic();
 }
+
 #endif //XENGINE_TEXFILTER_HPP

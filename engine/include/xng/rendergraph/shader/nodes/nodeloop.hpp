@@ -30,9 +30,9 @@ namespace xng {
         std::vector<std::unique_ptr<ShaderNode> > body;
 
         NodeLoop(std::unique_ptr<ShaderNode> initializer,
-                   std::unique_ptr<ShaderNode> predicate,
-                   std::unique_ptr<ShaderNode> iterator,
-                   std::vector<std::unique_ptr<ShaderNode> > body)
+                 std::unique_ptr<ShaderNode> predicate,
+                 std::unique_ptr<ShaderNode> iterator,
+                 std::vector<std::unique_ptr<ShaderNode> > body)
             : initializer(std::move(initializer)),
               predicate(std::move(predicate)),
               iterator(std::move(iterator)),
@@ -49,10 +49,10 @@ namespace xng {
             for (auto &node: body) {
                 bodyCopy.push_back(node->copy());
             }
-            return std::make_unique<NodeLoop>(initializer->copy(),
-                                                predicate->copy(),
-                                                iterator->copy(),
-                                                std::move(bodyCopy));
+            return std::make_unique<NodeLoop>(initializer ? initializer->copy() : nullptr,
+                                              predicate ? predicate->copy() : nullptr,
+                                              iterator ? iterator->copy() : nullptr,
+                                              std::move(bodyCopy));
         }
     };
 }

@@ -392,9 +392,9 @@ namespace xng::ShaderNodeFactory {
         for (auto &node: body) {
             bodyCopy.push_back(node->copy());
         }
-        return std::make_unique<NodeLoop>(initializer->copy(),
-                                          predicate->copy(),
-                                          iterator->copy(),
+        return std::make_unique<NodeLoop>(initializer ? initializer->copy() : nullptr,
+                                          predicate ? predicate->copy() : nullptr,
+                                          iterator ? iterator->copy() : nullptr,
                                           std::move(bodyCopy));
     }
 }

@@ -228,8 +228,7 @@ namespace xng {
         XENGINE_EXPORT std::unique_ptr<ShaderNode> loop(const std::unique_ptr<ShaderNode> &initializer,
                                                         const std::unique_ptr<ShaderNode> &predicate,
                                                         const std::unique_ptr<ShaderNode> &iterator,
-                                                        const std::vector<std::unique_ptr<ShaderNode> > &
-                                                        body);
+                                                        const std::vector<std::unique_ptr<ShaderNode> > &body);
 
         inline std::unique_ptr<ShaderNode> getX(const std::unique_ptr<ShaderNode> &value) {
             return subscriptVector(std::move(value), 0);

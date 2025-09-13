@@ -20,11 +20,16 @@
 #ifndef XENGINE_PI_HPP
 #define XENGINE_PI_HPP
 
-#include "xng/rendergraph/shader/nodes/fgnodeliteral.hpp"
+#include <memory>
+
+#include "xng/rendergraph/shaderscript/shadernodewrapper.hpp"
 
 namespace xng {
-    inline std::unique_ptr<FGShaderNode> pi() {
-        return std::make_unique<FGNodeLiteral>(FGShaderLiteral(3.14159265358979323846));
+    inline ShaderScript::ShaderNodeWrapper pi() {
+        return {
+            ShaderDataType::float32(),
+            std::make_unique<NodeLiteral>(ShaderLiteral(3.14159265358979323846))
+        };
     }
 }
 

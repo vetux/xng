@@ -86,13 +86,13 @@ namespace xng::ShaderScript {
          * Begin a for loop
          *
          * @param loopVariable The variable to perform looping on
-         * @param initializer The value the variable should be initialized to
-         * @param condition The condition to check every iteration
+         * @param loopStart The value the variable should be initialized to
+         * @param loopEnd The value the variable should be looped up to (loopVariable <= loopEnd)
          * @param incrementor The value added to the variable on every iteration
          */
         void For(const ShaderNodeWrapper &loopVariable,
-                 const ShaderNodeWrapper &initializer,
-                 const ShaderNodeWrapper &condition,
+                 const ShaderNodeWrapper &loopStart,
+                 const ShaderNodeWrapper &loopEnd,
                  const ShaderNodeWrapper &incrementor);
 
         void EndFor();
@@ -155,6 +155,7 @@ namespace xng::ShaderScript {
             std::unique_ptr<ShaderNode> condition;
             std::unique_ptr<ShaderNode> loopVariable;
             std::unique_ptr<ShaderNode> initializer;
+            std::unique_ptr<ShaderNode> loopEnd;
             std::unique_ptr<ShaderNode> incrementor;
             std::vector<std::shared_ptr<TreeNode> > defaultBranch;
             std::vector<std::shared_ptr<TreeNode> > falseBranch;
@@ -170,8 +171,8 @@ namespace xng::ShaderScript {
         std::unordered_map<std::string, ShaderBuffer> buffers;
         std::vector<ShaderTexture> textures;
 
-        std::shared_ptr<TreeNode> rootNode;
         TreeNode *currentNode{};
+        std::shared_ptr<TreeNode> rootNode;
 
         std::shared_ptr<TreeNode> functionRoot;
         std::vector<ShaderFunction> functions;

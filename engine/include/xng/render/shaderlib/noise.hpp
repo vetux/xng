@@ -20,92 +20,44 @@
 #ifndef XENGINE_NOISE_HPP
 #define XENGINE_NOISE_HPP
 
-#include "xng/rendergraph/shader/shaderfunction.hpp"
+#include "xng/rendergraph/shaderscript/shaderscript.hpp"
+
+using namespace xng::ShaderScript;
+
+DEFINE_FUNCTION1(simplex)
+
+DEFINE_FUNCTION1(perlin)
+DEFINE_FUNCTION2(perlin)
+DEFINE_FUNCTION3(perlin)
+DEFINE_FUNCTION1(perlinc)
+DEFINE_FUNCTION2(perlinc)
+
+DEFINE_FUNCTION1(noise)
 
 namespace xng::shaderlib::noise {
     /**
-     * float simplex2D(vec2 v)
-     *
-     * @return
+     * float simplex(vec2 v)
+     * float simplex(vec3 v)
+     * float simplex(vec4 v)
      */
-    XENGINE_EXPORT ShaderFunction simplex2D();
-
-    /**
-     * float simplex3D(vec3 v)
-     *
-     * @return
-     */
-    XENGINE_EXPORT ShaderFunction simplex3D();
-
-    /**
-     * float simplex4D(vec4 v)
-     *
-     * @return
-     */
-    XENGINE_EXPORT ShaderFunction simplex4D();
+    XENGINE_EXPORT void simplex();
 
     /**
      * float perlin(vec2 p, float dim)
-     *
-     * @return
+     * float perlin(vec2 p, float dim, float time)
+     * float perlinbw(vec2 p, float dim)
+     * float perlinc(vec2 p)
+     * float perlinc(vec4 p)
+     * float perlinc(vec4 p, vec4 rep)
      */
-    XENGINE_EXPORT ShaderFunction perlin();
-
-    /**
-     * float perlinT(vec2 p, float dim, float time)
-     *
-     * @return
-     */
-    XENGINE_EXPORT ShaderFunction perlinT();
-
-    /**
-     * float perlinBW(vec2 p, float dim)
-     *
-     * @return
-     */
-    XENGINE_EXPORT ShaderFunction perlinBW();
-
-    /**
-     * float perlinC2D(vec2 p)
-     *
-     * @return
-     */
-    XENGINE_EXPORT ShaderFunction perlinC2D();
-
-    /**
-     * float perlinC3D(vec4 p)
-     *
-     * @return
-     */
-    XENGINE_EXPORT ShaderFunction perlinC3D();
-
-    /**
-     * float perlinPeriodic(vec4 p, vec4 rep)
-     *
-     * @return
-     */
-    XENGINE_EXPORT ShaderFunction perlinPeriodic();
+    XENGINE_EXPORT void perlin();
 
     /**
      * float noise(float p)
-     *
-     * @return
+     * float noise(vec2 p)
+     * float noise(vec3 p)
      */
-    XENGINE_EXPORT ShaderFunction noise();
-
-    /**
-     * float noise2D(vec2 p)
-     *
-     * @return
-     */
-    XENGINE_EXPORT ShaderFunction noise2D();
-
-    /**
-     * float noise3D(vec3 p)
-     *
-     * @return
-     */
-    XENGINE_EXPORT ShaderFunction noise3D();
+    XENGINE_EXPORT void noise();
 }
 
 #endif //XENGINE_NOISE_HPP

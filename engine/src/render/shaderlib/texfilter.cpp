@@ -23,94 +23,101 @@
 
 using namespace xng::ShaderScript;
 
+DEFINE_FUNCTION3(textureMS)
+DEFINE_FUNCTION1(cubic)
+
 namespace xng::shaderlib {
-    ShaderNodeWrapper textureMS(const ShaderNodeWrapper &color,
-                                vec2 &uv,
-                                const Int &samples) {
-        ivec2 size = textureSize(color);
-        ivec2 pos = ivec2(size.x() * uv.x(), size.y() * uv.y());
+    void defTextureMS() {
+        Function("textureMS",
+                 {
+                     {"color", ShaderTexture(TEXTURE_2D_MULTISAMPLE, RGBA)},
+                     {"uv", ShaderDataType::vec2()},
+                     {"samples", ShaderDataType::integer()}
+                 },
+                 ShaderDataType::vec4());
+        {
+            vec2 uv = argument("uv");
+            Int samples = argument("samples");
 
-        vec4 ret = vec4(0, 0, 0, 0);
+            ivec2 size = textureSize(argument("color"));
+            ivec2 pos = ivec2(size.x() * uv.x(), size.y() * uv.y());
 
-        Int i = 0;
-        For(i, 0, i < samples, i + 1);
+            vec4 ret = vec4(0, 0, 0, 0);
 
-        ret += texelFetch(color, pos, i);
+            Int i;
+            For(i, 0, samples - 1, 1);
+            {
+                ret += texelFetch(argument("color"), pos, i);
+            }
+            EndFor();
 
-        EndFor();
+            ret = ret / samples;
 
-        ret = ret / samples;
-
-        return ret;
+            Return(ret);
+        }
+        EndFunction();
     }
 
-    ShaderNodeWrapper cubic(const Float &v) {
-        vec4 n = vec4(1.0, 2.0, 3.0, 4.0) - v;
-        vec4 s = n * n * n;
-        Float x = s.x();
-        Float y = s.y() - 4.0 * s.x();
-        Float z = s.z() - 4.0 * s.y() + 6.0 * s.x();
-        Float w = 6.0 - x - y - z;
-        return vec4(x, y, z, w) * (1.0 / 6.0);
+    void defCubic() {
+        Function("cubic", {{"v", ShaderDataType::float32()}}, ShaderDataType::vec4());
+        {
+            Float v = argument("v");
+            vec4 n = vec4(1.0, 2.0, 3.0, 4.0) - v;
+            vec4 s = n * n * n;
+            Float x = s.x();
+            Float y = s.y() - 4.0 * s.x();
+            Float z = s.z() - 4.0 * s.y() + 6.0 * s.x();
+            Float w = 6.0 - x - y - z;
+            Return(vec4(x, y, z, w) * (1.0 / 6.0));
+        }
+        EndFunction();
     }
 
-    ShaderFunction textureBicubic() {
-        auto &builder = ShaderBuilder::instance();
-        builder.setup({}, {}, {}, {}, {}, {}, {});
+    void textureBicubic() {
+        defCubic();
+        defTextureMS();
+        Function("textureBicubic",
+                 {
+                     {"sampler", ShaderTexture(TEXTURE_2D, RGBA)},
+                     {"texCoords", ShaderDataType::vec2()}
+                 },
+                 ShaderDataType::vec4());
+        {
+            vec2 texCoords = argument("texCoords");
 
-        builder.Function("textureBicubic",
-                         {
-                             {"sampler", ShaderTexture(TEXTURE_2D, RGBA)},
-                             {"texCoords", ShaderDataType::vec2()}
-                         },
-                         ShaderDataType::vec4());
+            ivec2 texSize = textureSize(argument("sampler"));
+            vec2 invTexSize = 1.0 / texSize;
 
-        vec2 texCoords = argument("texCoords");
+            texCoords = texCoords * texSize - 0.5;
 
-        ivec2 texSize = textureSize(argument("sampler"));
-        vec2 invTexSize = 1.0 / texSize;
+            vec2 fxy = fract(texCoords);
+            texCoords -= fxy;
 
-        texCoords = texCoords * texSize - 0.5;
+            vec4 xcubic = cubic(fxy.x());
+            vec4 ycubic = cubic(fxy.y());
 
+            vec4 c = vec4(texCoords.x(), texCoords.x(), texCoords.y(), texCoords.y())
+                     + vec4(-0.5, 1.5, -0.5, 1.5);
 
-        vec2 fxy = fract(texCoords);
-        texCoords -= fxy;
+            vec4 s = vec4(xcubic.x() + xcubic.y(),
+                          xcubic.z() + xcubic.w(),
+                          ycubic.x() + ycubic.y(),
+                          ycubic.z() + ycubic.w());
 
-        vec4 xcubic = cubic(fxy.x());
-        vec4 ycubic = cubic(fxy.y());
+            vec4 offset = c + vec4(xcubic.y(), xcubic.w(), ycubic.y(), ycubic.w()) / s;
 
-        vec4 c = vec4(texCoords.x(), texCoords.x(), texCoords.y(), texCoords.y())
-                 + vec4(-0.5, 1.5, -0.5, 1.5);
+            offset *= vec4(invTexSize.x(), invTexSize.x(), invTexSize.y(), invTexSize.y());
 
-        vec4 s = vec4(xcubic.x() + xcubic.y(),
-                      xcubic.z() + xcubic.w(),
-                      ycubic.x() + ycubic.y(),
-                      ycubic.z() + ycubic.w());
+            vec4 sample0 = texture(argument("sampler"), vec2(offset.x(), offset.z()));
+            vec4 sample1 = texture(argument("sampler"), vec2(offset.y(), offset.z()));
+            vec4 sample2 = texture(argument("sampler"), vec2(offset.x(), offset.w()));
+            vec4 sample3 = texture(argument("sampler"), vec2(offset.y(), offset.w()));
 
-        vec4 offset = c + vec4(xcubic.y(), xcubic.w(), ycubic.y(), ycubic.w()) / s;
+            Float sx = s.x() / (s.x() + s.y());
+            Float sy = s.z() / (s.z() + s.w());
 
-        offset *= vec4(invTexSize.x(), invTexSize.x(), invTexSize.y(), invTexSize.y());
-
-        vec4 sample0 = texture(argument("sampler"), vec2(offset.x(), offset.z()));
-        vec4 sample1 = texture(argument("sampler"), vec2(offset.y(), offset.z()));
-        vec4 sample2 = texture(argument("sampler"), vec2(offset.x(), offset.w()));
-        vec4 sample3 = texture(argument("sampler"), vec2(offset.y(), offset.w()));
-
-        Float sx = s.x() / (s.x() + s.y());
-        Float sy = s.z() / (s.z() + s.w());
-
-        Return(mix(mix(sample3, sample2, sx), mix(sample1, sample0, sx), sy));
-
-        builder.EndFunction();
-
-        return builder.getFunctions().at("textureBicubic");
-    }
-
-    ShaderFunction textureBicubicMS() {
-        throw std::runtime_error("Not implemented");
-    }
-
-    ShaderFunction textureBicubicArray() {
-        throw std::runtime_error("Not implemented");
+            Return(mix(mix(sample3, sample2, sx), mix(sample1, sample0, sx), sy));
+        }
+        EndFunction();
     }
 }

@@ -9,7 +9,7 @@ It is implemented through headers which define various types and functions to cr
   - Literal types are uppercase (e.g. `int` in glsl becomes `Int` in C++)
   - Arrays are defined as <code>ArrayX<COUNT> b = ArrayX<COUNT>{VALUES...}</code>
   - If a variable is assigned at initialization eg `vec2 v = vec2(1, 1)` it might be inlined in the resulting shader. (See `ShaderNodeWrapper::promoteToVariable` for more details)
-    - Default initalization can be used to avoid inlining eg `vec2 v; v = vec2(1, 1)`  
+    - Default initialization can be used to avoid inlining eg `vec2 v; v = vec2(1, 1)`. This is currently required if the variable is assigned to in a subsequent conditional or branch.  
 
 #### Subscripting
   - Vector subscripting are functions (e.g. <code>vec.x</code> in glsl becomes `vec.x()` in C++)
