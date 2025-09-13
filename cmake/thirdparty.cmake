@@ -38,6 +38,7 @@ endif ()
 
 if (BUILD_BULLET3)
     set(BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
+    set(BUILD_BULLET2_DEMOS OFF CACHE BOOL "" FORCE)
     add_thirdparty_subdir(${THIRD_PARTY_BASE}/bullet3/)
     add_thirdparty_include(${THIRD_PARTY_BASE}/bullet3/src/)
 endif ()
