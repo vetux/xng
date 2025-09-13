@@ -53,7 +53,12 @@ namespace xng {
         std::vector<ShaderTexture> textures; // The available textures in binding order
 
         std::vector<std::unique_ptr<ShaderNode> > mainFunction;
-        std::unordered_map<std::string, ShaderFunction> functions;
+
+        /**
+         * The available functions.
+         * Functions can be overloaded by specifying multiple functions with the same name but different argument signatures.
+         */
+        std::vector<ShaderFunction> functions;
 
         ShaderStage() = default;
 
@@ -64,7 +69,7 @@ namespace xng {
                     const std::unordered_map<std::string, ShaderBuffer> &buffers,
                     const std::vector<ShaderTexture> &textures,
                     std::vector<std::unique_ptr<ShaderNode> > mainFunction,
-                    std::unordered_map<std::string, ShaderFunction> functions)
+                    std::vector<ShaderFunction> functions)
             : type(stage),
               inputLayout(std::move(input_layout)),
               outputLayout(std::move(output_layout)),

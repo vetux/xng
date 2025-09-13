@@ -95,6 +95,10 @@ namespace xng {
             return type == other.type && component == other.component && count == other.count;
         }
 
+        bool operator!=(const ShaderDataType &other) const {
+            return !(*this == other);
+        }
+
         Type type{};
         Component component{};
         size_t count = 1; // If larger than 1, this element is a fixed size array

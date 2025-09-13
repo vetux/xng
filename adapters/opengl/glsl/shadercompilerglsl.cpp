@@ -146,8 +146,8 @@ std::string generateHeader(const ShaderStage &source, CompiledPipeline &pipeline
 
 std::string generateBody(const ShaderStage &source) {
     std::string body;
-    for (const auto &pair: source.functions) {
-        body += compileFunction(pair.first, pair.second.arguments, pair.second.body, pair.second.returnType, source);
+    for (const auto &func: source.functions) {
+        body += compileFunction(func.name, func.arguments, func.body, func.returnType, source);
         body += "\n\n";
     }
     std::string appendix = "";

@@ -93,8 +93,10 @@ namespace xng::ShaderScript {
     void ShaderBuilder::EndFunction() {
         ShaderFunction function = currentFunction;
         function.body = createNodes(*functionRoot);
-        functions[function.name] = function;
+        functions.emplace_back(function);
         currentNode = rootNode.get();
+        currentFunction={};
+        functionRoot = nullptr;
     }
 
     std::string ShaderBuilder::getVariableName() {
@@ -168,7 +170,7 @@ namespace xng::ShaderScript {
                               const std::unordered_map<std::string, ShaderDataType> &parameters,
                               const std::unordered_map<std::string, ShaderBuffer> &buffers,
                               const std::vector<ShaderTexture> &textures,
-                              const std::unordered_map<std::string, ShaderFunction> &functions) {
+                              const std::vector<ShaderFunction> &functions) {
         rootNode = std::make_shared<TreeNode>();
         rootNode->parent = nullptr;
         rootNode->type = TreeNode::ROOT;

@@ -55,7 +55,7 @@ namespace xng::ShaderScript {
             return textures;
         }
 
-        [[nodiscard]] const std::unordered_map<std::string, ShaderFunction> &getFunctions() const {
+        [[nodiscard]] const std::vector<ShaderFunction> &getFunctions() const {
             return functions;
         }
 
@@ -131,7 +131,7 @@ namespace xng::ShaderScript {
                    const std::unordered_map<std::string, ShaderDataType> &parameters,
                    const std::unordered_map<std::string, ShaderBuffer> &buffers,
                    const std::vector<ShaderTexture> &textures,
-                   const std::unordered_map<std::string, ShaderFunction> &functions);
+                   const std::vector<ShaderFunction> &functions);
 
         /**
          * The previously recorded nodes are used as the body of the main function.
@@ -174,7 +174,7 @@ namespace xng::ShaderScript {
         TreeNode *currentNode{};
 
         std::shared_ptr<TreeNode> functionRoot;
-        std::unordered_map<std::string, ShaderFunction> functions;
+        std::vector<ShaderFunction> functions;
 
         size_t variableCounter = 0;
 

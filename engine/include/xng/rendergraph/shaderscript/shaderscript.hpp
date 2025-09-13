@@ -233,8 +233,59 @@ namespace xng::ShaderScript {
         for (auto &arg: wArgs) {
             args.push_back(arg.node->copy());
         }
-        return ShaderNodeWrapper(ShaderBuilder::instance().getFunctions().at(functionName).returnType,
+
+        // Resolve function to call to retrieve the return type
+        int funcIndex = -1;
+        auto funcs = ShaderBuilder::instance().getFunctions();
+        for (auto i = 0; i < funcs.size(); i++) {
+            auto &func = funcs.at(i);
+            if (func.name == functionName) {
+                bool match = true;
+                for (auto fi = 0; fi < func.arguments.size(); fi++) {
+                    auto &farg = func.arguments.at(fi);
+                    if (farg.type.index() == 0) {
+                        if (std::get<ShaderDataType>(farg.type) != wArgs.at(funcIndex).type) {
+                            match = false;
+                            break;
+                        }
+                    } else {
+                        if (wArgs.at(fi).node->getType() != ShaderNode::TEXTURE) {
+                            if (wArgs.at(fi).node->getType() == ShaderNode::ARGUMENT) {
+                                auto &argNode = down_cast<NodeArgument &>(*wArgs.at(fi).node);
+                                auto targ = ShaderBuilder::instance().getCurrentFunction().getArgumentType(
+                                    argNode.argumentName);
+                                if (targ.index() != 1) {
+                                    match = false;
+                                    break;
+                                }
+                            } else {
+                                match = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (match) {
+                    funcIndex = i;
+                    break;
+                }
+            }
+        }
+        if (funcIndex < 0) {
+            throw std::runtime_error("Function " + functionName + " not found");
+        }
+        return ShaderNodeWrapper(ShaderBuilder::instance().getFunctions().at(funcIndex).returnType,
                                  ShaderNodeFactory::call(functionName, args));
+    }
+
+    inline void Function(const std::string &name,
+                         const std::vector<ShaderFunction::Argument> &arguments,
+                         ShaderDataType returnType) {
+        ShaderBuilder::instance().Function(name, arguments, returnType);
+    }
+
+    inline void EndFunction() {
+        ShaderBuilder::instance().EndFunction();
     }
 
     inline void Return(const ShaderNodeWrapper &value) {
@@ -293,10 +344,10 @@ namespace xng::ShaderScript {
             isArray) {
             return ShaderNodeWrapper(ShaderDataType::ivec3(),
                                      ShaderNodeFactory::textureSize(texture.node, lod.node));
-            } else {
-                return ShaderNodeWrapper(ShaderDataType::ivec2(),
-                                         ShaderNodeFactory::textureSize(texture.node, lod.node));
-            }
+        } else {
+            return ShaderNodeWrapper(ShaderDataType::ivec2(),
+                                     ShaderNodeFactory::textureSize(texture.node, lod.node));
+        }
     }
 
     inline ShaderNodeWrapper texture(const ShaderNodeWrapper &texture,
