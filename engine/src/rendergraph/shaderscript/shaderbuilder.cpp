@@ -40,7 +40,7 @@ namespace xng::ShaderScript {
         } else {
             currentNode->defaultBranch.push_back(ifNode);
         }
-        currentNode = ifNode;
+        currentNode = ifNode.get();
     }
 
     void ShaderBuilder::Else() {
@@ -54,9 +54,9 @@ namespace xng::ShaderScript {
     }
 
     void ShaderBuilder::For(const ShaderNodeWrapper &loopVariable,
-                              const ShaderNodeWrapper &initializer,
-                              const ShaderNodeWrapper &condition,
-                              const ShaderNodeWrapper &incrementor) {
+                            const ShaderNodeWrapper &initializer,
+                            const ShaderNodeWrapper &condition,
+                            const ShaderNodeWrapper &incrementor) {
         std::shared_ptr<TreeNode> forNode = std::make_shared<TreeNode>();
         forNode->parent = currentNode;
         forNode->type = TreeNode::FOR;
@@ -69,7 +69,7 @@ namespace xng::ShaderScript {
         } else {
             currentNode->defaultBranch.push_back(forNode);
         }
-        currentNode = forNode;
+        currentNode = forNode.get();
     }
 
     void ShaderBuilder::EndFor() {
@@ -78,13 +78,12 @@ namespace xng::ShaderScript {
     }
 
     void ShaderBuilder::Function(const std::string &name,
-                                   const std::vector<ShaderFunction::Argument> &arguments,
-                                   ShaderDataType returnType) {
-        // TODO: Redesign shader builder implementation to avoid leaking tree node pointers. (Valgrind reports this leaks so possibly a circular reference)
+                                 const std::vector<ShaderFunction::Argument> &arguments,
+                                 ShaderDataType returnType) {
         std::shared_ptr<TreeNode> functionNode = std::make_shared<TreeNode>();
         functionNode->parent = nullptr;
         functionNode->type = TreeNode::ROOT;
-        currentNode = functionNode;
+        currentNode = functionNode.get();
         currentFunction.name = name;
         currentFunction.returnType = returnType;
         currentFunction.arguments = arguments;
@@ -95,7 +94,7 @@ namespace xng::ShaderScript {
         ShaderFunction function = currentFunction;
         function.body = createNodes(*functionRoot);
         functions[function.name] = function;
-        currentNode = rootNode;
+        currentNode = rootNode.get();
     }
 
     std::string ShaderBuilder::getVariableName() {
@@ -139,13 +138,13 @@ namespace xng::ShaderScript {
             }
 
             auto initializer = ShaderNodeFactory::assign(node.loopVariable,
-                                                       node.initializer);
+                                                         node.initializer);
 
             auto incrementor = ShaderNodeFactory::assign(node.loopVariable, node.incrementor);
 
             nodes.push_back(ShaderNodeFactory::loop(initializer,
-                                                  node.condition,
-                                                  incrementor, body));
+                                                    node.condition,
+                                                    incrementor, body));
         }
         return nodes;
     }
@@ -164,16 +163,16 @@ namespace xng::ShaderScript {
     }
 
     void ShaderBuilder::setup(ShaderStage::Type stage,
-                                const ShaderAttributeLayout &inputLayout,
-                                const ShaderAttributeLayout &outputLayout,
-                                const std::unordered_map<std::string, ShaderDataType> &parameters,
-                                const std::unordered_map<std::string, ShaderBuffer> &buffers,
-                                const std::vector<ShaderTexture> &textures,
-                                const std::unordered_map<std::string, ShaderFunction> &functions) {
+                              const ShaderAttributeLayout &inputLayout,
+                              const ShaderAttributeLayout &outputLayout,
+                              const std::unordered_map<std::string, ShaderDataType> &parameters,
+                              const std::unordered_map<std::string, ShaderBuffer> &buffers,
+                              const std::vector<ShaderTexture> &textures,
+                              const std::unordered_map<std::string, ShaderFunction> &functions) {
         rootNode = std::make_shared<TreeNode>();
         rootNode->parent = nullptr;
         rootNode->type = TreeNode::ROOT;
-        currentNode = rootNode;
+        currentNode = rootNode.get();
 
         functionRoot = nullptr;
 

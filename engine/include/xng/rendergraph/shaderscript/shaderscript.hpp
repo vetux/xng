@@ -184,8 +184,7 @@ namespace xng::ShaderScript {
         auto arg = func.getArgumentType(name);
         if (arg.index() != 0) {
             return ShaderNodeWrapper(ShaderDataType::unsignedInteger(),
-                                     ShaderNodeFactory::argument(name),
-                                     false);
+                                     ShaderNodeFactory::argument(name));
         } else {
             return ShaderNodeWrapper(std::get<ShaderDataType>(arg),
                                      ShaderNodeFactory::argument(name));
@@ -275,8 +274,7 @@ namespace xng::ShaderScript {
     inline ShaderNodeWrapper textureSampler(const uint32_t textureBinding) {
         auto tex = ShaderBuilder::instance().getTextures().at(textureBinding);
         return ShaderNodeWrapper(ShaderDataType{ShaderDataType::VECTOR4, ShaderDataType::getColorComponent(tex.format)},
-                                 ShaderNodeFactory::texture(textureBinding),
-                                 false);
+                                 ShaderNodeFactory::texture(textureBinding));
     }
 
     inline ShaderNodeWrapper textureSize(const ShaderNodeWrapper &texture) {

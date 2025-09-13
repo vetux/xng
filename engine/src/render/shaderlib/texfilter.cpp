@@ -25,13 +25,12 @@ using namespace xng::ShaderScript;
 
 namespace xng::shaderlib {
     ShaderNodeWrapper textureMS(const ShaderNodeWrapper &color,
-                                const vec2 &uv,
+                                vec2 &uv,
                                 const Int &samples) {
         ivec2 size = textureSize(color);
         ivec2 pos = ivec2(size.x() * uv.x(), size.y() * uv.y());
 
         vec4 ret = vec4(0, 0, 0, 0);
-
 
         Int i = 0;
         For(i, 0, i < samples, i + 1);

@@ -20,6 +20,8 @@
 #ifndef XENGINE_SHADERNODEWRAPPER_HPP
 #define XENGINE_SHADERNODEWRAPPER_HPP
 
+#include <fcntl.h>
+
 #include "xng/rendergraph/shader/shadernodefactory.hpp"
 #include "xng/rendergraph/shader/nodes.hpp"
 
@@ -31,18 +33,11 @@ namespace xng::ShaderScript {
         ShaderDataType type;
         std::unique_ptr<ShaderNode> node{};
 
+        ShaderNodeWrapper() = delete;
+
         ShaderNodeWrapper(const ShaderDataType type,
-                          std::unique_ptr<ShaderNode> valueNode,
-                          bool createTempVariable = true)
-            : type(type) {
-            if (createTempVariable) {
-                const auto varName = ShaderBuilder::instance().getVariableName();
-                ShaderBuilder::instance().addNode(
-                    ShaderNodeFactory::createVariable(varName, type, valueNode));
-                node = ShaderNodeFactory::variable(varName);
-            } else {
-                node = std::move(valueNode);
-            }
+                          std::unique_ptr<ShaderNode> valueNode)
+            : type(type), node(std::move(valueNode)) {
         }
 
         ShaderNodeWrapper(const ShaderNodeWrapper &other) {
@@ -81,55 +76,61 @@ namespace xng::ShaderScript {
                                 ShaderNodeFactory::literal(literal)) {
         }
 
-        [[nodiscard]] ShaderNodeWrapper x() const {
-            return ShaderNodeWrapper({ShaderDataType::SCALAR, type.component},
-                                     ShaderNodeFactory::subscriptVector(node, 0));
+        [[nodiscard]] ShaderNodeWrapper x() {
+            promoteToVariable(node);
+            return {{ShaderDataType::SCALAR, type.component}, ShaderNodeFactory::subscriptVector(node, 0)};
         }
 
-        [[nodiscard]] ShaderNodeWrapper y() const {
-            return ShaderNodeWrapper({ShaderDataType::SCALAR, type.component},
-                                     ShaderNodeFactory::subscriptVector(node, 1));
+        [[nodiscard]] ShaderNodeWrapper y() {
+            promoteToVariable(node);
+            return {{ShaderDataType::SCALAR, type.component}, ShaderNodeFactory::subscriptVector(node, 1)};
         }
 
-        [[nodiscard]] ShaderNodeWrapper z() const {
-            return ShaderNodeWrapper({ShaderDataType::SCALAR, type.component},
-                                     ShaderNodeFactory::subscriptVector(node, 2));
+        [[nodiscard]] ShaderNodeWrapper z() {
+            promoteToVariable(node);
+            return {{ShaderDataType::SCALAR, type.component}, ShaderNodeFactory::subscriptVector(node, 2)};
         }
 
-        [[nodiscard]] ShaderNodeWrapper w() const {
-            return ShaderNodeWrapper({ShaderDataType::SCALAR, type.component},
-                                     ShaderNodeFactory::subscriptVector(node, 3));
+        [[nodiscard]] ShaderNodeWrapper w() {
+            promoteToVariable(node);
+            return {{ShaderDataType::SCALAR, type.component}, ShaderNodeFactory::subscriptVector(node, 3)};
         }
 
         [[nodiscard]] ShaderNodeWrapper element(const ShaderNodeWrapper &column,
-                                                const ShaderNodeWrapper &row) const {
+                                                const ShaderNodeWrapper &row) {
+            promoteToVariable(node);
             return ShaderNodeWrapper({ShaderDataType::SCALAR, type.component},
                                      ShaderNodeFactory::subscriptMatrix(node, column.node, row.node));
         }
 
-        void setX(const ShaderNodeWrapper &value) const {
+        void setX(const ShaderNodeWrapper &value) {
+            promoteToVariable(node);
             ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(ShaderNodeFactory::subscriptVector(node, 0),
                                                                         value.node));
         }
 
-        void setY(const ShaderNodeWrapper &value) const {
+        void setY(const ShaderNodeWrapper &value) {
+            promoteToVariable(node);
             ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(ShaderNodeFactory::subscriptVector(node, 1),
                                                                         value.node));
         }
 
-        void setZ(const ShaderNodeWrapper &value) const {
+        void setZ(const ShaderNodeWrapper &value) {
+            promoteToVariable(node);
             ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(ShaderNodeFactory::subscriptVector(node, 2),
                                                                         value.node));
         }
 
-        void setW(const ShaderNodeWrapper &value) const {
+        void setW(const ShaderNodeWrapper &value) {
+            promoteToVariable(node);
             ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(ShaderNodeFactory::subscriptVector(node, 3),
                                                                         value.node));
         }
 
         void setElement(const ShaderNodeWrapper &column,
                         const ShaderNodeWrapper &row,
-                        const ShaderNodeWrapper &value) const {
+                        const ShaderNodeWrapper &value) {
+            promoteToVariable(node);
             ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(
                 ShaderNodeFactory::subscriptMatrix(node,
                                                    row.node,
@@ -137,7 +138,8 @@ namespace xng::ShaderScript {
                 value.node));
         }
 
-        void setElement(const ShaderNodeWrapper &index, const ShaderNodeWrapper &value) const {
+        void setElement(const ShaderNodeWrapper &index, const ShaderNodeWrapper &value) {
+            promoteToVariable(node);
             ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(
                 ShaderNodeFactory::subscriptArray(node, index.node),
                 value.node));
@@ -159,9 +161,13 @@ namespace xng::ShaderScript {
                 // Assign value
                 ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(node, rhs.node));
                 return *this;
+            } else {
+                // Assume assignment to previously in place initialized object eg.
+                // vec2 v = vec2(0, 0)
+                // v = vec2(1, 1)
+                promoteToVariable(rhs.node);
+                return *this;
             }
-            // Not supported
-            throw std::runtime_error("Node wrapper move assignment not supported.");
         }
 
         /**
@@ -180,8 +186,13 @@ namespace xng::ShaderScript {
                 // Assign value
                 ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(node, rhs.node));
                 return *this;
+            } else {
+                // Assume assignment to previously in place initialized object eg.
+                // vec2 v = vec2(0, 0)
+                // v = vec2(1, 1)
+                promoteToVariable(rhs.node);
+                return *this;
             }
-            throw std::runtime_error("Node wrapper copy assignment not supported.");
         }
 
         ShaderNodeWrapper operator+(const ShaderNodeWrapper &rhs) const {
@@ -334,9 +345,39 @@ namespace xng::ShaderScript {
                                      ShaderNodeFactory::logicalAnd(node, rhs.node));
         }
 
-        ShaderNodeWrapper operator[](const ShaderNodeWrapper &rhs) const {
+        ShaderNodeWrapper operator[](const ShaderNodeWrapper &rhs) {
+            promoteToVariable(node);
             return ShaderNodeWrapper({type.type, type.component, 1},
                                      ShaderNodeFactory::subscriptArray(node, rhs.node));
+        }
+
+    protected:
+        /**
+         * Because C++ might elide the assignment operator invocation by creating the object in place for something like:
+         * vec2 v = vec2(1, 1);
+         * I cannot rely on the assignment operator to handle variable definition.
+         *
+         * Therefore, every object (Except default constructed objects) starts out as a temporary object and is promoted to a variable as soon as
+         * it's either being written to through the assignment operator, or a subscripting operation on it is invoked.
+         *
+         * Default constructed objects are variables, so variable definition can be forced by default constructing the variable. (e.g. "vec2 v;")
+         *
+         * This results in variables getting inlined where possible, which is what the graphics driver shader compiler would do anyway,
+         * but it also makes the resulting shader node tree harder to debug.
+         *
+         * It would be best to let the graphics driver handle this inlining, but I don't see any way to resolve
+         * this without making the script language less concise and readable.
+         */
+        void promoteToVariable(const std::unique_ptr<ShaderNode> &variableInitializer) {
+            if (node == nullptr
+                || node->getType() != ShaderNode::VARIABLE) {
+                const auto varName = ShaderBuilder::instance().getVariableName();
+                ShaderBuilder::instance().addNode(
+                    ShaderNodeFactory::createVariable(varName,
+                                                      type,
+                                                      variableInitializer ? variableInitializer->copy() : nullptr));
+                node = ShaderNodeFactory::variable(varName);
+            }
         }
     };
 
@@ -352,7 +393,14 @@ namespace xng::ShaderScript {
     template<ShaderDataType::Type VALUE_TYPE, ShaderDataType::Component VALUE_COMPONENT, size_t VALUE_COUNT>
     class ShaderNodeWrapperTyped : public ShaderNodeWrapper {
     public:
-        ShaderNodeWrapperTyped() = default;
+        /**
+         * Default constructor creates new variable
+         */
+        ShaderNodeWrapperTyped()
+            : ShaderNodeWrapper({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT}, nullptr) {
+            type = {VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT};
+            promoteToVariable(node);
+        }
 
         ShaderNodeWrapperTyped(const ShaderNodeWrapper &base)
             : ShaderNodeWrapper(base) {

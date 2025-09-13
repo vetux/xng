@@ -158,7 +158,7 @@ namespace xng::ShaderScript {
             std::unique_ptr<ShaderNode> incrementor;
             std::vector<std::shared_ptr<TreeNode> > defaultBranch;
             std::vector<std::shared_ptr<TreeNode> > falseBranch;
-            std::shared_ptr<TreeNode> parent; // TODO: Leaks ptr because of circular dependency
+            TreeNode *parent{};
         };
 
         std::vector<std::unique_ptr<ShaderNode> > createNodes(TreeNode &node);
@@ -171,7 +171,7 @@ namespace xng::ShaderScript {
         std::vector<ShaderTexture> textures;
 
         std::shared_ptr<TreeNode> rootNode;
-        std::shared_ptr<TreeNode> currentNode;
+        TreeNode *currentNode{};
 
         std::shared_ptr<TreeNode> functionRoot;
         std::unordered_map<std::string, ShaderFunction> functions;
