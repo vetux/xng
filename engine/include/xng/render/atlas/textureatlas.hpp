@@ -86,7 +86,12 @@ namespace xng {
                            const std::map<TextureAtlasResolution, RenderGraphResource> &atlasBuffers,
                            const ImageRGBA &texture);
 
-        TextureAtlas() = default;
+        TextureAtlas() {
+            for (int i = TEXTURE_ATLAS_8x8; i < TEXTURE_ATLAS_END; i++) {
+                auto res = static_cast<TextureAtlasResolution>(i);
+                bufferOccupations[res] = {};
+            }
+        }
 
         TextureAtlas(std::map<TextureAtlasResolution, std::vector<bool>> bufferOccupations);
 

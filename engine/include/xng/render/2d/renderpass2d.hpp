@@ -28,7 +28,7 @@
 namespace xng {
     class XENGINE_EXPORT RenderPass2D {
     public:
-        RenderPass2D() = default;
+        RenderPass2D();
 
         /**
          * Has to be called immediately before executing the render graph runtime.

@@ -59,6 +59,12 @@ namespace xng {
         Vec2i viewportSize;
     };
 
+    RenderPass2D::RenderPass2D() {
+        for (int res = TEXTURE_ATLAS_8x8; res < TEXTURE_ATLAS_END; res++) {
+            atlasTexturesSizes[static_cast<TextureAtlasResolution>(res)] = 0;
+        }
+    }
+
     bool RenderPass2D::shouldRebuild() {
         meshBuffer.update(renderer.getRenderBatches());
 
@@ -154,6 +160,12 @@ namespace xng {
         screenTexture = builder.getScreenTexture();
 
         builder.addPass("Renderer2D", [this](RenderGraphContext &ctx) {
+            static bool printDebug = true;
+            if (printDebug) {
+                auto src = ctx.getShaderSource(trianglePipeline);
+                std::cout << src[ShaderStage::VERTEX] << std::endl << src[ShaderStage::FRAGMENT] << std::endl;
+                printDebug = false;
+            }
             // Handle inherited resource buffers
             for (auto &v: atlasCopyTextures) {
                 const auto src = v.second;
