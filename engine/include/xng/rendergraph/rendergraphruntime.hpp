@@ -106,6 +106,8 @@ namespace xng {
          */
         virtual void execute(std::vector<GraphHandle> graphs) = 0;
 
+        virtual void destroy(GraphHandle graph) = 0;
+
         virtual void saveCache(GraphHandle graph, std::ostream &stream) = 0;
 
         virtual void loadCache(GraphHandle graph, std::istream &stream) = 0;

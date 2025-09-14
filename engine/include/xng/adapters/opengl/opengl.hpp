@@ -41,6 +41,8 @@ namespace xng::opengl {
 
         void execute(std::vector<GraphHandle> graphs) override;
 
+        void destroy(GraphHandle graph) override;
+
         void saveCache(GraphHandle graph, std::ostream &stream) override;
 
         void loadCache(GraphHandle graph, std::istream &stream) override;

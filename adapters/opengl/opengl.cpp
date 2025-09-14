@@ -63,6 +63,9 @@ namespace xng::opengl {
         }
     }
 
+    void OpenGL::destroy(GraphHandle graph) {
+    }
+
     void OpenGL::saveCache(GraphHandle graph, std::ostream &stream) {
     }
 
