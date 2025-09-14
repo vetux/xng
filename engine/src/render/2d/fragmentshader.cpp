@@ -61,13 +61,15 @@ namespace xng {
         textureArrays.emplace_back(ShaderTexture(TEXTURE_2D, RGBA, true), 12);
 
         auto &builder = ShaderBuilder::instance();
-        builder.setup(ShaderStage::VERTEX,
+        builder.setup(ShaderStage::FRAGMENT,
                       inputLayout,
                       outputLayout,
                       {},
                       {{"vars", buf}},
                       textureArrays,
                       {});
+
+        shaderlib::textureBicubic();
 
         vec4 fPosition;
         fPosition = attribute(0);
