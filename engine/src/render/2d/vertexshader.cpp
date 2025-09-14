@@ -57,11 +57,8 @@ namespace xng {
             }
         };
 
-        std::vector<ShaderTextureArray> textures;
-        textures.reserve(12);
-        for (auto i = 0; i < 12; i++) {
-            textures.emplace_back(ShaderTexture(TEXTURE_2D, RGBA, true));
-        }
+        std::vector<ShaderTextureArray> textureArrays;
+        textureArrays.emplace_back(ShaderTexture(TEXTURE_2D, RGBA, true), 12);
 
         auto &builder = ShaderBuilder::instance();
         builder.setup(ShaderStage::VERTEX,
@@ -69,7 +66,7 @@ namespace xng {
                       outputLayout,
                       {},
                       {{"vars", buf}},
-                      textures,
+                      textureArrays,
                       {});
 
         vec2 position = attribute(0);
