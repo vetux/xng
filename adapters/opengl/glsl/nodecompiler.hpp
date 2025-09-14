@@ -83,6 +83,10 @@ std::string compileLeafNode(const NodeTextureSample &node,
                             const ShaderStage &source,
                             const std::string &functionName);
 
+std::string compileLeafNode(const NodeTextureFetch &node,
+                            const ShaderStage &source,
+                            const std::string &functionName);
+
 std::string compileLeafNode(const NodeTextureSize &node,
                             const ShaderStage &source,
                             const std::string &functionName);

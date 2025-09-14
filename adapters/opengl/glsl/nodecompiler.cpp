@@ -53,6 +53,8 @@ std::string compileNode(const ShaderNode &node,
             return compileLeafNode(down_cast<const NodeTexture &>(node), source, functionName);
         case ShaderNode::TEXTURE_SAMPLE:
             return compileLeafNode(down_cast<const NodeTextureSample &>(node), source, functionName);
+        case ShaderNode::TEXTURE_FETCH:
+            return compileLeafNode(down_cast<const NodeTextureFetch &>(node), source, functionName);
         case ShaderNode::TEXTURE_SIZE:
             return compileLeafNode(down_cast<const NodeTextureSize &>(node), source, functionName);
         case ShaderNode::BUFFER_READ:
@@ -219,6 +221,18 @@ std::string compileLeafNode(const NodeTextureSample &node,
     return ret;
 }
 
+std::string compileLeafNode(const NodeTextureFetch &node,
+                            const ShaderStage &source,
+                            const std::string &functionName) {
+    return "texelFetch("
+           + compileNode(*node.texture, source, functionName)
+           + ", "
+           + compileNode(*node.coordinate, source, functionName, "")
+           + ", "
+           + compileNode(*node.index, source, functionName, "")
+           + ")";
+}
+
 std::string compileLeafNode(const NodeTextureSize &node,
                             const ShaderStage &source,
                             const std::string &functionName) {
@@ -227,15 +241,6 @@ std::string compileLeafNode(const NodeTextureSize &node,
         ret += ", " + compileNode(*node.lod, source, functionName, "");
     }
     return ret + ")";
-}
-
-std::string compileLeafNode(const NodeTextureFetch &node, const ShaderStage &source, const std::string &functionName) {
-    return "texelFetch("
-           + compileNode(*node.texture, source, functionName)
-           + ", "
-           + compileNode(*node.coordinate, source, functionName, "")
-           + ", "
-           + compileNode(*node.index, source, functionName, "");
 }
 
 std::string compileLeafNode(const NodeBufferRead &node,
