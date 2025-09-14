@@ -42,7 +42,7 @@ void ContextGL::bindRenderTarget(size_t binding,
                                  CubeMapFace face) {
 }
 
-void ContextGL::bindTextures(const std::unordered_map<std::string, RenderGraphResource> &textures) {
+void ContextGL::bindTextures(const std::vector<std::vector<RenderGraphResource>> &textureArrays) {
 }
 
 void ContextGL::bindShaderBuffers(const std::unordered_map<std::string, RenderGraphResource> &buffers) {

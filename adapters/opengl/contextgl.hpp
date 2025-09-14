@@ -53,7 +53,7 @@ public:
                           size_t mipMapLevel,
                           CubeMapFace face) override;
 
-    void bindTextures(const std::unordered_map<std::string, RenderGraphResource> &textures) override;
+    void bindTextures(const std::vector<std::vector<RenderGraphResource> > &textureArrays) override;
 
     void bindShaderBuffers(const std::unordered_map<std::string, RenderGraphResource> &buffers) override;
 
@@ -63,7 +63,8 @@ public:
 
     std::vector<uint8_t> downloadShaderBuffer(RenderGraphResource buffer) override;
 
-    Image<ColorRGBA> downloadTexture(RenderGraphResource texture, size_t index, size_t mipMapLevel, CubeMapFace face) override;
+    Image<ColorRGBA>
+    downloadTexture(RenderGraphResource texture, size_t index, size_t mipMapLevel, CubeMapFace face) override;
 
     std::unordered_map<ShaderStage::Type, std::string> getShaderSource(RenderGraphResource shader) override;
 
