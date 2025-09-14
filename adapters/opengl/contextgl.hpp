@@ -32,7 +32,8 @@ public:
 
     ~ContextGL() override = default;
 
-    explicit ContextGL(const std::unordered_map<RenderGraphResource, CompiledPipeline, RenderGraphResourceHash> &pipelines)
+    explicit ContextGL(
+        const std::unordered_map<RenderGraphResource, CompiledPipeline, RenderGraphResourceHash> &pipelines)
         : pipelines(pipelines) {
     }
 
@@ -60,11 +61,22 @@ public:
 
     void bindIndexBuffer(RenderGraphResource buffer) override;
 
-    void bindRenderTarget(size_t binding,
-                          RenderGraphResource texture,
-                          size_t index,
-                          CubeMapFace face,
-                          size_t mipMapLevel) override;
+    void setColorAttachment(size_t binding,
+                            RenderGraphResource texture,
+                            size_t index,
+                            CubeMapFace face,
+                            size_t mipMapLevel) override;
+
+    void setDepthStencilAttachment(RenderGraphResource texture,
+                                   size_t index,
+                                   CubeMapFace face,
+                                   size_t mipMapLevel) override;
+
+    void clearColorAttachment(size_t binding, ColorRGBA clearColor) override;
+
+    void clearDepthAttachment(float depth) override;
+
+    void setViewport(Vec2i viewportOffset, Vec2i viewportSize) override;
 
     void bindTextures(const std::vector<std::vector<RenderGraphResource> > &textureArrays) override;
 
@@ -72,7 +84,9 @@ public:
 
     void setShaderParameters(const std::unordered_map<std::string, ShaderLiteral> &parameters) override;
 
-    void draw(const std::vector<DrawCall> &calls) override;
+    void drawArray(const DrawCall &drawCall) override;
+
+    void drawIndexed(const DrawCall &drawCall, size_t indexOffset) override;
 
     std::vector<uint8_t> downloadShaderBuffer(RenderGraphResource buffer) override;
 

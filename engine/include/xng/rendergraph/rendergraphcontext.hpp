@@ -28,6 +28,8 @@
 #include "xng/rendergraph/shader/shaderstage.hpp"
 #include "xng/rendergraph/shader/shaderliteral.hpp"
 
+#include "xng/math/vector2.hpp"
+
 #include "xng/render/scene/image.hpp"
 
 namespace xng {
@@ -158,23 +160,35 @@ namespace xng {
          * @param face
          * @param mipMapLevel
          */
-        virtual void bindRenderTarget(size_t binding,
-                                      RenderGraphResource texture,
-                                      size_t index,
-                                      CubeMapFace face,
-                                      size_t mipMapLevel) = 0;
+        virtual void setColorAttachment(size_t binding,
+                                        RenderGraphResource texture,
+                                        size_t index,
+                                        CubeMapFace face,
+                                        size_t mipMapLevel) = 0;
 
-        void bindRenderTarget(const size_t binding, const RenderGraphResource texture) {
-            bindRenderTarget(binding, texture, 0, {}, 0);
+        void setColorAttachment(const size_t binding, const RenderGraphResource texture) {
+            setColorAttachment(binding, texture, 0, {}, 0);
         }
 
-        void bindRenderTarget(const size_t binding, const RenderGraphResource texture, const size_t index) {
-            bindRenderTarget(binding, texture, index,  {}, 0);
+        void setColorAttachment(const size_t binding, const RenderGraphResource texture, const size_t index) {
+            setColorAttachment(binding, texture, index, {}, 0);
         }
 
-        void bindRenderTarget(const size_t binding, const RenderGraphResource texture, const CubeMapFace face) {
-            bindRenderTarget(binding, texture, 0, face, 0);
+        void setColorAttachment(const size_t binding, const RenderGraphResource texture, const CubeMapFace face) {
+            setColorAttachment(binding, texture, 0, face, 0);
         }
+
+        virtual void setDepthStencilAttachment(RenderGraphResource texture,
+                                               size_t index,
+                                               CubeMapFace face,
+                                               size_t mipMapLevel) = 0;
+
+        virtual void clearColorAttachment(size_t binding,
+                                          ColorRGBA clearColor) = 0;
+
+        virtual void clearDepthAttachment(float depth) = 0;
+
+        virtual void setViewport(Vec2i viewportOffset, Vec2i viewportSize) = 0;
 
         /**
          * Bind the specified textures.
@@ -184,15 +198,6 @@ namespace xng {
          * @param textureArrays
          */
         virtual void bindTextures(const std::vector<std::vector<RenderGraphResource> > &textureArrays) = 0;
-
-        void bindTextures(const std::vector<RenderGraphResource> &textures) {
-            std::vector<std::vector<RenderGraphResource> > textureArrays;
-            textureArrays.reserve(textures.size());
-            for (auto &texture: textures) {
-                textureArrays.emplace_back(std::vector<RenderGraphResource>{texture});
-            }
-            bindTextures(textureArrays);
-        }
 
         virtual void bindShaderBuffers(const std::unordered_map<std::string, RenderGraphResource> &buffers) = 0;
 
@@ -207,12 +212,11 @@ namespace xng {
          */
         virtual void setShaderParameters(const std::unordered_map<std::string, ShaderLiteral> &parameters) = 0;
 
-        /**
-         * Execute the draw call/s with the bound shaders and geometry data.
-         *
-         * @param calls
-         */
-        virtual void draw(const std::vector<DrawCall> &calls) = 0;
+        virtual void drawArray(const DrawCall &drawCall) = 0;
+
+        virtual void drawIndexed(const DrawCall &drawCall, size_t indexOffset) = 0;
+
+        //TODO: Add instancing support
 
         /**
          * Download the data from the gpu side shader buffer.
