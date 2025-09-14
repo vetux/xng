@@ -51,8 +51,8 @@ namespace xng::ShaderScript {
             return buffers;
         }
 
-        [[nodiscard]] const std::vector<ShaderTexture> &getTextures() const {
-            return textures;
+        [[nodiscard]] const std::vector<ShaderTextureArray> &getTextureArrays() const {
+            return textureArrays;
         }
 
         [[nodiscard]] const std::vector<ShaderFunction> &getFunctions() const {
@@ -122,7 +122,7 @@ namespace xng::ShaderScript {
          * @param outputLayout
          * @param parameters
          * @param buffers
-         * @param textures
+         * @param textureArrays
          * @param functions
          */
         void setup(ShaderStage::Type stage,
@@ -130,7 +130,7 @@ namespace xng::ShaderScript {
                    const ShaderAttributeLayout &outputLayout,
                    const std::unordered_map<std::string, ShaderDataType> &parameters,
                    const std::unordered_map<std::string, ShaderBuffer> &buffers,
-                   const std::vector<ShaderTexture> &textures,
+                   const std::vector<ShaderTextureArray> &textureArrays,
                    const std::vector<ShaderFunction> &functions);
 
         /**
@@ -169,7 +169,7 @@ namespace xng::ShaderScript {
         ShaderAttributeLayout outputLayout;
         std::unordered_map<std::string, ShaderDataType> parameters;
         std::unordered_map<std::string, ShaderBuffer> buffers;
-        std::vector<ShaderTexture> textures;
+        std::vector<ShaderTextureArray> textureArrays;
 
         TreeNode *currentNode{};
         std::shared_ptr<TreeNode> rootNode;

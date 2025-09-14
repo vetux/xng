@@ -352,22 +352,39 @@ namespace xng::ShaderScript {
         ShaderBuilder::instance().EndFor();
     }
 
-    //TODO: Redesign shader script to  handle textures in an easier way
+    //TODO: Allow texture samplers to be assigned to variables
     /**
      * Cannot be assigned to a variable.
      *
-     * @param textureBinding
+     * @param textureArrayIndex
      * @return
      */
-    inline ShaderNodeWrapper textureSampler(const uint32_t textureBinding) {
-        auto tex = ShaderBuilder::instance().getTextures().at(textureBinding);
-        return ShaderNodeWrapper(ShaderDataType{ShaderDataType::VECTOR4, ShaderDataType::getColorComponent(tex.format)},
-                                 ShaderNodeFactory::texture(textureBinding));
+    inline ShaderNodeWrapper textureSampler(const uint32_t textureArrayIndex) {
+        auto texArray = ShaderBuilder::instance().getTextureArrays().at(textureArrayIndex);
+        return ShaderNodeWrapper(ShaderDataType{
+                                     ShaderDataType::VECTOR4, ShaderDataType::getColorComponent(texArray.texture.format)
+                                 },
+                                 ShaderNodeFactory::texture(textureArrayIndex));
+    }
+
+    /**
+     * Cannot be assigned to a variable.
+     *
+     * @param textureArrayIndex
+     * @return
+     */
+    inline ShaderNodeWrapper textureSampler(const uint32_t textureArrayIndex,
+                                            const ShaderNodeWrapper &textureIndex) {
+        auto texArray = ShaderBuilder::instance().getTextureArrays().at(textureArrayIndex);
+        return ShaderNodeWrapper(ShaderDataType{
+                                     ShaderDataType::VECTOR4, ShaderDataType::getColorComponent(texArray.texture.format)
+                                 },
+                                 ShaderNodeFactory::texture(textureArrayIndex, textureIndex.node));
     }
 
     inline ShaderNodeWrapper textureSize(const ShaderNodeWrapper &texture) {
-        if (ShaderBuilder::instance().getTextures().at(down_cast<NodeTexture &>(*texture.node).textureBinding).
-            isArray) {
+        if (ShaderBuilder::instance().getTextureArrays().at(
+            down_cast<NodeTexture &>(*texture.node).textureArrayIndex).texture.isArrayTexture) {
             return ShaderNodeWrapper(ShaderDataType::ivec3(),
                                      ShaderNodeFactory::textureSize(texture.node));
         } else {
@@ -377,8 +394,8 @@ namespace xng::ShaderScript {
     }
 
     inline ShaderNodeWrapper textureSize(const ShaderNodeWrapper &texture, const ShaderNodeWrapper &lod) {
-        if (ShaderBuilder::instance().getTextures().at(down_cast<NodeTexture &>(*texture.node).textureBinding).
-            isArray) {
+        if (ShaderBuilder::instance().getTextureArrays().at(
+            down_cast<NodeTexture &>(*texture.node).textureArrayIndex).texture.isArrayTexture) {
             return ShaderNodeWrapper(ShaderDataType::ivec3(),
                                      ShaderNodeFactory::textureSize(texture.node, lod.node));
         } else {

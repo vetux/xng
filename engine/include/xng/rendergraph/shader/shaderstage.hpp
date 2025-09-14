@@ -23,11 +23,11 @@
 #include <unordered_map>
 #include <utility>
 
-#include "xng/rendergraph/shader/shadertexture.hpp"
 #include "xng/rendergraph/shader/shaderattributelayout.hpp"
 #include "xng/rendergraph/shader/shaderfunction.hpp"
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 #include "xng/rendergraph/shader/shaderbuffer.hpp"
+#include "xng/rendergraph/shader/shadertexturearray.hpp"
 
 namespace xng {
     struct ShaderBuffer;
@@ -50,7 +50,9 @@ namespace xng {
 
         std::unordered_map<std::string, ShaderDataType> parameters;
         std::unordered_map<std::string, ShaderBuffer> buffers;
-        std::vector<ShaderTexture> textures; // The available textures in binding order
+
+        // The available texture arrays in binding order
+        std::vector<ShaderTextureArray> textureArrays;
 
         std::vector<std::unique_ptr<ShaderNode> > mainFunction;
 
@@ -67,7 +69,7 @@ namespace xng {
                     ShaderAttributeLayout output_layout,
                     const std::unordered_map<std::string, ShaderDataType> &parameters,
                     const std::unordered_map<std::string, ShaderBuffer> &buffers,
-                    const std::vector<ShaderTexture> &textures,
+                    const std::vector<ShaderTextureArray> &textureArrays,
                     std::vector<std::unique_ptr<ShaderNode> > mainFunction,
                     std::vector<ShaderFunction> functions)
             : type(stage),
@@ -75,7 +77,7 @@ namespace xng {
               outputLayout(std::move(output_layout)),
               parameters(parameters),
               buffers(buffers),
-              textures(textures),
+              textureArrays(textureArrays),
               mainFunction(std::move(mainFunction)),
               functions(std::move(functions)) {
         }
@@ -86,7 +88,7 @@ namespace xng {
               outputLayout(other.outputLayout),
               parameters(other.parameters),
               buffers(other.buffers),
-              textures(other.textures),
+              textureArrays(other.textureArrays),
               functions(other.functions) {
             for (auto &node: other.mainFunction) {
                 mainFunction.push_back(node->copy());
@@ -99,7 +101,7 @@ namespace xng {
               outputLayout(std::move(other.outputLayout)),
               parameters(std::move(other.parameters)),
               buffers(std::move(other.buffers)),
-              textures(std::move(other.textures)),
+              textureArrays(std::move(other.textureArrays)),
               mainFunction(std::move(other.mainFunction)),
               functions(std::move(other.functions)) {
         }
@@ -112,7 +114,7 @@ namespace xng {
             outputLayout = other.outputLayout;
             parameters = other.parameters;
             buffers = other.buffers;
-            textures = other.textures;
+            textureArrays = other.textureArrays;
             functions = other.functions;
             for (auto &node: other.mainFunction) {
                 mainFunction.push_back(node->copy());
@@ -128,7 +130,7 @@ namespace xng {
             outputLayout = std::move(other.outputLayout);
             parameters = std::move(other.parameters);
             buffers = std::move(other.buffers);
-            textures = std::move(other.textures);
+            textureArrays = std::move(other.textureArrays);
             mainFunction = std::move(other.mainFunction);
             functions = std::move(other.functions);
             return *this;

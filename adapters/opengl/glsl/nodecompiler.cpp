@@ -50,7 +50,7 @@ std::string compileNode(const ShaderNode &node,
         case ShaderNode::PARAMETER:
             return compileLeafNode(down_cast<const NodeParameter &>(node));
         case ShaderNode::TEXTURE:
-            return compileLeafNode(down_cast<const NodeTexture &>(node));
+            return compileLeafNode(down_cast<const NodeTexture &>(node), source, functionName);
         case ShaderNode::TEXTURE_SAMPLE:
             return compileLeafNode(down_cast<const NodeTextureSample &>(node), source, functionName);
         case ShaderNode::TEXTURE_SIZE:
@@ -191,8 +191,18 @@ std::string compileLeafNode(const NodeParameter &node) {
     return parameterPrefix + node.parameterName;
 }
 
-std::string compileLeafNode(const NodeTexture &node) {
-    return texturePrefix + std::to_string(node.textureBinding);
+std::string compileLeafNode(const NodeTexture &node,
+                            const ShaderStage &source,
+                            const std::string &functionName) {
+    std::string texIndex = "0";
+    if (node.textureIndex != nullptr) {
+        texIndex = compileNode(*node.textureIndex, source, functionName);
+    }
+    return texturePrefix
+           + std::to_string(node.textureArrayIndex)
+           + "["
+           + texIndex
+           + "]";
 }
 
 std::string compileLeafNode(const NodeTextureSample &node,
@@ -221,11 +231,11 @@ std::string compileLeafNode(const NodeTextureSize &node,
 
 std::string compileLeafNode(const NodeTextureFetch &node, const ShaderStage &source, const std::string &functionName) {
     return "texelFetch("
-               + compileNode(*node.texture, source, functionName)
-               + ", "
-               + compileNode(*node.coordinate, source, functionName, "")
-               + ", "
-               + compileNode(*node.index, source, functionName, "");
+           + compileNode(*node.texture, source, functionName)
+           + ", "
+           + compileNode(*node.coordinate, source, functionName, "")
+           + ", "
+           + compileNode(*node.index, source, functionName, "");
 }
 
 std::string compileLeafNode(const NodeBufferRead &node,
@@ -523,7 +533,7 @@ std::string compileLeafNode(const NodeVectorSwizzle &node,
         throw std::runtime_error("Invalid vector subscript indices size");
     }
     std::string ret = compileNode(*node.vector, source, functionName) + ".";
-    for (auto &index : node.indices) {
+    for (auto &index: node.indices) {
         switch (index) {
             case NodeVectorSwizzle::COMPONENT_X:
                 ret += "x";

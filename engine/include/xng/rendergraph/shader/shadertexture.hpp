@@ -26,12 +26,39 @@ namespace xng {
     struct ShaderTexture {
         TextureType type = TEXTURE_2D;
         ColorFormat format = RGBA;
-        bool isArray = false;
+        bool isArrayTexture = false; // Wheter or not this texture is an array texture
+
+        bool operator==(const ShaderTexture& other) const {
+            return type == other.type && format == other.format && isArrayTexture;
+        }
+
+        bool operator!=(const ShaderTexture& other) const {
+            return !(*this == other);
+        }
+
+        std::string toString() const {
+            std::string ret = "";
+            switch (type) {
+                case TEXTURE_2D:
+                    ret += "TEX2D";
+                    break;
+                case TEXTURE_2D_MULTISAMPLE:
+                    ret += "TEX2DMS";
+                    break;
+                case TEXTURE_CUBE_MAP:
+                    ret += "TEXCUBEMAP";
+                    break;
+            }
+            if (isArrayTexture) {
+                ret += "_ARRAY";
+            }
+            return ret;
+        }
 
         ShaderTexture() = default;
 
         ShaderTexture(const TextureType type, const ColorFormat format, const bool isArray = false)
-            : type(type), format(format), isArray(isArray) {
+            : type(type), format(format), isArrayTexture(isArray) {
         }
     };
 }

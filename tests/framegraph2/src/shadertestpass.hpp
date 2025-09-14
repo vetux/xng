@@ -73,7 +73,7 @@ public:
                       vertexLayout,
                       {},
                       {{"data", dataBuffer}},
-                      {textureDef},
+                      {ShaderTextureArray(textureDef)},
                       {});
 
         shaderlib::noise::simplex();
@@ -147,7 +147,7 @@ public:
                       vertexLayout,
                       {},
                       {{"data", dataBuffer}},
-                      {textureDef},
+                      {ShaderTextureArray(textureDef)},
                       {});
 
         writeAttribute(0, vec4(1, 0, 0, 1));

@@ -209,7 +209,7 @@ namespace xng::ShaderScript {
                               const ShaderAttributeLayout &outputLayout,
                               const std::unordered_map<std::string, ShaderDataType> &parameters,
                               const std::unordered_map<std::string, ShaderBuffer> &buffers,
-                              const std::vector<ShaderTexture> &textures,
+                              const std::vector<ShaderTextureArray> &textureArrays,
                               const std::vector<ShaderFunction> &functions) {
         if (currentNode != nullptr) {
             throw std::runtime_error("ShaderBuilder::setup called while a build is in progress (Nested setup() call?)");
@@ -224,7 +224,7 @@ namespace xng::ShaderScript {
         this->outputLayout = outputLayout;
         this->parameters = parameters;
         this->buffers = buffers;
-        this->textures = textures;
+        this->textureArrays = textureArrays;
         this->functions = functions;
     }
 
@@ -239,7 +239,7 @@ namespace xng::ShaderScript {
         ret.outputLayout = outputLayout;
         ret.parameters = parameters;
         ret.buffers = buffers;
-        ret.textures = textures;
+        ret.textureArrays = textureArrays;
 
         ret.mainFunction = createNodes(*rootNode);
         ret.functions = functions;
@@ -248,7 +248,7 @@ namespace xng::ShaderScript {
         outputLayout = {};
         parameters = {};
         buffers = {};
-        textures = {};
+        textureArrays = {};
 
         currentNode = nullptr;
         rootNode = {};

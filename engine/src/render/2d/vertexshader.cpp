@@ -57,10 +57,10 @@ namespace xng {
             }
         };
 
-        std::vector<ShaderTexture> textures;
+        std::vector<ShaderTextureArray> textures;
         textures.reserve(12);
         for (auto i = 0; i < 12; i++) {
-            textures.emplace_back(TEXTURE_2D, RGBA, true);
+            textures.emplace_back(ShaderTexture(TEXTURE_2D, RGBA, true));
         }
 
         auto &builder = ShaderBuilder::instance();

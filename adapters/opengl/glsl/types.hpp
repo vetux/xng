@@ -127,7 +127,7 @@ inline std::string getSampler(const ShaderTexture &texture) {
         prefix = "u";
     }
 
-    if (texture.isArray) {
+    if (texture.isArrayTexture) {
         switch (texture.type) {
             case TEXTURE_2D:
                 return prefix + "sampler2DArray";

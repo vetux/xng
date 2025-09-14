@@ -88,8 +88,8 @@ namespace xng::ShaderNodeFactory {
         return std::make_unique<NodeArray>(elementType, std::move(elementsCopy));
     }
 
-    std::unique_ptr<ShaderNode> texture(uint32_t textureBinding) {
-        return std::make_unique<NodeTexture>(textureBinding);
+    std::unique_ptr<ShaderNode> texture(uint32_t textureArrayIndex, const std::unique_ptr<ShaderNode> &textureIndex) {
+        return std::make_unique<NodeTexture>(textureArrayIndex, textureIndex ? textureIndex->copy() : nullptr);
     }
 
     std::unique_ptr<ShaderNode> textureSample(const std::unique_ptr<ShaderNode> &texture,

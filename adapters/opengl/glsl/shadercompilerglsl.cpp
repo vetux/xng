@@ -82,19 +82,23 @@ std::string generateHeader(const ShaderStage &source, CompiledPipeline &pipeline
         ret += "\n";
     }
 
-    for (auto i = 0; i < source.textures.size(); i++) {
-        auto &tex = source.textures[i];
+    size_t textureBinding = 0;
+    for (auto &texArray: source.textureArrays) {
         ret += "layout(binding = "
-                + std::to_string(i)
+                + std::to_string(textureBinding)
                 + ") uniform "
-                + getSampler(tex)
+                + getSampler(texArray.texture)
                 + " "
                 + texturePrefix
-                + std::to_string(i)
+                + std::to_string(textureBinding)
+                + "["
+                + std::to_string(texArray.arraySize)
+                + "]"
                 + ";\n";
+        textureBinding += texArray.arraySize;
     }
 
-    if (source.textures.size() > 0) {
+    if (source.textureArrays.size() > 0) {
         ret += "\n";
     }
 

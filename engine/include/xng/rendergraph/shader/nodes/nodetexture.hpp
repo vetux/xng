@@ -24,10 +24,15 @@
 
 namespace xng {
     struct NodeTexture final : ShaderNode {
-        uint32_t textureBinding;
+        // The index into ShaderSource.textureArrayIndex
+        uint32_t textureArrayIndex = 0;
 
-        explicit NodeTexture(const uint32_t textureBinding)
-            : textureBinding(textureBinding) {
+        // An optional index into ShaderSource.textureArrays[textureArrayIndex],
+        // if no index is specified, the texture at ShaderSource.textureArrays[textureArrayIndex][0] is accessed.
+        std::unique_ptr<ShaderNode> textureIndex;
+
+        explicit NodeTexture(const uint32_t textureArrayIndex, std::unique_ptr<ShaderNode> textureIndex)
+            : textureArrayIndex(textureArrayIndex), textureIndex(std::move(textureIndex)) {
         }
 
         NodeType getType() const override {
@@ -35,7 +40,7 @@ namespace xng {
         }
 
         std::unique_ptr<ShaderNode> copy() const override {
-            return std::make_unique<NodeTexture>(textureBinding);
+            return std::make_unique<NodeTexture>(textureArrayIndex, textureIndex ? textureIndex->copy() : nullptr);
         }
     };
 }

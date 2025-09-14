@@ -21,6 +21,8 @@
 
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
+#include "xng/render/shaderlib/texfilter.hpp"
+
 using namespace xng::ShaderScript;
 
 namespace xng {
@@ -55,10 +57,10 @@ namespace xng {
             }
         };
 
-        std::vector<ShaderTexture> textures;
+        std::vector<ShaderTextureArray> textures;
         textures.reserve(12);
         for (auto i = 0; i < 12; i++) {
-            textures.emplace_back(TEXTURE_2D, RGBA, true);
+            textures.emplace_back(ShaderTexture(TEXTURE_2D, RGBA, true));
         }
 
         auto &builder = ShaderBuilder::instance();
@@ -76,23 +78,36 @@ namespace xng {
         vec4 color = vec4(1, 1, 1, 1);
 
         builder.If(buffer("vars", "texAtlasIndex") >= 0);
+        {
+            vec2 uv = fUv;
+            uv = uv * buffer("vars", "uvOffset_uvScale").zw();
+            uv = uv + buffer("vars", "uvOffset_uvScale").xy();
+            uv = uv * buffer("vars", "atlasScale_texSize").xy();
 
-        vec2 uv = fUv;
-
-        vec2 uvOffset_uvScale = buffer("vars", "uvOffset_uvScale");
-        uv = uv * vec2(uvOffset_uvScale.z(), uvOffset_uvScale.w());
-        uv = uv + vec2(uvOffset_uvScale.x(), uvOffset_uvScale.y());
-
-        vec2 atlasScale_texSize = buffer("vars", "atlasScale_texSize");
-        uv = uv * vec2(atlasScale_texSize.x(), atlasScale_texSize.y());
-
-        vec4 texColor = vec4(1, 1, 1, 1);
-        builder.If(buffer("vars", "texFilter") == 1);
-
+            /*vec4 texColor;
+            If (buffer("vars", "texFilter") == 1);
+            {
+                textureSampler()
+                texColor = textureBicubic(atlasTextures[vars.passes[drawID].texAtlasLevel],
+                vec3(uv.x, uv.y, vars.passes[drawID].texAtlasIndex),
+                vars.passes[drawID].atlasScale_texSize.zw);
+            }
+            else
+            {
+                texColor = texture(atlasTextures[vars.passes[drawID].texAtlasLevel],
+                vec3(uv.x, uv.y, vars.passes[drawID].texAtlasIndex));
+            }
+            if (vars.passes[drawID].colorFactor != 0) {
+                color = vars.passes[drawID].color * texColor;
+            } else {
+                color.rgb = mix(texColor.rgb, vars.passes[drawID].color.rgb, vars.passes[drawID].colorMixFactor);
+                color.a = mix(texColor.a, vars.passes[drawID].color.a, vars.passes[drawID].alphaMixFactor);
+            }*/
+        }
         builder.Else();
-
-        color = buffer("vars", "color");
-
+        {
+            color = buffer("vars", "color");
+        }
         builder.EndIf();
 
         return builder.build();
