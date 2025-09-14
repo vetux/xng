@@ -43,7 +43,8 @@ namespace xng {
 
         ColorRGBA borderColor = ColorRGBA(0);
 
-        size_t arrayLayers = 1; // If > 1 this texture becomes an array texture
+        bool isArrayTexture = false;
+        size_t arrayLayers = 0; // The number of layers in this array texture
 
         Messageable &operator<<(const Message &message) override {
             message.value("size", size);
@@ -57,6 +58,7 @@ namespace xng {
             message.value("mipMapFilter", mipMapFilter);
             message.value("fixedSampleLocations", fixedSampleLocations);
             message.value("borderColor", borderColor);
+            message.value("isArrayTexture", isArrayTexture);
             message.value("arrayLayers", arrayLayers);
             return *this;
         }
@@ -74,6 +76,7 @@ namespace xng {
             mipMapFilter >> message["mipMapFilter"];
             fixedSampleLocations >> message["fixedSampleLocations"];
             borderColor >> message["borderColor"];
+            isArrayTexture >> message["isArrayTexture"];
             arrayLayers >> message["arrayLayers"];
             return message;
         }

@@ -52,9 +52,6 @@ namespace xng::opengl {
 
         GraphHandle graphCounter = 0;
 
-        std::unordered_map<GraphHandle, RenderGraph> graphs;
-        std::unordered_map<GraphHandle, std::unordered_map<RenderGraphResource, ShaderStage> > shaders;
-
         std::unique_ptr<State> state;
     };
 }

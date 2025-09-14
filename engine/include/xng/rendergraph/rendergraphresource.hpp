@@ -20,8 +20,42 @@
 #ifndef XENGINE_RENDERGRAPHRESOURCE_HPP
 #define XENGINE_RENDERGRAPHRESOURCE_HPP
 
+#include "xng/util/hashcombine.hpp"
+
 namespace xng {
-    typedef int RenderGraphResource;
+    struct RenderGraphResource {
+        int handle = -1;
+
+        RenderGraphResource() = default;
+
+        explicit RenderGraphResource(const int handle) : handle(handle) {
+        }
+
+        explicit operator bool() const {
+            return handle >= 0;
+        }
+
+        explicit operator int() const {
+            return handle;
+        }
+
+        bool operator==(const RenderGraphResource &other) const {
+            return handle == other.handle;
+        }
+
+        bool operator!=(const RenderGraphResource &other) const {
+            return !(*this == other);
+        }
+    };
+
+    class RenderGraphResourceHash {
+    public:
+        std::size_t operator()(const RenderGraphResource &k) const {
+            size_t ret = 0;
+            hash_combine(ret, k.handle);
+            return ret;
+        }
+    };
 }
 
 #endif //XENGINE_RENDERGRAPHRESOURCE_HPP

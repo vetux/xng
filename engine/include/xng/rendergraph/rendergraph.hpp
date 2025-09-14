@@ -25,7 +25,7 @@
 #include "xng/rendergraph/rendergraphresource.hpp"
 #include "xng/rendergraph/rendergraphpass.hpp"
 #include "xng/rendergraph/rendergraphtexture.hpp"
-#include "xng/rendergraph/shader/shaderstage.hpp"
+#include "xng/rendergraph/rendergraphpipeline.hpp"
 
 namespace xng {
     class RenderGraphContext;
@@ -38,36 +38,30 @@ namespace xng {
     struct RenderGraph {
         std::vector<RenderGraphPass> passes;
 
-        std::unordered_map<RenderGraphResource, size_t> vertexBufferAllocation;
-        std::unordered_map<RenderGraphResource, size_t> indexBufferAllocation;
-        std::unordered_map<RenderGraphResource, size_t> shaderBufferAllocation;
-
-        std::unordered_map<RenderGraphResource, RenderGraphTexture> textureAllocation;
-
-        std::unordered_map<RenderGraphResource, ShaderStage> shaderAllocation;
-        std::unordered_map<RenderGraphResource, std::unordered_set<RenderGraphResource> > pipelineAllocation;
-
-        std::unordered_map<RenderGraphResource, RenderGraphResource> inheritedResources;
+        std::unordered_map<RenderGraphResource, size_t, RenderGraphResourceHash> vertexBufferAllocation;
+        std::unordered_map<RenderGraphResource, size_t, RenderGraphResourceHash> indexBufferAllocation;
+        std::unordered_map<RenderGraphResource, size_t, RenderGraphResourceHash> shaderBufferAllocation;
+        std::unordered_map<RenderGraphResource, RenderGraphTexture, RenderGraphResourceHash> textureAllocation;
+        std::unordered_map<RenderGraphResource, RenderGraphPipeline, RenderGraphResourceHash> pipelineAllocation;
+        std::unordered_map<RenderGraphResource, RenderGraphResource, RenderGraphResourceHash> inheritedResources;
 
         RenderGraphResource screenTexture{};
 
         RenderGraph() = default;
 
         RenderGraph(const std::vector<RenderGraphPass> &passes,
-                const std::unordered_map<RenderGraphResource, size_t> &vertex_buffer_allocation,
-                const std::unordered_map<RenderGraphResource, size_t> &index_buffer_allocation,
-                const std::unordered_map<RenderGraphResource, size_t> &shader_buffer_allocation,
-                const std::unordered_map<RenderGraphResource, RenderGraphTexture> &texture_allocation,
-                const std::unordered_map<RenderGraphResource, ShaderStage> &shader_allocation,
-                const std::unordered_map<RenderGraphResource, std::unordered_set<RenderGraphResource> > &pipeline_allocation,
-                const std::unordered_map<RenderGraphResource, RenderGraphResource> &inherited_resources,
+                const std::unordered_map<RenderGraphResource, size_t, RenderGraphResourceHash> &vertex_buffer_allocation,
+                const std::unordered_map<RenderGraphResource, size_t, RenderGraphResourceHash> &index_buffer_allocation,
+                const std::unordered_map<RenderGraphResource, size_t, RenderGraphResourceHash> &shader_buffer_allocation,
+                const std::unordered_map<RenderGraphResource, RenderGraphTexture, RenderGraphResourceHash> &texture_allocation,
+                const std::unordered_map<RenderGraphResource, RenderGraphPipeline, RenderGraphResourceHash> &pipeline_allocation,
+                const std::unordered_map<RenderGraphResource, RenderGraphResource, RenderGraphResourceHash> &inherited_resources,
                 const RenderGraphResource screen_texture)
             : passes(passes),
               vertexBufferAllocation(vertex_buffer_allocation),
               indexBufferAllocation(index_buffer_allocation),
               shaderBufferAllocation(shader_buffer_allocation),
               textureAllocation(texture_allocation),
-              shaderAllocation(shader_allocation),
               pipelineAllocation(pipeline_allocation),
               inheritedResources(inherited_resources),
               screenTexture(screen_texture) {

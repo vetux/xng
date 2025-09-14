@@ -20,7 +20,7 @@
 #ifndef XENGINE_CONTEXTGL_HPP
 #define XENGINE_CONTEXTGL_HPP
 
-#include "../../engine/include/xng/rendergraph/rendergraphcontext.hpp"
+#include "xng/rendergraph/rendergraphcontext.hpp"
 
 #include "compiledpipeline.hpp"
 
@@ -32,14 +32,27 @@ public:
 
     ~ContextGL() override = default;
 
-    explicit ContextGL(const std::unordered_map<RenderGraphResource, CompiledPipeline> &pipelines)
+    explicit ContextGL(const std::unordered_map<RenderGraphResource, CompiledPipeline, RenderGraphResourceHash> &pipelines)
         : pipelines(pipelines) {
     }
 
-    void uploadBuffer(RenderGraphResource buffer, const uint8_t *ptr, size_t size) override;
+    void uploadBuffer(RenderGraphResource buffer, const uint8_t *ptr, size_t size, size_t targetOffset) override;
 
     void uploadTexture(RenderGraphResource texture, const uint8_t *ptr, size_t size, ColorFormat format, size_t index,
-                       size_t mipMapLevel, CubeMapFace face) override;
+                       CubeMapFace face, size_t mipMapLevel) override;
+
+    void copyBuffer(RenderGraphResource target, RenderGraphResource source, size_t targetOffset, size_t sourceOffset,
+                    size_t count) override;
+
+    void copyTexture(RenderGraphResource target, RenderGraphResource source) override;
+
+    void copyTexture(RenderGraphResource target,
+                     RenderGraphResource source,
+                     Vec3i srcOffset,
+                     Vec3i dstOffset,
+                     Vec3i size,
+                     size_t srcMipMapLevel,
+                     size_t dstMipMapLevel) override;
 
     void bindPipeline(RenderGraphResource pipeline) override;
 
@@ -50,8 +63,8 @@ public:
     void bindRenderTarget(size_t binding,
                           RenderGraphResource texture,
                           size_t index,
-                          size_t mipMapLevel,
-                          CubeMapFace face) override;
+                          CubeMapFace face,
+                          size_t mipMapLevel) override;
 
     void bindTextures(const std::vector<std::vector<RenderGraphResource> > &textureArrays) override;
 
@@ -69,7 +82,7 @@ public:
     std::unordered_map<ShaderStage::Type, std::string> getShaderSource(RenderGraphResource shader) override;
 
 private:
-    std::unordered_map<RenderGraphResource, CompiledPipeline> pipelines;
+    std::unordered_map<RenderGraphResource, CompiledPipeline, RenderGraphResourceHash> pipelines;
 };
 
 #endif //XENGINE_CONTEXTGL_HPP

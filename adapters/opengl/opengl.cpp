@@ -23,8 +23,14 @@
 #include "contextgl.hpp"
 
 namespace xng::opengl {
+    struct GraphContext {
+        RenderGraph graph;
+        std::unordered_map<RenderGraphResource, RenderGraphPipeline, RenderGraphResourceHash> pipelines;
+        std::unordered_map<RenderGraphResource, CompiledPipeline, RenderGraphResourceHash> compiledPipelines;
+    };
+
     struct State {
-        std::unordered_map<RenderGraphRuntime::GraphHandle, std::unordered_map<RenderGraphResource, CompiledPipeline> > pipelines;
+        std::unordered_map<RenderGraphRuntime::GraphHandle, GraphContext> contexts;
     };
 
     OpenGL::OpenGL() {
@@ -45,8 +51,8 @@ namespace xng::opengl {
     }
 
     void OpenGL::execute(GraphHandle graph) {
-        ContextGL context(state->pipelines.at(graph));
-        for (auto pass: graphs.at(graph).passes) {
+        ContextGL context(state->contexts.at(graph).compiledPipelines);
+        for (auto pass: state->contexts[graph].graph.passes) {
             pass.pass(context);
         }
     }
@@ -65,20 +71,19 @@ namespace xng::opengl {
 
     RenderGraphRuntime::GraphHandle OpenGL::compileGraph(const RenderGraph &graph) {
         const auto handle = graphCounter++;
-        graphs[handle] = graph;
 
-        for (auto pair: graph.shaderAllocation) {
-            shaders[handle][pair.first] = pair.second;
-        }
+        auto context = GraphContext();
+
+        context.graph = graph;
 
         ShaderCompilerGLSL compiler;
         for (auto pair: graph.pipelineAllocation) {
-            std::vector<ShaderStage> sources;
-            for (auto shader: pair.second) {
-                sources.emplace_back(shaders[handle][shader]);
-            }
-            state->pipelines[handle][pair.first] = compiler.compile(sources);
+            context.pipelines[pair.first] = pair.second;
+            context.compiledPipelines[pair.first] = compiler.compile(pair.second.shaders);
         }
+
+        state->contexts[handle] = context;
+
         return handle;
     }
 }

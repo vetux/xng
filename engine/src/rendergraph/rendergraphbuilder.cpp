@@ -57,15 +57,9 @@ namespace xng {
         return resource;
     }
 
-    RenderGraphResource RenderGraphBuilder::createShader(const ShaderStage &shader) {
+    RenderGraphResource RenderGraphBuilder::createPipeline(const RenderGraphPipeline &pipeline) {
         const auto resource = createResource();
-        shaderAllocation[resource] = shader;
-        return resource;
-    }
-
-    RenderGraphResource RenderGraphBuilder::createPipeline(const std::unordered_set<RenderGraphResource> &shaders) {
-        const auto resource = createResource();
-        pipelineAllocation[resource] = shaders;
+        pipelineAllocation[resource] = pipeline;
         return resource;
     }
 
@@ -73,7 +67,8 @@ namespace xng {
         return screenTexture;
     }
 
-    RenderGraphBuilder::PassHandle RenderGraphBuilder::addPass(const std::string &name, std::function<void(RenderGraphContext &)> pass) {
+    RenderGraphBuilder::PassHandle RenderGraphBuilder::addPass(const std::string &name,
+                                                               std::function<void(RenderGraphContext &)> pass) {
         RenderGraphPass p;
         p.name = name;
         p.pass = std::move(pass);
@@ -101,7 +96,6 @@ namespace xng {
             indexBufferAllocation,
             shaderBufferAllocation,
             textureAllocation,
-            shaderAllocation,
             pipelineAllocation,
             inheritedResources,
             screenTexture
@@ -109,6 +103,6 @@ namespace xng {
     }
 
     RenderGraphResource RenderGraphBuilder::createResource() {
-        return resourceCounter++;
+        return RenderGraphResource(resourceCounter++);
     }
 }

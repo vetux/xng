@@ -23,6 +23,7 @@
 #include <string>
 #include <functional>
 
+#include "xng/rendergraph/rendergraphpipeline.hpp"
 #include "xng/rendergraph/rendergraph.hpp"
 #include "xng/rendergraph/rendergraphcontext.hpp"
 #include "xng/rendergraph/rendergraphresource.hpp"
@@ -57,18 +58,16 @@ namespace xng {
 
         RenderGraphResource createTexture(const RenderGraphTexture &texture);
 
-        RenderGraphResource createShader(const ShaderStage &shader);
-
         /**
          * Create a render pipeline from the given shader resources.
          *
          * All shaders in a pipeline are required to have identical buffer / texture / parameter layouts and compatible
          * input / output attribute layouts.
          *
-         * @param shaders
+         * @param pipeline
          * @return
          */
-        RenderGraphResource createPipeline(const std::unordered_set<RenderGraphResource> &shaders);
+        RenderGraphResource createPipeline(const RenderGraphPipeline &pipeline);
 
         /**
          * The screen texture is an offscreen texture managed by the runtime.
@@ -96,20 +95,17 @@ namespace xng {
     private:
         RenderGraphResource createResource();
 
-        RenderGraphResource resourceCounter;
+        int resourceCounter;
 
         std::vector<RenderGraphPass> passes;
 
-        std::unordered_map<RenderGraphResource, size_t> vertexBufferAllocation;
-        std::unordered_map<RenderGraphResource, size_t> indexBufferAllocation;
-        std::unordered_map<RenderGraphResource, size_t> shaderBufferAllocation;
+        std::unordered_map<RenderGraphResource, size_t, RenderGraphResourceHash> vertexBufferAllocation;
+        std::unordered_map<RenderGraphResource, size_t, RenderGraphResourceHash> indexBufferAllocation;
+        std::unordered_map<RenderGraphResource, size_t, RenderGraphResourceHash> shaderBufferAllocation;
+        std::unordered_map<RenderGraphResource, RenderGraphTexture, RenderGraphResourceHash> textureAllocation;
+        std::unordered_map<RenderGraphResource, RenderGraphPipeline, RenderGraphResourceHash> pipelineAllocation;
 
-        std::unordered_map<RenderGraphResource, RenderGraphTexture> textureAllocation;
-
-        std::unordered_map<RenderGraphResource, ShaderStage> shaderAllocation;
-        std::unordered_map<RenderGraphResource, std::unordered_set<RenderGraphResource> > pipelineAllocation;
-
-        std::unordered_map<RenderGraphResource, RenderGraphResource> inheritedResources;
+        std::unordered_map<RenderGraphResource, RenderGraphResource, RenderGraphResourceHash> inheritedResources;
 
         RenderGraphResource screenTexture{};
     };

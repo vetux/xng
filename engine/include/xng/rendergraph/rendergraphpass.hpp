@@ -34,8 +34,8 @@ namespace xng  {
 
         std::function<void(RenderGraphContext &)> pass;
 
-        std::unordered_set<RenderGraphResource> read;
-        std::unordered_set<RenderGraphResource> write;
+        std::unordered_set<RenderGraphResource, RenderGraphResourceHash> read;
+        std::unordered_set<RenderGraphResource, RenderGraphResourceHash> write;
     };
 }
 

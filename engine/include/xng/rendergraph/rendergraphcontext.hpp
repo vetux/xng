@@ -38,36 +38,101 @@ namespace xng {
         /**
          * Upload data to a buffer.
          *
-         * Subsequent draw() invocations that use the specified buffer are guaranteed to receive the uploaded data.
-         * The upload might be performed asynchronously.
+         * Subsequent access to the target buffer is guaranteed to receive the uploaded data.
          *
-         * @param buffer
-         * @param ptr
-         * @param size
+         * @param target
+         * @param buffer The buffer holding the data
+         * @param bufferSize The size of the buffer
+         * @param targetOffset The offset into target to start writing to
          */
-        virtual void uploadBuffer(RenderGraphResource buffer, const uint8_t *ptr, size_t size) = 0;
+        virtual void uploadBuffer(RenderGraphResource target,
+                                  const uint8_t *buffer,
+                                  size_t bufferSize,
+                                  size_t targetOffset) = 0;
 
         /**
          * Upload data to a texture.
          *
-         * Subsequent draw() invocations that use the specified texture are guaranteed to receive the uploaded data.
-         * The upload might be performed asynchronously.
+         * Subsequent access to the texture is guaranteed to receive the uploaded data.
          *
          * @param texture
-         * @param ptr
-         * @param size
-         * @param format
-         * @param index The index of the texture if the passed texture is an array texture
+         * @param buffer The buffer holding the pixel data
+         * @param bufferSize The size of the buffer
+         * @param bufferFormat The format of the pixel data in the buffer
+         * @param index The index of the texture to upload into if the passed texture is an array texture
+         * @param face The face of the texture to upload into if texture is a cube map texture
          * @param mipMapLevel
-         * @param face
          */
         virtual void uploadTexture(RenderGraphResource texture,
-                                   const uint8_t *ptr,
-                                   size_t size,
-                                   ColorFormat format,
-                                   size_t index = 0,
-                                   size_t mipMapLevel = 0,
-                                   CubeMapFace face = POSITIVE_X) = 0;
+                                   const uint8_t *buffer,
+                                   size_t bufferSize,
+                                   ColorFormat bufferFormat,
+                                   size_t index,
+                                   CubeMapFace face,
+                                   size_t mipMapLevel) = 0;
+
+        void uploadTexture(const RenderGraphResource texture,
+                           const uint8_t *buffer,
+                           const size_t bufferSize,
+                           const ColorFormat format) {
+            uploadTexture(texture, buffer, bufferSize, format, 0, {}, 0);
+        }
+
+        void uploadTexture(RenderGraphResource texture,
+                           const uint8_t *buffer,
+                           const size_t bufferSize,
+                           const ColorFormat format,
+                           size_t index) {
+        }
+
+        /**
+         * Copy data from one buffer to another.
+         *
+         * Subsequent reads / copies from the buffer are guaranteed to receive the copied data.
+         *
+         * @param target The buffer to copy into
+         * @param source The buffer to copy from
+         * @param targetOffset The offset into target to write to
+         * @param sourceOffset The offset into source to read from
+         * @param count The number of bytes to copy
+         */
+        virtual void copyBuffer(RenderGraphResource target,
+                                RenderGraphResource source,
+                                size_t targetOffset,
+                                size_t sourceOffset,
+                                size_t count) = 0;
+
+        /**
+         * Copy one texture into another. The textures must have compatible formats / sizes.
+         *
+         * Subsequent reads / copies from the texture are guaranteed to receive the copied data.
+         *
+         * @param target The texture to copy into
+         * @param source The texture to copy from
+         */
+        virtual void copyTexture(RenderGraphResource target, RenderGraphResource source) = 0;
+
+        /**
+         * Copy a subregion of a texture to another texture.
+         *
+         * The offsets specify the x/y top left coordinates of the region to copy, and z is the index of the layer for array textures.
+         * The size specifies the width/height of the region to copy while z the number of layers to copy for array textures.
+         *
+         * @param target
+         * @param source
+         * @param srcOffset
+         * @param dstOffset
+         * @param size
+         * @param srcMipMapLevel
+         * @param dstMipMapLevel
+         */
+        virtual void copyTexture(RenderGraphResource target,
+                                 RenderGraphResource source,
+                                 Vec3i srcOffset,
+                                 Vec3i dstOffset,
+                                 Vec3i size,
+                                 size_t srcMipMapLevel,
+                                 size_t dstMipMapLevel) = 0;
 
         /**
          * Bind the given pipeline.
@@ -90,14 +155,26 @@ namespace xng {
          * @param binding
          * @param texture
          * @param index
-         * @param mipMapLevel
          * @param face
+         * @param mipMapLevel
          */
         virtual void bindRenderTarget(size_t binding,
                                       RenderGraphResource texture,
-                                      size_t index = 0,
-                                      size_t mipMapLevel = 0,
-                                      CubeMapFace face = POSITIVE_X) = 0;
+                                      size_t index,
+                                      CubeMapFace face,
+                                      size_t mipMapLevel) = 0;
+
+        void bindRenderTarget(const size_t binding, const RenderGraphResource texture) {
+            bindRenderTarget(binding, texture, 0, {}, 0);
+        }
+
+        void bindRenderTarget(const size_t binding, const RenderGraphResource texture, const size_t index) {
+            bindRenderTarget(binding, texture, index,  {}, 0);
+        }
+
+        void bindRenderTarget(const size_t binding, const RenderGraphResource texture, const CubeMapFace face) {
+            bindRenderTarget(binding, texture, 0, face, 0);
+        }
 
         /**
          * Bind the specified textures.

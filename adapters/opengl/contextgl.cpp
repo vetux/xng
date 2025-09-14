@@ -19,11 +19,22 @@
 
 #include "contextgl.hpp"
 
-void ContextGL::uploadBuffer(RenderGraphResource buffer, const uint8_t *ptr, size_t size) {
+void ContextGL::uploadBuffer(RenderGraphResource buffer, const uint8_t *ptr, size_t size, size_t targetOffset) {
 }
 
 void ContextGL::uploadTexture(RenderGraphResource texture, const uint8_t *ptr, size_t size, ColorFormat format, size_t index,
-                              size_t mipMapLevel, CubeMapFace face) {
+                              CubeMapFace face, size_t mipMapLevel) {
+}
+
+void ContextGL::copyBuffer(RenderGraphResource target, RenderGraphResource source, size_t targetOffset,
+    size_t sourceOffset, size_t count) {
+}
+
+void ContextGL::copyTexture(RenderGraphResource target, RenderGraphResource source) {
+}
+
+void ContextGL::copyTexture(RenderGraphResource target, RenderGraphResource source, Vec3i srcOffset, Vec3i dstOffset,
+    Vec3i size, size_t srcMipMapLevel, size_t dstMipMapLevel) {
 }
 
 void ContextGL::bindPipeline(RenderGraphResource pipeline) {
@@ -38,8 +49,8 @@ void ContextGL::bindIndexBuffer(RenderGraphResource buffer) {
 void ContextGL::bindRenderTarget(size_t binding,
                                  RenderGraphResource texture,
                                  size_t index,
-                                 size_t mipMapLevel,
-                                 CubeMapFace face) {
+                                 CubeMapFace face,
+                                 size_t mipMapLevel) {
 }
 
 void ContextGL::bindTextures(const std::vector<std::vector<RenderGraphResource>> &textureArrays) {

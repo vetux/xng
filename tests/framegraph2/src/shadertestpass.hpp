@@ -53,9 +53,7 @@ public:
     }
 
     void setup(RenderGraphBuilder &builder) {
-        auto vs = builder.createShader(createVertexShader());
-        auto fs = builder.createShader(createFragmentShader());
-        auto pip = builder.createPipeline({vs, fs});
+        auto pip = builder.createPipeline({{createVertexShader(), createFragmentShader()}});
 
         builder.addPass("Example Pass", [pip](RenderGraphContext &ctx) {
             const auto src = ctx.getShaderSource(pip);
