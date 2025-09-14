@@ -191,9 +191,12 @@ namespace xng::ShaderScript {
         auto func = ShaderBuilder::instance().getCurrentFunction();
         auto arg = func.getArgumentType(name);
         if (arg.index() != 0) {
+            auto targ = std::get<ShaderTexture>(arg);
             return ShaderNodeWrapper(ShaderDataType{
                                          ShaderDataType::VECTOR4,
-                                         ShaderDataType::getColorComponent(std::get<ShaderTexture>(arg).format)
+                                         ShaderDataType::getColorComponent(targ.format),
+                // Because textures cannot be assigned to variables we can store the information wheter a texture is an array in the type count
+                                         targ.isArrayTexture ? 2ul : 1ul
                                      },
                                      ShaderNodeFactory::argument(name));
         } else {
@@ -383,8 +386,8 @@ namespace xng::ShaderScript {
     }
 
     inline ShaderNodeWrapper textureSize(const ShaderNodeWrapper &texture) {
-        if (ShaderBuilder::instance().getTextureArrays().at(
-            down_cast<NodeTexture &>(*texture.node).textureArrayIndex).texture.isArrayTexture) {
+        // TODO: Avoid hacky texture array detection for argument nodes, ties into making textures assignable to variables
+        if (texture.type.count > 1) {
             return ShaderNodeWrapper(ShaderDataType::ivec3(),
                                      ShaderNodeFactory::textureSize(texture.node));
         } else {
@@ -394,13 +397,12 @@ namespace xng::ShaderScript {
     }
 
     inline ShaderNodeWrapper textureSize(const ShaderNodeWrapper &texture, const ShaderNodeWrapper &lod) {
-        if (ShaderBuilder::instance().getTextureArrays().at(
-            down_cast<NodeTexture &>(*texture.node).textureArrayIndex).texture.isArrayTexture) {
+        if (texture.type.count > 1) {
             return ShaderNodeWrapper(ShaderDataType::ivec3(),
-                                     ShaderNodeFactory::textureSize(texture.node, lod.node));
+                                     ShaderNodeFactory::textureSize(texture.node));
         } else {
             return ShaderNodeWrapper(ShaderDataType::ivec2(),
-                                     ShaderNodeFactory::textureSize(texture.node, lod.node));
+                                     ShaderNodeFactory::textureSize(texture.node));
         }
     }
 
