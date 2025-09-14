@@ -76,6 +76,7 @@ namespace xng::shaderlib {
     void textureBicubic() {
         defCubic();
         defTextureMS();
+
         Function("textureBicubic",
                  {
                      {"sampler", ShaderTexture(TEXTURE_2D, RGBA)},
@@ -96,10 +97,10 @@ namespace xng::shaderlib {
             vec4 xcubic = cubic(fxy.x());
             vec4 ycubic = cubic(fxy.y());
 
-            vec4 c = texCoords.xxyy() + vec2 (-0.5, +1.5).xyxy();
+            vec4 c = texCoords.xxyy() + vec2(-0.5, +1.5).xyxy();
 
             vec4 s = vec4(xcubic.xz() + xcubic.yw(), ycubic.xz() + ycubic.yw());
-            vec4 offset = c + vec4 (xcubic.yw(), ycubic.yw()) / s;
+            vec4 offset = c + vec4(xcubic.yw(), ycubic.yw()) / s;
 
             offset *= invTexSize.xxyy();
 
@@ -107,6 +108,89 @@ namespace xng::shaderlib {
             vec4 sample1 = texture(argument("sampler"), offset.yz());
             vec4 sample2 = texture(argument("sampler"), offset.xw());
             vec4 sample3 = texture(argument("sampler"), offset.yw());
+
+            Float sx = s.x() / (s.x() + s.y());
+            Float sy = s.z() / (s.z() + s.w());
+
+            Return(mix(mix(sample3, sample2, sx), mix(sample1, sample0, sx), sy));
+        }
+        EndFunction();
+
+        Function("textureBicubic",
+                 {
+                     {"sampler", ShaderTexture(TEXTURE_2D_MULTISAMPLE, RGBA)},
+                     {"texCoords", ShaderDataType::vec2()},
+                     {"samples", ShaderDataType::integer()}
+                 },
+                 ShaderDataType::vec4());
+        {
+            ivec2 texSize = textureSize(argument("sampler"));
+            vec2 invTexSize = 1.0 / texSize;
+
+            vec2 texCoords;
+            texCoords = argument("texCoords") * texSize - 0.5;
+
+            vec2 fxy = fract(texCoords);
+            texCoords -= fxy;
+
+            vec4 xcubic = cubic(fxy.x());
+            vec4 ycubic = cubic(fxy.y());
+
+            vec4 c = texCoords.xxyy() + vec2(-0.5, +1.5).xyxy();
+
+            vec4 s = vec4(xcubic.xz() + xcubic.yw(), ycubic.xz() + ycubic.yw());
+            vec4 offset = c + vec4(xcubic.yw(), ycubic.yw()) / s;
+
+            offset *= invTexSize.xxyy();
+
+            Int samples = argument("samples");
+            vec4 sample0 = textureMS(argument("sampler"), offset.xz(), samples);
+            vec4 sample1 = textureMS(argument("sampler"), offset.yz(), samples);
+            vec4 sample2 = textureMS(argument("sampler"), offset.xw(), samples);
+            vec4 sample3 = textureMS(argument("sampler"), offset.yw(), samples);
+
+            Float sx = s.x() / (s.x() + s.y());
+            Float sy = s.z() / (s.z() + s.w());
+
+            Return(mix(mix(sample3, sample2, sx), mix(sample1, sample0, sx), sy));
+        }
+        EndFunction();
+
+        // TODO: Sample texture arrays with integer coordinates / texelFetch
+        Function("textureBicubic",
+                 {
+                     {"sampler", ShaderTexture(TEXTURE_2D, RGBA, true)},
+                     {"texCoords3", ShaderDataType::vec3()},
+                     {"size", ShaderDataType::vec2()}
+                 },
+                 ShaderDataType::vec4());
+        {
+            vec2 size = argument("size");
+
+            vec3 texCoords3 = argument("texCoords3");
+            vec2 texCoords = texCoords3.xy();
+
+            vec2 invTexSize = 1.0 / size;
+
+            texCoords = texCoords * size - 0.5;
+
+            vec2 fxy = fract(texCoords);
+            texCoords -= fxy;
+
+            vec4 xcubic = cubic(fxy.x());
+            vec4 ycubic = cubic(fxy.y());
+
+            vec4 c = texCoords.xxyy() + vec2(-0.5, +1.5).xyxy();
+
+            vec4 s = vec4(xcubic.xz() + xcubic.yw(), ycubic.xz() + ycubic.yw());
+            vec4 offset = c + vec4(xcubic.yw(), ycubic.yw()) / s;
+
+            offset *= invTexSize.xxyy();
+
+            vec4 sample0 = texture(argument("sampler"), vec3(offset.x(), offset.z(), texCoords3.z()));
+            vec4 sample1 = texture(argument("sampler"), vec3(offset.y(), offset.z(), texCoords3.z()));
+            vec4 sample2 = texture(argument("sampler"), vec3(offset.x(), offset.w(), texCoords3.z()));
+            vec4 sample3 = texture(argument("sampler"), vec3(offset.y(), offset.w(), texCoords3.z()));
 
             Float sx = s.x() / (s.x() + s.y());
             Float sy = s.z() / (s.z() + s.w());
