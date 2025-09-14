@@ -60,13 +60,6 @@ namespace xng {
 
         void destroyTexture(const Texture2D &texture);
 
-        void renderClear(const ColorRGBA &clearColor,
-                         const Vec2i &viewportOffset,
-                         const Vec2i &viewportSize) {
-            renderBegin(true, clearColor, viewportOffset, viewportSize, {}, {});
-            renderPresent();
-        }
-
         /**
          * Must be called before calling draw methods.
          *
@@ -83,6 +76,30 @@ namespace xng {
                          const Vec2i &viewportSize,
                          const Vec2f &cameraPosition,
                          const Rectf &projection);
+
+
+        void renderBegin(bool clear,
+                         const ColorRGBA &clearColor,
+                         const Vec2i &viewportOffset,
+                         const Vec2i &viewportSize,
+                         const Vec2f &cameraPosition,
+                         const Vec2i &frameBufferSize) {
+            renderBegin(clear,
+                        clearColor,
+                        viewportOffset,
+                        viewportSize,
+                        cameraPosition,
+                        Rectf({}, frameBufferSize.convert<float>()));
+        }
+
+        void renderBegin(const Vec2i &frameBufferSize, const ColorRGBA clearColor = ColorRGBA::black(1, 0)) {
+            renderBegin(true,
+                        clearColor,
+                        {},
+                        frameBufferSize,
+                        {},
+                        Rectf({}, frameBufferSize.convert<float>()));
+        }
 
         void renderPresent();
 
@@ -192,7 +209,7 @@ namespace xng {
 
     private:
         bool isRendering = false;
-        TextureAtlas atlas;
+        TextureAtlas atlas{};
         RenderBatch2D batch;
         std::vector<RenderBatch2D> renderBatches;
     };
