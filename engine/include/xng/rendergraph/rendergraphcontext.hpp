@@ -37,6 +37,7 @@ namespace xng {
 
         /**
          * Upload data to a buffer.
+         *
          * Subsequent draw() invocations that use the specified buffer are guaranteed to receive the uploaded data.
          * The upload might be performed asynchronously.
          *
@@ -48,6 +49,7 @@ namespace xng {
 
         /**
          * Upload data to a texture.
+         *
          * Subsequent draw() invocations that use the specified texture are guaranteed to receive the uploaded data.
          * The upload might be performed asynchronously.
          *
@@ -55,7 +57,7 @@ namespace xng {
          * @param ptr
          * @param size
          * @param format
-         * @param index
+         * @param index The index of the texture if the passed texture is an array texture
          * @param mipMapLevel
          * @param face
          */
@@ -97,7 +99,23 @@ namespace xng {
                                       size_t mipMapLevel = 0,
                                       CubeMapFace face = POSITIVE_X) = 0;
 
-        virtual void bindTextures(const std::unordered_map<std::string, RenderGraphResource> &textures) = 0;
+        /**
+         * Bind the specified textures.
+         *
+         * Every sub vector represents a texture array in ShaderStage.textureArrays
+         *
+         * @param textureArrays
+         */
+        virtual void bindTextures(const std::vector<std::vector<RenderGraphResource> > &textureArrays) = 0;
+
+        void bindTextures(const std::vector<RenderGraphResource> &textures) {
+            std::vector<std::vector<RenderGraphResource> > textureArrays;
+            textureArrays.reserve(textures.size());
+            for (auto &texture: textures) {
+                textureArrays.emplace_back(std::vector<RenderGraphResource>{texture});
+            }
+            bindTextures(textureArrays);
+        }
 
         virtual void bindShaderBuffers(const std::unordered_map<std::string, RenderGraphResource> &buffers) = 0;
 
