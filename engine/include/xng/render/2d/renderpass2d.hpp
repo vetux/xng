@@ -22,17 +22,86 @@
 
 #include "xng/rendergraph/rendergraphbuilder.hpp"
 #include "xng/render/2d/renderer2d.hpp"
+#include "xng/render/2d/meshbuffer2d.hpp"
+#include "xng/render/geometry/primitive.hpp"
 
 namespace xng {
     class XENGINE_EXPORT RenderPass2D {
     public:
         RenderPass2D() = default;
 
+        /**
+         * Has to be called immediately before executing the render graph runtime.
+         *
+         * @return True if the graph must be rebuilt.
+         */
         bool shouldRebuild();
 
         void setup(RenderGraphBuilder &builder);
 
+        /**
+         * Drawing operations recorded in the returned renderer are presented by this pass.
+         *
+         * @return
+         */
+        Renderer2D &getRenderer2D() {
+            return renderer;
+        }
+
     private:
+        struct MeshDrawData {
+            Primitive primitive{};
+            DrawCall drawCall{};
+            size_t baseVertex{};
+
+            MeshDrawData() = default;
+
+            MeshDrawData(const Primitive primitive, const DrawCall &drawCall,
+                         const size_t baseVertex) : primitive(primitive),
+                                                    drawCall(drawCall),
+                                                    baseVertex(baseVertex) {
+            }
+        };
+
+        Mat4f getRotationMatrix(float rotation, Vec2f center);
+
+        class RotationPairHash {
+        public:
+            std::size_t operator()(const std::pair<float, Vec2f> &k) const {
+                size_t ret = 0;
+                hash_combine(ret, k.first);
+                hash_combine(ret, k.second);
+                return ret;
+            }
+        };
+
+        RenderGraphResource screenTexture;
+
+        RenderGraphResource trianglePipeline{};
+        RenderGraphResource linePipeline{};
+        RenderGraphResource pointPipeline{};
+
+        RenderGraphResource vertexBuffer{};
+        RenderGraphResource indexBuffer{};
+
+        RenderGraphResource vertexBufferCopy{};
+        RenderGraphResource indexBufferCopy{};
+
+        size_t vertexBufferSize{};
+        size_t indexBufferSize{};
+
+        RenderGraphResource shaderBuffer{};
+
+        std::map<TextureAtlasResolution, RenderGraphResource> atlasTextures;
+        std::map<TextureAtlasResolution, size_t> atlasTexturesSizes;
+
+        std::map<TextureAtlasResolution, RenderGraphResource> atlasCopyTextures;
+
+        std::unordered_map<std::pair<float, Vec2f>, Mat4f, RotationPairHash> rotationMatrices;
+        std::unordered_set<std::pair<float, Vec2f>, RotationPairHash> usedRotationMatrices;
+
+        MeshBuffer2D meshBuffer;
+
         Renderer2D renderer;
     };
 }

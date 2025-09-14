@@ -28,28 +28,18 @@ namespace xng {
     }
 
     void TextureAtlas::upload(RenderGraphContext &ctx, const TextureAtlasHandle &handle,
-        const std::map<TextureAtlasResolution, RenderGraphResource> &atlasBuffers, const ImageRGBA &texture) {
-        // TODO: Reimplement texture atlas upload
-    }
-
-    /*void TextureAtlas::upload(FGContext &builder,
-                              const TextureAtlasHandle &handle,
-                              const std::map<TextureAtlasResolution, FrameGraphResource> &atlasBuffers,
+                              const std::map<TextureAtlasResolution, RenderGraphResource> &atlasBuffers,
                               const ImageRGBA &texture) {
         auto img = getAlignedImage(texture, handle.level);
-        builder.upload(atlasBuffers.at(handle.level),
-                       handle.index,
-                       0,
-                       RGBA,
-                       {},
-                       [texture, handle]() {
-                           return FrameGraphUploadBuffer::createArray(
-                                   getAlignedImage(texture, handle.level).getBuffer());
-                       }, 0);
-    }*/
+        ctx.uploadTexture(atlasBuffers.at(handle.level),
+                          reinterpret_cast<const uint8_t *>(img.getBuffer().data()),
+                          img.getBuffer().size() * sizeof(ColorRGBA),
+                          RGBA);
+    }
 
-    TextureAtlas::TextureAtlas(std::map<TextureAtlasResolution, std::vector<bool>> bufferOccupations)
-            : bufferOccupations(std::move(bufferOccupations)) {}
+    TextureAtlas::TextureAtlas(std::map<TextureAtlasResolution, std::vector<bool> > bufferOccupations)
+        : bufferOccupations(std::move(bufferOccupations)) {
+    }
 
     TextureAtlasHandle TextureAtlas::add(const ImageRGBA &texture) {
         auto res = getClosestMatchingResolutionLevel(texture.getResolution());
@@ -63,7 +53,13 @@ namespace xng {
                 return ret;
             }
         }
-        throw std::runtime_error("No free slot in atlas texture array buffers.");
+        // No free slot, increase texture atlas array texture size
+        bufferOccupations.at(res).emplace_back(true);
+        TextureAtlasHandle ret;
+        ret.index = bufferOccupations.size() - 1;
+        ret.level = res;
+        ret.size = texture.getResolution();
+        return ret;
     }
 
     void TextureAtlas::remove(const TextureAtlasHandle &handle) {

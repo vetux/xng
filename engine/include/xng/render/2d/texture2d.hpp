@@ -21,28 +21,17 @@
 #define XENGINE_TEXTURE2D_HPP
 
 #include <utility>
+#include <memory>
 
 #include "xng/render/atlas/textureatlashandle.hpp"
 
 namespace xng {
     class Texture2D {
     public:
-        class Deallocator {
-        public:
-            explicit Deallocator(std::function<void()> callback) : callback(std::move(callback)) {}
-
-            ~Deallocator() {
-                callback();
-            }
-
-            std::function<void()> callback;
-        };
-
         Texture2D() = default;
 
-        Texture2D(std::shared_ptr<Deallocator> dealloc, TextureAtlasHandle handle)
-                : dealloc(std::move(dealloc)),
-                  handle(std::move(handle)) {}
+        Texture2D(TextureAtlasHandle handle)
+                : handle(std::move(handle)) {}
 
         const TextureAtlasHandle &getHandle() const {
             return handle;
@@ -53,7 +42,6 @@ namespace xng {
         }
 
     private:
-        std::shared_ptr<Deallocator> dealloc;
         TextureAtlasHandle handle;
     };
 }

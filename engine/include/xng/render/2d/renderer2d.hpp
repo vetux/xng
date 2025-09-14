@@ -20,24 +20,11 @@
 #ifndef XENGINE_RENDERER2D_HPP
 #define XENGINE_RENDERER2D_HPP
 
-#include <set>
-#include <unordered_set>
-#include <utility>
-#include <variant>
-
-#include "xng/render/scene/camera.hpp"
-
-#include "xng/util/hashcombine.hpp"
+#include <vector>
 
 #include "xng/render/atlas/textureatlas.hpp"
-
-#include "xng/render/geometry/primitive.hpp"
-
 #include "xng/render/2d/texture2d.hpp"
-#include "xng/rendergraph/drawcall.hpp"
-#include "xng/rendergraph/rendergraphresource.hpp"
-#include "../../rendergraph/rendergraphtextureproperties.hpp"
-#include "xng/rendergraph/shader/shaderstage.hpp"
+#include "xng/render/2d/renderbatch2d.hpp"
 
 namespace xng {
     /**
@@ -70,6 +57,8 @@ namespace xng {
         Texture2D createTexture(const ImageRGBA &texture);
 
         std::vector<Texture2D> createTextures(const std::vector<ImageRGBA> &textures);
+
+        void destroyTexture(const Texture2D &texture);
 
         void renderClear(const ColorRGBA &clearColor,
                          const Vec2i &viewportOffset,
@@ -189,240 +178,23 @@ namespace xng {
                   const Vec2f &center = {},
                   float rotation = 0);
 
+        TextureAtlas &getTextureAtlas() {
+            return atlas;
+        }
+
+        const std::vector<RenderBatch2D> &getRenderBatches() const {
+            return renderBatches;
+        }
+
+        void clearBatches() {
+            renderBatches.clear();
+        }
+
     private:
-        void updateAtlasRef();
-
-        struct Pass {
-            enum Type {
-                COLOR_POINT,
-                COLOR_LINE,
-                COLOR_PLANE,
-                TEXTURE,
-            } type{};
-
-            Rectf srcRect{};
-            Rectf dstRect{}; // If line dstRect.position contains the start and dstRect.dimensions the end of the line.
-
-            Vec2f center{};
-            float rotation = 0;
-
-            bool fill = false;
-
-            TextureAtlasHandle texture{};
-
-            TextureFiltering filter{};
-
-            float mix = 0;
-            float alphaMix = 0;
-            ColorRGBA color{};
-
-            bool colorFactor = false;
-
-            Pass() = default;
-
-            Pass(Vec2f point,
-                 ColorRGBA color,
-                 Vec2f position,
-                 Vec2f center,
-                 float rotation)
-                    : type(COLOR_POINT),
-                      srcRect(std::move(position), {}),
-                      dstRect(std::move(point), {}),
-                      color(color),
-                      center(std::move(center)),
-                      rotation(rotation) {}
-
-            Pass(Vec2f start,
-                 Vec2f end,
-                 ColorRGBA color,
-                 Vec2f position,
-                 Vec2f center,
-                 float rotation)
-                    : type(COLOR_LINE),
-                      srcRect(std::move(position), {}),
-                      dstRect(std::move(start), std::move(end)),
-                      color(color),
-                      center(std::move(center)),
-                      rotation(rotation) {}
-
-            Pass(Rectf dstRect,
-                 ColorRGBA color,
-                 bool fill,
-                 Vec2f center,
-                 float rotation)
-                    : type(COLOR_PLANE),
-                      dstRect(std::move(dstRect)),
-                      center(std::move(center)),
-                      rotation(rotation),
-                      color(color),
-                      fill(fill) {}
-
-            Pass(Rectf srcRect,
-                 Rectf dstRect,
-                 TextureAtlasHandle texture,
-                 Vec2f center,
-                 float rotation,
-                 TextureFiltering filter,
-                 float mix,
-                 float alphaMix,
-                 ColorRGBA color)
-                    : type(TEXTURE),
-                      srcRect(std::move(srcRect)),
-                      dstRect(std::move(dstRect)),
-                      center(std::move(center)),
-                      rotation(rotation),
-                      filter(filter),
-                      texture(std::move(texture)),
-                      mix(mix),
-                      alphaMix(alphaMix),
-                      color(color) {}
-
-            Pass(Rectf srcRect,
-                 Rectf dstRect,
-                 TextureAtlasHandle texture,
-                 Vec2f center,
-                 float rotation,
-                 TextureFiltering filter,
-                 ColorRGBA color)
-                    : type(TEXTURE),
-                      srcRect(std::move(srcRect)),
-                      dstRect(std::move(dstRect)),
-                      center(std::move(center)),
-                      rotation(rotation),
-                      filter(filter),
-                      texture(std::move(texture)),
-                      color(color),
-                      colorFactor(true) {}
-        };
-
-        struct MeshDrawData {
-            Primitive primitive{};
-            DrawCall drawCall{};
-            size_t baseVertex{};
-
-            MeshDrawData() = default;
-
-            MeshDrawData(Primitive primitive, DrawCall drawCall, size_t baseVertex) : primitive(primitive),
-                                                                                      drawCall(std::move(drawCall)),
-                                                                                      baseVertex(baseVertex) {}
-        };
-
-        void present();
-
-        void presentMultiDraw();
-
-        MeshDrawData getPlane(const Vec2f &size);
-
-        MeshDrawData getSquare(const Vec2f &size);
-
-        MeshDrawData getLine(const Vec2f &start, const Vec2f &end);
-
-        MeshDrawData getPoint(const Vec2f &point);
-
-        void destroyPlane(const Vec2f &size);
-
-        void destroySquare(const Vec2f &size);
-
-        void destroyLine(const Vec2f &start, const Vec2f &end);
-
-        void destroyPoint(const Vec2f &point);
-
-        /**
-         * @param size number of bytes to allocate
-         * @return The offset in bytes into the index buffer
-         */
-        size_t allocateVertexData(size_t size);
-
-        void deallocateVertexData(size_t offset);
-
-        /**
-         * @param size number of bytes to allocate
-         * @return The offset in bytes into the index buffer
-         */
-        size_t allocateIndexData(size_t size);
-
-        void deallocateIndexData(size_t offset);
-
-        void mergeFreeVertexBufferRanges();
-
-        void mergeFreeIndexBufferRanges();
-
-        void updateVertexArrayObject();
-
-        Mat4f getRotationMatrix(float rotation, Vec2f center);
-
-        class RotationPairHash {
-        public:
-            std::size_t operator()(const std::pair<float, Vec2f> &k) const {
-                size_t ret = 0;
-                hash_combine(ret, k.first);
-                hash_combine(ret, k.second);
-                return ret;
-            }
-        };
-
-        class LinePairHash {
-        public:
-            std::size_t operator()(const std::pair<Vec2f, Vec2f> &k) const {
-                size_t ret = 0;
-                hash_combine(ret, k.first);
-                hash_combine(ret, k.second);
-                return ret;
-            }
-        };
-
-        ShaderStage vsTexture;
-        ShaderStage fsTexture;
-
-        ShaderStage vsTextureMultiDraw;
-        ShaderStage fsTextureMultiDraw;
-
-        std::map<TextureAtlasResolution, RenderGraphResource> atlasRef;
-        std::map<TextureAtlasResolution, RenderGraphResource> atlasTextures;
-        TextureAtlas atlas;
-
-        std::unordered_map<Vec2f, MeshDrawData> planeMeshes;
-        std::unordered_map<Vec2f, MeshDrawData> squareMeshes;
-        std::unordered_map<std::pair<Vec2f, Vec2f>, MeshDrawData, LinePairHash> lineMeshes;
-        std::unordered_map<Vec2f, MeshDrawData> pointMeshes;
-
-        std::map<size_t, size_t> freeVertexBufferRanges; // start and size of free ranges of vertices with layout vertexLayout in the vertex buffer
-        std::map<size_t, size_t> freeIndexBufferRanges; // start and size of free ranges of bytes in the index buffer
-
-        std::map<size_t, size_t> allocatedVertexRanges;
-        std::map<size_t, size_t> allocatedIndexRanges;
-
-        std::unordered_set<Vec2f> usedPlanes;
-        std::unordered_set<Vec2f> usedSquares;
-        std::unordered_set<std::pair<Vec2f, Vec2f>, LinePairHash> usedLines;
-        std::unordered_set<Vec2f> usedPoints;
-
-        std::unique_ptr<RenderGraphResource> indexBuffer;
-        std::unique_ptr<RenderGraphResource> vertexBuffer;
-        std::unique_ptr<RenderGraphResource> vertexArrayObject;
-
-        std::unordered_map<std::pair<float, Vec2f>, Mat4f, RotationPairHash> rotationMatrices;
-        std::unordered_set<std::pair<float, Vec2f>, RotationPairHash> usedRotationMatrices;
-
-        std::vector<Pass> passes;
-
-        Camera camera;
-        Transform cameraTransform;
-
-        Mat4f viewProjectionMatrix;
-
         bool isRendering = false;
-
-        bool vaoChange = false;
-
-        Vec2i mViewportOffset = {};
-        Vec2i mViewportSize = Vec2i(1);
-
-        bool mClear = false;
-
-        ColorRGBA mClearColor = ColorRGBA::black();
-
-        ShaderAttributeLayout vertexLayout;
+        TextureAtlas atlas;
+        RenderBatch2D batch;
+        std::vector<RenderBatch2D> renderBatches;
     };
 }
 
