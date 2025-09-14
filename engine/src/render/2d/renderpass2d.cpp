@@ -159,7 +159,7 @@ namespace xng {
 
         screenTexture = builder.getScreenTexture();
 
-        builder.addPass("Renderer2D", [this](RenderGraphContext &ctx) {
+        auto pass = builder.addPass("Renderer2D", [this](RenderGraphContext &ctx) {
             static bool printDebug = true;
             if (printDebug) {
                 auto src = ctx.getShaderSource(trianglePipeline);
@@ -417,6 +417,25 @@ namespace xng {
 
             renderer.clearBatches();
         });
+        builder.read(pass, pointPipeline);
+        builder.read(pass, linePipeline);
+        builder.read(pass, trianglePipeline);
+        builder.readWrite(pass, vertexBuffer);
+        builder.readWrite(pass, indexBuffer);
+        builder.readWrite(pass, shaderBuffer);
+        for (auto &tex: atlasTextures) {
+            builder.readWrite(pass, tex.second);
+        }
+        for (auto &tex: atlasCopyTextures) {
+            builder.read(pass, tex.second);
+        }
+        if (vertexBufferCopy) {
+            builder.read(pass, vertexBufferCopy);
+        }
+        if (indexBufferCopy) {
+            builder.read(pass, indexBufferCopy);
+        }
+        builder.write(pass, screenTexture);
     }
 
     Mat4f RenderPass2D::getRotationMatrix(float rotation, Vec2f center) {
