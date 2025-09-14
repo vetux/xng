@@ -36,7 +36,7 @@ namespace xng {
         }
 
         std::unique_ptr<ShaderNode> copy() const override {
-            return std::make_unique<NodeTextureSize>(texture->copy(), lod->copy());
+            return std::make_unique<NodeTextureSize>(texture->copy(), lod ? lod->copy() : nullptr);
         }
     };
 }
