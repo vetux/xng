@@ -24,10 +24,10 @@
 
 namespace xng {
     struct NodeAttributeInput final : ShaderNode {
-        uint32_t attributeIndex = 0;
+        std::string attributeName;
 
-        explicit NodeAttributeInput(const uint32_t attribute_index)
-            : attributeIndex(attribute_index) {
+        explicit NodeAttributeInput(std::string attributeName)
+            : attributeName(std::move(attributeName)) {
         }
 
         NodeType getType() const override {
@@ -35,7 +35,7 @@ namespace xng {
         }
 
         std::unique_ptr<ShaderNode> copy() const override {
-            return std::make_unique<NodeAttributeInput>(attributeIndex);
+            return std::make_unique<NodeAttributeInput>(attributeName);
         }
     };
 }

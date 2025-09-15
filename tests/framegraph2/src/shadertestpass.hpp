@@ -45,9 +45,9 @@ public:
     ShaderTestPass() {
         dataBuffer.elements.emplace_back("mvp", ShaderDataType(ShaderDataType::MAT4, ShaderDataType::FLOAT));
         colorBuffer.elements.emplace_back("color", ShaderDataType(ShaderDataType::VECTOR4, ShaderDataType::FLOAT));
-        vertexLayout.elements.emplace_back(ShaderDataType::VECTOR3, ShaderDataType::FLOAT);
-        fragmentLayout.elements.emplace_back(ShaderDataType::VECTOR4, ShaderDataType::FLOAT);
-        colorLayout.elements.emplace_back(ShaderDataType::VECTOR4, ShaderDataType::FLOAT);
+        vertexLayout.addElement("position", ShaderDataType::vec3());
+        fragmentLayout.addElement("fPosition", ShaderDataType::vec4());
+        colorLayout.addElement("color", ShaderDataType::vec4());
     }
 
     void setup(RenderGraphBuilder &builder) {
@@ -66,7 +66,7 @@ public:
         auto &builder = ShaderBuilder::instance();
         builder.setup(Shader::VERTEX,
                       vertexLayout,
-                      vertexLayout,
+                      fragmentLayout,
                       {},
                       {{"data", dataBuffer}},
                       {{"texture", ShaderTextureArray(textureDef)}},
@@ -124,14 +124,14 @@ public:
         EndIf();
 
         mat4 mvp = buffer("data", "mvp");
-        vec3 vPos = attribute(0);
+        vec3 vPos = attribute("position");
         vec4 fPos = vec4(vPos.x(), vPos.y(), vPos.z(), Float(1));
         fPos = mvp * fPos;
         fPos = fPos * vec4(f.x(), f.y(), 0, 1);
 
         fPos.x() = fPos.x() + color.x();
 
-        writeAttribute(0, fPos);
+        writeAttribute("fPosition", fPos);
 
         return builder.build();
     }
@@ -140,13 +140,13 @@ public:
         auto &builder = ShaderBuilder::instance();
         builder.setup(Shader::FRAGMENT,
                       vertexLayout,
-                      vertexLayout,
+                      colorLayout,
                       {},
                       {{"data", dataBuffer}},
                       {{"texture", ShaderTextureArray(textureDef)}},
                       {});
 
-        writeAttribute(0, vec4(1, 0, 0, 1));
+        writeAttribute("color", vec4(1, 0, 0, 1));
 
         return builder.build();
     }

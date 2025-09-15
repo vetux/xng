@@ -379,7 +379,7 @@ namespace xng {
             for (auto &assMesh: pair.second) {
                 std::string name = assMesh->mName.C_Str();
                 Uri meshUri(path.getScheme(), path.getFile(), name);
-                if (mesh.vertexLayout.getSize() == 0) {
+                if (mesh.vertexLayout.getLayoutSize() == 0) {
                     mesh = SkinnedMesh(convertMesh(*assMesh, materialResourceHandles));
                     meshPtr = assMesh;
                 } else {
@@ -396,7 +396,7 @@ namespace xng {
 
             mesh.vertexLayout = Mesh::getDefaultVertexLayout();
             for(auto &v : mesh.vertices){
-                v.buffer.resize(mesh.vertexLayout.getSize());
+                v.buffer.resize(mesh.vertexLayout.getLayoutSize());
             }
 
             for (size_t i = 0; i < std::numeric_limits<size_t>::max(); i++) {

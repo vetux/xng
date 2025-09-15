@@ -106,12 +106,14 @@ std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
 
     std::string inputAttributes;
     size_t attributeCount = 0;
-    for (auto element: source.inputLayout.elements) {
+    for (auto element: source.inputLayout.getElements()) {
         auto location = attributeCount++;
         inputAttributes += "layout(location = "
                 + std::to_string(location)
                 + ") in "
-                + generateElement(inputAttributePrefix + std::to_string(location), element, "");
+                + generateElement(inputAttributePrefix + source.inputLayout.getElementName(location),
+                                  element,
+                                  "");
     }
     if (source.stage == Shader::Stage::FRAGMENT) {
         inputAttributes += "layout(location = " + std::to_string(attributeCount) + ") flat in uint drawID;\n";
@@ -121,12 +123,14 @@ std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
 
     std::string outputAttributes;
     attributeCount = 0;
-    for (auto element: source.outputLayout.elements) {
+    for (auto element: source.outputLayout.getElements()) {
         auto location = attributeCount++;
         outputAttributes += "layout(location = "
                 + std::to_string(location)
                 + ") out "
-                + generateElement(outputAttributePrefix + std::to_string(location), element, "");
+                + generateElement(outputAttributePrefix + source.outputLayout.getElementName(location),
+                                  element,
+                                  "");
     }
     if (source.stage == Shader::Stage::VERTEX) {
         outputAttributes += "layout(location = " + std::to_string(attributeCount) + ") flat out uint drawID;\n";

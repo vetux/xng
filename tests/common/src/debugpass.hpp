@@ -39,7 +39,7 @@ public:
     void setup(FrameGraphBuilder &builder) override {
         if (!vertexBuffer.assigned) {
             VertexBufferDesc desc;
-            desc.size = mesh.vertices.size() * mesh.vertexLayout.getSize();
+            desc.size = mesh.vertices.size() * mesh.vertexLayout.getLayoutSize();
             vertexBuffer = builder.createVertexBuffer(desc);
 
             builder.upload(vertexBuffer, [this]() {

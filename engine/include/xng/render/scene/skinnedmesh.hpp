@@ -46,13 +46,13 @@ namespace xng {
          */
         static ShaderAttributeLayout getDefaultVertexLayout() {
             return ShaderAttributeLayout({
-                ShaderDataType::vec3(),
-                ShaderDataType::vec3(),
-                ShaderDataType::vec2(),
-                ShaderDataType::vec3(),
-                ShaderDataType::vec3(),
-                ShaderDataType::vec4(),
-                ShaderDataType::vec4()
+                {"position", ShaderDataType::vec3()},
+                {"normal", ShaderDataType::vec3()},
+                {"uv", ShaderDataType::vec2()},
+                {"tangent", ShaderDataType::vec3()},
+                {"bitangent", ShaderDataType::vec3()},
+                {"boneIds", ShaderDataType::ivec4()},
+                {"boneWeights", ShaderDataType::vec4()}
             });
         }
 
@@ -77,18 +77,17 @@ namespace xng {
          */
         static ShaderAttributeLayout getDefaultInstanceLayout() {
             return ShaderAttributeLayout({
-                ShaderDataType::vec3(),
-                ShaderDataType::vec3(),
-                ShaderDataType::vec2(),
-                ShaderDataType::vec3(),
-                ShaderDataType::vec3(),
-                ShaderDataType::vec4(),
-                ShaderDataType::vec4(),
-
-                ShaderDataType::vec4(),
-                ShaderDataType::vec4(),
-                ShaderDataType::vec4(),
-                ShaderDataType::vec4()
+                {"position", ShaderDataType::vec3()},
+                {"normal", ShaderDataType::vec3()},
+                {"uv", ShaderDataType::vec2()},
+                {"tangent", ShaderDataType::vec3()},
+                {"bitangent", ShaderDataType::vec3()},
+                {"boneIds", ShaderDataType::ivec4()},
+                {"boneWeights", ShaderDataType::vec4()},
+                {"instanceRow0", ShaderDataType::vec4()},
+                {"instanceRow1", ShaderDataType::vec4()},
+                {"instanceRow2", ShaderDataType::vec4()},
+                {"instanceRow3", ShaderDataType::vec4()},
             });
         }
 

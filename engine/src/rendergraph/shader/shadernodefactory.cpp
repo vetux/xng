@@ -50,12 +50,12 @@ namespace xng::ShaderNodeFactory {
         return std::make_unique<NodeArgument>(name);
     }
 
-    std::unique_ptr<ShaderNode> attributeInput(uint32_t attributeIndex) {
-        return std::make_unique<NodeAttributeInput>(attributeIndex);
+    std::unique_ptr<ShaderNode> attributeInput(const std::string & attributeName) {
+        return std::make_unique<NodeAttributeInput>(attributeName);
     }
 
-    std::unique_ptr<ShaderNode> attributeOutput(uint32_t attributeIndex) {
-        return std::make_unique<NodeAttributeOutput>(attributeIndex);
+    std::unique_ptr<ShaderNode> attributeOutput(const std::string & attributeName) {
+        return std::make_unique<NodeAttributeOutput>(attributeName);
     }
 
     std::unique_ptr<ShaderNode> parameter(const std::string &parameter_name) {

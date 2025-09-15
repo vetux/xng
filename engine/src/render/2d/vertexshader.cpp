@@ -27,15 +27,15 @@ namespace xng {
     Shader createVertexShader() {
         const ShaderAttributeLayout inputLayout{
             {
-                ShaderDataType::vec2(),
-                ShaderDataType::vec2()
+                {"position", ShaderDataType::vec2()},
+                {"uv", ShaderDataType::vec2()}
             }
         };
 
         const ShaderAttributeLayout outputLayout{
             {
-                ShaderDataType::vec4(),
-                ShaderDataType::vec2()
+                {"fPosition", ShaderDataType::vec4()},
+                {"fUv", ShaderDataType::vec2()}
             }
         };
 
@@ -66,8 +66,8 @@ namespace xng {
                       {{"atlasTextures", ShaderTextureArray(ShaderTexture(TEXTURE_2D, RGBA, true), 12)}},
                       {});
 
-        vec2 position = attribute(0);
-        vec2 uv = attribute(1);
+        vec2 position = attribute("position");
+        vec2 uv = attribute("uv");
 
         vec4 fPosition = vec4(0, 0, 0, 1);
         vec2 fUv = vec2(0, 0);
@@ -77,8 +77,8 @@ namespace xng {
         fPosition = mvp * vec4(position.x(), position.y(), 0.0, 1.0);
         fUv = uv;
 
-        writeAttribute(0, fPosition);
-        writeAttribute(1, fUv);
+        writeAttribute("fPosition", fPosition);
+        writeAttribute("fUv", fUv);
 
         setVertexPosition(fPosition);
 

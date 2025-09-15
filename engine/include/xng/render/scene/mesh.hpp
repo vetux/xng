@@ -59,11 +59,11 @@ namespace xng {
          */
         static ShaderAttributeLayout getDefaultVertexLayout() {
             return ShaderAttributeLayout({
-                ShaderDataType::vec3(),
-                ShaderDataType::vec3(),
-                ShaderDataType::vec2(),
-                ShaderDataType::vec3(),
-                ShaderDataType::vec3()
+                {"position", ShaderDataType::vec3()},
+                {"normal", ShaderDataType::vec3()},
+                {"uv", ShaderDataType::vec2()},
+                {"tangent", ShaderDataType::vec3()},
+                {"bitangent", ShaderDataType::vec3()}
             });
         }
 
@@ -86,20 +86,23 @@ namespace xng {
          */
         static ShaderAttributeLayout getDefaultInstanceLayout() {
             return ShaderAttributeLayout({
-                ShaderDataType::vec3(),
-                ShaderDataType::vec3(),
-                ShaderDataType::vec2(),
-                ShaderDataType::vec3(),
-                ShaderDataType::vec3(),
-                ShaderDataType::vec4(),
-                ShaderDataType::vec4(),
-                ShaderDataType::vec4(),
-                ShaderDataType::vec4()
+                {"position", ShaderDataType::vec3()},
+                {"normal", ShaderDataType::vec3()},
+                {"uv", ShaderDataType::vec2()},
+                {"tangent", ShaderDataType::vec3()},
+                {"bitangent", ShaderDataType::vec3()},
+                {"instanceRow0", ShaderDataType::vec4()},
+                {"instanceRow1", ShaderDataType::vec4()},
+                {"instanceRow2", ShaderDataType::vec4()},
+                {"instanceRow3", ShaderDataType::vec4()},
             });
         }
 
         /**
          * A quad mesh which covers the viewport in normalized screen coordinates
+         *  layout (location = 0) in vec3 position;
+         *  layout (location = 1) in vec2 uv;
+         *
          * @return
          */
         static const Mesh &normalizedQuad();

@@ -182,11 +182,11 @@ std::string compileLeafNode(const NodeArray &node, const Shader &source, const s
 }
 
 std::string compileLeafNode(const NodeAttributeInput &node) {
-    return inputAttributePrefix + std::to_string(node.attributeIndex);
+    return inputAttributePrefix + node.attributeName;
 }
 
 std::string compileLeafNode(const NodeAttributeOutput &node) {
-    return outputAttributePrefix + std::to_string(node.attributeIndex);
+    return outputAttributePrefix + node.attributeName;
 }
 
 std::string compileLeafNode(const NodeParameter &node) {

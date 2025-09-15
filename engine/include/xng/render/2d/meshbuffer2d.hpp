@@ -212,8 +212,8 @@ namespace xng {
 
         ShaderAttributeLayout vertexLayout{
             {
-                ShaderDataType::vec2(),
-                ShaderDataType::vec2()
+                {"position", ShaderDataType::vec2()},
+                {"uv", ShaderDataType::vec2()}
             },
         };
 
@@ -255,7 +255,7 @@ namespace xng {
 
             planeMeshes[size] = MeshDrawData(TRIANGLES,
                                              drawCall,
-                                             vertexBufferOffset / vertexLayout.getSize());
+                                             vertexBufferOffset / vertexLayout.getLayoutSize());
 
             BufferUpload upload;
             upload.vertexData = vertexStream.getVertexBuffer();
@@ -309,7 +309,7 @@ namespace xng {
 
             squareMeshes[size] = MeshDrawData(LINES,
                                               drawCall,
-                                              vertexBufferOffset / vertexLayout.getSize());
+                                              vertexBufferOffset / vertexLayout.getLayoutSize());
 
             BufferUpload upload;
             upload.vertexData = vertexStream.getVertexBuffer();
@@ -345,7 +345,7 @@ namespace xng {
 
             lineMeshes[{start, end}] = MeshDrawData(LINES,
                                                     drawCall,
-                                                    vertexBufferOffset / vertexLayout.getSize());
+                                                    vertexBufferOffset / vertexLayout.getLayoutSize());
 
             BufferUpload upload;
             upload.vertexData = vertexStream.getVertexBuffer();
@@ -376,7 +376,7 @@ namespace xng {
 
             pointMeshes[point] = MeshDrawData(POINTS,
                                               drawCall,
-                                              vertexBufferOffset / vertexLayout.getSize());
+                                              vertexBufferOffset / vertexLayout.getLayoutSize());
 
             BufferUpload upload;
             upload.vertexData = vertexStream.getVertexBuffer();
@@ -391,14 +391,14 @@ namespace xng {
         void destroyPlane(const Vec2f &size) {
             auto drawData = planeMeshes.at(size);
             planeMeshes.erase(size);
-            deallocateVertexData(drawData.baseVertex * vertexLayout.getSize());
+            deallocateVertexData(drawData.baseVertex * vertexLayout.getLayoutSize());
             deallocateIndexData(drawData.drawCall.offset);
         }
 
         void destroySquare(const Vec2f &size) {
             auto drawData = squareMeshes.at(size);
             squareMeshes.erase(size);
-            deallocateVertexData(drawData.baseVertex * vertexLayout.getSize());
+            deallocateVertexData(drawData.baseVertex * vertexLayout.getLayoutSize());
             deallocateIndexData(drawData.drawCall.offset);
         }
 
@@ -406,14 +406,14 @@ namespace xng {
             auto pair = std::make_pair(start, end);
             auto drawData = lineMeshes.at(pair);
             lineMeshes.erase(pair);
-            deallocateVertexData(drawData.baseVertex * vertexLayout.getSize());
+            deallocateVertexData(drawData.baseVertex * vertexLayout.getLayoutSize());
             deallocateIndexData(drawData.drawCall.offset);
         }
 
         void destroyPoint(const Vec2f &point) {
             auto drawData = pointMeshes.at(point);
             pointMeshes.erase(point);
-            deallocateVertexData(drawData.baseVertex * vertexLayout.getSize());
+            deallocateVertexData(drawData.baseVertex * vertexLayout.getLayoutSize());
             deallocateIndexData(drawData.drawCall.offset);
         }
 

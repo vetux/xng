@@ -89,8 +89,8 @@ namespace xng {
                 }
             };
             nQuad.vertexLayout = ShaderAttributeLayout({
-                ShaderDataType::vec3(),
-                ShaderDataType::vec2()
+                {"position", ShaderDataType::vec3()},
+                {"uv" ,ShaderDataType::vec2()}
             });
         }
         return nQuad;

@@ -171,9 +171,9 @@ namespace xng::ShaderScript {
      * @param binding
      * @return
      */
-    inline ShaderNodeWrapper attribute(const uint32_t &binding) {
-        return ShaderNodeWrapper(ShaderBuilder::instance().getInputLayout().elements.at(binding),
-                                 ShaderNodeFactory::attributeInput(binding));
+    inline ShaderNodeWrapper attribute(const std::string &attributeName) {
+        return ShaderNodeWrapper(ShaderBuilder::instance().getInputLayout().getElementType(attributeName),
+                                 ShaderNodeFactory::attributeInput(attributeName));
     }
 
     inline ShaderNodeWrapper parameter(const std::string &name) {
@@ -217,8 +217,8 @@ namespace xng::ShaderScript {
                                  ShaderNodeFactory::bufferRead(name, elementName, index.node));
     }
 
-    inline void writeAttribute(const uint32_t &binding, const ShaderNodeWrapper &value) {
-        auto attr = ShaderNodeFactory::attributeOutput(binding);
+    inline void writeAttribute(const std::string &attributeName, const ShaderNodeWrapper &value) {
+        auto attr = ShaderNodeFactory::attributeOutput(attributeName);
         ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(attr, value.node));
     }
 

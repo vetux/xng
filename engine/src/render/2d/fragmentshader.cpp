@@ -29,13 +29,13 @@ namespace xng {
     Shader createFragmentShader() {
         const ShaderAttributeLayout inputLayout{
             {
-                ShaderDataType::vec4(),
-                ShaderDataType::vec2()
+                {"fPosition", ShaderDataType::vec4()},
+                {"fUv", ShaderDataType::vec2()}
             }
         };
         const ShaderAttributeLayout outputLayout{
             {
-                ShaderDataType::vec4()
+                {"color", ShaderDataType::vec4()}
             }
         };
 
@@ -69,9 +69,9 @@ namespace xng {
         shaderlib::textureBicubic();
 
         vec4 fPosition;
-        fPosition = attribute(0);
+        fPosition = attribute("fPosition");
         vec2 fUv;
-        fUv = attribute(1);
+        fUv = attribute("fUv");
 
         vec4 color;
         color = vec4(1, 1, 1, 1);
@@ -115,7 +115,7 @@ namespace xng {
         }
         builder.EndIf();
 
-        writeAttribute(0, color);
+        writeAttribute("color", color);
 
         return builder.build();
     }

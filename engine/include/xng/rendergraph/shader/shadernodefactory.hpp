@@ -42,9 +42,9 @@ namespace xng {
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> argument(const std::string &name);
 
-        XENGINE_EXPORT std::unique_ptr<ShaderNode> attributeInput(uint32_t attributeIndex);
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> attributeInput(const std::string & attributeName);
 
-        XENGINE_EXPORT std::unique_ptr<ShaderNode> attributeOutput(uint32_t attributeIndex);
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> attributeOutput(const std::string & attributeName);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> parameter(const std::string &parameter_name);
 

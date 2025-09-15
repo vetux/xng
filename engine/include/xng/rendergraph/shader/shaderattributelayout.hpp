@@ -26,26 +26,64 @@
 
 namespace xng {
     struct ShaderAttributeLayout {
-        std::vector<ShaderDataType> elements;
-
         ShaderAttributeLayout() = default;
 
-        explicit ShaderAttributeLayout(std::vector<ShaderDataType> elements) : elements(std::move(elements)) {}
-
-        bool operator==(const ShaderAttributeLayout &other) const{
-            return elements == other.elements;
+        explicit ShaderAttributeLayout(const std::vector<std::pair<std::string, ShaderDataType>>& namedElements) {
+            for (auto &pair : namedElements) {
+                elements.emplace_back(pair.second);
+                elementIdentifiers.emplace_back(pair.first);
+            }
         }
 
-        bool operator!=(const ShaderAttributeLayout &other) const{
+        bool operator==(const ShaderAttributeLayout &other) const {
+            return elements == other.elements && elementIdentifiers == other.elementIdentifiers;
+        }
+
+        bool operator!=(const ShaderAttributeLayout &other) const {
             return !(*this == other);
         }
 
-        size_t getSize() const {
+        size_t getLayoutSize() const {
             size_t ret = 0;
-            for (auto &attr : elements)
+            for (auto &attr: elements)
                 ret += attr.stride();
             return ret;
         }
+
+        ShaderDataType getElementType(const std::string &attributeName) const {
+            for (auto i = 0; i < elementIdentifiers.size(); ++i) {
+                if (elementIdentifiers.at(i) == attributeName) {
+                    return elements.at(i);
+                }
+            }
+            throw std::runtime_error("No such attribute " + attributeName);
+        }
+
+        size_t getElementIndex(const std::string &attributeName) const {
+            for (size_t i = 0; i < elementIdentifiers.size(); ++i) {
+                if (elementIdentifiers.at(i) == attributeName) {
+                    return i;
+                }
+            }
+            throw std::runtime_error("No such attribute " + attributeName);
+        }
+
+        const std::string & getElementName(size_t index) const {
+            return elementIdentifiers.at(index);
+        }
+
+        const std::vector<ShaderDataType> &getElements() const {
+            return elements;
+        }
+
+        void addElement(const std::string &name, ShaderDataType type) {
+            elementIdentifiers.emplace_back(name);
+            elements.emplace_back(type);
+        }
+
+    private:
+        std::vector<std::string> elementIdentifiers;
+        std::vector<ShaderDataType> elements;
     };
 }
 
