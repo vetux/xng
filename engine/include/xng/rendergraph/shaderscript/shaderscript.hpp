@@ -171,12 +171,12 @@ namespace xng::ShaderScript {
      * @param binding
      * @return
      */
-    inline ShaderNodeWrapper attribute(const std::string &attributeName) {
+    inline ShaderNodeWrapper readAttribute(const std::string &attributeName) {
         return ShaderNodeWrapper(ShaderBuilder::instance().getInputLayout().getElementType(attributeName),
                                  ShaderNodeFactory::attributeInput(attributeName));
     }
 
-    inline ShaderNodeWrapper parameter(const std::string &name) {
+    inline ShaderNodeWrapper readParameter(const std::string &name) {
         return ShaderNodeWrapper(ShaderBuilder::instance().getParameters().at(name),
                                  ShaderNodeFactory::parameter(name));
     }
@@ -205,12 +205,12 @@ namespace xng::ShaderScript {
         }
     }
 
-    inline ShaderNodeWrapper buffer(const std::string &name, const std::string &elementName) {
+    inline ShaderNodeWrapper readBuffer(const std::string &name, const std::string &elementName) {
         return ShaderNodeWrapper(ShaderBuilder::instance().getBuffers().at(name).getElement(elementName).value,
                                  ShaderNodeFactory::bufferRead(name, elementName, nullptr));
     }
 
-    inline ShaderNodeWrapper dynamicBuffer(const std::string &name,
+    inline ShaderNodeWrapper readDynamicBuffer(const std::string &name,
                                            const std::string &elementName,
                                            const ShaderNodeWrapper &index) {
         return ShaderNodeWrapper(ShaderBuilder::instance().getBuffers().at(name).getElement(elementName).value,
@@ -233,7 +233,7 @@ namespace xng::ShaderScript {
         ShaderBuilder::instance().addNode(ShaderNodeFactory::bufferWrite(name, elementName, index.node, value.node));
     }
 
-    inline ShaderNodeWrapper dynamicBufferLength(const std::string &name) {
+    inline ShaderNodeWrapper getDynamicBufferLength(const std::string &name) {
         return ShaderNodeWrapper(ShaderDataType::unsignedInteger(), ShaderNodeFactory::bufferSize(name));
     }
 

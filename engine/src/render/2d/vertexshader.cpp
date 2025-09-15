@@ -66,13 +66,13 @@ namespace xng {
                       {{"atlasTextures", ShaderTextureArray(ShaderTexture(TEXTURE_2D, RGBA, true), 12)}},
                       {});
 
-        vec2 position = attribute("position");
-        vec2 uv = attribute("uv");
+        vec2 position = readAttribute("position");
+        vec2 uv = readAttribute("uv");
 
         vec4 fPosition = vec4(0, 0, 0, 1);
         vec2 fUv = vec2(0, 0);
 
-        mat4 mvp = buffer("vars", "mvp");
+        mat4 mvp = readBuffer("vars", "mvp");
 
         fPosition = mvp * vec4(position.x(), position.y(), 0.0, 1.0);
         fUv = uv;

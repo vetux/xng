@@ -123,8 +123,8 @@ public:
         }
         EndIf();
 
-        mat4 mvp = buffer("data", "mvp");
-        vec3 vPos = attribute("position");
+        mat4 mvp = readBuffer("data", "mvp");
+        vec3 vPos = readAttribute("position");
         vec4 fPos = vec4(vPos.x(), vPos.y(), vPos.z(), Float(1));
         fPos = mvp * fPos;
         fPos = fPos * vec4(f.x(), f.y(), 0, 1);

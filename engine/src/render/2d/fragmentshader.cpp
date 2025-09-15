@@ -69,49 +69,49 @@ namespace xng {
         shaderlib::textureBicubic();
 
         vec4 fPosition;
-        fPosition = attribute("fPosition");
+        fPosition = readAttribute("fPosition");
         vec2 fUv;
-        fUv = attribute("fUv");
+        fUv = readAttribute("fUv");
 
         vec4 color;
         color = vec4(1, 1, 1, 1);
 
-        builder.If(buffer("vars", "texAtlasIndex") >= 0);
+        builder.If(readBuffer("vars", "texAtlasIndex") >= 0);
         {
             vec2 uv = fUv;
-            uv = uv * buffer("vars", "uvOffset_uvScale").zw();
-            uv = uv + buffer("vars", "uvOffset_uvScale").xy();
-            uv = uv * buffer("vars", "atlasScale_texSize").xy();
+            uv = uv * readBuffer("vars", "uvOffset_uvScale").zw();
+            uv = uv + readBuffer("vars", "uvOffset_uvScale").xy();
+            uv = uv * readBuffer("vars", "atlasScale_texSize").xy();
 
             vec4 texColor;
-            If(buffer("vars", "texFilter") == 1);
+            If(readBuffer("vars", "texFilter") == 1);
             {
-                texColor = textureBicubic(textureSampler("atlasTextures", buffer("vars", "texAtlasLevel")),
-                                          vec3(uv.x(), uv.y(), buffer("vars", "texAtlasIndex")),
-                                          buffer("vars", "atlasScale_texSize").zw());
+                texColor = textureBicubic(textureSampler("atlasTextures", readBuffer("vars", "texAtlasLevel")),
+                                          vec3(uv.x(), uv.y(), readBuffer("vars", "texAtlasIndex")),
+                                          readBuffer("vars", "atlasScale_texSize").zw());
             }
             Else();
             {
-                texColor = texture(textureSampler("atlasTextures", buffer("vars", "texAtlasLevel")),
-                                   vec3(uv.x(), uv.y(), buffer("vars", "texAtlasIndex")));
+                texColor = texture(textureSampler("atlasTextures", readBuffer("vars", "texAtlasLevel")),
+                                   vec3(uv.x(), uv.y(), readBuffer("vars", "texAtlasIndex")));
             }
             EndIf();
-            If(buffer("vars", "colorFactor") != 0);
+            If(readBuffer("vars", "colorFactor") != 0);
             {
-                color = buffer("vars", "color") * texColor;
+                color = readBuffer("vars", "color") * texColor;
             }
             Else();
             {
                 vec4 buffColor;
-                buffColor = buffer("vars", "color");
-                color.xyz() = mix(texColor.xyz(), buffColor.xyz(), buffer("vars", "colorMixFactor"));
-                color.w() = mix(texColor.w(), buffColor.w(), buffer("vars", "alphaMixFactor"));
+                buffColor = readBuffer("vars", "color");
+                color.xyz() = mix(texColor.xyz(), buffColor.xyz(), readBuffer("vars", "colorMixFactor"));
+                color.w() = mix(texColor.w(), buffColor.w(), readBuffer("vars", "alphaMixFactor"));
             }
             EndIf();
         }
         builder.Else();
         {
-            color = buffer("vars", "color");
+            color = readBuffer("vars", "color");
         }
         builder.EndIf();
 
