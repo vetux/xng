@@ -42,7 +42,8 @@ namespace xng::shaderlib {
             ivec2 size = textureSize(argument("color"));
             ivec2 pos = ivec2(size.x() * uv.x(), size.y() * uv.y());
 
-            vec4 ret = vec4(0, 0, 0, 0);
+            vec4 ret;
+            ret = vec4(0, 0, 0, 0);
 
             Int i;
             For(i, 0, samples - 1, 1);
@@ -62,13 +63,13 @@ namespace xng::shaderlib {
         Function("cubic", {{"v", ShaderDataType::float32()}}, ShaderDataType::vec4());
         {
             Float v = argument("v");
-            vec4 n = vec4(1.0, 2.0, 3.0, 4.0) - v;
+            vec4 n = vec4(1.0f, 2.0f, 3.0f, 4.0f) - v;
             vec4 s = n * n * n;
             Float x = s.x();
-            Float y = s.y() - 4.0 * s.x();
-            Float z = s.z() - 4.0 * s.y() + 6.0 * s.x();
-            Float w = 6.0 - x - y - z;
-            Return(vec4(x, y, z, w) * (1.0 / 6.0));
+            Float y = s.y() - 4.0f * s.x();
+            Float z = s.z() - 4.0f * s.y() + 6.0f * s.x();
+            Float w = 6.0f - x - y - z;
+            Return(vec4(x, y, z, w) * (1.0f / 6.0f));
         }
         EndFunction();
     }
@@ -86,10 +87,12 @@ namespace xng::shaderlib {
         {
             vec2 texCoords = argument("texCoords");
 
-            ivec2 texSize = textureSize(argument("sampler"));
-            vec2 invTexSize = 1.0 / texSize;
+            vec2 texSize;
+            texSize = textureSize(argument("sampler"), 0);
+            vec2 invTexSize;
+            invTexSize = 1.0f / texSize;
 
-            texCoords = texCoords * texSize - 0.5;
+            texCoords = texCoords * texSize - 0.5f;
 
             vec2 fxy = fract(texCoords);
             texCoords -= fxy;
@@ -97,7 +100,7 @@ namespace xng::shaderlib {
             vec4 xcubic = cubic(fxy.x());
             vec4 ycubic = cubic(fxy.y());
 
-            vec4 c = texCoords.xxyy() + vec2(-0.5, +1.5).xyxy();
+            vec4 c = texCoords.xxyy() + vec2(-0.5f, +1.5f).xyxy();
 
             vec4 s = vec4(xcubic.xz() + xcubic.yw(), ycubic.xz() + ycubic.yw());
             vec4 offset = c + vec4(xcubic.yw(), ycubic.yw()) / s;
@@ -124,11 +127,13 @@ namespace xng::shaderlib {
                  },
                  ShaderDataType::vec4());
         {
-            ivec2 texSize = textureSize(argument("sampler"));
-            vec2 invTexSize = 1.0 / texSize;
+            vec2 texSize;
+            texSize = textureSize(argument("sampler"));
+            vec2 invTexSize;
+            invTexSize = 1.0 / texSize;
 
             vec2 texCoords;
-            texCoords = argument("texCoords") * texSize - 0.5;
+            texCoords = argument("texCoords") * texSize - 0.5f;
 
             vec2 fxy = fract(texCoords);
             texCoords -= fxy;
@@ -136,7 +141,7 @@ namespace xng::shaderlib {
             vec4 xcubic = cubic(fxy.x());
             vec4 ycubic = cubic(fxy.y());
 
-            vec4 c = texCoords.xxyy() + vec2(-0.5, +1.5).xyxy();
+            vec4 c = texCoords.xxyy() + vec2(-0.5f, +1.5f).xyxy();
 
             vec4 s = vec4(xcubic.xz() + xcubic.yw(), ycubic.xz() + ycubic.yw());
             vec4 offset = c + vec4(xcubic.yw(), ycubic.yw()) / s;
@@ -170,9 +175,9 @@ namespace xng::shaderlib {
             vec3 texCoords3 = argument("texCoords3");
             vec2 texCoords = texCoords3.xy();
 
-            vec2 invTexSize = 1.0 / size;
+            vec2 invTexSize = 1.0f / size;
 
-            texCoords = texCoords * size - 0.5;
+            texCoords = texCoords * size - 0.5f;
 
             vec2 fxy = fract(texCoords);
             texCoords -= fxy;
@@ -180,7 +185,7 @@ namespace xng::shaderlib {
             vec4 xcubic = cubic(fxy.x());
             vec4 ycubic = cubic(fxy.y());
 
-            vec4 c = texCoords.xxyy() + vec2(-0.5, +1.5).xyxy();
+            vec4 c = texCoords.xxyy() + vec2(-0.5f, +1.5f).xyxy();
 
             vec4 s = vec4(xcubic.xz() + xcubic.yw(), ycubic.xz() + ycubic.yw());
             vec4 offset = c + vec4(xcubic.yw(), ycubic.yw()) / s;
