@@ -76,7 +76,7 @@ public:
 
         Function("test",
                  {{"texArg", textureDef}},
-                 ShaderDataType::integer());
+                 ShaderDataType::float32());
         {
             Return(5 * (3 + texture(argument("texArg"), vec2(0.5f, 0.5f)).x()));
         }
@@ -85,18 +85,17 @@ public:
         // Equivalent to int b[4] = {1, 2, 3, 4}
         ArrayInt<4> b = ArrayInt<4>{1, 2, 3, 4};
 
-        Int r = Call("test", textureSampler("texture"));
-        Int a = r;
+        Float r = Call("test", textureSampler("texture"));
 
         Int v = simplex(vec2(0.5f, 0.5f));
 
         vec2 f = vec2(5.0f, 1.0f);
-        f = f * a;
+        f = f * r;
 
         vec4 color;
         color = texture(textureSampler("texture"), vec2(0.5f, 0.5f));
 
-        If(a == 5);
+        If(r == 5);
         {
             f = f + vec2(1.0f, 1.0f);
         }
