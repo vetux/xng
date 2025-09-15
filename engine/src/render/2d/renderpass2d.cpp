@@ -94,13 +94,17 @@ namespace xng {
             for (auto &pair: atlasTexturesCopy) {
                 if (atlas.getBufferOccupations().at(pair.first).size() > atlasTexturesSizes.at(pair.first)) {
                     // Buffer Reallocation / Copy
-                    atlasCopyTextures[pair.first] = builder.inheritResource(pair.second);
+                    if (atlasTexturesSizes.at(pair.first) > 0) {
+                        atlasCopyTextures[pair.first] = builder.inheritResource(pair.second);
+                    }
 
                     RenderGraphTexture texture;
                     texture.format = RGBA;
                     texture.size = TextureAtlas::getResolutionLevelSize(pair.first);
                     texture.isArrayTexture = true;
+                    texture.arrayLayers = atlas.getBufferOccupations().at(pair.first).size();
                     atlasTextures[pair.first] = builder.createTexture(texture);
+                    atlasTexturesSizes[pair.first] = atlas.getBufferOccupations().at(pair.first).size();
                 } else {
                     // Inherit old buffer
                     atlasTextures[pair.first] = builder.inheritResource(pair.second);
@@ -131,7 +135,7 @@ namespace xng {
             renderPipeline.shaders.emplace_back(createFragmentShader());
             renderPipeline.enableBlending = true;
             renderPipeline.enableDepthTest = false;
-            renderPipeline.depthTestWrite = true;
+            renderPipeline.depthTestWrite = false;
             renderPipeline.primitive = TRIANGLES;
             trianglePipeline = builder.createPipeline(renderPipeline);
 
@@ -187,11 +191,15 @@ namespace xng {
 
             meshBuffer.upload(vertexBuffer, indexBuffer, ctx);
 
+            // TODO: Redesign RenderPass2D implementation
             std::vector<Primitive> primitives;
             std::vector<size_t> baseVertices;
             std::vector<DrawCall> drawCalls;
             std::vector<ShaderBufferFormat> passData;
-            for (auto &batch: renderer.getRenderBatches()) {
+            std::vector<size_t> batchIndices;
+            for (auto i = 0; i < renderer.getRenderBatches().size(); i++) {
+                auto &batch = renderer.getRenderBatches().at(i);
+
                 // Handle texture allocation / Deallocation
                 for (auto &alloc: batch.textureAllocations) {
                     renderer.getTextureAtlas().upload(ctx, alloc.first, atlasTextures, alloc.second);
@@ -201,7 +209,9 @@ namespace xng {
                 }
 
                 // Create draw batches to handle interleaved primitives
-                for (auto &pass: batch.drawCommands) {
+                for (auto y = 0; y < batch.drawCommands.size(); y++) {
+                    batchIndices.emplace_back(i);
+                    auto &pass = batch.drawCommands.at(y);
                     switch (pass.type) {
                         case DrawCommand2D::COLOR_POINT: {
                             auto point = meshBuffer.getPoint(pass.dstRect.position);
@@ -352,6 +362,10 @@ namespace xng {
                 }
             }
 
+            // Hacky way to properly clear between primitive draw batches
+            size_t renderBatchIndex = 0;
+            bool gotRenderBatchIndex = false;
+
             std::vector<DrawBatch> batches;
             DrawBatch currentBatch;
             for (auto y = 0; y < drawCalls.size(); y++) {
@@ -365,10 +379,15 @@ namespace xng {
                 currentBatch.drawCalls.emplace_back(drawCalls.at(y));
                 currentBatch.baseVertices.emplace_back(baseVertices.at(y));
                 currentBatch.uniformBuffers.emplace_back(passData.at(y));
-                currentBatch.clear = renderer.getRenderBatches().at(y).mClear;
-                currentBatch.clearColor = renderer.getRenderBatches().at(y).mClearColor;
-                currentBatch.viewportOffset = renderer.getRenderBatches().at(y).mViewportOffset;
-                currentBatch.viewportSize = renderer.getRenderBatches().at(y).mViewportSize;
+                if (!gotRenderBatchIndex
+                    || batchIndices.at(y) > renderBatchIndex) {
+                    currentBatch.clear = renderer.getRenderBatches().at(batchIndices.at(y)).mClear;
+                    currentBatch.clearColor = renderer.getRenderBatches().at(batchIndices.at(y)).mClearColor;
+                    renderBatchIndex = batchIndices.at(y);
+                    gotRenderBatchIndex = true;
+                }
+                currentBatch.viewportOffset = renderer.getRenderBatches().at(batchIndices.at(y)).mViewportOffset;
+                currentBatch.viewportSize = renderer.getRenderBatches().at(batchIndices.at(y)).mViewportSize;
             }
             if (!currentBatch.drawCalls.empty())
                 batches.emplace_back(currentBatch);

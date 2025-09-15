@@ -185,7 +185,7 @@ namespace xng::vulkan {
         vkDestroyInstance(getData(instanceData.get()).instance, nullptr);
     }
 
-    void Vulkan::setWindow(const Window &window) {
+    void Vulkan::setWindow(Window &window) {
     }
 
     Vulkan::GraphHandle Vulkan::compile(const RenderGraph &graph) {
@@ -198,7 +198,7 @@ namespace xng::vulkan {
     void Vulkan::execute(GraphHandle graph) {
     }
 
-    void Vulkan::execute(std::vector<GraphHandle> graphs) {
+    void Vulkan::execute(const std::vector<GraphHandle> &graphs) {
     }
 
     void Vulkan::saveCache(Vulkan::GraphHandle graph, std::ostream &stream) {

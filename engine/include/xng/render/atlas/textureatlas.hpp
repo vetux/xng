@@ -93,7 +93,7 @@ namespace xng {
             }
         }
 
-        TextureAtlas(std::map<TextureAtlasResolution, std::vector<bool>> bufferOccupations);
+        explicit TextureAtlas(std::map<TextureAtlasResolution, std::vector<bool>> bufferOccupations);
 
         TextureAtlasHandle add(const ImageRGBA &texture);
 

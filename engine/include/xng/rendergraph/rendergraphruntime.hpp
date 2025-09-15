@@ -48,7 +48,7 @@ namespace xng {
          *
          * @param window
          */
-        virtual void setWindow(const Window &window) = 0;
+        virtual void setWindow(Window &window) = 0;
 
         /**
          * Compile a graph.
@@ -104,7 +104,7 @@ namespace xng {
          *      graphs[3] will receive the changes to the screen texture from graph[1] and the read operation might run in parallel with graphs[2]
          * @param graphs
          */
-        virtual void execute(std::vector<GraphHandle> graphs) = 0;
+        virtual void execute(const std::vector<GraphHandle> &graphs) = 0;
 
         virtual void destroy(GraphHandle graph) = 0;
 

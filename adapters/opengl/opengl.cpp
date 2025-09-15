@@ -19,74 +19,42 @@
 
 #include "xng/adapters/opengl/opengl.hpp"
 
-#include "glsl/shadercompilerglsl.hpp"
-#include "contextgl.hpp"
+#include "rendergraphruntimeogl.hpp"
 
 namespace xng::opengl {
-    struct GraphContext {
-        RenderGraph graph;
-        std::unordered_map<RenderGraphResource, RenderGraphPipeline, RenderGraphResourceHash> pipelines;
-        std::unordered_map<RenderGraphResource, CompiledPipeline, RenderGraphResourceHash> compiledPipelines;
-    };
-
-    struct State {
-        std::unordered_map<RenderGraphRuntime::GraphHandle, GraphContext> contexts;
-    };
-
-    OpenGL::OpenGL() {
-        state = std::make_unique<State>();
+    OpenGL::OpenGL()
+        : runtime(std::make_unique<RenderGraphRuntimeOGL>()) {
     }
 
-    OpenGL::~OpenGL() {
-    }
-
-    void OpenGL::setWindow(const Window &window) {
+    void OpenGL::setWindow(Window &window) {
+        runtime->setWindow(window);
     }
 
     RenderGraphRuntime::GraphHandle OpenGL::compile(const RenderGraph &graph) {
-        return compileGraph(graph);
+        return runtime->compile(graph);
     }
 
-    void OpenGL::recompile(GraphHandle handle, const RenderGraph &graph) {
+    void OpenGL::recompile(const GraphHandle handle, const RenderGraph &graph) {
+        runtime->recompile(handle, graph);
     }
 
-    void OpenGL::execute(GraphHandle graph) {
-        ContextGL context(state->contexts.at(graph).compiledPipelines);
-        for (auto pass: state->contexts[graph].graph.passes) {
-            pass.pass(context);
-        }
+    void OpenGL::execute(const GraphHandle graph) {
+        runtime->execute(graph);
     }
 
-    void OpenGL::execute(std::vector<GraphHandle> graphs) {
-        for (auto graph: graphs) {
-            execute(graph);
-        }
+    void OpenGL::execute(const std::vector<GraphHandle> &graphs) {
+        runtime->execute(graphs);
     }
 
-    void OpenGL::destroy(GraphHandle graph) {
+    void OpenGL::destroy(const GraphHandle graph) {
+        runtime->destroy(graph);
     }
 
-    void OpenGL::saveCache(GraphHandle graph, std::ostream &stream) {
+    void OpenGL::saveCache(const GraphHandle graph, std::ostream &stream) {
+        runtime->saveCache(graph, stream);
     }
 
-    void OpenGL::loadCache(GraphHandle graph, std::istream &stream) {
-    }
-
-    RenderGraphRuntime::GraphHandle OpenGL::compileGraph(const RenderGraph &graph) {
-        const auto handle = graphCounter++;
-
-        auto context = GraphContext();
-
-        context.graph = graph;
-
-        ShaderCompilerGLSL compiler;
-        for (auto pair: graph.pipelineAllocation) {
-            context.pipelines[pair.first] = pair.second;
-            context.compiledPipelines[pair.first] = compiler.compile(pair.second.shaders);
-        }
-
-        state->contexts[handle] = context;
-
-        return handle;
+    void OpenGL::loadCache(const GraphHandle graph, std::istream &stream) {
+        runtime->loadCache(graph, stream);
     }
 }

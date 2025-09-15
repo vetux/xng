@@ -23,15 +23,13 @@
 #include "xng/rendergraph/rendergraphruntime.hpp"
 
 namespace xng::opengl {
-    struct State;
-
     class XENGINE_EXPORT OpenGL final : public RenderGraphRuntime {
     public:
         OpenGL();
 
-        ~OpenGL() override;
+        ~OpenGL() override = default;
 
-        void setWindow(const Window &window) override;
+        void setWindow(Window &window) override;
 
         GraphHandle compile(const RenderGraph &graph) override;
 
@@ -39,7 +37,7 @@ namespace xng::opengl {
 
         void execute(GraphHandle graph) override;
 
-        void execute(std::vector<GraphHandle> graphs) override;
+        void execute(const std::vector<GraphHandle> &graphs) override;
 
         void destroy(GraphHandle graph) override;
 
@@ -50,11 +48,7 @@ namespace xng::opengl {
         GraphicsAPI getGraphicsAPI() override { return OPENGL_4_6; }
 
     private:
-        GraphHandle compileGraph(const RenderGraph &graph);
-
-        GraphHandle graphCounter = 0;
-
-        std::unique_ptr<State> state;
+        std::unique_ptr<RenderGraphRuntime> runtime;
     };
 }
 

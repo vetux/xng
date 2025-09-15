@@ -20,11 +20,19 @@
 #include "xng/adapters/glfw/glfw.hpp"
 #include "xng/adapters/opengl/opengl.hpp"
 
-#include "xng/render/2d/renderpass2d.hpp"
+#include "xng/xng.hpp"
 
 #include "shadertestpass.hpp"
 
 int main(int argc, char *argv[]) {
+    std::vector<std::unique_ptr<ResourceImporter> > importers;
+    importers.emplace_back(std::make_unique<StbiImporter>());
+    ResourceRegistry::getDefaultRegistry().setImporters(std::move(importers));
+
+    ResourceRegistry::getDefaultRegistry().addArchive("file", std::make_shared<DirectoryArchive>("assets/"));
+
+    auto smiley = ResourceHandle<ImageRGBA>(Uri("file://images/awesomeface.png"));
+
     auto glfw = glfw::GLFW();
     auto runtime = opengl::OpenGL();
 
@@ -55,13 +63,26 @@ int main(int argc, char *argv[]) {
 
     auto &ren2D = pass2D.getRenderer2D();
 
+    const auto& smileyImg = smiley.get();
+
+    auto tex = ren2D.createTexture(smileyImg);
+
     while (!window->shouldClose()) {
         window->update();
 
         auto fbSize = window->getFramebufferSize();
 
-        ren2D.renderBegin(fbSize, ColorRGBA::olive());
+        ren2D.renderBegin(fbSize, ColorRGBA::white());
         ren2D.draw(Vec2f(0, 0), fbSize.convert<float>(), ColorRGBA::green());
+        ren2D.draw(Vec2f(0, static_cast<float>(fbSize.y)),
+                   Vec2f(static_cast<float>(fbSize.x), 0),
+                   ColorRGBA::green());
+        ren2D.draw(Rectf({}, smileyImg.getResolution().convert<float>()),
+                   Rectf({}, smileyImg.getResolution().convert<float>()),
+                   tex,
+                   {},
+                   0,
+                   LINEAR);
         ren2D.renderPresent();
 
         if (pass2D.shouldRebuild()) {
@@ -72,7 +93,11 @@ int main(int argc, char *argv[]) {
         }
 
         runtime.execute(gh);
+
+        window->swapBuffers();
     }
+
+    ren2D.destroyTexture(tex);
 
     return 0;
 }

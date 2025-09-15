@@ -21,6 +21,7 @@
 #define XENGINE_FRAMELIMITER_HPP
 
 #include <chrono>
+#include <thread>
 
 #include "xng/util/time.hpp"
 

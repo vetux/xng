@@ -20,36 +20,56 @@
 #ifndef XENGINE_CONTEXTGL_HPP
 #define XENGINE_CONTEXTGL_HPP
 
+#include <utility>
+
 #include "xng/rendergraph/rendergraphcontext.hpp"
 
+#include "ogl/oglframebuffer.hpp"
+#include "ogl/oglvertexarrayobject.hpp"
+
 #include "compiledpipeline.hpp"
+#include "graphresources.hpp"
 
 using namespace xng;
 
-class ContextGL : public RenderGraphContext {
+class ContextGL final : public RenderGraphContext {
 public:
-    ContextGL() = default;
-
     ~ContextGL() override = default;
 
-    explicit ContextGL(
-        const std::unordered_map<RenderGraphResource, CompiledPipeline, RenderGraphResourceHash> &pipelines)
-        : pipelines(pipelines) {
+    explicit ContextGL(std::shared_ptr<OGLTexture> screenTexture, GraphResources res)
+        : vertexArray(std::make_shared<OGLVertexArrayObject>()),
+          screenTexture(std::move(screenTexture)),
+          resources(std::move(res)) {
     }
 
-    void uploadBuffer(RenderGraphResource target, const uint8_t *buffer, size_t bufferSize,
+    void uploadBuffer(RenderGraphResource target,
+                      const uint8_t *buffer,
+                      size_t bufferSize,
                       size_t targetOffset) override;
 
-    void uploadTexture(RenderGraphResource texture, const uint8_t *buffer, size_t bufferSize, ColorFormat bufferFormat,
-                       size_t index, CubeMapFace face, size_t mipMapLevel) override;
+    void uploadTexture(RenderGraphResource texture,
+                       const uint8_t *buffer,
+                       size_t bufferSize,
+                       ColorFormat bufferFormat,
+                       size_t index,
+                       CubeMapFace face,
+                       size_t mipMapLevel) override;
 
-    void copyBuffer(RenderGraphResource target, RenderGraphResource source, size_t targetOffset, size_t sourceOffset,
+    void copyBuffer(RenderGraphResource target,
+                    RenderGraphResource source,
+                    size_t targetOffset,
+                    size_t sourceOffset,
                     size_t count) override;
 
     void copyTexture(RenderGraphResource target, RenderGraphResource source) override;
 
-    void copyTexture(RenderGraphResource target, RenderGraphResource source, Vec3i srcOffset, Vec3i dstOffset,
-                     Vec3i size, size_t srcMipMapLevel, size_t dstMipMapLevel) override;
+    void copyTexture(RenderGraphResource target,
+                     RenderGraphResource source,
+                     Vec3i srcOffset,
+                     Vec3i dstOffset,
+                     Vec3i size,
+                     size_t srcMipMapLevel,
+                     size_t dstMipMapLevel) override;
 
     void beginRenderPass(const std::vector<RenderGraphAttachment> &colorAttachments,
                          const RenderGraphAttachment &depthAttachment,
@@ -64,7 +84,7 @@ public:
 
     void bindIndexBuffer(RenderGraphResource buffer) override;
 
-    void bindTextures(const std::unordered_map<std::string, std::vector<RenderGraphResource>> &textureArrays) override;
+    void bindTextures(const std::unordered_map<std::string, std::vector<RenderGraphResource> > &textureArrays) override;
 
     void bindShaderBuffers(const std::unordered_map<std::string, RenderGraphResource> &buffers) override;
 
@@ -84,13 +104,29 @@ public:
 
     std::vector<uint8_t> downloadShaderBuffer(RenderGraphResource buffer) override;
 
-    Image<ColorRGBA> downloadTexture(RenderGraphResource texture, size_t index, size_t mipMapLevel,
+    Image<ColorRGBA> downloadTexture(RenderGraphResource texture,
+                                     size_t index,
+                                     size_t mipMapLevel,
                                      CubeMapFace face) override;
 
     std::unordered_map<Shader::Stage, std::string> getShaderSource(RenderGraphResource pipeline) override;
 
 private:
-    std::unordered_map<RenderGraphResource, CompiledPipeline, RenderGraphResourceHash> pipelines;
+    const OGLTexture &getTexture(RenderGraphResource resource) const;
+
+    std::vector<RenderGraphAttachment> framebufferColorAttachments;
+    RenderGraphAttachment framebufferDepthStencilAttachment;
+    RenderGraphAttachment framebufferDepthAttachment;
+    RenderGraphAttachment framebufferStencilAttachment;
+
+    RenderGraphResource boundPipeline;
+
+    std::shared_ptr<OGLFramebuffer> framebuffer = nullptr;
+    std::shared_ptr<OGLVertexArrayObject> vertexArray = nullptr;
+
+    std::shared_ptr<OGLTexture> screenTexture = nullptr;
+
+    GraphResources resources;
 };
 
 #endif //XENGINE_CONTEXTGL_HPP

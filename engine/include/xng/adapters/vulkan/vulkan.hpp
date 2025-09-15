@@ -35,7 +35,7 @@ namespace xng::vulkan {
 
         ~Vulkan() override;
 
-        void setWindow(const Window &window) override;
+        void setWindow(Window &window) override;
 
         GraphHandle compile(const RenderGraph &graph) override;
 
@@ -43,7 +43,7 @@ namespace xng::vulkan {
 
         void execute(GraphHandle graph) override;
 
-        void execute(std::vector<GraphHandle> graphs) override;
+        void execute(const std::vector<GraphHandle> &graphs) override;
 
         void saveCache(GraphHandle graph, std::ostream &stream) override;
 

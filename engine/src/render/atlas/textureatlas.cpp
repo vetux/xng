@@ -43,7 +43,7 @@ namespace xng {
 
     TextureAtlasHandle TextureAtlas::add(const ImageRGBA &texture) {
         auto res = getClosestMatchingResolutionLevel(texture.getResolution());
-        for (size_t i = 0; i < bufferOccupations[res].size(); i++) {
+        for (size_t i = 0; i < bufferOccupations.at(res).size(); i++) {
             if (!bufferOccupations.at(res).at(i)) {
                 bufferOccupations.at(res).at(i) = !bufferOccupations.at(res).at(i);
                 TextureAtlasHandle ret;

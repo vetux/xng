@@ -1,0 +1,75 @@
+/**
+ *  xEngine - C++ Game Engine Library
+ *  Copyright (C) 2023  Julian Zampiccoli
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 3 of the License, or (at your option) any later version.
+
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software Foundation,
+ *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+
+#ifndef XENGINE_RENDERGRAPHRUNTIMEOGL_HPP
+#define XENGINE_RENDERGRAPHRUNTIMEOGL_HPP
+
+#include "xng/rendergraph/rendergraphruntime.hpp"
+
+#include "compiledpipeline.hpp"
+#include "graphresources.hpp"
+#include "ogl/ogltexture.hpp"
+#include "ogl/oglframebuffer.hpp"
+
+using namespace xng;
+
+class XENGINE_EXPORT RenderGraphRuntimeOGL final : public RenderGraphRuntime {
+public:
+    RenderGraphRuntimeOGL();
+
+    ~RenderGraphRuntimeOGL() override;
+
+    void setWindow(Window &wndArg) override;
+
+    GraphHandle compile(const RenderGraph &graph) override;
+
+    void recompile(GraphHandle handle, const RenderGraph &graph) override;
+
+    void execute(GraphHandle graph) override;
+
+    void execute(const std::vector<GraphHandle> &graphs) override;
+
+    void destroy(GraphHandle graph) override;
+
+    void saveCache(GraphHandle graph, std::ostream &stream) override;
+
+    void loadCache(GraphHandle graph, std::istream &stream) override;
+
+    GraphicsAPI getGraphicsAPI() override { return OPENGL_4_6; }
+
+private:
+    void updateScreenTexture();
+
+    void presentScreenTexture() const;
+
+    GraphHandle compileGraph(const RenderGraph &graph);
+
+    GraphHandle recompileGraph(GraphHandle handle, const RenderGraph &graph);
+
+    GraphHandle graphCounter = 0;
+
+    std::shared_ptr<OGLTexture> screenColorTexture;
+    std::shared_ptr<OGLFramebuffer> screenFramebuffer;
+
+    std::unordered_map<GraphHandle, GraphResources> contexts;
+
+    Window *window = nullptr;
+};
+
+#endif //XENGINE_RENDERGRAPHRUNTIMEOGL_HPP
