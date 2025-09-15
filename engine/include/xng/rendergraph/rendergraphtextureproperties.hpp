@@ -39,21 +39,29 @@ namespace xng {
     };
 
     enum ColorFormat : int {
-        //Base Formats
-        DEPTH = 0,
-        DEPTH_STENCIL,
-        R,
+        // Base Formats
+        R = 0,
         RG,
         RGB,
         RGBA,
+        DEPTH,
+        STENCIL,
+        DEPTH_STENCIL,
 
-        //Compressed Formats
+        // Sized Depth / Stencil
+        DEPTH_32F,
+        DEPTH_24,
+        DEPTH_16,
+        DEPTH24_STENCIL8,
+        DEPTH32F_STENCIL8,
+
+        // Compressed Formats
         R_COMPRESSED,
         RG_COMPRESSED,
         RGB_COMPRESSED,
         RGBA_COMPRESSED,
 
-        //Sized normalized float
+        // Sized normalized float
         R8,
         RG8,
         RGB8,

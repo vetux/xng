@@ -37,23 +37,26 @@ public:
         : pipelines(pipelines) {
     }
 
-    void uploadBuffer(RenderGraphResource buffer, const uint8_t *ptr, size_t size, size_t targetOffset) override;
+    void uploadBuffer(RenderGraphResource target, const uint8_t *buffer, size_t bufferSize,
+                      size_t targetOffset) override;
 
-    void uploadTexture(RenderGraphResource texture, const uint8_t *ptr, size_t size, ColorFormat format, size_t index,
-                       CubeMapFace face, size_t mipMapLevel) override;
+    void uploadTexture(RenderGraphResource texture, const uint8_t *buffer, size_t bufferSize, ColorFormat bufferFormat,
+                       size_t index, CubeMapFace face, size_t mipMapLevel) override;
 
     void copyBuffer(RenderGraphResource target, RenderGraphResource source, size_t targetOffset, size_t sourceOffset,
                     size_t count) override;
 
     void copyTexture(RenderGraphResource target, RenderGraphResource source) override;
 
-    void copyTexture(RenderGraphResource target,
-                     RenderGraphResource source,
-                     Vec3i srcOffset,
-                     Vec3i dstOffset,
-                     Vec3i size,
-                     size_t srcMipMapLevel,
-                     size_t dstMipMapLevel) override;
+    void copyTexture(RenderGraphResource target, RenderGraphResource source, Vec3i srcOffset, Vec3i dstOffset,
+                     Vec3i size, size_t srcMipMapLevel, size_t dstMipMapLevel) override;
+
+    void beginRenderPass(const std::vector<RenderGraphAttachment> &colorAttachments,
+                         const RenderGraphAttachment &depthAttachment,
+                         const RenderGraphAttachment &stencilAttachment) override;
+
+    void beginRenderPass(const std::vector<RenderGraphAttachment> &colorAttachments,
+                         const RenderGraphAttachment &depthStencilAttachment) override;
 
     void bindPipeline(RenderGraphResource pipeline) override;
 
@@ -61,16 +64,11 @@ public:
 
     void bindIndexBuffer(RenderGraphResource buffer) override;
 
-    void setColorAttachment(size_t binding,
-                            RenderGraphResource texture,
-                            size_t index,
-                            CubeMapFace face,
-                            size_t mipMapLevel) override;
+    void bindTextures(const std::vector<std::vector<RenderGraphResource> > &textureArrays) override;
 
-    void setDepthStencilAttachment(RenderGraphResource texture,
-                                   size_t index,
-                                   CubeMapFace face,
-                                   size_t mipMapLevel) override;
+    void bindShaderBuffers(const std::unordered_map<std::string, RenderGraphResource> &buffers) override;
+
+    void setShaderParameters(const std::unordered_map<std::string, ShaderLiteral> &parameters) override;
 
     void clearColorAttachment(size_t binding, ColorRGBA clearColor) override;
 
@@ -78,22 +76,18 @@ public:
 
     void setViewport(Vec2i viewportOffset, Vec2i viewportSize) override;
 
-    void bindTextures(const std::vector<std::vector<RenderGraphResource> > &textureArrays) override;
-
-    void bindShaderBuffers(const std::unordered_map<std::string, RenderGraphResource> &buffers) override;
-
-    void setShaderParameters(const std::unordered_map<std::string, ShaderLiteral> &parameters) override;
-
     void drawArray(const DrawCall &drawCall) override;
 
     void drawIndexed(const DrawCall &drawCall, size_t indexOffset) override;
 
+    void endRenderPass() override;
+
     std::vector<uint8_t> downloadShaderBuffer(RenderGraphResource buffer) override;
 
-    Image<ColorRGBA>
-    downloadTexture(RenderGraphResource texture, size_t index, size_t mipMapLevel, CubeMapFace face) override;
+    Image<ColorRGBA> downloadTexture(RenderGraphResource texture, size_t index, size_t mipMapLevel,
+                                     CubeMapFace face) override;
 
-    std::unordered_map<ShaderStage::Type, std::string> getShaderSource(RenderGraphResource shader) override;
+    std::unordered_map<ShaderStage::Type, std::string> getShaderSource(RenderGraphResource pipeline) override;
 
 private:
     std::unordered_map<RenderGraphResource, CompiledPipeline, RenderGraphResourceHash> pipelines;

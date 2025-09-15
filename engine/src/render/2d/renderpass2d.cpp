@@ -374,6 +374,8 @@ namespace xng {
                 batches.emplace_back(currentBatch);
 
             // Render the draw batches
+            ctx.beginRenderPass({RenderGraphAttachment(screenTexture)}, {});
+
             ctx.bindVertexBuffer(vertexBuffer);
             ctx.bindIndexBuffer(indexBuffer);
             ctx.bindShaderBuffers({{"vars", shaderBuffer}});
@@ -383,8 +385,6 @@ namespace xng {
                 textures.emplace_back(atlasTextures.at(static_cast<TextureAtlasResolution>(i)));
             }
             ctx.bindTextures({textures});
-
-            ctx.setColorAttachment(0, screenTexture);
 
             for (auto &batch: batches) {
                 ctx.setViewport(batch.viewportOffset, batch.viewportSize);
@@ -414,6 +414,8 @@ namespace xng {
                     ctx.drawIndexed(batch.drawCalls.at(y), batch.baseVertices.at(y));
                 }
             }
+
+            ctx.endRenderPass();
 
             renderer.clearBatches();
         });

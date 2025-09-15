@@ -25,6 +25,7 @@
 #include "xng/rendergraph/drawcall.hpp"
 #include "xng/rendergraph/rendergraphresource.hpp"
 #include "xng/rendergraph/rendergraphtextureproperties.hpp"
+#include "xng/rendergraph/rendergraphattachment.hpp"
 #include "xng/rendergraph/shader/shaderstage.hpp"
 #include "xng/rendergraph/shader/shaderliteral.hpp"
 
@@ -60,7 +61,7 @@ namespace xng {
          * @param texture
          * @param buffer The buffer holding the pixel data
          * @param bufferSize The size of the buffer
-         * @param bufferFormat The format of the pixel data in the buffer
+         * @param bufferFormat The format of the pixel data in the buffer, must be one of the base formats in ColorFormat
          * @param index The index of the texture to upload into if the passed texture is an array texture
          * @param face The face of the texture to upload into if texture is a cube map texture
          * @param mipMapLevel
@@ -90,7 +91,7 @@ namespace xng {
         /**
          * Copy data from one buffer to another.
          *
-         * Subsequent reads / copies from the buffer are guaranteed to receive the copied data.
+         * Subsequent access to the buffer is guaranteed to receive the copied data.
          *
          * @param target The buffer to copy into
          * @param source The buffer to copy from
@@ -107,7 +108,7 @@ namespace xng {
         /**
          * Copy one texture into another. The textures must have compatible formats / sizes.
          *
-         * Subsequent reads / copies from the texture are guaranteed to receive the copied data.
+         * Subsequent access to the texture is guaranteed to receive the copied data.
          *
          * @param target The texture to copy into
          * @param source The texture to copy from
@@ -116,6 +117,8 @@ namespace xng {
 
         /**
          * Copy a subregion of a texture to another texture.
+         *
+         * Subsequent access to the texture is guaranteed to receive the copied data.
          *
          * The offsets specify the x/y top left coordinates of the region to copy, and z is the index of the layer for array textures.
          * The size specifies the width/height of the region to copy while z the number of layers to copy for array textures.
@@ -137,58 +140,30 @@ namespace xng {
                                  size_t dstMipMapLevel) = 0;
 
         /**
-         * Bind the given pipeline.
+         * Begin a render pass.
          *
-         * Resets previous binding state, so this should be called before binding the desired buffers.
+         * Bindings must be set inside a render pass.
          *
-         * @param pipeline
+         * Copy/upload operations can be performed inside a render pass.
+         *
+         * Download operations must be performed outside a render pass.
+         *
+         * @param colorAttachments
+         * @param depthAttachment
+         * @param stencilAttachment
          */
+        virtual void beginRenderPass(const std::vector<RenderGraphAttachment> &colorAttachments,
+                                     const RenderGraphAttachment &depthAttachment,
+                                     const RenderGraphAttachment &stencilAttachment) = 0;
+
+        virtual void beginRenderPass(const std::vector<RenderGraphAttachment> &colorAttachments,
+                                     const RenderGraphAttachment &depthStencilAttachment) = 0;
+
         virtual void bindPipeline(RenderGraphResource pipeline) = 0;
 
         virtual void bindVertexBuffer(RenderGraphResource buffer) = 0;
 
         virtual void bindIndexBuffer(RenderGraphResource buffer) = 0;
-
-        /**
-         * Bind a texture which can be written to by Fragment shaders.
-         *
-         * To render to the screen, the texture returned by RenderGraphBuilder.getScreenTexture must be explicitly bound.
-         *
-         * @param binding
-         * @param texture
-         * @param index
-         * @param face
-         * @param mipMapLevel
-         */
-        virtual void setColorAttachment(size_t binding,
-                                        RenderGraphResource texture,
-                                        size_t index,
-                                        CubeMapFace face,
-                                        size_t mipMapLevel) = 0;
-
-        void setColorAttachment(const size_t binding, const RenderGraphResource texture) {
-            setColorAttachment(binding, texture, 0, {}, 0);
-        }
-
-        void setColorAttachment(const size_t binding, const RenderGraphResource texture, const size_t index) {
-            setColorAttachment(binding, texture, index, {}, 0);
-        }
-
-        void setColorAttachment(const size_t binding, const RenderGraphResource texture, const CubeMapFace face) {
-            setColorAttachment(binding, texture, 0, face, 0);
-        }
-
-        virtual void setDepthStencilAttachment(RenderGraphResource texture,
-                                               size_t index,
-                                               CubeMapFace face,
-                                               size_t mipMapLevel) = 0;
-
-        virtual void clearColorAttachment(size_t binding,
-                                          ColorRGBA clearColor) = 0;
-
-        virtual void clearDepthAttachment(float depth) = 0;
-
-        virtual void setViewport(Vec2i viewportOffset, Vec2i viewportSize) = 0;
 
         /**
          * Bind the specified textures.
@@ -212,11 +187,19 @@ namespace xng {
          */
         virtual void setShaderParameters(const std::unordered_map<std::string, ShaderLiteral> &parameters) = 0;
 
+        virtual void clearColorAttachment(size_t binding, ColorRGBA clearColor) = 0;
+
+        virtual void clearDepthAttachment(float depth) = 0;
+
+        virtual void setViewport(Vec2i viewportOffset, Vec2i viewportSize) = 0;
+
         virtual void drawArray(const DrawCall &drawCall) = 0;
 
         virtual void drawIndexed(const DrawCall &drawCall, size_t indexOffset) = 0;
 
         //TODO: Add instancing support
+
+        virtual void endRenderPass() = 0;
 
         /**
          * Download the data from the gpu side shader buffer.

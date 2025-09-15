@@ -19,23 +19,31 @@
 
 #include "contextgl.hpp"
 
-void ContextGL::uploadBuffer(RenderGraphResource buffer, const uint8_t *ptr, size_t size, size_t targetOffset) {
+void ContextGL::uploadBuffer(RenderGraphResource target, const uint8_t *buffer, size_t bufferSize,
+    size_t targetOffset) {
 }
 
-void ContextGL::uploadTexture(RenderGraphResource texture, const uint8_t *ptr, size_t size, ColorFormat format,
-                              size_t index,
-                              CubeMapFace face, size_t mipMapLevel) {
+void ContextGL::uploadTexture(RenderGraphResource texture, const uint8_t *buffer, size_t bufferSize,
+    ColorFormat bufferFormat, size_t index, CubeMapFace face, size_t mipMapLevel) {
 }
 
 void ContextGL::copyBuffer(RenderGraphResource target, RenderGraphResource source, size_t targetOffset,
-                           size_t sourceOffset, size_t count) {
+    size_t sourceOffset, size_t count) {
 }
 
 void ContextGL::copyTexture(RenderGraphResource target, RenderGraphResource source) {
 }
 
 void ContextGL::copyTexture(RenderGraphResource target, RenderGraphResource source, Vec3i srcOffset, Vec3i dstOffset,
-                            Vec3i size, size_t srcMipMapLevel, size_t dstMipMapLevel) {
+    Vec3i size, size_t srcMipMapLevel, size_t dstMipMapLevel) {
+}
+
+void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorAttachments,
+    const RenderGraphAttachment &depthAttachment, const RenderGraphAttachment &stencilAttachment) {
+}
+
+void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorAttachments,
+    const RenderGraphAttachment &depthStencilAttachment) {
 }
 
 void ContextGL::bindPipeline(RenderGraphResource pipeline) {
@@ -47,17 +55,13 @@ void ContextGL::bindVertexBuffer(RenderGraphResource buffer) {
 void ContextGL::bindIndexBuffer(RenderGraphResource buffer) {
 }
 
-void ContextGL::setColorAttachment(size_t binding,
-                                   RenderGraphResource texture,
-                                   size_t index,
-                                   CubeMapFace face,
-                                   size_t mipMapLevel) {
+void ContextGL::bindTextures(const std::vector<std::vector<RenderGraphResource>> &textureArrays) {
 }
 
-void ContextGL::setDepthStencilAttachment(RenderGraphResource texture,
-                                          size_t index,
-                                          CubeMapFace face,
-                                          size_t mipMapLevel) {
+void ContextGL::bindShaderBuffers(const std::unordered_map<std::string, RenderGraphResource> &buffers) {
+}
+
+void ContextGL::setShaderParameters(const std::unordered_map<std::string, ShaderLiteral> &parameters) {
 }
 
 void ContextGL::clearColorAttachment(size_t binding, ColorRGBA clearColor) {
@@ -69,28 +73,22 @@ void ContextGL::clearDepthAttachment(float depth) {
 void ContextGL::setViewport(Vec2i viewportOffset, Vec2i viewportSize) {
 }
 
-void ContextGL::bindTextures(const std::vector<std::vector<RenderGraphResource> > &textureArrays) {
-}
-
-void ContextGL::bindShaderBuffers(const std::unordered_map<std::string, RenderGraphResource> &buffers) {
-}
-
-void ContextGL::setShaderParameters(const std::unordered_map<std::string, ShaderLiteral> &parameters) {
-}
-
 void ContextGL::drawArray(const DrawCall &drawCall) {
 }
 
 void ContextGL::drawIndexed(const DrawCall &drawCall, size_t indexOffset) {
 }
 
+void ContextGL::endRenderPass() {
+}
+
 std::vector<uint8_t> ContextGL::downloadShaderBuffer(RenderGraphResource buffer) {
-    throw std::runtime_error("Not implemented");
+    throw std::runtime_error("DownloadShaderBuffer not implemented");
 }
 
 Image<ColorRGBA> ContextGL::downloadTexture(RenderGraphResource texture, size_t index, size_t mipMapLevel,
-                                            CubeMapFace face) {
-    throw std::runtime_error("Not implemented");
+    CubeMapFace face) {
+    throw std::runtime_error("DownloadTexture not implemented");
 }
 
 std::unordered_map<ShaderStage::Type, std::string> ContextGL::getShaderSource(RenderGraphResource shader) {
