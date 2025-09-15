@@ -161,8 +161,22 @@ namespace xng {
 
         virtual void bindPipeline(RenderGraphResource pipeline) = 0;
 
+        /**
+         * Bind the specified vertex buffer.
+         *
+         * Can only be called after a pipeline has been bound.
+         *
+         * @param buffer
+         */
         virtual void bindVertexBuffer(RenderGraphResource buffer) = 0;
 
+        /**
+         * Bind the specified index buffer.
+         *
+         * Can only be called after a pipeline has been bound.
+         *
+         * @param buffer
+         */
         virtual void bindIndexBuffer(RenderGraphResource buffer) = 0;
 
         /**
@@ -170,11 +184,20 @@ namespace xng {
          *
          * Every sub vector represents a texture array in Shader.textureArrays
          *
+         * Can only be called after a pipeline has been bound.
+         *
          * @param textureArrays
          */
         virtual void bindTextures(const std::unordered_map<std::string,
             std::vector<RenderGraphResource> > &textureArrays) = 0;
 
+        /**
+         * Bind the specified buffers.
+         *
+         * Can only be called after a pipeline has been bound.
+         *
+         * @param buffers
+         */
         virtual void bindShaderBuffers(const std::unordered_map<std::string, RenderGraphResource> &buffers) = 0;
 
         /**
@@ -183,6 +206,8 @@ namespace xng {
          * Shader parameters are values that change frequently (Per Draw) and have a size limit.
          *
          * Shader Parameters are set per draw call and must be set again for subsequent draw calls.
+         *
+         * Can only be called after a pipeline has been bound.
          *
          * @param parameters
          */
