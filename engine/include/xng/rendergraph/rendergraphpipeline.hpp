@@ -122,6 +122,15 @@ namespace xng {
         BlendMode alphaBlendDestinationMode = BlendMode::ONE_MINUS_SRC_ALPHA;
         BlendEquation colorBlendEquation = BlendEquation::BLEND_ADD;
         BlendEquation alphaBlendEquation = BlendEquation::BLEND_ADD;
+
+        const ShaderAttributeLayout &getVertexLayout() const {
+            for (auto &shader : shaders) {
+                if (shader.stage == Shader::VERTEX) {
+                    return shader.inputLayout;
+                }
+            }
+            throw std::runtime_error("No vertex shader");
+        }
     };
 }
 
