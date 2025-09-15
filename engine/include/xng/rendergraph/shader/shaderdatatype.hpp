@@ -212,7 +212,7 @@ namespace xng {
         }
 
         static Component getColorComponent(const ColorFormat format) {
-            if (format >= DEPTH && format <= RGBA32F) {
+            if (format >= R && format <= RGBA32F) {
                 return FLOAT;
             } else if (format >= R8I && format <= RGBA32I) {
                 return SIGNED_INT;
