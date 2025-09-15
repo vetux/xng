@@ -419,31 +419,32 @@ namespace xng {
 
         size_t allocateVertexData(size_t size) {
             bool foundFreeRange = false;
-            auto ret = 0UL;
+
+            auto dataOffset = 0UL;
             for (auto &range: freeVertexBufferRanges) {
                 if (range.second >= size) {
-                    ret = range.first;
+                    dataOffset = range.first;
                     foundFreeRange = true;
                 }
             }
 
             if (foundFreeRange) {
-                auto rangeSize = freeVertexBufferRanges.at(ret) -= size;
-                freeVertexBufferRanges.erase(ret);
+                auto rangeSize = freeVertexBufferRanges.at(dataOffset) -= size;
+                freeVertexBufferRanges.erase(dataOffset);
                 if (rangeSize > 0) {
-                    freeVertexBufferRanges[ret + size] = rangeSize;
+                    freeVertexBufferRanges[dataOffset + size] = rangeSize;
                 }
             } else {
-                ret = vertexBufferSize;
+                dataOffset = vertexBufferSize;
             }
 
-            if (vertexBufferSize <= ret || vertexBufferSize < ret + size) {
-                vertexBufferSize = ret;
+            if (vertexBufferSize <= dataOffset || vertexBufferSize < dataOffset + size) {
+                vertexBufferSize = dataOffset + size;
             }
 
-            allocatedVertexRanges[ret] = size;
+            allocatedVertexRanges[dataOffset] = size;
 
-            return ret;
+            return dataOffset;
         }
 
         void deallocateVertexData(size_t offset) {
@@ -473,7 +474,7 @@ namespace xng {
 
             if (indexBufferSize <= ret
                 || indexBufferSize <= ret + size) {
-                indexBufferSize = ret;
+                indexBufferSize = ret + size;
             }
 
             allocatedIndexRanges[ret] = size;
@@ -492,9 +493,9 @@ namespace xng {
             while (merged) {
                 merged = false;
                 auto vertexRanges = freeVertexBufferRanges;
-                for (auto range = freeVertexBufferRanges.begin(); range != freeVertexBufferRanges.end(); range++) {
+                for (auto range = freeVertexBufferRanges.begin(); range != freeVertexBufferRanges.end(); ++range) {
                     auto next = range;
-                    next++;
+                    ++next;
                     if (next != freeVertexBufferRanges.end()) {
                         if (range->first + range->second == next->first
                             && vertexRanges.find(range->first) != vertexRanges.end()
