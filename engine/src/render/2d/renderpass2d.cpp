@@ -376,15 +376,10 @@ namespace xng {
             // Render the draw batches
             ctx.beginRenderPass({RenderGraphAttachment(screenTexture)}, {});
 
-            ctx.bindVertexBuffer(vertexBuffer);
-            ctx.bindIndexBuffer(indexBuffer);
-            ctx.bindShaderBuffers({{"vars", shaderBuffer}});
-
             std::vector<RenderGraphResource> textures;
             for (int i = TEXTURE_ATLAS_8x8; i < TEXTURE_ATLAS_END; i++) {
                 textures.emplace_back(atlasTextures.at(static_cast<TextureAtlasResolution>(i)));
             }
-            ctx.bindTextures({{"atlasTextures", textures}});
 
             for (auto &batch: batches) {
                 ctx.setViewport(batch.viewportOffset, batch.viewportSize);
@@ -404,6 +399,11 @@ namespace xng {
                     default:
                         throw std::runtime_error("Unsupported primitive");
                 }
+
+                ctx.bindVertexBuffer(vertexBuffer);
+                ctx.bindIndexBuffer(indexBuffer);
+                ctx.bindShaderBuffers({{"vars", shaderBuffer}});
+                ctx.bindTextures({{"atlasTextures", textures}});
 
                 for (auto y = 0; y < batch.drawCalls.size(); y++) {
                     auto buf = batch.uniformBuffers.at(y);
