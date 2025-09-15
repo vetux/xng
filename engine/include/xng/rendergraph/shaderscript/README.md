@@ -8,8 +8,11 @@ It is implemented through headers which define various types and functions to cr
 #### Type Definition
   - Literal types are uppercase (e.g. `int` in glsl becomes `Int` in C++)
   - Arrays are defined as `ArrayX<COUNT> b = ArrayX<COUNT>{VALUES...}`
-  - If a variable is assigned at initialization eg `vec2 v = vec2(1, 1)` it might be inlined in the resulting shader. (See `ShaderNodeWrapper::promoteToVariable` for more details)
-    - Default initialization can be used to avoid inlining eg `vec2 v; v = vec2(1, 1)`. This is currently required if the variable is assigned to in a subsequent conditional or branch.  
+  - If a variable is assigned at initialization e.g. `vec2 v = vec2(1, 1)` it might be inlined in the resulting shader. (See `ShaderNodeWrapper::promoteToVariable` for more details)
+    - Default initialization can be used to avoid inlining e.g. `vec2 v; v = vec2(1, 1)`. This is currently required if the variable is assigned to in a subsequent conditional or branch.  
+
+#### Type promotion in arithmetic expressions
+  - Currently, types are not automatically promoted inside expressions e.g. `vec2 v = ivec2(1, 1) / 1.0f` results in a compile error.
 
 #### Swizzling
   - Vector swizzling is done with functions (e.g. `vec.xyx` in glsl becomes `vec.xyx()` in C++)
