@@ -505,6 +505,7 @@ namespace xng::ShaderScript {
             }
         }
 
+        // TODO: Handle implicit promotion
         ShaderNodeWrapper operator+(const ShaderNodeWrapper &rhs) const {
             ShaderDataType outType;
             if (type == rhs.type) {

@@ -399,10 +399,10 @@ namespace xng::ShaderScript {
     inline ShaderNodeWrapper textureSize(const ShaderNodeWrapper &texture, const ShaderNodeWrapper &lod) {
         if (texture.type.count > 1) {
             return ShaderNodeWrapper(ShaderDataType::ivec3(),
-                                     ShaderNodeFactory::textureSize(texture.node));
+                                     ShaderNodeFactory::textureSize(texture.node, lod.node));
         } else {
             return ShaderNodeWrapper(ShaderDataType::ivec2(),
-                                     ShaderNodeFactory::textureSize(texture.node));
+                                     ShaderNodeFactory::textureSize(texture.node, lod.node));
         }
     }
 
