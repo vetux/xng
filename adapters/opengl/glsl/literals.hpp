@@ -25,6 +25,10 @@
 
 using namespace xng;
 
+inline std::string boolToString(bool b) {
+    return b ? "true" : "false";
+}
+
 static std::string literalToString(const ShaderLiteral &value) {
     auto type = getLiteralType(value);
 
@@ -32,7 +36,7 @@ static std::string literalToString(const ShaderLiteral &value) {
         case ShaderDataType::SCALAR:
             switch (type.component) {
                 case ShaderDataType::BOOLEAN:
-                    return std::to_string(std::get<bool>(value));
+                    return boolToString(std::get<bool>(value));
                 case ShaderDataType::UNSIGNED_INT:
                     return std::to_string(std::get<unsigned int>(value));
                 case ShaderDataType::SIGNED_INT:
@@ -47,7 +51,7 @@ static std::string literalToString(const ShaderLiteral &value) {
             switch (type.component) {
                 case ShaderDataType::BOOLEAN: {
                     auto vec = std::get<Vector2<bool> >(value);
-                    return "bvec2(" + std::to_string(vec.x) + ", " + std::to_string(vec.y) + ")";
+                    return "bvec2(" + boolToString(vec.x) + ", " + boolToString(vec.y) + ")";
                 }
                 case ShaderDataType::UNSIGNED_INT: {
                     auto vecu = std::get<Vector2<unsigned int> >(value);
@@ -70,7 +74,7 @@ static std::string literalToString(const ShaderLiteral &value) {
             switch (type.component) {
                 case ShaderDataType::BOOLEAN: {
                     auto vec = std::get<Vector3<bool> >(value);
-                    return "bvec3(" + std::to_string(vec.x) + ", " + std::to_string(vec.y) + ", " +
+                    return "bvec3(" + boolToString(vec.x) + ", " + boolToString(vec.y) + ", " +
                            std::to_string(vec.z) + ")";
                 }
                 case ShaderDataType::UNSIGNED_INT: {
@@ -98,8 +102,8 @@ static std::string literalToString(const ShaderLiteral &value) {
             switch (type.component) {
                 case ShaderDataType::BOOLEAN: {
                     auto vec = std::get<Vector4<bool> >(value);
-                    return "bvec4(" + std::to_string(vec.x) + ", " + std::to_string(vec.y) + ", " +
-                           std::to_string(vec.z) + ", " + std::to_string(vec.w) + ")";
+                    return "bvec4(" + boolToString(vec.x) + ", " + boolToString(vec.y) + ", " +
+                           boolToString(vec.z) + ", " + boolToString(vec.w) + ")";
                 }
                 case ShaderDataType::UNSIGNED_INT: {
                     auto vecu = std::get<Vector4<unsigned int> >(value);
