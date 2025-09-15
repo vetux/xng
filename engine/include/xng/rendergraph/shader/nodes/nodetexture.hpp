@@ -20,19 +20,20 @@
 #ifndef XENGINE_NODETEXTURE_HPP
 #define XENGINE_NODETEXTURE_HPP
 
+#include <string>
+
 #include "xng/rendergraph/shader/shadernode.hpp"
 
 namespace xng {
     struct NodeTexture final : ShaderNode {
-        // The index into ShaderSource.textureArrayIndex
-        uint32_t textureArrayIndex = 0;
+        std::string textureName;
 
-        // An optional index into ShaderSource.textureArrays[textureArrayIndex],
-        // if no index is specified, the texture at ShaderSource.textureArrays[textureArrayIndex][0] is accessed.
+        // An optional index into ShaderSource.textureArrays.at(textureName),
+        // if no index is specified, the texture at ShaderSource.textureArrays.at(textureName)[0] is accessed.
         std::unique_ptr<ShaderNode> textureIndex;
 
-        explicit NodeTexture(const uint32_t textureArrayIndex, std::unique_ptr<ShaderNode> textureIndex)
-            : textureArrayIndex(textureArrayIndex), textureIndex(std::move(textureIndex)) {
+        explicit NodeTexture( std::string textureName, std::unique_ptr<ShaderNode> textureIndex)
+            : textureName(std::move(textureName)), textureIndex(std::move(textureIndex)) {
         }
 
         NodeType getType() const override {
@@ -40,7 +41,7 @@ namespace xng {
         }
 
         std::unique_ptr<ShaderNode> copy() const override {
-            return std::make_unique<NodeTexture>(textureArrayIndex, textureIndex ? textureIndex->copy() : nullptr);
+            return std::make_unique<NodeTexture>(textureName, textureIndex ? textureIndex->copy() : nullptr);
         }
     };
 }

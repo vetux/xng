@@ -59,7 +59,7 @@ namespace xng {
         XENGINE_EXPORT std::unique_ptr<ShaderNode> array(ShaderDataType elementType,
                                                          const std::vector<std::unique_ptr<ShaderNode> > &elements);
 
-        XENGINE_EXPORT std::unique_ptr<ShaderNode> texture(uint32_t textureArrayIndex,
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> texture(std::string textureName,
                                                            const std::unique_ptr<ShaderNode> &textureIndex = nullptr);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> textureSample(const std::unique_ptr<ShaderNode> &texture,

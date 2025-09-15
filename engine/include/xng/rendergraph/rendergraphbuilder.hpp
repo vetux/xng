@@ -28,7 +28,7 @@
 #include "xng/rendergraph/rendergraphcontext.hpp"
 #include "xng/rendergraph/rendergraphresource.hpp"
 #include "xng/rendergraph/rendergraphtexture.hpp"
-#include "xng/rendergraph/shader/shaderstage.hpp"
+#include "xng/rendergraph/shader/shader.hpp"
 
 namespace xng {
     class XENGINE_EXPORT RenderGraphBuilder {

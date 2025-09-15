@@ -45,17 +45,17 @@ static const char *drawID = "DRAW_ID";
  * @return
  */
 std::string compileNode(const ShaderNode &node,
-                        const ShaderStage &source,
+                        const Shader &source,
                         const std::string &functionName,
                         const std::string &prefix = "");
 
 std::string compileLeafNode(const NodeVariableCreate &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName,
                             const std::string &prefix);
 
 std::string compileLeafNode(const NodeAssign &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName,
                             const std::string &prefix);
 
@@ -71,91 +71,91 @@ std::string compileLeafNode(const NodeAttributeOutput &node);
 
 std::string compileLeafNode(const NodeParameter &node);
 
-std::string compileLeafNode(const NodeVector &node, const ShaderStage &source, const std::string &functionName);
+std::string compileLeafNode(const NodeVector &node, const Shader &source, const std::string &functionName);
 
-std::string compileLeafNode(const NodeArray &node, const ShaderStage &source, const std::string &functionName);
+std::string compileLeafNode(const NodeArray &node, const Shader &source, const std::string &functionName);
 
 std::string compileLeafNode(const NodeTexture &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName);
 
 std::string compileLeafNode(const NodeTextureSample &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName);
 
 std::string compileLeafNode(const NodeTextureFetch &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName);
 
 std::string compileLeafNode(const NodeTextureSize &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName);
 
 std::string compileLeafNode(const NodeTextureFetch &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName);
 
-std::string compileLeafNode(const NodeBufferRead &node, const ShaderStage &source,
+std::string compileLeafNode(const NodeBufferRead &node, const Shader &source,
                             const std::string &functionName);
 
-std::string compileLeafNode(const NodeBufferWrite &node, const ShaderStage &source,
+std::string compileLeafNode(const NodeBufferWrite &node, const Shader &source,
                             const std::string &functionName,
                             const std::string &prefix);
 
-std::string compileLeafNode(const NodeBufferSize &node, const ShaderStage &source);
+std::string compileLeafNode(const NodeBufferSize &node, const Shader &source);
 
-std::string compileLeafNode(const NodeAdd &node, const ShaderStage &source, const std::string &functionName);
+std::string compileLeafNode(const NodeAdd &node, const Shader &source, const std::string &functionName);
 
-std::string compileLeafNode(const NodeSubtract &node, const ShaderStage &source, const std::string &functionName);
+std::string compileLeafNode(const NodeSubtract &node, const Shader &source, const std::string &functionName);
 
-std::string compileLeafNode(const NodeMultiply &node, const ShaderStage &source, const std::string &functionName);
+std::string compileLeafNode(const NodeMultiply &node, const Shader &source, const std::string &functionName);
 
-std::string compileLeafNode(const NodeDivide &node, const ShaderStage &source, const std::string &functionName);
+std::string compileLeafNode(const NodeDivide &node, const Shader &source, const std::string &functionName);
 
-std::string compileLeafNode(const NodeEqual &node, const ShaderStage &source, const std::string &functionName);
+std::string compileLeafNode(const NodeEqual &node, const Shader &source, const std::string &functionName);
 
-std::string compileLeafNode(const NodeNotEqual &node, const ShaderStage &source, const std::string &functionName);
+std::string compileLeafNode(const NodeNotEqual &node, const Shader &source, const std::string &functionName);
 
-std::string compileLeafNode(const NodeGreater &node, const ShaderStage &source, const std::string &functionName);
+std::string compileLeafNode(const NodeGreater &node, const Shader &source, const std::string &functionName);
 
-std::string compileLeafNode(const NodeLess &node, const ShaderStage &source, const std::string &functionName);
+std::string compileLeafNode(const NodeLess &node, const Shader &source, const std::string &functionName);
 
-std::string compileLeafNode(const NodeGreaterEqual &node, const ShaderStage &source,
+std::string compileLeafNode(const NodeGreaterEqual &node, const Shader &source,
                             const std::string &functionName);
 
-std::string compileLeafNode(const NodeLessEqual &node, const ShaderStage &source, const std::string &functionName);
+std::string compileLeafNode(const NodeLessEqual &node, const Shader &source, const std::string &functionName);
 
-std::string compileLeafNode(const NodeAnd &node, const ShaderStage &source, const std::string &functionName);
+std::string compileLeafNode(const NodeAnd &node, const Shader &source, const std::string &functionName);
 
-std::string compileLeafNode(const NodeOr &node, const ShaderStage &source, const std::string &functionName);
+std::string compileLeafNode(const NodeOr &node, const Shader &source, const std::string &functionName);
 
 std::string compileLeafNode(const NodeCall &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName);
 
 std::string compileLeafNode(const NodeReturn &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName,
                             const std::string &prefix);
 
-std::string compileLeafNode(const NodeBuiltin &node, const ShaderStage &source, const std::string &functionName);
+std::string compileLeafNode(const NodeBuiltin &node, const Shader &source, const std::string &functionName);
 
-std::string compileLeafNode(const NodeSubscriptArray &node, const ShaderStage &source,
+std::string compileLeafNode(const NodeSubscriptArray &node, const Shader &source,
                             const std::string &functionName);
 
-std::string compileLeafNode(const NodeVectorSwizzle &node, const ShaderStage &source,
+std::string compileLeafNode(const NodeVectorSwizzle &node, const Shader &source,
                             const std::string &functionName);
 
-std::string compileLeafNode(const NodeSubscriptMatrix &node, const ShaderStage &source,
+std::string compileLeafNode(const NodeSubscriptMatrix &node, const Shader &source,
                             const std::string &functionName);
 
-std::string compileLeafNode(const NodeBranch &node, const ShaderStage &source, const std::string &functionName,
+std::string compileLeafNode(const NodeBranch &node, const Shader &source, const std::string &functionName,
                             const std::string &prefix);
 
-std::string compileLeafNode(const NodeLoop &node, const ShaderStage &source, const std::string &functionName,
+std::string compileLeafNode(const NodeLoop &node, const Shader &source, const std::string &functionName,
                             const std::string &prefix);
 
-std::string compileLeafNode(const NodeVertexPosition &node, const ShaderStage &source, const std::string &functionName,
+std::string compileLeafNode(const NodeVertexPosition &node, const Shader &source, const std::string &functionName,
                             const std::string &prefix);
 
 #endif //XENGINE_NODECOMPILER_HPP

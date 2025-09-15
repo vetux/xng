@@ -55,7 +55,7 @@ void ContextGL::bindVertexBuffer(RenderGraphResource buffer) {
 void ContextGL::bindIndexBuffer(RenderGraphResource buffer) {
 }
 
-void ContextGL::bindTextures(const std::vector<std::vector<RenderGraphResource>> &textureArrays) {
+void ContextGL::bindTextures(const std::unordered_map<std::string, std::vector<RenderGraphResource>> &textureArrays) {
 }
 
 void ContextGL::bindShaderBuffers(const std::unordered_map<std::string, RenderGraphResource> &buffers) {
@@ -91,6 +91,6 @@ Image<ColorRGBA> ContextGL::downloadTexture(RenderGraphResource texture, size_t 
     throw std::runtime_error("DownloadTexture not implemented");
 }
 
-std::unordered_map<ShaderStage::Type, std::string> ContextGL::getShaderSource(RenderGraphResource shader) {
+std::unordered_map<Shader::Stage, std::string> ContextGL::getShaderSource(RenderGraphResource shader) {
     return pipelines.at(shader).sourceCode;
 }

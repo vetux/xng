@@ -204,12 +204,12 @@ namespace xng::ShaderScript {
         }
     }
 
-    void ShaderBuilder::setup(ShaderStage::Type stage,
+    void ShaderBuilder::setup(Shader::Stage stage,
                               const ShaderAttributeLayout &inputLayout,
                               const ShaderAttributeLayout &outputLayout,
                               const std::unordered_map<std::string, ShaderDataType> &parameters,
                               const std::unordered_map<std::string, ShaderBuffer> &buffers,
-                              const std::vector<ShaderTextureArray> &textureArrays,
+                              const std::unordered_map<std::string, ShaderTextureArray> &textureArrays,
                               const std::vector<ShaderFunction> &functions) {
         if (currentNode != nullptr) {
             throw std::runtime_error("ShaderBuilder::setup called while a build is in progress (Nested setup() call?)");
@@ -228,13 +228,13 @@ namespace xng::ShaderScript {
         this->functions = functions;
     }
 
-    ShaderStage ShaderBuilder::build() {
+    Shader ShaderBuilder::build() {
         if (currentNode == nullptr) {
             throw std::runtime_error("ShaderBuilder::build called without a setup() call");
         }
 
-        ShaderStage ret;
-        ret.type = stage;
+        Shader ret;
+        ret.stage = stage;
         ret.inputLayout = inputLayout;
         ret.outputLayout = outputLayout;
         ret.parameters = parameters;

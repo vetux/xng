@@ -25,7 +25,7 @@
 #include <vector>
 
 namespace xng {
-    struct ShaderStage;
+    struct Shader;
 
     struct ShaderNode {
         enum NodeType {

@@ -24,7 +24,7 @@
 using namespace xng::ShaderScript;
 
 namespace xng {
-    ShaderStage createVertexShader() {
+    Shader createVertexShader() {
         const ShaderAttributeLayout inputLayout{
             {
                 ShaderDataType::vec2(),
@@ -57,16 +57,13 @@ namespace xng {
             }
         };
 
-        std::vector<ShaderTextureArray> textureArrays;
-        textureArrays.emplace_back(ShaderTexture(TEXTURE_2D, RGBA, true), 12);
-
         auto &builder = ShaderBuilder::instance();
-        builder.setup(ShaderStage::VERTEX,
+        builder.setup(Shader::VERTEX,
                       inputLayout,
                       outputLayout,
                       {},
                       {{"vars", buf}},
-                      textureArrays,
+                      {{"atlasTextures", ShaderTextureArray(ShaderTexture(TEXTURE_2D, RGBA, true), 12)}},
                       {});
 
         vec2 position = attribute(0);

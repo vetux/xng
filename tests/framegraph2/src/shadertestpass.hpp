@@ -42,8 +42,6 @@ public:
     ShaderAttributeLayout fragmentLayout;
     ShaderAttributeLayout colorLayout;
 
-    static constexpr uint32_t tex = 0;
-
     ShaderTestPass() {
         dataBuffer.elements.emplace_back("mvp", ShaderDataType(ShaderDataType::MAT4, ShaderDataType::FLOAT));
         colorBuffer.elements.emplace_back("color", ShaderDataType(ShaderDataType::VECTOR4, ShaderDataType::FLOAT));
@@ -57,28 +55,28 @@ public:
 
         builder.addPass("Example Pass", [pip](RenderGraphContext &ctx) {
             const auto src = ctx.getShaderSource(pip);
-            std::cout << "----------Vertex Shader----------" << std::endl << src.at(ShaderStage::VERTEX) <<
+            std::cout << "----------Vertex Shader----------" << std::endl << src.at(Shader::VERTEX) <<
                     std::endl;
-            std::cout << "----------Fragment Shader----------" << std::endl << src.at(ShaderStage::FRAGMENT) <<
+            std::cout << "----------Fragment Shader----------" << std::endl << src.at(Shader::FRAGMENT) <<
                     std::endl;
         });
     }
 
-    ShaderStage createVertexShader() {
+    Shader createVertexShader() {
         auto &builder = ShaderBuilder::instance();
-        builder.setup(ShaderStage::VERTEX,
+        builder.setup(Shader::VERTEX,
                       vertexLayout,
                       vertexLayout,
                       {},
                       {{"data", dataBuffer}},
-                      {ShaderTextureArray(textureDef)},
+                      {{"texture", ShaderTextureArray(textureDef)}},
                       {});
 
         shaderlib::noise::simplex();
 
         Function("test",
-                         {{"texArg", textureDef}},
-                         ShaderDataType::integer());
+                 {{"texArg", textureDef}},
+                 ShaderDataType::integer());
         {
             Return(5 * (3 + texture(argument("texArg"), vec2(0.5f, 0.5f)).x()));
         }
@@ -87,7 +85,7 @@ public:
         // Equivalent to int b[4] = {1, 2, 3, 4}
         ArrayInt<4> b = ArrayInt<4>{1, 2, 3, 4};
 
-        Int r = Call("test", textureSampler(tex));
+        Int r = Call("test", textureSampler("texture"));
         Int a = r;
 
         Int v = simplex(vec2(0.5f, 0.5f));
@@ -96,7 +94,7 @@ public:
         f = f * a;
 
         vec4 color;
-        color = texture(textureSampler(tex), vec2(0.5f, 0.5f));
+        color = texture(textureSampler("texture"), vec2(0.5f, 0.5f));
 
         If(a == 5);
         {
@@ -105,7 +103,7 @@ public:
         Else();
         {
             Int i;
-            For(i, 0,  10,  1);
+            For(i, 0, 10, 1);
             {
                 If(i == 1);
                 {
@@ -138,14 +136,14 @@ public:
         return builder.build();
     }
 
-    ShaderStage createFragmentShader() {
+    Shader createFragmentShader() {
         auto &builder = ShaderBuilder::instance();
-        builder.setup(ShaderStage::FRAGMENT,
+        builder.setup(Shader::FRAGMENT,
                       vertexLayout,
                       vertexLayout,
                       {},
                       {{"data", dataBuffer}},
-                      {ShaderTextureArray(textureDef)},
+                      {{"texture", ShaderTextureArray(textureDef)}},
                       {});
 
         writeAttribute(0, vec4(1, 0, 0, 1));

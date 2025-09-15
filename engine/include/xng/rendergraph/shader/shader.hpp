@@ -17,8 +17,8 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_SHADERSTAGE_HPP
-#define XENGINE_SHADERSTAGE_HPP
+#ifndef XENGINE_SHADER_HPP
+#define XENGINE_SHADER_HPP
 
 #include <unordered_map>
 #include <utility>
@@ -32,27 +32,22 @@
 namespace xng {
     struct ShaderBuffer;
 
-    /**
-     * The shader compiler generates shader source code from the data in ShaderStage.
-     */
-    struct ShaderStage {
-        enum Type {
+    struct Shader {
+        enum Stage {
             VERTEX = 0,
             GEOMETRY,
             TESSELATION_CONTROL,
             TESSELATION_EVALUATION,
             FRAGMENT,
             COMPUTE,
-        } type{};
+        } stage{};
 
         ShaderAttributeLayout inputLayout;
         ShaderAttributeLayout outputLayout;
 
         std::unordered_map<std::string, ShaderDataType> parameters;
         std::unordered_map<std::string, ShaderBuffer> buffers;
-
-        // The available texture arrays in binding order
-        std::vector<ShaderTextureArray> textureArrays;
+        std::unordered_map<std::string, ShaderTextureArray> textureArrays;
 
         std::vector<std::unique_ptr<ShaderNode> > mainFunction;
 
@@ -62,17 +57,17 @@ namespace xng {
          */
         std::vector<ShaderFunction> functions;
 
-        ShaderStage() = default;
+        Shader() = default;
 
-        ShaderStage(const Type stage,
+        Shader(const Stage stage,
                     ShaderAttributeLayout input_layout,
                     ShaderAttributeLayout output_layout,
                     const std::unordered_map<std::string, ShaderDataType> &parameters,
                     const std::unordered_map<std::string, ShaderBuffer> &buffers,
-                    const std::vector<ShaderTextureArray> &textureArrays,
+                    const std::unordered_map<std::string, ShaderTextureArray> &textureArrays,
                     std::vector<std::unique_ptr<ShaderNode> > mainFunction,
                     std::vector<ShaderFunction> functions)
-            : type(stage),
+            : stage(stage),
               inputLayout(std::move(input_layout)),
               outputLayout(std::move(output_layout)),
               parameters(parameters),
@@ -82,8 +77,8 @@ namespace xng {
               functions(std::move(functions)) {
         }
 
-        ShaderStage(const ShaderStage &other)
-            : type(other.type),
+        Shader(const Shader &other)
+            : stage(other.stage),
               inputLayout(other.inputLayout),
               outputLayout(other.outputLayout),
               parameters(other.parameters),
@@ -95,8 +90,8 @@ namespace xng {
             }
         }
 
-        ShaderStage(ShaderStage &&other) noexcept
-            : type(other.type),
+        Shader(Shader &&other) noexcept
+            : stage(other.stage),
               inputLayout(std::move(other.inputLayout)),
               outputLayout(std::move(other.outputLayout)),
               parameters(std::move(other.parameters)),
@@ -106,10 +101,10 @@ namespace xng {
               functions(std::move(other.functions)) {
         }
 
-        ShaderStage &operator=(const ShaderStage &other) {
+        Shader &operator=(const Shader &other) {
             if (this == &other)
                 return *this;
-            type = other.type;
+            stage = other.stage;
             inputLayout = other.inputLayout;
             outputLayout = other.outputLayout;
             parameters = other.parameters;
@@ -122,10 +117,10 @@ namespace xng {
             return *this;
         }
 
-        ShaderStage &operator=(ShaderStage &&other) noexcept {
+        Shader &operator=(Shader &&other) noexcept {
             if (this == &other)
                 return *this;
-            type = other.type;
+            stage = other.stage;
             inputLayout = std::move(other.inputLayout);
             outputLayout = std::move(other.outputLayout);
             parameters = std::move(other.parameters);
@@ -138,4 +133,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_SHADERSTAGE_HPP
+#endif //XENGINE_SHADER_HPP

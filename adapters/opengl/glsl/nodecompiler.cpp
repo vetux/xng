@@ -25,7 +25,7 @@
 #include "types.hpp"
 
 std::string compileNode(const ShaderNode &node,
-                        const ShaderStage &source,
+                        const Shader &source,
                         const std::string &functionName,
                         const std::string &prefix) {
     switch (node.getType()) {
@@ -110,7 +110,7 @@ std::string compileNode(const ShaderNode &node,
 }
 
 std::string compileLeafNode(const NodeVariableCreate &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName,
                             const std::string &prefix) {
     auto ret = getTypeName(node.type) + " " + node.variableName;
@@ -124,7 +124,7 @@ std::string compileLeafNode(const NodeVariableCreate &node,
 }
 
 std::string compileLeafNode(const NodeAssign &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName,
                             const std::string &prefix) {
     return prefix + compileNode(*node.target, source, functionName)
@@ -145,7 +145,7 @@ std::string compileLeafNode(const NodeArgument &node) {
 }
 
 std::string compileLeafNode(const NodeVector &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     std::string ret;
     ret += getTypeName(node.type);
@@ -165,7 +165,7 @@ std::string compileLeafNode(const NodeVector &node,
     return ret;
 }
 
-std::string compileLeafNode(const NodeArray &node, const ShaderStage &source, const std::string &functionName) {
+std::string compileLeafNode(const NodeArray &node, const Shader &source, const std::string &functionName) {
     std::string ret;
     ret += getTypeName(node.elementType);
     ret += "[](";
@@ -194,21 +194,21 @@ std::string compileLeafNode(const NodeParameter &node) {
 }
 
 std::string compileLeafNode(const NodeTexture &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     std::string texIndex = "0";
     if (node.textureIndex != nullptr) {
         texIndex = compileNode(*node.textureIndex, source, functionName);
     }
     return texturePrefix
-           + std::to_string(node.textureArrayIndex)
+           + node.textureName
            + "["
            + texIndex
            + "]";
 }
 
 std::string compileLeafNode(const NodeTextureSample &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     auto ret = "texture("
                + compileNode(*node.texture, source, functionName)
@@ -222,7 +222,7 @@ std::string compileLeafNode(const NodeTextureSample &node,
 }
 
 std::string compileLeafNode(const NodeTextureFetch &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     return "texelFetch("
            + compileNode(*node.texture, source, functionName)
@@ -234,7 +234,7 @@ std::string compileLeafNode(const NodeTextureFetch &node,
 }
 
 std::string compileLeafNode(const NodeTextureSize &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     auto ret = "textureSize(" + compileNode(*node.texture, source, functionName);
     if (node.lod != nullptr) {
@@ -244,7 +244,7 @@ std::string compileLeafNode(const NodeTextureSize &node,
 }
 
 std::string compileLeafNode(const NodeBufferRead &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     if (source.buffers.at(node.bufferName).dynamic) {
         auto ret = bufferPrefix + node.bufferName + "." + bufferArrayName + "[";
@@ -264,7 +264,7 @@ std::string compileLeafNode(const NodeBufferRead &node,
 }
 
 std::string compileLeafNode(const NodeBufferWrite &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName,
                             const std::string &prefix) {
     if (source.buffers.at(node.bufferName).dynamic) {
@@ -296,7 +296,7 @@ std::string compileLeafNode(const NodeBufferWrite &node,
 }
 
 std::string compileLeafNode(const NodeBufferSize &node,
-                            const ShaderStage &source) {
+                            const Shader &source) {
     if (!source.buffers.at(node.bufferName).dynamic) {
         throw std::runtime_error("Buffer size read on non-dynamic buffer");
     }
@@ -304,7 +304,7 @@ std::string compileLeafNode(const NodeBufferSize &node,
 }
 
 std::string compileLeafNode(const NodeAdd &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " + "
@@ -312,7 +312,7 @@ std::string compileLeafNode(const NodeAdd &node,
 }
 
 std::string compileLeafNode(const NodeSubtract &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " - "
@@ -320,7 +320,7 @@ std::string compileLeafNode(const NodeSubtract &node,
 }
 
 std::string compileLeafNode(const NodeMultiply &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " * "
@@ -328,7 +328,7 @@ std::string compileLeafNode(const NodeMultiply &node,
 }
 
 std::string compileLeafNode(const NodeDivide &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " / "
@@ -336,7 +336,7 @@ std::string compileLeafNode(const NodeDivide &node,
 }
 
 std::string compileLeafNode(const NodeEqual &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " == "
@@ -344,7 +344,7 @@ std::string compileLeafNode(const NodeEqual &node,
 }
 
 std::string compileLeafNode(const NodeNotEqual &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " != "
@@ -352,7 +352,7 @@ std::string compileLeafNode(const NodeNotEqual &node,
 }
 
 std::string compileLeafNode(const NodeGreater &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " > "
@@ -360,7 +360,7 @@ std::string compileLeafNode(const NodeGreater &node,
 }
 
 std::string compileLeafNode(const NodeLess &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " < "
@@ -368,7 +368,7 @@ std::string compileLeafNode(const NodeLess &node,
 }
 
 std::string compileLeafNode(const NodeGreaterEqual &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " >= "
@@ -376,7 +376,7 @@ std::string compileLeafNode(const NodeGreaterEqual &node,
 }
 
 std::string compileLeafNode(const NodeLessEqual &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " <= "
@@ -384,7 +384,7 @@ std::string compileLeafNode(const NodeLessEqual &node,
 }
 
 std::string compileLeafNode(const NodeAnd &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " && "
@@ -392,7 +392,7 @@ std::string compileLeafNode(const NodeAnd &node,
 }
 
 std::string compileLeafNode(const NodeOr &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     return compileNode(*node.left, source, functionName)
            + " || "
@@ -400,7 +400,7 @@ std::string compileLeafNode(const NodeOr &node,
 }
 
 std::string compileLeafNode(const NodeCall &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     auto ret = node.functionName + "(";
     size_t argCount = 0;
@@ -416,14 +416,14 @@ std::string compileLeafNode(const NodeCall &node,
 }
 
 std::string compileLeafNode(const NodeReturn &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName,
                             const std::string &prefix) {
     return prefix + "return " + compileNode(*node.value, source, functionName);
 }
 
 std::string compileLeafNode(const NodeBuiltin &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     switch (node.type) {
         case NodeBuiltin::ABS:
@@ -523,7 +523,7 @@ std::string compileLeafNode(const NodeBuiltin &node,
 }
 
 std::string compileLeafNode(const NodeSubscriptArray &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     return compileNode(*node.array, source, functionName)
            + "["
@@ -532,7 +532,7 @@ std::string compileLeafNode(const NodeSubscriptArray &node,
 }
 
 std::string compileLeafNode(const NodeVectorSwizzle &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     if (node.indices.size() < 1 || node.indices.size() > 4) {
         throw std::runtime_error("Invalid vector subscript indices size");
@@ -560,7 +560,7 @@ std::string compileLeafNode(const NodeVectorSwizzle &node,
 }
 
 std::string compileLeafNode(const NodeSubscriptMatrix &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName) {
     return compileNode(*node.matrix, source, functionName)
            + "["
@@ -571,7 +571,7 @@ std::string compileLeafNode(const NodeSubscriptMatrix &node,
 }
 
 std::string compileLeafNode(const NodeBranch &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName,
                             const std::string &prefix) {
     std::string ret;
@@ -595,7 +595,7 @@ std::string compileLeafNode(const NodeBranch &node,
 }
 
 std::string compileLeafNode(const NodeLoop &node,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &functionName, const std::string &prefix) {
     std::string ret;
     ret += prefix + "for (";
@@ -619,7 +619,7 @@ std::string compileLeafNode(const NodeLoop &node,
     return ret;
 }
 
-std::string compileLeafNode(const NodeVertexPosition &node, const ShaderStage &source, const std::string &functionName,
+std::string compileLeafNode(const NodeVertexPosition &node, const Shader &source, const std::string &functionName,
                             const std::string &prefix) {
     return prefix + "gl_Position = " + compileNode(*node.value, source, functionName);
 }

@@ -26,7 +26,7 @@ std::string compileFunction(const std::string &functionName,
                             const std::vector<ShaderFunction::Argument> &parameters,
                             const std::vector<std::unique_ptr<ShaderNode> > &body,
                             const std::optional<ShaderDataType> &returnType,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &appendix) {
     std::string ret;
     if (returnType.has_value()) {

@@ -20,19 +20,64 @@
 #ifndef XENGINE_COMPILEDPIPELINE_HPP
 #define XENGINE_COMPILEDPIPELINE_HPP
 
-#include "xng/rendergraph/shader/shaderstage.hpp"
+#include "xng/rendergraph/shader/shader.hpp"
 
 using namespace xng;
 
 struct CompiledPipeline {
-    std::unordered_map<ShaderStage::Type, std::string> sourceCode;
-    std::unordered_map<std::string, size_t> bufferBindings;
+    std::unordered_map<Shader::Stage, std::string> sourceCode;
 
-    size_t getBufferBinding(const std::string &name) {
-        if (bufferBindings.find(name) == bufferBindings.end()) {
-            bufferBindings[name] = bufferBindings.size();
+    std::vector<std::string> shaderBufferBindings;
+    std::vector<std::string> textureArrayBindings;
+
+    std::unordered_map<std::string, size_t> textureArraySizes;
+
+    size_t getShaderBufferBinding(const std::string &name) const {
+        for (auto i = 0; i < shaderBufferBindings.size(); ++i) {
+            if (shaderBufferBindings.at(i) == name) {
+                return i;
+            }
         }
-        return bufferBindings.at(name);
+        throw std::runtime_error("Shader buffer " + name + " not found");
+    }
+
+    size_t getTextureArrayBinding(const std::string &name) const {
+        size_t ret = 0;
+        for (auto &binding : textureArrayBindings) {
+            if (binding == name) {
+                return ret;
+            }
+            ret += textureArraySizes.at(binding);
+        }
+        throw std::runtime_error("Texture Array " + name + " not found");
+    }
+
+    size_t createShaderBufferBinding(const std::string &name) {
+        for (auto i = 0; i < shaderBufferBindings.size(); ++i) {
+            auto &binding = shaderBufferBindings[i];
+            if (name == binding) {
+                return i;
+            }
+        }
+        shaderBufferBindings.emplace_back(name);
+        return shaderBufferBindings.size() - 1;
+    }
+
+    size_t createTextureArrayBinding(const std::string &name, size_t arraySize) {
+        bool found = false;
+        size_t ret = 0;
+        for (auto &binding : textureArrayBindings) {
+            if (name == binding) {
+                found = true;
+                break;
+            }
+            ret += textureArraySizes.at(binding);
+        }
+        if (!found) {
+            textureArrayBindings.emplace_back(name);
+            textureArraySizes[name] = arraySize;
+        }
+        return ret;
     }
 };
 

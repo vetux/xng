@@ -23,7 +23,7 @@
 #include <vector>
 
 #include "xng/render/geometry/primitive.hpp"
-#include "xng/rendergraph/shader/shaderstage.hpp"
+#include "xng/rendergraph/shader/shader.hpp"
 
 namespace xng {
     struct RenderGraphPipeline {
@@ -90,7 +90,7 @@ namespace xng {
             BLEND_MAX
         };
 
-        std::vector<ShaderStage> shaders;
+        std::vector<Shader> shaders;
 
         Primitive primitive = TRIANGLES;
         bool multisample = false;

@@ -64,7 +64,7 @@ public:
 
     void bindIndexBuffer(RenderGraphResource buffer) override;
 
-    void bindTextures(const std::vector<std::vector<RenderGraphResource> > &textureArrays) override;
+    void bindTextures(const std::unordered_map<std::string, std::vector<RenderGraphResource>> &textureArrays) override;
 
     void bindShaderBuffers(const std::unordered_map<std::string, RenderGraphResource> &buffers) override;
 
@@ -87,7 +87,7 @@ public:
     Image<ColorRGBA> downloadTexture(RenderGraphResource texture, size_t index, size_t mipMapLevel,
                                      CubeMapFace face) override;
 
-    std::unordered_map<ShaderStage::Type, std::string> getShaderSource(RenderGraphResource pipeline) override;
+    std::unordered_map<Shader::Stage, std::string> getShaderSource(RenderGraphResource pipeline) override;
 
 private:
     std::unordered_map<RenderGraphResource, CompiledPipeline, RenderGraphResourceHash> pipelines;

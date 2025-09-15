@@ -20,10 +20,10 @@
 #ifndef XENGINE_FRAGMENTSHADER_HPP
 #define XENGINE_FRAGMENTSHADER_HPP
 
-#include "xng/rendergraph/shader/shaderstage.hpp"
+#include "xng/rendergraph/shader/shader.hpp"
 
 namespace xng {
-    ShaderStage createFragmentShader();
+    Shader createFragmentShader();
 }
 
 #endif //XENGINE_FRAGMENTSHADER_HPP

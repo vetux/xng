@@ -20,10 +20,10 @@
 #ifndef XENGINE_VERTEXSHADER_HPP
 #define XENGINE_VERTEXSHADER_HPP
 
-#include "xng/rendergraph/shader/shaderstage.hpp"
+#include "xng/rendergraph/shader/shader.hpp"
 
 namespace xng {
-    ShaderStage createVertexShader();
+    Shader createVertexShader();
 }
 
 #endif //XENGINE_VERTEXSHADER_HPP

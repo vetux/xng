@@ -44,17 +44,17 @@ std::string generateElement(const std::string &name, const ShaderDataType &value
     return ret + ";\n";
 }
 
-std::string generateHeader(const ShaderStage &source, CompiledPipeline &pipeline) {
+std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
     std::string ret;
 
-    if (source.type == ShaderStage::Type::VERTEX) {
+    if (source.stage == Shader::Stage::VERTEX) {
         ret += "#define " + std::string(drawID) + " gl_DrawID\n\n";
     } else {
         ret += "#define " + std::string(drawID) + " drawID\n\n";
     }
 
     for (const auto &pair: source.buffers) {
-        auto binding = pipeline.getBufferBinding(pair.first);
+        auto binding = pipeline.createShaderBufferBinding(pair.first);
 
         std::string bufferLayout = "struct ShaderBufferData" + std::to_string(binding) + " {\n";
         for (const auto &element: pair.second.elements) {
@@ -82,20 +82,22 @@ std::string generateHeader(const ShaderStage &source, CompiledPipeline &pipeline
         ret += "\n";
     }
 
-    size_t textureBinding = 0;
-    for (auto &texArray: source.textureArrays) {
+    for (auto &pair: source.textureArrays) {
+        auto &texArray = pair.second;
+
+        auto textureBinding = pipeline.createTextureArrayBinding(pair.first, texArray.arraySize);
+
         ret += "layout(binding = "
                 + std::to_string(textureBinding)
                 + ") uniform "
                 + getSampler(texArray.texture)
                 + " "
                 + texturePrefix
-                + std::to_string(textureBinding)
+                + pair.first
                 + "["
                 + std::to_string(texArray.arraySize)
                 + "]"
                 + ";\n";
-        textureBinding += texArray.arraySize;
     }
 
     if (source.textureArrays.size() > 0) {
@@ -111,7 +113,7 @@ std::string generateHeader(const ShaderStage &source, CompiledPipeline &pipeline
                 + ") in "
                 + generateElement(inputAttributePrefix + std::to_string(location), element, "");
     }
-    if (source.type == ShaderStage::Type::FRAGMENT) {
+    if (source.stage == Shader::Stage::FRAGMENT) {
         inputAttributes += "layout(location = " + std::to_string(attributeCount) + ") flat in uint drawID;\n";
     }
     ret += inputAttributes;
@@ -126,7 +128,7 @@ std::string generateHeader(const ShaderStage &source, CompiledPipeline &pipeline
                 + ") out "
                 + generateElement(outputAttributePrefix + std::to_string(location), element, "");
     }
-    if (source.type == ShaderStage::Type::VERTEX) {
+    if (source.stage == Shader::Stage::VERTEX) {
         outputAttributes += "layout(location = " + std::to_string(attributeCount) + ") flat out uint drawID;\n";
     }
     ret += outputAttributes;
@@ -148,29 +150,29 @@ std::string generateHeader(const ShaderStage &source, CompiledPipeline &pipeline
     return ret;
 }
 
-std::string generateBody(const ShaderStage &source) {
+std::string generateBody(const Shader &source) {
     std::string body;
     for (const auto &func: source.functions) {
         body += compileFunction(func.name, func.arguments, func.body, func.returnType, source);
         body += "\n\n";
     }
     std::string appendix = "";
-    if (source.type == ShaderStage::Type::VERTEX) {
+    if (source.stage == Shader::Stage::VERTEX) {
         appendix = "drawID = gl_DrawID";
     }
     body += compileFunction("main", {}, source.mainFunction, {}, source, appendix);
     return body;
 }
 
-CompiledPipeline ShaderCompilerGLSL::compile(const std::vector<ShaderStage> &sources) {
+CompiledPipeline ShaderCompilerGLSL::compile(const std::vector<Shader> &sources) {
     CompiledPipeline ret;
     for (auto &shader: sources) {
-        ret.sourceCode[shader.type] = compileShader(shader, ret);
+        ret.sourceCode[shader.stage] = compileShader(shader, ret);
     }
     return ret;
 }
 
-std::string ShaderCompilerGLSL::compileShader(const ShaderStage &source, CompiledPipeline &pipeline) {
+std::string ShaderCompilerGLSL::compileShader(const Shader &source, CompiledPipeline &pipeline) {
     return "#version 460\n\n"
            + generateHeader(source, pipeline)
            + generateBody(source);

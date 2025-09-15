@@ -22,7 +22,7 @@
 
 #include <optional>
 
-#include "xng/rendergraph/shader/shaderstage.hpp"
+#include "xng/rendergraph/shader/shader.hpp"
 
 #include "xng/rendergraph/shader/nodes.hpp"
 
@@ -33,10 +33,10 @@ namespace xng {
     public:
         ShaderCompilerGLSL() = default;
 
-        CompiledPipeline compile(const std::vector<ShaderStage> &sources);
+        CompiledPipeline compile(const std::vector<Shader> &sources);
 
     private:
-        std::string compileShader(const ShaderStage &source, CompiledPipeline &pipeline);
+        std::string compileShader(const Shader &source, CompiledPipeline &pipeline);
     };
 }
 

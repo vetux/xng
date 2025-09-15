@@ -23,7 +23,7 @@
 #include <memory>
 
 #include "xng/rendergraph/shader/shadernode.hpp"
-#include "xng/rendergraph/shader/shaderstage.hpp"
+#include "xng/rendergraph/shader/shader.hpp"
 
 namespace xng::ShaderScript {
     class ShaderNodeWrapper;
@@ -51,7 +51,7 @@ namespace xng::ShaderScript {
             return buffers;
         }
 
-        [[nodiscard]] const std::vector<ShaderTextureArray> &getTextureArrays() const {
+        [[nodiscard]] const std::unordered_map<std::string, ShaderTextureArray> &getTextureArrays() const {
             return textureArrays;
         }
 
@@ -125,12 +125,12 @@ namespace xng::ShaderScript {
          * @param textureArrays
          * @param functions
          */
-        void setup(ShaderStage::Type stage,
+        void setup(Shader::Stage stage,
                    const ShaderAttributeLayout &inputLayout,
                    const ShaderAttributeLayout &outputLayout,
                    const std::unordered_map<std::string, ShaderDataType> &parameters,
                    const std::unordered_map<std::string, ShaderBuffer> &buffers,
-                   const std::vector<ShaderTextureArray> &textureArrays,
+                   const std::unordered_map<std::string, ShaderTextureArray> &textureArrays,
                    const std::vector<ShaderFunction> &functions);
 
         /**
@@ -139,7 +139,7 @@ namespace xng::ShaderScript {
 
          * @return
          */
-        ShaderStage build();
+        Shader build();
 
     private:
         struct TreeNode {
@@ -164,12 +164,12 @@ namespace xng::ShaderScript {
 
         std::vector<std::unique_ptr<ShaderNode> > createNodes(TreeNode &node);
 
-        ShaderStage::Type stage{};
+        Shader::Stage stage{};
         ShaderAttributeLayout inputLayout;
         ShaderAttributeLayout outputLayout;
         std::unordered_map<std::string, ShaderDataType> parameters;
         std::unordered_map<std::string, ShaderBuffer> buffers;
-        std::vector<ShaderTextureArray> textureArrays;
+        std::unordered_map<std::string, ShaderTextureArray> textureArrays;
 
         TreeNode *currentNode{};
         std::shared_ptr<TreeNode> rootNode;

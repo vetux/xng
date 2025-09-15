@@ -22,7 +22,7 @@
 
 #include <optional>
 
-#include "xng/rendergraph/shader/shaderstage.hpp"
+#include "xng/rendergraph/shader/shader.hpp"
 
 using namespace xng;
 
@@ -30,7 +30,7 @@ std::string compileFunction(const std::string &functionName,
                             const std::vector<ShaderFunction::Argument> &arguments,
                             const std::vector<std::unique_ptr<ShaderNode> > &body,
                             const std::optional<ShaderDataType> &returnType,
-                            const ShaderStage &source,
+                            const Shader &source,
                             const std::string &appendix = "");
 
 #endif //XENGINE_FUNCTIONCOMPILER_HPP

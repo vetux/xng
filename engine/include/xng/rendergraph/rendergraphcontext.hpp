@@ -26,7 +26,7 @@
 #include "xng/rendergraph/rendergraphresource.hpp"
 #include "xng/rendergraph/rendergraphtextureproperties.hpp"
 #include "xng/rendergraph/rendergraphattachment.hpp"
-#include "xng/rendergraph/shader/shaderstage.hpp"
+#include "xng/rendergraph/shader/shader.hpp"
 #include "xng/rendergraph/shader/shaderliteral.hpp"
 
 #include "xng/math/vector2.hpp"
@@ -168,11 +168,12 @@ namespace xng {
         /**
          * Bind the specified textures.
          *
-         * Every sub vector represents a texture array in ShaderStage.textureArrays
+         * Every sub vector represents a texture array in Shader.textureArrays
          *
          * @param textureArrays
          */
-        virtual void bindTextures(const std::vector<std::vector<RenderGraphResource> > &textureArrays) = 0;
+        virtual void bindTextures(const std::unordered_map<std::string,
+            std::vector<RenderGraphResource> > &textureArrays) = 0;
 
         virtual void bindShaderBuffers(const std::unordered_map<std::string, RenderGraphResource> &buffers) = 0;
 
@@ -235,7 +236,7 @@ namespace xng {
          * @param pipeline
          * @return
          */
-        virtual std::unordered_map<ShaderStage::Type, std::string> getShaderSource(RenderGraphResource pipeline) = 0;
+        virtual std::unordered_map<Shader::Stage, std::string> getShaderSource(RenderGraphResource pipeline) = 0;
     };
 }
 

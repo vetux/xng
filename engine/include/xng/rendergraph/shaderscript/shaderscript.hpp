@@ -362,12 +362,12 @@ namespace xng::ShaderScript {
      * @param textureArrayIndex
      * @return
      */
-    inline ShaderNodeWrapper textureSampler(const uint32_t textureArrayIndex) {
-        auto texArray = ShaderBuilder::instance().getTextureArrays().at(textureArrayIndex);
+    inline ShaderNodeWrapper textureSampler(const std::string& textureName) {
+        auto texArray = ShaderBuilder::instance().getTextureArrays().at(textureName);
         return ShaderNodeWrapper(ShaderDataType{
                                      ShaderDataType::VECTOR4, ShaderDataType::getColorComponent(texArray.texture.format)
                                  },
-                                 ShaderNodeFactory::texture(textureArrayIndex));
+                                 ShaderNodeFactory::texture(textureName));
     }
 
     /**
@@ -376,13 +376,13 @@ namespace xng::ShaderScript {
      * @param textureArrayIndex
      * @return
      */
-    inline ShaderNodeWrapper textureSampler(const uint32_t textureArrayIndex,
+    inline ShaderNodeWrapper textureSampler(const std::string& textureName,
                                             const ShaderNodeWrapper &textureIndex) {
-        auto texArray = ShaderBuilder::instance().getTextureArrays().at(textureArrayIndex);
+        auto texArray = ShaderBuilder::instance().getTextureArrays().at(textureName);
         return ShaderNodeWrapper(ShaderDataType{
                                      ShaderDataType::VECTOR4, ShaderDataType::getColorComponent(texArray.texture.format)
                                  },
-                                 ShaderNodeFactory::texture(textureArrayIndex, textureIndex.node));
+                                 ShaderNodeFactory::texture(textureName, textureIndex.node));
     }
 
     inline ShaderNodeWrapper textureSize(const ShaderNodeWrapper &texture) {

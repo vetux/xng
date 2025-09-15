@@ -21,7 +21,7 @@
 #define XENGINE_NODEBUFFERREAD_HPP
 
 #include "xng/rendergraph/shader/shadernode.hpp"
-#include "xng/rendergraph/shader/shaderstage.hpp"
+#include "xng/rendergraph/shader/shader.hpp"
 
 namespace xng {
     struct NodeBufferRead final : ShaderNode {

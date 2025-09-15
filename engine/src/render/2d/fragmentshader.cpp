@@ -26,7 +26,7 @@
 using namespace xng::ShaderScript;
 
 namespace xng {
-    ShaderStage createFragmentShader() {
+    Shader createFragmentShader() {
         const ShaderAttributeLayout inputLayout{
             {
                 ShaderDataType::vec4(),
@@ -57,16 +57,13 @@ namespace xng {
             }
         };
 
-        std::vector<ShaderTextureArray> textureArrays;
-        textureArrays.emplace_back(ShaderTexture(TEXTURE_2D, RGBA, true), 12);
-
         auto &builder = ShaderBuilder::instance();
-        builder.setup(ShaderStage::FRAGMENT,
+        builder.setup(Shader::FRAGMENT,
                       inputLayout,
                       outputLayout,
                       {},
                       {{"vars", buf}},
-                      textureArrays,
+                      {{"atlasTextures", ShaderTextureArray{ShaderTexture(TEXTURE_2D, RGBA, true), 12}}},
                       {});
 
         shaderlib::textureBicubic();
@@ -89,13 +86,13 @@ namespace xng {
             vec4 texColor;
             If(buffer("vars", "texFilter") == 1);
             {
-                texColor = textureBicubic(textureSampler(0, buffer("vars", "texAtlasLevel")),
+                texColor = textureBicubic(textureSampler("atlasTextures", buffer("vars", "texAtlasLevel")),
                                           vec3(uv.x(), uv.y(), buffer("vars", "texAtlasIndex")),
                                           buffer("vars", "atlasScale_texSize").zw());
             }
             Else();
             {
-                texColor = texture(textureSampler(0, buffer("vars", "texAtlasLevel")),
+                texColor = texture(textureSampler("atlasTextures", buffer("vars", "texAtlasLevel")),
                                    vec3(uv.x(), uv.y(), buffer("vars", "texAtlasIndex")));
             }
             EndIf();

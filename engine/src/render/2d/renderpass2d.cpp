@@ -163,7 +163,7 @@ namespace xng {
             static bool printDebug = true;
             if (printDebug) {
                 auto src = ctx.getShaderSource(trianglePipeline);
-                std::cout << src[ShaderStage::VERTEX] << std::endl << src[ShaderStage::FRAGMENT] << std::endl;
+                std::cout << src[Shader::VERTEX] << std::endl << src[Shader::FRAGMENT] << std::endl;
                 printDebug = false;
             }
             // Handle inherited resource buffers
@@ -384,7 +384,7 @@ namespace xng {
             for (int i = TEXTURE_ATLAS_8x8; i < TEXTURE_ATLAS_END; i++) {
                 textures.emplace_back(atlasTextures.at(static_cast<TextureAtlasResolution>(i)));
             }
-            ctx.bindTextures({textures});
+            ctx.bindTextures({{"atlasTextures", textures}});
 
             for (auto &batch: batches) {
                 ctx.setViewport(batch.viewportOffset, batch.viewportSize);
