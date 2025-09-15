@@ -46,6 +46,9 @@ namespace xng {
         bool isArrayTexture = false;
         size_t arrayLayers = 0; // The number of layers in this array texture
 
+        // Render textures can only be used as attachments and cannot be bound for read access by shaders.
+        bool isRenderTexture = false;
+
         Messageable &operator<<(const Message &message) override {
             message.value("size", size);
             message.value("textureType", textureType);
@@ -60,6 +63,7 @@ namespace xng {
             message.value("borderColor", borderColor);
             message.value("isArrayTexture", isArrayTexture);
             message.value("arrayLayers", arrayLayers);
+            message.value("isRenderTexture", isRenderTexture);
             return *this;
         }
 
@@ -78,6 +82,7 @@ namespace xng {
             borderColor >> message["borderColor"];
             isArrayTexture >> message["isArrayTexture"];
             arrayLayers >> message["arrayLayers"];
+            isRenderTexture >> message["isRenderTexture"];
             return message;
         }
     };
