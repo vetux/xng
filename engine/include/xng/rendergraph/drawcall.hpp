@@ -38,8 +38,9 @@ namespace xng {
               indexFormat(indexFormat) {
         }
 
-        size_t offset = 0;
         // The offset into the index or vertex buffer at which to begin reading indices or vertices in BYTES
+        size_t offset = 0;
+
         size_t count = 0; // The number of indices or vertices to draw.
         IndexFormat indexFormat = UNSIGNED_INT;
     };
