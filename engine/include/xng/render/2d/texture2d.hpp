@@ -28,21 +28,26 @@
 namespace xng {
     class Texture2D {
     public:
+        typedef size_t Handle;
+
         Texture2D() = default;
 
-        Texture2D(TextureAtlasHandle handle)
-                : handle(std::move(handle)) {}
+        Texture2D(const Handle handle, Vec2i size)
+            : handle(handle), size(std::move(size)) {
+        }
 
-        const TextureAtlasHandle &getHandle() const {
+        Handle getHandle() const {
             return handle;
         }
 
         const Vec2i &getSize() const {
-            return handle.size;
+            return size;
         }
 
     private:
-        TextureAtlasHandle handle;
+        Handle handle{};
+        Vec2i size;
     };
 }
+
 #endif //XENGINE_TEXTURE2D_HPP

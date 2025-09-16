@@ -20,13 +20,13 @@
 #ifndef XENGINE_RENDER2DPASS_HPP
 #define XENGINE_RENDER2DPASS_HPP
 
-#include "xng/rendergraph/rendergraphbuilder.hpp"
-#include "xng/render/2d/renderer2d.hpp"
+#include "xng/render/renderpass.hpp"
+#include "xng/render/2d/renderbatch2d.hpp"
 #include "xng/render/2d/meshbuffer2d.hpp"
 #include "xng/render/geometry/primitive.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT RenderPass2D {
+    class XENGINE_EXPORT RenderPass2D final : public RenderPass {
     public:
         RenderPass2D();
 
@@ -35,18 +35,20 @@ namespace xng {
          *
          * @return True if the graph must be rebuilt.
          */
-        bool shouldRebuild();
+        bool shouldRebuild() override;
 
-        void setup(RenderGraphBuilder &builder);
+        void create(RenderGraphBuilder &builder) override;
+
+        void recreate(RenderGraphBuilder &builder) override;
 
         /**
-         * Drawing operations recorded in the returned renderer are presented by this pass.
+         * Set the batches to be rendered.
          *
-         * @return
+         * Should be called before calling shouldRebuild()
+         *
+         * @param renderBatches The batches to be rendered.
          */
-        Renderer2D &getRenderer2D() {
-            return renderer;
-        }
+        void setBatches(const std::vector<RenderBatch2D> &renderBatches);
 
     private:
         struct MeshDrawData {
@@ -63,8 +65,6 @@ namespace xng {
             }
         };
 
-        Mat4f getRotationMatrix(float rotation, Vec2f center);
-
         class RotationPairHash {
         public:
             std::size_t operator()(const std::pair<float, Vec2f> &k) const {
@@ -74,6 +74,10 @@ namespace xng {
                 return ret;
             }
         };
+
+        Mat4f getRotationMatrix(float rotation, const Vec2f& center);
+
+        void runPass(RenderGraphContext &ctx);
 
         RenderGraphResource screenTexture;
 
@@ -102,7 +106,10 @@ namespace xng {
 
         MeshBuffer2D meshBuffer;
 
-        Renderer2D renderer;
+        TextureAtlas atlas;
+        std::vector<RenderBatch2D> batches;
+
+        std::unordered_map<Texture2D::Handle, TextureAtlasHandle> atlasHandles;
     };
 }
 

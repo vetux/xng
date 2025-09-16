@@ -17,33 +17,32 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/render/scene/camera.hpp"
 #include "xng/render/2d/renderer2d.hpp"
 
 #include <utility>
 
 #include "xng/math/matrixmath.hpp"
-
-#include "xng/render/geometry/vertexstream.hpp"
-
-static float distance(float val1, float val2) {
-    float abs = val1 - val2;
-    if (abs < 0)
-        return abs * -1;
-    else
-        return abs;
-}
+#include "xng/render/scene/camera.hpp"
 
 namespace xng {
-    Renderer2D::Renderer2D() {
+    Renderer2D::Renderer2D(std::shared_ptr<RenderPassScheduler> scheduler)
+        : renderPassScheduler(std::move(scheduler)),
+          renderPass(std::make_shared<RenderPass2D>()) {
+        graph = renderPassScheduler->addGraph(renderPass);
     }
 
     Renderer2D::~Renderer2D() = default;
 
     Texture2D Renderer2D::createTexture(const ImageRGBA &texture) {
-        auto ret = atlas.add(texture);
-        batch.textureAllocations[ret] = texture;
-        return {ret};
+        Texture2D::Handle handle;
+        if (unusedTextureHandles.empty()) {
+            handle = textureHandleCounter++;
+        } else {
+            handle = unusedTextureHandles.back();
+            unusedTextureHandles.pop_back();
+        }
+        batch.textureAllocations[handle] = texture;
+        return {handle, texture.getResolution()};
     }
 
     std::vector<Texture2D> Renderer2D::createTextures(const std::vector<ImageRGBA> &textures) {
@@ -56,10 +55,10 @@ namespace xng {
     }
 
     void Renderer2D::destroyTexture(const Texture2D &texture) {
-        batch.textureDeallocations.emplace_back(texture);
+        batch.textureDeallocations.emplace_back(texture.getHandle());
     }
 
-    void Renderer2D::renderBegin(bool clear,
+    void Renderer2D::renderBegin(const bool clear,
                                  const ColorRGBA &clearColor,
                                  const Vec2i &viewportOffset,
                                  const Vec2i &viewportSize,
@@ -94,6 +93,12 @@ namespace xng {
         isRendering = false;
         renderBatches.emplace_back(batch);
         batch = {};
+
+        if (renderPassScheduler) {
+            renderPass->setBatches(renderBatches);
+            renderPassScheduler->execute(graph);
+            clearBatches();
+        }
     }
 
     void Renderer2D::draw(const Rectf &srcRect,

@@ -22,9 +22,11 @@
 
 #include <vector>
 
-#include "xng/render/atlas/textureatlas.hpp"
+#include "xng/render/renderpassscheduler.hpp"
 #include "xng/render/2d/texture2d.hpp"
 #include "xng/render/2d/renderbatch2d.hpp"
+#include "xng/render/2d/renderpass2d.hpp"
+#include "xng/rendergraph/rendergraphruntime.hpp"
 
 namespace xng {
     /**
@@ -50,7 +52,17 @@ namespace xng {
      */
     class XENGINE_EXPORT Renderer2D {
     public:
-        Renderer2D();
+        /**
+         * The renderer does not present recorded batches.
+         */
+        Renderer2D() = default;
+
+        /**
+         * The recorded batches are presented via the passed scheduler.
+         *
+         * @param scheduler
+         */
+        explicit Renderer2D(std::shared_ptr<RenderPassScheduler> scheduler);
 
         ~Renderer2D();
 
@@ -195,10 +207,6 @@ namespace xng {
                   const Vec2f &center = {},
                   float rotation = 0);
 
-        TextureAtlas &getTextureAtlas() {
-            return atlas;
-        }
-
         const std::vector<RenderBatch2D> &getRenderBatches() const {
             return renderBatches;
         }
@@ -209,9 +217,16 @@ namespace xng {
 
     private:
         bool isRendering = false;
-        TextureAtlas atlas{};
         RenderBatch2D batch;
         std::vector<RenderBatch2D> renderBatches;
+
+        size_t textureHandleCounter = 0;
+        std::vector<size_t> unusedTextureHandles;
+
+        std::shared_ptr<RenderPassScheduler> renderPassScheduler = nullptr;
+        std::shared_ptr<RenderPass2D> renderPass = nullptr;
+
+        RenderGraphRuntime::GraphHandle graph{};
     };
 }
 

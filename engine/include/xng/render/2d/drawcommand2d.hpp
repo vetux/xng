@@ -23,6 +23,7 @@
 #include "xng/math/rectangle.hpp"
 
 #include "xng/render/atlas/textureatlas.hpp"
+#include "xng/render/2d/texture2d.hpp"
 
 namespace xng {
     struct DrawCommand2D {
@@ -41,7 +42,7 @@ namespace xng {
 
         bool fill = false;
 
-        TextureAtlasHandle texture{};
+        Texture2D::Handle texture{};
 
         TextureFiltering filter{};
 
@@ -54,10 +55,10 @@ namespace xng {
         DrawCommand2D() = default;
 
         DrawCommand2D(Vec2f point,
-             ColorRGBA color,
+             const ColorRGBA color,
              Vec2f position,
              Vec2f center,
-             float rotation)
+             const float rotation)
             : type(COLOR_POINT),
               srcRect(std::move(position), {}),
               dstRect(std::move(point), {}),
@@ -68,10 +69,10 @@ namespace xng {
 
         DrawCommand2D(Vec2f start,
              Vec2f end,
-             ColorRGBA color,
+             const ColorRGBA color,
              Vec2f position,
              Vec2f center,
-             float rotation)
+             const float rotation)
             : type(COLOR_LINE),
               srcRect(std::move(position), {}),
               dstRect(std::move(start), std::move(end)),
@@ -81,10 +82,10 @@ namespace xng {
         }
 
         DrawCommand2D(Rectf dstRect,
-             ColorRGBA color,
-             bool fill,
+             const ColorRGBA color,
+             const bool fill,
              Vec2f center,
-             float rotation)
+             const float rotation)
             : type(COLOR_PLANE),
               dstRect(std::move(dstRect)),
               center(std::move(center)),
@@ -95,12 +96,12 @@ namespace xng {
 
         DrawCommand2D(Rectf srcRect,
              Rectf dstRect,
-             TextureAtlasHandle texture,
+             const Texture2D::Handle texture,
              Vec2f center,
-             float rotation,
-             TextureFiltering filter,
-             float mix,
-             float alphaMix,
+             const float rotation,
+             const TextureFiltering filter,
+             const float mix,
+             const float alphaMix,
              ColorRGBA color)
             : type(TEXTURE),
               srcRect(std::move(srcRect)),
@@ -108,7 +109,7 @@ namespace xng {
               center(std::move(center)),
               rotation(rotation),
               filter(filter),
-              texture(std::move(texture)),
+              texture(texture),
               mix(mix),
               alphaMix(alphaMix),
               color(color) {
@@ -116,18 +117,18 @@ namespace xng {
 
         DrawCommand2D(Rectf srcRect,
              Rectf dstRect,
-             TextureAtlasHandle texture,
+             const Texture2D::Handle texture,
              Vec2f center,
-             float rotation,
-             TextureFiltering filter,
-             ColorRGBA color)
+             const float rotation,
+             const TextureFiltering filter,
+             const ColorRGBA color)
             : type(TEXTURE),
               srcRect(std::move(srcRect)),
               dstRect(std::move(dstRect)),
               center(std::move(center)),
               rotation(rotation),
               filter(filter),
-              texture(std::move(texture)),
+              texture(texture),
               color(color),
               colorFactor(true) {
         }

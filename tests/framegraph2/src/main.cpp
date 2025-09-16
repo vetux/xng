@@ -53,17 +53,10 @@ int main(int argc, char *argv[]) {
         runtime.destroy(gh);
     }
 
-    RenderGraphBuilder builder = {};
-
-    RenderPass2D pass2D;
-    pass2D.setup(builder);
-
-    auto graph = builder.build();
-    auto gh = runtime.compile(graph);
-
-    auto &ren2D = pass2D.getRenderer2D();
-
     const auto& smileyImg = smiley.get();
+
+    auto passScheduler = std::make_shared<RenderPassScheduler>(runtime);
+    auto ren2D = Renderer2D(passScheduler);
 
     auto tex = ren2D.createTexture(smileyImg);
 
@@ -84,15 +77,6 @@ int main(int argc, char *argv[]) {
                    0,
                    LINEAR);
         ren2D.renderPresent();
-
-        if (pass2D.shouldRebuild()) {
-            builder = {};
-            pass2D.setup(builder);
-            graph = builder.build();
-            runtime.recompile(gh, graph);
-        }
-
-        runtime.execute(gh);
 
         window->swapBuffers();
     }

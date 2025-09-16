@@ -43,8 +43,8 @@ namespace xng {
 
         std::vector<DrawCommand2D> drawCommands;
 
-        std::unordered_map<TextureAtlasHandle, ImageRGBA> textureAllocations;
-        std::vector<Texture2D> textureDeallocations;
+        std::unordered_map<Texture2D::Handle, ImageRGBA> textureAllocations;
+        std::vector<Texture2D::Handle> textureDeallocations;
 
         RenderBatch2D() = default;
 
@@ -56,8 +56,8 @@ namespace xng {
                       bool m_clear,
                       const ColorRGBA &m_clear_color,
                       const std::vector<DrawCommand2D> &draw_commands,
-                      const std::unordered_map<TextureAtlasHandle, ImageRGBA> &textureAllocations,
-                      const std::vector<Texture2D> &textureDeallocations)
+                      const std::unordered_map<Texture2D::Handle, ImageRGBA> &textureAllocations,
+                      const std::vector<Texture2D::Handle> &textureDeallocations)
             : camera(camera),
               cameraTransform(camera_transform),
               viewProjectionMatrix(view_projection_matrix),
