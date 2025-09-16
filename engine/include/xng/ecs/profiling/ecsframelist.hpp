@@ -21,7 +21,7 @@
 #define XENGINE_ECSFRAMELIST_HPP
 
 #include "xng/io/messageable.hpp"
-#include "ecsframe.hpp"
+#include "xng/ecs/profiling/ecsframe.hpp"
 
 namespace xng {
     struct ECSFrameList : public Messageable {

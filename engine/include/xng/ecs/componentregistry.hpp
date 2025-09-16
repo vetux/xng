@@ -27,7 +27,7 @@
 
 #include "xng/io/message.hpp"
 
-#include "component.hpp"
+#include "xng/ecs/component.hpp"
 
 namespace xng {
     class EntityScene;

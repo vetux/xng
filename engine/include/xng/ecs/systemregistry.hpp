@@ -26,7 +26,7 @@
 #include <map>
 #include <memory>
 
-#include "system.hpp"
+#include "xng/ecs/system.hpp"
 
 namespace xng {
 #define REGISTER_SYSTEM(type) \

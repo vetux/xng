@@ -20,8 +20,8 @@
 #ifndef XENGINE_ENTITY_HPP
 #define XENGINE_ENTITY_HPP
 
-#include "entityhandle.hpp"
-#include "entityscene.hpp"
+#include "xng/ecs/entityhandle.hpp"
+#include "xng/ecs/entityscene.hpp"
 
 namespace xng {
     /**

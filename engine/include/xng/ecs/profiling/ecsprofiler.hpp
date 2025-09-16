@@ -23,7 +23,7 @@
 #include <chrono>
 #include <mutex>
 
-#include "ecsframelist.hpp"
+#include "xng/ecs/profiling/ecsframelist.hpp"
 
 namespace xng {
     class ECSProfiler {

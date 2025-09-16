@@ -21,7 +21,7 @@
 #define XENGINE_SYSTEM_HPP
 
 #include "xng/util/time.hpp"
-#include "entityscene.hpp"
+#include "xng/ecs/entityscene.hpp"
 
 #include "xng/event/eventbus.hpp"
 #include "xng/util/time.hpp"

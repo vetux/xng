@@ -22,7 +22,7 @@
 
 #include "xng/resource/resourcehandle.hpp"
 #include "xng/render/scene/image.hpp"
-#include "../../rendergraph/rendergraphtexture.hpp"
+#include "xng/rendergraph/rendergraphtexture.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT Texture : public Resource, public Messageable {

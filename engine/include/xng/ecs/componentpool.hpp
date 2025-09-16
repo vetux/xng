@@ -24,8 +24,8 @@
 #include <stdexcept>
 #include <set>
 
-#include "entityhandle.hpp"
-#include "component.hpp"
+#include "xng/ecs/entityhandle.hpp"
+#include "xng/ecs/component.hpp"
 
 namespace xng {
     class ComponentPoolBase {

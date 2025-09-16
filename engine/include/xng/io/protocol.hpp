@@ -22,7 +22,7 @@
 
 #include <ostream>
 
-#include "message.hpp"
+#include "xng/io/message.hpp"
 
 namespace xng {
     class XENGINE_EXPORT Protocol {

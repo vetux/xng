@@ -20,7 +20,7 @@
 #ifndef XENGINE_PAKBUILDER_HPP
 #define XENGINE_PAKBUILDER_HPP
 
-#include "pak.hpp"
+#include "xng/io/pak.hpp"
 
 namespace xng {
     class XENGINE_EXPORT PakBuilder {

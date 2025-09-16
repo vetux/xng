@@ -20,7 +20,7 @@
 #ifndef XENGINE_ECSFRAME_HPP
 #define XENGINE_ECSFRAME_HPP
 
-#include "ecssample.hpp"
+#include "xng/ecs/profiling/ecssample.hpp"
 #include "xng/io/messageable.hpp"
 
 namespace xng {
