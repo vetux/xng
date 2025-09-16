@@ -219,7 +219,7 @@ namespace xng {
 
                             transform.position += transform.size / 2;
 
-                            auto imgSize = text.getImage().getResolution().convert<float>();
+                          /*  auto imgSize = text.getImage().getResolution().convert<float>();
 
                             Rectf srcRect({}, imgSize);
 
@@ -243,7 +243,7 @@ namespace xng {
                                        transform.center,
                                        transform.rotation,
                                        comp.filter,
-                                       comp.textColor);
+                                       comp.textColor);*/
                             if (drawDebugGeometry) {
                                 ren2d.draw(Rectf(debugTransform.position, debugTransform.size),
                                            ColorRGBA::yellow(),
@@ -363,19 +363,19 @@ namespace xng {
 
                 auto rIt = textRenderers.find(pointSize);
                 if (rIt == textRenderers.end()) {
-                    textRenderers.insert(std::move(
+              /*      textRenderers.insert(std::move(
                             std::make_pair(pointSize,
-                                           std::move(TextRenderer(*fontRenderers[comp.font.getUri()], ren2d, pointSize)))));
+                                           std::move(TextRenderer(*fontRenderers[comp.font.getUri()], ren2d, pointSize)))));*/
                 }
 
-                auto text = textRenderers.at(pointSize).render(comp.text, TextLayout{
+             /*   auto text = textRenderers.at(pointSize).render(comp.text, TextLayout{
                         comp.lineHeight == 0 ? pointSize.y : static_cast<int>(static_cast<float>(comp.lineHeight) *
                                                                               sizeScale.y),
                         static_cast<int>(static_cast<float>(comp.lineWidth)),
                         static_cast<int>(static_cast<float>(comp.lineSpacing)),
                         comp.alignment});
                 renderedTexts[ent] = text;
-                textTextures[ent] = ren2d.createTexture(text.getImage());
+                textTextures[ent] = ren2d.createTexture(text.getImage());*/
             }
         }
     }

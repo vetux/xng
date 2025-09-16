@@ -26,10 +26,9 @@
 
 #include "xng/font/fontengine.hpp"
 
-#include "xng/gui/textrenderer.hpp"
-#include "xng/gui/canvasscalingmode.hpp"
-
+#include "xng/render/2d/text/textrenderer.hpp"
 #include "xng/render/2d/renderer2d.hpp"
+
 #include "xng/util/time.hpp"
 
 namespace xng {

@@ -24,37 +24,31 @@
 #include "textlayout.hpp"
 
 #include "xng/render/2d/renderer2d.hpp"
+#include "xng/rendergraph/rendergraphruntime.hpp"
 
 namespace xng {
     /**
-     * Known Issues: Because the text renderer returns the rendered text as an Image there can be problems
-     * handling the text in real time as the text image size increases because there are currently several cpu operations
-     * required to move the text image between the cpu and gpu eg. swapping the columns on download or blitting
-     * the text image into an aligned texture atlas image.
+     * Renders text to Texture2D textures.
      */
     class XENGINE_EXPORT TextRenderer {
     public:
-        TextRenderer() = default;
-
-        TextRenderer(FontRenderer &font, Renderer2D &renderer2D, const Vec2i &pixelSize);
+        TextRenderer(FontRenderer &font,
+                     Renderer2D &ren2d,
+                     const Vec2i &pixelSize);
 
         ~TextRenderer();
 
-        TextRenderer(const TextRenderer &other);
-
-        TextRenderer &operator=(const TextRenderer &other);
-
-        Vec2i getSize(const std::string &text, const TextLayout &layout);
+        Vec2i getSize(const std::string &text, const TextLayout &layout) const;
 
         Text render(const std::string &text, const TextLayout &layout);
 
     private:
+        FontRenderer &font;
+        Renderer2D &ren2d;
+
         Vec2i pixelSize{0, 50};
         std::map<char, Character> ascii;
         std::map<char, Texture2D> textures;
-
-        FontRenderer *font = nullptr;
-        Renderer2D *ren2d = nullptr;
     };
 }
 #endif //XENGINE_TEXTRENDERER_HPP

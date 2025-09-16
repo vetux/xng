@@ -25,12 +25,12 @@
 namespace xng  {
     struct TextLayout {
         /**
-         * The distance between the top of the texture and the origin of the first line or the distance between the origins of each consequtive line.
+         * The distance between the top of the texture and the origin of the first line or the distance between the origins of each consecutive line.
          */
         int lineHeight = 50;
 
         /**
-         * If larger than zero the value in pixels at which a newline is rendered if the widths of characters in the current line exceed it.
+         * If larger than zero, the value in pixels at which a newline is rendered if the widths of characters in the current line exceed it.
          * The character is then drawn on a new line
          */
         int lineWidth = 0;
@@ -41,7 +41,7 @@ namespace xng  {
         int lineSpacing = 10;
 
         /**
-         * The horizontal alignment of lines within a rendered text eg.
+         * The horizontal alignment of lines within a rendered text e.g.,
          *
          * ALIGN_LEFT:
          * TestTestTest123
@@ -61,4 +61,5 @@ namespace xng  {
         TextAlignment alignment = TEXT_ALIGN_LEFT;
     };
 }
+
 #endif //XENGINE_TEXTPROPERTIES_HPP

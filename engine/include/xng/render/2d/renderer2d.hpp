@@ -22,6 +22,7 @@
 
 #include <vector>
 
+#include "text/text.hpp"
 #include "xng/render/renderpassscheduler.hpp"
 #include "xng/render/2d/texture2d.hpp"
 #include "xng/render/2d/renderbatch2d.hpp"
@@ -73,6 +74,8 @@ namespace xng {
         void destroyTexture(const Texture2D &texture);
 
         /**
+         * Begin rendering to the screen.
+         *
          * Must be called before calling draw methods.
          *
          * @param clear
@@ -89,8 +92,26 @@ namespace xng {
                          const Vec2f &cameraPosition,
                          const Rectf &projection);
 
+        /**
+         * Begin rendering to a texture
+         *
+         * @param target
+         * @param clear
+         * @param clearColor
+         * @param viewportOffset
+         * @param viewportSize
+         * @param cameraPosition
+         * @param projection
+         */
+        void renderBegin(const Texture2D &target,
+                         bool clear,
+                         const ColorRGBA &clearColor,
+                         const Vec2i &viewportOffset,
+                         const Vec2i &viewportSize,
+                         const Vec2f &cameraPosition,
+                         const Rectf &projection);
 
-        void renderBegin(bool clear,
+        void renderBegin(const bool clear,
                          const ColorRGBA &clearColor,
                          const Vec2i &viewportOffset,
                          const Vec2i &viewportSize,
@@ -137,6 +158,20 @@ namespace xng {
                   TextureFiltering filter,
                   ColorRGBA colorFactor = ColorRGBA::white());
 
+        void draw(const Vec2f &position,
+                  const Texture2D &texture,
+                  const TextureFiltering filter = NEAREST,
+                  const Vec2f &center = {},
+                  const float rotation = {}) {
+            const auto size = texture.getSize().convert<float>();
+            draw(Rectf({}, size),
+                 Rectf(position, size),
+                 texture,
+                 center,
+                 rotation,
+                 filter);
+        }
+
         /**
          * Draw texture with a color mixed in.
          *
@@ -159,6 +194,23 @@ namespace xng {
                   float mixRGB,
                   float mixAlpha,
                   const ColorRGBA &mixColor);
+
+        void draw(const Vec2f &position,
+                  const Text &text,
+                  const ColorRGBA &color,
+                  const Vec2f &center = {},
+                  float rotation = 0) {
+            auto tex = text.getTexture();
+            draw(Rectf({}, tex.getSize().convert<float>()),
+                 Rectf(position, tex.getSize().convert<float>()),
+                 tex,
+                 center,
+                 rotation,
+                 NEAREST,
+                 1,
+                 0,
+                 color);
+        }
 
         /**
          * Draw rectangle

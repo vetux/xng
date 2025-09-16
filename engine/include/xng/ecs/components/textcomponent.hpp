@@ -21,9 +21,9 @@
 #define XENGINE_TEXTCOMPONENT_HPP
 
 #include "xng/io/messageable.hpp"
-#include "xng/gui/textalignment.hpp"
 #include "xng/ecs/component.hpp"
 #include "xng/font/font.hpp"
+#include "xng/render/2d/text/textalignment.hpp"
 
 namespace xng {
     /**

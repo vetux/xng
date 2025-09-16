@@ -81,11 +81,12 @@ namespace xng {
             uploadTexture(texture, buffer, bufferSize, format, 0, {}, 0);
         }
 
-        void uploadTexture(RenderGraphResource texture,
+        void uploadTexture(const RenderGraphResource texture,
                            const uint8_t *buffer,
                            const size_t bufferSize,
                            const ColorFormat format,
-                           size_t index) {
+                           const size_t index) {
+            uploadTexture(texture, buffer, bufferSize, format, index, {}, 0);
         }
 
         /**

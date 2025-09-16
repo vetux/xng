@@ -46,6 +46,9 @@ namespace xng {
         std::unordered_map<Texture2D::Handle, ImageRGBA> textureAllocations;
         std::vector<Texture2D::Handle> textureDeallocations;
 
+        bool renderToScreen = true;
+        Texture2D::Handle renderTarget{};
+
         RenderBatch2D() = default;
 
         RenderBatch2D(const Camera &camera,
@@ -57,7 +60,9 @@ namespace xng {
                       const ColorRGBA &m_clear_color,
                       const std::vector<DrawCommand2D> &draw_commands,
                       const std::unordered_map<Texture2D::Handle, ImageRGBA> &textureAllocations,
-                      const std::vector<Texture2D::Handle> &textureDeallocations)
+                      const std::vector<Texture2D::Handle> &textureDeallocations,
+                      const bool renderToScreen,
+                      const Texture2D::Handle renderTarget)
             : camera(camera),
               cameraTransform(camera_transform),
               viewProjectionMatrix(view_projection_matrix),
@@ -67,7 +72,9 @@ namespace xng {
               mClearColor(m_clear_color),
               drawCommands(draw_commands),
               textureAllocations(textureAllocations),
-              textureDeallocations(textureDeallocations) {
+              textureDeallocations(textureDeallocations),
+              renderToScreen(renderToScreen),
+              renderTarget(renderTarget) {
         }
     };
 }

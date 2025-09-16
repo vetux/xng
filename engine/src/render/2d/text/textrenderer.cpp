@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/gui/textrenderer.hpp"
+#include "xng/render/2d/text/textrenderer.hpp"
 
 #include <utility>
 
@@ -26,59 +26,40 @@ namespace xng {
         std::reference_wrapper<Character> character;
         Texture2D texture; // The character texture
 
-        Vec2f position; // The position of the origin of the character x = Sum of all horizontal advance values before it, y = Sum of all line heights and spacings above it
+        // The position of the origin of the character x = Sum of all horizontal advance values before it, y = Sum of all line heights and spacings above it
+        Vec2f position;
 
         RenderChar(Character &character, Texture2D texture)
-                : character(character), texture(std::move(texture)) {}
+            : character(character), texture(std::move(texture)) {
+        }
 
         Vec2f getPosition(const Vec2f &origin) const {
-            return {position.x + (origin.x + static_cast<float>(character.get().bearing.x)),
-                    (position.y + (origin.y - static_cast<float>(character.get().bearing.y)))};
+            return {
+                position.x + (origin.x + static_cast<float>(character.get().bearing.x)),
+                (position.y + (origin.y - static_cast<float>(character.get().bearing.y)))
+            };
         }
     };
 
     TextRenderer::TextRenderer(FontRenderer &font,
-                               Renderer2D &ren2D,
+                               Renderer2D &ren2d,
                                const Vec2i &pixelSize)
-            : font(&font), ren2d(&ren2D), pixelSize(pixelSize) {
+        : font(font), ren2d(ren2d), pixelSize(pixelSize) {
         font.setPixelSize(pixelSize);
         ascii = font.renderAscii();
         for (auto &c: ascii) {
-            textures[c.first] = ren2d->createTexture(c.second.image);
+            textures[c.first] = ren2d.createTexture(c.second.image);
         }
     }
 
     TextRenderer::~TextRenderer() {
+        for (auto &tex: textures) {
+            ren2d.destroyTexture(tex.second);
+        }
         textures.clear();
     }
 
-    TextRenderer::TextRenderer(const TextRenderer &other) {
-        pixelSize = other.pixelSize;
-        font = other.font;
-        ren2d = other.ren2d;
-        font->setPixelSize(pixelSize);
-        ascii = font->renderAscii();
-        for (auto &c: ascii) {
-            textures[c.first] = ren2d->createTexture(c.second.image);
-        }
-    }
-
-    TextRenderer &TextRenderer::operator=(const TextRenderer &other) {
-        if (this == &other) {
-            return *this;
-        }
-        pixelSize = other.pixelSize;
-        font = other.font;
-        ren2d = other.ren2d;
-        font->setPixelSize(pixelSize);
-        ascii = font->renderAscii();
-        for (auto &c: ascii) {
-            textures[c.first] = ren2d->createTexture(c.second.image);
-        }
-        return *this;
-    }
-
-    Vec2i TextRenderer::getSize(const std::string &str, const TextLayout &layout) {
+    Vec2i TextRenderer::getSize(const std::string &str, const TextLayout &layout) const {
         Vec2i size(0); //The total size of the text
 
         Vec2i lineSize(0); // The size of the line and column of the current character
@@ -95,14 +76,14 @@ namespace xng {
             lineSize.x += character.advance;
 
             lineSize.y = ((line + 1) * layout.lineSpacing)
-                    + ((line+ 1) * layout.lineHeight);
+                         + ((line + 1) * layout.lineHeight);
 
-            //Assign current horizontal size of the line if it is larger than the current size
+            //Assign the current horizontal size of the line if it is larger than the current size
             if (lineSize.x > size.x) {
                 size.x = lineSize.x;
             }
 
-            // Assign current vertical size of the column if it is larger than the current size
+            // Assign the current vertical size of the column if it is larger than the current size
             if (lineSize.y > size.y) {
                 size.y = lineSize.y;
             }
@@ -110,7 +91,6 @@ namespace xng {
 
         return size;
     }
-
 
     int getWidth(const std::vector<RenderChar> &line) {
         auto ret = 0;
@@ -131,7 +111,7 @@ namespace xng {
         float posx = 0;
 
         int largestWidth = 0;
-        std::vector<std::vector<RenderChar>> lines = std::vector<std::vector<RenderChar>>();
+        std::vector<std::vector<RenderChar> > lines = std::vector<std::vector<RenderChar> >();
         lines.emplace_back();
 
         for (auto &c: text) {
@@ -195,37 +175,35 @@ namespace xng {
             }
         }
 
-    /*    auto origin = Vec2f(0, static_cast<float>(layout.lineHeight));
+        auto origin = Vec2f(0, static_cast<float>(layout.lineHeight));
 
-        auto target = ren2d->getDevice().createRenderTarget(RenderTargetDesc(size.convert<int>()));
+        auto target = ren2d.createTexture(ImageRGBA(size));
 
-        TextureBufferDesc desc;
-        desc.size = size.convert<int>();
+        auto sizef = size.convert<float>();
+        ren2d.renderBegin(target,
+                          true,
+                          ColorRGBA::white(1, 0),
+                          {},
+                          size,
+                          {},
+                          Rectf({0, sizef.y}, {sizef.x, 0}));
 
-        auto tex = ren2d->getDevice().createTextureBuffer(desc);
-
-        target->setAttachments({RenderTargetAttachment::texture(*tex)});
-
-        ren2d->renderBegin(*target);
         for (auto &c: renderText) {
             auto texSize = c.texture.getSize().convert<float>();
             auto pos = c.getPosition(origin);
-            ren2d->draw(Rectf({}, texSize),
-                        Rectf(pos, texSize),
-                        c.texture,
-                        {},
-                        0,
-                        NEAREST,
-                        0,
-                        0,
-                        ColorRGBA());
+            ren2d.draw(Rectf({}, texSize),
+                       Rectf(pos, texSize),
+                       c.texture,
+                       {},
+                       0,
+                       NEAREST,
+                       1,
+                       0,
+                       ColorRGBA::black());
         }
-        ren2d->renderPresent();
 
-        target->clearAttachments();
+        ren2d.renderPresent();
 
-        return {text, origin, layout, std::move(tex->download())};*/
-        //TODO: Reimplement text renderer
-        throw std::runtime_error("Text renderer not implemented");
+        return {text, origin, layout, target, ren2d};
     }
 }

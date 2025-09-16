@@ -48,7 +48,7 @@ namespace xng {
      * To ensure correct blending consequent draw calls of the same primitive are drawn in the same batch
      * together but each change in primitive causes a new draw batch to be created.
      */
-    struct DrawBatch {
+    struct DrawPass {
         bool clear{};
         ColorRGBA clearColor{};
         std::vector<DrawCall> drawCalls;
@@ -57,6 +57,7 @@ namespace xng {
         std::vector<ShaderBufferFormat> uniformBuffers; // The uniform buffer data for this batch
         Vec2i viewportOffset;
         Vec2i viewportSize;
+        RenderGraphAttachment renderTarget;
     };
 
     RenderPass2D::RenderPass2D() {
@@ -219,11 +220,12 @@ namespace xng {
             }
             for (auto &handle: batch.textureDeallocations) {
                 atlas.remove(atlasHandles.at(handle));
+                atlasHandles.erase(handle);
             }
         }
     }
 
-    Mat4f RenderPass2D::getRotationMatrix(float rotation, const Vec2f& center) {
+    Mat4f RenderPass2D::getRotationMatrix(float rotation, const Vec2f &center) {
         const auto pair = std::make_pair(rotation, center);
         usedRotationMatrices.insert(pair);
         auto it = rotationMatrices.find(pair);
@@ -276,12 +278,9 @@ namespace xng {
         for (auto i = 0; i < batches.size(); i++) {
             auto &batch = batches.at(i);
 
-            // Handle texture allocation / Deallocation
+            // Handle texture allocation
             for (auto &alloc: batch.textureAllocations) {
                 TextureAtlas::upload(ctx, atlasHandles.at(alloc.first), atlasTextures, alloc.second);
-            }
-            for (auto &dalloc: batch.textureDeallocations) {
-                atlas.remove(atlasHandles.at(dalloc));
             }
 
             // Create draw batches to handle interleaved primitives
@@ -415,7 +414,7 @@ namespace xng {
                         buffer.alphaMixFactor = pass.alphaMix;
                         buffer.colorFactor = pass.colorFactor;
                         buffer.texAtlasLevel = atlasTex.level;
-                        buffer.texAtlasIndex = (int) atlasTex.index;
+                        buffer.texAtlasIndex = static_cast<int>(atlasTex.index);
                         buffer.texFilter = pass.filter == LINEAR ? 1 : 0;
                         auto uvOffset = pass.srcRect.position / atlasTex.size.convert<float>();
                         buffer.uvOffset_uvScale[0] = uvOffset.x;
@@ -440,50 +439,60 @@ namespace xng {
             }
         }
 
-        // Hacky way to properly clear between primitive draw batches
+        // Hacky way to properly clear between primitive draw passes
         size_t renderBatchIndex = 0;
         bool gotRenderBatchIndex = false;
 
-        std::vector<DrawBatch> drawBatches;
-        DrawBatch currentBatch;
+        std::vector<DrawPass> drawPasses;
+        DrawPass currentPass;
         for (auto y = 0; y < drawCalls.size(); y++) {
             auto prim = primitives.at(y);
-            if (prim != currentBatch.primitive) {
-                if (!currentBatch.drawCalls.empty())
-                    drawBatches.emplace_back(currentBatch);
-                currentBatch = {};
-                currentBatch.primitive = prim;
+            if (prim != currentPass.primitive) {
+                if (!currentPass.drawCalls.empty())
+                    drawPasses.emplace_back(currentPass);
+                currentPass = {};
+                currentPass.primitive = prim;
             }
-            currentBatch.drawCalls.emplace_back(drawCalls.at(y));
-            currentBatch.baseVertices.emplace_back(baseVertices.at(y));
-            currentBatch.uniformBuffers.emplace_back(passData.at(y));
+            currentPass.drawCalls.emplace_back(drawCalls.at(y));
+            currentPass.baseVertices.emplace_back(baseVertices.at(y));
+            currentPass.uniformBuffers.emplace_back(passData.at(y));
+
+            auto batch = batches.at(batchIndices.at(y));
             if (!gotRenderBatchIndex
                 || batchIndices.at(y) > renderBatchIndex) {
-                currentBatch.clear = batches.at(batchIndices.at(y)).mClear;
-                currentBatch.clearColor = batches.at(batchIndices.at(y)).mClearColor;
+                currentPass.clear = batch.mClear;
+                currentPass.clearColor = batch.mClearColor;
                 renderBatchIndex = batchIndices.at(y);
                 gotRenderBatchIndex = true;
             }
-            currentBatch.viewportOffset = batches.at(batchIndices.at(y)).mViewportOffset;
-            currentBatch.viewportSize = batches.at(batchIndices.at(y)).mViewportSize;
+            currentPass.viewportOffset = batch.mViewportOffset;
+            currentPass.viewportSize = batch.mViewportSize;
+
+            if (batch.renderToScreen) {
+                currentPass.renderTarget = RenderGraphAttachment(screenTexture);
+            } else {
+                auto atlasHandle = atlasHandles.at(batch.renderTarget);
+                currentPass.renderTarget = RenderGraphAttachment(atlasTextures.at(atlasHandle.level),
+                                                                  atlasHandle.index);
+            }
         }
-        if (!currentBatch.drawCalls.empty())
-            drawBatches.emplace_back(currentBatch);
+        if (!currentPass.drawCalls.empty())
+            drawPasses.emplace_back(currentPass);
 
         // Render the draw batches
-        ctx.beginRenderPass({RenderGraphAttachment(screenTexture)}, {});
-
         std::vector<RenderGraphResource> textures;
         for (int i = TEXTURE_ATLAS_8x8; i < TEXTURE_ATLAS_END; i++) {
             textures.emplace_back(atlasTextures.at(static_cast<TextureAtlasResolution>(i)));
         }
 
-        for (auto &batch: drawBatches) {
-            ctx.setViewport(batch.viewportOffset, batch.viewportSize);
-            if (batch.clear) {
-                ctx.clearColorAttachment(0, batch.clearColor);
+        for (auto &pass: drawPasses) {
+            ctx.beginRenderPass({pass.renderTarget}, {});
+
+            ctx.setViewport(pass.viewportOffset, pass.viewportSize);
+            if (pass.clear) {
+                ctx.clearColorAttachment(0, pass.clearColor);
             }
-            switch (batch.primitive) {
+            switch (pass.primitive) {
                 case POINTS:
                     ctx.bindPipeline(pointPipeline);
                     break;
@@ -502,17 +511,17 @@ namespace xng {
             ctx.bindShaderBuffers({{"vars", shaderBuffer}});
             ctx.bindTextures({{"atlasTextures", textures}});
 
-            for (auto y = 0; y < batch.drawCalls.size(); y++) {
-                auto buf = batch.uniformBuffers.at(y);
+            for (auto y = 0; y < pass.drawCalls.size(); y++) {
+                auto buf = pass.uniformBuffers.at(y);
                 ctx.uploadBuffer(shaderBuffer,
                                  reinterpret_cast<const uint8_t *>(&buf),
                                  sizeof(ShaderBufferFormat),
                                  0);
-                ctx.drawIndexed(batch.drawCalls.at(y), batch.baseVertices.at(y));
+                ctx.drawIndexed(pass.drawCalls.at(y), pass.baseVertices.at(y));
             }
-        }
 
-        ctx.endRenderPass();
+            ctx.endRenderPass();
+        }
 
         batches.clear();
     }

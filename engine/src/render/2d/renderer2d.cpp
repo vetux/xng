@@ -31,7 +31,11 @@ namespace xng {
         graph = renderPassScheduler->addGraph(renderPass);
     }
 
-    Renderer2D::~Renderer2D() = default;
+    Renderer2D::~Renderer2D() {
+        if (renderPassScheduler) {
+            renderPassScheduler->destroy(graph);
+        }
+    }
 
     Texture2D Renderer2D::createTexture(const ImageRGBA &texture) {
         Texture2D::Handle handle;
@@ -56,6 +60,39 @@ namespace xng {
 
     void Renderer2D::destroyTexture(const Texture2D &texture) {
         batch.textureDeallocations.emplace_back(texture.getHandle());
+        unusedTextureHandles.emplace_back(texture.getHandle());
+    }
+
+    void Renderer2D::renderBegin(const Texture2D &target,
+                                 const bool clear,
+                                 const ColorRGBA &clearColor,
+                                 const Vec2i &viewportOffset,
+                                 const Vec2i &viewportSize,
+                                 const Vec2f &cameraPosition,
+                                 const Rectf &projection) {
+        if (isRendering) {
+            throw std::runtime_error("Already Rendering (Nested Renderer2D::renderBegin calls?)");
+        }
+
+        isRendering = true;
+
+        batch.mViewportOffset = viewportOffset;
+        batch.mViewportSize = viewportSize;
+        batch.mClear = clear;
+        batch.mClearColor = clearColor;
+
+        batch.camera.type = ORTHOGRAPHIC;
+        batch.camera.left = projection.position.x;
+        batch.camera.right = projection.dimensions.x;
+        batch.camera.top = projection.position.y;
+        batch.camera.bottom = projection.dimensions.y;
+
+        batch.cameraTransform.setPosition({cameraPosition.x, cameraPosition.y, 1});
+
+        batch.viewProjectionMatrix = batch.camera.projection() * Camera::view(batch.cameraTransform);
+
+        batch.renderToScreen = false;
+        batch.renderTarget = target.getHandle();
     }
 
     void Renderer2D::renderBegin(const bool clear,

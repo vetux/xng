@@ -41,7 +41,7 @@ namespace xng {
         MipMapFiltering mipMapFilter = NEAREST_MIPMAP_LINEAR;
         bool fixedSampleLocations = false;
 
-        ColorRGBA borderColor = ColorRGBA(0);
+        ColorRGBA borderColor = ColorRGBA::black(1, 0);
 
         bool isArrayTexture = false;
         size_t arrayLayers = 0; // The number of layers in this array texture

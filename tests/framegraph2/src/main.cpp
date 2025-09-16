@@ -17,21 +17,25 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#include "xng/xng.hpp"
+
 #include "xng/adapters/glfw/glfw.hpp"
 #include "xng/adapters/opengl/opengl.hpp"
-
-#include "xng/xng.hpp"
+#include "xng/adapters/freetype/freetype.hpp"
 
 #include "shadertestpass.hpp"
 
 int main(int argc, char *argv[]) {
     std::vector<std::unique_ptr<ResourceImporter> > importers;
+    importers.emplace_back(std::make_unique<FontImporter>());
     importers.emplace_back(std::make_unique<StbiImporter>());
     ResourceRegistry::getDefaultRegistry().setImporters(std::move(importers));
 
     ResourceRegistry::getDefaultRegistry().addArchive("file", std::make_shared<DirectoryArchive>("assets/"));
 
+    auto tux = ResourceHandle<ImageRGBA>(Uri("file://images/tux.png"));
     auto smiley = ResourceHandle<ImageRGBA>(Uri("file://images/awesomeface.png"));
+    auto font = ResourceHandle<Font>(Uri("file://fonts/Sono/static/Sono/Sono-Bold.ttf"));
 
     auto glfw = glfw::GLFW();
     auto runtime = opengl::OpenGL();
@@ -53,35 +57,43 @@ int main(int argc, char *argv[]) {
         runtime.destroy(gh);
     }
 
-    const auto& smileyImg = smiley.get();
+    const auto &tuxImg = tux.get();
+    const auto &smileyImg = smiley.get();
 
     auto passScheduler = std::make_shared<RenderPassScheduler>(runtime);
     auto ren2D = Renderer2D(passScheduler);
 
-    auto tex = ren2D.createTexture(smileyImg);
+    auto tuxTexture = ren2D.createTexture(tuxImg);
+    auto smileyTexture = ren2D.createTexture(smileyImg);
+
+    auto freeType = std::make_shared<freetype::FreeType>();
+    auto fontRenderer = freeType->createFontRenderer(font.get());
+    auto textRenderer = TextRenderer(*fontRenderer, ren2D, {0, 50});
+
+    auto text = textRenderer.render("Hello\nWorld!", {50, 0, 0, TEXT_ALIGN_LEFT});
 
     while (!window->shouldClose()) {
         window->update();
 
         auto fbSize = window->getFramebufferSize();
+        auto fbSizeF = fbSize.convert<float>();
 
         ren2D.renderBegin(fbSize, ColorRGBA::white());
-        ren2D.draw(Vec2f(0, 0), fbSize.convert<float>(), ColorRGBA::green());
-        ren2D.draw(Vec2f(0, static_cast<float>(fbSize.y)),
-                   Vec2f(static_cast<float>(fbSize.x), 0),
-                   ColorRGBA::green());
-        ren2D.draw(Rectf({}, smileyImg.getResolution().convert<float>()),
-                   Rectf({}, smileyImg.getResolution().convert<float>()),
-                   tex,
-                   {},
-                   0,
-                   LINEAR);
+
+        ren2D.draw(Vec2f(0, 0), fbSizeF, ColorRGBA::green());
+        ren2D.draw(Vec2f(0, fbSizeF.y), Vec2f(fbSizeF.x, 0), ColorRGBA::green());
+        ren2D.draw({}, smileyTexture, LINEAR);
+        ren2D.draw({}, tuxTexture, LINEAR);
+        ren2D.draw(Vec2f(0, fbSizeF.y / 2), Vec2f(fbSizeF.x, fbSizeF.y / 2), ColorRGBA::red());
+        ren2D.draw(Vec2f(fbSizeF.x / 2, 0), Vec2f(fbSizeF.x / 2, fbSizeF.y), ColorRGBA::red());
+        ren2D.draw(Vec2f(50, 0), text, ColorRGBA::purple());
+
         ren2D.renderPresent();
 
         window->swapBuffers();
     }
 
-    ren2D.destroyTexture(tex);
+    ren2D.destroyTexture(smileyTexture);
 
     return 0;
 }

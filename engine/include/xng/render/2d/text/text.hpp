@@ -23,28 +23,34 @@
 #include <utility>
 
 #include "xng/font/fontrenderer.hpp"
-
-#include "xng/gui/textlayout.hpp"
+#include "xng/render/2d/texture2d.hpp"
+#include "xng/render/2d/text/textlayout.hpp"
 
 namespace xng {
+    class Renderer2D;
+
     struct XENGINE_EXPORT Text {
-        Text() = default;
+        Text(std::string text,
+             Vec2f origin,
+             const TextLayout layout,
+             Texture2D texture,
+             Renderer2D &renderer)
+            : text(std::move(text)),
+              origin(std::move(origin)),
+              layout(layout),
+              texture(std::move(texture)),
+              renderer(renderer) {
+        }
 
-        Text(std::string text, Vec2f origin, TextLayout layout, ImageRGBA buffer)
-                : text(std::move(text)),
-                  origin(std::move(origin)),
-                  layout(std::move(layout)),
-                  image(std::move(buffer)) {}
+        ~Text();
 
-        ~Text() = default;
+        Text(const Text &other) = delete;
 
-        Text(const Text &other) = default;
+        Text &operator=(const Text &other) = delete;
 
-        Text &operator=(const Text& other) = default;
+        Text(Text &&other) noexcept = delete;
 
-        Text(Text &&other) = default;
-
-        Text &operator=(Text &&other) = default;
+        Text &operator=(Text &&other) noexcept = delete;
 
         /**
          * @return
@@ -58,18 +64,14 @@ namespace xng {
          */
         TextLayout getLayout() const { return layout; }
 
-        /**
-         * Get the image containing the rendered text with the grayscale in the r,g,b,a components.
-         *
-         * @return
-         */
-        const ImageRGBA &getImage() const { return image; }
+        const Texture2D &getTexture() const { return texture; }
 
     private:
         std::string text;
         Vec2f origin;
         TextLayout layout{};
-        ImageRGBA image;
+        Texture2D texture;
+        Renderer2D &renderer;
     };
 }
 #endif //XENGINE_TEXT_HPP
