@@ -22,7 +22,7 @@
 namespace xng {
     ImageRGBA TextureAtlas::getAlignedImage(const ImageRGBA &texture, TextureAtlasResolution res) {
         auto size = getResolutionLevelSize(res);
-        ImageRGBA image(size);
+        ImageRGBA image(size, ColorRGBA::black(1, 0));
         image.blit(Vec2i(0, 0), texture);
         return std::move(image);
     }
@@ -34,7 +34,8 @@ namespace xng {
         ctx.uploadTexture(atlasBuffers.at(handle.level),
                           reinterpret_cast<const uint8_t *>(img.getBuffer().data()),
                           img.getBuffer().size() * sizeof(ColorRGBA),
-                          RGBA);
+                          RGBA,
+                          handle.index);
     }
 
     TextureAtlas::TextureAtlas(std::map<TextureAtlasResolution, std::vector<bool> > bufferOccupations)
@@ -42,10 +43,10 @@ namespace xng {
     }
 
     TextureAtlasHandle TextureAtlas::add(const ImageRGBA &texture) {
-        auto res = getClosestMatchingResolutionLevel(texture.getResolution());
+        const auto res = getClosestMatchingResolutionLevel(texture.getResolution());
         for (size_t i = 0; i < bufferOccupations.at(res).size(); i++) {
             if (!bufferOccupations.at(res).at(i)) {
-                bufferOccupations.at(res).at(i) = !bufferOccupations.at(res).at(i);
+                bufferOccupations.at(res).at(i) = true;
                 TextureAtlasHandle ret;
                 ret.index = i;
                 ret.level = res;
@@ -56,7 +57,7 @@ namespace xng {
         // No free slot, increase texture atlas array texture size
         bufferOccupations.at(res).emplace_back(true);
         TextureAtlasHandle ret;
-        ret.index = bufferOccupations.size() - 1;
+        ret.index = bufferOccupations.at(res).size() - 1;
         ret.level = res;
         ret.size = texture.getResolution();
         return ret;
