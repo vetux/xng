@@ -465,8 +465,23 @@ void ContextGL::setShaderParameters(const std::unordered_map<std::string, Shader
 void ContextGL::clearColorAttachment(const size_t binding, const ColorRGBA clearColor) {
     oglDebugStartGroup("ContextGL::clearColorAttachment");
 
-    auto &tex = getTexture(framebufferColorAttachments.at(binding).texture);
-    glClearTexImage(tex.handle, 0, GL_RGBA, GL_UNSIGNED_BYTE, clearColor.data);
+    const auto &attachment = framebufferColorAttachments.at(binding);
+    auto &tex = getTexture(attachment.texture);
+
+    glClearTexSubImage(tex.handle,
+                       static_cast<GLint>(attachment.mipMapLevel),
+                       0,
+                       0,
+                       tex.textureType == TEXTURE_CUBE_MAP
+                           ? static_cast<GLint>(attachment.index * 6 + attachment.face)
+                           : static_cast<GLint>(attachment.index),
+                       tex.texture.size.x,
+                       tex.texture.size.y,
+                       1,
+                       GL_RGBA,
+                       GL_UNSIGNED_BYTE,
+                       clearColor.data);
+
     oglCheckError();
 
     oglDebugEndGroup();
