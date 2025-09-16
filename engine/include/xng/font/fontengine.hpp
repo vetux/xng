@@ -26,6 +26,8 @@
 namespace xng {
     class XENGINE_EXPORT FontEngine {
     public:
+        virtual ~FontEngine() = default;
+
         virtual std::unique_ptr<FontRenderer> createFontRenderer(std::istream &stream) {
             std::vector<char> buffer;
 

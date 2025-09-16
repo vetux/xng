@@ -24,14 +24,14 @@
 
 struct FT_LibraryRec_;
 
-typedef struct FT_LibraryRec_ * FT_Library;
+typedef struct FT_LibraryRec_ *FT_Library;
 
 namespace xng::freetype {
-    class XENGINE_EXPORT FreeType : public FontEngine {
+    class XENGINE_EXPORT FreeType final : public FontEngine {
     public:
         FreeType();
 
-        ~FreeType();
+        ~FreeType() override;
 
         std::unique_ptr<FontRenderer> createFontRenderer(std::istream &stream) override;
 
