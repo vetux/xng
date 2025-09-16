@@ -25,6 +25,7 @@
 #include "xng/gui/recttransform.hpp"
 
 namespace xng {
+    //TODO: Replace custom layout with flexbox (https://github.com/facebook/yoga)
     class LayoutEngine {
     public:
         /**
