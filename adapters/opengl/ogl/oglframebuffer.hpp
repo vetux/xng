@@ -102,10 +102,27 @@ struct OGLFramebuffer {
     }
 
     void attachIndex(const OGLTexture &texture, GLenum attachment, GLint mipLevel, GLint index) const {
+        if (texture.textureType != GL_TEXTURE_2D_ARRAY) {
+            throw std::runtime_error("Invalid texture type for index 2D array attachment");
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+        glFramebufferTextureLayer(GL_FRAMEBUFFER,
+                               attachment,
+                               texture.handle,
+                               mipLevel,
+                               index);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        oglCheckError();
+    }
+
+    void attachIndex(const OGLTexture &texture, GLenum attachment, GLenum face, GLint mipLevel, GLint index) const {
+        if (texture.textureType != GL_TEXTURE_CUBE_MAP_ARRAY) {
+            throw std::runtime_error("Invalid texture type for index cubemap array attachment");
+        }
         glBindFramebuffer(GL_FRAMEBUFFER, FBO);
         glFramebufferTexture3D(GL_FRAMEBUFFER,
                                attachment,
-                               convert(texture.texture.textureType),
+                               face,
                                texture.handle,
                                mipLevel,
                                index);
