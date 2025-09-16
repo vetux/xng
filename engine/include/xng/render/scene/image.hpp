@@ -47,24 +47,31 @@ namespace xng {
     class XENGINE_EXPORT Image : public Resource {
     public:
         std::unique_ptr<Resource> clone() override {
-            return std::make_unique<Image<T>>(*this);
+            return std::make_unique<Image<T> >(*this);
         }
 
         std::type_index getTypeIndex() const override {
             return typeid(Image<T>);
         }
 
-        Image() : resolution(), buffer() {}
+        Image() : resolution(), buffer() {
+        }
 
-        Image(int width, int height, const std::vector<T> &buffer) : resolution(width, height), buffer(buffer) {}
+        Image(int width, int height, const std::vector<T> &buffer) : resolution(width, height), buffer(buffer) {
+        }
 
-        Image(int width, int height) : resolution(width, height), buffer(width * height) {}
+        Image(int width, int height) : resolution(width, height), buffer(width * height) {
+        }
 
-        explicit Image(const Vec2i &resolution) : resolution(resolution), buffer(resolution.x * resolution.y) {}
+        explicit Image(const Vec2i &resolution, ColorRGBA color = ColorRGBA::black())
+            : resolution(resolution), buffer(resolution.x * resolution.y, color) {
+        }
 
-        Image(const Image &copy) : resolution(copy.resolution), buffer(copy.buffer) {}
+        Image(const Image &copy) : resolution(copy.resolution), buffer(copy.buffer) {
+        }
 
-        Image(Image &&other) noexcept: resolution(std::move(other.resolution)), buffer(std::move(other.buffer)) {}
+        Image(Image &&other) noexcept : resolution(std::move(other.resolution)), buffer(std::move(other.buffer)) {
+        }
 
         ~Image() override = default;
 

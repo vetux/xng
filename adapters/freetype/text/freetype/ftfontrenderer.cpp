@@ -58,7 +58,7 @@ namespace xng {
         auto bitmap = face->glyph->bitmap;
         auto pitch = bitmap.pitch;
 
-        ImageRGBA buffer(size);
+        ImageRGBA buffer(size, ColorRGBA::black(1, 0));
         if (pitch > 0) {
             //Ascending
             auto rowLength = pitch;
@@ -68,7 +68,7 @@ namespace xng {
             for (int x = 0; x < size.x; x++) {
                 for (int y = 0; y < size.y; y++) {
                     auto pixel = bitmap.buffer[size.x * y + x];
-                    buffer.setPixel(x, y, {pixel, pixel, pixel, pixel});
+                    buffer.setPixel(x, y, ColorRGBA(pixel, pixel, pixel, pixel));
                 }
             }
         } else if (pitch < 0) {
@@ -80,7 +80,7 @@ namespace xng {
             for (int x = 0; x < size.x; x++) {
                 for (int y = 0; y < size.y; y++) {
                     auto pixel = bitmap.buffer[size.x * y + x];
-                    buffer.setPixel(x, size.y - y, {pixel, pixel, pixel, pixel});
+                    buffer.setPixel(x, size.y - y, ColorRGBA(pixel, pixel, pixel, pixel));
                 }
             }
         } else {
