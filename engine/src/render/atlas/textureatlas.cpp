@@ -131,6 +131,11 @@ namespace xng {
         for (int i = TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; i++) {
             builder.readWrite(pass, currentHandles.at(static_cast<TextureAtlasResolution>(i)));
         }
+        if (previousHandles.size() > 0) {
+            for (int i = TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; i++) {
+                builder.readWrite(pass, previousHandles.at(static_cast<TextureAtlasResolution>(i)));
+            }
+        }
     }
 
     bool TextureAtlas::shouldRebuild() {
@@ -144,8 +149,6 @@ namespace xng {
     }
 
     void TextureAtlas::create(RenderGraphBuilder &builder) {
-        previousHandles = currentHandles;
-
         RenderGraphTexture desc;
         desc.isArrayTexture = true;
 
@@ -159,10 +162,11 @@ namespace xng {
     }
 
     void TextureAtlas::recreate(RenderGraphBuilder &builder) {
-        previousHandles = currentHandles;
-
         for (auto &pair: bufferOccupations) {
             if (bufferSizes[pair.first] < pair.second.size()) {
+                if (bufferSizes[pair.first] > 0) {
+                    previousHandles[pair.first] = builder.inheritResource(currentHandles.at(pair.first));
+                }
                 bufferSizes[pair.first] = pair.second.size();
                 RenderGraphTexture desc;
                 desc.isArrayTexture = true;
@@ -177,11 +181,14 @@ namespace xng {
 
     const std::unordered_map<TextureAtlasResolution, RenderGraphResource> &
     TextureAtlas::getAtlasTextures(RenderGraphContext &ctx) {
-        for (int i = TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; i++) {
-            const auto res = static_cast<TextureAtlasResolution>(i);
-            if (currentHandles.at(res) != previousHandles.at(res)) {
-                ctx.copyTexture(currentHandles.at(res), previousHandles.at(res));
+        if (previousHandles.size() > 0) {
+            for (int i = TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; i++) {
+                const auto res = static_cast<TextureAtlasResolution>(i);
+                if (currentHandles.at(res) != previousHandles.at(res)) {
+                    ctx.copyTexture(currentHandles.at(res), previousHandles.at(res));
+                }
             }
+            previousHandles.clear();
         }
 
         for (auto &tex: pendingTextures) {
