@@ -74,7 +74,7 @@ namespace xng {
          * It can be read from and written to by render passes to access the resulting screen contents.
          *
          * The texture format is as follows:
-         *  .size = Window / Full-screen size (Determined by the display environment)
+         *  .size = window.getFramebufferSize() (Determined by the display environment)
          *  .textureType = TEXTURE2D
          *  .format = RGBA
          *
