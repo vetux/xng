@@ -288,4 +288,7 @@
 #include "xng/ecs/profiling/ecssample.hpp"
 #include "xng/ecs/profiling/ecsprofiler.hpp"
 
+#include "xng/render/passes/clearpass.hpp"
+#include "xng/render/passes/constructionpass.hpp"
+
 #endif // XENGINE_ENGINE_HPP

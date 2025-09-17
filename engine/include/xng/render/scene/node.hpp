@@ -32,7 +32,7 @@ namespace xng {
     struct XENGINE_EXPORT Node {
         template<typename T>
         T &getProperty() {
-            return dynamic_cast< T &>(*properties.at(typeid(T)));
+            return dynamic_cast<T &>(*properties.at(typeid(T)));
         }
 
         template<typename T>
@@ -71,7 +71,7 @@ namespace xng {
         }
 
         std::vector<Node> childNodes;
-        std::map<std::type_index, std::shared_ptr<Property>> properties;
+        std::map<std::type_index, std::shared_ptr<Property> > properties;
     };
 }
 #endif //XENGINE_NODE_HPP

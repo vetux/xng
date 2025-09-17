@@ -22,13 +22,43 @@
 #include "xng/adapters/glfw/glfw.hpp"
 #include "xng/adapters/opengl/opengl.hpp"
 #include "xng/adapters/freetype/freetype.hpp"
+#include "xng/adapters/assimp/assimp.hpp"
 
 #include "shadertestpass.hpp"
+
+Scene createScene(float aspectRatio) {
+    // Scene interface will be redesign next.
+    Scene scene;
+
+    Node camera;
+    camera.addProperty(TransformProperty());
+
+    CameraProperty cameraProp;
+    cameraProp.camera.aspectRatio = aspectRatio;
+    camera.addProperty(cameraProp);
+
+    scene.rootNode.childNodes.emplace_back(camera);
+
+    Node mesh;
+
+    TransformProperty transform;
+    transform.transform = Transform(Vec3f(0, 0, -20), Vec3f(), Vec3f(1, 1, 1));
+    mesh.addProperty(transform);
+
+    SkinnedMeshProperty meshProp;
+    meshProp.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/sphere.obj"));
+    mesh.addProperty(meshProp);
+
+    scene.rootNode.childNodes.emplace_back(mesh);
+
+    return scene;
+}
 
 int main(int argc, char *argv[]) {
     std::vector<std::unique_ptr<ResourceImporter> > importers;
     importers.emplace_back(std::make_unique<FontImporter>());
     importers.emplace_back(std::make_unique<StbiImporter>());
+    importers.emplace_back(std::make_unique<AssImp>());
     ResourceRegistry::getDefaultRegistry().setImporters(std::move(importers));
 
     ResourceRegistry::getDefaultRegistry().addArchive("file", std::make_shared<DirectoryArchive>("assets/"));
@@ -60,8 +90,7 @@ int main(int argc, char *argv[]) {
     const auto &tuxImg = tux.get();
     const auto &smileyImg = smiley.get();
 
-    auto passScheduler = std::make_shared<RenderPassScheduler>(runtime);
-    auto ren2D = Renderer2D(passScheduler);
+    auto ren2D = Renderer2D();
 
     auto tuxTexture = ren2D.createTexture(tuxImg);
     auto smileyTexture = ren2D.createTexture(smileyImg);
@@ -71,6 +100,24 @@ int main(int argc, char *argv[]) {
     auto textRenderer = TextRenderer(*fontRenderer, ren2D, {0, 50});
 
     auto text = textRenderer.render("Hello\nWorld!", {50, 0, 0, TEXT_ALIGN_LEFT});
+
+    auto config = std::make_shared<RenderConfiguration>();
+    config->setFramebufferResolution(window->getFramebufferSize());
+
+    auto scene = createScene(static_cast<float>(window->getFramebufferSize().x)
+                                / static_cast<float>(window->getFramebufferSize().y));
+    config->setScene(scene);
+    auto registry = std::make_shared<RenderRegistry>();
+
+    auto passScheduler = std::make_shared<RenderPassScheduler>(runtime);
+
+    auto pass2D = std::make_shared<RenderPass2D>();
+
+    auto graph = passScheduler->addGraph({
+        std::make_shared<ClearPass>(config, registry),
+        std::make_shared<ConstructionPass>(config, registry),
+        pass2D
+    });
 
     while (!window->shouldClose()) {
         window->update();
@@ -89,6 +136,11 @@ int main(int argc, char *argv[]) {
         ren2D.draw(Vec2f(50, 0), text, ColorRGBA::purple());
 
         ren2D.renderPresent();
+
+        pass2D->setBatches(ren2D.getRenderBatches());
+        ren2D.clearBatches();
+
+        passScheduler->execute(graph);
 
         window->swapBuffers();
     }

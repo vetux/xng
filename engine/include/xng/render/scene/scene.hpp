@@ -25,6 +25,7 @@
 #include "xng/render/scene/node.hpp"
 
 namespace xng {
+    //TODO: Redesign scene interface
     /**
      * The runtime scene render data.
      */
