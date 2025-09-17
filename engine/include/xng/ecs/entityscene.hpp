@@ -287,6 +287,7 @@ namespace xng {
          * Generic interface use for component types that are not known at compile time.
          */
 
+        // Todo: Remove rtti usage from entityscene
         void createComponent(const EntityHandle &entity, const std::type_index &type) {
             ComponentRegistry::instance().getConstructor(type)(*this, entity);
         }
