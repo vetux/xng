@@ -23,6 +23,7 @@
 #include "xng/render/renderpass.hpp"
 #include "xng/render/2d/renderbatch2d.hpp"
 #include "xng/render/2d/meshbuffer2d.hpp"
+#include "xng/render/atlas/textureatlas.hpp"
 #include "xng/render/geometry/primitive.hpp"
 
 namespace xng {
@@ -95,11 +96,6 @@ namespace xng {
         size_t indexBufferSize{};
 
         RenderGraphResource shaderBuffer{};
-
-        std::map<TextureAtlasResolution, RenderGraphResource> atlasTextures;
-        std::map<TextureAtlasResolution, size_t> atlasTexturesSizes;
-
-        std::map<TextureAtlasResolution, RenderGraphResource> atlasCopyTextures;
 
         std::unordered_map<std::pair<float, Vec2f>, Mat4f, RotationPairHash> rotationMatrices;
         std::unordered_set<std::pair<float, Vec2f>, RotationPairHash> usedRotationMatrices;

@@ -60,25 +60,14 @@ namespace xng {
         RenderGraphAttachment renderTarget;
     };
 
-    RenderPass2D::RenderPass2D() {
-        for (int res = TEXTURE_ATLAS_8x8; res < TEXTURE_ATLAS_END; res++) {
-            atlasTexturesSizes[static_cast<TextureAtlasResolution>(res)] = 0;
-        }
-    }
+    RenderPass2D::RenderPass2D() = default;
 
     bool RenderPass2D::shouldRebuild() {
         if (vertexBufferSize < meshBuffer.getVertexBufferSize()
             || indexBufferSize < meshBuffer.getIndexBufferSize()) {
             return true;
         }
-
-        for (int res = TEXTURE_ATLAS_8x8; res < TEXTURE_ATLAS_END; res++) {
-            auto r = static_cast<TextureAtlasResolution>(res);
-            if (atlasTexturesSizes.at(r) < atlas.getBufferOccupations().at(r).size()) {
-                return true;
-            }
-        }
-        return false;
+        return atlas.shouldRebuild();
     }
 
     void RenderPass2D::create(RenderGraphBuilder &builder) {
@@ -97,15 +86,7 @@ namespace xng {
         renderPipeline.primitive = POINTS;
         pointPipeline = builder.createPipeline(renderPipeline);
 
-        for (int i = TEXTURE_ATLAS_8x8; i < TEXTURE_ATLAS_END; i++) {
-            auto res = static_cast<TextureAtlasResolution>(i);
-            RenderGraphTexture texture;
-            texture.format = RGBA;
-            texture.size = TextureAtlas::getResolutionLevelSize(res);
-            texture.isArrayTexture = true;
-            atlasTextures[res] = builder.createTexture(texture);
-            atlasTexturesSizes[res] = 0;
-        }
+        atlas.create(builder);
 
         vertexBuffer = builder.createVertexBuffer(0);
         indexBuffer = builder.createIndexBuffer(0);
@@ -124,12 +105,9 @@ namespace xng {
         builder.readWrite(pass, vertexBuffer);
         builder.readWrite(pass, indexBuffer);
         builder.readWrite(pass, shaderBuffer);
-        for (auto &tex: atlasTextures) {
-            builder.readWrite(pass, tex.second);
-        }
-        for (auto &tex: atlasCopyTextures) {
-            builder.read(pass, tex.second);
-        }
+
+        atlas.declareReadWrite(builder, pass);
+
         if (vertexBufferCopy) {
             builder.read(pass, vertexBufferCopy);
         }
@@ -144,27 +122,7 @@ namespace xng {
         linePipeline = builder.inheritResource(linePipeline);
         pointPipeline = builder.inheritResource(pointPipeline);
 
-        auto atlasTexturesCopy = atlasTextures;
-        atlasTextures.clear();
-        for (auto &pair: atlasTexturesCopy) {
-            if (atlas.getBufferOccupations().at(pair.first).size() > atlasTexturesSizes.at(pair.first)) {
-                // Buffer Reallocation / Copy
-                if (atlasTexturesSizes.at(pair.first) > 0) {
-                    atlasCopyTextures[pair.first] = builder.inheritResource(pair.second);
-                }
-
-                RenderGraphTexture texture;
-                texture.format = RGBA;
-                texture.size = TextureAtlas::getResolutionLevelSize(pair.first);
-                texture.isArrayTexture = true;
-                texture.arrayLayers = atlas.getBufferOccupations().at(pair.first).size();
-                atlasTextures[pair.first] = builder.createTexture(texture);
-                atlasTexturesSizes[pair.first] = atlas.getBufferOccupations().at(pair.first).size();
-            } else {
-                // Inherit old buffer
-                atlasTextures[pair.first] = builder.inheritResource(pair.second);
-            }
-        }
+        atlas.recreate(builder);
 
         if (vertexBufferSize < meshBuffer.getVertexBufferSize()) {
             vertexBufferCopy = builder.inheritResource(vertexBuffer);
@@ -194,12 +152,9 @@ namespace xng {
         builder.readWrite(pass, vertexBuffer);
         builder.readWrite(pass, indexBuffer);
         builder.readWrite(pass, shaderBuffer);
-        for (auto &tex: atlasTextures) {
-            builder.readWrite(pass, tex.second);
-        }
-        for (auto &tex: atlasCopyTextures) {
-            builder.read(pass, tex.second);
-        }
+
+        atlas.declareReadWrite(builder, pass);
+
         if (vertexBufferCopy) {
             builder.read(pass, vertexBufferCopy);
         }
@@ -249,12 +204,7 @@ namespace xng {
 
     void RenderPass2D::runPass(RenderGraphContext &ctx) {
         // Handle inherited resource buffers
-        for (auto &v: atlasCopyTextures) {
-            const auto src = v.second;
-            const auto target = atlasTextures.at(v.first);
-            ctx.copyTexture(target, src);
-        }
-        atlasCopyTextures.clear();
+        auto &atlasTextures = atlas.getAtlasTextures(ctx);
 
         if (vertexBufferCopy) {
             ctx.copyBuffer(vertexBuffer, vertexBufferCopy, 0, 0, vertexBufferSize);
@@ -277,11 +227,6 @@ namespace xng {
         std::vector<size_t> batchIndices;
         for (auto i = 0; i < batches.size(); i++) {
             auto &batch = batches.at(i);
-
-            // Handle texture allocation
-            for (auto &alloc: batch.textureAllocations) {
-                TextureAtlas::upload(ctx, atlasHandles.at(alloc.first), atlasTextures, alloc.second);
-            }
 
             // Create draw batches to handle interleaved primitives
             for (auto y = 0; y < batch.drawCommands.size(); y++) {
@@ -481,7 +426,7 @@ namespace xng {
 
         // Render the draw batches
         std::vector<RenderGraphResource> textures;
-        for (int i = TEXTURE_ATLAS_8x8; i < TEXTURE_ATLAS_END; i++) {
+        for (int i = TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; i++) {
             textures.emplace_back(atlasTextures.at(static_cast<TextureAtlasResolution>(i)));
         }
 

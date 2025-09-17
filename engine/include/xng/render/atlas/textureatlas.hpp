@@ -24,100 +24,64 @@
 #include "xng/render/scene/rendergraphtexture.hpp"
 
 #include "xng/rendergraph/rendergraphcontext.hpp"
+#include "xng/rendergraph/rendergraphbuilder.hpp"
 
 namespace xng {
     /**
-     * The texture atlas contains texture array buffers for TextureAtlasResolutions.
+     * A texture atlas abstraction for render graph.
      *
-     * When a texture is added it is added to the array buffer with the closest matching larger size.
+     * The texture atlas contains an array texture for each TextureAtlasResolution.
+     *
+     * When a texture is added, it is added to the array texture with the closest matching or larger size.
      *
      * The texture is arranged to the bottom left so uv coordinates can simply be scaled with the ratio of the size
      * of the texture compared to the size of the array buffer.
      *
-     * There are 12 texture array buffers in total which leaves 4 more texture buffer bindings free to use for other things.
+     * There are 12 array textures in total, which leaves 4 more texture buffer bindings free to use for other things.
      */
     class XENGINE_EXPORT TextureAtlas {
     public:
-        static Vec2i getResolutionLevelSize(TextureAtlasResolution level) {
-            switch (level) {
-                case TEXTURE_ATLAS_8x8:
-                    return {8, 8};
-                case TEXTURE_ATLAS_16x16:
-                    return {16, 16};
-                case TEXTURE_ATLAS_32x32:
-                    return {32, 32};
-                case TEXTURE_ATLAS_64x64:
-                    return {64, 64};
-                case TEXTURE_ATLAS_128x128:
-                    return {128, 128};
-                case TEXTURE_ATLAS_256x256:
-                    return {256, 256};
-                case TEXTURE_ATLAS_512x512:
-                    return {512, 512};
-                case TEXTURE_ATLAS_1024x1024:
-                    return {1024, 1024};
-                case TEXTURE_ATLAS_2048x2048:
-                    return {2048, 2048};
-                case TEXTURE_ATLAS_4096x4096:
-                    return {4096, 4096};
-                case TEXTURE_ATLAS_8192x8192:
-                    return {8192, 8192};
-                case TEXTURE_ATLAS_16384x16384:
-                    return {16384, 16384};
-                default:
-                    throw std::runtime_error("Invalid texture atlas resolution level");
-            }
-        }
+        XENGINE_EXPORT static Vec2i getResolutionLevelSize(TextureAtlasResolution level);
 
-        static TextureAtlasResolution getClosestMatchingResolutionLevel(const Vec2i &size) {
-            for (auto i = (int) TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; i++) {
-                auto res = getResolutionLevelSize((TextureAtlasResolution) i);
-                if (size.x <= res.x && size.y <= res.y) {
-                    return (TextureAtlasResolution) i;
-                }
-            }
-            throw std::runtime_error("No matching resolution level found");
-        }
+        XENGINE_EXPORT static TextureAtlasResolution getClosestMatchingResolutionLevel(const Vec2i &size);
 
-        static ImageRGBA getAlignedImage(const ImageRGBA &texture, TextureAtlasResolution res);
+        XENGINE_EXPORT static ImageRGBA getAlignedImage(const ImageRGBA &texture, TextureAtlasResolution res);
 
-        static void upload(RenderGraphContext &ctx,
-                           const TextureAtlasHandle &handle,
-                           const std::map<TextureAtlasResolution, RenderGraphResource> &atlasBuffers,
-                           const ImageRGBA &texture);
+        TextureAtlas();
 
-        TextureAtlas() {
-            for (int i = TEXTURE_ATLAS_8x8; i < TEXTURE_ATLAS_END; i++) {
-                auto res = static_cast<TextureAtlasResolution>(i);
-                bufferOccupations[res] = {};
-            }
-        }
-
-        explicit TextureAtlas(std::map<TextureAtlasResolution, std::vector<bool>> bufferOccupations);
+        explicit TextureAtlas(std::map<TextureAtlasResolution, std::vector<bool> > bufferOccupations);
 
         TextureAtlasHandle add(const ImageRGBA &texture);
 
         void remove(const TextureAtlasHandle &handle);
 
-        const std::map<TextureAtlasResolution, std::vector<bool>> &getBufferOccupations() const {
-            return bufferOccupations;
-        }
+        void declareReadWrite(RenderGraphBuilder &builder, RenderGraphBuilder::PassHandle pass) const;
 
-        std::map<TextureAtlasResolution, std::vector<bool>> &getBufferOccupations() {
-            return bufferOccupations;
-        }
+        bool shouldRebuild();
 
-        size_t getFreeSlotCount(TextureAtlasResolution resolution) {
-            size_t ret = 0;
-            for (auto slot: bufferOccupations[resolution]) {
-                if (!slot)
-                    ret++;
-            }
-            return ret;
-        }
+        void create(RenderGraphBuilder &builder);
+
+        void recreate(RenderGraphBuilder &builder);
+
+        const std::unordered_map<TextureAtlasResolution, RenderGraphResource> &
+        getAtlasTextures(RenderGraphContext &ctx);
 
     private:
-        std::map<TextureAtlasResolution, std::vector<bool>> bufferOccupations;
+        static void upload(RenderGraphContext &ctx,
+                           const TextureAtlasHandle &handle,
+                           const std::unordered_map<TextureAtlasResolution, RenderGraphResource> &atlasBuffers,
+                           const ImageRGBA &texture);
+
+        size_t getFreeSlotCount(TextureAtlasResolution resolution);
+
+        std::map<TextureAtlasResolution, std::vector<bool> > bufferOccupations;
+
+        std::unordered_map<TextureAtlasResolution, RenderGraphResource> currentHandles;
+        std::unordered_map<TextureAtlasResolution, RenderGraphResource> previousHandles;
+
+        std::map<TextureAtlasResolution, size_t> bufferSizes;
+
+        std::unordered_map<TextureAtlasHandle, ImageRGBA> pendingTextures;
     };
 }
 #endif //XENGINE_TEXTUREATLAS_HPP
