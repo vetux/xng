@@ -60,6 +60,9 @@ namespace xng {
             REFLECT,
             REFRACT,
             FACEFORWARD,
+
+            TRANSPOSE,
+            INVERSE,
         } type;
 
         std::unique_ptr<ShaderNode> valA;

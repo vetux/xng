@@ -165,6 +165,25 @@ std::string compileLeafNode(const NodeVector &node,
     return ret;
 }
 
+std::string compileLeafNode(const NodeMatrix &node, const Shader &source, const std::string &functionName) {
+    std::string ret;
+    ret += getTypeName(node.type);
+    ret += "(";
+    ret += compileNode(*node.x, source, functionName, "");
+    ret += ", ";
+    ret += compileNode(*node.y, source, functionName, "");
+    if (node.z != nullptr) {
+        ret += ", ";
+        ret += compileNode(*node.z, source, functionName, "");
+        if (node.w != nullptr) {
+            ret += ", ";
+            ret += compileNode(*node.w, source, functionName, "");
+        }
+    }
+    ret += ")";
+    return ret;
+}
+
 std::string compileLeafNode(const NodeArray &node, const Shader &source, const std::string &functionName) {
     std::string ret;
     ret += getTypeName(node.elementType);
@@ -517,6 +536,10 @@ std::string compileLeafNode(const NodeBuiltin &node,
                    + ", " + compileNode(*node.valB, source, functionName)
                    + ", " + compileNode(*node.valC, source, functionName)
                    + ")";
+        case NodeBuiltin::TRANSPOSE:
+            return "transpose(" + compileNode(*node.valA, source, functionName) + ")";
+        case NodeBuiltin::INVERSE:
+            return "inverse(" + compileNode(*node.valA, source, functionName) + ")";
         default:
             throw std::runtime_error("Invalid builtin type");
     }

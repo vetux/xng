@@ -41,6 +41,7 @@ namespace xng {
             PARAMETER,
 
             VECTOR,
+            MATRIX,
             ARRAY,
 
             TEXTURE,

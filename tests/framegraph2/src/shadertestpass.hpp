@@ -83,7 +83,7 @@ public:
         EndFunction();
 
         // Equivalent to int b[4] = {1, 2, 3, 4}
-        ArrayInt<4> b = ArrayInt<4>{1, 2, 3, 4};
+        ArrayInt<4> b = ArrayInt<4>(std::vector<Int>{1, 2, 3, 4});
 
         Float r = Call("test", textureSampler("texture"));
 

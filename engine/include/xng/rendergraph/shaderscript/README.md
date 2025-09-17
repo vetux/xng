@@ -16,6 +16,7 @@ It is implemented through headers which define various types and functions to cr
 
 #### Swizzling
   - Vector swizzling is done with functions (e.g. `vec.xyx` in glsl becomes `vec.xyx()` in C++)
+  - Vector initialization can use implicit swizzling (e.g. `vec4 v = vec4(vec2(0, 0), vec2(0, 0))`)
 
 #### Subscripting
   - Matrix subscripting has to be done with the `elements()` method (e.g. `mat[column][row]` in glsl becomes `mat.element(column, row)` in C++)

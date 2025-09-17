@@ -42,9 +42,9 @@ namespace xng {
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> argument(const std::string &name);
 
-        XENGINE_EXPORT std::unique_ptr<ShaderNode> attributeInput(const std::string & attributeName);
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> attributeInput(const std::string &attributeName);
 
-        XENGINE_EXPORT std::unique_ptr<ShaderNode> attributeOutput(const std::string & attributeName);
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> attributeOutput(const std::string &attributeName);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> parameter(const std::string &parameter_name);
 
@@ -53,6 +53,12 @@ namespace xng {
         XENGINE_EXPORT std::unique_ptr<ShaderNode> vector(ShaderDataType type,
                                                           const std::unique_ptr<ShaderNode> &x,
                                                           const std::unique_ptr<ShaderNode> &y,
+                                                          const std::unique_ptr<ShaderNode> &z = nullptr,
+                                                          const std::unique_ptr<ShaderNode> &w = nullptr);
+
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> matrix(ShaderDataType type,
+                                                          const std::unique_ptr<ShaderNode> &x,
+                                                          const std::unique_ptr<ShaderNode> &y = nullptr,
                                                           const std::unique_ptr<ShaderNode> &z = nullptr,
                                                           const std::unique_ptr<ShaderNode> &w = nullptr);
 
@@ -208,6 +214,10 @@ namespace xng {
         XENGINE_EXPORT std::unique_ptr<ShaderNode> faceforward(const std::unique_ptr<ShaderNode> &n,
                                                                const std::unique_ptr<ShaderNode> &i,
                                                                const std::unique_ptr<ShaderNode> &nref);
+
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> transpose(const std::unique_ptr<ShaderNode> &x);
+
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> inverse(const std::unique_ptr<ShaderNode> &x);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> subscriptArray(const std::unique_ptr<ShaderNode> &array,
                                                                   const std::unique_ptr<ShaderNode> &index);

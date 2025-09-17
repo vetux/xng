@@ -73,6 +73,8 @@ std::string compileLeafNode(const NodeParameter &node);
 
 std::string compileLeafNode(const NodeVector &node, const Shader &source, const std::string &functionName);
 
+std::string compileLeafNode(const NodeMatrix &node, const Shader &source, const std::string &functionName);
+
 std::string compileLeafNode(const NodeArray &node, const Shader &source, const std::string &functionName);
 
 std::string compileLeafNode(const NodeTexture &node,

@@ -50,11 +50,11 @@ namespace xng::ShaderNodeFactory {
         return std::make_unique<NodeArgument>(name);
     }
 
-    std::unique_ptr<ShaderNode> attributeInput(const std::string & attributeName) {
+    std::unique_ptr<ShaderNode> attributeInput(const std::string &attributeName) {
         return std::make_unique<NodeAttributeInput>(attributeName);
     }
 
-    std::unique_ptr<ShaderNode> attributeOutput(const std::string & attributeName) {
+    std::unique_ptr<ShaderNode> attributeOutput(const std::string &attributeName) {
         return std::make_unique<NodeAttributeOutput>(attributeName);
     }
 
@@ -74,6 +74,18 @@ namespace xng::ShaderNodeFactory {
         return std::make_unique<NodeVector>(type,
                                             x->copy(),
                                             y->copy(),
+                                            z ? z->copy() : nullptr,
+                                            w ? w->copy() : nullptr);
+    }
+
+    std::unique_ptr<ShaderNode> matrix(ShaderDataType type,
+                                       const std::unique_ptr<ShaderNode> &x,
+                                       const std::unique_ptr<ShaderNode> &y,
+                                       const std::unique_ptr<ShaderNode> &z,
+                                       const std::unique_ptr<ShaderNode> &w) {
+        return std::make_unique<NodeMatrix>(type,
+                                            x->copy(),
+                                            y ? y->copy() : nullptr,
                                             z ? z->copy() : nullptr,
                                             w ? w->copy() : nullptr);
     }
@@ -348,13 +360,21 @@ namespace xng::ShaderNodeFactory {
         return std::make_unique<NodeBuiltin>(NodeBuiltin::FACEFORWARD, n->copy(), i->copy(), nref->copy());
     }
 
+    std::unique_ptr<ShaderNode> transpose(const std::unique_ptr<ShaderNode> &x) {
+        return std::make_unique<NodeBuiltin>(NodeBuiltin::TRANSPOSE, x->copy(), nullptr, nullptr);
+    }
+
+    std::unique_ptr<ShaderNode> inverse(const std::unique_ptr<ShaderNode> &x) {
+        return std::make_unique<NodeBuiltin>(NodeBuiltin::INVERSE, x->copy(), nullptr, nullptr);
+    }
+
     std::unique_ptr<ShaderNode> subscriptArray(const std::unique_ptr<ShaderNode> &array,
                                                const std::unique_ptr<ShaderNode> &index) {
         return std::make_unique<NodeSubscriptArray>(array->copy(), index->copy());
     }
 
     std::unique_ptr<ShaderNode> vectorSwizzle(const std::unique_ptr<ShaderNode> &value,
-                                                 const std::vector<NodeVectorSwizzle::ComponentIndex> & indices) {
+                                              const std::vector<NodeVectorSwizzle::ComponentIndex> &indices) {
         return std::make_unique<NodeVectorSwizzle>(value->copy(), indices);
     }
 

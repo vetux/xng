@@ -195,7 +195,7 @@ namespace xng::ShaderScript {
             return ShaderNodeWrapper(ShaderDataType{
                                          ShaderDataType::VECTOR4,
                                          ShaderDataType::getColorComponent(targ.format),
-                // Because textures cannot be assigned to variables we can store the information wheter a texture is an array in the type count
+                                         // Because textures cannot be assigned to variables we can store the information wheter a texture is an array in the type count
                                          targ.isArrayTexture ? 2ul : 1ul
                                      },
                                      ShaderNodeFactory::argument(name));
@@ -211,8 +211,8 @@ namespace xng::ShaderScript {
     }
 
     inline ShaderNodeWrapper readDynamicBuffer(const std::string &name,
-                                           const std::string &elementName,
-                                           const ShaderNodeWrapper &index) {
+                                               const std::string &elementName,
+                                               const ShaderNodeWrapper &index) {
         return ShaderNodeWrapper(ShaderBuilder::instance().getBuffers().at(name).getElement(elementName).value,
                                  ShaderNodeFactory::bufferRead(name, elementName, index.node));
     }
@@ -362,7 +362,7 @@ namespace xng::ShaderScript {
      * @param textureArrayIndex
      * @return
      */
-    inline ShaderNodeWrapper textureSampler(const std::string& textureName) {
+    inline ShaderNodeWrapper textureSampler(const std::string &textureName) {
         auto texArray = ShaderBuilder::instance().getTextureArrays().at(textureName);
         return ShaderNodeWrapper(ShaderDataType{
                                      ShaderDataType::VECTOR4, ShaderDataType::getColorComponent(texArray.texture.format)
@@ -376,7 +376,7 @@ namespace xng::ShaderScript {
      * @param textureArrayIndex
      * @return
      */
-    inline ShaderNodeWrapper textureSampler(const std::string& textureName,
+    inline ShaderNodeWrapper textureSampler(const std::string &textureName,
                                             const ShaderNodeWrapper &textureIndex) {
         auto texArray = ShaderBuilder::instance().getTextureArrays().at(textureName);
         return ShaderNodeWrapper(ShaderDataType{
@@ -562,6 +562,46 @@ namespace xng::ShaderScript {
                                          const ShaderNodeWrapper &I,
                                          const ShaderNodeWrapper &Nref) {
         return ShaderNodeWrapper(N.type, ShaderNodeFactory::faceforward(N.node, I.node, Nref.node));
+    }
+
+    inline ShaderNodeWrapper transpose(const ShaderNodeWrapper &v) {
+        return ShaderNodeWrapper(v.type, ShaderNodeFactory::transpose(v.node));
+    }
+
+    inline ShaderNodeWrapper inverse(const ShaderNodeWrapper &v) {
+        return ShaderNodeWrapper(v.type, ShaderNodeFactory::inverse(v.node));
+    }
+
+    inline ShaderNodeWrapper matrix(const ShaderNodeWrapper &x, const ShaderNodeWrapper &y) {
+        return ShaderNodeWrapper({ShaderDataType::MAT2, x.type.component},
+                                 ShaderNodeFactory::matrix(ShaderDataType(ShaderDataType::MAT2, x.type.component),
+                                                           x.node,
+                                                           y.node,
+                                                           nullptr,
+                                                           nullptr));
+    }
+
+    inline ShaderNodeWrapper matrix(const ShaderNodeWrapper &x,
+                                    const ShaderNodeWrapper &y,
+                                    const ShaderNodeWrapper &z) {
+        return ShaderNodeWrapper({ShaderDataType::MAT3, x.type.component},
+                                 ShaderNodeFactory::matrix(ShaderDataType(ShaderDataType::MAT3, x.type.component),
+                                                           x.node,
+                                                           y.node,
+                                                           z.node,
+                                                           nullptr));
+    }
+
+    inline ShaderNodeWrapper matrix(const ShaderNodeWrapper &x,
+                                    const ShaderNodeWrapper &y,
+                                    const ShaderNodeWrapper &z,
+                                    const ShaderNodeWrapper &w) {
+        return ShaderNodeWrapper({ShaderDataType::MAT4, x.type.component},
+                                 ShaderNodeFactory::matrix(ShaderDataType(ShaderDataType::MAT4, x.type.component),
+                                                           x.node,
+                                                           y.node,
+                                                           z.node,
+                                                           w.node));
     }
 }
 

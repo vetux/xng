@@ -750,9 +750,9 @@ namespace xng::ShaderScript {
             return {
                 ShaderDataType{ShaderDataType::VECTOR2, type.component, 1},
                 ShaderNodeFactory::vectorSwizzle(node, {
-                                                       down_cast<NodeVectorSwizzle &>(*x.node).indices.at(0),
-                                                       down_cast<NodeVectorSwizzle &>(*y.node).indices.at(0),
-                                                   })
+                                                     down_cast<NodeVectorSwizzle &>(*x.node).indices.at(0),
+                                                     down_cast<NodeVectorSwizzle &>(*y.node).indices.at(0),
+                                                 })
             };
         }
 
@@ -763,10 +763,10 @@ namespace xng::ShaderScript {
             return {
                 ShaderDataType{ShaderDataType::VECTOR3, type.component, 1},
                 ShaderNodeFactory::vectorSwizzle(node, {
-                                                       down_cast<NodeVectorSwizzle &>(*x.node).indices.at(0),
-                                                       down_cast<NodeVectorSwizzle &>(*y.node).indices.at(0),
-                                                       down_cast<NodeVectorSwizzle &>(*z.node).indices.at(0)
-                                                   })
+                                                     down_cast<NodeVectorSwizzle &>(*x.node).indices.at(0),
+                                                     down_cast<NodeVectorSwizzle &>(*y.node).indices.at(0),
+                                                     down_cast<NodeVectorSwizzle &>(*z.node).indices.at(0)
+                                                 })
             };
         }
 
@@ -778,11 +778,11 @@ namespace xng::ShaderScript {
             return {
                 ShaderDataType{ShaderDataType::VECTOR4, type.component, 1},
                 ShaderNodeFactory::vectorSwizzle(node, {
-                                                       down_cast<NodeVectorSwizzle &>(*x.node).indices.at(0),
-                                                       down_cast<NodeVectorSwizzle &>(*y.node).indices.at(0),
-                                                       down_cast<NodeVectorSwizzle &>(*z.node).indices.at(0),
-                                                       down_cast<NodeVectorSwizzle &>(*w.node).indices.at(0)
-                                                   })
+                                                     down_cast<NodeVectorSwizzle &>(*x.node).indices.at(0),
+                                                     down_cast<NodeVectorSwizzle &>(*y.node).indices.at(0),
+                                                     down_cast<NodeVectorSwizzle &>(*z.node).indices.at(0),
+                                                     down_cast<NodeVectorSwizzle &>(*w.node).indices.at(0)
+                                                 })
             };
         }
     };
@@ -852,6 +852,9 @@ namespace xng::ShaderScript {
                                 ShaderNodeFactory::vector({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
                                                           x.node,
                                                           y.node)) {
+            static_assert(VALUE_TYPE == ShaderDataType::VECTOR4
+                          || VALUE_TYPE == ShaderDataType::VECTOR3
+                          || VALUE_TYPE == ShaderDataType::VECTOR2);
         }
 
         ShaderNodeWrapperTyped(const ShaderNodeWrapperTyped<ShaderDataType::SCALAR, VALUE_COMPONENT, 1> &x,
@@ -862,6 +865,8 @@ namespace xng::ShaderScript {
                                                           x.node,
                                                           y.node,
                                                           z.node)) {
+            static_assert(VALUE_TYPE == ShaderDataType::VECTOR4
+                          || VALUE_TYPE == ShaderDataType::VECTOR3);
         }
 
         ShaderNodeWrapperTyped(const ShaderNodeWrapperTyped<ShaderDataType::SCALAR, VALUE_COMPONENT, 1> &x,
@@ -874,8 +879,10 @@ namespace xng::ShaderScript {
                                                           y.node,
                                                           z.node,
                                                           w.node)) {
+            static_assert(VALUE_TYPE == ShaderDataType::VECTOR4);
         }
 
+        // Literal Constructors
         ShaderNodeWrapperTyped(const bool literal)
             : ShaderNodeWrapper({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
                                 ShaderNodeFactory::literal(literal)) {
@@ -902,7 +909,8 @@ namespace xng::ShaderScript {
         }
 
     private:
-        static std::vector<std::unique_ptr<ShaderNode> > getNodes(const std::vector<ShaderNodeWrapper> &values) {
+        static std::vector<std::unique_ptr<ShaderNode> > getNodes(
+            const std::vector<ShaderNodeWrapperTyped<VALUE_TYPE, VALUE_COMPONENT, 1> > &values) {
             std::vector<std::unique_ptr<ShaderNode> > nodes;
             for (auto &value: values) {
                 nodes.push_back(value.node->copy());
