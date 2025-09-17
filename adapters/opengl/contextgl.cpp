@@ -245,7 +245,7 @@ void ContextGL::clearTextureDepthStencil(const RenderGraphResource texture,
                            tex.texture.size.y,
                            1,
                            GL_DEPTH_STENCIL,
-                           GL_UNSIGNED_INT,
+                           GL_UNSIGNED_INT_24_8,
                            &packed_value);
     } else if (tex.texture.format == DEPTH
                || tex.texture.format == DEPTH_32F
@@ -420,7 +420,12 @@ void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorA
     oglDebugStartGroup("ContextGL::beginRenderPass");
 
     framebufferColorAttachments = colorAttachments;
+    framebufferDepthStencilAttachment = depthStencilAttachment;
     framebuffer = std::make_shared<OGLFramebuffer>();
+
+    std::vector<GLenum> drawBuffers;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer->FBO);
     for (auto i = 0; i < colorAttachments.size(); ++i) {
         auto &attachment = colorAttachments.at(i);
         auto &tex = getTexture(attachment.texture);
@@ -446,7 +451,10 @@ void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorA
             }
         }
         framebuffer->attach(attachment, tex, GL_COLOR_ATTACHMENT0 + i);
+        drawBuffers.emplace_back(GL_COLOR_ATTACHMENT0 + i);
     }
+
+    glDrawBuffers(static_cast<GLsizei>(drawBuffers.size()),drawBuffers.data());
 
     if (depthStencilAttachment.texture) {
         auto &attachment = depthStencilAttachment;
@@ -462,7 +470,9 @@ void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorA
         framebuffer->attach(depthStencilAttachment, tex, GL_DEPTH_STENCIL_ATTACHMENT);
     }
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer->FBO);
+
     glBindVertexArray(vertexArray->VAO);
     oglCheckError();
 
@@ -693,7 +703,6 @@ void ContextGL::clearColorAttachment(const size_t binding, const Vec4u &clearCol
     oglDebugStartGroup("ContextGL::clearColorAttachment");
 
     const auto &attachment = framebufferColorAttachments.at(binding);
-    auto &tex = getTexture(attachment.texture);
 
     clearTextureColor(attachment.texture,
                       clearColor,
@@ -708,7 +717,6 @@ void ContextGL::clearDepthStencilAttachment(const float clearDepth, const unsign
     oglDebugStartGroup("ContextGL::clearDepthStencilAttachment");
 
     const auto &attachment = framebufferDepthStencilAttachment;
-    auto &tex = getTexture(attachment.texture);
 
     clearTextureDepthStencil(attachment.texture,
                              clearDepth,
@@ -792,7 +800,7 @@ void ContextGL::endRenderPass() {
     oglDebugStartGroup("ContextGL::endRenderPass");
 
     glBindVertexArray(0);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
     oglCheckError();
 
