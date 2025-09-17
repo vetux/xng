@@ -135,6 +135,10 @@ namespace xng {
             return distance(*this, other);
         }
 
+        T length() const {
+            return std::sqrt(std::pow(x, 2) + std::pow(y, 2));
+        }
+
         static T magnitude(const Vector2<T> &vec) {
             return std::sqrt(std::pow(vec.x, static_cast<T>(2)) + std::pow(vec.y, static_cast<T>(2)));
         }
