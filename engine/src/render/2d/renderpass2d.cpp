@@ -58,6 +58,7 @@ namespace xng {
         Vec2i viewportOffset;
         Vec2i viewportSize;
         RenderGraphAttachment renderTarget;
+        std::vector<std::vector<Texture2D::Handle> > textureDeallocations;
     };
 
     RenderPass2D::RenderPass2D() = default;
@@ -173,10 +174,6 @@ namespace xng {
             for (auto &pair: batch.textureAllocations) {
                 atlasHandles[pair.first] = atlas.add(pair.second);
             }
-            for (auto &handle: batch.textureDeallocations) {
-                atlas.remove(atlasHandles.at(handle));
-                atlasHandles.erase(handle);
-            }
         }
     }
 
@@ -203,9 +200,9 @@ namespace xng {
     }
 
     void RenderPass2D::runPass(RenderGraphContext &ctx) {
-        // Handle inherited resource buffers
         auto &atlasTextures = atlas.getAtlasTextures(ctx);
 
+        // Handle inherited resource buffers
         if (vertexBufferCopy) {
             ctx.copyBuffer(vertexBuffer, vertexBufferCopy, 0, 0, vertexBufferSize);
             vertexBufferSize = meshBuffer.getVertexBufferSize();
@@ -409,6 +406,7 @@ namespace xng {
                 currentPass.clearColor = batch.mClearColor;
                 renderBatchIndex = batchIndices.at(y);
                 gotRenderBatchIndex = true;
+                currentPass.textureDeallocations.emplace_back(batch.textureDeallocations);
             }
             currentPass.viewportOffset = batch.mViewportOffset;
             currentPass.viewportSize = batch.mViewportSize;
@@ -418,7 +416,7 @@ namespace xng {
             } else {
                 auto atlasHandle = atlasHandles.at(batch.renderTarget);
                 currentPass.renderTarget = RenderGraphAttachment(atlasTextures.at(atlasHandle.level),
-                                                                  atlasHandle.index);
+                                                                 atlasHandle.index);
             }
         }
         if (!currentPass.drawCalls.empty())
@@ -431,6 +429,13 @@ namespace xng {
         }
 
         for (auto &pass: drawPasses) {
+            for (auto &deallocations: pass.textureDeallocations) {
+                for (auto &dealloc: deallocations) {
+                    atlas.remove(atlasHandles.at(dealloc));
+                    atlasHandles.erase(dealloc);
+                }
+            }
+
             ctx.beginRenderPass({pass.renderTarget}, {});
 
             ctx.setViewport(pass.viewportOffset, pass.viewportSize);
