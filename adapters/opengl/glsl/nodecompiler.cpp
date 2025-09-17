@@ -41,6 +41,8 @@ std::string compileNode(const ShaderNode &node,
             return compileLeafNode(down_cast<const NodeArgument &>(node));
         case ShaderNode::VECTOR:
             return compileLeafNode(down_cast<const NodeVector &>(node), source, functionName);
+        case ShaderNode::MATRIX:
+            return compileLeafNode(down_cast<const NodeMatrix &>(node), source, functionName);
         case ShaderNode::ARRAY:
             return compileLeafNode(down_cast<const NodeArray &>(node), source, functionName);
         case ShaderNode::ATTRIBUTE_IN:
@@ -585,12 +587,14 @@ std::string compileLeafNode(const NodeVectorSwizzle &node,
 std::string compileLeafNode(const NodeSubscriptMatrix &node,
                             const Shader &source,
                             const std::string &functionName) {
-    return compileNode(*node.matrix, source, functionName)
-           + "["
-           + compileNode(*node.column, source, functionName)
-           + "]["
-           + compileNode(*node.row, source, functionName)
-           + "]";
+    auto ret = compileNode(*node.matrix, source, functionName)
+               + "["
+               + compileNode(*node.column, source, functionName)
+               + "]";
+    if (node.row) {
+        ret += "[" + compileNode(*node.row, source, functionName) + "]";
+    }
+    return ret;
 }
 
 std::string compileLeafNode(const NodeBranch &node,

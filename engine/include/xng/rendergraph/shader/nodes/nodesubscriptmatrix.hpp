@@ -25,15 +25,15 @@
 namespace xng {
     struct NodeSubscriptMatrix final : ShaderNode {
         std::unique_ptr<ShaderNode> matrix;
-        std::unique_ptr<ShaderNode> row;
         std::unique_ptr<ShaderNode> column;
+        std::unique_ptr<ShaderNode> row;
 
         NodeSubscriptMatrix(std::unique_ptr<ShaderNode> matrix,
-                              std::unique_ptr<ShaderNode> row,
-                              std::unique_ptr<ShaderNode> column)
+                            std::unique_ptr<ShaderNode> column,
+                            std::unique_ptr<ShaderNode> row)
             : matrix(std::move(matrix)),
-              row(std::move(row)),
-              column(std::move(column)) {
+              column(std::move(column)),
+              row(std::move(row)) {
         }
 
         NodeType getType() const override {
@@ -41,7 +41,7 @@ namespace xng {
         }
 
         std::unique_ptr<ShaderNode> copy() const override {
-            return std::make_unique<NodeSubscriptMatrix>(matrix->copy(), row->copy(), column->copy());
+            return std::make_unique<NodeSubscriptMatrix>(matrix->copy(), column->copy(), row ? row->copy() : nullptr);
         }
     };
 }

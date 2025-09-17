@@ -379,9 +379,9 @@ namespace xng::ShaderNodeFactory {
     }
 
     std::unique_ptr<ShaderNode> subscriptMatrix(const std::unique_ptr<ShaderNode> &matrix,
-                                                const std::unique_ptr<ShaderNode> &row,
-                                                const std::unique_ptr<ShaderNode> &column) {
-        return std::make_unique<NodeSubscriptMatrix>(matrix->copy(), row->copy(), column->copy());
+                                                const std::unique_ptr<ShaderNode> &column,
+                                                const std::unique_ptr<ShaderNode> &row) {
+        return std::make_unique<NodeSubscriptMatrix>(matrix->copy(), column->copy(), row ? row->copy() : nullptr);
     }
 
     std::unique_ptr<ShaderNode> branch(const std::unique_ptr<ShaderNode> &condition,

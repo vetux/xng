@@ -449,6 +449,23 @@ namespace xng::ShaderScript {
                                      ShaderNodeFactory::subscriptMatrix(node, column.node, row.node));
         }
 
+        ShaderNodeWrapper column(const ShaderNodeWrapper &column) {
+            promoteToVariable(node);
+            switch (type.type) {
+                case ShaderDataType::MAT2:
+                    return ShaderNodeWrapper({ShaderDataType::VECTOR2, type.component},
+                                             ShaderNodeFactory::subscriptMatrix(node, column.node, nullptr));
+                case ShaderDataType::MAT3:
+                    return ShaderNodeWrapper({ShaderDataType::VECTOR3, type.component},
+                                             ShaderNodeFactory::subscriptMatrix(node, column.node, nullptr));
+                case ShaderDataType::MAT4:
+                    return ShaderNodeWrapper({ShaderDataType::VECTOR4, type.component},
+                                             ShaderNodeFactory::subscriptMatrix(node, column.node, nullptr));
+                default:
+                    throw std::runtime_error("column call on non matrix");
+            }
+        }
+
         /**
          * The move and copy assignment operators are overloaded to translate logical assignments to shader node operations.
          *
