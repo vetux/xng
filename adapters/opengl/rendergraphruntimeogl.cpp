@@ -99,7 +99,9 @@ void RenderGraphRuntimeOGL::updateScreenTexture() {
         texture.size = window->getFramebufferSize();
         screenColorTexture = std::make_shared<OGLTexture>(texture);
         screenFramebuffer = std::make_shared<OGLFramebuffer>();
+        glBindFramebuffer(GL_FRAMEBUFFER, screenFramebuffer->FBO);
         screenFramebuffer->attach(*screenColorTexture, GL_COLOR_ATTACHMENT0, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         const auto clearColor = ColorRGBA::fuchsia();
         glClearTexImage(screenColorTexture->handle, 0, GL_RGBA, GL_UNSIGNED_BYTE, clearColor.data);
     }

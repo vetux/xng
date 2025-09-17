@@ -42,7 +42,9 @@ struct OGLFramebuffer {
         }
     }
 
-    void attach(const RenderGraphAttachment &attachment, const OGLTexture &tex, GLenum attachmentPoint) const {
+    void attach(const RenderGraphAttachment &attachment,
+                const OGLTexture &tex,
+                GLenum attachmentPoint) const {
         switch (tex.textureType) {
             case GL_TEXTURE_2D:
             case GL_TEXTURE_2D_MULTISAMPLE:
@@ -67,24 +69,20 @@ struct OGLFramebuffer {
     }
 
     void attach(const OGLTexture &texture, GLenum attachment, GLint mipMapLevel) const {
-        glBindFramebuffer(GL_FRAMEBUFFER, FBO);
         glFramebufferTexture2D(GL_FRAMEBUFFER,
                                attachment,
                                texture.textureType,
                                texture.handle,
                                mipMapLevel);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         oglCheckError();
     }
 
     void attach(const OGLTexture &texture, GLenum attachment, GLint mipLevel, GLenum face) const {
-        glBindFramebuffer(GL_FRAMEBUFFER, FBO);
         glFramebufferTexture2D(GL_FRAMEBUFFER,
                                attachment,
                                face,
                                texture.handle,
                                mipLevel);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         oglCheckError();
     }
 
@@ -92,12 +90,10 @@ struct OGLFramebuffer {
         if (texture.textureType != GL_TEXTURE_CUBE_MAP) {
             throw std::runtime_error("Invalid texture type for layered cubemap attachment");
         }
-        glBindFramebuffer(GL_FRAMEBUFFER, FBO);
         glFramebufferTexture(GL_FRAMEBUFFER,
                              attachment,
                              texture.handle,
                              mipLevel);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         oglCheckError();
     }
 
@@ -105,13 +101,11 @@ struct OGLFramebuffer {
         if (texture.textureType != GL_TEXTURE_2D_ARRAY) {
             throw std::runtime_error("Invalid texture type for index 2D array attachment");
         }
-        glBindFramebuffer(GL_FRAMEBUFFER, FBO);
         glFramebufferTextureLayer(GL_FRAMEBUFFER,
-                               attachment,
-                               texture.handle,
-                               mipLevel,
-                               index);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                                  attachment,
+                                  texture.handle,
+                                  mipLevel,
+                                  index);
         oglCheckError();
     }
 
@@ -119,14 +113,12 @@ struct OGLFramebuffer {
         if (texture.textureType != GL_TEXTURE_CUBE_MAP_ARRAY) {
             throw std::runtime_error("Invalid texture type for index cubemap array attachment");
         }
-        glBindFramebuffer(GL_FRAMEBUFFER, FBO);
         glFramebufferTexture3D(GL_FRAMEBUFFER,
                                attachment,
                                face,
                                texture.handle,
                                mipLevel,
                                index);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         oglCheckError();
     }
 };
