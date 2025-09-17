@@ -55,6 +55,18 @@ public:
                        CubeMapFace face,
                        size_t mipMapLevel) override;
 
+    void clearTextureColor(RenderGraphResource texture, const ColorRGBA &clearColor, size_t index, CubeMapFace face,
+                           size_t mipMapLevel) override;
+
+    void clearTextureColor(RenderGraphResource texture, const Vec4i &clearColor, size_t index, CubeMapFace face,
+                           size_t mipMapLevel) override;
+
+    void clearTextureColor(RenderGraphResource texture, const Vec4u &clearColor, size_t index, CubeMapFace face,
+                           size_t mipMapLevel) override;
+
+    void clearTextureDepthStencil(RenderGraphResource texture, float clearDepth, unsigned int clearStencil, size_t index,
+                                  CubeMapFace face, size_t mipMapLevel) override;
+
     void copyBuffer(RenderGraphResource target,
                     RenderGraphResource source,
                     size_t targetOffset,
@@ -92,7 +104,15 @@ public:
 
     void clearColorAttachment(size_t binding, ColorRGBA clearColor) override;
 
-    void clearDepthAttachment(float depth) override;
+    void clearColorAttachment(size_t binding, const Vec4i &clearColor) override;
+
+    void clearColorAttachment(size_t binding, const Vec4u &clearColor) override;
+
+    void clearDepthStencilAttachment(float clearDepth, unsigned int clearStencil) override;
+
+    void clearDepthAttachment(float clearDepth) override;
+
+    void clearStencilAttachment(unsigned int clearStencil) override;
 
     void setViewport(Vec2i viewportOffset, Vec2i viewportSize) override;
 

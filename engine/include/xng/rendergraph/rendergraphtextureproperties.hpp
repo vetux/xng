@@ -39,7 +39,7 @@ namespace xng {
     };
 
     enum ColorFormat : int {
-        // Base Formats
+        // Base Formats, Let implementation decide sizes
         R = 0,
         RG,
         RGB,
@@ -52,8 +52,10 @@ namespace xng {
         DEPTH_32F,
         DEPTH_24,
         DEPTH_16,
+        STENCIL_32,
+        STENCIL_16,
+        STENCIL_8,
         DEPTH24_STENCIL8,
-        DEPTH32F_STENCIL8,
 
         // Compressed Formats
         R_COMPRESSED,

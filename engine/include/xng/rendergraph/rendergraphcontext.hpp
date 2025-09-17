@@ -89,6 +89,31 @@ namespace xng {
             uploadTexture(texture, buffer, bufferSize, format, index, {}, 0);
         }
 
+        virtual void clearTextureColor(RenderGraphResource texture,
+                                       const ColorRGBA &clearColor,
+                                       size_t index,
+                                       CubeMapFace face,
+                                       size_t mipMapLevel) = 0;
+
+        virtual void clearTextureColor(RenderGraphResource texture,
+                                       const Vec4i &clearColor,
+                                       size_t index,
+                                       CubeMapFace face,
+                                       size_t mipMapLevel) = 0;
+
+        virtual void clearTextureColor(RenderGraphResource texture,
+                                       const Vec4u &clearColor,
+                                       size_t index,
+                                       CubeMapFace face,
+                                       size_t mipMapLevel) = 0;
+
+        virtual void clearTextureDepthStencil(RenderGraphResource texture,
+                                              float clearDepth,
+                                              unsigned int clearStencil,
+                                              size_t index,
+                                              CubeMapFace face,
+                                              size_t mipMapLevel) = 0;
+
         /**
          * Copy data from one buffer to another.
          *
@@ -216,7 +241,15 @@ namespace xng {
 
         virtual void clearColorAttachment(size_t binding, ColorRGBA clearColor) = 0;
 
-        virtual void clearDepthAttachment(float depth) = 0;
+        virtual void clearColorAttachment(size_t binding, const Vec4i &clearColor) = 0;
+
+        virtual void clearColorAttachment(size_t binding, const Vec4u &clearColor) = 0;
+
+        virtual void clearDepthStencilAttachment(float clearDepth, unsigned int clearStencil) = 0;
+
+        virtual void clearDepthAttachment(float clearDepth) = 0;
+
+        virtual void clearStencilAttachment(unsigned int clearStencil) = 0;
 
         virtual void setViewport(Vec2i viewportOffset, Vec2i viewportSize) = 0;
 
