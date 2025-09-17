@@ -95,11 +95,19 @@ namespace xng {
                                        CubeMapFace face,
                                        size_t mipMapLevel) = 0;
 
+        void clearTextureColor(const RenderGraphResource texture, const ColorRGBA &clearColor) {
+            clearTextureColor(texture, clearColor, 0, {}, 0);
+        }
+
         virtual void clearTextureColor(RenderGraphResource texture,
                                        const Vec4i &clearColor,
                                        size_t index,
                                        CubeMapFace face,
                                        size_t mipMapLevel) = 0;
+
+        void clearTextureColor(const RenderGraphResource texture, const Vec4i &clearColor) {
+            clearTextureColor(texture, clearColor, 0, {}, 0);
+        }
 
         virtual void clearTextureColor(RenderGraphResource texture,
                                        const Vec4u &clearColor,
@@ -107,12 +115,22 @@ namespace xng {
                                        CubeMapFace face,
                                        size_t mipMapLevel) = 0;
 
+        void clearTextureColor(const RenderGraphResource texture, const Vec4u &clearColor) {
+            clearTextureColor(texture, clearColor, 0, {}, 0);
+        }
+
         virtual void clearTextureDepthStencil(RenderGraphResource texture,
                                               float clearDepth,
                                               unsigned int clearStencil,
                                               size_t index,
                                               CubeMapFace face,
                                               size_t mipMapLevel) = 0;
+
+        void clearTextureDepthStencil(const RenderGraphResource texture,
+                                      const float clearDepth,
+                                      const unsigned int clearStencil) {
+            clearTextureDepthStencil(texture, clearDepth, clearStencil, 0, {}, 0);
+        }
 
         /**
          * Copy data from one buffer to another.
