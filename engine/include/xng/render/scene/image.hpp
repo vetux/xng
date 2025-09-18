@@ -22,7 +22,6 @@
 
 #include <vector>
 #include <stdexcept>
-#include <typeindex>
 
 #include "xng/render/scene/color.hpp"
 #include "xng/resource/resource.hpp"

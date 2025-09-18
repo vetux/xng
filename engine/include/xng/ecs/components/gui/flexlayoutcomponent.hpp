@@ -20,8 +20,6 @@
 #ifndef XENGINE_FLEXLAYOUTCOMPONENT_HPP
 #define XENGINE_FLEXLAYOUTCOMPONENT_HPP
 
-#include <typeindex>
-
 #include "xng/ecs/component.hpp"
 
 #include "xng/flexbox/flexlayout.hpp"
