@@ -22,33 +22,59 @@
 
 #include <map>
 
-#include "xng/math/vector2.hpp"
 #include "xng/input/buttonstate.hpp"
-#include "xng/input/inputdevice.hpp"
-
-#include "xng/input/device/gamepadevent.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT GamePad : public InputDevice {
+    enum GamePadAxis {
+        LEFT_X,
+        LEFT_Y,
+        RIGHT_X,
+        RIGHT_Y,
+        TRIGGER_LEFT,
+        TRIGGER_RIGHT,
+        AXIS_UNDEFINED
+    };
+
+    enum GamePadButton {
+        A,
+        B,
+        X,
+        Y,
+        BUMPER_LEFT,
+        BUMPER_RIGHT,
+        BACK,
+        START,
+        GUIDE,
+        LEFT_STICK,
+        RIGHT_STICK,
+        DPAD_UP,
+        DPAD_RIGHT,
+        DPADP_LEFT,
+        GAMEPAD_BUTTON_UNDEFINED,
+        TRIANGLE = Y,
+        RECTANGLE = X,
+        CROSS = A,
+        CIRCLE = B
+    };
+
+    class XENGINE_EXPORT GamePad final {
     public:
-        double getGamepadAxis(GamePadAxis axis) const {
+        double getGamepadAxis(const GamePadAxis axis) const {
             return axies.at(axis);
         }
 
-        bool getGamepadButton(GamePadButton button) const {
+        bool getGamepadButton(const GamePadButton button) const {
             auto it = buttons.find(button);
             if (it != buttons.end())
                 return it->second != RELEASED;
-            else
-                return false;
+            return false;
         }
 
-        bool getGamepadButtonDown(GamePadButton button) const {
+        bool getGamepadButtonDown(const GamePadButton button) const {
             auto it = buttons.find(button);
             if (it != buttons.end())
                 return it->second == PRESSED;
-            else
-                return false;
+            return false;
         }
 
         std::string vendor; //Vendor if available eg sony

@@ -23,32 +23,38 @@
 #include <functional>
 #include <set>
 
-#include "event.hpp"
-#include "eventlistener.hpp"
-#include "xng/util/listenable.hpp"
+#include "xng/event/eventlistener.hpp"
+#include "xng/util/downcast.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT EventBus : public Listenable<EventListener> {
+    class XENGINE_EXPORT EventBus final {
     public:
-        void invoke(const Event &event) const {
-            for (auto *receiver: listeners) {
-                receiver->onEvent(event);
+        template<typename T>
+        void invoke(const T &event) const {
+            for (auto &listener: listeners.at(T::typeName)) {
+                down_cast<EventListener<T> &>(listener.get()).onEvent(event);
             }
         }
 
-        UnregisterCallback addListener(EventListener &listener) override {
-            listeners.insert(&listener);
-            return [this, &listener]() {
-                removeListener(listener);
-            };
+        template<typename T>
+        void addListener(EventListener<T> &listener) {
+            listeners[T::typeName].insert(listener);
         }
 
-        void removeListener(EventListener &listener) override {
-            listeners.erase(&listener);
+        template<typename T>
+        void removeListener(EventListener<T> &listener) {
+            listeners[T::typeName].erase(listener);
         }
 
     private:
-        std::set<EventListener *> listeners;
+        struct CompareRefs {
+            bool operator()(const std::reference_wrapper<EventListenerBase> &a,
+                            const std::reference_wrapper<EventListenerBase> &b) const {
+                return &a.get() < &b.get();
+            }
+        };
+
+        std::map<std::string, std::set<std::reference_wrapper<EventListenerBase>, CompareRefs> > listeners;
     };
 }
 

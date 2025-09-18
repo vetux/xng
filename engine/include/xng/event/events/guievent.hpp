@@ -25,7 +25,9 @@
 #include <utility>
 
 namespace xng {
-    struct GuiEvent : public Event {
+    struct GuiEvent {
+        EVENT_TYPENAME(GuiEvent)
+
         enum Type {
             BUTTON_HOVER_START,
             BUTTON_HOVER_STOP,
@@ -34,11 +36,7 @@ namespace xng {
 
         std::string id;
 
-        GuiEvent(Type type, std::string id) : type(type), id(std::move(id)) {}
-
-        std::type_index getEventType() const override {
-            return typeid(GuiEvent);
-        }
+        GuiEvent(const Type type, std::string id) : type(type), id(std::move(id)) {}
     };
 }
 #endif //XENGINE_GUIEVENT_HPP

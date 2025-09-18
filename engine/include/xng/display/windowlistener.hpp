@@ -25,6 +25,8 @@
 namespace xng {
     class XENGINE_EXPORT WindowListener {
     public:
+        virtual ~WindowListener() = default;
+
         virtual void onWindowClose() {};
 
         virtual void onWindowMove(Vec2i pos) {};

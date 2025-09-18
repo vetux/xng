@@ -21,35 +21,38 @@
 #define XENGINE_CONTACTEVENT_HPP
 
 #include "xng/event/event.hpp"
+
 #include "xng/physics/world.hpp"
 #include "xng/ecs/entityhandle.hpp"
 
 namespace xng {
-    struct ContactEvent : public Event {
-        std::type_index getEventType() const override {
-            return typeid(ContactEvent);
-        }
+    struct ContactEvent {
+        EVENT_TYPENAME(ContactEvent)
 
         enum Type {
             BEGIN_CONTACT,
             END_CONTACT
-        } type;
-
-        ContactEvent() = default;
-
-        ContactEvent(Type type, EntityHandle entityA, EntityHandle entityB, size_t colliderIndexA,
-                     size_t colliderIndexB)
-                : type(type),
-                  entityA(entityA),
-                  entityB(entityB),
-                  colliderIndexA(colliderIndexA),
-                  colliderIndexB(colliderIndexB) {}
+        } type{};
 
         EntityHandle entityA;
         EntityHandle entityB;
 
-        size_t colliderIndexA;
-        size_t colliderIndexB;
+        size_t colliderIndexA{};
+        size_t colliderIndexB{};
+
+        ContactEvent() = default;
+
+        ContactEvent(const Type type,
+                     const EntityHandle entityA,
+                     const EntityHandle entityB,
+                     const size_t colliderIndexA,
+                     const size_t colliderIndexB)
+            : type(type),
+              entityA(entityA),
+              entityB(entityB),
+              colliderIndexA(colliderIndexA),
+              colliderIndexB(colliderIndexB) {
+        }
     };
 }
 

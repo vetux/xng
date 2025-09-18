@@ -21,6 +21,7 @@
 #define XENGINE_DISPLAYENVIRONMENT_HPP
 
 #include "xng/display/window.hpp"
+#include "xng/display/windowattributes.hpp"
 #include "xng/display/graphicsapi.hpp"
 
 namespace xng {

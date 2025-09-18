@@ -61,23 +61,21 @@ namespace xng {
 
         void clearEventBus() override;
 
-        const InputDevice &getDevice(std::type_index deviceType, int id) override;
+        const std::map<int, Keyboard> &getKeyboards() override;
 
-         std::map<int, const std::reference_wrapper<InputDevice>> getDevices(std::type_index deviceType) override;
+        const std::map<int, Mouse> &getMice() override;
+
+        const std::map<int, GamePad> &getGamePads() override;
 
         void update();
 
     private:
-        void invokeEvent(const Event &event);
-
         GLFWwindow &wndH;
 
-        const EventBus * eventBus = nullptr;
+        const EventBus *eventBus = nullptr;
 
         std::map<int, Keyboard> keyboards;
-
         std::map<int, Mouse> mice;
-
         std::map<int, GamePad> gamepads;
     };
 }

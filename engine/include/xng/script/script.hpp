@@ -20,10 +20,8 @@
 #ifndef XENGINE_SCRIPT_HPP
 #define XENGINE_SCRIPT_HPP
 
-#include "xng/event/eventlistener.hpp"
-
 namespace xng {
-    class XENGINE_EXPORT Script : public EventListener {
+    class XENGINE_EXPORT Script {
     public:
         virtual ~Script() = default;
 

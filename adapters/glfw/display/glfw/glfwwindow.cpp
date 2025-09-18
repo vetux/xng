@@ -145,7 +145,9 @@ namespace xng::glfw {
     }
 
     //TODO: GLFW Window implementation synchronization
-    void GLFWWindow::createWindow(const std::string &title, Vec2i size, WindowAttributes attributes) {
+    void GLFWWindow::createWindow(const std::string &title,
+                                  const Vec2i &size,
+                                  const WindowAttributes &attributes) {
         applyHints(attributes);
 
         wndH = glfwCreateWindow(size.x, size.y, title.c_str(), nullptr, nullptr);
@@ -161,10 +163,10 @@ namespace xng::glfw {
     }
 
     void GLFWWindow::createWindow(const std::string &title,
-                                  Vec2i size,
-                                  WindowAttributes attributes,
-                                  MonitorGLFW &monitor,
-                                  VideoMode videoMode) {
+                                  const Vec2i &size,
+                                  const WindowAttributes &attributes,
+                                  const MonitorGLFW &monitor,
+                                  const VideoMode &videoMode) {
         applyHints(attributes);
 
         //Setup monitor video mode hints
@@ -191,57 +193,57 @@ namespace xng::glfw {
         glfwDestroyWindow(wndH);
     }
 
-    void GLFWWindow::glfwWindowCloseCallback() {
+    void GLFWWindow::glfwWindowCloseCallback() const {
         for (auto listener: listeners) {
-            listener->onWindowClose();
+            listener.get().onWindowClose();
         }
     }
 
-    void GLFWWindow::glfwWindowMoveCallback(Vec2i pos) {
+    void GLFWWindow::glfwWindowMoveCallback(const Vec2i &pos) const {
         for (auto listener: listeners) {
-            listener->onWindowMove(pos);
+            listener.get().onWindowMove(pos);
         }
     }
 
-    void GLFWWindow::glfwWindowSizeCallback(int width, int height) {
+    void GLFWWindow::glfwWindowSizeCallback(const int width, const int height) const {
         for (auto listener: listeners) {
-            listener->onWindowResize(Vec2i(width, height));
+            listener.get().onWindowResize(Vec2i(width, height));
         }
     }
 
-    void GLFWWindow::glfwWindowRefreshCallback() {
+    void GLFWWindow::glfwWindowRefreshCallback() const {
         for (auto listener: listeners) {
-            listener->onWindowRefresh();
+            listener.get().onWindowRefresh();
         }
     }
 
-    void GLFWWindow::glfwWindowFocusCallback(bool focused) {
+    void GLFWWindow::glfwWindowFocusCallback(const bool focused) const {
         for (auto listener: listeners) {
-            listener->onWindowFocus(focused);
+            listener.get().onWindowFocus(focused);
         }
     }
 
-    void GLFWWindow::glfwWindowMinimizeCallback() {
+    void GLFWWindow::glfwWindowMinimizeCallback() const {
         for (auto listener: listeners) {
-            listener->onWindowMinimize();
+            listener.get().onWindowMinimize();
         }
     }
 
-    void GLFWWindow::glfwWindowMaximizeCallback() {
+    void GLFWWindow::glfwWindowMaximizeCallback() const {
         for (auto listener: listeners) {
-            listener->onWindowMaximize();
+            listener.get().onWindowMaximize();
         }
     }
 
-    void GLFWWindow::glfwWindowContentScaleCallback(Vec2f scale) {
+    void GLFWWindow::glfwWindowContentScaleCallback(const Vec2f &scale) const {
         for (auto listener: listeners) {
-            listener->onWindowContentScale(scale);
+            listener.get().onWindowContentScale(scale);
         }
     }
 
-    void GLFWWindow::glfwFrameBufferSizeCallback(Vec2i size) {
+    void GLFWWindow::glfwFrameBufferSizeCallback(const Vec2i &size) const {
         for (auto listener: listeners) {
-            listener->onFramebufferResize(size);
+            listener.get().onFramebufferResize(size);
         }
     }
 
@@ -290,7 +292,7 @@ namespace xng::glfw {
         glfwRequestWindowAttention(wndH);
     }
 
-    void GLFWWindow::setTitle(std::string title) {
+    void GLFWWindow::setTitle(const std::string title) {
         glfwSetWindowTitle(wndH, title.c_str());
     }
 
@@ -298,7 +300,7 @@ namespace xng::glfw {
         throw std::runtime_error("Not Implemented");
     }
 
-    void GLFWWindow::setWindowPosition(Vec2i position) {
+    void GLFWWindow::setWindowPosition(const Vec2i position) {
         glfwSetWindowPos(wndH, position.x, position.y);
     }
 
@@ -308,7 +310,7 @@ namespace xng::glfw {
         return {x, y};
     }
 
-    void GLFWWindow::setWindowSize(Vec2i size) {
+    void GLFWWindow::setWindowSize(const Vec2i size) {
         glfwSetWindowSize(wndH, size.x, size.y);
     }
 
@@ -318,11 +320,11 @@ namespace xng::glfw {
         return {x, y};
     }
 
-    void GLFWWindow::setWindowSizeLimit(Vec2i sizeMin, Vec2i sizeMax) {
+    void GLFWWindow::setWindowSizeLimit(const Vec2i sizeMin, const Vec2i sizeMax) {
         glfwSetWindowSizeLimits(wndH, sizeMin.x, sizeMin.y, sizeMax.x, sizeMax.y);
     }
 
-    void GLFWWindow::setWindowAspectRatio(Vec2i ratio) {
+    void GLFWWindow::setWindowAspectRatio(const Vec2i ratio) {
         glfwSetWindowAspectRatio(wndH, ratio.x, ratio.y);
     }
 
@@ -349,7 +351,7 @@ namespace xng::glfw {
         return ret;
     }
 
-    void GLFWWindow::setWindowOpacity(float opacity) {
+    void GLFWWindow::setWindowOpacity(const float opacity) {
         glfwSetWindowOpacity(wndH, opacity);
     }
 
@@ -357,7 +359,7 @@ namespace xng::glfw {
         return std::make_unique<MonitorGLFW>(glfwGetWindowMonitor(wndH));
     }
 
-    void GLFWWindow::setMonitor(Monitor &monitor, Recti rect, int refreshRate) {
+    void GLFWWindow::setMonitor(Monitor &monitor, const Recti rect, const int refreshRate) {
         auto &mon = dynamic_cast<MonitorGLFW &>(monitor);
         glfwSetWindowMonitor(wndH,
                              mon.monH,
@@ -372,37 +374,38 @@ namespace xng::glfw {
         glfwSetWindowMonitor(wndH, nullptr, 0, 0, 0, 0, 0);
     }
 
-    void GLFWWindow::setWindowDecorated(bool decorated) {
+    void GLFWWindow::setWindowDecorated(const bool decorated) {
         glfwSetWindowAttrib(wndH, GLFW_DECORATED, decorated);
     }
 
-    void GLFWWindow::setWindowResizable(bool resizable) {
+    void GLFWWindow::setWindowResizable(const bool resizable) {
         glfwSetWindowAttrib(wndH, GLFW_RESIZABLE, resizable);
     }
 
-    void GLFWWindow::setWindowAlwaysOnTop(bool alwaysOnTop) {
+    void GLFWWindow::setWindowAlwaysOnTop(const bool alwaysOnTop) {
         glfwSetWindowAttrib(wndH, GLFW_FLOATING, alwaysOnTop);
     }
 
-    void GLFWWindow::setWindowAutoMinimize(bool autoMinimize) {
+    void GLFWWindow::setWindowAutoMinimize(const bool autoMinimize) {
         glfwSetWindowAttrib(wndH, GLFW_AUTO_ICONIFY, autoMinimize);
     }
 
-    void GLFWWindow::setWindowFocusOnShow(bool focusOnShow) {
+    void GLFWWindow::setWindowFocusOnShow(const bool focusOnShow) {
         glfwSetWindowAttrib(wndH, GLFW_FOCUS_ON_SHOW, focusOnShow);
     }
 
-    Listenable<WindowListener>::UnregisterCallback GLFWWindow::addListener(WindowListener &listener) {
-        if (listeners.find(&listener) != listeners.end())
+    void GLFWWindow::addListener(WindowListener &listener) {
+        if (std::find_if(listeners.begin(),
+                         listeners.end(),
+                         [&listener](const std::reference_wrapper<WindowListener> &ref) {
+                             return &ref.get() == &listener;
+                         }) != listeners.end())
             throw std::runtime_error("Listener already registered");
-        listeners.insert(&listener);
-        return [this, &listener]() {
-            removeListener(listener);
-        };
+        listeners.insert(listener);
     }
 
     void GLFWWindow::removeListener(WindowListener &listener) {
-        listeners.erase(&listener);
+        listeners.erase(listener);
     }
 }
 

@@ -20,16 +20,6 @@
 #ifndef XENGINE_ECSEVENT_HPP
 #define XENGINE_ECSEVENT_HPP
 
-#include <typeindex>
+#define EVENT_TYPENAME(T) static constexpr auto typeName = #T;
 
-namespace xng {
-    struct Event {
-        virtual std::type_index getEventType() const = 0;
-
-        template<typename T>
-        const T &as() const {
-            return dynamic_cast<const T &>(*this);
-        }
-    };
-}
 #endif //XENGINE_ECSEVENT_HPP

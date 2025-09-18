@@ -23,27 +23,34 @@
 #include "xng/math/vector2.hpp"
 
 #include "xng/input/buttonstate.hpp"
-#include "xng/input/inputdevice.hpp"
-
-#include "xng/input/device/mouseevent.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT Mouse : public InputDevice {
+    enum MouseButton {
+        MOUSE_BUTTON_LEFT,
+        MOUSE_BUTTON_MIDDLE,
+        MOUSE_BUTTON_RIGHT,
+        MOUSE_BUTTON_OPTIONAL_1,
+        MOUSE_BUTTON_OPTIONAL_2,
+        MOUSE_BUTTON_OPTIONAL_3,
+        MOUSE_BUTTON_OPTIONAL_4,
+        MOUSE_BUTTON_OPTIONAL_5,
+        MOUSE_BUTTON_UNDEFINED
+    };
+
+    class XENGINE_EXPORT Mouse final {
     public:
-        bool getButton(MouseButton button) const {
+        bool getButton(const MouseButton button) const {
             auto it = buttons.find(button);
             if (it != buttons.end())
                 return it->second != RELEASED;
-            else
-                return false;
+            return false;
         }
 
-        bool getButtonDown(MouseButton button) const {
+        bool getButtonDown(const MouseButton button) const {
             auto it = buttons.find(button);
             if (it != buttons.end())
                 return it->second == PRESSED;
-            else
-                return false;
+            return false;
         }
 
         Vec2d wheelDelta;

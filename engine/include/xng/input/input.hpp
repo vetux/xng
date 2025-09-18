@@ -20,11 +20,7 @@
 #ifndef XENGINE_INPUT_HPP
 #define XENGINE_INPUT_HPP
 
-#include <set>
-
 #include "xng/render/scene/image.hpp"
-
-#include "xng/input/inputdevice.hpp"
 
 #include "xng/event/eventbus.hpp"
 
@@ -62,35 +58,29 @@ namespace xng {
 
         virtual void clearEventBus() = 0;
 
-        virtual const InputDevice &getDevice(std::type_index deviceType, int id) = 0;
+        virtual const std::map<int, Keyboard> & getKeyboards() = 0;
 
-        const Keyboard &getKeyboard(int id = 0) { return getDevice < Keyboard > (id); }
+        virtual const std::map<int, Mouse> & getMice() = 0;
 
-        const Mouse &getMouse(int id = 0) { return getDevice < Mouse > (id); }
+        virtual const std::map<int, GamePad> &getGamePads() = 0;
 
-        const GamePad &getGamePad(int id = 0) { return getDevice < GamePad > (id); }
-
-        template<typename T>
-        const T &getDevice(int id = 0) {
-            return dynamic_cast<const T &>(getDevice(typeid(T), id));
+        const Keyboard &getKeyboard(const int id = 0) {
+            return getKeyboards().at(id);
         }
 
-        virtual std::map<int, const std::reference_wrapper<InputDevice>> getDevices(std::type_index deviceType) = 0;
-
-        template<typename T>
-        const std::map<int, std::reference_wrapper<T>> &getDevices() {
-            std::map<int, std::reference_wrapper<T>> ret;
-            for (auto pair: getDevices(typeid(T))) {
-                ret[pair.first] = dynamic_cast<T &>(pair.second.get());
-            }
-            return ret;
+        const Mouse &getMouse(const int id = 0) {
+            return getMice().at(id);
         }
 
-        bool getKey(KeyboardKey key){
+        const GamePad &getGamePad(const int id = 0) {
+            return getGamePads().at(id);
+        }
+
+        bool getKey(const KeyboardKey key) {
             return getKeyboard().getKey(key);
         }
 
-        bool getKeyDown(KeyboardKey key){
+        bool getKeyDown(const KeyboardKey key) {
             return getKeyboard().getKeyDown(key);
         }
     };

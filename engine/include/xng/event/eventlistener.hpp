@@ -20,15 +20,16 @@
 #ifndef XENGINE_EVENTLISTENER_HPP
 #define XENGINE_EVENTLISTENER_HPP
 
-#include "event.hpp"
-
 namespace xng {
-    class XENGINE_EXPORT EventListener {
+    class XENGINE_EXPORT EventListenerBase {
     public:
-        /**T
-         * @param event
-         */
-        virtual void onEvent(const Event &event) = 0;
+        virtual ~EventListenerBase() = default;
+    };
+
+    template <typename EventType>
+    class XENGINE_EXPORT EventListener : public EventListenerBase {
+    public:
+        virtual void onEvent(const EventType &event) = 0;
     };
 }
 

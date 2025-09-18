@@ -35,13 +35,13 @@ namespace xng::glfw {
 
         ~GLFWWindow() override;
 
-        void createWindow(const std::string &title, Vec2i size, WindowAttributes attributes);
+        void createWindow(const std::string &title, const Vec2i& size, const WindowAttributes &attributes);
 
         void createWindow(const std::string &title,
-                          Vec2i size,
-                          WindowAttributes attributes,
-                          MonitorGLFW &monitor,
-                          VideoMode videoMode);
+                          const Vec2i& size,
+                          const WindowAttributes &attributes,
+                          const MonitorGLFW &monitor,
+                          const VideoMode &videoMode);
 
         Input &getInput() override;
 
@@ -107,34 +107,41 @@ namespace xng::glfw {
 
         void setWindowFocusOnShow(bool focusOnShow) override;
 
-        void glfwWindowCloseCallback();
+        void glfwWindowCloseCallback()const ;
 
-        void glfwWindowMoveCallback(Vec2i pos);
+        void glfwWindowMoveCallback(const Vec2i& pos)const ;
 
-        void glfwWindowSizeCallback(int width, int height);
+        void glfwWindowSizeCallback(int width, int height)const ;
 
-        void glfwWindowRefreshCallback();
+        void glfwWindowRefreshCallback()const ;
 
-        void glfwWindowFocusCallback(bool focused);
+        void glfwWindowFocusCallback(bool focused)const ;
 
-        void glfwWindowMinimizeCallback();
+        void glfwWindowMinimizeCallback()const ;
 
-        void glfwWindowMaximizeCallback();
+        void glfwWindowMaximizeCallback() const;
 
-        void glfwWindowContentScaleCallback(Vec2f scale);
+        void glfwWindowContentScaleCallback(const Vec2f& scale)const ;
 
-        void glfwFrameBufferSizeCallback(Vec2i size);
+        void glfwFrameBufferSizeCallback(const Vec2i& size)const ;
 
-        UnregisterCallback addListener(WindowListener &listener) override;
+        void addListener(WindowListener &listener) override;
 
         void removeListener(WindowListener &listener) override;
 
-        GLFWwindow *windowHandle() { return wndH; }
+        GLFWwindow *windowHandle() const { return wndH; }
 
     protected:
+        struct CompareRefs {
+            bool operator()(const std::reference_wrapper<WindowListener>& a,
+                            const std::reference_wrapper<WindowListener>& b) const {
+                return &a.get() < &b.get();
+            }
+        };
+
         GLFWwindow *wndH{};
         std::unique_ptr<GLFWInput> input;
-        std::set<WindowListener *> listeners;
+        std::set<std::reference_wrapper<WindowListener>, CompareRefs> listeners;
     };
 }
 

@@ -22,20 +22,12 @@
 
 #include "xng/event/event.hpp"
 
-namespace xng {
-    enum MouseButton {
-        MOUSE_BUTTON_LEFT,
-        MOUSE_BUTTON_MIDDLE,
-        MOUSE_BUTTON_RIGHT,
-        MOUSE_BUTTON_OPTIONAL_1,
-        MOUSE_BUTTON_OPTIONAL_2,
-        MOUSE_BUTTON_OPTIONAL_3,
-        MOUSE_BUTTON_OPTIONAL_4,
-        MOUSE_BUTTON_OPTIONAL_5,
-        MOUSE_BUTTON_UNDEFINED
-    };
+#include "xng/input/device/mouse.hpp"
 
-    struct MouseEvent : public Event {
+namespace xng {
+    struct MouseEvent {
+        EVENT_TYPENAME(MouseEvent)
+
         enum Type {
             MOUSE_CONNECT,
             MOUSE_DISCONNECT,
@@ -54,10 +46,6 @@ namespace xng {
         double yAmount{};
 
         MouseButton key{};
-
-        std::type_index getEventType() const override {
-            return typeid(MouseEvent);
-        }
     };
 }
 #endif //XENGINE_MOUSEEVENT_HPP

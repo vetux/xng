@@ -28,7 +28,7 @@
 namespace xng {
     class XENGINE_EXPORT GuiEventSystem final : public System {
     public:
-        GuiEventSystem(Window &window);
+        explicit GuiEventSystem(Window &window);
 
         ~GuiEventSystem() override = default;
 

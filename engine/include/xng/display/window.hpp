@@ -22,19 +22,20 @@
 
 #include "xng/render/scene/image.hpp"
 
-#include "windowlistener.hpp"
-#include "windowattributes.hpp"
-#include "monitor.hpp"
+#include "xng/display/windowlistener.hpp"
+#include "xng/display/monitor.hpp"
 
 #include "xng/input/input.hpp"
 #include "xng/math/vector2.hpp"
 
-#include "xng/util/listenable.hpp"
-
 namespace xng {
-    class XENGINE_EXPORT Window : public Listenable<WindowListener> {
+    class XENGINE_EXPORT Window {
     public:
         virtual ~Window() = default;
+
+        virtual void addListener(WindowListener &listener) = 0;
+
+        virtual void removeListener(WindowListener &listener) = 0;
 
         virtual Input &getInput() = 0;
 

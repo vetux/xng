@@ -22,40 +22,12 @@
 
 #include "xng/event/event.hpp"
 
+#include "xng/input/device/gamepad.hpp"
+
 namespace xng {
-    enum GamePadAxis {
-        LEFT_X,
-        LEFT_Y,
-        RIGHT_X,
-        RIGHT_Y,
-        TRIGGER_LEFT,
-        TRIGGER_RIGHT,
-        AXIS_UNDEFINED
-    };
+    struct GamePadEvent {
+        EVENT_TYPENAME(GamePadEvent)
 
-    enum GamePadButton {
-        A,
-        B,
-        X,
-        Y,
-        BUMPER_LEFT,
-        BUMPER_RIGHT,
-        BACK,
-        START,
-        GUIDE,
-        LEFT_STICK,
-        RIGHT_STICK,
-        DPAD_UP,
-        DPAD_RIGHT,
-        DPADP_LEFT,
-        GAMEPAD_BUTTON_UNDEFINED,
-        TRIANGLE = Y,
-        RECTANGLE = X,
-        CROSS = A,
-        CIRCLE = B
-    };
-
-    struct GamePadEvent : public Event {
         enum Type {
             GAMEPAD_CONNECTED,
             GAMEPAD_DISCONNECTED,
@@ -70,10 +42,6 @@ namespace xng {
         double amount{};
 
         GamePadButton button{};
-
-        std::type_index getEventType() const override {
-            return typeid(GamePadEvent);
-        }
     };
 }
 

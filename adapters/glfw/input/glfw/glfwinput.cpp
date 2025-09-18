@@ -25,6 +25,9 @@
 #include "glfwinput.hpp"
 
 #include "glfwtypeconverter.hpp"
+#include "xng/input/device/gamepadevent.hpp"
+#include "xng/input/device/keyboardevent.hpp"
+#include "xng/input/device/mouseevent.hpp"
 
 namespace xng {
     std::mutex windowMappingMutex;
@@ -122,14 +125,18 @@ namespace xng {
             ev.type = KeyboardEvent::KEYBOARD_KEY_DOWN;
             ev.key = k;
             ev.id = 0;
-            invokeEvent(ev);
+            if (eventBus) {
+                eventBus->invoke(ev);
+            }
         } else {
             keyboards[0].keys[k] = RELEASED;
             auto ev = KeyboardEvent();
             ev.type = KeyboardEvent::KEYBOARD_KEY_UP;
             ev.key = k;
             ev.id = 0;
-            invokeEvent(ev);
+            if (eventBus) {
+                eventBus->invoke(ev);
+            }
         }
     }
 
@@ -139,7 +146,9 @@ namespace xng {
         ev.type = KeyboardEvent::KEYBOARD_CHARACTER_INPUT;
         ev.value = static_cast<char32_t>(codepoint);
         ev.id = 0;
-        invokeEvent(ev);
+        if (eventBus) {
+            eventBus->invoke(ev);
+        }
     }
 
     void GLFWInput::glfwCursorCallback(double xPos, double yPos) {
@@ -151,7 +160,9 @@ namespace xng {
         ev.id = 0;
         ev.xPos = xPos;
         ev.yPos = yPos;
-        invokeEvent(ev);
+        if (eventBus) {
+            eventBus->invoke(ev);
+        }
     }
 
     void GLFWInput::glfwMouseKeyCallback(int button, int action, int mods) {
@@ -176,14 +187,18 @@ namespace xng {
             ev.type = MouseEvent::MOUSE_KEY_DOWN;
             ev.id = 0;
             ev.key = btn;
-            invokeEvent(ev);
+            if (eventBus) {
+                eventBus->invoke(ev);
+            }
         } else {
             mice[0].buttons[btn] = RELEASED;
             auto ev = MouseEvent();
             ev.type = MouseEvent::MOUSE_KEY_UP;
             ev.id = 0;
             ev.key = btn;
-            invokeEvent(ev);
+            if (eventBus) {
+                eventBus->invoke(ev);
+            }
         }
     }
 
@@ -195,7 +210,9 @@ namespace xng {
                     auto ev = GamePadEvent();
                     ev.type = GamePadEvent::GAMEPAD_CONNECTED;
                     ev.id = jid;
-                    invokeEvent(ev);
+                    if (eventBus) {
+                        eventBus->invoke(ev);
+                    }
                     break;
                 }
                 case GLFW_DISCONNECTED: {
@@ -203,7 +220,9 @@ namespace xng {
                     auto ev = GamePadEvent();
                     ev.type = GamePadEvent::GAMEPAD_DISCONNECTED;
                     ev.id = jid;
-                    invokeEvent(ev);
+                    if (eventBus) {
+                        eventBus->invoke(ev);
+                    }
                     break;
                 }
                 default:
@@ -221,7 +240,9 @@ namespace xng {
         ev.id = 0;
         ev.xAmount = xoffset;
         ev.yAmount = yoffset;
-        invokeEvent(ev);
+        if (eventBus) {
+            eventBus->invoke(ev);
+        }
     }
 
     //TODO: Implement clipboard support
@@ -281,32 +302,16 @@ namespace xng {
         }
     }
 
-    void GLFWInput::invokeEvent(const Event &event) {
-        if (eventBus) {
-            eventBus->invoke(event);
-        }
+    const std::map<int, Keyboard> &GLFWInput::getKeyboards() {
+        return keyboards;
     }
 
-    const InputDevice &GLFWInput::getDevice(std::type_index deviceType, int id) {
-        return getDevices(deviceType).at(id);
+    const std::map<int, Mouse> &GLFWInput::getMice() {
+        return mice;
     }
 
-    std::map<int, const std::reference_wrapper<InputDevice>> GLFWInput::getDevices(std::type_index deviceType) {
-        std::map<int, const std::reference_wrapper<InputDevice>> ret;
-        if (deviceType == typeid(Keyboard)) {
-            for (auto &pair: keyboards)
-                ret.insert(std::make_pair<int, const std::reference_wrapper<InputDevice>>((const int) pair.first,
-                                                                                          pair.second));
-        } else if (deviceType == typeid(Mouse)) {
-            for (auto &pair: mice)
-                ret.insert(std::make_pair<int, const std::reference_wrapper<InputDevice>>((const int) pair.first,
-                                                                                          pair.second));
-        } else if (deviceType == typeid(GamePad)) {
-            for (auto &pair: gamepads)
-                ret.insert(std::make_pair<int, const std::reference_wrapper<InputDevice>>((const int) pair.first,
-                                                                                          pair.second));
-        }
-        return ret;
+    const std::map<int, GamePad> &GLFWInput::getGamePads() {
+        return gamepads;
     }
 
     void GLFWInput::setEventBus(const EventBus &bus) {
