@@ -61,27 +61,23 @@ namespace xng {
         renderPipelineSkinned = builder.createPipeline(pipelineDesc);
 
         // Create GBuffer Textures
-        resolution = config->getRenderResolution();
+        currentResolution = builder.getBackBufferSize() * config->getRenderScale();
 
         auto desc = RenderGraphTexture();
-        desc.size = resolution;
+        desc.size = currentResolution;
         desc.format = RGBA32F;
-
         gBufferPosition = builder.createTexture(desc);
         gBufferNormal = builder.createTexture(desc);
         gBufferTangent = builder.createTexture(desc);
         gBufferRoughnessMetallicAmbientOcclusion = builder.createTexture(desc);
 
         desc.format = RGBA;
-
         gBufferAlbedo = builder.createTexture(desc);
 
         desc.format = RGBA32I;
-
         gBufferObjectShadows = builder.createTexture(desc);
 
         desc.format = DEPTH_STENCIL;
-
         gBufferDepth = builder.createTexture(desc);
 
         shaderBuffer = builder.createShaderBuffer(0);
@@ -104,17 +100,54 @@ namespace xng {
 
         atlas.declareReadWrite(builder, pass);
         meshAllocator.declareReadWrite(builder, pass);
+
+        builder.read(pass, renderPipelineSkinned);
+        builder.readWrite(pass, shaderBuffer);
+        builder.readWrite(pass, boneBuffer);
     }
 
     void ConstructionPass::recreate(RenderGraphBuilder &builder) {
         renderPipelineSkinned = builder.inheritResource(renderPipelineSkinned);
-        gBufferPosition = builder.inheritResource(gBufferPosition);
-        gBufferNormal = builder.inheritResource(gBufferNormal);
-        gBufferTangent = builder.inheritResource(gBufferTangent);
-        gBufferRoughnessMetallicAmbientOcclusion = builder.inheritResource(gBufferRoughnessMetallicAmbientOcclusion);
-        gBufferAlbedo = builder.inheritResource(gBufferAlbedo);
-        gBufferObjectShadows = builder.inheritResource(gBufferObjectShadows);
-        gBufferDepth = builder.inheritResource(gBufferDepth);
+
+        const auto resolution = builder.getBackBufferSize() * config->getRenderScale();
+
+        if (currentResolution != resolution) {
+            // Recreate GBuffer textures
+            currentResolution = resolution;
+
+            auto desc = RenderGraphTexture();
+            desc.size = currentResolution;
+            desc.format = RGBA32F;
+            gBufferPosition = builder.createTexture(desc);
+            gBufferNormal = builder.createTexture(desc);
+            gBufferTangent = builder.createTexture(desc);
+            gBufferRoughnessMetallicAmbientOcclusion = builder.createTexture(desc);
+
+            desc.format = RGBA;
+            gBufferAlbedo = builder.createTexture(desc);
+
+            desc.format = RGBA32I;
+            gBufferObjectShadows = builder.createTexture(desc);
+
+            desc.format = DEPTH_STENCIL;
+            gBufferDepth = builder.createTexture(desc);
+        } else {
+            gBufferPosition = builder.inheritResource(gBufferPosition);
+            gBufferNormal = builder.inheritResource(gBufferNormal);
+            gBufferTangent = builder.inheritResource(gBufferTangent);
+            gBufferRoughnessMetallicAmbientOcclusion = builder.inheritResource(gBufferRoughnessMetallicAmbientOcclusion);
+            gBufferAlbedo = builder.inheritResource(gBufferAlbedo);
+            gBufferObjectShadows = builder.inheritResource(gBufferObjectShadows);
+            gBufferDepth = builder.inheritResource(gBufferDepth);
+        }
+
+        registry->setEntry(GBUFFER_POSITION, gBufferPosition);
+        registry->setEntry(GBUFFER_NORMAL, gBufferNormal);
+        registry->setEntry(GBUFFER_TANGENT, gBufferTangent);
+        registry->setEntry(GBUFFER_ROUGHNESS_METALLIC_AO, gBufferRoughnessMetallicAmbientOcclusion);
+        registry->setEntry(GBUFFER_ALBEDO, gBufferAlbedo);
+        registry->setEntry(GBUFFER_OBJECT_SHADOWS, gBufferObjectShadows);
+        registry->setEntry(GBUFFER_DEPTH, gBufferDepth);
 
         shaderBuffer = builder.createShaderBuffer(totalShaderBufferSize);
         currentShaderBufferSize = totalShaderBufferSize;
@@ -125,23 +158,19 @@ namespace xng {
         atlas.onRecreate(builder);
         meshAllocator.onRecreate(builder);
 
-        registry->setEntry(GBUFFER_POSITION, gBufferPosition);
-        registry->setEntry(GBUFFER_NORMAL, gBufferNormal);
-        registry->setEntry(GBUFFER_TANGENT, gBufferTangent);
-        registry->setEntry(GBUFFER_ROUGHNESS_METALLIC_AO, gBufferRoughnessMetallicAmbientOcclusion);
-        registry->setEntry(GBUFFER_ALBEDO, gBufferAlbedo);
-        registry->setEntry(GBUFFER_OBJECT_SHADOWS, gBufferObjectShadows);
-        registry->setEntry(GBUFFER_DEPTH, gBufferDepth);
-
         auto pass = builder.addPass("ConstructionPass", [this](RenderGraphContext &ctx) {
             runPass(ctx);
         });
 
         atlas.declareReadWrite(builder, pass);
         meshAllocator.declareReadWrite(builder, pass);
+
+        builder.read(pass, renderPipelineSkinned);
+        builder.readWrite(pass, shaderBuffer);
+        builder.readWrite(pass, boneBuffer);
     }
 
-    bool ConstructionPass::shouldRebuild() {
+    bool ConstructionPass::shouldRebuild(const Vec2i &backBufferSize) {
         totalShaderBufferSize = 0;
         totalBoneBufferSize = 0;
 
@@ -432,7 +461,7 @@ namespace xng {
                             },
                             RenderGraphAttachment(gBufferDepth, 1, 0));
 
-        ctx.setViewport({}, resolution);
+        ctx.setViewport({}, currentResolution);
 
         ctx.uploadBuffer(boneBuffer,
                          reinterpret_cast<const uint8_t *>(boneMatrices.data()),

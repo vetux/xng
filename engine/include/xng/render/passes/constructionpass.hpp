@@ -44,7 +44,7 @@ namespace xng {
 
         void recreate(RenderGraphBuilder &builder) override;
 
-        bool shouldRebuild() override;
+        bool shouldRebuild(const Vec2i &backBufferSize) override;
 
     private:
         void runPass(RenderGraphContext &ctx);
@@ -84,7 +84,7 @@ namespace xng {
         std::map<Uri, TextureAtlasHandle> textures;
         std::set<ResourceHandle<SkinnedMesh> > meshes;
 
-        Vec2i resolution;
+        Vec2i currentResolution;
 
         Transform cameraTransform;
         Camera camera;

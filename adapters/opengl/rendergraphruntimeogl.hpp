@@ -37,6 +37,8 @@ public:
 
     void setWindow(Window &wndArg) override;
 
+    Window &getWindow() override;
+
     GraphHandle compile(const RenderGraph &graph) override;
 
     void recompile(GraphHandle handle, const RenderGraph &graph) override;
@@ -54,9 +56,9 @@ public:
     GraphicsAPI getGraphicsAPI() override { return OPENGL_4_6; }
 
 private:
-    void updateScreenTexture();
+    void updateBackBuffer();
 
-    void presentScreenTexture() const;
+    void presentBackBuffer() const;
 
     GraphHandle compileGraph(const RenderGraph &graph);
 
@@ -64,8 +66,10 @@ private:
 
     GraphHandle graphCounter = 0;
 
-    std::shared_ptr<OGLTexture> screenColorTexture;
-    std::shared_ptr<OGLFramebuffer> screenFramebuffer;
+    std::shared_ptr<OGLTexture> backBufferColor;
+    std::shared_ptr<OGLTexture> backBufferDepthStencil;
+
+    std::shared_ptr<OGLFramebuffer> backBuffer;
 
     std::unordered_map<GraphHandle, GraphResources> contexts;
 

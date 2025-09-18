@@ -26,27 +26,20 @@
 namespace xng {
     class RenderConfiguration {
     public:
-        const Vec2i &getRenderResolution() const {
-            if (renderResolution.length() == 0) {
-                return framebufferResolution;
-            } else {
-                return renderResolution;
-            }
+        void setRenderScale(const float scale) {
+            renderScale = scale;
         }
 
-        const Vec2i &getFramebufferResolution() const { return framebufferResolution; }
-
-        const RenderScene &getScene() const { return renderScene; }
-
-        void setRenderResolution(const Vec2i &resolution) { this->renderResolution = resolution; }
-
-        void setFramebufferResolution(const Vec2i &resolution) { this->framebufferResolution = resolution; }
+        float getRenderScale() const {
+            return renderScale;
+        }
 
         void setScene(const RenderScene &scene) { this->renderScene = scene; }
 
+        const RenderScene &getScene() const { return renderScene; }
+
     private:
-        Vec2i renderResolution;
-        Vec2i framebufferResolution;
+        float renderScale = 1.0f;
         RenderScene renderScene;
     };
 }

@@ -36,9 +36,12 @@ class ContextGL final : public RenderGraphContext {
 public:
     ~ContextGL() override = default;
 
-    explicit ContextGL(std::shared_ptr<OGLTexture> screenTexture, GraphResources res)
+    explicit ContextGL(std::shared_ptr<OGLTexture> backBufferColor,
+                       std::shared_ptr<OGLTexture> backBufferDepthStencil,
+                       GraphResources res)
         : vertexArray(std::make_shared<OGLVertexArrayObject>()),
-          screenTexture(std::move(screenTexture)),
+          backBufferColor(std::move(backBufferColor)),
+          backBufferDepthStencil(std::move(backBufferDepthStencil)),
           resources(std::move(res)) {
     }
 
@@ -163,7 +166,8 @@ private:
     std::shared_ptr<OGLFramebuffer> framebuffer = nullptr;
     std::shared_ptr<OGLVertexArrayObject> vertexArray = nullptr;
 
-    std::shared_ptr<OGLTexture> screenTexture = nullptr;
+    std::shared_ptr<OGLTexture> backBufferColor = nullptr;
+    std::shared_ptr<OGLTexture> backBufferDepthStencil = nullptr;
 
     GraphResources resources;
 };

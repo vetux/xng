@@ -29,12 +29,17 @@ namespace xng {
     /**
      * The runtime / context represents the platform-dependent implementation of the renderer.
      *
-     * The runtime manages an offscreen texture representing the window contents for any given execute() invocation
-     * and presents this texture to the window / swap chain before returning from an execute() call.
+     * The runtime manages an offscreen back buffer representing the window contents for any given execute() invocation
+     * and presents the color component of the offscreen back buffer to the window / swap chain before returning from an execute() call.
      *
-     * At the start of an execute() call, the contents of this offscreen texture are undefined. (May or may not contain previous frame data)
+     * At the start of an execute() call, the contents of this offscreen back buffer are undefined. (May or may not contain previous frame data)
      *
-     * This enables cross-graph read access to the screen contents.
+     * On OpenGL this is implemented as offscreen texture buffers.
+     *      This means one color texture is wasted/duplicated at a minimum because the window framebuffer cannot be accessed directly through the render graph interface.
+     *
+     * On Vulkan the back buffer color image is the next image in the swap chain, and depth stencil is an offscreen image, so no texture memory is wasted.
+     *
+     * The offscreen back buffer enables cross-graph access to the screen contents.
      */
     class RenderGraphRuntime {
     public:
@@ -45,10 +50,11 @@ namespace xng {
         /**
          * Set the window to render to.
          *
-         *
          * @param window
          */
         virtual void setWindow(Window &window) = 0;
+
+        virtual Window &getWindow() = 0;
 
         /**
          * Compile a graph.
@@ -94,14 +100,14 @@ namespace xng {
          * Read/Write to the screen texture is synchronized in the specified order.
          *
          *  For Example,
-         *      graphs[0] write to screen texture
-         *      graphs[1] read and write the screen texture
-         *      graphs[2] read the screen texture
-         *      graphs[3] read and write the screen texture
+         *      graphs[0] write to back buffer
+         *      graphs[1] read and write the back buffer
+         *      graphs[2] read the back buffer
+         *      graphs[3] read and write the back buffer
          *
-         *      graphs[1] will receive the changes to the screen texture from graph[0]
-         *      graphs[2] will receive the changes to the screen texture from graph[1]
-         *      graphs[3] will receive the changes to the screen texture from graph[1] and the read operation might run in parallel with graphs[2]
+         *      graphs[1] will receive the changes to the back buffer from graph[0]
+         *      graphs[2] will receive the changes to the back buffer from graph[1]
+         *      graphs[3] will receive the changes to the back buffer from graph[1] and the read operation might run in parallel with graphs[2]
          * @param graphs
          */
         virtual void execute(const std::vector<GraphHandle> &graphs) = 0;

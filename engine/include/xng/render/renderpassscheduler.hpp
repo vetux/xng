@@ -43,7 +43,7 @@ namespace xng {
         }
 
         RenderGraphRuntime::GraphHandle addGraph(std::vector<std::shared_ptr<RenderPass> > renderPasses) {
-            RenderGraphBuilder builder;
+            RenderGraphBuilder builder(runtime.getWindow().getFramebufferSize());
             for (auto &pass: renderPasses) {
                 pass->create(builder);
             }
@@ -55,13 +55,13 @@ namespace xng {
         void execute(const RenderGraphRuntime::GraphHandle graphHandle) const {
             bool recompile = false;
             for (const auto &pass: graphPasses.at(graphHandle)) {
-                if (pass->shouldRebuild()) {
+                if (pass->shouldRebuild(runtime.getWindow().getFramebufferSize())) {
                     recompile = true;
                     break;
                 }
             }
             if (recompile) {
-                RenderGraphBuilder builder;
+                RenderGraphBuilder builder(runtime.getWindow().getFramebufferSize());
                 for (const auto &pass: graphPasses.at(graphHandle)) {
                     pass->recreate(builder);
                 }
@@ -74,13 +74,13 @@ namespace xng {
             for (auto &graphHandle: graphHandles) {
                 bool recompile = false;
                 for (const auto &pass: graphPasses.at(graphHandle)) {
-                    if (pass->shouldRebuild()) {
+                    if (pass->shouldRebuild(runtime.getWindow().getFramebufferSize())) {
                         recompile = true;
                         break;
                     }
                 }
                 if (recompile) {
-                    RenderGraphBuilder builder;
+                    RenderGraphBuilder builder(runtime.getWindow().getFramebufferSize());
                     for (const auto &pass: graphPasses.at(graphHandle)) {
                         pass->recreate(builder);
                     }

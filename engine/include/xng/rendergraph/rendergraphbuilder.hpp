@@ -29,13 +29,14 @@
 #include "xng/rendergraph/rendergraphresource.hpp"
 #include "xng/rendergraph/rendergraphtexture.hpp"
 #include "xng/rendergraph/shader/shader.hpp"
+#include "xng/rendergraph/rendergraphruntime.hpp"
 
 namespace xng {
     class XENGINE_EXPORT RenderGraphBuilder {
     public:
         typedef size_t PassHandle;
 
-        RenderGraphBuilder();
+        explicit RenderGraphBuilder(const Vec2i &backBufferSize);
 
         ~RenderGraphBuilder() = default;
 
@@ -69,18 +70,21 @@ namespace xng {
          */
         RenderGraphResource createPipeline(const RenderGraphPipeline &pipeline);
 
+        const Vec2i &getBackBufferSize() const;
+
         /**
-         * The screen texture is an offscreen texture managed by the runtime.
-         * It can be read from and written to by render passes to access the resulting screen contents.
+         * The returned texture has an RGBA color format.
          *
-         * The texture format is as follows:
-         *  .size = window.getFramebufferSize() (Determined by the display environment)
-         *  .textureType = TEXTURE2D
-         *  .format = RGBA
-         *
-         * @return The offscreen texture representing the screen.
+         * @return The resource handle representing the back buffer color texture
          */
-        RenderGraphResource getScreenTexture() const;
+        RenderGraphResource getBackBufferColor() const;
+
+        /**
+         * The returned texture has an DEPTH_STENCIL color format.
+         *
+         * @return The resource handle representing the back buffer depth stencil texture
+         */
+        RenderGraphResource getBackBufferDepthStencil() const;
 
         PassHandle addPass(const std::string &name, std::function<void(RenderGraphContext &)> pass);
 
@@ -107,7 +111,10 @@ namespace xng {
 
         std::unordered_map<RenderGraphResource, RenderGraphResource, RenderGraphResourceHash> inheritedResources;
 
-        RenderGraphResource screenTexture{};
+        RenderGraphResource backBufferColor;
+        RenderGraphResource backBufferDepthStencil;
+
+        Vec2i backBufferSize;
     };
 }
 

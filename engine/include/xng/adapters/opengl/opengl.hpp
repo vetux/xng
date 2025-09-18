@@ -31,6 +31,8 @@ namespace xng::opengl {
 
         void setWindow(Window &window) override;
 
+        Window &getWindow() override;
+
         GraphHandle compile(const RenderGraph &graph) override;
 
         void recompile(GraphHandle handle, const RenderGraph &graph) override;

@@ -36,27 +36,27 @@ namespace xng {
         ~ClearPass() override = default;
 
         void create(RenderGraphBuilder &builder) override {
-            auto resolution = config->getRenderResolution();
+            const auto resolution = builder.getBackBufferSize() * config->getRenderScale();
 
             currentResolution = resolution;
+
+            backBufferColor = builder.getBackBufferColor();
+            backBufferDepth = builder.getBackBufferDepthStencil();
 
             RenderGraphTexture desc;
             desc.size = resolution;
             desc.format = RGBA;
 
-            screenColor = builder.createTexture(desc);
             deferredColor = builder.createTexture(desc);
             forwardColor = builder.createTexture(desc);
+
             backgroundColor = builder.createTexture(desc);
 
             desc.format = DEPTH_STENCIL;
 
-            screenDepth = builder.createTexture(desc);
             deferredDepth = builder.createTexture(desc);
             forwardDepth = builder.createTexture(desc);
 
-            registry->setEntry(SCREEN_COLOR, screenColor);
-            registry->setEntry(SCREEN_DEPTH, screenDepth);
             registry->setEntry(DEFERRED_COLOR, deferredColor);
             registry->setEntry(DEFERRED_DEPTH, deferredDepth);
             registry->setEntry(FORWARD_COLOR, forwardColor);
@@ -64,30 +64,86 @@ namespace xng {
             registry->setEntry(BACKGROUND_COLOR, backgroundColor);
 
             auto pass = builder.addPass("ClearPass", [this](RenderGraphContext &ctx) {
-                ctx.clearTextureColor(screenColor, ColorRGBA::black(1, 0));
+                ctx.clearTextureColor(backBufferColor, ColorRGBA::black(1, 0));
                 ctx.clearTextureColor(deferredColor, ColorRGBA::black(1, 0));
                 ctx.clearTextureColor(forwardColor, ColorRGBA::black(1, 0));
                 ctx.clearTextureColor(backgroundColor, ColorRGBA::black(1, 0));
-                ctx.clearTextureDepthStencil(screenDepth, 1, 0);
+                ctx.clearTextureDepthStencil(backBufferDepth, 1, 0);
                 ctx.clearTextureDepthStencil(deferredDepth, 1, 0);
                 ctx.clearTextureDepthStencil(forwardDepth, 1, 0);
             });
 
-            builder.write(pass, screenColor);
+            builder.write(pass, backBufferColor);
+            builder.write(pass, backBufferDepth);
+
             builder.write(pass, deferredColor);
             builder.write(pass, forwardColor);
+
             builder.write(pass, backgroundColor);
-            builder.write(pass, screenDepth);
+
             builder.write(pass, deferredDepth);
             builder.write(pass, forwardDepth);
         }
 
         void recreate(RenderGraphBuilder &builder) override {
-            create(builder);
+            const auto resolution = builder.getBackBufferSize() * config->getRenderScale();
+
+            backBufferColor = builder.getBackBufferColor();
+            backBufferDepth = builder.getBackBufferDepthStencil();
+
+            if (currentResolution != resolution) {
+                currentResolution = resolution;
+
+                RenderGraphTexture desc;
+                desc.size = resolution;
+                desc.format = RGBA;
+
+                deferredColor = builder.createTexture(desc);
+                forwardColor = builder.createTexture(desc);
+
+                backgroundColor = builder.createTexture(desc);
+
+                desc.format = DEPTH_STENCIL;
+
+                deferredDepth = builder.createTexture(desc);
+                forwardDepth = builder.createTexture(desc);
+            } else {
+                deferredColor = builder.inheritResource(deferredColor);
+                forwardColor = builder.inheritResource(forwardColor);
+
+                backgroundColor = builder.inheritResource(backgroundColor);
+
+                deferredDepth = builder.inheritResource(deferredDepth);
+                forwardDepth = builder.inheritResource(forwardDepth);
+            }
+
+            registry->setEntry(DEFERRED_COLOR, deferredColor);
+            registry->setEntry(DEFERRED_DEPTH, deferredDepth);
+            registry->setEntry(FORWARD_COLOR, forwardColor);
+            registry->setEntry(FORWARD_DEPTH, forwardDepth);
+            registry->setEntry(BACKGROUND_COLOR, backgroundColor);
+
+            auto pass = builder.addPass("ClearPass", [this](RenderGraphContext &ctx) {
+                ctx.clearTextureColor(backBufferColor, ColorRGBA::black(1, 0));
+                ctx.clearTextureColor(deferredColor, ColorRGBA::black(1, 0));
+                ctx.clearTextureColor(forwardColor, ColorRGBA::black(1, 0));
+                ctx.clearTextureColor(backgroundColor, ColorRGBA::black(1, 0));
+                ctx.clearTextureDepthStencil(backBufferDepth, 1, 0);
+                ctx.clearTextureDepthStencil(deferredDepth, 1, 0);
+                ctx.clearTextureDepthStencil(forwardDepth, 1, 0);
+            });
+
+            builder.write(pass, backBufferColor);
+            builder.write(pass, deferredColor);
+            builder.write(pass, forwardColor);
+            builder.write(pass, backgroundColor);
+            builder.write(pass, backBufferDepth);
+            builder.write(pass, deferredDepth);
+            builder.write(pass, forwardDepth);
         }
 
-        bool shouldRebuild() override {
-            return config->getRenderResolution() != currentResolution;
+        bool shouldRebuild(const Vec2i &backBufferSize) override {
+            return backBufferSize * config->getRenderScale() != currentResolution;
         }
 
     private:
@@ -96,8 +152,8 @@ namespace xng {
 
         Vec2i currentResolution;
 
-        RenderGraphResource screenColor;
-        RenderGraphResource screenDepth;
+        RenderGraphResource backBufferColor;
+        RenderGraphResource backBufferDepth;
         RenderGraphResource deferredColor;
         RenderGraphResource deferredDepth;
         RenderGraphResource forwardColor;

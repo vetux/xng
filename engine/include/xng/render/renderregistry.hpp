@@ -24,18 +24,14 @@
 
 namespace xng {
     enum RenderRegistryEntry {
-        // The combined deferred and forward colors from the compositing pass, can be written to by post processing or overlay (eg. gui) passes.
-        SCREEN_COLOR = 0,
-        SCREEN_DEPTH, // The combined deferred and forward screen depth from the compositing pass
-
         // The combined color of the deferred rendered objects, can be written to by post processing passes which require separated transparency and color textures (DOF).
-        DEFERRED_COLOR,
+        DEFERRED_COLOR = 0,
         DEFERRED_DEPTH, // The depth of the deferred rendered objects
 
         FORWARD_COLOR, // The combined color of the forward rendered objects (Transparency)
         FORWARD_DEPTH, // The depth of the forward rendered objects
 
-        // The non-transparent color of the background (eg. Skybox), the compositing pass blits the deferred color over this based on the depth and then blends the forward color ontop and stores the result in screen color.
+        // The non-transparent color of the background (eg. Skybox), the compositing pass blits the deferred color over this based on the depth and then blends the forward color ontop and stores the result in the back buffer.
         BACKGROUND_COLOR,
 
         // The GBuffer Textures, Created and assigned by the construction pass

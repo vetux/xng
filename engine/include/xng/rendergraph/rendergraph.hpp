@@ -45,18 +45,26 @@ namespace xng {
         std::unordered_map<RenderGraphResource, RenderGraphPipeline, RenderGraphResourceHash> pipelineAllocation;
         std::unordered_map<RenderGraphResource, RenderGraphResource, RenderGraphResourceHash> inheritedResources;
 
-        RenderGraphResource screenTexture{};
+        RenderGraphResource backBufferColor;
+        RenderGraphResource backBufferDepthStencil;
 
         RenderGraph() = default;
 
         RenderGraph(const std::vector<RenderGraphPass> &passes,
-                const std::unordered_map<RenderGraphResource, size_t, RenderGraphResourceHash> &vertex_buffer_allocation,
-                const std::unordered_map<RenderGraphResource, size_t, RenderGraphResourceHash> &index_buffer_allocation,
-                const std::unordered_map<RenderGraphResource, size_t, RenderGraphResourceHash> &shader_buffer_allocation,
-                const std::unordered_map<RenderGraphResource, RenderGraphTexture, RenderGraphResourceHash> &texture_allocation,
-                const std::unordered_map<RenderGraphResource, RenderGraphPipeline, RenderGraphResourceHash> &pipeline_allocation,
-                const std::unordered_map<RenderGraphResource, RenderGraphResource, RenderGraphResourceHash> &inherited_resources,
-                const RenderGraphResource screen_texture)
+                    const std::unordered_map<RenderGraphResource, size_t, RenderGraphResourceHash> &
+                    vertex_buffer_allocation,
+                    const std::unordered_map<RenderGraphResource, size_t, RenderGraphResourceHash> &
+                    index_buffer_allocation,
+                    const std::unordered_map<RenderGraphResource, size_t, RenderGraphResourceHash> &
+                    shader_buffer_allocation,
+                    const std::unordered_map<RenderGraphResource, RenderGraphTexture, RenderGraphResourceHash> &
+                    texture_allocation,
+                    const std::unordered_map<RenderGraphResource, RenderGraphPipeline, RenderGraphResourceHash> &
+                    pipeline_allocation,
+                    const std::unordered_map<RenderGraphResource, RenderGraphResource, RenderGraphResourceHash> &
+                    inherited_resources,
+                    const RenderGraphResource backBufferColor,
+                    const RenderGraphResource backBufferDepthStencil)
             : passes(passes),
               vertexBufferAllocation(vertex_buffer_allocation),
               indexBufferAllocation(index_buffer_allocation),
@@ -64,7 +72,8 @@ namespace xng {
               textureAllocation(texture_allocation),
               pipelineAllocation(pipeline_allocation),
               inheritedResources(inherited_resources),
-              screenTexture(screen_texture) {
+              backBufferColor(backBufferColor),
+              backBufferDepthStencil(backBufferDepthStencil) {
         }
     };
 }

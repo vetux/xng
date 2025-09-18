@@ -63,7 +63,7 @@ namespace xng {
 
     RenderPass2D::RenderPass2D() = default;
 
-    bool RenderPass2D::shouldRebuild() {
+    bool RenderPass2D::shouldRebuild(const Vec2i &backBufferSize) {
         if (vertexBufferSize < meshBuffer.getVertexBufferSize()
             || indexBufferSize < meshBuffer.getIndexBufferSize()) {
             return true;
@@ -94,7 +94,7 @@ namespace xng {
 
         shaderBuffer = builder.createShaderBuffer(sizeof(ShaderBufferFormat));
 
-        screenTexture = builder.getScreenTexture();
+        backBufferColor = builder.getBackBufferColor();
 
         auto pass = builder.addPass("RenderPass2D", [this](RenderGraphContext &ctx) {
             runPass(ctx);
@@ -115,7 +115,8 @@ namespace xng {
         if (indexBufferCopy) {
             builder.read(pass, indexBufferCopy);
         }
-        builder.write(pass, screenTexture);
+
+        builder.write(pass, backBufferColor);
     }
 
     void RenderPass2D::recreate(RenderGraphBuilder &builder) {
@@ -143,6 +144,8 @@ namespace xng {
 
         shaderBuffer = builder.inheritResource(shaderBuffer);
 
+        backBufferColor = builder.getBackBufferColor();
+
         auto pass = builder.addPass("RenderPass2D", [this](RenderGraphContext &ctx) {
             runPass(ctx);
         });
@@ -162,7 +165,7 @@ namespace xng {
         if (indexBufferCopy) {
             builder.read(pass, indexBufferCopy);
         }
-        builder.write(pass, screenTexture);
+        builder.write(pass, backBufferColor);
     }
 
     void RenderPass2D::setBatches(const std::vector<RenderBatch2D> &renderBatches) {
@@ -412,7 +415,7 @@ namespace xng {
             currentPass.viewportSize = batch.mViewportSize;
 
             if (batch.renderToScreen) {
-                currentPass.renderTarget = RenderGraphAttachment(screenTexture);
+                currentPass.renderTarget = RenderGraphAttachment(backBufferColor);
             } else {
                 auto atlasHandle = atlasHandles.at(batch.renderTarget);
                 currentPass.renderTarget = RenderGraphAttachment(atlasTextures.at(atlasHandle.level),

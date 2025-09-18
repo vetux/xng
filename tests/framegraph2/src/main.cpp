@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
 
     // Print shader test pass
     {
-        RenderGraphBuilder builder;
+        RenderGraphBuilder builder(window->getFramebufferSize());
         ShaderTestPass pass;
         pass.setup(builder);
 
@@ -87,21 +87,21 @@ int main(int argc, char *argv[]) {
     auto text = textRenderer.render("Hello\nWorld!", {50, 0, 0, TEXT_ALIGN_LEFT});
 
     auto config = std::make_shared<RenderConfiguration>();
-    config->setFramebufferResolution(window->getFramebufferSize());
 
     auto scene = createScene();
     config->setScene(scene);
+
     auto registry = std::make_shared<RenderRegistry>();
 
     auto passScheduler = std::make_shared<RenderPassScheduler>(runtime);
 
     auto pass2D = std::make_shared<RenderPass2D>();
 
-    auto graph = passScheduler->addGraph({
+    auto graph3D = passScheduler->addGraph({
         std::make_shared<ClearPass>(config, registry),
-        std::make_shared<ConstructionPass>(config, registry),
-        pass2D
+        std::make_shared<ConstructionPass>(config, registry)
     });
+    auto graph2D = passScheduler->addGraph(pass2D);
 
     while (!window->shouldClose()) {
         window->update();
@@ -128,7 +128,7 @@ int main(int argc, char *argv[]) {
         pass2D->setBatches(ren2D.getRenderBatches());
         ren2D.clearBatches();
 
-        passScheduler->execute(graph);
+        passScheduler->execute({graph3D, graph2D});
 
         window->swapBuffers();
     }

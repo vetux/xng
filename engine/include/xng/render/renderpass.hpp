@@ -31,7 +31,8 @@ namespace xng {
 
         virtual void recreate(RenderGraphBuilder &builder) = 0;
 
-        virtual bool shouldRebuild() = 0;
+        virtual bool shouldRebuild(const Vec2i &backBufferSize) = 0;
     };
 }
+
 #endif //XENGINE_RENDERPASS_HPP

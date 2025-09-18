@@ -30,6 +30,13 @@ void RenderGraphRuntimeOGL::setWindow(Window &wndArg) {
     this->window = &wndArg;
 }
 
+Window &RenderGraphRuntimeOGL::getWindow() {
+    if (window == nullptr) {
+        throw std::runtime_error("No window set");
+    }
+    return *window;
+}
+
 RenderGraphRuntime::GraphHandle RenderGraphRuntimeOGL::compile(const RenderGraph &graph) {
     return compileGraph(graph);
 }
@@ -41,14 +48,14 @@ void RenderGraphRuntimeOGL::recompile(const GraphHandle handle, const RenderGrap
 void RenderGraphRuntimeOGL::execute(const GraphHandle graph) {
     oglDebugStartGroup("RenderGraphRuntimeOGL::execute");
 
-    updateScreenTexture();
-    ContextGL context(screenColorTexture, contexts.at(graph));
+    updateBackBuffer();
+    ContextGL context(backBufferColor, backBufferDepthStencil, contexts.at(graph));
     for (auto &pass: contexts[graph].graph.passes) {
         oglDebugStartGroup(pass.name);
         pass.pass(context);
         oglDebugEndGroup();
     }
-    presentScreenTexture();
+    presentBackBuffer();
 
     oglDebugEndGroup();
 }
@@ -56,10 +63,10 @@ void RenderGraphRuntimeOGL::execute(const GraphHandle graph) {
 void RenderGraphRuntimeOGL::execute(const std::vector<GraphHandle> &graphs) {
     oglDebugStartGroup("RenderGraphRuntimeOGL::execute");
 
-    updateScreenTexture();
+    updateBackBuffer();
     for (auto graph: graphs) {
         oglDebugStartGroup("SubGraph");
-        ContextGL context(screenColorTexture, contexts.at(graph));
+        ContextGL context(backBufferColor, backBufferDepthStencil, contexts.at(graph));
         for (auto &pass: contexts[graph].graph.passes) {
             oglDebugStartGroup(pass.name);
             pass.pass(context);
@@ -67,7 +74,7 @@ void RenderGraphRuntimeOGL::execute(const std::vector<GraphHandle> &graphs) {
         }
         oglDebugEndGroup();
     }
-    presentScreenTexture();
+    presentBackBuffer();
 
     oglDebugEndGroup();
 }
@@ -86,42 +93,59 @@ void RenderGraphRuntimeOGL::loadCache(const GraphHandle graph, std::istream &str
     throw std::runtime_error("Not implemented");
 }
 
-void RenderGraphRuntimeOGL::updateScreenTexture() {
+void RenderGraphRuntimeOGL::updateBackBuffer() {
     if (window == nullptr) {
         throw std::runtime_error("No window has been set");
     }
     oglDebugStartGroup("RenderGraphRuntimeOGL::updateScreenTexture");
 
-    if (screenColorTexture == nullptr
-        || screenColorTexture->handle == 0
-        || screenColorTexture->texture.size != window->getFramebufferSize()) {
-        RenderGraphTexture texture;
-        texture.size = window->getFramebufferSize();
-        screenColorTexture = std::make_shared<OGLTexture>(texture);
-        screenFramebuffer = std::make_shared<OGLFramebuffer>();
-        glBindFramebuffer(GL_FRAMEBUFFER, screenFramebuffer->FBO);
-        screenFramebuffer->attach(*screenColorTexture, GL_COLOR_ATTACHMENT0, 0);
+    if (backBuffer == nullptr) {
+        backBuffer = std::make_shared<OGLFramebuffer>();
+    }
+
+    const auto fbSize = window->getFramebufferSize();
+    if (backBufferColor == nullptr || backBufferColor->texture.size != fbSize) {
+        RenderGraphTexture desc;
+        desc.size = fbSize;
+        desc.format = RGBA;
+        backBufferColor = std::make_shared<OGLTexture>(desc);
+
+        desc.format = DEPTH_STENCIL;
+        backBufferDepthStencil = std::make_shared<OGLTexture>(desc);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, backBuffer->FBO);
+        {
+            backBuffer->attach(*backBufferColor, GL_COLOR_ATTACHMENT0, 0);
+            backBuffer->attach(*backBufferDepthStencil, GL_DEPTH_STENCIL_ATTACHMENT, 0);
+
+            glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+            const auto clearColor = ColorRGBA::fuchsia();
+            glClearColor(clearColor.r(), clearColor.g(), clearColor.b(), 0);
+            glClearDepth(0);
+            glClearStencil(0);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        const auto clearColor = ColorRGBA::fuchsia();
-        glClearTexImage(screenColorTexture->handle, 0, GL_RGBA, GL_UNSIGNED_BYTE, clearColor.data);
+        oglCheckError();
     }
 
     oglDebugEndGroup();
 }
 
-void RenderGraphRuntimeOGL::presentScreenTexture() const {
+void RenderGraphRuntimeOGL::presentBackBuffer() const {
     oglDebugStartGroup("RenderGraphRuntimeOGL::presentScreenTexture");
 
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, screenFramebuffer->FBO);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, backBuffer->FBO);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     glBlitFramebuffer(0,
                       0,
-                      screenColorTexture->texture.size.x,
-                      screenColorTexture->texture.size.y,
+                      backBufferColor->texture.size.x,
+                      backBufferColor->texture.size.y,
                       0,
                       0,
-                      screenColorTexture->texture.size.x,
-                      screenColorTexture->texture.size.y,
+                      backBufferColor->texture.size.x,
+                      backBufferColor->texture.size.y,
                       GL_COLOR_BUFFER_BIT,
                       GL_NEAREST);
     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
@@ -141,26 +165,26 @@ RenderGraphRuntime::GraphHandle RenderGraphRuntimeOGL::compileGraph(const Render
     context.graph = graph;
 
     ShaderCompilerGLSL compiler;
-    for (const auto& pair: graph.pipelineAllocation) {
+    for (const auto &pair: graph.pipelineAllocation) {
         auto pip = compiler.compile(pair.second.shaders);
         context.pipelines[pair.first] = pair.second;
         context.compiledPipelines[pair.first] = pip;
         context.shaderPrograms[pair.first] = std::make_shared<OGLShaderProgram>(pip);
     }
 
-    for (const auto& pair : graph.textureAllocation) {
+    for (const auto &pair: graph.textureAllocation) {
         context.textures[pair.first] = std::make_shared<OGLTexture>(pair.second);
     }
 
-    for (const auto &pair : graph.vertexBufferAllocation) {
+    for (const auto &pair: graph.vertexBufferAllocation) {
         context.vertexBuffers[pair.first] = std::make_shared<OGLVertexBuffer>(pair.second);
     }
 
-    for (const auto &pair : graph.indexBufferAllocation) {
+    for (const auto &pair: graph.indexBufferAllocation) {
         context.indexBuffers[pair.first] = std::make_shared<OGLIndexBuffer>(pair.second);
     }
 
-    for (const auto &pair : graph.shaderBufferAllocation) {
+    for (const auto &pair: graph.shaderBufferAllocation) {
         context.storageBuffers[pair.first] = std::make_shared<OGLShaderStorageBuffer>(pair.second);
     }
 
@@ -171,7 +195,8 @@ RenderGraphRuntime::GraphHandle RenderGraphRuntimeOGL::compileGraph(const Render
     return handle;
 }
 
-RenderGraphRuntime::GraphHandle RenderGraphRuntimeOGL::recompileGraph(const GraphHandle handle, const RenderGraph &graph) {
+RenderGraphRuntime::GraphHandle RenderGraphRuntimeOGL::recompileGraph(const GraphHandle handle,
+                                                                      const RenderGraph &graph) {
     oglDebugStartGroup("RenderGraphRuntimeOGL::recompileGraph");
 
     auto context = GraphResources();
@@ -179,26 +204,26 @@ RenderGraphRuntime::GraphHandle RenderGraphRuntimeOGL::recompileGraph(const Grap
     context.graph = graph;
 
     ShaderCompilerGLSL compiler;
-    for (const auto& pair: graph.pipelineAllocation) {
+    for (const auto &pair: graph.pipelineAllocation) {
         auto pip = compiler.compile(pair.second.shaders);
         context.pipelines[pair.first] = pair.second;
         context.compiledPipelines[pair.first] = pip;
         context.shaderPrograms[pair.first] = std::make_shared<OGLShaderProgram>(pip);
     }
 
-    for (const auto& pair : graph.textureAllocation) {
+    for (const auto &pair: graph.textureAllocation) {
         context.textures[pair.first] = std::make_shared<OGLTexture>(pair.second);
     }
 
-    for (const auto &pair : graph.vertexBufferAllocation) {
+    for (const auto &pair: graph.vertexBufferAllocation) {
         context.vertexBuffers[pair.first] = std::make_shared<OGLVertexBuffer>(pair.second);
     }
 
-    for (const auto &pair : graph.indexBufferAllocation) {
+    for (const auto &pair: graph.indexBufferAllocation) {
         context.indexBuffers[pair.first] = std::make_shared<OGLIndexBuffer>(pair.second);
     }
 
-    for (const auto &pair : graph.shaderBufferAllocation) {
+    for (const auto &pair: graph.shaderBufferAllocation) {
         context.storageBuffers[pair.first] = std::make_shared<OGLShaderStorageBuffer>(pair.second);
     }
 

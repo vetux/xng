@@ -30,6 +30,10 @@ namespace xng::opengl {
         runtime->setWindow(window);
     }
 
+    Window & OpenGL::getWindow() {
+        return runtime->getWindow();
+    }
+
     RenderGraphRuntime::GraphHandle OpenGL::compile(const RenderGraph &graph) {
         return runtime->compile(graph);
     }

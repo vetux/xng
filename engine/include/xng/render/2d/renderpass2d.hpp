@@ -36,7 +36,7 @@ namespace xng {
          *
          * @return True if the graph must be rebuilt.
          */
-        bool shouldRebuild() override;
+        bool shouldRebuild(const Vec2i &backBufferSize) override;
 
         void create(RenderGraphBuilder &builder) override;
 
@@ -80,7 +80,7 @@ namespace xng {
 
         void runPass(RenderGraphContext &ctx);
 
-        RenderGraphResource screenTexture;
+        RenderGraphResource backBufferColor;
 
         RenderGraphResource trianglePipeline{};
         RenderGraphResource linePipeline{};

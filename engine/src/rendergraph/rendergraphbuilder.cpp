@@ -22,9 +22,11 @@
 #include "xng/rendergraph/rendergraphbuilder.hpp"
 
 namespace xng {
-    RenderGraphBuilder::RenderGraphBuilder() {
-        resourceCounter = 0;
-        screenTexture = createResource();
+    RenderGraphBuilder::RenderGraphBuilder(const Vec2i &backBufferSize)
+        : resourceCounter(0),
+          backBufferColor(createResource()),
+          backBufferDepthStencil(createResource()),
+          backBufferSize(backBufferSize) {
     }
 
     RenderGraphResource RenderGraphBuilder::inheritResource(const RenderGraphResource resource) {
@@ -63,8 +65,16 @@ namespace xng {
         return resource;
     }
 
-    RenderGraphResource RenderGraphBuilder::getScreenTexture() const {
-        return screenTexture;
+    const Vec2i &RenderGraphBuilder::getBackBufferSize() const {
+        return backBufferSize;
+    }
+
+    RenderGraphResource RenderGraphBuilder::getBackBufferColor() const {
+        return backBufferColor;
+    }
+
+    RenderGraphResource RenderGraphBuilder::getBackBufferDepthStencil() const {
+        return backBufferDepthStencil;
     }
 
     RenderGraphBuilder::PassHandle RenderGraphBuilder::addPass(const std::string &name,
@@ -98,7 +108,8 @@ namespace xng {
             textureAllocation,
             pipelineAllocation,
             inheritedResources,
-            screenTexture
+            backBufferColor,
+            backBufferDepthStencil
         };
     }
 
