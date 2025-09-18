@@ -20,7 +20,7 @@
 #ifndef XENGINE_RENDERCONFIGURATION_HPP
 #define XENGINE_RENDERCONFIGURATION_HPP
 
-#include "xng/render/scene/scene.hpp"
+#include "xng/render/renderscene.hpp"
 #include "xng/math/vector2.hpp"
 
 namespace xng {
@@ -36,18 +36,18 @@ namespace xng {
 
         const Vec2i &getFramebufferResolution() const { return framebufferResolution; }
 
-        const Scene &getScene() const { return renderScene; }
+        const RenderScene &getScene() const { return renderScene; }
 
         void setRenderResolution(const Vec2i &resolution) { this->renderResolution = resolution; }
 
         void setFramebufferResolution(const Vec2i &resolution) { this->framebufferResolution = resolution; }
 
-        void setScene(const Scene &scene) { this->renderScene = scene; }
+        void setScene(const RenderScene &scene) { this->renderScene = scene; }
 
     private:
         Vec2i renderResolution;
         Vec2i framebufferResolution;
-        Scene renderScene;
+        RenderScene renderScene;
     };
 }
 

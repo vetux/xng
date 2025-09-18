@@ -24,9 +24,10 @@
 #include "xng/ecs/components.hpp"
 #include "xng/util/time.hpp"
 
+//TODO: Reimplement MeshRenderSystem
 namespace xng {
-    MeshRenderSystem::MeshRenderSystem(SceneRenderer &pipeline)
-            : renderer(pipeline) {
+    MeshRenderSystem::MeshRenderSystem()
+    {
     }
 
     MeshRenderSystem::~MeshRenderSystem() = default;
@@ -36,7 +37,7 @@ namespace xng {
     void MeshRenderSystem::stop(EntityScene &entityManager, EventBus &eventBus) {}
 
     void MeshRenderSystem::update(DeltaTime deltaTime, EntityScene &entScene, EventBus &eventBus) {
-        Scene scene = {};
+      /*  Scene scene = {};
 
         // Get objects
         for (auto &pair: entScene.getPool<SkinnedMeshComponent>()) {
@@ -162,10 +163,6 @@ namespace xng {
         }
 
         // Render
-        renderer.render(scene);
-    }
-
-    SceneRenderer &MeshRenderSystem::getPipeline() {
-        return renderer;
+        renderer.render(scene);*/
     }
 }

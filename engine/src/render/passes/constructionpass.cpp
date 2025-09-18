@@ -144,27 +144,21 @@ namespace xng {
         std::set<Uri> usedTextures;
         std::vector<ResourceHandle<SkinnedMesh> > usedMeshes;
 
-        auto tmp = scene.rootNode.findAll({typeid(SkinnedMeshProperty)});
+        auto tmp = scene.skinnedMeshes;
         for (auto id = 0; id < tmp.size(); id++) {
             auto &object = tmp.at(id);
-            auto &meshProp = object.getProperty<SkinnedMeshProperty>();
-            if (meshProp.mesh.assigned()) {
-                auto it = object.properties.find(typeid(MaterialProperty));
-                MaterialProperty matProp;
-                if (it != object.properties.end()) {
-                    matProp = it->second->get<MaterialProperty>();
-                }
+            auto &meshResource = object.mesh;
+            if (meshResource.assigned()) {
+                meshAllocator.allocateMesh(meshResource);
+                usedMeshes.emplace_back(meshResource);
 
-                meshAllocator.allocateMesh(meshProp.mesh);
-                usedMeshes.emplace_back(meshProp.mesh);
-
-                for (auto i = 0; i < meshProp.mesh.get().subMeshes.size() + 1; i++) {
-                    const Mesh &mesh = i == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
+                for (auto i = 0; i < meshResource.get().subMeshes.size() + 1; i++) {
+                    const Mesh &mesh = i == 0 ? meshResource.get() : meshResource.get().subMeshes.at(i - 1);
 
                     Material mat = mesh.material.get();
 
-                    auto mi = matProp.materials.find(i);
-                    if (mi != matProp.materials.end()) {
+                    auto mi = object.materials.find(i);
+                    if (mi != object.materials.end()) {
                         mat = mi->second.get();
                     }
 
@@ -212,9 +206,8 @@ namespace xng {
             }
         }
 
-        auto cameraNode = scene.rootNode.find<CameraProperty>();
-        cameraTransform = cameraNode.getProperty<TransformProperty>().transform;
-        camera = cameraNode.getProperty<CameraProperty>().camera;
+        cameraTransform = scene.cameraTransform;
+        camera = scene.camera;
 
         // Deallocate unused meshes
         std::vector<ResourceHandle<SkinnedMesh> > meshDealloc;
@@ -264,35 +257,24 @@ namespace xng {
 
         auto &allocatedMeshes = meshAllocator.getMeshAllocations(ctx);
 
-        for (auto oi = 0; oi < objects.size(); oi++) {
-            auto &node = objects.at(oi);
-            auto &meshProp = node.getProperty<SkinnedMeshProperty>();
+        for (auto objectIndex = 0; objectIndex < objects.size(); objectIndex++) {
+            auto &object = objects.at(objectIndex);
+            auto &meshResource = object.mesh;
 
-            auto rig = meshProp.mesh.get().rig;
+            const auto &rig = meshResource.get().rig;
+            const auto &boneTransforms = object.boneTransforms;
+            const auto &materials = object.materials;
+            const auto &drawData = allocatedMeshes.at(meshResource.getUri());
 
-            std::map<std::string, Mat4f> boneTransforms;
-            auto it = node.properties.find(typeid(BoneTransformsProperty));
-            if (it != node.properties.end()) {
-                boneTransforms = it->second->get<BoneTransformsProperty>().boneTransforms;
-            }
+            for (auto i = 0; i < meshResource.get().subMeshes.size() + 1; i++) {
+                auto model = object.transform.model();
 
-            std::map<size_t, ResourceHandle<Material> > mats;
-            it = node.properties.find(typeid(MaterialProperty));
-            if (it != node.properties.end()) {
-                mats = it->second->get<MaterialProperty>().materials;
-            }
-
-            auto drawData = allocatedMeshes.at(meshProp.mesh.getUri());
-
-            for (auto i = 0; i < meshProp.mesh.get().subMeshes.size() + 1; i++) {
-                auto model = node.getProperty<TransformProperty>().transform.model();
-
-                const Mesh &mesh = i == 0 ? meshProp.mesh.get() : meshProp.mesh.get().subMeshes.at(i - 1);
+                const Mesh &mesh = i == 0 ? meshResource.get() : meshResource.get().subMeshes.at(i - 1);
 
                 auto material = mesh.material.get();
 
-                auto mIt = mats.find(i);
-                if (mIt != mats.end()) {
+                auto mIt = materials.find(i);
+                if (mIt != materials.end()) {
                     material = mIt->second.get();
                 }
 
@@ -305,25 +287,22 @@ namespace xng {
                     boneOffset = -1;
                 } else {
                     for (auto &bone: mesh.bones) {
-                        auto bt = boneTransforms.find(bone);
-                        if (bt != boneTransforms.end()) {
-                            boneMatrices.emplace_back(bt->second);
+                        auto boneTransform = boneTransforms.find(bone);
+                        if (boneTransform != boneTransforms.end()) {
+                            boneMatrices.emplace_back(boneTransform->second);
                         } else {
                             boneMatrices.emplace_back(MatrixMath::identity());
                         }
                     }
                 }
 
-                bool receiveShadows = true;
-                if (node.hasProperty<ShadowProperty>()) {
-                    receiveShadows = node.getProperty<ShadowProperty>().receiveShadows;
-                }
+                bool receiveShadows = object.receiveShadows;
 
                 auto data = ShaderDrawData();
 
                 data.model = model;
                 data.mvp = projection * view * model;
-                data.objectID_boneOffset_shadows[0] = static_cast<int>(oi);
+                data.objectID_boneOffset_shadows[0] = objectIndex;
                 data.objectID_boneOffset_shadows[1] = static_cast<int>(boneOffset);
                 data.objectID_boneOffset_shadows[2] = receiveShadows;
 
@@ -438,25 +417,16 @@ namespace xng {
         auto &atlasTextures = atlas.getAtlasTextures(ctx);
 
         ctx.beginRenderPass({
-                                RenderGraphAttachment(gBufferPosition),
-                                RenderGraphAttachment(gBufferNormal),
-                                RenderGraphAttachment(gBufferTangent),
-                                RenderGraphAttachment(gBufferRoughnessMetallicAmbientOcclusion),
-                                RenderGraphAttachment(gBufferAlbedo),
-                                RenderGraphAttachment(gBufferObjectShadows),
+                                RenderGraphAttachment(gBufferPosition, Vec4f(0)),
+                                RenderGraphAttachment(gBufferNormal, Vec4f(0)),
+                                RenderGraphAttachment(gBufferTangent, Vec4f(0)),
+                                RenderGraphAttachment(gBufferRoughnessMetallicAmbientOcclusion, Vec4f(0)),
+                                RenderGraphAttachment(gBufferAlbedo, ColorRGBA::black(1, 0)),
+                                RenderGraphAttachment(gBufferObjectShadows, Vec4i(0)),
                             },
-                            RenderGraphAttachment(gBufferDepth));
+                            RenderGraphAttachment(gBufferDepth, 1, 0));
 
         ctx.setViewport({}, resolution);
-
-        ctx.clearColorAttachment(0, ColorRGBA::black(1, 0));
-        ctx.clearColorAttachment(1, ColorRGBA::black(1, 0));
-        ctx.clearColorAttachment(2, ColorRGBA::black(1, 0));
-        ctx.clearColorAttachment(3, ColorRGBA::black(1, 0));
-        ctx.clearColorAttachment(4, ColorRGBA::black(1, 0));
-        ctx.clearColorAttachment(5, Vec4i(0, 0, 0, 0));
-
-        ctx.clearDepthStencilAttachment(1, 0);
 
         ctx.uploadBuffer(boneBuffer,
                          reinterpret_cast<const uint8_t *>(boneMatrices.data()),

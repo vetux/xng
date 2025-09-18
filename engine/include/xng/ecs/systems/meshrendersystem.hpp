@@ -27,13 +27,13 @@
 #include "xng/ecs/components/meshcomponent.hpp"
 #include "xng/ecs/components/skyboxcomponent.hpp"
 
-#include "xng/render/scenerenderer.hpp"
+
 #include "xng/util/time.hpp"
 
 namespace xng {
     class XENGINE_EXPORT MeshRenderSystem : public System {
     public:
-        MeshRenderSystem(SceneRenderer &pipeline);
+        MeshRenderSystem();
 
         ~MeshRenderSystem() override;
 
@@ -45,10 +45,7 @@ namespace xng {
 
         std::string getName() override { return "MeshRenderSystem"; }
 
-        SceneRenderer &getPipeline();
-
     private:
-        SceneRenderer &renderer;
     };
 }
 

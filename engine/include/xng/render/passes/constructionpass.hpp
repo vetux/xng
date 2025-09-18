@@ -26,6 +26,7 @@
 #include "xng/render/renderconfiguration.hpp"
 #include "xng/render/renderpass.hpp"
 #include "xng/render/renderregistry.hpp"
+#include "xng/render/renderscene.hpp"
 #include "xng/render/atlas/textureatlas.hpp"
 
 namespace xng {
@@ -87,7 +88,7 @@ namespace xng {
 
         Transform cameraTransform;
         Camera camera;
-        std::vector<Node> objects;
+        std::vector<SkinnedMeshObject> objects;
     };
 }
 

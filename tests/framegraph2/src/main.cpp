@@ -26,30 +26,15 @@
 
 #include "shadertestpass.hpp"
 
-Scene createScene(float aspectRatio) {
+RenderScene createScene() {
     // Scene interface will be redesign next.
-    Scene scene;
+    RenderScene scene;
 
-    Node camera;
-    camera.addProperty(TransformProperty());
+    SkinnedMeshObject skinnedMesh;
+    skinnedMesh.transform = Transform(Vec3f(0, 0, -20), Vec3f(), Vec3f(1, 1, 1));
+    skinnedMesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/sphere.obj"));
 
-    CameraProperty cameraProp;
-    cameraProp.camera.aspectRatio = aspectRatio;
-    camera.addProperty(cameraProp);
-
-    scene.rootNode.childNodes.emplace_back(camera);
-
-    Node mesh;
-
-    TransformProperty transform;
-    transform.transform = Transform(Vec3f(0, 0, -20), Vec3f(), Vec3f(1, 1, 1));
-    mesh.addProperty(transform);
-
-    SkinnedMeshProperty meshProp;
-    meshProp.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/sphere.obj"));
-    mesh.addProperty(meshProp);
-
-    scene.rootNode.childNodes.emplace_back(mesh);
+    scene.skinnedMeshes.push_back(skinnedMesh);
 
     return scene;
 }
@@ -104,8 +89,7 @@ int main(int argc, char *argv[]) {
     auto config = std::make_shared<RenderConfiguration>();
     config->setFramebufferResolution(window->getFramebufferSize());
 
-    auto scene = createScene(static_cast<float>(window->getFramebufferSize().x)
-                                / static_cast<float>(window->getFramebufferSize().y));
+    auto scene = createScene();
     config->setScene(scene);
     auto registry = std::make_shared<RenderRegistry>();
 
@@ -121,6 +105,10 @@ int main(int argc, char *argv[]) {
 
     while (!window->shouldClose()) {
         window->update();
+
+        scene.camera.aspectRatio = static_cast<float>(window->getFramebufferSize().x)
+                                / static_cast<float>(window->getFramebufferSize().y);
+        config->setScene(scene);
 
         auto fbSize = window->getFramebufferSize();
         auto fbSizeF = fbSize.convert<float>();

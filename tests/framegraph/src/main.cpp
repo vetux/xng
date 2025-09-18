@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
 
     renderer.setPipeline(pipeline);
 
-    xng::Scene scene;
+    xng::RenderScene scene;
 
     xng::Node node;
 
