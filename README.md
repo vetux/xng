@@ -7,36 +7,34 @@
 
 # xEngine
 
-xEngine is a cross-platform c++ game engine library. 
+xEngine is a Game Engine library for C++. 
 
-The engine is designed as a standalone modular toolkit in which different modules can be used independently. 
+The engine is designed as a standalone modular toolkit from which different modules can be used independently.
+
+This project is currently under heavy construction and should not be used in projects yet because the interface is still unstable and may change any time.
+
+Once the project has reached a stable state there will be semantically versioned releases.
 
 [xng-editor](https://github.com/vetux/xng-editor) - Editor application to simplify and accelerate the game creation
 workflow
 
 ## Features
-
-- 3D Frame Graph Renderer
-    - Physically Based Lighting
-    - Shadow Mapping
-- 2D Renderer with object-oriented SDL like interface
+- Rendering
+  - Render Graph Abstraction (WIP)
+    - Shader Domain Specific Language for writing Shaders in C++ (WIP) 
+  - 3D Rendering (WIP)
+  - 2D Rendering with a simple SDL like interface
+  - Sprite Animation
+  - Skeletal Animation
+  - Text Rendering
 - Resource system
   - Uri Resource addressing
   - Multithreaded Resource streaming
   - Automatic Resource Lifetime handling
-- ECS using data oriented architecture
-- Text Rendering
-- Sprite Animation
-- Skeletal Animation
-- Canvas layout engine
+- Entity Component System interface using a data oriented architecture
 - PAK file format with compression, chunking and encryption support
-- Cross Plattform (Linux, Windows and Android)
+- Canvas layout engine (Will be replaced with Flexbox layouts)
 
-## Work In Progress
-- Frame Graph Renderer rewrite to utilize hardware features of Vulkan
-- Image Based Environment Lighting for the PBR Model
-- GPU Platform abstraction will be removed
- 
 ## Screenshots
 ![](https://raw.githubusercontent.com/vetux/xng-assets/refs/heads/master/screenshots/ScreenshotFramegraph.jpg)
 
@@ -49,12 +47,8 @@ Adapters are implementations of interfaces in the xEngine API (For example throu
     - Android (WIP)
 - 3D Audio
     - OpenAL-Soft
-- GPU (Render, Compute, Raytracing) (Will be removed)
+- Render Graph
     - OpenGL
-- Shader Compiler
-    - GLSLang
-- Shader Decompiler
-    - SPIRV-Cross  
 - Font Rendering
     - FreeType
 - Physics Simulation
@@ -65,9 +59,7 @@ Adapters are implementations of interfaces in the xEngine API (For example throu
     - libSndFile
 
 ## Building
-
 ### Supported Platforms
-
 - Linux
     - Tested Compiler: GCC 12.2.0 64bit
 - Windows
@@ -83,7 +75,6 @@ Adapters are implementations of interfaces in the xEngine API (For example throu
     - Tested Compiler: Android NDK r25c
 
 ### Build Instructions
-
 Check [BUILDING.md](BUILDING.md) for detailed building instructions.
 
 ## Notes
@@ -97,12 +88,7 @@ When exporting rigged meshes from blender to be imported with the assimp importe
   - "Force Start/End Keyframes" creates invalid keyframes inside an animation for bones which are not keyframed in the animation.
 - Run "Limit Total" in weight paint mode to ensure that there is no more than 4 bones per vertex.
 
-### HDR Colors
-This engine will not follow the HDR FAD that for some reason certain graphics programmers accept without using logical reasoning. 
-Colors are represented using a maximum of 8 bit per channel by default in the rendering code 
-because display and camera light sensor technology currently and probably for the forseeable future can barely reach 8 bit depth in the real world already so having higher bit depth colours just adds bandwidth overhead for no reason.
-
-
 ### PBR Shading
-Because I do not have or know anyone with a math degree I am dependent on tutorials for the lighting equations. This means the frame graph PBR lighting might
-not be fully accurate and have missing features.
+Because I do not have or know anyone with a math degree I am dependent on tutorials for the lighting calculations.
+
+I would welcome any math geniuses to help me out once the engine has reached a more stable state.
