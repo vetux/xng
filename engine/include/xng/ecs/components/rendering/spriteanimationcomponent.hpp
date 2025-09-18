@@ -29,6 +29,8 @@ namespace xng {
      * A sprite animation system updates the sprite animations each update and updates the sprite.
      */
     struct XENGINE_EXPORT AnimatedSpriteComponent final : Component {
+        XNG_COMPONENT_TYPENAME(AnimatedSpriteComponent)
+
         ResourceHandle<SpriteAnimation> animation{};
         float animationSpeed = 1.0f;
 
@@ -44,10 +46,6 @@ namespace xng {
             message = Message(Message::DICTIONARY);
             animation >> message["animation"];
             return Component::operator>>(message);
-        }
-
-        std::type_index getType() const override {
-            return typeid(AnimatedSpriteComponent);
         }
     };
 }

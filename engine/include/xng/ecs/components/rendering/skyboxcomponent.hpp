@@ -27,7 +27,9 @@
 #include "xng/ecs/component.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT SkyboxComponent : public Component {
+    struct XENGINE_EXPORT SkyboxComponent final : Component {
+        XNG_COMPONENT_TYPENAME(SkyboxComponent)
+
         Skybox skybox;
 
         bool operator==(const SkyboxComponent &other) const {
@@ -43,10 +45,6 @@ namespace xng {
             message = Message(Message::DICTIONARY);
             skybox >> message["skybox"];
             return Component::operator>>(message);
-        }
-
-        std::type_index getType() const override {
-            return typeid(SkyboxComponent);
         }
     };
 }

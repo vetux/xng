@@ -30,7 +30,7 @@ namespace xng {
         }
         auto cmap = std::map<std::string, Message>();
         for (auto &pair: componentPools) {
-            if (pair.first == typeid(GenericComponent)) {
+            if (pair.first == GenericComponent::typeName) {
                 if (pair.second->check(entity)) {
                     auto &comp = pair.second->get<GenericComponent>(entity);
                     for (auto &p: comp.components) {
@@ -42,7 +42,7 @@ namespace xng {
                 auto serializer = ComponentRegistry::instance().getSerializer(pair.first);
                 Message msg;
                 serializer(*this, entity, msg);
-                cmap[ComponentRegistry::instance().getNameFromType(pair.first)] = msg;
+                cmap[pair.first] = msg;
             }
         }
 
@@ -58,8 +58,7 @@ namespace xng {
         }
         for (auto &c: message.getMessage("components", std::map<std::string, Message>()).asDictionary()) {
             if (ComponentRegistry::instance().checkTypeName(c.first)) {
-                auto type = ComponentRegistry::instance().getTypeFromName(c.first);
-                auto deserializer = ComponentRegistry::instance().getDeserializer(type);
+                auto deserializer = ComponentRegistry::instance().getDeserializer(c.first);
                 deserializer(*this, entity, c.second);
             } else {
                 if (!checkComponent<GenericComponent>(entity)) {
@@ -104,7 +103,7 @@ namespace xng {
         entities = other.entities;
         entityNames = other.entityNames;
         entityNamesReverse = other.entityNamesReverse;
-        name = other.name;
+        sceneName = other.sceneName;
         idCounter = other.idCounter;
         idStore = other.idStore;
     }
@@ -117,7 +116,7 @@ namespace xng {
         entities = other.entities;
         entityNames = other.entityNames;
         entityNamesReverse = other.entityNamesReverse;
-        name = other.name;
+        sceneName = other.sceneName;
         idCounter = other.idCounter;
         idStore = other.idStore;
         return *this;

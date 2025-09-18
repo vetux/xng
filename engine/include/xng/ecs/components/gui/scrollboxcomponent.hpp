@@ -35,6 +35,8 @@ namespace xng {
      * or as percentages which means they will grow relative to the screen / scrollbox size achieving "resolution scaling"
      */
     struct ScrollBoxComponent final : Component {
+        XNG_COMPONENT_TYPENAME(ScrollBoxComponent)
+
         float verticalScrollValue = 0;
         float horizontalScrollValue = 0;
 
@@ -61,8 +63,6 @@ namespace xng {
             barSize >> message["barSize"];
             return Component::operator>>(message);
         }
-
-        std::type_index getType() const override { return typeid(ScrollBoxComponent); }
     };
 }
 

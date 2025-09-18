@@ -25,7 +25,9 @@
 #include "xng/io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT ButtonComponent : Component {
+    struct XENGINE_EXPORT ButtonComponent final : Component {
+        XNG_COMPONENT_TYPENAME(ButtonComponent)
+
         std::string id;
         int layer; // The layer of this button used for resolving inputs on overlapping buttons
         ResourceHandle<Sprite> sprite;
@@ -49,10 +51,6 @@ namespace xng {
             spriteHover >> message["spriteHover"];
             spritePressed >> message["spritePressed"];
             return Component::operator>>(message);
-        }
-
-        std::type_index getType() const override {
-            return typeid(ButtonComponent);
         }
     };
 }

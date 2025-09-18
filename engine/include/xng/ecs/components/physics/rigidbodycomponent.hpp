@@ -25,7 +25,9 @@
 #include "xng/ecs/component.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT RigidBodyComponent : public Component {
+    struct XENGINE_EXPORT RigidBodyComponent final : Component {
+        XNG_COMPONENT_TYPENAME(RigidBodyComponent)
+
         RigidBody::RigidBodyType type = RigidBody::DYNAMIC;
 
         Vec3f angularFactor = Vec3f(1);
@@ -69,10 +71,6 @@ namespace xng {
             massCenter >> message["massCenter"];
             rotationalInertia >> message["rotationalInertia"];
             return Component::operator>>(message);
-        }
-
-        std::type_index getType() const override {
-            return typeid(RigidBodyComponent);
         }
     };
 }

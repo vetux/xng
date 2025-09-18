@@ -30,7 +30,9 @@
 #include "xng/ecs/component.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT LightComponent : public Component {
+    struct XENGINE_EXPORT LightComponent final : Component {
+        XNG_COMPONENT_TYPENAME(LightComponent)
+
         std::variant<PointLight,
                 DirectionalLight,
                 SpotLight> light;
@@ -76,10 +78,6 @@ namespace xng {
                 }
             }
             return Component::operator>>(message);
-        }
-
-        std::type_index getType() const override {
-            return typeid(LightComponent);
         }
     };
 }

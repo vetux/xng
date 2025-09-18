@@ -28,7 +28,9 @@ namespace xng {
     /**
      * 3D mesh collider
      */
-    struct XENGINE_EXPORT Collider3DComponent : public Component {
+    struct XENGINE_EXPORT Collider3DComponent final : Component {
+        XNG_COMPONENT_TYPENAME(Collider3DComponent)
+
         ResourceHandle<Mesh> mesh; // Optional mesh for COLLIDER_CONVEX_HULL and COLLIDER_TRIANGLES shapes
 
         ColliderShape shape{};
@@ -46,10 +48,6 @@ namespace xng {
             shape >> message["shape"];
             properties >> message["properties"];
             return Component::operator>>(message);
-        }
-
-        std::type_index getType() const override {
-            return typeid(Collider3DComponent);
         }
     };
 }

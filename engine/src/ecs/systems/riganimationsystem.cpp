@@ -57,15 +57,15 @@ namespace xng {
     }
 
     void RigAnimationSystem::onComponentCreate(const EntityHandle &entity, const Component &component) {
-        if (component.getType() == typeid(SkinnedMeshComponent)
-            || component.getType() == typeid(RigAnimationComponent)) {
+        if (component.getTypeName() == SkinnedMeshComponent::typeName
+            || component.getTypeName() == RigAnimationComponent::typeName) {
             rigAnimators.erase(entity);
         }
     }
 
     void RigAnimationSystem::onComponentDestroy(const EntityHandle &entity, const Component &component) {
-        if (component.getType() == typeid(SkinnedMeshComponent)
-            || component.getType() == typeid(RigAnimationComponent)) {
+        if (component.getTypeName() == SkinnedMeshComponent::typeName
+            || component.getTypeName() == RigAnimationComponent::typeName) {
             rigAnimators.erase(entity);
         }
     }
@@ -73,9 +73,9 @@ namespace xng {
     void RigAnimationSystem::onComponentUpdate(const EntityHandle &entity,
                                                const Component &oldComponent,
                                                const Component &newComponent) {
-        if (oldComponent.getType() == typeid(SkinnedMeshComponent)) {
+        if (oldComponent.getTypeName() == SkinnedMeshComponent::typeName) {
             rigAnimators.erase(entity);
-        } else if (oldComponent.getType() == typeid(RigAnimationComponent)) {
+        } else if (oldComponent.getTypeName() == RigAnimationComponent::typeName) {
             auto &oc = dynamic_cast<const RigAnimationComponent &>(oldComponent);
             auto &nc = dynamic_cast<const RigAnimationComponent &>(newComponent);
             for (auto &pair: oc.channels) {

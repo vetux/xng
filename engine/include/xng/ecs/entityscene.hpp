@@ -35,10 +35,12 @@
 namespace xng {
     class Entity;
 
-    class XENGINE_EXPORT EntityScene : public Resource, public Messageable {
+    class XENGINE_EXPORT EntityScene final : public Resource, public Messageable {
     public:
         class XENGINE_EXPORT Listener {
         public:
+            virtual ~Listener() = default;
+
             virtual void onEntityCreate(const EntityHandle &entity) {};
 
             virtual void onEntityDestroy(const EntityHandle &entity) {};
@@ -58,8 +60,6 @@ namespace xng {
 
         EntityScene() = default;
 
-        ~EntityScene() = default;
-
         EntityScene(const EntityScene &other);
 
         EntityScene(EntityScene &&other) noexcept = default;
@@ -73,11 +73,11 @@ namespace xng {
         std::type_index getTypeIndex() const override;
 
         const std::string &getName() const {
-            return name;
+            return sceneName;
         }
 
         void setName(const std::string &v) {
-            name = v;
+            sceneName = v;
         }
 
         /**
@@ -89,7 +89,7 @@ namespace xng {
          * @param name
          */
         void setEntityName(const EntityHandle &entity, const std::string &name) {
-            auto it = entityNamesReverse.find(entity);
+            const auto it = entityNamesReverse.find(entity);
             std::string oldName;
             if (it != entityNamesReverse.end()) {
                 oldName = it->second;
@@ -125,7 +125,7 @@ namespace xng {
             return entityNames.find(name) != entityNames.end();
         }
 
-        bool entityHasName(EntityHandle handle) const {
+        bool entityHasName(const EntityHandle handle) const {
             return entityNamesReverse.find(handle) != entityNamesReverse.end();
         }
 
@@ -133,15 +133,15 @@ namespace xng {
             if (idStore.empty()) {
                 if (idCounter == std::numeric_limits<int>::max())
                     throw std::runtime_error("Cannot create entity, id overflow");
-                auto ret = EntityHandle(idCounter++);
+                const auto ret = EntityHandle(idCounter++);
                 entities.insert(ret);
                 for (auto &listener: listeners) {
                     listener->onEntityCreate(ret);
                 }
                 return ret;
             } else {
-                auto it = idStore.begin();
-                EntityHandle ret(*it);
+                const auto it = idStore.begin();
+                const EntityHandle ret(*it);
                 idStore.erase(it);
                 entities.insert(ret);
                 for (auto &listener: listeners) {
@@ -152,7 +152,7 @@ namespace xng {
         }
 
         EntityHandle create(const std::string &name) {
-            auto ret = create();
+            const auto ret = create();
             setEntityName(ret, name);
             return ret;
         }
@@ -205,25 +205,25 @@ namespace xng {
 
         template<typename T>
         ComponentPool<T> &getPool() {
-            auto it = componentPools.find(typeid(T));
+            auto it = componentPools.find(T::typeName);
             if (it == componentPools.end()) {
-                componentPools[typeid(T)] = std::make_unique<ComponentPool<T>>();
+                componentPools[T::typeName] = std::make_unique<ComponentPool<T>>();
             }
-            return dynamic_cast<ComponentPool<T> &>(*componentPools[typeid(T)]);
+            return dynamic_cast<ComponentPool<T> &>(*componentPools.at(T::typeName));
         }
 
         template<typename T>
         const ComponentPool<T> &getPool() const {
-            auto it = componentPools.find(typeid(T));
+            auto it = componentPools.find(T::typeName);
             if (it == componentPools.end()) {
                 throw std::runtime_error("Pool does not exist");
             }
-            return dynamic_cast<ComponentPool<T> &>(*componentPools.at(typeid(T)));
+            return dynamic_cast<ComponentPool<T> &>(*componentPools.at(T::typeName));
         }
 
         template<typename T>
         bool checkPool() const {
-            return componentPools.find(typeid(T)) != componentPools.end();
+            return componentPools.find(T::typeName) != componentPools.end();
         }
 
         template<typename T>
@@ -283,38 +283,6 @@ namespace xng {
             return checkPool<T>() && getPool<T>().check(entity);
         }
 
-        /**
-         * Generic interface use for component types that are not known at compile time.
-         */
-
-        // Todo: Remove rtti usage from entityscene
-        void createComponent(const EntityHandle &entity, const std::type_index &type) {
-            ComponentRegistry::instance().getConstructor(type)(*this, entity);
-        }
-
-        void updateComponent(const EntityHandle &entity,
-                             const Component &value) {
-            ComponentRegistry::instance().getUpdater(value.getType())(*this, entity, value);
-        }
-
-        void destroyComponent(const EntityHandle &entity,
-                              const std::type_index &type) {
-            auto r = componentPools.at(type)->destroy(entity);
-            for (auto &comp: r) {
-                for (auto &listener: listeners) {
-                    listener->onComponentDestroy(entity, *comp);
-                }
-            }
-        }
-
-        bool checkComponent(const EntityHandle &entity, const std::type_index &type) {
-            return checkPool(type) && componentPools.at(type)->check(entity);
-        }
-
-        bool checkPool(const std::type_index &type) const {
-            return componentPools.find(type) != componentPools.end();
-        }
-
         Entity createEntity();
 
         Entity createEntity(const std::string &name);
@@ -328,7 +296,7 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            message.value("name", name);
+            message.value("sceneName", sceneName);
             if (message.getMessage("entities").getType() == Message::LIST) {
                 for (auto &msg: message.getMessage("entities").asList()) {
                     deserializeEntity(msg);
@@ -339,7 +307,7 @@ namespace xng {
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            message["name"] = name;
+            message["sceneName"] = sceneName;
             auto list = std::vector<Message>();
             for (auto &ent: entities) {
                 Message msg;
@@ -370,11 +338,11 @@ namespace xng {
         std::map<EntityHandle, std::string> entityNamesReverse;
 
         std::set<EntityHandle> entities;
-        std::map<std::type_index, std::unique_ptr<ComponentPoolBase>> componentPools;
+        std::map<std::string, std::unique_ptr<ComponentPoolBase>> componentPools;
 
         std::set<Listener *> listeners;
 
-        std::string name;
+        std::string sceneName;
     };
 }
 

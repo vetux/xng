@@ -25,7 +25,9 @@
 
 namespace xng {
     // TODO: Design particle rendering interface
-    struct XENGINE_EXPORT ParticleComponent : public Component {
+    struct XENGINE_EXPORT ParticleComponent final :  Component {
+        XNG_COMPONENT_TYPENAME(ParticleComponent)
+
         Messageable &operator<<(const Message &message) override {
             return Component::operator<<(message);
         }
@@ -33,10 +35,6 @@ namespace xng {
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             return Component::operator>>(message);
-        }
-
-        std::type_index getType() const override {
-            return typeid(ParticleComponent);
         }
     };
 }

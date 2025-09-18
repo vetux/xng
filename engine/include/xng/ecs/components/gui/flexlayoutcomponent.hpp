@@ -33,6 +33,8 @@ namespace xng {
      * Each child entity should define their own layout component to control the layout flexbox style.
      */
     struct FlexLayoutComponent final : Component {
+        XNG_COMPONENT_TYPENAME(FlexLayoutComponent)
+
         FlexLayout layout;
 
         Messageable &operator<<(const Message &message) override {
@@ -43,10 +45,6 @@ namespace xng {
         Message &operator>>(Message &message) const override {
             layout >> message["layout"];
             return Component::operator>>(message);
-        }
-
-        std::type_index getType() const override {
-            return typeid(FlexLayoutComponent);
         }
     };
 }

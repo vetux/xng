@@ -27,7 +27,9 @@
 #include "xng/ecs/component.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT MeshComponent : public Component {
+    struct XENGINE_EXPORT MeshComponent final : Component {
+        XNG_COMPONENT_TYPENAME(MeshComponent)
+
         bool castShadows{};
         bool receiveShadows{};
 
@@ -53,10 +55,6 @@ namespace xng {
             receiveShadows >> message["receiveShadows"];
             mesh >> message["mesh"];
             return message;
-        }
-
-        std::type_index getType() const override {
-            return typeid(MeshComponent);
         }
     };
 }

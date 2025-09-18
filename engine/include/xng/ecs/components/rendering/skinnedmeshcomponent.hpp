@@ -27,7 +27,9 @@
 #include "xng/ecs/component.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT SkinnedMeshComponent : public Component {
+    struct XENGINE_EXPORT SkinnedMeshComponent final : Component {
+        XNG_COMPONENT_TYPENAME(SkinnedMeshComponent)
+
         bool castShadows{};
         bool receiveShadows{};
 
@@ -53,10 +55,6 @@ namespace xng {
             receiveShadows >> message["receiveShadows"];
             mesh >> message["mesh"];
             return message;
-        }
-
-        std::type_index getType() const override {
-            return typeid(SkinnedMeshComponent);
         }
     };
 }

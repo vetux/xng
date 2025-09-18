@@ -28,7 +28,9 @@ namespace xng {
     /**
      * A sprite is an image displayed on a plane in 3d space.
      */
-    struct SpriteComponent : public Component {
+    struct SpriteComponent final : Component {
+        XNG_COMPONENT_TYPENAME(SpriteComponent)
+
         ResourceHandle<Sprite> sprite; // The static sprite to draw
         TextureFiltering filter = NEAREST;
 
@@ -43,10 +45,6 @@ namespace xng {
             sprite >> message["sprite"];
             filter >> message["filter"];
             return Component::operator>>(message);
-        }
-
-        std::type_index getType() const override {
-            return typeid(SpriteComponent);
         }
     };
 }

@@ -30,6 +30,8 @@ namespace xng {
      * Contains the animated bone transforms.
      */
     struct RigAnimationComponent final : Component {
+        XNG_COMPONENT_TYPENAME(RigAnimationComponent)
+
         struct Channel final : Messageable {
             ResourceHandle<RigAnimation> animation;
             Duration blendDuration{};
@@ -71,10 +73,6 @@ namespace xng {
             channels >> message["channels"];
             boneTransforms >> message["boneTransforms"];
             return message;
-        }
-
-        std::type_index getType() const override {
-            return typeid(RigAnimationComponent);
         }
     };
 }

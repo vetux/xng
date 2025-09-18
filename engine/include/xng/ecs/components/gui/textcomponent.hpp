@@ -27,6 +27,8 @@
 
 namespace xng {
     struct XENGINE_EXPORT TextComponent final : Component {
+        XNG_COMPONENT_TYPENAME(TextComponent)
+
         std::string text{};
 
         Vec2i pixelSize{};
@@ -78,10 +80,6 @@ namespace xng {
             text >> message["text"];
             textColor >> message["textColor"];
             return Component::operator>>(message);
-        }
-
-        std::type_index getType() const override {
-            return typeid(TextComponent);
         }
     };
 }

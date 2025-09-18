@@ -30,7 +30,9 @@ namespace xng {
      *
      * Each canvas is rendered to a texture using the Renderer2D and then presented in world space on a plane.
      */
-    struct XENGINE_EXPORT CanvasComponent : Component {
+    struct XENGINE_EXPORT CanvasComponent final : Component {
+        XNG_COMPONENT_TYPENAME(CanvasComponent)
+
         bool worldSpace = false; // If false the canvas is rendered relative to the camera, transform still applies
         Vec2i size = Vec2i(0, 0); // Optional size specification. if unassigned, the back buffer size is used.
 
@@ -41,10 +43,6 @@ namespace xng {
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             return Component::operator>>(message);
-        }
-
-        std::type_index getType() const override {
-            return typeid(CanvasComponent);
         }
     };
 }

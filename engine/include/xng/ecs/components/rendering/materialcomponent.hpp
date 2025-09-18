@@ -26,7 +26,9 @@
 #include "xng/ecs/component.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT MaterialComponent : public Component {
+    struct XENGINE_EXPORT MaterialComponent final : Component {
+        XNG_COMPONENT_TYPENAME(MaterialComponent)
+
         /**
          *  The materials for each index where index 0 is the root mesh
          *  and index - 1 are indices of subMeshes in the root mesh.
@@ -63,10 +65,6 @@ namespace xng {
             }
             message["materials"] = dict;
             return message;
-        }
-
-        std::type_index getType() const override {
-            return typeid(MaterialComponent);
         }
     };
 }

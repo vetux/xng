@@ -28,7 +28,9 @@
 #include "xng/io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT TransformComponent : public Component {
+    struct XENGINE_EXPORT TransformComponent final : Component {
+        XNG_COMPONENT_TYPENAME(TransformComponent)
+
         static Transform getAbsoluteTransform(const TransformComponent &component, EntityScene &entityManager);
 
         Transform transform;
@@ -45,10 +47,6 @@ namespace xng {
             transform >> message["transform"];
             parent >> message["parent"];
             return Component::operator>>(message);
-        }
-
-        std::type_index getType() const override {
-            return typeid(TransformComponent);
         }
     };
 }

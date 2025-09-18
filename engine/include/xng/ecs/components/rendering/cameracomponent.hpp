@@ -25,7 +25,9 @@
 #include "xng/ecs/component.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT CameraComponent : public Component {
+    struct XENGINE_EXPORT CameraComponent final : Component {
+        XNG_COMPONENT_TYPENAME(CameraComponent)
+
         Camera camera;
 
         Messageable &operator<<(const Message &message) override {
@@ -37,10 +39,6 @@ namespace xng {
             message = Message(Message::DICTIONARY);
             camera >> message["camera"];
             return Component::operator>>(message);
-        }
-
-        std::type_index getType() const override {
-            return typeid(CameraComponent);
         }
     };
 }

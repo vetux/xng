@@ -27,7 +27,9 @@
 #include "xng/io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT AudioSourceComponent : public Component {
+    struct XENGINE_EXPORT AudioSourceComponent final : Component {
+        XNG_COMPONENT_TYPENAME(AudioSourceComponent)
+
         ResourceHandle<AudioData> audio;
         bool play = false;
         bool loop = false;
@@ -59,10 +61,6 @@ namespace xng {
             loop >> message["loop"];
             velocity >> message["velocity"];
             return Component::operator>>(message);
-        }
-
-        std::type_index getType() const override {
-            return typeid(AudioSourceComponent);
         }
     };
 }

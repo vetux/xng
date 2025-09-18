@@ -64,7 +64,7 @@ namespace xng {
     }
 
     void SpriteAnimationSystem::onComponentCreate(const EntityHandle &entity, const Component &component) {
-        if (component.getType() == typeid(AnimatedSpriteComponent)) {
+        if (component.getTypeName() == AnimatedSpriteComponent::typeName) {
             const auto &v = dynamic_cast<const AnimatedSpriteComponent &>(component);
             if (v.animation.assigned()) {
                 auto animation = v.animation.get();
@@ -74,7 +74,7 @@ namespace xng {
     }
 
     void SpriteAnimationSystem::onComponentDestroy(const EntityHandle &entity, const Component &component) {
-        if (component.getType() == typeid(AnimatedSpriteComponent)) {
+        if (component.getTypeName() == AnimatedSpriteComponent::typeName) {
             animations.erase(entity);
         }
     }
@@ -86,7 +86,7 @@ namespace xng {
     void SpriteAnimationSystem::onComponentUpdate(const EntityHandle &entity,
                                                   const Component &oldComponent,
                                                   const Component &newComponent) {
-        if (oldComponent.getType() == typeid(AnimatedSpriteComponent)) {
+        if (oldComponent.getTypeName() == AnimatedSpriteComponent::typeName) {
             const auto &ov = dynamic_cast<const AnimatedSpriteComponent &>(oldComponent);
             const auto &nv = dynamic_cast<const AnimatedSpriteComponent &>(newComponent);
             if (ov.animation != nv.animation) {

@@ -24,11 +24,13 @@
 #include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
 
-namespace xng{
+namespace xng {
     /**
      * 2D collider, Collider shapes must be COLLIDER_2D
      */
-    struct XENGINE_EXPORT Collider2DComponent : public Component {
+    struct XENGINE_EXPORT Collider2DComponent final : Component {
+        XNG_COMPONENT_TYPENAME(Collider2DComponent)
+
         std::vector<ColliderDesc> colliders;
 
         Messageable &operator<<(const Message &message) override {
@@ -39,10 +41,6 @@ namespace xng{
         Message &operator>>(Message &message) const override {
             colliders >> message["colliders"];
             return Component::operator>>(message);
-        }
-
-        std::type_index getType() const override {
-            return typeid(Collider2DComponent);
         }
     };
 }

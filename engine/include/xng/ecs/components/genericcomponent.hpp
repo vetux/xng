@@ -27,12 +27,10 @@ namespace xng {
      * When serializing a component for every entry in components is created.
      * When unknown type names are encountered when deserializing the data is stored in a generic component.
      */
-    struct GenericComponent : public Component {
-        std::map<std::string, Message> components;
+    struct GenericComponent final : Component {
+        XNG_COMPONENT_TYPENAME(GenericComponent)
 
-        std::type_index getType() const override {
-            return typeid(GenericComponent);
-        }
+        std::map<std::string, Message> components;
     };
 }
 

@@ -200,7 +200,7 @@ namespace xng {
     }
 
     void PhysicsSystem::onComponentDestroy(const EntityHandle &entity, const Component &component) {
-        if (component.getType() == typeid(RigidBodyComponent)) {
+        if (component.getTypeName() == RigidBodyComponent::typeName) {
             if (colliders.find(entity) != colliders.end()) {
                 for (auto &col: colliders.at(entity)) {
                     colliderIndices.erase(col.get());
@@ -217,7 +217,7 @@ namespace xng {
     void PhysicsSystem::onComponentUpdate(const EntityHandle &entity,
                                           const Component &oldComponent,
                                           const Component &newComponent) {
-        if (oldComponent.getType() == typeid(RigidBodyComponent)) {
+        if (oldComponent.getTypeName() ==  RigidBodyComponent::typeName) {
             auto &oComp = dynamic_cast<const RigidBodyComponent &>(oldComponent);
             auto &nComp = dynamic_cast<const RigidBodyComponent &>(newComponent);
 
@@ -226,7 +226,7 @@ namespace xng {
                 rigidBodies.at(entity)->setAngularFactor(nComp.angularFactor);
                 rigidBodies.at(entity)->setGravityScale(nComp.gravityScale);
             }
-        } else if (oldComponent.getType() == typeid(Collider2DComponent)) {
+        } else if (oldComponent.getTypeName() == Collider2DComponent::typeName) {
             auto &oComp = dynamic_cast<const Collider2DComponent &>(oldComponent);
             auto &nComp = dynamic_cast<const Collider2DComponent &>(newComponent);
 
@@ -244,7 +244,7 @@ namespace xng {
                     colliders[entity].emplace_back(std::move(collider));
                 }
             }
-        } else if (oldComponent.getType() == typeid(Collider3DComponent)) {
+        } else if (oldComponent.getTypeName() == Collider3DComponent::typeName) {
             // Recreate rigidbody
             if (rigidBodies.find(entity) != rigidBodies.end()) {
                 rigidBodiesReverse.erase(rigidBodies.at(entity).get());

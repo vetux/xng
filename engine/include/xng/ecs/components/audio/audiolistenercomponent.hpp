@@ -27,7 +27,9 @@
 #include "xng/io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT AudioListenerComponent : public Component {
+    struct XENGINE_EXPORT AudioListenerComponent final : Component {
+        XNG_COMPONENT_TYPENAME(AudioListenerComponent)
+
         Vec3f velocity;
 
         Messageable &operator<<(const Message &message) override {
@@ -39,10 +41,6 @@ namespace xng {
             message = Message(Message::DICTIONARY);
             velocity >> message["velocity"];
             return Component::operator>>(message);
-        }
-
-        std::type_index getType() const override {
-            return typeid(AudioListenerComponent);
         }
     };
 }

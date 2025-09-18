@@ -103,7 +103,7 @@ namespace xng {
     }
 
     void AudioSystem::onComponentDestroy(const EntityHandle &entity, const Component &component) {
-        if (component.getType() == typeid(AudioSourceComponent)) {
+        if (component.getTypeName() == AudioSourceComponent::typeName) {
             sources.erase(entity);
             buffers.erase(entity);
             playingSources.erase(entity);
@@ -113,7 +113,7 @@ namespace xng {
     void AudioSystem::onComponentUpdate(const EntityHandle &entity,
                                         const Component &oldComponent,
                                         const Component &newComponent) {
-        if (oldComponent.getType() == typeid(AudioSourceComponent)) {
+        if (oldComponent.getTypeName() == AudioSourceComponent::typeName) {
             const auto &oldValue = dynamic_cast<const AudioSourceComponent &>(oldComponent);
             const auto &newValue = dynamic_cast<const AudioSourceComponent &>(newComponent);
             if (oldValue != newValue) {

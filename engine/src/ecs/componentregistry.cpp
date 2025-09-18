@@ -26,82 +26,63 @@ namespace xng {
     ComponentRegistry &ComponentRegistry::instance() {
         if (inst == nullptr) {
             inst = std::make_unique<ComponentRegistry>();
-            REGISTER_COMPONENT(AudioListenerComponent)
-            REGISTER_COMPONENT(AudioSourceComponent)
-            REGISTER_COMPONENT(ButtonComponent)
-            REGISTER_COMPONENT(CameraComponent)
-            REGISTER_COMPONENT(CanvasComponent)
-            REGISTER_COMPONENT(LightComponent)
-            REGISTER_COMPONENT(MeshComponent)
-            REGISTER_COMPONENT(ParticleComponent)
-            REGISTER_COMPONENT(RigidBodyComponent)
-            REGISTER_COMPONENT(SkyboxComponent)
-            REGISTER_COMPONENT(AnimatedSpriteComponent)
-            REGISTER_COMPONENT(SpriteComponent)
-            REGISTER_COMPONENT(TextComponent)
-            REGISTER_COMPONENT(TransformComponent)
+            REGISTER_COMPONENT(xng::AudioListenerComponent)
+            REGISTER_COMPONENT(xng::AudioSourceComponent)
+            REGISTER_COMPONENT(xng::ButtonComponent)
+            REGISTER_COMPONENT(xng::CameraComponent)
+            REGISTER_COMPONENT(xng::CanvasComponent)
+            REGISTER_COMPONENT(xng::LightComponent)
+            REGISTER_COMPONENT(xng::MeshComponent)
+            REGISTER_COMPONENT(xng::ParticleComponent)
+            REGISTER_COMPONENT(xng::RigidBodyComponent)
+            REGISTER_COMPONENT(xng::SkyboxComponent)
+            REGISTER_COMPONENT(xng::AnimatedSpriteComponent)
+            REGISTER_COMPONENT(xng::SpriteComponent)
+            REGISTER_COMPONENT(xng::TextComponent)
+            REGISTER_COMPONENT(xng::TransformComponent)
         }
         return *inst;
     }
 
-    bool ComponentRegistry::registerComponent(std::type_index type,
-                                              const std::string &typeName,
+    void ComponentRegistry::registerComponent(const std::string &typeName,
                                               const Serializer &serializer,
                                               const Deserializer &deserializer,
                                               const Constructor &constructor,
-                                              const Updater &updater) noexcept {
-        if (nameMapping.find(type) != nameMapping.end()) {
-            return false;
+                                              const Updater &updater) {
+        if (serializers.find(typeName) != serializers.end()) {
+            throw std::runtime_error("Duplicate component type name registration for typeName " + typeName);
         }
 
-        nameMapping[type] = typeName;
-        nameReverseMapping.insert(std::pair(typeName, type));
-        serializers[type] = serializer;
-        deserializers[type] = deserializer;
-        constructors[type] = constructor;
-        updaters[type] = updater;
-        return true;
+        serializers[typeName] = serializer;
+        deserializers[typeName] = deserializer;
+        constructors[typeName] = constructor;
+        updaters[typeName] = updater;
     }
 
-    void ComponentRegistry::unregisterComponent(std::type_index type) noexcept {
-        auto &name = nameMapping.at(type);
-        nameReverseMapping.erase(name);
-        nameMapping.erase(type);
-        serializers.erase(type);
-        deserializers.erase(type);
-        constructors.erase(type);
-        updaters.erase(type);
-    }
-
-    const std::type_index &ComponentRegistry::getTypeFromName(const std::string &typeName) {
-        return nameReverseMapping.at(typeName);
-    }
-
-    const std::string &ComponentRegistry::getNameFromType(const std::type_index &index) {
-        return nameMapping.at(index);
+    void ComponentRegistry::unregisterComponent(const std::string &typeName) {
+        serializers.erase(typeName);
+        deserializers.erase(typeName);
+        constructors.erase(typeName);
+        updaters.erase(typeName);
     }
 
     bool ComponentRegistry::checkTypeName(const std::string &typeName) {
-        return nameReverseMapping.find(typeName) != nameReverseMapping.end();
+        return serializers.find(typeName) != serializers.end();
     }
 
-    const ComponentRegistry::Serializer &ComponentRegistry::getSerializer(const std::type_index &index) {
-        return serializers.at(index);
+    const ComponentRegistry::Serializer &ComponentRegistry::getSerializer(const std::string &typeName) {
+        return serializers.at(typeName);
     }
 
-    const ComponentRegistry::Deserializer &ComponentRegistry::getDeserializer(const std::type_index &index) {
-        return deserializers.at(index);
+    const ComponentRegistry::Deserializer &ComponentRegistry::getDeserializer(const std::string &typeName) {
+        return deserializers.at(typeName);
     }
 
-    const ComponentRegistry::Constructor &ComponentRegistry::getConstructor(const std::type_index &index) {
-        return constructors.at(index);
+    const ComponentRegistry::Constructor &ComponentRegistry::getConstructor(const std::string &typeName) {
+        return constructors.at(typeName);
     }
 
-    const ComponentRegistry::Updater &ComponentRegistry::getUpdater(const std::type_index &index) {
-        return updaters.at(index);
-    }
-
-    const std::map<std::type_index, std::string> &ComponentRegistry::getComponents() {
-        return nameMapping;
+    const ComponentRegistry::Updater &ComponentRegistry::getUpdater(const std::string &typeName) {
+        return updaters.at(typeName);
     }
 }

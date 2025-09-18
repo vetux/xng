@@ -22,7 +22,6 @@
 
 #include <string>
 #include <functional>
-#include <typeindex>
 #include <memory>
 
 #include "xng/io/message.hpp"
@@ -42,8 +41,7 @@ namespace xng {
  * The component type must extend Component and be default constructable
  */
 #define REGISTER_COMPONENT(type) \
-bool r_##type = xng::ComponentRegistry::instance().registerComponent(typeid(type), \
-                                                                             #type, \
+xng::ComponentRegistry::instance().registerComponent(#type, \
                                                                              [](const xng::EntityScene &scene,\
                                                                                 xng::EntityHandle ent, xng::Message &msg) {\
                                                                                  scene.getComponent<type>(ent) >> msg;\
@@ -52,11 +50,10 @@ bool r_##type = xng::ComponentRegistry::instance().registerComponent(typeid(type
                                                                                 const xng::Message &msg) {\
                                                                                  type comp;\
                                                                                  comp << msg;\
-                                                                                 scene.createComponent(ent, comp);\
+                                                                                 scene.createComponent<type>(ent, comp);\
                                                                              },\
                                                                              [](xng::EntityScene &scene, xng::EntityHandle ent) {\
-                                                                                 scene.createComponent(ent,\
-                                                                                                       type());\
+                                                                                 scene.createComponent<type>(ent);\
                                                                              },\
                                                                              [](xng::EntityScene &scene,\
                                                                                 xng::EntityHandle ent,\
@@ -86,41 +83,31 @@ namespace xng {
          */
         static ComponentRegistry &instance();
 
-        bool registerComponent(std::type_index type,
-                               const std::string &typeName,
+        void registerComponent(const std::string &typeName,
                                const Serializer &serializer,
                                const Deserializer &deserializer,
                                const Constructor &constructor,
-                               const Updater &updater) noexcept;
+                               const Updater &updater);
 
-        void unregisterComponent(std::type_index type) noexcept;
-
-        const std::type_index &getTypeFromName(const std::string &typeName);
-
-        const std::string &getNameFromType(const std::type_index &index);
+        void unregisterComponent(const std::string &typeName);
 
         bool checkTypeName(const std::string &typeName);
 
-        const Serializer &getSerializer(const std::type_index &index);
+        const Serializer &getSerializer(const std::string &typeName);
 
-        const Deserializer &getDeserializer(const std::type_index &index);
+        const Deserializer &getDeserializer(const std::string &typeName);
 
-        const Constructor &getConstructor(const std::type_index &index);
+        const Constructor &getConstructor(const std::string &typeName);
 
-        const Updater &getUpdater(const std::type_index &index);
-
-        const std::map<std::type_index, std::string> &getComponents();
+        const Updater &getUpdater(const std::string &typeName);
 
     private:
         static std::unique_ptr<ComponentRegistry> inst;
 
-        std::map<std::type_index, std::string> nameMapping;
-        std::map<std::string, std::type_index> nameReverseMapping;
-
-        std::map<std::type_index, Serializer> serializers;
-        std::map<std::type_index, Deserializer> deserializers;
-        std::map<std::type_index, Constructor> constructors;
-        std::map<std::type_index, Updater> updaters;
+        std::map<std::string, Serializer> serializers;
+        std::map<std::string, Deserializer> deserializers;
+        std::map<std::string, Constructor> constructors;
+        std::map<std::string, Updater> updaters;
     };
 }
 

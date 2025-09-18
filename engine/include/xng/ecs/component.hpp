@@ -22,14 +22,18 @@
 
 #include "xng/io/messageable.hpp"
 
+#define XNG_COMPONENT_TYPENAME(T) static constexpr auto typeName = "xng::"#T; std::string getTypeName() const override { return typeName; }
+
+#define COMPONENT_TYPENAME(T) static constexpr auto typeName = #T;
+
 namespace xng {
     /**
      * Component types must extend this type.
      */
-    struct XENGINE_EXPORT Component : public Messageable {
-        virtual ~Component() = default;
+    struct XENGINE_EXPORT Component : Messageable {
+        ~Component() override = default;
 
-        virtual std::type_index getType() const = 0;
+        virtual std::string getTypeName() const = 0;
 
         Messageable &operator<<(const Message &message) override {
             message.value("enabled", enabled, true);

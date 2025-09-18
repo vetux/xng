@@ -31,6 +31,8 @@
 
 namespace xng {
     struct ImageComponent final : Component {
+        XNG_COMPONENT_TYPENAME(ImageComponent)
+
         ResourceHandle<ImageRGBA> image; // The image to draw
 
         float mix = 0;
@@ -58,10 +60,7 @@ namespace xng {
             filter >> message["filter"];
             return Component::operator>>(message);
         }
-
-        std::type_index getType() const override {
-            return typeid(ImageComponent);
-        }
     };
 }
+
 #endif //XENGINE_IMAGECOMPONENT_HPP
