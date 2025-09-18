@@ -21,12 +21,11 @@
 #define XENGINE_SPRITEANIMATIONSYSTEM_HPP
 
 #include "xng/ecs/system.hpp"
-
 #include "xng/ecs/components/spriteanimationcomponent.hpp"
 #include "xng/util/time.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT SpriteAnimationSystem : public System, public EntityScene::Listener {
+    class XENGINE_EXPORT SpriteAnimationSystem final : public System, public EntityScene::Listener {
     public:
         ~SpriteAnimationSystem() override = default;
 

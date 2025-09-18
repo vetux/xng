@@ -73,7 +73,14 @@ namespace xng {
 
         void setDuration(float duration) {
             animationDuration = duration;
-            frameTime = animationDuration / static_cast<float>(keyframes.size());
+            frameTime = animationDuration / static_cast<float>(keyframes.size()) / animationSpeed;
+        }
+
+        float getAnimationSpeed() { return animationSpeed; }
+
+        void setAnimationSpeed(const float speed) {
+            animationSpeed = speed;
+            frameTime = animationSpeed / static_cast<float>(keyframes.size()) / animationSpeed;
         }
 
         bool isClampingDelta() const { return clampDelta; }
@@ -101,6 +108,7 @@ namespace xng {
         float animationDuration{};
         bool clampDelta{};
         bool loop{};
+        float animationSpeed = 1;
 
         std::vector<size_t> frames; // Each frame of the animation
         float frameTime{}; // The time in seconds that one frame should be visible for

@@ -17,25 +17,22 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_MESHRENDERSYSTEM_HPP
-#define XENGINE_MESHRENDERSYSTEM_HPP
+#ifndef XENGINE_RENDERSYSTEM_HPP
+#define XENGINE_RENDERSYSTEM_HPP
 
-#include <map>
 #include <string>
 
 #include "xng/ecs/system.hpp"
 #include "xng/ecs/components/meshcomponent.hpp"
-#include "xng/ecs/components/skyboxcomponent.hpp"
-
 
 #include "xng/util/time.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT MeshRenderSystem : public System {
+    class XENGINE_EXPORT RenderSystem final : public System {
     public:
-        MeshRenderSystem();
+        RenderSystem();
 
-        ~MeshRenderSystem() override;
+        ~RenderSystem() override;
 
         void start(EntityScene &entityManager, EventBus &eventBus) override;
 
@@ -43,10 +40,10 @@ namespace xng {
 
         void update(DeltaTime deltaTime, EntityScene &entityManager, EventBus &eventBus) override;
 
-        std::string getName() override { return "MeshRenderSystem"; }
+        std::string getName() override { return "RenderSystem"; }
 
     private:
     };
 }
 
-#endif //XENGINE_MESHRENDERSYSTEM_HPP
+#endif //XENGINE_RENDERSYSTEM_HPP

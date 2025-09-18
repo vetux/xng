@@ -21,13 +21,12 @@
 #define XENGINE_RIGANIMATIONSYSTEM_HPP
 
 #include "xng/ecs/system.hpp"
-
 #include "xng/ecs/components/riganimationcomponent.hpp"
 #include "xng/animation/skeletal/riganimator.hpp"
 #include "xng/util/time.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT RigAnimationSystem : public System, public EntityScene::Listener {
+    class XENGINE_EXPORT RigAnimationSystem final : public System, public EntityScene::Listener {
     public:
         ~RigAnimationSystem() override = default;
 

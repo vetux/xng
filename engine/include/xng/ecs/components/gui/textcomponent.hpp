@@ -26,11 +26,7 @@
 #include "xng/render/2d/text/textalignment.hpp"
 
 namespace xng {
-    /**
-     * A text component renders the given text.
-     * If the resulting rendered text size is larger than the rect dimensions the text is cropped
-     */
-    struct XENGINE_EXPORT TextComponent : public Component {
+    struct XENGINE_EXPORT TextComponent final : Component {
         std::string text{};
 
         Vec2i pixelSize{};
@@ -42,11 +38,7 @@ namespace xng {
 
         ResourceHandle<Font> font{};
 
-        Vec2f textScroll{};
-
         ColorRGBA textColor{};
-
-        TextureFiltering filter = NEAREST;
 
         bool operator==(const TextComponent &other) const {
             return text == other.text
@@ -56,9 +48,7 @@ namespace xng {
                    && lineSpacing == other.lineSpacing
                    && alignment == other.alignment
                    && font == other.font
-                   && textScroll == other.textScroll
-                   && textColor == other.textColor
-                   && filter == other.filter;
+                   && textColor == other.textColor;
         }
 
         bool operator!=(const TextComponent &other) const {
@@ -72,10 +62,8 @@ namespace xng {
             message.value("lineSpacing", lineSpacing);
             message.value("font", font);
             message.value("alignment", (int &) alignment, (int) TEXT_ALIGN_LEFT);
-            message.value("textScroll", textScroll);
             message.value("text", text);
             message.value("textColor", textColor);
-            message.value("filter", (int &) filter, (int) NEAREST);
             return Component::operator<<(message);
         }
 
@@ -88,9 +76,7 @@ namespace xng {
             font >> message["font"];
             alignment >> message["alignment"];
             text >> message["text"];
-            textScroll >> message["textScroll"];
             textColor >> message["textColor"];
-            filter >> message["filter"];
             return Component::operator>>(message);
         }
 

@@ -29,7 +29,7 @@
 
 namespace xng {
     struct XENGINE_EXPORT TransformComponent : public Component {
-        static Transform walkHierarchy(const TransformComponent &component, EntityScene &entityManager);
+        static Transform getAbsoluteTransform(const TransformComponent &component, EntityScene &entityManager);
 
         Transform transform;
         std::string parent; //The name of the parent transform entity

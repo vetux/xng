@@ -25,7 +25,7 @@
 #include "xng/io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT ButtonComponent : public Component {
+    struct XENGINE_EXPORT ButtonComponent : Component {
         std::string id;
         int layer; // The layer of this button used for resolving inputs on overlapping buttons
         ResourceHandle<Sprite> sprite;

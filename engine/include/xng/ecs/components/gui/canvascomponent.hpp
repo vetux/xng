@@ -22,44 +22,24 @@
 
 #include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
-#include "xng/gui/canvasscalingmode.hpp"
 
 namespace xng {
-    /*
-     * A canvas renders RectTransformComponents of all child entities recursively to the screen using Renderer2D
+    /**
+     * A canvas specifies a rectangular area which can be drawn into using layout components.
+     * The canvas entity must define a layout for child items by having a corresponding layout component.
+     *
+     * Each canvas is rendered to a texture using the Renderer2D and then presented in world space on a plane.
      */
-    struct XENGINE_EXPORT CanvasComponent : public Component {
-        CanvasScalingMode scaleMode = SCALE_NO_SCALING;
-
-        Vec2f referenceResolution = {800, 600};
-        float referenceFitWidth = 1;
-
-        Vec2f cameraPosition;
-
-        bool clear = true; // Wheter or not to clear the viewport when rendering this canvas
-        ColorRGBA clearColor = ColorRGBA::black();
-        int layer; // The sorting layer of this canvas relative to other canvases
+    struct XENGINE_EXPORT CanvasComponent : Component {
+        bool worldSpace = false; // If false the canvas is rendered relative to the camera, transform still applies
+        Vec2i size = Vec2i(0, 0); // Optional size specification. if unassigned, the back buffer size is used.
 
         Messageable &operator<<(const Message &message) override {
-            message.value("scaleMode", reinterpret_cast<int&>(scaleMode), static_cast<int>(SCALE_NO_SCALING));
-            message.value("referenceResolution", referenceResolution);
-            message.value("referenceFitWidth", referenceFitWidth);
-            message.value("cameraPosition", cameraPosition);
-            message.value("clear", clear);
-            message.value("clearColor", clearColor);
-            message.value("layer", layer);
             return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            scaleMode >> message["scaleMode"];
-            referenceResolution >> message["referenceResolution"];
-            referenceFitWidth >> message["referenceFitWidth"];
-            cameraPosition >> message["cameraPosition"];
-            clear >> message["clear"];
-            clearColor >> message["clearColor"];
-            layer >> message["layer"];
             return Component::operator>>(message);
         }
 

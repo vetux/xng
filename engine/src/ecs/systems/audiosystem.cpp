@@ -28,8 +28,8 @@
 #define AUDIO_POS_SCALE 1
 
 namespace xng {
-    AudioSystem::AudioSystem(AudioDevice &device, ResourceRegistry &repo)
-            : device(device), repo(repo) {
+    AudioSystem::AudioSystem(AudioDevice &device)
+        : device(device) {
         context = device.createContext();
         context->makeCurrent();
     }
@@ -59,7 +59,7 @@ namespace xng {
             auto &transform = scene.getComponent<TransformComponent>(pair.first);
             auto &source = sources.at(pair.first);
 
-            if (!pair.second.audio.isLoaded()){
+            if (!pair.second.audio.isLoaded()) {
                 continue;
             }
 

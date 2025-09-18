@@ -19,13 +19,13 @@
 
 #include "xng/ecs/systems/guieventsystem.hpp"
 
-#include "xng/ecs/components/recttransformcomponent.hpp"
-#include "xng/ecs/components/buttoncomponent.hpp"
+#include "xng/ecs/components/gui/buttoncomponent.hpp"
 #include "xng/ecs/components/spritecomponent.hpp"
 #include "xng/event/events/guievent.hpp"
 #include "xng/input/device/mouse.hpp"
 #include "xng/util/time.hpp"
 
+// TODO: Reimplement gui event system
 namespace xng {
     GuiEventSystem::GuiEventSystem(Window &window)
             : window(window) {}

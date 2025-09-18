@@ -26,7 +26,7 @@
 
 namespace xng {
     struct XENGINE_EXPORT CameraComponent : public Component {
-        Camera camera; // The camera used to render meshes. The camera aspect ratio must be updated by the user.
+        Camera camera;
 
         Messageable &operator<<(const Message &message) override {
             message.value("camera", camera);

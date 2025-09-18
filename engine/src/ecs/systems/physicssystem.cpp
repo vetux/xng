@@ -60,33 +60,33 @@ namespace xng {
         return shape;
     }
 
-    PhysicsSystem::PhysicsSystem(World &world, float scale, float timeStep)
-            : world(world), scale(scale), timeStep(timeStep) {}
+    PhysicsSystem::PhysicsSystem(PhysicsEngine &engine, float scale, float timeStep)
+            : world(engine.createWorld()), scale(scale), timeStep(timeStep) {}
 
-    PhysicsSystem::PhysicsSystem(World &world, float scale, int maxSteps)
-            : world(world), scale(scale), maxSteps(maxSteps) {}
+    PhysicsSystem::PhysicsSystem(PhysicsEngine &engine, float scale, int maxSteps)
+            : world(engine.createWorld()), scale(scale), maxSteps(maxSteps) {}
 
 
     void PhysicsSystem::start(EntityScene &scene, EventBus &eventBus) {
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
-            if (rigidbodies.find(pair.first) == rigidbodies.end()) {
+            if (rigidBodies.find(pair.first) == rigidBodies.end()) {
                 onComponentCreate(pair.first, pair.second);
             }
         }
         bus = &eventBus;
         scene.addListener(*this);
-        world.addContactListener(*this);
+        world->addContactListener(*this);
     }
 
     void PhysicsSystem::stop(EntityScene &scene, EventBus &eventBus) {
-        world.removeContactListener(*this);
+        world->removeContactListener(*this);
         scene.removeListener(*this);
         bus = nullptr;
     }
 
     void PhysicsSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
-            if (rigidbodies.find(pair.first) == rigidbodies.end()) {
+            if (rigidBodies.find(pair.first) == rigidBodies.end()) {
                 if (scene.checkComponent<Collider3DComponent>(pair.first)) {
                     auto comp = scene.getComponent<Collider3DComponent>(pair.first);
                     ColliderDesc desc{};
@@ -96,42 +96,42 @@ namespace xng {
                     } else {
                         desc.shape = comp.shape;
                     }
-                    auto body = world.createBody(desc, pair.second.type);
+                    auto body = world->createBody(desc, pair.second.type);
                     body->setAngularFactor(pair.second.angularFactor);
                     body->setGravityScale(pair.second.gravityScale);
 
-                    rigidbodiesReverse[body.get()] = pair.first;
-                    rigidbodies[pair.first] = std::move(body);
+                    rigidBodiesReverse[body.get()] = pair.first;
+                    rigidBodies[pair.first] = std::move(body);
                 } else if (scene.checkComponent<Collider2DComponent>(pair.first)) {
                     auto comp = scene.getComponent<Collider2DComponent>(pair.first);
 
-                    auto body = world.createBody();
+                    auto body = world->createBody();
                     body->setRigidBodyType(pair.second.type);
                     body->setAngularFactor(pair.second.angularFactor);
                     body->setGravityScale(pair.second.gravityScale);
 
-                    rigidbodiesReverse[body.get()] = pair.first;
-                    rigidbodies[pair.first] = std::move(body);
+                    rigidBodiesReverse[body.get()] = pair.first;
+                    rigidBodies[pair.first] = std::move(body);
 
                     for (auto i = 0; i < comp.colliders.size(); i++) {
-                        auto collider = rigidbodies.at(pair.first)->createCollider(applyScale(
+                        auto collider = rigidBodies.at(pair.first)->createCollider(applyScale(
                                 comp.colliders.at(i), scale));
                         colliderIndices[collider.get()] = i;
                         colliders[pair.first].emplace_back(std::move(collider));
                     }
 
                 } else {
-                    auto body = world.createBody();
+                    auto body = world->createBody();
                     body->setRigidBodyType(pair.second.type);
                     body->setAngularFactor(pair.second.angularFactor);
                     body->setGravityScale(pair.second.gravityScale);
 
-                    rigidbodiesReverse[body.get()] = pair.first;
-                    rigidbodies[pair.first] = std::move(body);
+                    rigidBodiesReverse[body.get()] = pair.first;
+                    rigidBodies[pair.first] = std::move(body);
                 }
             }
 
-            auto &rb = *rigidbodies.at(pair.first).get();
+            auto &rb = *rigidBodies.at(pair.first).get();
             auto tcomp = scene.getComponent<TransformComponent>(pair.first);
 
             if (pair.second.rotationalInertia.x < 0
@@ -157,7 +157,7 @@ namespace xng {
         }
 
         if (timeStep == 0) {
-            world.step(deltaTime, maxSteps);
+            world->step(deltaTime, maxSteps);
         } else {
             deltaAccumulator += static_cast<float>(deltaTime);
             int steps = static_cast<int>(deltaAccumulator / timeStep);
@@ -165,18 +165,18 @@ namespace xng {
 
             for (int i = 0; i < steps && i < maxSteps; i++) {
                 for (auto &pair: scene.getPool<RigidBodyComponent>()) {
-                    auto &rb = *rigidbodies.at(pair.first).get();
+                    auto &rb = *rigidBodies.at(pair.first).get();
                     rb.applyForce(pair.second.force, pair.second.forcePoint / scale);
                     rb.applyTorque(pair.second.torque);
                     rb.applyLinearImpulse(pair.second.impulse, pair.second.impulsePoint);
                     rb.applyAngularImpulse(pair.second.angularImpulse);
                 }
 
-                world.step(DeltaTime(timeStep));
+                world->step(DeltaTime(timeStep));
             }
         }
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
-            auto &rb = *rigidbodies.at(pair.first).get();
+            auto &rb = *rigidBodies.at(pair.first).get();
             auto tcomp = scene.getComponent<TransformComponent>(pair.first);
 
             tcomp.transform.setPosition(rb.getPosition() * scale);
@@ -207,9 +207,9 @@ namespace xng {
                 }
                 colliders.erase(entity);
             }
-            if (rigidbodies.find(entity) != rigidbodies.end()) {
-                rigidbodiesReverse.erase(rigidbodies.at(entity).get());
-                rigidbodies.erase(entity);
+            if (rigidBodies.find(entity) != rigidBodies.end()) {
+                rigidBodiesReverse.erase(rigidBodies.at(entity).get());
+                rigidBodies.erase(entity);
             }
         }
     }
@@ -221,10 +221,10 @@ namespace xng {
             auto &oComp = dynamic_cast<const RigidBodyComponent &>(oldComponent);
             auto &nComp = dynamic_cast<const RigidBodyComponent &>(newComponent);
 
-            if (rigidbodies.find(entity) != rigidbodies.end()) {
-                rigidbodies.at(entity)->setRigidBodyType(nComp.type);
-                rigidbodies.at(entity)->setAngularFactor(nComp.angularFactor);
-                rigidbodies.at(entity)->setGravityScale(nComp.gravityScale);
+            if (rigidBodies.find(entity) != rigidBodies.end()) {
+                rigidBodies.at(entity)->setRigidBodyType(nComp.type);
+                rigidBodies.at(entity)->setAngularFactor(nComp.angularFactor);
+                rigidBodies.at(entity)->setGravityScale(nComp.gravityScale);
             }
         } else if (oldComponent.getType() == typeid(Collider2DComponent)) {
             auto &oComp = dynamic_cast<const Collider2DComponent &>(oldComponent);
@@ -238,7 +238,7 @@ namespace xng {
                 colliders.erase(entity);
 
                 for (auto i = 0; i < nComp.colliders.size(); i++) {
-                    auto collider = rigidbodies.at(entity)->createCollider(applyScale(
+                    auto collider = rigidBodies.at(entity)->createCollider(applyScale(
                             nComp.colliders.at(i), scale));
                     colliderIndices[collider.get()] = i;
                     colliders[entity].emplace_back(std::move(collider));
@@ -246,16 +246,16 @@ namespace xng {
             }
         } else if (oldComponent.getType() == typeid(Collider3DComponent)) {
             // Recreate rigidbody
-            if (rigidbodies.find(entity) != rigidbodies.end()) {
-                rigidbodiesReverse.erase(rigidbodies.at(entity).get());
-                rigidbodies.erase(entity);
+            if (rigidBodies.find(entity) != rigidBodies.end()) {
+                rigidBodiesReverse.erase(rigidBodies.at(entity).get());
+                rigidBodies.erase(entity);
             }
         }
     }
 
     void PhysicsSystem::beginContact(const World::Contact &contact) {
-        auto entA = rigidbodiesReverse.at(&contact.colliderA.get().getBody());
-        auto entB = rigidbodiesReverse.at(&contact.colliderB.get().getBody());
+        auto entA = rigidBodiesReverse.at(&contact.colliderA.get().getBody());
+        auto entB = rigidBodiesReverse.at(&contact.colliderB.get().getBody());
         auto indexA = colliderIndices.at(&contact.colliderA.get());
         auto indexB = colliderIndices.at(&contact.colliderB.get());
 
@@ -268,8 +268,8 @@ namespace xng {
     }
 
     void PhysicsSystem::endContact(const World::Contact &contact) {
-        auto entA = rigidbodiesReverse.at(&contact.colliderA.get().getBody());
-        auto entB = rigidbodiesReverse.at(&contact.colliderB.get().getBody());
+        auto entA = rigidBodiesReverse.at(&contact.colliderA.get().getBody());
+        auto entB = rigidBodiesReverse.at(&contact.colliderB.get().getBody());
         auto indexA = colliderIndices.at(&contact.colliderA.get());
         auto indexB = colliderIndices.at(&contact.colliderB.get());
 
@@ -291,11 +291,11 @@ namespace xng {
             for (auto &c: ptrs)
                 colliderIndices.erase(c);
         }
-        auto it = rigidbodies.find(entity);
-        if (it != rigidbodies.end()) {
+        auto it = rigidBodies.find(entity);
+        if (it != rigidBodies.end()) {
             auto ptr = it->second.get();
-            rigidbodies.erase(entity);
-            rigidbodiesReverse.erase(ptr);
+            rigidBodies.erase(entity);
+            rigidBodiesReverse.erase(ptr);
         }
     }
 }

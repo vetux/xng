@@ -21,16 +21,16 @@
 #define XENGINE_RIGANIMATIONCOMPONENT_HPP
 
 #include "xng/ecs/component.hpp"
-
 #include "xng/animation/skeletal/riganimation.hpp"
-#include "xng/animation/skeletal/rig.hpp"
 #include "xng/resource/resourcehandle.hpp"
-
 #include "xng/util/time.hpp"
 
 namespace xng {
-    struct RigAnimationComponent : public Component {
-        struct Channel : public Messageable {
+    /**
+     * Contains the animated bone transforms.
+     */
+    struct RigAnimationComponent final : Component {
+        struct Channel final : Messageable {
             ResourceHandle<RigAnimation> animation;
             Duration blendDuration{};
             bool loop{};
@@ -52,7 +52,6 @@ namespace xng {
         };
 
         std::map<size_t, Channel> channels;
-
         std::map<std::string, Mat4f> boneTransforms;
 
         bool operator==(const RigAnimationComponent &other) const {

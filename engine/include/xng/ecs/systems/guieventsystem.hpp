@@ -26,7 +26,7 @@
 #include "xng/util/time.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT GuiEventSystem : public System {
+    class XENGINE_EXPORT GuiEventSystem final : public System {
     public:
         GuiEventSystem(Window &window);
 

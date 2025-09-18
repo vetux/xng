@@ -20,18 +20,17 @@
 #ifndef XENGINE_PHYISCS3DSYSTEM_HPP
 #define XENGINE_PHYISCS3DSYSTEM_HPP
 
-#include "xng/event/eventbus.hpp"
 #include "xng/ecs/system.hpp"
-
-#include "xng/physics/world.hpp"
+#include "xng/event/eventbus.hpp"
 #include "xng/util/time.hpp"
+#include "xng/physics/physicsengine.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT PhysicsSystem : public System, public EntityScene::Listener, public World::ContactListener {
+    class XENGINE_EXPORT PhysicsSystem final : public System, public EntityScene::Listener, public World::ContactListener {
     public:
-        PhysicsSystem(World &world, float scale, float timeStep);
+        PhysicsSystem(PhysicsEngine &engine, float scale, float timeStep);
 
-        PhysicsSystem(World &world, float scale, int maxSteps);
+        PhysicsSystem(PhysicsEngine &engine, float scale, int maxSteps);
 
         ~PhysicsSystem() override = default;
 
@@ -62,11 +61,12 @@ namespace xng {
         void endContact(const World::Contact &contact) override;
 
     private:
-        World &world;
         EventBus *bus = nullptr;
 
-        std::map<EntityHandle, std::unique_ptr<RigidBody>> rigidbodies;
-        std::map<RigidBody *, EntityHandle> rigidbodiesReverse;
+        std::unique_ptr<World> world;
+
+        std::map<EntityHandle, std::unique_ptr<RigidBody>> rigidBodies;
+        std::map<RigidBody *, EntityHandle> rigidBodiesReverse;
         std::map<EntityHandle, std::vector<std::unique_ptr<Collider>>> colliders;
         std::map<Collider *, size_t> colliderIndices;
 

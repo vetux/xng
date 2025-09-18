@@ -20,23 +20,23 @@
 #include <algorithm>
 #include <filesystem>
 
-#include "xng/ecs/systems/meshrendersystem.hpp"
+#include "xng/ecs/systems/rendersystem.hpp"
 #include "xng/ecs/components.hpp"
 #include "xng/util/time.hpp"
 
 //TODO: Reimplement MeshRenderSystem
 namespace xng {
-    MeshRenderSystem::MeshRenderSystem()
+    RenderSystem::RenderSystem()
     {
     }
 
-    MeshRenderSystem::~MeshRenderSystem() = default;
+    RenderSystem::~RenderSystem() = default;
 
-    void MeshRenderSystem::start(EntityScene &entityManager, EventBus &eventBus) {}
+    void RenderSystem::start(EntityScene &entityManager, EventBus &eventBus) {}
 
-    void MeshRenderSystem::stop(EntityScene &entityManager, EventBus &eventBus) {}
+    void RenderSystem::stop(EntityScene &entityManager, EventBus &eventBus) {}
 
-    void MeshRenderSystem::update(DeltaTime deltaTime, EntityScene &entScene, EventBus &eventBus) {
+    void RenderSystem::update(DeltaTime deltaTime, EntityScene &entScene, EventBus &eventBus) {
       /*  Scene scene = {};
 
         // Get objects

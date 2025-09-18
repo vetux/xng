@@ -25,31 +25,22 @@
 #include "xng/ecs/component.hpp"
 
 namespace xng {
+    /**
+     * A sprite is an image displayed on a plane in 3d space.
+     */
     struct SpriteComponent : public Component {
-        ResourceHandle <Sprite> sprite; // The sprite to draw
-
-        float mix = 0;
-        float mixAlpha = 0;
-        ColorRGBA mixColor = {};
-
+        ResourceHandle<Sprite> sprite; // The static sprite to draw
         TextureFiltering filter = NEAREST;
 
         Messageable &operator<<(const Message &message) override {
             message.value("sprite", sprite);
-            message.value("mix", mix);
-            message.value("mixColor", mixColor);
-            message.value("mix", mix);
-            message.value("mixAlpha", mixAlpha);
-            message.value("filter", (int &) filter, (int) NEAREST);
+            message.value("filter", reinterpret_cast<int &>(filter), static_cast<int>(NEAREST));
             return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             sprite >> message["sprite"];
-            mixColor >> message["mixColor"];
-            mix >> message["mix"];
-            mixAlpha >> message["mixAlpha"];
             filter >> message["filter"];
             return Component::operator>>(message);
         }

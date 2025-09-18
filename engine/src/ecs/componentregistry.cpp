@@ -36,11 +36,10 @@ namespace xng {
             REGISTER_COMPONENT(ParticleComponent)
             REGISTER_COMPONENT(RigidBodyComponent)
             REGISTER_COMPONENT(SkyboxComponent)
-            REGISTER_COMPONENT(SpriteAnimationComponent)
+            REGISTER_COMPONENT(AnimatedSpriteComponent)
             REGISTER_COMPONENT(SpriteComponent)
             REGISTER_COMPONENT(TextComponent)
             REGISTER_COMPONENT(TransformComponent)
-            REGISTER_COMPONENT(RectTransformComponent)
         }
         return *inst;
     }

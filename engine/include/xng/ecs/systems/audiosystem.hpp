@@ -20,9 +20,7 @@
 #ifndef XENGINE_AUDIOSYSTEM_HPP
 #define XENGINE_AUDIOSYSTEM_HPP
 
-
 #include "xng/ecs/system.hpp"
-
 
 #include "xng/ecs/components/audiosourcecomponent.hpp"
 #include "xng/ecs/components/transformcomponent.hpp"
@@ -32,9 +30,9 @@
 #include "xng/util/time.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT AudioSystem : public System, public EntityScene::Listener {
+    class XENGINE_EXPORT AudioSystem final : public System, public EntityScene::Listener {
     public:
-        explicit AudioSystem(AudioDevice &device, ResourceRegistry &repo);
+        explicit AudioSystem(AudioDevice &device);
 
         ~AudioSystem() override = default;
 
@@ -62,12 +60,12 @@ namespace xng {
 
     private:
         AudioDevice &device;
-        ResourceRegistry &repo;
 
         std::unique_ptr<AudioContext> context;
 
         std::map<EntityHandle, std::unique_ptr<AudioSource>> sources;
         std::map<EntityHandle, std::unique_ptr<AudioBuffer>> buffers;
+
         std::set<EntityHandle> playingSources;
     };
 }

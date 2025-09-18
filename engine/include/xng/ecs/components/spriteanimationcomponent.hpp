@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_SPRITEANIMATIONCOMPONENT_HPP
-#define XENGINE_SPRITEANIMATIONCOMPONENT_HPP
+#ifndef XENGINE_ANIMATEDSPRITECOMPONENT_HPP
+#define XENGINE_ANIMATEDSPRITECOMPONENT_HPP
 
 #include "xng/animation/sprite/spriteanimation.hpp"
 #include "xng/io/messageable.hpp"
@@ -26,12 +26,13 @@
 
 namespace xng {
     /**
-     * A sprite animation system updates the sprite animations each update
-     * and sets the sprite instance on the sprite render component of the entity if it exists.
+     * A sprite animation system updates the sprite animations each update and updates the sprite.
      */
-    struct XENGINE_EXPORT SpriteAnimationComponent : public Component {
+    struct XENGINE_EXPORT AnimatedSpriteComponent final : Component {
         ResourceHandle<SpriteAnimation> animation{};
-        float animationDurationOverride = -1;
+        float animationSpeed = 1.0f;
+
+        ResourceHandle<Sprite> sprite;
         bool finished = false;
 
         Messageable &operator<<(const Message &message) override {
@@ -46,8 +47,9 @@ namespace xng {
         }
 
         std::type_index getType() const override {
-            return typeid(SpriteAnimationComponent);
+            return typeid(AnimatedSpriteComponent);
         }
     };
 }
-#endif //XENGINE_SPRITEANIMATIONCOMPONENT_HPP
+
+#endif //XENGINE_ANIMATEDSPRITECOMPONENT_HPP
