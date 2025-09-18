@@ -148,7 +148,7 @@ namespace xng {
         return false;
     }
 
-    void TextureAtlas::create(RenderGraphBuilder &builder) {
+    void TextureAtlas::onCreate(RenderGraphBuilder &builder) {
         RenderGraphTexture desc;
         desc.isArrayTexture = true;
 
@@ -161,7 +161,7 @@ namespace xng {
         }
     }
 
-    void TextureAtlas::recreate(RenderGraphBuilder &builder) {
+    void TextureAtlas::onRecreate(RenderGraphBuilder &builder) {
         for (auto &pair: bufferOccupations) {
             if (bufferSizes[pair.first] < pair.second.size()) {
                 if (bufferSizes[pair.first] > 0) {

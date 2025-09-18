@@ -87,7 +87,7 @@ namespace xng {
         shaderBuffer = builder.createShaderBuffer(0);
         boneBuffer = builder.createShaderBuffer(0);
 
-        atlas.create(builder);
+        atlas.onCreate(builder);
         meshAllocator.onCreate(builder);
 
         registry->setEntry(GBUFFER_POSITION, gBufferPosition);
@@ -101,6 +101,9 @@ namespace xng {
         auto pass = builder.addPass("ConstructionPass", [this](RenderGraphContext &ctx) {
             runPass(ctx);
         });
+
+        atlas.declareReadWrite(builder, pass);
+        meshAllocator.declareReadWrite(builder, pass);
     }
 
     void ConstructionPass::recreate(RenderGraphBuilder &builder) {
@@ -119,7 +122,7 @@ namespace xng {
         boneBuffer = builder.createShaderBuffer(totalBoneBufferSize);
         currentBoneBufferSize = totalBoneBufferSize;
 
-        atlas.recreate(builder);
+        atlas.onRecreate(builder);
         meshAllocator.onRecreate(builder);
 
         registry->setEntry(GBUFFER_POSITION, gBufferPosition);
@@ -133,6 +136,9 @@ namespace xng {
         auto pass = builder.addPass("ConstructionPass", [this](RenderGraphContext &ctx) {
             runPass(ctx);
         });
+
+        atlas.declareReadWrite(builder, pass);
+        meshAllocator.declareReadWrite(builder, pass);
     }
 
     bool ConstructionPass::shouldRebuild() {

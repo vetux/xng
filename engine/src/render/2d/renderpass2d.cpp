@@ -87,7 +87,7 @@ namespace xng {
         renderPipeline.primitive = POINTS;
         pointPipeline = builder.createPipeline(renderPipeline);
 
-        atlas.create(builder);
+        atlas.onCreate(builder);
 
         vertexBuffer = builder.createVertexBuffer(0);
         indexBuffer = builder.createIndexBuffer(0);
@@ -123,7 +123,7 @@ namespace xng {
         linePipeline = builder.inheritResource(linePipeline);
         pointPipeline = builder.inheritResource(pointPipeline);
 
-        atlas.recreate(builder);
+        atlas.onRecreate(builder);
 
         if (vertexBufferSize < meshBuffer.getVertexBufferSize()) {
             vertexBufferCopy = builder.inheritResource(vertexBuffer);

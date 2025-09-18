@@ -59,9 +59,9 @@ namespace xng {
 
         bool shouldRebuild();
 
-        void create(RenderGraphBuilder &builder);
+        void onCreate(RenderGraphBuilder &builder);
 
-        void recreate(RenderGraphBuilder &builder);
+        void onRecreate(RenderGraphBuilder &builder);
 
         const std::unordered_map<TextureAtlasResolution, RenderGraphResource> &
         getAtlasTextures(RenderGraphContext &ctx);
