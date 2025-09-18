@@ -100,6 +100,17 @@ namespace xng {
         }
 
         virtual void clearTextureColor(RenderGraphResource texture,
+                               const Vec4f &clearColor,
+                               size_t index,
+                               CubeMapFace face,
+                               size_t mipMapLevel) = 0;
+
+        void clearTextureColor(const RenderGraphResource texture, const Vec4f &clearColor) {
+            clearTextureColor(texture, clearColor, 0, {}, 0);
+        }
+
+
+        virtual void clearTextureColor(RenderGraphResource texture,
                                        const Vec4i &clearColor,
                                        size_t index,
                                        CubeMapFace face,

@@ -126,9 +126,9 @@ void ContextGL::uploadTexture(const RenderGraphResource texture,
 
 void ContextGL::clearTextureColor(const RenderGraphResource texture,
                                   const ColorRGBA &clearColor,
-                                  size_t index,
-                                  CubeMapFace face,
-                                  size_t mipMapLevel) {
+                                  const size_t index,
+                                  const CubeMapFace face,
+                                  const size_t mipMapLevel) {
     oglDebugStartGroup("ContextGL::clearTextureColor");
 
     auto &tex = getTexture(texture);
@@ -146,6 +146,36 @@ void ContextGL::clearTextureColor(const RenderGraphResource texture,
                        GL_RGBA,
                        GL_UNSIGNED_BYTE,
                        clearColor.data);
+
+    oglCheckError();
+
+    oglDebugEndGroup();
+}
+
+void ContextGL::clearTextureColor(const RenderGraphResource texture,
+                                  const Vec4f &clearColor,
+                                  const size_t index,
+                                  const CubeMapFace face,
+                                  const size_t mipMapLevel) {
+    oglDebugStartGroup("ContextGL::clearTextureColor");
+
+    auto &tex = getTexture(texture);
+
+    const GLfloat data[4] = {clearColor.x, clearColor.y, clearColor.z, clearColor.w};
+
+    glClearTexSubImage(tex.handle,
+                       static_cast<GLint>(mipMapLevel),
+                       0,
+                       0,
+                       tex.textureType == TEXTURE_CUBE_MAP
+                           ? static_cast<GLint>(index * 6 + face)
+                           : static_cast<GLint>(index),
+                       tex.texture.size.x,
+                       tex.texture.size.y,
+                       1,
+                       GL_RGBA,
+                       GL_FLOAT,
+                       data);
 
     oglCheckError();
 
@@ -442,6 +472,12 @@ void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorA
                                   attachment.index,
                                   attachment.face,
                                   attachment.mipMapLevel);
+            } else if (tex.texture.format >= R8 && tex.texture.format <= RGBA32F) {
+                clearTextureColor(attachment.texture,
+                                  attachment.clearColorFloat,
+                                  attachment.index,
+                                  attachment.face,
+                                  attachment.mipMapLevel);
             } else {
                 clearTextureColor(attachment.texture,
                                   attachment.clearColor,
@@ -454,7 +490,7 @@ void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorA
         drawBuffers.emplace_back(GL_COLOR_ATTACHMENT0 + i);
     }
 
-    glDrawBuffers(static_cast<GLsizei>(drawBuffers.size()),drawBuffers.data());
+    glDrawBuffers(static_cast<GLsizei>(drawBuffers.size()), drawBuffers.data());
 
     if (depthStencilAttachment.texture) {
         auto &attachment = depthStencilAttachment;

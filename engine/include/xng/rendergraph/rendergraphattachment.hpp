@@ -34,6 +34,7 @@ namespace xng {
         bool clearAttachment{false};
 
         ColorRGBA clearColor{};
+        Vec4f clearColorFloat{};
         Vec4i clearColorInt{};
         Vec4u clearColorUint{};
 
@@ -44,6 +45,28 @@ namespace xng {
 
         explicit RenderGraphAttachment(const RenderGraphResource texture)
             : texture(texture) {
+        }
+
+        RenderGraphAttachment(const RenderGraphResource texture, const ColorRGBA clearColor)
+            : texture(texture), clearAttachment(true), clearColor(clearColor) {
+        }
+
+        RenderGraphAttachment(const RenderGraphResource texture, const Vec4f &clearColorFloat)
+            : texture(texture), clearAttachment(true), clearColorFloat(clearColorFloat) {
+        }
+
+        RenderGraphAttachment(const RenderGraphResource texture, const Vec4i &clearColorInt)
+            : texture(texture), clearAttachment(true), clearColorInt(clearColorInt) {
+        }
+
+        RenderGraphAttachment(const RenderGraphResource texture, const Vec4u &clearColorUint)
+            : texture(texture), clearAttachment(true), clearColorUint(clearColorUint) {
+        }
+
+        RenderGraphAttachment(const RenderGraphResource texture,
+                              const float clearDepth,
+                              const unsigned int clearStencil)
+            : texture(texture), clearAttachment(true), clearDepth(clearDepth), clearStencil(clearStencil) {
         }
 
         RenderGraphAttachment(const RenderGraphResource texture, const size_t index)
@@ -78,7 +101,20 @@ namespace xng {
                               const size_t index,
                               const CubeMapFace face,
                               const size_t mipMapLevel,
-                              const Vec4i clearColor)
+                              const Vec4f &clearColorFloat)
+            : texture(texture),
+              index(index),
+              face(face),
+              mipMapLevel(mipMapLevel),
+              clearAttachment(true),
+              clearColorFloat(clearColorFloat) {
+        }
+
+        RenderGraphAttachment(const RenderGraphResource texture,
+                              const size_t index,
+                              const CubeMapFace face,
+                              const size_t mipMapLevel,
+                              const Vec4i &clearColor)
             : texture(texture),
               index(index),
               face(face),
@@ -91,7 +127,7 @@ namespace xng {
                               const size_t index,
                               const CubeMapFace face,
                               const size_t mipMapLevel,
-                              const Vec4u clearColor)
+                              const Vec4u &clearColor)
             : texture(texture),
               index(index),
               face(face),
@@ -104,25 +140,14 @@ namespace xng {
                               const size_t index,
                               const CubeMapFace face,
                               const size_t mipMapLevel,
-                              const float clearDepth)
-            : texture(texture),
-              index(index),
-              face(face),
-              mipMapLevel(mipMapLevel),
-              clearAttachment(true),
-              clearDepth(clearDepth) {
-        }
-
-        RenderGraphAttachment(const RenderGraphResource texture,
-                              const size_t index,
-                              const CubeMapFace face,
-                              const size_t mipMapLevel,
+                              const float clearDepth,
                               const unsigned int clearStencil)
             : texture(texture),
               index(index),
               face(face),
               mipMapLevel(mipMapLevel),
               clearAttachment(true),
+              clearDepth(clearDepth),
               clearStencil(clearStencil) {
         }
     };

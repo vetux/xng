@@ -55,17 +55,36 @@ public:
                        CubeMapFace face,
                        size_t mipMapLevel) override;
 
-    void clearTextureColor(RenderGraphResource texture, const ColorRGBA &clearColor, size_t index, CubeMapFace face,
+    void clearTextureColor(RenderGraphResource texture,
+                           const ColorRGBA &clearColor,
+                           size_t index,
+                           CubeMapFace face,
                            size_t mipMapLevel) override;
 
-    void clearTextureColor(RenderGraphResource texture, const Vec4i &clearColor, size_t index, CubeMapFace face,
+    void clearTextureColor(RenderGraphResource texture,
+                           const Vec4f &clearColor,
+                           size_t index,
+                           CubeMapFace face,
                            size_t mipMapLevel) override;
 
-    void clearTextureColor(RenderGraphResource texture, const Vec4u &clearColor, size_t index, CubeMapFace face,
+    void clearTextureColor(RenderGraphResource texture,
+                           const Vec4i &clearColor,
+                           size_t index,
+                           CubeMapFace face,
                            size_t mipMapLevel) override;
 
-    void clearTextureDepthStencil(RenderGraphResource texture, float clearDepth, unsigned int clearStencil, size_t index,
-                                  CubeMapFace face, size_t mipMapLevel) override;
+    void clearTextureColor(RenderGraphResource texture,
+                           const Vec4u &clearColor,
+                           size_t index,
+                           CubeMapFace face,
+                           size_t mipMapLevel) override;
+
+    void clearTextureDepthStencil(RenderGraphResource texture,
+                                  float clearDepth,
+                                  unsigned int clearStencil,
+                                  size_t index,
+                                  CubeMapFace face,
+                                  size_t mipMapLevel) override;
 
     void copyBuffer(RenderGraphResource target,
                     RenderGraphResource source,
