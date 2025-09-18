@@ -38,7 +38,7 @@ namespace xng {
 
         explicit ResourceHandle(Uri u,
                                 ResourceRegistry *r = nullptr)
-                : uri(std::move(u)), registry(r) {
+            : uri(std::move(u)), registry(r) {
             if (!uri.empty()) {
                 getRegistry().incRef(uri);
             }
@@ -71,9 +71,9 @@ namespace xng {
             return *this;
         }
 
-        ResourceHandle(ResourceHandle<T> &&other)  noexcept = default;
+        ResourceHandle(ResourceHandle<T> &&other) noexcept = default;
 
-        ResourceHandle<T> &operator=(ResourceHandle<T> &&other)  noexcept = default;
+        ResourceHandle<T> &operator=(ResourceHandle<T> &&other) noexcept = default;
 
         bool operator==(const ResourceHandle<T> &other) const {
             return uri == other.uri
@@ -101,13 +101,7 @@ namespace xng {
         }
 
         const T &get() const {
-            try {
-                return dynamic_cast<const T &>(getRegistry().get(uri, typeid(T)));
-            } catch (const std::bad_cast &e) {
-                throw std::runtime_error("Invalid Resource Cast, Uri: " + uri.toString() + " Type: " +
-                                         getRegistry().get(uri, typeid(T)).getTypeIndex().name() + " Requested: " +
-                                         typeid(T).name());
-            }
+            return dynamic_cast<const T &>(getRegistry().get(uri, T::typeName));
         }
 
         ResourceRegistry &getRegistry() const {

@@ -24,9 +24,13 @@
 
 #include "xng/render/scene/mesh.hpp"
 
+#include "xng/animation/skeletal/rig.hpp"
+
 namespace xng {
-    class SkinnedMesh : public Mesh {
+    class SkinnedMesh final : public Mesh {
     public:
+        RESOURCE_TYPENAME(SkinnedMesh)
+
         /**
          * Create a standard vertex buffer description which is the format of meshes returned by the resource abstraction.
          *
@@ -38,9 +42,6 @@ namespace xng {
          *  layout (location = 4) in vec3 bitangent;
          *  layout (location = 5) in ivec4 boneIds;
          *  layout (location = 6) in vec4 boneWeights;
-         *
-         * @param mesh
-         * @param bufferType
          *
          * @return
          */
@@ -71,8 +72,6 @@ namespace xng {
          *  layout (location = 9) in vec4 instanceRow2;
          *  layout (location = 10) in vec4 instanceRow3;
          *
-         * @param mesh
-         * @param offsets
          * @return
          */
         static ShaderAttributeLayout getDefaultInstanceLayout() {
@@ -94,18 +93,18 @@ namespace xng {
         SkinnedMesh() = default;
 
         explicit SkinnedMesh(const Mesh &mesh)
-            : Mesh(mesh), rig() {
+            : Mesh(mesh) {
         }
 
-        SkinnedMesh(Primitive primitive, std::vector<Vertex> vertices)
-            : Mesh(primitive, std::move(vertices), {}), rig() {
+        SkinnedMesh(const Primitive primitive, std::vector<Vertex> vertices)
+            : Mesh(primitive, std::move(vertices), {}) {
         }
 
-        SkinnedMesh(Primitive primitive, std::vector<Vertex> vertices, std::vector<unsigned int> indices)
-            : Mesh(primitive, std::move(vertices), std::move(indices)), rig() {
+        SkinnedMesh(const Primitive primitive, std::vector<Vertex> vertices, std::vector<unsigned int> indices)
+            : Mesh(primitive, std::move(vertices), std::move(indices)) {
         }
 
-        SkinnedMesh(Primitive primitive, std::vector<Vertex> vertices, std::vector<unsigned int> indices, Rig rig)
+        SkinnedMesh(const Primitive primitive, std::vector<Vertex> vertices, std::vector<unsigned int> indices, Rig rig)
             : Mesh(primitive, std::move(vertices), std::move(indices)), rig(std::move(rig)) {
         }
 
@@ -121,10 +120,6 @@ namespace xng {
 
         std::unique_ptr<Resource> clone() override {
             return std::make_unique<SkinnedMesh>(*this);
-        }
-
-        std::type_index getTypeIndex() const override {
-            return typeid(SkinnedMesh);
         }
 
         Rig rig;

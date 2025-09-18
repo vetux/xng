@@ -21,7 +21,7 @@
 
 #include "thirdparty/stb_image.h"
 #include "xng/render/scene/image.hpp"
-#include "xng/render/scene/rendergraphtexture.hpp"
+#include "xng/render/scene/texture.hpp"
 
 #include <cstring>
 

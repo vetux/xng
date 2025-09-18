@@ -35,7 +35,7 @@ namespace xng {
     /**
      * A camera provides a view and projection matrix.
      */
-    struct XENGINE_EXPORT Camera : public Messageable {
+    struct XENGINE_EXPORT Camera final : Messageable {
         static Mat4f view(const Transform &cameraTransform) {
             Mat4f ret = cameraTransform.getRotation().matrix();
             // "The engines move the universe" - Futurama (Negate camera position)
@@ -44,7 +44,7 @@ namespace xng {
 
         Camera() = default;
 
-        explicit Camera(CameraType type) : type(type) {}
+        explicit Camera(const CameraType type) : type(type) {}
 
         Mat4f projection() const {
             switch (type) {
@@ -66,7 +66,7 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            type = (CameraType) message.getMessage("type", Message((int) PERSPECTIVE)).asInt();
+            message.value("type", reinterpret_cast<int&>(type), static_cast<int>(PERSPECTIVE));
             message.value("nearClip", nearClip, 0.1f);
             message.value("farClip", farClip, 1000.0f);
             message.value("fov", fov, 60.0f);

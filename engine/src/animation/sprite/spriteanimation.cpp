@@ -137,8 +137,4 @@ namespace xng {
     std::unique_ptr<Resource> SpriteAnimation::clone() {
         return std::make_unique<SpriteAnimation>(*this);
     }
-
-    std::type_index SpriteAnimation::getTypeIndex() const {
-        return typeid(SpriteAnimation);
-    }
 }

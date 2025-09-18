@@ -37,25 +37,33 @@ namespace xng {
 
     class XENGINE_EXPORT EntityScene final : public Resource, public Messageable {
     public:
+        RESOURCE_TYPENAME(EntityScene)
+
         class XENGINE_EXPORT Listener {
         public:
             virtual ~Listener() = default;
 
-            virtual void onEntityCreate(const EntityHandle &entity) {};
+            virtual void onEntityCreate(const EntityHandle &entity) {
+            };
 
-            virtual void onEntityDestroy(const EntityHandle &entity) {};
+            virtual void onEntityDestroy(const EntityHandle &entity) {
+            };
 
             virtual void onEntityNameChanged(const EntityHandle &entity,
                                              const std::string &newName,
-                                             const std::string &oldName) {};
+                                             const std::string &oldName) {
+            };
 
-            virtual void onComponentCreate(const EntityHandle &entity, const Component &component) {};
+            virtual void onComponentCreate(const EntityHandle &entity, const Component &component) {
+            };
 
-            virtual void onComponentDestroy(const EntityHandle &entity, const Component &component) {};
+            virtual void onComponentDestroy(const EntityHandle &entity, const Component &component) {
+            };
 
             virtual void onComponentUpdate(const EntityHandle &entity,
                                            const Component &oldComponent,
-                                           const Component &newComponent) {};
+                                           const Component &newComponent) {
+            };
         };
 
         EntityScene() = default;
@@ -69,8 +77,6 @@ namespace xng {
         EntityScene &operator=(EntityScene &&other) noexcept = default;
 
         std::unique_ptr<Resource> clone() override;
-
-        std::type_index getTypeIndex() const override;
 
         const std::string &getName() const {
             return sceneName;
@@ -164,7 +170,6 @@ namespace xng {
             for (auto &p: componentPools) {
                 if (p.second->check(entity)) {
                     for (auto &listener: listeners) {
-
                     }
                     p.second->destroy(entity);
                 }
@@ -207,7 +212,7 @@ namespace xng {
         ComponentPool<T> &getPool() {
             auto it = componentPools.find(T::typeName);
             if (it == componentPools.end()) {
-                componentPools[T::typeName] = std::make_unique<ComponentPool<T>>();
+                componentPools[T::typeName] = std::make_unique<ComponentPool<T> >();
             }
             return dynamic_cast<ComponentPool<T> &>(*componentPools.at(T::typeName));
         }
@@ -338,7 +343,7 @@ namespace xng {
         std::map<EntityHandle, std::string> entityNamesReverse;
 
         std::set<EntityHandle> entities;
-        std::map<std::string, std::unique_ptr<ComponentPoolBase>> componentPools;
+        std::map<std::string, std::unique_ptr<ComponentPoolBase> > componentPools;
 
         std::set<Listener *> listeners;
 

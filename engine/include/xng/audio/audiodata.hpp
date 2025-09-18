@@ -27,16 +27,14 @@
 #include "xng/resource/resource.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT AudioData : public Resource {
+    class XENGINE_EXPORT AudioData final : public Resource {
     public:
+        RESOURCE_TYPENAME(AudioData)
+
         ~AudioData() override = default;
 
         std::unique_ptr<Resource> clone() override {
             return std::make_unique<AudioData>(*this);
-        }
-
-        std::type_index getTypeIndex() const override {
-            return typeid(AudioData);
         }
 
         std::vector<uint8_t> buffer;

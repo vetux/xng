@@ -21,6 +21,7 @@
 #define XENGINE_BT3CONVERT_HPP
 
 #include "xng/math/vector3.hpp"
+#include "xng/math/quaternion.hpp"
 
 #include "btBulletDynamicsCommon.h"
 

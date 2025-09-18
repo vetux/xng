@@ -20,11 +20,9 @@
 #ifndef XENGINE_RESOURCEREGISTRY_HPP
 #define XENGINE_RESOURCEREGISTRY_HPP
 
-#include <thread>
 #include <memory>
 #include <map>
 #include <set>
-#include <atomic>
 #include <condition_variable>
 #include <filesystem>
 #include <shared_mutex>
@@ -96,9 +94,10 @@ namespace xng {
          * returns the first archive for which the uri file exists otherwise an exception is thrown.
          *
          * @param uri
+         * @param typeName
          * @return
          */
-        const Resource &get(const Uri &uri, std::type_index typeIndex){
+        const Resource &get(const Uri &uri, const std::string &typeName){
             mutex.lock();
             auto it = loadTasks.find(uri.getFile());
             if (it != loadTasks.end()) {
@@ -110,7 +109,7 @@ namespace xng {
                 }
                 mutex.lock();
             }
-            auto &ret = bundles.at(uri.getFile()).get(uri.getAsset(), typeIndex);
+            auto &ret = bundles.at(uri.getFile()).get(uri.getAsset(), typeName);
             mutex.unlock();
             return ret;
         }

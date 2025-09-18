@@ -23,7 +23,7 @@
 
 #include "xng/async/threadpool.hpp"
 
-#include "xng/render/scene/rendergraphtexture.hpp"
+#include "xng/render/scene/texture.hpp"
 #include "xng/render/scene/material.hpp"
 #include "xng/render/scene/cubemap.hpp"
 #include "xng/animation/sprite/spriteanimation.hpp"
@@ -46,34 +46,34 @@ namespace xng {
 
         for (auto &pair: bundle.assets) {
             auto msg = Message(Message::DICTIONARY);
-            auto type = pair.second.get()->getTypeIndex();
-            if (type == typeid(Material)) {
+            auto type = pair.second.get()->getTypeName();
+            if (type == Material::typeName) {
                 auto &res = dynamic_cast<Material &>(*pair.second);
                 res >> msg;
                 msg["name"] = pair.first;
                 materials.emplace_back(msg);
-            } else if (type == typeid(Texture)) {
+            } else if (type == Texture::typeName) {
                 auto &res = dynamic_cast<Texture &>(*pair.second);
                 res >> msg;
                 msg["name"] = pair.first;
                 textures.emplace_back(msg);
-            } else if (type == typeid(Sprite)) {
+            } else if (type == Sprite::typeName) {
                 auto &res = dynamic_cast<Sprite &>(*pair.second);
                 res >> msg;
                 msg["name"] = pair.first;
                 sprites.emplace_back(msg);
-            } else if (type == typeid(SpriteAnimation)) {
+            } else if (type == SpriteAnimation::typeName) {
                 auto &res = dynamic_cast<SpriteAnimation &>(*pair.second);
                 res >> msg;
                 msg["name"] = pair.first;
                 animations.emplace_back(msg);
-            } else if (type == typeid(CubeMap)) {
+            } else if (type == CubeMap::typeName) {
                 auto &res = dynamic_cast<CubeMap &>(*pair.second);
                 res >> msg;
                 msg["name"] = pair.first;
                 cubeMaps.emplace_back(msg);
             } else {
-                throw std::runtime_error("Unsupported resource type: " + std::string(type.name()));
+                throw std::runtime_error("Unsupported resource type: " + std::string(type));
             }
         }
 

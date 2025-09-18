@@ -44,33 +44,36 @@ namespace xng {
      * @tparam T The type to use for a pixel
      */
     template<typename T>
-    class XENGINE_EXPORT Image : public Resource {
+    class XENGINE_EXPORT Image final : public Resource {
     public:
+        RESOURCE_TYPENAME(Image)
+
         std::unique_ptr<Resource> clone() override {
-            return std::make_unique<Image<T> >(*this);
+            return std::make_unique<Image>(*this);
         }
 
-        std::type_index getTypeIndex() const override {
-            return typeid(Image<T>);
+        Image()
+            : buffer() {
         }
 
-        Image() : resolution(), buffer() {
+        Image(const int width, const int height, const std::vector<T> &buffer)
+            : resolution(width, height), buffer(buffer) {
         }
 
-        Image(int width, int height, const std::vector<T> &buffer) : resolution(width, height), buffer(buffer) {
-        }
-
-        Image(int width, int height) : resolution(width, height), buffer(width * height) {
+        Image(const int width, const int height)
+            : resolution(width, height), buffer(width * height) {
         }
 
         explicit Image(const Vec2i &resolution, ColorRGBA color = ColorRGBA::black())
             : resolution(resolution), buffer(resolution.x * resolution.y, color) {
         }
 
-        Image(const Image &copy) : resolution(copy.resolution), buffer(copy.buffer) {
+        Image(const Image &copy)
+            : resolution(copy.resolution), buffer(copy.buffer) {
         }
 
-        Image(Image &&other) noexcept : resolution(std::move(other.resolution)), buffer(std::move(other.buffer)) {
+        Image(Image &&other) noexcept
+            : resolution(std::move(other.resolution)), buffer(std::move(other.buffer)) {
         }
 
         ~Image() override = default;
@@ -103,19 +106,24 @@ namespace xng {
 
         bool empty() const { return buffer.empty(); }
 
-        const T &getPixel(int x, int y) const {
+        const T &getPixel(const int x, const int y) const {
             return buffer[scanLine(y) + x];
         }
 
-        void setPixel(int x, int y, T color) {
+        void setPixel(const int x, const int y, T color) {
             buffer[scanLine(y) + x] = color;
         }
 
-        int scanLine(int y) const {
+        int scanLine(const int y) const {
             return y * resolution.x;
         }
 
-        void copyRow(const Image<T> &source, int srcRow, int srcColumn, int dstRow, int dstColumn, size_t count) {
+        void copyRow(const Image &source,
+            const int srcRow,
+            const int srcColumn,
+            const int dstRow,
+            const int dstColumn,
+            const size_t count) {
             if (source.resolution.y <= srcRow
                 || source.resolution.x <= srcColumn
                 || source.resolution.x < srcColumn + count
@@ -134,7 +142,7 @@ namespace xng {
                       buffer.begin() + dstOffset);
         }
 
-        void copyRows(const Image<T> &source, int srcRow, int dstRow, size_t count) {
+        void copyRows(const Image &source, int srcRow, int dstRow, size_t count) {
             if (resolution != source.resolution
                 || source.resolution.y <= srcRow
                 || source.resolution.y < srcRow + count
@@ -152,14 +160,14 @@ namespace xng {
                       buffer.begin() + dstOffset);
         }
 
-        void blit(const Image<T> &source) {
+        void blit(const Image &source) {
             if (source.resolution.x != resolution.x || source.resolution.y != resolution.y) {
                 throw std::runtime_error("Invalid blit source resolution");
             }
             copyRows(source, 0, 0, resolution.y);
         }
 
-        void blit(const Vec2i &targetPosition, const Image<T> &source) {
+        void blit(const Vec2i &targetPosition, const Image &source) {
             if (targetPosition.x < 0
                 || targetPosition.y < 0
                 || targetPosition.x + source.getWidth() > resolution.x
@@ -172,8 +180,8 @@ namespace xng {
             }
         }
 
-        Image<T> slice(const Recti &rect) const {
-            Image<T> ret = Image<T>(rect.dimensions.x, rect.dimensions.y);
+        Image slice(const Recti &rect) const {
+            Image ret = Image(rect.dimensions.x, rect.dimensions.y);
             for (int x = rect.position.x; x < rect.position.x + rect.dimensions.x; x++) {
                 for (int y = rect.position.y; y < rect.position.y + rect.dimensions.y; y++) {
                     ret.setPixel(x - rect.position.x, y - rect.position.y, getPixel(x, y));
@@ -182,8 +190,8 @@ namespace xng {
             return std::move(ret);
         }
 
-        Image<T> swapRows() {
-            Image<T> ret = Image<T>(resolution.x, resolution.y);
+        Image swapRows() {
+            Image ret = Image(resolution.x, resolution.y);
             for (int y = 0; y < resolution.y; y++) {
                 for (int x = 0; x < resolution.x; x++) {
                     ret.setPixel(resolution.x - 1 - x, y, getPixel(x, y));
@@ -192,8 +200,8 @@ namespace xng {
             return std::move(ret);
         }
 
-        Image<T> swapColumns() {
-            Image<T> ret = Image<T>(resolution.x, resolution.y);
+        Image swapColumns() {
+            Image ret = Image(resolution.x, resolution.y);
             for (auto y = 0; y < resolution.y; y++) {
                 ret.copyRow(*this, y, 0, resolution.y - y - 1, 0, resolution.x);
             }

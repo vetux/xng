@@ -22,26 +22,20 @@
 
 #include <utility>
 #include <vector>
-#include <typeindex>
-#include <cstdint>
-
-#include "xng/math/vector3.hpp"
-#include "xng/math/vector2.hpp"
 
 #include "xng/render/geometry/vertex.hpp"
 #include "xng/render/geometry/primitive.hpp"
 
 #include "xng/resource/resource.hpp"
 
-#include "xng/animation/skeletal/rig.hpp"
-#include "xng/animation/skeletal/riganimation.hpp"
-
 #include "xng/render/scene/material.hpp"
 
 #include "xng/rendergraph/shader/shaderattributelayout.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT Mesh : public Resource {
+    struct XENGINE_EXPORT Mesh : Resource {
+        RESOURCE_TYPENAME(Mesh)
+
         /**
          * Create a standard vertex buffer description which is the format of meshes returned by the resource abstraction.
          *
@@ -167,8 +161,6 @@ namespace xng {
         std::unique_ptr<Resource> clone() override {
             return std::make_unique<Mesh>(*this);
         }
-
-        std::type_index getTypeIndex() const override;
 
         size_t polyCount() const {
             if (indices.empty())

@@ -26,8 +26,10 @@
 #include "xng/resource/resource.hpp"
 
 namespace xng {
-    class Font : public Resource {
+    class Font final : public Resource {
     public:
+        RESOURCE_TYPENAME(Font)
+
         std::vector<char> data;
 
         Font() = default;
@@ -37,10 +39,7 @@ namespace xng {
         std::unique_ptr<Resource> clone() override {
             return std::make_unique<Font>(*this);
         }
-
-        std::type_index getTypeIndex() const override {
-            return typeid(Font);
-        }
     };
 }
+
 #endif //XENGINE_FONTDATA_HPP

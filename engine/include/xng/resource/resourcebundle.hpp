@@ -23,7 +23,6 @@
 #include <map>
 #include <string>
 #include <memory>
-#include <typeindex>
 #include <stdexcept>
 
 #include "resource.hpp"
@@ -65,14 +64,21 @@ namespace xng {
             }
         }
 
-        const Resource &get(const std::string &name, std::type_index typeIndex) const {
+        const Resource &get(const std::string &name, const std::string &typeName) const {
             if (assets.empty())
                 throw std::runtime_error("Empty bundle map");
 
             if (name.empty()) {
-                return *getAll(typeIndex).at(0);
+                return *getAll(typeName).at(0);
             } else {
-                return get(name);
+                auto &ret = get(name);
+                if (ret.getTypeName() != typeName) {
+                    throw std::runtime_error("Invalid resource cast, typeName: "
+                                             + ret.getTypeName()
+                                             + " Requested: "
+                                             + typeName);
+                }
+                return ret;
             }
         }
 
@@ -93,15 +99,16 @@ namespace xng {
             for (auto &pair: assets) {
                 try {
                     ret.emplace_back(dynamic_cast<const T *>(pair.second.get()));
-                } catch (const std::bad_cast &e) {}
+                } catch (const std::bad_cast &e) {
+                }
             }
             return ret;
         }
 
-        std::vector<const Resource *> getAll(std::type_index typeIndex) const{
+        std::vector<const Resource *> getAll(const std::string &typeName) const {
             std::vector<const Resource *> ret;
             for (auto &pair: assets) {
-                if (pair.second->getTypeIndex() == typeIndex){
+                if (pair.second->getTypeName() == typeName) {
                     ret.emplace_back(pair.second.get());
                 }
             }
@@ -116,11 +123,11 @@ namespace xng {
             assets.erase(name);
         }
 
-        bool has(const std::string &name){
+        bool has(const std::string &name) {
             return assets.find(name) != assets.end();
         }
 
-        std::map<std::string, std::unique_ptr<Resource>> assets;
+        std::map<std::string, std::unique_ptr<Resource> > assets;
     };
 }
 

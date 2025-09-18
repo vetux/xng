@@ -25,7 +25,7 @@
 #include "xng/render/scene/color.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT PointLight : public Messageable {
+    struct XENGINE_EXPORT PointLight final : Messageable {
         Messageable &operator<<(const Message &message) override {
             color << message.getMessage("color");
             message.value("power", power);

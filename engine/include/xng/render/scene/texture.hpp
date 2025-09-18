@@ -22,18 +22,16 @@
 
 #include "xng/resource/resourcehandle.hpp"
 #include "xng/render/scene/image.hpp"
-#include "xng/rendergraph/rendergraphtexture.hpp"
+#include "xng/rendergraph/texture.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT Texture : public Resource, public Messageable {
+    struct XENGINE_EXPORT Texture final : Resource, Messageable {
+        RESOURCE_TYPENAME(Texture)
+
         ~Texture() override = default;
 
         std::unique_ptr<Resource> clone() override {
             return std::make_unique<Texture>(*this);
-        }
-
-        std::type_index getTypeIndex() const override {
-            return typeid(Texture);
         }
 
         Messageable &operator<<(const Message &message) override {

@@ -91,10 +91,6 @@ namespace xng {
         return std::make_unique<EntityScene>(*this);
     }
 
-    std::type_index EntityScene::getTypeIndex() const {
-        return typeid(EntityScene);
-    }
-
     EntityScene::EntityScene(const EntityScene &other) {
         componentPools.clear();
         for (auto &p: other.componentPools) {

@@ -23,6 +23,8 @@
 #include "xng/render/scene/mesh.hpp"
 #include "xng/io/messageable.hpp"
 
+#include "xng/math/vector3.hpp"
+
 namespace xng {
     enum ColliderShapeType {
         COLLIDER_2D, // The vertices are treated as 2D points describing a polygon facing in the z axis.
@@ -38,7 +40,7 @@ namespace xng {
     /**
      * A description of a shape for a physics simulation
      */
-    struct XENGINE_EXPORT ColliderShape :  public Messageable {
+    struct XENGINE_EXPORT ColliderShape final : Messageable {
         ColliderShapeType type = COLLIDER_2D;
 
         std::vector<Vec3f> vertices;

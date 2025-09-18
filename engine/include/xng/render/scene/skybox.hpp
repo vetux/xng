@@ -31,15 +31,13 @@
 #include "xng/io/messageable.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT Skybox : public Resource, public Messageable {
+    struct XENGINE_EXPORT Skybox final : Resource, Messageable {
+        RESOURCE_TYPENAME(Skybox)
+
         ~Skybox() override = default;
 
         std::unique_ptr<Resource> clone() override {
             return std::make_unique<Skybox>(*this);
-        }
-
-        std::type_index getTypeIndex() const override {
-            return typeid(Skybox);
         }
 
         Messageable &operator<<(const Message &message) override {

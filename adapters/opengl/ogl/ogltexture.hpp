@@ -25,7 +25,7 @@
 #include "typeconversion.hpp"
 #include "ogldebug.hpp"
 
-#include "xng/rendergraph/rendergraphtexture.hpp"
+#include "xng/rendergraph/texture.hpp"
 
 struct OGLTexture {
     GLuint handle{};

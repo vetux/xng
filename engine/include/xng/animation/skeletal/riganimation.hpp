@@ -30,6 +30,8 @@
 namespace xng {
     class XENGINE_EXPORT RigAnimation : public Resource {
     public:
+        RESOURCE_TYPENAME(RigAnimation)
+
         std::string name; // The name of this animation
         double duration; // Total duration in ticks
         double ticksPerSecond; // The number of ticks to show per second
@@ -37,10 +39,6 @@ namespace xng {
 
         std::unique_ptr<Resource> clone() override {
             return std::make_unique<RigAnimation>(*this);
-        }
-
-        std::type_index getTypeIndex() const override {
-            return typeid(RigAnimation);
         }
     };
 }

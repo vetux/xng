@@ -20,19 +20,21 @@
 #ifndef XENGINE_RESOURCE_HPP
 #define XENGINE_RESOURCE_HPP
 
-#include <typeindex>
 #include <memory>
+
+#define RESOURCE_TYPENAME(T) static constexpr auto typeName = #T; std::string getTypeName() const override { return typeName; }
 
 namespace xng {
     class XENGINE_EXPORT Resource {
     public:
-        Resource() {}
+        Resource() {
+        }
 
         virtual ~Resource() = default;
 
         virtual std::unique_ptr<Resource> clone() = 0;
 
-        virtual std::type_index getTypeIndex() const = 0;
+        virtual std::string getTypeName() const = 0;
 
         /**
          * @return Wheter or not the dependencies of this resource are loaded.

@@ -30,6 +30,9 @@
 #include "xng/render/geometry/vertexbuilder.hpp"
 
 #include "xng/math/matrixmath.hpp"
+#include "xng/math/quaternion.hpp"
+
+#include "xng/animation/skeletal/riganimation.hpp"
 
 namespace xng {
     static Mat4f convertMat4(const aiMatrix4x4 &mat) {

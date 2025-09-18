@@ -27,7 +27,7 @@
 #include "xng/rendergraph/rendergraph.hpp"
 #include "xng/rendergraph/rendergraphcontext.hpp"
 #include "xng/rendergraph/rendergraphresource.hpp"
-#include "xng/rendergraph/rendergraphtexture.hpp"
+#include "xng/rendergraph/texture.hpp"
 #include "xng/rendergraph/shader/shader.hpp"
 #include "xng/rendergraph/rendergraphruntime.hpp"
 

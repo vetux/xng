@@ -20,17 +20,15 @@
 #ifndef XENGINE_TERRAIN_HPP
 #define XENGINE_TERRAIN_HPP
 
-#include "xng/render/scene/rendergraphtexture.hpp"
+#include "xng/render/scene/texture.hpp"
 
 // TODO: Implement terrain rendering pass
 namespace xng {
-    struct Terrain : public Resource, public Messageable {
+    struct Terrain final : Resource, Messageable {
+        RESOURCE_TYPENAME(Terrain)
+
         std::unique_ptr<Resource> clone() override {
             return std::make_unique<Terrain>(*this);
-        }
-
-        std::type_index getTypeIndex() const override {
-            return typeid(Terrain);
         }
 
         Messageable &operator<<(const Message &message) override {

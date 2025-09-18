@@ -25,7 +25,7 @@
 
 #include "xng/math/rectangle.hpp"
 
-#include "xng/render/scene/rendergraphtexture.hpp"
+#include "xng/render/scene/texture.hpp"
 
 #include "xng/io/messageable.hpp"
 
@@ -33,7 +33,9 @@ namespace xng {
     /**
      * A sprite is a texture displayed on a planar quad mesh perpendicular to the camera.
      */
-    struct XENGINE_EXPORT Sprite : public Resource, public Messageable {
+    struct XENGINE_EXPORT Sprite final : Resource, Messageable {
+        RESOURCE_TYPENAME(Sprite)
+
         Sprite() = default;
 
         Sprite(ResourceHandle<ImageRGBA> image,
@@ -45,10 +47,6 @@ namespace xng {
 
         std::unique_ptr<Resource> clone() override {
             return std::make_unique<Sprite>(*this);
-        }
-
-        std::type_index getTypeIndex() const override {
-            return typeid(Sprite);
         }
 
         Messageable &operator<<(const Message &message) override {
@@ -65,8 +63,8 @@ namespace xng {
             return message;
         }
 
-        Recti offset{}; // The part of the image which contains the sprite
         ResourceHandle<ImageRGBA> image{}; // The image which contains the sprite
+        Recti offset{}; // The part of the image which contains the sprite
 
         bool isLoaded() const override {
             return image.isLoaded();

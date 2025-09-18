@@ -20,9 +20,7 @@
 #ifndef XENGINE_MATERIAL_HPP
 #define XENGINE_MATERIAL_HPP
 
-#include <variant>
-
-#include "xng/render/scene/rendergraphtexture.hpp"
+#include "xng/render/scene/texture.hpp"
 
 #include "xng/resource/resourcehandle.hpp"
 
@@ -34,15 +32,13 @@ namespace xng {
      *
      * Users can create custom lighting passes if needed and write to the SLOT_DEFERRED/FORWARD_COLOR and SLOT_DEFERRED/FORWARD_DEPTH.
      */
-    struct XENGINE_EXPORT Material : public Resource, public Messageable {
+    struct XENGINE_EXPORT Material final : Resource, Messageable {
+        RESOURCE_TYPENAME(Material)
+
         ~Material() override = default;
 
         std::unique_ptr<Resource> clone() override {
             return std::make_unique<Material>(*this);
-        }
-
-        std::type_index getTypeIndex() const override {
-            return typeid(Material);
         }
 
         Messageable &operator<<(const Message &message) override {

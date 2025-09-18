@@ -25,18 +25,16 @@
 
 #include "xng/render/scene/image.hpp"
 
-#include "xng/rendergraph/rendergraphtexture.hpp"
+#include "xng/rendergraph/texture.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT CubeMap : public Resource, public Messageable {
+    struct XENGINE_EXPORT CubeMap final : Resource, Messageable {
+        RESOURCE_TYPENAME(CubeMap)
+
         ~CubeMap() override = default;
 
         std::unique_ptr<Resource> clone() override {
             return std::make_unique<CubeMap>(*this);
-        }
-
-        std::type_index getTypeIndex() const override {
-            return typeid(CubeMap);
         }
 
         Messageable &operator<<(const Message &message) override {
