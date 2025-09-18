@@ -21,7 +21,7 @@
 #define XENGINE_SPRITEANIMATIONSYSTEM_HPP
 
 #include "xng/ecs/system.hpp"
-#include "xng/ecs/components/spriteanimationcomponent.hpp"
+#include "xng/ecs/components/rendering/spriteanimationcomponent.hpp"
 #include "xng/util/time.hpp"
 
 namespace xng {

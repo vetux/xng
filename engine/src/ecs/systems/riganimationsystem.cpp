@@ -18,8 +18,8 @@
  */
 
 #include "xng/ecs/systems/riganimationsystem.hpp"
-#include "xng/ecs/components/riganimationcomponent.hpp"
-#include "xng/ecs/components/skinnedmeshcomponent.hpp"
+#include "xng/ecs/components/rendering/riganimationcomponent.hpp"
+#include "xng/ecs/components/rendering/skinnedmeshcomponent.hpp"
 #include "xng/util/time.hpp"
 
 namespace xng {

@@ -23,7 +23,7 @@
 #include <string>
 
 #include "xng/ecs/system.hpp"
-#include "xng/ecs/components/meshcomponent.hpp"
+#include "xng/ecs/components/rendering/meshcomponent.hpp"
 
 #include "xng/util/time.hpp"
 

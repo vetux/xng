@@ -20,7 +20,7 @@
 #include "xng/ecs/systems/guieventsystem.hpp"
 
 #include "xng/ecs/components/gui/buttoncomponent.hpp"
-#include "xng/ecs/components/spritecomponent.hpp"
+#include "xng/ecs/components/rendering/spritecomponent.hpp"
 #include "xng/event/events/guievent.hpp"
 #include "xng/input/device/mouse.hpp"
 #include "xng/util/time.hpp"

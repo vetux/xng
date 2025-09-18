@@ -19,7 +19,7 @@
 
 #include "xng/ecs/systems/spriteanimationsystem.hpp"
 
-#include "xng/ecs/components/spritecomponent.hpp"
+#include "xng/ecs/components/rendering/spritecomponent.hpp"
 #include "xng/util/time.hpp"
 
 namespace xng {

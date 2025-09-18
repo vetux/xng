@@ -19,8 +19,8 @@
 
 #include "xng/ecs/systems/audiosystem.hpp"
 
-#include "xng/ecs/components/audiolistenercomponent.hpp"
-#include "xng/ecs/components/audiosourcecomponent.hpp"
+#include "xng/ecs/components/audio/audiolistenercomponent.hpp"
+#include "xng/ecs/components/audio/audiosourcecomponent.hpp"
 
 #include "xng/resource/resourcehandle.hpp"
 #include "xng/util/time.hpp"

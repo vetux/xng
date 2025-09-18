@@ -21,7 +21,7 @@
 #define XENGINE_RIGANIMATIONSYSTEM_HPP
 
 #include "xng/ecs/system.hpp"
-#include "xng/ecs/components/riganimationcomponent.hpp"
+#include "xng/ecs/components/rendering/riganimationcomponent.hpp"
 #include "xng/animation/skeletal/riganimator.hpp"
 #include "xng/util/time.hpp"
 

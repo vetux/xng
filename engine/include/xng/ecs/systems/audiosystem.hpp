@@ -22,7 +22,7 @@
 
 #include "xng/ecs/system.hpp"
 
-#include "xng/ecs/components/audiosourcecomponent.hpp"
+#include "xng/ecs/components/audio/audiosourcecomponent.hpp"
 #include "xng/ecs/components/transformcomponent.hpp"
 
 #include "xng/audio/audiodevice.hpp"
