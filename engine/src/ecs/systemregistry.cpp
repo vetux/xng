@@ -28,26 +28,14 @@ namespace xng {
         return *inst;
     }
 
-    bool SystemRegistry::registerSystem(const std::type_index &typeIndex,
-                                        const std::string &typeName,
-                                        const std::function<std::unique_ptr<System>()> &constructor) noexcept {
-        if (typeNameMapping.find(typeIndex) != typeNameMapping.end())
-            return false;
-        typeNameMapping[typeIndex] = typeName;
-        typeNameReverseMapping.insert(std::pair(typeName, typeIndex));
-        constructors[typeIndex] = constructor;
-        return true;
+    void SystemRegistry::registerSystem(const std::string &typeName,
+                                        const std::function<std::unique_ptr<System>()> &constructor) {
+        if (constructors.find(typeName) != constructors.end())
+            throw std::runtime_error("System " + typeName + " already registered");
+        constructors[typeName] = constructor;
     }
 
-    const std::type_index &SystemRegistry::getTypeFromName(const std::string &typeName) {
-        return typeNameReverseMapping.at(typeName);
-    }
-
-    const std::string &SystemRegistry::getTypeNameFromIndex(const std::type_index &index) {
-        return typeNameMapping.at(index);
-    }
-
-    std::unique_ptr<System> SystemRegistry::create(const std::type_index &index) {
-        return constructors.at(index)();
+    std::unique_ptr<System> SystemRegistry::create(const std::string &typeName) const {
+        return constructors.at(typeName)();
     }
 }

@@ -20,7 +20,6 @@
 #ifndef XENGINE_SYSTEMREGISTRY_HPP
 #define XENGINE_SYSTEMREGISTRY_HPP
 
-#include <typeindex>
 #include <functional>
 #include <string>
 #include <map>
@@ -30,14 +29,13 @@
 
 namespace xng {
 #define REGISTER_SYSTEM(type) \
-bool r_##type = xng::SystemRegistry::instance().registerSystem(typeid(type), \
-                                                                             #type, \
+bool r_##type = xng::SystemRegistry::instance().registerSystem(#type, \
                                                                              []() {\
                                                                                  return std::make_unique<type>();\
                                                                              });
 
     /**
-     * The system registry is used for the editor playmode to instantiate user defined systems based on their name
+     * The system registry is used for the editor play mode to instantiate user-defined systems based on their type name
      * by loading a shared library containing the register directives for the user system types at runtime.
      */
     class XENGINE_EXPORT SystemRegistry {
@@ -48,25 +46,17 @@ bool r_##type = xng::SystemRegistry::instance().registerSystem(typeid(type), \
 
         SystemRegistry(const SystemRegistry &other) = delete;
 
-        SystemRegistry&operator=(const SystemRegistry &other) = delete;
+        SystemRegistry &operator=(const SystemRegistry &other) = delete;
 
-        bool registerSystem(const std::type_index &typeIndex,
-                            const std::string &typeName,
-                            const std::function<std::unique_ptr<System>()> &constructor) noexcept;
+        void registerSystem(const std::string &typeName,
+                            const std::function<std::unique_ptr<System>()> &constructor);
 
-        const std::type_index &getTypeFromName(const std::string &typeName);
-
-        const std::string &getTypeNameFromIndex(const std::type_index &index);
-
-        std::unique_ptr<System> create(const std::type_index &index);
+        std::unique_ptr<System> create(const std::string &typeName) const;
 
     private:
         static std::unique_ptr<SystemRegistry> inst;
 
-        std::map<std::type_index, std::string> typeNameMapping;
-        std::map<std::string, std::type_index> typeNameReverseMapping;
-
-        std::map<std::type_index, std::function<std::unique_ptr<System>()>> constructors;
+        std::map<std::string, std::function<std::unique_ptr<System>()> > constructors;
     };
 }
 #endif //XENGINE_SYSTEMREGISTRY_HPP
