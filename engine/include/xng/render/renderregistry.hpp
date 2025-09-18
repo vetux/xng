@@ -19,8 +19,7 @@
 
 #ifndef XENGINE_RENDERREGISTRY_HPP
 #define XENGINE_RENDERREGISTRY_HPP
-#include "scene/scene.hpp"
-#include "xng/math/vector2.hpp"
+
 #include "xng/rendergraph/rendergraphresource.hpp"
 
 namespace xng {
