@@ -7,9 +7,9 @@ option(BUILD_BOX2D "Build the box2d physics adapter" ON)
 option(BUILD_BULLET3 "Build the bullet3 physics adapter"  ON)
 option(BUILD_OPENAL "Build the OpenAL audio adapter"  ON)
 option(BUILD_FREETYPE "Build the FreeType font rendering adapter"  ON)
-option(BUILD_ASSIMP "Build the AssImp resource parser adapter (For 3D asset file formats)"  ON)
+option(BUILD_ASSIMP "Build the AssImp resource parser adapter (For 3D asset file formats)"  ON) # Requires RTTI
 option(BUILD_SNDFILE "Build the SndFile resource parser adapter (For Audio file formats)"  ON)
-option(BUILD_CRYPTOPP "Build the CryptoPP adapter"  ON)
+option(BUILD_CRYPTOPP "Build the CryptoPP adapter"  ON) # Requires RTTI
 option(BUILD_ANDROID "Build the android display adapter" OFF)
 option(BUILD_ANDROID_OPENGL "Build the opengl support of the android display adapter" OFF) # Depends on BUILD_OPENGL
 
@@ -81,7 +81,6 @@ if (BUILD_OPENGL)
     AddAdapter(BUILD_OPENGL
             opengl
             ${GL_LIBNAME}
-            spirv-cross-core spirv-cross-glsl spirv-cross-hlsl
             glslang SPIRV glslang-default-resource-limits MachineIndependent OSDependent GenericCodeGen OGLCompiler)
 endif ()
 
