@@ -32,6 +32,8 @@
 
 #include "xng/io/messageable.hpp"
 
+#include "xng/util/downcast.hpp"
+
 namespace xng {
     class Entity;
 
@@ -214,7 +216,7 @@ namespace xng {
             if (it == componentPools.end()) {
                 componentPools[T::typeName] = std::make_unique<ComponentPool<T> >();
             }
-            return dynamic_cast<ComponentPool<T> &>(*componentPools.at(T::typeName));
+            return down_cast<ComponentPool<T> &>(*componentPools.at(T::typeName));
         }
 
         template<typename T>
@@ -223,7 +225,7 @@ namespace xng {
             if (it == componentPools.end()) {
                 throw std::runtime_error("Pool does not exist");
             }
-            return dynamic_cast<ComponentPool<T> &>(*componentPools.at(T::typeName));
+            return down_cast<ComponentPool<T> &>(*componentPools.at(T::typeName));
         }
 
         template<typename T>

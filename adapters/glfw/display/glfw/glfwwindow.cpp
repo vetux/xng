@@ -248,7 +248,7 @@ namespace xng::glfw {
     }
 
     Input &GLFWWindow::getInput() {
-        return dynamic_cast<Input &>(*input);
+        return *input;
     }
 
     void GLFWWindow::swapBuffers() {
@@ -360,7 +360,7 @@ namespace xng::glfw {
     }
 
     void GLFWWindow::setMonitor(Monitor &monitor, const Recti rect, const int refreshRate) {
-        auto &mon = dynamic_cast<MonitorGLFW &>(monitor);
+        const auto &mon = down_cast<MonitorGLFW &>(monitor);
         glfwSetWindowMonitor(wndH,
                              mon.monH,
                              rect.position.x,

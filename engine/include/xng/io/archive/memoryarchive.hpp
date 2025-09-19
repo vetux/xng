@@ -39,9 +39,9 @@ namespace xng {
 
         std::unique_ptr<std::istream> open(const std::string &path) override {
             auto buf = data.at(path);
-            auto ret = new std::stringstream(std::string(buf.begin(), buf.end()));
+            const auto ret = new std::stringstream(std::string(buf.begin(), buf.end()));
             std::noskipws(*ret);
-            return std::unique_ptr<std::istream>(dynamic_cast<std::istream *>(ret));
+            return std::unique_ptr<std::istream>(ret);
         }
 
         std::unique_ptr<std::iostream> openRW(const std::string &path) override {

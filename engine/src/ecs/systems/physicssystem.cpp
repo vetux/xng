@@ -218,8 +218,8 @@ namespace xng {
                                           const Component &oldComponent,
                                           const Component &newComponent) {
         if (oldComponent.getTypeName() ==  RigidBodyComponent::typeName) {
-            auto &oComp = dynamic_cast<const RigidBodyComponent &>(oldComponent);
-            auto &nComp = dynamic_cast<const RigidBodyComponent &>(newComponent);
+            auto &oComp = down_cast<const RigidBodyComponent &>(oldComponent);
+            auto &nComp = down_cast<const RigidBodyComponent &>(newComponent);
 
             if (rigidBodies.find(entity) != rigidBodies.end()) {
                 rigidBodies.at(entity)->setRigidBodyType(nComp.type);
@@ -227,8 +227,8 @@ namespace xng {
                 rigidBodies.at(entity)->setGravityScale(nComp.gravityScale);
             }
         } else if (oldComponent.getTypeName() == Collider2DComponent::typeName) {
-            auto &oComp = dynamic_cast<const Collider2DComponent &>(oldComponent);
-            auto &nComp = dynamic_cast<const Collider2DComponent &>(newComponent);
+            auto &oComp = down_cast<const Collider2DComponent &>(oldComponent);
+            auto &nComp = down_cast<const Collider2DComponent &>(newComponent);
 
             if (oComp.colliders != nComp.colliders
                 && colliders.find(entity) != colliders.end()) {

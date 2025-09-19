@@ -22,8 +22,9 @@
 
 namespace xng {
     /**
-     * In the future I want to support builds without using RTTI.
-     * To avoid using RTTI for downcasting, this will be performed with static_cast instead.
+     * When down casting, it must be ensured that the types are compatible with e.g. custom typenames.
+     *
+     * Will be replaced with a static_cast to avoid RTTI
      *
      * @tparam T
      * @tparam BASE

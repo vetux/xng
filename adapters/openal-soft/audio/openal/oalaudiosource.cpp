@@ -20,6 +20,7 @@
 #include "oalaudiosource.hpp"
 #include "oalcheckerror.hpp"
 #include "oalaudiobuffer.hpp"
+#include "xng/util/downcast.hpp"
 
 namespace xng {
     namespace openal {
@@ -291,7 +292,7 @@ namespace xng {
         }
 
         void OALAudioSource::setBuffer(const AudioBuffer &buffer) {
-            auto &b = dynamic_cast<const OALAudioBuffer &>(buffer);
+            auto &b = down_cast<const OALAudioBuffer &>(buffer);
             alSourcei(handle, AL_BUFFER, b.handle);
             checkOALError();
         }
@@ -305,7 +306,7 @@ namespace xng {
             //TODO: Queued buffers clear
             std::vector<ALuint> b(buffers.size());
             for (int i = 0; i < buffers.size(); i++) {
-                auto &ob = dynamic_cast<const OALAudioBuffer &>(buffers[i].get());
+                auto &ob = down_cast<const OALAudioBuffer &>(buffers[i].get());
                 b[i] = ob.handle;
                 bufferMapping.insert(std::pair<ALuint, std::reference_wrapper<const AudioBuffer>>(ob.handle, ob));
             }

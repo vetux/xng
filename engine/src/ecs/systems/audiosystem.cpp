@@ -114,8 +114,8 @@ namespace xng {
                                         const Component &oldComponent,
                                         const Component &newComponent) {
         if (oldComponent.getTypeName() == AudioSourceComponent::typeName) {
-            const auto &oldValue = dynamic_cast<const AudioSourceComponent &>(oldComponent);
-            const auto &newValue = dynamic_cast<const AudioSourceComponent &>(newComponent);
+            const auto &oldValue = down_cast<const AudioSourceComponent &>(oldComponent);
+            const auto &newValue = down_cast<const AudioSourceComponent &>(newComponent);
             if (oldValue != newValue) {
                 if (oldValue.audio != newValue.audio) {
                     sources[entity]->stop();

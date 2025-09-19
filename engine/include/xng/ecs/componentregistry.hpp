@@ -59,17 +59,15 @@ xng::ComponentRegistry::instance().registerComponent(#type, \
                                                                                 xng::EntityHandle ent,\
                                                                                 const Component &value) {\
                                                                                  scene.updateComponent(ent,\
-                                                                                                       dynamic_cast<const type &>(\
+                                                                                                       down_cast<const type &>(\
                                                                                                                value));\
                                                                              });
 
-#define UNREGISTER_COMPONENT(type) xng::ComponentRegistry::instance().unregisterComponent(typeid(type));
+#define UNREGISTER_COMPONENT(type) xng::ComponentRegistry::instance().unregisterComponent(T::typeName);
 
 namespace xng {
     /**
-     * The component registry is used by the entity scene when serializing / deserializing and when using the non template interface of the entity scene.
-     *
-     * Users have to register component types which are added to the entity scene to serialize / deserialize them and to be able to use the non template interface.
+     * The entity scene uses the component registry when serializing / deserializing components.
      */
     class XENGINE_EXPORT ComponentRegistry {
     public:

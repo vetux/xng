@@ -71,18 +71,13 @@ namespace xng {
 
         void removeArchive(const std::string &scheme);
 
-        void setImporters(std::vector<std::unique_ptr<ResourceImporter>> importers);
+        void setImporters(std::vector<std::unique_ptr<ResourceImporter> > importers);
 
-        const std::vector<std::unique_ptr<ResourceImporter>> &getImporters();
+        const std::vector<std::unique_ptr<ResourceImporter> > &getImporters();
 
         ResourceImporter &getImporter(const std::string &fileExtension);
 
         Archive &getArchive(const std::string &scheme);
-
-        template<typename T>
-        T &getArchiveT(const std::string &name) {
-            return dynamic_cast<T &>(getArchive(name));
-        }
 
         /**
          * @param scheme The scheme to use when an uri does not specify a scheme.
@@ -97,7 +92,7 @@ namespace xng {
          * @param typeName
          * @return
          */
-        const Resource &get(const Uri &uri, const std::string &typeName){
+        const Resource &get(const Uri &uri, const std::string &typeName) {
             mutex.lock();
             auto it = loadTasks.find(uri.getFile());
             if (it != loadTasks.end()) {
@@ -159,15 +154,15 @@ namespace xng {
 
         RefCounter<std::string, unsigned long> bundleRefCounter;
 
-        std::unordered_map<std::string, std::shared_ptr<Task>> loadTasks;
+        std::unordered_map<std::string, std::shared_ptr<Task> > loadTasks;
 
-        std::map<std::string, std::shared_ptr<Archive>> archives;
+        std::map<std::string, std::shared_ptr<Archive> > archives;
         std::map<std::string, ResourceBundle> bundles;
 
         std::string defaultScheme;
 
         std::shared_mutex importerMutex;
-        std::vector<std::unique_ptr<ResourceImporter>> importers;
+        std::vector<std::unique_ptr<ResourceImporter> > importers;
 
         std::set<Uri> uris;
         std::set<Uri> loadingUris;

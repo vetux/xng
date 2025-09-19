@@ -48,27 +48,27 @@ namespace xng {
             auto msg = Message(Message::DICTIONARY);
             auto type = pair.second.get()->getTypeName();
             if (type == Material::typeName) {
-                auto &res = dynamic_cast<Material &>(*pair.second);
+                auto &res = down_cast<Material &>(*pair.second);
                 res >> msg;
                 msg["name"] = pair.first;
                 materials.emplace_back(msg);
             } else if (type == Texture::typeName) {
-                auto &res = dynamic_cast<Texture &>(*pair.second);
+                auto &res = down_cast<Texture &>(*pair.second);
                 res >> msg;
                 msg["name"] = pair.first;
                 textures.emplace_back(msg);
             } else if (type == Sprite::typeName) {
-                auto &res = dynamic_cast<Sprite &>(*pair.second);
+                auto &res = down_cast<Sprite &>(*pair.second);
                 res >> msg;
                 msg["name"] = pair.first;
                 sprites.emplace_back(msg);
             } else if (type == SpriteAnimation::typeName) {
-                auto &res = dynamic_cast<SpriteAnimation &>(*pair.second);
+                auto &res = down_cast<SpriteAnimation &>(*pair.second);
                 res >> msg;
                 msg["name"] = pair.first;
                 animations.emplace_back(msg);
             } else if (type == CubeMap::typeName) {
-                auto &res = dynamic_cast<CubeMap &>(*pair.second);
+                auto &res = down_cast<CubeMap &>(*pair.second);
                 res >> msg;
                 msg["name"] = pair.first;
                 cubeMaps.emplace_back(msg);

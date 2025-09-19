@@ -24,8 +24,6 @@
 
 #include "xng/resource/resourceimporter.hpp"
 
-#include "resource/staticresource.hpp"
-
 #include "xng/render/geometry/vertexbuilder.hpp"
 
 static const std::string NORM_CUBE_OBJ = std::string(R"###(
@@ -100,7 +98,7 @@ namespace xng {
         if (!nCubeC) {
             nCubeC = true;
             std::stringstream stream(NORM_CUBE_OBJ);
-            nCube = *ResourceRegistry::getDefaultRegistry().getImporter(".obj").read(stream, ".obj", "",
+            nCube = ResourceRegistry::getDefaultRegistry().getImporter(".obj").read(stream, ".obj", "",
                 nullptr).getAll<Mesh>().at(0);
         }
         return nCube;

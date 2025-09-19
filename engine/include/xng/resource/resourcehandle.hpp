@@ -101,7 +101,7 @@ namespace xng {
         }
 
         const T &get() const {
-            return dynamic_cast<const T &>(getRegistry().get(uri, T::typeName));
+            return down_cast<const T &>(getRegistry().get(uri, T::typeName));
         }
 
         ResourceRegistry &getRegistry() const {

@@ -25,7 +25,9 @@
 #include <memory>
 #include <stdexcept>
 
-#include "resource.hpp"
+#include "xng/resource/resource.hpp"
+
+#include "xng/util/downcast.hpp"
 
 namespace xng {
     class XENGINE_EXPORT ResourceBundle {
@@ -59,9 +61,8 @@ namespace xng {
 
             if (name.empty()) {
                 return *getAll<T>().at(0);
-            } else {
-                return dynamic_cast<const T &>(get(name));
             }
+            return down_cast<const T &>(get(name));
         }
 
         const Resource &get(const std::string &name, const std::string &typeName) const {
@@ -69,17 +70,17 @@ namespace xng {
                 throw std::runtime_error("Empty bundle map");
 
             if (name.empty()) {
-                return *getAll(typeName).at(0);
-            } else {
-                auto &ret = get(name);
-                if (ret.getTypeName() != typeName) {
-                    throw std::runtime_error("Invalid resource cast, typeName: "
-                                             + ret.getTypeName()
-                                             + " Requested: "
-                                             + typeName);
-                }
-                return ret;
+                return getAll(typeName).at(0);
             }
+
+            auto &ret = get(name);
+            if (ret.getTypeName() != typeName) {
+                throw std::runtime_error("Invalid resource cast, typeName: "
+                                         + ret.getTypeName()
+                                         + " Requested: "
+                                         + typeName);
+            }
+            return ret;
         }
 
         const Resource &get(const std::string &name) const {
@@ -88,28 +89,26 @@ namespace xng {
 
             if (name.empty()) {
                 return *assets.begin()->second;
-            } else {
-                return *assets.at(name);
             }
+            return *assets.at(name);
         }
 
         template<typename T>
-        std::vector<const T *> getAll() const {
-            std::vector<const T *> ret;
+        std::vector<std::reference_wrapper<const T>> getAll() const {
+            std::vector<std::reference_wrapper<const T>> ret;
             for (auto &pair: assets) {
-                try {
-                    ret.emplace_back(dynamic_cast<const T *>(pair.second.get()));
-                } catch (const std::bad_cast &e) {
+                if (T::typeName == pair.second->getTypeName()) {
+                    ret.emplace_back(down_cast<const T &>(*pair.second));
                 }
             }
             return ret;
         }
 
-        std::vector<const Resource *> getAll(const std::string &typeName) const {
-            std::vector<const Resource *> ret;
+        std::vector<std::reference_wrapper<const Resource>> getAll(const std::string &typeName) const {
+            std::vector<std::reference_wrapper<const Resource>> ret;
             for (auto &pair: assets) {
                 if (pair.second->getTypeName() == typeName) {
-                    ret.emplace_back(pair.second.get());
+                    ret.emplace_back(*pair.second);
                 }
             }
             return ret;

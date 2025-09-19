@@ -67,7 +67,7 @@ namespace xng::vulkan {
     };
 
     static InstanceDataImp &getData(Vulkan::InstanceData *data) {
-        return dynamic_cast<InstanceDataImp &>(*data);
+        return down_cast<InstanceDataImp &>(*data);
     }
 
     Vulkan::Vulkan(DisplayEnvironment &displayDriver) {

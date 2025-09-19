@@ -129,7 +129,7 @@ namespace xng {
         ret.primitive = TRIANGLES;
         ret.vertexLayout = SkinnedMesh::getDefaultVertexLayout();
         for (int faceIndex = 0; faceIndex < assMesh.mNumFaces; faceIndex++) {
-            const auto &face = dynamic_cast<const aiFace &>(assMesh.mFaces[faceIndex]);
+            const auto &face = assMesh.mFaces[faceIndex];
             if (face.mNumIndices != 3)
                 throw std::runtime_error("Mesh triangulation failed");
             for (int z = 0; z < face.mNumIndices; z++) {
@@ -153,7 +153,7 @@ namespace xng {
         }
 
         for (auto vertexIndex = 0; vertexIndex < assMesh.mNumVertices; vertexIndex++) {
-            const auto &p = dynamic_cast<const aiVector3D &>(assMesh.mVertices[vertexIndex]);
+            const auto &p = assMesh.mVertices[vertexIndex];
 
             Vec3f pos{p.x, p.y, p.z};
             Vec3f norm{};
@@ -164,16 +164,16 @@ namespace xng {
             Vec4f boneWeights{};
 
             if (assMesh.mNormals != nullptr) {
-                const auto &n = dynamic_cast<const aiVector3D &>(assMesh.mNormals[vertexIndex]);
+                const auto &n = assMesh.mNormals[vertexIndex];
                 norm = {n.x, n.y, n.z};
-                const auto &t = dynamic_cast<const aiVector3D &>(assMesh.mTangents[vertexIndex]);
+                const auto &t = assMesh.mTangents[vertexIndex];
                 tangent = {t.x, t.y, t.z};
-                const auto &bt = dynamic_cast<const aiVector3D &>(assMesh.mBitangents[vertexIndex]);
+                const auto &bt = assMesh.mBitangents[vertexIndex];
                 bitangent = {bt.x, bt.y, bt.z};
             }
 
             if (assMesh.mTextureCoords[0] != nullptr) {
-                const auto &t = dynamic_cast<const aiVector3D &>(assMesh.mTextureCoords[0][vertexIndex]);
+                const auto &t = assMesh.mTextureCoords[0][vertexIndex];
                 uv = {t.x, t.y};
             }
 
@@ -345,7 +345,7 @@ namespace xng {
         if (scenePointer == nullptr)
             throw std::runtime_error("Failed to read mesh data from memory");
 
-        const auto &scene = dynamic_cast<const aiScene &>(*scenePointer);
+        const auto &scene = *scenePointer;
 
         ResourceBundle ret;
 
@@ -389,6 +389,10 @@ namespace xng {
                     mesh.subMeshes.emplace_back(convertMesh(*assMesh, materialResourceHandles));
                     subMeshPtrs.emplace_back(assMesh);
                 }
+            }
+
+            if (meshPtr == nullptr) {
+                throw std::runtime_error("Invalid mesh configuration");
             }
 
             if (meshPtr->HasBones()) {

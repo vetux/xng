@@ -35,7 +35,7 @@ namespace xng::glfw {
             return std::make_unique<GLFWWindowGL>(title,
                                                   size,
                                                   attributes,
-                                                  dynamic_cast<MonitorGLFW &>(*monitor),
+                                                  down_cast<MonitorGLFW &>(*monitor),
                                                   mode);
         } else {
             return std::make_unique<GLFWWindowGL>(title,
@@ -71,7 +71,7 @@ namespace xng::glfw {
             return std::make_unique<GLFWWindowVk>(title,
                                                   size,
                                                   attributes,
-                                                  dynamic_cast<MonitorGLFW &>(*monitor),
+                                                  down_cast<MonitorGLFW &>(*monitor),
                                                   mode);
         } else {
             return std::make_unique<GLFWWindowVk>(title,

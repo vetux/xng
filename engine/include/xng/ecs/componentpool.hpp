@@ -22,10 +22,11 @@
 
 #include <map>
 #include <stdexcept>
-#include <set>
 
 #include "xng/ecs/entityhandle.hpp"
 #include "xng/ecs/component.hpp"
+
+#include "xng/util/downcast.hpp"
 
 namespace xng {
     class ComponentPoolBase {
@@ -46,7 +47,7 @@ namespace xng {
 
         template<typename T>
         const T &get(const EntityHandle &entity) const {
-            return dynamic_cast<const T &>(get(entity));
+            return down_cast<const T &>(get(entity));
         }
     };
 
@@ -95,7 +96,7 @@ namespace xng {
         std::map<EntityHandle, Component *> getComponents() override {
             auto ret = std::map<EntityHandle, Component *>();
             for (auto &pair: components) {
-                ret[pair.first] = dynamic_cast<Component *>(&pair.second);
+                ret[pair.first] = &pair.second;
             }
             return ret;
         }
@@ -113,7 +114,7 @@ namespace xng {
                 throw std::runtime_error("Entity "
                                          + std::to_string(entity.id)
                                          + " already has component of type "
-                                         + typeid(T).name());
+                                         + T::typeName);
             auto &comp = components[entity];
             comp = value;
             return comp;
@@ -127,7 +128,7 @@ namespace xng {
             auto it = components.find(entity);
             if (it == components.end()) {
                 throw std::runtime_error("No component for type "
-                                         + std::string(typeid(T).name())
+                                         + std::string(T::typeName)
                                          + " on entity "
                                          + entity.toString());
             } else {

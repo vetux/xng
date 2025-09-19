@@ -76,8 +76,8 @@ namespace xng {
         if (oldComponent.getTypeName() == SkinnedMeshComponent::typeName) {
             rigAnimators.erase(entity);
         } else if (oldComponent.getTypeName() == RigAnimationComponent::typeName) {
-            auto &oc = dynamic_cast<const RigAnimationComponent &>(oldComponent);
-            auto &nc = dynamic_cast<const RigAnimationComponent &>(newComponent);
+            auto &oc = down_cast<const RigAnimationComponent &>(oldComponent);
+            auto &nc = down_cast<const RigAnimationComponent &>(newComponent);
             for (auto &pair: oc.channels) {
                 if (nc.channels.find(pair.first) == nc.channels.end()) {
                     rigAnimators.at(entity).stop(pair.first);
