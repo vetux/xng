@@ -32,7 +32,7 @@
 namespace xng {
     class XENGINE_EXPORT AudioSystem final : public System, public EntityScene::Listener {
     public:
-        explicit AudioSystem(AudioDevice &device);
+        explicit AudioSystem(std::shared_ptr<AudioDevice> audioDevice);
 
         ~AudioSystem() override = default;
 
@@ -59,7 +59,7 @@ namespace xng {
         void onEntityDestroy(const EntityHandle &entity) override;
 
     private:
-        AudioDevice &device;
+        std::shared_ptr<AudioDevice> device;
 
         std::unique_ptr<AudioContext> context;
 

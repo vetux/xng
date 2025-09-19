@@ -27,8 +27,8 @@
 
 // TODO: Reimplement gui event system
 namespace xng {
-    GuiEventSystem::GuiEventSystem(Window &window)
-            : window(window) {}
+    GuiEventSystem::GuiEventSystem(std::shared_ptr<Window> window)
+            : window(std::move(window)) {}
 
     void GuiEventSystem::start(EntityScene &scene, EventBus &eventBus) {}
 

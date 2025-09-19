@@ -31,7 +31,7 @@ namespace xng {
      */
     class XENGINE_EXPORT GuiEventSystem final : public System {
     public:
-        explicit GuiEventSystem(Window &window);
+        explicit GuiEventSystem(std::shared_ptr<Window> window);
 
         ~GuiEventSystem() override = default;
 
@@ -44,7 +44,7 @@ namespace xng {
         std::string getName() override { return "GuiEventSystem"; }
 
     private:
-        Window &window;
+        std::shared_ptr<Window> window;
 
         std::set<EntityHandle> hoverButtons;
         std::set<EntityHandle> clickButtons;

@@ -61,12 +61,12 @@ namespace xng {
         return shape;
     }
 
-    PhysicsSystem::PhysicsSystem(PhysicsEngine &engine, float scale, float timeStep)
-        : world(engine.createWorld()), scale(scale), timeStep(timeStep) {
+    PhysicsSystem::PhysicsSystem(std::shared_ptr<PhysicsEngine> physicsEngine, float scale, float timeStep)
+        : engine(std::move(physicsEngine)), world(engine->createWorld()), scale(scale), timeStep(timeStep) {
     }
 
-    PhysicsSystem::PhysicsSystem(PhysicsEngine &engine, float scale, int maxSteps)
-        : world(engine.createWorld()), scale(scale), maxSteps(maxSteps) {
+    PhysicsSystem::PhysicsSystem(std::shared_ptr<PhysicsEngine> physicsEngine, float scale, int maxSteps)
+        : engine(std::move(physicsEngine)), world(engine->createWorld()), scale(scale), maxSteps(maxSteps) {
     }
 
 

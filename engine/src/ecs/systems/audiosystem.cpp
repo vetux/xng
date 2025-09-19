@@ -28,9 +28,9 @@
 #define AUDIO_POS_SCALE 1
 
 namespace xng {
-    AudioSystem::AudioSystem(AudioDevice &device)
-        : device(device) {
-        context = device.createContext();
+    AudioSystem::AudioSystem(std::shared_ptr<AudioDevice> audioDevice)
+        : device(std::move(audioDevice)) {
+        context = device->createContext();
         context->makeCurrent();
     }
 

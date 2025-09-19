@@ -28,9 +28,9 @@
 namespace xng {
     class XENGINE_EXPORT PhysicsSystem final : public System, public EntityScene::Listener, public World::ContactListener {
     public:
-        PhysicsSystem(PhysicsEngine &engine, float scale, float timeStep);
+        PhysicsSystem(std::shared_ptr<PhysicsEngine> physicsEngine, float scale, float timeStep);
 
-        PhysicsSystem(PhysicsEngine &engine, float scale, int maxSteps);
+        PhysicsSystem(std::shared_ptr<PhysicsEngine> physicsEngine, float scale, int maxSteps);
 
         ~PhysicsSystem() override = default;
 
@@ -62,6 +62,8 @@ namespace xng {
 
     private:
         EventBus *bus = nullptr;
+
+        std::shared_ptr<PhysicsEngine> engine;
 
         std::unique_ptr<World> world;
 
