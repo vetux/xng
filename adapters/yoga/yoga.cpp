@@ -19,3 +19,7 @@
 
 #include "xng/adapters/yoga/yoga.hpp"
 
+namespace xng {
+    void Yoga::calculateLayout(FlexNode &node) {
+    }
+}

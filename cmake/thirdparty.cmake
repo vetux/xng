@@ -22,49 +22,34 @@ endfunction()
 
 set(THIRD_PARTY_BASE ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
 
-if (BUILD_GLFW)
-    add_thirdparty_subdir(${THIRD_PARTY_BASE}/glfw/)
-endif ()
+add_thirdparty_subdir(${THIRD_PARTY_BASE}/glfw/)
 
-if (BUILD_OPENGL)
-    add_thirdparty_subdir(${THIRD_PARTY_BASE}/SPIRV-Cross/)
-endif ()
+add_thirdparty_subdir(${THIRD_PARTY_BASE}/SPIRV-Cross/)
 
-if (BUILD_BOX2D)
-    set(BOX2D_BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
-    set(BOX2D_BUILD_TESTBED OFF CACHE BOOL "" FORCE)
-    add_thirdparty_subdir(${THIRD_PARTY_BASE}/box2d/)
-endif ()
+set(BOX2D_BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
+set(BOX2D_BUILD_TESTBED OFF CACHE BOOL "" FORCE)
+add_thirdparty_subdir(${THIRD_PARTY_BASE}/box2d/)
 
-if (BUILD_BULLET3)
-    set(BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
-    set(BUILD_BULLET2_DEMOS OFF CACHE BOOL "" FORCE)
-    add_thirdparty_subdir(${THIRD_PARTY_BASE}/bullet3/)
-    add_thirdparty_include(${THIRD_PARTY_BASE}/bullet3/src/)
-endif ()
+set(BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
+set(BUILD_BULLET2_DEMOS OFF CACHE BOOL "" FORCE)
+add_thirdparty_subdir(${THIRD_PARTY_BASE}/bullet3/)
+add_thirdparty_include(${THIRD_PARTY_BASE}/bullet3/src/)
 
-if (BUILD_OPENAL)
-    set(LIBTYPE STATIC CACHE STRING "" FORCE)
-    add_thirdparty_subdir(${THIRD_PARTY_BASE}/openal-soft/)
-endif ()
+set(LIBTYPE STATIC CACHE STRING "" FORCE)
+add_thirdparty_subdir(${THIRD_PARTY_BASE}/openal-soft/)
 
-if (BUILD_FREETYPE)
-    add_thirdparty_subdir(${THIRD_PARTY_BASE}/freetype/)
-endif ()
+add_thirdparty_subdir(${THIRD_PARTY_BASE}/freetype/)
 
-if (BUILD_ASSIMP)
-    add_thirdparty_subdir(${THIRD_PARTY_BASE}/assimp/)
-endif ()
+add_thirdparty_subdir(${THIRD_PARTY_BASE}/assimp/)
 
-if (BUILD_SNDFILE)
-    add_thirdparty_subdir(${THIRD_PARTY_BASE}/libsndfile/)
-endif ()
+add_thirdparty_subdir(${THIRD_PARTY_BASE}/libsndfile/)
 
-if (BUILD_CRYPTOPP)
-    add_thirdparty_subdir(${THIRD_PARTY_BASE}/cryptopp/)
-endif ()
+add_thirdparty_subdir(${THIRD_PARTY_BASE}/cryptopp/)
 
 set(ENABLE_OPT OFF CACHE BOOL "" FORCE)
 add_thirdparty_subdir(${THIRD_PARTY_BASE}/glslang/)
 
 add_thirdparty_include(${THIRD_PARTY_BASE}/glm/)
+
+set(BUILD_FUZZ_TESTS OFF CACHE BOOL "" FORCE)
+add_thirdparty_subdir(${THIRD_PARTY_BASE}/yoga/)
