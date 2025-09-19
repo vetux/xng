@@ -26,7 +26,7 @@
 #include "btBulletDynamicsCommon.h"
 
 namespace xng {
-    Vec3f convert(btVector3 vec) {
+    static Vec3f convert(btVector3 vec) {
         if (isnan(vec.x())
             || isnan(vec.y())
             || isnan(vec.z()))
@@ -34,7 +34,7 @@ namespace xng {
         return {vec.x(), vec.y(), vec.z()};
     }
 
-    btVector3 convert(const Vec3f &vec) {
+    static btVector3 convert(const Vec3f &vec) {
         if (isnan(vec.x)
             || isnan(vec.y)
             || isnan(vec.z))
@@ -42,7 +42,7 @@ namespace xng {
         return {vec.x, vec.y, vec.z};
     }
 
-    Quaternion convert(btQuaternion quat) {
+    static Quaternion convert(btQuaternion quat) {
         if (isnan(quat.x())
             || isnan(quat.y())
             || isnan(quat.z())
@@ -51,7 +51,7 @@ namespace xng {
         return {quat.w(), quat.x(), quat.y(), quat.z()};
     }
 
-    btQuaternion convert(const Quaternion &quat) {
+    static btQuaternion convert(const Quaternion &quat) {
         if (isnan(quat.x)
             || isnan(quat.y)
             || isnan(quat.z)

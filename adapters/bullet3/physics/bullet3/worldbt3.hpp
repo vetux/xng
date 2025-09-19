@@ -25,13 +25,14 @@
 #include "xng/physics/world.hpp"
 
 #include "physics/bullet3/rigidbodybt3.hpp"
-#include "physics/bullet3/colliderbt3.hpp"
 #include "physics/bullet3/jointbt3.hpp"
 
 #include "btBulletDynamicsCommon.h"
 #include "btBulletCollisionCommon.h"
 #include "BulletCollision/NarrowPhaseCollision/btRaycastCallback.h"
 #include "xng/util/time.hpp"
+
+//TODO: Cleanup bullet3 physics adapter implementation to avoid excessive pointer usage.
 
 namespace xng {
     class WorldBt3 : public World {
@@ -53,14 +54,20 @@ namespace xng {
                                                         collisionConfiguration);
         }
 
-        std::unique_ptr<RigidBody> createBody() override {
-            return std::make_unique<RigidBodyBt3>(dynamicsWorld);
+        void destroyBody(RigidBodyBt3 &body) {
+            rigidBodies.erase(body.body);
         }
 
-        std::unique_ptr<RigidBody>
-        createBody(const ColliderDesc &colliderDesc, RigidBody::RigidBodyType type) override {
-            auto ret = std::make_unique<RigidBodyBt3>(dynamicsWorld, colliderDesc, type);
-            colliders[ret.get()->body] = ColliderBt3(*ret);
+        std::unique_ptr<RigidBody> createBody() override {
+            auto ret = std::make_unique<RigidBodyBt3>(dynamicsWorld, *this);
+            rigidBodies.emplace(ret->body, *ret);
+            return ret;
+        }
+
+        std::unique_ptr<RigidBody> createBody(const ColliderDesc &colliderDesc,
+                                              RigidBody::RigidBodyType type) override {
+            auto ret = std::make_unique<RigidBodyBt3>(dynamicsWorld, *this, colliderDesc, type);
+            rigidBodies.emplace(ret->body, *ret);
             return ret;
         }
 
@@ -88,11 +95,11 @@ namespace xng {
             int numManifolds = dynamicsWorld->getDispatcher()->getNumManifolds();
             for (int i = 0; i < numManifolds; i++) {
                 btPersistentManifold *contactManifold = dynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
-                const auto *obA = static_cast<const btCollisionObject *>(contactManifold->getBody0());
-                const auto *obB = static_cast<const btCollisionObject *>(contactManifold->getBody1());
+                const auto *obA = contactManifold->getBody0();
+                const auto *obB = contactManifold->getBody1();
 
-                auto &colA = colliders.at(obA);
-                auto &colB = colliders.at(obB);
+                auto &colA = *rigidBodies.at(obA).get().collider;
+                auto &colB = *rigidBodies.at(obB).get().collider;
 
                 int numContacts = contactManifold->getNumContacts();
                 for (int j = 0; j < numContacts; j++) {
@@ -102,11 +109,13 @@ namespace xng {
                         const btVector3 &ptB = pt.getPositionWorldOnB();
                         const btVector3 &normalOnB = pt.m_normalWorldOnB;
 
-                        Contact c{colliders.at(obA),
-                                  colliders.at(obB),
-                                  convert(ptA),
-                                  convert(ptB),
-                                  convert(normalOnB)};
+                        Contact c{
+                            colA,
+                            colB,
+                            convert(ptA),
+                            convert(ptB),
+                            convert(normalOnB)
+                        };
                         contacts.insert(c);
                         if (existingContacts.find(c) == existingContacts.end()) {
                             for (auto &l: listeners) {
@@ -142,11 +151,11 @@ namespace xng {
             int numManifolds = dynamicsWorld->getDispatcher()->getNumManifolds();
             for (int i = 0; i < numManifolds; i++) {
                 btPersistentManifold *contactManifold = dynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
-                const auto *obA = static_cast<const btCollisionObject *>(contactManifold->getBody0());
-                const auto *obB = static_cast<const btCollisionObject *>(contactManifold->getBody1());
+                const auto *obA = contactManifold->getBody0();
+                const auto *obB = contactManifold->getBody1();
 
-                auto &colA = colliders.at(obA);
-                auto &colB = colliders.at(obB);
+                auto &colA = *rigidBodies.at(obA).get().collider;
+                auto &colB = *rigidBodies.at(obB).get().collider;
 
                 int numContacts = contactManifold->getNumContacts();
                 for (int j = 0; j < numContacts; j++) {
@@ -156,11 +165,13 @@ namespace xng {
                         const btVector3 &ptB = pt.getPositionWorldOnB();
                         const btVector3 &normalOnB = pt.m_normalWorldOnB;
 
-                        Contact c{colliders.at(obA),
-                                  colliders.at(obB),
-                                  convert(ptA),
-                                  convert(ptB),
-                                  convert(normalOnB)};
+                        Contact c{
+                            colA,
+                            colB,
+                            convert(ptA),
+                            convert(ptB),
+                            convert(normalOnB)
+                        };
                         contacts.insert(c);
                         if (existingContacts.find(c) == existingContacts.end()) {
                             for (auto &l: listeners) {
@@ -198,10 +209,12 @@ namespace xng {
             for (int i = 0; i < allResults.m_hitFractions.size(); i++) {
                 auto position = convert(lerp(convert(from), convert(to), allResults.m_hitFractions[i]));
                 auto normal = position + convert(allResults.m_hitNormalWorld[i]);
-                ret.emplace_back(RayHit{allResults.m_hitFractions[i],
-                                        position,
-                                        normal,
-                                        &colliders.at(allResults.m_collisionObjects[i])});
+                ret.emplace_back(RayHit{
+                    allResults.m_hitFractions[i],
+                    position,
+                    normal,
+                    *rigidBodies.at(allResults.m_collisionObjects[i]).get().collider
+                });
             }
             return ret;
         }
@@ -214,10 +227,12 @@ namespace xng {
 
             auto position = convert(lerp(convert(from), convert(to), results.m_closestHitFraction));
             auto normal = position + convert(results.m_hitNormalWorld);
-            return RayHit{results.m_closestHitFraction,
-                          position,
-                          normal,
-                          &colliders.at(results.m_collisionObject)};
+            return RayHit{
+                results.m_closestHitFraction,
+                position,
+                normal,
+                *rigidBodies.at(results.m_collisionObject).get().collider
+            };
         }
 
     private:
@@ -227,8 +242,7 @@ namespace xng {
 
         std::unordered_set<Contact> existingContacts;
 
-        std::map<const btCollisionObject *, ColliderBt3> colliders;
-
+        std::map<const btCollisionObject *, std::reference_wrapper<RigidBodyBt3>> rigidBodies;
     };
 }
 

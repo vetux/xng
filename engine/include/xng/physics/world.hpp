@@ -47,11 +47,12 @@ namespace xng {
                     Vec3f positionWorldA = Vec3f(),
                     Vec3f positionWorldB = Vec3f(),
                     Vec3f normalOnB = Vec3f())
-                    : colliderA(colliderA),
-                      colliderB(colliderB),
-                      positionWorldA(std::move(positionWorldA)),
-                      positionWorldB(std::move(positionWorldB)),
-                      normalOnB(std::move(normalOnB)) {}
+                : colliderA(colliderA),
+                  colliderB(colliderB),
+                  positionWorldA(std::move(positionWorldA)),
+                  positionWorldB(std::move(positionWorldB)),
+                  normalOnB(std::move(normalOnB)) {
+            }
 
             bool operator==(const Contact &other) const {
                 return &colliderA.get() == &other.colliderA.get()
@@ -66,9 +67,11 @@ namespace xng {
         public:
             virtual ~ContactListener() = default;
 
-            virtual void beginContact(const Contact &contact) {}
+            virtual void beginContact(const Contact &contact) {
+            }
 
-            virtual void endContact(const Contact &contact) {}
+            virtual void endContact(const Contact &contact) {
+            }
         };
 
         virtual ~World() = default;
@@ -81,14 +84,16 @@ namespace xng {
         virtual std::unique_ptr<RigidBody> createBody() = 0;
 
         /**
-         * Create a rigidbody with a collider attached.
-         * Certain physics apis (bullet3) do not support attaching colliders at runtime through Rigidbody::createCollider.
+         * Create a rigidbody with a fixed collider attached.
+         *
+         * Certain physics engines (bullet3) do not support attaching colliders dynamically through Rigidbody::createCollider.
          *
          * @param colliderDesc
+         * @param type
          * @return
          */
-        virtual std::unique_ptr<RigidBody>
-        createBody(const ColliderDesc &colliderDesc, RigidBody::RigidBodyType type) = 0;
+        virtual std::unique_ptr<RigidBody> createBody(const ColliderDesc &colliderDesc,
+                                                      RigidBody::RigidBodyType type) = 0;
 
         virtual std::unique_ptr<Joint> createJoint() = 0;
 

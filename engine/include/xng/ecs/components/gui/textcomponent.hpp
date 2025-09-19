@@ -63,7 +63,7 @@ namespace xng {
             message.value("lineWidth", lineWidth);
             message.value("lineSpacing", lineSpacing);
             message.value("font", font);
-            message.value("alignment", (int &) alignment, (int) TEXT_ALIGN_LEFT);
+            message.value("alignment", reinterpret_cast<int &>(alignment), static_cast<int>(TEXT_ALIGN_LEFT));
             message.value("text", text);
             message.value("textColor", textColor);
             return Component::operator<<(message);

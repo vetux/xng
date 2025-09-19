@@ -25,16 +25,16 @@
 namespace xng {
     namespace box2d {
         RigidBodyBox2D::RigidBodyBox2D(WorldBox2D &world)
-                : world(world) {
+            : world(world) {
             b2BodyDef def = b2BodyDef();
             body = world.world.CreateBody(&def);
         }
 
-        RigidBodyBox2D::RigidBodyBox2D(WorldBox2D &world, const ColliderDesc& colliderDesc)
-                : world(world) {
+        RigidBodyBox2D::RigidBodyBox2D(WorldBox2D &world, const ColliderDesc &colliderDesc)
+            : world(world) {
             b2BodyDef def = b2BodyDef();
             body = world.world.CreateBody(&def);
-            collider = std::make_unique<ColliderBox2D>(*this, colliderDesc);
+            fixedCollider = std::make_unique<ColliderBox2D>(*this, colliderDesc);
         }
 
         RigidBodyBox2D::~RigidBodyBox2D() {
@@ -208,6 +208,17 @@ namespace xng {
             }
 
             return std::make_unique<ColliderBox2D>(*this, desc);
+        }
+
+        Collider &RigidBodyBox2D::getFixedCollider() {
+            if (fixedCollider == nullptr) {
+                throw std::runtime_error("No default collider attached.");
+            }
+            return *fixedCollider;
+        }
+
+        bool RigidBodyBox2D::hasFixedCollider() {
+            return fixedCollider != nullptr;
         }
 
         void RigidBodyBox2D::setAngularFactor(const Vec3f &ax) {

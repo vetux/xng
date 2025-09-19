@@ -21,6 +21,7 @@
 
 #include "xng/ecs/systems/physicssystem.hpp"
 #include "xng/ecs/components.hpp"
+#include "xng/ecs/components/physics/meshcollidercomponent.hpp"
 #include "xng/util/time.hpp"
 
 namespace xng {
@@ -40,11 +41,11 @@ namespace xng {
         return ret;
     }
 
-    static ColliderShape getShape(const Mesh &mesh, const ColliderShape &s) {
+    static ColliderShape getShape(const Mesh &mesh) {
         if (mesh.vertexLayout != Mesh::getDefaultVertexLayout()) {
             throw std::runtime_error("Invalid mesh vertex layout");
         }
-        ColliderShape shape = s;
+        ColliderShape shape{};
         for (const auto &v: mesh.vertices) {
             assert(v.buffer.size() >= sizeof(float) * 2);
             float posx = *reinterpret_cast<const float *>(v.buffer.data());
@@ -61,10 +62,12 @@ namespace xng {
     }
 
     PhysicsSystem::PhysicsSystem(PhysicsEngine &engine, float scale, float timeStep)
-            : world(engine.createWorld()), scale(scale), timeStep(timeStep) {}
+        : world(engine.createWorld()), scale(scale), timeStep(timeStep) {
+    }
 
     PhysicsSystem::PhysicsSystem(PhysicsEngine &engine, float scale, int maxSteps)
-            : world(engine.createWorld()), scale(scale), maxSteps(maxSteps) {}
+        : world(engine.createWorld()), scale(scale), maxSteps(maxSteps) {
+    }
 
 
     void PhysicsSystem::start(EntityScene &scene, EventBus &eventBus) {
@@ -87,39 +90,50 @@ namespace xng {
     void PhysicsSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
             if (rigidBodies.find(pair.first) == rigidBodies.end()) {
-                if (scene.checkComponent<Collider3DComponent>(pair.first)) {
-                    auto comp = scene.getComponent<Collider3DComponent>(pair.first);
-                    ColliderDesc desc{};
-                    desc.properties = comp.properties;
-                    if (comp.mesh.assigned()) {
-                        desc.shape = getShape(comp.mesh.get(), comp.shape);
+                if (scene.checkComponent<ColliderComponent>(pair.first)) {
+                    auto &colliderComponent = scene.getComponent<ColliderComponent>(pair.first);
+
+                    if (colliderComponent.colliders.size() > 1) {
+                        auto body = world->createBody();
+                        body->setRigidBodyType(pair.second.type);
+                        body->setAngularFactor(pair.second.angularFactor);
+                        body->setGravityScale(pair.second.gravityScale);
+
+                        rigidBodiesReverse[body.get()] = pair.first;
+                        rigidBodies[pair.first] = std::move(body);
+
+                        for (auto i = 0; i < colliderComponent.colliders.size(); ++i) {
+                            auto collider = rigidBodies.at(pair.first)->createCollider(
+                                applyScale(colliderComponent.colliders.at(i), scale));
+                            colliderIndices[collider.get()] = i;
+                            colliders[pair.first].emplace_back(std::move(collider));
+                        }
                     } else {
-                        desc.shape = comp.shape;
+                        ColliderDesc desc = colliderComponent.colliders.at(0);
+
+                        auto body = world->createBody(desc, pair.second.type);
+                        body->setAngularFactor(pair.second.angularFactor);
+                        body->setGravityScale(pair.second.gravityScale);
+
+                        rigidBodiesReverse[body.get()] = pair.first;
+                        rigidBodies[pair.first] = std::move(body);
+                        colliderIndices[&body->getFixedCollider()] = 0;
                     }
+                } else if (scene.checkComponent<MeshColliderComponent>(pair.first)) {
+                    auto &colliderComponent = scene.getComponent<MeshColliderComponent>(pair.first);
+
+                    ColliderDesc desc;
+                    desc.properties = colliderComponent.properties;
+                    desc.shape = getShape(colliderComponent.mesh.get());
+                    desc.shape.type = colliderComponent.shapeType;
+
                     auto body = world->createBody(desc, pair.second.type);
                     body->setAngularFactor(pair.second.angularFactor);
                     body->setGravityScale(pair.second.gravityScale);
 
                     rigidBodiesReverse[body.get()] = pair.first;
                     rigidBodies[pair.first] = std::move(body);
-                } else if (scene.checkComponent<Collider2DComponent>(pair.first)) {
-                    auto comp = scene.getComponent<Collider2DComponent>(pair.first);
-
-                    auto body = world->createBody();
-                    body->setRigidBodyType(pair.second.type);
-                    body->setAngularFactor(pair.second.angularFactor);
-                    body->setGravityScale(pair.second.gravityScale);
-
-                    rigidBodiesReverse[body.get()] = pair.first;
-                    rigidBodies[pair.first] = std::move(body);
-
-                    for (auto i = 0; i < comp.colliders.size(); i++) {
-                        auto collider = rigidBodies.at(pair.first)->createCollider(applyScale(
-                                comp.colliders.at(i), scale));
-                        colliderIndices[collider.get()] = i;
-                        colliders[pair.first].emplace_back(std::move(collider));
-                    }
-
+                    colliderIndices[&body->getFixedCollider()] = 0;
                 } else {
                     auto body = world->createBody();
                     body->setRigidBodyType(pair.second.type);
@@ -132,7 +146,7 @@ namespace xng {
             }
 
             auto &rb = *rigidBodies.at(pair.first).get();
-            auto tcomp = scene.getComponent<TransformComponent>(pair.first);
+            auto &transformComponent = scene.getComponent<TransformComponent>(pair.first);
 
             if (pair.second.rotationalInertia.x < 0
                 || pair.second.rotationalInertia.y < 0
@@ -147,8 +161,8 @@ namespace xng {
             rb.setVelocity(pair.second.velocity);
             rb.setAngularVelocity(pair.second.angularVelocity);
 
-            rb.setPosition(tcomp.transform.getPosition() / scale);
-            rb.setRotation(tcomp.transform.getRotation().getEulerAngles());
+            rb.setPosition(transformComponent.transform.getPosition() / scale);
+            rb.setRotation(transformComponent.transform.getRotation().getEulerAngles());
 
             rb.applyForce(pair.second.force, pair.second.forcePoint / scale);
             rb.applyTorque(pair.second.torque);
@@ -177,22 +191,22 @@ namespace xng {
         }
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
             auto &rb = *rigidBodies.at(pair.first).get();
-            auto tcomp = scene.getComponent<TransformComponent>(pair.first);
+            auto transformComponent = scene.getComponent<TransformComponent>(pair.first);
 
-            tcomp.transform.setPosition(rb.getPosition() * scale);
-            tcomp.transform.setRotation(Quaternion(rb.getRotation()));
+            transformComponent.transform.setPosition(rb.getPosition() * scale);
+            transformComponent.transform.setRotation(Quaternion(rb.getRotation()));
 
-            RigidBodyComponent comp = pair.second;
-            comp.force = Vec3f();
-            comp.torque = Vec3f();
-            comp.impulse = Vec3f();
-            comp.angularImpulse = Vec3f();
-            comp.velocity = rb.getVelocity();
-            comp.angularVelocity = rb.getAngularVelocity();
-            comp.mass = rb.getMass();
+            RigidBodyComponent rigidbodyComponent = pair.second;
+            rigidbodyComponent.force = Vec3f();
+            rigidbodyComponent.torque = Vec3f();
+            rigidbodyComponent.impulse = Vec3f();
+            rigidbodyComponent.angularImpulse = Vec3f();
+            rigidbodyComponent.velocity = rb.getVelocity();
+            rigidbodyComponent.angularVelocity = rb.getAngularVelocity();
+            rigidbodyComponent.mass = rb.getMass();
 
-            scene.updateComponent(pair.first, comp);
-            scene.updateComponent(pair.first, tcomp);
+            scene.updateComponent(pair.first, rigidbodyComponent);
+            scene.updateComponent(pair.first, transformComponent);
         }
     }
 
@@ -208,6 +222,9 @@ namespace xng {
                 colliders.erase(entity);
             }
             if (rigidBodies.find(entity) != rigidBodies.end()) {
+                if (rigidBodies.at(entity)->hasFixedCollider()) {
+                    colliderIndices.erase(&rigidBodies.at(entity)->getFixedCollider());
+                }
                 rigidBodiesReverse.erase(rigidBodies.at(entity).get());
                 rigidBodies.erase(entity);
             }
@@ -217,7 +234,7 @@ namespace xng {
     void PhysicsSystem::onComponentUpdate(const EntityHandle &entity,
                                           const Component &oldComponent,
                                           const Component &newComponent) {
-        if (oldComponent.getTypeName() ==  RigidBodyComponent::typeName) {
+        if (oldComponent.getTypeName() == RigidBodyComponent::typeName) {
             auto &oComp = down_cast<const RigidBodyComponent &>(oldComponent);
             auto &nComp = down_cast<const RigidBodyComponent &>(newComponent);
 
@@ -226,12 +243,11 @@ namespace xng {
                 rigidBodies.at(entity)->setAngularFactor(nComp.angularFactor);
                 rigidBodies.at(entity)->setGravityScale(nComp.gravityScale);
             }
-        } else if (oldComponent.getTypeName() == Collider2DComponent::typeName) {
-            auto &oComp = down_cast<const Collider2DComponent &>(oldComponent);
-            auto &nComp = down_cast<const Collider2DComponent &>(newComponent);
+        } else if (oldComponent.getTypeName() == ColliderComponent::typeName) {
+            auto &oComp = down_cast<const ColliderComponent &>(oldComponent);
+            auto &nComp = down_cast<const ColliderComponent &>(newComponent);
 
-            if (oComp.colliders != nComp.colliders
-                && colliders.find(entity) != colliders.end()) {
+            if (oComp.colliders != nComp.colliders && colliders.find(entity) != colliders.end()) {
                 for (auto &col: colliders.at(entity)) {
                     colliderIndices.erase(col.get());
                 }
@@ -239,12 +255,12 @@ namespace xng {
 
                 for (auto i = 0; i < nComp.colliders.size(); i++) {
                     auto collider = rigidBodies.at(entity)->createCollider(applyScale(
-                            nComp.colliders.at(i), scale));
+                        nComp.colliders.at(i), scale));
                     colliderIndices[collider.get()] = i;
                     colliders[entity].emplace_back(std::move(collider));
                 }
             }
-        } else if (oldComponent.getTypeName() == Collider3DComponent::typeName) {
+        } else if (oldComponent.getTypeName() == MeshColliderComponent::typeName) {
             // Recreate rigidbody
             if (rigidBodies.find(entity) != rigidBodies.end()) {
                 rigidBodiesReverse.erase(rigidBodies.at(entity).get());

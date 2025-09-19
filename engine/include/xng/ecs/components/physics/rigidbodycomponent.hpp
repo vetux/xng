@@ -25,6 +25,12 @@
 #include "xng/ecs/component.hpp"
 
 namespace xng {
+    /**
+     * A Physics Rigidbody.
+     *
+     * Either a ColliderComponent or a MeshColliderComponent attached to the entity containing the rigidbody component
+     * can be used to define the collider.
+     */
     struct XENGINE_EXPORT RigidBodyComponent final : Component {
         XNG_COMPONENT_TYPENAME(RigidBodyComponent)
 

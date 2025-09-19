@@ -1,6 +1,6 @@
 /**
  *  xEngine - C++ Game Engine Library
- *  Copyright (C) 2024  Julian Zampiccoli
+ *  Copyright (C) 2023  Julian Zampiccoli
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_COLLIDER3DCOMPONENT_HPP
-#define XENGINE_COLLIDER3DCOMPONENT_HPP
+#ifndef XENGINE_MESHCOLLIDERCOMPONENT_HPP
+#define XENGINE_MESHCOLLIDERCOMPONENT_HPP
 
 #include "xng/physics/rigidbody.hpp"
 #include "xng/io/messageable.hpp"
@@ -26,30 +26,29 @@
 
 namespace xng {
     /**
-     * 3D mesh collider
+     * A mesh collider for the physics system.
      */
-    struct XENGINE_EXPORT Collider3DComponent final : Component {
-        XNG_COMPONENT_TYPENAME(Collider3DComponent)
+    struct XENGINE_EXPORT MeshColliderComponent final : Component {
+        XNG_COMPONENT_TYPENAME(MeshColliderComponent)
 
-        ResourceHandle<Mesh> mesh; // Optional mesh for COLLIDER_CONVEX_HULL and COLLIDER_TRIANGLES shapes
-
-        ColliderShape shape{};
+        ResourceHandle<Mesh> mesh;
+        ColliderShapeType shapeType{}; // Either COLLIDER_CONVEX_HULL or COLLIDER_TRIANGLES
         ColliderProperties properties{};
 
         Messageable &operator<<(const Message &message) override {
             message.value("mesh", mesh);
-            message.value("shape", shape);
+            message.value("shapeType", reinterpret_cast<int&>(shapeType));
             message.value("properties", properties);
             return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
             mesh >> message["mesh"];
-            shape >> message["shape"];
+            shapeType >> message["shapeType"];
             properties >> message["properties"];
             return Component::operator>>(message);
         }
     };
 }
 
-#endif //XENGINE_COLLIDER3DCOMPONENT_HPP
+#endif //XENGINE_MESHCOLLIDERCOMPONENT_HPP

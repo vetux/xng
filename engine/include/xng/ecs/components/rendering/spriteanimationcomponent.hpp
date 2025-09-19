@@ -28,8 +28,8 @@ namespace xng {
     /**
      * A sprite animation system updates the sprite animations each update and updates the sprite.
      */
-    struct XENGINE_EXPORT AnimatedSpriteComponent final : Component {
-        XNG_COMPONENT_TYPENAME(AnimatedSpriteComponent)
+    struct XENGINE_EXPORT SpriteAnimationComponent final : Component {
+        XNG_COMPONENT_TYPENAME(SpriteAnimationComponent)
 
         ResourceHandle<SpriteAnimation> animation{};
         float animationSpeed = 1.0f;

@@ -96,7 +96,7 @@ namespace xng {
                     ret.emplace_back(RayHit{output.fraction,
                                             from + convert(output.fraction * convert(to - from)),
                                             convert(output.normal),
-                                            fixtureColliderMapping.at(f)});
+                                            *fixtureColliderMapping.at(f)});
                 }
             }
             return ret;
@@ -126,7 +126,7 @@ namespace xng {
             return RayHit{closestFraction,
                           from + convert(closestFraction * convert(to - from)),
                           convert(intersectionNormal),
-                          fixtureColliderMapping.at(closestFixture)};
+                          *fixtureColliderMapping.at(closestFixture)};
         }
 
         std::unique_ptr<RigidBody>

@@ -32,11 +32,11 @@ namespace xng {
             WorldBox2D &world;
             b2Body *body{};
             b2Fixture *fixture{};
-            std::unique_ptr<Collider> collider{};
+            std::unique_ptr<Collider> fixedCollider{};
 
             explicit RigidBodyBox2D(WorldBox2D &world);
 
-            RigidBodyBox2D(WorldBox2D &world, const ColliderDesc& colliderDesc);
+            RigidBodyBox2D(WorldBox2D &world, const ColliderDesc &colliderDesc);
 
             ~RigidBodyBox2D() override;
 
@@ -71,6 +71,10 @@ namespace xng {
             void setAngularFactor(const Vec3f &ax) override;
 
             std::unique_ptr<Collider> createCollider(const ColliderDesc &desc) override;
+
+            Collider &getFixedCollider() override;
+
+            bool hasFixedCollider() override;
 
             void setMass(float mass, const Vec3f &center, const Vec3f &localInertia) override;
 

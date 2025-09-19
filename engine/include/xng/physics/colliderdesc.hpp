@@ -26,7 +26,7 @@
 #include "xng/physics/colliderproperties.hpp"
 
 namespace xng {
-    struct ColliderDesc : public Messageable {
+    struct ColliderDesc : Messageable {
         ColliderProperties properties;
         ColliderShape shape;
 

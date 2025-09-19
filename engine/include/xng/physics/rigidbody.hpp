@@ -78,7 +78,10 @@ namespace xng {
         virtual void setGravityScale(float scale) = 0;
 
         /**
-         * Create a collider attached to this rigidbody.
+         * Create a dynamic collider attached to this rigidbody.
+         *
+         * The collider can be detached / destroyed by destroying the returned collider pointer.
+         *
          * May not be supported by certain implementations (bullet3),
          * in this case only one collider can be created per rigidbody through World::createBody(ColliderDesc desc).
          *
@@ -86,6 +89,14 @@ namespace xng {
          * @return
          */
         virtual std::unique_ptr<Collider> createCollider(const ColliderDesc &desc) = 0;
+
+        /**
+         * @return The collider created through World::createBody(ColliderDesc desc)
+         */
+        virtual Collider &getFixedCollider() = 0;
+
+        virtual bool hasFixedCollider() = 0;
     };
 }
+
 #endif //XENGINE_RIGIDBODY_HPP

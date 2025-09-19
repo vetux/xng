@@ -27,12 +27,18 @@
 #include "btBulletDynamicsCommon.h"
 
 namespace xng {
-    class RigidBodyBt3 : public RigidBody {
+    class WorldBt3;
+
+    class RigidBodyBt3 final : public RigidBody {
     public:
         btRigidBody *body = nullptr;
         btDynamicsWorld *world = nullptr;
 
+        std::unique_ptr<ColliderBt3> collider = nullptr;
+
         RigidBodyType type{};
+
+        WorldBt3 &worldBt3;
 
         static btCollisionShape *createShape(const ColliderShape &shape) {
             switch (shape.type) {
@@ -99,7 +105,7 @@ namespace xng {
             }
         }
 
-        explicit RigidBodyBt3(btDynamicsWorld *world) : world(world) {
+        explicit RigidBodyBt3(btDynamicsWorld *world, WorldBt3 &worldBt3) : world(world), worldBt3(worldBt3) {
             btScalar mass(0);
             btVector3 localInertia(1, 1, 1);
 
@@ -109,7 +115,10 @@ namespace xng {
             world->addRigidBody(body);
         }
 
-        RigidBodyBt3(btDynamicsWorld *world, const ColliderDesc &desc, RigidBodyType type) : world(world) {
+        RigidBodyBt3(btDynamicsWorld *world,
+                     WorldBt3 &worldBt3,
+                     const ColliderDesc &desc,
+                     RigidBodyType type) : world(world), worldBt3(worldBt3) {
             btCollisionShape *shape = createShape(desc.shape);
 
             btScalar mass(type == RigidBodyType::STATIC ? 0 : 1);
@@ -148,11 +157,11 @@ namespace xng {
                         body->setCollisionFlags(btCollisionObject::CF_DYNAMIC_OBJECT);
                     break;
             }
+
+            collider = std::make_unique<ColliderBt3>(*this);
         }
 
-        ~RigidBodyBt3() override {
-            world->removeRigidBody(body);
-        }
+        ~RigidBodyBt3() override;
 
         void setRigidBodyType(RigidBodyType val) override {
             throw std::runtime_error("Set rigidbody type not supported on bullet3");
@@ -212,13 +221,26 @@ namespace xng {
         }
 
         void setAngularFactor(const Vec3f &ax) override {
-            body->setAngularFactor({ax.x,
-                                    ax.y,
-                                    ax.z});
+            body->setAngularFactor({
+                ax.x,
+                ax.y,
+                ax.z
+            });
         }
 
         std::unique_ptr<Collider> createCollider(const ColliderDesc &desc) override {
             throw std::runtime_error("createCollider not suppoert in bullet3, please use world->createRigidbody");
+        }
+
+        Collider &getFixedCollider() override {
+            if (collider == nullptr) {
+                throw std::runtime_error("No collider attached");
+            }
+            return *collider;
+        }
+
+        bool hasFixedCollider() override {
+            return collider != nullptr;
         }
 
         void applyLinearImpulse(const Vec3f &impulse, const Vec3f &point) override {

@@ -35,6 +35,9 @@ namespace xng {
 
         FlexLayout layout;
 
+        Vec2i calculatedPosition = {};
+        Vec2i calculatedSize = {};
+
         Messageable &operator<<(const Message &message) override {
             message.value("layout", layout);
             return Component::operator<<(message);

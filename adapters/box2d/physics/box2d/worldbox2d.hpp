@@ -29,6 +29,8 @@
 #include "physics/box2d/jointbox2d.hpp"
 #include "xng/util/time.hpp"
 
+//TODO: Cleanup box2d physics adapter implementation to avoid excessive pointer usage.
+
 namespace xng {
     namespace box2d {
         class WorldBox2D : public World, public b2ContactListener {
@@ -48,8 +50,8 @@ namespace xng {
 
             std::unique_ptr<RigidBody> createBody() override;
 
-            std::unique_ptr<RigidBody>
-            createBody(const ColliderDesc &colliderDesc, RigidBody::RigidBodyType type) override;
+            std::unique_ptr<RigidBody> createBody(const ColliderDesc &colliderDesc,
+                                                  RigidBody::RigidBodyType type) override;
 
             std::unique_ptr<Joint> createJoint() override;
 
@@ -66,7 +68,6 @@ namespace xng {
             std::vector<RayHit> rayTestAll(const Vec3f &from, const Vec3f &to) override;
 
             RayHit rayTestClosest(const Vec3f &from, const Vec3f &to) override;
-
 
             void BeginContact(b2Contact *contact) override;
 

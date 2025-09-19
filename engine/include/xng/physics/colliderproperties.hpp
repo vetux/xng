@@ -23,7 +23,7 @@
 #include "xng/io/messageable.hpp"
 
 namespace xng {
-    struct ColliderProperties : public Messageable {
+    struct ColliderProperties : Messageable {
         float friction = 1.0f;
         float restitution = 0;
         float restitution_threshold = 0;

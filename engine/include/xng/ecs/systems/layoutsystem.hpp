@@ -1,6 +1,6 @@
 /**
  *  xEngine - C++ Game Engine Library
- *  Copyright (C) 2024  Julian Zampiccoli
+ *  Copyright (C) 2023  Julian Zampiccoli
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,18 +17,7 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_RAY_HIT_HPP
-#define XENGINE_RAY_HIT_HPP
+#ifndef XENGINE_LAYOUTSYSTEM_HPP
+#define XENGINE_LAYOUTSYSTEM_HPP
 
-#include "xng/physics/collider.hpp"
-
-namespace xng {
-    struct RayHit {
-        float fraction{};
-        Vec3f position;
-        Vec3f normal;
-        std::reference_wrapper<Collider> collider;
-    };
-}
-
-#endif //XENGINE_RAY_HIT_HPP
+#endif //XENGINE_LAYOUTSYSTEM_HPP

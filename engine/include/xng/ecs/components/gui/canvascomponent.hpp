@@ -22,6 +22,7 @@
 
 #include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
+#include "xng/math/vector2.hpp"
 
 namespace xng {
     /**
@@ -37,11 +38,14 @@ namespace xng {
         Vec2i size = Vec2i(0, 0); // Optional size specification. if unassigned, the back buffer size is used.
 
         Messageable &operator<<(const Message &message) override {
+            message.value("worldSpace", worldSpace);
+            message.value("size", size);
             return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
-            message = Message(Message::DICTIONARY);
+            worldSpace >> message["worldSpace"];
+            size >> message["size"];
             return Component::operator>>(message);
         }
     };

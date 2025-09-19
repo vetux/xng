@@ -28,17 +28,25 @@ namespace xng {
             inst = std::make_unique<ComponentRegistry>();
             REGISTER_COMPONENT(xng::AudioListenerComponent)
             REGISTER_COMPONENT(xng::AudioSourceComponent)
+
             REGISTER_COMPONENT(xng::ButtonComponent)
-            REGISTER_COMPONENT(xng::CameraComponent)
             REGISTER_COMPONENT(xng::CanvasComponent)
+            REGISTER_COMPONENT(xng::FlexLayoutComponent)
+            REGISTER_COMPONENT(xng::ImageComponent)
+            REGISTER_COMPONENT(xng::ScrollBoxComponent)
+            REGISTER_COMPONENT(xng::TextComponent)
+
+            REGISTER_COMPONENT(xng::ColliderComponent)
+            REGISTER_COMPONENT(xng::MeshColliderComponent)
+            REGISTER_COMPONENT(xng::RigidBodyComponent)
+
+            REGISTER_COMPONENT(xng::CameraComponent)
             REGISTER_COMPONENT(xng::LightComponent)
             REGISTER_COMPONENT(xng::MeshComponent)
             REGISTER_COMPONENT(xng::ParticleComponent)
-            REGISTER_COMPONENT(xng::RigidBodyComponent)
             REGISTER_COMPONENT(xng::SkyboxComponent)
-            REGISTER_COMPONENT(xng::AnimatedSpriteComponent)
+            REGISTER_COMPONENT(xng::SpriteAnimationComponent)
             REGISTER_COMPONENT(xng::SpriteComponent)
-            REGISTER_COMPONENT(xng::TextComponent)
             REGISTER_COMPONENT(xng::TransformComponent)
         }
         return *inst;

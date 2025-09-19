@@ -17,8 +17,8 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_COLLIDER2DCOMPONENT_HPP
-#define XENGINE_COLLIDER2DCOMPONENT_HPP
+#ifndef XENGINE_COLLIDER3DCOMPONENT_HPP
+#define XENGINE_COLLIDER3DCOMPONENT_HPP
 
 #include "xng/physics/rigidbody.hpp"
 #include "xng/io/messageable.hpp"
@@ -26,10 +26,10 @@
 
 namespace xng {
     /**
-     * 2D collider, Collider shapes must be COLLIDER_2D
+     * A collider for the physics system.
      */
-    struct XENGINE_EXPORT Collider2DComponent final : Component {
-        XNG_COMPONENT_TYPENAME(Collider2DComponent)
+    struct XENGINE_EXPORT ColliderComponent final : Component {
+        XNG_COMPONENT_TYPENAME(ColliderComponent)
 
         std::vector<ColliderDesc> colliders;
 
@@ -45,4 +45,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_COLLIDER2DCOMPONENT_HPP
+#endif //XENGINE_COLLIDER3DCOMPONENT_HPP

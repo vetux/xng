@@ -26,7 +26,7 @@
 #include "xng/math/vector3.hpp"
 
 namespace xng {
-    enum ColliderShapeType {
+    enum ColliderShapeType : int {
         COLLIDER_2D, // The vertices are treated as 2D points describing a polygon facing in the z axis.
         COLLIDER_SPHERE, // A sphere collider of the specified radius
         COLLIDER_BOX, // A box collider with half extent
