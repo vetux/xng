@@ -53,11 +53,11 @@ int main(int argc, char *argv[]) {
     auto font = ResourceHandle<Font>(Uri("file://fonts/Sono/static/Sono/Sono-Bold.ttf"));
 
     auto glfw = glfw::GLFW();
-    auto runtime = opengl::OpenGL();
+    auto runtime = std::make_shared<opengl::OpenGL>();
 
-    const std::shared_ptr window = std::move(glfw.createWindow(runtime.getGraphicsAPI()));
+    const std::shared_ptr window = std::move(glfw.createWindow(runtime->getGraphicsAPI()));
 
-    runtime.setWindow(window);
+    runtime->setWindow(window);
 
     // Print shader test pass
     {
@@ -66,10 +66,10 @@ int main(int argc, char *argv[]) {
         pass.setup(builder);
 
         const auto graph = builder.build();
-        const auto gh = runtime.compile(graph);
+        const auto gh = runtime->compile(graph);
 
-        runtime.execute(gh);
-        runtime.destroy(gh);
+        runtime->execute(gh);
+        runtime->destroy(gh);
     }
 
     const auto &tuxImg = tux.get();
