@@ -26,7 +26,7 @@ namespace xng::opengl {
         : runtime(std::make_unique<RenderGraphRuntimeOGL>()) {
     }
 
-    void OpenGL::setWindow(Window &window) {
+    void OpenGL::setWindow(const std::shared_ptr<Window> window) {
         runtime->setWindow(window);
     }
 

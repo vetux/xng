@@ -55,9 +55,9 @@ int main(int argc, char *argv[]) {
     auto glfw = glfw::GLFW();
     auto runtime = opengl::OpenGL();
 
-    const auto window = glfw.createWindow(runtime.getGraphicsAPI());
+    const std::shared_ptr window = glfw.createWindow(runtime.getGraphicsAPI());
 
-    runtime.setWindow(*window);
+    runtime.setWindow(window);
 
     // Print shader test pass
     {

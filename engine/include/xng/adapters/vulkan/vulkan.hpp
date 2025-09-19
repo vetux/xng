@@ -35,7 +35,7 @@ namespace xng::vulkan {
 
         ~Vulkan() override;
 
-        void setWindow(Window &window) override;
+        void setWindow(std::shared_ptr<Window> window) override;
 
         GraphHandle compile(const RenderGraph &graph) override;
 

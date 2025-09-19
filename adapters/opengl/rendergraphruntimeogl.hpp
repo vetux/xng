@@ -35,7 +35,7 @@ public:
 
     ~RenderGraphRuntimeOGL() override;
 
-    void setWindow(Window &wndArg) override;
+    void setWindow(std::shared_ptr<Window> wndArg) override;
 
     Window &getWindow() override;
 
@@ -73,7 +73,7 @@ private:
 
     std::unordered_map<GraphHandle, GraphResources> contexts;
 
-    Window *window = nullptr;
+    std::shared_ptr<Window> window;
 };
 
 #endif //XENGINE_RENDERGRAPHRUNTIMEOGL_HPP

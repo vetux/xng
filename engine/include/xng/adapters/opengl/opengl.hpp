@@ -29,7 +29,7 @@ namespace xng::opengl {
 
         ~OpenGL() override = default;
 
-        void setWindow(Window &window) override;
+        void setWindow(std::shared_ptr<Window> window) override;
 
         Window &getWindow() override;
 

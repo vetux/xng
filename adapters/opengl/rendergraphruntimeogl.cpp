@@ -26,8 +26,8 @@ RenderGraphRuntimeOGL::RenderGraphRuntimeOGL() = default;
 
 RenderGraphRuntimeOGL::~RenderGraphRuntimeOGL() = default;
 
-void RenderGraphRuntimeOGL::setWindow(Window &wndArg) {
-    this->window = &wndArg;
+void RenderGraphRuntimeOGL::setWindow(std::shared_ptr<Window> wndArg) {
+    this->window = std::move(wndArg);
 }
 
 Window &RenderGraphRuntimeOGL::getWindow() {

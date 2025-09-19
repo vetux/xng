@@ -52,7 +52,7 @@ namespace xng {
          *
          * @param window
          */
-        virtual void setWindow(Window &window) = 0;
+        virtual void setWindow(std::shared_ptr<Window> window) = 0;
 
         virtual Window &getWindow() = 0;
 

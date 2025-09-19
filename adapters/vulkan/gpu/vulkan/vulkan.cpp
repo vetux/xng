@@ -185,7 +185,7 @@ namespace xng::vulkan {
         vkDestroyInstance(getData(instanceData.get()).instance, nullptr);
     }
 
-    void Vulkan::setWindow(Window &window) {
+    void Vulkan::setWindow(std::shared_ptr<Window> window) {
     }
 
     Vulkan::GraphHandle Vulkan::compile(const RenderGraph &graph) {
