@@ -23,6 +23,6 @@
 
 namespace xng {
     Text::~Text() {
-        renderer.destroyTexture(texture);
+        renderer->destroyTexture(texture);
     }
 }

@@ -32,8 +32,8 @@ namespace xng {
      */
     class XENGINE_EXPORT TextRenderer {
     public:
-        TextRenderer(FontRenderer &font,
-                     Renderer2D &ren2d,
+        TextRenderer(FontRenderer& font,
+                     std::shared_ptr<Renderer2D> ren2D,
                      const Vec2i &pixelSize);
 
         ~TextRenderer();
@@ -43,8 +43,7 @@ namespace xng {
         Text render(const std::string &text, const TextLayout &layout);
 
     private:
-        FontRenderer &font;
-        Renderer2D &ren2d;
+        std::shared_ptr<Renderer2D> ren2d;
 
         Vec2i pixelSize{0, 50};
         std::map<char, Character> ascii;

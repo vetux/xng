@@ -42,19 +42,19 @@ namespace xng {
     };
 
     TextRenderer::TextRenderer(FontRenderer &font,
-                               Renderer2D &ren2d,
+                               std::shared_ptr<Renderer2D> ren2D,
                                const Vec2i &pixelSize)
-        : font(font), ren2d(ren2d), pixelSize(pixelSize) {
+        : ren2d(std::move(ren2D)), pixelSize(pixelSize) {
         font.setPixelSize(pixelSize);
         ascii = font.renderAscii();
         for (auto &c: ascii) {
-            textures[c.first] = ren2d.createTexture(c.second.image);
+            textures[c.first] = ren2d->createTexture(c.second.image);
         }
     }
 
     TextRenderer::~TextRenderer() {
         for (auto &tex: textures) {
-            ren2d.destroyTexture(tex.second);
+            ren2d->destroyTexture(tex.second);
         }
         textures.clear();
     }
@@ -177,32 +177,32 @@ namespace xng {
 
         auto origin = Vec2f(0, static_cast<float>(layout.lineHeight));
 
-        auto target = ren2d.createTexture(ImageRGBA(size));
+        auto target = ren2d->createTexture(ImageRGBA(size));
 
         auto sizef = size.convert<float>();
-        ren2d.renderBegin(target,
-                          true,
-                          ColorRGBA::white(1, 0),
-                          {},
-                          size,
-                          {},
-                          Rectf({0, sizef.y}, {sizef.x, 0}));
+        ren2d->renderBegin(target,
+                           true,
+                           ColorRGBA::white(1, 0),
+                           {},
+                           size,
+                           {},
+                           Rectf({0, sizef.y}, {sizef.x, 0}));
 
         for (auto &c: renderText) {
             auto texSize = c.texture.getSize().convert<float>();
             auto pos = c.getPosition(origin);
-            ren2d.draw(Rectf({}, texSize),
-                       Rectf(pos, texSize),
-                       c.texture,
-                       {},
-                       0,
-                       NEAREST,
-                       1,
-                       0,
-                       ColorRGBA::black());
+            ren2d->draw(Rectf({}, texSize),
+                        Rectf(pos, texSize),
+                        c.texture,
+                        {},
+                        0,
+                        NEAREST,
+                        1,
+                        0,
+                        ColorRGBA::black());
         }
 
-        ren2d.renderPresent();
+        ren2d->renderPresent();
 
         return {text, origin, layout, target, ren2d};
     }

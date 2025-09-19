@@ -34,12 +34,12 @@ namespace xng {
              Vec2f origin,
              const TextLayout layout,
              Texture2D texture,
-             Renderer2D &renderer)
+             std::shared_ptr<Renderer2D> renderer)
             : text(std::move(text)),
               origin(std::move(origin)),
               layout(layout),
               texture(std::move(texture)),
-              renderer(renderer) {
+              renderer(std::move(renderer)) {
         }
 
         ~Text();
@@ -71,7 +71,7 @@ namespace xng {
         Vec2f origin;
         TextLayout layout{};
         Texture2D texture;
-        Renderer2D &renderer;
+        std::shared_ptr<Renderer2D> renderer;
     };
 }
 #endif //XENGINE_TEXT_HPP

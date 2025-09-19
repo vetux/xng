@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
     auto glfw = glfw::GLFW();
     auto runtime = opengl::OpenGL();
 
-    const std::shared_ptr window = glfw.createWindow(runtime.getGraphicsAPI());
+    const std::shared_ptr window = std::move(glfw.createWindow(runtime.getGraphicsAPI()));
 
     runtime.setWindow(window);
 
@@ -75,13 +75,14 @@ int main(int argc, char *argv[]) {
     const auto &tuxImg = tux.get();
     const auto &smileyImg = smiley.get();
 
-    auto ren2D = Renderer2D();
+    auto ren2D = std::make_shared<Renderer2D>();
 
-    auto tuxTexture = ren2D.createTexture(tuxImg);
-    auto smileyTexture = ren2D.createTexture(smileyImg);
+    auto tuxTexture = ren2D->createTexture(tuxImg);
+    auto smileyTexture = ren2D->createTexture(smileyImg);
 
-    auto freeType = std::make_shared<freetype::FreeType>();
+    auto freeType = std::make_unique<freetype::FreeType>();
     auto fontRenderer = freeType->createFontRenderer(font.get());
+
     auto textRenderer = TextRenderer(*fontRenderer, ren2D, {0, 50});
 
     auto text = textRenderer.render("Hello\nWorld!", {50, 0, 0, TEXT_ALIGN_LEFT});
@@ -113,27 +114,27 @@ int main(int argc, char *argv[]) {
         auto fbSize = window->getFramebufferSize();
         auto fbSizeF = fbSize.convert<float>();
 
-        ren2D.renderBegin(fbSize, ColorRGBA::white());
+        ren2D->renderBegin(fbSize, ColorRGBA::white());
 
-        ren2D.draw(Vec2f(0, 0), fbSizeF, ColorRGBA::green());
-        ren2D.draw(Vec2f(0, fbSizeF.y), Vec2f(fbSizeF.x, 0), ColorRGBA::green());
-        ren2D.draw({}, smileyTexture, LINEAR);
-        ren2D.draw({}, tuxTexture, LINEAR);
-        ren2D.draw(Vec2f(0, fbSizeF.y / 2), Vec2f(fbSizeF.x, fbSizeF.y / 2), ColorRGBA::red());
-        ren2D.draw(Vec2f(fbSizeF.x / 2, 0), Vec2f(fbSizeF.x / 2, fbSizeF.y), ColorRGBA::red());
-        ren2D.draw(Vec2f(50, 0), text, ColorRGBA::purple());
+        ren2D->draw(Vec2f(0, 0), fbSizeF, ColorRGBA::green());
+        ren2D->draw(Vec2f(0, fbSizeF.y), Vec2f(fbSizeF.x, 0), ColorRGBA::green());
+        ren2D->draw({}, smileyTexture, LINEAR);
+        ren2D->draw({}, tuxTexture, LINEAR);
+        ren2D->draw(Vec2f(0, fbSizeF.y / 2), Vec2f(fbSizeF.x, fbSizeF.y / 2), ColorRGBA::red());
+        ren2D->draw(Vec2f(fbSizeF.x / 2, 0), Vec2f(fbSizeF.x / 2, fbSizeF.y), ColorRGBA::red());
+        ren2D->draw(Vec2f(50, 0), text, ColorRGBA::purple());
 
-        ren2D.renderPresent();
+        ren2D->renderPresent();
 
-        pass2D->setBatches(ren2D.getRenderBatches());
-        ren2D.clearBatches();
+        pass2D->setBatches(ren2D->getRenderBatches());
+        ren2D->clearBatches();
 
         passScheduler->execute({graph3D, graph2D});
 
         window->swapBuffers();
     }
 
-    ren2D.destroyTexture(smileyTexture);
+    ren2D->destroyTexture(smileyTexture);
 
     return 0;
 }
