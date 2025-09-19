@@ -21,15 +21,14 @@
 #define XENGINE_NODES_HPP
 
 #include "xng/rendergraph/shader/nodes/nodeor.hpp"
-#include "xng/rendergraph/shader/nodes/nodebufferread.hpp"
+#include "xng/rendergraph/shader/nodes/nodebuffer.hpp"
 #include "xng/rendergraph/shader/nodes/nodeliteral.hpp"
 #include "xng/rendergraph/shader/nodes/nodetexturesample.hpp"
-#include "xng/rendergraph/shader/nodes/nodebufferwrite.hpp"
 #include "xng/rendergraph/shader/nodes/nodeassign.hpp"
 #include "xng/rendergraph/shader/nodes/nodebuffersize.hpp"
-#include "xng/rendergraph/shader/nodes/nodesubscriptarray.hpp"
+#include "xng/rendergraph/shader/nodes/nodearraysubscript.hpp"
 #include "xng/rendergraph/shader/nodes/nodevectorswizzle.hpp"
-#include "xng/rendergraph/shader/nodes/nodesubscriptmatrix.hpp"
+#include "xng/rendergraph/shader/nodes/nodematrixsubscript.hpp"
 #include "xng/rendergraph/shader/nodes/nodeargument.hpp"
 #include "xng/rendergraph/shader/nodes/nodevector.hpp"
 #include "xng/rendergraph/shader/nodes/nodearray.hpp"

@@ -17,42 +17,38 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_NODEBUFFERWRITE_HPP
-#define XENGINE_NODEBUFFERWRITE_HPP
+#ifndef XENGINE_NODEBUFFER_HPP
+#define XENGINE_NODEBUFFER_HPP
 
-#include <utility>
+#include <string>
 
 #include "xng/rendergraph/shader/shadernode.hpp"
 
 namespace xng {
-    struct NodeBufferWrite final : ShaderNode {
+    struct NodeBuffer final : ShaderNode {
         std::string bufferName;
         std::string elementName;
 
-        std::unique_ptr<ShaderNode> value;
+        /**
+         * Specify the index of the elements if this buffer is defined as dynamic.
+         * Unused for static buffers.
+         */
         std::unique_ptr<ShaderNode> index;
 
-        NodeBufferWrite(std::string buffer_name,
-                          std::string element_name,
-                          std::unique_ptr<ShaderNode> value,
-                          std::unique_ptr<ShaderNode> index)
-            : bufferName(std::move(buffer_name)),
-              elementName(std::move(element_name)),
-              value(std::move(value)),
-              index(std::move(index)) {
+        explicit NodeBuffer(std::string buffer_name,
+                            std::string element_name,
+                            std::unique_ptr<ShaderNode> index)
+            : bufferName(std::move(buffer_name)), elementName(std::move(element_name)), index(std::move(index)) {
         }
 
         NodeType getType() const override {
-            return BUFFER_WRITE;
+            return BUFFER;
         }
 
         std::unique_ptr<ShaderNode> copy() const override {
-            return std::make_unique<NodeBufferWrite>(bufferName,
-                                                       elementName,
-                                                       value->copy(),
-                                                       index ? index->copy() : nullptr);
+            return std::make_unique<NodeBuffer>(bufferName, elementName, index ? index->copy() : nullptr);
         }
     };
 }
 
-#endif //XENGINE_NODEBUFFERWRITE_HPP
+#endif //XENGINE_NODEBUFFER_HPP

@@ -17,33 +17,28 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_NODESUBSCRIPTMATRIX_HPP
-#define XENGINE_NODESUBSCRIPTMATRIX_HPP
+#ifndef XENGINE_NODEARRAYSUBSCRIPT_HPP
+#define XENGINE_NODEARRAYSUBSCRIPT_HPP
 
 #include "xng/rendergraph/shader/shadernode.hpp"
 
 namespace xng {
-    struct NodeSubscriptMatrix final : ShaderNode {
-        std::unique_ptr<ShaderNode> matrix;
-        std::unique_ptr<ShaderNode> column;
-        std::unique_ptr<ShaderNode> row;
+    struct NodeArraySubscript final : ShaderNode {
+        std::unique_ptr<ShaderNode> array;
+        std::unique_ptr<ShaderNode> index;
 
-        NodeSubscriptMatrix(std::unique_ptr<ShaderNode> matrix,
-                            std::unique_ptr<ShaderNode> column,
-                            std::unique_ptr<ShaderNode> row)
-            : matrix(std::move(matrix)),
-              column(std::move(column)),
-              row(std::move(row)) {
+        NodeArraySubscript(std::unique_ptr<ShaderNode> array, std::unique_ptr<ShaderNode> index)
+            : array(std::move(array)),
+              index(std::move(index)) {
         }
 
         NodeType getType() const override {
-            return SUBSCRIPT_MATRIX;
+            return SUBSCRIPT_ARRAY;
         }
 
         std::unique_ptr<ShaderNode> copy() const override {
-            return std::make_unique<NodeSubscriptMatrix>(matrix->copy(), column->copy(), row ? row->copy() : nullptr);
+            return std::make_unique<NodeArraySubscript>(array->copy(), index->copy());
         }
     };
 }
-
-#endif //XENGINE_NODESUBSCRIPTMATRIX_HPP
+#endif //XENGINE_NODEARRAYSUBSCRIPT_HPP

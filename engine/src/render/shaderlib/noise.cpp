@@ -65,15 +65,13 @@ namespace xng::shaderlib {
         }
         Function("taylorInvSqrt", {{"r", ShaderDataType::float32()}}, ShaderDataType::float32());
         {
-            Float r = argument("r");
-            Return(Float(1.79284291400159f) - Float(0.85373472095314f) * r);
+            Return(Float(1.79284291400159f) - Float(0.85373472095314f) * argument("r"));
         }
         EndFunction();
 
         Function("taylorInvSqrt", {{"r", ShaderDataType::vec4()}}, ShaderDataType::vec4());
         {
-            vec4 r = argument("r");
-            Return(Float(1.79284291400159f) - Float(0.85373472095314f) * r);
+            Return(Float(1.79284291400159f) - Float(0.85373472095314f) * argument("r"));
         }
         EndFunction();
     }
@@ -89,13 +87,17 @@ namespace xng::shaderlib {
         loadTaylorInvSqrt();
         Function("simplex", {{"v", ShaderDataType::vec2()}}, ShaderDataType::float32());
         {
-            vec2 v = argument("v");
+            ARGUMENT(v)
+
             vec4 C = vec4(0.211324865405187f, 0.366025403784439f,
                           -0.577350269189626f, 0.024390243902439f);
+
             vec2 i = floor(v + dot(v, C.yy()));
+
             vec2 x0 = v - i + dot(i, C.xx());
 
             vec2 i1;
+            i1 = vec2(0, 0);
             If(x0.x() > x0.y());
             {
                 i1 = vec2(1.0, 0.0);
@@ -122,7 +124,8 @@ namespace xng::shaderlib {
             vec3 ox = floor(x + 0.5f);
             vec3 a0 = x - ox;
             m *= Float(1.79284291400159f) - Float(0.85373472095314f) * (a0 * a0 + h * h);
-            vec3 g = vec3(0, 0, 0);
+            vec3 g;
+            g = vec3(0, 0, 0);
             g.x() = a0.x() * x0.x() + h.x() * x0.y();
             g.yz() = a0.yz() * x12.xz() + h.yz() * x12.yw();
             Return(Float(130.0f) * dot(m, g));

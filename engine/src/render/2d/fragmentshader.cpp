@@ -68,54 +68,61 @@ namespace xng {
 
         shaderlib::textureBicubic();
 
-        vec4 fPosition;
-        fPosition = readAttribute("fPosition");
-        vec2 fUv;
-        fUv = readAttribute("fUv");
+        INPUT_ATTRIBUTE(fPosition)
+        INPUT_ATTRIBUTE(fUv)
 
-        vec4 color;
-        color = vec4(1, 1, 1, 1);
+        OUTPUT_ATTRIBUTE(color)
 
-        builder.If(readBuffer("vars", "texAtlasIndex") >= 0);
+        BUFFER_ELEMENT(vars, color)
+        BUFFER_ELEMENT(vars, colorMixFactor)
+        BUFFER_ELEMENT(vars, alphaMixFactor)
+        BUFFER_ELEMENT(vars, colorFactor)
+        BUFFER_ELEMENT(vars, texAtlasLevel)
+        BUFFER_ELEMENT(vars, texAtlasIndex)
+        BUFFER_ELEMENT(vars, texFilter)
+        BUFFER_ELEMENT(vars, uvOffset_uvScale)
+        BUFFER_ELEMENT(vars, atlasScale_texSize)
+
+        TEXTURE_ARRAY_SAMPLER(atlasTextures, vars_texAtlasLevel, atlasTexture)
+
+        builder.If(vars_texAtlasIndex >= 0);
         {
-            vec2 uv = fUv;
-            uv = uv * readBuffer("vars", "uvOffset_uvScale").zw();
-            uv = uv + readBuffer("vars", "uvOffset_uvScale").xy();
-            uv = uv * readBuffer("vars", "atlasScale_texSize").xy();
+            vec2 uv = fUv.xy();
+            uv = uv * vars_uvOffset_uvScale.zw();
+            uv = uv + vars_uvOffset_uvScale.xy();
+            uv = uv * vars_atlasScale_texSize.xy();
 
             vec4 texColor;
-            If(readBuffer("vars", "texFilter") == 1);
+            texColor = vec4(0, 0, 0, 0);
+            If(vars_texFilter == 1);
             {
-                texColor = textureBicubic(textureSampler("atlasTextures", readBuffer("vars", "texAtlasLevel")),
-                                          vec3(uv.x(), uv.y(), readBuffer("vars", "texAtlasIndex")),
-                                          readBuffer("vars", "atlasScale_texSize").zw());
+                texColor = textureBicubic(atlasTexture,
+                                          vec3(uv.x(), uv.y(), vars_texAtlasIndex),
+                                          vars_atlasScale_texSize.zw());
             }
             Else();
             {
-                texColor = texture(textureSampler("atlasTextures", readBuffer("vars", "texAtlasLevel")),
-                                   vec3(uv.x(), uv.y(), readBuffer("vars", "texAtlasIndex")));
+                texColor = texture(atlasTexture, vec3(uv.x(), uv.y(), vars_texAtlasIndex));
             }
             EndIf();
-            If(readBuffer("vars", "colorFactor") != 0);
+            If(vars_colorFactor != 0);
             {
-                color = readBuffer("vars", "color") * texColor;
+                color = vars_color * texColor;
             }
             Else();
             {
                 vec4 buffColor;
-                buffColor = readBuffer("vars", "color");
-                color.xyz() = mix(texColor.xyz(), buffColor.xyz(), readBuffer("vars", "colorMixFactor"));
-                color.w() = mix(texColor.w(), buffColor.w(), readBuffer("vars", "alphaMixFactor"));
+                buffColor = vars_color.xyzw();
+                color.xyz() = mix(texColor.xyz(), buffColor.xyz(), vars_colorMixFactor);
+                color.w() = mix(texColor.w(), buffColor.w(), vars_alphaMixFactor);
             }
             EndIf();
         }
         builder.Else();
         {
-            color = readBuffer("vars", "color");
+            color = vars_color;
         }
         builder.EndIf();
-
-        writeAttribute("color", color);
 
         return builder.build();
     }

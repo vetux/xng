@@ -23,13 +23,47 @@
 #include "xng/rendergraph/shader/nodes/nodetexture.hpp"
 #include "xng/rendergraph/shaderscript/shadernodewrapper.hpp"
 
-// Helper macros for defining C++ function wrappers for directly calling a function
+// Optional Helper macros for defining C++ function wrappers for directly calling a function
 #define DEFINE_FUNCTION0(name) inline ShaderNodeWrapper name(){ return Call(#name);}
 #define DEFINE_FUNCTION1(name) inline ShaderNodeWrapper name(const ShaderNodeWrapper &arg){ return Call(#name, arg);}
 #define DEFINE_FUNCTION2(name) inline ShaderNodeWrapper name(const ShaderNodeWrapper &arg, const ShaderNodeWrapper &arg1){ return Call(#name, arg, arg1);}
 #define DEFINE_FUNCTION3(name) inline ShaderNodeWrapper name(const ShaderNodeWrapper &arg, const ShaderNodeWrapper &arg1, const ShaderNodeWrapper &arg2){ return Call(#name, arg, arg1, arg2);}
 #define DEFINE_FUNCTION4(name) inline ShaderNodeWrapper name(const ShaderNodeWrapper &arg, const ShaderNodeWrapper &arg1, const ShaderNodeWrapper &arg2, const ShaderNodeWrapper &arg3){ return Call(#name, arg, arg1, arg2, arg3);}
 #define DEFINE_FUNCTION5(name) inline ShaderNodeWrapper name(const ShaderNodeWrapper &arg, const ShaderNodeWrapper &arg1, const ShaderNodeWrapper &arg2, const ShaderNodeWrapper &arg3, const ShaderNodeWrapper &arg4){ return Call(#name, arg, arg1, arg2, arg3, arg4);}
+
+// Optional Helper macros for accessing attributes
+#define INPUT_ATTRIBUTE(attributeName) ShaderNodeWrapper attributeName = ShaderNodeWrapper(ShaderBuilder::instance().getInputLayout().getElementType(#attributeName), ShaderNodeFactory::attributeInput(#attributeName));
+#define OUTPUT_ATTRIBUTE(attributeName) ShaderNodeWrapper attributeName = ShaderNodeWrapper(ShaderBuilder::instance().getOutputLayout().getElementType(#attributeName), ShaderNodeFactory::attributeOutput(#attributeName));
+
+// Optional Helper macros for accessing buffers
+#define BUFFER_ELEMENT(bufferName, elementName) ShaderNodeWrapper bufferName##_##elementName = ShaderNodeWrapper(ShaderBuilder::instance().getBuffers().at(#bufferName).getElement(#elementName).value, ShaderNodeFactory::bufferElement(#bufferName, #elementName));
+#define DYNAMIC_BUFFER_ELEMENT(bufferName, elementName, index) ShaderNodeWrapper bufferName##_##elementName = ShaderNodeWrapper(ShaderBuilder::instance().getBuffers().at(#bufferName).getElement(#elementName).value, ShaderNodeFactory::bufferElement(#bufferName, #elementName, index.node));
+
+// Optional Helper macro for accessing parameters
+#define PARAMETER(parameterName) ShaderNodeWrapper parameterName = ShaderNodeWrapper(ShaderBuilder::instance().getParameters().at(#parameterName), ShaderNodeFactory::parameter(#parameterName));
+
+// Optional Helper macro for accessing textures
+#define TEXTURE_SAMPLER(textureName) ShaderNodeWrapper textureName = ShaderNodeWrapper(ShaderDataType{ ShaderDataType::VECTOR4, ShaderDataType::getColorComponent(ShaderBuilder::instance().getTextureArrays().at(#textureName).texture.format) }, ShaderNodeFactory::texture(#textureName));
+#define TEXTURE_ARRAY_SAMPLER(textureName, textureIndex, samplerName)  ShaderNodeWrapper samplerName = ShaderNodeWrapper(ShaderDataType{ ShaderDataType::VECTOR4, ShaderDataType::getColorComponent(ShaderBuilder::instance().getTextureArrays().at(#textureName).texture.format) }, ShaderNodeFactory::texture(#textureName, textureIndex.node));
+
+// Optional Helper macro for accessing arguments
+#define ARGUMENT(argumentName) ShaderNodeWrapper argumentName = ShaderBuilder::instance().getCurrentFunction().getArgumentType(#argumentName).index() != 0\
+                   ? ShaderNodeWrapper(ShaderDataType{\
+                                           ShaderDataType::VECTOR4,\
+                                           ShaderDataType::getColorComponent(\
+                                               std::get<ShaderTexture>(\
+                                                   ShaderBuilder::instance().getCurrentFunction().getArgumentType(#argumentName))\
+                                               .format),\
+                                           std::get<ShaderTexture>(\
+                                               ShaderBuilder::instance().getCurrentFunction().getArgumentType(#argumentName)).\
+                                           isArrayTexture\
+                                               ? 2ul\
+                                               : 1ul\
+                                       },\
+                                       ShaderNodeFactory::argument(#argumentName))\
+                   : ShaderNodeWrapper(\
+                       std::get<ShaderDataType>(ShaderBuilder::instance().getCurrentFunction().getArgumentType(#argumentName)),\
+                       ShaderNodeFactory::argument(#argumentName));
 
 /**
  * WARNING: This namespace defines implicit conversion operators for converting literals
@@ -195,7 +229,7 @@ namespace xng::ShaderScript {
             return ShaderNodeWrapper(ShaderDataType{
                                          ShaderDataType::VECTOR4,
                                          ShaderDataType::getColorComponent(targ.format),
-                                         // Because textures cannot be assigned to variables we can store the information wheter a texture is an array in the type count
+                                         // Because textures cannot be assigned to variables we can store the information wheter a texture is an array texture in the type count
                                          targ.isArrayTexture ? 2ul : 1ul
                                      },
                                      ShaderNodeFactory::argument(name));
@@ -205,32 +239,21 @@ namespace xng::ShaderScript {
         }
     }
 
-    inline ShaderNodeWrapper readBuffer(const std::string &name, const std::string &elementName) {
+    inline ShaderNodeWrapper bufferElement(const std::string &name, const std::string &elementName) {
         return ShaderNodeWrapper(ShaderBuilder::instance().getBuffers().at(name).getElement(elementName).value,
-                                 ShaderNodeFactory::bufferRead(name, elementName, nullptr));
+                                 ShaderNodeFactory::bufferElement(name, elementName, nullptr));
     }
 
-    inline ShaderNodeWrapper readDynamicBuffer(const std::string &name,
-                                               const std::string &elementName,
-                                               const ShaderNodeWrapper &index) {
+    inline ShaderNodeWrapper dynamicBufferElement(const std::string &name,
+                                                  const std::string &elementName,
+                                                  const ShaderNodeWrapper &index) {
         return ShaderNodeWrapper(ShaderBuilder::instance().getBuffers().at(name).getElement(elementName).value,
-                                 ShaderNodeFactory::bufferRead(name, elementName, index.node));
+                                 ShaderNodeFactory::bufferElement(name, elementName, index.node));
     }
 
     inline void writeAttribute(const std::string &attributeName, const ShaderNodeWrapper &value) {
         auto attr = ShaderNodeFactory::attributeOutput(attributeName);
         ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(attr, value.node));
-    }
-
-    inline void writeBuffer(const std::string &name, const std::string &elementName, const ShaderNodeWrapper &value) {
-        ShaderBuilder::instance().addNode(ShaderNodeFactory::bufferWrite(name, elementName, nullptr, value.node));
-    }
-
-    inline void writeDynamicBuffer(const std::string &name,
-                                   const std::string &elementName,
-                                   const ShaderNodeWrapper &index,
-                                   const ShaderNodeWrapper &value) {
-        ShaderBuilder::instance().addNode(ShaderNodeFactory::bufferWrite(name, elementName, index.node, value.node));
     }
 
     inline ShaderNodeWrapper getDynamicBufferLength(const std::string &name) {
@@ -570,6 +593,33 @@ namespace xng::ShaderScript {
 
     inline ShaderNodeWrapper inverse(const ShaderNodeWrapper &v) {
         return ShaderNodeWrapper(v.type, ShaderNodeFactory::inverse(v.node));
+    }
+
+    inline ShaderNodeWrapper matrix2(const ShaderNodeWrapper &x) {
+        return ShaderNodeWrapper({ShaderDataType::MAT2, x.type.component},
+                                 ShaderNodeFactory::matrix(ShaderDataType(ShaderDataType::MAT2, x.type.component),
+                                                           x.node,
+                                                           nullptr,
+                                                           nullptr,
+                                                           nullptr));
+    }
+
+    inline ShaderNodeWrapper matrix3(const ShaderNodeWrapper &x) {
+        return ShaderNodeWrapper({ShaderDataType::MAT3, x.type.component},
+                                 ShaderNodeFactory::matrix(ShaderDataType(ShaderDataType::MAT3, x.type.component),
+                                                           x.node,
+                                                           nullptr,
+                                                           nullptr,
+                                                           nullptr));
+    }
+
+    inline ShaderNodeWrapper matrix4(const ShaderNodeWrapper &x) {
+        return ShaderNodeWrapper({ShaderDataType::MAT4, x.type.component},
+                                 ShaderNodeFactory::matrix(ShaderDataType(ShaderDataType::MAT4, x.type.component),
+                                                           x.node,
+                                                           nullptr,
+                                                           nullptr,
+                                                           nullptr));
     }
 
     inline ShaderNodeWrapper matrix(const ShaderNodeWrapper &x, const ShaderNodeWrapper &y) {

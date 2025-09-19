@@ -20,7 +20,6 @@
 #include <utility>
 
 #include "xng/rendergraph/shaderscript/shaderbuilder.hpp"
-
 #include "xng/rendergraph/shaderscript/shadernodewrapper.hpp"
 
 namespace xng::ShaderScript {
@@ -170,8 +169,11 @@ namespace xng::ShaderScript {
                 }
             }
 
-            auto initializer = ShaderNodeFactory::assign(node.loopVariable,
-                                                         node.initializer);
+            if (node.loopVariable->getType() != ShaderNode::VARIABLE) {
+                throw std::runtime_error("Invalid For loop variable");
+            }
+
+            auto initializer = ShaderNodeFactory::assign(node.loopVariable,node.initializer);
 
             auto incrementor = ShaderNodeFactory::assign(node.loopVariable,
                                                          ShaderNodeFactory::add(node.loopVariable, node.incrementor));
@@ -179,7 +181,7 @@ namespace xng::ShaderScript {
             auto condition = ShaderNodeFactory::compareLessEqual(node.loopVariable, node.loopEnd);
 
             nodes.push_back(initializer->copy());
-            nodes.push_back(ShaderNodeFactory::loop(nullptr,
+            nodes.push_back(ShaderNodeFactory::loop(initializer,
                                                     condition,
                                                     incrementor,
                                                     body));

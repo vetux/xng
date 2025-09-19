@@ -49,8 +49,7 @@ namespace xng {
             TEXTURE_FETCH,
             TEXTURE_SIZE,
 
-            BUFFER_READ,
-            BUFFER_WRITE,
+            BUFFER,
             BUFFER_SIZE,
 
             ADD,

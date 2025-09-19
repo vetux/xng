@@ -44,7 +44,8 @@ public:
 
     ShaderTestPass() {
         dataBuffer.elements.emplace_back("mvp", ShaderDataType(ShaderDataType::MAT4, ShaderDataType::FLOAT));
-        colorBuffer.elements.emplace_back("color", ShaderDataType(ShaderDataType::VECTOR4, ShaderDataType::FLOAT));
+        colorBuffer.elements.emplace_back("albedo", ShaderDataType(ShaderDataType::VECTOR4, ShaderDataType::FLOAT));
+        colorBuffer.dynamic = true;
         vertexLayout.addElement("position", ShaderDataType::vec3());
         fragmentLayout.addElement("fPosition", ShaderDataType::vec4());
         colorLayout.addElement("color", ShaderDataType::vec4());
@@ -68,7 +69,7 @@ public:
                       vertexLayout,
                       fragmentLayout,
                       {},
-                      {{"data", dataBuffer}},
+                      {{"data", dataBuffer},  {"color", colorBuffer}},
                       {{"texture", ShaderTextureArray(textureDef)}},
                       {});
 
@@ -78,7 +79,8 @@ public:
                  {{"texArg", textureDef}},
                  ShaderDataType::float32());
         {
-            Return(5 * (3 + texture(argument("texArg"), vec2(0.5f, 0.5f)).x()));
+            ARGUMENT(texArg)
+            Return(5 * (3 + texture(texArg, vec2(0.5f, 0.5f)).x()));
         }
         EndFunction();
 
@@ -87,9 +89,10 @@ public:
 
         Float r = Call("test", textureSampler("texture"));
 
-        Int v = simplex(vec2(0.5f, 0.5f));
+        Float v = simplex(vec2(0.5f, 0.5f));
 
-        vec2 f = vec2(5.0f, 1.0f);
+        vec2 f;
+        f = vec2(5.0f, 1.0f);
         f = f * r;
 
         vec4 color;
@@ -102,6 +105,7 @@ public:
         Else();
         {
             Int i;
+            i = Int(0);
             For(i, 0, 10, 1);
             {
                 If(i == 1);
@@ -122,15 +126,33 @@ public:
         }
         EndIf();
 
-        mat4 mvp = readBuffer("data", "mvp");
-        vec3 vPos = readAttribute("position");
-        vec4 fPos = vec4(vPos.x(), vPos.y(), vPos.z(), Float(1));
-        fPos = mvp * fPos;
+        INPUT_ATTRIBUTE(position)
+        OUTPUT_ATTRIBUTE(fPosition)
+
+        BUFFER_ELEMENT(data, mvp)
+
+        UInt size = getDynamicBufferLength("color");
+        Int i;
+        i = Int(0);
+        For(i, 0, size, 1);
+        {
+            DYNAMIC_BUFFER_ELEMENT(color, albedo, i)
+            vec4 albedo;
+            albedo = color_albedo.xyzw();
+            color_albedo = albedo * 5;
+        }
+        EndFor();
+
+        vec4 fPos;
+        fPos = vec4(position.x(), position.y(), position.z(), Float(1));
+        fPos = data_mvp * fPos;
         fPos = fPos * vec4(f.x(), f.y(), 0, 1);
+
+        data_mvp = matrix(fPos, fPos, fPos, fPos);
 
         fPos.x() = fPos.x() + color.x();
 
-        writeAttribute("fPosition", fPos);
+        fPosition = fPos;
 
         return builder.build();
     }
@@ -141,7 +163,7 @@ public:
                       vertexLayout,
                       colorLayout,
                       {},
-                      {{"data", dataBuffer}},
+                      {{"data", dataBuffer},  {"color", colorBuffer}},
                       {{"texture", ShaderTextureArray(textureDef)}},
                       {});
 

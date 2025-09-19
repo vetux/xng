@@ -123,20 +123,10 @@ namespace xng::ShaderNodeFactory {
                                                   index->copy());
     }
 
-    std::unique_ptr<ShaderNode> bufferRead(const std::string &bufferName,
-                                           const std::string &elementName,
-                                           const std::unique_ptr<ShaderNode> &index) {
-        return std::make_unique<NodeBufferRead>(bufferName, elementName, index ? index->copy() : nullptr);
-    }
-
-    std::unique_ptr<ShaderNode> bufferWrite(const std::string &bufferName,
-                                            const std::string &elementName,
-                                            const std::unique_ptr<ShaderNode> &index,
-                                            const std::unique_ptr<ShaderNode> &value) {
-        return std::make_unique<NodeBufferWrite>(bufferName,
-                                                 elementName,
-                                                 value->copy(),
-                                                 index ? index->copy() : nullptr);
+    std::unique_ptr<ShaderNode> bufferElement(const std::string &bufferName,
+                                       const std::string &elementName,
+                                       const std::unique_ptr<ShaderNode> &index) {
+        return std::make_unique<NodeBuffer>(bufferName, elementName, index ? index->copy() : nullptr);
     }
 
     std::unique_ptr<ShaderNode> bufferSize(const std::string &bufferName) {
@@ -368,9 +358,9 @@ namespace xng::ShaderNodeFactory {
         return std::make_unique<NodeBuiltin>(NodeBuiltin::INVERSE, x->copy(), nullptr, nullptr);
     }
 
-    std::unique_ptr<ShaderNode> subscriptArray(const std::unique_ptr<ShaderNode> &array,
+    std::unique_ptr<ShaderNode> arraySubscript(const std::unique_ptr<ShaderNode> &array,
                                                const std::unique_ptr<ShaderNode> &index) {
-        return std::make_unique<NodeSubscriptArray>(array->copy(), index->copy());
+        return std::make_unique<NodeArraySubscript>(array->copy(), index->copy());
     }
 
     std::unique_ptr<ShaderNode> vectorSwizzle(const std::unique_ptr<ShaderNode> &value,
@@ -378,10 +368,10 @@ namespace xng::ShaderNodeFactory {
         return std::make_unique<NodeVectorSwizzle>(value->copy(), indices);
     }
 
-    std::unique_ptr<ShaderNode> subscriptMatrix(const std::unique_ptr<ShaderNode> &matrix,
+    std::unique_ptr<ShaderNode> matrixSubscript(const std::unique_ptr<ShaderNode> &matrix,
                                                 const std::unique_ptr<ShaderNode> &column,
                                                 const std::unique_ptr<ShaderNode> &row) {
-        return std::make_unique<NodeSubscriptMatrix>(matrix->copy(), column->copy(), row ? row->copy() : nullptr);
+        return std::make_unique<NodeMatrixSubscript>(matrix->copy(), column->copy(), row ? row->copy() : nullptr);
     }
 
     std::unique_ptr<ShaderNode> branch(const std::unique_ptr<ShaderNode> &condition,

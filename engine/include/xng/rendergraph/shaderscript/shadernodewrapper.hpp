@@ -81,22 +81,18 @@ namespace xng::ShaderScript {
         }
 
         [[nodiscard]] ShaderNodeWrapper x() {
-            promoteToVariable(node);
             return {{ShaderDataType::SCALAR, type.component}, ShaderNodeFactory::getX(node)};
         }
 
         [[nodiscard]] ShaderNodeWrapper y() {
-            promoteToVariable(node);
             return {{ShaderDataType::SCALAR, type.component}, ShaderNodeFactory::getY(node)};
         }
 
         [[nodiscard]] ShaderNodeWrapper z() {
-            promoteToVariable(node);
             return {{ShaderDataType::SCALAR, type.component}, ShaderNodeFactory::getZ(node)};
         }
 
         [[nodiscard]] ShaderNodeWrapper w() {
-            promoteToVariable(node);
             return {{ShaderDataType::SCALAR, type.component}, ShaderNodeFactory::getW(node)};
         }
 
@@ -444,23 +440,27 @@ namespace xng::ShaderScript {
 
         [[nodiscard]] ShaderNodeWrapper element(const ShaderNodeWrapper &column,
                                                 const ShaderNodeWrapper &row) {
-            promoteToVariable(node);
+            if (node->getType() != ShaderNode::VARIABLE) {
+                throw std::runtime_error(".element() invoked on a copy initialized variable");
+            }
             return ShaderNodeWrapper({ShaderDataType::SCALAR, type.component},
-                                     ShaderNodeFactory::subscriptMatrix(node, column.node, row.node));
+                                     ShaderNodeFactory::matrixSubscript(node, column.node, row.node));
         }
 
         ShaderNodeWrapper column(const ShaderNodeWrapper &column) {
-            promoteToVariable(node);
+            if (node->getType() != ShaderNode::VARIABLE) {
+                throw std::runtime_error(".column() invoked on a copy initialized variable");
+            }
             switch (type.type) {
                 case ShaderDataType::MAT2:
                     return ShaderNodeWrapper({ShaderDataType::VECTOR2, type.component},
-                                             ShaderNodeFactory::subscriptMatrix(node, column.node, nullptr));
+                                             ShaderNodeFactory::matrixSubscript(node, column.node, nullptr));
                 case ShaderDataType::MAT3:
                     return ShaderNodeWrapper({ShaderDataType::VECTOR3, type.component},
-                                             ShaderNodeFactory::subscriptMatrix(node, column.node, nullptr));
+                                             ShaderNodeFactory::matrixSubscript(node, column.node, nullptr));
                 case ShaderDataType::MAT4:
                     return ShaderNodeWrapper({ShaderDataType::VECTOR4, type.component},
-                                             ShaderNodeFactory::subscriptMatrix(node, column.node, nullptr));
+                                             ShaderNodeFactory::matrixSubscript(node, column.node, nullptr));
                 default:
                     throw std::runtime_error("column call on non matrix");
             }
@@ -471,27 +471,12 @@ namespace xng::ShaderScript {
          *
          * This enables the user to assign variables in glsl style.
          *
-         * Move / Copy assignments for non-variable node wrapper instances are not allowed.
-         *
          * @param rhs
          * @return
          */
-        ShaderNodeWrapper &operator=(ShaderNodeWrapper &&rhs) noexcept {
-            // Hook logical assignments to variables
-            if (node->getType() == ShaderNode::VARIABLE
-                || node->getType() == ShaderNode::VECTOR_SWIZZLE
-                || node->getType() == ShaderNode::SUBSCRIPT_MATRIX
-                || node->getType() == ShaderNode::SUBSCRIPT_ARRAY) {
-                // Assign value
-                ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(node, rhs.node));
-                return *this;
-            } else {
-                // Assume assignment to previously in place initialized object eg.
-                // vec2 v = vec2(0, 0)
-                // v = vec2(1, 1)
-                promoteToVariable(rhs.node);
-                return *this;
-            }
+        ShaderNodeWrapper &operator=(ShaderNodeWrapper &&rhs) {
+            assignValue(rhs);
+            return *this;
         }
 
         /**
@@ -499,30 +484,15 @@ namespace xng::ShaderScript {
          *
          * This enables the user to assign variables in glsl style.
          *
-         * Move / Copy assignments for non-variable node wrapper instances are not supported.
-         *
          * @param rhs
          * @return
          */
         ShaderNodeWrapper &operator=(const ShaderNodeWrapper &rhs) {
-            // Hook logical assignments
-            if (node->getType() == ShaderNode::VARIABLE
-                || node->getType() == ShaderNode::VECTOR_SWIZZLE
-                || node->getType() == ShaderNode::SUBSCRIPT_MATRIX
-                || node->getType() == ShaderNode::SUBSCRIPT_ARRAY) {
-                // Assign value
-                ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(node, rhs.node));
-                return *this;
-            } else {
-                // Assume assignment to previously in place initialized object eg.
-                // vec2 v = vec2(0, 0)
-                // v = vec2(1, 1)
-                promoteToVariable(rhs.node);
-                return *this;
-            }
+            assignValue(rhs);
+            return *this;
         }
 
-        // TODO: Handle implicit promotion
+        // TODO: Handle implicit type promotion
         ShaderNodeWrapper operator+(const ShaderNodeWrapper &rhs) const {
             ShaderDataType outType;
             if (type == rhs.type) {
@@ -537,7 +507,6 @@ namespace xng::ShaderScript {
                 }
             }
             auto ret = ShaderNodeWrapper(outType, ShaderNodeFactory::add(node, rhs.node));
-            ret.promoteToVariable(ret.node);
             return ret;
         }
 
@@ -555,7 +524,6 @@ namespace xng::ShaderScript {
                 }
             }
             auto ret = ShaderNodeWrapper(outType, ShaderNodeFactory::subtract(node, rhs.node));
-            ret.promoteToVariable(ret.node);
             return ret;
         }
 
@@ -584,7 +552,6 @@ namespace xng::ShaderScript {
                 }
             }
             auto ret = ShaderNodeWrapper(outType, ShaderNodeFactory::multiply(node, rhs.node));
-            ret.promoteToVariable(ret.node);
             return ret;
         }
 
@@ -601,169 +568,84 @@ namespace xng::ShaderScript {
                     outType = type;
                 }
             }
-            auto ret = ShaderNodeWrapper(outType, ShaderNodeFactory::divide(node, rhs.node));
-            ret.promoteToVariable(ret.node);
-            return ret;
+            return ShaderNodeWrapper(outType, ShaderNodeFactory::divide(node, rhs.node));
         }
 
         ShaderNodeWrapper operator+=(const ShaderNodeWrapper &rhs) {
-            if (node->getType() != ShaderNode::VARIABLE) {
-                if (node->getType() != ShaderNode::VECTOR_SWIZZLE) {
-                    // Assume assignment to previously in place initialized object eg.
-                    // vec2 v = vec2(0, 0)
-                    // v += vec2(1, 1)
-                    promoteToVariable(node);
-                }
-            }
-            ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(node,
-                                                                        ShaderNodeFactory::add(node, rhs.node)));
+            assignValue(*this + rhs);
             return *this;
         }
 
         ShaderNodeWrapper operator-=(const ShaderNodeWrapper &rhs) {
-            if (node->getType() != ShaderNode::VARIABLE) {
-                if (node->getType() != ShaderNode::VECTOR_SWIZZLE) {
-                    // Assume assignment to previously in place initialized object eg.
-                    // vec2 v = vec2(0, 0)
-                    // v -= vec2(1, 1)
-                    promoteToVariable(node);
-                }
-            }
-            ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(node,
-                                                                        ShaderNodeFactory::subtract(node, rhs.node)));
+            assignValue(*this - rhs);
             return *this;
         }
 
         ShaderNodeWrapper operator*=(const ShaderNodeWrapper &rhs) {
-            if (node->getType() != ShaderNode::VARIABLE) {
-                if (node->getType() != ShaderNode::VECTOR_SWIZZLE) {
-                    // Assume assignment to previously in place initialized object eg.
-                    // vec2 v = vec2(0, 0)
-                    // v *= vec2(1, 1)
-                    promoteToVariable(node);
-                }
-            }
-            ShaderBuilder::instance().addNode(
-                ShaderNodeFactory::assign(node, ShaderNodeFactory::multiply(node, rhs.node)));
+            assignValue(*this * rhs);
             return *this;
         }
 
         ShaderNodeWrapper operator/=(const ShaderNodeWrapper &rhs) {
-            if (node->getType() != ShaderNode::VARIABLE) {
-                if (node->getType() != ShaderNode::VECTOR_SWIZZLE) {
-                    // Assume assignment to previously in place initialized object eg.
-                    // vec2 v = vec2(0, 0)
-                    // v /= vec2(1, 1)
-                    promoteToVariable(node);
-                }
-            }
-            ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(node,
-                                                                        ShaderNodeFactory::divide(node, rhs.node)));
+            assignValue(*this / rhs);
             return *this;
         }
 
         ShaderNodeWrapper operator==(const ShaderNodeWrapper &rhs) const {
             auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
                                          ShaderNodeFactory::compareEqual(node, rhs.node));
-            ret.promoteToVariable(ret.node);
             return ret;
         }
 
         ShaderNodeWrapper operator!=(const ShaderNodeWrapper &rhs) const {
             auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
                                          ShaderNodeFactory::compareNotEqual(node, rhs.node));
-            ret.promoteToVariable(ret.node);
             return ret;
         }
 
         ShaderNodeWrapper operator<(const ShaderNodeWrapper &rhs) const {
             auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
                                          ShaderNodeFactory::compareLess(node, rhs.node));
-            ret.promoteToVariable(ret.node);
             return ret;
         }
 
         ShaderNodeWrapper operator>(const ShaderNodeWrapper &rhs) const {
             auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
                                          ShaderNodeFactory::compareGreater(node, rhs.node));
-            ret.promoteToVariable(ret.node);
             return ret;
         }
 
         ShaderNodeWrapper operator <=(const ShaderNodeWrapper &rhs) const {
             auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
                                          ShaderNodeFactory::compareLessEqual(node, rhs.node));
-            ret.promoteToVariable(ret.node);
             return ret;
         }
 
         ShaderNodeWrapper operator >=(const ShaderNodeWrapper &rhs) const {
             auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
                                          ShaderNodeFactory::compareGreaterEqual(node, rhs.node));
-            ret.promoteToVariable(ret.node);
             return ret;
         }
 
         ShaderNodeWrapper operator||(const ShaderNodeWrapper &rhs) const {
             auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
                                          ShaderNodeFactory::logicalOr(node, rhs.node));
-            ret.promoteToVariable(ret.node);
             return ret;
         }
 
         ShaderNodeWrapper operator&&(const ShaderNodeWrapper &rhs) const {
             auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
                                          ShaderNodeFactory::logicalAnd(node, rhs.node));
-            ret.promoteToVariable(ret.node);
             return ret;
         }
 
         ShaderNodeWrapper operator[](const ShaderNodeWrapper &rhs) {
-            promoteToVariable(node);
             return ShaderNodeWrapper({type.type, type.component, 1},
-                                     ShaderNodeFactory::subscriptArray(node, rhs.node));
+                                     ShaderNodeFactory::arraySubscript(node, rhs.node));
         }
 
     protected:
-        /**
-         * Because the c++ compiler might elide the assignment operator invocation by creating the object in place for something like:
-         * vec2 v = vec2(1, 1);
-         * I cannot rely on the assignment operator to handle variable definition.
-         *
-         * Therefore, every object (Except default constructed objects) starts out as a temporary object
-         * and is promoted to a variable as soon as it's either
-         * - Written to through the assignment operator,
-         * - The subscripting operator or a swizzle method is invoked on the object
-         * - It is the result of an arithmetic operator (To preserve the order of the expression).
-         *
-         * This results in variables getting inlined if they are not promoted,
-         * which can cause expensive operations to run multiple times
-         * and also makes the resulting shader node tree harder to debug.
-         *
-         * Default constructed objects are variables,
-         * so variable definition can be forced by default constructing the variable. (e.g. "vec2 v;")
-         *
-         * So for optimal performing shader code variables should be
-         * default constructed and then assigned in separate statements. (e.g. "vec2 v; v = vec2(0, 0);)
-         *
-         * TODO: Fix variable assignment in conditional or loop bodies
-         * Currently, there's a problem where if a variable is initialized in place and then assigned in a branch or loop body,
-         * the variable will be defined inside the loop body or branch even if it is used later outside the scope of the branch or loop.
-         */
-        void promoteToVariable(const std::unique_ptr<ShaderNode> &variableInitializer) {
-            if (node == nullptr
-                || node->getType() != ShaderNode::VARIABLE) {
-                const auto varName = ShaderBuilder::instance().getVariableName();
-                ShaderBuilder::instance().addNode(
-                    ShaderNodeFactory::createVariable(varName,
-                                                      type,
-                                                      variableInitializer ? variableInitializer->copy() : nullptr));
-                node = ShaderNodeFactory::variable(varName);
-            }
-        }
-
         ShaderNodeWrapper swizzle_vec2(const ShaderNodeWrapper &x, const ShaderNodeWrapper &y) {
-            promoteToVariable(node);
             return {
                 ShaderDataType{ShaderDataType::VECTOR2, type.component, 1},
                 ShaderNodeFactory::vectorSwizzle(node, {
@@ -776,7 +658,6 @@ namespace xng::ShaderScript {
         ShaderNodeWrapper swizzle_vec3(const ShaderNodeWrapper &x,
                                        const ShaderNodeWrapper &y,
                                        const ShaderNodeWrapper &z) {
-            promoteToVariable(node);
             return {
                 ShaderDataType{ShaderDataType::VECTOR3, type.component, 1},
                 ShaderNodeFactory::vectorSwizzle(node, {
@@ -791,7 +672,6 @@ namespace xng::ShaderScript {
                                        const ShaderNodeWrapper &y,
                                        const ShaderNodeWrapper &z,
                                        const ShaderNodeWrapper &w) {
-            promoteToVariable(node);
             return {
                 ShaderDataType{ShaderDataType::VECTOR4, type.component, 1},
                 ShaderNodeFactory::vectorSwizzle(node, {
@@ -801,6 +681,64 @@ namespace xng::ShaderScript {
                                                      down_cast<NodeVectorSwizzle &>(*w.node).indices.at(0)
                                                  })
             };
+        }
+
+    private:
+        /**
+         * Because copy initialization in C++17 can be elided (e.g. vec2 v = vec2(0, 0)), and explicitly deleting
+         * copy operators does not affect the copy initialization if the initializer value is a prvalue,
+         * I cannot rely on the assignment operator overload for defining shader variables for prvalue initializers.
+         * (See http://en.cppreference.com/w/cpp/language/copy_initialization.html)
+         *
+         * Therefore, copy initialized variables (e.g. vec2 v = vec2(0, 0)) are inlined in the resulting shader and are not assignable.
+         * Move initialized variables (e.g. vec2 v = other.xy()) are not inlined and are assignable.
+         */
+        void assignValue(const ShaderNodeWrapper &value) {
+            if (node->getType() == ShaderNode::VARIABLE_CREATE) {
+                // Assign to uninitialized variable
+                auto &varNode = down_cast<const NodeVariableCreate &>(*node);
+                ShaderBuilder::instance().addNode(
+                    ShaderNodeFactory::createVariable(varNode.variableName,
+                                                      type,
+                                                      value.node));
+                node = ShaderNodeFactory::variable(varNode.variableName);
+            } else if (node->getType() == ShaderNode::VECTOR_SWIZZLE) {
+                // Allow assignment to swizzle of a vector variable
+                auto &swizzleNode = down_cast<const NodeVectorSwizzle &>(*node);
+                if (swizzleNode.vector->getType() != ShaderNode::VARIABLE
+                    && swizzleNode.vector->getType() != ShaderNode::ATTRIBUTE_OUT
+                    && swizzleNode.vector->getType() != ShaderNode::BUFFER) {
+                    throw std::runtime_error(
+                        "Invalid vector swizzle assignment (Copy initialized or uninitialized variable)");
+                }
+                ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(node, value.node));
+            } else if (node->getType() == ShaderNode::SUBSCRIPT_MATRIX) {
+                // Allow assignment to subscript of a matrix variable
+                auto &subNode = down_cast<const NodeMatrixSubscript &>(*node);
+                if (subNode.matrix->getType() != ShaderNode::VARIABLE
+                    && subNode.matrix->getType() != ShaderNode::ATTRIBUTE_OUT
+                    && subNode.matrix->getType() != ShaderNode::BUFFER) {
+                    throw std::runtime_error(
+                        "Invalid matrix subscript assignment (Copy initialized or uninitialized variable)");
+                }
+                ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(node, value.node));
+            } else if (node->getType() == ShaderNode::SUBSCRIPT_ARRAY) {
+                // Allow assignment to a subscript of a vector variable
+                auto &subNode = down_cast<const NodeArraySubscript &>(*node);
+                if (subNode.array->getType() != ShaderNode::VARIABLE
+                    && subNode.array->getType() != ShaderNode::ATTRIBUTE_OUT
+                    && subNode.array->getType() != ShaderNode::BUFFER) {
+                    throw std::runtime_error(
+                        "Invalid array subscript assignment (Copy initialized or uninitialized variable)");
+                }
+                ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(node, value.node));
+            } else if (node->getType() == ShaderNode::VARIABLE
+                       || node->getType() == ShaderNode::ATTRIBUTE_OUT
+                       || node->getType() == ShaderNode::BUFFER) {
+                ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(node, value.node));
+            } else {
+                throw std::runtime_error("Invalid assignment (Copy initialized variable or temporary)");
+            }
         }
     };
 
@@ -817,39 +755,51 @@ namespace xng::ShaderScript {
     class ShaderNodeWrapperTyped : public ShaderNodeWrapper {
     public:
         /**
-         * Default constructor creates new variable
+         * Default constructor creates new variable.
          */
         ShaderNodeWrapperTyped()
             : ShaderNodeWrapper({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT}, nullptr) {
             type = {VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT};
-            promoteToVariable(node);
+            const auto varName = ShaderBuilder::instance().getVariableName();
+            node = ShaderNodeFactory::createVariable(varName,
+                                                     type,
+                                                     nullptr);
         }
 
-        ShaderNodeWrapperTyped(const ShaderNodeWrapper &base)
-            : ShaderNodeWrapper(base) {
-        }
+        // Copy operators and constructors for non prvalues are deleted to force move semantics and avoid copy eliding.
+        ShaderNodeWrapperTyped(const ShaderNodeWrapper &base) = delete;
 
+        ShaderNodeWrapper &operator=(const ShaderNodeWrapper &other) = delete;
+
+        // Copy operators and constructors for prvalues are allowed to support copying a variable (e.g. vec2 v = other; or vec2 v; v = other)
         ShaderNodeWrapperTyped(const ShaderNodeWrapperTyped &other)
             : ShaderNodeWrapper(other) {
-        }
-
-        ShaderNodeWrapperTyped(ShaderNodeWrapperTyped &&other) noexcept
-            : ShaderNodeWrapper(std::move(other)) {
         }
 
         ShaderNodeWrapper &operator=(const ShaderNodeWrapperTyped &other) {
             return ShaderNodeWrapper::operator=(other);
         }
 
+        // Move constructor can be deleted because in the dsl syntax variables are not initialized with vec2 v(other);
+        ShaderNodeWrapperTyped(ShaderNodeWrapperTyped &&other) noexcept = delete;
+
+        // Move operator is allowed to support assignments to default initialized variables from prvalues (e.g. vec2 v; v = vec2(0, 0);)
         ShaderNodeWrapper &operator=(ShaderNodeWrapperTyped &&other) noexcept {
             return ShaderNodeWrapper::operator=(std::move(other));
         }
 
-        ShaderNodeWrapper &operator=(const ShaderNodeWrapper &other) {
-            return ShaderNodeWrapper::operator=(other);
+        // Move operations from non prvalues, creates and initializes a variable.
+        ShaderNodeWrapperTyped(ShaderNodeWrapper &&other) noexcept
+            : ShaderNodeWrapper(std::move(other)) {
+            type = {VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT};
+            const auto varName = ShaderBuilder::instance().getVariableName();
+            ShaderBuilder::instance().addNode(ShaderNodeFactory::createVariable(varName,
+                type,
+                node));
+            node = ShaderNodeFactory::variable(varName);
         }
 
-        ShaderNodeWrapper &operator=(ShaderNodeWrapper &&other) noexcept {
+        ShaderNodeWrapper &operator=(ShaderNodeWrapper &&other) {
             return ShaderNodeWrapper::operator=(std::move(other));
         }
 
@@ -863,8 +813,8 @@ namespace xng::ShaderScript {
         }
 
         // Vector constructors
-        ShaderNodeWrapperTyped(const ShaderNodeWrapperTyped<ShaderDataType::SCALAR, VALUE_COMPONENT, 1> &x,
-                               const ShaderNodeWrapperTyped<ShaderDataType::SCALAR, VALUE_COMPONENT, 1> &y)
+        ShaderNodeWrapperTyped(const ShaderNodeWrapper &x,
+                               const ShaderNodeWrapper &y)
             : ShaderNodeWrapper({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
                                 ShaderNodeFactory::vector({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
                                                           x.node,
@@ -874,9 +824,9 @@ namespace xng::ShaderScript {
                           || VALUE_TYPE == ShaderDataType::VECTOR2);
         }
 
-        ShaderNodeWrapperTyped(const ShaderNodeWrapperTyped<ShaderDataType::SCALAR, VALUE_COMPONENT, 1> &x,
-                               const ShaderNodeWrapperTyped<ShaderDataType::SCALAR, VALUE_COMPONENT, 1> &y,
-                               const ShaderNodeWrapperTyped<ShaderDataType::SCALAR, VALUE_COMPONENT, 1> &z)
+        ShaderNodeWrapperTyped(const ShaderNodeWrapper &x,
+                               const ShaderNodeWrapper &y,
+                               const ShaderNodeWrapper &z)
             : ShaderNodeWrapper({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
                                 ShaderNodeFactory::vector({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
                                                           x.node,
@@ -886,10 +836,10 @@ namespace xng::ShaderScript {
                           || VALUE_TYPE == ShaderDataType::VECTOR3);
         }
 
-        ShaderNodeWrapperTyped(const ShaderNodeWrapperTyped<ShaderDataType::SCALAR, VALUE_COMPONENT, 1> &x,
-                               const ShaderNodeWrapperTyped<ShaderDataType::SCALAR, VALUE_COMPONENT, 1> &y,
-                               const ShaderNodeWrapperTyped<ShaderDataType::SCALAR, VALUE_COMPONENT, 1> &z,
-                               const ShaderNodeWrapperTyped<ShaderDataType::SCALAR, VALUE_COMPONENT, 1> &w)
+        ShaderNodeWrapperTyped(const ShaderNodeWrapper &x,
+                               const ShaderNodeWrapper &y,
+                               const ShaderNodeWrapper &z,
+                               const ShaderNodeWrapper &w)
             : ShaderNodeWrapper({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
                                 ShaderNodeFactory::vector({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
                                                           x.node,

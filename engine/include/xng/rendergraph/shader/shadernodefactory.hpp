@@ -79,14 +79,9 @@ namespace xng {
                                                                 const std::unique_ptr<ShaderNode> &coordinate,
                                                                 const std::unique_ptr<ShaderNode> &index);
 
-        XENGINE_EXPORT std::unique_ptr<ShaderNode> bufferRead(const std::string &bufferName,
-                                                              const std::string &elementName,
-                                                              const std::unique_ptr<ShaderNode> &index = nullptr);
-
-        XENGINE_EXPORT std::unique_ptr<ShaderNode> bufferWrite(const std::string &bufferName,
-                                                               const std::string &elementName,
-                                                               const std::unique_ptr<ShaderNode> &index,
-                                                               const std::unique_ptr<ShaderNode> &value);
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> bufferElement(const std::string &bufferName,
+                                                          const std::string &elementName,
+                                                          const std::unique_ptr<ShaderNode> &index = nullptr);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> bufferSize(const std::string &bufferName);
 
@@ -219,14 +214,14 @@ namespace xng {
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> inverse(const std::unique_ptr<ShaderNode> &x);
 
-        XENGINE_EXPORT std::unique_ptr<ShaderNode> subscriptArray(const std::unique_ptr<ShaderNode> &array,
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> arraySubscript(const std::unique_ptr<ShaderNode> &array,
                                                                   const std::unique_ptr<ShaderNode> &index);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> vectorSwizzle(const std::unique_ptr<ShaderNode> &value,
                                                                  const std::vector<NodeVectorSwizzle::ComponentIndex> &
                                                                  indices);
 
-        XENGINE_EXPORT std::unique_ptr<ShaderNode> subscriptMatrix(const std::unique_ptr<ShaderNode> &matrix,
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> matrixSubscript(const std::unique_ptr<ShaderNode> &matrix,
                                                                    const std::unique_ptr<ShaderNode> &row,
                                                                    const std::unique_ptr<ShaderNode> &column
                                                                            =

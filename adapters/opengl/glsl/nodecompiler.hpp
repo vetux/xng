@@ -97,12 +97,9 @@ std::string compileLeafNode(const NodeTextureFetch &node,
                             const Shader &source,
                             const std::string &functionName);
 
-std::string compileLeafNode(const NodeBufferRead &node, const Shader &source,
+std::string compileLeafNode(const NodeBuffer &node,
+                            const Shader &source,
                             const std::string &functionName);
-
-std::string compileLeafNode(const NodeBufferWrite &node, const Shader &source,
-                            const std::string &functionName,
-                            const std::string &prefix);
 
 std::string compileLeafNode(const NodeBufferSize &node, const Shader &source);
 
@@ -142,13 +139,13 @@ std::string compileLeafNode(const NodeReturn &node,
 
 std::string compileLeafNode(const NodeBuiltin &node, const Shader &source, const std::string &functionName);
 
-std::string compileLeafNode(const NodeSubscriptArray &node, const Shader &source,
+std::string compileLeafNode(const NodeArraySubscript &node, const Shader &source,
                             const std::string &functionName);
 
 std::string compileLeafNode(const NodeVectorSwizzle &node, const Shader &source,
                             const std::string &functionName);
 
-std::string compileLeafNode(const NodeSubscriptMatrix &node, const Shader &source,
+std::string compileLeafNode(const NodeMatrixSubscript &node, const Shader &source,
                             const std::string &functionName);
 
 std::string compileLeafNode(const NodeBranch &node, const Shader &source, const std::string &functionName,
