@@ -46,33 +46,33 @@ namespace xng {
 
     void AudioSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {
         for (const auto &pair: scene.getPool<AudioListenerComponent>()) {
-            auto &transform = scene.getComponent<TransformComponent>(pair.first);
+            auto &transform = scene.getComponent<TransformComponent>(pair.entity);
             auto &listener = context->getListener();
             listener.setPosition(transform.transform.getPosition() * AUDIO_POS_SCALE);
             listener.setOrientation({transform.transform.getPosition()},
                                     transform.transform.getRotation().getEulerAngles());
-            listener.setVelocity(pair.second.velocity);
+            listener.setVelocity(pair.component.velocity);
         }
 
         for (auto &pair: scene.getPool<AudioSourceComponent>()) {
-            auto comp = pair.second;
-            auto &transform = scene.getComponent<TransformComponent>(pair.first);
-            auto &source = sources.at(pair.first);
+            auto comp = pair.component;
+            auto &transform = scene.getComponent<TransformComponent>(pair.entity);
+            auto &source = sources.at(pair.entity);
 
-            if (!pair.second.audio.isLoaded()) {
+            if (!pair.component.audio.isLoaded()) {
                 continue;
             }
 
-            if (buffers.find(pair.first) == buffers.end()) {
-                auto &buffer = pair.second.audio.get();
-                buffers[pair.first] = context->createBuffer();
-                buffers[pair.first]->upload(buffer.buffer,
+            if (buffers.find(pair.entity) == buffers.end()) {
+                auto &buffer = pair.component.audio.get();
+                buffers[pair.entity] = context->createBuffer();
+                buffers[pair.entity]->upload(buffer.buffer,
                                             buffer.format,
                                             buffer.frequency);
 
-                sources[pair.first] = context->createSource();
-                sources[pair.first]->setBuffer(*buffers[pair.first]);
-                playingSources.erase(pair.first);
+                sources[pair.entity] = context->createSource();
+                sources[pair.entity]->setBuffer(*buffers[pair.entity]);
+                playingSources.erase(pair.entity);
             }
 
             source->setPosition(transform.transform.getPosition() * AUDIO_POS_SCALE);
@@ -81,15 +81,15 @@ namespace xng {
 
             //TODO: Source Volume and Distance
 
-            if (comp.play && playingSources.find(pair.first) == playingSources.end()) {
+            if (comp.play && playingSources.find(pair.entity) == playingSources.end()) {
                 source->play();
-                playingSources.insert(pair.first);
-            } else if (!comp.play && playingSources.find(pair.first) != playingSources.end()) {
+                playingSources.insert(pair.entity);
+            } else if (!comp.play && playingSources.find(pair.entity) != playingSources.end()) {
                 source->pause();
-                playingSources.erase(pair.first);
+                playingSources.erase(pair.entity);
             }
 
-            scene.updateComponent(pair.first, comp);
+            scene.updateComponent(pair.entity, comp);
         }
     }
 

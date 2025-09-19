@@ -34,20 +34,20 @@ namespace xng {
     void RigAnimationSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {
         std::map<EntityHandle, RigAnimationComponent> cUpdates;
         for (auto &c: scene.getPool<RigAnimationComponent>()) {
-            if (scene.checkComponent<SkinnedMeshComponent>(c.first)) {
-                if (rigAnimators.find(c.first) == rigAnimators.end()) {
-                    auto &meshComponent = scene.getComponent<SkinnedMeshComponent>(c.first);
-                    rigAnimators[c.first] = RigAnimator(meshComponent.mesh.get().rig);
-                    for (auto &pair: c.second.channels) {
-                        rigAnimators.at(c.first).start(pair.second.animation.get(),
-                                                       pair.second.blendDuration,
-                                                       pair.second.loop,
-                                                       pair.first);
+            if (scene.checkComponent<SkinnedMeshComponent>(c.entity)) {
+                if (rigAnimators.find(c.entity) == rigAnimators.end()) {
+                    auto &meshComponent = scene.getComponent<SkinnedMeshComponent>(c.entity);
+                    rigAnimators[c.entity] = RigAnimator(meshComponent.mesh.get().rig);
+                    for (auto &pair: c.component.channels) {
+                        rigAnimators.at(c.entity).start(pair.second.animation.get(),
+                                                        pair.second.blendDuration,
+                                                        pair.second.loop,
+                                                        pair.first);
                     }
                 }
-                rigAnimators.at(c.first).update(deltaTime);
-                cUpdates[c.first] = c.second;
-                cUpdates.at(c.first).boneTransforms = rigAnimators.at(c.first).getBoneTransforms();
+                rigAnimators.at(c.entity).update(deltaTime);
+                cUpdates[c.entity] = c.component;
+                cUpdates.at(c.entity).boneTransforms = rigAnimators.at(c.entity).getBoneTransforms();
             }
         }
 
@@ -93,9 +93,9 @@ namespace xng {
                 }
                 if (!skipUpdate) {
                     rigAnimators.at(entity).start(pair.second.animation.get(),
-                                                      pair.second.blendDuration,
-                                                      pair.second.loop,
-                                                      pair.first);
+                                                  pair.second.blendDuration,
+                                                  pair.second.loop,
+                                                  pair.first);
                 }
             }
         }

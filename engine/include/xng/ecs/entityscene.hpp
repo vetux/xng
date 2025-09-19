@@ -189,7 +189,7 @@ namespace xng {
             for (auto &pair: componentPools) {
                 for (auto &cpair: pair.second->getComponents()) {
                     for (auto &listener: listeners) {
-                        listener->onComponentDestroy(cpair.first, *cpair.second);
+                        listener->onComponentDestroy(cpair.first, cpair.second);
                     }
                 }
             }
@@ -254,12 +254,11 @@ namespace xng {
         }
 
         template<typename T>
-        const T &createComponent(const EntityHandle &entity, const T &value = {}) {
-            auto &ret = getPool<T>().create(entity, value);
+        void createComponent(const EntityHandle &entity, const T &value = {}) {
+            getPool<T>().create(entity, value);
             for (auto &listener: listeners) {
                 listener->onComponentCreate(entity, value);
             }
-            return ret;
         }
 
         template<typename T>

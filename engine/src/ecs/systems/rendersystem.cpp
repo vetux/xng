@@ -45,11 +45,11 @@ namespace xng {
             // TODO: Z Sort transparent meshes based on distance of transform to camera
             // TODO: Change transform walking / scene creation to allow model matrix caching
 
-            auto &transform = entScene.getComponent<TransformComponent>(pair.first);
+            auto &transform = entScene.getComponent<TransformComponent>(pair.entity);
             if (!transform.enabled)
                 continue;
 
-            auto &meshComponent = pair.second;
+            auto &meshComponent = pair.component;
             if (!meshComponent.enabled)
                 continue;
 
@@ -60,25 +60,25 @@ namespace xng {
             node.addProperty(transformProperty);
 
             SkinnedMeshProperty meshProperty;
-            meshProperty.mesh = pair.second.mesh;
+            meshProperty.mesh = pair.component.mesh;
             node.addProperty(meshProperty);
 
             ShadowProperty shadowProperty;
-            shadowProperty.castShadows = pair.second.castShadows;
-            shadowProperty.receiveShadows = pair.second.receiveShadows;
+            shadowProperty.castShadows = pair.component.castShadows;
+            shadowProperty.receiveShadows = pair.component.receiveShadows;
             node.addProperty(shadowProperty);
 
-            if (entScene.checkComponent<MaterialComponent>(pair.first)) {
-                auto &comp = entScene.getComponent<MaterialComponent>(pair.first);
+            if (entScene.checkComponent<MaterialComponent>(pair.entity)) {
+                auto &comp = entScene.getComponent<MaterialComponent>(pair.entity);
                 MaterialProperty materialProperty;
                 materialProperty.materials = comp.materials;
                 node.addProperty(materialProperty);
             }
 
-            if (entScene.checkComponent<RigAnimationComponent>(pair.first)) {
+            if (entScene.checkComponent<RigAnimationComponent>(pair.entity)) {
                 BoneTransformsProperty boneTransformsProperty;
                 boneTransformsProperty.boneTransforms = entScene.getComponent<RigAnimationComponent>(
-                        pair.first).boneTransforms;
+                        pair.entity).boneTransforms;
                 node.addProperty(boneTransformsProperty);
             }
 
@@ -87,7 +87,7 @@ namespace xng {
 
         // Get skybox
         for (auto &pair: entScene.getPool<SkyboxComponent>()) {
-            auto &comp = pair.second;
+            auto &comp = pair.component;
             auto boxProp = SkyboxProperty();
             boxProp.skybox = comp.skybox;
             scene.rootNode.addProperty(boxProp);
@@ -95,12 +95,12 @@ namespace xng {
 
         // Get Camera
         for (auto &pair: entScene.getPool<CameraComponent>()) {
-            auto &tcomp = entScene.getComponent<TransformComponent>(pair.first);
+            auto &tcomp = entScene.getComponent<TransformComponent>(pair.entity);
 
             if (!tcomp.enabled)
                 continue;
 
-            auto &comp = pair.second;
+            auto &comp = pair.component;
 
             Node cameraNode;
 
@@ -120,8 +120,8 @@ namespace xng {
         // Get lights
 
         for (auto &pair: entScene.getPool<LightComponent>()) {
-            auto lightComponent = pair.second;
-            auto &tcomp = entScene.getPool<TransformComponent>().lookup(pair.first);
+            auto lightComponent = pair.component;
+            auto &tcomp = entScene.getPool<TransformComponent>().lookup(pair.entity);
 
             if (!lightComponent.enabled)
                 continue;

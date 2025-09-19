@@ -38,7 +38,7 @@ namespace xng {
 
     void GuiEventSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {
         for (auto &pair: scene.getPool<ButtonComponent>()) {
-         /*   auto &rt = scene.getComponent<RectTransformComponent>(pair.first);
+         /*   auto &rt = scene.getComponent<RectTransformComponent>(pair.entity);
             auto windowSize = window.getRenderTarget().getDescription().size;
            auto canvas = scene.getEntity(rt.canvas).getComponent<CanvasComponent>();
             ResourceHandle<Sprite> sprite;
@@ -50,35 +50,35 @@ namespace xng {
                             - canvas.getViewportOffset(windowSize).convert<float>();
             if (rect.testPoint(mousePos)) {
                 if (window.getInput().getDevice<Mouse>().getButton(LEFT)) {
-                    if (clickButtons.find(pair.first) == clickButtons.end()) {
+                    if (clickButtons.find(pair.entity) == clickButtons.end()) {
                         // Pressing
-                        eventBus.invoke(GuiEvent(GuiEvent::BUTTON_CLICK, pair.second.id));
-                        clickButtons.insert(pair.first);
+                        eventBus.invoke(GuiEvent(GuiEvent::BUTTON_CLICK, pair.component.id));
+                        clickButtons.insert(pair.entity);
                     }
-                    sprite = pair.second.spritePressed;
+                    sprite = pair.component.spritePressed;
                 } else {
-                    clickButtons.erase(pair.first);
+                    clickButtons.erase(pair.entity);
                     // Hovering
-                    if (hoverButtons.find(pair.first) == hoverButtons.end()) {
-                        eventBus.invoke(GuiEvent(GuiEvent::BUTTON_HOVER_START, pair.second.id));
+                    if (hoverButtons.find(pair.entity) == hoverButtons.end()) {
+                        eventBus.invoke(GuiEvent(GuiEvent::BUTTON_HOVER_START, pair.component.id));
                     }
-                    sprite = pair.second.spriteHover;
+                    sprite = pair.component.spriteHover;
                 }
-                hoverButtons.insert(pair.first);
+                hoverButtons.insert(pair.entity);
             } else {
                 // Not hovering
-                clickButtons.erase(pair.first);
-                if (hoverButtons.find(pair.first) != hoverButtons.end()) {
-                    eventBus.invoke(GuiEvent(GuiEvent::BUTTON_HOVER_STOP, pair.second.id));
-                    hoverButtons.erase(pair.first);
+                clickButtons.erase(pair.entity);
+                if (hoverButtons.find(pair.entity) != hoverButtons.end()) {
+                    eventBus.invoke(GuiEvent(GuiEvent::BUTTON_HOVER_STOP, pair.component.id));
+                    hoverButtons.erase(pair.entity);
                 }
-                sprite = pair.second.sprite;
+                sprite = pair.component.sprite;
             }
 
-            if (sprite.assigned() && scene.checkComponent<SpriteComponent>(pair.first)) {
-                auto comp = scene.getComponent<SpriteComponent>(pair.first);
+            if (sprite.assigned() && scene.checkComponent<SpriteComponent>(pair.entity)) {
+                auto comp = scene.getComponent<SpriteComponent>(pair.entity);
                 comp.sprite = sprite;
-                scene.updateComponent(pair.first, comp);
+                scene.updateComponent(pair.entity, comp);
             }*/
         }
     }

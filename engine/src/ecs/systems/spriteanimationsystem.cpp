@@ -26,9 +26,9 @@ namespace xng {
     void SpriteAnimationSystem::start(EntityScene &scene, EventBus &eventBus) {
         scene.addListener(*this);
         for (auto &pair: scene.getPool<SpriteAnimationComponent>()) {
-            if (animations.find(pair.first) == animations.end()) {
-                if (pair.second.animation.assigned())
-                    animations[pair.first] = pair.second.animation.get();
+            if (animations.find(pair.entity) == animations.end()) {
+                if (pair.component.animation.assigned())
+                    animations[pair.entity] = pair.component.animation.get();
             }
         }
     }
@@ -40,24 +40,24 @@ namespace xng {
 
     void SpriteAnimationSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {
         for (const auto &c: scene.getPool<SpriteAnimationComponent>()) {
-            if (!c.second.enabled)
+            if (!c.component.enabled)
                 continue;
-            if (c.second.animation.assigned()) {
+            if (c.component.animation.assigned()) {
                 // Advance animation
-                auto &anim = animations.at(c.first);
-                anim.setAnimationSpeed(c.second.animationSpeed);
+                auto &anim = animations.at(c.entity);
+                anim.setAnimationSpeed(c.component.animationSpeed);
 
                 auto &f = anim.getFrame(deltaTime);
                 if (anim.getTime() == anim.getDuration() && !anim.isLooping()) {
-                    SpriteAnimationComponent comp = c.second;
+                    SpriteAnimationComponent comp = c.component;
                     comp.finished = true;
-                    scene.updateComponent(c.first, comp);
+                    scene.updateComponent(c.entity, comp);
                 }
                 // Update sprite
-                if (scene.checkComponent<SpriteComponent>(c.first)) {
-                    auto ren = scene.getComponent<SpriteComponent>(c.first);
+                if (scene.checkComponent<SpriteComponent>(c.entity)) {
+                    auto ren = scene.getComponent<SpriteComponent>(c.entity);
                     ren.sprite = f;
-                    scene.updateComponent(c.first, ren);
+                    scene.updateComponent(c.entity, ren);
                 }
             }
         }

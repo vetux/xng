@@ -22,6 +22,8 @@
 
 #include <string>
 
+#include "xng/util/hashcombine.hpp"
+
 namespace xng {
     struct XENGINE_EXPORT EntityHandle {
         int id;
@@ -48,6 +50,15 @@ namespace xng {
 
         std::string toString() const {
             return std::to_string(id);
+        }
+    };
+
+    class EntityHandleHash {
+    public:
+        std::size_t operator()(const EntityHandle &k) const {
+            size_t ret = 0;
+            hash_combine(ret, k.id);
+            return ret;
         }
     };
 }

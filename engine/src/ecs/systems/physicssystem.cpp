@@ -72,8 +72,8 @@ namespace xng {
 
     void PhysicsSystem::start(EntityScene &scene, EventBus &eventBus) {
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
-            if (rigidBodies.find(pair.first) == rigidBodies.end()) {
-                onComponentCreate(pair.first, pair.second);
+            if (rigidBodies.find(pair.entity) == rigidBodies.end()) {
+                onComponentCreate(pair.entity, pair.component);
             }
         }
         bus = &eventBus;
@@ -89,85 +89,85 @@ namespace xng {
 
     void PhysicsSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
-            if (rigidBodies.find(pair.first) == rigidBodies.end()) {
-                if (scene.checkComponent<ColliderComponent>(pair.first)) {
-                    auto &colliderComponent = scene.getComponent<ColliderComponent>(pair.first);
+            if (rigidBodies.find(pair.entity) == rigidBodies.end()) {
+                if (scene.checkComponent<ColliderComponent>(pair.entity)) {
+                    auto &colliderComponent = scene.getComponent<ColliderComponent>(pair.entity);
 
                     if (colliderComponent.colliders.size() > 1) {
                         auto body = world->createBody();
-                        body->setRigidBodyType(pair.second.type);
-                        body->setAngularFactor(pair.second.angularFactor);
-                        body->setGravityScale(pair.second.gravityScale);
+                        body->setRigidBodyType(pair.component.type);
+                        body->setAngularFactor(pair.component.angularFactor);
+                        body->setGravityScale(pair.component.gravityScale);
 
-                        rigidBodiesReverse[body.get()] = pair.first;
-                        rigidBodies[pair.first] = std::move(body);
+                        rigidBodiesReverse[body.get()] = pair.entity;
+                        rigidBodies[pair.entity] = std::move(body);
 
                         for (auto i = 0; i < colliderComponent.colliders.size(); ++i) {
-                            auto collider = rigidBodies.at(pair.first)->createCollider(
+                            auto collider = rigidBodies.at(pair.entity)->createCollider(
                                 applyScale(colliderComponent.colliders.at(i), scale));
                             colliderIndices[collider.get()] = i;
-                            colliders[pair.first].emplace_back(std::move(collider));
+                            colliders[pair.entity].emplace_back(std::move(collider));
                         }
                     } else {
                         ColliderDesc desc = colliderComponent.colliders.at(0);
 
-                        auto body = world->createBody(desc, pair.second.type);
-                        body->setAngularFactor(pair.second.angularFactor);
-                        body->setGravityScale(pair.second.gravityScale);
+                        auto body = world->createBody(desc, pair.component.type);
+                        body->setAngularFactor(pair.component.angularFactor);
+                        body->setGravityScale(pair.component.gravityScale);
 
-                        rigidBodiesReverse[body.get()] = pair.first;
-                        rigidBodies[pair.first] = std::move(body);
+                        rigidBodiesReverse[body.get()] = pair.entity;
+                        rigidBodies[pair.entity] = std::move(body);
                         colliderIndices[&body->getFixedCollider()] = 0;
                     }
-                } else if (scene.checkComponent<MeshColliderComponent>(pair.first)) {
-                    auto &colliderComponent = scene.getComponent<MeshColliderComponent>(pair.first);
+                } else if (scene.checkComponent<MeshColliderComponent>(pair.entity)) {
+                    auto &colliderComponent = scene.getComponent<MeshColliderComponent>(pair.entity);
 
                     ColliderDesc desc;
                     desc.properties = colliderComponent.properties;
                     desc.shape = getShape(colliderComponent.mesh.get());
                     desc.shape.type = colliderComponent.shapeType;
 
-                    auto body = world->createBody(desc, pair.second.type);
-                    body->setAngularFactor(pair.second.angularFactor);
-                    body->setGravityScale(pair.second.gravityScale);
+                    auto body = world->createBody(desc, pair.component.type);
+                    body->setAngularFactor(pair.component.angularFactor);
+                    body->setGravityScale(pair.component.gravityScale);
 
-                    rigidBodiesReverse[body.get()] = pair.first;
-                    rigidBodies[pair.first] = std::move(body);
+                    rigidBodiesReverse[body.get()] = pair.entity;
+                    rigidBodies[pair.entity] = std::move(body);
                     colliderIndices[&body->getFixedCollider()] = 0;
                 } else {
                     auto body = world->createBody();
-                    body->setRigidBodyType(pair.second.type);
-                    body->setAngularFactor(pair.second.angularFactor);
-                    body->setGravityScale(pair.second.gravityScale);
+                    body->setRigidBodyType(pair.component.type);
+                    body->setAngularFactor(pair.component.angularFactor);
+                    body->setGravityScale(pair.component.gravityScale);
 
-                    rigidBodiesReverse[body.get()] = pair.first;
-                    rigidBodies[pair.first] = std::move(body);
+                    rigidBodiesReverse[body.get()] = pair.entity;
+                    rigidBodies[pair.entity] = std::move(body);
                 }
             }
 
-            auto &rb = *rigidBodies.at(pair.first).get();
-            auto &transformComponent = scene.getComponent<TransformComponent>(pair.first);
+            auto &rb = *rigidBodies.at(pair.entity).get();
+            auto &transformComponent = scene.getComponent<TransformComponent>(pair.entity);
 
-            if (pair.second.rotationalInertia.x < 0
-                || pair.second.rotationalInertia.y < 0
-                || pair.second.rotationalInertia.z < 0)
-                rb.setMass(pair.second.type == RigidBody::STATIC ? 0 : pair.second.mass,
-                           pair.second.massCenter);
+            if (pair.component.rotationalInertia.x < 0
+                || pair.component.rotationalInertia.y < 0
+                || pair.component.rotationalInertia.z < 0)
+                rb.setMass(pair.component.type == RigidBody::STATIC ? 0 : pair.component.mass,
+                           pair.component.massCenter);
             else
-                rb.setMass(pair.second.type == RigidBody::STATIC ? 0 : pair.second.mass,
-                           pair.second.massCenter,
-                           pair.second.rotationalInertia);
+                rb.setMass(pair.component.type == RigidBody::STATIC ? 0 : pair.component.mass,
+                           pair.component.massCenter,
+                           pair.component.rotationalInertia);
 
-            rb.setVelocity(pair.second.velocity);
-            rb.setAngularVelocity(pair.second.angularVelocity);
+            rb.setVelocity(pair.component.velocity);
+            rb.setAngularVelocity(pair.component.angularVelocity);
 
             rb.setPosition(transformComponent.transform.getPosition() / scale);
             rb.setRotation(transformComponent.transform.getRotation().getEulerAngles());
 
-            rb.applyForce(pair.second.force, pair.second.forcePoint / scale);
-            rb.applyTorque(pair.second.torque);
-            rb.applyLinearImpulse(pair.second.impulse, pair.second.impulsePoint);
-            rb.applyAngularImpulse(pair.second.angularImpulse);
+            rb.applyForce(pair.component.force, pair.component.forcePoint / scale);
+            rb.applyTorque(pair.component.torque);
+            rb.applyLinearImpulse(pair.component.impulse, pair.component.impulsePoint);
+            rb.applyAngularImpulse(pair.component.angularImpulse);
         }
 
         if (timeStep == 0) {
@@ -179,24 +179,24 @@ namespace xng {
 
             for (int i = 0; i < steps && i < maxSteps; i++) {
                 for (auto &pair: scene.getPool<RigidBodyComponent>()) {
-                    auto &rb = *rigidBodies.at(pair.first).get();
-                    rb.applyForce(pair.second.force, pair.second.forcePoint / scale);
-                    rb.applyTorque(pair.second.torque);
-                    rb.applyLinearImpulse(pair.second.impulse, pair.second.impulsePoint);
-                    rb.applyAngularImpulse(pair.second.angularImpulse);
+                    auto &rb = *rigidBodies.at(pair.entity).get();
+                    rb.applyForce(pair.component.force, pair.component.forcePoint / scale);
+                    rb.applyTorque(pair.component.torque);
+                    rb.applyLinearImpulse(pair.component.impulse, pair.component.impulsePoint);
+                    rb.applyAngularImpulse(pair.component.angularImpulse);
                 }
 
                 world->step(DeltaTime(timeStep));
             }
         }
         for (auto &pair: scene.getPool<RigidBodyComponent>()) {
-            auto &rb = *rigidBodies.at(pair.first).get();
-            auto transformComponent = scene.getComponent<TransformComponent>(pair.first);
+            auto &rb = *rigidBodies.at(pair.entity).get();
+            auto transformComponent = scene.getComponent<TransformComponent>(pair.entity);
 
             transformComponent.transform.setPosition(rb.getPosition() * scale);
             transformComponent.transform.setRotation(Quaternion(rb.getRotation()));
 
-            RigidBodyComponent rigidbodyComponent = pair.second;
+            RigidBodyComponent rigidbodyComponent = pair.component;
             rigidbodyComponent.force = Vec3f();
             rigidbodyComponent.torque = Vec3f();
             rigidbodyComponent.impulse = Vec3f();
@@ -205,8 +205,8 @@ namespace xng {
             rigidbodyComponent.angularVelocity = rb.getAngularVelocity();
             rigidbodyComponent.mass = rb.getMass();
 
-            scene.updateComponent(pair.first, rigidbodyComponent);
-            scene.updateComponent(pair.first, transformComponent);
+            scene.updateComponent(pair.entity, rigidbodyComponent);
+            scene.updateComponent(pair.entity, transformComponent);
         }
     }
 

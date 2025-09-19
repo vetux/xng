@@ -22,6 +22,7 @@
 
 #include <map>
 #include <stdexcept>
+#include <utility>
 
 #include "xng/ecs/entityhandle.hpp"
 #include "xng/ecs/component.hpp"
@@ -41,9 +42,9 @@ namespace xng {
 
         virtual const Component &get(const EntityHandle &entity) const = 0;
 
-        virtual std::vector<std::unique_ptr<Component>> destroy(const EntityHandle &entity) = 0;
+        virtual void destroy(const EntityHandle &entity) = 0;
 
-        virtual std::map<EntityHandle, Component *> getComponents() = 0;
+        virtual std::map<EntityHandle, std::reference_wrapper<Component> > getComponents() = 0;
 
         template<typename T>
         const T &get(const EntityHandle &entity) const {
@@ -54,90 +55,136 @@ namespace xng {
     /**
      * Component pools handle the memory layout of components.
      *
-     * @tparam T The concrete type of the component, must extend Component
+     * @tparam T The concrete type of the component must extend Component
      */
     template<typename T>
-    class ComponentPool : public ComponentPoolBase {
+    class ComponentPool final : public ComponentPoolBase {
     public:
+        struct ComponentPair {
+            EntityHandle entity;
+            T component;
+
+            ComponentPair() = default;
+
+            ComponentPair(const EntityHandle &entity, const T &component)
+                : entity(entity),
+                  component(component) {
+            }
+        };
+
         ComponentPool() = default;
 
-        ComponentPool(const ComponentPool<T> &other) {
-            components = other.components;
+        ComponentPool(const ComponentPool &other)
+            : components(other.components) {
+            updateMapping();
         }
 
         ~ComponentPool() override = default;
 
         std::unique_ptr<ComponentPoolBase> clone() override {
-            return std::make_unique<ComponentPool<T>>(*this);
+            return std::make_unique<ComponentPool>(*this);
         }
-
 
         void clear() override {
             components.clear();
+            entityComponentMapping.clear();
+            entityComponentIndexMapping.clear();
         }
 
         bool check(const EntityHandle &entity) const override {
-            return components.find(entity) != components.end();
+            return entityComponentMapping.find(entity) != entityComponentMapping.end();
         }
 
         const Component &get(const EntityHandle &entity) const override {
-            return components.at(entity);
+            return getComponent(entity);
         }
 
-        std::vector<std::unique_ptr<Component>> destroy(const EntityHandle &entity) override {
-            std::vector<std::unique_ptr<Component>> ret;
-            if (components.find(entity) != components.end()) {
-                ret.emplace_back(std::make_unique<T>(components.at(entity)));
-                components.erase(entity);
-            }
-            return ret;
+        void destroy(const EntityHandle &entity) override {
+            destroyComponent(entity);
         }
 
-        std::map<EntityHandle, Component *> getComponents() override {
-            auto ret = std::map<EntityHandle, Component *>();
+        std::map<EntityHandle, std::reference_wrapper<Component> > getComponents() override {
+            auto ret = std::map<EntityHandle, std::reference_wrapper<Component> >();
             for (auto &pair: components) {
-                ret[pair.first] = &pair.second;
+                ret.emplace(pair.entity, pair.component);
             }
             return ret;
         }
 
-        typename std::map<EntityHandle, T>::const_iterator begin() const {
+        typename std::vector<ComponentPair>::const_iterator begin() const {
             return components.begin();
         }
 
-        typename std::map<EntityHandle, T>::const_iterator end() const {
+        typename std::vector<ComponentPair>::const_iterator end() const {
             return components.end();
         }
 
-        const T &create(const EntityHandle &entity, const T &value = {}) {
-            if (components.find(entity) != components.end())
+        void create(const EntityHandle &entity, const T &value = {}) {
+            createComponent(entity, value);
+        }
+
+        const T &lookup(const EntityHandle &entity) const {
+            return getComponent(entity);
+        }
+
+        void update(const EntityHandle &entity, const T &value = {}) {
+            updateComponent(entity, value);
+        }
+
+    private:
+        void createComponent(const EntityHandle &entity, const T &value) {
+            if (entityComponentMapping.find(entity) != entityComponentMapping.end())
                 throw std::runtime_error("Entity "
                                          + std::to_string(entity.id)
                                          + " already has component of type "
                                          + T::typeName);
-            auto &comp = components[entity];
-            comp = value;
-            return comp;
+            components.emplace_back(ComponentPair(entity, value));
+            updateMapping();
         }
 
-        const T &lookup(const EntityHandle &entity) const {
-            return components.at(entity);
+        void destroyComponent(const EntityHandle &entity) {
+            if (entityComponentMapping.find(entity) != entityComponentMapping.end()) {
+                auto index = entityComponentIndexMapping.at(entity);
+                components.erase(components.begin() + index);
+                updateMapping();
+            }
         }
 
-        void update(const EntityHandle &entity, const T &value = {}) {
-            auto it = components.find(entity);
-            if (it == components.end()) {
+        const T &getComponent(const EntityHandle &entity) const {
+            return getPair(entity).component;
+        }
+
+        const ComponentPair &getPair(const EntityHandle &entity) const {
+            return entityComponentMapping.at(entity).get();
+        }
+
+        void updateComponent(const EntityHandle &entity, const T &value) {
+            auto it = entityComponentIndexMapping.find(entity);
+            if (it == entityComponentIndexMapping.end()) {
                 throw std::runtime_error("No component for type "
                                          + std::string(T::typeName)
                                          + " on entity "
                                          + entity.toString());
-            } else {
-                it->second = value;
+            }
+            components.at(it->second).component = value;
+        }
+
+        void updateMapping() {
+            entityComponentMapping.clear();
+            for (auto i = 0; i < components.size(); i++) {
+                auto &pair = components.at(i);
+                entityComponentIndexMapping[pair.entity] = i;
+                entityComponentMapping.emplace(pair.entity, pair);
             }
         }
 
-    private:
-        std::map<EntityHandle, T> components; // TODO: Allocate components in contiguous memory.
+        std::vector<ComponentPair> components;
+
+        std::unordered_map<EntityHandle,
+            std::reference_wrapper<const ComponentPair>,
+            EntityHandleHash> entityComponentMapping;
+
+        std::unordered_map<EntityHandle, size_t, EntityHandleHash> entityComponentIndexMapping;
     };
 }
 
