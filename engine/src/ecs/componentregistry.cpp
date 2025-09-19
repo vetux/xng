@@ -41,7 +41,9 @@ namespace xng {
             REGISTER_COMPONENT(xng::RigidBodyComponent)
 
             REGISTER_COMPONENT(xng::CameraComponent)
-            REGISTER_COMPONENT(xng::LightComponent)
+            REGISTER_COMPONENT(xng::DirectionalLightComponent)
+            REGISTER_COMPONENT(xng::PointLightComponent)
+            REGISTER_COMPONENT(xng::SpotLightComponent)
             REGISTER_COMPONENT(xng::MeshComponent)
             REGISTER_COMPONENT(xng::ParticleComponent)
             REGISTER_COMPONENT(xng::SkyboxComponent)
