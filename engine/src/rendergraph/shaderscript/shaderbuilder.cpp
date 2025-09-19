@@ -235,6 +235,14 @@ namespace xng::ShaderScript {
             throw std::runtime_error("ShaderBuilder::build called without a setup() call");
         }
 
+        if (currentNode->type != TreeNode::ROOT) {
+            throw std::runtime_error("Attempting to call build with unfinished shader. (Missing EndIf, EndFor ?)");
+        }
+
+        if (functionRoot != nullptr) {
+            throw std::runtime_error("Attempting to call build with unfinished shader. (Missing EndFunction ?)");
+        }
+
         Shader ret;
         ret.stage = stage;
         ret.inputLayout = inputLayout;
