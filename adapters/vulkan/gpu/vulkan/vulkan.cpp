@@ -188,22 +188,22 @@ namespace xng::vulkan {
     void Vulkan::setWindow(std::shared_ptr<Window> window) {
     }
 
-    Vulkan::GraphHandle Vulkan::compile(const RenderGraph &graph) {
+    RenderGraphHandle Vulkan::compile(const RenderGraph &graph) {
         throw std::runtime_error("Not implemented");
     }
 
-    void Vulkan::recompile(GraphHandle handle, const RenderGraph &graph) {
+    void Vulkan::recompile(RenderGraphHandle handle, const RenderGraph &graph) {
     }
 
-    void Vulkan::execute(GraphHandle graph) {
+    void Vulkan::execute(RenderGraphHandle graph) {
     }
 
-    void Vulkan::execute(const std::vector<GraphHandle> &graphs) {
+    void Vulkan::execute(const std::vector<RenderGraphHandle> &graphs) {
     }
 
-    void Vulkan::saveCache(Vulkan::GraphHandle graph, std::ostream &stream) {
+    void Vulkan::saveCache(RenderGraphHandle graph, std::ostream &stream) {
     }
 
-    void Vulkan::loadCache(Vulkan::GraphHandle graph, std::istream &stream) {
+    void Vulkan::loadCache(RenderGraphHandle graph, std::istream &stream) {
     }
 }

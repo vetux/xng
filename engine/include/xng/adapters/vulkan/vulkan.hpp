@@ -37,17 +37,17 @@ namespace xng::vulkan {
 
         void setWindow(std::shared_ptr<Window> window) override;
 
-        GraphHandle compile(const RenderGraph &graph) override;
+        RenderGraphHandle compile(const RenderGraph &graph) override;
 
-        void recompile(GraphHandle handle, const RenderGraph &graph) override;
+        void recompile(RenderGraphHandle handle, const RenderGraph &graph) override;
 
-        void execute(GraphHandle graph) override;
+        void execute(RenderGraphHandle graph) override;
 
-        void execute(const std::vector<GraphHandle> &graphs) override;
+        void execute(const std::vector<RenderGraphHandle> &graphs) override;
 
-        void saveCache(GraphHandle graph, std::ostream &stream) override;
+        void saveCache(RenderGraphHandle graph, std::ostream &stream) override;
 
-        void loadCache(GraphHandle graph, std::istream &stream) override;
+        void loadCache(RenderGraphHandle graph, std::istream &stream) override;
 
     private:
         std::shared_ptr<InstanceData> instanceData;
