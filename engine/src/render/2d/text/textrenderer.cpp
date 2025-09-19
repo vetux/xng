@@ -41,8 +41,8 @@ namespace xng {
         }
     };
 
-    TextRenderer::TextRenderer(FontRenderer &font,
-                               std::shared_ptr<Renderer2D> ren2D,
+    TextRenderer::TextRenderer(std::shared_ptr<Renderer2D> ren2D,
+                               FontRenderer &font,
                                const Vec2i &pixelSize)
         : ren2d(std::move(ren2D)), pixelSize(pixelSize) {
         font.setPixelSize(pixelSize);

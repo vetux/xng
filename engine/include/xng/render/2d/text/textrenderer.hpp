@@ -32,8 +32,8 @@ namespace xng {
      */
     class XENGINE_EXPORT TextRenderer {
     public:
-        TextRenderer(FontRenderer& font,
-                     std::shared_ptr<Renderer2D> ren2D,
+        TextRenderer(std::shared_ptr<Renderer2D> ren2D,
+                     FontRenderer &font,
                      const Vec2i &pixelSize);
 
         ~TextRenderer();

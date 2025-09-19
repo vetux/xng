@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
     auto freeType = std::make_unique<freetype::FreeType>();
     auto fontRenderer = freeType->createFontRenderer(font.get());
 
-    auto textRenderer = TextRenderer(*fontRenderer, ren2D, {0, 50});
+    auto textRenderer = TextRenderer(ren2D, *fontRenderer, {0, 50});
 
     auto text = textRenderer.render("Hello\nWorld!", {50, 0, 0, TEXT_ALIGN_LEFT});
 
@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
         window->update();
 
         scene.camera.aspectRatio = static_cast<float>(window->getFramebufferSize().x)
-                                / static_cast<float>(window->getFramebufferSize().y);
+                                   / static_cast<float>(window->getFramebufferSize().y);
         config->setScene(scene);
 
         auto fbSize = window->getFramebufferSize();
