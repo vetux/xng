@@ -32,72 +32,72 @@ namespace xng {
      */
     class RenderPassScheduler {
     public:
-        explicit RenderPassScheduler(RenderGraphRuntime &rt)
-            : runtime(rt) {
+        explicit RenderPassScheduler(std::shared_ptr<RenderGraphRuntime> rt)
+            : runtime(std::move(rt)) {
         }
 
-        RenderGraphRuntime::GraphHandle addGraph(const std::shared_ptr<RenderPass>& renderPass) {
+        RenderGraphHandle addGraph(const std::shared_ptr<RenderPass>& renderPass) {
             std::vector<std::shared_ptr<RenderPass> > renderPasses;
             renderPasses.emplace_back(renderPass);
             return addGraph(renderPasses);
         }
 
-        RenderGraphRuntime::GraphHandle addGraph(std::vector<std::shared_ptr<RenderPass> > renderPasses) {
-            RenderGraphBuilder builder(runtime.getWindow().getFramebufferSize());
+        RenderGraphHandle addGraph(std::vector<std::shared_ptr<RenderPass> > renderPasses) {
+            RenderGraphBuilder builder(runtime->getWindow().getFramebufferSize());
             for (auto &pass: renderPasses) {
                 pass->create(builder);
             }
-            auto graphHandle = runtime.compile(builder.build());
+            auto graphHandle = runtime->compile(builder.build());
             graphPasses.emplace(graphHandle, renderPasses);
             return graphHandle;
         }
 
-        void execute(const RenderGraphRuntime::GraphHandle graphHandle) const {
+        void execute(const RenderGraphHandle graphHandle) const {
             bool recompile = false;
             for (const auto &pass: graphPasses.at(graphHandle)) {
-                if (pass->shouldRebuild(runtime.getWindow().getFramebufferSize())) {
+                if (pass->shouldRebuild(runtime->getWindow().getFramebufferSize())) {
                     recompile = true;
                     break;
                 }
             }
             if (recompile) {
-                RenderGraphBuilder builder(runtime.getWindow().getFramebufferSize());
+                RenderGraphBuilder builder(runtime->getWindow().getFramebufferSize());
                 for (const auto &pass: graphPasses.at(graphHandle)) {
                     pass->recreate(builder);
                 }
-                runtime.recompile(graphHandle, builder.build());
+                runtime->recompile(graphHandle, builder.build());
             }
-            runtime.execute(graphHandle);
+            runtime->execute(graphHandle);
         }
 
-        void execute(const std::vector<RenderGraphRuntime::GraphHandle> &graphHandles) const {
+        void execute(const std::vector<RenderGraphHandle> &graphHandles) const {
             for (auto &graphHandle: graphHandles) {
                 bool recompile = false;
                 for (const auto &pass: graphPasses.at(graphHandle)) {
-                    if (pass->shouldRebuild(runtime.getWindow().getFramebufferSize())) {
+                    if (pass->shouldRebuild(runtime->getWindow().getFramebufferSize())) {
                         recompile = true;
                         break;
                     }
                 }
                 if (recompile) {
-                    RenderGraphBuilder builder(runtime.getWindow().getFramebufferSize());
+                    RenderGraphBuilder builder(runtime->getWindow().getFramebufferSize());
                     for (const auto &pass: graphPasses.at(graphHandle)) {
                         pass->recreate(builder);
                     }
-                    runtime.recompile(graphHandle, builder.build());
+                    runtime->recompile(graphHandle, builder.build());
                 }
             }
-            runtime.execute(graphHandles);
+            runtime->execute(graphHandles);
         }
 
-        void destroy(const RenderGraphRuntime::GraphHandle graphHandle) {
+        void destroy(const RenderGraphHandle graphHandle) {
             graphPasses.erase(graphHandle);
-            runtime.destroy(graphHandle);
+            runtime->destroy(graphHandle);
         }
 
     private:
-        RenderGraphRuntime &runtime;
-        std::map<RenderGraphRuntime::GraphHandle, std::vector<std::shared_ptr<RenderPass> > > graphPasses;
+        std::shared_ptr<RenderGraphRuntime> runtime;
+        std::map<RenderGraphHandle, std::vector<std::shared_ptr<RenderPass> > > graphPasses;
     };
 }
 

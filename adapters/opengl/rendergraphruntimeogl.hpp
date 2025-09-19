@@ -39,19 +39,19 @@ public:
 
     Window &getWindow() override;
 
-    GraphHandle compile(const RenderGraph &graph) override;
+    RenderGraphHandle compile(const RenderGraph &graph) override;
 
-    void recompile(GraphHandle handle, const RenderGraph &graph) override;
+    void recompile(RenderGraphHandle handle, const RenderGraph &graph) override;
 
-    void execute(GraphHandle graph) override;
+    void execute(RenderGraphHandle graph) override;
 
-    void execute(const std::vector<GraphHandle> &graphs) override;
+    void execute(const std::vector<RenderGraphHandle> &graphs) override;
 
-    void destroy(GraphHandle graph) override;
+    void destroy(RenderGraphHandle graph) override;
 
-    void saveCache(GraphHandle graph, std::ostream &stream) override;
+    void saveCache(RenderGraphHandle graph, std::ostream &stream) override;
 
-    void loadCache(GraphHandle graph, std::istream &stream) override;
+    void loadCache(RenderGraphHandle graph, std::istream &stream) override;
 
     GraphicsAPI getGraphicsAPI() override { return OPENGL_4_6; }
 
@@ -60,18 +60,18 @@ private:
 
     void presentBackBuffer() const;
 
-    GraphHandle compileGraph(const RenderGraph &graph);
+    RenderGraphHandle compileGraph(const RenderGraph &graph);
 
-    GraphHandle recompileGraph(GraphHandle handle, const RenderGraph &graph);
+    RenderGraphHandle recompileGraph(RenderGraphHandle handle, const RenderGraph &graph);
 
-    GraphHandle graphCounter = 0;
+    RenderGraphHandle graphCounter = 0;
 
     std::shared_ptr<OGLTexture> backBufferColor;
     std::shared_ptr<OGLTexture> backBufferDepthStencil;
 
     std::shared_ptr<OGLFramebuffer> backBuffer;
 
-    std::unordered_map<GraphHandle, GraphResources> contexts;
+    std::unordered_map<RenderGraphHandle, GraphResources> contexts;
 
     std::shared_ptr<Window> window;
 };

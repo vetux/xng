@@ -34,31 +34,31 @@ namespace xng::opengl {
         return runtime->getWindow();
     }
 
-    RenderGraphRuntime::GraphHandle OpenGL::compile(const RenderGraph &graph) {
+    RenderGraphHandle OpenGL::compile(const RenderGraph &graph) {
         return runtime->compile(graph);
     }
 
-    void OpenGL::recompile(const GraphHandle handle, const RenderGraph &graph) {
+    void OpenGL::recompile(const RenderGraphHandle handle, const RenderGraph &graph) {
         runtime->recompile(handle, graph);
     }
 
-    void OpenGL::execute(const GraphHandle graph) {
+    void OpenGL::execute(const RenderGraphHandle graph) {
         runtime->execute(graph);
     }
 
-    void OpenGL::execute(const std::vector<GraphHandle> &graphs) {
+    void OpenGL::execute(const std::vector<RenderGraphHandle> &graphs) {
         runtime->execute(graphs);
     }
 
-    void OpenGL::destroy(const GraphHandle graph) {
+    void OpenGL::destroy(const RenderGraphHandle graph) {
         runtime->destroy(graph);
     }
 
-    void OpenGL::saveCache(const GraphHandle graph, std::ostream &stream) {
+    void OpenGL::saveCache(const RenderGraphHandle graph, std::ostream &stream) {
         runtime->saveCache(graph, stream);
     }
 
-    void OpenGL::loadCache(const GraphHandle graph, std::istream &stream) {
+    void OpenGL::loadCache(const RenderGraphHandle graph, std::istream &stream) {
         runtime->loadCache(graph, stream);
     }
 }

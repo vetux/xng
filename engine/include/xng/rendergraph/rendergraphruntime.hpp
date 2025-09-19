@@ -26,6 +26,8 @@
 #include "xng/display/graphicsapi.hpp"
 
 namespace xng {
+    typedef int RenderGraphHandle;
+
     /**
      * The runtime / context represents the platform-dependent implementation of the renderer.
      *
@@ -45,8 +47,6 @@ namespace xng {
     public:
         virtual ~RenderGraphRuntime() = default;
 
-        typedef int GraphHandle;
-
         /**
          * Set the window to render to.
          *
@@ -62,7 +62,7 @@ namespace xng {
          * @param graph The graph to compile
          * @return The handle identifying the compiled graph
          */
-        virtual GraphHandle compile(const RenderGraph &graph) = 0;
+        virtual RenderGraphHandle compile(const RenderGraph &graph) = 0;
 
         /**
          * Recompile a graph.
@@ -74,7 +74,7 @@ namespace xng {
          * @param handle The handle of a previously compiled graph
          * @param graph The updated graph
          */
-        virtual void recompile(GraphHandle handle, const RenderGraph &graph) = 0;
+        virtual void recompile(RenderGraphHandle handle, const RenderGraph &graph) = 0;
 
         /**
          * Execute a single graph.
@@ -91,7 +91,7 @@ namespace xng {
          *        pass[2] will receive the changes from pass[1]
          * @param graph
          */
-        virtual void execute(GraphHandle graph) = 0;
+        virtual void execute(RenderGraphHandle graph) = 0;
 
         /**
          * Execute multiple graphs.
@@ -110,13 +110,13 @@ namespace xng {
          *      graphs[3] will receive the changes to the back buffer from graph[1] and the read operation might run in parallel with graphs[2]
          * @param graphs
          */
-        virtual void execute(const std::vector<GraphHandle> &graphs) = 0;
+        virtual void execute(const std::vector<RenderGraphHandle> &graphs) = 0;
 
-        virtual void destroy(GraphHandle graph) = 0;
+        virtual void destroy(RenderGraphHandle graph) = 0;
 
-        virtual void saveCache(GraphHandle graph, std::ostream &stream) = 0;
+        virtual void saveCache(RenderGraphHandle graph, std::ostream &stream) = 0;
 
-        virtual void loadCache(GraphHandle graph, std::istream &stream) = 0;
+        virtual void loadCache(RenderGraphHandle graph, std::istream &stream) = 0;
 
         virtual GraphicsAPI getGraphicsAPI() = 0;
     };

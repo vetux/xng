@@ -37,15 +37,15 @@ Window &RenderGraphRuntimeOGL::getWindow() {
     return *window;
 }
 
-RenderGraphRuntime::GraphHandle RenderGraphRuntimeOGL::compile(const RenderGraph &graph) {
+RenderGraphHandle RenderGraphRuntimeOGL::compile(const RenderGraph &graph) {
     return compileGraph(graph);
 }
 
-void RenderGraphRuntimeOGL::recompile(const GraphHandle handle, const RenderGraph &graph) {
+void RenderGraphRuntimeOGL::recompile(const RenderGraphHandle handle, const RenderGraph &graph) {
     recompileGraph(handle, graph);
 }
 
-void RenderGraphRuntimeOGL::execute(const GraphHandle graph) {
+void RenderGraphRuntimeOGL::execute(const RenderGraphHandle graph) {
     oglDebugStartGroup("RenderGraphRuntimeOGL::execute");
 
     updateBackBuffer();
@@ -60,7 +60,7 @@ void RenderGraphRuntimeOGL::execute(const GraphHandle graph) {
     oglDebugEndGroup();
 }
 
-void RenderGraphRuntimeOGL::execute(const std::vector<GraphHandle> &graphs) {
+void RenderGraphRuntimeOGL::execute(const std::vector<RenderGraphHandle> &graphs) {
     oglDebugStartGroup("RenderGraphRuntimeOGL::execute");
 
     updateBackBuffer();
@@ -79,17 +79,17 @@ void RenderGraphRuntimeOGL::execute(const std::vector<GraphHandle> &graphs) {
     oglDebugEndGroup();
 }
 
-void RenderGraphRuntimeOGL::destroy(const GraphHandle graph) {
+void RenderGraphRuntimeOGL::destroy(const RenderGraphHandle graph) {
     oglDebugStartGroup("RenderGraphRuntimeOGL::destroy");
     contexts.erase(graph);
     oglDebugEndGroup();
 }
 
-void RenderGraphRuntimeOGL::saveCache(const GraphHandle graph, std::ostream &stream) {
+void RenderGraphRuntimeOGL::saveCache(const RenderGraphHandle graph, std::ostream &stream) {
     throw std::runtime_error("Not implemented");
 }
 
-void RenderGraphRuntimeOGL::loadCache(const GraphHandle graph, std::istream &stream) {
+void RenderGraphRuntimeOGL::loadCache(const RenderGraphHandle graph, std::istream &stream) {
     throw std::runtime_error("Not implemented");
 }
 
@@ -155,7 +155,7 @@ void RenderGraphRuntimeOGL::presentBackBuffer() const {
     oglDebugEndGroup();
 }
 
-RenderGraphRuntime::GraphHandle RenderGraphRuntimeOGL::compileGraph(const RenderGraph &graph) {
+RenderGraphHandle RenderGraphRuntimeOGL::compileGraph(const RenderGraph &graph) {
     oglDebugStartGroup("RenderGraphRuntimeOGL::compileGraph");
 
     const auto handle = graphCounter++;
@@ -195,7 +195,7 @@ RenderGraphRuntime::GraphHandle RenderGraphRuntimeOGL::compileGraph(const Render
     return handle;
 }
 
-RenderGraphRuntime::GraphHandle RenderGraphRuntimeOGL::recompileGraph(const GraphHandle handle,
+RenderGraphHandle RenderGraphRuntimeOGL::recompileGraph(const RenderGraphHandle handle,
                                                                       const RenderGraph &graph) {
     oglDebugStartGroup("RenderGraphRuntimeOGL::recompileGraph");
 

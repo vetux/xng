@@ -278,7 +278,7 @@ namespace xng {
         std::shared_ptr<RenderPassScheduler> renderPassScheduler = nullptr;
         std::shared_ptr<RenderPass2D> renderPass = nullptr;
 
-        RenderGraphRuntime::GraphHandle graph{};
+        RenderGraphHandle graph{};
     };
 }
 
