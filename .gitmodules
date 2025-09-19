@@ -34,3 +34,6 @@
 [submodule "thirdparty/bullet3"]
 	path = thirdparty/bullet3
 	url = https://github.com/bulletphysics/bullet3
+[submodule "thirdparty/yoga"]
+	path = thirdparty/yoga
+	url = https://github.com/facebook/yoga
