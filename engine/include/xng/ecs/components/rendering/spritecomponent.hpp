@@ -32,7 +32,7 @@ namespace xng {
         XNG_COMPONENT_TYPENAME(SpriteComponent)
 
         ResourceHandle<Sprite> sprite; // The static sprite to draw
-        TextureFiltering filter = NEAREST;
+        bool filter = false; // Whether or not to apply texture filtering when sampling from the sprite
 
         Messageable &operator<<(const Message &message) override {
             message.value("sprite", sprite);
