@@ -33,18 +33,23 @@ namespace xng {
 
         ResourceHandle<SpriteAnimation> animation{};
         float animationSpeed = 1.0f;
+        bool filter = false;
 
         ResourceHandle<Sprite> sprite;
         bool finished = false;
 
         Messageable &operator<<(const Message &message) override {
             message.value("animation", animation);
+            message.value("animationSpeed", animationSpeed);
+            message.value("filter", filter);
             return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             animation >> message["animation"];
+            animationSpeed >> message["animationSpeed"];
+            filter >> message["filter"];
             return Component::operator>>(message);
         }
     };
