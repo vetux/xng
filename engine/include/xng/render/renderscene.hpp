@@ -86,6 +86,7 @@ namespace xng {
 
     /**
      * The runtime scene render data.
+     * Designed to be small enough to be rebuilt every frame.
      */
     struct XENGINE_EXPORT RenderScene {
         Transform cameraTransform;
