@@ -26,7 +26,7 @@
 
 namespace xng {
     /**
-     * A sprite animation system updates the sprite animations each update and updates the sprite.
+     * A sprite animation system advances the sprite animations each update and sets the sprite to be rendered.
      */
     struct XENGINE_EXPORT SpriteAnimationComponent final : Component {
         XNG_COMPONENT_TYPENAME(SpriteAnimationComponent)
