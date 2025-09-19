@@ -20,4 +20,25 @@
 #ifndef XENGINE_LAYOUTSYSTEM_HPP
 #define XENGINE_LAYOUTSYSTEM_HPP
 
+#include "xng/ecs/system.hpp"
+#include "xng/event/eventbus.hpp"
+#include "xng/util/time.hpp"
+
+namespace xng {
+    class XENGINE_EXPORT LayoutSystem final : public System {
+    public:
+        explicit LayoutSystem();
+
+        ~LayoutSystem() override = default;
+
+        void update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) override;
+
+        void start(EntityScene &scene, EventBus &eventBus) override;
+
+        void stop(EntityScene &scene, EventBus &eventBus) override;
+
+        std::string getName() override { return "LayoutSystem"; }
+    };
+}
+
 #endif //XENGINE_LAYOUTSYSTEM_HPP

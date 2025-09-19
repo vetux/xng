@@ -35,8 +35,8 @@ namespace xng {
 
         FlexLayout layout;
 
-        Vec2i calculatedPosition = {};
-        Vec2i calculatedSize = {};
+        Vec2i calculatedPosition = {}; // The calculated absolute position of the layout relative to the canvas.
+        Vec2i calculatedSize = {}; // The calculated absolute size of the layout relative to the canvas
 
         Messageable &operator<<(const Message &message) override {
             message.value("layout", layout);
