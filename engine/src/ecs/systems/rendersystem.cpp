@@ -22,147 +22,201 @@
 
 #include "xng/ecs/systems/rendersystem.hpp"
 #include "xng/ecs/components.hpp"
+#include "xng/render/renderscene.hpp"
+#include "xng/render/passes/clearpass.hpp"
+#include "xng/render/passes/constructionpass.hpp"
 #include "xng/util/time.hpp"
 
-//TODO: Reimplement MeshRenderSystem
 namespace xng {
-    RenderSystem::RenderSystem()
-    {
+    RenderSystem::RenderSystem(std::shared_ptr<RenderGraphRuntime> renderGraphRuntime)
+        : runtime(std::move(renderGraphRuntime)),
+          scheduler(runtime),
+          ren2d(),
+          registry(std::make_shared<RenderRegistry>()),
+          config(std::make_shared<RenderConfiguration>()),
+          pass2D(std::make_shared<RenderPass2D>()) {
+        graph = scheduler.addGraph({
+            pass2D,
+            std::make_shared<ClearPass>(config, registry),
+            std::make_shared<ConstructionPass>(config, registry)
+        });
     }
 
     RenderSystem::~RenderSystem() = default;
 
-    void RenderSystem::start(EntityScene &entityManager, EventBus &eventBus) {}
+    void RenderSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {
+        // Render Canvases to textures using renderer 2D
+        // ren2d....
 
-    void RenderSystem::stop(EntityScene &entityManager, EventBus &eventBus) {}
+        pass2D->setBatches(ren2d.getRenderBatches());
 
-    void RenderSystem::update(DeltaTime deltaTime, EntityScene &entScene, EventBus &eventBus) {
-      /*  Scene scene = {};
+        RenderScene renderScene = {};
 
-        // Get objects
-        for (auto &pair: entScene.getPool<SkinnedMeshComponent>()) {
-            // TODO: Culling
-            // TODO: Z Sort transparent meshes based on distance of transform to camera
-            // TODO: Change transform walking / scene creation to allow model matrix caching
+        // Add canvas textures to the scene
 
-            auto &transform = entScene.getComponent<TransformComponent>(pair.entity);
+        // TODO: Culling
+        // TODO: Z Sort transparent meshes based on distance of transform to camera
+        // TODO: Change transform walking / scene creation to allow model matrix caching
+
+        // Get Meshes
+        for (auto &pair: scene.getPool<MeshComponent>()) {
+            auto &transform = scene.getComponent<TransformComponent>(pair.entity);
             if (!transform.enabled)
                 continue;
 
-            auto &meshComponent = pair.component;
-            if (!meshComponent.enabled)
+            if (!pair.component.enabled)
                 continue;
 
-            Node node;
+            MeshObject object;
+            object.transform = TransformComponent::getAbsoluteTransform(transform, scene);
+            object.mesh = pair.component.mesh;
+            object.castShadows = pair.component.castShadows;
+            object.receiveShadows = pair.component.receiveShadows;
 
-            TransformProperty transformProperty;
-            transformProperty.transform = TransformComponent::walkHierarchy(transform, entScene);
-            node.addProperty(transformProperty);
-
-            SkinnedMeshProperty meshProperty;
-            meshProperty.mesh = pair.component.mesh;
-            node.addProperty(meshProperty);
-
-            ShadowProperty shadowProperty;
-            shadowProperty.castShadows = pair.component.castShadows;
-            shadowProperty.receiveShadows = pair.component.receiveShadows;
-            node.addProperty(shadowProperty);
-
-            if (entScene.checkComponent<MaterialComponent>(pair.entity)) {
-                auto &comp = entScene.getComponent<MaterialComponent>(pair.entity);
-                MaterialProperty materialProperty;
-                materialProperty.materials = comp.materials;
-                node.addProperty(materialProperty);
+            if (scene.checkComponent<MaterialComponent>(pair.entity)) {
+                object.materials = scene.getComponent<MaterialComponent>(pair.entity).materials;
             }
 
-            if (entScene.checkComponent<RigAnimationComponent>(pair.entity)) {
-                BoneTransformsProperty boneTransformsProperty;
-                boneTransformsProperty.boneTransforms = entScene.getComponent<RigAnimationComponent>(
-                        pair.entity).boneTransforms;
-                node.addProperty(boneTransformsProperty);
+            renderScene.meshes.push_back(std::move(object));
+        }
+
+        // Get Rigged Meshes
+        for (auto &pair: scene.getPool<SkinnedMeshComponent>()) {
+            auto &transform = scene.getComponent<TransformComponent>(pair.entity);
+            if (!transform.enabled)
+                continue;
+
+            if (!pair.component.enabled)
+                continue;
+
+            SkinnedMeshObject object;
+            object.transform = TransformComponent::getAbsoluteTransform(transform, scene);
+            object.mesh = pair.component.mesh;
+            object.castShadows = pair.component.castShadows;
+            object.receiveShadows = pair.component.receiveShadows;
+
+            if (scene.checkComponent<MaterialComponent>(pair.entity)) {
+                object.materials = scene.getComponent<MaterialComponent>(pair.entity).materials;
             }
 
-            scene.rootNode.childNodes.emplace_back(node);
+            if (scene.checkComponent<RigAnimationComponent>(pair.entity)) {
+                object.boneTransforms = scene.getComponent<RigAnimationComponent>(pair.entity).boneTransforms;
+            }
+
+            renderScene.skinnedMeshes.push_back(std::move(object));
         }
 
         // Get skybox
-        for (auto &pair: entScene.getPool<SkyboxComponent>()) {
-            auto &comp = pair.component;
-            auto boxProp = SkyboxProperty();
-            boxProp.skybox = comp.skybox;
-            scene.rootNode.addProperty(boxProp);
+        for (auto &pair: scene.getPool<SkyboxComponent>()) {
+            renderScene.skybox = pair.component.skybox;
         }
 
         // Get Camera
-        for (auto &pair: entScene.getPool<CameraComponent>()) {
-            auto &tcomp = entScene.getComponent<TransformComponent>(pair.entity);
+        for (auto &pair: scene.getPool<CameraComponent>()) {
+            auto &transform = scene.getComponent<TransformComponent>(pair.entity);
 
-            if (!tcomp.enabled)
+            if (!transform.enabled)
                 continue;
 
-            auto &comp = pair.component;
-
-            Node cameraNode;
-
-            auto camProp = CameraProperty();
-            camProp.camera = comp.camera;
-            cameraNode.addProperty(camProp);
-
-            auto tProp = TransformProperty();
-            tProp.transform = TransformComponent::walkHierarchy(tcomp, entScene);
-            cameraNode.addProperty(tProp);
-
-            scene.rootNode.childNodes.emplace_back(cameraNode);
+            renderScene.camera = pair.component.camera;
+            renderScene.cameraTransform = TransformComponent::getAbsoluteTransform(transform, scene);
 
             break;
         }
 
-        // Get lights
+        // Get point lights
+        for (auto &pair: scene.getPool<PointLightComponent>()) {
+            auto &transform = scene.getPool<TransformComponent>().lookup(pair.entity);
 
-        for (auto &pair: entScene.getPool<LightComponent>()) {
-            auto lightComponent = pair.component;
-            auto &tcomp = entScene.getPool<TransformComponent>().lookup(pair.entity);
-
-            if (!lightComponent.enabled)
+            if (!pair.component.enabled)
                 continue;
 
-            if (!tcomp.enabled)
+            if (!transform.enabled)
                 continue;
 
+            PointLightObject object;
+            object.transform = transform.transform;
+            object.light = pair.component.light;
+            object.castShadows = pair.component.castShadows;
 
-            Node node;
-
-            TransformProperty transformProperty;
-            transformProperty.transform = tcomp.transform;
-            node.addProperty(transformProperty);
-
-            switch (lightComponent.light.index()) {
-                case 0: {
-                    auto tmp = std::get<PointLight>(lightComponent.light);
-                    PointLightProperty prop;
-                    prop.light = tmp;
-                    node.addProperty(prop);
-                    break;
-                }
-                case 1: {
-                    auto tmp = std::get<DirectionalLight>(lightComponent.light);
-                    DirectionalLightProperty prop;
-                    prop.light = tmp;
-                    node.addProperty(prop);
-                    break;
-                }
-                case 2: {
-                    auto tmp = std::get<SpotLight>(lightComponent.light);
-                    SpotLightProperty prop;
-                    prop.light = tmp;
-                    node.addProperty(prop);
-                    break;
-                }
-            }
-            scene.rootNode.childNodes.emplace_back(node);
+            renderScene.pointLights.emplace_back(std::move(object));
         }
 
-        // Render
-        renderer.render(scene);*/
+        // Get spotlights
+        for (auto &pair: scene.getPool<SpotLightComponent>()) {
+            auto &transform = scene.getPool<TransformComponent>().lookup(pair.entity);
+
+            if (!pair.component.enabled)
+                continue;
+
+            if (!transform.enabled)
+                continue;
+
+            SpotLightObject object;
+            object.transform = transform.transform;
+            object.light = pair.component.light;
+            object.castShadows = pair.component.castShadows;
+
+            renderScene.spotLights.emplace_back(std::move(object));
+        }
+
+        // Get directional lights
+        for (auto &pair: scene.getPool<DirectionalLightComponent>()) {
+            auto &transform = scene.getPool<TransformComponent>().lookup(pair.entity);
+
+            if (!pair.component.enabled)
+                continue;
+
+            if (!transform.enabled)
+                continue;
+
+            DirectionalLightObject object;
+            object.transform = transform.transform;
+            object.light = pair.component.light;
+            object.castShadows = pair.component.castShadows;
+
+            renderScene.directionalLights.emplace_back(std::move(object));
+        }
+
+        // Get Sprites
+        for (auto &pair : scene.getPool<SpriteComponent>()) {
+            auto &transform = scene.getPool<TransformComponent>().lookup(pair.entity);
+
+            if (!pair.component.enabled)
+                continue;
+
+            if (!transform.enabled)
+                continue;
+
+            SpriteObject object;
+            object.transform = transform.transform;
+            object.sprite = pair.component.sprite;
+            object.textureFiltering = pair.component.filter;
+
+            renderScene.sprites.emplace_back(std::move(object));
+        }
+
+        // Get Animated Sprites
+        for (auto &pair : scene.getPool<SpriteAnimationComponent>()) {
+            auto &transform = scene.getPool<TransformComponent>().lookup(pair.entity);
+
+            if (!pair.component.enabled)
+                continue;
+
+            if (!transform.enabled)
+                continue;
+
+            SpriteObject object;
+            object.transform = transform.transform;
+            object.sprite = pair.component.sprite;
+            object.textureFiltering = pair.component.filter;
+
+            renderScene.sprites.emplace_back(std::move(object));
+        }
+
+        config->setScene(renderScene);
+
+        // Execute the graph
+        scheduler.execute(graph);
     }
 }

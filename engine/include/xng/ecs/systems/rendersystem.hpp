@@ -25,24 +25,35 @@
 #include "xng/ecs/system.hpp"
 #include "xng/ecs/components/rendering/meshcomponent.hpp"
 
+#include "xng/render/renderpassscheduler.hpp"
+#include "xng/render/renderregistry.hpp"
+#include "xng/render/renderconfiguration.hpp"
+#include "xng/render/2d/renderer2d.hpp"
+
 #include "xng/util/time.hpp"
 
 namespace xng {
     class XENGINE_EXPORT RenderSystem final : public System {
     public:
-        RenderSystem();
+        explicit RenderSystem(std::shared_ptr<RenderGraphRuntime> renderGraphRuntime);
 
         ~RenderSystem() override;
 
-        void start(EntityScene &entityManager, EventBus &eventBus) override;
-
-        void stop(EntityScene &entityManager, EventBus &eventBus) override;
-
-        void update(DeltaTime deltaTime, EntityScene &entityManager, EventBus &eventBus) override;
+        void update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) override;
 
         std::string getName() override { return "RenderSystem"; }
 
     private:
+        std::shared_ptr<RenderGraphRuntime> runtime;
+        RenderPassScheduler scheduler;
+        Renderer2D ren2d;
+
+        std::shared_ptr<RenderRegistry> registry;
+        std::shared_ptr<RenderConfiguration> config;
+
+        std::shared_ptr<RenderPass2D> pass2D;
+
+        RenderGraphHandle graph;
     };
 }
 
