@@ -275,8 +275,8 @@ namespace xng {
         fTan = normalize(tangent);
 
         //https://www.gamedeveloper.com/programming/three-normal-mapping-techniques-explained-for-the-mathematically-uninclined
-        fN = normalize((data_model * vec4(normal, 0.0)).xyz());
-        fT = normalize((data_model * vec4(tangent, 0.0)).xyz());
+        fN = normalize((data_model * vec4(normalize(normal), 0.0)).xyz());
+        fT = normalize((data_model * vec4(normalize(tangent), 0.0)).xyz());
         fB = normalize((data_model * vec4(cross(normalize(normal), normalize(tangent).xyz()) * 1, 0.0)).xyz());
 
         setVertexPosition(vPos);
@@ -395,6 +395,7 @@ namespace xng {
                                    data_albedo_atlasScale_texSize,
                                    fUv);
         }
+        EndIf();
 
         oRoughnessMetallicAO = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -422,13 +423,11 @@ namespace xng {
 
         If(data_normal_level_index_filtering_assigned.w() != 0);
         {
-            mat3 tbn;
-            tbn = matrix(fT, fB, fN);
-            vec3 texNormal;
-            texNormal = textureAtlas(data_normal_level_index_filtering_assigned,
-                                     data_normal_atlasScale_texSize,
-                                     fUv).xyz()
-                        * vec3(data_normalIntensity.x(), data_normalIntensity.x(), 1);
+            mat3 tbn = matrix(fT, fB, fN);
+            vec3 texNormal = textureAtlas(data_normal_level_index_filtering_assigned,
+                                          data_normal_atlasScale_texSize,
+                                          fUv).xyz()
+                             * vec3(data_normalIntensity.x(), data_normalIntensity.x(), 1);
             texNormal = tbn * normalize(texNormal * 2.0 - 1.0);
             oNormal = vec4(normalize(texNormal), 1);
         }
