@@ -22,6 +22,7 @@
 
 #include <utility>
 
+#include "xng/render/scene/sprite.hpp"
 #include "xng/render/scene/pointlight.hpp"
 #include "xng/render/scene/directionallight.hpp"
 #include "xng/render/scene/spotlight.hpp"
@@ -75,6 +76,14 @@ namespace xng {
         bool castShadows = false;
     };
 
+    struct SpriteObject {
+        Transform transform;
+        ResourceHandle<Sprite> sprite;
+        bool textureFiltering = false;
+    };
+
+    // TODO: Sprite Lighting
+
     /**
      * The runtime scene render data.
      */
@@ -88,6 +97,8 @@ namespace xng {
         std::vector<PointLightObject> pointLights;
         std::vector<DirectionalLightObject> directionalLights;
         std::vector<SpotLightObject> spotLights;
+
+        std::vector<SpriteObject> sprites;
 
         Skybox skybox;
     };
