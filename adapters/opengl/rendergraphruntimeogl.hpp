@@ -64,14 +64,14 @@ private:
 
     RenderGraphHandle recompileGraph(RenderGraphHandle handle, const RenderGraph &graph);
 
-    RenderGraphHandle graphCounter = 0;
+    int graphCounter = 0;
 
     std::shared_ptr<OGLTexture> backBufferColor;
     std::shared_ptr<OGLTexture> backBufferDepthStencil;
 
     std::shared_ptr<OGLFramebuffer> backBuffer;
 
-    std::unordered_map<RenderGraphHandle, GraphResources> contexts;
+    std::unordered_map<RenderGraphHandle, GraphResources, RenderGraphHandleHash> contexts;
 
     std::shared_ptr<Window> window;
 };

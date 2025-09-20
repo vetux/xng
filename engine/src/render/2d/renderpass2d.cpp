@@ -17,7 +17,7 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "xng/graphics/2d/renderpass2d.hpp"
+#include "../../../include/xng/graphics/3d/passes/renderpass2d.hpp"
 
 #include "vertexshader.hpp"
 #include "fragmentshader.hpp"

@@ -158,7 +158,7 @@ void RenderGraphRuntimeOGL::presentBackBuffer() const {
 RenderGraphHandle RenderGraphRuntimeOGL::compileGraph(const RenderGraph &graph) {
     oglDebugStartGroup("RenderGraphRuntimeOGL::compileGraph");
 
-    const auto handle = graphCounter++;
+    const auto handle = RenderGraphHandle(graphCounter++);
 
     auto context = GraphResources();
 

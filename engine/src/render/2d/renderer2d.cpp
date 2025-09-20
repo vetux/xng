@@ -25,15 +25,16 @@
 #include "../../../include/xng/graphics/camera.hpp"
 
 namespace xng {
-    Renderer2D::Renderer2D(std::shared_ptr<RenderPassScheduler> scheduler)
-        : renderPassScheduler(std::move(scheduler)),
-          renderPass(std::make_shared<RenderPass2D>()) {
-        graph = renderPassScheduler->addGraph(renderPass);
+    Renderer2D::Renderer2D(std::shared_ptr<RenderGraphRuntime> runtime)
+        : runtime(std::move(runtime)),
+          renderPass(std::make_shared<RenderPass2D>()),
+          scheduler(std::make_unique<RenderPassScheduler>(runtime)) {
+        graph = scheduler->addGraph(renderPass);
     }
 
     Renderer2D::~Renderer2D() {
-        if (renderPassScheduler) {
-            renderPassScheduler->destroy(graph);
+        if (scheduler) {
+            scheduler->destroy(graph);
         }
     }
 
@@ -131,9 +132,9 @@ namespace xng {
         renderBatches.emplace_back(batch);
         batch = {};
 
-        if (renderPassScheduler) {
+        if (scheduler) {
             renderPass->setBatches(renderBatches);
-            renderPassScheduler->execute(graph);
+            scheduler->execute(graph);
             clearBatches();
         }
     }

@@ -22,8 +22,10 @@
 
 #include "xng/graphics/3d/renderpass.hpp"
 #include "xng/graphics/3d/atlas/textureatlas.hpp"
+
 #include "xng/graphics/2d/renderbatch2d.hpp"
 #include "xng/graphics/2d/meshbuffer2d.hpp"
+
 #include "xng/graphics/primitive.hpp"
 
 namespace xng {

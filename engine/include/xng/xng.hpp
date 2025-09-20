@@ -154,7 +154,7 @@
 #include "xng/graphics/2d/renderer2d.hpp"
 #include "xng/graphics/2d/meshbuffer2d.hpp"
 #include "xng/graphics/2d/renderbatch2d.hpp"
-#include "xng/graphics/2d/renderpass2d.hpp"
+#include "graphics/3d/passes/renderpass2d.hpp"
 #include "xng/graphics/2d/texture2d.hpp"
 #include "xng/graphics/2d/drawcommand2d.hpp"
 #include "xng/graphics/2d/text/textalignment.hpp"

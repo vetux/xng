@@ -26,7 +26,34 @@
 #include "xng/display/graphicsapi.hpp"
 
 namespace xng {
-    typedef int RenderGraphHandle;
+    struct RenderGraphHandle {
+        int id = -1;
+
+        RenderGraphHandle() = default;
+
+        explicit RenderGraphHandle(const int id) : id(id) {
+        }
+
+        explicit operator int() const { return id; }
+        explicit operator bool() const { return id != -1; }
+
+        bool operator<(const RenderGraphHandle &other) const {
+            return id < other.id;
+        }
+
+        bool operator==(const RenderGraphHandle& other) const {
+            return id == other.id;
+        }
+    };
+
+    class RenderGraphHandleHash {
+    public:
+        std::size_t operator()(const RenderGraphHandle &k) const {
+            size_t ret = 0;
+            hash_combine(ret, k.id);
+            return ret;
+        }
+    };
 
     /**
      * The runtime / context represents the platform-dependent implementation of the renderer.

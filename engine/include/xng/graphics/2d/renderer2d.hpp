@@ -26,9 +26,9 @@
 
 #include "xng/graphics/2d/texture2d.hpp"
 #include "xng/graphics/2d/renderbatch2d.hpp"
-#include "xng/graphics/2d/renderpass2d.hpp"
 
 #include "xng/graphics/3d/renderpassscheduler.hpp"
+#include "xng/graphics/3d/passes/renderpass2d.hpp"
 
 #include "xng/rendergraph/rendergraphruntime.hpp"
 
@@ -62,11 +62,13 @@ namespace xng {
         Renderer2D() = default;
 
         /**
-         * The recorded batches are presented via the passed scheduler.
+         * The recorded batches are presented via the passed runtime.
          *
-         * @param scheduler
+         * Provided for projects that exclusively use the renderer 2D and don't perform more complex rendering.
+         *
+         * @param runtime
          */
-        explicit Renderer2D(std::shared_ptr<RenderPassScheduler> scheduler);
+        explicit Renderer2D(std::shared_ptr<RenderGraphRuntime> runtime);
 
         ~Renderer2D();
 
@@ -278,8 +280,9 @@ namespace xng {
         size_t textureHandleCounter = 0;
         std::vector<size_t> unusedTextureHandles;
 
-        std::shared_ptr<RenderPassScheduler> renderPassScheduler = nullptr;
+        std::shared_ptr<RenderGraphRuntime> runtime = nullptr;
         std::shared_ptr<RenderPass2D> renderPass = nullptr;
+        std::unique_ptr<RenderPassScheduler> scheduler = nullptr;
 
         RenderGraphHandle graph{};
     };
