@@ -66,19 +66,19 @@ namespace xng {
         auto desc = RenderGraphTexture();
         desc.size = currentResolution;
         desc.format = RGBA32F;
-        gBufferPosition = builder.createTexture(desc);
-        gBufferNormal = builder.createTexture(desc);
-        gBufferTangent = builder.createTexture(desc);
-        gBufferRoughnessMetallicAmbientOcclusion = builder.createTexture(desc);
+        gBuffer.gBufferPosition = builder.createTexture(desc);
+        gBuffer.gBufferNormal = builder.createTexture(desc);
+        gBuffer.gBufferTangent = builder.createTexture(desc);
+        gBuffer.gBufferRoughnessMetallicAmbientOcclusion = builder.createTexture(desc);
 
         desc.format = RGBA;
-        gBufferAlbedo = builder.createTexture(desc);
+        gBuffer.gBufferAlbedo = builder.createTexture(desc);
 
         desc.format = RGBA32I;
-        gBufferObjectShadows = builder.createTexture(desc);
+        gBuffer.gBufferObjectShadows = builder.createTexture(desc);
 
         desc.format = DEPTH_STENCIL;
-        gBufferDepth = builder.createTexture(desc);
+        gBuffer.gBufferDepth = builder.createTexture(desc);
 
         shaderBuffer = builder.createShaderBuffer(0);
         boneBuffer = builder.createShaderBuffer(0);
@@ -86,13 +86,7 @@ namespace xng {
         atlas.onCreate(builder);
         meshAllocator.onCreate(builder);
 
-        registry->setEntry(GBUFFER_POSITION, gBufferPosition);
-        registry->setEntry(GBUFFER_NORMAL, gBufferNormal);
-        registry->setEntry(GBUFFER_TANGENT, gBufferTangent);
-        registry->setEntry(GBUFFER_ROUGHNESS_METALLIC_AO, gBufferRoughnessMetallicAmbientOcclusion);
-        registry->setEntry(GBUFFER_ALBEDO, gBufferAlbedo);
-        registry->setEntry(GBUFFER_OBJECT_SHADOWS, gBufferObjectShadows);
-        registry->setEntry(GBUFFER_DEPTH, gBufferDepth);
+        registry->set(gBuffer);
 
         auto pass = builder.addPass("ConstructionPass", [this](RenderGraphContext &ctx) {
             runPass(ctx);
@@ -118,36 +112,30 @@ namespace xng {
             auto desc = RenderGraphTexture();
             desc.size = currentResolution;
             desc.format = RGBA32F;
-            gBufferPosition = builder.createTexture(desc);
-            gBufferNormal = builder.createTexture(desc);
-            gBufferTangent = builder.createTexture(desc);
-            gBufferRoughnessMetallicAmbientOcclusion = builder.createTexture(desc);
+            gBuffer.gBufferPosition = builder.createTexture(desc);
+            gBuffer.gBufferNormal = builder.createTexture(desc);
+            gBuffer.gBufferTangent = builder.createTexture(desc);
+            gBuffer.gBufferRoughnessMetallicAmbientOcclusion = builder.createTexture(desc);
 
             desc.format = RGBA;
-            gBufferAlbedo = builder.createTexture(desc);
+            gBuffer.gBufferAlbedo = builder.createTexture(desc);
 
             desc.format = RGBA32I;
-            gBufferObjectShadows = builder.createTexture(desc);
+            gBuffer.gBufferObjectShadows = builder.createTexture(desc);
 
             desc.format = DEPTH_STENCIL;
-            gBufferDepth = builder.createTexture(desc);
+            gBuffer.gBufferDepth = builder.createTexture(desc);
         } else {
-            gBufferPosition = builder.inheritResource(gBufferPosition);
-            gBufferNormal = builder.inheritResource(gBufferNormal);
-            gBufferTangent = builder.inheritResource(gBufferTangent);
-            gBufferRoughnessMetallicAmbientOcclusion = builder.inheritResource(gBufferRoughnessMetallicAmbientOcclusion);
-            gBufferAlbedo = builder.inheritResource(gBufferAlbedo);
-            gBufferObjectShadows = builder.inheritResource(gBufferObjectShadows);
-            gBufferDepth = builder.inheritResource(gBufferDepth);
+            gBuffer.gBufferPosition = builder.inheritResource(gBuffer.gBufferPosition);
+            gBuffer.gBufferNormal = builder.inheritResource(gBuffer.gBufferNormal);
+            gBuffer.gBufferTangent = builder.inheritResource(gBuffer.gBufferTangent);
+            gBuffer.gBufferRoughnessMetallicAmbientOcclusion = builder.inheritResource(gBuffer.gBufferRoughnessMetallicAmbientOcclusion);
+            gBuffer.gBufferAlbedo = builder.inheritResource(gBuffer.gBufferAlbedo);
+            gBuffer.gBufferObjectShadows = builder.inheritResource(gBuffer.gBufferObjectShadows);
+            gBuffer.gBufferDepth = builder.inheritResource(gBuffer.gBufferDepth);
         }
 
-        registry->setEntry(GBUFFER_POSITION, gBufferPosition);
-        registry->setEntry(GBUFFER_NORMAL, gBufferNormal);
-        registry->setEntry(GBUFFER_TANGENT, gBufferTangent);
-        registry->setEntry(GBUFFER_ROUGHNESS_METALLIC_AO, gBufferRoughnessMetallicAmbientOcclusion);
-        registry->setEntry(GBUFFER_ALBEDO, gBufferAlbedo);
-        registry->setEntry(GBUFFER_OBJECT_SHADOWS, gBufferObjectShadows);
-        registry->setEntry(GBUFFER_DEPTH, gBufferDepth);
+        registry->set(gBuffer);;
 
         shaderBuffer = builder.createShaderBuffer(totalShaderBufferSize);
         currentShaderBufferSize = totalShaderBufferSize;
@@ -452,14 +440,14 @@ namespace xng {
         auto &atlasTextures = atlas.getAtlasTextures(ctx);
 
         ctx.beginRenderPass({
-                                RenderGraphAttachment(gBufferPosition, Vec4f(0)),
-                                RenderGraphAttachment(gBufferNormal, Vec4f(0)),
-                                RenderGraphAttachment(gBufferTangent, Vec4f(0)),
-                                RenderGraphAttachment(gBufferRoughnessMetallicAmbientOcclusion, Vec4f(0)),
-                                RenderGraphAttachment(gBufferAlbedo, ColorRGBA::black(1, 0)),
-                                RenderGraphAttachment(gBufferObjectShadows, Vec4i(0)),
+                                RenderGraphAttachment(gBuffer.gBufferPosition, Vec4f(0)),
+                                RenderGraphAttachment(gBuffer.gBufferNormal, Vec4f(0)),
+                                RenderGraphAttachment(gBuffer.gBufferTangent, Vec4f(0)),
+                                RenderGraphAttachment(gBuffer.gBufferRoughnessMetallicAmbientOcclusion, Vec4f(0)),
+                                RenderGraphAttachment(gBuffer.gBufferAlbedo, ColorRGBA::black(1, 0)),
+                                RenderGraphAttachment(gBuffer.gBufferObjectShadows, Vec4i(0)),
                             },
-                            RenderGraphAttachment(gBufferDepth, 1, 0));
+                            RenderGraphAttachment(gBuffer.gBufferDepth, 1, 0));
 
         ctx.setViewport({}, currentResolution);
 

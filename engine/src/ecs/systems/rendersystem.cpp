@@ -23,7 +23,7 @@
 #include "xng/ecs/systems/rendersystem.hpp"
 #include "xng/ecs/components.hpp"
 #include "xng/render/renderscene.hpp"
-#include "xng/render/passes/clearpass.hpp"
+#include "xng/render/passes/compositingpass.hpp"
 #include "xng/render/passes/constructionpass.hpp"
 #include "xng/util/time.hpp"
 
@@ -32,13 +32,13 @@ namespace xng {
         : runtime(std::move(renderGraphRuntime)),
           scheduler(runtime),
           ren2d(),
-          registry(std::make_shared<RenderRegistry>()),
+          registry(std::make_shared<SharedResourceRegistry>()),
           config(std::make_shared<RenderConfiguration>()),
           pass2D(std::make_shared<RenderPass2D>()) {
         graph = scheduler.addGraph({
             pass2D,
-            std::make_shared<ClearPass>(config, registry),
-            std::make_shared<ConstructionPass>(config, registry)
+            std::make_shared<ConstructionPass>(config, registry),
+            std::make_shared<CompositingPass>(config, registry),
         });
     }
 

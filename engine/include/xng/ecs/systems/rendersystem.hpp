@@ -26,7 +26,7 @@
 #include "xng/ecs/components/rendering/meshcomponent.hpp"
 
 #include "xng/render/renderpassscheduler.hpp"
-#include "xng/render/renderregistry.hpp"
+#include "xng/render/sharedresourceregistry.hpp"
 #include "xng/render/renderconfiguration.hpp"
 #include "xng/render/2d/renderer2d.hpp"
 
@@ -48,7 +48,7 @@ namespace xng {
         RenderPassScheduler scheduler;
         Renderer2D ren2d;
 
-        std::shared_ptr<RenderRegistry> registry;
+        std::shared_ptr<SharedResourceRegistry> registry;
         std::shared_ptr<RenderConfiguration> config;
 
         std::shared_ptr<RenderPass2D> pass2D;

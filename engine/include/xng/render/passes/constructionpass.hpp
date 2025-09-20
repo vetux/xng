@@ -25,15 +25,16 @@
 #include "xng/render/meshallocator.hpp"
 #include "xng/render/renderconfiguration.hpp"
 #include "xng/render/renderpass.hpp"
-#include "xng/render/renderregistry.hpp"
+#include "xng/render/sharedresourceregistry.hpp"
 #include "xng/render/renderscene.hpp"
 #include "xng/render/atlas/textureatlas.hpp"
+#include "xng/render/sharedresources/gbuffer.hpp"
 
 namespace xng {
     class XENGINE_EXPORT ConstructionPass final : public RenderPass {
     public:
         ConstructionPass(std::shared_ptr<RenderConfiguration> config,
-                         std::shared_ptr<RenderRegistry> registry)
+                         std::shared_ptr<SharedResourceRegistry> registry)
             : config(std::move(config)),
               registry(std::move(registry)) {
         }
@@ -56,17 +57,11 @@ namespace xng {
         static Shader createFragmentShader();
 
         std::shared_ptr<RenderConfiguration> config;
-        std::shared_ptr<RenderRegistry> registry;
+        std::shared_ptr<SharedResourceRegistry> registry;
 
         RenderGraphResource renderPipelineSkinned;
 
-        RenderGraphResource gBufferPosition;
-        RenderGraphResource gBufferNormal;
-        RenderGraphResource gBufferTangent;
-        RenderGraphResource gBufferRoughnessMetallicAmbientOcclusion;
-        RenderGraphResource gBufferAlbedo;
-        RenderGraphResource gBufferObjectShadows;
-        RenderGraphResource gBufferDepth;
+        GBuffer gBuffer;
 
         RenderGraphResource shaderBuffer;
         RenderGraphResource boneBuffer;

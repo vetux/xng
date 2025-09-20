@@ -17,17 +17,27 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_PRESENTATIONPASS_HPP
-#define XENGINE_PRESENTATIONPASS_HPP
+#ifndef XENGINE_COMPOSITINGLAYERS_HPP
+#define XENGINE_COMPOSITINGLAYERS_HPP
 
-#include "xng/render/renderpass.hpp"
+#include "xng/rendergraph/rendergraphresource.hpp"
+
+#include "xng/render/sharedresourceregistry.hpp"
 
 namespace xng {
+    struct CompositeLayer {
+        RenderGraphResource color;
+        RenderGraphResource depth;
+        bool containsTransparency = false;
+    };
+
     /**
-     * Assigns the composite layers according to available textures.
+     * The layers are presented by overlapping each layer from layers[0] to layers[end]
+     * ontop of the previous performing depth testing if the depth texture is assigned.
      */
-    class PresentationPass : public RenderPass {
-    public:
+    struct CompositingLayers final : SharedResource<RESOURCE_COMPOSITE_TEXTURES> {
+        std::vector<CompositeLayer> layers;
     };
 }
-#endif //XENGINE_PRESENTATIONPASS_HPP
+
+#endif //XENGINE_COMPOSITINGLAYERS_HPP

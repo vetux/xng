@@ -92,15 +92,15 @@ int main(int argc, char *argv[]) {
     auto scene = createScene();
     config->setScene(scene);
 
-    auto registry = std::make_shared<RenderRegistry>();
+    auto registry = std::make_shared<SharedResourceRegistry>();
 
     auto passScheduler = std::make_shared<RenderPassScheduler>(runtime);
 
     auto pass2D = std::make_shared<RenderPass2D>();
 
     auto graph3D = passScheduler->addGraph({
-        std::make_shared<ClearPass>(config, registry),
-        std::make_shared<ConstructionPass>(config, registry)
+        std::make_shared<ConstructionPass>(config, registry),
+        std::make_shared<CompositingPass>(config, registry),
     });
     auto graph2D = passScheduler->addGraph(pass2D);
 

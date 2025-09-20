@@ -17,17 +17,18 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_PRESENTATIONPASS_HPP
-#define XENGINE_PRESENTATIONPASS_HPP
+#ifndef XENGINE_DEFERREDTEXTURES_HPP
+#define XENGINE_DEFERREDTEXTURES_HPP
 
-#include "xng/render/renderpass.hpp"
+#include "xng/rendergraph/rendergraphresource.hpp"
+
+#include "xng/render/sharedresourceregistry.hpp"
 
 namespace xng {
-    /**
-     * Assigns the composite layers according to available textures.
-     */
-    class PresentationPass : public RenderPass {
-    public:
+    struct DeferredTextures final : SharedResource<RESOURCE_DEFERRED_TEXTURES> {
+        RenderGraphResource color;
+        RenderGraphResource depth;
     };
 }
-#endif //XENGINE_PRESENTATIONPASS_HPP
+
+#endif //XENGINE_DEFERREDTEXTURES_HPP
