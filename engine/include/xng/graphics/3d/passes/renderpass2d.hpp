@@ -26,12 +26,13 @@
 
 #include "xng/graphics/3d/renderpass.hpp"
 #include "xng/graphics/3d/meshbuffer2d.hpp"
+#include "xng/graphics/3d/renderconfiguration.hpp"
 #include "xng/graphics/3d/atlas/textureatlas.hpp"
 
 namespace xng {
     class XENGINE_EXPORT RenderPass2D final : public RenderPass {
     public:
-        RenderPass2D();
+        explicit RenderPass2D(std::shared_ptr<RenderConfiguration> configuration);
 
         /**
          * Has to be called immediately before executing the render graph runtime.
@@ -43,15 +44,6 @@ namespace xng {
         void create(RenderGraphBuilder &builder) override;
 
         void recreate(RenderGraphBuilder &builder) override;
-
-        /**
-         * Set the batches to be rendered.
-         *
-         * Should be called before calling shouldRebuild()
-         *
-         * @param renderBatches The batches to be rendered.
-         */
-        void setBatches(const std::vector<RenderBatch2D> &renderBatches);
 
     private:
         struct MeshDrawData {
@@ -112,6 +104,8 @@ namespace xng {
         std::vector<RenderBatch2D> batches;
 
         std::unordered_map<Texture2D::Handle, TextureAtlasHandle> atlasHandles;
+
+        std::shared_ptr<RenderConfiguration> config;
     };
 }
 

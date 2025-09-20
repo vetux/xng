@@ -23,6 +23,7 @@
 #include "xng/ecs/systems/rendersystem.hpp"
 #include "xng/ecs/components.hpp"
 #include "xng/graphics/renderscene.hpp"
+#include "xng/graphics/3d/passes/canvasrenderpass.hpp"
 #include "xng/graphics/3d/passes/compositingpass.hpp"
 #include "xng/graphics/3d/passes/constructionpass.hpp"
 #include "xng/util/time.hpp"
@@ -31,13 +32,12 @@ namespace xng {
     RenderSystem::RenderSystem(std::shared_ptr<RenderGraphRuntime> renderGraphRuntime)
         : runtime(std::move(renderGraphRuntime)),
           scheduler(runtime),
-          ren2d(),
           registry(std::make_shared<SharedResourceRegistry>()),
-          config(std::make_shared<RenderConfiguration>()),
-          pass2D(std::make_shared<RenderPass2D>()) {
+          config(std::make_shared<RenderConfiguration>()) {
         graph = scheduler.addGraph({
-            pass2D,
+            std::make_shared<RenderPass2D>(config),
             std::make_shared<ConstructionPass>(config, registry),
+            std::make_shared<CanvasRenderPass>(config, registry),
             std::make_shared<CompositingPass>(config, registry),
         });
     }
@@ -48,7 +48,7 @@ namespace xng {
         // Render Canvases to textures using renderer 2D
         // ren2d....
 
-        pass2D->setBatches(ren2d.getRenderBatches());
+        config->setRenderBatches(ren2d.getRenderBatches());
 
         RenderScene renderScene = {};
 
@@ -179,7 +179,7 @@ namespace xng {
         }
 
         // Get Sprites
-        for (auto &pair : scene.getPool<SpriteComponent>()) {
+        for (auto &pair: scene.getPool<SpriteComponent>()) {
             auto &transform = scene.getPool<TransformComponent>().lookup(pair.entity);
 
             if (!pair.component.enabled)
@@ -197,7 +197,7 @@ namespace xng {
         }
 
         // Get Animated Sprites
-        for (auto &pair : scene.getPool<SpriteAnimationComponent>()) {
+        for (auto &pair: scene.getPool<SpriteAnimationComponent>()) {
             auto &transform = scene.getPool<TransformComponent>().lookup(pair.entity);
 
             if (!pair.component.enabled)

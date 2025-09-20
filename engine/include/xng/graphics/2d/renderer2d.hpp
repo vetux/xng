@@ -280,6 +280,8 @@ namespace xng {
         size_t textureHandleCounter = 0;
         std::vector<size_t> unusedTextureHandles;
 
+        std::shared_ptr<RenderConfiguration> config = nullptr;
+
         std::shared_ptr<RenderGraphRuntime> runtime = nullptr;
         std::shared_ptr<RenderPass2D> renderPass = nullptr;
         std::unique_ptr<RenderPassScheduler> scheduler = nullptr;

@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
 
     auto passScheduler = std::make_shared<RenderPassScheduler>(runtime);
 
-    auto pass2D = std::make_shared<RenderPass2D>();
+    auto pass2D = std::make_shared<RenderPass2D>(config);
 
     auto graph3D = passScheduler->addGraph({
         std::make_shared<ConstructionPass>(config, registry),
@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
 
         ren2D->renderPresent();
 
-        pass2D->setBatches(ren2D->getRenderBatches());
+        config->setRenderBatches(ren2D->getRenderBatches());
         ren2D->clearBatches();
 
         passScheduler->execute({graph3D, graph2D});

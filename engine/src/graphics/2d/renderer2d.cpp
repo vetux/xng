@@ -26,8 +26,9 @@
 
 namespace xng {
     Renderer2D::Renderer2D(std::shared_ptr<RenderGraphRuntime> runtime)
-        : runtime(std::move(runtime)),
-          renderPass(std::make_shared<RenderPass2D>()),
+        : config(std::make_shared<RenderConfiguration>()),
+          runtime(std::move(runtime)),
+          renderPass(std::make_shared<RenderPass2D>(config)),
           scheduler(std::make_unique<RenderPassScheduler>(runtime)) {
         graph = scheduler->addGraph(renderPass);
     }
@@ -133,7 +134,7 @@ namespace xng {
         batch = {};
 
         if (scheduler) {
-            renderPass->setBatches(renderBatches);
+            config->setRenderBatches(renderBatches);
             scheduler->execute(graph);
             clearBatches();
         }

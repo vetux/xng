@@ -59,9 +59,21 @@ namespace xng {
         std::vector<std::vector<Texture2D::Handle> > textureDeallocations;
     };
 
-    RenderPass2D::RenderPass2D() = default;
+    RenderPass2D::RenderPass2D(std::shared_ptr<RenderConfiguration> configuration)
+        : config(std::move(configuration)) {
+    }
 
     bool RenderPass2D::shouldRebuild(const Vec2i &backBufferSize) {
+        batches = config->getRenderBatches();
+
+        meshBuffer.update(batches);
+
+        for (auto &batch: batches) {
+            for (auto &pair: batch.textureAllocations) {
+                atlasHandles[pair.first] = atlas.add(pair.second);
+            }
+        }
+
         if (vertexBufferSize < meshBuffer.getVertexBufferSize()
             || indexBufferSize < meshBuffer.getIndexBufferSize()) {
             return true;
@@ -164,18 +176,6 @@ namespace xng {
             builder.read(pass, indexBufferCopy);
         }
         builder.write(pass, backBufferColor);
-    }
-
-    void RenderPass2D::setBatches(const std::vector<RenderBatch2D> &renderBatches) {
-        batches = renderBatches;
-
-        meshBuffer.update(batches);
-
-        for (auto &batch: batches) {
-            for (auto &pair: batch.textureAllocations) {
-                atlasHandles[pair.first] = atlas.add(pair.second);
-            }
-        }
     }
 
     Mat4f RenderPass2D::getRotationMatrix(float rotation, const Vec2f &center) {

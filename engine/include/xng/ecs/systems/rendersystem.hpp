@@ -51,8 +51,6 @@ namespace xng {
         std::shared_ptr<SharedResourceRegistry> registry;
         std::shared_ptr<RenderConfiguration> config;
 
-        std::shared_ptr<RenderPass2D> pass2D;
-
         RenderGraphHandle graph;
     };
 }

@@ -21,11 +21,15 @@
 #define XENGINE_RENDERREGISTRY_HPP
 
 namespace xng {
-    enum SharedResourceType : int {
+    enum SharedResourceName : int {
         RESOURCE_COMPOSITE_TEXTURES = 0,
+
         RESOURCE_GEOMETRY_BUFFER,
+
         RESOURCE_DEFERRED_TEXTURES,
         RESOURCE_FORWARD_TEXTURES,
+
+        RESOURCE_CANVAS_TEXTURES,
 
         RESOURCE_USER = 255
     };
@@ -35,10 +39,10 @@ namespace xng {
         virtual ~SharedResourceBase() = default;
     };
 
-    template<SharedResourceType TYPE>
+    template<SharedResourceName TYPE>
     class SharedResource : public SharedResourceBase {
     public:
-        static const inline SharedResourceType resourceType = TYPE;
+        static const inline SharedResourceName resourceType = TYPE;
     };
 
     /**
@@ -67,7 +71,7 @@ namespace xng {
         }
 
     private:
-        std::unordered_map<SharedResourceType, std::unique_ptr<SharedResourceBase> > resources;
+        std::unordered_map<SharedResourceName, std::unique_ptr<SharedResourceBase> > resources;
     };
 }
 

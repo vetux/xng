@@ -33,13 +33,18 @@ namespace xng {
             return renderScale;
         }
 
-        void setScene(const RenderScene &scene) { this->renderScene = scene; }
+        void setScene(const RenderScene &scene) { renderScene = scene; }
 
         const RenderScene &getScene() const { return renderScene; }
+
+        void setRenderBatches(const std::vector<RenderBatch2D> &batches) { renderBatches = batches; }
+
+        const std::vector<RenderBatch2D> &getRenderBatches() const { return renderBatches; }
 
     private:
         float renderScale = 1.0f;
         RenderScene renderScene;
+        std::vector<RenderBatch2D> renderBatches;
     };
 }
 

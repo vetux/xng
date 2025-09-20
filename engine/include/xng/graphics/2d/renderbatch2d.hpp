@@ -49,6 +49,9 @@ namespace xng {
         bool renderToScreen = true;
         Texture2D::Handle renderTarget{};
 
+        Transform transform;
+        bool worldSpace = false;
+
         RenderBatch2D() = default;
 
         RenderBatch2D(const Camera &camera,

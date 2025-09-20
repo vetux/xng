@@ -17,18 +17,19 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_DEFERREDTEXTURES_HPP
-#define XENGINE_DEFERREDTEXTURES_HPP
-
-#include "xng/rendergraph/rendergraphresource.hpp"
-
-#include "xng/graphics/sharedresourceregistry.hpp"
+#include "xng/graphics/3d/passes/canvasrenderpass.hpp"
 
 namespace xng {
-    struct DeferredTextures final : SharedResource<RESOURCE_DEFERRED_TEXTURES> {
-        RenderGraphResource color;
-        RenderGraphResource depth;
-    };
-}
+    CanvasRenderPass::CanvasRenderPass(std::shared_ptr<RenderConfiguration> config,
+        std::shared_ptr<SharedResourceRegistry> registry) {
+    }
 
-#endif //XENGINE_DEFERREDTEXTURES_HPP
+    bool CanvasRenderPass::shouldRebuild(const Vec2i &backBufferSize) {
+    }
+
+    void CanvasRenderPass::create(RenderGraphBuilder &builder) {
+    }
+
+    void CanvasRenderPass::recreate(RenderGraphBuilder &builder) {
+    }
+}

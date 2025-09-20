@@ -17,18 +17,27 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FORWARDTEXTURES_HPP
-#define XENGINE_FORWARDTEXTURES_HPP
+#ifndef XENGINE_CANVASTEXTURES_HPP
+#define XENGINE_CANVASTEXTURES_HPP
 
 #include "xng/rendergraph/rendergraphresource.hpp"
 
-#include "xng/graphics/sharedresourceregistry.hpp"
+#include "xng/graphics/3d/sharedresourceregistry.hpp"
+#include "xng/math/transform.hpp"
 
 namespace xng {
-    struct ForwardTextures final : SharedResource<RESOURCE_FORWARD_TEXTURES> {
-        RenderGraphResource color;
-        RenderGraphResource depth;
+    struct Canvas {
+        Transform transform;
+        bool worldSpace;
+        RenderGraphResource texture;
+    };
+
+    /**
+     * The RenderPass2D creates a canvas for each render batch that doesn't have a render target.
+     */
+    struct CanvasTextures final : SharedResource<RESOURCE_CANVAS_TEXTURES> {
+        std::vector<Canvas> canvases;
     };
 }
 
-#endif //XENGINE_FORWARDTEXTURES_HPP
+#endif //XENGINE_CANVASTEXTURES_HPP

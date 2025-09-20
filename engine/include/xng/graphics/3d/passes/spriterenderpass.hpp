@@ -17,17 +17,15 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_PRESENTATIONPASS_HPP
-#define XENGINE_PRESENTATIONPASS_HPP
+#ifndef XENGINE_SPRITERENDERPASS_HPP
+#define XENGINE_SPRITERENDERPASS_HPP
 
 #include "xng/graphics/3d/renderpass.hpp"
 
 namespace xng {
-    /**
-     * Assigns the composite layers according to available textures.
-     */
-    class PresentationPass : public RenderPass {
+    class SpriteRenderPass : public RenderPass {
     public:
     };
 }
-#endif //XENGINE_PRESENTATIONPASS_HPP
+
+#endif //XENGINE_SPRITERENDERPASS_HPP

@@ -165,7 +165,6 @@
 #include "graphics/primitive.hpp"
 #include "xng/graphics/vertexstream.hpp"
 #include "xng/graphics/vertex.hpp"
-#include "xng/graphics/3d/passes/presentationpass.hpp"
 #include "xng/graphics/3d/passes/shadowmappingpass.hpp"
 #include "xng/graphics/3d/passes/skyboxpass.hpp"
 #include "xng/graphics/3d/passes/compositingpass.hpp"

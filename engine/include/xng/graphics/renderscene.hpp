@@ -31,6 +31,7 @@
 #include "xng/graphics/scene/skinnedmesh.hpp"
 #include "xng/graphics/scene/skybox.hpp"
 #include "camera.hpp"
+#include "2d/renderbatch2d.hpp"
 
 namespace xng {
     struct MeshObject {
@@ -80,9 +81,19 @@ namespace xng {
         Transform transform;
         ResourceHandle<Sprite> sprite;
         bool textureFiltering = false;
+        float zOffset = 0;
     };
 
     // TODO: Sprite Lighting
+
+    struct CanvasObject {
+        Transform transform;
+
+        // If false the canvas plane is rendered with an orthographic projection with the transform applied as an offset.
+        bool worldSpace = false;
+
+        size_t batchIndex = 0; // The index of the 2d render batch containing the canvas contents.
+    };
 
     /**
      * The runtime scene render data.
