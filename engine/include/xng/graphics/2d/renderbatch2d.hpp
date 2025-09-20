@@ -23,7 +23,7 @@
 #include <vector>
 
 #include "xng/graphics/camera.hpp"
-
+#include "xng/graphics/image.hpp"
 #include "xng/graphics/2d/drawcommand2d.hpp"
 #include "xng/graphics/2d/texture2d.hpp"
 

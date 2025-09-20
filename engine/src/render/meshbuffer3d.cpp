@@ -18,12 +18,12 @@
  */
 
 
-#include "../../include/xng/graphics/3d/meshallocator.hpp"
+#include "../../include/xng/graphics/3d/meshbuffer3d.hpp"
 
 #include "../../include/xng/graphics/vertexstream.hpp"
 
 namespace xng {
-    MeshAllocator::MeshAllocation MeshAllocator::allocateMesh(const Mesh &mesh) {
+    MeshBuffer3D::MeshAllocation MeshBuffer3D::allocateMesh(const Mesh &mesh) {
         MeshAllocation ret;
 
         MeshAllocation::Data data;
@@ -45,7 +45,7 @@ namespace xng {
         return ret;
     }
 
-    void MeshAllocator::allocateMesh(const ResourceHandle<SkinnedMesh> &mesh) {
+    void MeshBuffer3D::allocateMesh(const ResourceHandle<SkinnedMesh> &mesh) {
         if (mesh.get().primitive != TRIANGLES) {
             throw std::runtime_error("Unsupported mesh primitive");
         }
@@ -63,7 +63,7 @@ namespace xng {
         }
     }
 
-    void MeshAllocator::uploadMeshes(RenderGraphContext &ctx,
+    void MeshBuffer3D::uploadMeshes(RenderGraphContext &ctx,
                                      RenderGraphResource vertexBuffer,
                                      RenderGraphResource indexBuffer) {
         for (auto &pair: pendingMeshAllocations) {
@@ -90,7 +90,7 @@ namespace xng {
         pendingMeshHandles.clear();
     }
 
-    void MeshAllocator::deallocateMesh(const ResourceHandle<SkinnedMesh> &mesh) {
+    void MeshBuffer3D::deallocateMesh(const ResourceHandle<SkinnedMesh> &mesh) {
         auto alloc = meshAllocations.at(mesh.getUri());
         meshAllocations.erase(mesh.getUri());
         for (auto &data: alloc.data) {
@@ -101,12 +101,12 @@ namespace xng {
         mergeFreeIndexBufferRanges();
     }
 
-    bool MeshAllocator::shouldRebuild() {
+    bool MeshBuffer3D::shouldRebuild() {
         return currentVertexBufferSize < requestedVertexBufferSize
                || currentIndexBufferSize < requestedIndexBufferSize;
     }
 
-    void MeshAllocator::declareReadWrite(RenderGraphBuilder &builder, RenderGraphBuilder::PassHandle pass) {
+    void MeshBuffer3D::declareReadWrite(RenderGraphBuilder &builder, RenderGraphBuilder::PassHandle pass) {
         builder.readWrite(pass, currentVertexBuffer);
         builder.readWrite(pass, currentIndexBuffer);
         if (staleVertexBuffer) {
@@ -115,14 +115,14 @@ namespace xng {
         }
     }
 
-    void MeshAllocator::onCreate(RenderGraphBuilder &builder) {
+    void MeshBuffer3D::onCreate(RenderGraphBuilder &builder) {
         currentVertexBuffer = builder.createVertexBuffer(0);
         currentIndexBuffer = builder.createIndexBuffer(0);
         currentVertexBufferSize = 0;
         currentIndexBufferSize = 0;
     }
 
-    void MeshAllocator::onRecreate(RenderGraphBuilder &builder) {
+    void MeshBuffer3D::onRecreate(RenderGraphBuilder &builder) {
         if (currentVertexBufferSize > 0) {
             staleVertexBuffer = builder.inheritResource(currentVertexBuffer);
         }
@@ -136,7 +136,7 @@ namespace xng {
         currentIndexBufferSize = requestedIndexBufferSize;
     }
 
-    const std::map<Uri, MeshAllocator::MeshAllocation> &MeshAllocator::getMeshAllocations(RenderGraphContext &ctx) {
+    const std::map<Uri, MeshBuffer3D::MeshAllocation> &MeshBuffer3D::getMeshAllocations(RenderGraphContext &ctx) {
         if (staleVertexBuffer) {
             ctx.copyBuffer(currentVertexBuffer, staleVertexBuffer, 0, 0, currentVertexBufferSize);
             ctx.copyBuffer(currentIndexBuffer, staleIndexBuffer, 0, 0, currentIndexBufferSize);
@@ -149,7 +149,7 @@ namespace xng {
         return meshAllocations;
     }
 
-    size_t MeshAllocator::allocateVertexData(size_t size) {
+    size_t MeshBuffer3D::allocateVertexData(size_t size) {
         bool foundFreeRange = false;
         auto ret = 0UL;
         for (auto &range: freeVertexBufferRanges) {
@@ -175,13 +175,13 @@ namespace xng {
         return ret;
     }
 
-    void MeshAllocator::deallocateVertexData(size_t offset) {
+    void MeshBuffer3D::deallocateVertexData(size_t offset) {
         auto size = allocatedVertexRanges.at(offset);
         allocatedVertexRanges.erase(offset);
         freeVertexBufferRanges[offset] = size;
     }
 
-    size_t MeshAllocator::allocateIndexData(size_t size) {
+    size_t MeshBuffer3D::allocateIndexData(size_t size) {
         assert(size % sizeof(unsigned int) == 0);
 
         bool foundFreeRange = false;
@@ -208,13 +208,13 @@ namespace xng {
         return ret;
     }
 
-    void MeshAllocator::deallocateIndexData(size_t offset) {
+    void MeshBuffer3D::deallocateIndexData(size_t offset) {
         auto size = allocatedIndexRanges.at(offset);
         allocatedIndexRanges.erase(offset);
         freeIndexBufferRanges[offset] = size;
     }
 
-    void MeshAllocator::mergeFreeVertexBufferRanges() {
+    void MeshBuffer3D::mergeFreeVertexBufferRanges() {
         bool merged = true;
         while (merged) {
             merged = false;
@@ -237,7 +237,7 @@ namespace xng {
         }
     }
 
-    void MeshAllocator::mergeFreeIndexBufferRanges() {
+    void MeshBuffer3D::mergeFreeIndexBufferRanges() {
         bool merged = true;
         while (merged) {
             merged = false;

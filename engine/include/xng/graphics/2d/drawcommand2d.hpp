@@ -22,6 +22,7 @@
 
 #include "xng/math/rectangle.hpp"
 
+#include "xng/graphics/color.hpp"
 #include "xng/graphics/2d/texture2d.hpp"
 
 #include "xng/rendergraph/rendergraphtextureproperties.hpp"

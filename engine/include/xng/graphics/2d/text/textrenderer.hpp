@@ -24,7 +24,6 @@
 #include "textlayout.hpp"
 
 #include "xng/graphics/2d/renderer2d.hpp"
-#include "xng/rendergraph/rendergraphruntime.hpp"
 
 namespace xng {
     /**

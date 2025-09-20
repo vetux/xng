@@ -24,7 +24,10 @@
 #include "xng/graphics/scene/skinnedmesh.hpp"
 
 namespace xng {
-    class MeshAllocator {
+    /**
+     * Allocates Meshes from resource handles into a single vertex / index buffer.
+     */
+    class MeshBuffer3D {
     public:
         struct MeshAllocation {
             struct Data {

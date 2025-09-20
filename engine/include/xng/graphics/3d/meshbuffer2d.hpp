@@ -31,6 +31,9 @@
 #include "xng/rendergraph/rendergraphcontext.hpp"
 
 namespace xng {
+    /**
+     * Allocates 2D meshes from 2d draw commands into a single vertex / index buffer
+     */
     class MeshBuffer2D {
     public:
         struct MeshDrawData {

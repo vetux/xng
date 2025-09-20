@@ -22,11 +22,11 @@
 
 #include <utility>
 
-#include "xng/graphics/3d/meshallocator.hpp"
+#include "xng/graphics/renderscene.hpp"
+#include "xng/graphics/3d/meshbuffer3d.hpp"
 #include "xng/graphics/3d/renderconfiguration.hpp"
 #include "xng/graphics/3d/renderpass.hpp"
 #include "xng/graphics/3d/sharedresourceregistry.hpp"
-#include "xng/graphics/renderscene.hpp"
 #include "xng/graphics/3d/atlas/textureatlas.hpp"
 #include "xng/graphics/3d/sharedresources/gbuffer.hpp"
 
@@ -74,7 +74,7 @@ namespace xng {
         size_t totalShaderBufferSize{};
         size_t totalBoneBufferSize{};
 
-        MeshAllocator meshAllocator;
+        MeshBuffer3D meshAllocator;
 
         std::map<Uri, TextureAtlasHandle> textures;
         std::set<ResourceHandle<SkinnedMesh> > meshes;

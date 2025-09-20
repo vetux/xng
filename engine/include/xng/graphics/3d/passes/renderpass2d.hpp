@@ -20,13 +20,13 @@
 #ifndef XENGINE_RENDER2DPASS_HPP
 #define XENGINE_RENDER2DPASS_HPP
 
-#include "xng/graphics/3d/renderpass.hpp"
-#include "xng/graphics/3d/atlas/textureatlas.hpp"
+#include "xng/graphics/primitive.hpp"
 
 #include "xng/graphics/2d/renderbatch2d.hpp"
-#include "xng/graphics/2d/meshbuffer2d.hpp"
 
-#include "xng/graphics/primitive.hpp"
+#include "xng/graphics/3d/renderpass.hpp"
+#include "xng/graphics/3d/meshbuffer2d.hpp"
+#include "xng/graphics/3d/atlas/textureatlas.hpp"
 
 namespace xng {
     class XENGINE_EXPORT RenderPass2D final : public RenderPass {
