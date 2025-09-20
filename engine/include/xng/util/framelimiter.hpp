@@ -31,12 +31,14 @@ namespace xng {
         FrameLimiter() = default;
 
         explicit FrameLimiter(int targetFrameRate)
-                : targetFrameDuration(std::chrono::duration_cast<std::chrono::steady_clock::duration>(
-                std::chrono::milliseconds(1000 / targetFrameRate))) {}
+            : targetFrameDuration(std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+                std::chrono::milliseconds(1000 / targetFrameRate))) {
+        }
 
         explicit FrameLimiter(std::chrono::milliseconds targetFrameDuration)
-                : targetFrameDuration(
-                std::chrono::duration_cast<std::chrono::steady_clock::duration>(targetFrameDuration)) {}
+            : targetFrameDuration(
+                std::chrono::duration_cast<std::chrono::steady_clock::duration>(targetFrameDuration)) {
+        }
 
         /**
          * Should be called before the first call to newFrame to beginFrame the start time point
@@ -72,9 +74,14 @@ namespace xng {
             return deltaTime;
         }
 
+        float getFramesPerSecond() const {
+            return 1000.0f
+                   / static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(deltaTime).count());
+        }
+
         void setTargetFrameRate(int frameRate) {
             targetFrameDuration = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
-                    std::chrono::milliseconds(1000 / frameRate));
+                std::chrono::milliseconds(1000 / frameRate));
         }
 
         void setTargetFrameDuration(const std::chrono::steady_clock::duration &duration) {

@@ -108,11 +108,10 @@ int main(int argc, char *argv[]) {
 
     while (!window->shouldClose()) {
         frameLimiter.newFrame();
-
-        auto deltaText = textRenderer.render(std::to_string(1000.0f / std::chrono::duration_cast<std::chrono::milliseconds>(frameLimiter.getDeltaTime()).count()) + " fps",
-                                             {50, 0, 0, TEXT_ALIGN_LEFT});
-
         window->update();
+
+        auto deltaText = textRenderer.render(std::to_string(frameLimiter.getFramesPerSecond()) + " fps",
+                                             {50, 0, 0, TEXT_ALIGN_LEFT});
 
         auto fbSize = passScheduler->updateBackBuffer();
         scene.camera.aspectRatio = static_cast<float>(fbSize.x)
