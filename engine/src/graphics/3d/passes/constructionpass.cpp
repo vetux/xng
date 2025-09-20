@@ -167,6 +167,7 @@ namespace xng {
         std::set<Uri> usedTextures;
         std::vector<ResourceHandle<SkinnedMesh> > usedMeshes;
 
+        objects.clear();
         auto tmp = scene.skinnedMeshes;
         for (auto id = 0; id < tmp.size(); id++) {
             auto &object = tmp.at(id);
