@@ -20,8 +20,8 @@
 #ifndef XENGINE_RESOURCEEXPORTER_HPP
 #define XENGINE_RESOURCEEXPORTER_HPP
 
-#include "xng/render/scene/image.hpp"
-#include "xng/render/scene/color.hpp"
+#include "../graphics/image.hpp"
+#include "../graphics/color.hpp"
 
 #include <ostream>
 

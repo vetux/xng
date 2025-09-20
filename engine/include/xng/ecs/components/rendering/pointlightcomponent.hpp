@@ -21,7 +21,7 @@
 #define XENGINE_POINTLIGHTCOMPONENT_HPP
 
 #include "xng/ecs/component.hpp"
-#include "xng/render/scene/pointlight.hpp"
+#include "xng/graphics/scene/pointlight.hpp"
 
 namespace xng {
     struct PointLightComponent final : Component {

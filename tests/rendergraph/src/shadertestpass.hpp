@@ -26,7 +26,7 @@
 #include "xng/rendergraph/rendergraphbuilder.hpp"
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
-#include "xng/render/shaderlib/noise.hpp"
+#include "xng/graphics/shaderlib/noise.hpp"
 
 using namespace xng;
 using namespace xng::ShaderScript;

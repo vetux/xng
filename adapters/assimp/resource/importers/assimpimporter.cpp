@@ -23,11 +23,11 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "xng/render/scene/mesh.hpp"
-#include "xng/render/scene/skinnedmesh.hpp"
-#include "xng/render/scene/material.hpp"
+#include "xng/graphics/scene/mesh.hpp"
+#include "xng/graphics/scene/skinnedmesh.hpp"
+#include "xng/graphics/scene/material.hpp"
 
-#include "xng/render/geometry/vertexbuilder.hpp"
+#include "../../../../engine/include/xng/graphics/vertexbuilder.hpp"
 
 #include "xng/math/matrixmath.hpp"
 #include "xng/math/quaternion.hpp"

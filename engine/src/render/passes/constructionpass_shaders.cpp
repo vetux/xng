@@ -17,11 +17,11 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "xng/render/passes/constructionpass.hpp"
+#include "xng/graphics/3d/passes/constructionpass.hpp"
 
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
-#include "xng/render/shaderlib/texfilter.hpp"
+#include "xng/graphics/shaderlib/texfilter.hpp"
 
 using namespace xng::ShaderScript;
 

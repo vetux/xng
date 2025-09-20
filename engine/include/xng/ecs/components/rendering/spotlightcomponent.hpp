@@ -21,7 +21,7 @@
 #define XENGINE_SPOTLIGHTCOMPONENT_HPP
 
 #include "xng/ecs/component.hpp"
-#include "xng/render/scene/spotlight.hpp"
+#include "xng/graphics/scene/spotlight.hpp"
 
 namespace xng {
     struct SpotLightComponent final : Component {

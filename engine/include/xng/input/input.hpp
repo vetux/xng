@@ -20,7 +20,7 @@
 #ifndef XENGINE_INPUT_HPP
 #define XENGINE_INPUT_HPP
 
-#include "xng/render/scene/image.hpp"
+#include "../graphics/image.hpp"
 
 #include "xng/event/eventbus.hpp"
 

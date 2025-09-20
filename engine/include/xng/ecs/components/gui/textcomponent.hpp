@@ -23,7 +23,7 @@
 #include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
 #include "xng/font/font.hpp"
-#include "xng/render/2d/text/textalignment.hpp"
+#include "xng/graphics/2d/text/textalignment.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT TextComponent final : Component {

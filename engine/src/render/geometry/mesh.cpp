@@ -17,14 +17,14 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/render/scene/mesh.hpp"
+#include "xng/graphics/scene/mesh.hpp"
 
 #include <string>
 #include <sstream>
 
 #include "xng/resource/resourceimporter.hpp"
 
-#include "xng/render/geometry/vertexbuilder.hpp"
+#include "../../../include/xng/graphics/vertexbuilder.hpp"
 
 static const std::string NORM_CUBE_OBJ = std::string(R"###(
 o Cube

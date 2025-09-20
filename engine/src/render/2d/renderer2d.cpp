@@ -17,12 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/render/2d/renderer2d.hpp"
+#include "xng/graphics/2d/renderer2d.hpp"
 
 #include <utility>
 
 #include "xng/math/matrixmath.hpp"
-#include "xng/render/scene/camera.hpp"
+#include "../../../include/xng/graphics/camera.hpp"
 
 namespace xng {
     Renderer2D::Renderer2D(std::shared_ptr<RenderPassScheduler> scheduler)

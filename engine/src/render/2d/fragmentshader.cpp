@@ -21,7 +21,7 @@
 
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
-#include "xng/render/shaderlib/texfilter.hpp"
+#include "xng/graphics/shaderlib/texfilter.hpp"
 
 using namespace xng::ShaderScript;
 

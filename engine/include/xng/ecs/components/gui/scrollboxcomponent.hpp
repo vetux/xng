@@ -21,7 +21,7 @@
 #define XENGINE_SCROLLBOXCOMPONENT_HPP
 
 #include "xng/ecs/component.hpp"
-#include "xng/render/scene/image.hpp"
+#include "../../../graphics/image.hpp"
 
 namespace xng {
     /**

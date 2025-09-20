@@ -17,9 +17,9 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "xng/render/2d/text/text.hpp"
+#include "xng/graphics/2d/text/text.hpp"
 
-#include "xng/render/2d/renderer2d.hpp"
+#include "xng/graphics/2d/renderer2d.hpp"
 
 namespace xng {
     Text::~Text() {

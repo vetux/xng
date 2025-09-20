@@ -22,9 +22,9 @@
 
 #include "xng/ecs/systems/rendersystem.hpp"
 #include "xng/ecs/components.hpp"
-#include "xng/render/renderscene.hpp"
-#include "xng/render/passes/compositingpass.hpp"
-#include "xng/render/passes/constructionpass.hpp"
+#include "xng/graphics/renderscene.hpp"
+#include "xng/graphics/3d/passes/compositingpass.hpp"
+#include "xng/graphics/3d/passes/constructionpass.hpp"
 #include "xng/util/time.hpp"
 
 namespace xng {

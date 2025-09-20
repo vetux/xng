@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/render/atlas/textureatlas.hpp"
+#include "xng/graphics/3d/atlas/textureatlas.hpp"
 
 namespace xng {
     ImageRGBA TextureAtlas::getAlignedImage(const ImageRGBA &texture, TextureAtlasResolution res) {

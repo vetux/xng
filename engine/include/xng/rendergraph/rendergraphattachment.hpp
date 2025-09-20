@@ -22,7 +22,7 @@
 
 #include "xng/rendergraph/rendergraphresource.hpp"
 #include "xng/rendergraph/rendergraphtextureproperties.hpp"
-#include "xng/render/scene/color.hpp"
+#include "xng/graphics/color.hpp"
 
 namespace xng {
     struct RenderGraphAttachment {

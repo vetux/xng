@@ -22,7 +22,7 @@
 
 #include <vector>
 
-#include "xng/render/geometry/primitive.hpp"
+#include "xng/graphics/primitive.hpp"
 #include "xng/rendergraph/shader/shader.hpp"
 
 namespace xng {

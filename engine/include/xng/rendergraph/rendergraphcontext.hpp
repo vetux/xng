@@ -31,7 +31,7 @@
 
 #include "xng/math/vector2.hpp"
 
-#include "xng/render/scene/image.hpp"
+#include "xng/graphics/image.hpp"
 
 namespace xng {
     class RenderGraphContext {

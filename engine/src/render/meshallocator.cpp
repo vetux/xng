@@ -18,9 +18,9 @@
  */
 
 
-#include "xng/render/meshallocator.hpp"
+#include "../../include/xng/graphics/3d/meshallocator.hpp"
 
-#include "xng/render/geometry/vertexstream.hpp"
+#include "../../include/xng/graphics/vertexstream.hpp"
 
 namespace xng {
     MeshAllocator::MeshAllocation MeshAllocator::allocateMesh(const Mesh &mesh) {

@@ -25,10 +25,10 @@
 #include "xng/ecs/system.hpp"
 #include "xng/ecs/components/rendering/meshcomponent.hpp"
 
-#include "xng/render/renderpassscheduler.hpp"
-#include "xng/render/sharedresourceregistry.hpp"
-#include "xng/render/renderconfiguration.hpp"
-#include "xng/render/2d/renderer2d.hpp"
+#include "xng/graphics/3d/renderpassscheduler.hpp"
+#include "xng/graphics/3d/sharedresourceregistry.hpp"
+#include "xng/graphics/3d/renderconfiguration.hpp"
+#include "xng/graphics/2d/renderer2d.hpp"
 
 #include "xng/util/time.hpp"
 

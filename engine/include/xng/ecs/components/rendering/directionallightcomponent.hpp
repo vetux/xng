@@ -21,7 +21,7 @@
 #define XENGINE_DIRECTIONALLIGHTCOMPONENT_HPP
 
 #include "xng/ecs/component.hpp"
-#include "xng/render/scene/directionallight.hpp"
+#include "xng/graphics/scene/directionallight.hpp"
 
 namespace xng {
     struct DirectionalLightComponent final : Component {

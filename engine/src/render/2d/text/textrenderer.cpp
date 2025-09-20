@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/render/2d/text/textrenderer.hpp"
+#include "xng/graphics/2d/text/textrenderer.hpp"
 
 #include <utility>
 

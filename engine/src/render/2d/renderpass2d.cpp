@@ -17,11 +17,11 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "xng/render/2d/renderpass2d.hpp"
+#include "xng/graphics/2d/renderpass2d.hpp"
 
 #include "vertexshader.hpp"
 #include "fragmentshader.hpp"
-#include "xng/render/geometry/vertexstream.hpp"
+#include "../../../include/xng/graphics/vertexstream.hpp"
 
 namespace xng {
     static_assert(sizeof(float) == 4);

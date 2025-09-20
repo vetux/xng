@@ -17,7 +17,7 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "xng/render/shaderlib/texfilter.hpp"
+#include "xng/graphics/shaderlib/texfilter.hpp"
 
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 

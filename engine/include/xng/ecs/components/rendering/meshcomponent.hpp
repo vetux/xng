@@ -20,8 +20,8 @@
 #ifndef XENGINE_MESHCOMPONENT_HPP
 #define XENGINE_MESHCOMPONENT_HPP
 
-#include "xng/render/scene/material.hpp"
-#include "xng/render/scene/mesh.hpp"
+#include "xng/graphics/scene/material.hpp"
+#include "xng/graphics/scene/mesh.hpp"
 #include "xng/resource/resourcehandle.hpp"
 #include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
