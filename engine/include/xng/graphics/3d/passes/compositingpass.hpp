@@ -49,8 +49,6 @@ namespace xng {
         std::shared_ptr<RenderConfiguration> config;
         std::shared_ptr<SharedResourceRegistry> registry;
 
-        Vec2i currentResolution;
-
         std::vector<CompositeLayer> layers;
 
         RenderGraphResource backBufferColor;

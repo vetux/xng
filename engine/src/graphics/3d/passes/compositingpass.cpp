@@ -118,7 +118,7 @@ namespace xng {
     }
 
     bool CompositingPass::shouldRebuild(const Vec2i &backBufferSize) {
-        return backBufferSize * config->getRenderScale() != currentResolution;
+        return false;
     }
 
     void CompositingPass::runPass(RenderGraphContext &ctx) {
