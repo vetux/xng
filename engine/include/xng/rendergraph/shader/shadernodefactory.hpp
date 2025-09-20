@@ -50,6 +50,8 @@ namespace xng {
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> vertexPosition(const std::unique_ptr<ShaderNode> &position);
 
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> fragmentDepth(const std::unique_ptr<ShaderNode> &depth);
+
         XENGINE_EXPORT std::unique_ptr<ShaderNode> vector(ShaderDataType type,
                                                           const std::unique_ptr<ShaderNode> &x,
                                                           const std::unique_ptr<ShaderNode> &y,

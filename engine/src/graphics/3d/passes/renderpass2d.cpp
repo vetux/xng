@@ -21,6 +21,8 @@
 
 #include "xng/graphics/vertexstream.hpp"
 
+// TODO: Redesign RenderPass2D / Texture Atlas / Mesh Buffer
+
 namespace xng {
     static_assert(sizeof(float) == 4);
     static_assert(sizeof(int) == 4);
@@ -59,8 +61,9 @@ namespace xng {
         std::vector<std::vector<Texture2D::Handle> > textureDeallocations;
     };
 
-    RenderPass2D::RenderPass2D(std::shared_ptr<RenderConfiguration> configuration)
-        : config(std::move(configuration)) {
+    RenderPass2D::RenderPass2D(std::shared_ptr<RenderConfiguration> configuration,
+                               std::shared_ptr<SharedResourceRegistry> registry)
+        : config(std::move(configuration)), registry(std::move(registry)) {
     }
 
     bool RenderPass2D::shouldRebuild(const Vec2i &backBufferSize) {
@@ -70,14 +73,48 @@ namespace xng {
 
         for (auto &batch: batches) {
             for (auto &pair: batch.textureAllocations) {
+                if (atlasHandles.find(pair.first) != atlasHandles.end()) {
+                    //throw std::runtime_error("Texture already allocated in atlas");
+                }
                 atlasHandles[pair.first] = atlas.add(pair.second);
             }
+        }
+
+        std::unordered_map<Vec2i, size_t> canvasUseCount;
+        for (auto &batch: batches) {
+            if (batch.renderToScreen) {
+                canvasUseCount[batch.canvasSize]++;
+            }
+        }
+
+        bool rebuild = false;
+
+        auto canvasTexturesCopy = canvasTextures;
+        canvasTextures.clear();
+
+        for (auto &pair: canvasUseCount) {
+            if (canvasTexturesCopy.find(pair.first) == canvasTexturesCopy.end()) {
+                rebuild = true;
+            } else if (canvasTexturesCopy.at(pair.first).size() < pair.second) {
+                rebuild = true;
+                canvasTextures[pair.first] = canvasTexturesCopy.at(pair.first);
+            } else if (canvasTexturesCopy.at(pair.first).size() > pair.second) {
+                canvasTexturesCopy.at(pair.first).resize(pair.second);
+                canvasTextures[pair.first] = canvasTexturesCopy.at(pair.first);
+            } else {
+                canvasTextures[pair.first] = canvasTexturesCopy.at(pair.first);
+            }
+        }
+
+        if (rebuild) {
+            return true;
         }
 
         if (vertexBufferSize < meshBuffer.getVertexBufferSize()
             || indexBufferSize < meshBuffer.getIndexBufferSize()) {
             return true;
         }
+
         return atlas.shouldRebuild();
     }
 
@@ -104,7 +141,7 @@ namespace xng {
 
         shaderBuffer = builder.createShaderBuffer(sizeof(ShaderBufferFormat));
 
-        backBufferColor = builder.getBackBufferColor();
+        registry->set(RenderCanvases());
 
         auto pass = builder.addPass("RenderPass2D", [this](RenderGraphContext &ctx) {
             runPass(ctx);
@@ -125,8 +162,6 @@ namespace xng {
         if (indexBufferCopy) {
             builder.read(pass, indexBufferCopy);
         }
-
-        builder.write(pass, backBufferColor);
     }
 
     void RenderPass2D::recreate(RenderGraphBuilder &builder) {
@@ -154,7 +189,40 @@ namespace xng {
 
         shaderBuffer = builder.inheritResource(shaderBuffer);
 
-        backBufferColor = builder.getBackBufferColor();
+        std::unordered_map<Vec2i, size_t> canvasUseCount;
+
+        std::vector<Canvas> canvases;
+        for (auto i = 0; i < batches.size(); i++) {
+            auto &batch = batches[i];
+            if (batch.renderToScreen) {
+                canvasUseCount[batch.canvasSize]++;
+
+                Canvas canvas;
+                canvas.transform = batch.transform;
+                canvas.worldSpace = batch.worldSpace;
+
+                if (canvasUseCount.at(batch.canvasSize) > canvasTextures[batch.canvasSize].size()) {
+                    RenderGraphTexture canvasTexture;
+                    canvasTexture.size = batch.canvasSize;
+                    canvasTexture.format = RGBA;
+
+                    canvas.texture = builder.createTexture(canvasTexture);
+
+                    canvasTextures[batch.canvasSize].emplace_back(canvas.texture);
+                } else {
+                    auto canvasTextureRes = canvasTextures.at(batch.canvasSize).at(
+                        canvasUseCount.at(batch.canvasSize) - 1);
+                    canvasTextures.at(batch.canvasSize).at(
+                        canvasUseCount.at(batch.canvasSize) - 1) = builder.inheritResource(canvasTextureRes);
+                    canvas.texture = canvasTextures.at(batch.canvasSize).at(
+                        canvasUseCount.at(batch.canvasSize) - 1);
+                }
+
+                canvases.emplace_back(std::move(canvas));
+            }
+        }
+
+        registry->set(RenderCanvases(canvases));
 
         auto pass = builder.addPass("RenderPass2D", [this](RenderGraphContext &ctx) {
             runPass(ctx);
@@ -175,7 +243,12 @@ namespace xng {
         if (indexBufferCopy) {
             builder.read(pass, indexBufferCopy);
         }
-        builder.write(pass, backBufferColor);
+
+        for (auto &pair: canvasTextures) {
+            for (auto &tex: pair.second) {
+                builder.write(pass, tex);
+            }
+        }
     }
 
     Mat4f RenderPass2D::getRotationMatrix(float rotation, const Vec2f &center) {
@@ -217,7 +290,6 @@ namespace xng {
 
         meshBuffer.upload(vertexBuffer, indexBuffer, ctx);
 
-        // TODO: Redesign RenderPass2D implementation
         std::vector<Primitive> primitives;
         std::vector<size_t> baseVertices;
         std::vector<DrawCall> drawCalls;
@@ -386,21 +458,26 @@ namespace xng {
         size_t renderBatchIndex = 0;
         bool gotRenderBatchIndex = false;
 
+        std::unordered_map<Vec2i, size_t> canvasUseCount;
+
         std::vector<DrawPass> drawPasses;
         DrawPass currentPass;
+        Texture2D::Handle currentTarget = batches.at(0).renderTarget;
         for (auto y = 0; y < drawCalls.size(); y++) {
             auto prim = primitives.at(y);
-            if (prim != currentPass.primitive) {
+            auto batch = batches.at(batchIndices.at(y));
+            if (prim != currentPass.primitive
+                || batch.renderTarget != currentTarget) {
                 if (!currentPass.drawCalls.empty())
                     drawPasses.emplace_back(currentPass);
                 currentPass = {};
                 currentPass.primitive = prim;
+                currentTarget = batch.renderTarget;
             }
             currentPass.drawCalls.emplace_back(drawCalls.at(y));
             currentPass.baseVertices.emplace_back(baseVertices.at(y));
             currentPass.uniformBuffers.emplace_back(passData.at(y));
 
-            auto batch = batches.at(batchIndices.at(y));
             if (!gotRenderBatchIndex
                 || batchIndices.at(y) > renderBatchIndex) {
                 currentPass.clear = batch.mClear;
@@ -408,12 +485,15 @@ namespace xng {
                 renderBatchIndex = batchIndices.at(y);
                 gotRenderBatchIndex = true;
                 currentPass.textureDeallocations.emplace_back(batch.textureDeallocations);
+                if (batch.renderToScreen)
+                    canvasUseCount[batch.canvasSize]++;
             }
             currentPass.viewportOffset = batch.mViewportOffset;
             currentPass.viewportSize = batch.mViewportSize;
 
             if (batch.renderToScreen) {
-                currentPass.renderTarget = RenderGraphAttachment(backBufferColor);
+                auto index = canvasUseCount.at(batch.canvasSize) - 1;
+                currentPass.renderTarget = RenderGraphAttachment(canvasTextures.at(batch.canvasSize).at(index));
             } else {
                 auto atlasHandle = atlasHandles.at(batch.renderTarget);
                 currentPass.renderTarget = RenderGraphAttachment(atlasTextures.at(atlasHandle.level),

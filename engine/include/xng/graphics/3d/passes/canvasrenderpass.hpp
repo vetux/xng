@@ -24,26 +24,38 @@
 
 #include "xng/graphics/3d/renderconfiguration.hpp"
 #include "xng/graphics/3d/sharedresourceregistry.hpp"
+#include "xng/graphics/3d/sharedresources/compositinglayers.hpp"
+#include "xng/graphics/3d/sharedresources/rendercanvases.hpp"
 
 namespace xng {
     /**
      * Renders the canvases created by the RenderPass2D.
      */
-    class CanvasRenderPass final : public RenderPass {
+    class XENGINE_EXPORT CanvasRenderPass final : public RenderPass {
     public:
-        explicit CanvasRenderPass(std::shared_ptr<RenderConfiguration> config,
-                                  std::shared_ptr<SharedResourceRegistry> registry);
+        CanvasRenderPass(std::shared_ptr<RenderConfiguration> config, std::shared_ptr<SharedResourceRegistry> registry);
 
-        /**
-         * Has to be called immediately before executing the render graph runtime.
-         *
-         * @return True if the graph must be rebuilt.
-         */
         bool shouldRebuild(const Vec2i &backBufferSize) override;
 
         void create(RenderGraphBuilder &builder) override;
 
         void recreate(RenderGraphBuilder &builder) override;
+
+    private:
+        void runPass(RenderGraphContext &ctx);
+
+        static Shader createVertexShader();
+
+        static Shader createFragmentShader();
+
+        std::shared_ptr<RenderConfiguration> config;
+        std::shared_ptr<SharedResourceRegistry> registry;
+
+        CompositeLayer screenSpaceLayer;
+        CompositeLayer worldSpaceLayer;
+        Vec2i layerSize;
+
+        RenderCanvases canvases;
     };
 }
 

@@ -840,6 +840,8 @@ void ContextGL::endRenderPass() {
 
     oglCheckError();
 
+    boundPipeline = {};
+
     oglDebugEndGroup();
 }
 

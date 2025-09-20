@@ -105,6 +105,8 @@ std::string compileNode(const ShaderNode &node,
             return compileLeafNode(down_cast<const NodeLoop &>(node), source, functionName, prefix);
         case ShaderNode::VERTEX_POSITION:
             return compileLeafNode(down_cast<const NodeVertexPosition &>(node), source, functionName, prefix);
+        case ShaderNode::FRAGMENT_DEPTH:
+            return compileLeafNode(down_cast<const NodeFragmentDepth &>(node), source, functionName, prefix);
     }
     throw std::runtime_error("Node Type not implemented");
 }
@@ -641,4 +643,9 @@ std::string compileLeafNode(const NodeLoop &node,
 std::string compileLeafNode(const NodeVertexPosition &node, const Shader &source, const std::string &functionName,
                             const std::string &prefix) {
     return prefix + "gl_Position = " + compileNode(*node.value, source, functionName);
+}
+
+std::string compileLeafNode(const NodeFragmentDepth &node, const Shader &source, const std::string &functionName,
+                            const std::string &prefix) {
+    return prefix + "gl_FragDepth = " + compileNode(*node.value, source, functionName);
 }

@@ -84,6 +84,21 @@ namespace xng {
         virtual Window &getWindow() = 0;
 
         /**
+         * Internally updates the back buffer to match the current window framebuffer size.
+         *
+         * The runtime implementation must catch and handle errors internally if the window size changes during rendering.
+         * (What exactly happens if a swap chain / framebuffer size doesn't match is not clearly defined in graphics apis)
+         *
+         * @return The current back buffer size.
+         */
+        virtual Vec2i updateBackBuffer() = 0;
+
+        /**
+         * @return The currently set back buffer size
+         */
+        virtual Vec2i getBackBufferSize() = 0;
+
+        /**
          * Compile a graph.
          *
          * @param graph The graph to compile

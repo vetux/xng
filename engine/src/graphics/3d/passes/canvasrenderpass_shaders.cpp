@@ -17,25 +17,14 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_OGLSHADERSTORAGEBUFFER_HPP
-#define XENGINE_OGLSHADERSTORAGEBUFFER_HPP
+#include "xng/graphics/3d/passes/canvasrenderpass.hpp"
 
-#include "glad/glad.h"
-
-struct OGLShaderStorageBuffer {
-    GLuint SSBO = 0;
-
-    explicit OGLShaderStorageBuffer(size_t size) {
-        glGenBuffers(1, &SSBO);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, static_cast<GLsizeiptr>(size), nullptr, GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-        oglCheckError();
+namespace xng {
+    Shader CanvasRenderPass::createVertexShader() {
+        return Shader();
     }
 
-    ~OGLShaderStorageBuffer() {
-        glDeleteBuffers(1, &SSBO);
+    Shader CanvasRenderPass::createFragmentShader() {
+        return Shader();
     }
-};
-
-#endif //XENGINE_OGLSHADERSTORAGEBUFFER_HPP
+}

@@ -28,11 +28,13 @@
 #include "xng/graphics/3d/meshbuffer2d.hpp"
 #include "xng/graphics/3d/renderconfiguration.hpp"
 #include "xng/graphics/3d/atlas/textureatlas.hpp"
+#include "xng/graphics/3d/sharedresources/rendercanvases.hpp"
 
 namespace xng {
     class XENGINE_EXPORT RenderPass2D final : public RenderPass {
     public:
-        explicit RenderPass2D(std::shared_ptr<RenderConfiguration> configuration);
+        explicit RenderPass2D(std::shared_ptr<RenderConfiguration> configuration,
+                              std::shared_ptr<SharedResourceRegistry> registry);
 
         /**
          * Has to be called immediately before executing the render graph runtime.
@@ -74,11 +76,9 @@ namespace xng {
 
         static Shader createFragmentShader();
 
-        Mat4f getRotationMatrix(float rotation, const Vec2f& center);
+        Mat4f getRotationMatrix(float rotation, const Vec2f &center);
 
         void runPass(RenderGraphContext &ctx);
-
-        RenderGraphResource backBufferColor;
 
         RenderGraphResource trianglePipeline{};
         RenderGraphResource linePipeline{};
@@ -106,6 +106,11 @@ namespace xng {
         std::unordered_map<Texture2D::Handle, TextureAtlasHandle> atlasHandles;
 
         std::shared_ptr<RenderConfiguration> config;
+        std::shared_ptr<SharedResourceRegistry> registry;
+
+        std::unordered_map<Vec2i, std::vector<RenderGraphResource> > canvasTextures;
+
+        std::unordered_map<size_t, RenderGraphResource> batchCanvasTextures;
     };
 }
 

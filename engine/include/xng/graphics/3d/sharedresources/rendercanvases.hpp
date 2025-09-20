@@ -17,8 +17,8 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_CANVASTEXTURES_HPP
-#define XENGINE_CANVASTEXTURES_HPP
+#ifndef XENGINE_RENDERCANVASES_HPP
+#define XENGINE_RENDERCANVASES_HPP
 
 #include "xng/rendergraph/rendergraphresource.hpp"
 
@@ -35,9 +35,15 @@ namespace xng {
     /**
      * The RenderPass2D creates a canvas for each render batch that doesn't have a render target.
      */
-    struct CanvasTextures final : SharedResource<RESOURCE_CANVAS_TEXTURES> {
+    struct RenderCanvases final : SharedResource<RESOURCE_CANVAS_TEXTURES> {
         std::vector<Canvas> canvases;
+
+        RenderCanvases() = default;
+
+        explicit RenderCanvases(const std::vector<Canvas> &canvases)
+            : canvases(canvases) {
+        }
     };
 }
 
-#endif //XENGINE_CANVASTEXTURES_HPP
+#endif //XENGINE_RENDERCANVASES_HPP

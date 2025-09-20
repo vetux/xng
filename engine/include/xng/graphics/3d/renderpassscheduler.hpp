@@ -34,6 +34,12 @@ namespace xng {
     public:
         explicit RenderPassScheduler(std::shared_ptr<RenderGraphRuntime> rt)
             : runtime(std::move(rt)) {
+            updateBackBuffer();
+        }
+
+        Vec2i updateBackBuffer() {
+            backBufferSize = runtime->updateBackBuffer();
+            return backBufferSize;
         }
 
         RenderGraphHandle addGraph(const std::shared_ptr<RenderPass>& renderPass) {
@@ -43,7 +49,7 @@ namespace xng {
         }
 
         RenderGraphHandle addGraph(std::vector<std::shared_ptr<RenderPass> > renderPasses) {
-            RenderGraphBuilder builder(runtime->getWindow().getFramebufferSize());
+            RenderGraphBuilder builder(backBufferSize);
             for (auto &pass: renderPasses) {
                 pass->create(builder);
             }
@@ -55,13 +61,12 @@ namespace xng {
         void execute(const RenderGraphHandle graphHandle) const {
             bool recompile = false;
             for (const auto &pass: graphPasses.at(graphHandle)) {
-                if (pass->shouldRebuild(runtime->getWindow().getFramebufferSize())) {
+                if (pass->shouldRebuild(backBufferSize)) {
                     recompile = true;
-                    break;
                 }
             }
             if (recompile) {
-                RenderGraphBuilder builder(runtime->getWindow().getFramebufferSize());
+                RenderGraphBuilder builder(backBufferSize);
                 for (const auto &pass: graphPasses.at(graphHandle)) {
                     pass->recreate(builder);
                 }
@@ -74,13 +79,12 @@ namespace xng {
             for (auto &graphHandle: graphHandles) {
                 bool recompile = false;
                 for (const auto &pass: graphPasses.at(graphHandle)) {
-                    if (pass->shouldRebuild(runtime->getWindow().getFramebufferSize())) {
+                    if (pass->shouldRebuild(backBufferSize)) {
                         recompile = true;
-                        break;
                     }
                 }
                 if (recompile) {
-                    RenderGraphBuilder builder(runtime->getWindow().getFramebufferSize());
+                    RenderGraphBuilder builder(backBufferSize);
                     for (const auto &pass: graphPasses.at(graphHandle)) {
                         pass->recreate(builder);
                     }
@@ -96,6 +100,8 @@ namespace xng {
         }
 
     private:
+        Vec2i backBufferSize;
+
         std::shared_ptr<RenderGraphRuntime> runtime;
         std::map<RenderGraphHandle, std::vector<std::shared_ptr<RenderPass> > > graphPasses;
     };

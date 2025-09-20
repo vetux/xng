@@ -133,7 +133,9 @@ namespace xng {
         }
         if (previousHandles.size() > 0) {
             for (int i = TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; i++) {
-                builder.readWrite(pass, previousHandles.at(static_cast<TextureAtlasResolution>(i)));
+                auto res = static_cast<TextureAtlasResolution>(i);
+                if (previousHandles.find(res) != previousHandles.end())
+                    builder.readWrite(pass, previousHandles.at(res));
             }
         }
     }
@@ -184,7 +186,7 @@ namespace xng {
         if (previousHandles.size() > 0) {
             for (int i = TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; i++) {
                 const auto res = static_cast<TextureAtlasResolution>(i);
-                if (currentHandles.at(res) != previousHandles.at(res)) {
+                if (previousHandles.find(res) != previousHandles.end()) {
                     ctx.copyTexture(currentHandles.at(res), previousHandles.at(res));
                 }
             }

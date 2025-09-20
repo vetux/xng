@@ -51,6 +51,7 @@ namespace xng {
 
         Transform transform;
         bool worldSpace = false;
+        Vec2i canvasSize;
 
         RenderBatch2D() = default;
 

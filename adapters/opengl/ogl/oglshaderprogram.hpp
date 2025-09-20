@@ -28,7 +28,9 @@ struct OGLShaderProgram {
     GLuint programHandle{};
 
     explicit OGLShaderProgram(const CompiledPipeline &pipeline) {
-        char *vertexSource, *fragmentSource, *geometrySource = nullptr;
+        char *vertexSource = nullptr;
+        char *fragmentSource = nullptr;
+        char *geometrySource = nullptr;
 
         std::string vert, frag, geo;
         auto it = pipeline.sourceCode.find(Shader::VERTEX);
@@ -51,8 +53,15 @@ struct OGLShaderProgram {
             geometrySource = geo.data();
         }
 
-        programHandle = glCreateProgram();
+        buildShader(vertexSource, fragmentSource, geometrySource);
+    }
 
+    ~OGLShaderProgram() {
+        glDeleteProgram(programHandle);
+    }
+
+    void buildShader(const char *vertexSource, const char *fragmentSource, const char *geometrySource) {
+        programHandle = glCreateProgram();
         GLuint vsH = glCreateShader(GL_VERTEX_SHADER);
         glShaderSource(vsH, 1, &vertexSource, nullptr);
         glCompileShader(vsH);
@@ -109,10 +118,6 @@ struct OGLShaderProgram {
 
         glDeleteShader(vsH);
         glDeleteShader(fsH);
-    }
-
-    ~OGLShaderProgram() {
-        glDeleteProgram(programHandle);
     }
 };
 

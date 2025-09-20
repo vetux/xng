@@ -39,6 +39,10 @@ public:
 
     Window &getWindow() override;
 
+    Vec2i updateBackBuffer() override;
+
+    Vec2i getBackBufferSize() override;
+
     RenderGraphHandle compile(const RenderGraph &graph) override;
 
     void recompile(RenderGraphHandle handle, const RenderGraph &graph) override;
@@ -56,7 +60,7 @@ public:
     GraphicsAPI getGraphicsAPI() override { return OPENGL_4_6; }
 
 private:
-    void updateBackBuffer();
+    void updateInternalBackBuffer();
 
     void presentBackBuffer() const;
 

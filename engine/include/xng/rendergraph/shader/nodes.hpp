@@ -20,6 +20,7 @@
 #ifndef XENGINE_NODES_HPP
 #define XENGINE_NODES_HPP
 
+#include "xng/rendergraph/shader/nodes/nodefragmentdepth.hpp"
 #include "xng/rendergraph/shader/nodes/nodeor.hpp"
 #include "xng/rendergraph/shader/nodes/nodebuffer.hpp"
 #include "xng/rendergraph/shader/nodes/nodeliteral.hpp"

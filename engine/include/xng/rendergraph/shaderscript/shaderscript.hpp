@@ -264,6 +264,10 @@ namespace xng::ShaderScript {
         ShaderBuilder::instance().addNode(ShaderNodeFactory::vertexPosition(value.node));
     }
 
+    inline void setFragmentDepth(const ShaderNodeWrapper &value) {
+        ShaderBuilder::instance().addNode(ShaderNodeFactory::fragmentDepth(value.node));
+    }
+
     inline ShaderNodeWrapper CallA(const std::string &functionName,
                                    const std::vector<ShaderNodeWrapper> &wArgs = {}) {
         std::vector<std::unique_ptr<ShaderNode> > args;

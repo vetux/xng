@@ -281,6 +281,7 @@ namespace xng {
         std::vector<size_t> unusedTextureHandles;
 
         std::shared_ptr<RenderConfiguration> config = nullptr;
+        std::shared_ptr<SharedResourceRegistry> registry = nullptr;
 
         std::shared_ptr<RenderGraphRuntime> runtime = nullptr;
         std::shared_ptr<RenderPass2D> renderPass = nullptr;

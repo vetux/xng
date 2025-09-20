@@ -75,6 +75,11 @@ namespace xng {
 
         virtual void setWindowAspectRatio(Vec2i ratio) = 0;
 
+        /**
+         * The returned size can randomly asynchronously change.
+         *
+         * @return The current framebuffer size.
+         */
         virtual Vec2i getFramebufferSize() = 0;
 
         virtual Vec4i getFrameSize() = 0;

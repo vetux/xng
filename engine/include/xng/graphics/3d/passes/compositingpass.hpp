@@ -26,79 +26,26 @@
 #include "xng/graphics/3d/sharedresources/compositinglayers.hpp"
 
 namespace xng {
-    class CompositingPass final : public RenderPass {
+    class XENGINE_EXPORT CompositingPass final : public RenderPass {
     public:
         CompositingPass(std::shared_ptr<RenderConfiguration> config,
-                        std::shared_ptr<SharedResourceRegistry> registry)
-            : config(std::move(config)),
-              registry(std::move(registry)) {
-        }
+                        std::shared_ptr<SharedResourceRegistry> registry);
 
         ~CompositingPass() override = default;
 
-        void create(RenderGraphBuilder &builder) override {
-            const auto resolution = builder.getBackBufferSize() * config->getRenderScale();
+        void create(RenderGraphBuilder &builder) override;
 
-            currentResolution = resolution;
+        void recreate(RenderGraphBuilder &builder) override;
 
-            backBufferColor = builder.getBackBufferColor();
-            backBufferDepth = builder.getBackBufferDepthStencil();
-
-            if (registry->check<CompositingLayers>()) {
-                layers = registry->get<CompositingLayers>().layers;
-            } else {
-                layers = {};
-            }
-
-            auto pass = builder.addPass("CompositingPass", [this](RenderGraphContext &ctx) {
-                ctx.clearTextureColor(backBufferColor, ColorRGBA::black(1, 0));
-                ctx.clearTextureDepthStencil(backBufferDepth, 1, 0);
-            });
-
-            builder.write(pass, backBufferColor);
-            builder.write(pass, backBufferDepth);
-
-            for (auto &layer: layers) {
-                builder.read(pass, layer.color);
-                if (layer.depth) {
-                    builder.read(pass, layer.depth);
-                }
-            }
-        }
-
-        void recreate(RenderGraphBuilder &builder) override {
-            const auto resolution = builder.getBackBufferSize() * config->getRenderScale();
-
-            backBufferColor = builder.getBackBufferColor();
-            backBufferDepth = builder.getBackBufferDepthStencil();
-
-            if (registry->check<CompositingLayers>()) {
-                layers = registry->get<CompositingLayers>().layers;
-            } else {
-                layers = {};
-            }
-
-            auto pass = builder.addPass("CompositingPass", [this](RenderGraphContext &ctx) {
-                ctx.clearTextureColor(backBufferColor, ColorRGBA::black(1, 0));
-                ctx.clearTextureDepthStencil(backBufferDepth, 1, 0);
-            });
-
-            builder.write(pass, backBufferColor);
-            builder.write(pass, backBufferDepth);
-
-            for (auto &layer: layers) {
-                builder.read(pass, layer.color);
-                if (layer.depth) {
-                    builder.read(pass, layer.depth);
-                }
-            }
-        }
-
-        bool shouldRebuild(const Vec2i &backBufferSize) override {
-            return backBufferSize * config->getRenderScale() != currentResolution;
-        }
+        bool shouldRebuild(const Vec2i &backBufferSize) override;
 
     private:
+        static Shader createVertexShader();
+
+        static Shader createFragmentShader();
+
+        void runPass(RenderGraphContext &ctx);
+
         std::shared_ptr<RenderConfiguration> config;
         std::shared_ptr<SharedResourceRegistry> registry;
 
@@ -108,6 +55,16 @@ namespace xng {
 
         RenderGraphResource backBufferColor;
         RenderGraphResource backBufferDepth;
+
+        RenderGraphResource pipeline;
+
+        RenderGraphResource vertexBuffer;
+        bool vertexBufferAllocated = false;
+
+        RenderGraphResource defaultDepthTexture;
+        bool defaultDepthTextureAllocated = false;
+
+        Mesh normalizedQuad;
     };
 }
 

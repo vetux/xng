@@ -66,6 +66,10 @@ namespace xng::ShaderNodeFactory {
         return std::make_unique<NodeVertexPosition>(position->copy());
     }
 
+    std::unique_ptr<ShaderNode> fragmentDepth(const std::unique_ptr<ShaderNode> &depth) {
+        return std::make_unique<NodeFragmentDepth>(depth->copy());
+    }
+
     std::unique_ptr<ShaderNode> vector(const ShaderDataType type,
                                        const std::unique_ptr<ShaderNode> &x,
                                        const std::unique_ptr<ShaderNode> &y,

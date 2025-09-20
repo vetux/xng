@@ -17,25 +17,30 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_OGLSHADERSTORAGEBUFFER_HPP
-#define XENGINE_OGLSHADERSTORAGEBUFFER_HPP
+#ifndef XENGINE_NODEFRAGMENTDEPTH_HPP
+#define XENGINE_NODEFRAGMENTDEPTH_HPP
 
-#include "glad/glad.h"
 
-struct OGLShaderStorageBuffer {
-    GLuint SSBO = 0;
+#include <utility>
 
-    explicit OGLShaderStorageBuffer(size_t size) {
-        glGenBuffers(1, &SSBO);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, static_cast<GLsizeiptr>(size), nullptr, GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-        oglCheckError();
-    }
+#include "xng/rendergraph/shader/shadernode.hpp"
 
-    ~OGLShaderStorageBuffer() {
-        glDeleteBuffers(1, &SSBO);
-    }
-};
+namespace xng {
+    struct NodeFragmentDepth final : ShaderNode {
+        std::unique_ptr<ShaderNode> value;
 
-#endif //XENGINE_OGLSHADERSTORAGEBUFFER_HPP
+        explicit NodeFragmentDepth(std::unique_ptr<ShaderNode> value)
+            : value(std::move(value)) {
+        }
+
+        NodeType getType() const override {
+            return FRAGMENT_DEPTH;
+        }
+
+        std::unique_ptr<ShaderNode> copy() const override {
+            return std::make_unique<NodeFragmentDepth>(value->copy());
+        }
+    };
+}
+
+#endif //XENGINE_NODEFRAGMENTDEPTH_HPP

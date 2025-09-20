@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
 
     // Print shader test pass
     {
-        RenderGraphBuilder builder(window->getFramebufferSize());
+        RenderGraphBuilder builder(runtime->updateBackBuffer());
         ShaderTestPass pass;
         pass.setup(builder);
 
@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
 
     auto textRenderer = TextRenderer(ren2D, *fontRenderer, {0, 50});
 
-    auto text = textRenderer.render("Hello\nWorld!", {50, 0, 0, TEXT_ALIGN_LEFT});
+    auto text = textRenderer.render("Hello\nWorld!", {60, 0, 0, TEXT_ALIGN_LEFT});
 
     auto config = std::make_shared<RenderConfiguration>();
 
@@ -96,22 +96,29 @@ int main(int argc, char *argv[]) {
 
     auto passScheduler = std::make_shared<RenderPassScheduler>(runtime);
 
-    auto pass2D = std::make_shared<RenderPass2D>(config);
-
     auto graph3D = passScheduler->addGraph({
+        std::make_shared<RenderPass2D>(config, registry),
         std::make_shared<ConstructionPass>(config, registry),
+        std::make_shared<CanvasRenderPass>(config, registry),
         std::make_shared<CompositingPass>(config, registry),
     });
-    auto graph2D = passScheduler->addGraph(pass2D);
+
+    FrameLimiter frameLimiter;
+    frameLimiter.reset();
 
     while (!window->shouldClose()) {
+        frameLimiter.newFrame();
+
+        auto deltaText = textRenderer.render(std::to_string(1000.0f / std::chrono::duration_cast<std::chrono::milliseconds>(frameLimiter.getDeltaTime()).count()) + " fps",
+                                             {50, 0, 0, TEXT_ALIGN_LEFT});
+
         window->update();
 
-        scene.camera.aspectRatio = static_cast<float>(window->getFramebufferSize().x)
-                                   / static_cast<float>(window->getFramebufferSize().y);
+        auto fbSize = passScheduler->updateBackBuffer();
+        scene.camera.aspectRatio = static_cast<float>(fbSize.x)
+                                   / static_cast<float>(fbSize.y);
         config->setScene(scene);
 
-        auto fbSize = window->getFramebufferSize();
         auto fbSizeF = fbSize.convert<float>();
 
         ren2D->renderBegin(fbSize, ColorRGBA::white());
@@ -123,15 +130,21 @@ int main(int argc, char *argv[]) {
         ren2D->draw(Vec2f(0, fbSizeF.y / 2), Vec2f(fbSizeF.x, fbSizeF.y / 2), ColorRGBA::red());
         ren2D->draw(Vec2f(fbSizeF.x / 2, 0), Vec2f(fbSizeF.x / 2, fbSizeF.y), ColorRGBA::red());
         ren2D->draw(Vec2f(50, 0), text, ColorRGBA::purple());
+        ren2D->draw(Vec2f(fbSizeF.x - static_cast<float>(deltaText.getTexture().getSize().x), 0),
+                    deltaText,
+                    ColorRGBA::black());
 
         ren2D->renderPresent();
 
-        config->setRenderBatches(ren2D->getRenderBatches());
+        auto batches = ren2D->getRenderBatches();
+        for (auto &batch: batches) {
+            batch.canvasSize = fbSize;
+        }
+
+        config->setRenderBatches(batches);
         ren2D->clearBatches();
 
-        passScheduler->execute({graph3D, graph2D});
-
-        window->swapBuffers();
+        passScheduler->execute(graph3D);
     }
 
     ren2D->destroyTexture(smileyTexture);

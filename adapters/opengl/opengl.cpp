@@ -34,6 +34,14 @@ namespace xng::opengl {
         return runtime->getWindow();
     }
 
+    Vec2i OpenGL::updateBackBuffer() {
+        return runtime->updateBackBuffer();
+    }
+
+    Vec2i OpenGL::getBackBufferSize() {
+        return runtime->getBackBufferSize();
+    }
+
     RenderGraphHandle OpenGL::compile(const RenderGraph &graph) {
         return runtime->compile(graph);
     }

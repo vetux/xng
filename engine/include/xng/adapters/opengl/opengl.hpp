@@ -33,6 +33,10 @@ namespace xng::opengl {
 
         Window &getWindow() override;
 
+        Vec2i updateBackBuffer() override;
+
+        Vec2i getBackBufferSize() override;
+
         RenderGraphHandle compile(const RenderGraph &graph) override;
 
         void recompile(RenderGraphHandle handle, const RenderGraph &graph) override;

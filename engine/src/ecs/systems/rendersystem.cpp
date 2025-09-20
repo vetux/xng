@@ -35,7 +35,7 @@ namespace xng {
           registry(std::make_shared<SharedResourceRegistry>()),
           config(std::make_shared<RenderConfiguration>()) {
         graph = scheduler.addGraph({
-            std::make_shared<RenderPass2D>(config),
+            std::make_shared<RenderPass2D>(config, registry),
             std::make_shared<ConstructionPass>(config, registry),
             std::make_shared<CanvasRenderPass>(config, registry),
             std::make_shared<CompositingPass>(config, registry),

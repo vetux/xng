@@ -37,6 +37,18 @@ Window &RenderGraphRuntimeOGL::getWindow() {
     return *window;
 }
 
+Vec2i RenderGraphRuntimeOGL::updateBackBuffer() {
+    updateInternalBackBuffer();
+    return backBufferColor->texture.size;
+}
+
+Vec2i RenderGraphRuntimeOGL::getBackBufferSize() {
+    if (backBufferColor == nullptr) {
+        throw std::runtime_error("No back buffer");
+    }
+    return backBufferColor->texture.size;
+}
+
 RenderGraphHandle RenderGraphRuntimeOGL::compile(const RenderGraph &graph) {
     return compileGraph(graph);
 }
@@ -48,13 +60,13 @@ void RenderGraphRuntimeOGL::recompile(const RenderGraphHandle handle, const Rend
 void RenderGraphRuntimeOGL::execute(const RenderGraphHandle graph) {
     oglDebugStartGroup("RenderGraphRuntimeOGL::execute");
 
-    updateBackBuffer();
     ContextGL context(backBufferColor, backBufferDepthStencil, contexts.at(graph));
     for (auto &pass: contexts[graph].graph.passes) {
         oglDebugStartGroup(pass.name);
         pass.pass(context);
         oglDebugEndGroup();
     }
+
     presentBackBuffer();
 
     oglDebugEndGroup();
@@ -63,7 +75,6 @@ void RenderGraphRuntimeOGL::execute(const RenderGraphHandle graph) {
 void RenderGraphRuntimeOGL::execute(const std::vector<RenderGraphHandle> &graphs) {
     oglDebugStartGroup("RenderGraphRuntimeOGL::execute");
 
-    updateBackBuffer();
     for (auto graph: graphs) {
         oglDebugStartGroup("SubGraph");
         ContextGL context(backBufferColor, backBufferDepthStencil, contexts.at(graph));
@@ -93,11 +104,11 @@ void RenderGraphRuntimeOGL::loadCache(const RenderGraphHandle graph, std::istrea
     throw std::runtime_error("Not implemented");
 }
 
-void RenderGraphRuntimeOGL::updateBackBuffer() {
+void RenderGraphRuntimeOGL::updateInternalBackBuffer() {
     if (window == nullptr) {
         throw std::runtime_error("No window has been set");
     }
-    oglDebugStartGroup("RenderGraphRuntimeOGL::updateScreenTexture");
+    oglDebugStartGroup("RenderGraphRuntimeOGL::updateInternalBackBuffer");
 
     if (backBuffer == nullptr) {
         backBuffer = std::make_shared<OGLFramebuffer>();
@@ -136,21 +147,42 @@ void RenderGraphRuntimeOGL::updateBackBuffer() {
 void RenderGraphRuntimeOGL::presentBackBuffer() const {
     oglDebugStartGroup("RenderGraphRuntimeOGL::presentScreenTexture");
 
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, backBuffer->FBO);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    glBlitFramebuffer(0,
-                      0,
-                      backBufferColor->texture.size.x,
-                      backBufferColor->texture.size.y,
-                      0,
-                      0,
-                      backBufferColor->texture.size.x,
-                      backBufferColor->texture.size.y,
-                      GL_COLOR_BUFFER_BIT,
-                      GL_NEAREST);
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    auto srcSize = backBufferColor->texture.size;
+    auto dstSize = window->getFramebufferSize();
+
+    // Skip presenting frames on resize, prevents the contents of the window from jittering when live resizing.
+    if (dstSize == srcSize) {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, backBuffer->FBO);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glBlitFramebuffer(0,
+                          0,
+                          srcSize.x,
+                          srcSize.y,
+                          0,
+                          0,
+                          dstSize.x,
+                          dstSize.y,
+                          GL_COLOR_BUFFER_BIT,
+                          GL_LINEAR);
+
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    }
+
+    glFlush();
+
+    window->swapBuffers();
+
     oglCheckError();
+    try {
+        oglCheckError();
+    } catch (const std::exception &e) {
+        // Because the framebuffer size can change randomly, I ignore errors that glBlitFramebuffer might throw.
+    }
 
     oglDebugEndGroup();
 }
@@ -196,7 +228,7 @@ RenderGraphHandle RenderGraphRuntimeOGL::compileGraph(const RenderGraph &graph) 
 }
 
 RenderGraphHandle RenderGraphRuntimeOGL::recompileGraph(const RenderGraphHandle handle,
-                                                                      const RenderGraph &graph) {
+                                                        const RenderGraph &graph) {
     oglDebugStartGroup("RenderGraphRuntimeOGL::recompileGraph");
 
     auto context = GraphResources();

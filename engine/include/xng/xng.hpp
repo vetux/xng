@@ -24,6 +24,8 @@
 #define XENGINE_EXPORT
 #endif
 
+#include "xng/graphics/3d/passes/canvasrenderpass.hpp"
+
 #include "xng/display/displayenvironment.hpp"
 #include "xng/display/graphicsapi.hpp"
 #include "xng/display/monitor.hpp"

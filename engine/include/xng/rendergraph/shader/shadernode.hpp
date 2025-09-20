@@ -81,6 +81,7 @@ namespace xng {
             LOOP,
 
             VERTEX_POSITION,
+            FRAGMENT_DEPTH,
         };
 
         virtual NodeType getType() const = 0;
