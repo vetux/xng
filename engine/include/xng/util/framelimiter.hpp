@@ -74,9 +74,8 @@ namespace xng {
             return deltaTime;
         }
 
-        float getFramesPerSecond() const {
-            return 1000.0f
-                   / static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(deltaTime).count());
+        unsigned int getFramesPerSecond() const {
+            return static_cast<unsigned int>(std::round(1000000000.0f / static_cast<float>(deltaTime.count())));
         }
 
         void setTargetFrameRate(int frameRate) {
