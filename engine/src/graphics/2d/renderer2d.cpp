@@ -22,7 +22,7 @@
 #include <utility>
 
 #include "xng/math/matrixmath.hpp"
-#include "../../../include/xng/graphics/camera.hpp"
+#include "xng/graphics/camera.hpp"
 
 namespace xng {
     Renderer2D::Renderer2D(std::shared_ptr<RenderGraphRuntime> runtime)

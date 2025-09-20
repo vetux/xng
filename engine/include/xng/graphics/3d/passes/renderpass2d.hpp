@@ -78,6 +78,10 @@ namespace xng {
             }
         };
 
+        static Shader createVertexShader();
+
+        static Shader createFragmentShader();
+
         Mat4f getRotationMatrix(float rotation, const Vec2f& center);
 
         void runPass(RenderGraphContext &ctx);

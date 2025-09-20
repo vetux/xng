@@ -18,9 +18,9 @@
  */
 
 
-#include "../../include/xng/graphics/3d/meshbuffer3d.hpp"
+#include "xng/graphics/3d/meshbuffer3d.hpp"
 
-#include "../../include/xng/graphics/vertexstream.hpp"
+#include "xng/graphics/vertexstream.hpp"
 
 namespace xng {
     MeshBuffer3D::MeshAllocation MeshBuffer3D::allocateMesh(const Mesh &mesh) {

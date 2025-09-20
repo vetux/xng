@@ -24,7 +24,7 @@
 
 #include "xng/resource/resourceimporter.hpp"
 
-#include "../../../include/xng/graphics/vertexbuilder.hpp"
+#include "xng/graphics/vertexbuilder.hpp"
 
 static const std::string NORM_CUBE_OBJ = std::string(R"###(
 o Cube

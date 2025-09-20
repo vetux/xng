@@ -17,7 +17,8 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "fragmentshader.hpp"
+
+#include "xng/graphics/3d/passes/renderpass2d.hpp"
 
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
@@ -26,7 +27,65 @@
 using namespace xng::ShaderScript;
 
 namespace xng {
-    Shader createFragmentShader() {
+    Shader RenderPass2D::createVertexShader() {
+        const ShaderAttributeLayout inputLayout{
+            {
+                {"position", ShaderDataType::vec2()},
+                {"uv", ShaderDataType::vec2()}
+            }
+        };
+
+        const ShaderAttributeLayout outputLayout{
+            {
+                {"fPosition", ShaderDataType::vec4()},
+                {"fUv", ShaderDataType::vec2()}
+            }
+        };
+
+        const ShaderBuffer buf{
+            true,
+            false,
+            {
+                {"color", ShaderDataType::vec4()},
+                {"colorMixFactor", ShaderDataType::float32()},
+                {"alphaMixFactor", ShaderDataType::float32()},
+                {"colorFactor", ShaderDataType::float32()},
+                {"texAtlasLevel", ShaderDataType::integer()},
+                {"texAtlasIndex", ShaderDataType::integer()},
+                {"texFilter", ShaderDataType::integer()},
+                {"mvp", ShaderDataType::mat4()},
+                {"uvOffset_uvScale", ShaderDataType::vec4()},
+                {"atlasScale_texSize", ShaderDataType::vec4()},
+                {"_padding", ShaderDataType::float32()},
+            }
+        };
+
+        auto &builder = ShaderBuilder::instance();
+        builder.setup(Shader::VERTEX,
+                      inputLayout,
+                      outputLayout,
+                      {},
+                      {{"vars", buf}},
+                      {{"atlasTextures", ShaderTextureArray(ShaderTexture(TEXTURE_2D, RGBA, true), 12)}},
+                      {});
+
+        INPUT_ATTRIBUTE(position)
+        INPUT_ATTRIBUTE(uv)
+
+        OUTPUT_ATTRIBUTE(fPosition)
+        OUTPUT_ATTRIBUTE(fUv)
+
+        BUFFER_ELEMENT(vars, mvp)
+
+        fPosition = vars_mvp * vec4(position.x(), position.y(), 0.0, 1.0);
+        fUv = uv;
+
+        setVertexPosition(fPosition);
+
+        return builder.build();
+    }
+
+    Shader RenderPass2D::createFragmentShader() {
         const ShaderAttributeLayout inputLayout{
             {
                 {"fPosition", ShaderDataType::vec4()},
