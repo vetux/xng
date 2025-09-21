@@ -103,16 +103,28 @@ int main(int argc, char *argv[]) {
             0,
             TEXT_ALIGN_LEFT,
         });
+
+    auto deltaText = textLayoutEngine.getLayout(std::to_string(0) + " FPS",
+                                            {
+                                                0,
+                                                0,
+                                                TEXT_ALIGN_LEFT
+                                            });
+    std::chrono::milliseconds fpsUpdateInterval = std::chrono::milliseconds(50);
+    auto now = std::chrono::steady_clock::now();
     while (!window->shouldClose()) {
         frameLimiter.newFrame();
         window->update();
 
-        auto deltaText = textLayoutEngine.getLayout(std::to_string(frameLimiter.getFramesPerSecond()) + " FPS",
+        if (std::chrono::steady_clock::now() - now > fpsUpdateInterval) {
+            now = std::chrono::steady_clock::now();
+            deltaText = textLayoutEngine.getLayout(std::to_string(frameLimiter.getAverageFramerate()) + " FPS",
                                                     {
                                                         0,
                                                         0,
                                                         TEXT_ALIGN_LEFT
                                                     });
+        }
 
         auto fbSize = passScheduler->updateBackBuffer();
 

@@ -100,13 +100,18 @@ namespace xng {
                         }
                         case Paint::PAINT_TEXT: {
                             auto &text = std::get<PaintText>(paintCommand.data);
-                            for (auto &glyph : text.text.glyphs) {
+                            for (auto &glyph: text.text.glyphs) {
                                 auto dim = glyph.character.get().image.getResolution().convert<float>();
                                 if (planeMeshes.find(dim) == planeMeshes.end()) {
                                     planeMeshes[dim] = createPlane(dim);
                                 }
                                 usedPlanes.insert(dim);
                             }
+                            auto dim = text.text.size.convert<float>();
+                            if (planeMeshes.find(dim) == planeMeshes.end()) {
+                                planeMeshes[dim] = createPlane(dim);
+                            }
+                            usedPlanes.insert(dim);
                             break;
                         }
                     }

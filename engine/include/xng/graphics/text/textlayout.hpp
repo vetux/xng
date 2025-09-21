@@ -22,6 +22,7 @@
 
 #include <utility>
 
+#include "textlayoutparameters.hpp"
 #include "xng/font/character.hpp"
 #include "xng/resource/uri.hpp"
 
@@ -41,11 +42,15 @@ namespace xng {
         TextLayout(const Vec2i &size,
                    const std::vector<Glyph> &glyphs,
                    const Uri &font_uri,
-                   const Vec2i &font_pixel_size)
+                   const Vec2i &font_pixel_size,
+                   const std::string &text,
+                   const TextLayoutParameters &parameters)
             : size(size),
               glyphs(glyphs),
               fontUri(font_uri),
-              fontPixelSize(font_pixel_size) {
+              fontPixelSize(font_pixel_size),
+              text(text),
+              parameters(parameters) {
         }
 
         Vec2i size; // The total size of the text layout
@@ -53,6 +58,8 @@ namespace xng {
 
         Uri fontUri; // The font used to render the glyphs
         Vec2i fontPixelSize; // The size of the glyphs in pixels
+        std::string text;
+        TextLayoutParameters parameters; // The parameters used to render the glyphs
     };
 }
 

@@ -129,6 +129,6 @@ namespace xng {
             }
         }
 
-        return {getSize(text, layout), renderText, fontUri, fontPixelSize};
+        return {getSize(text, layout), renderText, fontUri, fontPixelSize, text, layout};
     }
 }

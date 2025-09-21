@@ -36,7 +36,8 @@ namespace xng {
         alignas(16) Mat4f mvp{};
         alignas(16) float uvOffset_uvScale[4]{};
         alignas(16) float atlasScale_texSize[4]{};
-        alignas(4) float _padding{}; // TODO: Handle shader buffer padding in the render graph runtime
+        alignas(4) float customTexture = 0;
+        // TODO: Handle shader buffer padding automatically in the render graph runtime
         // Array stride in the ssbo must be 16 for std140 therefore we add this padding float
     };
 
@@ -58,6 +59,19 @@ namespace xng {
         updateTextures();
 
         meshBuffer.update(canvases);
+
+        for (auto &canvas: canvases) {
+            for (auto &paintCommand: canvas.getPaintCommands()) {
+                if (paintCommand.type == Paint::PAINT_TEXT) {
+                    auto &txt = std::get<PaintText>(paintCommand.data);
+                    auto key = RenderText(txt.text.text, txt.color, txt.text.fontUri, txt.text.fontPixelSize,
+                      txt.text.parameters);
+                    if (textCache.find(key) == textCache.end()) {
+                        return true;
+                    }
+                }
+            }
+        }
 
         return atlas.shouldRebuild()
                || backBufferSize != layerSize
@@ -110,6 +124,8 @@ namespace xng {
         auto pass = builder.addPass("CanvasRenderPass", [this](RenderGraphContext &ctx) {
             runPass(ctx);
         });
+
+        updateTextCache(pass, builder);
 
         atlas.declareReadWrite(builder, pass);
 
@@ -170,6 +186,8 @@ namespace xng {
             runPass(ctx);
         });
 
+        updateTextCache(pass, builder);
+
         atlas.declareReadWrite(builder, pass);
 
         builder.readWrite(pass, vertexBuffer);
@@ -196,13 +214,12 @@ namespace xng {
 
         meshBuffer.upload(vertexBuffer, indexBuffer, ctx);
 
-        // Screen space canvases are always the same size as the back buffer, and there can currently only be one screen space canvas.
+        // Screen space canvases are always the same size as the back buffer,
+        // canvases which contain a background color with alpha clear the previous canvas contents.
         for (auto &canvas: canvases) {
             if (canvas.isWorldSpace())
                 continue;
-            // TODO: Implement multiple screen space canvas rendering support.
             renderCanvas(screenSpaceLayer.color, canvas, ctx);
-            break;
         }
 
         ctx.clearTextureColor(worldSpaceLayer.color, ColorRGBA::black(1, 0));
@@ -269,6 +286,131 @@ namespace xng {
         }
     }
 
+    void CanvasRenderPass::updateTextCache(RenderGraphBuilder::PassHandle pass, RenderGraphBuilder &builder) {
+        std::unordered_set<RenderText, RenderTextHash> usedTexts;
+        for (auto &canvas: canvases) {
+            for (auto &paintCommand: canvas.getPaintCommands()) {
+                if (paintCommand.type != Paint::PAINT_TEXT)
+                    continue;
+                auto &txt = std::get<PaintText>(paintCommand.data);
+                auto key = RenderText{
+                    txt.text.text, txt.color, txt.text.fontUri, txt.text.fontPixelSize, txt.text.parameters
+                };
+                usedTexts.insert(key);
+                if (textCache.find(key) == textCache.end()) {
+                    RenderGraphTexture texture;
+                    texture.format = RGBA;
+                    texture.size = txt.text.size;
+                    textCache[key] = builder.createTexture(texture);
+                    textCachePending.insert(key);
+                } else {
+                    textCache.at(key) = builder.inheritResource(textCache.at(key));
+                }
+                builder.readWrite(pass, textCache.at(key));
+            }
+        }
+
+        std::unordered_set<RenderText, RenderTextHash> delTexts;
+        for (auto &textCacheEntry: textCache) {
+            if (usedTexts.find(textCacheEntry.first) == usedTexts.end()) {
+                delTexts.insert(textCacheEntry.first);
+            }
+        }
+
+        for (auto &del: delTexts) {
+            textCache.erase(del);
+        }
+    }
+
+    void CanvasRenderPass::renderTextCache(RenderGraphContext &ctx,
+                                           std::vector<RenderGraphResource> atlasTextureBindings) {
+        for (auto &canvas: canvases) {
+            for (auto &paintCommand: canvas.getPaintCommands()) {
+                if (paintCommand.type != Paint::PAINT_TEXT)
+                    continue;
+                auto &txt = std::get<PaintText>(paintCommand.data);
+                auto key = RenderText{
+                    txt.text.text, txt.color, txt.text.fontUri, txt.text.fontPixelSize, txt.text.parameters
+                };
+                if (textCachePending.find(key) == textCachePending.end())
+                    continue;
+                textCachePending.erase(key);
+
+                ctx.beginRenderPass({RenderGraphAttachment(textCache.at(key), ColorRGBA::black(0, 0))}, {});
+                ctx.setViewport({}, txt.text.size);
+                ctx.bindPipeline(trianglePipeline);
+                ctx.bindVertexBuffer(vertexBuffer);
+                ctx.bindIndexBuffer(indexBuffer);
+                ctx.bindShaderBuffers({
+                    {"vars", shaderBuffer}
+                });
+                ctx.bindTextures({{"atlasTextures", atlasTextureBindings}});
+
+                auto &text = std::get<PaintText>(paintCommand.data);
+
+                Camera camera;
+                camera.type = ORTHOGRAPHIC;
+                camera.top = text.text.size.y;
+                camera.left = 0;
+                camera.right = text.text.size.x;
+                camera.bottom = 0;
+
+                auto viewProjection = camera.projection()
+                                      * Camera::view(Transform(Vec3f(0, 0, 1), Vec3f(), Vec3f()));
+
+                auto &glyphTextureHandles = glyphTextures.at({text.text.fontUri, text.text.fontPixelSize});
+                for (auto &glyph: text.text.glyphs) {
+                    auto model = MatrixMath::translate({
+                        glyph.position.x,
+                        glyph.position.y,
+                        0
+                    });
+
+                    ShaderBufferFormat data;
+                    data.mvp = viewProjection * model;
+
+                    auto color = text.color.divide();
+                    data.color[0] = color.x;
+                    data.color[1] = color.y;
+                    data.color[2] = color.z;
+                    data.color[3] = color.w;
+
+                    auto atlasTex = glyphTextureHandles.at(glyph.character.get().value);
+
+                    data.colorMixFactor = 0;
+                    data.alphaMixFactor = 0;
+                    data.colorFactor = 1;
+                    data.texAtlasLevel = atlasTex.level;
+                    data.texAtlasIndex = static_cast<int>(atlasTex.index);
+                    data.texFilter = 0;
+
+                    data.uvOffset_uvScale[0] = 0;
+                    data.uvOffset_uvScale[1] = 0;
+
+                    data.uvOffset_uvScale[2] = 1;
+                    data.uvOffset_uvScale[3] = 1;
+
+                    auto atlasScale = (atlasTex.size.convert<float>() /
+                                       TextureAtlas::getResolutionLevelSize(
+                                           atlasTex.level).convert<float>());
+                    data.atlasScale_texSize[0] = atlasScale.x;
+                    data.atlasScale_texSize[1] = atlasScale.y;
+                    data.atlasScale_texSize[2] = static_cast<float>(atlasTex.size.x);
+                    data.atlasScale_texSize[3] = static_cast<float>(atlasTex.size.y);
+
+                    ctx.uploadBuffer(shaderBuffer,
+                                     reinterpret_cast<const uint8_t *>(&data),
+                                     sizeof(ShaderBufferFormat),
+                                     0);
+
+                    auto plane = meshBuffer.getPlane(glyph.character.get().image.getResolution().convert<float>());
+                    ctx.drawIndexed(plane.drawCall, plane.baseVertex);
+                }
+                ctx.endRenderPass();
+            }
+        }
+    }
+
     void CanvasRenderPass::renderCanvas(RenderGraphResource target,
                                         const Canvas &canvas,
                                         RenderGraphContext &ctx) {
@@ -279,6 +421,8 @@ namespace xng {
             auto res = static_cast<TextureAtlasResolution>(i);
             textures.emplace_back(atlasTextures.at(res));
         }
+
+        renderTextCache(ctx, textures);
 
         ctx.beginRenderPass({RenderGraphAttachment(target)}, {});
         ctx.setViewport({}, {layerSize.x, layerSize.y});
@@ -527,60 +671,39 @@ namespace xng {
                         ctx.bindShaderBuffers({
                             {"vars", shaderBuffer}
                         });
-                        ctx.bindTextures({{"atlasTextures", textures}});
                     }
-                    auto &text = std::get<PaintText>(paintCommand.data);
+                    auto &txt = std::get<PaintText>(paintCommand.data);
 
-                    // TODO: Cache rendered text in a texture.
-                    auto &glyphTextureHandles = glyphTextures.at({text.text.fontUri, text.text.fontPixelSize});
-                    for (auto &glyph: text.text.glyphs) {
-                        auto model = MatrixMath::translate({
-                            glyph.position.x + text.position.x,
-                            glyph.position.y + text.position.y,
-                            0
-                        });
+                    auto key = RenderText(txt.text.text, txt.color, txt.text.fontUri, txt.text.fontPixelSize,
+                                          txt.text.parameters);
 
-                        ShaderBufferFormat data;
-                        data.mvp = canvas.getViewProjectionMatrix() * model;
+                    ctx.bindTextures({{"customTexture", {textCache.at(key)}}});
 
-                        auto color = text.color.divide();
-                        data.color[0] = color.x;
-                        data.color[1] = color.y;
-                        data.color[2] = color.z;
-                        data.color[3] = color.w;
+                    Mat4f rotMat = MatrixMath::identity();
 
-                        auto atlasTex = glyphTextureHandles.at(glyph.character.get().value);
+                    auto model = MatrixMath::translate({
+                                     txt.position.x,
+                                     txt.position.y,
+                                     0
+                                 }) * rotMat;
 
-                        data.colorMixFactor = 0;
-                        data.alphaMixFactor = 0;
-                        data.colorFactor = 1;
-                        data.texAtlasLevel = atlasTex.level;
-                        data.texAtlasIndex = static_cast<int>(atlasTex.index);
-                        data.texFilter = 0;
+                    ShaderBufferFormat data;
+                    data.mvp = canvas.getViewProjectionMatrix() * model;
 
-                        data.uvOffset_uvScale[0] = 0;
-                        data.uvOffset_uvScale[1] = 0;
+                    data.customTexture = 1;
+                    data.colorMixFactor = 0;
+                    data.alphaMixFactor = 0;
+                    data.colorFactor = 0;
+                    data.texFilter = 0;
 
-                        data.uvOffset_uvScale[2] = 1;
-                        data.uvOffset_uvScale[3] = 1;
+                    ctx.uploadBuffer(shaderBuffer,
+                                     reinterpret_cast<const uint8_t *>(&data),
+                                     sizeof(ShaderBufferFormat),
+                                     0);
 
-                        auto atlasScale = (atlasTex.size.convert<float>() /
-                                           TextureAtlas::getResolutionLevelSize(
-                                               atlasTex.level).convert<float>());
-                        data.atlasScale_texSize[0] = atlasScale.x;
-                        data.atlasScale_texSize[1] = atlasScale.y;
-                        data.atlasScale_texSize[2] = static_cast<float>(atlasTex.size.x);
-                        data.atlasScale_texSize[3] = static_cast<float>(atlasTex.size.y);
+                    auto draw = meshBuffer.getPlane(txt.text.size.convert<float>());
 
-                        ctx.uploadBuffer(shaderBuffer,
-                                         reinterpret_cast<const uint8_t *>(&data),
-                                         sizeof(ShaderBufferFormat),
-                                         0);
-
-                        auto plane = meshBuffer.getPlane(glyph.character.get().image.getResolution().convert<float>());
-                        ctx.drawIndexed(plane.drawCall, plane.baseVertex);
-                    }
-                    break;
+                    ctx.drawIndexed(draw.drawCall, draw.baseVertex);
                 }
             }
         }

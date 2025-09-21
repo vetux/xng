@@ -56,7 +56,7 @@ namespace xng {
                 {"mvp", ShaderDataType::mat4()},
                 {"uvOffset_uvScale", ShaderDataType::vec4()},
                 {"atlasScale_texSize", ShaderDataType::vec4()},
-                {"_padding", ShaderDataType::float32()},
+                {"useCustomTexture", ShaderDataType::float32()},
             }
         };
 
@@ -66,7 +66,10 @@ namespace xng {
                       outputLayout,
                       {},
                       {{"vars", buf}},
-                      {{"atlasTextures", ShaderTextureArray(ShaderTexture(TEXTURE_2D, RGBA, true), 12)}},
+                      {
+                          {"atlasTextures", ShaderTextureArray(ShaderTexture(TEXTURE_2D, RGBA, true), 12)},
+                          {"customTexture", ShaderTextureArray{ShaderTexture(TEXTURE_2D, RGBA, false), 1}}
+                      },
                       {});
 
         INPUT_ATTRIBUTE(position)
@@ -112,7 +115,7 @@ namespace xng {
                 {"mvp", ShaderDataType::mat4()},
                 {"uvOffset_uvScale", ShaderDataType::vec4()},
                 {"atlasScale_texSize", ShaderDataType::vec4()},
-                {"_padding", ShaderDataType::float32()},
+                {"useCustomTexture", ShaderDataType::float32()},
             }
         };
 
@@ -122,7 +125,10 @@ namespace xng {
                       outputLayout,
                       {},
                       {{"vars", buf}},
-                      {{"atlasTextures", ShaderTextureArray{ShaderTexture(TEXTURE_2D, RGBA, true), 12}}},
+                      {
+                          {"atlasTextures", ShaderTextureArray{ShaderTexture(TEXTURE_2D, RGBA, true), 12}},
+                          {"customTexture", ShaderTextureArray{ShaderTexture(TEXTURE_2D, RGBA, false), 1}}
+                      },
                       {});
 
         shaderlib::textureBicubic();
@@ -141,10 +147,12 @@ namespace xng {
         BUFFER_ELEMENT(vars, texFilter)
         BUFFER_ELEMENT(vars, uvOffset_uvScale)
         BUFFER_ELEMENT(vars, atlasScale_texSize)
+        BUFFER_ELEMENT(vars, useCustomTexture)
 
         TEXTURE_ARRAY_SAMPLER(atlasTextures, vars_texAtlasLevel, atlasTexture)
+        TEXTURE_SAMPLER(customTexture)
 
-        builder.If(vars_texAtlasIndex >= 0);
+        If(vars_texAtlasIndex >= 0);
         {
             vec2 uv = fUv.xy();
             uv = uv * vars_uvOffset_uvScale.zw();
@@ -177,13 +185,20 @@ namespace xng {
             }
             EndIf();
         }
-        builder.Else();
+        Else();
         {
-            color = vars_color;
+            If(vars_useCustomTexture == 1);
+            {
+                color = texture(customTexture, fUv.xy());
+            }
+            Else();
+            {
+                color = vars_color;
+            }
+            EndIf();
         }
-        builder.EndIf();
+        EndIf();
 
         return builder.build();
     }
 }
-

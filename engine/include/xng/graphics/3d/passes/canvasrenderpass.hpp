@@ -53,6 +53,10 @@ namespace xng {
 
         void updateTextures();
 
+        void updateTextCache(RenderGraphBuilder::PassHandle pass, RenderGraphBuilder &builder);
+
+        void renderTextCache(RenderGraphContext &ctx, std::vector<RenderGraphResource> atlasTextureBindings);
+
         void renderCanvas(RenderGraphResource target,
                           const Canvas &canvas,
                           RenderGraphContext &ctx);
@@ -103,6 +107,56 @@ namespace xng {
         };
 
         std::unordered_map<std::pair<Uri, Vec2i>, std::map<char, TextureAtlasHandle>, GlyphTextureHash> glyphTextures;
+
+        struct RenderText {
+            std::string text;
+            ColorRGBA color;
+            Uri fontUri;
+            Vec2i fontPixelSize;
+            TextLayoutParameters parameters;
+
+            RenderText(const std::string &text,
+                       const ColorRGBA &color,
+                       const Uri &font_uri,
+                       const Vec2i &font_pixel_size,
+                       const TextLayoutParameters &parameters)
+                : text(text),
+                  color(color),
+                  fontUri(font_uri),
+                  fontPixelSize(font_pixel_size),
+                  parameters(parameters) {
+            }
+
+            bool operator==(const RenderText &other) const {
+                return text == other.text
+                       && color == other.color
+                       && fontUri == other.fontUri
+                       && fontPixelSize == other.fontPixelSize
+                       && parameters == other.parameters;
+            }
+        };
+
+        class RenderTextHash {
+        public:
+            std::size_t operator()(const RenderText &k) const {
+                size_t ret = 0;
+                hash_combine(ret, k.text);
+                hash_combine(ret, k.color.r());
+                hash_combine(ret, k.color.g());
+                hash_combine(ret, k.color.b());
+                hash_combine(ret, k.color.a());
+                hash_combine(ret, k.fontUri.toString());
+                hash_combine(ret, k.fontPixelSize.x);
+                hash_combine(ret, k.fontPixelSize.y);
+                hash_combine(ret, k.parameters.maxLineWidth);
+                hash_combine(ret, k.parameters.lineSpacing);
+                hash_combine(ret, k.parameters.alignment);
+                return ret;
+            }
+        };
+
+        std::unordered_map<RenderText, RenderGraphResource, RenderTextHash> textCache;
+        std::unordered_set<RenderText, RenderTextHash> textCachePending;
     };
 }
 

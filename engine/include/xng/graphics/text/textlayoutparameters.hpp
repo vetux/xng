@@ -22,8 +22,10 @@
 
 #include "xng/graphics/text/textalignment.hpp"
 
+#include "xng/io/messageable.hpp"
+
 namespace xng {
-    struct TextLayoutParameters : Messageable {
+    struct TextLayoutParameters final : Messageable {
         /**
          * If larger than zero, the value in pixels at which a newline is rendered if the widths of characters in the current line exceed it.
          * The character is then drawn on a new line
@@ -60,7 +62,7 @@ namespace xng {
         TextLayoutParameters(int line_width, int line_spacing, TextAlignment alignment)
             : maxLineWidth(line_width),
               lineSpacing(line_spacing),
-              alignment(alignment){
+              alignment(alignment) {
         }
 
         Messageable &operator<<(const Message &message) override {
@@ -76,6 +78,12 @@ namespace xng {
             lineSpacing >> message["lineSpacing"];
             alignment >> message["alignment"];
             return message;
+        }
+
+        bool operator==(const TextLayoutParameters &other) const {
+            return maxLineWidth == other.maxLineWidth
+                   && lineSpacing == other.lineSpacing
+                   && alignment == other.alignment;
         }
     };
 }

@@ -66,6 +66,7 @@ namespace xng {
             now = std::chrono::steady_clock::now();
             deltaTime = now - start;
             start = now;
+            fpsAverage = fpsAlpha * fpsAverage + (1.0 - fpsAlpha) * getFramerate();
             auto v = std::chrono::steady_clock::duration::period::den;
             return DeltaTime(static_cast<DeltaTime>(deltaTime.count()) / static_cast<DeltaTime>(v));
         }
@@ -74,8 +75,12 @@ namespace xng {
             return deltaTime;
         }
 
-        unsigned int getFramesPerSecond() const {
+        unsigned int getFramerate() const {
             return static_cast<unsigned int>(std::round(1000000000.0f / static_cast<float>(deltaTime.count())));
+        }
+
+        unsigned int getAverageFramerate() const {
+            return fpsAverage;
         }
 
         void setTargetFrameRate(int frameRate) {
@@ -88,6 +93,8 @@ namespace xng {
         }
 
     private:
+        unsigned int fpsAverage = 0;
+        float fpsAlpha = 0.9f;
         std::chrono::steady_clock::duration targetFrameDuration{};
         std::chrono::steady_clock::duration deltaTime;
         std::chrono::steady_clock::time_point start;
