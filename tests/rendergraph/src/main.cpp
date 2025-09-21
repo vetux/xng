@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
         std::make_shared<CompositingPass>(config, registry),
     });
 
-    FrameLimiter frameLimiter;
+    FrameLimiter frameLimiter(0);
     frameLimiter.reset();
 
     auto textLayoutEngine = TextLayoutEngine(*freeType, font, {0, 30});

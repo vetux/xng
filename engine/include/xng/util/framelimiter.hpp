@@ -30,14 +30,14 @@ namespace xng {
     public:
         FrameLimiter() = default;
 
-        explicit FrameLimiter(int targetFrameRate)
-            : targetFrameDuration(std::chrono::duration_cast<std::chrono::steady_clock::duration>(
-                std::chrono::milliseconds(1000 / targetFrameRate))) {
+        explicit FrameLimiter(const int targetFrameRate)
+            : deltaTime() {
+            targetFrameDuration = std::chrono::round<std::chrono::steady_clock::duration>(
+                std::chrono::duration<double>(1.0 / targetFrameRate));
         }
 
-        explicit FrameLimiter(std::chrono::milliseconds targetFrameDuration)
-            : targetFrameDuration(
-                std::chrono::duration_cast<std::chrono::steady_clock::duration>(targetFrameDuration)) {
+        explicit FrameLimiter(const std::chrono::steady_clock::duration targetFrameDuration)
+            : targetFrameDuration(targetFrameDuration), deltaTime() {
         }
 
         /**
@@ -58,15 +58,18 @@ namespace xng {
          */
         DeltaTime newFrame() {
             auto now = std::chrono::steady_clock::now();
-            deltaTime = now - start;
-            if (targetFrameDuration.count() > 0 && deltaTime < targetFrameDuration) {
-                auto diff = targetFrameDuration - deltaTime;
-                std::this_thread::sleep_for(diff);
+            if (targetFrameDuration.count() > 0 && now < start + targetFrameDuration) {
+                constexpr auto spin_threshold = std::chrono::microseconds(200);
+                if (now + spin_threshold < deadline) {
+                    std::this_thread::sleep_until(deadline - spin_threshold);
+                }
+                while (std::chrono::steady_clock::now() < deadline) {
+                }
+                now = std::chrono::steady_clock::now();
             }
-            now = std::chrono::steady_clock::now();
             deltaTime = now - start;
             start = now;
-            fpsAverage = fpsAlpha * fpsAverage + (1.0 - fpsAlpha) * getFramerate();
+            deadline = now + targetFrameDuration;
             auto v = std::chrono::steady_clock::duration::period::den;
             return DeltaTime(static_cast<DeltaTime>(deltaTime.count()) / static_cast<DeltaTime>(v));
         }
@@ -76,16 +79,12 @@ namespace xng {
         }
 
         unsigned int getFramerate() const {
-            return static_cast<unsigned int>(std::round(1000000000.0f / static_cast<float>(deltaTime.count())));
+            return std::ceil(1.0 / std::chrono::duration_cast<std::chrono::duration<double> >(deltaTime).count());
         }
 
-        unsigned int getAverageFramerate() const {
-            return fpsAverage;
-        }
-
-        void setTargetFrameRate(int frameRate) {
+        void setTargetFrameRate(const int frameRate) {
             targetFrameDuration = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
-                std::chrono::milliseconds(1000 / frameRate));
+                std::chrono::duration<double>(1.0 / frameRate));
         }
 
         void setTargetFrameDuration(const std::chrono::steady_clock::duration &duration) {
@@ -93,11 +92,10 @@ namespace xng {
         }
 
     private:
-        unsigned int fpsAverage = 0;
-        float fpsAlpha = 0.9f;
         std::chrono::steady_clock::duration targetFrameDuration{};
         std::chrono::steady_clock::duration deltaTime;
         std::chrono::steady_clock::time_point start;
+        std::chrono::steady_clock::time_point deadline;
     };
 }
 
