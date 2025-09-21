@@ -31,7 +31,7 @@ namespace xng {
         char value{};
         ImageRGBA image; //The rasterized character as an image
         Vec2i bearing;   //The bearing of the character in pixels
-        int advance{};   //The advance of the character in pixels
+        int advance{};   //The horizontal advance of the character in pixels
 
         Character() = default;
 

@@ -44,6 +44,10 @@ namespace xng {
         std::map<char, Character> renderAscii() override;
 
         Character renderUnicode(wchar_t c) override;
+
+        int getAscender() override;
+
+        int getDescender() override;
     };
 }
 

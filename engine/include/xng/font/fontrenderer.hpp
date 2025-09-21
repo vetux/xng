@@ -65,6 +65,16 @@ namespace xng {
          * @return
          */
         virtual Character renderUnicode(wchar_t c) = 0;
+
+        /**
+         * @return The distance between baseline and the largest top value in pixels.
+         */
+        virtual int getAscender() = 0;
+
+        /**
+         * @return The distance between baseline and the lowest bottom value in pixels.
+         */
+        virtual int getDescender() = 0;
     };
 }
 

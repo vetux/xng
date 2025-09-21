@@ -104,4 +104,12 @@ namespace xng {
     Character FTFontRenderer::renderUnicode(wchar_t c) {
         throw std::runtime_error("FreeType unicode rendering not implemented yet.");
     }
+
+    int FTFontRenderer::getAscender() {
+        return face->ascender;
+    }
+
+    int FTFontRenderer::getDescender() {
+        return face->descender;
+    }
 }
