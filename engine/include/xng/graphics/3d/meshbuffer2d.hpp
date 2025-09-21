@@ -24,8 +24,7 @@
 
 #include "xng/graphics/primitive.hpp"
 #include "xng/graphics/vertexstream.hpp"
-
-#include "xng/graphics/2d/renderbatch2d.hpp"
+#include "xng/graphics/2d/canvas.hpp"
 
 #include "xng/rendergraph/drawcall.hpp"
 #include "xng/rendergraph/rendergraphcontext.hpp"
@@ -36,6 +35,8 @@ namespace xng {
      */
     class MeshBuffer2D {
     public:
+        // TODO: Use transformation of a normalized quad instead of separate vertex / index allocations for 2D planes / Squares
+
         struct MeshDrawData {
             Primitive primitive{};
             DrawCall drawCall{};
@@ -50,48 +51,64 @@ namespace xng {
             }
         };
 
-        void update(const std::vector<RenderBatch2D> &batches) {
+        void update(const std::vector<Canvas> &canvases) {
             std::unordered_set<Vec2f> usedPlanes;
             std::unordered_set<Vec2f> usedSquares;
             std::unordered_set<std::pair<Vec2f, Vec2f>, LinePairHash> usedLines;
             std::unordered_set<Vec2f> usedPoints;
-            for (auto &batch: batches) {
-                for (auto &call: batch.drawCommands) {
-                    switch (call.type) {
-                        case DrawCommand2D::COLOR_POINT:
-                            if (pointMeshes.find(call.dstRect.position) == pointMeshes.end()) {
-                                pointMeshes[call.dstRect.position] = createPoint(call.dstRect.position);
+            for (auto &canvas: canvases) {
+                for (auto &paintCommand: canvas.getPaintCommands()) {
+                    switch (paintCommand.type) {
+                        case Paint::PAINT_POINT: {
+                            auto &point = std::get<PaintPoint>(paintCommand.data);
+                            if (pointMeshes.find(point.position) == pointMeshes.end()) {
+                                pointMeshes[point.position] = createPoint(point.position);
                             }
-                            usedPoints.insert(call.dstRect.position);
-                            break;
-                        case DrawCommand2D::COLOR_LINE: {
-                            auto line = std::pair<Vec2f, Vec2f>{call.dstRect.position, call.dstRect.dimensions};
-                            if (lineMeshes.find(line) == lineMeshes.end()) {
-                                lineMeshes[{call.dstRect.position, call.dstRect.dimensions}] = createLine(
-                                    line.first, line.second);
-                            }
-                            usedLines.insert(line);
+                            usedPoints.insert(point.position);
                             break;
                         }
-                        case DrawCommand2D::COLOR_PLANE:
-                            if (call.fill) {
-                                if (planeMeshes.find(call.dstRect.dimensions) == planeMeshes.end()) {
-                                    planeMeshes[call.dstRect.dimensions] = createPlane(call.dstRect.dimensions);
+                        case Paint::PAINT_LINE: {
+                            auto &line = std::get<PaintLine>(paintCommand.data);
+                            if (lineMeshes.find({line.start, line.end}) == lineMeshes.end()) {
+                                lineMeshes[{line.start, line.end}] = createLine(line.start, line.end);
+                            }
+                            usedLines.insert({line.start, line.end});
+                            break;
+                        }
+                        case Paint::PAINT_RECTANGLE: {
+                            auto &square = std::get<PaintRectangle>(paintCommand.data);
+                            if (square.fill) {
+                                if (planeMeshes.find(square.dstRect.dimensions) == planeMeshes.end()) {
+                                    planeMeshes[square.dstRect.dimensions] = createPlane(square.dstRect.dimensions);
                                 }
-                                usedPlanes.insert(call.dstRect.dimensions);
+                                usedPlanes.insert(square.dstRect.dimensions);
                             } else {
-                                if (squareMeshes.find(call.dstRect.dimensions) == squareMeshes.end()) {
-                                    squareMeshes[call.dstRect.dimensions] = createSquare(call.dstRect.dimensions);
+                                if (squareMeshes.find(square.dstRect.dimensions) == squareMeshes.end()) {
+                                    squareMeshes[square.dstRect.dimensions] = createSquare(square.dstRect.dimensions);
                                 }
-                                usedSquares.insert(call.dstRect.dimensions);
+                                usedSquares.insert(square.dstRect.dimensions);
                             }
                             break;
-                        case DrawCommand2D::TEXTURE:
-                            if (planeMeshes.find(call.dstRect.dimensions) == planeMeshes.end()) {
-                                planeMeshes[call.dstRect.dimensions] = createPlane(call.dstRect.dimensions);
+                        }
+                        case Paint::PAINT_IMAGE: {
+                            auto &img = std::get<PaintImage>(paintCommand.data);
+                            if (planeMeshes.find(img.dstRect.dimensions) == planeMeshes.end()) {
+                                planeMeshes[img.dstRect.dimensions] = createPlane(img.dstRect.dimensions);
                             }
-                            usedPlanes.insert(call.dstRect.dimensions);
+                            usedPlanes.insert(img.dstRect.dimensions);
                             break;
+                        }
+                        case Paint::PAINT_TEXT: {
+                            auto &text = std::get<PaintText>(paintCommand.data);
+                            for (auto &glyph : text.text.glyphs) {
+                                auto dim = glyph.character.get().image.getResolution().convert<float>();
+                                if (planeMeshes.find(dim) == planeMeshes.end()) {
+                                    planeMeshes[dim] = createPlane(dim);
+                                }
+                                usedPlanes.insert(dim);
+                            }
+                            break;
+                        }
                     }
                 }
             }

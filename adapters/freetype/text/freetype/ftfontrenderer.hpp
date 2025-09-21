@@ -48,6 +48,8 @@ namespace xng {
         int getAscender() override;
 
         int getDescender() override;
+
+        int getHeight() override;
     };
 }
 

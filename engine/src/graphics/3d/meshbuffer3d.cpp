@@ -64,8 +64,8 @@ namespace xng {
     }
 
     void MeshBuffer3D::uploadMeshes(RenderGraphContext &ctx,
-                                     RenderGraphResource vertexBuffer,
-                                     RenderGraphResource indexBuffer) {
+                                    RenderGraphResource vertexBuffer,
+                                    RenderGraphResource indexBuffer) {
         for (auto &pair: pendingMeshAllocations) {
             auto meshHandle = pendingMeshHandles.at(pair.first);
             for (auto i = 0; i < meshHandle.get().subMeshes.size() + 1; i++) {
@@ -102,38 +102,29 @@ namespace xng {
     }
 
     bool MeshBuffer3D::shouldRebuild() {
-        return currentVertexBufferSize < requestedVertexBufferSize
-               || currentIndexBufferSize < requestedIndexBufferSize;
+        return currentVertexBufferSize < requestedVertexBufferSize || currentIndexBufferSize < requestedIndexBufferSize;
     }
 
-    void MeshBuffer3D::declareReadWrite(RenderGraphBuilder &builder, RenderGraphBuilder::PassHandle pass) {
-        builder.readWrite(pass, currentVertexBuffer);
-        builder.readWrite(pass, currentIndexBuffer);
-        if (staleVertexBuffer) {
-            builder.readWrite(pass, staleVertexBuffer);
-            builder.readWrite(pass, staleIndexBuffer);
-        }
-    }
-
-    void MeshBuffer3D::onCreate(RenderGraphBuilder &builder) {
-        currentVertexBuffer = builder.createVertexBuffer(0);
-        currentIndexBuffer = builder.createIndexBuffer(0);
-        currentVertexBufferSize = 0;
-        currentIndexBufferSize = 0;
-    }
-
-    void MeshBuffer3D::onRecreate(RenderGraphBuilder &builder) {
+    void MeshBuffer3D::update(RenderGraphBuilder &builder, RenderGraphBuilder::PassHandle pass) {
         if (currentVertexBufferSize > 0) {
             staleVertexBuffer = builder.inheritResource(currentVertexBuffer);
         }
         if (currentIndexBufferSize > 0) {
             staleIndexBuffer = builder.inheritResource(currentIndexBuffer);
         }
+
         currentVertexBuffer = builder.createVertexBuffer(requestedVertexBufferSize);
         currentVertexBufferSize = requestedVertexBufferSize;
 
         currentIndexBuffer = builder.createIndexBuffer(requestedIndexBufferSize);
         currentIndexBufferSize = requestedIndexBufferSize;
+
+        builder.readWrite(pass, currentVertexBuffer);
+        builder.readWrite(pass, currentIndexBuffer);
+        if (staleVertexBuffer) {
+            builder.readWrite(pass, staleVertexBuffer);
+            builder.readWrite(pass, staleIndexBuffer);
+        }
     }
 
     const std::map<Uri, MeshBuffer3D::MeshAllocation> &MeshBuffer3D::getMeshAllocations(RenderGraphContext &ctx) {

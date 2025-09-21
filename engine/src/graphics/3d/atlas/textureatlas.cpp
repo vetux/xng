@@ -77,6 +77,7 @@ namespace xng {
             throw std::runtime_error("Texture already removed");
         }
         bufferOccupations.at(handle.level).at(handle.index) = false;
+        pendingTextures.erase(handle);
     }
 
     Vec2i TextureAtlas::getResolutionLevelSize(TextureAtlasResolution level) {
@@ -131,12 +132,8 @@ namespace xng {
         for (int i = TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; i++) {
             builder.readWrite(pass, currentHandles.at(static_cast<TextureAtlasResolution>(i)));
         }
-        if (previousHandles.size() > 0) {
-            for (int i = TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; i++) {
-                auto res = static_cast<TextureAtlasResolution>(i);
-                if (previousHandles.find(res) != previousHandles.end())
-                    builder.readWrite(pass, previousHandles.at(res));
-            }
+        for (auto &pair: copyHandles) {
+            builder.readWrite(pass, pair.second);
         }
     }
 
@@ -167,7 +164,8 @@ namespace xng {
         for (auto &pair: bufferOccupations) {
             if (bufferSizes[pair.first] < pair.second.size()) {
                 if (bufferSizes[pair.first] > 0) {
-                    previousHandles[pair.first] = builder.inheritResource(currentHandles.at(pair.first));
+                    copyHandles[pair.first] = builder.inheritResource(currentHandles.at(pair.first));
+                    copySizes[pair.first] = bufferSizes[pair.first];
                 }
                 bufferSizes[pair.first] = pair.second.size();
                 RenderGraphTexture desc;
@@ -183,15 +181,20 @@ namespace xng {
 
     const std::unordered_map<TextureAtlasResolution, RenderGraphResource> &
     TextureAtlas::getAtlasTextures(RenderGraphContext &ctx) {
-        if (previousHandles.size() > 0) {
-            for (int i = TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; i++) {
-                const auto res = static_cast<TextureAtlasResolution>(i);
-                if (previousHandles.find(res) != previousHandles.end()) {
-                    ctx.copyTexture(currentHandles.at(res), previousHandles.at(res));
-                }
+        for (auto &pair: copyHandles) {
+            auto size = getResolutionLevelSize(pair.first);
+            for (int i = 0; i < copySizes.at(pair.first); i++) {
+                ctx.copyTexture(currentHandles.at(pair.first),
+                                pair.second,
+                                Vec3i(0, 0, i),
+                                Vec3i(0, 0, i),
+                                Vec3i(size.x, size.y, 1),
+                                0,
+                                0);
             }
-            previousHandles.clear();
         }
+        copyHandles.clear();
+        copySizes.clear();
 
         for (auto &tex: pendingTextures) {
             upload(ctx, tex.first, currentHandles, tex.second);

@@ -45,11 +45,7 @@ namespace xng {
 
         bool shouldRebuild();
 
-        void declareReadWrite(RenderGraphBuilder &builder, RenderGraphBuilder::PassHandle pass);
-
-        void onCreate(RenderGraphBuilder &builder);
-
-        void onRecreate(RenderGraphBuilder &builder);
+        void update(RenderGraphBuilder &builder, RenderGraphBuilder::PassHandle pass);
 
         const std::map<Uri, MeshAllocation> &getMeshAllocations(RenderGraphContext &ctx);
 

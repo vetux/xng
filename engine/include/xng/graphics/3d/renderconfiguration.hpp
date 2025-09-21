@@ -21,6 +21,7 @@
 #define XENGINE_RENDERCONFIGURATION_HPP
 
 #include "xng/graphics/renderscene.hpp"
+#include "xng/graphics/2d/canvas.hpp"
 
 namespace xng {
     class RenderConfiguration {
@@ -37,14 +38,15 @@ namespace xng {
 
         const RenderScene &getScene() const { return renderScene; }
 
-        void setRenderBatches(const std::vector<RenderBatch2D> &batches) { renderBatches = batches; }
+        void setCanvases(const std::vector<Canvas> &canvases) { renderCanvases = canvases; }
 
-        const std::vector<RenderBatch2D> &getRenderBatches() const { return renderBatches; }
+        const std::vector<Canvas> &getCanvases() const { return renderCanvases; }
 
     private:
         float renderScale = 1.0f;
         RenderScene renderScene;
-        std::vector<RenderBatch2D> renderBatches;
+
+        std::vector<Canvas> renderCanvases;
     };
 }
 

@@ -21,17 +21,21 @@
 
 #include <utility>
 
-#include "xng/math/matrixmath.hpp"
 #include "xng/graphics/camera.hpp"
+#include "xng/graphics/3d/passes/canvasrenderpass.hpp"
+#include "xng/graphics/3d/passes/compositingpass.hpp"
 
 namespace xng {
     Renderer2D::Renderer2D(std::shared_ptr<RenderGraphRuntime> runtime)
-        : config(std::make_shared<RenderConfiguration>()),
-          registry(),
+        : canvas({1, 1}),
+          config(std::make_shared<RenderConfiguration>()),
+          registry(std::make_shared<SharedResourceRegistry>()),
           runtime(std::move(runtime)),
-          renderPass(std::make_shared<RenderPass2D>(config, registry)),
           scheduler(std::make_unique<RenderPassScheduler>(runtime)) {
-        graph = scheduler->addGraph(renderPass);
+        graph = scheduler->addGraph({
+            std::make_shared<CanvasRenderPass>(config, registry),
+            std::make_shared<CompositingPass>(config, registry),
+        });
     }
 
     Renderer2D::~Renderer2D() {
@@ -40,90 +44,13 @@ namespace xng {
         }
     }
 
-    Texture2D Renderer2D::createTexture(const ImageRGBA &texture) {
-        Texture2D::Handle handle;
-        if (unusedTextureHandles.empty()) {
-            handle = textureHandleCounter++;
-        } else {
-            handle = unusedTextureHandles.back();
-            unusedTextureHandles.pop_back();
-        }
-        batch.textureAllocations[handle] = texture;
-        return {handle, texture.getResolution()};
-    }
-
-    std::vector<Texture2D> Renderer2D::createTextures(const std::vector<ImageRGBA> &textures) {
-        std::vector<Texture2D> ret;
-        ret.reserve(textures.size());
-        for (auto &img: textures) {
-            ret.emplace_back(createTexture(img));
-        }
-        return ret;
-    }
-
-    void Renderer2D::destroyTexture(const Texture2D &texture) {
-        batch.textureDeallocations.emplace_back(texture.getHandle());
-        unusedTextureHandles.emplace_back(texture.getHandle());
-    }
-
-    void Renderer2D::renderBegin(const Texture2D &target,
-                                 const bool clear,
-                                 const ColorRGBA &clearColor,
-                                 const Vec2i &viewportOffset,
-                                 const Vec2i &viewportSize,
-                                 const Vec2f &cameraPosition,
-                                 const Rectf &projection) {
+    void Renderer2D::renderBegin(const ColorRGBA &clearColor) {
         if (isRendering) {
             throw std::runtime_error("Already Rendering (Nested Renderer2D::renderBegin calls?)");
         }
 
         isRendering = true;
-
-        batch.mViewportOffset = viewportOffset;
-        batch.mViewportSize = viewportSize;
-        batch.mClear = clear;
-        batch.mClearColor = clearColor;
-
-        batch.camera.type = ORTHOGRAPHIC;
-        batch.camera.left = projection.position.x;
-        batch.camera.right = projection.dimensions.x;
-        batch.camera.top = projection.position.y;
-        batch.camera.bottom = projection.dimensions.y;
-
-        batch.cameraTransform.setPosition({cameraPosition.x, cameraPosition.y, 1});
-
-        batch.viewProjectionMatrix = batch.camera.projection() * Camera::view(batch.cameraTransform);
-
-        batch.renderToScreen = false;
-        batch.renderTarget = target.getHandle();
-    }
-
-    void Renderer2D::renderBegin(const bool clear,
-                                 const ColorRGBA &clearColor,
-                                 const Vec2i &viewportOffset,
-                                 const Vec2i &viewportSize,
-                                 const Vec2f &cameraPosition,
-                                 const Rectf &projection) {
-        if (isRendering) {
-            throw std::runtime_error("Already Rendering (Nested Renderer2D::renderBegin calls?)");
-        }
-
-        isRendering = true;
-
-        batch.mViewportOffset = viewportOffset;
-        batch.mViewportSize = viewportSize;
-        batch.mClear = clear;
-        batch.mClearColor = clearColor;
-
-        batch.camera.type = ORTHOGRAPHIC;
-        batch.camera.left = projection.position.x;
-        batch.camera.right = projection.dimensions.x;
-        batch.camera.top = projection.position.y;
-        batch.camera.bottom = projection.dimensions.y;
-
-        batch.cameraTransform.setPosition({cameraPosition.x, cameraPosition.y, 1});
-
-        batch.viewProjectionMatrix = batch.camera.projection() * Camera::view(batch.cameraTransform);
+        canvas = Canvas(scheduler->updateBackBuffer());
     }
 
     void Renderer2D::renderPresent() {
@@ -131,75 +58,51 @@ namespace xng {
             throw std::runtime_error("Not Rendering");
         }
         isRendering = false;
-        renderBatches.emplace_back(batch);
-        batch = {};
-
-        if (scheduler) {
-            auto size = scheduler->updateBackBuffer();
-            for (auto &b :renderBatches) {
-                b.canvasSize = size;
-            }
-            config->setRenderBatches(renderBatches);
-            scheduler->execute(graph);
-            clearBatches();
-        }
+        config->setCanvases({canvas});
+        scheduler->execute(graph);
     }
 
     void Renderer2D::draw(const Rectf &srcRect,
                           const Rectf &dstRect,
-                          const Texture2D &texture,
+                          const ResourceHandle<ImageRGBA> &texture,
                           const Vec2f &center,
                           float rotation,
-                          TextureFiltering filter,
+                          bool filter,
                           float mixRGB,
                           float mixAlpha,
                           const ColorRGBA &mixColor) {
-        batch.drawCommands.emplace_back(srcRect,
-                                        dstRect,
-                                        texture.getHandle(),
-                                        center,
-                                        rotation,
-                                        filter,
-                                        mixRGB,
-                                        mixAlpha,
-                                        mixColor);
+        canvas.paint(PaintImage(srcRect,
+                                dstRect,
+                                texture,
+                                filter,
+                                mixRGB,
+                                mixAlpha,
+                                mixColor,
+                                center,
+                                rotation));
     }
 
-    void Renderer2D::draw(const Rectf &srcRect,
-                          const Rectf &dstRect,
-                          const Texture2D &texture,
+    void Renderer2D::draw(const Vec2f &position,
+                          const TextLayout &text,
+                          const ColorRGBA &color) {
+        canvas.paint(PaintText(position, text, color));
+    }
+
+    void Renderer2D::draw(const Rectf &rectangle,
+                          const ColorRGBA &color,
+                          bool fill,
                           const Vec2f &center,
-                          float rotation,
-                          TextureFiltering filter,
-                          ColorRGBA colorFactor) {
-        batch.drawCommands.emplace_back(srcRect,
-                                        dstRect,
-                                        texture.getHandle(),
-                                        center,
-                                        rotation,
-                                        filter,
-                                        colorFactor);
-    }
-
-    void Renderer2D::draw(const Rectf &rectangle, const ColorRGBA &color, bool fill, const Vec2f &center,
                           float rotation) {
-        batch.drawCommands.emplace_back(rectangle, color, fill, center, rotation);
+        canvas.paint(PaintRectangle(rectangle, color, fill, center, rotation));
     }
 
     void Renderer2D::draw(const Vec2f &start,
                           const Vec2f &end,
-                          const ColorRGBA &color,
-                          const Vec2f &position,
-                          const Vec2f &center,
-                          float rotation) {
-        batch.drawCommands.emplace_back(start, end, color, position, center, rotation);
+                          const ColorRGBA &color) {
+        canvas.paint(PaintLine(start, end, color));
     }
 
-    void Renderer2D::draw(const Vec2f &point,
-                          const ColorRGBA &color,
-                          const Vec2f &position,
-                          const Vec2f &center,
-                          float rotation) {
-        batch.drawCommands.emplace_back(point, color, position, center, rotation);
+    void Renderer2D::draw(const Vec2f &point, const ColorRGBA &color) {
+        canvas.paint(PaintPoint(point, color));
     }
 }

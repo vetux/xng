@@ -28,7 +28,6 @@
 #include "xng/graphics/3d/renderpassscheduler.hpp"
 #include "xng/graphics/3d/sharedresourceregistry.hpp"
 #include "xng/graphics/3d/renderconfiguration.hpp"
-#include "xng/graphics/2d/renderer2d.hpp"
 
 #include "xng/util/time.hpp"
 
@@ -46,7 +45,6 @@ namespace xng {
     private:
         std::shared_ptr<RenderGraphRuntime> runtime;
         RenderPassScheduler scheduler;
-        Renderer2D ren2d;
 
         std::shared_ptr<SharedResourceRegistry> registry;
         std::shared_ptr<RenderConfiguration> config;

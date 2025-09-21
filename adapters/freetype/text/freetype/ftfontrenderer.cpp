@@ -106,10 +106,14 @@ namespace xng {
     }
 
     int FTFontRenderer::getAscender() {
-        return face->ascender;
+        return (face->ascender * (face->size->metrics.height >> 6)) / face->units_per_EM;
     }
 
     int FTFontRenderer::getDescender() {
-        return face->descender;
+        return (face->descender * (face->size->metrics.height >> 6)) / face->units_per_EM;
+    }
+
+    int FTFontRenderer::getHeight() {
+        return face->size->metrics.height >> 6;
     }
 }

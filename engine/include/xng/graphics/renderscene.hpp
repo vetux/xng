@@ -20,8 +20,6 @@
 #ifndef XENGINE_SCENE_HPP
 #define XENGINE_SCENE_HPP
 
-#include <utility>
-
 #include "xng/graphics/scene/sprite.hpp"
 #include "xng/graphics/scene/pointlight.hpp"
 #include "xng/graphics/scene/directionallight.hpp"
@@ -30,8 +28,7 @@
 #include "xng/graphics/scene/mesh.hpp"
 #include "xng/graphics/scene/skinnedmesh.hpp"
 #include "xng/graphics/scene/skybox.hpp"
-#include "camera.hpp"
-#include "2d/renderbatch2d.hpp"
+#include "xng/graphics/camera.hpp"
 
 namespace xng {
     struct MeshObject {

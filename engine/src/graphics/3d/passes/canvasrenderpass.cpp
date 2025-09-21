@@ -17,15 +17,34 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#include <utility>
+
 #include "xng/graphics/3d/passes/canvasrenderpass.hpp"
 
-#include "xng/graphics/vertexstream.hpp"
-#include "xng/graphics/3d/sharedresources/rendercanvases.hpp"
-
 namespace xng {
+    static_assert(sizeof(float) == 4);
+    static_assert(sizeof(int) == 4);
+
+    struct ShaderBufferFormat {
+        alignas(16) float color[4]{};
+        alignas(4) float colorMixFactor{};
+        alignas(4) float alphaMixFactor{};
+        alignas(4) float colorFactor{};
+        alignas(4) int texAtlasLevel = -1;
+        alignas(4) int texAtlasIndex = -1;
+        alignas(4) int texFilter{};
+        alignas(16) Mat4f mvp{};
+        alignas(16) float uvOffset_uvScale[4]{};
+        alignas(16) float atlasScale_texSize[4]{};
+        alignas(4) float _padding{}; // TODO: Handle shader buffer padding in the render graph runtime
+        // Array stride in the ssbo must be 16 for std140 therefore we add this padding float
+    };
+
+    static_assert(sizeof(ShaderBufferFormat) % 16 == 0);
+
     CanvasRenderPass::CanvasRenderPass(std::shared_ptr<RenderConfiguration> config,
                                        std::shared_ptr<SharedResourceRegistry> registry)
-        : config(config), registry(registry) {
+        : config(std::move(config)), registry(std::move(registry)) {
         screenSpaceLayer.name = LAYER_CANVASES_SCREEN;
         worldSpaceLayer.name = LAYER_CANVASES_WORLD;
         screenSpaceLayer.containsTransparency = true;
@@ -33,10 +52,35 @@ namespace xng {
     }
 
     bool CanvasRenderPass::shouldRebuild(const Vec2i &backBufferSize) {
-        return backBufferSize != layerSize;
+        canvases = config->getCanvases();
+
+        updateGlyphTextures();
+        updateTextures();
+
+        meshBuffer.update(canvases);
+
+        return atlas.shouldRebuild()
+               || backBufferSize != layerSize
+               || vertexBufferSize != meshBuffer.getVertexBufferSize()
+               || indexBufferSize != meshBuffer.getIndexBufferSize();
     }
 
     void CanvasRenderPass::create(RenderGraphBuilder &builder) {
+        RenderGraphPipeline pipeline;
+        pipeline.shaders.emplace_back(createVertexShader());
+        pipeline.shaders.emplace_back(createFragmentShader());
+        pipeline.enableBlending = true;
+        pipeline.enableDepthTest = false;
+        pipeline.depthTestWrite = false;
+        pipeline.primitive = TRIANGLES;
+        trianglePipeline = builder.createPipeline(pipeline);
+
+        pipeline.primitive = LINES;
+        linePipeline = builder.createPipeline(pipeline);
+
+        pipeline.primitive = POINTS;
+        pointPipeline = builder.createPipeline(pipeline);
+
         layerSize = builder.getBackBufferSize();
 
         RenderGraphTexture texture;
@@ -53,17 +97,37 @@ namespace xng {
         layers.layers.emplace_back(screenSpaceLayer);
         registry->set<CompositingLayers>(layers);
 
-        canvases = registry->get<RenderCanvases>();
+        atlas.onCreate(builder);
+
+        vertexBufferSize = meshBuffer.getVertexBufferSize();
+        vertexBuffer = builder.createVertexBuffer(vertexBufferSize);
+
+        indexBufferSize = meshBuffer.getIndexBufferSize();
+        indexBuffer = builder.createIndexBuffer(indexBufferSize);
+
+        shaderBuffer = builder.createShaderBuffer(sizeof(ShaderBufferFormat));
+
         auto pass = builder.addPass("CanvasRenderPass", [this](RenderGraphContext &ctx) {
             runPass(ctx);
         });
 
-        for (auto &canvas: canvases.canvases) {
-            builder.read(pass, canvas.texture);
-        }
+        atlas.declareReadWrite(builder, pass);
+
+        builder.readWrite(pass, vertexBuffer);
+        builder.readWrite(pass, indexBuffer);
+        builder.readWrite(pass, shaderBuffer);
+
+        builder.write(pass, screenSpaceLayer.color);
+        builder.write(pass, worldSpaceLayer.color);
+        builder.write(pass, worldSpaceLayer.depth);
     }
 
     void CanvasRenderPass::recreate(RenderGraphBuilder &builder) {
+        trianglePipeline = builder.inheritResource(trianglePipeline);
+        linePipeline = builder.inheritResource(linePipeline);
+        pointPipeline = builder.inheritResource(pointPipeline);
+        shaderBuffer = builder.inheritResource(shaderBuffer);
+
         if (builder.getBackBufferSize() != layerSize) {
             layerSize = builder.getBackBufferSize();
 
@@ -86,24 +150,58 @@ namespace xng {
         layers.layers.emplace_back(screenSpaceLayer);
         registry->set<CompositingLayers>(layers);
 
-        canvases = registry->get<RenderCanvases>();
+        atlas.onRecreate(builder);
+
+        if (vertexBufferSize < meshBuffer.getVertexBufferSize()) {
+            vertexBufferCopy = builder.inheritResource(vertexBuffer);
+            vertexBuffer = builder.createVertexBuffer(meshBuffer.getVertexBufferSize());
+        } else {
+            vertexBuffer = builder.inheritResource(vertexBuffer);
+        }
+
+        if (indexBufferSize < meshBuffer.getIndexBufferSize()) {
+            indexBufferCopy = builder.inheritResource(indexBuffer);
+            indexBuffer = builder.createIndexBuffer(meshBuffer.getIndexBufferSize());
+        } else {
+            indexBuffer = builder.inheritResource(indexBuffer);
+        }
+
         auto pass = builder.addPass("CanvasRenderPass", [this](RenderGraphContext &ctx) {
             runPass(ctx);
         });
 
-        for (auto &canvas: canvases.canvases) {
-            builder.read(pass, canvas.texture);
-        }
+        atlas.declareReadWrite(builder, pass);
+
+        builder.readWrite(pass, vertexBuffer);
+        builder.readWrite(pass, indexBuffer);
+        builder.readWrite(pass, shaderBuffer);
+
+        builder.write(pass, screenSpaceLayer.color);
+        builder.write(pass, worldSpaceLayer.color);
+        builder.write(pass, worldSpaceLayer.depth);
     }
 
     void CanvasRenderPass::runPass(RenderGraphContext &ctx) {
-        ctx.clearTextureColor(screenSpaceLayer.color, ColorRGBA::black(1, 0));
+        if (vertexBufferCopy) {
+            ctx.copyBuffer(vertexBuffer, vertexBufferCopy, 0, 0, vertexBufferSize);
+            vertexBufferCopy = {};
+            vertexBufferSize = meshBuffer.getVertexBufferSize();
+        }
 
-        // Screen space canvases are always the same size as the back buffer, and there can only be one screen space canvas.
-        for (auto &canvas: canvases.canvases) {
-            if (canvas.worldSpace)
+        if (indexBufferCopy) {
+            ctx.copyBuffer(indexBuffer, indexBufferCopy, 0, 0, indexBufferSize);
+            indexBufferCopy = {};
+            indexBufferSize = meshBuffer.getIndexBufferSize();
+        }
+
+        meshBuffer.upload(vertexBuffer, indexBuffer, ctx);
+
+        // Screen space canvases are always the same size as the back buffer, and there can currently only be one screen space canvas.
+        for (auto &canvas: canvases) {
+            if (canvas.isWorldSpace())
                 continue;
-            ctx.copyTexture(screenSpaceLayer.color, canvas.texture);
+            // TODO: Implement multiple screen space canvas rendering support.
+            renderCanvas(screenSpaceLayer.color, canvas, ctx);
             break;
         }
 
@@ -111,5 +209,381 @@ namespace xng {
         ctx.clearTextureDepthStencil(worldSpaceLayer.depth, 1, 0);
 
         //TODO: Implement World Space canvas rendering
+    }
+
+    void CanvasRenderPass::updateGlyphTextures() {
+        std::unordered_set<std::pair<Uri, Vec2i>, GlyphTextureHash> usedFonts;
+        for (auto &canvas: canvases) {
+            for (auto &paintCommand: canvas.getPaintCommands()) {
+                if (paintCommand.type != Paint::PAINT_TEXT)
+                    continue;
+                auto &text = std::get<PaintText>(paintCommand.data);
+                auto key = std::pair{text.text.fontUri, text.text.fontPixelSize};
+                usedFonts.insert(key);
+                auto &glyphTextureHandles = glyphTextures[key];
+                for (auto &glyph: text.text.glyphs) {
+                    if (glyphTextureHandles.find(glyph.character.get().value) == glyphTextureHandles.end()) {
+                        glyphTextureHandles[glyph.character.get().value] = atlas.add(glyph.character.get().image);
+                    }
+                }
+            }
+        }
+        std::unordered_set<std::pair<Uri, Vec2i>, GlyphTextureHash> delFonts;
+        for (auto &fontTextures: glyphTextures) {
+            if (usedFonts.find(fontTextures.first) == usedFonts.end()) {
+                delFonts.insert(fontTextures.first);
+                for (auto &glyphTextureHandles: fontTextures.second) {
+                    atlas.remove(glyphTextureHandles.second);
+                }
+            }
+        }
+        for (auto &fontTextures: delFonts) {
+            glyphTextures.erase(fontTextures);
+        }
+    }
+
+    void CanvasRenderPass::updateTextures() {
+        std::set<Uri> usedTextures;
+        for (auto &canvas: canvases) {
+            for (auto &paintCommand: canvas.getPaintCommands()) {
+                if (paintCommand.type != Paint::PAINT_IMAGE)
+                    continue;
+                auto &img = std::get<PaintImage>(paintCommand.data);
+                usedTextures.insert(img.image.getUri());
+                if (textureAtlasHandles.find(img.image.getUri()) == textureAtlasHandles.end()) {
+                    textureAtlasHandles[img.image.getUri()] = atlas.add(img.image.get());
+                }
+            }
+        }
+
+        std::set<Uri> delTextures;
+        for (auto &textureHandles: textureAtlasHandles) {
+            if (usedTextures.find(textureHandles.first) == usedTextures.end()) {
+                delTextures.insert(textureHandles.first);
+                atlas.remove(textureHandles.second);
+            }
+        }
+
+        for (auto &textureHandles: delTextures) {
+            textureAtlasHandles.erase(textureHandles);
+        }
+    }
+
+    void CanvasRenderPass::renderCanvas(RenderGraphResource target,
+                                        const Canvas &canvas,
+                                        RenderGraphContext &ctx) {
+        auto &atlasTextures = atlas.getAtlasTextures(ctx);
+
+        std::vector<RenderGraphResource> textures;
+        for (int i = TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; i++) {
+            auto res = static_cast<TextureAtlasResolution>(i);
+            textures.emplace_back(atlasTextures.at(res));
+        }
+
+        ctx.beginRenderPass({RenderGraphAttachment(target)}, {});
+        ctx.setViewport({}, {layerSize.x, layerSize.y});
+        if (canvas.getBackgroundColor().a() > 0) {
+            ctx.clearColorAttachment(0, canvas.getBackgroundColor());
+        }
+        ctx.bindPipeline(trianglePipeline);
+        ctx.bindVertexBuffer(vertexBuffer);
+        ctx.bindIndexBuffer(indexBuffer);
+        ctx.bindShaderBuffers({
+            {"vars", shaderBuffer}
+        });
+        ctx.bindTextures({{"atlasTextures", textures}});
+
+        Primitive currentPrimitive = TRIANGLES;
+        for (auto &paintCommand: canvas.getPaintCommands()) {
+            switch (paintCommand.type) {
+                case Paint::PAINT_POINT: {
+                    if (currentPrimitive != POINTS) {
+                        currentPrimitive = POINTS;
+                        ctx.bindPipeline(pointPipeline);
+                        ctx.bindVertexBuffer(vertexBuffer);
+                        ctx.bindIndexBuffer(indexBuffer);
+                        ctx.bindShaderBuffers({
+                            {"vars", shaderBuffer}
+                        });
+                        ctx.bindTextures({{"atlasTextures", textures}});
+                    }
+                    auto &point = std::get<PaintPoint>(paintCommand.data);
+
+                    auto model = MatrixMath::translate({
+                        point.position.x,
+                        point.position.y,
+                        0
+                    });
+
+                    ShaderBufferFormat data;
+                    data.mvp = canvas.getViewProjectionMatrix() * model;
+
+                    auto color = point.color.divide();
+                    data.color[0] = color.x;
+                    data.color[1] = color.y;
+                    data.color[2] = color.z;
+                    data.color[3] = color.w;
+
+                    ctx.uploadBuffer(shaderBuffer,
+                                     reinterpret_cast<const uint8_t *>(&data),
+                                     sizeof(ShaderBufferFormat),
+                                     0);
+
+                    auto &pointDraw = meshBuffer.getPoint(point.position);
+                    ctx.drawIndexed(pointDraw.drawCall, pointDraw.baseVertex);
+                    break;
+                }
+                case Paint::PAINT_LINE: {
+                    if (currentPrimitive != LINES) {
+                        currentPrimitive = LINES;
+                        ctx.bindPipeline(linePipeline);
+                        ctx.bindVertexBuffer(vertexBuffer);
+                        ctx.bindIndexBuffer(indexBuffer);
+                        ctx.bindShaderBuffers({
+                            {"vars", shaderBuffer}
+                        });
+                        ctx.bindTextures({{"atlasTextures", textures}});
+                    }
+                    auto &line = std::get<PaintLine>(paintCommand.data);
+                    Mat4f rotMat = MatrixMath::identity();
+
+                    if (line.rotation != 0) {
+                        rotMat = MatrixMath::translate({
+                                     line.center.x,
+                                     line.center.y,
+                                     0
+                                 })
+                                 * MatrixMath::rotate(Vec3f(0, 0, line.rotation))
+                                 * MatrixMath::translate({
+                                     -line.center.x,
+                                     -line.center.y,
+                                     0
+                                 });
+                    }
+
+                    auto model = MatrixMath::identity() * rotMat;
+
+                    ShaderBufferFormat data;
+                    data.mvp = canvas.getViewProjectionMatrix() * model;
+
+                    auto color = line.color.divide();
+                    data.color[0] = color.x;
+                    data.color[1] = color.y;
+                    data.color[2] = color.z;
+                    data.color[3] = color.w;
+
+                    ctx.uploadBuffer(shaderBuffer,
+                                     reinterpret_cast<const uint8_t *>(&data),
+                                     sizeof(ShaderBufferFormat),
+                                     0);
+
+                    auto &draw = meshBuffer.getLine(line.start, line.end);
+                    ctx.drawIndexed(draw.drawCall, draw.baseVertex);
+                    break;
+                }
+                case Paint::PAINT_RECTANGLE: {
+                    if (currentPrimitive != TRIANGLES) {
+                        currentPrimitive = TRIANGLES;
+                        ctx.bindPipeline(trianglePipeline);
+                        ctx.bindVertexBuffer(vertexBuffer);
+                        ctx.bindIndexBuffer(indexBuffer);
+                        ctx.bindShaderBuffers({
+                            {"vars", shaderBuffer}
+                        });
+                        ctx.bindTextures({{"atlasTextures", textures}});
+                    }
+                    auto &square = std::get<PaintRectangle>(paintCommand.data);
+                    Mat4f rotMat = MatrixMath::identity();
+
+                    if (square.rotation != 0) {
+                        rotMat = MatrixMath::translate({
+                                     square.center.x,
+                                     square.center.y,
+                                     0
+                                 })
+                                 * MatrixMath::rotate(Vec3f(0, 0, square.rotation))
+                                 * MatrixMath::translate({
+                                     -square.center.x,
+                                     -square.center.y,
+                                     0
+                                 });
+                    }
+
+                    auto model = MatrixMath::translate({
+                                     square.dstRect.position.x,
+                                     square.dstRect.position.y,
+                                     0
+                                 }) * rotMat;
+
+                    ShaderBufferFormat data;
+                    data.mvp = canvas.getViewProjectionMatrix() * model;
+
+                    auto color = square.color.divide();
+                    data.color[0] = color.x;
+                    data.color[1] = color.y;
+                    data.color[2] = color.z;
+                    data.color[3] = color.w;
+
+                    ctx.uploadBuffer(shaderBuffer,
+                                     reinterpret_cast<const uint8_t *>(&data),
+                                     sizeof(ShaderBufferFormat),
+                                     0);
+
+                    MeshBuffer2D::MeshDrawData draw;
+                    if (square.fill) {
+                        draw = meshBuffer.getPlane(square.dstRect.dimensions);
+                    } else {
+                        draw = meshBuffer.getSquare(square.dstRect.dimensions);
+                    }
+
+                    ctx.drawIndexed(draw.drawCall, draw.baseVertex);
+
+                    break;
+                }
+                case Paint::PAINT_IMAGE: {
+                    if (currentPrimitive != TRIANGLES) {
+                        currentPrimitive = TRIANGLES;
+                        ctx.bindPipeline(trianglePipeline);
+                        ctx.bindVertexBuffer(vertexBuffer);
+                        ctx.bindIndexBuffer(indexBuffer);
+                        ctx.bindShaderBuffers({
+                            {"vars", shaderBuffer}
+                        });
+                        ctx.bindTextures({{"atlasTextures", textures}});
+                    }
+                    auto &img = std::get<PaintImage>(paintCommand.data);
+                    Mat4f rotMat = MatrixMath::identity();
+
+                    if (img.rotation != 0) {
+                        rotMat = MatrixMath::translate({
+                                     img.center.x,
+                                     img.center.y,
+                                     0
+                                 })
+                                 * MatrixMath::rotate(Vec3f(0, 0, img.rotation))
+                                 * MatrixMath::translate({
+                                     -img.center.x,
+                                     -img.center.y,
+                                     0
+                                 });
+                    }
+
+                    auto model = MatrixMath::translate({
+                                     img.dstRect.position.x,
+                                     img.dstRect.position.y,
+                                     0
+                                 }) * rotMat;
+
+                    ShaderBufferFormat data;
+                    data.mvp = canvas.getViewProjectionMatrix() * model;
+
+                    auto color = img.mixColor.divide();
+                    data.color[0] = color.x;
+                    data.color[1] = color.y;
+                    data.color[2] = color.z;
+                    data.color[3] = color.w;
+
+                    auto atlasTex = textureAtlasHandles.at(img.image.getUri());
+
+                    data.colorMixFactor = img.mix;
+                    data.alphaMixFactor = img.alphaMix;
+                    data.colorFactor = 0;
+                    data.texAtlasLevel = atlasTex.level;
+                    data.texAtlasIndex = static_cast<int>(atlasTex.index);
+                    data.texFilter = img.filter;
+
+                    auto uvOffset = img.srcRect.position / atlasTex.size.convert<float>();
+                    data.uvOffset_uvScale[0] = uvOffset.x;
+                    data.uvOffset_uvScale[1] = uvOffset.y;
+
+                    auto uvScale = (img.srcRect.dimensions / atlasTex.size.convert<float>());
+                    data.uvOffset_uvScale[2] = uvScale.x;
+                    data.uvOffset_uvScale[3] = uvScale.y;
+
+                    auto atlasScale = (atlasTex.size.convert<float>() /
+                                       TextureAtlas::getResolutionLevelSize(
+                                           atlasTex.level).convert<float>());
+                    data.atlasScale_texSize[0] = atlasScale.x;
+                    data.atlasScale_texSize[1] = atlasScale.y;
+                    data.atlasScale_texSize[2] = static_cast<float>(atlasTex.size.x);
+                    data.atlasScale_texSize[3] = static_cast<float>(atlasTex.size.y);
+
+                    ctx.uploadBuffer(shaderBuffer,
+                                     reinterpret_cast<const uint8_t *>(&data),
+                                     sizeof(ShaderBufferFormat),
+                                     0);
+
+                    auto draw = meshBuffer.getPlane(img.dstRect.dimensions);
+
+                    ctx.drawIndexed(draw.drawCall, draw.baseVertex);
+                    break;
+                }
+                case Paint::PAINT_TEXT: {
+                    if (currentPrimitive != TRIANGLES) {
+                        currentPrimitive = TRIANGLES;
+                        ctx.bindPipeline(trianglePipeline);
+                        ctx.bindVertexBuffer(vertexBuffer);
+                        ctx.bindIndexBuffer(indexBuffer);
+                        ctx.bindShaderBuffers({
+                            {"vars", shaderBuffer}
+                        });
+                        ctx.bindTextures({{"atlasTextures", textures}});
+                    }
+                    auto &text = std::get<PaintText>(paintCommand.data);
+
+                    // TODO: Cache rendered text in a texture.
+                    auto &glyphTextureHandles = glyphTextures.at({text.text.fontUri, text.text.fontPixelSize});
+                    for (auto &glyph: text.text.glyphs) {
+                        auto model = MatrixMath::translate({
+                            glyph.position.x + text.position.x,
+                            glyph.position.y + text.position.y,
+                            0
+                        });
+
+                        ShaderBufferFormat data;
+                        data.mvp = canvas.getViewProjectionMatrix() * model;
+
+                        auto color = text.color.divide();
+                        data.color[0] = color.x;
+                        data.color[1] = color.y;
+                        data.color[2] = color.z;
+                        data.color[3] = color.w;
+
+                        auto atlasTex = glyphTextureHandles.at(glyph.character.get().value);
+
+                        data.colorMixFactor = 0;
+                        data.alphaMixFactor = 0;
+                        data.colorFactor = 1;
+                        data.texAtlasLevel = atlasTex.level;
+                        data.texAtlasIndex = static_cast<int>(atlasTex.index);
+                        data.texFilter = 0;
+
+                        data.uvOffset_uvScale[0] = 0;
+                        data.uvOffset_uvScale[1] = 0;
+
+                        data.uvOffset_uvScale[2] = 1;
+                        data.uvOffset_uvScale[3] = 1;
+
+                        auto atlasScale = (atlasTex.size.convert<float>() /
+                                           TextureAtlas::getResolutionLevelSize(
+                                               atlasTex.level).convert<float>());
+                        data.atlasScale_texSize[0] = atlasScale.x;
+                        data.atlasScale_texSize[1] = atlasScale.y;
+                        data.atlasScale_texSize[2] = static_cast<float>(atlasTex.size.x);
+                        data.atlasScale_texSize[3] = static_cast<float>(atlasTex.size.y);
+
+                        ctx.uploadBuffer(shaderBuffer,
+                                         reinterpret_cast<const uint8_t *>(&data),
+                                         sizeof(ShaderBufferFormat),
+                                         0);
+
+                        auto plane = meshBuffer.getPlane(glyph.character.get().image.getResolution().convert<float>());
+                        ctx.drawIndexed(plane.drawCall, plane.baseVertex);
+                    }
+                    break;
+                }
+            }
+        }
+        ctx.endRenderPass();
     }
 }

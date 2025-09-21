@@ -20,17 +20,13 @@
 #ifndef XENGINE_RENDERER2D_HPP
 #define XENGINE_RENDERER2D_HPP
 
-#include <vector>
-
-#include "text/text.hpp"
-
-#include "xng/graphics/2d/texture2d.hpp"
-#include "xng/graphics/2d/renderbatch2d.hpp"
-
+#include "xng/graphics/3d/renderconfiguration.hpp"
 #include "xng/graphics/3d/renderpassscheduler.hpp"
-#include "xng/graphics/3d/passes/renderpass2d.hpp"
+#include "xng/graphics/3d/sharedresourceregistry.hpp"
+#include "xng/graphics/text/textlayout.hpp"
 
 #include "xng/rendergraph/rendergraphruntime.hpp"
+#include "xng/resource/resourcehandle.hpp"
 
 namespace xng {
     /**
@@ -57,14 +53,10 @@ namespace xng {
     class XENGINE_EXPORT Renderer2D {
     public:
         /**
-         * The renderer does not present recorded batches.
-         */
-        Renderer2D() = default;
-
-        /**
-         * The recorded batches are presented via the passed runtime.
+         * The recorded commands are presented via the passed runtime.
          *
-         * Provided for projects that exclusively use the renderer 2D and don't perform more complex rendering.
+         * Provided for projects that exclusively use the renderer 2D and don't perform more complex rendering
+         * via the canvas api.
          *
          * @param runtime
          */
@@ -72,113 +64,19 @@ namespace xng {
 
         ~Renderer2D();
 
-        Texture2D createTexture(const ImageRGBA &texture);
-
-        std::vector<Texture2D> createTextures(const std::vector<ImageRGBA> &textures);
-
-        void destroyTexture(const Texture2D &texture);
-
         /**
          * Begin rendering to the screen.
          *
          * Must be called before calling draw methods.
          *
-         * @param clear
-         * @param clearColor
-         * @param viewportOffset
-         * @param viewportSize
-         * @param projection
-         * @param cameraPosition
+         * @param clearColor If the clear color contains non 0 alpha, the screen is cleared before rendering.
          */
-        void renderBegin(bool clear,
-                         const ColorRGBA &clearColor,
-                         const Vec2i &viewportOffset,
-                         const Vec2i &viewportSize,
-                         const Vec2f &cameraPosition,
-                         const Rectf &projection);
-
-        /**
-         * Begin rendering to a texture
-         *
-         * @param target
-         * @param clear
-         * @param clearColor
-         * @param viewportOffset
-         * @param viewportSize
-         * @param cameraPosition
-         * @param projection
-         */
-        void renderBegin(const Texture2D &target,
-                         bool clear,
-                         const ColorRGBA &clearColor,
-                         const Vec2i &viewportOffset,
-                         const Vec2i &viewportSize,
-                         const Vec2f &cameraPosition,
-                         const Rectf &projection);
-
-        void renderBegin(const bool clear,
-                         const ColorRGBA &clearColor,
-                         const Vec2i &viewportOffset,
-                         const Vec2i &viewportSize,
-                         const Vec2f &cameraPosition,
-                         const Vec2i &frameBufferSize) {
-            renderBegin(clear,
-                        clearColor,
-                        viewportOffset,
-                        viewportSize,
-                        cameraPosition,
-                        Rectf({}, frameBufferSize.convert<float>()));
-        }
-
-        void renderBegin(const Vec2i &frameBufferSize, const ColorRGBA clearColor = ColorRGBA::black(1, 0)) {
-            renderBegin(true,
-                        clearColor,
-                        {},
-                        frameBufferSize,
-                        {},
-                        Rectf({}, frameBufferSize.convert<float>()));
-        }
+        void renderBegin(const ColorRGBA &clearColor = ColorRGBA::black(1, 0));
 
         void renderPresent();
 
         /**
-         * Draw texture where each fragment color = textureColor * colorFactor.
-         *
-         * The colorFactor usually is white so the texture color is unaffected,
-         * for rendering text where the image is a grayscale image the color factor can be used to tint the text.
-         *
-         * @param srcRect The part of the of texture to sample
-         * @param dstRect The part of the screen to display the sampled part into
-         * @param texture
-         * @param center
-         * @param rotation
-         * @param filter
-         * @param colorFactor
-         */
-        void draw(const Rectf &srcRect,
-                  const Rectf &dstRect,
-                  const Texture2D &texture,
-                  const Vec2f &center,
-                  float rotation,
-                  TextureFiltering filter,
-                  ColorRGBA colorFactor = ColorRGBA::white());
-
-        void draw(const Vec2f &position,
-                  const Texture2D &texture,
-                  const TextureFiltering filter = NEAREST,
-                  const Vec2f &center = {},
-                  const float rotation = {}) {
-            const auto size = texture.getSize().convert<float>();
-            draw(Rectf({}, size),
-                 Rectf(position, size),
-                 texture,
-                 center,
-                 rotation,
-                 filter);
-        }
-
-        /**
-         * Draw texture with a color mixed in.
+         * Draw texture with another color optionally mixed in.
          *
          * @param srcRect The part of the of texture to sample
          * @param dstRect The part of the screen to display the sampled part into
@@ -192,33 +90,27 @@ namespace xng {
          */
         void draw(const Rectf &srcRect,
                   const Rectf &dstRect,
-                  const Texture2D &texture,
+                  const ResourceHandle<ImageRGBA> &texture,
                   const Vec2f &center,
                   float rotation,
-                  TextureFiltering filter,
-                  float mixRGB,
-                  float mixAlpha,
-                  const ColorRGBA &mixColor);
-
-        void draw(const Vec2f &position,
-                  const Text &text,
-                  const ColorRGBA &color,
-                  const Vec2f &center = {},
-                  float rotation = 0) {
-            auto tex = text.getTexture();
-            draw(Rectf({}, tex.getSize().convert<float>()),
-                 Rectf(position, tex.getSize().convert<float>()),
-                 tex,
-                 center,
-                 rotation,
-                 NEAREST,
-                 1,
-                 0,
-                 color);
-        }
+                  bool filter,
+                  float mixRGB = 0,
+                  float mixAlpha = 0,
+                  const ColorRGBA &mixColor = {});
 
         /**
-         * Draw rectangle
+         * Draw text
+         *
+         * @param position
+         * @param text
+         * @param color
+         * @param center
+         * @param rotation
+         */
+        void draw(const Vec2f &position, const TextLayout &text, const ColorRGBA &color);
+
+        /**
+         * Draw a rectangle
          *
          * @param rectangle
          * @param color
@@ -242,12 +134,7 @@ namespace xng {
          * @param center
          * @param rotation
          */
-        void draw(const Vec2f &start,
-                  const Vec2f &end,
-                  const ColorRGBA &color,
-                  const Vec2f &position = {},
-                  const Vec2f &center = {},
-                  float rotation = 0);
+        void draw(const Vec2f &start, const Vec2f &end, const ColorRGBA &color);
 
         /**
          * Draw point
@@ -258,34 +145,18 @@ namespace xng {
          * @param center
          * @param rotation
          */
-        void draw(const Vec2f &point,
-                  const ColorRGBA &color = {},
-                  const Vec2f &position = {},
-                  const Vec2f &center = {},
-                  float rotation = 0);
-
-        const std::vector<RenderBatch2D> &getRenderBatches() const {
-            return renderBatches;
-        }
-
-        void clearBatches() {
-            renderBatches.clear();
-        }
+        void draw(const Vec2f &point, const ColorRGBA &color = {});
 
     private:
         bool isRendering = false;
-        RenderBatch2D batch;
-        std::vector<RenderBatch2D> renderBatches;
 
-        size_t textureHandleCounter = 0;
-        std::vector<size_t> unusedTextureHandles;
+        Canvas canvas;
 
-        std::shared_ptr<RenderConfiguration> config = nullptr;
-        std::shared_ptr<SharedResourceRegistry> registry = nullptr;
+        std::shared_ptr<RenderConfiguration> config;
+        std::shared_ptr<SharedResourceRegistry> registry;
 
-        std::shared_ptr<RenderGraphRuntime> runtime = nullptr;
-        std::shared_ptr<RenderPass2D> renderPass = nullptr;
-        std::unique_ptr<RenderPassScheduler> scheduler = nullptr;
+        std::shared_ptr<RenderGraphRuntime> runtime;
+        std::unique_ptr<RenderPassScheduler> scheduler;
 
         RenderGraphHandle graph{};
     };

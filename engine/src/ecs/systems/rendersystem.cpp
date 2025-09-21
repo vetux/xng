@@ -35,7 +35,6 @@ namespace xng {
           registry(std::make_shared<SharedResourceRegistry>()),
           config(std::make_shared<RenderConfiguration>()) {
         graph = scheduler.addGraph({
-            std::make_shared<RenderPass2D>(config, registry),
             std::make_shared<ConstructionPass>(config, registry),
             std::make_shared<CanvasRenderPass>(config, registry),
             std::make_shared<CompositingPass>(config, registry),
@@ -45,10 +44,10 @@ namespace xng {
     RenderSystem::~RenderSystem() = default;
 
     void RenderSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {
-        // Render Canvases to textures using renderer 2D
-        // ren2d....
+        // Build Canvases
+        std::vector<Canvas> canvases;
 
-        config->setRenderBatches(ren2d.getRenderBatches());
+        config->setCanvases(canvases);
 
         RenderScene renderScene = {};
 

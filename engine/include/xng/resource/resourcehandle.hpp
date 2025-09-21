@@ -26,8 +26,6 @@
 #include "uri.hpp"
 #include "resourceregistry.hpp"
 
-#include "xng/async/threadpool.hpp"
-
 #include "xng/io/messageable.hpp"
 
 namespace xng {
@@ -44,11 +42,11 @@ namespace xng {
             }
         }
 
-        ~ResourceHandle() {
+        ~ResourceHandle() override {
             if (!uri.empty()) {
                 getRegistry().decRef(uri);
             }
-        };
+        }
 
         ResourceHandle(const ResourceHandle<T> &other) {
             uri = other.uri;

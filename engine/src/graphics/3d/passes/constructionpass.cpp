@@ -84,7 +84,6 @@ namespace xng {
         boneBuffer = builder.createShaderBuffer(0);
 
         atlas.onCreate(builder);
-        meshAllocator.onCreate(builder);
 
         registry->set(gBuffer);
 
@@ -92,8 +91,9 @@ namespace xng {
             runPass(ctx);
         });
 
+        meshAllocator.update(builder, pass);
+
         atlas.declareReadWrite(builder, pass);
-        meshAllocator.declareReadWrite(builder, pass);
 
         builder.read(pass, renderPipelineSkinned);
         builder.readWrite(pass, shaderBuffer);
@@ -144,14 +144,14 @@ namespace xng {
         currentBoneBufferSize = totalBoneBufferSize;
 
         atlas.onRecreate(builder);
-        meshAllocator.onRecreate(builder);
 
         auto pass = builder.addPass("ConstructionPass", [this](RenderGraphContext &ctx) {
             runPass(ctx);
         });
 
+        meshAllocator.update(builder, pass);
+
         atlas.declareReadWrite(builder, pass);
-        meshAllocator.declareReadWrite(builder, pass);
 
         builder.read(pass, renderPipelineSkinned);
         builder.readWrite(pass, shaderBuffer);

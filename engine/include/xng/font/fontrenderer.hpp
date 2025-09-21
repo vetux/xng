@@ -75,6 +75,11 @@ namespace xng {
          * @return The distance between baseline and the lowest bottom value in pixels.
          */
         virtual int getDescender() = 0;
+
+        /**
+         * @return The suggested distance between baselines.
+         */
+        virtual int getHeight() = 0;
     };
 }
 

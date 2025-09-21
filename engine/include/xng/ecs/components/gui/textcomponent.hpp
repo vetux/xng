@@ -23,7 +23,7 @@
 #include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
 #include "xng/font/font.hpp"
-#include "xng/graphics/2d/text/textalignment.hpp"
+#include "xng/graphics/text/textlayoutparameters.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT TextComponent final : Component {
@@ -31,25 +31,17 @@ namespace xng {
 
         std::string text{};
 
+        ResourceHandle<Font> font{};
         Vec2i pixelSize{};
 
-        int lineHeight{};
-        int lineWidth{};
-        int lineSpacing{};
-        TextAlignment alignment{};
-
-        ResourceHandle<Font> font{};
+        TextLayoutParameters layoutParameters{};
 
         ColorRGBA textColor{};
 
         bool operator==(const TextComponent &other) const {
             return text == other.text
-                   && pixelSize == other.pixelSize
-                   && lineHeight == other.lineHeight
-                   && lineWidth == other.lineWidth
-                   && lineSpacing == other.lineSpacing
-                   && alignment == other.alignment
                    && font == other.font
+                   && pixelSize == other.pixelSize
                    && textColor == other.textColor;
         }
 
@@ -58,26 +50,19 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            message.value("pixelSize", pixelSize);
-            message.value("lineHeight", lineHeight);
-            message.value("lineWidth", lineWidth);
-            message.value("lineSpacing", lineSpacing);
-            message.value("font", font);
-            message.value("alignment", reinterpret_cast<int &>(alignment), static_cast<int>(TEXT_ALIGN_LEFT));
             message.value("text", text);
+            message.value("font", font);
+            message.value("pixelSize", pixelSize);
+            message.value("layoutParameters", layoutParameters);
             message.value("textColor", textColor);
             return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
-            message = Message(Message::DICTIONARY);
-            pixelSize >> message["pixelSize"];
-            lineHeight >> message["lineHeight"];
-            lineWidth >> message["lineWidth"];
-            lineSpacing >> message["lineSpacing"];
-            font >> message["font"];
-            alignment >> message["alignment"];
             text >> message["text"];
+            font >> message["font"];
+            pixelSize >> message["pixelSize"];
+            layoutParameters >> message["layoutParameters"];
             textColor >> message["textColor"];
             return Component::operator>>(message);
         }

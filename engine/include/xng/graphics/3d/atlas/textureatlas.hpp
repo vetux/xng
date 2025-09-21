@@ -77,7 +77,9 @@ namespace xng {
         std::map<TextureAtlasResolution, std::vector<bool> > bufferOccupations;
 
         std::unordered_map<TextureAtlasResolution, RenderGraphResource> currentHandles;
-        std::unordered_map<TextureAtlasResolution, RenderGraphResource> previousHandles;
+
+        std::unordered_map<TextureAtlasResolution, RenderGraphResource> copyHandles;
+        std::unordered_map<TextureAtlasResolution, size_t> copySizes;
 
         std::map<TextureAtlasResolution, size_t> bufferSizes;
 

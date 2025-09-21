@@ -75,17 +75,7 @@ int main(int argc, char *argv[]) {
     const auto &tuxImg = tux.get();
     const auto &smileyImg = smiley.get();
 
-    auto ren2D = std::make_shared<Renderer2D>();
-
-    auto tuxTexture = ren2D->createTexture(tuxImg);
-    auto smileyTexture = ren2D->createTexture(smileyImg);
-
     auto freeType = std::make_unique<freetype::FreeType>();
-    auto fontRenderer = freeType->createFontRenderer(font.get());
-
-    auto textRenderer = TextRenderer(ren2D, *fontRenderer, {0, 50});
-
-    auto text = textRenderer.render("Hello\nWorld!", {60, 0, 0, TEXT_ALIGN_LEFT});
 
     auto config = std::make_shared<RenderConfiguration>();
 
@@ -97,7 +87,6 @@ int main(int argc, char *argv[]) {
     auto passScheduler = std::make_shared<RenderPassScheduler>(runtime);
 
     auto graph3D = passScheduler->addGraph({
-        std::make_shared<RenderPass2D>(config, registry),
         std::make_shared<ConstructionPass>(config, registry),
         std::make_shared<CanvasRenderPass>(config, registry),
         std::make_shared<CompositingPass>(config, registry),
@@ -106,47 +95,55 @@ int main(int argc, char *argv[]) {
     FrameLimiter frameLimiter;
     frameLimiter.reset();
 
+    auto textLayoutEngine = TextLayoutEngine(*freeType, font, {0, 25});
+    auto text = textLayoutEngine.getLayout(
+        "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.",
+        {
+            500,
+            0,
+            TEXT_ALIGN_LEFT,
+        });
     while (!window->shouldClose()) {
         frameLimiter.newFrame();
         window->update();
 
-        auto deltaText = textRenderer.render(std::to_string(frameLimiter.getFramesPerSecond()) + " fps",
-                                             {50, 0, 0, TEXT_ALIGN_LEFT});
+        auto deltaText = textLayoutEngine.getLayout(std::to_string(frameLimiter.getFramesPerSecond()) + " FPS",
+                                                    {
+                                                        0,
+                                                        0,
+                                                        TEXT_ALIGN_LEFT
+                                                    });
 
         auto fbSize = passScheduler->updateBackBuffer();
+
         scene.camera.aspectRatio = static_cast<float>(fbSize.x)
                                    / static_cast<float>(fbSize.y);
         config->setScene(scene);
 
         auto fbSizeF = fbSize.convert<float>();
 
-        ren2D->renderBegin(fbSize, ColorRGBA::white());
+        Canvas canvas(fbSize);
+        canvas.setBackgroundColor(ColorRGBA::white());
+        canvas.paint(PaintLine(Vec2f(0, 0), fbSizeF, ColorRGBA::green()));
+        canvas.paint(PaintLine(Vec2f(0, fbSizeF.y), Vec2f(fbSizeF.x, 0), ColorRGBA::green()));
+        canvas.paint(PaintImage(Rectf({}, smileyImg.getResolution().convert<float>()),
+                                Rectf({}, smileyImg.getResolution().convert<float>()),
+                                smiley,
+                                true));
+        canvas.paint(PaintImage(Rectf({}, tuxImg.getResolution().convert<float>()),
+                                Rectf({}, tuxImg.getResolution().convert<float>()),
+                                tux,
+                                true));
+        canvas.paint(PaintLine(Vec2f(0, fbSizeF.y / 2), Vec2f(fbSizeF.x, fbSizeF.y / 2), ColorRGBA::red()));
+        canvas.paint(PaintLine(Vec2f(fbSizeF.x / 2, 0), Vec2f(fbSizeF.x / 2, fbSizeF.y), ColorRGBA::red()));
+        canvas.paint(PaintText({15, 10}, text, ColorRGBA::purple()));
+        canvas.paint(PaintText(Vec2f(fbSizeF.x - static_cast<float>(deltaText.size.x)-3, 0), deltaText,
+                               ColorRGBA::black()));
 
-        ren2D->draw(Vec2f(0, 0), fbSizeF, ColorRGBA::green());
-        ren2D->draw(Vec2f(0, fbSizeF.y), Vec2f(fbSizeF.x, 0), ColorRGBA::green());
-        ren2D->draw({}, smileyTexture, LINEAR);
-        ren2D->draw({}, tuxTexture, LINEAR);
-        ren2D->draw(Vec2f(0, fbSizeF.y / 2), Vec2f(fbSizeF.x, fbSizeF.y / 2), ColorRGBA::red());
-        ren2D->draw(Vec2f(fbSizeF.x / 2, 0), Vec2f(fbSizeF.x / 2, fbSizeF.y), ColorRGBA::red());
-        ren2D->draw(Vec2f(50, 0), text, ColorRGBA::purple());
-        ren2D->draw(Vec2f(fbSizeF.x - static_cast<float>(deltaText.getTexture().getSize().x), 0),
-                    deltaText,
-                    ColorRGBA::black());
-
-        ren2D->renderPresent();
-
-        auto batches = ren2D->getRenderBatches();
-        for (auto &batch: batches) {
-            batch.canvasSize = fbSize;
-        }
-
-        config->setRenderBatches(batches);
-        ren2D->clearBatches();
+        config->setCanvases({canvas});
 
         passScheduler->execute(graph3D);
     }
-
-    ren2D->destroyTexture(smileyTexture);
 
     return 0;
 }

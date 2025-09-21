@@ -20,33 +20,31 @@
 #ifndef XENGINE_TEXTRENDERER_HPP
 #define XENGINE_TEXTRENDERER_HPP
 
-#include "text.hpp"
-#include "textlayout.hpp"
-
-#include "xng/graphics/2d/renderer2d.hpp"
+#include "xng/graphics/text/textlayout.hpp"
+#include "xng/graphics/text/textlayoutparameters.hpp"
+#include "xng/font/fontengine.hpp"
+#include "xng/resource/resourcehandle.hpp"
 
 namespace xng {
-    /**
-     * Renders text to Texture2D textures.
-     */
-    class XENGINE_EXPORT TextRenderer {
+    class XENGINE_EXPORT TextLayoutEngine {
     public:
-        TextRenderer(std::shared_ptr<Renderer2D> ren2D,
-                     FontRenderer &font,
-                     const Vec2i &pixelSize);
+        explicit TextLayoutEngine(FontEngine &fontEngine,
+                                  const ResourceHandle<Font> &font,
+                                  const Vec2i &fontPixelSize);
 
-        ~TextRenderer();
+        Vec2i getSize(const std::string &text, const TextLayoutParameters &layoutParameters) const;
 
-        Vec2i getSize(const std::string &text, const TextLayout &layout) const;
-
-        Text render(const std::string &text, const TextLayout &layout);
+        TextLayout getLayout(const std::string &text, const TextLayoutParameters &layoutParameters) const;
 
     private:
-        std::shared_ptr<Renderer2D> ren2d;
+        Uri fontUri;
+        Vec2i fontPixelSize{};
 
-        Vec2i pixelSize{0, 50};
+        int ascender = 0;
+        int descender = 0;
+        int lineHeight = 0;
         std::map<char, Character> ascii;
-        std::map<char, Texture2D> textures;
     };
 }
+
 #endif //XENGINE_TEXTRENDERER_HPP

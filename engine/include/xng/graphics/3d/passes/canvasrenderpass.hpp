@@ -20,16 +20,21 @@
 #ifndef XENGINE_CANVASRENDERPASS_HPP
 #define XENGINE_CANVASRENDERPASS_HPP
 
+#include "xng/graphics/3d/meshbuffer2d.hpp"
 #include "xng/graphics/3d/renderpass.hpp"
 
 #include "xng/graphics/3d/renderconfiguration.hpp"
 #include "xng/graphics/3d/sharedresourceregistry.hpp"
+#include "xng/graphics/3d/atlas/textureatlas.hpp"
+#include "xng/graphics/3d/atlas/textureatlashandle.hpp"
 #include "xng/graphics/3d/sharedresources/compositinglayers.hpp"
-#include "xng/graphics/3d/sharedresources/rendercanvases.hpp"
 
 namespace xng {
     /**
-     * Renders the canvases created by the RenderPass2D.
+     * Renders canvases to textures and presents these textures either in the world or screen space.
+     *
+     * Text glyphs are allocated as they are encountered in the canvases and kept allocated as long as the font / pixel size
+     * they belong to is used in the current canvases.
      */
     class XENGINE_EXPORT CanvasRenderPass final : public RenderPass {
     public:
@@ -44,6 +49,14 @@ namespace xng {
     private:
         void runPass(RenderGraphContext &ctx);
 
+        void updateGlyphTextures();
+
+        void updateTextures();
+
+        void renderCanvas(RenderGraphResource target,
+                          const Canvas &canvas,
+                          RenderGraphContext &ctx);
+
         static Shader createVertexShader();
 
         static Shader createFragmentShader();
@@ -55,7 +68,41 @@ namespace xng {
         CompositeLayer worldSpaceLayer;
         Vec2i layerSize;
 
-        RenderCanvases canvases;
+        std::vector<Canvas> canvases;
+
+        RenderGraphResource trianglePipeline;
+        RenderGraphResource linePipeline;
+        RenderGraphResource pointPipeline;
+
+        RenderGraphResource shaderBuffer;
+
+        RenderGraphResource vertexBuffer;
+        RenderGraphResource indexBuffer;
+
+        RenderGraphResource vertexBufferCopy;
+        RenderGraphResource indexBufferCopy;
+
+        size_t vertexBufferSize{};
+        size_t indexBufferSize{};
+
+        MeshBuffer2D meshBuffer;
+
+        // TODO: Share a single atlas instance across the passes.
+        TextureAtlas atlas;
+        std::map<Uri, TextureAtlasHandle> textureAtlasHandles;
+
+        class GlyphTextureHash {
+        public:
+            std::size_t operator()(const std::pair<Uri, Vec2i> &k) const {
+                size_t ret = 0;
+                hash_combine(ret, k.first.toString());
+                hash_combine(ret, k.second.x);
+                hash_combine(ret, k.second.y);
+                return ret;
+            }
+        };
+
+        std::unordered_map<std::pair<Uri, Vec2i>, std::map<char, TextureAtlasHandle>, GlyphTextureHash> glyphTextures;
     };
 }
 
