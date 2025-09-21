@@ -62,6 +62,10 @@ RenderGraphStatistics RenderGraphRuntimeOGL::execute(const RenderGraphHandle gra
     oglDebugStartGroup("RenderGraphRuntimeOGL::execute");
 
     auto stats = RenderGraphStatistics();
+    stats.textureVRamUsage += backBufferColor->texture.size.x * backBufferColor->texture.size.y
+                             * getColorByteSize(backBufferColor->texture.format);
+    stats.textureVRamUsage += backBufferDepthStencil->texture.size.x * backBufferDepthStencil->texture.size.y
+            * getColorByteSize(backBufferDepthStencil->texture.format);
     for (auto &buffer: contexts.at(graph).vertexBuffers) {
         stats.vertexVRamUsage += buffer.second->size;
     }
@@ -95,6 +99,10 @@ RenderGraphStatistics RenderGraphRuntimeOGL::execute(const std::vector<RenderGra
     oglDebugStartGroup("RenderGraphRuntimeOGL::execute");
 
     auto stats = RenderGraphStatistics();
+    stats.textureVRamUsage += backBufferColor->texture.size.x * backBufferColor->texture.size.y
+                         * getColorByteSize(backBufferColor->texture.format);
+    stats.textureVRamUsage += backBufferDepthStencil->texture.size.x * backBufferDepthStencil->texture.size.y
+            * getColorByteSize(backBufferDepthStencil->texture.format);
     for (auto graph: graphs) {
         for (auto &buffer: contexts.at(graph).vertexBuffers) {
             stats.vertexVRamUsage += buffer.second->size;

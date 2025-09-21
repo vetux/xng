@@ -109,11 +109,11 @@ int main(int argc, char *argv[]) {
     auto deltaTextLayoutEngine = TextLayoutEngine(*freeType, font, {0, 20});
 
     auto deltaText = deltaTextLayoutEngine.getLayout(std::to_string(0) + " FPS",
-                                            {
-                                                0,
-                                                0,
-                                                TEXT_ALIGN_LEFT
-                                            });
+                                                     {
+                                                         0,
+                                                         0,
+                                                         TEXT_ALIGN_LEFT
+                                                     });
     std::chrono::milliseconds fpsUpdateInterval = std::chrono::milliseconds(50);
     auto now = std::chrono::steady_clock::now();
 
@@ -129,10 +129,13 @@ int main(int argc, char *argv[]) {
             txt += std::to_string(stats.drawCalls) + " draw calls\n";
             txt += std::to_string(stats.polygons) + " polygons\n\n";
             txt += "VRAM Usage\n";
+            txt += "Total " + std::to_string(
+                (stats.vertexVRamUsage + stats.indexVRamUsage + stats.shaderBufferVRamUsage + stats.textureVRamUsage) /
+                MEGABYTE) + "MB\n";
             txt += "Vertex Buffers " + std::to_string(stats.vertexVRamUsage / KILOBYTE) + "KB\n";
             txt += "Index Buffers " + std::to_string(stats.indexVRamUsage / KILOBYTE) + "KB\n";
-            txt += "Shader Storage Buffers " + std::to_string(stats.shaderBufferVRamUsage/ KILOBYTE) + "KB\n";
-            txt += "Texture Buffers " + std::to_string(stats.textureVRamUsage/ KILOBYTE) + "KB\n\n";
+            txt += "Shader Storage Buffers " + std::to_string(stats.shaderBufferVRamUsage / KILOBYTE) + "KB\n";
+            txt += "Texture Buffers " + std::to_string(stats.textureVRamUsage / KILOBYTE) + "KB\n\n";
             txt += "VRAM Copy\n";
             txt += "Vertex Buffers " + std::to_string(stats.vertexVRamCopy / KILOBYTE) + "KB\n";
             txt += "Index Buffers " + std::to_string(stats.indexVRamCopy / KILOBYTE) + "KB\n";
@@ -144,11 +147,11 @@ int main(int argc, char *argv[]) {
             txt += "Shader Storage Buffers " + std::to_string(stats.shaderBufferVRamUpload / KILOBYTE) + "KB\n";
             txt += "Texture Buffers " + std::to_string(stats.textureVRamUpload / KILOBYTE) + "KB\n";
             deltaText = deltaTextLayoutEngine.getLayout(txt,
-                                                    {
-                                                        0,
-                                                        0,
-                                                        TEXT_ALIGN_RIGHT
-                                                    });
+                                                        {
+                                                            0,
+                                                            0,
+                                                            TEXT_ALIGN_RIGHT
+                                                        });
         }
 
         auto fbSize = passScheduler->updateBackBuffer();
@@ -174,7 +177,7 @@ int main(int argc, char *argv[]) {
         canvas.paint(PaintLine(Vec2f(0, fbSizeF.y / 2), Vec2f(fbSizeF.x, fbSizeF.y / 2), ColorRGBA::red()));
         canvas.paint(PaintLine(Vec2f(fbSizeF.x / 2, 0), Vec2f(fbSizeF.x / 2, fbSizeF.y), ColorRGBA::red()));
         canvas.paint(PaintText({15, 10}, text, ColorRGBA::purple()));
-        canvas.paint(PaintText(Vec2f(fbSizeF.x - static_cast<float>(deltaText.size.x)-3, 0), deltaText,
+        canvas.paint(PaintText(Vec2f(fbSizeF.x - static_cast<float>(deltaText.size.x) - 3, 0), deltaText,
                                ColorRGBA::black()));
 
         config->setCanvases({canvas});
