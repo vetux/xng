@@ -195,10 +195,12 @@ namespace xng::vulkan {
     void Vulkan::recompile(RenderGraphHandle handle, const RenderGraph &graph) {
     }
 
-    void Vulkan::execute(RenderGraphHandle graph) {
+    RenderGraphStatistics Vulkan::execute(RenderGraphHandle graph) {
+        throw std::runtime_error("Not implemented");
     }
 
-    void Vulkan::execute(const std::vector<RenderGraphHandle> &graphs) {
+    RenderGraphStatistics Vulkan::execute(const std::vector<RenderGraphHandle> &graphs) {
+        throw std::runtime_error("Not implemented");
     }
 
     void Vulkan::saveCache(RenderGraphHandle graph, std::ostream &stream) {

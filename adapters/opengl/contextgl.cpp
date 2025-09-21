@@ -19,6 +19,7 @@
 
 #include "contextgl.hpp"
 
+#include "colorbytesize.hpp"
 #include "ogl/oglframebuffer.hpp"
 
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
@@ -37,6 +38,7 @@ void ContextGL::uploadBuffer(const RenderGraphResource target,
                         buffer);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         oglCheckError();
+        stats.vertexVRamUpload += bufferSize;
     } else if (resources.indexBuffers.find(target) != resources.indexBuffers.end()) {
         const auto buf = resources.indexBuffers.at(target);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf->EBO);
@@ -46,6 +48,7 @@ void ContextGL::uploadBuffer(const RenderGraphResource target,
                         buffer);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         oglCheckError();
+        stats.indexVRamUpload += bufferSize;
     } else if (resources.storageBuffers.find(target) != resources.storageBuffers.end()) {
         const auto buf = resources.storageBuffers.at(target);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, buf->SSBO);
@@ -55,6 +58,7 @@ void ContextGL::uploadBuffer(const RenderGraphResource target,
                         buffer);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
         oglCheckError();
+        stats.shaderBufferVRamUpload += bufferSize;
     }
     oglDebugEndGroup();
 }
@@ -120,6 +124,8 @@ void ContextGL::uploadTexture(const RenderGraphResource texture,
     }
     glBindTexture(tex->textureType, 0);
     oglCheckError();
+
+    stats.textureVRamUpload += bufferSize;
 
     oglDebugEndGroup();
 }
@@ -332,12 +338,15 @@ void ContextGL::copyBuffer(const RenderGraphResource target,
     if (resources.vertexBuffers.find(target) != resources.vertexBuffers.end()) {
         readBuffer = resources.vertexBuffers.at(source)->VBO;
         writeBuffer = resources.vertexBuffers.at(target)->VBO;
+        stats.vertexVRamCopy += count;
     } else if (resources.indexBuffers.find(target) != resources.indexBuffers.end()) {
         readBuffer = resources.indexBuffers.at(source)->EBO;
         writeBuffer = resources.indexBuffers.at(target)->EBO;
+        stats.indexVRamCopy += count;
     } else if (resources.storageBuffers.find(target) != resources.storageBuffers.end()) {
         readBuffer = resources.storageBuffers.at(source)->SSBO;
         writeBuffer = resources.storageBuffers.at(target)->SSBO;
+        stats.shaderBufferVRamCopy += count;
     } else {
         throw std::runtime_error("Invalid buffer");
     }
@@ -379,6 +388,9 @@ void ContextGL::copyTexture(const RenderGraphResource target, const RenderGraphR
                        1);
     oglCheckError();
 
+    stats.textureVRamCopy += srcTexture->texture.size.x * srcTexture->texture.size.y
+            * getColorByteSize(srcTexture->texture.format);
+
     oglDebugEndGroup();
 }
 
@@ -409,6 +421,9 @@ void ContextGL::copyTexture(const RenderGraphResource target,
                        srcTexture->texture.size.y,
                        1);
     oglCheckError();
+
+    stats.textureVRamCopy += srcTexture->texture.size.x * srcTexture->texture.size.y
+        * getColorByteSize(srcTexture->texture.format);
 
     oglDebugEndGroup();
 }
@@ -815,6 +830,9 @@ void ContextGL::drawArray(const DrawCall &drawCall) {
                  static_cast<GLsizei>(drawCall.count));
     oglCheckError();
 
+    stats.drawCalls++;
+    stats.polygons += drawCall.count / pip.primitive;
+
     oglDebugEndGroup();
 }
 
@@ -828,6 +846,9 @@ void ContextGL::drawIndexed(const DrawCall &drawCall, const size_t indexOffset) 
                              reinterpret_cast<void *>(drawCall.offset),
                              static_cast<GLint>(indexOffset));
     oglCheckError();
+
+    stats.drawCalls++;
+    stats.polygons += drawCall.count / pip.primitive;
 
     oglDebugEndGroup();
 }

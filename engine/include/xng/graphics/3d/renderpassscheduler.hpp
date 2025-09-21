@@ -58,7 +58,7 @@ namespace xng {
             return graphHandle;
         }
 
-        void execute(const RenderGraphHandle graphHandle) const {
+        RenderGraphStatistics execute(const RenderGraphHandle graphHandle) const {
             bool recompile = false;
             for (const auto &pass: graphPasses.at(graphHandle)) {
                 if (pass->shouldRebuild(backBufferSize)) {
@@ -72,10 +72,10 @@ namespace xng {
                 }
                 runtime->recompile(graphHandle, builder.build());
             }
-            runtime->execute(graphHandle);
+            return runtime->execute(graphHandle);
         }
 
-        void execute(const std::vector<RenderGraphHandle> &graphHandles) const {
+        RenderGraphStatistics execute(const std::vector<RenderGraphHandle> &graphHandles) const {
             for (auto &graphHandle: graphHandles) {
                 bool recompile = false;
                 for (const auto &pass: graphPasses.at(graphHandle)) {
@@ -91,7 +91,7 @@ namespace xng {
                     runtime->recompile(graphHandle, builder.build());
                 }
             }
-            runtime->execute(graphHandles);
+            return runtime->execute(graphHandles);
         }
 
         void destroy(const RenderGraphHandle graphHandle) {

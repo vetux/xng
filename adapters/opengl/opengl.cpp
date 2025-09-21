@@ -50,12 +50,12 @@ namespace xng::opengl {
         runtime->recompile(handle, graph);
     }
 
-    void OpenGL::execute(const RenderGraphHandle graph) {
-        runtime->execute(graph);
+    RenderGraphStatistics OpenGL::execute(const RenderGraphHandle graph) {
+        return runtime->execute(graph);
     }
 
-    void OpenGL::execute(const std::vector<RenderGraphHandle> &graphs) {
-        runtime->execute(graphs);
+    RenderGraphStatistics OpenGL::execute(const std::vector<RenderGraphHandle> &graphs) {
+        return runtime->execute(graphs);
     }
 
     void OpenGL::destroy(const RenderGraphHandle graph) {

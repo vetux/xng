@@ -21,6 +21,7 @@
 
 #include "contextgl.hpp"
 #include "glsl/shadercompilerglsl.hpp"
+#include "colorbytesize.hpp"
 
 RenderGraphRuntimeOGL::RenderGraphRuntimeOGL() = default;
 
@@ -57,11 +58,27 @@ void RenderGraphRuntimeOGL::recompile(const RenderGraphHandle handle, const Rend
     recompileGraph(handle, graph);
 }
 
-void RenderGraphRuntimeOGL::execute(const RenderGraphHandle graph) {
+RenderGraphStatistics RenderGraphRuntimeOGL::execute(const RenderGraphHandle graph) {
     oglDebugStartGroup("RenderGraphRuntimeOGL::execute");
 
-    ContextGL context(backBufferColor, backBufferDepthStencil, contexts.at(graph));
-    for (auto &pass: contexts[graph].graph.passes) {
+    auto stats = RenderGraphStatistics();
+    for (auto &buffer: contexts.at(graph).vertexBuffers) {
+        stats.vertexVRamUsage += buffer.second->size;
+    }
+    for (auto &buffer: contexts.at(graph).indexBuffers) {
+        stats.indexVRamUsage += buffer.second->size;
+    }
+    for (auto &tex: contexts.at(graph).textures) {
+        auto numColors = (tex.second->texture.size.x
+                          * tex.second->texture.size.y);
+        if (tex.second->texture.isArrayTexture) {
+            numColors *= tex.second->texture.arrayLayers;
+        }
+        stats.textureVRamUsage += numColors * getColorByteSize(tex.second->texture.format);
+    }
+
+    ContextGL context(backBufferColor, backBufferDepthStencil, contexts.at(graph), stats);
+    for (auto &pass: contexts.at(graph).graph.passes) {
         oglDebugStartGroup(pass.name);
         pass.pass(context);
         oglDebugEndGroup();
@@ -70,15 +87,33 @@ void RenderGraphRuntimeOGL::execute(const RenderGraphHandle graph) {
     presentBackBuffer();
 
     oglDebugEndGroup();
+
+    return stats;
 }
 
-void RenderGraphRuntimeOGL::execute(const std::vector<RenderGraphHandle> &graphs) {
+RenderGraphStatistics RenderGraphRuntimeOGL::execute(const std::vector<RenderGraphHandle> &graphs) {
     oglDebugStartGroup("RenderGraphRuntimeOGL::execute");
 
+    auto stats = RenderGraphStatistics();
     for (auto graph: graphs) {
+        for (auto &buffer: contexts.at(graph).vertexBuffers) {
+            stats.vertexVRamUsage += buffer.second->size;
+        }
+        for (auto &buffer: contexts.at(graph).indexBuffers) {
+            stats.indexVRamUsage += buffer.second->size;
+        }
+        for (auto &tex: contexts.at(graph).textures) {
+            auto numColors = (tex.second->texture.size.x
+                              * tex.second->texture.size.y);
+            if (tex.second->texture.isArrayTexture) {
+                numColors *= tex.second->texture.arrayLayers;
+            }
+            stats.textureVRamUsage += numColors * getColorByteSize(tex.second->texture.format);
+        }
+
         oglDebugStartGroup("SubGraph");
-        ContextGL context(backBufferColor, backBufferDepthStencil, contexts.at(graph));
-        for (auto &pass: contexts[graph].graph.passes) {
+        ContextGL context(backBufferColor, backBufferDepthStencil, contexts.at(graph), stats);
+        for (auto &pass: contexts.at(graph).graph.passes) {
             oglDebugStartGroup(pass.name);
             pass.pass(context);
             oglDebugEndGroup();
@@ -88,6 +123,8 @@ void RenderGraphRuntimeOGL::execute(const std::vector<RenderGraphHandle> &graphs
     presentBackBuffer();
 
     oglDebugEndGroup();
+
+    return stats;
 }
 
 void RenderGraphRuntimeOGL::destroy(const RenderGraphHandle graph) {

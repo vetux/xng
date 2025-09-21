@@ -41,9 +41,9 @@ namespace xng::opengl {
 
         void recompile(RenderGraphHandle handle, const RenderGraph &graph) override;
 
-        void execute(RenderGraphHandle graph) override;
+        RenderGraphStatistics execute(RenderGraphHandle graph) override;
 
-        void execute(const std::vector<RenderGraphHandle> &graphs) override;
+        RenderGraphStatistics execute(const std::vector<RenderGraphHandle> &graphs) override;
 
         void destroy(RenderGraphHandle graph) override;
 

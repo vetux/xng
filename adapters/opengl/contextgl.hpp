@@ -29,6 +29,7 @@
 
 #include "compiledpipeline.hpp"
 #include "graphresources.hpp"
+#include "xng/rendergraph/rendergraphstatistics.hpp"
 
 using namespace xng;
 
@@ -38,11 +39,13 @@ public:
 
     explicit ContextGL(std::shared_ptr<OGLTexture> backBufferColor,
                        std::shared_ptr<OGLTexture> backBufferDepthStencil,
-                       GraphResources res)
+                       GraphResources res,
+                       RenderGraphStatistics &stats)
         : vertexArray(std::make_shared<OGLVertexArrayObject>()),
           backBufferColor(std::move(backBufferColor)),
           backBufferDepthStencil(std::move(backBufferDepthStencil)),
-          resources(std::move(res)) {
+          resources(std::move(res)),
+          stats(stats) {
     }
 
     void uploadBuffer(RenderGraphResource target,
@@ -170,6 +173,8 @@ private:
     std::shared_ptr<OGLTexture> backBufferDepthStencil = nullptr;
 
     GraphResources resources;
+
+    RenderGraphStatistics &stats;
 };
 
 #endif //XENGINE_CONTEXTGL_HPP

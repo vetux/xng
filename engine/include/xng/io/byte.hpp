@@ -27,4 +27,8 @@
 #define MB(x)   ((size_t) (x) << 20)
 #define GB(x)   ((size_t) (x) << 30)
 
+#define KILOBYTE (1024)
+#define MEGABYTE (1024 * KILOBYTE)
+#define GIGABYTE (1024 * MEGABYTE)
+
 #endif //XENGINE_BYTE_HPP

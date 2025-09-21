@@ -25,6 +25,8 @@
 #include "xng/display/window.hpp"
 #include "xng/display/graphicsapi.hpp"
 
+#include "xng/rendergraph/rendergraphstatistics.hpp"
+
 namespace xng {
     struct RenderGraphHandle {
         int id = -1;
@@ -133,7 +135,7 @@ namespace xng {
          *        pass[2] will receive the changes from pass[1]
          * @param graph
          */
-        virtual void execute(RenderGraphHandle graph) = 0;
+        virtual RenderGraphStatistics execute(RenderGraphHandle graph) = 0;
 
         /**
          * Execute multiple graphs.
@@ -152,7 +154,7 @@ namespace xng {
          *      graphs[3] will receive the changes to the back buffer from graph[1] and the read operation might run in parallel with graphs[2]
          * @param graphs
          */
-        virtual void execute(const std::vector<RenderGraphHandle> &graphs) = 0;
+        virtual RenderGraphStatistics execute(const std::vector<RenderGraphHandle> &graphs) = 0;
 
         virtual void destroy(RenderGraphHandle graph) = 0;
 

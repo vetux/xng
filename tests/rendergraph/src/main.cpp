@@ -57,6 +57,8 @@ int main(int argc, char *argv[]) {
 
     const std::shared_ptr window = std::move(glfw.createWindow(runtime->getGraphicsAPI()));
 
+    window->setWindowSize({1000, 900});
+
     runtime->setWindow(window);
 
     // Print shader test pass
@@ -95,7 +97,7 @@ int main(int argc, char *argv[]) {
     FrameLimiter frameLimiter;
     frameLimiter.reset();
 
-    auto textLayoutEngine = TextLayoutEngine(*freeType, font, {0, 25});
+    auto textLayoutEngine = TextLayoutEngine(*freeType, font, {0, 30});
     auto text = textLayoutEngine.getLayout(
         "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.",
         {
@@ -104,7 +106,9 @@ int main(int argc, char *argv[]) {
             TEXT_ALIGN_LEFT,
         });
 
-    auto deltaText = textLayoutEngine.getLayout(std::to_string(0) + " FPS",
+    auto deltaTextLayoutEngine = TextLayoutEngine(*freeType, font, {0, 20});
+
+    auto deltaText = deltaTextLayoutEngine.getLayout(std::to_string(0) + " FPS",
                                             {
                                                 0,
                                                 0,
@@ -112,17 +116,38 @@ int main(int argc, char *argv[]) {
                                             });
     std::chrono::milliseconds fpsUpdateInterval = std::chrono::milliseconds(50);
     auto now = std::chrono::steady_clock::now();
+
+    RenderGraphStatistics stats;
     while (!window->shouldClose()) {
         frameLimiter.newFrame();
         window->update();
 
         if (std::chrono::steady_clock::now() - now > fpsUpdateInterval) {
             now = std::chrono::steady_clock::now();
-            deltaText = textLayoutEngine.getLayout(std::to_string(frameLimiter.getAverageFramerate()) + " FPS",
+
+            auto txt = std::to_string(frameLimiter.getFramerate()) + " FPS\n\n";
+            txt += std::to_string(stats.drawCalls) + " draw calls\n";
+            txt += std::to_string(stats.polygons) + " polygons\n\n";
+            txt += "VRAM Usage\n";
+            txt += "Vertex Buffers " + std::to_string(stats.vertexVRamUsage / KILOBYTE) + "KB\n";
+            txt += "Index Buffers " + std::to_string(stats.indexVRamUsage / KILOBYTE) + "KB\n";
+            txt += "Shader Storage Buffers " + std::to_string(stats.shaderBufferVRamUsage/ KILOBYTE) + "KB\n";
+            txt += "Texture Buffers " + std::to_string(stats.textureVRamUsage/ KILOBYTE) + "KB\n\n";
+            txt += "VRAM Copy\n";
+            txt += "Vertex Buffers " + std::to_string(stats.vertexVRamCopy / KILOBYTE) + "KB\n";
+            txt += "Index Buffers " + std::to_string(stats.indexVRamCopy / KILOBYTE) + "KB\n";
+            txt += "Shader Storage Buffers " + std::to_string(stats.shaderBufferVRamCopy / KILOBYTE) + "KB\n";
+            txt += "Texture Buffers " + std::to_string(stats.textureVRamCopy / KILOBYTE) + "KB\n\n";
+            txt += "VRAM Upload\n";
+            txt += "Vertex Buffers " + std::to_string(stats.vertexVRamUpload / KILOBYTE) + "KB\n";
+            txt += "Index Buffers " + std::to_string(stats.indexVRamUpload / KILOBYTE) + "KB\n";
+            txt += "Shader Storage Buffers " + std::to_string(stats.shaderBufferVRamUpload / KILOBYTE) + "KB\n";
+            txt += "Texture Buffers " + std::to_string(stats.textureVRamUpload / KILOBYTE) + "KB\n";
+            deltaText = deltaTextLayoutEngine.getLayout(txt,
                                                     {
                                                         0,
                                                         0,
-                                                        TEXT_ALIGN_LEFT
+                                                        TEXT_ALIGN_RIGHT
                                                     });
         }
 
@@ -154,7 +179,7 @@ int main(int argc, char *argv[]) {
 
         config->setCanvases({canvas});
 
-        passScheduler->execute(graph3D);
+        stats = passScheduler->execute(graph3D);
     }
 
     return 0;
