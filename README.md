@@ -18,22 +18,28 @@ Once the project has reached a stable state there will be semantically versioned
 [xng-editor](https://github.com/vetux/xng-editor) - Editor application to simplify and accelerate the game creation
 workflow
 
-## Features
+## (Planned) Features
 - Rendering
-  - Render Graph Abstraction (WIP)
-    - Shader Domain Specific Language for writing Shaders in C++ (WIP) 
-  - 3D Rendering (WIP)
-  - 2D Rendering with a simple SDL like interface
-  - Sprite Animation
-  - Skeletal Animation
-  - Text Rendering
-- Resource system
+  - Render Graph Abstraction
+    - Shader Domain Specific Language for writing Shaders in C++
+  - 3D Rendering
+    - Shading
+      - PBR Pipeline (TODO)
+      - Shadow Mapping
+      - Image Based Lighting (TODO)
+    - Skeletal Animation
+    - Volumetric Rendering (TODO)
+  - 2D Rendering
+    - Sprite Animation
+  - GUI Rendering
+    - Flexbox layout engine (WIP)
+    - Text Rendering
+- Resource Management
   - Uri Resource addressing
   - Multithreaded Resource streaming
   - Automatic Resource Lifetime handling
-- Entity Component System interface using a data oriented architecture
+- Entity Component System interface implementing data-oriented architecture
 - PAK file format with compression, chunking and encryption support
-- Canvas layout engine (Will be replaced with Flexbox layouts)
 
 ## Screenshots
 ![](https://raw.githubusercontent.com/vetux/xng-assets/refs/heads/master/screenshots/ScreenshotFramegraph.jpg)
