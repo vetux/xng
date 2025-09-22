@@ -83,15 +83,6 @@ namespace xng {
 
     // TODO: Sprite Lighting
 
-    struct CanvasObject {
-        Transform transform;
-
-        // If false the canvas plane is rendered with an orthographic projection with the transform applied as an offset.
-        bool worldSpace = false;
-
-        size_t batchIndex = 0; // The index of the 2d render batch containing the canvas contents.
-    };
-
     /**
      * The runtime scene render data.
      * Designed to be small enough to be rebuilt every frame.
