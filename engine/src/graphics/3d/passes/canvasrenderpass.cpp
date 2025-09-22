@@ -65,7 +65,7 @@ namespace xng {
                 if (paintCommand.type == Paint::PAINT_TEXT) {
                     auto &txt = std::get<PaintText>(paintCommand.data);
                     auto key = RenderText(txt.text.text, txt.color, txt.text.fontUri, txt.text.fontPixelSize,
-                      txt.text.parameters);
+                                          txt.text.parameters);
                     if (textCache.find(key) == textCache.end()) {
                         return true;
                     }
@@ -215,7 +215,6 @@ namespace xng {
         meshBuffer.upload(vertexBuffer, indexBuffer, ctx);
 
         // Screen space canvases are always the same size as the back buffer,
-        // canvases which contain a background color with alpha clear the previous canvas contents.
         for (auto &canvas: canvases) {
             if (canvas.isWorldSpace())
                 continue;
@@ -426,9 +425,7 @@ namespace xng {
 
         ctx.beginRenderPass({RenderGraphAttachment(target)}, {});
         ctx.setViewport({}, {layerSize.x, layerSize.y});
-        if (canvas.getBackgroundColor().a() > 0) {
-            ctx.clearColorAttachment(0, canvas.getBackgroundColor());
-        }
+        ctx.clearColorAttachment(0, canvas.getBackgroundColor());
         ctx.bindPipeline(trianglePipeline);
         ctx.bindVertexBuffer(vertexBuffer);
         ctx.bindIndexBuffer(indexBuffer);
