@@ -58,7 +58,7 @@ namespace xng {
             viewProjectionMatrix = camera.projection() * Camera::view(cameraTransform);
         }
 
-        void setTransform(const Transform &canvasTransform) { transform = canvasTransform; }
+        void setWorldTransform(const Transform &canvasTransform) { worldTransform = canvasTransform; }
 
         void setWorldSpace(const bool isWorldSpace) { this->worldSpace = isWorldSpace; }
 
@@ -70,7 +70,7 @@ namespace xng {
 
         const Mat4f &getViewProjectionMatrix() const { return viewProjectionMatrix; }
 
-        const Transform &getTransform() const { return transform; }
+        const Transform &getWorldTransform() const { return worldTransform; }
 
         bool isWorldSpace() const { return worldSpace; }
 
@@ -82,7 +82,7 @@ namespace xng {
         Vec2i canvasSize;
         Mat4f viewProjectionMatrix;
 
-        Transform transform;
+        Transform worldTransform;
         bool worldSpace = false;
 
         ColorRGBA backgroundColor = ColorRGBA::black();
