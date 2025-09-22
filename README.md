@@ -28,11 +28,11 @@ workflow
       - Shadow Mapping
       - Image Based Lighting (TODO)
     - Skeletal Animation
+    - Terrain Rendering (TODO)
     - Volumetric Rendering (TODO)
   - 2D Rendering
     - Sprite Animation
   - GUI Rendering
-    - Flexbox layout engine (WIP)
     - Text Rendering
 - Resource Management
   - Uri Resource addressing
