@@ -35,7 +35,7 @@ namespace xng {
      */
     class MeshBuffer2D {
     public:
-        // TODO: Use transformation of a normalized quad instead of separate vertex / index allocations for 2D planes / Squares
+        // TODO: Scale a unit quad instead of separate vertex / index allocations for 2D planes / Squares
 
         struct MeshDrawData {
             Primitive primitive{};
