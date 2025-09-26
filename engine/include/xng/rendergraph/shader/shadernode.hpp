@@ -82,6 +82,11 @@ namespace xng {
 
             VERTEX_POSITION,
             FRAGMENT_DEPTH,
+
+            LAYER,
+
+            GEOMETRY_EMIT_VERTEX,
+            GEOMETRY_END_PRIMITIVE
         };
 
         virtual NodeType getType() const = 0;

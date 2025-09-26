@@ -41,7 +41,7 @@ std::string generateElement(const std::string &name, const ShaderDataType &value
         ret += "]";
     }
 
-    return ret + ";\n";
+    return ret;
 }
 
 std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
@@ -58,7 +58,7 @@ std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
 
         std::string bufferLayout = "struct ShaderBufferData" + std::to_string(binding) + " {\n";
         for (const auto &element: pair.second.elements) {
-            bufferLayout += generateElement(element.name, element.value);
+            bufferLayout += generateElement(element.name, element.value) + ";\n";
         }
         bufferLayout += "};\n";
 
@@ -106,17 +106,61 @@ std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
 
     std::string inputAttributes;
     size_t attributeCount = 0;
-    for (auto element: source.inputLayout.getElements()) {
-        auto location = attributeCount++;
-        inputAttributes += "layout(location = "
-                + std::to_string(location)
-                + ") in "
-                + generateElement(inputAttributePrefix + source.inputLayout.getElementName(location),
-                                  element,
-                                  "");
-    }
-    if (source.stage == Shader::Stage::FRAGMENT) {
-        inputAttributes += "layout(location = " + std::to_string(attributeCount) + ") flat in uint drawID;\n";
+    if (source.stage == Shader::GEOMETRY) {
+        switch (source.geometryInput) {
+            case POINTS:
+                inputAttributes += "layout(points) in;\n";
+                break;
+            case LINES:
+                inputAttributes += "layout(lines) in;\n";
+                break;
+            case TRIANGLES:
+                inputAttributes += "layout(triangles) in;\n";
+                break;
+            case QUAD:
+                throw std::runtime_error("Geometry shaders with quad input not supported");
+        }
+        switch (source.geometryOutput) {
+            case POINTS:
+                inputAttributes += "layout(points, max_vertices = ";
+                break;
+            case LINES:
+                inputAttributes += "layout(line_strip, max_vertices = ";
+                break;
+            case TRIANGLES:
+                inputAttributes += "layout(triangle_strip, max_vertices = ";
+                break;
+            case QUAD:
+                throw std::runtime_error("Geometry shaders with quad output not supported");
+        }
+        inputAttributes += std::to_string(source.geometryMaxVertices) + ") out;\n";
+        inputAttributes += "\n";
+
+        for (auto element: source.inputLayout.getElements()) {
+            auto location = attributeCount++;
+            inputAttributes += "layout(location = "
+                    + std::to_string(location)
+                    + ") in "
+                    + generateElement(inputAttributePrefix + source.inputLayout.getElementName(location),
+                                      element,
+                                      "")
+                    + "[];\n";
+        }
+        inputAttributes += "layout(location = " + std::to_string(attributeCount) + ") flat in uint in_drawID[];\n";
+    } else {
+        for (auto element: source.inputLayout.getElements()) {
+            auto location = attributeCount++;
+            inputAttributes += "layout(location = "
+                    + std::to_string(location)
+                    + ") in "
+                    + generateElement(inputAttributePrefix + source.inputLayout.getElementName(location),
+                                      element,
+                                      "")
+                    + ";\n";
+        }
+        if (source.stage == Shader::Stage::FRAGMENT) {
+            inputAttributes += "layout(location = " + std::to_string(attributeCount) + ") flat in uint drawID;\n";
+        }
     }
     ret += inputAttributes;
     ret += "\n";
@@ -130,10 +174,12 @@ std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
                 + ") out "
                 + generateElement(outputAttributePrefix + source.outputLayout.getElementName(location),
                                   element,
-                                  "");
+                                  "")
+                + +";\n";;
     }
-    if (source.stage == Shader::Stage::VERTEX) {
-        outputAttributes += "layout(location = " + std::to_string(attributeCount) + ") flat out uint drawID;\n";
+    if (source.stage == Shader::Stage::VERTEX
+        || source.stage == Shader::Stage::GEOMETRY) {
+        outputAttributes += "layout(location = " + std::to_string(attributeCount) + ") flat out uint out_drawID;\n";
     }
     ret += outputAttributes;
     ret += "\n";
@@ -162,7 +208,7 @@ std::string generateBody(const Shader &source) {
     }
     std::string appendix = "";
     if (source.stage == Shader::Stage::VERTEX) {
-        appendix = "drawID = gl_DrawID";
+        appendix = "out_drawID = gl_DrawID";
     }
     body += compileFunction("main", {}, source.mainFunction, {}, source, appendix);
     return body;

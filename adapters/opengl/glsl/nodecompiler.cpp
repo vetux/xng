@@ -661,7 +661,7 @@ std::string compileLeafNode(const NodeLayer &node) {
 }
 
 std::string compileLeafNode(const NodeEmitVertex &node, const std::string &prefix) {
-    return prefix + "EmitVertex()";
+    return prefix + "out_drawID = in_drawID[0];\n" + prefix + "EmitVertex()";
 }
 
 std::string compileLeafNode(const NodeEndPrimitive &node, const std::string &prefix) {

@@ -23,6 +23,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "xng/graphics/primitive.hpp"
 #include "xng/rendergraph/shader/shaderattributelayout.hpp"
 #include "xng/rendergraph/shader/shaderfunction.hpp"
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
@@ -42,6 +43,11 @@ namespace xng {
             COMPUTE,
         } stage{};
 
+        Primitive geometryInput; // The input primitive for geometry shaders. Must match the pipeline primitive.
+        Primitive geometryOutput; // The output primitive for geometry shaders
+
+        size_t geometryMaxVertices{}; // The maximum number of output vertices for geometry shaders.
+
         ShaderAttributeLayout inputLayout;
         ShaderAttributeLayout outputLayout;
 
@@ -60,14 +66,20 @@ namespace xng {
         Shader() = default;
 
         Shader(const Stage stage,
-                    ShaderAttributeLayout input_layout,
-                    ShaderAttributeLayout output_layout,
-                    const std::unordered_map<std::string, ShaderDataType> &parameters,
-                    const std::unordered_map<std::string, ShaderBuffer> &buffers,
-                    const std::unordered_map<std::string, ShaderTextureArray> &textureArrays,
-                    std::vector<std::unique_ptr<ShaderNode> > mainFunction,
-                    std::vector<ShaderFunction> functions)
+               Primitive geometry_input,
+               Primitive geometry_output,
+               size_t geometry_max_vertices,
+               ShaderAttributeLayout input_layout,
+               ShaderAttributeLayout output_layout,
+               const std::unordered_map<std::string, ShaderDataType> &parameters,
+               const std::unordered_map<std::string, ShaderBuffer> &buffers,
+               const std::unordered_map<std::string, ShaderTextureArray> &textureArrays,
+               std::vector<std::unique_ptr<ShaderNode> > mainFunction,
+               std::vector<ShaderFunction> functions)
             : stage(stage),
+              geometryInput(geometry_input),
+              geometryOutput(geometry_output),
+              geometryMaxVertices(geometry_max_vertices),
               inputLayout(std::move(input_layout)),
               outputLayout(std::move(output_layout)),
               parameters(parameters),
@@ -79,6 +91,9 @@ namespace xng {
 
         Shader(const Shader &other)
             : stage(other.stage),
+              geometryInput(other.geometryInput),
+              geometryOutput(other.geometryOutput),
+              geometryMaxVertices(other.geometryMaxVertices),
               inputLayout(other.inputLayout),
               outputLayout(other.outputLayout),
               parameters(other.parameters),
@@ -92,6 +107,9 @@ namespace xng {
 
         Shader(Shader &&other) noexcept
             : stage(other.stage),
+              geometryInput(other.geometryInput),
+              geometryOutput(other.geometryOutput),
+              geometryMaxVertices(other.geometryMaxVertices),
               inputLayout(std::move(other.inputLayout)),
               outputLayout(std::move(other.outputLayout)),
               parameters(std::move(other.parameters)),
@@ -105,6 +123,9 @@ namespace xng {
             if (this == &other)
                 return *this;
             stage = other.stage;
+            geometryInput = other.geometryInput;
+            geometryOutput = other.geometryOutput;
+            geometryMaxVertices = other.geometryMaxVertices;
             inputLayout = other.inputLayout;
             outputLayout = other.outputLayout;
             parameters = other.parameters;
@@ -121,6 +142,9 @@ namespace xng {
             if (this == &other)
                 return *this;
             stage = other.stage;
+            geometryInput = other.geometryInput;
+            geometryOutput = other.geometryOutput;
+            geometryMaxVertices = other.geometryMaxVertices;
             inputLayout = std::move(other.inputLayout);
             outputLayout = std::move(other.outputLayout);
             parameters = std::move(other.parameters);
