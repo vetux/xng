@@ -93,10 +93,6 @@ std::string compileLeafNode(const NodeTextureSize &node,
                             const Shader &source,
                             const std::string &functionName);
 
-std::string compileLeafNode(const NodeTextureFetch &node,
-                            const Shader &source,
-                            const std::string &functionName);
-
 std::string compileLeafNode(const NodeBuffer &node,
                             const Shader &source,
                             const std::string &functionName);
@@ -159,5 +155,11 @@ std::string compileLeafNode(const NodeVertexPosition &node, const Shader &source
 
 std::string compileLeafNode(const NodeFragmentDepth &node, const Shader &source, const std::string &functionName,
                             const std::string &prefix);
+
+std::string compileLeafNode(const NodeLayer &node);
+
+std::string compileLeafNode(const NodeEmitVertex &node, const std::string &prefix);
+
+std::string compileLeafNode(const NodeEndPrimitive &node, const std::string &prefix);
 
 #endif //XENGINE_NODECOMPILER_HPP

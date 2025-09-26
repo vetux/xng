@@ -107,6 +107,12 @@ std::string compileNode(const ShaderNode &node,
             return compileLeafNode(down_cast<const NodeVertexPosition &>(node), source, functionName, prefix);
         case ShaderNode::FRAGMENT_DEPTH:
             return compileLeafNode(down_cast<const NodeFragmentDepth &>(node), source, functionName, prefix);
+        case ShaderNode::LAYER:
+            return compileLeafNode(down_cast<const NodeLayer &>(node));
+        case ShaderNode::GEOMETRY_EMIT_VERTEX:
+            return compileLeafNode(down_cast<const NodeEmitVertex &>(node), prefix);
+        case ShaderNode::GEOMETRY_END_PRIMITIVE:
+            return compileLeafNode(down_cast<const NodeEndPrimitive &>(node), prefix);
     }
     throw std::runtime_error("Node Type not implemented");
 }
@@ -648,4 +654,16 @@ std::string compileLeafNode(const NodeVertexPosition &node, const Shader &source
 std::string compileLeafNode(const NodeFragmentDepth &node, const Shader &source, const std::string &functionName,
                             const std::string &prefix) {
     return prefix + "gl_FragDepth = " + compileNode(*node.value, source, functionName);
+}
+
+std::string compileLeafNode(const NodeLayer &node) {
+    return "gl_Layer";
+}
+
+std::string compileLeafNode(const NodeEmitVertex &node, const std::string &prefix) {
+    return prefix + "EmitVertex()";
+}
+
+std::string compileLeafNode(const NodeEndPrimitive &node, const std::string &prefix) {
+    return prefix + "EndPrimitive()";
 }

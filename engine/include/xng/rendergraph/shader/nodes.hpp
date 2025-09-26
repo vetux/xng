@@ -59,5 +59,8 @@
 #include "xng/rendergraph/shader/nodes/nodetexture.hpp"
 #include "xng/rendergraph/shader/nodes/nodetexturefetch.hpp"
 #include "xng/rendergraph/shader/nodes/nodematrix.hpp"
+#include "xng/rendergraph/shader/nodes/nodeemitvertex.hpp"
+#include "xng/rendergraph/shader/nodes/nodeendprimitive.hpp"
+#include "xng/rendergraph/shader/nodes/nodelayer.hpp"
 
 #endif //XENGINE_NODES_HPP
