@@ -27,7 +27,7 @@
 
 namespace xng::ShaderNodeFactory {
     std::unique_ptr<ShaderNode> createVariable(const std::string &name,
-                                               const ShaderDataType &type,
+                                               const std::variant<ShaderDataType, ShaderStructName> &type,
                                                const std::unique_ptr<ShaderNode> &value,
                                                size_t count) {
         return std::make_unique<NodeVariableCreate>(name, type, count, value ? value->copy() : nullptr);

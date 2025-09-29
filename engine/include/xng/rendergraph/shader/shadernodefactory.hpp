@@ -20,6 +20,7 @@
 #ifndef XENGINE_SHADERNODEFACTORY_HPP
 #define XENGINE_SHADERNODEFACTORY_HPP
 
+#include "shaderstruct.hpp"
 #include "xng/rendergraph/shader/shadernode.hpp"
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 #include "xng/rendergraph/shader/shaderliteral.hpp"
@@ -28,7 +29,8 @@
 namespace xng {
     namespace ShaderNodeFactory {
         XENGINE_EXPORT std::unique_ptr<ShaderNode> createVariable(const std::string &name,
-                                                                  const ShaderDataType &type,
+                                                                  const std::variant<ShaderDataType, ShaderStructName> &
+                                                                  type,
                                                                   const std::unique_ptr<ShaderNode> &value =
                                                                           nullptr,
                                                                   size_t count = 1);

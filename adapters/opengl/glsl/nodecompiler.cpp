@@ -121,7 +121,12 @@ std::string compileLeafNode(const NodeVariableCreate &node,
                             const Shader &source,
                             const std::string &functionName,
                             const std::string &prefix) {
-    auto ret = getTypeName(node.type) + " " + node.variableName;
+    std::string ret;
+    if (std::holds_alternative<ShaderDataType>(node.type)) {
+        ret += getTypeName(std::get<ShaderDataType>(node.type)) + " " + node.variableName;
+    } else {
+        ret += std::get<ShaderStructName>(node.type) + " " + node.variableName;
+    }
     if (node.count > 1) {
         ret += "[" + std::to_string(node.count) + "]";
     }

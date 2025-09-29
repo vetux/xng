@@ -28,15 +28,15 @@
 namespace xng {
     struct NodeVariableCreate final : ShaderNode {
         std::string variableName;
-        ShaderDataType type;
+        std::variant<ShaderDataType, ShaderStructName> type;
         size_t count;
 
         std::unique_ptr<ShaderNode> value;
 
         NodeVariableCreate(const std::string &variable_name,
-                             const ShaderDataType &type,
-                             const size_t count,
-                             std::unique_ptr<ShaderNode> value)
+                           const std::variant<ShaderDataType, ShaderStructName> &type,
+                           const size_t count,
+                           std::unique_ptr<ShaderNode> value)
             : variableName(variable_name),
               type(type),
               count(count),
