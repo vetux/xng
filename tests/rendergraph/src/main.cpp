@@ -27,7 +27,6 @@
 using namespace xng;
 
 RenderScene createScene() {
-    // Scene interface will be redesign next.
     RenderScene scene;
 
     SkinnedMeshObject skinnedMesh;

@@ -33,7 +33,7 @@ namespace xng {
     /**
      * A graph represents an encapsulated rendering operation.
      *
-     * The only resource shareable between graphs is the screen texture.
+     * The only resource shareable between graphs is the back buffer contents.
      */
     struct RenderGraph {
         std::vector<RenderGraphPass> passes;
