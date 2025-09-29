@@ -24,8 +24,10 @@
 
 struct OGLShaderStorageBuffer {
     GLuint SSBO = 0;
+    size_t size = 0;
 
-    explicit OGLShaderStorageBuffer(size_t size) {
+    explicit OGLShaderStorageBuffer(const size_t size)
+        : size(size) {
         glGenBuffers(1, &SSBO);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO);
         glBufferData(GL_SHADER_STORAGE_BUFFER, static_cast<GLsizeiptr>(size), nullptr, GL_DYNAMIC_DRAW);

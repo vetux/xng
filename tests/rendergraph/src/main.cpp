@@ -118,21 +118,21 @@ int main(int argc, char *argv[]) {
             txt += "VRAM Usage\n";
             txt += "Total " + std::to_string(
                 (stats.vertexVRamUsage + stats.indexVRamUsage + stats.shaderBufferVRamUsage + stats.textureVRamUsage) /
-                MEGABYTE) + "MB\n";
-            txt += "Vertex Buffers " + std::to_string(stats.vertexVRamUsage / KILOBYTE) + "KB\n";
-            txt += "Index Buffers " + std::to_string(stats.indexVRamUsage / KILOBYTE) + "KB\n";
-            txt += "Shader Storage Buffers " + std::to_string(stats.shaderBufferVRamUsage / KILOBYTE) + "KB\n";
-            txt += "Texture Buffers " + std::to_string(stats.textureVRamUsage / KILOBYTE) + "KB\n\n";
+                MEGABYTE) + " MB\n";
+            txt += "Vertex Buffers " + std::to_string(stats.vertexVRamUsage / KILOBYTE) + " KB\n";
+            txt += "Index Buffers " + std::to_string(stats.indexVRamUsage / KILOBYTE) + " KB\n";
+            txt += "Shader Storage Buffers " + std::to_string(stats.shaderBufferVRamUsage / KILOBYTE) + " KB\n";
+            txt += "Texture Buffers " + std::to_string(stats.textureVRamUsage / KILOBYTE) + " KB\n\n";
             txt += "VRAM Copy\n";
-            txt += "Vertex Buffers " + std::to_string(stats.vertexVRamCopy / KILOBYTE) + "KB\n";
-            txt += "Index Buffers " + std::to_string(stats.indexVRamCopy / KILOBYTE) + "KB\n";
-            txt += "Shader Storage Buffers " + std::to_string(stats.shaderBufferVRamCopy / KILOBYTE) + "KB\n";
-            txt += "Texture Buffers " + std::to_string(stats.textureVRamCopy / KILOBYTE) + "KB\n\n";
+            txt += "Vertex Buffers " + std::to_string(stats.vertexVRamCopy / KILOBYTE) + " KB\n";
+            txt += "Index Buffers " + std::to_string(stats.indexVRamCopy / KILOBYTE) + " KB\n";
+            txt += "Shader Storage Buffers " + std::to_string(stats.shaderBufferVRamCopy / KILOBYTE) + " KB\n";
+            txt += "Texture Buffers " + std::to_string(stats.textureVRamCopy / KILOBYTE) + " KB\n\n";
             txt += "VRAM Upload\n";
-            txt += "Vertex Buffers " + std::to_string(stats.vertexVRamUpload / KILOBYTE) + "KB\n";
-            txt += "Index Buffers " + std::to_string(stats.indexVRamUpload / KILOBYTE) + "KB\n";
-            txt += "Shader Storage Buffers " + std::to_string(stats.shaderBufferVRamUpload / KILOBYTE) + "KB\n";
-            txt += "Texture Buffers " + std::to_string(stats.textureVRamUpload / KILOBYTE) + "KB\n";
+            txt += "Vertex Buffers " + std::to_string(stats.vertexVRamUpload / KILOBYTE) + " KB\n";
+            txt += "Index Buffers " + std::to_string(stats.indexVRamUpload / KILOBYTE) + " KB\n";
+            txt += "Shader Storage Buffers " + std::to_string(stats.shaderBufferVRamUpload / KILOBYTE) + " KB\n";
+            txt += "Texture Buffers " + std::to_string(stats.textureVRamUpload / KILOBYTE) + " KB\n";
             deltaText = deltaTextLayoutEngine.getLayout(txt,
                                                         {
                                                             0,

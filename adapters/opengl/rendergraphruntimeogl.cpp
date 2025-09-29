@@ -63,7 +63,7 @@ RenderGraphStatistics RenderGraphRuntimeOGL::execute(const RenderGraphHandle gra
 
     auto stats = RenderGraphStatistics();
     stats.textureVRamUsage += backBufferColor->texture.size.x * backBufferColor->texture.size.y
-                             * getColorByteSize(backBufferColor->texture.format);
+            * getColorByteSize(backBufferColor->texture.format);
     stats.textureVRamUsage += backBufferDepthStencil->texture.size.x * backBufferDepthStencil->texture.size.y
             * getColorByteSize(backBufferDepthStencil->texture.format);
     for (auto &buffer: contexts.at(graph).vertexBuffers) {
@@ -72,13 +72,18 @@ RenderGraphStatistics RenderGraphRuntimeOGL::execute(const RenderGraphHandle gra
     for (auto &buffer: contexts.at(graph).indexBuffers) {
         stats.indexVRamUsage += buffer.second->size;
     }
+    for (auto &buffer : contexts.at(graph).storageBuffers) {
+        stats.shaderBufferVRamUsage += buffer.second->size;
+    }
     for (auto &tex: contexts.at(graph).textures) {
-        auto numColors = (tex.second->texture.size.x
-                          * tex.second->texture.size.y);
-        if (tex.second->texture.arrayLayers > 0) {
-            numColors *= tex.second->texture.arrayLayers;
+        if (tex.second->texture.textureType >= TEXTURE_2D_ARRAY) {
+            stats.textureVRamUsage += (tex.second->texture.size.x * tex.second->texture.size.y)
+                    * tex.second->texture.arrayLayers
+                    * getColorByteSize(tex.second->texture.format);
+        } else {
+            stats.textureVRamUsage += (tex.second->texture.size.x * tex.second->texture.size.y)
+                    * getColorByteSize(tex.second->texture.format);
         }
-        stats.textureVRamUsage += numColors * getColorByteSize(tex.second->texture.format);
     }
 
     ContextGL context(backBufferColor, backBufferDepthStencil, contexts.at(graph), stats);
@@ -100,7 +105,7 @@ RenderGraphStatistics RenderGraphRuntimeOGL::execute(const std::vector<RenderGra
 
     auto stats = RenderGraphStatistics();
     stats.textureVRamUsage += backBufferColor->texture.size.x * backBufferColor->texture.size.y
-                         * getColorByteSize(backBufferColor->texture.format);
+            * getColorByteSize(backBufferColor->texture.format);
     stats.textureVRamUsage += backBufferDepthStencil->texture.size.x * backBufferDepthStencil->texture.size.y
             * getColorByteSize(backBufferDepthStencil->texture.format);
     for (auto graph: graphs) {
@@ -110,9 +115,12 @@ RenderGraphStatistics RenderGraphRuntimeOGL::execute(const std::vector<RenderGra
         for (auto &buffer: contexts.at(graph).indexBuffers) {
             stats.indexVRamUsage += buffer.second->size;
         }
+        for (auto &buffer : contexts.at(graph).storageBuffers) {
+            stats.shaderBufferVRamUsage += buffer.second->size;
+        }
         for (auto &tex: contexts.at(graph).textures) {
-            auto numColors = (tex.second->texture.size.x
-                              * tex.second->texture.size.y);
+            size_t numColors = (tex.second->texture.size.x
+                                * tex.second->texture.size.y);
             if (tex.second->texture.arrayLayers > 0) {
                 numColors *= tex.second->texture.arrayLayers;
             }
