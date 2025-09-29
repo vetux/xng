@@ -27,19 +27,22 @@
 #include <unordered_map>
 #include <variant>
 
+#include "shaderstruct.hpp"
 #include "xng/rendergraph/shader/shadernode.hpp"
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 #include "xng/rendergraph/shader/shadertexture.hpp"
 
 namespace xng {
     struct ShaderFunction {
+        typedef std::variant<ShaderDataType, ShaderStructName> ReturnType;
+
         struct Argument {
             std::string name;
-            std::variant<ShaderDataType, ShaderTexture> type;
+            std::variant<ShaderDataType, ShaderTexture, ShaderStructName> type;
 
             Argument() = default;
 
-            Argument(std::string name, const std::variant<ShaderDataType, ShaderTexture> &type)
+            Argument(std::string name, const std::variant<ShaderDataType, ShaderTexture, ShaderStructName> &type)
                 : name(std::move(name)), type(type) {
             }
         };
@@ -47,9 +50,9 @@ namespace xng {
         std::string name;
         std::vector<Argument> arguments;
         std::vector<std::unique_ptr<ShaderNode> > body;
-        ShaderDataType returnType;
+        ReturnType returnType;
 
-        [[nodiscard]] std::variant<ShaderDataType, ShaderTexture> getArgumentType(const std::string &argName) const {
+        std::variant<ShaderDataType, ShaderTexture, std::string> getArgumentType(const std::string &argName) const {
             for (auto &arg: arguments) {
                 if (arg.name == argName) {
                     return arg.type;
@@ -70,6 +73,16 @@ namespace xng {
               returnType(returnType) {
         }
 
+        ShaderFunction(std::string name,
+                       std::vector<Argument> arguments,
+                       std::vector<std::unique_ptr<ShaderNode> > body,
+                       ShaderStructName returnType)
+            : name(std::move(name)),
+              arguments(std::move(arguments)),
+              body(std::move(body)),
+              returnType(std::move(returnType)) {
+        }
+
         ShaderFunction(const ShaderFunction &other)
             : name(other.name),
               arguments(other.arguments),
@@ -82,7 +95,7 @@ namespace xng {
         ShaderFunction(ShaderFunction &&other) noexcept
             : name(std::move(other.name)),
               arguments(std::move(other.arguments)),
-              returnType(other.returnType),
+              returnType(std::move(other.returnType)),
               body(std::move(other.body)) {
         }
 

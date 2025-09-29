@@ -162,4 +162,6 @@ std::string compileLeafNode(const NodeEmitVertex &node, const std::string &prefi
 
 std::string compileLeafNode(const NodeEndPrimitive &node, const std::string &prefix);
 
+std::string compileLeafNode(const NodeObjectElement &node, const Shader &source, const std::string &functionName);
+
 #endif //XENGINE_NODECOMPILER_HPP

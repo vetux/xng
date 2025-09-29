@@ -25,12 +25,16 @@
 std::string compileFunction(const std::string &functionName,
                             const std::vector<ShaderFunction::Argument> &parameters,
                             const std::vector<std::unique_ptr<ShaderNode> > &body,
-                            const std::optional<ShaderDataType> &returnType,
+                            const std::optional<ShaderFunction::ReturnType> &returnType,
                             const Shader &source,
                             const std::string &appendix) {
     std::string ret;
     if (returnType.has_value()) {
-        ret += getTypeName(returnType.value());
+        if (std::holds_alternative<ShaderDataType>(returnType.value())) {
+            ret += getTypeName(std::get<ShaderDataType>(returnType.value()));
+        } else {
+            ret += std::get<ShaderStructName>(returnType.value());
+        }
     } else {
         ret += "void";
     }
@@ -42,12 +46,14 @@ std::string compileFunction(const std::string &functionName,
             ret += ", ";
         }
         paramCount++;
-        if (param.type.index() == 0) {
+        if (std::holds_alternative<ShaderDataType>(param.type)) {
             auto arg = std::get<ShaderDataType>(param.type);
             ret += getTypeName(arg) + " " + param.name;
-        } else {
+        } else if (std::holds_alternative<ShaderTexture>(param.type)) {
             auto arg = std::get<ShaderTexture>(param.type);
             ret += getSampler(arg) + " " + param.name;
+        } else {
+            ret += std::get<ShaderStructName>(param.type) + " " + param.name;
         }
     }
 

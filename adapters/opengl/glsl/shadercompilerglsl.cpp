@@ -53,32 +53,31 @@ std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
         ret += "#define " + std::string(drawID) + " drawID\n\n";
     }
 
+    for (const auto &pair: source.dataStructures) {
+        ret += "struct " + pair.first + " {\n";
+        for (const auto &element: pair.second.elements) {
+            if (std::holds_alternative<ShaderStructName>(element.type)) {
+                ret += std::get<ShaderStructName>(element.type) + " " + element.name + ";\n";
+            } else {
+                ret += generateElement(element.name, std::get<ShaderDataType>(element.type)) + ";\n";
+            }
+        }
+        ret += "};\n";
+        ret += "\n";
+    }
+
     for (const auto &pair: source.buffers) {
         auto binding = pipeline.createShaderBufferBinding(pair.first);
-
-        std::string bufferLayout = "struct ShaderBufferData" + std::to_string(binding) + " {\n";
-        for (const auto &element: pair.second.elements) {
-            bufferLayout += generateElement(element.name, element.value) + ";\n";
-        }
-        bufferLayout += "};\n";
-
-        std::string bufferCode = "layout(binding = "
-                                 + std::to_string(binding)
-                                 + ", std140) buffer ShaderBuffer"
-                                 + std::to_string(binding)
-                                 + " {\n"
-                                 + "\tShaderBufferData"
-                                 + std::to_string(binding)
-                                 + " "
-                                 + bufferArrayName
-                                 + "[];\n} "
-                                 + bufferPrefix
-                                 + pair.first
-                                 + ";\n";
-
-        ret += bufferLayout;
-        ret += "\n";
-        ret += bufferCode;
+        ret += "layout(binding = "
+                + std::to_string(binding)
+                + ", std140) buffer ShaderBuffer"
+                + std::to_string(binding)
+                + " {\n"
+                + "\t" + pair.second.typeName + " " + bufferArrayName
+                + "[];\n} "
+                + bufferPrefix
+                + pair.first
+                + ";\n";
         ret += "\n";
     }
 

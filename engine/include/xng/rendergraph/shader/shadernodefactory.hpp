@@ -81,11 +81,13 @@ namespace xng {
                                                                 const std::unique_ptr<ShaderNode> &coordinate,
                                                                 const std::unique_ptr<ShaderNode> &index);
 
-        XENGINE_EXPORT std::unique_ptr<ShaderNode> bufferElement(const std::string &bufferName,
-                                                          const std::string &elementName,
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> buffer(const std::string &bufferName,
                                                           const std::unique_ptr<ShaderNode> &index = nullptr);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> bufferSize(const std::string &bufferName);
+
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> objectElement(const std::unique_ptr<ShaderNode> &object,
+                                                                 const std::string &elementName);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> add(const std::unique_ptr<ShaderNode> &left,
                                                        const std::unique_ptr<ShaderNode> &right);

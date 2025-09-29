@@ -27,18 +27,16 @@
 namespace xng {
     struct NodeBuffer final : ShaderNode {
         std::string bufferName;
-        std::string elementName;
 
         /**
-         * Specify the index of the elements if this buffer is defined as dynamic.
+         * Specify the index of the object in the dynamic buffer.
+         *
          * Unused for static buffers.
          */
         std::unique_ptr<ShaderNode> index;
 
-        explicit NodeBuffer(std::string buffer_name,
-                            std::string element_name,
-                            std::unique_ptr<ShaderNode> index)
-            : bufferName(std::move(buffer_name)), elementName(std::move(element_name)), index(std::move(index)) {
+        explicit NodeBuffer(std::string buffer_name, std::unique_ptr<ShaderNode> index)
+            : bufferName(std::move(buffer_name)), index(std::move(index)) {
         }
 
         NodeType getType() const override {
@@ -46,7 +44,7 @@ namespace xng {
         }
 
         std::unique_ptr<ShaderNode> copy() const override {
-            return std::make_unique<NodeBuffer>(bufferName, elementName, index ? index->copy() : nullptr);
+            return std::make_unique<NodeBuffer>(bufferName, index ? index->copy() : nullptr);
         }
     };
 }

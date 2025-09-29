@@ -127,14 +127,18 @@ namespace xng::ShaderNodeFactory {
                                                   index->copy());
     }
 
-    std::unique_ptr<ShaderNode> bufferElement(const std::string &bufferName,
-                                       const std::string &elementName,
+    std::unique_ptr<ShaderNode> buffer(const std::string &bufferName,
                                        const std::unique_ptr<ShaderNode> &index) {
-        return std::make_unique<NodeBuffer>(bufferName, elementName, index ? index->copy() : nullptr);
+        return std::make_unique<NodeBuffer>(bufferName, index ? index->copy() : nullptr);
     }
 
     std::unique_ptr<ShaderNode> bufferSize(const std::string &bufferName) {
         return std::make_unique<NodeBufferSize>(bufferName);
+    }
+
+    std::unique_ptr<ShaderNode> objectElement(const std::unique_ptr<ShaderNode> &object,
+                                              const std::string &elementName) {
+        return std::make_unique<NodeObjectElement>(object->copy(), elementName);
     }
 
     std::unique_ptr<ShaderNode> add(const std::unique_ptr<ShaderNode> &left,

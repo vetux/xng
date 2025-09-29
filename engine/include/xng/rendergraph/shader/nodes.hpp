@@ -62,5 +62,6 @@
 #include "xng/rendergraph/shader/nodes/nodeemitvertex.hpp"
 #include "xng/rendergraph/shader/nodes/nodeendprimitive.hpp"
 #include "xng/rendergraph/shader/nodes/nodelayer.hpp"
+#include "xng/rendergraph/shader/nodes/nodeobjectelement.hpp"
 
 #endif //XENGINE_NODES_HPP

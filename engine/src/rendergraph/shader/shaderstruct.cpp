@@ -17,24 +17,14 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_SHADERBUFFER_HPP
-#define XENGINE_SHADERBUFFER_HPP
-
 #include "xng/rendergraph/shader/shaderstruct.hpp"
-#include "xng/rendergraph/shader/shaderdatatype.hpp"
 
 namespace xng {
-    /**
-     * A shader buffer can either be dynamic or static.
-     *
-     * Shaders can access dynamic buffers without knowing the exact count of the elements this is useful
-     * for dynamic data such as lights.
-     */
-    struct ShaderBuffer {
-        bool readOnly = true; // Whether shaders are allowed to write to the buffer
-        bool dynamic = false; // If true, this buffer is a dynamic buffer and elements can be accessed by specifying NodeBuffer.index
-        ShaderStructName typeName; // The type name of the structure defining the contents of the buffer. For dynamic buffers an instance of the structure is created for every element.
-    };
+    const ShaderStructElement &ShaderStruct::find(const std::string &name) const {
+        for (auto &element: elements) {
+            if (element.name == name)
+                return element;
+        }
+        throw std::runtime_error("ShaderStruct::find: element not found");
+    }
 }
-
-#endif //XENGINE_SHADERBUFFER_HPP

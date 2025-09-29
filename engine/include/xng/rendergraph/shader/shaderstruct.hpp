@@ -17,24 +17,38 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_SHADERBUFFER_HPP
-#define XENGINE_SHADERBUFFER_HPP
+#ifndef XENGINE_SHADERSTRUCT_HPP
+#define XENGINE_SHADERSTRUCT_HPP
 
-#include "xng/rendergraph/shader/shaderstruct.hpp"
+#include <variant>
+
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 
 namespace xng {
-    /**
-     * A shader buffer can either be dynamic or static.
-     *
-     * Shaders can access dynamic buffers without knowing the exact count of the elements this is useful
-     * for dynamic data such as lights.
-     */
-    struct ShaderBuffer {
-        bool readOnly = true; // Whether shaders are allowed to write to the buffer
-        bool dynamic = false; // If true, this buffer is a dynamic buffer and elements can be accessed by specifying NodeBuffer.index
-        ShaderStructName typeName; // The type name of the structure defining the contents of the buffer. For dynamic buffers an instance of the structure is created for every element.
+    struct ShaderStructElement;
+
+    typedef std::string ShaderStructName;
+
+    struct ShaderStruct {
+        std::vector<ShaderStructElement> elements;
+
+        const ShaderStructElement &find(const std::string &name) const;
+    };
+
+    struct ShaderStructElement {
+        std::string name; // The name of this element. must be unique inside the structure.
+        std::variant<ShaderStructName, ShaderDataType> type; // Either the typename of another structure or the type of the data.
+
+        ShaderStructElement(std::string name, const ShaderDataType &value)
+            : name(std::move(name)),
+              type(value) {
+        }
+
+        ShaderStructElement(std::string name, const std::string &value)
+            : name(std::move(name)),
+              type(value) {
+        }
     };
 }
 
-#endif //XENGINE_SHADERBUFFER_HPP
+#endif //XENGINE_SHADERSTRUCT_HPP

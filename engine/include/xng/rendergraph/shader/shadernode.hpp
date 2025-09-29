@@ -86,7 +86,9 @@ namespace xng {
             LAYER,
 
             GEOMETRY_EMIT_VERTEX,
-            GEOMETRY_END_PRIMITIVE
+            GEOMETRY_END_PRIMITIVE,
+
+            OBJECT_ELEMENT,
         };
 
         virtual NodeType getType() const = 0;

@@ -17,24 +17,36 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_SHADERBUFFER_HPP
-#define XENGINE_SHADERBUFFER_HPP
+#ifndef XENGINE_NODEOBJECTELEMENT_HPP
+#define XENGINE_NODEOBJECTELEMENT_HPP
 
-#include "xng/rendergraph/shader/shaderstruct.hpp"
-#include "xng/rendergraph/shader/shaderdatatype.hpp"
+#include <string>
+
+#include "xng/rendergraph/shader/shadernode.hpp"
 
 namespace xng {
     /**
-     * A shader buffer can either be dynamic or static.
-     *
-     * Shaders can access dynamic buffers without knowing the exact count of the elements this is useful
-     * for dynamic data such as lights.
+     * Access an element of an object.
+     * May return another object.
      */
-    struct ShaderBuffer {
-        bool readOnly = true; // Whether shaders are allowed to write to the buffer
-        bool dynamic = false; // If true, this buffer is a dynamic buffer and elements can be accessed by specifying NodeBuffer.index
-        ShaderStructName typeName; // The type name of the structure defining the contents of the buffer. For dynamic buffers an instance of the structure is created for every element.
+    struct NodeObjectElement final : ShaderNode {
+        std::unique_ptr<ShaderNode> object;
+        std::string elementName;
+
+        NodeObjectElement(std::unique_ptr<ShaderNode> object,
+                    std::string element_name)
+            : object(std::move(object)),
+              elementName(std::move(element_name)) {
+        }
+
+        NodeType getType() const override {
+            return OBJECT_ELEMENT;
+        }
+
+        std::unique_ptr<ShaderNode> copy() const override {
+            return std::make_unique<NodeObjectElement>(object->copy(), elementName);
+        }
     };
 }
 
-#endif //XENGINE_SHADERBUFFER_HPP
+#endif //XENGINE_NODEOBJECTELEMENT_HPP

@@ -278,7 +278,7 @@ std::string compileLeafNode(const NodeBuffer &node,
     if (source.buffers.at(node.bufferName).dynamic) {
         auto ret = bufferPrefix + node.bufferName + "." + bufferArrayName + "[";
         ret += compileNode(*node.index, source, functionName, "");
-        ret += "]." + node.elementName;
+        ret += "]";
         return ret;
     } else {
         return bufferPrefix
@@ -287,8 +287,7 @@ std::string compileLeafNode(const NodeBuffer &node,
                + bufferArrayName
                + "["
                + drawID
-               + "]."
-               + node.elementName;
+               + "]";
     }
 }
 
@@ -666,4 +665,8 @@ std::string compileLeafNode(const NodeEmitVertex &node, const std::string &prefi
 
 std::string compileLeafNode(const NodeEndPrimitive &node, const std::string &prefix) {
     return prefix + "EndPrimitive()";
+}
+
+std::string compileLeafNode(const NodeObjectElement &node, const Shader &source, const std::string &functionName) {
+    return compileNode(*node.object, source, functionName) + "." + node.elementName;
 }
