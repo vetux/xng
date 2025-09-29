@@ -32,8 +32,20 @@ namespace xng {
      */
     struct ShaderBuffer {
         bool readOnly = true; // Whether shaders are allowed to write to the buffer
-        bool dynamic = false; // If true, this buffer is a dynamic buffer and elements can be accessed by specifying NodeBuffer.index
-        ShaderStructName typeName; // The type name of the structure defining the contents of the buffer. For dynamic buffers an instance of the structure is created for every element.
+
+        // If true, this buffer is a dynamic buffer and elements can be accessed by specifying NodeBuffer.index
+        bool dynamic = false;
+
+        // The type name of the structure defining the contents of the buffer. For dynamic buffers an instance of the structure is created for every element.
+        ShaderStructName typeName;
+
+        ShaderBuffer() = default;
+
+        ShaderBuffer(bool read_only, bool dynamic, const ShaderStructName &type_name)
+            : readOnly(read_only),
+              dynamic(dynamic),
+              typeName(type_name) {
+        }
     };
 }
 

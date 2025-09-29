@@ -32,6 +32,10 @@ namespace xng {
         explicit ShaderTextureArray(const ShaderTexture texture, const size_t arraySize = 1)
             : texture(texture), arraySize(arraySize) {
         }
+
+        bool operator==(const ShaderTextureArray &other) const {
+            return texture == other.texture && arraySize == other.arraySize;
+        }
     };
 }
 #endif //XENGINE_SHADERTEXTUREARRAY_HPP
