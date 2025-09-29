@@ -113,6 +113,8 @@ std::string compileNode(const ShaderNode &node,
             return compileLeafNode(down_cast<const NodeEmitVertex &>(node), prefix);
         case ShaderNode::GEOMETRY_END_PRIMITIVE:
             return compileLeafNode(down_cast<const NodeEndPrimitive &>(node), prefix);
+        case ShaderNode::OBJECT_ELEMENT:
+            return compileLeafNode(down_cast<const NodeObjectElement &>(node), source, functionName);
     }
     throw std::runtime_error("Node Type not implemented");
 }

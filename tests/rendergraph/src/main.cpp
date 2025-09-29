@@ -24,7 +24,7 @@
 #include "xng/adapters/freetype/freetype.hpp"
 #include "xng/adapters/assimp/assimp.hpp"
 
-#include "shadertestpass.hpp"
+using namespace xng;
 
 RenderScene createScene() {
     // Scene interface will be redesign next.
@@ -60,19 +60,6 @@ int main(int argc, char *argv[]) {
     window->setWindowSize({1000, 900});
 
     runtime->setWindow(window);
-
-    // Print shader test pass
-    {
-        RenderGraphBuilder builder(runtime->updateBackBuffer());
-        ShaderTestPass pass;
-        pass.setup(builder);
-
-        const auto graph = builder.build();
-        const auto gh = runtime->compile(graph);
-
-        runtime->execute(gh);
-        runtime->destroy(gh);
-    }
 
     const auto &tuxImg = tux.get();
     const auto &smileyImg = smiley.get();

@@ -55,7 +55,7 @@ namespace xng {
         std::unordered_map<std::string, ShaderBuffer> buffers;
         std::unordered_map<std::string, ShaderTextureArray> textureArrays;
 
-        std::unordered_map<std::string, ShaderStruct> typeDefinitions;
+        std::vector<ShaderStruct> typeDefinitions;
 
         std::vector<std::unique_ptr<ShaderNode> > mainFunction;
 
@@ -76,7 +76,7 @@ namespace xng {
                const std::unordered_map<std::string, ShaderDataType> &parameters,
                const std::unordered_map<std::string, ShaderBuffer> &buffers,
                const std::unordered_map<std::string, ShaderTextureArray> &textureArrays,
-               const std::unordered_map<std::string, ShaderStruct> &dataStructures,
+               const std::vector<ShaderStruct> &typeDefinitions,
                std::vector<std::unique_ptr<ShaderNode> > mainFunction,
                std::vector<ShaderFunction> functions)
             : stage(stage),
@@ -88,7 +88,7 @@ namespace xng {
               parameters(parameters),
               buffers(buffers),
               textureArrays(textureArrays),
-              typeDefinitions(dataStructures),
+              typeDefinitions(typeDefinitions),
               mainFunction(std::move(mainFunction)),
               functions(std::move(functions)) {
         }

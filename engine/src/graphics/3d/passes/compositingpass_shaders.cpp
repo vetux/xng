@@ -32,57 +32,37 @@ namespace xng {
     }
 
     Shader CompositingPass::createVertexShader() {
-        auto &builder = ShaderBuilder::instance();
-        builder.setup(Shader::VERTEX,
-                      getVertexLayout(),
-                      ShaderAttributeLayout({
-                          {"fUv", ShaderDataType::vec2()},
-                      }),
-                      {},
-                      {},
-                      {
-                          {"layerColor", ShaderTextureArray(ShaderTexture(TEXTURE_2D, RGBA, false))},
-                          {"layerDepth", ShaderTextureArray(ShaderTexture(TEXTURE_2D, DEPTH, false))},
-                      },
-                      {});
+        BeginShader(Shader::VERTEX);
 
-        INPUT_ATTRIBUTE(position)
-        INPUT_ATTRIBUTE(uv)
+        Input(ShaderDataType::vec3(), position);
+        Input(ShaderDataType::vec2(), uv);
 
-        OUTPUT_ATTRIBUTE(fUv)
+        Output(ShaderDataType::vec2(), fUv);
+
+        Texture(layerColor, TEXTURE_2D, RGBA);
+        Texture(layerDepth, TEXTURE_2D, DEPTH);
 
         fUv = uv;
 
         setVertexPosition(vec4(position, 1));
 
-        return builder.build();
+        return BuildShader();
     }
 
     Shader CompositingPass::createFragmentShader() {
-        auto &builder = ShaderBuilder::instance();
-        builder.setup(Shader::FRAGMENT,
-                      ShaderAttributeLayout({
-                          {"fUv", ShaderDataType::vec2()},
-                      }),
-                      ShaderAttributeLayout({
-                          {"color", ShaderDataType::vec4()}
-                      }),
-                      {},
-                      {},
-                      {
-                          {"layerColor", ShaderTextureArray(ShaderTexture(TEXTURE_2D, RGBA, false))},
-                          {"layerDepth", ShaderTextureArray(ShaderTexture(TEXTURE_2D, DEPTH, false))},
-                      },
-                      {});
+        BeginShader(Shader::FRAGMENT);
 
-        INPUT_ATTRIBUTE(fUv)
+        Input(ShaderDataType::vec2(), fUv);
 
-        OUTPUT_ATTRIBUTE(color)
+        Output(ShaderDataType::vec4(), color);
 
-        color = texture(textureSampler("layerColor"), fUv);
+        Texture(layerColor, TEXTURE_2D, RGBA);
+        Texture(layerDepth, TEXTURE_2D, DEPTH);
 
-        setFragmentDepth(texture(textureSampler("layerDepth"), fUv).x());
+        color = texture(layerColor, fUv);
 
-        return builder.build();
+        setFragmentDepth(texture(layerDepth, fUv).x());
+
+        return BuildShader();
     }
 }

@@ -53,17 +53,16 @@ std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
         ret += "#define " + std::string(drawID) + " drawID\n\n";
     }
 
-    for (const auto &pair: source.typeDefinitions) {
-        ret += "struct " + pair.first + " {\n";
-        for (const auto &element: pair.second.elements) {
+    for (const auto &v: source.typeDefinitions) {
+        ret += "struct " + v.name + " {\n";
+        for (const auto &element: v.elements) {
             if (std::holds_alternative<ShaderStructName>(element.type)) {
-                ret += std::get<ShaderStructName>(element.type) + " " + element.name + ";\n";
+                ret += "\t" + std::get<ShaderStructName>(element.type) + " " + element.name + ";\n";
             } else {
                 ret += generateElement(element.name, std::get<ShaderDataType>(element.type)) + ";\n";
             }
         }
-        ret += "};\n";
-        ret += "\n";
+        ret += "};\n\n";
     }
 
     for (const auto &pair: source.buffers) {

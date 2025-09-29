@@ -170,7 +170,7 @@ namespace xng::shaderlib {
         // TODO: Sample texture arrays with integer coordinates / texelFetch
         Function("textureBicubic",
                  {
-                     {"sampler", ShaderTexture(TEXTURE_2D, RGBA, true)},
+                     {"sampler", ShaderTexture(TEXTURE_2D_ARRAY, RGBA)},
                      {"texCoords3", ShaderDataType::vec3()},
                      {"size", ShaderDataType::vec2()}
                  },

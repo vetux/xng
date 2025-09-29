@@ -17,83 +17,115 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_SHADERNODEWRAPPER_HPP
-#define XENGINE_SHADERNODEWRAPPER_HPP
-
-#include <fcntl.h>
+#ifndef XENGINE_ShaderObject_HPP
+#define XENGINE_ShaderObject_HPP
 
 #include "xng/rendergraph/shader/shadernodefactory.hpp"
 #include "xng/rendergraph/shader/nodes.hpp"
 
 #include "xng/rendergraph/shaderscript/shaderbuilder.hpp"
 
-#define _SWIZZLE2(x, y) [[nodiscard]] ShaderNodeWrapper x##y() { return swizzle_vec2(x(), y()); }
-#define _SWIZZLE3(x, y, z) [[nodiscard]] ShaderNodeWrapper x##y##z() { return swizzle_vec3(x(), y(), z()); }
-#define _SWIZZLE4(x, y, z, w) [[nodiscard]] ShaderNodeWrapper x##y##z##w() { return swizzle_vec4(x(), y(), z(), w()); }
+#define _SWIZZLE2(x, y) [[nodiscard]] ShaderObject x##y() { return swizzle_vec2(x(), y()); }
+#define _SWIZZLE3(x, y, z) [[nodiscard]] ShaderObject x##y##z() { return swizzle_vec3(x(), y(), z()); }
+#define _SWIZZLE4(x, y, z, w) [[nodiscard]] ShaderObject x##y##z##w() { return swizzle_vec4(x(), y(), z(), w()); }
 
 namespace xng::ShaderScript {
-    class ShaderNodeWrapper {
+    /**
+     * An object can be an instance of a built-in type, an instance of a user-defined type, a texture array or a single texture.
+     */
+    class ShaderObject {
     public:
-        ShaderDataType type;
+        std::variant<ShaderDataType, ShaderStructName, ShaderTextureArray, ShaderTexture> type;
         std::unique_ptr<ShaderNode> node{};
 
-        ShaderNodeWrapper() = delete;
+        const ShaderDataType &getDataType() const {
+            if (std::holds_alternative<ShaderDataType>(type)) {
+                return std::get<ShaderDataType>(type);
+            }
+            throw std::runtime_error("ShaderObject is not a builtin type");
+        }
 
-        ShaderNodeWrapper(const ShaderDataType type,
-                          std::unique_ptr<ShaderNode> valueNode)
+        const ShaderStructName &getStructName() const {
+            if (std::holds_alternative<ShaderStructName>(type)) {
+                return std::get<ShaderStructName>(type);
+            }
+            throw std::runtime_error("ShaderObject is not a struct instance");
+        }
+
+        const ShaderTextureArray &getTextureArray() const {
+            if (std::holds_alternative<ShaderTextureArray>(type)) {
+                return std::get<ShaderTextureArray>(type);
+            }
+            throw std::runtime_error("ShaderObject is not a texture array");
+        }
+
+        const ShaderTexture &getTexture() const {
+            if (std::holds_alternative<ShaderTexture>(type)) {
+                return std::get<ShaderTexture>(type);
+            }
+            if (std::holds_alternative<ShaderTextureArray>(type)) {
+                return std::get<ShaderTextureArray>(type).texture;
+            }
+            throw std::runtime_error("ShaderObject is not a texture");
+        }
+
+        ShaderObject() = delete;
+
+        ShaderObject(const std::variant<ShaderDataType, ShaderStructName, ShaderTextureArray, ShaderTexture> &type,
+                     std::unique_ptr<ShaderNode> valueNode)
             : type(type), node(std::move(valueNode)) {
         }
 
-        ShaderNodeWrapper(const ShaderNodeWrapper &other) {
+        ShaderObject(const ShaderObject &other) {
             type = other.type;
             node = other.node->copy();
         }
 
-        ShaderNodeWrapper(ShaderNodeWrapper &&other) noexcept {
+        ShaderObject(ShaderObject &&other) noexcept {
             type = other.type;
             node = std::move(other.node);
         }
 
         // Literal constructor
-        ShaderNodeWrapper(const bool literal)
-            : ShaderNodeWrapper(getLiteralType(literal),
-                                ShaderNodeFactory::literal(literal)) {
+        ShaderObject(const bool literal)
+            : ShaderObject(getLiteralType(literal),
+                           ShaderNodeFactory::literal(literal)) {
         }
 
-        ShaderNodeWrapper(const int literal)
-            : ShaderNodeWrapper(getLiteralType(literal),
-                                ShaderNodeFactory::literal(literal)) {
+        ShaderObject(const int literal)
+            : ShaderObject(getLiteralType(literal),
+                           ShaderNodeFactory::literal(literal)) {
         }
 
-        ShaderNodeWrapper(const unsigned int literal)
-            : ShaderNodeWrapper(getLiteralType(literal),
-                                ShaderNodeFactory::literal(literal)) {
+        ShaderObject(const unsigned int literal)
+            : ShaderObject(getLiteralType(literal),
+                           ShaderNodeFactory::literal(literal)) {
         }
 
-        ShaderNodeWrapper(const float literal)
-            : ShaderNodeWrapper(getLiteralType(literal),
-                                ShaderNodeFactory::literal(literal)) {
+        ShaderObject(const float literal)
+            : ShaderObject(getLiteralType(literal),
+                           ShaderNodeFactory::literal(literal)) {
         }
 
-        ShaderNodeWrapper(const double literal)
-            : ShaderNodeWrapper(getLiteralType(literal),
-                                ShaderNodeFactory::literal(literal)) {
+        ShaderObject(const double literal)
+            : ShaderObject(getLiteralType(literal),
+                           ShaderNodeFactory::literal(literal)) {
         }
 
-        [[nodiscard]] ShaderNodeWrapper x() {
-            return {{ShaderDataType::SCALAR, type.component}, ShaderNodeFactory::getX(node)};
+        [[nodiscard]] ShaderObject x() {
+            return {ShaderDataType{ShaderDataType::SCALAR, getDataType().component}, ShaderNodeFactory::getX(node)};
         }
 
-        [[nodiscard]] ShaderNodeWrapper y() {
-            return {{ShaderDataType::SCALAR, type.component}, ShaderNodeFactory::getY(node)};
+        [[nodiscard]] ShaderObject y() {
+            return {ShaderDataType{ShaderDataType::SCALAR, getDataType().component}, ShaderNodeFactory::getY(node)};
         }
 
-        [[nodiscard]] ShaderNodeWrapper z() {
-            return {{ShaderDataType::SCALAR, type.component}, ShaderNodeFactory::getZ(node)};
+        [[nodiscard]] ShaderObject z() {
+            return {ShaderDataType{ShaderDataType::SCALAR, getDataType().component}, ShaderNodeFactory::getZ(node)};
         }
 
-        [[nodiscard]] ShaderNodeWrapper w() {
-            return {{ShaderDataType::SCALAR, type.component}, ShaderNodeFactory::getW(node)};
+        [[nodiscard]] ShaderObject w() {
+            return {ShaderDataType{ShaderDataType::SCALAR, getDataType().component}, ShaderNodeFactory::getW(node)};
         }
 
         // 4^2 = 16 Vector2 Swizzle Combinations (Macro calls generated with ChatGPT)
@@ -438,34 +470,42 @@ namespace xng::ShaderScript {
         _SWIZZLE4(w, w, w, z)
         _SWIZZLE4(w, w, w, w)
 
-        [[nodiscard]] ShaderNodeWrapper element(const ShaderNodeWrapper &column,
-                                                const ShaderNodeWrapper &row) {
+        [[nodiscard]] ShaderObject element(const ShaderObject &column,
+                                           const ShaderObject &row) {
             if (node->getType() != ShaderNode::VARIABLE) {
                 throw std::runtime_error(".element() invoked on a copy initialized variable");
             }
-            return ShaderNodeWrapper({ShaderDataType::SCALAR, type.component},
-                                     ShaderNodeFactory::matrixSubscript(node, column.node, row.node));
+            return ShaderObject(ShaderDataType{ShaderDataType::SCALAR, getDataType().component},
+                                ShaderNodeFactory::matrixSubscript(node, column.node, row.node));
         }
 
-        ShaderNodeWrapper column(const ShaderNodeWrapper &column) {
+        ShaderObject column(const ShaderObject &column) {
             if (node->getType() != ShaderNode::VARIABLE) {
                 throw std::runtime_error(".column() invoked on a copy initialized variable");
             }
-            switch (type.type) {
+            switch (getDataType().type) {
                 case ShaderDataType::MAT2:
-                    return ShaderNodeWrapper({ShaderDataType::VECTOR2, type.component},
-                                             ShaderNodeFactory::matrixSubscript(node, column.node, nullptr));
+                    return ShaderObject(ShaderDataType{ShaderDataType::VECTOR2, getDataType().component},
+                                        ShaderNodeFactory::matrixSubscript(node, column.node, nullptr));
                 case ShaderDataType::MAT3:
-                    return ShaderNodeWrapper({ShaderDataType::VECTOR3, type.component},
-                                             ShaderNodeFactory::matrixSubscript(node, column.node, nullptr));
+                    return ShaderObject(ShaderDataType{ShaderDataType::VECTOR3, getDataType().component},
+                                        ShaderNodeFactory::matrixSubscript(node, column.node, nullptr));
                 case ShaderDataType::MAT4:
-                    return ShaderNodeWrapper({ShaderDataType::VECTOR4, type.component},
-                                             ShaderNodeFactory::matrixSubscript(node, column.node, nullptr));
+                    return ShaderObject(ShaderDataType{ShaderDataType::VECTOR4, getDataType().component},
+                                        ShaderNodeFactory::matrixSubscript(node, column.node, nullptr));
                 default:
                     throw std::runtime_error("column call on non matrix");
             }
         }
 
+        ShaderObject length() const {
+            if (node->getType() == ShaderNode::BUFFER) {
+                auto &bnode = down_cast<const NodeBuffer &>(*node);
+                return ShaderObject(ShaderDataType::unsignedInteger(), ShaderNodeFactory::bufferSize(bnode.bufferName));
+            }
+            throw std::runtime_error("length() called on non buffer");
+        }
+
         /**
          * The move and copy assignment operators are overloaded to translate logical assignments to shader node operations.
          *
@@ -474,7 +514,7 @@ namespace xng::ShaderScript {
          * @param rhs
          * @return
          */
-        ShaderNodeWrapper &operator=(ShaderNodeWrapper &&rhs) {
+        ShaderObject &operator=(ShaderObject &&rhs) {
             assignValue(rhs);
             return *this;
         }
@@ -487,167 +527,199 @@ namespace xng::ShaderScript {
          * @param rhs
          * @return
          */
-        ShaderNodeWrapper &operator=(const ShaderNodeWrapper &rhs) {
+        ShaderObject &operator=(const ShaderObject &rhs) {
             assignValue(rhs);
             return *this;
         }
 
         // TODO: Handle implicit type promotion
-        ShaderNodeWrapper operator+(const ShaderNodeWrapper &rhs) const {
+        ShaderObject operator+(const ShaderObject &rhs) const {
             ShaderDataType outType;
             if (type == rhs.type) {
                 // Arithmetic with identical types
-                outType = type;
+                outType = getDataType();
             } else {
                 // Mixed Arithmetic e.g. vec3 + float
-                if (type.type == ShaderDataType::SCALAR) {
-                    outType = rhs.type;
+                if (getDataType().type == ShaderDataType::SCALAR) {
+                    outType = rhs.getDataType();
                 } else {
-                    outType = type;
+                    outType = getDataType();
                 }
             }
-            auto ret = ShaderNodeWrapper(outType, ShaderNodeFactory::add(node, rhs.node));
+            auto ret = ShaderObject(outType, ShaderNodeFactory::add(node, rhs.node));
             return ret;
         }
 
-        ShaderNodeWrapper operator-(const ShaderNodeWrapper &rhs) const {
+        ShaderObject operator-(const ShaderObject &rhs) const {
             ShaderDataType outType;
             if (type == rhs.type) {
                 // Arithmetic with identical types
-                outType = type;
+                outType = getDataType();
             } else {
                 // Mixed Arithmetic e.g. vec3 + float
-                if (type.type == ShaderDataType::SCALAR) {
-                    outType = rhs.type;
+                if (getDataType().type == ShaderDataType::SCALAR) {
+                    outType = rhs.getDataType();
                 } else {
-                    outType = type;
+                    outType = getDataType();
                 }
             }
-            auto ret = ShaderNodeWrapper(outType, ShaderNodeFactory::subtract(node, rhs.node));
+            auto ret = ShaderObject(outType, ShaderNodeFactory::subtract(node, rhs.node));
             return ret;
         }
 
-        ShaderNodeWrapper operator*(const ShaderNodeWrapper &rhs) const {
+        ShaderObject operator*(const ShaderObject &rhs) const {
             ShaderDataType outType;
             if (type == rhs.type) {
                 // Arithmetic with identical types
-                outType = type;
+                outType = getDataType();
             } else {
                 // Mixed Arithmetic
 
                 // Matrix * Vector or Vector * Matrix
-                if (type.type == ShaderDataType::MAT4 || rhs.type.type == ShaderDataType::MAT4) {
-                    outType = {ShaderDataType::VECTOR4, type.component, 1};
-                } else if (type.type == ShaderDataType::MAT3 || rhs.type.type == ShaderDataType::MAT3) {
-                    outType = {ShaderDataType::VECTOR3, type.component, 1};
-                } else if (type.type == ShaderDataType::MAT2 || rhs.type.type == ShaderDataType::MAT2) {
-                    outType = {ShaderDataType::VECTOR2, type.component, 1};
+                if (getDataType().type == ShaderDataType::MAT4 || rhs.getDataType().type == ShaderDataType::MAT4) {
+                    outType = {ShaderDataType::VECTOR4, getDataType().component, 1};
+                } else if (getDataType().type == ShaderDataType::MAT3 || rhs.getDataType().type ==
+                           ShaderDataType::MAT3) {
+                    outType = {ShaderDataType::VECTOR3, getDataType().component, 1};
+                } else if (getDataType().type == ShaderDataType::MAT2 || rhs.getDataType().type ==
+                           ShaderDataType::MAT2) {
+                    outType = {ShaderDataType::VECTOR2, getDataType().component, 1};
                 } else {
                     // Scalar * Vector
-                    if (type.type == ShaderDataType::SCALAR) {
-                        outType = rhs.type;
+                    if (getDataType().type == ShaderDataType::SCALAR) {
+                        outType = rhs.getDataType();
                     } else {
-                        outType = type;
+                        outType = getDataType();
                     }
                 }
             }
-            auto ret = ShaderNodeWrapper(outType, ShaderNodeFactory::multiply(node, rhs.node));
+            auto ret = ShaderObject(outType, ShaderNodeFactory::multiply(node, rhs.node));
             return ret;
         }
 
-        ShaderNodeWrapper operator/(const ShaderNodeWrapper &rhs) const {
+        ShaderObject operator/(const ShaderObject &rhs) const {
             ShaderDataType outType;
             if (type == rhs.type) {
                 // Arithmetic with identical types
-                outType = type;
+                outType = getDataType();
             } else {
                 // Mixed Arithmetic e.g. vec3 / float
-                if (type.type == ShaderDataType::SCALAR) {
-                    outType = rhs.type;
+                if (getDataType().type == ShaderDataType::SCALAR) {
+                    outType = rhs.getDataType();
                 } else {
-                    outType = type;
+                    outType = getDataType();
                 }
             }
-            return ShaderNodeWrapper(outType, ShaderNodeFactory::divide(node, rhs.node));
+            return ShaderObject(outType, ShaderNodeFactory::divide(node, rhs.node));
         }
 
-        ShaderNodeWrapper operator+=(const ShaderNodeWrapper &rhs) {
+        ShaderObject operator+=(const ShaderObject &rhs) {
             assignValue(*this + rhs);
             return *this;
         }
 
-        ShaderNodeWrapper operator-=(const ShaderNodeWrapper &rhs) {
+        ShaderObject operator-=(const ShaderObject &rhs) {
             assignValue(*this - rhs);
             return *this;
         }
 
-        ShaderNodeWrapper operator*=(const ShaderNodeWrapper &rhs) {
+        ShaderObject operator*=(const ShaderObject &rhs) {
             assignValue(*this * rhs);
             return *this;
         }
 
-        ShaderNodeWrapper operator/=(const ShaderNodeWrapper &rhs) {
+        ShaderObject operator/=(const ShaderObject &rhs) {
             assignValue(*this / rhs);
             return *this;
         }
 
-        ShaderNodeWrapper operator==(const ShaderNodeWrapper &rhs) const {
-            auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
-                                         ShaderNodeFactory::compareEqual(node, rhs.node));
+        ShaderObject operator==(const ShaderObject &rhs) const {
+            auto ret = ShaderObject(ShaderDataType::boolean(),
+                                    ShaderNodeFactory::compareEqual(node, rhs.node));
             return ret;
         }
 
-        ShaderNodeWrapper operator!=(const ShaderNodeWrapper &rhs) const {
-            auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
-                                         ShaderNodeFactory::compareNotEqual(node, rhs.node));
+        ShaderObject operator!=(const ShaderObject &rhs) const {
+            auto ret = ShaderObject(ShaderDataType::boolean(),
+                                    ShaderNodeFactory::compareNotEqual(node, rhs.node));
             return ret;
         }
 
-        ShaderNodeWrapper operator<(const ShaderNodeWrapper &rhs) const {
-            auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
-                                         ShaderNodeFactory::compareLess(node, rhs.node));
+        ShaderObject operator<(const ShaderObject &rhs) const {
+            auto ret = ShaderObject(ShaderDataType::boolean(),
+                                    ShaderNodeFactory::compareLess(node, rhs.node));
             return ret;
         }
 
-        ShaderNodeWrapper operator>(const ShaderNodeWrapper &rhs) const {
-            auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
-                                         ShaderNodeFactory::compareGreater(node, rhs.node));
+        ShaderObject operator>(const ShaderObject &rhs) const {
+            auto ret = ShaderObject(ShaderDataType::boolean(),
+                                    ShaderNodeFactory::compareGreater(node, rhs.node));
             return ret;
         }
 
-        ShaderNodeWrapper operator <=(const ShaderNodeWrapper &rhs) const {
-            auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
-                                         ShaderNodeFactory::compareLessEqual(node, rhs.node));
+        ShaderObject operator <=(const ShaderObject &rhs) const {
+            auto ret = ShaderObject(ShaderDataType::boolean(),
+                                    ShaderNodeFactory::compareLessEqual(node, rhs.node));
             return ret;
         }
 
-        ShaderNodeWrapper operator >=(const ShaderNodeWrapper &rhs) const {
-            auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
-                                         ShaderNodeFactory::compareGreaterEqual(node, rhs.node));
+        ShaderObject operator >=(const ShaderObject &rhs) const {
+            auto ret = ShaderObject(ShaderDataType::boolean(),
+                                    ShaderNodeFactory::compareGreaterEqual(node, rhs.node));
             return ret;
         }
 
-        ShaderNodeWrapper operator||(const ShaderNodeWrapper &rhs) const {
-            auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
-                                         ShaderNodeFactory::logicalOr(node, rhs.node));
+        ShaderObject operator||(const ShaderObject &rhs) const {
+            auto ret = ShaderObject(ShaderDataType::boolean(),
+                                    ShaderNodeFactory::logicalOr(node, rhs.node));
             return ret;
         }
 
-        ShaderNodeWrapper operator&&(const ShaderNodeWrapper &rhs) const {
-            auto ret = ShaderNodeWrapper(ShaderDataType::boolean(),
-                                         ShaderNodeFactory::logicalAnd(node, rhs.node));
+        ShaderObject operator&&(const ShaderObject &rhs) const {
+            auto ret = ShaderObject(ShaderDataType::boolean(),
+                                    ShaderNodeFactory::logicalAnd(node, rhs.node));
             return ret;
         }
 
-        ShaderNodeWrapper operator[](const ShaderNodeWrapper &rhs) {
-            return ShaderNodeWrapper({type.type, type.component, 1},
-                                     ShaderNodeFactory::arraySubscript(node, rhs.node));
+        ShaderObject operator[](const char *elementName) const {
+            auto typeDefs = ShaderBuilder::instance().getTypeDefinitions();
+            std::variant<ShaderDataType, ShaderStructName> t;
+            for (auto &typeDef : typeDefs) {
+                if (typeDef.name == getStructName()) {
+                    t = typeDef.find(elementName).type;
+                    break;
+                }
+            }
+            if (std::holds_alternative<ShaderDataType>(t)) {
+                return ShaderObject(std::get<ShaderDataType>(t), ShaderNodeFactory::objectElement(node, elementName));
+            }
+            return ShaderObject(std::get<ShaderStructName>(t), ShaderNodeFactory::objectElement(node, elementName));
+        }
+
+        ShaderObject operator[](const ShaderObject &index) const {
+            if (std::holds_alternative<ShaderTextureArray>(type)) {
+                auto &tnode = down_cast<const NodeTexture &>(*node);
+                return ShaderObject(std::get<ShaderTextureArray>(type),
+                                    ShaderNodeFactory::texture(tnode.textureName, index.node));
+            }
+            if (std::holds_alternative<ShaderStructName>(type)) {
+                if (node->getType() == ShaderNode::BUFFER) {
+                    auto &bnode = down_cast<const NodeBuffer &>(*node);
+                    return ShaderObject(std::get<ShaderStructName>(type),
+                                        ShaderNodeFactory::buffer(bnode.bufferName, index.node));
+                }
+            }
+            if (std::holds_alternative<ShaderDataType>(type)) {
+                return ShaderObject(ShaderDataType{getDataType().type, getDataType().component, 1},
+                                    ShaderNodeFactory::arraySubscript(node, index.node));
+            }
+            throw std::runtime_error("Invalid subscript");
         }
 
     protected:
-        ShaderNodeWrapper swizzle_vec2(const ShaderNodeWrapper &x, const ShaderNodeWrapper &y) {
+        ShaderObject swizzle_vec2(const ShaderObject &x, const ShaderObject &y) {
             return {
-                ShaderDataType{ShaderDataType::VECTOR2, type.component, 1},
+                ShaderDataType{ShaderDataType::VECTOR2, getDataType().component, 1},
                 ShaderNodeFactory::vectorSwizzle(node, {
                                                      down_cast<NodeVectorSwizzle &>(*x.node).indices.at(0),
                                                      down_cast<NodeVectorSwizzle &>(*y.node).indices.at(0),
@@ -655,11 +727,11 @@ namespace xng::ShaderScript {
             };
         }
 
-        ShaderNodeWrapper swizzle_vec3(const ShaderNodeWrapper &x,
-                                       const ShaderNodeWrapper &y,
-                                       const ShaderNodeWrapper &z) {
+        ShaderObject swizzle_vec3(const ShaderObject &x,
+                                  const ShaderObject &y,
+                                  const ShaderObject &z) {
             return {
-                ShaderDataType{ShaderDataType::VECTOR3, type.component, 1},
+                ShaderDataType{ShaderDataType::VECTOR3, getDataType().component, 1},
                 ShaderNodeFactory::vectorSwizzle(node, {
                                                      down_cast<NodeVectorSwizzle &>(*x.node).indices.at(0),
                                                      down_cast<NodeVectorSwizzle &>(*y.node).indices.at(0),
@@ -668,12 +740,12 @@ namespace xng::ShaderScript {
             };
         }
 
-        ShaderNodeWrapper swizzle_vec4(const ShaderNodeWrapper &x,
-                                       const ShaderNodeWrapper &y,
-                                       const ShaderNodeWrapper &z,
-                                       const ShaderNodeWrapper &w) {
+        ShaderObject swizzle_vec4(const ShaderObject &x,
+                                  const ShaderObject &y,
+                                  const ShaderObject &z,
+                                  const ShaderObject &w) {
             return {
-                ShaderDataType{ShaderDataType::VECTOR4, type.component, 1},
+                ShaderDataType{ShaderDataType::VECTOR4, getDataType().component, 1},
                 ShaderNodeFactory::vectorSwizzle(node, {
                                                      down_cast<NodeVectorSwizzle &>(*x.node).indices.at(0),
                                                      down_cast<NodeVectorSwizzle &>(*y.node).indices.at(0),
@@ -693,13 +765,13 @@ namespace xng::ShaderScript {
          * Therefore, copy initialized variables (e.g. vec2 v = vec2(0, 0)) are inlined in the resulting shader and are not assignable.
          * Move initialized variables (e.g. vec2 v = other.xy()) are not inlined and are assignable.
          */
-        void assignValue(const ShaderNodeWrapper &value) {
+        void assignValue(const ShaderObject &value) {
             if (node->getType() == ShaderNode::VARIABLE_CREATE) {
                 // Assign to uninitialized variable
                 auto &varNode = down_cast<const NodeVariableCreate &>(*node);
                 ShaderBuilder::instance().addNode(
                     ShaderNodeFactory::createVariable(varNode.variableName,
-                                                      type,
+                                                      varNode.type,
                                                       value.node));
                 node = ShaderNodeFactory::variable(varNode.variableName);
             } else if (node->getType() == ShaderNode::VECTOR_SWIZZLE) {
@@ -745,139 +817,139 @@ namespace xng::ShaderScript {
     /**
      * A node wrapper with specific type information in a value template.
      *
-     * This allows users to create variables in the style of glsl through the typedefs in fgshadernodehelper.hpp
+     * This allows users to create variables in the style of glsl through the typedefs in shaderscript.hpp
      *
      * @tparam VALUE_TYPE
      * @tparam VALUE_COMPONENT
      * @tparam VALUE_COUNT
      */
     template<ShaderDataType::Type VALUE_TYPE, ShaderDataType::Component VALUE_COMPONENT, size_t VALUE_COUNT>
-    class ShaderNodeWrapperTyped : public ShaderNodeWrapper {
+    class ShaderObjectTyped : public ShaderObject {
     public:
         /**
          * Default constructor creates new variable.
          */
-        ShaderNodeWrapperTyped()
-            : ShaderNodeWrapper({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT}, nullptr) {
-            type = {VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT};
+        ShaderObjectTyped()
+            : ShaderObject(ShaderDataType{VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT}, nullptr) {
+            type = ShaderDataType{VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT};
             const auto varName = ShaderBuilder::instance().getVariableName();
             node = ShaderNodeFactory::createVariable(varName,
-                                                     type,
+                                                     getDataType(),
                                                      nullptr);
         }
 
         // Copy operators and constructors for non prvalues are deleted to force move semantics and avoid copy eliding.
-        ShaderNodeWrapperTyped(const ShaderNodeWrapper &base) = delete;
+        ShaderObjectTyped(const ShaderObject &base) = delete;
 
-        ShaderNodeWrapper &operator=(const ShaderNodeWrapper &other) = delete;
+        ShaderObject &operator=(const ShaderObject &other) = delete;
 
         // Copy operators and constructors for prvalues are allowed to support copying a variable (e.g. vec2 v = other; or vec2 v; v = other)
-        ShaderNodeWrapperTyped(const ShaderNodeWrapperTyped &other)
-            : ShaderNodeWrapper(other) {
+        ShaderObjectTyped(const ShaderObjectTyped &other)
+            : ShaderObject(other) {
         }
 
-        ShaderNodeWrapper &operator=(const ShaderNodeWrapperTyped &other) {
-            return ShaderNodeWrapper::operator=(other);
+        ShaderObject &operator=(const ShaderObjectTyped &other) {
+            return ShaderObject::operator=(other);
         }
 
         // Move constructor can be deleted because in the dsl syntax variables are not initialized with vec2 v(other);
-        ShaderNodeWrapperTyped(ShaderNodeWrapperTyped &&other) noexcept = delete;
+        ShaderObjectTyped(ShaderObjectTyped &&other) noexcept = delete;
 
         // Move operator is allowed to support assignments to default initialized variables from prvalues (e.g. vec2 v; v = vec2(0, 0);)
-        ShaderNodeWrapper &operator=(ShaderNodeWrapperTyped &&other) noexcept {
-            return ShaderNodeWrapper::operator=(std::move(other));
+        ShaderObject &operator=(ShaderObjectTyped &&other) noexcept {
+            return ShaderObject::operator=(std::move(other));
         }
 
         // Move operations from non prvalues, creates and initializes a variable.
-        ShaderNodeWrapperTyped(ShaderNodeWrapper &&other) noexcept
-            : ShaderNodeWrapper(std::move(other)) {
-            type = {VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT};
+        ShaderObjectTyped(ShaderObject &&other) noexcept
+            : ShaderObject(std::move(other)) {
+            type = ShaderDataType{VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT};
             const auto varName = ShaderBuilder::instance().getVariableName();
             ShaderBuilder::instance().addNode(ShaderNodeFactory::createVariable(varName,
-                type,
+                getDataType(),
                 node));
             node = ShaderNodeFactory::variable(varName);
         }
 
-        ShaderNodeWrapper &operator=(ShaderNodeWrapper &&other) {
-            return ShaderNodeWrapper::operator=(std::move(other));
+        ShaderObject &operator=(ShaderObject &&other) {
+            return ShaderObject::operator=(std::move(other));
         }
 
         // Array constructor
-        ShaderNodeWrapperTyped(const std::vector<ShaderNodeWrapperTyped<VALUE_TYPE, VALUE_COMPONENT, 1> > &values)
-            : ShaderNodeWrapper({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
-                                ShaderNodeFactory::array({
-                                                             VALUE_TYPE,
-                                                             VALUE_COMPONENT, 1
-                                                         }, getNodes(values))) {
+        ShaderObjectTyped(const std::vector<ShaderObjectTyped<VALUE_TYPE, VALUE_COMPONENT, 1> > &values)
+            : ShaderObject(ShaderDataType{VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
+                           ShaderNodeFactory::array({
+                                                        VALUE_TYPE,
+                                                        VALUE_COMPONENT, 1
+                                                    }, getNodes(values))) {
         }
 
         // Vector constructors
-        ShaderNodeWrapperTyped(const ShaderNodeWrapper &x,
-                               const ShaderNodeWrapper &y)
-            : ShaderNodeWrapper({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
-                                ShaderNodeFactory::vector({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
-                                                          x.node,
-                                                          y.node)) {
+        ShaderObjectTyped(const ShaderObject &x,
+                          const ShaderObject &y)
+            : ShaderObject(ShaderDataType{VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
+                           ShaderNodeFactory::vector({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
+                                                     x.node,
+                                                     y.node)) {
             static_assert(VALUE_TYPE == ShaderDataType::VECTOR4
                           || VALUE_TYPE == ShaderDataType::VECTOR3
                           || VALUE_TYPE == ShaderDataType::VECTOR2);
         }
 
-        ShaderNodeWrapperTyped(const ShaderNodeWrapper &x,
-                               const ShaderNodeWrapper &y,
-                               const ShaderNodeWrapper &z)
-            : ShaderNodeWrapper({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
-                                ShaderNodeFactory::vector({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
-                                                          x.node,
-                                                          y.node,
-                                                          z.node)) {
+        ShaderObjectTyped(const ShaderObject &x,
+                          const ShaderObject &y,
+                          const ShaderObject &z)
+            : ShaderObject(ShaderDataType{VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
+                           ShaderNodeFactory::vector({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
+                                                     x.node,
+                                                     y.node,
+                                                     z.node)) {
             static_assert(VALUE_TYPE == ShaderDataType::VECTOR4
                           || VALUE_TYPE == ShaderDataType::VECTOR3);
         }
 
-        ShaderNodeWrapperTyped(const ShaderNodeWrapper &x,
-                               const ShaderNodeWrapper &y,
-                               const ShaderNodeWrapper &z,
-                               const ShaderNodeWrapper &w)
-            : ShaderNodeWrapper({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
-                                ShaderNodeFactory::vector({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
-                                                          x.node,
-                                                          y.node,
-                                                          z.node,
-                                                          w.node)) {
+        ShaderObjectTyped(const ShaderObject &x,
+                          const ShaderObject &y,
+                          const ShaderObject &z,
+                          const ShaderObject &w)
+            : ShaderObject(ShaderDataType{VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
+                           ShaderNodeFactory::vector({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
+                                                     x.node,
+                                                     y.node,
+                                                     z.node,
+                                                     w.node)) {
             static_assert(VALUE_TYPE == ShaderDataType::VECTOR4);
         }
 
         // Literal Constructors
-        ShaderNodeWrapperTyped(const bool literal)
-            : ShaderNodeWrapper({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
-                                ShaderNodeFactory::literal(literal)) {
+        ShaderObjectTyped(const bool literal)
+            : ShaderObject(ShaderDataType{VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
+                           ShaderNodeFactory::literal(literal)) {
         }
 
-        ShaderNodeWrapperTyped(const int literal)
-            : ShaderNodeWrapper({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
-                                ShaderNodeFactory::literal(literal)) {
+        ShaderObjectTyped(const int literal)
+            : ShaderObject(ShaderDataType{VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
+                           ShaderNodeFactory::literal(literal)) {
         }
 
-        ShaderNodeWrapperTyped(const unsigned int literal)
-            : ShaderNodeWrapper({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
-                                ShaderNodeFactory::literal(literal)) {
+        ShaderObjectTyped(const unsigned int literal)
+            : ShaderObject(ShaderDataType{VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
+                           ShaderNodeFactory::literal(literal)) {
         }
 
-        ShaderNodeWrapperTyped(const float literal)
-            : ShaderNodeWrapper({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
-                                ShaderNodeFactory::literal(literal)) {
+        ShaderObjectTyped(const float literal)
+            : ShaderObject(ShaderDataType{VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
+                           ShaderNodeFactory::literal(literal)) {
         }
 
-        ShaderNodeWrapperTyped(const double literal)
-            : ShaderNodeWrapper({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
-                                ShaderNodeFactory::literal(literal)) {
+        ShaderObjectTyped(const double literal)
+            : ShaderObject(ShaderDataType{VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
+                           ShaderNodeFactory::literal(literal)) {
         }
 
     private:
         static std::vector<std::unique_ptr<ShaderNode> > getNodes(
-            const std::vector<ShaderNodeWrapperTyped<VALUE_TYPE, VALUE_COMPONENT, 1> > &values) {
+            const std::vector<ShaderObjectTyped<VALUE_TYPE, VALUE_COMPONENT, 1> > &values) {
             std::vector<std::unique_ptr<ShaderNode> > nodes;
             for (auto &value: values) {
                 nodes.push_back(value.node->copy());
@@ -887,4 +959,4 @@ namespace xng::ShaderScript {
     };
 }
 
-#endif //XENGINE_SHADERNODEWRAPPER_HPP
+#endif //XENGINE_ShaderObject_HPP

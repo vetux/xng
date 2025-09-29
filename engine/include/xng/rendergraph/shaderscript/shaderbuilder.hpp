@@ -26,7 +26,7 @@
 #include "xng/rendergraph/shader/shader.hpp"
 
 namespace xng::ShaderScript {
-    class ShaderNodeWrapper;
+    class ShaderObject;
 
     class XENGINE_EXPORT ShaderBuilder {
     public:
@@ -55,6 +55,10 @@ namespace xng::ShaderScript {
             return textureArrays;
         }
 
+        const std::vector<ShaderStruct> &getTypeDefinitions() const {
+            return typeDefinitions;
+        }
+
         [[nodiscard]] const std::vector<ShaderFunction> &getFunctions() const {
             return functions;
         }
@@ -70,7 +74,7 @@ namespace xng::ShaderScript {
          *
          * @param condition
          */
-        void If(const ShaderNodeWrapper &condition);
+        void If(const ShaderObject &condition);
 
         /**
          * Subsequently added nodes are stored in the false branch of this conditional
@@ -90,10 +94,10 @@ namespace xng::ShaderScript {
          * @param loopEnd The value the variable should be looped up to (loopVariable <= loopEnd)
          * @param incrementor The value added to the variable on every iteration
          */
-        void For(const ShaderNodeWrapper &loopVariable,
-                 const ShaderNodeWrapper &loopStart,
-                 const ShaderNodeWrapper &loopEnd,
-                 const ShaderNodeWrapper &incrementor);
+        void For(const ShaderObject &loopVariable,
+                 const ShaderObject &loopStart,
+                 const ShaderObject &loopEnd,
+                 const ShaderObject &incrementor);
 
         void EndFor();
 
@@ -115,23 +119,40 @@ namespace xng::ShaderScript {
         void addNode(const std::unique_ptr<ShaderNode> &node);
 
         /**
-         * Clears internal state and sets up the builder using the specified shader source data.
+         * Clears internal state.
          *
          * @param stage
-         * @param inputLayout
-         * @param outputLayout
-         * @param parameters
-         * @param buffers
-         * @param textureArrays
-         * @param functions
          */
-        void setup(Shader::Stage stage,
-                   const ShaderAttributeLayout &inputLayout,
-                   const ShaderAttributeLayout &outputLayout,
-                   const std::unordered_map<std::string, ShaderDataType> &parameters,
-                   const std::unordered_map<std::string, ShaderBuffer> &buffers,
-                   const std::unordered_map<std::string, ShaderTextureArray> &textureArrays,
-                   const std::vector<ShaderFunction> &functions);
+        void setup(Shader::Stage stage);
+
+        void addInput(const std::string &name, const ShaderDataType &type) {
+            inputLayout.addElement(name, type);
+        }
+
+        void addOutput(const std::string &name, const ShaderDataType &type) {
+            outputLayout.addElement(name, type);
+        }
+
+        void addParameter(const std::string &name, const ShaderDataType &type) {
+            parameters.emplace(name, type);
+        }
+
+        void addBuffer(const std::string &name, const ShaderBuffer &buffer) {
+            buffers.emplace(name, buffer);
+        }
+
+        void addTextureArray(const std::string &name, const ShaderTextureArray &textureArray) {
+            textureArrays.emplace(name, textureArray);
+        }
+
+        void addTypeDefinition(const ShaderStruct &type) {
+            for (auto &t: typeDefinitions) {
+                if (t.name == type.name) {
+                    throw std::runtime_error("Type definition already exists");
+                }
+            }
+            typeDefinitions.emplace_back(type);
+        }
 
         /**
          * The previously recorded nodes are used as the body of the main function.
@@ -167,9 +188,11 @@ namespace xng::ShaderScript {
         Shader::Stage stage{};
         ShaderAttributeLayout inputLayout;
         ShaderAttributeLayout outputLayout;
+
         std::unordered_map<std::string, ShaderDataType> parameters;
         std::unordered_map<std::string, ShaderBuffer> buffers;
         std::unordered_map<std::string, ShaderTextureArray> textureArrays;
+        std::vector<ShaderStruct> typeDefinitions;
 
         TreeNode *currentNode{};
         std::shared_ptr<TreeNode> rootNode;

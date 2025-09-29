@@ -22,10 +22,10 @@
 
 #include <memory>
 
-#include "xng/rendergraph/shaderscript/shadernodewrapper.hpp"
+#include "xng/rendergraph/shaderscript/shaderobject.hpp"
 
 namespace xng {
-    inline ShaderScript::ShaderNodeWrapper pi() {
+    inline ShaderScript::ShaderObject pi() {
         return {
             ShaderDataType::float32(),
             std::make_unique<NodeLiteral>(ShaderLiteral(3.14159265358979323846))

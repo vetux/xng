@@ -75,7 +75,7 @@ RenderGraphStatistics RenderGraphRuntimeOGL::execute(const RenderGraphHandle gra
     for (auto &tex: contexts.at(graph).textures) {
         auto numColors = (tex.second->texture.size.x
                           * tex.second->texture.size.y);
-        if (tex.second->texture.isArrayTexture) {
+        if (tex.second->texture.arrayLayers > 0) {
             numColors *= tex.second->texture.arrayLayers;
         }
         stats.textureVRamUsage += numColors * getColorByteSize(tex.second->texture.format);
@@ -113,7 +113,7 @@ RenderGraphStatistics RenderGraphRuntimeOGL::execute(const std::vector<RenderGra
         for (auto &tex: contexts.at(graph).textures) {
             auto numColors = (tex.second->texture.size.x
                               * tex.second->texture.size.y);
-            if (tex.second->texture.isArrayTexture) {
+            if (tex.second->texture.arrayLayers > 0) {
                 numColors *= tex.second->texture.arrayLayers;
             }
             stats.textureVRamUsage += numColors * getColorByteSize(tex.second->texture.format);
