@@ -25,7 +25,7 @@
 #include "typeconversion.hpp"
 #include "ogldebug.hpp"
 
-#include "xng/rendergraph/texture.hpp"
+#include "xng/rendergraph/rendergraphtexture.hpp"
 
 struct OGLTexture {
     GLuint handle{};
@@ -38,7 +38,7 @@ struct OGLTexture {
 
     explicit OGLTexture(const RenderGraphTexture &texture)
         : texture(texture) {
-        if (texture.isArrayTexture) {
+        if (texture.textureType >= TEXTURE_2D_ARRAY) {
             initializeArrayTexture(texture);
         } else {
             initializeTexture(texture);
@@ -196,20 +196,16 @@ private:
     }
 
     void initializeArrayTexture(const RenderGraphTexture &texture) {
-        if (texture.textureType != TEXTURE_2D && texture.textureType != TEXTURE_CUBE_MAP) {
-            throw std::runtime_error("Invalid texture type for array texture");
-        }
-
-        oglDebugStartGroup("Texture Array Buffer Constructor");
+        oglDebugStartGroup("Texture Buffer Constructor");
 
         glGenTextures(1, &handle);
 
+        textureType = convert(texture.textureType);
+
         GLsizei layers;
-        if (texture.textureType == TEXTURE_CUBE_MAP) {
-            textureType = GL_TEXTURE_CUBE_MAP_ARRAY;
+        if (texture.textureType == TEXTURE_CUBE_MAP_ARRAY) {
             layers = static_cast<GLsizei>(texture.arrayLayers) * 6;
         } else {
-            textureType = GL_TEXTURE_2D_ARRAY;
             layers = static_cast<GLsizei>(texture.arrayLayers);
         }
 

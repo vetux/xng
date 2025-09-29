@@ -149,8 +149,7 @@ namespace xng {
 
     void TextureAtlas::onCreate(RenderGraphBuilder &builder) {
         RenderGraphTexture desc;
-        desc.isArrayTexture = true;
-
+        desc.textureType = TEXTURE_2D_ARRAY;
         for (int i = TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; i++) {
             const auto res = static_cast<TextureAtlasResolution>(i);
             desc.arrayLayers = bufferOccupations.at(res).size();
@@ -169,7 +168,7 @@ namespace xng {
                 }
                 bufferSizes[pair.first] = pair.second.size();
                 RenderGraphTexture desc;
-                desc.isArrayTexture = true;
+                desc.textureType = TEXTURE_2D_ARRAY;
                 desc.arrayLayers = pair.second.size();
                 desc.size = getResolutionLevelSize(pair.first);
                 currentHandles[pair.first] = builder.createTexture(desc);

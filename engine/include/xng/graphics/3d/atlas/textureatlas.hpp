@@ -21,7 +21,6 @@
 #define XENGINE_TEXTUREATLAS_HPP
 
 #include "xng/graphics/3d/atlas/textureatlashandle.hpp"
-#include "xng/graphics/scene/texture.hpp"
 
 #include "xng/rendergraph/rendergraphcontext.hpp"
 #include "xng/rendergraph/rendergraphbuilder.hpp"

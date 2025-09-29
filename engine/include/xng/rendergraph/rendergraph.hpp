@@ -24,7 +24,7 @@
 
 #include "xng/rendergraph/rendergraphresource.hpp"
 #include "xng/rendergraph/rendergraphpass.hpp"
-#include "xng/rendergraph/texture.hpp"
+#include "xng/rendergraph/rendergraphtexture.hpp"
 #include "xng/rendergraph/rendergraphpipeline.hpp"
 
 namespace xng {

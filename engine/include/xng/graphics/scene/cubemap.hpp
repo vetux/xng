@@ -25,7 +25,7 @@
 
 #include "xng/graphics/image.hpp"
 
-#include "xng/rendergraph/texture.hpp"
+#include "xng/rendergraph/rendergraphtexture.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT CubeMap final : Resource, Messageable {

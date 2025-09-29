@@ -26,7 +26,10 @@ namespace xng {
     enum TextureType : int {
         TEXTURE_2D = 0,
         TEXTURE_2D_MULTISAMPLE,
-        TEXTURE_CUBE_MAP
+        TEXTURE_CUBE_MAP,
+        TEXTURE_2D_ARRAY,
+        TEXTURE_2D_MULTISAMPLE_ARRAY,
+        TEXTURE_CUBE_MAP_ARRAY,
     };
 
     enum CubeMapFace : int {

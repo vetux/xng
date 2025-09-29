@@ -210,6 +210,12 @@ static GLenum convert(TextureType type) {
             return GL_TEXTURE_2D_MULTISAMPLE;
         case TEXTURE_CUBE_MAP:
             return GL_TEXTURE_CUBE_MAP;
+        case TEXTURE_2D_ARRAY:
+            return GL_TEXTURE_2D_ARRAY;
+        case TEXTURE_2D_MULTISAMPLE_ARRAY:
+            return GL_TEXTURE_2D_MULTISAMPLE_ARRAY;
+        case TEXTURE_CUBE_MAP_ARRAY:
+            return GL_TEXTURE_CUBE_MAP_ARRAY;
         default:
             throw std::runtime_error("Unrecognized texture type");
     }
