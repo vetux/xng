@@ -37,17 +37,17 @@ namespace xng {
         Output(ShaderDataType::vec2(), fUv)
 
         Struct(BufferData,
-               {"color", ShaderDataType::vec4()},
-               {"colorMixFactor", ShaderDataType::float32()},
-               {"alphaMixFactor", ShaderDataType::float32()},
-               {"colorFactor", ShaderDataType::float32()},
-               {"texAtlasLevel", ShaderDataType::integer()},
-               {"texAtlasIndex", ShaderDataType::integer()},
-               {"texFilter", ShaderDataType::integer()},
-               {"mvp", ShaderDataType::mat4()},
-               {"uvOffset_uvScale", ShaderDataType::vec4()},
-               {"atlasScale_texSize", ShaderDataType::vec4()},
-               {"useCustomTexture", ShaderDataType::float32()});
+               {ShaderDataType::vec4(), "color"},
+               {ShaderDataType::float32(), "colorMixFactor"},
+               {ShaderDataType::float32(), "alphaMixFactor"},
+               {ShaderDataType::float32(), "colorFactor"},
+               {ShaderDataType::integer(), "texAtlasLevel"},
+               {ShaderDataType::integer(), "texAtlasIndex"},
+               {ShaderDataType::integer(), "texFilter"},
+               {ShaderDataType::mat4(), "mvp"},
+               {ShaderDataType::vec4(), "uvOffset_uvScale", },
+               {ShaderDataType::vec4(), "atlasScale_texSize"},
+               {ShaderDataType::float32(), "useCustomTexture"});
 
         Buffer(vars, BufferData)
 
@@ -71,17 +71,17 @@ namespace xng {
         Output(ShaderDataType::vec4(), color)
 
         Struct(BufferData,
-               {"color", ShaderDataType::vec4()},
-               {"colorMixFactor", ShaderDataType::float32()},
-               {"alphaMixFactor", ShaderDataType::float32()},
-               {"colorFactor", ShaderDataType::float32()},
-               {"texAtlasLevel", ShaderDataType::integer()},
-               {"texAtlasIndex", ShaderDataType::integer()},
-               {"texFilter", ShaderDataType::integer()},
-               {"mvp", ShaderDataType::mat4()},
-               {"uvOffset_uvScale", ShaderDataType::vec4()},
-               {"atlasScale_texSize", ShaderDataType::vec4()},
-               {"useCustomTexture", ShaderDataType::float32()})
+               {ShaderDataType::vec4(), "color"},
+               {ShaderDataType::float32(), "colorMixFactor"},
+               {ShaderDataType::float32(), "alphaMixFactor"},
+               {ShaderDataType::float32(), "colorFactor"},
+               {ShaderDataType::integer(), "texAtlasLevel"},
+               {ShaderDataType::integer(), "texAtlasIndex"},
+               {ShaderDataType::integer(), "texFilter"},
+               {ShaderDataType::mat4(), "mvp"},
+               {ShaderDataType::vec4(), "uvOffset_uvScale", },
+               {ShaderDataType::vec4(), "atlasScale_texSize"},
+               {ShaderDataType::float32(), "useCustomTexture"});
 
         Buffer(vars, BufferData)
 

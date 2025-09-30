@@ -41,20 +41,22 @@ namespace xng {
     };
 
     struct ShaderStructElement {
-        std::string name; // The name of this element. must be unique inside the structure.
+        // Either the typename of another user-defined structure or a built-in type.
         std::variant<ShaderDataType, ShaderStructName> type;
-        // Either the typename of another structure or the type of the data.
+
+        // The name of this element. must be unique inside the structure.
+        std::string name;
 
         ShaderStructElement() = default;
 
-        ShaderStructElement(std::string name, const ShaderDataType &value)
-            : name(std::move(name)),
-              type(value) {
+        ShaderStructElement(const ShaderDataType &value, std::string name)
+            : type(value),
+              name(std::move(name)) {
         }
 
-        ShaderStructElement(std::string name, const std::string &value)
-            : name(std::move(name)),
-              type(value) {
+        ShaderStructElement(const ShaderStructName &value, std::string name)
+            : type(value),
+              name(std::move(name)) {
         }
     };
 }

@@ -45,23 +45,23 @@ namespace xng {
         Output(ShaderDataType::vec3(), fN);
 
         Struct(AtlasTexture,
-               {"level_index_filtering_assigned", ShaderDataType::ivec4()},
-               {"atlasScale_texSize", ShaderDataType::vec4()});
+               {ShaderDataType::ivec4(), "level_index_filtering_assigned"},
+               {ShaderDataType::vec4(), "atlasScale_texSize"});
 
         Struct(BufferLayout,
-               {"model", ShaderDataType::mat4()},
-               {"mvp", ShaderDataType::mat4()},
-               {"objectID_boneOffset_shadows", ShaderDataType::ivec4()},
-               {"metallic_roughness_ambientOcclusion", ShaderDataType::vec4()},
-               {"albedoColor", ShaderDataType::vec4()},
-               {"normalIntensity", ShaderDataType::vec4()},
-               {"normal", AtlasTexture},
-               {"metallic", AtlasTexture},
-               {"roughness", AtlasTexture},
-               {"ambientOcclusion", AtlasTexture},
-               {"albedo", AtlasTexture});
+               {ShaderDataType::mat4(), "model"},
+               {ShaderDataType::mat4(), "mvp"},
+               {ShaderDataType::ivec4(), "objectID_boneOffset_shadows"},
+               {ShaderDataType::vec4(), "metallic_roughness_ambientOcclusion"},
+               {ShaderDataType::vec4(), "albedoColor"},
+               {ShaderDataType::vec4(), "normalIntensity"},
+               {AtlasTexture, "normal"},
+               {AtlasTexture, "metallic"},
+               {AtlasTexture, "roughness"},
+               {AtlasTexture, "ambientOcclusion"},
+               {AtlasTexture, "albedo"});
 
-        Struct(BoneBufferLayout, {"matrix", ShaderDataType::mat4()});
+        Struct(BoneBufferLayout, {ShaderDataType::mat4(), "matrix"});
 
         Buffer(data, BufferLayout);
         DynamicBuffer(bones, BoneBufferLayout);
@@ -105,23 +105,23 @@ namespace xng {
         Output(ShaderDataType::vec3(), fN);
 
         Struct(AtlasTexture,
-               {"level_index_filtering_assigned", ShaderDataType::ivec4()},
-               {"atlasScale_texSize", ShaderDataType::vec4()});
+               {ShaderDataType::ivec4(), "level_index_filtering_assigned"},
+               {ShaderDataType::vec4(), "atlasScale_texSize"});
 
         Struct(BufferLayout,
-               {"model", ShaderDataType::mat4()},
-               {"mvp", ShaderDataType::mat4()},
-               {"objectID_boneOffset_shadows", ShaderDataType::ivec4()},
-               {"metallic_roughness_ambientOcclusion", ShaderDataType::vec4()},
-               {"albedoColor", ShaderDataType::vec4()},
-               {"normalIntensity", ShaderDataType::vec4()},
-               {"normal", AtlasTexture},
-               {"metallic", AtlasTexture},
-               {"roughness", AtlasTexture},
-               {"ambientOcclusion", AtlasTexture},
-               {"albedo", AtlasTexture});
+               {ShaderDataType::mat4(), "model"},
+               {ShaderDataType::mat4(), "mvp"},
+               {ShaderDataType::ivec4(), "objectID_boneOffset_shadows"},
+               {ShaderDataType::vec4(), "metallic_roughness_ambientOcclusion"},
+               {ShaderDataType::vec4(), "albedoColor"},
+               {ShaderDataType::vec4(), "normalIntensity"},
+               {AtlasTexture, "normal"},
+               {AtlasTexture, "metallic"},
+               {AtlasTexture, "roughness"},
+               {AtlasTexture, "ambientOcclusion"},
+               {AtlasTexture, "albedo"});
 
-        Struct(BoneBufferLayout, {"matrix", ShaderDataType::mat4()});
+        Struct(BoneBufferLayout, {ShaderDataType::mat4(), "matrix"});
 
         Buffer(data, BufferLayout);
         DynamicBuffer(bones, BoneBufferLayout);
@@ -254,23 +254,23 @@ namespace xng {
         Output(ShaderDataType::ivec4(), oObjectShadows);
 
         Struct(AtlasTexture,
-               {"level_index_filtering_assigned", ShaderDataType::ivec4()},
-               {"atlasScale_texSize", ShaderDataType::vec4()});
+               {ShaderDataType::ivec4(), "level_index_filtering_assigned"},
+               {ShaderDataType::vec4(), "atlasScale_texSize"});
 
         Struct(BufferLayout,
-               {"model", ShaderDataType::mat4()},
-               {"mvp", ShaderDataType::mat4()},
-               {"objectID_boneOffset_shadows", ShaderDataType::ivec4()},
-               {"metallic_roughness_ambientOcclusion", ShaderDataType::vec4()},
-               {"albedoColor", ShaderDataType::vec4()},
-               {"normalIntensity", ShaderDataType::vec4()},
-               {"normal", AtlasTexture},
-               {"metallic", AtlasTexture},
-               {"roughness", AtlasTexture},
-               {"ambientOcclusion", AtlasTexture},
-               {"albedo", AtlasTexture});
+               {ShaderDataType::mat4(), "model"},
+               {ShaderDataType::mat4(), "mvp"},
+               {ShaderDataType::ivec4(), "objectID_boneOffset_shadows"},
+               {ShaderDataType::vec4(), "metallic_roughness_ambientOcclusion"},
+               {ShaderDataType::vec4(), "albedoColor"},
+               {ShaderDataType::vec4(), "normalIntensity"},
+               {AtlasTexture, "normal"},
+               {AtlasTexture, "metallic"},
+               {AtlasTexture, "roughness"},
+               {AtlasTexture, "ambientOcclusion"},
+               {AtlasTexture, "albedo"});
 
-        Struct(BoneBufferLayout, {"matrix", ShaderDataType::mat4()});
+        Struct(BoneBufferLayout, {ShaderDataType::mat4(), "matrix"});
 
         Buffer(data, BufferLayout);
         DynamicBuffer(bones, BoneBufferLayout);
