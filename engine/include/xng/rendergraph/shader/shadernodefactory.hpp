@@ -54,6 +54,12 @@ namespace xng {
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> fragmentDepth(const std::unique_ptr<ShaderNode> &depth);
 
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> emitVertex();
+
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> endPrimitive();
+
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> layer();
+
         XENGINE_EXPORT std::unique_ptr<ShaderNode> vector(ShaderDataType type,
                                                           const std::unique_ptr<ShaderNode> &x,
                                                           const std::unique_ptr<ShaderNode> &y,

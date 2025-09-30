@@ -70,6 +70,18 @@ namespace xng::ShaderNodeFactory {
         return std::make_unique<NodeFragmentDepth>(depth->copy());
     }
 
+    std::unique_ptr<ShaderNode> emitVertex() {
+        return std::make_unique<NodeEmitVertex>();
+    }
+
+    std::unique_ptr<ShaderNode> endPrimitive() {
+        return std::make_unique<NodeEndPrimitive>();
+    }
+
+    std::unique_ptr<ShaderNode> layer() {
+        return std::make_unique<NodeLayer>();
+    }
+
     std::unique_ptr<ShaderNode> vector(const ShaderDataType type,
                                        const std::unique_ptr<ShaderNode> &x,
                                        const std::unique_ptr<ShaderNode> &y,
