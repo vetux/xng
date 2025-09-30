@@ -45,7 +45,6 @@ namespace xng {
 
         Primitive geometryInput; // The input primitive for geometry shaders. Must match the pipeline primitive.
         Primitive geometryOutput; // The output primitive for geometry shaders
-
         size_t geometryMaxVertices{}; // The maximum number of output vertices for geometry shaders.
 
         ShaderAttributeLayout inputLayout;

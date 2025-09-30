@@ -154,6 +154,15 @@ namespace xng::ShaderScript {
             typeDefinitions.emplace_back(type);
         }
 
+        void setGeometryInput(Primitive input) {
+            geometryInput = input;
+        }
+
+        void setGeometryOutput(Primitive output, size_t maxVertices) {
+            geometryOutput = output;
+            geometryMaxVertices = maxVertices;
+        }
+
         /**
          * The previously recorded nodes are used as the body of the main function.
          * Clears the internally stored nodes.
@@ -188,6 +197,10 @@ namespace xng::ShaderScript {
         Shader::Stage stage{};
         ShaderAttributeLayout inputLayout;
         ShaderAttributeLayout outputLayout;
+
+        Primitive geometryInput;
+        Primitive geometryOutput;
+        size_t geometryMaxVertices{};
 
         std::unordered_map<std::string, ShaderDataType> parameters;
         std::unordered_map<std::string, ShaderBuffer> buffers;

@@ -235,6 +235,9 @@ namespace xng::ShaderScript {
         ret.stage = stage;
         ret.inputLayout = inputLayout;
         ret.outputLayout = outputLayout;
+        ret.geometryInput = geometryInput;
+        ret.geometryOutput = geometryOutput;
+        ret.geometryMaxVertices = geometryMaxVertices;
         ret.parameters = parameters;
         ret.buffers = buffers;
         ret.textureArrays = textureArrays;
@@ -245,6 +248,9 @@ namespace xng::ShaderScript {
 
         inputLayout = {};
         outputLayout = {};
+        geometryInput = {};
+        geometryOutput = {};
+        geometryMaxVertices = 0;
         parameters = {};
         buffers = {};
         textureArrays = {};

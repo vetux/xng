@@ -86,6 +86,9 @@
 #define Texture(name, type, format) builder.addTextureArray(#name, ShaderTextureArray(ShaderTexture(type, format))); ShaderObject name = ShaderObject(ShaderTexture(type, format), ShaderNodeFactory::texture(#name));
 #define TextureArray(name, type, format, count) builder.addTextureArray(#name, ShaderTextureArray(ShaderTexture(type, format), count)); ShaderObject name = ShaderObject(ShaderTextureArray(ShaderTexture(type, format), count), ShaderNodeFactory::texture(#name));
 
+#define InputPrimitive(type) builder.setGeometryInput(type);
+#define OutputPrimitive(type, maxVertices) builder.setGeometryOutput(type, maxVertices);
+
 #define BuildShader() builder.build();
 
 /**
@@ -281,6 +284,10 @@ namespace xng::ShaderScript {
 
     inline void setFragmentDepth(const ShaderObject &value) {
         ShaderBuilder::instance().addNode(ShaderNodeFactory::fragmentDepth(value.node));
+    }
+
+    inline void setLayer(const ShaderObject &value) {
+        ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(ShaderNodeFactory::layer(), value.node));
     }
 
     inline ShaderObject CallA(const std::string &functionName,
