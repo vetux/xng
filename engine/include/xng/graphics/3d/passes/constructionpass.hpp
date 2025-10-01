@@ -77,7 +77,7 @@ namespace xng {
         MeshBuffer3D meshAllocator;
 
         std::map<Uri, TextureAtlasHandle> textures;
-        std::set<ResourceHandle<SkinnedMesh> > meshes;
+        std::vector<ResourceHandle<SkinnedMesh> > allocatedMeshes;
 
         Vec2i currentResolution;
 

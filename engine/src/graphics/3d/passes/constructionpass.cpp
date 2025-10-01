@@ -129,7 +129,8 @@ namespace xng {
             gBuffer.gBufferPosition = builder.inheritResource(gBuffer.gBufferPosition);
             gBuffer.gBufferNormal = builder.inheritResource(gBuffer.gBufferNormal);
             gBuffer.gBufferTangent = builder.inheritResource(gBuffer.gBufferTangent);
-            gBuffer.gBufferRoughnessMetallicAmbientOcclusion = builder.inheritResource(gBuffer.gBufferRoughnessMetallicAmbientOcclusion);
+            gBuffer.gBufferRoughnessMetallicAmbientOcclusion = builder.inheritResource(
+                gBuffer.gBufferRoughnessMetallicAmbientOcclusion);
             gBuffer.gBufferAlbedo = builder.inheritResource(gBuffer.gBufferAlbedo);
             gBuffer.gBufferObjectShadows = builder.inheritResource(gBuffer.gBufferObjectShadows);
             gBuffer.gBufferDepth = builder.inheritResource(gBuffer.gBufferDepth);
@@ -234,16 +235,13 @@ namespace xng {
         camera = scene.camera;
 
         // Deallocate unused meshes
-        std::vector<ResourceHandle<SkinnedMesh> > meshDealloc;
-        for (auto &mesh: meshes) {
+        for (auto &mesh: allocatedMeshes) {
             auto it = std::find(usedMeshes.begin(), usedMeshes.end(), mesh);
             if (it == usedMeshes.end()) {
-                meshDealloc.emplace_back(mesh);
+                meshAllocator.deallocateMesh(mesh);
             }
         }
-        for (auto &mesh: meshDealloc) {
-            meshAllocator.deallocateMesh(mesh);
-        }
+        allocatedMeshes = usedMeshes;
 
         // Deallocate unused textures
         std::set<Uri> dealloc;
