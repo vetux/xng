@@ -290,6 +290,14 @@ namespace xng::ShaderScript {
         ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(ShaderNodeFactory::layer(), value.node));
     }
 
+    inline void EmitVertex() {
+        ShaderBuilder::instance().addNode(ShaderNodeFactory::emitVertex());
+    }
+
+    inline void EndPrimitive() {
+        ShaderBuilder::instance().addNode(ShaderNodeFactory::endPrimitive());
+    }
+
     inline ShaderObject CallA(const std::string &functionName,
                               const std::vector<ShaderObject> &wArgs = {}) {
         std::vector<std::unique_ptr<ShaderNode> > args;
