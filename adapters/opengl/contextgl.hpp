@@ -121,11 +121,11 @@ public:
 
     void bindIndexBuffer(RenderGraphResource buffer) override;
 
-    void bindTextures(const std::unordered_map<std::string, std::vector<RenderGraphResource> > &textureArrays) override;
+    void bindTexture(const std::string &target, const std::vector<RenderGraphResource> &textureArray) override;
 
-    void bindShaderBuffers(const std::unordered_map<std::string, RenderGraphResource> &buffers) override;
+    void bindShaderBuffer(const std::string &target, RenderGraphResource buffer, size_t offset, size_t size) override;
 
-    void setShaderParameters(const std::unordered_map<std::string, ShaderLiteral> &parameters) override;
+    void setShaderParameter(const std::string &name, const ShaderLiteral &value) override;
 
     void clearColorAttachment(size_t binding, ColorRGBA clearColor) override;
 

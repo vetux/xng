@@ -141,10 +141,8 @@ namespace xng {
         ctx.bindPipeline(pipeline);
         ctx.bindVertexBuffer(vertexBuffer);
         for (auto &layer: layers) {
-            ctx.bindTextures({
-                {"layerColor", {layer.color}},
-                {"layerDepth", {layer.depth ? layer.depth : defaultDepthTexture},}
-            });
+            ctx.bindTexture("layerColor", layer.color);
+            ctx.bindTexture("layerDepth", layer.depth ? layer.depth : defaultDepthTexture);
             ctx.drawArray(DrawCall(0, normalizedQuad.vertices.size()));
         }
         ctx.endRenderPass();

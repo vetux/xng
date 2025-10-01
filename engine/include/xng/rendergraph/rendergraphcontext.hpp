@@ -214,6 +214,12 @@ namespace xng {
         virtual void beginRenderPass(const std::vector<RenderGraphAttachment> &colorAttachments,
                                      const RenderGraphAttachment &depthStencilAttachment) = 0;
 
+        /**
+         * Bind a pipeline.
+         * Resets previous bindings.
+         *
+         * @param pipeline
+         */
         virtual void bindPipeline(RenderGraphResource pipeline) = 0;
 
         /**
@@ -235,38 +241,51 @@ namespace xng {
         virtual void bindIndexBuffer(RenderGraphResource buffer) = 0;
 
         /**
-         * Bind the specified textures.
+         * Bind the specified texture array.
          *
-         * Every sub vector represents a texture array in Shader.textureArrays
-         *
-         * Can only be called after a pipeline has been bound.
-         *
-         * @param textureArrays
-         */
-        virtual void bindTextures(const std::unordered_map<std::string,
-            std::vector<RenderGraphResource> > &textureArrays) = 0;
-
-        /**
-         * Bind the specified buffers.
+         * Every element in the vector corresponds to an entry in Shader.textureArrays
          *
          * Can only be called after a pipeline has been bound.
          *
-         * @param buffers
+         * @param target
+         * @param textureArray
          */
-        virtual void bindShaderBuffers(const std::unordered_map<std::string, RenderGraphResource> &buffers) = 0;
+        virtual void bindTexture(const std::string &target, const std::vector<RenderGraphResource> &textureArray) = 0;
+
+        void bindTexture(const std::string &target, const RenderGraphResource texture) {
+            bindTexture(target, std::vector{texture});
+        }
 
         /**
-         * Set the shader parameters for the next draw call. (Implemented as Push Constants)
+         * Bind a region of a shader buffer.
+         *
+         * Can only be called after a pipeline has been bound.
+         *
+         * @param target
+         * @param buffer
+         * @param offset
+         * @param size If 0, the region from offset to the end of the buffer is bound.
+         */
+        virtual void bindShaderBuffer(const std::string &target,
+                                      RenderGraphResource buffer,
+                                      size_t offset,
+                                      size_t size) = 0;
+
+        void bindShaderBuffer(const std::string &target, const RenderGraphResource buffer) {
+            bindShaderBuffer(target, buffer, 0, 0);
+        }
+
+        /**
+         * Set a shader parameter. (Implemented as Push Constants on vulkan)
          *
          * Shader parameters are values that change frequently (Per Draw) and have a size limit.
          *
-         * Shader Parameters are set per draw call and must be set again for subsequent draw calls.
-         *
          * Can only be called after a pipeline has been bound.
          *
-         * @param parameters
+         * @param name
+         * @param value
          */
-        virtual void setShaderParameters(const std::unordered_map<std::string, ShaderLiteral> &parameters) = 0;
+        virtual void setShaderParameter(const std::string &name, const ShaderLiteral &value) = 0;
 
         virtual void clearColorAttachment(size_t binding, ColorRGBA clearColor) = 0;
 

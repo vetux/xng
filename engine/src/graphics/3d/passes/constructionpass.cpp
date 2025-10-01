@@ -465,7 +465,10 @@ namespace xng {
         for (int i = TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; ++i) {
             bindTextures.emplace_back(atlasTextures.at(static_cast<TextureAtlasResolution>(i)));
         }
-        ctx.bindTextures({{"atlasTextures", bindTextures}});
+        ctx.bindTexture("atlasTextures", bindTextures);
+
+        ctx.bindShaderBuffer("data", shaderBuffer);
+        ctx.bindShaderBuffer("bones", boneBuffer);
 
         for (auto i = 0; i < shaderData.size(); ++i) {
             auto &data = shaderData.at(i);
@@ -473,10 +476,6 @@ namespace xng {
                              reinterpret_cast<const uint8_t *>(&data),
                              sizeof(ShaderDrawData),
                              0);
-            ctx.bindShaderBuffers({
-                {"data", shaderBuffer},
-                {"bones", boneBuffer}
-            });
             ctx.drawIndexed(drawCalls.at(i), baseVertices.at(i));
         }
 

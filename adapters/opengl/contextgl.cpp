@@ -423,7 +423,7 @@ void ContextGL::copyTexture(const RenderGraphResource target,
     oglCheckError();
 
     stats.textureVRamCopy += srcTexture->texture.size.x * srcTexture->texture.size.y
-        * getColorByteSize(srcTexture->texture.format);
+            * getColorByteSize(srcTexture->texture.format);
 
     oglDebugEndGroup();
 }
@@ -674,47 +674,64 @@ void ContextGL::bindIndexBuffer(const RenderGraphResource buffer) {
     oglDebugEndGroup();
 }
 
-void ContextGL::bindTextures(const std::unordered_map<std::string, std::vector<RenderGraphResource> > &textureArrays) {
+void ContextGL::bindTexture(const std::string &target, const std::vector<RenderGraphResource> &textureArray) {
     if (!boundPipeline) {
         throw std::runtime_error("No current pipeline");
     }
 
-    oglDebugStartGroup("ContextGL::bindTextures");
+    oglDebugStartGroup("ContextGL::bindTexture");
 
-    auto &pipeline = resources.compiledPipelines.at(boundPipeline);
-    for (auto &textureArray: textureArrays) {
-        auto binding = pipeline.getTextureArrayBinding(textureArray.first);
-        for (auto i = 0; i < textureArray.second.size(); i++) {
-            auto &texture = resources.textures.at(textureArray.second.at(i));
-            glActiveTexture(getTextureSlot(binding + i));
-            glBindTexture(texture->textureType, texture->handle);
+    const auto &pipeline = resources.compiledPipelines.at(boundPipeline);
+
+    const auto binding = pipeline.getTextureArrayBinding(target);
+    for (auto i = 0; i < textureArray.size(); i++) {
+        auto &texture = resources.textures.at(textureArray.at(i));
+        glActiveTexture(getTextureSlot(binding + i));
+        glBindTexture(texture->textureType, texture->handle);
+    }
+
+    oglCheckError();
+
+    oglDebugEndGroup();
+}
+
+void ContextGL::bindShaderBuffer(const std::string &target,
+                                 const RenderGraphResource buffer,
+                                 const size_t offset,
+                                 const size_t size) {
+    if (!boundPipeline) {
+        throw std::runtime_error("No current pipeline");
+    }
+
+    oglDebugStartGroup("ContextGL::bindShaderBuffer");
+
+    const auto &pipeline = resources.compiledPipelines.at(boundPipeline);
+    const auto binding = pipeline.getShaderBufferBinding(target);
+    const auto &buf = resources.storageBuffers.at(buffer);
+    if (size == 0) {
+        if (buf->size == 0) {
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, static_cast<GLuint>(binding), buf->SSBO);
+        } else {
+            glBindBufferRange(GL_SHADER_STORAGE_BUFFER,
+                              static_cast<GLuint>(binding),
+                              buf->SSBO,
+                              static_cast<GLintptr>(offset),
+                              static_cast<GLsizeiptr>(buf->size - offset));
         }
+    } else {
+        glBindBufferRange(GL_SHADER_STORAGE_BUFFER,
+                          static_cast<GLuint>(binding),
+                          buf->SSBO,
+                          static_cast<GLintptr>(offset),
+                          static_cast<GLsizeiptr>(size));
     }
+
     oglCheckError();
 
     oglDebugEndGroup();
 }
 
-void ContextGL::bindShaderBuffers(const std::unordered_map<std::string, RenderGraphResource> &buffers) {
-    if (!boundPipeline) {
-        throw std::runtime_error("No current pipeline");
-    }
-
-    oglDebugStartGroup("ContextGL::bindShaderBuffers");
-
-    auto &pipeline = resources.compiledPipelines.at(boundPipeline);
-    for (auto &buffer: buffers) {
-        auto binding = pipeline.getShaderBufferBinding(buffer.first);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
-                         static_cast<GLuint>(binding),
-                         resources.storageBuffers.at(buffer.second)->SSBO);
-    }
-    oglCheckError();
-
-    oglDebugEndGroup();
-}
-
-void ContextGL::setShaderParameters(const std::unordered_map<std::string, ShaderLiteral> &parameters) {
+void ContextGL::setShaderParameter(const std::string &name, const ShaderLiteral &value) {
     throw std::runtime_error("Not implemented");
 }
 

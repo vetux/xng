@@ -340,10 +340,8 @@ namespace xng {
                 ctx.bindPipeline(trianglePipeline);
                 ctx.bindVertexBuffer(vertexBuffer);
                 ctx.bindIndexBuffer(indexBuffer);
-                ctx.bindShaderBuffers({
-                    {"vars", shaderBuffer}
-                });
-                ctx.bindTextures({{"atlasTextures", atlasTextureBindings}});
+                ctx.bindShaderBuffer("vars", shaderBuffer);
+                ctx.bindTexture("atlasTextures", atlasTextureBindings);
 
                 auto &text = std::get<PaintText>(paintCommand.data);
 
@@ -429,10 +427,8 @@ namespace xng {
         ctx.bindPipeline(trianglePipeline);
         ctx.bindVertexBuffer(vertexBuffer);
         ctx.bindIndexBuffer(indexBuffer);
-        ctx.bindShaderBuffers({
-            {"vars", shaderBuffer}
-        });
-        ctx.bindTextures({{"atlasTextures", textures}});
+        ctx.bindShaderBuffer("vars", shaderBuffer);
+        ctx.bindTexture("atlasTextures", textures);
 
         Primitive currentPrimitive = TRIANGLES;
         for (auto &paintCommand: canvas.getPaintCommands()) {
@@ -443,10 +439,8 @@ namespace xng {
                         ctx.bindPipeline(pointPipeline);
                         ctx.bindVertexBuffer(vertexBuffer);
                         ctx.bindIndexBuffer(indexBuffer);
-                        ctx.bindShaderBuffers({
-                            {"vars", shaderBuffer}
-                        });
-                        ctx.bindTextures({{"atlasTextures", textures}});
+                        ctx.bindShaderBuffer("vars", shaderBuffer);
+                        ctx.bindTexture("atlasTextures", textures);
                     }
                     auto &point = std::get<PaintPoint>(paintCommand.data);
 
@@ -480,10 +474,8 @@ namespace xng {
                         ctx.bindPipeline(linePipeline);
                         ctx.bindVertexBuffer(vertexBuffer);
                         ctx.bindIndexBuffer(indexBuffer);
-                        ctx.bindShaderBuffers({
-                            {"vars", shaderBuffer}
-                        });
-                        ctx.bindTextures({{"atlasTextures", textures}});
+                        ctx.bindShaderBuffer("vars", shaderBuffer);
+                        ctx.bindTexture("atlasTextures", textures);
                     }
                     auto &line = std::get<PaintLine>(paintCommand.data);
                     Mat4f rotMat = MatrixMath::identity();
@@ -528,10 +520,8 @@ namespace xng {
                         ctx.bindPipeline(trianglePipeline);
                         ctx.bindVertexBuffer(vertexBuffer);
                         ctx.bindIndexBuffer(indexBuffer);
-                        ctx.bindShaderBuffers({
-                            {"vars", shaderBuffer}
-                        });
-                        ctx.bindTextures({{"atlasTextures", textures}});
+                        ctx.bindShaderBuffer("vars", shaderBuffer);
+                        ctx.bindTexture("atlasTextures", textures);
                     }
                     auto &square = std::get<PaintRectangle>(paintCommand.data);
                     Mat4f rotMat = MatrixMath::identity();
@@ -587,10 +577,8 @@ namespace xng {
                         ctx.bindPipeline(trianglePipeline);
                         ctx.bindVertexBuffer(vertexBuffer);
                         ctx.bindIndexBuffer(indexBuffer);
-                        ctx.bindShaderBuffers({
-                            {"vars", shaderBuffer}
-                        });
-                        ctx.bindTextures({{"atlasTextures", textures}});
+                        ctx.bindShaderBuffer("vars", shaderBuffer);
+                        ctx.bindTexture("atlasTextures", textures);
                     }
                     auto &img = std::get<PaintImage>(paintCommand.data);
                     Mat4f rotMat = MatrixMath::identity();
@@ -665,16 +653,14 @@ namespace xng {
                         ctx.bindPipeline(trianglePipeline);
                         ctx.bindVertexBuffer(vertexBuffer);
                         ctx.bindIndexBuffer(indexBuffer);
-                        ctx.bindShaderBuffers({
-                            {"vars", shaderBuffer}
-                        });
+                        ctx.bindShaderBuffer("vars", shaderBuffer);
                     }
                     auto &txt = std::get<PaintText>(paintCommand.data);
 
                     auto key = RenderText(txt.text.text, txt.color, txt.text.fontUri, txt.text.fontPixelSize,
                                           txt.text.parameters);
 
-                    ctx.bindTextures({{"customTexture", {textCache.at(key)}}});
+                    ctx.bindTexture("customTexture", textCache.at(key));
 
                     Mat4f rotMat = MatrixMath::identity();
 
