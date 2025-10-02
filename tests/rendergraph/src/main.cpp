@@ -29,11 +29,21 @@ using namespace xng;
 RenderScene createScene() {
     RenderScene scene;
 
-    SkinnedMeshObject skinnedMesh;
-    skinnedMesh.transform = Transform(Vec3f(0, 0, -20), Vec3f(), Vec3f(1, 1, 1));
-    skinnedMesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/sphere.obj"));
+    SkinnedMeshObject mesh;
+    mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx/Cube"));
+    scene.skinnedMeshes.push_back(mesh);
 
-    scene.skinnedMeshes.push_back(skinnedMesh);
+    mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx/Box"));
+    scene.skinnedMeshes.push_back(mesh);
+
+    mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx/Sphere.001"));
+    scene.skinnedMeshes.push_back(mesh);
+
+    mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx/Sphere.002"));
+    scene.skinnedMeshes.push_back(mesh);
+
+    scene.cameraTransform.setRotation(Quaternion(Vec3f(0, 180, 0)));
+    scene.cameraTransform.setPosition(Vec3f(0, 0, -2));
 
     return scene;
 }
