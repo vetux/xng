@@ -33,7 +33,7 @@ namespace xng {
         lineHeight = fontRenderer->getHeight();
         auto a = fontRenderer->renderAscii();
         for (auto &c: a) {
-            ascii.emplace(c.first, std::make_shared<Character>(c.second));
+            ascii.emplace(c.first, std::make_shared<Character>(std::move(c.second)));
         }
     }
 
