@@ -31,7 +31,10 @@ namespace xng {
         ascender = fontRenderer->getAscender();
         descender = fontRenderer->getDescender();
         lineHeight = fontRenderer->getHeight();
-        ascii = fontRenderer->renderAscii();
+        auto a = fontRenderer->renderAscii();
+        for (auto &c: a) {
+            ascii.emplace(c.first, std::make_shared<Character>(c.second));
+        }
     }
 
     Vec2i TextLayoutEngine::getSize(const std::string &str, const TextLayoutParameters &layout) const {
@@ -39,7 +42,7 @@ namespace xng {
         size_t currentLineWidth = 0;
         size_t maximumLineWidth = 0;
         for (auto c: str) {
-            auto &chr = ascii.at(c);
+            auto &chr = *ascii.at(c);
             if (c == '\n' || (layout.maxLineWidth > 0 && currentLineWidth + chr.advance > layout.maxLineWidth)) {
                 numberOfLines++;
                 currentLineWidth = 0;
@@ -55,7 +58,7 @@ namespace xng {
     int getWidth(const std::vector<TextLayout::Glyph> &line) {
         auto ret = 0;
         for (auto &c: line) {
-            ret += c.character.get().advance;
+            ret += c.character->advance;
         }
         return ret;
     }
@@ -76,7 +79,7 @@ namespace xng {
             auto lineWidth = getWidth(lines.at(lineIndex));
 
             if (c == '\n'
-                || (layout.maxLineWidth > 0 && lineWidth + character.advance > layout.maxLineWidth)) {
+                || (layout.maxLineWidth > 0 && lineWidth + character->advance > layout.maxLineWidth)) {
                 lines.emplace_back();
                 posx = 0;
                 lineIndex = lines.size() - 1;
@@ -86,8 +89,8 @@ namespace xng {
             if (c < 32)
                 continue; // Skip non printable characters
 
-            if (lineWidth + character.advance > largestWidth)
-                largestWidth = lineWidth + character.advance;
+            if (lineWidth + character->advance > largestWidth)
+                largestWidth = lineWidth + character->advance;
 
             float posy = (static_cast<float>(lineIndex) * static_cast<float>(layout.lineSpacing))
                          + (static_cast<float>(lineIndex) * static_cast<float>(lineHeight));
@@ -95,7 +98,7 @@ namespace xng {
             TextLayout::Glyph renderChar(Vec2f(posx, posy), character);
 
             // Add horizontal advance
-            posx += static_cast<float>(character.advance);
+            posx += static_cast<float>(character->advance);
 
             lines.at(lineIndex).emplace_back(renderChar);
         }
@@ -123,8 +126,8 @@ namespace xng {
 
             for (auto c: line) {
                 c.position.x += offset;
-                c.position.x = c.position.x + (origin.x + static_cast<float>(c.character.get().bearing.x));
-                c.position.y = c.position.y + (origin.y - static_cast<float>(c.character.get().bearing.y));
+                c.position.x = c.position.x + (origin.x + static_cast<float>(c.character->bearing.x));
+                c.position.y = c.position.y + (origin.y - static_cast<float>(c.character->bearing.y));
                 renderText.emplace_back(c);
             }
         }

@@ -32,10 +32,10 @@ namespace xng {
     struct TextLayout {
         struct Glyph {
             Vec2f position; // The absolute position of the character image
-            std::reference_wrapper<const Character> character;
+            std::shared_ptr<const Character> character;
 
-            Glyph(Vec2f position, const Character &character)
-                : position(std::move(position)), character(character) {
+            Glyph(Vec2f position, std::shared_ptr<const Character> character)
+                : position(std::move(position)), character(std::move(character)) {
             }
         };
 

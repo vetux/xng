@@ -238,8 +238,8 @@ namespace xng {
                 usedFonts.insert(key);
                 auto &glyphTextureHandles = glyphTextures[key];
                 for (auto &glyph: text.text.glyphs) {
-                    if (glyphTextureHandles.find(glyph.character.get().value) == glyphTextureHandles.end()) {
-                        glyphTextureHandles[glyph.character.get().value] = atlas.add(glyph.character.get().image);
+                    if (glyphTextureHandles.find(glyph.character->value) == glyphTextureHandles.end()) {
+                        glyphTextureHandles[glyph.character->value] = atlas.add(glyph.character->image);
                     }
                 }
             }
@@ -372,7 +372,7 @@ namespace xng {
                     data.color[2] = color.z;
                     data.color[3] = color.w;
 
-                    auto atlasTex = glyphTextureHandles.at(glyph.character.get().value);
+                    auto atlasTex = glyphTextureHandles.at(glyph.character->value);
 
                     data.colorMixFactor = 0;
                     data.alphaMixFactor = 0;
@@ -400,7 +400,7 @@ namespace xng {
                                      sizeof(ShaderBufferFormat),
                                      0);
 
-                    auto plane = meshBuffer.getPlane(glyph.character.get().image.getResolution().convert<float>());
+                    auto plane = meshBuffer.getPlane(glyph.character->image.getResolution().convert<float>());
                     ctx.drawIndexed(plane.drawCall, plane.baseVertex);
                 }
                 ctx.endRenderPass();

@@ -43,7 +43,7 @@ namespace xng {
         int ascender = 0;
         int descender = 0;
         int lineHeight = 0;
-        std::map<char, Character> ascii;
+        std::map<char, std::shared_ptr<Character>> ascii;
     };
 }
 
