@@ -31,8 +31,7 @@ namespace xng {
     class XENGINE_EXPORT FontImporter : public ResourceImporter {
     public:
         ResourceBundle read(std::istream &stream,
-                            const std::string &hint,
-                            const std::string &path,
+                            const Uri &path,
                             Archive *archive) override;
 
         const std::set<std::string> &getSupportedFormats() const override;

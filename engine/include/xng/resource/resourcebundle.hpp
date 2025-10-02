@@ -56,13 +56,7 @@ namespace xng {
 
         template<typename T>
         const T &get(const std::string &name = "") const {
-            if (assets.empty())
-                throw std::runtime_error("Empty bundle map");
-
-            if (name.empty()) {
-                return *getAll<T>().at(0);
-            }
-            return down_cast<const T &>(get(name));
+            return down_cast<const T &>(get(name, T::typeName));
         }
 
         const Resource &get(const std::string &name, const std::string &typeName) const {
@@ -70,7 +64,11 @@ namespace xng {
                 throw std::runtime_error("Empty bundle map");
 
             if (name.empty()) {
-                return getAll(typeName).at(0);
+                auto r = getAll(typeName);
+                if (r.size() == 0) {
+                    throw std::runtime_error("No resource of type " + typeName + " found in bundle");
+                }
+                return r.at(0);
             }
 
             auto &ret = get(name);
@@ -90,7 +88,11 @@ namespace xng {
             if (name.empty()) {
                 return *assets.begin()->second;
             }
-            return *assets.at(name);
+            auto it = assets.find(name);
+            if (it == assets.end()) {
+                throw std::runtime_error("Resource not found: " + name);
+            }
+            return *it->second;
         }
 
         template<typename T>

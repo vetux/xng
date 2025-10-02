@@ -27,12 +27,14 @@
 #include "xng/graphics/scene/skinnedmesh.hpp"
 #include "xng/graphics/scene/material.hpp"
 
-#include "../../../../engine/include/xng/graphics/vertexbuilder.hpp"
+#include "xng/graphics/vertexbuilder.hpp"
 
 #include "xng/math/matrixmath.hpp"
 #include "xng/math/quaternion.hpp"
 
 #include "xng/animation/skeletal/riganimation.hpp"
+
+#include "xng/resource/importers/stbiimporter.hpp"
 
 namespace xng {
     static Mat4f convertMat4(const aiMatrix4x4 &mat) {
@@ -124,7 +126,7 @@ namespace xng {
         return ret;
     }
 
-    static Mesh convertMesh(const aiMesh &assMesh, const std::vector<ResourceHandle<Material>> &materials) {
+    static Mesh convertMesh(const aiMesh &assMesh, const std::vector<ResourceHandle<Material> > &materials) {
         Mesh ret;
         ret.primitive = TRIANGLES;
         ret.vertexLayout = SkinnedMesh::getDefaultVertexLayout();
@@ -138,7 +140,7 @@ namespace xng {
         }
 
         std::vector<Bone> bones;
-        std::map<size_t, std::set<std::pair<float, size_t>>> boneVertexMapping;
+        std::map<size_t, std::set<std::pair<float, size_t> > > boneVertexMapping;
         for (auto i = 0; i < assMesh.mNumBones; i++) {
             auto bone = convertBone(*assMesh.mBones[i]);
             auto boneIndex = bones.size();
@@ -209,14 +211,14 @@ namespace xng {
             }
 
             ret.vertices.emplace_back(VertexBuilder()
-                                              .addVec3(pos)
-                                              .addVec3(norm)
-                                              .addVec2(uv)
-                                              .addVec3(tangent)
-                                              .addVec3(bitangent)
-                                              .addVec4(boneIds)
-                                              .addVec4(boneWeights)
-                                              .build());
+                .addVec3(pos)
+                .addVec3(norm)
+                .addVec2(uv)
+                .addVec3(tangent)
+                .addVec3(bitangent)
+                .addVec4(boneIds)
+                .addVec4(boneWeights)
+                .build());
         }
 
         if (assMesh.mMaterialIndex >= 0) {
@@ -226,15 +228,20 @@ namespace xng {
         return ret;
     }
 
-    static Material convertMaterial(const aiMaterial &assMaterial, const std::string &path) {
+    static Material convertMaterial(const aiMaterial &assMaterial,
+                                    const std::string &parentPath,
+                                    const Uri &fileUri,
+                                    const std::map<std::string, aiTexture *> &embeddedTextures) {
         Material ret;
 
         aiColor3D c;
         assMaterial.Get(AI_MATKEY_COLOR_DIFFUSE, c);
-        ret.albedo = {static_cast<uint8_t>(255 * c.r),
-                      static_cast<uint8_t>(255 * c.g),
-                      static_cast<uint8_t>(255 * c.b),
-                      0};
+        ret.albedo = {
+            static_cast<uint8_t>(255 * c.r),
+            static_cast<uint8_t>(255 * c.g),
+            static_cast<uint8_t>(255 * c.b),
+            0
+        };
 
         float alpha = 0;
         assMaterial.Get(AI_MATKEY_TRANSPARENCYFACTOR, alpha);
@@ -254,7 +261,12 @@ namespace xng {
                                           texPath.get());
 
         if (tex == aiReturn::aiReturn_SUCCESS) {
-            ret.albedoTexture = ResourceHandle<Texture>(Uri(path + std::string(texPath->C_Str())));
+            if (embeddedTextures.find(std::string(texPath->C_Str())) != embeddedTextures.end()) {
+                ret.albedoTexture = ResourceHandle<Texture>(
+                    Uri(fileUri.getScheme(), fileUri.getFile(), std::string(texPath->C_Str()) + "_texture"));
+            } else {
+                ret.albedoTexture = ResourceHandle<Texture>(Uri(parentPath + std::string(texPath->C_Str())));
+            }
         }
 
         tex = assMaterial.GetTexture(aiTextureType_METALNESS,
@@ -262,7 +274,12 @@ namespace xng {
                                      texPath.get());
 
         if (tex == aiReturn::aiReturn_SUCCESS) {
-            ret.metallicTexture = ResourceHandle<Texture>(Uri(path + std::string(texPath->C_Str())));
+            if (embeddedTextures.find(std::string(texPath->C_Str())) != embeddedTextures.end()) {
+                ret.metallicTexture = ResourceHandle<Texture>(
+                    Uri(fileUri.getScheme(), fileUri.getFile(), std::string(texPath->C_Str()) + "_texture"));
+            } else {
+                ret.metallicTexture = ResourceHandle<Texture>(Uri(parentPath + std::string(texPath->C_Str())));
+            }
         }
 
         tex = assMaterial.GetTexture(aiTextureType_AMBIENT_OCCLUSION,
@@ -270,8 +287,13 @@ namespace xng {
                                      texPath.get());
 
         if (tex == aiReturn::aiReturn_SUCCESS) {
-            ret.ambientOcclusionTexture = ResourceHandle<Texture>(
-                    Uri(path + std::string(texPath->C_Str())));
+            if (embeddedTextures.find(std::string(texPath->C_Str())) != embeddedTextures.end()) {
+                ret.ambientOcclusionTexture = ResourceHandle<Texture>(
+                    Uri(fileUri.getScheme(), fileUri.getFile(), std::string(texPath->C_Str()) + "_texture"));
+            } else {
+                ret.ambientOcclusionTexture = ResourceHandle<Texture>(
+                    Uri(parentPath + std::string(texPath->C_Str())));
+            }
         }
 
         tex = assMaterial.GetTexture(aiTextureType_NORMALS,
@@ -279,10 +301,32 @@ namespace xng {
                                      texPath.get());
 
         if (tex == aiReturn::aiReturn_SUCCESS) {
-            ret.normal = ResourceHandle<Texture>(Uri(path + std::string(texPath->C_Str())));
+            if (embeddedTextures.find(std::string(texPath->C_Str())) != embeddedTextures.end()) {
+                ret.normal = ResourceHandle<Texture>(Uri(fileUri.getScheme(), fileUri.getFile(),
+                                                         std::string(texPath->C_Str()) + "_texture"));
+            } else {
+                ret.normal = ResourceHandle<Texture>(Uri(parentPath + std::string(texPath->C_Str())));
+            }
         }
 
         return ret;
+    }
+
+    static ImageRGBA convertImage(const aiTexture &texture) {
+        if (texture.mHeight == 0) {
+            std::vector buffer(reinterpret_cast<const char *>(texture.pcData),
+                               reinterpret_cast<const char *>(texture.pcData) + texture.mWidth);
+            return StbiImporter::readImage(buffer);
+        }
+
+        std::vector<ColorRGBA> pixels;
+        pixels.reserve(texture.mWidth * texture.mHeight);
+        // TODO: Fix Slow Conversion of aiTexture
+        for (auto i = 0; i < texture.mWidth * texture.mHeight; i++) {
+            auto &texel = texture.pcData[i];
+            pixels.emplace_back(texel.r, texel.g, texel.b, texel.a);
+        }
+        return ImageRGBA(static_cast<int>(texture.mWidth), static_cast<int>(texture.mHeight), pixels);
     }
 
     static void getChildNodesRecursive(aiNode *node,
@@ -349,7 +393,13 @@ namespace xng {
 
         ResourceBundle ret;
 
-        std::map<std::string, std::vector<aiMesh *>> meshes;
+        std::map<std::string, aiTexture *> textures;
+        for (auto i = 0; i < scene.mNumTextures; i++) {
+            auto *tex = scene.mTextures[i];
+            textures[tex->mFilename.C_Str()] = tex;
+        }
+
+        std::map<std::string, std::vector<aiMesh *> > meshes;
         for (auto i = 0; i < scene.mNumMeshes; i++) {
             const auto &mesh = *scene.mMeshes[i];
             std::string name = mesh.mName.C_Str();
@@ -358,14 +408,17 @@ namespace xng {
 
         auto p = std::filesystem::path(path.getFile());
 
-        std::string prefix;
+        std::string parentPath = path.getScheme() + "://";
         if (p.has_parent_path()) {
-            prefix = p.parent_path().string() + "/";
+            parentPath += p.parent_path().string() + "/";
         }
 
-        std::vector<ResourceHandle<Material>> materialResourceHandles;
+        std::vector<ResourceHandle<Material> > materialResourceHandles;
         for (auto i = 0; i < scene.mNumMaterials; i++) {
-            auto material = convertMaterial(*scene.mMaterials[i], prefix);
+            auto material = convertMaterial(*scene.mMaterials[i],
+                                            parentPath,
+                                            path,
+                                            textures);
 
             aiString materialName;
             scene.mMaterials[i]->Get(AI_MATKEY_NAME, materialName);
@@ -402,7 +455,7 @@ namespace xng {
             ret.add(pair.first, std::make_unique<SkinnedMesh>(mesh));
 
             mesh.vertexLayout = Mesh::getDefaultVertexLayout();
-            for(auto &v : mesh.vertices){
+            for (auto &v: mesh.vertices) {
                 v.buffer.resize(mesh.vertexLayout.getLayoutSize());
             }
 
@@ -420,12 +473,21 @@ namespace xng {
             ret.add(anim.name, std::make_unique<RigAnimation>(anim));
         }
 
+        for (auto i = 0; i < textures.size(); i++) {
+            const auto &atex = *scene.mTextures[i];
+            auto img = convertImage(atex);
+            ret.add(std::string(atex.mFilename.C_Str()), std::make_unique<ImageRGBA>(img));
+            Texture tex;
+            tex.image = ResourceHandle<ImageRGBA>(Uri(path.getScheme(), path.getFile(),
+                                                      std::string(atex.mFilename.C_Str())));
+            ret.add(std::string(atex.mFilename.C_Str()) + "_texture", std::make_unique<Texture>(tex));
+        }
+
         return ret;
     }
 
     ResourceBundle AssImp::read(std::istream &stream,
-                                const std::string &hint,
-                                const std::string &path,
+                                const Uri &path,
                                 Archive *archive) {
         std::vector<char> buffer;
 
@@ -437,13 +499,15 @@ namespace xng {
             }
         }
 
-        return readAsset(buffer, hint, Uri(path), archive);
+        return readAsset(buffer, path.getExtension(), path, archive);
     }
 
     const std::set<std::string> &AssImp::getSupportedFormats() const {
-        static const std::set<std::string> formats = {".fbx", ".dae", ".gltf", ".glb", ".blend", ".3ds", ".ase", ".obj",
-                                                      ".ifc", ".xgl", ".zgl", ".ply", ".dxf", ".lwo", ".lws", ".lxo",
-                                                      ".stl", ".x", ".ac", ".ms3d", ".cob", ".scn"};
+        static const std::set<std::string> formats = {
+            ".fbx", ".dae", ".gltf", ".glb", ".blend", ".3ds", ".ase", ".obj",
+            ".ifc", ".xgl", ".zgl", ".ply", ".dxf", ".lwo", ".lws", ".lxo",
+            ".stl", ".x", ".ac", ".ms3d", ".cob", ".scn"
+        };
         return formats;
     }
 }

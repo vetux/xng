@@ -146,8 +146,7 @@ namespace xng {
     }
 
     ResourceBundle SndFile::read(std::istream &stream,
-                                 const std::string &hint,
-                                 const std::string &path,
+                                 const Uri &path,
                                  Archive *archive) {
         std::vector<char> buffer;
 

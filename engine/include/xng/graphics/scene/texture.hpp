@@ -28,6 +28,12 @@ namespace xng {
     struct XENGINE_EXPORT Texture final : Resource, Messageable {
         RESOURCE_TYPENAME(Texture)
 
+        enum Filtering : int {
+            LINEAR = 0,
+            NEAREST,
+            BICUBIC
+        };
+
         ~Texture() override = default;
 
         std::unique_ptr<Resource> clone() override {
@@ -36,19 +42,19 @@ namespace xng {
 
         Messageable &operator<<(const Message &message) override {
             message.value("image", image);
-            message.value("description", description);
+            message.value("filter", reinterpret_cast<int &>(filter));
             return *this;
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
             image >> message["image"];
-            description >> message["description"];
+            filter >> message["filter"];
             return message;
         }
 
         ResourceHandle<ImageRGBA> image;
-        RenderGraphTexture description;
+        Filtering filter = LINEAR;
 
         bool isLoaded() const override {
             return image.isLoaded();

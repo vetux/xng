@@ -47,8 +47,7 @@ namespace xng {
         static Message createBundle(const ResourceBundle &bundle);
 
          ResourceBundle read(std::istream &stream,
-                             const std::string &hint,
-                             const std::string &path,
+                             const Uri &path,
                              Archive *archive) override;
 
         const std::set<std::string> &getSupportedFormats() const override;

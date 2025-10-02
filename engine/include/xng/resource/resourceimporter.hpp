@@ -43,11 +43,11 @@ namespace xng {
          * to resolve the paths, and imports the resolved data using this->import().
          *
          * @param stream The stream to the data to be imported.
-         * @param hint The file extension
+         * @param path The path of the resource to import.
          * @param archive The archive instance to use when resolving paths in the stream data.
          * @return
          */
-        virtual ResourceBundle read(std::istream &stream, const std::string &hint, const std::string &path, Archive *archive) = 0;
+        virtual ResourceBundle read(std::istream &stream, const Uri &path, Archive *archive) = 0;
 
         /**
          * @return The set of supported file extensions with each containing the preceding dot

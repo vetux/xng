@@ -345,8 +345,7 @@ namespace xng {
 
                     data.metallic.level_index_filtering_assigned[0] = tex.level;
                     data.metallic.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.metallic.level_index_filtering_assigned[2] = material.metallicTexture.get().description.
-                            filterMag;
+                    data.metallic.level_index_filtering_assigned[2] = material.metallicTexture.get().filter;
                     data.metallic.level_index_filtering_assigned[3] = 1;
 
                     auto atlasScale = tex.size.convert<float>()
@@ -363,8 +362,7 @@ namespace xng {
 
                     data.roughness.level_index_filtering_assigned[0] = tex.level;
                     data.roughness.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.roughness.level_index_filtering_assigned[2] = material.roughnessTexture.get().description.
-                            filterMag;
+                    data.roughness.level_index_filtering_assigned[2] = material.roughnessTexture.get().filter;
                     data.roughness.level_index_filtering_assigned[3] = 1;
 
                     auto atlasScale = tex.size.convert<float>()
@@ -381,8 +379,7 @@ namespace xng {
 
                     data.ambientOcclusion.level_index_filtering_assigned[0] = tex.level;
                     data.ambientOcclusion.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.ambientOcclusion.level_index_filtering_assigned[2] = material.ambientOcclusionTexture.get().
-                            description.filterMag;
+                    data.ambientOcclusion.level_index_filtering_assigned[2] = material.ambientOcclusionTexture.get().filter;
                     data.ambientOcclusion.level_index_filtering_assigned[3] = 1;
 
                     auto atlasScale = tex.size.convert<float>()
@@ -399,7 +396,7 @@ namespace xng {
 
                     data.albedo.level_index_filtering_assigned[0] = tex.level;
                     data.albedo.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.albedo.level_index_filtering_assigned[2] = material.albedoTexture.get().description.filterMag;
+                    data.albedo.level_index_filtering_assigned[2] = material.albedoTexture.get().filter;
                     data.albedo.level_index_filtering_assigned[3] = 1;
 
                     auto atlasScale = tex.size.convert<float>()
@@ -416,7 +413,7 @@ namespace xng {
 
                     data.normal.level_index_filtering_assigned[0] = tex.level;
                     data.normal.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.normal.level_index_filtering_assigned[2] = material.normal.get().description.filterMag;
+                    data.normal.level_index_filtering_assigned[2] = material.normal.get().filter;
                     data.normal.level_index_filtering_assigned[3] = 1;
 
                     auto atlasScale = tex.size.convert<float>()

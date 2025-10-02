@@ -36,17 +36,17 @@ namespace xng {
      *
      * The scheme and asset specification is optional.
      *
-     * Asset names cannot contain dots.
+     * Asset names cannot contain slashes.
      *
      * When specifying an asset name the file name must have an extension.
      *
      * SCHEME :// FILE / ASSET
      *
      * For example:
-     * https://www.domain.com/assets/cube.fbx/cube
+     * https://www.domain.com/assets/cube.fbx/
      * memory://shaders/shader.spirv
      * file://mesh/cube.obj
-     * /mydir/myfile.fbx/myAssetDir/cube
+     * /mydir.extension/myfile.fbx/cube.001
      * /mydir/myimage.png
      * /mydir/myfilewithoutextension
      */
@@ -64,24 +64,15 @@ namespace xng {
             }
 
             auto path = std::filesystem::path(pathStr);
-            if (!path.has_extension() && path.has_parent_path()) {
-                auto parent = path;
-                bool foundExtension = false;
-                while (parent.has_parent_path() && parent.has_relative_path()) {
-                    parent = parent.parent_path();
-                    if (parent.has_extension()) {
-                        asset = pathStr.substr(parent.string().size() + 1);
-                        foundExtension = true;
-                        break;
-                    }
-                }
-                if (foundExtension) {
-                    file = parent.string();
-                } else {
-                    file = pathStr;
-                }
+
+            if (path.has_parent_path() && path.parent_path().has_extension()) {
+                // file/asset
+                asset = path.filename().string();
+                file = path.parent_path().string();
             } else {
-                file = pathStr;
+                // file
+                asset = "";
+                file = path.string();
             }
         }
 
@@ -122,7 +113,7 @@ namespace xng {
         std::string getExtension() const { return std::filesystem::path(getFile()).extension().string(); }
 
         std::string toString(bool includeScheme = true) const {
-            return (scheme.empty() || !includeScheme ? "" : scheme + "://") + file + (asset.empty() ? "" : "$" + asset);
+            return (scheme.empty() || !includeScheme ? "" : scheme + "://") + file + (asset.empty() ? "" : "/" + asset);
         }
 
         bool empty() const {

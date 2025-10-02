@@ -49,7 +49,7 @@ namespace xng {
                 std::rethrow_exception(ex);
             }
         }
-        bundles.clear(); // Deallocate resource bundles which might contain a reference to this registry before destroying the registry object.
+        bundles.clear();
     }
 
     void ResourceRegistry::addArchive(const std::string &scheme, std::shared_ptr<Archive> archive) {
@@ -64,12 +64,12 @@ namespace xng {
         archives.erase(scheme);
     }
 
-    void ResourceRegistry::setImporters(std::vector<std::unique_ptr<ResourceImporter>> value) {
+    void ResourceRegistry::setImporters(std::vector<std::unique_ptr<ResourceImporter> > value) {
         std::unique_lock l(importerMutex);
         importers = std::move(value);
     }
 
-    const std::vector<std::unique_ptr<ResourceImporter>> &ResourceRegistry::getImporters() {
+    const std::vector<std::unique_ptr<ResourceImporter> > &ResourceRegistry::getImporters() {
         return importers;
     }
 
@@ -156,8 +156,7 @@ namespace xng {
                     auto &archive = resolveUri(uri);
                     std::filesystem::path path(uri.getFile());
                     auto stream = archive.open(path.string());
-                    auto bundle = getImporter(path.extension().string())
-                            .read(*stream, path.extension().string(), path.string(), &archive);
+                    auto bundle = getImporter(path.extension().string()).read(*stream, uri, &archive);
 
                     std::lock_guard<std::mutex> g(mutex);
 
