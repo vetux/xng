@@ -260,10 +260,14 @@ namespace xng {
                                           0,
                                           texPath.get());
 
+        auto embeddedTexturePath = std::string(texPath->C_Str());
+        std::replace(embeddedTexturePath.begin(), embeddedTexturePath.end(), '\\', '_');
+        std::replace(embeddedTexturePath.begin(), embeddedTexturePath.end(), '/', '_');
+
         if (tex == aiReturn::aiReturn_SUCCESS) {
-            if (embeddedTextures.find(std::string(texPath->C_Str())) != embeddedTextures.end()) {
+            if (embeddedTextures.find(embeddedTexturePath) != embeddedTextures.end()) {
                 ret.albedoTexture = ResourceHandle<Texture>(
-                    Uri(fileUri.getScheme(), fileUri.getFile(), std::string(texPath->C_Str()) + "_texture"));
+                    Uri(fileUri.getScheme(), fileUri.getFile(), embeddedTexturePath + "_texture"));
             } else {
                 ret.albedoTexture = ResourceHandle<Texture>(Uri(parentPath + std::string(texPath->C_Str())));
             }
@@ -272,11 +276,14 @@ namespace xng {
         tex = assMaterial.GetTexture(aiTextureType_METALNESS,
                                      0,
                                      texPath.get());
+        embeddedTexturePath = std::string(texPath->C_Str());
+        std::replace(embeddedTexturePath.begin(), embeddedTexturePath.end(), '\\', '_');
+        std::replace(embeddedTexturePath.begin(), embeddedTexturePath.end(), '/', '_');
 
         if (tex == aiReturn::aiReturn_SUCCESS) {
-            if (embeddedTextures.find(std::string(texPath->C_Str())) != embeddedTextures.end()) {
+            if (embeddedTextures.find(embeddedTexturePath) != embeddedTextures.end()) {
                 ret.metallicTexture = ResourceHandle<Texture>(
-                    Uri(fileUri.getScheme(), fileUri.getFile(), std::string(texPath->C_Str()) + "_texture"));
+                    Uri(fileUri.getScheme(), fileUri.getFile(), embeddedTexturePath + "_texture"));
             } else {
                 ret.metallicTexture = ResourceHandle<Texture>(Uri(parentPath + std::string(texPath->C_Str())));
             }
@@ -285,25 +292,32 @@ namespace xng {
         tex = assMaterial.GetTexture(aiTextureType_AMBIENT_OCCLUSION,
                                      0,
                                      texPath.get());
+        embeddedTexturePath = std::string(texPath->C_Str());
+        std::replace(embeddedTexturePath.begin(), embeddedTexturePath.end(), '\\', '_');
+        std::replace(embeddedTexturePath.begin(), embeddedTexturePath.end(), '/', '_');
 
         if (tex == aiReturn::aiReturn_SUCCESS) {
-            if (embeddedTextures.find(std::string(texPath->C_Str())) != embeddedTextures.end()) {
+            if (embeddedTextures.find(embeddedTexturePath) != embeddedTextures.end()) {
                 ret.ambientOcclusionTexture = ResourceHandle<Texture>(
-                    Uri(fileUri.getScheme(), fileUri.getFile(), std::string(texPath->C_Str()) + "_texture"));
+                    Uri(fileUri.getScheme(), fileUri.getFile(), embeddedTexturePath + "_texture"));
             } else {
-                ret.ambientOcclusionTexture = ResourceHandle<Texture>(
-                    Uri(parentPath + std::string(texPath->C_Str())));
+                ret.ambientOcclusionTexture = ResourceHandle<Texture>(Uri(parentPath
+                                                                          + std::string(texPath->C_Str())));
             }
         }
 
         tex = assMaterial.GetTexture(aiTextureType_NORMALS,
                                      0,
                                      texPath.get());
+        embeddedTexturePath = std::string(texPath->C_Str());
+        std::replace(embeddedTexturePath.begin(), embeddedTexturePath.end(), '\\', '_');
+        std::replace(embeddedTexturePath.begin(), embeddedTexturePath.end(), '/', '_');
 
         if (tex == aiReturn::aiReturn_SUCCESS) {
-            if (embeddedTextures.find(std::string(texPath->C_Str())) != embeddedTextures.end()) {
-                ret.normal = ResourceHandle<Texture>(Uri(fileUri.getScheme(), fileUri.getFile(),
-                                                         std::string(texPath->C_Str()) + "_texture"));
+            if (embeddedTextures.find(embeddedTexturePath) != embeddedTextures.end()) {
+                ret.normal = ResourceHandle<Texture>(Uri(fileUri.getScheme(),
+                                                         fileUri.getFile(),
+                                                         embeddedTexturePath + "_texture"));
             } else {
                 ret.normal = ResourceHandle<Texture>(Uri(parentPath + std::string(texPath->C_Str())));
             }
@@ -396,7 +410,10 @@ namespace xng {
         std::map<std::string, aiTexture *> textures;
         for (auto i = 0; i < scene.mNumTextures; i++) {
             auto *tex = scene.mTextures[i];
-            textures[tex->mFilename.C_Str()] = tex;
+            auto embeddedTexturePath = std::string(tex->mFilename.C_Str());
+            std::replace(embeddedTexturePath.begin(), embeddedTexturePath.end(), '\\', '_');
+            std::replace(embeddedTexturePath.begin(), embeddedTexturePath.end(), '/', '_');
+            textures[embeddedTexturePath] = tex;
         }
 
         std::map<std::string, std::vector<aiMesh *> > meshes;
@@ -473,14 +490,13 @@ namespace xng {
             ret.add(anim.name, std::make_unique<RigAnimation>(anim));
         }
 
-        for (auto i = 0; i < textures.size(); i++) {
-            const auto &atex = *scene.mTextures[i];
+        for (auto &pair: textures) {
+            const auto &atex = *pair.second;
             auto img = convertImage(atex);
-            ret.add(std::string(atex.mFilename.C_Str()), std::make_unique<ImageRGBA>(img));
+            ret.add(std::string(pair.first), std::make_unique<ImageRGBA>(img));
             Texture tex;
-            tex.image = ResourceHandle<ImageRGBA>(Uri(path.getScheme(), path.getFile(),
-                                                      std::string(atex.mFilename.C_Str())));
-            ret.add(std::string(atex.mFilename.C_Str()) + "_texture", std::make_unique<Texture>(tex));
+            tex.image = ResourceHandle<ImageRGBA>(Uri(path.getScheme(), path.getFile(), pair.first));
+            ret.add(pair.first + "_texture", std::make_unique<Texture>(tex));
         }
 
         return ret;
