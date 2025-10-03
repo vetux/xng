@@ -277,7 +277,7 @@ namespace xng {
         std::vector<ShaderDrawData> shaderData;
         std::vector<Mat4f> boneMatrices;
 
-        auto &allocatedMeshes = meshAllocator.getMeshAllocations(ctx);
+        auto &meshAllocations = meshAllocator.getMeshAllocations(ctx);
 
         for (auto objectIndex = 0; objectIndex < objects.size(); objectIndex++) {
             auto &object = objects.at(objectIndex);
@@ -286,7 +286,7 @@ namespace xng {
             const auto &rig = meshResource.get().rig;
             const auto &boneTransforms = object.boneTransforms;
             const auto &materials = object.materials;
-            const auto &drawData = allocatedMeshes.at(meshResource.getUri());
+            const auto &drawData = meshAllocations.at(meshResource.getUri());
 
             for (auto i = 0; i < meshResource.get().subMeshes.size() + 1; i++) {
                 auto model = object.transform.model();
