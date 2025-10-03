@@ -138,6 +138,7 @@ namespace xng {
             textureArrays = other.textureArrays;
             typeDefinitions = other.typeDefinitions;
             functions = other.functions;
+            mainFunction.clear();
             for (auto &node: other.mainFunction) {
                 mainFunction.push_back(node->copy());
             }
