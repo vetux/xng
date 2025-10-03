@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.10.0)
 
-include(user-config.cmake OPTIONAL)
-
 project(xEngine)
 
 set(BASE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
@@ -20,4 +18,8 @@ message("Link Dirs: ${linkDirs}")
 include(${BASE_SOURCE_DIR}/cmake/thirdparty.cmake)
 include(${BASE_SOURCE_DIR}/cmake/adapters.cmake)
 include(${BASE_SOURCE_DIR}/cmake/engine.cmake)
-include(${BASE_SOURCE_DIR}/cmake/tests.cmake)
+
+option(BUILD_TESTS "Build the test applications" ON)
+if (BUILD_TESTS)
+    include(${BASE_SOURCE_DIR}/cmake/tests.cmake)
+endif ()
