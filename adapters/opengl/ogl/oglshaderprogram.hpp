@@ -24,6 +24,8 @@
 
 #include "compiledpipeline.hpp"
 
+#include "ogldebug.hpp"
+
 struct OGLShaderProgram {
     GLuint programHandle{};
 
@@ -115,9 +117,24 @@ struct OGLShaderProgram {
         glAttachShader(programHandle, fsH);
 
         glLinkProgram(programHandle);
+        oglCheckError();
 
         glDeleteShader(vsH);
         glDeleteShader(fsH);
+        if (geometrySource != nullptr)
+            glDeleteShader(gsH);
+
+        oglCheckError();
+
+        glGetProgramiv(programHandle, GL_LINK_STATUS, &success);
+        if (!success) {
+            GLchar infoLog[512];
+            glGetProgramInfoLog(programHandle, 512, nullptr, infoLog);
+            glDeleteProgram(programHandle);
+            std::string error = "Failed to link shader program: ";
+            error.append(infoLog);
+            throw std::runtime_error(error);
+        }
     }
 };
 
