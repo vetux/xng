@@ -30,6 +30,7 @@ RenderScene createScene() {
     RenderScene scene;
 
     SkinnedMeshObject mesh;
+    mesh.castShadows = true;
     mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx/Cube"));
     scene.skinnedMeshes.push_back(mesh);
 
@@ -41,6 +42,18 @@ RenderScene createScene() {
 
     mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx/Sphere.002"));
     scene.skinnedMeshes.push_back(mesh);
+
+    PointLightObject light;
+    light.transform.setPosition(Vec3f(0, 0.45, 0));
+    scene.pointLights.emplace_back(light);
+
+    DirectionalLightObject dirLight;
+    dirLight.light.direction = Vec3f(-0.5, -1, 1);
+    scene.directionalLights.emplace_back(dirLight);
+
+    SpotLightObject spotLight;
+    spotLight.transform.setPosition(Vec3f(0, 0, -2));
+    scene.spotLights.emplace_back(spotLight);
 
     scene.cameraTransform.setRotation(Quaternion(Vec3f(0, 180, 0)));
     scene.cameraTransform.setPosition(Vec3f(0, 0, -2));
@@ -86,6 +99,7 @@ int main(int argc, char *argv[]) {
 
     auto graph3D = passScheduler->addGraph({
         std::make_shared<ConstructionPass>(config, registry),
+        std::make_shared<ShadowMappingPass>(config, registry),
         std::make_shared<CanvasRenderPass>(config, registry),
         std::make_shared<CompositingPass>(config, registry),
     });

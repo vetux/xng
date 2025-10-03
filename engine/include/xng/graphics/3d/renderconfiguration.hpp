@@ -26,13 +26,21 @@
 namespace xng {
     class RenderConfiguration {
     public:
-        void setRenderScale(const float scale) {
-            renderScale = scale;
-        }
+        void setRenderScale(const float scale) { renderScale = scale; }
 
-        float getRenderScale() const {
-            return renderScale;
-        }
+        float getRenderScale() const { return renderScale; }
+
+        void setPointShadowResolution(const int resolution) { pointShadowResolution = resolution; }
+
+        int getPointShadowResolution() const { return pointShadowResolution; }
+
+        void setSpotShadowResolution(const int resolution) { spotShadowResolution = resolution; }
+
+        int getSpotShadowResolution() const { return spotShadowResolution; }
+
+        void setDirectionalShadowResolution(const int resolution) { directionalShadowResolution = resolution; }
+
+        int getDirectionalShadowResolution() const { return directionalShadowResolution; }
 
         void setScene(const RenderScene &scene) { renderScene = scene; }
 
@@ -44,8 +52,10 @@ namespace xng {
 
     private:
         float renderScale = 1.0f;
+        int pointShadowResolution = 1024;
+        int spotShadowResolution = 1024;
+        int directionalShadowResolution = 1024;
         RenderScene renderScene;
-
         std::vector<Canvas> renderCanvases;
     };
 }

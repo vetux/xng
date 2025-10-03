@@ -31,6 +31,8 @@ namespace xng {
 
         RESOURCE_CANVAS_TEXTURES,
 
+        RESOURCE_SHADOW_MAPS,
+
         RESOURCE_USER = 255
     };
 

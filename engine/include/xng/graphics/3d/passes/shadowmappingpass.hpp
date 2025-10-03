@@ -20,11 +20,73 @@
 #ifndef XENGINE_SHADOWMAPPINGPASS_HPP
 #define XENGINE_SHADOWMAPPINGPASS_HPP
 
+#include "xng/graphics/3d/meshbuffer3d.hpp"
+#include "xng/graphics/3d/renderconfiguration.hpp"
 #include "xng/graphics/3d/renderpass.hpp"
+#include "xng/graphics/3d/sharedresourceregistry.hpp"
+#include "xng/graphics/3d/sharedresources/shadowmaps.hpp"
 
 namespace xng {
-    class ShadowMappingPass : public RenderPass {
-        public:
+    class XENGINE_EXPORT ShadowMappingPass final : public RenderPass {
+    public:
+        ShadowMappingPass(std::shared_ptr<RenderConfiguration> config,
+                          std::shared_ptr<SharedResourceRegistry> registry);
+
+        ~ShadowMappingPass() override = default;
+
+        void create(RenderGraphBuilder &builder) override;
+
+        void recreate(RenderGraphBuilder &builder) override;
+
+        bool shouldRebuild(const Vec2i &backBufferSize) override;
+
+    private:
+        static Shader createVertexShader();
+
+        static Shader createGeometryShader();
+
+        static Shader createFragmentShader();
+
+        static Shader createDirVertexShader();
+
+        static Shader createDirGeometryShader();
+
+        static Shader createDirFragmentShader();
+
+        void runPass(RenderGraphContext &ctx);
+
+        std::shared_ptr<RenderConfiguration> config;
+        std::shared_ptr<SharedResourceRegistry> registry;
+
+        MeshBuffer3D meshBuffer;
+
+        RenderGraphResource pointPipeline;
+        RenderGraphResource dirPipeline;
+
+        ShadowMaps shadowMaps;
+
+        Vec2i pointShadowMapResolution;
+        Vec2i dirShadowMapResolution;
+        Vec2i spotShadowMapResolution;
+
+        size_t pointShadowMapCount{};
+        size_t dirShadowMapCount{};
+        size_t spotShadowMapCount{};
+
+        RenderGraphResource shaderBuffer;
+        RenderGraphResource boneBuffer;
+        RenderGraphResource pointLightBuffer;
+        RenderGraphResource dirLightBuffer;
+
+        size_t currentBoneBufferSize{};
+        size_t requiredBoneBufferSize{};
+
+        std::vector<ResourceHandle<SkinnedMesh> > allocatedMeshes;
+
+        std::vector<SkinnedMeshObject> meshObjects;
+        std::vector<PointLightObject> pointLights;
+        std::vector<DirectionalLightObject> dirLights;
+        std::vector<SpotLightObject> spotLights;
     };
 }
 
