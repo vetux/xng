@@ -51,17 +51,26 @@ struct OGLFramebuffer {
                 attach(tex, attachmentPoint, static_cast<GLint>(attachment.mipMapLevel));
                 break;
             case GL_TEXTURE_CUBE_MAP:
-                attach(tex,
-                       attachmentPoint,
-                       static_cast<GLint>(attachment.mipMapLevel),
-                       convert(attachment.face));
+                if (attachment.layered) {
+                    attachLayered(tex, attachmentPoint, static_cast<GLint>(attachment.mipMapLevel));
+                } else {
+                    attach(tex,
+                           attachmentPoint,
+                           static_cast<GLint>(attachment.mipMapLevel),
+                           convert(attachment.face));
+                }
                 break;
             case GL_TEXTURE_CUBE_MAP_ARRAY:
             case GL_TEXTURE_2D_ARRAY:
-                attachIndex(tex,
-                            attachmentPoint,
-                            static_cast<GLint>(attachment.mipMapLevel),
-                            static_cast<GLint>(attachment.index));
+            case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:
+                if (attachment.layered) {
+                    attachLayered(tex, attachmentPoint, static_cast<GLint>(attachment.mipMapLevel));
+                } else {
+                    attachIndex(tex,
+                                attachmentPoint,
+                                static_cast<GLint>(attachment.mipMapLevel),
+                                static_cast<GLint>(attachment.index));
+                }
                 break;
             default:
                 throw std::runtime_error("unsupported attachment type");
@@ -87,8 +96,11 @@ struct OGLFramebuffer {
     }
 
     void attachLayered(const OGLTexture &texture, GLenum attachment, GLint mipLevel) const {
-        if (texture.textureType != GL_TEXTURE_CUBE_MAP) {
-            throw std::runtime_error("Invalid texture type for layered cubemap attachment");
+        if (texture.textureType != GL_TEXTURE_CUBE_MAP
+            && texture.textureType != GL_TEXTURE_CUBE_MAP_ARRAY
+            && texture.textureType != GL_TEXTURE_2D_ARRAY
+            && texture.textureType != GL_TEXTURE_2D_MULTISAMPLE_ARRAY) {
+            throw std::runtime_error("Invalid texture type for layered attachment");
         }
         glFramebufferTexture(GL_FRAMEBUFFER,
                              attachment,
