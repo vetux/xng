@@ -49,6 +49,8 @@ std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
 
     if (source.stage == Shader::Stage::VERTEX) {
         ret += "#define " + std::string(drawID) + " gl_DrawID\n\n";
+    } else if (source.stage == Shader::Stage::GEOMETRY) {
+        ret += "#define " + std::string(drawID) + " in_drawID[0]\n\n";
     } else {
         ret += "#define " + std::string(drawID) + " drawID\n\n";
     }
@@ -175,8 +177,7 @@ std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
                                   "")
                 + +";\n";;
     }
-    if (source.stage == Shader::Stage::VERTEX
-        || source.stage == Shader::Stage::GEOMETRY) {
+    if (source.stage == Shader::Stage::VERTEX || source.stage == Shader::Stage::GEOMETRY) {
         outputAttributes += "layout(location = " + std::to_string(attributeCount) + ") flat out uint out_drawID;\n";
     }
     ret += outputAttributes;
