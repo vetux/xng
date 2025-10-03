@@ -22,7 +22,7 @@
 
 #include "xng/physics/physicsengine.hpp"
 
-namespace xng:: box2d {
+namespace xng::box2d {
     //TODO: Fix box2d returning nan values for positions after stepping the world.
     class XENGINE_EXPORT PhysicsEngine final : public xng::PhysicsEngine {
     public:

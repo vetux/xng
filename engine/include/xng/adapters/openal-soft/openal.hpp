@@ -22,7 +22,7 @@
 
 #include "xng/audio/audioengine.hpp"
 
-namespace xng:: openal {
+namespace xng::openal {
     class XENGINE_EXPORT AudioEngine final : public xng::AudioEngine {
     public:
         std::vector<std::string> getDeviceNames() override;
