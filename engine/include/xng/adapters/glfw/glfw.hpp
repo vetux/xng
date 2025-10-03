@@ -23,11 +23,11 @@
 #include "xng/display/displayenvironment.hpp"
 
 namespace xng::glfw {
-    class XENGINE_EXPORT GLFW final : public DisplayEnvironment {
+    class XENGINE_EXPORT DisplayEnvironment final : public xng::DisplayEnvironment {
     public:
-        GLFW();
+        DisplayEnvironment();
 
-        ~GLFW() override;
+        ~DisplayEnvironment() override;
 
         std::unique_ptr<Monitor> getPrimaryMonitor() override;
 

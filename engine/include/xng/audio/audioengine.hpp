@@ -25,6 +25,8 @@
 namespace xng {
     class XENGINE_EXPORT AudioEngine {
     public:
+        virtual ~AudioEngine() = default;
+
         virtual std::vector<std::string> getDeviceNames() = 0;
 
         virtual std::unique_ptr<AudioDevice> createDevice() = 0;

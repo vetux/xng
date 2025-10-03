@@ -17,29 +17,27 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_FREETYPE_HPP
-#define XENGINE_FREETYPE_HPP
+#include "xng/adapters/cryptopp/cryptopp.hpp"
 
-#include "xng/font/fontengine.hpp"
+#include "cryptoppaes.hpp"
+#include "cryptoppgzip.hpp"
+#include "cryptopprandom.hpp"
+#include "cryptoppsha.hpp"
 
-struct FT_LibraryRec_;
+namespace xng::cryptopp {
+    std::unique_ptr<AES> CryptoProvider::createAES() {
+        return std::make_unique<CryptoPPAES>();
+    }
 
-typedef struct FT_LibraryRec_ *FT_Library;
+    std::unique_ptr<GZip> CryptoProvider::createGzip() {
+        return std::make_unique<CryptoPPGzip>();
+    }
 
-namespace xng::freetype {
-    class XENGINE_EXPORT FontEngine final : public xng::FontEngine {
-    public:
-        FontEngine();
+    std::unique_ptr<Random> CryptoProvider::createRandom() {
+        return std::make_unique<CryptoPPRandom>();
+    }
 
-        ~FontEngine() override;
-
-        std::unique_ptr<FontRenderer> createFontRenderer(std::istream &stream) override;
-
-        std::unique_ptr<FontRenderer> createFontRenderer(const Font &data) override;
-
-    private:
-        FT_Library library = nullptr;
-    };
+    std::unique_ptr<SHA> CryptoProvider::createSHA() {
+        return std::make_unique<CryptoPPSHA>();
+    }
 }
-
-#endif //XENGINE_FREETYPE_HPP

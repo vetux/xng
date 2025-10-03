@@ -28,11 +28,11 @@
 #include "androidapp.hpp"
 
 namespace xng::android {
-    class XENGINE_EXPORT Android : public DisplayEnvironment {
+    class XENGINE_EXPORT DisplayEnvironment : public xng::DisplayEnvironment {
     public:
-        Android();
+        DisplayEnvironment();
 
-        Android(Android &other) = delete;
+        DisplayEnvironment(DisplayEnvironment &other) = delete;
 
         std::unique_ptr<Monitor> getPrimaryMonitor() override {
             throw std::runtime_error("No monitors support on android");

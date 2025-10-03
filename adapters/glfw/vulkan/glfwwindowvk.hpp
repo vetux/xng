@@ -17,16 +17,24 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_YOGA_HPP
-#define XENGINE_YOGA_HPP
+#ifndef XENGINE_WINDOWGLFWVK_HPP
+#define XENGINE_WINDOWGLFWVK_HPP
 
-#include "xng/flexbox/flexlayoutengine.hpp"
+#include "glfwwindow.hpp"
 
-namespace xng::yoga {
-    class XENGINE_EXPORT FlexLayoutEngine final : public xng::FlexLayoutEngine {
+namespace xng::glfw {
+    class GLFWWindowVk : public GLFWWindow {
     public:
-        void calculateLayout(FlexNode &node) override;
+        GLFWWindowVk(const std::string &title, Vec2i size, WindowAttributes attributes);
+
+        GLFWWindowVk(const std::string &title,
+                     Vec2i size,
+                     WindowAttributes attributes,
+                     MonitorGLFW &monitor,
+                     VideoMode videoMode);
+
+        void swapBuffers() override;
     };
 }
 
-#endif //XENGINE_YOGA_HPP
+#endif //XENGINE_WINDOWGLFWVK_HPP

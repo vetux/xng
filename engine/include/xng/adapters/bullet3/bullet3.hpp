@@ -22,13 +22,11 @@
 
 #include "xng/physics/physicsengine.hpp"
 
-namespace xng {
-    namespace bullet3 {
-        class XENGINE_EXPORT Bullet3 : public PhysicsEngine {
-        public:
-            std::unique_ptr<World> createWorld() override;
-        };
-    }
+namespace xng::bullet3 {
+    class XENGINE_EXPORT PhysicsEngine final : public xng::PhysicsEngine {
+    public:
+        std::unique_ptr<World> createWorld() override;
+    };
 }
 
 #endif //XENGINE_BULLET3_HPP

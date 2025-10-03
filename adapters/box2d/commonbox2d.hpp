@@ -17,29 +17,27 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_FREETYPE_HPP
-#define XENGINE_FREETYPE_HPP
+#ifndef XENGINE_COMMONBOX2D_HPP
+#define XENGINE_COMMONBOX2D_HPP
 
-#include "xng/font/fontengine.hpp"
+#include <stdexcept>
 
-struct FT_LibraryRec_;
+#include "box2dinclude.hpp"
 
-typedef struct FT_LibraryRec_ *FT_Library;
+#include "xng/physics/rigidbody.hpp"
 
-namespace xng::freetype {
-    class XENGINE_EXPORT FontEngine final : public xng::FontEngine {
-    public:
-        FontEngine();
+namespace xng {
+    namespace box2d {
+        Vec3f convert(const b2Vec2 &vec);
 
-        ~FontEngine() override;
+        b2Vec2 convert(const Vec3f &vec);
 
-        std::unique_ptr<FontRenderer> createFontRenderer(std::istream &stream) override;
+        RigidBody::RigidBodyType convert(b2BodyType type);
 
-        std::unique_ptr<FontRenderer> createFontRenderer(const Font &data) override;
+        b2BodyType convert(RigidBody::RigidBodyType type);
 
-    private:
-        FT_Library library = nullptr;
-    };
+        b2PolygonShape convert(const std::vector<Vec3f> &points);
+    }
 }
 
-#endif //XENGINE_FREETYPE_HPP
+#endif //XENGINE_COMMONBOX2D_HPP

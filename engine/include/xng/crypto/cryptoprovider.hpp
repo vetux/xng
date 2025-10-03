@@ -28,6 +28,8 @@
 namespace xng {
     class CryptoProvider {
     public:
+        virtual ~CryptoProvider() = default;
+
         virtual std::unique_ptr<AES> createAES() = 0;
 
         virtual std::unique_ptr<GZip> createGzip() = 0;

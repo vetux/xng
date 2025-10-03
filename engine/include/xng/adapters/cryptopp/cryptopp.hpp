@@ -23,7 +23,7 @@
 #include "xng/crypto/cryptoprovider.hpp"
 
 namespace xng::cryptopp {
-    class XENGINE_EXPORT CryptoPP : public CryptoProvider {
+    class XENGINE_EXPORT CryptoProvider final : public xng::CryptoProvider {
     public:
         std::unique_ptr<AES> createAES() override;
 

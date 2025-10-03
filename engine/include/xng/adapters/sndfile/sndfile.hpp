@@ -22,8 +22,8 @@
 
 #include "xng/resource/resourceimporter.hpp"
 
-namespace xng {
-    class XENGINE_EXPORT SndFile : public ResourceImporter {
+namespace xng::sndfile {
+    class XENGINE_EXPORT ResourceImporter final : public xng::ResourceImporter {
     public:
         ResourceBundle read(std::istream &stream,
                             const Uri &path,

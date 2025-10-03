@@ -20,30 +20,26 @@
 #ifndef XENGINE_ANDROIDAPP_HPP
 #define XENGINE_ANDROIDAPP_HPP
 
-#include <stdexcept>
-
 struct android_app;
 
-namespace xng {
-    namespace android {
-        /**
-         * The android_app object which must be assigned by the user by including this header and calling setApp
-         * with the application object passed in the android_start method.
-         *
-         * This must be done before instantiating the android display driver.
-         */
-        class XENGINE_EXPORT AndroidApp {
-        public:
-            AndroidApp() = delete;
+namespace xng::android {
+    /**
+     * The android_app object which must be assigned by the user by including this header and calling setApp with the
+     * application object passed in the android_start method.
+     *
+     * This must be done before instantiating the android display driver.
+     */
+    class XENGINE_EXPORT AndroidApp {
+    public:
+        AndroidApp() = delete;
 
-            static android_app *getApp();
+        static android_app *getApp();
 
-            static void setApp(android_app *app);
+        static void setApp(android_app *app);
 
-        private:
-            static android_app *app;
-        };
-    }
+    private:
+        static android_app *app;
+    };
 }
 
 #endif //XENGINE_ANDROIDAPP_HPP

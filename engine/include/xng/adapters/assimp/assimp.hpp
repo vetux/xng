@@ -22,9 +22,11 @@
 
 #include "xng/resource/resourceimporter.hpp"
 
-namespace xng {
-    class XENGINE_EXPORT AssImp : public ResourceImporter {
+namespace xng::assimp {
+    class XENGINE_EXPORT ResourceImporter final : public xng::ResourceImporter {
     public:
+        ~ResourceImporter() override = default;
+
         ResourceBundle read(std::istream &stream,
                             const Uri &path,
                             Archive *archive) override;

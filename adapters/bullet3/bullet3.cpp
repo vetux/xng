@@ -17,29 +17,12 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_FREETYPE_HPP
-#define XENGINE_FREETYPE_HPP
+#include "xng/adapters/bullet3/bullet3.hpp"
 
-#include "xng/font/fontengine.hpp"
+#include "worldbt3.hpp"
 
-struct FT_LibraryRec_;
-
-typedef struct FT_LibraryRec_ *FT_Library;
-
-namespace xng::freetype {
-    class XENGINE_EXPORT FontEngine final : public xng::FontEngine {
-    public:
-        FontEngine();
-
-        ~FontEngine() override;
-
-        std::unique_ptr<FontRenderer> createFontRenderer(std::istream &stream) override;
-
-        std::unique_ptr<FontRenderer> createFontRenderer(const Font &data) override;
-
-    private:
-        FT_Library library = nullptr;
-    };
+namespace xng::bullet3 {
+    std::unique_ptr<World> PhysicsEngine::createWorld() {
+        return std::make_unique<WorldBt3>();
+    }
 }
-
-#endif //XENGINE_FREETYPE_HPP

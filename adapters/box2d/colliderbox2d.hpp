@@ -17,29 +17,32 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_FREETYPE_HPP
-#define XENGINE_FREETYPE_HPP
+#ifndef XENGINE_COLLIDERBOX2D_HPP
+#define XENGINE_COLLIDERBOX2D_HPP
 
-#include "xng/font/fontengine.hpp"
+#include "xng/physics/collidershape.hpp"
+#include "xng/physics/colliderdesc.hpp"
 
-struct FT_LibraryRec_;
+#include "box2dinclude.hpp"
 
-typedef struct FT_LibraryRec_ *FT_Library;
+#include "xng/physics/collider.hpp"
 
-namespace xng::freetype {
-    class XENGINE_EXPORT FontEngine final : public xng::FontEngine {
-    public:
-        FontEngine();
+namespace xng {
+    namespace box2d {
+        class RigidBodyBox2D;
 
-        ~FontEngine() override;
+        class ColliderBox2D : public Collider {
+        public:
+            RigidBodyBox2D &body;
+            b2Fixture *fixture;
 
-        std::unique_ptr<FontRenderer> createFontRenderer(std::istream &stream) override;
+            ColliderBox2D(RigidBodyBox2D &body, const ColliderDesc &desc);
 
-        std::unique_ptr<FontRenderer> createFontRenderer(const Font &data) override;
+            ~ColliderBox2D() override;
 
-    private:
-        FT_Library library = nullptr;
-    };
+            RigidBody &getBody() override;
+        };
+    }
 }
 
-#endif //XENGINE_FREETYPE_HPP
+#endif //XENGINE_COLLIDERBOX2D_HPP

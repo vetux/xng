@@ -22,51 +22,51 @@
 #include "rendergraphruntimeogl.hpp"
 
 namespace xng::opengl {
-    OpenGL::OpenGL()
+    RenderGraphRuntime::RenderGraphRuntime()
         : runtime(std::make_unique<RenderGraphRuntimeOGL>()) {
     }
 
-    void OpenGL::setWindow(const std::shared_ptr<Window> window) {
+    void RenderGraphRuntime::setWindow(const std::shared_ptr<Window> window) {
         runtime->setWindow(window);
     }
 
-    Window & OpenGL::getWindow() {
+    Window & RenderGraphRuntime::getWindow() {
         return runtime->getWindow();
     }
 
-    Vec2i OpenGL::updateBackBuffer() {
+    Vec2i RenderGraphRuntime::updateBackBuffer() {
         return runtime->updateBackBuffer();
     }
 
-    Vec2i OpenGL::getBackBufferSize() {
+    Vec2i RenderGraphRuntime::getBackBufferSize() {
         return runtime->getBackBufferSize();
     }
 
-    RenderGraphHandle OpenGL::compile(const RenderGraph &graph) {
+    RenderGraphHandle RenderGraphRuntime::compile(const RenderGraph &graph) {
         return runtime->compile(graph);
     }
 
-    void OpenGL::recompile(const RenderGraphHandle handle, const RenderGraph &graph) {
+    void RenderGraphRuntime::recompile(const RenderGraphHandle handle, const RenderGraph &graph) {
         runtime->recompile(handle, graph);
     }
 
-    RenderGraphStatistics OpenGL::execute(const RenderGraphHandle graph) {
+    RenderGraphStatistics RenderGraphRuntime::execute(const RenderGraphHandle graph) {
         return runtime->execute(graph);
     }
 
-    RenderGraphStatistics OpenGL::execute(const std::vector<RenderGraphHandle> &graphs) {
+    RenderGraphStatistics RenderGraphRuntime::execute(const std::vector<RenderGraphHandle> &graphs) {
         return runtime->execute(graphs);
     }
 
-    void OpenGL::destroy(const RenderGraphHandle graph) {
+    void RenderGraphRuntime::destroy(const RenderGraphHandle graph) {
         runtime->destroy(graph);
     }
 
-    void OpenGL::saveCache(const RenderGraphHandle graph, std::ostream &stream) {
+    void RenderGraphRuntime::saveCache(const RenderGraphHandle graph, std::ostream &stream) {
         runtime->saveCache(graph, stream);
     }
 
-    void OpenGL::loadCache(const RenderGraphHandle graph, std::istream &stream) {
+    void RenderGraphRuntime::loadCache(const RenderGraphHandle graph, std::istream &stream) {
         runtime->loadCache(graph, stream);
     }
 }

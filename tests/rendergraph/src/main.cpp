@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
     std::vector<std::unique_ptr<ResourceImporter> > importers;
     importers.emplace_back(std::make_unique<FontImporter>());
     importers.emplace_back(std::make_unique<StbiImporter>());
-    importers.emplace_back(std::make_unique<AssImp>());
+    importers.emplace_back(std::make_unique<assimp::ResourceImporter>());
     ResourceRegistry::getDefaultRegistry().setImporters(std::move(importers));
 
     ResourceRegistry::getDefaultRegistry().addArchive("file", std::make_shared<DirectoryArchive>("assets/"));
@@ -74,8 +74,8 @@ int main(int argc, char *argv[]) {
     auto smiley = ResourceHandle<ImageRGBA>(Uri("file://images/awesomeface.png"));
     auto font = ResourceHandle<Font>(Uri("file://fonts/Sono/static/Sono/Sono-Bold.ttf"));
 
-    auto glfw = glfw::GLFW();
-    auto runtime = std::make_shared<opengl::OpenGL>();
+    auto glfw = glfw::DisplayEnvironment();
+    auto runtime = std::make_shared<opengl::RenderGraphRuntime>();
 
     const std::shared_ptr window = std::move(glfw.createWindow(runtime->getGraphicsAPI()));
 
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
     const auto &tuxImg = tux.get();
     const auto &smileyImg = smiley.get();
 
-    auto freeType = std::make_unique<freetype::FreeType>();
+    auto freeType = std::make_unique<freetype::FontEngine>();
 
     auto config = std::make_shared<RenderConfiguration>();
 

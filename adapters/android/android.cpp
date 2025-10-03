@@ -17,29 +17,30 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_FREETYPE_HPP
-#define XENGINE_FREETYPE_HPP
+#include "xng/adapters/android/android.hpp"
 
-#include "xng/font/fontengine.hpp"
+#include <EGL/egl.h>
 
-struct FT_LibraryRec_;
+#ifdef BUILD_ANDROID_OPENGL
 
-typedef struct FT_LibraryRec_ *FT_Library;
+#include "display/android/opengl/androidwindowgles.hpp"
 
-namespace xng::freetype {
-    class XENGINE_EXPORT FontEngine final : public xng::FontEngine {
-    public:
-        FontEngine();
+#endif
 
-        ~FontEngine() override;
+namespace xng::android {
+    DisplayEnvironment::DisplayEnvironment() {
+        app = AndroidApp::getApp();
+    }
 
-        std::unique_ptr<FontRenderer> createFontRenderer(std::istream &stream) override;
-
-        std::unique_ptr<FontRenderer> createFontRenderer(const Font &data) override;
-
-    private:
-        FT_Library library = nullptr;
-    };
+    std::unique_ptr<Window> DisplayEnvironment::getWindow(GpuDriverBackend gpuDriverBackend,
+                                                            WindowAttributes attributes) {
+        switch (gpuDriverBackend) {
+#ifdef BUILD_ANDROID_OPENGL
+            case OPENGL_4_6:
+                return std::make_unique<AndroidWindowGLES>(app);
+#endif
+            default:
+                throw std::runtime_error("Unsupported gpu backend");
+        }
+    }
 }
-
-#endif //XENGINE_FREETYPE_HPP

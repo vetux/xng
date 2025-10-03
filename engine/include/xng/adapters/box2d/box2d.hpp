@@ -22,14 +22,12 @@
 
 #include "xng/physics/physicsengine.hpp"
 
-namespace xng {
-    namespace box2d {
-        //TODO: Fix box2d returning nan values for positions after stepping the world.
-        class XENGINE_EXPORT Box2D : public PhysicsEngine {
-        public:
-            std::unique_ptr<World> createWorld() override;
-        };
-    }
+namespace xng:: box2d {
+    //TODO: Fix box2d returning nan values for positions after stepping the world.
+    class XENGINE_EXPORT PhysicsEngine final : public xng::PhysicsEngine {
+    public:
+        std::unique_ptr<World> createWorld() override;
+    };
 }
 
 #endif //XENGINE_BOX2D_HPP

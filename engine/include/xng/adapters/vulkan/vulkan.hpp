@@ -25,17 +25,19 @@
 #include "xng/display/displayenvironment.hpp"
 
 namespace xng::vulkan {
-    class XENGINE_EXPORT Vulkan final : public RenderGraphRuntime {
+    class XENGINE_EXPORT RenderGraphRuntime final : public xng::RenderGraphRuntime {
     public:
-        struct InstanceData {
-            virtual ~InstanceData() = default;
-        };
+        explicit RenderGraphRuntime(DisplayEnvironment &displayDriver);
 
-        explicit Vulkan(DisplayEnvironment &displayDriver);
-
-        ~Vulkan() override;
+        ~RenderGraphRuntime() override;
 
         void setWindow(std::shared_ptr<Window> window) override;
+
+        Window &getWindow() override;
+
+        Vec2i updateBackBuffer() override;
+
+        Vec2i getBackBufferSize() override;
 
         RenderGraphHandle compile(const RenderGraph &graph) override;
 
@@ -45,12 +47,13 @@ namespace xng::vulkan {
 
         RenderGraphStatistics execute(const std::vector<RenderGraphHandle> &graphs) override;
 
+        void destroy(RenderGraphHandle graph) override;
+
         void saveCache(RenderGraphHandle graph, std::ostream &stream) override;
 
         void loadCache(RenderGraphHandle graph, std::istream &stream) override;
 
-    private:
-        std::shared_ptr<InstanceData> instanceData;
+        GraphicsAPI getGraphicsAPI() override;
     };
 }
 

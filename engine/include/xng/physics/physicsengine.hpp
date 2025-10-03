@@ -27,6 +27,8 @@
 namespace xng {
     class XENGINE_EXPORT PhysicsEngine {
     public:
+        virtual ~PhysicsEngine() = default;
+
         virtual std::unique_ptr<World> createWorld() = 0;
     };
 }

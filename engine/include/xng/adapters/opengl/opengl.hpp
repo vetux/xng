@@ -23,11 +23,11 @@
 #include "xng/rendergraph/rendergraphruntime.hpp"
 
 namespace xng::opengl {
-    class XENGINE_EXPORT OpenGL final : public RenderGraphRuntime {
+    class XENGINE_EXPORT RenderGraphRuntime final : public xng::RenderGraphRuntime {
     public:
-        OpenGL();
+        RenderGraphRuntime();
 
-        ~OpenGL() override = default;
+        ~RenderGraphRuntime() override = default;
 
         void setWindow(std::shared_ptr<Window> window) override;
 
@@ -54,7 +54,7 @@ namespace xng::opengl {
         GraphicsAPI getGraphicsAPI() override { return OPENGL_4_6; }
 
     private:
-        std::unique_ptr<RenderGraphRuntime> runtime;
+        std::unique_ptr<xng::RenderGraphRuntime> runtime;
     };
 }
 

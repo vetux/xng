@@ -17,16 +17,12 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_YOGA_HPP
-#define XENGINE_YOGA_HPP
+#include "rigidbodybt3.hpp"
+#include "worldbt3.hpp"
 
-#include "xng/flexbox/flexlayoutengine.hpp"
-
-namespace xng::yoga {
-    class XENGINE_EXPORT FlexLayoutEngine final : public xng::FlexLayoutEngine {
-    public:
-        void calculateLayout(FlexNode &node) override;
-    };
+namespace xng {
+    RigidBodyBt3::~RigidBodyBt3() {
+        worldBt3.destroyBody(*this);
+        world->removeRigidBody(body);
+    }
 }
-
-#endif //XENGINE_YOGA_HPP

@@ -17,29 +17,22 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_FREETYPE_HPP
-#define XENGINE_FREETYPE_HPP
+#ifndef XENGINE_JOINTBOX2D_HPP
+#define XENGINE_JOINTBOX2D_HPP
 
-#include "xng/font/fontengine.hpp"
+#include "box2dinclude.hpp"
 
-struct FT_LibraryRec_;
+#include "xng/physics/joint.hpp"
 
-typedef struct FT_LibraryRec_ *FT_Library;
+namespace xng {
+    namespace box2d {
+        class JointBox2D : public Joint {
+        public:
+            b2Joint *joint;
 
-namespace xng::freetype {
-    class XENGINE_EXPORT FontEngine final : public xng::FontEngine {
-    public:
-        FontEngine();
-
-        ~FontEngine() override;
-
-        std::unique_ptr<FontRenderer> createFontRenderer(std::istream &stream) override;
-
-        std::unique_ptr<FontRenderer> createFontRenderer(const Font &data) override;
-
-    private:
-        FT_Library library = nullptr;
-    };
+            ~JointBox2D() override = default;
+        };
+    }
 }
 
-#endif //XENGINE_FREETYPE_HPP
+#endif //XENGINE_JOINTBOX2D_HPP

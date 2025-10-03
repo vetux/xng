@@ -22,17 +22,15 @@
 
 #include "xng/audio/audioengine.hpp"
 
-namespace xng {
-    namespace openal {
-        class XENGINE_EXPORT OpenAL : public AudioEngine {
-        public:
-            std::vector<std::string> getDeviceNames() override;
+namespace xng:: openal {
+    class XENGINE_EXPORT AudioEngine final : public xng::AudioEngine {
+    public:
+        std::vector<std::string> getDeviceNames() override;
 
-            std::unique_ptr<AudioDevice> createDevice() override;
+        std::unique_ptr<AudioDevice> createDevice() override;
 
-            std::unique_ptr<AudioDevice> createDevice(const std::string &deviceName) override;
-        };
-    }
+        std::unique_ptr<AudioDevice> createDevice(const std::string &deviceName) override;
+    };
 }
 
 #endif //XENGINE_OPENAL_HPP

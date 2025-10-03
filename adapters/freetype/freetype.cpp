@@ -17,29 +17,27 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_FREETYPE_HPP
-#define XENGINE_FREETYPE_HPP
+#include "xng/adapters/freetype/freetype.hpp"
 
-#include "xng/font/fontengine.hpp"
-
-struct FT_LibraryRec_;
-
-typedef struct FT_LibraryRec_ *FT_Library;
+#include "ftfontrenderer.hpp"
 
 namespace xng::freetype {
-    class XENGINE_EXPORT FontEngine final : public xng::FontEngine {
-    public:
-        FontEngine();
+    FontEngine::FontEngine() {
+        auto r = FT_Init_FreeType(&library);
+        if (r != 0) {
+            throw std::runtime_error("Failed to initalize freetype: " + std::to_string(r));
+        }
+    }
 
-        ~FontEngine() override;
+    FontEngine::~FontEngine() {
+        FT_Done_FreeType(library);
+    }
 
-        std::unique_ptr<FontRenderer> createFontRenderer(std::istream &stream) override;
+    std::unique_ptr<FontRenderer> FontEngine::createFontRenderer(const Font &data) {
+        return std::make_unique<FTFontRenderer>(data, library);
+    }
 
-        std::unique_ptr<FontRenderer> createFontRenderer(const Font &data) override;
-
-    private:
-        FT_Library library = nullptr;
-    };
+    std::unique_ptr<FontRenderer> FontEngine::createFontRenderer(std::istream &stream) {
+        return xng::FontEngine::createFontRenderer(stream);
+    }
 }
-
-#endif //XENGINE_FREETYPE_HPP
