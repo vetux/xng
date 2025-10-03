@@ -19,6 +19,8 @@
 
 #include "xng/graphics/3d/passes/shadowmappingpass.hpp"
 
+//TODO: Optimize shadow mapping pass
+
 namespace xng {
     struct ShadowShaderDrawData {
         std::array<int, 4> boneOffset{};
