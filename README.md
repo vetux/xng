@@ -19,20 +19,24 @@ Once the project has reached a stable state there will be semantically versioned
 workflow
 
 ## (Planned) Features
-- Rendering
-  - Render Graph Abstraction
-    - Shader Domain Specific Language for writing Shaders in C++
-  - 3D Rendering
-    - Shading
-      - PBR Pipeline (TODO)
+- Graphics
+  - Render Graph
+    - Domain-Specific Language for writing Render Graph shaders in C++
+  - 3D
+    - PBR Render Graph Pipeline
+      - Forward Shading (TODO)
+      - Deferred Shading (TODO)
       - Shadow Mapping
+      - Environment Mapping (Reflections) (TODO)
       - Image Based Lighting (TODO)
+      - Path Tracing (Shadows, Reflections) (TODO)
     - Skeletal Animation
     - Terrain Rendering (TODO)
     - Volumetric Rendering (TODO)
-  - 2D Rendering
+    - Particle Rendering (TODO)
+  - 2D
+    - Canvas Interface
     - Sprite Animation
-  - GUI Rendering
     - Text Rendering
 - Resource Management
   - Uri Resource addressing
