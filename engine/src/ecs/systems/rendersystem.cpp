@@ -136,7 +136,6 @@ namespace xng {
             PointLightObject object;
             object.transform = transform.transform;
             object.light = pair.component.light;
-            object.castShadows = pair.component.castShadows;
 
             renderScene.pointLights.emplace_back(std::move(object));
         }
@@ -154,7 +153,6 @@ namespace xng {
             SpotLightObject object;
             object.transform = transform.transform;
             object.light = pair.component.light;
-            object.castShadows = pair.component.castShadows;
 
             renderScene.spotLights.emplace_back(std::move(object));
         }
@@ -172,7 +170,6 @@ namespace xng {
             DirectionalLightObject object;
             object.transform = transform.transform;
             object.light = pair.component.light;
-            object.castShadows = pair.component.castShadows;
 
             renderScene.directionalLights.emplace_back(std::move(object));
         }
