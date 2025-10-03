@@ -133,6 +133,8 @@ public:
 
     void clearColorAttachment(size_t binding, const Vec4u &clearColor) override;
 
+    void clearColorAttachment(size_t binding, const Vec4f &clearColor) override;
+
     void clearDepthStencilAttachment(float clearDepth, unsigned int clearStencil) override;
 
     void clearDepthAttachment(float clearDepth) override;

@@ -41,6 +41,10 @@ namespace xng {
         float clearDepth{};
         unsigned int clearStencil{};
 
+        // If texture is a TEXTURE_CUBE_MAP, TEXTURE_2D_ARRAY or TEXTURE_CUBE_MAP_ARRAY either an index / face can
+        // be specified or the texture can be attached layered where geometry shaders can set the draw layer via NodeLayer.
+        bool layered{true};
+
         RenderGraphAttachment() = default;
 
         explicit RenderGraphAttachment(const RenderGraphResource texture)
@@ -70,18 +74,18 @@ namespace xng {
         }
 
         RenderGraphAttachment(const RenderGraphResource texture, const size_t index)
-            : texture(texture), index(index) {
+            : texture(texture), index(index), layered(false) {
         }
 
         RenderGraphAttachment(const RenderGraphResource texture, const CubeMapFace face)
-            : texture(texture), face(face) {
+            : texture(texture), face(face), layered(false) {
         }
 
         RenderGraphAttachment(const RenderGraphResource texture,
                               const size_t index,
                               const CubeMapFace face,
                               const size_t mipMapLevel)
-            : texture(texture), index(index), face(face), mipMapLevel(mipMapLevel) {
+            : texture(texture), index(index), face(face), mipMapLevel(mipMapLevel), layered(false) {
         }
 
         RenderGraphAttachment(const RenderGraphResource texture,
@@ -94,7 +98,8 @@ namespace xng {
               face(face),
               mipMapLevel(mipMapLevel),
               clearAttachment(true),
-              clearColor(clearColor) {
+              clearColor(clearColor),
+              layered(false) {
         }
 
         RenderGraphAttachment(const RenderGraphResource texture,
@@ -107,7 +112,8 @@ namespace xng {
               face(face),
               mipMapLevel(mipMapLevel),
               clearAttachment(true),
-              clearColorFloat(clearColorFloat) {
+              clearColorFloat(clearColorFloat),
+              layered(false) {
         }
 
         RenderGraphAttachment(const RenderGraphResource texture,
@@ -120,7 +126,8 @@ namespace xng {
               face(face),
               mipMapLevel(mipMapLevel),
               clearAttachment(true),
-              clearColorInt(clearColor) {
+              clearColorInt(clearColor),
+              layered(false) {
         }
 
         RenderGraphAttachment(const RenderGraphResource texture,
@@ -133,7 +140,8 @@ namespace xng {
               face(face),
               mipMapLevel(mipMapLevel),
               clearAttachment(true),
-              clearColorUint(clearColor) {
+              clearColorUint(clearColor),
+              layered(false) {
         }
 
         RenderGraphAttachment(const RenderGraphResource texture,
@@ -148,7 +156,8 @@ namespace xng {
               mipMapLevel(mipMapLevel),
               clearAttachment(true),
               clearDepth(clearDepth),
-              clearStencil(clearStencil) {
+              clearStencil(clearStencil),
+              layered(false) {
         }
     };
 }

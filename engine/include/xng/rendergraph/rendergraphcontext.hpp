@@ -293,6 +293,8 @@ namespace xng {
 
         virtual void clearColorAttachment(size_t binding, const Vec4u &clearColor) = 0;
 
+        virtual void clearColorAttachment(size_t binding, const Vec4f &clearColor) = 0;
+
         virtual void clearDepthStencilAttachment(float clearDepth, unsigned int clearStencil) = 0;
 
         virtual void clearDepthAttachment(float clearDepth) = 0;

@@ -476,29 +476,13 @@ void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorA
         auto &tex = getTexture(attachment.texture);
         if (attachment.clearAttachment) {
             if (tex.texture.format >= R8I && tex.texture.format <= RGBA32I) {
-                clearTextureColor(attachment.texture,
-                                  attachment.clearColorInt,
-                                  attachment.index,
-                                  attachment.face,
-                                  attachment.mipMapLevel);
+                clearColorAttachment(i, attachment.clearColorInt);
             } else if (tex.texture.format >= R8UI && tex.texture.format <= RGBA32UI) {
-                clearTextureColor(attachment.texture,
-                                  attachment.clearColorUint,
-                                  attachment.index,
-                                  attachment.face,
-                                  attachment.mipMapLevel);
+                clearColorAttachment(i, attachment.clearColorUint);
             } else if (tex.texture.format >= R8 && tex.texture.format <= RGBA32F) {
-                clearTextureColor(attachment.texture,
-                                  attachment.clearColorFloat,
-                                  attachment.index,
-                                  attachment.face,
-                                  attachment.mipMapLevel);
+                clearColorAttachment(i, attachment.clearColorFloat);
             } else {
-                clearTextureColor(attachment.texture,
-                                  attachment.clearColor,
-                                  attachment.index,
-                                  attachment.face,
-                                  attachment.mipMapLevel);
+                clearColorAttachment(i, attachment.clearColor);
             }
         }
         framebuffer->attach(attachment, tex, GL_COLOR_ATTACHMENT0 + i);
@@ -510,21 +494,37 @@ void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorA
     if (depthStencilAttachment.texture) {
         auto &attachment = depthStencilAttachment;
         auto &tex = getTexture(attachment.texture);
-        if (attachment.clearAttachment) {
-            clearTextureDepthStencil(attachment.texture,
-                                     attachment.clearDepth,
-                                     attachment.clearStencil,
-                                     attachment.index,
-                                     attachment.face,
-                                     attachment.mipMapLevel);
+        if (tex.texture.format == DEPTH
+            || tex.texture.format >= DEPTH_32F && tex.texture.format <= DEPTH_16) {
+            if (attachment.clearAttachment) {
+                clearDepthAttachment(attachment.clearDepth);
+            }
+            framebuffer->attach(depthStencilAttachment, tex, GL_DEPTH_ATTACHMENT);
+        } else if (tex.texture.format == STENCIL
+                   || tex.texture.format >= STENCIL_32 && tex.texture.format <= STENCIL_8) {
+            if (attachment.clearAttachment) {
+                clearStencilAttachment(attachment.clearStencil);
+            }
+            framebuffer->attach(depthStencilAttachment, tex, GL_STENCIL_ATTACHMENT);
+        } else if (tex.texture.format == DEPTH_STENCIL || tex.texture.format == DEPTH24_STENCIL8) {
+            if (attachment.clearAttachment) {
+                clearDepthStencilAttachment(attachment.clearDepth, attachment.clearStencil);
+            }
+            framebuffer->attach(depthStencilAttachment, tex, GL_DEPTH_STENCIL_ATTACHMENT);
+        } else {
+            throw std::runtime_error("Invalid depth/stencil attachment");
         }
-        framebuffer->attach(depthStencilAttachment, tex, GL_DEPTH_STENCIL_ATTACHMENT);
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer->FBO);
 
     glBindVertexArray(vertexArray->VAO);
+
+    auto fstatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
+    if (fstatus != GL_FRAMEBUFFER_COMPLETE) {
+        throw std::runtime_error("Framebuffer is incomplete");
+    }
     oglCheckError();
 
     oglDebugEndGroup();
@@ -534,6 +534,11 @@ void ContextGL::bindPipeline(const RenderGraphResource pipeline) {
     oglDebugStartGroup("ContextGL::bindPipeline");
 
     const auto &pipelineDesc = resources.pipelines.at(pipeline);
+
+    // Bind shader program
+    auto shaderProgram = resources.shaderPrograms.at(pipeline);
+    glUseProgram(shaderProgram->programHandle);
+
     if (pipelineDesc.multisample)
         glEnable(GL_MULTISAMPLE);
     else
@@ -545,10 +550,6 @@ void ContextGL::bindPipeline(const RenderGraphResource pipeline) {
         glDisable(GL_SAMPLE_COVERAGE);
 
     glSampleCoverage(pipelineDesc.multiSampleFrequency, GL_TRUE);
-
-    // Bind shader program
-    auto shaderProgram = resources.shaderPrograms.at(pipeline);
-    glUseProgram(shaderProgram->programHandle);
 
     // Setup pipeline state
     glDepthFunc(convert(pipelineDesc.depthTestMode));
@@ -741,11 +742,37 @@ void ContextGL::clearColorAttachment(const size_t binding, const ColorRGBA clear
     const auto &attachment = framebufferColorAttachments.at(binding);
     auto &tex = getTexture(attachment.texture);
 
-    clearTextureColor(attachment.texture,
-                      clearColor,
-                      attachment.index,
-                      attachment.face,
-                      attachment.mipMapLevel);
+    if ((tex.texture.textureType == TEXTURE_CUBE_MAP
+         || tex.texture.textureType == TEXTURE_2D_ARRAY
+         || tex.texture.textureType == TEXTURE_CUBE_MAP_ARRAY
+         || tex.texture.textureType == TEXTURE_2D_MULTISAMPLE_ARRAY)
+        && attachment.layered) {
+        if (tex.texture.textureType == TEXTURE_CUBE_MAP_ARRAY) {
+            for (auto i = 0; i < tex.texture.arrayLayers; i++) {
+                for (auto face = 0; face < 6; face++) {
+                    clearTextureColor(attachment.texture,
+                                      clearColor,
+                                      (i * 6) + face,
+                                      {},
+                                      attachment.mipMapLevel);
+                }
+            }
+        } else {
+            for (auto i = 0; i < tex.texture.arrayLayers; i++) {
+                clearTextureColor(attachment.texture,
+                                  clearColor,
+                                  i,
+                                  {},
+                                  attachment.mipMapLevel);
+            }
+        }
+    } else {
+        clearTextureColor(attachment.texture,
+                          clearColor,
+                          attachment.index,
+                          attachment.face,
+                          attachment.mipMapLevel);
+    }
 
     oglCheckError();
 
@@ -758,11 +785,37 @@ void ContextGL::clearColorAttachment(const size_t binding, const Vec4i &clearCol
     const auto &attachment = framebufferColorAttachments.at(binding);
     auto &tex = getTexture(attachment.texture);
 
-    clearTextureColor(attachment.texture,
-                      clearColor,
-                      attachment.index,
-                      attachment.face,
-                      attachment.mipMapLevel);
+    if ((tex.texture.textureType == TEXTURE_CUBE_MAP
+         || tex.texture.textureType == TEXTURE_2D_ARRAY
+         || tex.texture.textureType == TEXTURE_CUBE_MAP_ARRAY
+         || tex.texture.textureType == TEXTURE_2D_MULTISAMPLE_ARRAY)
+        && attachment.layered) {
+        if (tex.texture.textureType == TEXTURE_CUBE_MAP_ARRAY) {
+            for (auto i = 0; i < tex.texture.arrayLayers; i++) {
+                for (auto face = 0; face < 6; face++) {
+                    clearTextureColor(attachment.texture,
+                                      clearColor,
+                                      (i * 6) + face,
+                                      {},
+                                      attachment.mipMapLevel);
+                }
+            }
+        } else {
+            for (auto i = 0; i < tex.texture.arrayLayers; i++) {
+                clearTextureColor(attachment.texture,
+                                  clearColor,
+                                  i,
+                                  {},
+                                  attachment.mipMapLevel);
+            }
+        }
+    } else {
+        clearTextureColor(attachment.texture,
+                          clearColor,
+                          attachment.index,
+                          attachment.face,
+                          attachment.mipMapLevel);
+    }
 
     oglDebugEndGroup();
 }
@@ -771,12 +824,80 @@ void ContextGL::clearColorAttachment(const size_t binding, const Vec4u &clearCol
     oglDebugStartGroup("ContextGL::clearColorAttachment");
 
     const auto &attachment = framebufferColorAttachments.at(binding);
+    auto &tex = getTexture(attachment.texture);
 
-    clearTextureColor(attachment.texture,
-                      clearColor,
-                      attachment.index,
-                      attachment.face,
-                      attachment.mipMapLevel);
+    if ((tex.texture.textureType == TEXTURE_CUBE_MAP
+         || tex.texture.textureType == TEXTURE_2D_ARRAY
+         || tex.texture.textureType == TEXTURE_CUBE_MAP_ARRAY
+         || tex.texture.textureType == TEXTURE_2D_MULTISAMPLE_ARRAY)
+        && attachment.layered) {
+        if (tex.texture.textureType == TEXTURE_CUBE_MAP_ARRAY) {
+            for (auto i = 0; i < tex.texture.arrayLayers; i++) {
+                for (auto face = 0; face < 6; face++) {
+                    clearTextureColor(attachment.texture,
+                                      clearColor,
+                                      (i * 6) + face,
+                                      {},
+                                      attachment.mipMapLevel);
+                }
+            }
+        } else {
+            for (auto i = 0; i < tex.texture.arrayLayers; i++) {
+                clearTextureColor(attachment.texture,
+                                  clearColor,
+                                  i,
+                                  {},
+                                  attachment.mipMapLevel);
+            }
+        }
+    } else {
+        clearTextureColor(attachment.texture,
+                          clearColor,
+                          attachment.index,
+                          attachment.face,
+                          attachment.mipMapLevel);
+    }
+
+    oglDebugEndGroup();
+}
+
+void ContextGL::clearColorAttachment(size_t binding, const Vec4f &clearColor) {
+    oglDebugStartGroup("ContextGL::clearColorAttachment");
+
+    const auto &attachment = framebufferColorAttachments.at(binding);
+    auto &tex = getTexture(attachment.texture);
+
+    if ((tex.texture.textureType == TEXTURE_CUBE_MAP
+         || tex.texture.textureType == TEXTURE_2D_ARRAY
+         || tex.texture.textureType == TEXTURE_CUBE_MAP_ARRAY
+         || tex.texture.textureType == TEXTURE_2D_MULTISAMPLE_ARRAY)
+        && attachment.layered) {
+        if (tex.texture.textureType == TEXTURE_CUBE_MAP_ARRAY) {
+            for (auto i = 0; i < tex.texture.arrayLayers; i++) {
+                for (auto face = 0; face < 6; face++) {
+                    clearTextureColor(attachment.texture,
+                                      clearColor,
+                                      (i * 6) + face,
+                                      {},
+                                      attachment.mipMapLevel);
+                }
+            }
+        } else {
+            for (auto i = 0; i < tex.texture.arrayLayers; i++) {
+                clearTextureColor(attachment.texture,
+                                  clearColor,
+                                  i,
+                                  {},
+                                  attachment.mipMapLevel);
+            }
+        }
+    } else {
+        clearTextureColor(attachment.texture,
+                          clearColor,
+                          attachment.index,
+                          attachment.face,
+                          attachment.mipMapLevel);
+    }
 
     oglDebugEndGroup();
 }
@@ -785,13 +906,42 @@ void ContextGL::clearDepthStencilAttachment(const float clearDepth, const unsign
     oglDebugStartGroup("ContextGL::clearDepthStencilAttachment");
 
     const auto &attachment = framebufferDepthStencilAttachment;
+    auto &tex = getTexture(attachment.texture);
 
-    clearTextureDepthStencil(attachment.texture,
-                             clearDepth,
-                             clearStencil,
-                             attachment.index,
-                             attachment.face,
-                             attachment.mipMapLevel);
+    if ((tex.texture.textureType == TEXTURE_CUBE_MAP
+         || tex.texture.textureType == TEXTURE_2D_ARRAY
+         || tex.texture.textureType == TEXTURE_CUBE_MAP_ARRAY
+         || tex.texture.textureType == TEXTURE_2D_MULTISAMPLE_ARRAY)
+        && attachment.layered) {
+        if (tex.texture.textureType == TEXTURE_CUBE_MAP_ARRAY) {
+            for (auto i = 0; i < tex.texture.arrayLayers; i++) {
+                for (auto face = 0; face < 6; face++) {
+                    clearTextureDepthStencil(attachment.texture,
+                                             clearDepth,
+                                             clearStencil,
+                                             (i * 6) + face,
+                                             {},
+                                             attachment.mipMapLevel);
+                }
+            }
+        } else {
+            for (auto i = 0; i < tex.texture.arrayLayers; i++) {
+                clearTextureDepthStencil(attachment.texture,
+                                         clearDepth,
+                                         clearStencil,
+                                         i,
+                                         {},
+                                         attachment.mipMapLevel);
+            }
+        }
+    } else {
+        clearTextureDepthStencil(attachment.texture,
+                                 clearDepth,
+                                 clearStencil,
+                                 attachment.index,
+                                 attachment.face,
+                                 attachment.mipMapLevel);
+    }
 
     oglDebugEndGroup();
 }
@@ -802,12 +952,40 @@ void ContextGL::clearDepthAttachment(const float clearDepth) {
     const auto &attachment = framebufferDepthStencilAttachment;
     auto &tex = getTexture(attachment.texture);
 
-    clearTextureDepthStencil(attachment.texture,
-                             clearDepth,
-                             0,
-                             attachment.index,
-                             attachment.face,
-                             attachment.mipMapLevel);
+    if ((tex.texture.textureType == TEXTURE_CUBE_MAP
+         || tex.texture.textureType == TEXTURE_2D_ARRAY
+         || tex.texture.textureType == TEXTURE_CUBE_MAP_ARRAY
+         || tex.texture.textureType == TEXTURE_2D_MULTISAMPLE_ARRAY)
+        && attachment.layered) {
+        if (tex.texture.textureType == TEXTURE_CUBE_MAP_ARRAY) {
+            for (auto i = 0; i < tex.texture.arrayLayers; i++) {
+                for (auto face = 0; face < 6; face++) {
+                    clearTextureDepthStencil(attachment.texture,
+                                             clearDepth,
+                                             0,
+                                             (i * 6) + face,
+                                             {},
+                                             attachment.mipMapLevel);
+                }
+            }
+        } else {
+            for (auto i = 0; i < tex.texture.arrayLayers; i++) {
+                clearTextureDepthStencil(attachment.texture,
+                                         clearDepth,
+                                         0,
+                                         i,
+                                         {},
+                                         attachment.mipMapLevel);
+            }
+        }
+    } else {
+        clearTextureDepthStencil(attachment.texture,
+                                 clearDepth,
+                                 0,
+                                 attachment.index,
+                                 attachment.face,
+                                 attachment.mipMapLevel);
+    }
 
     oglDebugEndGroup();
 }
@@ -818,12 +996,40 @@ void ContextGL::clearStencilAttachment(const unsigned int clearStencil) {
     const auto &attachment = framebufferDepthStencilAttachment;
     auto &tex = getTexture(attachment.texture);
 
-    clearTextureDepthStencil(attachment.texture,
-                             0,
-                             clearStencil,
-                             attachment.index,
-                             attachment.face,
-                             attachment.mipMapLevel);
+    if ((tex.texture.textureType == TEXTURE_CUBE_MAP
+         || tex.texture.textureType == TEXTURE_2D_ARRAY
+         || tex.texture.textureType == TEXTURE_CUBE_MAP_ARRAY
+         || tex.texture.textureType == TEXTURE_2D_MULTISAMPLE_ARRAY)
+        && attachment.layered) {
+        if (tex.texture.textureType == TEXTURE_CUBE_MAP_ARRAY) {
+            for (auto i = 0; i < tex.texture.arrayLayers; i++) {
+                for (auto face = 0; face < 6; face++) {
+                    clearTextureDepthStencil(attachment.texture,
+                                             1,
+                                             clearStencil,
+                                             (i * 6) + face,
+                                             {},
+                                             attachment.mipMapLevel);
+                }
+            }
+        } else {
+            for (auto i = 0; i < tex.texture.arrayLayers; i++) {
+                clearTextureDepthStencil(attachment.texture,
+                                         1,
+                                         clearStencil,
+                                         i,
+                                         {},
+                                         attachment.mipMapLevel);
+            }
+        }
+    } else {
+        clearTextureDepthStencil(attachment.texture,
+                                 1,
+                                 clearStencil,
+                                 attachment.index,
+                                 attachment.face,
+                                 attachment.mipMapLevel);
+    }
 
     oglDebugEndGroup();
 }
