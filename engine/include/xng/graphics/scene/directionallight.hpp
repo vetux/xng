@@ -32,7 +32,7 @@ namespace xng {
             message.value("castShadows", castShadows);
             message.value("shadowNearPlane", shadowNearPlane);
             message.value("shadowFarPlane", shadowFarPlane);
-            message.value("shadowPosition", shadowPosition);
+            message.value("shadowProjectionExtent", shadowProjectionExtent);
             message.value("direction", direction);
             return *this;
         }
@@ -44,23 +44,27 @@ namespace xng {
             castShadows >> message["castShadows"];
             shadowNearPlane >> message["shadowNearPlane"];
             shadowFarPlane >> message["shadowFarPlane"];
-            shadowPosition >> message["shadowPosition"];
+            shadowProjectionExtent >> message["shadowProjectionExtent"];
             direction >> message["direction"];
             return message;
         }
 
         ColorRGBA color = ColorRGBA::white(); // The color of the light
         float power = 1; // The strength of the light, for directional lights should be in the range 0 - 1
-        Vec3f direction = Vec3f(0.5, -1, -1);
+        Vec3f direction = Vec3f(0.5, -1, -1); // The direction the light is pointing
 
         bool castShadows = true;
 
-        float shadowNearPlane = -10;
+        // The Near / Far plane of the orthographic projection used to generate the shadow map.
+        // Must encompass the desired depth of the scene.
+        float shadowNearPlane = -100;
         float shadowFarPlane = 100;
 
-        Vec2f shadowPosition{}; // The x and z coordinates used for generating the shadow map for this light
-        float shadowProjectionExtent = 50; // The extent of the orthographic projection used for generating shadow maps,
-                                            // larger values means larger shadow area around the shadowPosition at the cost of reduced resolution.
+        // The extent of the orthographic projection used for generating the shadow map.
+        // Larger values mean a larger part of the scene is rendered into the shadow map.
+        // The light transform controls the x, y offset for generating the shadow map.
+        // The light transform should typically be synced to the camera position.
+        float shadowProjectionExtent = 10;
     };
 }
 

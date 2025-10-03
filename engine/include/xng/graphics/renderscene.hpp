@@ -39,7 +39,7 @@ namespace xng {
         std::map<size_t, ResourceHandle<Material> > materials;
 
         bool castShadows = false;
-        bool receiveShadows = false;
+        bool receiveShadows = true;
     };
 
     struct SkinnedMeshObject {
@@ -50,7 +50,7 @@ namespace xng {
         std::map<size_t, ResourceHandle<Material> > materials;
 
         bool castShadows = false;
-        bool receiveShadows = false;
+        bool receiveShadows = true;
 
         // Optional dynamic bone transform values which override the values in SkinnedMesh.rig, For animation
         std::map<std::string, Mat4f> boneTransforms;
@@ -59,19 +59,16 @@ namespace xng {
     struct PointLightObject {
         Transform transform;
         PointLight light;
-        bool castShadows = false;
     };
 
     struct DirectionalLightObject {
         Transform transform;
         DirectionalLight light;
-        bool castShadows = false;
     };
 
     struct SpotLightObject {
         Transform transform;
         SpotLight light;
-        bool castShadows = false;
     };
 
     struct SpriteObject {

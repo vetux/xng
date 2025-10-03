@@ -50,8 +50,8 @@ namespace xng {
 
         bool castShadows = true;
 
-        float shadowNearPlane = 0.1f;
-        float shadowFarPlane = 10000;
+        float shadowNearPlane = 0.01f;
+        float shadowFarPlane = 1000;
     };
 }
 

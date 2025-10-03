@@ -28,17 +28,14 @@ namespace xng {
         XNG_COMPONENT_TYPENAME(PointLightComponent)
 
         PointLight light;
-        bool castShadows = false;
 
         Messageable & operator<<(const Message &message) override {
             message.value("light", light);
-            message.value("castShadows", castShadows);
             return Component::operator<<(message);
         }
 
         Message & operator>>(Message &message) const override {
             light >> message["light"];
-            castShadows >> message["castShadows"];
             return Component::operator>>(message);
         }
     };
