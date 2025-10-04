@@ -27,13 +27,28 @@
 
 namespace xng {
     struct XENGINE_EXPORT SpotLight final : Messageable {
+        ColorRGBA color = ColorRGBA::white(); // The color of the light
+        float power = 1; // The strength of the light
+
+        // The inner cut off angle in degrees
+        float cutOff = 12.5;
+        // The outer cut off angle in degrees, The light is faded out between cutOff / outerCutOff
+        float outerCutOff = 17.5;
+
+        float quadratic = 0.032f;
+        float constant = 1;
+        float linear = 0.09;
+
+        bool castShadows = true;
+        float shadowNearPlane = 0.01;
+        float shadowFarPlane = 50;
+
         Messageable &operator<<(const Message &message) override {
             color << message.getMessage("color");
             message.value("power", power);
             message.value("castShadows", castShadows);
             message.value("shadowNearPlane", shadowNearPlane);
             message.value("shadowFarPlane", shadowFarPlane);
-            message.value("direction", direction);
             message.value("quadratic", quadratic);
             message.value("cutOff", cutOff);
             message.value("outerCutOff", outerCutOff);
@@ -49,7 +64,6 @@ namespace xng {
             castShadows >> message["castShadows"];
             shadowNearPlane >> message["shadowNearPlane"];
             shadowFarPlane >> message["shadowFarPlane"];
-            direction >> message["direction"];
             quadratic >> message["quadratic"];
             cutOff >> message["cutOff"];
             outerCutOff >> message["outerCutOff"];
@@ -58,20 +72,21 @@ namespace xng {
             return message;
         }
 
-        ColorRGBA color = ColorRGBA::white(); // The color of the light
-        float power = 10; // The strength of the light
-        Vec3f direction = Vec3f(0, 0, 1);
+        bool operator==(const SpotLight &other) const {
+            return color == other.color
+                   && power == other.power
+                   && castShadows == other.castShadows
+                   && shadowNearPlane == other.shadowNearPlane
+                   && shadowFarPlane == other.shadowFarPlane
+                   && quadratic == other.quadratic
+                   && cutOff == other.cutOff
+                   && outerCutOff == other.outerCutOff
+                   && constant == other.constant;
+        }
 
-        float cutOff = 12.5; // The inner cut off angle in degrees
-        float outerCutOff = 17.5; // The outer cut off angle in degrees, The light is faded out between cutOff / outerCutOff
-
-        float quadratic = 0.032f;
-        float constant = 1;
-        float linear = 0.09;
-
-        bool castShadows = true;
-        float shadowNearPlane = 0.01;
-        float shadowFarPlane = 50;
+        bool operator!=(const SpotLight &other) const {
+            return !(*this == other);
+        }
     };
 }
 

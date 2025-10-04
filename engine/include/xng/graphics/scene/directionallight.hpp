@@ -26,32 +26,8 @@
 
 namespace xng {
     struct XENGINE_EXPORT DirectionalLight : public Messageable {
-        Messageable &operator<<(const Message &message) override {
-            color << message.getMessage("color");
-            message.value("power", power);
-            message.value("castShadows", castShadows);
-            message.value("shadowNearPlane", shadowNearPlane);
-            message.value("shadowFarPlane", shadowFarPlane);
-            message.value("shadowProjectionExtent", shadowProjectionExtent);
-            message.value("direction", direction);
-            return *this;
-        }
-
-        Message &operator>>(Message &message) const override {
-            message = Message(Message::DICTIONARY);
-            color >> message["color"];
-            power >> message["power"];
-            castShadows >> message["castShadows"];
-            shadowNearPlane >> message["shadowNearPlane"];
-            shadowFarPlane >> message["shadowFarPlane"];
-            shadowProjectionExtent >> message["shadowProjectionExtent"];
-            direction >> message["direction"];
-            return message;
-        }
-
         ColorRGBA color = ColorRGBA::white(); // The color of the light
         float power = 1; // The strength of the light, for directional lights should be in the range 0 - 1
-        Vec3f direction = Vec3f(0.5, -1, -1); // The direction the light is pointing
 
         bool castShadows = true;
 
@@ -65,6 +41,40 @@ namespace xng {
         // The light transform controls the x, y offset for generating the shadow map.
         // The light transform should typically be synced to the camera position.
         float shadowProjectionExtent = 10;
+
+        Messageable &operator<<(const Message &message) override {
+            color << message.getMessage("color");
+            message.value("power", power);
+            message.value("castShadows", castShadows);
+            message.value("shadowNearPlane", shadowNearPlane);
+            message.value("shadowFarPlane", shadowFarPlane);
+            message.value("shadowProjectionExtent", shadowProjectionExtent);
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            color >> message["color"];
+            power >> message["power"];
+            castShadows >> message["castShadows"];
+            shadowNearPlane >> message["shadowNearPlane"];
+            shadowFarPlane >> message["shadowFarPlane"];
+            shadowProjectionExtent >> message["shadowProjectionExtent"];
+            return message;
+        }
+
+        bool operator==(const DirectionalLight &other) const {
+            return color == other.color
+                   && power == other.power
+                   && castShadows == other.castShadows
+                   && shadowNearPlane == other.shadowNearPlane
+                   && shadowFarPlane == other.shadowFarPlane
+                   && shadowProjectionExtent == other.shadowProjectionExtent;
+        }
+
+        bool operator!=(const DirectionalLight &other) const {
+            return !(*this == other);
+        }
     };
 }
 

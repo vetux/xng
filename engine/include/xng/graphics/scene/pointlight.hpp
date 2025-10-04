@@ -26,6 +26,14 @@
 
 namespace xng {
     struct XENGINE_EXPORT PointLight final : Messageable {
+        ColorRGBA color = ColorRGBA::white(); // The color of the light
+        float power = 1; // The strength of the light
+
+        bool castShadows = true;
+
+        float shadowNearPlane = 0.01f;
+        float shadowFarPlane = 1000;
+
         Messageable &operator<<(const Message &message) override {
             color << message.getMessage("color");
             message.value("power", power);
@@ -45,13 +53,17 @@ namespace xng {
             return message;
         }
 
-        ColorRGBA color = ColorRGBA::white(); // The color of the light
-        float power = 10; // The strength of the light
+        bool operator==(const PointLight &other) const {
+            return color == other.color
+                   && power == other.power
+                   && castShadows == other.castShadows
+                   && shadowNearPlane == other.shadowNearPlane
+                   && shadowFarPlane == other.shadowFarPlane;
+        }
 
-        bool castShadows = true;
-
-        float shadowNearPlane = 0.01f;
-        float shadowFarPlane = 1000;
+        bool operator!=(const PointLight &other) const {
+            return !(*this == other);
+        }
     };
 }
 
