@@ -282,156 +282,161 @@ namespace xng {
                          boneMatrices.size() * sizeof(Mat4f), 0);
 
         // Render Point Light Shadow Maps
-        ctx.beginRenderPass({}, RenderGraphAttachment(shadowMaps.pointShadowMaps));
-        ctx.clearDepthAttachment(1);
-        ctx.bindPipeline(pointPipeline);
-        ctx.setViewport({}, pointShadowMapResolution);
-        ctx.bindVertexBuffer(meshBuffer.getVertexBuffer());
-        ctx.bindIndexBuffer(meshBuffer.getIndexBuffer());
-        ctx.bindShaderBuffer("drawData", shaderBuffer);
-        ctx.bindShaderBuffer("bones", boneBuffer);
-        ctx.bindShaderBuffer("lightData", pointLightBuffer);
-        for (auto i = 0; i < pointLights.size(); i++) {
-            auto &lightObject = pointLights.at(i);
-            auto &transform = lightObject.transform;
-            float aspect = 1;
-            float near = lightObject.light.shadowNearPlane;
-            float far = lightObject.light.shadowFarPlane;
+        if (pointLights.size() > 0) {
+            ctx.beginRenderPass({}, RenderGraphAttachment(shadowMaps.pointShadowMaps));
+            ctx.clearDepthAttachment(1);
+            ctx.bindPipeline(pointPipeline);
+            ctx.setViewport({}, pointShadowMapResolution);
+            ctx.bindVertexBuffer(meshBuffer.getVertexBuffer());
+            ctx.bindIndexBuffer(meshBuffer.getIndexBuffer());
+            ctx.bindShaderBuffer("drawData", shaderBuffer);
+            ctx.bindShaderBuffer("bones", boneBuffer);
+            ctx.bindShaderBuffer("lightData", pointLightBuffer);
+            for (auto i = 0; i < pointLights.size(); i++) {
+                auto &lightObject = pointLights.at(i);
+                auto &transform = lightObject.transform;
+                float aspect = 1;
+                float near = lightObject.light.shadowNearPlane;
+                float far = lightObject.light.shadowFarPlane;
 
-            Mat4f shadowProj = MatrixMath::perspective(90.0f, aspect, near, far);
+                Mat4f shadowProj = MatrixMath::perspective(90.0f, aspect, near, far);
 
-            auto &lightPos = transform.getPosition();
+                auto &lightPos = transform.getPosition();
 
-            ShadowPointLightData lightData;
-            lightData.shadowMatrices[0] = (shadowProj *
-                                           MatrixMath::lookAt(lightPos, lightPos + Vec3f(1.0, 0.0, 0.0),
-                                                              Vec3f(0.0, -1.0, 0.0)));
-            lightData.shadowMatrices[1] = (shadowProj *
-                                           MatrixMath::lookAt(lightPos, lightPos + Vec3f(-1.0, 0.0, 0.0),
-                                                              Vec3f(0.0, -1.0, 0.0)));
-            lightData.shadowMatrices[2] = (shadowProj *
-                                           MatrixMath::lookAt(lightPos, lightPos + Vec3f(0.0, 1.0, 0.0),
-                                                              Vec3f(0.0, 0.0, 1.0)));
-            lightData.shadowMatrices[3] = (shadowProj *
-                                           MatrixMath::lookAt(lightPos, lightPos + Vec3f(0.0, -1.0, 0.0),
-                                                              Vec3f(0.0, 0.0, -1.0)));
-            lightData.shadowMatrices[4] = (shadowProj *
-                                           MatrixMath::lookAt(lightPos, lightPos + Vec3f(0.0, 0.0, 1.0),
-                                                              Vec3f(0.0, -1.0, 0.0)));
-            lightData.shadowMatrices[5] = (shadowProj *
-                                           MatrixMath::lookAt(lightPos, lightPos + Vec3f(0.0, 0.0, -1.0),
-                                                              Vec3f(0.0, -1.0, 0.0)));
+                ShadowPointLightData lightData;
+                lightData.shadowMatrices[0] = (shadowProj *
+                                               MatrixMath::lookAt(lightPos, lightPos + Vec3f(1.0, 0.0, 0.0),
+                                                                  Vec3f(0.0, -1.0, 0.0)));
+                lightData.shadowMatrices[1] = (shadowProj *
+                                               MatrixMath::lookAt(lightPos, lightPos + Vec3f(-1.0, 0.0, 0.0),
+                                                                  Vec3f(0.0, -1.0, 0.0)));
+                lightData.shadowMatrices[2] = (shadowProj *
+                                               MatrixMath::lookAt(lightPos, lightPos + Vec3f(0.0, 1.0, 0.0),
+                                                                  Vec3f(0.0, 0.0, 1.0)));
+                lightData.shadowMatrices[3] = (shadowProj *
+                                               MatrixMath::lookAt(lightPos, lightPos + Vec3f(0.0, -1.0, 0.0),
+                                                                  Vec3f(0.0, 0.0, -1.0)));
+                lightData.shadowMatrices[4] = (shadowProj *
+                                               MatrixMath::lookAt(lightPos, lightPos + Vec3f(0.0, 0.0, 1.0),
+                                                                  Vec3f(0.0, -1.0, 0.0)));
+                lightData.shadowMatrices[5] = (shadowProj *
+                                               MatrixMath::lookAt(lightPos, lightPos + Vec3f(0.0, 0.0, -1.0),
+                                                                  Vec3f(0.0, -1.0, 0.0)));
 
-            lightData.lightPosFarPlane = Vec4f(lightPos.x, lightPos.y, lightPos.z, far).getMemory();
+                lightData.lightPosFarPlane = Vec4f(lightPos.x, lightPos.y, lightPos.z, far).getMemory();
 
-            lightData.layer[0] = i;
+                lightData.layer[0] = i;
 
-            ctx.uploadBuffer(pointLightBuffer,
-                             reinterpret_cast<const uint8_t *>(&lightData),
-                             sizeof(ShadowPointLightData),
-                             0);
-
-            for (auto drawIndex = 0; drawIndex < meshData.size(); drawIndex++) {
-                auto &mesh = meshData.at(drawIndex);
-                auto &draw = drawData.at(drawIndex);
-                ctx.uploadBuffer(shaderBuffer,
-                                 reinterpret_cast<const uint8_t *>(&draw),
-                                 sizeof(ShadowShaderDrawData),
+                ctx.uploadBuffer(pointLightBuffer,
+                                 reinterpret_cast<const uint8_t *>(&lightData),
+                                 sizeof(ShadowPointLightData),
                                  0);
-                ctx.drawIndexed(mesh.drawCall, mesh.baseVertex);
+
+                for (auto drawIndex = 0; drawIndex < meshData.size(); drawIndex++) {
+                    auto &mesh = meshData.at(drawIndex);
+                    auto &draw = drawData.at(drawIndex);
+                    ctx.uploadBuffer(shaderBuffer,
+                                     reinterpret_cast<const uint8_t *>(&draw),
+                                     sizeof(ShadowShaderDrawData),
+                                     0);
+                    ctx.drawIndexed(mesh.drawCall, mesh.baseVertex);
+                }
             }
+            ctx.endRenderPass();
         }
-        ctx.endRenderPass();
 
         // Render Directional Light Shadow Maps
-        ctx.beginRenderPass({}, RenderGraphAttachment(shadowMaps.dirShadowMaps));
-        ctx.clearDepthAttachment(1);
-        ctx.bindPipeline(dirPipeline);
-        ctx.setViewport({}, dirShadowMapResolution);
-        ctx.bindVertexBuffer(meshBuffer.getVertexBuffer());
-        ctx.bindIndexBuffer(meshBuffer.getIndexBuffer());
-        ctx.bindShaderBuffer("drawData", shaderBuffer);
-        ctx.bindShaderBuffer("bones", boneBuffer);
-        ctx.bindShaderBuffer("lightData", dirLightBuffer);
-        for (auto i = 0; i < dirLights.size(); i++) {
-            auto &lightObject = dirLights.at(i);
-            auto &light = lightObject.light;
+        if (dirLights.size() > 0) {
+            ctx.beginRenderPass({}, RenderGraphAttachment(shadowMaps.dirShadowMaps));
+            ctx.clearDepthAttachment(1);
+            ctx.bindPipeline(dirPipeline);
+            ctx.setViewport({}, dirShadowMapResolution);
+            ctx.bindVertexBuffer(meshBuffer.getVertexBuffer());
+            ctx.bindIndexBuffer(meshBuffer.getIndexBuffer());
+            ctx.bindShaderBuffer("drawData", shaderBuffer);
+            ctx.bindShaderBuffer("bones", boneBuffer);
+            ctx.bindShaderBuffer("lightData", dirLightBuffer);
+            for (auto i = 0; i < dirLights.size(); i++) {
+                auto &lightObject = dirLights.at(i);
+                auto &light = lightObject.light;
 
-            Mat4f shadowProj = MatrixMath::ortho(-light.shadowProjectionExtent,
-                                                 light.shadowProjectionExtent,
-                                                 -light.shadowProjectionExtent,
-                                                 light.shadowProjectionExtent,
-                                                 light.shadowNearPlane,
-                                                 light.shadowFarPlane)
-                               * MatrixMath::lookAt(lightObject.transform.getPosition(),
-                                                    lightObject.transform.getPosition() + light.direction,
-                                                    Vec3f(0, 1, 0));
+                Mat4f shadowProj = MatrixMath::ortho(-light.shadowProjectionExtent,
+                                                     light.shadowProjectionExtent,
+                                                     -light.shadowProjectionExtent,
+                                                     light.shadowProjectionExtent,
+                                                     light.shadowNearPlane,
+                                                     light.shadowFarPlane)
+                                   * MatrixMath::lookAt(lightObject.transform.getPosition(),
+                                                        lightObject.transform.getPosition() + lightObject.transform.forward(),
+                                                        Vec3f(0, 1, 0));
 
-            ShadowDirLightData lightData;
-            lightData.shadowMatrix = shadowProj;
-            lightData.layer[0] = i;
+                ShadowDirLightData lightData;
+                lightData.shadowMatrix = shadowProj;
+                lightData.layer[0] = i;
 
-            ctx.uploadBuffer(dirLightBuffer,
-                             reinterpret_cast<const uint8_t *>(&lightData),
-                             sizeof(ShadowDirLightData),
-                             0);
-
-            for (auto drawIndex = 0; drawIndex < meshData.size(); drawIndex++) {
-                auto &mesh = meshData.at(drawIndex);
-                auto &draw = drawData.at(drawIndex);
-                ctx.uploadBuffer(shaderBuffer,
-                                 reinterpret_cast<const uint8_t *>(&draw),
-                                 sizeof(ShadowShaderDrawData),
+                ctx.uploadBuffer(dirLightBuffer,
+                                 reinterpret_cast<const uint8_t *>(&lightData),
+                                 sizeof(ShadowDirLightData),
                                  0);
-                ctx.drawIndexed(mesh.drawCall, mesh.baseVertex);
+
+                for (auto drawIndex = 0; drawIndex < meshData.size(); drawIndex++) {
+                    auto &mesh = meshData.at(drawIndex);
+                    auto &draw = drawData.at(drawIndex);
+                    ctx.uploadBuffer(shaderBuffer,
+                                     reinterpret_cast<const uint8_t *>(&draw),
+                                     sizeof(ShadowShaderDrawData),
+                                     0);
+                    ctx.drawIndexed(mesh.drawCall, mesh.baseVertex);
+                }
             }
+            ctx.endRenderPass();
         }
-        ctx.endRenderPass();
 
         // Render Spot Light Shadow Maps
-        ctx.beginRenderPass({}, RenderGraphAttachment(shadowMaps.spotShadowMaps));
-        ctx.clearDepthAttachment(1);
-        ctx.bindPipeline(dirPipeline);
-        ctx.setViewport({}, spotShadowMapResolution);
-        ctx.bindVertexBuffer(meshBuffer.getVertexBuffer());
-        ctx.bindIndexBuffer(meshBuffer.getIndexBuffer());
-        ctx.bindShaderBuffer("drawData", shaderBuffer);
-        ctx.bindShaderBuffer("bones", boneBuffer);
-        ctx.bindShaderBuffer("lightData", dirLightBuffer);
-        for (auto i = 0; i < spotLights.size(); i++) {
-            auto &lightObject = spotLights.at(i);
-            auto &light = lightObject.light;
-            auto &transform = lightObject.transform;
-            float aspect = 1;
+        if (spotLights.size() > 0) {
+            ctx.beginRenderPass({}, RenderGraphAttachment(shadowMaps.spotShadowMaps));
+            ctx.clearDepthAttachment(1);
+            ctx.bindPipeline(dirPipeline);
+            ctx.setViewport({}, spotShadowMapResolution);
+            ctx.bindVertexBuffer(meshBuffer.getVertexBuffer());
+            ctx.bindIndexBuffer(meshBuffer.getIndexBuffer());
+            ctx.bindShaderBuffer("drawData", shaderBuffer);
+            ctx.bindShaderBuffer("bones", boneBuffer);
+            ctx.bindShaderBuffer("lightData", dirLightBuffer);
+            for (auto i = 0; i < spotLights.size(); i++) {
+                auto &lightObject = spotLights.at(i);
+                auto &light = lightObject.light;
+                auto &transform = lightObject.transform;
+                float aspect = 1;
 
-            Mat4f shadowProj = MatrixMath::perspective(45,
-                                                       aspect,
-                                                       light.shadowNearPlane,
-                                                       light.shadowFarPlane)
-                               * MatrixMath::lookAt(transform.getPosition(),
-                                                    transform.getPosition() + light.direction,
-                                                    Vec3f(0, 1, 0));
+                Mat4f shadowProj = MatrixMath::perspective(45,
+                                                           aspect,
+                                                           light.shadowNearPlane,
+                                                           light.shadowFarPlane)
+                                   * MatrixMath::lookAt(transform.getPosition(),
+                                                        transform.getPosition() + transform.forward(),
+                                                        Vec3f(0, 1, 0));
 
-            ShadowDirLightData lightData;
-            lightData.shadowMatrix = shadowProj;
-            lightData.layer[0] = i;
+                ShadowDirLightData lightData;
+                lightData.shadowMatrix = shadowProj;
+                lightData.layer[0] = i;
 
-            ctx.uploadBuffer(dirLightBuffer,
-                             reinterpret_cast<const uint8_t *>(&lightData),
-                             sizeof(ShadowDirLightData),
-                             0);
-
-            for (auto drawIndex = 0; drawIndex < meshData.size(); drawIndex++) {
-                auto &mesh = meshData.at(drawIndex);
-                auto &draw = drawData.at(drawIndex);
-                ctx.uploadBuffer(shaderBuffer,
-                                 reinterpret_cast<const uint8_t *>(&draw),
-                                 sizeof(ShadowShaderDrawData),
+                ctx.uploadBuffer(dirLightBuffer,
+                                 reinterpret_cast<const uint8_t *>(&lightData),
+                                 sizeof(ShadowDirLightData),
                                  0);
-                ctx.drawIndexed(mesh.drawCall, mesh.baseVertex);
-            }
-        }
 
-        ctx.endRenderPass();
+                for (auto drawIndex = 0; drawIndex < meshData.size(); drawIndex++) {
+                    auto &mesh = meshData.at(drawIndex);
+                    auto &draw = drawData.at(drawIndex);
+                    ctx.uploadBuffer(shaderBuffer,
+                                     reinterpret_cast<const uint8_t *>(&draw),
+                                     sizeof(ShadowShaderDrawData),
+                                     0);
+                    ctx.drawIndexed(mesh.drawCall, mesh.baseVertex);
+                }
+            }
+            ctx.endRenderPass();
+        }
     }
 }
