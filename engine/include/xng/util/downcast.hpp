@@ -32,7 +32,7 @@ namespace xng {
      * @return
      */
     template <typename T, typename BASE>
-    T down_cast(BASE &base) {
+    T down_cast(BASE &&base) {
         return dynamic_cast<T>(base);
     }
 }
