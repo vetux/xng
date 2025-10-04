@@ -29,7 +29,14 @@
 #define DEFINE_FUNCTION2(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1){ return Call(#name, arg, arg1);}
 #define DEFINE_FUNCTION3(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2){ return Call(#name, arg, arg1, arg2);}
 #define DEFINE_FUNCTION4(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3){ return Call(#name, arg, arg1, arg2, arg3);}
-#define DEFINE_FUNCTION5(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4){ return Call(#name, arg, arg1, arg2, arg3, arg4);}
+#define DEFINE_FUNCTION5(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4){ return CallA(#name, {arg, arg1, arg2, arg3, arg4});}
+#define DEFINE_FUNCTION6(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5){ return CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5});}
+#define DEFINE_FUNCTION7(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6){ return CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6});}
+#define DEFINE_FUNCTION8(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6, const ShaderObject &arg7){ return CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6, arg7});}
+#define DEFINE_FUNCTION9(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6, const ShaderObject &arg7, const ShaderObject &arg8){ return CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8});}
+#define DEFINE_FUNCTION10(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6, const ShaderObject &arg7, const ShaderObject &arg8, const ShaderObject &arg9){ return CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9});}
+#define DEFINE_FUNCTION11(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6, const ShaderObject &arg7, const ShaderObject &arg8, const ShaderObject &arg9, const ShaderObject &arg10){ return CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10});}
+#define DEFINE_FUNCTION12(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6, const ShaderObject &arg7, const ShaderObject &arg8, const ShaderObject &arg9, const ShaderObject &arg10, const ShaderObject &arg11){ return CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11});}
 
 // Optional Helper macro for accessing arguments
 #define ARGUMENT(argumentName) ShaderObject argumentName = std::holds_alternative<ShaderTexture>(ShaderBuilder::instance().getCurrentFunction().getArgumentType(#argumentName))\
@@ -173,6 +180,15 @@ namespace xng::ShaderScript {
     template<int C>
     using ArrayDouble = ShaderObjectTyped<ShaderDataType::SCALAR, ShaderDataType::DOUBLE, C>;
 
+    template<int C>
+    using ArrayVec2 = ShaderObjectTyped<ShaderDataType::VECTOR2, ShaderDataType::FLOAT, C>;
+
+    template<int C>
+    using ArrayVec3 = ShaderObjectTyped<ShaderDataType::VECTOR3, ShaderDataType::FLOAT, C>;
+
+    template<int C>
+    using ArrayVec4 = ShaderObjectTyped<ShaderDataType::VECTOR4, ShaderDataType::FLOAT, C>;
+
     typedef ShaderObjectTyped<ShaderDataType::SCALAR, ShaderDataType::BOOLEAN, 1> Bool;
 
     typedef ShaderObjectTyped<ShaderDataType::SCALAR, ShaderDataType::SIGNED_INT, 1> Int;
@@ -298,6 +314,12 @@ namespace xng::ShaderScript {
         ShaderBuilder::instance().addNode(ShaderNodeFactory::endPrimitive());
     }
 
+    inline ShaderObject New(const ShaderStructName &typeName) {
+        const auto varName = ShaderBuilder::instance().getVariableName();
+        ShaderBuilder::instance().addNode(ShaderNodeFactory::createVariable(varName, typeName));
+        return ShaderObject(typeName, ShaderNodeFactory::variable(varName));
+    }
+
     inline ShaderObject CallA(const std::string &functionName,
                               const std::vector<ShaderObject> &wArgs = {}) {
         std::vector<std::unique_ptr<ShaderNode> > args;
@@ -388,7 +410,7 @@ namespace xng::ShaderScript {
 
     inline void Function(const std::string &name,
                          const std::vector<ShaderFunction::Argument> &arguments,
-                         ShaderDataType returnType) {
+                         const ShaderFunction::ReturnType &returnType) {
         ShaderBuilder::instance().Function(name, arguments, returnType);
     }
 
@@ -398,6 +420,10 @@ namespace xng::ShaderScript {
 
     inline void Return(const ShaderObject &value) {
         ShaderBuilder::instance().addNode(ShaderNodeFactory::ret(value.node));
+    }
+
+    inline void Return() {
+        ShaderBuilder::instance().addNode(ShaderNodeFactory::ret());
     }
 
     inline void If(const ShaderObject &condition) {

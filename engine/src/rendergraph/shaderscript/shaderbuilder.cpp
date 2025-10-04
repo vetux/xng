@@ -99,7 +99,7 @@ namespace xng::ShaderScript {
 
     void ShaderBuilder::Function(const std::string &name,
                                  const std::vector<ShaderFunction::Argument> &arguments,
-                                 ShaderDataType returnType) {
+                                 ShaderFunction::ReturnType returnType) {
         if (currentNode == nullptr) {
             throw std::runtime_error("ShaderBuilder::Function called without a setup() call");
         }
@@ -112,7 +112,7 @@ namespace xng::ShaderScript {
         functionNode->type = TreeNode::ROOT;
         currentNode = functionNode.get();
         currentFunction.name = name;
-        currentFunction.returnType = returnType;
+        currentFunction.returnType = std::move(returnType);
         currentFunction.arguments = arguments;
         functionRoot = functionNode;
     }

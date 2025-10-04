@@ -110,7 +110,7 @@ namespace xng::ShaderScript {
          */
         void Function(const std::string &name,
                       const std::vector<ShaderFunction::Argument> &arguments,
-                      ShaderDataType returnType);
+                      ShaderFunction::ReturnType returnType);
 
         void EndFunction();
 

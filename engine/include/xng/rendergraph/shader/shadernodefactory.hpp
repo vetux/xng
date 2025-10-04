@@ -32,8 +32,7 @@ namespace xng {
                                                                   const std::variant<ShaderDataType, ShaderStructName> &
                                                                   type,
                                                                   const std::unique_ptr<ShaderNode> &value =
-                                                                          nullptr,
-                                                                  size_t count = 1);
+                                                                          nullptr);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> assign(const std::unique_ptr<ShaderNode> &target,
                                                           const std::unique_ptr<ShaderNode> &value);
@@ -140,6 +139,8 @@ namespace xng {
                                                         arguments);
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> ret(const std::unique_ptr<ShaderNode> &value);
+
+        XENGINE_EXPORT std::unique_ptr<ShaderNode> ret();
 
         XENGINE_EXPORT std::unique_ptr<ShaderNode> abs(const std::unique_ptr<ShaderNode> &value);
 

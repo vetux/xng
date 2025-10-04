@@ -28,9 +28,8 @@
 namespace xng::ShaderNodeFactory {
     std::unique_ptr<ShaderNode> createVariable(const std::string &name,
                                                const std::variant<ShaderDataType, ShaderStructName> &type,
-                                               const std::unique_ptr<ShaderNode> &value,
-                                               size_t count) {
-        return std::make_unique<NodeVariableCreate>(name, type, count, value ? value->copy() : nullptr);
+                                               const std::unique_ptr<ShaderNode> &value) {
+        return std::make_unique<NodeVariableCreate>(name, type, value ? value->copy() : nullptr);
     }
 
     std::unique_ptr<ShaderNode> assign(const std::unique_ptr<ShaderNode> &target,
@@ -225,6 +224,11 @@ namespace xng::ShaderNodeFactory {
 
     std::unique_ptr<ShaderNode> ret(const std::unique_ptr<ShaderNode> &value) {
         return std::make_unique<NodeReturn>(value->copy());
+    }
+
+
+    std::unique_ptr<ShaderNode> ret() {
+        return std::make_unique<NodeReturn>(nullptr);
     }
 
     std::unique_ptr<ShaderNode> abs(const std::unique_ptr<ShaderNode> &value) {

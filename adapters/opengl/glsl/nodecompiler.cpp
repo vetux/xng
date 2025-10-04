@@ -125,12 +125,13 @@ std::string compileLeafNode(const NodeVariableCreate &node,
                             const std::string &prefix) {
     std::string ret;
     if (std::holds_alternative<ShaderDataType>(node.type)) {
-        ret += getTypeName(std::get<ShaderDataType>(node.type)) + " " + node.variableName;
+        auto type = std::get<ShaderDataType>(node.type);
+        ret += getTypeName(type) + " " + node.variableName;
+        if (type.count > 1) {
+            ret += "[" + std::to_string(type.count) + "]";
+        }
     } else {
         ret += std::get<ShaderStructName>(node.type) + " " + node.variableName;
-    }
-    if (node.count > 1) {
-        ret += "[" + std::to_string(node.count) + "]";
     }
     if (node.value != nullptr) {
         ret += " = " + compileNode(*node.value, source, functionName);
@@ -446,6 +447,9 @@ std::string compileLeafNode(const NodeReturn &node,
                             const Shader &source,
                             const std::string &functionName,
                             const std::string &prefix) {
+    if (node.value == nullptr) {
+        return prefix + "return";
+    }
     return prefix + "return " + compileNode(*node.value, source, functionName);
 }
 

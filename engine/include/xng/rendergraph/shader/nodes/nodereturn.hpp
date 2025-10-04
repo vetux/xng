@@ -35,7 +35,7 @@ namespace xng {
         }
 
         std::unique_ptr<ShaderNode> copy() const override {
-            return std::make_unique<NodeReturn>(value->copy());
+            return std::make_unique<NodeReturn>(value ? value->copy() : nullptr);
         }
     };
 }

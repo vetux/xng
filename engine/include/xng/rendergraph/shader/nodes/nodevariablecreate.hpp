@@ -29,17 +29,14 @@ namespace xng {
     struct NodeVariableCreate final : ShaderNode {
         std::string variableName;
         std::variant<ShaderDataType, ShaderStructName> type;
-        size_t count;
 
         std::unique_ptr<ShaderNode> value;
 
         NodeVariableCreate(const std::string &variable_name,
                            const std::variant<ShaderDataType, ShaderStructName> &type,
-                           const size_t count,
                            std::unique_ptr<ShaderNode> value)
             : variableName(variable_name),
               type(type),
-              count(count),
               value(std::move(value)) {
         }
 
@@ -48,7 +45,7 @@ namespace xng {
         }
 
         std::unique_ptr<ShaderNode> copy() const override {
-            return std::make_unique<NodeVariableCreate>(variableName, type, count, value ? value->copy() : nullptr);
+            return std::make_unique<NodeVariableCreate>(variableName, type, value ? value->copy() : nullptr);
         }
     };
 }
