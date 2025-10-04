@@ -33,11 +33,13 @@ namespace xng {
 
         Transform(Vec3f position, Vec3f rotation, Vec3f scale) : mPosition(position),
                                                                  mRotation(rotation),
-                                                                 mScale(scale) {}
+                                                                 mScale(scale) {
+        }
 
         Transform(Vec3f position, Quaternion rotation, Vec3f scale) : mPosition(position),
                                                                       mRotation(rotation),
-                                                                      mScale(scale) {}
+                                                                      mScale(scale) {
+        }
 
         Transform &operator+=(const Transform &other) {
             mPosition += other.mPosition;
@@ -103,6 +105,14 @@ namespace xng {
 
         Vec3f left() const {
             return rotate(Vec3f(-1, 0, 0));
+        }
+
+        bool operator==(const Transform &other) const {
+            return mPosition == other.mPosition && mRotation == other.mRotation && mScale == other.mScale;
+        }
+
+        bool operator!=(const Transform &other) const {
+            return !(*this == other);
         }
 
         Messageable &operator<<(const Message &message) override {
