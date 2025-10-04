@@ -37,7 +37,7 @@ namespace xng {
 
         explicit Quaternion(Vec4f vec);
 
-        explicit Quaternion(const Vec3f& eulerAngles);
+        explicit Quaternion(const Vec3f &eulerAngles);
 
         Quaternion &operator=(const Quaternion &other) = default;
 
@@ -61,11 +61,19 @@ namespace xng {
 
         float magnitude() const;
 
-        Quaternion& normalize();
+        Quaternion &normalize();
 
         static Quaternion normalize(const Quaternion &q);
 
         static Quaternion slerp(const Quaternion &a, const Quaternion &b, float advance);
+
+        bool operator==(const Quaternion &other) const {
+            return w == other.w && x == other.x && y == other.y && z == other.z;
+        }
+
+        bool operator!=(const Quaternion &other) const {
+            return !(*this == other);
+        }
 
         Messageable &operator<<(const Message &message) override;
 
