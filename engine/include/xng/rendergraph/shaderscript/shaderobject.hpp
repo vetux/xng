@@ -806,7 +806,9 @@ namespace xng::ShaderScript {
                 ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(node, value.node));
             } else if (node->getType() == ShaderNode::VARIABLE
                        || node->getType() == ShaderNode::ATTRIBUTE_OUT
-                       || node->getType() == ShaderNode::BUFFER) {
+                       || node->getType() == ShaderNode::BUFFER
+                       || node->getType() == ShaderNode::OBJECT_ELEMENT
+                       || node->getType() == ShaderNode::ARGUMENT) {
                 ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(node, value.node));
             } else {
                 throw std::runtime_error("Invalid assignment (Copy initialized variable or temporary)");
