@@ -48,12 +48,13 @@ RenderScene createScene() {
     scene.pointLights.emplace_back(light);
 
     DirectionalLightObject dirLight;
-    dirLight.light.direction = Vec3f(-0.5, -1, 1);
-    scene.directionalLights.emplace_back(dirLight);
+    dirLight.transform.setRotation(Quaternion(Vec3f(45, -45, 0)));
+    //scene.directionalLights.emplace_back(dirLight);
 
     SpotLightObject spotLight;
-    spotLight.transform.setPosition(Vec3f(0, 0, -2));
-    scene.spotLights.emplace_back(spotLight);
+    spotLight.transform.setPosition(Vec3f(1, 0, -2));
+    spotLight.transform.setRotation(Quaternion(Vec3f(0, 25, 0)));
+    //scene.spotLights.emplace_back(spotLight);
 
     scene.cameraTransform.setRotation(Quaternion(Vec3f(0, 180, 0)));
     scene.cameraTransform.setPosition(Vec3f(0, 0, -2));
@@ -100,6 +101,7 @@ int main(int argc, char *argv[]) {
     auto graph3D = passScheduler->addGraph({
         std::make_shared<ConstructionPass>(config, registry),
         std::make_shared<ShadowMappingPass>(config, registry),
+        std::make_shared<DeferredLightingPass>(config, registry),
         std::make_shared<CanvasRenderPass>(config, registry),
         std::make_shared<CompositingPass>(config, registry),
     });
@@ -173,9 +175,7 @@ int main(int argc, char *argv[]) {
         auto fbSizeF = fbSize.convert<float>();
 
         Canvas canvas(fbSize);
-        canvas.setBackgroundColor(ColorRGBA::white());
-        canvas.paint(PaintLine(Vec2f(0, 0), fbSizeF, ColorRGBA::green()));
-        canvas.paint(PaintLine(Vec2f(0, fbSizeF.y), Vec2f(fbSizeF.x, 0), ColorRGBA::green()));
+        canvas.setBackgroundColor(ColorRGBA::black(1, 0));
         canvas.paint(PaintImage(Rectf({}, smileyImg.getResolution().convert<float>()),
                                 Rectf({}, smileyImg.getResolution().convert<float>()),
                                 smiley,
@@ -184,8 +184,6 @@ int main(int argc, char *argv[]) {
                                 Rectf({}, tuxImg.getResolution().convert<float>()),
                                 tux,
                                 true));
-        canvas.paint(PaintLine(Vec2f(0, fbSizeF.y / 2), Vec2f(fbSizeF.x, fbSizeF.y / 2), ColorRGBA::red()));
-        canvas.paint(PaintLine(Vec2f(fbSizeF.x / 2, 0), Vec2f(fbSizeF.x / 2, fbSizeF.y), ColorRGBA::red()));
         canvas.paint(PaintText({15, 10}, text, ColorRGBA::purple()));
         canvas.paint(PaintText(Vec2f(fbSizeF.x - static_cast<float>(deltaText.size.x) - 3, 0), deltaText,
                                ColorRGBA::black()));

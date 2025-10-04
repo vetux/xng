@@ -20,11 +20,72 @@
 #ifndef XENGINE_DEFERREDLIGHTINGPASS_HPP
 #define XENGINE_DEFERREDLIGHTINGPASS_HPP
 
+#include "xng/graphics/3d/renderconfiguration.hpp"
 #include "xng/graphics/3d/renderpass.hpp"
+#include "xng/graphics/3d/sharedresources/compositinglayers.hpp"
+#include "xng/graphics/3d/sharedresources/gbuffer.hpp"
+#include "xng/graphics/3d/sharedresources/shadowmaps.hpp"
+#include "xng/graphics/scene/mesh.hpp"
 
 namespace xng {
-    class DeferredLightingPass : public RenderPass {
-        public:
+    class XENGINE_EXPORT DeferredLightingPass : public RenderPass {
+    public:
+        DeferredLightingPass(std::shared_ptr<RenderConfiguration> configuration,
+                             std::shared_ptr<SharedResourceRegistry> registry);
+
+        void create(RenderGraphBuilder &builder) override;
+
+        void recreate(RenderGraphBuilder &builder) override;
+
+        bool shouldRebuild(const Vec2i &backBufferSize) override;
+
+    private:
+        static Shader createVertexShader();
+
+        static Shader createFragmentShader();
+
+        void runPass(RenderGraphContext &ctx);
+
+        Mesh normalizedQuad = Mesh::normalizedQuad();
+        bool normalizedQuadUploaded = false;
+
+        std::shared_ptr<RenderConfiguration> config;
+        std::shared_ptr<SharedResourceRegistry> registry;
+
+        RenderGraphResource pipeline;
+
+        RenderGraphResource vertexBuffer;
+
+        RenderGraphResource shaderDataBuffer;
+
+        RenderGraphResource pointLightBuffer;
+        RenderGraphResource directionalLightBuffer;
+        RenderGraphResource spotLightBuffer;
+
+        std::vector<PointLightObject> pointLights;
+        std::vector<DirectionalLightObject> directionalLights;
+        std::vector<SpotLightObject> spotLights;
+
+        RenderGraphResource shadowPointLightBuffer;
+        RenderGraphResource shadowDirectionalLightBuffer;
+        RenderGraphResource shadowSpotLightBuffer;
+
+        std::vector<PointLightObject> shadowPointLights;
+        std::vector<DirectionalLightObject> shadowDirectionalLights;
+        std::vector<SpotLightObject> shadowSpotLights;
+
+        RenderGraphResource shadowDirectionalLightTransformBuffer;
+        RenderGraphResource shadowSpotLightTransformBuffer;
+
+        bool recreateLightBuffers = false;
+
+        Vec3f viewPosition;
+
+        CompositeLayer layer;
+        Vec2i layerSize;
+
+        GBuffer gBuffer;
+        ShadowMaps shadowMaps;
     };
 }
 
