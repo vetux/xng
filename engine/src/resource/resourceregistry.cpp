@@ -26,15 +26,9 @@
 #include "xng/log/log.hpp"
 
 namespace xng {
-    static std::mutex defMutex;
-    static std::unique_ptr<ResourceRegistry> defRepo = nullptr;
-
     ResourceRegistry &ResourceRegistry::getDefaultRegistry() {
-        std::lock_guard<std::mutex> guard(defMutex);
-        if (!defRepo) {
-            defRepo = std::make_unique<ResourceRegistry>();
-        }
-        return *defRepo;
+        static ResourceRegistry defRepo;
+        return defRepo;
     }
 
     ResourceRegistry::ResourceRegistry() {
