@@ -42,6 +42,10 @@ namespace xng {
 
         int getDirectionalShadowResolution() const { return directionalShadowResolution; }
 
+        void setCompositingClearColor(const ColorRGBA &color) { compositingClearColor = color; }
+
+        const ColorRGBA &getCompositingClearColor() const { return compositingClearColor; }
+
         void setScene(const RenderScene &scene) { renderScene = scene; }
 
         const RenderScene &getScene() const { return renderScene; }
@@ -57,6 +61,7 @@ namespace xng {
         int directionalShadowResolution = 1024;
         RenderScene renderScene;
         std::vector<Canvas> renderCanvases;
+        ColorRGBA compositingClearColor = ColorRGBA::white();
     };
 }
 

@@ -117,12 +117,13 @@ namespace xng {
         }
     }
 
-    bool CompositingPass::shouldRebuild(const Vec2i &backBufferSize) {
+    bool CompositingPass::shouldRebuild(const Vec2i &backBufSize) {
+        backBufferSize = backBufSize;
         return false;
     }
 
     void CompositingPass::runPass(RenderGraphContext &ctx) {
-        ctx.clearTextureColor(backBufferColor, ColorRGBA::black(1, 0));
+        ctx.clearTextureColor(backBufferColor, config->getCompositingClearColor());
         ctx.clearTextureDepthStencil(backBufferDepth, 1, 0);
 
         if (!vertexBufferAllocated) {
@@ -138,6 +139,7 @@ namespace xng {
         }
 
         ctx.beginRenderPass({RenderGraphAttachment(backBufferColor)}, RenderGraphAttachment(backBufferDepth));
+        ctx.setViewport({}, backBufferSize);
         ctx.bindPipeline(pipeline);
         ctx.bindVertexBuffer(vertexBuffer);
         for (auto &layer: layers) {

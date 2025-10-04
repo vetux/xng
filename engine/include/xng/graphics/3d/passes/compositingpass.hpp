@@ -63,6 +63,8 @@ namespace xng {
         bool defaultDepthTextureAllocated = false;
 
         Mesh normalizedQuad;
+
+        Vec2i backBufferSize;
     };
 }
 
