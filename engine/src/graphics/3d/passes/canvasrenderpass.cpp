@@ -87,6 +87,8 @@ namespace xng {
         pipeline.enableDepthTest = false;
         pipeline.depthTestWrite = false;
         pipeline.primitive = TRIANGLES;
+        pipeline.alphaBlendSourceMode = RenderGraphPipeline::ONE;
+        pipeline.alphaBlendDestinationMode = RenderGraphPipeline::ONE_MINUS_SRC_ALPHA;
         trianglePipeline = builder.createPipeline(pipeline);
 
         pipeline.primitive = LINES;
@@ -106,7 +108,7 @@ namespace xng {
         texture.format = DEPTH;
         worldSpaceLayer.depth = builder.createTexture(texture);
 
-        auto layers = registry->check<CompositingLayers>() ? registry->get<CompositingLayers>() : CompositingLayers();
+        auto layers = registry->getOrCreate<CompositingLayers>();
         layers.layers.emplace_back(worldSpaceLayer);
         layers.layers.emplace_back(screenSpaceLayer);
         registry->set<CompositingLayers>(layers);

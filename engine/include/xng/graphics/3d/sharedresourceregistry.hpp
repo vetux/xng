@@ -59,7 +59,15 @@ namespace xng {
 
         template<typename T>
         const T &get() const {
-            return down_cast<const T&>(*resources.at(T::resourceType));
+            return down_cast<const T &>(*resources.at(T::resourceType));
+        }
+
+        template<typename T>
+        const T &getOrCreate() {
+            if (resources.find(T::resourceType) == resources.end()) {
+                set(T());
+            }
+            return get<T>();
         }
 
         template<typename T>
