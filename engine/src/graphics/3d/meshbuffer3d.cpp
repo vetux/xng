@@ -106,18 +106,23 @@ namespace xng {
     }
 
     void MeshBuffer3D::update(RenderGraphBuilder &builder, RenderGraphBuilder::PassHandle pass) {
-        if (currentVertexBufferSize > 0) {
-            staleVertexBuffer = builder.inheritResource(currentVertexBuffer);
-        }
-        if (currentIndexBufferSize > 0) {
-            staleIndexBuffer = builder.inheritResource(currentIndexBuffer);
-        }
+        if (requestedVertexBufferSize != currentVertexBufferSize || requestedIndexBufferSize != currentIndexBufferSize) {
+            if (currentVertexBufferSize > 0) {
+                staleVertexBuffer = builder.inheritResource(currentVertexBuffer);
+            }
+            if (currentIndexBufferSize > 0) {
+                staleIndexBuffer = builder.inheritResource(currentIndexBuffer);
+            }
 
-        currentVertexBuffer = builder.createVertexBuffer(requestedVertexBufferSize);
-        currentVertexBufferSize = requestedVertexBufferSize;
+            currentVertexBuffer = builder.createVertexBuffer(requestedVertexBufferSize);
+            currentVertexBufferSize = requestedVertexBufferSize;
 
-        currentIndexBuffer = builder.createIndexBuffer(requestedIndexBufferSize);
-        currentIndexBufferSize = requestedIndexBufferSize;
+            currentIndexBuffer = builder.createIndexBuffer(requestedIndexBufferSize);
+            currentIndexBufferSize = requestedIndexBufferSize;
+        } else {
+            currentVertexBuffer = builder.inheritResource(currentVertexBuffer);
+            currentIndexBuffer = builder.inheritResource(currentIndexBuffer);
+        }
 
         builder.readWrite(pass, currentVertexBuffer);
         builder.readWrite(pass, currentIndexBuffer);
