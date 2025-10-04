@@ -59,16 +59,40 @@ namespace xng {
     struct PointLightObject {
         Transform transform;
         PointLight light;
+
+        bool operator==(const PointLightObject &other) const {
+            return transform == other.transform && light == other.light;
+        }
+
+        bool operator!=(const PointLightObject &other) const {
+            return !(*this == other);
+        }
     };
 
     struct DirectionalLightObject {
         Transform transform;
         DirectionalLight light;
+
+        bool operator==(const DirectionalLightObject &other) const {
+            return transform == other.transform && light == other.light;
+        }
+
+        bool operator!=(const DirectionalLightObject &other) const {
+            return !(*this == other);
+        }
     };
 
     struct SpotLightObject {
         Transform transform;
         SpotLight light;
+
+        bool operator==(const SpotLightObject &other) const {
+            return transform == other.transform && light == other.light;
+        }
+
+        bool operator!=(const SpotLightObject &other) const {
+            return !(*this == other);
+        }
     };
 
     struct SpriteObject {
