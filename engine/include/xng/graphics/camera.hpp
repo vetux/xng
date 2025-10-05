@@ -112,7 +112,7 @@ namespace xng {
         float farClip = 1000.0f;
 
         //Perspective
-        float fov = 60;
+        float fov = 90;
         float aspectRatio = 4.0f / 3.0f;
 
         //Orthographic
