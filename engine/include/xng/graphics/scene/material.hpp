@@ -28,12 +28,25 @@
 
 namespace xng {
     /**
-     * A PBR material for the provided lighting passes.
-     *
-     * Users can create custom lighting passes if needed and write to the SLOT_DEFERRED/FORWARD_COLOR and SLOT_DEFERRED/FORWARD_DEPTH.
+     * A PBR material for the built-in lighting passes.
      */
     struct XENGINE_EXPORT Material final : Resource, Messageable {
         RESOURCE_TYPENAME(Material)
+
+        ColorRGBA albedo = ColorRGBA::white();
+        float metallic = 0;
+        float roughness = 0.5;
+        float ambientOcclusion = 1;
+
+        ResourceHandle<Texture> albedoTexture;
+        ResourceHandle<Texture> metallicTexture;
+        ResourceHandle<Texture> roughnessTexture;
+        ResourceHandle<Texture> ambientOcclusionTexture;
+
+        ResourceHandle<Texture> normal; // If assigned, the contained normals replace the vertex normals
+        float normalIntensity = 1; // The specified value is used to scale texture normals
+
+        bool transparent = false; // Whether the albedo alpha should be presented. (Forward Shading)
 
         ~Material() override = default;
 
@@ -86,34 +99,6 @@ namespace xng {
 
             return message;
         }
-
-        /**
-         * If true the alpha value of the diffuse color / texture is used as the output alpha value.
-         * This is implemented using forward rendering instead of the default deferred rendering path used for non transparent objects.
-         */
-        bool transparent = false;
-
-        /**
-         * If assigned the contained normals are sampled otherwise vertex normals are used.
-         */
-        ResourceHandle<Texture> normal;
-
-        /**
-         * The sampled normals are scaled by the specified value
-         */
-        float normalIntensity = 1;
-
-        ColorRGBA albedo{};
-        ResourceHandle<Texture> albedoTexture;
-
-        float metallic{};
-        ResourceHandle<Texture> metallicTexture;
-
-        float roughness = 0.5;
-        ResourceHandle<Texture> roughnessTexture;
-
-        float ambientOcclusion = 1;
-        ResourceHandle<Texture> ambientOcclusionTexture;
 
         bool isLoaded() const override {
             return normal.isLoaded()
