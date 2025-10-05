@@ -78,6 +78,10 @@ namespace xng {
             return deltaTime;
         }
 
+        double getDeltaTimeSeconds() const {
+            return std::chrono::duration_cast<std::chrono::duration<double> >(deltaTime).count();
+        }
+
         unsigned int getFramerate() const {
             return std::ceil(1.0 / std::chrono::duration_cast<std::chrono::duration<double> >(deltaTime).count());
         }
