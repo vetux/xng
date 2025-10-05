@@ -190,11 +190,11 @@ namespace xng::vulkan {
         throw std::runtime_error("Not implemented");
     }
 
-    RenderGraphHandle RenderGraphRuntime::compile(const RenderGraph &graph) {
+    RenderGraphHandle RenderGraphRuntime::compile(RenderGraph &&graph) {
         throw std::runtime_error("Not implemented");
     }
 
-    void RenderGraphRuntime::recompile(RenderGraphHandle handle, const RenderGraph &graph) {
+    void RenderGraphRuntime::recompile(RenderGraphHandle handle, RenderGraph &&graph) {
         throw std::runtime_error("Not implemented");
     }
 

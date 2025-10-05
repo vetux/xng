@@ -39,7 +39,7 @@ public:
 
     explicit ContextGL(std::shared_ptr<OGLTexture> backBufferColor,
                        std::shared_ptr<OGLTexture> backBufferDepthStencil,
-                       GraphResources res,
+                       const GraphResources& res,
                        RenderGraphStatistics &stats)
         : vertexArray(std::make_shared<OGLVertexArrayObject>()),
           backBufferColor(std::move(backBufferColor)),
@@ -174,8 +174,7 @@ private:
     std::shared_ptr<OGLTexture> backBufferColor = nullptr;
     std::shared_ptr<OGLTexture> backBufferDepthStencil = nullptr;
 
-    GraphResources resources;
-
+    const GraphResources &resources;
     RenderGraphStatistics &stats;
 };
 

@@ -50,12 +50,12 @@ Vec2i RenderGraphRuntimeOGL::getBackBufferSize() {
     return backBufferColor->texture.size;
 }
 
-RenderGraphHandle RenderGraphRuntimeOGL::compile(const RenderGraph &graph) {
-    return compileGraph(graph);
+RenderGraphHandle RenderGraphRuntimeOGL::compile(RenderGraph &&graph) {
+    return compileGraph(std::move(graph));
 }
 
-void RenderGraphRuntimeOGL::recompile(const RenderGraphHandle handle, const RenderGraph &graph) {
-    recompileGraph(handle, graph);
+void RenderGraphRuntimeOGL::recompile(const RenderGraphHandle handle, RenderGraph &&graph) {
+    recompileGraph(handle, std::move(graph));
 }
 
 RenderGraphStatistics RenderGraphRuntimeOGL::execute(const RenderGraphHandle graph) {
@@ -87,7 +87,7 @@ RenderGraphStatistics RenderGraphRuntimeOGL::execute(const RenderGraphHandle gra
     }
 
     ContextGL context(backBufferColor, backBufferDepthStencil, contexts.at(graph), stats);
-    for (auto &pass: contexts.at(graph).graph.passes) {
+    for (auto &pass: contexts.at(graph).passes) {
         oglDebugStartGroup(pass.name);
         pass.pass(context);
         oglDebugEndGroup();
@@ -129,7 +129,7 @@ RenderGraphStatistics RenderGraphRuntimeOGL::execute(const std::vector<RenderGra
 
         oglDebugStartGroup("SubGraph");
         ContextGL context(backBufferColor, backBufferDepthStencil, contexts.at(graph), stats);
-        for (auto &pass: contexts.at(graph).graph.passes) {
+        for (auto &pass: contexts.at(graph).passes) {
             oglDebugStartGroup(pass.name);
             pass.pass(context);
             oglDebugEndGroup();
@@ -240,19 +240,21 @@ void RenderGraphRuntimeOGL::presentBackBuffer() const {
     oglDebugEndGroup();
 }
 
-RenderGraphHandle RenderGraphRuntimeOGL::compileGraph(const RenderGraph &graph) {
+RenderGraphHandle RenderGraphRuntimeOGL::compileGraph(RenderGraph &&graph) {
     oglDebugStartGroup("RenderGraphRuntimeOGL::compileGraph");
 
     const auto handle = RenderGraphHandle(graphCounter++);
 
     auto context = GraphResources();
 
-    context.graph = graph;
+    context.backBufferColor = graph.backBufferColor;
+    context.backBufferDepthStencil = graph.backBufferDepthStencil;
+    context.passes = std::move(graph.passes);
 
     ShaderCompilerGLSL compiler;
     for (const auto &pair: graph.pipelineAllocation) {
         auto pip = compiler.compile(pair.second.shaders);
-        context.pipelines[pair.first] = pair.second;
+        context.pipelines[pair.first] = std::move(pair.second);
         context.compiledPipelines[pair.first] = pip;
         context.shaderPrograms[pair.first] = std::make_shared<OGLShaderProgram>(pip);
     }
@@ -281,17 +283,15 @@ RenderGraphHandle RenderGraphRuntimeOGL::compileGraph(const RenderGraph &graph) 
 }
 
 RenderGraphHandle RenderGraphRuntimeOGL::recompileGraph(const RenderGraphHandle handle,
-                                                        const RenderGraph &graph) {
+                                                        RenderGraph &&graph) {
     oglDebugStartGroup("RenderGraphRuntimeOGL::recompileGraph");
 
     auto context = GraphResources();
 
-    context.graph = graph;
-
     ShaderCompilerGLSL compiler;
-    for (const auto &pair: graph.pipelineAllocation) {
+    for (auto &pair: graph.pipelineAllocation) {
         auto pip = compiler.compile(pair.second.shaders);
-        context.pipelines[pair.first] = pair.second;
+        context.pipelines[pair.first] = std::move(pair.second);
         context.compiledPipelines[pair.first] = pip;
         context.shaderPrograms[pair.first] = std::make_shared<OGLShaderProgram>(pip);
     }
@@ -315,7 +315,7 @@ RenderGraphHandle RenderGraphRuntimeOGL::recompileGraph(const RenderGraphHandle 
     auto &oldContext = contexts.at(handle);
     for (const auto &pair: graph.inheritedResources) {
         if (oldContext.compiledPipelines.find(pair.second) != oldContext.compiledPipelines.end()) {
-            context.pipelines[pair.first] = oldContext.pipelines[pair.second];
+            context.pipelines[pair.first] = std::move(oldContext.pipelines[pair.second]);
             context.compiledPipelines[pair.first] = oldContext.compiledPipelines[pair.second];
             context.shaderPrograms[pair.first] = oldContext.shaderPrograms[pair.second];
         } else if (oldContext.textures.find(pair.second) != oldContext.textures.end()) {
@@ -331,7 +331,11 @@ RenderGraphHandle RenderGraphRuntimeOGL::recompileGraph(const RenderGraphHandle 
         }
     }
 
-    contexts[handle] = context;
+    context.backBufferColor = graph.backBufferColor;
+    context.backBufferDepthStencil = graph.backBufferDepthStencil;
+    context.passes = std::move(graph.passes);
+
+    contexts[handle] = std::move(context);
 
     oglDebugEndGroup();
 

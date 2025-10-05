@@ -42,12 +42,12 @@ namespace xng::opengl {
         return runtime->getBackBufferSize();
     }
 
-    RenderGraphHandle RenderGraphRuntime::compile(const RenderGraph &graph) {
-        return runtime->compile(graph);
+    RenderGraphHandle RenderGraphRuntime::compile(RenderGraph &&graph) {
+        return runtime->compile(std::move(graph));
     }
 
-    void RenderGraphRuntime::recompile(const RenderGraphHandle handle, const RenderGraph &graph) {
-        runtime->recompile(handle, graph);
+    void RenderGraphRuntime::recompile(const RenderGraphHandle handle, RenderGraph &&graph) {
+        runtime->recompile(handle, std::move(graph));
     }
 
     RenderGraphStatistics RenderGraphRuntime::execute(const RenderGraphHandle graph) {

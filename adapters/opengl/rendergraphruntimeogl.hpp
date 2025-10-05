@@ -43,9 +43,9 @@ public:
 
     Vec2i getBackBufferSize() override;
 
-    RenderGraphHandle compile(const RenderGraph &graph) override;
+    RenderGraphHandle compile(RenderGraph &&graph) override;
 
-    void recompile(RenderGraphHandle handle, const RenderGraph &graph) override;
+    void recompile(RenderGraphHandle handle, RenderGraph &&graph) override;
 
     RenderGraphStatistics execute(RenderGraphHandle graph) override;
 
@@ -64,9 +64,9 @@ private:
 
     void presentBackBuffer() const;
 
-    RenderGraphHandle compileGraph(const RenderGraph &graph);
+    RenderGraphHandle compileGraph(RenderGraph &&graph);
 
-    RenderGraphHandle recompileGraph(RenderGraphHandle handle, const RenderGraph &graph);
+    RenderGraphHandle recompileGraph(RenderGraphHandle handle, RenderGraph &&graph);
 
     int graphCounter = 0;
 

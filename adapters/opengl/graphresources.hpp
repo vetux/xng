@@ -29,7 +29,10 @@
 #include "ogl/oglshaderstoragebuffer.hpp"
 
 struct GraphResources {
-    RenderGraph graph;
+    RenderGraphResource backBufferColor;
+    RenderGraphResource backBufferDepthStencil;
+
+    std::vector<RenderGraphPass> passes;
 
     std::unordered_map<RenderGraphResource, RenderGraphPipeline, RenderGraphResourceHash> pipelines;
     std::unordered_map<RenderGraphResource, CompiledPipeline, RenderGraphResourceHash> compiledPipelines;

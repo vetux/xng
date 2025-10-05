@@ -1104,10 +1104,10 @@ std::unordered_map<Shader::Stage, std::string> ContextGL::getShaderSource(const 
 }
 
 const OGLTexture &ContextGL::getTexture(const RenderGraphResource resource) const {
-    if (resource == resources.graph.backBufferColor) {
+    if (resource == resources.backBufferColor) {
         return *backBufferColor;
     }
-    if (resource == resources.graph.backBufferDepthStencil) {
+    if (resource == resources.backBufferDepthStencil) {
         return *backBufferDepthStencil;
     }
     return *resources.textures.at(resource);

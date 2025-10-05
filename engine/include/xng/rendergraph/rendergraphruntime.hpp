@@ -106,7 +106,7 @@ namespace xng {
          * @param graph The graph to compile
          * @return The handle identifying the compiled graph
          */
-        virtual RenderGraphHandle compile(const RenderGraph &graph) = 0;
+        virtual RenderGraphHandle compile(RenderGraph &&graph) = 0;
 
         /**
          * Recompile a graph.
@@ -118,7 +118,7 @@ namespace xng {
          * @param handle The handle of a previously compiled graph
          * @param graph The updated graph
          */
-        virtual void recompile(RenderGraphHandle handle, const RenderGraph &graph) = 0;
+        virtual void recompile(RenderGraphHandle handle, RenderGraph &&graph) = 0;
 
         /**
          * Execute a single graph.

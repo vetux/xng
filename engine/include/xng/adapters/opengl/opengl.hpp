@@ -37,9 +37,9 @@ namespace xng::opengl {
 
         Vec2i getBackBufferSize() override;
 
-        RenderGraphHandle compile(const RenderGraph &graph) override;
+        RenderGraphHandle compile(RenderGraph &&graph) override;
 
-        void recompile(RenderGraphHandle handle, const RenderGraph &graph) override;
+        void recompile(RenderGraphHandle handle, RenderGraph &&graph) override;
 
         RenderGraphStatistics execute(RenderGraphHandle graph) override;
 
