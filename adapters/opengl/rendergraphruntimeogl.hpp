@@ -78,6 +78,10 @@ private:
     std::unordered_map<RenderGraphHandle, GraphResources, RenderGraphHandleHash> contexts;
 
     std::shared_ptr<Window> window;
+
+    std::string vendor;
+    std::string renderer;
+    std::string version;
 };
 
 #endif //XENGINE_RENDERGRAPHRUNTIMEOGL_HPP

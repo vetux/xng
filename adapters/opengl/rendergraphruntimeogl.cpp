@@ -29,6 +29,9 @@ RenderGraphRuntimeOGL::~RenderGraphRuntimeOGL() = default;
 
 void RenderGraphRuntimeOGL::setWindow(std::shared_ptr<Window> wndArg) {
     this->window = std::move(wndArg);
+    vendor = std::string(reinterpret_cast<const char *>(glGetString(GL_VENDOR)));
+    renderer = std::string(reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
+    version = std::string(reinterpret_cast<const char *>(glGetString(GL_VERSION)));
 }
 
 Window &RenderGraphRuntimeOGL::getWindow() {
@@ -97,6 +100,10 @@ RenderGraphStatistics RenderGraphRuntimeOGL::execute(const RenderGraphHandle gra
 
     oglDebugEndGroup();
 
+    stats.vendor = vendor;
+    stats.renderer = renderer;
+    stats.version = version;
+
     return stats;
 }
 
@@ -139,6 +146,10 @@ RenderGraphStatistics RenderGraphRuntimeOGL::execute(const std::vector<RenderGra
     presentBackBuffer();
 
     oglDebugEndGroup();
+
+    stats.vendor = vendor;
+    stats.renderer = renderer;
+    stats.version = version;
 
     return stats;
 }

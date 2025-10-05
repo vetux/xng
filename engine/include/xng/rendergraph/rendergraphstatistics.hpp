@@ -50,6 +50,10 @@ namespace xng {
         size_t shaderBufferVRamUpload = 0;
         size_t shaderBufferVRamDownload = 0;
         size_t shaderBufferVRamCopy = 0;
+
+        std::string vendor;
+        std::string renderer;
+        std::string version;
     };
 }
 
