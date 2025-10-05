@@ -80,7 +80,7 @@ namespace xng {
         desc.format = DEPTH_STENCIL;
         gBuffer.gBufferDepth = builder.createTexture(desc);
 
-        shaderBuffer = builder.createShaderBuffer(0);
+        shaderBuffer = builder.createShaderBuffer(sizeof(ShaderDrawData));
         boneBuffer = builder.createShaderBuffer(0);
 
         atlas.onCreate(builder);
@@ -138,8 +138,7 @@ namespace xng {
 
         registry->set(gBuffer);;
 
-        shaderBuffer = builder.createShaderBuffer(totalShaderBufferSize);
-        currentShaderBufferSize = totalShaderBufferSize;
+        shaderBuffer = builder.inheritResource(shaderBuffer);
 
         boneBuffer = builder.createShaderBuffer(totalBoneBufferSize);
         currentBoneBufferSize = totalBoneBufferSize;
@@ -160,7 +159,6 @@ namespace xng {
     }
 
     bool ConstructionPass::shouldRebuild(const Vec2i &backBufferSize) {
-        totalShaderBufferSize = 0;
         totalBoneBufferSize = 0;
 
         auto &scene = config->getScene();
@@ -224,8 +222,6 @@ namespace xng {
                         }
                         usedTextures.insert(mat.albedoTexture.getUri());
                     }
-
-                    totalShaderBufferSize += sizeof(ShaderDrawData);
                 }
                 objects.emplace_back(object);
             }
@@ -263,8 +259,7 @@ namespace xng {
             return true;
         }
 
-        return currentShaderBufferSize < totalShaderBufferSize
-               || currentBoneBufferSize < totalBoneBufferSize;
+        return currentBoneBufferSize < totalBoneBufferSize;
     }
 
     void ConstructionPass::runPass(RenderGraphContext &ctx) {

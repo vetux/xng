@@ -68,10 +68,7 @@ namespace xng {
 
         TextureAtlas atlas;
 
-        size_t currentShaderBufferSize{};
         size_t currentBoneBufferSize{};
-
-        size_t totalShaderBufferSize{};
         size_t totalBoneBufferSize{};
 
         MeshBuffer3D meshAllocator;
