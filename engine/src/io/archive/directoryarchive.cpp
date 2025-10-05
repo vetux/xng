@@ -23,9 +23,14 @@
 #include "xng/io/archive/directoryarchive.hpp"
 
 namespace xng {
-    DirectoryArchive::DirectoryArchive(std::filesystem::path directory, bool readOnly)
-            : directory(std::move(directory)),
-              readOnly(readOnly) {}
+    DirectoryArchive::DirectoryArchive(std::filesystem::path dir, bool readOnly)
+        : readOnly(readOnly) {
+        auto dirStr = dir.string();
+        if (dirStr.back() != '/') {
+            dirStr.append("/");
+        }
+        directory = std::filesystem::canonical(dirStr);
+    }
 
     bool DirectoryArchive::exists(const std::string &name) {
         auto ret = std::filesystem::exists(name);
@@ -66,14 +71,10 @@ namespace xng {
     }
 
     std::filesystem::path DirectoryArchive::getAbsolutePath(const std::string &path) {
-        if (path.find(directory.string()) == 0 && std::filesystem::exists(path)) {
-            //Allow absolute paths which reference files relative to the directory
-            return path;
-        } else if (path.find('/') != 0) {
-            //Allow relative paths without leading slash
+        if (path.at(0) != '/') {
+            //Allow relative paths without a leading slash
             return directory.string() + "/" + path;
-        } else {
-            return directory.string() + path;
         }
+        return directory.string() + path;
     }
 }
