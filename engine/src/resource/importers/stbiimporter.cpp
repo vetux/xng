@@ -73,6 +73,7 @@ namespace xng {
             auto img = readImage(buffer);
             ret.add("image", std::make_unique<ImageRGBA>(img));
             Texture tex;
+            tex.filter = Texture::NEAREST;
             tex.image = ResourceHandle<ImageRGBA>(Uri(path));
             ret.add("texture", std::make_unique<Texture>(tex));
             return ret;

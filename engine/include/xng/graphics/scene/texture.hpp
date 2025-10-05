@@ -29,8 +29,8 @@ namespace xng {
         RESOURCE_TYPENAME(Texture)
 
         enum Filtering : int {
-            LINEAR = 0,
-            NEAREST,
+            NEAREST = 0,
+            LINEAR,
             BICUBIC
         };
 
