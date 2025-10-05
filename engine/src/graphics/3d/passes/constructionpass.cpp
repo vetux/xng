@@ -184,7 +184,7 @@ namespace xng {
 
                     auto mi = object.materials.find(i);
                     if (mi != object.materials.end()) {
-                        mat = mi->second.get();
+                        mat = mi->second;
                     }
 
                     if (mat.transparent) {
@@ -297,7 +297,7 @@ namespace xng {
 
                 auto mIt = materials.find(i);
                 if (mIt != materials.end()) {
-                    material = mIt->second.get();
+                    material = mIt->second;
                 }
 
                 if (material.transparent) {
@@ -345,7 +345,8 @@ namespace xng {
 
                     data.metallic.level_index_filtering_assigned[0] = tex.level;
                     data.metallic.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.metallic.level_index_filtering_assigned[2] = material.metallicTexture.get().filter;
+                    data.metallic.level_index_filtering_assigned[2] =
+                            material.metallicTexture.get().filter > Texture::NEAREST;
                     data.metallic.level_index_filtering_assigned[3] = 1;
 
                     auto atlasScale = tex.size.convert<float>()
@@ -362,7 +363,8 @@ namespace xng {
 
                     data.roughness.level_index_filtering_assigned[0] = tex.level;
                     data.roughness.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.roughness.level_index_filtering_assigned[2] = material.roughnessTexture.get().filter;
+                    data.roughness.level_index_filtering_assigned[2] =
+                            material.roughnessTexture.get().filter > Texture::NEAREST;
                     data.roughness.level_index_filtering_assigned[3] = 1;
 
                     auto atlasScale = tex.size.convert<float>()
@@ -379,7 +381,8 @@ namespace xng {
 
                     data.ambientOcclusion.level_index_filtering_assigned[0] = tex.level;
                     data.ambientOcclusion.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.ambientOcclusion.level_index_filtering_assigned[2] = material.ambientOcclusionTexture.get().filter;
+                    data.ambientOcclusion.level_index_filtering_assigned[2] =
+                            material.ambientOcclusionTexture.get().filter > Texture::NEAREST;
                     data.ambientOcclusion.level_index_filtering_assigned[3] = 1;
 
                     auto atlasScale = tex.size.convert<float>()
@@ -396,7 +399,8 @@ namespace xng {
 
                     data.albedo.level_index_filtering_assigned[0] = tex.level;
                     data.albedo.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.albedo.level_index_filtering_assigned[2] = material.albedoTexture.get().filter;
+                    data.albedo.level_index_filtering_assigned[2] =
+                            material.albedoTexture.get().filter > Texture::NEAREST;
                     data.albedo.level_index_filtering_assigned[3] = 1;
 
                     auto atlasScale = tex.size.convert<float>()
@@ -413,7 +417,7 @@ namespace xng {
 
                     data.normal.level_index_filtering_assigned[0] = tex.level;
                     data.normal.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.normal.level_index_filtering_assigned[2] = material.normal.get().filter;
+                    data.normal.level_index_filtering_assigned[2] = material.normal.get().filter > Texture::NEAREST;
                     data.normal.level_index_filtering_assigned[3] = 1;
 
                     auto atlasScale = tex.size.convert<float>()

@@ -73,7 +73,9 @@ namespace xng {
             object.receiveShadows = pair.component.receiveShadows;
 
             if (scene.checkComponent<MaterialComponent>(pair.entity)) {
-                object.materials = scene.getComponent<MaterialComponent>(pair.entity).materials;
+                for (auto &material : scene.getComponent<MaterialComponent>(pair.entity).materials) {
+                    object.materials[material.first] = material.second.get();
+                }
             }
 
             renderScene.meshes.push_back(std::move(object));
@@ -95,7 +97,9 @@ namespace xng {
             object.receiveShadows = pair.component.receiveShadows;
 
             if (scene.checkComponent<MaterialComponent>(pair.entity)) {
-                object.materials = scene.getComponent<MaterialComponent>(pair.entity).materials;
+                for (auto &material : scene.getComponent<MaterialComponent>(pair.entity).materials) {
+                    object.materials[material.first] = material.second.get();
+                }
             }
 
             if (scene.checkComponent<RigAnimationComponent>(pair.entity)) {

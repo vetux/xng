@@ -36,7 +36,7 @@ namespace xng {
         ResourceHandle<Mesh> mesh;
 
         // Optional user specified materials for the mesh (materials[0]) and submeshes (materials[1...])
-        std::map<size_t, ResourceHandle<Material> > materials;
+        std::map<size_t, Material> materials;
 
         bool castShadows = false;
         bool receiveShadows = true;
@@ -47,7 +47,7 @@ namespace xng {
         ResourceHandle<SkinnedMesh> mesh;
 
         // Optional user specified materials for the mesh (materials[0]) and submeshes (materials[1...])
-        std::map<size_t, ResourceHandle<Material> > materials;
+        std::map<size_t, Material> materials;
 
         bool castShadows = false;
         bool receiveShadows = true;
