@@ -28,7 +28,7 @@
 #include "xng/graphics/scene/mesh.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT DeferredLightingPass : public RenderPass {
+    class XENGINE_EXPORT DeferredLightingPass final : public RenderPass {
     public:
         DeferredLightingPass(std::shared_ptr<RenderConfiguration> configuration,
                              std::shared_ptr<SharedResourceRegistry> registry);

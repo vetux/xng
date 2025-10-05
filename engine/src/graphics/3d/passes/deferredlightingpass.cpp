@@ -213,11 +213,6 @@ namespace xng {
         return layerSize != backBufferSize * config->getRenderScale();
     }
 
-
-    static float getCutOff(float angleDegrees) {
-        return std::cos(degreesToRadians(angleDegrees));
-    }
-
     void DeferredLightingPass::runPass(RenderGraphContext &ctx) {
         if (recreateLightBuffers) {
             std::vector<PointLightData> pointLightData;
@@ -281,14 +276,15 @@ namespace xng {
                 data.farPlane = Vec4f(lightObject.light.shadowFarPlane, 0, 0, 0).getMemory();
                 directionalLightData.emplace_back(data);
                 directionalLightTransforms.emplace_back(MatrixMath::ortho(-lightObject.light.shadowProjectionExtent,
-                                                     lightObject.light.shadowProjectionExtent,
-                                                     -lightObject.light.shadowProjectionExtent,
-                                                     lightObject.light.shadowProjectionExtent,
-                                                     lightObject.light.shadowNearPlane,
-                                                     lightObject.light.shadowFarPlane)
-                                   * MatrixMath::lookAt(lightObject.transform.getPosition(),
-                                                        lightObject.transform.getPosition() + lightObject.transform.forward(),
-                                                        Vec3f(0, 1, 0)));
+                                                                          lightObject.light.shadowProjectionExtent,
+                                                                          -lightObject.light.shadowProjectionExtent,
+                                                                          lightObject.light.shadowProjectionExtent,
+                                                                          lightObject.light.shadowNearPlane,
+                                                                          lightObject.light.shadowFarPlane)
+                                                        * MatrixMath::lookAt(lightObject.transform.getPosition(),
+                                                                             lightObject.transform.getPosition() +
+                                                                             lightObject.transform.forward(),
+                                                                             Vec3f(0, 1, 0)));
             }
             ctx.uploadBuffer(shadowDirectionalLightBuffer,
                              reinterpret_cast<const uint8_t *>(directionalLightData.data()),
@@ -313,8 +309,8 @@ namespace xng {
                                                  light.light.quadratic).getMemory();
                 data.color = (light.light.color.divide() * light.light.power).getMemory();
                 data.farPlane = Vec4f(light.light.shadowFarPlane, 0, 0, 0).getMemory();
-                data.cutOff_outerCutOff_constant_linear = Vec4f(getCutOff(light.light.cutOff),
-                                                                getCutOff(light.light.outerCutOff),
+                data.cutOff_outerCutOff_constant_linear = Vec4f(SpotLight::getCutOff(light.light.cutOff),
+                                                                SpotLight::getCutOff(light.light.outerCutOff),
                                                                 light.light.constant,
                                                                 light.light.linear).getMemory();
                 spotLightData.emplace_back(data);
@@ -339,18 +335,19 @@ namespace xng {
                                                  light.light.quadratic).getMemory();
                 data.color = (light.light.color.divide() * light.light.power).getMemory();
                 data.farPlane = Vec4f(light.light.shadowFarPlane, 0, 0, 0).getMemory();
-                data.cutOff_outerCutOff_constant_linear = Vec4f(getCutOff(light.light.cutOff),
-                                                                getCutOff(light.light.outerCutOff),
+                data.cutOff_outerCutOff_constant_linear = Vec4f(SpotLight::getCutOff(light.light.cutOff),
+                                                                SpotLight::getCutOff(light.light.outerCutOff),
                                                                 light.light.constant,
                                                                 light.light.linear).getMemory();
                 spotLightData.emplace_back(data);
                 directionalLightTransforms.emplace_back(MatrixMath::perspective(45,
-                                                           1,
-                                                           light.light.shadowNearPlane,
-                                                           light.light.shadowFarPlane)
-                                   * MatrixMath::lookAt(light.transform.getPosition(),
-                                                        light.transform.getPosition() + light.transform.forward(),
-                                                        Vec3f(0, 1, 0)));
+                                                            1,
+                                                            light.light.shadowNearPlane,
+                                                            light.light.shadowFarPlane)
+                                                        * MatrixMath::lookAt(light.transform.getPosition(),
+                                                                             light.transform.getPosition() + light.
+                                                                             transform.forward(),
+                                                                             Vec3f(0, 1, 0)));
             }
             ctx.uploadBuffer(shadowSpotLightBuffer,
                              reinterpret_cast<const uint8_t *>(spotLightData.data()),

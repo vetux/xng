@@ -87,6 +87,10 @@ namespace xng {
         bool operator!=(const SpotLight &other) const {
             return !(*this == other);
         }
+
+        static float getCutOff(float angleDegrees) {
+            return std::cos(degreesToRadians(angleDegrees));
+        }
     };
 }
 
