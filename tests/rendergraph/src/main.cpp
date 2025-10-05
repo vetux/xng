@@ -58,7 +58,9 @@ RenderScene createScene() {
     material = {};
     material.normal = ResourceHandle<Texture>(Uri("file://images/sphere_normals.png"));
     material.metallic = 0;
-    material.roughness = 0.1;
+    material.roughness = 0.5;
+    material.transparent = true;
+    material.albedo = ColorRGBA::white(1, 200);
     mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx:Sphere.002"));
     mesh.materials[0] = material;
     scene.skinnedMeshes.push_back(mesh);
@@ -122,6 +124,7 @@ int main(int argc, char *argv[]) {
         std::make_shared<ConstructionPass>(config, registry),
         std::make_shared<ShadowMappingPass>(config, registry),
         std::make_shared<DeferredLightingPass>(config, registry),
+        std::make_shared<ForwardLightingPass>(config, registry),
         std::make_shared<CanvasRenderPass>(config, registry),
         std::make_shared<CompositingPass>(config, registry),
     });
