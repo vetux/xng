@@ -29,18 +29,38 @@ using namespace xng;
 RenderScene createScene() {
     RenderScene scene;
 
+    Material material;
     SkinnedMeshObject mesh;
     mesh.castShadows = true;
-    mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx:Cube"));
-    scene.skinnedMeshes.push_back(mesh);
 
+    material = {};
+    material.roughness = 1;
+    material.albedoTexture = ResourceHandle<Texture>(Uri("file://images/cornell_boxcolor.png"));
     mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx:Box"));
+    mesh.materials[0] = material;
     scene.skinnedMeshes.push_back(mesh);
 
+    material = {};
+    material.roughness = 0.2;
+    material.metallic = 0.2;
+    mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx:Cube"));
+    mesh.materials[0] = material;
+    scene.skinnedMeshes.push_back(mesh);
+
+    material = {};
+    material.normal = ResourceHandle<Texture>(Uri("file://images/sphere_normals.png"));
+    material.metallic = 0.5;
+    material.roughness = 0.5;
     mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx:Sphere.001"));
+    mesh.materials[0] = material;
     scene.skinnedMeshes.push_back(mesh);
 
+    material = {};
+    material.normal = ResourceHandle<Texture>(Uri("file://images/sphere_normals.png"));
+    material.metallic = 0;
+    material.roughness = 0.1;
     mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx:Sphere.002"));
+    mesh.materials[0] = material;
     scene.skinnedMeshes.push_back(mesh);
 
     PointLightObject light;
