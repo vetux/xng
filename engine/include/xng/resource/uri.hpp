@@ -32,23 +32,20 @@
 
 namespace xng {
     /**
-     * Components of an uri can contain any sequence of ascii values only the sequence "://" is reserved.
+     * Components of an uri can contain any sequence of ascii values only the sequence "://" and colon ":" is reserved.
      *
      * The scheme and asset specification is optional.
      *
-     * Asset names cannot contain slashes.
-     *
-     * When specifying an asset name the file name must have an extension.
-     *
-     * SCHEME :// FILE / ASSET
+     * SCHEME :// FILE : ASSET
      *
      * For example:
      * https://www.domain.com/assets/cube.fbx/
      * memory://shaders/shader.spirv
      * file://mesh/cube.obj
-     * /mydir.extension/myfile.fbx/cube.001
+     * /mydir.extension/myfile.fbx:cube.001
+     * /mydir.extension/myfile.fbx
      * /mydir/myimage.png
-     * /mydir/myfilewithoutextension
+     * /mydir/myfilewithoutextension:cube
      */
     class XENGINE_EXPORT Uri : public Messageable {
     public:
@@ -57,22 +54,18 @@ namespace xng {
         explicit Uri(const std::string &value) {
             auto schemeIndex = value.find("://");
 
-            auto pathStr = value;
+            auto path = value;
             if (schemeIndex != std::string::npos) {
                 scheme = value.substr(0, schemeIndex);
-                pathStr = value.substr(schemeIndex + 3);
+                path = value.substr(schemeIndex + 3);
             }
 
-            auto path = std::filesystem::path(pathStr);
-
-            if (path.has_parent_path() && path.parent_path().has_extension()) {
-                // file/asset
-                asset = path.filename().string();
-                file = path.parent_path().string();
+            auto assetIndex = path.find(':');
+            if (assetIndex != std::string::npos) {
+                asset = path.substr(assetIndex + 1);
+                file = path.substr(0, assetIndex);
             } else {
-                // file
-                asset = "";
-                file = path.string();
+                file = path;
             }
         }
 
@@ -113,7 +106,7 @@ namespace xng {
         std::string getExtension() const { return std::filesystem::path(getFile()).extension().string(); }
 
         std::string toString(bool includeScheme = true) const {
-            return (scheme.empty() || !includeScheme ? "" : scheme + "://") + file + (asset.empty() ? "" : "/" + asset);
+            return (scheme.empty() || !includeScheme ? "" : scheme + "://") + file + (asset.empty() ? "" : ":" + asset);
         }
 
         bool empty() const {
