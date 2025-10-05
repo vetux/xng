@@ -152,7 +152,7 @@ namespace xng {
     }
 
     void GLFWInput::glfwCursorCallback(double xPos, double yPos) {
-        mice[0].positionDelta = mice[0].position - Vec2d(xPos, yPos);
+        mice[0].positionDelta += mice[0].position - Vec2d(xPos, yPos);
         mice[0].position.x = xPos;
         mice[0].position.y = yPos;
         auto ev = MouseEvent();
@@ -232,8 +232,8 @@ namespace xng {
     }
 
     void GLFWInput::glfwScrollCallback(double xoffset, double yoffset) {
-        mice[0].wheelDelta.x = xoffset;
-        mice[0].wheelDelta.y = yoffset;
+        mice[0].wheelDelta.x += xoffset;
+        mice[0].wheelDelta.y += yoffset;
 
         auto ev = MouseEvent();
         ev.type = MouseEvent::MOUSE_WHEEL_SCROLL;
