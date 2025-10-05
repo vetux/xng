@@ -31,16 +31,16 @@ RenderScene createScene() {
 
     SkinnedMeshObject mesh;
     mesh.castShadows = true;
-    mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx/Cube"));
+    mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx:Cube"));
     scene.skinnedMeshes.push_back(mesh);
 
-    mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx/Box"));
+    mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx:Box"));
     scene.skinnedMeshes.push_back(mesh);
 
-    mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx/Sphere.001"));
+    mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx:Sphere.001"));
     scene.skinnedMeshes.push_back(mesh);
 
-    mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx/Sphere.002"));
+    mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx:Sphere.002"));
     scene.skinnedMeshes.push_back(mesh);
 
     PointLightObject light;
