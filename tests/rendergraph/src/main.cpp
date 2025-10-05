@@ -84,6 +84,45 @@ RenderScene createScene() {
     return scene;
 }
 
+void cameraController(Transform &cameraTransform, Window &window, double deltaTime) {
+    constexpr float movementSpeed = 1;
+
+    auto &input = window.getInput();
+    auto &mouse = input.getMouse();
+    if (mouse.getButton(MOUSE_BUTTON_RIGHT)) {
+        constexpr float rotationSpeed = 90;
+        auto rot = Vec3d(0, -(mouse.positionDelta.x / window.getFramebufferSize().x) * rotationSpeed, 0);
+        cameraTransform.applyRotation(Quaternion(rot.convert<float>()), true);
+
+        rot = Vec3d(-(mouse.positionDelta.y / window.getFramebufferSize().y) * rotationSpeed, 0, 0);
+        cameraTransform.applyRotation(Quaternion(rot.convert<float>()), false);
+    }
+
+    Vec3f movement{};
+    if (input.getKey(KEY_W)) {
+        movement.y = -1;
+    } else if (input.getKey(KEY_S)) {
+        movement.y = 1;
+    }
+    if (input.getKey(KEY_A)) {
+        movement.x = 1;
+    } else if (input.getKey(KEY_D)) {
+        movement.x = -1;
+    }
+    if (input.getKey(KEY_SPACE)) {
+        movement.z = 1;
+    } else if (input.getKey(KEY_LCTRL)) {
+        movement.z = -1;
+    }
+
+    cameraTransform.setPosition(cameraTransform.getPosition()
+                                + cameraTransform.forward() * (movement.y * movementSpeed * deltaTime));
+    cameraTransform.setPosition(cameraTransform.getPosition()
+                                + cameraTransform.left() * (movement.x * movementSpeed * deltaTime));
+    cameraTransform.setPosition(cameraTransform.getPosition()
+                                + Vec3f(0, 1, 0) * (movement.z * movementSpeed * deltaTime));
+}
+
 int main(int argc, char *argv[]) {
     std::vector<std::unique_ptr<ResourceImporter> > importers;
     importers.emplace_back(std::make_unique<FontImporter>());
@@ -101,6 +140,7 @@ int main(int argc, char *argv[]) {
     auto runtime = std::make_shared<opengl::RenderGraphRuntime>();
 
     const std::shared_ptr window = std::move(glfw.createWindow(runtime->getGraphicsAPI()));
+    auto &input = window->getInput();
 
     window->setWindowSize({1000, 900});
 
@@ -193,6 +233,7 @@ int main(int argc, char *argv[]) {
 
         scene.camera.aspectRatio = static_cast<float>(fbSize.x)
                                    / static_cast<float>(fbSize.y);
+        cameraController(scene.cameraTransform, *window, frameLimiter.getDeltaTimeSeconds());
         config->setScene(scene);
 
         auto fbSizeF = fbSize.convert<float>();
