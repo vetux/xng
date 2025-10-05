@@ -110,7 +110,6 @@ namespace xng {
         pointPipeline = builder.inheritResource(pointPipeline);
         dirPipeline = builder.inheritResource(dirPipeline);
         shaderBuffer = builder.inheritResource(shaderBuffer);
-        boneBuffer = builder.inheritResource(boneBuffer);
         dirLightBuffer = builder.inheritResource(dirLightBuffer);
         pointLightBuffer = builder.inheritResource(pointLightBuffer);
         const auto pointShadowResolution = Vec2i(config->getPointShadowResolution());
@@ -161,6 +160,8 @@ namespace xng {
         if (currentBoneBufferSize != requiredBoneBufferSize) {
             boneBuffer = builder.createShaderBuffer(requiredBoneBufferSize);
             currentBoneBufferSize = requiredBoneBufferSize;
+        } else {
+            boneBuffer = builder.inheritResource(boneBuffer);
         }
 
         auto pass = builder.addPass("ShadowMapping", [this](RenderGraphContext &ctx) {
