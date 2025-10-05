@@ -106,7 +106,9 @@ namespace xng {
     }
 
     void MeshBuffer3D::update(RenderGraphBuilder &builder, RenderGraphBuilder::PassHandle pass) {
-        if (requestedVertexBufferSize != currentVertexBufferSize || requestedIndexBufferSize != currentIndexBufferSize) {
+        if (requestedVertexBufferSize != currentVertexBufferSize
+            || requestedIndexBufferSize != currentIndexBufferSize
+            || !currentVertexBuffer) {
             if (currentVertexBufferSize > 0) {
                 staleVertexBuffer = builder.inheritResource(currentVertexBuffer);
             }
