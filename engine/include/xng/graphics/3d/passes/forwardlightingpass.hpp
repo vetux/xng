@@ -20,11 +20,84 @@
 #ifndef XENGINE_FORWARDLIGHTINGPASS_HPP
 #define XENGINE_FORWARDLIGHTINGPASS_HPP
 
+#include "xng/graphics/3d/meshbuffer3d.hpp"
+#include "xng/graphics/3d/renderconfiguration.hpp"
 #include "xng/graphics/3d/renderpass.hpp"
+#include "xng/graphics/3d/sharedresourceregistry.hpp"
+#include "xng/graphics/3d/atlas/textureatlas.hpp"
+#include "xng/graphics/3d/sharedresources/compositinglayers.hpp"
+#include "xng/graphics/3d/sharedresources/shadowmaps.hpp"
 
 namespace xng {
-    class ForwardLightingPass : public RenderPass {
-        public:
+    class XENGINE_EXPORT ForwardLightingPass final : public RenderPass {
+    public:
+        ForwardLightingPass(std::shared_ptr<RenderConfiguration> configuration,
+                            std::shared_ptr<SharedResourceRegistry> registry);
+
+        void create(RenderGraphBuilder &builder) override;
+
+        void recreate(RenderGraphBuilder &builder) override;
+
+        bool shouldRebuild(const Vec2i &backBufferSize) override;
+
+    private:
+        static Shader createVertexShader();
+
+        static Shader createFragmentShader();
+
+        void runPass(RenderGraphContext &ctx);
+
+        std::shared_ptr<RenderConfiguration> config;
+        std::shared_ptr<SharedResourceRegistry> registry;
+
+        RenderGraphResource pipeline;
+
+        RenderGraphResource shaderBuffer;
+        RenderGraphResource boneBuffer;
+
+        TextureAtlas atlas;
+
+        size_t currentBoneBufferSize{};
+        size_t totalBoneBufferSize{};
+
+        MeshBuffer3D meshAllocator;
+
+        std::map<Uri, TextureAtlasHandle> textures;
+        std::vector<ResourceHandle<SkinnedMesh> > allocatedMeshes;
+
+        Vec2i currentResolution;
+
+        Transform cameraTransform;
+        Camera camera;
+        std::vector<SkinnedMeshObject> objects;
+
+        RenderGraphResource pointLightBuffer;
+        RenderGraphResource directionalLightBuffer;
+        RenderGraphResource spotLightBuffer;
+
+        std::vector<PointLightObject> pointLights;
+        std::vector<DirectionalLightObject> directionalLights;
+        std::vector<SpotLightObject> spotLights;
+
+        RenderGraphResource shadowPointLightBuffer;
+        RenderGraphResource shadowDirectionalLightBuffer;
+        RenderGraphResource shadowSpotLightBuffer;
+
+        std::vector<PointLightObject> shadowPointLights;
+        std::vector<DirectionalLightObject> shadowDirectionalLights;
+        std::vector<SpotLightObject> shadowSpotLights;
+
+        RenderGraphResource shadowDirectionalLightTransformBuffer;
+        RenderGraphResource shadowSpotLightTransformBuffer;
+
+        bool recreateLightBuffers = false;
+
+        Vec3f viewPosition;
+
+        CompositeLayer layer;
+        Vec2i layerSize;
+
+        ShadowMaps shadowMaps;
     };
 }
 
