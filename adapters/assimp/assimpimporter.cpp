@@ -228,7 +228,6 @@ namespace xng::assimp {
     }
 
     static Material convertMaterial(const aiMaterial &assMaterial,
-                                    const std::string &parentPath,
                                     const Uri &fileUri,
                                     const std::map<std::string, aiTexture *> &embeddedTextures) {
         Material ret;
@@ -254,21 +253,27 @@ namespace xng::assimp {
         assMaterial.Get(AI_MATKEY_METALLIC_FACTOR, ret.metallic);
         assMaterial.Get(AI_MATKEY_ROUGHNESS_FACTOR, ret.roughness);
 
+        std::string parentPath;
+        auto filePath = std::filesystem::path(fileUri.getFile());
+        if (filePath.has_parent_path()) {
+            parentPath += filePath.parent_path().string() + "/";
+        }
+
         auto texPath = std::make_unique<aiString>();
         auto tex = assMaterial.GetTexture(aiTextureType_DIFFUSE,
                                           0,
                                           texPath.get());
 
         auto embeddedTexturePath = std::string(texPath->C_Str());
-        std::replace(embeddedTexturePath.begin(), embeddedTexturePath.end(), '\\', '_');
-        std::replace(embeddedTexturePath.begin(), embeddedTexturePath.end(), '/', '_');
 
         if (tex == aiReturn::aiReturn_SUCCESS) {
             if (embeddedTextures.find(embeddedTexturePath) != embeddedTextures.end()) {
                 ret.albedoTexture = ResourceHandle<Texture>(
                     Uri(fileUri.getScheme(), fileUri.getFile(), embeddedTexturePath + "_texture"));
             } else {
-                ret.albedoTexture = ResourceHandle<Texture>(Uri(parentPath + std::string(texPath->C_Str())));
+                ret.albedoTexture = ResourceHandle<Texture>(Uri(fileUri.getScheme(),
+                                                                parentPath + std::string(texPath->C_Str()),
+                                                                ""));
             }
         }
 
@@ -276,15 +281,15 @@ namespace xng::assimp {
                                      0,
                                      texPath.get());
         embeddedTexturePath = std::string(texPath->C_Str());
-        std::replace(embeddedTexturePath.begin(), embeddedTexturePath.end(), '\\', '_');
-        std::replace(embeddedTexturePath.begin(), embeddedTexturePath.end(), '/', '_');
 
         if (tex == aiReturn::aiReturn_SUCCESS) {
             if (embeddedTextures.find(embeddedTexturePath) != embeddedTextures.end()) {
                 ret.metallicTexture = ResourceHandle<Texture>(
                     Uri(fileUri.getScheme(), fileUri.getFile(), embeddedTexturePath + "_texture"));
             } else {
-                ret.metallicTexture = ResourceHandle<Texture>(Uri(parentPath + std::string(texPath->C_Str())));
+                ret.metallicTexture = ResourceHandle<Texture>(Uri(fileUri.getScheme(),
+                                                                parentPath + std::string(texPath->C_Str()),
+                                                                ""));
             }
         }
 
@@ -292,16 +297,15 @@ namespace xng::assimp {
                                      0,
                                      texPath.get());
         embeddedTexturePath = std::string(texPath->C_Str());
-        std::replace(embeddedTexturePath.begin(), embeddedTexturePath.end(), '\\', '_');
-        std::replace(embeddedTexturePath.begin(), embeddedTexturePath.end(), '/', '_');
 
         if (tex == aiReturn::aiReturn_SUCCESS) {
             if (embeddedTextures.find(embeddedTexturePath) != embeddedTextures.end()) {
                 ret.ambientOcclusionTexture = ResourceHandle<Texture>(
                     Uri(fileUri.getScheme(), fileUri.getFile(), embeddedTexturePath + "_texture"));
             } else {
-                ret.ambientOcclusionTexture = ResourceHandle<Texture>(Uri(parentPath
-                                                                          + std::string(texPath->C_Str())));
+                ret.ambientOcclusionTexture = ResourceHandle<Texture>(Uri(fileUri.getScheme(),
+                                                                parentPath + std::string(texPath->C_Str()),
+                                                                ""));
             }
         }
 
@@ -309,8 +313,6 @@ namespace xng::assimp {
                                      0,
                                      texPath.get());
         embeddedTexturePath = std::string(texPath->C_Str());
-        std::replace(embeddedTexturePath.begin(), embeddedTexturePath.end(), '\\', '_');
-        std::replace(embeddedTexturePath.begin(), embeddedTexturePath.end(), '/', '_');
 
         if (tex == aiReturn::aiReturn_SUCCESS) {
             if (embeddedTextures.find(embeddedTexturePath) != embeddedTextures.end()) {
@@ -318,7 +320,9 @@ namespace xng::assimp {
                                                          fileUri.getFile(),
                                                          embeddedTexturePath + "_texture"));
             } else {
-                ret.normal = ResourceHandle<Texture>(Uri(parentPath + std::string(texPath->C_Str())));
+                ret.normal = ResourceHandle<Texture>(Uri(fileUri.getScheme(),
+                                                                parentPath + std::string(texPath->C_Str()),
+                                                                ""));
             }
         }
 
@@ -410,8 +414,6 @@ namespace xng::assimp {
         for (auto i = 0; i < scene.mNumTextures; i++) {
             auto *tex = scene.mTextures[i];
             auto embeddedTexturePath = std::string(tex->mFilename.C_Str());
-            std::replace(embeddedTexturePath.begin(), embeddedTexturePath.end(), '\\', '_');
-            std::replace(embeddedTexturePath.begin(), embeddedTexturePath.end(), '/', '_');
             textures[embeddedTexturePath] = tex;
         }
 
@@ -422,17 +424,9 @@ namespace xng::assimp {
             meshes[name].emplace_back(scene.mMeshes[i]);
         }
 
-        auto p = std::filesystem::path(path.getFile());
-
-        std::string parentPath = path.getScheme() + "://";
-        if (p.has_parent_path()) {
-            parentPath += p.parent_path().string() + "/";
-        }
-
         std::vector<ResourceHandle<Material> > materialResourceHandles;
         for (auto i = 0; i < scene.mNumMaterials; i++) {
             auto material = convertMaterial(*scene.mMaterials[i],
-                                            parentPath,
                                             path,
                                             textures);
 
@@ -502,8 +496,8 @@ namespace xng::assimp {
     }
 
     ResourceBundle ResourceImporter::read(std::istream &stream,
-                                const Uri &path,
-                                Archive *archive) {
+                                          const Uri &path,
+                                          Archive *archive) {
         std::vector<char> buffer;
 
         char c;
