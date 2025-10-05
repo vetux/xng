@@ -187,7 +187,7 @@ namespace xng {
                 usedMeshes.emplace_back(meshObject.mesh);
 
                 for (auto i = 0; i < meshObject.mesh.get().subMeshes.size() + 1; i++) {
-                    Mesh mesh = i == 0 ? meshObject.mesh.get() : meshObject.mesh.get().subMeshes.at(i - 1);
+                    auto &mesh = i == 0 ? meshObject.mesh.get() : meshObject.mesh.get().subMeshes.at(i - 1);
                     boneCount += mesh.bones.size();
                 }
 
@@ -254,7 +254,7 @@ namespace xng {
             auto model = meshObject.transform.model();
 
             for (auto i = 0; i < meshObject.mesh.get().subMeshes.size() + 1; i++) {
-                auto mesh = i == 0 ? meshObject.mesh.get() : meshObject.mesh.get().subMeshes.at(i - 1);
+                auto& mesh = i == 0 ? meshObject.mesh.get() : meshObject.mesh.get().subMeshes.at(i - 1);
                 int boneOffset = static_cast<int>(boneMatrices.size());
                 if (meshObject.mesh.get().bones.empty()) {
                     boneOffset = -1;
