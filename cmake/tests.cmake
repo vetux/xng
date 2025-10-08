@@ -6,7 +6,7 @@ target_include_directories(test-pak PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/pa
 target_link_libraries(test-pak Threads::Threads xengine)
 
 add_executable(test-rendergraph ${BASE_SOURCE_DIR}/tests/rendergraph/src/main.cpp)
-target_include_directories(test-rendergraph PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/rendergraph/src/ ${SHADER_COMPILED_DIR} ${TESTS_COMMON_DIR})
+target_include_directories(test-rendergraph PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/rendergraph/src/ ${TESTS_COMMON_DIR})
 target_link_libraries(test-rendergraph Threads::Threads xengine)
 
 if (MSVC)

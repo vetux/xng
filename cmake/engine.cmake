@@ -5,10 +5,10 @@ file(GLOB_RECURSE Engine.File.SRC ${Engine.Dir.SRC}*.cpp ${Engine.Dir.SRC}*.c)
 
 # xengine
 
-add_library(xengine SHARED ${Engine.File.SRC} ${ADAPTER_SRC} ${SHADER_HEADERS})
+add_library(xengine SHARED ${Engine.File.SRC} ${ADAPTER_SRC})
 
 target_include_directories(xengine PUBLIC ${Engine.Dir.INCLUDE})
-target_include_directories(xengine PRIVATE ${Engine.Dir.SRC} ${ADAPTER_INCLUDE} ${SHADER_COMPILED_DIR})
+target_include_directories(xengine PRIVATE ${Engine.Dir.SRC} ${ADAPTER_INCLUDE})
 
 target_link_libraries(xengine PRIVATE Threads::Threads ${ADAPTER_LINK})
 
@@ -28,10 +28,10 @@ endif ()
 
 # xengine-static
 
-add_library(xengine-static STATIC ${Engine.File.SRC} ${ADAPTER_SRC} ${SHADER_HEADERS})
+add_library(xengine-static STATIC ${Engine.File.SRC} ${ADAPTER_SRC})
 
 target_include_directories(xengine-static PUBLIC ${Engine.Dir.INCLUDE})
-target_include_directories(xengine-static PRIVATE ${Engine.Dir.SRC} ${ADAPTER_INCLUDE} ${SHADER_COMPILED_DIR})
+target_include_directories(xengine-static PRIVATE ${Engine.Dir.SRC} ${ADAPTER_INCLUDE})
 
 target_link_libraries(xengine-static PRIVATE Threads::Threads ${ADAPTER_LINK})
 
