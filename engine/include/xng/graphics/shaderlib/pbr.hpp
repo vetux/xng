@@ -28,6 +28,8 @@ namespace xng::ShaderScript {
     DEFINE_FUNCTION5(pbr_directional)
     DEFINE_FUNCTION11(pbr_spot)
     DEFINE_FUNCTION2(pbr_finish)
+
+    static constexpr char PbrPass[] = "PbrPass";
 }
 
 namespace xng::shaderlib {

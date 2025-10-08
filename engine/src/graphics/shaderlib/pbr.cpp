@@ -146,7 +146,7 @@ namespace xng::shaderlib {
             ARGUMENT(ao)
             ARGUMENT(camPos)
 
-            auto ret = New(PbrPass);
+            Object<PbrPass> ret;
 
             vec3 N = normalize(Normal);
             vec3 V = normalize(camPos - WorldPos);

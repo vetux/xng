@@ -20,37 +20,40 @@
 #ifndef XENGINE_SHADERSCRIPT_HPP
 #define XENGINE_SHADERSCRIPT_HPP
 
-#include "xng/rendergraph/shader/nodes/nodetexture.hpp"
 #include "xng/rendergraph/shaderscript/shaderobject.hpp"
 
+/**
+ * WARNING: This file should only be included in compilation units that specifically handle shader creation,
+ *          because it defines loosely named macros such as Struct or Input which can collide with other symbols.
+ *
+ *          The xng::ShaderScript namespace defines implicit conversion operators for converting literals
+ *          to node wrappers, which can cause ambiguous overloads when "using" the namespace.
+ */
+
 // Optional Helper macros for defining C++ function wrappers for directly calling a function
-#define DEFINE_FUNCTION0(name) inline ShaderObject name(){ return Call(#name);}
-#define DEFINE_FUNCTION1(name) inline ShaderObject name(const ShaderObject &arg){ return Call(#name, arg);}
-#define DEFINE_FUNCTION2(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1){ return Call(#name, arg, arg1);}
-#define DEFINE_FUNCTION3(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2){ return Call(#name, arg, arg1, arg2);}
-#define DEFINE_FUNCTION4(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3){ return Call(#name, arg, arg1, arg2, arg3);}
-#define DEFINE_FUNCTION5(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4){ return CallA(#name, {arg, arg1, arg2, arg3, arg4});}
-#define DEFINE_FUNCTION6(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5){ return CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5});}
-#define DEFINE_FUNCTION7(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6){ return CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6});}
-#define DEFINE_FUNCTION8(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6, const ShaderObject &arg7){ return CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6, arg7});}
-#define DEFINE_FUNCTION9(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6, const ShaderObject &arg7, const ShaderObject &arg8){ return CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8});}
-#define DEFINE_FUNCTION10(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6, const ShaderObject &arg7, const ShaderObject &arg8, const ShaderObject &arg9){ return CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9});}
-#define DEFINE_FUNCTION11(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6, const ShaderObject &arg7, const ShaderObject &arg8, const ShaderObject &arg9, const ShaderObject &arg10){ return CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10});}
-#define DEFINE_FUNCTION12(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6, const ShaderObject &arg7, const ShaderObject &arg8, const ShaderObject &arg9, const ShaderObject &arg10, const ShaderObject &arg11){ return CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11});}
+#define DEFINE_FUNCTION0(name) inline ShaderObject name(){ return xng::ShaderScript::Call(#name);}
+#define DEFINE_FUNCTION1(name) inline ShaderObject name(const ShaderObject &arg){ return xng::ShaderScript::Call(#name, arg);}
+#define DEFINE_FUNCTION2(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1){ return xng::ShaderScript::Call(#name, arg, arg1);}
+#define DEFINE_FUNCTION3(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2){ return xng::ShaderScript::Call(#name, arg, arg1, arg2);}
+#define DEFINE_FUNCTION4(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3){ return xng::ShaderScript::Call(#name, arg, arg1, arg2, arg3);}
+#define DEFINE_FUNCTION5(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4){ return xng::ShaderScript::CallA(#name, {arg, arg1, arg2, arg3, arg4});}
+#define DEFINE_FUNCTION6(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5){ return xng::ShaderScript::CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5});}
+#define DEFINE_FUNCTION7(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6){ return xng::ShaderScript::CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6});}
+#define DEFINE_FUNCTION8(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6, const ShaderObject &arg7){ return xng::ShaderScript::CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6, arg7});}
+#define DEFINE_FUNCTION9(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6, const ShaderObject &arg7, const ShaderObject &arg8){ return xng::ShaderScript::CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8});}
+#define DEFINE_FUNCTION10(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6, const ShaderObject &arg7, const ShaderObject &arg8, const ShaderObject &arg9){ return xng::ShaderScript::CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9});}
+#define DEFINE_FUNCTION11(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6, const ShaderObject &arg7, const ShaderObject &arg8, const ShaderObject &arg9, const ShaderObject &arg10){ return xng::ShaderScript::CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10});}
+#define DEFINE_FUNCTION12(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6, const ShaderObject &arg7, const ShaderObject &arg8, const ShaderObject &arg9, const ShaderObject &arg10, const ShaderObject &arg11){ return xng::ShaderScript::CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11});}
 
 // Optional Helper macro for accessing arguments
-#define ARGUMENT(argumentName) ShaderObject argumentName = std::holds_alternative<ShaderTexture>(ShaderBuilder::instance().getCurrentFunction().getArgumentType(#argumentName))\
-                    ? ShaderObject(std::get<ShaderTexture>(ShaderBuilder::instance().getCurrentFunction().getArgumentType(#argumentName)), ShaderNodeFactory::argument(#argumentName))\
-                    : std::holds_alternative<ShaderStructName>(ShaderBuilder::instance().getCurrentFunction().getArgumentType(#argumentName))\
-                        ? ShaderObject(std::get<ShaderStructName>(ShaderBuilder::instance().getCurrentFunction().getArgumentType(#argumentName)),ShaderNodeFactory::argument(#argumentName))\
-                        : ShaderObject(std::get<ShaderDataType>(ShaderBuilder::instance().getCurrentFunction().getArgumentType(#argumentName)),ShaderNodeFactory::argument(#argumentName));
+#define ARGUMENT(argumentName) ShaderObject argumentName = xng::ShaderScript::argument(#argumentName);
 
 /**
  * Optional Helper Macros for abstracting the shader builder interactions
  *
  * BeginShader(VERTEX);
  *
- * Input(ShaderDataType::vec3(), vPosition);
+3 * Input(ShaderDataType::vec3(), vPosition);
  * Input(ShaderDataType::vec2(), vUv);
  *
  * Output(ShaderDataType::vec4(), fPosition);
@@ -79,30 +82,27 @@
  */
 #define BeginShader(stage) auto &builder = ShaderBuilder::instance(); builder.setup(stage);
 
-#define Input(type, name) builder.addInput(#name, type); ShaderObject name = ShaderObject(type, ShaderNodeFactory::attributeInput(#name));
-#define Output(type, name) builder.addOutput(#name, type); ShaderObject name = ShaderObject(type, ShaderNodeFactory::attributeOutput(#name));
+#define Struct(name, ...) builder.addTypeDefinition(ShaderStruct(#name, {__VA_ARGS__})); static constexpr char name[] = #name;
 
-#define Struct(name, ...) builder.addTypeDefinition(ShaderStruct(#name, {__VA_ARGS__})); const ShaderStructName name = #name;
+#define Input(type, name) builder.addInput(#name, type); ShaderObject name = xng::ShaderScript::inputAttribute(#name);
+#define Output(type, name) builder.addOutput(#name, type); ShaderObject name = xng::ShaderScript::outputAttribute(#name);
 
-#define Buffer(name, type) builder.addBuffer(#name, ShaderBuffer(false, false, #type)); ShaderObject name = ShaderObject(#type, ShaderNodeFactory::buffer(#name));
-#define DynamicBuffer(name, type) builder.addBuffer(#name, ShaderBuffer(false, true, #type)); ShaderObject name = ShaderObject(#type, ShaderNodeFactory::buffer(#name));
+#define Parameter(type, name) builder.addParameter(#name, type); ShaderObject name = xng::ShaderScript::parameter(#name);
 
-#define BufferRW(name, type) builder.addBuffer(#name, ShaderBuffer(true, false, #type)); ShaderObject name = ShaderObject(#type, ShaderNodeFactory::buffer(#name));
-#define DynamicBufferRW(name, type) builder.addBuffer(#name, ShaderBuffer(true, true, #type)); ShaderObject name = ShaderObject(#type, ShaderNodeFactory::buffer(#name));
+#define Buffer(name, type) builder.addBuffer(#name, ShaderBuffer(false, false, #type)); ShaderObject name = xng::ShaderScript::buffer(#name);
+#define DynamicBuffer(name, type) builder.addBuffer(#name, ShaderBuffer(false, true, #type)); ShaderObject name = xng::ShaderScript::buffer(#name);
 
-#define Texture(name, type, format) builder.addTextureArray(#name, ShaderTextureArray(ShaderTexture(type, format))); ShaderObject name = ShaderObject(ShaderTexture(type, format), ShaderNodeFactory::texture(#name));
-#define TextureArray(name, type, format, count) builder.addTextureArray(#name, ShaderTextureArray(ShaderTexture(type, format), count)); ShaderObject name = ShaderObject(ShaderTextureArray(ShaderTexture(type, format), count), ShaderNodeFactory::texture(#name));
+#define BufferRW(name, type) builder.addBuffer(#name, ShaderBuffer(true, false, #type)); ShaderObject name = xng::ShaderScript::buffer(#name);
+#define DynamicBufferRW(name, type) builder.addBuffer(#name, ShaderBuffer(true, true, #type)); ShaderObject name = xng::ShaderScript::buffer(#name);
+
+#define Texture(name, type, format) builder.addTextureArray(#name, ShaderTextureArray(ShaderTexture(type, format))); ShaderObject name = xng::ShaderScript::textureSampler(#name)[Int(0)];
+#define TextureArray(name, type, format, count) builder.addTextureArray(#name, ShaderTextureArray(ShaderTexture(type, format), count)); ShaderObject name = xng::ShaderScript::textureSampler(#name);
 
 #define InputPrimitive(type) builder.setGeometryInput(type);
 #define OutputPrimitive(type, maxVertices) builder.setGeometryOutput(type, maxVertices);
 
 #define BuildShader() builder.build();
 
-/**
- * WARNING: This namespace defines implicit conversion operators for converting literals
- *          to node wrappers, which can cause ambiguous overloads when "using" the namespace,
- *          so this namespace should only be "used" in compilation units that specifically handle shader creation.
- */
 namespace xng::ShaderScript {
     // Operators for lhs literals
     template<typename T>
@@ -166,95 +166,104 @@ namespace xng::ShaderScript {
     }
 
     template<int C>
-    using ArrayBool = ShaderObjectTyped<ShaderDataType::SCALAR, ShaderDataType::BOOLEAN, C>;
+    using ArrayBool = ShaderDataObject<ShaderDataType::SCALAR, ShaderDataType::BOOLEAN, C>;
 
     template<int C>
-    using ArrayInt = ShaderObjectTyped<ShaderDataType::SCALAR, ShaderDataType::SIGNED_INT, C>;
+    using ArrayInt = ShaderDataObject<ShaderDataType::SCALAR, ShaderDataType::SIGNED_INT, C>;
 
     template<int C>
-    using ArrayUInt = ShaderObjectTyped<ShaderDataType::SCALAR, ShaderDataType::UNSIGNED_INT, C>;
+    using ArrayUInt = ShaderDataObject<ShaderDataType::SCALAR, ShaderDataType::UNSIGNED_INT, C>;
 
     template<int C>
-    using ArrayFloat = ShaderObjectTyped<ShaderDataType::SCALAR, ShaderDataType::FLOAT, C>;
+    using ArrayFloat = ShaderDataObject<ShaderDataType::SCALAR, ShaderDataType::FLOAT, C>;
 
     template<int C>
-    using ArrayDouble = ShaderObjectTyped<ShaderDataType::SCALAR, ShaderDataType::DOUBLE, C>;
+    using ArrayDouble = ShaderDataObject<ShaderDataType::SCALAR, ShaderDataType::DOUBLE, C>;
 
     template<int C>
-    using ArrayVec2 = ShaderObjectTyped<ShaderDataType::VECTOR2, ShaderDataType::FLOAT, C>;
+    using ArrayVec2 = ShaderDataObject<ShaderDataType::VECTOR2, ShaderDataType::FLOAT, C>;
 
     template<int C>
-    using ArrayVec3 = ShaderObjectTyped<ShaderDataType::VECTOR3, ShaderDataType::FLOAT, C>;
+    using ArrayVec3 = ShaderDataObject<ShaderDataType::VECTOR3, ShaderDataType::FLOAT, C>;
 
     template<int C>
-    using ArrayVec4 = ShaderObjectTyped<ShaderDataType::VECTOR4, ShaderDataType::FLOAT, C>;
+    using ArrayVec4 = ShaderDataObject<ShaderDataType::VECTOR4, ShaderDataType::FLOAT, C>;
 
-    typedef ShaderObjectTyped<ShaderDataType::SCALAR, ShaderDataType::BOOLEAN, 1> Bool;
+    template<const char * typeName>
+    using Object = ShaderStructObject<typeName>;
 
-    typedef ShaderObjectTyped<ShaderDataType::SCALAR, ShaderDataType::SIGNED_INT, 1> Int;
+    typedef ShaderDataObject<ShaderDataType::SCALAR, ShaderDataType::BOOLEAN, 1> Bool;
 
-    typedef ShaderObjectTyped<ShaderDataType::SCALAR, ShaderDataType::UNSIGNED_INT, 1> UInt;
+    typedef ShaderDataObject<ShaderDataType::SCALAR, ShaderDataType::SIGNED_INT, 1> Int;
 
-    typedef ShaderObjectTyped<ShaderDataType::SCALAR, ShaderDataType::FLOAT, 1> Float;
+    typedef ShaderDataObject<ShaderDataType::SCALAR, ShaderDataType::UNSIGNED_INT, 1> UInt;
 
-    typedef ShaderObjectTyped<ShaderDataType::SCALAR, ShaderDataType::DOUBLE, 1> Double;
+    typedef ShaderDataObject<ShaderDataType::SCALAR, ShaderDataType::FLOAT, 1> Float;
 
-    typedef ShaderObjectTyped<ShaderDataType::VECTOR2, ShaderDataType::FLOAT, 1> vec2;
+    typedef ShaderDataObject<ShaderDataType::SCALAR, ShaderDataType::DOUBLE, 1> Double;
 
-    typedef ShaderObjectTyped<ShaderDataType::VECTOR3, ShaderDataType::FLOAT, 1> vec3;
+    typedef ShaderDataObject<ShaderDataType::VECTOR2, ShaderDataType::FLOAT, 1> vec2;
 
-    typedef ShaderObjectTyped<ShaderDataType::VECTOR4, ShaderDataType::FLOAT, 1> vec4;
+    typedef ShaderDataObject<ShaderDataType::VECTOR3, ShaderDataType::FLOAT, 1> vec3;
 
-    typedef ShaderObjectTyped<ShaderDataType::MAT2, ShaderDataType::FLOAT, 1> mat2;
+    typedef ShaderDataObject<ShaderDataType::VECTOR4, ShaderDataType::FLOAT, 1> vec4;
 
-    typedef ShaderObjectTyped<ShaderDataType::MAT3, ShaderDataType::FLOAT, 1> mat3;
+    typedef ShaderDataObject<ShaderDataType::MAT2, ShaderDataType::FLOAT, 1> mat2;
 
-    typedef ShaderObjectTyped<ShaderDataType::MAT4, ShaderDataType::FLOAT, 1> mat4;
+    typedef ShaderDataObject<ShaderDataType::MAT3, ShaderDataType::FLOAT, 1> mat3;
 
-    typedef ShaderObjectTyped<ShaderDataType::VECTOR2, ShaderDataType::DOUBLE, 1> dvec2;
+    typedef ShaderDataObject<ShaderDataType::MAT4, ShaderDataType::FLOAT, 1> mat4;
 
-    typedef ShaderObjectTyped<ShaderDataType::VECTOR3, ShaderDataType::DOUBLE, 1> dvec3;
+    typedef ShaderDataObject<ShaderDataType::VECTOR2, ShaderDataType::DOUBLE, 1> dvec2;
 
-    typedef ShaderObjectTyped<ShaderDataType::VECTOR4, ShaderDataType::DOUBLE, 1> dvec4;
+    typedef ShaderDataObject<ShaderDataType::VECTOR3, ShaderDataType::DOUBLE, 1> dvec3;
 
-    typedef ShaderObjectTyped<ShaderDataType::MAT2, ShaderDataType::DOUBLE, 1> dmat2;
+    typedef ShaderDataObject<ShaderDataType::VECTOR4, ShaderDataType::DOUBLE, 1> dvec4;
 
-    typedef ShaderObjectTyped<ShaderDataType::MAT3, ShaderDataType::DOUBLE, 1> dmat3;
+    typedef ShaderDataObject<ShaderDataType::MAT2, ShaderDataType::DOUBLE, 1> dmat2;
 
-    typedef ShaderObjectTyped<ShaderDataType::MAT4, ShaderDataType::DOUBLE, 1> dmat4;
+    typedef ShaderDataObject<ShaderDataType::MAT3, ShaderDataType::DOUBLE, 1> dmat3;
 
-    typedef ShaderObjectTyped<ShaderDataType::VECTOR2, ShaderDataType::BOOLEAN, 1> bvec2;
+    typedef ShaderDataObject<ShaderDataType::MAT4, ShaderDataType::DOUBLE, 1> dmat4;
 
-    typedef ShaderObjectTyped<ShaderDataType::VECTOR3, ShaderDataType::BOOLEAN, 1> bvec3;
+    typedef ShaderDataObject<ShaderDataType::VECTOR2, ShaderDataType::BOOLEAN, 1> bvec2;
 
-    typedef ShaderObjectTyped<ShaderDataType::VECTOR4, ShaderDataType::BOOLEAN, 1> bvec4;
+    typedef ShaderDataObject<ShaderDataType::VECTOR3, ShaderDataType::BOOLEAN, 1> bvec3;
 
-    typedef ShaderObjectTyped<ShaderDataType::VECTOR2, ShaderDataType::SIGNED_INT, 1> ivec2;
+    typedef ShaderDataObject<ShaderDataType::VECTOR4, ShaderDataType::BOOLEAN, 1> bvec4;
 
-    typedef ShaderObjectTyped<ShaderDataType::VECTOR3, ShaderDataType::SIGNED_INT, 1> ivec3;
+    typedef ShaderDataObject<ShaderDataType::VECTOR2, ShaderDataType::SIGNED_INT, 1> ivec2;
 
-    typedef ShaderObjectTyped<ShaderDataType::VECTOR4, ShaderDataType::SIGNED_INT, 1> ivec4;
+    typedef ShaderDataObject<ShaderDataType::VECTOR3, ShaderDataType::SIGNED_INT, 1> ivec3;
 
-    typedef ShaderObjectTyped<ShaderDataType::VECTOR2, ShaderDataType::UNSIGNED_INT, 1> uvec2;
+    typedef ShaderDataObject<ShaderDataType::VECTOR4, ShaderDataType::SIGNED_INT, 1> ivec4;
 
-    typedef ShaderObjectTyped<ShaderDataType::VECTOR3, ShaderDataType::UNSIGNED_INT, 1> uvec3;
+    typedef ShaderDataObject<ShaderDataType::VECTOR2, ShaderDataType::UNSIGNED_INT, 1> uvec2;
 
-    typedef ShaderObjectTyped<ShaderDataType::VECTOR4, ShaderDataType::UNSIGNED_INT, 1> uvec4;
+    typedef ShaderDataObject<ShaderDataType::VECTOR3, ShaderDataType::UNSIGNED_INT, 1> uvec3;
 
-    /**
-     * Read-only references to input data
-     *
-     * @param binding
-     * @return
-     */
-    inline ShaderObject readAttribute(const std::string &attributeName) {
-        return ShaderObject(ShaderBuilder::instance().getInputLayout().getElementType(attributeName),
-                            ShaderNodeFactory::attributeInput(attributeName));
+    typedef ShaderDataObject<ShaderDataType::VECTOR4, ShaderDataType::UNSIGNED_INT, 1> uvec4;
+
+    inline ShaderObject inputAttribute(const std::string &attributeName) {
+        return ShaderObject(ShaderOperand(ShaderOperand::InputAttribute, attributeName),
+                            true);
     }
 
-    inline ShaderObject readParameter(const std::string &name) {
-        return ShaderObject(ShaderBuilder::instance().getParameters().at(name),
-                            ShaderNodeFactory::parameter(name));
+    inline ShaderObject outputAttribute(const std::string &attributeName) {
+        return ShaderObject(ShaderOperand(ShaderOperand::OutputAttribute, attributeName),
+                            true);
+    }
+
+    inline ShaderObject parameter(const std::string &name) {
+        return ShaderObject(ShaderOperand(ShaderOperand::Parameter, name));
+    }
+
+    inline ShaderObject buffer(const std::string &name) {
+        return ShaderObject(ShaderOperand(ShaderOperand::Buffer, name));
+    }
+
+    inline ShaderObject textureSampler(const std::string &name) {
+        return ShaderObject(ShaderOperand(ShaderOperand::Texture, name));
     }
 
     /**
@@ -264,122 +273,36 @@ namespace xng::ShaderScript {
      * @return
      */
     inline ShaderObject argument(const std::string &name) {
-        auto func = ShaderBuilder::instance().getCurrentFunction();
-        auto arg = func.getArgumentType(name);
-        if (std::holds_alternative<ShaderTexture>(arg)) {
-            return ShaderObject(std::get<ShaderTexture>(arg), ShaderNodeFactory::argument(name));
-        }
-        if (std::holds_alternative<ShaderStructName>(arg)) {
-            return ShaderObject(std::get<ShaderStructName>(arg), ShaderNodeFactory::argument(name));
-        }
-        return ShaderObject(std::get<ShaderDataType>(arg), ShaderNodeFactory::argument(name));
-    }
-
-    inline ShaderObject buffer(const std::string &name) {
-        return ShaderObject(ShaderBuilder::instance().getBuffers().at(name).typeName,
-                            ShaderNodeFactory::buffer(name, nullptr));
-    }
-
-    inline ShaderObject dynamicBuffer(const std::string &name, const ShaderObject &index) {
-        return ShaderObject(ShaderBuilder::instance().getBuffers().at(name).typeName,
-                            ShaderNodeFactory::buffer(name, index.node));
-    }
-
-    inline void writeAttribute(const std::string &attributeName, const ShaderObject &value) {
-        auto attr = ShaderNodeFactory::attributeOutput(attributeName);
-        ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(attr, value.node));
-    }
-
-    inline ShaderObject getDynamicBufferLength(const std::string &name) {
-        return ShaderObject(ShaderDataType::unsignedInteger(), ShaderNodeFactory::bufferSize(name));
+        return ShaderObject(ShaderOperand(ShaderOperand::Argument, name), true);
     }
 
     inline void setVertexPosition(const ShaderObject &value) {
-        ShaderBuilder::instance().addNode(ShaderNodeFactory::vertexPosition(value.node));
+        ShaderBuilder::instance().addInstruction(ShaderInstructionFactory::setVertexPosition(value.operand));
     }
 
     inline void setFragmentDepth(const ShaderObject &value) {
-        ShaderBuilder::instance().addNode(ShaderNodeFactory::fragmentDepth(value.node));
+        ShaderBuilder::instance().addInstruction((ShaderInstructionFactory::setFragmentDepth(value.operand)));
     }
 
     inline void setLayer(const ShaderObject &value) {
-        ShaderBuilder::instance().addNode(ShaderNodeFactory::assign(ShaderNodeFactory::layer(), value.node));
+        ShaderBuilder::instance().addInstruction((ShaderInstructionFactory::setLayer(value.operand)));
     }
 
     inline void EmitVertex() {
-        ShaderBuilder::instance().addNode(ShaderNodeFactory::emitVertex());
+        ShaderBuilder::instance().addInstruction(ShaderInstructionFactory::emitVertex());
     }
 
     inline void EndPrimitive() {
-        ShaderBuilder::instance().addNode(ShaderNodeFactory::endPrimitive());
-    }
-
-    inline ShaderObject New(const ShaderStructName &typeName) {
-        const auto varName = ShaderBuilder::instance().getVariableName();
-        ShaderBuilder::instance().addNode(ShaderNodeFactory::createVariable(varName, typeName));
-        return ShaderObject(typeName, ShaderNodeFactory::variable(varName));
+        ShaderBuilder::instance().addInstruction(ShaderInstructionFactory::endPrimitive());
     }
 
     inline ShaderObject CallA(const std::string &functionName,
                               const std::vector<ShaderObject> &wArgs = {}) {
-        std::vector<std::unique_ptr<ShaderNode> > args;
+        std::vector<ShaderOperand> args;
         for (auto &arg: wArgs) {
-            args.push_back(arg.node->copy());
+            args.push_back(arg.operand);
         }
-
-        // Resolve function to call to retrieve the return type
-        int funcIndex = -1;
-        auto funcs = ShaderBuilder::instance().getFunctions();
-        for (auto i = 0; i < funcs.size(); i++) {
-            auto &func = funcs.at(i);
-            if (func.name == functionName) {
-                bool match = true;
-                for (auto fi = 0; fi < func.arguments.size(); fi++) {
-                    auto &farg = func.arguments.at(fi);
-                    if (std::holds_alternative<ShaderDataType>(farg.type)) {
-                        if (std::get<ShaderDataType>(farg.type) != wArgs.at(fi).getDataType()) {
-                            match = false;
-                            break;
-                        }
-                    } else if (std::holds_alternative<ShaderTexture>(farg.type)) {
-                        if (wArgs.at(fi).node->getType() != ShaderNode::TEXTURE) {
-                            if (wArgs.at(fi).node->getType() == ShaderNode::ARGUMENT) {
-                                auto &argNode = down_cast<NodeArgument &>(*wArgs.at(fi).node);
-                                auto targ = ShaderBuilder::instance().getCurrentFunction().getArgumentType(
-                                    argNode.argumentName);
-                                if (targ.index() != 1) {
-                                    match = false;
-                                    break;
-                                }
-                            } else {
-                                match = false;
-                                break;
-                            }
-                        }
-                    } else {
-                        if (std::get<ShaderStructName>(farg.type) != wArgs.at(fi).getStructName()) {
-                            match = false;
-                            break;
-                        }
-                    }
-                }
-                if (match) {
-                    funcIndex = i;
-                    break;
-                }
-            }
-        }
-        if (funcIndex < 0) {
-            throw std::runtime_error("Function " + functionName + " not found");
-        }
-
-        auto &func = ShaderBuilder::instance().getFunctions().at(funcIndex);
-        if (std::holds_alternative<ShaderDataType>(func.returnType)) {
-            return ShaderObject(std::get<ShaderDataType>(func.returnType),
-                                ShaderNodeFactory::call(functionName, args));
-        }
-        return ShaderObject(std::get<ShaderStructName>(func.returnType),
-                            ShaderNodeFactory::call(functionName, args));
+        return ShaderObject(ShaderInstructionFactory::call(functionName, args));
     }
 
     inline ShaderObject Call(const std::string &functionName,
@@ -419,11 +342,11 @@ namespace xng::ShaderScript {
     }
 
     inline void Return(const ShaderObject &value) {
-        ShaderBuilder::instance().addNode(ShaderNodeFactory::ret(value.node));
+        ShaderBuilder::instance().addInstruction(ShaderInstructionFactory::ret(value.operand));
     }
 
     inline void Return() {
-        ShaderBuilder::instance().addNode(ShaderNodeFactory::ret());
+        ShaderBuilder::instance().addInstruction(ShaderInstructionFactory::ret());
     }
 
     inline void If(const ShaderObject &condition) {
@@ -449,278 +372,171 @@ namespace xng::ShaderScript {
         ShaderBuilder::instance().EndFor();
     }
 
-    /**
-     * Cannot be assigned to a variable.
-     *
-     * @param textureName
-     * @return
-     */
-    inline ShaderObject textureSampler(const std::string &textureName) {
-        auto texArray = ShaderBuilder::instance().getTextureArrays().at(textureName);
-        return ShaderObject(texArray, ShaderNodeFactory::texture(textureName));
-    }
-
-    /**
-     * Cannot be assigned to a variable.
-     *
-     * @param textureName
-     * @param textureIndex
-     * @return
-     */
-    inline ShaderObject textureSampler(const std::string &textureName,
-                                       const ShaderObject &textureIndex) {
-        auto texArray = ShaderBuilder::instance().getTextureArrays().at(textureName);
-        return ShaderObject(texArray, ShaderNodeFactory::texture(textureName, textureIndex.node));
-    }
-
     inline ShaderObject textureSize(const ShaderObject &texture) {
-        if (std::holds_alternative<ShaderTextureArray>(texture.type)
-            && texture.getTextureArray().arraySize > 1) {
-            return ShaderObject(ShaderDataType::ivec3(), ShaderNodeFactory::textureSize(texture.node));
-        }
-        return ShaderObject(ShaderDataType::ivec2(), ShaderNodeFactory::textureSize(texture.node));
+        return ShaderObject(ShaderInstructionFactory::textureSize(texture.operand));
     }
 
     inline ShaderObject textureSize(const ShaderObject &texture, const ShaderObject &lod) {
-        if (std::holds_alternative<ShaderTextureArray>(texture.type)
-            && texture.getTextureArray().arraySize > 1) {
-            return ShaderObject(ShaderDataType::ivec3(), ShaderNodeFactory::textureSize(texture.node, lod.node));
-        }
-        return ShaderObject(ShaderDataType::ivec2(), ShaderNodeFactory::textureSize(texture.node, lod.node));
+        return ShaderObject(ShaderInstructionFactory::textureSize(texture.operand, lod.operand));
     }
 
     inline ShaderObject texture(const ShaderObject &texture,
                                 const ShaderObject &coords) {
-        return ShaderObject(ShaderDataType{
-                                ShaderDataType::VECTOR4,
-                                ShaderDataType::getColorComponent(texture.getTexture().format)
-                            },
-                            ShaderNodeFactory::textureSample(texture.node,
-                                                             coords.node,
-                                                             nullptr));
+        return ShaderObject(ShaderInstructionFactory::textureSample(texture.operand, coords.operand));
     }
 
     inline ShaderObject texture(const ShaderObject &texture,
                                 const ShaderObject &coords,
                                 const ShaderObject &bias) {
-        return ShaderObject(ShaderDataType{
-                                ShaderDataType::VECTOR4,
-                                ShaderDataType::getColorComponent(texture.getTexture().format)
-                            },
-                            ShaderNodeFactory::textureSample(texture.node,
-                                                             coords.node,
-                                                             bias.node));
+        return ShaderObject(ShaderInstructionFactory::textureSample(texture.operand, coords.operand, bias.operand));
     }
 
     inline ShaderObject texelFetch(const ShaderObject &texture,
                                    const ShaderObject &coords,
                                    const ShaderObject &index) {
-        return ShaderObject(ShaderDataType{
-                                ShaderDataType::VECTOR4,
-                                ShaderDataType::getColorComponent(texture.getTexture().format)
-                            },
-                            ShaderNodeFactory::textureFetch(texture.node, coords.node, index.node));
+        return ShaderObject(ShaderInstructionFactory::textureFetch(texture.operand, coords.operand, index.operand));
     }
 
     inline ShaderObject abs(const ShaderObject &value) {
-        return ShaderObject(value.type, ShaderNodeFactory::abs(value.node));
+        return ShaderObject(ShaderInstructionFactory::abs(value.operand));
     }
 
     inline ShaderObject sin(const ShaderObject &value) {
-        return ShaderObject(value.type, ShaderNodeFactory::sin(value.node));
+        return ShaderObject(ShaderInstructionFactory::sin(value.operand));
     }
 
     inline ShaderObject cos(const ShaderObject &value) {
-        return ShaderObject(value.type, ShaderNodeFactory::cos(value.node));
+        return ShaderObject(ShaderInstructionFactory::cos(value.operand));
     }
 
     inline ShaderObject tan(const ShaderObject &value) {
-        return ShaderObject(value.type, ShaderNodeFactory::tan(value.node));
+        return ShaderObject(ShaderInstructionFactory::tan(value.operand));
     }
 
     inline ShaderObject asin(const ShaderObject &value) {
-        return ShaderObject(value.type, ShaderNodeFactory::asin(value.node));
+        return ShaderObject(ShaderInstructionFactory::asin(value.operand));
     }
 
     inline ShaderObject acos(const ShaderObject &value) {
-        return ShaderObject(value.type, ShaderNodeFactory::acos(value.node));
+        return ShaderObject(ShaderInstructionFactory::acos(value.operand));
     }
 
     inline ShaderObject atan(const ShaderObject &value) {
-        return ShaderObject(value.type, ShaderNodeFactory::atan(value.node));
+        return ShaderObject(ShaderInstructionFactory::atan(value.operand));
     }
 
     inline ShaderObject pow(const ShaderObject &value, const ShaderObject &exponent) {
-        return ShaderObject(value.type, ShaderNodeFactory::pow(value.node, exponent.node));
+        return ShaderObject(ShaderInstructionFactory::pow(value.operand, exponent.operand));
     }
 
     inline ShaderObject exp(const ShaderObject &value) {
-        return ShaderObject(value.type, ShaderNodeFactory::exp(value.node));
+        return ShaderObject(ShaderInstructionFactory::exp(value.operand));
     }
 
     inline ShaderObject log(const ShaderObject &value) {
-        return ShaderObject(value.type, ShaderNodeFactory::log(value.node));
+        return ShaderObject(ShaderInstructionFactory::log(value.operand));
     }
 
     inline ShaderObject sqrt(const ShaderObject &value) {
-        return ShaderObject(value.type, ShaderNodeFactory::sqrt(value.node));
+        return ShaderObject(ShaderInstructionFactory::sqrt(value.operand));
     }
 
     inline ShaderObject inverseSqrt(const ShaderObject &value) {
-        return ShaderObject(value.type, ShaderNodeFactory::inverseSqrt(value.node));
+        return ShaderObject(ShaderInstructionFactory::inverseSqrt(value.operand));
     }
 
     inline ShaderObject floor(const ShaderObject &value) {
-        return ShaderObject(value.type, ShaderNodeFactory::floor(value.node));
+        return ShaderObject(ShaderInstructionFactory::floor(value.operand));
     }
 
     inline ShaderObject ceil(const ShaderObject &value) {
-        return ShaderObject(value.type, ShaderNodeFactory::ceil(value.node));
+        return ShaderObject(ShaderInstructionFactory::ceil(value.operand));
     }
 
     inline ShaderObject round(const ShaderObject &value) {
-        return ShaderObject(value.type, ShaderNodeFactory::round(value.node));
+        return ShaderObject(ShaderInstructionFactory::round(value.operand));
     }
 
     inline ShaderObject fract(const ShaderObject &value) {
-        return ShaderObject(value.type, ShaderNodeFactory::fract(value.node));
+        return ShaderObject(ShaderInstructionFactory::fract(value.operand));
     }
 
     inline ShaderObject mod(const ShaderObject &value, const ShaderObject &modulus) {
-        return ShaderObject(value.type, ShaderNodeFactory::mod(value.node, modulus.node));
+        return ShaderObject(ShaderInstructionFactory::mod(value.operand, modulus.operand));
     }
 
     inline ShaderObject min(const ShaderObject &x, const ShaderObject &y) {
-        return ShaderObject(x.type, ShaderNodeFactory::min(x.node, y.node));
+        return ShaderObject(ShaderInstructionFactory::min(x.operand, y.operand));
     }
 
     inline ShaderObject max(const ShaderObject &x, const ShaderObject &y) {
-        return ShaderObject(x.type, ShaderNodeFactory::max(x.node, y.node));
+        return ShaderObject(ShaderInstructionFactory::max(x.operand, y.operand));
     }
 
     inline ShaderObject clamp(const ShaderObject &value,
                               const ShaderObject &min,
                               const ShaderObject &max) {
-        return ShaderObject(value.type, ShaderNodeFactory::clamp(value.node, min.node, max.node));
+        return ShaderObject(ShaderInstructionFactory::clamp(value.operand, min.operand, max.operand));
     }
 
     inline ShaderObject mix(const ShaderObject &x,
                             const ShaderObject &y,
                             const ShaderObject &a) {
-        return ShaderObject(x.type, ShaderNodeFactory::mix(x.node, y.node, a.node));
+        return ShaderObject(ShaderInstructionFactory::mix(x.operand, y.operand, a.operand));
     }
 
     inline ShaderObject step(const ShaderObject &edge, const ShaderObject &x) {
-        return ShaderObject(x.type, ShaderNodeFactory::step(edge.node, x.node));
+        return ShaderObject(ShaderInstructionFactory::step(edge.operand, x.operand));
     }
 
     inline ShaderObject smoothstep(const ShaderObject &edge0,
                                    const ShaderObject &edge1,
                                    const ShaderObject &x) {
-        return ShaderObject(x.type, ShaderNodeFactory::smoothstep(edge0.node, edge1.node, x.node));
+        return ShaderObject(ShaderInstructionFactory::smoothstep(edge0.operand, edge1.operand, x.operand));
     }
 
     inline ShaderObject dot(const ShaderObject &x, const ShaderObject &y) {
-        return ShaderObject(ShaderDataType::float32(), ShaderNodeFactory::dot(x.node, y.node));
+        return ShaderObject(ShaderInstructionFactory::dot(x.operand, y.operand));
     }
 
     inline ShaderObject cross(const ShaderObject &x, const ShaderObject &y) {
-        return ShaderObject(ShaderDataType::vec3(), ShaderNodeFactory::cross(x.node, y.node));
+        return ShaderObject(ShaderInstructionFactory::cross(x.operand, y.operand));
     }
 
     inline ShaderObject normalize(const ShaderObject &x) {
-        return ShaderObject(x.type, ShaderNodeFactory::normalize(x.node));
+        return ShaderObject(ShaderInstructionFactory::normalize(x.operand));
     }
 
     inline ShaderObject length(const ShaderObject &x) {
-        return ShaderObject(ShaderDataType::float32(), ShaderNodeFactory::length(x.node));
+        return ShaderObject(ShaderInstructionFactory::length(x.operand));
     }
 
     inline ShaderObject distance(const ShaderObject &x, const ShaderObject &y) {
-        return ShaderObject(ShaderDataType::float32(), ShaderNodeFactory::distance(x.node, y.node));
+        return ShaderObject(ShaderInstructionFactory::distance(x.operand, y.operand));
     }
 
     inline ShaderObject reflect(const ShaderObject &I, const ShaderObject &N) {
-        return ShaderObject(I.type, ShaderNodeFactory::reflect(I.node, N.node));
+        return ShaderObject(ShaderInstructionFactory::reflect(I.operand, N.operand));
     }
 
     inline ShaderObject refract(const ShaderObject &I,
                                 const ShaderObject &N,
                                 const ShaderObject &eta) {
-        return ShaderObject(I.type, ShaderNodeFactory::refract(I.node, N.node, eta.node));
+        return ShaderObject(ShaderInstructionFactory::refract(I.operand, N.operand, eta.operand));
     }
 
     inline ShaderObject faceforward(const ShaderObject &N,
                                     const ShaderObject &I,
                                     const ShaderObject &Nref) {
-        return ShaderObject(N.type, ShaderNodeFactory::faceforward(N.node, I.node, Nref.node));
+        return ShaderObject(ShaderInstructionFactory::faceForward(N.operand, I.operand, Nref.operand));
     }
 
     inline ShaderObject transpose(const ShaderObject &v) {
-        return ShaderObject(v.type, ShaderNodeFactory::transpose(v.node));
+        return ShaderObject(ShaderInstructionFactory::transpose(v.operand));
     }
 
     inline ShaderObject inverse(const ShaderObject &v) {
-        return ShaderObject(v.type, ShaderNodeFactory::inverse(v.node));
-    }
-
-    inline ShaderObject matrix2(const ShaderObject &x) {
-        return ShaderObject(ShaderDataType{ShaderDataType::MAT2, x.getDataType().component},
-                            ShaderNodeFactory::matrix(ShaderDataType(ShaderDataType::MAT2, x.getDataType().component),
-                                                      x.node,
-                                                      nullptr,
-                                                      nullptr,
-                                                      nullptr));
-    }
-
-    inline ShaderObject matrix3(const ShaderObject &x) {
-        return ShaderObject(ShaderDataType{ShaderDataType::MAT3, x.getDataType().component},
-                            ShaderNodeFactory::matrix(ShaderDataType(ShaderDataType::MAT3, x.getDataType().component),
-                                                      x.node,
-                                                      nullptr,
-                                                      nullptr,
-                                                      nullptr));
-    }
-
-    inline ShaderObject matrix4(const ShaderObject &x) {
-        return ShaderObject(ShaderDataType{ShaderDataType::MAT4, x.getDataType().component},
-                            ShaderNodeFactory::matrix(ShaderDataType(ShaderDataType::MAT4, x.getDataType().component),
-                                                      x.node,
-                                                      nullptr,
-                                                      nullptr,
-                                                      nullptr));
-    }
-
-    inline ShaderObject matrix(const ShaderObject &x, const ShaderObject &y) {
-        return ShaderObject(ShaderDataType{ShaderDataType::MAT2, x.getDataType().component},
-                            ShaderNodeFactory::matrix(ShaderDataType(ShaderDataType::MAT2, x.getDataType().component),
-                                                      x.node,
-                                                      y.node,
-                                                      nullptr,
-                                                      nullptr));
-    }
-
-    inline ShaderObject matrix(const ShaderObject &x,
-                               const ShaderObject &y,
-                               const ShaderObject &z) {
-        return ShaderObject(ShaderDataType{ShaderDataType::MAT3, x.getDataType().component},
-                            ShaderNodeFactory::matrix(ShaderDataType(ShaderDataType::MAT3, x.getDataType().component),
-                                                      x.node,
-                                                      y.node,
-                                                      z.node,
-                                                      nullptr));
-    }
-
-    inline ShaderObject matrix(const ShaderObject &x,
-                               const ShaderObject &y,
-                               const ShaderObject &z,
-                               const ShaderObject &w) {
-        return ShaderObject(ShaderDataType{ShaderDataType::MAT4, x.getDataType().component},
-                            ShaderNodeFactory::matrix(ShaderDataType(ShaderDataType::MAT4, x.getDataType().component),
-                                                      x.node,
-                                                      y.node,
-                                                      z.node,
-                                                      w.node));
+        return ShaderObject(ShaderInstructionFactory::inverse(v.operand));
     }
 }
 

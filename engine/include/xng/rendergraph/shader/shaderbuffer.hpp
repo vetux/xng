@@ -37,11 +37,11 @@ namespace xng {
         bool dynamic = false;
 
         // The type name of the structure defining the contents of the buffer. For dynamic buffers an instance of the structure is created for every element.
-        ShaderStructName typeName;
+        ShaderStructTypeName typeName;
 
         ShaderBuffer() = default;
 
-        ShaderBuffer(bool read_only, bool dynamic, const ShaderStructName &type_name)
+        ShaderBuffer(bool read_only, bool dynamic, const ShaderStructTypeName &type_name)
             : readOnly(read_only),
               dynamic(dynamic),
               typeName(type_name) {

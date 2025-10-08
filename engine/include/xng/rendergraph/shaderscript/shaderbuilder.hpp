@@ -22,8 +22,9 @@
 
 #include <memory>
 
-#include "xng/rendergraph/shader/shadernode.hpp"
+#include "xng/rendergraph/shader/shaderinstruction.hpp"
 #include "xng/rendergraph/shader/shader.hpp"
+#include "xng/rendergraph/shader/shaderinstructionfactory.hpp"
 
 namespace xng::ShaderScript {
     class ShaderObject;
@@ -116,7 +117,7 @@ namespace xng::ShaderScript {
 
         std::string getVariableName();
 
-        void addNode(const std::unique_ptr<ShaderNode> &node);
+        void addInstruction(const ShaderInstruction &inst);
 
         /**
          * Clears internal state.
@@ -181,18 +182,18 @@ namespace xng::ShaderScript {
             } type;
 
             bool processingElse = false;
-            std::unique_ptr<ShaderNode> node;
-            std::unique_ptr<ShaderNode> condition;
-            std::unique_ptr<ShaderNode> loopVariable;
-            std::unique_ptr<ShaderNode> initializer;
-            std::unique_ptr<ShaderNode> loopEnd;
-            std::unique_ptr<ShaderNode> incrementor;
+            ShaderInstruction node;
+            ShaderOperand condition;
+            ShaderOperand loopVariable;
+            ShaderOperand initializer;
+            ShaderOperand loopEnd;
+            ShaderOperand incrementor;
             std::vector<std::shared_ptr<TreeNode> > defaultBranch;
             std::vector<std::shared_ptr<TreeNode> > falseBranch;
             TreeNode *parent{};
         };
 
-        std::vector<std::unique_ptr<ShaderNode> > createNodes(TreeNode &node);
+        std::vector<ShaderInstruction> createNodes(TreeNode &node);
 
         Shader::Stage stage{};
         ShaderAttributeLayout inputLayout;

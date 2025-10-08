@@ -24,8 +24,6 @@
 
 #include "xng/rendergraph/shader/shader.hpp"
 
-#include "xng/rendergraph/shader/nodes.hpp"
-
 #include "compiledpipeline.hpp"
 
 namespace xng {

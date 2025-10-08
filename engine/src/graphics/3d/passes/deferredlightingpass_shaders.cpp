@@ -161,7 +161,7 @@ namespace xng {
         vec3 roughnessMetallicAO = texture(gBufferRoughnessMetallicAO, fUv).xyz();
         vec3 albedo = texture(gBufferAlbedo, fUv).xyz();
 
-        auto pass = New("PbrPass");
+        Object<PbrPass> pass;
         pass = pbr_begin(fPos,
                               fNorm,
                               albedo,

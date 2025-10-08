@@ -312,13 +312,13 @@ namespace xng {
                 vec2 uv = inUv * atlasScale_texSize.xy();
                 If(level_index_filtering_assigned.z() == 1);
                 {
-                    Return(textureBicubic(textureSampler("atlasTextures", level_index_filtering_assigned.x()),
+                    Return(textureBicubic(atlasTextures[level_index_filtering_assigned.x()],
                                           vec3(uv.x(), uv.y(), level_index_filtering_assigned.y()),
                                           atlasScale_texSize.zw()));
                 }
                 Else();
                 {
-                    Return(texture(textureSampler("atlasTextures", level_index_filtering_assigned.x()),
+                    Return(texture(atlasTextures[level_index_filtering_assigned.x()],
                                    vec3(uv.x(), uv.y(), level_index_filtering_assigned.y())));
                 }
                 EndIf();
@@ -356,14 +356,14 @@ namespace xng {
                                                fUv).x()
                                   + data["metallic_roughness_ambientOcclusion"].z();
 
-        mat3 normalMatrix = matrix3(transpose(inverse(data["model"])));
+        mat3 normalMatrix = mat3(transpose(inverse(data["model"])));
         vec3 normal;
         normal = normalize(normalMatrix * fNorm);
         vec3 tangent = normalize(normalMatrix * fTan);
 
         If(data["normal"]["level_index_filtering_assigned"].w() != 0);
         {
-            mat3 tbn = matrix(fT, fB, fN);
+            mat3 tbn = mat3(fT, fB, fN);
             vec3 texNormal = textureAtlas(data["normal"], fUv).xyz()
                              * vec3(data["normalIntensity"].x(), data["normalIntensity"].x(), 1);
             texNormal = tbn * normalize(texNormal * 2.0 - 1.0);
@@ -371,7 +371,7 @@ namespace xng {
         }
         EndIf();
 
-        auto pass = New("PbrPass");
+        Object<PbrPass> pass;
         pass = pbr_begin(fPos,
                          normal,
                          albedo.xyz(),

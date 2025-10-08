@@ -56,7 +56,7 @@ namespace xng {
 
         std::vector<ShaderStruct> typeDefinitions;
 
-        std::vector<std::unique_ptr<ShaderNode> > mainFunction;
+        std::vector<ShaderInstruction> mainFunction;
 
         /**
          * The available functions.
@@ -76,7 +76,7 @@ namespace xng {
                const std::unordered_map<std::string, ShaderBuffer> &buffers,
                const std::unordered_map<std::string, ShaderTextureArray> &textureArrays,
                const std::vector<ShaderStruct> &typeDefinitions,
-               std::vector<std::unique_ptr<ShaderNode> > mainFunction,
+               std::vector<ShaderInstruction> mainFunction,
                std::vector<ShaderFunction> functions)
             : stage(stage),
               geometryInput(geometry_input),
@@ -92,76 +92,13 @@ namespace xng {
               functions(std::move(functions)) {
         }
 
-        Shader(const Shader &other)
-            : stage(other.stage),
-              geometryInput(other.geometryInput),
-              geometryOutput(other.geometryOutput),
-              geometryMaxVertices(other.geometryMaxVertices),
-              inputLayout(other.inputLayout),
-              outputLayout(other.outputLayout),
-              parameters(other.parameters),
-              buffers(other.buffers),
-              textureArrays(other.textureArrays),
-              typeDefinitions(other.typeDefinitions),
-              functions(other.functions) {
-            for (auto &node: other.mainFunction) {
-                mainFunction.push_back(node->copy());
-            }
-        }
+        Shader(const Shader &other) = default;
 
-        Shader(Shader &&other) noexcept
-            : stage(other.stage),
-              geometryInput(other.geometryInput),
-              geometryOutput(other.geometryOutput),
-              geometryMaxVertices(other.geometryMaxVertices),
-              inputLayout(std::move(other.inputLayout)),
-              outputLayout(std::move(other.outputLayout)),
-              parameters(std::move(other.parameters)),
-              buffers(std::move(other.buffers)),
-              textureArrays(std::move(other.textureArrays)),
-              typeDefinitions(std::move(other.typeDefinitions)),
-              mainFunction(std::move(other.mainFunction)),
-              functions(std::move(other.functions)) {
-        }
+        Shader &operator=(const Shader &other) = default;
 
-        Shader &operator=(const Shader &other) {
-            if (this == &other)
-                return *this;
-            stage = other.stage;
-            geometryInput = other.geometryInput;
-            geometryOutput = other.geometryOutput;
-            geometryMaxVertices = other.geometryMaxVertices;
-            inputLayout = other.inputLayout;
-            outputLayout = other.outputLayout;
-            parameters = other.parameters;
-            buffers = other.buffers;
-            textureArrays = other.textureArrays;
-            typeDefinitions = other.typeDefinitions;
-            functions = other.functions;
-            mainFunction.clear();
-            for (auto &node: other.mainFunction) {
-                mainFunction.push_back(node->copy());
-            }
-            return *this;
-        }
+        Shader(Shader &&other) noexcept = default;
 
-        Shader &operator=(Shader &&other) noexcept {
-            if (this == &other)
-                return *this;
-            stage = other.stage;
-            geometryInput = other.geometryInput;
-            geometryOutput = other.geometryOutput;
-            geometryMaxVertices = other.geometryMaxVertices;
-            inputLayout = std::move(other.inputLayout);
-            outputLayout = std::move(other.outputLayout);
-            parameters = std::move(other.parameters);
-            buffers = std::move(other.buffers);
-            textureArrays = std::move(other.textureArrays);
-            typeDefinitions = std::move(other.typeDefinitions);
-            mainFunction = std::move(other.mainFunction);
-            functions = std::move(other.functions);
-            return *this;
-        }
+        Shader &operator=(Shader &&other) noexcept = default;
     };
 }
 

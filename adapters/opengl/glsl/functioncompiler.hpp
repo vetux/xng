@@ -28,7 +28,7 @@ using namespace xng;
 
 std::string compileFunction(const std::string &functionName,
                             const std::vector<ShaderFunction::Argument> &arguments,
-                            const std::vector<std::unique_ptr<ShaderNode> > &body,
+                            const std::vector<ShaderInstruction> &body,
                             const std::optional<ShaderFunction::ReturnType> &returnType,
                             const Shader &source,
                             const std::string &appendix = "");

@@ -36,7 +36,7 @@ namespace xng::ShaderScript {
         std::shared_ptr<TreeNode> ifNode = std::make_shared<TreeNode>();
         ifNode->parent = currentNode;
         ifNode->type = TreeNode::IF;
-        ifNode->condition = condition.node->copy();
+        ifNode->condition = condition.operand;
         if (currentNode->processingElse) {
             currentNode->falseBranch.push_back(ifNode);
         } else {
@@ -75,10 +75,10 @@ namespace xng::ShaderScript {
         std::shared_ptr<TreeNode> forNode = std::make_shared<TreeNode>();
         forNode->parent = currentNode;
         forNode->type = TreeNode::FOR;
-        forNode->loopVariable = loopVariable.node->copy();
-        forNode->loopEnd = loopEnd.node->copy();
-        forNode->initializer = loopStart.node->copy();
-        forNode->incrementor = incrementor.node->copy();
+        forNode->loopVariable = loopVariable.operand;
+        forNode->loopEnd = loopEnd.operand;
+        forNode->initializer = loopStart.operand;
+        forNode->incrementor = incrementor.operand;
         if (currentNode->processingElse) {
             currentNode->falseBranch.push_back(forNode);
         } else {
@@ -133,63 +133,67 @@ namespace xng::ShaderScript {
         return "v" + std::to_string(variableCounter++);
     }
 
-    std::vector<std::unique_ptr<ShaderNode> > ShaderBuilder::createNodes(TreeNode &node) {
-        std::vector<std::unique_ptr<ShaderNode> > nodes;
+    std::vector<ShaderInstruction> ShaderBuilder::createNodes(TreeNode &node) {
+        std::vector<ShaderInstruction> nodes;
         if (node.type == TreeNode::ROOT) {
             for (auto &child: node.defaultBranch) {
                 auto childNodes = createNodes(*child);
                 for (auto &childNode: childNodes) {
-                    nodes.push_back(childNode->copy());
+                    nodes.push_back(childNode);
                 }
             }
         } else if (node.type == TreeNode::NODE) {
-            nodes.push_back(node.node->copy());
+            nodes.push_back(node.node);
         } else if (node.type == TreeNode::IF) {
-            std::vector<std::unique_ptr<ShaderNode> > trueBranch;
-            std::vector<std::unique_ptr<ShaderNode> > falseBranch;
+            std::vector<ShaderInstruction> trueBranch;
+            std::vector<ShaderInstruction> falseBranch;
             for (auto &child: node.defaultBranch) {
                 auto childNodes = createNodes(*child);
                 for (auto &childNode: childNodes) {
-                    trueBranch.push_back(childNode->copy());
+                    trueBranch.push_back(childNode);
                 }
             }
             for (auto &child: node.falseBranch) {
                 auto childNodes = createNodes(*child);
                 for (auto &childNode: childNodes) {
-                    falseBranch.push_back(childNode->copy());
+                    falseBranch.push_back(childNode);
                 }
             }
-            nodes.push_back(ShaderNodeFactory::branch(node.condition->copy(), trueBranch, falseBranch));
+            nodes.push_back(ShaderInstructionFactory::branch(
+                node.condition,
+                trueBranch,
+                falseBranch));
         } else if (node.type == TreeNode::FOR) {
-            std::vector<std::unique_ptr<ShaderNode> > body;
+            std::vector<ShaderInstruction> body;
             for (auto &child: node.defaultBranch) {
                 auto childNodes = createNodes(*child);
                 for (auto &childNode: childNodes) {
-                    body.push_back(childNode->copy());
+                    body.push_back(childNode);
                 }
             }
 
-            if (node.loopVariable->getType() != ShaderNode::VARIABLE) {
+            if (node.loopVariable.type != ShaderOperand::Variable) {
                 throw std::runtime_error("Invalid For loop variable");
             }
 
-            auto initializer = ShaderNodeFactory::assign(node.loopVariable,node.initializer);
+            auto initializer = ShaderInstructionFactory::assign(node.loopVariable, node.initializer);
+            auto incrementor = ShaderInstructionFactory::assign(node.loopVariable,
+                                                                ShaderOperand(
+                                                                    ShaderInstructionFactory::add(
+                                                                        node.loopVariable, node.incrementor)));
 
-            auto incrementor = ShaderNodeFactory::assign(node.loopVariable,
-                                                         ShaderNodeFactory::add(node.loopVariable, node.incrementor));
+            auto condition = ShaderInstructionFactory::compareLessEqual(node.loopVariable, node.loopEnd);
 
-            auto condition = ShaderNodeFactory::compareLessEqual(node.loopVariable, node.loopEnd);
-
-            nodes.push_back(initializer->copy());
-            nodes.push_back(ShaderNodeFactory::loop(initializer,
-                                                    condition,
-                                                    incrementor,
-                                                    body));
+            nodes.push_back(ShaderInstruction(initializer));
+            nodes.push_back(ShaderInstruction(ShaderInstructionFactory::loop(ShaderOperand(initializer),
+                                                                         ShaderOperand(condition),
+                                                                         ShaderOperand(incrementor),
+                                                                         body)));
         }
         return nodes;
     }
 
-    void ShaderBuilder::addNode(const std::unique_ptr<ShaderNode> &node) {
+    void ShaderBuilder::addInstruction(const ShaderInstruction &node) {
         if (currentNode == nullptr) {
             throw std::runtime_error("ShaderBuilder::addNode called without a setup() call");
         }
@@ -197,7 +201,7 @@ namespace xng::ShaderScript {
         const std::shared_ptr<TreeNode> treeNode = std::make_shared<TreeNode>();
         treeNode->parent = currentNode;
         treeNode->type = TreeNode::NODE;
-        treeNode->node = node->copy();
+        treeNode->node = node;
 
         if (currentNode->processingElse) {
             currentNode->falseBranch.push_back(treeNode);

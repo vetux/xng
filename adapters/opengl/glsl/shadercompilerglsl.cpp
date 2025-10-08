@@ -21,9 +21,7 @@
 
 #include <utility>
 
-#include "xng/rendergraph/shader/shadernode.hpp"
-
-#include "nodecompiler.hpp"
+#include "instructioncompiler.hpp"
 #include "functioncompiler.hpp"
 #include "types.hpp"
 
@@ -58,8 +56,8 @@ std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
     for (const auto &v: source.typeDefinitions) {
         ret += "struct " + v.name + " {\n";
         for (const auto &element: v.elements) {
-            if (std::holds_alternative<ShaderStructName>(element.type)) {
-                ret += "\t" + std::get<ShaderStructName>(element.type) + " " + element.name + ";\n";
+            if (std::holds_alternative<ShaderStructTypeName>(element.type)) {
+                ret += "\t" + std::get<ShaderStructTypeName>(element.type) + " " + element.name + ";\n";
             } else {
                 ret += generateElement(element.name, std::get<ShaderDataType>(element.type)) + ";\n";
             }

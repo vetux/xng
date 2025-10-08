@@ -20,11 +20,11 @@
 #include "functioncompiler.hpp"
 
 #include "types.hpp"
-#include "nodecompiler.hpp"
+#include "instructioncompiler.hpp"
 
 std::string compileFunction(const std::string &functionName,
                             const std::vector<ShaderFunction::Argument> &parameters,
-                            const std::vector<std::unique_ptr<ShaderNode> > &body,
+                            const std::vector<ShaderInstruction> &body,
                             const std::optional<ShaderFunction::ReturnType> &returnType,
                             const Shader &source,
                             const std::string &appendix) {
@@ -33,7 +33,7 @@ std::string compileFunction(const std::string &functionName,
         if (std::holds_alternative<ShaderDataType>(returnType.value())) {
             ret += getTypeName(std::get<ShaderDataType>(returnType.value()));
         } else {
-            ret += std::get<ShaderStructName>(returnType.value());
+            ret += std::get<ShaderStructTypeName>(returnType.value());
         }
     } else {
         ret += "void";
@@ -53,7 +53,7 @@ std::string compileFunction(const std::string &functionName,
             auto arg = std::get<ShaderTexture>(param.type);
             ret += getSampler(arg) + " " + param.name;
         } else {
-            ret += std::get<ShaderStructName>(param.type) + " " + param.name;
+            ret += std::get<ShaderStructTypeName>(param.type) + " " + param.name;
         }
     }
 
@@ -63,9 +63,8 @@ std::string compileFunction(const std::string &functionName,
     if (functionName == "main") {
         nodeFuncName = "";
     }
-    for (const auto &node: body) {
-        ret += compileNode(*node, source, nodeFuncName, "\t");
-        ret += ";\n";
+    for (const auto &instruction: body) {
+        ret += compile(instruction, source, nodeFuncName, "\t") + ";\n";
     }
     if (appendix.size() > 0) {
         ret += "\t" + appendix + ";\n";

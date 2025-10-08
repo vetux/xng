@@ -27,8 +27,7 @@
 namespace xng {
     inline ShaderScript::ShaderObject pi() {
         return {
-            ShaderDataType::float32(),
-            std::make_unique<NodeLiteral>(ShaderLiteral(3.14159265358979323846))
+            3.1415926535897932384
         };
     }
 }
