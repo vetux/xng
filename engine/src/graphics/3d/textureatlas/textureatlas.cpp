@@ -171,6 +171,8 @@ namespace xng {
                 desc.textureType = TEXTURE_2D_ARRAY;
                 desc.arrayLayers = pair.second.size();
                 desc.size = getResolutionLevelSize(pair.first);
+                desc.mipMapLevels = RenderGraphTexture::calculateMipLevels(desc.size);
+                desc.wrapping = REPEAT;
                 currentHandles[pair.first] = builder.createTexture(desc);
             } else {
                 currentHandles[pair.first] = builder.inheritResource(currentHandles.at(pair.first));
@@ -195,10 +197,16 @@ namespace xng {
         copyHandles.clear();
         copySizes.clear();
 
+        std::unordered_set<TextureAtlasResolution> changedResolutions;
         for (auto &tex: pendingTextures) {
+            changedResolutions.insert(tex.first.level);
             upload(ctx, tex.first, currentHandles, tex.second);
         }
         pendingTextures.clear();
+
+        for (auto &res: changedResolutions) {
+            ctx.generateMipMaps(currentHandles.at(res));
+        }
 
         return currentHandles;
     }
