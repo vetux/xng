@@ -89,6 +89,8 @@ namespace xng {
             uploadTexture(texture, buffer, bufferSize, format, index, {}, 0);
         }
 
+        virtual void generateMipMaps(RenderGraphResource texture) = 0;
+
         virtual void clearTextureColor(RenderGraphResource texture,
                                        const ColorRGBA &clearColor,
                                        size_t index,

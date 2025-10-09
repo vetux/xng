@@ -48,6 +48,11 @@ namespace xng {
         // Render textures can only be used as attachments and cannot be bound for read access by shaders.
         bool isRenderTexture = false;
 
+        static int calculateMipLevels(const Vec2i &size) {
+            const auto maxDimension = std::max(size.x, size.y);
+            return static_cast<int>(std::floor(std::log2(maxDimension))) + 1;
+        }
+
         Messageable &operator<<(const Message &message) override {
             message.value("size", size);
             message.value("textureType", textureType);

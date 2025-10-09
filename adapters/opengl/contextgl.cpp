@@ -130,6 +130,19 @@ void ContextGL::uploadTexture(const RenderGraphResource texture,
     oglDebugEndGroup();
 }
 
+void ContextGL::generateMipMaps(RenderGraphResource texture) {
+    oglDebugStartGroup("ContextGL::generateMipMaps");
+
+    auto &tex = resources.textures.at(texture);
+    glBindTexture(tex->textureType, tex->handle);
+    glGenerateMipmap(tex->textureType);
+    glBindTexture(tex->textureType, 0);
+
+    oglCheckError();
+
+    oglDebugEndGroup();
+}
+
 void ContextGL::clearTextureColor(const RenderGraphResource texture,
                                   const ColorRGBA &clearColor,
                                   const size_t index,

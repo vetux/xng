@@ -61,6 +61,8 @@ public:
                        CubeMapFace face,
                        size_t mipMapLevel) override;
 
+    void generateMipMaps(RenderGraphResource texture) override;
+
     void clearTextureColor(RenderGraphResource texture,
                            const ColorRGBA &clearColor,
                            size_t index,
