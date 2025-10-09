@@ -72,6 +72,15 @@ namespace xng {
             return elementIdentifiers.at(index);
         }
 
+        bool checkElement(const std::string &name) const {
+            for (auto &attr: elementIdentifiers) {
+                if (attr == name) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         const std::vector<ShaderDataType> &getElements() const {
             return elements;
         }

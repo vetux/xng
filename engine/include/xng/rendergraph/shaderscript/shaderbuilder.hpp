@@ -127,22 +127,37 @@ namespace xng::ShaderScript {
         void setup(Shader::Stage stage);
 
         void addInput(const std::string &name, const ShaderDataType &type) {
+            if (inputLayout.checkElement(name)) {
+                throw std::runtime_error("Input already exists");
+            }
             inputLayout.addElement(name, type);
         }
 
         void addOutput(const std::string &name, const ShaderDataType &type) {
+            if (outputLayout.checkElement(name)) {
+                throw std::runtime_error("Output already exists");
+            }
             outputLayout.addElement(name, type);
         }
 
         void addParameter(const std::string &name, const ShaderDataType &type) {
+            if (parameters.find(name) != parameters.end()) {
+                throw std::runtime_error("Parameter already exists");
+            }
             parameters.emplace(name, type);
         }
 
         void addBuffer(const std::string &name, const ShaderBuffer &buffer) {
+            if (buffers.find(name) != buffers.end()) {
+                throw std::runtime_error("Buffer already exists");
+            }
             buffers.emplace(name, buffer);
         }
 
         void addTextureArray(const std::string &name, const ShaderTextureArray &textureArray) {
+            if (textureArrays.find(name) != textureArrays.end()) {
+                throw std::runtime_error("Texture Array already exists");
+            }
             textureArrays.emplace(name, textureArray);
         }
 
