@@ -628,7 +628,7 @@ namespace xng::ShaderScript {
     };
 
     /**
-     * A node wrapper with specific type information in a value template.
+     * A shader object with type information stored in a value template.
      *
      * This allows users to create variables in the style of glsl through the typedefs in shaderscript.hpp
      *
@@ -653,31 +653,61 @@ namespace xng::ShaderScript {
             assignable = true;
         }
 
-        // Copy operators and constructors for non prvalues are deleted to force move semantics and avoid copy eliding.
+        /**
+         * Copy operator and constructor for non prvalues are deleted to force move semantics and avoid copy eliding.
+         *
+         * @param base
+         */
         ShaderDataObject(const ShaderObject &base) = delete;
 
-        ShaderObject &operator=(const ShaderObject &other) = delete;
+        ShaderDataObject &operator=(const ShaderObject &base) = delete;
 
-        // Move constructor can be deleted because in the dsl syntax variables are not initialized with vec2 v(other);
+        /**
+         * Move operation to a previously default constructed object from a non prvalue (e.g. vec2 u; u = other.xyz())
+         *
+         * @param other
+         * @return
+         */
+        ShaderDataObject &operator=(ShaderObject &&base) {
+            ShaderObject::operator=(std::move(base));
+            return *this;
+        }
+
+        /**
+         * Copy operation to a previously default constructed object  from a prvalue (e.g. vec2 u; u = vec2(0, 0))
+         *
+         * @param other
+         * @return
+         */
+        ShaderDataObject &operator=(const ShaderDataObject &other) {
+            ShaderObject::operator=(other);
+            return *this;
+        }
+
+        /**
+         * Move operator is allowed to support assignments to default initialized variables from prvalues (e.g. vec2 v; v = vec2(0, 0);)
+         *
+         * @param other
+         * @return
+         */
+        ShaderDataObject &operator=(ShaderDataObject &&other) noexcept {
+            ShaderObject::operator=(std::move(other));
+            return *this;
+        }
+
+        /**
+         * Move constructor from non prvalues can be deleted because in the dsl syntax variables are not initialized with vec2 v(...);
+         *
+         * @param other
+         */
         ShaderDataObject(ShaderDataObject &&other) noexcept = delete;
 
-        // Move operator is allowed to support assignments to default initialized variables from prvalues (e.g. vec2 v; v = vec2(0, 0);)
-        ShaderObject &operator=(ShaderDataObject &&other) noexcept {
-            return ShaderObject::operator=(std::move(other));
-        }
-
-        // Copy operators is allowed to support copying variables (e.g. vec2 u = vec2(0, 0); vec2 d = u;)
-        ShaderObject &operator=(const ShaderDataObject &other) {
-            return ShaderObject::operator=(other);
-        }
-
-        // Move operation to a previously default constructed object (e.g. vec2 u; u = other.xyz())
-        ShaderObject &operator=(ShaderObject &&other) {
-            return ShaderObject::operator=(std::move(other));
-        }
-
-        // Move operations from non prvalues, creates and initializes a variable. (e.g. vec2 v = other.xyz())
-        // Automatically handles conversion (e.g. vec3 v = other.xy() turns into vec3 v = vec3(other.xy()))
+        /**
+         * Move operation from non prvalue, creates and initializes a variable. (e.g. vec2 v = other.xyz()).
+         * Automatically handles conversion (e.g. vec3 v = other.xy() turns into vec3 v = vec3(other.xy())).
+         *
+         * @param other
+         */
         ShaderDataObject(ShaderObject &&other) noexcept
             : ShaderObject(std::move(other)) {
             if (VALUE_TYPE >= ShaderDataType::VECTOR2 && VALUE_TYPE <= ShaderDataType::VECTOR4) {
@@ -699,7 +729,11 @@ namespace xng::ShaderScript {
             assignable = true;
         }
 
-        // Array constructor
+        /**
+         * Array constructor
+         *
+         * @param values
+         */
         ShaderDataObject(const std::vector<ShaderDataObject<VALUE_TYPE, VALUE_COMPONENT, 1> > &values)
             : ShaderObject(ShaderInstructionFactory::createArray({
                                                                      VALUE_TYPE,
@@ -708,7 +742,11 @@ namespace xng::ShaderScript {
                                                                  }, getOperands(values))) {
         }
 
-        // Scalar / Vector / Matrix Constructor
+        /**
+         * Scalar, Vector or Matrix Constructor
+         *
+         * @param x
+         */
         ShaderDataObject(const ShaderDataObject &x) {
             if (VALUE_TYPE >= ShaderDataType::VECTOR2 && VALUE_TYPE <= ShaderDataType::VECTOR4) {
                 auto instruction = ShaderInstructionFactory::createVector({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
@@ -723,7 +761,6 @@ namespace xng::ShaderScript {
             }
         }
 
-        // Vector / Matrix Constructors
         ShaderDataObject(const ShaderObject &x, const ShaderObject &y) {
             if (VALUE_TYPE >= ShaderDataType::VECTOR2 && VALUE_TYPE <= ShaderDataType::VECTOR4) {
                 auto instruction = ShaderInstructionFactory::createVector({VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
@@ -779,7 +816,6 @@ namespace xng::ShaderScript {
             }
         }
 
-        // Literal Constructors
         ShaderDataObject(const bool literal)
             : ShaderObject(literal) {
         }
@@ -824,29 +860,52 @@ namespace xng::ShaderScript {
             assignable = true;
         }
 
-        // Copy operators and constructors for non prvalues are deleted to force move semantics and avoid copy eliding.
+        /**
+         * Copy operators and constructors for non prvalues are deleted to force move semantics and avoid copy eliding.
+         *
+         * @param base
+         */
         ShaderStructObject(const ShaderObject &base) = delete;
 
-        ShaderObject &operator=(const ShaderObject &other) = delete;
+        ShaderStructObject &operator=(const ShaderObject &other) = delete;
 
-        // Copy operators and constructors for prvalues are allowed to support copying a variable (e.g. vec2 v = other; or vec2 v; v = other)
+        /**
+         * Copy operators and constructors for prvalues are allowed to support copying a variable (e.g. vec2 v = other; or vec2 v; v = other)
+         *
+         * @param other
+         */
         ShaderStructObject(const ShaderStructObject &other)
             : ShaderObject(other) {
         }
 
-        ShaderObject &operator=(const ShaderStructObject &other) {
-            return ShaderObject::operator=(other);
+        ShaderStructObject &operator=(const ShaderStructObject &other) {
+            ShaderObject::operator=(other);
+            return *this;
         }
 
-        // Move constructor can be deleted because in the dsl syntax variables are not initialized with vec2 v(other);
+        /**
+         * Move constructor can be deleted because in the dsl syntax variables are not initialized with vec2 v(...);
+         *
+         * @param other
+         */
         ShaderStructObject(ShaderStructObject &&other) noexcept = delete;
 
-        // Move operator is allowed to support assignments to default initialized variables from prvalues (e.g. vec2 v; v = vec2(0, 0);)
-        ShaderObject &operator=(ShaderStructObject &&other) noexcept {
-            return ShaderObject::operator=(std::move(other));
+        /**
+         * Move operator is allowed to support assignments to default initialized variables from prvalues (e.g. vec2 v; v = vec2(0, 0);)
+         *
+         * @param other
+         * @return
+         */
+        ShaderStructObject &operator=(ShaderStructObject &&other) noexcept {
+            ShaderObject::operator=(std::move(other));
+            return *this;
         }
 
-        // Move operations from non prvalues, creates and initializes a variable.
+        /**
+         * Move operation from non prvalue, creates and initializes a variable.
+         *
+         * @param other
+         */
         ShaderStructObject(ShaderObject &&other) noexcept
             : ShaderObject(std::move(other)) {
             const auto varName = ShaderBuilder::instance().getVariableName();
@@ -855,8 +914,9 @@ namespace xng::ShaderScript {
             operand = ShaderOperand(ShaderOperand::Variable, varName);
         }
 
-        ShaderObject &operator=(ShaderObject &&other) {
-            return ShaderObject::operator=(std::move(other));
+        ShaderStructObject &operator=(ShaderObject &&other) {
+            ShaderObject::operator=(std::move(other));
+            return *this;
         }
     };
 }

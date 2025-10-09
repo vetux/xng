@@ -165,9 +165,8 @@ namespace xng::ShaderScript {
         }
 
         /**
-         * The previously recorded nodes are used as the body of the main function.
-         * Clears the internally stored nodes.
-
+         * The previously recorded instructions are used as the body of the main function.
+         *
          * @return
          */
         Shader build();
@@ -182,7 +181,7 @@ namespace xng::ShaderScript {
             } type;
 
             bool processingElse = false;
-            ShaderInstruction node;
+            ShaderInstruction instruction;
             ShaderOperand condition;
             ShaderOperand loopVariable;
             ShaderOperand initializer;
@@ -193,7 +192,7 @@ namespace xng::ShaderScript {
             TreeNode *parent{};
         };
 
-        std::vector<ShaderInstruction> createNodes(TreeNode &node);
+        std::vector<ShaderInstruction> buildInstructionTree(TreeNode &node);
 
         Shader::Stage stage{};
         ShaderAttributeLayout inputLayout;

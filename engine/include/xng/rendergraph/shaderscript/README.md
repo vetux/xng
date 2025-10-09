@@ -24,6 +24,7 @@ It is implemented through headers which define various types, functions and macr
 
 #### Subscripting
   - Matrix subscripting has to be done with the `element()` method (e.g. `mat[column][row]` in glsl becomes `mat.element(column, row)` in C++)
+  - Member variables of user defined type instances can be accessed through the array operator (e.g. `o.x` in glsl becomes `o["x"]` in C++)
 
 #### Resource Access
   - Input attributes are accessed through `ShaderScript::inputAttribute`  or alternatively via the `Input` macro

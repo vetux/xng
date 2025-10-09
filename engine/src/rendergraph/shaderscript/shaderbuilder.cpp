@@ -122,7 +122,7 @@ namespace xng::ShaderScript {
             throw std::runtime_error("ShaderBuilder::EndFunction called without a Function() call");
         }
         ShaderFunction function = currentFunction;
-        function.body = createNodes(*functionRoot);
+        function.body = buildInstructionTree(*functionRoot);
         functions.emplace_back(function);
         currentNode = rootNode.get();
         currentFunction = {};
@@ -133,28 +133,28 @@ namespace xng::ShaderScript {
         return "v" + std::to_string(variableCounter++);
     }
 
-    std::vector<ShaderInstruction> ShaderBuilder::createNodes(TreeNode &node) {
+    std::vector<ShaderInstruction> ShaderBuilder::buildInstructionTree(TreeNode &node) {
         std::vector<ShaderInstruction> nodes;
         if (node.type == TreeNode::ROOT) {
             for (auto &child: node.defaultBranch) {
-                auto childNodes = createNodes(*child);
+                auto childNodes = buildInstructionTree(*child);
                 for (auto &childNode: childNodes) {
                     nodes.push_back(childNode);
                 }
             }
         } else if (node.type == TreeNode::NODE) {
-            nodes.push_back(node.node);
+            nodes.push_back(node.instruction);
         } else if (node.type == TreeNode::IF) {
             std::vector<ShaderInstruction> trueBranch;
             std::vector<ShaderInstruction> falseBranch;
             for (auto &child: node.defaultBranch) {
-                auto childNodes = createNodes(*child);
+                auto childNodes = buildInstructionTree(*child);
                 for (auto &childNode: childNodes) {
                     trueBranch.push_back(childNode);
                 }
             }
             for (auto &child: node.falseBranch) {
-                auto childNodes = createNodes(*child);
+                auto childNodes = buildInstructionTree(*child);
                 for (auto &childNode: childNodes) {
                     falseBranch.push_back(childNode);
                 }
@@ -166,7 +166,7 @@ namespace xng::ShaderScript {
         } else if (node.type == TreeNode::FOR) {
             std::vector<ShaderInstruction> body;
             for (auto &child: node.defaultBranch) {
-                auto childNodes = createNodes(*child);
+                auto childNodes = buildInstructionTree(*child);
                 for (auto &childNode: childNodes) {
                     body.push_back(childNode);
                 }
@@ -201,7 +201,7 @@ namespace xng::ShaderScript {
         const std::shared_ptr<TreeNode> treeNode = std::make_shared<TreeNode>();
         treeNode->parent = currentNode;
         treeNode->type = TreeNode::NODE;
-        treeNode->node = node;
+        treeNode->instruction = node;
 
         if (currentNode->processingElse) {
             currentNode->falseBranch.push_back(treeNode);
@@ -211,9 +211,23 @@ namespace xng::ShaderScript {
     }
 
     void ShaderBuilder::setup(Shader::Stage stage) {
-        if (currentNode != nullptr) {
-            throw std::runtime_error("ShaderBuilder::setup called while a build is in progress (Nested setup() call?)");
-        }
+        inputLayout = {};
+        outputLayout = {};
+        geometryInput = {};
+        geometryOutput = {};
+        geometryMaxVertices = 0;
+        parameters = {};
+        buffers = {};
+        textureArrays = {};
+        typeDefinitions = {};
+
+        functionRoot = {};
+        functions = {};
+
+        variableCounter = 0;
+
+        currentFunction = {};
+
         rootNode = std::make_shared<TreeNode>();
         rootNode->parent = nullptr;
         rootNode->type = TreeNode::ROOT;
@@ -246,30 +260,8 @@ namespace xng::ShaderScript {
         ret.buffers = buffers;
         ret.textureArrays = textureArrays;
         ret.typeDefinitions = typeDefinitions;
-
-        ret.mainFunction = createNodes(*rootNode);
+        ret.mainFunction = buildInstructionTree(*rootNode);
         ret.functions = functions;
-
-        inputLayout = {};
-        outputLayout = {};
-        geometryInput = {};
-        geometryOutput = {};
-        geometryMaxVertices = 0;
-        parameters = {};
-        buffers = {};
-        textureArrays = {};
-        typeDefinitions = {};
-
-        currentNode = nullptr;
-        rootNode = {};
-
-        functionRoot = {};
-        functions = {};
-
-        variableCounter = 0;
-
-        currentFunction = {};
-
         return ret;
     }
 }

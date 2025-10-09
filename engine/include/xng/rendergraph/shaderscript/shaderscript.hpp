@@ -266,12 +266,6 @@ namespace xng::ShaderScript {
         return ShaderObject(ShaderOperand(ShaderOperand::Texture, name));
     }
 
-    /**
-     * If the argument is a texture it cannot be assigned to a variable.
-     *
-     * @param name
-     * @return
-     */
     inline ShaderObject argument(const std::string &name) {
         return ShaderObject(ShaderOperand(ShaderOperand::Argument, name), true);
     }
