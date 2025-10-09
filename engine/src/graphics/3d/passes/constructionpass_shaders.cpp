@@ -331,17 +331,38 @@ namespace xng {
         oRoughnessMetallicAO = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
         // Roughness
-        oRoughnessMetallicAO.x() = texture_atlas(data["roughness"], fUv).x()
-                                   + data["metallic_roughness_ambientOcclusion"].y();
+        If(data["roughness"]["level_index_filtering_assigned"].w() == 0);
+        {
+            oRoughnessMetallicAO.x() = data["metallic_roughness_ambientOcclusion"].y();
+        }
+        Else();
+        {
+            oRoughnessMetallicAO.x() = texture_atlas(data["roughness"], fUv).x();
+        }
+        EndIf();
+
 
         // Metallic
-        oRoughnessMetallicAO.y() = texture_atlas(data["metallic"], fUv).x()
-                                   + data["metallic_roughness_ambientOcclusion"].x();
+        If(data["metallic"]["level_index_filtering_assigned"].w() == 0);
+        {
+            oRoughnessMetallicAO.y() = data["metallic_roughness_ambientOcclusion"].x();
+        }
+        Else();
+        {
+            oRoughnessMetallicAO.y() = texture_atlas(data["metallic"], fUv).x();
+        }
+        EndIf();
 
         // Ambient Occlusion
-        oRoughnessMetallicAO.z() = texture_atlas(data["ambientOcclusion"],
-                                                fUv).x()
-                                   + data["metallic_roughness_ambientOcclusion"].z();
+        If(data["ambientOcclusion"]["level_index_filtering_assigned"].w() == 0);
+        {
+            oRoughnessMetallicAO.z() = data["metallic_roughness_ambientOcclusion"].z();
+        }
+        Else();
+        {
+            oRoughnessMetallicAO.z() = texture_atlas(data["ambientOcclusion"], fUv).x();
+        }
+        EndIf();
 
         mat3 normalMatrix = mat3(transpose(inverse(data["model"])));
         oNormal = vec4(normalize(normalMatrix * fNorm), 1);
