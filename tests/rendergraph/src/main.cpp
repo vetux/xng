@@ -41,31 +41,42 @@ RenderScene createScene() {
     scene.skinnedMeshes.push_back(mesh);
 
     material = {};
-    material.roughness = 0.2;
-    material.metallic = 0.2;
+    material.ambientOcclusionTexture = ResourceHandle<Texture>(
+        Uri("file://images/subway_brick/old-subway-brick_ao.png"));
+    material.metallicTexture = ResourceHandle<Texture>(Uri("file://images/subway_brick/old-subway-brick_metallic.png"));
+    material.roughnessTexture = ResourceHandle<Texture>(
+        Uri("file://images/subway_brick/old-subway-brick_roughness.png"));
+    material.albedoTexture = ResourceHandle<Texture>(Uri("file://images/subway_brick/old-subway-brick_albedo.png"));
+    material.normal = ResourceHandle<Texture>(Uri("file://images/subway_brick/old-subway-brick_normal-ogl.png"));
     mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx:Cube"));
     mesh.materials[0] = material;
     scene.skinnedMeshes.push_back(mesh);
 
     material = {};
     material.normal = ResourceHandle<Texture>(Uri("file://images/sphere_normals.png"));
-    material.metallic = 0.5;
-    material.roughness = 0.5;
+    material.metallicTexture = ResourceHandle<Texture>(Uri("file://images/rusted_iron/rustediron2_metallic.png"));
+    material.roughnessTexture = ResourceHandle<Texture>(Uri("file://images/rusted_iron/rustediron2_roughness.png"));
+    material.albedoTexture = ResourceHandle<Texture>(Uri("file://images/rusted_iron/rustediron2_basecolor.png"));
     mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx:Sphere.001"));
     mesh.materials[0] = material;
     scene.skinnedMeshes.push_back(mesh);
 
     material = {};
     material.normal = ResourceHandle<Texture>(Uri("file://images/sphere_normals.png"));
+    material.metallicTexture = ResourceHandle<Texture>(Uri("file://images/rusted_iron/rustediron2_metallic.png"));
+    material.roughnessTexture = ResourceHandle<Texture>(Uri("file://images/rusted_iron/rustediron2_roughness.png"));
+    material.albedoTexture = ResourceHandle<Texture>(Uri("file://images/rusted_iron/rustediron2_basecolor.png"));
     material.metallic = 0;
     material.roughness = 0.5;
-    material.transparent = true;
-    material.albedo = ColorRGBA::white(1, 200);
+    material.transparent = false;
+    material.albedo = ColorRGBA::white(1, 255);
     mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx:Sphere.002"));
     mesh.materials[0] = material;
     scene.skinnedMeshes.push_back(mesh);
 
     PointLightObject light;
+    light.light.power = 2;
+    light.light.castShadows = true;
     light.transform.setPosition(Vec3f(0, 0.45, 0));
     scene.pointLights.emplace_back(light);
 
@@ -253,6 +264,18 @@ int main(int argc, char *argv[]) {
                                ColorRGBA::black()));
 
         config->setCanvases({canvas});
+
+        if (input.getKey(KEY_F1)) {
+            config->setGamma(config->getGamma() - 0.75 * frameLimiter.getDeltaTimeSeconds());
+        } else if (input.getKey(KEY_F2)) {
+            config->setGamma(config->getGamma() + 0.75 * frameLimiter.getDeltaTimeSeconds());
+        }
+
+        if (input.getKey(KEY_F3)) {
+            config->setRenderScale(config->getRenderScale() - 0.1 * frameLimiter.getDeltaTimeSeconds());
+        } else if (input.getKey(KEY_F4)) {
+            config->setRenderScale(config->getRenderScale() + 0.1 * frameLimiter.getDeltaTimeSeconds());
+        }
 
         stats = passScheduler->execute(graph3D);
     }
