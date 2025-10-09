@@ -59,15 +59,15 @@ namespace xng {
 
             message.value("normalIntensity", normalIntensity);
 
-            message.value("transparent", transparent, false);
+            message.value("transparent", transparent);
 
             message.value("albedo", albedo);;
 
             message.value("albedoTexture", albedoTexture);
 
             message.value("metallic", metallic);
-            message.value("roughness", roughness, 1.0f);
-            message.value("ambientOcclusion", ambientOcclusion, 1.0f);
+            message.value("roughness", roughness);
+            message.value("ambientOcclusion", ambientOcclusion);
 
             message.value("metallicTexture", metallicTexture);
             message.value("roughnessTexture", roughnessTexture);
