@@ -22,6 +22,7 @@
 namespace xng {
     //TODO: Move all type definitions and inline function definitions inside all of the translation units into anonymous namespaces to force "internal linkage" (https://en.cppreference.com/w/cpp/language/namespace.html).
     namespace {
+#pragma pack(push, 1)
         struct PointLightData {
             std::array<float, 4> position;
             std::array<float, 4> color;
@@ -43,32 +44,33 @@ namespace xng {
         };
 
         struct ShaderAtlasTexture {
-            alignas(16) int level_index_filtering_assigned[4]{0, 0, 0, 0};
-            alignas(16) float atlasScale_texSize[4]{0, 0, 0, 0};
+            int level_index_filtering_assigned[4]{0, 0, 0, 0};
+            float atlasScale_texSize[4]{0, 0, 0, 0};
         };
 
         struct ShaderDrawData {
-            alignas(16) Mat4f model;
-            alignas(16) Mat4f mvp;
+            Mat4f model;
+            Mat4f mvp;
 
-            alignas(16) int objectID_boneOffset_shadows[4]{0, 0, 0, 0};
+            int objectID_boneOffset_shadows[4]{0, 0, 0, 0};
 
-            alignas(16) float metallic_roughness_ambientOcclusion[4]{0, 0, 0, 0};
-            alignas(16) float albedoColor[4]{0, 0, 0, 0};
+            float metallic_roughness_ambientOcclusion[4]{0, 0, 0, 0};
+            float albedoColor[4]{0, 0, 0, 0};
 
-            alignas(16) ShaderAtlasTexture metallic;
-            alignas(16) ShaderAtlasTexture roughness;
-            alignas(16) ShaderAtlasTexture ambientOcclusion;
-            alignas(16) ShaderAtlasTexture albedo;
+            ShaderAtlasTexture metallic;
+            ShaderAtlasTexture roughness;
+            ShaderAtlasTexture ambientOcclusion;
+            ShaderAtlasTexture albedo;
 
-            alignas(16) float viewPosition_gamma[4]{0, 0, 0, 0};
+            float viewPosition_gamma[4]{0, 0, 0, 0};
 
-            alignas(16) ShaderAtlasTexture normal;
-            alignas(16) float normalIntensity[4]{0, 0, 0, 0};
+            ShaderAtlasTexture normal;
+            float normalIntensity[4]{0, 0, 0, 0};
         };
-    }
+#pragma pack(pop)
 
-    static_assert(sizeof(ShaderDrawData) == 64 + 64 + 16 + 16 + 16 + 16 + 32 + 32 + 32 + 32 + 32 + 16);
+        static_assert(sizeof(ShaderDrawData) == 64 + 64 + 16 + 16 + 16 + 16 + 32 + 32 + 32 + 32 + 32 + 16);
+    }
 
     ForwardLightingPass::ForwardLightingPass(std::shared_ptr<RenderConfiguration> configuration,
                                              std::shared_ptr<SharedResourceRegistry> registry)
@@ -76,6 +78,8 @@ namespace xng {
     }
 
     void ForwardLightingPass::create(RenderGraphBuilder &builder) {
+        assert(sizeof(ShaderDrawData) == 64 + 64 + 16 + 16 + 16 + 16 + 32 + 32 + 32 + 32 + 32 + 16);
+
         auto vs = createVertexShader();
         auto fs = createFragmentShader();
 
@@ -299,13 +303,15 @@ namespace xng {
                     }
                     if (mat.metallicTexture.assigned()) {
                         if (textures.find(mat.metallicTexture.getUri()) == textures.end()) {
-                            textures[mat.metallicTexture.getUri()] = textureAtlas.add(mat.metallicTexture.get().image.get());
+                            textures[mat.metallicTexture.getUri()] = textureAtlas.add(
+                                mat.metallicTexture.get().image.get());
                         }
                         usedTextures.insert(mat.metallicTexture.getUri());
                     }
                     if (mat.roughnessTexture.assigned()) {
                         if (textures.find(mat.roughnessTexture.getUri()) == textures.end()) {
-                            textures[mat.roughnessTexture.getUri()] = textureAtlas.add(mat.roughnessTexture.get().image.get());
+                            textures[mat.roughnessTexture.getUri()] = textureAtlas.add(
+                                mat.roughnessTexture.get().image.get());
                         }
                         usedTextures.insert(mat.roughnessTexture.getUri());
                     }
@@ -318,7 +324,8 @@ namespace xng {
                     }
                     if (mat.albedoTexture.assigned()) {
                         if (textures.find(mat.albedoTexture.getUri()) == textures.end()) {
-                            textures[mat.albedoTexture.getUri()] = textureAtlas.add(mat.albedoTexture.get().image.get());
+                            textures[mat.albedoTexture.getUri()] = textureAtlas.
+                                    add(mat.albedoTexture.get().image.get());
                         }
                         usedTextures.insert(mat.albedoTexture.getUri());
                     }

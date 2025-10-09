@@ -26,6 +26,8 @@
 
 using namespace xng::ShaderScript;
 
+//TODO: Fix forward lighting pass artifacts.
+
 namespace xng {
     Shader ForwardLightingPass::createVertexShader() {
         BeginShader(Shader::VERTEX);
@@ -393,6 +395,10 @@ namespace xng {
         EndIf();
 
         Object<PbrPass> pass;
+
+        // Passing data["viewPosition_gamma"].w() here instead of a constant e.g. 1.0f produces random artifacts
+        // However, checking data["viewPosition_gamma"].w() manually e.g. oColor = vec4(vec3(data["viewPosition_gamma"].w()), 1.0f) does not produce any artifacts
+        // nor does checking pass["gamma"] manually produce any artifacts e.g. oColor = vec4(vec3(pass["gamma"]), 1.0f)
         pass = pbr_begin(fPos,
                          normal,
                          albedo.xyz(),
@@ -409,21 +415,24 @@ namespace xng {
         i = Int(0);
         For(i, 0, pointLights.length() - 1, 1);
         {
-            auto light = pointLights[i];
+            Object<PBRPointLight> light;
+            light = pointLights[i];
             reflectance = pbr_point(pass, reflectance, light["position"].xyz(), light["color"].xyz(), 1.0f);
         }
         EndFor();
 
         For(i, 0, directionalLights.length() - 1, 1);
         {
-            auto light = directionalLights[i];
+            Object<PBRDirectionalLight> light;
+            light = directionalLights[i];
             reflectance = pbr_directional(pass, reflectance, light["direction"].xyz(), light["color"].xyz(), 1.0f);
         }
         EndFor();
 
         For(i, 0, spotLights.length() - 1, 1);
         {
-            auto light = spotLights[i];
+            Object<PBRSpotLight> light;
+            light = spotLights[i];
             reflectance = pbr_spot(pass,
                                    reflectance,
                                    light["position"].xyz(),
@@ -440,7 +449,8 @@ namespace xng {
 
         For(i, 0, shadowPointLights.length() - 1, 1);
         {
-            auto light = shadowPointLights[i];
+            Object<PBRPointLight> light;
+            light = shadowPointLights[i];
             Float shadow;
             shadow = Float(1.0f);
             If(data["objectID_boneOffset_shadows"].z() == 1);
@@ -459,7 +469,8 @@ namespace xng {
 
         For(i, 0, shadowDirectionalLights.length() - 1, 1);
         {
-            auto light = shadowDirectionalLights[i];
+            Object<PBRDirectionalLight> light;
+            light = shadowDirectionalLights[i];
             vec4 fragPosLightSpace = directionalLightShadowTransforms[i]["transform"] * vec4(fPos, 1);
             Float shadow;
             shadow = Float(1.0f);
@@ -479,7 +490,8 @@ namespace xng {
 
         For(i, 0, shadowSpotLights.length() - 1, 1);
         {
-            auto light = shadowSpotLights[i];
+            Object<PBRSpotLight> light;
+            light = shadowSpotLights[i];
             vec4 fragPosLightSpace = spotLightShadowTransforms[i]["transform"] * vec4(fPos, 1);
             Float shadow;
             shadow = Float(1.0f);
@@ -507,7 +519,8 @@ namespace xng {
         }
         EndFor();
 
-        oColor = vec4(pbr_finish(pass, reflectance), albedo.w());
+        oColor = vec4(pbr_finish(pass, reflectance), 1.0f);
+
         return BuildShader();
     }
 }
