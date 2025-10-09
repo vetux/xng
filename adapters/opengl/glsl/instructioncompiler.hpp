@@ -17,8 +17,8 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_NODECOMPILER_HPP
-#define XENGINE_NODECOMPILER_HPP
+#ifndef XENGINE_INSTRUCTIONCOMPILER_HPP
+#define XENGINE_INSTRUCTIONCOMPILER_HPP
 
 #include "xng/rendergraph/shader/shader.hpp"
 
@@ -32,147 +32,149 @@ static const char *bufferArrayName = "data";
 static const char *texturePrefix = "texture_";
 static const char *drawID = "DRAW_ID";
 
-/**
- * Compile the given node.
- *
- * @param node
- * @param source
- * @param functionName
- * @param prefix The prefix for lvalue nodes
- * @return
- */
-XENGINE_EXPORT std::string compile(const ShaderInstruction &node,
-                                   const Shader &source,
-                                   const std::string &functionName,
-                                   const std::string &prefix);
-
-XENGINE_EXPORT std::string compileOperand(const ShaderOperand &operand,
-                                          const Shader &source,
-                                          const std::string &functionName);
-
-XENGINE_EXPORT std::string compileDeclareVariable(const ShaderInstruction &node,
-                                                  const Shader &source,
-                                                  const std::string &functionName,
-                                                  const std::string &prefix);
-
-XENGINE_EXPORT std::string compileAssign(const ShaderInstruction &node,
-                                         const Shader &source,
-                                         const std::string &functionName,
-                                         const std::string &prefix);
-
-XENGINE_EXPORT std::string compileCreateVector(const ShaderInstruction &node,
-                                               const Shader &source,
-                                               const std::string &functionName,
-                                               const std::string &prefix);
-
-XENGINE_EXPORT std::string compileCreateMatrix(const ShaderInstruction &node,
-                                               const Shader &source,
-                                               const std::string &functionName,
-                                               const std::string &prefix);
-
-XENGINE_EXPORT std::string compileCreateArray(const ShaderInstruction &node,
-                                              const Shader &source,
-                                              const std::string &functionName,
-                                              const std::string &prefix);
-
-XENGINE_EXPORT std::string compileCreateStruct(const ShaderInstruction &node,
-                                               const Shader &source,
-                                               const std::string &functionName,
-                                               const std::string &prefix);
-
-XENGINE_EXPORT std::string compileTextureSample(const ShaderInstruction &node,
-                                                const Shader &source,
-                                                const std::string &functionName,
-                                                const std::string &prefix);
-
-XENGINE_EXPORT std::string compileTextureFetch(const ShaderInstruction &node,
-                                               const Shader &source,
-                                               const std::string &functionName,
-                                               const std::string &prefix);
-
-XENGINE_EXPORT std::string compileTextureSize(const ShaderInstruction &node,
-                                              const Shader &source,
-                                              const std::string &functionName,
-                                              const std::string &prefix);
-
-XENGINE_EXPORT std::string compileBufferSize(const ShaderInstruction &node,
-                                             const Shader &source,
-                                             const std::string &functionName,
-                                             const std::string &prefix);
-
-XENGINE_EXPORT std::string compileArithmetic(const ShaderInstruction &node,
-                                             const Shader &source,
-                                             const std::string &functionName,
-                                             const std::string &prefix);
-
-XENGINE_EXPORT std::string compileCall(const ShaderInstruction &node,
+namespace InstructionCompiler {
+    /**
+     * Compile the given instruction.
+     *
+     * @param instruction
+     * @param source
+     * @param functionName
+     * @param indent The tab indentation for lvalue instructions
+     * @return
+     */
+    XENGINE_EXPORT std::string compile(const ShaderInstruction &instruction,
                                        const Shader &source,
                                        const std::string &functionName,
-                                       const std::string &prefix);
+                                       const std::string &indent);
 
-XENGINE_EXPORT std::string compileReturn(const ShaderInstruction &node,
-                                         const Shader &source,
-                                         const std::string &functionName,
-                                         const std::string &prefix);
-
-XENGINE_EXPORT std::string compileCallBuiltIn(const ShaderInstruction &node,
+    XENGINE_EXPORT std::string compileOperand(const ShaderOperand &operand,
                                               const Shader &source,
-                                              const std::string &functionName,
-                                              const std::string &prefix);
+                                              const std::string &functionName);
 
-XENGINE_EXPORT std::string compileArraySubscript(const ShaderInstruction &node,
-                                                 const Shader &source,
-                                                 const std::string &functionName,
-                                                 const std::string &prefix);
+    XENGINE_EXPORT std::string compileDeclareVariable(const ShaderInstruction &instruction,
+                                                      const Shader &source,
+                                                      const std::string &functionName,
+                                                      const std::string &indent);
 
-XENGINE_EXPORT std::string compileVectorSwizzle(const ShaderInstruction &node,
-                                                const Shader &source,
-                                                const std::string &functionName,
-                                                const std::string &prefix);
+    XENGINE_EXPORT std::string compileAssign(const ShaderInstruction &instruction,
+                                             const Shader &source,
+                                             const std::string &functionName,
+                                             const std::string &indent);
 
-XENGINE_EXPORT std::string compileMatrixSubscript(const ShaderInstruction &node,
-                                                  const Shader &source,
-                                                  const std::string &functionName,
-                                                  const std::string &prefix);
-
-XENGINE_EXPORT std::string compileBranch(const ShaderInstruction &node,
-                                         const Shader &source,
-                                         const std::string &functionName,
-                                         const std::string &prefix);
-
-XENGINE_EXPORT std::string compileLoop(const ShaderInstruction &node,
-                                       const Shader &source,
-                                       const std::string &functionName,
-                                       const std::string &prefix);
-
-XENGINE_EXPORT std::string compileSetVertexPosition(const ShaderInstruction &node,
-                                                    const Shader &source,
-                                                    const std::string &functionName,
-                                                    const std::string &prefix);
-
-XENGINE_EXPORT std::string compileSetFragmentDepth(const ShaderInstruction &node,
+    XENGINE_EXPORT std::string compileCreateVector(const ShaderInstruction &instruction,
                                                    const Shader &source,
                                                    const std::string &functionName,
-                                                   const std::string &prefix);
+                                                   const std::string &indent);
 
-XENGINE_EXPORT std::string compileSetLayer(const ShaderInstruction &node,
+    XENGINE_EXPORT std::string compileCreateMatrix(const ShaderInstruction &instruction,
+                                                   const Shader &source,
+                                                   const std::string &functionName,
+                                                   const std::string &indent);
+
+    XENGINE_EXPORT std::string compileCreateArray(const ShaderInstruction &instruction,
+                                                  const Shader &source,
+                                                  const std::string &functionName,
+                                                  const std::string &indent);
+
+    XENGINE_EXPORT std::string compileCreateStruct(const ShaderInstruction &instruction,
+                                                   const Shader &source,
+                                                   const std::string &functionName,
+                                                   const std::string &indent);
+
+    XENGINE_EXPORT std::string compileTextureSample(const ShaderInstruction &instruction,
+                                                    const Shader &source,
+                                                    const std::string &functionName,
+                                                    const std::string &indent);
+
+    XENGINE_EXPORT std::string compileTextureFetch(const ShaderInstruction &instruction,
+                                                   const Shader &source,
+                                                   const std::string &functionName,
+                                                   const std::string &indent);
+
+    XENGINE_EXPORT std::string compileTextureSize(const ShaderInstruction &instruction,
+                                                  const Shader &source,
+                                                  const std::string &functionName,
+                                                  const std::string &indent);
+
+    XENGINE_EXPORT std::string compileBufferSize(const ShaderInstruction &instruction,
+                                                 const Shader &source,
+                                                 const std::string &functionName,
+                                                 const std::string &indent);
+
+    XENGINE_EXPORT std::string compileArithmetic(const ShaderInstruction &instruction,
+                                                 const Shader &source,
+                                                 const std::string &functionName,
+                                                 const std::string &indent);
+
+    XENGINE_EXPORT std::string compileCall(const ShaderInstruction &instruction,
                                            const Shader &source,
                                            const std::string &functionName,
-                                           const std::string &prefix);
+                                           const std::string &indent);
 
-XENGINE_EXPORT std::string compileEmitVertex(const ShaderInstruction &node,
+    XENGINE_EXPORT std::string compileReturn(const ShaderInstruction &instruction,
                                              const Shader &source,
                                              const std::string &functionName,
-                                             const std::string &prefix);
+                                             const std::string &indent);
 
-XENGINE_EXPORT std::string compileEndPrimitive(const ShaderInstruction &node,
+    XENGINE_EXPORT std::string compileCallBuiltIn(const ShaderInstruction &instruction,
+                                                  const Shader &source,
+                                                  const std::string &functionName,
+                                                  const std::string &indent);
+
+    XENGINE_EXPORT std::string compileArraySubscript(const ShaderInstruction &instruction,
+                                                     const Shader &source,
+                                                     const std::string &functionName,
+                                                     const std::string &indent);
+
+    XENGINE_EXPORT std::string compileVectorSwizzle(const ShaderInstruction &instruction,
+                                                    const Shader &source,
+                                                    const std::string &functionName,
+                                                    const std::string &indent);
+
+    XENGINE_EXPORT std::string compileMatrixSubscript(const ShaderInstruction &instruction,
+                                                      const Shader &source,
+                                                      const std::string &functionName,
+                                                      const std::string &indent);
+
+    XENGINE_EXPORT std::string compileBranch(const ShaderInstruction &instruction,
+                                             const Shader &source,
+                                             const std::string &functionName,
+                                             const std::string &indent);
+
+    XENGINE_EXPORT std::string compileLoop(const ShaderInstruction &instruction,
+                                           const Shader &source,
+                                           const std::string &functionName,
+                                           const std::string &indent);
+
+    XENGINE_EXPORT std::string compileSetVertexPosition(const ShaderInstruction &instruction,
+                                                        const Shader &source,
+                                                        const std::string &functionName,
+                                                        const std::string &indent);
+
+    XENGINE_EXPORT std::string compileSetFragmentDepth(const ShaderInstruction &instruction,
+                                                       const Shader &source,
+                                                       const std::string &functionName,
+                                                       const std::string &indent);
+
+    XENGINE_EXPORT std::string compileSetLayer(const ShaderInstruction &instruction,
                                                const Shader &source,
                                                const std::string &functionName,
-                                               const std::string &prefix);
+                                               const std::string &indent);
 
-XENGINE_EXPORT std::string compileObjectElement(const ShaderInstruction &node,
-                                                const Shader &source,
-                                                const std::string &functionName,
-                                                const std::string &prefix);
+    XENGINE_EXPORT std::string compileEmitVertex(const ShaderInstruction &instruction,
+                                                 const Shader &source,
+                                                 const std::string &functionName,
+                                                 const std::string &indent);
 
-#endif //XENGINE_NODECOMPILER_HPP
+    XENGINE_EXPORT std::string compileEndPrimitive(const ShaderInstruction &instruction,
+                                                   const Shader &source,
+                                                   const std::string &functionName,
+                                                   const std::string &indent);
+
+    XENGINE_EXPORT std::string compileObjectElement(const ShaderInstruction &instruction,
+                                                    const Shader &source,
+                                                    const std::string &functionName,
+                                                    const std::string &indent);
+}
+
+#endif //XENGINE_INSTRUCTIONCOMPILER_HPP

@@ -72,7 +72,7 @@ if (BUILD_OPENGL)
     else ()
         set(GL_LIBNAME GL)
     endif ()
-    AddAdapter(BUILD_OPENGL opengl ${GL_LIBNAME} glslang SPIRV glslang-default-resource-limits MachineIndependent OSDependent GenericCodeGen OGLCompiler)
+    AddAdapter(BUILD_OPENGL opengl ${GL_LIBNAME})
 endif ()
 
 if (BUILD_VULKAN)

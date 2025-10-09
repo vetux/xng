@@ -64,7 +64,7 @@ std::string compileFunction(const std::string &functionName,
         nodeFuncName = "";
     }
     for (const auto &instruction: body) {
-        ret += compile(instruction, source, nodeFuncName, "\t") + ";\n";
+        ret += InstructionCompiler::compile(instruction, source, nodeFuncName, "\t") + ";\n";
     }
     if (appendix.size() > 0) {
         ret += "\t" + appendix + ";\n";
