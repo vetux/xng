@@ -818,22 +818,57 @@ namespace xng::ShaderScript {
 
         ShaderDataObject(const bool literal)
             : ShaderObject(literal) {
+            if (VALUE_TYPE == ShaderDataType::VECTOR2
+                || VALUE_TYPE == ShaderDataType::VECTOR3
+                || VALUE_TYPE == ShaderDataType::VECTOR4) {
+                operand = ShaderOperand(ShaderInstructionFactory::createVector(
+                    {VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
+                    operand));
+            }
         }
 
         ShaderDataObject(const int literal)
             : ShaderObject(literal) {
+            if (VALUE_TYPE == ShaderDataType::VECTOR2
+                || VALUE_TYPE == ShaderDataType::VECTOR3
+                || VALUE_TYPE == ShaderDataType::VECTOR4) {
+                operand = ShaderOperand(ShaderInstructionFactory::createVector(
+                    {VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
+                    operand));
+            }
         }
 
         ShaderDataObject(const unsigned int literal)
             : ShaderObject(literal) {
+            if (VALUE_TYPE == ShaderDataType::VECTOR2
+                || VALUE_TYPE == ShaderDataType::VECTOR3
+                || VALUE_TYPE == ShaderDataType::VECTOR4) {
+                operand = ShaderOperand(ShaderInstructionFactory::createVector(
+                    {VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
+                    operand));
+            }
         }
 
         ShaderDataObject(const float literal)
             : ShaderObject(literal) {
+            if (VALUE_TYPE == ShaderDataType::VECTOR2
+                || VALUE_TYPE == ShaderDataType::VECTOR3
+                || VALUE_TYPE == ShaderDataType::VECTOR4) {
+                operand = ShaderOperand(ShaderInstructionFactory::createVector(
+                    {VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
+                    operand));
+            }
         }
 
         ShaderDataObject(const double literal)
             : ShaderObject(literal) {
+            if (VALUE_TYPE == ShaderDataType::VECTOR2
+                || VALUE_TYPE == ShaderDataType::VECTOR3
+                || VALUE_TYPE == ShaderDataType::VECTOR4) {
+                operand = ShaderOperand(ShaderInstructionFactory::createVector(
+                    {VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT},
+                    operand));
+            }
         }
 
     private:
