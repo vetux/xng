@@ -22,7 +22,7 @@
 
 #include <cstddef>
 
-#include "xng/graphics/3d/atlas/textureatlasresolution.hpp"
+#include "xng/graphics/3d/textureatlas/textureatlasresolution.hpp"
 
 #include "xng/math/vector2.hpp"
 

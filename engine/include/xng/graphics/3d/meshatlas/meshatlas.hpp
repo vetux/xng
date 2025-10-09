@@ -27,7 +27,7 @@ namespace xng {
     /**
      * Allocates Meshes from resource handles into a single vertex / index buffer.
      */
-    class MeshBuffer3D {
+    class MeshAtlas {
     public:
         struct MeshAllocation {
             struct Data {
@@ -39,8 +39,18 @@ namespace xng {
             std::vector<Data> data;
         };
 
+        /**
+         * Allocate the mesh and all sub meshes.
+         *
+         * @param mesh
+         */
         void allocateMesh(const ResourceHandle<SkinnedMesh> &mesh);
 
+        /**
+         * Deallocate the mesh and all sub meshes.
+         *
+         * @param mesh
+         */
         void deallocateMesh(const ResourceHandle<SkinnedMesh> &mesh);
 
         bool shouldRebuild();
@@ -82,22 +92,22 @@ namespace xng {
 
         void mergeFreeIndexBufferRanges();
 
+        ShaderAttributeLayout vertexLayout = SkinnedMesh::getDefaultVertexLayout();
+
         std::map<Uri, MeshAllocation> meshAllocations;
-        std::map<Uri, MeshAllocation> pendingMeshAllocations;
-        std::map<Uri, ResourceHandle<SkinnedMesh> > pendingMeshHandles;
+        std::map<Uri, ResourceHandle<SkinnedMesh> > pendingUploads;
 
         size_t requestedVertexBufferSize{};
         size_t requestedIndexBufferSize{};
 
+        size_t currentVertexBufferSize{};
+        size_t currentIndexBufferSize{};
+
         std::map<size_t, size_t> freeVertexBufferRanges;
-        // start and size of free ranges of vertices with layout vertexLayout in the vertex buffer
-        std::map<size_t, size_t> freeIndexBufferRanges; // start and size of free ranges of bytes in the index buffer
+        std::map<size_t, size_t> freeIndexBufferRanges;
 
         std::map<size_t, size_t> allocatedVertexRanges;
         std::map<size_t, size_t> allocatedIndexRanges;
-
-        size_t currentVertexBufferSize{};
-        size_t currentIndexBufferSize{};
 
         RenderGraphResource currentVertexBuffer{};
         RenderGraphResource currentIndexBuffer{};

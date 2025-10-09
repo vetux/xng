@@ -18,12 +18,22 @@
  */
 
 
-#include "xng/graphics/3d/meshbuffer3d.hpp"
+#include "xng/graphics/3d/meshatlas/meshatlas.hpp"
 
 #include "xng/graphics/vertexstream.hpp"
 
 namespace xng {
-    MeshBuffer3D::MeshAllocation MeshBuffer3D::allocateMesh(const Mesh &mesh) {
+    MeshAtlas::MeshAllocation MeshAtlas::allocateMesh(const Mesh &mesh) {
+        if (mesh.primitive != TRIANGLES) {
+            throw std::runtime_error("Unsupported mesh primitive");
+        }
+        if (mesh.vertexLayout != vertexLayout) {
+            throw std::runtime_error("Unsupported mesh vertex layout");
+        }
+        if (mesh.indices.empty()) {
+            throw std::runtime_error("Arrayed mesh not supported, must be indexed");
+        }
+
         MeshAllocation ret;
 
         MeshAllocation::Data data;
@@ -31,9 +41,9 @@ namespace xng {
         data.drawCall.count = mesh.indices.size();
         auto indexSize = mesh.indices.size() * sizeof(unsigned int);
         data.drawCall.offset = allocateIndexData(indexSize);
-        auto vertexSize = mesh.vertices.size() * mesh.vertexLayout.getLayoutSize();
+        auto vertexSize = mesh.vertices.size() * vertexLayout.getLayoutSize();
         auto baseVertex = allocateVertexData(vertexSize);
-        data.baseVertex = baseVertex / mesh.vertexLayout.getLayoutSize();
+        data.baseVertex = baseVertex / vertexLayout.getLayoutSize();
 
         ret.data.emplace_back(data);
 
@@ -45,67 +55,57 @@ namespace xng {
         return ret;
     }
 
-    void MeshBuffer3D::allocateMesh(const ResourceHandle<SkinnedMesh> &mesh) {
-        if (mesh.get().primitive != TRIANGLES) {
-            throw std::runtime_error("Unsupported mesh primitive");
-        }
-        if (mesh.get().vertexLayout != SkinnedMesh::getDefaultVertexLayout()) {
-            throw std::runtime_error("Unsupported mesh vertex layout");
-        }
-        if (mesh.get().indices.empty()) {
-            throw std::runtime_error("Arrayed mesh not supported, must be indexed");
-        }
+    void MeshAtlas::allocateMesh(const ResourceHandle<SkinnedMesh> &mesh) {
         if (meshAllocations.find(mesh.getUri()) == meshAllocations.end()
-            && pendingMeshAllocations.find(mesh.getUri()) == pendingMeshAllocations.end()) {
+            && pendingUploads.find(mesh.getUri()) == pendingUploads.end()) {
             const MeshAllocation mdata = allocateMesh(mesh.get());
-            pendingMeshAllocations[mesh.getUri()] = mdata;
-            pendingMeshHandles[mesh.getUri()] = mesh;
+            meshAllocations[mesh.getUri()] = mdata;
+            pendingUploads[mesh.getUri()] = mesh;
         }
     }
 
-    void MeshBuffer3D::uploadMeshes(RenderGraphContext &ctx,
+    void MeshAtlas::uploadMeshes(RenderGraphContext &ctx,
                                     RenderGraphResource vertexBuffer,
                                     RenderGraphResource indexBuffer) {
-        for (auto &pair: pendingMeshAllocations) {
-            auto meshHandle = pendingMeshHandles.at(pair.first);
-            for (auto i = 0; i < meshHandle.get().subMeshes.size() + 1; i++) {
-                auto &data = pair.second.data.at(i);
-                auto &curMesh = i == 0 ? meshHandle.get() : meshHandle.get().subMeshes.at(i - 1);
+        for (auto &pair: pendingUploads) {
+            auto &meshAllocation = meshAllocations.at(pair.first);
+            for (auto i = 0; i < pair.second.get().subMeshes.size() + 1; i++) {
+                auto &data = meshAllocation.data.at(i);
+                auto &mesh = i == 0 ? pair.second.get() : pair.second.get().subMeshes.at(i - 1);
 
-                auto vb = VertexStream().addVertices(curMesh.vertices).getVertexBuffer();
+                auto vb = VertexStream().addVertices(mesh.vertices).getVertexBuffer();
                 ctx.uploadBuffer(vertexBuffer,
                                  vb.data(),
                                  vb.size(),
-                                 data.baseVertex * curMesh.vertexLayout.getLayoutSize());
+                                 data.baseVertex * vertexLayout.getLayoutSize());
 
-                auto ib = curMesh.indices;
+                auto ib = mesh.indices;
                 ctx.uploadBuffer(indexBuffer,
                                  reinterpret_cast<const uint8_t *>(ib.data()),
                                  ib.size() * sizeof(unsigned int),
                                  data.drawCall.offset);
             }
-            meshAllocations[pair.first] = pair.second;
         }
-        pendingMeshAllocations.clear();
-        pendingMeshHandles.clear();
+        pendingUploads.clear();
     }
 
-    void MeshBuffer3D::deallocateMesh(const ResourceHandle<SkinnedMesh> &mesh) {
+    void MeshAtlas::deallocateMesh(const ResourceHandle<SkinnedMesh> &mesh) {
         auto alloc = meshAllocations.at(mesh.getUri());
         meshAllocations.erase(mesh.getUri());
+        pendingUploads.erase(mesh.getUri());
         for (auto &data: alloc.data) {
-            deallocateVertexData(data.baseVertex * mesh.get().vertexLayout.getLayoutSize());
+            deallocateVertexData(data.baseVertex * vertexLayout.getLayoutSize());
             deallocateIndexData(data.drawCall.offset);
         }
         mergeFreeVertexBufferRanges();
         mergeFreeIndexBufferRanges();
     }
 
-    bool MeshBuffer3D::shouldRebuild() {
+    bool MeshAtlas::shouldRebuild() {
         return currentVertexBufferSize < requestedVertexBufferSize || currentIndexBufferSize < requestedIndexBufferSize;
     }
 
-    void MeshBuffer3D::update(RenderGraphBuilder &builder, RenderGraphBuilder::PassHandle pass) {
+    void MeshAtlas::update(RenderGraphBuilder &builder, RenderGraphBuilder::PassHandle pass) {
         if (requestedVertexBufferSize != currentVertexBufferSize
             || requestedIndexBufferSize != currentIndexBufferSize
             || !currentVertexBuffer) {
@@ -134,7 +134,7 @@ namespace xng {
         }
     }
 
-    const std::map<Uri, MeshBuffer3D::MeshAllocation> &MeshBuffer3D::getMeshAllocations(RenderGraphContext &ctx) {
+    const std::map<Uri, MeshAtlas::MeshAllocation> &MeshAtlas::getMeshAllocations(RenderGraphContext &ctx) {
         if (staleVertexBuffer) {
             ctx.copyBuffer(currentVertexBuffer, staleVertexBuffer, 0, 0, currentVertexBufferSize);
             ctx.copyBuffer(currentIndexBuffer, staleIndexBuffer, 0, 0, currentIndexBufferSize);
@@ -147,7 +147,7 @@ namespace xng {
         return meshAllocations;
     }
 
-    size_t MeshBuffer3D::allocateVertexData(size_t size) {
+    size_t MeshAtlas::allocateVertexData(size_t size) {
         bool foundFreeRange = false;
         auto ret = 0UL;
         for (auto &range: freeVertexBufferRanges) {
@@ -173,13 +173,13 @@ namespace xng {
         return ret;
     }
 
-    void MeshBuffer3D::deallocateVertexData(size_t offset) {
+    void MeshAtlas::deallocateVertexData(size_t offset) {
         auto size = allocatedVertexRanges.at(offset);
         allocatedVertexRanges.erase(offset);
         freeVertexBufferRanges[offset] = size;
     }
 
-    size_t MeshBuffer3D::allocateIndexData(size_t size) {
+    size_t MeshAtlas::allocateIndexData(size_t size) {
         assert(size % sizeof(unsigned int) == 0);
 
         bool foundFreeRange = false;
@@ -206,13 +206,13 @@ namespace xng {
         return ret;
     }
 
-    void MeshBuffer3D::deallocateIndexData(size_t offset) {
+    void MeshAtlas::deallocateIndexData(size_t offset) {
         auto size = allocatedIndexRanges.at(offset);
         allocatedIndexRanges.erase(offset);
         freeIndexBufferRanges[offset] = size;
     }
 
-    void MeshBuffer3D::mergeFreeVertexBufferRanges() {
+    void MeshAtlas::mergeFreeVertexBufferRanges() {
         bool merged = true;
         while (merged) {
             merged = false;
@@ -235,7 +235,7 @@ namespace xng {
         }
     }
 
-    void MeshBuffer3D::mergeFreeIndexBufferRanges() {
+    void MeshAtlas::mergeFreeIndexBufferRanges() {
         bool merged = true;
         while (merged) {
             merged = false;

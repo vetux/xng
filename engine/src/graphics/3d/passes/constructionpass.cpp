@@ -83,7 +83,7 @@ namespace xng {
         shaderBuffer = builder.createShaderBuffer(sizeof(ShaderDrawData));
         boneBuffer = builder.createShaderBuffer(0);
 
-        atlas.onCreate(builder);
+        textureAtlas.onCreate(builder);
 
         registry->set(gBuffer);
 
@@ -91,9 +91,9 @@ namespace xng {
             runPass(ctx);
         });
 
-        meshAllocator.update(builder, pass);
+        meshAtlas.update(builder, pass);
 
-        atlas.declareReadWrite(builder, pass);
+        textureAtlas.declareReadWrite(builder, pass);
 
         builder.read(pass, renderPipelineSkinned);
         builder.readWrite(pass, shaderBuffer);
@@ -143,15 +143,15 @@ namespace xng {
         boneBuffer = builder.createShaderBuffer(totalBoneBufferSize);
         currentBoneBufferSize = totalBoneBufferSize;
 
-        atlas.onRecreate(builder);
+        textureAtlas.onRecreate(builder);
 
         auto pass = builder.addPass("ConstructionPass", [this](RenderGraphContext &ctx) {
             runPass(ctx);
         });
 
-        meshAllocator.update(builder, pass);
+        meshAtlas.update(builder, pass);
 
-        atlas.declareReadWrite(builder, pass);
+        textureAtlas.declareReadWrite(builder, pass);
 
         builder.read(pass, renderPipelineSkinned);
         builder.readWrite(pass, shaderBuffer);
@@ -172,7 +172,7 @@ namespace xng {
             auto &object = tmp.at(id);
             auto &meshResource = object.mesh;
             if (meshResource.assigned()) {
-                meshAllocator.allocateMesh(meshResource);
+                meshAtlas.allocateMesh(meshResource);
                 usedMeshes.emplace_back(meshResource);
 
                 for (auto i = 0; i < meshResource.get().subMeshes.size() + 1; i++) {
@@ -193,32 +193,32 @@ namespace xng {
 
                     if (mat.normal.assigned()) {
                         if (textures.find(mat.normal.getUri()) == textures.end()) {
-                            textures[mat.normal.getUri()] = atlas.add(mat.normal.get().image.get());
+                            textures[mat.normal.getUri()] = textureAtlas.add(mat.normal.get().image.get());
                         }
                         usedTextures.insert(mat.normal.getUri());
                     }
                     if (mat.metallicTexture.assigned()) {
                         if (textures.find(mat.metallicTexture.getUri()) == textures.end()) {
-                            textures[mat.metallicTexture.getUri()] = atlas.add(mat.metallicTexture.get().image.get());
+                            textures[mat.metallicTexture.getUri()] = textureAtlas.add(mat.metallicTexture.get().image.get());
                         }
                         usedTextures.insert(mat.metallicTexture.getUri());
                     }
                     if (mat.roughnessTexture.assigned()) {
                         if (textures.find(mat.roughnessTexture.getUri()) == textures.end()) {
-                            textures[mat.roughnessTexture.getUri()] = atlas.add(mat.roughnessTexture.get().image.get());
+                            textures[mat.roughnessTexture.getUri()] = textureAtlas.add(mat.roughnessTexture.get().image.get());
                         }
                         usedTextures.insert(mat.roughnessTexture.getUri());
                     }
                     if (mat.ambientOcclusionTexture.assigned()) {
                         if (textures.find(mat.ambientOcclusionTexture.getUri()) == textures.end()) {
-                            textures[mat.ambientOcclusionTexture.getUri()] = atlas.add(
+                            textures[mat.ambientOcclusionTexture.getUri()] = textureAtlas.add(
                                 mat.ambientOcclusionTexture.get().image.get());
                         }
                         usedTextures.insert(mat.ambientOcclusionTexture.getUri());
                     }
                     if (mat.albedoTexture.assigned()) {
                         if (textures.find(mat.albedoTexture.getUri()) == textures.end()) {
-                            textures[mat.albedoTexture.getUri()] = atlas.add(mat.albedoTexture.get().image.get());
+                            textures[mat.albedoTexture.getUri()] = textureAtlas.add(mat.albedoTexture.get().image.get());
                         }
                         usedTextures.insert(mat.albedoTexture.getUri());
                     }
@@ -234,7 +234,7 @@ namespace xng {
         for (auto &mesh: allocatedMeshes) {
             auto it = std::find(usedMeshes.begin(), usedMeshes.end(), mesh);
             if (it == usedMeshes.end()) {
-                meshAllocator.deallocateMesh(mesh);
+                meshAtlas.deallocateMesh(mesh);
             }
         }
         allocatedMeshes = usedMeshes;
@@ -247,15 +247,15 @@ namespace xng {
             }
         }
         for (auto &uri: dealloc) {
-            atlas.remove(textures.at(uri));
+            textureAtlas.remove(textures.at(uri));
             textures.erase(uri);
         }
 
-        if (atlas.shouldRebuild()) {
+        if (textureAtlas.shouldRebuild()) {
             return true;
         }
 
-        if (meshAllocator.shouldRebuild()) {
+        if (meshAtlas.shouldRebuild()) {
             return true;
         }
 
@@ -272,7 +272,7 @@ namespace xng {
         std::vector<ShaderDrawData> shaderData;
         std::vector<Mat4f> boneMatrices;
 
-        auto &meshAllocations = meshAllocator.getMeshAllocations(ctx);
+        auto &meshAllocations = meshAtlas.getMeshAllocations(ctx);
 
         for (auto objectIndex = 0; objectIndex < objects.size(); objectIndex++) {
             auto &object = objects.at(objectIndex);
@@ -432,7 +432,7 @@ namespace xng {
             }
         }
 
-        auto &atlasTextures = atlas.getAtlasTextures(ctx);
+        auto &atlasTextures = textureAtlas.getAtlasTextures(ctx);
 
         ctx.beginRenderPass({
                                 RenderGraphAttachment(gBuffer.gBufferPosition, Vec4f(0)),
@@ -452,8 +452,8 @@ namespace xng {
                          0);
 
         ctx.bindPipeline(renderPipelineSkinned);
-        ctx.bindVertexBuffer(meshAllocator.getVertexBuffer());
-        ctx.bindIndexBuffer(meshAllocator.getIndexBuffer());
+        ctx.bindVertexBuffer(meshAtlas.getVertexBuffer());
+        ctx.bindIndexBuffer(meshAtlas.getIndexBuffer());
 
         std::vector<RenderGraphResource> bindTextures;
         for (int i = TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; ++i) {

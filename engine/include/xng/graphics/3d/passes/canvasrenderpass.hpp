@@ -25,8 +25,8 @@
 
 #include "xng/graphics/3d/renderconfiguration.hpp"
 #include "xng/graphics/3d/sharedresourceregistry.hpp"
-#include "xng/graphics/3d/atlas/textureatlas.hpp"
-#include "xng/graphics/3d/atlas/textureatlashandle.hpp"
+#include "xng/graphics/3d/textureatlas/textureatlas.hpp"
+#include "xng/graphics/3d/textureatlas/textureatlashandle.hpp"
 #include "xng/graphics/3d/sharedresources/compositinglayers.hpp"
 
 namespace xng {

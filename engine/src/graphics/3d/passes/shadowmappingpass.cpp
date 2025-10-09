@@ -103,7 +103,7 @@ namespace xng {
             runPass(ctx);
         });
 
-        meshBuffer.update(builder, pass);
+        meshAtlas.update(builder, pass);
     }
 
     void ShadowMappingPass::recreate(RenderGraphBuilder &builder) {
@@ -168,7 +168,7 @@ namespace xng {
             runPass(ctx);
         });
 
-        meshBuffer.update(builder, pass);
+        meshAtlas.update(builder, pass);
     }
 
     bool ShadowMappingPass::shouldRebuild(const Vec2i &backBufferSize) {
@@ -183,7 +183,7 @@ namespace xng {
         size_t boneCount = 0;
         for (auto &meshObject: config->getScene().skinnedMeshes) {
             if (meshObject.mesh.assigned() && meshObject.castShadows) {
-                meshBuffer.allocateMesh(meshObject.mesh);
+                meshAtlas.allocateMesh(meshObject.mesh);
                 usedMeshes.emplace_back(meshObject.mesh);
 
                 for (auto i = 0; i < meshObject.mesh.get().subMeshes.size() + 1; i++) {
@@ -199,7 +199,7 @@ namespace xng {
 
         for (auto &mesh: allocatedMeshes) {
             if (std::find(usedMeshes.begin(), usedMeshes.end(), mesh) == usedMeshes.end()) {
-                meshBuffer.deallocateMesh(ResourceHandle<SkinnedMesh>());
+                meshAtlas.deallocateMesh(ResourceHandle<SkinnedMesh>());
             }
         }
 
@@ -227,7 +227,7 @@ namespace xng {
             }
         }
 
-        if (meshBuffer.shouldRebuild()) {
+        if (meshAtlas.shouldRebuild()) {
             return true;
         }
 
@@ -245,11 +245,11 @@ namespace xng {
     }
 
     void ShadowMappingPass::runPass(RenderGraphContext &ctx) {
-        const auto &meshAllocations = meshBuffer.getMeshAllocations(ctx);
+        const auto &meshAllocations = meshAtlas.getMeshAllocations(ctx);
 
         std::vector<Mat4f> boneMatrices;
         std::vector<ShadowShaderDrawData> drawData;
-        std::vector<MeshBuffer3D::MeshAllocation::Data> meshData;
+        std::vector<MeshAtlas::MeshAllocation::Data> meshData;
         for (auto &meshObject: meshObjects) {
             auto model = meshObject.transform.model();
 
@@ -288,8 +288,8 @@ namespace xng {
             ctx.clearDepthAttachment(1);
             ctx.bindPipeline(pointPipeline);
             ctx.setViewport({}, pointShadowMapResolution);
-            ctx.bindVertexBuffer(meshBuffer.getVertexBuffer());
-            ctx.bindIndexBuffer(meshBuffer.getIndexBuffer());
+            ctx.bindVertexBuffer(meshAtlas.getVertexBuffer());
+            ctx.bindIndexBuffer(meshAtlas.getIndexBuffer());
             ctx.bindShaderBuffer("drawData", shaderBuffer);
             ctx.bindShaderBuffer("bones", boneBuffer);
             ctx.bindShaderBuffer("lightData", pointLightBuffer);
@@ -352,8 +352,8 @@ namespace xng {
             ctx.clearDepthAttachment(1);
             ctx.bindPipeline(dirPipeline);
             ctx.setViewport({}, dirShadowMapResolution);
-            ctx.bindVertexBuffer(meshBuffer.getVertexBuffer());
-            ctx.bindIndexBuffer(meshBuffer.getIndexBuffer());
+            ctx.bindVertexBuffer(meshAtlas.getVertexBuffer());
+            ctx.bindIndexBuffer(meshAtlas.getIndexBuffer());
             ctx.bindShaderBuffer("drawData", shaderBuffer);
             ctx.bindShaderBuffer("bones", boneBuffer);
             ctx.bindShaderBuffer("lightData", dirLightBuffer);
@@ -399,8 +399,8 @@ namespace xng {
             ctx.clearDepthAttachment(1);
             ctx.bindPipeline(dirPipeline);
             ctx.setViewport({}, spotShadowMapResolution);
-            ctx.bindVertexBuffer(meshBuffer.getVertexBuffer());
-            ctx.bindIndexBuffer(meshBuffer.getIndexBuffer());
+            ctx.bindVertexBuffer(meshAtlas.getVertexBuffer());
+            ctx.bindIndexBuffer(meshAtlas.getIndexBuffer());
             ctx.bindShaderBuffer("drawData", shaderBuffer);
             ctx.bindShaderBuffer("bones", boneBuffer);
             ctx.bindShaderBuffer("lightData", dirLightBuffer);

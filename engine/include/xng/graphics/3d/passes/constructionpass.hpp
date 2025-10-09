@@ -23,11 +23,11 @@
 #include <utility>
 
 #include "xng/graphics/renderscene.hpp"
-#include "xng/graphics/3d/meshbuffer3d.hpp"
 #include "xng/graphics/3d/renderconfiguration.hpp"
 #include "xng/graphics/3d/renderpass.hpp"
 #include "xng/graphics/3d/sharedresourceregistry.hpp"
-#include "xng/graphics/3d/atlas/textureatlas.hpp"
+#include "xng/graphics/3d/meshatlas/meshatlas.hpp"
+#include "xng/graphics/3d/textureatlas/textureatlas.hpp"
 #include "xng/graphics/3d/sharedresources/gbuffer.hpp"
 
 namespace xng {
@@ -66,15 +66,14 @@ namespace xng {
         RenderGraphResource shaderBuffer;
         RenderGraphResource boneBuffer;
 
-        TextureAtlas atlas;
-
-        size_t currentBoneBufferSize{};
-        size_t totalBoneBufferSize{};
-
-        MeshBuffer3D meshAllocator;
+        TextureAtlas textureAtlas;
+        MeshAtlas meshAtlas;
 
         std::map<Uri, TextureAtlasHandle> textures;
         std::vector<ResourceHandle<SkinnedMesh> > allocatedMeshes;
+
+        size_t currentBoneBufferSize{};
+        size_t totalBoneBufferSize{};
 
         Vec2i currentResolution;
 

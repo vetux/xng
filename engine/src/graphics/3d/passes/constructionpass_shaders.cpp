@@ -232,7 +232,7 @@ namespace xng {
         return BuildShader();
     }
 
-    DEFINE_FUNCTION2(textureAtlas)
+    DEFINE_FUNCTION2(texture_atlas)
 
     Shader ConstructionPass::createFragmentShader() {
         BeginShader(Shader::FRAGMENT);
@@ -279,7 +279,7 @@ namespace xng {
 
         shaderlib::textureBicubic();
 
-        Function("textureAtlas",
+        Function("texture_atlas",
                  {
                      {"textureDef", AtlasTexture},
                      {"inUv", ShaderDataType::vec2()}
@@ -324,22 +324,22 @@ namespace xng {
         }
         Else();
         {
-            oAlbedo = textureAtlas(data["albedo"], fUv);
+            oAlbedo = texture_atlas(data["albedo"], fUv);
         }
         EndIf();
 
         oRoughnessMetallicAO = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
         // Roughness
-        oRoughnessMetallicAO.x() = textureAtlas(data["roughness"], fUv).x()
+        oRoughnessMetallicAO.x() = texture_atlas(data["roughness"], fUv).x()
                                    + data["metallic_roughness_ambientOcclusion"].y();
 
         // Metallic
-        oRoughnessMetallicAO.y() = textureAtlas(data["metallic"], fUv).x()
+        oRoughnessMetallicAO.y() = texture_atlas(data["metallic"], fUv).x()
                                    + data["metallic_roughness_ambientOcclusion"].x();
 
         // Ambient Occlusion
-        oRoughnessMetallicAO.z() = textureAtlas(data["ambientOcclusion"],
+        oRoughnessMetallicAO.z() = texture_atlas(data["ambientOcclusion"],
                                                 fUv).x()
                                    + data["metallic_roughness_ambientOcclusion"].z();
 
@@ -350,7 +350,7 @@ namespace xng {
         If(data["normal"]["level_index_filtering_assigned"].w() != 0);
         {
             mat3 tbn = mat3(fT, fB, fN);
-            vec3 texNormal = textureAtlas(data["normal"], fUv).xyz()
+            vec3 texNormal = texture_atlas(data["normal"], fUv).xyz()
                              * vec3(data["normalIntensity"].x(), data["normalIntensity"].x(), 1);
             texNormal = tbn * normalize(texNormal * 2.0 - 1.0);
             oNormal = vec4(normalize(texNormal), 1);

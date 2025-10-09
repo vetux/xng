@@ -20,7 +20,7 @@
 #ifndef XENGINE_SHADOWMAPPINGPASS_HPP
 #define XENGINE_SHADOWMAPPINGPASS_HPP
 
-#include "xng/graphics/3d/meshbuffer3d.hpp"
+#include "xng/graphics/3d/meshatlas/meshatlas.hpp"
 #include "xng/graphics/3d/renderconfiguration.hpp"
 #include "xng/graphics/3d/renderpass.hpp"
 #include "xng/graphics/3d/sharedresourceregistry.hpp"
@@ -58,7 +58,7 @@ namespace xng {
         std::shared_ptr<RenderConfiguration> config;
         std::shared_ptr<SharedResourceRegistry> registry;
 
-        MeshBuffer3D meshBuffer;
+        MeshAtlas meshAtlas;
 
         RenderGraphResource pointPipeline;
         RenderGraphResource dirPipeline;
