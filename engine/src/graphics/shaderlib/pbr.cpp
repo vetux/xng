@@ -44,7 +44,8 @@ namespace xng::shaderlib {
                {ShaderDataType::float32(), "metallic"},
                {ShaderDataType::float32(), "roughness"},
                {ShaderDataType::float32(), "ao"},
-               {ShaderDataType::vec3(), "camPos"});
+               {ShaderDataType::vec3(), "camPos"},
+               {ShaderDataType::float32(), "gamma"});
 
         Function("DistributionGGX",
                  {
@@ -134,7 +135,8 @@ namespace xng::shaderlib {
                      {"metallic", ShaderDataType::float32()},
                      {"roughness", ShaderDataType::float32()},
                      {"ao", ShaderDataType::float32()},
-                     {"camPos", ShaderDataType::vec3()}
+                     {"camPos", ShaderDataType::vec3()},
+                     {"gamma", ShaderDataType::float32()},
                  },
                  PbrPass);
         {
@@ -145,6 +147,7 @@ namespace xng::shaderlib {
             ARGUMENT(roughness)
             ARGUMENT(ao)
             ARGUMENT(camPos)
+            ARGUMENT(gamma)
 
             Object<PbrPass> ret;
 
@@ -168,6 +171,7 @@ namespace xng::shaderlib {
             ret["roughness"] = roughness;
             ret["ao"] = ao;
             ret["camPos"] = camPos;
+            ret["gamma"] = gamma;
 
             Return(ret);
         }
@@ -209,12 +213,7 @@ namespace xng::shaderlib {
             // Cook-Torrance BRDF
             Float NDF = DistributionGGX(N, H, roughness);
             Float G = GeometrySmith(N, V, L, roughness);
-            vec3 F = FresnelSchlick(clamp(dot(H, V), 0.0f, 1.0f), F0);
-
-            vec3 numerator = NDF * G * F;
-            Float denominator = 4.0f * max(dot(N, V), 0.0f) * max(dot(N, L), 0.0f) + 0.0001f;
-            // + 0.0001 to prevent divide by zero
-            vec3 specular = numerator / denominator;
+            vec3 F = FresnelSchlick(max(dot(H, V), 0.0f), F0);
 
             // kS is equal to Fresnel
             vec3 kS = F;
@@ -226,6 +225,11 @@ namespace xng::shaderlib {
             // have diffuse lighting, or a linear blend if partly metal (pure metals
             // have no diffuse light).
             kD *= 1.0f - metallic;
+
+            vec3 numerator = NDF * G * F;
+            Float denominator = 4.0f * max(dot(N, V), 0.0f) * max(dot(N, L), 0.0f) + 0.0001f;
+            // + 0.0001 to prevent divide by zero
+            vec3 specular = numerator / denominator;
 
             // scale light by NdotL
             Float NdotL = max(dot(N, L), 0.0f);
@@ -278,11 +282,6 @@ namespace xng::shaderlib {
             Float G = GeometrySmith(N, V, L, roughness);
             vec3 F = FresnelSchlick(clamp(dot(H, V), 0.0f, 1.0f), F0);
 
-            vec3 numerator = NDF * G * F;
-            Float denominator = 4.0f * max(dot(N, V), 0.0f) * max(dot(N, L), 0.0f) + 0.0001f;
-            // + 0.0001 to prevent divide by zero
-            vec3 specular = numerator / denominator;
-
             // kS is equal to Fresnel
             vec3 kS = F;
             // for energy conservation, the diffuse and specular light can't
@@ -293,6 +292,11 @@ namespace xng::shaderlib {
             // have diffuse lighting, or a linear blend if partly metal (pure metals
             // have no diffuse light).
             kD *= 1.0f - metallic;
+
+            vec3 numerator = NDF * G * F;
+            Float denominator = 4.0f * max(dot(N, V), 0.0f) * max(dot(N, L), 0.0f) + 0.0001f;
+            // + 0.0001 to prevent divide by zero
+            vec3 specular = numerator / denominator;
 
             // scale light by NdotL
             Float NdotL = max(dot(N, L), 0.0f);
@@ -361,11 +365,6 @@ namespace xng::shaderlib {
             Float G = GeometrySmith(N, V, L, roughness);
             vec3 F = FresnelSchlick(clamp(dot(H, V), 0.0f, 1.0f), F0);
 
-            vec3 numerator = NDF * G * F;
-            Float denominator = 4.0f * max(dot(N, V), 0.0f) * max(dot(N, L), 0.0f) + 0.0001f;
-            // + 0.0001 to prevent divide by zero
-            vec3 specular = numerator / denominator;
-
             // kS is equal to Fresnel
             vec3 kS = F;
             // for energy conservation, the diffuse and specular light can't
@@ -376,6 +375,11 @@ namespace xng::shaderlib {
             // have diffuse lighting, or a linear blend if partly metal (pure metals
             // have no diffuse light).
             kD *= 1.0f - metallic;
+
+            vec3 numerator = NDF * G * F;
+            Float denominator = 4.0f * max(dot(N, V), 0.0f) * max(dot(N, L), 0.0f) + 0.0001f;
+            // + 0.0001 to prevent divide by zero
+            vec3 specular = numerator / denominator;
 
             // scale light by NdotL
             Float NdotL = max(dot(N, L), 0.0f);
@@ -405,9 +409,9 @@ namespace xng::shaderlib {
             vec3 color = ambient + Lo;
 
             // HDR tonemapping
-            //  color = color / (color + vec3(1.0));
+            color = color / (color + vec3(1.0));
             // gamma correct
-            //  color = pow(color, vec3(1.0/2.2));
+            color = pow(color, vec3(1.0 / pass["gamma"]));
 
             Return(color);
         }

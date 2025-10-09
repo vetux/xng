@@ -35,7 +35,7 @@ namespace xng {
         Output(ShaderDataType::vec2(), fUv);
 
         Struct(ShaderData,
-               {{ShaderDataType::vec4(), "viewPosition"}});
+               {{ShaderDataType::vec4(), "viewPosition_gamma"},});
 
         Struct(PBRPointLight,
                {{ShaderDataType::vec4(), "position"},
@@ -96,7 +96,7 @@ namespace xng {
         Output(ShaderDataType::vec4(), oColor);
 
         Struct(ShaderData,
-               {{ShaderDataType::vec4(), "viewPosition"}});
+               {{ShaderDataType::vec4(), "viewPosition_gamma"}});
 
         Struct(PBRPointLight,
                {{ShaderDataType::vec4(), "position"},
@@ -168,7 +168,8 @@ namespace xng {
                               roughnessMetallicAO.y(),
                               roughnessMetallicAO.x(),
                               roughnessMetallicAO.z(),
-                              shaderData["viewPosition"].xyz());
+                              shaderData["viewPosition_gamma"].xyz(),
+                              shaderData["viewPosition_gamma"].w());
 
         vec3 reflectance;
         reflectance = vec3(0, 0, 0);
@@ -211,7 +212,7 @@ namespace xng {
             auto light = shadowPointLights[i];
             Float shadow = sampleShadowPoint(fPos,
                                              light["position"].xyz(),
-                                             shaderData["viewPosition"].xyz(),
+                                             shaderData["viewPosition_gamma"].xyz(),
                                              pointLightShadowMaps,
                                              i,
                                              light["farPlane"].x());

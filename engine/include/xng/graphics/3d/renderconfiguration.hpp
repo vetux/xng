@@ -26,6 +26,10 @@
 namespace xng {
     class RenderConfiguration {
     public:
+        void setGamma(const float value) { gamma = value; }
+
+        float getGamma() const { return gamma; }
+
         void setRenderScale(const float scale) { renderScale = scale; }
 
         float getRenderScale() const { return renderScale; }
@@ -62,6 +66,7 @@ namespace xng {
         RenderScene renderScene;
         std::vector<Canvas> renderCanvases;
         ColorRGBA compositingClearColor = ColorRGBA::white();
+        float gamma = 1;
     };
 }
 

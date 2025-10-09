@@ -46,7 +46,7 @@ namespace xng {
     };
 
     struct ShaderStorageData {
-        std::array<float, 4> viewPosition{};
+        std::array<float, 4> viewPosition_gamma{};
     };
 #pragma pack(pop)
 
@@ -371,7 +371,10 @@ namespace xng {
         }
 
         ShaderStorageData shaderData;
-        shaderData.viewPosition = Vec4f(viewPosition.x, viewPosition.y, viewPosition.z, 0).getMemory();
+        shaderData.viewPosition_gamma = Vec4f(viewPosition.x,
+                                              viewPosition.y,
+                                              viewPosition.z,
+                                              config->getGamma()).getMemory();
         ctx.uploadBuffer(shaderDataBuffer,
                          reinterpret_cast<const uint8_t *>(&shaderData),
                          sizeof(ShaderStorageData),

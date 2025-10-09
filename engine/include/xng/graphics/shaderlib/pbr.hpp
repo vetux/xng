@@ -23,7 +23,7 @@
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
 namespace xng::ShaderScript {
-    DEFINE_FUNCTION7(pbr_begin)
+    DEFINE_FUNCTION8(pbr_begin)
     DEFINE_FUNCTION5(pbr_point)
     DEFINE_FUNCTION5(pbr_directional)
     DEFINE_FUNCTION11(pbr_spot)
@@ -47,6 +47,7 @@ namespace xng::shaderlib {
      *   float roughness;
      *   float ao;
      *   vec3 camPos;
+     *   float gamma;
      * };
      *
      * Defines the following functions:

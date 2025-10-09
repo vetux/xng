@@ -61,7 +61,7 @@ namespace xng {
                {AtlasTexture, "roughness"},
                {AtlasTexture, "ambientOcclusion"},
                {AtlasTexture, "albedo"},
-               {ShaderDataType::vec4(), "viewPosition"},
+               {ShaderDataType::vec4(), "viewPosition_gamma"},
                {AtlasTexture, "normal"},
                {ShaderDataType::vec4(), "normalIntensity"});
 
@@ -240,7 +240,7 @@ namespace xng {
                {AtlasTexture, "roughness"},
                {AtlasTexture, "ambientOcclusion"},
                {AtlasTexture, "albedo"},
-               {ShaderDataType::vec4(), "viewPosition"},
+               {ShaderDataType::vec4(), "viewPosition_gamma"},
                {AtlasTexture, "normal"},
                {ShaderDataType::vec4(), "normalIntensity"});
 
@@ -399,7 +399,8 @@ namespace xng {
                          roughnessMetallicAO.y(),
                          roughnessMetallicAO.x(),
                          roughnessMetallicAO.z(),
-                         data["viewPosition"].xyz());
+                         data["viewPosition_gamma"].xyz(),
+                         data["viewPosition_gamma"].w());
 
         vec3 reflectance;
         reflectance = vec3(0, 0, 0);
@@ -446,7 +447,7 @@ namespace xng {
             {
                 shadow = sampleShadowPoint(fPos,
                                            light["position"].xyz(),
-                                           data["viewPosition"].xyz(),
+                                           data["viewPosition_gamma"].xyz(),
                                            pointLightShadowMaps,
                                            i,
                                            light["farPlane"].x());

@@ -61,7 +61,7 @@ namespace xng {
             alignas(16) ShaderAtlasTexture ambientOcclusion;
             alignas(16) ShaderAtlasTexture albedo;
 
-            alignas(16) float viewPosition[4]{0, 0, 0, 0};
+            alignas(16) float viewPosition_gamma[4]{0, 0, 0, 0};
 
             alignas(16) ShaderAtlasTexture normal;
             alignas(16) float normalIntensity[4]{0, 0, 0, 0};
@@ -677,9 +677,10 @@ namespace xng {
                     data.normal.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
                 }
 
-                data.viewPosition[0] = viewPosition.x;
-                data.viewPosition[1] = viewPosition.y;
-                data.viewPosition[2] = viewPosition.z;
+                data.viewPosition_gamma[0] = viewPosition.x;
+                data.viewPosition_gamma[1] = viewPosition.y;
+                data.viewPosition_gamma[2] = viewPosition.z;
+                data.viewPosition_gamma[3] = config->getGamma();
 
                 shaderData.emplace_back(data);
 
