@@ -24,6 +24,7 @@ endif ()
 if (MSVC)
     # Disable the C4251 warnings because the STL is heavily integrated with the engine by design and the users/editor must ensure that the user application is built with the same msvc compiler version.
     target_compile_options(xengine PUBLIC -wd4251)
+    target_compile_options(xengine PUBLIC /bigobj)
 endif ()
 
 # xengine-static
@@ -47,4 +48,5 @@ endif ()
 if (MSVC)
     # Disable the C4251 warnings because the STL is heavily integrated with the engine by design and the users/editor must ensure that the user application is built with the same msvc compiler version.
     target_compile_options(xengine-static PUBLIC -wd4251)
+    target_compile_options(xengine-static PUBLIC /bigobj)
 endif ()
