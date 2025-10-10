@@ -27,7 +27,7 @@ namespace xng {
     /**
      * Allocates Meshes from resource handles into a single vertex / index buffer.
      */
-    class MeshAtlas {
+    class XENGINE_EXPORT MeshAtlas {
     public:
         struct MeshAllocation {
             struct Data {
