@@ -519,7 +519,7 @@ namespace xng {
         }
         EndFor();
 
-        oColor = vec4(pbr_finish(pass, reflectance), 1.0f);
+        oColor = vec4(pbr_finish(pass, reflectance), albedo.w());
 
         return BuildShader();
     }
