@@ -20,6 +20,7 @@
 #include "xng/adapters/box2d/box2d.hpp"
 #include "worldbox2d.hpp"
 
+//TODO: Upgrade box2d adapter to use box2d 3.0
 namespace xng::box2d {
     std::unique_ptr<World> PhysicsEngine::createWorld() {
         return std::make_unique<WorldBox2D>();
