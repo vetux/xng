@@ -40,6 +40,7 @@ add_thirdparty_subdir(${THIRD_PARTY_BASE}/openal-soft/)
 
 add_thirdparty_subdir(${THIRD_PARTY_BASE}/freetype/)
 
+set(ASSIMP_BUILD_ZLIB ON CACHE BOOL "" FORCE)
 add_thirdparty_subdir(${THIRD_PARTY_BASE}/assimp/)
 
 add_thirdparty_subdir(${THIRD_PARTY_BASE}/libsndfile/)
