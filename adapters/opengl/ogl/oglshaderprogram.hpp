@@ -26,6 +26,16 @@
 
 #include "ogldebug.hpp"
 
+// Shader compilers in the opengl drivers can produce invalid shader code because of the complexity
+// of converting the high level shader language (glsl) into gpu instructions.
+
+// Khronos solved this by providing the GL_ARB_gl_spirv (Core since 4.1) which can be used to handle the complex
+// compilation in the application and passing spirv to the driver which reduces the chance for erroneous shaders being passed to the gpu.
+
+// However Mesa(Linux) does not seem to conform to the full core 4.6 specification because glSpecializeShader fails without any error specification.
+
+// So the opengl render graph adapter should currently be considered unstable because shaders may produce rendering artifacts in certain environments.
+
 struct OGLShaderProgram {
     GLuint programHandle{};
 

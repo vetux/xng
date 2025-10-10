@@ -26,8 +26,6 @@
 
 using namespace xng::ShaderScript;
 
-//TODO: Fix forward lighting pass artifacts.
-
 namespace xng {
     Shader ForwardLightingPass::createVertexShader() {
         BeginShader(Shader::VERTEX);
@@ -395,10 +393,6 @@ namespace xng {
         EndIf();
 
         Object<PbrPass> pass;
-
-        // Passing data["viewPosition_gamma"].w() here instead of a constant e.g. 1.0f produces random artifacts
-        // However, checking data["viewPosition_gamma"].w() manually e.g. oColor = vec4(vec3(data["viewPosition_gamma"].w()), 1.0f) does not produce any artifacts
-        // nor does checking pass["gamma"] manually produce any artifacts e.g. oColor = vec4(vec3(pass["gamma"]), 1.0f)
         pass = pbr_begin(fPos,
                          normal,
                          albedo.xyz(),
