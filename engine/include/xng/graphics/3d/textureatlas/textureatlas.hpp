@@ -40,11 +40,11 @@ namespace xng {
      */
     class XENGINE_EXPORT TextureAtlas {
     public:
-        XENGINE_EXPORT static Vec2i getResolutionLevelSize(TextureAtlasResolution level);
+        static Vec2i getResolutionLevelSize(TextureAtlasResolution level);
 
-        XENGINE_EXPORT static TextureAtlasResolution getClosestMatchingResolutionLevel(const Vec2i &size);
+        static TextureAtlasResolution getClosestMatchingResolutionLevel(const Vec2i &size);
 
-        XENGINE_EXPORT static ImageRGBA getAlignedImage(const ImageRGBA &texture, TextureAtlasResolution res);
+        static ImageRGBA getAlignedImage(const ImageRGBA &texture, TextureAtlasResolution res);
 
         TextureAtlas();
 
