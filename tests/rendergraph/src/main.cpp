@@ -68,7 +68,7 @@ RenderScene createScene() {
     material.albedoTexture = ResourceHandle<Texture>(Uri("file://images/rusted_iron/rustediron2_basecolor.png"));
     material.metallic = 0;
     material.roughness = 0.5;
-    material.transparent = false;
+    material.transparent = true;
     material.albedo = ColorRGBA::white(1, 255);
     mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx:Sphere.002"));
     mesh.materials[0] = material;
