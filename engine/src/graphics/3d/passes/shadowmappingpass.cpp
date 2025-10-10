@@ -179,12 +179,14 @@ namespace xng {
         meshObjects.clear();
 
         std::vector<ResourceHandle<SkinnedMesh> > usedMeshes;
+        std::set<Uri> usedMeshUris;
 
         size_t boneCount = 0;
         for (auto &meshObject: config->getScene().skinnedMeshes) {
             if (meshObject.mesh.assigned() && meshObject.castShadows) {
                 meshAtlas.allocateMesh(meshObject.mesh);
                 usedMeshes.emplace_back(meshObject.mesh);
+                usedMeshUris.insert(meshObject.mesh.getUri());
 
                 for (auto i = 0; i < meshObject.mesh.get().subMeshes.size() + 1; i++) {
                     auto &mesh = i == 0 ? meshObject.mesh.get() : meshObject.mesh.get().subMeshes.at(i - 1);
@@ -198,8 +200,8 @@ namespace xng {
         requiredBoneBufferSize = boneCount * sizeof(Mat4f);
 
         for (auto &mesh: allocatedMeshes) {
-            if (std::find(usedMeshes.begin(), usedMeshes.end(), mesh) == usedMeshes.end()) {
-                meshAtlas.deallocateMesh(ResourceHandle<SkinnedMesh>());
+            if (usedMeshUris.find(mesh.getUri()) == usedMeshUris.end()) {
+                meshAtlas.deallocateMesh(mesh);
             }
         }
 
@@ -254,7 +256,7 @@ namespace xng {
             auto model = meshObject.transform.model();
 
             for (auto i = 0; i < meshObject.mesh.get().subMeshes.size() + 1; i++) {
-                auto& mesh = i == 0 ? meshObject.mesh.get() : meshObject.mesh.get().subMeshes.at(i - 1);
+                auto &mesh = i == 0 ? meshObject.mesh.get() : meshObject.mesh.get().subMeshes.at(i - 1);
                 int boneOffset = static_cast<int>(boneMatrices.size());
                 if (meshObject.mesh.get().bones.empty()) {
                     boneOffset = -1;
@@ -368,7 +370,8 @@ namespace xng {
                                                      light.shadowNearPlane,
                                                      light.shadowFarPlane)
                                    * MatrixMath::lookAt(lightObject.transform.getPosition(),
-                                                        lightObject.transform.getPosition() + lightObject.transform.forward(),
+                                                        lightObject.transform.getPosition() + lightObject.transform.
+                                                        forward(),
                                                         Vec3f(0, 1, 0));
 
                 ShadowDirLightData lightData;

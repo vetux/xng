@@ -269,6 +269,7 @@ namespace xng {
 
         std::set<Uri> usedTextures;
         std::vector<ResourceHandle<SkinnedMesh> > usedMeshes;
+        std::set<Uri> usedMeshUris;
 
         objects.clear();
         auto tmp = scene.skinnedMeshes;
@@ -278,6 +279,7 @@ namespace xng {
             if (meshResource.assigned()) {
                 meshAtlas.allocateMesh(meshResource);
                 usedMeshes.emplace_back(meshResource);
+                usedMeshUris.insert(meshResource.getUri());
 
                 for (auto i = 0; i < meshResource.get().subMeshes.size() + 1; i++) {
                     const Mesh &mesh = i == 0 ? meshResource.get() : meshResource.get().subMeshes.at(i - 1);
@@ -339,8 +341,7 @@ namespace xng {
 
         // Deallocate unused meshes
         for (auto &mesh: allocatedMeshes) {
-            auto it = std::find(usedMeshes.begin(), usedMeshes.end(), mesh);
-            if (it == usedMeshes.end()) {
+            if (usedMeshUris.find(mesh.getUri()) == usedMeshUris.end()) {
                 meshAtlas.deallocateMesh(mesh);
             }
         }
