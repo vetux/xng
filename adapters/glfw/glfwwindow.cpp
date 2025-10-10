@@ -21,6 +21,7 @@
 
 #include <stdexcept>
 #include <mutex>
+#include <algorithm>
 
 #include "glfwwindow.hpp"
 
