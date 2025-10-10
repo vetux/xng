@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10.0)
+cmake_minimum_required(VERSION 3.26.0) # 3.26 is required for openal-soft static build
 
 project(xEngine)
 
