@@ -26,6 +26,7 @@
 #include <functional>
 #include <map>
 #include <cassert>
+#include <stdexcept>
 
 #include "task.hpp"
 

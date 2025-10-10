@@ -19,6 +19,8 @@
 
 #include "xng/async/task.hpp"
 
+#include <chrono>
+
 namespace xng {
     Task &Task::operator=(const Task &other) {
         work = other.work;

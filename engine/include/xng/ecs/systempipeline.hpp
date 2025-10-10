@@ -23,6 +23,7 @@
 #include <memory>
 #include <vector>
 #include <chrono>
+#include <algorithm>
 
 #include "xng/ecs/system.hpp"
 #include "xng/ecs/profiling/ecsprofiler.hpp"
