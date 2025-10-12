@@ -89,6 +89,7 @@ RenderScene createScene() {
     spotLight.transform.setRotation(Quaternion(Vec3f(0, 25, 0)));
     //scene.spotLights.emplace_back(spotLight);
 
+    scene.camera.nearClip = 0.001f;
     scene.cameraTransform.setRotation(Quaternion(Vec3f(0, 180, 0)));
     scene.cameraTransform.setPosition(Vec3f(0, 0, -2));
 
