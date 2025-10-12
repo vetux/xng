@@ -21,7 +21,7 @@
 #define XENGINE_MESHALLOCATOR_HPP
 
 #include "xng/rendergraph/rendergraphbuilder.hpp"
-#include "xng/graphics/scene/skinnedmesh.hpp"
+#include "xng/graphics/scene/skinnedmodel.hpp"
 
 namespace xng {
     /**
@@ -36,7 +36,7 @@ namespace xng {
                 size_t baseVertex = 0;
             };
 
-            std::vector<Data> data;
+            std::vector<Data> data; // Allocation data for each submesh
         };
 
         /**
@@ -44,14 +44,14 @@ namespace xng {
          *
          * @param mesh
          */
-        void allocateMesh(const ResourceHandle<SkinnedMesh> &mesh);
+        void allocateMesh(const ResourceHandle<SkinnedModel> &mesh);
 
         /**
          * Deallocate the mesh and all sub meshes.
          *
          * @param mesh
          */
-        void deallocateMesh(const ResourceHandle<SkinnedMesh> &mesh);
+        void deallocateMesh(const ResourceHandle<SkinnedModel> &mesh);
 
         bool shouldRebuild();
 
@@ -70,7 +70,7 @@ namespace xng {
     private:
         void uploadMeshes(RenderGraphContext &ctx, RenderGraphResource vertexBuffer, RenderGraphResource indexBuffer);
 
-        MeshAllocation allocateMesh(const Mesh &mesh);
+        MeshAllocation::Data allocateMesh(const Mesh &mesh);
 
         /**
          * @param size number of bytes to allocate
@@ -92,10 +92,10 @@ namespace xng {
 
         void mergeFreeIndexBufferRanges();
 
-        ShaderAttributeLayout vertexLayout = SkinnedMesh::getDefaultVertexLayout();
+        ShaderAttributeLayout vertexLayout = SkinnedModel::getVertexLayout();
 
         std::map<Uri, MeshAllocation> meshAllocations;
-        std::map<Uri, ResourceHandle<SkinnedMesh> > pendingUploads;
+        std::map<Uri, ResourceHandle<SkinnedModel> > pendingUploads;
 
         size_t requestedVertexBufferSize{};
         size_t requestedIndexBufferSize{};

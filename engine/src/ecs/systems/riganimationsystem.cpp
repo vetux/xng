@@ -19,7 +19,7 @@
 
 #include "xng/ecs/systems/riganimationsystem.hpp"
 #include "xng/ecs/components/rendering/riganimationcomponent.hpp"
-#include "xng/ecs/components/rendering/skinnedmeshcomponent.hpp"
+#include "xng/ecs/components/rendering/skinnedmodelcomponent.hpp"
 #include "xng/util/time.hpp"
 
 namespace xng {
@@ -34,10 +34,10 @@ namespace xng {
     void RigAnimationSystem::update(DeltaTime deltaTime, EntityScene &scene, EventBus &eventBus) {
         std::map<EntityHandle, RigAnimationComponent> cUpdates;
         for (auto &c: scene.getPool<RigAnimationComponent>()) {
-            if (scene.checkComponent<SkinnedMeshComponent>(c.entity)) {
+            if (scene.checkComponent<SkinnedModelComponent>(c.entity)) {
                 if (rigAnimators.find(c.entity) == rigAnimators.end()) {
-                    auto &meshComponent = scene.getComponent<SkinnedMeshComponent>(c.entity);
-                    rigAnimators[c.entity] = RigAnimator(meshComponent.mesh.get().rig);
+                    auto &meshComponent = scene.getComponent<SkinnedModelComponent>(c.entity);
+                    rigAnimators[c.entity] = RigAnimator(meshComponent.model.get().rig);
                     for (auto &pair: c.component.channels) {
                         rigAnimators.at(c.entity).start(pair.second.animation.get(),
                                                         pair.second.blendDuration,
@@ -57,14 +57,14 @@ namespace xng {
     }
 
     void RigAnimationSystem::onComponentCreate(const EntityHandle &entity, const Component &component) {
-        if (component.getTypeName() == SkinnedMeshComponent::typeName
+        if (component.getTypeName() == SkinnedModelComponent::typeName
             || component.getTypeName() == RigAnimationComponent::typeName) {
             rigAnimators.erase(entity);
         }
     }
 
     void RigAnimationSystem::onComponentDestroy(const EntityHandle &entity, const Component &component) {
-        if (component.getTypeName() == SkinnedMeshComponent::typeName
+        if (component.getTypeName() == SkinnedModelComponent::typeName
             || component.getTypeName() == RigAnimationComponent::typeName) {
             rigAnimators.erase(entity);
         }
@@ -73,7 +73,7 @@ namespace xng {
     void RigAnimationSystem::onComponentUpdate(const EntityHandle &entity,
                                                const Component &oldComponent,
                                                const Component &newComponent) {
-        if (oldComponent.getTypeName() == SkinnedMeshComponent::typeName) {
+        if (oldComponent.getTypeName() == SkinnedModelComponent::typeName) {
             rigAnimators.erase(entity);
         } else if (oldComponent.getTypeName() == RigAnimationComponent::typeName) {
             auto &oc = down_cast<const RigAnimationComponent &>(oldComponent);

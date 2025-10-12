@@ -19,8 +19,6 @@
 
 #include "xng/graphics/3d/passes/deferredlightingpass.hpp"
 
-#include "xng/graphics/vertexstream.hpp"
-
 namespace xng {
 #pragma pack(push, 1)
     struct PointLightData {
@@ -64,8 +62,7 @@ namespace xng {
         pip.shaders = {createVertexShader(), createFragmentShader()};
         pipeline = builder.createPipeline(pip);
 
-        vertexBuffer = builder.createVertexBuffer(
-            normalizedQuad.vertexLayout.getLayoutSize() * normalizedQuad.vertices.size());
+        vertexBuffer = builder.createVertexBuffer(normalizedQuad.vertices.size());
 
         shaderDataBuffer = builder.createShaderBuffer(sizeof(ShaderStorageData));
 
@@ -359,12 +356,7 @@ namespace xng {
         }
 
         if (!normalizedQuadUploaded) {
-            VertexStream stream;
-            for (auto &vert: normalizedQuad.vertices) {
-                stream.addVertex(vert);
-            }
-            auto data = stream.getVertexBuffer();
-            ctx.uploadBuffer(vertexBuffer, data.data(), data.size(), 0);
+            ctx.uploadBuffer(vertexBuffer, normalizedQuad.vertices.data(), normalizedQuad.vertices.size(), 0);
             normalizedQuadUploaded = true;
         }
 

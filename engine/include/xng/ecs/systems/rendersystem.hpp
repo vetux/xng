@@ -23,7 +23,6 @@
 #include <string>
 
 #include "xng/ecs/system.hpp"
-#include "xng/ecs/components/rendering/meshcomponent.hpp"
 
 #include "xng/graphics/3d/renderpassscheduler.hpp"
 #include "xng/graphics/3d/sharedresourceregistry.hpp"

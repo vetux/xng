@@ -268,71 +268,69 @@ namespace xng {
         auto &scene = config->getScene();
 
         std::set<Uri> usedTextures;
-        std::vector<ResourceHandle<SkinnedMesh> > usedMeshes;
+        std::vector<ResourceHandle<SkinnedModel> > usedMeshes;
         std::set<Uri> usedMeshUris;
 
         objects.clear();
-        auto tmp = scene.skinnedMeshes;
-        for (auto id = 0; id < tmp.size(); id++) {
-            auto &object = tmp.at(id);
-            auto &meshResource = object.mesh;
-            if (meshResource.assigned()) {
-                meshAtlas.allocateMesh(meshResource);
-                usedMeshes.emplace_back(meshResource);
-                usedMeshUris.insert(meshResource.getUri());
+        auto tmp = scene.skinnedModels;
+        for (auto &object: tmp) {
+            if (!object.model.assigned()) {
+                continue;
+            }
+            meshAtlas.allocateMesh(object.model);
+            usedMeshes.emplace_back(object.model);
+            usedMeshUris.insert(object.model.getUri());
+            objects.emplace_back(object);
+            for (auto i = 0; i < object.model.get().subMeshes.size(); i++) {
+                const auto &subMesh = object.model.get().subMeshes.at(i);
 
-                for (auto i = 0; i < meshResource.get().subMeshes.size() + 1; i++) {
-                    const Mesh &mesh = i == 0 ? meshResource.get() : meshResource.get().subMeshes.at(i - 1);
+                Material mat = subMesh.material.get();
 
-                    Material mat = mesh.material.get();
-
-                    auto mi = object.materials.find(i);
-                    if (mi != object.materials.end()) {
-                        mat = mi->second;
-                    }
-
-                    if (!mat.transparent) {
-                        continue;
-                    }
-
-                    totalBoneBufferSize += mesh.bones.size() * sizeof(Mat4f);
-
-                    if (mat.normal.assigned()) {
-                        if (textures.find(mat.normal.getUri()) == textures.end()) {
-                            textures[mat.normal.getUri()] = textureAtlas.add(mat.normal.get().image.get());
-                        }
-                        usedTextures.insert(mat.normal.getUri());
-                    }
-                    if (mat.metallicTexture.assigned()) {
-                        if (textures.find(mat.metallicTexture.getUri()) == textures.end()) {
-                            textures[mat.metallicTexture.getUri()] = textureAtlas.add(
-                                mat.metallicTexture.get().image.get());
-                        }
-                        usedTextures.insert(mat.metallicTexture.getUri());
-                    }
-                    if (mat.roughnessTexture.assigned()) {
-                        if (textures.find(mat.roughnessTexture.getUri()) == textures.end()) {
-                            textures[mat.roughnessTexture.getUri()] = textureAtlas.add(
-                                mat.roughnessTexture.get().image.get());
-                        }
-                        usedTextures.insert(mat.roughnessTexture.getUri());
-                    }
-                    if (mat.ambientOcclusionTexture.assigned()) {
-                        if (textures.find(mat.ambientOcclusionTexture.getUri()) == textures.end()) {
-                            textures[mat.ambientOcclusionTexture.getUri()] = textureAtlas.add(
-                                mat.ambientOcclusionTexture.get().image.get());
-                        }
-                        usedTextures.insert(mat.ambientOcclusionTexture.getUri());
-                    }
-                    if (mat.albedoTexture.assigned()) {
-                        if (textures.find(mat.albedoTexture.getUri()) == textures.end()) {
-                            textures[mat.albedoTexture.getUri()] = textureAtlas.
-                                    add(mat.albedoTexture.get().image.get());
-                        }
-                        usedTextures.insert(mat.albedoTexture.getUri());
-                    }
+                auto mi = object.materials.find(i);
+                if (mi != object.materials.end()) {
+                    mat = mi->second;
                 }
-                objects.emplace_back(object);
+
+                if (!mat.transparent) {
+                    continue;
+                }
+
+                totalBoneBufferSize += subMesh.bones.size() * sizeof(Mat4f);
+
+                if (mat.normal.assigned()) {
+                    if (textures.find(mat.normal.getUri()) == textures.end()) {
+                        textures[mat.normal.getUri()] = textureAtlas.add(mat.normal.get().image.get());
+                    }
+                    usedTextures.insert(mat.normal.getUri());
+                }
+                if (mat.metallicTexture.assigned()) {
+                    if (textures.find(mat.metallicTexture.getUri()) == textures.end()) {
+                        textures[mat.metallicTexture.getUri()] = textureAtlas.add(
+                            mat.metallicTexture.get().image.get());
+                    }
+                    usedTextures.insert(mat.metallicTexture.getUri());
+                }
+                if (mat.roughnessTexture.assigned()) {
+                    if (textures.find(mat.roughnessTexture.getUri()) == textures.end()) {
+                        textures[mat.roughnessTexture.getUri()] = textureAtlas.add(
+                            mat.roughnessTexture.get().image.get());
+                    }
+                    usedTextures.insert(mat.roughnessTexture.getUri());
+                }
+                if (mat.ambientOcclusionTexture.assigned()) {
+                    if (textures.find(mat.ambientOcclusionTexture.getUri()) == textures.end()) {
+                        textures[mat.ambientOcclusionTexture.getUri()] = textureAtlas.add(
+                            mat.ambientOcclusionTexture.get().image.get());
+                    }
+                    usedTextures.insert(mat.ambientOcclusionTexture.getUri());
+                }
+                if (mat.albedoTexture.assigned()) {
+                    if (textures.find(mat.albedoTexture.getUri()) == textures.end()) {
+                        textures[mat.albedoTexture.getUri()] = textureAtlas.
+                                add(mat.albedoTexture.get().image.get());
+                    }
+                    usedTextures.insert(mat.albedoTexture.getUri());
+                }
             }
         }
 
@@ -537,17 +535,16 @@ namespace xng {
 
         for (auto objectIndex = 0; objectIndex < objects.size(); objectIndex++) {
             auto &object = objects.at(objectIndex);
-            auto &meshResource = object.mesh;
 
-            const auto &rig = meshResource.get().rig;
+            const auto &rig = object.model.get().rig;
             const auto &boneTransforms = object.boneTransforms;
             const auto &materials = object.materials;
-            const auto &drawData = meshAllocations.at(meshResource.getUri());
+            const auto &drawData = meshAllocations.at(object.model.getUri());
 
-            for (auto i = 0; i < meshResource.get().subMeshes.size() + 1; i++) {
+            for (auto i = 0; i < object.model.get().subMeshes.size(); i++) {
                 auto model = object.transform.model();
 
-                const Mesh &mesh = i == 0 ? meshResource.get() : meshResource.get().subMeshes.at(i - 1);
+                const auto &mesh = object.model.get().subMeshes.at(i);
 
                 auto material = mesh.material.get();
 

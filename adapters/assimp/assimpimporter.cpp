@@ -20,8 +20,9 @@
 #include "xng/adapters/assimp/assimp.hpp"
 
 #include "xng/graphics/scene/mesh.hpp"
-#include "xng/graphics/scene/skinnedmesh.hpp"
 #include "xng/graphics/scene/material.hpp"
+#include "xng/graphics/scene/skinnedmodel.hpp"
+
 #include "xng/graphics/vertexbuilder.hpp"
 
 #include "xng/math/matrixmath.hpp"
@@ -125,10 +126,10 @@ namespace xng::assimp {
         return ret;
     }
 
-    static Mesh convertMesh(const aiMesh &assMesh, const std::vector<ResourceHandle<Material> > &materials) {
+    static Mesh convertMesh(const aiMesh &assMesh) {
         Mesh ret;
         ret.primitive = TRIANGLES;
-        ret.vertexLayout = SkinnedMesh::getDefaultVertexLayout();
+        ret.vertexLayout = SkinnedModel::getVertexLayout();
         for (int faceIndex = 0; faceIndex < assMesh.mNumFaces; faceIndex++) {
             const auto &face = assMesh.mFaces[faceIndex];
             if (face.mNumIndices != 3)
@@ -147,10 +148,6 @@ namespace xng::assimp {
             for (auto &v: bone.weights) {
                 boneVertexMapping[v.vertex].insert(std::make_pair(v.weight, boneIndex));
             }
-        }
-
-        for (auto &bone: bones) {
-            ret.bones.emplace_back(bone.name);
         }
 
         for (auto vertexIndex = 0; vertexIndex < assMesh.mNumVertices; vertexIndex++) {
@@ -209,19 +206,17 @@ namespace xng::assimp {
                 }
             }
 
-            ret.vertices.emplace_back(VertexBuilder()
-                .addVec3(pos)
-                .addVec3(norm)
-                .addVec2(uv)
-                .addVec3(tangent)
-                .addVec3(bitangent)
-                .addVec4(boneIds)
-                .addVec4(boneWeights)
-                .build());
-        }
+            auto vertData = VertexBuilder()
+                    .addVec3(pos)
+                    .addVec3(norm)
+                    .addVec2(uv)
+                    .addVec3(tangent)
+                    .addVec3(bitangent)
+                    .addVec4(boneIds)
+                    .addVec4(boneWeights)
+                    .build();
 
-        if (assMesh.mMaterialIndex >= 0) {
-            ret.material = materials.at(assMesh.mMaterialIndex);
+            ret.vertices.insert(ret.vertices.end(), vertData.begin(), vertData.end());
         }
 
         return ret;
@@ -288,8 +283,8 @@ namespace xng::assimp {
                     Uri(fileUri.getScheme(), fileUri.getFile(), embeddedTexturePath + "_texture"));
             } else {
                 ret.metallicTexture = ResourceHandle<Texture>(Uri(fileUri.getScheme(),
-                                                                parentPath + std::string(texPath->C_Str()),
-                                                                ""));
+                                                                  parentPath + std::string(texPath->C_Str()),
+                                                                  ""));
             }
         }
 
@@ -304,8 +299,8 @@ namespace xng::assimp {
                     Uri(fileUri.getScheme(), fileUri.getFile(), embeddedTexturePath + "_texture"));
             } else {
                 ret.ambientOcclusionTexture = ResourceHandle<Texture>(Uri(fileUri.getScheme(),
-                                                                parentPath + std::string(texPath->C_Str()),
-                                                                ""));
+                                                                          parentPath + std::string(texPath->C_Str()),
+                                                                          ""));
             }
         }
 
@@ -321,8 +316,8 @@ namespace xng::assimp {
                                                          embeddedTexturePath + "_texture"));
             } else {
                 ret.normal = ResourceHandle<Texture>(Uri(fileUri.getScheme(),
-                                                                parentPath + std::string(texPath->C_Str()),
-                                                                ""));
+                                                         parentPath + std::string(texPath->C_Str()),
+                                                         ""));
             }
         }
 
@@ -346,9 +341,9 @@ namespace xng::assimp {
         return ImageRGBA(static_cast<int>(texture.mWidth), static_cast<int>(texture.mHeight), pixels);
     }
 
-    static void getChildNodesRecursive(aiNode *node,
-                                       std::map<std::string, std::string> &parentMapping,
-                                       std::vector<Bone> &bones) {
+    static void getBonesRecursive(aiNode *node,
+                                  std::map<std::string, std::string> &parentMapping,
+                                  std::vector<Bone> &bones) {
         Bone bone;
         bone.offset = MatrixMath::identity();
         bone.transform = convertMat4(node->mTransformation);
@@ -357,7 +352,7 @@ namespace xng::assimp {
         for (auto i = 0; i < node->mNumChildren; i++) {
             auto *child = node->mChildren[i];
             parentMapping[child->mName.C_Str()] = node->mName.C_Str();
-            getChildNodesRecursive(child, parentMapping, bones);
+            getBonesRecursive(child, parentMapping, bones);
         }
     }
 
@@ -371,9 +366,10 @@ namespace xng::assimp {
     static Rig getRig(const aiMesh &mesh, const std::vector<aiMesh *> &subMeshes, const aiScene &scene) {
         std::vector<Bone> bones;
         std::map<std::string, std::string> parentMapping;
-        if (mesh.mNumBones > 0) {
-            getChildNodesRecursive(scene.mRootNode, parentMapping, bones);
-        }
+
+        //TODO: Support importing multiple rigs per asset file
+        getBonesRecursive(scene.mRootNode, parentMapping, bones);
+
         auto ret = Rig(bones, parentMapping);
 
         getBoneOffsets(ret, mesh);
@@ -396,7 +392,7 @@ namespace xng::assimp {
 
         const auto *scenePointer = importer.ReadFileFromMemory(assetBuffer.data(),
                                                                assetBuffer.size(),
-                                                               aiPostProcessSteps::aiProcess_Triangulate
+                                                               aiProcess_Triangulate
                                                                | aiProcess_CalcTangentSpace
                                                                | aiProcess_FlipUVs
                                                                | aiProcess_JoinIdenticalVertices
@@ -438,44 +434,27 @@ namespace xng::assimp {
             materialResourceHandles.emplace_back(Uri(path.getScheme(), path.getFile(), materialName.data));
         }
 
+        //TODO: Handle static mesh import
+
+        // For now all models are imported as skinned models until the render passes handle static models.
         for (auto &pair: meshes) {
-            SkinnedMesh mesh;
-            aiMesh *meshPtr{};
-            std::vector<aiMesh *> subMeshPtrs;
+            SkinnedModel model;
             for (auto &assMesh: pair.second) {
-                std::string name = assMesh->mName.C_Str();
-                Uri meshUri(path.getScheme(), path.getFile(), name);
-                if (mesh.vertexLayout.getLayoutSize() == 0) {
-                    mesh = SkinnedMesh(convertMesh(*assMesh, materialResourceHandles));
-                    meshPtr = assMesh;
-                } else {
-                    mesh.subMeshes.emplace_back(convertMesh(*assMesh, materialResourceHandles));
-                    subMeshPtrs.emplace_back(assMesh);
+                SkinnedModel::SubMesh subMesh;
+                subMesh.mesh = convertMesh(*assMesh);
+
+                if (materialResourceHandles.size() > 0) {
+                    subMesh.material = materialResourceHandles.at(assMesh->mMaterialIndex);
                 }
-            }
 
-            if (meshPtr == nullptr) {
-                throw std::runtime_error("Invalid mesh configuration");
-            }
-
-            if (meshPtr->HasBones()) {
-                mesh.rig = getRig(*meshPtr, subMeshPtrs, scene);
-            }
-
-            ret.add(pair.first, std::make_unique<SkinnedMesh>(mesh));
-
-            mesh.vertexLayout = Mesh::getDefaultVertexLayout();
-            for (auto &v: mesh.vertices) {
-                v.buffer.resize(mesh.vertexLayout.getLayoutSize());
-            }
-
-            for (size_t i = 0; i < std::numeric_limits<size_t>::max(); i++) {
-                auto name = pair.first + "_mesh_" + std::to_string(i);
-                if (!ret.has(name)) {
-                    ret.add(name, std::make_unique<Mesh>(mesh));
-                    break;
+                for (auto i = 0; i < assMesh->mNumBones; i++) {
+                    subMesh.bones.insert(assMesh->mBones[i]->mName.C_Str());
                 }
+
+                model.subMeshes.emplace_back(subMesh);
             }
+            model.rig = getRig(*pair.second.at(0), pair.second, scene);
+            ret.add(pair.first, std::make_unique<SkinnedModel>(model));
         }
 
         for (auto i = 0; i < scene.mNumAnimations; i++) {

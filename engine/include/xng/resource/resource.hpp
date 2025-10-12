@@ -40,8 +40,6 @@ namespace xng {
          * @return Wheter or not the dependencies of this resource are loaded.
          */
         virtual bool isLoaded() const { return true; }
-
-        virtual bool isLoading() const { return false; }
     };
 }
 

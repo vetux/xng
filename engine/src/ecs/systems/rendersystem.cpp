@@ -58,7 +58,7 @@ namespace xng {
         // TODO: Change transform walking / scene creation to allow model matrix caching
 
         // Get Meshes
-        for (auto &pair: scene.getPool<MeshComponent>()) {
+        for (auto &pair: scene.getPool<StaticModelComponent>()) {
             auto &transform = scene.getComponent<TransformComponent>(pair.entity);
             if (!transform.enabled)
                 continue;
@@ -66,9 +66,9 @@ namespace xng {
             if (!pair.component.enabled)
                 continue;
 
-            MeshObject object;
+            StaticModelObject object;
             object.transform = TransformComponent::getAbsoluteTransform(transform, scene);
-            object.mesh = pair.component.mesh;
+            object.model = pair.component.model;
             object.castShadows = pair.component.castShadows;
             object.receiveShadows = pair.component.receiveShadows;
 
@@ -78,11 +78,11 @@ namespace xng {
                 }
             }
 
-            renderScene.meshes.push_back(std::move(object));
+            renderScene.staticModels.push_back(std::move(object));
         }
 
         // Get Rigged Meshes
-        for (auto &pair: scene.getPool<SkinnedMeshComponent>()) {
+        for (auto &pair: scene.getPool<SkinnedModelComponent>()) {
             auto &transform = scene.getComponent<TransformComponent>(pair.entity);
             if (!transform.enabled)
                 continue;
@@ -90,9 +90,9 @@ namespace xng {
             if (!pair.component.enabled)
                 continue;
 
-            SkinnedMeshObject object;
+            SkinnedModelObject object;
             object.transform = TransformComponent::getAbsoluteTransform(transform, scene);
-            object.mesh = pair.component.mesh;
+            object.model = pair.component.model;
             object.castShadows = pair.component.castShadows;
             object.receiveShadows = pair.component.receiveShadows;
 
@@ -106,7 +106,7 @@ namespace xng {
                 object.boneTransforms = scene.getComponent<RigAnimationComponent>(pair.entity).boneTransforms;
             }
 
-            renderScene.skinnedMeshes.push_back(std::move(object));
+            renderScene.skinnedModels.push_back(std::move(object));
         }
 
         // Get skybox

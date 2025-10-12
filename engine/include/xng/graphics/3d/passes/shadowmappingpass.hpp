@@ -81,9 +81,9 @@ namespace xng {
         size_t currentBoneBufferSize{};
         size_t requiredBoneBufferSize{};
 
-        std::vector<ResourceHandle<SkinnedMesh> > allocatedMeshes;
+        std::vector<ResourceHandle<SkinnedModel> > allocatedMeshes;
 
-        std::vector<SkinnedMeshObject> meshObjects;
+        std::vector<SkinnedModelObject> meshObjects;
         std::vector<PointLightObject> pointLights;
         std::vector<DirectionalLightObject> dirLights;
         std::vector<SpotLightObject> spotLights;

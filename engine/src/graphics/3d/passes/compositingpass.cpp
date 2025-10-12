@@ -19,8 +19,6 @@
 
 #include "xng/graphics/3d/passes/compositingpass.hpp"
 
-#include "xng/graphics/vertexstream.hpp"
-
 namespace xng {
     CompositingPass::CompositingPass(std::shared_ptr<RenderConfiguration> config,
                                      std::shared_ptr<SharedResourceRegistry> registry)
@@ -48,8 +46,7 @@ namespace xng {
         pip.alphaBlendDestinationMode = RenderGraphPipeline::ONE_MINUS_SRC_ALPHA;
         pipeline = builder.createPipeline(pip);
 
-        vertexBuffer = builder.createVertexBuffer(normalizedQuad.vertexLayout.getLayoutSize()
-                                                  * normalizedQuad.vertices.size());
+        vertexBuffer = builder.createVertexBuffer(normalizedQuad.vertices.size());
 
         backBufferColor = builder.getBackBufferColor();
         backBufferDepth = builder.getBackBufferDepthStencil();
@@ -128,10 +125,7 @@ namespace xng {
 
         if (!vertexBufferAllocated) {
             vertexBufferAllocated = true;
-            VertexStream stream;
-            stream.addVertices(normalizedQuad.vertices);
-            auto data = stream.getVertexBuffer();
-            ctx.uploadBuffer(vertexBuffer, data.data(), data.size(), 0);
+            ctx.uploadBuffer(vertexBuffer, normalizedQuad.vertices.data(), normalizedQuad.vertices.size(), 0);
         }
 
         if (!defaultDepthTextureAllocated) {
@@ -145,7 +139,7 @@ namespace xng {
         for (auto &layer: layers) {
             ctx.bindTexture("layerColor", layer.color);
             ctx.bindTexture("layerDepth", layer.depth ? layer.depth : defaultDepthTexture);
-            ctx.drawArray(DrawCall(0, normalizedQuad.vertices.size()));
+            ctx.drawArray(DrawCall(0, 6));
         }
         ctx.endRenderPass();
     }

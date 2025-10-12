@@ -30,15 +30,15 @@ RenderScene createScene() {
     RenderScene scene;
 
     Material material;
-    SkinnedMeshObject mesh;
+    SkinnedModelObject mesh;
     mesh.castShadows = true;
 
     material = {};
     material.roughness = 1;
     material.albedoTexture = ResourceHandle<Texture>(Uri("file://images/cornell_boxcolor.png"));
-    mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx:Box"));
+    mesh.model = ResourceHandle<SkinnedModel>(Uri("file://meshes/cornell.fbx:Box"));
     mesh.materials[0] = material;
-    scene.skinnedMeshes.push_back(mesh);
+    scene.skinnedModels.push_back(mesh);
 
     material = {};
     material.ambientOcclusionTexture = ResourceHandle<Texture>(
@@ -48,18 +48,18 @@ RenderScene createScene() {
         Uri("file://images/subway_brick/old-subway-brick_roughness.png"));
     material.albedoTexture = ResourceHandle<Texture>(Uri("file://images/subway_brick/old-subway-brick_albedo.png"));
     material.normal = ResourceHandle<Texture>(Uri("file://images/subway_brick/old-subway-brick_normal-ogl.png"));
-    mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx:Cube"));
+    mesh.model = ResourceHandle<SkinnedModel>(Uri("file://meshes/cornell.fbx:Cube"));
     mesh.materials[0] = material;
-    scene.skinnedMeshes.push_back(mesh);
+    scene.skinnedModels.push_back(mesh);
 
     material = {};
     material.normal = ResourceHandle<Texture>(Uri("file://images/sphere_normals.png"));
     material.metallicTexture = ResourceHandle<Texture>(Uri("file://images/rusted_iron/rustediron2_metallic.png"));
     material.roughnessTexture = ResourceHandle<Texture>(Uri("file://images/rusted_iron/rustediron2_roughness.png"));
     material.albedoTexture = ResourceHandle<Texture>(Uri("file://images/rusted_iron/rustediron2_basecolor.png"));
-    mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx:Sphere.001"));
+    mesh.model = ResourceHandle<SkinnedModel>(Uri("file://meshes/cornell.fbx:Sphere.001"));
     mesh.materials[0] = material;
-    scene.skinnedMeshes.push_back(mesh);
+    scene.skinnedModels.push_back(mesh);
 
     material = {};
     material.normal = ResourceHandle<Texture>(Uri("file://images/sphere_normals.png"));
@@ -70,9 +70,9 @@ RenderScene createScene() {
     material.roughness = 0.5;
     material.transparent = true;
     material.albedo = ColorRGBA::white(1, 255);
-    mesh.mesh = ResourceHandle<SkinnedMesh>(Uri("file://meshes/cornell.fbx:Sphere.002"));
+    mesh.model = ResourceHandle<SkinnedModel>(Uri("file://meshes/cornell.fbx:Sphere.002"));
     mesh.materials[0] = material;
-    scene.skinnedMeshes.push_back(mesh);
+    scene.skinnedModels.push_back(mesh);
 
     PointLightObject light;
     light.light.power = 2;

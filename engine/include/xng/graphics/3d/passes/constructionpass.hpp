@@ -70,7 +70,7 @@ namespace xng {
         MeshAtlas meshAtlas;
 
         std::map<Uri, TextureAtlasHandle> textures;
-        std::vector<ResourceHandle<SkinnedMesh> > allocatedMeshes;
+        std::vector<ResourceHandle<SkinnedModel> > allocatedMeshes;
 
         size_t currentBoneBufferSize{};
         size_t totalBoneBufferSize{};
@@ -79,7 +79,7 @@ namespace xng {
 
         Transform cameraTransform;
         Camera camera;
-        std::vector<SkinnedMeshObject> objects;
+        std::vector<SkinnedModelObject> objects;
     };
 }
 

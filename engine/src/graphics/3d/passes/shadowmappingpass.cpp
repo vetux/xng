@@ -178,22 +178,21 @@ namespace xng {
 
         meshObjects.clear();
 
-        std::vector<ResourceHandle<SkinnedMesh> > usedMeshes;
+        std::vector<ResourceHandle<SkinnedModel> > usedMeshes;
         std::set<Uri> usedMeshUris;
 
         size_t boneCount = 0;
-        for (auto &meshObject: config->getScene().skinnedMeshes) {
-            if (meshObject.mesh.assigned() && meshObject.castShadows) {
-                meshAtlas.allocateMesh(meshObject.mesh);
-                usedMeshes.emplace_back(meshObject.mesh);
-                usedMeshUris.insert(meshObject.mesh.getUri());
+        for (auto &object: config->getScene().skinnedModels) {
+            if (object.model.assigned() && object.castShadows) {
+                meshAtlas.allocateMesh(object.model);
+                usedMeshes.emplace_back(object.model);
+                usedMeshUris.insert(object.model.getUri());
 
-                for (auto i = 0; i < meshObject.mesh.get().subMeshes.size() + 1; i++) {
-                    auto &mesh = i == 0 ? meshObject.mesh.get() : meshObject.mesh.get().subMeshes.at(i - 1);
-                    boneCount += mesh.bones.size();
+                for (auto &subMesh : object.model.get().subMeshes) {
+                    boneCount += subMesh.bones.size();
                 }
 
-                meshObjects.emplace_back(meshObject);
+                meshObjects.emplace_back(object);
             }
         }
 
@@ -255,13 +254,13 @@ namespace xng {
         for (auto &meshObject: meshObjects) {
             auto model = meshObject.transform.model();
 
-            for (auto i = 0; i < meshObject.mesh.get().subMeshes.size() + 1; i++) {
-                auto &mesh = i == 0 ? meshObject.mesh.get() : meshObject.mesh.get().subMeshes.at(i - 1);
+            for (auto i = 0; i < meshObject.model.get().subMeshes.size(); i++) {
+                auto &subMesh = meshObject.model.get().subMeshes.at(i);
                 int boneOffset = static_cast<int>(boneMatrices.size());
-                if (meshObject.mesh.get().bones.empty()) {
+                if (subMesh.bones.empty()) {
                     boneOffset = -1;
                 } else {
-                    for (auto &bone: mesh.bones) {
+                    for (auto &bone: subMesh.bones) {
                         auto bt = meshObject.boneTransforms.find(bone);
                         if (bt != meshObject.boneTransforms.end()) {
                             boneMatrices.emplace_back(bt->second);
@@ -276,7 +275,7 @@ namespace xng {
                 data.boneOffset[0] = boneOffset;
                 drawData.emplace_back(data);
 
-                meshData.emplace_back(meshAllocations.at(meshObject.mesh.getUri()).data.at(i));
+                meshData.emplace_back(meshAllocations.at(meshObject.model.getUri()).data.at(i));
             }
         }
 

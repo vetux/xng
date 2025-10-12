@@ -20,10 +20,8 @@
 
 #include "xng/graphics/3d/meshatlas/meshatlas.hpp"
 
-#include "xng/graphics/vertexstream.hpp"
-
 namespace xng {
-    MeshAtlas::MeshAllocation MeshAtlas::allocateMesh(const Mesh &mesh) {
+    MeshAtlas::MeshAllocation::Data MeshAtlas::allocateMesh(const Mesh &mesh) {
         if (mesh.primitive != TRIANGLES) {
             throw std::runtime_error("Unsupported mesh primitive");
         }
@@ -34,49 +32,41 @@ namespace xng {
             throw std::runtime_error("Arrayed mesh not supported, must be indexed");
         }
 
-        MeshAllocation ret;
-
         MeshAllocation::Data data;
         data.primitive = mesh.primitive;
         data.drawCall.count = mesh.indices.size();
         auto indexSize = mesh.indices.size() * sizeof(unsigned int);
         data.drawCall.offset = allocateIndexData(indexSize);
-        auto vertexSize = mesh.vertices.size() * vertexLayout.getLayoutSize();
-        auto baseVertex = allocateVertexData(vertexSize);
+        auto baseVertex = allocateVertexData(mesh.vertices.size());
         data.baseVertex = baseVertex / vertexLayout.getLayoutSize();
 
-        ret.data.emplace_back(data);
-
-        for (auto &subMesh: mesh.subMeshes) {
-            auto v = allocateMesh(subMesh).data;
-            ret.data.insert(ret.data.end(), v.begin(), v.end());
-        }
-
-        return ret;
+        return data;
     }
 
-    void MeshAtlas::allocateMesh(const ResourceHandle<SkinnedMesh> &mesh) {
+    void MeshAtlas::allocateMesh(const ResourceHandle<SkinnedModel> &mesh) {
         if (meshAllocations.find(mesh.getUri()) == meshAllocations.end()
             && pendingUploads.find(mesh.getUri()) == pendingUploads.end()) {
-            const MeshAllocation mdata = allocateMesh(mesh.get());
-            meshAllocations[mesh.getUri()] = mdata;
+            MeshAllocation alloc;
+            for (const auto &subMesh: mesh.get().subMeshes) {
+                alloc.data.emplace_back(allocateMesh(subMesh.mesh));
+            }
+            meshAllocations[mesh.getUri()] = alloc;
             pendingUploads[mesh.getUri()] = mesh;
         }
     }
 
     void MeshAtlas::uploadMeshes(RenderGraphContext &ctx,
-                                    RenderGraphResource vertexBuffer,
-                                    RenderGraphResource indexBuffer) {
+                                 RenderGraphResource vertexBuffer,
+                                 RenderGraphResource indexBuffer) {
         for (auto &pair: pendingUploads) {
             auto &meshAllocation = meshAllocations.at(pair.first);
-            for (auto i = 0; i < pair.second.get().subMeshes.size() + 1; i++) {
+            for (auto i = 0; i < meshAllocation.data.size(); i++) {
                 auto &data = meshAllocation.data.at(i);
-                auto &mesh = i == 0 ? pair.second.get() : pair.second.get().subMeshes.at(i - 1);
+                auto &mesh = pair.second.get().subMeshes.at(i).mesh;
 
-                auto vb = VertexStream().addVertices(mesh.vertices).getVertexBuffer();
                 ctx.uploadBuffer(vertexBuffer,
-                                 vb.data(),
-                                 vb.size(),
+                                 mesh.vertices.data(),
+                                 mesh.vertices.size(),
                                  data.baseVertex * vertexLayout.getLayoutSize());
 
                 auto ib = mesh.indices;
@@ -89,7 +79,7 @@ namespace xng {
         pendingUploads.clear();
     }
 
-    void MeshAtlas::deallocateMesh(const ResourceHandle<SkinnedMesh> &mesh) {
+    void MeshAtlas::deallocateMesh(const ResourceHandle<SkinnedModel> &mesh) {
         auto alloc = meshAllocations.at(mesh.getUri());
         meshAllocations.erase(mesh.getUri());
         pendingUploads.erase(mesh.getUri());

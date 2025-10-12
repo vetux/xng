@@ -75,21 +75,24 @@ namespace xng {
     const xng::Mesh &xng::Mesh::normalizedQuad() {
         if (!nQuadC) {
             nQuadC = true;
-            nQuad = {
-                TRIANGLES,
-                {
-                    VertexBuilder().addVec3(Vec3f(-1, 1, 0)).addVec2(Vec2f(0, 1)).build(),
-                    VertexBuilder().addVec3(Vec3f(1, 1, 0)).addVec2(Vec2f(1, 1)).build(),
-                    VertexBuilder().addVec3(Vec3f(1, -1, 0)).addVec2(Vec2f(1, 0)).build(),
-                    VertexBuilder().addVec3(Vec3f(-1, 1, 0)).addVec2(Vec2f(0, 1)).build(),
-                    VertexBuilder().addVec3(Vec3f(1, -1, 0)).addVec2(Vec2f(1, 0)).build(),
-                    VertexBuilder().addVec3(Vec3f(-1, -1, 0)).addVec2(Vec2f(0, 0)).build(),
-                }
-            };
+            nQuad = {};
+            nQuad.primitive = TRIANGLES;
             nQuad.vertexLayout = ShaderAttributeLayout({
                 {"position", ShaderDataType::vec3()},
-                {"uv" ,ShaderDataType::vec2()}
+                {"uv", ShaderDataType::vec2()}
             });
+            auto vertData = VertexBuilder().addVec3(Vec3f(-1, 1, 0)).addVec2(Vec2f(0, 1)).build();
+            nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
+            vertData = VertexBuilder().addVec3(Vec3f(1, 1, 0)).addVec2(Vec2f(1, 1)).build();
+            nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
+            vertData = VertexBuilder().addVec3(Vec3f(1, -1, 0)).addVec2(Vec2f(1, 0)).build();
+            nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
+            vertData = VertexBuilder().addVec3(Vec3f(-1, 1, 0)).addVec2(Vec2f(0, 1)).build();
+            nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
+            vertData = VertexBuilder().addVec3(Vec3f(1, -1, 0)).addVec2(Vec2f(1, 0)).build();
+            nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
+            vertData = VertexBuilder().addVec3(Vec3f(-1, -1, 0)).addVec2(Vec2f(0, 0)).build();
+            nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
         }
         return nQuad;
     }
@@ -98,22 +101,22 @@ namespace xng {
         if (!nCubeC) {
             nCubeC = true;
             std::stringstream stream(NORM_CUBE_OBJ);
-            nCube = ResourceRegistry::getDefaultRegistry().getImporter(".obj").read(stream, Uri(), nullptr).getAll<Mesh>().at(0);
+            nCube = ResourceRegistry::getDefaultRegistry().getImporter(".obj").read(stream, Uri(), nullptr).getAll<
+                Mesh>().at(0);
         }
         return nCube;
     }
 
     Mesh Mesh::sphere(float radius, int latitudes, int longitudes) {
         //https://gist.github.com/Pikachuxxxx/5c4c490a7d7679824e0e18af42918efc
-
         if (longitudes < 3)
             longitudes = 3;
         if (latitudes < 2)
             latitudes = 2;
 
-        std::vector<Vec3f> vertices;
+        std::vector<Vec3f> positions;
         std::vector<Vec3f> normals;
-        std::vector<Vec2f> uv;
+        std::vector<Vec2f> uvs;
         std::vector<unsigned int> indices;
 
         float nx, ny, nz, lengthInv = 1.0f / radius; // normal
@@ -148,8 +151,8 @@ namespace xng {
                 vertex.z = z; /* z = r * sin(phi) */
                 vertex.s = (float) j / longitudes; /* s */
                 vertex.t = (float) i / latitudes; /* t */
-                vertices.emplace_back(vertex.x, vertex.y, vertex.z);
-                uv.emplace_back(vertex.s, vertex.t);
+                positions.emplace_back(vertex.x, vertex.y, vertex.z);
+                uvs.emplace_back(vertex.s, vertex.t);
 
                 // normalized vertex normal
                 nx = vertex.x * lengthInv;
@@ -186,6 +189,21 @@ namespace xng {
             }
         }
 
-        throw std::runtime_error("Not Implemented");
+        Mesh ret;
+        ret.primitive = TRIANGLES;
+        ret.vertexLayout = ShaderAttributeLayout({
+            {"position", ShaderDataType::vec3()},
+            {"normal", ShaderDataType::vec3()},
+            {"uv", ShaderDataType::vec2()}
+        });
+        for (auto i = 0; i < positions.size(); ++i) {
+            auto position = positions.at(i);
+            auto norm = normals.at(i);
+            auto uv = uvs.at(i);
+            auto vertdata = VertexBuilder().addVec3(position).addVec3(norm).addVec2(uv).build();
+            ret.vertices.insert(ret.vertices.end(), vertdata.begin(), vertdata.end());
+        }
+        ret.indices = std::move(indices);
+        return ret;
     }
 }

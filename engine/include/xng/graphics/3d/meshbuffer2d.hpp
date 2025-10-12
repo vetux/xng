@@ -23,8 +23,9 @@
 #include <unordered_set>
 
 #include "xng/graphics/primitive.hpp"
-#include "xng/graphics/vertexstream.hpp"
 #include "xng/graphics/2d/canvas.hpp"
+
+#include "xng/graphics/vertexbuilder.hpp"
 
 #include "xng/rendergraph/drawcall.hpp"
 #include "xng/rendergraph/rendergraphcontext.hpp"
@@ -44,7 +45,8 @@ namespace xng {
 
             MeshDrawData() = default;
 
-            MeshDrawData(const Primitive primitive, const DrawCall &drawCall,
+            MeshDrawData(const Primitive primitive,
+                         const DrawCall &drawCall,
                          const size_t baseVertex) : primitive(primitive),
                                                     drawCall(drawCall),
                                                     baseVertex(baseVertex) {
@@ -245,27 +247,33 @@ namespace xng {
         };
 
         MeshDrawData createPlane(const Vec2f &size) {
-            VertexStream vertexStream;
+            std::vector<uint8_t> vertexBuffer;
+            auto vertData = VertexBuilder()
+                    .addVec2(Vec2f(0, 0))
+                    .addVec2(Vec2f(0, 0))
+                    .build();
+            vertexBuffer.insert(vertexBuffer.end(), vertData.begin(), vertData.end());
 
-            vertexStream.addVertex(VertexBuilder()
-                .addVec2(Vec2f(0, 0))
-                .addVec2(Vec2f(0, 0))
-                .build());
-            vertexStream.addVertex(VertexBuilder()
-                .addVec2(Vec2f(size.x, 0))
-                .addVec2(Vec2f(1, 0))
-                .build());
-            vertexStream.addVertex(VertexBuilder()
-                .addVec2(Vec2f(0, size.y))
-                .addVec2(Vec2f(0, 1))
-                .build());
-            vertexStream.addVertex(VertexBuilder()
-                .addVec2(Vec2f(size.x,
-                               size.y))
-                .addVec2(Vec2f(1, 1))
-                .build());
+            vertData = VertexBuilder()
+                    .addVec2(Vec2f(size.x, 0))
+                    .addVec2(Vec2f(1, 0))
+                    .build();
+            vertexBuffer.insert(vertexBuffer.end(), vertData.begin(), vertData.end());
 
-            auto vertexBufferOffset = allocateVertexData(vertexStream.getVertexBuffer().size());
+            vertData = VertexBuilder()
+                    .addVec2(Vec2f(0, size.y))
+                    .addVec2(Vec2f(0, 1))
+                    .build();
+            vertexBuffer.insert(vertexBuffer.end(), vertData.begin(), vertData.end());
+
+            vertData = VertexBuilder()
+                    .addVec2(Vec2f(size.x,
+                                   size.y))
+                    .addVec2(Vec2f(1, 1))
+                    .build();
+            vertexBuffer.insert(vertexBuffer.end(), vertData.begin(), vertData.end());
+
+            auto vertexBufferOffset = allocateVertexData(vertexBuffer.size());
 
             std::vector<unsigned int> indices;
             indices.emplace_back(0);
@@ -285,7 +293,7 @@ namespace xng {
                                              vertexBufferOffset / vertexLayout.getLayoutSize());
 
             BufferUpload upload;
-            upload.vertexData = vertexStream.getVertexBuffer();
+            upload.vertexData = vertexBuffer;
             upload.vertexOffset = vertexBufferOffset;
             upload.indexData = indices;
             upload.indexOffset = indexBufferOffset;
@@ -295,27 +303,34 @@ namespace xng {
         }
 
         MeshDrawData createSquare(const Vec2f &size) {
-            VertexStream vertexStream;
+            std::vector<uint8_t> vertexBuffer;
 
-            vertexStream.addVertex(VertexBuilder()
-                .addVec2(Vec2f(0, 0))
-                .addVec2(Vec2f(0, 0))
-                .build());
-            vertexStream.addVertex(VertexBuilder()
-                .addVec2(Vec2f(size.x, 0))
-                .addVec2(Vec2f(1, 0))
-                .build());
-            vertexStream.addVertex(VertexBuilder()
-                .addVec2(Vec2f(0, size.y))
-                .addVec2(Vec2f(0, 1))
-                .build());
-            vertexStream.addVertex(VertexBuilder()
-                .addVec2(Vec2f(size.x,
-                               size.y))
-                .addVec2(Vec2f(1, 1))
-                .build());
+            auto vertData = VertexBuilder()
+                    .addVec2(Vec2f(0, 0))
+                    .addVec2(Vec2f(0, 0))
+                    .build();
+            vertexBuffer.insert(vertexBuffer.end(), vertData.begin(), vertData.end());
 
-            auto vertexBufferOffset = allocateVertexData(vertexStream.getVertexBuffer().size());
+            vertData = VertexBuilder()
+                    .addVec2(Vec2f(size.x, 0))
+                    .addVec2(Vec2f(1, 0))
+                    .build();
+            vertexBuffer.insert(vertexBuffer.end(), vertData.begin(), vertData.end());
+
+            vertData = VertexBuilder()
+                    .addVec2(Vec2f(0, size.y))
+                    .addVec2(Vec2f(0, 1))
+                    .build();
+            vertexBuffer.insert(vertexBuffer.end(), vertData.begin(), vertData.end());
+
+            vertData = VertexBuilder()
+                    .addVec2(Vec2f(size.x,
+                                   size.y))
+                    .addVec2(Vec2f(1, 1))
+                    .build();
+            vertexBuffer.insert(vertexBuffer.end(), vertData.begin(), vertData.end());
+
+            auto vertexBufferOffset = allocateVertexData(vertexBuffer.size());
 
             std::vector<unsigned int> indices;
             indices.emplace_back(0);
@@ -339,7 +354,7 @@ namespace xng {
                                               vertexBufferOffset / vertexLayout.getLayoutSize());
 
             BufferUpload upload;
-            upload.vertexData = vertexStream.getVertexBuffer();
+            upload.vertexData = vertexBuffer;
             upload.vertexOffset = vertexBufferOffset;
             upload.indexData = indices;
             upload.indexOffset = indexBufferOffset;
@@ -349,18 +364,21 @@ namespace xng {
         }
 
         MeshDrawData createLine(const Vec2f &start, const Vec2f &end) {
-            VertexStream vertexStream;
+            std::vector<uint8_t> vertexBuffer;
 
-            vertexStream.addVertex(VertexBuilder()
-                .addVec2(start)
-                .addVec2(Vec2f())
-                .build());
-            vertexStream.addVertex(VertexBuilder()
-                .addVec2(end)
-                .addVec2(Vec2f())
-                .build());
+            auto vertData = VertexBuilder()
+                    .addVec2(start)
+                    .addVec2(Vec2f())
+                    .build();
+            vertexBuffer.insert(vertexBuffer.end(), vertData.begin(), vertData.end());
 
-            auto vertexBufferOffset = allocateVertexData(vertexStream.getVertexBuffer().size());
+            vertData = VertexBuilder()
+                    .addVec2(end)
+                    .addVec2(Vec2f())
+                    .build();
+            vertexBuffer.insert(vertexBuffer.end(), vertData.begin(), vertData.end());
+
+            auto vertexBufferOffset = allocateVertexData(vertexBuffer.size());
 
             std::vector<unsigned int> indices;
             indices.emplace_back(0);
@@ -375,7 +393,7 @@ namespace xng {
                                                     vertexBufferOffset / vertexLayout.getLayoutSize());
 
             BufferUpload upload;
-            upload.vertexData = vertexStream.getVertexBuffer();
+            upload.vertexData = vertexBuffer;
             upload.vertexOffset = vertexBufferOffset;
             upload.indexData = indices;
             upload.indexOffset = indexBufferOffset;
@@ -385,14 +403,16 @@ namespace xng {
         }
 
         MeshDrawData createPoint(const Vec2f &point) {
-            VertexStream vertexStream;
+            std::vector<uint8_t> vertexBuffer;
 
-            vertexStream.addVertex(VertexBuilder()
-                .addVec2(point)
-                .addVec2(Vec2f())
-                .build());
+            auto vertData = VertexBuilder()
+                    .addVec2(point)
+                    .addVec2(Vec2f())
+                    .build();
 
-            auto vertexBufferOffset = allocateVertexData(vertexStream.getVertexBuffer().size());
+            vertexBuffer.insert(vertexBuffer.end(), vertData.begin(), vertData.end());
+
+            auto vertexBufferOffset = allocateVertexData(vertexBuffer.size());
 
             std::vector<unsigned int> indices;
             indices.emplace_back(0);
@@ -406,7 +426,7 @@ namespace xng {
                                               vertexBufferOffset / vertexLayout.getLayoutSize());
 
             BufferUpload upload;
-            upload.vertexData = vertexStream.getVertexBuffer();
+            upload.vertexData = vertexBuffer;
             upload.vertexOffset = vertexBufferOffset;
             upload.indexData = indices;
             upload.indexOffset = indexBufferOffset;
@@ -543,9 +563,9 @@ namespace xng {
             while (merged) {
                 merged = false;
                 auto indexRanges = freeIndexBufferRanges;
-                for (auto range = freeIndexBufferRanges.begin(); range != freeIndexBufferRanges.end(); range++) {
+                for (auto range = freeIndexBufferRanges.begin(); range != freeIndexBufferRanges.end(); ++range) {
                     auto next = range;
-                    next++;
+                    ++next;
                     if (next != freeIndexBufferRanges.end()) {
                         if (range->first + range->second == next->first
                             && indexRanges.find(range->first) != indexRanges.end()
@@ -562,4 +582,5 @@ namespace xng {
         }
     };
 }
+
 #endif //XENGINE_MESHBUFFER2D_HPP

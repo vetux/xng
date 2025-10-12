@@ -20,8 +20,6 @@
 #ifndef XENGINE_VERTEXBUILDER_HPP
 #define XENGINE_VERTEXBUILDER_HPP
 
-#include "vertex.hpp"
-
 #include "xng/math/vector2.hpp"
 #include "xng/math/vector3.hpp"
 #include "xng/math/vector4.hpp"
@@ -29,7 +27,7 @@
 namespace xng {
     class VertexBuilder {
     public:
-        Vertex build() {
+        std::vector<uint8_t> build() {
             return vertex;
         }
 
@@ -46,7 +44,7 @@ namespace xng {
 
             auto * bytePointer = reinterpret_cast<const uint8_t *>(&value);
             for (auto i = 0; i < bytes; i++){
-                vertex.buffer.emplace_back(bytePointer[i]);
+                vertex.emplace_back(bytePointer[i]);
             }
 
             return *this;
@@ -77,7 +75,7 @@ namespace xng {
         }
 
     private:
-        Vertex vertex;
+        std::vector<uint8_t> vertex;
     };
 }
 

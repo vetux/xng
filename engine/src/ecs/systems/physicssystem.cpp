@@ -42,15 +42,16 @@ namespace xng {
     }
 
     static ColliderShape getShape(const Mesh &mesh) {
-        if (mesh.vertexLayout != Mesh::getDefaultVertexLayout()) {
+        if (mesh.vertexLayout != StaticModel::getVertexLayout()) {
             throw std::runtime_error("Invalid mesh vertex layout");
         }
         ColliderShape shape{};
-        for (const auto &v: mesh.vertices) {
-            assert(v.buffer.size() >= sizeof(float) * 2);
-            float posx = *reinterpret_cast<const float *>(v.buffer.data());
-            float posy = *reinterpret_cast<const float *>(v.buffer.data() + sizeof(float));
-            float posz = *reinterpret_cast<const float *>(v.buffer.data() + sizeof(float) * 2);
+        assert(mesh.vertices.size() >= sizeof(float) * 2);
+        for (auto i = 0; i < mesh.vertices.size() / mesh.vertexLayout.getLayoutSize(); i++) {
+            auto offset = i * mesh.vertexLayout.getLayoutSize();
+            float posx = *reinterpret_cast<const float *>(mesh.vertices.data() + offset);
+            float posy = *reinterpret_cast<const float *>(mesh.vertices.data() + offset + sizeof(float));
+            float posz = *reinterpret_cast<const float *>(mesh.vertices.data() + offset + sizeof(float) * 2);
             shape.vertices.emplace_back(posx,
                                         posy,
                                         posz);

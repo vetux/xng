@@ -25,34 +25,34 @@
 #include "xng/graphics/scene/directionallight.hpp"
 #include "xng/graphics/scene/spotlight.hpp"
 
-#include "xng/graphics/scene/mesh.hpp"
-#include "xng/graphics/scene/skinnedmesh.hpp"
+#include "xng/graphics/scene/staticmodel.hpp"
+#include "xng/graphics/scene/skinnedmodel.hpp"
 #include "xng/graphics/scene/skybox.hpp"
 #include "xng/graphics/camera.hpp"
 
 namespace xng {
-    struct MeshObject {
+    struct StaticModelObject {
         Transform transform;
-        ResourceHandle<Mesh> mesh;
+        ResourceHandle<StaticModel> model;
 
-        // Optional user specified materials for the mesh (materials[0]) and submeshes (materials[1...])
+        // Optional user specified materials for the submeshes
         std::map<size_t, Material> materials;
 
         bool castShadows = false;
         bool receiveShadows = true;
     };
 
-    struct SkinnedMeshObject {
+    struct SkinnedModelObject {
         Transform transform;
-        ResourceHandle<SkinnedMesh> mesh;
+        ResourceHandle<SkinnedModel> model;
 
-        // Optional user specified materials for the mesh (materials[0]) and submeshes (materials[1...])
+        // Optional user specified materials for the submeshes
         std::map<size_t, Material> materials;
 
         bool castShadows = false;
         bool receiveShadows = true;
 
-        // Optional dynamic bone transform values which override the values in SkinnedMesh.rig, For animation
+        // Optional dynamic bone transform values
         std::map<std::string, Mat4f> boneTransforms;
     };
 
@@ -104,16 +104,12 @@ namespace xng {
 
     // TODO: Sprite Lighting
 
-    /**
-     * The runtime scene render data.
-     * Designed to be small enough to be rebuilt every frame.
-     */
-    struct XENGINE_EXPORT RenderScene {
+    struct RenderScene {
         Transform cameraTransform;
         Camera camera;
 
-        std::vector<MeshObject> meshes;
-        std::vector<SkinnedMeshObject> skinnedMeshes;
+        std::vector<StaticModelObject> staticModels;
+        std::vector<SkinnedModelObject> skinnedModels;
 
         std::vector<PointLightObject> pointLights;
         std::vector<DirectionalLightObject> directionalLights;
