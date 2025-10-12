@@ -42,7 +42,7 @@ namespace xng {
         unsigned int clearStencil{};
 
         // If texture is a TEXTURE_CUBE_MAP, TEXTURE_2D_ARRAY or TEXTURE_CUBE_MAP_ARRAY either an index / face can
-        // be specified or the texture can be attached layered where geometry shaders can set the draw layer via NodeLayer.
+        // be specified or the texture can be attached layered where geometry shaders can set the draw layer.
         bool layered{true};
 
         RenderGraphAttachment() = default;

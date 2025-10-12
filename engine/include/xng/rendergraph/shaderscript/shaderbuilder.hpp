@@ -71,14 +71,14 @@ namespace xng::ShaderScript {
         ShaderBuilder() = default;
 
         /**
-         * Subsequently added nodes are stored in the true branch of this conditional
+         * Subsequently added instructions are stored in the true branch of this conditional
          *
          * @param condition
          */
         void If(const ShaderObject &condition);
 
         /**
-         * Subsequently added nodes are stored in the false branch of this conditional
+         * Subsequently added instructions are stored in the false branch of this conditional
          */
         void Else();
 
@@ -103,7 +103,7 @@ namespace xng::ShaderScript {
         void EndFor();
 
         /**
-         * Subsequently added nodes are used as the body of a function.
+         * Subsequently added instructions are used as the body of a function.
          *
          * @param name
          * @param arguments

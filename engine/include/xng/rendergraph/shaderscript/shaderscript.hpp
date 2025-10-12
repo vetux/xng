@@ -27,7 +27,7 @@
  *          because it defines loosely named macros such as Struct or Input which can collide with other symbols.
  *
  *          The xng::ShaderScript namespace defines implicit conversion operators for converting literals
- *          to node wrappers, which can cause ambiguous overloads when "using" the namespace.
+ *          to shader objects, which can cause ambiguous overloads when "using" the namespace.
  */
 
 // Optional Helper macros for defining C++ function wrappers for directly calling a function

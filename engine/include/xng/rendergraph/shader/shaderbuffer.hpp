@@ -33,7 +33,7 @@ namespace xng {
     struct ShaderBuffer {
         bool readOnly = true; // Whether shaders are allowed to write to the buffer
 
-        // If true, this buffer is a dynamic buffer and elements can be accessed by specifying NodeBuffer.index
+        // If true, this buffer is a dynamic buffer and elements can be accessed by subscripting the buffer object
         bool dynamic = false;
 
         // The type name of the structure defining the contents of the buffer. For dynamic buffers an instance of the structure is created for every element.
