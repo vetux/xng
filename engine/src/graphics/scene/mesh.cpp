@@ -26,6 +26,8 @@
 
 #include "xng/graphics/vertexbuilder.hpp"
 
+#include "xng/math/pi.hpp"
+
 static const std::string NORM_CUBE_OBJ = std::string(R"###(
 o Cube
 v -1.000000 -1.000000 1.000000
@@ -125,14 +127,14 @@ namespace xng {
             float x, y, z, s, t; // Postion and Texcoords
         };
 
-        float deltaLatitude = M_PI / latitudes;
-        float deltaLongitude = 2 * M_PI / longitudes;
+        float deltaLatitude = PI / latitudes;
+        float deltaLongitude = 2 * PI / longitudes;
         float latitudeAngle;
         float longitudeAngle;
 
         // Compute all vertices first except normals
         for (int i = 0; i <= latitudes; ++i) {
-            latitudeAngle = M_PI / 2 - i * deltaLatitude; /* Starting -pi/2 to pi/2 */
+            latitudeAngle = PI / 2 - i * deltaLatitude; /* Starting -pi/2 to pi/2 */
             float xy = radius * cosf(latitudeAngle); /* r * cos(phi) */
             float z = radius * sinf(latitudeAngle); /* r * sin(phi )*/
 
