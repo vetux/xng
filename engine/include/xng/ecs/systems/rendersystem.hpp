@@ -24,9 +24,9 @@
 
 #include "xng/ecs/system.hpp"
 
-#include "xng/graphics/3d/renderpassscheduler.hpp"
-#include "xng/graphics/3d/sharedresourceregistry.hpp"
-#include "xng/graphics/3d/renderconfiguration.hpp"
+#include "../../graphics/renderpassscheduler.hpp"
+#include "../../graphics/sharedresourceregistry.hpp"
+#include "../../graphics/renderconfiguration.hpp"
 
 #include "xng/util/time.hpp"
 
