@@ -24,6 +24,7 @@
 using namespace xng::ShaderScript;
 
 namespace xng::shaderlib::shadowmapping {
+    //TODO: Fix point shadows
     void sampleShadowPoint() {
         Function("sampleShadowPoint", {
                      {"fragPos", ShaderDataType::vec3()},
