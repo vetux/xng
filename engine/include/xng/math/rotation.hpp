@@ -3,30 +3,29 @@
 
 #include <cmath>
 
-#include "vector2.hpp"
-
-#define PI 3.141592653589793238463
+#include "xng/math/vector2.hpp"
+#include "xng/math/pi.hpp"
 
 namespace xng {
-    inline double radiansToDegrees(double radians) {
+    inline double radiansToDegrees(const double radians) {
         return radians * (180.0 / PI);
     }
 
-    inline double degreesToRadians(double degrees) {
+    inline double degreesToRadians(const double degrees) {
         return degrees * PI / 180.0;
     }
 
-    inline float radiansToDegrees(float radians) {
-        return (float) (radians * (180.0 / PI));
+    inline float radiansToDegrees(const float radians) {
+        return static_cast<float>(radians * (180.0 / PI));
     }
 
-    inline float degreesToRadians(float degrees) {
-        return (float) (degrees * PI / 180.0);
+    inline float degreesToRadians(const float degrees) {
+        return static_cast<float>(degrees * PI / 180.0);
     }
 
     //Rotate the vector around the point clockwise by angleDegrees
-    inline Vec2f rotateVectorAroundPoint(Vec2f vector, Vec2f point, double angleDegrees) {
-        double radians = degreesToRadians(angleDegrees);
+    inline Vec2f rotateVectorAroundPoint(const Vec2f &vector, const Vec2f &point, const double angleDegrees) {
+        const float radians = static_cast<float>(degreesToRadians(angleDegrees));
 
         //https://math.stackexchange.com/questions/814950/how-can-i-rotate-a-coordinate-around-a-circle
         Vec2f ret;
