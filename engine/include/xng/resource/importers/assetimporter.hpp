@@ -25,7 +25,6 @@
 #include "xng/io/message.hpp"
 
 namespace xng {
-    // TODO: Implement custom asset file format
     /**
      * Import assets from a custom file format for the engine.
      *
