@@ -78,7 +78,7 @@ struct OGLFramebuffer {
     }
 
     void attach(const OGLTexture &texture, GLenum attachment, GLint mipMapLevel) const {
-        glFramebufferTexture2D(GL_FRAMEBUFFER,
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER,
                                attachment,
                                texture.textureType,
                                texture.handle,
@@ -87,7 +87,7 @@ struct OGLFramebuffer {
     }
 
     void attach(const OGLTexture &texture, GLenum attachment, GLint mipLevel, GLenum face) const {
-        glFramebufferTexture2D(GL_FRAMEBUFFER,
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER,
                                attachment,
                                face,
                                texture.handle,
@@ -102,7 +102,7 @@ struct OGLFramebuffer {
             && texture.textureType != GL_TEXTURE_2D_MULTISAMPLE_ARRAY) {
             throw std::runtime_error("Invalid texture type for layered attachment");
         }
-        glFramebufferTexture(GL_FRAMEBUFFER,
+        glFramebufferTexture(GL_DRAW_FRAMEBUFFER,
                              attachment,
                              texture.handle,
                              mipLevel);
@@ -113,7 +113,7 @@ struct OGLFramebuffer {
         if (texture.textureType != GL_TEXTURE_2D_ARRAY) {
             throw std::runtime_error("Invalid texture type for index 2D array attachment");
         }
-        glFramebufferTextureLayer(GL_FRAMEBUFFER,
+        glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER,
                                   attachment,
                                   texture.handle,
                                   mipLevel,
@@ -125,7 +125,7 @@ struct OGLFramebuffer {
         if (texture.textureType != GL_TEXTURE_CUBE_MAP_ARRAY) {
             throw std::runtime_error("Invalid texture type for index cubemap array attachment");
         }
-        glFramebufferTexture3D(GL_FRAMEBUFFER,
+        glFramebufferTexture3D(GL_DRAW_FRAMEBUFFER,
                                attachment,
                                face,
                                texture.handle,

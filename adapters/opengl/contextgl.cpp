@@ -273,29 +273,28 @@ void ContextGL::clearTextureDepthStencil(const RenderGraphResource texture,
 
     if (tex.texture.format == DEPTH_STENCIL
         || tex.texture.format == DEPTH24_STENCIL8) {
-        // Convert depth to 24-bit integer
-        const GLuint depth24 = static_cast<GLuint>(clearDepth * 0xFFFFFF);
-
-        if (clearStencil > 255) {
-            throw std::runtime_error("Invalid stencil value for clearing DEPTH_STENCIL texture");
+        //Workaround using the pipeline to clear because there doesn't seem to be a standard 24bit_8bit depth stencil format.
+        auto clearFb = std::make_unique<OGLFramebuffer>();
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, clearFb->FBO);
+        clearFb->attach(tex, GL_DEPTH_STENCIL_ATTACHMENT, 0);
+        glClearDepth(clearDepth);
+        glClearStencil(static_cast<GLint>(clearStencil));
+        glDepthMask(GL_TRUE);
+        glStencilMask(0xff);
+        glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        if (framebuffer) {
+            if (boundPipeline) {
+                auto &pip = resources.pipelines.at(boundPipeline);
+                if (pip.depthTestWrite) {
+                    glDepthMask(GL_TRUE);
+                } else {
+                    glDepthMask(GL_FALSE);
+                }
+                glStencilMask(pip.stencilTestMask);
+            }
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer->FBO);
         }
-
-        // Pack into 32-bit value: depth in top 24 bits, stencil in bottom 8 bits
-        const GLuint packed_value = (depth24 << 8) | clearStencil;
-
-        glClearTexSubImage(tex.handle,
-                           static_cast<GLint>(mipMapLevel),
-                           0,
-                           0,
-                           tex.textureType == TEXTURE_CUBE_MAP
-                               ? static_cast<GLint>(index * 6 + face)
-                               : static_cast<GLint>(index),
-                           tex.texture.size.x,
-                           tex.texture.size.y,
-                           1,
-                           GL_DEPTH_STENCIL,
-                           GL_UNSIGNED_INT_24_8,
-                           &packed_value);
     } else if (tex.texture.format == DEPTH
                || tex.texture.format == DEPTH_32F
                || tex.texture.format == DEPTH_24
@@ -447,27 +446,55 @@ void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorA
     oglDebugStartGroup("ContextGL::beginRenderPass");
 
     framebufferColorAttachments = colorAttachments;
+    framebufferDepthAttachment = depthAttachment;
+    framebufferStencilAttachment = stencilAttachment;
+
     framebuffer = std::make_shared<OGLFramebuffer>();
+
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer->FBO);
+
     for (auto i = 0; i < colorAttachments.size(); ++i) {
         auto &attachment = colorAttachments.at(i);
         auto &tex = getTexture(attachment.texture);
+        if (attachment.clearAttachment) {
+            if (tex.texture.format >= R8I && tex.texture.format <= RGBA32I) {
+                clearColorAttachment(i, attachment.clearColorInt);
+            } else if (tex.texture.format >= R8UI && tex.texture.format <= RGBA32UI) {
+                clearColorAttachment(i, attachment.clearColorUint);
+            } else if (tex.texture.format >= R8 && tex.texture.format <= RGBA32F) {
+                clearColorAttachment(i, attachment.clearColorFloat);
+            } else {
+                clearColorAttachment(i, attachment.clearColor);
+            }
+        }
         framebuffer->attach(attachment, tex, GL_COLOR_ATTACHMENT0 + i);
     }
 
     if (depthAttachment.texture) {
         auto &attachment = depthAttachment;
         auto &tex = getTexture(attachment.texture);
+        if (attachment.clearAttachment) {
+            clearDepthAttachment(attachment.clearDepth);
+        }
         framebuffer->attach(attachment, tex, GL_DEPTH_ATTACHMENT);
     }
 
     if (stencilAttachment.texture) {
         auto &attachment = stencilAttachment;
         auto &tex = getTexture(attachment.texture);
+        if (attachment.clearAttachment) {
+            clearStencilAttachment(attachment.clearStencil);
+        }
         framebuffer->attach(attachment, tex, GL_STENCIL_ATTACHMENT);
     }
 
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer->FBO);
     glBindVertexArray(vertexArray->VAO);
+
+    auto fstatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
+    if (fstatus != GL_FRAMEBUFFER_COMPLETE) {
+        throw std::runtime_error("Framebuffer is incomplete");
+    }
+
     oglCheckError();
 
     oglDebugEndGroup();
@@ -479,11 +506,13 @@ void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorA
 
     framebufferColorAttachments = colorAttachments;
     framebufferDepthStencilAttachment = depthStencilAttachment;
+
     framebuffer = std::make_shared<OGLFramebuffer>();
 
     std::vector<GLenum> drawBuffers;
 
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer->FBO);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer->FBO);
+
     for (auto i = 0; i < colorAttachments.size(); ++i) {
         auto &attachment = colorAttachments.at(i);
         auto &tex = getTexture(attachment.texture);
@@ -529,15 +558,13 @@ void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorA
         }
     }
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer->FBO);
-
     glBindVertexArray(vertexArray->VAO);
 
     auto fstatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
     if (fstatus != GL_FRAMEBUFFER_COMPLETE) {
         throw std::runtime_error("Framebuffer is incomplete");
     }
+
     oglCheckError();
 
     oglDebugEndGroup();
@@ -962,7 +989,9 @@ void ContextGL::clearDepthStencilAttachment(const float clearDepth, const unsign
 void ContextGL::clearDepthAttachment(const float clearDepth) {
     oglDebugStartGroup("ContextGL::clearDepthAttachment");
 
-    const auto &attachment = framebufferDepthStencilAttachment;
+    const auto &attachment = framebufferDepthStencilAttachment.texture
+                                 ? framebufferDepthStencilAttachment
+                                 : framebufferDepthAttachment;
     auto &tex = getTexture(attachment.texture);
 
     if ((tex.texture.textureType == TEXTURE_CUBE_MAP
@@ -1006,7 +1035,9 @@ void ContextGL::clearDepthAttachment(const float clearDepth) {
 void ContextGL::clearStencilAttachment(const unsigned int clearStencil) {
     oglDebugStartGroup("ContextGL::clearStencilAttachment");
 
-    const auto &attachment = framebufferDepthStencilAttachment;
+    const auto &attachment = framebufferDepthStencilAttachment.texture
+                                 ? framebufferDepthStencilAttachment
+                                 : framebufferStencilAttachment;
     auto &tex = getTexture(attachment.texture);
 
     if ((tex.texture.textureType == TEXTURE_CUBE_MAP
@@ -1098,6 +1129,11 @@ void ContextGL::endRenderPass() {
     oglCheckError();
 
     boundPipeline = {};
+    framebufferColorAttachments = {};
+    framebufferDepthStencilAttachment = {};
+    framebufferDepthAttachment = {};
+    framebufferStencilAttachment = {};
+    framebuffer = nullptr;
 
     oglDebugEndGroup();
 }
