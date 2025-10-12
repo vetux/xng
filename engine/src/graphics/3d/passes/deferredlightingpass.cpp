@@ -19,8 +19,6 @@
 
 #include "xng/graphics/3d/passes/deferredlightingpass.hpp"
 
-#include <unistd.h>
-
 #include "xng/graphics/vertexstream.hpp"
 
 namespace xng {
