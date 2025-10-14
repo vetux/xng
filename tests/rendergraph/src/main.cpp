@@ -81,12 +81,16 @@ RenderScene createScene() {
     scene.pointLights.emplace_back(light);
 
     DirectionalLightObject dirLight;
-    dirLight.transform.setRotation(Quaternion(Vec3f(45, -45, 0)));
+    dirLight.light.power = 2;
+    dirLight.light.castShadows = true;
+    dirLight.transform.setRotation(Quaternion(Vec3f(0, 180, 0)));
     //scene.directionalLights.emplace_back(dirLight);
 
     SpotLightObject spotLight;
-    spotLight.transform.setPosition(Vec3f(1, 0, -2));
-    spotLight.transform.setRotation(Quaternion(Vec3f(0, 25, 0)));
+    spotLight.light.castShadows = true;
+    spotLight.light.power = 2;
+    spotLight.transform.setPosition(Vec3f(0, 0, -2));
+    spotLight.transform.setRotation(Quaternion(Vec3f(0, 0, 0)));
     //scene.spotLights.emplace_back(spotLight);
 
     scene.camera.nearClip = 0.001f;
