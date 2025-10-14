@@ -48,6 +48,7 @@ add_thirdparty_subdir(${THIRD_PARTY_BASE}/libsndfile/)
 add_thirdparty_subdir(${THIRD_PARTY_BASE}/cryptopp/)
 
 set(ENABLE_OPT OFF CACHE BOOL "" FORCE)
+set(ENABLE_GLSLANG_BINARIES OFF CACHE BOOL "" FORCE)
 add_thirdparty_subdir(${THIRD_PARTY_BASE}/glslang/)
 
 add_thirdparty_include(${THIRD_PARTY_BASE}/glm/)
