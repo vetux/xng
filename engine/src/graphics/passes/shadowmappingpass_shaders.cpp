@@ -216,7 +216,7 @@ namespace xng {
         // map to [0;1] range by dividing by far_plane
         lightDistance = lightDistance / lightData["lightPosFarPlane"].w();
 
-        // write this as modified depth
+        // write this as modified linear depth
         setFragmentDepth(lightDistance);
 
         return BuildShader();
