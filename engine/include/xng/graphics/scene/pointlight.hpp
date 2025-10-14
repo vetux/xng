@@ -32,7 +32,7 @@ namespace xng {
         bool castShadows = true;
 
         float shadowNearPlane = 0.01f;
-        float shadowFarPlane = 1000;
+        float shadowFarPlane = 100;
 
         Messageable &operator<<(const Message &message) override {
             color << message.getMessage("color");
