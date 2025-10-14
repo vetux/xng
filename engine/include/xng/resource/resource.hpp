@@ -21,6 +21,7 @@
 #define XENGINE_RESOURCE_HPP
 
 #include <memory>
+#include <string>
 
 #define RESOURCE_TYPENAME(T) static constexpr auto typeName = #T; std::string getTypeName() const override { return typeName; }
 
