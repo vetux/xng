@@ -121,6 +121,9 @@ namespace xng::ShaderScript {
         if (functionRoot == nullptr) {
             throw std::runtime_error("ShaderBuilder::EndFunction called without a Function() call");
         }
+        if (currentNode->type != TreeNode::ROOT) {
+            throw std::runtime_error("Attempting to call EndFunction with unfinished shader. (Missing EndIf, EndFor ?)");
+        }
         ShaderFunction function = currentFunction;
         function.body = buildInstructionTree(*functionRoot);
         functions.emplace_back(function);
