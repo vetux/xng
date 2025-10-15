@@ -66,6 +66,11 @@ namespace xng {
             CULL_BACK
         };
 
+        enum FaceCullingWinding {
+            CLOCKWISE,
+            COUNTER_CLOCKWISE
+        };
+
         enum BlendMode {
             ZERO,
             ONE,
@@ -100,28 +105,28 @@ namespace xng {
         bool enableDepthTest = false;
         bool depthTestWrite = false;
 
-        DepthTestMode depthTestMode = DepthTestMode::DEPTH_TEST_LESS;
+        DepthTestMode depthTestMode = DEPTH_TEST_LESS;
 
         bool enableStencilTest = false;
         unsigned int stencilTestMask = 0xFF;
-        StencilMode stencilMode = StencilMode::STENCIL_ALWAYS;
+        StencilMode stencilMode = STENCIL_ALWAYS;
         int stencilReference = 1;
         unsigned int stencilFunctionMask = 0xFF;
-        StencilAction stencilFail = StencilAction::STENCIL_KEEP;
-        StencilAction stencilDepthFail = StencilAction::STENCIL_KEEP;
-        StencilAction stencilPass = StencilAction::STENCIL_KEEP;
+        StencilAction stencilFail = STENCIL_KEEP;
+        StencilAction stencilDepthFail = STENCIL_KEEP;
+        StencilAction stencilPass = STENCIL_KEEP;
 
         bool enableFaceCulling = false;
-        FaceCullingMode faceCullMode = FaceCullingMode::CULL_BACK;
-        bool faceCullClockwiseWinding = false;
+        FaceCullingMode faceCullMode = CULL_BACK;
+        FaceCullingWinding faceCullWinding = COUNTER_CLOCKWISE;
 
         bool enableBlending = false;
-        BlendMode colorBlendSourceMode = BlendMode::SRC_ALPHA;
-        BlendMode colorBlendDestinationMode = BlendMode::ONE_MINUS_SRC_ALPHA;
-        BlendMode alphaBlendSourceMode = BlendMode::SRC_ALPHA;
-        BlendMode alphaBlendDestinationMode = BlendMode::ONE_MINUS_SRC_ALPHA;
-        BlendEquation colorBlendEquation = BlendEquation::BLEND_ADD;
-        BlendEquation alphaBlendEquation = BlendEquation::BLEND_ADD;
+        BlendMode colorBlendSourceMode = SRC_ALPHA;
+        BlendMode colorBlendDestinationMode = ONE_MINUS_SRC_ALPHA;
+        BlendMode alphaBlendSourceMode = SRC_ALPHA;
+        BlendMode alphaBlendDestinationMode = ONE_MINUS_SRC_ALPHA;
+        BlendEquation colorBlendEquation = BLEND_ADD;
+        BlendEquation alphaBlendEquation = BLEND_ADD;
 
         const ShaderAttributeLayout &getVertexLayout() const {
             for (auto &shader : shaders) {

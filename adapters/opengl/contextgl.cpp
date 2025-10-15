@@ -619,7 +619,7 @@ void ContextGL::bindPipeline(const RenderGraphResource pipeline) {
     }
 
     glCullFace(convert(pipelineDesc.faceCullMode));
-    if (pipelineDesc.faceCullClockwiseWinding)
+    if (pipelineDesc.faceCullWinding == RenderGraphPipeline::CLOCKWISE)
         glFrontFace(GL_CW);
     else
         glFrontFace(GL_CCW);
