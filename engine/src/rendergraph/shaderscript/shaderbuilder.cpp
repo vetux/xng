@@ -184,7 +184,6 @@ namespace xng::ShaderScript {
 
             auto condition = ShaderInstructionFactory::compareLessEqual(node.loopVariable, node.loopEnd);
 
-            nodes.push_back(ShaderInstruction(initializer));
             nodes.push_back(ShaderInstruction(ShaderInstructionFactory::loop(ShaderOperand(initializer),
                                                                          ShaderOperand(condition),
                                                                          ShaderOperand(incrementor),
