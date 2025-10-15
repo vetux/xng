@@ -119,9 +119,11 @@ namespace xng::shaderlib::shadowmapping {
             ARGUMENT(lightPos)
             ARGUMENT(fragPos)
 
+            // TODO: Make directional shadow map sampling compatible with generic NDC
             // perform perspective divide
             vec3 projCoords = fragPosLightSpace.xyz() / fragPosLightSpace.w();
             // transform to [0,1] range
+            // This assumes ndc z coordinate range of -1 to 1 which is true for OpenGL but not for Vulkan (0 to 1)
             projCoords = projCoords * 0.5f + 0.5f;
 
             // Check if position is outside projection
@@ -149,7 +151,7 @@ namespace xng::shaderlib::shadowmapping {
             Float bias = 0.005f;
 
             // Single Sample
-            {
+            /*{
                 // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
                 Float closestDepth = texture(shadowMap, vec3(projCoords.xy(), shadowMapIndex)).x();
                 If(currentDepth - bias > closestDepth);
@@ -161,11 +163,10 @@ namespace xng::shaderlib::shadowmapping {
                     Return(1.0f);
                 }
                 EndIf();
-            }
+            }*/
 
-            // TODO: Fix directional shadow PCF not outputting shadow value of 0 for fragments completely in shadow
             // PCF
-            /*{
+            {
                 Float shadow;
                 shadow = Float(0.0f);
                 vec2 texelSize = 1.0f / textureSize(shadowMap, 0).xy();
@@ -185,13 +186,14 @@ namespace xng::shaderlib::shadowmapping {
                         }
                         EndIf();
                     }
+                    EndFor();
                 }
                 EndFor();
 
                 shadow /= 9.0f;
 
                 Return(1.0f - shadow);
-            }*/
+            }
         }
         EndFunction();
     }
