@@ -154,8 +154,8 @@ void cameraController(Transform &cameraTransform, Window &window, double deltaTi
 }
 
 void lightController(Transform &lightTransform, Window &window, double deltaTime) {
-    constexpr float movementSpeed = 2;
-    constexpr float rotationSpeed = 45;
+    constexpr float movementSpeed = 0.5;
+    constexpr float rotationSpeed = 35;
     auto &input = window.getInput();
 
     Vec3f pos;
