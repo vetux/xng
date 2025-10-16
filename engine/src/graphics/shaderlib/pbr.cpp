@@ -32,6 +32,7 @@ namespace xng::shaderlib {
     DEFINE_FUNCTION4(GeometrySmith)
     DEFINE_FUNCTION2(FresnelSchlick)
 
+    //TODO: Fix pbr light colors other than white not correctly blending with albedo
     void pbr() {
         auto &builder = ShaderBuilder::instance();
         Struct(PbrPass,
