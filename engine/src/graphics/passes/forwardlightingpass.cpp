@@ -379,14 +379,14 @@ namespace xng {
     void ForwardLightingPass::runPass(RenderGraphContext &ctx) {
         if (recreateLightBuffers) {
             std::vector<PointLightData> pointLightData;
-            for (auto &light: pointLights) {
+            for (auto &lightObject: pointLights) {
                 PointLightData data{};
-                data.position = Vec4f(light.transform.getPosition().x,
-                                      light.transform.getPosition().y,
-                                      light.transform.getPosition().z,
+                data.position = Vec4f(lightObject.transform.getPosition().x,
+                                      lightObject.transform.getPosition().y,
+                                      lightObject.transform.getPosition().z,
                                       0).getMemory();
-                data.color = (light.light.color.divide() * light.light.power).getMemory();
-                data.farPlane = Vec4f(light.light.shadowFarPlane, 0, 0, 0).getMemory();
+                data.color = (lightObject.light.color.divide() * lightObject.light.power).getMemory();
+                data.farPlane = Vec4f(lightObject.light.shadowFarPlane, 0, 0, 0).getMemory();
                 pointLightData.emplace_back(data);
             }
             ctx.uploadBuffer(pointLightBuffer,
@@ -395,14 +395,14 @@ namespace xng {
                              0);
 
             pointLightData.clear();
-            for (auto &light: shadowPointLights) {
+            for (auto &lightObject: shadowPointLights) {
                 PointLightData data{};
-                data.position = Vec4f(light.transform.getPosition().x,
-                                      light.transform.getPosition().y,
-                                      light.transform.getPosition().z,
+                data.position = Vec4f(lightObject.transform.getPosition().x,
+                                      lightObject.transform.getPosition().y,
+                                      lightObject.transform.getPosition().z,
                                       0).getMemory();
-                data.color = (light.light.color.divide() * light.light.power).getMemory();
-                data.farPlane = Vec4f(light.light.shadowFarPlane, 0, 0, 0).getMemory();
+                data.color = (lightObject.light.color.divide() * lightObject.light.power).getMemory();
+                data.farPlane = Vec4f(lightObject.light.shadowFarPlane, 0, 0, 0).getMemory();
                 pointLightData.emplace_back(data);
             }
             ctx.uploadBuffer(shadowPointLightBuffer,
@@ -411,14 +411,15 @@ namespace xng {
                              0);
 
             std::vector<DirectionalLightData> directionalLightData;
-            for (auto &light: directionalLights) {
+            for (auto &lightObject: directionalLights) {
                 DirectionalLightData data{};
-                data.direction = Vec4f(light.transform.forward().x,
-                                       light.transform.forward().y,
-                                       light.transform.forward().z,
+                auto direction = lightObject.light.getDirection(lightObject.transform);
+                data.direction = Vec4f(direction.x,
+                                       direction.y,
+                                       direction.z,
                                        0).getMemory();
-                data.color = (light.light.color.divide() * light.light.power).getMemory();
-                data.farPlane = Vec4f(light.light.shadowFarPlane, 0, 0, 0).getMemory();
+                data.color = (lightObject.light.color.divide() * lightObject.light.power).getMemory();
+                data.farPlane = Vec4f(lightObject.light.shadowFarPlane, 0, 0, 0).getMemory();
                 directionalLightData.emplace_back(data);
             }
             ctx.uploadBuffer(directionalLightBuffer,
@@ -431,23 +432,15 @@ namespace xng {
             std::vector<Mat4f> directionalLightTransforms;
             for (auto &lightObject: shadowDirectionalLights) {
                 DirectionalLightData data{};
-                data.direction = Vec4f(lightObject.transform.forward().x,
-                                       lightObject.transform.forward().y,
-                                       lightObject.transform.forward().z,
+                auto direction = lightObject.light.getDirection(lightObject.transform);
+                data.direction = Vec4f(direction.x,
+                                       direction.y,
+                                       direction.z,
                                        0).getMemory();
                 data.color = (lightObject.light.color.divide() * lightObject.light.power).getMemory();
                 data.farPlane = Vec4f(lightObject.light.shadowFarPlane, 0, 0, 0).getMemory();
                 directionalLightData.emplace_back(data);
-                directionalLightTransforms.emplace_back(MatrixMath::ortho(-lightObject.light.shadowProjectionExtent,
-                                                                          lightObject.light.shadowProjectionExtent,
-                                                                          -lightObject.light.shadowProjectionExtent,
-                                                                          lightObject.light.shadowProjectionExtent,
-                                                                          lightObject.light.shadowNearPlane,
-                                                                          lightObject.light.shadowFarPlane)
-                                                        * MatrixMath::lookAt(lightObject.transform.getPosition(),
-                                                                             lightObject.transform.getPosition() +
-                                                                             lightObject.transform.forward(),
-                                                                             Vec3f(0, 1, 0)));
+                directionalLightTransforms.emplace_back(lightObject.light.getShadowProjection(lightObject.transform));
             }
             ctx.uploadBuffer(shadowDirectionalLightBuffer,
                              reinterpret_cast<const uint8_t *>(directionalLightData.data()),
@@ -460,22 +453,24 @@ namespace xng {
 
 
             std::vector<SpotLightData> spotLightData;
-            for (auto &light: spotLights) {
+            for (auto &lightObject: spotLights) {
                 SpotLightData data{};
-                data.position = Vec4f(light.transform.getPosition().x,
-                                      light.transform.getPosition().y,
-                                      light.transform.getPosition().z,
+                data.position = Vec4f(lightObject.transform.getPosition().x,
+                                      lightObject.transform.getPosition().y,
+                                      lightObject.transform.getPosition().z,
                                       0).getMemory();
-                data.direction_quadratic = Vec4f(light.transform.forward().x,
-                                                 light.transform.forward().y,
-                                                 light.transform.forward().z,
-                                                 light.light.quadratic).getMemory();
-                data.color = (light.light.color.divide() * light.light.power).getMemory();
-                data.farPlane = Vec4f(light.light.shadowFarPlane, 0, 0, 0).getMemory();
-                data.cutOff_outerCutOff_constant_linear = Vec4f(SpotLight::getCutOff(light.light.cutOff),
-                                                                SpotLight::getCutOff(light.light.outerCutOff),
-                                                                light.light.constant,
-                                                                light.light.linear).getMemory();
+
+                auto direction = lightObject.light.getDirection(lightObject.transform);
+                data.direction_quadratic = Vec4f(direction.x,
+                                                 direction.y,
+                                                 direction.z,
+                                                 lightObject.light.quadratic).getMemory();
+                data.color = (lightObject.light.color.divide() * lightObject.light.power).getMemory();
+                data.farPlane = Vec4f(lightObject.light.shadowFarPlane, 0, 0, 0).getMemory();
+                data.cutOff_outerCutOff_constant_linear = Vec4f(SpotLight::getCutOff(lightObject.light.cutOff),
+                                                                SpotLight::getCutOff(lightObject.light.outerCutOff),
+                                                                lightObject.light.constant,
+                                                                lightObject.light.linear).getMemory();
                 spotLightData.emplace_back(data);
             }
             ctx.uploadBuffer(spotLightBuffer,
@@ -486,31 +481,26 @@ namespace xng {
             spotLightData.clear();
             directionalLightTransforms.clear();
 
-            for (auto &light: shadowSpotLights) {
+            for (auto &lightObject: shadowSpotLights) {
                 SpotLightData data{};
-                data.position = Vec4f(light.transform.getPosition().x,
-                                      light.transform.getPosition().y,
-                                      light.transform.getPosition().z,
+                data.position = Vec4f(lightObject.transform.getPosition().x,
+                                      lightObject.transform.getPosition().y,
+                                      lightObject.transform.getPosition().z,
                                       0).getMemory();
-                data.direction_quadratic = Vec4f(light.transform.forward().x,
-                                                 light.transform.forward().y,
-                                                 light.transform.forward().z,
-                                                 light.light.quadratic).getMemory();
-                data.color = (light.light.color.divide() * light.light.power).getMemory();
-                data.farPlane = Vec4f(light.light.shadowFarPlane, 0, 0, 0).getMemory();
-                data.cutOff_outerCutOff_constant_linear = Vec4f(SpotLight::getCutOff(light.light.cutOff),
-                                                                SpotLight::getCutOff(light.light.outerCutOff),
-                                                                light.light.constant,
-                                                                light.light.linear).getMemory();
+
+                auto direction = lightObject.light.getDirection(lightObject.transform);
+                data.direction_quadratic = Vec4f(direction.x,
+                                                 direction.y,
+                                                 direction.z,
+                                                 lightObject.light.quadratic).getMemory();
+                data.color = (lightObject.light.color.divide() * lightObject.light.power).getMemory();
+                data.farPlane = Vec4f(lightObject.light.shadowFarPlane, 0, 0, 0).getMemory();
+                data.cutOff_outerCutOff_constant_linear = Vec4f(SpotLight::getCutOff(lightObject.light.cutOff),
+                                                                SpotLight::getCutOff(lightObject.light.outerCutOff),
+                                                                lightObject.light.constant,
+                                                                lightObject.light.linear).getMemory();
                 spotLightData.emplace_back(data);
-                directionalLightTransforms.emplace_back(MatrixMath::perspective(45,
-                                                            1,
-                                                            light.light.shadowNearPlane,
-                                                            light.light.shadowFarPlane)
-                                                        * MatrixMath::lookAt(light.transform.getPosition(),
-                                                                             light.transform.getPosition() + light.
-                                                                             transform.forward(),
-                                                                             Vec3f(0, 1, 0)));
+                directionalLightTransforms.emplace_back(lightObject.light.getShadowProjection(lightObject.transform));
             }
             ctx.uploadBuffer(shadowSpotLightBuffer,
                              reinterpret_cast<const uint8_t *>(spotLightData.data()),

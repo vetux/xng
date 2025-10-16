@@ -145,7 +145,7 @@ namespace xng {
         shaderlib::shadowmapping::sampleShadowPoint();
         shaderlib::shadowmapping::sampleShadowDirectional();
 
-        Float gDepth = texture(gBufferDepth, fUv).x();
+        Float gDepth = textureSample(gBufferDepth, fUv).x();
         If(gDepth == 1);
         {
             oColor = vec4(0, 0, 0, 0);
@@ -154,12 +154,12 @@ namespace xng {
         }
         EndIf();
 
-        Int receiveShadows = texture(gBufferObjectShadows, fUv).y();
+        Int receiveShadows = textureSample(gBufferObjectShadows, fUv).y();
 
-        vec3 fPos = texture(gBufferPos, fUv).xyz();
-        vec3 fNorm = texture(gBufferNormal, fUv).xyz();
-        vec3 roughnessMetallicAO = texture(gBufferRoughnessMetallicAO, fUv).xyz();
-        vec3 albedo = texture(gBufferAlbedo, fUv).xyz();
+        vec3 fPos = textureSample(gBufferPos, fUv).xyz();
+        vec3 fNorm = textureSample(gBufferNormal, fUv).xyz();
+        vec3 roughnessMetallicAO = textureSample(gBufferRoughnessMetallicAO, fUv).xyz();
+        vec3 albedo = textureSample(gBufferAlbedo, fUv).xyz();
 
         Object<PbrPass> pass;
         pass = pbr_begin(fPos,

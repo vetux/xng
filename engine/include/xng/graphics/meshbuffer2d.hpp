@@ -307,26 +307,26 @@ namespace xng {
 
             auto vertData = VertexBuilder()
                     .addVec2(Vec2f(0, 0))
-                    .addVec2(Vec2f(0, 0))
+                    .addVec2(Vec2f())
                     .build();
             vertexBuffer.insert(vertexBuffer.end(), vertData.begin(), vertData.end());
 
             vertData = VertexBuilder()
                     .addVec2(Vec2f(size.x, 0))
-                    .addVec2(Vec2f(1, 0))
+                    .addVec2(Vec2f())
                     .build();
             vertexBuffer.insert(vertexBuffer.end(), vertData.begin(), vertData.end());
 
             vertData = VertexBuilder()
                     .addVec2(Vec2f(0, size.y))
-                    .addVec2(Vec2f(0, 1))
+                    .addVec2(Vec2f())
                     .build();
             vertexBuffer.insert(vertexBuffer.end(), vertData.begin(), vertData.end());
 
             vertData = VertexBuilder()
                     .addVec2(Vec2f(size.x,
                                    size.y))
-                    .addVec2(Vec2f(1, 1))
+                    .addVec2(Vec2f())
                     .build();
             vertexBuffer.insert(vertexBuffer.end(), vertData.begin(), vertData.end());
 

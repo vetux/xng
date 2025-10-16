@@ -390,13 +390,15 @@ namespace xng::assimp {
 
         Assimp::Importer importer;
 
+        // This assumes the mesh was exported with uv origin at bottom left (Valid for blender and maya)
         const auto *scenePointer = importer.ReadFileFromMemory(assetBuffer.data(),
                                                                assetBuffer.size(),
                                                                aiProcess_Triangulate
                                                                | aiProcess_CalcTangentSpace
-                                                               | aiProcess_FlipUVs
                                                                | aiProcess_JoinIdenticalVertices
-                                                               | aiProcess_PopulateArmatureData,
+                                                               | aiProcess_PopulateArmatureData
+                                                               | aiProcess_MakeLeftHanded
+                                                               | aiProcess_FlipUVs,
                                                                hint.c_str());
 
         if (scenePointer == nullptr)

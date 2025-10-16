@@ -33,14 +33,32 @@ namespace xng {
 
         // The Near / Far plane of the orthographic projection used to generate the shadow map.
         // Must encompass the desired depth of the scene.
-        float shadowNearPlane = -100;
-        float shadowFarPlane = 100;
+        // Lar
+        float shadowNearPlane = -10;
+        float shadowFarPlane = 10;
 
         // The extent of the orthographic projection used for generating the shadow map.
         // Larger values mean a larger part of the scene is rendered into the shadow map.
         // The light transform controls the x, y offset for generating the shadow map.
         // The light transform should typically be synced to the camera position.
-        float shadowProjectionExtent = 10;
+        float shadowProjectionExtent = 1;
+
+        Mat4f getShadowProjection(const Transform &transform) const {
+            return MatrixMath::ortho(-shadowProjectionExtent,
+                                     shadowProjectionExtent,
+                                     -shadowProjectionExtent,
+                                     shadowProjectionExtent,
+                                     shadowNearPlane,
+                                     shadowFarPlane)
+                   * MatrixMath::inverse(transform.getRotation().matrix());
+        }
+
+        Vec3f getDirection(const Transform &transform) const {
+            // TODO: Find out reason why transform.forward() doesnt work for directional light direction.
+            // Light direction apparently needs to be calculated by taking non inverse of rotation and
+            // multiply by inverted forward vector. I have no idea why.
+            return transform.getRotation().matrix() * Vec3f(0, 0, -1);
+        }
 
         Messageable &operator<<(const Message &message) override {
             color << message.getMessage("color");

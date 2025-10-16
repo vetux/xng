@@ -31,6 +31,13 @@ RenderScene createScene() {
 
     Material material;
     SkinnedModelObject mesh;
+    mesh.castShadows = false;
+
+    mesh.model = ResourceHandle<SkinnedModel>(Uri("file://meshes/sphere.obj"));
+    mesh.transform.setScale(Vec3f(0.05f));
+    scene.skinnedModels.push_back(mesh);
+
+    mesh = {};
     mesh.castShadows = true;
 
     material = {};
@@ -38,6 +45,8 @@ RenderScene createScene() {
     material.albedoTexture = ResourceHandle<Texture>(Uri("file://images/cornell_boxcolor.png"));
     mesh.model = ResourceHandle<SkinnedModel>(Uri("file://meshes/cornell.fbx:Box"));
     mesh.materials[0] = material;
+    mesh.transform.setPosition(Vec3f(0, 0, 0));
+    mesh.transform.setRotation(Quaternion(Vec3f(0, 0, 0)));
     scene.skinnedModels.push_back(mesh);
 
     material = {};
@@ -50,6 +59,8 @@ RenderScene createScene() {
     material.normal = ResourceHandle<Texture>(Uri("file://images/subway_brick/old-subway-brick_normal-ogl.png"));
     mesh.model = ResourceHandle<SkinnedModel>(Uri("file://meshes/cornell.fbx:Cube"));
     mesh.materials[0] = material;
+    mesh.transform.setRotation(Quaternion(Vec3f(0, 0, 0)));
+
     scene.skinnedModels.push_back(mesh);
 
     material = {};
@@ -59,6 +70,8 @@ RenderScene createScene() {
     material.albedoTexture = ResourceHandle<Texture>(Uri("file://images/rusted_iron/rustediron2_basecolor.png"));
     mesh.model = ResourceHandle<SkinnedModel>(Uri("file://meshes/cornell.fbx:Sphere.001"));
     mesh.materials[0] = material;
+    mesh.transform.setRotation(Quaternion(Vec3f(0, 0, 0)));
+
     scene.skinnedModels.push_back(mesh);
 
     material = {};
@@ -72,6 +85,8 @@ RenderScene createScene() {
     material.albedo = ColorRGBA::white(1, 255);
     mesh.model = ResourceHandle<SkinnedModel>(Uri("file://meshes/cornell.fbx:Sphere.002"));
     mesh.materials[0] = material;
+    mesh.transform.setRotation(Quaternion(Vec3f(0, 0, 0)));
+
     scene.skinnedModels.push_back(mesh);
 
     PointLightObject light;
@@ -81,20 +96,20 @@ RenderScene createScene() {
     scene.pointLights.emplace_back(light);
 
     DirectionalLightObject dirLight;
-    dirLight.light.power = 2;
+    dirLight.light.power = 0.5f;
     dirLight.light.castShadows = true;
-    dirLight.transform.setRotation(Quaternion(Vec3f(0, 180, 0)));
-    //scene.directionalLights.emplace_back(dirLight);
+    dirLight.transform.setRotation(Quaternion(Vec3f(45, 45, 0)));
+    scene.directionalLights.emplace_back(dirLight);
 
     SpotLightObject spotLight;
     spotLight.light.castShadows = true;
-    spotLight.light.power = 2;
-    spotLight.transform.setPosition(Vec3f(0, 0, -2));
+    spotLight.light.power = 3;
+    spotLight.transform.setPosition(Vec3f(0, 0, 0));
     spotLight.transform.setRotation(Quaternion(Vec3f(0, 0, 0)));
-    //scene.spotLights.emplace_back(spotLight);
+    scene.spotLights.emplace_back(spotLight);
 
     scene.camera.nearClip = 0.001f;
-    scene.cameraTransform.setRotation(Quaternion(Vec3f(0, 180, 0)));
+    scene.cameraTransform.setRotation(Quaternion(Vec3f(0, 0, 0)));
     scene.cameraTransform.setPosition(Vec3f(0, 0, -2));
 
     return scene;
@@ -107,18 +122,18 @@ void cameraController(Transform &cameraTransform, Window &window, double deltaTi
     auto &mouse = input.getMouse();
     if (mouse.getButton(MOUSE_BUTTON_RIGHT)) {
         constexpr float rotationSpeed = 90;
-        auto rot = Vec3d(0, -(mouse.positionDelta.x / window.getFramebufferSize().x) * rotationSpeed, 0);
+        auto rot = Vec3d(0, (mouse.positionDelta.x / window.getFramebufferSize().x) * rotationSpeed, 0);
         cameraTransform.applyRotation(Quaternion(rot.convert<float>()), true);
 
-        rot = Vec3d(-(mouse.positionDelta.y / window.getFramebufferSize().y) * rotationSpeed, 0, 0);
+        rot = Vec3d((mouse.positionDelta.y / window.getFramebufferSize().y) * rotationSpeed, 0, 0);
         cameraTransform.applyRotation(Quaternion(rot.convert<float>()), false);
     }
 
     Vec3f movement{};
     if (input.getKey(KEY_W)) {
-        movement.y = -1;
-    } else if (input.getKey(KEY_S)) {
         movement.y = 1;
+    } else if (input.getKey(KEY_S)) {
+        movement.y = -1;
     }
     if (input.getKey(KEY_A)) {
         movement.x = 1;
@@ -137,6 +152,44 @@ void cameraController(Transform &cameraTransform, Window &window, double deltaTi
                                 + cameraTransform.left() * (movement.x * movementSpeed * deltaTime));
     cameraTransform.setPosition(cameraTransform.getPosition()
                                 + Vec3f(0, 1, 0) * (movement.z * movementSpeed * deltaTime));
+}
+
+void lightController(Transform &lightTransform, Window &window, double deltaTime) {
+    constexpr float movementSpeed = 2;
+    constexpr float rotationSpeed = 45;
+    auto &input = window.getInput();
+
+    Vec3f pos;
+    Vec3f rot;
+
+    if (input.getKey(KEY_LSHIFT)) {
+        if (input.getKey(KEY_UP)) {
+            pos.z = 1;
+        } else if (input.getKey(KEY_DOWN)) {
+            pos.z = -1;
+        }
+        if (input.getKey(KEY_LEFT)) {
+            pos.x = -1;
+        } else if (input.getKey(KEY_RIGHT)) {
+            pos.x = 1;
+        }
+    } else {
+        if (input.getKey(KEY_UP)) {
+            rot.x = -1;
+        } else if (input.getKey(KEY_DOWN)) {
+            rot.x = 1;
+        }
+        if (input.getKey(KEY_LEFT)) {
+            rot.y = -1;
+        } else if (input.getKey(KEY_RIGHT)) {
+            rot.y = 1;
+        }
+    }
+
+    lightTransform.applyRotation(Quaternion(Vec3f(rot.x, 0, 0) * rotationSpeed * deltaTime), true);
+    lightTransform.applyRotation(Quaternion(Vec3f(0, rot.y, 0) * rotationSpeed * deltaTime), false);
+
+    lightTransform.setPosition(lightTransform.getPosition() + pos * movementSpeed * deltaTime);
 }
 
 int main(int argc, char *argv[]) {
@@ -250,6 +303,9 @@ int main(int argc, char *argv[]) {
         scene.camera.aspectRatio = static_cast<float>(fbSize.x)
                                    / static_cast<float>(fbSize.y);
         cameraController(scene.cameraTransform, *window, frameLimiter.getDeltaTimeSeconds());
+        lightController(scene.spotLights.at(0).transform, *window, frameLimiter.getDeltaTimeSeconds());
+        scene.skinnedModels.at(0).transform.setPosition(scene.spotLights.at(0).transform.getPosition());
+        scene.skinnedModels.at(0).transform.setRotation(scene.spotLights.at(0).transform.getRotation());
         config->setScene(scene);
 
         auto fbSizeF = fbSize.convert<float>();

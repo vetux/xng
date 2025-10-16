@@ -58,12 +58,16 @@ namespace xng {
          *
          * Subsequent access to the texture is guaranteed to receive the uploaded data.
          *
-         * @param texture
+         * The buffer is uploaded top to bottom meaning the first row in the buffer corresponds to the top row.
+         *
+         * @param texture The texture to upload into
          * @param buffer The buffer holding the pixel data
          * @param bufferSize The size of the buffer
-         * @param bufferFormat The format of the pixel data in the buffer, must be one of the base formats in ColorFormat
+         * @param bufferFormat The format of the pixel data in the buffer, must be R/RG/RGB or RGBA
          * @param index The index of the texture to upload into if the passed texture is an array texture
          * @param face The face of the texture to upload into if texture is a cube map texture
+         * @param size The width / height of the pixel data in buffer, must be smaller or equal to the texture size.
+         * @param offset The offset (Origin top-left) into the texture to upload into
          * @param mipMapLevel
          */
         virtual void uploadTexture(RenderGraphResource texture,
@@ -72,22 +76,9 @@ namespace xng {
                                    ColorFormat bufferFormat,
                                    size_t index,
                                    CubeMapFace face,
-                                   size_t mipMapLevel) = 0;
-
-        void uploadTexture(const RenderGraphResource texture,
-                           const uint8_t *buffer,
-                           const size_t bufferSize,
-                           const ColorFormat format) {
-            uploadTexture(texture, buffer, bufferSize, format, 0, {}, 0);
-        }
-
-        void uploadTexture(const RenderGraphResource texture,
-                           const uint8_t *buffer,
-                           const size_t bufferSize,
-                           const ColorFormat format,
-                           const size_t index) {
-            uploadTexture(texture, buffer, bufferSize, format, index, {}, 0);
-        }
+                                   size_t mipMapLevel,
+                                   const Vec2i &size,
+                                   const Vec2i &offset) = 0;
 
         virtual void generateMipMaps(RenderGraphResource texture) = 0;
 

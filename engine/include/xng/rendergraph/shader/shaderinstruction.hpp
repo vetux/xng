@@ -77,8 +77,18 @@ namespace xng {
             CreateStruct,
 
             // Texture / Buffer Access
-            TextureFetch,
             TextureSample,
+            TextureSampleArray,
+
+            TextureSampleCubeMap,
+            TextureSampleCubeMapArray,
+
+            TextureFetch,
+            TextureFetchArray,
+
+            TextureFetchMS,
+            TextureFetchMSArray,
+
             TextureSize,
             BufferSize,
 

@@ -39,7 +39,7 @@ public:
 
     explicit ContextGL(std::shared_ptr<OGLTexture> backBufferColor,
                        std::shared_ptr<OGLTexture> backBufferDepthStencil,
-                       const GraphResources& res,
+                       const GraphResources &res,
                        RenderGraphStatistics &stats)
         : vertexArray(std::make_shared<OGLVertexArrayObject>()),
           backBufferColor(std::move(backBufferColor)),
@@ -59,7 +59,9 @@ public:
                        ColorFormat bufferFormat,
                        size_t index,
                        CubeMapFace face,
-                       size_t mipMapLevel) override;
+                       size_t mipMapLevel,
+                       const Vec2i &size,
+                       const Vec2i &offset) override;
 
     void generateMipMaps(RenderGraphResource texture) override;
 

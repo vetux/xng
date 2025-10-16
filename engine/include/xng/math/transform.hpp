@@ -27,6 +27,9 @@
 #include "xng/io/message.hpp"
 
 namespace xng {
+    /**
+     * TODO: NDC Independent transform coordinate space
+     */
     class XENGINE_EXPORT Transform : public Messageable {
     public:
         Transform() = default;
@@ -48,11 +51,15 @@ namespace xng {
             return *this;
         }
 
-        Vec3f rotate(Vec3f vec) const {
-            Vec4f ret = MatrixMath::inverse(mRotation.matrix()) * Vec4f(vec.x, vec.y, vec.z, 1);
-            return Vec3f(ret.x, ret.y, ret.z);
-        }
-
+        /**
+         * The coordinate space of the returned model matrix is left-handed.
+         *
+         * +X = Right
+         * +Y = Up
+         * +Z = Forward
+         *
+         * @return
+         */
         Mat4f model() const {
             return MatrixMath::translate(mPosition) * mRotation.matrix() * MatrixMath::scale(mScale);
         }
@@ -96,15 +103,15 @@ namespace xng {
         }
 
         Vec3f forward() const {
-            return rotate(Vec3f(0, 0, 1));
+            return MatrixMath::inverse(mRotation.matrix()) * (Vec3f(0, 0, 1));
         }
 
         Vec3f up() const {
-            return rotate(Vec3f(0, 1, 0));
+            return MatrixMath::inverse(mRotation.matrix()) * (Vec3f(0, 1, 0));
         }
 
         Vec3f left() const {
-            return rotate(Vec3f(-1, 0, 0));
+            return MatrixMath::inverse(mRotation.matrix()) * (Vec3f(-1, 0, 0));
         }
 
         bool operator==(const Transform &other) const {

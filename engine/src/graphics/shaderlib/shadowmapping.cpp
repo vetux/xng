@@ -55,6 +55,7 @@ namespace xng::shaderlib::shadowmapping {
             Float fSamples = 20.0f;
 
             vec3 fragToLight = fragPos - lightPos;
+            fragToLight.z() *= -1;
 
             Float currentDepth = length(fragToLight);
 
@@ -75,7 +76,7 @@ namespace xng::shaderlib::shadowmapping {
             For(i, 0, samples - 1, 1);
             {
                 vec3 sampleDir = fragToLight + gridSamplingDisk[i] * diskRadius;
-                Float closestDepth = texture(depthMap, vec4(sampleDir, depthMapIndex)).x();
+                Float closestDepth = textureSampleCubeArray(depthMap, vec4(sampleDir, depthMapIndex)).x();
 
                 // closestDepth contains linear depth produced by the shadow mapping pass.
 
@@ -141,15 +142,11 @@ namespace xng::shaderlib::shadowmapping {
             Float currentDepth = projCoords.z();
 
             // TODO: Fix bias calculation
-            /*
             // calculate bias (based on depth map resolution and slope)
             vec3 normal = normalize(Normal);
             vec3 lightDir = normalize(lightPos - fragPos);
-            Float bias = max(0.05f * (1.0f - dot(normal, lightDir)), 0.005f);
-            */
-
-            Float bias = 0.005f;
-
+            Float bias = max(0.01f * (1.0f - dot(normal, lightDir)), 0.001f);
+            bias = Float(0.001f);
             // Single Sample
             /*{
                 // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
@@ -178,7 +175,9 @@ namespace xng::shaderlib::shadowmapping {
                     y = Int(0);
                     For(y, -1, 1, 1);
                     {
-                        Float pcfDepth = texture(shadowMap, vec3(projCoords.xy() + vec2(x, y) * texelSize, shadowMapIndex)).
+                        vec2 coords = projCoords.xy() + vec2(x, y) * texelSize;
+                        coords.y() = 1.0f - coords.y();
+                        Float pcfDepth = textureSampleArray(shadowMap, vec3(coords, shadowMapIndex)).
                                 x();
                         If(currentDepth - bias > pcfDepth);
                         {

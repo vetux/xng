@@ -17,6 +17,8 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#include <cstring>
+
 #include "contextgl.hpp"
 
 #include "colorbytesize.hpp"
@@ -69,59 +71,76 @@ void ContextGL::uploadTexture(const RenderGraphResource texture,
                               const ColorFormat bufferFormat,
                               const size_t index,
                               const CubeMapFace face,
-                              const size_t mipMapLevel) {
+                              const size_t mipMapLevel,
+                              const Vec2i &size,
+                              const Vec2i &offset) {
     oglDebugStartGroup("ContextGL::uploadTexture");
 
+    if (bufferSize != size.x * size.y * getColorByteSize(bufferFormat)) {
+        throw std::runtime_error("Invalid buffer size");
+    }
+
+    // Invert the rows because opengl requires bottom-up texture data
+    uint8_t *bufferCpy = new uint8_t[bufferSize];
+    for (auto row = 0; row < size.y; ++row) {
+        auto dstOffset = row * size.x * getColorByteSize(bufferFormat);
+        auto srcOffset = (size.y - row - 1) * size.x * getColorByteSize(bufferFormat);
+        memcpy(bufferCpy + dstOffset, buffer + srcOffset, size.x * getColorByteSize(bufferFormat));
+    }
+
     auto &tex = resources.textures.at(texture);
+
+    auto &textureSize = tex->texture.size;
 
     glBindTexture(tex->textureType, tex->handle);
     if (tex->textureType == GL_TEXTURE_2D) {
         glTexSubImage2D(GL_TEXTURE_2D,
                         static_cast<GLint>(mipMapLevel),
-                        0,
-                        0,
-                        tex->texture.size.x,
-                        tex->texture.size.y,
+                        offset.x,
+                        textureSize.y - offset.y - 1 - size.y + 1,
+                        size.x,
+                        size.y,
                         convert(bufferFormat),
                         GL_UNSIGNED_BYTE,
-                        buffer);
+                        bufferCpy);
     } else if (tex->textureType == GL_TEXTURE_CUBE_MAP) {
         glTexSubImage2D(convert(face),
                         static_cast<GLint>(mipMapLevel),
-                        0,
-                        0,
+                        offset.x,
+                        textureSize.y - offset.y - 1 - size.y + 1,
                         tex->texture.size.x,
                         tex->texture.size.y,
                         convert(bufferFormat),
                         GL_UNSIGNED_BYTE,
-                        buffer);
+                        bufferCpy);
     } else if (tex->textureType == GL_TEXTURE_2D_ARRAY) {
         glTexSubImage3D(tex->textureType,
                         static_cast<GLint>(mipMapLevel),
-                        0,
-                        0,
+                        offset.x,
+                        textureSize.y - offset.y - 1 - size.y + 1,
                         static_cast<GLint>(index),
-                        tex->texture.size.x,
-                        tex->texture.size.y,
+                        size.x,
+                        size.y,
                         1,
                         convert(bufferFormat),
                         GL_UNSIGNED_BYTE,
-                        buffer);
+                        bufferCpy);
     } else if (tex->textureType == GL_TEXTURE_CUBE_MAP_ARRAY) {
         glTexSubImage3D(tex->textureType,
                         static_cast<GLint>(mipMapLevel),
-                        0,
-                        0,
+                        offset.x,
+                        textureSize.y - offset.y - 1 - size.y + 1,
                         static_cast<GLint>(index) * 6 + face,
-                        tex->texture.size.x,
-                        tex->texture.size.y,
+                        size.x,
+                        size.y,
                         1,
                         convert(bufferFormat),
                         GL_UNSIGNED_BYTE,
-                        buffer);
+                        bufferCpy);
     } else {
         throw std::runtime_error("Invalid texture type");
     }
+    delete[] bufferCpy;
     glBindTexture(tex->textureType, 0);
     oglCheckError();
 

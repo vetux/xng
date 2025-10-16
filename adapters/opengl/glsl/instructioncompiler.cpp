@@ -72,8 +72,20 @@ namespace InstructionCompiler {
                 return compileCreateStruct(instruction, source, functionName, indent);
             case ShaderInstruction::TextureFetch:
                 return compileTextureFetch(instruction, source, functionName, indent);
+            case ShaderInstruction::TextureFetchArray:
+                return compileTextureFetchArray(instruction, source, functionName, indent);
+            case ShaderInstruction::TextureFetchMS:
+                return compileTextureFetchMS(instruction, source, functionName, indent);
+            case ShaderInstruction::TextureFetchMSArray:
+                return compileTextureFetchMSArray(instruction, source, functionName, indent);
             case ShaderInstruction::TextureSample:
                 return compileTextureSample(instruction, source, functionName, indent);
+            case ShaderInstruction::TextureSampleArray:
+                return compileTextureSampleArray(instruction, source, functionName, indent);
+            case ShaderInstruction::TextureSampleCubeMap:
+                return compileTextureSampleCubeMap(instruction, source, functionName, indent);
+            case ShaderInstruction::TextureSampleCubeMapArray:
+                return compileTextureSampleCubeMapArray(instruction, source, functionName, indent);
             case ShaderInstruction::TextureSize:
                 return compileTextureSize(instruction, source, functionName, indent);
             case ShaderInstruction::BufferSize:
@@ -245,22 +257,114 @@ namespace InstructionCompiler {
                                      const Shader &source,
                                      const std::string &functionName,
                                      const std::string &indent) {
-        if (instruction.operands.at(1).isAssigned()) {
-            return "texture("
-                   + compileOperand(instruction.operands.at(0), source, functionName) + ", "
-                   + compileOperand(instruction.operands.at(1), source, functionName) + ")";
+        auto name = compileOperand(instruction.operands.at(0), source, functionName);
+        auto coords = compileOperand(instruction.operands.at(1), source, functionName);
+        coords = "vec2(" + coords + ".x, 1 - " + coords + ".y)";
+        if (instruction.operands.at(2).isAssigned()) {
+            auto lod = compileOperand(instruction.operands.at(2), source, functionName);
+            return "texture(" + name + ", " + coords + ", " + lod + ")";
         }
-        return "texture(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
+        return "texture(" + name + ", " + coords + ")";
+    }
+
+    std::string compileTextureSampleArray(const ShaderInstruction &instruction,
+                                          const Shader &source,
+                                          const std::string &functionName,
+                                          const std::string &indent) {
+        auto name = compileOperand(instruction.operands.at(0), source, functionName);
+        auto coords = compileOperand(instruction.operands.at(1), source, functionName);
+        coords = "vec3(" + coords + ".x, 1 - " + coords + ".y, " + coords + ".z)";
+        if (instruction.operands.at(2).isAssigned()) {
+            auto lod = compileOperand(instruction.operands.at(2), source, functionName);
+            return "texture(" + name + ", " + coords + ", " + lod + ")";
+        }
+        return "texture(" + name + ", " + coords + ")";
+    }
+
+    std::string compileTextureSampleCubeMap(const ShaderInstruction &instruction,
+                                            const Shader &source,
+                                            const std::string &functionName,
+                                            const std::string &indent) {
+        auto name = compileOperand(instruction.operands.at(0), source, functionName);
+        auto coords = compileOperand(instruction.operands.at(1), source, functionName);
+        if (instruction.operands.at(2).isAssigned()) {
+            auto lod = compileOperand(instruction.operands.at(2), source, functionName);
+            return "texture(" + name + ", " + coords + ", " + lod + ")";
+        }
+        return "texture(" + name + ", " + coords + ")";
+    }
+
+    std::string compileTextureSampleCubeMapArray(const ShaderInstruction &instruction,
+                                                 const Shader &source,
+                                                 const std::string &functionName,
+                                                 const std::string &indent) {
+        auto name = compileOperand(instruction.operands.at(0), source, functionName);
+        auto coords = compileOperand(instruction.operands.at(1), source, functionName);
+        if (instruction.operands.at(2).isAssigned()) {
+            auto lod = compileOperand(instruction.operands.at(2), source, functionName);
+            return "texture(" + name + ", " + coords + ", " + lod + ")";
+        }
+        return "texture(" + name + ", " + coords + ")";
     }
 
     std::string compileTextureFetch(const ShaderInstruction &instruction,
                                     const Shader &source,
                                     const std::string &functionName,
                                     const std::string &indent) {
+        auto name = compileOperand(instruction.operands.at(0), source, functionName);
+        auto coords = compileOperand(instruction.operands.at(1), source, functionName);
+        auto lod = compileOperand(instruction.operands.at(2), source, functionName);
+        auto sizeY = "textureSize(" + name + ", " + lod + ").y";
+        coords = "ivec2(" + coords + ".x, " + sizeY + " - " + coords + ".y)";
         return "texelFetch("
-               + compileOperand(instruction.operands.at(0), source, functionName) + ", "
-               + compileOperand(instruction.operands.at(1), source, functionName) + ", "
-               + compileOperand(instruction.operands.at(2), source, functionName) + ")";
+               + name + ", "
+               + coords + ", "
+               + lod + ")";
+    }
+
+    std::string compileTextureFetchArray(const ShaderInstruction &instruction,
+                                         const Shader &source,
+                                         const std::string &functionName,
+                                         const std::string &indent) {
+        auto name = compileOperand(instruction.operands.at(0), source, functionName);
+        auto coords = compileOperand(instruction.operands.at(1), source, functionName);
+        auto lod = compileOperand(instruction.operands.at(2), source, functionName);
+        auto sizeY = "textureSize(" + name + ", " + lod + ").y";
+        coords = "ivec3(" + coords + ".x, " + sizeY + " - " + coords + ".y, " + coords + ".z)";
+        return "texelFetch("
+               + name + ", "
+               + coords + ", "
+               + lod + ")";
+    }
+
+    std::string compileTextureFetchMS(const ShaderInstruction &instruction,
+                                      const Shader &source,
+                                      const std::string &functionName,
+                                      const std::string &indent) {
+        auto name = compileOperand(instruction.operands.at(0), source, functionName);
+        auto coords = compileOperand(instruction.operands.at(1), source, functionName);
+        auto sample = compileOperand(instruction.operands.at(2), source, functionName);
+        auto sizeY = "textureSize(" + name + ").y";
+        coords = "ivec2(" + coords + ".x, " + sizeY + " - " + coords + ".y)";
+        return "texelFetch("
+               + name + ", "
+               + coords + ", "
+               + sample + ")";
+    }
+
+    std::string compileTextureFetchMSArray(const ShaderInstruction &instruction,
+                                           const Shader &source,
+                                           const std::string &functionName,
+                                           const std::string &indent) {
+        auto name = compileOperand(instruction.operands.at(0), source, functionName);
+        auto coords = compileOperand(instruction.operands.at(1), source, functionName);
+        auto sample = compileOperand(instruction.operands.at(2), source, functionName);
+        auto sizeY = "textureSize(" + name + ").y";
+        coords = "ivec3(" + coords + ".x, " + sizeY + " - " + coords + ".y, " + coords + ".z)";
+        return "texelFetch("
+               + name + ", "
+               + coords + ", "
+               + sample + ")";
     }
 
     std::string compileTextureSize(const ShaderInstruction &instruction,

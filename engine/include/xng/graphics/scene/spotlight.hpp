@@ -41,7 +41,23 @@ namespace xng {
 
         bool castShadows = true;
         float shadowNearPlane = 0.1;
-        float shadowFarPlane = 20;
+        float shadowFarPlane = 1000;
+
+        Mat4f getShadowProjection(const Transform &transform) const {
+            return MatrixMath::perspective(45,
+                                           1,
+                                           shadowNearPlane,
+                                           shadowFarPlane)
+                   * MatrixMath::inverse(transform.getRotation().matrix())
+                   * MatrixMath::translate(transform.getPosition() * -1);
+        }
+
+        Vec3f getDirection(const Transform &transform) const {
+            // TODO: Find out reason why transform.forward() doesnt work for directional light direction.
+            // Light direction apparently needs to be calculated by taking non inverse of rotation and
+            // multiply by inverted forward vector. I have no idea why.
+            return transform.getRotation().matrix() * Vec3f(0, 0, -1);
+        }
 
         Messageable &operator<<(const Message &message) override {
             color << message.getMessage("color");

@@ -349,13 +349,13 @@ namespace xng {
 
                 Camera camera;
                 camera.type = ORTHOGRAPHIC;
-                camera.top = text.text.size.y;
+                camera.top = 0;
                 camera.left = 0;
                 camera.right = text.text.size.x;
-                camera.bottom = 0;
+                camera.bottom = text.text.size.y;
 
                 auto viewProjection = camera.projection()
-                                      * Camera::view(Transform(Vec3f(0, 0, 1), Vec3f(), Vec3f()));
+                                      * Camera::view(Transform(Vec3f(0, 0, -1), Vec3f(), Vec3f()));
 
                 auto &glyphTextureHandles = glyphTextures.at({text.text.fontUri, text.text.fontPixelSize});
                 for (auto &glyph: text.text.glyphs) {

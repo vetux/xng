@@ -83,17 +83,17 @@ namespace xng {
                 {"position", ShaderDataType::vec3()},
                 {"uv", ShaderDataType::vec2()}
             });
-            auto vertData = VertexBuilder().addVec3(Vec3f(-1, 1, 0)).addVec2(Vec2f(0, 1)).build();
+            auto vertData = VertexBuilder().addVec3(Vec3f(-1, 1, 0)).addVec2(Vec2f(0, 0)).build();
             nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
-            vertData = VertexBuilder().addVec3(Vec3f(1, 1, 0)).addVec2(Vec2f(1, 1)).build();
+            vertData = VertexBuilder().addVec3(Vec3f(1, 1, 0)).addVec2(Vec2f(1, 0)).build();
             nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
-            vertData = VertexBuilder().addVec3(Vec3f(1, -1, 0)).addVec2(Vec2f(1, 0)).build();
+            vertData = VertexBuilder().addVec3(Vec3f(1, -1, 0)).addVec2(Vec2f(1, 1)).build();
             nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
-            vertData = VertexBuilder().addVec3(Vec3f(-1, 1, 0)).addVec2(Vec2f(0, 1)).build();
+            vertData = VertexBuilder().addVec3(Vec3f(-1, 1, 0)).addVec2(Vec2f(0, 0)).build();
             nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
-            vertData = VertexBuilder().addVec3(Vec3f(1, -1, 0)).addVec2(Vec2f(1, 0)).build();
+            vertData = VertexBuilder().addVec3(Vec3f(1, -1, 0)).addVec2(Vec2f(1, 1)).build();
             nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
-            vertData = VertexBuilder().addVec3(Vec3f(-1, -1, 0)).addVec2(Vec2f(0, 0)).build();
+            vertData = VertexBuilder().addVec3(Vec3f(-1, -1, 0)).addVec2(Vec2f(0, 1)).build();
             nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
         }
         return nQuad;

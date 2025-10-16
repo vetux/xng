@@ -31,12 +31,16 @@ namespace xng {
                               const TextureAtlasHandle &handle,
                               const std::unordered_map<TextureAtlasResolution, RenderGraphResource> &atlasBuffers,
                               const ImageRGBA &texture) {
-        auto img = getAlignedImage(texture, handle.level);
+        auto buffer = texture.getBuffer();
         ctx.uploadTexture(atlasBuffers.at(handle.level),
-                          reinterpret_cast<const uint8_t *>(img.getBuffer().data()),
-                          img.getBuffer().size() * sizeof(ColorRGBA),
+                          reinterpret_cast<const uint8_t *>(buffer.data()),
+                          buffer.size() * sizeof(ColorRGBA),
                           RGBA,
-                          handle.index);
+                          handle.index,
+                          {},
+                          0,
+                          texture.getResolution(),
+                          {});
     }
 
     TextureAtlas::TextureAtlas(std::map<TextureAtlasResolution, std::vector<bool> > bufferOccupations)

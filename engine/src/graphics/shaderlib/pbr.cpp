@@ -269,7 +269,6 @@ namespace xng::shaderlib {
             vec3 camPos = pass["camPos"];
 
             // calculate per-light radiance
-
             vec3 L = normalize(direction);
             vec3 H = normalize(V + L);
 
@@ -349,7 +348,7 @@ namespace xng::shaderlib {
 
             vec3 lightDir = normalize(position - WorldPos);
 
-            Float theta = dot(lightDir, normalize(direction * -1));
+            Float theta = dot(lightDir, normalize(direction));
             Float epsilon = (cutOff - outerCutOff);
             Float intensity = clamp((theta - outerCutOff) / epsilon, 0.0f, 1.0f);
 

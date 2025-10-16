@@ -337,6 +337,7 @@ namespace xng {
         fPosition = lightData["shadowMatrix"]
                     * drawData["model"]
                     * getSkinnedVertexPosition(drawData["boneOffset"].x());
+
         setVertexPosition(fPosition);
 
         return BuildShader();

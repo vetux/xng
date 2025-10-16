@@ -60,9 +60,9 @@ namespace xng {
         Texture(layerDepth, TEXTURE_2D, DEPTH);
 
         // TODO: Implement supersampling
-        color = texture(layerColor, fUv);
+        color = textureSample(layerColor, fUv);
 
-        setFragmentDepth(texture(layerDepth, fUv).x());
+        setFragmentDepth(textureSample(layerDepth, fUv).x());
 
         return BuildShader();
     }

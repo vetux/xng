@@ -84,13 +84,119 @@ namespace xng::ShaderInstructionFactory {
 
     XENGINE_EXPORT ShaderInstruction createStruct(ShaderStructTypeName typeName);
 
+    /**
+     * Fetch a texel of a TEXTURE_2D.
+     *
+     * UV Coordinates origin is upper left.
+     *
+     * @param texture
+     * @param coordinate A 2d integer vector specifying the texel coordinates
+     * @param lod
+     * @return
+     */
     XENGINE_EXPORT ShaderInstruction textureFetch(ShaderOperand texture,
                                                   ShaderOperand coordinate,
-                                                  ShaderOperand index = {});
+                                                  ShaderOperand lod = {});
 
+    /**
+     * Fetch a texel of a TEXTURE_2D_ARRAY.
+     *
+     * UV Coordinates origin is upper left.
+     *
+     * @param texture
+     * @param coordinate A 3d integer vector specifying the texel coordinates in x/y and the array layer in z.
+     * @param lod
+     * @return
+     */
+    XENGINE_EXPORT ShaderInstruction textureFetchArray(ShaderOperand texture,
+                                                       ShaderOperand coordinate,
+                                                       ShaderOperand lod = {});
+
+    /**
+     * Fetch a texel of a TEXTURE_2D_MULTISAMPLE texture.
+     *
+     * UV Coordinates origin is upper left.
+     *
+     * @param texture
+     * @param coordinate A 2d integer vector specifying the texel coordinates
+     * @param sample The sample index
+     * @return
+     */
+    XENGINE_EXPORT ShaderInstruction textureFetchMS(ShaderOperand texture,
+                                                    ShaderOperand coordinate,
+                                                    ShaderOperand sample = {});
+
+    /**
+     * Fetch a texel of a TEXTURE_2D_MULTISAMPLE_ARRAY texture.
+     *
+     * UV Coordinates origin is upper left.
+     *
+     * @param texture
+     * @param coordinate A 3d integer vector specifying the texel coordinates in x/y and the array layer in z.
+     * @param sample The sample index
+     * @return
+     */
+    XENGINE_EXPORT ShaderInstruction textureFetchMSArray(ShaderOperand texture,
+                                                         ShaderOperand coordinate,
+                                                         ShaderOperand sample = {});
+
+    /**
+     * Sample a TEXTURE_2D.
+     *
+     * UV Coordinates origin is upper left.
+     *
+     * @param texture
+     * @param coordinate A 2d float vector specifying the uv coordinates.
+     * @param bias Optional bias to apply during level-of-detail computation.
+     * @return
+     */
     XENGINE_EXPORT ShaderInstruction textureSample(ShaderOperand texture,
                                                    ShaderOperand coordinate,
                                                    ShaderOperand bias = {});
+
+    /**
+     * Sample a TEXTURE_2D_ARRAY, TEXTURE_2D_MULTISAMPLE_ARRAY texture.
+     *
+     * UV Coordinates origin is upper left.
+     *
+     * @param texture
+     * @param coordinate A 3d float vector specifying the uv coordinates in x/y and the array layer in z.
+     * @param bias Optional bias to apply during level-of-detail computation.
+     * @return
+     */
+    XENGINE_EXPORT ShaderInstruction textureSampleArray(ShaderOperand texture,
+                                                        ShaderOperand coordinate,
+                                                        ShaderOperand bias = {});
+
+    /**
+     * Sample a TEXTURE_CUBE_MAP texture.
+     *
+     * The sampled texel is computed by interpreting the coordinate in left hand coordinate space
+     * matching OpenGL and Vulkan conventions.
+     *
+     * @param texture
+     * @param coordinate A 3d float vector specifying the point to sample.
+     * @param bias Optional bias to apply during level-of-detail computation.
+     * @return
+     */
+    XENGINE_EXPORT ShaderInstruction textureSampleCubeMap(ShaderOperand texture,
+                                                          ShaderOperand coordinate,
+                                                          ShaderOperand bias = {});
+
+    /**
+     * Sample a TEXTURE_CUBE_MAP_ARRAY texture.
+     *
+     * The sampled texel is computed by interpreting the coordinate in left hand coordinate space
+     * matching OpenGL and Vulkan conventions.
+     *
+     * @param texture
+     * @param coordinate A 4d float vector specifying the point to sample in xyz and the array layer in w.
+     * @param bias Optional bias to apply during level-of-detail computation.
+     * @return
+     */
+    XENGINE_EXPORT ShaderInstruction textureSampleCubeMapArray(ShaderOperand texture,
+                                                               ShaderOperand coordinate,
+                                                               ShaderOperand bias = {});
 
     XENGINE_EXPORT ShaderInstruction textureSize(ShaderOperand texture, ShaderOperand lod = {});
 

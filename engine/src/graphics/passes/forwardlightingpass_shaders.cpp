@@ -203,7 +203,7 @@ namespace xng {
         //https://www.gamedeveloper.com/programming/three-normal-mapping-techniques-explained-for-the-mathematically-uninclined
         fN = normalize((data["model"] * vec4(normalize(normal), 0.0)).xyz());
         fT = normalize((data["model"] * vec4(normalize(tangent), 0.0)).xyz());
-        fB = normalize((data["model"] * vec4(cross(normalize(normal), normalize(tangent).xyz()) * 1, 0.0)).xyz());
+        fB = normalize((data["model"] * vec4(cross(normalize(tangent), normalize(normal).xyz()) * 1, 0.0)).xyz());
 
         setVertexPosition(vPos);
 
@@ -318,7 +318,7 @@ namespace xng {
                 }
                 Else();
                 {
-                    Return(texture(atlasTextures[level_index_filtering_assigned.x()],
+                    Return(textureSampleArray(atlasTextures[level_index_filtering_assigned.x()],
                                    vec3(uv.x(), uv.y(), level_index_filtering_assigned.y())));
                 }
                 EndIf();

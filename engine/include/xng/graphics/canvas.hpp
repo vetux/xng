@@ -39,7 +39,7 @@ namespace xng {
             camera.bottom = static_cast<float>(canvasSize.y);
 
             Transform cameraTransform;
-            cameraTransform.setPosition({0, 0, 1});
+            cameraTransform.setPosition({0, 0, -1});
 
             viewProjectionMatrix = camera.projection() * Camera::view(cameraTransform);
         }
@@ -53,7 +53,7 @@ namespace xng {
             camera.top = top;
 
             Transform cameraTransform;
-            cameraTransform.setPosition({0, 0, 1});
+            cameraTransform.setPosition({0, 0, -1});
 
             viewProjectionMatrix = camera.projection() * Camera::view(cameraTransform);
         }

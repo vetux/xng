@@ -50,7 +50,7 @@ namespace xng::shaderlib {
             i = Int(0);
             For(i, 0, samples - 1, 1);
             {
-                ret += texelFetch(color, pos, i);
+                ret += texelFetchMS(color, pos, i);
             }
             EndFor();
 
@@ -111,10 +111,10 @@ namespace xng::shaderlib {
 
             offset *= invTexSize.xxyy();
 
-            vec4 sample0 = texture(sampler, offset.xz());
-            vec4 sample1 = texture(sampler, offset.yz());
-            vec4 sample2 = texture(sampler, offset.xw());
-            vec4 sample3 = texture(sampler, offset.yw());
+            vec4 sample0 = textureSample(sampler, offset.xz());
+            vec4 sample1 = textureSample(sampler, offset.yz());
+            vec4 sample2 = textureSample(sampler, offset.xw());
+            vec4 sample3 = textureSample(sampler, offset.yw());
 
             Float sx = s.x() / (s.x() + s.y());
             Float sy = s.z() / (s.z() + s.w());
@@ -199,10 +199,10 @@ namespace xng::shaderlib {
 
             offset *= invTexSize.xxyy();
 
-            vec4 sample0 = texture(sampler, vec3(offset.x(), offset.z(), texCoords3.z()));
-            vec4 sample1 = texture(sampler, vec3(offset.y(), offset.z(), texCoords3.z()));
-            vec4 sample2 = texture(sampler, vec3(offset.x(), offset.w(), texCoords3.z()));
-            vec4 sample3 = texture(sampler, vec3(offset.y(), offset.w(), texCoords3.z()));
+            vec4 sample0 = textureSampleArray(sampler, vec3(offset.x(), offset.z(), texCoords3.z()));
+            vec4 sample1 = textureSampleArray(sampler, vec3(offset.y(), offset.z(), texCoords3.z()));
+            vec4 sample2 = textureSampleArray(sampler, vec3(offset.x(), offset.w(), texCoords3.z()));
+            vec4 sample3 = textureSampleArray(sampler, vec3(offset.y(), offset.w(), texCoords3.z()));
 
             Float sx = s.x() / (s.x() + s.y());
             Float sy = s.z() / (s.z() + s.w());

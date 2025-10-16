@@ -374,21 +374,86 @@ namespace xng::ShaderScript {
         return ShaderObject(ShaderInstructionFactory::textureSize(texture.operand, lod.operand));
     }
 
-    inline ShaderObject texture(const ShaderObject &texture,
-                                const ShaderObject &coords) {
+    inline ShaderObject textureSample(const ShaderObject &texture, const ShaderObject &coords) {
         return ShaderObject(ShaderInstructionFactory::textureSample(texture.operand, coords.operand));
     }
 
-    inline ShaderObject texture(const ShaderObject &texture,
-                                const ShaderObject &coords,
-                                const ShaderObject &bias) {
-        return ShaderObject(ShaderInstructionFactory::textureSample(texture.operand, coords.operand, bias.operand));
+    inline ShaderObject textureSample(const ShaderObject &texture,
+                                      const ShaderObject &coords,
+                                      const ShaderObject &bias) {
+        return ShaderObject(ShaderInstructionFactory::textureSample(texture.operand,
+                                                                    coords.operand,
+                                                                    bias.operand));
+    }
+
+    inline ShaderObject textureSampleArray(const ShaderObject &texture, const ShaderObject &coords) {
+        return ShaderObject(ShaderInstructionFactory::textureSampleArray(texture.operand, coords.operand));
+    }
+
+    inline ShaderObject textureSampleArray(const ShaderObject &texture,
+                                           const ShaderObject &coords,
+                                           const ShaderObject &bias) {
+        return ShaderObject(ShaderInstructionFactory::textureSampleArray(texture.operand,
+                                                                         coords.operand,
+                                                                         bias.operand));
     }
 
     inline ShaderObject texelFetch(const ShaderObject &texture,
-                                   const ShaderObject &coords,
-                                   const ShaderObject &index) {
-        return ShaderObject(ShaderInstructionFactory::textureFetch(texture.operand, coords.operand, index.operand));
+                                     const ShaderObject &coords,
+                                     const ShaderObject &index) {
+        return ShaderObject(ShaderInstructionFactory::textureFetch(texture.operand,
+                                                                   coords.operand,
+                                                                   index.operand));
+    }
+
+    inline ShaderObject texelFetchArray(const ShaderObject &texture,
+                                        const ShaderObject &coords,
+                                        const ShaderObject &index) {
+        return ShaderObject(ShaderInstructionFactory::textureFetchArray(texture.operand,
+                                                                        coords.operand,
+                                                                        index.operand));
+    }
+
+    inline ShaderObject texelFetchMS(const ShaderObject &texture,
+                                 const ShaderObject &coords,
+                                 const ShaderObject &index) {
+        return ShaderObject(ShaderInstructionFactory::textureFetchMS(texture.operand,
+                                                                   coords.operand,
+                                                                   index.operand));
+    }
+
+    inline ShaderObject texelFetchMSArray(const ShaderObject &texture,
+                                        const ShaderObject &coords,
+                                        const ShaderObject &index) {
+        return ShaderObject(ShaderInstructionFactory::textureFetchMSArray(texture.operand,
+                                                                        coords.operand,
+                                                                        index.operand));
+    }
+
+    inline ShaderObject textureSampleCube(const ShaderObject &texture,
+                                          const ShaderObject &coords) {
+        return ShaderObject(ShaderInstructionFactory::textureSampleCubeMap(texture.operand, coords.operand));
+    }
+
+    inline ShaderObject textureSampleCube(const ShaderObject &texture,
+                                          const ShaderObject &coords,
+                                          const ShaderObject &bias) {
+        return ShaderObject(ShaderInstructionFactory::textureSampleCubeMap(texture.operand,
+                                                                           coords.operand,
+                                                                           bias.operand));
+    }
+
+    inline ShaderObject textureSampleCubeArray(const ShaderObject &texture,
+                                               const ShaderObject &coords) {
+        return ShaderObject(ShaderInstructionFactory::textureSampleCubeMapArray(texture.operand, coords.operand));
+    }
+
+    inline ShaderObject textureSampleCubeArray(const ShaderObject &texture,
+                                               const ShaderObject &coords,
+                                               const ShaderObject &bias) {
+        return ShaderObject(ShaderInstructionFactory::textureSampleCubeMapArray(texture.operand,
+            coords.operand,
+            bias.operand));
     }
 
     inline ShaderObject abs(const ShaderObject &value) {

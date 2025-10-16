@@ -183,9 +183,63 @@ namespace xng::ShaderInstructionFactory {
         return ret;
     }
 
+    ShaderInstruction textureFetchArray(ShaderOperand texture, ShaderOperand coordinate, ShaderOperand index) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::TextureFetchArray;
+        ret.operands.push_back(std::move(texture));
+        ret.operands.push_back(std::move(coordinate));
+        ret.operands.push_back(std::move(index));
+        return ret;
+    }
+
+    ShaderInstruction textureFetchMS(ShaderOperand texture, ShaderOperand coordinate, ShaderOperand index) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::TextureFetchMS;
+        ret.operands.push_back(std::move(texture));
+        ret.operands.push_back(std::move(coordinate));
+        ret.operands.push_back(std::move(index));
+        return ret;
+    }
+
+    ShaderInstruction textureFetchMSArray(ShaderOperand texture, ShaderOperand coordinate, ShaderOperand index) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::TextureFetchMSArray;
+        ret.operands.push_back(std::move(texture));
+        ret.operands.push_back(std::move(coordinate));
+        ret.operands.push_back(std::move(index));
+        return ret;
+    }
+
     ShaderInstruction textureSample(ShaderOperand texture, ShaderOperand coordinate, ShaderOperand bias) {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::TextureSample;
+        ret.operands.push_back(std::move(texture));
+        ret.operands.push_back(std::move(coordinate));
+        ret.operands.push_back(std::move(bias));
+        return ret;
+    }
+
+    ShaderInstruction textureSampleArray(ShaderOperand texture, ShaderOperand coordinate, ShaderOperand bias) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::TextureSampleArray;
+        ret.operands.push_back(std::move(texture));
+        ret.operands.push_back(std::move(coordinate));
+        ret.operands.push_back(std::move(bias));
+        return ret;
+    }
+
+    ShaderInstruction textureSampleCubeMap(ShaderOperand texture, ShaderOperand coordinate, ShaderOperand bias) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::TextureSampleCubeMap;
+        ret.operands.push_back(std::move(texture));
+        ret.operands.push_back(std::move(coordinate));
+        ret.operands.push_back(std::move(bias));
+        return ret;
+    }
+
+    ShaderInstruction textureSampleCubeMapArray(ShaderOperand texture, ShaderOperand coordinate, ShaderOperand bias) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::TextureSampleCubeMapArray;
         ret.operands.push_back(std::move(texture));
         ret.operands.push_back(std::move(coordinate));
         ret.operands.push_back(std::move(bias));

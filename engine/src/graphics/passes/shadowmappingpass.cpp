@@ -188,7 +188,7 @@ namespace xng {
                 usedMeshes.emplace_back(object.model);
                 usedMeshUris.insert(object.model.getUri());
 
-                for (auto &subMesh : object.model.get().subMeshes) {
+                for (auto &subMesh: object.model.get().subMeshes) {
                     boneCount += subMesh.bones.size();
                 }
 
@@ -307,22 +307,28 @@ namespace xng {
 
                 ShadowPointLightData lightData;
                 lightData.shadowMatrices[0] = (shadowProj *
-                                               MatrixMath::lookAt(lightPos, lightPos + Vec3f(1.0, 0.0, 0.0),
+                                               MatrixMath::lookAt(lightPos,
+                                                                  lightPos + Vec3f(1.0, 0.0, 0.0),
                                                                   Vec3f(0.0, -1.0, 0.0)));
                 lightData.shadowMatrices[1] = (shadowProj *
-                                               MatrixMath::lookAt(lightPos, lightPos + Vec3f(-1.0, 0.0, 0.0),
+                                               MatrixMath::lookAt(lightPos,
+                                                                  lightPos + Vec3f(-1.0, 0.0, 0.0),
                                                                   Vec3f(0.0, -1.0, 0.0)));
                 lightData.shadowMatrices[2] = (shadowProj *
-                                               MatrixMath::lookAt(lightPos, lightPos + Vec3f(0.0, 1.0, 0.0),
-                                                                  Vec3f(0.0, 0.0, 1.0)));
-                lightData.shadowMatrices[3] = (shadowProj *
-                                               MatrixMath::lookAt(lightPos, lightPos + Vec3f(0.0, -1.0, 0.0),
+                                               MatrixMath::lookAt(lightPos,
+                                                                  lightPos + Vec3f(0.0, 1.0, 0.0),
                                                                   Vec3f(0.0, 0.0, -1.0)));
+                lightData.shadowMatrices[3] = (shadowProj *
+                                               MatrixMath::lookAt(lightPos,
+                                                                  lightPos + Vec3f(0.0, -1.0, 0.0),
+                                                                  Vec3f(0.0, 0.0, 1.0)));
                 lightData.shadowMatrices[4] = (shadowProj *
-                                               MatrixMath::lookAt(lightPos, lightPos + Vec3f(0.0, 0.0, 1.0),
+                                               MatrixMath::lookAt(lightPos,
+                                                                  lightPos + Vec3f(0.0, 0.0, 1.0),
                                                                   Vec3f(0.0, -1.0, 0.0)));
                 lightData.shadowMatrices[5] = (shadowProj *
-                                               MatrixMath::lookAt(lightPos, lightPos + Vec3f(0.0, 0.0, -1.0),
+                                               MatrixMath::lookAt(lightPos,
+                                                                  lightPos + Vec3f(0.0, 0.0, -1.0),
                                                                   Vec3f(0.0, -1.0, 0.0)));
 
                 lightData.lightPosFarPlane = Vec4f(lightPos.x, lightPos.y, lightPos.z, far).getMemory();
@@ -362,19 +368,8 @@ namespace xng {
                 auto &lightObject = dirLights.at(i);
                 auto &light = lightObject.light;
 
-                Mat4f shadowProj = MatrixMath::ortho(-light.shadowProjectionExtent,
-                                                     light.shadowProjectionExtent,
-                                                     -light.shadowProjectionExtent,
-                                                     light.shadowProjectionExtent,
-                                                     light.shadowNearPlane,
-                                                     light.shadowFarPlane)
-                                   * MatrixMath::lookAt(lightObject.transform.getPosition(),
-                                                        lightObject.transform.getPosition() + lightObject.transform.
-                                                        forward(),
-                                                        Vec3f(0, 1, 0));
-
                 ShadowDirLightData lightData;
-                lightData.shadowMatrix = shadowProj;
+                lightData.shadowMatrix = light.getShadowProjection(lightObject.transform);
                 lightData.layer[0] = i;
 
                 ctx.uploadBuffer(dirLightBuffer,
@@ -410,18 +405,9 @@ namespace xng {
                 auto &lightObject = spotLights.at(i);
                 auto &light = lightObject.light;
                 auto &transform = lightObject.transform;
-                float aspect = 1;
-
-                Mat4f shadowProj = MatrixMath::perspective(45,
-                                                           aspect,
-                                                           light.shadowNearPlane,
-                                                           light.shadowFarPlane)
-                                   * MatrixMath::lookAt(transform.getPosition(),
-                                                        transform.getPosition() + transform.forward(),
-                                                        Vec3f(0, 1, 0));
 
                 ShadowDirLightData lightData;
-                lightData.shadowMatrix = shadowProj;
+                lightData.shadowMatrix = light.getShadowProjection(transform);
                 lightData.layer[0] = i;
 
                 ctx.uploadBuffer(dirLightBuffer,

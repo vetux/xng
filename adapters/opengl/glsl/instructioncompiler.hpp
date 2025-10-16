@@ -86,7 +86,37 @@ namespace InstructionCompiler {
                                                     const std::string &functionName,
                                                     const std::string &indent);
 
+    XENGINE_EXPORT std::string compileTextureSampleArray(const ShaderInstruction &instruction,
+                                                    const Shader &source,
+                                                    const std::string &functionName,
+                                                    const std::string &indent);
+
+    XENGINE_EXPORT std::string compileTextureSampleCubeMap(const ShaderInstruction &instruction,
+                                                    const Shader &source,
+                                                    const std::string &functionName,
+                                                    const std::string &indent);
+
+    XENGINE_EXPORT std::string compileTextureSampleCubeMapArray(const ShaderInstruction &instruction,
+                                                    const Shader &source,
+                                                    const std::string &functionName,
+                                                    const std::string &indent);
+
     XENGINE_EXPORT std::string compileTextureFetch(const ShaderInstruction &instruction,
+                                                   const Shader &source,
+                                                   const std::string &functionName,
+                                                   const std::string &indent);
+
+    XENGINE_EXPORT std::string compileTextureFetchArray(const ShaderInstruction &instruction,
+                                                   const Shader &source,
+                                                   const std::string &functionName,
+                                                   const std::string &indent);
+
+    XENGINE_EXPORT std::string compileTextureFetchMS(const ShaderInstruction &instruction,
+                                               const Shader &source,
+                                               const std::string &functionName,
+                                               const std::string &indent);
+
+    XENGINE_EXPORT std::string compileTextureFetchMSArray(const ShaderInstruction &instruction,
                                                    const Shader &source,
                                                    const std::string &functionName,
                                                    const std::string &indent);

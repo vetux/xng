@@ -107,7 +107,8 @@ namespace xng {
             }
             Else();
             {
-                texColor = texture(atlasTextures[vars["texAtlasLevel"]], vec3(uv.x(), uv.y(), vars["texAtlasIndex"]));
+                texColor = textureSampleArray(atlasTextures[vars["texAtlasLevel"]],
+                                              vec3(uv.x(), uv.y(), vars["texAtlasIndex"]));
             }
             EndIf();
             If(vars["colorFactor"] != 0);
@@ -127,7 +128,7 @@ namespace xng {
         {
             If(vars["useCustomTexture"] == 1);
             {
-                color = texture(customTexture, fUv.xy());
+                color = textureSample(customTexture, fUv.xy());
             }
             Else();
             {

@@ -25,6 +25,9 @@
 #include "vector4.hpp"
 #include "matrix.hpp"
 
+/**
+ * Currently the functions assume left hand coordinate space.
+ */
 namespace xng::MatrixMath {
     XENGINE_EXPORT Mat4f identity();
 
