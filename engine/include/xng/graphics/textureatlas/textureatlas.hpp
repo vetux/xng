@@ -44,8 +44,6 @@ namespace xng {
 
         static TextureAtlasResolution getClosestMatchingResolutionLevel(const Vec2i &size);
 
-        static ImageRGBA getAlignedImage(const ImageRGBA &texture, TextureAtlasResolution res);
-
         TextureAtlas();
 
         explicit TextureAtlas(std::map<TextureAtlasResolution, std::vector<bool> > bufferOccupations);

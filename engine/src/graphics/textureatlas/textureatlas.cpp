@@ -20,13 +20,6 @@
 #include "xng/graphics/textureatlas/textureatlas.hpp"
 
 namespace xng {
-    ImageRGBA TextureAtlas::getAlignedImage(const ImageRGBA &texture, TextureAtlasResolution res) {
-        auto size = getResolutionLevelSize(res);
-        ImageRGBA image(size, ColorRGBA::black(1, 0));
-        image.blit(Vec2i(0, 0), texture);
-        return std::move(image);
-    }
-
     void TextureAtlas::upload(RenderGraphContext &ctx,
                               const TextureAtlasHandle &handle,
                               const std::unordered_map<TextureAtlasResolution, RenderGraphResource> &atlasBuffers,
