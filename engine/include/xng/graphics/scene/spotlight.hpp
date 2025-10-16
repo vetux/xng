@@ -26,6 +26,7 @@
 #include "xng/graphics/color.hpp"
 
 namespace xng {
+    //TODO: Fix shadow cutoff for large outerCutOff values
     struct XENGINE_EXPORT SpotLight final : Messageable {
         ColorRGBA color = ColorRGBA::white(); // The color of the light
         float power = 1; // The strength of the light

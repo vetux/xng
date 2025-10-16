@@ -101,7 +101,7 @@ RenderScene createScene() {
     SpotLightObject spotLight;
     spotLight.light.castShadows = true;
     spotLight.light.power = 15;
-    spotLight.light.outerCutOff = 25;
+    spotLight.light.outerCutOff = 20;
     spotLight.light.color = ColorRGBA::aqua();
     spotLight.transform.setPosition(Vec3f(0, 0, 0));
     spotLight.transform.setRotation(Quaternion(Vec3f(0, 0, 0)));
