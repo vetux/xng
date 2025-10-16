@@ -401,6 +401,8 @@ namespace xng::shaderlib {
             ARGUMENT(pass)
             ARGUMENT(Lo)
 
+            //TODO: Fix metallic / smooth surfaces appearing too dark
+
             // ambient lighting (note that the next IBL tutorial will replace
             // this ambient lighting with environment lighting).
             vec3 ambient = vec3(0.03f) * pass["albedo"] * pass["ao"];
