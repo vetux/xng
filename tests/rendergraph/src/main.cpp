@@ -76,13 +76,10 @@ RenderScene createScene() {
 
     material = {};
     material.normal = ResourceHandle<Texture>(Uri("file://images/sphere_normals.png"));
-    material.metallicTexture = ResourceHandle<Texture>(Uri("file://images/rusted_iron/rustediron2_metallic.png"));
-    material.roughnessTexture = ResourceHandle<Texture>(Uri("file://images/rusted_iron/rustediron2_roughness.png"));
-    material.albedoTexture = ResourceHandle<Texture>(Uri("file://images/rusted_iron/rustediron2_basecolor.png"));
-    material.metallic = 0;
-    material.roughness = 0.5;
+    material.metallicTexture = ResourceHandle<Texture>(Uri("file://images/lightgold/lightgold_metallic.png"));
+    material.roughnessTexture = ResourceHandle<Texture>(Uri("file://images/lightgold/lightgold_roughness.png"));
+    material.albedoTexture = ResourceHandle<Texture>(Uri("file://images/lightgold/lightgold_albedo.png"));
     material.transparent = true;
-    material.albedo = ColorRGBA::white(1, 255);
     mesh.model = ResourceHandle<SkinnedModel>(Uri("file://meshes/cornell.fbx:Sphere.002"));
     mesh.materials[0] = material;
     mesh.transform.setRotation(Quaternion(Vec3f(0, 0, 0)));
