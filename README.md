@@ -18,22 +18,15 @@ Once the project has reached a stable state there will be semantically versioned
 [xng-editor](https://github.com/vetux/xng-editor) - Editor application to simplify and accelerate the game creation
 workflow
 
-## (Planned) Features
+## Features
 - Graphics
   - Render Graph
     - Domain-Specific Language for writing Render Graph shaders in C++
   - 3D
     - PBR Render Graph Pipeline
-      - Forward Shading (TODO)
-      - Deferred Shading (TODO)
+      - Forward / Deferred Rendering
       - Shadow Mapping
-      - Environment Mapping (Reflections) (TODO)
-      - Image Based Lighting (TODO)
-      - Path Tracing (Shadows, Reflections) (TODO)
     - Skeletal Animation
-    - Terrain Rendering (TODO)
-    - Volumetric Rendering (TODO)
-    - Particle Rendering (TODO)
   - 2D
     - Canvas Interface
     - Sprite Animation
@@ -45,7 +38,26 @@ workflow
 - Entity Component System interface implementing data-oriented architecture
 - PAK file format with compression, chunking and encryption support
 
-## Screenshots
+## Todolist for Version 0.1.0
+- Graphics
+  - Render Graph
+    - [ ] Vulkan Implementation 
+  - 3D 
+    - [ ] Refine the PBR Shading Model 
+    - [ ] Refine Shadow Mapping Implementation
+    - [ ] Skybox Rendering 
+    - [ ] Particles Rendering
+    - [ ] Terrain Rendering
+    - [ ] Volumetric Rendering
+    - [ ] Image Based Lighting
+    - [ ] Environment Mapping (Reflections)
+    - [ ] Post Processing (Anti Aliasing)
+  - 2D
+    - [ ] Sprite Lighting
+  - [ ] Custom Asset File format
+  - [ ] Flexbox based GUI Layout
+ 
+## Screenshots (Old, will be updated when the pbr shading model is fixed up)
 ![](https://raw.githubusercontent.com/vetux/xng-assets/refs/heads/master/screenshots/ScreenshotFramegraph.jpg)
 
 ## Adapters
