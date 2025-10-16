@@ -54,8 +54,8 @@ workflow
     - [ ] Post Processing (Anti Aliasing)
   - 2D
     - [ ] Sprite Lighting
-  - [ ] Custom Asset File format
-  - [ ] Flexbox based GUI Layout
+- [ ] Custom Asset File format
+- [ ] Flexbox based GUI Layout
  
 ## Screenshots (Old, will be updated when the pbr shading model is fixed up)
 ![](https://raw.githubusercontent.com/vetux/xng-assets/refs/heads/master/screenshots/ScreenshotFramegraph.jpg)
