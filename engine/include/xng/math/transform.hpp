@@ -51,15 +51,6 @@ namespace xng {
             return *this;
         }
 
-        /**
-         * The coordinate space of the returned model matrix is left-handed.
-         *
-         * +X = Right
-         * +Y = Up
-         * +Z = Forward
-         *
-         * @return
-         */
         Mat4f model() const {
             return MatrixMath::translate(mPosition) * mRotation.matrix() * MatrixMath::scale(mScale);
         }

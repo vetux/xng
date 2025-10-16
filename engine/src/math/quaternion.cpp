@@ -22,7 +22,6 @@
 #include "xng/math/rotation.hpp"
 #include "xng/math/matrixmath.hpp"
 
-#define GLM_FORCE_LEFT_HANDED
 #include<glm/glm.hpp>
 #include<glm/gtc/quaternion.hpp>
 #include<glm/common.hpp>

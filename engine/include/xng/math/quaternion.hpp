@@ -53,8 +53,6 @@ namespace xng {
          * Return the matrix which applies the rotation of this quaternion.
          * The returned matrix should be multiplied with a column vector or transposed to multiply with a row vector.
          *
-         * The returned matrix applies the specified rotation using left-handed coordinate space.
-         *
          * @return
          */
         Mat4f matrix() const;

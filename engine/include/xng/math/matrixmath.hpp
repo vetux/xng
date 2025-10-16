@@ -25,9 +25,6 @@
 #include "vector4.hpp"
 #include "matrix.hpp"
 
-/**
- * Currently the functions assume left hand coordinate space.
- */
 namespace xng::MatrixMath {
     XENGINE_EXPORT Mat4f identity();
 
@@ -39,6 +36,11 @@ namespace xng::MatrixMath {
      * Returns a matrix which can be used for multiplying with a column vector.
      *
      * The returned matrix should be multiplied with a column vector or transposed to multiply with a row vector.
+     *
+     * The returned matrix applies the projection transformation using left hand coordinate system where
+     * +X Is pointing to the right
+     * +Y Is pointing upwards
+     * +Z Is pointing forwards
      *
      * @param fovy
      * @param aspect
@@ -52,6 +54,11 @@ namespace xng::MatrixMath {
      * Returns a matrix which can be used for multiplying with a column vector.
      *
      * The returned matrix should be multiplied with a column vector or transposed to multiply with a row vector.
+     *
+     * The returned matrix applies the projection transformation using left hand coordinate system where
+     * +X Is pointing to the right
+     * +Y Is pointing upwards
+     * +Z Is pointing forwards
      *
      * @param left
      * @param right
