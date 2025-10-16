@@ -53,6 +53,7 @@ workflow
     - [ ] Environment Mapping (Reflections)
     - [ ] Post Processing (Anti Aliasing)
   - 2D
+    - [ ] Sprite Rendering 
     - [ ] Sprite Lighting
 - [ ] Custom Asset File format
 - [ ] Flexbox based GUI Layout
