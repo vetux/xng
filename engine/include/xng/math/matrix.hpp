@@ -126,7 +126,7 @@ namespace xng {
                     data[i] = v.at(i).as<T>();
                 }
             } else {
-                std::fill_n(data, size(), 0);
+                std::fill_n(data, size(), T());
             }
             return *this;
         }
