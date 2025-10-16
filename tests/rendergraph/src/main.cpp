@@ -100,7 +100,9 @@ RenderScene createScene() {
 
     SpotLightObject spotLight;
     spotLight.light.castShadows = true;
-    spotLight.light.power = 3;
+    spotLight.light.power = 15;
+    spotLight.light.outerCutOff = 25;
+    spotLight.light.color = ColorRGBA::aqua();
     spotLight.transform.setPosition(Vec3f(0, 0, 0));
     spotLight.transform.setRotation(Quaternion(Vec3f(0, 0, 0)));
     scene.spotLights.emplace_back(spotLight);
@@ -181,6 +183,12 @@ void lightController(Transform &lightTransform, Window &window, double deltaTime
         } else if (input.getKey(KEY_RIGHT)) {
             rot.y = 1;
         }
+    }
+
+    if (input.getKey(KEY_PAGEUP)) {
+        pos.y = 1;
+    } else if (input.getKey(KEY_PAGEDOWN)) {
+        pos.y = -1;
     }
 
     lightTransform.applyRotation(Quaternion(Vec3f(rot.x, 0, 0) * rotationSpeed * deltaTime), true);
