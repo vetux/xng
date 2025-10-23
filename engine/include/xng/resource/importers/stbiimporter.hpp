@@ -26,7 +26,9 @@
 namespace xng {
     class XENGINE_EXPORT StbiImporter : public ResourceImporter {
     public:
-        static ImageRGBA readImage(const std::vector<char> &buffer);
+        static ImageRGBA readImageRGBA(const std::vector<char> &buffer);
+
+        static ImageFloat readImageFloat(const std::vector<char> &buffer);
 
         ResourceBundle read(std::istream &stream,
                             const Uri &path,

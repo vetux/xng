@@ -26,26 +26,62 @@
 #include <cstring>
 
 namespace xng {
-     ImageRGBA StbiImporter::readImage(const std::vector<char> &buffer) {
+    ImageRGBA StbiImporter::readImageRGBA(const std::vector<char> &buffer) {
         int width, height, nrChannels;
         stbi_uc *data = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(buffer.data()),
-                                              buffer.size(),
+                                              static_cast<int>(buffer.size()),
                                               &width,
                                               &height,
                                               &nrChannels,
                                               4);
         if (data) {
             auto ret = ImageRGBA(width, height);
-            std::memcpy(reinterpret_cast<stbi_uc *>(ret.getBuffer().data()),
+            std::memcpy(ret.getBuffer().data(),
                         data,
                         ret.getBuffer().size() * sizeof(ColorRGBA));
             stbi_image_free(data);
             return ret;
-        } else {
-            stbi_image_free(data);
-            std::string error = "Failed to load image";
-            throw std::runtime_error(error);
         }
+
+        stbi_image_free(data);
+
+        std::string error = "Failed to load image";
+
+        const auto reason = stbi_failure_reason();
+        if (reason) {
+            error += ": " + std::string(reason);
+        }
+
+        throw std::runtime_error(error);
+    }
+
+    ImageFloat StbiImporter::readImageFloat(const std::vector<char> &buffer) {
+        int width, height, nrChannels;
+        float *data = stbi_loadf_from_memory(reinterpret_cast<const stbi_uc *>(buffer.data()),
+                                             static_cast<int>(buffer.size()),
+                                             &width,
+                                             &height,
+                                             &nrChannels,
+                                             4);
+        if (data) {
+            auto ret = Image<float>(width, height);
+            std::memcpy(ret.getBuffer().data(),
+                        data,
+                        ret.getBuffer().size() * sizeof(float));
+            stbi_image_free(data);
+            return ret;
+        }
+
+        stbi_image_free(data);
+
+        std::string error = "Failed to load image";
+
+        const auto reason = stbi_failure_reason();
+        if (reason) {
+            error += ": " + std::string(reason);
+        }
+
+        throw std::runtime_error(error);
     }
 
     ResourceBundle StbiImporter::read(std::istream &stream,
@@ -62,7 +98,7 @@ namespace xng {
         }
         //Try to read source as image
         int x, y, n;
-        auto r = stbi_info_from_memory((const stbi_uc *) (buffer.data()),
+        auto r = stbi_info_from_memory(reinterpret_cast<const stbi_uc *>(buffer.data()),
                                        buffer.size(),
                                        &x,
                                        &y,
@@ -70,16 +106,28 @@ namespace xng {
         if (r == 1) {
             //Source is image
             ResourceBundle ret;
-            auto img = readImage(buffer);
-            ret.add("image", std::make_unique<ImageRGBA>(img));
-            Texture tex;
-            tex.filter = Texture::NEAREST;
-            tex.image = ResourceHandle<ImageRGBA>(Uri(path));
-            ret.add("texture", std::make_unique<Texture>(tex));
+            if (path.getExtension() == "hdr") {
+                auto img = readImageFloat(buffer);
+                ret.add("image", std::make_unique<Image<float> >(img));
+            } else {
+                auto img = readImageRGBA(buffer);
+                ret.add("image", std::make_unique<ImageRGBA>(img));
+                Texture tex;
+                tex.filter = Texture::NEAREST;
+                tex.image = ResourceHandle<ImageRGBA>(Uri(path));
+                ret.add("texture", std::make_unique<Texture>(tex));
+            }
             return ret;
-        } else {
-            throw std::runtime_error("Failed to read image info: " + std::string(stbi_failure_reason()));
         }
+
+        std::string error = "Failed to read image info";
+
+        const auto reason = stbi_failure_reason();
+        if (reason) {
+            error += ": " + std::string(reason);
+        }
+
+        throw std::runtime_error(error);
     }
 
     const std::set<std::string> &StbiImporter::getSupportedFormats() const {

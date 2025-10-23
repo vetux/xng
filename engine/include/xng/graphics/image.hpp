@@ -214,6 +214,7 @@ namespace xng {
 
     typedef Image<ColorRGBA> ImageRGBA;
     typedef Image<ColorRGB> ImageRGB;
+    typedef Image<float> ImageFloat;
 }
 
 #endif //XENGINE_IMAGE_HPP
