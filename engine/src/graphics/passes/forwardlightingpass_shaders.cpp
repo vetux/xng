@@ -383,24 +383,17 @@ namespace xng {
         vec3 reflectance;
         reflectance = vec3(0, 0, 0);
 
-        Int i;
-        i = Int(0);
-        For(i, 0, pointLights.length() - 1, 1)
-        {
+        For(Int, i, 0, i < pointLights.length(), i + 1)
             PBRPointLight light = pointLights[i];
             reflectance = pbr_point(pass, reflectance, light.position.xyz(), light.color.xyz(), 1.0f);
-        }
         EndFor
 
-        For(i, 0, directionalLights.length() - 1, 1)
-        {
+        For(Int, i, 0, i < directionalLights.length(), i + 1)
             PBRDirectionalLight light = directionalLights[i];
             reflectance = pbr_directional(pass, reflectance, light.direction.xyz(), light.color.xyz(), 1.0f);
-        }
         EndFor
 
-        For(i, 0, spotLights.length() - 1, 1)
-        {
+        For(Int, i, 0, i < spotLights.length(), i + 1)
             PBRSpotLight light = spotLights[i];
             reflectance = pbr_spot(pass,
                                    reflectance,
@@ -413,11 +406,9 @@ namespace xng {
                                    light.cutOff_outerCutOff_constant_linear.z(),
                                    light.cutOff_outerCutOff_constant_linear.w(),
                                    1.0f);
-        }
         EndFor
 
-        For(i, 0, shadowPointLights.length() - 1, 1)
-        {
+        For(Int, i, 0, i < shadowPointLights.length(), i + 1)
             PBRPointLight light = shadowPointLights[i];
             Float shadow;
             shadow = Float(1.0f);
@@ -432,11 +423,9 @@ namespace xng {
             }
             EndIf
             reflectance = pbr_point(pass, reflectance, light.position.xyz(), light.color.xyz(), shadow);
-        }
         EndFor
 
-        For(i, 0, shadowDirectionalLights.length() - 1, 1)
-        {
+        For(Int, i, 0, i < shadowDirectionalLights.length(), i + 1)
             PBRDirectionalLight light = shadowDirectionalLights[i];
             vec4 fragPosLightSpace = directionalLightShadowTransforms[i].transform * vec4(fPos, 1);
             Float shadow;
@@ -452,11 +441,9 @@ namespace xng {
             }
             EndIf
             reflectance = pbr_directional(pass, reflectance, light.direction.xyz(), light.color.xyz(), shadow);
-        }
         EndFor
 
-        For(i, 0, shadowSpotLights.length() - 1, 1)
-        {
+        For(Int, i, 0, i < shadowSpotLights.length(), i + 1)
             PBRSpotLight light = shadowSpotLights[i];
             vec4 fragPosLightSpace = spotLightShadowTransforms[i].transform * vec4(fPos, 1);
             Float shadow;
@@ -482,7 +469,6 @@ namespace xng {
                                    light.cutOff_outerCutOff_constant_linear.z(),
                                    light.cutOff_outerCutOff_constant_linear.w(),
                                    shadow);
-        }
         EndFor
 
         oColor = vec4(pbr_finish(pass, reflectance), albedo.w());

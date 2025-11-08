@@ -639,6 +639,8 @@ namespace xng::ShaderScript {
     template<ShaderDataType::Type VALUE_TYPE, ShaderDataType::Component VALUE_COMPONENT, size_t VALUE_COUNT>
     class ShaderDataObject : public ShaderObject {
     public:
+        static inline ShaderDataType TYPE = ShaderDataType(VALUE_TYPE, VALUE_COMPONENT, VALUE_COUNT);
+
         /**
          * Default constructor creates new variable.
          */
@@ -662,6 +664,11 @@ namespace xng::ShaderScript {
 
         ShaderDataObject &operator=(const ShaderObject &base) = delete;
 
+        ShaderDataObject &operator=(const ShaderDataObject &other) {
+            ShaderObject::operator=(other);
+            return *this;
+        }
+
         /**
          * Move operation to a previously default constructed object from a non prvalue (e.g. vec2 u; u = other.xyz())
          *
@@ -670,17 +677,6 @@ namespace xng::ShaderScript {
          */
         ShaderDataObject &operator=(ShaderObject &&base) {
             ShaderObject::operator=(std::move(base));
-            return *this;
-        }
-
-        /**
-         * Copy operation to a previously default constructed object  from a prvalue (e.g. vec2 u; u = vec2(0, 0))
-         *
-         * @param other
-         * @return
-         */
-        ShaderDataObject &operator=(const ShaderDataObject &other) {
-            ShaderObject::operator=(other);
             return *this;
         }
 
@@ -736,6 +732,17 @@ namespace xng::ShaderScript {
          * @param other
          */
         explicit ShaderDataObject(ShaderInstruction &&other) noexcept
+            : ShaderObject(std::move(other)) {
+            assignable = true;
+        }
+
+        /**
+         * Construct a data object which inlines the specified operand.
+         * Used by the for loop macro to refer to the loop initializer variable.
+         *
+         * @param other
+         */
+        explicit ShaderDataObject(ShaderOperand &&other) noexcept
             : ShaderObject(std::move(other)) {
             assignable = true;
         }

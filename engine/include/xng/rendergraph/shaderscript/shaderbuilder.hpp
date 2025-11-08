@@ -89,16 +89,8 @@ namespace xng::ShaderScript {
 
         /**
          * Begin a for loop
-         *
-         * @param loopVariable The variable to perform looping on
-         * @param loopStart The value the variable should be initialized to
-         * @param loopEnd The value the variable should be looped up to (loopVariable <= loopEnd)
-         * @param incrementor The value added to the variable on every iteration
          */
-        void For(const ShaderObject &loopVariable,
-                 const ShaderObject &loopStart,
-                 const ShaderObject &loopEnd,
-                 const ShaderObject &incrementor);
+        void For(const ShaderOperand &initializer, const ShaderOperand &predicate, const ShaderOperand &incrementor);
 
         void EndFor();
 
@@ -208,10 +200,8 @@ namespace xng::ShaderScript {
             bool processingElse = false;
             ShaderInstruction instruction;
             ShaderOperand condition;
-            ShaderOperand loopVariable;
             ShaderOperand initializer;
-            ShaderOperand loopEnd;
-            ShaderOperand incrementor;
+            ShaderOperand iterator;
             std::vector<std::shared_ptr<TreeNode> > defaultBranch;
             std::vector<std::shared_ptr<TreeNode> > falseBranch;
             TreeNode *parent{};

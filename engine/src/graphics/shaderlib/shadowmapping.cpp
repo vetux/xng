@@ -51,8 +51,8 @@ namespace xng::shaderlib::shadowmapping {
                 vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1)
             };
 
-            Int samples = 20;
-            Float fSamples = 20.0f;
+            Int samples = Int(20);
+            Float fSamples = Float(20.0f);
 
             vec3 fragToLight = fragPos - lightPos;
             fragToLight.z() *= -1;
@@ -71,10 +71,7 @@ namespace xng::shaderlib::shadowmapping {
             Float viewDistance = length(viewPos - fragPos);
             Float diskRadius = (1.0 + (viewDistance / far_plane)) / far_plane;
 
-            Int i;
-            i = Int(0);
-            For(i, 0, samples - 1, 1)
-            {
+            For(Int, i, 0, i < samples, i + 1)
                 vec3 sampleDir = fragToLight + gridSamplingDisk[i] * diskRadius;
                 Float closestDepth = textureSampleCubeArray(depthMap, vec4(sampleDir, depthMapIndex)).x();
 
@@ -91,7 +88,6 @@ namespace xng::shaderlib::shadowmapping {
                     shadow += 1.0;
                 }
                 EndIf
-            }
             EndFor
 
             shadow = shadow / fSamples;
@@ -129,10 +125,10 @@ namespace xng::shaderlib::shadowmapping {
 
             // Check if position is outside projection
             If(projCoords.x() < 0
-               || projCoords.x() > 1
-               || projCoords.y() < 0
-               || projCoords.y() > 1
-               || projCoords.z() > 1)
+                || projCoords.x() > 1
+                || projCoords.y() < 0
+                || projCoords.y() > 1
+                || projCoords.z() > 1)
             {
                 Return(1.0f);
             }
@@ -167,14 +163,8 @@ namespace xng::shaderlib::shadowmapping {
                 Float shadow;
                 shadow = Float(0.0f);
                 vec2 texelSize = 1.0f / textureSize(shadowMap, 0).xy();
-                Int x;
-                x = Int(0);
-                For(x, -1, 1, 1)
-                {
-                    Int y;
-                    y = Int(0);
-                    For(y, -1, 1, 1)
-                    {
+                For(Int, x, -1, x <= 1, x + 1)
+                    For(Int, y, -1, y <= 1, y + 1)
                         vec2 coords = projCoords.xy() + vec2(x, y) * texelSize;
                         coords.y() = 1.0f - coords.y();
                         Float pcfDepth = textureSampleArray(shadowMap, vec3(coords, shadowMapIndex)).
@@ -184,9 +174,7 @@ namespace xng::shaderlib::shadowmapping {
                             shadow += 1.0f;
                         }
                         EndIf
-                    }
                     EndFor
-                }
                 EndFor
 
                 shadow /= 9.0f;

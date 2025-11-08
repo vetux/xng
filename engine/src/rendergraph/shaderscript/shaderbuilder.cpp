@@ -65,20 +65,18 @@ namespace xng::ShaderScript {
         currentNode = currentNode->parent;
     }
 
-    void ShaderBuilder::For(const ShaderObject &loopVariable,
-                            const ShaderObject &loopStart,
-                            const ShaderObject &loopEnd,
-                            const ShaderObject &incrementor) {
+    void ShaderBuilder::For(const ShaderOperand &initializer,
+                            const ShaderOperand &predicate,
+                            const ShaderOperand &iterator) {
         if (currentNode == nullptr) {
             throw std::runtime_error("ShaderBuilder::For called without a setup() call");
         }
         std::shared_ptr<TreeNode> forNode = std::make_shared<TreeNode>();
         forNode->parent = currentNode;
         forNode->type = TreeNode::FOR;
-        forNode->loopVariable = loopVariable.operand;
-        forNode->loopEnd = loopEnd.operand;
-        forNode->initializer = loopStart.operand;
-        forNode->incrementor = incrementor.operand;
+        forNode->initializer = initializer;
+        forNode->condition = predicate;
+        forNode->iterator = iterator;
         if (currentNode->processingElse) {
             currentNode->falseBranch.push_back(forNode);
         } else {
@@ -122,7 +120,8 @@ namespace xng::ShaderScript {
             throw std::runtime_error("ShaderBuilder::EndFunction called without a Function() call");
         }
         if (currentNode->type != TreeNode::ROOT) {
-            throw std::runtime_error("Attempting to call EndFunction with unfinished shader. (Missing EndIf, EndFor ?)");
+            throw std::runtime_error(
+                "Attempting to call EndFunction with unfinished shader. (Missing EndIf, EndFor ?)");
         }
         ShaderFunction function = currentFunction;
         function.body = buildInstructionTree(*functionRoot);
@@ -175,22 +174,22 @@ namespace xng::ShaderScript {
                 }
             }
 
-            if (node.loopVariable.type != ShaderOperand::Variable) {
-                throw std::runtime_error("Invalid For loop variable");
+            if (node.initializer.type != ShaderOperand::Instruction) {
+                throw std::runtime_error("ShaderBuilder::For called with non-instruction initializer");
             }
 
-            auto initializer = ShaderInstructionFactory::assign(node.loopVariable, node.initializer);
-            auto incrementor = ShaderInstructionFactory::assign(node.loopVariable,
-                                                                ShaderOperand(
-                                                                    ShaderInstructionFactory::add(
-                                                                        node.loopVariable, node.incrementor)));
+            if (node.condition.type != ShaderOperand::Instruction) {
+                throw std::runtime_error("ShaderBuilder::For called with non-instruction condition");
+            }
 
-            auto condition = ShaderInstructionFactory::compareLessEqual(node.loopVariable, node.loopEnd);
+            if (node.iterator.type != ShaderOperand::Instruction) {
+                throw std::runtime_error("ShaderBuilder::For called with non-instruction iterator");
+            }
 
-            nodes.push_back(ShaderInstruction(ShaderInstructionFactory::loop(ShaderOperand(initializer),
-                                                                         ShaderOperand(condition),
-                                                                         ShaderOperand(incrementor),
-                                                                         body)));
+            nodes.push_back(ShaderInstruction(ShaderInstructionFactory::loop(node.initializer,
+                                                                             node.condition,
+                                                                             node.iterator,
+                                                                             body)));
         }
         return nodes;
     }

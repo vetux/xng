@@ -171,24 +171,14 @@ namespace xng {
         DynamicBuffer(bones, BoneData)
         Buffer(lightData, PointLightData)
 
-        Int face;
-        face = Int(0);
-        For(face, 0, 5, 1)
-        {
+        For(Int, face,  0, face <= 5,  face + 1)
             setLayer((lightData.layer.x() * 6) + face);
-
-            Int i;
-            i = Int(0);
-            For(i, 0, 2, 1)
-            {
+            For(Int, i, 0, i <= 2, i + 1)
                 FragPos = fPosition[i];
                 setVertexPosition(lightData.shadowMatrices[face] * FragPos);
                 EmitVertex();
-            }
             EndFor
-
             EndPrimitive();
-        }
         EndFor
 
         return BuildShader();
@@ -356,14 +346,10 @@ namespace xng {
 
         setLayer(lightData.layer.x());
 
-        Int i;
-        i = Int(0);
-        For(i, 0, 2, 1)
-        {
+        For(Int, i, 0, i <= 2, i + 1)
             fragCoord = fPosition[i];
             setVertexPosition(fragCoord);
             EmitVertex();
-        }
         EndFor
 
         EndPrimitive();

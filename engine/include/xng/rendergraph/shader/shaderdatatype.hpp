@@ -220,6 +220,36 @@ namespace xng {
                 return UNSIGNED_INT;
             }
         }
+
+        static ShaderDataType fromString(const std::string &typeStr) {
+            if (typeStr == "Bool") return Bool();
+            if (typeStr == "Int") return Int();
+            if (typeStr == "UInt") return UInt();
+            if (typeStr == "Float") return Float();
+            if (typeStr == "Double") return Double();
+            if (typeStr == "bvec2") return bvec2();
+            if (typeStr == "bvec3") return bvec3();
+            if (typeStr == "bvec4") return bvec4();
+            if (typeStr == "ivec2") return ivec2();
+            if (typeStr == "ivec3") return ivec3();
+            if (typeStr == "ivec4") return ivec4();
+            if (typeStr == "uvec2") return uvec2();
+            if (typeStr == "uvec3") return uvec3();
+            if (typeStr == "uvec4") return uvec4();
+            if (typeStr == "vec2") return vec2();
+            if (typeStr == "vec3") return vec3();
+            if (typeStr == "vec4") return vec4();
+            if (typeStr == "mat2") return mat2();
+            if (typeStr == "mat3") return mat3();
+            if (typeStr == "mat4") return mat4();
+            if (typeStr == "dvec2") return dvec2();
+            if (typeStr == "dvec3") return dvec3();
+            if (typeStr == "dvec4") return dvec4();
+            if (typeStr == "dmat2") return dmat2();
+            if (typeStr == "dmat3") return dmat3();
+            if (typeStr == "dmat4") return dmat4();
+            throw std::runtime_error("Invalid type");
+        }
     };
 }
 
