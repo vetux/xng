@@ -94,6 +94,7 @@ namespace xng::ShaderScript {
 
         void EndFor();
 
+        //TODO: Macro based function definitions
         /**
          * Subsequently added instructions are used as the body of a function.
          *
