@@ -54,7 +54,7 @@ std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
     }
 
     for (const auto &v: source.typeDefinitions) {
-        ret += "struct " + v.name + " {\n";
+        ret += "struct " + v.typeName + " {\n";
         for (const auto &element: v.elements) {
             if (std::holds_alternative<ShaderStructTypeName>(element.type)) {
                 ret += "\t" + std::get<ShaderStructTypeName>(element.type) + " " + element.name + ";\n";

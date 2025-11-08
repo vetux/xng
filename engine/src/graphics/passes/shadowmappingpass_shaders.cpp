@@ -25,98 +25,107 @@ using namespace xng::ShaderScript;
 namespace xng {
     DEFINE_FUNCTION1(getSkinnedVertexPosition)
 
+    DefineStruct(PointLightData,
+                 vec4, lightPosFarPlane,
+                 ivec4, layer,
+                 ArrayMat4<6>, shadowMatrices)
+
+    DefineStruct(DirLightData,
+                 ivec4, layer,
+                 mat4, shadowMatrix)
+
+    DefineStruct(DrawData,
+                 ivec4, boneOffset,
+                 mat4, model)
+
+    DefineStruct(BoneData, mat4, matrix)
+
     Shader ShadowMappingPass::createVertexShader() {
-        BeginShader(Shader::VERTEX);
+        BeginShader(Shader::VERTEX)
 
-        Input(ShaderDataType::vec3(), vPosition);
-        Input(ShaderDataType::vec3(), vNormal);
-        Input(ShaderDataType::vec2(), vUv);
-        Input(ShaderDataType::vec3(), vTangent);
-        Input(ShaderDataType::vec3(), vBitangent);
-        Input(ShaderDataType::ivec4(), boneIds);
-        Input(ShaderDataType::vec4(), boneWeights);
+        Input(vec3, vPosition)
+        Input(vec3, vNormal)
+        Input(vec2, vUv)
+        Input(vec3, vTangent)
+        Input(vec3, vBitangent)
+        Input(ivec4, boneIds)
+        Input(vec4, boneWeights)
 
-        Output(ShaderDataType::vec4(), fPosition);
+        Output(vec4, fPosition)
 
-        Struct(PointLightData,
-               {ShaderDataType::vec4(), "lightPosFarPlane"},
-               {ShaderDataType::ivec4(), "layer"},
-               {ShaderDataType::array(ShaderDataType::mat4(), 6), "shadowMatrices"});
+        DeclareStruct(PointLightData)
+        DeclareStruct(DirLightData)
+        DeclareStruct(DrawData)
+        DeclareStruct(BoneData)
 
-        Struct(DrawData,
-               {ShaderDataType::ivec4(), "boneOffset"},
-               {ShaderDataType::mat4(), "model"});
-
-        Struct(BoneData, {ShaderDataType::mat4(), "matrix"});
-
-        Buffer(drawData, DrawData);
-        DynamicBuffer(bones, BoneData);
-        Buffer(lightData, PointLightData);
+        Buffer(drawData, DrawData)
+        DynamicBuffer(bones, BoneData)
+        Buffer(lightData, PointLightData)
 
         Function("getSkinnedVertexPosition",
-                 {ShaderFunction::Argument("offset", ShaderDataType::integer())},
+                 {ShaderFunction::Argument(ShaderDataType::Int(), "offset")},
                  ShaderDataType::vec4());
         {
-            ARGUMENT(offset)
+            ARGUMENT(Int, offset)
 
-            If(offset < 0);
+            If(offset < 0)
             {
                 Return(vec4(vPosition, 1.0f));
             }
-            EndIf();
+            EndIf
 
             Int boneCount = bones.length();
 
             vec4 totalPosition;
             totalPosition = vec4(0, 0, 0, 0);
 
-            If(boneIds.x() > -1);
+            If(boneIds.x() > -1)
             {
-                If(boneIds.x() + offset >= boneCount);
+                If(boneIds.x() + offset >= boneCount)
                 {
                     Return(vec4(vPosition, 1.0f));
                 }
-                Else();
+                Else
                 {
                     vec4 localPosition;
-                    localPosition = bones[boneIds.x() + offset]["matrix"] * vec4(vPosition, 1.0f);
+                    localPosition = bones[boneIds.x() + offset].matrix * vec4(vPosition, 1.0f);
                     totalPosition += localPosition * boneWeights.x();
                 }
-                EndIf();
+                EndIf
             }
-            EndIf();
+            EndIf
 
-            If(boneIds.y() > -1);
+            If(boneIds.y() > -1)
             {
-                If(boneIds.y() + offset >= boneCount);
+                If(boneIds.y() + offset >= boneCount)
                 {
                     Return(vec4(vPosition, 1.0f));
                 }
-                Else();
+                Else
                 {
                     vec4 localPosition;
-                    localPosition = bones[boneIds.y() + offset]["matrix"] * vec4(vPosition, 1.0f);
+                    localPosition = bones[boneIds.y() + offset].matrix * vec4(vPosition, 1.0f);
                     totalPosition += localPosition * boneWeights.y();
                 }
-                EndIf();
+                EndIf
             }
-            EndIf();
+            EndIf
 
-            If(boneIds.z() > -1);
+            If(boneIds.z() > -1)
             {
-                If(boneIds.z() + offset >= boneCount);
+                If(boneIds.z() + offset >= boneCount)
                 {
                     Return(vec4(vPosition, 1.0f));
                 }
-                Else();
+                Else
                 {
                     vec4 localPosition;
-                    localPosition = bones[boneIds.z() + offset]["matrix"] * vec4(vPosition, 1.0f);
+                    localPosition = bones[boneIds.z() + offset].matrix * vec4(vPosition, 1.0f);
                     totalPosition += localPosition * boneWeights.z();
                 }
-                EndIf();
+                EndIf
             }
-            EndIf();
+            EndIf
 
             If(boneIds.w() > -1);
             {
@@ -124,97 +133,85 @@ namespace xng {
                 {
                     Return(vec4(vPosition, 1.0f));
                 }
-                Else();
+                Else
                 {
                     vec4 localPosition;
-                    localPosition = bones[boneIds.w() + offset]["matrix"] * vec4(vPosition, 1.0f);
+                    localPosition = bones[boneIds.w() + offset].matrix * vec4(vPosition, 1.0f);
                     totalPosition += localPosition * boneWeights.w();
                 }
-                EndIf();
+                EndIf
             }
-            EndIf();
+            EndIf
 
             Return(totalPosition);
         }
         EndFunction();
 
-        fPosition = drawData["model"] * getSkinnedVertexPosition(drawData["boneOffset"].x());
+        fPosition = drawData.model * getSkinnedVertexPosition(drawData.boneOffset.x());
         setVertexPosition(fPosition);
 
         return BuildShader();
     }
 
     Shader ShadowMappingPass::createGeometryShader() {
-        BeginShader(Shader::GEOMETRY);
+        BeginShader(Shader::GEOMETRY)
 
-        InputPrimitive(TRIANGLES);
-        OutputPrimitive(TRIANGLES, 18);
+        InputPrimitive(TRIANGLES)
+        OutputPrimitive(TRIANGLES, 18)
 
-        Input(ShaderDataType::vec4(), fPosition);
-        Output(ShaderDataType::vec4(), FragPos);
+        Input(vec4, fPosition)
+        Output(vec4, FragPos)
 
-        Struct(PointLightData,
-               {ShaderDataType::vec4(), "lightPosFarPlane"},
-               {ShaderDataType::ivec4(), "layer"},
-               {ShaderDataType::array(ShaderDataType::mat4(), 6), "shadowMatrices"});
+        DeclareStruct(PointLightData)
+        DeclareStruct(DirLightData)
+        DeclareStruct(DrawData)
+        DeclareStruct(BoneData)
 
-        Struct(DrawData,
-               {ShaderDataType::ivec4(), "boneOffset"},
-               {ShaderDataType::mat4(), "model"});
-
-        Struct(BoneData, {ShaderDataType::mat4(), "matrix"});
-
-        Buffer(drawData, DrawData);
-        DynamicBuffer(bones, BoneData);
-        Buffer(lightData, PointLightData);
+        Buffer(drawData, DrawData)
+        DynamicBuffer(bones, BoneData)
+        Buffer(lightData, PointLightData)
 
         Int face;
         face = Int(0);
-        For(face, 0, 5, 1);
+        For(face, 0, 5, 1)
         {
-            setLayer((lightData["layer"].x() * 6) + face);
+            setLayer((lightData.layer.x() * 6) + face);
 
             Int i;
             i = Int(0);
-            For(i, 0, 2, 1);
+            For(i, 0, 2, 1)
             {
                 FragPos = fPosition[i];
-                setVertexPosition(lightData["shadowMatrices"][face] * FragPos);
+                setVertexPosition(lightData.shadowMatrices[face] * FragPos);
                 EmitVertex();
             }
-            EndFor();
+            EndFor
 
             EndPrimitive();
         }
-        EndFor();
+        EndFor
 
         return BuildShader();
     }
 
     Shader ShadowMappingPass::createFragmentShader() {
-        BeginShader(Shader::FRAGMENT);
+        BeginShader(Shader::FRAGMENT)
 
-        Input(ShaderDataType::vec4(), FragPos);
+        Input(vec4, FragPos)
 
-        Struct(PointLightData,
-               {ShaderDataType::vec4(), "lightPosFarPlane"},
-               {ShaderDataType::ivec4(), "layer"},
-               {ShaderDataType::array(ShaderDataType::mat4(), 6), "shadowMatrices"});
+        DeclareStruct(PointLightData)
+        DeclareStruct(DirLightData)
+        DeclareStruct(DrawData)
+        DeclareStruct(BoneData)
 
-        Struct(DrawData,
-               {ShaderDataType::ivec4(), "boneOffset"},
-               {ShaderDataType::mat4(), "model"});
+        Buffer(drawData, DrawData)
+        DynamicBuffer(bones, BoneData)
+        Buffer(lightData, PointLightData)
 
-        Struct(BoneData, {ShaderDataType::mat4(), "matrix"});
-
-        Buffer(drawData, DrawData);
-        DynamicBuffer(bones, BoneData);
-        Buffer(lightData, PointLightData);
-
-        Float lightDistance = length(FragPos.xyz() - lightData["lightPosFarPlane"].xyz());
+        Float lightDistance = length(FragPos.xyz() - lightData.lightPosFarPlane.xyz());
 
         // map to [0;1] range by dividing by far_plane
-        lightDistance = lightDistance / lightData["lightPosFarPlane"].w();
+        lightDistance = lightDistance / lightData.lightPosFarPlane.w();
 
         // write this as modified linear depth
         setFragmentDepth(lightDistance);
@@ -223,120 +220,115 @@ namespace xng {
     }
 
     Shader ShadowMappingPass::createDirVertexShader() {
-        BeginShader(Shader::VERTEX);
+        BeginShader(Shader::VERTEX)
 
-        Input(ShaderDataType::vec3(), vPosition);
-        Input(ShaderDataType::vec3(), vNormal);
-        Input(ShaderDataType::vec2(), vUv);
-        Input(ShaderDataType::vec3(), vTangent);
-        Input(ShaderDataType::vec3(), vBitangent);
-        Input(ShaderDataType::ivec4(), boneIds);
-        Input(ShaderDataType::vec4(), boneWeights);
+        Input(vec3, vPosition)
+        Input(vec3, vNormal)
+        Input(vec2, vUv)
+        Input(vec3, vTangent)
+        Input(vec3, vBitangent)
+        Input(ivec4, boneIds)
+        Input(vec4, boneWeights)
 
-        Output(ShaderDataType::vec4(), fPosition);
+        Output(vec4, fPosition)
 
-        Struct(DirLightData,
-               {ShaderDataType::ivec4(), "layer"},
-               {ShaderDataType::mat4(), "shadowMatrix"});
+        DeclareStruct(PointLightData)
+        DeclareStruct(DirLightData)
+        DeclareStruct(DrawData)
+        DeclareStruct(BoneData)
 
-        Struct(DrawData,
-               {ShaderDataType::ivec4(), "boneOffset"},
-               {ShaderDataType::mat4(), "model"});
-
-        Struct(BoneData, {ShaderDataType::mat4(), "matrix"});
-
-        Buffer(drawData, DrawData);
-        DynamicBuffer(bones, BoneData);
-        Buffer(lightData, DirLightData);
+        Buffer(drawData, DrawData)
+        DynamicBuffer(bones, BoneData)
+        Buffer(lightData, DirLightData)
 
         Function("getSkinnedVertexPosition",
-                 {ShaderFunction::Argument("offset", ShaderDataType::integer())},
+                 {ShaderFunction::Argument(ShaderDataType::Int(), "offset")},
                  ShaderDataType::vec4());
         {
-            ARGUMENT(offset)
+            ARGUMENT(Int, offset)
 
-            If(offset < 0);
+            If(offset < 0)
             {
                 Return(vec4(vPosition, 1.0f));
             }
-            EndIf();
+            EndIf
 
             Int boneCount = bones.length();
 
             vec4 totalPosition;
             totalPosition = vec4(0, 0, 0, 0);
 
-            If(boneIds.x() > -1);
+            If(boneIds.x() > -1)
             {
-                If(boneIds.x() + offset >= boneCount);
+                If(boneIds.x() + offset >= boneCount)
                 {
                     Return(vec4(vPosition, 1.0f));
                 }
-                Else();
+                Else
                 {
                     vec4 localPosition;
-                    localPosition = bones[boneIds.x() + offset]["matrix"] * vec4(vPosition, 1.0f);
+                    localPosition = bones[boneIds.x() + offset].matrix * vec4(vPosition, 1.0f);
                     totalPosition += localPosition * boneWeights.x();
                 }
-                EndIf();
+                EndIf
             }
-            EndIf();
+            EndIf
 
-            If(boneIds.y() > -1);
+            If(boneIds.y() > -1)
             {
-                If(boneIds.y() + offset >= boneCount);
+                If(boneIds.y() + offset >= boneCount)
                 {
                     Return(vec4(vPosition, 1.0f));
                 }
-                Else();
+                Else
                 {
                     vec4 localPosition;
-                    localPosition = bones[boneIds.y() + offset]["matrix"] * vec4(vPosition, 1.0f);
+                    localPosition = bones[boneIds.y() + offset].matrix * vec4(vPosition, 1.0f);
                     totalPosition += localPosition * boneWeights.y();
                 }
-                EndIf();
+                EndIf
             }
-            EndIf();
+            EndIf
 
-            If(boneIds.z() > -1);
+            If(boneIds.z() > -1)
             {
-                If(boneIds.z() + offset >= boneCount);
+                If(boneIds.z() + offset >= boneCount)
                 {
                     Return(vec4(vPosition, 1.0f));
                 }
-                Else();
+                Else
                 {
                     vec4 localPosition;
-                    localPosition = bones[boneIds.z() + offset]["matrix"] * vec4(vPosition, 1.0f);
+                    localPosition = bones[boneIds.z() + offset].matrix * vec4(vPosition, 1.0f);
                     totalPosition += localPosition * boneWeights.z();
                 }
-                EndIf();
+                EndIf
             }
-            EndIf();
+            EndIf
 
-            If(boneIds.w() > -1);
+            If(boneIds.w() > -1)
             {
-                If(boneIds.w() + offset >= boneCount);
+                If(boneIds.w() + offset >= boneCount)
                 {
                     Return(vec4(vPosition, 1.0f));
                 }
-                Else();
+                Else
                 {
                     vec4 localPosition;
-                    localPosition = bones[boneIds.w() + offset]["matrix"] * vec4(vPosition, 1.0f);
+                    localPosition = bones[boneIds.w() + offset].matrix * vec4(vPosition, 1.0f);
                     totalPosition += localPosition * boneWeights.w();
                 }
-                EndIf();
+                EndIf
             }
-            EndIf();
+            EndIf
 
             Return(totalPosition);
         }
         EndFunction();
 
-        fPosition = lightData["shadowMatrix"]
-                    * drawData["model"]
-                    * getSkinnedVertexPosition(drawData["boneOffset"].x());
+        fPosition = lightData.shadowMatrix
+                    * drawData.model
+                    * getSkinnedVertexPosition(drawData.boneOffset.x());
 
         setVertexPosition(fPosition);
 
@@ -344,40 +336,35 @@ namespace xng {
     }
 
     Shader ShadowMappingPass::createDirGeometryShader() {
-        BeginShader(Shader::GEOMETRY);
+        BeginShader(Shader::GEOMETRY)
 
-        InputPrimitive(TRIANGLES);
-        OutputPrimitive(TRIANGLES, 3);
+        InputPrimitive(TRIANGLES)
+        OutputPrimitive(TRIANGLES, 3)
 
-        Input(ShaderDataType::vec4(), fPosition);
+        Input(vec4, fPosition)
 
-        Output(ShaderDataType::vec4(), fragCoord);
+        Output(vec4, fragCoord)
 
-        Struct(DirLightData,
-               {ShaderDataType::ivec4(), "layer"},
-               {ShaderDataType::mat4(), "shadowMatrix"});
+        DeclareStruct(PointLightData)
+        DeclareStruct(DirLightData)
+        DeclareStruct(DrawData)
+        DeclareStruct(BoneData)
 
-        Struct(DrawData,
-               {ShaderDataType::ivec4(), "boneOffset"},
-               {ShaderDataType::mat4(), "model"});
+        Buffer(drawData, DrawData)
+        DynamicBuffer(bones, BoneData)
+        Buffer(lightData, DirLightData)
 
-        Struct(BoneData, {ShaderDataType::mat4(), "matrix"});
-
-        Buffer(drawData, DrawData);
-        DynamicBuffer(bones, BoneData);
-        Buffer(lightData, DirLightData);
-
-        setLayer(lightData["layer"].x());
+        setLayer(lightData.layer.x());
 
         Int i;
         i = Int(0);
-        For(i, 0, 2, 1);
+        For(i, 0, 2, 1)
         {
             fragCoord = fPosition[i];
             setVertexPosition(fragCoord);
             EmitVertex();
         }
-        EndFor();
+        EndFor
 
         EndPrimitive();
 
@@ -385,23 +372,18 @@ namespace xng {
     }
 
     Shader ShadowMappingPass::createDirFragmentShader() {
-        BeginShader(Shader::FRAGMENT);
+        BeginShader(Shader::FRAGMENT)
 
-        Input(ShaderDataType::vec4(), fragCoord);
+        Input(vec4, fragCoord)
 
-        Struct(DirLightData,
-               {ShaderDataType::ivec4(), "layer"},
-               {ShaderDataType::mat4(), "shadowMatrix"});
+        DeclareStruct(PointLightData)
+        DeclareStruct(DirLightData)
+        DeclareStruct(DrawData)
+        DeclareStruct(BoneData)
 
-        Struct(DrawData,
-               {ShaderDataType::ivec4(), "boneOffset"},
-               {ShaderDataType::mat4(), "model"});
-
-        Struct(BoneData, {ShaderDataType::mat4(), "matrix"});
-
-        Buffer(drawData, DrawData);
-        DynamicBuffer(bones, BoneData);
-        Buffer(lightData, DirLightData);
+        Buffer(drawData, DrawData)
+        DynamicBuffer(bones, BoneData)
+        Buffer(lightData, DirLightData)
 
         return BuildShader();
     }

@@ -25,60 +25,67 @@
 using namespace xng::ShaderScript;
 
 namespace xng {
+    DefineStruct(ShaderData,
+                 vec4, viewPosition_gamma)
+
+    DefineStruct(PBRPointLight,
+                 vec4, position,
+                 vec4, color,
+                 vec4, farPlane)
+
+    DefineStruct(PBRDirectionalLight,
+                 vec4, direction,
+                 vec4, color,
+                 vec4, farPlane)
+
+    DefineStruct(PBRSpotLight,
+                 vec4, position,
+                 vec4, direction_quadratic,
+                 vec4, color,
+                 vec4, farPlane,
+                 vec4, cutOff_outerCutOff_constant_linear)
+
+    DefineStruct(TransformData, mat4, transform);
+
     Shader DeferredLightingPass::createVertexShader() {
         BeginShader(Shader::VERTEX)
 
-        Input(ShaderDataType::vec3(), vPosition);
-        Input(ShaderDataType::vec2(), vUv);
+        Input(vec3, vPosition)
+        Input(vec2, vUv)
 
-        Output(ShaderDataType::vec4(), fPosition);
-        Output(ShaderDataType::vec2(), fUv);
+        Output(vec4, fPosition)
+        Output(vec2, fUv)
 
-        Struct(ShaderData,
-               {{ShaderDataType::vec4(), "viewPosition_gamma"},});
+        DeclareStruct(ShaderData)
+        DeclareStruct(PBRPointLight)
+        DeclareStruct(PBRDirectionalLight)
+        DeclareStruct(PBRSpotLight)
+        DeclareStruct(TransformData)
+        DeclareStruct(PbrPass)
 
-        Struct(PBRPointLight,
-               {{ShaderDataType::vec4(), "position"},
-               {ShaderDataType::vec4(), "color"},
-               {ShaderDataType::vec4(), "farPlane"}});
+        Buffer(shaderData, ShaderData)
 
-        Struct(PBRDirectionalLight,
-               {{ShaderDataType::vec4(), "direction"},
-               {ShaderDataType::vec4(), "color"},
-               {ShaderDataType::vec4(), "farPlane"}});
-
-        Struct(PBRSpotLight,
-               {{ShaderDataType::vec4(), "position"},
-               {ShaderDataType::vec4(), "direction_quadratic"},
-               {ShaderDataType::vec4(), "color"},
-               {ShaderDataType::vec4(), "farPlane"},
-               {ShaderDataType::vec4(), "cutOff_outerCutOff_constant_linear"} });
-
-        Struct(Transform, {{ShaderDataType::mat4(), "transform"}});
-
-        Buffer(shaderData, ShaderData);
-
-        DynamicBuffer(pointLights, PBRPointLight);
-        DynamicBuffer(directionalLights, PBRDirectionalLight);
-        DynamicBuffer(spotLights, PBRSpotLight);
+        DynamicBuffer(pointLights, PBRPointLight)
+        DynamicBuffer(directionalLights, PBRDirectionalLight)
+        DynamicBuffer(spotLights, PBRSpotLight)
 
         DynamicBuffer(shadowPointLights, PBRPointLight)
         DynamicBuffer(shadowDirectionalLights, PBRDirectionalLight)
         DynamicBuffer(shadowSpotLights, PBRSpotLight)
 
-        Texture(gBufferPos, TEXTURE_2D, RGBA32F);
-        Texture(gBufferNormal, TEXTURE_2D, RGBA32F);
-        Texture(gBufferRoughnessMetallicAO, TEXTURE_2D, RGBA32F);
-        Texture(gBufferAlbedo, TEXTURE_2D, RGBA);
-        Texture(gBufferObjectShadows, TEXTURE_2D, RGBA32I);
-        Texture(gBufferDepth, TEXTURE_2D, DEPTH);
+        Texture(gBufferPos, TEXTURE_2D, RGBA32F)
+        Texture(gBufferNormal, TEXTURE_2D, RGBA32F)
+        Texture(gBufferRoughnessMetallicAO, TEXTURE_2D, RGBA32F)
+        Texture(gBufferAlbedo, TEXTURE_2D, RGBA)
+        Texture(gBufferObjectShadows, TEXTURE_2D, RGBA32I)
+        Texture(gBufferDepth, TEXTURE_2D, DEPTH)
 
-        Texture(pointLightShadowMaps, TEXTURE_CUBE_MAP_ARRAY, DEPTH);
-        Texture(directionalLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH);
-        Texture(spotLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH);
+        Texture(pointLightShadowMaps, TEXTURE_CUBE_MAP_ARRAY, DEPTH)
+        Texture(directionalLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH)
+        Texture(spotLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH)
 
-        DynamicBuffer(directionalLightShadowTransforms, Transform);
-        DynamicBuffer(spotLightShadowTransforms, Transform);
+        DynamicBuffer(directionalLightShadowTransforms, TransformData)
+        DynamicBuffer(spotLightShadowTransforms, TransformData)
 
         fPosition = vec4(vPosition, 1.0f);
         fUv = vUv;
@@ -90,69 +97,54 @@ namespace xng {
     Shader DeferredLightingPass::createFragmentShader() {
         BeginShader(Shader::FRAGMENT)
 
-        Input(ShaderDataType::vec4(), fPosition);
-        Input(ShaderDataType::vec2(), fUv);
+        Input(vec4, fPosition)
+        Input(vec2, fUv)
 
-        Output(ShaderDataType::vec4(), oColor);
+        Output(vec4, oColor)
 
-        Struct(ShaderData,
-               {{ShaderDataType::vec4(), "viewPosition_gamma"}});
+        DeclareStruct(ShaderData)
+        DeclareStruct(PBRPointLight)
+        DeclareStruct(PBRDirectionalLight)
+        DeclareStruct(PBRSpotLight)
+        DeclareStruct(TransformData)
+        DeclareStruct(PbrPass)
 
-        Struct(PBRPointLight,
-               {{ShaderDataType::vec4(), "position"},
-               {ShaderDataType::vec4(), "color"},
-               {ShaderDataType::vec4(), "farPlane"}});
+        Buffer(shaderData, ShaderData)
 
-        Struct(PBRDirectionalLight,
-               {{ShaderDataType::vec4(), "direction"},
-               {ShaderDataType::vec4(), "color"},
-               {ShaderDataType::vec4(), "farPlane"}});
-
-        Struct(PBRSpotLight,
-               {{ShaderDataType::vec4(), "position"},
-               {ShaderDataType::vec4(), "direction_quadratic"},
-               {ShaderDataType::vec4(), "color"},
-               {ShaderDataType::vec4(), "farPlane"},
-               {ShaderDataType::vec4(), "cutOff_outerCutOff_constant_linear"} });
-
-        Struct(Transform, {{ShaderDataType::mat4(), "transform"}});
-
-        Buffer(shaderData, ShaderData);
-
-        DynamicBuffer(pointLights, PBRPointLight);
-        DynamicBuffer(directionalLights, PBRDirectionalLight);
-        DynamicBuffer(spotLights, PBRSpotLight);
+        DynamicBuffer(pointLights, PBRPointLight)
+        DynamicBuffer(directionalLights, PBRDirectionalLight)
+        DynamicBuffer(spotLights, PBRSpotLight)
 
         DynamicBuffer(shadowPointLights, PBRPointLight)
         DynamicBuffer(shadowDirectionalLights, PBRDirectionalLight)
         DynamicBuffer(shadowSpotLights, PBRSpotLight)
 
-        Texture(gBufferPos, TEXTURE_2D, RGBA32F);
-        Texture(gBufferNormal, TEXTURE_2D, RGBA32F);
-        Texture(gBufferRoughnessMetallicAO, TEXTURE_2D, RGBA32F);
-        Texture(gBufferAlbedo, TEXTURE_2D, RGBA);
-        Texture(gBufferObjectShadows, TEXTURE_2D, RGBA32I);
-        Texture(gBufferDepth, TEXTURE_2D, DEPTH);
+        Texture(gBufferPos, TEXTURE_2D, RGBA32F)
+        Texture(gBufferNormal, TEXTURE_2D, RGBA32F)
+        Texture(gBufferRoughnessMetallicAO, TEXTURE_2D, RGBA32F)
+        Texture(gBufferAlbedo, TEXTURE_2D, RGBA)
+        Texture(gBufferObjectShadows, TEXTURE_2D, RGBA32I)
+        Texture(gBufferDepth, TEXTURE_2D, DEPTH)
 
-        Texture(pointLightShadowMaps, TEXTURE_CUBE_MAP_ARRAY, DEPTH);
-        Texture(directionalLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH);
-        Texture(spotLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH);
+        Texture(pointLightShadowMaps, TEXTURE_CUBE_MAP_ARRAY, DEPTH)
+        Texture(directionalLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH)
+        Texture(spotLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH)
 
-        DynamicBuffer(directionalLightShadowTransforms, Transform);
-        DynamicBuffer(spotLightShadowTransforms, Transform);
+        DynamicBuffer(directionalLightShadowTransforms, TransformData)
+        DynamicBuffer(spotLightShadowTransforms, TransformData)
 
         shaderlib::pbr();
         shaderlib::shadowmapping::sampleShadowPoint();
         shaderlib::shadowmapping::sampleShadowDirectional();
 
         Float gDepth = textureSample(gBufferDepth, fUv).x();
-        If(gDepth == 1);
+        If(gDepth == 1)
         {
             oColor = vec4(0, 0, 0, 0);
             setFragmentDepth(1);
             Return();
         }
-        EndIf();
+        EndIf
 
         Int receiveShadows = textureSample(gBufferObjectShadows, fUv).y();
 
@@ -161,102 +153,101 @@ namespace xng {
         vec3 roughnessMetallicAO = textureSample(gBufferRoughnessMetallicAO, fUv).xyz();
         vec3 albedo = textureSample(gBufferAlbedo, fUv).xyz();
 
-        Object<PbrPass> pass;
-        pass = pbr_begin(fPos,
-                              fNorm,
-                              albedo,
-                              roughnessMetallicAO.y(),
-                              roughnessMetallicAO.x(),
-                              roughnessMetallicAO.z(),
-                              shaderData["viewPosition_gamma"].xyz(),
-                              shaderData["viewPosition_gamma"].w());
+        PbrPass pass = pbr_begin(fPos,
+                         fNorm,
+                         albedo,
+                         roughnessMetallicAO.y(),
+                         roughnessMetallicAO.x(),
+                         roughnessMetallicAO.z(),
+                         shaderData.viewPosition_gamma.xyz(),
+                         shaderData.viewPosition_gamma.w());
 
         vec3 reflectance;
         reflectance = vec3(0, 0, 0);
 
         Int i;
         i = Int(0);
-        For(i, 0, pointLights.length() - 1, 1);
+        For(i, 0, pointLights.length() - 1, 1)
         {
             auto light = pointLights[i];
-            reflectance = pbr_point(pass, reflectance, light["position"].xyz(), light["color"].xyz(), 1.0f);
+            reflectance = pbr_point(pass, reflectance, light.position.xyz(), light.color.xyz(), 1.0f);
         }
-        EndFor();
+        EndFor
 
-        For(i, 0, directionalLights.length() - 1,  1);
+        For(i, 0, directionalLights.length() - 1, 1)
         {
             auto light = directionalLights[i];
-            reflectance = pbr_directional(pass, reflectance, light["direction"].xyz(), light["color"].xyz(), 1.0f);
+            reflectance = pbr_directional(pass, reflectance, light.direction.xyz(), light.color.xyz(), 1.0f);
         }
-        EndFor();
+        EndFor
 
-        For(i, 0, spotLights.length() - 1,  1);
+        For(i, 0, spotLights.length() - 1, 1)
         {
             auto light = spotLights[i];
             reflectance = pbr_spot(pass,
                                    reflectance,
-                                   light["position"].xyz(),
-                                   light["direction_quadratic"].xyz(),
-                                   light["direction_quadratic"].w(),
-                                   light["color"].xyz(),
-                                   light["cutOff_outerCutOff_constant_linear"].x(),
-                                   light["cutOff_outerCutOff_constant_linear"].y(),
-                                   light["cutOff_outerCutOff_constant_linear"].z(),
-                                   light["cutOff_outerCutOff_constant_linear"].w(),
+                                   light.position.xyz(),
+                                   light.direction_quadratic.xyz(),
+                                   light.direction_quadratic.w(),
+                                   light.color.xyz(),
+                                   light.cutOff_outerCutOff_constant_linear.x(),
+                                   light.cutOff_outerCutOff_constant_linear.y(),
+                                   light.cutOff_outerCutOff_constant_linear.z(),
+                                   light.cutOff_outerCutOff_constant_linear.w(),
                                    1.0f);
         }
-        EndFor();
+        EndFor
 
-        For(i, 0, shadowPointLights.length() - 1,  1);
+        For(i, 0, shadowPointLights.length() - 1, 1)
         {
             auto light = shadowPointLights[i];
             Float shadow = sampleShadowPoint(fPos,
-                                             light["position"].xyz(),
-                                             shaderData["viewPosition_gamma"].xyz(),
+                                             light.position.xyz(),
+                                             shaderData.viewPosition_gamma.xyz(),
                                              pointLightShadowMaps,
                                              i,
-                                             light["farPlane"].x());
-            reflectance = pbr_point(pass, reflectance, light["position"].xyz(), light["color"].xyz(), shadow);
+                                             light.farPlane.x());
+            reflectance = pbr_point(pass, reflectance, light.position.xyz(), light.color.xyz(), shadow);
         }
-        EndFor();
+        EndFor
 
-        For(i, 0, shadowDirectionalLights.length() - 1,  1);
+        For(i, 0, shadowDirectionalLights.length() - 1, 1)
         {
             auto light = shadowDirectionalLights[i];
-            vec4 fragPosLightSpace = directionalLightShadowTransforms[i]["transform"] * vec4(fPos, 1);
+            vec4 fragPosLightSpace = directionalLightShadowTransforms[i].transform * vec4(fPos, 1);
             Float shadow = sampleShadowDirectional(fragPosLightSpace,
                                                    directionalLightShadowMaps,
                                                    i,
                                                    fNorm,
                                                    vec3(0, 0, 0),
                                                    fPos);
-            reflectance = pbr_directional(pass, reflectance, light["direction"].xyz(), light["color"].xyz(), shadow);
+            reflectance = pbr_directional(pass, reflectance, light.direction.xyz(), light.color.xyz(), shadow);
         }
-        EndFor();
+        EndFor
 
-        For(i, 0, shadowSpotLights.length() - 1,  1);
+        For(i, 0, shadowSpotLights.length() - 1, 1)
         {
             auto light = shadowSpotLights[i];
-            vec4 fragPosLightSpace = spotLightShadowTransforms[i]["transform"] * vec4(fPos, 1);
+            vec4 fragPosLightSpace = spotLightShadowTransforms[i].transform * vec4(fPos, 1);
             Float shadow = sampleShadowDirectional(fragPosLightSpace,
                                                    spotLightShadowMaps,
                                                    i,
                                                    fNorm,
-                                                   light["position"].xyz(),
+                                                   light.position.xyz(),
                                                    fPos);
             reflectance = pbr_spot(pass,
                                    reflectance,
-                                   light["position"].xyz(),
-                                   light["direction_quadratic"].xyz(),
-                                   light["direction_quadratic"].w(),
-                                   light["color"].xyz(),
-                                   light["cutOff_outerCutOff_constant_linear"].x(),
-                                   light["cutOff_outerCutOff_constant_linear"].y(),
-                                   light["cutOff_outerCutOff_constant_linear"].z(),
-                                   light["cutOff_outerCutOff_constant_linear"].w(),
+                                   light.position.xyz(),
+                                   light.direction_quadratic.xyz(),
+                                   light.direction_quadratic.w(),
+                                   light.color.xyz(),
+                                   light.cutOff_outerCutOff_constant_linear.x(),
+                                   light.cutOff_outerCutOff_constant_linear.y(),
+                                   light.cutOff_outerCutOff_constant_linear.z(),
+                                   light.cutOff_outerCutOff_constant_linear.w(),
                                    shadow);
         }
-        EndFor();
+        EndFor
 
         oColor = vec4(pbr_finish(pass, reflectance), 1);
 

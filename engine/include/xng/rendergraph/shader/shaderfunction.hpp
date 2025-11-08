@@ -42,7 +42,7 @@ namespace xng {
 
             Argument() = default;
 
-            Argument(std::string name, const std::variant<ShaderDataType, ShaderTexture, ShaderStructTypeName> &type)
+            Argument(const std::variant<ShaderDataType, ShaderTexture, ShaderStructTypeName> &type, std::string name)
                 : name(std::move(name)), type(type) {
             }
         };

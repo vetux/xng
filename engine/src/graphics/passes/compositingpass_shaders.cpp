@@ -32,15 +32,15 @@ namespace xng {
     }
 
     Shader CompositingPass::createVertexShader() {
-        BeginShader(Shader::VERTEX);
+        BeginShader(Shader::VERTEX)
 
-        Input(ShaderDataType::vec3(), position);
-        Input(ShaderDataType::vec2(), uv);
+        Input(vec3, position)
+        Input(vec2, uv)
 
-        Output(ShaderDataType::vec2(), fUv);
+        Output(vec2, fUv)
 
-        Texture(layerColor, TEXTURE_2D, RGBA);
-        Texture(layerDepth, TEXTURE_2D, DEPTH);
+        Texture(layerColor, TEXTURE_2D, RGBA)
+        Texture(layerDepth, TEXTURE_2D, DEPTH)
 
         fUv = uv;
 
@@ -50,14 +50,14 @@ namespace xng {
     }
 
     Shader CompositingPass::createFragmentShader() {
-        BeginShader(Shader::FRAGMENT);
+        BeginShader(Shader::FRAGMENT)
 
-        Input(ShaderDataType::vec2(), fUv);
+        Input(vec2, fUv)
 
-        Output(ShaderDataType::vec4(), color);
+        Output(vec4, color)
 
-        Texture(layerColor, TEXTURE_2D, RGBA);
-        Texture(layerDepth, TEXTURE_2D, DEPTH);
+        Texture(layerColor, TEXTURE_2D, RGBA)
+        Texture(layerDepth, TEXTURE_2D, DEPTH)
 
         // TODO: Implement supersampling
         color = textureSample(layerColor, fUv);

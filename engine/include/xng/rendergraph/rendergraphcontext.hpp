@@ -43,6 +43,8 @@ namespace xng {
          *
          * Subsequent access to the target buffer is guaranteed to receive the uploaded data.
          *
+         * Can be used for vertex, index or shader buffers.
+         *
          * @param target
          * @param buffer The buffer holding the data
          * @param bufferSize The size of the buffer

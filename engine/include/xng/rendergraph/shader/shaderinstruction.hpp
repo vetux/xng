@@ -41,10 +41,8 @@ namespace xng {
         };
 
         enum OpCode {
-            Nop = 0,
-
             // Variable Declaration
-            DeclareVariable,
+            DeclareVariable = 0,
 
             // Data Assignment
             Assign,
@@ -143,7 +141,7 @@ namespace xng {
 
             LHS_START = DeclareVariable,
             LHS_END = VectorSwizzle,
-        } code = Nop;
+        } code = DeclareVariable;
 
         std::vector<ShaderOperand> operands{};
 

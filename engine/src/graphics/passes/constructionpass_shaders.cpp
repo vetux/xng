@@ -26,58 +26,63 @@
 using namespace xng::ShaderScript;
 
 namespace xng {
+    DefineStruct(AtlasTexture,
+                 ivec4, level_index_filtering_assigned,
+                 vec4, atlasScale_texSize);
+
+    DefineStruct(BufferLayout,
+                 mat4, model,
+                 mat4, mvp,
+                 ivec4, objectID_boneOffset_shadows,
+                 vec4, metallic_roughness_ambientOcclusion,
+                 vec4, albedoColor,
+                 vec4, normalIntensity,
+                 AtlasTexture, normal,
+                 AtlasTexture, metallic,
+                 AtlasTexture, roughness,
+                 AtlasTexture, ambientOcclusion,
+                 AtlasTexture, albedo);
+
+    DefineStruct(BoneBufferLayout,
+                 mat4, matrix);
+
     Shader ConstructionPass::createVertexShader() {
-        BeginShader(Shader::VERTEX);
+        BeginShader(Shader::VERTEX)
 
-        Input(ShaderDataType::vec3(), position);
-        Input(ShaderDataType::vec3(), normal);
-        Input(ShaderDataType::vec2(), uv);
-        Input(ShaderDataType::vec3(), tangent);
-        Input(ShaderDataType::vec3(), bitangent);
+        Input(vec3, position)
+        Input(vec3, normal)
+        Input(vec2, uv)
+        Input(vec3, tangent)
+        Input(vec3, bitangent)
 
-        Output(ShaderDataType::vec3(), fPos);
-        Output(ShaderDataType::vec3(), fNorm);
-        Output(ShaderDataType::vec3(), fTan);
-        Output(ShaderDataType::vec2(), fUv);
-        Output(ShaderDataType::vec4(), vPos);
-        Output(ShaderDataType::vec3(), fT);
-        Output(ShaderDataType::vec3(), fB);
-        Output(ShaderDataType::vec3(), fN);
+        Output(vec3, fPos)
+        Output(vec3, fNorm)
+        Output(vec3, fTan)
+        Output(vec2, fUv)
+        Output(vec4, vPos)
+        Output(vec3, fT)
+        Output(vec3, fB)
+        Output(vec3, fN)
 
-        Struct(AtlasTexture,
-               {ShaderDataType::ivec4(), "level_index_filtering_assigned"},
-               {ShaderDataType::vec4(), "atlasScale_texSize"});
+        DeclareStruct(AtlasTexture)
+        DeclareStruct(BufferLayout)
+        DeclareStruct(BoneBufferLayout)
 
-        Struct(BufferLayout,
-               {ShaderDataType::mat4(), "model"},
-               {ShaderDataType::mat4(), "mvp"},
-               {ShaderDataType::ivec4(), "objectID_boneOffset_shadows"},
-               {ShaderDataType::vec4(), "metallic_roughness_ambientOcclusion"},
-               {ShaderDataType::vec4(), "albedoColor"},
-               {ShaderDataType::vec4(), "normalIntensity"},
-               {AtlasTexture, "normal"},
-               {AtlasTexture, "metallic"},
-               {AtlasTexture, "roughness"},
-               {AtlasTexture, "ambientOcclusion"},
-               {AtlasTexture, "albedo"});
+        Buffer(data, BufferLayout)
+        DynamicBuffer(bones, BoneBufferLayout)
 
-        Struct(BoneBufferLayout, {ShaderDataType::mat4(), "matrix"});
+        TextureArray(atlasTextures, TEXTURE_2D_ARRAY, RGBA, 12)
 
-        Buffer(data, BufferLayout);
-        DynamicBuffer(bones, BoneBufferLayout);
-
-        TextureArray(atlasTextures, TEXTURE_2D_ARRAY, RGBA, 12);
-
-        vPos = data["mvp"] * vec4(position, 1);
-        fPos = (data["model"] * vec4(position, 1)).xyz();
+        vPos = data.mvp * vec4(position, 1);
+        fPos = (data.model * vec4(position, 1)).xyz();
         fUv = uv;
         fNorm = normalize(normal);
         fTan = normalize(tangent);
 
         //https://www.gamedeveloper.com/programming/three-normal-mapping-techniques-explained-for-the-mathematically-uninclined
-        fN = normalize((data["model"] * vec4(normal, 0.0)).xyz());
-        fT = normalize((data["model"] * vec4(tangent, 0.0)).xyz());
-        fB = normalize((data["model"] * vec4(cross(normalize(tangent), normalize(normal).xyz()) * 1, 0.0)).xyz());
+        fN = normalize((data.model * vec4(normal, 0.0)).xyz());
+        fT = normalize((data.model * vec4(tangent, 0.0)).xyz());
+        fB = normalize((data.model * vec4(cross(normalize(tangent), normalize(normal).xyz()) * 1, 0.0)).xyz());
 
         setVertexPosition(vPos);
 
@@ -85,147 +90,132 @@ namespace xng {
     }
 
     Shader ConstructionPass::createSkinnedVertexShader() {
-        BeginShader(Shader::VERTEX);
+        BeginShader(Shader::VERTEX)
 
-        Input(ShaderDataType::vec3(), position);
-        Input(ShaderDataType::vec3(), normal);
-        Input(ShaderDataType::vec2(), uv);
-        Input(ShaderDataType::vec3(), tangent);
-        Input(ShaderDataType::vec3(), bitangent);
-        Input(ShaderDataType::ivec4(), boneIds);
-        Input(ShaderDataType::vec4(), boneWeights);
+        Input(vec3, position)
+        Input(vec3, normal)
+        Input(vec2, uv)
+        Input(vec3, tangent)
+        Input(vec3, bitangent)
+        Input(ivec4, boneIds)
+        Input(vec4, boneWeights)
 
-        Output(ShaderDataType::vec3(), fPos);
-        Output(ShaderDataType::vec3(), fNorm);
-        Output(ShaderDataType::vec3(), fTan);
-        Output(ShaderDataType::vec2(), fUv);
-        Output(ShaderDataType::vec4(), vPos);
-        Output(ShaderDataType::vec3(), fT);
-        Output(ShaderDataType::vec3(), fB);
-        Output(ShaderDataType::vec3(), fN);
+        Output(vec3, fPos)
+        Output(vec3, fNorm)
+        Output(vec3, fTan)
+        Output(vec2, fUv)
+        Output(vec4, vPos)
+        Output(vec3, fT)
+        Output(vec3, fB)
+        Output(vec3, fN)
 
-        Struct(AtlasTexture,
-               {ShaderDataType::ivec4(), "level_index_filtering_assigned"},
-               {ShaderDataType::vec4(), "atlasScale_texSize"});
+        DeclareStruct(AtlasTexture)
+        DeclareStruct(BufferLayout)
+        DeclareStruct(BoneBufferLayout)
 
-        Struct(BufferLayout,
-               {ShaderDataType::mat4(), "model"},
-               {ShaderDataType::mat4(), "mvp"},
-               {ShaderDataType::ivec4(), "objectID_boneOffset_shadows"},
-               {ShaderDataType::vec4(), "metallic_roughness_ambientOcclusion"},
-               {ShaderDataType::vec4(), "albedoColor"},
-               {ShaderDataType::vec4(), "normalIntensity"},
-               {AtlasTexture, "normal"},
-               {AtlasTexture, "metallic"},
-               {AtlasTexture, "roughness"},
-               {AtlasTexture, "ambientOcclusion"},
-               {AtlasTexture, "albedo"});
+        Buffer(data, BufferLayout)
+        DynamicBuffer(bones, BoneBufferLayout)
 
-        Struct(BoneBufferLayout, {ShaderDataType::mat4(), "matrix"});
-
-        Buffer(data, BufferLayout);
-        DynamicBuffer(bones, BoneBufferLayout);
-
-        TextureArray(atlasTextures, TEXTURE_2D_ARRAY, RGBA, 12);
+        TextureArray(atlasTextures, TEXTURE_2D_ARRAY, RGBA, 12)
 
         Function("getSkinnedVertexPosition",
-                 {ShaderFunction::Argument("offset", ShaderDataType::integer())},
+                 {ShaderFunction::Argument(ShaderDataType::Int(), "offset")},
                  ShaderDataType::vec4());
         {
-            ARGUMENT(offset)
+            ARGUMENT(Int, offset)
 
-            If(offset < 0);
+            If(offset < 0)
             {
                 Return(vec4(position, 1.0f));
             }
-            EndIf();
+            EndIf
 
             Int boneCount = bones.length();
 
             vec4 totalPosition;
             totalPosition = vec4(0, 0, 0, 0);
 
-            If(boneIds.x() > -1);
+            If(boneIds.x() > -1)
             {
-                If(boneIds.x() + offset >= boneCount);
+                If(boneIds.x() + offset >= boneCount)
                 {
                     Return(vec4(position, 1.0f));
                 }
-                Else();
+                Else
                 {
                     vec4 localPosition;
-                    localPosition = bones[boneIds.x() + offset]["matrix"] * vec4(position, 1.0f);
+                    localPosition = bones[boneIds.x() + offset].matrix * vec4(position, 1.0f);
                     totalPosition += localPosition * boneWeights.x();
                 }
-                EndIf();
+                EndIf
             }
-            EndIf();
+            EndIf
 
-            If(boneIds.y() > -1);
+            If(boneIds.y() > -1)
             {
-                If(boneIds.y() + offset >= boneCount);
+                If(boneIds.y() + offset >= boneCount)
                 {
                     Return(vec4(position, 1.0f));
                 }
-                Else();
+                Else
                 {
                     vec4 localPosition;
-                    localPosition = bones[boneIds.y() + offset]["matrix"] * vec4(position, 1.0f);
+                    localPosition = bones[boneIds.y() + offset].matrix * vec4(position, 1.0f);
                     totalPosition += localPosition * boneWeights.y();
                 }
-                EndIf();
+                EndIf
             }
-            EndIf();
+            EndIf
 
-            If(boneIds.z() > -1);
+            If(boneIds.z() > -1)
             {
-                If(boneIds.z() + offset >= boneCount);
+                If(boneIds.z() + offset >= boneCount)
                 {
                     Return(vec4(position, 1.0f));
                 }
-                Else();
+                Else
                 {
                     vec4 localPosition;
-                    localPosition = bones[boneIds.z() + offset]["matrix"] * vec4(position, 1.0f);
+                    localPosition = bones[boneIds.z() + offset].matrix * vec4(position, 1.0f);
                     totalPosition += localPosition * boneWeights.z();
                 }
-                EndIf();
+                EndIf
             }
-            EndIf();
+            EndIf
 
-            If(boneIds.w() > -1);
+            If(boneIds.w() > -1)
             {
                 If(boneIds.w() + offset >= boneCount);
                 {
                     Return(vec4(position, 1.0f));
                 }
-                Else();
+                Else
                 {
                     vec4 localPosition;
-                    localPosition = bones[boneIds.w() + offset]["matrix"] * vec4(position, 1.0f);
+                    localPosition = bones[boneIds.w() + offset].matrix * vec4(position, 1.0f);
                     totalPosition += localPosition * boneWeights.w();
                 }
-                EndIf();
+                EndIf
             }
-            EndIf();
+            EndIf
 
             Return(totalPosition);
         }
         EndFunction();
 
-        vec4 pos = Call("getSkinnedVertexPosition", data["objectID_boneOffset_shadows"].y());
+        vec4 pos = Call("getSkinnedVertexPosition", data.objectID_boneOffset_shadows.y());
 
-        vPos = data["mvp"] * pos;
-        fPos = (data["model"] * pos).xyz();
+        vPos = data.mvp * pos;
+        fPos = (data.model * pos).xyz();
         fUv = uv;
 
         fNorm = normalize(normal);
         fTan = normalize(tangent);
 
         //https://www.gamedeveloper.com/programming/three-normal-mapping-techniques-explained-for-the-mathematically-uninclined
-        fN = normalize((data["model"] * vec4(normalize(normal), 0.0)).xyz());
-        fT = normalize((data["model"] * vec4(normalize(tangent), 0.0)).xyz());
-        fB = normalize((data["model"] * vec4(cross(normalize(tangent), normalize(normal).xyz()) * 1, 0.0)).xyz());
+        fN = normalize((data.model * vec4(normalize(normal), 0.0)).xyz());
+        fT = normalize((data.model * vec4(normalize(tangent), 0.0)).xyz());
+        fB = normalize((data.model * vec4(cross(normalize(tangent), normalize(normal).xyz()) * 1, 0.0)).xyz());
 
         setVertexPosition(vPos);
 
@@ -235,151 +225,136 @@ namespace xng {
     DEFINE_FUNCTION2(texture_atlas)
 
     Shader ConstructionPass::createFragmentShader() {
-        BeginShader(Shader::FRAGMENT);
+        BeginShader(Shader::FRAGMENT)
 
-        Input(ShaderDataType::vec3(), fPos);
-        Input(ShaderDataType::vec3(), fNorm);
-        Input(ShaderDataType::vec3(), fTan);
-        Input(ShaderDataType::vec2(), fUv);
-        Input(ShaderDataType::vec4(), vPos);
-        Input(ShaderDataType::vec3(), fT);
-        Input(ShaderDataType::vec3(), fB);
-        Input(ShaderDataType::vec3(), fN);
+        Input(vec3, fPos)
+        Input(vec3, fNorm)
+        Input(vec3, fTan)
+        Input(vec2, fUv)
+        Input(vec4, vPos)
+        Input(vec3, fT)
+        Input(vec3, fB)
+        Input(vec3, fN)
 
-        Output(ShaderDataType::vec4(), oPosition);
-        Output(ShaderDataType::vec4(), oNormal);
-        Output(ShaderDataType::vec4(), oTangent);
-        Output(ShaderDataType::vec4(), oRoughnessMetallicAO);
-        Output(ShaderDataType::vec4(), oAlbedo);
-        Output(ShaderDataType::ivec4(), oObjectShadows);
+        Output(vec4, oPosition)
+        Output(vec4, oNormal)
+        Output(vec4, oTangent)
+        Output(vec4, oRoughnessMetallicAO)
+        Output(vec4, oAlbedo)
+        Output(ivec4, oObjectShadows)
 
-        Struct(AtlasTexture,
-               {ShaderDataType::ivec4(), "level_index_filtering_assigned"},
-               {ShaderDataType::vec4(), "atlasScale_texSize"});
+        DeclareStruct(AtlasTexture)
+        DeclareStruct(BufferLayout)
+        DeclareStruct(BoneBufferLayout)
 
-        Struct(BufferLayout,
-               {ShaderDataType::mat4(), "model"},
-               {ShaderDataType::mat4(), "mvp"},
-               {ShaderDataType::ivec4(), "objectID_boneOffset_shadows"},
-               {ShaderDataType::vec4(), "metallic_roughness_ambientOcclusion"},
-               {ShaderDataType::vec4(), "albedoColor"},
-               {ShaderDataType::vec4(), "normalIntensity"},
-               {AtlasTexture, "normal"},
-               {AtlasTexture, "metallic"},
-               {AtlasTexture, "roughness"},
-               {AtlasTexture, "ambientOcclusion"},
-               {AtlasTexture, "albedo"});
+        Buffer(data, BufferLayout)
+        DynamicBuffer(bones, BoneBufferLayout)
 
-        Struct(BoneBufferLayout, {ShaderDataType::mat4(), "matrix"});
-
-        Buffer(data, BufferLayout);
-        DynamicBuffer(bones, BoneBufferLayout);
-
-        TextureArray(atlasTextures, TEXTURE_2D_ARRAY, RGBA, 12);
+        TextureArray(atlasTextures, TEXTURE_2D_ARRAY, RGBA, 12)
 
         shaderlib::textureBicubic();
 
         Function("texture_atlas",
                  {
-                     {"textureDef", AtlasTexture},
-                     {"inUv", ShaderDataType::vec2()}
+                     {AtlasTexture::getShaderStruct().typeName, "textureDef"},
+                     {ShaderDataType::vec2(), "inUv"}
                  },
                  ShaderDataType::vec4());
         {
-            ARGUMENT(textureDef)
-            ARGUMENT(inUv)
+            ARGUMENT(AtlasTexture, textureDef)
+            ARGUMENT(vec2, inUv)
 
-            ivec4 level_index_filtering_assigned = textureDef["level_index_filtering_assigned"];
-            vec4 atlasScale_texSize = textureDef["atlasScale_texSize"];
+            ivec4 level_index_filtering_assigned = textureDef.level_index_filtering_assigned;
+            vec4 atlasScale_texSize = textureDef.atlasScale_texSize;
 
-            If(level_index_filtering_assigned.w() == 0);
+            If(level_index_filtering_assigned.w() == 0)
             {
                 Return(vec4(0.0f, 0.0f, 0.0f, 0.0f));
             }
-            Else();
+            Else
             {
                 vec2 uv = inUv * atlasScale_texSize.xy();
-                If(level_index_filtering_assigned.z() == 1);
+                If(level_index_filtering_assigned.z() == 1)
                 {
                     Return(textureBicubic(atlasTextures[level_index_filtering_assigned.x()],
                                           vec3(uv.x(), uv.y(), level_index_filtering_assigned.y()),
                                           atlasScale_texSize.zw()));
                 }
-                Else();
+                Else
                 {
                     Return(textureSampleArray(atlasTextures[level_index_filtering_assigned.x()],
-                                   vec3(uv.x(), uv.y(), level_index_filtering_assigned.y())));
+                                              vec3(uv.x(), uv.y(), level_index_filtering_assigned.y())));
                 }
-                EndIf();
+                EndIf
             }
-            EndIf();
+            EndIf
         }
         EndFunction();
 
         oPosition = vec4(fPos, 1);
 
-        If(data["albedo"]["level_index_filtering_assigned"].w() == 0);
+        If(data.albedo.level_index_filtering_assigned.w() == 0)
         {
-            oAlbedo = data["albedoColor"];
+            oAlbedo = data.albedoColor;
         }
-        Else();
+        Else
         {
-            oAlbedo = texture_atlas(data["albedo"], fUv);
+            oAlbedo = texture_atlas(data.albedo, fUv);
         }
-        EndIf();
+        EndIf
 
         oRoughnessMetallicAO = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
         // Roughness
-        If(data["roughness"]["level_index_filtering_assigned"].w() == 0);
+        If(data.roughness.level_index_filtering_assigned.w() == 0)
         {
-            oRoughnessMetallicAO.x() = data["metallic_roughness_ambientOcclusion"].y();
+            oRoughnessMetallicAO.x() = data.metallic_roughness_ambientOcclusion.y();
         }
-        Else();
+        Else
         {
-            oRoughnessMetallicAO.x() = texture_atlas(data["roughness"], fUv).x();
+            oRoughnessMetallicAO.x() = texture_atlas(data.roughness, fUv).x();
         }
-        EndIf();
+        EndIf
 
 
         // Metallic
-        If(data["metallic"]["level_index_filtering_assigned"].w() == 0);
+        If(data.metallic.level_index_filtering_assigned.w() == 0)
         {
-            oRoughnessMetallicAO.y() = data["metallic_roughness_ambientOcclusion"].x();
+            oRoughnessMetallicAO.y() = data.metallic_roughness_ambientOcclusion.x();
         }
-        Else();
+        Else
         {
-            oRoughnessMetallicAO.y() = texture_atlas(data["metallic"], fUv).x();
+            oRoughnessMetallicAO.y() = texture_atlas(data.metallic, fUv).x();
         }
-        EndIf();
+        EndIf
 
         // Ambient Occlusion
-        If(data["ambientOcclusion"]["level_index_filtering_assigned"].w() == 0);
+        If(data.ambientOcclusion.level_index_filtering_assigned.w() == 0)
         {
-            oRoughnessMetallicAO.z() = data["metallic_roughness_ambientOcclusion"].z();
+            oRoughnessMetallicAO.z() = data.metallic_roughness_ambientOcclusion.z();
         }
-        Else();
+        Else
         {
-            oRoughnessMetallicAO.z() = texture_atlas(data["ambientOcclusion"], fUv).x();
+            oRoughnessMetallicAO.z() = texture_atlas(data.ambientOcclusion, fUv).x();
         }
-        EndIf();
+        EndIf
 
-        mat3 normalMatrix = mat3(transpose(inverse(data["model"])));
+        mat3 normalMatrix = mat3(transpose(inverse(data.model)));
         oNormal = vec4(normalize(normalMatrix * fNorm), 1);
         oTangent = vec4(normalize(normalMatrix * fTan), 1);
 
-        If(data["normal"]["level_index_filtering_assigned"].w() != 0);
+        If(data.normal.level_index_filtering_assigned.w() != 0)
         {
             mat3 tbn = mat3(fT, fB, fN);
-            vec3 texNormal = texture_atlas(data["normal"], fUv).xyz()
-                             * vec3(data["normalIntensity"].x(), data["normalIntensity"].x(), 1);
+            vec3 texNormal = texture_atlas(data.normal, fUv).xyz()
+                             * vec3(data.normalIntensity.x(), data.normalIntensity.x(), 1);
             texNormal = tbn * normalize(texNormal * 2.0 - 1.0);
             oNormal = vec4(normalize(texNormal), 1);
         }
-        EndIf();
+        EndIf
 
-        oObjectShadows.x() = data["objectID_boneOffset_shadows"].x();
-        oObjectShadows.y() = data["objectID_boneOffset_shadows"].z();
+        oObjectShadows.x() = data.objectID_boneOffset_shadows.x();
+        oObjectShadows.y() = data.objectID_boneOffset_shadows.z();
         oObjectShadows.z() = 0;
         oObjectShadows.w() = 1;
 

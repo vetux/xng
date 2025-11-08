@@ -730,6 +730,17 @@ namespace xng::ShaderScript {
         }
 
         /**
+         * Construct a data object which inlines the specified instruction.
+         * Used by the shader struct wrapper to inline the members instead of creating new variables for each member.
+         *
+         * @param other
+         */
+        explicit ShaderDataObject(ShaderInstruction &&other) noexcept
+            : ShaderObject(std::move(other)) {
+            assignable = true;
+        }
+
+        /**
          * Array constructor
          *
          * @param values

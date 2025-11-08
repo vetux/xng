@@ -29,27 +29,22 @@ namespace xng::ShaderScript {
     DEFINE_FUNCTION11(pbr_spot)
     DEFINE_FUNCTION2(pbr_finish)
 
-    static constexpr char PbrPass[] = "PbrPass";
+    DefineStruct(PbrPass,
+                 vec3, N,
+                 vec3, V,
+                 vec3, F0,
+                 vec3, WorldPos,
+                 vec3, Normal,
+                 vec3, albedo,
+                 Float, metallic,
+                 Float, roughness,
+                 Float, ao,
+                 vec3, camPos,
+                 Float, gamma);
 }
 
 namespace xng::shaderlib {
     /**
-     * Defines the following types:
-     *
-     * struct PbrPass {
-     *   vec3 N;
-     *   vec3 V;
-     *   vec3 F0;
-     *   vec3 WorldPos;
-     *   vec3 Normal;
-     *   vec3 albedo;
-     *   float metallic;
-     *   float roughness;
-     *   float ao;
-     *   vec3 camPos;
-     *   float gamma;
-     * };
-     *
      * Defines the following functions:
      *
      * PbrPass pbr_begin(vec3 WorldPos, vec3 Normal, vec3 albedo, float metallic, float roughness, float ao, vec3 camPos);

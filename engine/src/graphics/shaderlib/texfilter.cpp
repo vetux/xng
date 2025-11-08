@@ -30,15 +30,15 @@ namespace xng::shaderlib {
     void defTextureMS() {
         Function("textureMS",
                  {
-                     {"color", ShaderTexture(TEXTURE_2D_MULTISAMPLE, RGBA)},
-                     {"uv", ShaderDataType::vec2()},
-                     {"samples", ShaderDataType::integer()}
+                     {ShaderTexture(TEXTURE_2D_MULTISAMPLE, RGBA), "color"},
+                     {ShaderDataType::vec2(), "uv"},
+                     {ShaderDataType::Int(), "samples"}
                  },
                  ShaderDataType::vec4());
         {
-            ARGUMENT(color)
-            ARGUMENT(uv)
-            ARGUMENT(samples)
+            ARGUMENT(TextureSampler, color)
+            ARGUMENT(vec2, uv)
+            ARGUMENT(Int, samples)
 
             ivec2 size = textureSize(color);
             ivec2 pos = ivec2(size.x() * uv.x(), size.y() * uv.y());
@@ -48,11 +48,11 @@ namespace xng::shaderlib {
 
             Int i;
             i = Int(0);
-            For(i, 0, samples - 1, 1);
+            For(i, 0, samples - 1, 1)
             {
                 ret += texelFetchMS(color, pos, i);
             }
-            EndFor();
+            EndFor
 
             ret = ret / samples;
 
@@ -62,9 +62,9 @@ namespace xng::shaderlib {
     }
 
     void defCubic() {
-        Function("cubic", {{"v", ShaderDataType::float32()}}, ShaderDataType::vec4());
+        Function("cubic", {{ShaderDataType::Float(), "v"}}, ShaderDataType::vec4());
         {
-            ARGUMENT(v)
+            ARGUMENT(Float, v)
             vec4 n = vec4(1.0f, 2.0f, 3.0f, 4.0f) - v;
             vec4 s = n * n * n;
             Float x = s.x();
@@ -82,14 +82,13 @@ namespace xng::shaderlib {
 
         Function("textureBicubic",
                  {
-                     {"sampler", ShaderTexture(TEXTURE_2D, RGBA)},
-                     {"texCoords", ShaderDataType::vec2()}
+                     {ShaderTexture(TEXTURE_2D, RGBA), "sampler"},
+                     {ShaderDataType::vec2(), "texCoords"}
                  },
                  ShaderDataType::vec4());
         {
-            ARGUMENT(sampler)
-
-            vec2 texCoords = argument("texCoords");
+            ARGUMENT(TextureSampler, sampler)
+            ARGUMENT(vec2, texCoords)
 
             vec2 texSize;
             texSize = textureSize(sampler, 0);
@@ -125,22 +124,22 @@ namespace xng::shaderlib {
 
         Function("textureBicubic",
                  {
-                     {"sampler", ShaderTexture(TEXTURE_2D_MULTISAMPLE, RGBA)},
-                     {"texCoords", ShaderDataType::vec2()},
-                     {"samples", ShaderDataType::integer()}
+                     {ShaderTexture(TEXTURE_2D_MULTISAMPLE, RGBA), "sampler"},
+                     {ShaderDataType::vec2(), "texCoords"},
+                     {ShaderDataType::Int(), "samples"}
                  },
                  ShaderDataType::vec4());
         {
-            ARGUMENT(sampler)
-            ARGUMENT(samples)
+            ARGUMENT(TextureSampler, sampler)
+            ARGUMENT(vec2, texCoords)
+            ARGUMENT(Int, samples)
 
             vec2 texSize;
             texSize = textureSize(sampler);
             vec2 invTexSize;
             invTexSize = 1.0 / texSize;
 
-            vec2 texCoords;
-            texCoords = argument("texCoords") * texSize - 0.5f;
+            texCoords = texCoords * texSize - 0.5f;
 
             vec2 fxy = fract(texCoords);
             texCoords -= fxy;
@@ -170,16 +169,16 @@ namespace xng::shaderlib {
         // TODO: Sample texture arrays with integer coordinates / texelFetch
         Function("textureBicubic",
                  {
-                     {"sampler", ShaderTexture(TEXTURE_2D_ARRAY, RGBA)},
-                     {"texCoords3", ShaderDataType::vec3()},
-                     {"size", ShaderDataType::vec2()}
+                     {ShaderTexture(TEXTURE_2D_ARRAY, RGBA), "sampler"},
+                     {ShaderDataType::vec3(), "texCoords3"},
+                     {ShaderDataType::vec2(), "size"}
                  },
                  ShaderDataType::vec4());
         {
-            ARGUMENT(sampler)
-            ARGUMENT(size)
+            ARGUMENT(TextureSampler, sampler)
+            ARGUMENT(vec3, texCoords3)
+            ARGUMENT(vec2, size)
 
-            vec3 texCoords3 = argument("texCoords3");
             vec2 texCoords = texCoords3.xy();
 
             vec2 invTexSize = 1.0f / size;

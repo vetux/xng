@@ -103,23 +103,23 @@ namespace xng {
         Component component{};
         size_t count = 1; // If larger than 1, this element is a fixed size array
 
-        static ShaderDataType boolean() {
+        static ShaderDataType Bool() {
             return {SCALAR, BOOLEAN};
         }
 
-        static ShaderDataType integer() {
+        static ShaderDataType Int() {
             return {SCALAR, SIGNED_INT};
         }
 
-        static ShaderDataType unsignedInteger() {
+        static ShaderDataType UInt() {
             return {SCALAR, UNSIGNED_INT};
         }
 
-        static ShaderDataType float32() {
+        static ShaderDataType Float() {
             return {SCALAR, FLOAT};
         }
 
-        static ShaderDataType float64() {
+        static ShaderDataType Double() {
             return {SCALAR, DOUBLE};
         }
 

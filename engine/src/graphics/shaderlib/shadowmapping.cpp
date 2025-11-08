@@ -26,21 +26,21 @@ using namespace xng::ShaderScript;
 namespace xng::shaderlib::shadowmapping {
     void sampleShadowPoint() {
         Function("sampleShadowPoint", {
-                     {"fragPos", ShaderDataType::vec3()},
-                     {"lightPos", ShaderDataType::vec3()},
-                     {"viewPos", ShaderDataType::vec3()},
-                     {"depthMap", ShaderTexture(TEXTURE_CUBE_MAP_ARRAY, DEPTH)},
-                     {"depthMapIndex", ShaderDataType::integer()},
-                     {"far_plane", ShaderDataType::float32()}
+                     {ShaderDataType::vec3(), "fragPos"},
+                     {ShaderDataType::vec3(), "lightPos"},
+                     {ShaderDataType::vec3(), "viewPos"},
+                     {ShaderTexture(TEXTURE_CUBE_MAP_ARRAY, DEPTH), "depthMap"},
+                     {ShaderDataType::Int(), "depthMapIndex"},
+                     {ShaderDataType::Float(), "far_plane"}
                  },
-                 ShaderDataType::float32());
+                 ShaderDataType::Float());
         {
-            ARGUMENT(fragPos)
-            ARGUMENT(lightPos)
-            ARGUMENT(viewPos)
-            ARGUMENT(depthMap)
-            ARGUMENT(depthMapIndex)
-            ARGUMENT(far_plane)
+            ARGUMENT(vec3, fragPos)
+            ARGUMENT(vec3, lightPos)
+            ARGUMENT(vec3, viewPos)
+            ARGUMENT(TextureSampler, depthMap)
+            ARGUMENT(Int, depthMapIndex)
+            ARGUMENT(Float, far_plane)
 
             ArrayVec3<20> gridSamplingDisk;
             gridSamplingDisk = std::vector{
@@ -73,7 +73,7 @@ namespace xng::shaderlib::shadowmapping {
 
             Int i;
             i = Int(0);
-            For(i, 0, samples - 1, 1);
+            For(i, 0, samples - 1, 1)
             {
                 vec3 sampleDir = fragToLight + gridSamplingDisk[i] * diskRadius;
                 Float closestDepth = textureSampleCubeArray(depthMap, vec4(sampleDir, depthMapIndex)).x();
@@ -90,9 +90,9 @@ namespace xng::shaderlib::shadowmapping {
                 {
                     shadow += 1.0;
                 }
-                EndIf();
+                EndIf
             }
-            EndFor();
+            EndFor
 
             shadow = shadow / fSamples;
 
@@ -104,21 +104,21 @@ namespace xng::shaderlib::shadowmapping {
     // TODO: Fix directional light shadows
     void sampleShadowDirectional() {
         Function("sampleShadowDirectional", {
-                     {"fragPosLightSpace", ShaderDataType::vec4()},
-                     {"shadowMap", ShaderTexture(TEXTURE_2D_ARRAY, DEPTH)},
-                     {"shadowMapIndex", ShaderDataType::integer()},
-                     {"Normal", ShaderDataType::vec3()},
-                     {"lightPos", ShaderDataType::vec3()},
-                     {"fragPos", ShaderDataType::vec3()},
+                     {ShaderDataType::vec4(), "fragPosLightSpace"},
+                     {ShaderTexture(TEXTURE_2D_ARRAY, DEPTH), "shadowMap"},
+                     {ShaderDataType::Int(), "shadowMapIndex"},
+                     {ShaderDataType::vec3(), "Normal"},
+                     {ShaderDataType::vec3(), "lightPos"},
+                     {ShaderDataType::vec3(), "fragPos"},
                  },
-                 ShaderDataType::float32());
+                 ShaderDataType::Float());
         {
-            ARGUMENT(fragPosLightSpace)
-            ARGUMENT(shadowMap)
-            ARGUMENT(shadowMapIndex)
-            ARGUMENT(Normal)
-            ARGUMENT(lightPos)
-            ARGUMENT(fragPos)
+            ARGUMENT(vec4, fragPosLightSpace)
+            ARGUMENT(TextureSampler, shadowMap)
+            ARGUMENT(Int, shadowMapIndex)
+            ARGUMENT(vec3, Normal)
+            ARGUMENT(vec3, lightPos)
+            ARGUMENT(vec3, fragPos)
 
             // TODO: Make directional shadow map sampling compatible with generic NDC
             // perform perspective divide
@@ -132,11 +132,11 @@ namespace xng::shaderlib::shadowmapping {
                || projCoords.x() > 1
                || projCoords.y() < 0
                || projCoords.y() > 1
-               || projCoords.z() > 1);
+               || projCoords.z() > 1)
             {
                 Return(1.0f);
             }
-            EndIf();
+            EndIf
 
             // get depth of current fragment from light's perspective
             Float currentDepth = projCoords.z();
@@ -169,25 +169,25 @@ namespace xng::shaderlib::shadowmapping {
                 vec2 texelSize = 1.0f / textureSize(shadowMap, 0).xy();
                 Int x;
                 x = Int(0);
-                For(x, -1, 1, 1);
+                For(x, -1, 1, 1)
                 {
                     Int y;
                     y = Int(0);
-                    For(y, -1, 1, 1);
+                    For(y, -1, 1, 1)
                     {
                         vec2 coords = projCoords.xy() + vec2(x, y) * texelSize;
                         coords.y() = 1.0f - coords.y();
                         Float pcfDepth = textureSampleArray(shadowMap, vec3(coords, shadowMapIndex)).
                                 x();
-                        If(currentDepth - bias > pcfDepth);
+                        If(currentDepth - bias > pcfDepth)
                         {
                             shadow += 1.0f;
                         }
-                        EndIf();
+                        EndIf
                     }
-                    EndFor();
+                    EndFor
                 }
-                EndFor();
+                EndFor
 
                 shadow /= 9.0f;
 

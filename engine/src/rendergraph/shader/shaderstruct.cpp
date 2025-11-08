@@ -20,7 +20,7 @@
 #include "xng/rendergraph/shader/shaderstruct.hpp"
 
 namespace xng {
-    const ShaderStructElement &ShaderStruct::find(const std::string &name) const {
+    const ShaderStructElement &ShaderStruct::get(const std::string &name) const {
         for (auto &element: elements) {
             if (element.name == name)
                 return element;

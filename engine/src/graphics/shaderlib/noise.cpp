@@ -35,23 +35,23 @@ namespace xng::shaderlib {
             }
         }
 
-        Function("permute", {{"x", ShaderDataType::float32()}}, ShaderDataType::float32());
+        Function("permute", {{ShaderDataType::Float(), "x"}}, ShaderDataType::Float());
         {
-            Float x = argument("x");
+            ARGUMENT(Float, x)
             Return(floor(mod(((x * 34.0f) + 1.0f) * x, 289.0f)));
         }
         EndFunction();
 
-        Function("permute", {{"x", ShaderDataType::vec3()}}, ShaderDataType::vec3());
+        Function("permute", {{ShaderDataType::vec3(), "x"}}, ShaderDataType::vec3());
         {
-            vec3 x = argument("x");
+            ARGUMENT(vec3, x)
             Return(mod(((x * 34.0f) + 1.0f) * x, 289.0f));
         }
         EndFunction();
 
-        Function("permute", {{"x", ShaderDataType::vec4()}}, ShaderDataType::vec4());
+        Function("permute", {{ShaderDataType::vec4(), "x"}}, ShaderDataType::vec4());
         {
-            vec4 x = argument("x");
+            ARGUMENT(vec4, x)
             Return(mod(((x * 34.0f) + 1.0f) * x, 289.0f));
         }
         EndFunction();
@@ -63,13 +63,13 @@ namespace xng::shaderlib {
                 return;
             }
         }
-        Function("taylorInvSqrt", {{"r", ShaderDataType::float32()}}, ShaderDataType::float32());
+        Function("taylorInvSqrt", {{ShaderDataType::Float(), "r"}}, ShaderDataType::Float());
         {
             Return(Float(1.79284291400159f) - Float(0.85373472095314f) * argument("r"));
         }
         EndFunction();
 
-        Function("taylorInvSqrt", {{"r", ShaderDataType::vec4()}}, ShaderDataType::vec4());
+        Function("taylorInvSqrt", {{ShaderDataType::vec4(), "r"}}, ShaderDataType::vec4());
         {
             Return(Float(1.79284291400159f) - Float(0.85373472095314f) * argument("r"));
         }
@@ -85,9 +85,9 @@ namespace xng::shaderlib {
 
         loadPermute();
         loadTaylorInvSqrt();
-        Function("simplex", {{"v", ShaderDataType::vec2()}}, ShaderDataType::float32());
+        Function("simplex", {{ShaderDataType::vec2(), "v"}}, ShaderDataType::Float());
         {
-            ARGUMENT(v)
+            ARGUMENT(vec2, v)
 
             vec4 C = vec4(0.211324865405187f, 0.366025403784439f,
                           -0.577350269189626f, 0.024390243902439f);
@@ -98,15 +98,15 @@ namespace xng::shaderlib {
 
             vec2 i1;
             i1 = vec2(0, 0);
-            If(x0.x() > x0.y());
+            If(x0.x() > x0.y())
             {
                 i1 = vec2(1.0, 0.0);
             }
-            Else();
+            Else
             {
                 i1 = vec2(0.0f, 1.0f);
             }
-            EndIf();
+            EndIf
 
             vec4 x12 = x0.xyxy() + C.xxzz();
             x12.xy() -= i1;

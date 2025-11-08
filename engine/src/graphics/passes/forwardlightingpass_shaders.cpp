@@ -27,183 +27,192 @@
 using namespace xng::ShaderScript;
 
 namespace xng {
+    DefineStruct(AtlasTexture,
+                 ivec4, level_index_filtering_assigned,
+                 vec4, atlasScale_texSize)
+
+    DefineStruct(BufferLayout,
+                 mat4, model,
+                 mat4, mvp,
+                 ivec4, objectID_boneOffset_shadows,
+                 vec4, metallic_roughness_ambientOcclusion,
+                 vec4, albedoColor,
+                 AtlasTexture, metallic,
+                 AtlasTexture, roughness,
+                 AtlasTexture, ambientOcclusion,
+                 AtlasTexture, albedo,
+                 vec4, viewPosition_gamma,
+                 AtlasTexture, normal,
+                 vec4, normalIntensity)
+
+    DefineStruct(BoneBufferLayout, mat4, matrix)
+
+    DefineStruct(PBRPointLight,
+                 vec4, position,
+                 vec4, color,
+                 vec4, farPlane)
+
+    DefineStruct(PBRDirectionalLight,
+                 vec4, direction,
+                 vec4, color,
+                 vec4, farPlane)
+
+    DefineStruct(PBRSpotLight,
+                 vec4, position,
+                 vec4, direction_quadratic,
+                 vec4, color,
+                 vec4, farPlane,
+                 vec4, cutOff_outerCutOff_constant_linear)
+
+    DefineStruct(TransformData, mat4, transform)
+
     Shader ForwardLightingPass::createVertexShader() {
-        BeginShader(Shader::VERTEX);
+        BeginShader(Shader::VERTEX)
 
-        Input(ShaderDataType::vec3(), position);
-        Input(ShaderDataType::vec3(), normal);
-        Input(ShaderDataType::vec2(), uv);
-        Input(ShaderDataType::vec3(), tangent);
-        Input(ShaderDataType::vec3(), bitangent);
-        Input(ShaderDataType::ivec4(), boneIds);
-        Input(ShaderDataType::vec4(), boneWeights);
+        Input(vec3, position)
+        Input(vec3, normal)
+        Input(vec2, uv)
+        Input(vec3, tangent)
+        Input(vec3, bitangent)
+        Input(ivec4, boneIds)
+        Input(vec4, boneWeights)
 
-        Output(ShaderDataType::vec3(), fPos);
-        Output(ShaderDataType::vec3(), fNorm);
-        Output(ShaderDataType::vec3(), fTan);
-        Output(ShaderDataType::vec2(), fUv);
-        Output(ShaderDataType::vec4(), vPos);
-        Output(ShaderDataType::vec3(), fT);
-        Output(ShaderDataType::vec3(), fB);
-        Output(ShaderDataType::vec3(), fN);
+        Output(vec3, fPos)
+        Output(vec3, fNorm)
+        Output(vec3, fTan)
+        Output(vec2, fUv)
+        Output(vec4, vPos)
+        Output(vec3, fT)
+        Output(vec3, fB)
+        Output(vec3, fN)
 
-        Struct(AtlasTexture,
-               {ShaderDataType::ivec4(), "level_index_filtering_assigned"},
-               {ShaderDataType::vec4(), "atlasScale_texSize"});
+        DeclareStruct(AtlasTexture)
+        DeclareStruct(BufferLayout)
+        DeclareStruct(BoneBufferLayout)
+        DeclareStruct(PBRPointLight)
+        DeclareStruct(PBRDirectionalLight)
+        DeclareStruct(PBRSpotLight)
+        DeclareStruct(TransformData)
+        DeclareStruct(PbrPass);
 
-        Struct(BufferLayout,
-               {ShaderDataType::mat4(), "model"},
-               {ShaderDataType::mat4(), "mvp"},
-               {ShaderDataType::ivec4(), "objectID_boneOffset_shadows"},
-               {ShaderDataType::vec4(), "metallic_roughness_ambientOcclusion"},
-               {ShaderDataType::vec4(), "albedoColor"},
-               {AtlasTexture, "metallic"},
-               {AtlasTexture, "roughness"},
-               {AtlasTexture, "ambientOcclusion"},
-               {AtlasTexture, "albedo"},
-               {ShaderDataType::vec4(), "viewPosition_gamma"},
-               {AtlasTexture, "normal"},
-               {ShaderDataType::vec4(), "normalIntensity"});
-
-        Struct(BoneBufferLayout, {ShaderDataType::mat4(), "matrix"});
-
-        Struct(PBRPointLight,
-               {{ShaderDataType::vec4(), "position"},
-               {ShaderDataType::vec4(), "color"},
-               {ShaderDataType::vec4(), "farPlane"}});
-
-        Struct(PBRDirectionalLight,
-               {{ShaderDataType::vec4(), "direction"},
-               {ShaderDataType::vec4(), "color"},
-               {ShaderDataType::vec4(), "farPlane"}});
-
-        Struct(PBRSpotLight,
-               {{ShaderDataType::vec4(), "position"},
-               {ShaderDataType::vec4(), "direction_quadratic"},
-               {ShaderDataType::vec4(), "color"},
-               {ShaderDataType::vec4(), "farPlane"},
-               {ShaderDataType::vec4(), "cutOff_outerCutOff_constant_linear"} });
-
-        Struct(Transform, {{ShaderDataType::mat4(), "transform"}});
-
-        DynamicBuffer(pointLights, PBRPointLight);
-        DynamicBuffer(directionalLights, PBRDirectionalLight);
-        DynamicBuffer(spotLights, PBRSpotLight);
+        DynamicBuffer(pointLights, PBRPointLight)
+        DynamicBuffer(directionalLights, PBRDirectionalLight)
+        DynamicBuffer(spotLights, PBRSpotLight)
 
         DynamicBuffer(shadowPointLights, PBRPointLight)
         DynamicBuffer(shadowDirectionalLights, PBRDirectionalLight)
         DynamicBuffer(shadowSpotLights, PBRSpotLight)
 
-        DynamicBuffer(directionalLightShadowTransforms, Transform);
-        DynamicBuffer(spotLightShadowTransforms, Transform);
+        DynamicBuffer(directionalLightShadowTransforms, TransformData)
+        DynamicBuffer(spotLightShadowTransforms, TransformData)
 
-        Buffer(data, BufferLayout);
-        DynamicBuffer(bones, BoneBufferLayout);
+        Buffer(data, BufferLayout)
+        DynamicBuffer(bones, BoneBufferLayout)
 
-        Texture(pointLightShadowMaps, TEXTURE_CUBE_MAP_ARRAY, DEPTH);
-        Texture(directionalLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH);
-        Texture(spotLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH);
+        Texture(pointLightShadowMaps, TEXTURE_CUBE_MAP_ARRAY, DEPTH)
+        Texture(directionalLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH)
+        Texture(spotLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH)
 
-        TextureArray(atlasTextures, TEXTURE_2D_ARRAY, RGBA, 12);
+        TextureArray(atlasTextures, TEXTURE_2D_ARRAY, RGBA, 12)
 
         Function("getSkinnedVertexPosition",
-                 {ShaderFunction::Argument("offset", ShaderDataType::integer())},
+                 {ShaderFunction::Argument(ShaderDataType::Int(), "offset")},
                  ShaderDataType::vec4());
         {
-            ARGUMENT(offset)
+            ARGUMENT(Int, offset)
 
-            If(offset < 0);
+            If(offset < 0)
             {
                 Return(vec4(position, 1.0f));
             }
-            EndIf();
+            EndIf
 
             Int boneCount = bones.length();
 
             vec4 totalPosition;
             totalPosition = vec4(0, 0, 0, 0);
 
-            If(boneIds.x() > -1);
+            If(boneIds.x() > -1)
             {
-                If(boneIds.x() + offset >= boneCount);
+                If(boneIds.x() + offset >= boneCount)
                 {
                     Return(vec4(position, 1.0f));
                 }
-                Else();
+                Else
                 {
                     vec4 localPosition;
-                    localPosition = bones[boneIds.x() + offset]["matrix"] * vec4(position, 1.0f);
+                    localPosition = bones[boneIds.x() + offset].matrix * vec4(position, 1.0f);
                     totalPosition += localPosition * boneWeights.x();
                 }
-                EndIf();
+                EndIf
             }
-            EndIf();
+            EndIf
 
-            If(boneIds.y() > -1);
+            If(boneIds.y() > -1)
             {
-                If(boneIds.y() + offset >= boneCount);
+                If(boneIds.y() + offset >= boneCount)
                 {
                     Return(vec4(position, 1.0f));
                 }
-                Else();
+                Else
                 {
                     vec4 localPosition;
-                    localPosition = bones[boneIds.y() + offset]["matrix"] * vec4(position, 1.0f);
+                    localPosition = bones[boneIds.y() + offset].matrix * vec4(position, 1.0f);
                     totalPosition += localPosition * boneWeights.y();
                 }
-                EndIf();
+                EndIf
             }
-            EndIf();
+            EndIf
 
-            If(boneIds.z() > -1);
+            If(boneIds.z() > -1)
             {
-                If(boneIds.z() + offset >= boneCount);
+                If(boneIds.z() + offset >= boneCount)
                 {
                     Return(vec4(position, 1.0f));
                 }
-                Else();
+                Else
                 {
                     vec4 localPosition;
-                    localPosition = bones[boneIds.z() + offset]["matrix"] * vec4(position, 1.0f);
+                    localPosition = bones[boneIds.z() + offset].matrix * vec4(position, 1.0f);
                     totalPosition += localPosition * boneWeights.z();
                 }
-                EndIf();
+                EndIf
             }
-            EndIf();
+            EndIf
 
-            If(boneIds.w() > -1);
+            If(boneIds.w() > -1)
             {
-                If(boneIds.w() + offset >= boneCount);
+                If(boneIds.w() + offset >= boneCount)
                 {
                     Return(vec4(position, 1.0f));
                 }
-                Else();
+                Else
                 {
                     vec4 localPosition;
-                    localPosition = bones[boneIds.w() + offset]["matrix"] * vec4(position, 1.0f);
+                    localPosition = bones[boneIds.w() + offset].matrix * vec4(position, 1.0f);
                     totalPosition += localPosition * boneWeights.w();
                 }
-                EndIf();
+                EndIf
             }
-            EndIf();
+            EndIf
 
             Return(totalPosition);
         }
         EndFunction();
 
-        vec4 pos = Call("getSkinnedVertexPosition", data["objectID_boneOffset_shadows"].y());
+        vec4 pos = Call("getSkinnedVertexPosition", data.objectID_boneOffset_shadows.y());
 
-        vPos = data["mvp"] * pos;
-        fPos = (data["model"] * pos).xyz();
+        vPos = data.mvp * pos;
+        fPos = (data.model * pos).xyz();
         fUv = uv;
 
         fNorm = normalize(normal);
         fTan = normalize(tangent);
 
         //https://www.gamedeveloper.com/programming/three-normal-mapping-techniques-explained-for-the-mathematically-uninclined
-        fN = normalize((data["model"] * vec4(normalize(normal), 0.0)).xyz());
-        fT = normalize((data["model"] * vec4(normalize(tangent), 0.0)).xyz());
-        fB = normalize((data["model"] * vec4(cross(normalize(tangent), normalize(normal).xyz()) * 1, 0.0)).xyz());
+        fN = normalize((data.model * vec4(normalize(normal), 0.0)).xyz());
+        fT = normalize((data.model * vec4(normalize(tangent), 0.0)).xyz());
+        fB = normalize((data.model * vec4(cross(normalize(tangent), normalize(normal).xyz()) * 1, 0.0)).xyz());
 
         setVertexPosition(vPos);
 
@@ -213,77 +222,47 @@ namespace xng {
     DEFINE_FUNCTION2(texture_atlas)
 
     Shader ForwardLightingPass::createFragmentShader() {
-        BeginShader(Shader::FRAGMENT);
+        BeginShader(Shader::FRAGMENT)
 
-        Input(ShaderDataType::vec3(), fPos);
-        Input(ShaderDataType::vec3(), fNorm);
-        Input(ShaderDataType::vec3(), fTan);
-        Input(ShaderDataType::vec2(), fUv);
-        Input(ShaderDataType::vec4(), vPos);
-        Input(ShaderDataType::vec3(), fT);
-        Input(ShaderDataType::vec3(), fB);
-        Input(ShaderDataType::vec3(), fN);
+        Input(vec3, fPos)
+        Input(vec3, fNorm)
+        Input(vec3, fTan)
+        Input(vec2, fUv)
+        Input(vec4, vPos)
+        Input(vec3, fT)
+        Input(vec3, fB)
+        Input(vec3, fN)
 
-        Output(ShaderDataType::vec4(), oColor);
+        Output(vec4, oColor)
 
-        Struct(AtlasTexture,
-               {ShaderDataType::ivec4(), "level_index_filtering_assigned"},
-               {ShaderDataType::vec4(), "atlasScale_texSize"});
+        DeclareStruct(AtlasTexture)
+        DeclareStruct(BufferLayout)
+        DeclareStruct(BoneBufferLayout)
+        DeclareStruct(PBRPointLight)
+        DeclareStruct(PBRDirectionalLight)
+        DeclareStruct(PBRSpotLight)
+        DeclareStruct(TransformData)
+        DeclareStruct(PbrPass);
 
-        Struct(BufferLayout,
-               {ShaderDataType::mat4(), "model"},
-               {ShaderDataType::mat4(), "mvp"},
-               {ShaderDataType::ivec4(), "objectID_boneOffset_shadows"},
-               {ShaderDataType::vec4(), "metallic_roughness_ambientOcclusion"},
-               {ShaderDataType::vec4(), "albedoColor"},
-               {AtlasTexture, "metallic"},
-               {AtlasTexture, "roughness"},
-               {AtlasTexture, "ambientOcclusion"},
-               {AtlasTexture, "albedo"},
-               {ShaderDataType::vec4(), "viewPosition_gamma"},
-               {AtlasTexture, "normal"},
-               {ShaderDataType::vec4(), "normalIntensity"});
-
-        Struct(BoneBufferLayout, {ShaderDataType::mat4(), "matrix"});
-
-        Struct(PBRPointLight,
-               {{ShaderDataType::vec4(), "position"},
-               {ShaderDataType::vec4(), "color"},
-               {ShaderDataType::vec4(), "farPlane"}});
-
-        Struct(PBRDirectionalLight,
-               {{ShaderDataType::vec4(), "direction"},
-               {ShaderDataType::vec4(), "color"},
-               {ShaderDataType::vec4(), "farPlane"}});
-
-        Struct(PBRSpotLight,
-               {{ShaderDataType::vec4(), "position"},
-               {ShaderDataType::vec4(), "direction_quadratic"},
-               {ShaderDataType::vec4(), "color"},
-               {ShaderDataType::vec4(), "farPlane"},
-               {ShaderDataType::vec4(), "cutOff_outerCutOff_constant_linear"} });
-
-        Struct(Transform, {{ShaderDataType::mat4(), "transform"}});
-
-        DynamicBuffer(pointLights, PBRPointLight);
-        DynamicBuffer(directionalLights, PBRDirectionalLight);
-        DynamicBuffer(spotLights, PBRSpotLight);
+        DynamicBuffer(pointLights, PBRPointLight)
+        DynamicBuffer(directionalLights, PBRDirectionalLight)
+        DynamicBuffer(spotLights, PBRSpotLight)
 
         DynamicBuffer(shadowPointLights, PBRPointLight)
         DynamicBuffer(shadowDirectionalLights, PBRDirectionalLight)
         DynamicBuffer(shadowSpotLights, PBRSpotLight)
 
-        DynamicBuffer(directionalLightShadowTransforms, Transform);
-        DynamicBuffer(spotLightShadowTransforms, Transform);
+        DynamicBuffer(directionalLightShadowTransforms, TransformData)
+        DynamicBuffer(spotLightShadowTransforms, TransformData)
 
-        Buffer(data, BufferLayout);
-        DynamicBuffer(bones, BoneBufferLayout);
+        Buffer(data, BufferLayout)
+        DynamicBuffer(bones, BoneBufferLayout)
 
-        Texture(pointLightShadowMaps, TEXTURE_CUBE_MAP_ARRAY, DEPTH);
-        Texture(directionalLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH);
-        Texture(spotLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH);
+        Texture(pointLightShadowMaps, TEXTURE_CUBE_MAP_ARRAY, DEPTH)
+        Texture(directionalLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH)
+        Texture(spotLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH)
 
-        TextureArray(atlasTextures, TEXTURE_2D_ARRAY, RGBA, 12);
+        TextureArray(atlasTextures, TEXTURE_2D_ARRAY, RGBA, 12)
 
         shaderlib::pbr();
         shaderlib::shadowmapping::sampleShadowPoint();
@@ -292,183 +271,177 @@ namespace xng {
 
         Function("texture_atlas",
                  {
-                     {"textureDef", AtlasTexture},
-                     {"inUv", ShaderDataType::vec2()}
+                     {AtlasTexture::getShaderStruct().typeName, "textureDef"},
+                     {ShaderDataType::vec2(), "inUv"}
                  },
                  ShaderDataType::vec4());
         {
-            ARGUMENT(textureDef)
-            ARGUMENT(inUv)
+            ARGUMENT(AtlasTexture, textureDef)
+            ARGUMENT(vec2, inUv)
 
-            ivec4 level_index_filtering_assigned = textureDef["level_index_filtering_assigned"];
-            vec4 atlasScale_texSize = textureDef["atlasScale_texSize"];
+            ivec4 level_index_filtering_assigned = textureDef.level_index_filtering_assigned;
+            vec4 atlasScale_texSize = textureDef.atlasScale_texSize;
 
-            If(level_index_filtering_assigned.w() == 0);
+            If(level_index_filtering_assigned.w() == 0)
             {
                 Return(vec4(0.0f, 0.0f, 0.0f, 0.0f));
             }
-            Else();
+            Else
             {
                 vec2 uv = inUv * atlasScale_texSize.xy();
-                If(level_index_filtering_assigned.z() == 1);
+                If(level_index_filtering_assigned.z() == 1)
                 {
                     Return(textureBicubic(atlasTextures[level_index_filtering_assigned.x()],
                                           vec3(uv.x(), uv.y(), level_index_filtering_assigned.y()),
                                           atlasScale_texSize.zw()));
                 }
-                Else();
+                Else
                 {
                     Return(textureSampleArray(atlasTextures[level_index_filtering_assigned.x()],
-                                   vec3(uv.x(), uv.y(), level_index_filtering_assigned.y())));
+                                              vec3(uv.x(), uv.y(), level_index_filtering_assigned.y())));
                 }
-                EndIf();
+                EndIf
             }
-            EndIf();
+            EndIf
         }
         EndFunction();
 
         vec4 albedo;
         albedo = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 
-        If(data["albedo"]["level_index_filtering_assigned"].w() == 0);
+        If(data.albedo.level_index_filtering_assigned.w() == 0)
         {
-            albedo = data["albedoColor"];
+            albedo = data.albedoColor;
         }
-        Else();
+        Else
         {
-            albedo = texture_atlas(data["albedo"], fUv);
+            albedo = texture_atlas(data.albedo, fUv);
         }
-        EndIf();
+        EndIf
 
         vec3 roughnessMetallicAO;
         roughnessMetallicAO = vec3(0.0f, 0.0f, 0.0f);
 
         // Roughness
-        If(data["roughness"]["level_index_filtering_assigned"].w() == 0);
+        If(data.roughness.level_index_filtering_assigned.w() == 0)
         {
-            roughnessMetallicAO.x() = data["metallic_roughness_ambientOcclusion"].y();
+            roughnessMetallicAO.x() = data.metallic_roughness_ambientOcclusion.y();
         }
-        Else();
+        Else
         {
-            roughnessMetallicAO.x() = texture_atlas(data["roughness"], fUv).x();
+            roughnessMetallicAO.x() = texture_atlas(data.roughness, fUv).x();
         }
-        EndIf();
+        EndIf
 
 
         // Metallic
-        If(data["metallic"]["level_index_filtering_assigned"].w() == 0);
+        If(data.metallic.level_index_filtering_assigned.w() == 0)
         {
-            roughnessMetallicAO.y() = data["metallic_roughness_ambientOcclusion"].x();
+            roughnessMetallicAO.y() = data.metallic_roughness_ambientOcclusion.x();
         }
-        Else();
+        Else
         {
-            roughnessMetallicAO.y() = texture_atlas(data["metallic"], fUv).x();
+            roughnessMetallicAO.y() = texture_atlas(data.metallic, fUv).x();
         }
-        EndIf();
+        EndIf
 
         // Ambient Occlusion
-        If(data["ambientOcclusion"]["level_index_filtering_assigned"].w() == 0);
+        If(data.ambientOcclusion.level_index_filtering_assigned.w() == 0)
         {
-            roughnessMetallicAO.z() = data["metallic_roughness_ambientOcclusion"].z();
+            roughnessMetallicAO.z() = data.metallic_roughness_ambientOcclusion.z();
         }
-        Else();
+        Else
         {
-            roughnessMetallicAO.z() = texture_atlas(data["ambientOcclusion"], fUv).x();
+            roughnessMetallicAO.z() = texture_atlas(data.ambientOcclusion, fUv).x();
         }
-        EndIf();
+        EndIf
 
-        mat3 normalMatrix = mat3(transpose(inverse(data["model"])));
+        mat3 normalMatrix = mat3(transpose(inverse(data.model)));
         vec3 normal;
         normal = normalize(normalMatrix * fNorm);
         vec3 tangent = normalize(normalMatrix * fTan);
 
-        If(data["normal"]["level_index_filtering_assigned"].w() != 0);
+        If(data.normal.level_index_filtering_assigned.w() != 0)
         {
             mat3 tbn = mat3(fT, fB, fN);
-            vec3 texNormal = texture_atlas(data["normal"], fUv).xyz()
-                             * vec3(data["normalIntensity"].x(), data["normalIntensity"].x(), 1);
+            vec3 texNormal = texture_atlas(data.normal, fUv).xyz()
+                             * vec3(data.normalIntensity.x(), data.normalIntensity.x(), 1);
             texNormal = tbn * normalize(texNormal * 2.0 - 1.0);
             normal = normalize(texNormal);
         }
-        EndIf();
+        EndIf
 
-        Object<PbrPass> pass;
-        pass = pbr_begin(fPos,
-                         normal,
-                         albedo.xyz(),
-                         roughnessMetallicAO.y(),
-                         roughnessMetallicAO.x(),
-                         roughnessMetallicAO.z(),
-                         data["viewPosition_gamma"].xyz(),
-                         data["viewPosition_gamma"].w());
+        PbrPass pass = pbr_begin(fPos,
+                                 normal,
+                                 albedo.xyz(),
+                                 roughnessMetallicAO.y(),
+                                 roughnessMetallicAO.x(),
+                                 roughnessMetallicAO.z(),
+                                 data.viewPosition_gamma.xyz(),
+                                 data.viewPosition_gamma.w());
 
         vec3 reflectance;
         reflectance = vec3(0, 0, 0);
 
         Int i;
         i = Int(0);
-        For(i, 0, pointLights.length() - 1, 1);
+        For(i, 0, pointLights.length() - 1, 1)
         {
-            Object<PBRPointLight> light;
-            light = pointLights[i];
-            reflectance = pbr_point(pass, reflectance, light["position"].xyz(), light["color"].xyz(), 1.0f);
+            PBRPointLight light = pointLights[i];
+            reflectance = pbr_point(pass, reflectance, light.position.xyz(), light.color.xyz(), 1.0f);
         }
-        EndFor();
+        EndFor
 
-        For(i, 0, directionalLights.length() - 1, 1);
+        For(i, 0, directionalLights.length() - 1, 1)
         {
-            Object<PBRDirectionalLight> light;
-            light = directionalLights[i];
-            reflectance = pbr_directional(pass, reflectance, light["direction"].xyz(), light["color"].xyz(), 1.0f);
+            PBRDirectionalLight light = directionalLights[i];
+            reflectance = pbr_directional(pass, reflectance, light.direction.xyz(), light.color.xyz(), 1.0f);
         }
-        EndFor();
+        EndFor
 
-        For(i, 0, spotLights.length() - 1, 1);
+        For(i, 0, spotLights.length() - 1, 1)
         {
-            Object<PBRSpotLight> light;
-            light = spotLights[i];
+            PBRSpotLight light = spotLights[i];
             reflectance = pbr_spot(pass,
                                    reflectance,
-                                   light["position"].xyz(),
-                                   light["direction_quadratic"].xyz(),
-                                   light["direction_quadratic"].w(),
-                                   light["color"].xyz(),
-                                   light["cutOff_outerCutOff_constant_linear"].x(),
-                                   light["cutOff_outerCutOff_constant_linear"].y(),
-                                   light["cutOff_outerCutOff_constant_linear"].z(),
-                                   light["cutOff_outerCutOff_constant_linear"].w(),
+                                   light.position.xyz(),
+                                   light.direction_quadratic.xyz(),
+                                   light.direction_quadratic.w(),
+                                   light.color.xyz(),
+                                   light.cutOff_outerCutOff_constant_linear.x(),
+                                   light.cutOff_outerCutOff_constant_linear.y(),
+                                   light.cutOff_outerCutOff_constant_linear.z(),
+                                   light.cutOff_outerCutOff_constant_linear.w(),
                                    1.0f);
         }
-        EndFor();
+        EndFor
 
-        For(i, 0, shadowPointLights.length() - 1, 1);
+        For(i, 0, shadowPointLights.length() - 1, 1)
         {
-            Object<PBRPointLight> light;
-            light = shadowPointLights[i];
+            PBRPointLight light = shadowPointLights[i];
             Float shadow;
             shadow = Float(1.0f);
-            If(data["objectID_boneOffset_shadows"].z() == 1);
+            If(data.objectID_boneOffset_shadows.z() == 1);
             {
                 shadow = sampleShadowPoint(fPos,
-                                           light["position"].xyz(),
-                                           data["viewPosition_gamma"].xyz(),
+                                           light.position.xyz(),
+                                           data.viewPosition_gamma.xyz(),
                                            pointLightShadowMaps,
                                            i,
-                                           light["farPlane"].x());
+                                           light.farPlane.x());
             }
-            EndIf();
-            reflectance = pbr_point(pass, reflectance, light["position"].xyz(), light["color"].xyz(), shadow);
+            EndIf
+            reflectance = pbr_point(pass, reflectance, light.position.xyz(), light.color.xyz(), shadow);
         }
-        EndFor();
+        EndFor
 
-        For(i, 0, shadowDirectionalLights.length() - 1, 1);
+        For(i, 0, shadowDirectionalLights.length() - 1, 1)
         {
-            Object<PBRDirectionalLight> light;
-            light = shadowDirectionalLights[i];
-            vec4 fragPosLightSpace = directionalLightShadowTransforms[i]["transform"] * vec4(fPos, 1);
+            PBRDirectionalLight light = shadowDirectionalLights[i];
+            vec4 fragPosLightSpace = directionalLightShadowTransforms[i].transform * vec4(fPos, 1);
             Float shadow;
             shadow = Float(1.0f);
-            If(data["objectID_boneOffset_shadows"].z() == 1);
+            If(data.objectID_boneOffset_shadows.z() == 1)
             {
                 shadow = sampleShadowDirectional(fragPosLightSpace,
                                                  directionalLightShadowMaps,
@@ -477,41 +450,40 @@ namespace xng {
                                                  vec3(0, 0, 0),
                                                  fPos);
             }
-            EndIf();
-            reflectance = pbr_directional(pass, reflectance, light["direction"].xyz(), light["color"].xyz(), shadow);
+            EndIf
+            reflectance = pbr_directional(pass, reflectance, light.direction.xyz(), light.color.xyz(), shadow);
         }
-        EndFor();
+        EndFor
 
-        For(i, 0, shadowSpotLights.length() - 1, 1);
+        For(i, 0, shadowSpotLights.length() - 1, 1)
         {
-            Object<PBRSpotLight> light;
-            light = shadowSpotLights[i];
-            vec4 fragPosLightSpace = spotLightShadowTransforms[i]["transform"] * vec4(fPos, 1);
+            PBRSpotLight light = shadowSpotLights[i];
+            vec4 fragPosLightSpace = spotLightShadowTransforms[i].transform * vec4(fPos, 1);
             Float shadow;
             shadow = Float(1.0f);
-            If(data["objectID_boneOffset_shadows"].z() == 1);
+            If(data.objectID_boneOffset_shadows.z() == 1)
             {
                 shadow = sampleShadowDirectional(fragPosLightSpace,
                                                  spotLightShadowMaps,
                                                  i,
                                                  normal,
-                                                 light["position"].xyz(),
+                                                 light.position.xyz(),
                                                  fPos);
             }
-            EndIf();
+            EndIf
             reflectance = pbr_spot(pass,
                                    reflectance,
-                                   light["position"].xyz(),
-                                   light["direction_quadratic"].xyz(),
-                                   light["direction_quadratic"].w(),
-                                   light["color"].xyz(),
-                                   light["cutOff_outerCutOff_constant_linear"].x(),
-                                   light["cutOff_outerCutOff_constant_linear"].y(),
-                                   light["cutOff_outerCutOff_constant_linear"].z(),
-                                   light["cutOff_outerCutOff_constant_linear"].w(),
+                                   light.position.xyz(),
+                                   light.direction_quadratic.xyz(),
+                                   light.direction_quadratic.w(),
+                                   light.color.xyz(),
+                                   light.cutOff_outerCutOff_constant_linear.x(),
+                                   light.cutOff_outerCutOff_constant_linear.y(),
+                                   light.cutOff_outerCutOff_constant_linear.z(),
+                                   light.cutOff_outerCutOff_constant_linear.w(),
                                    shadow);
         }
-        EndFor();
+        EndFor
 
         oColor = vec4(pbr_finish(pass, reflectance), albedo.w());
 

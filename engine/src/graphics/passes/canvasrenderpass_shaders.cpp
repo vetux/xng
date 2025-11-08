@@ -27,34 +27,36 @@
 using namespace xng::ShaderScript;
 
 namespace xng {
+    DefineStruct(BufferData,
+             vec4, color,
+             Float, colorMixFactor,
+             Float, alphaMixFactor,
+             Float, colorFactor,
+             Int, texAtlasLevel,
+             Int, texAtlasIndex,
+             Int, texFilter,
+             mat4, mvp,
+             vec4, uvOffset_uvScale,
+             vec4, atlasScale_texSize,
+             Float, useCustomTexture)
+
     Shader CanvasRenderPass::createVertexShader() {
         BeginShader(Shader::VERTEX)
 
-        Input(ShaderDataType::vec2(), position)
-        Input(ShaderDataType::vec2(), uv)
+        Input(vec2, position)
+        Input(vec2, uv)
 
-        Output(ShaderDataType::vec4(), fPosition)
-        Output(ShaderDataType::vec2(), fUv)
+        Output(vec4, fPosition)
+        Output(vec2, fUv)
 
-        Struct(BufferData,
-               {ShaderDataType::vec4(), "color"},
-               {ShaderDataType::float32(), "colorMixFactor"},
-               {ShaderDataType::float32(), "alphaMixFactor"},
-               {ShaderDataType::float32(), "colorFactor"},
-               {ShaderDataType::integer(), "texAtlasLevel"},
-               {ShaderDataType::integer(), "texAtlasIndex"},
-               {ShaderDataType::integer(), "texFilter"},
-               {ShaderDataType::mat4(), "mvp"},
-               {ShaderDataType::vec4(), "uvOffset_uvScale", },
-               {ShaderDataType::vec4(), "atlasScale_texSize"},
-               {ShaderDataType::float32(), "useCustomTexture"});
+        DeclareStruct(BufferData)
 
         Buffer(vars, BufferData)
 
         TextureArray(atlasTextures, TEXTURE_2D_ARRAY, RGBA, 12)
         Texture(customTexture, TEXTURE_2D, RGBA)
 
-        fPosition = vars["mvp"] * vec4(position.x(), position.y(), 0.0, 1.0);
+        fPosition = vars.mvp * vec4(position.x(), position.y(), 0.0, 1.0);
         fUv = uv;
 
         setVertexPosition(fPosition);
@@ -65,23 +67,12 @@ namespace xng {
     Shader CanvasRenderPass::createFragmentShader() {
         BeginShader(Shader::FRAGMENT)
 
-        Input(ShaderDataType::vec4(), fPosition)
-        Input(ShaderDataType::vec2(), fUv)
+        Input(vec4, fPosition)
+        Input(vec2, fUv)
 
-        Output(ShaderDataType::vec4(), color)
+        Output(vec4, color)
 
-        Struct(BufferData,
-               {ShaderDataType::vec4(), "color"},
-               {ShaderDataType::float32(), "colorMixFactor"},
-               {ShaderDataType::float32(), "alphaMixFactor"},
-               {ShaderDataType::float32(), "colorFactor"},
-               {ShaderDataType::integer(), "texAtlasLevel"},
-               {ShaderDataType::integer(), "texAtlasIndex"},
-               {ShaderDataType::integer(), "texFilter"},
-               {ShaderDataType::mat4(), "mvp"},
-               {ShaderDataType::vec4(), "uvOffset_uvScale", },
-               {ShaderDataType::vec4(), "atlasScale_texSize"},
-               {ShaderDataType::float32(), "useCustomTexture"});
+        DeclareStruct(BufferData)
 
         Buffer(vars, BufferData)
 
@@ -90,53 +81,53 @@ namespace xng {
 
         shaderlib::textureBicubic();
 
-        If(vars["texAtlasIndex"] >= 0);
+        If(vars.texAtlasIndex >= 0)
         {
             vec2 uv = fUv.xy();
-            uv = uv * vars["uvOffset_uvScale"].zw();
-            uv = uv + vars["uvOffset_uvScale"].xy();
-            uv = uv * vars["atlasScale_texSize"].xy();
+            uv = uv * vars.uvOffset_uvScale.zw();
+            uv = uv + vars.uvOffset_uvScale.xy();
+            uv = uv * vars.atlasScale_texSize.xy();
 
             vec4 texColor;
             texColor = vec4(0, 0, 0, 0);
-            If(vars["texFilter"] == 1);
+            If(vars.texFilter == 1)
             {
-                texColor = textureBicubic(atlasTextures[vars["texAtlasLevel"]],
-                                          vec3(uv.x(), uv.y(), vars["texAtlasIndex"]),
-                                          vars["atlasScale_texSize"].zw());
+                texColor = textureBicubic(atlasTextures[vars.texAtlasLevel],
+                                          vec3(uv.x(), uv.y(), vars.texAtlasIndex),
+                                          vars.atlasScale_texSize.zw());
             }
-            Else();
+            Else
             {
-                texColor = textureSampleArray(atlasTextures[vars["texAtlasLevel"]],
-                                              vec3(uv.x(), uv.y(), vars["texAtlasIndex"]));
+                texColor = textureSampleArray(atlasTextures[vars.texAtlasLevel],
+                                              vec3(uv.x(), uv.y(), vars.texAtlasIndex));
             }
-            EndIf();
-            If(vars["colorFactor"] != 0);
+            EndIf
+            If(vars.colorFactor != 0)
             {
-                color = vars["color"] * texColor;
+                color = vars.color * texColor;
             }
-            Else();
+            Else
             {
                 vec4 buffColor;
-                buffColor = vars["color"].xyzw();
-                color.xyz() = mix(texColor.xyz(), buffColor.xyz(), vars["colorMixFactor"]);
-                color.w() = mix(texColor.w(), buffColor.w(), vars["alphaMixFactor"]);
+                buffColor = vars.color.xyzw();
+                color.xyz() = mix(texColor.xyz(), buffColor.xyz(), vars.colorMixFactor);
+                color.w() = mix(texColor.w(), buffColor.w(), vars.alphaMixFactor);
             }
-            EndIf();
+            EndIf
         }
-        Else();
+        Else
         {
-            If(vars["useCustomTexture"] == 1);
+            If(vars.useCustomTexture == 1)
             {
                 color = textureSample(customTexture, fUv.xy());
             }
-            Else();
+            Else
             {
-                color = vars["color"];
+                color = vars.color;
             }
-            EndIf();
+            EndIf
         }
-        EndIf();
+        EndIf
 
         return BuildShader();
     }

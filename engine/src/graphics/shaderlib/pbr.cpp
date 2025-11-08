@@ -35,30 +35,18 @@ namespace xng::shaderlib {
     //TODO: Fix pbr light colors other than white not correctly blending with albedo
     void pbr() {
         auto &builder = ShaderBuilder::instance();
-        Struct(PbrPass,
-               {ShaderDataType::vec3(), "N"},
-               {ShaderDataType::vec3(), "V"},
-               {ShaderDataType::vec3(), "F0"},
-               {ShaderDataType::vec3(), "WorldPos"},
-               {ShaderDataType::vec3(), "Normal"},
-               {ShaderDataType::vec3(), "albedo"},
-               {ShaderDataType::float32(), "metallic"},
-               {ShaderDataType::float32(), "roughness"},
-               {ShaderDataType::float32(), "ao"},
-               {ShaderDataType::vec3(), "camPos"},
-               {ShaderDataType::float32(), "gamma"});
 
         Function("DistributionGGX",
                  {
-                     {"N", ShaderDataType::vec3()},
-                     {"H", ShaderDataType::vec3()},
-                     {"roughness", ShaderDataType::float32()},
+                     {ShaderDataType::vec3(), "N"},
+                     {ShaderDataType::vec3(), "H"},
+                     {ShaderDataType::Float(), "roughness"},
                  },
-                 ShaderDataType::float32());
+                 ShaderDataType::Float());
         {
-            ARGUMENT(N)
-            ARGUMENT(H)
-            ARGUMENT(roughness)
+            ARGUMENT(vec3, N)
+            ARGUMENT(vec3, H)
+            ARGUMENT(Float, roughness)
 
             Float a = roughness * roughness;
             Float a2 = a * a;
@@ -75,13 +63,13 @@ namespace xng::shaderlib {
 
         Function("GeometrySchlickGGX",
                  {
-                     {"NdotV", ShaderDataType::float32()},
-                     {"roughness", ShaderDataType::float32()},
+                     {ShaderDataType::Float(), "NdotV"},
+                     {ShaderDataType::Float(), "roughness"},
                  },
-                 ShaderDataType::float32());
+                 ShaderDataType::Float());
         {
-            ARGUMENT(NdotV)
-            ARGUMENT(roughness)
+            ARGUMENT(Float, NdotV)
+            ARGUMENT(Float, roughness)
 
             Float r = (roughness + 1.0f);
             Float k = (r * r) / 8.0f;
@@ -94,17 +82,17 @@ namespace xng::shaderlib {
 
         Function("GeometrySmith",
                  {
-                     {"N", ShaderDataType::vec3()},
-                     {"V", ShaderDataType::vec3()},
-                     {"L", ShaderDataType::vec3()},
-                     {"roughness", ShaderDataType::float32()}
+                     {ShaderDataType::vec3(), "N"},
+                     {ShaderDataType::vec3(), "V"},
+                     {ShaderDataType::vec3(), "L"},
+                     {ShaderDataType::Float(), "roughness"}
                  },
-                 ShaderDataType::float32());
+                 ShaderDataType::Float());
         {
-            ARGUMENT(N)
-            ARGUMENT(V)
-            ARGUMENT(L)
-            ARGUMENT(roughness)
+            ARGUMENT(vec3, N)
+            ARGUMENT(vec3, V)
+            ARGUMENT(vec3, L)
+            ARGUMENT(Float, roughness)
 
             Float NdotV = max(dot(N, V), 0.0f);
             Float NdotL = max(dot(N, L), 0.0f);
@@ -117,40 +105,40 @@ namespace xng::shaderlib {
 
         Function("FresnelSchlick",
                  {
-                     {"cosTheta", ShaderDataType::float32()},
-                     {"F0", ShaderDataType::vec3()}
+                     {ShaderDataType::Float(), "cosTheta"},
+                     {ShaderDataType::vec3(), "F0"}
                  },
                  ShaderDataType::vec3());
         {
-            ARGUMENT(cosTheta)
-            ARGUMENT(F0)
+            ARGUMENT(Float, cosTheta)
+            ARGUMENT(vec3, F0)
             Return(F0 + (1.0f - F0) * pow(clamp(1.0f - cosTheta, 0.0f, 1.0f), 5.0f));
         }
         EndFunction();
 
         Function("pbr_begin",
                  {
-                     {"WorldPos", ShaderDataType::vec3()},
-                     {"Normal", ShaderDataType::vec3()},
-                     {"albedo", ShaderDataType::vec3()},
-                     {"metallic", ShaderDataType::float32()},
-                     {"roughness", ShaderDataType::float32()},
-                     {"ao", ShaderDataType::float32()},
-                     {"camPos", ShaderDataType::vec3()},
-                     {"gamma", ShaderDataType::float32()},
+                     {ShaderDataType::vec3(), "WorldPos"},
+                     {ShaderDataType::vec3(), "Normal"},
+                     {ShaderDataType::vec3(), "albedo"},
+                     {ShaderDataType::Float(), "metallic"},
+                     {ShaderDataType::Float(), "roughness"},
+                     {ShaderDataType::Float(), "ao"},
+                     {ShaderDataType::vec3(), "camPos"},
+                     {ShaderDataType::Float(), "gamma"},
                  },
-                 PbrPass);
+                 PbrPass::getShaderStruct().typeName);
         {
-            ARGUMENT(WorldPos)
-            ARGUMENT(Normal)
-            ARGUMENT(albedo)
-            ARGUMENT(metallic)
-            ARGUMENT(roughness)
-            ARGUMENT(ao)
-            ARGUMENT(camPos)
-            ARGUMENT(gamma)
+            ARGUMENT(vec3, WorldPos)
+            ARGUMENT(vec3, Normal)
+            ARGUMENT(vec3, albedo)
+            ARGUMENT(Float, metallic)
+            ARGUMENT(Float, roughness)
+            ARGUMENT(Float, ao)
+            ARGUMENT(vec3, camPos)
+            ARGUMENT(Float, gamma)
 
-            Object<PbrPass> ret;
+            PbrPass ret;
 
             vec3 N = normalize(Normal);
             vec3 V = normalize(camPos - WorldPos);
@@ -161,48 +149,48 @@ namespace xng::shaderlib {
             F0 = vec3(0.04f, 0.04f, 0.04f);
             F0 = mix(F0, albedo, metallic);
 
-            ret["N"] = N;
-            ret["V"] = V;
-            ret["F0"] = F0;
+            ret.N = N;
+            ret.V = V;
+            ret.F0 = F0;
 
-            ret["WorldPos"] = WorldPos;
-            ret["Normal"] = Normal;
-            ret["albedo"] = albedo;
-            ret["metallic"] = metallic;
-            ret["roughness"] = roughness;
-            ret["ao"] = ao;
-            ret["camPos"] = camPos;
-            ret["gamma"] = gamma;
+            ret.WorldPos = WorldPos;
+            ret.Normal = Normal;
+            ret.albedo = albedo;
+            ret.metallic = metallic;
+            ret.roughness = roughness;
+            ret.ao = ao;
+            ret.camPos = camPos;
+            ret.gamma = gamma;
 
             Return(ret);
         }
         EndFunction();
 
         Function("pbr_point", {
-                     {"pass", PbrPass},
-                     {"Lo", ShaderDataType::vec3()},
-                     {"position", ShaderDataType::vec3()},
-                     {"color", ShaderDataType::vec3()},
-                     {"shadow", ShaderDataType::float32()},
+                     {PbrPass::getShaderStruct().typeName, "pass"},
+                     {ShaderDataType::vec3(), "Lo"},
+                     {ShaderDataType::vec3(), "position"},
+                     {ShaderDataType::vec3(), "color"},
+                     {ShaderDataType::Float(), "shadow"},
                  },
                  ShaderDataType::vec3());
         {
-            ARGUMENT(pass)
-            ARGUMENT(Lo)
-            ARGUMENT(position)
-            ARGUMENT(color)
-            ARGUMENT(shadow)
+            ARGUMENT(PbrPass, pass)
+            ARGUMENT(vec3, Lo)
+            ARGUMENT(vec3, position)
+            ARGUMENT(vec3, color)
+            ARGUMENT(Float, shadow)
 
-            vec3 N = pass["N"];
-            vec3 V = pass["V"];
-            vec3 F0 = pass["F0"];
-            vec3 WorldPos = pass["WorldPos"];
-            vec3 Normal = pass["Normal"];
-            vec3 albedo = pass["albedo"];
-            Float metallic = pass["metallic"];
-            Float roughness = pass["roughness"];
-            Float ao = pass["ao"];
-            vec3 camPos = pass["camPos"];
+            vec3 N = pass.N;
+            vec3 V = pass.V;
+            vec3 F0 = pass.F0;
+            vec3 WorldPos = pass.WorldPos;
+            vec3 Normal = pass.Normal;
+            vec3 albedo = pass.albedo;
+            Float metallic = pass.metallic;
+            Float roughness = pass.roughness;
+            Float ao = pass.ao;
+            vec3 camPos = pass.camPos;
 
             // calculate per-light radiance
             vec3 L = normalize(position - WorldPos);
@@ -244,30 +232,30 @@ namespace xng::shaderlib {
         EndFunction();
 
         Function("pbr_directional", {
-                     {"pass", PbrPass},
-                     {"Lo", ShaderDataType::vec3()},
-                     {"direction", ShaderDataType::vec3()},
-                     {"color", ShaderDataType::vec3()},
-                     {"shadow", ShaderDataType::float32()},
+                     {PbrPass::getShaderStruct().typeName, "pass"},
+                     {ShaderDataType::vec3(), "Lo"},
+                     {ShaderDataType::vec3(), "direction"},
+                     {ShaderDataType::vec3(), "color"},
+                     {ShaderDataType::Float(), "shadow"},
                  },
                  ShaderDataType::vec3());
         {
-            ARGUMENT(pass)
-            ARGUMENT(Lo)
-            ARGUMENT(direction)
-            ARGUMENT(color)
-            ARGUMENT(shadow)
+            ARGUMENT(PbrPass, pass)
+            ARGUMENT(vec3, Lo)
+            ARGUMENT(vec3, direction)
+            ARGUMENT(vec3, color)
+            ARGUMENT(Float, shadow)
 
-            vec3 N = pass["N"];
-            vec3 V = pass["V"];
-            vec3 F0 = pass["F0"];
-            vec3 WorldPos = pass["WorldPos"];
-            vec3 Normal = pass["Normal"];
-            vec3 albedo = pass["albedo"];
-            Float metallic = pass["metallic"];
-            Float roughness = pass["roughness"];
-            Float ao = pass["ao"];
-            vec3 camPos = pass["camPos"];
+            vec3 N = pass.N;
+            vec3 V = pass.V;
+            vec3 F0 = pass.F0;
+            vec3 WorldPos = pass.WorldPos;
+            vec3 Normal = pass.Normal;
+            vec3 albedo = pass.albedo;
+            Float metallic = pass.metallic;
+            Float roughness = pass.roughness;
+            Float ao = pass.ao;
+            vec3 camPos = pass.camPos;
 
             // calculate per-light radiance
             vec3 L = normalize(direction);
@@ -310,42 +298,42 @@ namespace xng::shaderlib {
         EndFunction();
 
         Function("pbr_spot", {
-                     {"pass", PbrPass},
-                     {"Lo", ShaderDataType::vec3()},
-                     {"position", ShaderDataType::vec3()},
-                     {"direction", ShaderDataType::vec3()},
-                     {"quadratic", ShaderDataType::float32()},
-                     {"color", ShaderDataType::vec3()},
-                     {"cutOff", ShaderDataType::float32()},
-                     {"outerCutOff", ShaderDataType::float32()},
-                     {"constant", ShaderDataType::float32()},
-                     {"linear", ShaderDataType::float32()},
-                     {"shadow", ShaderDataType::float32()},
+                     {PbrPass::getShaderStruct().typeName, "pass"},
+                     {ShaderDataType::vec3(), "Lo"},
+                     {ShaderDataType::vec3(),"position"},
+                     {ShaderDataType::vec3(),"direction"},
+                     {ShaderDataType::Float(), "quadratic"},
+                     {ShaderDataType::vec3(), "color"},
+                     {ShaderDataType::Float(), "cutOff"},
+                     {ShaderDataType::Float(), "outerCutOff"},
+                     {ShaderDataType::Float(), "constant"},
+                     {ShaderDataType::Float(), "linear"},
+                     {ShaderDataType::Float(), "shadow"},
                  },
                  ShaderDataType::vec3());
         {
-            ARGUMENT(pass)
-            ARGUMENT(Lo)
-            ARGUMENT(position)
-            ARGUMENT(direction)
-            ARGUMENT(quadratic)
-            ARGUMENT(color)
-            ARGUMENT(cutOff)
-            ARGUMENT(outerCutOff)
-            ARGUMENT(constant)
-            ARGUMENT(linear)
-            ARGUMENT(shadow)
+            ARGUMENT(PbrPass, pass)
+            ARGUMENT(vec3, Lo)
+            ARGUMENT(vec3, position)
+            ARGUMENT(vec3, direction)
+            ARGUMENT(Float, quadratic)
+            ARGUMENT(vec3, color)
+            ARGUMENT(Float, cutOff)
+            ARGUMENT(Float, outerCutOff)
+            ARGUMENT(Float, constant)
+            ARGUMENT(Float, linear)
+            ARGUMENT(Float, shadow)
 
-            vec3 N = pass["N"];
-            vec3 V = pass["V"];
-            vec3 F0 = pass["F0"];
-            vec3 WorldPos = pass["WorldPos"];
-            vec3 Normal = pass["Normal"];
-            vec3 albedo = pass["albedo"];
-            Float metallic = pass["metallic"];
-            Float roughness = pass["roughness"];
-            Float ao = pass["ao"];
-            vec3 camPos = pass["camPos"];
+            vec3 N = pass.N;
+            vec3 V = pass.V;
+            vec3 F0 = pass.F0;
+            vec3 WorldPos = pass.WorldPos;
+            vec3 Normal = pass.Normal;
+            vec3 albedo = pass.albedo;
+            Float metallic = pass.metallic;
+            Float roughness = pass.roughness;
+            Float ao = pass.ao;
+            vec3 camPos = pass.camPos;
 
             vec3 lightDir = normalize(position - WorldPos);
 
@@ -394,26 +382,24 @@ namespace xng::shaderlib {
 
         Function("pbr_finish",
                  {
-                     {"pass", PbrPass},
-                     {"Lo", ShaderDataType::vec3()}
+                     {PbrPass::getShaderStruct().typeName, "pass"},
+                     {ShaderDataType::vec3(), "Lo"}
                  },
                  ShaderDataType::vec3());
         {
-            ARGUMENT(pass)
-            ARGUMENT(Lo)
+            ARGUMENT(PbrPass, pass)
+            ARGUMENT(vec3, Lo)
 
-            //TODO: Fix metallic / smooth surfaces appearing too dark
-
-            // ambient lighting (note that the next IBL tutorial will replace
-            // this ambient lighting with environment lighting).
-            vec3 ambient = vec3(0.03f) * pass["albedo"] * pass["ao"];
+            // ambient lighting, without IBL the pbr metallic shading will be too dark because there is nothing
+            // for the metallic surface specular to reflect other than the light sources.
+            vec3 ambient = vec3(0.03f) * pass.albedo * pass.ao;
 
             vec3 color = ambient + Lo;
 
-            // HDR tonemapping
+            // HDR tonemapping,
             color = color / (color + vec3(1.0));
             // gamma correct
-            color = pow(color, vec3(1.0 / pass["gamma"]));
+            color = pow(color, vec3(1.0 / pass.gamma));
 
             Return(color);
         }

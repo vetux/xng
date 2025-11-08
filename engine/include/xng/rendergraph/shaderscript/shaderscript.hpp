@@ -46,7 +46,7 @@
 #define DEFINE_FUNCTION12(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6, const ShaderObject &arg7, const ShaderObject &arg8, const ShaderObject &arg9, const ShaderObject &arg10, const ShaderObject &arg11){ return xng::ShaderScript::CallA(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11});}
 
 // Optional Helper macro for accessing arguments
-#define ARGUMENT(argumentName) ShaderObject argumentName = xng::ShaderScript::argument(#argumentName);
+#define ARGUMENT(argumentType, argumentName) argumentType argumentName(xng::ShaderScript::argument(#argumentName));
 
 /**
  * Optional Helper Macros for abstracting the shader builder interactions
@@ -80,20 +80,23 @@
  *
  * Shader vs = BuildShader();
  */
+
+#include "xng/rendergraph/shaderscript/shaderstructdef.hpp"
+
 #define BeginShader(stage) auto &builder = ShaderBuilder::instance(); builder.setup(stage);
 
-#define Struct(name, ...) builder.addTypeDefinition(ShaderStruct(#name, {__VA_ARGS__})); static constexpr char name[] = #name;
+#define DeclareStruct(name) builder.addTypeDefinition(name::getShaderStruct());
 
-#define Input(type, name) builder.addInput(#name, type); ShaderObject name = xng::ShaderScript::inputAttribute(#name);
-#define Output(type, name) builder.addOutput(#name, type); ShaderObject name = xng::ShaderScript::outputAttribute(#name);
+#define Input(type, name) builder.addInput(#name, ShaderDataType::type()); ShaderObject name = xng::ShaderScript::inputAttribute(#name);
+#define Output(type, name) builder.addOutput(#name, ShaderDataType::type()); ShaderObject name = xng::ShaderScript::outputAttribute(#name);
 
 #define Parameter(type, name) builder.addParameter(#name, type); ShaderObject name = xng::ShaderScript::parameter(#name);
 
-#define Buffer(name, type) builder.addBuffer(#name, ShaderBuffer(false, false, #type)); ShaderObject name = xng::ShaderScript::buffer(#name);
-#define DynamicBuffer(name, type) builder.addBuffer(#name, ShaderBuffer(false, true, #type)); ShaderObject name = xng::ShaderScript::buffer(#name);
+#define Buffer(bufferName, bufferType) builder.addBuffer(#bufferName, ShaderBuffer(false, false, bufferType::getShaderStruct().typeName)); bufferType bufferName(ShaderScript::buffer(#bufferName));
+#define DynamicBuffer(bufferName, bufferType) builder.addBuffer(#bufferName, ShaderBuffer(false, true, bufferType::getShaderStruct().typeName)); DynamicBufferWrapper<bufferType> bufferName(ShaderScript::buffer(#bufferName));
 
-#define BufferRW(name, type) builder.addBuffer(#name, ShaderBuffer(true, false, #type)); ShaderObject name = xng::ShaderScript::buffer(#name);
-#define DynamicBufferRW(name, type) builder.addBuffer(#name, ShaderBuffer(true, true, #type)); ShaderObject name = xng::ShaderScript::buffer(#name);
+#define BufferRW(bufferName, bufferType) builder.addBuffer(#bufferName, ShaderBuffer(true, false, bufferType::getShaderStruct().typeName)); bufferType bufferName(ShaderScript::buffer(#bufferName));
+#define DynamicBufferRW(bufferName, bufferType) builder.addBuffer(#bufferName, ShaderBuffer(true, true, bufferType::getShaderStruct().typeName)); DynamicBufferWrapper<bufferType> bufferName(ShaderScript::buffer(#bufferName));
 
 #define Texture(name, type, format) builder.addTextureArray(#name, ShaderTextureArray(ShaderTexture(type, format))); ShaderObject name = xng::ShaderScript::textureSampler(#name)[Int(0)];
 #define TextureArray(name, type, format, count) builder.addTextureArray(#name, ShaderTextureArray(ShaderTexture(type, format), count)); ShaderObject name = xng::ShaderScript::textureSampler(#name);
@@ -101,7 +104,13 @@
 #define InputPrimitive(type) builder.setGeometryInput(type);
 #define OutputPrimitive(type, maxVertices) builder.setGeometryOutput(type, maxVertices);
 
-#define BuildShader() builder.build();
+#define BuildShader() builder.build()
+
+#define If(condition) ShaderBuilder::instance().If(condition);
+#define Else ShaderBuilder::instance().Else();
+#define EndIf ShaderBuilder::instance().EndIf();
+#define For(loopVariable, loopStart, loopEnd, incrementor) ShaderBuilder::instance().For(loopVariable, loopStart, loopEnd, incrementor);
+#define EndFor ShaderBuilder::instance().EndFor();
 
 namespace xng::ShaderScript {
     // Operators for lhs literals
@@ -165,29 +174,86 @@ namespace xng::ShaderScript {
         return ShaderObject(lhs) + rhs;
     }
 
-    template<int C>
-    using ArrayBool = ShaderDataObject<ShaderDataType::SCALAR, ShaderDataType::BOOLEAN, C>;
+    template<ShaderDataType::Type TYPE, ShaderDataType::Component COMPONENT, int C>
+    using Array = ShaderDataObject<TYPE, COMPONENT, C>;
 
     template<int C>
-    using ArrayInt = ShaderDataObject<ShaderDataType::SCALAR, ShaderDataType::SIGNED_INT, C>;
+    using ArrayBool = Array<ShaderDataType::SCALAR, ShaderDataType::BOOLEAN, C>;
 
     template<int C>
-    using ArrayUInt = ShaderDataObject<ShaderDataType::SCALAR, ShaderDataType::UNSIGNED_INT, C>;
+    using ArrayInt = Array<ShaderDataType::SCALAR, ShaderDataType::SIGNED_INT, C>;
 
     template<int C>
-    using ArrayFloat = ShaderDataObject<ShaderDataType::SCALAR, ShaderDataType::FLOAT, C>;
+    using ArrayUInt = Array<ShaderDataType::SCALAR, ShaderDataType::UNSIGNED_INT, C>;
 
     template<int C>
-    using ArrayDouble = ShaderDataObject<ShaderDataType::SCALAR, ShaderDataType::DOUBLE, C>;
+    using ArrayFloat = Array<ShaderDataType::SCALAR, ShaderDataType::FLOAT, C>;
 
     template<int C>
-    using ArrayVec2 = ShaderDataObject<ShaderDataType::VECTOR2, ShaderDataType::FLOAT, C>;
+    using ArrayDouble = Array<ShaderDataType::SCALAR, ShaderDataType::DOUBLE, C>;
 
     template<int C>
-    using ArrayVec3 = ShaderDataObject<ShaderDataType::VECTOR3, ShaderDataType::FLOAT, C>;
+    using ArrayBVec2 = Array<ShaderDataType::VECTOR2, ShaderDataType::BOOLEAN, C>;
 
     template<int C>
-    using ArrayVec4 = ShaderDataObject<ShaderDataType::VECTOR4, ShaderDataType::FLOAT, C>;
+    using ArrayBVec3 = Array<ShaderDataType::VECTOR3, ShaderDataType::BOOLEAN, C>;
+
+    template<int C>
+    using ArrayBVec4 = Array<ShaderDataType::VECTOR4, ShaderDataType::BOOLEAN, C>;
+
+    template<int C>
+    using ArrayIVec2 = Array<ShaderDataType::VECTOR2, ShaderDataType::SIGNED_INT, C>;
+
+    template<int C>
+    using ArrayIVec3 = Array<ShaderDataType::VECTOR3, ShaderDataType::SIGNED_INT, C>;
+
+    template<int C>
+    using ArrayIVec4 = Array<ShaderDataType::VECTOR4, ShaderDataType::SIGNED_INT, C>;
+
+    template<int C>
+    using ArrayUVec2 = Array<ShaderDataType::VECTOR2, ShaderDataType::UNSIGNED_INT, C>;
+
+    template<int C>
+    using ArrayUVec3 = Array<ShaderDataType::VECTOR3, ShaderDataType::UNSIGNED_INT, C>;
+
+    template<int C>
+    using ArrayUVec4 = Array<ShaderDataType::VECTOR4, ShaderDataType::UNSIGNED_INT, C>;
+
+    template<int C>
+    using ArrayVec2 = Array<ShaderDataType::VECTOR2, ShaderDataType::FLOAT, C>;
+
+    template<int C>
+    using ArrayVec3 = Array<ShaderDataType::VECTOR3, ShaderDataType::FLOAT, C>;
+
+    template<int C>
+    using ArrayVec4 = Array<ShaderDataType::VECTOR4, ShaderDataType::FLOAT, C>;
+
+    template<int C>
+    using ArrayMat2 = Array<ShaderDataType::MAT2, ShaderDataType::FLOAT, C>;
+
+    template<int C>
+    using ArrayMat3 = Array<ShaderDataType::MAT3, ShaderDataType::FLOAT, C>;
+
+    template<int C>
+    using ArrayMat4 = Array<ShaderDataType::MAT4, ShaderDataType::FLOAT, C>;
+
+    template<int C>
+    using ArrayDVec2 = Array<ShaderDataType::VECTOR2, ShaderDataType::DOUBLE, C>;
+
+    template<int C>
+    using ArrayDVec3 = Array<ShaderDataType::VECTOR3, ShaderDataType::DOUBLE, C>;
+
+    template<int C>
+    using ArrayDVec4 = Array<ShaderDataType::VECTOR4, ShaderDataType::DOUBLE, C>;
+
+    template<int C>
+    using ArrayDMat2 = Array<ShaderDataType::MAT2, ShaderDataType::DOUBLE, C>;
+
+    template<int C>
+    using ArrayDMat3 = Array<ShaderDataType::MAT3, ShaderDataType::DOUBLE, C>;
+
+    template<int C>
+    using ArrayDMat4 = Array<ShaderDataType::MAT4, ShaderDataType::DOUBLE, C>;
 
     template<const char * typeName>
     using Object = ShaderStructObject<typeName>;
@@ -243,6 +309,8 @@ namespace xng::ShaderScript {
     typedef ShaderDataObject<ShaderDataType::VECTOR3, ShaderDataType::UNSIGNED_INT, 1> uvec3;
 
     typedef ShaderDataObject<ShaderDataType::VECTOR4, ShaderDataType::UNSIGNED_INT, 1> uvec4;
+
+    typedef ShaderObject TextureSampler;
 
     inline ShaderObject inputAttribute(const std::string &attributeName) {
         return ShaderObject(ShaderOperand(ShaderOperand::InputAttribute, attributeName),
@@ -343,29 +411,6 @@ namespace xng::ShaderScript {
         ShaderBuilder::instance().addInstruction(ShaderInstructionFactory::ret());
     }
 
-    inline void If(const ShaderObject &condition) {
-        ShaderBuilder::instance().If(condition);
-    }
-
-    inline void Else() {
-        ShaderBuilder::instance().Else();
-    }
-
-    inline void EndIf() {
-        ShaderBuilder::instance().EndIf();
-    }
-
-    inline void For(const ShaderObject &loopVariable,
-                    const ShaderObject &loopStart,
-                    const ShaderObject &loopEnd,
-                    const ShaderObject &incrementor) {
-        ShaderBuilder::instance().For(loopVariable, loopStart, loopEnd, incrementor);
-    }
-
-    inline void EndFor() {
-        ShaderBuilder::instance().EndFor();
-    }
-
     inline ShaderObject textureSize(const ShaderObject &texture) {
         return ShaderObject(ShaderInstructionFactory::textureSize(texture.operand));
     }
@@ -399,8 +444,8 @@ namespace xng::ShaderScript {
     }
 
     inline ShaderObject texelFetch(const ShaderObject &texture,
-                                     const ShaderObject &coords,
-                                     const ShaderObject &index) {
+                                   const ShaderObject &coords,
+                                   const ShaderObject &index) {
         return ShaderObject(ShaderInstructionFactory::textureFetch(texture.operand,
                                                                    coords.operand,
                                                                    index.operand));
@@ -415,19 +460,19 @@ namespace xng::ShaderScript {
     }
 
     inline ShaderObject texelFetchMS(const ShaderObject &texture,
-                                 const ShaderObject &coords,
-                                 const ShaderObject &index) {
+                                     const ShaderObject &coords,
+                                     const ShaderObject &index) {
         return ShaderObject(ShaderInstructionFactory::textureFetchMS(texture.operand,
-                                                                   coords.operand,
-                                                                   index.operand));
+                                                                     coords.operand,
+                                                                     index.operand));
     }
 
     inline ShaderObject texelFetchMSArray(const ShaderObject &texture,
-                                        const ShaderObject &coords,
-                                        const ShaderObject &index) {
+                                          const ShaderObject &coords,
+                                          const ShaderObject &index) {
         return ShaderObject(ShaderInstructionFactory::textureFetchMSArray(texture.operand,
-                                                                        coords.operand,
-                                                                        index.operand));
+                                                                          coords.operand,
+                                                                          index.operand));
     }
 
     inline ShaderObject textureSampleCube(const ShaderObject &texture,
@@ -597,6 +642,25 @@ namespace xng::ShaderScript {
     inline ShaderObject inverse(const ShaderObject &v) {
         return ShaderObject(ShaderInstructionFactory::inverse(v.operand));
     }
+
+    template<typename T>
+    struct DynamicBufferWrapper {
+        ShaderObject object;
+
+        explicit DynamicBufferWrapper(ShaderObject &&buffer) : object(buffer) {}
+
+        T operator[](const Int &index) {
+            return object[index];
+        }
+
+        T operator[](const int index) {
+            return object[Int(index)];
+        }
+
+        ShaderObject length() {
+            return object.length();
+        }
+    };
 }
 
 #endif //XENGINE_SHADERSCRIPT_HPP

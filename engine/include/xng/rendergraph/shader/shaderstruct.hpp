@@ -22,22 +22,24 @@
 
 #include <variant>
 
+#include "shaderliteral.hpp"
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 
 namespace xng {
     struct ShaderStructElement;
+    struct Shader;
 
     typedef std::string ShaderStructTypeName;
 
     struct ShaderStruct {
-        std::string name;
+        std::string typeName;
         std::vector<ShaderStructElement> elements;
 
         ShaderStruct(std::string name, const std::vector<ShaderStructElement> &elements)
-            : name(std::move(name)), elements(elements) {
+            : typeName(std::move(name)), elements(elements) {
         }
 
-        const ShaderStructElement &find(const std::string &name) const;
+        const ShaderStructElement &get(const std::string &name) const;
     };
 
     struct ShaderStructElement {

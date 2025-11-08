@@ -643,7 +643,7 @@ namespace InstructionCompiler {
         }
         ret += indent + "}";
         if (instruction.branchB.size() > 0) {
-            ret += "else {\n";
+            ret += " else {\n";
             for (auto &inst: instruction.branchB) {
                 ret += compile(inst, source, functionName, indent + "\t") + ";\n";
             }
