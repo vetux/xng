@@ -171,8 +171,8 @@ namespace xng::ShaderInstructionFactory {
     /**
      * Sample a TEXTURE_CUBE_MAP texture.
      *
-     * The sampled texel is computed by interpreting the coordinate in left hand coordinate space
-     * matching OpenGL and Vulkan conventions.
+     * The sampled texel is computed by interpreting the coordinate in left-hand coordinate space
+     * with +Y pointing up matching the OpenGL convention.
      *
      * @param texture
      * @param coordinate A 3d float vector specifying the point to sample.
@@ -186,8 +186,8 @@ namespace xng::ShaderInstructionFactory {
     /**
      * Sample a TEXTURE_CUBE_MAP_ARRAY texture.
      *
-     * The sampled texel is computed by interpreting the coordinate in left hand coordinate space
-     * matching OpenGL and Vulkan conventions.
+     * The sampled texel is computed by interpreting the coordinate in left-hand coordinate space
+     * with +Y pointing up matching the OpenGL convention.
      *
      * @param texture
      * @param coordinate A 4d float vector specifying the point to sample in xyz and the array layer in w.
