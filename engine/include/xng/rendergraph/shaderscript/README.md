@@ -2,13 +2,15 @@
 
 Shader Script is a custom Shader Domain Specific Language for writing render graph shaders.
 
-It is implemented through headers which define various types, functions and macros to create an easy-to-use DSL that resembles GLSL pretty closely.
+It is implemented through headers which define various types, functions and macros to create an easy-to-use DSL that resembles a mixture between glsl, bash and python.
+
+For usage examples check the *_shaders.cpp files at [engine/src/graphics/passes](https://github.com/vetux/xng/tree/master/engine/src/graphics/passes)
 
 ### Differences to GLSL
 #### Type Definition
   - Literal types are uppercase (e.g. `int` in glsl becomes `Int` in C++)
   - Arrays are instantiated like this `ArrayX<COUNT> b = std::vector{VALUES...}`
-  - User Defined types are instantiated like this `Object<TYPENAME> o`
+  - User Defined types are instantiated through either `Object<TYPENAME> o` or using the DefineStruct / DeclareStruct interface.
 
 #### Variable Initialization
   - Default constructed variables are undefined just like in glsl e.g. `vec2 v;` produces an uninitialized variable that cannot be used until it is assigned a value.
@@ -35,7 +37,8 @@ It is implemented through headers which define various types, functions and macr
   - User-defined function arguments are accessed through `ShaderScript::argument` or alternatively via the `Argument` macro
 
 #### Control Flow
-  - Conditionals and Branches are defined through `ShaderScript::If` / `ShaderScript::Else` / `ShaderScript::EndIf` / `ShaderScript::For` / `ShaderScript::EndFor`
+  - Conditionals are defined through the If / Else / Fi macros (e.g. `If(condition) x = 0; Else y = 0; Fi`)
+  - Loops are defined through the For / Done macros (e.g. `For(Int, i, 0, i < 10, i + 1) x = i; Done`)
   - Functions can be defined through `ShaderScript::Function` / `ShaderScript::EndFunction`
   - User-defined functions can be called through `ShaderScript::Call` (e.g. `test(1)` in glsl becomes `Call("test", {1})` in C++)
   - Functions are returned from through `ShaderScript::Return` (e.g. `return 5;` in glsl becomes `Return(5)` in C++)

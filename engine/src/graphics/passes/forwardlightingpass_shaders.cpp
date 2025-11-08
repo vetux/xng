@@ -122,10 +122,8 @@ namespace xng {
             ARGUMENT(Int, offset)
 
             If(offset < 0)
-            {
                 Return(vec4(position, 1.0f));
-            }
-            EndIf
+            Fi
 
             Int boneCount = bones.length();
 
@@ -133,68 +131,44 @@ namespace xng {
             totalPosition = vec4(0, 0, 0, 0);
 
             If(boneIds.x() > -1)
-            {
                 If(boneIds.x() + offset >= boneCount)
-                {
                     Return(vec4(position, 1.0f));
-                }
                 Else
-                {
                     vec4 localPosition;
                     localPosition = bones[boneIds.x() + offset].matrix * vec4(position, 1.0f);
                     totalPosition += localPosition * boneWeights.x();
-                }
-                EndIf
-            }
-            EndIf
+                Fi
+            Fi
 
             If(boneIds.y() > -1)
-            {
                 If(boneIds.y() + offset >= boneCount)
-                {
                     Return(vec4(position, 1.0f));
-                }
                 Else
-                {
                     vec4 localPosition;
                     localPosition = bones[boneIds.y() + offset].matrix * vec4(position, 1.0f);
                     totalPosition += localPosition * boneWeights.y();
-                }
-                EndIf
-            }
-            EndIf
+                Fi
+            Fi
 
             If(boneIds.z() > -1)
-            {
                 If(boneIds.z() + offset >= boneCount)
-                {
                     Return(vec4(position, 1.0f));
-                }
                 Else
-                {
                     vec4 localPosition;
                     localPosition = bones[boneIds.z() + offset].matrix * vec4(position, 1.0f);
                     totalPosition += localPosition * boneWeights.z();
-                }
-                EndIf
-            }
-            EndIf
+                Fi
+            Fi
 
             If(boneIds.w() > -1)
-            {
                 If(boneIds.w() + offset >= boneCount)
-                {
                     Return(vec4(position, 1.0f));
-                }
                 Else
-                {
                     vec4 localPosition;
                     localPosition = bones[boneIds.w() + offset].matrix * vec4(position, 1.0f);
                     totalPosition += localPosition * boneWeights.w();
-                }
-                EndIf
-            }
-            EndIf
+                Fi
+            Fi
 
             Return(totalPosition);
         }
@@ -283,26 +257,18 @@ namespace xng {
             vec4 atlasScale_texSize = textureDef.atlasScale_texSize;
 
             If(level_index_filtering_assigned.w() == 0)
-            {
                 Return(vec4(0.0f, 0.0f, 0.0f, 0.0f));
-            }
             Else
-            {
                 vec2 uv = inUv * atlasScale_texSize.xy();
                 If(level_index_filtering_assigned.z() == 1)
-                {
                     Return(textureBicubic(atlasTextures[level_index_filtering_assigned.x()],
                                           vec3(uv.x(), uv.y(), level_index_filtering_assigned.y()),
                                           atlasScale_texSize.zw()));
-                }
                 Else
-                {
                     Return(textureSampleArray(atlasTextures[level_index_filtering_assigned.x()],
                                               vec3(uv.x(), uv.y(), level_index_filtering_assigned.y())));
-                }
-                EndIf
-            }
-            EndIf
+                Fi
+            Fi
         }
         EndFunction();
 
@@ -310,51 +276,35 @@ namespace xng {
         albedo = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 
         If(data.albedo.level_index_filtering_assigned.w() == 0)
-        {
             albedo = data.albedoColor;
-        }
         Else
-        {
             albedo = texture_atlas(data.albedo, fUv);
-        }
-        EndIf
+        Fi
 
         vec3 roughnessMetallicAO;
         roughnessMetallicAO = vec3(0.0f, 0.0f, 0.0f);
 
         // Roughness
         If(data.roughness.level_index_filtering_assigned.w() == 0)
-        {
             roughnessMetallicAO.x() = data.metallic_roughness_ambientOcclusion.y();
-        }
         Else
-        {
             roughnessMetallicAO.x() = texture_atlas(data.roughness, fUv).x();
-        }
-        EndIf
+        Fi
 
 
         // Metallic
         If(data.metallic.level_index_filtering_assigned.w() == 0)
-        {
             roughnessMetallicAO.y() = data.metallic_roughness_ambientOcclusion.x();
-        }
         Else
-        {
             roughnessMetallicAO.y() = texture_atlas(data.metallic, fUv).x();
-        }
-        EndIf
+        Fi
 
         // Ambient Occlusion
         If(data.ambientOcclusion.level_index_filtering_assigned.w() == 0)
-        {
             roughnessMetallicAO.z() = data.metallic_roughness_ambientOcclusion.z();
-        }
         Else
-        {
             roughnessMetallicAO.z() = texture_atlas(data.ambientOcclusion, fUv).x();
-        }
-        EndIf
+        Fi
 
         mat3 normalMatrix = mat3(transpose(inverse(data.model)));
         vec3 normal;
@@ -362,14 +312,12 @@ namespace xng {
         vec3 tangent = normalize(normalMatrix * fTan);
 
         If(data.normal.level_index_filtering_assigned.w() != 0)
-        {
             mat3 tbn = mat3(fT, fB, fN);
             vec3 texNormal = texture_atlas(data.normal, fUv).xyz()
                              * vec3(data.normalIntensity.x(), data.normalIntensity.x(), 1);
             texNormal = tbn * normalize(texNormal * 2.0 - 1.0);
             normal = normalize(texNormal);
-        }
-        EndIf
+        Fi
 
         PbrPass pass = pbr_begin(fPos,
                                  normal,
@@ -386,12 +334,12 @@ namespace xng {
         For(Int, i, 0, i < pointLights.length(), i + 1)
             PBRPointLight light = pointLights[i];
             reflectance = pbr_point(pass, reflectance, light.position.xyz(), light.color.xyz(), 1.0f);
-        EndFor
+        Done
 
         For(Int, i, 0, i < directionalLights.length(), i + 1)
             PBRDirectionalLight light = directionalLights[i];
             reflectance = pbr_directional(pass, reflectance, light.direction.xyz(), light.color.xyz(), 1.0f);
-        EndFor
+        Done
 
         For(Int, i, 0, i < spotLights.length(), i + 1)
             PBRSpotLight light = spotLights[i];
@@ -406,24 +354,22 @@ namespace xng {
                                    light.cutOff_outerCutOff_constant_linear.z(),
                                    light.cutOff_outerCutOff_constant_linear.w(),
                                    1.0f);
-        EndFor
+        Done
 
         For(Int, i, 0, i < shadowPointLights.length(), i + 1)
             PBRPointLight light = shadowPointLights[i];
             Float shadow;
             shadow = Float(1.0f);
-            If(data.objectID_boneOffset_shadows.z() == 1);
-            {
+            If(data.objectID_boneOffset_shadows.z() == 1)
                 shadow = sampleShadowPoint(fPos,
                                            light.position.xyz(),
                                            data.viewPosition_gamma.xyz(),
                                            pointLightShadowMaps,
                                            i,
                                            light.farPlane.x());
-            }
-            EndIf
+            Fi
             reflectance = pbr_point(pass, reflectance, light.position.xyz(), light.color.xyz(), shadow);
-        EndFor
+        Done
 
         For(Int, i, 0, i < shadowDirectionalLights.length(), i + 1)
             PBRDirectionalLight light = shadowDirectionalLights[i];
@@ -431,17 +377,15 @@ namespace xng {
             Float shadow;
             shadow = Float(1.0f);
             If(data.objectID_boneOffset_shadows.z() == 1)
-            {
                 shadow = sampleShadowDirectional(fragPosLightSpace,
                                                  directionalLightShadowMaps,
                                                  i,
                                                  normal,
                                                  vec3(0, 0, 0),
                                                  fPos);
-            }
-            EndIf
+            Fi
             reflectance = pbr_directional(pass, reflectance, light.direction.xyz(), light.color.xyz(), shadow);
-        EndFor
+        Done
 
         For(Int, i, 0, i < shadowSpotLights.length(), i + 1)
             PBRSpotLight light = shadowSpotLights[i];
@@ -449,15 +393,13 @@ namespace xng {
             Float shadow;
             shadow = Float(1.0f);
             If(data.objectID_boneOffset_shadows.z() == 1)
-            {
                 shadow = sampleShadowDirectional(fragPosLightSpace,
                                                  spotLightShadowMaps,
                                                  i,
                                                  normal,
                                                  light.position.xyz(),
                                                  fPos);
-            }
-            EndIf
+            Fi
             reflectance = pbr_spot(pass,
                                    reflectance,
                                    light.position.xyz(),
@@ -469,7 +411,7 @@ namespace xng {
                                    light.cutOff_outerCutOff_constant_linear.z(),
                                    light.cutOff_outerCutOff_constant_linear.w(),
                                    shadow);
-        EndFor
+        Done
 
         oColor = vec4(pbr_finish(pass, reflectance), albedo.w());
 

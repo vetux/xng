@@ -28,17 +28,17 @@ using namespace xng::ShaderScript;
 
 namespace xng {
     DefineStruct(BufferData,
-             vec4, color,
-             Float, colorMixFactor,
-             Float, alphaMixFactor,
-             Float, colorFactor,
-             Int, texAtlasLevel,
-             Int, texAtlasIndex,
-             Int, texFilter,
-             mat4, mvp,
-             vec4, uvOffset_uvScale,
-             vec4, atlasScale_texSize,
-             Float, useCustomTexture)
+                 vec4, color,
+                 Float, colorMixFactor,
+                 Float, alphaMixFactor,
+                 Float, colorFactor,
+                 Int, texAtlasLevel,
+                 Int, texAtlasIndex,
+                 Int, texFilter,
+                 mat4, mvp,
+                 vec4, uvOffset_uvScale,
+                 vec4, atlasScale_texSize,
+                 Float, useCustomTexture)
 
     Shader CanvasRenderPass::createVertexShader() {
         BeginShader(Shader::VERTEX)
@@ -82,7 +82,6 @@ namespace xng {
         shaderlib::textureBicubic();
 
         If(vars.texAtlasIndex >= 0)
-        {
             vec2 uv = fUv.xy();
             uv = uv * vars.uvOffset_uvScale.zw();
             uv = uv + vars.uvOffset_uvScale.xy();
@@ -91,43 +90,28 @@ namespace xng {
             vec4 texColor;
             texColor = vec4(0, 0, 0, 0);
             If(vars.texFilter == 1)
-            {
                 texColor = textureBicubic(atlasTextures[vars.texAtlasLevel],
                                           vec3(uv.x(), uv.y(), vars.texAtlasIndex),
                                           vars.atlasScale_texSize.zw());
-            }
             Else
-            {
                 texColor = textureSampleArray(atlasTextures[vars.texAtlasLevel],
                                               vec3(uv.x(), uv.y(), vars.texAtlasIndex));
-            }
-            EndIf
+            Fi
             If(vars.colorFactor != 0)
-            {
                 color = vars.color * texColor;
-            }
             Else
-            {
                 vec4 buffColor;
                 buffColor = vars.color.xyzw();
                 color.xyz() = mix(texColor.xyz(), buffColor.xyz(), vars.colorMixFactor);
                 color.w() = mix(texColor.w(), buffColor.w(), vars.alphaMixFactor);
-            }
-            EndIf
-        }
+            Fi
         Else
-        {
             If(vars.useCustomTexture == 1)
-            {
                 color = textureSample(customTexture, fUv.xy());
-            }
             Else
-            {
                 color = vars.color;
-            }
-            EndIf
-        }
-        EndIf
+            Fi
+        Fi
 
         return BuildShader();
     }

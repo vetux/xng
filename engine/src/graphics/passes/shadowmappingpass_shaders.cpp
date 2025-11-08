@@ -69,10 +69,8 @@ namespace xng {
             ARGUMENT(Int, offset)
 
             If(offset < 0)
-            {
                 Return(vec4(vPosition, 1.0f));
-            }
-            EndIf
+            Fi
 
             Int boneCount = bones.length();
 
@@ -80,68 +78,44 @@ namespace xng {
             totalPosition = vec4(0, 0, 0, 0);
 
             If(boneIds.x() > -1)
-            {
                 If(boneIds.x() + offset >= boneCount)
-                {
                     Return(vec4(vPosition, 1.0f));
-                }
                 Else
-                {
                     vec4 localPosition;
                     localPosition = bones[boneIds.x() + offset].matrix * vec4(vPosition, 1.0f);
                     totalPosition += localPosition * boneWeights.x();
-                }
-                EndIf
-            }
-            EndIf
+                Fi
+            Fi
 
             If(boneIds.y() > -1)
-            {
                 If(boneIds.y() + offset >= boneCount)
-                {
                     Return(vec4(vPosition, 1.0f));
-                }
                 Else
-                {
                     vec4 localPosition;
                     localPosition = bones[boneIds.y() + offset].matrix * vec4(vPosition, 1.0f);
                     totalPosition += localPosition * boneWeights.y();
-                }
-                EndIf
-            }
-            EndIf
+                Fi
+            Fi
 
             If(boneIds.z() > -1)
-            {
                 If(boneIds.z() + offset >= boneCount)
-                {
                     Return(vec4(vPosition, 1.0f));
-                }
                 Else
-                {
                     vec4 localPosition;
                     localPosition = bones[boneIds.z() + offset].matrix * vec4(vPosition, 1.0f);
                     totalPosition += localPosition * boneWeights.z();
-                }
-                EndIf
-            }
-            EndIf
+                Fi
+            Fi
 
-            If(boneIds.w() > -1);
-            {
-                If(boneIds.w() + offset >= boneCount);
-                {
+            If(boneIds.w() > -1)
+                If(boneIds.w() + offset >= boneCount)
                     Return(vec4(vPosition, 1.0f));
-                }
                 Else
-                {
                     vec4 localPosition;
                     localPosition = bones[boneIds.w() + offset].matrix * vec4(vPosition, 1.0f);
                     totalPosition += localPosition * boneWeights.w();
-                }
-                EndIf
-            }
-            EndIf
+                Fi
+            Fi
 
             Return(totalPosition);
         }
@@ -171,15 +145,15 @@ namespace xng {
         DynamicBuffer(bones, BoneData)
         Buffer(lightData, PointLightData)
 
-        For(Int, face,  0, face <= 5,  face + 1)
+        For(Int, face, 0, face <= 5, face + 1)
             setLayer((lightData.layer.x() * 6) + face);
             For(Int, i, 0, i <= 2, i + 1)
                 FragPos = fPosition[i];
                 setVertexPosition(lightData.shadowMatrices[face] * FragPos);
                 EmitVertex();
-            EndFor
+            Done
             EndPrimitive();
-        EndFor
+        Done
 
         return BuildShader();
     }
@@ -238,10 +212,8 @@ namespace xng {
             ARGUMENT(Int, offset)
 
             If(offset < 0)
-            {
                 Return(vec4(vPosition, 1.0f));
-            }
-            EndIf
+            Fi
 
             Int boneCount = bones.length();
 
@@ -249,68 +221,44 @@ namespace xng {
             totalPosition = vec4(0, 0, 0, 0);
 
             If(boneIds.x() > -1)
-            {
                 If(boneIds.x() + offset >= boneCount)
-                {
                     Return(vec4(vPosition, 1.0f));
-                }
                 Else
-                {
                     vec4 localPosition;
                     localPosition = bones[boneIds.x() + offset].matrix * vec4(vPosition, 1.0f);
                     totalPosition += localPosition * boneWeights.x();
-                }
-                EndIf
-            }
-            EndIf
+                Fi
+            Fi
 
             If(boneIds.y() > -1)
-            {
                 If(boneIds.y() + offset >= boneCount)
-                {
                     Return(vec4(vPosition, 1.0f));
-                }
                 Else
-                {
                     vec4 localPosition;
                     localPosition = bones[boneIds.y() + offset].matrix * vec4(vPosition, 1.0f);
                     totalPosition += localPosition * boneWeights.y();
-                }
-                EndIf
-            }
-            EndIf
+                Fi
+            Fi
 
             If(boneIds.z() > -1)
-            {
                 If(boneIds.z() + offset >= boneCount)
-                {
                     Return(vec4(vPosition, 1.0f));
-                }
                 Else
-                {
                     vec4 localPosition;
                     localPosition = bones[boneIds.z() + offset].matrix * vec4(vPosition, 1.0f);
                     totalPosition += localPosition * boneWeights.z();
-                }
-                EndIf
-            }
-            EndIf
+                Fi
+            Fi
 
             If(boneIds.w() > -1)
-            {
                 If(boneIds.w() + offset >= boneCount)
-                {
                     Return(vec4(vPosition, 1.0f));
-                }
                 Else
-                {
                     vec4 localPosition;
                     localPosition = bones[boneIds.w() + offset].matrix * vec4(vPosition, 1.0f);
                     totalPosition += localPosition * boneWeights.w();
-                }
-                EndIf
-            }
-            EndIf
+                Fi
+            Fi
 
             Return(totalPosition);
         }
@@ -350,7 +298,7 @@ namespace xng {
             fragCoord = fPosition[i];
             setVertexPosition(fragCoord);
             EmitVertex();
-        EndFor
+        Done
 
         EndPrimitive();
 

@@ -125,10 +125,8 @@ namespace xng {
             ARGUMENT(Int, offset)
 
             If(offset < 0)
-            {
                 Return(vec4(position, 1.0f));
-            }
-            EndIf
+            Fi
 
             Int boneCount = bones.length();
 
@@ -136,68 +134,44 @@ namespace xng {
             totalPosition = vec4(0, 0, 0, 0);
 
             If(boneIds.x() > -1)
-            {
                 If(boneIds.x() + offset >= boneCount)
-                {
                     Return(vec4(position, 1.0f));
-                }
                 Else
-                {
                     vec4 localPosition;
                     localPosition = bones[boneIds.x() + offset].matrix * vec4(position, 1.0f);
                     totalPosition += localPosition * boneWeights.x();
-                }
-                EndIf
-            }
-            EndIf
+                Fi
+            Fi
 
             If(boneIds.y() > -1)
-            {
                 If(boneIds.y() + offset >= boneCount)
-                {
                     Return(vec4(position, 1.0f));
-                }
                 Else
-                {
                     vec4 localPosition;
                     localPosition = bones[boneIds.y() + offset].matrix * vec4(position, 1.0f);
                     totalPosition += localPosition * boneWeights.y();
-                }
-                EndIf
-            }
-            EndIf
+                Fi
+            Fi
 
             If(boneIds.z() > -1)
-            {
                 If(boneIds.z() + offset >= boneCount)
-                {
                     Return(vec4(position, 1.0f));
-                }
                 Else
-                {
                     vec4 localPosition;
                     localPosition = bones[boneIds.z() + offset].matrix * vec4(position, 1.0f);
                     totalPosition += localPosition * boneWeights.z();
-                }
-                EndIf
-            }
-            EndIf
+                Fi
+            Fi
 
             If(boneIds.w() > -1)
-            {
-                If(boneIds.w() + offset >= boneCount);
-                {
+                If(boneIds.w() + offset >= boneCount)
                     Return(vec4(position, 1.0f));
-                }
                 Else
-                {
                     vec4 localPosition;
                     localPosition = bones[boneIds.w() + offset].matrix * vec4(position, 1.0f);
                     totalPosition += localPosition * boneWeights.w();
-                }
-                EndIf
-            }
-            EndIf
+                Fi
+            Fi
 
             Return(totalPosition);
         }
@@ -268,90 +242,64 @@ namespace xng {
             vec4 atlasScale_texSize = textureDef.atlasScale_texSize;
 
             If(level_index_filtering_assigned.w() == 0)
-            {
                 Return(vec4(0.0f, 0.0f, 0.0f, 0.0f));
-            }
             Else
-            {
                 vec2 uv = inUv * atlasScale_texSize.xy();
                 If(level_index_filtering_assigned.z() == 1)
-                {
                     Return(textureBicubic(atlasTextures[level_index_filtering_assigned.x()],
                                           vec3(uv.x(), uv.y(), level_index_filtering_assigned.y()),
                                           atlasScale_texSize.zw()));
-                }
                 Else
-                {
                     Return(textureSampleArray(atlasTextures[level_index_filtering_assigned.x()],
                                               vec3(uv.x(), uv.y(), level_index_filtering_assigned.y())));
-                }
-                EndIf
-            }
-            EndIf
+                Fi
+            Fi
         }
         EndFunction();
 
         oPosition = vec4(fPos, 1);
 
         If(data.albedo.level_index_filtering_assigned.w() == 0)
-        {
             oAlbedo = data.albedoColor;
-        }
         Else
-        {
             oAlbedo = texture_atlas(data.albedo, fUv);
-        }
-        EndIf
+        Fi
 
         oRoughnessMetallicAO = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
         // Roughness
         If(data.roughness.level_index_filtering_assigned.w() == 0)
-        {
             oRoughnessMetallicAO.x() = data.metallic_roughness_ambientOcclusion.y();
-        }
         Else
-        {
             oRoughnessMetallicAO.x() = texture_atlas(data.roughness, fUv).x();
-        }
-        EndIf
+        Fi
 
 
         // Metallic
         If(data.metallic.level_index_filtering_assigned.w() == 0)
-        {
             oRoughnessMetallicAO.y() = data.metallic_roughness_ambientOcclusion.x();
-        }
         Else
-        {
             oRoughnessMetallicAO.y() = texture_atlas(data.metallic, fUv).x();
-        }
-        EndIf
+        Fi
 
         // Ambient Occlusion
         If(data.ambientOcclusion.level_index_filtering_assigned.w() == 0)
-        {
             oRoughnessMetallicAO.z() = data.metallic_roughness_ambientOcclusion.z();
-        }
         Else
-        {
             oRoughnessMetallicAO.z() = texture_atlas(data.ambientOcclusion, fUv).x();
-        }
-        EndIf
+        Fi
 
         mat3 normalMatrix = mat3(transpose(inverse(data.model)));
         oNormal = vec4(normalize(normalMatrix * fNorm), 1);
         oTangent = vec4(normalize(normalMatrix * fTan), 1);
 
         If(data.normal.level_index_filtering_assigned.w() != 0)
-        {
             mat3 tbn = mat3(fT, fB, fN);
             vec3 texNormal = texture_atlas(data.normal, fUv).xyz()
                              * vec3(data.normalIntensity.x(), data.normalIntensity.x(), 1);
             texNormal = tbn * normalize(texNormal * 2.0 - 1.0);
             oNormal = vec4(normalize(texNormal), 1);
-        }
-        EndIf
+        Fi
 
         oObjectShadows.x() = data.objectID_boneOffset_shadows.x();
         oObjectShadows.y() = data.objectID_boneOffset_shadows.z();

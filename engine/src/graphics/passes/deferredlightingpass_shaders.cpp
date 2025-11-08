@@ -139,12 +139,10 @@ namespace xng {
 
         Float gDepth = textureSample(gBufferDepth, fUv).x();
         If(gDepth == 1)
-        {
             oColor = vec4(0, 0, 0, 0);
             setFragmentDepth(1);
             Return();
-        }
-        EndIf
+        Fi
 
         Int receiveShadows = textureSample(gBufferObjectShadows, fUv).y();
 
@@ -168,12 +166,12 @@ namespace xng {
         For(Int, i, 0, i < pointLights.length(), i + 1)
             auto light = pointLights[i];
             reflectance = pbr_point(pass, reflectance, light.position.xyz(), light.color.xyz(), 1.0f);
-        EndFor
+        Done
 
         For(Int, i, 0, i < directionalLights.length(), i + 1)
             auto light = directionalLights[i];
             reflectance = pbr_directional(pass, reflectance, light.direction.xyz(), light.color.xyz(), 1.0f);
-        EndFor
+        Done
 
         For(Int, i, 0, i < spotLights.length(), i + 1)
             auto light = spotLights[i];
@@ -188,7 +186,7 @@ namespace xng {
                                    light.cutOff_outerCutOff_constant_linear.z(),
                                    light.cutOff_outerCutOff_constant_linear.w(),
                                    1.0f);
-        EndFor
+        Done
 
         For(Int, i, 0, i < shadowPointLights.length(), i + 1)
             auto light = shadowPointLights[i];
@@ -199,7 +197,7 @@ namespace xng {
                                              i,
                                              light.farPlane.x());
             reflectance = pbr_point(pass, reflectance, light.position.xyz(), light.color.xyz(), shadow);
-        EndFor
+        Done
 
         For(Int, i, 0, i < shadowDirectionalLights.length(), i + 1)
             auto light = shadowDirectionalLights[i];
@@ -211,7 +209,7 @@ namespace xng {
                                                    vec3(0, 0, 0),
                                                    fPos);
             reflectance = pbr_directional(pass, reflectance, light.direction.xyz(), light.color.xyz(), shadow);
-        EndFor
+        Done
 
         For(Int, i, 0, i < shadowSpotLights.length(), i + 1)
             auto light = shadowSpotLights[i];
@@ -233,7 +231,7 @@ namespace xng {
                                    light.cutOff_outerCutOff_constant_linear.z(),
                                    light.cutOff_outerCutOff_constant_linear.w(),
                                    shadow);
-        EndFor
+        Done
 
         oColor = vec4(pbr_finish(pass, reflectance), 1);
 

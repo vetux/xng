@@ -83,12 +83,10 @@ namespace xng::shaderlib::shadowmapping {
                 closestDepth *= far_plane;
 
                 // Compare the distance of the fragment to the distance of the closest fragment in world space units
-                If(currentDepth - bias > closestDepth);
-                {
+                If(currentDepth - bias > closestDepth)
                     shadow += 1.0;
-                }
-                EndIf
-            EndFor
+                Fi
+            Done
 
             shadow = shadow / fSamples;
 
@@ -129,10 +127,8 @@ namespace xng::shaderlib::shadowmapping {
                 || projCoords.y() < 0
                 || projCoords.y() > 1
                 || projCoords.z() > 1)
-            {
                 Return(1.0f);
-            }
-            EndIf
+            Fi
 
             // get depth of current fragment from light's perspective
             Float currentDepth = projCoords.z();
@@ -170,12 +166,10 @@ namespace xng::shaderlib::shadowmapping {
                         Float pcfDepth = textureSampleArray(shadowMap, vec3(coords, shadowMapIndex)).
                                 x();
                         If(currentDepth - bias > pcfDepth)
-                        {
                             shadow += 1.0f;
-                        }
-                        EndIf
-                    EndFor
-                EndFor
+                        Fi
+                    Done
+                Done
 
                 shadow /= 9.0f;
 

@@ -108,16 +108,16 @@
 
 #define BuildShader() builder.build()
 
-#define If(condition) ShaderBuilder::instance().If(condition);
-#define Else ShaderBuilder::instance().Else();
-#define EndIf ShaderBuilder::instance().EndIf();
+#define If(condition) ShaderBuilder::instance().If(condition);{
+#define Else }ShaderBuilder::instance().Else();{
+#define Fi }ShaderBuilder::instance().EndIf();
 #define For(variableType, variableName, initializer, predicate, iterator) { std::string _variableName = ShaderBuilder::instance().getVariableName();\
     variableType variableName(ShaderOperand(ShaderOperand::Variable, _variableName));\
     ShaderBuilder::instance().For(\
         ShaderOperand(ShaderInstructionFactory::declareVariable(_variableName, variableType::TYPE, ShaderOperand(variableType(initializer).operand))),\
         (predicate).operand,\
         ShaderOperand(ShaderInstructionFactory::assign(variableName.operand, (iterator).operand)));
-#define EndFor ShaderBuilder::instance().EndFor(); };
+#define Done } ShaderBuilder::instance().EndFor();
 
 namespace xng::ShaderScript {
     // Operators for lhs literals

@@ -48,7 +48,7 @@ namespace xng::shaderlib {
 
             For(Int, i, 0, i < samples, i + 1)
                 ret += texelFetchMS(color, pos, i);
-            EndFor
+            Done
 
             ret = ret / samples;
 

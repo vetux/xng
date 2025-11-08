@@ -99,14 +99,10 @@ namespace xng::shaderlib {
             vec2 i1;
             i1 = vec2(0, 0);
             If(x0.x() > x0.y())
-            {
                 i1 = vec2(1.0, 0.0);
-            }
             Else
-            {
                 i1 = vec2(0.0f, 1.0f);
-            }
-            EndIf
+            Fi
 
             vec4 x12 = x0.xyxy() + C.xxzz();
             x12.xy() -= i1;
