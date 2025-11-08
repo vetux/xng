@@ -29,7 +29,7 @@ namespace xng::ShaderScript {
         return fgShaderBuilder;
     }
 
-    void ShaderBuilder::If(const ShaderObject &condition) {
+    void ShaderBuilder::BeginIf(const ShaderObject &condition) {
         if (currentNode == nullptr) {
             throw std::runtime_error("ShaderBuilder::If called without a setup() call");
         }
@@ -45,7 +45,7 @@ namespace xng::ShaderScript {
         currentNode = ifNode.get();
     }
 
-    void ShaderBuilder::Else() {
+    void ShaderBuilder::DoElse() {
         if (currentNode == nullptr) {
             throw std::runtime_error("ShaderBuilder::Else called without a setup() call");
         }
@@ -65,7 +65,7 @@ namespace xng::ShaderScript {
         currentNode = currentNode->parent;
     }
 
-    void ShaderBuilder::For(const ShaderOperand &initializer,
+    void ShaderBuilder::BeginFor(const ShaderOperand &initializer,
                             const ShaderOperand &predicate,
                             const ShaderOperand &iterator) {
         if (currentNode == nullptr) {

@@ -75,12 +75,12 @@ namespace xng::ShaderScript {
          *
          * @param condition
          */
-        void If(const ShaderObject &condition);
+        void BeginIf(const ShaderObject &condition);
 
         /**
          * Subsequently added instructions are stored in the false branch of this conditional
          */
-        void Else();
+        void DoElse();
 
         /**
          * Finish the conditional branch.
@@ -90,7 +90,7 @@ namespace xng::ShaderScript {
         /**
          * Begin a for loop
          */
-        void For(const ShaderOperand &initializer, const ShaderOperand &predicate, const ShaderOperand &incrementor);
+        void BeginFor(const ShaderOperand &initializer, const ShaderOperand &predicate, const ShaderOperand &incrementor);
 
         void EndFor();
 

@@ -108,12 +108,12 @@
 
 #define BuildShader() builder.build()
 
-#define If(condition) ShaderBuilder::instance().If(condition);{
-#define Else }ShaderBuilder::instance().Else();{
+#define If(condition) ShaderBuilder::instance().BeginIf(condition);{
+#define Else }ShaderBuilder::instance().DoElse();{
 #define Fi }ShaderBuilder::instance().EndIf();
 #define For(variableType, variableName, initializer, predicate, iterator) { std::string _variableName = ShaderBuilder::instance().getVariableName();\
     variableType variableName(ShaderOperand(ShaderOperand::Variable, _variableName));\
-    ShaderBuilder::instance().For(\
+    ShaderBuilder::instance().BeginFor(\
         ShaderOperand(ShaderInstructionFactory::declareVariable(_variableName, variableType::TYPE, ShaderOperand(variableType(initializer).operand))),\
         (predicate).operand,\
         ShaderOperand(ShaderInstructionFactory::assign(variableName.operand, (iterator).operand)));
