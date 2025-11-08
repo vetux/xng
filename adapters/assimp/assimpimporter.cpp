@@ -328,7 +328,7 @@ namespace xng::assimp {
         if (texture.mHeight == 0) {
             std::vector buffer(reinterpret_cast<const char *>(texture.pcData),
                                reinterpret_cast<const char *>(texture.pcData) + texture.mWidth);
-            return StbiImporter::readImage(buffer);
+            return StbiImporter::readImageRGBA(buffer);
         }
 
         std::vector<ColorRGBA> pixels;
