@@ -51,10 +51,10 @@ namespace xng {
 
         DeclareStruct(BufferData)
 
-        Buffer(vars, BufferData)
+        Buffer(BufferData, vars)
 
-        TextureArray(atlasTextures, TEXTURE_2D_ARRAY, RGBA, 12)
-        Texture(customTexture, TEXTURE_2D, RGBA)
+        TextureArray(TEXTURE_2D_ARRAY, RGBA, 12, atlasTextures)
+        Texture(TEXTURE_2D, RGBA, customTexture)
 
         fPosition = vars.mvp * vec4(position.x(), position.y(), 0.0, 1.0);
         fUv = uv;
@@ -74,10 +74,10 @@ namespace xng {
 
         DeclareStruct(BufferData)
 
-        Buffer(vars, BufferData)
+        Buffer(BufferData, vars)
 
-        TextureArray(atlasTextures, TEXTURE_2D_ARRAY, RGBA, 12)
-        Texture(customTexture, TEXTURE_2D, RGBA)
+        TextureArray(TEXTURE_2D_ARRAY, RGBA, 12, atlasTextures)
+        Texture(TEXTURE_2D, RGBA, customTexture)
 
         shaderlib::textureBicubic();
 

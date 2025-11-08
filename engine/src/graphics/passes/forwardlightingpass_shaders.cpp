@@ -95,25 +95,25 @@ namespace xng {
         DeclareStruct(TransformData)
         DeclareStruct(PbrPass);
 
-        DynamicBuffer(pointLights, PBRPointLight)
-        DynamicBuffer(directionalLights, PBRDirectionalLight)
-        DynamicBuffer(spotLights, PBRSpotLight)
+        DynamicBuffer(PBRPointLight, pointLights)
+        DynamicBuffer(PBRDirectionalLight, directionalLights)
+        DynamicBuffer(PBRSpotLight, spotLights)
 
-        DynamicBuffer(shadowPointLights, PBRPointLight)
-        DynamicBuffer(shadowDirectionalLights, PBRDirectionalLight)
-        DynamicBuffer(shadowSpotLights, PBRSpotLight)
+        DynamicBuffer(PBRPointLight, shadowPointLights)
+        DynamicBuffer(PBRDirectionalLight, shadowDirectionalLights)
+        DynamicBuffer(PBRSpotLight, shadowSpotLights)
 
-        DynamicBuffer(directionalLightShadowTransforms, TransformData)
-        DynamicBuffer(spotLightShadowTransforms, TransformData)
+        DynamicBuffer(TransformData, directionalLightShadowTransforms)
+        DynamicBuffer(TransformData, spotLightShadowTransforms)
 
-        Buffer(data, BufferLayout)
-        DynamicBuffer(bones, BoneBufferLayout)
+        Buffer(BufferLayout, data)
+        DynamicBuffer(BoneBufferLayout, bones)
 
-        Texture(pointLightShadowMaps, TEXTURE_CUBE_MAP_ARRAY, DEPTH)
-        Texture(directionalLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH)
-        Texture(spotLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH)
+        Texture(TEXTURE_CUBE_MAP_ARRAY, DEPTH, pointLightShadowMaps)
+        Texture(TEXTURE_2D_ARRAY, DEPTH, directionalLightShadowMaps)
+        Texture(TEXTURE_2D_ARRAY, DEPTH, spotLightShadowMaps)
 
-        TextureArray(atlasTextures, TEXTURE_2D_ARRAY, RGBA, 12)
+        TextureArray(TEXTURE_2D_ARRAY, RGBA, 12, atlasTextures)
 
         Function("getSkinnedVertexPosition",
                  {ShaderFunction::Argument(ShaderDataType::Int(), "offset")},
@@ -218,25 +218,25 @@ namespace xng {
         DeclareStruct(TransformData)
         DeclareStruct(PbrPass);
 
-        DynamicBuffer(pointLights, PBRPointLight)
-        DynamicBuffer(directionalLights, PBRDirectionalLight)
-        DynamicBuffer(spotLights, PBRSpotLight)
+        DynamicBuffer(PBRPointLight, pointLights)
+        DynamicBuffer(PBRDirectionalLight, directionalLights)
+        DynamicBuffer(PBRSpotLight, spotLights)
 
-        DynamicBuffer(shadowPointLights, PBRPointLight)
-        DynamicBuffer(shadowDirectionalLights, PBRDirectionalLight)
-        DynamicBuffer(shadowSpotLights, PBRSpotLight)
+        DynamicBuffer(PBRPointLight, shadowPointLights)
+        DynamicBuffer(PBRDirectionalLight, shadowDirectionalLights)
+        DynamicBuffer(PBRSpotLight, shadowSpotLights)
 
-        DynamicBuffer(directionalLightShadowTransforms, TransformData)
-        DynamicBuffer(spotLightShadowTransforms, TransformData)
+        DynamicBuffer(TransformData, directionalLightShadowTransforms)
+        DynamicBuffer(TransformData, spotLightShadowTransforms)
 
-        Buffer(data, BufferLayout)
-        DynamicBuffer(bones, BoneBufferLayout)
+        Buffer(BufferLayout, data)
+        DynamicBuffer(BoneBufferLayout, bones)
 
-        Texture(pointLightShadowMaps, TEXTURE_CUBE_MAP_ARRAY, DEPTH)
-        Texture(directionalLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH)
-        Texture(spotLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH)
+        Texture(TEXTURE_CUBE_MAP_ARRAY, DEPTH, pointLightShadowMaps)
+        Texture(TEXTURE_2D_ARRAY, DEPTH, directionalLightShadowMaps)
+        Texture(TEXTURE_2D_ARRAY, DEPTH, spotLightShadowMaps)
 
-        TextureArray(atlasTextures, TEXTURE_2D_ARRAY, RGBA, 12)
+        TextureArray(TEXTURE_2D_ARRAY, RGBA, 12, atlasTextures)
 
         shaderlib::pbr();
         shaderlib::shadowmapping::sampleShadowPoint();

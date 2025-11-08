@@ -94,14 +94,14 @@
 
 #define Parameter(type, name) builder.addParameter(#name, type); ShaderObject name = xng::ShaderScript::parameter(#name);
 
-#define Buffer(bufferName, bufferType) builder.addBuffer(#bufferName, ShaderBuffer(false, false, bufferType::getShaderStruct().typeName)); bufferType bufferName(ShaderScript::buffer(#bufferName));
-#define DynamicBuffer(bufferName, bufferType) builder.addBuffer(#bufferName, ShaderBuffer(false, true, bufferType::getShaderStruct().typeName)); DynamicBufferWrapper<bufferType> bufferName(ShaderScript::buffer(#bufferName));
+#define Buffer(bufferType, bufferName) builder.addBuffer(#bufferName, ShaderBuffer(false, false, bufferType::getShaderStruct().typeName)); bufferType bufferName(ShaderScript::buffer(#bufferName));
+#define DynamicBuffer(bufferType, bufferName) builder.addBuffer(#bufferName, ShaderBuffer(false, true, bufferType::getShaderStruct().typeName)); DynamicBufferWrapper<bufferType> bufferName(ShaderScript::buffer(#bufferName));
 
-#define BufferRW(bufferName, bufferType) builder.addBuffer(#bufferName, ShaderBuffer(true, false, bufferType::getShaderStruct().typeName)); bufferType bufferName(ShaderScript::buffer(#bufferName));
-#define DynamicBufferRW(bufferName, bufferType) builder.addBuffer(#bufferName, ShaderBuffer(true, true, bufferType::getShaderStruct().typeName)); DynamicBufferWrapper<bufferType> bufferName(ShaderScript::buffer(#bufferName));
+#define BufferRW(bufferType, bufferName) builder.addBuffer(#bufferName, ShaderBuffer(true, false, bufferType::getShaderStruct().typeName)); bufferType bufferName(ShaderScript::buffer(#bufferName));
+#define DynamicBufferRW(bufferType, bufferName) builder.addBuffer(#bufferName, ShaderBuffer(true, true, bufferType::getShaderStruct().typeName)); DynamicBufferWrapper<bufferType> bufferName(ShaderScript::buffer(#bufferName));
 
-#define Texture(name, type, format) builder.addTextureArray(#name, ShaderTextureArray(ShaderTexture(type, format))); ShaderObject name = xng::ShaderScript::textureSampler(#name)[Int(0)];
-#define TextureArray(name, type, format, count) builder.addTextureArray(#name, ShaderTextureArray(ShaderTexture(type, format), count)); ShaderObject name = xng::ShaderScript::textureSampler(#name);
+#define Texture(type, format, name) builder.addTextureArray(#name, ShaderTextureArray(ShaderTexture(type, format))); ShaderObject name = xng::ShaderScript::textureSampler(#name)[Int(0)];
+#define TextureArray(type, format, count, name) builder.addTextureArray(#name, ShaderTextureArray(ShaderTexture(type, format), count)); ShaderObject name = xng::ShaderScript::textureSampler(#name);
 
 #define InputPrimitive(type) builder.setGeometryInput(type);
 #define OutputPrimitive(type, maxVertices) builder.setGeometryOutput(type, maxVertices);

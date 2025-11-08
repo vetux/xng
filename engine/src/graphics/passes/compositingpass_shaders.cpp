@@ -39,8 +39,8 @@ namespace xng {
 
         Output(vec2, fUv)
 
-        Texture(layerColor, TEXTURE_2D, RGBA)
-        Texture(layerDepth, TEXTURE_2D, DEPTH)
+        Texture(TEXTURE_2D, RGBA, layerColor)
+        Texture(TEXTURE_2D, DEPTH, layerDepth)
 
         fUv = uv;
 
@@ -56,8 +56,8 @@ namespace xng {
 
         Output(vec4, color)
 
-        Texture(layerColor, TEXTURE_2D, RGBA)
-        Texture(layerDepth, TEXTURE_2D, DEPTH)
+        Texture(TEXTURE_2D, RGBA, layerColor)
+        Texture(TEXTURE_2D, DEPTH, layerDepth)
 
         // TODO: Implement supersampling
         color = textureSample(layerColor, fUv);

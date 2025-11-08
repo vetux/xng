@@ -58,9 +58,9 @@ namespace xng {
         DeclareStruct(DrawData)
         DeclareStruct(BoneData)
 
-        Buffer(drawData, DrawData)
-        DynamicBuffer(bones, BoneData)
-        Buffer(lightData, PointLightData)
+        Buffer(DrawData, drawData)
+        DynamicBuffer(BoneData, bones)
+        Buffer(PointLightData, lightData)
 
         Function("getSkinnedVertexPosition",
                  {ShaderFunction::Argument(ShaderDataType::Int(), "offset")},
@@ -141,9 +141,9 @@ namespace xng {
         DeclareStruct(DrawData)
         DeclareStruct(BoneData)
 
-        Buffer(drawData, DrawData)
-        DynamicBuffer(bones, BoneData)
-        Buffer(lightData, PointLightData)
+        Buffer(DrawData, drawData)
+        DynamicBuffer(BoneData, bones)
+        Buffer(PointLightData, lightData)
 
         For(Int, face, 0, face <= 5, face + 1)
             setLayer((lightData.layer.x() * 6) + face);
@@ -168,9 +168,9 @@ namespace xng {
         DeclareStruct(DrawData)
         DeclareStruct(BoneData)
 
-        Buffer(drawData, DrawData)
-        DynamicBuffer(bones, BoneData)
-        Buffer(lightData, PointLightData)
+        Buffer(DrawData, drawData)
+        DynamicBuffer(BoneData, bones)
+        Buffer(PointLightData, lightData)
 
         Float lightDistance = length(FragPos.xyz() - lightData.lightPosFarPlane.xyz());
 
@@ -201,9 +201,9 @@ namespace xng {
         DeclareStruct(DrawData)
         DeclareStruct(BoneData)
 
-        Buffer(drawData, DrawData)
-        DynamicBuffer(bones, BoneData)
-        Buffer(lightData, DirLightData)
+        Buffer(DrawData, drawData)
+        DynamicBuffer(BoneData, bones)
+        Buffer(DirLightData, lightData)
 
         Function("getSkinnedVertexPosition",
                  {ShaderFunction::Argument(ShaderDataType::Int(), "offset")},
@@ -288,9 +288,9 @@ namespace xng {
         DeclareStruct(DrawData)
         DeclareStruct(BoneData)
 
-        Buffer(drawData, DrawData)
-        DynamicBuffer(bones, BoneData)
-        Buffer(lightData, DirLightData)
+        Buffer(DrawData, drawData)
+        DynamicBuffer(BoneData, bones)
+        Buffer(DirLightData, lightData)
 
         setLayer(lightData.layer.x());
 
@@ -315,9 +315,9 @@ namespace xng {
         DeclareStruct(DrawData)
         DeclareStruct(BoneData)
 
-        Buffer(drawData, DrawData)
-        DynamicBuffer(bones, BoneData)
-        Buffer(lightData, DirLightData)
+        Buffer(DrawData, drawData)
+        DynamicBuffer(BoneData, bones)
+        Buffer(DirLightData, lightData)
 
         return BuildShader();
     }

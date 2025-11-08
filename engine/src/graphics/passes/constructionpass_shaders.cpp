@@ -68,10 +68,10 @@ namespace xng {
         DeclareStruct(BufferLayout)
         DeclareStruct(BoneBufferLayout)
 
-        Buffer(data, BufferLayout)
-        DynamicBuffer(bones, BoneBufferLayout)
+        Buffer(BufferLayout, data)
+        DynamicBuffer(BoneBufferLayout, bones)
 
-        TextureArray(atlasTextures, TEXTURE_2D_ARRAY, RGBA, 12)
+        TextureArray(TEXTURE_2D_ARRAY, RGBA, 12, atlasTextures)
 
         vPos = data.mvp * vec4(position, 1);
         fPos = (data.model * vec4(position, 1)).xyz();
@@ -113,10 +113,10 @@ namespace xng {
         DeclareStruct(BufferLayout)
         DeclareStruct(BoneBufferLayout)
 
-        Buffer(data, BufferLayout)
-        DynamicBuffer(bones, BoneBufferLayout)
+        Buffer(BufferLayout, data)
+        DynamicBuffer(BoneBufferLayout, bones)
 
-        TextureArray(atlasTextures, TEXTURE_2D_ARRAY, RGBA, 12)
+        TextureArray(TEXTURE_2D_ARRAY, RGBA, 12, atlasTextures)
 
         Function("getSkinnedVertexPosition",
                  {ShaderFunction::Argument(ShaderDataType::Int(), "offset")},
@@ -221,10 +221,10 @@ namespace xng {
         DeclareStruct(BufferLayout)
         DeclareStruct(BoneBufferLayout)
 
-        Buffer(data, BufferLayout)
-        DynamicBuffer(bones, BoneBufferLayout)
+        Buffer(BufferLayout, data)
+        DynamicBuffer(BoneBufferLayout, bones)
 
-        TextureArray(atlasTextures, TEXTURE_2D_ARRAY, RGBA, 12)
+        TextureArray(TEXTURE_2D_ARRAY, RGBA, 12, atlasTextures)
 
         shaderlib::textureBicubic();
 

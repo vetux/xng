@@ -63,29 +63,29 @@ namespace xng {
         DeclareStruct(TransformData)
         DeclareStruct(PbrPass)
 
-        Buffer(shaderData, ShaderData)
+        Buffer(ShaderData, shaderData)
 
-        DynamicBuffer(pointLights, PBRPointLight)
-        DynamicBuffer(directionalLights, PBRDirectionalLight)
-        DynamicBuffer(spotLights, PBRSpotLight)
+        DynamicBuffer(PBRPointLight, pointLights)
+        DynamicBuffer(PBRDirectionalLight, directionalLights)
+        DynamicBuffer(PBRSpotLight, spotLights)
 
-        DynamicBuffer(shadowPointLights, PBRPointLight)
-        DynamicBuffer(shadowDirectionalLights, PBRDirectionalLight)
-        DynamicBuffer(shadowSpotLights, PBRSpotLight)
+        DynamicBuffer(PBRPointLight, shadowPointLights)
+        DynamicBuffer(PBRDirectionalLight, shadowDirectionalLights)
+        DynamicBuffer(PBRSpotLight, shadowSpotLights)
 
-        Texture(gBufferPos, TEXTURE_2D, RGBA32F)
-        Texture(gBufferNormal, TEXTURE_2D, RGBA32F)
-        Texture(gBufferRoughnessMetallicAO, TEXTURE_2D, RGBA32F)
-        Texture(gBufferAlbedo, TEXTURE_2D, RGBA)
-        Texture(gBufferObjectShadows, TEXTURE_2D, RGBA32I)
-        Texture(gBufferDepth, TEXTURE_2D, DEPTH)
+        Texture(TEXTURE_2D, RGBA32F, gBufferPos)
+        Texture(TEXTURE_2D, RGBA32F, gBufferNormal)
+        Texture(TEXTURE_2D, RGBA32F, gBufferRoughnessMetallicAO)
+        Texture(TEXTURE_2D, RGBA, gBufferAlbedo)
+        Texture(TEXTURE_2D, RGBA32I, gBufferObjectShadows)
+        Texture(TEXTURE_2D, DEPTH, gBufferDepth)
 
-        Texture(pointLightShadowMaps, TEXTURE_CUBE_MAP_ARRAY, DEPTH)
-        Texture(directionalLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH)
-        Texture(spotLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH)
+        Texture(TEXTURE_CUBE_MAP_ARRAY, DEPTH, pointLightShadowMaps)
+        Texture(TEXTURE_2D_ARRAY, DEPTH, directionalLightShadowMaps)
+        Texture(TEXTURE_2D_ARRAY, DEPTH, spotLightShadowMaps)
 
-        DynamicBuffer(directionalLightShadowTransforms, TransformData)
-        DynamicBuffer(spotLightShadowTransforms, TransformData)
+        DynamicBuffer(TransformData, directionalLightShadowTransforms)
+        DynamicBuffer(TransformData, spotLightShadowTransforms)
 
         fPosition = vec4(vPosition, 1.0f);
         fUv = vUv;
@@ -109,29 +109,29 @@ namespace xng {
         DeclareStruct(TransformData)
         DeclareStruct(PbrPass)
 
-        Buffer(shaderData, ShaderData)
+        Buffer(ShaderData, shaderData)
 
-        DynamicBuffer(pointLights, PBRPointLight)
-        DynamicBuffer(directionalLights, PBRDirectionalLight)
-        DynamicBuffer(spotLights, PBRSpotLight)
+        DynamicBuffer(PBRPointLight, pointLights)
+        DynamicBuffer(PBRDirectionalLight, directionalLights)
+        DynamicBuffer(PBRSpotLight, spotLights)
 
-        DynamicBuffer(shadowPointLights, PBRPointLight)
-        DynamicBuffer(shadowDirectionalLights, PBRDirectionalLight)
-        DynamicBuffer(shadowSpotLights, PBRSpotLight)
+        DynamicBuffer(PBRPointLight, shadowPointLights)
+        DynamicBuffer(PBRDirectionalLight, shadowDirectionalLights)
+        DynamicBuffer(PBRSpotLight, shadowSpotLights)
 
-        Texture(gBufferPos, TEXTURE_2D, RGBA32F)
-        Texture(gBufferNormal, TEXTURE_2D, RGBA32F)
-        Texture(gBufferRoughnessMetallicAO, TEXTURE_2D, RGBA32F)
-        Texture(gBufferAlbedo, TEXTURE_2D, RGBA)
-        Texture(gBufferObjectShadows, TEXTURE_2D, RGBA32I)
-        Texture(gBufferDepth, TEXTURE_2D, DEPTH)
+        Texture(TEXTURE_2D, RGBA32F, gBufferPos)
+        Texture(TEXTURE_2D, RGBA32F, gBufferNormal)
+        Texture(TEXTURE_2D, RGBA32F, gBufferRoughnessMetallicAO)
+        Texture(TEXTURE_2D, RGBA, gBufferAlbedo)
+        Texture(TEXTURE_2D, RGBA32I, gBufferObjectShadows)
+        Texture(TEXTURE_2D, DEPTH, gBufferDepth)
 
-        Texture(pointLightShadowMaps, TEXTURE_CUBE_MAP_ARRAY, DEPTH)
-        Texture(directionalLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH)
-        Texture(spotLightShadowMaps, TEXTURE_2D_ARRAY, DEPTH)
+        Texture(TEXTURE_CUBE_MAP_ARRAY, DEPTH, pointLightShadowMaps)
+        Texture(TEXTURE_2D_ARRAY, DEPTH, directionalLightShadowMaps)
+        Texture(TEXTURE_2D_ARRAY, DEPTH, spotLightShadowMaps)
 
-        DynamicBuffer(directionalLightShadowTransforms, TransformData)
-        DynamicBuffer(spotLightShadowTransforms, TransformData)
+        DynamicBuffer(TransformData, directionalLightShadowTransforms)
+        DynamicBuffer(TransformData, spotLightShadowTransforms)
 
         shaderlib::pbr();
         shaderlib::shadowmapping::sampleShadowPoint();
