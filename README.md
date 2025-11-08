@@ -6,7 +6,6 @@
 <br>
 
 # xEngine
-
 xEngine is a Game Engine library for C++. 
 
 The engine is designed as a standalone modular toolkit from which different modules can be used independently.
@@ -18,68 +17,36 @@ Once the project has reached a stable state there will be semantically versioned
 [xng-editor](https://github.com/vetux/xng-editor) - Editor application to simplify and accelerate the game creation
 workflow
 
-## Features
+## Feature Checklist for Version 0.1.0
 - Graphics
   - Render Graph
-    - Domain-Specific Language for writing Render Graph shaders in C++
-  - 3D
-    - PBR Render Graph Pipeline
-      - Forward / Deferred Rendering
-      - Shadow Mapping
-    - Skeletal Animation
-  - 2D
-    - Canvas Interface
-    - Sprite Animation
-    - Text Rendering
-- Resource Management
-  - Uri Resource addressing
-  - Multithreaded Resource streaming
-  - Automatic Resource Lifetime handling
-- Entity Component System interface implementing data-oriented architecture
-- PAK file format with compression, chunking and encryption support
-
-## Todolist for Version 0.1.0
-- Graphics
-  - Render Graph
+    - [X] OpenGL Implementation 
     - [ ] Vulkan Implementation 
-  - 3D 
-    - [ ] Refine the PBR Shading Model 
-    - [ ] Refine Shadow Mapping Implementation
+  - 3D
+    - [X] PBR Shading Model
+    - [X] Skeletal Animation
+    - [X] Shadow Mapping
+    - [ ] Image Based Lighting 
     - [ ] Skybox Rendering 
     - [ ] Particles Rendering
     - [ ] Terrain Rendering
     - [ ] Volumetric Rendering
-    - [ ] Image Based Lighting
     - [ ] Environment Mapping (Reflections)
     - [ ] Post Processing (Anti Aliasing)
   - 2D
+    - [X] Canvas Rendering
+    - [X] Text Rendering
+    - [ ] Sprite Animation
     - [ ] Sprite Rendering 
     - [ ] Sprite Lighting
-- [ ] Custom Asset File format
-- [ ] Flexbox based GUI Layout
+- Resource Management
+  - [X] Resource System
+  - [ ] Custom Asset File format
+- GUI
+  - [ ] Flexbox based GUI Layout
  
 ## Screenshots (Old, will be updated when the pbr shading model is fixed up)
 ![](https://raw.githubusercontent.com/vetux/xng-assets/refs/heads/master/screenshots/ScreenshotFramegraph.jpg)
-
-## Adapters
-
-Adapters are implementations of interfaces in the xEngine API (For example through 3rd party libraries) that can be optionally compiled into the engine library. If an adapter type is instantiated in an application, the corresponding adapter must be defined by the linked engine library by enabling the corresponding cmake option/s in [adapters.cmake](cmake/adapters.cmake) when compiling the engine library.
-
-- Display Environment
-    - GLFW
-    - Android (WIP)
-- 3D Audio
-    - OpenAL-Soft
-- Render Graph
-    - OpenGL
-- Font Rendering
-    - FreeType
-- Physics Simulation
-    - Box2D
-    - Bullet3
-- Resource Importers
-    - AssImp
-    - libSndFile
 
 ## Building
 ### Supported Platforms
