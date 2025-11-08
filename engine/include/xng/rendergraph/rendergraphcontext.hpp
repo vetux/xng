@@ -55,6 +55,8 @@ namespace xng {
                                   size_t bufferSize,
                                   size_t targetOffset) = 0;
 
+        //TODO: Type / Format safe shader buffer uploads
+
         /**
          * Upload data to a texture.
          *
