@@ -213,10 +213,14 @@ int main(int argc, char *argv[]) {
     auto glfw = glfw::DisplayEnvironment();
     auto runtime = std::make_shared<opengl::RenderGraphRuntime>();
 
-    const std::shared_ptr window = std::move(glfw.createWindow(runtime->getGraphicsAPI()));
-    auto &input = window->getInput();
+    WindowAttributes attributes;
+    attributes.visible = false;
 
-    window->setWindowSize({1000, 900});
+    const std::shared_ptr window = std::move(glfw.createWindow(runtime->getGraphicsAPI(),
+                                                               "RenderGraph Test",
+                                                               {1000, 900},
+                                                               attributes));
+    auto &input = window->getInput();
 
     runtime->setWindow(window);
 
@@ -234,6 +238,7 @@ int main(int argc, char *argv[]) {
 
     auto passScheduler = std::make_shared<RenderPassScheduler>(runtime);
 
+    printf("Compiling Graph...\n");
     auto graph3D = passScheduler->addGraph({
         std::make_shared<ConstructionPass>(config, registry),
         std::make_shared<ShadowMappingPass>(config, registry),
@@ -242,6 +247,11 @@ int main(int argc, char *argv[]) {
         std::make_shared<CanvasRenderPass>(config, registry),
         std::make_shared<CompositingPass>(config, registry),
     });
+    printf("Loading Assets...\n");
+    ResourceRegistry::getDefaultRegistry().awaitAll();
+    printf("Ready\n");
+
+    window->show();
 
     FrameLimiter frameLimiter(0);
     frameLimiter.reset();
