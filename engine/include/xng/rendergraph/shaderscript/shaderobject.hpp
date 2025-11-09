@@ -20,8 +20,6 @@
 #ifndef XENGINE_ShaderObject_HPP
 #define XENGINE_ShaderObject_HPP
 
-#include <compare>
-
 #include "xng/rendergraph/shader/shaderinstruction.hpp"
 #include "xng/rendergraph/shaderscript/shaderbuilder.hpp"
 
