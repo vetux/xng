@@ -131,10 +131,6 @@ namespace xng {
         return uris;
     }
 
-    const std::set<Uri> &ResourceRegistry::getLoadingUris() const {
-        return loadingUris;
-    }
-
     void ResourceRegistry::load(const Uri &uri) {
         std::lock_guard<std::mutex> g(mutex);
 

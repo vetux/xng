@@ -131,13 +131,18 @@ namespace xng {
 
         const std::set<Uri> &getUris() const;
 
-        const std::set<Uri> &getLoadingUris() const;
+        std::set<Uri> getLoadingUris() {
+            std::lock_guard<std::mutex> g(mutex);
+            return loadingUris;
+        }
 
-        bool isLoaded(const Uri &uri) const {
+        bool isLoaded(const Uri &uri) {
+            std::lock_guard<std::mutex> g(mutex);
             return bundles.find(uri.getFile()) != bundles.end();
         }
 
-        bool isLoading(const Uri &uri) const {
+        bool isLoading(const Uri &uri) {
+            std::lock_guard<std::mutex> g(mutex);
             return loadTasks.find(uri.getFile()) == loadTasks.end();
         }
 
