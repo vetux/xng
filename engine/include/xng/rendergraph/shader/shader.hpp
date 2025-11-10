@@ -29,6 +29,7 @@
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 #include "xng/rendergraph/shader/shaderbuffer.hpp"
 #include "xng/rendergraph/shader/shadertexturearray.hpp"
+#include "xng/rendergraph/shader/shaderstruct.hpp"
 
 namespace xng {
     struct ShaderBuffer;
