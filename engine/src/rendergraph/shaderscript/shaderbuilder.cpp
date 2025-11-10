@@ -66,8 +66,8 @@ namespace xng::ShaderScript {
     }
 
     void ShaderBuilder::BeginFor(const ShaderOperand &initializer,
-                            const ShaderOperand &predicate,
-                            const ShaderOperand &iterator) {
+                                 const ShaderOperand &predicate,
+                                 const ShaderOperand &iterator) {
         if (currentNode == nullptr) {
             throw std::runtime_error("ShaderBuilder::For called without a setup() call");
         }
@@ -95,9 +95,9 @@ namespace xng::ShaderScript {
         currentNode = currentNode->parent;
     }
 
-    void ShaderBuilder::Function(const std::string &name,
-                                 const std::vector<ShaderFunction::Argument> &arguments,
-                                 ShaderFunction::ReturnType returnType) {
+    void ShaderBuilder::BeginFunction(std::string name,
+                                      std::vector<ShaderFunction::Argument> arguments,
+                                      std::optional<ShaderDataType> returnType) {
         if (currentNode == nullptr) {
             throw std::runtime_error("ShaderBuilder::Function called without a setup() call");
         }
@@ -109,9 +109,9 @@ namespace xng::ShaderScript {
         functionNode->parent = nullptr;
         functionNode->type = TreeNode::ROOT;
         currentNode = functionNode.get();
-        currentFunction.name = name;
+        currentFunction.name = std::move(name);
+        currentFunction.arguments = std::move(arguments);
         currentFunction.returnType = std::move(returnType);
-        currentFunction.arguments = arguments;
         functionRoot = functionNode;
     }
 

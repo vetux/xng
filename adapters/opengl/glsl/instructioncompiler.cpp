@@ -141,31 +141,39 @@ namespace InstructionCompiler {
     }
 
     std::string compileOperand(const ShaderOperand &operand, const Shader &source, const std::string &functionName) {
+        std::string name;
         switch (operand.type) {
             default:
                 throw std::runtime_error("Unknown operand type");
             case ShaderOperand::None:
                 throw std::runtime_error("Unassigned operand");
             case ShaderOperand::Instruction:
-                return compile(operand.instruction, source, functionName, {});
+                return compile(std::get<ShaderInstruction>(operand.value), source, functionName, {});
             case ShaderOperand::Buffer:
-                if (source.buffers.at(operand.name).dynamic)
-                    return bufferPrefix + operand.name + "." + bufferArrayName;
-                return bufferPrefix + operand.name + "." + bufferArrayName + "[" + drawID + "]";
+                name = std::get<std::string>(operand.value);
+                if (source.buffers.at(name).dynamic)
+                    return bufferPrefix + name + "." + bufferArrayName;
+                return bufferPrefix + name + "." + bufferArrayName + "[" + drawID + "]";
             case ShaderOperand::Texture:
-                return texturePrefix + operand.name;
+                name = std::get<std::string>(operand.value);
+                return texturePrefix + name;
             case ShaderOperand::Parameter:
-                return parameterPrefix + operand.name;
+                name = std::get<std::string>(operand.value);
+                return parameterPrefix + name;
             case ShaderOperand::InputAttribute:
-                return inputAttributePrefix + operand.name;
+                name = std::get<std::string>(operand.value);
+                return inputAttributePrefix + name;
             case ShaderOperand::OutputAttribute:
-                return outputAttributePrefix + operand.name;
+                name = std::get<std::string>(operand.value);
+                return outputAttributePrefix + name;
             case ShaderOperand::Argument:
-                return operand.name;
+                name = std::get<std::string>(operand.value);
+                return name;
             case ShaderOperand::Variable:
-                return operand.name;
+                name = std::get<std::string>(operand.value);
+                return name;
             case ShaderOperand::Literal:
-                return literalToString(operand.literal);
+                return literalToString(std::get<ShaderPrimitive>(operand.value));
         }
     }
 
@@ -173,15 +181,18 @@ namespace InstructionCompiler {
                                        const Shader &source,
                                        const std::string &functionName,
                                        const std::string &indent) {
+        const ShaderDataType &type = std::get<ShaderDataType>(instruction.data.at(0));
+        const std::string &name = std::get<std::string>(instruction.data.at(1));
         std::string ret;
-        if (std::holds_alternative<ShaderDataType>(instruction.type)) {
-            auto t = std::get<ShaderDataType>(instruction.type);
-            ret += getTypeName(t) + " " + instruction.name;
-            if (t.count > 1) {
-                ret += "[" + std::to_string(t.count) + "]";
-            }
+        if (std::holds_alternative<ShaderPrimitiveType>(type.value)) {
+            auto t = std::get<ShaderPrimitiveType>(type.value);
+            ret += getTypeName(t) + " " + name;
         } else {
-            ret += std::get<ShaderStructTypeName>(instruction.type) + " " + instruction.name;
+            ret += std::get<ShaderStructType>(type.value) + " " + name;
+        }
+
+        if (type.count > 1) {
+            ret += "[" + std::to_string(type.count) + "]";
         }
 
         if (instruction.operands.at(0).isAssigned()) {
@@ -202,7 +213,7 @@ namespace InstructionCompiler {
                                     const Shader &source,
                                     const std::string &functionName,
                                     const std::string &indent) {
-        std::string ret = getTypeName(std::get<ShaderDataType>(instruction.type)) + "(";
+        std::string ret = getTypeName(std::get<ShaderPrimitiveType>(instruction.data.at(0))) + "(";
         for (auto &operand: instruction.operands) {
             if (!operand.isAssigned()) {
                 break;
@@ -218,14 +229,22 @@ namespace InstructionCompiler {
                                     const Shader &source,
                                     const std::string &functionName,
                                     const std::string &indent) {
-        return std::get<ShaderStructTypeName>(instruction.type) + "()";
+        std::string ret = std::get<ShaderStructType>(instruction.data.at(0)) + "(";
+        if (instruction.operands.size() > 0) {
+            for (auto &operand: instruction.operands) {
+                ret += compileOperand(operand, source, functionName) + ", ";
+            }
+            ret.pop_back();
+            ret.pop_back();
+        }
+        return ret + ")";
     }
 
     std::string compileCreateMatrix(const ShaderInstruction &instruction,
                                     const Shader &source,
                                     const std::string &functionName,
                                     const std::string &indent) {
-        std::string ret = getTypeName(std::get<ShaderDataType>(instruction.type)) + "(";
+        std::string ret = getTypeName(std::get<ShaderPrimitiveType>(instruction.data.at(0))) + "(";
         for (auto &operand: instruction.operands) {
             if (!operand.isAssigned()) {
                 break;
@@ -241,8 +260,13 @@ namespace InstructionCompiler {
                                    const Shader &source,
                                    const std::string &functionName,
                                    const std::string &indent) {
+        const ShaderDataType &type = std::get<ShaderDataType>(instruction.data.at(0));
         std::string ret;
-        ret += getTypeName(std::get<ShaderDataType>(instruction.type));
+        if (std::holds_alternative<ShaderPrimitiveType>(type.value)) {
+            ret += getTypeName(std::get<ShaderPrimitiveType>(type.value));
+        } else {
+            ret += std::get<ShaderStructType>(type.value);
+        }
         ret += "[](";
         for (auto &operand: instruction.operands) {
             ret += compileOperand(operand, source, functionName) + ", ";
@@ -383,7 +407,7 @@ namespace InstructionCompiler {
                                   const Shader &source,
                                   const std::string &functionName,
                                   const std::string &indent) {
-        return bufferPrefix + instruction.name + "." + bufferArrayName + ".length()";
+        return compileOperand(instruction.operands.at(0), source, functionName) + ".length()";
     }
 
     std::string compileArithmetic(const ShaderInstruction &instruction,
@@ -474,7 +498,7 @@ namespace InstructionCompiler {
             args.pop_back();
             args.pop_back();
         }
-        return instruction.name + "(" + args + ")";
+        return std::get<std::string>(instruction.data.at(0)) + "(" + args + ")";
     }
 
     std::string compileReturn(const ShaderInstruction &instruction,
@@ -596,22 +620,23 @@ namespace InstructionCompiler {
                                      const Shader &source,
                                      const std::string &functionName,
                                      const std::string &indent) {
-        if (instruction.components.size() < 1 || instruction.components.size() > 4) {
+        if (instruction.data.size() < 1 || instruction.data.size() > 4) {
             throw std::runtime_error("Invalid vector subscript indices size");
         }
         std::string ret = compileOperand(instruction.operands.at(0), source, functionName) + ".";
-        for (auto &index: instruction.components) {
-            switch (index) {
-                case ShaderInstruction::COMPONENT_x:
+        for (auto &index: instruction.data) {
+            const auto &component = std::get<ShaderPrimitiveType::VectorComponent>(index);
+            switch (component) {
+                case ShaderPrimitiveType::COMPONENT_x:
                     ret += "x";
                     break;
-                case ShaderInstruction::COMPONENT_y:
+                case ShaderPrimitiveType::COMPONENT_y:
                     ret += "y";
                     break;
-                case ShaderInstruction::COMPONENT_z:
+                case ShaderPrimitiveType::COMPONENT_z:
                     ret += "z";
                     break;
-                case ShaderInstruction::COMPONENT_w:
+                case ShaderPrimitiveType::COMPONENT_w:
                     ret += "w";
                     break;
                 default:
@@ -638,13 +663,14 @@ namespace InstructionCompiler {
                               const std::string &functionName,
                               const std::string &indent) {
         std::string ret = indent + "if(" + compileOperand(instruction.operands.at(0), source, functionName) + ") {\n";
-        for (auto &inst: instruction.branchA) {
+        for (auto &inst: std::get<std::vector<ShaderInstruction> >(instruction.data.at(0))) {
             ret += compile(inst, source, functionName, indent + "\t") + ";\n";
         }
         ret += indent + "}";
-        if (instruction.branchB.size() > 0) {
+        const auto &branchB = std::get<std::vector<ShaderInstruction> >(instruction.data.at(1));
+        if (branchB.size() > 0) {
             ret += " else {\n";
-            for (auto &inst: instruction.branchB) {
+            for (auto &inst: branchB) {
                 ret += compile(inst, source, functionName, indent + "\t") + ";\n";
             }
             ret += indent + "}";
@@ -659,7 +685,7 @@ namespace InstructionCompiler {
         std::string ret = indent + "for(" + compileOperand(instruction.operands.at(0), source, functionName) + "; "
                           + compileOperand(instruction.operands.at(1), source, functionName) + "; "
                           + compileOperand(instruction.operands.at(2), source, functionName) + ") {\n";
-        for (auto &inst: instruction.branchA) {
+        for (auto &inst: std::get<std::vector<ShaderInstruction> >(instruction.data.at(0))) {
             ret += compile(inst, source, functionName, indent + "\t") + ";\n";
         }
         ret += indent + "}";
@@ -705,6 +731,8 @@ namespace InstructionCompiler {
                                      const Shader &source,
                                      const std::string &functionName,
                                      const std::string &indent) {
-        return compileOperand(instruction.operands.at(0), source, functionName) + "." + instruction.name;
+        return compileOperand(instruction.operands.at(0), source, functionName)
+               + "."
+               + std::get<std::string>(instruction.data.at(0));
     }
 }

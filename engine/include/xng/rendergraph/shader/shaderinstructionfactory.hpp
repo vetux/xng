@@ -27,7 +27,7 @@
  */
 namespace xng::ShaderInstructionFactory {
     XENGINE_EXPORT ShaderInstruction declareVariable(std::string name,
-                                                     std::variant<ShaderDataType, ShaderStructTypeName> type,
+                                                     ShaderDataType type,
                                                      ShaderOperand value = {});
 
     XENGINE_EXPORT ShaderInstruction assign(ShaderOperand target, ShaderOperand value);
@@ -57,7 +57,7 @@ namespace xng::ShaderInstructionFactory {
     XENGINE_EXPORT ShaderInstruction setVertexPosition(ShaderOperand position);
 
     XENGINE_EXPORT ShaderInstruction vectorSwizzle(ShaderOperand vector,
-                                                   std::vector<ShaderInstruction::VectorComponent> components);
+                                                   const std::vector<ShaderPrimitiveType::VectorComponent> &components);
 
     XENGINE_EXPORT ShaderInstruction arraySubscript(ShaderOperand array, ShaderOperand index);
 
@@ -67,22 +67,23 @@ namespace xng::ShaderInstructionFactory {
 
     XENGINE_EXPORT ShaderInstruction objectMember(ShaderOperand object, std::string member);
 
-    XENGINE_EXPORT ShaderInstruction createArray(ShaderDataType elementType,
+    XENGINE_EXPORT ShaderInstruction createArray(const ShaderDataType &arrayType,
                                                  std::vector<ShaderOperand> elements);
 
-    XENGINE_EXPORT ShaderInstruction createMatrix(ShaderDataType elementType,
+    XENGINE_EXPORT ShaderInstruction createMatrix(ShaderPrimitiveType elementType,
                                                   ShaderOperand x,
                                                   ShaderOperand y = {},
                                                   ShaderOperand z = {},
                                                   ShaderOperand w = {});
 
-    XENGINE_EXPORT ShaderInstruction createVector(ShaderDataType elementType,
+    XENGINE_EXPORT ShaderInstruction createVector(ShaderPrimitiveType elementType,
                                                   ShaderOperand x,
                                                   ShaderOperand y = {},
                                                   ShaderOperand z = {},
                                                   ShaderOperand w = {});
 
-    XENGINE_EXPORT ShaderInstruction createStruct(ShaderStructTypeName typeName);
+    XENGINE_EXPORT ShaderInstruction createStruct(ShaderStructType typeName,
+                                                  std::vector<ShaderOperand> values = {});
 
     /**
      * Fetch a texel of a TEXTURE_2D.
@@ -200,7 +201,7 @@ namespace xng::ShaderInstructionFactory {
 
     XENGINE_EXPORT ShaderInstruction textureSize(ShaderOperand texture, ShaderOperand lod = {});
 
-    XENGINE_EXPORT ShaderInstruction bufferSize(std::string name);
+    XENGINE_EXPORT ShaderInstruction bufferSize(ShaderOperand buffer);
 
     XENGINE_EXPORT ShaderInstruction add(ShaderOperand left, ShaderOperand right);
 
@@ -268,7 +269,8 @@ namespace xng::ShaderInstructionFactory {
                                            ShaderOperand min,
                                            ShaderOperand max);
 
-    XENGINE_EXPORT ShaderInstruction mix(ShaderOperand x, ShaderOperand y,
+    XENGINE_EXPORT ShaderInstruction mix(ShaderOperand x,
+                                         ShaderOperand y,
                                          ShaderOperand a);
 
     XENGINE_EXPORT ShaderInstruction step(ShaderOperand edge, ShaderOperand x);

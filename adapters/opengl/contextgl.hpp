@@ -129,7 +129,7 @@ public:
 
     void bindShaderBuffer(const std::string &target, RenderGraphResource buffer, size_t offset, size_t size) override;
 
-    void setShaderParameter(const std::string &name, const ShaderLiteral &value) override;
+    void setShaderParameter(const std::string &name, const ShaderPrimitive &value) override;
 
     void clearColorAttachment(size_t binding, ColorRGBA clearColor) override;
 

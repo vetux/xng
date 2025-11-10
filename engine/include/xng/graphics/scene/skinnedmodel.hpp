@@ -58,13 +58,13 @@ namespace xng {
          */
         static ShaderAttributeLayout getVertexLayout() {
             return ShaderAttributeLayout({
-                {"position", ShaderDataType::vec3()},
-                {"normal", ShaderDataType::vec3()},
-                {"uv", ShaderDataType::vec2()},
-                {"tangent", ShaderDataType::vec3()},
-                {"bitangent", ShaderDataType::vec3()},
-                {"boneIds", ShaderDataType::ivec4()},
-                {"boneWeights", ShaderDataType::vec4()}
+                {"position", ShaderPrimitiveType::vec3()},
+                {"normal", ShaderPrimitiveType::vec3()},
+                {"uv", ShaderPrimitiveType::vec2()},
+                {"tangent", ShaderPrimitiveType::vec3()},
+                {"bitangent", ShaderPrimitiveType::vec3()},
+                {"boneIds", ShaderPrimitiveType::ivec4()},
+                {"boneWeights", ShaderPrimitiveType::vec4()}
             });
         }
 

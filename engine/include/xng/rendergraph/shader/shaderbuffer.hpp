@@ -20,7 +20,6 @@
 #ifndef XENGINE_SHADERBUFFER_HPP
 #define XENGINE_SHADERBUFFER_HPP
 
-#include "xng/rendergraph/shader/shaderstruct.hpp"
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 
 namespace xng {
@@ -37,14 +36,14 @@ namespace xng {
         bool dynamic = false;
 
         // The type name of the structure defining the contents of the buffer. For dynamic buffers an instance of the structure is created for every element.
-        ShaderStructTypeName typeName;
+        ShaderStructType typeName;
 
         ShaderBuffer() = default;
 
-        ShaderBuffer(bool read_only, bool dynamic, const ShaderStructTypeName &type_name)
+        ShaderBuffer(const bool read_only, const bool dynamic, ShaderStructType type_name)
             : readOnly(read_only),
               dynamic(dynamic),
-              typeName(type_name) {
+              typeName(std::move(type_name)) {
         }
     };
 }

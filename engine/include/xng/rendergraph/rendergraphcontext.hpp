@@ -27,7 +27,6 @@
 #include "xng/rendergraph/rendergraphtextureproperties.hpp"
 #include "xng/rendergraph/rendergraphattachment.hpp"
 #include "xng/rendergraph/shader/shader.hpp"
-#include "xng/rendergraph/shader/shaderliteral.hpp"
 
 #include "xng/math/vector2.hpp"
 
@@ -282,7 +281,7 @@ namespace xng {
          * @param name
          * @param value
          */
-        virtual void setShaderParameter(const std::string &name, const ShaderLiteral &value) = 0;
+        virtual void setShaderParameter(const std::string &name, const ShaderPrimitive &value) = 0;
 
         virtual void clearColorAttachment(size_t binding, ColorRGBA clearColor) = 0;
 

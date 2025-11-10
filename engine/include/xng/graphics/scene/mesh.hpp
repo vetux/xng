@@ -25,10 +25,10 @@
 
 #include "xng/resource/resource.hpp"
 
-#include "xng/graphics/primitive.hpp"
 #include "xng/graphics/scene/material.hpp"
 
 #include "xng/rendergraph/shader/shaderattributelayout.hpp"
+#include "xng/rendergraph/renderprimitive.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT Mesh : Resource {
@@ -68,18 +68,18 @@ namespace xng {
          */
         static Mesh sphere(float radius, int latitudes, int longitudes);
 
-        Primitive primitive = POINTS;
+        RenderPrimitive primitive = POINTS;
         std::vector<uint8_t> vertices;
         std::vector<unsigned int> indices;
         ShaderAttributeLayout vertexLayout;
 
         Mesh() = default;
 
-        Mesh(const Primitive primitive, std::vector<uint8_t> vertices)
+        Mesh(const RenderPrimitive primitive, std::vector<uint8_t> vertices)
             : primitive(primitive), vertices(std::move(vertices)) {
         }
 
-        Mesh(const Primitive primitive, std::vector<uint8_t> vertices, std::vector<unsigned int> indices)
+        Mesh(const RenderPrimitive primitive, std::vector<uint8_t> vertices, std::vector<unsigned int> indices)
             : primitive(primitive), vertices(std::move(vertices)), indices(std::move(indices)) {
         }
 

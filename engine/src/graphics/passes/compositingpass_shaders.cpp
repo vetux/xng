@@ -26,8 +26,8 @@ using namespace xng::ShaderScript;
 namespace xng {
     ShaderAttributeLayout getVertexLayout() {
         ShaderAttributeLayout ret;
-        ret.addElement("position", ShaderDataType::vec3());
-        ret.addElement("uv", ShaderDataType::vec2());
+        ret.addElement("position", ShaderPrimitiveType::vec3());
+        ret.addElement("uv", ShaderPrimitiveType::vec2());
         return ret;
     }
 

@@ -432,7 +432,7 @@ namespace xng {
         ctx.bindShaderBuffer("vars", shaderBuffer);
         ctx.bindTexture("atlasTextures", textures);
 
-        Primitive currentPrimitive = TRIANGLES;
+        RenderPrimitive currentPrimitive = TRIANGLES;
         for (auto &paintCommand: canvas.getPaintCommands()) {
             switch (paintCommand.type) {
                 case Paint::PAINT_POINT: {

@@ -25,23 +25,13 @@ using namespace xng::ShaderScript;
 
 namespace xng::shaderlib::shadowmapping {
     void sampleShadowPoint() {
-        Function("sampleShadowPoint", {
-                     {ShaderDataType::vec3(), "fragPos"},
-                     {ShaderDataType::vec3(), "lightPos"},
-                     {ShaderDataType::vec3(), "viewPos"},
-                     {ShaderTexture(TEXTURE_CUBE_MAP_ARRAY, DEPTH), "depthMap"},
-                     {ShaderDataType::Int(), "depthMapIndex"},
-                     {ShaderDataType::Float(), "far_plane"}
-                 },
-                 ShaderDataType::Float());
-        {
-            ARGUMENT(vec3, fragPos)
-            ARGUMENT(vec3, lightPos)
-            ARGUMENT(vec3, viewPos)
-            ARGUMENT(TextureSampler, depthMap)
-            ARGUMENT(Int, depthMapIndex)
-            ARGUMENT(Float, far_plane)
-
+        Function(Float, sampleShadowPoint,
+                 vec3, fragPos,
+                 vec3, lightPos,
+                 vec3, viewPos,
+                 TextureCubeArray<DEPTH>, depthMap,
+                 Int, depthMapIndex,
+                 Float, far_plane)
             ArrayVec3<20> gridSamplingDisk;
             gridSamplingDisk = std::vector{
                 vec3(1, 1, 1), vec3(1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1),
@@ -91,29 +81,18 @@ namespace xng::shaderlib::shadowmapping {
             shadow = shadow / fSamples;
 
             Return(1 - shadow);
-        }
-        EndFunction();
+        End
     }
 
     // TODO: Fix directional light shadows
     void sampleShadowDirectional() {
-        Function("sampleShadowDirectional", {
-                     {ShaderDataType::vec4(), "fragPosLightSpace"},
-                     {ShaderTexture(TEXTURE_2D_ARRAY, DEPTH), "shadowMap"},
-                     {ShaderDataType::Int(), "shadowMapIndex"},
-                     {ShaderDataType::vec3(), "Normal"},
-                     {ShaderDataType::vec3(), "lightPos"},
-                     {ShaderDataType::vec3(), "fragPos"},
-                 },
-                 ShaderDataType::Float());
-        {
-            ARGUMENT(vec4, fragPosLightSpace)
-            ARGUMENT(TextureSampler, shadowMap)
-            ARGUMENT(Int, shadowMapIndex)
-            ARGUMENT(vec3, Normal)
-            ARGUMENT(vec3, lightPos)
-            ARGUMENT(vec3, fragPos)
-
+        Function(Float, sampleShadowDirectional,
+                 vec4, fragPosLightSpace,
+                 Texture2DArray<DEPTH>, shadowMap,
+                 Int, shadowMapIndex,
+                 vec3, Normal,
+                 vec3, lightPos,
+                 vec3, fragPos)
             // TODO: Make directional shadow map sampling compatible with generic NDC
             // perform perspective divide
             vec3 projCoords = fragPosLightSpace.xyz() / fragPosLightSpace.w();
@@ -175,7 +154,6 @@ namespace xng::shaderlib::shadowmapping {
 
                 Return(1.0f - shadow);
             }
-        }
-        EndFunction();
+        End
     }
 }

@@ -20,16 +20,10 @@
 #ifndef XENGINE_SHADERSTRUCT_HPP
 #define XENGINE_SHADERSTRUCT_HPP
 
-#include <variant>
-
-#include "shaderliteral.hpp"
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 
 namespace xng {
     struct ShaderStructElement;
-    struct Shader;
-
-    typedef std::string ShaderStructTypeName;
 
     struct ShaderStruct {
         std::string typeName;
@@ -43,21 +37,13 @@ namespace xng {
     };
 
     struct ShaderStructElement {
-        // Either the typename of another user-defined structure or a built-in type.
-        std::variant<ShaderDataType, ShaderStructTypeName> type;
-
-        // The name of this element. must be unique inside the structure.
-        std::string name;
+        ShaderDataType type; // The type of this element.
+        std::string name; // The name of this element. must be unique inside the structure.
 
         ShaderStructElement() = default;
 
-        ShaderStructElement(const ShaderDataType &value, std::string name)
-            : type(value),
-              name(std::move(name)) {
-        }
-
-        ShaderStructElement(const ShaderStructTypeName &value, std::string name)
-            : type(value),
+        ShaderStructElement(ShaderDataType type, std::string name)
+            : type(std::move(type)),
               name(std::move(name)) {
         }
     };

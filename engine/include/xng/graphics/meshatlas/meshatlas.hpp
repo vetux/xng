@@ -31,7 +31,7 @@ namespace xng {
     public:
         struct MeshAllocation {
             struct Data {
-                Primitive primitive = TRIANGLES;
+                RenderPrimitive primitive = TRIANGLES;
                 DrawCall drawCall{};
                 size_t baseVertex = 0;
             };

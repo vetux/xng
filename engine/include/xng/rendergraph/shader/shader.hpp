@@ -23,7 +23,7 @@
 #include <unordered_map>
 #include <utility>
 
-#include "xng/graphics/primitive.hpp"
+#include "xng/rendergraph/renderprimitive.hpp"
 #include "xng/rendergraph/shader/shaderattributelayout.hpp"
 #include "xng/rendergraph/shader/shaderfunction.hpp"
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
@@ -43,36 +43,36 @@ namespace xng {
             COMPUTE,
         } stage{};
 
-        Primitive geometryInput; // The input primitive for geometry shaders. Must match the pipeline primitive.
-        Primitive geometryOutput; // The output primitive for geometry shaders
+        RenderPrimitive geometryInput{}; // The input primitive for geometry shaders. Must match the pipeline primitive.
+        RenderPrimitive geometryOutput{}; // The output primitive for geometry shaders
         size_t geometryMaxVertices{}; // The maximum number of output vertices for geometry shaders.
 
         ShaderAttributeLayout inputLayout;
         ShaderAttributeLayout outputLayout;
 
-        std::unordered_map<std::string, ShaderDataType> parameters;
-        std::unordered_map<std::string, ShaderBuffer> buffers;
-        std::unordered_map<std::string, ShaderTextureArray> textureArrays;
+        std::unordered_map<std::string, ShaderPrimitiveType> parameters{};
+        std::unordered_map<std::string, ShaderBuffer> buffers{};
+        std::unordered_map<std::string, ShaderTextureArray> textureArrays{};
 
-        std::vector<ShaderStruct> typeDefinitions;
+        std::vector<ShaderStruct> typeDefinitions{};
 
-        std::vector<ShaderInstruction> mainFunction;
+        std::vector<ShaderInstruction> mainFunction{};
 
         /**
          * The available functions.
          * Functions can be overloaded by specifying multiple functions with the same name but different argument signatures.
          */
-        std::vector<ShaderFunction> functions;
+        std::vector<ShaderFunction> functions{};
 
         Shader() = default;
 
         Shader(const Stage stage,
-               Primitive geometry_input,
-               Primitive geometry_output,
+               RenderPrimitive geometry_input,
+               RenderPrimitive geometry_output,
                size_t geometry_max_vertices,
                ShaderAttributeLayout input_layout,
                ShaderAttributeLayout output_layout,
-               const std::unordered_map<std::string, ShaderDataType> &parameters,
+               const std::unordered_map<std::string, ShaderPrimitiveType> &parameters,
                const std::unordered_map<std::string, ShaderBuffer> &buffers,
                const std::unordered_map<std::string, ShaderTextureArray> &textureArrays,
                const std::vector<ShaderStruct> &typeDefinitions,

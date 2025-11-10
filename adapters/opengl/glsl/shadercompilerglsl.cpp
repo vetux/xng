@@ -27,15 +27,19 @@
 
 using namespace xng;
 
-std::string generateElement(const std::string &name, const ShaderDataType &value, std::string prefix = "\t") {
-    auto ret = prefix
-               + getTypeName(value)
-               + " "
-               + name;
+std::string generateElement(const std::string &name, const ShaderDataType &type, std::string prefix = "\t") {
+    std::string ret = prefix;
 
-    if (value.count > 1) {
+    if (std::holds_alternative<ShaderPrimitiveType>(type.value)) {
+        ret += getTypeName(std::get<ShaderPrimitiveType>(type.value));
+    } else {
+        ret += std::get<ShaderStructType>(type.value);
+    }
+    ret += " " + name;
+
+    if (type.count > 1) {
         ret += "[";
-        ret += std::to_string(value.count);
+        ret += std::to_string(type.count);
         ret += "]";
     }
 
@@ -56,11 +60,7 @@ std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
     for (const auto &v: source.typeDefinitions) {
         ret += "struct " + v.typeName + " {\n";
         for (const auto &element: v.elements) {
-            if (std::holds_alternative<ShaderStructTypeName>(element.type)) {
-                ret += "\t" + std::get<ShaderStructTypeName>(element.type) + " " + element.name + ";\n";
-            } else {
-                ret += generateElement(element.name, std::get<ShaderDataType>(element.type)) + ";\n";
-            }
+            ret += generateElement(element.name, element.type) + ";\n";
         }
         ret += "};\n\n";
     }
@@ -140,7 +140,7 @@ std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
                     + std::to_string(location)
                     + ") in "
                     + generateElement(inputAttributePrefix + source.inputLayout.getElementName(location),
-                                      element,
+                                      ShaderDataType(element),
                                       "")
                     + "[];\n";
         }
@@ -152,7 +152,7 @@ std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
                     + std::to_string(location)
                     + ") in "
                     + generateElement(inputAttributePrefix + source.inputLayout.getElementName(location),
-                                      element,
+                                      ShaderDataType(element),
                                       "")
                     + ";\n";
         }
@@ -171,7 +171,7 @@ std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
                 + std::to_string(location)
                 + ") out "
                 + generateElement(outputAttributePrefix + source.outputLayout.getElementName(location),
-                                  element,
+                                  ShaderDataType(element),
                                   "")
                 + +";\n";;
     }

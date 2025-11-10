@@ -23,23 +23,21 @@
 #include <memory>
 #include <utility>
 #include <variant>
-#include <optional>
 
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
-#include "xng/rendergraph/shader/shaderliteral.hpp"
-#include "xng/rendergraph/shader/shaderstruct.hpp"
 
 namespace xng {
     struct ShaderOperand;
 
-    struct ShaderInstruction {
-        enum VectorComponent : int {
-            COMPONENT_x = 0,
-            COMPONENT_y,
-            COMPONENT_z,
-            COMPONENT_w
-        };
+    struct ShaderInstruction;
 
+    typedef std::variant<ShaderDataType,
+        ShaderPrimitiveType,
+        ShaderPrimitiveType::VectorComponent,
+        std::vector<ShaderInstruction>,
+        std::string> ShaderInstructionData;
+
+    struct ShaderInstruction {
         enum OpCode {
             // Variable Declaration
             DeclareVariable = 0,
@@ -143,19 +141,12 @@ namespace xng {
             LHS_END = VectorSwizzle,
         } code = DeclareVariable;
 
-        std::vector<ShaderOperand> operands{};
-
-        std::string name{};
-        std::variant<ShaderDataType, ShaderStructTypeName> type{};
-
-        std::vector<ShaderInstruction> branchA{};
-        std::vector<ShaderInstruction> branchB{};
-
-        std::vector<VectorComponent> components{};
+        std::vector<ShaderOperand> operands{}; // Operand types can be dynamic depending on the instruction format.
+        std::vector<ShaderInstructionData> data{}; // Data types are statically defined by the instruction format.
     };
 
     struct ShaderOperand {
-        enum Type : int {
+        enum OperandType : int {
             None = 0,
             Instruction,
             Buffer,
@@ -168,23 +159,52 @@ namespace xng {
             Literal,
         } type{};
 
-        ShaderInstruction instruction;
-        std::string name;
-        ShaderLiteral literal{};
+        std::variant<ShaderInstruction, ShaderPrimitive, std::string> value{};
 
         ShaderOperand() = default;
 
-        explicit ShaderOperand(ShaderInstruction instruction)
-            : type(Instruction), instruction(std::move(instruction)) {
+        ShaderOperand(const OperandType type, std::variant<ShaderInstruction, ShaderPrimitive, std::string> val)
+            : type(type), value(std::move(val)) {
         }
 
-        ShaderOperand(const Type type, std::string name)
-            : type(type), name(std::move(name)) {
+        static ShaderOperand instruction(ShaderInstruction instruction) {
+            return {Instruction, std::move(instruction)};
         }
 
-        explicit ShaderOperand(ShaderLiteral literal)
-            : type(Literal),
-              literal(std::move(literal)) {
+        static ShaderOperand buffer(std::string name) {
+            return {Buffer, std::move(name)};
+        }
+
+        static ShaderOperand texture(std::string name) {
+            return {Texture, std::move(name)};
+        }
+
+        static ShaderOperand parameter(std::string name) {
+            return {Parameter, std::move(name)};
+        }
+
+        static ShaderOperand inputAttribute(std::string name) {
+            return {InputAttribute, std::move(name)};
+        }
+
+        static ShaderOperand outputAttribute(std::string name) {
+            return {OutputAttribute, std::move(name)};
+        }
+
+        static ShaderOperand argument(std::string name) {
+            return {Argument, std::move(name)};
+        }
+
+        static ShaderOperand variable(std::string name) {
+            return {Variable, std::move(name)};
+        }
+
+        static ShaderOperand literal(ShaderPrimitive value) {
+            return {Literal, std::move(value)};
+        }
+
+        static ShaderOperand literal(ShaderPrimitive::Value value) {
+            return {Literal, std::move(value)};
         }
 
         bool isAssigned() const {

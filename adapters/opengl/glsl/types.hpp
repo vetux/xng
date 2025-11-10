@@ -20,96 +20,96 @@
 #ifndef XENGINE_TYPES_HPP
 #define XENGINE_TYPES_HPP
 
-#include "xng/rendergraph/shader/shaderdatatype.hpp"
+#include "xng/rendergraph/shader/shaderprimitive.hpp"
 
 using namespace xng;
 
-static std::string getTypeName(const ShaderDataType &value) {
+static std::string getTypeName(const ShaderPrimitiveType &value) {
     std::string ret;
     switch (value.type) {
-        case ShaderDataType::SCALAR:
+        case ShaderPrimitiveType::SCALAR:
             switch (value.component) {
-                case ShaderDataType::BOOLEAN:
+                case ShaderPrimitiveType::BOOLEAN:
                     return "bool";
-                case ShaderDataType::UNSIGNED_INT:
+                case ShaderPrimitiveType::UNSIGNED_INT:
                     return "uint";
-                case ShaderDataType::SIGNED_INT:
+                case ShaderPrimitiveType::SIGNED_INT:
                     return "int";
-                case ShaderDataType::FLOAT:
+                case ShaderPrimitiveType::FLOAT:
                     return "float";
-                case ShaderDataType::DOUBLE:
+                case ShaderPrimitiveType::DOUBLE:
                     return "double";
                 default:
                     throw std::runtime_error("Invalid component");
             }
-        case ShaderDataType::VECTOR2:
+        case ShaderPrimitiveType::VECTOR2:
             switch (value.component) {
-                case ShaderDataType::BOOLEAN:
+                case ShaderPrimitiveType::BOOLEAN:
                     return "bvec2";
-                case ShaderDataType::UNSIGNED_INT:
+                case ShaderPrimitiveType::UNSIGNED_INT:
                     return "uvec2";
-                case ShaderDataType::SIGNED_INT:
+                case ShaderPrimitiveType::SIGNED_INT:
                     return "ivec2";
-                case ShaderDataType::FLOAT:
+                case ShaderPrimitiveType::FLOAT:
                     return "vec2";
-                case ShaderDataType::DOUBLE:
+                case ShaderPrimitiveType::DOUBLE:
                     return "dvec2";
                 default:
                     throw std::runtime_error("Invalid component");
             }
-        case ShaderDataType::VECTOR3:
+        case ShaderPrimitiveType::VECTOR3:
             switch (value.component) {
-                case ShaderDataType::BOOLEAN:
+                case ShaderPrimitiveType::BOOLEAN:
                     return "bvec3";
-                case ShaderDataType::UNSIGNED_INT:
+                case ShaderPrimitiveType::UNSIGNED_INT:
                     return "uvec3";
-                case ShaderDataType::SIGNED_INT:
+                case ShaderPrimitiveType::SIGNED_INT:
                     return "ivec3";
-                case ShaderDataType::FLOAT:
+                case ShaderPrimitiveType::FLOAT:
                     return "vec3";
-                case ShaderDataType::DOUBLE:
+                case ShaderPrimitiveType::DOUBLE:
                     return "dvec3";
                 default:
                     throw std::runtime_error("Invalid component");
             }
-        case ShaderDataType::VECTOR4:
+        case ShaderPrimitiveType::VECTOR4:
             switch (value.component) {
-                case ShaderDataType::BOOLEAN:
+                case ShaderPrimitiveType::BOOLEAN:
                     return "bvec4";
-                case ShaderDataType::UNSIGNED_INT:
+                case ShaderPrimitiveType::UNSIGNED_INT:
                     return "uvec4";
-                case ShaderDataType::SIGNED_INT:
+                case ShaderPrimitiveType::SIGNED_INT:
                     return "ivec4";
-                case ShaderDataType::FLOAT:
+                case ShaderPrimitiveType::FLOAT:
                     return "vec4";
-                case ShaderDataType::DOUBLE:
+                case ShaderPrimitiveType::DOUBLE:
                     return "dvec4";
                 default:
                     throw std::runtime_error("Invalid component");
             }
-        case ShaderDataType::MAT2:
+        case ShaderPrimitiveType::MAT2:
             switch (value.component) {
-                case ShaderDataType::FLOAT:
+                case ShaderPrimitiveType::FLOAT:
                     return "mat2";
-                case ShaderDataType::DOUBLE:
+                case ShaderPrimitiveType::DOUBLE:
                     return "dmat2";
                 default:
                     throw std::runtime_error("Invalid component");
             }
-        case ShaderDataType::MAT3:
+        case ShaderPrimitiveType::MAT3:
             switch (value.component) {
-                case ShaderDataType::FLOAT:
+                case ShaderPrimitiveType::FLOAT:
                     return "mat3";
-                case ShaderDataType::DOUBLE:
+                case ShaderPrimitiveType::DOUBLE:
                     return "dmat3";
                 default:
                     throw std::runtime_error("Invalid component");
             }
-        case ShaderDataType::MAT4:
+        case ShaderPrimitiveType::MAT4:
             switch (value.component) {
-                case ShaderDataType::FLOAT:
+                case ShaderPrimitiveType::FLOAT:
                     return "mat4";
-                case ShaderDataType::DOUBLE:
+                case ShaderPrimitiveType::DOUBLE:
                     return "dmat4";
                 default:
                     throw std::runtime_error("Invalid component");

@@ -21,11 +21,9 @@
 
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
-//TODO: Port noise.glsl
-
 using namespace xng::ShaderScript;
-DEFINE_FUNCTION1(permute)
-DEFINE_FUNCTION1(taylorInvSqrt)
+DeclareFunction1(permute)
+DeclareFunction1(taylorInvSqrt)
 
 namespace xng::shaderlib {
     void loadPermute() {
@@ -35,26 +33,17 @@ namespace xng::shaderlib {
             }
         }
 
-        Function("permute", {{ShaderDataType::Float(), "x"}}, ShaderDataType::Float());
-        {
-            ARGUMENT(Float, x)
+        Function(Float, permute, Float, x)
             Return(floor(mod(((x * 34.0f) + 1.0f) * x, 289.0f)));
-        }
-        EndFunction();
+        End
 
-        Function("permute", {{ShaderDataType::vec3(), "x"}}, ShaderDataType::vec3());
-        {
-            ARGUMENT(vec3, x)
+        Function(vec3, permute, vec3, x)
             Return(mod(((x * 34.0f) + 1.0f) * x, 289.0f));
-        }
-        EndFunction();
+        End
 
-        Function("permute", {{ShaderDataType::vec4(), "x"}}, ShaderDataType::vec4());
-        {
-            ARGUMENT(vec4, x)
+        Function(vec4, permute, vec4, x)
             Return(mod(((x * 34.0f) + 1.0f) * x, 289.0f));
-        }
-        EndFunction();
+        End
     }
 
     void loadTaylorInvSqrt() {
@@ -63,17 +52,13 @@ namespace xng::shaderlib {
                 return;
             }
         }
-        Function("taylorInvSqrt", {{ShaderDataType::Float(), "r"}}, ShaderDataType::Float());
-        {
-            Return(Float(1.79284291400159f) - Float(0.85373472095314f) * argument("r"));
-        }
-        EndFunction();
+        Function(Float, taylorInvSqrt, Float, r)
+            Return(Float(1.79284291400159f) - Float(0.85373472095314f) * r);
+        End
 
-        Function("taylorInvSqrt", {{ShaderDataType::vec4(), "r"}}, ShaderDataType::vec4());
-        {
-            Return(Float(1.79284291400159f) - Float(0.85373472095314f) * argument("r"));
-        }
-        EndFunction();
+        Function(vec4, taylorInvSqrt, vec4, r)
+            Return(Float(1.79284291400159f) - Float(0.85373472095314f) * r);
+        End
     }
 
     void noise::simplex() {
@@ -85,10 +70,7 @@ namespace xng::shaderlib {
 
         loadPermute();
         loadTaylorInvSqrt();
-        Function("simplex", {{ShaderDataType::vec2(), "v"}}, ShaderDataType::Float());
-        {
-            ARGUMENT(vec2, v)
-
+        Function(Float, simplex, vec2, v)
             vec4 C = vec4(0.211324865405187f, 0.366025403784439f,
                           -0.577350269189626f, 0.024390243902439f);
 
@@ -125,10 +107,10 @@ namespace xng::shaderlib {
             g.x() = a0.x() * x0.x() + h.x() * x0.y();
             g.yz() = a0.yz() * x12.xz() + h.yz() * x12.yw();
             Return(Float(130.0f) * dot(m, g));
-        }
-        EndFunction();
+        End
     }
 
+    //TODO: Port perlin / noise functions
     void noise::perlin() {
         throw std::runtime_error("Perlin not implemented");
     }

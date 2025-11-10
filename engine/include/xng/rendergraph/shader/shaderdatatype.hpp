@@ -20,235 +20,94 @@
 #ifndef XENGINE_SHADERDATATYPE_HPP
 #define XENGINE_SHADERDATATYPE_HPP
 
-#include <stdexcept>
-
-#include "xng/rendergraph/rendergraphtextureproperties.hpp"
+#include "xng/rendergraph/shader/shaderprimitive.hpp"
 
 namespace xng {
+    typedef std::string ShaderStructType; // The name of the struct type
+
     struct ShaderDataType {
-        enum Type : int {
-            SCALAR,
-            VECTOR2,
-            VECTOR3,
-            VECTOR4,
-            MAT2,
-            MAT3,
-            MAT4
-        };
-
-        enum Component : int {
-            BOOLEAN = 0, // 1 Byte boolean
-            UNSIGNED_INT, // 4 Byte unsigned
-            SIGNED_INT, // 4 Byte signed
-            FLOAT, // 4 Byte float
-            DOUBLE, // 8 Byte double
-        };
-
-        static int getBytes(Component type) {
-            switch (type) {
-                case BOOLEAN:
-                    return 1;
-                case UNSIGNED_INT:
-                case SIGNED_INT:
-                case FLOAT:
-                    return 4;
-                case DOUBLE:
-                    return 8;
-                default:
-                    throw std::runtime_error("Invalid component");
-            }
-        }
-
-        static int getCount(Type count) {
-            switch (count) {
-                case SCALAR:
-                    return 1;
-                case VECTOR2:
-                    return 2;
-                case VECTOR3:
-                    return 3;
-                case VECTOR4:
-                case MAT2:
-                    return 4;
-                case MAT3:
-                    return 9;
-                case MAT4:
-                    return 16;
-                default:
-                    throw std::runtime_error("Invalid type");
-            }
-        }
-
-        size_t stride() const {
-            return (getBytes(component) * getCount(type)) * count;
-        }
+        std::variant<ShaderPrimitiveType, ShaderStructType> value{};
+        size_t count = 1; // If larger than 1, this type is a fixed size array
 
         ShaderDataType() = default;
 
-        ShaderDataType(const Type type, const Component component, const size_t count = 1)
-            : type(type),
-              component(component),
-              count(count) {
+        ShaderDataType(const std::variant<ShaderPrimitiveType, ShaderStructType> &type, size_t count = 1)
+            : value(type), count(count) {
         }
 
-        bool operator==(const ShaderDataType &other) const {
-            return type == other.type && component == other.component && count == other.count;
+        const ShaderPrimitiveType &getPrimitive() const {
+            return std::get<ShaderPrimitiveType>(value);
         }
 
-        bool operator!=(const ShaderDataType &other) const {
-            return !(*this == other);
+        const ShaderStructType &getStruct() const {
+            return std::get<ShaderStructType>(value);
         }
 
-        Type type{};
-        Component component{};
-        size_t count = 1; // If larger than 1, this element is a fixed size array
-
-        static ShaderDataType Bool() {
-            return {SCALAR, BOOLEAN};
-        }
-
-        static ShaderDataType Int() {
-            return {SCALAR, SIGNED_INT};
-        }
-
-        static ShaderDataType UInt() {
-            return {SCALAR, UNSIGNED_INT};
-        }
-
-        static ShaderDataType Float() {
-            return {SCALAR, FLOAT};
-        }
-
-        static ShaderDataType Double() {
-            return {SCALAR, DOUBLE};
-        }
-
-        static ShaderDataType bvec2() {
-            return {VECTOR2, BOOLEAN};
-        }
-
-        static ShaderDataType bvec3() {
-            return {VECTOR3, BOOLEAN};
-        }
-
-        static ShaderDataType bvec4() {
-            return {VECTOR4, BOOLEAN};
-        }
-
-        static ShaderDataType ivec2() {
-            return {VECTOR2, SIGNED_INT};
-        }
-
-        static ShaderDataType ivec3() {
-            return {VECTOR3, SIGNED_INT};
-        }
-
-        static ShaderDataType ivec4() {
-            return {VECTOR4, SIGNED_INT};
-        }
-
-        static ShaderDataType uvec2() {
-            return {VECTOR2, UNSIGNED_INT};
-        }
-
-        static ShaderDataType uvec3() {
-            return {VECTOR3, UNSIGNED_INT};
-        }
-
-        static ShaderDataType uvec4() {
-            return {VECTOR4, UNSIGNED_INT};
-        }
-
-        static ShaderDataType vec2() {
-            return {VECTOR2, FLOAT};
-        }
-
-        static ShaderDataType vec3() {
-            return {VECTOR3, FLOAT};
-        }
-
-        static ShaderDataType vec4() {
-            return {VECTOR4, FLOAT};
-        }
-
-        static ShaderDataType mat2() {
-            return {MAT2, FLOAT};
-        }
-
-        static ShaderDataType mat3() {
-            return {MAT3, FLOAT};
-        }
-
-        static ShaderDataType mat4() {
-            return {MAT4, FLOAT};
-        }
-
-        static ShaderDataType dvec2() {
-            return {VECTOR2, DOUBLE};
-        }
-
-        static ShaderDataType dvec3() {
-            return {VECTOR3, DOUBLE};
-        }
-
-        static ShaderDataType dvec4() {
-            return {VECTOR4, DOUBLE};
-        }
-
-        static ShaderDataType dmat2() {
-            return {MAT2, DOUBLE};
-        }
-
-        static ShaderDataType dmat3() {
-            return {MAT3, DOUBLE};
-        }
-
-        static ShaderDataType dmat4() {
-            return {MAT4, DOUBLE};
-        }
-
-        static ShaderDataType array(const ShaderDataType &type, const size_t count) {
-            return {type.type, type.component, count};
-        }
-
-        static Component getColorComponent(const ColorFormat format) {
-            if (format >= R && format <= RGBA32F) {
-                return FLOAT;
-            } else if (format >= R8I && format <= RGBA32I) {
-                return SIGNED_INT;
-            } else {
-                return UNSIGNED_INT;
+        static ShaderDataType fromString(const std::string &typeName) {
+            if (typeName == "Bool") return ShaderDataType(ShaderPrimitiveType::Bool());
+            if (typeName == "Int") return ShaderDataType(ShaderPrimitiveType::Int());
+            if (typeName == "UInt") return ShaderDataType(ShaderPrimitiveType::UInt());
+            if (typeName == "Float") return ShaderDataType(ShaderPrimitiveType::Float());
+            if (typeName == "Double") return ShaderDataType(ShaderPrimitiveType::Double());
+            if (typeName == "bvec2") return ShaderDataType(ShaderPrimitiveType::bvec2());
+            if (typeName == "bvec3") return ShaderDataType(ShaderPrimitiveType::bvec3());
+            if (typeName == "bvec4") return ShaderDataType(ShaderPrimitiveType::bvec4());
+            if (typeName == "ivec2") return ShaderDataType(ShaderPrimitiveType::ivec2());
+            if (typeName == "ivec3") return ShaderDataType(ShaderPrimitiveType::ivec3());
+            if (typeName == "ivec4") return ShaderDataType(ShaderPrimitiveType::ivec4());
+            if (typeName == "uvec2") return ShaderDataType(ShaderPrimitiveType::uvec2());
+            if (typeName == "uvec3") return ShaderDataType(ShaderPrimitiveType::uvec3());
+            if (typeName == "uvec4") return ShaderDataType(ShaderPrimitiveType::uvec4());
+            if (typeName == "vec2") return ShaderDataType(ShaderPrimitiveType::vec2());
+            if (typeName == "vec3") return ShaderDataType(ShaderPrimitiveType::vec3());
+            if (typeName == "vec4") return ShaderDataType(ShaderPrimitiveType::vec4());
+            if (typeName == "dvec2") return ShaderDataType(ShaderPrimitiveType::dvec2());
+            if (typeName == "dvec3") return ShaderDataType(ShaderPrimitiveType::dvec3());
+            if (typeName == "dvec4") return ShaderDataType(ShaderPrimitiveType::dvec4());
+            if (typeName == "mat2") return ShaderDataType(ShaderPrimitiveType::mat2());
+            if (typeName == "mat3") return ShaderDataType(ShaderPrimitiveType::mat3());
+            if (typeName == "mat4") return ShaderDataType(ShaderPrimitiveType::mat4());
+            if (typeName == "dmat2") return ShaderDataType(ShaderPrimitiveType::dmat2());
+            if (typeName == "dmat3") return ShaderDataType(ShaderPrimitiveType::dmat3());
+            if (typeName == "dmat4") return ShaderDataType(ShaderPrimitiveType::dmat4());
+            auto it = typeName.rfind("Array");
+            if (it == 0) {
+                auto itStart = typeName.rfind('<');
+                auto itEnd = typeName.rfind('>');
+                if (itStart != std::string::npos && itEnd != std::string::npos && itStart + 1 < itEnd) {
+                    std::string params = typeName.substr(itStart + 1, itEnd - itStart - 1);
+                    std::string type = typeName.substr(5, itStart - 5);
+                    int count = std::stoi(params);
+                    if (type == "Bool") return ShaderDataType(ShaderPrimitiveType::Bool(), count);
+                    if (type == "Int") return ShaderDataType(ShaderPrimitiveType::Int(), count);
+                    if (type == "UInt") return ShaderDataType(ShaderPrimitiveType::UInt(), count);
+                    if (type == "Float") return ShaderDataType(ShaderPrimitiveType::Float(), count);
+                    if (type == "Double") return ShaderDataType(ShaderPrimitiveType::Double(), count);
+                    if (type == "BVec2") return ShaderDataType(ShaderPrimitiveType::bvec2(), count);
+                    if (type == "BVec3") return ShaderDataType(ShaderPrimitiveType::bvec3(), count);
+                    if (type == "BVec4") return ShaderDataType(ShaderPrimitiveType::bvec4(), count);
+                    if (type == "IVec2") return ShaderDataType(ShaderPrimitiveType::ivec2(), count);
+                    if (type == "IVec3") return ShaderDataType(ShaderPrimitiveType::ivec3(), count);
+                    if (type == "IVec4") return ShaderDataType(ShaderPrimitiveType::ivec4(), count);
+                    if (type == "UVec2") return ShaderDataType(ShaderPrimitiveType::uvec2(), count);
+                    if (type == "UVec3") return ShaderDataType(ShaderPrimitiveType::uvec3(), count);
+                    if (type == "UVec4") return ShaderDataType(ShaderPrimitiveType::uvec4(), count);
+                    if (type == "Vec2") return ShaderDataType(ShaderPrimitiveType::vec2(), count);
+                    if (type == "Vec3") return ShaderDataType(ShaderPrimitiveType::vec3(), count);
+                    if (type == "Vec4") return ShaderDataType(ShaderPrimitiveType::vec4(), count);
+                    if (type == "DVec2") return ShaderDataType(ShaderPrimitiveType::dvec2(), count);
+                    if (type == "DVec3") return ShaderDataType(ShaderPrimitiveType::dvec3(), count);
+                    if (type == "DVec4") return ShaderDataType(ShaderPrimitiveType::dvec4(), count);
+                    if (type == "Mat2") return ShaderDataType(ShaderPrimitiveType::mat2(), count);
+                    if (type == "Mat3") return ShaderDataType(ShaderPrimitiveType::mat3(), count);
+                    if (type == "Mat4") return ShaderDataType(ShaderPrimitiveType::mat4(), count);
+                    if (type == "DMat2") return ShaderDataType(ShaderPrimitiveType::dmat2(), count);
+                    if (type == "DMat3") return ShaderDataType(ShaderPrimitiveType::dmat3(), count);
+                    if (type == "DMat4") return ShaderDataType(ShaderPrimitiveType::dmat4(), count);
+                }
             }
-        }
-
-        static ShaderDataType fromString(const std::string &typeStr) {
-            if (typeStr == "Bool") return Bool();
-            if (typeStr == "Int") return Int();
-            if (typeStr == "UInt") return UInt();
-            if (typeStr == "Float") return Float();
-            if (typeStr == "Double") return Double();
-            if (typeStr == "bvec2") return bvec2();
-            if (typeStr == "bvec3") return bvec3();
-            if (typeStr == "bvec4") return bvec4();
-            if (typeStr == "ivec2") return ivec2();
-            if (typeStr == "ivec3") return ivec3();
-            if (typeStr == "ivec4") return ivec4();
-            if (typeStr == "uvec2") return uvec2();
-            if (typeStr == "uvec3") return uvec3();
-            if (typeStr == "uvec4") return uvec4();
-            if (typeStr == "vec2") return vec2();
-            if (typeStr == "vec3") return vec3();
-            if (typeStr == "vec4") return vec4();
-            if (typeStr == "mat2") return mat2();
-            if (typeStr == "mat3") return mat3();
-            if (typeStr == "mat4") return mat4();
-            if (typeStr == "dvec2") return dvec2();
-            if (typeStr == "dvec3") return dvec3();
-            if (typeStr == "dvec4") return dvec4();
-            if (typeStr == "dmat2") return dmat2();
-            if (typeStr == "dmat3") return dmat3();
-            if (typeStr == "dmat4") return dmat4();
-            throw std::runtime_error("Invalid type");
+            //TODO: Struct Array support
+            return ShaderDataType(typeName);
         }
     };
 }

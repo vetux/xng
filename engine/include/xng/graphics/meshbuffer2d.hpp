@@ -22,11 +22,10 @@
 
 #include <unordered_set>
 
-#include "xng/graphics/primitive.hpp"
-#include "canvas.hpp"
-
+#include "xng/graphics/canvas.hpp"
 #include "xng/graphics/vertexbuilder.hpp"
 
+#include "xng/rendergraph/renderprimitive.hpp"
 #include "xng/rendergraph/drawcall.hpp"
 #include "xng/rendergraph/rendergraphcontext.hpp"
 
@@ -39,13 +38,13 @@ namespace xng {
         // TODO: Scale a unit quad instead of separate vertex / index allocations for 2D planes / Squares
 
         struct MeshDrawData {
-            Primitive primitive{};
+            RenderPrimitive primitive{};
             DrawCall drawCall{};
             size_t baseVertex{};
 
             MeshDrawData() = default;
 
-            MeshDrawData(const Primitive primitive,
+            MeshDrawData(const RenderPrimitive primitive,
                          const DrawCall &drawCall,
                          const size_t baseVertex) : primitive(primitive),
                                                     drawCall(drawCall),
@@ -241,8 +240,8 @@ namespace xng {
 
         ShaderAttributeLayout vertexLayout{
             {
-                {"position", ShaderDataType::vec2()},
-                {"uv", ShaderDataType::vec2()}
+                {"position", ShaderPrimitiveType::vec2()},
+                {"uv", ShaderPrimitiveType::vec2()}
             },
         };
 

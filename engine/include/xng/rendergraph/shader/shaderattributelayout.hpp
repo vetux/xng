@@ -28,8 +28,8 @@ namespace xng {
     struct ShaderAttributeLayout {
         ShaderAttributeLayout() = default;
 
-        explicit ShaderAttributeLayout(const std::vector<std::pair<std::string, ShaderDataType>>& namedElements) {
-            for (auto &pair : namedElements) {
+        explicit ShaderAttributeLayout(const std::vector<std::pair<std::string, ShaderPrimitiveType> > &namedElements) {
+            for (auto &pair: namedElements) {
                 elements.emplace_back(pair.second);
                 elementIdentifiers.emplace_back(pair.first);
             }
@@ -50,7 +50,7 @@ namespace xng {
             return ret;
         }
 
-        ShaderDataType getElementType(const std::string &attributeName) const {
+        ShaderPrimitiveType getElementType(const std::string &attributeName) const {
             for (auto i = 0; i < elementIdentifiers.size(); ++i) {
                 if (elementIdentifiers.at(i) == attributeName) {
                     return elements.at(i);
@@ -68,7 +68,7 @@ namespace xng {
             throw std::runtime_error("No such attribute " + attributeName);
         }
 
-        const std::string & getElementName(size_t index) const {
+        const std::string &getElementName(size_t index) const {
             return elementIdentifiers.at(index);
         }
 
@@ -81,18 +81,18 @@ namespace xng {
             return false;
         }
 
-        const std::vector<ShaderDataType> &getElements() const {
+        const std::vector<ShaderPrimitiveType> &getElements() const {
             return elements;
         }
 
-        void addElement(const std::string &name, ShaderDataType type) {
+        void addElement(const std::string &name, ShaderPrimitiveType type) {
             elementIdentifiers.emplace_back(name);
             elements.emplace_back(type);
         }
 
     private:
         std::vector<std::string> elementIdentifiers;
-        std::vector<ShaderDataType> elements;
+        std::vector<ShaderPrimitiveType> elements;
     };
 }
 

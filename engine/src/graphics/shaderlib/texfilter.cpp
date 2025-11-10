@@ -23,23 +23,12 @@
 
 using namespace xng::ShaderScript;
 
-DEFINE_FUNCTION3(textureMS)
-DEFINE_FUNCTION1(cubic)
+DeclareFunction3(textureMS)
+DeclareFunction1(cubic)
 
 namespace xng::shaderlib {
     void defTextureMS() {
-        Function("textureMS",
-                 {
-                     {ShaderTexture(TEXTURE_2D_MULTISAMPLE, RGBA), "color"},
-                     {ShaderDataType::vec2(), "uv"},
-                     {ShaderDataType::Int(), "samples"}
-                 },
-                 ShaderDataType::vec4());
-        {
-            ARGUMENT(TextureSampler, color)
-            ARGUMENT(vec2, uv)
-            ARGUMENT(Int, samples)
-
+        Function(vec4, textureMS, Texture2DMS<RGBA>, color, vec2, uv, Int, samples)
             ivec2 size = textureSize(color);
             ivec2 pos = ivec2(size.x() * uv.x(), size.y() * uv.y());
 
@@ -53,14 +42,11 @@ namespace xng::shaderlib {
             ret = ret / samples;
 
             Return(ret);
-        }
-        EndFunction();
+        End
     }
 
     void defCubic() {
-        Function("cubic", {{ShaderDataType::Float(), "v"}}, ShaderDataType::vec4());
-        {
-            ARGUMENT(Float, v)
+        Function(vec4, cubic, Float, v)
             vec4 n = vec4(1.0f, 2.0f, 3.0f, 4.0f) - v;
             vec4 s = n * n * n;
             Float x = s.x();
@@ -68,24 +54,14 @@ namespace xng::shaderlib {
             Float z = s.z() - 4.0f * s.y() + 6.0f * s.x();
             Float w = 6.0f - x - y - z;
             Return(vec4(x, y, z, w) * (1.0f / 6.0f));
-        }
-        EndFunction();
+        End
     }
 
     void textureBicubic() {
         defCubic();
         defTextureMS();
 
-        Function("textureBicubic",
-                 {
-                     {ShaderTexture(TEXTURE_2D, RGBA), "sampler"},
-                     {ShaderDataType::vec2(), "texCoords"}
-                 },
-                 ShaderDataType::vec4());
-        {
-            ARGUMENT(TextureSampler, sampler)
-            ARGUMENT(vec2, texCoords)
-
+        Function(vec4, textureBicubic, Texture2D<RGBA>, sampler, vec2, texCoords)
             vec2 texSize;
             texSize = textureSize(sampler, 0);
             vec2 invTexSize;
@@ -115,21 +91,9 @@ namespace xng::shaderlib {
             Float sy = s.z() / (s.z() + s.w());
 
             Return(mix(mix(sample3, sample2, sx), mix(sample1, sample0, sx), sy));
-        }
-        EndFunction();
+        End
 
-        Function("textureBicubic",
-                 {
-                     {ShaderTexture(TEXTURE_2D_MULTISAMPLE, RGBA), "sampler"},
-                     {ShaderDataType::vec2(), "texCoords"},
-                     {ShaderDataType::Int(), "samples"}
-                 },
-                 ShaderDataType::vec4());
-        {
-            ARGUMENT(TextureSampler, sampler)
-            ARGUMENT(vec2, texCoords)
-            ARGUMENT(Int, samples)
-
+        Function(vec4, textureBicubic, Texture2DMS<RGBA>, sampler, vec2, texCoords, Int, samples)
             vec2 texSize;
             texSize = textureSize(sampler);
             vec2 invTexSize;
@@ -159,22 +123,10 @@ namespace xng::shaderlib {
             Float sy = s.z() / (s.z() + s.w());
 
             Return(mix(mix(sample3, sample2, sx), mix(sample1, sample0, sx), sy));
-        }
-        EndFunction();
+        End
 
         // TODO: Sample texture arrays with integer coordinates / texelFetch
-        Function("textureBicubic",
-                 {
-                     {ShaderTexture(TEXTURE_2D_ARRAY, RGBA), "sampler"},
-                     {ShaderDataType::vec3(), "texCoords3"},
-                     {ShaderDataType::vec2(), "size"}
-                 },
-                 ShaderDataType::vec4());
-        {
-            ARGUMENT(TextureSampler, sampler)
-            ARGUMENT(vec3, texCoords3)
-            ARGUMENT(vec2, size)
-
+        Function(vec4, textureBicubic, Texture2DArray<RGBA>, sampler, vec3, texCoords3, vec2, size)
             vec2 texCoords = texCoords3.xy();
 
             vec2 invTexSize = 1.0f / size;
@@ -203,7 +155,6 @@ namespace xng::shaderlib {
             Float sy = s.z() / (s.z() + s.w());
 
             Return(mix(mix(sample3, sample2, sx), mix(sample1, sample0, sx), sy));
-        }
-        EndFunction();
+        End
     }
 }

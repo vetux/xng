@@ -17,20 +17,16 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_SHADOWMAPPING_HPP
-#define XENGINE_SHADOWMAPPING_HPP
+#ifndef XENGINE_RENDERPRIMITIVE_HPP
+#define XENGINE_RENDERPRIMITIVE_HPP
 
-#include "xng/rendergraph/shaderscript/shaderscript.hpp"
-
-namespace xng::ShaderScript {
-    DeclareFunction6(sampleShadowPoint)
-    DeclareFunction6(sampleShadowDirectional)
+namespace xng {
+    enum RenderPrimitive : int {
+        POINTS = 1,
+        LINES = 2,
+        TRIANGLES = 3,
+        QUAD = 4
+    };
 }
 
-namespace xng::shaderlib::shadowmapping {
-    XENGINE_EXPORT void sampleShadowPoint();
-
-    XENGINE_EXPORT void sampleShadowDirectional();
-}
-
-#endif //XENGINE_SHADOWMAPPING_HPP
+#endif //XENGINE_RENDERPRIMITIVE_HPP

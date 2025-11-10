@@ -36,17 +36,17 @@ static GLuint getTextureSlot(size_t slot) {
     return GL_TEXTURE0 + slot;
 }
 
-static GLenum getType(const ShaderDataType::Component c) {
+static GLenum getType(const ShaderPrimitiveType::Component c) {
     switch (c) {
-        case ShaderDataType::BOOLEAN:
+        case ShaderPrimitiveType::BOOLEAN:
             return GL_BYTE;
-        case ShaderDataType::UNSIGNED_INT:
+        case ShaderPrimitiveType::UNSIGNED_INT:
             return GL_UNSIGNED_INT;
-        case ShaderDataType::SIGNED_INT:
+        case ShaderPrimitiveType::SIGNED_INT:
             return GL_INT;
-        case ShaderDataType::FLOAT:
+        case ShaderPrimitiveType::FLOAT:
             return GL_FLOAT;
-        case ShaderDataType::DOUBLE:
+        case ShaderPrimitiveType::DOUBLE:
             return GL_DOUBLE;
         default:
             throw std::runtime_error("Invalid component");
@@ -73,7 +73,7 @@ static GLenum convert(IndexFormat type) {
     throw std::runtime_error("Unsupported index type");
 }
 
-static GLenum convert(Primitive prim) {
+static GLenum convert(RenderPrimitive prim) {
     switch (prim) {
         case POINTS:
             return GL_POINTS;

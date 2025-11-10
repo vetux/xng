@@ -21,131 +21,8 @@
 #define XENGINE_SHADERSTRUCTDEF_HPP
 
 #include "xng/rendergraph/shaderscript/shaderobject.hpp"
+#include "xng/rendergraph/shaderscript/shadercommondef.hpp"
 #include "xng/rendergraph/shader/shaderstruct.hpp"
-
-namespace xng::ShaderScript {
-    static ShaderStructElement _getElement(const std::string &typeName, const std::string &name) {
-        if (typeName == "Bool") return {ShaderDataType::Bool(), name};
-        if (typeName == "Int") return {ShaderDataType::Int(), name};
-        if (typeName == "UInt") return {ShaderDataType::UInt(), name};
-        if (typeName == "Float") return {ShaderDataType::Float(), name};
-        if (typeName == "Double") return {ShaderDataType::Double(), name};
-        if (typeName == "bvec2") return {ShaderDataType::bvec2(), name};
-        if (typeName == "bvec3") return {ShaderDataType::bvec3(), name};
-        if (typeName == "bvec4") return {ShaderDataType::bvec4(), name};
-        if (typeName == "ivec2") return {ShaderDataType::ivec2(), name};
-        if (typeName == "ivec3") return {ShaderDataType::ivec3(), name};
-        if (typeName == "ivec4") return {ShaderDataType::ivec4(), name};
-        if (typeName == "uvec2") return {ShaderDataType::uvec2(), name};
-        if (typeName == "uvec3") return {ShaderDataType::uvec3(), name};
-        if (typeName == "uvec4") return {ShaderDataType::uvec4(), name};
-        if (typeName == "vec2") return {ShaderDataType::vec2(), name};
-        if (typeName == "vec3") return {ShaderDataType::vec3(), name};
-        if (typeName == "vec4") return {ShaderDataType::vec4(), name};
-        if (typeName == "dvec2") return {ShaderDataType::dvec2(), name};
-        if (typeName == "dvec3") return {ShaderDataType::dvec3(), name};
-        if (typeName == "dvec4") return {ShaderDataType::dvec4(), name};
-        if (typeName == "mat2") return {ShaderDataType::mat2(), name};
-        if (typeName == "mat3") return {ShaderDataType::mat3(), name};
-        if (typeName == "mat4") return {ShaderDataType::mat4(), name};
-        if (typeName == "dmat2") return {ShaderDataType::dmat2(), name};
-        if (typeName == "dmat3") return {ShaderDataType::dmat3(), name};
-        if (typeName == "dmat4") return {ShaderDataType::dmat4(), name};
-        auto it = typeName.rfind("Array");
-        if (it == 0) {
-            auto itStart = typeName.rfind('<');
-            auto itEnd = typeName.rfind('>');
-            if (itStart != std::string::npos && itEnd != std::string::npos && itStart + 1 < itEnd) {
-                int count = std::stoi(typeName.substr(itStart + 1, itEnd - itStart - 1));
-                std::string type = typeName.substr(5, itStart - 5);
-                if (type == "Bool") return {ShaderDataType::array(ShaderDataType::Bool(), count), name};
-                if (type == "Int") return {ShaderDataType::array(ShaderDataType::Int(), count), name};
-                if (type == "UInt") return {ShaderDataType::array(ShaderDataType::UInt(), count), name};
-                if (type == "Float") return {ShaderDataType::array(ShaderDataType::Float(), count), name};
-                if (type == "Double") return {ShaderDataType::array(ShaderDataType::Double(), count), name};
-                if (type == "BVec2") return {ShaderDataType::array(ShaderDataType::bvec2(), count), name};
-                if (type == "BVec3") return {ShaderDataType::array(ShaderDataType::bvec3(), count), name};
-                if (type == "BVec4") return {ShaderDataType::array(ShaderDataType::bvec4(), count), name};
-                if (type == "IVec2") return {ShaderDataType::array(ShaderDataType::ivec2(), count), name};
-                if (type == "IVec3") return {ShaderDataType::array(ShaderDataType::ivec3(), count), name};
-                if (type == "IVec4") return {ShaderDataType::array(ShaderDataType::ivec4(), count), name};
-                if (type == "UVec2") return {ShaderDataType::array(ShaderDataType::uvec2(), count), name};
-                if (type == "UVec3") return {ShaderDataType::array(ShaderDataType::uvec3(), count), name};
-                if (type == "UVec4") return {ShaderDataType::array(ShaderDataType::uvec4(), count), name};
-                if (type == "Vec2") return {ShaderDataType::array(ShaderDataType::vec2(), count), name};
-                if (type == "Vec3") return {ShaderDataType::array(ShaderDataType::vec3(), count), name};
-                if (type == "Vec4") return {ShaderDataType::array(ShaderDataType::vec4(), count), name};
-                if (type == "DVec2") return {ShaderDataType::array(ShaderDataType::dvec2(), count), name};
-                if (type == "DVec3") return {ShaderDataType::array(ShaderDataType::dvec3(), count), name};
-                if (type == "DVec4") return {ShaderDataType::array(ShaderDataType::dvec4(), count), name};
-                if (type == "Mat2") return {ShaderDataType::array(ShaderDataType::mat2(), count), name};
-                if (type == "Mat3") return {ShaderDataType::array(ShaderDataType::mat3(), count), name};
-                if (type == "Mat4") return {ShaderDataType::array(ShaderDataType::mat4(), count), name};
-                if (type == "DMat2") return {ShaderDataType::array(ShaderDataType::dmat2(), count), name};
-                if (type == "DMat3") return {ShaderDataType::array(ShaderDataType::dmat3(), count), name};
-                if (type == "DMat4") return {ShaderDataType::array(ShaderDataType::dmat4(), count), name};
-            }
-        }
-        return {typeName, name};
-    }
-}
-
-#define GetGenerator(_type0, _name0, \
-    _type1, _name1, \
-    _type2, _name2, \
-    _type3, _name3, \
-    _type4, _name4, \
-    _type5, _name5, \
-    _type6, _name6, \
-    _type7, _name7, \
-    _type8, _name8, \
-    _type9, _name9, \
-    _type10, _name10, \
-    _type11, _name11, \
-    _type12, _name12, \
-    _type13, _name13, \
-    _type14, _name14, \
-    _type15, _name15, \
-    _type16, _name16, \
-    _type17, _name17, \
-    _type18, _name18, \
-    _type19, _name19, \
-    _type20, _name20, \
-    _type21, _name21, \
-    _type22, _name22, \
-    _type23, _name23, \
-    _type24, _name24, \
-    _type25, _name25, \
-    _type26, _name26, \
-    _type27, _name27, \
-    _type28, _name28, \
-    _type29, _name29, \
-    _type30, _name30, \
-    _type31, _name31, \
-    _type32, _name32, \
-    _type33, _name33, \
-    _type34, _name34, \
-    _type35, _name35, \
-    _type36, _name36, \
-    _type37, _name37, \
-    _type38, _name38, \
-    _type39, _name39, \
-    _type40, _name40, \
-    _type41, _name41, \
-    _type42, _name42, \
-    _type43, _name43, \
-    _type44, _name44, \
-    _type45, _name45, \
-    _type46, _name46, \
-    _type47, _name47, \
-    _type48, _name48, \
-    _type49, _name49, \
-    NAME, ...) NAME
-
-// In MSVC preprocessor __VA_ARGS__ is treated as a single token in macro argument lists.
-// According to this: https://stackoverflow.com/a/32400131
-// when wrapping __VA_ARGS__ usage in another macro invocation, it forces the preprocessor to not treat __VA_ARGS__ as a single token.
-#define ExpandVAArgs(v) v
 
 #define GenerateElementDeclaration1(type, name) type name;
 #define GenerateElementDeclaration2(type, name, ...) GenerateElementDeclaration1(type, name) ExpandVAArgs(GenerateElementDeclaration1(__VA_ARGS__))
@@ -353,7 +230,7 @@ namespace xng::ShaderScript {
     GenerateConstructor2, GenerateConstructor2,\
     GenerateConstructor1, GenerateConstructor1)(__VA_ARGS__))
 
-#define GenerateStructElements1(type, name) xng::ShaderScript::_getElement(#type, #name)
+#define GenerateStructElements1(type, name) {ShaderDataType::fromString(#type), #name}
 #define GenerateStructElements2(type, name, ...) GenerateStructElements1(type, name), ExpandVAArgs(GenerateStructElements1(__VA_ARGS__))
 #define GenerateStructElements3(type, name, ...) GenerateStructElements1(type, name), ExpandVAArgs(GenerateStructElements2(__VA_ARGS__))
 #define GenerateStructElements4(type, name, ...) GenerateStructElements1(type, name), ExpandVAArgs(GenerateStructElements3(__VA_ARGS__))
@@ -486,7 +363,7 @@ namespace xng::ShaderScript {
         }\
         ShaderObject _object;\
         GenerateElementDeclaration(__VA_ARGS__)\
-        name() : _object(ShaderStructObject<_##name>()), GenerateConstructor(__VA_ARGS__) {}\
+        name() : _object(ShaderStructObject<_##name, 1>()), GenerateConstructor(__VA_ARGS__) {}\
         name(ShaderObject &&buffer, bool b = false) : _object(buffer), GenerateConstructor(__VA_ARGS__) {}\
         operator const ShaderObject&() const { return _object; }\
     };}

@@ -27,27 +27,16 @@ using namespace xng::ShaderScript;
 
 // Adapted from the tutorial at https://learnopengl.com/PBR/Lighting
 namespace xng::shaderlib {
-    DEFINE_FUNCTION3(DistributionGGX)
-    DEFINE_FUNCTION2(GeometrySchlickGGX)
-    DEFINE_FUNCTION4(GeometrySmith)
-    DEFINE_FUNCTION2(FresnelSchlick)
+    DeclareFunction3(DistributionGGX)
+    DeclareFunction2(GeometrySchlickGGX)
+    DeclareFunction4(GeometrySmith)
+    DeclareFunction2(FresnelSchlick)
 
     //TODO: Fix pbr light colors other than white not correctly blending with albedo
     void pbr() {
         auto &builder = ShaderBuilder::instance();
 
-        Function("DistributionGGX",
-                 {
-                     {ShaderDataType::vec3(), "N"},
-                     {ShaderDataType::vec3(), "H"},
-                     {ShaderDataType::Float(), "roughness"},
-                 },
-                 ShaderDataType::Float());
-        {
-            ARGUMENT(vec3, N)
-            ARGUMENT(vec3, H)
-            ARGUMENT(Float, roughness)
-
+        Function(Float, DistributionGGX, vec3, N, vec3, H, Float, roughness)
             Float a = roughness * roughness;
             Float a2 = a * a;
             Float NdotH = max(dot(N, H), 0.0f);
@@ -58,86 +47,39 @@ namespace xng::shaderlib {
             denom = pi() * denom * denom;
 
             Return(nom / denom);
-        }
-        EndFunction();
+        End
 
-        Function("GeometrySchlickGGX",
-                 {
-                     {ShaderDataType::Float(), "NdotV"},
-                     {ShaderDataType::Float(), "roughness"},
-                 },
-                 ShaderDataType::Float());
-        {
-            ARGUMENT(Float, NdotV)
-            ARGUMENT(Float, roughness)
-
+        Function(Float, GeometrySchlickGGX, Float, NdotV, Float, roughness)
             Float r = (roughness + 1.0f);
             Float k = (r * r) / 8.0f;
 
             Float denom = NdotV * (1.0f - k) + k;
 
             Return(NdotV / denom);
-        }
-        EndFunction();
+        End
 
-        Function("GeometrySmith",
-                 {
-                     {ShaderDataType::vec3(), "N"},
-                     {ShaderDataType::vec3(), "V"},
-                     {ShaderDataType::vec3(), "L"},
-                     {ShaderDataType::Float(), "roughness"}
-                 },
-                 ShaderDataType::Float());
-        {
-            ARGUMENT(vec3, N)
-            ARGUMENT(vec3, V)
-            ARGUMENT(vec3, L)
-            ARGUMENT(Float, roughness)
-
+        Function(Float, GeometrySmith, vec3, N, vec3, V, vec3, L, Float, roughness)
             Float NdotV = max(dot(N, V), 0.0f);
             Float NdotL = max(dot(N, L), 0.0f);
             Float ggx2 = GeometrySchlickGGX(NdotV, roughness);
             Float ggx1 = GeometrySchlickGGX(NdotL, roughness);
 
             Return(ggx1 * ggx2);
-        }
-        EndFunction();
+        End
 
-        Function("FresnelSchlick",
-                 {
-                     {ShaderDataType::Float(), "cosTheta"},
-                     {ShaderDataType::vec3(), "F0"}
-                 },
-                 ShaderDataType::vec3());
-        {
-            ARGUMENT(Float, cosTheta)
-            ARGUMENT(vec3, F0)
+        Function(vec3, FresnelSchlick, Float, cosTheta, vec3, F0)
             Return(F0 + (1.0f - F0) * pow(clamp(1.0f - cosTheta, 0.0f, 1.0f), 5.0f));
-        }
-        EndFunction();
+        End
 
-        Function("pbr_begin",
-                 {
-                     {ShaderDataType::vec3(), "WorldPos"},
-                     {ShaderDataType::vec3(), "Normal"},
-                     {ShaderDataType::vec3(), "albedo"},
-                     {ShaderDataType::Float(), "metallic"},
-                     {ShaderDataType::Float(), "roughness"},
-                     {ShaderDataType::Float(), "ao"},
-                     {ShaderDataType::vec3(), "camPos"},
-                     {ShaderDataType::Float(), "gamma"},
-                 },
-                 PbrPass::getShaderStruct().typeName);
-        {
-            ARGUMENT(vec3, WorldPos)
-            ARGUMENT(vec3, Normal)
-            ARGUMENT(vec3, albedo)
-            ARGUMENT(Float, metallic)
-            ARGUMENT(Float, roughness)
-            ARGUMENT(Float, ao)
-            ARGUMENT(vec3, camPos)
-            ARGUMENT(Float, gamma)
-
+        Function(PbrPass, pbr_begin,
+                 vec3, WorldPos,
+                 vec3, Normal,
+                 vec3, albedo,
+                 Float, metallic,
+                 Float, roughness,
+                 Float, ao,
+                 vec3, camPos,
+                 Float, gamma)
             PbrPass ret;
 
             vec3 N = normalize(Normal);
@@ -163,24 +105,9 @@ namespace xng::shaderlib {
             ret.gamma = gamma;
 
             Return(ret);
-        }
-        EndFunction();
+        End
 
-        Function("pbr_point", {
-                     {PbrPass::getShaderStruct().typeName, "pass"},
-                     {ShaderDataType::vec3(), "Lo"},
-                     {ShaderDataType::vec3(), "position"},
-                     {ShaderDataType::vec3(), "color"},
-                     {ShaderDataType::Float(), "shadow"},
-                 },
-                 ShaderDataType::vec3());
-        {
-            ARGUMENT(PbrPass, pass)
-            ARGUMENT(vec3, Lo)
-            ARGUMENT(vec3, position)
-            ARGUMENT(vec3, color)
-            ARGUMENT(Float, shadow)
-
+        Function(vec3, pbr_point, PbrPass, pass, vec3, Lo, vec3, position, vec3, color, Float, shadow)
             vec3 N = pass.N;
             vec3 V = pass.V;
             vec3 F0 = pass.F0;
@@ -228,24 +155,9 @@ namespace xng::shaderlib {
             // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 
             Return(Lo);
-        }
-        EndFunction();
+        End
 
-        Function("pbr_directional", {
-                     {PbrPass::getShaderStruct().typeName, "pass"},
-                     {ShaderDataType::vec3(), "Lo"},
-                     {ShaderDataType::vec3(), "direction"},
-                     {ShaderDataType::vec3(), "color"},
-                     {ShaderDataType::Float(), "shadow"},
-                 },
-                 ShaderDataType::vec3());
-        {
-            ARGUMENT(PbrPass, pass)
-            ARGUMENT(vec3, Lo)
-            ARGUMENT(vec3, direction)
-            ARGUMENT(vec3, color)
-            ARGUMENT(Float, shadow)
-
+        Function(vec3, pbr_directional, PbrPass, pass, vec3, Lo, vec3, direction, vec3, color, Float, shadow)
             vec3 N = pass.N;
             vec3 V = pass.V;
             vec3 F0 = pass.F0;
@@ -294,36 +206,20 @@ namespace xng::shaderlib {
             // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 
             Return(Lo);
-        }
-        EndFunction();
+        End
 
-        Function("pbr_spot", {
-                     {PbrPass::getShaderStruct().typeName, "pass"},
-                     {ShaderDataType::vec3(), "Lo"},
-                     {ShaderDataType::vec3(),"position"},
-                     {ShaderDataType::vec3(),"direction"},
-                     {ShaderDataType::Float(), "quadratic"},
-                     {ShaderDataType::vec3(), "color"},
-                     {ShaderDataType::Float(), "cutOff"},
-                     {ShaderDataType::Float(), "outerCutOff"},
-                     {ShaderDataType::Float(), "constant"},
-                     {ShaderDataType::Float(), "linear"},
-                     {ShaderDataType::Float(), "shadow"},
-                 },
-                 ShaderDataType::vec3());
-        {
-            ARGUMENT(PbrPass, pass)
-            ARGUMENT(vec3, Lo)
-            ARGUMENT(vec3, position)
-            ARGUMENT(vec3, direction)
-            ARGUMENT(Float, quadratic)
-            ARGUMENT(vec3, color)
-            ARGUMENT(Float, cutOff)
-            ARGUMENT(Float, outerCutOff)
-            ARGUMENT(Float, constant)
-            ARGUMENT(Float, linear)
-            ARGUMENT(Float, shadow)
-
+        Function(vec3, pbr_spot,
+                 PbrPass, pass,
+                 vec3, Lo,
+                 vec3, position,
+                 vec3, direction,
+                 Float, quadratic,
+                 vec3, color,
+                 Float, cutOff,
+                 Float, outerCutOff,
+                 Float, constant,
+                 Float, linear,
+                 Float, shadow)
             vec3 N = pass.N;
             vec3 V = pass.V;
             vec3 F0 = pass.F0;
@@ -377,19 +273,9 @@ namespace xng::shaderlib {
             // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 
             Return(Lo);
-        }
-        EndFunction();
+        End
 
-        Function("pbr_finish",
-                 {
-                     {PbrPass::getShaderStruct().typeName, "pass"},
-                     {ShaderDataType::vec3(), "Lo"}
-                 },
-                 ShaderDataType::vec3());
-        {
-            ARGUMENT(PbrPass, pass)
-            ARGUMENT(vec3, Lo)
-
+        Function(vec3, pbr_finish, PbrPass, pass, vec3, Lo)
             // ambient lighting, without IBL the pbr metallic shading will be too dark because there is nothing
             // for the metallic surface specular to reflect other than the light sources.
             vec3 ambient = vec3(0.03f) * pass.albedo * pass.ao;
@@ -402,7 +288,6 @@ namespace xng::shaderlib {
             color = pow(color, vec3(1.0 / pass.gamma));
 
             Return(color);
-        }
-        EndFunction();
+        End
     }
 }

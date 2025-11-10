@@ -690,16 +690,16 @@ void ContextGL::bindVertexBuffer(const RenderGraphResource buffer) {
     for (int i = 0; i < attributes.size(); i++) {
         auto &binding = attributes.at(i);
         glEnableVertexAttribArray(i);
-        if (binding.component > ShaderDataType::SIGNED_INT) {
+        if (binding.component > ShaderPrimitiveType::SIGNED_INT) {
             glVertexAttribPointer(i,
-                                  ShaderDataType::getCount(binding.type),
+                                  ShaderPrimitiveType::getCount(binding.type),
                                   getType(binding.component),
                                   GL_FALSE,
                                   vertexStride,
                                   reinterpret_cast<void *>(currentOffset));
         } else {
             glVertexAttribIPointer(i,
-                                   ShaderDataType::getCount(binding.type),
+                                   ShaderPrimitiveType::getCount(binding.type),
                                    getType(binding.component),
                                    vertexStride,
                                    reinterpret_cast<void *>(currentOffset));
@@ -791,7 +791,7 @@ void ContextGL::bindShaderBuffer(const std::string &target,
     oglDebugEndGroup();
 }
 
-void ContextGL::setShaderParameter(const std::string &name, const ShaderLiteral &value) {
+void ContextGL::setShaderParameter(const std::string &name, const ShaderPrimitive &value) {
     throw std::runtime_error("Not implemented");
 }
 

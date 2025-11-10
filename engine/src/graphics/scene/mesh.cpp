@@ -80,8 +80,8 @@ namespace xng {
             nQuad = {};
             nQuad.primitive = TRIANGLES;
             nQuad.vertexLayout = ShaderAttributeLayout({
-                {"position", ShaderDataType::vec3()},
-                {"uv", ShaderDataType::vec2()}
+                {"position", ShaderPrimitiveType::vec3()},
+                {"uv", ShaderPrimitiveType::vec2()}
             });
             auto vertData = VertexBuilder().addVec3(Vec3f(-1, 1, 0)).addVec2(Vec2f(0, 0)).build();
             nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
@@ -194,9 +194,9 @@ namespace xng {
         Mesh ret;
         ret.primitive = TRIANGLES;
         ret.vertexLayout = ShaderAttributeLayout({
-            {"position", ShaderDataType::vec3()},
-            {"normal", ShaderDataType::vec3()},
-            {"uv", ShaderDataType::vec2()}
+            {"position", ShaderPrimitiveType::vec3()},
+            {"normal", ShaderPrimitiveType::vec3()},
+            {"uv", ShaderPrimitiveType::vec2()}
         });
         for (auto i = 0; i < positions.size(); ++i) {
             auto position = positions.at(i);

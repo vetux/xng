@@ -44,7 +44,7 @@ namespace xng::ShaderScript {
             return outputLayout;
         }
 
-        [[nodiscard]] const std::unordered_map<std::string, ShaderDataType> &getParameters() const {
+        [[nodiscard]] const std::unordered_map<std::string, ShaderPrimitiveType> &getParameters() const {
             return parameters;
         }
 
@@ -90,11 +90,12 @@ namespace xng::ShaderScript {
         /**
          * Begin a for loop
          */
-        void BeginFor(const ShaderOperand &initializer, const ShaderOperand &predicate, const ShaderOperand &incrementor);
+        void BeginFor(const ShaderOperand &initializer,
+                      const ShaderOperand &predicate,
+                      const ShaderOperand &incrementor);
 
         void EndFor();
 
-        //TODO: Macro based function definitions
         /**
          * Subsequently added instructions are used as the body of a function.
          *
@@ -102,9 +103,9 @@ namespace xng::ShaderScript {
          * @param arguments
          * @param returnType
          */
-        void Function(const std::string &name,
-                      const std::vector<ShaderFunction::Argument> &arguments,
-                      ShaderFunction::ReturnType returnType);
+        void BeginFunction(std::string name,
+                      std::vector<ShaderFunction::Argument> arguments,
+                      std::optional<ShaderDataType> returnType = {});
 
         void EndFunction();
 
@@ -119,21 +120,21 @@ namespace xng::ShaderScript {
          */
         void setup(Shader::Stage stage);
 
-        void addInput(const std::string &name, const ShaderDataType &type) {
+        void addInput(const std::string &name, const ShaderPrimitiveType &type) {
             if (inputLayout.checkElement(name)) {
                 throw std::runtime_error("Input already exists");
             }
             inputLayout.addElement(name, type);
         }
 
-        void addOutput(const std::string &name, const ShaderDataType &type) {
+        void addOutput(const std::string &name, const ShaderPrimitiveType &type) {
             if (outputLayout.checkElement(name)) {
                 throw std::runtime_error("Output already exists");
             }
             outputLayout.addElement(name, type);
         }
 
-        void addParameter(const std::string &name, const ShaderDataType &type) {
+        void addParameter(const std::string &name, const ShaderPrimitiveType &type) {
             if (parameters.find(name) != parameters.end()) {
                 throw std::runtime_error("Parameter already exists");
             }
@@ -145,7 +146,7 @@ namespace xng::ShaderScript {
                 throw std::runtime_error("Buffer already exists");
             }
             bool found = false;
-            for (auto &type : typeDefinitions) {
+            for (auto &type: typeDefinitions) {
                 if (type.typeName == buffer.typeName) {
                     found = true;
                     break;
@@ -173,11 +174,11 @@ namespace xng::ShaderScript {
             typeDefinitions.emplace_back(type);
         }
 
-        void setGeometryInput(Primitive input) {
+        void setGeometryInput(RenderPrimitive input) {
             geometryInput = input;
         }
 
-        void setGeometryOutput(Primitive output, size_t maxVertices) {
+        void setGeometryOutput(RenderPrimitive output, size_t maxVertices) {
             geometryOutput = output;
             geometryMaxVertices = maxVertices;
         }
@@ -214,11 +215,11 @@ namespace xng::ShaderScript {
         ShaderAttributeLayout inputLayout;
         ShaderAttributeLayout outputLayout;
 
-        Primitive geometryInput;
-        Primitive geometryOutput;
+        RenderPrimitive geometryInput;
+        RenderPrimitive geometryOutput;
         size_t geometryMaxVertices{};
 
-        std::unordered_map<std::string, ShaderDataType> parameters;
+        std::unordered_map<std::string, ShaderPrimitiveType> parameters;
         std::unordered_map<std::string, ShaderBuffer> buffers;
         std::unordered_map<std::string, ShaderTextureArray> textureArrays;
         std::vector<ShaderStruct> typeDefinitions;

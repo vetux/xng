@@ -23,7 +23,7 @@
 using namespace xng::ShaderScript;
 
 namespace xng {
-    DEFINE_FUNCTION1(getSkinnedVertexPosition)
+    DeclareFunction1(getSkinnedVertexPosition)
 
     DefineStruct(PointLightData,
                  vec4, lightPosFarPlane,
@@ -62,12 +62,7 @@ namespace xng {
         DynamicBuffer(BoneData, bones)
         Buffer(PointLightData, lightData)
 
-        Function("getSkinnedVertexPosition",
-                 {ShaderFunction::Argument(ShaderDataType::Int(), "offset")},
-                 ShaderDataType::vec4());
-        {
-            ARGUMENT(Int, offset)
-
+        Function(vec4, getSkinnedVertexPosition, Int, offset)
             If(offset < 0)
                 Return(vec4(vPosition, 1.0f));
             Fi
@@ -118,8 +113,7 @@ namespace xng {
             Fi
 
             Return(totalPosition);
-        }
-        EndFunction();
+        End
 
         fPosition = drawData.model * getSkinnedVertexPosition(drawData.boneOffset.x());
         setVertexPosition(fPosition);
@@ -205,12 +199,7 @@ namespace xng {
         DynamicBuffer(BoneData, bones)
         Buffer(DirLightData, lightData)
 
-        Function("getSkinnedVertexPosition",
-                 {ShaderFunction::Argument(ShaderDataType::Int(), "offset")},
-                 ShaderDataType::vec4());
-        {
-            ARGUMENT(Int, offset)
-
+        Function(vec4, getSkinnedVertexPosition, Int, offset)
             If(offset < 0)
                 Return(vec4(vPosition, 1.0f));
             Fi
@@ -261,8 +250,7 @@ namespace xng {
             Fi
 
             Return(totalPosition);
-        }
-        EndFunction();
+        End
 
         fPosition = lightData.shadowMatrix
                     * drawData.model

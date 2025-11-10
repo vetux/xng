@@ -21,13 +21,13 @@
 
 namespace xng::ShaderInstructionFactory {
     ShaderInstruction declareVariable(std::string name,
-                                      std::variant<ShaderDataType, ShaderStructTypeName> type,
+                                      ShaderDataType type,
                                       ShaderOperand value) {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::DeclareVariable;
-        ret.name = std::move(name);
-        ret.type = std::move(type);
         ret.operands.push_back(std::move(value));
+        ret.data.emplace_back(std::move(type));
+        ret.data.emplace_back(std::move(name));
         return ret;
     }
 
@@ -39,32 +39,35 @@ namespace xng::ShaderInstructionFactory {
         return ret;
     }
 
-    ShaderInstruction branch(ShaderOperand condition, std::vector<ShaderInstruction> trueBranch,
+    ShaderInstruction branch(ShaderOperand condition,
+                             std::vector<ShaderInstruction> trueBranch,
                              std::vector<ShaderInstruction> falseBranch) {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::Branch;
         ret.operands.push_back(std::move(condition));
-        ret.branchA = std::move(trueBranch);
-        ret.branchB = std::move(falseBranch);
+        ret.data.emplace_back(std::move(trueBranch));
+        ret.data.emplace_back(std::move(falseBranch));
         return ret;
     }
 
-    ShaderInstruction loop(ShaderOperand initializer, ShaderOperand predicate, ShaderOperand iterator,
+    ShaderInstruction loop(ShaderOperand initializer,
+                           ShaderOperand predicate,
+                           ShaderOperand iterator,
                            std::vector<ShaderInstruction> body) {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::Loop;
         ret.operands.push_back(std::move(initializer));
         ret.operands.push_back(std::move(predicate));
         ret.operands.push_back(std::move(iterator));
-        ret.branchA = std::move(body);
+        ret.data.emplace_back(std::move(body));
         return ret;
     }
 
     ShaderInstruction call(std::string name, std::vector<ShaderOperand> arguments) {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::CallFunction;
-        ret.name = std::move(name);
         ret.operands = std::move(arguments);
+        ret.data.emplace_back(std::move(name));
         return ret;
     }
 
@@ -108,11 +111,14 @@ namespace xng::ShaderInstructionFactory {
         return ret;
     }
 
-    ShaderInstruction vectorSwizzle(ShaderOperand vector, std::vector<ShaderInstruction::VectorComponent> components) {
+    ShaderInstruction vectorSwizzle(ShaderOperand vector,
+                                    const std::vector<ShaderPrimitiveType::VectorComponent> &components) {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::VectorSwizzle;
         ret.operands.push_back(std::move(vector));
-        ret.components = std::move(components);
+        for (const auto &component: components) {
+            ret.data.emplace_back(component);
+        }
         return ret;
     }
 
@@ -137,40 +143,53 @@ namespace xng::ShaderInstructionFactory {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::ObjectMember;
         ret.operands.push_back(std::move(object));
-        ret.name = std::move(member);
+        ret.data.emplace_back(std::move(member));
         return ret;
     }
 
-    ShaderInstruction createArray(ShaderDataType elementType, std::vector<ShaderOperand> elements) {
+    ShaderInstruction createArray(const ShaderDataType &arrayType, std::vector<ShaderOperand> elements) {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::CreateArray;
-        ret.type = elementType;
-        ret.operands = std::move(elements);
+        ret.operands.insert(ret.operands.end(), elements.begin(), elements.end());
+        ret.data.emplace_back(arrayType);
         return ret;
     }
 
-    ShaderInstruction createMatrix(ShaderDataType elementType, ShaderOperand x, ShaderOperand y, ShaderOperand z,
+    ShaderInstruction createMatrix(ShaderPrimitiveType elementType,
+                                   ShaderOperand x,
+                                   ShaderOperand y,
+                                   ShaderOperand z,
                                    ShaderOperand w) {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::CreateMatrix;
-        ret.type = elementType;
-        ret.operands = {x, y, z, w};
+        ret.operands.push_back(std::move(x));
+        ret.operands.push_back(std::move(y));
+        ret.operands.push_back(std::move(z));
+        ret.operands.push_back(std::move(w));
+        ret.data.emplace_back(elementType);
         return ret;
     }
 
-    ShaderInstruction createVector(ShaderDataType elementType, ShaderOperand x, ShaderOperand y, ShaderOperand z,
+    ShaderInstruction createVector(ShaderPrimitiveType elementType,
+                                   ShaderOperand x,
+                                   ShaderOperand y,
+                                   ShaderOperand z,
                                    ShaderOperand w) {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::CreateVector;
-        ret.type = elementType;
-        ret.operands = {x, y, z, w};
+        ret.operands.push_back(std::move(x));
+        ret.operands.push_back(std::move(y));
+        ret.operands.push_back(std::move(z));
+        ret.operands.push_back(std::move(w));
+        ret.data.emplace_back(elementType);
         return ret;
     }
 
-    ShaderInstruction createStruct(ShaderStructTypeName typeName) {
+    ShaderInstruction createStruct(ShaderStructType typeName, std::vector<ShaderOperand> values) {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::CreateStruct;
-        ret.type = typeName;
+        ret.operands = std::move(values);
+        ret.data.emplace_back(std::move(typeName));
         return ret;
     }
 
@@ -254,10 +273,10 @@ namespace xng::ShaderInstructionFactory {
         return ret;
     }
 
-    ShaderInstruction bufferSize(std::string name) {
+    ShaderInstruction bufferSize(ShaderOperand buffer) {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::BufferSize;
-        ret.name = std::move(name);
+        ret.operands.push_back(std::move(buffer));
         return ret;
     }
 

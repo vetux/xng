@@ -22,7 +22,7 @@
 
 #include <vector>
 
-#include "xng/graphics/primitive.hpp"
+#include "xng/rendergraph/renderprimitive.hpp"
 #include "xng/rendergraph/shader/shader.hpp"
 
 namespace xng {
@@ -95,9 +95,9 @@ namespace xng {
             BLEND_MAX
         };
 
-        std::vector<Shader> shaders;
+        std::vector<Shader> shaders{};
 
-        Primitive primitive = TRIANGLES;
+        RenderPrimitive primitive = TRIANGLES;
         bool multisample = false;
         bool multiSampleEnableFrequency = false;
         float multiSampleFrequency = 1;

@@ -24,35 +24,32 @@
 #include <utility>
 #include <vector>
 #include <memory>
-#include <unordered_map>
+#include <optional>
 #include <variant>
 
-#include "shaderstruct.hpp"
 #include "xng/rendergraph/shader/shaderinstruction.hpp"
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 #include "xng/rendergraph/shader/shadertexture.hpp"
 
 namespace xng {
     struct ShaderFunction {
-        typedef std::variant<ShaderDataType, ShaderStructTypeName> ReturnType;
-
         struct Argument {
             std::string name;
-            std::variant<ShaderDataType, ShaderTexture, ShaderStructTypeName> type;
+            std::variant<ShaderDataType, ShaderTexture> type;
 
             Argument() = default;
 
-            Argument(const std::variant<ShaderDataType, ShaderTexture, ShaderStructTypeName> &type, std::string name)
+            Argument(const std::variant<ShaderDataType, ShaderTexture> &type, std::string name)
                 : name(std::move(name)), type(type) {
             }
         };
 
-        std::string name;
-        std::vector<Argument> arguments;
-        std::vector<ShaderInstruction> body;
-        ReturnType returnType;
+        std::string name{};
+        std::vector<Argument> arguments{};
+        std::vector<ShaderInstruction> body{};
+        std::optional<ShaderDataType> returnType{};
 
-        std::variant<ShaderDataType, ShaderTexture, std::string> getArgumentType(const std::string &argName) const {
+        std::variant<ShaderDataType, ShaderTexture> getArgumentType(const std::string &argName) const {
             for (auto &arg: arguments) {
                 if (arg.name == argName) {
                     return arg.type;
@@ -66,21 +63,19 @@ namespace xng {
         ShaderFunction(std::string name,
                        std::vector<Argument> arguments,
                        std::vector<ShaderInstruction> body,
-                       const ShaderDataType returnType)
-            : name(std::move(name)),
-              arguments(std::move(arguments)),
-              body(std::move(body)),
-              returnType(returnType) {
-        }
-
-        ShaderFunction(std::string name,
-                       std::vector<Argument> arguments,
-                       std::vector<ShaderInstruction> body,
-                       ShaderStructTypeName returnType)
+                       ShaderDataType returnType)
             : name(std::move(name)),
               arguments(std::move(arguments)),
               body(std::move(body)),
               returnType(std::move(returnType)) {
+        }
+
+        ShaderFunction(std::string name,
+                       std::vector<Argument> arguments,
+                       std::vector<ShaderInstruction> body)
+            : name(std::move(name)),
+              arguments(std::move(arguments)),
+              body(std::move(body)) {
         }
 
         ShaderFunction(const ShaderFunction &other) = default;

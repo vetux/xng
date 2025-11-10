@@ -23,11 +23,11 @@
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
 namespace xng::ShaderScript {
-    DEFINE_FUNCTION8(pbr_begin)
-    DEFINE_FUNCTION5(pbr_point)
-    DEFINE_FUNCTION5(pbr_directional)
-    DEFINE_FUNCTION11(pbr_spot)
-    DEFINE_FUNCTION2(pbr_finish)
+    DeclareFunction8(pbr_begin)
+    DeclareFunction5(pbr_point)
+    DeclareFunction5(pbr_directional)
+    DeclareFunction11(pbr_spot)
+    DeclareFunction2(pbr_finish)
 
     DefineStruct(PbrPass,
                  vec3, N,

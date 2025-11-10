@@ -118,12 +118,7 @@ namespace xng {
 
         TextureArray(TEXTURE_2D_ARRAY, RGBA, 12, atlasTextures)
 
-        Function("getSkinnedVertexPosition",
-                 {ShaderFunction::Argument(ShaderDataType::Int(), "offset")},
-                 ShaderDataType::vec4());
-        {
-            ARGUMENT(Int, offset)
-
+        Function(vec4, getSkinnedVertexPosition, Int, offset);
             If(offset < 0)
                 Return(vec4(position, 1.0f));
             Fi
@@ -174,8 +169,7 @@ namespace xng {
             Fi
 
             Return(totalPosition);
-        }
-        EndFunction();
+        End
 
         vec4 pos = Call("getSkinnedVertexPosition", data.objectID_boneOffset_shadows.y());
 
@@ -196,7 +190,7 @@ namespace xng {
         return BuildShader();
     }
 
-    DEFINE_FUNCTION2(texture_atlas)
+    DeclareFunction2(texture_atlas)
 
     Shader ConstructionPass::createFragmentShader() {
         BeginShader(Shader::FRAGMENT)
@@ -228,16 +222,7 @@ namespace xng {
 
         shaderlib::textureBicubic();
 
-        Function("texture_atlas",
-                 {
-                     {AtlasTexture::getShaderStruct().typeName, "textureDef"},
-                     {ShaderDataType::vec2(), "inUv"}
-                 },
-                 ShaderDataType::vec4());
-        {
-            ARGUMENT(AtlasTexture, textureDef)
-            ARGUMENT(vec2, inUv)
-
+        Function(vec4, texture_atlas, AtlasTexture, textureDef, vec2, inUv)
             ivec4 level_index_filtering_assigned = textureDef.level_index_filtering_assigned;
             vec4 atlasScale_texSize = textureDef.atlasScale_texSize;
 
@@ -254,8 +239,7 @@ namespace xng {
                                               vec3(uv.x(), uv.y(), level_index_filtering_assigned.y())));
                 Fi
             Fi
-        }
-        EndFunction();
+        End
 
         oPosition = vec4(fPos, 1);
 
