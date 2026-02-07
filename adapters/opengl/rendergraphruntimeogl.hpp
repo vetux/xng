@@ -70,6 +70,8 @@ private:
 
     int graphCounter = 0;
 
+    std::shared_ptr<Window> window;
+
     std::shared_ptr<OGLTexture> backBufferColor;
     std::shared_ptr<OGLTexture> backBufferDepthStencil;
 
@@ -77,7 +79,7 @@ private:
 
     std::unordered_map<RenderGraphHandle, GraphResources, RenderGraphHandleHash> contexts;
 
-    std::shared_ptr<Window> window;
+    std::unique_ptr<ContextGL> rContext;
 
     std::string vendor;
     std::string renderer;
