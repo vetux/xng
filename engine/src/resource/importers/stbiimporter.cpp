@@ -89,13 +89,12 @@ namespace xng {
                                       Archive *archive) {
         std::vector<char> buffer;
 
-        char c;
+        std::array<char, 1024> readBuffer;
         while (!stream.eof()) {
-            stream.read(&c, 1);
-            if (stream.gcount() == 1) {
-                buffer.emplace_back(c);
-            }
+            stream.read(readBuffer.data(), readBuffer.size());
+            buffer.insert(buffer.end(), readBuffer.begin(), readBuffer.begin() + stream.gcount());
         }
+
         //Try to read source as image
         int x, y, n;
         auto r = stbi_info_from_memory(reinterpret_cast<const stbi_uc *>(buffer.data()),
