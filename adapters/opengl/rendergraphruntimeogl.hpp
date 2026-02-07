@@ -79,8 +79,6 @@ private:
 
     std::unordered_map<RenderGraphHandle, GraphResources, RenderGraphHandleHash> contexts;
 
-    std::unique_ptr<ContextGL> rContext;
-
     std::string vendor;
     std::string renderer;
     std::string version;
