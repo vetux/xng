@@ -67,6 +67,7 @@ struct OGLShaderProgram {
 
     ~OGLShaderProgram() {
         glDeleteProgram(programHandle);
+        oglCheckError();
     }
 
     void buildShader(const std::string &vertexSource, const std::string &fragmentSource) {

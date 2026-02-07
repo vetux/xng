@@ -37,6 +37,7 @@ struct OGLShaderStorageBuffer {
 
     ~OGLShaderStorageBuffer() {
         glDeleteBuffers(1, &SSBO);
+        oglCheckError();
     }
 };
 

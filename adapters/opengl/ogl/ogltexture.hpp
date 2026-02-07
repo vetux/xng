@@ -47,6 +47,7 @@ struct OGLTexture {
 
     ~OGLTexture() {
         glDeleteTextures(1, &handle);
+        oglCheckError();
     }
 
 private:

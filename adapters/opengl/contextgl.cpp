@@ -1106,7 +1106,6 @@ void ContextGL::setViewport(const Vec2i viewportOffset, const Vec2i viewportSize
     oglDebugEndGroup();
 }
 
-// TODO: Implement automatic multi draw
 void ContextGL::drawArray(const DrawCall &drawCall) {
     oglDebugStartGroup("ContextGL::drawArray");
 
