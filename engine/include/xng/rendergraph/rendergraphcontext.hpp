@@ -303,7 +303,8 @@ namespace xng {
 
         virtual void drawIndexed(const DrawCall &drawCall, size_t indexOffset) = 0;
 
-        //TODO: Add instancing support
+        //TODO: Add drawInstanced
+        //TODO: Add drawMulti
 
         virtual void endRenderPass() = 0;
 

@@ -151,9 +151,7 @@ namespace InstructionCompiler {
                 return compile(std::get<ShaderInstruction>(operand.value), source, functionName, {});
             case ShaderOperand::Buffer:
                 name = std::get<std::string>(operand.value);
-                if (source.buffers.at(name).dynamic)
-                    return bufferPrefix + name + "." + bufferArrayName;
-                return bufferPrefix + name + "." + bufferArrayName + "[" + drawID + "]";
+                return bufferPrefix + name + "." + bufferArrayName;
             case ShaderOperand::Texture:
                 name = std::get<std::string>(operand.value);
                 return texturePrefix + name;

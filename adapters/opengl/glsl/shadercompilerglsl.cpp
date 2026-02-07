@@ -49,14 +49,6 @@ std::string generateElement(const std::string &name, const ShaderDataType &type,
 std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
     std::string ret;
 
-    if (source.stage == Shader::Stage::VERTEX) {
-        ret += "#define " + std::string(drawID) + " gl_DrawID\n\n";
-    } else if (source.stage == Shader::Stage::GEOMETRY) {
-        ret += "#define " + std::string(drawID) + " in_drawID[0]\n\n";
-    } else {
-        ret += "#define " + std::string(drawID) + " drawID\n\n";
-    }
-
     for (const auto &v: source.typeDefinitions) {
         ret += "struct " + v.typeName + " {\n";
         for (const auto &element: v.elements) {
@@ -72,9 +64,12 @@ std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
                 + ", std140) buffer ShaderBuffer"
                 + std::to_string(binding)
                 + " {\n"
-                + "\t" + pair.second.typeName + " " + bufferArrayName
-                + "[];\n} "
-                + bufferPrefix
+                + "\t" + pair.second.typeName + " " + bufferArrayName;
+        if (pair.second.dynamic) {
+            ret += "[]";
+        }
+        ret += ";\n} ";
+        ret += bufferPrefix
                 + pair.first
                 + ";\n";
         ret += "\n";
@@ -144,7 +139,6 @@ std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
                                       "")
                     + "[];\n";
         }
-        inputAttributes += "layout(location = " + std::to_string(attributeCount) + ") flat in uint in_drawID[];\n";
     } else {
         for (auto element: source.inputLayout.getElements()) {
             auto location = attributeCount++;
@@ -155,9 +149,6 @@ std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
                                       ShaderDataType(element),
                                       "")
                     + ";\n";
-        }
-        if (source.stage == Shader::Stage::FRAGMENT) {
-            inputAttributes += "layout(location = " + std::to_string(attributeCount) + ") flat in uint drawID;\n";
         }
     }
     ret += inputAttributes;
@@ -174,9 +165,6 @@ std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
                                   ShaderDataType(element),
                                   "")
                 + +";\n";;
-    }
-    if (source.stage == Shader::Stage::VERTEX || source.stage == Shader::Stage::GEOMETRY) {
-        outputAttributes += "layout(location = " + std::to_string(attributeCount) + ") flat out uint out_drawID;\n";
     }
     ret += outputAttributes;
     ret += "\n";
@@ -203,11 +191,7 @@ std::string generateBody(const Shader &source) {
         body += compileFunction(func.name, func.arguments, func.body, func.returnType, source);
         body += "\n\n";
     }
-    std::string appendix = "";
-    if (source.stage == Shader::Stage::VERTEX) {
-        appendix = "out_drawID = gl_DrawID";
-    }
-    body += compileFunction("main", {}, source.mainFunction, {}, source, appendix);
+    body += compileFunction("main", {}, source.mainFunction, {}, source);
     return body;
 }
 

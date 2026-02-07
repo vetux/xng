@@ -30,7 +30,6 @@ static const char *parameterPrefix = "param_";
 static const char *bufferPrefix = "buffer_";
 static const char *bufferArrayName = "data";
 static const char *texturePrefix = "texture_";
-static const char *drawID = "DRAW_ID";
 
 namespace InstructionCompiler {
     /**
