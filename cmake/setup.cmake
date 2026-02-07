@@ -28,3 +28,8 @@ elseif (WIN32)
 else ()
     add_compile_definitions(XENGINE_EXPORT=)
 endif ()
+
+# Sadly there is no other way to copy the linked dlls automatically than putting all build artifacts in one directory on MSVC.
+if (MSVC)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+endif ()
