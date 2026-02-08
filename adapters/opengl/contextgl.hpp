@@ -44,8 +44,9 @@ public:
         : vertexArray(std::make_shared<OGLVertexArrayObject>()),
           backBufferColor(std::move(backBufferColor)),
           backBufferDepthStencil(std::move(backBufferDepthStencil)),
+          emptySSBO(std::make_unique<OGLShaderStorageBuffer>(1)),
           resources(std::move(res)),
-          stats(stats) {
+          stats(stats){
     }
 
     void uploadBuffer(RenderGraphResource target,
@@ -177,6 +178,8 @@ private:
 
     std::shared_ptr<OGLTexture> backBufferColor = nullptr;
     std::shared_ptr<OGLTexture> backBufferDepthStencil = nullptr;
+
+    std::unique_ptr<OGLShaderStorageBuffer> emptySSBO = nullptr;
 
     const GraphResources &resources;
     RenderGraphStatistics &stats;

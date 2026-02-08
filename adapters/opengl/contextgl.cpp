@@ -770,7 +770,10 @@ void ContextGL::bindShaderBuffer(const std::string &target,
     const auto &buf = resources.storageBuffers.at(buffer);
     if (size == 0) {
         if (buf->size == 0) {
-            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, static_cast<GLuint>(binding), buf->SSBO);
+            // Bind SSBO with a size of one byte to avoid undefined behavior
+            // caused by binding a SSBO with size = 0 per OpenGL spec.
+            // On AMD this was handled by the driver but Intel driver breaks if SSBO is 0
+            glBindBufferRange(GL_SHADER_STORAGE_BUFFER, static_cast<GLuint>(binding), emptySSBO->SSBO, 0, 1);
         } else {
             glBindBufferRange(GL_SHADER_STORAGE_BUFFER,
                               static_cast<GLuint>(binding),
