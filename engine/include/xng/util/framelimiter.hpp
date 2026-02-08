@@ -59,7 +59,8 @@ namespace xng {
         DeltaTime newFrame() {
             auto now = std::chrono::steady_clock::now();
             if (targetFrameDuration.count() > 0 && now < start + targetFrameDuration) {
-                constexpr auto spin_threshold = std::chrono::microseconds(200);
+                // Win32 Scheduler performs interrupt intervals only every 15.6ms so we add a threshold of 20ms
+                constexpr auto spin_threshold = std::chrono::milliseconds(20);
                 if (now + spin_threshold < deadline) {
                     std::this_thread::sleep_until(deadline - spin_threshold);
                 }
