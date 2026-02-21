@@ -26,12 +26,12 @@ workflow
     - [X] PBR Shading Model
     - [X] Skeletal Animation
     - [X] Shadow Mapping
-    - [ ] Image Based Lighting 
+    - [X] Image Based Lighting
+    - [ ] Environment Mapping (Probes) 
     - [ ] Skybox Rendering 
     - [ ] Particles Rendering
     - [ ] Terrain Rendering
     - [ ] Volumetric Rendering
-    - [ ] Environment Mapping (Reflections)
     - [ ] Post Processing (Anti Aliasing)
   - 2D
     - [X] Canvas Rendering
