@@ -155,21 +155,43 @@ private:
                 }
             }
         } else {
-            for (unsigned int i = 0; i < 6; i++) {
-                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-                             0,
-                             static_cast<GLint>(convert(texture.format)),
-                             texture.size.x,
-                             texture.size.y,
-                             0,
-                             GL_RGBA,
-                             GL_UNSIGNED_BYTE,
-                             nullptr);
+            // Cube map textures: allocate immutable storage for all faces and mip levels
+            textureInternalFormat = convert(texture.format);
+
+            switch (texture.format) {
+                case DEPTH:
+                    textureInternalFormat = GL_DEPTH_COMPONENT32F;
+                    break;
+                case DEPTH_STENCIL:
+                    textureInternalFormat = GL_DEPTH24_STENCIL8;
+                    break;
+                case R:
+                    textureInternalFormat = GL_R8;
+                    break;
+                case RG:
+                    textureInternalFormat = GL_RG8;
+                    break;
+                case RGB:
+                    textureInternalFormat = GL_RGB8;
+                    break;
+                case RGBA:
+                    textureInternalFormat = GL_RGBA8;
+                    break;
+                default:
+                    break;
             }
+
+            glTexStorage2D(textureType,
+                           texture.mipMapLevels,
+                           textureInternalFormat,
+                           texture.size.x,
+                           texture.size.y);
         }
 
         glTexParameteri(textureType, GL_TEXTURE_WRAP_S, convert(texture.wrapping));
         glTexParameteri(textureType, GL_TEXTURE_WRAP_T, convert(texture.wrapping));
+        // For cube maps also set R wrap to avoid sampling artifacts across faces
+        glTexParameteri(textureType, GL_TEXTURE_WRAP_R, convert(texture.wrapping));
 
         if (texture.mipMapLevels > 1) {
             glTexParameteri(textureType,
@@ -268,6 +290,9 @@ private:
                             texWrap);
             glTexParameteri(textureType,
                             GL_TEXTURE_WRAP_T,
+                            texWrap);
+            glTexParameteri(textureType,
+                            GL_TEXTURE_WRAP_R,
                             texWrap);
 
             if (texture.mipMapLevels > 1) {
