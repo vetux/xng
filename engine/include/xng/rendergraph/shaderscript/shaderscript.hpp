@@ -538,6 +538,11 @@ namespace xng::ShaderScript {
         return ShaderObject(ShaderInstructionFactory::atan(value.operand));
     }
 
+    inline ShaderObject atan2(const ShaderObject &y, const ShaderObject &x)
+    {
+        return ShaderObject(ShaderInstructionFactory::atan2(y.operand, x.operand));
+    }
+
     inline ShaderObject pow(const ShaderObject &value, const ShaderObject &exponent) {
         return ShaderObject(ShaderInstructionFactory::pow(value.operand, exponent.operand));
     }
@@ -548,6 +553,10 @@ namespace xng::ShaderScript {
 
     inline ShaderObject log(const ShaderObject &value) {
         return ShaderObject(ShaderInstructionFactory::log(value.operand));
+    }
+
+    inline ShaderObject log2(const ShaderObject &value) {
+        return ShaderObject(ShaderInstructionFactory::log2(value.operand));
     }
 
     inline ShaderObject sqrt(const ShaderObject &value) {
@@ -650,6 +659,18 @@ namespace xng::ShaderScript {
 
     inline ShaderObject inverse(const ShaderObject &v) {
         return ShaderObject(ShaderInstructionFactory::inverse(v.operand));
+    }
+
+    // Currently hacked in conversion functions, with a redesign of shader script to handle
+    // variable assignments without hooking assignment operators these will be obsolete.
+    inline ShaderObject toFloat(const ShaderObject &v)
+    {
+        return Float(v.operand);
+    }
+
+    inline ShaderObject toInt(const ShaderObject &v)
+    {
+        return Int(v.operand);
     }
 
     template<typename T>
