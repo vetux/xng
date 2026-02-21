@@ -76,7 +76,9 @@ void ContextGL::uploadTexture(const RenderGraphResource texture,
                               const Vec2i &offset) {
     oglDebugStartGroup("ContextGL::uploadTexture");
 
-    if (bufferSize != size.x * size.y * getColorByteSize(bufferFormat)) {
+    auto &tex = resources.textures.at(texture);
+
+    if (bufferSize > tex->texture.size.x * tex->texture.size.y * getColorByteSize(tex->texture.format)) {
         throw std::runtime_error("Invalid buffer size");
     }
 
@@ -88,11 +90,64 @@ void ContextGL::uploadTexture(const RenderGraphResource texture,
         memcpy(bufferCpy + dstOffset, buffer + srcOffset, size.x * getColorByteSize(bufferFormat));
     }
 
-    auto &tex = resources.textures.at(texture);
-
     auto &textureSize = tex->texture.size;
 
     glBindTexture(tex->textureType, tex->handle);
+
+    // determine pixel format (GL_RGB/GL_RGBA/GL_RED/GL_RG) and data type for upload
+    GLenum dataType = GL_UNSIGNED_BYTE;
+    GLenum pixelFormat = GL_RGBA;
+
+    switch (bufferFormat) {
+        case ColorFormat::R:
+        case ColorFormat::R8:
+        case ColorFormat::R16:
+        case ColorFormat::R16F:
+        case ColorFormat::R32F:
+        case ColorFormat::R8I:
+        case ColorFormat::R16I:
+        case ColorFormat::R32I:
+        case ColorFormat::R8UI:
+        case ColorFormat::R16UI:
+        case ColorFormat::R32UI:
+            pixelFormat = GL_RED;
+            dataType = (bufferFormat == ColorFormat::R16F || bufferFormat == ColorFormat::R32F) ? GL_FLOAT : GL_UNSIGNED_BYTE;
+            break;
+        case ColorFormat::RG:
+        case ColorFormat::RG8:
+        case ColorFormat::RG16:
+        case ColorFormat::RG16F:
+        case ColorFormat::RG32F:
+        case ColorFormat::RG8I:
+        case ColorFormat::RG16I:
+        case ColorFormat::RG32I:
+        case ColorFormat::RG8UI:
+        case ColorFormat::RG16UI:
+        case ColorFormat::RG32UI:
+            pixelFormat = GL_RG;
+            dataType = (bufferFormat == ColorFormat::RG16F || bufferFormat == ColorFormat::RG32F) ? GL_FLOAT : GL_UNSIGNED_BYTE;
+            break;
+        case ColorFormat::RGB:
+        case ColorFormat::RGB8:
+        case ColorFormat::RGB16:
+        case ColorFormat::RGB16F:
+        case ColorFormat::RGB32F:
+        case ColorFormat::RGB8I:
+        case ColorFormat::RGB16I:
+        case ColorFormat::RGB32I:
+        case ColorFormat::RGB8UI:
+        case ColorFormat::RGB16UI:
+        case ColorFormat::RGB32UI:
+            pixelFormat = GL_RGB;
+            dataType = (bufferFormat == ColorFormat::RGB16F || bufferFormat == ColorFormat::RGB32F) ? GL_FLOAT : GL_UNSIGNED_BYTE;
+            break;
+        default:
+            // Assume RGBA-like default
+            pixelFormat = GL_RGBA;
+            dataType = (bufferFormat == ColorFormat::RGBA16F || bufferFormat == ColorFormat::RGBA32F) ? GL_FLOAT : GL_UNSIGNED_BYTE;
+            break;
+    }
+
     if (tex->textureType == GL_TEXTURE_2D) {
         glTexSubImage2D(GL_TEXTURE_2D,
                         static_cast<GLint>(mipMapLevel),
@@ -100,18 +155,18 @@ void ContextGL::uploadTexture(const RenderGraphResource texture,
                         textureSize.y - offset.y - 1 - size.y + 1,
                         size.x,
                         size.y,
-                        convert(bufferFormat),
-                        GL_UNSIGNED_BYTE,
+                        pixelFormat,
+                        dataType,
                         bufferCpy);
     } else if (tex->textureType == GL_TEXTURE_CUBE_MAP) {
         glTexSubImage2D(convert(face),
                         static_cast<GLint>(mipMapLevel),
                         offset.x,
                         textureSize.y - offset.y - 1 - size.y + 1,
-                        tex->texture.size.x,
-                        tex->texture.size.y,
-                        convert(bufferFormat),
-                        GL_UNSIGNED_BYTE,
+                        size.x,
+                        size.y,
+                        pixelFormat,
+                        dataType,
                         bufferCpy);
     } else if (tex->textureType == GL_TEXTURE_2D_ARRAY) {
         glTexSubImage3D(tex->textureType,
@@ -122,8 +177,8 @@ void ContextGL::uploadTexture(const RenderGraphResource texture,
                         size.x,
                         size.y,
                         1,
-                        convert(bufferFormat),
-                        GL_UNSIGNED_BYTE,
+                        pixelFormat,
+                        dataType,
                         bufferCpy);
     } else if (tex->textureType == GL_TEXTURE_CUBE_MAP_ARRAY) {
         glTexSubImage3D(tex->textureType,
@@ -134,8 +189,8 @@ void ContextGL::uploadTexture(const RenderGraphResource texture,
                         size.x,
                         size.y,
                         1,
-                        convert(bufferFormat),
-                        GL_UNSIGNED_BYTE,
+                        pixelFormat,
+                        dataType,
                         bufferCpy);
     } else {
         throw std::runtime_error("Invalid texture type");
@@ -171,6 +226,9 @@ void ContextGL::clearTextureColor(const RenderGraphResource texture,
 
     auto &tex = getTexture(texture);
 
+    const GLsizei mipWidth = std::max(1, tex.texture.size.x >> static_cast<int>(mipMapLevel));
+    const GLsizei mipHeight = std::max(1, tex.texture.size.y >> static_cast<int>(mipMapLevel));
+
     glClearTexSubImage(tex.handle,
                        static_cast<GLint>(mipMapLevel),
                        0,
@@ -178,8 +236,8 @@ void ContextGL::clearTextureColor(const RenderGraphResource texture,
                        tex.textureType == TEXTURE_CUBE_MAP
                            ? static_cast<GLint>(index * 6 + face)
                            : static_cast<GLint>(index),
-                       tex.texture.size.x,
-                       tex.texture.size.y,
+                       mipWidth,
+                       mipHeight,
                        1,
                        GL_RGBA,
                        GL_UNSIGNED_BYTE,
@@ -201,6 +259,9 @@ void ContextGL::clearTextureColor(const RenderGraphResource texture,
 
     const GLfloat data[4] = {clearColor.x, clearColor.y, clearColor.z, clearColor.w};
 
+    const GLsizei mipWidth = std::max(1, tex.texture.size.x >> static_cast<int>(mipMapLevel));
+    const GLsizei mipHeight = std::max(1, tex.texture.size.y >> static_cast<int>(mipMapLevel));
+
     glClearTexSubImage(tex.handle,
                        static_cast<GLint>(mipMapLevel),
                        0,
@@ -208,8 +269,8 @@ void ContextGL::clearTextureColor(const RenderGraphResource texture,
                        tex.textureType == TEXTURE_CUBE_MAP
                            ? static_cast<GLint>(index * 6 + face)
                            : static_cast<GLint>(index),
-                       tex.texture.size.x,
-                       tex.texture.size.y,
+                       mipWidth,
+                       mipHeight,
                        1,
                        GL_RGBA,
                        GL_FLOAT,
@@ -231,6 +292,9 @@ void ContextGL::clearTextureColor(const RenderGraphResource texture,
 
     const GLint data[4] = {clearColor.x, clearColor.y, clearColor.z, clearColor.w};
 
+    const GLsizei mipWidth = std::max(1, tex.texture.size.x >> static_cast<int>(mipMapLevel));
+    const GLsizei mipHeight = std::max(1, tex.texture.size.y >> static_cast<int>(mipMapLevel));
+
     glClearTexSubImage(tex.handle,
                        static_cast<GLint>(mipMapLevel),
                        0,
@@ -238,8 +302,8 @@ void ContextGL::clearTextureColor(const RenderGraphResource texture,
                        tex.textureType == TEXTURE_CUBE_MAP
                            ? static_cast<GLint>(index * 6 + face)
                            : static_cast<GLint>(index),
-                       tex.texture.size.x,
-                       tex.texture.size.y,
+                       mipWidth,
+                       mipHeight,
                        1,
                        GL_RGBA_INTEGER,
                        GL_INT,
@@ -261,6 +325,9 @@ void ContextGL::clearTextureColor(const RenderGraphResource texture,
 
     const GLuint data[4] = {clearColor.x, clearColor.y, clearColor.z, clearColor.w};
 
+    const GLsizei mipWidth = std::max(1, tex.texture.size.x >> static_cast<int>(mipMapLevel));
+    const GLsizei mipHeight = std::max(1, tex.texture.size.y >> static_cast<int>(mipMapLevel));
+
     glClearTexSubImage(tex.handle,
                        static_cast<GLint>(mipMapLevel),
                        0,
@@ -268,8 +335,8 @@ void ContextGL::clearTextureColor(const RenderGraphResource texture,
                        tex.textureType == TEXTURE_CUBE_MAP
                            ? static_cast<GLint>(index * 6 + face)
                            : static_cast<GLint>(index),
-                       tex.texture.size.x,
-                       tex.texture.size.y,
+                       mipWidth,
+                       mipHeight,
                        1,
                        GL_RGBA_INTEGER,
                        GL_UNSIGNED_INT,
@@ -511,9 +578,19 @@ void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorA
 
     auto fstatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
     if (fstatus != GL_FRAMEBUFFER_COMPLETE) {
-        throw std::runtime_error("Framebuffer is incomplete");
+        const char *msg = "UNKNOWN";
+        switch (fstatus) {
+        case GL_FRAMEBUFFER_UNDEFINED: msg = "UNDEFINED"; break;
+        case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: msg = "INCOMPLETE_ATTACHMENT"; break;
+        case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: msg = "MISSING_ATTACHMENT"; break;
+        case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: msg = "INCOMPLETE_DRAW_BUFFER"; break;
+        case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: msg = "INCOMPLETE_READ_BUFFER"; break;
+        case GL_FRAMEBUFFER_UNSUPPORTED: msg = "UNSUPPORTED"; break;
+        case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: msg = "INCOMPLETE_MULTISAMPLE"; break;
+        case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: msg = "INCOMPLETE_LAYER_TARGETS"; break;
+        }
+        throw std::runtime_error(std::string("Framebuffer is incomplete ") + msg);
     }
-
     oglCheckError();
 
     oglDebugEndGroup();
@@ -581,7 +658,18 @@ void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorA
 
     auto fstatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
     if (fstatus != GL_FRAMEBUFFER_COMPLETE) {
-        throw std::runtime_error("Framebuffer is incomplete");
+        const char *msg = "UNKNOWN";
+        switch (fstatus) {
+        case GL_FRAMEBUFFER_UNDEFINED: msg = "UNDEFINED"; break;
+        case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: msg = "INCOMPLETE_ATTACHMENT"; break;
+        case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: msg = "MISSING_ATTACHMENT"; break;
+        case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: msg = "INCOMPLETE_DRAW_BUFFER"; break;
+        case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: msg = "INCOMPLETE_READ_BUFFER"; break;
+        case GL_FRAMEBUFFER_UNSUPPORTED: msg = "UNSUPPORTED"; break;
+        case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: msg = "INCOMPLETE_MULTISAMPLE"; break;
+        case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: msg = "INCOMPLETE_LAYER_TARGETS"; break;
+        }
+        throw std::runtime_error(std::string("Framebuffer is incomplete ") + msg);
     }
 
     oglCheckError();
