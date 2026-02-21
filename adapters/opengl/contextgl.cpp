@@ -750,6 +750,11 @@ void ContextGL::bindPipeline(const RenderGraphResource pipeline) {
         glDisable(GL_BLEND);
     }
 
+    // Enable seamless cubemap filtering so texel lookups blend across face boundaries
+    // For the render graph abstraction this is assumed as default on.
+    // On Vulkan / DirectX this should be on without additional configuration.
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
     oglCheckError();
 
     boundPipeline = pipeline;
