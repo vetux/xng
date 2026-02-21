@@ -110,9 +110,11 @@ namespace InstructionCompiler {
             case ShaderInstruction::Asin:
             case ShaderInstruction::Acos:
             case ShaderInstruction::Atan:
+            case ShaderInstruction::Atan2:
             case ShaderInstruction::Pow:
             case ShaderInstruction::Exp:
             case ShaderInstruction::Log:
+            case ShaderInstruction::Log2:
             case ShaderInstruction::Sqrt:
             case ShaderInstruction::InverseSqrt:
             case ShaderInstruction::Floor:
@@ -311,7 +313,7 @@ namespace InstructionCompiler {
         auto coords = compileOperand(instruction.operands.at(1), source, functionName);
         if (instruction.operands.at(2).isAssigned()) {
             auto lod = compileOperand(instruction.operands.at(2), source, functionName);
-            return "texture(" + name + ", " + coords + ", " + lod + ")";
+            return "textureLod(" + name + ", " + coords + ", " + lod + ")";
         }
         return "texture(" + name + ", " + coords + ")";
     }
@@ -324,7 +326,7 @@ namespace InstructionCompiler {
         auto coords = compileOperand(instruction.operands.at(1), source, functionName);
         if (instruction.operands.at(2).isAssigned()) {
             auto lod = compileOperand(instruction.operands.at(2), source, functionName);
-            return "texture(" + name + ", " + coords + ", " + lod + ")";
+            return "textureLod(" + name + ", " + coords + ", " + lod + ")";
         }
         return "texture(" + name + ", " + coords + ")";
     }
@@ -531,6 +533,8 @@ namespace InstructionCompiler {
                 return "acos(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
             case ShaderInstruction::Atan:
                 return "atan(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
+            case ShaderInstruction::Atan2:
+                return "atan(" + compileOperand(instruction.operands.at(0), source, functionName) + ", " + compileOperand(instruction.operands.at(1), source, functionName) + ")";
             case ShaderInstruction::Pow:
                 return "pow(" + compileOperand(instruction.operands.at(0), source, functionName) + ", "
                        + compileOperand(instruction.operands.at(1), source, functionName) + ")";
@@ -538,6 +542,8 @@ namespace InstructionCompiler {
                 return "exp(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
             case ShaderInstruction::Log:
                 return "log(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
+            case ShaderInstruction::Log2:
+                return "log2(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
             case ShaderInstruction::Sqrt:
                 return "sqrt(" + compileOperand(instruction.operands.at(0), source, functionName) + ")";
             case ShaderInstruction::InverseSqrt:

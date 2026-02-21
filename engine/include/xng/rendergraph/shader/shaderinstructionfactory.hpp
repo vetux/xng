@@ -177,12 +177,12 @@ namespace xng::ShaderInstructionFactory {
      *
      * @param texture
      * @param coordinate A 3d float vector specifying the point to sample.
-     * @param bias Optional bias to apply during level-of-detail computation.
+     * @param lod Optional explicit level-of-detail to sample from (uses textureLod when specified).
      * @return
      */
     XENGINE_EXPORT ShaderInstruction textureSampleCubeMap(ShaderOperand texture,
                                                           ShaderOperand coordinate,
-                                                          ShaderOperand bias = {});
+                                                          ShaderOperand lod = {});
 
     /**
      * Sample a TEXTURE_CUBE_MAP_ARRAY texture.
@@ -192,12 +192,12 @@ namespace xng::ShaderInstructionFactory {
      *
      * @param texture
      * @param coordinate A 4d float vector specifying the point to sample in xyz and the array layer in w.
-     * @param bias Optional bias to apply during level-of-detail computation.
+     * @param lod Optional explicit level-of-detail to sample from (uses textureLod when specified).
      * @return
      */
     XENGINE_EXPORT ShaderInstruction textureSampleCubeMapArray(ShaderOperand texture,
                                                                ShaderOperand coordinate,
-                                                               ShaderOperand bias = {});
+                                                               ShaderOperand lod = {});
 
     XENGINE_EXPORT ShaderInstruction textureSize(ShaderOperand texture, ShaderOperand lod = {});
 
@@ -241,11 +241,15 @@ namespace xng::ShaderInstructionFactory {
 
     XENGINE_EXPORT ShaderInstruction atan(ShaderOperand value);
 
+    XENGINE_EXPORT ShaderInstruction atan2(ShaderOperand y, ShaderOperand x);
+
     XENGINE_EXPORT ShaderInstruction pow(ShaderOperand value, ShaderOperand exponent);
 
     XENGINE_EXPORT ShaderInstruction exp(ShaderOperand value);
 
     XENGINE_EXPORT ShaderInstruction log(ShaderOperand value);
+
+    XENGINE_EXPORT ShaderInstruction log2(ShaderOperand value);
 
     XENGINE_EXPORT ShaderInstruction sqrt(ShaderOperand value);
 

@@ -425,6 +425,15 @@ namespace xng::ShaderInstructionFactory {
         return ret;
     }
 
+    ShaderInstruction atan2(ShaderOperand y, ShaderOperand x)
+    {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::Atan2;
+        ret.operands.push_back(std::move(y));
+        ret.operands.push_back(std::move(x));
+        return ret;
+    }
+
     ShaderInstruction pow(ShaderOperand value, ShaderOperand exponent) {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::Pow;
@@ -443,6 +452,13 @@ namespace xng::ShaderInstructionFactory {
     ShaderInstruction log(ShaderOperand value) {
         ShaderInstruction ret;
         ret.code = ShaderInstruction::Log;
+        ret.operands.push_back(std::move(value));
+        return ret;
+    }
+
+    ShaderInstruction log2(ShaderOperand value) {
+        ShaderInstruction ret;
+        ret.code = ShaderInstruction::Log2;
         ret.operands.push_back(std::move(value));
         return ret;
     }
