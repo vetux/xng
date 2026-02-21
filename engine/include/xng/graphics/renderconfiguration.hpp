@@ -24,8 +24,7 @@
 #include "canvas.hpp"
 
 namespace xng {
-    class RenderConfiguration {
-    public:
+    struct RenderConfiguration {
         void setGamma(const float value) { gamma = value; }
 
         float getGamma() const { return gamma; }
@@ -58,15 +57,24 @@ namespace xng {
 
         const std::vector<Canvas> &getCanvases() const { return renderCanvases; }
 
-    private:
         float renderScale = 1.0f;
+
         int pointShadowResolution = 1024;
         int spotShadowResolution = 1024;
         int directionalShadowResolution = 1024;
+
         RenderScene renderScene;
+
         std::vector<Canvas> renderCanvases;
+
         ColorRGBA compositingClearColor = ColorRGBA::white();
         float gamma = 1;
+
+        // IBL texture size configuration
+        Vec2i iblCubemapSize{512, 512};
+        Vec2i iblPrefilterSize{128, 128};
+        Vec2i iblIrradianceSize{128, 128};
+        Vec2i iblBRDFSize{512, 512};
     };
 }
 

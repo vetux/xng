@@ -22,6 +22,7 @@
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
 #include "xng/graphics/shaderlib/pi.hpp"
+#include "xng/rendergraph/rendergraphtexture.hpp"
 
 using namespace xng::ShaderScript;
 
@@ -31,11 +32,9 @@ namespace xng::shaderlib {
     DeclareFunction2(GeometrySchlickGGX)
     DeclareFunction4(GeometrySmith)
     DeclareFunction2(FresnelSchlick)
+    DeclareFunction3(FresnelSchlickRoughness)
 
-    //TODO: Fix pbr light colors other than white not correctly blending with albedo
     void pbr() {
-        auto &builder = ShaderBuilder::instance();
-
         Function(Float, DistributionGGX, vec3, N, vec3, H, Float, roughness)
             Float a = roughness * roughness;
             Float a2 = a * a;
@@ -71,6 +70,10 @@ namespace xng::shaderlib {
             Return(F0 + (1.0f - F0) * pow(clamp(1.0f - cosTheta, 0.0f, 1.0f), 5.0f));
         End
 
+        Function(vec3, FresnelSchlickRoughness, Float, cosTheta, vec3, F0, Float, roughness)
+            Return(F0 + (max(vec3(1.0f - roughness), F0) - F0) * pow(clamp(1.0f - cosTheta, 0.0f, 1.0f), 5.0f));
+        End
+
         Function(PbrPass, pbr_begin,
                  vec3, WorldPos,
                  vec3, Normal,
@@ -103,6 +106,9 @@ namespace xng::shaderlib {
             ret.ao = ao;
             ret.camPos = camPos;
             ret.gamma = gamma;
+            ret.iblIrradiance = vec3(0.0f, 0.0f, 0.0f);
+            ret.iblPrefilter = vec3(0.0f, 0.0f, 0.0f);
+            ret.iblBRDF = vec2(0.0f, 0.0f);
 
             Return(ret);
         End
@@ -276,13 +282,32 @@ namespace xng::shaderlib {
         End
 
         Function(vec3, pbr_finish, PbrPass, pass, vec3, Lo)
-            // ambient lighting, without IBL the pbr metallic shading will be too dark because there is nothing
-            // for the metallic surface specular to reflect other than the light sources.
-            vec3 ambient = vec3(0.03f) * pass.albedo * pass.ao;
+            // Image based lighting ambient contribution
+            vec3 N = pass.N;
+            vec3 V = pass.V;
+            vec3 F0 = pass.F0;
+            vec3 albedo = pass.albedo;
+            Float metallic = pass.metallic;
+            Float roughness = pass.roughness;
+            Float ao = pass.ao;
+
+            // Use IBL values provided on the PbrPass by the lighting pass
+            vec3 irradiance = pass.iblIrradiance;
+            vec3 kS = FresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughness);
+            vec3 kD = vec3(1.0f) - kS;
+            kD *= 1.0f - metallic;
+
+            vec3 diffuse = irradiance * albedo;
+
+            vec3 prefilteredColor = pass.iblPrefilter;
+            vec2 brdf = pass.iblBRDF;
+            vec3 specular = prefilteredColor * (F0 * brdf.x() + brdf.y());
+
+            vec3 ambient = (kD * diffuse + specular) * ao;
 
             vec3 color = ambient + Lo;
 
-            // HDR tonemapping,
+            // HDR tonemapping
             color = color / (color + vec3(1.0));
             // gamma correct
             color = pow(color, vec3(1.0 / pass.gamma));

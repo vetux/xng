@@ -118,6 +118,8 @@ namespace xng {
         std::vector<SpriteObject> sprites;
 
         Skybox skybox;
+
+        ResourceHandle<ImageRGBF> hdri;
     };
 }
 

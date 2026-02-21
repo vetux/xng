@@ -18,22 +18,27 @@
  */
 
 #include "xng/graphics/passes/deferredlightingpass.hpp"
+#include "xng/graphics/sharedresources/ibl.hpp"
 
-namespace xng {
+namespace xng
+{
 #pragma pack(push, 1)
-    struct PointLightData {
+    struct PointLightData
+    {
         std::array<float, 4> position;
         std::array<float, 4> color;
         std::array<float, 4> farPlane;
     };
 
-    struct DirectionalLightData {
+    struct DirectionalLightData
+    {
         std::array<float, 4> direction;
         std::array<float, 4> color;
         std::array<float, 4> farPlane;
     };
 
-    struct SpotLightData {
+    struct SpotLightData
+    {
         std::array<float, 4> position;
         std::array<float, 4> direction_quadratic;
         std::array<float, 4> color;
@@ -41,18 +46,22 @@ namespace xng {
         std::array<float, 4> cutOff_outerCutOff_constant_linear;
     };
 
-    struct ShaderStorageData {
+    struct ShaderStorageData
+    {
         std::array<float, 4> viewPosition_gamma{};
+        std::array<int, 4> iblPresent_prefilterMipCount{};
     };
 #pragma pack(pop)
 
     DeferredLightingPass::DeferredLightingPass(std::shared_ptr<RenderConfiguration> configuration,
                                                std::shared_ptr<SharedResourceRegistry> registry)
         : config(std::move(configuration)),
-          registry(std::move(registry)) {
+          registry(std::move(registry))
+    {
     }
 
-    void DeferredLightingPass::create(RenderGraphBuilder &builder) {
+    void DeferredLightingPass::create(RenderGraphBuilder& builder)
+    {
         layerSize = builder.getBackBufferSize() * config->getRenderScale();
 
         RenderGraphPipeline pip;
@@ -92,33 +101,47 @@ namespace xng {
         layers.layers.emplace_back(layer);
         registry->set<CompositingLayers>(layers);
 
-        builder.addPass("DeferredLightingPass", [this](RenderGraphContext &ctx) {
+        auto pass = builder.addPass("DeferredLightingPass", [this](RenderGraphContext& ctx)
+        {
             runPass(ctx);
         });
+
+        // If IBL maps are available in the shared registry, declare them as read resources
+        if (registry->check<IBLMaps>())
+        {
+            auto ibl = registry->get<IBLMaps>();
+            if (ibl.irradiance) builder.read(pass, ibl.irradiance);
+            if (ibl.prefilter) builder.read(pass, ibl.prefilter);
+            if (ibl.brdfLUT) builder.read(pass, ibl.brdfLUT);
+        }
     }
 
-    void DeferredLightingPass::recreate(RenderGraphBuilder &builder) {
+    void DeferredLightingPass::recreate(RenderGraphBuilder& builder)
+    {
         pipeline = builder.inheritResource(pipeline);
         vertexBuffer = builder.inheritResource(vertexBuffer);
         shaderDataBuffer = builder.inheritResource(shaderDataBuffer);
 
-        if (recreateLightBuffers) {
+        if (recreateLightBuffers)
+        {
             pointLightBuffer = builder.createShaderBuffer(sizeof(PointLightData)
-                                                          * pointLights.size());
+                * pointLights.size());
             directionalLightBuffer = builder.createShaderBuffer(sizeof(DirectionalLightData)
-                                                                * directionalLights.size());
+                * directionalLights.size());
             spotLightBuffer = builder.createShaderBuffer(sizeof(SpotLightData)
-                                                         * spotLights.size());
+                * spotLights.size());
             shadowPointLightBuffer = builder.createShaderBuffer(sizeof(PointLightData)
-                                                                * shadowPointLights.size());
+                * shadowPointLights.size());
             shadowDirectionalLightBuffer = builder.createShaderBuffer(sizeof(DirectionalLightData)
-                                                                      * shadowDirectionalLights.size());
+                * shadowDirectionalLights.size());
             shadowSpotLightBuffer = builder.createShaderBuffer(sizeof(SpotLightData)
-                                                               * shadowSpotLights.size());
+                * shadowSpotLights.size());
             shadowDirectionalLightTransformBuffer = builder.createShaderBuffer(sizeof(Mat4f)
-                                                                               * shadowDirectionalLights.size());
+                * shadowDirectionalLights.size());
             shadowSpotLightTransformBuffer = builder.createShaderBuffer(sizeof(Mat4f) * shadowSpotLights.size());
-        } else {
+        }
+        else
+        {
             pointLightBuffer = builder.inheritResource(pointLightBuffer);
             directionalLightBuffer = builder.inheritResource(directionalLightBuffer);
             spotLightBuffer = builder.inheritResource(spotLightBuffer);
@@ -133,13 +156,16 @@ namespace xng {
         gBuffer = registry->get<GBuffer>();
 
         auto nLayerSize = builder.getBackBufferSize() * config->getRenderScale();
-        if (layerSize != nLayerSize) {
+        if (layerSize != nLayerSize)
+        {
             layerSize = nLayerSize;
             RenderGraphTexture tex;
             tex.format = RGBA;
             tex.size = layerSize;
             layer.color = builder.createTexture(tex);
-        } else {
+        }
+        else
+        {
             layer.color = builder.inheritResource(layer.color);
         }
 
@@ -149,48 +175,71 @@ namespace xng {
         layers.layers.emplace_back(layer);
         registry->set<CompositingLayers>(layers);
 
-        builder.addPass("DeferredLightingPass", [this](RenderGraphContext &ctx) {
+        auto pass = builder.addPass("DeferredLightingPass", [this](RenderGraphContext& ctx)
+        {
             runPass(ctx);
         });
+
+        // If IBL maps are available in the shared registry, declare them as read resources
+        if (registry->check<IBLMaps>())
+        {
+            auto ibl = registry->get<IBLMaps>();
+            if (ibl.irradiance) builder.read(pass, ibl.irradiance);
+            if (ibl.prefilter) builder.read(pass, ibl.prefilter);
+            if (ibl.brdfLUT) builder.read(pass, ibl.brdfLUT);
+        }
     }
 
-    bool DeferredLightingPass::shouldRebuild(const Vec2i &backBufferSize) {
+    bool DeferredLightingPass::shouldRebuild(const Vec2i& backBufferSize)
+    {
         std::vector<PointLightObject> pLights;
         std::vector<PointLightObject> psLights;
-        for (auto &object: config->getScene().pointLights) {
-            if (object.light.castShadows) {
+        for (auto& object : config->getScene().pointLights)
+        {
+            if (object.light.castShadows)
+            {
                 psLights.emplace_back(object);
-            } else {
+            }
+            else
+            {
                 pLights.emplace_back(object);
             }
         }
 
         std::vector<DirectionalLightObject> dLights;
         std::vector<DirectionalLightObject> dsLights;
-        for (auto &object: config->getScene().directionalLights) {
-            if (object.light.castShadows) {
+        for (auto& object : config->getScene().directionalLights)
+        {
+            if (object.light.castShadows)
+            {
                 dsLights.emplace_back(object);
-            } else {
+            }
+            else
+            {
                 dLights.emplace_back(object);
             }
         }
 
         std::vector<SpotLightObject> sLights;
         std::vector<SpotLightObject> ssLights;
-        for (auto &object: config->getScene().spotLights) {
-            if (object.light.castShadows) {
+        for (auto& object : config->getScene().spotLights)
+        {
+            if (object.light.castShadows)
+            {
                 ssLights.emplace_back(object);
-            } else {
+            }
+            else
+            {
                 sLights.emplace_back(object);
             }
         }
 
         recreateLightBuffers = pLights != pointLights
-                               || psLights != shadowPointLights
-                               || dLights != directionalLights
-                               || dsLights != shadowDirectionalLights
-                               || sLights != spotLights
-                               || ssLights != shadowSpotLights;
+            || psLights != shadowPointLights
+            || dLights != directionalLights
+            || dsLights != shadowDirectionalLights
+            || sLights != spotLights
+            || ssLights != shadowSpotLights;
 
         pointLights = pLights;
         shadowPointLights = psLights;
@@ -201,17 +250,21 @@ namespace xng {
 
         viewPosition = config->getScene().cameraTransform.getPosition();
 
-        if (recreateLightBuffers) {
+        if (recreateLightBuffers)
+        {
             return true;
         }
 
         return layerSize != backBufferSize * config->getRenderScale();
     }
 
-    void DeferredLightingPass::runPass(RenderGraphContext &ctx) {
-        if (recreateLightBuffers) {
+    void DeferredLightingPass::runPass(RenderGraphContext& ctx)
+    {
+        if (recreateLightBuffers)
+        {
             std::vector<PointLightData> pointLightData;
-            for (auto &lightObject: pointLights) {
+            for (auto& lightObject : pointLights)
+            {
                 PointLightData data{};
                 data.position = Vec4f(lightObject.transform.getPosition().x,
                                       lightObject.transform.getPosition().y,
@@ -222,12 +275,13 @@ namespace xng {
                 pointLightData.emplace_back(data);
             }
             ctx.uploadBuffer(pointLightBuffer,
-                             reinterpret_cast<const uint8_t *>(pointLightData.data()),
+                             reinterpret_cast<const uint8_t*>(pointLightData.data()),
                              pointLightData.size() * sizeof(PointLightData),
                              0);
 
             pointLightData.clear();
-            for (auto &lightObject: shadowPointLights) {
+            for (auto& lightObject : shadowPointLights)
+            {
                 PointLightData data{};
                 data.position = Vec4f(lightObject.transform.getPosition().x,
                                       lightObject.transform.getPosition().y,
@@ -238,12 +292,13 @@ namespace xng {
                 pointLightData.emplace_back(data);
             }
             ctx.uploadBuffer(shadowPointLightBuffer,
-                             reinterpret_cast<const uint8_t *>(pointLightData.data()),
+                             reinterpret_cast<const uint8_t*>(pointLightData.data()),
                              pointLightData.size() * sizeof(PointLightData),
                              0);
 
             std::vector<DirectionalLightData> directionalLightData;
-            for (auto &lightObject: directionalLights) {
+            for (auto& lightObject : directionalLights)
+            {
                 DirectionalLightData data{};
                 auto direction = lightObject.light.getDirection(lightObject.transform);
                 data.direction = Vec4f(direction.x,
@@ -255,14 +310,15 @@ namespace xng {
                 directionalLightData.emplace_back(data);
             }
             ctx.uploadBuffer(directionalLightBuffer,
-                             reinterpret_cast<const uint8_t *>(directionalLightData.data()),
+                             reinterpret_cast<const uint8_t*>(directionalLightData.data()),
                              directionalLightData.size() * sizeof(DirectionalLightData),
                              0);
 
             directionalLightData.clear();
 
             std::vector<Mat4f> directionalLightTransforms;
-            for (auto &lightObject: shadowDirectionalLights) {
+            for (auto& lightObject : shadowDirectionalLights)
+            {
                 DirectionalLightData data{};
                 auto direction = lightObject.light.getDirection(lightObject.transform);
                 data.direction = Vec4f(direction.x,
@@ -275,17 +331,18 @@ namespace xng {
                 directionalLightTransforms.emplace_back(lightObject.light.getShadowProjection(lightObject.transform));
             }
             ctx.uploadBuffer(shadowDirectionalLightBuffer,
-                             reinterpret_cast<const uint8_t *>(directionalLightData.data()),
+                             reinterpret_cast<const uint8_t*>(directionalLightData.data()),
                              directionalLightData.size() * sizeof(DirectionalLightData),
                              0);
             ctx.uploadBuffer(shadowDirectionalLightTransformBuffer,
-                             reinterpret_cast<const uint8_t *>(directionalLightTransforms.data()),
+                             reinterpret_cast<const uint8_t*>(directionalLightTransforms.data()),
                              directionalLightTransforms.size() * sizeof(Mat4f),
                              0);
 
 
             std::vector<SpotLightData> spotLightData;
-            for (auto &lightObject: spotLights) {
+            for (auto& lightObject : spotLights)
+            {
                 SpotLightData data{};
                 data.position = Vec4f(lightObject.transform.getPosition().x,
                                       lightObject.transform.getPosition().y,
@@ -306,14 +363,15 @@ namespace xng {
                 spotLightData.emplace_back(data);
             }
             ctx.uploadBuffer(spotLightBuffer,
-                             reinterpret_cast<const uint8_t *>(spotLightData.data()),
+                             reinterpret_cast<const uint8_t*>(spotLightData.data()),
                              spotLightData.size() * sizeof(SpotLightData),
                              0);
 
             spotLightData.clear();
             directionalLightTransforms.clear();
 
-            for (auto &lightObject: shadowSpotLights) {
+            for (auto& lightObject : shadowSpotLights)
+            {
                 SpotLightData data{};
                 data.position = Vec4f(lightObject.transform.getPosition().x,
                                       lightObject.transform.getPosition().y,
@@ -335,17 +393,18 @@ namespace xng {
                 directionalLightTransforms.emplace_back(lightObject.light.getShadowProjection(lightObject.transform));
             }
             ctx.uploadBuffer(shadowSpotLightBuffer,
-                             reinterpret_cast<const uint8_t *>(spotLightData.data()),
+                             reinterpret_cast<const uint8_t*>(spotLightData.data()),
                              spotLightData.size() * sizeof(SpotLightData),
                              0);
             ctx.uploadBuffer(shadowSpotLightTransformBuffer,
-                             reinterpret_cast<const uint8_t *>(directionalLightTransforms.data()),
+                             reinterpret_cast<const uint8_t*>(directionalLightTransforms.data()),
                              directionalLightTransforms.size() * sizeof(Mat4f),
                              0);
             recreateLightBuffers = false;
         }
 
-        if (!normalizedQuadUploaded) {
+        if (!normalizedQuadUploaded)
+        {
             ctx.uploadBuffer(vertexBuffer, normalizedQuad.vertices.data(), normalizedQuad.vertices.size(), 0);
             normalizedQuadUploaded = true;
         }
@@ -355,8 +414,18 @@ namespace xng {
                                               viewPosition.y,
                                               viewPosition.z,
                                               config->getGamma()).getMemory();
+        if (registry->check<IBLMaps>())
+        {
+            shaderData.iblPresent_prefilterMipCount[0] = true;
+            shaderData.iblPresent_prefilterMipCount[1] = RenderGraphTexture::calculateMipLevels(
+                config->iblPrefilterSize);
+        }
+        else
+        {
+            shaderData.iblPresent_prefilterMipCount[0] = false;
+        }
         ctx.uploadBuffer(shaderDataBuffer,
-                         reinterpret_cast<const uint8_t *>(&shaderData),
+                         reinterpret_cast<const uint8_t*>(&shaderData),
                          sizeof(ShaderStorageData),
                          0);
 
@@ -387,6 +456,14 @@ namespace xng {
         ctx.bindTexture("pointLightShadowMaps", shadowMaps.pointShadowMaps);
         ctx.bindTexture("directionalLightShadowMaps", shadowMaps.dirShadowMaps);
         ctx.bindTexture("spotLightShadowMaps", shadowMaps.spotShadowMaps);
+
+        if (registry->check<IBLMaps>())
+        {
+            auto ibl = registry->get<IBLMaps>();
+            if (ibl.irradiance) ctx.bindTexture("iblIrradiance", ibl.irradiance);
+            if (ibl.prefilter) ctx.bindTexture("iblPrefilter", ibl.prefilter);
+            if (ibl.brdfLUT) ctx.bindTexture("iblBRDF", ibl.brdfLUT);
+        }
 
         ctx.drawArray(DrawCall(0, 6));
 

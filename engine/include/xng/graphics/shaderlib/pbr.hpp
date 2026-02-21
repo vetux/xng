@@ -40,7 +40,10 @@ namespace xng::ShaderScript {
                  Float, roughness,
                  Float, ao,
                  vec3, camPos,
-                 Float, gamma);
+                 Float, gamma,
+                 vec3, iblIrradiance,
+                 vec3, iblPrefilter,
+                 vec2, iblBRDF);
 }
 
 namespace xng::shaderlib {

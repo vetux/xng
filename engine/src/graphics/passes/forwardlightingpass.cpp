@@ -18,6 +18,7 @@
  */
 
 #include "xng/graphics/passes/forwardlightingpass.hpp"
+#include "xng/graphics/sharedresources/ibl.hpp"
 
 namespace xng {
     //TODO: Move all type definitions and inline function definitions inside all of the translation units into anonymous namespaces to force "internal linkage" (https://en.cppreference.com/w/cpp/language/namespace.html).
@@ -66,10 +67,12 @@ namespace xng {
 
             ShaderAtlasTexture normal;
             float normalIntensity[4]{0, 0, 0, 0};
+
+            int iblPresent_iblPrefilterMipCount[4]{0, 0, 0, 0};
         };
 #pragma pack(pop)
 
-        static_assert(sizeof(ShaderDrawData) == 64 + 64 + 16 + 16 + 16 + 16 + 32 + 32 + 32 + 32 + 32 + 16);
+        static_assert(sizeof(ShaderDrawData) == 64 + 64 + 16 + 16 + 16 + 16 + 32 + 32 + 32 + 32 + 32 + 16 + 16);
     }
 
     ForwardLightingPass::ForwardLightingPass(std::shared_ptr<RenderConfiguration> configuration,
@@ -78,7 +81,7 @@ namespace xng {
     }
 
     void ForwardLightingPass::create(RenderGraphBuilder &builder) {
-        assert(sizeof(ShaderDrawData) == 64 + 64 + 16 + 16 + 16 + 16 + 32 + 32 + 32 + 32 + 32 + 16);
+        assert(sizeof(ShaderDrawData) == 64 + 64 + 16 + 16 + 16 + 16 + 32 + 32 + 32 + 32 + 32 + 16 + 16);
 
         auto vs = createVertexShader();
         auto fs = createFragmentShader();
@@ -133,6 +136,14 @@ namespace xng {
         auto pass = builder.addPass("ForwardLightingPass", [this](RenderGraphContext &ctx) {
             runPass(ctx);
         });
+
+        // If IBL maps are available, declare them as read resources so they are produced before this pass
+        if (registry->check<IBLMaps>()) {
+            auto ibl = registry->get<IBLMaps>();
+            if (ibl.irradiance) builder.read(pass, ibl.irradiance);
+            if (ibl.prefilter) builder.read(pass, ibl.prefilter);
+            if (ibl.brdfLUT) builder.read(pass, ibl.brdfLUT);
+        }
 
         meshAtlas.update(builder, pass);
 
@@ -206,6 +217,13 @@ namespace xng {
         auto pass = builder.addPass("ForwardLightingPass", [this](RenderGraphContext &ctx) {
             runPass(ctx);
         });
+
+        if (registry->check<IBLMaps>()) {
+            auto ibl = registry->get<IBLMaps>();
+            if (ibl.irradiance) builder.read(pass, ibl.irradiance);
+            if (ibl.prefilter) builder.read(pass, ibl.prefilter);
+            if (ibl.brdfLUT) builder.read(pass, ibl.brdfLUT);
+        }
 
         meshAtlas.update(builder, pass);
 
@@ -677,6 +695,16 @@ namespace xng {
                 data.viewPosition_gamma[2] = viewPosition.z;
                 data.viewPosition_gamma[3] = config->getGamma();
 
+                if (registry->check<IBLMaps>())
+                {
+                    data.iblPresent_iblPrefilterMipCount[0] = true;
+                    data.iblPresent_iblPrefilterMipCount[1] = RenderGraphTexture::calculateMipLevels(config->iblPrefilterSize);;
+                }
+                else
+                {
+                    data.iblPresent_iblPrefilterMipCount[0] = false;
+                }
+
                 shaderData.emplace_back(data);
 
                 auto &draw = drawData.data.at(i);
@@ -720,6 +748,13 @@ namespace xng {
         ctx.bindShaderBuffer("shadowSpotLights", shadowSpotLightBuffer);
         ctx.bindShaderBuffer("directionalLightShadowTransforms", shadowDirectionalLightTransformBuffer);
         ctx.bindShaderBuffer("spotLightShadowTransforms", shadowSpotLightTransformBuffer);
+
+        if (registry->check<IBLMaps>()) {
+            auto ibl = registry->get<IBLMaps>();
+            if (ibl.irradiance) ctx.bindTexture("iblIrradiance", ibl.irradiance);
+            if (ibl.prefilter) ctx.bindTexture("iblPrefilter", ibl.prefilter);
+            if (ibl.brdfLUT) ctx.bindTexture("iblBRDF", ibl.brdfLUT);
+        }
 
         ctx.bindTexture("pointLightShadowMaps", shadowMaps.pointShadowMaps);
         ctx.bindTexture("directionalLightShadowMaps", shadowMaps.dirShadowMaps);

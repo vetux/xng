@@ -23,10 +23,12 @@
 #include "xng/graphics/shaderlib/pbr.hpp"
 #include "xng/graphics/shaderlib/shadowmapping.hpp"
 #include "xng/graphics/shaderlib/texfilter.hpp"
+#include "xng/rendergraph/rendergraphtexture.hpp"
 
 using namespace xng::ShaderScript;
 
-namespace xng {
+namespace xng
+{
     DefineStruct(AtlasTexture,
                  ivec4, level_index_filtering_assigned,
                  vec4, atlasScale_texSize)
@@ -43,7 +45,8 @@ namespace xng {
                  AtlasTexture, albedo,
                  vec4, viewPosition_gamma,
                  AtlasTexture, normal,
-                 vec4, normalIntensity)
+                 vec4, normalIntensity,
+                 ivec4, iblPresent_prefilterMipCount)
 
     DefineStruct(BoneBufferLayout, mat4, matrix)
 
@@ -66,7 +69,8 @@ namespace xng {
 
     DefineStruct(TransformData, mat4, transform)
 
-    Shader ForwardLightingPass::createVertexShader() {
+    Shader ForwardLightingPass::createVertexShader()
+    {
         BeginShader(Shader::VERTEX)
 
         Input(vec3, position)
@@ -189,7 +193,8 @@ namespace xng {
 
     DeclareFunction2(texture_atlas)
 
-    Shader ForwardLightingPass::createFragmentShader() {
+    Shader ForwardLightingPass::createFragmentShader()
+    {
         BeginShader(Shader::FRAGMENT)
 
         Input(vec3, fPos)
@@ -229,6 +234,10 @@ namespace xng {
         Texture(TEXTURE_CUBE_MAP_ARRAY, DEPTH, pointLightShadowMaps)
         Texture(TEXTURE_2D_ARRAY, DEPTH, directionalLightShadowMaps)
         Texture(TEXTURE_2D_ARRAY, DEPTH, spotLightShadowMaps)
+
+        Texture(TEXTURE_CUBE_MAP, RGBA16F, iblPrefilter)
+        Texture(TEXTURE_CUBE_MAP, RGBA16F, iblIrradiance)
+        Texture(TEXTURE_2D, RG16F, iblBRDF)
 
         TextureArray(TEXTURE_2D_ARRAY, RGBA, 12, atlasTextures)
 
@@ -298,19 +307,20 @@ namespace xng {
         If(data.normal.level_index_filtering_assigned.w() != 0)
             mat3 tbn = mat3(fT, fB, fN);
             vec3 texNormal = texture_atlas(data.normal, fUv).xyz()
-                             * vec3(data.normalIntensity.x(), data.normalIntensity.x(), 1);
+                * vec3(data.normalIntensity.x(), data.normalIntensity.x(), 1);
             texNormal = tbn * normalize(texNormal * 2.0 - 1.0);
             normal = normalize(texNormal);
         Fi
 
-        PbrPass pass = pbr_begin(fPos,
-                                 normal,
-                                 albedo.xyz(),
-                                 roughnessMetallicAO.y(),
-                                 roughnessMetallicAO.x(),
-                                 roughnessMetallicAO.z(),
-                                 data.viewPosition_gamma.xyz(),
-                                 data.viewPosition_gamma.w());
+        PbrPass pass;
+        pass = pbr_begin(fPos,
+                         normal,
+                         albedo.xyz(),
+                         roughnessMetallicAO.y(),
+                         roughnessMetallicAO.x(),
+                         roughnessMetallicAO.z(),
+                         data.viewPosition_gamma.xyz(),
+                         data.viewPosition_gamma.w());
 
         vec3 reflectance;
         reflectance = vec3(0, 0, 0);
@@ -396,6 +406,23 @@ namespace xng {
                                    light.cutOff_outerCutOff_constant_linear.w(),
                                    shadow);
         Done
+
+        If(data.iblPresent_prefilterMipCount.x() == 0)
+            pass.iblIrradiance = vec3(0);
+            pass.iblPrefilter = vec3(0);
+            pass.iblBRDF = vec2(0);
+        Else
+            // Sample IBL textures and store results in the PbrPass for pbr_finish
+            vec3 irradiance = textureSampleCube(iblIrradiance, pass.N).xyz();
+            vec3 R = reflect(pass.V * -1, pass.N);
+            Float maxMip = Float(data.iblPresent_prefilterMipCount.y() - 1);
+            vec3 prefilteredColor = textureSampleCube(iblPrefilter, R, pass.roughness * maxMip).xyz();
+            vec2 brdf = textureSample(iblBRDF, vec2(max(dot(pass.N, pass.V), 0.0f), pass.roughness)).xy();
+
+            pass.iblIrradiance = irradiance;
+            pass.iblPrefilter = prefilteredColor;
+            pass.iblBRDF = brdf;
+        Fi
 
         oColor = vec4(pbr_finish(pass, reflectance), albedo.w());
 

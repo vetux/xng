@@ -21,12 +21,15 @@
 
 #include "xng/graphics/shaderlib/pbr.hpp"
 #include "xng/graphics/shaderlib/shadowmapping.hpp"
+#include "xng/rendergraph/rendergraphtexture.hpp"
 
 using namespace xng::ShaderScript;
 
-namespace xng {
+namespace xng
+{
     DefineStruct(ShaderData,
-                 vec4, viewPosition_gamma)
+                 vec4, viewPosition_gamma,
+                 ivec4, iblPresent_prefilterMipCount)
 
     DefineStruct(PBRPointLight,
                  vec4, position,
@@ -47,7 +50,8 @@ namespace xng {
 
     DefineStruct(TransformData, mat4, transform);
 
-    Shader DeferredLightingPass::createVertexShader() {
+    Shader DeferredLightingPass::createVertexShader()
+    {
         BeginShader(Shader::VERTEX)
 
         Input(vec3, vPosition)
@@ -94,7 +98,8 @@ namespace xng {
         return BuildShader();
     }
 
-    Shader DeferredLightingPass::createFragmentShader() {
+    Shader DeferredLightingPass::createFragmentShader()
+    {
         BeginShader(Shader::FRAGMENT)
 
         Input(vec4, fPosition)
@@ -130,6 +135,10 @@ namespace xng {
         Texture(TEXTURE_2D_ARRAY, DEPTH, directionalLightShadowMaps)
         Texture(TEXTURE_2D_ARRAY, DEPTH, spotLightShadowMaps)
 
+        Texture(TEXTURE_CUBE_MAP, RGBA16F, iblPrefilter)
+        Texture(TEXTURE_CUBE_MAP, RGBA16F, iblIrradiance)
+        Texture(TEXTURE_2D, RG16F, iblBRDF)
+
         DynamicBuffer(TransformData, directionalLightShadowTransforms)
         DynamicBuffer(TransformData, spotLightShadowTransforms)
 
@@ -151,14 +160,15 @@ namespace xng {
         vec3 roughnessMetallicAO = textureSample(gBufferRoughnessMetallicAO, fUv).xyz();
         vec3 albedo = textureSample(gBufferAlbedo, fUv).xyz();
 
-        PbrPass pass = pbr_begin(fPos,
-                                 fNorm,
-                                 albedo,
-                                 roughnessMetallicAO.y(),
-                                 roughnessMetallicAO.x(),
-                                 roughnessMetallicAO.z(),
-                                 shaderData.viewPosition_gamma.xyz(),
-                                 shaderData.viewPosition_gamma.w());
+        PbrPass pass;
+        pass = pbr_begin(fPos,
+                         fNorm,
+                         albedo,
+                         roughnessMetallicAO.y(),
+                         roughnessMetallicAO.x(),
+                         roughnessMetallicAO.z(),
+                         shaderData.viewPosition_gamma.xyz(),
+                         shaderData.viewPosition_gamma.w());
 
         vec3 reflectance;
         reflectance = vec3(0, 0, 0);
@@ -232,6 +242,22 @@ namespace xng {
                                    light.cutOff_outerCutOff_constant_linear.w(),
                                    shadow);
         Done
+
+        If(shaderData.iblPresent_prefilterMipCount.x() == 0)
+            pass.iblIrradiance = vec3(0);
+            pass.iblPrefilter = vec3(0);
+            pass.iblBRDF = vec2(0);
+        Else
+            // Sample IBL textures and store results in the PbrPass for pbr_finish
+            vec3 irradiance = textureSampleCube(iblIrradiance, pass.N).xyz();
+            vec3 R = reflect(pass.V * -1, pass.N);
+            Float maxMip = Float(shaderData.iblPresent_prefilterMipCount.y() - 1);
+            vec3 prefilteredColor = textureSampleCube(iblPrefilter, R, pass.roughness * maxMip).xyz();
+            vec2 brdf = textureSample(iblBRDF, vec2(max(dot(pass.N, pass.V), 0.0f), pass.roughness)).xy();
+            pass.iblIrradiance = irradiance;
+            pass.iblPrefilter = prefilteredColor;
+            pass.iblBRDF = brdf;
+        Fi
 
         oColor = vec4(pbr_finish(pass, reflectance), 1);
 

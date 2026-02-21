@@ -31,6 +31,9 @@ namespace xng {
 
         RESOURCE_CANVAS_TEXTURES,
 
+        RESOURCE_ENVIRONMENT_MAP,
+        RESOURCE_IBL,
+
         RESOURCE_SHADOW_MAPS,
 
         RESOURCE_USER = 255
