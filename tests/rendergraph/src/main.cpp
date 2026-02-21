@@ -23,11 +23,14 @@
 #include "xng/adapters/opengl/opengl.hpp"
 #include "xng/adapters/freetype/freetype.hpp"
 #include "xng/adapters/assimp/assimp.hpp"
+#include "xng/graphics/passes/iblprepass.hpp"
 
 using namespace xng;
 
 RenderScene createScene() {
     RenderScene scene;
+
+    scene.hdri = ResourceHandle<ImageRGBF>(Uri("file://hdri/church_stairway_4k.hdr"));
 
     Material material;
     SkinnedModelObject mesh;
@@ -242,6 +245,7 @@ int main(int argc, char *argv[]) {
     auto graph3D = passScheduler->addGraph({
         std::make_shared<ConstructionPass>(config, registry),
         std::make_shared<ShadowMappingPass>(config, registry),
+        std::make_shared<IBLPrePass>(config, registry),
         std::make_shared<DeferredLightingPass>(config, registry),
         std::make_shared<ForwardLightingPass>(config, registry),
         std::make_shared<CanvasRenderPass>(config, registry),
@@ -253,7 +257,7 @@ int main(int argc, char *argv[]) {
 
     window->show();
 
-    FrameLimiter frameLimiter(0);
+    FrameLimiter frameLimiter(60);
     frameLimiter.reset();
 
     auto textLayoutEngine = TextLayoutEngine(*freeType, font, {0, 30});
