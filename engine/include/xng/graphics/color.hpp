@@ -80,6 +80,47 @@ namespace xng {
         }
     };
 
+    struct XENGINE_EXPORT ColorRGBF
+    {
+        float data[3];
+
+        float &r() { return data[0]; }
+
+        float &g() { return data[1]; }
+
+        float &b() { return data[2]; }
+
+        const float &r() const { return data[0]; }
+
+        const float &g() const { return data[1]; }
+
+        const float &b() const { return data[2]; }
+
+        ColorRGBF() : data() {}
+
+        ColorRGBF(float r, float g, float b)
+                : data() {
+            this->r() = r;
+            this->g() = g;
+            this->b() = b;
+        }
+
+        explicit ColorRGBF(float v)
+                : data() {
+            this->r() = v;
+            this->g() = v;
+            this->b() = v;
+        }
+
+        bool operator==(const ColorRGBF &other) const {
+            return r() == other.r() && g() == other.g() && b() == other.b();
+        }
+
+        bool operator!=(const ColorRGBF &other) const {
+            return !(*this == other);
+        }
+    };
+
     struct ColorRGBA {
         uint8_t data[4];
 

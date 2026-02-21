@@ -55,19 +55,19 @@ namespace xng {
         throw std::runtime_error(error);
     }
 
-    ImageFloat StbiImporter::readImageFloat(const std::vector<char> &buffer) {
+    ImageRGBF StbiImporter::readImageFloat(const std::vector<char> &buffer) {
         int width, height, nrChannels;
         float *data = stbi_loadf_from_memory(reinterpret_cast<const stbi_uc *>(buffer.data()),
                                              static_cast<int>(buffer.size()),
                                              &width,
                                              &height,
                                              &nrChannels,
-                                             4);
+                                             3);
         if (data) {
-            auto ret = Image<float>(width, height);
+            auto ret = Image<ColorRGBF>(width, height);
             std::memcpy(ret.getBuffer().data(),
                         data,
-                        ret.getBuffer().size() * sizeof(float));
+                        ret.getBuffer().size() * sizeof(ColorRGBF));
             stbi_image_free(data);
             return ret;
         }
@@ -105,9 +105,9 @@ namespace xng {
         if (r == 1) {
             //Source is image
             ResourceBundle ret;
-            if (path.getExtension() == "hdr") {
+            if (path.getExtension() == ".hdr") {
                 auto img = readImageFloat(buffer);
-                ret.add("image", std::make_unique<Image<float> >(img));
+                ret.add("image", std::make_unique<ImageRGBF>(img));
             } else {
                 auto img = readImageRGBA(buffer);
                 ret.add("image", std::make_unique<ImageRGBA>(img));

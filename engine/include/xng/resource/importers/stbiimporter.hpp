@@ -28,7 +28,7 @@ namespace xng {
     public:
         static ImageRGBA readImageRGBA(const std::vector<char> &buffer);
 
-        static ImageFloat readImageFloat(const std::vector<char> &buffer);
+        static ImageRGBF readImageFloat(const std::vector<char> &buffer);
 
         ResourceBundle read(std::istream &stream,
                             const Uri &path,
