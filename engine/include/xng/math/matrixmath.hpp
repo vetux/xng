@@ -101,6 +101,18 @@ namespace xng::MatrixMath {
     XENGINE_EXPORT Mat4f rotate(const Vec3f &rotationValue);
 
     XENGINE_EXPORT Mat4f lookAt(const Vec3f &eye, const Vec3f &center , const Vec3f &up);
+
+    /**
+     * Right-handed lookAt, independent of GLM_FORCE_LEFT_HANDED.
+     * Use for OpenGL cubemap capture and other cases requiring RH convention.
+     */
+    XENGINE_EXPORT Mat4f lookAtRH(const Vec3f &eye, const Vec3f &center, const Vec3f &up);
+
+    /**
+     * Right-handed symmetric perspective projection with depth range [-1,1].
+     * Use for OpenGL cubemap capture and other cases requiring RH convention.
+     */
+    XENGINE_EXPORT Mat4f perspectiveRH(float fovy, float aspect, float zNear, float zFar);
 }
 
 #endif //XENGINE_GRAPHICSMATH_HPP

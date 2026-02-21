@@ -19,6 +19,8 @@
 
 #include "xng/math/matrixmath.hpp"
 
+#include <cmath>
+
 #define GLM_FORCE_LEFT_HANDED
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -110,5 +112,43 @@ namespace xng {
 
     Mat4f MatrixMath::lookAt(const Vec3f &eye, const Vec3f &center, const Vec3f &up) {
         return convert(glm::lookAt(convert(eye), convert(center), convert(up)));
+    }
+
+    Mat4f MatrixMath::lookAtRH(const Vec3f &eye, const Vec3f &center, const Vec3f &up) {
+        // Explicit right-handed lookAt, not affected by GLM_FORCE_LEFT_HANDED
+        Vec3f fd(center.x - eye.x, center.y - eye.y, center.z - eye.z);
+        float flen = std::sqrt(fd.x * fd.x + fd.y * fd.y + fd.z * fd.z);
+        Vec3f f(fd.x / flen, fd.y / flen, fd.z / flen);
+        // s = normalize(cross(f, up))
+        Vec3f sc(f.y * up.z - f.z * up.y,
+                 f.z * up.x - f.x * up.z,
+                 f.x * up.y - f.y * up.x);
+        float slen = std::sqrt(sc.x * sc.x + sc.y * sc.y + sc.z * sc.z);
+        Vec3f s(sc.x / slen, sc.y / slen, sc.z / slen);
+        // u = cross(s, f)
+        Vec3f u(s.y * f.z - s.z * f.y,
+                s.z * f.x - s.x * f.z,
+                s.x * f.y - s.y * f.x);
+        Mat4f m;
+        m.set(0, 0, s.x);   m.set(1, 0, s.y);   m.set(2, 0, s.z);
+        m.set(0, 1, u.x);   m.set(1, 1, u.y);   m.set(2, 1, u.z);
+        m.set(0, 2, -f.x);  m.set(1, 2, -f.y);  m.set(2, 2, -f.z);
+        // translation = -dot(axis, eye)
+        m.set(3, 0, -(s.x * eye.x + s.y * eye.y + s.z * eye.z));
+        m.set(3, 1, -(u.x * eye.x + u.y * eye.y + u.z * eye.z));
+        m.set(3, 2,  (f.x * eye.x + f.y * eye.y + f.z * eye.z));
+        m.set(3, 3, 1.0f);
+        return m;
+    }
+
+    Mat4f MatrixMath::perspectiveRH(float fovy, float aspect, float zNear, float zFar) {
+        float tanHalfFovy = std::tan(fovy * 0.5f * 3.14159265358979323846f / 180.0f);
+        Mat4f ret;
+        ret.set(0, 0, 1.0f / (aspect * tanHalfFovy));
+        ret.set(1, 1, 1.0f / tanHalfFovy);
+        ret.set(2, 2, -(zFar + zNear) / (zFar - zNear));
+        ret.set(2, 3, -1.0f);
+        ret.set(3, 2, -(2.0f * zFar * zNear) / (zFar - zNear));
+        return ret;
     }
 }
