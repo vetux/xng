@@ -119,6 +119,11 @@ namespace xng {
                    && scheme == other.scheme;
         }
 
+        bool operator!=(const Uri &other) const
+        {
+            return !(*this == other);
+        }
+
         bool operator<(const Uri &other) const {
             return std::tie(file, asset, scheme) < std::tie(other.file, other.asset, other.scheme);
         }
