@@ -41,19 +41,18 @@ namespace xng {
          *
          * @return
          */
-        static const Mesh &normalizedQuad();
+        static Mesh normalizedQuad();
 
         /**
-         * A cube mesh with an extent of 1.
-        *   layout (location = 0) in vec3 position;
+         * A subdivided normalized cube mesh.
+         *  layout (location = 0) in vec3 position;
          *  layout (location = 1) in vec3 normal;
          *  layout (location = 2) in vec2 uv;
-         *  layout (location = 3) in vec3 tangent;
-         *  layout (location = 4) in vec3 bitangent;
          *
+         * @param subdivisions Number of subdivisions per face edge (e.g., 16 creates 16x16 quads per face)
          * @return
          */
-        static const Mesh &normalizedCube();
+        static Mesh normalizedCube(int subdivisions = 1);
 
         /**
          * A sphere mesh.

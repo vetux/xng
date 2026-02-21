@@ -19,97 +19,126 @@
 
 #include "xng/graphics/scene/mesh.hpp"
 
-#include <string>
-#include <sstream>
-
-#include "xng/resource/resourceimporter.hpp"
-
 #include "xng/graphics/vertexbuilder.hpp"
 
 #include "xng/math/pi.hpp"
 
-static const std::string NORM_CUBE_OBJ = std::string(R"###(
-o Cube
-v -1.000000 -1.000000 1.000000
-v -1.000000 1.000000 1.000000
-v -1.000000 -1.000000 -1.000000
-v -1.000000 1.000000 -1.000000
-v 1.000000 -1.000000 1.000000
-v 1.000000 1.000000 1.000000
-v 1.000000 -1.000000 -1.000000
-v 1.000000 1.000000 -1.000000
-vt 0.375000 0.000000
-vt 0.625000 0.000000
-vt 0.625000 0.250000
-vt 0.375000 0.250000
-vt 0.625000 0.500000
-vt 0.375000 0.500000
-vt 0.625000 0.750000
-vt 0.375000 0.750000
-vt 0.625000 1.000000
-vt 0.375000 1.000000
-vt 0.125000 0.500000
-vt 0.125000 0.750000
-vt 0.875000 0.500000
-vt 0.875000 0.750000
-vn -1.0000 0.0000 0.0000
-vn 0.0000 0.0000 -1.0000
-vn 1.0000 0.0000 0.0000
-vn 0.0000 0.0000 1.0000
-vn 0.0000 -1.0000 0.0000
-vn 0.0000 1.0000 0.0000
-s off
-f 1/1/1 2/2/1 4/3/1 3/4/1
-f 3/4/2 4/3/2 8/5/2 7/6/2
-f 7/6/3 8/5/3 6/7/3 5/8/3
-f 5/8/4 6/7/4 2/9/4 1/10/4
-f 3/11/5 7/6/5 5/8/5 1/12/5
-f 8/5/6 4/13/6 2/14/6 6/7/6
-)###");
-
-namespace xng {
-    static bool nQuadC = false;
-    static Mesh nQuad;
-
-    static bool nCubeC = false;
-    static Mesh nCube;
-
-    const xng::Mesh &xng::Mesh::normalizedQuad() {
-        if (!nQuadC) {
-            nQuadC = true;
-            nQuad = {};
-            nQuad.primitive = TRIANGLES;
-            nQuad.vertexLayout = ShaderAttributeLayout({
-                {"position", ShaderPrimitiveType::vec3()},
-                {"uv", ShaderPrimitiveType::vec2()}
-            });
-            auto vertData = VertexBuilder().addVec3(Vec3f(-1, 1, 0)).addVec2(Vec2f(0, 0)).build();
-            nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
-            vertData = VertexBuilder().addVec3(Vec3f(1, 1, 0)).addVec2(Vec2f(1, 0)).build();
-            nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
-            vertData = VertexBuilder().addVec3(Vec3f(1, -1, 0)).addVec2(Vec2f(1, 1)).build();
-            nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
-            vertData = VertexBuilder().addVec3(Vec3f(-1, 1, 0)).addVec2(Vec2f(0, 0)).build();
-            nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
-            vertData = VertexBuilder().addVec3(Vec3f(1, -1, 0)).addVec2(Vec2f(1, 1)).build();
-            nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
-            vertData = VertexBuilder().addVec3(Vec3f(-1, -1, 0)).addVec2(Vec2f(0, 1)).build();
-            nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
-        }
+namespace xng
+{
+    Mesh Mesh::normalizedQuad()
+    {
+        Mesh nQuad = {};
+        nQuad.primitive = TRIANGLES;
+        nQuad.vertexLayout = ShaderAttributeLayout({
+            {"position", ShaderPrimitiveType::vec3()},
+            {"uv", ShaderPrimitiveType::vec2()}
+        });
+        auto vertData = VertexBuilder().addVec3(Vec3f(-1, 1, 0)).addVec2(Vec2f(0, 0)).build();
+        nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
+        vertData = VertexBuilder().addVec3(Vec3f(1, 1, 0)).addVec2(Vec2f(1, 0)).build();
+        nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
+        vertData = VertexBuilder().addVec3(Vec3f(1, -1, 0)).addVec2(Vec2f(1, 1)).build();
+        nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
+        vertData = VertexBuilder().addVec3(Vec3f(-1, 1, 0)).addVec2(Vec2f(0, 0)).build();
+        nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
+        vertData = VertexBuilder().addVec3(Vec3f(1, -1, 0)).addVec2(Vec2f(1, 1)).build();
+        nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
+        vertData = VertexBuilder().addVec3(Vec3f(-1, -1, 0)).addVec2(Vec2f(0, 1)).build();
+        nQuad.vertices.insert(nQuad.vertices.end(), vertData.begin(), vertData.end());
         return nQuad;
     }
 
-    const Mesh &Mesh::normalizedCube() {
-        if (!nCubeC) {
-            nCubeC = true;
-            std::stringstream stream(NORM_CUBE_OBJ);
-            nCube = ResourceRegistry::getDefaultRegistry().getImporter(".obj").read(stream, Uri(), nullptr).getAll<
-                Mesh>().at(0);
+    Mesh Mesh::normalizedCube(int subdivisions)
+    {
+        Mesh mesh = {};
+        mesh.primitive = TRIANGLES;
+        mesh.vertexLayout = ShaderAttributeLayout({
+            {"position", ShaderPrimitiveType::vec3()},
+            {"normal", ShaderPrimitiveType::vec3()},
+            {"uv", ShaderPrimitiveType::vec2()}
+        });
+
+        const size_t vertexStride = static_cast<size_t>(mesh.vertexLayout.getLayoutSize());
+        std::vector<Vec3f> positions;
+        std::vector<Vec3f> normals;
+        std::vector<Vec2f> uvs;
+        std::vector<unsigned int> indices;
+
+        auto addFace = [&](const Vec3f& normal, const Vec3f& tangent, const Vec3f& bitangent, const Vec3f& center)
+        {
+            unsigned int baseIndex = static_cast<unsigned int>(positions.size());
+
+            // Generate a subdivided grid for this face
+            for (int y = 0; y <= subdivisions; ++y)
+            {
+                for (int x = 0; x <= subdivisions; ++x)
+                {
+                    float u = static_cast<float>(x) / static_cast<float>(subdivisions);
+                    float v = static_cast<float>(y) / static_cast<float>(subdivisions);
+
+                    // Map from [0,1] to [-1,1]
+                    float s = u * 2.0f - 1.0f;
+                    float t = v * 2.0f - 1.0f;
+
+                    Vec3f pos = center + tangent * s + bitangent * t;
+                    positions.push_back(pos);
+                    normals.push_back(normal);
+                    uvs.push_back(Vec2f(u, v));
+                }
+            }
+
+            // Generate indices for this face
+            for (int y = 0; y < subdivisions; ++y)
+            {
+                for (int x = 0; x < subdivisions; ++x)
+                {
+                    unsigned int i0 = baseIndex + y * (subdivisions + 1) + x;
+                    unsigned int i1 = i0 + 1;
+                    unsigned int i2 = i0 + (subdivisions + 1);
+                    unsigned int i3 = i2 + 1;
+
+                    // Two triangles per quad
+                    indices.push_back(i0);
+                    indices.push_back(i2);
+                    indices.push_back(i1);
+
+                    indices.push_back(i1);
+                    indices.push_back(i2);
+                    indices.push_back(i3);
+                }
+            }
+        };
+
+        // +X face (right)
+        addFace(Vec3f(1, 0, 0), Vec3f(0, 0, -1), Vec3f(0, 1, 0), Vec3f(1, 0, 0));
+        // -X face (left)
+        addFace(Vec3f(-1, 0, 0), Vec3f(0, 0, 1), Vec3f(0, 1, 0), Vec3f(-1, 0, 0));
+        // +Y face (top)
+        addFace(Vec3f(0, 1, 0), Vec3f(1, 0, 0), Vec3f(0, 0, -1), Vec3f(0, 1, 0));
+        // -Y face (bottom)
+        addFace(Vec3f(0, -1, 0), Vec3f(1, 0, 0), Vec3f(0, 0, 1), Vec3f(0, -1, 0));
+        // +Z face (front)
+        addFace(Vec3f(0, 0, 1), Vec3f(1, 0, 0), Vec3f(0, 1, 0), Vec3f(0, 0, 1));
+        // -Z face (back)
+        addFace(Vec3f(0, 0, -1), Vec3f(-1, 0, 0), Vec3f(0, 1, 0), Vec3f(0, 0, -1));
+
+        // Pack vertices into buffer
+        for (size_t i = 0; i < positions.size(); ++i)
+        {
+            auto vertData = VertexBuilder()
+                            .addVec3(positions[i])
+                            .addVec3(normals[i])
+                            .addVec2(uvs[i])
+                            .build();
+            mesh.vertices.insert(mesh.vertices.end(), vertData.begin(), vertData.end());
         }
-        return nCube;
+
+        mesh.indices = std::move(indices);
+        return mesh;
     }
 
-    Mesh Mesh::sphere(float radius, int latitudes, int longitudes) {
+    Mesh Mesh::sphere(float radius, int latitudes, int longitudes)
+    {
         //https://gist.github.com/Pikachuxxxx/5c4c490a7d7679824e0e18af42918efc
         if (longitudes < 3)
             longitudes = 3;
@@ -123,7 +152,8 @@ namespace xng {
 
         float nx, ny, nz, lengthInv = 1.0f / radius; // normal
         // Temporary vertex
-        struct Vertex {
+        struct Vertex
+        {
             float x, y, z, s, t; // Postion and Texcoords
         };
 
@@ -133,7 +163,8 @@ namespace xng {
         float longitudeAngle;
 
         // Compute all vertices first except normals
-        for (int i = 0; i <= latitudes; ++i) {
+        for (int i = 0; i <= latitudes; ++i)
+        {
             latitudeAngle = PI / 2 - i * deltaLatitude; /* Starting -pi/2 to pi/2 */
             float xy = radius * cosf(latitudeAngle); /* r * cos(phi) */
             float z = radius * sinf(latitudeAngle); /* r * sin(phi )*/
@@ -144,15 +175,16 @@ namespace xng {
              * The first and last vertices have same position and normal, but
              * different tex coords.
              */
-            for (int j = 0; j <= longitudes; ++j) {
+            for (int j = 0; j <= longitudes; ++j)
+            {
                 longitudeAngle = j * deltaLongitude;
 
                 Vertex vertex{};
                 vertex.x = xy * cosf(longitudeAngle); /* x = r * cos(phi) * cos(theta)  */
                 vertex.y = xy * sinf(longitudeAngle); /* y = r * cos(phi) * sin(theta) */
                 vertex.z = z; /* z = r * sin(phi) */
-                vertex.s = (float) j / longitudes; /* s */
-                vertex.t = (float) i / latitudes; /* t */
+                vertex.s = (float)j / longitudes; /* s */
+                vertex.t = (float)i / latitudes; /* t */
                 positions.emplace_back(vertex.x, vertex.y, vertex.z);
                 uvs.emplace_back(vertex.s, vertex.t);
 
@@ -172,18 +204,22 @@ namespace xng {
          *  k2--k2+1
          */
         unsigned int k1, k2;
-        for (int i = 0; i < latitudes; ++i) {
+        for (int i = 0; i < latitudes; ++i)
+        {
             k1 = i * (longitudes + 1);
             k2 = k1 + longitudes + 1;
             // 2 Triangles per latitude block excluding the first and last longitudes blocks
-            for (int j = 0; j < longitudes; ++j, ++k1, ++k2) {
-                if (i != 0) {
+            for (int j = 0; j < longitudes; ++j, ++k1, ++k2)
+            {
+                if (i != 0)
+                {
                     indices.push_back(k1);
                     indices.push_back(k2);
                     indices.push_back(k1 + 1);
                 }
 
-                if (i != (latitudes - 1)) {
+                if (i != (latitudes - 1))
+                {
                     indices.push_back(k1 + 1);
                     indices.push_back(k2);
                     indices.push_back(k2 + 1);
@@ -198,7 +234,8 @@ namespace xng {
             {"normal", ShaderPrimitiveType::vec3()},
             {"uv", ShaderPrimitiveType::vec2()}
         });
-        for (auto i = 0; i < positions.size(); ++i) {
+        for (auto i = 0; i < positions.size(); ++i)
+        {
             auto position = positions.at(i);
             auto norm = normals.at(i);
             auto uv = uvs.at(i);
