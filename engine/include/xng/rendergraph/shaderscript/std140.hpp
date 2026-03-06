@@ -42,6 +42,10 @@ namespace xng {
     // Covers: bool, int, uint, float, double
     template<typename T>
     struct alignas(sizeof(T)) Std140 {
+        static_assert(std::is_arithmetic_v<T>,
+            "Std140<T>: no specialization for T. "
+            "Supported types: bool, int, uint, float, double, "
+            "Vector2/3/4<T>, Matrix<T,2,2>, Matrix<T,3,3>, Matrix<T,4,4>, std::array<T,N>.");
         T value{};
 
         Std140() = default;
