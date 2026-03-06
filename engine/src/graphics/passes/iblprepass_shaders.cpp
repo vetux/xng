@@ -27,8 +27,8 @@ using namespace xng::ShaderScript;
 
 namespace xng
 {
-    DeclareFunction2(integrateBRDF)
-    DeclareFunction1(radicalInverseVdC)
+    DeclareFunction(integrateBRDF)
+    DeclareFunction(radicalInverseVdC)
 
     RenderGraphPipeline IBLPrePass::makeBRDFPipeline()
     {

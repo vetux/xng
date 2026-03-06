@@ -23,15 +23,12 @@
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
 namespace xng::ShaderScript {
-    DeclareFunction1(simplex)
+    DeclareFunction(simplex)
 
-    DeclareFunction1(perlin)
-    DeclareFunction2(perlin)
-    DeclareFunction3(perlin)
-    DeclareFunction1(perlinc)
-    DeclareFunction2(perlinc)
+    DeclareFunction(perlin)
+    DeclareFunction(perlinc)
 
-    DeclareFunction1(noise)
+    DeclareFunction(noise)
 }
 
 namespace xng::shaderlib::noise {

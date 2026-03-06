@@ -33,19 +33,10 @@
  */
 
 // Optional Helper macros for defining C++ function wrappers for directly calling a function
-#define DeclareFunction0(name) inline ShaderObject name(){ return xng::ShaderScript::Call(#name);}
-#define DeclareFunction1(name) inline ShaderObject name(const ShaderObject &arg){ return xng::ShaderScript::Call(#name, {arg});}
-#define DeclareFunction2(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1){ return xng::ShaderScript::Call(#name, {arg, arg1});}
-#define DeclareFunction3(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2){ return xng::ShaderScript::Call(#name, {arg, arg1, arg2});}
-#define DeclareFunction4(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3){ return xng::ShaderScript::Call(#name, {arg, arg1, arg2, arg3});}
-#define DeclareFunction5(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4){ return xng::ShaderScript::Call(#name, {arg, arg1, arg2, arg3, arg4});}
-#define DeclareFunction6(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5){ return xng::ShaderScript::Call(#name, {arg, arg1, arg2, arg3, arg4, arg5});}
-#define DeclareFunction7(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6){ return xng::ShaderScript::Call(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6});}
-#define DeclareFunction8(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6, const ShaderObject &arg7){ return xng::ShaderScript::Call(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6, arg7});}
-#define DeclareFunction9(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6, const ShaderObject &arg7, const ShaderObject &arg8){ return xng::ShaderScript::Call(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8});}
-#define DeclareFunction10(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6, const ShaderObject &arg7, const ShaderObject &arg8, const ShaderObject &arg9){ return xng::ShaderScript::Call(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9});}
-#define DeclareFunction11(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6, const ShaderObject &arg7, const ShaderObject &arg8, const ShaderObject &arg9, const ShaderObject &arg10){ return xng::ShaderScript::Call(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10});}
-#define DeclareFunction12(name) inline ShaderObject name(const ShaderObject &arg, const ShaderObject &arg1, const ShaderObject &arg2, const ShaderObject &arg3, const ShaderObject &arg4, const ShaderObject &arg5, const ShaderObject &arg6, const ShaderObject &arg7, const ShaderObject &arg8, const ShaderObject &arg9, const ShaderObject &arg10, const ShaderObject &arg11){ return xng::ShaderScript::Call(#name, {arg, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11});}
+#define DeclareFunction(name) template<typename... Args>\
+inline ShaderObject name(Args&&... args) {\
+    return xng::ShaderScript::Call(#name, {std::forward<Args>(args)...});\
+}
 
 /**
  * Optional Helper Macros for abstracting the shader builder interactions

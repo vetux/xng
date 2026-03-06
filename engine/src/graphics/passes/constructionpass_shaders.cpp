@@ -162,7 +162,7 @@ namespace xng {
         return BuildShader();
     }
 
-    DeclareFunction2(texture_atlas)
+    DeclareFunction(texture_atlas)
 
     Shader ConstructionPass::createFragmentShader() {
         BeginShader(Shader::FRAGMENT)

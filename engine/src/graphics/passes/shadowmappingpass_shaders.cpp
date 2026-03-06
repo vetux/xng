@@ -23,7 +23,7 @@
 using namespace xng::ShaderScript;
 
 namespace xng {
-    DeclareFunction1(getSkinnedVertexPosition)
+    DeclareFunction(getSkinnedVertexPosition)
 
     Shader ShadowMappingPass::createVertexShader() {
         BeginShader(Shader::VERTEX)

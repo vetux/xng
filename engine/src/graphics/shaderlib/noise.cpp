@@ -22,8 +22,8 @@
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
 using namespace xng::ShaderScript;
-DeclareFunction1(permute)
-DeclareFunction1(taylorInvSqrt)
+DeclareFunction(permute)
+DeclareFunction(taylorInvSqrt)
 
 namespace xng::shaderlib {
     void loadPermute() {

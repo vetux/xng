@@ -23,8 +23,7 @@
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
 namespace xng::ShaderScript {
-    DeclareFunction2(textureBicubic)
-    DeclareFunction3(textureBicubic)
+    DeclareFunction(textureBicubic)
 }
 
 namespace xng::shaderlib {

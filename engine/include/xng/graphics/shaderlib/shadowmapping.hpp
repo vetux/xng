@@ -23,8 +23,8 @@
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
 namespace xng::ShaderScript {
-    DeclareFunction6(sampleShadowPoint)
-    DeclareFunction6(sampleShadowDirectional)
+    DeclareFunction(sampleShadowPoint)
+    DeclareFunction(sampleShadowDirectional)
 }
 
 namespace xng::shaderlib::shadowmapping {

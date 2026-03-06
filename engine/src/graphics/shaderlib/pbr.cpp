@@ -28,11 +28,11 @@ using namespace xng::ShaderScript;
 
 // Adapted from the tutorial at https://learnopengl.com/PBR/Lighting
 namespace xng::shaderlib {
-    DeclareFunction3(DistributionGGX)
-    DeclareFunction2(GeometrySchlickGGX)
-    DeclareFunction4(GeometrySmith)
-    DeclareFunction2(FresnelSchlick)
-    DeclareFunction3(FresnelSchlickRoughness)
+    DeclareFunction(DistributionGGX)
+    DeclareFunction(GeometrySchlickGGX)
+    DeclareFunction(GeometrySmith)
+    DeclareFunction(FresnelSchlick)
+    DeclareFunction(FresnelSchlickRoughness)
 
     void pbr() {
         Function(Float, DistributionGGX, vec3, N, vec3, H, Float, roughness)

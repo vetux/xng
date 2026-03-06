@@ -23,8 +23,8 @@
 
 using namespace xng::ShaderScript;
 
-DeclareFunction3(textureMS)
-DeclareFunction1(cubic)
+DeclareFunction(textureMS)
+DeclareFunction(cubic)
 
 namespace xng::shaderlib {
     void defTextureMS() {
