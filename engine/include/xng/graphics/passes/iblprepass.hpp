@@ -24,7 +24,7 @@
 #include "xng/graphics/renderpass.hpp"
 #include "xng/graphics/sharedresourceregistry.hpp"
 #include "xng/graphics/sharedresources/ibl.hpp"
-#include "xng/rendergraph/shaderscript/shaderstructdef.hpp"
+#include "xng/rendergraph/shaderscript/shaderstruct.hpp"
 
 namespace xng
 {
@@ -53,9 +53,9 @@ namespace xng
 
         RenderGraphPipeline makePrefilterPipeline();
 
-        DefineStruct(CaptureFaceData, Mat4f, captureMatrix)
+        ShaderStruct(CaptureFaceData, Mat4f, captureMatrix)
 
-        DefineStruct(PrefilterParams, Vec4f, prefilterParams)
+        ShaderStruct(PrefilterParams, Vec4f, prefilterParams)
 
         std::shared_ptr<RenderConfiguration> config;
         std::shared_ptr<SharedResourceRegistry> registry;

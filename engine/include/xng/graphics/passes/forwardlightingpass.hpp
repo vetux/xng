@@ -27,7 +27,7 @@
 #include "xng/graphics/textureatlas/textureatlas.hpp"
 #include "xng/graphics/sharedresources/compositinglayers.hpp"
 #include "xng/graphics/sharedresources/shadowmaps.hpp"
-#include "xng/rendergraph/shaderscript/shaderstructdef.hpp"
+#include "xng/rendergraph/shaderscript/shaderstruct.hpp"
 
 namespace xng
 {
@@ -50,11 +50,11 @@ namespace xng
 
         void runPass(RenderGraphContext& ctx);
 
-        DefineStruct(AtlasTexture,
+        ShaderStruct(AtlasTexture,
                      Vec4i, level_index_filtering_assigned,
                      Vec4f, atlasScale_texSize)
 
-        DefineStruct(BufferLayout,
+        ShaderStruct(BufferLayout,
                      Mat4f, model,
                      Mat4f, mvp,
                      Vec4i, objectID_boneOffset_shadows,
@@ -69,26 +69,26 @@ namespace xng
                      Vec4f, normalIntensity,
                      Vec4i, iblPresent_prefilterMipCount)
 
-        DefineStruct(BoneBufferLayout, Mat4f, matrix)
+        ShaderStruct(BoneBufferLayout, Mat4f, matrix)
 
-        DefineStruct(PointLightData,
+        ShaderStruct(PointLightData,
                      Vec4f, position,
                      Vec4f, color,
                      Vec4f, farPlane)
 
-        DefineStruct(DirectionalLightData,
+        ShaderStruct(DirectionalLightData,
                      Vec4f, direction,
                      Vec4f, color,
                      Vec4f, farPlane)
 
-        DefineStruct(SpotLightData,
+        ShaderStruct(SpotLightData,
                      Vec4f, position,
                      Vec4f, direction_quadratic,
                      Vec4f, color,
                      Vec4f, farPlane,
                      Vec4f, cutOff_outerCutOff_constant_linear)
 
-        DefineStruct(TransformData, Mat4f, transform)
+        ShaderStruct(TransformData, Mat4f, transform)
 
         std::shared_ptr<RenderConfiguration> config;
         std::shared_ptr<SharedResourceRegistry> registry;

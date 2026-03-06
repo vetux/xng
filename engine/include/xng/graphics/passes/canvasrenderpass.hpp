@@ -28,7 +28,7 @@
 #include "xng/graphics/textureatlas/textureatlas.hpp"
 #include "xng/graphics/textureatlas/textureatlashandle.hpp"
 #include "xng/graphics/sharedresources/compositinglayers.hpp"
-#include "xng/rendergraph/shaderscript/shaderstructdef.hpp"
+#include "xng/rendergraph/shaderscript/shaderstruct.hpp"
 
 namespace xng {
     /**
@@ -66,7 +66,7 @@ namespace xng {
 
         static Shader createFragmentShader();
 
-        DefineStruct(BufferData,
+        ShaderStruct(BufferData,
              Vec4f, color,
              float, colorMixFactor,
              float, alphaMixFactor,

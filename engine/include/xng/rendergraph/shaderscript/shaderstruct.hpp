@@ -499,7 +499,7 @@ namespace xng::ShaderScript
  *  Object nesting is supported.
  *  Up to 50 member variables are supported.
  *
- *  The getShaderStruct() public static function can be used to retrieve the ShaderStruct instance.
+ *  The getShaderStruct() public static function can be used to retrieve the ShaderStructDef instance.
  *
  *  e.g.:
  *      DefineStruct(MvpBuffer, Mat4f, mvp)
@@ -512,15 +512,15 @@ namespace xng::ShaderScript
  *
  * @param name The type name of the struct
  */
-#define DefineStruct(name, ...)\
+#define ShaderStruct(name, ...)\
     struct name {\
         static constexpr char _##name##_type[] = #name;\
         struct CPU {\
             GenerateCpuElementDeclaration(__VA_ARGS__)\
         };\
         static inline xng::ShaderDataType TYPE{static_cast<xng::ShaderStructType>(#name), 1};\
-        static xng::ShaderStruct getShaderStruct() {\
-            return xng::ShaderStruct(#name, {\
+        static xng::ShaderStructDef getShaderStruct() {\
+            return xng::ShaderStructDef(#name, {\
                 GenerateStructElements(__VA_ARGS__) \
             });\
         }\

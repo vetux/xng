@@ -25,11 +25,11 @@
 namespace xng {
     struct ShaderStructElement;
 
-    struct ShaderStruct {
+    struct ShaderStructDef {
         std::string typeName;
         std::vector<ShaderStructElement> elements;
 
-        ShaderStruct(std::string name, const std::vector<ShaderStructElement> &elements)
+        ShaderStructDef(std::string name, const std::vector<ShaderStructElement> &elements)
             : typeName(std::move(name)), elements(elements) {
         }
 

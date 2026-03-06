@@ -29,7 +29,7 @@
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 #include "xng/rendergraph/shader/shaderbuffer.hpp"
 #include "xng/rendergraph/shader/shadertexturearray.hpp"
-#include "xng/rendergraph/shader/shaderstruct.hpp"
+#include "xng/rendergraph/shader/shaderstructdef.hpp"
 
 namespace xng {
     struct ShaderBuffer;
@@ -55,7 +55,7 @@ namespace xng {
         std::unordered_map<std::string, ShaderBuffer> buffers{};
         std::unordered_map<std::string, ShaderTextureArray> textureArrays{};
 
-        std::vector<ShaderStruct> typeDefinitions{};
+        std::vector<ShaderStructDef> typeDefinitions{};
 
         std::vector<ShaderInstruction> mainFunction{};
 
@@ -76,7 +76,7 @@ namespace xng {
                const std::unordered_map<std::string, ShaderPrimitiveType> &parameters,
                const std::unordered_map<std::string, ShaderBuffer> &buffers,
                const std::unordered_map<std::string, ShaderTextureArray> &textureArrays,
-               const std::vector<ShaderStruct> &typeDefinitions,
+               const std::vector<ShaderStructDef> &typeDefinitions,
                std::vector<ShaderInstruction> mainFunction,
                std::vector<ShaderFunction> functions)
             : stage(stage),

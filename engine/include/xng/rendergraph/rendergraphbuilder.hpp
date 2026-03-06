@@ -56,7 +56,7 @@ namespace xng {
 
         RenderGraphResource createShaderBuffer(size_t size);
 
-        RenderGraphResource createShaderBuffer(const ShaderStruct &type);
+        RenderGraphResource createShaderBuffer(const ShaderStructDef &type);
 
         RenderGraphResource createTexture(const RenderGraphTexture &texture);
 

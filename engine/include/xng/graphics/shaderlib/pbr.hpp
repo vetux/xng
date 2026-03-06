@@ -29,7 +29,7 @@ namespace xng::ShaderScript {
     DeclareFunction11(pbr_spot)
     DeclareFunction2(pbr_finish)
 
-    DefineStruct(PbrPass,
+    ShaderStruct(PbrPass,
                  Vec3f, N,
                  Vec3f, V,
                  Vec3f, F0,

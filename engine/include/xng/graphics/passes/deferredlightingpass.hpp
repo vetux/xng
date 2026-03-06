@@ -26,7 +26,7 @@
 #include "xng/graphics/sharedresources/gbuffer.hpp"
 #include "xng/graphics/sharedresources/shadowmaps.hpp"
 #include "xng/graphics/scene/mesh.hpp"
-#include "xng/rendergraph/shaderscript/shaderstructdef.hpp"
+#include "xng/rendergraph/shaderscript/shaderstruct.hpp"
 
 namespace xng
 {
@@ -49,28 +49,28 @@ namespace xng
 
         void runPass(RenderGraphContext& ctx);
 
-        DefineStruct(ShaderData,
+        ShaderStruct(ShaderData,
                      Vec4f, viewPosition_gamma,
                      Vec4i, iblPresent_prefilterMipCount)
 
-        DefineStruct(PointLightData,
+        ShaderStruct(PointLightData,
                      Vec4f, position,
                      Vec4f, color,
                      Vec4f, farPlane)
 
-        DefineStruct(DirectionalLightData,
+        ShaderStruct(DirectionalLightData,
                      Vec4f, direction,
                      Vec4f, color,
                      Vec4f, farPlane)
 
-        DefineStruct(SpotLightData,
+        ShaderStruct(SpotLightData,
                      Vec4f, position,
                      Vec4f, direction_quadratic,
                      Vec4f, color,
                      Vec4f, farPlane,
                      Vec4f, cutOff_outerCutOff_constant_linear)
 
-        DefineStruct(TransformData, Mat4f, transform)
+        ShaderStruct(TransformData, Mat4f, transform)
 
         Mesh normalizedQuad = Mesh::normalizedQuad();
         bool normalizedQuadUploaded = false;

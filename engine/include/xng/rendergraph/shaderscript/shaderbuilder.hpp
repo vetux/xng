@@ -56,7 +56,7 @@ namespace xng::ShaderScript {
             return textureArrays;
         }
 
-        const std::vector<ShaderStruct> &getTypeDefinitions() const {
+        const std::vector<ShaderStructDef> &getTypeDefinitions() const {
             return typeDefinitions;
         }
 
@@ -165,7 +165,7 @@ namespace xng::ShaderScript {
             textureArrays.emplace(name, textureArray);
         }
 
-        void addTypeDefinition(const ShaderStruct &type) {
+        void addTypeDefinition(const ShaderStructDef &type) {
             for (auto &t: typeDefinitions) {
                 if (t.typeName == type.typeName) {
                     throw std::runtime_error("Type definition already exists");
@@ -222,7 +222,7 @@ namespace xng::ShaderScript {
         std::unordered_map<std::string, ShaderPrimitiveType> parameters;
         std::unordered_map<std::string, ShaderBuffer> buffers;
         std::unordered_map<std::string, ShaderTextureArray> textureArrays;
-        std::vector<ShaderStruct> typeDefinitions;
+        std::vector<ShaderStructDef> typeDefinitions;
 
         TreeNode *currentNode{};
         std::shared_ptr<TreeNode> rootNode;

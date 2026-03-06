@@ -17,10 +17,10 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "xng/rendergraph/shader/shaderstruct.hpp"
+#include "xng/rendergraph/shader/shaderstructdef.hpp"
 
 namespace xng {
-    const ShaderStructElement &ShaderStruct::get(const std::string &name) const {
+    const ShaderStructElement &ShaderStructDef::get(const std::string &name) const {
         for (auto &element: elements) {
             if (element.name == name)
                 return element;

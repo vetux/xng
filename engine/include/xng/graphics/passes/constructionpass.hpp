@@ -29,7 +29,7 @@
 #include "xng/graphics/meshatlas/meshatlas.hpp"
 #include "xng/graphics/textureatlas/textureatlas.hpp"
 #include "xng/graphics/sharedresources/gbuffer.hpp"
-#include "xng/rendergraph/shaderscript/shaderstructdef.hpp"
+#include "xng/rendergraph/shaderscript/shaderstruct.hpp"
 
 namespace xng
 {
@@ -60,11 +60,11 @@ namespace xng
 
         static Shader createFragmentShader();
 
-        DefineStruct(AtlasTexture,
+        ShaderStruct(AtlasTexture,
                      Vec4i, level_index_filtering_assigned,
                      Vec4f, atlasScale_texSize)
 
-        DefineStruct(BufferLayout,
+        ShaderStruct(BufferLayout,
                      Mat4f, model,
                      Mat4f, mvp,
                      Vec4i, objectID_boneOffset_shadows,
@@ -77,7 +77,7 @@ namespace xng
                      AtlasTexture, ambientOcclusion,
                      AtlasTexture, albedo)
 
-        DefineStruct(BoneBufferLayout,
+        ShaderStruct(BoneBufferLayout,
                      Mat4f, matrix)
 
         std::shared_ptr<RenderConfiguration> config;

@@ -20,7 +20,7 @@
 #ifndef XENGINE_SHADERSCRIPT_HPP
 #define XENGINE_SHADERSCRIPT_HPP
 
-#include "xng/rendergraph/shaderscript/shaderstructdef.hpp"
+#include "xng/rendergraph/shaderscript/shaderstruct.hpp"
 #include "xng/rendergraph/shaderscript/shaderfunctiondef.hpp"
 #include "xng/rendergraph/shaderscript/shaderobject.hpp"
 
