@@ -37,13 +37,6 @@ namespace xng
         Output(vec4, fPosition)
         Output(vec2, fUv)
 
-        DeclareStruct(ShaderData)
-        DeclareStruct(PointLightData)
-        DeclareStruct(DirectionalLightData)
-        DeclareStruct(SpotLightData)
-        DeclareStruct(TransformData)
-        DeclareStruct(PbrPass)
-
         Buffer(ShaderData, shaderData)
 
         DynamicBuffer(PointLightData, pointLights)
@@ -83,13 +76,6 @@ namespace xng
         Input(vec2, fUv)
 
         Output(vec4, oColor)
-
-        DeclareStruct(ShaderData)
-        DeclareStruct(PointLightData)
-        DeclareStruct(DirectionalLightData)
-        DeclareStruct(SpotLightData)
-        DeclareStruct(TransformData)
-        DeclareStruct(PbrPass)
 
         Buffer(ShaderData, shaderData)
 

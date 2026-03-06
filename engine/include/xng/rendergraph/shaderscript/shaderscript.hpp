@@ -57,15 +57,6 @@
  *
  * Output(ShaderPrimitiveType::vec4(), fPosition);
  *
- * Struct(BufferSubData, {
- *      {ShaderPrimitiveType::float(), "value"}
- * });
- *
- * Struct(BufferData, {
- *      {ShaderPrimitiveType::vec2(), "color"},
- *      {BufferSubData, "subData"}
- * });
- *
  * Buffer(data, BufferData);
  * DynamicBuffer(dynData, BufferData);
  *
@@ -82,18 +73,16 @@
 
 #define BeginShader(stage) auto &builder = ShaderBuilder::instance(); builder.setup(stage);
 
-#define DeclareStruct(name) builder.addTypeDefinition(name::getShaderStruct());
-
 #define Input(type, name) builder.addInput(#name, ShaderPrimitiveType::type()); ShaderObject name = xng::ShaderScript::inputAttribute(#name);
 #define Output(type, name) builder.addOutput(#name, ShaderPrimitiveType::type()); ShaderObject name = xng::ShaderScript::outputAttribute(#name);
 
 #define Parameter(type, name) builder.addParameter(#name, ShaderPrimitiveType::type()); ShaderObject name = xng::ShaderScript::parameter(#name);
 
-#define Buffer(bufferType, bufferName) builder.addBuffer(#bufferName, ShaderBuffer(false, false, bufferType::getShaderStruct().typeName)); bufferType bufferName(ShaderScript::buffer(#bufferName));
-#define DynamicBuffer(bufferType, bufferName) builder.addBuffer(#bufferName, ShaderBuffer(false, true, bufferType::getShaderStruct().typeName)); DynamicBufferWrapper<bufferType> bufferName(ShaderScript::buffer(#bufferName));
+#define Buffer(bufferType, bufferName) builder.addBuffer(#bufferName, ShaderBuffer(false, false, bufferType::getShaderStructDef().typeName)); bufferType bufferName(ShaderScript::buffer(#bufferName));
+#define DynamicBuffer(bufferType, bufferName) builder.addBuffer(#bufferName, ShaderBuffer(false, true, bufferType::getShaderStructDef().typeName)); DynamicBufferWrapper<bufferType> bufferName(ShaderScript::buffer(#bufferName));
 
-#define BufferRW(bufferType, bufferName) builder.addBuffer(#bufferName, ShaderBuffer(true, false, bufferType::getShaderStruct().typeName)); bufferType bufferName(ShaderScript::buffer(#bufferName));
-#define DynamicBufferRW(bufferType, bufferName) builder.addBuffer(#bufferName, ShaderBuffer(true, true, bufferType::getShaderStruct().typeName)); DynamicBufferWrapper<bufferType> bufferName(ShaderScript::buffer(#bufferName));
+#define BufferRW(bufferType, bufferName) builder.addBuffer(#bufferName, ShaderBuffer(true, false, bufferType::getShaderStructDef().typeName)); bufferType bufferName(ShaderScript::buffer(#bufferName));
+#define DynamicBufferRW(bufferType, bufferName) builder.addBuffer(#bufferName, ShaderBuffer(true, true, bufferType::getShaderStructDef().typeName)); DynamicBufferWrapper<bufferType> bufferName(ShaderScript::buffer(#bufferName));
 
 #define Texture(type, format, name) builder.addTextureArray(#name, ShaderTextureArray(ShaderTexture(type, format))); ShaderObject name = xng::ShaderScript::textureSampler(#name)[Int(0)];
 #define TextureArray(type, format, count, name) builder.addTextureArray(#name, ShaderTextureArray(ShaderTexture(type, format), count)); ShaderObject name = xng::ShaderScript::textureSampler(#name);
@@ -678,6 +667,7 @@ namespace xng::ShaderScript {
         ShaderObject object;
 
         explicit DynamicBufferWrapper(ShaderObject &&buffer) : object(buffer) {
+            ShaderBuilder::instance().addTypeDefinition(T::getShaderStructDef());
         }
 
         T operator[](const Int &index) {

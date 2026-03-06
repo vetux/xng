@@ -145,16 +145,6 @@ namespace xng::ShaderScript {
             if (buffers.find(name) != buffers.end()) {
                 throw std::runtime_error("Buffer already exists");
             }
-            bool found = false;
-            for (auto &type: typeDefinitions) {
-                if (type.typeName == buffer.typeName) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                throw std::runtime_error("Buffer struct " + buffer.typeName + " undefined");
-            }
             buffers.emplace(name, buffer);
         }
 
@@ -168,7 +158,10 @@ namespace xng::ShaderScript {
         void addTypeDefinition(const ShaderStructDef &type) {
             for (auto &t: typeDefinitions) {
                 if (t.typeName == type.typeName) {
-                    throw std::runtime_error("Type definition already exists");
+                    if (!(t == type)) {
+                        throw std::runtime_error("Conflicting type definition: " + type.typeName);
+                    }
+                    return;
                 }
             }
             typeDefinitions.emplace_back(type);

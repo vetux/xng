@@ -44,10 +44,6 @@ namespace xng {
         Output(vec3, fB)
         Output(vec3, fN)
 
-        DeclareStruct(AtlasTexture)
-        DeclareStruct(BufferLayout)
-        DeclareStruct(BoneBufferLayout)
-
         Buffer(BufferLayout, data)
         DynamicBuffer(BoneBufferLayout, bones)
 
@@ -88,10 +84,6 @@ namespace xng {
         Output(vec3, fT)
         Output(vec3, fB)
         Output(vec3, fN)
-
-        DeclareStruct(AtlasTexture)
-        DeclareStruct(BufferLayout)
-        DeclareStruct(BoneBufferLayout)
 
         Buffer(BufferLayout, data)
         DynamicBuffer(BoneBufferLayout, bones)
@@ -190,10 +182,6 @@ namespace xng {
         Output(vec4, oRoughnessMetallicAO)
         Output(vec4, oAlbedo)
         Output(ivec4, oObjectShadows)
-
-        DeclareStruct(AtlasTexture)
-        DeclareStruct(BufferLayout)
-        DeclareStruct(BoneBufferLayout)
 
         Buffer(BufferLayout, data)
         DynamicBuffer(BoneBufferLayout, bones)

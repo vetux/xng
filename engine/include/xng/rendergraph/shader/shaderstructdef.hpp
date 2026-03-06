@@ -34,6 +34,10 @@ namespace xng {
         }
 
         const ShaderStructElement &get(const std::string &name) const;
+
+        bool operator==(const ShaderStructDef &o) const {
+            return typeName == o.typeName && elements == o.elements;
+        }
     };
 
     struct ShaderStructElement {
@@ -45,6 +49,10 @@ namespace xng {
         ShaderStructElement(ShaderDataType type, std::string name)
             : type(std::move(type)),
               name(std::move(name)) {
+        }
+
+        bool operator==(const ShaderStructElement &o) const {
+            return type == o.type && name == o.name;
         }
     };
 }

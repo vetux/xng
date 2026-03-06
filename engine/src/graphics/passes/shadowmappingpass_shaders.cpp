@@ -38,11 +38,6 @@ namespace xng {
 
         Output(vec4, fPosition)
 
-        DeclareStruct(PointLightData)
-        DeclareStruct(DirLightData)
-        DeclareStruct(DrawData)
-        DeclareStruct(BoneData)
-
         Buffer(DrawData, drawData)
         DynamicBuffer(BoneData, bones)
         Buffer(PointLightData, lightData)
@@ -115,11 +110,6 @@ namespace xng {
         Input(vec4, fPosition)
         Output(vec4, FragPos)
 
-        DeclareStruct(PointLightData)
-        DeclareStruct(DirLightData)
-        DeclareStruct(DrawData)
-        DeclareStruct(BoneData)
-
         Buffer(DrawData, drawData)
         DynamicBuffer(BoneData, bones)
         Buffer(PointLightData, lightData)
@@ -141,11 +131,6 @@ namespace xng {
         BeginShader(Shader::FRAGMENT)
 
         Input(vec4, FragPos)
-
-        DeclareStruct(PointLightData)
-        DeclareStruct(DirLightData)
-        DeclareStruct(DrawData)
-        DeclareStruct(BoneData)
 
         Buffer(DrawData, drawData)
         DynamicBuffer(BoneData, bones)
@@ -174,11 +159,6 @@ namespace xng {
         Input(vec4, boneWeights)
 
         Output(vec4, fPosition)
-
-        DeclareStruct(PointLightData)
-        DeclareStruct(DirLightData)
-        DeclareStruct(DrawData)
-        DeclareStruct(BoneData)
 
         Buffer(DrawData, drawData)
         DynamicBuffer(BoneData, bones)
@@ -256,11 +236,6 @@ namespace xng {
 
         Output(vec4, fragCoord)
 
-        DeclareStruct(PointLightData)
-        DeclareStruct(DirLightData)
-        DeclareStruct(DrawData)
-        DeclareStruct(BoneData)
-
         Buffer(DrawData, drawData)
         DynamicBuffer(BoneData, bones)
         Buffer(DirLightData, lightData)
@@ -282,11 +257,6 @@ namespace xng {
         BeginShader(Shader::FRAGMENT)
 
         Input(vec4, fragCoord)
-
-        DeclareStruct(PointLightData)
-        DeclareStruct(DirLightData)
-        DeclareStruct(DrawData)
-        DeclareStruct(BoneData)
 
         Buffer(DrawData, drawData)
         DynamicBuffer(BoneData, bones)

@@ -34,8 +34,6 @@ namespace xng {
         Output(vec4, fPosition)
         Output(vec2, fUv)
 
-        DeclareStruct(BufferData)
-
         Buffer(BufferData, vars)
 
         TextureArray(TEXTURE_2D_ARRAY, RGBA, 12, atlasTextures)
@@ -56,8 +54,6 @@ namespace xng {
         Input(vec2, fUv)
 
         Output(vec4, color)
-
-        DeclareStruct(BufferData)
 
         Buffer(BufferData, vars)
 

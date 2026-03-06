@@ -109,6 +109,10 @@ namespace xng {
             //TODO: Struct Array support
             return ShaderDataType(typeName);
         }
+
+        bool operator==(const ShaderDataType &o) const {
+            return value == o.value && count == o.count;
+        }
     };
 }
 

@@ -519,15 +519,15 @@ namespace xng::ShaderScript
             GenerateCpuElementDeclaration(__VA_ARGS__)\
         };\
         static inline xng::ShaderDataType TYPE{static_cast<xng::ShaderStructType>(#name), 1};\
-        static xng::ShaderStructDef getShaderStruct() {\
+        static xng::ShaderStructDef getShaderStructDef() {\
             return xng::ShaderStructDef(#name, {\
                 GenerateStructElements(__VA_ARGS__) \
             });\
         }\
         xng::ShaderScript::ShaderObject _object;\
         GenerateElementDeclaration(__VA_ARGS__)\
-        name() : _object(xng::ShaderScript::ShaderStructObject<_##name##_type, 1>()), GenerateConstructor(__VA_ARGS__) {}\
-        name(xng::ShaderScript::ShaderObject &&buffer, bool b = false) : _object(buffer), GenerateConstructor(__VA_ARGS__) {}\
+        name() : _object(xng::ShaderScript::ShaderStructObject<_##name##_type, 1>()), GenerateConstructor(__VA_ARGS__) { xng::ShaderScript::ShaderBuilder::instance().addTypeDefinition(getShaderStructDef()); }\
+        name(xng::ShaderScript::ShaderObject &&buffer, bool b = false) : _object(buffer), GenerateConstructor(__VA_ARGS__) { xng::ShaderScript::ShaderBuilder::instance().addTypeDefinition(getShaderStructDef()); }\
         operator const xng::ShaderScript::ShaderObject&() const { return _object; }\
     };
 

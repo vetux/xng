@@ -50,15 +50,6 @@ namespace xng
         Output(vec3, fB)
         Output(vec3, fN)
 
-        DeclareStruct(AtlasTexture)
-        DeclareStruct(BufferLayout)
-        DeclareStruct(BoneBufferLayout)
-        DeclareStruct(PointLightData)
-        DeclareStruct(DirectionalLightData)
-        DeclareStruct(SpotLightData)
-        DeclareStruct(TransformData)
-        DeclareStruct(PbrPass);
-
         DynamicBuffer(PointLightData, pointLights)
         DynamicBuffer(DirectionalLightData, directionalLights)
         DynamicBuffer(SpotLightData, spotLights)
@@ -167,15 +158,6 @@ namespace xng
         Input(vec3, fN)
 
         Output(vec4, oColor)
-
-        DeclareStruct(AtlasTexture)
-        DeclareStruct(BufferLayout)
-        DeclareStruct(BoneBufferLayout)
-        DeclareStruct(PointLightData)
-        DeclareStruct(DirectionalLightData)
-        DeclareStruct(SpotLightData)
-        DeclareStruct(TransformData)
-        DeclareStruct(PbrPass);
 
         DynamicBuffer(PointLightData, pointLights)
         DynamicBuffer(DirectionalLightData, directionalLights)

@@ -146,7 +146,6 @@ namespace xng
             Input(vec3, normal)
             Input(vec2, uv)
             Output(vec3, vPosition)
-            DeclareStruct(CaptureFaceData)
             Buffer(CaptureFaceData, captureData)
             vPosition = position;
             setVertexPosition(captureData.captureMatrix * vec4(position, 1.0f));
@@ -187,7 +186,6 @@ namespace xng
             Input(vec3, normal)
             Input(vec2, uv)
             Output(vec3, vPosition)
-            DeclareStruct(CaptureFaceData)
             Buffer(CaptureFaceData, captureData)
             vPosition = position;
             setVertexPosition(captureData.captureMatrix * vec4(position, 1.0f));
@@ -201,7 +199,6 @@ namespace xng
             Output(vec4, outColor)
             Texture(TEXTURE_CUBE_MAP, RGBA16F, envCube)
 
-            DeclareStruct(PrefilterParams)
             Buffer(PrefilterParams, prefilterParams)
 
             // Van der Corput for better distributed sampling
@@ -291,7 +288,6 @@ namespace xng
             Input(vec3, normal)
             Input(vec2, uv)
             Output(vec3, vPosition)
-            DeclareStruct(CaptureFaceData)
             Buffer(CaptureFaceData, captureData)
             vPosition = position;
             setVertexPosition(captureData.captureMatrix * vec4(position, 1.0f));
@@ -305,7 +301,6 @@ namespace xng
             Output(vec4, outColor)
             Texture(TEXTURE_CUBE_MAP, RGBA16F, envCube)
 
-            DeclareStruct(PrefilterParams)
             Buffer(PrefilterParams, prefilterParams)
 
             vec3 N = normalize(vPosition);
