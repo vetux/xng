@@ -17,11 +17,11 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_PI_HPP
-#define XENGINE_PI_HPP
+#ifndef XENGINE_MATH_PI_HPP
+#define XENGINE_MATH_PI_HPP
 
 namespace xng {
     constexpr float PI = 3.14159265358979323846f;
 }
 
-#endif //XENGINE_PI_HPP
+#endif //XENGINE_MATH_PI_HPP

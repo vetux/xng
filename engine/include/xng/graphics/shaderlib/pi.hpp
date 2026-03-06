@@ -17,8 +17,8 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_PI_HPP
-#define XENGINE_PI_HPP
+#ifndef XENGINE_SHADERLIB_PI_HPP
+#define XENGINE_SHADERLIB_PI_HPP
 
 #include <memory>
 
@@ -32,4 +32,4 @@ namespace xng {
     }
 }
 
-#endif //XENGINE_PI_HPP
+#endif //XENGINE_SHADERLIB_PI_HPP
