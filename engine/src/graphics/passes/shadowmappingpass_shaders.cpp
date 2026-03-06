@@ -25,20 +25,24 @@ using namespace xng::ShaderScript;
 namespace xng {
     DeclareFunction1(getSkinnedVertexPosition)
 
+    using Mat4fArray6 = std::array<Mat4f, 6>;
+
+    namespace {
     DefineStruct(PointLightData,
-                 vec4, lightPosFarPlane,
-                 ivec4, layer,
-                 ArrayMat4<6>, shadowMatrices)
+                 Vec4f, lightPosFarPlane,
+                 Vec4i, layer,
+                 Mat4fArray6, shadowMatrices)
 
     DefineStruct(DirLightData,
-                 ivec4, layer,
-                 mat4, shadowMatrix)
+                 Vec4i, layer,
+                 Mat4f, shadowMatrix)
 
     DefineStruct(DrawData,
-                 ivec4, boneOffset,
-                 mat4, model)
+                 Vec4i, boneOffset,
+                 Mat4f, model)
 
-    DefineStruct(BoneData, mat4, matrix)
+    DefineStruct(BoneData, Mat4f, matrix)
+    }
 
     Shader ShadowMappingPass::createVertexShader() {
         BeginShader(Shader::VERTEX)

@@ -30,20 +30,20 @@ namespace xng::ShaderScript {
     DeclareFunction2(pbr_finish)
 
     DefineStruct(PbrPass,
-                 vec3, N,
-                 vec3, V,
-                 vec3, F0,
-                 vec3, WorldPos,
-                 vec3, Normal,
-                 vec3, albedo,
-                 Float, metallic,
-                 Float, roughness,
-                 Float, ao,
-                 vec3, camPos,
-                 Float, gamma,
-                 vec3, iblIrradiance,
-                 vec3, iblPrefilter,
-                 vec2, iblBRDF);
+                 Vec3f, N,
+                 Vec3f, V,
+                 Vec3f, F0,
+                 Vec3f, WorldPos,
+                 Vec3f, Normal,
+                 Vec3f, albedo,
+                 float, metallic,
+                 float, roughness,
+                 float, ao,
+                 Vec3f, camPos,
+                 float, gamma,
+                 Vec3f, iblIrradiance,
+                 Vec3f, iblPrefilter,
+                 Vec2f, iblBRDF);
 }
 
 namespace xng::shaderlib {

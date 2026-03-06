@@ -19,26 +19,24 @@
 
 #include "xng/graphics/passes/canvasrenderpass.hpp"
 
-
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
-
 #include "xng/graphics/shaderlib/texfilter.hpp"
 
 using namespace xng::ShaderScript;
 
 namespace xng {
     DefineStruct(BufferData,
-                 vec4, color,
-                 Float, colorMixFactor,
-                 Float, alphaMixFactor,
-                 Float, colorFactor,
-                 Int, texAtlasLevel,
-                 Int, texAtlasIndex,
-                 Int, texFilter,
-                 mat4, mvp,
-                 vec4, uvOffset_uvScale,
-                 vec4, atlasScale_texSize,
-                 Float, useCustomTexture)
+                 Vec4f, color,
+                 float, colorMixFactor,
+                 float, alphaMixFactor,
+                 float, colorFactor,
+                 int, texAtlasLevel,
+                 int, texAtlasIndex,
+                 int, texFilter,
+                 Mat4f, mvp,
+                 Vec4f, uvOffset_uvScale,
+                 Vec4f, atlasScale_texSize,
+                 float, useCustomTexture)
 
     Shader CanvasRenderPass::createVertexShader() {
         BeginShader(Shader::VERTEX)

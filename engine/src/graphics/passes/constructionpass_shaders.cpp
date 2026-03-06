@@ -26,25 +26,27 @@
 using namespace xng::ShaderScript;
 
 namespace xng {
+    namespace {
     DefineStruct(AtlasTexture,
-                 ivec4, level_index_filtering_assigned,
-                 vec4, atlasScale_texSize);
+                 Vec4i, level_index_filtering_assigned,
+                 Vec4f, atlasScale_texSize)
 
     DefineStruct(BufferLayout,
-                 mat4, model,
-                 mat4, mvp,
-                 ivec4, objectID_boneOffset_shadows,
-                 vec4, metallic_roughness_ambientOcclusion,
-                 vec4, albedoColor,
-                 vec4, normalIntensity,
+                 Mat4f, model,
+                 Mat4f, mvp,
+                 Vec4i, objectID_boneOffset_shadows,
+                 Vec4f, metallic_roughness_ambientOcclusion,
+                 Vec4f, albedoColor,
+                 Vec4f, normalIntensity,
                  AtlasTexture, normal,
                  AtlasTexture, metallic,
                  AtlasTexture, roughness,
                  AtlasTexture, ambientOcclusion,
-                 AtlasTexture, albedo);
+                 AtlasTexture, albedo)
 
     DefineStruct(BoneBufferLayout,
-                 mat4, matrix);
+                 Mat4f, matrix)
+    }
 
     Shader ConstructionPass::createVertexShader() {
         BeginShader(Shader::VERTEX)

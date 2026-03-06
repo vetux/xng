@@ -27,28 +27,30 @@ using namespace xng::ShaderScript;
 
 namespace xng
 {
+    namespace {
     DefineStruct(ShaderData,
-                 vec4, viewPosition_gamma,
-                 ivec4, iblPresent_prefilterMipCount)
+                 Vec4f, viewPosition_gamma,
+                 Vec4i, iblPresent_prefilterMipCount)
 
     DefineStruct(PBRPointLight,
-                 vec4, position,
-                 vec4, color,
-                 vec4, farPlane)
+                 Vec4f, position,
+                 Vec4f, color,
+                 Vec4f, farPlane)
 
     DefineStruct(PBRDirectionalLight,
-                 vec4, direction,
-                 vec4, color,
-                 vec4, farPlane)
+                 Vec4f, direction,
+                 Vec4f, color,
+                 Vec4f, farPlane)
 
     DefineStruct(PBRSpotLight,
-                 vec4, position,
-                 vec4, direction_quadratic,
-                 vec4, color,
-                 vec4, farPlane,
-                 vec4, cutOff_outerCutOff_constant_linear)
+                 Vec4f, position,
+                 Vec4f, direction_quadratic,
+                 Vec4f, color,
+                 Vec4f, farPlane,
+                 Vec4f, cutOff_outerCutOff_constant_linear)
 
-    DefineStruct(TransformData, mat4, transform);
+    DefineStruct(TransformData, Mat4f, transform)
+    }
 
     Shader DeferredLightingPass::createVertexShader()
     {

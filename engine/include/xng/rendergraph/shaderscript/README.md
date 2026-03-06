@@ -4,6 +4,8 @@ Shader Script is a custom Shader Domain Specific Language for writing render gra
 
 It is implemented through headers which define various types, functions and macros to create an easy-to-use DSL that resembles a mixture between glsl, bash and python.
 
+It resembles a CUDA like environment where users can write gpu side shader code in C++. Unlike CUDA however the C++ code translates into a shader intermediate representation at runtime through the use of operator overloading and custom type definitions, which then must be explicitly passed to the render graph runtime through the RenderGraphPipeline configuration.
+
 For usage examples check the *_shaders.cpp files at [engine/src/graphics/passes](https://github.com/vetux/xng/tree/master/engine/src/graphics/passes)
 
 ### Differences to GLSL
@@ -11,6 +13,7 @@ For usage examples check the *_shaders.cpp files at [engine/src/graphics/passes]
   - Literal types are uppercase (e.g. `int` in glsl becomes `Int` in C++)
   - Arrays are instantiated like this `ArrayX<COUNT> b = std::vector{VALUES...}`
   - User Defined types are instantiated through either `Object<TYPENAME> o` or using the DefineStruct / DeclareStruct interface.
+    - When using the DefineStruct macro for Buffer types users can generate both the cpu and gpu side structure definitions with automatic layout and padding handling for the cpu side structure. 
 
 #### Variable Initialization
   - Default constructed variables are undefined just like in glsl e.g. `vec2 v;` produces an uninitialized variable that cannot be used until it is assigned a value.

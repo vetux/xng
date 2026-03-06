@@ -29,45 +29,47 @@ using namespace xng::ShaderScript;
 
 namespace xng
 {
+    namespace {
     DefineStruct(AtlasTexture,
-                 ivec4, level_index_filtering_assigned,
-                 vec4, atlasScale_texSize)
+                 Vec4i, level_index_filtering_assigned,
+                 Vec4f, atlasScale_texSize)
 
     DefineStruct(BufferLayout,
-                 mat4, model,
-                 mat4, mvp,
-                 ivec4, objectID_boneOffset_shadows,
-                 vec4, metallic_roughness_ambientOcclusion,
-                 vec4, albedoColor,
+                 Mat4f, model,
+                 Mat4f, mvp,
+                 Vec4i, objectID_boneOffset_shadows,
+                 Vec4f, metallic_roughness_ambientOcclusion,
+                 Vec4f, albedoColor,
                  AtlasTexture, metallic,
                  AtlasTexture, roughness,
                  AtlasTexture, ambientOcclusion,
                  AtlasTexture, albedo,
-                 vec4, viewPosition_gamma,
+                 Vec4f, viewPosition_gamma,
                  AtlasTexture, normal,
-                 vec4, normalIntensity,
-                 ivec4, iblPresent_prefilterMipCount)
+                 Vec4f, normalIntensity,
+                 Vec4i, iblPresent_prefilterMipCount)
 
-    DefineStruct(BoneBufferLayout, mat4, matrix)
+    DefineStruct(BoneBufferLayout, Mat4f, matrix)
 
     DefineStruct(PBRPointLight,
-                 vec4, position,
-                 vec4, color,
-                 vec4, farPlane)
+                 Vec4f, position,
+                 Vec4f, color,
+                 Vec4f, farPlane)
 
     DefineStruct(PBRDirectionalLight,
-                 vec4, direction,
-                 vec4, color,
-                 vec4, farPlane)
+                 Vec4f, direction,
+                 Vec4f, color,
+                 Vec4f, farPlane)
 
     DefineStruct(PBRSpotLight,
-                 vec4, position,
-                 vec4, direction_quadratic,
-                 vec4, color,
-                 vec4, farPlane,
-                 vec4, cutOff_outerCutOff_constant_linear)
+                 Vec4f, position,
+                 Vec4f, direction_quadratic,
+                 Vec4f, color,
+                 Vec4f, farPlane,
+                 Vec4f, cutOff_outerCutOff_constant_linear)
 
-    DefineStruct(TransformData, mat4, transform)
+    DefineStruct(TransformData, Mat4f, transform)
+    }
 
     Shader ForwardLightingPass::createVertexShader()
     {

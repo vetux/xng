@@ -14,9 +14,11 @@ namespace xng {
         DeclareFunction2(integrateBRDF)
         DeclareFunction1(radicalInverseVdC)
 
-        DefineStruct(CaptureFaceData, mat4, captureMatrix)
+        namespace {
+        DefineStruct(CaptureFaceData, Mat4f, captureMatrix)
 
-        DefineStruct(PrefilterParams, vec4, prefilterParams)
+        DefineStruct(PrefilterParams, Vec4f, prefilterParams)
+        }
 
         RenderGraphPipeline makeBRDFPipeline() {
             RenderGraphPipeline pip;
