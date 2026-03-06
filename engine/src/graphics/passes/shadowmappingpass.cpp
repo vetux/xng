@@ -21,30 +21,17 @@
 
 //TODO: Optimize shadow mapping pass
 
-namespace xng {
-    struct ShadowShaderDrawData {
-        std::array<int, 4> boneOffset{};
-        Mat4f model;
-    };
-
-    struct ShadowPointLightData {
-        std::array<float, 4> lightPosFarPlane{};
-        std::array<int, 4> layer{};
-        std::array<Mat4f, 6> shadowMatrices;
-    };
-
-    struct ShadowDirLightData {
-        std::array<int, 4> layer{};
-        Mat4f shadowMatrix;
-    };
-
+namespace xng
+{
     ShadowMappingPass::ShadowMappingPass(std::shared_ptr<RenderConfiguration> config,
                                          std::shared_ptr<SharedResourceRegistry> registry)
         : config(std::move(config)),
-          registry(std::move(registry)) {
+          registry(std::move(registry))
+    {
     }
 
-    void ShadowMappingPass::create(RenderGraphBuilder &builder) {
+    void ShadowMappingPass::create(RenderGraphBuilder& builder)
+    {
         RenderGraphPipeline pipeline;
         pipeline.enableDepthTest = true;
         pipeline.depthTestWrite = true;
@@ -91,22 +78,24 @@ namespace xng {
 
         registry->set(shadowMaps);
 
-        shaderBuffer = builder.createShaderBuffer(sizeof(ShadowShaderDrawData));
+        shaderBuffer = builder.createShaderBuffer(sizeof(DrawData::CPU));
 
         currentBoneBufferSize = 0;
         boneBuffer = builder.createShaderBuffer(currentBoneBufferSize);
 
-        dirLightBuffer = builder.createShaderBuffer(sizeof(ShadowDirLightData));
-        pointLightBuffer = builder.createShaderBuffer(sizeof(ShadowPointLightData));
+        dirLightBuffer = builder.createShaderBuffer(sizeof(DirLightData::CPU));
+        pointLightBuffer = builder.createShaderBuffer(sizeof(PointLightData::CPU));
 
-        auto pass = builder.addPass("ShadowMapping", [this](RenderGraphContext &ctx) {
+        auto pass = builder.addPass("ShadowMapping", [this](RenderGraphContext& ctx)
+        {
             runPass(ctx);
         });
 
         meshAtlas.update(builder, pass);
     }
 
-    void ShadowMappingPass::recreate(RenderGraphBuilder &builder) {
+    void ShadowMappingPass::recreate(RenderGraphBuilder& builder)
+    {
         pointPipeline = builder.inheritResource(pointPipeline);
         dirPipeline = builder.inheritResource(dirPipeline);
         shaderBuffer = builder.inheritResource(shaderBuffer);
@@ -116,7 +105,8 @@ namespace xng {
         const auto dirShadowResolution = Vec2i(config->getDirectionalShadowResolution());
         const auto spotShadowResolution = Vec2i(config->getSpotShadowResolution());
 
-        if (pointShadowResolution != pointShadowMapResolution || pointShadowMapCount != pointLights.size()) {
+        if (pointShadowResolution != pointShadowMapResolution || pointShadowMapCount != pointLights.size())
+        {
             RenderGraphTexture tex;
             tex.format = DEPTH;
             tex.textureType = TEXTURE_CUBE_MAP_ARRAY;
@@ -125,11 +115,14 @@ namespace xng {
             shadowMaps.pointShadowMaps = builder.createTexture(tex);
             pointShadowMapResolution = pointShadowResolution;
             pointShadowMapCount = pointLights.size();
-        } else {
+        }
+        else
+        {
             shadowMaps.pointShadowMaps = builder.inheritResource(shadowMaps.pointShadowMaps);
         }
 
-        if (dirShadowResolution != dirShadowMapResolution || dirShadowMapCount != dirLights.size()) {
+        if (dirShadowResolution != dirShadowMapResolution || dirShadowMapCount != dirLights.size())
+        {
             RenderGraphTexture tex;
             tex.format = DEPTH;
             tex.textureType = TEXTURE_2D_ARRAY;
@@ -138,11 +131,14 @@ namespace xng {
             shadowMaps.dirShadowMaps = builder.createTexture(tex);
             dirShadowMapResolution = dirShadowResolution;
             dirShadowMapCount = dirLights.size();
-        } else {
+        }
+        else
+        {
             shadowMaps.dirShadowMaps = builder.inheritResource(shadowMaps.dirShadowMaps);
         }
 
-        if (spotShadowResolution != spotShadowMapResolution || spotShadowMapCount != spotLights.size()) {
+        if (spotShadowResolution != spotShadowMapResolution || spotShadowMapCount != spotLights.size())
+        {
             RenderGraphTexture tex;
             tex.format = DEPTH;
             tex.textureType = TEXTURE_2D_ARRAY;
@@ -151,44 +147,54 @@ namespace xng {
             shadowMaps.spotShadowMaps = builder.createTexture(tex);
             spotShadowMapResolution = spotShadowResolution;
             spotShadowMapCount = spotLights.size();
-        } else {
+        }
+        else
+        {
             shadowMaps.spotShadowMaps = builder.inheritResource(shadowMaps.spotShadowMaps);
         }
 
         registry->set(shadowMaps);
 
-        if (currentBoneBufferSize != requiredBoneBufferSize) {
+        if (currentBoneBufferSize != requiredBoneBufferSize)
+        {
             boneBuffer = builder.createShaderBuffer(requiredBoneBufferSize);
             currentBoneBufferSize = requiredBoneBufferSize;
-        } else {
+        }
+        else
+        {
             boneBuffer = builder.inheritResource(boneBuffer);
         }
 
-        auto pass = builder.addPass("ShadowMapping", [this](RenderGraphContext &ctx) {
+        auto pass = builder.addPass("ShadowMapping", [this](RenderGraphContext& ctx)
+        {
             runPass(ctx);
         });
 
         meshAtlas.update(builder, pass);
     }
 
-    bool ShadowMappingPass::shouldRebuild(const Vec2i &backBufferSize) {
+    bool ShadowMappingPass::shouldRebuild(const Vec2i& backBufferSize)
+    {
         auto pointShadowResolution = Vec2i(config->getPointShadowResolution());
         auto dirShadowResolution = Vec2i(config->getDirectionalShadowResolution());
         auto spotShadowResolution = Vec2i(config->getSpotShadowResolution());
 
         meshObjects.clear();
 
-        std::vector<ResourceHandle<SkinnedModel> > usedMeshes;
+        std::vector<ResourceHandle<SkinnedModel>> usedMeshes;
         std::set<Uri> usedMeshUris;
 
         size_t boneCount = 0;
-        for (auto &object: config->getScene().skinnedModels) {
-            if (object.model.assigned() && object.castShadows) {
+        for (auto& object : config->getScene().skinnedModels)
+        {
+            if (object.model.assigned() && object.castShadows)
+            {
                 meshAtlas.allocateMesh(object.model);
                 usedMeshes.emplace_back(object.model);
                 usedMeshUris.insert(object.model.getUri());
 
-                for (auto &subMesh: object.model.get().subMeshes) {
+                for (auto& subMesh : object.model.get().subMeshes)
+                {
                     boneCount += subMesh.bones.size();
                 }
 
@@ -198,8 +204,10 @@ namespace xng {
 
         requiredBoneBufferSize = boneCount * sizeof(Mat4f);
 
-        for (auto &mesh: allocatedMeshes) {
-            if (usedMeshUris.find(mesh.getUri()) == usedMeshUris.end()) {
+        for (auto& mesh : allocatedMeshes)
+        {
+            if (usedMeshUris.find(mesh.getUri()) == usedMeshUris.end())
+            {
                 meshAtlas.deallocateMesh(mesh);
             }
         }
@@ -210,69 +218,88 @@ namespace xng {
         dirLights.clear();
         spotLights.clear();
 
-        for (auto &lightNode: config->getScene().pointLights) {
-            if (lightNode.light.castShadows) {
+        for (auto& lightNode : config->getScene().pointLights)
+        {
+            if (lightNode.light.castShadows)
+            {
                 pointLights.emplace_back(lightNode);
             }
         }
 
-        for (auto &lightNode: config->getScene().directionalLights) {
-            if (lightNode.light.castShadows) {
+        for (auto& lightNode : config->getScene().directionalLights)
+        {
+            if (lightNode.light.castShadows)
+            {
                 dirLights.emplace_back(lightNode);
             }
         }
 
-        for (auto &lightNode: config->getScene().spotLights) {
-            if (lightNode.light.castShadows) {
+        for (auto& lightNode : config->getScene().spotLights)
+        {
+            if (lightNode.light.castShadows)
+            {
                 spotLights.emplace_back(lightNode);
             }
         }
 
-        if (meshAtlas.shouldRebuild()) {
+        if (meshAtlas.shouldRebuild())
+        {
             return true;
         }
 
-        if (currentBoneBufferSize < requiredBoneBufferSize) {
+        if (currentBoneBufferSize < requiredBoneBufferSize)
+        {
             return true;
         }
 
         if (pointShadowResolution != pointShadowMapResolution
             || dirShadowResolution != dirShadowMapResolution
-            || spotShadowResolution != spotShadowMapResolution) {
+            || spotShadowResolution != spotShadowMapResolution)
+        {
             return true;
         }
 
         return false;
     }
 
-    void ShadowMappingPass::runPass(RenderGraphContext &ctx) {
-        const auto &meshAllocations = meshAtlas.getMeshAllocations(ctx);
+    void ShadowMappingPass::runPass(RenderGraphContext& ctx)
+    {
+        const auto& meshAllocations = meshAtlas.getMeshAllocations(ctx);
 
         std::vector<Mat4f> boneMatrices;
-        std::vector<ShadowShaderDrawData> drawData;
+        std::vector<DrawData::CPU> drawData;
         std::vector<MeshAtlas::MeshAllocation::Data> meshData;
-        for (auto &meshObject: meshObjects) {
+        for (auto& meshObject : meshObjects)
+        {
             auto model = meshObject.transform.model();
 
-            for (auto i = 0; i < meshObject.model.get().subMeshes.size(); i++) {
-                auto &subMesh = meshObject.model.get().subMeshes.at(i);
+            for (auto i = 0; i < meshObject.model.get().subMeshes.size(); i++)
+            {
+                auto& subMesh = meshObject.model.get().subMeshes.at(i);
                 int boneOffset = static_cast<int>(boneMatrices.size());
-                if (subMesh.bones.empty()) {
+                if (subMesh.bones.empty())
+                {
                     boneOffset = -1;
-                } else {
-                    for (auto &bone: subMesh.bones) {
+                }
+                else
+                {
+                    for (auto& bone : subMesh.bones)
+                    {
                         auto bt = meshObject.boneTransforms.find(bone);
-                        if (bt != meshObject.boneTransforms.end()) {
+                        if (bt != meshObject.boneTransforms.end())
+                        {
                             boneMatrices.emplace_back(bt->second);
-                        } else {
+                        }
+                        else
+                        {
                             boneMatrices.emplace_back(MatrixMath::identity());
                         }
                     }
                 }
 
-                auto data = ShadowShaderDrawData();
+                auto data = DrawData::CPU();
                 data.model = model;
-                data.boneOffset[0] = boneOffset;
+                data.boneOffset = Vec4i(boneOffset, 0, 0, 0);
                 drawData.emplace_back(data);
 
                 meshData.emplace_back(meshAllocations.at(meshObject.model.getUri()).data.at(i));
@@ -280,11 +307,12 @@ namespace xng {
         }
 
         ctx.uploadBuffer(boneBuffer,
-                         reinterpret_cast<const uint8_t *>(boneMatrices.data()),
+                         reinterpret_cast<const uint8_t*>(boneMatrices.data()),
                          boneMatrices.size() * sizeof(Mat4f), 0);
 
         // Render Point Light Shadow Maps
-        if (pointLights.size() > 0) {
+        if (pointLights.size() > 0)
+        {
             ctx.beginRenderPass({}, RenderGraphAttachment(shadowMaps.pointShadowMaps));
             ctx.clearDepthAttachment(1);
             ctx.bindPipeline(pointPipeline);
@@ -294,58 +322,59 @@ namespace xng {
             ctx.bindShaderBuffer("drawData", shaderBuffer);
             ctx.bindShaderBuffer("bones", boneBuffer);
             ctx.bindShaderBuffer("lightData", pointLightBuffer);
-            for (auto i = 0; i < pointLights.size(); i++) {
-                auto &lightObject = pointLights.at(i);
-                auto &transform = lightObject.transform;
+            for (auto i = 0; i < pointLights.size(); i++)
+            {
+                auto& lightObject = pointLights.at(i);
+                auto& transform = lightObject.transform;
                 float aspect = 1;
                 float near = lightObject.light.shadowNearPlane;
                 float far = lightObject.light.shadowFarPlane;
 
                 Mat4f shadowProj = MatrixMath::perspective(90.0f, aspect, near, far);
 
-                auto &lightPos = transform.getPosition();
+                auto& lightPos = transform.getPosition();
 
-                ShadowPointLightData lightData;
-                lightData.shadowMatrices[0] = (shadowProj *
-                                               MatrixMath::lookAt(lightPos,
-                                                                  lightPos + Vec3f(1.0, 0.0, 0.0),
-                                                                  Vec3f(0.0, -1.0, 0.0)));
-                lightData.shadowMatrices[1] = (shadowProj *
-                                               MatrixMath::lookAt(lightPos,
-                                                                  lightPos + Vec3f(-1.0, 0.0, 0.0),
-                                                                  Vec3f(0.0, -1.0, 0.0)));
-                lightData.shadowMatrices[2] = (shadowProj *
-                                               MatrixMath::lookAt(lightPos,
-                                                                  lightPos + Vec3f(0.0, 1.0, 0.0),
-                                                                  Vec3f(0.0, 0.0, -1.0)));
-                lightData.shadowMatrices[3] = (shadowProj *
-                                               MatrixMath::lookAt(lightPos,
-                                                                  lightPos + Vec3f(0.0, -1.0, 0.0),
-                                                                  Vec3f(0.0, 0.0, 1.0)));
-                lightData.shadowMatrices[4] = (shadowProj *
-                                               MatrixMath::lookAt(lightPos,
-                                                                  lightPos + Vec3f(0.0, 0.0, 1.0),
-                                                                  Vec3f(0.0, -1.0, 0.0)));
-                lightData.shadowMatrices[5] = (shadowProj *
-                                               MatrixMath::lookAt(lightPos,
-                                                                  lightPos + Vec3f(0.0, 0.0, -1.0),
-                                                                  Vec3f(0.0, -1.0, 0.0)));
+                PointLightData::CPU lightData;
+                lightData.shadowMatrices.value[0] = (shadowProj *
+                    MatrixMath::lookAt(lightPos,
+                                       lightPos + Vec3f(1.0, 0.0, 0.0),
+                                       Vec3f(0.0, -1.0, 0.0)));
+                lightData.shadowMatrices.value[1] = (shadowProj *
+                    MatrixMath::lookAt(lightPos,
+                                       lightPos + Vec3f(-1.0, 0.0, 0.0),
+                                       Vec3f(0.0, -1.0, 0.0)));
+                lightData.shadowMatrices.value[2] = (shadowProj *
+                    MatrixMath::lookAt(lightPos,
+                                       lightPos + Vec3f(0.0, 1.0, 0.0),
+                                       Vec3f(0.0, 0.0, -1.0)));
+                lightData.shadowMatrices.value[3] = (shadowProj *
+                    MatrixMath::lookAt(lightPos,
+                                       lightPos + Vec3f(0.0, -1.0, 0.0),
+                                       Vec3f(0.0, 0.0, 1.0)));
+                lightData.shadowMatrices.value[4] = (shadowProj *
+                    MatrixMath::lookAt(lightPos,
+                                       lightPos + Vec3f(0.0, 0.0, 1.0),
+                                       Vec3f(0.0, -1.0, 0.0)));
+                lightData.shadowMatrices.value[5] = (shadowProj *
+                    MatrixMath::lookAt(lightPos,
+                                       lightPos + Vec3f(0.0, 0.0, -1.0),
+                                       Vec3f(0.0, -1.0, 0.0)));
 
-                lightData.lightPosFarPlane = Vec4f(lightPos.x, lightPos.y, lightPos.z, far).getMemory();
-
-                lightData.layer[0] = i;
+                lightData.lightPosFarPlane = Vec4f(lightPos.x, lightPos.y, lightPos.z, far);
+                lightData.layer = Vec4i(i, 0, 0, 0);
 
                 ctx.uploadBuffer(pointLightBuffer,
-                                 reinterpret_cast<const uint8_t *>(&lightData),
-                                 sizeof(ShadowPointLightData),
+                                 reinterpret_cast<const uint8_t*>(&lightData),
+                                 sizeof(PointLightData::CPU),
                                  0);
 
-                for (auto drawIndex = 0; drawIndex < meshData.size(); drawIndex++) {
-                    auto &mesh = meshData.at(drawIndex);
-                    auto &draw = drawData.at(drawIndex);
+                for (auto drawIndex = 0; drawIndex < meshData.size(); drawIndex++)
+                {
+                    auto& mesh = meshData.at(drawIndex);
+                    auto& draw = drawData.at(drawIndex);
                     ctx.uploadBuffer(shaderBuffer,
-                                     reinterpret_cast<const uint8_t *>(&draw),
-                                     sizeof(ShadowShaderDrawData),
+                                     reinterpret_cast<const uint8_t*>(&draw),
+                                     sizeof(DrawData::CPU),
                                      0);
                     ctx.drawIndexed(mesh.drawCall, mesh.baseVertex);
                 }
@@ -354,7 +383,8 @@ namespace xng {
         }
 
         // Render Directional Light Shadow Maps
-        if (dirLights.size() > 0) {
+        if (dirLights.size() > 0)
+        {
             ctx.beginRenderPass({}, RenderGraphAttachment(shadowMaps.dirShadowMaps));
             ctx.clearDepthAttachment(1);
             ctx.bindPipeline(dirPipeline);
@@ -364,25 +394,27 @@ namespace xng {
             ctx.bindShaderBuffer("drawData", shaderBuffer);
             ctx.bindShaderBuffer("bones", boneBuffer);
             ctx.bindShaderBuffer("lightData", dirLightBuffer);
-            for (auto i = 0; i < dirLights.size(); i++) {
-                auto &lightObject = dirLights.at(i);
-                auto &light = lightObject.light;
+            for (auto i = 0; i < dirLights.size(); i++)
+            {
+                auto& lightObject = dirLights.at(i);
+                auto& light = lightObject.light;
 
-                ShadowDirLightData lightData;
+                DirLightData::CPU lightData;
                 lightData.shadowMatrix = light.getShadowProjection(lightObject.transform);
-                lightData.layer[0] = i;
+                lightData.layer = Vec4i(i, 0, 0, 0);
 
                 ctx.uploadBuffer(dirLightBuffer,
-                                 reinterpret_cast<const uint8_t *>(&lightData),
-                                 sizeof(ShadowDirLightData),
+                                 reinterpret_cast<const uint8_t*>(&lightData),
+                                 sizeof(DirLightData::CPU),
                                  0);
 
-                for (auto drawIndex = 0; drawIndex < meshData.size(); drawIndex++) {
-                    auto &mesh = meshData.at(drawIndex);
-                    auto &draw = drawData.at(drawIndex);
+                for (auto drawIndex = 0; drawIndex < meshData.size(); drawIndex++)
+                {
+                    auto& mesh = meshData.at(drawIndex);
+                    auto& draw = drawData.at(drawIndex);
                     ctx.uploadBuffer(shaderBuffer,
-                                     reinterpret_cast<const uint8_t *>(&draw),
-                                     sizeof(ShadowShaderDrawData),
+                                     reinterpret_cast<const uint8_t*>(&draw),
+                                     sizeof(DrawData::CPU),
                                      0);
                     ctx.drawIndexed(mesh.drawCall, mesh.baseVertex);
                 }
@@ -391,7 +423,8 @@ namespace xng {
         }
 
         // Render Spot Light Shadow Maps
-        if (spotLights.size() > 0) {
+        if (spotLights.size() > 0)
+        {
             ctx.beginRenderPass({}, RenderGraphAttachment(shadowMaps.spotShadowMaps));
             ctx.clearDepthAttachment(1);
             ctx.bindPipeline(dirPipeline);
@@ -401,26 +434,28 @@ namespace xng {
             ctx.bindShaderBuffer("drawData", shaderBuffer);
             ctx.bindShaderBuffer("bones", boneBuffer);
             ctx.bindShaderBuffer("lightData", dirLightBuffer);
-            for (auto i = 0; i < spotLights.size(); i++) {
-                auto &lightObject = spotLights.at(i);
-                auto &light = lightObject.light;
-                auto &transform = lightObject.transform;
+            for (auto i = 0; i < spotLights.size(); i++)
+            {
+                auto& lightObject = spotLights.at(i);
+                auto& light = lightObject.light;
+                auto& transform = lightObject.transform;
 
-                ShadowDirLightData lightData;
+                DirLightData::CPU lightData;
                 lightData.shadowMatrix = light.getShadowProjection(transform);
-                lightData.layer[0] = i;
+                lightData.layer = Vec4i(i, 0, 0, 0);
 
                 ctx.uploadBuffer(dirLightBuffer,
-                                 reinterpret_cast<const uint8_t *>(&lightData),
-                                 sizeof(ShadowDirLightData),
+                                 reinterpret_cast<const uint8_t*>(&lightData),
+                                 sizeof(DirLightData::CPU),
                                  0);
 
-                for (auto drawIndex = 0; drawIndex < meshData.size(); drawIndex++) {
-                    auto &mesh = meshData.at(drawIndex);
-                    auto &draw = drawData.at(drawIndex);
+                for (auto drawIndex = 0; drawIndex < meshData.size(); drawIndex++)
+                {
+                    auto& mesh = meshData.at(drawIndex);
+                    auto& draw = drawData.at(drawIndex);
                     ctx.uploadBuffer(shaderBuffer,
-                                     reinterpret_cast<const uint8_t *>(&draw),
-                                     sizeof(ShadowShaderDrawData),
+                                     reinterpret_cast<const uint8_t*>(&draw),
+                                     sizeof(DrawData::CPU),
                                      0);
                     ctx.drawIndexed(mesh.drawCall, mesh.baseVertex);
                 }

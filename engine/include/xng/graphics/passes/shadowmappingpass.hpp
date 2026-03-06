@@ -25,20 +25,23 @@
 #include "xng/graphics/renderpass.hpp"
 #include "xng/graphics/sharedresourceregistry.hpp"
 #include "xng/graphics/sharedresources/shadowmaps.hpp"
+#include "xng/rendergraph/shaderscript/shaderstructdef.hpp"
 
-namespace xng {
-    class XENGINE_EXPORT ShadowMappingPass final : public RenderPass {
+namespace xng
+{
+    class XENGINE_EXPORT ShadowMappingPass final : public RenderPass
+    {
     public:
         ShadowMappingPass(std::shared_ptr<RenderConfiguration> config,
                           std::shared_ptr<SharedResourceRegistry> registry);
 
         ~ShadowMappingPass() override = default;
 
-        void create(RenderGraphBuilder &builder) override;
+        void create(RenderGraphBuilder& builder) override;
 
-        void recreate(RenderGraphBuilder &builder) override;
+        void recreate(RenderGraphBuilder& builder) override;
 
-        bool shouldRebuild(const Vec2i &backBufferSize) override;
+        bool shouldRebuild(const Vec2i& backBufferSize) override;
 
     private:
         static Shader createVertexShader();
@@ -53,7 +56,24 @@ namespace xng {
 
         static Shader createDirFragmentShader();
 
-        void runPass(RenderGraphContext &ctx);
+        void runPass(RenderGraphContext& ctx);
+
+        using Mat4fArray6 = std::array<Mat4f, 6>;
+
+        DefineStruct(PointLightData,
+                     Vec4f, lightPosFarPlane,
+                     Vec4i, layer,
+                     Mat4fArray6, shadowMatrices)
+
+        DefineStruct(DirLightData,
+                     Vec4i, layer,
+                     Mat4f, shadowMatrix)
+
+        DefineStruct(DrawData,
+                     Vec4i, boneOffset,
+                     Mat4f, model)
+
+        DefineStruct(BoneData, Mat4f, matrix)
 
         std::shared_ptr<RenderConfiguration> config;
         std::shared_ptr<SharedResourceRegistry> registry;
@@ -81,7 +101,7 @@ namespace xng {
         size_t currentBoneBufferSize{};
         size_t requiredBoneBufferSize{};
 
-        std::vector<ResourceHandle<SkinnedModel> > allocatedMeshes;
+        std::vector<ResourceHandle<SkinnedModel>> allocatedMeshes;
 
         std::vector<SkinnedModelObject> meshObjects;
         std::vector<PointLightObject> pointLights;

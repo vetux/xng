@@ -29,32 +29,56 @@
 #include "xng/graphics/meshatlas/meshatlas.hpp"
 #include "xng/graphics/textureatlas/textureatlas.hpp"
 #include "xng/graphics/sharedresources/gbuffer.hpp"
+#include "xng/rendergraph/shaderscript/shaderstructdef.hpp"
 
-namespace xng {
-    class XENGINE_EXPORT ConstructionPass final : public RenderPass {
+namespace xng
+{
+    class XENGINE_EXPORT ConstructionPass final : public RenderPass
+    {
     public:
         ConstructionPass(std::shared_ptr<RenderConfiguration> config,
                          std::shared_ptr<SharedResourceRegistry> registry)
             : config(std::move(config)),
-              registry(std::move(registry)) {
+              registry(std::move(registry))
+        {
         }
 
         ~ConstructionPass() override = default;
 
-        void create(RenderGraphBuilder &builder) override;
+        void create(RenderGraphBuilder& builder) override;
 
-        void recreate(RenderGraphBuilder &builder) override;
+        void recreate(RenderGraphBuilder& builder) override;
 
-        bool shouldRebuild(const Vec2i &backBufferSize) override;
+        bool shouldRebuild(const Vec2i& backBufferSize) override;
 
     private:
-        void runPass(RenderGraphContext &ctx);
+        void runPass(RenderGraphContext& ctx);
 
         static Shader createVertexShader();
 
         static Shader createSkinnedVertexShader();
 
         static Shader createFragmentShader();
+
+        DefineStruct(AtlasTexture,
+                     Vec4i, level_index_filtering_assigned,
+                     Vec4f, atlasScale_texSize)
+
+        DefineStruct(BufferLayout,
+                     Mat4f, model,
+                     Mat4f, mvp,
+                     Vec4i, objectID_boneOffset_shadows,
+                     Vec4f, metallic_roughness_ambientOcclusion,
+                     Vec4f, albedoColor,
+                     Vec4f, normalIntensity,
+                     AtlasTexture, normal,
+                     AtlasTexture, metallic,
+                     AtlasTexture, roughness,
+                     AtlasTexture, ambientOcclusion,
+                     AtlasTexture, albedo)
+
+        DefineStruct(BoneBufferLayout,
+                     Mat4f, matrix)
 
         std::shared_ptr<RenderConfiguration> config;
         std::shared_ptr<SharedResourceRegistry> registry;
@@ -70,7 +94,7 @@ namespace xng {
         MeshAtlas meshAtlas;
 
         std::map<Uri, TextureAtlasHandle> textures;
-        std::vector<ResourceHandle<SkinnedModel> > allocatedMeshes;
+        std::vector<ResourceHandle<SkinnedModel>> allocatedMeshes;
 
         size_t currentBoneBufferSize{};
         size_t totalBoneBufferSize{};

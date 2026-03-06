@@ -26,25 +26,51 @@
 #include "xng/graphics/sharedresources/gbuffer.hpp"
 #include "xng/graphics/sharedresources/shadowmaps.hpp"
 #include "xng/graphics/scene/mesh.hpp"
+#include "xng/rendergraph/shaderscript/shaderstructdef.hpp"
 
-namespace xng {
-    class XENGINE_EXPORT DeferredLightingPass final : public RenderPass {
+namespace xng
+{
+    class XENGINE_EXPORT DeferredLightingPass final : public RenderPass
+    {
     public:
         DeferredLightingPass(std::shared_ptr<RenderConfiguration> configuration,
                              std::shared_ptr<SharedResourceRegistry> registry);
 
-        void create(RenderGraphBuilder &builder) override;
+        void create(RenderGraphBuilder& builder) override;
 
-        void recreate(RenderGraphBuilder &builder) override;
+        void recreate(RenderGraphBuilder& builder) override;
 
-        bool shouldRebuild(const Vec2i &backBufferSize) override;
+        bool shouldRebuild(const Vec2i& backBufferSize) override;
 
     private:
         static Shader createVertexShader();
 
         static Shader createFragmentShader();
 
-        void runPass(RenderGraphContext &ctx);
+        void runPass(RenderGraphContext& ctx);
+
+        DefineStruct(ShaderData,
+                     Vec4f, viewPosition_gamma,
+                     Vec4i, iblPresent_prefilterMipCount)
+
+        DefineStruct(PointLightData,
+                     Vec4f, position,
+                     Vec4f, color,
+                     Vec4f, farPlane)
+
+        DefineStruct(DirectionalLightData,
+                     Vec4f, direction,
+                     Vec4f, color,
+                     Vec4f, farPlane)
+
+        DefineStruct(SpotLightData,
+                     Vec4f, position,
+                     Vec4f, direction_quadratic,
+                     Vec4f, color,
+                     Vec4f, farPlane,
+                     Vec4f, cutOff_outerCutOff_constant_linear)
+
+        DefineStruct(TransformData, Mat4f, transform)
 
         Mesh normalizedQuad = Mesh::normalizedQuad();
         bool normalizedQuadUploaded = false;

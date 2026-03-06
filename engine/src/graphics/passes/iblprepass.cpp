@@ -1,17 +1,30 @@
-/*
- * IBL pre-pass: creates irradiance, prefilter and BRDF LUT textures
+/**
+*  xEngine - C++ Game Engine Library
+ *  Copyright (C) 2025 Julian Zampiccoli
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 3 of the License, or (at your option) any later version.
+
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software Foundation,
+ *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
 #include "xng/graphics/passes/iblprepass.hpp"
-#include "xng/rendergraph/shaderscript/shaderscript.hpp"
+
+#include "xng/graphics/image.hpp"
 #include "xng/graphics/scene/mesh.hpp"
+#include "xng/rendergraph/shaderscript/shaderscript.hpp"
 #include "xng/rendergraph/rendergraphattachment.hpp"
 #include "xng/math/matrixmath.hpp"
 #include "xng/math/vector3.hpp"
-
-#include "xng/graphics/image.hpp"
-
-#include "iblprepass_shaders.hpp"
 
 namespace xng
 {
@@ -77,10 +90,10 @@ namespace xng
         // create a small shader buffer for prefilter params (roughness, samples)
         prefilterParamBuffer = builder.createShaderBuffer(sizeof(float) * 4);
 
-        pipelineBRDF = builder.createPipeline(iblprepass_shaders::makeBRDFPipeline());
-        pipelineEquirectToCube = builder.createPipeline(iblprepass_shaders::makeEquirectToCubePipeline());
-        pipelineIrradiance = builder.createPipeline(iblprepass_shaders::makeIrradiancePipeline());
-        pipelinePrefilter = builder.createPipeline(iblprepass_shaders::makePrefilterPipeline());
+        pipelineBRDF = builder.createPipeline(makeBRDFPipeline());
+        pipelineEquirectToCube = builder.createPipeline(makeEquirectToCubePipeline());
+        pipelineIrradiance = builder.createPipeline(makeIrradiancePipeline());
+        pipelinePrefilter = builder.createPipeline(makePrefilterPipeline());
 
         // create an intermediate environment cubemap that will be populated from the HDR equirect
         RenderGraphTexture envCubeDesc;

@@ -27,25 +27,68 @@
 #include "xng/graphics/textureatlas/textureatlas.hpp"
 #include "xng/graphics/sharedresources/compositinglayers.hpp"
 #include "xng/graphics/sharedresources/shadowmaps.hpp"
+#include "xng/rendergraph/shaderscript/shaderstructdef.hpp"
 
-namespace xng {
-    class XENGINE_EXPORT ForwardLightingPass final : public RenderPass {
+namespace xng
+{
+    class XENGINE_EXPORT ForwardLightingPass final : public RenderPass
+    {
     public:
         ForwardLightingPass(std::shared_ptr<RenderConfiguration> configuration,
                             std::shared_ptr<SharedResourceRegistry> registry);
 
-        void create(RenderGraphBuilder &builder) override;
+        void create(RenderGraphBuilder& builder) override;
 
-        void recreate(RenderGraphBuilder &builder) override;
+        void recreate(RenderGraphBuilder& builder) override;
 
-        bool shouldRebuild(const Vec2i &backBufferSize) override;
+        bool shouldRebuild(const Vec2i& backBufferSize) override;
 
     private:
         static Shader createVertexShader();
 
         static Shader createFragmentShader();
 
-        void runPass(RenderGraphContext &ctx);
+        void runPass(RenderGraphContext& ctx);
+
+        DefineStruct(AtlasTexture,
+                     Vec4i, level_index_filtering_assigned,
+                     Vec4f, atlasScale_texSize)
+
+        DefineStruct(BufferLayout,
+                     Mat4f, model,
+                     Mat4f, mvp,
+                     Vec4i, objectID_boneOffset_shadows,
+                     Vec4f, metallic_roughness_ambientOcclusion,
+                     Vec4f, albedoColor,
+                     AtlasTexture, metallic,
+                     AtlasTexture, roughness,
+                     AtlasTexture, ambientOcclusion,
+                     AtlasTexture, albedo,
+                     Vec4f, viewPosition_gamma,
+                     AtlasTexture, normal,
+                     Vec4f, normalIntensity,
+                     Vec4i, iblPresent_prefilterMipCount)
+
+        DefineStruct(BoneBufferLayout, Mat4f, matrix)
+
+        DefineStruct(PointLightData,
+                     Vec4f, position,
+                     Vec4f, color,
+                     Vec4f, farPlane)
+
+        DefineStruct(DirectionalLightData,
+                     Vec4f, direction,
+                     Vec4f, color,
+                     Vec4f, farPlane)
+
+        DefineStruct(SpotLightData,
+                     Vec4f, position,
+                     Vec4f, direction_quadratic,
+                     Vec4f, color,
+                     Vec4f, farPlane,
+                     Vec4f, cutOff_outerCutOff_constant_linear)
+
+        DefineStruct(TransformData, Mat4f, transform)
 
         std::shared_ptr<RenderConfiguration> config;
         std::shared_ptr<SharedResourceRegistry> registry;
@@ -59,7 +102,7 @@ namespace xng {
         MeshAtlas meshAtlas;
 
         std::map<Uri, TextureAtlasHandle> textures;
-        std::vector<ResourceHandle<SkinnedModel> > allocatedMeshes;
+        std::vector<ResourceHandle<SkinnedModel>> allocatedMeshes;
 
         size_t currentBoneBufferSize{};
         size_t totalBoneBufferSize{};

@@ -28,6 +28,7 @@
 #include "xng/graphics/textureatlas/textureatlas.hpp"
 #include "xng/graphics/textureatlas/textureatlashandle.hpp"
 #include "xng/graphics/sharedresources/compositinglayers.hpp"
+#include "xng/rendergraph/shaderscript/shaderstructdef.hpp"
 
 namespace xng {
     /**
@@ -64,6 +65,19 @@ namespace xng {
         static Shader createVertexShader();
 
         static Shader createFragmentShader();
+
+        DefineStruct(BufferData,
+             Vec4f, color,
+             float, colorMixFactor,
+             float, alphaMixFactor,
+             float, colorFactor,
+             int, texAtlasLevel,
+             int, texAtlasIndex,
+             int, texFilter,
+             Mat4f, mvp,
+             Vec4f, uvOffset_uvScale,
+             Vec4f, atlasScale_texSize,
+             float, useCustomTexture)
 
         std::shared_ptr<RenderConfiguration> config;
         std::shared_ptr<SharedResourceRegistry> registry;

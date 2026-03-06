@@ -25,19 +25,6 @@
 using namespace xng::ShaderScript;
 
 namespace xng {
-    DefineStruct(BufferData,
-                 Vec4f, color,
-                 float, colorMixFactor,
-                 float, alphaMixFactor,
-                 float, colorFactor,
-                 int, texAtlasLevel,
-                 int, texAtlasIndex,
-                 int, texFilter,
-                 Mat4f, mvp,
-                 Vec4f, uvOffset_uvScale,
-                 Vec4f, atlasScale_texSize,
-                 float, useCustomTexture)
-
     Shader CanvasRenderPass::createVertexShader() {
         BeginShader(Shader::VERTEX)
 

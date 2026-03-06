@@ -26,28 +26,6 @@
 using namespace xng::ShaderScript;
 
 namespace xng {
-    namespace {
-    DefineStruct(AtlasTexture,
-                 Vec4i, level_index_filtering_assigned,
-                 Vec4f, atlasScale_texSize)
-
-    DefineStruct(BufferLayout,
-                 Mat4f, model,
-                 Mat4f, mvp,
-                 Vec4i, objectID_boneOffset_shadows,
-                 Vec4f, metallic_roughness_ambientOcclusion,
-                 Vec4f, albedoColor,
-                 Vec4f, normalIntensity,
-                 AtlasTexture, normal,
-                 AtlasTexture, metallic,
-                 AtlasTexture, roughness,
-                 AtlasTexture, ambientOcclusion,
-                 AtlasTexture, albedo)
-
-    DefineStruct(BoneBufferLayout,
-                 Mat4f, matrix)
-    }
-
     Shader ConstructionPass::createVertexShader() {
         BeginShader(Shader::VERTEX)
 

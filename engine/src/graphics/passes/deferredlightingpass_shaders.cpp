@@ -27,31 +27,6 @@ using namespace xng::ShaderScript;
 
 namespace xng
 {
-    namespace {
-    DefineStruct(ShaderData,
-                 Vec4f, viewPosition_gamma,
-                 Vec4i, iblPresent_prefilterMipCount)
-
-    DefineStruct(PBRPointLight,
-                 Vec4f, position,
-                 Vec4f, color,
-                 Vec4f, farPlane)
-
-    DefineStruct(PBRDirectionalLight,
-                 Vec4f, direction,
-                 Vec4f, color,
-                 Vec4f, farPlane)
-
-    DefineStruct(PBRSpotLight,
-                 Vec4f, position,
-                 Vec4f, direction_quadratic,
-                 Vec4f, color,
-                 Vec4f, farPlane,
-                 Vec4f, cutOff_outerCutOff_constant_linear)
-
-    DefineStruct(TransformData, Mat4f, transform)
-    }
-
     Shader DeferredLightingPass::createVertexShader()
     {
         BeginShader(Shader::VERTEX)
@@ -63,21 +38,21 @@ namespace xng
         Output(vec2, fUv)
 
         DeclareStruct(ShaderData)
-        DeclareStruct(PBRPointLight)
-        DeclareStruct(PBRDirectionalLight)
-        DeclareStruct(PBRSpotLight)
+        DeclareStruct(PointLightData)
+        DeclareStruct(DirectionalLightData)
+        DeclareStruct(SpotLightData)
         DeclareStruct(TransformData)
         DeclareStruct(PbrPass)
 
         Buffer(ShaderData, shaderData)
 
-        DynamicBuffer(PBRPointLight, pointLights)
-        DynamicBuffer(PBRDirectionalLight, directionalLights)
-        DynamicBuffer(PBRSpotLight, spotLights)
+        DynamicBuffer(PointLightData, pointLights)
+        DynamicBuffer(DirectionalLightData, directionalLights)
+        DynamicBuffer(SpotLightData, spotLights)
 
-        DynamicBuffer(PBRPointLight, shadowPointLights)
-        DynamicBuffer(PBRDirectionalLight, shadowDirectionalLights)
-        DynamicBuffer(PBRSpotLight, shadowSpotLights)
+        DynamicBuffer(PointLightData, shadowPointLights)
+        DynamicBuffer(DirectionalLightData, shadowDirectionalLights)
+        DynamicBuffer(SpotLightData, shadowSpotLights)
 
         Texture(TEXTURE_2D, RGBA32F, gBufferPos)
         Texture(TEXTURE_2D, RGBA32F, gBufferNormal)
@@ -110,21 +85,21 @@ namespace xng
         Output(vec4, oColor)
 
         DeclareStruct(ShaderData)
-        DeclareStruct(PBRPointLight)
-        DeclareStruct(PBRDirectionalLight)
-        DeclareStruct(PBRSpotLight)
+        DeclareStruct(PointLightData)
+        DeclareStruct(DirectionalLightData)
+        DeclareStruct(SpotLightData)
         DeclareStruct(TransformData)
         DeclareStruct(PbrPass)
 
         Buffer(ShaderData, shaderData)
 
-        DynamicBuffer(PBRPointLight, pointLights)
-        DynamicBuffer(PBRDirectionalLight, directionalLights)
-        DynamicBuffer(PBRSpotLight, spotLights)
+        DynamicBuffer(PointLightData, pointLights)
+        DynamicBuffer(DirectionalLightData, directionalLights)
+        DynamicBuffer(SpotLightData, spotLights)
 
-        DynamicBuffer(PBRPointLight, shadowPointLights)
-        DynamicBuffer(PBRDirectionalLight, shadowDirectionalLights)
-        DynamicBuffer(PBRSpotLight, shadowSpotLights)
+        DynamicBuffer(PointLightData, shadowPointLights)
+        DynamicBuffer(DirectionalLightData, shadowDirectionalLights)
+        DynamicBuffer(SpotLightData, shadowSpotLights)
 
         Texture(TEXTURE_2D, RGBA32F, gBufferPos)
         Texture(TEXTURE_2D, RGBA32F, gBufferNormal)

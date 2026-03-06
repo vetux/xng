@@ -20,69 +20,16 @@
 #include "xng/graphics/passes/forwardlightingpass.hpp"
 #include "xng/graphics/sharedresources/ibl.hpp"
 
-namespace xng {
-    //TODO: Move all type definitions and inline function definitions inside all of the translation units into anonymous namespaces to force "internal linkage" (https://en.cppreference.com/w/cpp/language/namespace.html).
-    namespace {
-#pragma pack(push, 1)
-        struct PointLightData {
-            std::array<float, 4> position;
-            std::array<float, 4> color;
-            std::array<float, 4> farPlane;
-        };
-
-        struct DirectionalLightData {
-            std::array<float, 4> direction;
-            std::array<float, 4> color;
-            std::array<float, 4> farPlane;
-        };
-
-        struct SpotLightData {
-            std::array<float, 4> position;
-            std::array<float, 4> direction_quadratic;
-            std::array<float, 4> color;
-            std::array<float, 4> farPlane;
-            std::array<float, 4> cutOff_outerCutOff_constant_linear;
-        };
-
-        struct ShaderAtlasTexture {
-            int level_index_filtering_assigned[4]{0, 0, 0, 0};
-            float atlasScale_texSize[4]{0, 0, 0, 0};
-        };
-
-        struct ShaderDrawData {
-            Mat4f model;
-            Mat4f mvp;
-
-            int objectID_boneOffset_shadows[4]{0, 0, 0, 0};
-
-            float metallic_roughness_ambientOcclusion[4]{0, 0, 0, 0};
-            float albedoColor[4]{0, 0, 0, 0};
-
-            ShaderAtlasTexture metallic;
-            ShaderAtlasTexture roughness;
-            ShaderAtlasTexture ambientOcclusion;
-            ShaderAtlasTexture albedo;
-
-            float viewPosition_gamma[4]{0, 0, 0, 0};
-
-            ShaderAtlasTexture normal;
-            float normalIntensity[4]{0, 0, 0, 0};
-
-            int iblPresent_iblPrefilterMipCount[4]{0, 0, 0, 0};
-        };
-#pragma pack(pop)
-
-        static_assert(sizeof(ShaderDrawData) == 64 + 64 + 16 + 16 + 16 + 16 + 32 + 32 + 32 + 32 + 32 + 16 + 16);
-    }
-
+namespace xng
+{
     ForwardLightingPass::ForwardLightingPass(std::shared_ptr<RenderConfiguration> configuration,
                                              std::shared_ptr<SharedResourceRegistry> registry)
-        : config(std::move(configuration)), registry(std::move(registry)) {
+        : config(std::move(configuration)), registry(std::move(registry))
+    {
     }
 
-    void ForwardLightingPass::create(RenderGraphBuilder &builder) {
-        assert(sizeof(ShaderDrawData) == 64 + 64 + 16 + 16 + 16 + 16 + 32 + 32 + 32 + 32 + 32 + 16 + 16);
-
+    void ForwardLightingPass::create(RenderGraphBuilder& builder)
+    {
         auto vs = createVertexShader();
         auto fs = createFragmentShader();
 
@@ -115,7 +62,7 @@ namespace xng {
         layers.layers.emplace_back(layer);
         registry->set<CompositingLayers>(layers);
 
-        shaderBuffer = builder.createShaderBuffer(sizeof(ShaderDrawData));
+        shaderBuffer = builder.createShaderBuffer(sizeof(BufferLayout::CPU));
         boneBuffer = builder.createShaderBuffer(0);
 
         textureAtlas.onCreate(builder);
@@ -133,12 +80,14 @@ namespace xng {
 
         shadowMaps = registry->get<ShadowMaps>();
 
-        auto pass = builder.addPass("ForwardLightingPass", [this](RenderGraphContext &ctx) {
+        auto pass = builder.addPass("ForwardLightingPass", [this](RenderGraphContext& ctx)
+        {
             runPass(ctx);
         });
 
         // If IBL maps are available, declare them as read resources so they are produced before this pass
-        if (registry->check<IBLMaps>()) {
+        if (registry->check<IBLMaps>())
+        {
             auto ibl = registry->get<IBLMaps>();
             if (ibl.irradiance) builder.read(pass, ibl.irradiance);
             if (ibl.prefilter) builder.read(pass, ibl.prefilter);
@@ -154,12 +103,14 @@ namespace xng {
         builder.readWrite(pass, boneBuffer);
     }
 
-    void ForwardLightingPass::recreate(RenderGraphBuilder &builder) {
+    void ForwardLightingPass::recreate(RenderGraphBuilder& builder)
+    {
         pipeline = builder.inheritResource(pipeline);
 
         const auto resolution = builder.getBackBufferSize() * config->getRenderScale();
 
-        if (currentResolution != resolution) {
+        if (currentResolution != resolution)
+        {
             currentResolution = resolution;
 
             auto desc = RenderGraphTexture();
@@ -169,7 +120,9 @@ namespace xng {
 
             desc.format = DEPTH;
             layer.depth = builder.createTexture(desc);
-        } else {
+        }
+        else
+        {
             layer.color = builder.inheritResource(layer.color);
             layer.depth = builder.inheritResource(layer.depth);
         }
@@ -185,23 +138,26 @@ namespace xng {
 
         textureAtlas.onRecreate(builder);
 
-        if (recreateLightBuffers) {
-            pointLightBuffer = builder.createShaderBuffer(sizeof(PointLightData)
-                                                          * pointLights.size());
-            directionalLightBuffer = builder.createShaderBuffer(sizeof(DirectionalLightData)
-                                                                * directionalLights.size());
-            spotLightBuffer = builder.createShaderBuffer(sizeof(SpotLightData)
-                                                         * spotLights.size());
-            shadowPointLightBuffer = builder.createShaderBuffer(sizeof(PointLightData)
-                                                                * shadowPointLights.size());
-            shadowDirectionalLightBuffer = builder.createShaderBuffer(sizeof(DirectionalLightData)
-                                                                      * shadowDirectionalLights.size());
-            shadowSpotLightBuffer = builder.createShaderBuffer(sizeof(SpotLightData)
-                                                               * shadowSpotLights.size());
+        if (recreateLightBuffers)
+        {
+            pointLightBuffer = builder.createShaderBuffer(sizeof(PointLightData::CPU)
+                * pointLights.size());
+            directionalLightBuffer = builder.createShaderBuffer(sizeof(DirectionalLightData::CPU)
+                * directionalLights.size());
+            spotLightBuffer = builder.createShaderBuffer(sizeof(SpotLightData::CPU)
+                * spotLights.size());
+            shadowPointLightBuffer = builder.createShaderBuffer(sizeof(PointLightData::CPU)
+                * shadowPointLights.size());
+            shadowDirectionalLightBuffer = builder.createShaderBuffer(sizeof(DirectionalLightData::CPU)
+                * shadowDirectionalLights.size());
+            shadowSpotLightBuffer = builder.createShaderBuffer(sizeof(SpotLightData::CPU)
+                * shadowSpotLights.size());
             shadowDirectionalLightTransformBuffer = builder.createShaderBuffer(sizeof(Mat4f)
-                                                                               * shadowDirectionalLights.size());
+                * shadowDirectionalLights.size());
             shadowSpotLightTransformBuffer = builder.createShaderBuffer(sizeof(Mat4f) * shadowSpotLights.size());
-        } else {
+        }
+        else
+        {
             pointLightBuffer = builder.inheritResource(pointLightBuffer);
             directionalLightBuffer = builder.inheritResource(directionalLightBuffer);
             spotLightBuffer = builder.inheritResource(spotLightBuffer);
@@ -214,11 +170,13 @@ namespace xng {
 
         shadowMaps = registry->get<ShadowMaps>();
 
-        auto pass = builder.addPass("ForwardLightingPass", [this](RenderGraphContext &ctx) {
+        auto pass = builder.addPass("ForwardLightingPass", [this](RenderGraphContext& ctx)
+        {
             runPass(ctx);
         });
 
-        if (registry->check<IBLMaps>()) {
+        if (registry->check<IBLMaps>())
+        {
             auto ibl = registry->get<IBLMaps>();
             if (ibl.irradiance) builder.read(pass, ibl.irradiance);
             if (ibl.prefilter) builder.read(pass, ibl.prefilter);
@@ -234,43 +192,56 @@ namespace xng {
         builder.readWrite(pass, boneBuffer);
     }
 
-    bool ForwardLightingPass::shouldRebuild(const Vec2i &backBufferSize) {
+    bool ForwardLightingPass::shouldRebuild(const Vec2i& backBufferSize)
+    {
         std::vector<PointLightObject> pLights;
         std::vector<PointLightObject> psLights;
-        for (auto &object: config->getScene().pointLights) {
-            if (object.light.castShadows) {
+        for (auto& object : config->getScene().pointLights)
+        {
+            if (object.light.castShadows)
+            {
                 psLights.emplace_back(object);
-            } else {
+            }
+            else
+            {
                 pLights.emplace_back(object);
             }
         }
 
         std::vector<DirectionalLightObject> dLights;
         std::vector<DirectionalLightObject> dsLights;
-        for (auto &object: config->getScene().directionalLights) {
-            if (object.light.castShadows) {
+        for (auto& object : config->getScene().directionalLights)
+        {
+            if (object.light.castShadows)
+            {
                 dsLights.emplace_back(object);
-            } else {
+            }
+            else
+            {
                 dLights.emplace_back(object);
             }
         }
 
         std::vector<SpotLightObject> sLights;
         std::vector<SpotLightObject> ssLights;
-        for (auto &object: config->getScene().spotLights) {
-            if (object.light.castShadows) {
+        for (auto& object : config->getScene().spotLights)
+        {
+            if (object.light.castShadows)
+            {
                 ssLights.emplace_back(object);
-            } else {
+            }
+            else
+            {
                 sLights.emplace_back(object);
             }
         }
 
         recreateLightBuffers = pLights != pointLights
-                               || psLights != shadowPointLights
-                               || dLights != directionalLights
-                               || dsLights != shadowDirectionalLights
-                               || sLights != spotLights
-                               || ssLights != shadowSpotLights;
+            || psLights != shadowPointLights
+            || dLights != directionalLights
+            || dsLights != shadowDirectionalLights
+            || sLights != spotLights
+            || ssLights != shadowSpotLights;
 
         pointLights = pLights;
         shadowPointLights = psLights;
@@ -283,69 +254,84 @@ namespace xng {
 
         totalBoneBufferSize = 0;
 
-        auto &scene = config->getScene();
+        auto& scene = config->getScene();
 
         std::set<Uri> usedTextures;
-        std::vector<ResourceHandle<SkinnedModel> > usedMeshes;
+        std::vector<ResourceHandle<SkinnedModel>> usedMeshes;
         std::set<Uri> usedMeshUris;
 
         objects.clear();
         auto tmp = scene.skinnedModels;
-        for (auto &object: tmp) {
-            if (!object.model.assigned()) {
+        for (auto& object : tmp)
+        {
+            if (!object.model.assigned())
+            {
                 continue;
             }
             meshAtlas.allocateMesh(object.model);
             usedMeshes.emplace_back(object.model);
             usedMeshUris.insert(object.model.getUri());
             objects.emplace_back(object);
-            for (auto i = 0; i < object.model.get().subMeshes.size(); i++) {
-                const auto &subMesh = object.model.get().subMeshes.at(i);
+            for (auto i = 0; i < object.model.get().subMeshes.size(); i++)
+            {
+                const auto& subMesh = object.model.get().subMeshes.at(i);
 
                 Material mat = subMesh.material.get();
 
                 auto mi = object.materials.find(i);
-                if (mi != object.materials.end()) {
+                if (mi != object.materials.end())
+                {
                     mat = mi->second;
                 }
 
-                if (!mat.transparent) {
+                if (!mat.transparent)
+                {
                     continue;
                 }
 
                 totalBoneBufferSize += subMesh.bones.size() * sizeof(Mat4f);
 
-                if (mat.normal.assigned()) {
-                    if (textures.find(mat.normal.getUri()) == textures.end()) {
+                if (mat.normal.assigned())
+                {
+                    if (textures.find(mat.normal.getUri()) == textures.end())
+                    {
                         textures[mat.normal.getUri()] = textureAtlas.add(mat.normal.get().image.get());
                     }
                     usedTextures.insert(mat.normal.getUri());
                 }
-                if (mat.metallicTexture.assigned()) {
-                    if (textures.find(mat.metallicTexture.getUri()) == textures.end()) {
+                if (mat.metallicTexture.assigned())
+                {
+                    if (textures.find(mat.metallicTexture.getUri()) == textures.end())
+                    {
                         textures[mat.metallicTexture.getUri()] = textureAtlas.add(
                             mat.metallicTexture.get().image.get());
                     }
                     usedTextures.insert(mat.metallicTexture.getUri());
                 }
-                if (mat.roughnessTexture.assigned()) {
-                    if (textures.find(mat.roughnessTexture.getUri()) == textures.end()) {
+                if (mat.roughnessTexture.assigned())
+                {
+                    if (textures.find(mat.roughnessTexture.getUri()) == textures.end())
+                    {
                         textures[mat.roughnessTexture.getUri()] = textureAtlas.add(
                             mat.roughnessTexture.get().image.get());
                     }
                     usedTextures.insert(mat.roughnessTexture.getUri());
                 }
-                if (mat.ambientOcclusionTexture.assigned()) {
-                    if (textures.find(mat.ambientOcclusionTexture.getUri()) == textures.end()) {
+                if (mat.ambientOcclusionTexture.assigned())
+                {
+                    if (textures.find(mat.ambientOcclusionTexture.getUri()) == textures.end())
+                    {
                         textures[mat.ambientOcclusionTexture.getUri()] = textureAtlas.add(
                             mat.ambientOcclusionTexture.get().image.get());
                     }
                     usedTextures.insert(mat.ambientOcclusionTexture.getUri());
                 }
-                if (mat.albedoTexture.assigned()) {
-                    if (textures.find(mat.albedoTexture.getUri()) == textures.end()) {
+                if (mat.albedoTexture.assigned())
+                {
+                    if (textures.find(mat.albedoTexture.getUri()) == textures.end())
+                    {
                         textures[mat.albedoTexture.getUri()] = textureAtlas.
-                                add(mat.albedoTexture.get().image.get());
+                            add(mat.albedoTexture.get().image.get());
                     }
                     usedTextures.insert(mat.albedoTexture.getUri());
                 }
@@ -356,8 +342,10 @@ namespace xng {
         camera = scene.camera;
 
         // Deallocate unused meshes
-        for (auto &mesh: allocatedMeshes) {
-            if (usedMeshUris.find(mesh.getUri()) == usedMeshUris.end()) {
+        for (auto& mesh : allocatedMeshes)
+        {
+            if (usedMeshUris.find(mesh.getUri()) == usedMeshUris.end())
+            {
                 meshAtlas.deallocateMesh(mesh);
             }
         }
@@ -365,167 +353,182 @@ namespace xng {
 
         // Deallocate unused textures
         std::set<Uri> dealloc;
-        for (auto &pair: textures) {
-            if (usedTextures.find(pair.first) == usedTextures.end()) {
+        for (auto& pair : textures)
+        {
+            if (usedTextures.find(pair.first) == usedTextures.end())
+            {
                 dealloc.insert(pair.first);
             }
         }
-        for (auto &uri: dealloc) {
+        for (auto& uri : dealloc)
+        {
             textureAtlas.remove(textures.at(uri));
             textures.erase(uri);
         }
 
-        if (recreateLightBuffers) {
+        if (recreateLightBuffers)
+        {
             return true;
         }
 
-        if (layerSize != backBufferSize * config->getRenderScale()) {
+        if (layerSize != backBufferSize * config->getRenderScale())
+        {
             return true;
         }
 
-        if (textureAtlas.shouldRebuild()) {
+        if (textureAtlas.shouldRebuild())
+        {
             return true;
         }
 
-        if (meshAtlas.shouldRebuild()) {
+        if (meshAtlas.shouldRebuild())
+        {
             return true;
         }
 
         return currentBoneBufferSize < totalBoneBufferSize;
     }
 
-    void ForwardLightingPass::runPass(RenderGraphContext &ctx) {
-        if (recreateLightBuffers) {
-            std::vector<PointLightData> pointLightData;
-            for (auto &lightObject: pointLights) {
-                PointLightData data{};
+    void ForwardLightingPass::runPass(RenderGraphContext& ctx)
+    {
+        if (recreateLightBuffers)
+        {
+            std::vector<PointLightData::CPU> pointLightData;
+            for (auto& lightObject : pointLights)
+            {
+                PointLightData::CPU data{};
                 data.position = Vec4f(lightObject.transform.getPosition().x,
                                       lightObject.transform.getPosition().y,
                                       lightObject.transform.getPosition().z,
-                                      0).getMemory();
-                data.color = (lightObject.light.color.divide() * lightObject.light.power).getMemory();
-                data.farPlane = Vec4f(lightObject.light.shadowFarPlane, 0, 0, 0).getMemory();
+                                      0);
+                data.color = (lightObject.light.color.divide() * lightObject.light.power);
+                data.farPlane = Vec4f(lightObject.light.shadowFarPlane, 0, 0, 0);
                 pointLightData.emplace_back(data);
             }
             ctx.uploadBuffer(pointLightBuffer,
-                             reinterpret_cast<const uint8_t *>(pointLightData.data()),
-                             pointLightData.size() * sizeof(PointLightData),
+                             reinterpret_cast<const uint8_t*>(pointLightData.data()),
+                             pointLightData.size() * sizeof(PointLightData::CPU),
                              0);
 
             pointLightData.clear();
-            for (auto &lightObject: shadowPointLights) {
-                PointLightData data{};
+            for (auto& lightObject : shadowPointLights)
+            {
+                PointLightData::CPU data{};
                 data.position = Vec4f(lightObject.transform.getPosition().x,
                                       lightObject.transform.getPosition().y,
                                       lightObject.transform.getPosition().z,
-                                      0).getMemory();
-                data.color = (lightObject.light.color.divide() * lightObject.light.power).getMemory();
-                data.farPlane = Vec4f(lightObject.light.shadowFarPlane, 0, 0, 0).getMemory();
+                                      0);
+                data.color = (lightObject.light.color.divide() * lightObject.light.power);
+                data.farPlane = Vec4f(lightObject.light.shadowFarPlane, 0, 0, 0);
                 pointLightData.emplace_back(data);
             }
             ctx.uploadBuffer(shadowPointLightBuffer,
-                             reinterpret_cast<const uint8_t *>(pointLightData.data()),
-                             pointLightData.size() * sizeof(PointLightData),
+                             reinterpret_cast<const uint8_t*>(pointLightData.data()),
+                             pointLightData.size() * sizeof(PointLightData::CPU),
                              0);
 
-            std::vector<DirectionalLightData> directionalLightData;
-            for (auto &lightObject: directionalLights) {
-                DirectionalLightData data{};
+            std::vector<DirectionalLightData::CPU> directionalLightData;
+            for (auto& lightObject : directionalLights)
+            {
+                DirectionalLightData::CPU data{};
                 auto direction = lightObject.light.getDirection(lightObject.transform);
                 data.direction = Vec4f(direction.x,
                                        direction.y,
                                        direction.z,
-                                       0).getMemory();
-                data.color = (lightObject.light.color.divide() * lightObject.light.power).getMemory();
-                data.farPlane = Vec4f(lightObject.light.shadowFarPlane, 0, 0, 0).getMemory();
+                                       0);
+                data.color = (lightObject.light.color.divide() * lightObject.light.power);
+                data.farPlane = Vec4f(lightObject.light.shadowFarPlane, 0, 0, 0);
                 directionalLightData.emplace_back(data);
             }
             ctx.uploadBuffer(directionalLightBuffer,
-                             reinterpret_cast<const uint8_t *>(directionalLightData.data()),
-                             directionalLightData.size() * sizeof(DirectionalLightData),
+                             reinterpret_cast<const uint8_t*>(directionalLightData.data()),
+                             directionalLightData.size() * sizeof(DirectionalLightData::CPU),
                              0);
 
             directionalLightData.clear();
 
             std::vector<Mat4f> directionalLightTransforms;
-            for (auto &lightObject: shadowDirectionalLights) {
-                DirectionalLightData data{};
+            for (auto& lightObject : shadowDirectionalLights)
+            {
+                DirectionalLightData::CPU data{};
                 auto direction = lightObject.light.getDirection(lightObject.transform);
                 data.direction = Vec4f(direction.x,
                                        direction.y,
                                        direction.z,
-                                       0).getMemory();
-                data.color = (lightObject.light.color.divide() * lightObject.light.power).getMemory();
-                data.farPlane = Vec4f(lightObject.light.shadowFarPlane, 0, 0, 0).getMemory();
+                                       0);
+                data.color = (lightObject.light.color.divide() * lightObject.light.power);
+                data.farPlane = Vec4f(lightObject.light.shadowFarPlane, 0, 0, 0);
                 directionalLightData.emplace_back(data);
                 directionalLightTransforms.emplace_back(lightObject.light.getShadowProjection(lightObject.transform));
             }
             ctx.uploadBuffer(shadowDirectionalLightBuffer,
-                             reinterpret_cast<const uint8_t *>(directionalLightData.data()),
-                             directionalLightData.size() * sizeof(DirectionalLightData),
+                             reinterpret_cast<const uint8_t*>(directionalLightData.data()),
+                             directionalLightData.size() * sizeof(DirectionalLightData::CPU),
                              0);
             ctx.uploadBuffer(shadowDirectionalLightTransformBuffer,
-                             reinterpret_cast<const uint8_t *>(directionalLightTransforms.data()),
+                             reinterpret_cast<const uint8_t*>(directionalLightTransforms.data()),
                              directionalLightTransforms.size() * sizeof(Mat4f),
                              0);
 
 
-            std::vector<SpotLightData> spotLightData;
-            for (auto &lightObject: spotLights) {
-                SpotLightData data{};
+            std::vector<SpotLightData::CPU> spotLightData;
+            for (auto& lightObject : spotLights)
+            {
+                SpotLightData::CPU data{};
                 data.position = Vec4f(lightObject.transform.getPosition().x,
                                       lightObject.transform.getPosition().y,
                                       lightObject.transform.getPosition().z,
-                                      0).getMemory();
+                                      0);
 
                 auto direction = lightObject.light.getDirection(lightObject.transform);
                 data.direction_quadratic = Vec4f(direction.x,
                                                  direction.y,
                                                  direction.z,
-                                                 lightObject.light.quadratic).getMemory();
-                data.color = (lightObject.light.color.divide() * lightObject.light.power).getMemory();
-                data.farPlane = Vec4f(lightObject.light.shadowFarPlane, 0, 0, 0).getMemory();
+                                                 lightObject.light.quadratic);
+                data.color = (lightObject.light.color.divide() * lightObject.light.power);
+                data.farPlane = Vec4f(lightObject.light.shadowFarPlane, 0, 0, 0);
                 data.cutOff_outerCutOff_constant_linear = Vec4f(SpotLight::getCutOff(lightObject.light.cutOff),
                                                                 SpotLight::getCutOff(lightObject.light.outerCutOff),
                                                                 lightObject.light.constant,
-                                                                lightObject.light.linear).getMemory();
+                                                                lightObject.light.linear);
                 spotLightData.emplace_back(data);
             }
             ctx.uploadBuffer(spotLightBuffer,
-                             reinterpret_cast<const uint8_t *>(spotLightData.data()),
-                             spotLightData.size() * sizeof(SpotLightData),
+                             reinterpret_cast<const uint8_t*>(spotLightData.data()),
+                             spotLightData.size() * sizeof(SpotLightData::CPU),
                              0);
 
             spotLightData.clear();
             directionalLightTransforms.clear();
 
-            for (auto &lightObject: shadowSpotLights) {
-                SpotLightData data{};
+            for (auto& lightObject : shadowSpotLights)
+            {
+                SpotLightData::CPU data{};
                 data.position = Vec4f(lightObject.transform.getPosition().x,
                                       lightObject.transform.getPosition().y,
                                       lightObject.transform.getPosition().z,
-                                      0).getMemory();
+                                      0);
 
                 auto direction = lightObject.light.getDirection(lightObject.transform);
                 data.direction_quadratic = Vec4f(direction.x,
                                                  direction.y,
                                                  direction.z,
-                                                 lightObject.light.quadratic).getMemory();
-                data.color = (lightObject.light.color.divide() * lightObject.light.power).getMemory();
-                data.farPlane = Vec4f(lightObject.light.shadowFarPlane, 0, 0, 0).getMemory();
+                                                 lightObject.light.quadratic);
+                data.color = (lightObject.light.color.divide() * lightObject.light.power);
+                data.farPlane = Vec4f(lightObject.light.shadowFarPlane, 0, 0, 0);
                 data.cutOff_outerCutOff_constant_linear = Vec4f(SpotLight::getCutOff(lightObject.light.cutOff),
                                                                 SpotLight::getCutOff(lightObject.light.outerCutOff),
                                                                 lightObject.light.constant,
-                                                                lightObject.light.linear).getMemory();
+                                                                lightObject.light.linear);
                 spotLightData.emplace_back(data);
                 directionalLightTransforms.emplace_back(lightObject.light.getShadowProjection(lightObject.transform));
             }
             ctx.uploadBuffer(shadowSpotLightBuffer,
-                             reinterpret_cast<const uint8_t *>(spotLightData.data()),
-                             spotLightData.size() * sizeof(SpotLightData),
+                             reinterpret_cast<const uint8_t*>(spotLightData.data()),
+                             spotLightData.size() * sizeof(SpotLightData::CPU),
                              0);
             ctx.uploadBuffer(shadowSpotLightTransformBuffer,
-                             reinterpret_cast<const uint8_t *>(directionalLightTransforms.data()),
+                             reinterpret_cast<const uint8_t*>(directionalLightTransforms.data()),
                              directionalLightTransforms.size() * sizeof(Mat4f),
                              0);
             recreateLightBuffers = false;
@@ -536,44 +539,55 @@ namespace xng {
 
         std::vector<DrawCall> drawCalls{};
         std::vector<size_t> baseVertices{};
-        std::vector<ShaderDrawData> shaderData{};
+        std::vector<BufferLayout::CPU> shaderData{};
         std::vector<Mat4f> boneMatrices{};
 
-        auto &meshAllocations = meshAtlas.getMeshAllocations(ctx);
+        auto& meshAllocations = meshAtlas.getMeshAllocations(ctx);
 
-        for (auto objectIndex = 0; objectIndex < objects.size(); objectIndex++) {
-            auto &object = objects.at(objectIndex);
+        for (auto objectIndex = 0; objectIndex < objects.size(); objectIndex++)
+        {
+            auto& object = objects.at(objectIndex);
 
-            const auto &rig = object.model.get().rig;
-            const auto &boneTransforms = object.boneTransforms;
-            const auto &materials = object.materials;
-            const auto &drawData = meshAllocations.at(object.model.getUri());
+            const auto& rig = object.model.get().rig;
+            const auto& boneTransforms = object.boneTransforms;
+            const auto& materials = object.materials;
+            const auto& drawData = meshAllocations.at(object.model.getUri());
 
-            for (auto i = 0; i < object.model.get().subMeshes.size(); i++) {
+            for (auto i = 0; i < object.model.get().subMeshes.size(); i++)
+            {
                 auto model = object.transform.model();
 
-                const auto &mesh = object.model.get().subMeshes.at(i);
+                const auto& mesh = object.model.get().subMeshes.at(i);
 
                 auto material = mesh.material.get();
 
                 auto mIt = materials.find(i);
-                if (mIt != materials.end()) {
+                if (mIt != materials.end())
+                {
                     material = mIt->second;
                 }
 
-                if (!material.transparent) {
+                if (!material.transparent)
+                {
                     continue;
                 }
 
                 auto boneOffset = boneMatrices.size();
-                if (mesh.bones.empty()) {
+                if (mesh.bones.empty())
+                {
                     boneOffset = -1;
-                } else {
-                    for (auto &bone: mesh.bones) {
+                }
+                else
+                {
+                    for (auto& bone : mesh.bones)
+                    {
                         auto boneTransform = boneTransforms.find(bone);
-                        if (boneTransform != boneTransforms.end()) {
+                        if (boneTransform != boneTransforms.end())
+                        {
                             boneMatrices.emplace_back(boneTransform->second);
-                        } else {
+                        }
+                        else
+                        {
                             boneMatrices.emplace_back(MatrixMath::identity());
                         }
                     }
@@ -581,139 +595,130 @@ namespace xng {
 
                 bool receiveShadows = object.receiveShadows;
 
-                auto data = ShaderDrawData();
+                auto data = BufferLayout::CPU();
 
                 data.model = model;
                 data.mvp = projection * view * model;
-                data.objectID_boneOffset_shadows[0] = objectIndex;
-                data.objectID_boneOffset_shadows[1] = static_cast<int>(boneOffset);
-                data.objectID_boneOffset_shadows[2] = receiveShadows;
+                data.objectID_boneOffset_shadows = Vec4i(objectIndex, static_cast<int>(boneOffset), receiveShadows, 0);
+                data.metallic_roughness_ambientOcclusion = Vec4f(material.metallic, material.roughness,
+                                                                 material.ambientOcclusion, 0);
+                data.albedoColor = material.albedo.divide();
+                data.normalIntensity = Vec4f(material.normalIntensity, 0, 0, 0);
 
-                data.metallic_roughness_ambientOcclusion[0] = material.metallic;
-                data.metallic_roughness_ambientOcclusion[1] = material.roughness;
-                data.metallic_roughness_ambientOcclusion[2] = material.ambientOcclusion;
-
-                auto col = material.albedo.divide().getMemory();
-                data.albedoColor[0] = col[0];
-                data.albedoColor[1] = col[1];
-                data.albedoColor[2] = col[2];
-                data.albedoColor[3] = col[3];
-
-                data.normalIntensity[0] = material.normalIntensity;
-
-                if (material.metallicTexture.assigned()) {
+                if (material.metallicTexture.assigned())
+                {
                     auto tex = textures.at(material.metallicTexture.getUri());
 
-                    data.metallic.level_index_filtering_assigned[0] = tex.level;
-                    data.metallic.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.metallic.level_index_filtering_assigned[2] =
-                            material.metallicTexture.get().filter > Texture::NEAREST;
-                    data.metallic.level_index_filtering_assigned[3] = 1;
+                    data.metallic.level_index_filtering_assigned = Vec4i(tex.level,
+                                                                         static_cast<int>(tex.index),
+                                                                         material.metallicTexture.get().filter >
+                                                                         Texture::NEAREST,
+                                                                         1);
 
                     auto atlasScale = tex.size.convert<float>()
-                                      / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
+                        / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
 
-                    data.metallic.atlasScale_texSize[0] = atlasScale.x;
-                    data.metallic.atlasScale_texSize[1] = atlasScale.y;
-                    data.metallic.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                    data.metallic.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
+                    data.metallic.atlasScale_texSize = Vec4f(atlasScale.x, atlasScale.y, static_cast<float>(tex.size.x),
+                                                             static_cast<float>(tex.size.y));
                 }
 
-                if (material.roughnessTexture.assigned()) {
+                if (material.roughnessTexture.assigned())
+                {
                     auto tex = textures.at(material.roughnessTexture.getUri());
 
-                    data.roughness.level_index_filtering_assigned[0] = tex.level;
-                    data.roughness.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.roughness.level_index_filtering_assigned[2] =
-                            material.roughnessTexture.get().filter > Texture::NEAREST;
-                    data.roughness.level_index_filtering_assigned[3] = 1;
+                    data.roughness.level_index_filtering_assigned = Vec4i(tex.level,
+                                                                          static_cast<int>(tex.index),
+                                                                          material.roughnessTexture.get().filter >
+                                                                          Texture::NEAREST,
+                                                                          1);
 
                     auto atlasScale = tex.size.convert<float>()
-                                      / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
+                        / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
 
-                    data.roughness.atlasScale_texSize[0] = atlasScale.x;
-                    data.roughness.atlasScale_texSize[1] = atlasScale.y;
-                    data.roughness.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                    data.roughness.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
+                    data.roughness.atlasScale_texSize = Vec4f(atlasScale.x, atlasScale.y,
+                                                              static_cast<float>(tex.size.x),
+                                                              static_cast<float>(tex.size.y));
                 }
 
-                if (material.ambientOcclusionTexture.assigned()) {
+                if (material.ambientOcclusionTexture.assigned())
+                {
                     auto tex = textures.at(material.ambientOcclusionTexture.getUri());
 
-                    data.ambientOcclusion.level_index_filtering_assigned[0] = tex.level;
-                    data.ambientOcclusion.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.ambientOcclusion.level_index_filtering_assigned[2] =
-                            material.ambientOcclusionTexture.get().filter > Texture::NEAREST;
-                    data.ambientOcclusion.level_index_filtering_assigned[3] = 1;
+                    data.ambientOcclusion.level_index_filtering_assigned = Vec4i(tex.level,
+                        static_cast<int>(tex.index),
+                        material.ambientOcclusionTexture.get().filter > Texture::NEAREST,
+                        1);
 
                     auto atlasScale = tex.size.convert<float>()
-                                      / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
+                        / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
 
-                    data.ambientOcclusion.atlasScale_texSize[0] = atlasScale.x;
-                    data.ambientOcclusion.atlasScale_texSize[1] = atlasScale.y;
-                    data.ambientOcclusion.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                    data.ambientOcclusion.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
+                    data.ambientOcclusion.atlasScale_texSize = Vec4f(atlasScale.x,
+                                                                     atlasScale.y,
+                                                                     static_cast<float>(tex.size.x),
+                                                                     static_cast<float>(tex.size.y));
                 }
 
-                if (material.albedoTexture.assigned()) {
+                if (material.albedoTexture.assigned())
+                {
                     auto tex = textures.at(material.albedoTexture.getUri());
 
-                    data.albedo.level_index_filtering_assigned[0] = tex.level;
-                    data.albedo.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.albedo.level_index_filtering_assigned[2] =
-                            material.albedoTexture.get().filter > Texture::NEAREST;
-                    data.albedo.level_index_filtering_assigned[3] = 1;
+                    data.albedo.level_index_filtering_assigned = Vec4i(tex.level,
+                                                                       static_cast<int>(tex.index),
+                                                                       material.albedoTexture.get().filter >
+                                                                       Texture::NEAREST,
+                                                                       1);
 
                     auto atlasScale = tex.size.convert<float>()
-                                      / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
+                        / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
 
-                    data.albedo.atlasScale_texSize[0] = atlasScale.x;
-                    data.albedo.atlasScale_texSize[1] = atlasScale.y;
-                    data.albedo.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                    data.albedo.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
+                    data.albedo.atlasScale_texSize = Vec4f(atlasScale.x,
+                                                           atlasScale.y,
+                                                           static_cast<float>(tex.size.x),
+                                                           static_cast<float>(tex.size.y));
                 }
 
-                if (material.normal.assigned()) {
+                if (material.normal.assigned())
+                {
                     auto tex = textures.at(material.normal.getUri());
 
-                    data.normal.level_index_filtering_assigned[0] = tex.level;
-                    data.normal.level_index_filtering_assigned[1] = static_cast<int>(tex.index);
-                    data.normal.level_index_filtering_assigned[2] = material.normal.get().filter > Texture::NEAREST;
-                    data.normal.level_index_filtering_assigned[3] = 1;
+                    data.normal.level_index_filtering_assigned = Vec4i(tex.level,
+                                                                       static_cast<int>(tex.index),
+                                                                       material.normal.get().filter > Texture::NEAREST,
+                                                                       1);
 
                     auto atlasScale = tex.size.convert<float>()
-                                      / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
+                        / TextureAtlas::getResolutionLevelSize(tex.level).convert<float>();
 
-                    data.normal.atlasScale_texSize[0] = atlasScale.x;
-                    data.normal.atlasScale_texSize[1] = atlasScale.y;
-                    data.normal.atlasScale_texSize[2] = static_cast<float>(tex.size.x);
-                    data.normal.atlasScale_texSize[3] = static_cast<float>(tex.size.y);
+                    data.normal.atlasScale_texSize = Vec4f(atlasScale.x,
+                                                           atlasScale.y,
+                                                           static_cast<float>(tex.size.x),
+                                                           static_cast<float>(tex.size.y));
                 }
 
-                data.viewPosition_gamma[0] = viewPosition.x;
-                data.viewPosition_gamma[1] = viewPosition.y;
-                data.viewPosition_gamma[2] = viewPosition.z;
-                data.viewPosition_gamma[3] = config->getGamma();
+                data.viewPosition_gamma = Vec4f(viewPosition.x, viewPosition.y, viewPosition.z, config->getGamma());
 
                 if (registry->check<IBLMaps>())
                 {
-                    data.iblPresent_iblPrefilterMipCount[0] = true;
-                    data.iblPresent_iblPrefilterMipCount[1] = RenderGraphTexture::calculateMipLevels(config->iblPrefilterSize);;
+                    data.iblPresent_prefilterMipCount = Vec4i(true,
+                                                              RenderGraphTexture::calculateMipLevels(
+                                                                  config->iblPrefilterSize),
+                                                              0,
+                                                              0);
                 }
                 else
                 {
-                    data.iblPresent_iblPrefilterMipCount[0] = false;
+                    data.iblPresent_prefilterMipCount = Vec4i(false, 0, 0, 0);
                 }
 
                 shaderData.emplace_back(data);
 
-                auto &draw = drawData.data.at(i);
+                auto& draw = drawData.data.at(i);
                 drawCalls.emplace_back(draw.drawCall);
                 baseVertices.emplace_back(draw.baseVertex);
             }
         }
 
-        auto &atlasTextures = textureAtlas.getAtlasTextures(ctx);
+        auto& atlasTextures = textureAtlas.getAtlasTextures(ctx);
 
         ctx.beginRenderPass({
                                 RenderGraphAttachment(layer.color, ColorRGBA(0, 0, 0, 0)),
@@ -723,7 +728,7 @@ namespace xng {
         ctx.setViewport({}, currentResolution);
 
         ctx.uploadBuffer(boneBuffer,
-                         reinterpret_cast<const uint8_t *>(boneMatrices.data()),
+                         reinterpret_cast<const uint8_t*>(boneMatrices.data()),
                          boneMatrices.size() * sizeof(Mat4f),
                          0);
 
@@ -732,7 +737,8 @@ namespace xng {
         ctx.bindIndexBuffer(meshAtlas.getIndexBuffer());
 
         std::vector<RenderGraphResource> bindTextures;
-        for (int i = TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; ++i) {
+        for (int i = TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; ++i)
+        {
             bindTextures.emplace_back(atlasTextures.at(static_cast<TextureAtlasResolution>(i)));
         }
         ctx.bindTexture("atlasTextures", bindTextures);
@@ -749,7 +755,8 @@ namespace xng {
         ctx.bindShaderBuffer("directionalLightShadowTransforms", shadowDirectionalLightTransformBuffer);
         ctx.bindShaderBuffer("spotLightShadowTransforms", shadowSpotLightTransformBuffer);
 
-        if (registry->check<IBLMaps>()) {
+        if (registry->check<IBLMaps>())
+        {
             auto ibl = registry->get<IBLMaps>();
             if (ibl.irradiance) ctx.bindTexture("iblIrradiance", ibl.irradiance);
             if (ibl.prefilter) ctx.bindTexture("iblPrefilter", ibl.prefilter);
@@ -760,11 +767,12 @@ namespace xng {
         ctx.bindTexture("directionalLightShadowMaps", shadowMaps.dirShadowMaps);
         ctx.bindTexture("spotLightShadowMaps", shadowMaps.spotShadowMaps);
 
-        for (auto i = 0; i < shaderData.size(); ++i) {
-            auto &data = shaderData.at(i);
+        for (auto i = 0; i < shaderData.size(); ++i)
+        {
+            auto& data = shaderData.at(i);
             ctx.uploadBuffer(shaderBuffer,
-                             reinterpret_cast<const uint8_t *>(&data),
-                             sizeof(ShaderDrawData),
+                             reinterpret_cast<const uint8_t*>(&data),
+                             sizeof(BufferLayout::CPU),
                              0);
             ctx.drawIndexed(drawCalls.at(i), baseVertices.at(i));
         }

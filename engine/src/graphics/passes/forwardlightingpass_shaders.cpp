@@ -29,48 +29,6 @@ using namespace xng::ShaderScript;
 
 namespace xng
 {
-    namespace {
-    DefineStruct(AtlasTexture,
-                 Vec4i, level_index_filtering_assigned,
-                 Vec4f, atlasScale_texSize)
-
-    DefineStruct(BufferLayout,
-                 Mat4f, model,
-                 Mat4f, mvp,
-                 Vec4i, objectID_boneOffset_shadows,
-                 Vec4f, metallic_roughness_ambientOcclusion,
-                 Vec4f, albedoColor,
-                 AtlasTexture, metallic,
-                 AtlasTexture, roughness,
-                 AtlasTexture, ambientOcclusion,
-                 AtlasTexture, albedo,
-                 Vec4f, viewPosition_gamma,
-                 AtlasTexture, normal,
-                 Vec4f, normalIntensity,
-                 Vec4i, iblPresent_prefilterMipCount)
-
-    DefineStruct(BoneBufferLayout, Mat4f, matrix)
-
-    DefineStruct(PBRPointLight,
-                 Vec4f, position,
-                 Vec4f, color,
-                 Vec4f, farPlane)
-
-    DefineStruct(PBRDirectionalLight,
-                 Vec4f, direction,
-                 Vec4f, color,
-                 Vec4f, farPlane)
-
-    DefineStruct(PBRSpotLight,
-                 Vec4f, position,
-                 Vec4f, direction_quadratic,
-                 Vec4f, color,
-                 Vec4f, farPlane,
-                 Vec4f, cutOff_outerCutOff_constant_linear)
-
-    DefineStruct(TransformData, Mat4f, transform)
-    }
-
     Shader ForwardLightingPass::createVertexShader()
     {
         BeginShader(Shader::VERTEX)
@@ -95,19 +53,19 @@ namespace xng
         DeclareStruct(AtlasTexture)
         DeclareStruct(BufferLayout)
         DeclareStruct(BoneBufferLayout)
-        DeclareStruct(PBRPointLight)
-        DeclareStruct(PBRDirectionalLight)
-        DeclareStruct(PBRSpotLight)
+        DeclareStruct(PointLightData)
+        DeclareStruct(DirectionalLightData)
+        DeclareStruct(SpotLightData)
         DeclareStruct(TransformData)
         DeclareStruct(PbrPass);
 
-        DynamicBuffer(PBRPointLight, pointLights)
-        DynamicBuffer(PBRDirectionalLight, directionalLights)
-        DynamicBuffer(PBRSpotLight, spotLights)
+        DynamicBuffer(PointLightData, pointLights)
+        DynamicBuffer(DirectionalLightData, directionalLights)
+        DynamicBuffer(SpotLightData, spotLights)
 
-        DynamicBuffer(PBRPointLight, shadowPointLights)
-        DynamicBuffer(PBRDirectionalLight, shadowDirectionalLights)
-        DynamicBuffer(PBRSpotLight, shadowSpotLights)
+        DynamicBuffer(PointLightData, shadowPointLights)
+        DynamicBuffer(DirectionalLightData, shadowDirectionalLights)
+        DynamicBuffer(SpotLightData, shadowSpotLights)
 
         DynamicBuffer(TransformData, directionalLightShadowTransforms)
         DynamicBuffer(TransformData, spotLightShadowTransforms)
@@ -213,19 +171,19 @@ namespace xng
         DeclareStruct(AtlasTexture)
         DeclareStruct(BufferLayout)
         DeclareStruct(BoneBufferLayout)
-        DeclareStruct(PBRPointLight)
-        DeclareStruct(PBRDirectionalLight)
-        DeclareStruct(PBRSpotLight)
+        DeclareStruct(PointLightData)
+        DeclareStruct(DirectionalLightData)
+        DeclareStruct(SpotLightData)
         DeclareStruct(TransformData)
         DeclareStruct(PbrPass);
 
-        DynamicBuffer(PBRPointLight, pointLights)
-        DynamicBuffer(PBRDirectionalLight, directionalLights)
-        DynamicBuffer(PBRSpotLight, spotLights)
+        DynamicBuffer(PointLightData, pointLights)
+        DynamicBuffer(DirectionalLightData, directionalLights)
+        DynamicBuffer(SpotLightData, spotLights)
 
-        DynamicBuffer(PBRPointLight, shadowPointLights)
-        DynamicBuffer(PBRDirectionalLight, shadowDirectionalLights)
-        DynamicBuffer(PBRSpotLight, shadowSpotLights)
+        DynamicBuffer(PointLightData, shadowPointLights)
+        DynamicBuffer(DirectionalLightData, shadowDirectionalLights)
+        DynamicBuffer(SpotLightData, shadowSpotLights)
 
         DynamicBuffer(TransformData, directionalLightShadowTransforms)
         DynamicBuffer(TransformData, spotLightShadowTransforms)
@@ -328,17 +286,17 @@ namespace xng
         reflectance = vec3(0, 0, 0);
 
         For(Int, i, 0, i < pointLights.length(), i + 1)
-            PBRPointLight light = pointLights[i];
+            PointLightData light = pointLights[i];
             reflectance = pbr_point(pass, reflectance, light.position.xyz(), light.color.xyz(), 1.0f);
         Done
 
         For(Int, i, 0, i < directionalLights.length(), i + 1)
-            PBRDirectionalLight light = directionalLights[i];
+            DirectionalLightData light = directionalLights[i];
             reflectance = pbr_directional(pass, reflectance, light.direction.xyz(), light.color.xyz(), 1.0f);
         Done
 
         For(Int, i, 0, i < spotLights.length(), i + 1)
-            PBRSpotLight light = spotLights[i];
+            SpotLightData light = spotLights[i];
             reflectance = pbr_spot(pass,
                                    reflectance,
                                    light.position.xyz(),
@@ -353,7 +311,7 @@ namespace xng
         Done
 
         For(Int, i, 0, i < shadowPointLights.length(), i + 1)
-            PBRPointLight light = shadowPointLights[i];
+            PointLightData light = shadowPointLights[i];
             Float shadow;
             shadow = Float(1.0f);
             If(data.objectID_boneOffset_shadows.z() == 1)
@@ -368,7 +326,7 @@ namespace xng
         Done
 
         For(Int, i, 0, i < shadowDirectionalLights.length(), i + 1)
-            PBRDirectionalLight light = shadowDirectionalLights[i];
+            DirectionalLightData light = shadowDirectionalLights[i];
             vec4 fragPosLightSpace = directionalLightShadowTransforms[i].transform * vec4(fPos, 1);
             Float shadow;
             shadow = Float(1.0f);
@@ -384,7 +342,7 @@ namespace xng
         Done
 
         For(Int, i, 0, i < shadowSpotLights.length(), i + 1)
-            PBRSpotLight light = shadowSpotLights[i];
+            SpotLightData light = shadowSpotLights[i];
             vec4 fragPosLightSpace = spotLightShadowTransforms[i].transform * vec4(fPos, 1);
             Float shadow;
             shadow = Float(1.0f);
