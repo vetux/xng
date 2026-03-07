@@ -72,6 +72,15 @@ namespace xng::ShaderScript
     // The struct itself IS the DSL type — no wrapping needed.
     template<typename T>
     struct ShaderTypeOf<T, std::void_t<typename T::CPU>> { using type = T; };
+
+    template<typename T, typename = void>
+    struct ShaderCpuTypeOf { using type = Std140<T>; };
+
+    template<typename T>
+    struct ShaderCpuTypeOf<T, std::void_t<typename T::CPU>> { using type = typename T::CPU; };
+
+    template<typename T>
+    using ShaderCpuType = typename ShaderCpuTypeOf<T>::type;
 }
 
 #define GenerateElementDeclaration1(_type, name) xng::ShaderScript::ShaderTypeOf<_type>::type name;
@@ -383,7 +392,7 @@ namespace xng::ShaderScript
     GenerateStructElements2, GenerateStructElements2, \
     GenerateStructElements1, GenerateStructElements1,)(__VA_ARGS__))
 
-#define GenerateCpuElementDeclaration1(type, name) xng::ShaderCpuType<type> name;
+#define GenerateCpuElementDeclaration1(type, name) xng::ShaderScript::ShaderCpuType<type> name;
 #define GenerateCpuElementDeclaration2(type, name, ...) GenerateCpuElementDeclaration1(type, name) ExpandVAArgs(GenerateCpuElementDeclaration1(__VA_ARGS__))
 #define GenerateCpuElementDeclaration3(type, name, ...) GenerateCpuElementDeclaration1(type, name) ExpandVAArgs(GenerateCpuElementDeclaration2(__VA_ARGS__))
 #define GenerateCpuElementDeclaration4(type, name, ...) GenerateCpuElementDeclaration1(type, name) ExpandVAArgs(GenerateCpuElementDeclaration3(__VA_ARGS__))

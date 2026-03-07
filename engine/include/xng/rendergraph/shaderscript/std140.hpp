@@ -185,15 +185,6 @@ namespace xng {
         }
     };
 
-    template<typename T, typename = void>
-    struct ShaderCpuTypeOf { using type = Std140<T>; };
-
-    template<typename T>
-    struct ShaderCpuTypeOf<T, std::void_t<typename T::CPU>> { using type = typename T::CPU; };
-
-    template<typename T>
-    using ShaderCpuType = typename ShaderCpuTypeOf<T>::type;
-
 } // namespace xng
 
 #endif // XENGINE_STD140_HPP
