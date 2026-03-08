@@ -32,12 +32,6 @@
  *          to shader objects, which can cause ambiguous overloads when "using" the namespace.
  */
 
-// Optional Helper macros for defining C++ function wrappers for directly calling a function
-#define DeclareFunction(name) template<typename... Args>\
-inline ShaderObject name(Args&&... args) {\
-    return xng::ShaderScript::Call(#name, {std::forward<Args>(args)...});\
-}
-
 /**
  * Optional Helper Macros for abstracting the shader builder interactions
  *

@@ -353,4 +353,14 @@ namespace xng::ShaderScript {
 
 #define End } ShaderBuilder::instance().EndFunction();
 
+// Optional Helper macro for defining C++ function wrappers for directly calling a function
+#define DeclareFunction(name) template<typename... Args>\
+inline ShaderObject name(Args&&... args) {\
+    std::vector<ShaderOperand> args;\
+    for (auto &arg: wArgs) {\
+        args.push_back(arg.operand);\
+    }\
+    return ShaderObject(ShaderInstructionFactory::call(functionName, args));\
+}
+
 #endif //XENGINE_SHADERFUNCTIONDEF_HPP
