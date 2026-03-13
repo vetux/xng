@@ -103,7 +103,7 @@ namespace xng
         TextureAtlas textureAtlas;
         MeshAtlas meshAtlas;
 
-        std::map<Uri, TextureAtlasHandle> textures;
+        std::unordered_map<Uri, TextureAtlasHandle> textures;
         std::vector<ResourceHandle<SkinnedModel>> allocatedMeshes;
 
         size_t currentBoneBufferSize{};
@@ -111,9 +111,16 @@ namespace xng
 
         Vec2i currentResolution;
 
-        Transform cameraTransform;
-        Camera camera;
-        std::vector<SkinnedModelObject> objects;
+        std::unordered_set<Uri> usedTextures;
+        std::vector<ResourceHandle<SkinnedModel> > usedMeshes;
+        std::unordered_set<Uri> usedMeshUris;
+
+        std::vector<DrawCall> drawCalls;
+        std::vector<size_t> baseVertices;
+        std::vector<BufferLayout::CPU> shaderData;
+        std::vector<Mat4f> boneMatrices;
+
+        std::unordered_set<Uri> dealloc;
     };
 }
 
