@@ -27,70 +27,87 @@ RenderGraphRuntimeOGL::RenderGraphRuntimeOGL() = default;
 
 RenderGraphRuntimeOGL::~RenderGraphRuntimeOGL() = default;
 
-void RenderGraphRuntimeOGL::setWindow(std::shared_ptr<Window> wndArg) {
+void RenderGraphRuntimeOGL::setWindow(std::shared_ptr<Window> wndArg)
+{
     this->window = std::move(wndArg);
-    vendor = std::string(reinterpret_cast<const char *>(glGetString(GL_VENDOR)));
-    renderer = std::string(reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
-    version = std::string(reinterpret_cast<const char *>(glGetString(GL_VERSION)));
+    vendor = std::string(reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
+    renderer = std::string(reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+    version = std::string(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 }
 
-Window &RenderGraphRuntimeOGL::getWindow() {
-    if (window == nullptr) {
+Window& RenderGraphRuntimeOGL::getWindow()
+{
+    if (window == nullptr)
+    {
         throw std::runtime_error("No window set");
     }
     return *window;
 }
 
-Vec2i RenderGraphRuntimeOGL::updateBackBuffer() {
+Vec2i RenderGraphRuntimeOGL::updateBackBuffer()
+{
     updateInternalBackBuffer();
     return backBufferColor->texture.size;
 }
 
-Vec2i RenderGraphRuntimeOGL::getBackBufferSize() {
-    if (backBufferColor == nullptr) {
+Vec2i RenderGraphRuntimeOGL::getBackBufferSize()
+{
+    if (backBufferColor == nullptr)
+    {
         throw std::runtime_error("No back buffer");
     }
     return backBufferColor->texture.size;
 }
 
-RenderGraphHandle RenderGraphRuntimeOGL::compile(RenderGraph &&graph) {
+RenderGraphHandle RenderGraphRuntimeOGL::compile(RenderGraph&& graph)
+{
     return compileGraph(std::move(graph));
 }
 
-void RenderGraphRuntimeOGL::recompile(const RenderGraphHandle handle, RenderGraph &&graph) {
+void RenderGraphRuntimeOGL::recompile(const RenderGraphHandle handle, RenderGraph&& graph)
+{
     recompileGraph(handle, std::move(graph));
 }
 
-RenderGraphStatistics RenderGraphRuntimeOGL::execute(const RenderGraphHandle graph) {
+RenderGraphStatistics RenderGraphRuntimeOGL::execute(const RenderGraphHandle graph)
+{
     oglDebugStartGroup("RenderGraphRuntimeOGL::execute");
 
     auto stats = RenderGraphStatistics();
     stats.textureVRamUsage += backBufferColor->texture.size.x * backBufferColor->texture.size.y
-            * getColorByteSize(backBufferColor->texture.format);
+        * getColorByteSize(backBufferColor->texture.format);
     stats.textureVRamUsage += backBufferDepthStencil->texture.size.x * backBufferDepthStencil->texture.size.y
-            * getColorByteSize(backBufferDepthStencil->texture.format);
-    for (auto &buffer: contexts.at(graph).vertexBuffers) {
+        * getColorByteSize(backBufferDepthStencil->texture.format);
+    for (auto& buffer : contexts.at(graph).vertexBuffers)
+    {
         stats.vertexVRamUsage += buffer.second->size;
     }
-    for (auto &buffer: contexts.at(graph).indexBuffers) {
+    for (auto& buffer : contexts.at(graph).indexBuffers)
+    {
         stats.indexVRamUsage += buffer.second->size;
     }
-    for (auto &buffer : contexts.at(graph).storageBuffers) {
+    for (auto& buffer : contexts.at(graph).storageBuffers)
+    {
         stats.shaderBufferVRamUsage += buffer.second->size;
     }
-    for (auto &tex: contexts.at(graph).textures) {
-        if (tex.second->texture.textureType >= TEXTURE_2D_ARRAY) {
+    for (auto& tex : contexts.at(graph).textures)
+    {
+        if (tex.second->texture.textureType >= TEXTURE_2D_ARRAY)
+        {
             stats.textureVRamUsage += (tex.second->texture.size.x * tex.second->texture.size.y)
-                    * tex.second->texture.arrayLayers
-                    * getColorByteSize(tex.second->texture.format);
-        } else {
+                * tex.second->texture.arrayLayers
+                * getColorByteSize(tex.second->texture.format);
+        }
+        else
+        {
             stats.textureVRamUsage += (tex.second->texture.size.x * tex.second->texture.size.y)
-                    * getColorByteSize(tex.second->texture.format);
+                * getColorByteSize(tex.second->texture.format);
         }
     }
 
     ContextGL context(backBufferColor, backBufferDepthStencil, contexts.at(graph), stats);
-    for (auto &pass: contexts.at(graph).passes) {
+    for (auto& pass : contexts.at(graph).passes)
+    {
         oglDebugStartGroup(pass.name);
         pass.pass(context);
         oglDebugEndGroup();
@@ -107,28 +124,35 @@ RenderGraphStatistics RenderGraphRuntimeOGL::execute(const RenderGraphHandle gra
     return stats;
 }
 
-RenderGraphStatistics RenderGraphRuntimeOGL::execute(const std::vector<RenderGraphHandle> &graphs) {
+RenderGraphStatistics RenderGraphRuntimeOGL::execute(const std::vector<RenderGraphHandle>& graphs)
+{
     oglDebugStartGroup("RenderGraphRuntimeOGL::execute");
 
     auto stats = RenderGraphStatistics();
     stats.textureVRamUsage += backBufferColor->texture.size.x * backBufferColor->texture.size.y
-            * getColorByteSize(backBufferColor->texture.format);
+        * getColorByteSize(backBufferColor->texture.format);
     stats.textureVRamUsage += backBufferDepthStencil->texture.size.x * backBufferDepthStencil->texture.size.y
-            * getColorByteSize(backBufferDepthStencil->texture.format);
-    for (auto graph: graphs) {
-        for (auto &buffer: contexts.at(graph).vertexBuffers) {
+        * getColorByteSize(backBufferDepthStencil->texture.format);
+    for (auto graph : graphs)
+    {
+        for (auto& buffer : contexts.at(graph).vertexBuffers)
+        {
             stats.vertexVRamUsage += buffer.second->size;
         }
-        for (auto &buffer: contexts.at(graph).indexBuffers) {
+        for (auto& buffer : contexts.at(graph).indexBuffers)
+        {
             stats.indexVRamUsage += buffer.second->size;
         }
-        for (auto &buffer : contexts.at(graph).storageBuffers) {
+        for (auto& buffer : contexts.at(graph).storageBuffers)
+        {
             stats.shaderBufferVRamUsage += buffer.second->size;
         }
-        for (auto &tex: contexts.at(graph).textures) {
+        for (auto& tex : contexts.at(graph).textures)
+        {
             size_t numColors = (tex.second->texture.size.x
-                                * tex.second->texture.size.y);
-            if (tex.second->texture.arrayLayers > 0) {
+                * tex.second->texture.size.y);
+            if (tex.second->texture.arrayLayers > 0)
+            {
                 numColors *= tex.second->texture.arrayLayers;
             }
             stats.textureVRamUsage += numColors * getColorByteSize(tex.second->texture.format);
@@ -136,7 +160,8 @@ RenderGraphStatistics RenderGraphRuntimeOGL::execute(const std::vector<RenderGra
 
         oglDebugStartGroup("SubGraph");
         ContextGL context(backBufferColor, backBufferDepthStencil, contexts.at(graph), stats);
-        for (auto &pass: contexts.at(graph).passes) {
+        for (auto& pass : contexts.at(graph).passes)
+        {
             oglDebugStartGroup(pass.name);
             pass.pass(context);
             oglDebugEndGroup();
@@ -154,32 +179,44 @@ RenderGraphStatistics RenderGraphRuntimeOGL::execute(const std::vector<RenderGra
     return stats;
 }
 
-void RenderGraphRuntimeOGL::destroy(const RenderGraphHandle graph) {
+void RenderGraphRuntimeOGL::destroy(const RenderGraphHandle graph)
+{
     oglDebugStartGroup("RenderGraphRuntimeOGL::destroy");
     contexts.erase(graph);
     oglDebugEndGroup();
 }
 
-void RenderGraphRuntimeOGL::saveCache(const RenderGraphHandle graph, std::ostream &stream) {
+void RenderGraphRuntimeOGL::saveCache(const RenderGraphHandle graph, std::ostream& stream)
+{
     throw std::runtime_error("Not implemented");
 }
 
-void RenderGraphRuntimeOGL::loadCache(const RenderGraphHandle graph, std::istream &stream) {
+void RenderGraphRuntimeOGL::loadCache(const RenderGraphHandle graph, std::istream& stream)
+{
     throw std::runtime_error("Not implemented");
 }
 
-void RenderGraphRuntimeOGL::updateInternalBackBuffer() {
-    if (window == nullptr) {
+void RenderGraphRuntimeOGL::updateInternalBackBuffer()
+{
+    if (window == nullptr)
+    {
         throw std::runtime_error("No window has been set");
     }
     oglDebugStartGroup("RenderGraphRuntimeOGL::updateInternalBackBuffer");
 
-    if (backBuffer == nullptr) {
+    if (backBuffer == nullptr)
+    {
         backBuffer = std::make_shared<OGLFramebuffer>();
     }
 
-    const auto fbSize = window->getFramebufferSize();
-    if (backBufferColor == nullptr || backBufferColor->texture.size != fbSize) {
+    auto fbSize = window->getFramebufferSize();
+
+    // Handle framebuffer null size (Minimize, Window resize)
+    if (fbSize.x <= 0) fbSize.x = 1;
+    if (fbSize.y <= 0) fbSize.y = 1;
+
+    if (backBufferColor == nullptr || backBufferColor->texture.size != fbSize)
+    {
         RenderGraphTexture desc;
         desc.size = fbSize;
         desc.format = RGBA;
@@ -208,14 +245,16 @@ void RenderGraphRuntimeOGL::updateInternalBackBuffer() {
     oglDebugEndGroup();
 }
 
-void RenderGraphRuntimeOGL::presentBackBuffer() const {
+void RenderGraphRuntimeOGL::presentBackBuffer() const
+{
     oglDebugStartGroup("RenderGraphRuntimeOGL::presentScreenTexture");
 
     auto srcSize = backBufferColor->texture.size;
     auto dstSize = window->getFramebufferSize();
 
     // Skip presenting frames on resize, prevents the contents of the window from jittering when live resizing.
-    if (dstSize == srcSize) {
+    if (dstSize == srcSize)
+    {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, backBuffer->FBO);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
@@ -242,16 +281,20 @@ void RenderGraphRuntimeOGL::presentBackBuffer() const {
     window->swapBuffers();
 
     oglCheckError();
-    try {
+    try
+    {
         oglCheckError();
-    } catch (const std::exception &e) {
+    }
+    catch (const std::exception& e)
+    {
         // Because the framebuffer size can change randomly, I ignore errors that glBlitFramebuffer might throw.
     }
 
     oglDebugEndGroup();
 }
 
-RenderGraphHandle RenderGraphRuntimeOGL::compileGraph(RenderGraph &&graph) {
+RenderGraphHandle RenderGraphRuntimeOGL::compileGraph(RenderGraph&& graph)
+{
     oglDebugStartGroup("RenderGraphRuntimeOGL::compileGraph");
 
     const auto handle = RenderGraphHandle(graphCounter++);
@@ -263,26 +306,31 @@ RenderGraphHandle RenderGraphRuntimeOGL::compileGraph(RenderGraph &&graph) {
     context.passes = std::move(graph.passes);
 
     ShaderCompilerGLSL compiler;
-    for (const auto &pair: graph.pipelineAllocation) {
+    for (const auto& pair : graph.pipelineAllocation)
+    {
         auto pip = compiler.compile(pair.second.shaders);
         context.pipelines[pair.first] = std::move(pair.second);
         context.compiledPipelines[pair.first] = pip;
         context.shaderPrograms[pair.first] = std::make_shared<OGLShaderProgram>(pip);
     }
 
-    for (const auto &pair: graph.textureAllocation) {
+    for (const auto& pair : graph.textureAllocation)
+    {
         context.textures[pair.first] = std::make_shared<OGLTexture>(pair.second);
     }
 
-    for (const auto &pair: graph.vertexBufferAllocation) {
+    for (const auto& pair : graph.vertexBufferAllocation)
+    {
         context.vertexBuffers[pair.first] = std::make_shared<OGLVertexBuffer>(pair.second);
     }
 
-    for (const auto &pair: graph.indexBufferAllocation) {
+    for (const auto& pair : graph.indexBufferAllocation)
+    {
         context.indexBuffers[pair.first] = std::make_shared<OGLIndexBuffer>(pair.second);
     }
 
-    for (const auto &pair: graph.shaderBufferAllocation) {
+    for (const auto& pair : graph.shaderBufferAllocation)
+    {
         context.storageBuffers[pair.first] = std::make_shared<OGLShaderStorageBuffer>(pair.second);
     }
 
@@ -294,50 +342,68 @@ RenderGraphHandle RenderGraphRuntimeOGL::compileGraph(RenderGraph &&graph) {
 }
 
 RenderGraphHandle RenderGraphRuntimeOGL::recompileGraph(const RenderGraphHandle handle,
-                                                        RenderGraph &&graph) {
+                                                        RenderGraph&& graph)
+{
     oglDebugStartGroup("RenderGraphRuntimeOGL::recompileGraph");
 
     auto context = GraphResources();
 
     ShaderCompilerGLSL compiler;
-    for (auto &pair: graph.pipelineAllocation) {
+    for (auto& pair : graph.pipelineAllocation)
+    {
         auto pip = compiler.compile(pair.second.shaders);
         context.pipelines[pair.first] = std::move(pair.second);
         context.compiledPipelines[pair.first] = pip;
         context.shaderPrograms[pair.first] = std::make_shared<OGLShaderProgram>(pip);
     }
 
-    for (const auto &pair: graph.textureAllocation) {
+    for (const auto& pair : graph.textureAllocation)
+    {
         context.textures[pair.first] = std::make_shared<OGLTexture>(pair.second);
     }
 
-    for (const auto &pair: graph.vertexBufferAllocation) {
+    for (const auto& pair : graph.vertexBufferAllocation)
+    {
         context.vertexBuffers[pair.first] = std::make_shared<OGLVertexBuffer>(pair.second);
     }
 
-    for (const auto &pair: graph.indexBufferAllocation) {
+    for (const auto& pair : graph.indexBufferAllocation)
+    {
         context.indexBuffers[pair.first] = std::make_shared<OGLIndexBuffer>(pair.second);
     }
 
-    for (const auto &pair: graph.shaderBufferAllocation) {
+    for (const auto& pair : graph.shaderBufferAllocation)
+    {
         context.storageBuffers[pair.first] = std::make_shared<OGLShaderStorageBuffer>(pair.second);
     }
 
-    auto &oldContext = contexts.at(handle);
-    for (const auto &pair: graph.inheritedResources) {
-        if (oldContext.compiledPipelines.find(pair.second) != oldContext.compiledPipelines.end()) {
+    auto& oldContext = contexts.at(handle);
+    for (const auto& pair : graph.inheritedResources)
+    {
+        if (oldContext.compiledPipelines.find(pair.second) != oldContext.compiledPipelines.end())
+        {
             context.pipelines[pair.first] = std::move(oldContext.pipelines[pair.second]);
             context.compiledPipelines[pair.first] = oldContext.compiledPipelines[pair.second];
             context.shaderPrograms[pair.first] = oldContext.shaderPrograms[pair.second];
-        } else if (oldContext.textures.find(pair.second) != oldContext.textures.end()) {
+        }
+        else if (oldContext.textures.find(pair.second) != oldContext.textures.end())
+        {
             context.textures[pair.first] = oldContext.textures[pair.second];
-        } else if (oldContext.vertexBuffers.find(pair.second) != oldContext.vertexBuffers.end()) {
+        }
+        else if (oldContext.vertexBuffers.find(pair.second) != oldContext.vertexBuffers.end())
+        {
             context.vertexBuffers[pair.first] = oldContext.vertexBuffers[pair.second];
-        } else if (oldContext.indexBuffers.find(pair.second) != oldContext.indexBuffers.end()) {
+        }
+        else if (oldContext.indexBuffers.find(pair.second) != oldContext.indexBuffers.end())
+        {
             context.indexBuffers[pair.first] = oldContext.indexBuffers[pair.second];
-        } else if (oldContext.storageBuffers.find(pair.second) != oldContext.storageBuffers.end()) {
+        }
+        else if (oldContext.storageBuffers.find(pair.second) != oldContext.storageBuffers.end())
+        {
             context.storageBuffers[pair.first] = oldContext.storageBuffers[pair.second];
-        } else {
+        }
+        else
+        {
             throw std::runtime_error("Invalid resource handle inherited by pass");
         }
     }
