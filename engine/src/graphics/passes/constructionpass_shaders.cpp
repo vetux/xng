@@ -22,11 +22,108 @@
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
 #include "xng/graphics/shaderlib/texfilter.hpp"
+#include "xng/rendergraph/shaderscript/macro/helpermacros.hpp"
 
 using namespace xng::ShaderScript;
+using namespace xng::shaderlib::texfilter;
 
-namespace xng {
-    Shader ConstructionPass::createVertexShader() {
+namespace xng
+{
+    vec4 ConstructionPass::getSkinnedVertexPosition(Param<Int> offset,
+                                                    Param<vec3> position,
+                                                    Param<ivec4> boneIdsA,
+                                                    Param<vec4> boneWeightsA)
+    {
+        IRFunction
+
+        DynamicBuffer(BoneBufferLayout, bones)
+
+        ivec4 boneIds = boneIdsA;
+        vec4 boneWeights = boneWeightsA;
+
+        If(offset < 0)
+            IRReturn(vec4(position, 1.0f));
+        Fi
+
+        Int boneCount = bones.length();
+
+        vec4 totalPosition;
+        totalPosition = vec4(0, 0, 0, 0);
+
+        If(boneIds.x() > -1)
+            If(boneIds.x() + offset >= boneCount)
+                IRReturn(vec4(position, 1.0f));
+            Else
+                vec4 localPosition;
+                localPosition = bones[boneIds.x() + offset].matrix * vec4(position, 1.0f);
+                totalPosition += localPosition * boneWeights.x();
+            Fi
+        Fi
+
+        If(boneIds.y() > -1)
+            If(boneIds.y() + offset >= boneCount)
+                IRReturn(vec4(position, 1.0f));
+            Else
+                vec4 localPosition;
+                localPosition = bones[boneIds.y() + offset].matrix * vec4(position, 1.0f);
+                totalPosition += localPosition * boneWeights.y();
+            Fi
+        Fi
+
+        If(boneIds.z() > -1)
+            If(boneIds.z() + offset >= boneCount)
+                IRReturn(vec4(position, 1.0f));
+            Else
+                vec4 localPosition;
+                localPosition = bones[boneIds.z() + offset].matrix * vec4(position, 1.0f);
+                totalPosition += localPosition * boneWeights.z();
+            Fi
+        Fi
+
+        If(boneIds.w() > -1)
+            If(boneIds.w() + offset >= boneCount)
+                IRReturn(vec4(position, 1.0f));
+            Else
+                vec4 localPosition;
+                localPosition = bones[boneIds.w() + offset].matrix * vec4(position, 1.0f);
+                totalPosition += localPosition * boneWeights.w();
+            Fi
+        Fi
+
+        IRReturn(totalPosition);
+
+        IRFunctionEnd
+    }
+
+    vec4 ConstructionPass::texture_atlas(Param<AtlasTexture> textureDef,
+                                         Param<vec2> inUv)
+    {
+        IRFunction
+
+        TextureArray(TEXTURE_2D_ARRAY, RGBA, 12, atlasTextures)
+
+        ivec4 level_index_filtering_assigned = textureDef.value().level_index_filtering_assigned;
+        vec4 atlasScale_texSize = textureDef.value().atlasScale_texSize;
+
+        If(level_index_filtering_assigned.w() == 0)
+            IRReturn(vec4(0.0f, 0.0f, 0.0f, 0.0f));
+        Else
+            vec2 uv = inUv * atlasScale_texSize.xy();
+            If(level_index_filtering_assigned.z() == 1)
+                IRReturn(textureBicubicArray(atlasTextures[level_index_filtering_assigned.x()],
+                                           vec3(uv.x(), uv.y(), level_index_filtering_assigned.y()),
+                                           atlasScale_texSize.zw()));
+            Else
+                IRReturn(vec4(textureSampleArray(atlasTextures[level_index_filtering_assigned.x()],
+                                          vec3(uv.x(), uv.y(), level_index_filtering_assigned.y()))));
+            Fi
+        Fi
+
+        IRFunctionEnd
+    }
+
+    Shader ConstructionPass::createVertexShader()
+    {
         BeginShader(Shader::VERTEX)
 
         Input(vec3, position)
@@ -62,10 +159,12 @@ namespace xng {
 
         setVertexPosition(vPos);
 
+        EndShader();
         return BuildShader();
     }
 
-    Shader ConstructionPass::createSkinnedVertexShader() {
+    Shader ConstructionPass::createSkinnedVertexShader()
+    {
         BeginShader(Shader::VERTEX)
 
         Input(vec3, position)
@@ -90,60 +189,7 @@ namespace xng {
 
         TextureArray(TEXTURE_2D_ARRAY, RGBA, 12, atlasTextures)
 
-        Function(vec4, getSkinnedVertexPosition, Int, offset);
-            If(offset < 0)
-                Return(vec4(position, 1.0f));
-            Fi
-
-            Int boneCount = bones.length();
-
-            vec4 totalPosition;
-            totalPosition = vec4(0, 0, 0, 0);
-
-            If(boneIds.x() > -1)
-                If(boneIds.x() + offset >= boneCount)
-                    Return(vec4(position, 1.0f));
-                Else
-                    vec4 localPosition;
-                    localPosition = bones[boneIds.x() + offset].matrix * vec4(position, 1.0f);
-                    totalPosition += localPosition * boneWeights.x();
-                Fi
-            Fi
-
-            If(boneIds.y() > -1)
-                If(boneIds.y() + offset >= boneCount)
-                    Return(vec4(position, 1.0f));
-                Else
-                    vec4 localPosition;
-                    localPosition = bones[boneIds.y() + offset].matrix * vec4(position, 1.0f);
-                    totalPosition += localPosition * boneWeights.y();
-                Fi
-            Fi
-
-            If(boneIds.z() > -1)
-                If(boneIds.z() + offset >= boneCount)
-                    Return(vec4(position, 1.0f));
-                Else
-                    vec4 localPosition;
-                    localPosition = bones[boneIds.z() + offset].matrix * vec4(position, 1.0f);
-                    totalPosition += localPosition * boneWeights.z();
-                Fi
-            Fi
-
-            If(boneIds.w() > -1)
-                If(boneIds.w() + offset >= boneCount)
-                    Return(vec4(position, 1.0f));
-                Else
-                    vec4 localPosition;
-                    localPosition = bones[boneIds.w() + offset].matrix * vec4(position, 1.0f);
-                    totalPosition += localPosition * boneWeights.w();
-                Fi
-            Fi
-
-            Return(totalPosition);
-        End
-
-        vec4 pos = Call("getSkinnedVertexPosition", data.objectID_boneOffset_shadows.y());
+        vec4 pos = getSkinnedVertexPosition(data.objectID_boneOffset_shadows.y(), position, boneIds, boneWeights);
 
         vPos = data.mvp * pos;
         fPos = (data.model * pos).xyz();
@@ -159,12 +205,13 @@ namespace xng {
 
         setVertexPosition(vPos);
 
-        return BuildShader();
+        EndShader();
+
+        return BuildShader()
     }
 
-    DeclareFunction(texture_atlas)
-
-    Shader ConstructionPass::createFragmentShader() {
+    Shader ConstructionPass::createFragmentShader()
+    {
         BeginShader(Shader::FRAGMENT)
 
         Input(vec3, fPos)
@@ -187,27 +234,6 @@ namespace xng {
         DynamicBuffer(BoneBufferLayout, bones)
 
         TextureArray(TEXTURE_2D_ARRAY, RGBA, 12, atlasTextures)
-
-        shaderlib::textureBicubic();
-
-        Function(vec4, texture_atlas, AtlasTexture, textureDef, vec2, inUv)
-            ivec4 level_index_filtering_assigned = textureDef.level_index_filtering_assigned;
-            vec4 atlasScale_texSize = textureDef.atlasScale_texSize;
-
-            If(level_index_filtering_assigned.w() == 0)
-                Return(vec4(0.0f, 0.0f, 0.0f, 0.0f));
-            Else
-                vec2 uv = inUv * atlasScale_texSize.xy();
-                If(level_index_filtering_assigned.z() == 1)
-                    Return(textureBicubic(atlasTextures[level_index_filtering_assigned.x()],
-                                          vec3(uv.x(), uv.y(), level_index_filtering_assigned.y()),
-                                          atlasScale_texSize.zw()));
-                Else
-                    Return(textureSampleArray(atlasTextures[level_index_filtering_assigned.x()],
-                                              vec3(uv.x(), uv.y(), level_index_filtering_assigned.y())));
-                Fi
-            Fi
-        End
 
         oPosition = vec4(fPos, 1);
 
@@ -248,7 +274,7 @@ namespace xng {
         If(data.normal.level_index_filtering_assigned.w() != 0)
             mat3 tbn = mat3(fT, fB, fN);
             vec3 texNormal = texture_atlas(data.normal, fUv).xyz()
-                             * vec3(data.normalIntensity.x(), data.normalIntensity.x(), 1);
+                * vec3(data.normalIntensity.x(), data.normalIntensity.x(), 1);
             texNormal = tbn * normalize(texNormal * 2.0 - 1.0);
             oNormal = vec4(normalize(texNormal), 1);
         Fi
@@ -258,6 +284,8 @@ namespace xng {
         oObjectShadows.z() = 0;
         oObjectShadows.w() = 1;
 
-        return BuildShader();
+        EndShader();
+
+        return BuildShader()
     }
 }

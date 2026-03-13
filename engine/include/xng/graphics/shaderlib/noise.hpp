@@ -22,39 +22,24 @@
 
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
-namespace xng::ShaderScript {
-    DeclareFunction(simplex)
+namespace xng::shaderlib::noise
+{
+    using namespace xng::ShaderScript;
 
-    DeclareFunction(perlin)
-    DeclareFunction(perlinc)
+    XENGINE_EXPORT Float simplex(Param<vec2> v);
+    XENGINE_EXPORT Float simplex3(Param<vec3> v);
+    XENGINE_EXPORT Float simplex4(Param<vec4> v);
 
-    DeclareFunction(noise)
-}
+    XENGINE_EXPORT Float perlin(Param<vec2> p, Param<Float> dim);
+    XENGINE_EXPORT Float perlinT(Param<vec2> p, Param<Float> dim, Param<Float> time);
+    XENGINE_EXPORT Float perlinbw(Param<vec2> p, Param<Float> dim);
+    XENGINE_EXPORT Float perlinc(Param<vec2> p);
+    XENGINE_EXPORT Float perlinc4(Param<vec4> p);
+    XENGINE_EXPORT Float perlincr(Param<vec4> p, Param<vec4> rep);
 
-namespace xng::shaderlib::noise {
-    /**
-     * float simplex(vec2 v)
-     * float simplex(vec3 v)
-     * float simplex(vec4 v)
-     */
-    XENGINE_EXPORT void simplex();
-
-    /**
-     * float perlin(vec2 p, float dim)
-     * float perlin(vec2 p, float dim, float time)
-     * float perlinbw(vec2 p, float dim)
-     * float perlinc(vec2 p)
-     * float perlinc(vec4 p)
-     * float perlinc(vec4 p, vec4 rep)
-     */
-    XENGINE_EXPORT void perlin();
-
-    /**
-     * float noise(float p)
-     * float noise(vec2 p)
-     * float noise(vec3 p)
-     */
-    XENGINE_EXPORT void noise();
+    XENGINE_EXPORT Float noise(Param<Float> p);
+    XENGINE_EXPORT Float noise2(Param<vec2> p);
+    XENGINE_EXPORT Float noise3(Param<vec3> p);
 }
 
 #endif //XENGINE_NOISE_HPP

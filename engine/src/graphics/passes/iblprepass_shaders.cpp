@@ -22,17 +22,90 @@
 
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 #include "xng/rendergraph/rendergraphpipeline.hpp"
+#include "xng/rendergraph/shaderscript/macro/helpermacros.hpp"
 
 using namespace xng::ShaderScript;
 
 namespace xng
 {
-    DeclareFunction(integrateBRDF)
-    DeclareFunction(radicalInverseVdC)
+    // Van der Corput radical inverse for Hammersley sequence
+    Float radicalInverseVdC(Param<Int> bits)
+    {
+        IRFunction
+
+        Float inv;
+        inv = Float(0.0f);
+        Float denom;
+        denom = Float(1.0f);
+        Float nnf;
+        nnf = Float(bits);
+        For(Int, r, Int(0), r < Int(32), r + 1)
+            denom = denom * Float(2.0f);
+            Float bitf = mod(nnf, Float(2.0f));
+            inv = inv + bitf / denom;
+            nnf = floor(nnf / Float(2.0f));
+            If(nnf <= Float(0.0f))
+                IRReturn(inv);
+            Fi
+        Done
+        IRReturn(inv);
+
+        IRFunctionEnd
+    }
+
+    vec2 integrateBRDF(Param<Float> NdotV, Param<Float> roughness)
+    {
+        IRFunction
+
+        Int SAMPLE_COUNT;
+        SAMPLE_COUNT = Int(1024);
+
+        Float A;
+        A = Float(0.0f);
+        Float B;
+        B = Float(0.0f);
+        vec3 V;
+        V = vec3(sqrt(Float(1.0f) - NdotV * NdotV), Float(0.0f), NdotV);
+
+        For(Int, i, Int(0), i < SAMPLE_COUNT, i + 1)
+            // Hammersley sequence for better distribution
+            Float Xi1 = (Float(i) + Float(0.5f)) / Float(SAMPLE_COUNT);
+            Float Xi2 = radicalInverseVdC(i);
+
+            Float a = roughness * roughness;
+            Float phi = Float(2.0f) * Float(pi()) * Xi1;
+            Float cosTheta = sqrt((Float(1.0f) - Xi2) / (Float(1.0f) + (a * a - Float(1.0f)) * Xi2));
+            Float sinTheta = sqrt(Float(1.0f) - cosTheta * cosTheta);
+
+            vec3 H = vec3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
+            vec3 L = normalize(Float(2.0f) * dot(V, H) * H - V);
+
+            Float NdotL = max(L.z(), Float(0.0f));
+            Float NdotH = max(H.z(), Float(0.0f));
+            Float VdotH = max(dot(V, H), Float(0.0f));
+
+            If(NdotL > Float(0.0f))
+                // IBL-specific geometry (k = roughness^2 / 2)
+                Float k = (roughness * roughness) / Float(2.0f);
+                Float gV = NdotV / (NdotV * (Float(1.0f) - k) + k);
+                Float gL = NdotL / (NdotL * (Float(1.0f) - k) + k);
+                Float G = gV * gL;
+                Float G_Vis = (G * VdotH) / (NdotH * NdotV + Float(0.0001f));
+                Float Fc = pow(Float(1.0f) - VdotH, Float(5.0f));
+                A = A + (Float(1.0f) - Fc) * G_Vis;
+                B = B + Fc * G_Vis;
+            Fi
+        Done
+
+        A = A / Float(SAMPLE_COUNT);
+        B = B / Float(SAMPLE_COUNT);
+        IRReturn(vec2(A, B));
+
+        IRFunctionEnd
+    }
 
     RenderGraphPipeline IBLPrePass::makeBRDFPipeline()
     {
-
         RenderGraphPipeline pip;
 
         // Vertex shader for fullscreen quad
@@ -44,6 +117,7 @@ namespace xng
             Output(vec2, vUv)
             setVertexPosition(vec4(position, 1.0f));
             vUv = uv;
+            EndShader();
             vs = BuildShader();
         }
 
@@ -54,76 +128,12 @@ namespace xng
             Input(vec2, vUv)
             Output(vec2, outColor)
 
-            // Van der Corput radical inverse for Hammersley sequence
-            Function(Float, radicalInverseVdC, Int, bits)
-                Float inv;
-                inv = Float(0.0f);
-                Float denom;
-                denom = Float(1.0f);
-                Float nnf;
-                nnf = toFloat(bits);
-                For(Int, r, 0, r < Int(32), r + 1)
-                    denom = denom * Float(2.0f);
-                    Float bitf = mod(nnf, Float(2.0f));
-                    inv = inv + bitf / denom;
-                    nnf = floor(nnf / Float(2.0f));
-                    If(nnf <= Float(0.0f))
-                        Return(inv);
-                    Fi
-                Done
-                Return(inv);
-            End
-
-            Function(vec2, integrateBRDF, Float, NdotV, Float, roughness)
-                Int SAMPLE_COUNT;
-                SAMPLE_COUNT = Int(1024);
-
-                Float A;
-                A = Float(0.0f);
-                Float B;
-                B = Float(0.0f);
-                vec3 V;
-                V = vec3(sqrt(Float(1.0f) - NdotV * NdotV), Float(0.0f), NdotV);
-
-                For(Int, i, 0, i < SAMPLE_COUNT, i + 1)
-                    // Hammersley sequence for better distribution
-                    Float Xi1 = (toFloat(i) + Float(0.5f)) / toFloat(SAMPLE_COUNT);
-                    Float Xi2 = radicalInverseVdC(i);
-
-                    Float a = roughness * roughness;
-                    Float phi = Float(2.0f) * Float(pi()) * Xi1;
-                    Float cosTheta = sqrt((Float(1.0f) - Xi2) / (Float(1.0f) + (a * a - Float(1.0f)) * Xi2));
-                    Float sinTheta = sqrt(Float(1.0f) - cosTheta * cosTheta);
-
-                    vec3 H = vec3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
-                    vec3 L = normalize(Float(2.0f) * dot(V, H) * H - V);
-
-                    Float NdotL = max(L.z(), Float(0.0f));
-                    Float NdotH = max(H.z(), Float(0.0f));
-                    Float VdotH = max(dot(V, H), Float(0.0f));
-
-                    If(NdotL > Float(0.0f))
-                        // IBL-specific geometry (k = roughness^2 / 2)
-                        Float k = (roughness * roughness) / Float(2.0f);
-                        Float gV = NdotV / (NdotV * (Float(1.0f) - k) + k);
-                        Float gL = NdotL / (NdotL * (Float(1.0f) - k) + k);
-                        Float G = gV * gL;
-                        Float G_Vis = (G * VdotH) / (NdotH * NdotV + Float(0.0001f));
-                        Float Fc = pow(Float(1.0f) - VdotH, Float(5.0f));
-                        A = A + (Float(1.0f) - Fc) * G_Vis;
-                        B = B + Fc * G_Vis;
-                    Fi
-                Done
-
-                A = A / toFloat(SAMPLE_COUNT);
-                B = B / toFloat(SAMPLE_COUNT);
-                Return(vec2(A, B));
-            End
-
             Float NdotV = max(vUv.x(), Float(0.001f));
             Float roughness = max(vUv.y(), Float(0.001f));
             vec2 res = integrateBRDF(NdotV, roughness);
             outColor = res;
+
+            EndShader();
 
             fs = BuildShader();
         }
@@ -149,6 +159,7 @@ namespace xng
             Buffer(CaptureFaceData, captureData)
             vPosition = position;
             setVertexPosition(captureData.captureMatrix * vec4(position, 1.0f));
+            EndShader();
             eqVs = BuildShader();
         }
 
@@ -164,7 +175,7 @@ namespace xng
             Float v = Float(0.5f) - asin(clamp(dir.y(), Float(-1.0f), Float(1.0f))) / Float(pi());
             vec4 samp = textureSample(envEquirect, vec2(u, v));
             outColor = vec4(samp.xyz(), Float(1.0f));
-
+            EndShader();
             eqFs = BuildShader();
         }
 
@@ -189,6 +200,7 @@ namespace xng
             Buffer(CaptureFaceData, captureData)
             vPosition = position;
             setVertexPosition(captureData.captureMatrix * vec4(position, 1.0f));
+            EndShader();
             irrVs = BuildShader();
         }
 
@@ -200,26 +212,6 @@ namespace xng
             Texture(TEXTURE_CUBE_MAP, RGBA16F, envCube)
 
             Buffer(PrefilterParams, prefilterParams)
-
-            // Van der Corput for better distributed sampling
-            Function(Float, radicalInverseVdC, Int, bits)
-                Float inv;
-                inv = Float(0.0f);
-                Float denom;
-                denom = Float(1.0f);
-                Float nnf;
-                nnf = toFloat(bits);
-                For(Int, r, 0, r < Int(32), r + 1)
-                    denom = denom * Float(2.0f);
-                    Float bitf = mod(nnf, Float(2.0f));
-                    inv = inv + bitf / denom;
-                    nnf = floor(nnf / Float(2.0f));
-                    If(nnf <= Float(0.0f))
-                        Return(inv);
-                    Fi
-                Done
-                Return(inv);
-            End
 
             vec3 N = normalize(vPosition);
 
@@ -242,9 +234,9 @@ namespace xng
             Float resolution = prefilterParams.prefilterParams.y();
             Float saTexel = Float(4.0f) * Float(pi()) / (Float(6.0f) * resolution * resolution);
 
-            For(Int, i, 0, i < SAMPLE_COUNT, i + 1)
+            For(Int, i, Int(0), i < SAMPLE_COUNT, i + 1)
                 // Hammersley sequence for uniform hemisphere sampling
-                Float Xi1 = (toFloat(i) + Float(0.5f)) / toFloat(SAMPLE_COUNT);
+                Float Xi1 = (Float(i) + Float(0.5f)) / Float(SAMPLE_COUNT);
                 Float Xi2 = radicalInverseVdC(i);
 
                 // Cosine-weighted hemisphere sampling
@@ -257,16 +249,16 @@ namespace xng
 
                 // Compute per-sample LOD based on cosine-weighted PDF to avoid fireflies
                 Float pdf = cosTheta / Float(pi());
-                Float saSample = Float(1.0f) / (toFloat(SAMPLE_COUNT) * pdf + Float(1e-6f));
+                Float saSample = Float(1.0f) / (Float(SAMPLE_COUNT) * pdf + Float(1e-6f));
                 Float lod = max(Float(0.5f) * log2(saSample / saTexel), Float(0.0f));
 
                 irradiance = irradiance + textureSampleCube(envCube, sampleVec, lod).xyz();
             Done
 
             // Average samples; cosine-weighted sampling yields E/pi directly
-            irradiance = irradiance / toFloat(SAMPLE_COUNT);
+            irradiance = irradiance / Float(SAMPLE_COUNT);
             outColor = vec4(irradiance, Float(1.0f));
-
+            EndShader();
             irrFs = BuildShader();
         }
 
@@ -291,6 +283,7 @@ namespace xng
             Buffer(CaptureFaceData, captureData)
             vPosition = position;
             setVertexPosition(captureData.captureMatrix * vec4(position, 1.0f));
+            EndShader();
             preVs = BuildShader();
         }
 
@@ -311,26 +304,6 @@ namespace xng
             Int SAMPLE_COUNT;
             SAMPLE_COUNT = Int(1024);
 
-            // Van der Corput for Hammersley sequence
-            Function(Float, radicalInverseVdC, Int, bits)
-                Float inv;
-                inv = Float(0.0f);
-                Float denom;
-                denom = Float(1.0f);
-                Float nnf;
-                nnf = toFloat(bits);
-                For(Int, r, 0, r < Int(32), r + 1)
-                    denom = denom * Float(2.0f);
-                    Float bitf = mod(nnf, Float(2.0f));
-                    inv = inv + bitf / denom;
-                    nnf = floor(nnf / Float(2.0f));
-                    If(nnf <= Float(0.0f))
-                        Return(inv);
-                    Fi
-                Done
-                Return(inv);
-            End
-
             // Build tangent frame for N
             vec3 up;
             up = vec3(0.0f, 1.0f, 0.0f);
@@ -345,9 +318,9 @@ namespace xng
             Float totalWeight;
             totalWeight = Float(0.0f);
 
-            For(Int, i, 0, i < SAMPLE_COUNT, i + 1)
+            For(Int, i, Int(0), i < SAMPLE_COUNT, i + 1)
                 // Hammersley sequence for importance sampling
-                Float Xi1 = (toFloat(i) + Float(0.5f)) / toFloat(SAMPLE_COUNT);
+                Float Xi1 = (Float(i) + Float(0.5f)) / Float(SAMPLE_COUNT);
                 Float Xi2 = radicalInverseVdC(i);
 
                 // GGX importance sampling
@@ -380,7 +353,7 @@ namespace xng
                     // read the base prefilter resolution passed from CPU side
                     Float resolution = prefilterParams.prefilterParams.y();
                     Float saTexel = Float(4.0f) * Float(pi()) / (Float(6.0f) * resolution * resolution);
-                    Float saSample = Float(1.0f) / (toFloat(SAMPLE_COUNT) * pdf + Float(1e-6f));
+                    Float saSample = Float(1.0f) / (Float(SAMPLE_COUNT) * pdf + Float(1e-6f));
 
                     Float mipLevel;
                     If(roughness == Float(0.0f))
@@ -401,7 +374,7 @@ namespace xng
             Fi
 
             outColor = vec4(prefilteredColor, Float(1.0f));
-
+            EndShader();
             preFs = BuildShader();
         }
 

@@ -20,8 +20,10 @@
 #ifndef XENGINE_ShaderObject_HPP
 #define XENGINE_ShaderObject_HPP
 
-#include "xng/rendergraph/shader/shaderinstruction.hpp"
-#include "xng/rendergraph/shaderscript/shaderbuilder.hpp"
+#include "xng/rendergraph/shader/shaderinstructionfactory.hpp"
+#include "xng/rendergraph/shader/shadertexture.hpp"
+
+#include "xng/rendergraph/shaderscript/blockscope.hpp"
 
 #define _SWIZZLE2(x, y) [[nodiscard]] ShaderObject x##y() { return swizzle_vec2(ShaderPrimitiveType::COMPONENT_##x, ShaderPrimitiveType::COMPONENT_##y); }
 #define _SWIZZLE3(x, y, z) [[nodiscard]] ShaderObject x##y##z() { return swizzle_vec3(ShaderPrimitiveType::COMPONENT_##x, ShaderPrimitiveType::COMPONENT_##y, ShaderPrimitiveType::COMPONENT_##z); }
@@ -31,77 +33,62 @@ namespace xng::ShaderScript {
     class ShaderObject {
     public:
         ShaderOperand operand;
-        bool assignable = false;
 
         ShaderObject() = default;
 
-        ShaderObject(const ShaderInstruction &instruction, const bool assignable = false)
-            : operand(ShaderOperand::instruction(instruction)), assignable(assignable) {
+        ShaderObject(const ShaderInstruction &instruction)
+            : operand(ShaderOperand::instruction(instruction)) {
         }
 
-        ShaderObject(ShaderOperand operand, const bool assignable = false)
-            : operand(std::move(operand)), assignable(assignable) {
+        ShaderObject(ShaderOperand operand)
+            : operand(std::move(operand)) {
         }
 
         ShaderObject(const ShaderObject &other) = default;
 
-        ShaderObject(ShaderObject &&other) noexcept = default;
-
-        // Literal constructor
+        // Literal constructors
         ShaderObject(const bool literal)
-            : ShaderObject(ShaderOperand::literal(literal)) {
+            : operand(ShaderOperand::literal(literal)) {
         }
 
         ShaderObject(const int literal)
-            : ShaderObject(ShaderOperand::literal(literal)) {
+            : operand(ShaderOperand::literal(literal)) {
         }
 
         ShaderObject(const unsigned int literal)
-            : ShaderObject(ShaderOperand::literal(literal)) {
+            : operand(ShaderOperand::literal(literal)) {
         }
 
         ShaderObject(const float literal)
-            : ShaderObject(ShaderOperand::literal(literal)) {
+            : operand(ShaderOperand::literal(literal)) {
         }
 
         ShaderObject(const double literal)
-            : ShaderObject(ShaderOperand::literal(literal)) {
+            : operand(ShaderOperand::literal(literal)) {
         }
 
         [[nodiscard]] ShaderObject x() {
-            return {
-                ShaderInstructionFactory::vectorSwizzle(operand, {
-                                                            ShaderPrimitiveType::COMPONENT_x
-                                                        }),
-                assignable
-            };
+            return ShaderObject(ShaderInstructionFactory::vectorSwizzle(operand, {
+                ShaderPrimitiveType::COMPONENT_x
+            }));
         }
 
         [[nodiscard]] ShaderObject y() {
-            return {
-                ShaderInstructionFactory::vectorSwizzle(operand, {
-                                                            ShaderPrimitiveType::COMPONENT_y
-                                                        }),
-                assignable
-            };
+            return ShaderObject(ShaderInstructionFactory::vectorSwizzle(operand, {
+                ShaderPrimitiveType::COMPONENT_y
+            }));
         }
 
         [[nodiscard]] ShaderObject z() {
-            return {
-                ShaderInstructionFactory::vectorSwizzle(operand, {
-                                                            ShaderPrimitiveType::COMPONENT_z
-                                                        }),
-                assignable
-            };
+            return ShaderObject(ShaderInstructionFactory::vectorSwizzle(operand, {
+                ShaderPrimitiveType::COMPONENT_z
+            }));
         }
 
         [[nodiscard]] ShaderObject w() {
-            return {
-                ShaderInstructionFactory::vectorSwizzle(operand, {
-                                                            ShaderPrimitiveType::COMPONENT_w
-                                                        }),
-                assignable
-            };
+            return ShaderObject(ShaderInstructionFactory::vectorSwizzle(operand, {
+                ShaderPrimitiveType::COMPONENT_w
+            }));
         }
 
         // 4^2 = 16 Vector2 Swizzle Combinations (Macro calls generated with ChatGPT)
@@ -448,13 +435,11 @@ namespace xng::ShaderScript {
 
         [[nodiscard]] ShaderObject element(const ShaderObject &column,
                                            const ShaderObject &row) {
-            return ShaderObject(ShaderInstructionFactory::matrixSubscript(operand, column.operand, row.operand),
-                                assignable);
+            return ShaderObject(ShaderInstructionFactory::matrixSubscript(operand, column.operand, row.operand));
         }
 
         ShaderObject column(const ShaderObject &column) {
-            return ShaderObject(ShaderInstructionFactory::matrixSubscript(operand, column.operand),
-                                assignable);
+            return ShaderObject(ShaderInstructionFactory::matrixSubscript(operand, column.operand));
         }
 
         ShaderObject length() {
@@ -464,27 +449,6 @@ namespace xng::ShaderScript {
             throw std::runtime_error("length() called on non buffer");
         }
 
-        /**
-         * The move and copy assignment operators are overloaded to translate logical assignments to shader instructions.
-         *
-         * This enables the user to assign variables in glsl style.
-         *
-         * @param rhs
-         * @return
-         */
-        ShaderObject &operator=(ShaderObject &&rhs) {
-            assignValue(rhs);
-            return *this;
-        }
-
-        /**
-         * The move and copy assignment operators are overloaded to translate logical assignments to shader instructions.
-         *
-         * This enables the user to assign variables in glsl style.
-         *
-         * @param rhs
-         * @return
-         */
         ShaderObject &operator=(const ShaderObject &rhs) {
             assignValue(rhs);
             return *this;
@@ -542,11 +506,11 @@ namespace xng::ShaderScript {
             return ShaderObject(ShaderInstructionFactory::compareGreater(operand, rhs.operand));
         }
 
-        ShaderObject operator <=(const ShaderObject &rhs) {
+        ShaderObject operator<=(const ShaderObject &rhs) {
             return ShaderObject(ShaderInstructionFactory::compareLessEqual(operand, rhs.operand));
         }
 
-        ShaderObject operator >=(const ShaderObject &rhs) {
+        ShaderObject operator>=(const ShaderObject &rhs) {
             return ShaderObject(ShaderInstructionFactory::compareGreaterEqual(operand, rhs.operand));
         }
 
@@ -559,69 +523,40 @@ namespace xng::ShaderScript {
         }
 
         ShaderObject operator[](const char *elementName) {
-            return ShaderObject(ShaderInstructionFactory::objectMember(operand, elementName), assignable);
+            return ShaderObject(ShaderInstructionFactory::objectMember(operand, elementName));
         }
 
         ShaderObject operator[](const ShaderObject &index) {
-            return ShaderObject(ShaderInstructionFactory::arraySubscript(operand, index.operand), assignable);
+            return ShaderObject(ShaderInstructionFactory::arraySubscript(operand, index.operand));
         }
 
     protected:
         ShaderObject swizzle_vec2(const ShaderPrimitiveType::VectorComponent &x,
                                   const ShaderPrimitiveType::VectorComponent &y) {
-            return {
-                ShaderInstructionFactory::vectorSwizzle(operand, {
-                                                            x,
-                                                            y,
-                                                        }),
-                assignable
-            };
+            return ShaderObject(ShaderInstructionFactory::vectorSwizzle(operand, {x, y}));
         }
 
         ShaderObject swizzle_vec3(const ShaderPrimitiveType::VectorComponent &x,
                                   const ShaderPrimitiveType::VectorComponent &y,
                                   const ShaderPrimitiveType::VectorComponent &z) {
-            return {
-                ShaderInstructionFactory::vectorSwizzle(operand, {
-                                                            x,
-                                                            y,
-                                                            z
-                                                        }),
-                assignable
-            };
+            return ShaderObject(ShaderInstructionFactory::vectorSwizzle(operand, {x, y, z}));
         }
 
         ShaderObject swizzle_vec4(const ShaderPrimitiveType::VectorComponent &x,
                                   const ShaderPrimitiveType::VectorComponent &y,
                                   const ShaderPrimitiveType::VectorComponent &z,
                                   const ShaderPrimitiveType::VectorComponent &w) {
-            return {
-                ShaderInstructionFactory::vectorSwizzle(operand, {
-                                                            x,
-                                                            y,
-                                                            z,
-                                                            w
-                                                        }),
-                assignable
-            };
+            return ShaderObject(ShaderInstructionFactory::vectorSwizzle(operand, {x, y, z, w}));
         }
 
     private:
-        /**
-         * Because copy initialization in C++17 can be elided (e.g. vec2 v = vec2(0, 0)), and explicitly deleting
-         * copy operators does not affect the copy initialization if the initializer value is a prvalue,
-         * I cannot rely on the assignment operator overload for defining shader variables for prvalue initializers.
-         * (See http://en.cppreference.com/w/cpp/language/copy_initialization.html)
-         *
-         * Therefore, copy initialized variables (e.g. vec2 v = vec2(0, 0)) are inlined in the resulting shader and are not assignable.
-         * Move initialized variables (e.g. vec2 v = other.xy()) are not inlined and are assignable.
-         */
-        void assignValue(const ShaderObject &value) {
-            if (!assignable) {
-                throw std::runtime_error(
-                    "Attempted assignment to non-assignable variable (Copy initialized variable?)");
-            }
-            ShaderBuilder::instance().addInstruction(ShaderInstructionFactory::assign(operand, value.operand));
+        void assignValue(const ShaderObject &value) const
+        {
+            // Assignments to objects must be tracked so we can emit logical assignments
+            // When user direct initializes an object like vec2 v = vec2(1, 1);
+            // the vec2(1,1) is registered to the current scope as an object with the given initializer.
+            // v itself just gets this object reference via direct initialization so no assign value instruction is emitted.
+            BlockScope::get().addInstruction(ShaderInstructionFactory::assign(operand, value.operand));
         }
     };
 
@@ -640,253 +575,99 @@ namespace xng::ShaderScript {
         static inline ShaderDataType TYPE = ShaderDataType(ShaderPrimitiveType(VALUE_TYPE, VALUE_COMPONENT),
                                                            VALUE_COUNT);
 
-        /**
-         * Default constructor creates new variable.
-         */
+        // Default constructor - creates a new registered variable
         ShaderDataObject() {
-            const auto varName = ShaderBuilder::instance().getVariableName();
-            ShaderBuilder::instance().addInstruction(ShaderInstructionFactory::declareVariable(varName, TYPE));
-            operand = ShaderOperand(ShaderOperand::Variable, varName);
-            assignable = true;
+            operand = BlockScope::get().registerObject(TYPE, {});
         }
-
-        /**
-         * Copy operator and constructor for non prvalues are deleted to force move semantics and avoid copy eliding.
-         *
-         * @param base
-         */
-        ShaderDataObject(const ShaderObject &base) = delete;
-
-        ShaderDataObject &operator=(const ShaderObject &base) = delete;
 
         ShaderDataObject &operator=(const ShaderDataObject &other) {
             ShaderObject::operator=(other);
             return *this;
         }
 
-        /**
-         * Move operation to a previously default constructed object from a non prvalue (e.g. vec2 u; u = other.xyz())
-         *
-         * @param other
-         * @return
-         */
-        ShaderDataObject &operator=(ShaderObject &&base) {
-            ShaderObject::operator=(std::move(base));
+        ShaderDataObject &operator=(const ShaderObject &other) {
+            ShaderObject::operator=(other);
             return *this;
         }
 
-        /**
-         * Move operator is allowed to support assignments to default initialized variables from prvalues (e.g. vec2 v; v = vec2(0, 0);)
-         *
-         * @param other
-         * @return
-         */
-        ShaderDataObject &operator=(ShaderDataObject &&other) noexcept {
-            ShaderObject::operator=(std::move(other));
-            return *this;
-        }
-
-        /**
-         * Move constructor from non prvalues can be deleted because in the dsl syntax variables are not initialized with vec2 v(...);
-         *
-         * @param other
-         */
-        ShaderDataObject(ShaderDataObject &&other) noexcept = delete;
-
-        /**
-         * Move operation from non prvalue, creates and initializes a variable. (e.g. vec2 v = other.xyz()).
-         * Automatically handles conversion (e.g. vec3 v = other.xy() turns into vec3 v = vec3(other.xy())).
-         *
-         * @param other
-         */
-        ShaderDataObject(ShaderObject &&other) noexcept
-            : ShaderObject(std::move(other)) {
+        // Conversion constructor - creates and registers a variable with automatic type conversion
+        ShaderDataObject(const ShaderObject &other)
+            : ShaderObject(other) {
+            ShaderOperand initializer = other.operand;
             if (VALUE_TYPE >= ShaderPrimitiveType::VECTOR2 && VALUE_TYPE <= ShaderPrimitiveType::VECTOR4) {
-                auto instruction = ShaderInstructionFactory::createVector(TYPE.getPrimitive(),
-                                                                          operand);
-                operand = ShaderOperand::instruction(instruction);
+                initializer = ShaderOperand::instruction(ShaderInstructionFactory::createVector(TYPE.getPrimitive(), other.operand));
             } else if (VALUE_TYPE >= ShaderPrimitiveType::MAT2 && VALUE_TYPE <= ShaderPrimitiveType::MAT4) {
-                auto instruction = ShaderInstructionFactory::createMatrix(TYPE.getPrimitive(),
-                                                                          operand);
-                operand = ShaderOperand::instruction(instruction);
+                initializer = ShaderOperand::instruction(ShaderInstructionFactory::createMatrix(TYPE.getPrimitive(), other.operand));
             }
-            const auto varName = ShaderBuilder::instance().getVariableName();
-            ShaderBuilder::instance().addInstruction(ShaderInstructionFactory::declareVariable(varName,
-                TYPE,
-                operand));
-            operand = ShaderOperand(ShaderOperand::Variable, varName);
-            assignable = true;
+            operand = BlockScope::get().registerObject(TYPE, initializer);
         }
 
-        /**
-         * Construct a data object which inlines the specified instruction.
-         * Used by the shader struct wrapper to inline the members instead of creating new variables for each member.
-         *
-         * @param other
-         */
-        explicit ShaderDataObject(ShaderInstruction &&other) noexcept
-            : ShaderObject(std::move(other)) {
-            assignable = true;
-        }
+        // Construct from inline instruction (e.g. struct member access)
+        explicit ShaderDataObject(const ShaderInstruction &other)
+            : ShaderObject(other) {}
 
-        /**
-         * Construct a data object which inlines the specified operand.
-         * Used by the for loop macro to refer to the loop initializer variable.
-         *
-         * @param other
-         */
-        explicit ShaderDataObject(ShaderOperand &&other) noexcept
-            : ShaderObject(std::move(other)) {
-            assignable = true;
-        }
+        // Construct from inline operand (e.g. for loop variable, function argument)
+        explicit ShaderDataObject(ShaderOperand other)
+            : ShaderObject(std::move(other)) {}
 
-        /**
-         * Array constructor
-         *
-         * @param values
-         */
-        ShaderDataObject(const std::vector<ShaderDataObject<VALUE_TYPE, VALUE_COMPONENT, 1> > &values)
+        // Array constructor
+        ShaderDataObject(const std::vector<ShaderDataObject<VALUE_TYPE, VALUE_COMPONENT, 1>> &values)
             : ShaderObject(ShaderInstructionFactory::createArray(ShaderDataType{
-                                                                     ShaderPrimitiveType{
-                                                                         VALUE_TYPE,
-                                                                         VALUE_COMPONENT,
-                                                                     },
-                                                                     VALUE_COUNT
-                                                                 }, getOperands(values))) {
-        }
+                  ShaderPrimitiveType{VALUE_TYPE, VALUE_COMPONENT}, VALUE_COUNT
+              }, getOperands(values))) {}
 
-        /**
-         * Scalar, Vector or Matrix Constructor
-         *
-         * @param x
-         */
+        // Copy constructor - creates and registers a variable with automatic type conversion
         ShaderDataObject(const ShaderDataObject &x) {
+            ShaderOperand initializer = x.operand;
             if (VALUE_TYPE >= ShaderPrimitiveType::VECTOR2 && VALUE_TYPE <= ShaderPrimitiveType::VECTOR4) {
-                auto instruction = ShaderInstructionFactory::createVector(TYPE.getPrimitive(), x.operand);
-                operand = ShaderOperand::instruction(instruction);
+                initializer = ShaderOperand::instruction(ShaderInstructionFactory::createVector(TYPE.getPrimitive(), x.operand));
             } else if (VALUE_TYPE >= ShaderPrimitiveType::MAT2 && VALUE_TYPE <= ShaderPrimitiveType::MAT4) {
-                auto instruction = ShaderInstructionFactory::createMatrix(TYPE.getPrimitive(), x.operand);
-                operand = ShaderOperand::instruction(instruction);
-            } else {
-                operand = x.operand;
+                initializer = ShaderOperand::instruction(ShaderInstructionFactory::createMatrix(TYPE.getPrimitive(), x.operand));
             }
+            operand = BlockScope::get().registerObject(TYPE, initializer);
         }
 
+        // Multi-arg constructors for vector/matrix construction
         ShaderDataObject(const ShaderObject &x, const ShaderObject &y) {
-            if (VALUE_TYPE >= ShaderPrimitiveType::VECTOR2 && VALUE_TYPE <= ShaderPrimitiveType::VECTOR4) {
-                auto instruction = ShaderInstructionFactory::createVector(TYPE.getPrimitive(),
-                                                                          x.operand,
-                                                                          y.operand);
-                operand = ShaderOperand::instruction(instruction);
-            } else if (VALUE_TYPE >= ShaderPrimitiveType::MAT2 && VALUE_TYPE <= ShaderPrimitiveType::MAT4) {
-                auto instruction = ShaderInstructionFactory::createMatrix(TYPE.getPrimitive(),
-                                                                          x.operand,
-                                                                          y.operand);
-                ShaderBuilder::instance().addInstruction(instruction);
-                operand = ShaderOperand::instruction(instruction);
-            } else {
-                throw std::runtime_error("Invalid scalar constructor invoked");
-            }
+            operand = ShaderOperand::instruction(makeComposite(x.operand, y.operand));
         }
 
         ShaderDataObject(const ShaderObject &x, const ShaderObject &y, const ShaderObject &z) {
-            if (VALUE_TYPE >= ShaderPrimitiveType::VECTOR2 && VALUE_TYPE <= ShaderPrimitiveType::VECTOR4) {
-                auto instruction = ShaderInstructionFactory::createVector(TYPE.getPrimitive(),
-                                                                          x.operand,
-                                                                          y.operand,
-                                                                          z.operand);
-                operand = ShaderOperand::instruction(instruction);
-            } else if (VALUE_TYPE >= ShaderPrimitiveType::MAT2 && VALUE_TYPE <= ShaderPrimitiveType::MAT4) {
-                auto instruction = ShaderInstructionFactory::createMatrix(TYPE.getPrimitive(),
-                                                                          x.operand,
-                                                                          y.operand,
-                                                                          z.operand);
-                operand = ShaderOperand::instruction(instruction);
-            } else {
-                throw std::runtime_error("Invalid scalar constructor invoked");
-            }
+            operand = ShaderOperand::instruction(makeComposite(x.operand, y.operand, z.operand));
         }
 
         ShaderDataObject(const ShaderObject &x, const ShaderObject &y, const ShaderObject &z, const ShaderObject &w) {
-            if (VALUE_TYPE >= ShaderPrimitiveType::VECTOR2 && VALUE_TYPE <= ShaderPrimitiveType::VECTOR4) {
-                auto instruction = ShaderInstructionFactory::createVector(TYPE.getPrimitive(),
-                                                                          x.operand,
-                                                                          y.operand,
-                                                                          z.operand,
-                                                                          w.operand);
-                operand = ShaderOperand::instruction(instruction);
-            } else if (VALUE_TYPE >= ShaderPrimitiveType::MAT2 && VALUE_TYPE <= ShaderPrimitiveType::MAT4) {
-                auto instruction = ShaderInstructionFactory::createMatrix(TYPE.getPrimitive(),
-                                                                          x.operand,
-                                                                          y.operand,
-                                                                          z.operand,
-                                                                          w.operand);
-                operand = ShaderOperand::instruction(instruction);
-            } else {
-                throw std::runtime_error("Invalid scalar constructor invoked");
-            }
+            operand = ShaderOperand::instruction(makeComposite(x.operand, y.operand, z.operand, w.operand));
         }
 
-        ShaderDataObject(const bool literal)
-            : ShaderObject(literal) {
-            if (VALUE_TYPE == ShaderPrimitiveType::VECTOR2
-                || VALUE_TYPE == ShaderPrimitiveType::VECTOR3
-                || VALUE_TYPE == ShaderPrimitiveType::VECTOR4) {
-                operand = ShaderOperand::instruction(ShaderInstructionFactory::createVector(
-                    TYPE.getPrimitive(),
-                    operand));
-            }
-        }
-
-        ShaderDataObject(const int literal)
-            : ShaderObject(literal) {
-            if (VALUE_TYPE == ShaderPrimitiveType::VECTOR2
-                || VALUE_TYPE == ShaderPrimitiveType::VECTOR3
-                || VALUE_TYPE == ShaderPrimitiveType::VECTOR4) {
-                operand = ShaderOperand::instruction(ShaderInstructionFactory::createVector(
-                    TYPE.getPrimitive(),
-                    operand));
-            }
-        }
-
-        ShaderDataObject(const unsigned int literal)
-            : ShaderObject(literal) {
-            if (VALUE_TYPE == ShaderPrimitiveType::VECTOR2
-                || VALUE_TYPE == ShaderPrimitiveType::VECTOR3
-                || VALUE_TYPE == ShaderPrimitiveType::VECTOR4) {
-                operand = ShaderOperand::instruction(ShaderInstructionFactory::createVector(
-                    TYPE.getPrimitive(),
-                    operand));
-            }
-        }
-
-        ShaderDataObject(const float literal)
-            : ShaderObject(literal) {
-            if (VALUE_TYPE == ShaderPrimitiveType::VECTOR2
-                || VALUE_TYPE == ShaderPrimitiveType::VECTOR3
-                || VALUE_TYPE == ShaderPrimitiveType::VECTOR4) {
-                operand = ShaderOperand::instruction(ShaderInstructionFactory::createVector(
-                    TYPE.getPrimitive(),
-                    operand));
-            }
-        }
-
-        ShaderDataObject(const double literal)
-            : ShaderObject(literal) {
-            if (VALUE_TYPE == ShaderPrimitiveType::VECTOR2
-                || VALUE_TYPE == ShaderPrimitiveType::VECTOR3
-                || VALUE_TYPE == ShaderPrimitiveType::VECTOR4) {
-                operand = ShaderOperand::instruction(ShaderInstructionFactory::createVector(
-                    TYPE.getPrimitive(),
-                    operand));
-            }
-        }
+        // Literal constructors
+        ShaderDataObject(const bool literal) : ShaderObject(literal) { wrapLiteralIfVector(); }
+        ShaderDataObject(const int literal) : ShaderObject(literal) { wrapLiteralIfVector(); }
+        ShaderDataObject(const unsigned int literal) : ShaderObject(literal) { wrapLiteralIfVector(); }
+        ShaderDataObject(const float literal) : ShaderObject(literal) { wrapLiteralIfVector(); }
+        ShaderDataObject(const double literal) : ShaderObject(literal) { wrapLiteralIfVector(); }
 
     private:
+        void wrapLiteralIfVector() {
+            if (VALUE_TYPE >= ShaderPrimitiveType::VECTOR2 && VALUE_TYPE <= ShaderPrimitiveType::VECTOR4) {
+                operand = ShaderOperand::instruction(ShaderInstructionFactory::createVector(TYPE.getPrimitive(), operand));
+            }
+        }
+
+        template<typename... Args>
+        ShaderInstruction makeComposite(Args&&... args) {
+            if (VALUE_TYPE >= ShaderPrimitiveType::VECTOR2 && VALUE_TYPE <= ShaderPrimitiveType::VECTOR4) {
+                return ShaderInstructionFactory::createVector(TYPE.getPrimitive(), std::forward<Args>(args)...);
+            } else if (VALUE_TYPE >= ShaderPrimitiveType::MAT2 && VALUE_TYPE <= ShaderPrimitiveType::MAT4) {
+                return ShaderInstructionFactory::createMatrix(TYPE.getPrimitive(), std::forward<Args>(args)...);
+            }
+            throw std::runtime_error("Invalid scalar constructor invoked");
+        }
+
         static std::vector<ShaderOperand> getOperands(
-            const std::vector<ShaderDataObject<VALUE_TYPE, VALUE_COMPONENT, 1> > &values) {
+            const std::vector<ShaderDataObject<VALUE_TYPE, VALUE_COMPONENT, 1>> &values) {
             std::vector<ShaderOperand> ops;
-            for (auto &value: values) {
+            for (auto &value : values) {
                 ops.push_back(value.operand);
             }
             return ops;
@@ -896,77 +677,62 @@ namespace xng::ShaderScript {
     template<const char * typeName, int C>
     class ShaderStructObject : public ShaderObject {
     public:
-        /**
-         * Default constructor creates new variable.
-         */
+        static inline ShaderDataType TYPE = ShaderDataType(typeName, C);
+
+        // Default constructor - creates a new registered variable
         ShaderStructObject() {
-            const auto varName = ShaderBuilder::instance().getVariableName();
-            ShaderBuilder::instance().addInstruction(
-                ShaderInstructionFactory::declareVariable(varName, ShaderDataType(typeName, C)));
-            operand = ShaderOperand::variable(varName);
-            assignable = true;
+            operand = BlockScope::get().registerObject(TYPE, {});
         }
 
-        /**
-         * Copy operators and constructors for non prvalues are deleted to force move semantics and avoid copy eliding.
-         *
-         * @param base
-         */
-        ShaderStructObject(const ShaderObject &base) = delete;
-
-        ShaderStructObject &operator=(const ShaderObject &other) = delete;
-
-        /**
-         * Copy operators and constructors for prvalues are allowed to support copying a variable (e.g. vec2 v = other; or vec2 v; v = other)
-         *
-         * @param other
-         */
-        ShaderStructObject(const ShaderStructObject &other)
-            : ShaderObject(other) {
-        }
+        ShaderStructObject(const ShaderStructObject &other) : ShaderObject(other) {}
 
         ShaderStructObject &operator=(const ShaderStructObject &other) {
             ShaderObject::operator=(other);
             return *this;
         }
 
-        /**
-         * Move constructor can be deleted because in the dsl syntax variables are not initialized with vec2 v(...);
-         *
-         * @param other
-         */
-        ShaderStructObject(ShaderStructObject &&other) noexcept = delete;
-
-        /**
-         * Move operator is allowed to support assignments to default initialized variables from prvalues (e.g. vec2 v; v = vec2(0, 0);)
-         *
-         * @param other
-         * @return
-         */
-        ShaderStructObject &operator=(ShaderStructObject &&other) noexcept {
-            ShaderObject::operator=(std::move(other));
+        ShaderStructObject &operator=(const ShaderObject &other) {
+            ShaderObject::operator=(other);
             return *this;
         }
 
-        /**
-         * Move operation from non prvalue, creates and initializes a variable.
-         *
-         * @param other
-         */
-        ShaderStructObject(ShaderObject &&other) noexcept
-            : ShaderObject(std::move(other)) {
-            const auto varName = ShaderBuilder::instance().getVariableName();
-            ShaderBuilder::instance().addInstruction(
-                ShaderInstruction(ShaderInstructionFactory::declareVariable(varName,
-                                                                            ShaderDataType(typeName, C),
-                                                                            operand)));
-            operand = ShaderOperand::variable(varName);
+        // Conversion from ShaderObject - creates and registers a variable
+        ShaderStructObject(const ShaderObject &other)
+            : ShaderObject(other) {
+            operand = BlockScope::get().registerObject(TYPE, operand);
         }
 
-        ShaderStructObject &operator=(ShaderObject &&other) {
-            ShaderObject::operator=(std::move(other));
+        // Construct from inline operand (e.g. for loop variable)
+        explicit ShaderStructObject(ShaderOperand other)
+            : ShaderObject(std::move(other)) {}
+    };
+
+    template<TextureType t, ColorFormat format>
+    class ShaderTextureObject : public ShaderObject
+    {
+    public:
+        static inline ShaderTexture TYPE = ShaderTexture(t, format);
+
+        ShaderTextureObject() {}
+
+        ShaderTextureObject(const ShaderTextureObject &other) : ShaderObject(other) {}
+
+        ShaderTextureObject &operator=(const ShaderObject &other) {
+            operand = other.operand;
             return *this;
         }
+
+        ShaderTextureObject &operator=(const ShaderTextureObject &other) {
+            operand = other.operand;
+            return *this;
+        }
+
+        ShaderTextureObject(const ShaderObject &other) {
+            operand = other.operand;
+        }
+
+        explicit ShaderTextureObject(ShaderOperand other)
+            : ShaderObject(std::move(other)) {}
     };
 }
 

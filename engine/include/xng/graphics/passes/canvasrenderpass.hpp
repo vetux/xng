@@ -28,7 +28,8 @@
 #include "xng/graphics/textureatlas/textureatlas.hpp"
 #include "xng/graphics/textureatlas/textureatlashandle.hpp"
 #include "xng/graphics/sharedresources/compositinglayers.hpp"
-#include "xng/rendergraph/shaderscript/shaderstruct.hpp"
+#include "xng/rendergraph/shaderscript/shaderscope.hpp"
+#include "xng/rendergraph/shaderscript/macro/shaderstruct.hpp"
 
 namespace xng {
     /**

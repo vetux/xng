@@ -45,6 +45,11 @@ namespace xng {
               dynamic(dynamic),
               typeName(std::move(type_name)) {
         }
+
+        bool operator==(const ShaderBuffer& other) const
+        {
+            return readOnly == other.readOnly && dynamic == other.dynamic && typeName == other.typeName;
+        }
     };
 }
 

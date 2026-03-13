@@ -27,7 +27,9 @@
 #include "xng/graphics/textureatlas/textureatlas.hpp"
 #include "xng/graphics/sharedresources/compositinglayers.hpp"
 #include "xng/graphics/sharedresources/shadowmaps.hpp"
-#include "xng/rendergraph/shaderscript/shaderstruct.hpp"
+#include "xng/rendergraph/shaderscript/macro/shaderstruct.hpp"
+#include "xng/rendergraph/shaderscript/shaderscope.hpp"
+#include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
 namespace xng
 {
@@ -89,6 +91,14 @@ namespace xng
                      Vec4f, cutOff_outerCutOff_constant_linear)
 
         ShaderStruct(TransformData, Mat4f, transform)
+
+        static ShaderScript::vec4 getSkinnedVertexPosition(ShaderScript::Param<ShaderScript::Int> offset,
+                                            ShaderScript::Param<ShaderScript::vec3> position,
+                                            ShaderScript::Param<ShaderScript::ivec4> boneIds,
+                                            ShaderScript::Param<ShaderScript::vec4> boneWeights);
+
+        static ShaderScript::vec4 texture_atlas(ShaderScript::Param<AtlasTexture> textureDef,
+                                         ShaderScript::Param<ShaderScript::vec2> inUv);
 
         std::shared_ptr<RenderConfiguration> config;
         std::shared_ptr<SharedResourceRegistry> registry;

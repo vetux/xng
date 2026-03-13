@@ -20,18 +20,22 @@
 #include "xng/graphics/passes/compositingpass.hpp"
 
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
+#include "xng/rendergraph/shaderscript/macro/helpermacros.hpp"
 
 using namespace xng::ShaderScript;
 
-namespace xng {
-    ShaderAttributeLayout getVertexLayout() {
+namespace xng
+{
+    ShaderAttributeLayout getVertexLayout()
+    {
         ShaderAttributeLayout ret;
         ret.addElement("position", ShaderPrimitiveType::vec3());
         ret.addElement("uv", ShaderPrimitiveType::vec2());
         return ret;
     }
 
-    Shader CompositingPass::createVertexShader() {
+    Shader CompositingPass::createVertexShader()
+    {
         BeginShader(Shader::VERTEX)
 
         Input(vec3, position)
@@ -46,10 +50,13 @@ namespace xng {
 
         setVertexPosition(vec4(position, 1));
 
-        return BuildShader();
+        EndShader();
+
+        return BuildShader()
     }
 
-    Shader CompositingPass::createFragmentShader() {
+    Shader CompositingPass::createFragmentShader()
+    {
         BeginShader(Shader::FRAGMENT)
 
         Input(vec2, fUv)
@@ -64,6 +71,8 @@ namespace xng {
 
         setFragmentDepth(textureSample(layerDepth, fUv).x());
 
-        return BuildShader();
+        EndShader();
+
+        return BuildShader()
     }
 }

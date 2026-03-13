@@ -35,6 +35,14 @@ namespace xng {
             : value(type), count(count) {
         }
 
+        bool operator==(const ShaderDataType &other) const {
+            return value == other.value && count == other.count;
+        }
+
+        bool operator!=(const ShaderDataType &other) const {
+            return !(*this == other);
+        }
+
         const ShaderPrimitiveType &getPrimitive() const {
             return std::get<ShaderPrimitiveType>(value);
         }
@@ -108,10 +116,6 @@ namespace xng {
             }
             //TODO: Struct Array support
             return ShaderDataType(typeName);
-        }
-
-        bool operator==(const ShaderDataType &o) const {
-            return value == o.value && count == o.count;
         }
     };
 }

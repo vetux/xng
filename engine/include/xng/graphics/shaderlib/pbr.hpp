@@ -21,13 +21,11 @@
 #define XENGINE_PBR_HPP
 
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
+#include "xng/rendergraph/shaderscript/macro/shaderstruct.hpp"
 
-namespace xng::ShaderScript {
-    DeclareFunction(pbr_begin)
-    DeclareFunction(pbr_point)
-    DeclareFunction(pbr_directional)
-    DeclareFunction(pbr_spot)
-    DeclareFunction(pbr_finish)
+namespace xng::shaderlib::pbr
+{
+    using namespace xng::ShaderScript;
 
     ShaderStruct(PbrPass,
                  Vec3f, N,
@@ -44,19 +42,35 @@ namespace xng::ShaderScript {
                  Vec3f, iblIrradiance,
                  Vec3f, iblPrefilter,
                  Vec2f, iblBRDF);
-}
 
-namespace xng::shaderlib {
-    /**
-     * Defines the following functions:
-     *
-     * PbrPass pbr_begin(vec3 WorldPos, vec3 Normal, vec3 albedo, float metallic, float roughness, float ao, vec3 camPos);
-     * vec3 pbr_point(PbrPass pass, vec3 Lo, vec3 position, vec3 color, float shadow);
-     * vec3 pbr_directional(PbrPass pass, vec3 Lo, vec3 direction, vec3 color, float shadow);
-     * vec3 pbr_spot(PbrPass pass, vec3 Lo, vec3 position, vec3 direction, float quadratic, vec3 color, float cutOff, float outerCutOff, float constant, float linear, float shadow);
-     * vec3 pbr_finish(PbrPass pass, vec3 Lo);
-     */
-    XENGINE_EXPORT void pbr();
+    XENGINE_EXPORT PbrPass pbr_begin(Param<vec3> WorldPos,
+                                     Param<vec3> Normal,
+                                     Param<vec3> albedo,
+                                     Param<Float> metallic,
+                                     Param<Float> roughness,
+                                     Param<Float> ao,
+                                     Param<vec3> camPos,
+                                     Param<Float> gamma);
+
+    XENGINE_EXPORT vec3 pbr_point(Param<PbrPass> pass, Param<vec3> Lo, Param<vec3> position, Param<vec3> color,
+                                  Param<Float> shadow);
+
+    XENGINE_EXPORT vec3 pbr_directional(Param<PbrPass> pass, Param<vec3> Lo, Param<vec3> direction, Param<vec3> color,
+                                        Param<Float> shadow);
+
+    XENGINE_EXPORT vec3 pbr_spot(Param<PbrPass> pass,
+                                 Param<vec3> Lo,
+                                 Param<vec3> position,
+                                 Param<vec3> direction,
+                                 Param<Float> quadratic,
+                                 Param<vec3> color,
+                                 Param<Float> cutOff,
+                                 Param<Float> outerCutOff,
+                                 Param<Float> constant,
+                                 Param<Float> linear,
+                                 Param<Float> shadow);
+
+    XENGINE_EXPORT vec3 pbr_finish(Param<PbrPass> pass, Param<vec3> Lo);
 }
 
 #endif //XENGINE_PBR_HPP

@@ -25,7 +25,9 @@
 #include "xng/graphics/renderpass.hpp"
 #include "xng/graphics/sharedresourceregistry.hpp"
 #include "xng/graphics/sharedresources/shadowmaps.hpp"
-#include "xng/rendergraph/shaderscript/shaderstruct.hpp"
+#include "xng/rendergraph/shaderscript/macro/shaderstruct.hpp"
+#include "xng/rendergraph/shaderscript/shaderscope.hpp"
+#include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
 namespace xng
 {
@@ -74,6 +76,11 @@ namespace xng
                      Mat4f, model)
 
         ShaderStruct(BoneData, Mat4f, matrix)
+
+        static ShaderScript::vec4 getSkinnedVertexPosition(ShaderScript::Param<ShaderScript::Int> offset,
+                                                           ShaderScript::Param<ShaderScript::vec3> position,
+                                                           ShaderScript::Param<ShaderScript::ivec4> boneIds,
+                                                           ShaderScript::Param<ShaderScript::vec4> boneWeights);
 
         std::shared_ptr<RenderConfiguration> config;
         std::shared_ptr<SharedResourceRegistry> registry;

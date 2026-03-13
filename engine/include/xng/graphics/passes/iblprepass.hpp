@@ -24,7 +24,8 @@
 #include "xng/graphics/renderpass.hpp"
 #include "xng/graphics/sharedresourceregistry.hpp"
 #include "xng/graphics/sharedresources/ibl.hpp"
-#include "xng/rendergraph/shaderscript/shaderstruct.hpp"
+#include "xng/rendergraph/shaderscript/macro/shaderstruct.hpp"
+#include "xng/rendergraph/shaderscript/shaderscope.hpp"
 
 namespace xng
 {

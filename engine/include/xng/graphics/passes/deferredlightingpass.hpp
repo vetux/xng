@@ -26,7 +26,8 @@
 #include "xng/graphics/sharedresources/gbuffer.hpp"
 #include "xng/graphics/sharedresources/shadowmaps.hpp"
 #include "xng/graphics/scene/mesh.hpp"
-#include "xng/rendergraph/shaderscript/shaderstruct.hpp"
+#include "xng/rendergraph/shaderscript/macro/shaderstruct.hpp"
+#include "xng/rendergraph/shaderscript/shaderscope.hpp"
 
 namespace xng
 {

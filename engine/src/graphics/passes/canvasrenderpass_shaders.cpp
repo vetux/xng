@@ -21,11 +21,15 @@
 
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 #include "xng/graphics/shaderlib/texfilter.hpp"
+#include "xng/rendergraph/shaderscript/macro/helpermacros.hpp"
 
 using namespace xng::ShaderScript;
+using namespace xng::shaderlib::texfilter;
 
-namespace xng {
-    Shader CanvasRenderPass::createVertexShader() {
+namespace xng
+{
+    Shader CanvasRenderPass::createVertexShader()
+    {
         BeginShader(Shader::VERTEX)
 
         Input(vec2, position)
@@ -44,10 +48,13 @@ namespace xng {
 
         setVertexPosition(fPosition);
 
-        return BuildShader();
+        EndShader();
+
+        return BuildShader()
     }
 
-    Shader CanvasRenderPass::createFragmentShader() {
+    Shader CanvasRenderPass::createFragmentShader()
+    {
         BeginShader(Shader::FRAGMENT)
 
         Input(vec4, fPosition)
@@ -60,8 +67,6 @@ namespace xng {
         TextureArray(TEXTURE_2D_ARRAY, RGBA, 12, atlasTextures)
         Texture(TEXTURE_2D, RGBA, customTexture)
 
-        shaderlib::textureBicubic();
-
         If(vars.texAtlasIndex >= 0)
             vec2 uv = fUv.xy();
             uv = uv * vars.uvOffset_uvScale.zw();
@@ -71,9 +76,9 @@ namespace xng {
             vec4 texColor;
             texColor = vec4(0, 0, 0, 0);
             If(vars.texFilter == 1)
-                texColor = textureBicubic(atlasTextures[vars.texAtlasLevel],
-                                          vec3(uv.x(), uv.y(), vars.texAtlasIndex),
-                                          vars.atlasScale_texSize.zw());
+                texColor = textureBicubicArray(atlasTextures[vars.texAtlasLevel],
+                                               vec3(uv.x(), uv.y(), vars.texAtlasIndex),
+                                               vars.atlasScale_texSize.zw());
             Else
                 texColor = textureSampleArray(atlasTextures[vars.texAtlasLevel],
                                               vec3(uv.x(), uv.y(), vars.texAtlasIndex));
@@ -94,6 +99,8 @@ namespace xng {
             Fi
         Fi
 
-        return BuildShader();
+        EndShader();
+
+        return BuildShader()
     }
 }

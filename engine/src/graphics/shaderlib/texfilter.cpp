@@ -20,141 +20,147 @@
 #include "xng/graphics/shaderlib/texfilter.hpp"
 
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
+#include "xng/rendergraph/shaderscript/macro/helpermacros.hpp"
 
 using namespace xng::ShaderScript;
 
-DeclareFunction(textureMS)
-DeclareFunction(cubic)
+namespace xng::shaderlib
+{
+    vec4 textureMS(Param<Texture2DMS<RGBA>> color, Param<vec2> uv, Param<Int> samples)
+    {
+        IRFunction
 
-namespace xng::shaderlib {
-    void defTextureMS() {
-        Function(vec4, textureMS, Texture2DMS<RGBA>, color, vec2, uv, Int, samples)
-            ivec2 size = textureSize(color);
-            ivec2 pos = ivec2(size.x() * uv.x(), size.y() * uv.y());
+        ivec2 size = textureSize(color);
+        ivec2 pos = ivec2(size.x() * uv.value().x(), size.y() * uv.value().y());
 
-            vec4 ret;
-            ret = vec4(0, 0, 0, 0);
+        vec4 ret;
+        ret = vec4(0, 0, 0, 0);
 
-            For(Int, i, 0, i < samples, i + 1)
-                ret += texelFetchMS(color, pos, i);
-            Done
+        For(Int, i, Int(0), i < samples, i + 1)
+            ret += texelFetchMS(color, pos, i);
+        Done
 
-            ret = ret / samples;
+        ret = ret / samples;
 
-            Return(ret);
-        End
+        IRReturn(ret);
+        IRFunctionEnd
     }
 
-    void defCubic() {
-        Function(vec4, cubic, Float, v)
-            vec4 n = vec4(1.0f, 2.0f, 3.0f, 4.0f) - v;
-            vec4 s = n * n * n;
-            Float x = s.x();
-            Float y = s.y() - 4.0f * s.x();
-            Float z = s.z() - 4.0f * s.y() + 6.0f * s.x();
-            Float w = 6.0f - x - y - z;
-            Return(vec4(x, y, z, w) * (1.0f / 6.0f));
-        End
+    vec4 cubic(Param<Float> v)
+    {
+        IRFunction
+        vec4 n = vec4(1.0f, 2.0f, 3.0f, 4.0f) - v;
+        vec4 s = n * n * n;
+        Float x = s.x();
+        Float y = s.y() - 4.0f * s.x();
+        Float z = s.z() - 4.0f * s.y() + 6.0f * s.x();
+        Float w = 6.0f - x - y - z;
+        IRReturn(vec4(vec4(x, y, z, w) * (1.0f / 6.0f)));
+        IRFunctionEnd
     }
 
-    void textureBicubic() {
-        defCubic();
-        defTextureMS();
+    vec4 texfilter::textureBicubic(Param<Texture2D<RGBA>> texture, Param<vec2> uv)
+    {
+        IRFunction
+        vec2 texSize;
+        texSize = textureSize(texture, 0);
+        vec2 invTexSize;
+        invTexSize = 1.0f / texSize;
 
-        Function(vec4, textureBicubic, Texture2D<RGBA>, sampler, vec2, texCoords)
-            vec2 texSize;
-            texSize = textureSize(sampler, 0);
-            vec2 invTexSize;
-            invTexSize = 1.0f / texSize;
+        vec2 texCoords = uv * texSize - 0.5f;
 
-            texCoords = texCoords * texSize - 0.5f;
+        vec2 fxy = fract(texCoords);
+        texCoords -= fxy;
 
-            vec2 fxy = fract(texCoords);
-            texCoords -= fxy;
+        vec4 xcubic = cubic(fxy.x());
+        vec4 ycubic = cubic(fxy.y());
 
-            vec4 xcubic = cubic(fxy.x());
-            vec4 ycubic = cubic(fxy.y());
+        vec4 c = texCoords.xxyy() + vec2(-0.5f, +1.5f).xyxy();
 
-            vec4 c = texCoords.xxyy() + vec2(-0.5f, +1.5f).xyxy();
+        vec4 s = vec4(xcubic.xz() + xcubic.yw(), ycubic.xz() + ycubic.yw());
+        vec4 offset = c + vec4(xcubic.yw(), ycubic.yw()) / s;
 
-            vec4 s = vec4(xcubic.xz() + xcubic.yw(), ycubic.xz() + ycubic.yw());
-            vec4 offset = c + vec4(xcubic.yw(), ycubic.yw()) / s;
+        offset *= invTexSize.xxyy();
 
-            offset *= invTexSize.xxyy();
+        vec4 sample0 = textureSample(texture, offset.xz());
+        vec4 sample1 = textureSample(texture, offset.yz());
+        vec4 sample2 = textureSample(texture, offset.xw());
+        vec4 sample3 = textureSample(texture, offset.yw());
 
-            vec4 sample0 = textureSample(sampler, offset.xz());
-            vec4 sample1 = textureSample(sampler, offset.yz());
-            vec4 sample2 = textureSample(sampler, offset.xw());
-            vec4 sample3 = textureSample(sampler, offset.yw());
+        Float sx = s.x() / (s.x() + s.y());
+        Float sy = s.z() / (s.z() + s.w());
 
-            Float sx = s.x() / (s.x() + s.y());
-            Float sy = s.z() / (s.z() + s.w());
+        IRReturn(vec4(mix(mix(sample3, sample2, sx), mix(sample1, sample0, sx), sy)));
+        IRFunctionEnd
+    }
 
-            Return(mix(mix(sample3, sample2, sx), mix(sample1, sample0, sx), sy));
-        End
+    vec4 texfilter::textureBicubicMS(Param<Texture2DMS<RGBA>> texture, Param<vec2> uv, Param<Int> samples)
+    {
+        IRFunction
+        vec2 texSize;
+        texSize = textureSize(texture);
+        vec2 invTexSize;
+        invTexSize = 1.0 / texSize;
 
-        Function(vec4, textureBicubic, Texture2DMS<RGBA>, sampler, vec2, texCoords, Int, samples)
-            vec2 texSize;
-            texSize = textureSize(sampler);
-            vec2 invTexSize;
-            invTexSize = 1.0 / texSize;
+        vec2 texCoords = uv * texSize - 0.5f;
 
-            texCoords = texCoords * texSize - 0.5f;
+        vec2 fxy = fract(texCoords);
+        texCoords -= fxy;
 
-            vec2 fxy = fract(texCoords);
-            texCoords -= fxy;
+        vec4 xcubic = cubic(fxy.x());
+        vec4 ycubic = cubic(fxy.y());
 
-            vec4 xcubic = cubic(fxy.x());
-            vec4 ycubic = cubic(fxy.y());
+        vec4 c = texCoords.xxyy() + vec2(-0.5f, +1.5f).xyxy();
 
-            vec4 c = texCoords.xxyy() + vec2(-0.5f, +1.5f).xyxy();
+        vec4 s = vec4(xcubic.xz() + xcubic.yw(), ycubic.xz() + ycubic.yw());
+        vec4 offset = c + vec4(xcubic.yw(), ycubic.yw()) / s;
 
-            vec4 s = vec4(xcubic.xz() + xcubic.yw(), ycubic.xz() + ycubic.yw());
-            vec4 offset = c + vec4(xcubic.yw(), ycubic.yw()) / s;
+        offset *= invTexSize.xxyy();
 
-            offset *= invTexSize.xxyy();
+        vec4 sample0 = textureMS(texture, offset.xz(), samples);
+        vec4 sample1 = textureMS(texture, offset.yz(), samples);
+        vec4 sample2 = textureMS(texture, offset.xw(), samples);
+        vec4 sample3 = textureMS(texture, offset.yw(), samples);
 
-            vec4 sample0 = textureMS(sampler, offset.xz(), samples);
-            vec4 sample1 = textureMS(sampler, offset.yz(), samples);
-            vec4 sample2 = textureMS(sampler, offset.xw(), samples);
-            vec4 sample3 = textureMS(sampler, offset.yw(), samples);
+        Float sx = s.x() / (s.x() + s.y());
+        Float sy = s.z() / (s.z() + s.w());
 
-            Float sx = s.x() / (s.x() + s.y());
-            Float sy = s.z() / (s.z() + s.w());
+        IRReturn(vec4(mix(mix(sample3, sample2, sx), mix(sample1, sample0, sx), sy)));
+        IRFunctionEnd
+    }
 
-            Return(mix(mix(sample3, sample2, sx), mix(sample1, sample0, sx), sy));
-        End
+    // TODO: Sample texture arrays with integer coordinates / texelFetch
+    vec4 texfilter::textureBicubicArray(Param<Texture2DArray<RGBA>> texture, Param<vec3> uv, Param<vec2> size)
+    {
+        IRFunction
+        vec2 texCoords = uv.value().xy();
 
-        // TODO: Sample texture arrays with integer coordinates / texelFetch
-        Function(vec4, textureBicubic, Texture2DArray<RGBA>, sampler, vec3, texCoords3, vec2, size)
-            vec2 texCoords = texCoords3.xy();
+        vec2 invTexSize = 1.0f / size;
 
-            vec2 invTexSize = 1.0f / size;
+        texCoords = texCoords * size - 0.5f;
 
-            texCoords = texCoords * size - 0.5f;
+        vec2 fxy = fract(texCoords);
+        texCoords -= fxy;
 
-            vec2 fxy = fract(texCoords);
-            texCoords -= fxy;
+        vec4 xcubic = cubic(fxy.x());
+        vec4 ycubic = cubic(fxy.y());
 
-            vec4 xcubic = cubic(fxy.x());
-            vec4 ycubic = cubic(fxy.y());
+        vec4 c = texCoords.xxyy() + vec2(-0.5f, +1.5f).xyxy();
 
-            vec4 c = texCoords.xxyy() + vec2(-0.5f, +1.5f).xyxy();
+        vec4 s = vec4(xcubic.xz() + xcubic.yw(), ycubic.xz() + ycubic.yw());
+        vec4 offset = c + vec4(xcubic.yw(), ycubic.yw()) / s;
 
-            vec4 s = vec4(xcubic.xz() + xcubic.yw(), ycubic.xz() + ycubic.yw());
-            vec4 offset = c + vec4(xcubic.yw(), ycubic.yw()) / s;
+        offset *= invTexSize.xxyy();
 
-            offset *= invTexSize.xxyy();
+        vec4 sample0 = textureSampleArray(texture, vec3(offset.x(), offset.z(), uv.value().z()));
+        vec4 sample1 = textureSampleArray(texture, vec3(offset.y(), offset.z(), uv.value().z()));
+        vec4 sample2 = textureSampleArray(texture, vec3(offset.x(), offset.w(), uv.value().z()));
+        vec4 sample3 = textureSampleArray(texture, vec3(offset.y(), offset.w(), uv.value().z()));
 
-            vec4 sample0 = textureSampleArray(sampler, vec3(offset.x(), offset.z(), texCoords3.z()));
-            vec4 sample1 = textureSampleArray(sampler, vec3(offset.y(), offset.z(), texCoords3.z()));
-            vec4 sample2 = textureSampleArray(sampler, vec3(offset.x(), offset.w(), texCoords3.z()));
-            vec4 sample3 = textureSampleArray(sampler, vec3(offset.y(), offset.w(), texCoords3.z()));
+        Float sx = s.x() / (s.x() + s.y());
+        Float sy = s.z() / (s.z() + s.w());
 
-            Float sx = s.x() / (s.x() + s.y());
-            Float sy = s.z() / (s.z() + s.w());
-
-            Return(mix(mix(sample3, sample2, sx), mix(sample1, sample0, sx), sy));
-        End
+        IRReturn(vec4(mix(mix(sample3, sample2, sx), mix(sample1, sample0, sx), sy)));
+        IRFunctionEnd
     }
 }

@@ -29,7 +29,9 @@
 #include "xng/graphics/meshatlas/meshatlas.hpp"
 #include "xng/graphics/textureatlas/textureatlas.hpp"
 #include "xng/graphics/sharedresources/gbuffer.hpp"
-#include "xng/rendergraph/shaderscript/shaderstruct.hpp"
+#include "xng/rendergraph/shaderscript/macro/shaderstruct.hpp"
+#include "xng/rendergraph/shaderscript/shaderscope.hpp"
+#include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
 namespace xng
 {
@@ -79,6 +81,14 @@ namespace xng
 
         ShaderStruct(BoneBufferLayout,
                      Mat4f, matrix)
+
+        static ShaderScript::vec4 getSkinnedVertexPosition(ShaderScript::Param<ShaderScript::Int> offset,
+                                                    ShaderScript::Param<ShaderScript::vec3> position,
+                                                    ShaderScript::Param<ShaderScript::ivec4> boneIds,
+                                                    ShaderScript::Param<ShaderScript::vec4> boneWeights);
+
+        static ShaderScript::vec4 texture_atlas(ShaderScript::Param<AtlasTexture> textureDef,
+                                         ShaderScript::Param<ShaderScript::vec2> inUv);
 
         std::shared_ptr<RenderConfiguration> config;
         std::shared_ptr<SharedResourceRegistry> registry;

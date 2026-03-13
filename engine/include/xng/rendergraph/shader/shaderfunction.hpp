@@ -42,6 +42,11 @@ namespace xng {
             Argument(const std::variant<ShaderDataType, ShaderTexture> &type, std::string name)
                 : name(std::move(name)), type(type) {
             }
+
+            bool operator==(const Argument &other) const
+            {
+                return name == other.name && type == other.type;
+            }
         };
 
         std::string name{};

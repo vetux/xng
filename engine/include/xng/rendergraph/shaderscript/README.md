@@ -4,9 +4,20 @@ Shader Script is a custom Shader Domain Specific Language for writing render gra
 
 It is implemented through headers which define various types, functions and macros to create an easy-to-use DSL that resembles a mixture between glsl, bash and python.
 
-It resembles a CUDA like environment where users can write gpu side shader code in C++. Unlike CUDA however the C++ code translates into a shader intermediate representation at runtime through the use of operator overloading and custom type definitions, which then must be explicitly passed to the render graph runtime through the RenderGraphPipeline configuration.
+The DSL incurs a small runtime overhead so in production shaders should be supplied in precompiled form (From DSL or some shading language). 
+Currently there is no automatic permutation/static-branching system in place and 
+all shaders of the default passes are uber shaders written in shader script invoked at runtime.
+
+It resembles a CUDA like environment where users can write gpu side shader code in C++.
+Unlike CUDA however the C++ code generates shader IR at runtime
+which then must be explicitly passed to the render graph runtime through the RenderGraphPipeline configuration.
+So features from cuda like language level pointers pointing to gpu side resources 
+or c++ language constructs such as loops, conditionals or types directly mapping to shader code are not possible.
 
 For usage examples check the *_shaders.cpp files at [engine/src/graphics/passes](https://github.com/vetux/xng/tree/master/engine/src/graphics/passes)
+
+Functions may not be overloaded at DSL level as a compromise for the cleaner function definition because users  would need to duplicate
+the signature in the IRFunction macro invocation.
 
 ### Differences to GLSL
 #### Type Definition
@@ -14,11 +25,6 @@ For usage examples check the *_shaders.cpp files at [engine/src/graphics/passes]
   - Arrays are instantiated like this `ArrayX<COUNT> b = std::vector{VALUES...}`
   - User Defined types are instantiated through either `Object<TYPENAME> o` or using the DefineStruct / DeclareStruct interface.
     - When using the DefineStruct macro for Buffer types users can generate both the cpu and gpu side structure definitions with automatic layout and padding handling for the cpu side structure. 
-
-#### Variable Initialization
-  - Default constructed variables are undefined just like in glsl e.g. `vec2 v;` produces an uninitialized variable that cannot be used until it is assigned a value.
-  - If a variable is assigned at initialization using a prvalue e.g. `vec2 v = vec2(1, 1)` it cannot be assigned again and is inlined. (See ShaderObject::assignValue() for more details)
-  - Variables used in subsequent branches or loops must be initialized before the branch / loop body.
 
 #### Type promotion in arithmetic expressions
   - Currently, types are not automatically promoted inside expressions e.g. `vec2 v = ivec2(1, 1) / 1.0f` results in a compile error.
@@ -41,7 +47,10 @@ For usage examples check the *_shaders.cpp files at [engine/src/graphics/passes]
 
 #### Control Flow
   - Conditionals are defined through the If / Else / Fi macros (e.g. `If(condition) x = 0; Else y = 0; Fi`)
-  - Loops are defined through the For / Done macros (e.g. `For(Int, i, 0, i < 10, i + 1) x = i; Done`)
+  - Loops are defined through the For / Done macros (e.g. `Int i; For(i, 0, i < 10, i + 1) x = i; Done`)
   - Functions can be defined through `ShaderScript::Function` / `ShaderScript::EndFunction`
   - User-defined functions can be called through `ShaderScript::Call` (e.g. `test(1)` in glsl becomes `Call("test", {1})` in C++)
   - Functions are returned from through `ShaderScript::Return` (e.g. `return 5;` in glsl becomes `Return(5)` in C++)
+
+### Functions
+  - Functions can be defined either by using the FunctionScope interface directly or using the IRFunction / IRFunctionEnd / IRReturn macros and the Param wrapper for the parameters inside a c++ function with matching signature.

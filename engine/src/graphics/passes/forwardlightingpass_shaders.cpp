@@ -24,11 +24,108 @@
 #include "xng/graphics/shaderlib/shadowmapping.hpp"
 #include "xng/graphics/shaderlib/texfilter.hpp"
 #include "xng/rendergraph/rendergraphtexture.hpp"
+#include "xng/rendergraph/shaderscript/macro/helpermacros.hpp"
 
 using namespace xng::ShaderScript;
+using namespace xng::shaderlib::texfilter;
+using namespace xng::shaderlib::pbr;
+using namespace xng::shaderlib::shadowmapping;
 
 namespace xng
 {
+    vec4 ForwardLightingPass::getSkinnedVertexPosition(Param<Int> offset,
+                                                       Param<vec3> position,
+                                                       Param<ivec4> boneIdsA,
+                                                       Param<vec4> boneWeightsA)
+    {
+        IRFunction
+
+        DynamicBuffer(BoneBufferLayout, bones)
+
+        ivec4 boneIds = boneIdsA;
+        vec4 boneWeights = boneWeightsA;
+
+        If(offset < 0)
+            IRReturn(vec4(position, 1.0f));
+        Fi
+
+        Int boneCount = bones.length();
+
+        vec4 totalPosition;
+        totalPosition = vec4(0, 0, 0, 0);
+
+        If(boneIds.x() > -1)
+            If(boneIds.x() + offset >= boneCount)
+                IRReturn(vec4(position, 1.0f));
+            Else
+                vec4 localPosition;
+                localPosition = bones[boneIds.x() + offset].matrix * vec4(position, 1.0f);
+                totalPosition += localPosition * boneWeights.x();
+            Fi
+        Fi
+
+        If(boneIds.y() > -1)
+            If(boneIds.y() + offset >= boneCount)
+                IRReturn(vec4(position, 1.0f));
+            Else
+                vec4 localPosition;
+                localPosition = bones[boneIds.y() + offset].matrix * vec4(position, 1.0f);
+                totalPosition += localPosition * boneWeights.y();
+            Fi
+        Fi
+
+        If(boneIds.z() > -1)
+            If(boneIds.z() + offset >= boneCount)
+                IRReturn(vec4(position, 1.0f));
+            Else
+                vec4 localPosition;
+                localPosition = bones[boneIds.z() + offset].matrix * vec4(position, 1.0f);
+                totalPosition += localPosition * boneWeights.z();
+            Fi
+        Fi
+
+        If(boneIds.w() > -1)
+            If(boneIds.w() + offset >= boneCount)
+                IRReturn(vec4(position, 1.0f));
+            Else
+                vec4 localPosition;
+                localPosition = bones[boneIds.w() + offset].matrix * vec4(position, 1.0f);
+                totalPosition += localPosition * boneWeights.w();
+            Fi
+        Fi
+
+        IRReturn(totalPosition);
+
+        IRFunctionEnd
+    }
+
+    vec4 ForwardLightingPass::texture_atlas(Param<AtlasTexture> textureDef,
+                                            Param<vec2> inUv)
+    {
+        IRFunction
+
+        TextureArray(TEXTURE_2D_ARRAY, RGBA, 12, atlasTextures)
+
+        ivec4 level_index_filtering_assigned = textureDef.value().level_index_filtering_assigned;
+        vec4 atlasScale_texSize = textureDef.value().atlasScale_texSize;
+
+        If(level_index_filtering_assigned.w() == 0)
+            IRReturn(vec4(0.0f, 0.0f, 0.0f, 0.0f));
+        Else
+            vec2 uv = inUv * atlasScale_texSize.xy();
+            If(level_index_filtering_assigned.z() == 1)
+                IRReturn(textureBicubicArray(atlasTextures[level_index_filtering_assigned.x()],
+                    vec3(uv.x(), uv.y(), level_index_filtering_assigned.y()),
+                    atlasScale_texSize.zw()));
+            Else
+                IRReturn(vec4(textureSampleArray(atlasTextures[level_index_filtering_assigned.x()],
+                    vec3(uv.x(), uv.y(), level_index_filtering_assigned.y()))));
+            Fi
+        Fi
+
+        IRFunctionEnd
+    }
+
     Shader ForwardLightingPass::createVertexShader()
     {
         BeginShader(Shader::VERTEX)
@@ -70,60 +167,7 @@ namespace xng
 
         TextureArray(TEXTURE_2D_ARRAY, RGBA, 12, atlasTextures)
 
-        Function(vec4, getSkinnedVertexPosition, Int, offset)
-            If(offset < 0)
-                Return(vec4(position, 1.0f));
-            Fi
-
-            Int boneCount = bones.length();
-
-            vec4 totalPosition;
-            totalPosition = vec4(0, 0, 0, 0);
-
-            If(boneIds.x() > -1)
-                If(boneIds.x() + offset >= boneCount)
-                    Return(vec4(position, 1.0f));
-                Else
-                    vec4 localPosition;
-                    localPosition = bones[boneIds.x() + offset].matrix * vec4(position, 1.0f);
-                    totalPosition += localPosition * boneWeights.x();
-                Fi
-            Fi
-
-            If(boneIds.y() > -1)
-                If(boneIds.y() + offset >= boneCount)
-                    Return(vec4(position, 1.0f));
-                Else
-                    vec4 localPosition;
-                    localPosition = bones[boneIds.y() + offset].matrix * vec4(position, 1.0f);
-                    totalPosition += localPosition * boneWeights.y();
-                Fi
-            Fi
-
-            If(boneIds.z() > -1)
-                If(boneIds.z() + offset >= boneCount)
-                    Return(vec4(position, 1.0f));
-                Else
-                    vec4 localPosition;
-                    localPosition = bones[boneIds.z() + offset].matrix * vec4(position, 1.0f);
-                    totalPosition += localPosition * boneWeights.z();
-                Fi
-            Fi
-
-            If(boneIds.w() > -1)
-                If(boneIds.w() + offset >= boneCount)
-                    Return(vec4(position, 1.0f));
-                Else
-                    vec4 localPosition;
-                    localPosition = bones[boneIds.w() + offset].matrix * vec4(position, 1.0f);
-                    totalPosition += localPosition * boneWeights.w();
-                Fi
-            Fi
-
-            Return(totalPosition);
-        End
-
-        vec4 pos = Call("getSkinnedVertexPosition", data.objectID_boneOffset_shadows.y());
+        vec4 pos = getSkinnedVertexPosition(data.objectID_boneOffset_shadows.y(), position, boneIds, boneWeights);
 
         vPos = data.mvp * pos;
         fPos = (data.model * pos).xyz();
@@ -139,10 +183,10 @@ namespace xng
 
         setVertexPosition(vPos);
 
-        return BuildShader();
-    }
+        EndShader();
 
-    DeclareFunction(texture_atlas)
+        return BuildShader()
+    }
 
     Shader ForwardLightingPass::createFragmentShader()
     {
@@ -182,30 +226,6 @@ namespace xng
         Texture(TEXTURE_2D, RG16F, iblBRDF)
 
         TextureArray(TEXTURE_2D_ARRAY, RGBA, 12, atlasTextures)
-
-        shaderlib::pbr();
-        shaderlib::shadowmapping::sampleShadowPoint();
-        shaderlib::shadowmapping::sampleShadowDirectional();
-        shaderlib::textureBicubic();
-
-        Function(vec4, texture_atlas, AtlasTexture, textureDef, vec2, inUv)
-            ivec4 level_index_filtering_assigned = textureDef.level_index_filtering_assigned;
-            vec4 atlasScale_texSize = textureDef.atlasScale_texSize;
-
-            If(level_index_filtering_assigned.w() == 0)
-                Return(vec4(0.0f, 0.0f, 0.0f, 0.0f));
-            Else
-                vec2 uv = inUv * atlasScale_texSize.xy();
-                If(level_index_filtering_assigned.z() == 1)
-                    Return(textureBicubic(atlasTextures[level_index_filtering_assigned.x()],
-                                          vec3(uv.x(), uv.y(), level_index_filtering_assigned.y()),
-                                          atlasScale_texSize.zw()));
-                Else
-                    Return(textureSampleArray(atlasTextures[level_index_filtering_assigned.x()],
-                                              vec3(uv.x(), uv.y(), level_index_filtering_assigned.y())));
-                Fi
-            Fi
-        End
 
         vec4 albedo;
         albedo = vec4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -267,17 +287,17 @@ namespace xng
         vec3 reflectance;
         reflectance = vec3(0, 0, 0);
 
-        For(Int, i, 0, i < pointLights.length(), i + 1)
+        For(Int, i, Int(0), i < pointLights.length(), i + 1)
             PointLightData light = pointLights[i];
-            reflectance = pbr_point(pass, reflectance, light.position.xyz(), light.color.xyz(), 1.0f);
+            reflectance = pbr_point(pass, reflectance, light.position.xyz(), light.color.xyz(), Float(1.0f));
         Done
 
-        For(Int, i, 0, i < directionalLights.length(), i + 1)
+        For(Int, i, Int(0), i < directionalLights.length(), i + 1)
             DirectionalLightData light = directionalLights[i];
-            reflectance = pbr_directional(pass, reflectance, light.direction.xyz(), light.color.xyz(), 1.0f);
+            reflectance = pbr_directional(pass, reflectance, light.direction.xyz(), light.color.xyz(), Float(1.0f));
         Done
 
-        For(Int, i, 0, i < spotLights.length(), i + 1)
+        For(Int, i, Int(0), i < spotLights.length(), i + 1)
             SpotLightData light = spotLights[i];
             reflectance = pbr_spot(pass,
                                    reflectance,
@@ -289,10 +309,10 @@ namespace xng
                                    light.cutOff_outerCutOff_constant_linear.y(),
                                    light.cutOff_outerCutOff_constant_linear.z(),
                                    light.cutOff_outerCutOff_constant_linear.w(),
-                                   1.0f);
+                                   Float(1.0f));
         Done
 
-        For(Int, i, 0, i < shadowPointLights.length(), i + 1)
+        For(Int, i, Int(0), i < shadowPointLights.length(), i + 1)
             PointLightData light = shadowPointLights[i];
             Float shadow;
             shadow = Float(1.0f);
@@ -307,7 +327,7 @@ namespace xng
             reflectance = pbr_point(pass, reflectance, light.position.xyz(), light.color.xyz(), shadow);
         Done
 
-        For(Int, i, 0, i < shadowDirectionalLights.length(), i + 1)
+        For(Int, i, Int(0), i < shadowDirectionalLights.length(), i + 1)
             DirectionalLightData light = shadowDirectionalLights[i];
             vec4 fragPosLightSpace = directionalLightShadowTransforms[i].transform * vec4(fPos, 1);
             Float shadow;
@@ -323,7 +343,7 @@ namespace xng
             reflectance = pbr_directional(pass, reflectance, light.direction.xyz(), light.color.xyz(), shadow);
         Done
 
-        For(Int, i, 0, i < shadowSpotLights.length(), i + 1)
+        For(Int, i, Int(0), i < shadowSpotLights.length(), i + 1)
             SpotLightData light = shadowSpotLights[i];
             vec4 fragPosLightSpace = spotLightShadowTransforms[i].transform * vec4(fPos, 1);
             Float shadow;
@@ -368,6 +388,8 @@ namespace xng
 
         oColor = vec4(pbr_finish(pass, reflectance), albedo.w());
 
-        return BuildShader();
+        EndShader();
+
+        return BuildShader()
     }
 }

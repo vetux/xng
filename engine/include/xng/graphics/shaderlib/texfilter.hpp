@@ -22,19 +22,14 @@
 
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
-namespace xng::ShaderScript {
-    DeclareFunction(textureBicubic)
-}
+namespace xng::shaderlib::texfilter {
+    using namespace xng::ShaderScript;
 
-namespace xng::shaderlib {
-    /**
-     * vec4 textureBicubic(sampler2D sampler, vec2 texCoords)
-     * vec4 textureBicubic(sampler2DMS sampler, vec2 texCoords, int samples)
-     * vec4 textureBicubic(sampler2DArray sampler, vec3 texCoords3, vec2 size)
-     *
-     * @return
-     */
-    XENGINE_EXPORT void textureBicubic();
+    XENGINE_EXPORT vec4 textureBicubic(Param<Texture2D<RGBA>> texture, Param<vec2> uv);
+
+    XENGINE_EXPORT vec4 textureBicubicMS(Param<Texture2DMS<RGBA>> texture, Param<vec2> uv, Param<Int> samples);
+
+    XENGINE_EXPORT vec4 textureBicubicArray(Param<Texture2DArray<RGBA>> texture, Param<vec3> uv, Param<vec2> size);
 }
 
 #endif //XENGINE_TEXFILTER_HPP

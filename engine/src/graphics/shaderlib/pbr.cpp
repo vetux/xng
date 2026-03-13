@@ -23,296 +23,332 @@
 
 #include "xng/graphics/shaderlib/pi.hpp"
 #include "xng/rendergraph/rendergraphtexture.hpp"
+#include "xng/rendergraph/shaderscript/macro/helpermacros.hpp"
 
 using namespace xng::ShaderScript;
 
 // Adapted from the tutorial at https://learnopengl.com/PBR/Lighting
-namespace xng::shaderlib {
-    DeclareFunction(DistributionGGX)
-    DeclareFunction(GeometrySchlickGGX)
-    DeclareFunction(GeometrySmith)
-    DeclareFunction(FresnelSchlick)
-    DeclareFunction(FresnelSchlickRoughness)
+namespace xng::shaderlib
+{
+    Float DistributionGGX(Param<vec3> N, Param<vec3> H, Param<Float> roughness)
+    {
+        IRFunction
+        Float a = roughness * roughness;
+        Float a2 = a * a;
+        Float NdotH = max(dot(N, H), 0.0f);
+        Float NdotH2 = NdotH * NdotH;
 
-    void pbr() {
-        Function(Float, DistributionGGX, vec3, N, vec3, H, Float, roughness)
-            Float a = roughness * roughness;
-            Float a2 = a * a;
-            Float NdotH = max(dot(N, H), 0.0f);
-            Float NdotH2 = NdotH * NdotH;
+        Float nom = a2;
+        Float denom = (NdotH2 * (a2 - 1.0f) + 1.0f);
+        denom = pi() * denom * denom;
 
-            Float nom = a2;
-            Float denom = (NdotH2 * (a2 - 1.0f) + 1.0f);
-            denom = pi() * denom * denom;
+        IRReturn(Float(nom / denom));
+        IRFunctionEnd
+    }
 
-            Return(nom / denom);
-        End
+    Float GeometrySchlickGGX(Param<Float> NdotV, Param<Float> roughness)
+    {
+        IRFunction
+        Float r = (roughness + 1.0f);
+        Float k = (r * r) / 8.0f;
 
-        Function(Float, GeometrySchlickGGX, Float, NdotV, Float, roughness)
-            Float r = (roughness + 1.0f);
-            Float k = (r * r) / 8.0f;
+        Float denom = NdotV * (1.0f - k) + k;
 
-            Float denom = NdotV * (1.0f - k) + k;
+        IRReturn(Float(NdotV / denom));
+        IRFunctionEnd
+    }
 
-            Return(NdotV / denom);
-        End
+    Float GeometrySmith(Param<vec3> N, Param<vec3> V, Param<vec3> L, Param<Float> roughness)
+    {
+        IRFunction
+        Float NdotV = max(dot(N, V), 0.0f);
+        Float NdotL = max(dot(N, L), 0.0f);
+        Float ggx2 = GeometrySchlickGGX(NdotV, roughness);
+        Float ggx1 = GeometrySchlickGGX(NdotL, roughness);
 
-        Function(Float, GeometrySmith, vec3, N, vec3, V, vec3, L, Float, roughness)
-            Float NdotV = max(dot(N, V), 0.0f);
-            Float NdotL = max(dot(N, L), 0.0f);
-            Float ggx2 = GeometrySchlickGGX(NdotV, roughness);
-            Float ggx1 = GeometrySchlickGGX(NdotL, roughness);
+        IRReturn(Float(ggx1 * ggx2));
+        IRFunctionEnd
+    }
 
-            Return(ggx1 * ggx2);
-        End
+    vec3 FresnelSchlick(Param<Float> cosTheta, Param<vec3> F0)
+    {
+        IRFunction
+        IRReturn(vec3(F0 + (1.0f - F0) * pow(clamp(1.0f - cosTheta, 0.0f, 1.0f), 5.0f)));
+        IRFunctionEnd
+    }
 
-        Function(vec3, FresnelSchlick, Float, cosTheta, vec3, F0)
-            Return(F0 + (1.0f - F0) * pow(clamp(1.0f - cosTheta, 0.0f, 1.0f), 5.0f));
-        End
+    vec3 FresnelSchlickRoughness(Param<Float> cosTheta, Param<vec3> F0, Param<Float> roughness)
+    {
+        IRFunction
+        IRReturn(vec3(F0 + (max(vec3(1.0f - roughness), F0) - F0) * pow(clamp(1.0f - cosTheta, 0.0f, 1.0f), 5.0f)));
+        IRFunctionEnd
+    }
 
-        Function(vec3, FresnelSchlickRoughness, Float, cosTheta, vec3, F0, Float, roughness)
-            Return(F0 + (max(vec3(1.0f - roughness), F0) - F0) * pow(clamp(1.0f - cosTheta, 0.0f, 1.0f), 5.0f));
-        End
+    pbr::PbrPass pbr::pbr_begin(Param<vec3> WorldPos,
+                                Param<vec3> Normal,
+                                Param<vec3> albedo,
+                                Param<Float> metallic,
+                                Param<Float> roughness,
+                                Param<Float> ao,
+                                Param<vec3> camPos,
+                                Param<Float> gamma)
+    {
+        IRFunction
+        PbrPass ret;
 
-        Function(PbrPass, pbr_begin,
-                 vec3, WorldPos,
-                 vec3, Normal,
-                 vec3, albedo,
-                 Float, metallic,
-                 Float, roughness,
-                 Float, ao,
-                 vec3, camPos,
-                 Float, gamma)
-            PbrPass ret;
+        vec3 N = normalize(Normal);
+        vec3 V = normalize(camPos - WorldPos);
 
-            vec3 N = normalize(Normal);
-            vec3 V = normalize(camPos - WorldPos);
+        // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0
+        // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)
+        vec3 F0;
+        F0 = vec3(0.04f, 0.04f, 0.04f);
+        F0 = mix(F0, albedo, metallic);
 
-            // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0
-            // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)
-            vec3 F0;
-            F0 = vec3(0.04f, 0.04f, 0.04f);
-            F0 = mix(F0, albedo, metallic);
+        ret.N = N;
+        ret.V = V;
+        ret.F0 = F0;
 
-            ret.N = N;
-            ret.V = V;
-            ret.F0 = F0;
+        ret.WorldPos = WorldPos;
+        ret.Normal = Normal;
+        ret.albedo = albedo;
+        ret.metallic = metallic;
+        ret.roughness = roughness;
+        ret.ao = ao;
+        ret.camPos = camPos;
+        ret.gamma = gamma;
+        ret.iblIrradiance = vec3(0.0f, 0.0f, 0.0f);
+        ret.iblPrefilter = vec3(0.0f, 0.0f, 0.0f);
+        ret.iblBRDF = vec2(0.0f, 0.0f);
 
-            ret.WorldPos = WorldPos;
-            ret.Normal = Normal;
-            ret.albedo = albedo;
-            ret.metallic = metallic;
-            ret.roughness = roughness;
-            ret.ao = ao;
-            ret.camPos = camPos;
-            ret.gamma = gamma;
-            ret.iblIrradiance = vec3(0.0f, 0.0f, 0.0f);
-            ret.iblPrefilter = vec3(0.0f, 0.0f, 0.0f);
-            ret.iblBRDF = vec2(0.0f, 0.0f);
+        IRReturn(ret);
+        IRFunctionEnd
+    }
 
-            Return(ret);
-        End
+    vec3 pbr::pbr_point(Param<PbrPass> pass,
+                        Param<vec3> Lo,
+                        Param<vec3> position,
+                        Param<vec3> color,
+                        Param<Float> shadow)
+    {
+        IRFunction
+        vec3 N = pass.value().N;
+        vec3 V = pass.value().V;
+        vec3 F0 = pass.value().F0;
+        vec3 WorldPos = pass.value().WorldPos;
+        vec3 Normal = pass.value().Normal;
+        vec3 albedo = pass.value().albedo;
+        Float metallic = pass.value().metallic;
+        Float roughness = pass.value().roughness;
+        Float ao = pass.value().ao;
+        vec3 camPos = pass.value().camPos;
 
-        Function(vec3, pbr_point, PbrPass, pass, vec3, Lo, vec3, position, vec3, color, Float, shadow)
-            vec3 N = pass.N;
-            vec3 V = pass.V;
-            vec3 F0 = pass.F0;
-            vec3 WorldPos = pass.WorldPos;
-            vec3 Normal = pass.Normal;
-            vec3 albedo = pass.albedo;
-            Float metallic = pass.metallic;
-            Float roughness = pass.roughness;
-            Float ao = pass.ao;
-            vec3 camPos = pass.camPos;
+        // calculate per-light radiance
+        vec3 L = normalize(position - WorldPos);
+        vec3 H = normalize(V + L);
+        Float distance = length(position - WorldPos);
+        Float attenuation = 1.0f / (distance * distance);
+        vec3 radiance = color * attenuation;
 
-            // calculate per-light radiance
-            vec3 L = normalize(position - WorldPos);
-            vec3 H = normalize(V + L);
-            Float distance = length(position - WorldPos);
-            Float attenuation = 1.0f / (distance * distance);
-            vec3 radiance = color * attenuation;
+        // Cook-Torrance BRDF
+        Float NDF = DistributionGGX(N, H, roughness);
+        Float G = GeometrySmith(N, V, L, roughness);
+        vec3 F = FresnelSchlick(max(dot(H, V), 0.0f), F0);
 
-            // Cook-Torrance BRDF
-            Float NDF = DistributionGGX(N, H, roughness);
-            Float G = GeometrySmith(N, V, L, roughness);
-            vec3 F = FresnelSchlick(max(dot(H, V), 0.0f), F0);
+        // kS is equal to Fresnel
+        vec3 kS = F;
+        // for energy conservation, the diffuse and specular light can't
+        // be above 1.0 (unless the surface emits light); to preserve this
+        // relationship the diffuse component (kD) should equal 1.0 - kS.
+        vec3 kD = vec3(1.0f) - kS;
+        // multiply kD by the inverse metalness such that only non-metals
+        // have diffuse lighting, or a linear blend if partly metal (pure metals
+        // have no diffuse light).
+        kD *= 1.0f - metallic;
 
-            // kS is equal to Fresnel
-            vec3 kS = F;
-            // for energy conservation, the diffuse and specular light can't
-            // be above 1.0 (unless the surface emits light); to preserve this
-            // relationship the diffuse component (kD) should equal 1.0 - kS.
-            vec3 kD = vec3(1.0f) - kS;
-            // multiply kD by the inverse metalness such that only non-metals
-            // have diffuse lighting, or a linear blend if partly metal (pure metals
-            // have no diffuse light).
-            kD *= 1.0f - metallic;
+        vec3 numerator = NDF * G * F;
+        Float denominator = 4.0f * max(dot(N, V), 0.0f) * max(dot(N, L), 0.0f) + 0.0001f;
+        // + 0.0001 to prevent divide by zero
+        vec3 specular = numerator / denominator;
 
-            vec3 numerator = NDF * G * F;
-            Float denominator = 4.0f * max(dot(N, V), 0.0f) * max(dot(N, L), 0.0f) + 0.0001f;
-            // + 0.0001 to prevent divide by zero
-            vec3 specular = numerator / denominator;
+        // scale light by NdotL
+        Float NdotL = max(dot(N, L), 0.0f);
 
-            // scale light by NdotL
-            Float NdotL = max(dot(N, L), 0.0f);
+        // add to outgoing radiance Lo
+        vec3 ret = Lo;
+        ret += (kD * albedo / pi() + specular) * radiance * NdotL * shadow;
+        // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 
-            // add to outgoing radiance Lo
-            Lo += (kD * albedo / pi() + specular) * radiance * NdotL * shadow;
-            // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+        IRReturn(ret);
+        IRFunctionEnd
+    }
 
-            Return(Lo);
-        End
+    vec3 pbr::pbr_directional(Param<PbrPass> pass,
+                              Param<vec3> Lo,
+                              Param<vec3> direction,
+                              Param<vec3> color,
+                              Param<Float> shadow)
+    {
+        IRFunction
+        vec3 N = pass.value().N;
+        vec3 V = pass.value().V;
+        vec3 F0 = pass.value().F0;
+        vec3 WorldPos = pass.value().WorldPos;
+        vec3 Normal = pass.value().Normal;
+        vec3 albedo = pass.value().albedo;
+        Float metallic = pass.value().metallic;
+        Float roughness = pass.value().roughness;
+        Float ao = pass.value().ao;
+        vec3 camPos = pass.value().camPos;
 
-        Function(vec3, pbr_directional, PbrPass, pass, vec3, Lo, vec3, direction, vec3, color, Float, shadow)
-            vec3 N = pass.N;
-            vec3 V = pass.V;
-            vec3 F0 = pass.F0;
-            vec3 WorldPos = pass.WorldPos;
-            vec3 Normal = pass.Normal;
-            vec3 albedo = pass.albedo;
-            Float metallic = pass.metallic;
-            Float roughness = pass.roughness;
-            Float ao = pass.ao;
-            vec3 camPos = pass.camPos;
+        // calculate per-light radiance
+        vec3 L = normalize(direction);
+        vec3 H = normalize(V + L);
 
-            // calculate per-light radiance
-            vec3 L = normalize(direction);
-            vec3 H = normalize(V + L);
+        Float angle = acos(dot(normalize(direction), normalize(Normal)));
 
-            Float angle = acos(dot(normalize(direction), normalize(Normal)));
+        vec3 radiance = color * cos(angle);
 
-            vec3 radiance = color * cos(angle);
+        // Cook-Torrance BRDF
+        Float NDF = DistributionGGX(N, H, roughness);
+        Float G = GeometrySmith(N, V, L, roughness);
+        vec3 F = FresnelSchlick(clamp(dot(H, V), 0.0f, 1.0f), F0);
 
-            // Cook-Torrance BRDF
-            Float NDF = DistributionGGX(N, H, roughness);
-            Float G = GeometrySmith(N, V, L, roughness);
-            vec3 F = FresnelSchlick(clamp(dot(H, V), 0.0f, 1.0f), F0);
+        // kS is equal to Fresnel
+        vec3 kS = F;
+        // for energy conservation, the diffuse and specular light can't
+        // be above 1.0 (unless the surface emits light); to preserve this
+        // relationship the diffuse component (kD) should equal 1.0 - kS.
+        vec3 kD = vec3(1.0f) - kS;
+        // multiply kD by the inverse metalness such that only non-metals
+        // have diffuse lighting, or a linear blend if partly metal (pure metals
+        // have no diffuse light).
+        kD *= 1.0f - metallic;
 
-            // kS is equal to Fresnel
-            vec3 kS = F;
-            // for energy conservation, the diffuse and specular light can't
-            // be above 1.0 (unless the surface emits light); to preserve this
-            // relationship the diffuse component (kD) should equal 1.0 - kS.
-            vec3 kD = vec3(1.0f) - kS;
-            // multiply kD by the inverse metalness such that only non-metals
-            // have diffuse lighting, or a linear blend if partly metal (pure metals
-            // have no diffuse light).
-            kD *= 1.0f - metallic;
+        vec3 numerator = NDF * G * F;
+        Float denominator = 4.0f * max(dot(N, V), 0.0f) * max(dot(N, L), 0.0f) + 0.0001f;
+        // + 0.0001 to prevent divide by zero
+        vec3 specular = numerator / denominator;
 
-            vec3 numerator = NDF * G * F;
-            Float denominator = 4.0f * max(dot(N, V), 0.0f) * max(dot(N, L), 0.0f) + 0.0001f;
-            // + 0.0001 to prevent divide by zero
-            vec3 specular = numerator / denominator;
+        // scale light by NdotL
+        Float NdotL = max(dot(N, L), 0.0f);
 
-            // scale light by NdotL
-            Float NdotL = max(dot(N, L), 0.0f);
+        // add to outgoing radiance Lo
+        vec3 ret = Lo;
+        ret += (kD * albedo / pi() + specular) * radiance * NdotL * shadow;
+        // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 
-            // add to outgoing radiance Lo
-            Lo += (kD * albedo / pi() + specular) * radiance * NdotL * shadow;
-            // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+        IRReturn(ret);
+        IRFunctionEnd
+    }
 
-            Return(Lo);
-        End
+    vec3 pbr::pbr_spot(Param<PbrPass> pass,
+                       Param<vec3> Lo,
+                       Param<vec3> position,
+                       Param<vec3> direction,
+                       Param<Float> quadratic,
+                       Param<vec3> color,
+                       Param<Float> cutOff,
+                       Param<Float> outerCutOff,
+                       Param<Float> constant,
+                       Param<Float> linear,
+                       Param<Float> shadow)
+    {
+        IRFunction
+        vec3 N = pass.value().N;
+        vec3 V = pass.value().V;
+        vec3 F0 = pass.value().F0;
+        vec3 WorldPos = pass.value().WorldPos;
+        vec3 Normal = pass.value().Normal;
+        vec3 albedo = pass.value().albedo;
+        Float metallic = pass.value().metallic;
+        Float roughness = pass.value().roughness;
+        Float ao = pass.value().ao;
+        vec3 camPos = pass.value().camPos;
 
-        Function(vec3, pbr_spot,
-                 PbrPass, pass,
-                 vec3, Lo,
-                 vec3, position,
-                 vec3, direction,
-                 Float, quadratic,
-                 vec3, color,
-                 Float, cutOff,
-                 Float, outerCutOff,
-                 Float, constant,
-                 Float, linear,
-                 Float, shadow)
-            vec3 N = pass.N;
-            vec3 V = pass.V;
-            vec3 F0 = pass.F0;
-            vec3 WorldPos = pass.WorldPos;
-            vec3 Normal = pass.Normal;
-            vec3 albedo = pass.albedo;
-            Float metallic = pass.metallic;
-            Float roughness = pass.roughness;
-            Float ao = pass.ao;
-            vec3 camPos = pass.camPos;
+        vec3 lightDir = normalize(position - WorldPos);
 
-            vec3 lightDir = normalize(position - WorldPos);
+        Float theta = dot(lightDir, normalize(direction));
+        Float epsilon = (cutOff - outerCutOff);
+        Float intensity = clamp((theta - outerCutOff) / epsilon, 0.0f, 1.0f);
 
-            Float theta = dot(lightDir, normalize(direction));
-            Float epsilon = (cutOff - outerCutOff);
-            Float intensity = clamp((theta - outerCutOff) / epsilon, 0.0f, 1.0f);
+        vec3 L = normalize(position - WorldPos);
+        vec3 H = normalize(V + L);
+        Float distance = length(position - WorldPos);
+        Float attenuation = 1.0f / (constant + linear * distance + quadratic * (distance * distance));
 
-            vec3 L = normalize(position - WorldPos);
-            vec3 H = normalize(V + L);
-            Float distance = length(position - WorldPos);
-            Float attenuation = 1.0f / (constant + linear * distance + quadratic * (distance * distance));
+        vec3 radiance = color * attenuation * intensity;
 
-            vec3 radiance = color * attenuation * intensity;
+        // Cook-Torrance BRDF
+        Float NDF = DistributionGGX(N, H, roughness);
+        Float G = GeometrySmith(N, V, L, roughness);
+        vec3 F = FresnelSchlick(clamp(dot(H, V), 0.0f, 1.0f), F0);
 
-            // Cook-Torrance BRDF
-            Float NDF = DistributionGGX(N, H, roughness);
-            Float G = GeometrySmith(N, V, L, roughness);
-            vec3 F = FresnelSchlick(clamp(dot(H, V), 0.0f, 1.0f), F0);
+        // kS is equal to Fresnel
+        vec3 kS = F;
+        // for energy conservation, the diffuse and specular light can't
+        // be above 1.0 (unless the surface emits light); to preserve this
+        // relationship the diffuse component (kD) should equal 1.0 - kS.
+        vec3 kD = vec3(1.0f) - kS;
+        // multiply kD by the inverse metalness such that only non-metals
+        // have diffuse lighting, or a linear blend if partly metal (pure metals
+        // have no diffuse light).
+        kD *= 1.0f - metallic;
 
-            // kS is equal to Fresnel
-            vec3 kS = F;
-            // for energy conservation, the diffuse and specular light can't
-            // be above 1.0 (unless the surface emits light); to preserve this
-            // relationship the diffuse component (kD) should equal 1.0 - kS.
-            vec3 kD = vec3(1.0f) - kS;
-            // multiply kD by the inverse metalness such that only non-metals
-            // have diffuse lighting, or a linear blend if partly metal (pure metals
-            // have no diffuse light).
-            kD *= 1.0f - metallic;
+        vec3 numerator = NDF * G * F;
+        Float denominator = 4.0f * max(dot(N, V), 0.0f) * max(dot(N, L), 0.0f) + 0.0001f;
+        // + 0.0001 to prevent divide by zero
+        vec3 specular = numerator / denominator;
 
-            vec3 numerator = NDF * G * F;
-            Float denominator = 4.0f * max(dot(N, V), 0.0f) * max(dot(N, L), 0.0f) + 0.0001f;
-            // + 0.0001 to prevent divide by zero
-            vec3 specular = numerator / denominator;
+        // scale light by NdotL
+        Float NdotL = max(dot(N, L), 0.0f);
 
-            // scale light by NdotL
-            Float NdotL = max(dot(N, L), 0.0f);
+        // add to outgoing radiance Lo
+        vec3 ret = Lo;
+        ret += (kD * albedo / pi() + specular) * radiance * NdotL * shadow;
+        // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 
-            // add to outgoing radiance Lo
-            Lo += (kD * albedo / pi() + specular) * radiance * NdotL * shadow;
-            // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+        IRReturn(ret);
+        IRFunctionEnd
+    }
 
-            Return(Lo);
-        End
+    vec3 pbr::pbr_finish(Param<PbrPass> pass, Param<vec3> Lo)
+    {
+        IRFunction
+        // Image based lighting ambient contribution
+        vec3 N = pass.value().N;
+        vec3 V = pass.value().V;
+        vec3 F0 = pass.value().F0;
+        vec3 WorldPos = pass.value().WorldPos;
+        vec3 Normal = pass.value().Normal;
+        vec3 albedo = pass.value().albedo;
+        Float metallic = pass.value().metallic;
+        Float roughness = pass.value().roughness;
+        Float ao = pass.value().ao;
+        vec3 camPos = pass.value().camPos;
 
-        Function(vec3, pbr_finish, PbrPass, pass, vec3, Lo)
-            // Image based lighting ambient contribution
-            vec3 N = pass.N;
-            vec3 V = pass.V;
-            vec3 F0 = pass.F0;
-            vec3 albedo = pass.albedo;
-            Float metallic = pass.metallic;
-            Float roughness = pass.roughness;
-            Float ao = pass.ao;
+        // Use IBL values provided on the PbrPass by the lighting pass
+        vec3 irradiance = pass.value().iblIrradiance;
+        vec3 kS = FresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughness);
+        vec3 kD = vec3(1.0f) - kS;
+        kD *= 1.0f - metallic;
 
-            // Use IBL values provided on the PbrPass by the lighting pass
-            vec3 irradiance = pass.iblIrradiance;
-            vec3 kS = FresnelSchlickRoughness(max(dot(N, V), 0.0f), F0, roughness);
-            vec3 kD = vec3(1.0f) - kS;
-            kD *= 1.0f - metallic;
+        vec3 diffuse = irradiance * albedo;
 
-            vec3 diffuse = irradiance * albedo;
+        vec3 prefilteredColor = pass.value().iblPrefilter;
+        vec2 brdf = pass.value().iblBRDF;
+        vec3 specular = prefilteredColor * (F0 * brdf.x() + brdf.y());
 
-            vec3 prefilteredColor = pass.iblPrefilter;
-            vec2 brdf = pass.iblBRDF;
-            vec3 specular = prefilteredColor * (F0 * brdf.x() + brdf.y());
+        vec3 ambient = (kD * diffuse + specular) * ao;
 
-            vec3 ambient = (kD * diffuse + specular) * ao;
+        vec3 color = ambient + Lo;
 
-            vec3 color = ambient + Lo;
+        // HDR tonemapping
+        color = color / (color + vec3(1.0));
+        // gamma correct
+        color = pow(color, vec3(1.0 / pass.value().gamma));
 
-            // HDR tonemapping
-            color = color / (color + vec3(1.0));
-            // gamma correct
-            color = pow(color, vec3(1.0 / pass.gamma));
-
-            Return(color);
-        End
+        IRReturn(color);
+        IRFunctionEnd
     }
 }

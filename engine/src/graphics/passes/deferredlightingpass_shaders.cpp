@@ -22,8 +22,11 @@
 #include "xng/graphics/shaderlib/pbr.hpp"
 #include "xng/graphics/shaderlib/shadowmapping.hpp"
 #include "xng/rendergraph/rendergraphtexture.hpp"
+#include "xng/rendergraph/shaderscript/macro/helpermacros.hpp"
 
 using namespace xng::ShaderScript;
+using namespace xng::shaderlib::pbr;
+using namespace xng::shaderlib::shadowmapping;
 
 namespace xng
 {
@@ -65,7 +68,9 @@ namespace xng
         fUv = vUv;
         setVertexPosition(fPosition);
 
-        return BuildShader();
+        EndShader();
+
+        return BuildShader()
     }
 
     Shader DeferredLightingPass::createFragmentShader()
@@ -105,10 +110,6 @@ namespace xng
         DynamicBuffer(TransformData, directionalLightShadowTransforms)
         DynamicBuffer(TransformData, spotLightShadowTransforms)
 
-        shaderlib::pbr();
-        shaderlib::shadowmapping::sampleShadowPoint();
-        shaderlib::shadowmapping::sampleShadowDirectional();
-
         Float gDepth = textureSample(gBufferDepth, fUv).x();
         If(gDepth == 1)
             oColor = vec4(0, 0, 0, 0);
@@ -136,17 +137,17 @@ namespace xng
         vec3 reflectance;
         reflectance = vec3(0, 0, 0);
 
-        For(Int, i, 0, i < pointLights.length(), i + 1)
+        For(Int, i, Int(0), i < pointLights.length(), i + 1)
             auto light = pointLights[i];
-            reflectance = pbr_point(pass, reflectance, light.position.xyz(), light.color.xyz(), 1.0f);
+            reflectance = pbr_point(pass, reflectance, light.position.xyz(), light.color.xyz(), Float(1.0f));
         Done
 
-        For(Int, i, 0, i < directionalLights.length(), i + 1)
+        For(Int, i, Int(0), i < directionalLights.length(), i + 1)
             auto light = directionalLights[i];
-            reflectance = pbr_directional(pass, reflectance, light.direction.xyz(), light.color.xyz(), 1.0f);
+            reflectance = pbr_directional(pass, reflectance, light.direction.xyz(), light.color.xyz(), Float(1.0f));
         Done
 
-        For(Int, i, 0, i < spotLights.length(), i + 1)
+        For(Int, i, Int(0), i < spotLights.length(), i + 1)
             auto light = spotLights[i];
             reflectance = pbr_spot(pass,
                                    reflectance,
@@ -158,10 +159,10 @@ namespace xng
                                    light.cutOff_outerCutOff_constant_linear.y(),
                                    light.cutOff_outerCutOff_constant_linear.z(),
                                    light.cutOff_outerCutOff_constant_linear.w(),
-                                   1.0f);
+                                   Float(1.0f));
         Done
 
-        For(Int, i, 0, i < shadowPointLights.length(), i + 1)
+        For(Int, i , Int(0), i < shadowPointLights.length(), i + 1)
             auto light = shadowPointLights[i];
             Float shadow = sampleShadowPoint(fPos,
                                              light.position.xyz(),
@@ -172,7 +173,7 @@ namespace xng
             reflectance = pbr_point(pass, reflectance, light.position.xyz(), light.color.xyz(), shadow);
         Done
 
-        For(Int, i, 0, i < shadowDirectionalLights.length(), i + 1)
+        For(Int, i , Int(0), i < shadowDirectionalLights.length(), i + 1)
             auto light = shadowDirectionalLights[i];
             vec4 fragPosLightSpace = directionalLightShadowTransforms[i].transform * vec4(fPos, 1);
             Float shadow = sampleShadowDirectional(fragPosLightSpace,
@@ -184,7 +185,7 @@ namespace xng
             reflectance = pbr_directional(pass, reflectance, light.direction.xyz(), light.color.xyz(), shadow);
         Done
 
-        For(Int, i, 0, i < shadowSpotLights.length(), i + 1)
+        For(Int, i , Int(0), i < shadowSpotLights.length(), i + 1)
             auto light = shadowSpotLights[i];
             vec4 fragPosLightSpace = spotLightShadowTransforms[i].transform * vec4(fPos, 1);
             Float shadow = sampleShadowDirectional(fragPosLightSpace,
@@ -224,6 +225,8 @@ namespace xng
 
         oColor = vec4(pbr_finish(pass, reflectance), 1);
 
-        return BuildShader();
+        EndShader();
+
+        return BuildShader()
     }
 }

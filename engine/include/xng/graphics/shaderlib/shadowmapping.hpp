@@ -22,15 +22,23 @@
 
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
-namespace xng::ShaderScript {
-    DeclareFunction(sampleShadowPoint)
-    DeclareFunction(sampleShadowDirectional)
-}
+namespace xng::shaderlib::shadowmapping
+{
+    using namespace xng::ShaderScript;
 
-namespace xng::shaderlib::shadowmapping {
-    XENGINE_EXPORT void sampleShadowPoint();
+    XENGINE_EXPORT Float sampleShadowPoint(Param<vec3> fragPos,
+                                           Param<vec3> lightPos,
+                                           Param<vec3> viewPos,
+                                           Param<TextureCubeArray<DEPTH>> depthMap,
+                                           Param<Int> depthMapIndex,
+                                           Param<Float> far_plane);
 
-    XENGINE_EXPORT void sampleShadowDirectional();
+    XENGINE_EXPORT Float sampleShadowDirectional(Param<vec4> fragPosLightSpace,
+                                                 Param<Texture2DArray<DEPTH>> shadowMap,
+                                                 Param<Int> shadowMapIndex,
+                                                 Param<vec3> Normal,
+                                                 Param<vec3> lightPos,
+                                                 Param<vec3> fragPos);
 }
 
 #endif //XENGINE_SHADOWMAPPING_HPP
