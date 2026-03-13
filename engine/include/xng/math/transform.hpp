@@ -32,31 +32,38 @@ namespace xng {
      */
     class XENGINE_EXPORT Transform : public Messageable {
     public:
-        Transform() = default;
+        Transform() {
+            mModel = MatrixMath::translate(mPosition) * mRotation.matrix() * MatrixMath::scale(mScale);
+        }
 
         Transform(Vec3f position, Vec3f rotation, Vec3f scale) : mPosition(position),
                                                                  mRotation(rotation),
                                                                  mScale(scale) {
+            mModel = MatrixMath::translate(mPosition) * mRotation.matrix() * MatrixMath::scale(mScale);
         }
 
         Transform(Vec3f position, Quaternion rotation, Vec3f scale) : mPosition(position),
                                                                       mRotation(rotation),
                                                                       mScale(scale) {
+            mModel = MatrixMath::translate(mPosition) * mRotation.matrix() * MatrixMath::scale(mScale);
         }
 
         Transform &operator+=(const Transform &other) {
             mPosition += other.mPosition;
             mRotation = other.mRotation * mRotation;
             mScale += other.mScale;
+            mModel = MatrixMath::translate(mPosition) * mRotation.matrix() * MatrixMath::scale(mScale);
             return *this;
         }
 
-        Mat4f model() const {
-            return MatrixMath::translate(mPosition) * mRotation.matrix() * MatrixMath::scale(mScale);
+        const Mat4f &model() const {
+            return mModel;
         }
 
         void setPosition(Vec3f position) {
-            mPosition = position;
+            if (mPosition == position) return;
+            mPosition = std::move(position);
+            mModel = MatrixMath::translate(mPosition) * mRotation.matrix() * MatrixMath::scale(mScale);
         }
 
         const Vec3f &getPosition() const {
@@ -64,7 +71,9 @@ namespace xng {
         }
 
         void setRotation(const Quaternion &quaternion) {
+            if (mRotation == quaternion) return;
             mRotation = quaternion;
+            mModel = MatrixMath::translate(mPosition) * mRotation.matrix() * MatrixMath::scale(mScale);
         }
 
         const Quaternion &getRotation() const {
@@ -83,10 +92,13 @@ namespace xng {
             } else {
                 mRotation = quaternion * mRotation;
             }
+            mModel = MatrixMath::translate(mPosition) * mRotation.matrix() * MatrixMath::scale(mScale);
         }
 
         void setScale(const Vec3f &scale) {
+            if (mScale == scale) return;
             mScale = scale;
+            mModel = MatrixMath::translate(mPosition) * mRotation.matrix() * MatrixMath::scale(mScale);
         }
 
         const Vec3f &getScale() const {
@@ -119,6 +131,7 @@ namespace xng {
             euler << message.getMessage("rotation");
             mRotation = Quaternion(euler);
             mScale << message.getMessage("scale");
+            mModel = MatrixMath::translate(mPosition) * mRotation.matrix() * MatrixMath::scale(mScale);
             return *this;
         }
 
