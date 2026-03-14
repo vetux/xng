@@ -44,7 +44,8 @@ namespace xng {
 
         Camera() = default;
 
-        explicit Camera(const CameraType type) : type(type) {}
+        explicit Camera(const CameraType type) : type(type) {
+        }
 
         Mat4f projection() const {
             switch (type) {
@@ -66,7 +67,7 @@ namespace xng {
         }
 
         Messageable &operator<<(const Message &message) override {
-            message.value("type", reinterpret_cast<int&>(type), static_cast<int>(PERSPECTIVE));
+            message.value("type", reinterpret_cast<int &>(type), static_cast<int>(PERSPECTIVE));
             message.value("nearClip", nearClip, 0.1f);
             message.value("farClip", farClip, 1000.0f);
             message.value("fov", fov, 60.0f);
@@ -94,15 +95,15 @@ namespace xng {
 
         bool operator==(const Camera &other) const {
             return type == other.type
-            && nearClip == other.nearClip
-            && farClip == other.farClip
-            && left == other.left
-            && top == other.top
-            && right == other.right
-            && bottom == other.bottom;
+                   && nearClip == other.nearClip
+                   && farClip == other.farClip
+                   && left == other.left
+                   && top == other.top
+                   && right == other.right
+                   && bottom == other.bottom;
         };
 
-        bool operator!=(const Camera &other) const{
+        bool operator!=(const Camera &other) const {
             return !(*this == other);
         }
 

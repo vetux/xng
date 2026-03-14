@@ -24,7 +24,7 @@
 
 #include "xng/resource/resourcehandle.hpp"
 #include "xng/math/rectangle.hpp"
-#include "xng/graphics/color.hpp"
+#include "xng/rendergraph/color.hpp"
 #include "xng/graphics/image.hpp"
 #include "xng/graphics/text/textlayout.hpp"
 

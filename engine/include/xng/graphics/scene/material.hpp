@@ -20,11 +20,12 @@
 #ifndef XENGINE_MATERIAL_HPP
 #define XENGINE_MATERIAL_HPP
 
-#include "xng/graphics/scene/texture.hpp"
+#include "xng/graphics/image.hpp"
 
 #include "xng/resource/resourcehandle.hpp"
 
 #include "xng/io/messageable.hpp"
+#include "xng/rendergraph/rendergraphtextureproperties.hpp"
 
 namespace xng {
     /**
@@ -38,12 +39,17 @@ namespace xng {
         float roughness = 0.5;
         float ambientOcclusion = 1;
 
-        ResourceHandle<Texture> albedoTexture;
-        ResourceHandle<Texture> metallicTexture;
-        ResourceHandle<Texture> roughnessTexture;
-        ResourceHandle<Texture> ambientOcclusionTexture;
+        ResourceHandle<ImageRGBA> albedoTexture;
+        ResourceHandle<ImageRGBA> metallicTexture;
+        ResourceHandle<ImageRGBA> roughnessTexture;
+        ResourceHandle<ImageRGBA> ambientOcclusionTexture;
 
-        ResourceHandle<Texture> normal; // If assigned, the contained normals replace the vertex normals
+        TextureFiltering albedoFiltering = LINEAR;
+        TextureFiltering metallicFiltering = LINEAR;
+        TextureFiltering roughnessFiltering = LINEAR;
+        TextureFiltering ambientOcclusionFiltering = LINEAR;
+
+        ResourceHandle<ImageRGBA> normal; // If assigned, the contained normals replace the vertex normals
         float normalIntensity = 1; // The specified value is used to scale texture normals
 
         bool transparent = false; // Whether the albedo alpha should be presented. (Forward Shading)
@@ -62,16 +68,19 @@ namespace xng {
             message.value("transparent", transparent);
 
             message.value("albedo", albedo);;
-
-            message.value("albedoTexture", albedoTexture);
-
             message.value("metallic", metallic);
             message.value("roughness", roughness);
             message.value("ambientOcclusion", ambientOcclusion);
 
+            message.value("albedoTexture", albedoTexture);
             message.value("metallicTexture", metallicTexture);
             message.value("roughnessTexture", roughnessTexture);
             message.value("ambientOcclusionTexture", ambientOcclusionTexture);
+
+            message.value("albedoFiltering", albedoFiltering);
+            message.value("metallicFiltering", metallicFiltering);
+            message.value("roughnessFiltering", roughnessFiltering);
+            message.value("ambientOcclusionFiltering", ambientOcclusionFiltering);
 
             return *this;
         }
@@ -86,16 +95,19 @@ namespace xng {
             transparent >> message["transparent"];
 
             albedo >> message["albedo"];
-
-            albedoTexture >> message["albedoTexture"];
-
             metallic >> message["metallic"];
             roughness >> message["roughness"];
             ambientOcclusion >> message["ambientOcclusion"];
 
+            albedoTexture >> message["albedoTexture"];
             metallicTexture >> message["metallicTexture"];
             roughnessTexture >> message["roughnessTexture"];
             ambientOcclusionTexture >> message["ambientOcclusionTexture"];
+
+            albedoFiltering >> message["albedoFiltering"];
+            metallicFiltering >> message["metallicFiltering"];
+            roughnessFiltering >> message["roughnessFiltering"];
+            ambientOcclusionFiltering >> message["ambientOcclusionFiltering"];
 
             return message;
         }

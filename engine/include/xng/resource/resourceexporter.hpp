@@ -21,7 +21,7 @@
 #define XENGINE_RESOURCEEXPORTER_HPP
 
 #include "xng/graphics/image.hpp"
-#include "xng/graphics/color.hpp"
+#include "xng/rendergraph/color.hpp"
 
 #include <ostream>
 

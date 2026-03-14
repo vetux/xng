@@ -23,7 +23,7 @@
 #include "xng/math/transform.hpp"
 #include "xng/math/rotation.hpp"
 #include "xng/io/messageable.hpp"
-#include "xng/graphics/color.hpp"
+#include "xng/rendergraph/color.hpp"
 
 namespace xng {
     //TODO: Fix shadow cutoff for large outerCutOff values

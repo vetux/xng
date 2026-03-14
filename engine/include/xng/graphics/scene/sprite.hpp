@@ -20,12 +20,11 @@
 #ifndef XENGINE_SPRITE_HPP
 #define XENGINE_SPRITE_HPP
 
+#include "xng/graphics/image.hpp"
 #include "xng/resource/resource.hpp"
 #include "xng/resource/resourcehandle.hpp"
 
 #include "xng/math/rectangle.hpp"
-
-#include "xng/graphics/scene/texture.hpp"
 
 #include "xng/io/messageable.hpp"
 

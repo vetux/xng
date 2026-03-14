@@ -23,7 +23,7 @@
 #include <vector>
 #include <stdexcept>
 
-#include "color.hpp"
+#include "xng/rendergraph/color.hpp"
 #include "xng/resource/resource.hpp"
 
 #include "xng/math/rectangle.hpp"

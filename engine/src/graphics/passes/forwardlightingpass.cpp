@@ -48,6 +48,8 @@ namespace xng
 
         currentResolution = builder.getBackBufferSize() * config->getRenderScale();
 
+        layerSize = currentResolution;
+
         layer.containsTransparency = true;
 
         auto desc = RenderGraphTexture();
@@ -120,6 +122,8 @@ namespace xng
 
             desc.format = DEPTH;
             layer.depth = builder.createTexture(desc);
+
+            layerSize = resolution;
         }
         else
         {
@@ -295,7 +299,7 @@ namespace xng
                 {
                     if (textures.find(mat.normal.getUri()) == textures.end())
                     {
-                        textures[mat.normal.getUri()] = textureAtlas.add(mat.normal.get().image.get());
+                        textures[mat.normal.getUri()] = textureAtlas.add(mat.normal.get());
                     }
                     usedTextures.insert(mat.normal.getUri());
                 }
@@ -304,7 +308,7 @@ namespace xng
                     if (textures.find(mat.metallicTexture.getUri()) == textures.end())
                     {
                         textures[mat.metallicTexture.getUri()] = textureAtlas.add(
-                            mat.metallicTexture.get().image.get());
+                            mat.metallicTexture.get());
                     }
                     usedTextures.insert(mat.metallicTexture.getUri());
                 }
@@ -313,7 +317,7 @@ namespace xng
                     if (textures.find(mat.roughnessTexture.getUri()) == textures.end())
                     {
                         textures[mat.roughnessTexture.getUri()] = textureAtlas.add(
-                            mat.roughnessTexture.get().image.get());
+                            mat.roughnessTexture.get());
                     }
                     usedTextures.insert(mat.roughnessTexture.getUri());
                 }
@@ -322,7 +326,7 @@ namespace xng
                     if (textures.find(mat.ambientOcclusionTexture.getUri()) == textures.end())
                     {
                         textures[mat.ambientOcclusionTexture.getUri()] = textureAtlas.add(
-                            mat.ambientOcclusionTexture.get().image.get());
+                            mat.ambientOcclusionTexture.get());
                     }
                     usedTextures.insert(mat.ambientOcclusionTexture.getUri());
                 }
@@ -331,7 +335,7 @@ namespace xng
                     if (textures.find(mat.albedoTexture.getUri()) == textures.end())
                     {
                         textures[mat.albedoTexture.getUri()] = textureAtlas.
-                            add(mat.albedoTexture.get().image.get());
+                            add(mat.albedoTexture.get());
                     }
                     usedTextures.insert(mat.albedoTexture.getUri());
                 }
@@ -611,8 +615,7 @@ namespace xng
 
                     data.metallic.level_index_filtering_assigned = Vec4i(tex.level,
                                                                          static_cast<int>(tex.index),
-                                                                         material.metallicTexture.get().filter >
-                                                                         Texture::NEAREST,
+                                                                         material.metallicFiltering > NEAREST,
                                                                          1);
 
                     auto atlasScale = tex.size.convert<float>()
@@ -628,8 +631,7 @@ namespace xng
 
                     data.roughness.level_index_filtering_assigned = Vec4i(tex.level,
                                                                           static_cast<int>(tex.index),
-                                                                          material.roughnessTexture.get().filter >
-                                                                          Texture::NEAREST,
+                                                                          material.roughnessFiltering > NEAREST,
                                                                           1);
 
                     auto atlasScale = tex.size.convert<float>()
@@ -646,7 +648,7 @@ namespace xng
 
                     data.ambientOcclusion.level_index_filtering_assigned = Vec4i(tex.level,
                         static_cast<int>(tex.index),
-                        material.ambientOcclusionTexture.get().filter > Texture::NEAREST,
+                        material.ambientOcclusionFiltering > NEAREST,
                         1);
 
                     auto atlasScale = tex.size.convert<float>()
@@ -664,8 +666,7 @@ namespace xng
 
                     data.albedo.level_index_filtering_assigned = Vec4i(tex.level,
                                                                        static_cast<int>(tex.index),
-                                                                       material.albedoTexture.get().filter >
-                                                                       Texture::NEAREST,
+                                                                       material.albedoFiltering > NEAREST,
                                                                        1);
 
                     auto atlasScale = tex.size.convert<float>()
@@ -683,7 +684,7 @@ namespace xng
 
                     data.normal.level_index_filtering_assigned = Vec4i(tex.level,
                                                                        static_cast<int>(tex.index),
-                                                                       material.normal.get().filter > Texture::NEAREST,
+                                                                       false,
                                                                        1);
 
                     auto atlasScale = tex.size.convert<float>()

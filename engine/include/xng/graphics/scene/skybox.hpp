@@ -26,7 +26,7 @@
 #include "xng/resource/resourcehandle.hpp"
 
 #include "xng/graphics/scene/cubemap.hpp"
-#include "xng/graphics/color.hpp"
+#include "xng/rendergraph/color.hpp"
 
 #include "xng/io/messageable.hpp"
 

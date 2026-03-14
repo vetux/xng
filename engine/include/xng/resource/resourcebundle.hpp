@@ -20,7 +20,7 @@
 #ifndef XENGINE_RESOURCEBUNDLE_HPP
 #define XENGINE_RESOURCEBUNDLE_HPP
 
-#include <map>
+#include <unordered_map>
 #include <string>
 #include <memory>
 #include <stdexcept>
@@ -56,29 +56,11 @@ namespace xng {
 
         template<typename T>
         const T &get(const std::string &name = "") const {
-            return down_cast<const T &>(get(name, T::typeName));
-        }
-
-        const Resource &get(const std::string &name, const std::string &typeName) const {
-            if (assets.empty())
-                throw std::runtime_error("Empty bundle map");
-
-            if (name.empty()) {
-                auto r = getAll(typeName);
-                if (r.size() == 0) {
-                    throw std::runtime_error("No resource of type " + typeName + " found in bundle");
-                }
-                return r.at(0);
-            }
-
             auto &ret = get(name);
-            if (ret.getTypeName() != typeName) {
-                throw std::runtime_error("Invalid resource cast, typeName: "
-                                         + ret.getTypeName()
-                                         + " Requested: "
-                                         + typeName);
+            if (ret.getTypeName() != T::typeName) {
+                throw std::runtime_error("Resource type mismatch");
             }
-            return ret;
+            return down_cast<const T &>(ret);
         }
 
         const Resource &get(const std::string &name) const {
@@ -88,32 +70,12 @@ namespace xng {
             if (name.empty()) {
                 return *assets.begin()->second;
             }
+
             auto it = assets.find(name);
             if (it == assets.end()) {
                 throw std::runtime_error("Resource not found: " + name);
             }
             return *it->second;
-        }
-
-        template<typename T>
-        std::vector<std::reference_wrapper<const T>> getAll() const {
-            std::vector<std::reference_wrapper<const T>> ret;
-            for (auto &pair: assets) {
-                if (T::typeName == pair.second->getTypeName()) {
-                    ret.emplace_back(down_cast<const T &>(*pair.second));
-                }
-            }
-            return ret;
-        }
-
-        std::vector<std::reference_wrapper<const Resource>> getAll(const std::string &typeName) const {
-            std::vector<std::reference_wrapper<const Resource>> ret;
-            for (auto &pair: assets) {
-                if (pair.second->getTypeName() == typeName) {
-                    ret.emplace_back(*pair.second);
-                }
-            }
-            return ret;
         }
 
         void add(const std::string &name, std::unique_ptr<Resource> ptr) {
@@ -128,7 +90,7 @@ namespace xng {
             return assets.find(name) != assets.end();
         }
 
-        std::map<std::string, std::unique_ptr<Resource> > assets;
+        std::unordered_map<std::string, std::unique_ptr<Resource> > assets;
     };
 }
 

@@ -21,12 +21,11 @@
 #define XENGINE_RESOURCEREGISTRY_HPP
 
 #include <memory>
-#include <map>
-#include <set>
+#include <unordered_map>
+#include <unordered_set>
 #include <condition_variable>
 #include <filesystem>
 #include <shared_mutex>
-#include <unordered_map>
 
 #include "xng/io/archive.hpp"
 
@@ -92,7 +91,7 @@ namespace xng {
          * @param typeName
          * @return
          */
-        const Resource &get(const Uri &uri, const std::string &typeName) {
+        const Resource &get(const Uri &uri) {
             mutex.lock();
             auto it = loadTasks.find(uri.getFile());
             if (it != loadTasks.end()) {
@@ -104,9 +103,16 @@ namespace xng {
                 }
                 mutex.lock();
             }
-            auto &ret = bundles.at(uri.getFile()).get(uri.getAsset(), typeName);
-            mutex.unlock();
-            return ret;
+            if (resources.find(uri) != resources.end()) {
+                auto &ret = resources.at(uri);
+                mutex.unlock();
+                return ret;
+            } else {
+                auto &ret = bundles.at(uri.getFile()).get(uri.getAsset());
+                resources.emplace(uri, ret);
+                mutex.unlock();
+                return ret;
+            }
         }
 
         void incRef(const Uri &uri);
@@ -129,9 +135,9 @@ namespace xng {
             }
         }
 
-        const std::set<Uri> &getUris() const;
+        const std::unordered_set<Uri> &getUris() const;
 
-        std::set<Uri> getLoadingUris() {
+        std::unordered_set<Uri> getLoadingUris() {
             std::lock_guard<std::mutex> g(mutex);
             return loadingUris;
         }
@@ -161,18 +167,19 @@ namespace xng {
 
         std::unordered_map<std::string, std::shared_ptr<Task> > loadTasks;
 
-        std::map<std::string, std::shared_ptr<Archive> > archives;
-        std::map<std::string, ResourceBundle> bundles;
+        std::unordered_map<std::string, std::shared_ptr<Archive> > archives;
+        std::unordered_map<std::string, ResourceBundle> bundles;
+        std::unordered_map<Uri, const Resource &> resources;
 
         std::string defaultScheme;
 
         std::shared_mutex importerMutex;
         std::vector<std::unique_ptr<ResourceImporter> > importers;
 
-        std::set<Uri> uris;
-        std::set<Uri> loadingUris;
+        std::unordered_set<Uri> uris;
+        std::unordered_set<Uri> loadingUris;
 
-        std::set<std::string> killBundles;
+        std::unordered_set<std::string> abortedBundleLoads;
     };
 }
 #endif //XENGINE_RESOURCEREGISTRY_HPP

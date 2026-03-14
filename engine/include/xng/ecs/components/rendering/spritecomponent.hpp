@@ -23,6 +23,7 @@
 #include "xng/graphics/scene/sprite.hpp"
 #include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
+#include "xng/rendergraph/rendergraphtextureproperties.hpp"
 
 namespace xng {
     /**

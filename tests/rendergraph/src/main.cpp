@@ -27,8 +27,7 @@
 
 using namespace xng;
 
-void createCornellScene(RenderScene& scene, Vec3f offset)
-{
+void createCornellScene(RenderScene &scene, Vec3f offset) {
     Material material;
     SkinnedModelObject mesh;
     mesh.castShadows = false;
@@ -43,7 +42,7 @@ void createCornellScene(RenderScene& scene, Vec3f offset)
 
     material = {};
     material.roughness = 1;
-    material.albedoTexture = ResourceHandle<Texture>(Uri("file://images/cornell_boxcolor.png"));
+    material.albedoTexture = ResourceHandle<ImageRGBA>(Uri("file://images/cornell_boxcolor.png"));
     mesh.model = ResourceHandle<SkinnedModel>(Uri("file://meshes/cornell.fbx:Box"));
     mesh.materials[0] = material;
     mesh.transform.setPosition(offset);
@@ -51,13 +50,13 @@ void createCornellScene(RenderScene& scene, Vec3f offset)
     scene.skinnedModels.push_back(mesh);
 
     material = {};
-    material.ambientOcclusionTexture = ResourceHandle<Texture>(
+    material.ambientOcclusionTexture = ResourceHandle<ImageRGBA>(
         Uri("file://images/subway_brick/old-subway-brick_ao.png"));
-    material.metallicTexture = ResourceHandle<Texture>(Uri("file://images/subway_brick/old-subway-brick_metallic.png"));
-    material.roughnessTexture = ResourceHandle<Texture>(
+    material.metallicTexture = ResourceHandle<ImageRGBA>(Uri("file://images/subway_brick/old-subway-brick_metallic.png"));
+    material.roughnessTexture = ResourceHandle<ImageRGBA>(
         Uri("file://images/subway_brick/old-subway-brick_roughness.png"));
-    material.albedoTexture = ResourceHandle<Texture>(Uri("file://images/subway_brick/old-subway-brick_albedo.png"));
-    material.normal = ResourceHandle<Texture>(Uri("file://images/subway_brick/old-subway-brick_normal-ogl.png"));
+    material.albedoTexture = ResourceHandle<ImageRGBA>(Uri("file://images/subway_brick/old-subway-brick_albedo.png"));
+    material.normal = ResourceHandle<ImageRGBA>(Uri("file://images/subway_brick/old-subway-brick_normal-ogl.png"));
     mesh.model = ResourceHandle<SkinnedModel>(Uri("file://meshes/cornell.fbx:Cube"));
     mesh.materials[0] = material;
     mesh.transform.setPosition(offset);
@@ -66,10 +65,10 @@ void createCornellScene(RenderScene& scene, Vec3f offset)
     scene.skinnedModels.push_back(mesh);
 
     material = {};
-    material.normal = ResourceHandle<Texture>(Uri("file://images/sphere_normals.png"));
-    material.metallicTexture = ResourceHandle<Texture>(Uri("file://images/rusted_iron/rustediron2_metallic.png"));
-    material.roughnessTexture = ResourceHandle<Texture>(Uri("file://images/rusted_iron/rustediron2_roughness.png"));
-    material.albedoTexture = ResourceHandle<Texture>(Uri("file://images/rusted_iron/rustediron2_basecolor.png"));
+    material.normal = ResourceHandle<ImageRGBA>(Uri("file://images/sphere_normals.png"));
+    material.metallicTexture = ResourceHandle<ImageRGBA>(Uri("file://images/rusted_iron/rustediron2_metallic.png"));
+    material.roughnessTexture = ResourceHandle<ImageRGBA>(Uri("file://images/rusted_iron/rustediron2_roughness.png"));
+    material.albedoTexture = ResourceHandle<ImageRGBA>(Uri("file://images/rusted_iron/rustediron2_basecolor.png"));
     mesh.model = ResourceHandle<SkinnedModel>(Uri("file://meshes/cornell.fbx:Sphere.001"));
     mesh.materials[0] = material;
     mesh.transform.setPosition(offset);
@@ -78,10 +77,10 @@ void createCornellScene(RenderScene& scene, Vec3f offset)
     scene.skinnedModels.push_back(mesh);
 
     material = {};
-    material.normal = ResourceHandle<Texture>(Uri("file://images/sphere_normals.png"));
-    material.metallicTexture = ResourceHandle<Texture>(Uri("file://images/lightgold/lightgold_metallic.png"));
-    material.roughnessTexture = ResourceHandle<Texture>(Uri("file://images/lightgold/lightgold_roughness.png"));
-    material.albedoTexture = ResourceHandle<Texture>(Uri("file://images/lightgold/lightgold_albedo.png"));
+    material.normal = ResourceHandle<ImageRGBA>(Uri("file://images/sphere_normals.png"));
+    material.metallicTexture = ResourceHandle<ImageRGBA>(Uri("file://images/lightgold/lightgold_metallic.png"));
+    material.roughnessTexture = ResourceHandle<ImageRGBA>(Uri("file://images/lightgold/lightgold_roughness.png"));
+    material.albedoTexture = ResourceHandle<ImageRGBA>(Uri("file://images/lightgold/lightgold_albedo.png"));
     material.transparent = true;
     mesh.model = ResourceHandle<SkinnedModel>(Uri("file://meshes/cornell.fbx:Sphere.002"));
     mesh.materials[0] = material;
@@ -97,8 +96,7 @@ void createCornellScene(RenderScene& scene, Vec3f offset)
     scene.pointLights.emplace_back(light);
 }
 
-RenderScene createScene()
-{
+RenderScene createScene() {
     RenderScene scene;
 
     scene.hdri = ResourceHandle<ImageRGBF>(Uri("file://hdri/church_stairway_4k.hdr"));
@@ -122,26 +120,23 @@ RenderScene createScene()
     dirLight.transform.setRotation(Quaternion(Vec3f(45, 45, 0)));
     scene.directionalLights.emplace_back(dirLight);
 
-    const int rows = 1;
-    for (int x = 0; x < rows; x++)
-    {
-        for (int y = 0; y < rows; y++)
-        {
-            createCornellScene(scene, Vec3f(x * 1.5 - (rows * 1.5 / 2), y * 1.5 - (rows * 1.5 / 2), 0));
+    const int rows = 3;
+    const int columns = rows;
+    const float spacing = 1.5f;
+    for (int x = 0; x < columns; x++) {
+        for (int y = 0; y < rows; y++) {
+            createCornellScene(scene, Vec3f(x * spacing - (columns * spacing / 2), y * spacing - (rows * spacing / 2), 0));
         }
     }
-
     return scene;
 }
 
-void cameraController(Transform& cameraTransform, Window& window, double deltaTime)
-{
+void cameraController(Transform &cameraTransform, Window &window, double deltaTime) {
     constexpr float movementSpeed = 1;
 
-    auto& input = window.getInput();
-    auto& mouse = input.getMouse();
-    if (mouse.getButton(MOUSE_BUTTON_RIGHT))
-    {
+    auto &input = window.getInput();
+    auto &mouse = input.getMouse();
+    if (mouse.getButton(MOUSE_BUTTON_RIGHT)) {
         constexpr float rotationSpeed = 90;
         auto rot = Vec3d(0, (mouse.positionDelta.x / window.getFramebufferSize().x) * rotationSpeed, 0);
         cameraTransform.applyRotation(Quaternion(rot.convert<float>()), true);
@@ -151,93 +146,65 @@ void cameraController(Transform& cameraTransform, Window& window, double deltaTi
     }
 
     Vec3f movement{};
-    if (input.getKey(KEY_W))
-    {
+    if (input.getKey(KEY_W)) {
         movement.y = 1;
-    }
-    else if (input.getKey(KEY_S))
-    {
+    } else if (input.getKey(KEY_S)) {
         movement.y = -1;
     }
-    if (input.getKey(KEY_A))
-    {
+    if (input.getKey(KEY_A)) {
         movement.x = 1;
-    }
-    else if (input.getKey(KEY_D))
-    {
+    } else if (input.getKey(KEY_D)) {
         movement.x = -1;
     }
-    if (input.getKey(KEY_SPACE))
-    {
+    if (input.getKey(KEY_SPACE)) {
         movement.z = 1;
-    }
-    else if (input.getKey(KEY_LCTRL))
-    {
+    } else if (input.getKey(KEY_LCTRL)) {
         movement.z = -1;
     }
 
     cameraTransform.setPosition(cameraTransform.getPosition()
-        + cameraTransform.forward() * (movement.y * movementSpeed * deltaTime));
+                                + cameraTransform.forward() * (movement.y * movementSpeed * deltaTime));
     cameraTransform.setPosition(cameraTransform.getPosition()
-        + cameraTransform.left() * (movement.x * movementSpeed * deltaTime));
+                                + cameraTransform.left() * (movement.x * movementSpeed * deltaTime));
     cameraTransform.setPosition(cameraTransform.getPosition()
-        + Vec3f(0, 1, 0) * (movement.z * movementSpeed * deltaTime));
+                                + Vec3f(0, 1, 0) * (movement.z * movementSpeed * deltaTime));
 }
 
-void lightController(Transform& lightTransform, Window& window, double deltaTime)
-{
+void lightController(Transform &lightTransform, Window &window, double deltaTime) {
     constexpr float movementSpeed = 0.5;
     constexpr float rotationSpeed = 35;
-    auto& input = window.getInput();
+    auto &input = window.getInput();
 
     Vec3f pos;
     Vec3f rot;
 
-    if (input.getKey(KEY_LSHIFT))
-    {
-        if (input.getKey(KEY_UP))
-        {
+    if (input.getKey(KEY_LSHIFT)) {
+        if (input.getKey(KEY_UP)) {
             pos.z = 1;
-        }
-        else if (input.getKey(KEY_DOWN))
-        {
+        } else if (input.getKey(KEY_DOWN)) {
             pos.z = -1;
         }
-        if (input.getKey(KEY_LEFT))
-        {
+        if (input.getKey(KEY_LEFT)) {
             pos.x = -1;
-        }
-        else if (input.getKey(KEY_RIGHT))
-        {
+        } else if (input.getKey(KEY_RIGHT)) {
             pos.x = 1;
         }
-    }
-    else
-    {
-        if (input.getKey(KEY_UP))
-        {
+    } else {
+        if (input.getKey(KEY_UP)) {
             rot.x = -1;
-        }
-        else if (input.getKey(KEY_DOWN))
-        {
+        } else if (input.getKey(KEY_DOWN)) {
             rot.x = 1;
         }
-        if (input.getKey(KEY_LEFT))
-        {
+        if (input.getKey(KEY_LEFT)) {
             rot.y = -1;
-        }
-        else if (input.getKey(KEY_RIGHT))
-        {
+        } else if (input.getKey(KEY_RIGHT)) {
             rot.y = 1;
         }
     }
 
-    if (input.getKey(KEY_PAGEUP))
-    {
+    if (input.getKey(KEY_PAGEUP)) {
         pos.y = 1;
-    }
-    else if (input.getKey(KEY_PAGEDOWN))
-    {
+    } else if (input.getKey(KEY_PAGEDOWN)) {
         pos.y = -1;
     }
 
@@ -247,9 +214,8 @@ void lightController(Transform& lightTransform, Window& window, double deltaTime
     lightTransform.setPosition(lightTransform.getPosition() + pos * movementSpeed * deltaTime);
 }
 
-int main(int argc, char* argv[])
-{
-    std::vector<std::unique_ptr<ResourceImporter>> importers;
+int main(int argc, char *argv[]) {
+    std::vector<std::unique_ptr<ResourceImporter> > importers;
     importers.emplace_back(std::make_unique<FontImporter>());
     importers.emplace_back(std::make_unique<StbiImporter>());
     importers.emplace_back(std::make_unique<assimp::ResourceImporter>());
@@ -271,12 +237,12 @@ int main(int argc, char* argv[])
                                                                "RenderGraph Test",
                                                                {1000, 900},
                                                                attributes));
-    auto& input = window->getInput();
+    auto &input = window->getInput();
 
     runtime->setWindow(window);
 
-    const auto& tuxImg = tux.get();
-    const auto& smileyImg = smiley.get();
+    const auto &tuxImg = tux.get();
+    const auto &smileyImg = smiley.get();
 
     auto freeType = std::make_unique<freetype::FontEngine>();
 
@@ -329,13 +295,11 @@ int main(int argc, char* argv[])
     auto now = std::chrono::steady_clock::now();
 
     RenderGraphStatistics stats;
-    while (!window->shouldClose())
-    {
+    while (!window->shouldClose()) {
         frameLimiter.newFrame();
         window->update();
 
-        if (std::chrono::steady_clock::now() - now > fpsUpdateInterval)
-        {
+        if (std::chrono::steady_clock::now() - now > fpsUpdateInterval) {
             now = std::chrono::steady_clock::now();
 
             auto txt = std::to_string(frameLimiter.getFramerate()) + " FPS\n\n";
@@ -370,7 +334,7 @@ int main(int argc, char* argv[])
         auto fbSize = passScheduler->updateBackBuffer();
 
         scene.camera.aspectRatio = static_cast<float>(fbSize.x)
-            / static_cast<float>(fbSize.y);
+                                   / static_cast<float>(fbSize.y);
         cameraController(scene.cameraTransform, *window, frameLimiter.getDeltaTimeSeconds());
         lightController(scene.spotLights.at(0).transform, *window, frameLimiter.getDeltaTimeSeconds());
         scene.skinnedModels.at(0).transform.setPosition(scene.spotLights.at(0).transform.getPosition());
@@ -395,21 +359,15 @@ int main(int argc, char* argv[])
 
         config->setCanvases({canvas});
 
-        if (input.getKey(KEY_F1))
-        {
+        if (input.getKey(KEY_F1)) {
             config->setGamma(config->getGamma() - 0.75 * frameLimiter.getDeltaTimeSeconds());
-        }
-        else if (input.getKey(KEY_F2))
-        {
+        } else if (input.getKey(KEY_F2)) {
             config->setGamma(config->getGamma() + 0.75 * frameLimiter.getDeltaTimeSeconds());
         }
 
-        if (input.getKey(KEY_F3))
-        {
+        if (input.getKey(KEY_F3)) {
             config->setRenderScale(config->getRenderScale() - 0.1 * frameLimiter.getDeltaTimeSeconds());
-        }
-        else if (input.getKey(KEY_F4))
-        {
+        } else if (input.getKey(KEY_F4)) {
             config->setRenderScale(config->getRenderScale() + 0.1 * frameLimiter.getDeltaTimeSeconds());
         }
 

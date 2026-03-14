@@ -21,7 +21,6 @@
 
 #include "thirdparty/stb_image.h"
 #include "xng/graphics/image.hpp"
-#include "xng/graphics/scene/texture.hpp"
 
 #include <cstring>
 
@@ -107,14 +106,10 @@ namespace xng {
             ResourceBundle ret;
             if (path.getExtension() == ".hdr") {
                 auto img = readImageFloat(buffer);
-                ret.add("image", std::make_unique<ImageRGBF>(img));
+                ret.add("", std::make_unique<ImageRGBF>(img));
             } else {
                 auto img = readImageRGBA(buffer);
-                ret.add("image", std::make_unique<ImageRGBA>(img));
-                Texture tex;
-                tex.filter = Texture::NEAREST;
-                tex.image = ResourceHandle<ImageRGBA>(Uri(path));
-                ret.add("texture", std::make_unique<Texture>(tex));
+                ret.add("", std::make_unique<ImageRGBA>(img));
             }
             return ret;
         }

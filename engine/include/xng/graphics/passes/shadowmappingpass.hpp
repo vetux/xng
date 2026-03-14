@@ -111,6 +111,7 @@ namespace xng
         std::vector<ResourceHandle<SkinnedModel>> allocatedMeshes;
 
         std::vector<SkinnedModelObject> meshObjects;
+
         std::vector<PointLightObject> pointLights;
         std::vector<DirectionalLightObject> dirLights;
         std::vector<SpotLightObject> spotLights;

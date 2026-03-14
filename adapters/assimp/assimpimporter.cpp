@@ -263,10 +263,10 @@ namespace xng::assimp {
 
         if (tex == aiReturn::aiReturn_SUCCESS) {
             if (embeddedTextures.find(embeddedTexturePath) != embeddedTextures.end()) {
-                ret.albedoTexture = ResourceHandle<Texture>(
+                ret.albedoTexture = ResourceHandle<ImageRGBA>(
                     Uri(fileUri.getScheme(), fileUri.getFile(), embeddedTexturePath + "_texture"));
             } else {
-                ret.albedoTexture = ResourceHandle<Texture>(Uri(fileUri.getScheme(),
+                ret.albedoTexture = ResourceHandle<ImageRGBA>(Uri(fileUri.getScheme(),
                                                                 parentPath + std::string(texPath->C_Str()),
                                                                 ""));
             }
@@ -279,10 +279,10 @@ namespace xng::assimp {
 
         if (tex == aiReturn::aiReturn_SUCCESS) {
             if (embeddedTextures.find(embeddedTexturePath) != embeddedTextures.end()) {
-                ret.metallicTexture = ResourceHandle<Texture>(
+                ret.metallicTexture = ResourceHandle<ImageRGBA>(
                     Uri(fileUri.getScheme(), fileUri.getFile(), embeddedTexturePath + "_texture"));
             } else {
-                ret.metallicTexture = ResourceHandle<Texture>(Uri(fileUri.getScheme(),
+                ret.metallicTexture = ResourceHandle<ImageRGBA>(Uri(fileUri.getScheme(),
                                                                   parentPath + std::string(texPath->C_Str()),
                                                                   ""));
             }
@@ -295,10 +295,10 @@ namespace xng::assimp {
 
         if (tex == aiReturn::aiReturn_SUCCESS) {
             if (embeddedTextures.find(embeddedTexturePath) != embeddedTextures.end()) {
-                ret.ambientOcclusionTexture = ResourceHandle<Texture>(
+                ret.ambientOcclusionTexture = ResourceHandle<ImageRGBA>(
                     Uri(fileUri.getScheme(), fileUri.getFile(), embeddedTexturePath + "_texture"));
             } else {
-                ret.ambientOcclusionTexture = ResourceHandle<Texture>(Uri(fileUri.getScheme(),
+                ret.ambientOcclusionTexture = ResourceHandle<ImageRGBA>(Uri(fileUri.getScheme(),
                                                                           parentPath + std::string(texPath->C_Str()),
                                                                           ""));
             }
@@ -311,11 +311,11 @@ namespace xng::assimp {
 
         if (tex == aiReturn::aiReturn_SUCCESS) {
             if (embeddedTextures.find(embeddedTexturePath) != embeddedTextures.end()) {
-                ret.normal = ResourceHandle<Texture>(Uri(fileUri.getScheme(),
+                ret.normal = ResourceHandle<ImageRGBA>(Uri(fileUri.getScheme(),
                                                          fileUri.getFile(),
                                                          embeddedTexturePath + "_texture"));
             } else {
-                ret.normal = ResourceHandle<Texture>(Uri(fileUri.getScheme(),
+                ret.normal = ResourceHandle<ImageRGBA>(Uri(fileUri.getScheme(),
                                                          parentPath + std::string(texPath->C_Str()),
                                                          ""));
             }
@@ -468,9 +468,6 @@ namespace xng::assimp {
             const auto &atex = *pair.second;
             auto img = convertImage(atex);
             ret.add(std::string(pair.first), std::make_unique<ImageRGBA>(img));
-            Texture tex;
-            tex.image = ResourceHandle<ImageRGBA>(Uri(path.getScheme(), path.getFile(), pair.first));
-            ret.add(pair.first + "_texture", std::make_unique<Texture>(tex));
         }
 
         return ret;

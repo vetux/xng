@@ -20,7 +20,7 @@
 #ifndef XENGINE_TERRAIN_HPP
 #define XENGINE_TERRAIN_HPP
 
-#include "xng/graphics/scene/texture.hpp"
+#include "xng/graphics/image.hpp"
 
 // TODO: Implement terrain rendering pass
 namespace xng {
@@ -42,7 +42,7 @@ namespace xng {
             return message;
         }
 
-        ResourceHandle<Texture> heightMap;
+        ResourceHandle<ImageRGBA> heightMap;
     };
 }
 #endif //XENGINE_TERRAIN_HPP

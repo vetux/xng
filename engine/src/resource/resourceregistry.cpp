@@ -98,6 +98,7 @@ namespace xng {
             std::lock_guard<std::mutex> g(mutex);
             auto it = loadTasks.find(uri.getFile());
             if (it != loadTasks.end()) {
+                abortedBundleLoads.insert(uri.getFile());
                 task = it->second;
             }
         }
@@ -106,6 +107,9 @@ namespace xng {
             task->join();
         }
 
+        std::lock_guard<std::mutex> g(mutex);
+
+        resources.erase(uri);
         bundles.erase(uri.getFile());
         uris.erase(uri);
 
@@ -127,7 +131,7 @@ namespace xng {
         }
     }
 
-    const std::set<Uri> &ResourceRegistry::getUris() const {
+    const std::unordered_set<Uri> &ResourceRegistry::getUris() const {
         return uris;
     }
 
@@ -150,10 +154,10 @@ namespace xng {
 
                     std::lock_guard<std::mutex> g(mutex);
 
-                    if (killBundles.find(uri.getFile()) == killBundles.end()) {
+                    if (abortedBundleLoads.find(uri.getFile()) == abortedBundleLoads.end()) {
                         bundles[uri.getFile()] = std::move(bundle);
                     } else {
-                        killBundles.erase(uri.getFile());
+                        abortedBundleLoads.erase(uri.getFile());
                         uris.erase(uri);
                     }
 
@@ -173,9 +177,20 @@ namespace xng {
 
         auto it = loadTasks.find(uri.getFile());
         if (it != loadTasks.end()) {
-            killBundles.insert(uri.getFile());
+            abortedBundleLoads.insert(uri.getFile());
         } else {
             uris.erase(uri);
+            resources.erase(uri);
+            bool bundleReferenced = false;
+            for (auto &oUri : uris) {
+                if (oUri.getFile() == uri.getFile()) {
+                    bundleReferenced = true;
+                    break;
+                }
+            }
+            if (!bundleReferenced) {
+                bundles.erase(uri.getFile());
+            }
         }
     }
 

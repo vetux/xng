@@ -99,7 +99,11 @@ namespace xng {
         }
 
         const T &get() const {
-            return down_cast<const T &>(getRegistry().get(uri, T::typeName));
+            auto &ret = getRegistry().get(uri);
+            if (ret.getTypeName() != T::typeName) {
+                throw std::runtime_error("Resource type mismatch");
+            }
+            return down_cast<const T &>(ret);
         }
 
         ResourceRegistry &getRegistry() const {

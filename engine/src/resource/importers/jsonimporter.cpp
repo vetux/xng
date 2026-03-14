@@ -51,11 +51,6 @@ namespace xng {
                 res >> msg;
                 msg["name"] = pair.first;
                 materials.emplace_back(msg);
-            } else if (type == Texture::typeName) {
-                auto &res = down_cast<Texture &>(*pair.second);
-                res >> msg;
-                msg["name"] = pair.first;
-                textures.emplace_back(msg);
             } else if (type == Sprite::typeName) {
                 auto &res = down_cast<Sprite &>(*pair.second);
                 res >> msg;
@@ -105,15 +100,6 @@ namespace xng {
                     Material mat;
                     mat << element;
                     ret.add(name, std::make_unique<Material>(mat));
-                }
-            }
-
-            if (m.has("textures") && m.at("textures").getType() == Message::LIST) {
-                for (auto &element: m.at("textures").asList()) {
-                    auto name = element.getMessage("name", std::string()).asString();
-                    Texture tex;
-                    tex << element;
-                    ret.add(name, std::make_unique<Texture>(tex));
                 }
             }
 
