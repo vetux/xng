@@ -119,10 +119,6 @@ namespace xng
 
         Vec2i currentResolution;
 
-        Transform cameraTransform;
-        Camera camera;
-        std::vector<SkinnedModelObject> objects;
-
         RenderGraphResource pointLightBuffer;
         RenderGraphResource directionalLightBuffer;
         RenderGraphResource spotLightBuffer;
@@ -143,8 +139,6 @@ namespace xng
         RenderGraphResource shadowSpotLightTransformBuffer;
 
         bool recreateLightBuffers = false;
-
-        Vec3f viewPosition;
 
         CompositeLayer layer;
         Vec2i layerSize;
