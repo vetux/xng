@@ -30,12 +30,6 @@ using namespace xng;
 void createCornellScene(RenderScene &scene, Vec3f offset) {
     Material material;
     SkinnedModelObject mesh;
-    mesh.castShadows = false;
-
-    mesh.model = ResourceHandle<SkinnedModel>(Uri("file://meshes/sphere.obj"));
-    mesh.transform.setPosition(offset);
-    mesh.transform.setScale(Vec3f(0.05f));
-    scene.skinnedModels.push_back(mesh);
 
     mesh = {};
     mesh.castShadows = true;
@@ -119,6 +113,13 @@ RenderScene createScene() {
     dirLight.light.castShadows = true;
     dirLight.transform.setRotation(Quaternion(Vec3f(45, 45, 0)));
     scene.directionalLights.emplace_back(dirLight);
+
+    SkinnedModelObject mesh;
+    mesh.castShadows = true;
+    mesh.model = ResourceHandle<SkinnedModel>(Uri("file://meshes/sphere.obj"));
+    mesh.transform.setPosition({});
+    mesh.transform.setScale(Vec3f(0.05f));
+    scene.skinnedModels.push_back(mesh);
 
     const int rows = 3;
     const int columns = rows;
