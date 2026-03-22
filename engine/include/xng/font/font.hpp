@@ -23,10 +23,10 @@
 #include <utility>
 #include <vector>
 
-#include "xng/resource/resource.hpp"
+#include "xng/resource/resourcebase.hpp"
 
 namespace xng {
-    class Font final : public Resource {
+    class Font final : public ResourceBase {
     public:
         RESOURCE_TYPENAME(Font)
 
@@ -36,7 +36,7 @@ namespace xng {
 
         explicit Font(std::vector<char> data) : data(std::move(data)) {}
 
-        std::unique_ptr<Resource> clone() override {
+        std::unique_ptr<ResourceBase> clone() override {
             return std::make_unique<Font>(*this);
         }
     };

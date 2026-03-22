@@ -60,7 +60,7 @@ namespace xng
 
         layerSize = builder.getBackBufferSize() * config->getRenderScale();
 
-        RenderGraphTexture tex;
+        RenderGraphTextureBuffer tex;
         tex.format = RGBA;
         tex.size = layerSize;
         layer.color = builder.createTexture(tex);
@@ -128,7 +128,7 @@ namespace xng
         if (layerSize != nLayerSize)
         {
             layerSize = nLayerSize;
-            RenderGraphTexture tex;
+            RenderGraphTextureBuffer tex;
             tex.format = RGBA;
             tex.size = layerSize;
             layer.color = builder.createTexture(tex);
@@ -386,7 +386,7 @@ namespace xng
         if (registry->check<IBLMaps>())
         {
             shaderData.iblPresent_prefilterMipCount = Vec4i(true,
-                RenderGraphTexture::calculateMipLevels(config->iblPrefilterSize),
+                RenderGraphTextureBuffer::calculateMipLevels(config->iblPrefilterSize),
                 0,
                 0);
         }

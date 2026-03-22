@@ -17,7 +17,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "../../include/xng/graphics/renderer2d.hpp"
+#include "xng/graphics/renderer2d.hpp"
 
 #include <utility>
 
@@ -26,23 +26,19 @@
 #include "xng/graphics/passes/compositingpass.hpp"
 
 namespace xng {
-    Renderer2D::Renderer2D(std::shared_ptr<RenderGraphRuntime> runtime)
+    Renderer2D::Renderer2D(std::shared_ptr<rendergraph::Runtime> runtime)
         : canvas({1, 1}),
           config(std::make_shared<RenderConfiguration>()),
           registry(std::make_shared<SharedResourceRegistry>()),
           runtime(std::move(runtime)),
-          scheduler(std::make_unique<RenderPassScheduler>(runtime)) {
-        graph = scheduler->addGraph({
+          scheduler(runtime) {
+         scheduler.addPasses({
             std::make_shared<CanvasRenderPass>(config, registry),
             std::make_shared<CompositingPass>(config, registry),
         });
     }
 
-    Renderer2D::~Renderer2D() {
-        if (scheduler) {
-            scheduler->destroy(graph);
-        }
-    }
+    Renderer2D::~Renderer2D() = default;
 
     void Renderer2D::renderBegin(const ColorRGBA &clearColor) {
         if (isRendering) {
@@ -50,7 +46,7 @@ namespace xng {
         }
 
         isRendering = true;
-        canvas = Canvas(scheduler->updateBackBuffer());
+        canvas = Canvas(runtime->getBackBufferColor().getData().size);
     }
 
     void Renderer2D::renderPresent() {
@@ -59,7 +55,8 @@ namespace xng {
         }
         isRendering = false;
         config->setCanvases({canvas});
-        scheduler->execute(graph);
+        scheduler.execute();
+        runtime->swapBuffers();
     }
 
     void Renderer2D::draw(const Rectf &srcRect,

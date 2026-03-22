@@ -25,7 +25,7 @@
 #include <memory>
 #include <stdexcept>
 
-#include "xng/resource/resource.hpp"
+#include "xng/resource/resourcebase.hpp"
 
 #include "xng/util/downcast.hpp"
 
@@ -63,7 +63,7 @@ namespace xng {
             return down_cast<const T &>(ret);
         }
 
-        const Resource &get(const std::string &name) const {
+        const ResourceBase &get(const std::string &name) const {
             if (assets.empty())
                 throw std::runtime_error("Empty bundle map");
 
@@ -78,7 +78,7 @@ namespace xng {
             return *it->second;
         }
 
-        void add(const std::string &name, std::unique_ptr<Resource> ptr) {
+        void add(const std::string &name, std::unique_ptr<ResourceBase> ptr) {
             assets[name] = std::move(ptr);
         }
 
@@ -90,7 +90,7 @@ namespace xng {
             return assets.find(name) != assets.end();
         }
 
-        std::unordered_map<std::string, std::unique_ptr<Resource> > assets;
+        std::unordered_map<std::string, std::unique_ptr<ResourceBase> > assets;
     };
 }
 

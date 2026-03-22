@@ -17,13 +17,13 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_SHADER_HPP
-#define XENGINE_SHADER_HPP
+#ifndef XENGINE_RENDERGRAPH_SHADER_HPP
+#define XENGINE_RENDERGRAPH_SHADER_HPP
 
 #include <unordered_map>
 #include <utility>
 
-#include "xng/rendergraph/renderprimitive.hpp"
+#include "xng/rendergraph/primitive.hpp"
 #include "xng/rendergraph/shader/shaderattributelayout.hpp"
 #include "xng/rendergraph/shader/shaderfunction.hpp"
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
@@ -31,7 +31,7 @@
 #include "xng/rendergraph/shader/shadertexturearray.hpp"
 #include "xng/rendergraph/shader/shaderstructdef.hpp"
 
-namespace xng {
+namespace xng::rendergraph {
     struct ShaderBuffer;
 
     struct Shader {
@@ -44,9 +44,13 @@ namespace xng {
             COMPUTE,
         } stage{};
 
-        RenderPrimitive geometryInput{}; // The input primitive for geometry shaders. Must match the pipeline primitive.
-        RenderPrimitive geometryOutput{}; // The output primitive for geometry shaders
+        Primitive geometryInput{}; // The input primitive for geometry shaders. Must match the pipeline primitive.
+        Primitive geometryOutput{}; // The output primitive for geometry shaders
         size_t geometryMaxVertices{}; // The maximum number of output vertices for geometry shaders.
+
+        // The workgroup size of a compute shader.
+        // When calling ComputeContext.dispatch(numberOfWorkGroups) each workgroup runs computeLocalSize threads.
+        Vec3u computeLocalSize = {1, 1, 1};
 
         ShaderAttributeLayout inputLayout;
         ShaderAttributeLayout outputLayout;
@@ -68,8 +72,8 @@ namespace xng {
         Shader() = default;
 
         Shader(const Stage stage,
-               RenderPrimitive geometry_input,
-               RenderPrimitive geometry_output,
+               Primitive geometry_input,
+               Primitive geometry_output,
                size_t geometry_max_vertices,
                ShaderAttributeLayout input_layout,
                ShaderAttributeLayout output_layout,
@@ -103,4 +107,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_SHADER_HPP
+#endif //XENGINE_RENDERGRAPH_SHADER_HPP

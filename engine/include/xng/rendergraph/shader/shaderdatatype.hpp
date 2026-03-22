@@ -17,12 +17,12 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_SHADERDATATYPE_HPP
-#define XENGINE_SHADERDATATYPE_HPP
+#ifndef XENGINE_RENDERGRAPH_SHADERDATATYPE_HPP
+#define XENGINE_RENDERGRAPH_SHADERDATATYPE_HPP
 
 #include "xng/rendergraph/shader/shaderprimitive.hpp"
 
-namespace xng {
+namespace xng::rendergraph {
     typedef std::string ShaderStructType; // The name of the struct type
 
     struct ShaderDataType {
@@ -120,4 +120,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_SHADERDATATYPE_HPP
+#endif //XENGINE_RENDERGRAPH_SHADERDATATYPE_HPP

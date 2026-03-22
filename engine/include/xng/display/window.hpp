@@ -20,7 +20,7 @@
 #ifndef XENGINE_WINDOW_HPP
 #define XENGINE_WINDOW_HPP
 
-#include "xng/graphics/image.hpp"
+#include "xng/rendergraph/image.hpp"
 
 #include "xng/display/windowlistener.hpp"
 #include "xng/display/monitor.hpp"

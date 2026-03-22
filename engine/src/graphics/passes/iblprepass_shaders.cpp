@@ -21,7 +21,7 @@
 #include "xng/graphics/shaderlib/pi.hpp"
 
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
-#include "xng/rendergraph/rendergraphpipeline.hpp"
+#include "../../../include/xng/rendergraph/resource/rendergraphpipeline.hpp"
 #include "xng/rendergraph/shaderscript/macro/helpermacros.hpp"
 
 using namespace xng::ShaderScript;

@@ -23,7 +23,7 @@
 #include <map>
 #include <memory>
 
-#include "xng/graphics/image.hpp"
+#include "xng/rendergraph/image.hpp"
 
 namespace xng {
     class XENGINE_EXPORT Character {

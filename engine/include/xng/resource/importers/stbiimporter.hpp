@@ -20,7 +20,7 @@
 #ifndef XENGINE_STBIPARSER_HPP
 #define XENGINE_STBIPARSER_HPP
 
-#include "xng/graphics/image.hpp"
+#include "xng/rendergraph/image.hpp"
 #include "xng/resource/resourceimporter.hpp"
 
 namespace xng {

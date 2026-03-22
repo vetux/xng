@@ -17,12 +17,12 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_SHADERTEXTURE_HPP
-#define XENGINE_SHADERTEXTURE_HPP
+#ifndef XENGINE_RENDERGRAPH_SHADERTEXTURE_HPP
+#define XENGINE_RENDERGRAPH_SHADERTEXTURE_HPP
 
-#include "xng/rendergraph/rendergraphtextureproperties.hpp"
+#include "xng/rendergraph/textureproperties.hpp"
 
-namespace xng {
+namespace xng::rendergraph {
     struct ShaderTexture {
         TextureType type = TEXTURE_2D;
         ColorFormat format = RGBA;
@@ -42,4 +42,5 @@ namespace xng {
         }
     };
 }
-#endif //XENGINE_SHADERTEXTURE_HPP
+
+#endif //XENGINE_RENDERGRAPH_SHADERTEXTURE_HPP

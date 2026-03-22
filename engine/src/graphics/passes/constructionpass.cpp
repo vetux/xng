@@ -37,7 +37,7 @@ namespace xng {
         // Create GBuffer Textures
         currentResolution = builder.getBackBufferSize() * config->getRenderScale();
 
-        auto desc = RenderGraphTexture();
+        auto desc = RenderGraphTextureBuffer();
         desc.size = currentResolution;
         desc.format = RGBA32F;
         gBuffer.gBufferPosition = builder.createTexture(desc);
@@ -83,7 +83,7 @@ namespace xng {
             // Recreate GBuffer textures
             currentResolution = resolution;
 
-            auto desc = RenderGraphTexture();
+            auto desc = RenderGraphTextureBuffer();
             desc.size = currentResolution;
             desc.format = RGBA32F;
             gBuffer.gBufferPosition = builder.createTexture(desc);
@@ -401,7 +401,7 @@ namespace xng {
         ctx.bindVertexBuffer(meshAtlas.getVertexBuffer());
         ctx.bindIndexBuffer(meshAtlas.getIndexBuffer());
 
-        std::vector<RenderGraphResource> bindTextures;
+        std::vector<RenderGraphResourceHandle> bindTextures;
         for (int i = TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; ++i) {
             bindTextures.emplace_back(atlasTextures.at(static_cast<TextureAtlasResolution>(i)));
         }

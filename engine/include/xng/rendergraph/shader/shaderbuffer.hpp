@@ -17,12 +17,12 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_SHADERBUFFER_HPP
-#define XENGINE_SHADERBUFFER_HPP
+#ifndef XENGINE_RENDERGRAPH_SHADERBUFFER_HPP
+#define XENGINE_RENDERGRAPH_SHADERBUFFER_HPP
 
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 
-namespace xng {
+namespace xng::rendergraph {
     /**
      * A shader buffer can either be dynamic or static.
      *
@@ -53,4 +53,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_SHADERBUFFER_HPP
+#endif //XENGINE_RENDERGRAPH_SHADERBUFFER_HPP

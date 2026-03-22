@@ -17,12 +17,12 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_SHADERSTRUCT_HPP
-#define XENGINE_SHADERSTRUCT_HPP
+#ifndef XENGINE_RENDERGRAPH_SHADERSTRUCT_HPP
+#define XENGINE_RENDERGRAPH_SHADERSTRUCT_HPP
 
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 
-namespace xng {
+namespace xng::rendergraph {
     struct ShaderStructElement;
 
     struct ShaderStructDef {
@@ -57,4 +57,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_SHADERSTRUCT_HPP
+#endif //XENGINE_RENDERGRAPH_SHADERSTRUCT_HPP

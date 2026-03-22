@@ -21,7 +21,7 @@
 
 #include "xng/graphics/shaderlib/pbr.hpp"
 #include "xng/graphics/shaderlib/shadowmapping.hpp"
-#include "xng/rendergraph/rendergraphtexture.hpp"
+#include "../../../include/xng/rendergraph/resource/rendergraphtexture.hpp"
 #include "xng/rendergraph/shaderscript/macro/helpermacros.hpp"
 
 using namespace xng::ShaderScript;

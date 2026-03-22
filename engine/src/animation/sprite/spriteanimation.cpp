@@ -134,7 +134,7 @@ namespace xng {
         }
     }
 
-    std::unique_ptr<Resource> SpriteAnimation::clone() {
+    std::unique_ptr<ResourceBase> SpriteAnimation::clone() {
         return std::make_unique<SpriteAnimation>(*this);
     }
 }

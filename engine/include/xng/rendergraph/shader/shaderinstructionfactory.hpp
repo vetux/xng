@@ -17,15 +17,15 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_SHADERINSTRUCTIONFACTORY_HPP
-#define XENGINE_SHADERINSTRUCTIONFACTORY_HPP
+#ifndef XENGINE_RENDERGRAPH_SHADERINSTRUCTIONFACTORY_HPP
+#define XENGINE_RENDERGRAPH_SHADERINSTRUCTIONFACTORY_HPP
 
 #include "xng/rendergraph/shader/shaderinstruction.hpp"
 
 /**
  * The ShaderInstructionFactory defines the format of instructions.
  */
-namespace xng::ShaderInstructionFactory {
+namespace xng::rendergraph::ShaderInstructionFactory {
     XENGINE_EXPORT ShaderInstruction declareVariable(std::string name,
                                                      ShaderDataType type,
                                                      ShaderOperand value = {});
@@ -308,4 +308,4 @@ namespace xng::ShaderInstructionFactory {
     XENGINE_EXPORT ShaderInstruction inverse(ShaderOperand x);
 }
 
-#endif //XENGINE_SHADERINSTRUCTIONFACTORY_HPP
+#endif //XENGINE_RENDERGRAPH_SHADERINSTRUCTIONFACTORY_HPP

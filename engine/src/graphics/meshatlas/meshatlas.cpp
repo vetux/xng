@@ -20,6 +20,8 @@
 
 #include "xng/graphics/meshatlas/meshatlas.hpp"
 
+using namespace xng::rendergraph;
+
 namespace xng {
     MeshAtlas::MeshAllocation::Data MeshAtlas::allocateMesh(const Mesh &mesh) {
         if (mesh.primitive != TRIANGLES) {
@@ -55,25 +57,25 @@ namespace xng {
         }
     }
 
-    void MeshAtlas::uploadMeshes(RenderGraphContext &ctx,
-                                 RenderGraphResource vertexBuffer,
-                                 RenderGraphResource indexBuffer) {
+    void MeshAtlas::uploadMeshes(Context &ctx,
+                                 Resource<VertexBuffer> vertexBuffer,
+                                 Resource<IndexBuffer> indexBuffer) {
         for (auto &pair: pendingUploads) {
             auto &meshAllocation = meshAllocations.at(pair.first);
             for (auto i = 0; i < meshAllocation.data.size(); i++) {
                 auto &data = meshAllocation.data.at(i);
                 auto &mesh = pair.second.get().subMeshes.at(i).mesh;
 
-                ctx.uploadBuffer(vertexBuffer,
-                                 mesh.vertices.data(),
-                                 mesh.vertices.size(),
-                                 data.baseVertex * vertexLayout.getLayoutSize());
+                ctx.uploadVertexBuffer(vertexBuffer,
+                                       mesh.vertices.data(),
+                                       mesh.vertices.size(),
+                                       data.baseVertex * vertexLayout.getLayoutSize());
 
                 auto ib = mesh.indices;
-                ctx.uploadBuffer(indexBuffer,
-                                 reinterpret_cast<const uint8_t *>(ib.data()),
-                                 ib.size() * sizeof(unsigned int),
-                                 data.drawCall.offset);
+                ctx.uploadIndexBuffer(indexBuffer,
+                                      reinterpret_cast<const uint8_t *>(ib.data()),
+                                      ib.size() * sizeof(unsigned int),
+                                      data.drawCall.offset);
             }
         }
         pendingUploads.clear();
@@ -91,26 +93,21 @@ namespace xng {
         mergeFreeIndexBufferRanges();
     }
 
-    bool MeshAtlas::shouldRebuild() {
-        return currentVertexBufferSize < requestedVertexBufferSize || currentIndexBufferSize < requestedIndexBufferSize;
-    }
-
-    void MeshAtlas::update(RenderGraphBuilder &builder, RenderGraphBuilder::PassHandle pass) {
-        if (requestedVertexBufferSize != currentVertexBufferSize
-            || requestedIndexBufferSize != currentIndexBufferSize
-            || !currentVertexBuffer) {
-            if (currentVertexBufferSize > 0) {
+    void MeshAtlas::update(Builder &builder,
+                           Heap &heap,
+                           Builder::PassHandle pass) {
+        if (requestedVertexBufferSize != currentVertexBuffer.getData().size
+            || requestedIndexBufferSize != currentIndexBuffer.getData().size
+            || !currentVertexBuffer.isAssigned()) {
+            if (currentVertexBuffer.getData().size > 0) {
                 staleVertexBuffer = builder.inheritResource(currentVertexBuffer);
             }
-            if (currentIndexBufferSize > 0) {
+            if (currentIndexBuffer.getData().size > 0) {
                 staleIndexBuffer = builder.inheritResource(currentIndexBuffer);
             }
 
             currentVertexBuffer = builder.createVertexBuffer(requestedVertexBufferSize);
-            currentVertexBufferSize = requestedVertexBufferSize;
-
             currentIndexBuffer = builder.createIndexBuffer(requestedIndexBufferSize);
-            currentIndexBufferSize = requestedIndexBufferSize;
         } else {
             currentVertexBuffer = builder.inheritResource(currentVertexBuffer);
             currentIndexBuffer = builder.inheritResource(currentIndexBuffer);
@@ -126,10 +123,10 @@ namespace xng {
 
     const std::map<Uri, MeshAtlas::MeshAllocation> &MeshAtlas::getMeshAllocations(RenderGraphContext &ctx) {
         if (staleVertexBuffer) {
-            ctx.copyBuffer(currentVertexBuffer, staleVertexBuffer, 0, 0, currentVertexBufferSize);
-            ctx.copyBuffer(currentIndexBuffer, staleIndexBuffer, 0, 0, currentIndexBufferSize);
-            currentVertexBufferSize = requestedVertexBufferSize;
-            currentIndexBufferSize = requestedIndexBufferSize;
+            ctx.copyBuffer(currentVertexBuffer, staleVertexBuffer, 0, 0, currentVertexBuffer.getData().size);
+            ctx.copyBuffer(currentIndexBuffer, staleIndexBuffer, 0, 0, currentIndexBuffer.getData().size);
+            currentVertexBuffer.getData().size = requestedVertexBufferSize;
+            currentIndexBuffer.getData().size = requestedIndexBufferSize;
             staleVertexBuffer = {};
             staleIndexBuffer = {};
         }

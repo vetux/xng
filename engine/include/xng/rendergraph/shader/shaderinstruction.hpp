@@ -17,8 +17,8 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_SHADERINSTRUCTION_HPP
-#define XENGINE_SHADERINSTRUCTION_HPP
+#ifndef XENGINE_RENDERGRAPH_SHADERINSTRUCTION_HPP
+#define XENGINE_RENDERGRAPH_SHADERINSTRUCTION_HPP
 
 #include <memory>
 #include <utility>
@@ -26,7 +26,7 @@
 
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 
-namespace xng {
+namespace xng::rendergraph {
     struct ShaderOperand;
 
     struct ShaderInstruction;
@@ -215,4 +215,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_SHADERINSTRUCTION_HPP
+#endif //XENGINE_RENDERGRAPH_SHADERINSTRUCTION_HPP

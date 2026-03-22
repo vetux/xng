@@ -17,8 +17,8 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_SHADERFUNCTION_HPP
-#define XENGINE_SHADERFUNCTION_HPP
+#ifndef XENGINE_RENDERGRAPH_SHADERFUNCTION_HPP
+#define XENGINE_RENDERGRAPH_SHADERFUNCTION_HPP
 
 #include <string>
 #include <utility>
@@ -31,7 +31,7 @@
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 #include "xng/rendergraph/shader/shadertexture.hpp"
 
-namespace xng {
+namespace xng::rendergraph {
     struct ShaderFunction {
         struct Argument {
             std::string name;
@@ -93,4 +93,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_SHADERFUNCTION_HPP
+#endif //XENGINE_RENDERGRAPH_SHADERFUNCTION_HPP

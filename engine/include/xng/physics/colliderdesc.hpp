@@ -20,7 +20,7 @@
 #ifndef XENGINE_COLLIDERDEF_HPP
 #define XENGINE_COLLIDERDEF_HPP
 
-#include "xng/resource/resource.hpp"
+#include "xng/resource/resourcebase.hpp"
 
 #include "collidershape.hpp"
 #include "xng/physics/colliderproperties.hpp"

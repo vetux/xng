@@ -28,7 +28,7 @@ namespace xng {
     }
 
     void CompositingPass::create(RenderGraphBuilder &builder) {
-        RenderGraphTexture depthTex;
+        RenderGraphTextureBuffer depthTex;
         depthTex.size = {1, 1};
         depthTex.format = DEPTH;
         defaultDepthTexture = builder.createTexture(depthTex);

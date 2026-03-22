@@ -49,7 +49,7 @@ namespace xng {
 
         layer.containsTransparency = true;
 
-        auto desc = RenderGraphTexture();
+        auto desc = RenderGraphTextureBuffer();
         desc.size = currentResolution;
         desc.format = RGBA;
         layer.color = builder.createTexture(desc);
@@ -108,7 +108,7 @@ namespace xng {
         if (currentResolution != resolution) {
             currentResolution = resolution;
 
-            auto desc = RenderGraphTexture();
+            auto desc = RenderGraphTextureBuffer();
             desc.size = currentResolution;
             desc.format = RGBA;
             layer.color = builder.createTexture(desc);
@@ -614,7 +614,7 @@ namespace xng {
 
                 if (registry->check<IBLMaps>()) {
                     data.iblPresent_prefilterMipCount = Vec4i(true,
-                                                              RenderGraphTexture::calculateMipLevels(
+                                                              RenderGraphTextureBuffer::calculateMipLevels(
                                                                   config->iblPrefilterSize),
                                                               0,
                                                               0);
@@ -648,7 +648,7 @@ namespace xng {
         ctx.bindVertexBuffer(meshAtlas.getVertexBuffer());
         ctx.bindIndexBuffer(meshAtlas.getIndexBuffer());
 
-        std::vector<RenderGraphResource> bindTextures;
+        std::vector<RenderGraphResourceHandle> bindTextures;
         for (int i = TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; ++i) {
             bindTextures.emplace_back(atlasTextures.at(static_cast<TextureAtlasResolution>(i)));
         }

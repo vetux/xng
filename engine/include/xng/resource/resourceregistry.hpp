@@ -30,7 +30,7 @@
 #include "xng/io/archive.hpp"
 
 #include "uri.hpp"
-#include "resource.hpp"
+#include "resourcebase.hpp"
 #include "resourcebundle.hpp"
 #include "resourceimporter.hpp"
 
@@ -91,7 +91,7 @@ namespace xng {
          * @param typeName
          * @return
          */
-        const Resource &get(const Uri &uri) {
+        const ResourceBase &get(const Uri &uri) {
             mutex.lock();
             auto it = loadTasks.find(uri.getFile());
             if (it != loadTasks.end()) {
@@ -169,7 +169,7 @@ namespace xng {
 
         std::unordered_map<std::string, std::shared_ptr<Archive> > archives;
         std::unordered_map<std::string, ResourceBundle> bundles;
-        std::unordered_map<Uri, const Resource &> resources;
+        std::unordered_map<Uri, const ResourceBase &> resources;
 
         std::string defaultScheme;
 

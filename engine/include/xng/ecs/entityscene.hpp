@@ -24,7 +24,7 @@
 #include <limits>
 #include <functional>
 
-#include "xng/resource/resource.hpp"
+#include "xng/resource/resourcebase.hpp"
 
 #include "xng/ecs/entityhandle.hpp"
 #include "xng/ecs/componentpool.hpp"
@@ -37,7 +37,7 @@
 namespace xng {
     class Entity;
 
-    class XENGINE_EXPORT EntityScene final : public Resource, public Messageable {
+    class XENGINE_EXPORT EntityScene final : public ResourceBase, public Messageable {
     public:
         RESOURCE_TYPENAME(EntityScene)
 
@@ -78,7 +78,7 @@ namespace xng {
 
         EntityScene &operator=(EntityScene &&other) noexcept = default;
 
-        std::unique_ptr<Resource> clone() override;
+        std::unique_ptr<ResourceBase> clone() override;
 
         const std::string &getName() const {
             return sceneName;

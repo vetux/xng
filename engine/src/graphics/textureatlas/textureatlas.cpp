@@ -22,7 +22,7 @@
 namespace xng {
     void TextureAtlas::upload(RenderGraphContext &ctx,
                               const TextureAtlasHandle &handle,
-                              const std::unordered_map<TextureAtlasResolution, RenderGraphResource> &atlasBuffers,
+                              const std::unordered_map<TextureAtlasResolution, RenderGraphResourceHandle> &atlasBuffers,
                               const ImageRGBA &texture) {
         auto buffer = texture.getBuffer();
         ctx.uploadTexture(atlasBuffers.at(handle.level),
@@ -145,7 +145,7 @@ namespace xng {
     }
 
     void TextureAtlas::onCreate(RenderGraphBuilder &builder) {
-        RenderGraphTexture desc;
+        RenderGraphTextureBuffer desc;
         desc.textureType = TEXTURE_2D_ARRAY;
         for (int i = TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; i++) {
             const auto res = static_cast<TextureAtlasResolution>(i);
@@ -164,11 +164,11 @@ namespace xng {
                     copySizes[pair.first] = bufferSizes[pair.first];
                 }
                 bufferSizes[pair.first] = pair.second.size();
-                RenderGraphTexture desc;
+                RenderGraphTextureBuffer desc;
                 desc.textureType = TEXTURE_2D_ARRAY;
                 desc.arrayLayers = pair.second.size();
                 desc.size = getResolutionLevelSize(pair.first);
-                desc.mipMapLevels = RenderGraphTexture::calculateMipLevels(desc.size);
+                desc.mipMapLevels = RenderGraphTextureBuffer::calculateMipLevels(desc.size);
                 desc.wrapping = REPEAT;
                 currentHandles[pair.first] = builder.createTexture(desc);
             } else {
@@ -177,7 +177,7 @@ namespace xng {
         }
     }
 
-    const std::unordered_map<TextureAtlasResolution, RenderGraphResource> &
+    const std::unordered_map<TextureAtlasResolution, RenderGraphResourceHandle> &
     TextureAtlas::getAtlasTextures(RenderGraphContext &ctx) {
         for (auto &pair: copyHandles) {
             auto size = getResolutionLevelSize(pair.first);

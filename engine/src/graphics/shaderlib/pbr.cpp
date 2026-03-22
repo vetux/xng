@@ -22,7 +22,7 @@
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 
 #include "xng/graphics/shaderlib/pi.hpp"
-#include "xng/rendergraph/rendergraphtexture.hpp"
+#include "../../../include/xng/rendergraph/resource/rendergraphtexture.hpp"
 #include "xng/rendergraph/shaderscript/macro/helpermacros.hpp"
 
 using namespace xng::ShaderScript;

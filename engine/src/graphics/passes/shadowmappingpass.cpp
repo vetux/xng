@@ -63,7 +63,7 @@ namespace xng
         dirShadowMapResolution = dirShadowResolution;
         spotShadowMapResolution = spotShadowResolution;
 
-        RenderGraphTexture tex;
+        RenderGraphTextureBuffer tex;
         tex.format = DEPTH;
         tex.textureType = TEXTURE_CUBE_MAP_ARRAY;
         tex.size = pointShadowResolution;
@@ -107,7 +107,7 @@ namespace xng
 
         if (pointShadowResolution != pointShadowMapResolution || pointShadowMapCount != pointLights.size())
         {
-            RenderGraphTexture tex;
+            RenderGraphTextureBuffer tex;
             tex.format = DEPTH;
             tex.textureType = TEXTURE_CUBE_MAP_ARRAY;
             tex.size = pointShadowResolution;
@@ -123,7 +123,7 @@ namespace xng
 
         if (dirShadowResolution != dirShadowMapResolution || dirShadowMapCount != dirLights.size())
         {
-            RenderGraphTexture tex;
+            RenderGraphTextureBuffer tex;
             tex.format = DEPTH;
             tex.textureType = TEXTURE_2D_ARRAY;
             tex.size = dirShadowResolution;
@@ -139,7 +139,7 @@ namespace xng
 
         if (spotShadowResolution != spotShadowMapResolution || spotShadowMapCount != spotLights.size())
         {
-            RenderGraphTexture tex;
+            RenderGraphTextureBuffer tex;
             tex.format = DEPTH;
             tex.textureType = TEXTURE_2D_ARRAY;
             tex.size = spotShadowResolution;

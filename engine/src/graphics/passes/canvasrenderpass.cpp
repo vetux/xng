@@ -86,7 +86,7 @@ namespace xng
 
         layerSize = builder.getBackBufferSize();
 
-        RenderGraphTexture texture;
+        RenderGraphTextureBuffer texture;
         texture.size = layerSize;
         texture.format = RGBA;
         screenSpaceLayer.color = builder.createTexture(texture);
@@ -139,7 +139,7 @@ namespace xng
         {
             layerSize = builder.getBackBufferSize();
 
-            RenderGraphTexture texture;
+            RenderGraphTextureBuffer texture;
             texture.size = layerSize;
             texture.format = RGBA;
             screenSpaceLayer.color = builder.createTexture(texture);
@@ -322,7 +322,7 @@ namespace xng
                 usedTexts.insert(key);
                 if (textCache.find(key) == textCache.end())
                 {
-                    RenderGraphTexture texture;
+                    RenderGraphTextureBuffer texture;
                     texture.format = RGBA;
                     texture.size = txt.text.size;
                     textCache[key] = builder.createTexture(texture);
@@ -352,7 +352,7 @@ namespace xng
     }
 
     void CanvasRenderPass::renderTextCache(RenderGraphContext& ctx,
-                                           std::vector<RenderGraphResource> atlasTextureBindings)
+                                           std::vector<RenderGraphResourceHandle> atlasTextureBindings)
     {
         for (auto& canvas : canvases)
         {
@@ -432,13 +432,13 @@ namespace xng
         }
     }
 
-    void CanvasRenderPass::renderCanvas(RenderGraphResource target,
+    void CanvasRenderPass::renderCanvas(RenderGraphResourceHandle target,
                                         const Canvas& canvas,
                                         RenderGraphContext& ctx)
     {
         auto& atlasTextures = atlas.getAtlasTextures(ctx);
 
-        std::vector<RenderGraphResource> textures;
+        std::vector<RenderGraphResourceHandle> textures;
         for (int i = TEXTURE_ATLAS_BEGIN; i < TEXTURE_ATLAS_END; i++)
         {
             auto res = static_cast<TextureAtlasResolution>(i);

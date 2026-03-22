@@ -138,7 +138,7 @@ namespace xng {
 namespace std {
     template<>
     struct hash<xng::Uri> {
-        std::size_t operator()(const xng::Uri &k) const {
+        std::size_t operator()(const xng::Uri &k) const noexcept {
             size_t ret = 0;
             xng::hash_combine(ret, k.getScheme());
             xng::hash_combine(ret, k.getFile());

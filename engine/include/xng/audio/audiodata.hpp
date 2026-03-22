@@ -24,16 +24,16 @@
 
 #include "xng/audio/audioformat.hpp"
 
-#include "xng/resource/resource.hpp"
+#include "xng/resource/resourcebase.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT AudioData final : public Resource {
+    class XENGINE_EXPORT AudioData final : public ResourceBase {
     public:
         RESOURCE_TYPENAME(AudioData)
 
         ~AudioData() override = default;
 
-        std::unique_ptr<Resource> clone() override {
+        std::unique_ptr<ResourceBase> clone() override {
             return std::make_unique<AudioData>(*this);
         }
 

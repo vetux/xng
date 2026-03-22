@@ -87,7 +87,7 @@ namespace xng {
         return {getEntityByName(name), *this};
     }
 
-    std::unique_ptr<Resource> EntityScene::clone() {
+    std::unique_ptr<ResourceBase> EntityScene::clone() {
         return std::make_unique<EntityScene>(*this);
     }
 

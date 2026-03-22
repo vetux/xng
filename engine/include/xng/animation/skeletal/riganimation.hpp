@@ -25,10 +25,10 @@
 
 #include "boneanimation.hpp"
 
-#include "xng/resource/resource.hpp"
+#include "xng/resource/resourcebase.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT RigAnimation : public Resource {
+    class XENGINE_EXPORT RigAnimation : public ResourceBase {
     public:
         RESOURCE_TYPENAME(RigAnimation)
 
@@ -37,7 +37,7 @@ namespace xng {
         double ticksPerSecond; // The number of ticks to show per second
         std::vector<BoneAnimation> channels; // The animation channels.
 
-        std::unique_ptr<Resource> clone() override {
+        std::unique_ptr<ResourceBase> clone() override {
             return std::make_unique<RigAnimation>(*this);
         }
     };

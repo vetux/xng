@@ -17,12 +17,12 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_SHADERTEXTUREARRAY_HPP
-#define XENGINE_SHADERTEXTUREARRAY_HPP
+#ifndef XENGINE_RENDERGRAPH_SHADERTEXTUREARRAY_HPP
+#define XENGINE_RENDERGRAPH_SHADERTEXTUREARRAY_HPP
 
 #include "xng/rendergraph/shader/shadertexture.hpp"
 
-namespace xng {
+namespace xng::rendergraph {
     struct ShaderTextureArray {
         ShaderTexture texture;
         size_t arraySize{};
@@ -38,4 +38,5 @@ namespace xng {
         }
     };
 }
-#endif //XENGINE_SHADERTEXTUREARRAY_HPP
+
+#endif //XENGINE_RENDERGRAPH_SHADERTEXTUREARRAY_HPP

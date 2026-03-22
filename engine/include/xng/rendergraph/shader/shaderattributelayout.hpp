@@ -17,14 +17,14 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_SHADERATTRIBUTELAYOUT_HPP
-#define XENGINE_SHADERATTRIBUTELAYOUT_HPP
+#ifndef XENGINE_RENDERGRAPH_SHADERATTRIBUTELAYOUT_HPP
+#define XENGINE_RENDERGRAPH_SHADERATTRIBUTELAYOUT_HPP
 
 #include <vector>
 
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 
-namespace xng {
+namespace xng::rendergraph {
     struct ShaderAttributeLayout {
         ShaderAttributeLayout() = default;
 
@@ -96,4 +96,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_SHADERATTRIBUTELAYOUT_HPP
+#endif //XENGINE_RENDERGRAPH_SHADERATTRIBUTELAYOUT_HPP

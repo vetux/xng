@@ -26,7 +26,7 @@
 
 #include "xng/resource/resourcehandle.hpp"
 
-#include "xng/graphics/image.hpp"
+#include "xng/rendergraph/image.hpp"
 #include "xng/rendergraph/rendergraphtextureproperties.hpp"
 
 namespace xng {

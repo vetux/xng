@@ -17,8 +17,8 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_SHADERPRIMITIVE_HPP
-#define XENGINE_SHADERPRIMITIVE_HPP
+#ifndef XENGINE_RENDERGRAPH_SHADERPRIMITIVE_HPP
+#define XENGINE_RENDERGRAPH_SHADERPRIMITIVE_HPP
 
 #include <variant>
 
@@ -27,9 +27,9 @@
 #include "xng/math/vector4.hpp"
 #include "xng/math/matrix.hpp"
 
-#include "xng/rendergraph/rendergraphtextureproperties.hpp"
+#include "xng/rendergraph/textureproperties.hpp"
 
-namespace xng {
+namespace xng::rendergraph {
     struct ShaderPrimitiveType {
         enum VectorComponent : int {
             COMPONENT_x = 0,
@@ -304,4 +304,4 @@ namespace xng {
     };
 }
 
-#endif //XENGINE_SHADERPRIMITIVE_HPP
+#endif //XENGINE_RENDERGRAPH_SHADERPRIMITIVE_HPP

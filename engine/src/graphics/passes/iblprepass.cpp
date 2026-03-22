@@ -19,7 +19,7 @@
 
 #include "xng/graphics/passes/iblprepass.hpp"
 
-#include "xng/graphics/image.hpp"
+#include "../../../include/xng/rendergraph/image.hpp"
 #include "xng/graphics/scene/mesh.hpp"
 #include "xng/rendergraph/shaderscript/shaderscript.hpp"
 #include "xng/rendergraph/rendergraphattachment.hpp"
@@ -42,7 +42,7 @@ namespace xng
         brdfSize = config->iblBRDFSize;
 
         // create irradiance cubemap (small)
-        RenderGraphTexture irrDesc;
+        RenderGraphTextureBuffer irrDesc;
         irrDesc.size = irradianceSize;
         irrDesc.textureType = TEXTURE_CUBE_MAP;
         irrDesc.format = RGBA16F;
@@ -53,11 +53,11 @@ namespace xng
         irradiance = builder.createTexture(irrDesc);
 
         // create prefilter cubemap (mipmapped)
-        RenderGraphTexture preDesc;
+        RenderGraphTextureBuffer preDesc;
         preDesc.size = prefilterSize;
         preDesc.textureType = TEXTURE_CUBE_MAP;
         preDesc.format = RGBA16F;
-        preDesc.mipMapLevels = RenderGraphTexture::calculateMipLevels(preDesc.size);
+        preDesc.mipMapLevels = RenderGraphTextureBuffer::calculateMipLevels(preDesc.size);
         preDesc.filterMin = LINEAR;
         preDesc.filterMag = LINEAR;
         preDesc.mipMapFilter = LINEAR_MIPMAP_LINEAR;
@@ -65,7 +65,7 @@ namespace xng
         prefilter = builder.createTexture(preDesc);
 
         // create BRDF LUT 2D
-        RenderGraphTexture lutDesc;
+        RenderGraphTextureBuffer lutDesc;
         lutDesc.size = brdfSize;
         lutDesc.textureType = TEXTURE_2D;
         lutDesc.format = RG16F;
@@ -96,11 +96,11 @@ namespace xng
         pipelinePrefilter = builder.createPipeline(makePrefilterPipeline());
 
         // create an intermediate environment cubemap that will be populated from the HDR equirect
-        RenderGraphTexture envCubeDesc;
+        RenderGraphTextureBuffer envCubeDesc;
         envCubeDesc.size = cubemapSize;
         envCubeDesc.textureType = TEXTURE_CUBE_MAP;
         envCubeDesc.format = RGBA16F;
-        envCubeDesc.mipMapLevels = RenderGraphTexture::calculateMipLevels(envCubeDesc.size);
+        envCubeDesc.mipMapLevels = RenderGraphTextureBuffer::calculateMipLevels(envCubeDesc.size);
         envCubeDesc.filterMin = LINEAR;
         envCubeDesc.filterMag = LINEAR;
         envCubeDesc.mipMapFilter = LINEAR_MIPMAP_LINEAR;
@@ -114,7 +114,7 @@ namespace xng
         if (currentHDRI.assigned())
         {
             const auto& img = currentHDRI.get();
-            RenderGraphTexture desc;
+            RenderGraphTextureBuffer desc;
             desc.size = img.getResolution();
             desc.textureType = TEXTURE_2D;
             desc.format = RGB32F;
@@ -162,11 +162,11 @@ namespace xng
         }
         else
         {
-            RenderGraphTexture envCubeDesc;
+            RenderGraphTextureBuffer envCubeDesc;
             envCubeDesc.size = cubemapSize;
             envCubeDesc.textureType = TEXTURE_CUBE_MAP;
             envCubeDesc.format = RGBA16F;
-            envCubeDesc.mipMapLevels = RenderGraphTexture::calculateMipLevels(envCubeDesc.size);
+            envCubeDesc.mipMapLevels = RenderGraphTextureBuffer::calculateMipLevels(envCubeDesc.size);
             envCubeDesc.filterMin = LINEAR;
             envCubeDesc.filterMag = LINEAR;
             envCubeDesc.mipMapFilter = LINEAR_MIPMAP_LINEAR;
@@ -181,7 +181,7 @@ namespace xng
         else
         {
             // create irradiance cubemap (small)
-            RenderGraphTexture irrDesc;
+            RenderGraphTextureBuffer irrDesc;
             irrDesc.size = irradianceSize;
             irrDesc.textureType = TEXTURE_CUBE_MAP;
             irrDesc.format = RGBA16F;
@@ -199,11 +199,11 @@ namespace xng
         else
         {
             // create prefilter cubemap (mipmapped)
-            RenderGraphTexture preDesc;
+            RenderGraphTextureBuffer preDesc;
             preDesc.size = prefilterSize;
             preDesc.textureType = TEXTURE_CUBE_MAP;
             preDesc.format = RGBA16F;
-            preDesc.mipMapLevels = RenderGraphTexture::calculateMipLevels(preDesc.size);
+            preDesc.mipMapLevels = RenderGraphTextureBuffer::calculateMipLevels(preDesc.size);
             preDesc.filterMin = LINEAR;
             preDesc.filterMag = LINEAR;
             preDesc.mipMapFilter = LINEAR_MIPMAP_LINEAR;
@@ -218,7 +218,7 @@ namespace xng
         else
         {
             // create BRDF LUT 2D
-            RenderGraphTexture lutDesc;
+            RenderGraphTextureBuffer lutDesc;
             lutDesc.size = brdfSize;
             lutDesc.textureType = TEXTURE_2D;
             lutDesc.format = RG16F;
@@ -257,7 +257,7 @@ namespace xng
         else
         {
             const auto& img = currentHDRI.get();
-            RenderGraphTexture desc;
+            RenderGraphTextureBuffer desc;
             desc.size = img.getResolution();
             desc.textureType = TEXTURE_2D;
             desc.format = RGB32F;
@@ -280,7 +280,7 @@ namespace xng
             || brdfSize != config->iblBRDFSize;
     }
 
-    void IBLPrePass::runPass(RenderGraphContext& ctx)
+    void IBLPrePass::runPass(RenderGraphContext& c)
     {
         if (!currentHDRI.assigned() ||
             (currentHDRI.getUri() == builtHDRI
@@ -299,42 +299,47 @@ namespace xng
 
         builtHDRI = currentHDRI.getUri();
 
-        // Upload quad vertices once
-        const auto& quad = Mesh::normalizedQuad();
-        static bool quadUploaded = false;
-        if (!quadUploaded)
-        {
-            quadUploaded = true;
-            ctx.uploadBuffer(vertexBuffer, quad.vertices.data(), quad.vertices.size(), 0);
-        }
+        PassBuilder builder(ctx);
 
-        // Upload cube mesh vertices/indices once (using subdivided cube)
-        const auto cube = Mesh::normalizedCube(32);
-        static bool cubeUploaded = false;
-        if (!cubeUploaded)
-        {
-            cubeUploaded = true;
-            ctx.uploadBuffer(cubeVertexBuffer, cube.vertices.data(), cube.vertices.size(), 0);
-            ctx.uploadBuffer(indexBuffer, reinterpret_cast<const uint8_t*>(cube.indices.data()),
-                             cube.indices.size() * sizeof(unsigned int), 0);
-        }
+        builder.addPass([](TransferContext& ctx) {
+            // Upload quad vertices once
+            const auto& quad = Mesh::normalizedQuad();
+            static bool quadUploaded = false;
+            if (!quadUploaded)
+            {
+                quadUploaded = true;
+                ctx.uploadBuffer(vertexBuffer, quad.vertices.data(), quad.vertices.size(), 0);
+            }
 
-        // Upload the HDR equirectangular texture and convert it to cubemap
-        std::array<Mat4f, 6> views;
-        const auto& img = currentHDRI.get();
-        const auto& buf = img.getBuffer();
-        if (!buf.empty())
-        {
-            ctx.uploadTexture(env,
-                              reinterpret_cast<const uint8_t*>(buf.data()),
-                              buf.size() * sizeof(ColorRGBF),
-                              RGB32F,
-                              0,
-                              CubeMapFace{},
-                              0,
-                              img.getResolution(),
-                              {0, 0});
-        }
+            // Upload cube mesh vertices/indices once (using subdivided cube)
+            const auto cube = Mesh::normalizedCube(32);
+            static bool cubeUploaded = false;
+            if (!cubeUploaded)
+            {
+                cubeUploaded = true;
+                ctx.uploadBuffer(cubeVertexBuffer, cube.vertices.data(), cube.vertices.size(), 0);
+                ctx.uploadBuffer(indexBuffer, reinterpret_cast<const uint8_t*>(cube.indices.data()),
+                                 cube.indices.size() * sizeof(unsigned int), 0);
+            }
+
+            // Upload the HDR equirectangular texture and convert it to cubemap
+            std::array<Mat4f, 6> views;
+            const auto& img = currentHDRI.get();
+            const auto& buf = img.getBuffer();
+            if (!buf.empty())
+            {
+                ctx.uploadTexture(env,
+                                  reinterpret_cast<const uint8_t*>(buf.data()),
+                                  buf.size() * sizeof(ColorRGBF),
+                                  RGB32F,
+                                  0,
+                                  CubeMapFace{},
+                                  0,
+                                  img.getResolution(),
+                                  {0, 0});
+            }
+        })
+        .access(vertexBuffer);
 
         // proceed with conversion to cubemap
         // Use right-handed capture matrices. MatrixMath::lookAt/perspective use
@@ -352,23 +357,28 @@ namespace xng
 
         for (int face = 0; face < 6; ++face)
         {
-            ctx.uploadBuffer(captureBuffer, reinterpret_cast<const uint8_t*>(&views[face]), sizeof(Mat4f), 0);
-            ctx.beginRenderPass({
-                                    RenderGraphAttachment(environmentCube,
-                                                          0,
-                                                          static_cast<CubeMapFace>(face),
-                                                          0)
-                                },
-                                {});
-            ctx.setViewport({}, cubemapSize);
-            // bind the pipeline that samples the equirectangular HDR and writes to cubemap
-            ctx.bindPipeline(pipelineEquirectToCube);
-            ctx.bindVertexBuffer(cubeVertexBuffer);
-            ctx.bindIndexBuffer(indexBuffer);
-            ctx.bindShaderBuffer("captureData", captureBuffer);
-            ctx.bindTexture("envEquirect", env);
-            ctx.drawIndexed(DrawCall(0, cube.indices.size()), 0);
-            ctx.endRenderPass();
+            builder.addPass([](TransferContext &) {
+                ctx.uploadBuffer(captureBuffer, reinterpret_cast<const uint8_t*>(&views[face]), sizeof(Mat4f), 0);
+            });
+            builder.addPass([](RasterContext& ctx) {
+                ctx.beginRenderPass({
+                                        RenderGraphAttachment(environmentCube,
+                                                              0,
+                                                              static_cast<CubeMapFace>(face),
+                                                              0)
+                                    },
+                                    {});
+                ctx.setViewport({}, cubemapSize);
+                // bind the pipeline that samples the equirectangular HDR and writes to cubemap
+                ctx.bindPipeline(pipelineEquirectToCube);
+                ctx.bindVertexBuffer(cubeVertexBuffer);
+                ctx.bindIndexBuffer(indexBuffer);
+                ctx.bindShaderBuffer("captureData", captureBuffer);
+                ctx.bindTexture("envEquirect", env);
+                ctx.drawIndexed(DrawCall(0, cube.indices.size()), 0);
+                ctx.endRenderPass();
+            })
+            .attachColor(environmentCube);
         }
 
         // Generate mipmaps for the environment cube so it can be sampled with filtering
@@ -404,7 +414,7 @@ namespace xng
         }
 
         // Generate prefiltered environment map (specular) across mip levels
-        int maxMip = RenderGraphTexture::calculateMipLevels(prefilterSize) - 1;
+        int maxMip = RenderGraphTextureBuffer::calculateMipLevels(prefilterSize) - 1;
         for (int mip = 0; mip <= maxMip; ++mip)
         {
             Vec2i mipSize = {std::max(1, prefilterSize.x >> mip), std::max(1, prefilterSize.y >> mip)};
