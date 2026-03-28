@@ -42,7 +42,7 @@ namespace xng::rendergraph {
          *
          * This is a convenience method.
          *
-         * This will internally use staging buffers on platforms that don't have native "upload to gpu" api (E.g., Vulkan).
+         * On Vulkan this is implemented with internal staging buffers.
          *
          * @param target
          * @param buffer The buffer holding the data
@@ -59,9 +59,13 @@ namespace xng::rendergraph {
          *
          * This is a convenience method.
          *
-         * This will internally use staging buffers on platforms that don't have native "upload to gpu" api (E.g., Vulkan).
-         *
          * The buffer is uploaded top to bottom, meaning the first row in the buffer corresponds to the top row.
+         *
+         * On Vulkan this is implemented with internal staging buffers.
+         *
+         * On OpenGL internally textures are still stored bottom to top,
+         * but all visible readback is performed with the origin at top left.
+         * (Shader compiler inverts uv.v accesses automatically, Upload and Copy from/to buffer inverts rows and coordinates internally)
          *
          * @param texture The texture to upload into
          * @param target The target subresource to upload into
@@ -121,7 +125,9 @@ namespace xng::rendergraph {
         /**
          * Copy a texel region of a mip level to a mip level of another texture.
          *
-         * The offsets specify the x/y top left coordinates of the region to copy, and z is the index of the layer for array textures.
+         * The offsets specify the x/y top left coordinates of the region to copy,
+         * and z is the index of the layer for array textures.
+         *
          * The size specifies the width/height of the region to copy while z the number of layers to copy for array textures.
          *
          * @param target
@@ -143,23 +149,49 @@ namespace xng::rendergraph {
         /**
          * Copy a buffer to a texture.
          *
-         * The srcFormat must be compatible with the texture format.
+         * The format of the pixel data in the buffer must be compatible with texture.
          *
-         * @param target The texture to copy into
-         * @param source The buffer to copy from
-         * @param targetSubResource
-         * @param srcFormat
-         * @param srcOffset
-         * @param dstOffset
-         * @param extent
+         * The texture data is read from the buffer with the rows progressing vertically top to bottom
+         * and each row progressing horizontally left to right.
+         *
+         * The textureOffset specifies the top left pixel position and extent of the region to write to.
+         *
+         * In GL the copy is performed by mapping the buffer and using an inverted copy of the pixel data
+         * in the same way as uploadTexture because opengl expects the texture data in bottom-up format.
+         *
+         * @param texture The texture to copy into
+         * @param buffer The buffer to copy from
+         * @param textureSubResource The target sub resource to copy into.
+         * @param bufferOffset The offset into the buffer at which to start reading.
+         * @param textureOffset The region to write to.
          */
-        virtual void copyBufferToTexture(const Resource<Texture> &target,
-                                         const Resource<Buffer> &source,
-                                         Texture::SubResource targetSubResource,
-                                         ColorFormat srcFormat,
-                                         size_t srcOffset,
-                                         const Vec2i &dstOffset,
-                                         const Vec2i &extent) = 0;
+        virtual void copyBufferToTexture(const Resource<Texture> &texture,
+                                         const Resource<Buffer> &buffer,
+                                         Texture::SubResource textureSubResource,
+                                         size_t bufferOffset,
+                                         const Recti &textureOffset) = 0;
+
+        /**
+         * Copy a texture to a buffer.
+         *
+         * The texture data is stored in the buffer with the rows progressing vertically top to bottom
+         * and each row progressing horizontally left to right.
+         *
+         * The textureOffset specifies the top left pixel position and extent of the region to read from.
+         *
+         * In GL the copy is performed by mapping the buffer after the copy and inverting the stored data before returning.
+         *
+         * @param buffer The buffer to copy into
+         * @param texture The texture to copy from
+         * @param textureSubResource The target sub resource to copy from
+         * @param bufferOffset The offset into the buffer at which to start writing
+         * @param textureOffset The region to read from.
+         */
+        virtual void copyTextureToBuffer(const Resource<Buffer> &buffer,
+                                         const Resource<Texture> &texture,
+                                         Texture::SubResource textureSubResource,
+                                         size_t bufferOffset,
+                                         const Recti &textureOffset) = 0;
 
         /**
          * Clear a texture.
