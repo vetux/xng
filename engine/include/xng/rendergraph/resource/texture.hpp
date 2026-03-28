@@ -34,7 +34,7 @@ namespace xng::rendergraph {
             unsigned int clearStencil{};
         };
 
-        typedef std::variant<ColorRGBA, Vec4f, Vec4i, Vec4u, DepthStencilClearValue> ClearValue;
+        typedef std::variant<ColorRGBA, Vec4f, Vec4i, Vec4u, DepthStencilClearValue, float, unsigned> ClearValue;
 
         /**
          * Capability describes how a texture can be used.
@@ -65,9 +65,9 @@ namespace xng::rendergraph {
          * A TEXTURE_CUBE_MAP_ARRAY texture has arrayLayers * 6(Each Face) * mipLevels addressable sub resources.
          */
         struct SubResource {
-            size_t arrayLayer = 0;
-            CubeMapFace face = CubeMapFace::POSITIVE_X;
             size_t mipLevel = 0;
+            size_t arrayLayer = -1;
+            CubeMapFace face = FACE_UNDEFINED;
 
             SubResource() = default;
 
@@ -79,10 +79,10 @@ namespace xng::rendergraph {
                 : face(face) {
             }
 
-            SubResource(const size_t arrayLayer,
-                        const CubeMapFace face,
-                        const size_t mipLevel)
-                : arrayLayer(arrayLayer), face(face), mipLevel(mipLevel) {
+            SubResource(const size_t mipLevel,
+                        const size_t arrayLayer,
+                        const CubeMapFace face)
+                : mipLevel(mipLevel), arrayLayer(arrayLayer), face(face) {
             }
         };
 

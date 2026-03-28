@@ -33,6 +33,7 @@ namespace xng::rendergraph {
     };
 
     enum CubeMapFace : int {
+        FACE_UNDEFINED = -1,
         POSITIVE_X = 0,
         NEGATIVE_X,
         POSITIVE_Y,

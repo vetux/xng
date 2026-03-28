@@ -135,7 +135,7 @@ namespace xng::rendergraph {
         BlendEquation colorBlendEquation = BLEND_ADD;
         BlendEquation alphaBlendEquation = BLEND_ADD;
 
-        const ShaderAttributeLayout &getVertexLayout() {
+        const ShaderAttributeLayout &getVertexLayout() const {
             for (auto &shader: shaders) {
                 if (shader.stage == Shader::VERTEX) {
                     return shader.inputLayout;

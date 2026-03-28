@@ -104,7 +104,7 @@ namespace xng::rendergraph {
          * @param handle The target pipeline
          * @return The compiled shaders
          */
-        virtual std::unordered_map<Shader::Stage, std::string> getCompiledShaders(Handle handle) = 0;
+        virtual std::unordered_map<Shader::Stage, std::string> getCompiledShaderSource(Handle handle) = 0;
     };
 }
 

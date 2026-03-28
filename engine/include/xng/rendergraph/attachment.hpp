@@ -34,12 +34,11 @@ namespace xng::rendergraph {
         std::variant<Resource<Texture>, std::shared_ptr<Surface> > target{};
 
         /**
-         * When the texture is a TEXTURE_CUBE_MAP, TEXTURE_2D_ARRAY or TEXTURE_CUBE_MAP_ARRAY and no target is specified,
+         * When the texture is a TEXTURE_CUBE_MAP, TEXTURE_CUBE_MAP_ARRAY, TEXTURE_2D_ARRAY
+         * or TEXTURE_2D_MULTISAMPLE_ARRAY and no target array layer / face is specified,
          * it becomes a layered attachment where geometry shaders can specify the target subresource/s.
-         *
-         * Mip level 0 is used for TEXTURE_2D_* without a specified target.
          */
-        std::optional<Texture::SubResource> targetSubResource{};
+        Texture::SubResource targetSubResource{};
 
         /**
          * An optional clear value.
@@ -47,8 +46,6 @@ namespace xng::rendergraph {
          * The texture is cleared with the specified value before the RasterPass callback is run.
          */
         std::optional<Texture::ClearValue> clearValue{};
-
-        Attachment() = default;
 
         explicit Attachment(const Resource<Texture> &target)
             : target(std::move(target)) {

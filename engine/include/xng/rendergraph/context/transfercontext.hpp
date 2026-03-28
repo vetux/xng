@@ -75,13 +75,13 @@ namespace xng::rendergraph {
          * @param offset The offset (Origin top-left) into the texture to upload into
          * @param size The width / height of the pixel data in the buffer. Must be smaller or equal to the texture size.
          */
-        virtual void uploadTextureBuffer(const Resource<Texture> &texture,
-                                         Texture::SubResource target,
-                                         const uint8_t *buffer,
-                                         size_t bufferSize,
-                                         ColorFormat bufferFormat,
-                                         const Vec2i &offset,
-                                         const Vec2i &size) = 0;
+        virtual void uploadTexture(const Resource<Texture> &texture,
+                                   Texture::SubResource target,
+                                   const uint8_t *buffer,
+                                   size_t bufferSize,
+                                   ColorFormat bufferFormat,
+                                   const Vec2i &offset,
+                                   const Vec2i &size) = 0;
 
         /**
          * Copy data from one buffer to another.
