@@ -25,7 +25,7 @@ namespace xng {
      * The glfw display adapter implements this interface for OPENGL_4_6 windows.
      *
      * The opengl adapter depends on this interface.
-     * The window passed to opengl::Runtime.setWindow must implement this interface.
+     * The window passed to opengl::Runtime.createSurface must implement this interface.
      */
     class WindowGl {
     public:

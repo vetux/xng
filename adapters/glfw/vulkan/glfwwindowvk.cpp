@@ -48,7 +48,7 @@ namespace xng::glfw {
         createWindow(title, size, attributes, monitor, videoMode);
     }
 
-    VkSurfaceKHR GLFWWindowVk::createSurface(VkInstance instance, VkAllocationCallbacks *allocator) {
+    VkSurfaceKHR GLFWWindowVk::createWindowSurface(VkInstance instance, VkAllocationCallbacks *allocator) {
         VkSurfaceKHR surface;
         glfwCreateWindowSurface(instance, wndH, allocator, &surface);
         return surface;

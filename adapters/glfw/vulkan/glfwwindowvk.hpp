@@ -42,7 +42,7 @@ namespace xng::glfw {
                      MonitorGLFW &monitor,
                      VideoMode videoMode);
 
-        VkSurfaceKHR createSurface(VkInstance instance, VkAllocationCallbacks *allocator) override;
+        VkSurfaceKHR createWindowSurface(VkInstance instance, VkAllocationCallbacks *allocator) override;
     };
 }
 

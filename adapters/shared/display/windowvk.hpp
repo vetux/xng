@@ -27,7 +27,7 @@ namespace xng {
      * The glfw display adapter implements this interface for VULKAN_1_1 windows.
      *
      * The vulkan adapter depends on this interface.
-     * The window passed to vulkan::Runtime.setWindow must implement this interface.
+     * The window passed to vulkan::Runtime.createSurface must implement this interface.
      */
     class WindowVk {
     public:
@@ -38,7 +38,7 @@ namespace xng {
          * @param allocator Optional allocator to create the surface for.
          * @return The created surface.
          */
-        virtual VkSurfaceKHR createSurface(VkInstance instance, VkAllocationCallbacks *allocator) = 0;
+        virtual VkSurfaceKHR createWindowSurface(VkInstance instance, VkAllocationCallbacks *allocator) = 0;
     };
 }
 
