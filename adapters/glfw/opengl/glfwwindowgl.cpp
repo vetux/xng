@@ -71,6 +71,10 @@ namespace xng::glfw {
         }
     }
 
+    void GLFWWindowGL::makeContextCurrent() {
+        glfwMakeContextCurrent(wndH);
+    }
+
     void GLFWWindowGL::swapBuffers() {
         glfwSwapBuffers(wndH);
     }

@@ -20,65 +20,42 @@
 #ifndef XENGINE_RENDERGRAPH_RUNTIME_HPP
 #define XENGINE_RENDERGRAPH_RUNTIME_HPP
 
+#include "xng/display/window.hpp"
+
 #include "xng/rendergraph/heap.hpp"
 #include "xng/rendergraph/pipelinecache.hpp"
 #include "xng/rendergraph/graph.hpp"
 #include "xng/rendergraph/statistics.hpp"
-#include "xng/rendergraph/resourceid.hpp"
-
-#include "xng/rendergraph/resource/texture.hpp"
-
-#include "xng/display/window.hpp"
-#include "xng/display/graphicsapi.hpp"
 
 namespace xng::rendergraph {
-    /**
-     * The runtime / context represents the platform-dependent implementation of the renderer.
-     *
-     * The runtime manages an offscreen back buffer representing the window contents for any given execute() invocation
-     * and presents the color component of the offscreen back buffer to the window / swap chain before returning from an execute() call.
-     *
-     * At the start of an execute() call, the contents of this offscreen back buffer are undefined. (May or may not contain previous frame data)
-     *
-     * On Vulkan the back buffer color image is the next image in the swap chain, and depth stencil is an offscreen image, so no texture memory is wasted.
-     */
     class Runtime {
     public:
         virtual ~Runtime() = default;
 
-        virtual GraphicsAPI getGraphicsAPI() = 0;
+        /**
+         * The passed window instance must be compatible with the runtime implementation.
+         *
+         * @param window The window for which to create a surface.
+         * @return The Surface representing the window contents.
+         */
+        virtual std::shared_ptr<Surface> createSurface(std::shared_ptr<Window> window) = 0;
 
         /**
-         * Set the window to render to.
+         * For each frame in flight the runtime will manage:
+         *  - Copies of heap MEMORY_CPU_TO_GPU / MEMORY_GPU_TO_CPU buffers
+         *  - Transient resources
+         *  - Swap chain images of surfaces
          *
-         * @param window
-         */
-        virtual void setWindow(std::shared_ptr<Window> window) = 0;
-
-        virtual Window &getWindow() = 0;
-
-        //TODO: Frames in flight conflict with swapBuffers
-        /**
-         * Swap the back buffer.
+         * This means frames in flight come at the cost of extra memory usage.
          *
-         * The runtime implementation must catch and handle errors internally
-         * if the window size changes during rendering. (E.G. OUT_OF_DATE / SUBOPTIMAL in Vulkan, No Equivalent in OpenGL)
+         * The in flight rendering is completely transparent to the user.
          *
-         * What exactly is drawn in the screen buffer if a swap chain / framebuffer size doesn't match is not clearly defined in graphics apis
-         */
-        virtual void swapBuffers() = 0;
-
-        /**
-         * The back buffer textures are write-only (No Sampling).
+         * Some implementations (OpenGL) may not perform frames in flight manually and ignore the passed value,
+         * or internally cap the maximum number of frames in flight (E.g. 2/3 for vulkan)
          *
-         * @return The resource handle representing the back buffer color.
+         * @param framesInFlight The maximum number of requested frames in flight.
          */
-        virtual Resource<Texture> getBackBufferColor() = 0;
-
-        /**
-         * @return The resource handle representing the back buffer depth stencil.
-         */
-        virtual Resource<Texture> getBackBufferDepthStencil() = 0;
+        virtual void setFramesInFlight(size_t framesInFlight) = 0;
 
         /**
          * Destroying a heap resource currently referenced by a compiled graph is forbidden.
@@ -100,6 +77,14 @@ namespace xng::rendergraph {
          * Write-After-Write is treated as undefined-behavior.
          * Runtimes may perform Last write wins or throw an exception.
          *
+         * The runtime will internally queue swapping operations for all referenced surfaces.
+         *
+         * The runtime implementation must catch and handle errors internally when the surface size changes during rendering.
+         * (E.G. OUT_OF_DATE / SUBOPTIMAL in Vulkan, No Equivalent in OpenGL)
+         *
+         * What exactly is drawn in the screen buffer if a swap chain / framebuffer size doesn't match
+         * is not clearly defined in the graphic apis.
+         *
          *  For Example,
          *        pass[0] writes resource0
          *        pass[1] reads/writes resource0
@@ -116,8 +101,13 @@ namespace xng::rendergraph {
          *
          * The graphs run in parallel where possible.
          *
-         * On vulkan this basically maps to each graph running on separate queues.
-         * Aliasing is isolated inside each graph.
+         * The runtime will internally queue swapping operations for all referenced surfaces.
+         *
+         * The runtime implementation must catch and handle errors internally when the window size changes during rendering.
+         * (E.G. OUT_OF_DATE / SUBOPTIMAL in Vulkan, No Equivalent in OpenGL)
+         *
+         * What exactly is drawn in the screen buffer if a swap chain / framebuffer size doesn't match
+         * is not clearly defined in the graphic apis.
          *
          *  For Example,
          *      graphs[0] write heap

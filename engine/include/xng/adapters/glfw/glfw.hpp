@@ -23,31 +23,47 @@
 #include "xng/display/displayenvironment.hpp"
 
 namespace xng::glfw {
+    /**
+     * The graphics apis currently implemented for the glfw display adapter implementation.
+     */
+    enum GraphicsAPI {
+        OPENGL_4_6,
+        VULKAN_1_1,
+    };
+
     class XENGINE_EXPORT DisplayEnvironment final : public xng::DisplayEnvironment {
     public:
         DisplayEnvironment();
 
         ~DisplayEnvironment() override;
 
+        /**
+         * Later calls to createWindow will create windows for the given api.
+         *
+         * @param api The api to set
+         */
+        void setGraphicsAPI(const GraphicsAPI api) { gpuBackend = api; }
+
         std::unique_ptr<Monitor> getPrimaryMonitor() override;
 
-        std::set<std::unique_ptr<Monitor>> getMonitors() override;
+        std::set<std::unique_ptr<Monitor> > getMonitors() override;
 
-        std::unique_ptr<Window> createWindow(GraphicsAPI gpuBackend) override;
+        std::unique_ptr<Window> createWindow() override;
 
-        std::unique_ptr<Window> createWindow(GraphicsAPI gpuBackend,
-                                             const std::string &title,
+        std::unique_ptr<Window> createWindow(const std::string &title,
                                              Vec2i size,
                                              WindowAttributes attributes) override;
 
-        std::unique_ptr<Window> createWindow(GraphicsAPI gpuBackend,
-                                             const std::string &title,
+        std::unique_ptr<Window> createWindow(const std::string &title,
                                              Vec2i size,
                                              WindowAttributes attributes,
                                              Monitor &monitor,
                                              VideoMode mode) override;
 
-        std::vector<const char *> getRequiredVulkanExtensions() override;
+        std::vector<std::string> getRequiredVulkanExtensions();
+
+    private:
+        GraphicsAPI gpuBackend = OPENGL_4_6;
     };
 }
 

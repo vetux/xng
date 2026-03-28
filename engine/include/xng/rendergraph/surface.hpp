@@ -17,19 +17,28 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_GRAPHICSAPI_HPP
-#define XENGINE_GRAPHICSAPI_HPP
+#ifndef XENGINE_SURFACE_HPP
+#define XENGINE_SURFACE_HPP
 
-namespace xng {
-    enum GraphicsAPI : int {
-        OPENGL_4_6 = 0,
-        VULKAN_1_1,
-        DIRECTX11,
-        DIRECTX12,
-        METAL,
-        NONE,
-        USER = 255,
+#include "xng/math/vector2.hpp"
+
+#include "xng/rendergraph/textureproperties.hpp"
+
+namespace xng::rendergraph {
+    /**
+     * A surface represents a display environment render target into which passes can render.
+     * Any given Runtime.execute() call may render to multiple surfaces.
+     *
+     * The runtime manages swap chains for each surface.
+     */
+    class Surface {
+    public:
+        virtual ~Surface() = default;
+
+        virtual Vec2i getDimensions() = 0;
+
+        virtual ColorFormat getFormat() = 0;
     };
 }
 
-#endif //XENGINE_GRAPHICSAPI_HPP
+#endif //XENGINE_SURFACE_HPP

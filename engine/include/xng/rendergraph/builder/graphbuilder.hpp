@@ -40,10 +40,8 @@ namespace xng::rendergraph {
      */
     class XENGINE_EXPORT GraphBuilder {
     public:
-        explicit GraphBuilder(Resource<Texture> backBufferColor, Resource<Texture> backBufferDepthStencil)
-            : resourceCounter(0),
-              backBufferColor(std::move(backBufferColor)),
-              backBufferDepthStencil(std::move(backBufferDepthStencil)) {
+        explicit GraphBuilder()
+            : resourceCounter(0){
         }
 
         Resource<Buffer> allocateBuffer(const Buffer &desc) {
@@ -70,24 +68,6 @@ namespace xng::rendergraph {
             Resource ret(createResource(), desc);
             textureAllocations.insert({ret, static_cast<Texture>(desc)});
             return ret;
-        }
-
-        /**
-         * The returned texture has an RGBA color format.
-         *
-         * @return The resource handle representing the back buffer color texture
-         */
-        [[nodiscard]] Resource<Texture> getBackBufferColor() const {
-            return backBufferColor;
-        }
-
-        /**
-         * The returned texture has an DEPTH_STENCIL color format.
-         *
-         * @return The resource handle representing the back buffer depth stencil texture
-         */
-        [[nodiscard]] Resource<Texture> getBackBufferDepthStencil() const {
-            return backBufferDepthStencil;
         }
 
         TransferPassBuilder addTransferPass(std::string name) {
@@ -132,9 +112,6 @@ namespace xng::rendergraph {
 
         std::unordered_map<ResourceId, Buffer, ResourceIdHash> bufferAllocations;
         std::unordered_map<ResourceId, Texture, ResourceIdHash> textureAllocations;
-
-        Resource<Texture> backBufferColor;
-        Resource<Texture> backBufferDepthStencil;
     };
 }
 

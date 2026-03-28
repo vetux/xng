@@ -134,19 +134,17 @@ namespace xng::glfw {
         return ret;
     }
 
-    std::unique_ptr<Window> DisplayEnvironment::createWindow(GraphicsAPI gpuBackend) {
-        return makeWindow(gpuBackend, "Window DisplayEnvironment", Vec2i(600, 300), WindowAttributes());
+    std::unique_ptr<Window> DisplayEnvironment::createWindow() {
+        return makeWindow(gpuBackend, "XNG Window", Vec2i(600, 300), WindowAttributes());
     }
 
-    std::unique_ptr<Window> DisplayEnvironment::createWindow(GraphicsAPI gpuBackend,
-                                               const std::string &title,
+    std::unique_ptr<Window> DisplayEnvironment::createWindow(const std::string &title,
                                                Vec2i size,
                                                WindowAttributes attributes) {
         return makeWindow(gpuBackend, title, size, attributes);
     }
 
-    std::unique_ptr<Window> DisplayEnvironment::createWindow(GraphicsAPI gpuBackend,
-                                               const std::string &title,
+    std::unique_ptr<Window> DisplayEnvironment::createWindow(const std::string &title,
                                                Vec2i size,
                                                WindowAttributes attributes,
                                                Monitor &monitor,
@@ -154,11 +152,10 @@ namespace xng::glfw {
         return makeWindow(gpuBackend, title, size, attributes, &monitor, mode);
     }
 
-    std::vector<const char *> DisplayEnvironment::getRequiredVulkanExtensions() {
+    std::vector<std::string> DisplayEnvironment::getRequiredVulkanExtensions() {
 #ifdef BUILD_GLFW_VULKAN
         uint32_t glfwExtensionCount = 0;
-        const char **glfwExtensions;
-        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+        const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
         return {glfwExtensions, glfwExtensions + glfwExtensionCount};
 #else
         return {};

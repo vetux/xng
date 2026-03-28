@@ -61,7 +61,7 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance,
 }
 
 namespace xng::vulkan {
-    RenderGraphRuntime::RenderGraphRuntime(DisplayEnvironment &displayDriver) {
+    Runtime::Runtime(const std::vector<std::string> &extensions) {
         VkApplicationInfo appInfo{};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         appInfo.pApplicationName = "xEngine Application";
@@ -69,10 +69,6 @@ namespace xng::vulkan {
         appInfo.pEngineName = "xEngine";
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.apiVersion = VK_API_VERSION_1_1;
-
-        // auto extensions = displayDriver.getRequiredVulkanExtensions();
-
-        auto extensions = std::vector<const char *>{};
 
         // extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME); // Not supported on android
 
@@ -88,7 +84,7 @@ namespace xng::vulkan {
         for (auto &ext: extensions) {
             bool found = false;
             for (auto &aExt: availableExtensions) {
-                if (strcmp(aExt.extensionName, ext) == 0) {
+                if (strcmp(aExt.extensionName, ext.c_str()) == 0) {
                     found = true;
                     break;
                 }
@@ -98,11 +94,16 @@ namespace xng::vulkan {
             }
         }
 
+        std::vector<const char *> enabledExtensions;
+        for (auto &ext: extensions) {
+            enabledExtensions.emplace_back(ext.c_str());
+        }
+
         VkInstanceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo = &appInfo;
         createInfo.enabledExtensionCount = extensions.size();
-        createInfo.ppEnabledExtensionNames = extensions.data();
+        createInfo.ppEnabledExtensionNames = enabledExtensions.data();
 
         createInfo.enabledLayerCount = 0;
 
@@ -167,58 +168,37 @@ namespace xng::vulkan {
         instanceData = std::make_shared<InstanceData>(data);*/
     }
 
-    RenderGraphRuntime::~RenderGraphRuntime() {/*
-#ifndef NDEBUG
-        DestroyDebugUtilsMessengerEXT(getData(instanceData.get()).instance,
-                                      getData(instanceData.get()).debugMessenger,
-                                      nullptr);
-#endif
-        vkDestroyInstance(getData(instanceData.get()).instance, nullptr);*/
+    Runtime::~Runtime() {
+        /*
+        #ifndef NDEBUG
+                DestroyDebugUtilsMessengerEXT(getData(instanceData.get()).instance,
+                                              getData(instanceData.get()).debugMessenger,
+                                              nullptr);
+        #endif
+                vkDestroyInstance(getData(instanceData.get()).instance, nullptr);*/
     }
 
-    void RenderGraphRuntime::setWindow(std::shared_ptr<Window> window){}
-
-    Window &RenderGraphRuntime::getWindow() {
-        throw std::runtime_error("Not implemented");
+    std::shared_ptr<rendergraph::Surface> createSurface(std::shared_ptr<Window> window) {
+        throw std::runtime_error("Not Implemented");
     }
 
-    Vec2i RenderGraphRuntime::updateBackBuffer() {
-        throw std::runtime_error("Not implemented");
+    void setFramesInFlight(size_t framesInFlight) {
+        throw std::runtime_error("Not Implemented");
     }
 
-    Vec2i RenderGraphRuntime::getBackBufferSize() {
-        throw std::runtime_error("Not implemented");
+    rendergraph::Heap &getResourceHeap() {
+        throw std::runtime_error("Not Implemented");
     }
 
-    RenderGraphHandle RenderGraphRuntime::compile(RenderGraph &&graph) {
-        throw std::runtime_error("Not implemented");
+    rendergraph::PipelineCache &getPipelineCache() {
+        throw std::runtime_error("Not Implemented");
     }
 
-    void RenderGraphRuntime::recompile(RenderGraphHandle handle, RenderGraph &&graph) {
-        throw std::runtime_error("Not implemented");
+    rendergraph::Statistics execute(const rendergraph::Graph &graph) {
+        throw std::runtime_error("Not Implemented");
     }
 
-    RenderGraphStatistics RenderGraphRuntime::execute(RenderGraphHandle graph) {
-        throw std::runtime_error("Not implemented");
-    }
-
-    RenderGraphStatistics RenderGraphRuntime::execute(const std::vector<RenderGraphHandle> &graphs) {
-        throw std::runtime_error("Not implemented");
-    }
-
-    void RenderGraphRuntime::destroy(RenderGraphHandle graph) {
-        throw std::runtime_error("Not implemented");
-    }
-
-    void RenderGraphRuntime::saveCache(RenderGraphHandle graph, std::ostream &stream) {
-        throw std::runtime_error("Not implemented");
-    }
-
-    void RenderGraphRuntime::loadCache(RenderGraphHandle graph, std::istream &stream) {
-        throw std::runtime_error("Not implemented");
-    }
-
-    GraphicsAPI RenderGraphRuntime::getGraphicsAPI() {
-        throw std::runtime_error("Not implemented");
+    rendergraph::Statistics execute(const std::vector<rendergraph::Graph> &graphs) {
+        throw std::runtime_error("Not Implemented");
     }
 }

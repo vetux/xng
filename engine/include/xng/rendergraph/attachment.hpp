@@ -26,11 +26,12 @@
 #include "xng/rendergraph/resourceid.hpp"
 #include "xng/rendergraph/textureproperties.hpp"
 #include "xng/rendergraph/color.hpp"
+#include "xng/rendergraph/surface.hpp"
 #include "xng/rendergraph/resource/texture.hpp"
 
 namespace xng::rendergraph {
     struct Attachment {
-        Resource<Texture> texture{};
+        std::variant<Resource<Texture>, std::shared_ptr<Surface> > target{};
 
         /**
          * When the texture is a TEXTURE_CUBE_MAP, TEXTURE_2D_ARRAY or TEXTURE_CUBE_MAP_ARRAY and no target is specified,
@@ -38,7 +39,7 @@ namespace xng::rendergraph {
          *
          * Mip level 0 is used for TEXTURE_2D_* without a specified target.
          */
-        std::optional<Texture::SubResource> target{};
+        std::optional<Texture::SubResource> targetSubResource{};
 
         /**
          * An optional clear value.
@@ -49,20 +50,30 @@ namespace xng::rendergraph {
 
         Attachment() = default;
 
-        explicit Attachment(Resource<Texture> texture)
-            : texture(std::move(texture)) {
+        explicit Attachment(const Resource<Texture> &target)
+            : target(std::move(target)) {
         }
 
-        Attachment(Resource<Texture> texture, Texture::ClearValue clearColor)
-            : texture(std::move(texture)), clearValue(std::move(clearColor)) {
+        Attachment(const Resource<Texture> &target, Texture::ClearValue clearColor)
+            : target(std::move(target)), clearValue(std::move(clearColor)) {
         }
 
-        Attachment(Resource<Texture> texture, const Texture::SubResource &target)
-            : texture(std::move(texture)), target(target) {
+        Attachment(const Resource<Texture> &target, const Texture::SubResource &targetSubResource)
+            : target(std::move(target)), targetSubResource(targetSubResource) {
         }
 
-        Attachment(Resource<Texture> texture, const Texture::SubResource &target, Texture::ClearValue clearColor)
-            : texture(std::move(texture)), target(target), clearValue(std::move(clearColor)) {
+        Attachment(const Resource<Texture> &target,
+                   const Texture::SubResource &targetSubResource,
+                   Texture::ClearValue clearColor)
+            : target(std::move(target)), targetSubResource(targetSubResource), clearValue(std::move(clearColor)) {
+        }
+
+        explicit Attachment(const std::shared_ptr<Surface> &target)
+            : target(std::move(target)) {
+        }
+
+        Attachment(const std::shared_ptr<Surface> &target, Texture::ClearValue clearColor)
+            : target(std::move(target)), clearValue(std::move(clearColor)) {
         }
     };
 }

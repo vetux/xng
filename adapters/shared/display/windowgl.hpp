@@ -17,33 +17,30 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_OPENGL_HPP
-#define XENGINE_OPENGL_HPP
+#ifndef XENGINE_WINDOWGL_HPP
+#define XENGINE_WINDOWGL_HPP
 
-#include "xng/rendergraph/runtime.hpp"
-
-namespace xng::opengl {
-    class XENGINE_EXPORT Runtime final : public rendergraph::Runtime {
+namespace xng {
+    /**
+     * The glfw display adapter implements this interface for OPENGL_4_6 windows.
+     *
+     * The opengl adapter depends on this interface.
+     * The window passed to opengl::Runtime.setWindow must implement this interface.
+     */
+    class WindowGl {
     public:
-        Runtime();
+        virtual ~WindowGl() = default;
 
-        ~Runtime() override = default;
+        /**
+         * Make the window-owned OpenGL context current.
+         */
+        virtual void makeContextCurrent() = 0;
 
-        std::shared_ptr<rendergraph::Surface> createSurface(std::shared_ptr<Window> window) override;
-
-        void setFramesInFlight(size_t framesInFlight) override;
-
-        rendergraph::Heap &getResourceHeap() override;
-
-        rendergraph::PipelineCache &getPipelineCache() override;
-
-        rendergraph::Statistics execute(const rendergraph::Graph &graph) override;
-
-        rendergraph::Statistics execute(const std::vector<rendergraph::Graph> &graphs) override;
-
-    private:
-        std::unique_ptr<rendergraph::Runtime> runtime;
+        /**
+         * Swap the window buffers.
+         */
+        virtual void swapBuffers() = 0;
     };
 }
 
-#endif //XENGINE_OPENGL_HPP
+#endif //XENGINE_WINDOWGL_HPP

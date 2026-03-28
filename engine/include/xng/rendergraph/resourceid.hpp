@@ -26,11 +26,10 @@
 
 namespace xng::rendergraph {
     /**
-     * There are 3 resource ID namespaces with separate minting.
+     * There are 2 resource ID namespaces with separate minting.
      *
      *  TRANSIENT: Resources local to the graph (ID minting handled by user / Builder class)
      *  HEAP: Resources inside the heap (ID minting handled by heap)
-     *  RUNTIME: Special Resources such as the back buffer textures (ID minting handled by runtime / static IDs)
      */
     class ResourceId {
     public:
@@ -38,8 +37,7 @@ namespace xng::rendergraph {
 
         enum NameSpace {
             TRANSIENT = 0,
-            HEAP,
-            RUNTIME // Currently only back buffer is runtime scope
+            HEAP
         };
 
         ResourceId() = default;

@@ -45,8 +45,6 @@ namespace xng::glfw {
 
         Input &getInput() override;
 
-        void swapBuffers() override = 0;
-
         void update() override;
 
         bool shouldClose() override;

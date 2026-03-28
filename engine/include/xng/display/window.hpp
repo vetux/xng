@@ -39,8 +39,6 @@ namespace xng {
 
         virtual Input &getInput() = 0;
 
-        virtual void swapBuffers() = 0;
-
         virtual void update() = 0;
 
         virtual bool shouldClose() = 0;

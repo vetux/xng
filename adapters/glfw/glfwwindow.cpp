@@ -252,10 +252,6 @@ namespace xng::glfw {
         return *input;
     }
 
-    void GLFWWindow::swapBuffers() {
-        glfwSwapBuffers(wndH);
-    }
-
     void GLFWWindow::update() {
         input->update();
         glfwPollEvents();

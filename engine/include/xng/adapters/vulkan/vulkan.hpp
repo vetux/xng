@@ -20,40 +20,26 @@
 #ifndef XENGINE_VULKAN_HPP
 #define XENGINE_VULKAN_HPP
 
-#include "xng/rendergraph/rendergraphruntime.hpp"
-
-#include "xng/display/displayenvironment.hpp"
+#include "xng/rendergraph/runtime.hpp"
 
 namespace xng::vulkan {
-    class XENGINE_EXPORT RenderGraphRuntime final : public xng::RenderGraphRuntime {
+    class XENGINE_EXPORT Runtime final : public xng::rendergraph::Runtime {
     public:
-        explicit RenderGraphRuntime(DisplayEnvironment &displayDriver);
+        explicit Runtime(const std::vector<std::string> &extensions);
 
-        ~RenderGraphRuntime() override;
+        ~Runtime() override;
 
-        void setWindow(std::shared_ptr<Window> window) override;
+        std::shared_ptr<rendergraph::Surface> createSurface(std::shared_ptr<Window> window) override;
 
-        Window &getWindow() override;
+        void setFramesInFlight(size_t framesInFlight) override;
 
-        Vec2i updateBackBuffer() override;
+        rendergraph::Heap &getResourceHeap() override;
 
-        Vec2i getBackBufferSize() override;
+        rendergraph::PipelineCache &getPipelineCache() override;
 
-        RenderGraphHandle compile(RenderGraph &&graph) override;
+        rendergraph::Statistics execute(const rendergraph::Graph &graph) override;
 
-        void recompile(RenderGraphHandle handle, RenderGraph &&graph) override;
-
-        RenderGraphStatistics execute(RenderGraphHandle graph) override;
-
-        RenderGraphStatistics execute(const std::vector<RenderGraphHandle> &graphs) override;
-
-        void destroy(RenderGraphHandle graph) override;
-
-        void saveCache(RenderGraphHandle graph, std::ostream &stream) override;
-
-        void loadCache(RenderGraphHandle graph, std::istream &stream) override;
-
-        GraphicsAPI getGraphicsAPI() override;
+        rendergraph::Statistics execute(const std::vector<rendergraph::Graph> &graphs) override;
     };
 }
 

@@ -17,33 +17,29 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_OPENGL_HPP
-#define XENGINE_OPENGL_HPP
+#ifndef XENGINE_WINDOWVK_HPP
+#define XENGINE_WINDOWVK_HPP
 
-#include "xng/rendergraph/runtime.hpp"
+#include <vulkan/vulkan.h>
 
-namespace xng::opengl {
-    class XENGINE_EXPORT Runtime final : public rendergraph::Runtime {
+namespace xng {
+    /**
+     * The glfw display adapter implements this interface for VULKAN_1_1 windows.
+     *
+     * The vulkan adapter depends on this interface.
+     * The window passed to vulkan::Runtime.setWindow must implement this interface.
+     */
+    class WindowVk {
     public:
-        Runtime();
+        virtual ~WindowVk() = default;
 
-        ~Runtime() override = default;
-
-        std::shared_ptr<rendergraph::Surface> createSurface(std::shared_ptr<Window> window) override;
-
-        void setFramesInFlight(size_t framesInFlight) override;
-
-        rendergraph::Heap &getResourceHeap() override;
-
-        rendergraph::PipelineCache &getPipelineCache() override;
-
-        rendergraph::Statistics execute(const rendergraph::Graph &graph) override;
-
-        rendergraph::Statistics execute(const std::vector<rendergraph::Graph> &graphs) override;
-
-    private:
-        std::unique_ptr<rendergraph::Runtime> runtime;
+        /**
+         * @param instance The instance in which to create the surface.
+         * @param allocator Optional allocator to create the surface for.
+         * @return The created surface.
+         */
+        virtual VkSurfaceKHR createSurface(VkInstance instance, VkAllocationCallbacks *allocator) = 0;
     };
 }
 
-#endif //XENGINE_OPENGL_HPP
+#endif //XENGINE_WINDOWVK_HPP

@@ -20,11 +20,11 @@
 #ifndef XENGINE_RENDERGRAPH_HEAP_HPP
 #define XENGINE_RENDERGRAPH_HEAP_HPP
 
-#include <span>
-
 #include "xng/rendergraph/image.hpp"
 #include "xng/rendergraph/resourceid.hpp"
 #include "xng/rendergraph/heapmapping.hpp"
+
+#include "xng/rendergraph/context/transfercontext.hpp"
 
 #include "xng/rendergraph/resource/indexbuffer.hpp"
 #include "xng/rendergraph/resource/storagebuffer.hpp"

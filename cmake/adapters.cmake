@@ -1,8 +1,8 @@
 option(BUILD_GLFW "Build the glfw display adapter" ON)
 option(BUILD_GLFW_OPENGL "Build the opengl support of the glfw display adapter" ON) # Depends on BUILD_OPENGL
-option(BUILD_GLFW_VULKAN "Build the vulkan support of the glfw display adapter" OFF) # Depends on BUILD_VULKAN
+option(BUILD_GLFW_VULKAN "Build the vulkan support of the glfw display adapter" ON) # Depends on BUILD_VULKAN
 option(BUILD_OPENGL "Build the OpenGL render graph adapter" ON)
-option(BUILD_VULKAN "Build the Vulkan render graph adapter" OFF)
+option(BUILD_VULKAN "Build the Vulkan render graph adapter" ON)
 option(BUILD_BOX2D "Build the box2d physics adapter" ON)
 option(BUILD_BULLET3 "Build the bullet3 physics adapter" ON)
 option(BUILD_OPENAL "Build the OpenAL audio adapter" ON)
@@ -14,7 +14,7 @@ option(BUILD_ANDROID "Build the android display adapter" OFF)
 option(BUILD_ANDROID_OPENGL "Build the opengl support of the android display adapter" OFF) # Depends on BUILD_OPENGL
 option(BUILD_YOGA "Build the yoga flexbox layout engine adapter" ON)
 
-set(ADAPTER_INCLUDE) # The adapter include directories in a list
+set(ADAPTER_INCLUDE ${BASE_SOURCE_DIR}/adapters/shared/) # The adapter include directories in a list
 set(ADAPTER_SRC) # The adapter source files in a list
 set(ADAPTER_LINK) # The adapter linked library names in a list
 set(ADAPTER_INCLUDES) # The adapter include paths

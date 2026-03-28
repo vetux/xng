@@ -20,10 +20,19 @@
 #ifndef XENGINE_WINDOWGLFWVK_HPP
 #define XENGINE_WINDOWGLFWVK_HPP
 
+#include <string>
+
 #include "glfwwindow.hpp"
+#include "display/windowvk.hpp"
+
+#include "xng/display/videomode.hpp"
+#include "xng/display/windowattributes.hpp"
+#include "xng/math/vector2.hpp"
 
 namespace xng::glfw {
-    class GLFWWindowVk : public GLFWWindow {
+    class MonitorGLFW;
+
+    class GLFWWindowVk : public GLFWWindow, public WindowVk {
     public:
         GLFWWindowVk(const std::string &title, Vec2i size, WindowAttributes attributes);
 
@@ -33,7 +42,7 @@ namespace xng::glfw {
                      MonitorGLFW &monitor,
                      VideoMode videoMode);
 
-        void swapBuffers() override;
+        VkSurfaceKHR createSurface(VkInstance instance, VkAllocationCallbacks *allocator) override;
     };
 }
 

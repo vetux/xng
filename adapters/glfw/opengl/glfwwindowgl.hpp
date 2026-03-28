@@ -23,8 +23,10 @@
 #include "glfwwindow.hpp"
 #include "monitorglfw.hpp"
 
+#include "display/windowgl.hpp"
+
 namespace xng::glfw {
-    class GLFWWindowGL final : public GLFWWindow {
+    class GLFWWindowGL final : public GLFWWindow, public WindowGl {
     public:
         GLFWWindowGL(const std::string &title, Vec2i size, WindowAttributes attributes);
 
@@ -35,6 +37,8 @@ namespace xng::glfw {
                      VideoMode videoMode);
 
         ~GLFWWindowGL() override = default;
+
+        void makeContextCurrent() override;
 
         void swapBuffers() override;
     };
