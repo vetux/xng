@@ -71,6 +71,17 @@ namespace xng::rendergraph {
     inline Buffer::Capability operator|(const Buffer::Capability a, const Buffer::Capability b) {
         return static_cast<Buffer::Capability>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
     }
+
+    class BufferHash {
+    public:
+        std::size_t operator()(const Buffer &buffer) const {
+            size_t ret = 0;
+            hash_combine(ret, buffer.size);
+            hash_combine(ret, buffer.capabilityFlags);
+            hash_combine(ret, buffer.memoryType);
+            return ret;
+        }
+    };
 }
 
 #endif //XENGINE_BUFFER_HPP

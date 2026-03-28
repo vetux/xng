@@ -195,7 +195,7 @@ namespace xng::rendergraph {
             : Resource<T>(), heap(nullptr) {
         }
 
-        HeapResource(ResourceId::IdType handle, T value, Heap &heap)
+        HeapResource(ResourceId::Handle handle, T value, Heap &heap)
             : Resource<T>(handle, value, ResourceId::HEAP), heap(&heap) {
             heap.incrementReference(*this);
         }

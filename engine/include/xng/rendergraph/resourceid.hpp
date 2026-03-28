@@ -33,7 +33,7 @@ namespace xng::rendergraph {
      */
     class ResourceId {
     public:
-        typedef int IdType;
+        typedef int Handle;
 
         enum NameSpace {
             TRANSIENT = 0,
@@ -42,7 +42,7 @@ namespace xng::rendergraph {
 
         ResourceId() = default;
 
-        explicit ResourceId(const IdType handle, const NameSpace ns)
+        explicit ResourceId(const Handle handle, const NameSpace ns)
             : handle(handle), space(ns) {
         }
 
@@ -50,7 +50,7 @@ namespace xng::rendergraph {
             return handle >= 0;
         }
 
-        [[nodiscard]] IdType getHandle() const {
+        [[nodiscard]] Handle getHandle() const {
             return handle;
         }
 
@@ -67,7 +67,7 @@ namespace xng::rendergraph {
         }
 
     protected:
-        IdType handle = -1;
+        Handle handle = -1;
         NameSpace space = TRANSIENT;
     };
 
@@ -86,11 +86,11 @@ namespace xng::rendergraph {
     public:
         Resource() = default;
 
-        Resource(const IdType handle, T data)
+        Resource(const Handle handle, T data)
             : ResourceId(handle, TRANSIENT), data(std::move(data)) {
         }
 
-        Resource(const IdType handle, T data, const NameSpace scope)
+        Resource(const Handle handle, T data, const NameSpace scope)
             : ResourceId(handle, scope), data(std::move(data)) {
         }
 

@@ -28,32 +28,39 @@ namespace xng::rendergraph {
      * May not be assigned or contain inaccurate data.
      */
     struct Statistics {
+        std::string vendor{};
+        std::string renderer{};
+        std::string version{};
+
         size_t drawCalls = 0;
         size_t polygons = 0;
 
-        size_t vertexVRamUsage = 0;
-        size_t vertexVRamUpload = 0;
-        size_t vertexVRamDownload = 0;
-        size_t vertexVRamCopy = 0;
-
-        size_t indexVRamUsage = 0;
-        size_t indexVRamUpload = 0;
-        size_t indexVRamDownload = 0;
-        size_t indexVRamCopy = 0;
+        size_t bufferVRamUsage = 0;
+        size_t bufferVRamUpload = 0;
+        size_t bufferVRamDownload = 0;
+        size_t bufferVRamCopy = 0;
 
         size_t textureVRamUsage = 0;
         size_t textureVRamUpload = 0;
         size_t textureVRamDownload = 0;
         size_t textureVRamCopy = 0;
 
-        size_t shaderBufferVRamUsage = 0;
-        size_t shaderBufferVRamUpload = 0;
-        size_t shaderBufferVRamDownload = 0;
-        size_t shaderBufferVRamCopy = 0;
+        Statistics &operator+=(const Statistics &other) {
+            drawCalls += other.drawCalls;
+            polygons += other.polygons;
 
-        std::string vendor{};
-        std::string renderer{};
-        std::string version{};
+            bufferVRamUsage += other.bufferVRamUsage;
+            bufferVRamUpload += other.bufferVRamUpload;
+            bufferVRamDownload += other.bufferVRamDownload;
+            bufferVRamCopy += other.bufferVRamCopy;
+
+            textureVRamUsage += other.textureVRamUsage;
+            textureVRamUpload += other.textureVRamUpload;
+            textureVRamDownload += other.textureVRamDownload;
+            textureVRamCopy += other.textureVRamCopy;
+
+            return *this;
+        }
     };
 }
 

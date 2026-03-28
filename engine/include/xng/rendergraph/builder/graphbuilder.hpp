@@ -102,11 +102,11 @@ namespace xng::rendergraph {
         }
 
     private:
-        ResourceId::IdType createResource() {
+        ResourceId::Handle createResource() {
             return resourceCounter++;
         }
 
-        ResourceId::IdType resourceCounter;
+        ResourceId::Handle resourceCounter;
 
         std::vector<Pass> passes;
 

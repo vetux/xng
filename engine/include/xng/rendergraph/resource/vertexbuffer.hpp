@@ -20,6 +20,8 @@
 #ifndef XENGINE_RENDERGRAPH_VERTEXBUFFER_HPP
 #define XENGINE_RENDERGRAPH_VERTEXBUFFER_HPP
 
+#include <stdexcept>
+
 #include "xng/rendergraph/resource/buffer.hpp"
 
 namespace xng::rendergraph {
