@@ -35,6 +35,13 @@ namespace xng::rendergraph {
         /**
          * The passed window instance must be compatible with the runtime implementation.
          *
+         * Runtimes can operate completely headless.
+         *
+         * On OpenGL this is a bit messy. The display environment must manage a single global context with a hidden
+         * window, and all other windows are created with sub contexts of this global context.
+         *
+         * On Vulkan it is completely decoupled, and the windowing system interaction exists solely in this method.
+         *
          * @param window The window for which to create a surface.
          * @return The Surface representing the window contents.
          */

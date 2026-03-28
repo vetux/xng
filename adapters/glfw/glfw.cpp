@@ -30,17 +30,20 @@ namespace xng::glfw {
                                          const Vec2i &size,
                                          WindowAttributes attributes,
                                          Monitor *monitor = nullptr,
-                                         VideoMode mode = {}) {
+                                         VideoMode mode = {},
+                                         GLFWwindow *share = nullptr) {
         if (monitor) {
             return std::make_unique<GLFWWindowGL>(title,
                                                   size,
                                                   attributes,
                                                   down_cast<MonitorGLFW &>(*monitor),
-                                                  mode);
+                                                  mode,
+                                                  share);
         } else {
             return std::make_unique<GLFWWindowGL>(title,
                                                   size,
-                                                  attributes);
+                                                  attributes,
+                                                  share);
         }
     }
 }
@@ -94,24 +97,37 @@ namespace xng::glfw {
 #endif
 
 namespace xng::glfw {
-    static std::unique_ptr<Window> makeWindow(GraphicsAPI gpuBackend,
-                                              const std::string &title,
-                                              Vec2i size,
-                                              WindowAttributes attributes,
-                                              Monitor *monitor = nullptr,
-                                              VideoMode mode = {}) {
-        switch (gpuBackend) {
+    std::unique_ptr<Window> DisplayEnvironment::makeWindow(GraphicsAPI api,
+                                                           const std::string &title,
+                                                           Vec2i size,
+                                                           WindowAttributes attributes,
+                                                           Monitor *monitor,
+                                                           VideoMode mode) const {
+        switch (api) {
             case OPENGL_4_6:
-                return makeWindowGL(title, size, attributes, monitor, mode);
+                if (primaryWindow == nullptr) {
+                    throw std::runtime_error("DisplayEnvironment OpenGL backend support not built");
+                }
+                return makeWindowGL(title,
+                                    size,
+                                    attributes,
+                                    monitor,
+                                    mode,
+                                    down_cast<GLFWWindowGL &>(*primaryWindow).windowHandle());
             case VULKAN_1_1:
                 return makeWindowVK(title, size, attributes, monitor, mode);
             default:
-                throw std::runtime_error("Unsupported gpu backend " + std::to_string(static_cast<int>(gpuBackend)));
+                throw std::runtime_error("Unsupported gpu backend " + std::to_string(static_cast<int>(api)));
         }
     }
 
     DisplayEnvironment::DisplayEnvironment() {
         glfwInit();
+#ifdef BUILD_GLFW_OPENGL
+        auto attr = WindowAttributes();
+        attr.visible = false;
+        primaryWindow = makeWindowGL("XNG Window", Vec2i(0, 0), attr);
+#endif
     }
 
     DisplayEnvironment::~DisplayEnvironment() {
@@ -139,16 +155,16 @@ namespace xng::glfw {
     }
 
     std::unique_ptr<Window> DisplayEnvironment::createWindow(const std::string &title,
-                                               Vec2i size,
-                                               WindowAttributes attributes) {
+                                                             Vec2i size,
+                                                             WindowAttributes attributes) {
         return makeWindow(gpuBackend, title, size, attributes);
     }
 
     std::unique_ptr<Window> DisplayEnvironment::createWindow(const std::string &title,
-                                               Vec2i size,
-                                               WindowAttributes attributes,
-                                               Monitor &monitor,
-                                               VideoMode mode) {
+                                                             Vec2i size,
+                                                             WindowAttributes attributes,
+                                                             Monitor &monitor,
+                                                             VideoMode mode) {
         return makeWindow(gpuBackend, title, size, attributes, &monitor, mode);
     }
 

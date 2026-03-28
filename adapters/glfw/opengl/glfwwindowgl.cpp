@@ -27,7 +27,8 @@
 #include "glfwwindowgl.hpp"
 
 namespace xng::glfw {
-    GLFWWindowGL::GLFWWindowGL(const std::string &title, Vec2i size, WindowAttributes attributes) {
+    GLFWWindowGL::GLFWWindowGL(const std::string &title, Vec2i size, WindowAttributes attributes, GLFWwindow *share)
+        : share(share) {
         glfwDefaultWindowHints();
 
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -35,7 +36,7 @@ namespace xng::glfw {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, attributes.debug);
 
-        createWindow(title, size, attributes);
+        createWindow(title, size, attributes, share);
 
         glfwMakeContextCurrent(wndH);
         if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
@@ -49,7 +50,8 @@ namespace xng::glfw {
                                Vec2i size,
                                WindowAttributes attributes,
                                MonitorGLFW &monitor,
-                               VideoMode videoMode) {
+                               VideoMode videoMode,
+                               GLFWwindow *share) {
         glfwDefaultWindowHints();
 
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -63,7 +65,7 @@ namespace xng::glfw {
         glfwWindowHint(GLFW_BLUE_BITS, videoMode.blueBits);
         glfwWindowHint(GLFW_REFRESH_RATE, videoMode.refreshRate);
 
-        createWindow(title, size, attributes, monitor, videoMode);
+        createWindow(title, size, attributes, monitor, videoMode, share);
 
         glfwMakeContextCurrent(wndH);
         if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
@@ -71,8 +73,12 @@ namespace xng::glfw {
         }
     }
 
-    void GLFWWindowGL::makeContextCurrent() {
+    void GLFWWindowGL::bindContext() {
         glfwMakeContextCurrent(wndH);
+    }
+
+    void GLFWWindowGL::unbindContext() {
+        glfwMakeContextCurrent(share);
     }
 
     void GLFWWindowGL::swapBuffers() {

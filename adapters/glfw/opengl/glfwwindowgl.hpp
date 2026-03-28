@@ -28,19 +28,25 @@
 namespace xng::glfw {
     class GLFWWindowGL final : public GLFWWindow, public WindowGl {
     public:
-        GLFWWindowGL(const std::string &title, Vec2i size, WindowAttributes attributes);
+        GLFWWindowGL(const std::string &title, Vec2i size, WindowAttributes attributes, GLFWwindow *share = nullptr);
 
         GLFWWindowGL(const std::string &title,
                      Vec2i size,
                      WindowAttributes attributes,
                      MonitorGLFW &monitor,
-                     VideoMode videoMode);
+                     VideoMode videoMode,
+                     GLFWwindow *share = nullptr);
 
         ~GLFWWindowGL() override = default;
 
-        void makeContextCurrent() override;
+        void bindContext() override;
+
+        void unbindContext() override;
 
         void swapBuffers() override;
+
+    private:
+        GLFWwindow *share = nullptr;
     };
 }
 

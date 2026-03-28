@@ -52,8 +52,8 @@ namespace xng::rendergraph {
      *
      * This enables users to asynchronously stream data to the gpu.
      *
-     * On OpenGL this is implemented with a sub context on a separate thread + std::atomic.
-     * On Vulkan this is implemented on the main thread using transfer queues + semaphores / fences.
+     * On OpenGL this is implemented using glFenceSync / glClientWaitSync.
+     * On Vulkan this is implemented using transfer queues + semaphores / fences.
      */
     class Heap {
     public:

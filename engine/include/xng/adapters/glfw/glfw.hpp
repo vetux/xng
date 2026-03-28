@@ -63,7 +63,15 @@ namespace xng::glfw {
         std::vector<std::string> getRequiredVulkanExtensions();
 
     private:
+        std::unique_ptr<Window> makeWindow(GraphicsAPI api,
+                                          const std::string &title,
+                                          Vec2i size,
+                                          WindowAttributes attributes,
+                                          Monitor *monitor = nullptr,
+                                          VideoMode mode = {}) const;
+
         GraphicsAPI gpuBackend = OPENGL_4_6;
+        std::unique_ptr<Window> primaryWindow; // Hack for opengl. Holds one global context shared with all created opengl windows.
     };
 }
 

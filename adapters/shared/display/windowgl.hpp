@@ -32,9 +32,14 @@ namespace xng {
         virtual ~WindowGl() = default;
 
         /**
-         * Make the window-owned OpenGL context current.
+         * Make the window-owned OpenGL sub context current.
          */
-        virtual void makeContextCurrent() = 0;
+        virtual void bindContext() = 0;
+
+        /**
+         * Make the display environment owned global OpenGL context current.
+         */
+        virtual void unbindContext() = 0;
 
         /**
          * Swap the window buffers.

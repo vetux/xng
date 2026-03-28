@@ -35,13 +35,17 @@ namespace xng::glfw {
 
         ~GLFWWindow() override;
 
-        void createWindow(const std::string &title, const Vec2i& size, const WindowAttributes &attributes);
+        void createWindow(const std::string &title,
+                          const Vec2i &size,
+                          const WindowAttributes &attributes,
+                          GLFWwindow *share);
 
         void createWindow(const std::string &title,
-                          const Vec2i& size,
+                          const Vec2i &size,
                           const WindowAttributes &attributes,
                           const MonitorGLFW &monitor,
-                          const VideoMode &videoMode);
+                          const VideoMode &videoMode,
+                          GLFWwindow *share);
 
         Input &getInput() override;
 
@@ -105,23 +109,23 @@ namespace xng::glfw {
 
         void setWindowFocusOnShow(bool focusOnShow) override;
 
-        void glfwWindowCloseCallback()const ;
+        void glfwWindowCloseCallback() const;
 
-        void glfwWindowMoveCallback(const Vec2i& pos)const ;
+        void glfwWindowMoveCallback(const Vec2i &pos) const;
 
-        void glfwWindowSizeCallback(int width, int height)const ;
+        void glfwWindowSizeCallback(int width, int height) const;
 
-        void glfwWindowRefreshCallback()const ;
+        void glfwWindowRefreshCallback() const;
 
-        void glfwWindowFocusCallback(bool focused)const ;
+        void glfwWindowFocusCallback(bool focused) const;
 
-        void glfwWindowMinimizeCallback()const ;
+        void glfwWindowMinimizeCallback() const;
 
         void glfwWindowMaximizeCallback() const;
 
-        void glfwWindowContentScaleCallback(const Vec2f& scale)const ;
+        void glfwWindowContentScaleCallback(const Vec2f &scale) const;
 
-        void glfwFrameBufferSizeCallback(const Vec2i& size)const ;
+        void glfwFrameBufferSizeCallback(const Vec2i &size) const;
 
         void addListener(WindowListener &listener) override;
 
@@ -131,8 +135,8 @@ namespace xng::glfw {
 
     protected:
         struct CompareRefs {
-            bool operator()(const std::reference_wrapper<WindowListener>& a,
-                            const std::reference_wrapper<WindowListener>& b) const {
+            bool operator()(const std::reference_wrapper<WindowListener> &a,
+                            const std::reference_wrapper<WindowListener> &b) const {
                 return &a.get() < &b.get();
             }
         };

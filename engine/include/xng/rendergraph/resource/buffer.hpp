@@ -21,6 +21,7 @@
 #define XENGINE_BUFFER_HPP
 
 #include <cstdint>
+#include <cstddef>
 
 namespace xng::rendergraph {
     /**

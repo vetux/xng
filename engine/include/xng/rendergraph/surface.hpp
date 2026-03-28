@@ -27,6 +27,7 @@
 namespace xng::rendergraph {
     /**
      * A surface represents a display environment render target into which passes can render.
+     *
      * Any given Runtime.execute() call may render to multiple surfaces.
      *
      * The runtime manages swap chains for each surface.
@@ -35,9 +36,17 @@ namespace xng::rendergraph {
     public:
         virtual ~Surface() = default;
 
+        /**
+         * The runtime internally caches the dimensions of the frame buffer.
+         *
+         * At the end of each Runtime.execute() invocation, the runtime checks the current window frame buffer size
+         * and reconfigures the swap chain when needed.
+         *
+         * This means the returned value may be unstable across graph executions.
+         *
+         * @return The current dimensions of the surface (Swap chain images).
+         */
         virtual Vec2i getDimensions() = 0;
-
-        virtual ColorFormat getFormat() = 0;
     };
 }
 

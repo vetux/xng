@@ -145,13 +145,13 @@ namespace xng::glfw {
         glfwSetFramebufferSizeCallback(wndH, glfwFrameBufferSizeCallback);
     }
 
-    //TODO: GLFW Window implementation synchronization
     void GLFWWindow::createWindow(const std::string &title,
                                   const Vec2i &size,
-                                  const WindowAttributes &attributes) {
+                                  const WindowAttributes &attributes,
+                                  GLFWwindow *share) {
         applyHints(attributes);
 
-        wndH = glfwCreateWindow(size.x, size.y, title.c_str(), nullptr, nullptr);
+        wndH = glfwCreateWindow(size.x, size.y, title.c_str(), nullptr, share);
         if (wndH == nullptr) {
             throw std::runtime_error("Failed to create GLFW Window");
         }
@@ -167,7 +167,8 @@ namespace xng::glfw {
                                   const Vec2i &size,
                                   const WindowAttributes &attributes,
                                   const MonitorGLFW &monitor,
-                                  const VideoMode &videoMode) {
+                                  const VideoMode &videoMode,
+                                  GLFWwindow *share) {
         applyHints(attributes);
 
         //Setup monitor video mode hints
@@ -176,7 +177,7 @@ namespace xng::glfw {
         glfwWindowHint(GLFW_BLUE_BITS, videoMode.blueBits);
         glfwWindowHint(GLFW_REFRESH_RATE, videoMode.refreshRate);
 
-        wndH = glfwCreateWindow(size.x, size.y, title.c_str(), monitor.monH, nullptr);
+        wndH = glfwCreateWindow(size.x, size.y, title.c_str(), monitor.monH, share);
         if (wndH == nullptr) {
             throw std::runtime_error("Failed to create GLFW Window");
         }

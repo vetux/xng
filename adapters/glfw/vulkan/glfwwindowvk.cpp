@@ -27,7 +27,7 @@ namespace xng::glfw {
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-        createWindow(title, size, attributes);
+        createWindow(title, size, attributes, nullptr);
     }
 
     GLFWWindowVk::GLFWWindowVk(const std::string &title,
@@ -45,7 +45,7 @@ namespace xng::glfw {
         glfwWindowHint(GLFW_BLUE_BITS, videoMode.blueBits);
         glfwWindowHint(GLFW_REFRESH_RATE, videoMode.refreshRate);
 
-        createWindow(title, size, attributes, monitor, videoMode);
+        createWindow(title, size, attributes, monitor, videoMode, nullptr);
     }
 
     VkSurfaceKHR GLFWWindowVk::createWindowSurface(VkInstance instance, VkAllocationCallbacks *allocator) {
