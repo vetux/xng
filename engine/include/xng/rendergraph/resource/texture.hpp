@@ -20,6 +20,8 @@
 #ifndef XENGINE_RENDERGRAPH_TEXTURE_HPP
 #define XENGINE_RENDERGRAPH_TEXTURE_HPP
 
+#include <variant>
+
 #include "xng/math/vector2.hpp"
 
 #include "xng/rendergraph/color.hpp"
