@@ -22,113 +22,142 @@
 
 #include <utility>
 
-#include "xng/rendergraph/rendergraphcontext.hpp"
+#include "xng/rendergraph/context.hpp"
+#include "xng/rendergraph/statistics.hpp"
 
-#include "ogl/oglframebuffer.hpp"
-#include "ogl/oglvertexarrayobject.hpp"
+#include "resource/oglframebuffer.hpp"
+#include "resource/oglvertexarrayobject.hpp"
 
-#include "compiledpipeline.hpp"
+#include "compiledshaderprogram.hpp"
 #include "graphresources.hpp"
-#include "xng/rendergraph/rendergraphstatistics.hpp"
+#include "heapgl.hpp"
 
 using namespace xng;
 
-class ContextGL final : public RenderGraphContext {
+class ContextGL final : public RasterContext {
 public:
     ~ContextGL() override = default;
 
     explicit ContextGL(std::shared_ptr<OGLTexture> backBufferColor,
                        std::shared_ptr<OGLTexture> backBufferDepthStencil,
                        const GraphResources &res,
-                       RenderGraphStatistics &stats)
+                       const HeapGL &heap,
+                       Statistics &stats)
         : vertexArray(std::make_shared<OGLVertexArrayObject>()),
           backBufferColor(std::move(backBufferColor)),
           backBufferDepthStencil(std::move(backBufferDepthStencil)),
           emptySSBO(std::make_unique<OGLShaderStorageBuffer>(1)),
           resources(std::move(res)),
-          stats(stats){
+          heap(heap),
+          stats(stats) {
     }
 
-    void uploadBuffer(RenderGraphResource target,
-                      const uint8_t *buffer,
-                      size_t bufferSize,
-                      size_t targetOffset) override;
+    void uploadVertexBuffer(const Resource<VertexBuffer> &target,
+                            const uint8_t *buffer,
+                            size_t bufferSize,
+                            size_t targetOffset) override;
 
-    void uploadTexture(RenderGraphResource texture,
-                       const uint8_t *buffer,
-                       size_t bufferSize,
-                       ColorFormat bufferFormat,
-                       size_t index,
-                       CubeMapFace face,
-                       size_t mipMapLevel,
-                       const Vec2i &size,
-                       const Vec2i &offset) override;
+    void uploadIndexBuffer(const Resource<IndexBuffer> &target,
+                           const uint8_t *buffer,
+                           size_t bufferSize,
+                           size_t targetOffset) override;
 
-    void generateMipMaps(RenderGraphResource texture) override;
+    void uploadStorageBuffer(const Resource<StorageBuffer> &target,
+                             const uint8_t *buffer,
+                             size_t bufferSize,
+                             size_t targetOffset) override;
 
-    void clearTextureColor(RenderGraphResource texture,
+    void uploadTextureBuffer(const Resource<Texture> &texture,
+                             const uint8_t *buffer,
+                             size_t bufferSize,
+                             ColorFormat bufferFormat,
+                             size_t index,
+                             CubeMapFace face,
+                             size_t mipMapLevel,
+                             const Vec2i &size,
+                             const Vec2i &offset) override;
+
+    void generateMipMaps(const Resource<Texture> &texture) override;
+
+    void clearTextureColor(const Resource<Texture> &texture,
                            const ColorRGBA &clearColor,
                            size_t index,
                            CubeMapFace face,
                            size_t mipMapLevel) override;
 
-    void clearTextureColor(RenderGraphResource texture,
+    void clearTextureColor(const Resource<Texture> &texture,
                            const Vec4f &clearColor,
                            size_t index,
                            CubeMapFace face,
                            size_t mipMapLevel) override;
 
-    void clearTextureColor(RenderGraphResource texture,
+    void clearTextureColor(const Resource<Texture> &texture,
                            const Vec4i &clearColor,
                            size_t index,
                            CubeMapFace face,
                            size_t mipMapLevel) override;
 
-    void clearTextureColor(RenderGraphResource texture,
+    void clearTextureColor(const Resource<Texture> &texture,
                            const Vec4u &clearColor,
                            size_t index,
                            CubeMapFace face,
                            size_t mipMapLevel) override;
 
-    void clearTextureDepthStencil(RenderGraphResource texture,
+    void clearTextureDepthStencil(const Resource<Texture> &texture,
                                   float clearDepth,
-                                  unsigned int clearStencil,
+                                  unsigned clearStencil,
                                   size_t index,
                                   CubeMapFace face,
                                   size_t mipMapLevel) override;
 
-    void copyBuffer(RenderGraphResource target,
-                    RenderGraphResource source,
-                    size_t targetOffset,
-                    size_t sourceOffset,
-                    size_t count) override;
+    void copyVertexBuffer(Resource<VertexBuffer> target,
+                          Resource<VertexBuffer> source,
+                          size_t targetOffset,
+                          size_t sourceOffset,
+                          size_t count) override;
 
-    void copyTexture(RenderGraphResource target, RenderGraphResource source) override;
+    void copyIndexBuffer(Resource<IndexBuffer> target,
+                         Resource<IndexBuffer> source,
+                         size_t targetOffset,
+                         size_t sourceOffset,
+                         size_t count) override;
 
-    void copyTexture(RenderGraphResource target,
-                     RenderGraphResource source,
-                     Vec3i srcOffset,
-                     Vec3i dstOffset,
-                     Vec3i size,
-                     size_t srcMipMapLevel,
-                     size_t dstMipMapLevel) override;
+    void copyStorageBuffer(Resource<StorageBuffer> target,
+                           Resource<StorageBuffer> source,
+                           size_t targetOffset,
+                           size_t sourceOffset,
+                           size_t count) override;
 
-    void beginRenderPass(const std::vector<RenderGraphAttachment> &colorAttachments,
-                         const RenderGraphAttachment &depthAttachment,
-                         const RenderGraphAttachment &stencilAttachment) override;
+    void copyTextureBuffer(Resource<Texture> target, Resource<Texture> source) override;
 
-    void beginRenderPass(const std::vector<RenderGraphAttachment> &colorAttachments,
-                         const RenderGraphAttachment &depthStencilAttachment) override;
+    void copyTextureBuffer(Resource<Texture> target,
+                           Resource<Texture> source,
+                           Vec3i srcOffset,
+                           Vec3i dstOffset,
+                           Vec3i size,
+                           size_t srcMipMapLevel,
+                           size_t dstMipMapLevel) override;
 
-    void bindPipeline(RenderGraphResource pipeline) override;
+    void beginRenderPass(const std::vector<Attachment> &colorAttachments,
+                         const Attachment &depthAttachment,
+                         const Attachment &stencilAttachment) override;
 
-    void bindVertexBuffer(RenderGraphResource buffer) override;
+    void beginRenderPass(const std::vector<Attachment> &colorAttachments,
+                         const Attachment &depthStencilAttachment) override;
 
-    void bindIndexBuffer(RenderGraphResource buffer) override;
+    void bindPipeline(const Resource<RasterPipeline> &pipeline) override;
 
-    void bindTexture(const std::string &target, const std::vector<RenderGraphResource> &textureArray) override;
+    void bindVertexBuffer(const Resource<VertexBuffer> &buffer) override;
 
-    void bindShaderBuffer(const std::string &target, RenderGraphResource buffer, size_t offset, size_t size) override;
+    void bindIndexBuffer(const Resource<IndexBuffer> &buffer) override;
+
+    void bindTexture(const std::string &target,
+                           const std::vector<Resource<Texture> > &textureArray) override;
+
+    void bindStorageBuffer(const std::string &target,
+                           const Resource<StorageBuffer> &buffer,
+                           size_t offset,
+                           size_t size) override;
 
     void setShaderParameter(const std::string &name, const ShaderPrimitive &value) override;
 
@@ -140,11 +169,11 @@ public:
 
     void clearColorAttachment(size_t binding, const Vec4f &clearColor) override;
 
-    void clearDepthStencilAttachment(float clearDepth, unsigned int clearStencil) override;
+    void clearDepthStencilAttachment(float clearDepth, unsigned clearStencil) override;
 
     void clearDepthAttachment(float clearDepth) override;
 
-    void clearStencilAttachment(unsigned int clearStencil) override;
+    void clearStencilAttachment(unsigned clearStencil) override;
 
     void setViewport(Vec2i viewportOffset, Vec2i viewportSize) override;
 
@@ -154,24 +183,36 @@ public:
 
     void endRenderPass() override;
 
-    std::vector<uint8_t> downloadShaderBuffer(RenderGraphResource buffer) override;
+    std::vector<uint8_t> downloadStorageBuffer(const Resource<StorageBuffer> &buffer) override;
 
-    Image<ColorRGBA> downloadTexture(RenderGraphResource texture,
-                                     size_t index,
-                                     size_t mipMapLevel,
-                                     CubeMapFace face) override;
+    Image<ColorRGBA> downloadTextureBuffer(const Resource<Texture> &texture,
+                                           size_t index,
+                                           size_t mipMapLevel,
+                                           CubeMapFace face) override;
 
-    std::unordered_map<Shader::Stage, std::string> getShaderSource(RenderGraphResource pipeline) override;
+    std::unordered_map<Shader::Stage, std::string> getShaderSource(const Resource<RasterPipeline> &pipeline) override;
 
 private:
-    const OGLTexture &getTexture(RenderGraphResource resource) const;
+    const OGLVertexBuffer &getVertexBuffer(const ResourceId &resource) const;
 
-    std::vector<RenderGraphAttachment> framebufferColorAttachments;
-    RenderGraphAttachment framebufferDepthStencilAttachment;
-    RenderGraphAttachment framebufferDepthAttachment;
-    RenderGraphAttachment framebufferStencilAttachment;
+    const OGLIndexBuffer &getIndexBuffer(const ResourceId &resource) const;
 
-    RenderGraphResource boundPipeline;
+    const OGLShaderStorageBuffer &getStorageBuffer(const ResourceId &resource) const;
+
+    const OGLTexture &getTextureBuffer(const ResourceId &resource) const;
+
+    const OGLShaderProgram &getShaderProgram(const ResourceId &resource) const;
+
+    const ShaderAttributeLayout &getVertexLayout(const ResourceId &resource) const;
+
+    const CompiledShader &getCompiledShader(const ResourceId &resource) const;
+
+    std::vector<Attachment> framebufferColorAttachments{};
+    Attachment framebufferDepthStencilAttachment;
+    Attachment framebufferDepthAttachment;
+    Attachment framebufferStencilAttachment;
+
+    Resource<RasterPipeline> boundPipeline;
 
     std::shared_ptr<OGLFramebuffer> framebuffer = nullptr;
     std::shared_ptr<OGLVertexArrayObject> vertexArray = nullptr;
@@ -182,7 +223,8 @@ private:
     std::unique_ptr<OGLShaderStorageBuffer> emptySSBO = nullptr;
 
     const GraphResources &resources;
-    RenderGraphStatistics &stats;
+    const HeapGL &heap;
+    Statistics &stats;
 };
 
 #endif //XENGINE_CONTEXTGL_HPP

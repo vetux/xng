@@ -22,63 +22,69 @@
 #include "contextgl.hpp"
 
 #include "colorbytesize.hpp"
-#include "ogl/oglframebuffer.hpp"
+#include "resource/oglframebuffer.hpp"
 
-#include "xng/rendergraph/shaderscript/shaderscript.hpp"
+void ContextGL::uploadVertexBuffer(const Resource<VertexBuffer> &target,
+                                   const uint8_t *buffer,
+                                   const size_t bufferSize,
+                                   const size_t targetOffset) {
+    oglDebugStartGroup("ContextGL::uploadVertexBuffer");
 
-void ContextGL::uploadBuffer(const RenderGraphResource target,
-                             const uint8_t *buffer,
-                             const size_t bufferSize,
-                             const size_t targetOffset) {
-    oglDebugStartGroup("ContextGL::uploadBuffer");
-    if (resources.vertexBuffers.find(target) != resources.vertexBuffers.end()) {
-        const auto buf = resources.vertexBuffers.at(target);
-        glBindBuffer(GL_ARRAY_BUFFER, buf->VBO);
-        glBufferSubData(GL_ARRAY_BUFFER,
-                        static_cast<GLintptr>(targetOffset),
-                        static_cast<GLsizeiptr>(bufferSize),
-                        buffer);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        oglCheckError();
-        stats.vertexVRamUpload += bufferSize;
-    } else if (resources.indexBuffers.find(target) != resources.indexBuffers.end()) {
-        const auto buf = resources.indexBuffers.at(target);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf->EBO);
-        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER,
-                        static_cast<GLintptr>(targetOffset),
-                        static_cast<GLsizeiptr>(bufferSize),
-                        buffer);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        oglCheckError();
-        stats.indexVRamUpload += bufferSize;
-    } else if (resources.storageBuffers.find(target) != resources.storageBuffers.end()) {
-        const auto buf = resources.storageBuffers.at(target);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, buf->SSBO);
-        glBufferSubData(GL_SHADER_STORAGE_BUFFER,
-                        static_cast<GLintptr>(targetOffset),
-                        static_cast<GLsizeiptr>(bufferSize),
-                        buffer);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-        oglCheckError();
-        stats.shaderBufferVRamUpload += bufferSize;
-    }
+    const auto &buf = getVertexBuffer(target);
+    glBindBuffer(GL_ARRAY_BUFFER, buf.VBO);
+    glBufferSubData(GL_ARRAY_BUFFER,
+                    static_cast<GLintptr>(targetOffset),
+                    static_cast<GLsizeiptr>(bufferSize),
+                    buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    oglCheckError();
+    stats.bufferVRamUpload += bufferSize;
+
     oglDebugEndGroup();
 }
 
-void ContextGL::uploadTexture(const RenderGraphResource texture,
-                              const uint8_t *buffer,
-                              const size_t bufferSize,
-                              const ColorFormat bufferFormat,
-                              const size_t index,
-                              const CubeMapFace face,
-                              const size_t mipMapLevel,
-                              const Vec2i &size,
-                              const Vec2i &offset) {
+void ContextGL::uploadIndexBuffer(const Resource<IndexBuffer> &target, const uint8_t *buffer, size_t bufferSize,
+                                  size_t targetOffset) {
+    oglDebugStartGroup("ContextGL::uploadIndexBuffer");
+
+    const auto buf = getIndexBuffer(target);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf.EBO);
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER,
+                    static_cast<GLintptr>(targetOffset),
+                    static_cast<GLsizeiptr>(bufferSize),
+                    buffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    oglCheckError();
+    stats.indexVRamUpload += bufferSize;
+
+    oglDebugEndGroup();
+}
+
+void ContextGL::uploadStorageBuffer(const Resource<StorageBuffer> &target, const uint8_t *buffer, size_t bufferSize,
+                                    size_t targetOffset) {
+    oglDebugStartGroup("ContextGL::uploadStorageBuffer");
+
+    const auto buf = getStorageBuffer(target);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, buf.SSBO);
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER,
+                    static_cast<GLintptr>(targetOffset),
+                    static_cast<GLsizeiptr>(bufferSize),
+                    buffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    oglCheckError();
+    stats.storageBufferVRamUpload += bufferSize;
+
+    oglDebugEndGroup();
+}
+
+void ContextGL::uploadTextureBuffer(const Resource<Texture> &texture, const uint8_t *buffer, size_t bufferSize,
+                                    ColorFormat bufferFormat, size_t index, CubeMapFace face, size_t mipMapLevel,
+                                    const Vec2i &size, const Vec2i &offset) {
     oglDebugStartGroup("ContextGL::uploadTexture");
 
-    auto &tex = resources.textures.at(texture);
+    auto &tex = getTextureBuffer(texture);
 
-    if (bufferSize > tex->texture.size.x * tex->texture.size.y * getColorByteSize(tex->texture.format)) {
+    if (bufferSize > tex.texture.size.x * tex.texture.size.y * getColorByteSize(tex.texture.format)) {
         throw std::runtime_error("Invalid buffer size");
     }
 
@@ -90,9 +96,9 @@ void ContextGL::uploadTexture(const RenderGraphResource texture,
         memcpy(bufferCpy + dstOffset, buffer + srcOffset, size.x * getColorByteSize(bufferFormat));
     }
 
-    auto &textureSize = tex->texture.size;
+    auto &textureSize = tex.texture.size;
 
-    glBindTexture(tex->textureType, tex->handle);
+    glBindTexture(tex.textureType, tex.handle);
 
     // determine pixel format (GL_RGB/GL_RGBA/GL_RED/GL_RG) and data type for upload
     GLenum dataType = GL_UNSIGNED_BYTE;
@@ -111,7 +117,9 @@ void ContextGL::uploadTexture(const RenderGraphResource texture,
         case ColorFormat::R16UI:
         case ColorFormat::R32UI:
             pixelFormat = GL_RED;
-            dataType = (bufferFormat == ColorFormat::R16F || bufferFormat == ColorFormat::R32F) ? GL_FLOAT : GL_UNSIGNED_BYTE;
+            dataType = (bufferFormat == ColorFormat::R16F || bufferFormat == ColorFormat::R32F)
+                           ? GL_FLOAT
+                           : GL_UNSIGNED_BYTE;
             break;
         case ColorFormat::RG:
         case ColorFormat::RG8:
@@ -125,7 +133,9 @@ void ContextGL::uploadTexture(const RenderGraphResource texture,
         case ColorFormat::RG16UI:
         case ColorFormat::RG32UI:
             pixelFormat = GL_RG;
-            dataType = (bufferFormat == ColorFormat::RG16F || bufferFormat == ColorFormat::RG32F) ? GL_FLOAT : GL_UNSIGNED_BYTE;
+            dataType = (bufferFormat == ColorFormat::RG16F || bufferFormat == ColorFormat::RG32F)
+                           ? GL_FLOAT
+                           : GL_UNSIGNED_BYTE;
             break;
         case ColorFormat::RGB:
         case ColorFormat::RGB8:
@@ -139,16 +149,20 @@ void ContextGL::uploadTexture(const RenderGraphResource texture,
         case ColorFormat::RGB16UI:
         case ColorFormat::RGB32UI:
             pixelFormat = GL_RGB;
-            dataType = (bufferFormat == ColorFormat::RGB16F || bufferFormat == ColorFormat::RGB32F) ? GL_FLOAT : GL_UNSIGNED_BYTE;
+            dataType = (bufferFormat == ColorFormat::RGB16F || bufferFormat == ColorFormat::RGB32F)
+                           ? GL_FLOAT
+                           : GL_UNSIGNED_BYTE;
             break;
         default:
             // Assume RGBA-like default
             pixelFormat = GL_RGBA;
-            dataType = (bufferFormat == ColorFormat::RGBA16F || bufferFormat == ColorFormat::RGBA32F) ? GL_FLOAT : GL_UNSIGNED_BYTE;
+            dataType = (bufferFormat == ColorFormat::RGBA16F || bufferFormat == ColorFormat::RGBA32F)
+                           ? GL_FLOAT
+                           : GL_UNSIGNED_BYTE;
             break;
     }
 
-    if (tex->textureType == GL_TEXTURE_2D) {
+    if (tex.textureType == GL_TEXTURE_2D) {
         glTexSubImage2D(GL_TEXTURE_2D,
                         static_cast<GLint>(mipMapLevel),
                         offset.x,
@@ -158,7 +172,7 @@ void ContextGL::uploadTexture(const RenderGraphResource texture,
                         pixelFormat,
                         dataType,
                         bufferCpy);
-    } else if (tex->textureType == GL_TEXTURE_CUBE_MAP) {
+    } else if (tex.textureType == GL_TEXTURE_CUBE_MAP) {
         glTexSubImage2D(convert(face),
                         static_cast<GLint>(mipMapLevel),
                         offset.x,
@@ -168,8 +182,8 @@ void ContextGL::uploadTexture(const RenderGraphResource texture,
                         pixelFormat,
                         dataType,
                         bufferCpy);
-    } else if (tex->textureType == GL_TEXTURE_2D_ARRAY) {
-        glTexSubImage3D(tex->textureType,
+    } else if (tex.textureType == GL_TEXTURE_2D_ARRAY) {
+        glTexSubImage3D(tex.textureType,
                         static_cast<GLint>(mipMapLevel),
                         offset.x,
                         textureSize.y - offset.y - 1 - size.y + 1,
@@ -180,8 +194,8 @@ void ContextGL::uploadTexture(const RenderGraphResource texture,
                         pixelFormat,
                         dataType,
                         bufferCpy);
-    } else if (tex->textureType == GL_TEXTURE_CUBE_MAP_ARRAY) {
-        glTexSubImage3D(tex->textureType,
+    } else if (tex.textureType == GL_TEXTURE_CUBE_MAP_ARRAY) {
+        glTexSubImage3D(tex.textureType,
                         static_cast<GLint>(mipMapLevel),
                         offset.x,
                         textureSize.y - offset.y - 1 - size.y + 1,
@@ -196,7 +210,7 @@ void ContextGL::uploadTexture(const RenderGraphResource texture,
         throw std::runtime_error("Invalid texture type");
     }
     delete[] bufferCpy;
-    glBindTexture(tex->textureType, 0);
+    glBindTexture(tex.textureType, 0);
     oglCheckError();
 
     stats.textureVRamUpload += bufferSize;
@@ -204,27 +218,27 @@ void ContextGL::uploadTexture(const RenderGraphResource texture,
     oglDebugEndGroup();
 }
 
-void ContextGL::generateMipMaps(RenderGraphResource texture) {
+void ContextGL::generateMipMaps(const Resource<Texture> &texture) {
     oglDebugStartGroup("ContextGL::generateMipMaps");
 
-    auto &tex = resources.textures.at(texture);
-    glBindTexture(tex->textureType, tex->handle);
-    glGenerateMipmap(tex->textureType);
-    glBindTexture(tex->textureType, 0);
+    auto &tex = getTextureBuffer(texture);
+    glBindTexture(tex.textureType, tex.handle);
+    glGenerateMipmap(tex.textureType);
+    glBindTexture(tex.textureType, 0);
 
     oglCheckError();
 
     oglDebugEndGroup();
 }
 
-void ContextGL::clearTextureColor(const RenderGraphResource texture,
+void ContextGL::clearTextureColor(const Resource<Texture> &texture,
                                   const ColorRGBA &clearColor,
                                   const size_t index,
                                   const CubeMapFace face,
                                   const size_t mipMapLevel) {
     oglDebugStartGroup("ContextGL::clearTextureColor");
 
-    auto &tex = getTexture(texture);
+    auto &tex = getTextureBuffer(texture);
 
     const GLsizei mipWidth = std::max(1, tex.texture.size.x >> static_cast<int>(mipMapLevel));
     const GLsizei mipHeight = std::max(1, tex.texture.size.y >> static_cast<int>(mipMapLevel));
@@ -248,14 +262,14 @@ void ContextGL::clearTextureColor(const RenderGraphResource texture,
     oglDebugEndGroup();
 }
 
-void ContextGL::clearTextureColor(const RenderGraphResource texture,
+void ContextGL::clearTextureColor(const Resource<Texture> &texture,
                                   const Vec4f &clearColor,
                                   const size_t index,
                                   const CubeMapFace face,
                                   const size_t mipMapLevel) {
     oglDebugStartGroup("ContextGL::clearTextureColor");
 
-    auto &tex = getTexture(texture);
+    auto &tex = getTextureBuffer(texture);
 
     const GLfloat data[4] = {clearColor.x, clearColor.y, clearColor.z, clearColor.w};
 
@@ -281,14 +295,14 @@ void ContextGL::clearTextureColor(const RenderGraphResource texture,
     oglDebugEndGroup();
 }
 
-void ContextGL::clearTextureColor(const RenderGraphResource texture,
+void ContextGL::clearTextureColor(const Resource<Texture> &texture,
                                   const Vec4i &clearColor,
                                   const size_t index,
                                   const CubeMapFace face,
                                   const size_t mipMapLevel) {
     oglDebugStartGroup("ContextGL::clearTextureColor");
 
-    auto &tex = getTexture(texture);
+    auto &tex = getTextureBuffer(texture);
 
     const GLint data[4] = {clearColor.x, clearColor.y, clearColor.z, clearColor.w};
 
@@ -305,7 +319,7 @@ void ContextGL::clearTextureColor(const RenderGraphResource texture,
                        mipWidth,
                        mipHeight,
                        1,
-                       GL_RGBA_INTEGER,
+                        GL_RGBA_INTEGER,
                        GL_INT,
                        data);
 
@@ -314,14 +328,14 @@ void ContextGL::clearTextureColor(const RenderGraphResource texture,
     oglDebugEndGroup();
 }
 
-void ContextGL::clearTextureColor(const RenderGraphResource texture,
+void ContextGL::clearTextureColor(const Resource<Texture> &texture,
                                   const Vec4u &clearColor,
                                   const size_t index,
                                   const CubeMapFace face,
                                   const size_t mipMapLevel) {
     oglDebugStartGroup("ContextGL::clearTextureColor");
 
-    auto &tex = getTexture(texture);
+    auto &tex = getTextureBuffer(texture);
 
     const GLuint data[4] = {clearColor.x, clearColor.y, clearColor.z, clearColor.w};
 
@@ -347,7 +361,7 @@ void ContextGL::clearTextureColor(const RenderGraphResource texture,
     oglDebugEndGroup();
 }
 
-void ContextGL::clearTextureDepthStencil(const RenderGraphResource texture,
+void ContextGL::clearTextureDepthStencil(const Resource<Texture> &texture,
                                          const float clearDepth,
                                          const unsigned int clearStencil,
                                          const size_t index,
@@ -355,7 +369,7 @@ void ContextGL::clearTextureDepthStencil(const RenderGraphResource texture,
                                          const size_t mipMapLevel) {
     oglDebugStartGroup("ContextGL::clearTextureDepthStencil");
 
-    auto &tex = getTexture(texture);
+    auto &tex = getTextureBuffer(texture);
 
     if (tex.texture.format == DEPTH_STENCIL
         || tex.texture.format == DEPTH24_STENCIL8) {
@@ -370,14 +384,13 @@ void ContextGL::clearTextureDepthStencil(const RenderGraphResource texture,
         glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
         if (framebuffer) {
-            if (boundPipeline) {
-                auto &pip = resources.pipelines.at(boundPipeline);
-                if (pip.depthTestWrite) {
+            if (boundPipeline.isAssigned()) {
+                if (boundPipeline.getData().depthTestWrite) {
                     glDepthMask(GL_TRUE);
                 } else {
                     glDepthMask(GL_FALSE);
                 }
-                glStencilMask(pip.stencilTestMask);
+                glStencilMask(boundPipeline.getData().stencilTestMask);
             }
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer->FBO);
         }
@@ -424,30 +437,15 @@ void ContextGL::clearTextureDepthStencil(const RenderGraphResource texture,
     oglDebugEndGroup();
 }
 
-void ContextGL::copyBuffer(const RenderGraphResource target,
-                           const RenderGraphResource source,
-                           const size_t targetOffset,
-                           const size_t sourceOffset,
-                           const size_t count) {
-    oglDebugStartGroup("ContextGL::copyBuffer");
+void ContextGL::copyVertexBuffer(Resource<VertexBuffer> target, Resource<VertexBuffer> source, size_t targetOffset,
+                                 size_t sourceOffset, size_t count) {
+    oglDebugStartGroup("ContextGL::copyVertexBuffer");
 
     GLuint readBuffer = 0;
     GLuint writeBuffer = 0;
-    if (resources.vertexBuffers.find(target) != resources.vertexBuffers.end()) {
-        readBuffer = resources.vertexBuffers.at(source)->VBO;
-        writeBuffer = resources.vertexBuffers.at(target)->VBO;
-        stats.vertexVRamCopy += count;
-    } else if (resources.indexBuffers.find(target) != resources.indexBuffers.end()) {
-        readBuffer = resources.indexBuffers.at(source)->EBO;
-        writeBuffer = resources.indexBuffers.at(target)->EBO;
-        stats.indexVRamCopy += count;
-    } else if (resources.storageBuffers.find(target) != resources.storageBuffers.end()) {
-        readBuffer = resources.storageBuffers.at(source)->SSBO;
-        writeBuffer = resources.storageBuffers.at(target)->SSBO;
-        stats.shaderBufferVRamCopy += count;
-    } else {
-        throw std::runtime_error("Invalid buffer");
-    }
+    readBuffer = resources.vertexBuffers.at(source)->VBO;
+    writeBuffer = resources.vertexBuffers.at(target)->VBO;
+    stats.bufferVRamCopy += count;
 
     glBindBuffer(GL_COPY_READ_BUFFER, readBuffer);
     glBindBuffer(GL_COPY_WRITE_BUFFER, writeBuffer);
@@ -464,71 +462,121 @@ void ContextGL::copyBuffer(const RenderGraphResource target,
     oglDebugEndGroup();
 }
 
-void ContextGL::copyTexture(const RenderGraphResource target, const RenderGraphResource source) {
-    oglDebugStartGroup("ContextGL::copyTexture");
+void ContextGL::copyIndexBuffer(Resource<IndexBuffer> target, Resource<IndexBuffer> source, size_t targetOffset,
+                                size_t sourceOffset, size_t count) {
+    oglDebugStartGroup("ContextGL::copyIndexBuffer");
 
-    auto srcTexture = resources.textures.at(source);
-    auto dstTexture = resources.textures.at(target);
-    glCopyImageSubData(srcTexture->handle,
-                       srcTexture->textureType,
-                       0,
-                       0,
-                       0,
-                       0,
-                       dstTexture->handle,
-                       dstTexture->textureType,
-                       0,
-                       0,
-                       0,
-                       0,
-                       srcTexture->texture.size.x,
-                       srcTexture->texture.size.y,
-                       1);
+    GLuint readBuffer = 0;
+    GLuint writeBuffer = 0;
+    readBuffer = resources.indexBuffers.at(source)->EBO;
+    writeBuffer = resources.indexBuffers.at(target)->EBO;
+    stats.indexVRamCopy += count;
+
+    glBindBuffer(GL_COPY_READ_BUFFER, readBuffer);
+    glBindBuffer(GL_COPY_WRITE_BUFFER, writeBuffer);
+    glCopyBufferSubData(GL_COPY_READ_BUFFER,
+                        GL_COPY_WRITE_BUFFER,
+                        static_cast<GLintptr>(sourceOffset),
+                        static_cast<GLintptr>(targetOffset),
+                        static_cast<GLsizeiptr>(count));
+    glBindBuffer(GL_COPY_READ_BUFFER, 0);
+    glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
+
     oglCheckError();
-
-    stats.textureVRamCopy += srcTexture->texture.size.x * srcTexture->texture.size.y
-            * getColorByteSize(srcTexture->texture.format);
 
     oglDebugEndGroup();
 }
 
-void ContextGL::copyTexture(const RenderGraphResource target,
-                            const RenderGraphResource source,
-                            const Vec3i srcOffset,
-                            const Vec3i dstOffset,
-                            const Vec3i size,
-                            const size_t srcMipMapLevel,
-                            const size_t dstMipMapLevel) {
+void ContextGL::copyStorageBuffer(Resource<StorageBuffer> target, Resource<StorageBuffer> source, size_t targetOffset,
+                                  size_t sourceOffset, size_t count) {
+    oglDebugStartGroup("ContextGL::copyStorageBuffer");
+
+    GLuint readBuffer = 0;
+    GLuint writeBuffer = 0;
+    readBuffer = resources.storageBuffers.at(source)->SSBO;
+    writeBuffer = resources.storageBuffers.at(target)->SSBO;
+    stats.storageBufferVRamCopy += count;
+
+    glBindBuffer(GL_COPY_READ_BUFFER, readBuffer);
+    glBindBuffer(GL_COPY_WRITE_BUFFER, writeBuffer);
+    glCopyBufferSubData(GL_COPY_READ_BUFFER,
+                        GL_COPY_WRITE_BUFFER,
+                        static_cast<GLintptr>(sourceOffset),
+                        static_cast<GLintptr>(targetOffset),
+                        static_cast<GLsizeiptr>(count));
+    glBindBuffer(GL_COPY_READ_BUFFER, 0);
+    glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
+
+    oglCheckError();
+
+    oglDebugEndGroup();
+}
+
+void ContextGL::copyTextureBuffer(Resource<Texture> target, Resource<Texture> source) {
     oglDebugStartGroup("ContextGL::copyTexture");
 
-    auto srcTexture = resources.textures.at(source);
-    auto dstTexture = resources.textures.at(target);
-    glCopyImageSubData(srcTexture->handle,
-                       srcTexture->textureType,
+    auto srcTexture = getTextureBuffer(source);
+    auto dstTexture = getTextureBuffer(target);
+    glCopyImageSubData(srcTexture.handle,
+                       srcTexture.textureType,
+                       0,
+                       0,
+                       0,
+                       0,
+                       dstTexture.handle,
+                       dstTexture.textureType,
+                       0,
+                       0,
+                       0,
+                       0,
+                       srcTexture.texture.size.x,
+                       srcTexture.texture.size.y,
+                       1);
+    oglCheckError();
+
+    stats.textureVRamCopy += srcTexture.texture.size.x * srcTexture.texture.size.y
+            * getColorByteSize(srcTexture.texture.format);
+
+    oglDebugEndGroup();
+}
+
+void ContextGL::copyTextureBuffer(Resource<Texture> target,
+                                  Resource<Texture> source,
+                                  Vec3i srcOffset,
+                                  Vec3i dstOffset,
+                                  Vec3i size,
+                                  size_t srcMipMapLevel,
+                                  size_t dstMipMapLevel) {
+    oglDebugStartGroup("ContextGL::copyTexture");
+
+    auto srcTexture = getTextureBuffer(source);
+    auto dstTexture = getTextureBuffer(target);
+    glCopyImageSubData(srcTexture.handle,
+                       srcTexture.textureType,
                        static_cast<GLint>(srcMipMapLevel),
                        srcOffset.x,
                        srcOffset.y,
                        srcOffset.z,
-                       dstTexture->handle,
-                       dstTexture->textureType,
+                       dstTexture.handle,
+                       dstTexture.textureType,
                        static_cast<GLint>(dstMipMapLevel),
                        dstOffset.x,
                        dstOffset.y,
                        dstOffset.z,
-                       srcTexture->texture.size.x,
-                       srcTexture->texture.size.y,
+                       srcTexture.texture.size.x,
+                       srcTexture.texture.size.y,
                        1);
     oglCheckError();
 
-    stats.textureVRamCopy += srcTexture->texture.size.x * srcTexture->texture.size.y
-            * getColorByteSize(srcTexture->texture.format);
+    stats.textureVRamCopy += srcTexture.texture.size.x * srcTexture.texture.size.y
+            * getColorByteSize(srcTexture.texture.format);
 
     oglDebugEndGroup();
 }
 
-void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorAttachments,
-                                const RenderGraphAttachment &depthAttachment,
-                                const RenderGraphAttachment &stencilAttachment) {
+void ContextGL::beginRenderPass(const std::vector<Attachment> &colorAttachments,
+                                const Attachment &depthAttachment,
+                                const Attachment &stencilAttachment) {
     oglDebugStartGroup("ContextGL::beginRenderPass");
 
     framebufferColorAttachments = colorAttachments;
@@ -541,7 +589,7 @@ void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorA
 
     for (auto i = 0; i < colorAttachments.size(); ++i) {
         auto &attachment = colorAttachments.at(i);
-        auto &tex = getTexture(attachment.texture);
+        auto &tex = getTextureBuffer(attachment.texture);
         if (attachment.clearAttachment) {
             if (tex.texture.format >= R8I && tex.texture.format <= RGBA32I) {
                 clearColorAttachment(i, attachment.clearColorInt);
@@ -556,18 +604,18 @@ void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorA
         framebuffer->attach(attachment, tex, GL_COLOR_ATTACHMENT0 + i);
     }
 
-    if (depthAttachment.texture) {
+    if (depthAttachment.texture.isAssigned()) {
         auto &attachment = depthAttachment;
-        auto &tex = getTexture(attachment.texture);
+        auto &tex = getTextureBuffer(attachment.texture);
         if (attachment.clearAttachment) {
             clearDepthAttachment(attachment.clearDepth);
         }
         framebuffer->attach(attachment, tex, GL_DEPTH_ATTACHMENT);
     }
 
-    if (stencilAttachment.texture) {
+    if (stencilAttachment.texture.isAssigned()) {
         auto &attachment = stencilAttachment;
-        auto &tex = getTexture(attachment.texture);
+        auto &tex = getTextureBuffer(attachment.texture);
         if (attachment.clearAttachment) {
             clearStencilAttachment(attachment.clearStencil);
         }
@@ -580,14 +628,22 @@ void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorA
     if (fstatus != GL_FRAMEBUFFER_COMPLETE) {
         const char *msg = "UNKNOWN";
         switch (fstatus) {
-        case GL_FRAMEBUFFER_UNDEFINED: msg = "UNDEFINED"; break;
-        case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: msg = "INCOMPLETE_ATTACHMENT"; break;
-        case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: msg = "MISSING_ATTACHMENT"; break;
-        case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: msg = "INCOMPLETE_DRAW_BUFFER"; break;
-        case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: msg = "INCOMPLETE_READ_BUFFER"; break;
-        case GL_FRAMEBUFFER_UNSUPPORTED: msg = "UNSUPPORTED"; break;
-        case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: msg = "INCOMPLETE_MULTISAMPLE"; break;
-        case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: msg = "INCOMPLETE_LAYER_TARGETS"; break;
+            case GL_FRAMEBUFFER_UNDEFINED: msg = "UNDEFINED";
+                break;
+            case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: msg = "INCOMPLETE_ATTACHMENT";
+                break;
+            case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: msg = "MISSING_ATTACHMENT";
+                break;
+            case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: msg = "INCOMPLETE_DRAW_BUFFER";
+                break;
+            case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: msg = "INCOMPLETE_READ_BUFFER";
+                break;
+            case GL_FRAMEBUFFER_UNSUPPORTED: msg = "UNSUPPORTED";
+                break;
+            case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: msg = "INCOMPLETE_MULTISAMPLE";
+                break;
+            case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: msg = "INCOMPLETE_LAYER_TARGETS";
+                break;
         }
         throw std::runtime_error(std::string("Framebuffer is incomplete ") + msg);
     }
@@ -596,8 +652,8 @@ void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorA
     oglDebugEndGroup();
 }
 
-void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorAttachments,
-                                const RenderGraphAttachment &depthStencilAttachment) {
+void ContextGL::beginRenderPass(const std::vector<Attachment> &colorAttachments,
+                                const Attachment &depthStencilAttachment) {
     oglDebugStartGroup("ContextGL::beginRenderPass");
 
     framebufferColorAttachments = colorAttachments;
@@ -611,7 +667,7 @@ void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorA
 
     for (auto i = 0; i < colorAttachments.size(); ++i) {
         auto &attachment = colorAttachments.at(i);
-        auto &tex = getTexture(attachment.texture);
+        auto &tex = getTextureBuffer(attachment.texture);
         if (attachment.clearAttachment) {
             if (tex.texture.format >= R8I && tex.texture.format <= RGBA32I) {
                 clearColorAttachment(i, attachment.clearColorInt);
@@ -629,9 +685,9 @@ void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorA
 
     glDrawBuffers(static_cast<GLsizei>(drawBuffers.size()), drawBuffers.data());
 
-    if (depthStencilAttachment.texture) {
+    if (depthStencilAttachment.texture.isAssigned()) {
         auto &attachment = depthStencilAttachment;
-        auto &tex = getTexture(attachment.texture);
+        auto &tex = getTextureBuffer(attachment.texture);
         if (tex.texture.format == DEPTH
             || tex.texture.format >= DEPTH_32F && tex.texture.format <= DEPTH_16) {
             if (attachment.clearAttachment) {
@@ -660,14 +716,22 @@ void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorA
     if (fstatus != GL_FRAMEBUFFER_COMPLETE) {
         const char *msg = "UNKNOWN";
         switch (fstatus) {
-        case GL_FRAMEBUFFER_UNDEFINED: msg = "UNDEFINED"; break;
-        case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: msg = "INCOMPLETE_ATTACHMENT"; break;
-        case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: msg = "MISSING_ATTACHMENT"; break;
-        case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: msg = "INCOMPLETE_DRAW_BUFFER"; break;
-        case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: msg = "INCOMPLETE_READ_BUFFER"; break;
-        case GL_FRAMEBUFFER_UNSUPPORTED: msg = "UNSUPPORTED"; break;
-        case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: msg = "INCOMPLETE_MULTISAMPLE"; break;
-        case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: msg = "INCOMPLETE_LAYER_TARGETS"; break;
+            case GL_FRAMEBUFFER_UNDEFINED: msg = "UNDEFINED";
+                break;
+            case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: msg = "INCOMPLETE_ATTACHMENT";
+                break;
+            case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: msg = "MISSING_ATTACHMENT";
+                break;
+            case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: msg = "INCOMPLETE_DRAW_BUFFER";
+                break;
+            case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: msg = "INCOMPLETE_READ_BUFFER";
+                break;
+            case GL_FRAMEBUFFER_UNSUPPORTED: msg = "UNSUPPORTED";
+                break;
+            case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: msg = "INCOMPLETE_MULTISAMPLE";
+                break;
+            case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: msg = "INCOMPLETE_LAYER_TARGETS";
+                break;
         }
         throw std::runtime_error(std::string("Framebuffer is incomplete ") + msg);
     }
@@ -677,74 +741,72 @@ void ContextGL::beginRenderPass(const std::vector<RenderGraphAttachment> &colorA
     oglDebugEndGroup();
 }
 
-void ContextGL::bindPipeline(const RenderGraphResource pipeline) {
+void ContextGL::bindPipeline(const Resource<RasterPipeline> &pipeline) {
     oglDebugStartGroup("ContextGL::bindPipeline");
 
-    const auto &pipelineDesc = resources.pipelines.at(pipeline);
-
     // Bind shader program
-    auto shaderProgram = resources.shaderPrograms.at(pipeline);
-    glUseProgram(shaderProgram->programHandle);
+    const auto shaderProgram = getShaderProgram(pipeline);
+    glUseProgram(shaderProgram.programHandle);
 
-    if (pipelineDesc.multisample)
+    if (pipeline.getData().multisample)
         glEnable(GL_MULTISAMPLE);
     else
         glDisable(GL_MULTISAMPLE);
 
-    if (pipelineDesc.multiSampleEnableFrequency)
+    if (pipeline.getData().multiSampleEnableFrequency)
         glEnable(GL_SAMPLE_COVERAGE);
     else
         glDisable(GL_SAMPLE_COVERAGE);
 
-    glSampleCoverage(pipelineDesc.multiSampleFrequency, GL_TRUE);
+    glSampleCoverage(pipeline.getData().multiSampleFrequency, GL_TRUE);
 
     // Setup pipeline state
-    glDepthFunc(convert(pipelineDesc.depthTestMode));
-    if (pipelineDesc.depthTestWrite)
+    glDepthFunc(convert(pipeline.getData().depthTestMode));
+    if (pipeline.getData().depthTestWrite)
         glDepthMask(GL_TRUE);
     else
         glDepthMask(GL_FALSE);
 
-    if (pipelineDesc.enableDepthTest) {
+    if (pipeline.getData().enableDepthTest) {
         glEnable(GL_DEPTH_TEST);
     } else {
         glDisable(GL_DEPTH_TEST);
     }
 
-    glStencilMask(pipelineDesc.stencilTestMask);
-    glStencilFunc(convert(pipelineDesc.stencilMode),
-                  pipelineDesc.stencilReference,
-                  pipelineDesc.stencilFunctionMask);
-    glStencilOp(convert(pipelineDesc.stencilFail),
-                convert(pipelineDesc.stencilDepthFail),
-                convert(pipelineDesc.stencilPass));
+    glStencilMask(pipeline.getData().stencilTestMask);
+    glStencilFunc(convert(pipeline.getData().stencilMode),
+                  pipeline.getData().stencilReference,
+                  pipeline.getData().stencilFunctionMask);
+    glStencilOp(convert(pipeline.getData().stencilFail),
+                convert(pipeline.getData().stencilDepthFail),
+                convert(pipeline.getData().stencilPass));
 
-    if (pipelineDesc.enableStencilTest) {
+    if (pipeline.getData().enableStencilTest) {
         glEnable(GL_STENCIL_TEST);
     } else {
         glDisable(GL_STENCIL_TEST);
     }
 
-    glCullFace(convert(pipelineDesc.faceCullMode));
-    if (pipelineDesc.faceCullWinding == RenderGraphPipeline::CLOCKWISE)
+    glCullFace(convert(pipeline.getData().faceCullMode));
+    if (pipeline.getData().faceCullWinding == RasterPipeline::CLOCKWISE)
         glFrontFace(GL_CW);
     else
         glFrontFace(GL_CCW);
 
-    if (pipelineDesc.enableFaceCulling) {
+    if (pipeline.getData().enableFaceCulling) {
         glEnable(GL_CULL_FACE);
     } else {
         glDisable(GL_CULL_FACE);
     }
 
-    glBlendFuncSeparate(convert(pipelineDesc.colorBlendSourceMode),
-                        convert(pipelineDesc.colorBlendDestinationMode),
-                        convert(pipelineDesc.alphaBlendSourceMode),
-                        convert(pipelineDesc.alphaBlendDestinationMode));
-    glBlendEquationSeparate(convert(pipelineDesc.colorBlendEquation),
-                            convert(pipelineDesc.alphaBlendEquation));
+    glBlendFuncSeparate(convert(pipeline.getData().colorBlendSourceMode),
+                        convert(pipeline.getData().colorBlendDestinationMode),
+                        convert(pipeline.getData().alphaBlendSourceMode),
+                        convert(pipeline.getData().alphaBlendDestinationMode));
+    glBlendEquationSeparate(convert(pipeline.getData().colorBlendEquation),
+                            convert(pipeline.getData().alphaBlendEquation));
 
-    if (pipelineDesc.enableBlending) {
+    if (pipeline.getData().enableBlending) {
         glEnable(GL_BLEND);
     } else {
         glDisable(GL_BLEND);
@@ -762,8 +824,8 @@ void ContextGL::bindPipeline(const RenderGraphResource pipeline) {
     oglDebugEndGroup();
 }
 
-void ContextGL::bindVertexBuffer(const RenderGraphResource buffer) {
-    if (!boundPipeline) {
+void ContextGL::bindVertexBuffer(const Resource<VertexBuffer> &buffer) {
+    if (!boundPipeline.isAssigned()) {
         throw std::runtime_error("No current pipeline set");
     }
 
@@ -772,9 +834,7 @@ void ContextGL::bindVertexBuffer(const RenderGraphResource buffer) {
     glBindBuffer(GL_ARRAY_BUFFER, resources.vertexBuffers.at(buffer)->VBO);
 
     // Setup vertex layout
-    auto &desc = resources.pipelines.at(boundPipeline);
-
-    auto &vertexLayout = desc.getVertexLayout();
+    auto &vertexLayout = getVertexLayout(boundPipeline);
 
     const auto vertexStride = static_cast<GLsizei>(vertexLayout.getLayoutSize());
 
@@ -811,8 +871,8 @@ void ContextGL::bindVertexBuffer(const RenderGraphResource buffer) {
     oglDebugEndGroup();
 }
 
-void ContextGL::bindIndexBuffer(const RenderGraphResource buffer) {
-    if (!boundPipeline) {
+void ContextGL::bindIndexBuffer(const Resource<IndexBuffer> &buffer) {
+    if (!boundPipeline.isAssigned()) {
         throw std::runtime_error("No current pipeline set");
     }
 
@@ -827,18 +887,19 @@ void ContextGL::bindIndexBuffer(const RenderGraphResource buffer) {
     oglDebugEndGroup();
 }
 
-void ContextGL::bindTexture(const std::string &target, const std::vector<RenderGraphResource> &textureArray) {
-    if (!boundPipeline) {
+void ContextGL::bindTexture(const std::string &target,
+                                  const std::vector<Resource<Texture> > &textureArray) {
+    if (!boundPipeline.isAssigned()) {
         throw std::runtime_error("No current pipeline");
     }
 
     oglDebugStartGroup("ContextGL::bindTexture");
 
-    const auto &pipeline = resources.compiledPipelines.at(boundPipeline);
+    const auto &pipeline = getCompiledShader(boundPipeline);
 
     const auto binding = pipeline.getTextureArrayBinding(target);
     for (auto i = 0; i < textureArray.size(); i++) {
-        auto &texture = resources.textures.at(textureArray.at(i));
+        auto &texture = resources.textureBuffers.at(textureArray.at(i));
         glActiveTexture(getTextureSlot(binding + i));
         glBindTexture(texture->textureType, texture->handle);
     }
@@ -848,21 +909,21 @@ void ContextGL::bindTexture(const std::string &target, const std::vector<RenderG
     oglDebugEndGroup();
 }
 
-void ContextGL::bindShaderBuffer(const std::string &target,
-                                 const RenderGraphResource buffer,
-                                 const size_t offset,
-                                 const size_t size) {
-    if (!boundPipeline) {
+void ContextGL::bindStorageBuffer(const std::string &target,
+                                  const Resource<StorageBuffer> &buffer,
+                                  const size_t offset,
+                                  const size_t size) {
+    if (!boundPipeline.isAssigned()) {
         throw std::runtime_error("No current pipeline");
     }
 
     oglDebugStartGroup("ContextGL::bindShaderBuffer");
 
-    const auto &pipeline = resources.compiledPipelines.at(boundPipeline);
+    const auto &pipeline = getCompiledShader(boundPipeline);
     const auto binding = pipeline.getShaderBufferBinding(target);
-    const auto &buf = resources.storageBuffers.at(buffer);
+    const auto &buf = getStorageBuffer(buffer);
     if (size == 0) {
-        if (buf->size == 0) {
+        if (buf.size == 0) {
             // Bind SSBO with a size of one byte to avoid undefined behavior
             // caused by binding a SSBO with size = 0 per OpenGL spec.
             // On AMD this was handled by the driver but Intel driver breaks if SSBO is 0
@@ -870,14 +931,14 @@ void ContextGL::bindShaderBuffer(const std::string &target,
         } else {
             glBindBufferRange(GL_SHADER_STORAGE_BUFFER,
                               static_cast<GLuint>(binding),
-                              buf->SSBO,
+                              buf.SSBO,
                               static_cast<GLintptr>(offset),
-                              static_cast<GLsizeiptr>(buf->size - offset));
+                              static_cast<GLsizeiptr>(buf.size - offset));
         }
     } else {
         glBindBufferRange(GL_SHADER_STORAGE_BUFFER,
                           static_cast<GLuint>(binding),
-                          buf->SSBO,
+                          buf.SSBO,
                           static_cast<GLintptr>(offset),
                           static_cast<GLsizeiptr>(size));
     }
@@ -895,7 +956,7 @@ void ContextGL::clearColorAttachment(const size_t binding, const ColorRGBA clear
     oglDebugStartGroup("ContextGL::clearColorAttachment");
 
     const auto &attachment = framebufferColorAttachments.at(binding);
-    auto &tex = getTexture(attachment.texture);
+    auto &tex = getTextureBuffer(attachment.texture);
 
     if ((tex.texture.textureType == TEXTURE_CUBE_MAP
          || tex.texture.textureType == TEXTURE_2D_ARRAY
@@ -938,7 +999,7 @@ void ContextGL::clearColorAttachment(const size_t binding, const Vec4i &clearCol
     oglDebugStartGroup("ContextGL::clearColorAttachment");
 
     const auto &attachment = framebufferColorAttachments.at(binding);
-    auto &tex = getTexture(attachment.texture);
+    auto &tex = getTextureBuffer(attachment.texture);
 
     if ((tex.texture.textureType == TEXTURE_CUBE_MAP
          || tex.texture.textureType == TEXTURE_2D_ARRAY
@@ -979,7 +1040,7 @@ void ContextGL::clearColorAttachment(const size_t binding, const Vec4u &clearCol
     oglDebugStartGroup("ContextGL::clearColorAttachment");
 
     const auto &attachment = framebufferColorAttachments.at(binding);
-    auto &tex = getTexture(attachment.texture);
+    auto &tex = getTextureBuffer(attachment.texture);
 
     if ((tex.texture.textureType == TEXTURE_CUBE_MAP
          || tex.texture.textureType == TEXTURE_2D_ARRAY
@@ -1020,7 +1081,7 @@ void ContextGL::clearColorAttachment(size_t binding, const Vec4f &clearColor) {
     oglDebugStartGroup("ContextGL::clearColorAttachment");
 
     const auto &attachment = framebufferColorAttachments.at(binding);
-    auto &tex = getTexture(attachment.texture);
+    auto &tex = getTextureBuffer(attachment.texture);
 
     if ((tex.texture.textureType == TEXTURE_CUBE_MAP
          || tex.texture.textureType == TEXTURE_2D_ARRAY
@@ -1061,7 +1122,7 @@ void ContextGL::clearDepthStencilAttachment(const float clearDepth, const unsign
     oglDebugStartGroup("ContextGL::clearDepthStencilAttachment");
 
     const auto &attachment = framebufferDepthStencilAttachment;
-    auto &tex = getTexture(attachment.texture);
+    auto &tex = getTextureBuffer(attachment.texture);
 
     if ((tex.texture.textureType == TEXTURE_CUBE_MAP
          || tex.texture.textureType == TEXTURE_2D_ARRAY
@@ -1104,10 +1165,10 @@ void ContextGL::clearDepthStencilAttachment(const float clearDepth, const unsign
 void ContextGL::clearDepthAttachment(const float clearDepth) {
     oglDebugStartGroup("ContextGL::clearDepthAttachment");
 
-    const auto &attachment = framebufferDepthStencilAttachment.texture
+    const auto &attachment = framebufferDepthStencilAttachment.texture.isAssigned()
                                  ? framebufferDepthStencilAttachment
                                  : framebufferDepthAttachment;
-    auto &tex = getTexture(attachment.texture);
+    auto &tex = getTextureBuffer(attachment.texture);
 
     if ((tex.texture.textureType == TEXTURE_CUBE_MAP
          || tex.texture.textureType == TEXTURE_2D_ARRAY
@@ -1150,10 +1211,10 @@ void ContextGL::clearDepthAttachment(const float clearDepth) {
 void ContextGL::clearStencilAttachment(const unsigned int clearStencil) {
     oglDebugStartGroup("ContextGL::clearStencilAttachment");
 
-    const auto &attachment = framebufferDepthStencilAttachment.texture
+    const auto &attachment = framebufferDepthStencilAttachment.texture.isAssigned()
                                  ? framebufferDepthStencilAttachment
                                  : framebufferStencilAttachment;
-    auto &tex = getTexture(attachment.texture);
+    auto &tex = getTextureBuffer(attachment.texture);
 
     if ((tex.texture.textureType == TEXTURE_CUBE_MAP
          || tex.texture.textureType == TEXTURE_2D_ARRAY
@@ -1205,14 +1266,13 @@ void ContextGL::setViewport(const Vec2i viewportOffset, const Vec2i viewportSize
 void ContextGL::drawArray(const DrawCall &drawCall) {
     oglDebugStartGroup("ContextGL::drawArray");
 
-    auto &pip = resources.pipelines.at(boundPipeline);
-    glDrawArrays(convert(pip.primitive),
+    glDrawArrays(convert(boundPipeline.getData().primitive),
                  static_cast<GLint>(drawCall.offset),
                  static_cast<GLsizei>(drawCall.count));
     oglCheckError();
 
     stats.drawCalls++;
-    stats.polygons += drawCall.count / pip.primitive;
+    stats.polygons += drawCall.count / boundPipeline.getData().primitive;
 
     oglDebugEndGroup();
 }
@@ -1220,8 +1280,7 @@ void ContextGL::drawArray(const DrawCall &drawCall) {
 void ContextGL::drawIndexed(const DrawCall &drawCall, const size_t indexOffset) {
     oglDebugStartGroup("ContextGL::drawIndexed");
 
-    auto &pip = resources.pipelines.at(boundPipeline);
-    glDrawElementsBaseVertex(convert(pip.primitive),
+    glDrawElementsBaseVertex(convert(boundPipeline.getData().primitive),
                              static_cast<GLsizei>(drawCall.count),
                              convert(drawCall.indexFormat),
                              reinterpret_cast<void *>(drawCall.offset),
@@ -1229,7 +1288,7 @@ void ContextGL::drawIndexed(const DrawCall &drawCall, const size_t indexOffset) 
     oglCheckError();
 
     stats.drawCalls++;
-    stats.polygons += drawCall.count / pip.primitive;
+    stats.polygons += drawCall.count / boundPipeline.getData().primitive;
 
     oglDebugEndGroup();
 }
@@ -1252,26 +1311,98 @@ void ContextGL::endRenderPass() {
     oglDebugEndGroup();
 }
 
-std::vector<uint8_t> ContextGL::downloadShaderBuffer(const RenderGraphResource buffer) {
-    throw std::runtime_error("DownloadShaderBuffer not implemented");
+std::vector<uint8_t> ContextGL::downloadStorageBuffer(const Resource<StorageBuffer> &buffer) {
+    throw std::runtime_error("downloadStorageBuffer not implemented");
 }
 
-Image<ColorRGBA> ContextGL::downloadTexture(const RenderGraphResource texture,
-                                            const size_t index, size_t mipMapLevel,
-                                            const CubeMapFace face) {
-    throw std::runtime_error("DownloadTexture not implemented");
+Image<ColorRGBA> ContextGL::downloadTextureBuffer(const Resource<Texture> &texture,
+                                                  const size_t index, size_t mipMapLevel,
+                                                  const CubeMapFace face) {
+    throw std::runtime_error("downloadTextureBuffer not implemented");
 }
 
-std::unordered_map<Shader::Stage, std::string> ContextGL::getShaderSource(const RenderGraphResource pipeline) {
-    return resources.compiledPipelines.at(pipeline).sourceCode;
+std::unordered_map<Shader::Stage, std::string> ContextGL::getShaderSource(const Resource<RasterPipeline> &pipeline) {
+    return getCompiledShader(pipeline).sourceCode;
 }
 
-const OGLTexture &ContextGL::getTexture(const RenderGraphResource resource) const {
-    if (resource == resources.backBufferColor) {
-        return *backBufferColor;
+const OGLVertexBuffer &ContextGL::getVertexBuffer(const ResourceId &resource) const {
+    switch (resource.getScope()) {
+        case ResourceId::TRANSIENT:
+            return *resources.vertexBuffers.at(resource);
+        case ResourceId::HEAP:
+            return *heap.vertexBuffers.at(resource);
+        case ResourceId::RUNTIME:
+        default:
+            throw std::runtime_error("Invalid vertex buffer handle scope");
     }
-    if (resource == resources.backBufferDepthStencil) {
-        return *backBufferDepthStencil;
+}
+
+const OGLIndexBuffer &ContextGL::getIndexBuffer(const ResourceId &resource) const {
+    switch (resource.getScope()) {
+        case ResourceId::TRANSIENT:
+            return *resources.indexBuffers.at(resource);
+        case ResourceId::HEAP:
+            return *heap.indexBuffers.at(resource);
+        case ResourceId::RUNTIME:
+        default:
+            throw std::runtime_error("Invalid index buffer handle scope");
     }
-    return *resources.textures.at(resource);
+}
+
+const OGLShaderStorageBuffer &ContextGL::getStorageBuffer(const ResourceId &resource) const {
+    switch (resource.getScope()) {
+        case ResourceId::TRANSIENT:
+            return *resources.storageBuffers.at(resource);
+        case ResourceId::HEAP:
+            return *heap.storageBuffers.at(resource);
+        case ResourceId::RUNTIME:
+        default:
+            throw std::runtime_error("Invalid storage buffer handle scope");
+    }
+}
+
+const OGLTexture &ContextGL::getTextureBuffer(const ResourceId &resource) const {
+    switch (resource.getScope()) {
+        case ResourceId::TRANSIENT:
+            return *resources.textureBuffers.at(resource);
+        case ResourceId::HEAP:
+            return *heap.textureBuffers.at(resource);
+        case ResourceId::RUNTIME:
+            if (resource.getHandle() == 0) {
+                return *backBufferColor;
+            }
+            if (resource.getHandle() == 1) {
+                return *backBufferDepthStencil;
+            }
+            throw std::runtime_error("Invalid texture buffer handle");
+        default:
+            throw std::runtime_error("Invalid texture handle scope");
+    }
+}
+
+const OGLShaderProgram &ContextGL::getShaderProgram(const ResourceId &resource) const {
+    switch (resource.getScope()) {
+        case ResourceId::HEAP:
+            return *heap.shaderPrograms.at(resource);
+        default:
+            throw std::runtime_error("Invalid pipeline handle scope");
+    }
+}
+
+const ShaderAttributeLayout &ContextGL::getVertexLayout(const ResourceId &resource) const {
+    switch (resource.getScope()) {
+        case ResourceId::HEAP:
+            return heap.vertexLayouts.at(resource);
+        default:
+            throw std::runtime_error("Invalid pipeline handle scope");
+    }
+}
+
+const CompiledShader &ContextGL::getCompiledShader(const ResourceId &resource) const {
+    switch (resource.getScope()) {
+        case ResourceId::HEAP:
+            return heap.compiledShaders.at(resource);
+        default:
+            throw std::runtime_error("Invalid pipeline handle scope");
+    }
 }

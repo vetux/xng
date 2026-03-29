@@ -22,7 +22,7 @@
 
 #include "xng/rendergraph/shader/shader.hpp"
 
-using namespace xng;
+using namespace xng::rendergraph;
 
 static const char *inputAttributePrefix = "in_";
 static const char *outputAttributePrefix = "out_";

@@ -17,28 +17,30 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_OGLSHADERSTORAGEBUFFER_HPP
-#define XENGINE_OGLSHADERSTORAGEBUFFER_HPP
+#ifndef XENGINE_TRANSIENTSTACK_HPP
+#define XENGINE_TRANSIENTSTACK_HPP
 
-#include "glad/glad.h"
+#include <memory>
+#include <unordered_map>
 
-struct OGLShaderStorageBuffer {
-    GLuint SSBO = 0;
-    size_t size = 0;
+#include "xng/rendergraph/resourceid.hpp"
 
-    explicit OGLShaderStorageBuffer(const size_t size)
-        : size(size) {
-        glGenBuffers(1, &SSBO);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, static_cast<GLsizeiptr>(size), nullptr, GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-        oglCheckError();
-    }
+#include "resource/buffergl.hpp"
+#include "resource/texturegl.hpp"
 
-    ~OGLShaderStorageBuffer() {
-        glDeleteBuffers(1, &SSBO);
-        oglCheckError();
-    }
-};
+namespace xng::opengl {
+    struct ResourceScope {
+        [[nodiscard]] BufferGL &getBuffer(rendergraph::ResourceId::Handle id) const {
+            return *buffers.at(id);
+        }
 
-#endif //XENGINE_OGLSHADERSTORAGEBUFFER_HPP
+        [[nodiscard]] TextureGL &getTexture(rendergraph::ResourceId::Handle id) const {
+            return *textures.at(id);
+        }
+
+        std::unordered_map<rendergraph::ResourceId::Handle, std::shared_ptr<BufferGL>> buffers{};
+        std::unordered_map<rendergraph::ResourceId::Handle, std::shared_ptr<TextureGL>> textures{};
+    };
+}
+
+#endif //XENGINE_TRANSIENTSTACK_HPP

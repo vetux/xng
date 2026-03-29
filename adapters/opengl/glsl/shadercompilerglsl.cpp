@@ -46,7 +46,7 @@ std::string generateElement(const std::string &name, const ShaderDataType &type,
     return ret;
 }
 
-std::string generateHeader(const Shader &source, CompiledPipeline &pipeline) {
+std::string generateHeader(const Shader &source, CompiledShader &pipeline) {
     std::string ret;
 
     for (const auto &v: source.typeDefinitions) {
@@ -195,15 +195,15 @@ std::string generateBody(const Shader &source) {
     return body;
 }
 
-CompiledPipeline ShaderCompilerGLSL::compile(const std::vector<Shader> &sources) {
-    CompiledPipeline ret;
+CompiledShader ShaderCompilerGLSL::compile(const std::vector<Shader> &sources) {
+    CompiledShader ret;
     for (auto &shader: sources) {
         ret.sourceCode[shader.stage] = compileShader(shader, ret);
     }
     return ret;
 }
 
-std::string ShaderCompilerGLSL::compileShader(const Shader &source, CompiledPipeline &pipeline) {
+std::string ShaderCompilerGLSL::compileShader(const Shader &source, CompiledShader &pipeline) {
     return "#version 460\n\n"
            + generateHeader(source, pipeline)
            + generateBody(source);

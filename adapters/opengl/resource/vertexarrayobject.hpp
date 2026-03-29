@@ -17,34 +17,25 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_OGLINDEXBUFFER_HPP
-#define XENGINE_OGLINDEXBUFFER_HPP
-
-#include <cstddef>
+#ifndef XENGINE_OGLVERTEXARRAYOBJECT_HPP
+#define XENGINE_OGLVERTEXARRAYOBJECT_HPP
 
 #include "glad/glad.h"
 
-struct OGLIndexBuffer {
-    GLuint EBO = 0;
+#include "ogldebug.hpp"
 
-    size_t size = 0;
+struct VertexArrayObject {
+    GLuint VAO = 0;
 
-    explicit OGLIndexBuffer(size_t size)
-        : size(size) {
-        glGenBuffers(1, &EBO);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                     static_cast<GLsizeiptr>(size),
-                     nullptr,
-                     GL_DYNAMIC_COPY);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    VertexArrayObject() {
+        glGenVertexArrays(1, &VAO);
         oglCheckError();
     }
 
-    ~OGLIndexBuffer() {
-        glDeleteBuffers(1, &EBO);
+    ~VertexArrayObject() {
+        glDeleteVertexArrays(1, &VAO);
         oglCheckError();
     }
 };
 
-#endif //XENGINE_OGLINDEXBUFFER_HPP
+#endif //XENGINE_OGLVERTEXARRAYOBJECT_HPP

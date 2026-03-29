@@ -20,9 +20,9 @@
 #ifndef XENGINE_COLORBYTESIZE_HPP
 #define XENGINE_COLORBYTESIZE_HPP
 
-#include "xng/rendergraph/rendergraphtextureproperties.hpp"
+#include "xng/rendergraph/textureproperties.hpp"
 
-using namespace xng ;
+using namespace xng::rendergraph;
 
 static size_t getColorByteSize(const ColorFormat colorFormat) {
     switch (colorFormat) {

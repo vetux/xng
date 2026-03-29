@@ -22,12 +22,20 @@
 
 #include "xng/rendergraph/runtime.hpp"
 
+#include "xng/display/displayenvironment.hpp"
+
 namespace xng::opengl {
     class XENGINE_EXPORT Runtime final : public rendergraph::Runtime {
     public:
-        Runtime();
+        /**
+         * To be able to implement the heap, the runtime must create a hidden window
+         * because of tight context/window coupling in gl.
+         *
+         * @param env The env used to create the heap hidden window.
+         */
+        Runtime(DisplayEnvironment &env);
 
-        ~Runtime() override = default;
+        ~Runtime() override;
 
         std::shared_ptr<rendergraph::Surface> createSurface(std::shared_ptr<Window> window) override;
 
@@ -42,7 +50,8 @@ namespace xng::opengl {
         rendergraph::Statistics execute(const std::vector<rendergraph::Graph> &graphs) override;
 
     private:
-        std::unique_ptr<rendergraph::Runtime> runtime;
+        struct MemberData;
+        std::unique_ptr<MemberData> data;
     };
 }
 

@@ -20,6 +20,8 @@
 #ifndef XENGINE_OGLDEBUG_HPP
 #define XENGINE_OGLDEBUG_HPP
 
+#include <string>
+
 #include "glad/glad.h"
 
 static std::string getGLErrorString(GLenum error) {

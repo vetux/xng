@@ -22,7 +22,7 @@
 
 #include "glad/glad.h"
 
-#include "compiledpipeline.hpp"
+#include "glsl/compiledshader.hpp"
 
 #include "ogldebug.hpp"
 
@@ -36,10 +36,10 @@
 
 // So the opengl render graph adapter should currently be considered unstable because shaders may produce rendering artifacts in certain environments.
 
-struct OGLShaderProgram {
+struct ShaderProgram {
     GLuint programHandle{};
 
-    explicit OGLShaderProgram(const CompiledPipeline &pipeline) {
+    explicit ShaderProgram(const CompiledShader &pipeline) {
         auto it = pipeline.sourceCode.find(Shader::VERTEX);
         if (it == pipeline.sourceCode.end())
             throw std::runtime_error("No vertex shader");
@@ -65,7 +65,7 @@ struct OGLShaderProgram {
         }
     }
 
-    ~OGLShaderProgram() {
+    ~ShaderProgram() {
         glDeleteProgram(programHandle);
         oglCheckError();
     }

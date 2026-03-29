@@ -22,9 +22,9 @@
 
 #include "xng/rendergraph/shader/shader.hpp"
 
-using namespace xng;
+using namespace xng::rendergraph;
 
-struct CompiledPipeline {
+struct CompiledShader {
     std::unordered_map<Shader::Stage, std::string> sourceCode;
 
     std::vector<std::string> shaderBufferBindings;

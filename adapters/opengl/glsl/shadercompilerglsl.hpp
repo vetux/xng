@@ -24,17 +24,15 @@
 
 #include "xng/rendergraph/shader/shader.hpp"
 
-#include "compiledpipeline.hpp"
+#include "compiledshader.hpp"
 
 namespace xng {
     class ShaderCompilerGLSL {
     public:
-        ShaderCompilerGLSL() = default;
-
-        CompiledPipeline compile(const std::vector<Shader> &sources);
+        static CompiledShader compile(const std::vector<Shader> &sources);
 
     private:
-        std::string compileShader(const Shader &source, CompiledPipeline &pipeline);
+        static std::string compileShader(const Shader &source, CompiledShader &pipeline);
     };
 }
 

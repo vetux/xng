@@ -22,11 +22,11 @@
 
 #include "glad/glad.h"
 
-#include "xng/rendergraph/rendergraphtextureproperties.hpp"
-#include "xng/rendergraph/rendergraphpipeline.hpp"
+#include "xng/rendergraph/textureproperties.hpp"
 #include "xng/rendergraph/drawcall.hpp"
+#include "xng/rendergraph/pipeline/rasterpipeline.hpp"
 
-using namespace xng;
+using namespace xng::rendergraph;
 
 static GLenum getColorAttachment(int index) {
     return GL_COLOR_ATTACHMENT0 + index;
@@ -53,13 +53,13 @@ static GLenum getType(const ShaderPrimitiveType::Component c) {
     }
 }
 
-static GLenum convert(RenderGraphPipeline::FaceCullingMode mode) {
+static GLenum convert(RasterPipeline::FaceCullingMode mode) {
     switch (mode) {
-        case RenderGraphPipeline::CULL_NONE:
+        case RasterPipeline::CULL_NONE:
             return GL_NONE;
-        case RenderGraphPipeline::CULL_FRONT:
+        case RasterPipeline::CULL_FRONT:
             return GL_FRONT;
-        case RenderGraphPipeline::CULL_BACK:
+        case RasterPipeline::CULL_BACK:
             return GL_BACK;
     }
     throw std::runtime_error("Unsupported culling mode");
@@ -73,7 +73,7 @@ static GLenum convert(IndexFormat type) {
     throw std::runtime_error("Unsupported index type");
 }
 
-static GLenum convert(RenderPrimitive prim) {
+static GLenum convert(Primitive prim) {
     switch (prim) {
         case POINTS:
             return GL_POINTS;
@@ -88,115 +88,115 @@ static GLenum convert(RenderPrimitive prim) {
     }
 }
 
-static GLenum convert(const RenderGraphPipeline::DepthTestMode &mode) {
+static GLenum convert(const RasterPipeline::DepthTestMode &mode) {
     switch (mode) {
-        case RenderGraphPipeline::DEPTH_TEST_ALWAYS:
+        case RasterPipeline::DEPTH_TEST_ALWAYS:
             return GL_ALWAYS;
-        case RenderGraphPipeline::DEPTH_TEST_NEVER:
+        case RasterPipeline::DEPTH_TEST_NEVER:
             return GL_NEVER;
-        case RenderGraphPipeline::DEPTH_TEST_LESS:
+        case RasterPipeline::DEPTH_TEST_LESS:
             return GL_LESS;
-        case RenderGraphPipeline::DEPTH_TEST_EQUAL:
+        case RasterPipeline::DEPTH_TEST_EQUAL:
             return GL_EQUAL;
-        case RenderGraphPipeline::DEPTH_TEST_LEQUAL:
+        case RasterPipeline::DEPTH_TEST_LEQUAL:
             return GL_LEQUAL;
-        case RenderGraphPipeline::DEPTH_TEST_GREATER:
+        case RasterPipeline::DEPTH_TEST_GREATER:
             return GL_GREATER;
-        case RenderGraphPipeline::DEPTH_TEST_NOTEQUAL:
+        case RasterPipeline::DEPTH_TEST_NOTEQUAL:
             return GL_NOTEQUAL;
-        case RenderGraphPipeline::DEPTH_TEST_GEQUAL:
+        case RasterPipeline::DEPTH_TEST_GEQUAL:
             return GL_GEQUAL;
     }
     throw std::runtime_error("Unsupported depth testing mode");
 }
 
-static GLenum convert(RenderGraphPipeline::BlendMode mode) {
+static GLenum convert(RasterPipeline::BlendMode mode) {
     switch (mode) {
-        case RenderGraphPipeline::ZERO:
+        case RasterPipeline::ZERO:
             return GL_ZERO;
-        case RenderGraphPipeline::ONE:
+        case RasterPipeline::ONE:
             return GL_ONE;
-        case RenderGraphPipeline::SRC_COLOR:
+        case RasterPipeline::SRC_COLOR:
             return GL_SRC_COLOR;
-        case RenderGraphPipeline::ONE_MINUS_SRC_COLOR:
+        case RasterPipeline::ONE_MINUS_SRC_COLOR:
             return GL_ONE_MINUS_SRC_COLOR;
-        case RenderGraphPipeline::DST_COLOR:
+        case RasterPipeline::DST_COLOR:
             return GL_DST_COLOR;
-        case RenderGraphPipeline::SRC_ALPHA:
+        case RasterPipeline::SRC_ALPHA:
             return GL_SRC_ALPHA;
-        case RenderGraphPipeline::ONE_MINUS_SRC_ALPHA:
+        case RasterPipeline::ONE_MINUS_SRC_ALPHA:
             return GL_ONE_MINUS_SRC_ALPHA;
-        case RenderGraphPipeline::DST_ALPHA:
+        case RasterPipeline::DST_ALPHA:
             return GL_DST_ALPHA;
-        case RenderGraphPipeline::ONE_MINUS_DST_ALPHA:
+        case RasterPipeline::ONE_MINUS_DST_ALPHA:
             return GL_ONE_MINUS_DST_ALPHA;
-        case RenderGraphPipeline::CONSTANT_COLOR:
+        case RasterPipeline::CONSTANT_COLOR:
             return GL_CONSTANT_COLOR;
-        case RenderGraphPipeline::ONE_MINUS_CONSTANT_COLOR:
+        case RasterPipeline::ONE_MINUS_CONSTANT_COLOR:
             return GL_ONE_MINUS_CONSTANT_COLOR;
-        case RenderGraphPipeline::CONSTANT_ALPHA:
+        case RasterPipeline::CONSTANT_ALPHA:
             return GL_CONSTANT_ALPHA;
-        case RenderGraphPipeline::ONE_MINUS_CONSTANT_ALPHA:
+        case RasterPipeline::ONE_MINUS_CONSTANT_ALPHA:
             return GL_ONE_MINUS_CONSTANT_ALPHA;
     }
     throw std::runtime_error("Unsupported blending mode");
 }
 
-static GLenum convert(RenderGraphPipeline::BlendEquation eq) {
+static GLenum convert(RasterPipeline::BlendEquation eq) {
     switch (eq) {
-        case RenderGraphPipeline::BLEND_ADD:
+        case RasterPipeline::BLEND_ADD:
             return GL_FUNC_ADD;
-        case RenderGraphPipeline::BLEND_SUBTRACT:
+        case RasterPipeline::BLEND_SUBTRACT:
             return GL_FUNC_SUBTRACT;
-        case RenderGraphPipeline::BLEND_REVERSE_SUBTRACT:
+        case RasterPipeline::BLEND_REVERSE_SUBTRACT:
             return GL_FUNC_REVERSE_SUBTRACT;
-        case RenderGraphPipeline::BLEND_MIN:
+        case RasterPipeline::BLEND_MIN:
             return GL_MIN;
-        case RenderGraphPipeline::BLEND_MAX:
+        case RasterPipeline::BLEND_MAX:
             return GL_MAX;
     }
     throw std::runtime_error("Unsupported blend equation");
 }
 
-static GLenum convert(RenderGraphPipeline::StencilMode mode) {
+static GLenum convert(RasterPipeline::StencilMode mode) {
     switch (mode) {
-        case RenderGraphPipeline::STENCIL_NEVER:
+        case RasterPipeline::STENCIL_NEVER:
             return GL_NEVER;
-        case RenderGraphPipeline::STENCIL_LESS:
+        case RasterPipeline::STENCIL_LESS:
             return GL_LESS;
-        case RenderGraphPipeline::STENCIL_LEQUAL:
+        case RasterPipeline::STENCIL_LEQUAL:
             return GL_LEQUAL;
-        case RenderGraphPipeline::STENCIL_GREATER:
+        case RasterPipeline::STENCIL_GREATER:
             return GL_GREATER;
-        case RenderGraphPipeline::STENCIL_GEQUAL:
+        case RasterPipeline::STENCIL_GEQUAL:
             return GL_GEQUAL;
-        case RenderGraphPipeline::STENCIL_EQUAL:
+        case RasterPipeline::STENCIL_EQUAL:
             return GL_EQUAL;
-        case RenderGraphPipeline::STENCIL_NOTEQUAL:
+        case RasterPipeline::STENCIL_NOTEQUAL:
             return GL_NOTEQUAL;
-        case RenderGraphPipeline::STENCIL_ALWAYS:
+        case RasterPipeline::STENCIL_ALWAYS:
             return GL_ALWAYS;
     }
     throw std::runtime_error("Unsupported stencil mode");
 }
 
-static GLenum convert(RenderGraphPipeline::StencilAction action) {
+static GLenum convert(RasterPipeline::StencilAction action) {
     switch (action) {
-        case RenderGraphPipeline::STENCIL_KEEP:
+        case RasterPipeline::STENCIL_KEEP:
             return GL_KEEP;
-        case RenderGraphPipeline::STENCIL_ZERO:
+        case RasterPipeline::STENCIL_ZERO:
             return GL_ZERO;
-        case RenderGraphPipeline::STENCIL_REPLACE:
+        case RasterPipeline::STENCIL_REPLACE:
             return GL_REPLACE;
-        case RenderGraphPipeline::STENCIL_INCR:
+        case RasterPipeline::STENCIL_INCR:
             return GL_INCR;
-        case RenderGraphPipeline::STENCIL_INCR_WRAP:
+        case RasterPipeline::STENCIL_INCR_WRAP:
             return GL_INCR_WRAP;
-        case RenderGraphPipeline::STENCIL_DECR:
+        case RasterPipeline::STENCIL_DECR:
             return GL_DECR;
-        case RenderGraphPipeline::STENCIL_DECR_WRAP:
+        case RasterPipeline::STENCIL_DECR_WRAP:
             return GL_DECR_WRAP;
-        case RenderGraphPipeline::STENCIL_INVERT:
+        case RasterPipeline::STENCIL_INVERT:
             return GL_INVERT;
     }
     throw std::runtime_error("Unsupported stencil action");
