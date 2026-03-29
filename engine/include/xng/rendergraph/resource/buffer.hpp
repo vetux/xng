@@ -23,6 +23,8 @@
 #include <cstdint>
 #include <cstddef>
 
+#include "xng/util/hashcombine.hpp"
+
 namespace xng::rendergraph {
     /**
      * Buffers are storage blobs that can be used as Vertex / Index or Storage buffers.
@@ -40,10 +42,10 @@ namespace xng::rendergraph {
          * Bitmask.
          */
         enum Capability : uint32_t {
-            CAPABILITY_NONE         = 0,
-            CAPABILITY_VERTEX       = 1,
-            CAPABILITY_INDEX        = 2,
-            CAPABILITY_STORAGE      = 4,
+            CAPABILITY_NONE = 0,
+            CAPABILITY_VERTEX = 1,
+            CAPABILITY_INDEX = 2,
+            CAPABILITY_STORAGE = 4,
             CAPABILITY_TRANSFER_SRC = 8,
             CAPABILITY_TRANSFER_DST = 16,
         };
@@ -53,8 +55,8 @@ namespace xng::rendergraph {
          */
         enum MemoryType {
             MEMORY_GPU_ONLY = 0, // E.g. Vulkan DEVICE_LOCAL
-            MEMORY_CPU_TO_GPU, // E.g. Vulkan HOST_VISIBLE | HOST_COHERENT
-            MEMORY_GPU_TO_CPU, // E.g. Vulkan HOST_VISIBLE | HOST_CACHED
+            MEMORY_CPU_TO_GPU, // Mapped memory can only be written to. E.g., Vulkan HOST_VISIBLE | HOST_COHERENT
+            MEMORY_GPU_TO_CPU, // Mapped memory can only be read from. E.g., Vulkan HOST_VISIBLE | HOST_CACHED
         };
 
         size_t size = 0;
@@ -65,6 +67,10 @@ namespace xng::rendergraph {
 
         Buffer(const size_t size, const Capability capabilityFlags, const MemoryType memoryType)
             : size(size), capabilityFlags(capabilityFlags), memoryType(memoryType) {
+        }
+
+        bool operator==(const Buffer &other) const {
+            return size == other.size && capabilityFlags == other.capabilityFlags && memoryType == other.memoryType;
         }
     };
 

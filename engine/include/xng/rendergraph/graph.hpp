@@ -46,7 +46,7 @@ namespace xng::rendergraph {
         std::vector<Pass> passes{};
 
         // Transient / Aliased Resource Allocations - Handles cannot be reused on recompile
-        std::unordered_map<ResourceId, Buffer, ResourceIdHash> vertexBufferAllocations{};
+        std::unordered_map<ResourceId, Buffer, ResourceIdHash> bufferAllocations{};
         std::unordered_map<ResourceId, Texture, ResourceIdHash> textureAllocations{};
 
         Graph() = default;
@@ -55,7 +55,7 @@ namespace xng::rendergraph {
               std::unordered_map<ResourceId, Buffer, ResourceIdHash> vertexBufferAllocations,
               std::unordered_map<ResourceId, Texture, ResourceIdHash> textureAllocations)
             : passes(std::move(passes)),
-              vertexBufferAllocations(std::move(vertexBufferAllocations)),
+              bufferAllocations(std::move(vertexBufferAllocations)),
               textureAllocations(std::move(textureAllocations)) {
         }
     };

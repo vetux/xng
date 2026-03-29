@@ -52,7 +52,7 @@ namespace xng::rendergraph {
      *
      * This enables users to asynchronously stream data to the gpu.
      *
-     * On OpenGL this is implemented using glFenceSync / glClientWaitSync.
+     * On OpenGL this is implemented using a separate thread with a subcontext + glFenceSync / glClientWaitSync.
      * On Vulkan this is implemented using transfer queues + semaphores / fences.
      */
     class Heap {
@@ -158,7 +158,7 @@ namespace xng::rendergraph {
          * @param face
          * @return
          */
-        virtual Image<ColorRGBA> downloadTextureBuffer(const HeapResource<Texture> &texture,
+        virtual Image<ColorRGBA> downloadTexture(const HeapResource<Texture> &texture,
                                                        size_t index,
                                                        size_t mipMapLevel,
                                                        CubeMapFace face) = 0;

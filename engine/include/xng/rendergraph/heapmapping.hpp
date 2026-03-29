@@ -33,14 +33,14 @@ namespace xng {
     public:
         HeapMapping() = default;
 
-        HeapMapping(uint8_t *blockPtr, const size_t blockSize, std::function<void(uint8_t *)> deleter)
+        HeapMapping(uint8_t *blockPtr, const size_t blockSize, std::function<void()> deleter)
             : blockPtr(blockPtr), blockSize(blockSize), deleter(std::move(deleter)) {
             assert(blockPtr != nullptr);
         }
 
         ~HeapMapping() {
             if (deleter) {
-                deleter(blockPtr);
+                deleter();
             }
         }
 
@@ -156,7 +156,7 @@ namespace xng {
     private:
         uint8_t *blockPtr = nullptr;
         size_t blockSize = 0;
-        std::function<void(uint8_t *)> deleter = {};
+        std::function<void()> deleter = {};
     };
 }
 
