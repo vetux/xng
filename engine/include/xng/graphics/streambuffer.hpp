@@ -150,8 +150,9 @@ namespace xng {
          * Must be called every frame where the stable buffer is referenced.
          *
          * @param builder
+         * @return The handle to the buffer.
          */
-        void commit(rg::GraphBuilder &builder) {
+        const rg::Resource<rg::Buffer> &commit(rg::GraphBuilder &builder) {
             auto passBuilder = builder.addTransferPass("StreamBufferTransfer");
 
             rg::HeapResource<rg::Buffer> staleBuffer;
@@ -198,16 +199,7 @@ namespace xng {
                                    upload.second.buffer.getDescription().size);
                 }
             });
-        }
 
-        /**
-         * The returned buffer can be bound and used while async uploads are pending.
-         *
-         * commit() may modify the buffer handle on reallocation.
-         *
-         * @return The stable buffer.
-         */
-        const rg::Resource<rg::Buffer> &getBuffer() const {
             return buffer;
         }
 
