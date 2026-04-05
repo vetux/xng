@@ -160,10 +160,10 @@ namespace xng::rg {
          * @param face
          * @return
          */
-        virtual Image<ColorRGBA> downloadTexture(const HeapResource<Texture> &texture,
-                                                       size_t index,
-                                                       size_t mipMapLevel,
-                                                       CubeMapFace face) = 0;
+        virtual std::vector<uint8_t> downloadTexture(const HeapResource<Texture> &texture,
+                                                     size_t index,
+                                                     size_t mipMapLevel,
+                                                     CubeMapFace face) = 0;
 
         /**
          * Type safe vertex buffer allocation wrapper.

@@ -24,7 +24,7 @@
 
 namespace xng::opengl {
     HeapGL::HeapGL(std::unique_ptr<Window> heapWindow)
-        : transferContext(std::make_unique<HeapTransferContextGL>(std::move(heapWindow))) {
+        : transferContext(std::make_unique<HeapTransferContextGL>(std::move(heapWindow), *this)) {
     }
 
     HeapGL::~HeapGL() = default;
@@ -56,7 +56,7 @@ namespace xng::opengl {
         throw std::runtime_error("downloadTextureBuffer not implemented");
     }
 
-    Image<ColorRGBA> HeapGL::downloadTexture(const HeapResource<Texture> &texture,
+    std::vector<uint8_t> HeapGL::downloadTexture(const HeapResource<Texture> &texture,
                                                    size_t index,
                                                    size_t mipMapLevel,
                                                    CubeMapFace face) {

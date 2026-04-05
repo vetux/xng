@@ -56,7 +56,7 @@ namespace xng::opengl {
 
         std::vector<uint8_t> downloadStorageBuffer(const HeapResource<StorageBuffer> &buffer) override;
 
-        Image<ColorRGBA> downloadTexture(const HeapResource<Texture> &texture,
+        std::vector<uint8_t> downloadTexture(const HeapResource<Texture> &texture,
                                          size_t index,
                                          size_t mipMapLevel,
                                          CubeMapFace face) override;
