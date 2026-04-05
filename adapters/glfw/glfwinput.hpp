@@ -25,7 +25,6 @@
 
 #include "glfwinclude.hpp"
 
-#include "xng/rendergraph/image.hpp"
 #include "xng/input/input.hpp"
 
 namespace xng {
@@ -50,12 +49,6 @@ namespace xng {
         void setClipboardText(std::string text) override;
 
         std::string getClipboardText() override;
-
-        void setMouseCursorImage(const ImageRGBA &image) override;
-
-        void clearMouseCursorImage() override;
-
-        void setMouseCursorMode(CursorMode mode) override;
 
         void setEventBus(const EventBus &bus) override;
 

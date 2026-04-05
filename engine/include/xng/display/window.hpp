@@ -20,17 +20,23 @@
 #ifndef XENGINE_WINDOW_HPP
 #define XENGINE_WINDOW_HPP
 
-#include "xng/rendergraph/image.hpp"
-
 #include "xng/display/windowlistener.hpp"
 #include "xng/display/monitor.hpp"
 
-#include "xng/input/input.hpp"
 #include "xng/math/vector2.hpp"
+#include "xng/math/vector4.hpp"
+
+#include "xng/input/input.hpp"
 
 namespace xng {
     class XENGINE_EXPORT Window {
     public:
+        enum CursorMode {
+            CURSOR_NORMAL,
+            CURSOR_HIDDEN,
+            CURSOR_DISABLED
+        };
+
         virtual ~Window() = default;
 
         virtual void addListener(WindowListener &listener) = 0;
@@ -59,7 +65,7 @@ namespace xng {
 
         virtual void setTitle(std::string title) = 0;
 
-        virtual void setIcon(ImageRGBA &buffer) = 0;
+        virtual void setIcon(const Vec2i &size, const std::vector<uint8_t> &data) = 0;
 
         virtual void setWindowPosition(Vec2i position) = 0;
 
@@ -103,6 +109,12 @@ namespace xng {
         virtual void setWindowAutoMinimize(bool autoMinimize) = 0;
 
         virtual void setWindowFocusOnShow(bool focusOnShow) = 0;
+
+        virtual void setMouseCursorImage(const Vec2i &size, const std::vector<uint8_t> &data) = 0;
+
+        virtual void clearMouseCursorImage() = 0;
+
+        virtual void setMouseCursorMode(CursorMode mode) = 0;
     };
 }
 

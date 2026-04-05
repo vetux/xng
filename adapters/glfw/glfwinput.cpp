@@ -254,29 +254,6 @@ namespace xng {
         throw std::runtime_error("Not Implemented");
     }
 
-    //TODO: Implement cursor image change
-    void GLFWInput::setMouseCursorImage(const ImageRGBA &image) {
-        throw std::runtime_error("Not implemented");
-    }
-
-    void GLFWInput::clearMouseCursorImage() {
-        throw std::runtime_error("Not implemented");
-    }
-
-    void GLFWInput::setMouseCursorMode(CursorMode mode) {
-        switch (mode) {
-            case Input::CURSOR_NORMAL:
-                glfwSetInputMode(&wndH, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-                break;
-            case Input::CURSOR_HIDDEN:
-                glfwSetInputMode(&wndH, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-                break;
-            case Input::CURSOR_DISABLED:
-                glfwSetInputMode(&wndH, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-                break;
-        }
-    }
-
     void GLFWInput::update() {
         for (auto &pair: mice) {
             pair.second.wheelDelta = Vec2d(0);

@@ -294,7 +294,7 @@ namespace xng::glfw {
         glfwSetWindowTitle(wndH, title.c_str());
     }
 
-    void GLFWWindow::setIcon(ImageRGBA &buffer) {
+    void GLFWWindow::setIcon(const Vec2i &size, const std::vector<uint8_t> &data) {
         throw std::runtime_error("Not Implemented");
     }
 
@@ -404,6 +404,29 @@ namespace xng::glfw {
 
     void GLFWWindow::removeListener(WindowListener &listener) {
         listeners.erase(listener);
+    }
+
+    //TODO: Implement cursor image change
+    void GLFWWindow::setMouseCursorImage(const Vec2i &size, const std::vector<uint8_t> &data) {
+        throw std::runtime_error("Not implemented");
+    }
+
+    void GLFWWindow::clearMouseCursorImage() {
+        throw std::runtime_error("Not implemented");
+    }
+
+    void GLFWWindow::setMouseCursorMode(CursorMode mode) {
+        switch (mode) {
+            case CURSOR_NORMAL:
+                glfwSetInputMode(wndH, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                break;
+            case CURSOR_HIDDEN:
+                glfwSetInputMode(wndH, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+                break;
+            case CURSOR_DISABLED:
+                glfwSetInputMode(wndH, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                break;
+        }
     }
 }
 

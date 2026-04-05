@@ -20,8 +20,6 @@
 #ifndef XENGINE_INPUT_HPP
 #define XENGINE_INPUT_HPP
 
-#include "xng/rendergraph/image.hpp"
-
 #include "xng/event/eventbus.hpp"
 
 #include "xng/input/device/keyboard.hpp"
@@ -31,23 +29,11 @@
 namespace xng {
     class XENGINE_EXPORT Input {
     public:
-        enum CursorMode {
-            CURSOR_NORMAL,
-            CURSOR_HIDDEN,
-            CURSOR_DISABLED
-        };
-
         virtual ~Input() = default;
 
         virtual void setClipboardText(std::string text) = 0;
 
         virtual std::string getClipboardText() = 0;
-
-        virtual void setMouseCursorImage(const ImageRGBA &image) = 0;
-
-        virtual void clearMouseCursorImage() = 0;
-
-        virtual void setMouseCursorMode(CursorMode mode) = 0;
 
         /**
          * Set the event bus on which input events of devices are dispatched.

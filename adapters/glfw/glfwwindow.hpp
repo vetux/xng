@@ -21,6 +21,7 @@
 #define XENGINE_GLFWWINDOW_HPP
 
 #include <set>
+#include <memory>
 
 #include "xng/display/window.hpp"
 #include "xng/display/windowattributes.hpp"
@@ -69,7 +70,7 @@ namespace xng::glfw {
 
         void setTitle(std::string title) override;
 
-        void setIcon(ImageRGBA &buffer) override;
+        void setIcon(const Vec2i &size, const std::vector<uint8_t> &data) override;
 
         void setWindowPosition(Vec2i position) override;
 
@@ -130,6 +131,12 @@ namespace xng::glfw {
         void addListener(WindowListener &listener) override;
 
         void removeListener(WindowListener &listener) override;
+
+        void setMouseCursorImage(const Vec2i &size, const std::vector<uint8_t> &data) override;
+
+        void clearMouseCursorImage() override;
+
+        void setMouseCursorMode(CursorMode mode) override;
 
         GLFWwindow *windowHandle() const { return wndH; }
 
