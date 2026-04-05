@@ -258,9 +258,7 @@ namespace xng::opengl {
 
             oglDebugStartGroup("RasterContextGL::setViewport");
 
-            auto &pipeline = pipelineCache.getRasterPipeline(boundPipeline.value());
-
-            glViewport(viewportOffset.x, viewportOffset.y, viewportSize.x, viewportSize.y);
+            glViewport(viewportOffset.x, frameBufferHeight - viewportOffset.y, viewportSize.x, viewportSize.y);
             oglCheckError();
 
             oglDebugEndGroup();
@@ -308,6 +306,10 @@ namespace xng::opengl {
             oglDebugEndGroup();
         }
 
+        void setFrameBufferHeight(const int height) {
+            frameBufferHeight = height;
+        }
+
     private:
         const PassResources &resources;
         PipelineCacheGL &pipelineCache;
@@ -317,6 +319,8 @@ namespace xng::opengl {
 
         VertexArrayObject vertexArray;
         BufferGL emptySSBO;
+
+        int frameBufferHeight = 0;
     };
 }
 

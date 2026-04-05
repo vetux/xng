@@ -49,13 +49,14 @@ namespace xng::opengl {
         Framebuffer framebuffer;
     };
 
-    void bindAttachments(const Framebuffer &framebuffer,
+    Vec2i bindAttachments(const Framebuffer &framebuffer,
                          const rendergraph::RasterPass &pass,
                          const PassResources &passResources) {
         oglDebugStartGroup("Runtime::bindAttachments");
 
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer.FBO);
 
+        Vec2i ret(0);
         for (auto i = 0; i < pass.colorAttachments.size(); ++i) {
             auto &attachment = pass.colorAttachments.at(i);
 
@@ -73,6 +74,11 @@ namespace xng::opengl {
             assert(tex != nullptr);
 
             auto &texture = *tex;
+            if (ret.x + ret.y > 0 && ret != texture.desc.size) {
+                throw std::runtime_error("All attachments must have the same size");
+            } else {
+                ret = texture.desc.size;
+            }
             if (attachment.clearValue.has_value()) {
                 TransferContextGL::clearTexture(texture, attachment.targetSubResource, attachment.clearValue.value());
             }
@@ -91,6 +97,11 @@ namespace xng::opengl {
                         throw std::runtime_error("Depth attachment cannot be a surface");
                     }
                     const auto &texture = passResources.getTexture(std::get<Resource<Texture> >(attachment.target));
+                    if (ret.x + ret.y > 0 && ret != texture.desc.size) {
+                        throw std::runtime_error("All attachments must have the same size");
+                    } else {
+                        ret = texture.desc.size;
+                    }
                     if (attachment.clearValue.has_value()) {
                         TransferContextGL::clearTexture(texture,
                                                         attachment.targetSubResource,
@@ -106,6 +117,11 @@ namespace xng::opengl {
                         throw std::runtime_error("Stencil attachment cannot be a surface");
                     }
                     const auto &texture = passResources.getTexture(std::get<Resource<Texture> >(attachment.target));
+                    if (ret.x + ret.y > 0 && ret != texture.desc.size) {
+                        throw std::runtime_error("All attachments must have the same size");
+                    } else {
+                        ret = texture.desc.size;
+                    }
                     if (attachment.clearValue.has_value()) {
                         TransferContextGL::clearTexture(texture,
                                                         attachment.targetSubResource,
@@ -121,6 +137,11 @@ namespace xng::opengl {
                     throw std::runtime_error("DepthStencil attachment cannot be a surface");
                 }
                 const auto &texture = passResources.getTexture(std::get<Resource<Texture> >(attachment.target));
+                if (ret.x + ret.y > 0 && ret != texture.desc.size) {
+                    throw std::runtime_error("All attachments must have the same size");
+                } else {
+                    ret = texture.desc.size;
+                }
                 if (attachment.clearValue.has_value()) {
                     TransferContextGL::clearTexture(texture,
                                                     attachment.targetSubResource,
@@ -156,6 +177,8 @@ namespace xng::opengl {
         oglCheckError();
 
         oglDebugEndGroup();
+
+        return ret;
     }
 
     Runtime::Runtime(DisplayEnvironment &env)
@@ -291,7 +314,8 @@ namespace xng::opengl {
                 }
                 case 1: {
                     auto p = std::get<RasterPass>(pass);
-                    bindAttachments(data->framebuffer, p, passResources);
+                    auto dimensions = bindAttachments(data->framebuffer, p, passResources);
+                    rasterContext.setFrameBufferHeight(dimensions.y);
                     p.callback(rasterContext);
                     break;
                 }

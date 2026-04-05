@@ -106,10 +106,33 @@ namespace xng::rendergraph {
          */
         virtual void setShaderParameter(const std::string &name, const ShaderPrimitive &value) = 0;
 
+        /**
+         * @param viewportOffset The upper left corner of the viewport.
+         * @param viewportSize The width / height of the viewport.
+         */
         virtual void setViewport(Vec2i viewportOffset, Vec2i viewportSize) = 0;
 
+        /**
+         * Draw vertices from a bound vertex buffer.
+         *
+         * drawCall.offset specifies byte offset into the bound vertex buffer.
+         *
+         * @param drawCall The draw call
+         */
         virtual void drawArray(const DrawCall &drawCall) = 0;
 
+        /**
+         * Draw vertices indexed by values in a bound index buffer.
+         *
+         * drawCall.offset specifies byte offset into the bound index buffer.
+         *
+         * indexOffset specifies a base index value which is added to each index read from the bound index buffer.
+         *
+         * The indexOffset enables indexed drawing from a single index / vertex buffer as long as the all vertex data has the same layout.
+         *
+         * @param drawCall The draw call
+         * @param indexOffset The index offset added to each index read from the bound index buffer.
+         */
         virtual void drawIndexed(const DrawCall &drawCall, size_t indexOffset) = 0;
 
         //TODO: Add drawInstanced
