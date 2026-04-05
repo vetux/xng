@@ -23,10 +23,9 @@
 #include <vector>
 #include <stdexcept>
 
-#include "xng/rendergraph/color.hpp"
-#include "xng/resource/resourcebase.hpp"
-
+#include "xng/assets/color.hpp"
 #include "xng/math/rectangle.hpp"
+#include "xng/resource/resourcebase.hpp"
 
 namespace xng {
     /**
