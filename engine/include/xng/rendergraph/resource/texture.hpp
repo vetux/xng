@@ -23,8 +23,8 @@
 #include <variant>
 
 #include "xng/math/vector2.hpp"
+#include "xng/math/vector4.hpp"
 
-#include "xng/rendergraph/color.hpp"
 #include "xng/rendergraph/textureproperties.hpp"
 
 namespace xng::rg {

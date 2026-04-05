@@ -25,7 +25,6 @@
 
 #include "xng/rendergraph/resourceid.hpp"
 #include "xng/rendergraph/textureproperties.hpp"
-#include "xng/rendergraph/color.hpp"
 #include "xng/rendergraph/surface.hpp"
 #include "xng/rendergraph/resource/texture.hpp"
 

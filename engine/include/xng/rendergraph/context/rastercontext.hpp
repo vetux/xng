@@ -23,7 +23,6 @@
 
 #include "xng/rendergraph/drawcall.hpp"
 #include "xng/rendergraph/resourceid.hpp"
-#include "xng/rendergraph/image.hpp"
 #include "xng/rendergraph/pipelinecache.hpp"
 #include "xng/rendergraph/texturebinding.hpp"
 
