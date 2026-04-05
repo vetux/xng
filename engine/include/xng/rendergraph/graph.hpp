@@ -27,7 +27,7 @@
 #include "xng/rendergraph/resourceid.hpp"
 #include "xng/rendergraph/resource/texture.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     /**
      * A graph represents an encapsulated rendering operation.
      *

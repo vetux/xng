@@ -26,7 +26,7 @@
 
 namespace xng::ShaderScript
 {
-    using namespace xng::rendergraph;
+    using namespace xng::rg;
 
     /**
      * Block scope represents the scope into which shader operations are recorded.

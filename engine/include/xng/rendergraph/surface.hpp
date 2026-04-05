@@ -24,7 +24,7 @@
 
 #include "xng/rendergraph/textureproperties.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     /**
      * A surface represents a display environment render target into which passes can render.
      *

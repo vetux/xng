@@ -25,7 +25,7 @@
 #include "xng/display/displayenvironment.hpp"
 
 namespace xng::opengl {
-    class XENGINE_EXPORT Runtime final : public rendergraph::Runtime {
+    class XENGINE_EXPORT Runtime final : public rg::Runtime {
     public:
         /**
          * To be able to implement the heap, the runtime must create a hidden window
@@ -37,17 +37,17 @@ namespace xng::opengl {
 
         ~Runtime() override;
 
-        std::shared_ptr<rendergraph::Surface> createSurface(std::shared_ptr<Window> window) override;
+        std::shared_ptr<rg::Surface> createSurface(std::shared_ptr<Window> window) override;
 
         void setFramesInFlight(size_t framesInFlight) override;
 
-        rendergraph::Heap &getResourceHeap() override;
+        rg::Heap &getResourceHeap() override;
 
-        rendergraph::PipelineCache &getPipelineCache() override;
+        rg::PipelineCache &getPipelineCache() override;
 
-        rendergraph::Statistics execute(const rendergraph::Graph &graph) override;
+        rg::Statistics execute(const rg::Graph &graph) override;
 
-        rendergraph::Statistics execute(const std::vector<rendergraph::Graph> &graphs) override;
+        rg::Statistics execute(const std::vector<rg::Graph> &graphs) override;
 
     private:
         struct MemberData;

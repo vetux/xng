@@ -29,7 +29,7 @@
 #include "xng/rendergraph/surface.hpp"
 #include "xng/rendergraph/resource/texture.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     struct Attachment {
         std::variant<Resource<Texture>, std::shared_ptr<Surface> > target{};
 

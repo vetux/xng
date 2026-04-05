@@ -22,7 +22,7 @@
 #include "glsl/shadercompilerglsl.hpp"
 
 namespace xng::opengl {
-    rendergraph::PipelineCache::Handle PipelineCacheGL::create(const rendergraph::RasterPipeline &desc) {
+    rg::PipelineCache::Handle PipelineCacheGL::create(const rg::RasterPipeline &desc) {
         auto shader = ShaderCompilerGLSL::compile(desc.shaders);
         auto program = ShaderProgram(shader);
         auto handle = allocateHandle();
@@ -34,7 +34,7 @@ namespace xng::opengl {
         return handle;
     }
 
-    rendergraph::PipelineCache::Handle PipelineCacheGL::create(const rendergraph::ComputePipeline &desc) {
+    rg::PipelineCache::Handle PipelineCacheGL::create(const rg::ComputePipeline &desc) {
         auto shader = ShaderCompilerGLSL::compile({desc.shader});
         auto program = ShaderProgram(shader);
         auto handle = allocateHandle();

@@ -22,7 +22,7 @@
 
 #include "xng/rendergraph/shader/shaderprimitive.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     typedef std::string ShaderStructType; // The name of the struct type
 
     struct ShaderDataType {

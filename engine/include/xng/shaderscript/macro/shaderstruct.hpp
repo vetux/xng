@@ -28,7 +28,7 @@
 #include "xng/shaderscript/shaderobject.hpp"
 #include "xng/shaderscript/std140.hpp"
 
-using namespace xng::rendergraph;
+using namespace xng::rg;
 
 /**
  * This header defines macros to make shader struct definition simpler and cleaner and allow

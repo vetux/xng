@@ -31,7 +31,7 @@
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 #include "xng/rendergraph/shader/shadertexture.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     struct ShaderFunction {
         struct Argument {
             std::string name;

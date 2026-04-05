@@ -26,7 +26,7 @@
 
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     struct ShaderOperand;
 
     struct ShaderInstruction;

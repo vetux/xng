@@ -32,9 +32,9 @@ namespace xng::opengl {
 
         GLenum target{};
 
-        rendergraph::Buffer desc;
+        rg::Buffer desc;
 
-        explicit BufferGL(rendergraph::Buffer bufferDesc)
+        explicit BufferGL(rg::Buffer bufferDesc)
             : desc(std::move(bufferDesc)) {
             if (desc.capabilityFlags & Buffer::CAPABILITY_STORAGE) {
                 target = GL_SHADER_STORAGE_BUFFER;

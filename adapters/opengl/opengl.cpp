@@ -50,7 +50,7 @@ namespace xng::opengl {
     };
 
     Vec2i bindAttachments(const Framebuffer &framebuffer,
-                         const rendergraph::RasterPass &pass,
+                         const rg::RasterPass &pass,
                          const PassResources &passResources) {
         oglDebugStartGroup("Runtime::bindAttachments");
 
@@ -195,22 +195,22 @@ namespace xng::opengl {
 
     Runtime::~Runtime() = default;
 
-    std::shared_ptr<rendergraph::Surface> Runtime::createSurface(std::shared_ptr<Window> window) {
+    std::shared_ptr<rg::Surface> Runtime::createSurface(std::shared_ptr<Window> window) {
         return std::make_shared<SurfaceGL>(std::move(window));
     }
 
     void Runtime::setFramesInFlight(size_t framesInFlight) {
     }
 
-    rendergraph::Heap &Runtime::getResourceHeap() {
+    rg::Heap &Runtime::getResourceHeap() {
         return *data->heap;
     }
 
-    rendergraph::PipelineCache &Runtime::getPipelineCache() {
+    rg::PipelineCache &Runtime::getPipelineCache() {
         return data->pipelineCache;
     }
 
-    rendergraph::Statistics Runtime::execute(const rendergraph::Graph &graph) {
+    rg::Statistics Runtime::execute(const rg::Graph &graph) {
         Statistics stats;
 
         std::unordered_set<SurfaceGL *> surfaces;
@@ -350,7 +350,7 @@ namespace xng::opengl {
         return stats;
     }
 
-    rendergraph::Statistics Runtime::execute(const std::vector<rendergraph::Graph> &graphs) {
+    rg::Statistics Runtime::execute(const std::vector<rg::Graph> &graphs) {
         Statistics stats;
         stats.vendor = data->vendor;
         stats.renderer = data->renderer;

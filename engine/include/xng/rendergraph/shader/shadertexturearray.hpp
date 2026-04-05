@@ -22,7 +22,7 @@
 
 #include "xng/rendergraph/shader/shadertexture.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     struct ShaderTextureArray {
         ShaderTexture texture;
         size_t arraySize{};

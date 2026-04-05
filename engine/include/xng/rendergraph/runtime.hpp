@@ -27,7 +27,11 @@
 #include "xng/rendergraph/graph.hpp"
 #include "xng/rendergraph/statistics.hpp"
 
-namespace xng::rendergraph {
+/**
+ * The Render Graph namespace.
+ * Contains the render graph interface.
+ */
+namespace xng::rg {
     class Runtime {
     public:
         virtual ~Runtime() = default;

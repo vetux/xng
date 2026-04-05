@@ -24,7 +24,7 @@
 
 #include "xng/rendergraph/resource/texture.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     struct TextureBinding {
         enum Aspect {
             /**

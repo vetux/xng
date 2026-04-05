@@ -23,7 +23,7 @@
 #include "xng/rendergraph/context/computecontext.hpp"
 
 namespace xng::opengl {
-    class ComputeContextGL final : public rendergraph::ComputeContext {
+    class ComputeContextGL final : public rg::ComputeContext {
     public:
         ComputeContextGL(const PassResources &resources, PipelineCacheGL &pipelineCache)
             : resources(resources),

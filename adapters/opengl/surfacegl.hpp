@@ -31,7 +31,7 @@
 namespace xng::opengl {
     class Framebuffer;
 
-    class SurfaceGL final : public rendergraph::Surface {
+    class SurfaceGL final : public rg::Surface {
     public:
         explicit SurfaceGL(std::shared_ptr<Window> window)
             : window(std::move(window)) {

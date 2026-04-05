@@ -24,7 +24,7 @@
 
 #include "xng/rendergraph/resource/buffer.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     struct VertexBuffer : Buffer {
         explicit VertexBuffer(const size_t size,
                               const Capability capabilities = CAPABILITY_TRANSFER_SRC | CAPABILITY_TRANSFER_DST,

@@ -30,16 +30,16 @@
 
 namespace xng::opengl {
     struct ResourceScope {
-        [[nodiscard]] BufferGL &getBuffer(rendergraph::ResourceId::Handle id) const {
+        [[nodiscard]] BufferGL &getBuffer(rg::ResourceId::Handle id) const {
             return *buffers.at(id);
         }
 
-        [[nodiscard]] TextureGL &getTexture(rendergraph::ResourceId::Handle id) const {
+        [[nodiscard]] TextureGL &getTexture(rg::ResourceId::Handle id) const {
             return *textures.at(id);
         }
 
-        std::unordered_map<rendergraph::ResourceId::Handle, std::shared_ptr<BufferGL>> buffers{};
-        std::unordered_map<rendergraph::ResourceId::Handle, std::shared_ptr<TextureGL>> textures{};
+        std::unordered_map<rg::ResourceId::Handle, std::shared_ptr<BufferGL>> buffers{};
+        std::unordered_map<rg::ResourceId::Handle, std::shared_ptr<TextureGL>> textures{};
     };
 }
 

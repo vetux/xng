@@ -28,7 +28,7 @@
 #include "xng/rendergraph/shader/shader.hpp"
 #include "xng/rendergraph/shader/shaderattributelayout.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     struct RasterPipeline {
         enum DepthTestMode {
             DEPTH_TEST_ALWAYS,

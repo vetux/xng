@@ -22,7 +22,7 @@
 
 #include "xng/rendergraph/shader/shader.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     struct ComputePipeline {
         Shader shader;
     };

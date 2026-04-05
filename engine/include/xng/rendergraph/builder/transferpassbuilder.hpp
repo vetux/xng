@@ -24,7 +24,7 @@
 
 #include "xng/rendergraph/pass.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     class TransferPassBuilder {
     public:
         TransferPassBuilder(std::string name, std::function<void(TransferPass &&)> buildCallback)

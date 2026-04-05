@@ -36,7 +36,7 @@ namespace xng::opengl {
             if (fbSize.y <= 0) fbSize.y = 1;
 
             if (backBufferColor == nullptr || backBufferColor->desc.size != fbSize) {
-                rendergraph::Texture desc;
+                rg::Texture desc;
                 desc.size = fbSize;
                 desc.format = RGBA;
                 backBufferColor = std::make_shared<TextureGL>(desc);

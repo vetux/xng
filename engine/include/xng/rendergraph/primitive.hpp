@@ -20,7 +20,7 @@
 #ifndef XENGINE_RENDERPRIMITIVE_HPP
 #define XENGINE_RENDERPRIMITIVE_HPP
 
-namespace xng::rendergraph {
+namespace xng::rg {
     enum Primitive : int {
         POINTS = 1,
         LINES = 2,

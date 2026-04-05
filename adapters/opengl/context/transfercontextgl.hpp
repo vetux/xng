@@ -28,7 +28,7 @@
 #include "resource/framebuffer.hpp"
 
 namespace xng::opengl {
-    class TransferContextGL final : public rendergraph::TransferContext {
+    class TransferContextGL final : public rg::TransferContext {
     public:
         TransferContextGL(const PassResources &resources, Statistics &stats)
             : resources(resources), stats(stats) {

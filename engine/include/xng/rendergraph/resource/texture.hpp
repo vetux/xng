@@ -27,7 +27,7 @@
 #include "xng/rendergraph/color.hpp"
 #include "xng/rendergraph/textureproperties.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     struct Texture {
         struct DepthStencilClearValue {
             float clearDepth{};

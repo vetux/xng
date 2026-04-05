@@ -41,7 +41,7 @@
 #include "xng/util/downcast.hpp"
 
 namespace xng::opengl {
-    class HeapTransferContextGL final : public rendergraph::TransferContext {
+    class HeapTransferContextGL final : public rg::TransferContext {
     public:
         struct UploadBufferCmd {
             ResourceId::Handle target{};

@@ -24,7 +24,7 @@
 
 #include "xng/rendergraph/pass.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     class RasterPassBuilder {
     public:
         RasterPassBuilder(std::string name, std::function<void(RasterPass &&)> buildCallback)

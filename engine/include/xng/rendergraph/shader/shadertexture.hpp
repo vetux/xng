@@ -22,7 +22,7 @@
 
 #include "xng/rendergraph/textureproperties.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     struct ShaderTexture {
         TextureType type = TEXTURE_2D;
         ColorFormat format = RGBA;

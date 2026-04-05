@@ -24,7 +24,7 @@
 
 #include "xng/rendergraph/shader/shader.hpp"
 
-using namespace xng::rendergraph;
+using namespace xng::rg;
 
 std::string compileFunction(const std::string &functionName,
                             const std::vector<ShaderFunction::Argument> &arguments,

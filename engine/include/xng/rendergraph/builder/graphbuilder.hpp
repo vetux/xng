@@ -32,7 +32,7 @@
 #include "xng/rendergraph/builder/rasterpassbuilder.hpp"
 #include "xng/rendergraph/builder/computepassbuilder.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     /**
      * The graph builder can be used to simplify graph recording.
      *

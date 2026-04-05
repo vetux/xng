@@ -25,7 +25,7 @@
 
 #include "xng/util/hashcombine.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     /**
      * Buffers are storage blobs that can be used as Vertex / Index or Storage buffers.
      *

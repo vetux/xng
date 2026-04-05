@@ -28,7 +28,7 @@
 
 #include "xng/math/vector3.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     class ComputeContext {
     public:
         virtual ~ComputeContext() = default;

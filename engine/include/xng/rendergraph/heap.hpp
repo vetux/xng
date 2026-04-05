@@ -31,7 +31,7 @@
 #include "xng/rendergraph/resource/texture.hpp"
 #include "xng/rendergraph/resource/vertexbuffer.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     template<typename T>
     class HeapResource;
 

@@ -24,7 +24,7 @@
 
 #include "xng/rendergraph/pass.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     class ComputePassBuilder {
     public:
         ComputePassBuilder(std::string name, std::function<void(ComputePass &&)> buildCallback)

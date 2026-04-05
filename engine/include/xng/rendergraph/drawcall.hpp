@@ -22,7 +22,7 @@
 
 #include <cstddef>
 
-namespace xng::rendergraph {
+namespace xng::rg {
     enum IndexFormat {
         UNSIGNED_SHORT,
         UNSIGNED_INT,

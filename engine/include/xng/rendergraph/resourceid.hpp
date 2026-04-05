@@ -24,7 +24,7 @@
 
 #include "xng/rendergraph/resource/buffer.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     /**
      * There are 2 resource ID namespaces with separate minting.
      *

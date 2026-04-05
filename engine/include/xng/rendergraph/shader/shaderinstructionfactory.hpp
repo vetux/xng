@@ -22,290 +22,293 @@
 
 #include "xng/rendergraph/shader/shaderinstruction.hpp"
 
-/**
- * The ShaderInstructionFactory defines the format of instructions.
- */
-namespace xng::rendergraph::ShaderInstructionFactory {
-    XENGINE_EXPORT ShaderInstruction declareVariable(std::string name,
-                                                     ShaderDataType type,
-                                                     ShaderOperand value = {});
-
-    XENGINE_EXPORT ShaderInstruction assign(ShaderOperand target, ShaderOperand value);
-
-
-    XENGINE_EXPORT ShaderInstruction branch(ShaderOperand condition,
-                                            std::vector<ShaderInstruction> trueBranch,
-                                            std::vector<ShaderInstruction> falseBranch);
-
-    XENGINE_EXPORT ShaderInstruction loop(ShaderOperand initializer,
-                                          ShaderOperand predicate,
-                                          ShaderOperand iterator,
-                                          std::vector<ShaderInstruction> body);
-
-    XENGINE_EXPORT ShaderInstruction call(std::string name, std::vector<ShaderOperand> arguments);
-
-    XENGINE_EXPORT ShaderInstruction ret(ShaderOperand returnValue = {});
-
-    XENGINE_EXPORT ShaderInstruction emitVertex();
-
-    XENGINE_EXPORT ShaderInstruction endPrimitive();
-
-    XENGINE_EXPORT ShaderInstruction setFragmentDepth(ShaderOperand depth);
-
-    XENGINE_EXPORT ShaderInstruction setLayer(ShaderOperand layer);
-
-    XENGINE_EXPORT ShaderInstruction setVertexPosition(ShaderOperand position);
-
-    XENGINE_EXPORT ShaderInstruction vectorSwizzle(ShaderOperand vector,
-                                                   const std::vector<ShaderPrimitiveType::VectorComponent> &components);
-
-    XENGINE_EXPORT ShaderInstruction arraySubscript(ShaderOperand array, ShaderOperand index);
-
-    XENGINE_EXPORT ShaderInstruction matrixSubscript(ShaderOperand matrix,
-                                                     ShaderOperand column,
-                                                     ShaderOperand row = {});
-
-    XENGINE_EXPORT ShaderInstruction objectMember(ShaderOperand object, std::string member);
-
-    XENGINE_EXPORT ShaderInstruction createArray(const ShaderDataType &arrayType,
-                                                 std::vector<ShaderOperand> elements);
-
-    XENGINE_EXPORT ShaderInstruction createMatrix(ShaderPrimitiveType elementType,
-                                                  ShaderOperand x,
-                                                  ShaderOperand y = {},
-                                                  ShaderOperand z = {},
-                                                  ShaderOperand w = {});
-
-    XENGINE_EXPORT ShaderInstruction createVector(ShaderPrimitiveType elementType,
-                                                  ShaderOperand x,
-                                                  ShaderOperand y = {},
-                                                  ShaderOperand z = {},
-                                                  ShaderOperand w = {});
-
-    XENGINE_EXPORT ShaderInstruction createStruct(ShaderStructType typeName,
-                                                  std::vector<ShaderOperand> values = {});
-
+namespace xng::rg {
     /**
-     * Fetch a texel of a TEXTURE_2D.
-     *
-     * UV Coordinates origin is upper left.
-     *
-     * @param texture
-     * @param coordinate A 2d integer vector specifying the texel coordinates
-     * @param lod
-     * @return
+     * The ShaderInstructionFactory defines the format of instructions.
      */
-    XENGINE_EXPORT ShaderInstruction textureFetch(ShaderOperand texture,
-                                                  ShaderOperand coordinate,
-                                                  ShaderOperand lod = {});
+    namespace ShaderInstructionFactory {
+        XENGINE_EXPORT ShaderInstruction declareVariable(std::string name,
+                                                         ShaderDataType type,
+                                                         ShaderOperand value = {});
 
-    /**
-     * Fetch a texel of a TEXTURE_2D_ARRAY.
-     *
-     * UV Coordinates origin is upper left.
-     *
-     * @param texture
-     * @param coordinate A 3d integer vector specifying the texel coordinates in x/y and the array layer in z.
-     * @param lod
-     * @return
-     */
-    XENGINE_EXPORT ShaderInstruction textureFetchArray(ShaderOperand texture,
-                                                       ShaderOperand coordinate,
-                                                       ShaderOperand lod = {});
+        XENGINE_EXPORT ShaderInstruction assign(ShaderOperand target, ShaderOperand value);
 
-    /**
-     * Fetch a texel of a TEXTURE_2D_MULTISAMPLE texture.
-     *
-     * UV Coordinates origin is upper left.
-     *
-     * @param texture
-     * @param coordinate A 2d integer vector specifying the texel coordinates
-     * @param sample The sample index
-     * @return
-     */
-    XENGINE_EXPORT ShaderInstruction textureFetchMS(ShaderOperand texture,
-                                                    ShaderOperand coordinate,
-                                                    ShaderOperand sample = {});
 
-    /**
-     * Fetch a texel of a TEXTURE_2D_MULTISAMPLE_ARRAY texture.
-     *
-     * UV Coordinates origin is upper left.
-     *
-     * @param texture
-     * @param coordinate A 3d integer vector specifying the texel coordinates in x/y and the array layer in z.
-     * @param sample The sample index
-     * @return
-     */
-    XENGINE_EXPORT ShaderInstruction textureFetchMSArray(ShaderOperand texture,
-                                                         ShaderOperand coordinate,
-                                                         ShaderOperand sample = {});
+        XENGINE_EXPORT ShaderInstruction branch(ShaderOperand condition,
+                                                std::vector<ShaderInstruction> trueBranch,
+                                                std::vector<ShaderInstruction> falseBranch);
 
-    /**
-     * Sample a TEXTURE_2D.
-     *
-     * UV Coordinates origin is upper left.
-     *
-     * @param texture
-     * @param coordinate A 2d float vector specifying the uv coordinates.
-     * @param bias Optional bias to apply during level-of-detail computation.
-     * @return
-     */
-    XENGINE_EXPORT ShaderInstruction textureSample(ShaderOperand texture,
-                                                   ShaderOperand coordinate,
-                                                   ShaderOperand bias = {});
+        XENGINE_EXPORT ShaderInstruction loop(ShaderOperand initializer,
+                                              ShaderOperand predicate,
+                                              ShaderOperand iterator,
+                                              std::vector<ShaderInstruction> body);
 
-    /**
-     * Sample a TEXTURE_2D_ARRAY, TEXTURE_2D_MULTISAMPLE_ARRAY texture.
-     *
-     * UV Coordinates origin is upper left.
-     *
-     * @param texture
-     * @param coordinate A 3d float vector specifying the uv coordinates in x/y and the array layer in z.
-     * @param bias Optional bias to apply during level-of-detail computation.
-     * @return
-     */
-    XENGINE_EXPORT ShaderInstruction textureSampleArray(ShaderOperand texture,
+        XENGINE_EXPORT ShaderInstruction call(std::string name, std::vector<ShaderOperand> arguments);
+
+        XENGINE_EXPORT ShaderInstruction ret(ShaderOperand returnValue = {});
+
+        XENGINE_EXPORT ShaderInstruction emitVertex();
+
+        XENGINE_EXPORT ShaderInstruction endPrimitive();
+
+        XENGINE_EXPORT ShaderInstruction setFragmentDepth(ShaderOperand depth);
+
+        XENGINE_EXPORT ShaderInstruction setLayer(ShaderOperand layer);
+
+        XENGINE_EXPORT ShaderInstruction setVertexPosition(ShaderOperand position);
+
+        XENGINE_EXPORT ShaderInstruction vectorSwizzle(ShaderOperand vector,
+                                                       const std::vector<ShaderPrimitiveType::VectorComponent> &
+                                                       components);
+
+        XENGINE_EXPORT ShaderInstruction arraySubscript(ShaderOperand array, ShaderOperand index);
+
+        XENGINE_EXPORT ShaderInstruction matrixSubscript(ShaderOperand matrix,
+                                                         ShaderOperand column,
+                                                         ShaderOperand row = {});
+
+        XENGINE_EXPORT ShaderInstruction objectMember(ShaderOperand object, std::string member);
+
+        XENGINE_EXPORT ShaderInstruction createArray(const ShaderDataType &arrayType,
+                                                     std::vector<ShaderOperand> elements);
+
+        XENGINE_EXPORT ShaderInstruction createMatrix(ShaderPrimitiveType elementType,
+                                                      ShaderOperand x,
+                                                      ShaderOperand y = {},
+                                                      ShaderOperand z = {},
+                                                      ShaderOperand w = {});
+
+        XENGINE_EXPORT ShaderInstruction createVector(ShaderPrimitiveType elementType,
+                                                      ShaderOperand x,
+                                                      ShaderOperand y = {},
+                                                      ShaderOperand z = {},
+                                                      ShaderOperand w = {});
+
+        XENGINE_EXPORT ShaderInstruction createStruct(ShaderStructType typeName,
+                                                      std::vector<ShaderOperand> values = {});
+
+        /**
+         * Fetch a texel of a TEXTURE_2D.
+         *
+         * UV Coordinates origin is upper left.
+         *
+         * @param texture
+         * @param coordinate A 2d integer vector specifying the texel coordinates
+         * @param lod
+         * @return
+         */
+        XENGINE_EXPORT ShaderInstruction textureFetch(ShaderOperand texture,
+                                                      ShaderOperand coordinate,
+                                                      ShaderOperand lod = {});
+
+        /**
+         * Fetch a texel of a TEXTURE_2D_ARRAY.
+         *
+         * UV Coordinates origin is upper left.
+         *
+         * @param texture
+         * @param coordinate A 3d integer vector specifying the texel coordinates in x/y and the array layer in z.
+         * @param lod
+         * @return
+         */
+        XENGINE_EXPORT ShaderInstruction textureFetchArray(ShaderOperand texture,
+                                                           ShaderOperand coordinate,
+                                                           ShaderOperand lod = {});
+
+        /**
+         * Fetch a texel of a TEXTURE_2D_MULTISAMPLE texture.
+         *
+         * UV Coordinates origin is upper left.
+         *
+         * @param texture
+         * @param coordinate A 2d integer vector specifying the texel coordinates
+         * @param sample The sample index
+         * @return
+         */
+        XENGINE_EXPORT ShaderInstruction textureFetchMS(ShaderOperand texture,
                                                         ShaderOperand coordinate,
-                                                        ShaderOperand bias = {});
+                                                        ShaderOperand sample = {});
 
-    /**
-     * Sample a TEXTURE_CUBE_MAP texture.
-     *
-     * The sampled texel is computed by interpreting the coordinate in left-hand coordinate space
-     * with +Y pointing up matching the OpenGL convention.
-     *
-     * @param texture
-     * @param coordinate A 3d float vector specifying the point to sample.
-     * @param lod Optional explicit level-of-detail to sample from (uses textureLod when specified).
-     * @return
-     */
-    XENGINE_EXPORT ShaderInstruction textureSampleCubeMap(ShaderOperand texture,
-                                                          ShaderOperand coordinate,
-                                                          ShaderOperand lod = {});
+        /**
+         * Fetch a texel of a TEXTURE_2D_MULTISAMPLE_ARRAY texture.
+         *
+         * UV Coordinates origin is upper left.
+         *
+         * @param texture
+         * @param coordinate A 3d integer vector specifying the texel coordinates in x/y and the array layer in z.
+         * @param sample The sample index
+         * @return
+         */
+        XENGINE_EXPORT ShaderInstruction textureFetchMSArray(ShaderOperand texture,
+                                                             ShaderOperand coordinate,
+                                                             ShaderOperand sample = {});
 
-    /**
-     * Sample a TEXTURE_CUBE_MAP_ARRAY texture.
-     *
-     * The sampled texel is computed by interpreting the coordinate in left-hand coordinate space
-     * with +Y pointing up matching the OpenGL convention.
-     *
-     * @param texture
-     * @param coordinate A 4d float vector specifying the point to sample in xyz and the array layer in w.
-     * @param lod Optional explicit level-of-detail to sample from (uses textureLod when specified).
-     * @return
-     */
-    XENGINE_EXPORT ShaderInstruction textureSampleCubeMapArray(ShaderOperand texture,
-                                                               ShaderOperand coordinate,
-                                                               ShaderOperand lod = {});
+        /**
+         * Sample a TEXTURE_2D.
+         *
+         * UV Coordinates origin is upper left.
+         *
+         * @param texture
+         * @param coordinate A 2d float vector specifying the uv coordinates.
+         * @param bias Optional bias to apply during level-of-detail computation.
+         * @return
+         */
+        XENGINE_EXPORT ShaderInstruction textureSample(ShaderOperand texture,
+                                                       ShaderOperand coordinate,
+                                                       ShaderOperand bias = {});
 
-    XENGINE_EXPORT ShaderInstruction textureSize(ShaderOperand texture, ShaderOperand lod = {});
+        /**
+         * Sample a TEXTURE_2D_ARRAY, TEXTURE_2D_MULTISAMPLE_ARRAY texture.
+         *
+         * UV Coordinates origin is upper left.
+         *
+         * @param texture
+         * @param coordinate A 3d float vector specifying the uv coordinates in x/y and the array layer in z.
+         * @param bias Optional bias to apply during level-of-detail computation.
+         * @return
+         */
+        XENGINE_EXPORT ShaderInstruction textureSampleArray(ShaderOperand texture,
+                                                            ShaderOperand coordinate,
+                                                            ShaderOperand bias = {});
 
-    XENGINE_EXPORT ShaderInstruction bufferSize(ShaderOperand buffer);
+        /**
+         * Sample a TEXTURE_CUBE_MAP texture.
+         *
+         * The sampled texel is computed by interpreting the coordinate in left-hand coordinate space
+         * with +Y pointing up matching the OpenGL convention.
+         *
+         * @param texture
+         * @param coordinate A 3d float vector specifying the point to sample.
+         * @param lod Optional explicit level-of-detail to sample from (uses textureLod when specified).
+         * @return
+         */
+        XENGINE_EXPORT ShaderInstruction textureSampleCubeMap(ShaderOperand texture,
+                                                              ShaderOperand coordinate,
+                                                              ShaderOperand lod = {});
 
-    XENGINE_EXPORT ShaderInstruction add(ShaderOperand left, ShaderOperand right);
+        /**
+         * Sample a TEXTURE_CUBE_MAP_ARRAY texture.
+         *
+         * The sampled texel is computed by interpreting the coordinate in left-hand coordinate space
+         * with +Y pointing up matching the OpenGL convention.
+         *
+         * @param texture
+         * @param coordinate A 4d float vector specifying the point to sample in xyz and the array layer in w.
+         * @param lod Optional explicit level-of-detail to sample from (uses textureLod when specified).
+         * @return
+         */
+        XENGINE_EXPORT ShaderInstruction textureSampleCubeMapArray(ShaderOperand texture,
+                                                                   ShaderOperand coordinate,
+                                                                   ShaderOperand lod = {});
 
-    XENGINE_EXPORT ShaderInstruction subtract(ShaderOperand left, ShaderOperand right);
+        XENGINE_EXPORT ShaderInstruction textureSize(ShaderOperand texture, ShaderOperand lod = {});
 
-    XENGINE_EXPORT ShaderInstruction multiply(ShaderOperand left, ShaderOperand right);
+        XENGINE_EXPORT ShaderInstruction bufferSize(ShaderOperand buffer);
 
-    XENGINE_EXPORT ShaderInstruction divide(ShaderOperand left, ShaderOperand right);
+        XENGINE_EXPORT ShaderInstruction add(ShaderOperand left, ShaderOperand right);
 
-    XENGINE_EXPORT ShaderInstruction logicalAnd(ShaderOperand left, ShaderOperand right);
+        XENGINE_EXPORT ShaderInstruction subtract(ShaderOperand left, ShaderOperand right);
 
-    XENGINE_EXPORT ShaderInstruction logicalOr(ShaderOperand left, ShaderOperand right);
+        XENGINE_EXPORT ShaderInstruction multiply(ShaderOperand left, ShaderOperand right);
 
-    XENGINE_EXPORT ShaderInstruction compareGreaterEqual(ShaderOperand left, ShaderOperand right);
+        XENGINE_EXPORT ShaderInstruction divide(ShaderOperand left, ShaderOperand right);
 
-    XENGINE_EXPORT ShaderInstruction compareGreater(ShaderOperand left, ShaderOperand right);
+        XENGINE_EXPORT ShaderInstruction logicalAnd(ShaderOperand left, ShaderOperand right);
 
-    XENGINE_EXPORT ShaderInstruction compareLessEqual(ShaderOperand left, ShaderOperand right);
+        XENGINE_EXPORT ShaderInstruction logicalOr(ShaderOperand left, ShaderOperand right);
 
-    XENGINE_EXPORT ShaderInstruction compareLess(ShaderOperand left, ShaderOperand right);
+        XENGINE_EXPORT ShaderInstruction compareGreaterEqual(ShaderOperand left, ShaderOperand right);
 
-    XENGINE_EXPORT ShaderInstruction compareEqual(ShaderOperand left, ShaderOperand right);
+        XENGINE_EXPORT ShaderInstruction compareGreater(ShaderOperand left, ShaderOperand right);
 
-    XENGINE_EXPORT ShaderInstruction compareNotEqual(ShaderOperand left, ShaderOperand right);
+        XENGINE_EXPORT ShaderInstruction compareLessEqual(ShaderOperand left, ShaderOperand right);
 
-    XENGINE_EXPORT ShaderInstruction abs(ShaderOperand value);
+        XENGINE_EXPORT ShaderInstruction compareLess(ShaderOperand left, ShaderOperand right);
 
-    XENGINE_EXPORT ShaderInstruction sin(ShaderOperand value);
+        XENGINE_EXPORT ShaderInstruction compareEqual(ShaderOperand left, ShaderOperand right);
 
-    XENGINE_EXPORT ShaderInstruction cos(ShaderOperand value);
+        XENGINE_EXPORT ShaderInstruction compareNotEqual(ShaderOperand left, ShaderOperand right);
 
-    XENGINE_EXPORT ShaderInstruction tan(ShaderOperand value);
+        XENGINE_EXPORT ShaderInstruction abs(ShaderOperand value);
 
-    XENGINE_EXPORT ShaderInstruction asin(ShaderOperand value);
+        XENGINE_EXPORT ShaderInstruction sin(ShaderOperand value);
 
-    XENGINE_EXPORT ShaderInstruction acos(ShaderOperand value);
+        XENGINE_EXPORT ShaderInstruction cos(ShaderOperand value);
 
-    XENGINE_EXPORT ShaderInstruction atan(ShaderOperand value);
+        XENGINE_EXPORT ShaderInstruction tan(ShaderOperand value);
 
-    XENGINE_EXPORT ShaderInstruction atan2(ShaderOperand y, ShaderOperand x);
+        XENGINE_EXPORT ShaderInstruction asin(ShaderOperand value);
 
-    XENGINE_EXPORT ShaderInstruction pow(ShaderOperand value, ShaderOperand exponent);
+        XENGINE_EXPORT ShaderInstruction acos(ShaderOperand value);
 
-    XENGINE_EXPORT ShaderInstruction exp(ShaderOperand value);
+        XENGINE_EXPORT ShaderInstruction atan(ShaderOperand value);
 
-    XENGINE_EXPORT ShaderInstruction log(ShaderOperand value);
+        XENGINE_EXPORT ShaderInstruction atan2(ShaderOperand y, ShaderOperand x);
 
-    XENGINE_EXPORT ShaderInstruction log2(ShaderOperand value);
+        XENGINE_EXPORT ShaderInstruction pow(ShaderOperand value, ShaderOperand exponent);
 
-    XENGINE_EXPORT ShaderInstruction sqrt(ShaderOperand value);
+        XENGINE_EXPORT ShaderInstruction exp(ShaderOperand value);
 
-    XENGINE_EXPORT ShaderInstruction inverseSqrt(ShaderOperand value);
+        XENGINE_EXPORT ShaderInstruction log(ShaderOperand value);
 
-    XENGINE_EXPORT ShaderInstruction floor(ShaderOperand value);
+        XENGINE_EXPORT ShaderInstruction log2(ShaderOperand value);
 
-    XENGINE_EXPORT ShaderInstruction ceil(ShaderOperand value);
+        XENGINE_EXPORT ShaderInstruction sqrt(ShaderOperand value);
 
-    XENGINE_EXPORT ShaderInstruction round(ShaderOperand value);
+        XENGINE_EXPORT ShaderInstruction inverseSqrt(ShaderOperand value);
 
-    XENGINE_EXPORT ShaderInstruction fract(ShaderOperand value);
+        XENGINE_EXPORT ShaderInstruction floor(ShaderOperand value);
 
-    XENGINE_EXPORT ShaderInstruction mod(ShaderOperand value, ShaderOperand modulus);
+        XENGINE_EXPORT ShaderInstruction ceil(ShaderOperand value);
 
-    XENGINE_EXPORT ShaderInstruction min(ShaderOperand x, ShaderOperand y);
+        XENGINE_EXPORT ShaderInstruction round(ShaderOperand value);
 
-    XENGINE_EXPORT ShaderInstruction max(ShaderOperand x, ShaderOperand y);
+        XENGINE_EXPORT ShaderInstruction fract(ShaderOperand value);
 
-    XENGINE_EXPORT ShaderInstruction clamp(ShaderOperand value,
-                                           ShaderOperand min,
-                                           ShaderOperand max);
+        XENGINE_EXPORT ShaderInstruction mod(ShaderOperand value, ShaderOperand modulus);
 
-    XENGINE_EXPORT ShaderInstruction mix(ShaderOperand x,
-                                         ShaderOperand y,
-                                         ShaderOperand a);
+        XENGINE_EXPORT ShaderInstruction min(ShaderOperand x, ShaderOperand y);
 
-    XENGINE_EXPORT ShaderInstruction step(ShaderOperand edge, ShaderOperand x);
+        XENGINE_EXPORT ShaderInstruction max(ShaderOperand x, ShaderOperand y);
 
-    XENGINE_EXPORT ShaderInstruction smoothstep(ShaderOperand edge0,
-                                                ShaderOperand edge1,
-                                                ShaderOperand x);
+        XENGINE_EXPORT ShaderInstruction clamp(ShaderOperand value,
+                                               ShaderOperand min,
+                                               ShaderOperand max);
 
-    XENGINE_EXPORT ShaderInstruction dot(ShaderOperand x, ShaderOperand y);
+        XENGINE_EXPORT ShaderInstruction mix(ShaderOperand x,
+                                             ShaderOperand y,
+                                             ShaderOperand a);
 
-    XENGINE_EXPORT ShaderInstruction cross(ShaderOperand x, ShaderOperand y);
+        XENGINE_EXPORT ShaderInstruction step(ShaderOperand edge, ShaderOperand x);
 
-    XENGINE_EXPORT ShaderInstruction normalize(ShaderOperand x);
+        XENGINE_EXPORT ShaderInstruction smoothstep(ShaderOperand edge0,
+                                                    ShaderOperand edge1,
+                                                    ShaderOperand x);
 
-    XENGINE_EXPORT ShaderInstruction length(ShaderOperand x);
+        XENGINE_EXPORT ShaderInstruction dot(ShaderOperand x, ShaderOperand y);
 
-    XENGINE_EXPORT ShaderInstruction distance(ShaderOperand x, ShaderOperand y);
+        XENGINE_EXPORT ShaderInstruction cross(ShaderOperand x, ShaderOperand y);
 
-    XENGINE_EXPORT ShaderInstruction reflect(ShaderOperand I, ShaderOperand N);
+        XENGINE_EXPORT ShaderInstruction normalize(ShaderOperand x);
 
-    XENGINE_EXPORT ShaderInstruction refract(ShaderOperand I,
-                                             ShaderOperand N,
-                                             ShaderOperand eta);
+        XENGINE_EXPORT ShaderInstruction length(ShaderOperand x);
 
-    XENGINE_EXPORT ShaderInstruction faceForward(ShaderOperand N,
-                                                 ShaderOperand I,
-                                                 ShaderOperand Nref);
+        XENGINE_EXPORT ShaderInstruction distance(ShaderOperand x, ShaderOperand y);
 
-    XENGINE_EXPORT ShaderInstruction transpose(ShaderOperand x);
+        XENGINE_EXPORT ShaderInstruction reflect(ShaderOperand I, ShaderOperand N);
 
-    XENGINE_EXPORT ShaderInstruction inverse(ShaderOperand x);
+        XENGINE_EXPORT ShaderInstruction refract(ShaderOperand I,
+                                                 ShaderOperand N,
+                                                 ShaderOperand eta);
+
+        XENGINE_EXPORT ShaderInstruction faceForward(ShaderOperand N,
+                                                     ShaderOperand I,
+                                                     ShaderOperand Nref);
+
+        XENGINE_EXPORT ShaderInstruction transpose(ShaderOperand x);
+
+        XENGINE_EXPORT ShaderInstruction inverse(ShaderOperand x);
+    }
 }
 
 #endif //XENGINE_RENDERGRAPH_SHADERINSTRUCTIONFACTORY_HPP

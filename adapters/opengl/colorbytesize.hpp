@@ -22,7 +22,7 @@
 
 #include "xng/rendergraph/textureproperties.hpp"
 
-using namespace xng::rendergraph;
+using namespace xng::rg;
 
 static size_t getColorByteSize(const ColorFormat colorFormat) {
     switch (colorFormat) {

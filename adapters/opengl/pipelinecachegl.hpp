@@ -29,15 +29,15 @@
 #include "resource/shaderprogram.hpp"
 
 namespace xng::opengl {
-    class PipelineCacheGL : public rendergraph::PipelineCache {
+    class PipelineCacheGL : public rg::PipelineCache {
     public:
         PipelineCacheGL() = default;
 
         ~PipelineCacheGL() override = default;
 
-        Handle create(const rendergraph::RasterPipeline &desc) override;
+        Handle create(const rg::RasterPipeline &desc) override;
 
-        Handle create(const rendergraph::ComputePipeline &desc) override;
+        Handle create(const rg::ComputePipeline &desc) override;
 
         void destroy(Handle handle) override;
 
@@ -47,21 +47,21 @@ namespace xng::opengl {
 
         void load(std::istream &stream) override;
 
-        std::unordered_map<rendergraph::Shader::Stage, std::string> getCompiledShaderSource(Handle handle) override;
+        std::unordered_map<rg::Shader::Stage, std::string> getCompiledShaderSource(Handle handle) override;
 
-        [[nodiscard]] const std::unordered_map<Handle, rendergraph::RasterPipeline> &getRasterPipelines() const {
+        [[nodiscard]] const std::unordered_map<Handle, rg::RasterPipeline> &getRasterPipelines() const {
             return rasterPipelines;
         }
 
-        [[nodiscard]] const rendergraph::RasterPipeline &getRasterPipeline(const Handle handle) const {
+        [[nodiscard]] const rg::RasterPipeline &getRasterPipeline(const Handle handle) const {
             return rasterPipelines.at(handle);
         }
 
-        [[nodiscard]] const std::unordered_map<Handle, rendergraph::ComputePipeline> &getComputePipelines() const {
+        [[nodiscard]] const std::unordered_map<Handle, rg::ComputePipeline> &getComputePipelines() const {
             return computePipelines;
         }
 
-        [[nodiscard]] const rendergraph::ComputePipeline &getComputePipeline(const Handle handle) const {
+        [[nodiscard]] const rg::ComputePipeline &getComputePipeline(const Handle handle) const {
             return computePipelines.at(handle);
         }
 
@@ -86,8 +86,8 @@ namespace xng::opengl {
         Handle nextHandle = 0;
         std::unordered_set<Handle> freeHandles{};
 
-        std::unordered_map<Handle, rendergraph::RasterPipeline> rasterPipelines{};
-        std::unordered_map<Handle, rendergraph::ComputePipeline> computePipelines{};
+        std::unordered_map<Handle, rg::RasterPipeline> rasterPipelines{};
+        std::unordered_map<Handle, rg::ComputePipeline> computePipelines{};
 
         std::unordered_map<Handle, ShaderProgram> shaderPrograms{};
         std::unordered_map<Handle, CompiledShader> compiledShaders{};

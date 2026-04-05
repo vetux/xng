@@ -33,11 +33,11 @@ namespace xng::opengl {
         GLenum textureType{};
         GLint textureInternalFormat{};
 
-        rendergraph::Texture desc;
+        rg::Texture desc;
 
         TextureGL() = default;
 
-        explicit TextureGL(const rendergraph::Texture &texture)
+        explicit TextureGL(const rg::Texture &texture)
             : desc(texture) {
             if (texture.textureType >= TEXTURE_2D_ARRAY) {
                 initializeArrayTexture();

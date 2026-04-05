@@ -26,7 +26,7 @@
 #include "xng/rendergraph/drawcall.hpp"
 #include "xng/rendergraph/pipeline/rasterpipeline.hpp"
 
-using namespace xng::rendergraph;
+using namespace xng::rg;
 
 static GLenum getColorAttachment(int index) {
     return GL_COLOR_ATTACHMENT0 + index;

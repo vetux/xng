@@ -178,7 +178,7 @@ namespace xng::vulkan {
                 vkDestroyInstance(getData(instanceData.get()).instance, nullptr);*/
     }
 
-    std::shared_ptr<rendergraph::Surface> createSurface(std::shared_ptr<Window> window) {
+    std::shared_ptr<rg::Surface> createSurface(std::shared_ptr<Window> window) {
         throw std::runtime_error("Not Implemented");
     }
 
@@ -186,19 +186,19 @@ namespace xng::vulkan {
         throw std::runtime_error("Not Implemented");
     }
 
-    rendergraph::Heap &getResourceHeap() {
+    rg::Heap &getResourceHeap() {
         throw std::runtime_error("Not Implemented");
     }
 
-    rendergraph::PipelineCache &getPipelineCache() {
+    rg::PipelineCache &getPipelineCache() {
         throw std::runtime_error("Not Implemented");
     }
 
-    rendergraph::Statistics execute(const rendergraph::Graph &graph) {
+    rg::Statistics execute(const rg::Graph &graph) {
         throw std::runtime_error("Not Implemented");
     }
 
-    rendergraph::Statistics execute(const std::vector<rendergraph::Graph> &graphs) {
+    rg::Statistics execute(const std::vector<rg::Graph> &graphs) {
         throw std::runtime_error("Not Implemented");
     }
 }

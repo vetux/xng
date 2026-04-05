@@ -22,7 +22,7 @@
 
 #include "xng/io/message.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     enum TextureType : int {
         TEXTURE_2D = 0,
         TEXTURE_2D_MULTISAMPLE,

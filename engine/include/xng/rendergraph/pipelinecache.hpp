@@ -27,7 +27,7 @@
 #include "xng/rendergraph/pipeline/rasterpipeline.hpp"
 #include "xng/rendergraph/pipeline/computepipeline.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     /**
      * Stores an internal pipeline cache that can optionally be saved to disk.
      */

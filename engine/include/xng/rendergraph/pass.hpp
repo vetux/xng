@@ -34,7 +34,7 @@
 
 #include "xng/rendergraph/texturebinding.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     struct BufferAccess {
         enum Type {
             StorageRead,

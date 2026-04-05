@@ -22,7 +22,7 @@
 
 #include <string>
 
-namespace xng::rendergraph {
+namespace xng::rg {
     /**
      * Optional statistics data for debugging only.
      * May not be assigned or contain inaccurate data.

@@ -22,7 +22,7 @@
 
 #include "xng/rendergraph/shader/shaderdatatype.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     /**
      * A shader buffer can either be dynamic or static.
      *

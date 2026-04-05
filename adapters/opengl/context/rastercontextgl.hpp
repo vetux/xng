@@ -26,7 +26,7 @@
 #include "resource/vertexarrayobject.hpp"
 
 namespace xng::opengl {
-    class RasterContextGL final : public rendergraph::RasterContext {
+    class RasterContextGL final : public rg::RasterContext {
     public:
         RasterContextGL(const PassResources &resources, PipelineCacheGL &pipelineCache, Statistics &stats)
             : resources(resources),

@@ -32,7 +32,7 @@
 
 #include "xng/math/vector2.hpp"
 
-namespace xng::rendergraph {
+namespace xng::rg {
     class TransferContext {
     public:
         virtual ~TransferContext() = default;

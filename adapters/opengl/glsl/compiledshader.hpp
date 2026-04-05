@@ -22,7 +22,7 @@
 
 #include "xng/rendergraph/shader/shader.hpp"
 
-using namespace xng::rendergraph;
+using namespace xng::rg;
 
 struct CompiledShader {
     std::unordered_map<Shader::Stage, std::string> sourceCode;
