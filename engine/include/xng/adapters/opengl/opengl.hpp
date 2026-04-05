@@ -33,7 +33,7 @@ namespace xng::opengl {
          *
          * @param env The env used to create the heap hidden window.
          */
-        Runtime(DisplayEnvironment &env);
+        explicit Runtime(DisplayEnvironment &env);
 
         ~Runtime() override;
 

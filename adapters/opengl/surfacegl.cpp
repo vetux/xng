@@ -19,6 +19,8 @@
 
 #include "surfacegl.hpp"
 
+#include "resource/framebuffer.hpp"
+
 namespace xng::opengl {
     void SurfaceGL::update() {
             oglDebugStartGroup("Surface::update");

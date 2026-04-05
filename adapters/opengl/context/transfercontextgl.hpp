@@ -30,8 +30,8 @@
 namespace xng::opengl {
     class TransferContextGL final : public rendergraph::TransferContext {
     public:
-        TransferContextGL(PassResources &&resources, Statistics &stats)
-            : resources(std::move(resources)), stats(stats) {
+        TransferContextGL(const PassResources &resources, Statistics &stats)
+            : resources(resources), stats(stats) {
         }
 
         ~TransferContextGL() override = default;
@@ -284,16 +284,35 @@ namespace xng::opengl {
         void clearTexture(const Resource<Texture> &texture,
                           const Texture::SubResource &target,
                           const Texture::ClearValue &clearVal) override {
-            oglDebugStartGroup("TransferContextGL::clearTexture");
+            const auto &tex = resources.getTexture(texture);
+            clearTexture(tex, target, clearVal);
+        }
+
+        void generateMipMaps(const Resource<Texture> &texture) override {
+            oglDebugStartGroup("TransferContextGL::generateMipMaps");
 
             const auto &tex = resources.getTexture(texture);
+
+            glBindTexture(tex.textureType, tex.handle);
+            glGenerateMipmap(tex.textureType);
+            glBindTexture(tex.textureType, 0);
+
+            oglCheckError();
+
+            oglDebugEndGroup();
+        }
+
+        static void clearTexture(const TextureGL &tex,
+                          const Texture::SubResource &target,
+                          const Texture::ClearValue &clearVal) {
+            oglDebugStartGroup("TransferContextGL::clearTexture");
 
             if (tex.desc.format == DEPTH_STENCIL
                 || tex.desc.format == DEPTH24_STENCIL8) {
                 //Workaround using the raster pipeline to clear because there doesn't seem to be a standard 24bit_8bit depth stencil format.
                 const auto clearValue = std::get<Texture::DepthStencilClearValue>(clearVal);
-                const auto clearFb = std::make_unique<Framebuffer>();
-                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, clearFb->FBO);
+                const auto clearFb = Framebuffer();
+                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, clearFb.FBO);
                 Framebuffer::attach(GL_DEPTH_STENCIL_ATTACHMENT, tex, target);
                 glClearDepth(clearValue.clearDepth);
                 glClearStencil(static_cast<GLint>(clearValue.clearStencil));
@@ -407,22 +426,8 @@ namespace xng::opengl {
             oglDebugEndGroup();
         }
 
-        void generateMipMaps(const Resource<Texture> &texture) override {
-            oglDebugStartGroup("TransferContextGL::generateMipMaps");
-
-            const auto &tex = resources.getTexture(texture);
-
-            glBindTexture(tex.textureType, tex.handle);
-            glGenerateMipmap(tex.textureType);
-            glBindTexture(tex.textureType, 0);
-
-            oglCheckError();
-
-            oglDebugEndGroup();
-        }
-
     private:
-        PassResources resources;
+        const PassResources &resources;
         Statistics &stats;
     };
 }

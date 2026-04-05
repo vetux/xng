@@ -28,15 +28,14 @@
 namespace xng::opengl {
     class RasterContextGL final : public rendergraph::RasterContext {
     public:
-        RasterContextGL(PassResources &&resources, PipelineCacheGL &pipelineCache, Statistics &stats)
-            : resources(std::move(resources)),
+        RasterContextGL(const PassResources &resources, PipelineCacheGL &pipelineCache, Statistics &stats)
+            : resources(resources),
               pipelineCache(pipelineCache),
               stats(stats),
               emptySSBO(Buffer(1, Buffer::CAPABILITY_STORAGE, Buffer::MEMORY_GPU_ONLY)) {
         }
 
-        ~RasterContextGL() override {
-        }
+        ~RasterContextGL() override = default;
 
         void bindPipeline(const PipelineCache::Handle &handle) override {
             oglDebugStartGroup("RasterContextGL::bindPipeline");
@@ -259,6 +258,8 @@ namespace xng::opengl {
 
             oglDebugStartGroup("RasterContextGL::setViewport");
 
+            auto &pipeline = pipelineCache.getRasterPipeline(boundPipeline.value());
+
             glViewport(viewportOffset.x, viewportOffset.y, viewportSize.x, viewportSize.y);
             oglCheckError();
 
@@ -308,7 +309,7 @@ namespace xng::opengl {
         }
 
     private:
-        PassResources resources;
+        const PassResources &resources;
         PipelineCacheGL &pipelineCache;
         Statistics &stats;
 

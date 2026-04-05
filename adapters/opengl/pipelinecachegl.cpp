@@ -29,7 +29,7 @@ namespace xng::opengl {
 
         rasterPipelines.emplace(handle, desc);
         shaderPrograms.emplace(handle, std::move(program));
-        compiledShaders.emplace(handle, std::move(shader.sourceCode));
+        compiledShaders.emplace(handle, std::move(shader));
 
         return handle;
     }
@@ -41,7 +41,7 @@ namespace xng::opengl {
 
         computePipelines.emplace(handle, desc);
         shaderPrograms.emplace(handle, std::move(program));
-        compiledShaders.emplace(handle, std::move(shader.sourceCode));
+        compiledShaders.emplace(handle, std::move(shader));
 
         return handle;
     }
@@ -70,6 +70,6 @@ namespace xng::opengl {
     }
 
     std::unordered_map<Shader::Stage, std::string> PipelineCacheGL::getCompiledShaderSource(Handle handle) {
-        return compiledShaders.at(handle);
+        return compiledShaders.at(handle).sourceCode;
     }
 }

@@ -25,8 +25,8 @@
 namespace xng::opengl {
     class ComputeContextGL final : public rendergraph::ComputeContext {
     public:
-        ComputeContextGL(PassResources &&resources, PipelineCacheGL &pipelineCache)
-            : resources(std::move(resources)),
+        ComputeContextGL(const PassResources &resources, PipelineCacheGL &pipelineCache)
+            : resources(resources),
               pipelineCache(pipelineCache),
               emptySSBO(Buffer(1, Buffer::CAPABILITY_STORAGE, Buffer::MEMORY_GPU_ONLY)) {
         }
@@ -121,10 +121,10 @@ namespace xng::opengl {
         }
 
     private:
-        PassResources resources;
+        const PassResources &resources;
         PipelineCacheGL &pipelineCache;
 
-        std::optional<PipelineCache::Handle> boundPipeline;
+        std::optional<PipelineCache::Handle> boundPipeline{};
 
         BufferGL emptySSBO;
     };

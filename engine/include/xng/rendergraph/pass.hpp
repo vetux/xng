@@ -122,8 +122,8 @@ namespace xng::rendergraph {
      */
     struct RasterPass {
         struct DepthStencilAttachment {
-            Attachment depthAttachment;
-            Attachment stencilAttachment;
+            std::optional<Attachment> depthAttachment;
+            std::optional<Attachment> stencilAttachment;
         };
 
         std::string name;
