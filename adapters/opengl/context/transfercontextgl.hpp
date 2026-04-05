@@ -30,62 +30,10 @@
 namespace xng::opengl {
     class TransferContextGL final : public rg::TransferContext {
     public:
-        TransferContextGL(const PassResources &resources, Statistics &stats)
-            : resources(resources), stats(stats) {
-        }
-
-        ~TransferContextGL() override = default;
-
-        void uploadBuffer(const Resource<Buffer> &target,
-                          const uint8_t *buffer,
-                          const size_t bufferSize,
-                          const size_t targetOffset) override {
-            oglDebugStartGroup("TransferContextGL::uploadBuffer");
-
-            const auto &buf = resources.getBuffer(target);
-            glBindBuffer(buf.target, buf.handle);
-            glBufferSubData(buf.target,
-                            static_cast<GLintptr>(targetOffset),
-                            static_cast<GLsizeiptr>(bufferSize),
-                            buffer);
-            glBindBuffer(buf.target, 0);
-            oglCheckError();
-
-            stats.bufferVRamUpload += bufferSize;
-
-            oglDebugEndGroup();
-        }
-
-        void uploadTexture(const Resource<Texture> &texture,
-                           const Texture::SubResource target,
-                           const uint8_t *buffer,
-                           const size_t bufferSize,
-                           const ColorFormat bufferFormat,
-                           const Vec2i &offset,
-                           const Vec2i &size) override {
-            oglDebugStartGroup("TransferContextGL::uploadTexture");
-
-            auto &tex = resources.getTexture(texture);
-
-            if (bufferSize > tex.desc.size.x * tex.desc.size.y * getColorByteSize(tex.desc.format)) {
-                throw std::runtime_error("Invalid buffer size");
-            }
-
-            // Invert the rows because opengl requires bottom-up texture data
-            auto *bufferCpy = new uint8_t[bufferSize];
-            for (auto row = 0; row < size.y; ++row) {
-                auto dstOffset = row * size.x * getColorByteSize(bufferFormat);
-                auto srcOffset = (size.y - row - 1) * size.x * getColorByteSize(bufferFormat);
-                memcpy(bufferCpy + dstOffset, buffer + srcOffset, size.x * getColorByteSize(bufferFormat));
-            }
-
-            const auto &textureSize = tex.desc.size;
-
-            glBindTexture(tex.textureType, tex.handle);
-
-            // determine pixel format (GL_RGB/GL_RGBA/GL_RED/GL_RG) and data type for upload
-            GLenum dataType = GL_UNSIGNED_BYTE;
-            GLenum pixelFormat = GL_RGBA;
+        static void getFormatAndDataType(const ColorFormat bufferFormat, GLenum &dataType, GLenum &pixelFormat) {
+            // determine pixel format (GL_RGB/GL_RGBA/GL_RED/GL_RG) and data type for upload/copy
+            dataType = GL_UNSIGNED_BYTE;
+            pixelFormat = GL_RGBA;
 
             switch (bufferFormat) {
                 case ColorFormat::R:
@@ -144,6 +92,65 @@ namespace xng::opengl {
                                    : GL_UNSIGNED_BYTE;
                     break;
             }
+        }
+
+        TransferContextGL(const PassResources &resources, Statistics &stats)
+            : resources(resources), stats(stats) {
+        }
+
+        ~TransferContextGL() override = default;
+
+        void uploadBuffer(const Resource<Buffer> &target,
+                          const uint8_t *buffer,
+                          const size_t bufferSize,
+                          const size_t targetOffset) override {
+            oglDebugStartGroup("TransferContextGL::uploadBuffer");
+
+            const auto &buf = resources.getBuffer(target);
+            glBindBuffer(buf.target, buf.handle);
+            glBufferSubData(buf.target,
+                            static_cast<GLintptr>(targetOffset),
+                            static_cast<GLsizeiptr>(bufferSize),
+                            buffer);
+            glBindBuffer(buf.target, 0);
+            oglCheckError();
+
+            stats.bufferVRamUpload += bufferSize;
+
+            oglDebugEndGroup();
+        }
+
+        void uploadTexture(const Resource<Texture> &texture,
+                           const Texture::SubResource target,
+                           const uint8_t *buffer,
+                           const size_t bufferSize,
+                           const ColorFormat bufferFormat,
+                           const Vec2i &offset,
+                           const Vec2i &size) override {
+            oglDebugStartGroup("TransferContextGL::uploadTexture");
+
+            auto &tex = resources.getTexture(texture);
+
+            if (bufferSize > tex.desc.size.x * tex.desc.size.y * getColorByteSize(tex.desc.format)) {
+                throw std::runtime_error("Invalid buffer size");
+            }
+
+            // Invert the rows because opengl requires bottom-up texture data
+            auto *bufferCpy = new uint8_t[bufferSize];
+            for (auto row = 0; row < size.y; ++row) {
+                auto dstOffset = row * size.x * getColorByteSize(bufferFormat);
+                auto srcOffset = (size.y - row - 1) * size.x * getColorByteSize(bufferFormat);
+                memcpy(bufferCpy + dstOffset, buffer + srcOffset, size.x * getColorByteSize(bufferFormat));
+            }
+
+            const auto &textureSize = tex.desc.size;
+
+            glBindTexture(tex.textureType, tex.handle);
+
+            // determine pixel format (GL_RGB/GL_RGBA/GL_RED/GL_RG) and data type for upload
+            GLenum dataType;
+            GLenum pixelFormat;
+            getFormatAndDataType(bufferFormat, dataType, pixelFormat);
 
             if (tex.textureType == GL_TEXTURE_2D) {
                 glTexSubImage2D(GL_TEXTURE_2D,
@@ -266,19 +273,182 @@ namespace xng::opengl {
 
         void copyBufferToTexture(const Resource<Texture> &texture,
                                  const Resource<Buffer> &buffer,
-                                 Texture::SubResource textureSubResource,
-                                 size_t bufferOffset,
+                                 const Texture::SubResource textureSubResource,
+                                 const size_t bufferOffset,
                                  const Recti &textureOffset) override {
-            //TODO: PBO buffer copy
-            throw std::runtime_error("Not implemented");
+            oglDebugStartGroup("TransferContextGL::copyBufferToTexture");
+
+            const auto &tex = resources.getTexture(texture);
+            const auto &buf = resources.getBuffer(buffer);
+
+            const auto pixelSize = getColorByteSize(texture.getDescription().format);
+
+            const BufferGL unpackCopy(Buffer(textureOffset.dimensions.x * textureOffset.dimensions.y * pixelSize,
+                                             Buffer::CAPABILITY_TRANSFER_SRC,
+                                             Buffer::MEMORY_CPU_TO_GPU));
+
+            const auto *bufferPtr = buf.map();
+            auto *unpackPtr = unpackCopy.map();
+
+            const auto rowSize = textureOffset.dimensions.x * pixelSize;
+
+            // Invert the rows because opengl requires bottom-up texture data
+            for (auto row = 0; row < textureOffset.dimensions.y; ++row) {
+                const auto dstOffset = row * rowSize;
+                const auto srcOffset = bufferOffset + ((textureOffset.dimensions.y - row - 1) * rowSize);
+                memcpy(unpackPtr + dstOffset, bufferPtr + srcOffset, rowSize);
+            }
+
+            buf.unmap();
+            unpackCopy.unmap();
+
+            GLenum pixelFormat;
+            GLenum dataType;
+            getFormatAndDataType(texture.getDescription().format, dataType, pixelFormat);
+
+            const auto textureSize = tex.desc.size;
+            const auto offset = textureOffset.position;
+            const auto size = textureOffset.dimensions;
+
+            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, unpackCopy.handle);
+
+            glBindTexture(tex.textureType, tex.handle);
+
+            if (tex.textureType == GL_TEXTURE_2D) {
+                glTexSubImage2D(GL_TEXTURE_2D,
+                                static_cast<GLint>(textureSubResource.mipLevel),
+                                offset.x,
+                                textureSize.y - offset.y - 1 - size.y + 1,
+                                size.x,
+                                size.y,
+                                pixelFormat,
+                                dataType,
+                                nullptr);
+            } else if (tex.textureType == GL_TEXTURE_CUBE_MAP) {
+                glTexSubImage2D(convert(textureSubResource.face),
+                                static_cast<GLint>(textureSubResource.mipLevel),
+                                offset.x,
+                                textureSize.y - offset.y - 1 - size.y + 1,
+                                size.x,
+                                size.y,
+                                pixelFormat,
+                                dataType,
+                                nullptr);
+            } else if (tex.textureType == GL_TEXTURE_2D_ARRAY) {
+                glTexSubImage3D(tex.textureType,
+                                static_cast<GLint>(textureSubResource.mipLevel),
+                                offset.x,
+                                textureSize.y - offset.y - 1 - size.y + 1,
+                                static_cast<GLint>(textureSubResource.arrayLayer),
+                                size.x,
+                                size.y,
+                                1,
+                                pixelFormat,
+                                dataType,
+                                nullptr);
+            } else if (tex.textureType == GL_TEXTURE_CUBE_MAP_ARRAY) {
+                glTexSubImage3D(tex.textureType,
+                                static_cast<GLint>(textureSubResource.mipLevel),
+                                offset.x,
+                                textureSize.y - offset.y - 1 - size.y + 1,
+                                static_cast<GLint>(textureSubResource.arrayLayer) * 6 + textureSubResource.face,
+                                size.x,
+                                size.y,
+                                1,
+                                pixelFormat,
+                                dataType,
+                                nullptr);
+            } else {
+                throw std::runtime_error("Invalid texture type");
+            }
+
+            glBindTexture(tex.textureType, 0);
+
+            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+            oglCheckError();
+
+            oglDebugEndGroup();
         }
 
         void copyTextureToBuffer(const Resource<Buffer> &buffer,
                                  const Resource<Texture> &texture,
-                                 Texture::SubResource textureSubResource,
-                                 size_t bufferOffset,
+                                 const Texture::SubResource textureSubResource,
+                                 const size_t bufferOffset,
                                  const Recti &textureOffset) override {
-            throw std::runtime_error("Not implemented");
+            oglDebugStartGroup("TransferContextGL::copyTextureToBuffer");
+
+            const auto &tex = resources.getTexture(texture);
+            const auto &buf = resources.getBuffer(buffer);
+
+            const auto pixelSize = getColorByteSize(texture.getDescription().format);
+            const auto rowSize = textureOffset.dimensions.x * pixelSize;
+            const auto dataSize = textureOffset.dimensions.x * textureOffset.dimensions.y * pixelSize;
+
+            const auto textureSize = tex.desc.size;
+            const auto offset = textureOffset.position;
+            const auto size = textureOffset.dimensions;
+
+            GLenum pixelFormat;
+            GLenum dataType;
+            getFormatAndDataType(texture.getDescription().format, dataType, pixelFormat);
+
+            // Temporary pack PBO
+            const BufferGL packCopy(Buffer(dataSize,
+                                           Buffer::CAPABILITY_TRANSFER_DST,
+                                           Buffer::MEMORY_GPU_TO_CPU));
+
+            glBindBuffer(GL_PIXEL_PACK_BUFFER, packCopy.handle);
+
+            GLint zOffset = 0;
+            GLint depth = 1;
+            if (tex.textureType == GL_TEXTURE_2D) {
+                zOffset = 0;
+                depth = 1;
+            } else if (tex.textureType == GL_TEXTURE_CUBE_MAP) {
+                zOffset = textureSubResource.face;
+                depth = 1;
+            } else if (tex.textureType == GL_TEXTURE_2D_ARRAY) {
+                zOffset = static_cast<GLint>(textureSubResource.arrayLayer);
+                depth = 1;
+            } else if (tex.textureType == GL_TEXTURE_CUBE_MAP_ARRAY) {
+                zOffset = static_cast<GLint>(textureSubResource.arrayLayer) * 6 + textureSubResource.face;
+                depth = 1;
+            } else {
+                throw std::runtime_error("Invalid texture type");
+            }
+
+            glGetTextureSubImage(tex.handle,
+                                 static_cast<GLint>(textureSubResource.mipLevel),
+                                 offset.x,
+                                 textureSize.y - offset.y - 1 - size.y + 1,
+                                 zOffset,
+                                 size.x,
+                                 size.y,
+                                 depth,
+                                 pixelFormat,
+                                 dataType,
+                                 static_cast<GLsizei>(dataSize),
+                                 nullptr);
+
+            glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+            // Invert rows and copy into the destination buffer
+            const auto *packPtr = packCopy.map();
+            auto *bufferPtr = buf.map();
+
+            for (auto row = 0; row < size.y; ++row) {
+                const auto srcOffset = row * rowSize;
+                const auto dstOffset = bufferOffset + ((size.y - row - 1) * rowSize);
+                memcpy(bufferPtr + dstOffset, packPtr + srcOffset, rowSize);
+            }
+
+            packCopy.unmap();
+            buf.unmap();
+
+            oglCheckError();
+
+            oglDebugEndGroup();
         }
 
         void clearTexture(const Resource<Texture> &texture,
@@ -303,8 +473,8 @@ namespace xng::opengl {
         }
 
         static void clearTexture(const TextureGL &tex,
-                          const Texture::SubResource &target,
-                          const Texture::ClearValue &clearVal) {
+                                 const Texture::SubResource &target,
+                                 const Texture::ClearValue &clearVal) {
             oglDebugStartGroup("TransferContextGL::clearTexture");
 
             if (tex.desc.format == DEPTH_STENCIL

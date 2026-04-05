@@ -34,14 +34,16 @@ namespace xng::opengl {
 
         rg::Buffer desc;
 
-        explicit BufferGL(rg::Buffer bufferDesc)
-            : desc(std::move(bufferDesc)) {
+        explicit BufferGL(const rg::Buffer bufferDesc)
+            : desc(bufferDesc) {
             if (desc.capabilityFlags & Buffer::CAPABILITY_STORAGE) {
                 target = GL_SHADER_STORAGE_BUFFER;
             } else if (desc.capabilityFlags & Buffer::CAPABILITY_VERTEX) {
                 target = GL_ARRAY_BUFFER;
-            } else {
+            } else if (desc.capabilityFlags & Buffer::CAPABILITY_INDEX) {
                 target = GL_ELEMENT_ARRAY_BUFFER;
+            } else {
+                target = GL_COPY_WRITE_BUFFER;
             }
 
             glGenBuffers(1, &handle);
@@ -49,10 +51,10 @@ namespace xng::opengl {
 
             switch (desc.memoryType) {
                 case Buffer::MEMORY_GPU_ONLY:
-                    glBufferData(target,
+                    glBufferStorage(target,
                                  static_cast<GLsizeiptr>(desc.size),
                                  nullptr,
-                                 GL_STATIC_COPY);
+                                 GL_DYNAMIC_STORAGE_BIT);
                     break;
                 case Buffer::MEMORY_CPU_TO_GPU:
                     glBufferStorage(target,
