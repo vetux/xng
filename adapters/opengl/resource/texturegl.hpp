@@ -208,9 +208,32 @@ namespace xng::opengl {
                             GL_TEXTURE_MAG_FILTER,
                             convert(desc.filterMag));
 
-            auto col = desc.borderColor.divide();
-            float borderColor[] = {col.x, col.y, col.z, col.w};
-            glTexParameterfv(textureType, GL_TEXTURE_BORDER_COLOR, borderColor);
+            switch (desc.borderColor.index()) {
+                case 0: {
+                    const auto &color = std::get<Vec4f>(desc.borderColor);
+                    const GLfloat borderColor[] = {
+                        color.x, color.y, color.z, color.w
+                    };
+                    glTexParameterfv(textureType, GL_TEXTURE_BORDER_COLOR, borderColor);
+                    break;
+                }
+                case 1: {
+                    const auto &color = std::get<Vec4i>(desc.borderColor);
+                    const GLint borderColor[] = {
+                        color.x, color.y, color.z, color.w
+                    };
+                    glTexParameteriv(textureType, GL_TEXTURE_BORDER_COLOR, borderColor);
+                }
+                case 2: {
+                    const auto &color = std::get<Vec4u>(desc.borderColor);
+                    const GLuint borderColor[] = {
+                        color.x, color.y, color.z, color.w
+                    };
+                    glTexParameterIuiv(textureType, GL_TEXTURE_BORDER_COLOR, borderColor);
+                }
+                default:
+                    break;
+            }
 
             glBindTexture(textureType, 0);
 
@@ -310,9 +333,32 @@ namespace xng::opengl {
                                 GL_TEXTURE_MAG_FILTER,
                                 convert(desc.filterMag));
 
-                auto col = desc.borderColor.divide();
-                float borderColor[] = {col.x, col.y, col.z, col.w};
-                glTexParameterfv(textureType, GL_TEXTURE_BORDER_COLOR, borderColor);
+                switch (desc.borderColor.index()) {
+                    case 0: {
+                        const auto &color = std::get<Vec4f>(desc.borderColor);
+                        const GLfloat borderColor[] = {
+                            color.x, color.y, color.z, color.w
+                        };
+                        glTexParameterfv(textureType, GL_TEXTURE_BORDER_COLOR, borderColor);
+                        break;
+                    }
+                    case 1: {
+                        const auto &color = std::get<Vec4i>(desc.borderColor);
+                        const GLint borderColor[] = {
+                            color.x, color.y, color.z, color.w
+                        };
+                        glTexParameteriv(textureType, GL_TEXTURE_BORDER_COLOR, borderColor);
+                    }
+                    case 2: {
+                        const auto &color = std::get<Vec4u>(desc.borderColor);
+                        const GLuint borderColor[] = {
+                            color.x, color.y, color.z, color.w
+                        };
+                        glTexParameterIuiv(textureType, GL_TEXTURE_BORDER_COLOR, borderColor);
+                    }
+                    default:
+                        break;
+                }
             }
 
             glBindTexture(textureType, 0);

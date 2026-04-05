@@ -531,16 +531,23 @@ namespace xng::opengl {
                 GLenum format = GL_RGBA;
                 GLenum type = GL_UNSIGNED_BYTE;
 
+                GLubyte bClearData[4];
                 GLfloat fClearData[4];
                 GLint iClearData[4];
                 GLuint uiClearData[4];
 
                 switch (clearVal.index()) {
-                    case 0:
+                    case 0: {
                         format = GL_RGBA;
                         type = GL_UNSIGNED_BYTE;
-                        clearData = &std::get<ColorRGBA>(clearVal);
+                        const auto& vec = std::get<Vector4<uint8_t>>(clearVal);
+                        bClearData[0] = vec.x;
+                        bClearData[1] = vec.y;
+                        bClearData[2] = vec.z;
+                        bClearData[3] = vec.w;
+                        clearData = bClearData;
                         break;
+                    }
                     case 1: {
                         format = GL_RGBA;
                         type = GL_FLOAT;
@@ -561,6 +568,7 @@ namespace xng::opengl {
                         iClearData[2] = ivec.z;
                         iClearData[3] = ivec.w;
                         clearData = iClearData;
+                        break;
                     }
                     case 3: {
                         format = GL_RGBA_INTEGER;

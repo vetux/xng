@@ -34,7 +34,7 @@ namespace xng::rg {
             unsigned int clearStencil{};
         };
 
-        typedef std::variant<ColorRGBA, Vec4f, Vec4i, Vec4u, DepthStencilClearValue, float, unsigned> ClearValue;
+        typedef std::variant<Vector4<uint8_t>, Vec4f, Vec4i, Vec4u, DepthStencilClearValue, float, unsigned> ClearValue;
 
         /**
          * Capability describes how a texture can be used.
@@ -104,7 +104,7 @@ namespace xng::rg {
 
         size_t arrayLayers = 0; // The number of layers in the texture if textureType == TEXTURE_*_ARRAY
 
-        ColorRGBA borderColor = ColorRGBA::black(1, 0);
+        std::variant<Vec4f, Vec4i, Vec4u> borderColor = Vec4f(0);
 
         static int calculateMipLevels(const Vec2i &size) {
             const auto maxDimension = std::max(size.x, size.y);
@@ -146,10 +146,37 @@ namespace xng::rg {
             hash_combine(ret, buffer.mipLevels);
             hash_combine(ret, buffer.mipMapFilter);
             hash_combine(ret, buffer.fixedSampleLocations);
-            hash_combine(ret, buffer.borderColor.r());
-            hash_combine(ret, buffer.borderColor.g());
-            hash_combine(ret, buffer.borderColor.b());
-            hash_combine(ret, buffer.borderColor.a());
+
+            hash_combine(ret, buffer.borderColor.index());
+            switch (buffer.borderColor.index()) {
+                case 0: {
+                    auto &color = std::get<Vec4f>(buffer.borderColor);
+                    hash_combine(ret, color.x);
+                    hash_combine(ret, color.y);
+                    hash_combine(ret, color.z);
+                    hash_combine(ret, color.w);
+                    break;
+                }
+                case 1: {
+                    auto &color = std::get<Vec4i>(buffer.borderColor);
+                    hash_combine(ret, color.x);
+                    hash_combine(ret, color.y);
+                    hash_combine(ret, color.z);
+                    hash_combine(ret, color.w);
+                    break;
+                }
+                case 2: {
+                    auto &color = std::get<Vec4u>(buffer.borderColor);
+                    hash_combine(ret, color.x);
+                    hash_combine(ret, color.y);
+                    hash_combine(ret, color.z);
+                    hash_combine(ret, color.w);
+                    break;
+                }
+                default:
+                    break;
+            }
+
             hash_combine(ret, buffer.arrayLayers);
             hash_combine(ret, buffer.capabilities);
             return ret;
