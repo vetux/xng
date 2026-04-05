@@ -154,8 +154,6 @@ namespace xng {
         void commit(rg::GraphBuilder &builder) {
             auto passBuilder = builder.addTransferPass("StreamBufferTransfer");
 
-            passBuilder.read(buffer);
-
             rg::HeapResource<rg::Buffer> staleBuffer;
             if (buffer.getDescription().size != bufferSize) {
                 staleBuffer = buffer;
@@ -163,7 +161,7 @@ namespace xng {
                                                         buffer.getDescription().capabilityFlags,
                                                         rg::Buffer::MEMORY_GPU_ONLY));
 
-                passBuilder.read(buffer);
+                passBuilder.read(staleBuffer);
                 passBuilder.write(buffer);
             }
 
