@@ -129,6 +129,8 @@ namespace xng::rg {
          *
          * Users can poll transfer status via hasPendingTransfers().
          *
+         * Resources passed into async transfer operations are pinned internally until the operation has finished.
+         *
          * @return The transfer context for heap transfers.
          */
         virtual TransferContext &getTransferContext() = 0;

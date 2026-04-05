@@ -44,13 +44,13 @@ namespace xng::opengl {
     class HeapTransferContextGL final : public rg::TransferContext {
     public:
         struct UploadBufferCmd {
-            ResourceId::Handle target{};
+            HeapResource<Buffer> target{};
             std::vector<uint8_t> data{};
             size_t targetOffset{};
         };
 
         struct UploadTextureCmd {
-            ResourceId::Handle target{};
+            HeapResource<Texture> target{};
             Texture::SubResource subResource{};
             std::vector<uint8_t> data{};
             ColorFormat bufferFormat{};
@@ -59,16 +59,16 @@ namespace xng::opengl {
         };
 
         struct CopyBufferCmd {
-            ResourceId::Handle target{};
-            ResourceId::Handle source{};
+            HeapResource<Buffer> target{};
+            HeapResource<Buffer> source{};
             size_t targetOffset{};
             size_t sourceOffset{};
             size_t count{};
         };
 
         struct CopyTextureCmd {
-            ResourceId::Handle target{};
-            ResourceId::Handle source{};
+            HeapResource<Texture> target{};
+            HeapResource<Texture> source{};
             Vec3i srcOffset{};
             Vec3i dstOffset{};
             Vec3i size{};
@@ -77,29 +77,29 @@ namespace xng::opengl {
         };
 
         struct CopyBufferToTextureCmd {
-            ResourceId::Handle texture{};
-            ResourceId::Handle buffer{};
+            HeapResource<Texture> texture{};
+            HeapResource<Buffer> buffer{};
             Texture::SubResource textureSubResource{};
             size_t bufferOffset{};
             Recti textureOffset{};
         };
 
         struct CopyTextureToBufferCmd {
-            ResourceId::Handle buffer{};
-            ResourceId::Handle texture{};
+            HeapResource<Buffer> buffer{};
+            HeapResource<Texture> texture{};
             Texture::SubResource textureSubResource{};
             size_t bufferOffset{};
             Recti textureOffset{};
         };
 
         struct ClearTextureCmd {
-            ResourceId::Handle target{};
+            HeapResource<Texture> target{};
             Texture::SubResource subResource{};
             Texture::ClearValue clearValue{};
         };
 
         struct GenerateMipMapsCmd {
-            ResourceId::Handle target{};
+            HeapResource<Texture> target{};
         };
 
         using Command = std::variant<UploadBufferCmd,
@@ -111,8 +111,8 @@ namespace xng::opengl {
             ClearTextureCmd,
             GenerateMipMapsCmd>;
 
-        explicit HeapTransferContextGL(std::unique_ptr<Window> heapWindow)
-            : heapWindow(std::move(heapWindow)) {
+        explicit HeapTransferContextGL(std::unique_ptr<Window> heapWindow, Heap &heap)
+            : heapWindow(std::move(heapWindow)), heap(heap) {
             thread = std::thread(&HeapTransferContextGL::loop, this);
         }
 
@@ -134,7 +134,7 @@ namespace xng::opengl {
                           const size_t targetOffset) override {
             std::lock_guard lock(mutex);
             commandQueue.emplace_back(UploadBufferCmd{
-                target.getHandle(),
+                HeapResource(target.getHandle(), target.getDescription(), heap),
                 std::vector<uint8_t>(buffer, buffer + bufferSize),
                 targetOffset
             });
@@ -150,7 +150,7 @@ namespace xng::opengl {
                            const Vec2i &size) override {
             std::lock_guard lock(mutex);
             commandQueue.emplace_back(UploadTextureCmd{
-                texture.getHandle(),
+                HeapResource(texture.getHandle(), texture.getDescription(), heap),
                 target,
                 std::vector<uint8_t>(buffer, buffer + bufferSize),
                 bufferFormat,
@@ -167,8 +167,8 @@ namespace xng::opengl {
                         const size_t count) override {
             std::lock_guard lock(mutex);
             commandQueue.emplace_back(CopyBufferCmd{
-                target.getHandle(),
-                source.getHandle(),
+                HeapResource(target.getHandle(), target.getDescription(), heap),
+                HeapResource(source.getHandle(), source.getDescription(), heap),
                 targetOffset,
                 sourceOffset,
                 count
@@ -185,8 +185,8 @@ namespace xng::opengl {
                          const size_t dstMipMapLevel) override {
             std::lock_guard lock(mutex);
             commandQueue.emplace_back(CopyTextureCmd{
-                target.getHandle(),
-                source.getHandle(),
+                HeapResource(target.getHandle(), target.getDescription(), heap),
+                HeapResource(source.getHandle(), source.getDescription(), heap),
                 srcOffset,
                 dstOffset,
                 size,
@@ -203,8 +203,8 @@ namespace xng::opengl {
                                  const Recti &textureOffset) override {
             std::lock_guard lock(mutex);
             commandQueue.emplace_back(CopyBufferToTextureCmd{
-                texture.getHandle(),
-                buffer.getHandle(),
+                HeapResource(texture.getHandle(), texture.getDescription(), heap),
+                HeapResource(buffer.getHandle(), buffer.getDescription(), heap),
                 textureSubResource,
                 bufferOffset,
                 textureOffset
@@ -219,8 +219,8 @@ namespace xng::opengl {
                                  const Recti &textureOffset) override {
             std::lock_guard lock(mutex);
             commandQueue.emplace_back(CopyTextureToBufferCmd{
-                buffer.getHandle(),
-                texture.getHandle(),
+                HeapResource(buffer.getHandle(), buffer.getDescription(), heap),
+                HeapResource(texture.getHandle(), texture.getDescription(), heap),
                 textureSubResource,
                 bufferOffset,
                 textureOffset
@@ -233,7 +233,7 @@ namespace xng::opengl {
                           const Texture::ClearValue &clearValue) override {
             std::lock_guard lock(mutex);
             commandQueue.emplace_back(ClearTextureCmd{
-                texture.getHandle(),
+                HeapResource(texture.getHandle(), texture.getDescription(), heap),
                 target,
                 clearValue
             });
@@ -242,7 +242,9 @@ namespace xng::opengl {
 
         void generateMipMaps(const Resource<Texture> &texture) override {
             std::lock_guard lock(mutex);
-            commandQueue.emplace_back(GenerateMipMapsCmd{texture.getHandle()});
+            commandQueue.emplace_back(GenerateMipMapsCmd{
+                HeapResource(texture.getHandle(), texture.getDescription(), heap)
+            });
             cv.notify_one();
         }
 
@@ -332,14 +334,41 @@ namespace xng::opengl {
             std::visit([&](const auto &c) { visitHandlesImpl(c, std::forward<F>(f)); }, cmd);
         }
 
-        template<typename F> static void visitHandlesImpl(const UploadBufferCmd &c, F &&f)      { f(c.target); }
-        template<typename F> static void visitHandlesImpl(const UploadTextureCmd &c, F &&f)     { f(c.target); }
-        template<typename F> static void visitHandlesImpl(const CopyBufferCmd &c, F &&f)        { f(c.target); f(c.source); }
-        template<typename F> static void visitHandlesImpl(const CopyTextureCmd &c, F &&f)       { f(c.target); f(c.source); }
-        template<typename F> static void visitHandlesImpl(const CopyBufferToTextureCmd &c, F &&f) { f(c.texture); f(c.buffer); }
-        template<typename F> static void visitHandlesImpl(const CopyTextureToBufferCmd &c, F &&f) { f(c.buffer); f(c.texture); }
-        template<typename F> static void visitHandlesImpl(const ClearTextureCmd &c, F &&f)      { f(c.target); }
-        template<typename F> static void visitHandlesImpl(const GenerateMipMapsCmd &c, F &&f)   { f(c.target); }
+        template<typename F>
+        static void visitHandlesImpl(const UploadBufferCmd &c, F &&f) { f(c.target.getHandle()); }
+
+        template<typename F>
+        static void visitHandlesImpl(const UploadTextureCmd &c, F &&f) { f(c.target.getHandle()); }
+
+        template<typename F>
+        static void visitHandlesImpl(const CopyBufferCmd &c, F &&f) {
+            f(c.target.getHandle());
+            f(c.source.getHandle());
+        }
+
+        template<typename F>
+        static void visitHandlesImpl(const CopyTextureCmd &c, F &&f) {
+            f(c.target.getHandle());
+            f(c.source.getHandle());
+        }
+
+        template<typename F>
+        static void visitHandlesImpl(const CopyBufferToTextureCmd &c, F &&f) {
+            f(c.texture.getHandle());
+            f(c.buffer.getHandle());
+        }
+
+        template<typename F>
+        static void visitHandlesImpl(const CopyTextureToBufferCmd &c, F &&f) {
+            f(c.buffer.getHandle());
+            f(c.texture.getHandle());
+        }
+
+        template<typename F>
+        static void visitHandlesImpl(const ClearTextureCmd &c, F &&f) { f(c.target.getHandle()); }
+
+        template<typename F>
+        static void visitHandlesImpl(const GenerateMipMapsCmd &c, F &&f) { f(c.target.getHandle()); }
 
         static bool commandTouchesHandle(const Command &cmd, const ResourceId::Handle handle) {
             bool found = false;
@@ -393,68 +422,69 @@ namespace xng::opengl {
         }
 
         void execute(TransferContextGL &ctx, const UploadBufferCmd &cmd) {
-            ctx.uploadBuffer(Resource<Buffer>(cmd.target, Buffer{}, ResourceId::HEAP),
-                             cmd.data.data(), cmd.data.size(), cmd.targetOffset);
+            ctx.uploadBuffer(cmd.target,
+                             cmd.data.data(),
+                             cmd.data.size(),
+                             cmd.targetOffset);
             std::lock_guard lock(fencesMutex);
-            createFence(cmd.target);
+            createFence(cmd.target.getHandle());
         }
 
         void execute(TransferContextGL &ctx, const UploadTextureCmd &cmd) {
-            ctx.uploadTexture(Resource<Texture>(cmd.target, Texture{}, ResourceId::HEAP),
+            ctx.uploadTexture(cmd.target,
                               cmd.subResource, cmd.data.data(), cmd.data.size(),
                               cmd.bufferFormat, cmd.offset, cmd.size);
             std::lock_guard lock(fencesMutex);
-            createFence(cmd.target);
+            createFence(cmd.target.getHandle());
         }
 
         void execute(TransferContextGL &ctx, const CopyBufferCmd &cmd) {
-            ctx.copyBuffer(Resource<Buffer>(cmd.target, Buffer{}, ResourceId::HEAP),
-                           Resource<Buffer>(cmd.source, Buffer{}, ResourceId::HEAP),
+            ctx.copyBuffer(cmd.target,
+                           cmd.source,
                            cmd.targetOffset, cmd.sourceOffset, cmd.count);
             std::lock_guard lock(fencesMutex);
-            createFence(cmd.target);
-            createFence(cmd.source);
+            createFence(cmd.target.getHandle());
+            createFence(cmd.source.getHandle());
         }
 
         void execute(TransferContextGL &ctx, const CopyTextureCmd &cmd) {
-            ctx.copyTexture(Resource<Texture>(cmd.target, Texture{}, ResourceId::HEAP),
-                            Resource<Texture>(cmd.source, Texture{}, ResourceId::HEAP),
+            ctx.copyTexture(cmd.target,
+                            cmd.source,
                             cmd.srcOffset, cmd.dstOffset, cmd.size,
                             cmd.srcMipMapLevel, cmd.dstMipMapLevel);
             std::lock_guard lock(fencesMutex);
-            createFence(cmd.target);
-            createFence(cmd.source);
+            createFence(cmd.target.getHandle());
+            createFence(cmd.source.getHandle());
         }
 
         void execute(TransferContextGL &ctx, const CopyBufferToTextureCmd &cmd) {
-            ctx.copyBufferToTexture(Resource<Texture>(cmd.texture, Texture{}, ResourceId::HEAP),
-                                    Resource<Buffer>(cmd.buffer, Buffer{}, ResourceId::HEAP),
+            ctx.copyBufferToTexture(cmd.texture,
+                                    cmd.buffer,
                                     cmd.textureSubResource, cmd.bufferOffset, cmd.textureOffset);
             std::lock_guard lock(fencesMutex);
-            createFence(cmd.texture);
-            createFence(cmd.buffer);
+            createFence(cmd.texture.getHandle());
+            createFence(cmd.buffer.getHandle());
         }
 
         void execute(TransferContextGL &ctx, const CopyTextureToBufferCmd &cmd) {
-            ctx.copyTextureToBuffer(Resource<Buffer>(cmd.buffer, Buffer{}, ResourceId::HEAP),
-                                    Resource<Texture>(cmd.texture, Texture{}, ResourceId::HEAP),
+            ctx.copyTextureToBuffer(cmd.buffer,
+                                    cmd.texture,
                                     cmd.textureSubResource, cmd.bufferOffset, cmd.textureOffset);
             std::lock_guard lock(fencesMutex);
-            createFence(cmd.buffer);
-            createFence(cmd.texture);
+            createFence(cmd.buffer.getHandle());
+            createFence(cmd.texture.getHandle());
         }
 
         void execute(TransferContextGL &ctx, const ClearTextureCmd &cmd) {
-            ctx.clearTexture(Resource<Texture>(cmd.target, Texture{}, ResourceId::HEAP),
-                             cmd.subResource, cmd.clearValue);
+            ctx.clearTexture(cmd.target, cmd.subResource, cmd.clearValue);
             std::lock_guard lock(fencesMutex);
-            createFence(cmd.target);
+            createFence(cmd.target.getHandle());
         }
 
         void execute(TransferContextGL &ctx, const GenerateMipMapsCmd &cmd) {
-            ctx.generateMipMaps(Resource<Texture>(cmd.target, Texture{}, ResourceId::HEAP));
+            ctx.generateMipMaps(cmd.target);
             std::lock_guard lock(fencesMutex);
-            createFence(cmd.target);
+            createFence(cmd.target.getHandle());
         }
 
         ResourceId::Handle allocateHandle() {
@@ -471,6 +501,8 @@ namespace xng::opengl {
 
         std::thread thread;
         std::unique_ptr<Window> heapWindow;
+
+        Heap &heap;
 
         Statistics stats;
 
