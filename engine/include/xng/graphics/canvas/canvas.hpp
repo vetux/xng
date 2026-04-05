@@ -22,15 +22,15 @@
 
 #include <utility>
 
-#include "xng/graphics/paint.hpp"
+#include "paint.hpp"
 #include "xng/graphics/camera.hpp"
 #include "xng/math/transform.hpp"
 
 namespace xng {
     class Canvas {
     public:
-        explicit Canvas(Vec2i canvasSize)
-            : canvasSize(std::move(canvasSize)) {
+        explicit Canvas(Vec2i size)
+            : canvasSize(std::move(size)) {
             Camera camera;
             camera.type = ORTHOGRAPHIC;
             camera.left = 0;
