@@ -104,10 +104,10 @@ namespace xng::rendergraph {
          */
         template<typename U>
         explicit Resource(const Resource<U> &other)
-            : ResourceId(other.getHandle(), other.getNameSpace()), data(other.getData()) {
+            : ResourceId(other.getHandle(), other.getNameSpace()), data(other.getDescription()) {
         }
 
-        const T &getData() const {
+        const T &getDescription() const {
             return data;
         }
 

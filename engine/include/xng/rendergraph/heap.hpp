@@ -201,7 +201,7 @@ namespace xng::rendergraph {
         }
 
         HeapResource(const HeapResource &other)
-            : Resource<T>(other.getHandle(), other.getData(), ResourceId::HEAP), heap(other.heap) {
+            : Resource<T>(other.getHandle(), other.getDescription(), ResourceId::HEAP), heap(other.heap) {
             if (heap != nullptr) {
                 heap->incrementReference(*this);
             }
@@ -222,7 +222,7 @@ namespace xng::rendergraph {
          */
         template<typename U>
         explicit HeapResource(const HeapResource<U> &other)
-            : Resource<T>(other.getHandle(), other.getData(), ResourceId::HEAP), heap(other.getHeap()) {
+            : Resource<T>(other.getHandle(), other.getDescription(), ResourceId::HEAP), heap(other.getHeap()) {
         }
 
         ~HeapResource() {
@@ -263,7 +263,7 @@ namespace xng::rendergraph {
         operator HeapResource<Buffer>() const {
             if (heap == nullptr) throw std::runtime_error("Nullptr heap in resource cast");
             return HeapResource<Buffer>(Resource<T>::getHandle(),
-                                        static_cast<Buffer>(Resource<T>::getData()),
+                                        static_cast<Buffer>(Resource<T>::getDescription()),
                                         *heap);
         }
 
