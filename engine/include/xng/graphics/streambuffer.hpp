@@ -184,21 +184,23 @@ namespace xng {
                 passBuilder.write(buffer);
             }
 
-            passBuilder.execute([this, staleBuffer, frameUploads](rg::TransferContext &ctx) {
-                // Copy stale buffer if reallocated
-                if (staleBuffer.isAssigned()) {
-                    ctx.copyBuffer(buffer, staleBuffer, 0, 0, staleBuffer.getDescription().size);
-                }
+            if (staleBuffer.isAssigned() || !frameUploads.empty()) {
+                passBuilder.execute([this, staleBuffer, frameUploads](rg::TransferContext &ctx) {
+                    // Copy stale buffer if reallocated
+                    if (staleBuffer.isAssigned()) {
+                        ctx.copyBuffer(buffer, staleBuffer, 0, 0, staleBuffer.getDescription().size);
+                    }
 
-                // Copy flushed upload buffers into stable.
-                for (auto &upload: frameUploads) {
-                    ctx.copyBuffer(buffer,
-                                   upload.second.buffer,
-                                   upload.second.offset,
-                                   0,
-                                   upload.second.buffer.getDescription().size);
-                }
-            });
+                    // Copy flushed upload buffers into stable.
+                    for (auto &upload: frameUploads) {
+                        ctx.copyBuffer(buffer,
+                                       upload.second.buffer,
+                                       upload.second.offset,
+                                       0,
+                                       upload.second.buffer.getDescription().size);
+                    }
+                });
+            }
 
             return buffer;
         }
