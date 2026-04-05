@@ -20,6 +20,8 @@
 #ifndef XENGINE_DISPLAYENVIRONMENT_HPP
 #define XENGINE_DISPLAYENVIRONMENT_HPP
 
+#include <memory>
+
 #include "xng/display/window.hpp"
 #include "xng/display/windowattributes.hpp"
 
