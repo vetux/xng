@@ -32,13 +32,13 @@ namespace xng::rendergraph {
             pass.name = std::move(name);
         }
 
-        TransferPassBuilder &read(const Resource<Buffer> &buffer, const size_t offset, const size_t size) {
+        TransferPassBuilder &read(const Resource<Buffer> &buffer, const size_t offset = 0, const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::TransferSrc, offset, size);
             pass.bufferUsages[buffer].entries.emplace_back(access);
             return *this;
         }
 
-        TransferPassBuilder &write(const Resource<Buffer> &buffer, const size_t offset, const size_t size) {
+        TransferPassBuilder &write(const Resource<Buffer> &buffer, const size_t offset = 0, const size_t size = 0) {
             const auto access = BufferAccess(BufferAccess::TransferDst, offset, size);
             pass.bufferUsages[buffer].entries.emplace_back(access);
             return *this;
