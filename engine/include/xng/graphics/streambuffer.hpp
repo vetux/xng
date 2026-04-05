@@ -181,6 +181,10 @@ namespace xng {
                 }
             }
 
+            if (!staleBuffer.isAssigned() && !frameUploads.empty()) {
+                passBuilder.write(buffer);
+            }
+
             passBuilder.execute([this, staleBuffer, frameUploads](rg::TransferContext &ctx) {
                 // Copy stale buffer if reallocated
                 if (staleBuffer.isAssigned()) {
