@@ -111,7 +111,7 @@ namespace xng::rendergraph {
      */
     struct TransferPass {
         std::string name;
-        std::function<void(TransferContext &)> callback;
+        std::function<void(TransferContext &)> callback; // May be invoked on a different thread.
 
         std::unordered_map<ResourceId, ResourceAccess<BufferAccess>, ResourceIdHash> bufferUsages;
         std::unordered_map<ResourceId, ResourceAccess<TextureAccess>, ResourceIdHash> textureUsages;
@@ -127,7 +127,7 @@ namespace xng::rendergraph {
         };
 
         std::string name;
-        std::function<void(RasterContext &)> callback;
+        std::function<void(RasterContext &)> callback; // May be invoked on a different thread.
 
         std::unordered_map<ResourceId, RasterResourceAccess<BufferAccess>, ResourceIdHash> bufferUsages;
         std::unordered_map<ResourceId, RasterResourceAccess<TextureAccess>, ResourceIdHash> textureUsages;
@@ -151,7 +151,7 @@ namespace xng::rendergraph {
      */
     struct ComputePass {
         std::string name;
-        std::function<void(ComputeContext &)> callback;
+        std::function<void(ComputeContext &)> callback; // May be invoked on a different thread.
 
         std::unordered_map<ResourceId, ResourceAccess<BufferAccess>, ResourceIdHash> bufferUsages;
         std::unordered_map<ResourceId, ResourceAccess<TextureAccess>, ResourceIdHash> textureUsages;

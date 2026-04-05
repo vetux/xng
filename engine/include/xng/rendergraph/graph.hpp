@@ -24,12 +24,8 @@
 #include <vector>
 
 #include "xng/rendergraph/pass.hpp"
-
 #include "xng/rendergraph/resourceid.hpp"
 #include "xng/rendergraph/resource/texture.hpp"
-#include "xng/rendergraph/resource/indexbuffer.hpp"
-#include "xng/rendergraph/resource/storagebuffer.hpp"
-#include "xng/rendergraph/resource/vertexbuffer.hpp"
 
 namespace xng::rendergraph {
     /**
