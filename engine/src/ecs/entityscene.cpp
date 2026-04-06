@@ -37,7 +37,6 @@ namespace xng {
                         cmap[p.first] = p.second;
                     }
                 }
-
             } else if (pair.second->check(entity)) {
                 auto serializer = ComponentRegistry::instance().getSerializer(pair.first);
                 Message msg;
@@ -112,5 +111,9 @@ namespace xng {
         idCounter = other.idCounter;
         idStore = other.idStore;
         return *this;
+    }
+
+    std::unique_ptr<ResourceBase> EntityScene::clone() {
+        return std::make_unique<EntityScene>(*this);
     }
 }

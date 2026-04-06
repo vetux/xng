@@ -24,19 +24,21 @@
 #include <limits>
 #include <functional>
 
+#include "xng/io/messageable.hpp"
+#include "xng/util/downcast.hpp"
+#include "xng/resource/resourcebase.hpp"
+
 #include "xng/ecs/entityhandle.hpp"
 #include "xng/ecs/componentpool.hpp"
 #include "xng/ecs/componentregistry.hpp"
 
-#include "xng/io/messageable.hpp"
-
-#include "xng/util/downcast.hpp"
-
 namespace xng {
     class Entity;
 
-    class XENGINE_EXPORT EntityScene final : public Messageable {
+    class XENGINE_EXPORT EntityScene final : public ResourceBase, Messageable {
     public:
+        RESOURCE_TYPENAME(EntityScene)
+
         class XENGINE_EXPORT Listener {
         public:
             virtual ~Listener() = default;
@@ -329,6 +331,8 @@ namespace xng {
         void serializeEntity(const EntityHandle &entity, Message &message) const;
 
         void deserializeEntity(const Message &message);
+
+        std::unique_ptr<ResourceBase> clone() override;
 
     private:
         std::set<int> idStore;
