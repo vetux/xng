@@ -24,7 +24,7 @@
 namespace xng {
     Pose Pose::sample(const Duration &time,
                       const double ticksPerSecond,
-                      const std::unordered_map<std::string, BoneAnimation> &channels) {
+                      const std::unordered_map<std::string, AnimationChannel> &channels) {
         Pose ret;
         for (auto &pair: channels) {
             const auto position = interpolate(time,
@@ -42,7 +42,7 @@ namespace xng {
                                            pair.second.preState,
                                            pair.second.postState,
                                            pair.second.scaleFrames);
-            ret.transforms.emplace(pair.first, BoneTransform(position, rotation, scale));
+            ret.transforms.emplace(pair.first, Transform(position, rotation, scale));
         }
         return ret;
     }
@@ -62,10 +62,10 @@ namespace xng {
         return ret;
     }
 
-    Pose::BoneTransform Pose::blend(const BoneTransform &transformA,
-                                    const BoneTransform &transformB,
+    Pose::Transform Pose::blend(const Transform &transformA,
+                                    const Transform &transformB,
                                     const float weight) {
-        BoneTransform ret;
+        Transform ret;
         ret.position = lerp(transformA.position, transformB.position, weight);
         ret.rotation = slerp(transformA.rotation, transformB.rotation, weight);
         ret.scale = lerp(transformA.scale, transformB.scale, weight);
@@ -74,8 +74,8 @@ namespace xng {
 
     Vec3f Pose::interpolate(const Duration &time,
                             const double ticksPerSecond,
-                            const BoneAnimation::Behaviour preState,
-                            const BoneAnimation::Behaviour postState,
+                            const AnimationChannel::Behaviour preState,
+                            const AnimationChannel::Behaviour postState,
                             const std::map<double, Vec3f> &frames) {
         assert(!frames.empty());
 
@@ -85,7 +85,7 @@ namespace xng {
         if (ticks < frames.begin()->first) {
             switch (preState) {
                 default:
-                case BoneAnimation::LINEAR: {
+                case AnimationChannel::LINEAR: {
                     if (frames.size() < 2) return frames.begin()->second;
                     const auto itA = frames.begin();
                     const auto itB = std::next(itA);
@@ -99,7 +99,7 @@ namespace xng {
         if (ticks > frames.rbegin()->first) {
             switch (postState) {
                 default:
-                case BoneAnimation::LINEAR: {
+                case AnimationChannel::LINEAR: {
                     if (frames.size() < 2) return frames.rbegin()->second;
                     auto itB = frames.end();
                     --itB;
@@ -120,8 +120,8 @@ namespace xng {
 
     Quaternion Pose::interpolate(const Duration &time,
                                  const double ticksPerSecond,
-                                 const BoneAnimation::Behaviour preState,
-                                 const BoneAnimation::Behaviour postState,
+                                 const AnimationChannel::Behaviour preState,
+                                 const AnimationChannel::Behaviour postState,
                                  const std::map<double, Quaternion> &frames) {
         assert(!frames.empty());
 
@@ -131,7 +131,7 @@ namespace xng {
         if (ticks < frames.begin()->first) {
             switch (preState) {
                 default:
-                case BoneAnimation::LINEAR: {
+                case AnimationChannel::LINEAR: {
                     if (frames.size() < 2) return frames.begin()->second;
                     const auto itA = frames.begin();
                     const auto itB = std::next(itA);
@@ -145,7 +145,7 @@ namespace xng {
         if (ticks > frames.rbegin()->first) {
             switch (postState) {
                 default:
-                case BoneAnimation::LINEAR: {
+                case AnimationChannel::LINEAR: {
                     if (frames.size() < 2) return frames.rbegin()->second;
                     auto itB = frames.end();
                     --itB;

@@ -26,33 +26,33 @@
 #include "xng/math/quaternion.hpp"
 #include "xng/util/time.hpp"
 
-#include "xng/animation/skeletal/boneanimation.hpp"
+#include "xng/animation/skeletal/animationchannel.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT Pose {
-        struct BoneTransform {
+        struct Transform {
             Vec3f position;
             Quaternion rotation;
             Vec3f scale;
 
-            BoneTransform() = default;
+            Transform() = default;
 
-            BoneTransform(Vec3f position, Quaternion rotation, Vec3f scale)
+            Transform(Vec3f position, Quaternion rotation, Vec3f scale)
                 : position(std::move(position)), rotation(std::move(rotation)), scale(std::move(scale)) {
             }
         };
 
-        std::unordered_map<std::string, BoneTransform> transforms;
+        std::unordered_map<std::string, Transform> transforms;
 
         /**
          * @param time The time point to sample
          * @param ticksPerSecond The number of ticks to show per second
-         * @param channels The animation channels keyed by bone name
+         * @param channels The animation channels keyed by node name
          * @return The animated pose for the given time point
          */
         static Pose sample(const Duration &time,
                            double ticksPerSecond,
-                           const std::unordered_map<std::string, BoneAnimation> &channels);
+                           const std::unordered_map<std::string, AnimationChannel> &channels);
 
         /**
          * Blend poseA and poseB with the given weight.
@@ -67,20 +67,20 @@ namespace xng {
          */
         static Pose blend(const Pose &poseA, const Pose &poseB, float weight);
 
-        static BoneTransform blend(const BoneTransform &transformA,
-                                   const BoneTransform &transformB,
-                                   float weight);
+        static Transform blend(const Transform &transformA,
+                               const Transform &transformB,
+                               float weight);
 
         static Vec3f interpolate(const Duration &time,
                                  double ticksPerSecond,
-                                 BoneAnimation::Behaviour preState,
-                                 BoneAnimation::Behaviour postState,
+                                 AnimationChannel::Behaviour preState,
+                                 AnimationChannel::Behaviour postState,
                                  const std::map<double, Vec3f> &frames);
 
         static Quaternion interpolate(const Duration &time,
                                       double ticksPerSecond,
-                                      BoneAnimation::Behaviour preState,
-                                      BoneAnimation::Behaviour postState,
+                                      AnimationChannel::Behaviour preState,
+                                      AnimationChannel::Behaviour postState,
                                       const std::map<double, Quaternion> &frames);
     };
 }

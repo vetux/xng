@@ -26,13 +26,13 @@
 
 namespace xng {
     /**
-     * The set of keyframes of an animation for a bone.
+     * The set of keyframes of an animation for a node.
      *
-     * Keyframe data is relative to the parent bone.
+     * Keyframe data is relative to the parent node.
      */
-    struct BoneAnimation {
+    struct AnimationChannel {
         enum Behaviour {
-            DEFAULT, // The value from the default bone transformation is taken
+            DEFAULT, // The value from the default node transformation is taken
             CONSTANT, //The nearest key value is used without interpolation.
             LINEAR, // The value of the nearest two keys is linearly extrapolated for the current time value.
             REPEAT // The animation is repeated.
