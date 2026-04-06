@@ -35,6 +35,8 @@ namespace xng {
 
         Quaternion(const Quaternion &other) = default;
 
+        Quaternion(Quaternion &&other) noexcept = default;
+
         explicit Quaternion(Vec4f vec);
 
         explicit Quaternion(const Vec3f &eulerAngles);
