@@ -20,28 +20,30 @@
 #ifndef XENGINE_ANIMATEDSPRITECOMPONENT_HPP
 #define XENGINE_ANIMATEDSPRITECOMPONENT_HPP
 
-#include "xng/animation/sprite/spriteanimation.hpp"
-#include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
+#include "xng/io/messageable.hpp"
+#include "xng/assets/spriteanimation.hpp"
 
 namespace xng {
     /**
-     * A sprite animation system advances the sprite animations each update and sets the sprite to be rendered.
+     * A sprite animation system advances the sprite animations each update and sets the sprite to be rendered
+     * on the sprite component of the entity.
      */
     struct XENGINE_EXPORT SpriteAnimationComponent final : Component {
         XNG_COMPONENT_TYPENAME(SpriteAnimationComponent)
 
-        ResourceHandle<SpriteAnimation> animation{};
-        float animationSpeed = 1.0f;
-        bool filter = false;
+        ResourceHandle<SpriteAnimation> animation;
 
-        ResourceHandle<Sprite> sprite;
-        bool finished = false;
+        float animationSpeed = 1.0f; // Multiplier for the animation fps
+        bool loop = true; // Whether the animation should loop
+
+        Duration elapsedTime = Duration(0);
 
         Messageable &operator<<(const Message &message) override {
-            message.value("animation", animation);
-            message.value("animationSpeed", animationSpeed);
-            message.value("filter", filter);
+            animation << message["animation"];
+            animationSpeed << message["animationSpeed"];
+            loop << message["loop"];
+            elapsedTime << message["elapsedTime"];
             return Component::operator<<(message);
         }
 
@@ -49,7 +51,8 @@ namespace xng {
             message = Message(Message::DICTIONARY);
             animation >> message["animation"];
             animationSpeed >> message["animationSpeed"];
-            filter >> message["filter"];
+            loop >> message["loop"];
+            elapsedTime >> message["elapsedTime"];
             return Component::operator>>(message);
         }
     };

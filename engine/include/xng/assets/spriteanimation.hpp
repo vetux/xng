@@ -1,0 +1,85 @@
+/**
+ *  xEngine - C++ Game Engine Library
+ *  Copyright (C) 2025 Julian Zampiccoli
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 3 of the License, or (at your option) any later version.
+
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software Foundation,
+ *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+
+#ifndef XENGINE_SPRITEANIMATION_HPP
+#define XENGINE_SPRITEANIMATION_HPP
+
+#include "xng/resource/resourcebase.hpp"
+#include "xng/resource/resourcehandle.hpp"
+#include "xng/io/messageable.hpp"
+#include "xng/math/rectangle.hpp"
+#include "xng/assets/image.hpp"
+
+namespace xng {
+    class XENGINE_EXPORT SpriteAnimation : public ResourceBase, Messageable {
+    public:
+        RESOURCE_TYPENAME(SpriteAnimation)
+
+        struct Keyframe final : Messageable {
+            ResourceHandle<ImageRGBA> image;
+            Recti imageSubRegion;
+            int duration{}; // The number of frames for which the keyframe should be displayed
+
+            Keyframe() = default;
+
+            explicit Keyframe(ResourceHandle<ImageRGBA> image, Recti imageSubRegion, const int duration = 1)
+                : image(std::move(image)), imageSubRegion(std::move(imageSubRegion)), duration(duration) {
+            }
+
+            Messageable &operator<<(const Message &message) override {
+                image << message.getMessage("image");
+                imageSubRegion << message.getMessage("imageSubRegion");
+                duration << message.getMessage("duration");
+                return *this;
+            }
+
+            Message &operator>>(Message &message) const override {
+                message = Message(Message::DICTIONARY);
+                image >> message["image"];
+                imageSubRegion >> message["imageSubRegion"];
+                duration >> message["duration"];
+                return message;
+            }
+        };
+
+        int framesPerSecond{};
+        std::vector<Keyframe> keyframes{};
+
+        SpriteAnimation() = default;
+
+        SpriteAnimation(const int framesPerSecond, std::vector<Keyframe> keyframes)
+            : framesPerSecond(framesPerSecond), keyframes(std::move(keyframes)) {
+        }
+
+        Messageable &operator<<(const Message &message) override {
+            framesPerSecond << message["framesPerSecond"];
+            keyframes << message["keyframes"];
+            return *this;
+        }
+
+        Message &operator>>(Message &message) const override {
+            message = Message(Message::DICTIONARY);
+            framesPerSecond >> message["framesPerSecond"];
+            keyframes >> message["keyframes"];
+            return message;
+        }
+    };
+}
+
+#endif //XENGINE_SPRITEANIMATION_HPP

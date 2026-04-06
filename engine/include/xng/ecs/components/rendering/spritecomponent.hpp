@@ -20,10 +20,8 @@
 #ifndef XENGINE_SPRITECOMPONENT_HPP
 #define XENGINE_SPRITECOMPONENT_HPP
 
-#include "xng/graphics/scene/sprite.hpp"
-#include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
-#include "xng/rendergraph/rendergraphtextureproperties.hpp"
+#include "xng/io/messageable.hpp"
 
 namespace xng {
     /**
@@ -32,18 +30,22 @@ namespace xng {
     struct SpriteComponent final : Component {
         XNG_COMPONENT_TYPENAME(SpriteComponent)
 
-        ResourceHandle<Sprite> sprite; // The static sprite to draw
-        bool filter = false; // Whether or not to apply texture filtering when sampling from the sprite
+        ResourceHandle<ImageRGBA> image;
+        Recti imageSubRegion;
+
+        bool filter = false; // Whether to apply texture filtering when sampling from the image
 
         Messageable &operator<<(const Message &message) override {
-            message.value("sprite", sprite);
-            message.value("filter", reinterpret_cast<int &>(filter), static_cast<int>(NEAREST));
+            image << message["image"];
+            imageSubRegion << message["imageSubRegion"];
+            filter << message["filter"];
             return Component::operator<<(message);
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-            sprite >> message["sprite"];
+            image >> message["image"];
+            imageSubRegion >> message["imageSubRegion"];
             filter >> message["filter"];
             return Component::operator>>(message);
         }
