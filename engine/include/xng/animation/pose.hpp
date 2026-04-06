@@ -26,7 +26,7 @@
 #include "xng/math/quaternion.hpp"
 #include "xng/util/time.hpp"
 
-#include "xng/animation/skeletal/animationchannel.hpp"
+#include "xng/animation/animationchannel.hpp"
 
 namespace xng {
     struct XENGINE_EXPORT Pose {
