@@ -33,9 +33,7 @@ namespace xng::freetype {
 
         ~FontEngine() override;
 
-        std::unique_ptr<FontRenderer> createFontRenderer(std::istream &stream) override;
-
-        std::unique_ptr<FontRenderer> createFontRenderer(const Font &data) override;
+        std::unique_ptr<FontRenderer> createFontRenderer(const std::vector<uint8_t> &font) override;
 
     private:
         FT_Library library = nullptr;

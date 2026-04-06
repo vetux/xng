@@ -33,11 +33,7 @@ namespace xng::freetype {
         FT_Done_FreeType(library);
     }
 
-    std::unique_ptr<FontRenderer> FontEngine::createFontRenderer(const Font &data) {
-        return std::make_unique<FTFontRenderer>(data, library);
-    }
-
-    std::unique_ptr<FontRenderer> FontEngine::createFontRenderer(std::istream &stream) {
-        return xng::FontEngine::createFontRenderer(stream);
+    std::unique_ptr<FontRenderer> FontEngine::createFontRenderer(const std::vector<uint8_t> &font) {
+        return std::make_unique<FTFontRenderer>(font, library);
     }
 }

@@ -19,14 +19,14 @@
 
 #include "ftfontrenderer.hpp"
 
+#include <cstring>
 #include <string>
 
 namespace xng {
-    FTFontRenderer::FTFontRenderer(const Font &font, FT_Library library) : library(library) {
-        bytes = font.data;
-
+    FTFontRenderer::FTFontRenderer(const std::vector<uint8_t> &font, FT_Library library)
+        : library(library), bytes(font) {
         auto r = FT_New_Memory_Face(library,
-                                    (const FT_Byte *) (bytes.data()),
+                                    bytes.data(),
                                     static_cast<FT_Long>(bytes.size()),
                                     0,
                                     &face);
@@ -46,51 +46,35 @@ namespace xng {
         FT_Set_Pixel_Sizes(face, size.x, size.y);
     }
 
-    Character FTFontRenderer::renderAscii(char c) {
+    Character FTFontRenderer::renderAscii(const char c) {
         auto r = FT_Load_Char(face, c, FT_LOAD_RENDER);
         if (r != 0) {
             throw std::runtime_error("Failed to rasterize character " + std::to_string(c) + " " + std::to_string(r));
         }
 
-        Vec2i size(static_cast<int>(face->glyph->bitmap.width), static_cast<int>(face->glyph->bitmap.rows));
-        Vec2i bearing(face->glyph->bitmap_left, face->glyph->bitmap_top);
+        Character ret;
+        ret.value = c;
+        ret.bearing = Vec2i(face->glyph->bitmap_left, face->glyph->bitmap_top);
+        ret.advance = static_cast<int>(face->glyph->advance.x) >> 6;
+        ret.bitmapSize = Vec2i(static_cast<int>(face->glyph->bitmap.width), static_cast<int>(face->glyph->bitmap.rows));
 
-        auto bitmap = face->glyph->bitmap;
-        auto pitch = bitmap.pitch;
+        const auto bitmap = face->glyph->bitmap;
+        const auto pitch = bitmap.pitch;
 
-        ImageRGBA buffer(size, ColorRGBA::black(1, 0));
-        if (pitch > 0) {
-            //Ascending
-            auto rowLength = pitch;
-            if (size.x != rowLength) {
-                throw std::runtime_error("Invalid bitmap format");
-            }
-            for (int x = 0; x < size.x; x++) {
-                for (int y = 0; y < size.y; y++) {
-                    auto pixel = bitmap.buffer[size.x * y + x];
-                    buffer.setPixel(x, y, ColorRGBA(pixel, pixel, pixel, pixel));
-                }
-            }
-        } else if (pitch < 0) {
-            //Descending
-            auto rowLength = pitch * -1;
-            if (size.x != rowLength) {
-                throw std::runtime_error("Invalid bitmap format");
-            }
-            for (int x = 0; x < size.x; x++) {
-                for (int y = 0; y < size.y; y++) {
-                    auto pixel = bitmap.buffer[size.x * y + x];
-                    buffer.setPixel(x, size.y - y, ColorRGBA(pixel, pixel, pixel, pixel));
-                }
+        if (pitch != 0) {
+            const auto absPitch = std::abs(pitch);
+            ret.bitmap.resize(ret.bitmapSize.x * ret.bitmapSize.y);
+            for (auto y = 0; y < ret.bitmapSize.y; y++) {
+                const size_t srcRow = pitch > 0 ? y : (ret.bitmapSize.y - y - 1);
+                const size_t sourceOffset = srcRow * absPitch;
+                const size_t dstOffset = y * ret.bitmapSize.x;
+                std::memcpy(ret.bitmap.data() + dstOffset, bitmap.buffer + sourceOffset, ret.bitmapSize.x);
             }
         } else {
-            //No pitch
-            buffer = ImageRGBA();
+            throw std::runtime_error("Invalid font pitch");
         }
 
-        int advanceX = static_cast<int>(face->glyph->advance.x) >> 6;
-
-        return std::move(Character(c, std::move(buffer), bearing, advanceX));
+        return ret;
     }
 
     std::map<char, Character> FTFontRenderer::renderAscii() {
@@ -106,14 +90,14 @@ namespace xng {
     }
 
     int FTFontRenderer::getAscender() {
-        return (face->ascender * (face->size->metrics.height >> 6)) / face->units_per_EM;
+        return static_cast<int>(face->ascender * (face->size->metrics.height >> 6)) / face->units_per_EM;
     }
 
     int FTFontRenderer::getDescender() {
-        return (face->descender * (face->size->metrics.height >> 6)) / face->units_per_EM;
+        return static_cast<int>(face->descender * (face->size->metrics.height >> 6)) / face->units_per_EM;
     }
 
     int FTFontRenderer::getHeight() {
-        return face->size->metrics.height >> 6;
+        return static_cast<int>(face->size->metrics.height >> 6);
     }
 }

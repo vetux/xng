@@ -20,13 +20,8 @@
 #ifndef XENGINE_FONTRENDERER_HPP
 #define XENGINE_FONTRENDERER_HPP
 
-#include <istream>
-#include <memory>
-
 #include "xng/math/vector2.hpp"
-
 #include "xng/font/character.hpp"
-#include "xng/font/font.hpp"
 
 namespace xng {
     /**

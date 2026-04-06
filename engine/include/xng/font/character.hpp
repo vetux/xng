@@ -20,23 +20,33 @@
 #ifndef XENGINE_CHARACTER_HPP
 #define XENGINE_CHARACTER_HPP
 
-#include <map>
 #include <memory>
-
-#include "xng/rendergraph/image.hpp"
+#include <utility>
 
 namespace xng {
     class XENGINE_EXPORT Character {
     public:
         char value{};
-        ImageRGBA image; //The rasterized character as an image
-        Vec2i bearing;   //The bearing of the character in pixels
-        int advance{};   //The horizontal advance of the character in pixels
+
+        Vec2i bearing{}; //The bearing of the character in pixels
+        int advance{}; //The horizontal advance of the character in pixels
+
+        Vec2i bitmapSize{}; // The width / height of the bitmap
+        std::vector<uint8_t> bitmap{}; // The character bitmap, 1 byte grayscale per pixel, packed row ascending
 
         Character() = default;
 
-        Character(char value, ImageRGBA image, Vec2i bearing, int advance)
-                : value(value), image(std::move(image)), bearing(bearing), advance(advance) {}
+        Character(const char value,
+                  Vec2i bearing,
+                  const int advance,
+                  Vec2i bitmapSize,
+                  std::vector<uint8_t> bitmap)
+            : value(value),
+              bearing(std::move(bearing)),
+              advance(advance),
+              bitmapSize(std::move(bitmapSize)),
+              bitmap(std::move(bitmap)) {
+        }
 
         ~Character() = default;
 

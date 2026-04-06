@@ -31,9 +31,9 @@ namespace xng {
     public:
         FT_Library library{};
         FT_Face face{};
-        std::vector<char> bytes; //Freetype requires the data to stay in memory when loading with FT_New_Memory_Face
+        std::vector<uint8_t> bytes; //Freetype requires the data to stay in memory when loading with FT_New_Memory_Face
 
-        explicit FTFontRenderer(const Font &font, FT_Library library);
+        explicit FTFontRenderer(const std::vector<uint8_t> &font, FT_Library library);
 
         ~FTFontRenderer() override;
 
