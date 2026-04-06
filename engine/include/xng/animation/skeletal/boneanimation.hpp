@@ -20,6 +20,8 @@
 #ifndef XENGINE_BONEANIMATION_HPP
 #define XENGINE_BONEANIMATION_HPP
 
+#include <map>
+
 #include "xng/math/quaternion.hpp"
 
 namespace xng {
@@ -33,10 +35,8 @@ namespace xng {
             DEFAULT, // The value from the default bone transformation is taken
             CONSTANT, //The nearest key value is used without interpolation.
             LINEAR, // The value of the nearest two keys is linearly extrapolated for the current time value.
-            REPEAT // The animation is repeated. If the animation key go from n to m and the current time is t, use the value at (t-n) % (|m-n|).
+            REPEAT // The animation is repeated.
         };
-
-        std::string name; // The name of the bone which is influenced by this animation
 
         // Define how the animation behaves outside the defined time range
         Behaviour preState;
@@ -46,49 +46,7 @@ namespace xng {
         std::map<double, Vec3f> positionFrames;
         std::map<double, Quaternion> rotationFrames;
         std::map<double, Vec3f> scaleFrames;
-
-        double getNearestPositionKey(double ticks) const {
-            if (positionFrames.empty()){
-                throw std::runtime_error("Empty Position Frames");
-            }
-            double ret = positionFrames.begin()->first;
-            for (auto &pair : positionFrames) {
-                if (pair.first > ticks){
-                    break;
-                } else {
-                    ret = pair.first;
-                }
-            }
-            return ret;
-        }
-        double getNearestRotationKey(double ticks) const {
-            if (rotationFrames.empty()){
-                throw std::runtime_error("Empty Rotation Frames");
-            }
-            double ret = rotationFrames.begin()->first;
-            for (auto &pair : rotationFrames) {
-                if (pair.first > ticks){
-                    break;
-                } else {
-                    ret = pair.first;
-                }
-            }
-            return ret;
-        }
-        double getNearestScaleKey(double ticks) const {
-            if (scaleFrames.empty()){
-                throw std::runtime_error("Empty Scale Frames");
-            }
-            double ret = scaleFrames.begin()->first;
-            for (auto &pair : scaleFrames) {
-                if (pair.first > ticks){
-                    break;
-                } else {
-                    ret = pair.first;
-                }
-            }
-            return ret;
-        }
     };
 }
+
 #endif //XENGINE_BONEANIMATION_HPP

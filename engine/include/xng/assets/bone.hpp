@@ -17,30 +17,23 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XENGINE_RIGANIMATION_HPP
-#define XENGINE_RIGANIMATION_HPP
+#ifndef XENGINE_BONE_HPP
+#define XENGINE_BONE_HPP
 
-#include <string>
-#include <map>
-
-#include "boneanimation.hpp"
-
-#include "xng/resource/resourcebase.hpp"
+#include "xng/math/matrix.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT RigAnimation : public ResourceBase {
-    public:
-        RESOURCE_TYPENAME(RigAnimation)
+    struct VertexWeight {
+        size_t vertex{}; // The index of the vertex in Mesh::vertices
+        float weight{};
+    };
 
-        std::string name; // The name of this animation
-        double duration; // Total duration in ticks
-        double ticksPerSecond; // The number of ticks to show per second
-        std::vector<BoneAnimation> channels; // The animation channels.
-
-        std::unique_ptr<ResourceBase> clone() override {
-            return std::make_unique<RigAnimation>(*this);
-        }
+    struct Bone {
+        std::string name; // The name of the bone
+        Mat4f transform;
+        Mat4f offset;
+        std::vector<VertexWeight> weights;
     };
 }
 
-#endif //XENGINE_RIGANIMATION_HPP
+#endif //XENGINE_BONE_HPP
