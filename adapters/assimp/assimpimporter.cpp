@@ -17,24 +17,22 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "xng/adapters/assimp/assimp.hpp"
-
-#include "xng/graphics/scene/mesh.hpp"
-#include "xng/graphics/scene/material.hpp"
-#include "xng/graphics/scene/skinnedmodel.hpp"
-
-#include "xng/graphics/vertexbuilder.hpp"
-
-#include "xng/math/matrixmath.hpp"
-#include "xng/math/quaternion.hpp"
-
-#include "xng/animation/skeletal/riganimation.hpp"
-
-#include "xng/resource/importers/stbiimporter.hpp"
-
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+
+#include "xng/adapters/assimp/assimp.hpp"
+
+#include "xng/assets/assetscene.hpp"
+#include "xng/assets/mesh.hpp"
+#include "xng/assets/material.hpp"
+#include "xng/assets/nodeanimation.hpp"
+
+#include "xng/math/matrixmath.hpp"
+#include "xng/math/quaternion.hpp"
+#include "xng/math/transform.hpp"
+
+#include "xng/resource/importers/stbiimporter.hpp"
 
 namespace xng::assimp {
     static Mat4f convertMat4(const aiMatrix4x4 &mat) {
@@ -58,20 +56,6 @@ namespace xng::assimp {
         return ret;
     }
 
-    static Bone convertBone(const aiBone &bone) {
-        Bone ret;
-        ret.name = std::string(bone.mName.data, bone.mName.length);
-        ret.transform = convertMat4(bone.mNode->mTransformation);
-        ret.offset = convertMat4(bone.mOffsetMatrix);
-        for (auto i = 0; i < bone.mNumWeights; i++) {
-            VertexWeight weight;
-            weight.vertex = bone.mWeights[i].mVertexId;
-            weight.weight = bone.mWeights[i].mWeight;
-            ret.weights.emplace_back(weight);
-        }
-        return ret;
-    }
-
     static Vec3f convertVector(const aiVector3D &vec) {
         return {vec.x, vec.y, vec.z};
     }
@@ -80,22 +64,36 @@ namespace xng::assimp {
         return {q.w, q.x, q.y, q.z};
     }
 
-    static BoneAnimation::Behaviour convertAnimBehaviour(const aiAnimBehaviour &b) {
+    static Transform convertTransform(const aiMatrix4x4 &mat) {
+        aiVector3D scaling;
+        aiQuaternion rotation;
+        aiVector3D position;
+        mat.Decompose(scaling, rotation, position);
+        return {
+            convertVector(position),
+            convertQuaterion(rotation),
+            convertVector(scaling)
+        };
+    }
+
+    static AnimationChannel::Behaviour convertAnimBehaviour(const aiAnimBehaviour &b) {
         switch (b) {
             default:
             case aiAnimBehaviour_DEFAULT:
-                return BoneAnimation::DEFAULT;
+                return AnimationChannel::DEFAULT;
             case aiAnimBehaviour_CONSTANT:
-                return BoneAnimation::CONSTANT;
+                return AnimationChannel::CONSTANT;
             case aiAnimBehaviour_LINEAR:
-                return BoneAnimation::LINEAR;
+                return AnimationChannel::LINEAR;
             case aiAnimBehaviour_REPEAT:
-                return BoneAnimation::REPEAT;
+                return AnimationChannel::REPEAT;
         }
     }
 
-    static BoneAnimation convertBoneAnimation(const aiNodeAnim &anim) {
-        BoneAnimation ret;
+    static AnimationChannel convertChannel(const aiNodeAnim &anim) {
+        AnimationChannel ret;
+        ret.preState = convertAnimBehaviour(anim.mPreState);
+        ret.postState = convertAnimBehaviour(anim.mPostState);
         for (auto i = 0; i < anim.mNumPositionKeys; i++) {
             auto k = anim.mPositionKeys[i];
             ret.positionFrames[k.mTime] = convertVector(k.mValue);
@@ -108,28 +106,23 @@ namespace xng::assimp {
             auto k = anim.mScalingKeys[i];
             ret.scaleFrames[k.mTime] = convertVector(k.mValue);
         }
-        ret.preState = convertAnimBehaviour(anim.mPreState);
-        ret.postState = convertAnimBehaviour(anim.mPostState);
-        ret.name = std::string(anim.mNodeName.C_Str());
         return ret;
     }
 
-    static RigAnimation convertAnimation(const aiAnimation &animation) {
-        RigAnimation ret;
-        ret.name = std::string(animation.mName.C_Str());
+    static NodeAnimation convertNodeAnimation(const aiAnimation &animation) {
+        NodeAnimation ret;
         ret.duration = animation.mDuration;
         ret.ticksPerSecond = animation.mTicksPerSecond;
         for (auto i = 0; i < animation.mNumChannels; i++) {
             auto &channel = *animation.mChannels[i];
-            ret.channels.emplace_back(convertBoneAnimation(channel));
+            ret.channels[channel.mNodeName.C_Str()] = convertChannel(channel);
         }
         return ret;
     }
 
     static Mesh convertMesh(const aiMesh &assMesh) {
         Mesh ret;
-        ret.primitive = TRIANGLES;
-        ret.vertexLayout = SkinnedModel::getVertexLayout();
+        ret.primitive = Mesh::TRIANGLES;
         for (int faceIndex = 0; faceIndex < assMesh.mNumFaces; faceIndex++) {
             const auto &face = assMesh.mFaces[faceIndex];
             if (face.mNumIndices != 3)
@@ -139,84 +132,40 @@ namespace xng::assimp {
             }
         }
 
-        std::vector<Bone> bones;
-        std::map<size_t, std::set<std::pair<float, size_t> > > boneVertexMapping;
-        for (auto i = 0; i < assMesh.mNumBones; i++) {
-            auto bone = convertBone(*assMesh.mBones[i]);
-            auto boneIndex = bones.size();
-            bones.emplace_back(bone);
-            for (auto &v: bone.weights) {
-                boneVertexMapping[v.vertex].insert(std::make_pair(v.weight, boneIndex));
-            }
-        }
-
         for (auto vertexIndex = 0; vertexIndex < assMesh.mNumVertices; vertexIndex++) {
             const auto &p = assMesh.mVertices[vertexIndex];
-
-            Vec3f pos{p.x, p.y, p.z};
-            Vec3f norm{};
-            Vec2f uv{};
-            Vec3f tangent{};
-            Vec3f bitangent{};
-            Vec4i boneIds(-1);
-            Vec4f boneWeights{};
+            ret.positions.emplace_back(p.x, p.y, p.z);
 
             if (assMesh.mNormals != nullptr) {
                 const auto &n = assMesh.mNormals[vertexIndex];
-                norm = {n.x, n.y, n.z};
+                ret.normals.emplace_back(n.x, n.y, n.z);
                 const auto &t = assMesh.mTangents[vertexIndex];
-                tangent = {t.x, t.y, t.z};
+                ret.tangents.emplace_back(t.x, t.y, t.z);
                 const auto &bt = assMesh.mBitangents[vertexIndex];
-                bitangent = {bt.x, bt.y, bt.z};
+                ret.bitangents.emplace_back(bt.x, bt.y, bt.z);
+            } else {
+                ret.normals.emplace_back();
+                ret.tangents.emplace_back();
+                ret.bitangents.emplace_back();
             }
 
             if (assMesh.mTextureCoords[0] != nullptr) {
                 const auto &t = assMesh.mTextureCoords[0][vertexIndex];
-                uv = {t.x, t.y};
+                ret.uvs.emplace_back(t.x, t.y);
+            } else {
+                ret.uvs.emplace_back();
             }
+        }
 
-            auto it = boneVertexMapping.find(vertexIndex);
-            if (it != boneVertexMapping.end()) {
-                int boneId = 0;
-                for (auto &pair: it->second) {
-                    if (boneId > 3) {
-                        throw std::runtime_error("More than 4 bones per vertex are not supported.");
-                    }
-                    switch (boneId) {
-                        case 0:
-                            boneIds.x = static_cast<int>(pair.second);
-                            boneWeights.x = pair.first;
-                            break;
-                        case 1:
-                            boneIds.y = static_cast<int>(pair.second);
-                            boneWeights.y = pair.first;
-                            break;
-                        case 2:
-                            boneIds.z = static_cast<int>(pair.second);
-                            boneWeights.z = pair.first;
-                            break;
-                        case 3:
-                            boneIds.w = static_cast<int>(pair.second);
-                            boneWeights.w = pair.first;
-                            break;
-                        default:
-                            break;
-                    }
-                    boneId++;
-                }
+        for (auto i = 0; i < assMesh.mNumBones; i++) {
+            const auto &bone = *assMesh.mBones[i];
+            auto &weights = ret.boneWeights[bone.mName.C_Str()];
+            for (auto w = 0; w < bone.mNumWeights; w++) {
+                Mesh::VertexWeight vw;
+                vw.vertex = bone.mWeights[w].mVertexId;
+                vw.weight = bone.mWeights[w].mWeight;
+                weights.emplace_back(vw);
             }
-
-            auto vertData = VertexBuilder()
-                    .addVec3(pos)
-                    .addVec3(norm)
-                    .addVec2(uv)
-                    .addVec3(tangent)
-                    .addVec3(bitangent)
-                    .addVec4(boneIds)
-                    .addVec4(boneWeights)
-                    .build();
-
-            ret.vertices.insert(ret.vertices.end(), vertData.begin(), vertData.end());
         }
 
         return ret;
@@ -243,8 +192,6 @@ namespace xng::assimp {
 
         ret.albedo.a() = static_cast<uint8_t>(255 * alpha);
 
-        ret.transparent = ret.albedo.a() != 255;
-
         assMaterial.Get(AI_MATKEY_METALLIC_FACTOR, ret.metallic);
         assMaterial.Get(AI_MATKEY_ROUGHNESS_FACTOR, ret.roughness);
 
@@ -267,8 +214,8 @@ namespace xng::assimp {
                     Uri(fileUri.getScheme(), fileUri.getFile(), embeddedTexturePath + "_texture"));
             } else {
                 ret.albedoTexture = ResourceHandle<ImageRGBA>(Uri(fileUri.getScheme(),
-                                                                parentPath + std::string(texPath->C_Str()),
-                                                                ""));
+                                                                  parentPath + std::string(texPath->C_Str()),
+                                                                  ""));
             }
         }
 
@@ -283,8 +230,8 @@ namespace xng::assimp {
                     Uri(fileUri.getScheme(), fileUri.getFile(), embeddedTexturePath + "_texture"));
             } else {
                 ret.metallicTexture = ResourceHandle<ImageRGBA>(Uri(fileUri.getScheme(),
-                                                                  parentPath + std::string(texPath->C_Str()),
-                                                                  ""));
+                                                                    parentPath + std::string(texPath->C_Str()),
+                                                                    ""));
             }
         }
 
@@ -299,8 +246,8 @@ namespace xng::assimp {
                     Uri(fileUri.getScheme(), fileUri.getFile(), embeddedTexturePath + "_texture"));
             } else {
                 ret.ambientOcclusionTexture = ResourceHandle<ImageRGBA>(Uri(fileUri.getScheme(),
-                                                                          parentPath + std::string(texPath->C_Str()),
-                                                                          ""));
+                                                                            parentPath + std::string(texPath->C_Str()),
+                                                                            ""));
             }
         }
 
@@ -312,12 +259,12 @@ namespace xng::assimp {
         if (tex == aiReturn::aiReturn_SUCCESS) {
             if (embeddedTextures.find(embeddedTexturePath) != embeddedTextures.end()) {
                 ret.normal = ResourceHandle<ImageRGBA>(Uri(fileUri.getScheme(),
-                                                         fileUri.getFile(),
-                                                         embeddedTexturePath + "_texture"));
+                                                           fileUri.getFile(),
+                                                           embeddedTexturePath + "_texture"));
             } else {
                 ret.normal = ResourceHandle<ImageRGBA>(Uri(fileUri.getScheme(),
-                                                         parentPath + std::string(texPath->C_Str()),
-                                                         ""));
+                                                           parentPath + std::string(texPath->C_Str()),
+                                                           ""));
             }
         }
 
@@ -326,7 +273,7 @@ namespace xng::assimp {
 
     static ImageRGBA convertImage(const aiTexture &texture) {
         if (texture.mHeight == 0) {
-            std::vector buffer(reinterpret_cast<const char *>(texture.pcData),
+            const std::vector buffer(reinterpret_cast<const char *>(texture.pcData),
                                reinterpret_cast<const char *>(texture.pcData) + texture.mWidth);
             return StbiImporter::readImageRGBA(buffer);
         }
@@ -341,41 +288,45 @@ namespace xng::assimp {
         return ImageRGBA(static_cast<int>(texture.mWidth), static_cast<int>(texture.mHeight), pixels);
     }
 
-    static void getBonesRecursive(aiNode *node,
-                                  std::map<std::string, std::string> &parentMapping,
-                                  std::vector<Bone> &bones) {
-        Bone bone;
-        bone.offset = MatrixMath::identity();
-        bone.transform = convertMat4(node->mTransformation);
-        bone.name = node->mName.C_Str();
-        bones.emplace_back(bone);
-        for (auto i = 0; i < node->mNumChildren; i++) {
-            auto *child = node->mChildren[i];
-            parentMapping[child->mName.C_Str()] = node->mName.C_Str();
-            getBonesRecursive(child, parentMapping, bones);
+    static std::map<std::string, Mat4f> collectBoneOffsets(const aiScene &scene) {
+        std::map<std::string, Mat4f> ret;
+        for (auto i = 0; i < scene.mNumMeshes; i++) {
+            const auto &mesh = *scene.mMeshes[i];
+            for (auto j = 0; j < mesh.mNumBones; j++) {
+                const auto &bone = *mesh.mBones[j];
+                ret[bone.mName.C_Str()] = convertMat4(bone.mOffsetMatrix);
+            }
         }
+        return ret;
     }
 
-    static void getBoneOffsets(Rig &rig, const aiMesh &mesh) {
-        for (auto i = 0; i < mesh.mNumBones; i++) {
-            auto bone = mesh.mBones[i];
-            rig.getBone(bone->mName.C_Str()).offset = convertMat4(bone->mOffsetMatrix);
+    static AssetScene::Node buildNode(const aiNode &node,
+                                      const aiScene &scene,
+                                      const Uri &path,
+                                      const std::map<std::string, Mat4f> &boneOffsets,
+                                      const std::vector<ResourceHandle<Material> > &materials) {
+        AssetScene::Node ret;
+        ret.name = node.mName.C_Str();
+        ret.transform = convertTransform(node.mTransformation);
+
+        for (auto i = 0; i < node.mNumMeshes; i++) {
+            const auto &assMesh = *scene.mMeshes[node.mMeshes[i]];
+            AssetScene::Node::MeshData meshData;
+            meshData.mesh = ResourceHandle<Mesh>(
+                Uri(path.getScheme(), path.getFile(), assMesh.mName.C_Str()));
+            if (assMesh.mMaterialIndex < materials.size()) {
+                meshData.material = materials.at(assMesh.mMaterialIndex);
+            }
+            ret.meshes.emplace_back(std::move(meshData));
         }
-    }
 
-    static Rig getRig(const aiMesh &mesh, const std::vector<aiMesh *> &subMeshes, const aiScene &scene) {
-        std::vector<Bone> bones;
-        std::map<std::string, std::string> parentMapping;
+        auto it = boneOffsets.find(ret.name);
+        if (it != boneOffsets.end()) {
+            ret.inverseBind = it->second;
+        }
 
-        //TODO: Support importing multiple rigs per asset file
-        getBonesRecursive(scene.mRootNode, parentMapping, bones);
-
-        auto ret = Rig(bones, parentMapping);
-
-        getBoneOffsets(ret, mesh);
-
-        for (auto &m: subMeshes) {
-            getBoneOffsets(ret, *m);
+        for (auto i = 0; i < node.mNumChildren; i++) {
+            ret.children.emplace_back(buildNode(*node.mChildren[i], scene, path, boneOffsets, materials));
         }
 
         return ret;
@@ -415,13 +366,6 @@ namespace xng::assimp {
             textures[embeddedTexturePath] = tex;
         }
 
-        std::map<std::string, std::vector<aiMesh *> > meshes;
-        for (auto i = 0; i < scene.mNumMeshes; i++) {
-            const auto &mesh = *scene.mMeshes[i];
-            std::string name = mesh.mName.C_Str();
-            meshes[name].emplace_back(scene.mMeshes[i]);
-        }
-
         std::vector<ResourceHandle<Material> > materialResourceHandles;
         for (auto i = 0; i < scene.mNumMaterials; i++) {
             auto material = convertMaterial(*scene.mMaterials[i],
@@ -436,33 +380,32 @@ namespace xng::assimp {
             materialResourceHandles.emplace_back(Uri(path.getScheme(), path.getFile(), materialName.data));
         }
 
-        //TODO: Handle static mesh import
-
-        // For now all models are imported as skinned models until the render passes handle static models.
-        for (auto &pair: meshes) {
-            SkinnedModel model;
-            for (auto &assMesh: pair.second) {
-                SkinnedModel::SubMesh subMesh;
-                subMesh.mesh = convertMesh(*assMesh);
-
-                if (materialResourceHandles.size() > 0) {
-                    subMesh.material = materialResourceHandles.at(assMesh->mMaterialIndex);
-                }
-
-                for (auto i = 0; i < assMesh->mNumBones; i++) {
-                    subMesh.bones.insert(assMesh->mBones[i]->mName.C_Str());
-                }
-
-                model.subMeshes.emplace_back(subMesh);
-            }
-            model.rig = getRig(*pair.second.at(0), pair.second, scene);
-            ret.add(pair.first, std::make_unique<SkinnedModel>(model));
+        for (auto i = 0; i < scene.mNumMeshes; i++) {
+            const auto &assMesh = *scene.mMeshes[i];
+            auto mesh = convertMesh(assMesh);
+            ret.add(std::string(assMesh.mName.C_Str()), std::make_unique<Mesh>(mesh));
         }
 
+        auto boneOffsets = collectBoneOffsets(scene);
+
+        std::vector<ResourceHandle<NodeAnimation> > nodeAnimationHandles;
         for (auto i = 0; i < scene.mNumAnimations; i++) {
-            auto anim = convertAnimation(*scene.mAnimations[i]);
-            ret.add(anim.name, std::make_unique<RigAnimation>(anim));
+            auto anim = convertNodeAnimation(*scene.mAnimations[i]);
+            std::string animName = scene.mAnimations[i]->mName.C_Str();
+            ret.add(animName, std::make_unique<NodeAnimation>(anim));
+            nodeAnimationHandles.emplace_back(
+                Uri(path.getScheme(), path.getFile(), animName));
         }
+
+        AssetScene assetScene;
+        assetScene.root = buildNode(*scene.mRootNode, scene, path, boneOffsets, materialResourceHandles);
+        assetScene.nodeAnimations = nodeAnimationHandles;
+
+        std::string sceneName = scene.mName.C_Str();
+        if (sceneName.empty()) {
+            sceneName = scene.mRootNode->mName.C_Str();
+        }
+        ret.add(sceneName, std::make_unique<AssetScene>(assetScene));
 
         for (auto &pair: textures) {
             const auto &atex = *pair.second;

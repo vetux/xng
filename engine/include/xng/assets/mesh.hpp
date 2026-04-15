@@ -23,15 +23,14 @@
 #include <utility>
 #include <vector>
 
-#include "xng/resource/resource.hpp"
+#include "xng/resource/resourcebase.hpp"
 
-#include "xng/graphics/scene/material.hpp"
+#include "material.hpp"
 
 #include "xng/rendergraph/shader/shaderattributelayout.hpp"
-#include "xng/rendergraph/renderprimitive.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT Mesh : Resource {
+    struct XENGINE_EXPORT Mesh final : ResourceBase {
         RESOURCE_TYPENAME(Mesh)
 
         /**
@@ -67,31 +66,46 @@ namespace xng {
          */
         static Mesh sphere(float radius, int latitudes, int longitudes);
 
-        RenderPrimitive primitive = POINTS;
-        std::vector<uint8_t> vertices;
+        enum Primitive : int {
+            POINTS = 1,
+            LINES = 2,
+            TRIANGLES = 3,
+            QUAD = 4
+        };
+
+        struct VertexWeight {
+            size_t vertex{}; // The index of the vertex in the mesh
+            float weight{}; // The weight
+        };
+
+        struct MorphTarget {
+            std::vector<Vec3f> positions;
+            std::vector<Vec3f> normals;
+            std::vector<Vec3f> tangents;
+            std::vector<Vec3f> bitangents;
+            std::vector<Vec2f> uvs;
+        };
+
+        Primitive primitive = POINTS;
+
+        std::vector<Vec3f> positions;
+        std::vector<Vec3f> normals;
+        std::vector<Vec2f> uvs;
+        std::vector<Vec3f> tangents;
+        std::vector<Vec3f> bitangents;
+
         std::vector<unsigned int> indices;
-        ShaderAttributeLayout vertexLayout;
+
+        std::unordered_map<std::string, std::vector<VertexWeight>> boneWeights; // The list of bone names influencing the mesh and their weights
+
+        std::vector<MorphTarget> morphTargets; // The list of morph targets
 
         Mesh() = default;
 
-        Mesh(const RenderPrimitive primitive, std::vector<uint8_t> vertices)
-            : primitive(primitive), vertices(std::move(vertices)) {
-        }
-
-        Mesh(const RenderPrimitive primitive, std::vector<uint8_t> vertices, std::vector<unsigned int> indices)
-            : primitive(primitive), vertices(std::move(vertices)), indices(std::move(indices)) {
-        }
-
         ~Mesh() override = default;
 
-        std::unique_ptr<Resource> clone() override {
+        std::unique_ptr<ResourceBase> clone() override {
             return std::make_unique<Mesh>(*this);
-        }
-
-        size_t polyCount() const {
-            if (indices.empty())
-                return vertices.size() / vertexLayout.getLayoutSize() / primitive;
-            return indices.size() / primitive;
         }
     };
 }

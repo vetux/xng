@@ -21,7 +21,7 @@
 
 #include "xng/resource/importers/fontimporter.hpp"
 
-#include "xng/font/font.hpp"
+#include "xng/assets/font.hpp"
 
 namespace xng {
     ResourceBundle FontImporter::read(std::istream &stream,

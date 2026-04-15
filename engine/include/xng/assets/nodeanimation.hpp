@@ -17,28 +17,27 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef XENGINE_FONTDATA_HPP
-#define XENGINE_FONTDATA_HPP
+#ifndef XENGINE_ANIMATION_HPP
+#define XENGINE_ANIMATION_HPP
 
-#include <utility>
-#include <vector>
+#include <unordered_map>
 
 #include "xng/resource/resourcebase.hpp"
 
+#include "xng/animation/animationchannel.hpp"
+
 namespace xng {
-    struct Font final : ResourceBase {
-        RESOURCE_TYPENAME(Font)
+    struct NodeAnimation final : ResourceBase {
+        RESOURCE_TYPENAME(NodeAnimation)
 
-        std::vector<char> data;
-
-        Font() = default;
-
-        explicit Font(std::vector<char> data) : data(std::move(data)) {}
+        double ticksPerSecond;
+        double duration; // in ticks
+        std::unordered_map<std::string, AnimationChannel> channels; // node name -> channel
 
         std::unique_ptr<ResourceBase> clone() override {
-            return std::make_unique<Font>(*this);
+            return std::make_unique<NodeAnimation>(*this);
         }
     };
 }
 
-#endif //XENGINE_FONTDATA_HPP
+#endif //XENGINE_ANIMATION_HPP

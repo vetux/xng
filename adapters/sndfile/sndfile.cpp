@@ -24,8 +24,7 @@
 #include "xng/adapters/sndfile/sndfile.hpp"
 
 #include "xng/audio/audioformat.hpp"
-#include "xng/audio/audiodata.hpp"
-
+#include "xng/assets/audiodata.hpp"
 
 #include <sndfile.h>
 

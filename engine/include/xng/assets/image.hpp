@@ -42,7 +42,7 @@ namespace xng {
      * @tparam T The type to use for a pixel
      */
     template<typename T>
-    class XENGINE_EXPORT Image final : public ResourceBase {
+    class Image final : public ResourceBase {
     public:
         RESOURCE_TYPENAME(Image)
 

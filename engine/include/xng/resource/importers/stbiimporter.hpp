@@ -20,8 +20,9 @@
 #ifndef XENGINE_STBIPARSER_HPP
 #define XENGINE_STBIPARSER_HPP
 
-#include "xng/rendergraph/image.hpp"
 #include "xng/resource/resourceimporter.hpp"
+
+#include "xng/assets/image.hpp"
 
 namespace xng {
     class XENGINE_EXPORT StbiImporter : public ResourceImporter {

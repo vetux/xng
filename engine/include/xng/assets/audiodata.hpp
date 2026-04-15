@@ -27,8 +27,7 @@
 #include "xng/resource/resourcebase.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT AudioData final : public ResourceBase {
-    public:
+    struct AudioData final : ResourceBase {
         RESOURCE_TYPENAME(AudioData)
 
         ~AudioData() override = default;

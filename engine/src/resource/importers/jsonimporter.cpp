@@ -23,12 +23,10 @@
 
 #include "xng/async/threadpool.hpp"
 
-#include "xng/graphics/scene/material.hpp"
-#include "xng/graphics/scene/cubemap.hpp"
-#include "xng/animation/sprite/spriteanimation.hpp"
-#include "xng/ecs/entityscene.hpp"
+#include "xng/assets/material.hpp"
+#include "xng/assets/spriteanimation.hpp"
 
-#include "xng/physics/colliderdesc.hpp"
+#include "xng/ecs/entityscene.hpp"
 
 #include "xng/io/protocol/jsonprotocol.hpp"
 
@@ -51,21 +49,11 @@ namespace xng {
                 res >> msg;
                 msg["name"] = pair.first;
                 materials.emplace_back(msg);
-            } else if (type == Sprite::typeName) {
-                auto &res = down_cast<Sprite &>(*pair.second);
-                res >> msg;
-                msg["name"] = pair.first;
-                sprites.emplace_back(msg);
             } else if (type == SpriteAnimation::typeName) {
                 auto &res = down_cast<SpriteAnimation &>(*pair.second);
                 res >> msg;
                 msg["name"] = pair.first;
                 animations.emplace_back(msg);
-            } else if (type == CubeMap::typeName) {
-                auto &res = down_cast<CubeMap &>(*pair.second);
-                res >> msg;
-                msg["name"] = pair.first;
-                cubeMaps.emplace_back(msg);
             } else {
                 throw std::runtime_error("Unsupported resource type: " + std::string(type));
             }
@@ -100,24 +88,6 @@ namespace xng {
                     Material mat;
                     mat << element;
                     ret.add(name, std::make_unique<Material>(mat));
-                }
-            }
-
-            if (m.has("cubeMaps") && m.at("cubeMaps").getType() == Message::LIST) {
-                for (auto &element: m.at("cubeMaps").asList()) {
-                    auto name = element.getMessage("name", std::string()).asString();
-                    CubeMap tex;
-                    tex << element;
-                    ret.add(name, std::make_unique<CubeMap>(tex));
-                }
-            }
-
-            if (m.has("sprites") && m.at("sprites").getType() == Message::LIST) {
-                for (auto &element: m.at("sprites").asList()) {
-                    auto name = element.getMessage("name", std::string()).asString();
-                    Sprite sprite;
-                    sprite << element;
-                    ret.add(name, std::make_unique<Sprite>(sprite));
                 }
             }
 

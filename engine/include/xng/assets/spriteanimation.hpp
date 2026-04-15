@@ -27,8 +27,7 @@
 #include "xng/assets/image.hpp"
 
 namespace xng {
-    class XENGINE_EXPORT SpriteAnimation : public ResourceBase, Messageable {
-    public:
+    struct SpriteAnimation final : ResourceBase, Messageable {
         RESOURCE_TYPENAME(SpriteAnimation)
 
         struct Keyframe final : Messageable {
@@ -78,6 +77,10 @@ namespace xng {
             framesPerSecond >> message["framesPerSecond"];
             keyframes >> message["keyframes"];
             return message;
+        }
+
+        std::unique_ptr<ResourceBase> clone() override {
+            return std::make_unique<SpriteAnimation>(*this);
         }
     };
 }

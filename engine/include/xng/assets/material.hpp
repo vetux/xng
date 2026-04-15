@@ -20,18 +20,17 @@
 #ifndef XENGINE_MATERIAL_HPP
 #define XENGINE_MATERIAL_HPP
 
-#include "xng/graphics/image.hpp"
+#include "xng/assets/image.hpp"
 
 #include "xng/resource/resourcehandle.hpp"
 
 #include "xng/io/messageable.hpp"
-#include "xng/rendergraph/rendergraphtextureproperties.hpp"
 
 namespace xng {
     /**
-     * A PBR material for the built-in lighting passes.
+     * A PBR material.
      */
-    struct XENGINE_EXPORT Material final : Resource, Messageable {
+    struct Material final : ResourceBase, Messageable {
         RESOURCE_TYPENAME(Material)
 
         ColorRGBA albedo = ColorRGBA::white();
@@ -44,29 +43,15 @@ namespace xng {
         ResourceHandle<ImageRGBA> roughnessTexture;
         ResourceHandle<ImageRGBA> ambientOcclusionTexture;
 
-        TextureFiltering albedoFiltering = LINEAR;
-        TextureFiltering metallicFiltering = LINEAR;
-        TextureFiltering roughnessFiltering = LINEAR;
-        TextureFiltering ambientOcclusionFiltering = LINEAR;
-
         ResourceHandle<ImageRGBA> normal; // If assigned, the contained normals replace the vertex normals
-        float normalIntensity = 1; // The specified value is used to scale texture normals
-
-        bool transparent = false; // Whether the albedo alpha should be presented. (Forward Shading)
 
         ~Material() override = default;
 
-        std::unique_ptr<Resource> clone() override {
+        std::unique_ptr<ResourceBase> clone() override {
             return std::make_unique<Material>(*this);
         }
 
         Messageable &operator<<(const Message &message) override {
-            message.value("normal", normal);
-
-            message.value("normalIntensity", normalIntensity);
-
-            message.value("transparent", transparent);
-
             message.value("albedo", albedo);;
             message.value("metallic", metallic);
             message.value("roughness", roughness);
@@ -77,22 +62,13 @@ namespace xng {
             message.value("roughnessTexture", roughnessTexture);
             message.value("ambientOcclusionTexture", ambientOcclusionTexture);
 
-            message.value("albedoFiltering", albedoFiltering);
-            message.value("metallicFiltering", metallicFiltering);
-            message.value("roughnessFiltering", roughnessFiltering);
-            message.value("ambientOcclusionFiltering", ambientOcclusionFiltering);
+            message.value("normal", normal);
 
             return *this;
         }
 
         Message &operator>>(Message &message) const override {
             message = Message(Message::DICTIONARY);
-
-            normal >> message["normal"];
-
-            normalIntensity >> message["normalIntensity"];
-
-            transparent >> message["transparent"];
 
             albedo >> message["albedo"];
             metallic >> message["metallic"];
@@ -104,10 +80,7 @@ namespace xng {
             roughnessTexture >> message["roughnessTexture"];
             ambientOcclusionTexture >> message["ambientOcclusionTexture"];
 
-            albedoFiltering >> message["albedoFiltering"];
-            metallicFiltering >> message["metallicFiltering"];
-            roughnessFiltering >> message["roughnessFiltering"];
-            ambientOcclusionFiltering >> message["ambientOcclusionFiltering"];
+            normal >> message["normal"];
 
             return message;
         }

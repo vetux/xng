@@ -25,7 +25,7 @@
 #include "xng/math/vector4.hpp"
 
 namespace xng {
-    struct XENGINE_EXPORT ColorRGB {
+    struct ColorRGB {
         uint8_t data[3];
 
         uint8_t &r() { return data[0]; }
@@ -80,7 +80,7 @@ namespace xng {
         }
     };
 
-    struct XENGINE_EXPORT ColorRGBF
+    struct ColorRGBF
     {
         float data[3];
 
