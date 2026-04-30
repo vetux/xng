@@ -26,6 +26,7 @@
 #include "xng/rendergraph/shader/shaderstructdef.hpp"
 
 #include "xng/shaderscript/shaderobject.hpp"
+#include "xng/shaderscript/shaderscope.hpp"
 #include "xng/shaderscript/std140.hpp"
 
 using namespace xng::rg;
@@ -691,16 +692,16 @@ namespace xng::ShaderScript
         struct CPU {\
             GenerateCpuElementDeclaration(__VA_ARGS__)\
         };\
-        static inline xng::ShaderDataType TYPE{static_cast<xng::ShaderStructType>(#name), 1};\
-        static xng::ShaderStructDef getShaderStructDef() {\
-            return xng::ShaderStructDef(#name, {\
+        static inline xng::rg::ShaderDataType TYPE{static_cast<xng::ShaderScript::ShaderStructType>(#name), 1};\
+        static xng::ShaderScript::ShaderStructDef getShaderStructDef() {\
+            return xng::ShaderScript::ShaderStructDef(#name, {\
                 GenerateStructElements(__VA_ARGS__) \
             });\
         }\
         xng::ShaderScript::ShaderObject _object;\
         GenerateElementDeclaration(__VA_ARGS__)\
         name() : _object(xng::ShaderScript::ShaderStructObject<_##name##_type, 1>()), GenerateConstructor(__VA_ARGS__) { xng::ShaderScript::ShaderScope::get().addTypeDefinition(getShaderStructDef()); }\
-        name(const xng::ShaderScript::ShaderObject &buffer, bool b = false) : _object(buffer), GenerateConstructor(__VA_ARGS__) { xng::ShaderScript::ShaderScope::get().addTypeDefinition(getShaderStructDef()); }\
+        explicit name(const xng::ShaderScript::ShaderObject &buffer, bool b = false) : _object(buffer), GenerateConstructor(__VA_ARGS__) { xng::ShaderScript::ShaderScope::get().addTypeDefinition(getShaderStructDef()); }\
         name& operator=(const name& other) {\
             _object = other._object;\
             return *this;\
