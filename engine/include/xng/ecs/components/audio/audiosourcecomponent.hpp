@@ -21,7 +21,7 @@
 #define XENGINE_AUDIOSOURCECOMPONENT_HPP
 
 #include "xng/ecs/component.hpp"
-#include "xng/audio/audiodata.hpp"
+#include "xng/assets/audiodata.hpp"
 #include "xng/math/vector3.hpp"
 #include "xng/resource/resourcehandle.hpp"
 #include "xng/io/messageable.hpp"

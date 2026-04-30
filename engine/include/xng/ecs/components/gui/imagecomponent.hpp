@@ -26,8 +26,8 @@
 
 #include "xng/resource/resourcehandle.hpp"
 
-#include "xng/rendergraph/image.hpp"
-#include "xng/rendergraph/rendergraphtextureproperties.hpp"
+#include "xng/assets/image.hpp"
+#include "xng/rendergraph/textureproperties.hpp"
 
 namespace xng {
     struct ImageComponent final : Component {
@@ -39,7 +39,7 @@ namespace xng {
         float mixAlpha = 0;
         ColorRGBA mixColor = {};
 
-        TextureFiltering filter = NEAREST;
+        rg::TextureFiltering filter = rg::NEAREST;
 
         Messageable &operator<<(const Message &message) override {
             message.value("sprite", image);
@@ -47,7 +47,7 @@ namespace xng {
             message.value("mixColor", mixColor);
             message.value("mix", mix);
             message.value("mixAlpha", mixAlpha);
-            message.value("filter", (int &) filter, (int) NEAREST);
+            message.value("filter", (int &) filter, (int) rg::NEAREST);
             return Component::operator<<(message);
         }
 

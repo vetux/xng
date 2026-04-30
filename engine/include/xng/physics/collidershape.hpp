@@ -20,7 +20,6 @@
 #ifndef XENGINE_COLLIDERSHAPE_HPP
 #define XENGINE_COLLIDERSHAPE_HPP
 
-#include "xng/graphics/scene/mesh.hpp"
 #include "xng/io/messageable.hpp"
 
 #include "xng/math/vector3.hpp"

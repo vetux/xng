@@ -22,7 +22,7 @@
 
 #include "xng/io/messageable.hpp"
 #include "xng/ecs/component.hpp"
-#include "xng/font/font.hpp"
+#include "xng/assets/font.hpp"
 #include "xng/graphics/text/textlayoutparameters.hpp"
 
 namespace xng {
