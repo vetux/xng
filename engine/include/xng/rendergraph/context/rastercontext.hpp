@@ -49,13 +49,26 @@ namespace xng::rg {
         virtual void bindPipeline(const PipelineCache::Handle &pipeline) = 0;
 
         /**
-         * Bind the specified vertex buffer.
+         * Bind the specified vertex buffer containing packed vertex data in the layout of the bound pipeline.
          *
          * Can only be called after a pipeline has been bound.
          *
          * @param buffer
          */
         virtual void bindVertexBuffer(const Resource<VertexBuffer> &buffer) = 0;
+
+        /**
+         * Bind the specified vertex buffer to the given vertex attribute.
+         *
+         * @param buffer The buffer to bind
+         * @param attributeIndex The index of the vertex attribute
+         * @param offset The offset of the first element into the buffer
+         * @param stride The stride between elements
+         */
+        virtual void bindVertexBuffer(const Resource<VertexBuffer> &buffer,
+                                      int attributeIndex,
+                                      size_t offset,
+                                      size_t stride) = 0;
 
         /**
          * Bind the specified index buffer.

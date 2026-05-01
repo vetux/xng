@@ -158,11 +158,54 @@ namespace xng::opengl {
                 currentOffset += binding.stride();
             }
 
-            glBindVertexArray(0);
-
             glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-            glBindVertexArray(vertexArray.VAO);
+            oglCheckError();
+
+            oglDebugEndGroup();
+        }
+
+        void bindVertexBuffer(const Resource<VertexBuffer> &buffer,
+                              const int attributeIndex,
+                              const size_t offset,
+                              const size_t stride) override {
+            if (!boundPipeline.has_value()) {
+                throw std::runtime_error("Must bind pipeline before binding vertex buffer");
+            }
+
+            oglDebugStartGroup("RasterContextGL::bindVertexBuffer");
+
+            glBindBuffer(GL_ARRAY_BUFFER, resources.getBuffer(buffer).handle);
+
+            // Setup vertex layout
+            const auto &vertexLayout = pipelineCache.getRasterPipeline(boundPipeline.value()).getVertexLayout();
+
+            auto &attributes = vertexLayout.getElements();
+
+            if (attributeIndex >= attributes.size()) {
+                throw std::runtime_error("Invalid attribute index");
+            }
+
+            // Bind attribute
+            const auto &binding = attributes.at(attributeIndex);
+
+            glEnableVertexAttribArray(attributeIndex);
+            if (binding.component > ShaderPrimitiveType::SIGNED_INT) {
+                glVertexAttribPointer(attributeIndex,
+                                      ShaderPrimitiveType::getCount(binding.type),
+                                      getType(binding.component),
+                                      GL_FALSE,
+                                      stride,
+                                      reinterpret_cast<void *>(offset));
+            } else {
+                glVertexAttribIPointer(attributeIndex,
+                                       ShaderPrimitiveType::getCount(binding.type),
+                                       getType(binding.component),
+                                       stride,
+                                       reinterpret_cast<void *>(offset));
+            }
+
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
 
             oglCheckError();
 
