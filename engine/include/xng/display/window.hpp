@@ -20,6 +20,9 @@
 #ifndef XENGINE_WINDOW_HPP
 #define XENGINE_WINDOW_HPP
 
+#include <cstdint>
+#include <memory>
+
 #include "xng/display/windowlistener.hpp"
 #include "xng/display/monitor.hpp"
 
