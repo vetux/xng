@@ -31,7 +31,7 @@ namespace xng::rg {
     /**
      * A graph represents an encapsulated rendering operation.
      *
-     * Graphs can only share heap resources.
+     * Only heap resources can be shared between graphs.
      * The runtime synchronizes heap accesses between graphs.
      *
      * Write-After-Write conflicts for both heap and transient resources are deemed undefined behavior.
