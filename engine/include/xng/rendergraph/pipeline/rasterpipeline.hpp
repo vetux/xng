@@ -20,6 +20,7 @@
 #ifndef XENGINE_RENDERGRAPH_PIPELINE_HPP
 #define XENGINE_RENDERGRAPH_PIPELINE_HPP
 
+#include <numeric>
 #include <vector>
 #include <optional>
 #include <variant>
@@ -98,11 +99,43 @@ namespace xng::rg {
             BLEND_MAX
         };
 
+        struct VertexFormat {
+            ShaderAttributeLayout layout;
+            std::vector<size_t> bindingPoints; // The bindings points of each attribute
+            std::vector<size_t> offsets; // The relative offsets of the attributes
+
+            /**
+             * @param layout The layout of the vertex
+             * @param offsets The relative offsets of each attribute
+             */
+            VertexFormat(ShaderAttributeLayout layout, std::vector<size_t> bindingPoints, std::vector<size_t> offsets)
+                : layout(std::move(layout)), bindingPoints(std::move(bindingPoints)), offsets(std::move(offsets)) {
+                if (this->layout.getElements().size() != this->offsets.size()) {
+                    throw std::runtime_error("Vertex layout and offsets must have the same number of elements");
+                }
+            }
+
+            /**
+             * Initializes the offsets to assume tightly packed attributes in a single buffer.
+             *
+             * @param layout The layout of the vertex
+             */
+            explicit VertexFormat(ShaderAttributeLayout layout)
+                : layout(std::move(layout)) {
+                size_t offset = 0;
+                for (auto &element : this->layout.getElements()) {
+                    offsets.emplace_back(offset);
+                    bindingPoints.emplace_back(0);
+                    offset += element.getSize();
+                }
+            }
+        };
+
         std::vector<Shader> shaders;
 
         std::vector<ColorFormat> colorAttachments;
-        std::optional<ColorFormat> depthAttachment; // Specifies the format of the texture bound as the depth attachment.
-        std::optional<ColorFormat> stencilAttachment; // Specifies the format of the texture bound as the stencil attachment.
+        std::optional<ColorFormat> depthAttachment;// Specifies the format of the texture bound as the depth attachment.
+        std::optional<ColorFormat> stencilAttachment;// Specifies the format of the texture bound as the stencil attachment.
 
         Primitive primitive = TRIANGLES;
         bool multisample = false;
@@ -135,14 +168,7 @@ namespace xng::rg {
         BlendEquation colorBlendEquation = BLEND_ADD;
         BlendEquation alphaBlendEquation = BLEND_ADD;
 
-        const ShaderAttributeLayout &getVertexLayout() const {
-            for (auto &shader: shaders) {
-                if (shader.stage == Shader::VERTEX) {
-                    return shader.inputLayout;
-                }
-            }
-            throw std::runtime_error("No vertex shader");
-        }
+        VertexFormat vertexFormat;
     };
 }
 

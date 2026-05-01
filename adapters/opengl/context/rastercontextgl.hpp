@@ -21,6 +21,7 @@
 #define XENGINE_RASTERCONTEXTGL_HPP
 
 #include "xng/rendergraph/context/rastercontext.hpp"
+#include "xng/rendergraph/shader/shaderprimitive.hpp"
 
 #include "typeconversion.hpp"
 #include "resource/vertexarrayobject.hpp"
@@ -114,7 +115,29 @@ namespace xng::opengl {
             // On Vulkan / DirectX this should be on without additional configuration.
             glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
+            // Setup VAO
             glBindVertexArray(vertexArray.VAO);
+
+            const auto &elements = pipeline.vertexFormat.layout.getElements();
+            const auto &bindingPoints = pipeline.vertexFormat.bindingPoints;
+            const auto &offsets = pipeline.vertexFormat.offsets;
+            for (auto i = 0; i < offsets.size(); i++) {
+                glEnableVertexAttribArray(i);
+                glVertexAttribBinding(i, bindingPoints.at(i));
+
+                if (isIntegerFormat(elements.at(i).component)) {
+                    glVertexAttribIFormat(i,
+                                          elements.at(i).getSize(),
+                                          getType(elements.at(i).component),
+                                          offsets.at(i));
+                } else {
+                    glVertexAttribFormat(i,
+                                         elements.at(i).getSize(),
+                                         getType(elements.at(i).component),
+                                         GL_FALSE,
+                                         offsets.at(i));
+                }
+            }
 
             oglCheckError();
 
@@ -123,50 +146,8 @@ namespace xng::opengl {
             oglDebugEndGroup();
         }
 
-        void bindVertexBuffer(const Resource<VertexBuffer> &buffer) override {
-            if (!boundPipeline.has_value()) {
-                throw std::runtime_error("Must bind pipeline before binding vertex buffer");
-            }
-
-            oglDebugStartGroup("RasterContextGL::bindVertexBuffer");
-
-            glBindBuffer(GL_ARRAY_BUFFER, resources.getBuffer(buffer).handle);
-
-            // Setup vertex layout
-            const auto &vertexLayout = pipelineCache.getRasterPipeline(boundPipeline.value()).getVertexLayout();
-            const auto vertexStride = static_cast<GLsizei>(vertexLayout.getLayoutSize());
-
-            auto &attributes = vertexLayout.getElements();
-            size_t currentOffset = 0;
-            for (int i = 0; i < attributes.size(); i++) {
-                auto &binding = attributes.at(i);
-                glEnableVertexAttribArray(i);
-                if (binding.component > ShaderPrimitiveType::SIGNED_INT) {
-                    glVertexAttribPointer(i,
-                                          ShaderPrimitiveType::getCount(binding.type),
-                                          getType(binding.component),
-                                          GL_FALSE,
-                                          vertexStride,
-                                          reinterpret_cast<void *>(currentOffset));
-                } else {
-                    glVertexAttribIPointer(i,
-                                           ShaderPrimitiveType::getCount(binding.type),
-                                           getType(binding.component),
-                                           vertexStride,
-                                           reinterpret_cast<void *>(currentOffset));
-                }
-                currentOffset += binding.stride();
-            }
-
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-            oglCheckError();
-
-            oglDebugEndGroup();
-        }
-
         void bindVertexBuffer(const Resource<VertexBuffer> &buffer,
-                              const int attributeIndex,
+                              const unsigned int bindingPoint,
                               const size_t offset,
                               const size_t stride) override {
             if (!boundPipeline.has_value()) {
@@ -175,37 +156,7 @@ namespace xng::opengl {
 
             oglDebugStartGroup("RasterContextGL::bindVertexBuffer");
 
-            glBindBuffer(GL_ARRAY_BUFFER, resources.getBuffer(buffer).handle);
-
-            // Setup vertex layout
-            const auto &vertexLayout = pipelineCache.getRasterPipeline(boundPipeline.value()).getVertexLayout();
-
-            auto &attributes = vertexLayout.getElements();
-
-            if (attributeIndex >= attributes.size()) {
-                throw std::runtime_error("Invalid attribute index");
-            }
-
-            // Bind attribute
-            const auto &binding = attributes.at(attributeIndex);
-
-            glEnableVertexAttribArray(attributeIndex);
-            if (binding.component > ShaderPrimitiveType::SIGNED_INT) {
-                glVertexAttribPointer(attributeIndex,
-                                      ShaderPrimitiveType::getCount(binding.type),
-                                      getType(binding.component),
-                                      GL_FALSE,
-                                      stride,
-                                      reinterpret_cast<void *>(offset));
-            } else {
-                glVertexAttribIPointer(attributeIndex,
-                                       ShaderPrimitiveType::getCount(binding.type),
-                                       getType(binding.component),
-                                       stride,
-                                       reinterpret_cast<void *>(offset));
-            }
-
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindVertexBuffer(bindingPoint, resources.getBuffer(buffer).handle, offset, stride);
 
             oglCheckError();
 
@@ -220,10 +171,6 @@ namespace xng::opengl {
             oglDebugStartGroup("RasterContextGL::bindIndexBuffer");
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, resources.getBuffer(buffer).handle);
-
-            glBindVertexArray(0);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-            glBindVertexArray(vertexArray.VAO);
 
             oglCheckError();
 
@@ -364,6 +311,10 @@ namespace xng::opengl {
         BufferGL emptySSBO;
 
         int frameBufferHeight = 0;
+
+        static bool isIntegerFormat(const ShaderPrimitiveType::Component component) {
+            return component <= ShaderPrimitiveType::SIGNED_INT;
+        }
     };
 }
 

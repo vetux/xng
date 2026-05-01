@@ -91,7 +91,7 @@ namespace xng::rg {
             }
         }
 
-        size_t stride() const {
+        size_t getSize() const {
             return getBytes(component) * getCount(type);
         }
 

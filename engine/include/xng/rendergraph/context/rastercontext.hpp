@@ -53,20 +53,13 @@ namespace xng::rg {
          *
          * Can only be called after a pipeline has been bound.
          *
-         * @param buffer
-         */
-        virtual void bindVertexBuffer(const Resource<VertexBuffer> &buffer) = 0;
-
-        /**
-         * Bind the specified vertex buffer to the given vertex attribute.
-         *
          * @param buffer The buffer to bind
-         * @param attributeIndex The index of the vertex attribute
-         * @param offset The offset of the first element into the buffer
-         * @param stride The stride between elements
+         * @param bindingPoint The binding point to bind the buffer to
+         * @param offset The offset into the buffer of the first element
+         * @param stride The stride between elements. For single buffer packed data this is the size of one vertex.
          */
         virtual void bindVertexBuffer(const Resource<VertexBuffer> &buffer,
-                                      int attributeIndex,
+                                      unsigned int bindingPoint,
                                       size_t offset,
                                       size_t stride) = 0;
 

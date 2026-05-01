@@ -46,7 +46,7 @@ namespace xng::rg {
         size_t getLayoutSize() const {
             size_t ret = 0;
             for (auto &attr: elements)
-                ret += attr.stride();
+                ret += attr.getSize();
             return ret;
         }
 
