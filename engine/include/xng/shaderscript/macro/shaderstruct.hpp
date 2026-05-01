@@ -29,8 +29,6 @@
 #include "xng/shaderscript/shaderscope.hpp"
 #include "xng/shaderscript/std140.hpp"
 
-using namespace xng::rg;
-
 /**
  * This header defines macros to make shader struct definition simpler and cleaner and allow
  * a single source of truth definition for both the shader script side structure definition and the
@@ -351,7 +349,7 @@ namespace xng::ShaderScript
     GenerateElementDeclaration2, GenerateElementDeclaration2,\
     GenerateElementDeclaration1, GenerateElementDeclaration1)(__VA_ARGS__))
 
-#define GenerateConstructor1(_type, name) name(xng::ShaderScript::ShaderTypeOf<_type>::type(ShaderInstructionFactory::objectMember(_object.operand, #name)))
+#define GenerateConstructor1(_type, name) name(xng::ShaderScript::ShaderTypeOf<_type>::type(xng::rg::ShaderInstructionFactory::objectMember(_object.operand, #name)))
 #define GenerateConstructor2(type, name, ...) GenerateConstructor1(type, name), ExpandVAArgs(GenerateConstructor1(__VA_ARGS__))
 #define GenerateConstructor3(type, name, ...) GenerateConstructor1(type, name), ExpandVAArgs(GenerateConstructor2(__VA_ARGS__))
 #define GenerateConstructor4(type, name, ...) GenerateConstructor1(type, name), ExpandVAArgs(GenerateConstructor3(__VA_ARGS__))
